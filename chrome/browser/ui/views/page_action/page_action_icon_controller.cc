@@ -1,8 +1,8 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_controller.h"
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_ui_controller.h"
@@ -16,6 +16,8 @@
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/browser/ui/views/native_file_system/native_file_system_access_icon_view.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_container.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_params.h"
 #include "chrome/browser/ui/views/page_action/pwa_install_view.h"
 #include "chrome/browser/ui/views/page_action/zoom_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
@@ -27,24 +29,16 @@
 #include "chrome/browser/ui/views/translate/translate_icon_view.h"
 #include "ui/views/layout/box_layout.h"
 
-PageActionIconContainerView::Params::Params() = default;
-PageActionIconContainerView::Params::~Params() = default;
+PageActionIconController::PageActionIconController() : zoom_observer_(this) {}
+PageActionIconController::~PageActionIconController() = default;
 
-// static
-const char
-    PageActionIconContainerView::kPageActionIconContainerViewClassName[] =
-        "PageActionIconContainerView";
-
-PageActionIconContainerView::PageActionIconContainerView(const Params& params)
-    : zoom_observer_(this) {
+void PageActionIconController::Init(const PageActionIconParams& params,
+                                    PageActionIconContainer* icon_container) {
+  DCHECK(icon_container);
+  DCHECK(!icon_container_);
   DCHECK(params.page_action_icon_delegate);
 
-  views::BoxLayout& layout =
-      *SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
-          params.between_icon_spacing));
-  // Right align to clip the leftmost items first when not enough space.
-  layout.set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kEnd);
+  icon_container_ = icon_container;
 
   for (PageActionIconType type : params.types_enabled) {
     switch (type) {
@@ -162,7 +156,7 @@ PageActionIconContainerView::PageActionIconContainerView(const Params& params)
       icon->AddButtonObserver(params.button_observer);
     if (params.view_observer)
       icon->views::View::AddObserver(params.view_observer);
-    AddChildView(icon);
+    icon_container_->AddPageActionIcon(icon);
   }
 
   if (params.browser) {
@@ -171,9 +165,7 @@ PageActionIconContainerView::PageActionIconContainerView(const Params& params)
   }
 }
 
-PageActionIconContainerView::~PageActionIconContainerView() {}
-
-PageActionIconView* PageActionIconContainerView::GetIconView(
+PageActionIconView* PageActionIconController::GetIconView(
     PageActionIconType type) {
   switch (type) {
     case PageActionIconType::kBookmarkStar:
@@ -212,19 +204,18 @@ PageActionIconView* PageActionIconContainerView::GetIconView(
   return nullptr;
 }
 
-void PageActionIconContainerView::UpdateAll() {
+void PageActionIconController::UpdateAll() {
   for (PageActionIconView* icon : page_action_icons_)
     icon->Update();
 }
 
-bool PageActionIconContainerView::IsAnyIconVisible() const {
+bool PageActionIconController::IsAnyIconVisible() const {
   return std::any_of(
       page_action_icons_.begin(), page_action_icons_.end(),
       [](const PageActionIconView* icon) { return icon->GetVisible(); });
 }
 
-bool PageActionIconContainerView::
-    ActivateFirstInactiveBubbleForAccessibility() {
+bool PageActionIconController::ActivateFirstInactiveBubbleForAccessibility() {
   for (PageActionIconView* icon : page_action_icons_) {
     if (!icon->GetVisible() || !icon->GetBubble())
       continue;
@@ -238,31 +229,21 @@ bool PageActionIconContainerView::
   return false;
 }
 
-void PageActionIconContainerView::SetIconColor(SkColor icon_color) {
+void PageActionIconController::SetIconColor(SkColor icon_color) {
   for (PageActionIconView* icon : page_action_icons_)
     icon->SetIconColor(icon_color);
 }
 
-void PageActionIconContainerView::SetFontList(const gfx::FontList& font_list) {
+void PageActionIconController::SetFontList(const gfx::FontList& font_list) {
   for (PageActionIconView* icon : page_action_icons_)
     icon->SetFontList(font_list);
 }
 
-void PageActionIconContainerView::ZoomChangedForActiveTab(
-    bool can_show_bubble) {
+void PageActionIconController::ZoomChangedForActiveTab(bool can_show_bubble) {
   if (zoom_icon_)
     zoom_icon_->ZoomChangedForActiveTab(can_show_bubble);
 }
 
-const char* PageActionIconContainerView::GetClassName() const {
-  return kPageActionIconContainerViewClassName;
-}
-
-void PageActionIconContainerView::ChildPreferredSizeChanged(
-    views::View* child) {
-  PreferredSizeChanged();
-}
-
-void PageActionIconContainerView::OnDefaultZoomLevelChanged() {
+void PageActionIconController::OnDefaultZoomLevelChanged() {
   ZoomChangedForActiveTab(false);
 }

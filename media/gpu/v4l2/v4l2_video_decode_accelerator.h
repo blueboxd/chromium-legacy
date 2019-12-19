@@ -106,7 +106,7 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
       EGLDisplay egl_display,
       const GetGLContextCallback& get_gl_context_cb,
       const MakeGLContextCurrentCallback& make_context_current_cb,
-      const scoped_refptr<V4L2Device>& device);
+      scoped_refptr<V4L2Device> device);
   ~V4L2VideoDecodeAccelerator() override;
 
   // VideoDecodeAccelerator implementation.

@@ -71,6 +71,18 @@ void OnCalculateSizeComplete(
     std::move(callback).Run(base::nullopt);
     return;
   }
+  if (offset >= blob_reader->total_size()) {
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+  uint64_t offset_plus_length;
+  if (!base::CheckAdd(offset, length).AssignIfValid(&offset_plus_length)) {
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+  if (offset_plus_length > blob_reader->total_size())
+    length = blob_reader->total_size() - offset;
+
   auto set_read_range_status = blob_reader->SetReadRange(offset, length);
   if (set_read_range_status != storage::BlobReader::Status::DONE) {
     DCHECK_EQ(set_read_range_status, storage::BlobReader::Status::NET_ERROR);
@@ -90,26 +102,18 @@ void OnCalculateSizeComplete(
   }
 }
 
-bool IsValidRange(uint64_t offset, uint64_t length, int64_t content_length) {
-  int64_t offset_plus_length;
-  if (!base::CheckAdd(offset, length).AssignIfValid(&offset_plus_length))
-    return false;
-  return offset_plus_length <= content_length;
-}
-
 }  // namespace
 
 WebBundleBlobDataSource::WebBundleBlobDataSource(
-    int64_t content_length,
+    uint64_t length_hint,
     mojo::ScopedDataPipeConsumerHandle outer_response_body,
     network::mojom::URLLoaderClientEndpointsPtr endpoints,
     BrowserContext::BlobContextGetter blob_context_getter) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK_GT(content_length, 0);
   base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&WebBundleBlobDataSource::CreateCoreOnIO,
-                     weak_factory_.GetWeakPtr(), content_length,
+                     weak_factory_.GetWeakPtr(), length_hint,
                      std::move(outer_response_body), std::move(endpoints),
                      std::move(blob_context_getter)));
 }
@@ -147,13 +151,13 @@ void WebBundleBlobDataSource::AddReceiverImpl(
 // static
 void WebBundleBlobDataSource::CreateCoreOnIO(
     base::WeakPtr<WebBundleBlobDataSource> weak_ptr,
-    int64_t content_length,
+    uint64_t length_hint,
     mojo::ScopedDataPipeConsumerHandle outer_response_body,
     network::mojom::URLLoaderClientEndpointsPtr endpoints,
     BrowserContext::BlobContextGetter blob_context_getter) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   auto core = std::make_unique<BlobDataSourceCore>(
-      content_length, std::move(endpoints), std::move(blob_context_getter));
+      length_hint, std::move(endpoints), std::move(blob_context_getter));
   core->Start(std::move(outer_response_body));
   auto weak_core = core->GetWeakPtr();
   base::PostTask(
@@ -235,10 +239,10 @@ void WebBundleBlobDataSource::ReadToDataPipeImpl(
 }
 
 WebBundleBlobDataSource::BlobDataSourceCore::BlobDataSourceCore(
-    int64_t content_length,
+    uint64_t length_hint,
     network::mojom::URLLoaderClientEndpointsPtr endpoints,
     BrowserContext::BlobContextGetter blob_context_getter)
-    : content_length_(content_length),
+    : length_hint_(length_hint),
       endpoints_(std::move(endpoints)),
       blob_builder_from_stream_(std::make_unique<
                                 storage::BlobBuilderFromStream>(
@@ -249,7 +253,6 @@ WebBundleBlobDataSource::BlobDataSourceCore::BlobDataSourceCore(
               &WebBundleBlobDataSource::BlobDataSourceCore::StreamingBlobDone,
               base::Unretained(this)))) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK_GT(content_length_, 0);
 }
 
 WebBundleBlobDataSource::BlobDataSourceCore::~BlobDataSourceCore() {
@@ -261,8 +264,12 @@ WebBundleBlobDataSource::BlobDataSourceCore::~BlobDataSourceCore() {
 void WebBundleBlobDataSource::BlobDataSourceCore::Start(
     mojo::ScopedDataPipeConsumerHandle outer_response_body) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // If |length_hint_| is zero (the stream length is unknown), this will create
+  // a disk-backed blob instead of memory-backed.
+  // TODO(crbug.com/1033404): Consider deferring creating a blob until the
+  // stream length can be calculated from webbundle header.
   blob_builder_from_stream_->Start(
-      content_length_, std::move(outer_response_body),
+      length_hint_, std::move(outer_response_body),
       mojo::NullAssociatedRemote() /*  progress_client */);
 }
 
@@ -278,10 +285,6 @@ void WebBundleBlobDataSource::BlobDataSourceCore::ReadToDataPipe(
     mojo::ScopedDataPipeProducerHandle producer_handle,
     CompletionCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!IsValidRange(offset, length, content_length_)) {
-    std::move(callback).Run(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE);
-    return;
-  }
   WaitForBlob(base::BindOnce(&WebBundleBlobDataSource::BlobDataSourceCore::
                                  OnBlobReadyForReadToDataPipe,
                              base::Unretained(this), offset, length,
@@ -298,17 +301,6 @@ void WebBundleBlobDataSource::BlobDataSourceCore::Read(uint64_t offset,
                                                        uint64_t length,
                                                        ReadCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (offset >= static_cast<uint64_t>(content_length_)) {
-    std::move(callback).Run(base::nullopt);
-    return;
-  }
-  int64_t offset_plus_length;
-  if (!base::CheckAdd(offset, length).AssignIfValid(&offset_plus_length)) {
-    std::move(callback).Run(base::nullopt);
-    return;
-  }
-  if (offset_plus_length > content_length_)
-    length = content_length_ - offset;
   WaitForBlob(base::BindOnce(
       &WebBundleBlobDataSource::BlobDataSourceCore::OnBlobReadyForRead,
       base::Unretained(this), offset, length, std::move(callback)));
@@ -318,8 +310,7 @@ void WebBundleBlobDataSource::BlobDataSourceCore::StreamingBlobDone(
     storage::BlobBuilderFromStream* builder,
     std::unique_ptr<storage::BlobDataHandle> result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  // Content length mismatch is treated as an error.
-  if (result && (result->size() == base::checked_cast<size_t>(content_length_)))
+  if (result)
     blob_ = std::move(result);
   blob_builder_from_stream_.reset();
 

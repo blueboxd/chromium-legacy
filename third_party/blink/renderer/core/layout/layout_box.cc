@@ -108,7 +108,8 @@ struct SameSizeAsLayoutBox : public LayoutBoxModelObject {
   LayoutUnit intrinsic_content_logical_height;
   LayoutRectOutsets margin_box_outsets;
   LayoutUnit preferred_logical_width[2];
-  void* pointers[5];
+  void* pointers[4];
+  Persistent<void*> rare_data;
 };
 
 static_assert(sizeof(LayoutBox) == sizeof(SameSizeAsLayoutBox),
@@ -134,6 +135,10 @@ LayoutBoxRareData::LayoutBoxRareData()
       percent_height_container_(nullptr),
       snap_container_(nullptr),
       snap_areas_(nullptr) {}
+
+void LayoutBoxRareData::Trace(Visitor* visitor) {
+  visitor->Trace(layout_child_);
+}
 
 LayoutBox::LayoutBox(ContainerNode* node)
     : LayoutBoxModelObject(node),

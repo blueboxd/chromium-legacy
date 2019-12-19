@@ -43,8 +43,9 @@ class SSLBlockingPageBase
   void OverrideRendererPrefs(blink::mojom::RendererPreferences* prefs) override;
 
   void set_renderer_pref_callback(
-      base::Callback<void(content::WebContents*,
-                          blink::mojom::RendererPreferences*)> callback) {
+      base::RepeatingCallback<void(content::WebContents*,
+                                   blink::mojom::RendererPreferences*)>
+          callback) {
     renderer_pref_callback_ = callback;
   }
 
@@ -54,8 +55,8 @@ class SSLBlockingPageBase
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter);
 
  private:
-  base::Callback<void(content::WebContents*,
-                      blink::mojom::RendererPreferences*)>
+  base::RepeatingCallback<void(content::WebContents*,
+                               blink::mojom::RendererPreferences*)>
       renderer_pref_callback_;
   const std::unique_ptr<CertReportHelper> cert_report_helper_;
   DISALLOW_COPY_AND_ASSIGN(SSLBlockingPageBase);

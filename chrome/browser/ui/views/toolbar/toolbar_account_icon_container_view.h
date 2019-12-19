@@ -12,6 +12,7 @@
 class AvatarToolbarButton;
 class Browser;
 class PageActionIconContainerView;
+class PageActionIconController;
 
 // A container view for user-account-related PageActionIconViews and the profile
 // avatar icon.
@@ -38,8 +39,8 @@ class ToolbarAccountIconContainerView : public ToolbarIconContainerView,
   void OnThemeChanged() override;
   const char* GetClassName() const override;
 
-  PageActionIconContainerView* page_action_icon_container() {
-    return page_action_icon_container_view_;
+  PageActionIconController* page_action_icon_controller() {
+    return page_action_icon_controller_;
   }
   AvatarToolbarButton* avatar_button() { return avatar_; }
 
@@ -50,6 +51,7 @@ class ToolbarAccountIconContainerView : public ToolbarIconContainerView,
   const views::View::Views& GetChildren() const override;
 
   PageActionIconContainerView* page_action_icon_container_view_ = nullptr;
+  PageActionIconController* page_action_icon_controller_ = nullptr;
 
   AvatarToolbarButton* const avatar_ = nullptr;
 

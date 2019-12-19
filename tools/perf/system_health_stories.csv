@@ -12,6 +12,7 @@ browse:chrome:newtab,Story that loads new tab page and performs searches.,mobile
 browse:chrome:omnibox,Story that peforms search by using omnibox search provider,mobile,"2016,emerging_market"
 browse:chrome:omnibox:2019,Story that peforms search by using omnibox search provider,mobile,"2019,emerging_market"
 browse:media:facebook_photos,Load a photo page from Rihanna's facebook page then navigate a few next,mobile,"2016,emerging_market"
+browse:media:facebook_photos:2019,Load a photo page from Rihanna's facebook page then navigate a few next,mobile,"2019,emerging_market"
 browse:media:flickr_infinite_scroll,,"desktop,mobile","2016,infinite_scroll"
 browse:media:googleplaystore:2018,"Navigate to the movies page of Google Play Store, scroll to the bottom,",desktop,"2018,images"
 browse:media:googleplaystore:2019,"Navigate to the movies page of Google Play Store, scroll to the bottom,",mobile,"2019,emerging_market,images"

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_fieldset.h"
 #include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
@@ -99,9 +100,12 @@ LayoutObject* LayoutObjectFactory::CreateListMarker(Node& node,
   if (!RuntimeEnabledFeatures::LayoutNGEnabled() ||
       legacy == LegacyLayout::kForce)
     return nullptr;
-  // TODO(obrufau): markers may be forced to be inside despite having
-  // `list-style-position: outside`.
-  if (style.ListStylePosition() == EListStylePosition::kInside) {
+  const Node* parent = node.parentNode();
+  const ComputedStyle* parent_style = parent->GetComputedStyle();
+  bool is_inside =
+      parent_style->ListStylePosition() == EListStylePosition::kInside ||
+      (IsA<HTMLLIElement>(parent) && !parent_style->IsInsideListElement());
+  if (is_inside) {
     return CreateObject<LayoutObject, LayoutNGInsideListMarker,
                         LayoutNGInsideListMarker>(node, style, legacy);
   }

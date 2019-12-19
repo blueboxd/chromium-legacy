@@ -38,7 +38,7 @@ class SyncUserSettingsMock : public SyncUserSettings {
   MOCK_METHOD2(SetSelectedOsTypes, void(bool, UserSelectableOsTypeSet));
   MOCK_CONST_METHOD0(GetRegisteredSelectableOsTypes, UserSelectableOsTypeSet());
 
-  MOCK_CONST_METHOD0(GetOsSyncFeatureEnabled, bool());
+  MOCK_CONST_METHOD0(IsOsSyncFeatureEnabled, bool());
   MOCK_METHOD1(SetOsSyncFeatureEnabled, void(bool));
 #endif
 

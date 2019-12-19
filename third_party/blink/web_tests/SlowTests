@@ -116,6 +116,7 @@ crbug.com/451577 [ Mac ] http/tests/devtools/layers/layer-canvas-log.js [ Slow ]
 crbug.com/451577 [ Mac ] http/tests/devtools/network/network-domain-filter.js [ Slow ]
 
 crbug.com/510337 cssom/cssvalue-comparison.html [ Slow ]
+crbug.com/1034030 [ Mac ] http/tests/devtools/resource-har-conversion.js [ Slow ]
 
 # These tests are intentionally SLOW because of throttled loading.
 crbug.com/73609 http/tests/media/video-play-stall.html [ Slow ]

@@ -2672,11 +2672,11 @@ crbug.com/1035194 [ Linux ] external/wpt/css/filter-effects/backdrop-filter-basi
 crbug.com/1035194 [ Linux ] virtual/scalefactor200/external/wpt/css/filter-effects/css-filters-animation-opacity.html [ Failure ]
 crbug.com/1035194 [ Linux ] virtual/scalefactor200/external/wpt/css/filter-effects/backdrop-filter-basic-opacity-2.html [ Failure ]
 
+# css-pseudo-4 ::spelling-error and ::grammar-error not implemented
+crbug.com/1035708 external/wpt/css/css-pseudo/spelling-error-001.html [ Failure ]
+crbug.com/1035708 external/wpt/css/css-pseudo/grammar-error-001.html [ Failure ]
+
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 [ Mac ] external/wpt/css/css-pseudo/spelling-error-001.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-pseudo/spelling-error-001.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-pseudo/grammar-error-001.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-pseudo/grammar-error-001.html [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/pointerevents/pointerevent_touch-action-pan-x-css_touch.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/motion/offset-anchor-transform-box-fill-box-003.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/motion/offset-anchor-transform-box-fill-box-003.html [ Failure ]

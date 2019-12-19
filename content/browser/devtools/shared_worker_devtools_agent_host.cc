@@ -41,9 +41,7 @@ SharedWorkerDevToolsAgentHost::~SharedWorkerDevToolsAgentHost() {
 BrowserContext* SharedWorkerDevToolsAgentHost::GetBrowserContext() {
   if (!worker_host_)
     return nullptr;
-  RenderProcessHost* rph =
-      RenderProcessHost::FromID(worker_host_->worker_process_id());
-  return rph ? rph->GetBrowserContext() : nullptr;
+  return worker_host_->GetProcessHost()->GetBrowserContext();
 }
 
 std::string SharedWorkerDevToolsAgentHost::GetType() {
@@ -102,7 +100,7 @@ void SharedWorkerDevToolsAgentHost::WorkerReadyForInspection(
   state_ = WORKER_READY;
   GetRendererChannel()->SetRenderer(std::move(agent_remote),
                                     std::move(agent_host_receiver),
-                                    worker_host_->worker_process_id());
+                                    worker_host_->GetProcessHost()->GetID());
   for (auto* inspector : protocol::InspectorHandler::ForAgentHost(this))
     inspector->TargetReloadedAfterCrash();
 }

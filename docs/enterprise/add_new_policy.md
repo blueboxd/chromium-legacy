@@ -250,6 +250,13 @@ The presubmit checks perform the following verifications:
         1.  Dictionary policies can have some of their "required" fields removed
             in order to be less restrictive.
 
+## Cloud Policy
+
+**For googlers only**: Cloud Policy will be maintained by the Admin console
+team,
+[see instruction here](https://docs.google.com/document/d/1QgDTWISgOE8DVwQSSz8x5oKrI3O_qAvOmPryE5DQPcw/edit?usp=sharing)
+about updating the cloud policy.
+
 ## Post policy update
 
 Once the policy is added or modified, there is nothing else needs to be taken
@@ -261,11 +268,6 @@ everything listed below.
   will be updated automatically.
 * [Policy documentation](https://cloud.google.com/docs/chrome-enterprise/policies/)
   will be updated automatically.
-* **For googlers only**: Cloud policy UI will be updated by the DPanel team
-  manually and the task is tracked with [go/dpanel-policy-requests](http://go/dpanel-policy-requests).
-  If you are interested in implementing the cloud policy UI by yourself, please
-  follow the instruction in
-  [go/dpanel-autosettings-guide](http://go/dpanel-autosettings-guide).
 
 ------
 

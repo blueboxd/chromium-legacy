@@ -123,13 +123,7 @@ export class ChromeHelper {
 
 /* eslint-disable no-undef */
 
-/**
- * @typedef {ChromeHelper}
- */
-cca.mojo.ChromeHelper;
+/** @const */
+cca.mojo.ChromeHelper = ChromeHelper;
 
-(/** @suppress {checkTypes} */ () => {
-  cca.mojo.ChromeHelper = ChromeHelper;
-})();
-
-/* eslint-enbale no-undef */
+/* eslint-enable no-undef */

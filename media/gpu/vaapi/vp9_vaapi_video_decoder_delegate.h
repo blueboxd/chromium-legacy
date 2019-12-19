@@ -28,7 +28,7 @@ class VP9VaapiVideoDecoderDelegate : public VP9Decoder::VP9Accelerator,
                     const Vp9SegmentationParams& seg,
                     const Vp9LoopFilterParams& lf,
                     const Vp9ReferenceFrameVector& reference_frames,
-                    const base::Closure& done_cb) override;
+                    base::OnceClosure done_cb) override;
 
   bool OutputPicture(scoped_refptr<VP9Picture> pic) override;
   bool IsFrameContextRequired() const override;

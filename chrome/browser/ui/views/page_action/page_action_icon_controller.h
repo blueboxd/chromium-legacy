@@ -1,9 +1,9 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_PAGE_ACTION_PAGE_ACTION_ICON_CONTAINER_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_PAGE_ACTION_PAGE_ACTION_ICON_CONTAINER_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_PAGE_ACTION_PAGE_ACTION_ICON_CONTROLLER_H_
+#define CHROME_BROWSER_UI_VIEWS_PAGE_ACTION_PAGE_ACTION_ICON_CONTROLLER_H_
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
@@ -15,13 +15,13 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/views/view.h"
 
-class Browser;
-class CommandUpdater;
 class CookieControlsIconView;
 class FindBarIcon;
 class IntentPickerView;
 class ManagePasswordsIconViews;
 class NativeFileSystemAccessIconView;
+class PageActionIconContainer;
+struct PageActionIconParams;
 class PwaInstallView;
 class ReaderModeIconView;
 class SharingIconView;
@@ -42,34 +42,13 @@ namespace send_tab_to_self {
 class SendTabToSelfIconView;
 }
 
-class PageActionIconContainerView : public views::View,
-                                    public zoom::ZoomEventManagerObserver {
+class PageActionIconController : public zoom::ZoomEventManagerObserver {
  public:
-  struct Params {
-    Params();
-    ~Params();
+  PageActionIconController();
+  ~PageActionIconController() override;
 
-    std::vector<PageActionIconType> types_enabled;
-
-    // Leaving these params unset will leave the icon default values untouched.
-    // TODO(crbug.com/932818): Make these fields non-optional.
-    base::Optional<int> icon_size;
-    base::Optional<SkColor> icon_color;
-    const gfx::FontList* font_list = nullptr;
-
-    int between_icon_spacing = 0;
-    Browser* browser = nullptr;
-    CommandUpdater* command_updater = nullptr;
-    PageActionIconView::Delegate* page_action_icon_delegate = nullptr;
-    views::ButtonObserver* button_observer = nullptr;
-    views::ViewObserver* view_observer = nullptr;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Params);
-  };
-
-  explicit PageActionIconContainerView(const Params& params);
-  ~PageActionIconContainerView() override;
+  void Init(const PageActionIconParams& params,
+            PageActionIconContainer* icon_container);
 
   PageActionIconView* GetIconView(PageActionIconType type);
 
@@ -91,18 +70,12 @@ class PageActionIconContainerView : public views::View,
   // See comment in browser_window.h for more info.
   void ZoomChangedForActiveTab(bool can_show_bubble);
 
-  // views::View:
-  const char* GetClassName() const override;
-
-  static const char kPageActionIconContainerViewClassName[];
-
  private:
-  // views::View:
-  void ChildPreferredSizeChanged(views::View* child) override;
-
   // ZoomEventManagerObserver:
   // Updates the view for the zoom icon when default zoom levels change.
   void OnDefaultZoomLevelChanged() override;
+
+  PageActionIconContainer* icon_container_ = nullptr;
 
   StarView* bookmark_star_icon_ = nullptr;
   SharingIconView* click_to_call_icon_ = nullptr;
@@ -127,7 +100,7 @@ class PageActionIconContainerView : public views::View,
   ScopedObserver<zoom::ZoomEventManager, zoom::ZoomEventManagerObserver>
       zoom_observer_;
 
-  DISALLOW_COPY_AND_ASSIGN(PageActionIconContainerView);
+  DISALLOW_COPY_AND_ASSIGN(PageActionIconController);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_PAGE_ACTION_PAGE_ACTION_ICON_CONTAINER_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_PAGE_ACTION_PAGE_ACTION_ICON_CONTROLLER_H_

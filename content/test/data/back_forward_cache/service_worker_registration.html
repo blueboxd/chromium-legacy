@@ -1,0 +1,17 @@
+<html>
+<title>service worker registration</title>
+<script>
+let clients;
+
+async function register(worker_url, scope) {
+  try {
+    const init = scope ? {scope} : {};
+    await navigator.serviceWorker.register(worker_url, init);
+    await navigator.serviceWorker.ready;
+    return 'DONE';
+  } catch (error) {
+    return `${error}`;
+  }
+}
+</script>
+</html>

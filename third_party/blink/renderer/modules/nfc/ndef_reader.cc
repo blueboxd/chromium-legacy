@@ -166,6 +166,13 @@ void NDEFReader::OnReading(const String& serial_number,
       MakeGarbageCollected<NDEFMessage>(message)));
 }
 
+void NDEFReader::OnError(device::mojom::blink::NDEFErrorType error) {
+  ErrorEvent* event = ErrorEvent::Create(
+      NDEFErrorTypeToDOMException(error)->message(),
+      SourceLocation::Capture(GetExecutionContext()), nullptr);
+  DispatchEvent(*event);
+}
+
 void NDEFReader::OnMojoConnectionError() {
   // If |resolver_| has already settled this rejection is silently ignored.
   if (resolver_) {
@@ -174,10 +181,7 @@ void NDEFReader::OnMojoConnectionError() {
   }
 
   // Dispatches an error event.
-  ErrorEvent* error = ErrorEvent::Create(
-      "No NFC adapter or cannot establish connection.",
-      SourceLocation::Capture(GetExecutionContext()), nullptr);
-  DispatchEvent(*error);
+  OnError(device::mojom::blink::NDEFErrorType::NOT_SUPPORTED);
 }
 
 void NDEFReader::ContextDestroyed(ExecutionContext*) {

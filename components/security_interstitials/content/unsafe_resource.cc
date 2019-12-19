@@ -91,12 +91,11 @@ UnsafeResource::GetNavigationEntryForResource() const {
 }
 
 // static
-base::Callback<content::WebContents*(void)>
-UnsafeResource::GetWebContentsGetter(
-    int render_process_host_id,
-    int render_frame_id) {
-  return base::Bind(&GetWebContentsByFrameID, render_process_host_id,
-                    render_frame_id);
+base::RepeatingCallback<content::WebContents*(void)>
+UnsafeResource::GetWebContentsGetter(int render_process_host_id,
+                                     int render_frame_id) {
+  return base::BindRepeating(&GetWebContentsByFrameID, render_process_host_id,
+                             render_frame_id);
 }
 
 }  // security_interstitials

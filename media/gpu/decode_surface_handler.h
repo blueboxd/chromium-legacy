@@ -34,7 +34,7 @@ class DecodeSurfaceHandler {
   // the same order as SurfaceReady is called. (On Intel, this order doesn't
   // need to be explicitly maintained since the driver will enforce it, together
   // with any necessary dependencies).
-  virtual void SurfaceReady(const scoped_refptr<T>& dec_surface,
+  virtual void SurfaceReady(scoped_refptr<T> dec_surface,
                             int32_t bitstream_id,
                             const gfx::Rect& visible_rect,
                             const VideoColorSpace& color_space) = 0;

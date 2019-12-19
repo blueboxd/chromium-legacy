@@ -258,6 +258,11 @@ void LayoutTextControlSingleLine::Autoscroll(const PhysicalOffset& position) {
 }
 
 LayoutUnit LayoutTextControlSingleLine::ScrollWidth() const {
+  // If in preview state, fake the scroll width to prevent that any information
+  // about the suggested content can be derived from the size.
+  if (!GetTextControlElement()->SuggestedValue().IsEmpty())
+    return ClientWidth();
+
   if (LayoutBox* inner = InnerEditorElement()
                              ? InnerEditorElement()->GetLayoutBox()
                              : nullptr) {
@@ -270,6 +275,11 @@ LayoutUnit LayoutTextControlSingleLine::ScrollWidth() const {
 }
 
 LayoutUnit LayoutTextControlSingleLine::ScrollHeight() const {
+  // If in preview state, fake the scroll height to prevent that any information
+  // about the suggested content can be derived from the size.
+  if (!GetTextControlElement()->SuggestedValue().IsEmpty())
+    return ClientHeight();
+
   if (LayoutBox* inner = InnerEditorElement()
                              ? InnerEditorElement()->GetLayoutBox()
                              : nullptr) {

@@ -830,6 +830,53 @@ public class NFCTest {
     }
 
     /**
+     * Test that when the tag in proximity is found to be not NDEF compatible, an error event will
+     * be dispatched to the client.
+     */
+    @Test
+    @Feature({"NFCTest"})
+    public void testNonNdefCompatibleTagFound() {
+        TestNfcImpl nfc = new TestNfcImpl(mContext, mDelegate);
+        mDelegate.invokeCallback();
+        nfc.setClient(mNfcClient);
+        // Prepare at least one watcher, otherwise the error won't be notified.
+        WatchResponse mockWatchCallback = mock(WatchResponse.class);
+        nfc.watch(createNdefScanOptions(), mNextWatchId, mockWatchCallback);
+
+        // Pass null tag handler to simulate that the tag is not NDEF compatible.
+        nfc.processPendingOperationsForTesting(null);
+
+        // An error is notified.
+        verify(mNfcClient, times(1)).onError(NdefErrorType.NOT_SUPPORTED);
+        // No watch.
+        verify(mNfcClient, times(0))
+                .onWatch(mOnWatchCallbackCaptor.capture(), nullable(String.class),
+                        any(NdefMessage.class));
+    }
+
+    /**
+     * Test that when the tag in proximity is found to be not NDEF compatible, an error event will
+     * not be dispatched to the client if there is no watcher present.
+     */
+    @Test
+    @Feature({"NFCTest"})
+    public void testNonNdefCompatibleTagFoundWithoutWatcher() {
+        TestNfcImpl nfc = new TestNfcImpl(mContext, mDelegate);
+        mDelegate.invokeCallback();
+        nfc.setClient(mNfcClient);
+
+        // Pass null tag handler to simulate that the tag is not NDEF compatible.
+        nfc.processPendingOperationsForTesting(null);
+
+        // An error is NOT notified.
+        verify(mNfcClient, times(0)).onError(NdefErrorType.NOT_SUPPORTED);
+        // No watch.
+        verify(mNfcClient, times(0))
+                .onWatch(mOnWatchCallbackCaptor.capture(), nullable(String.class),
+                        any(NdefMessage.class));
+    }
+
+    /**
      * Test that when tag is disconnected during read operation, IllegalStateException is handled.
      */
     @Test
@@ -847,10 +894,11 @@ public class NFCTest {
         // Mocks 'NFC tag found' event.
         nfc.processPendingOperationsForTesting(mNfcTagHandler);
 
-        // Check that client was not notified.
+        // Check that the watch was not triggered but an error was dispatched to the client.
         verify(mNfcClient, times(0))
                 .onWatch(mOnWatchCallbackCaptor.capture(), nullable(String.class),
                         any(NdefMessage.class));
+        verify(mNfcClient, times(1)).onError(NdefErrorType.IO_ERROR);
     }
 
     /**

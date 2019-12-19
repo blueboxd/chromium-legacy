@@ -129,10 +129,13 @@ blink_modules_sources("bindings_modules_impl") {
       get_target_outputs(":bindings_modules_v8_generated_init_partial") +
       get_target_outputs(":bindings_modules_origin_trial_features")
 
+  sources += generated_modules_dictionary_files
+
   deps = [
     ":bindings_modules_origin_trial_features",
     ":bindings_modules_v8_generated",
     ":generate_mojo_bindings",
+    "//third_party/blink/renderer/bindings:generate_v8_bindings",
     "//third_party/blink/renderer/modules/mediarecorder:buildflags",
     "//third_party/dawn/src/dawn:dawn_headers",
   ]

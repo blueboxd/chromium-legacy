@@ -56,7 +56,9 @@
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
-#include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_container.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_controller.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_params.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_icon_view.h"
@@ -237,7 +239,7 @@ void LocationBarView::Init() {
     content_setting_views_.push_back(AddChildView(std::move(image_view)));
   }
 
-  PageActionIconContainerView::Params params;
+  PageActionIconParams params;
   // |browser_| may be null when LocationBarView is used for non-Browser windows
   // such as PresentationReceiverWindowView, which do not support page actions.
   if (browser_) {
@@ -288,6 +290,7 @@ void LocationBarView::Init() {
   params.page_action_icon_delegate = this;
   page_action_icon_container_ =
       AddChildView(std::make_unique<PageActionIconContainerView>(params));
+  page_action_icon_controller_ = page_action_icon_container_->controller();
 
   auto clear_all_button = views::CreateVectorImageButton(this);
   clear_all_button->SetTooltipText(
@@ -621,7 +624,7 @@ void LocationBarView::OnThemeChanged() {
     return;
 
   SkColor icon_color = GetColor(OmniboxPart::RESULTS_ICON);
-  page_action_icon_container_->SetIconColor(icon_color);
+  page_action_icon_controller_->SetIconColor(icon_color);
   for (ContentSettingImageView* image_view : content_setting_views_)
     image_view->SetIconColor(icon_color);
 
@@ -652,7 +655,7 @@ void LocationBarView::Update(const WebContents* contents) {
     omnibox_view_->Update();
 
   PageActionIconView* send_tab_to_self_icon =
-      page_action_icon_container_->GetIconView(
+      page_action_icon_controller_->GetIconView(
           PageActionIconType::kSendTabToSelf);
   if (send_tab_to_self_icon)
     send_tab_to_self_icon->SetVisible(false);
@@ -665,7 +668,7 @@ void LocationBarView::ResetTabState(WebContents* contents) {
 }
 
 bool LocationBarView::ActivateFirstInactiveBubbleForAccessibility() {
-  return page_action_icon_container_
+  return page_action_icon_controller_
       ->ActivateFirstInactiveBubbleForAccessibility();
 }
 
@@ -839,7 +842,7 @@ void LocationBarView::RefreshPageActionIconViews() {
     GetWidget()->non_client_view()->ResetWindowControls();
   }
 
-  page_action_icon_container_->UpdateAll();
+  page_action_icon_controller_->UpdateAll();
 }
 
 void LocationBarView::ButtonPressed(views::Button* sender,
@@ -934,7 +937,7 @@ void LocationBarView::UpdateContentSettingsIcons() {
 }
 
 inline bool LocationBarView::UpdateSendTabToSelfIcon() {
-  PageActionIconView* icon = page_action_icon_container_->GetIconView(
+  PageActionIconView* icon = page_action_icon_controller_->GetIconView(
       PageActionIconType::kSendTabToSelf);
   if (!icon)
     return false;
@@ -1152,7 +1155,7 @@ void LocationBarView::OnTouchUiChanged() {
   selected_keyword_view_->SetFontList(font_list);
   for (ContentSettingImageView* view : content_setting_views_)
     view->SetFontList(font_list);
-  page_action_icon_container_->SetFontList(font_list);
+  page_action_icon_controller_->SetFontList(font_list);
   location_icon_view_->Update(/*suppress_animations=*/false);
   PreferredSizeChanged();
 }

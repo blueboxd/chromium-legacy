@@ -67,7 +67,7 @@ void OSSyncHandler::HandleDidNavigateToOsSyncPage(const base::ListValue* args) {
   // Cache the feature enabled pref.
   SyncService* service = GetSyncService();
   if (service)
-    feature_enabled_ = service->GetUserSettings()->GetOsSyncFeatureEnabled();
+    feature_enabled_ = service->GetUserSettings()->IsOsSyncFeatureEnabled();
 
   PushSyncPrefs();
 }

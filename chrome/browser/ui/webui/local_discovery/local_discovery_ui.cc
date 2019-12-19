@@ -105,6 +105,7 @@ LocalDiscoveryUI::LocalDiscoveryUI(content::WebUI* web_ui)
 
 void LocalDiscoveryUI::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kLocalDiscoveryEnabled, true);
   registry->RegisterBooleanPref(
       prefs::kLocalDiscoveryNotificationsEnabled,
 #if defined(OS_WIN)

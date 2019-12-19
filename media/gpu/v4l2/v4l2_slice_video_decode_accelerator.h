@@ -48,7 +48,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
       public base::trace_event::MemoryDumpProvider {
  public:
   V4L2SliceVideoDecodeAccelerator(
-      const scoped_refptr<V4L2Device>& device,
+      scoped_refptr<V4L2Device> device,
       EGLDisplay egl_display,
       const BindGLImageCallback& bind_image_cb,
       const MakeGLContextCurrentCallback& make_context_current_cb);
@@ -145,15 +145,14 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   scoped_refptr<V4L2DecodeSurface> CreateSurface() override;
   // SurfaceReady() uses |decoder_display_queue_| to guarantee that decoding
   // of |dec_surface| happens in order.
-  void SurfaceReady(const scoped_refptr<V4L2DecodeSurface>& dec_surface,
+  void SurfaceReady(scoped_refptr<V4L2DecodeSurface> dec_surface,
                     int32_t bitstream_id,
                     const gfx::Rect& visible_rect,
                     const VideoColorSpace& /* color_space */) override;
-  bool SubmitSlice(const scoped_refptr<V4L2DecodeSurface>& dec_surface,
+  bool SubmitSlice(V4L2DecodeSurface* dec_surface,
                    const uint8_t* data,
                    size_t size) override;
-  void DecodeSurface(
-      const scoped_refptr<V4L2DecodeSurface>& dec_surface) override;
+  void DecodeSurface(scoped_refptr<V4L2DecodeSurface> dec_surface) override;
 
   //
   // Internal methods of this class.
@@ -162,7 +161,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   void ReuseOutputBuffer(V4L2ReadableBufferRef buffer);
 
   // Queue a |dec_surface| to device for decoding.
-  void Enqueue(const scoped_refptr<V4L2DecodeSurface>& dec_surface);
+  void Enqueue(scoped_refptr<V4L2DecodeSurface> dec_surface);
 
   // Dequeue any V4L2 buffers available and process.
   void Dequeue();
@@ -334,7 +333,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   // decoding the stream in |bitstream_id| - after it is decoded preserving
   // the order in which it was scheduled via SurfaceReady().
   void OutputSurface(int32_t bitstream_id,
-                     const scoped_refptr<V4L2DecodeSurface>& dec_surface);
+                     scoped_refptr<V4L2DecodeSurface> dec_surface);
 
   // Goes over the |decoder_display_queue_| and sends all buffers from the
   // front of the queue that are already decoded to the client, in order.

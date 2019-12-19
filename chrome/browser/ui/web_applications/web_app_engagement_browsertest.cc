@@ -363,12 +363,14 @@ IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, TwoApps) {
   ExpectLaunchCounts(tester, /*windowLaunches=*/3, /*tabLaunches=*/0);
 }
 
-// Flaky. http://crbug.com/1034028
-IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, DISABLED_ManyUserApps) {
+IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, ManyUserApps) {
   base::HistogramTester tester;
 
   // More than 3 user-installed apps:
   const int num_user_apps = 4;
+
+  // A small number of launches, to avoid timeouts.
+  const int num_launches = 2;
 
   std::vector<AppId> app_ids;
 
@@ -384,8 +386,9 @@ IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, DISABLED_ManyUserApps) {
     app_ids.push_back(app_id);
   }
 
-  // Launch apps in windows.
-  for (int i = 0; i < num_user_apps; ++i) {
+  // Launch an app in a window.
+  DCHECK_LE(num_launches, num_user_apps);
+  for (int i = 0; i < num_launches; ++i) {
     Browser* browser = LaunchWebAppBrowser(app_ids[i]);
 
     const GURL url = GetUrlForSuffix(base_url, i);
@@ -400,9 +403,10 @@ IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, DISABLED_ManyUserApps) {
 
   ExpectUniqueSamples(tester, histograms,
                       SiteEngagementService::ENGAGEMENT_WEBAPP_SHORTCUT_LAUNCH,
-                      4);
+                      num_launches);
   ExpectTotalCounts(tester, ~histograms, 0);
-  ExpectLaunchCounts(tester, /*windowLaunches=*/4, /*tabLaunches=*/0);
+  ExpectLaunchCounts(tester, /*windowLaunches=*/num_launches,
+                     /*tabLaunches=*/0);
 }
 
 IN_PROC_BROWSER_TEST_P(HostedAppEngagementBrowserTest, DefaultApp) {

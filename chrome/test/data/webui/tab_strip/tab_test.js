@@ -369,9 +369,10 @@ suite('Tab', function() {
     assertFalse(tabElement.hasAttribute('dragging_'));
   });
 
-  test('getting the drag image grabs the contents', () => {
+  test('gets the drag image', () => {
     assertEquals(
-        tabElement.getDragImage(), tabElement.shadowRoot.querySelector('#tab'));
+        tabElement.getDragImage(),
+        tabElement.shadowRoot.querySelector('#dragImage'));
   });
 
   test('has custom context menu', async () => {

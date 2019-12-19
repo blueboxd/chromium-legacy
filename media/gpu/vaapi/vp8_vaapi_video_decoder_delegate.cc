@@ -44,7 +44,7 @@ bool VP8VaapiVideoDecoderDelegate::SubmitDecode(
 }
 
 bool VP8VaapiVideoDecoderDelegate::OutputPicture(
-    const scoped_refptr<VP8Picture>& pic) {
+    scoped_refptr<VP8Picture> pic) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const VaapiVP8Picture* vaapi_pic = pic->AsVaapiVP8Picture();

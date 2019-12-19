@@ -108,14 +108,23 @@ void NFCProxy::OnWatch(const Vector<uint32_t>& watch_ids,
                        const String& serial_number,
                        device::mojom::blink::NDEFMessagePtr message) {
   // Dispatch the event to all matched readers. We iterate on a copy of
-  // |readers_| because the user's NDEFReader#onreading event handler may call
-  // NDEFReader#stop() to modify |readers_| just during the iteration process.
-  // This loop is O(n^2), however, we assume the number of readers to be small
-  // so it'd be just OK.
+  // |readers_| because a reader's onreading event handler may remove itself
+  // from |readers_| just during the iteration process. This loop is O(n^2),
+  // however, we assume the number of readers to be small so it'd be just OK.
   ReaderMap copy = readers_;
   for (auto& pair : copy) {
     if (watch_ids.Contains(pair.value))
       pair.key->OnReading(serial_number, *message);
+  }
+}
+
+void NFCProxy::OnError(device::mojom::blink::NDEFErrorType error) {
+  // Dispatch the event to all readers. We iterate on a copy of |readers_|
+  // because a reader's onerror event handler may remove itself from |readers_|
+  // just during the iteration process.
+  ReaderMap copy = readers_;
+  for (auto& pair : copy) {
+    pair.key->OnError(error);
   }
 }
 
@@ -179,6 +188,21 @@ void NFCProxy::EnsureMojoConnection() {
       client_receiver_.BindNewPipeAndPassRemote(task_runner));
 }
 
+// Once the NFC Mojo connection is established, this OnMojoConnectionError()
+// could happen in only one case: DeviceService shutdown. As currently
+// DeviceService is running in the browser process and only goes to shutdown
+// when the browser process exits, so this case should just be impossible and
+// meaningless.
+//
+// But, it's possible that in the future we may configure DeviceService to run
+// in some separate process and may start/stop/start it under some conditions
+// (e.g. handle some unexpected crashes), then each time DeviceService goes down
+// we will get this OnMojoConnectionError().
+//
+// However, for now, this OnMojoConnectionError() happens only when we failed to
+// establish the NFC Mojo connection in the first place, i.e. the connection
+// request is rejected by the browser side (DeviceService) due to missing NFC
+// support etc.
 void NFCProxy::OnMojoConnectionError() {
   nfc_remote_.reset();
   client_receiver_.reset();

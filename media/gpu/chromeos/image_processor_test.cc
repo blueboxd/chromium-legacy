@@ -85,10 +85,20 @@ class ImageProcessorParamTest
       const std::vector<VideoFrame::StorageType>& input_storage_types,
       test::Image* const output_image,
       const std::vector<VideoFrame::StorageType>& output_storage_types) {
-    Fourcc input_fourcc =
-        *Fourcc::FromVideoPixelFormat(input_image.PixelFormat());
-    Fourcc output_fourcc =
-        *Fourcc::FromVideoPixelFormat(output_image->PixelFormat());
+    bool is_single_planar_input = true;
+    bool is_single_planar_output = true;
+#if defined(ARCH_CPU_ARM_FAMILY)
+    // [Ugly Hack] In the use scenario of V4L2ImageProcessor in
+    // V4L2VideoEncodeAccelerator. ImageProcessor needs to read and write
+    // contents with arbitrary offsets. The format needs to be multi planar.
+    is_single_planar_input = !IsYuvPlanar(input_image.PixelFormat());
+    is_single_planar_output = !IsYuvPlanar(output_image->PixelFormat());
+#endif
+
+    Fourcc input_fourcc = *Fourcc::FromVideoPixelFormat(
+        input_image.PixelFormat(), is_single_planar_input);
+    Fourcc output_fourcc = *Fourcc::FromVideoPixelFormat(
+        output_image->PixelFormat(), is_single_planar_output);
 
     auto input_layout = test::CreateVideoFrameLayout(input_image.PixelFormat(),
                                                      input_image.Size());

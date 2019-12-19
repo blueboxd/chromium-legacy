@@ -166,12 +166,10 @@ class SpellCheck : public base::SupportsWeakPtr<SpellCheck>,
       mojo::PendingReceiver<spellcheck::mojom::SpellChecker> receiver);
 
   // Returns the current number of spell check languages.
-  // Overriden by tests in spellcheck_provider_test.cc (FakeSpellCheck class).
-  virtual size_t LanguageCount();
+  size_t LanguageCount();
 
   // Returns the current number of spell check languages with enabled engines.
-  // Overriden by tests in spellcheck_provider_test.cc (FakeSpellCheck class).
-  virtual size_t EnabledLanguageCount();
+  size_t EnabledLanguageCount();
 
  private:
    friend class SpellCheckTest;

@@ -33,6 +33,9 @@
         "browse:media:facebook_photos": {
             "DEFAULT": "system_health_mobile_040.wprgo"
         },
+        "browse:media:facebook_photos:2019": {
+            "DEFAULT": "system_health_mobile_c257dc16d3.wprgo"
+        },
         "browse:media:flickr_infinite_scroll": {
             "DEFAULT": "system_health_mobile_062.wprgo"
         },

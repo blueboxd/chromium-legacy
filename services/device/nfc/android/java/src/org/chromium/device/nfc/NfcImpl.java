@@ -544,10 +544,22 @@ public class NfcImpl implements Nfc {
             notifyMatchingWatchers(webNdefMessage);
         } catch (UnsupportedEncodingException e) {
             Log.w(TAG, "Cannot read data from NFC tag. Cannot convert to NdefMessage.");
+            notifyErrorToAllWatchers(NdefErrorType.INVALID_MESSAGE);
         } catch (TagLostException e) {
             Log.w(TAG, "Cannot read data from NFC tag. Tag is lost.");
+            notifyErrorToAllWatchers(NdefErrorType.IO_ERROR);
         } catch (FormatException | IllegalStateException | IOException e) {
             Log.w(TAG, "Cannot read data from NFC tag. IO_ERROR.");
+            notifyErrorToAllWatchers(NdefErrorType.IO_ERROR);
+        }
+    }
+
+    /**
+     * Notify all active watchers that an error happened when trying to read the tag coming nearby.
+     */
+    private void notifyErrorToAllWatchers(int error) {
+        for (int i = 0; i < mWatchers.size(); i++) {
+            mClient.onError(error);
         }
     }
 
@@ -615,6 +627,13 @@ public class NfcImpl implements Nfc {
      */
     protected void processPendingOperations(NfcTagHandler tagHandler) {
         mTagHandler = tagHandler;
+
+        // This tag is not NDEF compatible.
+        if (mTagHandler == null) {
+            notifyErrorToAllWatchers(NdefErrorType.NOT_SUPPORTED);
+            return;
+        }
+
         processPendingWatchOperations();
         processPendingPushOperation();
         if (mTagHandler != null && mTagHandler.isConnected()) {

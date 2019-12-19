@@ -459,8 +459,10 @@ LayoutListMarker::ListStyleCategory LayoutListMarker::GetListStyleCategory(
 }
 
 bool LayoutListMarker::IsInside() const {
-  return list_item_->Ordinal().NotInList() ||
-         StyleRef().ListStylePosition() == EListStylePosition::kInside;
+  const ComputedStyle& parent_style = list_item_->StyleRef();
+  return parent_style.ListStylePosition() == EListStylePosition::kInside ||
+         (IsA<HTMLLIElement>(list_item_->GetNode()) &&
+          !parent_style.IsInsideListElement());
 }
 
 LayoutRect LayoutListMarker::GetRelativeMarkerRect() const {

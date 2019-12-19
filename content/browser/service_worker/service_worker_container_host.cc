@@ -1113,9 +1113,14 @@ void ServiceWorkerContainerHost::UpdateController(
 
   scoped_refptr<ServiceWorkerVersion> previous_version = controller_;
   controller_ = version;
-
-  if (version)
+  if (version) {
     version->AddControllee(this);
+    if (IsBackForwardCacheEnabled() && IsInBackForwardCache()) {
+      // |this| was not |version|'s controllee when |OnEnterBackForwardCache|
+      // was called.
+      version->MoveControlleeToBackForwardCacheMap(client_uuid());
+    }
+  }
   if (previous_version)
     previous_version->RemoveControllee(client_uuid());
 

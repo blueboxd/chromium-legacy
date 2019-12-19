@@ -27,7 +27,7 @@ cat <<HTMLBEGIN
 
   img {
      margin: 10px;
-     background: #ddd;
+     background: #eee;
      object-fit: contain;
      width: 100px;
      height: 100px;

@@ -118,6 +118,8 @@
 #include "chrome/browser/ui/webui/chromeos/cellular_setup/cellular_setup_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer.mojom.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer_ui.h"
+#include "chrome/browser/ui/webui/chromeos/crostini_upgrader/crostini_upgrader.mojom.h"
+#include "chrome/browser/ui/webui/chromeos/crostini_upgrader/crostini_upgrader_ui.h"
 #include "chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom.h"
 #endif
 
@@ -445,9 +447,15 @@ void PopulateChromeWebUIFrameBinders(
   RegisterWebUIControllerInterfaceBinder<
       chromeos::cellular_setup::CellularSetupDialogUI,
       chromeos::cellular_setup::mojom::CellularSetup>(map);
+
   RegisterWebUIControllerInterfaceBinder<
       chromeos::CrostiniInstallerUI,
       chromeos::crostini_installer::mojom::PageHandlerFactory>(map);
+
+  RegisterWebUIControllerInterfaceBinder<
+      chromeos::CrostiniUpgraderUI,
+      chromeos::crostini_upgrader::mojom::PageHandlerFactory>(map);
+
   RegisterWebUIControllerInterfaceBinder<
       chromeos::machine_learning::MachineLearningInternalsUI,
       chromeos::machine_learning::mojom::PageHandler>(map);

@@ -66,6 +66,11 @@ export class TabElement extends CustomElement {
         'aria-label', loadTimeData.getString('closeTab'));
 
     /** @private {!HTMLElement} */
+    this.dragImageEl_ =
+        /** @type {!HTMLElement} */ (
+            this.shadowRoot.querySelector('#dragImage'));
+
+    /** @private {!HTMLElement} */
     this.tabEl_ =
         /** @type {!HTMLElement} */ (this.shadowRoot.querySelector('#tab'));
 
@@ -183,7 +188,7 @@ export class TabElement extends CustomElement {
 
   /** @return {!HTMLElement} */
   getDragImage() {
-    return this.tabEl_;
+    return this.dragImageEl_;
   }
 
   /**

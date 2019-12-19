@@ -27,11 +27,11 @@ class V4L2VP8Accelerator : public VP8Decoder::VP8Accelerator {
   scoped_refptr<VP8Picture> CreateVP8Picture() override;
   bool SubmitDecode(scoped_refptr<VP8Picture> pic,
                     const Vp8ReferenceFrameVector& reference_frames) override;
-  bool OutputPicture(const scoped_refptr<VP8Picture>& pic) override;
+  bool OutputPicture(scoped_refptr<VP8Picture> pic) override;
 
  private:
   scoped_refptr<V4L2DecodeSurface> VP8PictureToV4L2DecodeSurface(
-      const scoped_refptr<VP8Picture>& pic);
+      VP8Picture* pic);
 
   V4L2DecodeSurfaceHandler* const surface_handler_;
   V4L2Device* const device_;

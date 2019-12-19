@@ -29,30 +29,10 @@ void FakeTextCheckingCompletion::DidCancelCheckingText() {
   ++result_->cancellation_count_;
 }
 
-FakeSpellCheck::FakeSpellCheck(
-    service_manager::LocalInterfaceProvider* embedder_provider)
-    : SpellCheck(embedder_provider) {}
-
-void FakeSpellCheck::SetFakeLanguageCounts(size_t language_count,
-                                           size_t enabled_count) {
-  use_fake_counts_ = true;
-  language_count_ = language_count;
-  enabled_language_count_ = enabled_count;
-}
-
-size_t FakeSpellCheck::LanguageCount() {
-  return use_fake_counts_ ? language_count_ : SpellCheck::LanguageCount();
-}
-
-size_t FakeSpellCheck::EnabledLanguageCount() {
-  return use_fake_counts_ ? enabled_language_count_
-                          : SpellCheck::EnabledLanguageCount();
-}
-
 TestingSpellCheckProvider::TestingSpellCheckProvider(
     service_manager::LocalInterfaceProvider* embedder_provider)
     : SpellCheckProvider(nullptr,
-                         new FakeSpellCheck(embedder_provider),
+                         new SpellCheck(embedder_provider),
                          embedder_provider) {}
 
 TestingSpellCheckProvider::TestingSpellCheckProvider(
@@ -147,8 +127,7 @@ void TestingSpellCheckProvider::RequestPartialTextCheck(
     const std::vector<SpellCheckResult>& partial_results,
     bool fill_suggestions,
     RequestPartialTextCheckCallback callback) {
-  partial_text_check_requests_.push_back(
-      std::make_pair(text, std::move(callback)));
+  NOTREACHED();
 }
 #endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 
@@ -170,24 +149,6 @@ bool TestingSpellCheckProvider::SatisfyRequestFromCache(
     blink::WebTextCheckingCompletion* completion) {
   return SpellCheckProvider::SatisfyRequestFromCache(text, completion);
 }
-
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-int TestingSpellCheckProvider::AddCompletionForTest(
-    std::unique_ptr<FakeTextCheckingCompletion> completion) {
-  return SpellCheckProvider::text_check_completions_.Add(std::move(completion));
-}
-
-void TestingSpellCheckProvider::HybridSpellCheckParagraphComplete(
-    const base::string16& text,
-    int request_id,
-    std::vector<SpellCheckResult> renderer_results) {
-  if (!receiver_.is_bound())
-    SetSpellCheckHostForTesting(receiver_.BindNewPipeAndPassRemote());
-  SpellCheckProvider::HybridSpellCheckParagraphComplete(
-      text, request_id, std::move(renderer_results));
-  base::RunLoop().RunUntilIdle();
-}
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 
 SpellCheckProviderTest::SpellCheckProviderTest()
     : provider_(&embedder_provider_) {}

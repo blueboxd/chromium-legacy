@@ -96,14 +96,11 @@ CrostiniUpgraderUI::CrostiniUpgraderUI(content::WebUI* web_ui)
   source->UseStringsJs();
   source->EnableReplaceI18nInJS();
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
-
-  AddHandlerToRegistry(base::BindRepeating(
-      &CrostiniUpgraderUI::BindPageHandlerFactory, base::Unretained(this)));
 }
 
 CrostiniUpgraderUI::~CrostiniUpgraderUI() = default;
 
-void CrostiniUpgraderUI::BindPageHandlerFactory(
+void CrostiniUpgraderUI::BindInterface(
     mojo::PendingReceiver<
         chromeos::crostini_upgrader::mojom::PageHandlerFactory>
         pending_receiver) {
@@ -136,5 +133,7 @@ void CrostiniUpgraderUI::OnWebUICloseDialog() {
   // access the page using the URL directly, which is not supported).
   ui::MojoWebDialogUI::CloseDialog(nullptr);
 }
+
+WEB_UI_CONTROLLER_TYPE_IMPL(CrostiniUpgraderUI)
 
 }  // namespace chromeos

@@ -92,24 +92,6 @@ void HTMLLIElement::AttachLayoutTree(AttachContext& context) {
 
   if (ListItemOrdinal* ordinal = ListItemOrdinal::Get(*this)) {
     DCHECK(!GetDocument().ChildNeedsDistributionRecalc());
-
-    // Find the enclosing list node.
-    Element* list_node = nullptr;
-    Element* current = this;
-    while (!list_node) {
-      current = LayoutTreeBuilderTraversal::ParentElement(*current);
-      if (!current)
-        break;
-      if (IsA<HTMLUListElement>(*current) || IsA<HTMLOListElement>(*current))
-        list_node = current;
-    }
-
-    // If we are not in a list, tell the layoutObject so it can position us
-    // inside.  We don't want to change our style to say "inside" since that
-    // would affect nested nodes.
-    if (!list_node)
-      ordinal->SetNotInList(true, *this);
-
     ParseValue(FastGetAttribute(html_names::kValueAttr), ordinal);
   }
 }

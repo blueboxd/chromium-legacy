@@ -685,7 +685,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   }
 #endif
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
-  if (url.host_piece() == chrome::kChromeUIDevicesHost) {
+  if (url.host_piece() == chrome::kChromeUIDevicesHost &&
+      profile->GetPrefs()->GetBoolean(prefs::kLocalDiscoveryEnabled)) {
     return &NewWebUI<LocalDiscoveryUI>;
   }
 #endif

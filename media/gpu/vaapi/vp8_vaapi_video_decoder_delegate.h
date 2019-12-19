@@ -27,7 +27,7 @@ class VP8VaapiVideoDecoderDelegate : public VP8Decoder::VP8Accelerator,
   scoped_refptr<VP8Picture> CreateVP8Picture() override;
   bool SubmitDecode(scoped_refptr<VP8Picture> picture,
                     const Vp8ReferenceFrameVector& reference_frames) override;
-  bool OutputPicture(const scoped_refptr<VP8Picture>& pic) override;
+  bool OutputPicture(scoped_refptr<VP8Picture> pic) override;
 
   DISALLOW_COPY_AND_ASSIGN(VP8VaapiVideoDecoderDelegate);
 };

@@ -38,7 +38,7 @@ class MockVP8Accelerator : public VP8Decoder::VP8Accelerator {
   MOCK_METHOD2(SubmitDecode,
                bool(scoped_refptr<VP8Picture> pic,
                     const Vp8ReferenceFrameVector& reference_frames));
-  MOCK_METHOD1(OutputPicture, bool(const scoped_refptr<VP8Picture>& pic));
+  MOCK_METHOD1(OutputPicture, bool(scoped_refptr<VP8Picture> pic));
 };
 
 // Test VP8Decoder by feeding different VP8 frame sequences and making sure it

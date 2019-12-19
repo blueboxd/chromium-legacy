@@ -224,8 +224,10 @@ bool IOSChromeSyncedTabDelegate::GetSessionStorageIfNeeded() const {
   bool should_use_storage =
       web_state_->GetNavigationManager()->IsRestoreSessionInProgress();
   bool storage_has_tabs = false;
-  if (should_use_storage && !session_storage_) {
-    session_storage_ = web_state_->BuildSessionStorage();
+  if (should_use_storage) {
+    if (!session_storage_) {
+      session_storage_ = web_state_->BuildSessionStorage();
+    }
     storage_has_tabs = session_storage_.itemStorages.count;
 #if DCHECK_IS_ON()
     if (storage_has_tabs) {

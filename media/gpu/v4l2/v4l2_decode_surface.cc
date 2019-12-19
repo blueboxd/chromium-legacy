@@ -79,6 +79,7 @@ void V4L2DecodeSurface::SetDecodeDoneCallback(base::OnceClosure done_cb) {
 
 void V4L2DecodeSurface::SetReleaseCallback(base::OnceClosure release_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!release_cb_);
 
   release_cb_ = std::move(release_cb);
 }
@@ -130,6 +131,7 @@ bool V4L2ConfigStoreDecodeSurface::Submit() {
 
 void V4L2RequestDecodeSurface::PrepareSetCtrls(
     struct v4l2_ext_controls* ctrls) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_NE(ctrls, nullptr);
   DCHECK(request_ref_.IsValid());
 
@@ -139,6 +141,7 @@ void V4L2RequestDecodeSurface::PrepareSetCtrls(
 
 void V4L2RequestDecodeSurface::PrepareQueueBuffer(
     struct v4l2_buffer* buffer) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_NE(buffer, nullptr);
   DCHECK(request_ref_.IsValid());
 
@@ -153,12 +156,15 @@ void V4L2RequestDecodeSurface::PrepareQueueBuffer(
 }
 
 uint64_t V4L2RequestDecodeSurface::GetReferenceID() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // Convert the input buffer ID to what the internal representation of
   // the timestamp we submitted will be (tv_usec * 1000).
   return output_record() * 1000;
 }
 
 bool V4L2RequestDecodeSurface::Submit() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(request_ref_.IsValid());
 
   return std::move(request_ref_).Submit().IsValid();

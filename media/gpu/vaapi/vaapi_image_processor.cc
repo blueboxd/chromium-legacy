@@ -181,8 +181,13 @@ void VaapiImageProcessor::Process(scoped_refptr<VideoFrame> input_frame,
     return;
   }
   // VA-API performs pixel format conversion and scaling without any filters.
-  vaapi_wrapper_->BlitSurface(std::move(src_va_surface),
-                              std::move(dst_va_surface));
+  if (vaapi_wrapper_->BlitSurface(
+          std::move(src_va_surface), std::move(dst_va_surface),
+          input_frame->visible_rect(), output_frame->visible_rect())) {
+    // Failed to execute BlitSurface(). Since VaapiWrapper has invoked
+    // ReportToUMA(), calling error_cb_ here is not needed.
+    return;
+  }
 
   std::move(cb).Run(std::move(output_frame));
 }

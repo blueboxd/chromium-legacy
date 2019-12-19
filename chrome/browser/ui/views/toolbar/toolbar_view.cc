@@ -44,7 +44,8 @@
 #include "chrome/browser/ui/views/global_media_controls/media_toolbar_button_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/media_router/cast_toolbar_button.h"
-#include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_container.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
@@ -821,11 +822,11 @@ views::View* ToolbarView::GetDefaultExtensionDialogAnchorView() {
 PageActionIconView* ToolbarView::GetPageActionIconView(
     PageActionIconType type) {
   PageActionIconView* icon =
-      location_bar()->page_action_icon_container()->GetIconView(type);
+      location_bar()->page_action_icon_controller()->GetIconView(type);
   if (icon)
     return icon;
   return toolbar_account_icon_container_
-             ? toolbar_account_icon_container_->page_action_icon_container()
+             ? toolbar_account_icon_container_->page_action_icon_controller()
                    ->GetIconView(type)
              : nullptr;
 }
@@ -870,7 +871,7 @@ views::View* ToolbarView::GetAnchorView(PageActionIconType type) {
 }
 
 void ToolbarView::ZoomChangedForActiveTab(bool can_show_bubble) {
-  location_bar_->page_action_icon_container()->ZoomChangedForActiveTab(
+  location_bar_->page_action_icon_controller()->ZoomChangedForActiveTab(
       can_show_bubble);
 }
 

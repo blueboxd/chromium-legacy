@@ -216,11 +216,11 @@ TEST_F(OsSyncHandlerTest, UserEnablesFeatureThenNavigatesAway) {
   base::ListValue args;
   args.Append(base::Value(true));  // feature_enabled
   handler_->HandleSetOsSyncFeatureEnabled(&args);
-  EXPECT_FALSE(user_settings_->GetOsSyncFeatureEnabled());
+  EXPECT_FALSE(user_settings_->IsOsSyncFeatureEnabled());
 
   // The pref is set when the user navigates away.
   handler_->HandleDidNavigateAwayFromOsSyncPage(nullptr);
-  EXPECT_TRUE(user_settings_->GetOsSyncFeatureEnabled());
+  EXPECT_TRUE(user_settings_->IsOsSyncFeatureEnabled());
 }
 
 TEST_F(OsSyncHandlerTest, UserEnablesFeatureThenClosesSettings) {
@@ -232,11 +232,11 @@ TEST_F(OsSyncHandlerTest, UserEnablesFeatureThenClosesSettings) {
   base::ListValue args;
   args.Append(base::Value(true));  // feature_enabled
   handler_->HandleSetOsSyncFeatureEnabled(&args);
-  EXPECT_FALSE(user_settings_->GetOsSyncFeatureEnabled());
+  EXPECT_FALSE(user_settings_->IsOsSyncFeatureEnabled());
 
   // The pref is set when the settings window closes and destroys the handler.
   handler_.reset();
-  EXPECT_TRUE(user_settings_->GetOsSyncFeatureEnabled());
+  EXPECT_TRUE(user_settings_->IsOsSyncFeatureEnabled());
 }
 
 TEST_F(OsSyncHandlerTest, TestSyncEverything) {

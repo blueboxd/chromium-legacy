@@ -153,9 +153,9 @@ UserSelectableOsTypeSet SyncUserSettingsImpl::GetRegisteredSelectableOsTypes()
   return registered_types;
 }
 
-bool SyncUserSettingsImpl::GetOsSyncFeatureEnabled() const {
+bool SyncUserSettingsImpl::IsOsSyncFeatureEnabled() const {
   DCHECK(chromeos::features::IsSplitSettingsSyncEnabled());
-  return prefs_->GetOsSyncFeatureEnabled();
+  return prefs_->IsOsSyncFeatureEnabled();
 }
 
 void SyncUserSettingsImpl::SetOsSyncFeatureEnabled(bool enabled) {

@@ -10,6 +10,7 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -26,9 +27,9 @@ TEST(ServiceManagerConnectionImplTest, ServiceLaunchThreading) {
   base::test::SingleThreadTaskEnvironment task_environment;
   base::Thread io_thread("ServiceManagerConnectionImplTest IO Thread");
   io_thread.Start();
-  service_manager::mojom::ServicePtr service;
-  ServiceManagerConnectionImpl connection_impl(mojo::MakeRequest(&service),
-                                               io_thread.task_runner());
+  mojo::Remote<service_manager::mojom::Service> service;
+  ServiceManagerConnectionImpl connection_impl(
+      service.BindNewPipeAndPassReceiver(), io_thread.task_runner());
   ServiceManagerConnection& connection = connection_impl;
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);

@@ -352,7 +352,7 @@ bool D3D11VP9Accelerator::SubmitDecode(
     const Vp9SegmentationParams& segmentation_params,
     const Vp9LoopFilterParams& loop_filter_params,
     const Vp9ReferenceFrameVector& reference_frames,
-    const base::Closure& on_finished_cb) {
+    base::OnceClosure on_finished_cb) {
   D3D11VP9Picture* pic = static_cast<D3D11VP9Picture*>(picture.get());
 
   if (!BeginFrame(*pic))
@@ -373,7 +373,7 @@ bool D3D11VP9Accelerator::SubmitDecode(
   RETURN_ON_HR_FAILURE(DecoderEndFrame,
                        video_context_->DecoderEndFrame(video_decoder_.Get()));
   if (on_finished_cb)
-    on_finished_cb.Run();
+    std::move(on_finished_cb).Run();
   return true;
 }
 

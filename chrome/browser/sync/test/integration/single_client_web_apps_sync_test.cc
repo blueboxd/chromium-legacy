@@ -42,11 +42,11 @@ IN_PROC_BROWSER_TEST_F(SingleClientWebAppsOsSyncTest,
   syncer::ProfileSyncService* service = GetSyncService(0);
   syncer::SyncUserSettings* settings = service->GetUserSettings();
 
-  EXPECT_TRUE(settings->GetOsSyncFeatureEnabled());
+  EXPECT_TRUE(settings->IsOsSyncFeatureEnabled());
   EXPECT_TRUE(service->GetActiveDataTypes().Has(syncer::WEB_APPS));
 
   settings->SetOsSyncFeatureEnabled(false);
-  EXPECT_FALSE(settings->GetOsSyncFeatureEnabled());
+  EXPECT_FALSE(settings->IsOsSyncFeatureEnabled());
   EXPECT_FALSE(service->GetActiveDataTypes().Has(syncer::WEB_APPS));
 }
 

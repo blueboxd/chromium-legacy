@@ -452,7 +452,7 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
 #if defined(OS_CHROMEOS)
   if (!chromeos::features::IsSplitSettingsSyncEnabled())
     os_feature_state->Set("Flag disabled");
-  else if (service->GetUserSettings()->GetOsSyncFeatureEnabled())
+  else if (service->GetUserSettings()->IsOsSyncFeatureEnabled())
     os_feature_state->Set("Enabled");
   else
     os_feature_state->Set("Disabled");

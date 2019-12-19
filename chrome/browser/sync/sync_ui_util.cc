@@ -188,7 +188,7 @@ bool HasUserOptedInToSync(const syncer::SyncUserSettings* settings) {
     return true;
 #if defined(OS_CHROMEOS)
   if (chromeos::features::IsSplitSettingsSyncEnabled() &&
-      settings->GetOsSyncFeatureEnabled()) {
+      settings->IsOsSyncFeatureEnabled()) {
     return true;
   }
 #endif  // defined(OS_CHROMEOS)

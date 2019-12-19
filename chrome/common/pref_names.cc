@@ -1394,6 +1394,10 @@ const char kMessageCenterDisabledExtensionIds[] =
 // platforms.
 const char kFullscreenAllowed[] = "fullscreen.allowed";
 
+// Enable the local discovery UI (chrome://devices) which shows discoverable
+// devices near the user as well as cloud devices registered to them.
+const char kLocalDiscoveryEnabled[] = "local_discovery.enabled";
+
 // Enable notifications for new devices on the local network that can be
 // registered to the user's account, e.g. Google Cloud Print printers.
 const char kLocalDiscoveryNotificationsEnabled[] =

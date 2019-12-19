@@ -19,9 +19,9 @@ test(() => {
     internals.setSuggestedValue(reference, value);
     internals.setSuggestedValue(modified, value);
 
-    assert_equals(reference.scrollWidth, modified.scrollWidth,
+    assert_approx_equals(reference.scrollWidth, modified.scrollWidth, 1,
         'Elements should have same scrollWidth');
-    assert_equals(reference.scrollHeight, modified.scrollHeight,
+    assert_approx_equals(reference.scrollHeight, modified.scrollHeight, 1,
         'Elements should have same scrollHeight');
 }, 'Testing that <input> elements\' scroll size does not depend on font type.');
 
@@ -33,9 +33,9 @@ test(() => {
     internals.setSuggestedValue(reference, value);
     internals.setSuggestedValue(modified, value);
 
-    assert_equals(reference.scrollWidth, modified.scrollWidth,
+    assert_approx_equals(reference.scrollWidth, modified.scrollWidth, 1,
         'Elements should have same scrollWidth');
-    assert_equals(reference.scrollHeight, modified.scrollHeight,
+    assert_approx_equals(reference.scrollHeight, modified.scrollHeight, 1,
         'Elements should have same scrollHeight');
 }, 'Testing that <textarea> elements\' scroll size does not depend on font type.');
 </script>

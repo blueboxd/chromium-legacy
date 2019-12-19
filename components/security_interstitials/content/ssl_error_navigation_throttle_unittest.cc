@@ -120,8 +120,8 @@ class TestSSLErrorNavigationThrottle : public SSLErrorNavigationThrottle {
       : SSLErrorNavigationThrottle(
             handle,
             std::make_unique<FakeSSLCertReporter>(),
-            base::Bind(&MockHandleSSLError, async_handle_ssl_error),
-            base::Bind(&IsInHostedApp)),
+            base::BindOnce(&MockHandleSSLError, async_handle_ssl_error),
+            base::BindOnce(&IsInHostedApp)),
         on_cancel_deferred_navigation_(
             std::move(on_cancel_deferred_navigation)) {}
 

@@ -1889,10 +1889,15 @@ def _CheckNoDeprecatedMojoTypes(input_api, output_api):
   warnings = []
   errors = []
 
+  # For any path that is not an "ok" or an "error" path, a warning will be
+  # raised if deprecated mojo types are found.
+  ok_paths = ['components/arc']
+  error_paths = ['third_party/blink', 'content']
+
   file_filter = lambda f: f.LocalPath().endswith(('.cc', '.mm', '.h'))
   for f in input_api.AffectedFiles(file_filter=file_filter):
     # Don't check //components/arc, not yet migrated (see crrev.com/c/1868870).
-    if f.LocalPath().startswith('components/arc'):
+    if any(map(lambda path: f.LocalPath().startswith(path), ok_paths)):
       continue
 
     for line_num, line in f.ChangedContents():
@@ -1901,8 +1906,8 @@ def _CheckNoDeprecatedMojoTypes(input_api, output_api):
                                               func_name, message)
 
         if problems:
-          # Violations raise errors inside Blink and warnings everywhere else.
-          if f.LocalPath().startswith('third_party/blink'):
+          # Raise errors inside |error_paths| and warnings everywhere else.
+          if any(map(lambda path: f.LocalPath().startswith(path), error_paths)):
             errors.extend(problems)
           else:
             warnings.extend(problems)

@@ -46,9 +46,15 @@ from idl_types import inherits_interface
 from v8_globals import includes
 import v8_types
 import v8_utilities
-from v8_utilities import (cpp_name_or_partial, capitalize, cpp_name, has_extended_attribute,
-                          has_extended_attribute_value, scoped_name, strip_suffix,
-                          uncapitalize, extended_attribute_value_as_list, is_unforgeable)
+from v8_utilities import capitalize
+from v8_utilities import cpp_encoded_property_name
+from v8_utilities import cpp_name
+from v8_utilities import extended_attribute_value_as_list
+from v8_utilities import has_extended_attribute_value
+from v8_utilities import is_unforgeable
+from v8_utilities import scoped_name
+from v8_utilities import strip_suffix
+from v8_utilities import uncapitalize
 from blinkbuild.name_style_converter import NameStyleConverter
 
 
@@ -178,13 +184,15 @@ def attribute_context(interface, attribute, interfaces, component_info):
 
     runtime_features = component_info['runtime_enabled_features']
 
+    internal_name = cpp_encoded_property_name(attribute)
+
     context = {
         'activity_logging_world_list_for_getter': v8_utilities.activity_logging_world_list(attribute, 'Getter'),  # [ActivityLogging]
         'activity_logging_world_list_for_setter': v8_utilities.activity_logging_world_list(attribute, 'Setter'),  # [ActivityLogging]
         'activity_logging_world_check': v8_utilities.activity_logging_world_check(attribute),  # [ActivityLogging]
         'cached_accessor_name': '%s%sCachedAccessor' % (interface.name, attribute.name.capitalize()),
         'cached_attribute_validation_method': cached_attribute_validation_method,
-        'camel_case_name': NameStyleConverter(attribute.name).to_upper_camel_case(),
+        'camel_case_name': NameStyleConverter(internal_name).to_upper_camel_case(),
         'constructor_type': constructor_type,
         'context_enabled_feature_name': v8_utilities.context_enabled_feature_name(attribute),
         'cpp_name': cpp_name(attribute),

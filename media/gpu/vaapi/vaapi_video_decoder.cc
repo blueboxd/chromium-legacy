@@ -337,7 +337,7 @@ scoped_refptr<VASurface> VaapiVideoDecoder::CreateSurface() {
                        std::move(release_frame_cb));
 }
 
-void VaapiVideoDecoder::SurfaceReady(const scoped_refptr<VASurface>& va_surface,
+void VaapiVideoDecoder::SurfaceReady(scoped_refptr<VASurface> va_surface,
                                      int32_t buffer_id,
                                      const gfx::Rect& visible_rect,
                                      const VideoColorSpace& /*color_space*/) {

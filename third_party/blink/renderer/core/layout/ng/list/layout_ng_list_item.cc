@@ -90,12 +90,6 @@ void LayoutNGListItem::SubtreeDidChange() {
   if (!marker_)
     return;
 
-  if (ordinal_.NotInListChanged()) {
-    UpdateMarker();
-    ordinal_.SetNotInListChanged(false);
-    return;
-  }
-
   // Make sure outside marker is the direct child of ListItem.
   if (!IsInside() && marker_->Parent() != this) {
     marker_->Remove();
@@ -112,8 +106,8 @@ void LayoutNGListItem::WillCollectInlines() {
 // Returns true if this is 'list-style-position: inside', or should be laid out
 // as 'inside'.
 bool LayoutNGListItem::IsInside() const {
-  return ordinal_.NotInList() ||
-         StyleRef().ListStylePosition() == EListStylePosition::kInside;
+  return StyleRef().ListStylePosition() == EListStylePosition::kInside ||
+         (IsA<HTMLLIElement>(GetNode()) && !StyleRef().IsInsideListElement());
 }
 
 // Destroy the list marker objects if exists.

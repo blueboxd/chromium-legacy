@@ -43,7 +43,7 @@ class TestSyncUserSettings : public SyncUserSettings {
                           UserSelectableOsTypeSet types) override;
   UserSelectableOsTypeSet GetRegisteredSelectableOsTypes() const override;
 
-  bool GetOsSyncFeatureEnabled() const override;
+  bool IsOsSyncFeatureEnabled() const override;
   void SetOsSyncFeatureEnabled(bool enabled) override;
 #endif
 

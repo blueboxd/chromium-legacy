@@ -36,7 +36,7 @@ bool VP9VaapiVideoDecoderDelegate::SubmitDecode(
     const Vp9SegmentationParams& seg,
     const Vp9LoopFilterParams& lf,
     const Vp9ReferenceFrameVector& ref_frames,
-    const base::Closure& done_cb) {
+    base::OnceClosure done_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // |done_cb| should be null as we return false from IsFrameContextRequired().
   DCHECK(!done_cb);

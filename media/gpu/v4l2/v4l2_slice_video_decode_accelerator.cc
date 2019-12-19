@@ -97,7 +97,7 @@ V4L2SliceVideoDecodeAccelerator::OutputRecord::~OutputRecord() = default;
 struct V4L2SliceVideoDecodeAccelerator::BitstreamBufferRef {
   BitstreamBufferRef(
       base::WeakPtr<VideoDecodeAccelerator::Client>& client,
-      const scoped_refptr<base::SingleThreadTaskRunner>& client_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> client_task_runner,
       scoped_refptr<DecoderBuffer> buffer,
       int32_t input_id);
   ~BitstreamBufferRef();
@@ -111,11 +111,11 @@ struct V4L2SliceVideoDecodeAccelerator::BitstreamBufferRef {
 
 V4L2SliceVideoDecodeAccelerator::BitstreamBufferRef::BitstreamBufferRef(
     base::WeakPtr<VideoDecodeAccelerator::Client>& client,
-    const scoped_refptr<base::SingleThreadTaskRunner>& client_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> client_task_runner,
     scoped_refptr<DecoderBuffer> buffer,
     int32_t input_id)
     : client(client),
-      client_task_runner(client_task_runner),
+      client_task_runner(std::move(client_task_runner)),
       buffer(std::move(buffer)),
       bytes_used(0),
       input_id(input_id) {}
@@ -139,14 +139,14 @@ V4L2SliceVideoDecodeAccelerator::PictureRecord::PictureRecord(
 V4L2SliceVideoDecodeAccelerator::PictureRecord::~PictureRecord() {}
 
 V4L2SliceVideoDecodeAccelerator::V4L2SliceVideoDecodeAccelerator(
-    const scoped_refptr<V4L2Device>& device,
+    scoped_refptr<V4L2Device> device,
     EGLDisplay egl_display,
     const BindGLImageCallback& bind_image_cb,
     const MakeGLContextCurrentCallback& make_context_current_cb)
     : input_planes_count_(0),
       output_planes_count_(0),
       child_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      device_(device),
+      device_(std::move(device)),
       decoder_thread_("V4L2SliceVideoDecodeAcceleratorThread"),
       video_profile_(VIDEO_CODEC_PROFILE_UNKNOWN),
       input_format_fourcc_(0),
@@ -776,7 +776,7 @@ void V4L2SliceVideoDecodeAccelerator::ServiceDeviceTask(bool event) {
 }
 
 void V4L2SliceVideoDecodeAccelerator::Enqueue(
-    const scoped_refptr<V4L2DecodeSurface>& dec_surface) {
+    scoped_refptr<V4L2DecodeSurface> dec_surface) {
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
 
   if (!EnqueueInputRecord(dec_surface.get())) {
@@ -1937,7 +1937,7 @@ void V4L2SliceVideoDecodeAccelerator::SetErrorState(Error error) {
 }
 
 bool V4L2SliceVideoDecodeAccelerator::SubmitSlice(
-    const scoped_refptr<V4L2DecodeSurface>& dec_surface,
+    V4L2DecodeSurface* dec_surface,
     const uint8_t* data,
     size_t size) {
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
@@ -1962,7 +1962,7 @@ bool V4L2SliceVideoDecodeAccelerator::SubmitSlice(
 }
 
 void V4L2SliceVideoDecodeAccelerator::DecodeSurface(
-    const scoped_refptr<V4L2DecodeSurface>& dec_surface) {
+    scoped_refptr<V4L2DecodeSurface> dec_surface) {
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
 
   DVLOGF(3) << "Submitting decode for surface: " << dec_surface->ToString();
@@ -1975,7 +1975,7 @@ void V4L2SliceVideoDecodeAccelerator::DecodeSurface(
 }
 
 void V4L2SliceVideoDecodeAccelerator::SurfaceReady(
-    const scoped_refptr<V4L2DecodeSurface>& dec_surface,
+    scoped_refptr<V4L2DecodeSurface> dec_surface,
     int32_t bitstream_id,
     const gfx::Rect& visible_rect,
     const VideoColorSpace& /* color_space */) {
@@ -2003,7 +2003,7 @@ void V4L2SliceVideoDecodeAccelerator::TryOutputSurfaces() {
 
 void V4L2SliceVideoDecodeAccelerator::OutputSurface(
     int32_t bitstream_id,
-    const scoped_refptr<V4L2DecodeSurface>& dec_surface) {
+    scoped_refptr<V4L2DecodeSurface> dec_surface) {
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
 
   DCHECK_EQ(decoded_buffer_map_.count(dec_surface->output_record()), 1u);
@@ -2242,7 +2242,7 @@ bool V4L2SliceVideoDecodeAccelerator::ProcessFrame(
     // In IMPORT mode we can decide ourselves which IP buffer to use, so choose
     // the one with the same index number as our decoded buffer.
     const OutputRecord& output_record = output_buffer_map_[buffer->BufferId()];
-    const scoped_refptr<VideoFrame>& output_frame = output_record.output_frame;
+    scoped_refptr<VideoFrame> output_frame = output_record.output_frame;
 
     // We will set a destruction observer to the output frame, so wrap the
     // imported frame into another one that we can destruct.

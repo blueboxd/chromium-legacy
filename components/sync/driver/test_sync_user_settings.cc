@@ -130,7 +130,7 @@ UserSelectableOsTypeSet TestSyncUserSettings::GetRegisteredSelectableOsTypes()
   return UserSelectableOsTypeSet::All();
 }
 
-bool TestSyncUserSettings::GetOsSyncFeatureEnabled() const {
+bool TestSyncUserSettings::IsOsSyncFeatureEnabled() const {
   return os_sync_feature_enabled_;
 }
 

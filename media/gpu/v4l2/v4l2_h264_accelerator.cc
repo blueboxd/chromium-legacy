@@ -35,8 +35,8 @@ struct V4L2H264AcceleratorPrivate {
 
 class V4L2H264Picture : public H264Picture {
  public:
-  explicit V4L2H264Picture(const scoped_refptr<V4L2DecodeSurface>& dec_surface)
-      : dec_surface_(dec_surface) {}
+  explicit V4L2H264Picture(scoped_refptr<V4L2DecodeSurface> dec_surface)
+      : dec_surface_(std::move(dec_surface)) {}
 
   V4L2H264Picture* AsV4L2H264Picture() override { return this; }
   scoped_refptr<V4L2DecodeSurface> dec_surface() { return dec_surface_; }
@@ -75,7 +75,7 @@ void V4L2H264Accelerator::H264PictureListToDPBIndicesList(
     uint8_t dst_list[kDPBIndicesListSize]) {
   size_t i;
   for (i = 0; i < src_pic_list.size() && i < kDPBIndicesListSize; ++i) {
-    const scoped_refptr<H264Picture>& pic = src_pic_list[i];
+    const H264Picture* pic = (src_pic_list[i]).get();
     dst_list[i] = pic ? pic->dpb_position : VIDEO_MAX_FRAME;
   }
 
@@ -417,7 +417,7 @@ H264Decoder::H264Accelerator::Status V4L2H264Accelerator::SubmitSlice(
   memset(data_copy.get(), 0, data_copy_size);
   data_copy[2] = 0x01;
   memcpy(data_copy.get() + 3, data, size);
-  return surface_handler_->SubmitSlice(dec_surface, data_copy.get(),
+  return surface_handler_->SubmitSlice(dec_surface.get(), data_copy.get(),
                                        data_copy_size)
              ? Status::kOk
              : Status::kFail;

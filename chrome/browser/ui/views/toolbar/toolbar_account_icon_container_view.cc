@@ -11,7 +11,9 @@
 #include "chrome/browser/ui/views/autofill/payments/save_card_icon_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
-#include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_container.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_controller.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_params.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "chrome/browser/ui/views/profiles/avatar_toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
@@ -32,7 +34,7 @@ ToolbarAccountIconContainerView::ToolbarAccountIconContainerView(
           /*uses_highlight=*/!browser->profile()->IsIncognitoProfile()),
       avatar_(new AvatarToolbarButton(browser, this)),
       browser_(browser) {
-  PageActionIconContainerView::Params params;
+  PageActionIconParams params;
   params.types_enabled = {
       PageActionIconType::kManagePasswords,
       PageActionIconType::kLocalCardMigration,
@@ -45,6 +47,7 @@ ToolbarAccountIconContainerView::ToolbarAccountIconContainerView(
   params.view_observer = this;
   page_action_icon_container_view_ =
       AddChildView(std::make_unique<PageActionIconContainerView>(params));
+  page_action_icon_controller_ = page_action_icon_container_view_->controller();
 
   avatar_->SetProperty(views::kFlexBehaviorKey,
                        views::FlexSpecification::ForSizeRule(
@@ -56,8 +59,8 @@ ToolbarAccountIconContainerView::ToolbarAccountIconContainerView(
 ToolbarAccountIconContainerView::~ToolbarAccountIconContainerView() = default;
 
 void ToolbarAccountIconContainerView::UpdateAllIcons() {
-  page_action_icon_container_view_->SetIconColor(GetIconColor());
-  page_action_icon_container_view_->UpdateAll();
+  page_action_icon_controller_->SetIconColor(GetIconColor());
+  page_action_icon_controller_->UpdateAll();
   avatar_->UpdateIcon();
 }
 

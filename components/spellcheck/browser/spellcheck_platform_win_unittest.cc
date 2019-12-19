@@ -50,14 +50,6 @@ class SpellcheckPlatformWinTest : public testing::Test {
       std::move(quit_).Run();
   }
 
-  void GetSuggestionsCompletionCallback(
-      const spellcheck::PerLanguageSuggestions& suggestions) {
-    callback_finished_ = true;
-    spell_check_suggestions_ = suggestions;
-    if (quit_)
-      std::move(quit_).Run();
-  }
-
 #if BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK)
   void RetrieveSupportedWindowsPreferredLanguagesCallback(
       const std::vector<std::string>& preferred_languages) {
@@ -73,169 +65,11 @@ class SpellcheckPlatformWinTest : public testing::Test {
   }
 #endif  // BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK
 
-  // TODO(crbug.com/1035044) Make these methods actual tests. See the
-  //                         task_environment_ comment below.
-  void RequestTextCheckTests() {
-    static const struct {
-      const char* text_to_check;
-      const char* expected_suggestion;
-    } kTestCases[] = {
-        {"absense", "absence"},    {"becomeing", "becoming"},
-        {"cieling", "ceiling"},    {"definate", "definite"},
-        {"eigth", "eight"},        {"exellent", "excellent"},
-        {"finaly", "finally"},     {"garantee", "guarantee"},
-        {"humerous", "humorous"},  {"imediately", "immediately"},
-        {"jellous", "jealous"},    {"knowlege", "knowledge"},
-        {"lenght", "length"},      {"manuever", "maneuver"},
-        {"naturaly", "naturally"}, {"ommision", "omission"},
-    };
-
-    for (size_t i = 0; i < base::size(kTestCases); ++i) {
-      const auto& test_case = kTestCases[i];
-      const base::string16 word(base::ASCIIToUTF16(test_case.text_to_check));
-
-      // Check if the suggested words occur.
-      spellcheck_platform::RequestTextCheck(
-          1, word,
-          base::BindOnce(
-              &SpellcheckPlatformWinTest::TextCheckCompletionCallback,
-              base::Unretained(this)));
-      RunUntilResultReceived();
-
-      ASSERT_EQ(1u, spell_check_results_.size())
-          << "RequestTextCheckTests case " << i << ": Wrong number of results";
-
-      const std::vector<base::string16>& suggestions =
-          spell_check_results_.front().replacements;
-      const base::string16 suggested_word(
-          base::ASCIIToUTF16(test_case.expected_suggestion));
-      auto position =
-          std::find_if(suggestions.begin(), suggestions.end(),
-                       [&](const base::string16& suggestion) {
-                         return suggestion.compare(suggested_word) == 0;
-                       });
-
-      ASSERT_NE(suggestions.end(), position)
-          << "RequestTextCheckTests case " << i
-          << ": Expected suggestion not found";
-    }
-  }
-
-#if BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK)
-  void RetrieveSupportedWindowsPreferredLanguagesTests() {
-    spellcheck_platform::RetrieveSupportedWindowsPreferredLanguages(
-        base::BindOnce(&SpellcheckPlatformWinTest::
-                           RetrieveSupportedWindowsPreferredLanguagesCallback,
-                       base::Unretained(this)));
-
-    RunUntilResultReceived();
-
-    ASSERT_LE(1u, preferred_languages_.size());
-    ASSERT_NE(preferred_languages_.end(),
-              std::find(preferred_languages_.begin(),
-                        preferred_languages_.end(), "en-US"));
-  }
-#endif  // BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK
-
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-  void HybridRequestTextCheckTests() {
-    static const struct {
-      const char* text_to_check;
-      std::vector<SpellCheckResult> fake_renderer_results;
-      bool fill_suggestions;
-      size_t expected_result_count;
-    } kHybridTestCases[] = {
-        // Should find no mistakes.
-        {"This has no spelling mistakes", {}, false, 0u},
-        // Should find all 3 mistakes.
-        {"Tihs has some speling mitsakes", {}, false, 3u},
-        // Should find all 3 mistakes and return some spelling suggestions.
-        {"Tihs has some speling mitsakes", {}, true, 3u},
-        // Should find no mistakes because all words are correct on the browser
-        // side, so mistakes from the renderer should be ignored.
-        {"This has no spelling mistakes",
-         {
-             SpellCheckResult(SpellCheckResult::SPELLING, 5, 3),
-             SpellCheckResult(SpellCheckResult::SPELLING, 9, 2),
-         },
-         false,
-         0u},
-        // Should find no mistakes because all words were marked correct by
-        // either
-        // the renderer or the browser.
-        {"Tihs has some speling mitsakes",
-         {
-             SpellCheckResult(SpellCheckResult::SPELLING, 5, 3),
-             SpellCheckResult(SpellCheckResult::SPELLING, 9, 2),
-         },
-         false,
-         0u},
-        // Should find a single mistake, "speling", because that's the only word
-        // marked as misspelled by both the renderer and the browser.
-        {"Tihs has some speling mitsakes",
-         {
-             SpellCheckResult(SpellCheckResult::SPELLING, 5, 3),
-             SpellCheckResult(SpellCheckResult::SPELLING, 14, 7),
-         },
-         false,
-         1u},
-        // Should find all 3 mistakes because they were marked as misspelled by
-        // both the renderer and the browser.
-        {"Tihs has some speling mitsakes",
-         {
-             SpellCheckResult(SpellCheckResult::SPELLING, 0, 4),
-             SpellCheckResult(SpellCheckResult::SPELLING, 14, 7),
-             SpellCheckResult(SpellCheckResult::SPELLING, 22, 8),
-         },
-         false,
-         3u},
-        // Should find 3 mistakes. The 2 extra renderer mistakes should be
-        // ignored
-        // because the browser didn't mark them as misspelled.
-        {"Tihs has some speling mitsakes",
-         {
-             SpellCheckResult(SpellCheckResult::SPELLING, 0, 4),
-             SpellCheckResult(SpellCheckResult::SPELLING, 5, 3),
-             SpellCheckResult(SpellCheckResult::SPELLING, 9, 2),
-             SpellCheckResult(SpellCheckResult::SPELLING, 14, 7),
-             SpellCheckResult(SpellCheckResult::SPELLING, 22, 8),
-         },
-         false,
-         3u},
-    };
-
-    for (size_t i = 0; i < base::size(kHybridTestCases); ++i) {
-      const auto& test_case = kHybridTestCases[i];
-      const base::string16 text(base::ASCIIToUTF16(test_case.text_to_check));
-
-      // Check if the suggested words occur.
-      spellcheck_platform::RequestTextCheck(
-          1, text, test_case.fake_renderer_results, test_case.fill_suggestions,
-          base::BindOnce(
-              &SpellcheckPlatformWinTest::TextCheckCompletionCallback,
-              base::Unretained(this)));
-      RunUntilResultReceived();
-
-      ASSERT_EQ(test_case.expected_result_count, spell_check_results_.size())
-          << "HybridRequestTextCheckTests case " << i
-          << ": Wrong number of results";
-
-      if (spell_check_results_.size() > 0u) {
-        ASSERT_EQ(spell_check_results_[0].replacements.size() > 0,
-                  test_case.fill_suggestions)
-            << "HybridRequestTextCheckTests case " << i
-            << ": Wrong number of suggestions";
-      }
-    }
-  }
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-
  protected:
   bool callback_finished_ = false;
 
   bool set_language_result_;
   std::vector<SpellCheckResult> spell_check_results_;
-  spellcheck::PerLanguageSuggestions spell_check_suggestions_;
 #if BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK)
   std::vector<std::string> preferred_languages_;
 #endif  // BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK
@@ -253,13 +87,23 @@ class SpellcheckPlatformWinTest : public testing::Test {
       base::test::TaskEnvironment::MainThreadType::UI};
 };
 
-// TODO(crbug.com/1035044) Split this test into multiple tests instead of
-//                         individual methods. See the task_environment_
-//                         comment in the SpellcheckPlatformWinTest class.
 TEST_F(SpellcheckPlatformWinTest, SpellCheckAsyncMethods) {
-  if (!spellcheck::WindowsVersionSupportsSpellchecker()) {
+  static const struct {
+    const char* input;           // A string to be tested.
+    const char* suggested_word;  // A suggested word that should occur.
+  } kTestCases[] = {
+      {"absense", "absence"},    {"becomeing", "becoming"},
+      {"cieling", "ceiling"},    {"definate", "definite"},
+      {"eigth", "eight"},        {"exellent", "excellent"},
+      {"finaly", "finally"},     {"garantee", "guarantee"},
+      {"humerous", "humorous"},  {"imediately", "immediately"},
+      {"jellous", "jealous"},    {"knowlege", "knowledge"},
+      {"lenght", "length"},      {"manuever", "maneuver"},
+      {"naturaly", "naturally"}, {"ommision", "omission"},
+  };
+
+  if (base::win::GetVersion() < base::win::Version::WIN8)
     return;
-  }
 
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(spellcheck::kWinUseBrowserSpellChecker);
@@ -273,15 +117,44 @@ TEST_F(SpellcheckPlatformWinTest, SpellCheckAsyncMethods) {
 
   ASSERT_TRUE(set_language_result_);
 
-  RequestTextCheckTests();
+  for (const auto& test_case : kTestCases) {
+    const base::string16 word(base::ASCIIToUTF16(test_case.input));
+
+    // Check if the suggested words occur.
+    spellcheck_platform::RequestTextCheck(
+        1, word,
+        base::BindOnce(&SpellcheckPlatformWinTest::TextCheckCompletionCallback,
+                       base::Unretained(this)));
+    RunUntilResultReceived();
+
+    ASSERT_EQ(1u, spell_check_results_.size());
+
+    const std::vector<base::string16>& suggestions =
+        spell_check_results_.front().replacements;
+    const base::string16 suggested_word(
+        base::ASCIIToUTF16(test_case.suggested_word));
+    auto position =
+        std::find_if(suggestions.begin(), suggestions.end(),
+                     [&](const base::string16& suggestion) {
+                       return suggestion.compare(suggested_word) == 0;
+                     });
+
+    ASSERT_NE(suggestions.end(), position);
+  }
 
 #if BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK)
-  RetrieveSupportedWindowsPreferredLanguagesTests();
-#endif  // BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK
+  spellcheck_platform::RetrieveSupportedWindowsPreferredLanguages(
+      base::BindOnce(&SpellcheckPlatformWinTest::
+                         RetrieveSupportedWindowsPreferredLanguagesCallback,
+                     base::Unretained(this)));
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-  HybridRequestTextCheckTests();
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+  RunUntilResultReceived();
+
+  ASSERT_LE(1u, preferred_languages_.size());
+  ASSERT_NE(preferred_languages_.end(),
+            std::find(preferred_languages_.begin(), preferred_languages_.end(),
+                      "en-US"));
+#endif  // BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK
 }
 
 }  // namespace

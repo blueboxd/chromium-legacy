@@ -13,12 +13,14 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/unguessable_token.h"
 #include "content/browser/browser_interface_broker_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/shared_worker_instance.h"
 #include "media/mojo/mojom/video_decode_perf_history.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -26,6 +28,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom-forward.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
@@ -53,19 +56,17 @@ class SharedWorkerServiceImpl;
 
 // The SharedWorkerHost is the interface that represents the browser side of
 // the browser <-> worker communication channel. This is owned by
-// SharedWorkerServiceImpl and destructed when a worker context or worker's
-// message filter is closed.
-class CONTENT_EXPORT SharedWorkerHost : public blink::mojom::SharedWorkerHost {
+// SharedWorkerServiceImpl and destroyed when the connection to the worker in
+// the renderer is lost, or the RenderProcessHost of the worker is destroyed.
+class CONTENT_EXPORT SharedWorkerHost : public blink::mojom::SharedWorkerHost,
+                                        public RenderProcessHostObserver {
  public:
   SharedWorkerHost(SharedWorkerServiceImpl* service,
                    const SharedWorkerInstance& instance,
-                   int worker_process_id);
+                   RenderProcessHost* worker_process_host);
   ~SharedWorkerHost() override;
 
-  // May return nullptr.
-  RenderProcessHost* GetProcessHost() {
-    return RenderProcessHost::FromID(worker_process_id_);
-  }
+  RenderProcessHost* GetProcessHost() { return worker_process_host_; }
 
   // Starts the SharedWorker in the renderer process.
   //
@@ -123,7 +124,6 @@ class CONTENT_EXPORT SharedWorkerHost : public blink::mojom::SharedWorkerHost {
   bool HasClients() const;
 
   const SharedWorkerInstance& instance() const { return instance_; }
-  int worker_process_id() const { return worker_process_id_; }
 
   // Signals the remote worker to terminate and returns the mojo::Remote
   // instance so the caller can be notified when the connection is lost. Should
@@ -136,6 +136,7 @@ class CONTENT_EXPORT SharedWorkerHost : public blink::mojom::SharedWorkerHost {
   friend class SharedWorkerHostTest;
 
   class ScopedDevToolsHandle;
+  class ScopedProcessHostRef;
 
   // Contains information about a client connecting to this shared worker.
   struct ClientInfo {
@@ -161,6 +162,10 @@ class CONTENT_EXPORT SharedWorkerHost : public blink::mojom::SharedWorkerHost {
   void OnScriptLoadFailed() override;
   void OnFeatureUsed(blink::mojom::WebFeature feature) override;
 
+  // RenderProcessHost:
+  void RenderProcessHostDestroyed(
+      RenderProcessHost* render_process_host) override;
+
   // Returns the frame ids of this worker's clients.
   std::vector<GlobalFrameRoutingId> GetRenderFrameIDsForWorker();
 
@@ -184,7 +189,16 @@ class CONTENT_EXPORT SharedWorkerHost : public blink::mojom::SharedWorkerHost {
   mojo::PendingReceiver<blink::mojom::SharedWorker> worker_receiver_;
   mojo::Remote<blink::mojom::SharedWorker> worker_;
 
-  const int worker_process_id_;
+  // The host of the process on which this shared worker lives.
+  RenderProcessHost* const worker_process_host_;
+
+  // Keep alive the renderer process that will be hosting the shared worker.
+  std::unique_ptr<ScopedProcessHostRef> scoped_process_host_ref_;
+
+  // Observe the destruction of |worker_process_host_|.
+  ScopedObserver<RenderProcessHost, RenderProcessHostObserver>
+      scoped_process_host_observer_;
+
   int next_connection_request_id_;
   std::unique_ptr<ScopedDevToolsHandle> devtools_handle_;
 

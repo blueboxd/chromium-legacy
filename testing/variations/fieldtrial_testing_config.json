@@ -3908,28 +3908,6 @@
             ]
         }
     ],
-    "NewPasswordFormParsing": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows",
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "new-password-form-parsing",
-                        "new-password-form-parsing-for-saving",
-                        "only-new-password-form-parsing"
-                    ]
-                }
-            ]
-        }
-    ],
     "NewTabInProductHelp": [
         {
             "platforms": [
@@ -7083,6 +7061,25 @@
                     "name": "UserActivityEventLogging",
                     "enable_features": [
                         "UserActivityEventLogging"
+                    ]
+                }
+            ]
+        }
+    ],
+    "UsernameFirstFlow": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "UsernameFirstFlow"
                     ]
                 }
             ]

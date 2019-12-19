@@ -7,7 +7,8 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/autofill/payments/save_card_icon_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_container.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_controller.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_account_icon_container_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -61,7 +62,7 @@ class ToolbarAccountIconContainerViewBrowserTest : public InProcessBrowserTest {
     // Make sure the save-card icon is visible so that at least two children are
     // visible. Otherwise the border highlight would never be drawn.
     PageActionIconView* save_card_icon =
-        container->page_action_icon_container()->GetIconView(
+        container->page_action_icon_controller()->GetIconView(
             PageActionIconType::kSaveCard);
     save_card_icon->SetVisible(true);
 

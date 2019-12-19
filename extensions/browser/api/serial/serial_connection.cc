@@ -203,7 +203,10 @@ void SerialConnection::SetPaused(bool paused) {
     return;
 
   paused_ = paused;
-  if (!paused_) {
+  if (paused_) {
+    // Make sure no pending timeout task fires.
+    receive_timeout_task_.Cancel();
+  } else {
     // If |receive_pipe_| is closed and there is no pending ReceiveError event,
     // try to reconnect the data pipe.
     if (!receive_pipe_ && !read_error_) {

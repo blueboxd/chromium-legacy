@@ -198,7 +198,8 @@ static void AdjustStyleForFirstLetter(ComputedStyle& style) {
 }
 
 static void AdjustStyleForMarker(ComputedStyle& style,
-                                 const ComputedStyle& parent_style) {
+                                 const ComputedStyle& parent_style,
+                                 Element* element) {
   if (style.StyleType() != kPseudoIdMarker)
     return;
 
@@ -206,8 +207,13 @@ static void AdjustStyleForMarker(ComputedStyle& style,
   if (!style.GetContentData())
     return;
 
+  bool is_inside =
+      parent_style.ListStylePosition() == EListStylePosition::kInside ||
+      (element && IsA<HTMLLIElement>(element->parentNode()) &&
+       !parent_style.IsInsideListElement());
+
   // Outside list markers should generate a block container.
-  if (parent_style.ListStylePosition() == EListStylePosition::kOutside) {
+  if (!is_inside) {
     DCHECK_EQ(style.Display(), EDisplay::kInline);
     style.SetDisplay(EDisplay::kInlineBlock);
   }
@@ -317,6 +323,11 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
         html_plugin_element->ShouldAccelerate());
     if (style.Display() == EDisplay::kContents)
       style.SetDisplay(EDisplay::kNone);
+    return;
+  }
+
+  if (IsA<HTMLUListElement>(element) || IsA<HTMLOListElement>(element)) {
+    style.SetIsInsideListElement();
     return;
   }
 
@@ -624,7 +635,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     // We don't adjust the first letter style earlier because we may change the
     // display setting in adjustStyeForTagName() above.
     AdjustStyleForFirstLetter(style);
-    AdjustStyleForMarker(style, parent_style);
+    AdjustStyleForMarker(style, parent_style, element);
 
     AdjustStyleForDisplay(style, layout_parent_style,
                           element ? &element->GetDocument() : nullptr);

@@ -7,11 +7,9 @@
 /**
  * import {Resolution} from '../type.js';
  */
+const CCAResolution = Resolution;
 
-/** @typedef {Resolution} */
-Resolution;
-
-/* eslint-enbale no-undef */
+/* eslint-enable no-undef */
 
 /**
  * Parse the entry data according to its type.
@@ -158,7 +156,7 @@ export class DeviceOperator {
       const [format, width, height, type] =
           streamConfigs.slice(i, i + numElementPerEntry);
       if (format === formatBlob && type === typeOutputStream) {
-        supportedResolutions.push(new Resolution(width, height));
+        supportedResolutions.push(new CCAResolution(width, height));
       }
     }
     return supportedResolutions;
@@ -470,5 +468,11 @@ export class DeviceOperator {
   }
 }
 
+/* eslint-disable no-undef */
+
+/** @const */
 cca.mojo.DeviceOperator = DeviceOperator;
+/** @const */
 cca.mojo.parseMetadataData = parseMetadataData;
+
+/* eslint-enable no-undef */

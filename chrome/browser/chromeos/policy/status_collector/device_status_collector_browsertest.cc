@@ -497,15 +497,7 @@ class DeviceStatusCollectorTest : public testing::Test {
   }
 
   void SetUp() override {
-    RestartStatusCollector(base::BindRepeating(&GetEmptyVolumeInfo),
-                           base::BindRepeating(&GetEmptyCPUStatistics),
-                           base::BindRepeating(&GetEmptyCPUTempInfo),
-                           base::BindRepeating(&GetEmptyAndroidStatus),
-                           base::BindRepeating(&GetEmptyTpmStatus),
-                           base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
-                           base::BindRepeating(&GetEmptyStatefulPartitionInfo),
-                           base::BindRepeating(&GetEmptyCrosHealthdData));
-
+    RestartStatusCollector();
     // Disable network interface reporting since it requires additional setup.
     scoped_testing_cros_settings_.device_settings()->SetBoolean(
         chromeos::kReportDeviceNetworkInterfaces, false);
@@ -540,6 +532,17 @@ class DeviceStatusCollectorTest : public testing::Test {
         cpu_temp_fetcher, android_status_fetcher, tpm_status_fetcher,
         emmc_lifetime_fetcher, stateful_partition_info_fetcher,
         cros_healthd_data_fetcher);
+  }
+
+  void RestartStatusCollector() {
+    RestartStatusCollector(base::BindRepeating(&GetEmptyVolumeInfo),
+                           base::BindRepeating(&GetEmptyCPUStatistics),
+                           base::BindRepeating(&GetEmptyCPUTempInfo),
+                           base::BindRepeating(&GetEmptyAndroidStatus),
+                           base::BindRepeating(&GetEmptyTpmStatus),
+                           base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
+                           base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+                           base::BindRepeating(&GetEmptyCrosHealthdData));
   }
 
   void GetStatus() {
@@ -2585,9 +2588,7 @@ static const FakeNetworkState kUnconfiguredNetwork = {
 class DeviceStatusCollectorNetworkTest : public DeviceStatusCollectorTest {
  protected:
   void SetUp() override {
-    DeviceStatusCollectorTest::SetUp();
-    scoped_testing_cros_settings_.device_settings()->SetBoolean(
-        chromeos::kReportDeviceNetworkInterfaces, true);
+    RestartStatusCollector();
 
     chromeos::NetworkHandler::Initialize();
     base::RunLoop().RunUntilIdle();
@@ -2695,6 +2696,11 @@ class DeviceStatusCollectorNetworkTest : public DeviceStatusCollectorTest {
     ASSERT_EQ(base::size(kFakeNetworks), state_list.size());
   }
 
+  void SetReportDeviceNetworkInterfacesPolicy(bool enable) {
+    scoped_testing_cros_settings_.device_settings()->SetBoolean(
+        chromeos::kReportDeviceNetworkInterfaces, enable);
+  }
+
   void TearDown() override {
     chromeos::NetworkHandler::Shutdown();
     DeviceStatusCollectorTest::TearDown();
@@ -2741,25 +2747,25 @@ class DeviceStatusCollectorNetworkInterfacesTest
 };
 
 TEST_F(DeviceStatusCollectorNetworkInterfacesTest, Default) {
-  // Network interfaces should be reported by default.
+  // Network interfaces should be reported by default, i.e if the policy is not
+  // set.
   GetStatus();
   VerifyReporting();
 
-  // Network interfaces shouldn't be reported if the policy is off.
-  scoped_testing_cros_settings_.device_settings()->SetBoolean(
-      chromeos::kReportDeviceNetworkInterfaces, false);
+  // Network interfaces should be reported if the policy is set to true.
+  SetReportDeviceNetworkInterfacesPolicy(true);
+  GetStatus();
+  VerifyReporting();
+
+  // Network interfaces should not be reported if the policy is set to false.
+  SetReportDeviceNetworkInterfacesPolicy(false);
   GetStatus();
   EXPECT_EQ(0, device_status_.network_interfaces_size());
-
-  // Switch the policy on and verify the interface list is present.
-  scoped_testing_cros_settings_.device_settings()->SetBoolean(
-      chromeos::kReportDeviceNetworkInterfaces, true);
-  GetStatus();
-  VerifyReporting();
 }
 
 TEST_F(DeviceStatusCollectorNetworkInterfacesTest, IfUnaffiliatedUser) {
   // Network interfaces should be reported for unaffiliated users.
+  SetReportDeviceNetworkInterfacesPolicy(true);
   const AccountId account_id0(AccountId::FromUserEmail("user0@managed.com"));
   user_manager_->AddUserWithAffiliationAndType(account_id0, false,
                                                user_manager::USER_TYPE_REGULAR);
@@ -2769,6 +2775,7 @@ TEST_F(DeviceStatusCollectorNetworkInterfacesTest, IfUnaffiliatedUser) {
 
 TEST_F(DeviceStatusCollectorNetworkInterfacesTest, IfAffiliatedUser) {
   // Network interfaces should be reported for affiliated users.
+  SetReportDeviceNetworkInterfacesPolicy(true);
   const AccountId account_id0(AccountId::FromUserEmail("user0@managed.com"));
   user_manager_->AddUserWithAffiliationAndType(account_id0, true,
                                                user_manager::USER_TYPE_REGULAR);
@@ -2778,6 +2785,7 @@ TEST_F(DeviceStatusCollectorNetworkInterfacesTest, IfAffiliatedUser) {
 
 TEST_F(DeviceStatusCollectorNetworkInterfacesTest, IfPublicSession) {
   // Network interfaces should be reported if in public session.
+  SetReportDeviceNetworkInterfacesPolicy(true);
   user_manager_->CreatePublicAccountUser(
       AccountId::FromUserEmail(kPublicAccountId));
   EXPECT_CALL(*user_manager_, IsLoggedInAsPublicAccount())
@@ -2789,7 +2797,7 @@ TEST_F(DeviceStatusCollectorNetworkInterfacesTest, IfPublicSession) {
 
 TEST_F(DeviceStatusCollectorNetworkInterfacesTest, IfKioskMode) {
   // Network interfaces should be reported if in kiosk mode.
-
+  SetReportDeviceNetworkInterfacesPolicy(true);
   user_manager_->CreateKioskAppUser(AccountId::FromUserEmail(kKioskAccountId));
   EXPECT_CALL(*user_manager_, IsLoggedInAsKioskApp())
       .WillRepeatedly(Return(true));
@@ -2833,10 +2841,12 @@ class DeviceStatusCollectorNetworkStateTest
 };
 
 TEST_F(DeviceStatusCollectorNetworkStateTest, Default) {
-  // Network state shouldn't be reported by default.
+  // Network state should not be reported by default, i.e if the policy is not
+  // set.
   GetStatus();
   EXPECT_EQ(0, device_status_.network_states_size());
 
+  SetReportDeviceNetworkInterfacesPolicy(true);
   // Mock that the device is in kiosk mode to report network state.
   user_manager_->CreateKioskAppUser(AccountId::FromUserEmail(kKioskAccountId));
   EXPECT_CALL(*user_manager_, IsLoggedInAsKioskApp())
@@ -2845,21 +2855,20 @@ TEST_F(DeviceStatusCollectorNetworkStateTest, Default) {
   GetStatus();
   VerifyReporting();
 
-  // Network state shouldn't be reported if the policy is off.
-  scoped_testing_cros_settings_.device_settings()->SetBoolean(
-      chromeos::kReportDeviceNetworkInterfaces, false);
+  // Network state should not be reported if the policy is set to false.
+  SetReportDeviceNetworkInterfacesPolicy(false);
   GetStatus();
   EXPECT_EQ(0, device_status_.network_states_size());
 
-  // Switch the policy on and verify that network state is reported
-  scoped_testing_cros_settings_.device_settings()->SetBoolean(
-      chromeos::kReportDeviceNetworkInterfaces, true);
+  // Network state should be reported if the policy is set to true.
+  SetReportDeviceNetworkInterfacesPolicy(true);
   GetStatus();
   VerifyReporting();
 }
 
 TEST_F(DeviceStatusCollectorNetworkStateTest, IfUnaffiliatedUser) {
   // Network state shouldn't be reported for unaffiliated users.
+  SetReportDeviceNetworkInterfacesPolicy(true);
   const AccountId account_id0(AccountId::FromUserEmail("user0@managed.com"));
   user_manager_->AddUserWithAffiliationAndType(account_id0, false,
                                                user_manager::USER_TYPE_REGULAR);
@@ -2869,6 +2878,7 @@ TEST_F(DeviceStatusCollectorNetworkStateTest, IfUnaffiliatedUser) {
 
 TEST_F(DeviceStatusCollectorNetworkStateTest, IfAffiliatedUser) {
   // Network state should be reported for affiliated users.
+  SetReportDeviceNetworkInterfacesPolicy(true);
   const AccountId account_id0(AccountId::FromUserEmail("user0@managed.com"));
   user_manager_->AddUserWithAffiliationAndType(account_id0, true,
                                                user_manager::USER_TYPE_REGULAR);
@@ -2878,6 +2888,7 @@ TEST_F(DeviceStatusCollectorNetworkStateTest, IfAffiliatedUser) {
 
 TEST_F(DeviceStatusCollectorNetworkStateTest, IfPublicSession) {
   // Network state should be reported if in public session.
+  SetReportDeviceNetworkInterfacesPolicy(true);
   user_manager_->CreatePublicAccountUser(
       AccountId::FromUserEmail(kPublicAccountId));
   EXPECT_CALL(*user_manager_, IsLoggedInAsPublicAccount())
@@ -2889,6 +2900,7 @@ TEST_F(DeviceStatusCollectorNetworkStateTest, IfPublicSession) {
 
 TEST_F(DeviceStatusCollectorNetworkStateTest, IfKioskMode) {
   // Network state should be reported if in kiosk mode.
+  SetReportDeviceNetworkInterfacesPolicy(true);
   user_manager_->CreateKioskAppUser(AccountId::FromUserEmail(kKioskAccountId));
   EXPECT_CALL(*user_manager_, IsLoggedInAsKioskApp())
       .WillRepeatedly(Return(true));

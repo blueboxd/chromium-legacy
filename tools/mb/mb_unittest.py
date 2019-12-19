@@ -523,42 +523,6 @@ class UnitTest(unittest.TestCase):
     self.assertIn('/fake_src/out/Default/cc_perftests.isolated.gen.json',
                   mbw.files)
 
-  def test_gen_fuzzer(self):
-    files = {
-      '/tmp/swarming_targets': 'cc_perftests_fuzzer\n',
-      '/fake_src/testing/buildbot/gn_isolate_map.pyl': (
-          "{'cc_perftests_fuzzer': {"
-          "  'label': '//cc:cc_perftests_fuzzer',"
-          "  'type': 'fuzzer',"
-          "}}\n"
-      ),
-    }
-
-    mbw = self.fake_mbw(files=files)
-
-    def fake_call(cmd, env=None, buffer_output=True, stdin=None):
-      del cmd
-      del env
-      del buffer_output
-      del stdin
-      mbw.files['/fake_src/out/Default/cc_perftests_fuzzer.runtime_deps'] = (
-          'cc_perftests_fuzzer\n')
-      return 0, '', ''
-
-    mbw.Call = fake_call
-
-    self.check(['gen',
-                '-c', 'debug_goma',
-                '--swarming-targets-file', '/tmp/swarming_targets',
-                '--isolate-map-file',
-                '/fake_src/testing/buildbot/gn_isolate_map.pyl',
-                '//out/Default'], mbw=mbw, ret=0)
-    self.assertIn('/fake_src/out/Default/cc_perftests_fuzzer.isolate',
-                  mbw.files)
-    self.assertIn(
-        '/fake_src/out/Default/cc_perftests_fuzzer.isolated.gen.json',
-        mbw.files)
-
   def test_multiple_isolate_maps(self):
     files = {
       '/tmp/swarming_targets': 'cc_perftests\n',

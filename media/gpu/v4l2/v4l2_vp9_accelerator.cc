@@ -209,7 +209,7 @@ bool V4L2VP9Accelerator::SubmitDecode(scoped_refptr<VP9Picture> pic,
                                       const Vp9SegmentationParams& segm_params,
                                       const Vp9LoopFilterParams& lf_params,
                                       const Vp9ReferenceFrameVector& ref_frames,
-                                      const base::Closure& done_cb) {
+                                      base::OnceClosure done_cb) {
   const Vp9FrameHeader* frame_hdr = pic->frame_hdr.get();
   DCHECK(frame_hdr);
 
@@ -357,9 +357,9 @@ bool V4L2VP9Accelerator::SubmitDecode(scoped_refptr<VP9Picture> pic,
   }
 
   dec_surface->SetReferenceSurfaces(ref_surfaces);
-  dec_surface->SetDecodeDoneCallback(done_cb);
+  dec_surface->SetDecodeDoneCallback(std::move(done_cb));
 
-  if (!surface_handler_->SubmitSlice(dec_surface, frame_hdr->data,
+  if (!surface_handler_->SubmitSlice(dec_surface.get(), frame_hdr->data,
                                      frame_hdr->frame_size))
     return false;
 

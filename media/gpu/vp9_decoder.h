@@ -65,7 +65,7 @@ class MEDIA_GPU_EXPORT VP9Decoder : public AcceleratedVideoDecoder {
                               const Vp9SegmentationParams& segm_params,
                               const Vp9LoopFilterParams& lf_params,
                               const Vp9ReferenceFrameVector& reference_frames,
-                              const base::Closure& done_cb) = 0;
+                              const base::OnceClosure done_cb) = 0;
 
     // Schedule output (display) of |pic|.
     //

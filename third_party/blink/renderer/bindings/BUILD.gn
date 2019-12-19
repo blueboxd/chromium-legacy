@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 import("//build/config/python.gni")
+import("//third_party/blink/renderer/bindings/bindings.gni")
+import("//third_party/blink/renderer/bindings/core/v8/generated.gni")
+import("//third_party/blink/renderer/bindings/modules/v8/generated.gni")
 import("//third_party/blink/renderer/bindings/scripts/scripts.gni")
 import("//third_party/blink/renderer/build/scripts/scripts.gni")
 import("//third_party/blink/renderer/core/core_idl_files.gni")
@@ -139,31 +142,39 @@ action_with_pydeps("web_idl_database") {
   ]
 }
 
-action_with_pydeps("generate_bindings_example") {
-  script = "${bindings_scripts_dir}/generate_bindings.py"
+group("generate_v8_bindings") {
+  public_deps = []
+  if (use_v8_bind_gen_for_dictionary) {
+    public_deps += [ ":generate_v8_bindings_dictionary" ]
+  }
+}
 
-  web_idl_database_outputs = get_target_outputs(":web_idl_database")
-  web_idl_database = web_idl_database_outputs[0]
+if (use_v8_bind_gen_for_dictionary) {
+  action_with_pydeps("generate_v8_bindings_dictionary") {
+    script = "${bindings_scripts_dir}/generate_bindings.py"
 
-  inputs = [
-    web_idl_database,
-  ]
-  outputs = [
-    "${bindings_output_dir}/core/v8/example_dictionary.cc",
-    "${bindings_output_dir}/core/v8/example_dictionary.h",
-  ]
+    web_idl_database_outputs = get_target_outputs(":web_idl_database")
+    web_idl_database = web_idl_database_outputs[0]
 
-  args = [
-    "dictionary",
-    "--web_idl_database",
-    rebase_path(web_idl_database, root_build_dir),
-    "--output_dir_core",
-    rebase_path("${bindings_output_dir}/core/v8/", root_build_dir),
-    "--output_dir_modules",
-    rebase_path("${bindings_output_dir}/modules/v8/", root_build_dir),
-  ]
+    inputs = [
+      web_idl_database,
+    ]
+    outputs =
+        generated_core_dictionary_files + generated_modules_dictionary_files +
+        generated_core_testing_dictionary_files + generated_demo_files
 
-  deps = [
-    ":web_idl_database",
-  ]
+    args = [
+      "dictionary",
+      "--web_idl_database",
+      rebase_path(web_idl_database, root_build_dir),
+      "--output_dir_core",
+      rebase_path("${bindings_output_dir}/core/v8/", root_build_dir),
+      "--output_dir_modules",
+      rebase_path("${bindings_output_dir}/modules/v8/", root_build_dir),
+    ]
+
+    deps = [
+      ":web_idl_database",
+    ]
+  }
 }

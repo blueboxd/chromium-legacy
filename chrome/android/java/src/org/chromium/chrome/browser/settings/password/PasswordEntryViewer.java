@@ -79,6 +79,11 @@ public class PasswordEntryViewer
     private static final int PASSWORD_ACTION_HIDDEN = 2;
     private static final int PASSWORD_ACTION_BOUNDARY = 3;
 
+    // Metrics: "PasswordManager.AccessPasswordInSettings"
+    private static final int ACCESS_PASSWORD_VIEWED = 0;
+    private static final int ACCESS_PASSWORD_COPIED = 1;
+    private static final int ACCESS_PASSWORD_COUNT = 2;
+
     // ID of this name/password or exception.
     private int mID;
 
@@ -355,6 +360,9 @@ public class PasswordEntryViewer
         RecordHistogram.recordEnumeratedHistogram(
                 "PasswordManager.Android.PasswordCredentialEntry.Password",
                 PASSWORD_ACTION_DISPLAYED, PASSWORD_ACTION_BOUNDARY);
+
+        RecordHistogram.recordEnumeratedHistogram("PasswordManager.AccessPasswordInSettings",
+                ACCESS_PASSWORD_VIEWED, ACCESS_PASSWORD_COUNT);
     }
 
     private void hidePassword() {
@@ -380,6 +388,9 @@ public class PasswordEntryViewer
         RecordHistogram.recordEnumeratedHistogram(
                 "PasswordManager.Android.PasswordCredentialEntry.Password", PASSWORD_ACTION_COPIED,
                 PASSWORD_ACTION_BOUNDARY);
+
+        RecordHistogram.recordEnumeratedHistogram("PasswordManager.AccessPasswordInSettings",
+                ACCESS_PASSWORD_COPIED, ACCESS_PASSWORD_COUNT);
     }
 
     private void hookupPasswordButtons() {

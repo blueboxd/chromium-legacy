@@ -128,4 +128,8 @@ interface NFCClient {
   // anti-collision and identification, or empty string in case none is
   // available.
   OnWatch(array<uint32> watch_ids, string? serial_number, NDEFMessage message);
+
+  // Sends |error| to all readers that are trying to read some data from the nfc
+  // tag coming nearby.
+  OnError(NDEFErrorType error);
 };

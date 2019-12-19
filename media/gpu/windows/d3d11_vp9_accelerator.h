@@ -37,7 +37,7 @@ class D3D11VP9Accelerator : public VP9Decoder::VP9Accelerator {
                     const Vp9SegmentationParams& segmentation_params,
                     const Vp9LoopFilterParams& loop_filter_params,
                     const Vp9ReferenceFrameVector& reference_frames,
-                    const base::Closure& on_finished_cb) override;
+                    base::OnceClosure on_finished_cb) override;
 
   bool OutputPicture(scoped_refptr<VP9Picture> picture) override;
 

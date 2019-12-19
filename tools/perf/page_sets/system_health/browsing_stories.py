@@ -722,6 +722,7 @@ class YouTubeTVDesktopStory2019(_MediaBrowsingStory):
         story_set, take_memory_measurement,
         extra_browser_args=['--js-flags="--jitless"'])
 
+
 class FacebookPhotosMobileStory(_MediaBrowsingStory):
   """Load a photo page from Rihanna's facebook page then navigate a few next
   photos.
@@ -734,6 +735,20 @@ class FacebookPhotosMobileStory(_MediaBrowsingStory):
   IS_SINGLE_PAGE_APP = True
   ITEM_SELECTOR_INDEX = 0
   TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2016]
+
+
+class FacebookPhotosMobileStory2019(_MediaBrowsingStory):
+  """Load a photo page from Rihanna's facebook page then navigate a few next
+  photos.
+  """
+  NAME = 'browse:media:facebook_photos:2019'
+  URL = (
+      'https://m.facebook.com/rihanna/photos/a.10152251658271676/10156761246686676/?type=3&source=54')
+  ITEM_SELECTOR = '._57-r.touchable'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  IS_SINGLE_PAGE_APP = True
+  ITEM_SELECTOR_INDEX = 0
+  TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2019]
 
 
 class FacebookPhotosDesktopStory(_MediaBrowsingStory):

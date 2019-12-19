@@ -287,7 +287,7 @@ V4L2StatelessVideoDecoderBackend::CreateSurface() {
 }
 
 bool V4L2StatelessVideoDecoderBackend::SubmitSlice(
-    const scoped_refptr<V4L2DecodeSurface>& dec_surface,
+    V4L2DecodeSurface* dec_surface,
     const uint8_t* data,
     size_t size) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -310,7 +310,7 @@ bool V4L2StatelessVideoDecoderBackend::SubmitSlice(
 }
 
 void V4L2StatelessVideoDecoderBackend::DecodeSurface(
-    const scoped_refptr<V4L2DecodeSurface>& dec_surface) {
+    scoped_refptr<V4L2DecodeSurface> dec_surface) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOGF(3);
 
@@ -349,7 +349,7 @@ void V4L2StatelessVideoDecoderBackend::DecodeSurface(
 }
 
 void V4L2StatelessVideoDecoderBackend::SurfaceReady(
-    const scoped_refptr<V4L2DecodeSurface>& dec_surface,
+    scoped_refptr<V4L2DecodeSurface> dec_surface,
     int32_t bitstream_id,
     const gfx::Rect& visible_rect,
     const VideoColorSpace& /* color_space */) {

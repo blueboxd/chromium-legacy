@@ -47,7 +47,7 @@ namespace media {
 class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
     : public VideoEncodeAccelerator {
  public:
-  explicit V4L2VideoEncodeAccelerator(const scoped_refptr<V4L2Device>& device);
+  explicit V4L2VideoEncodeAccelerator(scoped_refptr<V4L2Device> device);
   ~V4L2VideoEncodeAccelerator() override;
 
   // VideoEncodeAccelerator implementation.

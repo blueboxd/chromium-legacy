@@ -829,27 +829,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
   static void OnMojoError(int render_process_id, const std::string& error);
 
   template <typename InterfaceType>
-  using AddInterfaceCallback =
-      base::RepeatingCallback<void(mojo::InterfaceRequest<InterfaceType>)>;
-
-  template <typename InterfaceType>
   using AddReceiverCallback =
       base::RepeatingCallback<void(mojo::PendingReceiver<InterfaceType>)>;
 
   template <typename CallbackType>
   struct InterfaceGetter;
-
-  template <typename InterfaceType>
-  struct InterfaceGetter<AddInterfaceCallback<InterfaceType>> {
-    static void GetInterfaceOnUIThread(
-        base::WeakPtr<RenderProcessHostImpl> weak_host,
-        AddInterfaceCallback<InterfaceType> callback,
-        mojo::InterfaceRequest<InterfaceType> request) {
-      if (!weak_host)
-        return;
-      std::move(callback).Run(std::move(request));
-    }
-  };
 
   template <typename InterfaceType>
   struct InterfaceGetter<AddReceiverCallback<InterfaceType>> {

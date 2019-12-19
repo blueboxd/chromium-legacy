@@ -1163,14 +1163,16 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, Download) {
 IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, NoContentLength) {
   const std::string test_bundle =
       GetTestFile("web_bundle_browsertest_network.wbn");
+  // No Content-Length header.
   RegisterRequestHandler("/web_bundle/test.wbn",
                          "HTTP/1.1 200 OK\n"
                          "Content-Type:application/webbundle\n",
                          test_bundle);
   ASSERT_TRUE(embedded_test_server()->Start(kNetworkTestPort));
-  TestNavigationFailure(
+  NavigateToBundleAndWaitForReady(
       GetTestUrl("localhost"),
-      "Web Bundle response must have valid Content-Length header.");
+      GURL(base::StringPrintf("http://localhost:%d/web_bundle/network/",
+                              kNetworkTestPort)));
 }
 
 IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, NonSecureUrl) {
@@ -1468,23 +1470,6 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
       "HTTP/1.1 302 OK\n"
       "Location:/web_bundle/empty_page.html\n",
       "", "Unexpected redirect.");
-}
-
-IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
-                       HistoryNavigationError_InvalidContentLength) {
-  const std::string test_bundle = GetTestFile("path_test.wbn");
-  RunHistoryNavigationErrorTest(
-      base::StringPrintf("HTTP/1.1 200 OK\n"
-                         "Content-Type:application/webbundle\n"
-                         "Cache-Control:no-store\n"
-                         "Content-Length: %" PRIuS "\n",
-                         test_bundle.size()),
-      test_bundle,
-      "HTTP/1.1 200 OK\n"
-      "Content-Type:application/webbundle\n"
-      "Cache-Control:no-store\n",
-      test_bundle,
-      "Web Bundle response must have valid Content-Length header.");
 }
 
 IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,

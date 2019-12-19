@@ -363,7 +363,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportOsSyncTest,
   ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
             GetSyncService(0)->GetTransportState());
   ASSERT_TRUE(service->IsSyncFeatureActive());
-  ASSERT_FALSE(settings->GetOsSyncFeatureEnabled());
+  ASSERT_FALSE(settings->IsOsSyncFeatureEnabled());
 
   // OS data types synced by the transport layer are not active.
   syncer::ModelTypeSet active_types = service->GetActiveDataTypes();

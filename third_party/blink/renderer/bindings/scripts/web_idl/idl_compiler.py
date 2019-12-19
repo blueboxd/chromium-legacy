@@ -13,6 +13,7 @@ from .database import Database
 from .database import DatabaseBody
 from .dictionary import Dictionary
 from .enumeration import Enumeration
+from .extended_attribute import ExtendedAttribute
 from .idl_type import IdlTypeFactory
 from .interface import Interface
 from .ir_map import IRMap
@@ -90,6 +91,7 @@ class IdlCompiler(object):
 
         # Make groups of overloaded functions including inherited ones.
         self._group_overloaded_functions()
+        self._propagate_extattrs_to_overload_group()
         self._calculate_group_exposure()
 
         self._sort_dictionary_members()
@@ -335,6 +337,30 @@ class IdlCompiler(object):
                     sorted(new_ir.operations, key=sort_key), key=sort_key)
                 if identifier
             ]
+
+    def _propagate_extattrs_to_overload_group(self):
+        ANY_OF = ("CrossOrigin", "LenientThis", "NotEnumerable",
+                  "PerWorldBindings", "Unforgeable", "Unscopable")
+
+        old_irs = self._ir_map.irs_of_kinds(IRMap.IR.Kind.INTERFACE,
+                                            IRMap.IR.Kind.NAMESPACE)
+
+        self._ir_map.move_to_new_phase()
+
+        for old_ir in old_irs:
+            new_ir = make_copy(old_ir)
+            self._ir_map.add(new_ir)
+
+            for group in new_ir.constructor_groups + new_ir.operation_groups:
+                for key in ANY_OF:
+                    if any(key in overload.extended_attributes
+                           for overload in group):
+                        group.extended_attributes.append(
+                            ExtendedAttribute(key=key))
+                if all((overload.extended_attributes.value_of("Affects") ==
+                        "Nothing") for overload in group):
+                    group.extended_attributes.append(
+                        ExtendedAttribute(key="Affects", values="Nothing"))
 
     def _calculate_group_exposure(self):
         old_irs = self._ir_map.irs_of_kinds(IRMap.IR.Kind.INTERFACE,

@@ -27,7 +27,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/common/content_client.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
@@ -70,22 +69,43 @@ class SharedWorkerHost::ScopedDevToolsHandle {
   DISALLOW_COPY_AND_ASSIGN(ScopedDevToolsHandle);
 };
 
+class SharedWorkerHost::ScopedProcessHostRef {
+ public:
+  explicit ScopedProcessHostRef(RenderProcessHost* render_process_host)
+      : render_process_host_(render_process_host) {
+    render_process_host_->IncrementKeepAliveRefCount();
+  }
+
+  ~ScopedProcessHostRef() {
+    if (!render_process_host_->IsKeepAliveRefCountDisabled())
+      render_process_host_->DecrementKeepAliveRefCount();
+  }
+
+  ScopedProcessHostRef(const ScopedProcessHostRef& other) = delete;
+
+ private:
+  RenderProcessHost* const render_process_host_;
+};
+
 SharedWorkerHost::SharedWorkerHost(SharedWorkerServiceImpl* service,
                                    const SharedWorkerInstance& instance,
-                                   int worker_process_id)
+                                   RenderProcessHost* worker_process_host)
     : service_(service),
       instance_(instance),
-      worker_process_id_(worker_process_id),
+      worker_process_host_(worker_process_host),
+      scoped_process_host_ref_(
+          std::make_unique<ScopedProcessHostRef>(worker_process_host)),
+      scoped_process_host_observer_(this),
       next_connection_request_id_(1) {
+  DCHECK(worker_process_host_);
+  DCHECK(!IsShuttingDown(worker_process_host_));
+
   // Set up the worker pending receiver. This is needed first in either
   // AddClient() or Start(). AddClient() can sometimes be called before Start()
   // when two clients call new SharedWorker() at around the same time.
   worker_receiver_ = worker_.BindNewPipeAndPassReceiver();
 
-  // Keep the renderer process alive that will be hosting the shared worker.
-  auto* worker_process_host = RenderProcessHost::FromID(worker_process_id_);
-  DCHECK(!IsShuttingDown(worker_process_host));
-  worker_process_host->IncrementKeepAliveRefCount();
+  scoped_process_host_observer_.Add(worker_process_host_);
 }
 
 SharedWorkerHost::~SharedWorkerHost() {
@@ -106,10 +126,6 @@ SharedWorkerHost::~SharedWorkerHost() {
     for (const ClientInfo& info : clients_)
       info.client->OnScriptLoadFailed();
   }
-
-  auto* worker_process_host = RenderProcessHost::FromID(worker_process_id_);
-  if (!IsShuttingDown(worker_process_host))
-    worker_process_host->DecrementKeepAliveRefCount();
 }
 
 void SharedWorkerHost::Start(
@@ -141,8 +157,7 @@ void SharedWorkerHost::Start(
 
   auto renderer_preferences = blink::mojom::RendererPreferences::New();
   GetContentClient()->browser()->UpdateRendererPreferencesForWorker(
-      RenderProcessHost::FromID(worker_process_id_)->GetBrowserContext(),
-      renderer_preferences.get());
+      worker_process_host_->GetBrowserContext(), renderer_preferences.get());
 
   // Create a RendererPreferenceWatcher to observe updates in the preferences.
   mojo::PendingRemote<blink::mojom::RendererPreferenceWatcher> watcher_remote;
@@ -150,8 +165,7 @@ void SharedWorkerHost::Start(
       preference_watcher_receiver =
           watcher_remote.InitWithNewPipeAndPassReceiver();
   GetContentClient()->browser()->RegisterRendererPreferenceWatcher(
-      RenderProcessHost::FromID(worker_process_id_)->GetBrowserContext(),
-      std::move(watcher_remote));
+      worker_process_host_->GetBrowserContext(), std::move(watcher_remote));
 
   // Set up content settings interface.
   mojo::PendingRemote<blink::mojom::WorkerContentSettingsProxy>
@@ -220,7 +234,7 @@ void SharedWorkerHost::Start(
 
   // Notify the service that the worker was started and that some clients were
   // already connected.
-  service_->NotifyWorkerStarted(instance_, worker_process_id_,
+  service_->NotifyWorkerStarted(instance_, worker_process_host_->GetID(),
                                 devtools_worker_token);
   for (const auto& client : clients_) {
     service_->NotifyClientAdded(instance_, client.client_process_id,
@@ -238,8 +252,6 @@ SharedWorkerHost::CreateNetworkFactoryForSubresources(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(bypass_redirect_checks);
 
-  auto* worker_process_host = RenderProcessHost::FromID(worker_process_id_);
-
   mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_default_factory;
   mojo::PendingReceiver<network::mojom::URLLoaderFactory>
       default_factory_receiver =
@@ -248,11 +260,11 @@ SharedWorkerHost::CreateNetworkFactoryForSubresources(
   const url::Origin& origin = instance_.constructor_origin();
   network::mojom::URLLoaderFactoryParamsPtr factory_params =
       URLLoaderFactoryParamsHelper::CreateForWorker(
-          worker_process_host, origin,
+          worker_process_host_, origin,
           net::NetworkIsolationKey(origin, origin));
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
-      worker_process_host->GetBrowserContext(),
-      /*frame=*/nullptr, worker_process_id_,
+      worker_process_host_->GetBrowserContext(),
+      /*frame=*/nullptr, worker_process_host_->GetID(),
       ContentBrowserClient::URLLoaderFactoryType::kWorkerSubResource, origin,
       /*navigation_id=*/base::nullopt, &default_factory_receiver,
       &factory_params->header_client, bypass_redirect_checks,
@@ -262,8 +274,7 @@ SharedWorkerHost::CreateNetworkFactoryForSubresources(
   // here.
 
   // TODO(yhirano): Support COEP.
-
-  worker_process_host->CreateURLLoaderFactory(
+  worker_process_host_->CreateURLLoaderFactory(
       std::move(default_factory_receiver), std::move(factory_params));
 
   return pending_default_factory;
@@ -273,14 +284,14 @@ void SharedWorkerHost::AllowFileSystem(
     const GURL& url,
     base::OnceCallback<void(bool)> callback) {
   GetContentClient()->browser()->AllowWorkerFileSystem(
-      url, RenderProcessHost::FromID(worker_process_id_)->GetBrowserContext(),
+      url, worker_process_host_->GetBrowserContext(),
       GetRenderFrameIDsForWorker(), std::move(callback));
 }
 
 void SharedWorkerHost::AllowIndexedDB(const GURL& url,
                                       base::OnceCallback<void(bool)> callback) {
   std::move(callback).Run(GetContentClient()->browser()->AllowWorkerIndexedDB(
-      url, RenderProcessHost::FromID(worker_process_id_)->GetBrowserContext(),
+      url, worker_process_host_->GetBrowserContext(),
       GetRenderFrameIDsForWorker()));
 }
 
@@ -289,42 +300,34 @@ void SharedWorkerHost::AllowCacheStorage(
     base::OnceCallback<void(bool)> callback) {
   std::move(callback).Run(
       GetContentClient()->browser()->AllowWorkerCacheStorage(
-          url,
-          RenderProcessHost::FromID(worker_process_id_)->GetBrowserContext(),
+          url, worker_process_host_->GetBrowserContext(),
           GetRenderFrameIDsForWorker()));
 }
 
 void SharedWorkerHost::AllowWebLocks(const GURL& url,
                                      base::OnceCallback<void(bool)> callback) {
   std::move(callback).Run(GetContentClient()->browser()->AllowWorkerWebLocks(
-      url, RenderProcessHost::FromID(worker_process_id_)->GetBrowserContext(),
+      url, worker_process_host_->GetBrowserContext(),
       GetRenderFrameIDsForWorker()));
 }
 
 void SharedWorkerHost::CreateAppCacheBackend(
     mojo::PendingReceiver<blink::mojom::AppCacheBackend> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RenderProcessHost* worker_process_host = GetProcessHost();
-  if (!worker_process_host)
-    return;
   auto* storage_partition_impl = static_cast<StoragePartitionImpl*>(
-      worker_process_host->GetStoragePartition());
+      worker_process_host_->GetStoragePartition());
   if (!storage_partition_impl)
     return;
   storage_partition_impl->GetAppCacheService()->CreateBackend(
-      worker_process_host->GetID(), MSG_ROUTING_NONE, std::move(receiver));
+      worker_process_host_->GetID(), MSG_ROUTING_NONE, std::move(receiver));
 }
 
 void SharedWorkerHost::CreateQuicTransportConnector(
     mojo::PendingReceiver<blink::mojom::QuicTransportConnector> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RenderProcessHost* worker_process_host = GetProcessHost();
-  if (!worker_process_host)
-    return;
-
   const url::Origin origin = url::Origin::Create(instance().url());
   mojo::MakeSelfOwnedReceiver(std::make_unique<QuicTransportConnectorImpl>(
-                                  worker_process_host->GetID(), origin,
+                                  worker_process_host_->GetID(), origin,
                                   net::NetworkIsolationKey(origin, origin)),
                               std::move(receiver));
 }
@@ -386,6 +389,12 @@ void SharedWorkerHost::OnFeatureUsed(blink::mojom::WebFeature feature) {
     return;
   for (const ClientInfo& info : clients_)
     info.client->OnFeatureUsed(feature);
+}
+
+void SharedWorkerHost::RenderProcessHostDestroyed(
+    RenderProcessHost* render_process_host) {
+  DCHECK_EQ(worker_process_host_, render_process_host);
+  Destruct();
 }
 
 std::vector<GlobalFrameRoutingId>

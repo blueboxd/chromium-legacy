@@ -69,8 +69,9 @@ class Operation(FunctionLike, WithExtendedAttributes, WithCodeGeneratorInfo,
         return self._is_stringifier
 
 
-class OperationGroup(OverloadGroup, WithCodeGeneratorInfo, WithExposure,
-                     WithOwner, WithComponent, WithDebugInfo):
+class OperationGroup(OverloadGroup, WithExtendedAttributes,
+                     WithCodeGeneratorInfo, WithExposure, WithOwner,
+                     WithComponent, WithDebugInfo):
     """
     Represents a group of operations with the same identifier.
 
@@ -78,13 +79,15 @@ class OperationGroup(OverloadGroup, WithCodeGeneratorInfo, WithExposure,
     the operations are overloaded.
     """
 
-    class IR(OverloadGroup.IR, WithCodeGeneratorInfo, WithExposure,
-             WithDebugInfo):
+    class IR(OverloadGroup.IR, WithExtendedAttributes, WithCodeGeneratorInfo,
+             WithExposure, WithDebugInfo):
         def __init__(self,
                      operations,
+                     extended_attributes=None,
                      code_generator_info=None,
                      debug_info=None):
             OverloadGroup.IR.__init__(self, operations)
+            WithExtendedAttributes.__init__(self, extended_attributes)
             WithCodeGeneratorInfo.__init__(self, code_generator_info)
             WithExposure.__init__(self)
             WithDebugInfo.__init__(self, debug_info)
@@ -103,6 +106,7 @@ class OperationGroup(OverloadGroup, WithCodeGeneratorInfo, WithExposure,
 
         ir = make_copy(ir)
         OverloadGroup.__init__(self, functions=operations)
+        WithExtendedAttributes.__init__(self, ir, readonly=True)
         WithCodeGeneratorInfo.__init__(self, ir, readonly=True)
         WithExposure.__init__(self, ir, readonly=True)
         WithOwner.__init__(self, owner)

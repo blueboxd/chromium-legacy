@@ -2076,7 +2076,7 @@ class BannedTypeCheckTest(unittest.TestCase):
   def testDeprecatedMojoTypes(self):
     ok_paths = ['components/arc']
     warning_paths = ['some/cpp']
-    error_paths = ['third_party/blink']
+    error_paths = ['third_party/blink', 'content']
     test_cases = [
       {
         'type': 'mojo::AssociatedBinding<>;',

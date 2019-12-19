@@ -31,12 +31,14 @@ class CrostiniUpgraderUI
     launch_closure_ = std::move(launch_closure);
   }
 
- private:
-  void BindPageHandlerFactory(
-      mojo::PendingReceiver<
-          chromeos::crostini_upgrader::mojom::PageHandlerFactory>
-          pending_receiver);
+  // Instantiates implementor of the
+  // chromeos::crostini_upgrader::mojom::PageHandlerFactory mojo interface
+  // passing the pending receiver that will be internally bound.
+  void BindInterface(mojo::PendingReceiver<
+                     chromeos::crostini_upgrader::mojom::PageHandlerFactory>
+                         pending_receiver);
 
+ private:
   // chromeos::crostini_upgrader::mojom::PageHandlerFactory:
   void CreatePageHandler(
       mojo::PendingRemote<chromeos::crostini_upgrader::mojom::Page>
@@ -54,6 +56,8 @@ class CrostiniUpgraderUI
   base::OnceClosure launch_closure_;
 
   bool can_close_ = false;
+
+  WEB_UI_CONTROLLER_TYPE_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(CrostiniUpgraderUI);
 };

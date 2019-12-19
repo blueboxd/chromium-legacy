@@ -104,6 +104,11 @@
     ],
     'modifications': {
       # chromium.fyi
+      'linux-code-coverage': {
+        'swarming': {
+          'shards': 21,
+        },
+      },
       'linux-chromeos-code-coverage': {
         'swarming': {
           'shards': 21,
@@ -1310,6 +1315,11 @@
   'non_viz_browser_tests': {
     'modifications': {
       # chromium.fyi
+      'linux-code-coverage': {
+        'swarming': {
+          'shards': 21,
+        },
+      },
       'linux-chromeos-code-coverage': {
         'swarming': {
           'shards': 20,
@@ -1370,6 +1380,15 @@
       'Linux Tests (dbg)(1)',
     ],
     'modifications': {
+      'linux-code-coverage': {
+        'args': [
+          '--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw',
+          '--fuzzy-diff',
+        ],
+        'swarming': {
+          'shards': 20,
+        },
+      },
       'Linux Tests': {
         "args": [
           "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw",
@@ -2042,6 +2061,15 @@
           '--additional-driver-flag=--disable-blink-features=LayoutNG',
           '--fuzzy-diff',
         ],
+      },
+      'linux-code-coverage': {
+        'args': [
+          '--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw',
+          '--fuzzy-diff',
+        ],
+        'swarming': {
+          'shards': 20,
+        },
       },
       # chromium.linux
       'Fuchsia x64': {

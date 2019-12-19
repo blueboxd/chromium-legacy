@@ -57,22 +57,25 @@ class Constructor(FunctionLike, WithExtendedAttributes, WithCodeGeneratorInfo,
         WithDebugInfo.__init__(self, ir)
 
 
-class ConstructorGroup(OverloadGroup, WithCodeGeneratorInfo, WithExposure,
-                       WithOwner, WithComponent, WithDebugInfo):
+class ConstructorGroup(OverloadGroup, WithExtendedAttributes,
+                       WithCodeGeneratorInfo, WithExposure, WithOwner,
+                       WithComponent, WithDebugInfo):
     """
-    Represents a group of constructors for an interface.
+    Represents a group of constructors of an interface.
 
     The number of constructors in this group may be 1 or 2+.  In the latter
     case, the constructors are overloaded.
     """
 
-    class IR(OverloadGroup.IR, WithCodeGeneratorInfo, WithExposure,
-             WithDebugInfo):
+    class IR(OverloadGroup.IR, WithExtendedAttributes, WithCodeGeneratorInfo,
+             WithExposure, WithDebugInfo):
         def __init__(self,
                      constructors,
+                     extended_attributes=None,
                      code_generator_info=None,
                      debug_info=None):
             OverloadGroup.IR.__init__(self, constructors)
+            WithExtendedAttributes.__init__(self, extended_attributes)
             WithCodeGeneratorInfo.__init__(self, code_generator_info)
             WithExposure.__init__(self)
             WithDebugInfo.__init__(self, debug_info)
@@ -92,6 +95,7 @@ class ConstructorGroup(OverloadGroup, WithCodeGeneratorInfo, WithExposure,
 
         ir = make_copy(ir)
         OverloadGroup.__init__(self, functions=constructors)
+        WithExtendedAttributes.__init__(self, ir, readonly=True)
         WithCodeGeneratorInfo.__init__(self, ir, readonly=True)
         WithExposure.__init__(self, ir, readonly=True)
         WithOwner.__init__(self, owner)

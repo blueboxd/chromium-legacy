@@ -70,8 +70,8 @@ class SharedWorkerHostTest : public testing::Test {
         service_.next_shared_worker_instance_id_++, url, name, origin,
         content_security_policy, content_security_policy_type,
         creation_address_space, creation_context_type);
-    auto host = std::make_unique<SharedWorkerHost>(
-        &service_, instance, mock_render_process_host_.GetID());
+    auto host = std::make_unique<SharedWorkerHost>(&service_, instance,
+                                                   &mock_render_process_host_);
     auto weak_host = host->AsWeakPtr();
     service_.worker_hosts_.insert(std::move(host));
     return weak_host;

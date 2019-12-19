@@ -32,7 +32,7 @@ class V4L2VP9Accelerator : public VP9Decoder::VP9Accelerator {
                     const Vp9SegmentationParams& segm_params,
                     const Vp9LoopFilterParams& lf_params,
                     const Vp9ReferenceFrameVector& reference_frames,
-                    const base::Closure& done_cb) override;
+                    base::OnceClosure done_cb) override;
 
   bool OutputPicture(scoped_refptr<VP9Picture> pic) override;
 

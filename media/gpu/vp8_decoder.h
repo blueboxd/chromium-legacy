@@ -53,7 +53,7 @@ class MEDIA_GPU_EXPORT VP8Decoder : public AcceleratedVideoDecoder {
     // as this method was called for them. Decoder may drop its reference
     // to |pic| after calling this method.
     // Return true if successful.
-    virtual bool OutputPicture(const scoped_refptr<VP8Picture>& pic) = 0;
+    virtual bool OutputPicture(scoped_refptr<VP8Picture> pic) = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(VP8Accelerator);

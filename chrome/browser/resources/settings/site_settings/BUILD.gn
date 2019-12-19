@@ -131,7 +131,9 @@ js_library("cookie_info") {
 js_library("protocol_handlers") {
   deps = [
     ":site_settings_behavior",
-    "../android_apps_page:android_apps_browser_proxy",
+
+    # Must be included on all platforms to satisfy closure compiler.
+    "../chromeos/os_apps_page:android_apps_browser_proxy",
     "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
     "//ui/webui/resources/js:web_ui_listener_behavior",
   ]

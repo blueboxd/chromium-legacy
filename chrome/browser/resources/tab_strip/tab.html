@@ -287,33 +287,53 @@
 
   /* When being dragged, the contents of the drag image needs to be off-screen
    * with nothing else on top or below obscuring it. */
-  :host([dragging_]) #tab {
-    box-shadow: none;
+  :host([dragging_]) #dragImage {
+    align-items: center;
+    display: flex;
+    height: 100%;
+    justify-content: center;
+    /* Enough padding to not crop the box shadow set on #tab below. */
+    padding: 25px;
     position: absolute;
-    top: -999px;
+    top: 100vh;
+    width: 100%;
+  }
+
+  :host([dragging_]) #tab {
+    box-shadow: 0 4px 4px 0 rgba(var(--google-grey-800-rgb), .3),
+                0 8px 12px 6px rgba(var(--google-grey-800-rgb), .15);
   }
 </style>
 
 <div id="dragPlaceholder"></div>
 
-<div id="tab" role="tab" tabindex="0"
-    aria-labelledby="titleText alertIndicators">
-  <header id="title">
-    <div id="faviconContainer" aria-hidden="true">
-      <div id="progressSpinner"></div>
-      <div id="favicon"></div>
-      <div id="crashedIcon"></div>
-      <div id="blocked"></div>
-    </div>
-    <h2 id="titleText"></h2>
-    <tabstrip-alert-indicators id="alertIndicators"></tabstrip-alert-indicators>
-    <button id="close" aria-describedby="titleText">
-      <span id="closeIconFocus"></span>
-      <span id="closeIcon"></span>
-    </button>
-  </header>
+<!--
+  #dragImage is a wrapper that wraps the entire #tab contents so that #tab can
+  be styled with properties, such as box-shadow, that extend beyond #tab's
+  boundaries and #dragImage can add padding to itself to contain all of #tab's
+  styles. When the tab is not being dragged, the #dragImage parent has no use.
+-->
+<div id="dragImage">
+  <div id="tab" role="tab" tabindex="0"
+      aria-labelledby="titleText alertIndicators">
+    <header id="title">
+      <div id="faviconContainer" aria-hidden="true">
+        <div id="progressSpinner"></div>
+        <div id="favicon"></div>
+        <div id="crashedIcon"></div>
+        <div id="blocked"></div>
+      </div>
+      <h2 id="titleText"></h2>
+      <tabstrip-alert-indicators id="alertIndicators">
+      </tabstrip-alert-indicators>
+      <button id="close" aria-describedby="titleText">
+        <span id="closeIconFocus"></span>
+        <span id="closeIcon"></span>
+      </button>
+    </header>
 
-  <div id="thumbnail">
-    <img id="thumbnailImg">
+    <div id="thumbnail">
+      <img id="thumbnailImg">
+    </div>
   </div>
 </div>

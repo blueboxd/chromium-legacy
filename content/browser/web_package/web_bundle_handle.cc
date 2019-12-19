@@ -471,19 +471,17 @@ class InterceptorForNetwork final : public NavigationLoaderInterceptor {
       return true;
     }
 
-    if ((*response_head)->content_length <= 0) {
-      CompleteWithInvalidWebBundleError(
-          std::move(forwarding_client_), frame_tree_node_id_,
-          "Web Bundle response must have valid Content-Length header.");
-      return true;
-    }
+    uint64_t length_hint =
+        (*response_head)->content_length > 0
+            ? static_cast<uint64_t>((*response_head)->content_length)
+            : 0;
 
     // TODO(crbug.com/1018640): Check the special HTTP response header if we
     // decided to require one for WBN navigation.
 
     reader_ = base::MakeRefCounted<WebBundleReader>(
-        std::move(source), (*response_head)->content_length,
-        std::move(*response_body), url_loader->Unbind(),
+        std::move(source), length_hint, std::move(*response_body),
+        url_loader->Unbind(),
         BrowserContext::GetBlobStorageContext(browser_context_));
     reader_->ReadMetadata(
         base::BindOnce(&InterceptorForNetwork::OnMetadataReady,
@@ -1043,12 +1041,10 @@ class InterceptorForHistoryNavigationFromNetwork final
                                         "Unexpected content type.");
       return true;
     }
-    if ((*response_head)->content_length <= 0) {
-      CompleteWithInvalidWebBundleError(
-          std::move(forwarding_client_), frame_tree_node_id_,
-          "Web Bundle response must have valid Content-Length header.");
-      return true;
-    }
+    uint64_t length_hint =
+        (*response_head)->content_length > 0
+            ? static_cast<uint64_t>((*response_head)->content_length)
+            : 0;
 
     // TODO(crbug.com/1018640): Check the special HTTP response header if we
     // decided to require one for WBN navigation.
@@ -1059,8 +1055,8 @@ class InterceptorForHistoryNavigationFromNetwork final
     BrowserContext* browser_context = web_contents->GetBrowserContext();
     DCHECK(browser_context);
     reader_ = base::MakeRefCounted<WebBundleReader>(
-        std::move(source_), (*response_head)->content_length,
-        std::move(*response_body), url_loader->Unbind(),
+        std::move(source_), length_hint, std::move(*response_body),
+        url_loader->Unbind(),
         BrowserContext::GetBlobStorageContext(browser_context));
     reader_->ReadMetadata(base::BindOnce(
         &InterceptorForHistoryNavigationFromNetwork::OnMetadataReady,

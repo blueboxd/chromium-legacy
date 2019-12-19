@@ -130,7 +130,7 @@ class SyncPrefs : public CryptoSyncPrefs,
   void SetSelectedOsTypes(bool sync_all_os_types,
                           UserSelectableOsTypeSet registered_types,
                           UserSelectableOsTypeSet selected_types);
-  bool GetOsSyncFeatureEnabled() const;
+  bool IsOsSyncFeatureEnabled() const;
   void SetOsSyncFeatureEnabled(bool enabled);
 #endif
 

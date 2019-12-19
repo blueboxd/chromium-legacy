@@ -533,6 +533,11 @@ input::-internal-input-suggested {
 input::-internal-input-suggested,
 textarea::-internal-input-suggested {
     font: -webkit-small-control !important;
+    /* Prevent that overflow affects the scrollable area. Without this,
+       LayoutBox::*Scroll{Height,Width}() may determine the scroll width/height
+       from the scrollable area instead of from the overrides in
+       LayoutTextControl{Single,Multi}Line::Scroll{Height,Width}(). */
+    overflow: hidden !important;
 }
 
 input[type="password" i] {

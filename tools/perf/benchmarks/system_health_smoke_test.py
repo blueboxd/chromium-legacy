@@ -47,6 +47,7 @@ _DISABLED_TESTS = frozenset({
   'system_health.memory_mobile/browse:tech:discourse_infinite_scroll',
   'system_health.memory_mobile/browse:shopping:amazon',
   'system_health.memory_mobile/browse:social:facebook_infinite_scroll',
+  'system_health.memory_mobile/browse:media:facebook_photos',
   'system_health.memory_mobile/browse:social:instagram',
   'system_health.memory_mobile/browse:news:reddit',
   'system_health.memory_mobile/browse:social:tumblr_infinite_scroll',

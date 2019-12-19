@@ -396,6 +396,25 @@ def cpp_name_or_partial(interface):
     return cpp_class_name
 
 
+def cpp_encoded_property_name(member):
+    """
+    Returns a property name that the bindings generator can use in generated
+    code internally.
+
+    Note that Web IDL allows '-' (hyphen-minus) and '_' (low line) in
+    identifiers but C++ does not allow or recommend them.  This function
+    encodes these characters.
+    """
+    property_name = member.name
+    # We're optimistic about name conflict.  It's highly unlikely that these
+    # replacements will cause a conflict.
+    assert "Dec45" not in property_name
+    assert "Dec95" not in property_name
+    property_name = property_name.replace("-", "Dec45")
+    property_name = property_name.replace("_", "Dec95")
+    return property_name
+
+
 # [MeasureAs]
 def measure_as(definition_or_member, interface):
     extended_attributes = definition_or_member.extended_attributes

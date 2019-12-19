@@ -28,7 +28,9 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
-#include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_container.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_controller.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_params.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/button_utils.h"
@@ -376,7 +378,7 @@ class WebAppFrameToolbarView::ToolbarButtonContainer
   void UpdateStatusIconsVisibility() {
     if (content_settings_container_)
       content_settings_container_->UpdateContentSettingViewsVisibility();
-    page_action_icon_container_view_->UpdateAll();
+    page_action_icon_container_view_->controller()->UpdateAll();
   }
 
   void SetIconColor(SkColor icon_color) {
@@ -387,7 +389,7 @@ class WebAppFrameToolbarView::ToolbarButtonContainer
       content_settings_container_->SetIconColor(icon_color);
     if (extensions_container_)
       extensions_container_->OverrideIconColor(icon_color);
-    page_action_icon_container_view_->SetIconColor(icon_color);
+    page_action_icon_container_view_->controller()->SetIconColor(icon_color);
     web_app_menu_button_->SetColor(icon_color);
   }
 
@@ -551,7 +553,7 @@ WebAppFrameToolbarView::ToolbarButtonContainer::ToolbarButtonContainer(
                                static_cast<int>(HTCLIENT));
   }
 
-  PageActionIconContainerView::Params params;
+  PageActionIconParams params;
   params.types_enabled.push_back(PageActionIconType::kFind);
   params.types_enabled.push_back(PageActionIconType::kManagePasswords);
   params.types_enabled.push_back(PageActionIconType::kTranslate);
@@ -766,7 +768,9 @@ views::View* WebAppFrameToolbarView::GetDefaultExtensionDialogAnchorView() {
 
 PageActionIconView* WebAppFrameToolbarView::GetPageActionIconView(
     PageActionIconType type) {
-  return right_container_->page_action_icon_container_view()->GetIconView(type);
+  return right_container_->page_action_icon_container_view()
+      ->controller()
+      ->GetIconView(type);
 }
 
 AppMenuButton* WebAppFrameToolbarView::GetAppMenuButton() {
@@ -808,8 +812,9 @@ views::View* WebAppFrameToolbarView::GetAnchorView(PageActionIconType type) {
 }
 
 void WebAppFrameToolbarView::ZoomChangedForActiveTab(bool can_show_bubble) {
-  right_container_->page_action_icon_container_view()->ZoomChangedForActiveTab(
-      can_show_bubble);
+  right_container_->page_action_icon_container_view()
+      ->controller()
+      ->ZoomChangedForActiveTab(can_show_bubble);
 }
 
 AvatarToolbarButton* WebAppFrameToolbarView::GetAvatarToolbarButton() {

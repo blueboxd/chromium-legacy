@@ -516,6 +516,20 @@ void V4L2CaptureDelegate::SetPhotoOptions(
       DPLOG(ERROR) << "setting zoom to " << settings->zoom;
   }
 
+  if (settings->has_focus_mode &&
+      (settings->focus_mode == mojom::MeteringMode::MANUAL ||
+       settings->focus_mode == mojom::MeteringMode::CONTINUOUS)) {
+    v4l2_control auto_focus = {};
+    auto_focus.id = V4L2_CID_FOCUS_AUTO;
+    auto_focus.value =
+        settings->focus_mode == mojom::MeteringMode::MANUAL ? false : true;
+    if (DoIoctl(VIDIOC_S_CTRL, &auto_focus) < 0)
+      DPLOG(ERROR) << "setting focusMode to "
+                   << (settings->focus_mode == mojom::MeteringMode::MANUAL
+                           ? "manual"
+                           : "continuous");
+  }
+
   if (settings->has_focus_distance &&
       settings->focus_mode == mojom::MeteringMode::MANUAL) {
     v4l2_control set_focus_distance_ctrl = {};

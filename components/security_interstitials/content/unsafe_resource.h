@@ -26,7 +26,7 @@ namespace security_interstitials {
 struct UnsafeResource {
   // Passed a boolean indicating whether or not it is OK to proceed with
   // loading an URL.
-  typedef base::Callback<void(bool /*proceed*/)> UrlCheckCallback;
+  using UrlCheckCallback = base::RepeatingCallback<void(bool /*proceed*/)>;
 
   UnsafeResource();
   UnsafeResource(const UnsafeResource& other);
@@ -52,9 +52,8 @@ struct UnsafeResource {
   content::NavigationEntry* GetNavigationEntryForResource() const;
 
   // Helper to build a getter for WebContents* from render frame id.
-  static base::Callback<content::WebContents*(void)> GetWebContentsGetter(
-      int render_process_host_id,
-      int render_frame_id);
+  static base::RepeatingCallback<content::WebContents*(void)>
+  GetWebContentsGetter(int render_process_host_id, int render_frame_id);
 
   GURL url;
   GURL original_url;
@@ -67,7 +66,7 @@ struct UnsafeResource {
   safe_browsing::ThreatMetadata threat_metadata;
   UrlCheckCallback callback;  // This is called back on |callback_thread|.
   scoped_refptr<base::SingleThreadTaskRunner> callback_thread;
-  base::Callback<content::WebContents*(void)> web_contents_getter;
+  base::RepeatingCallback<content::WebContents*(void)> web_contents_getter;
   safe_browsing::ThreatSource threat_source;
   // |token| field is only set if |threat_type| is
   // SB_THREAT_TYPE_*_PASSWORD_REUSE.

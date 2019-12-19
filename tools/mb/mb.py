@@ -1144,7 +1144,6 @@ class MetaBuildWrapper(object):
             target + '.runtime_deps',
             stamp_runtime_deps]
       elif (target_type == 'script' or
-            target_type == 'fuzzer' or
             isolate_map[target].get('label_type') == 'group'):
         # For script targets, the build target is usually a group,
         # for which gn generates the runtime_deps next to the stamp file
@@ -1449,13 +1448,6 @@ class MetaBuildWrapper(object):
           '../../testing/test_env.py',
           script,
       ]
-    elif test_type == 'fuzzer':
-      cmdline += [
-        '../../testing/test_env.py',
-        '../../tools/code_coverage/run_fuzz_target.py',
-        '--fuzzer', './' + target,
-        '--output-dir', '${ISOLATED_OUTDIR}',
-        '--timeout', '3600']
     elif is_android and test_type != "script":
       if asan:
         cmdline += [os.path.join('bin', 'run_with_asan'), '--']

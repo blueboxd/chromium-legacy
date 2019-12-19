@@ -139,12 +139,9 @@ Polymer({
     this.allowCrostini_ = loadTimeData.valueExists('allowCrostini') &&
         loadTimeData.getBoolean('allowCrostini');
 
-    if (settings.AndroidAppsBrowserProxyImpl) {
-      this.addWebUIListener(
-          'android-apps-info-update', this.androidAppsInfoUpdate_.bind(this));
-      settings.AndroidAppsBrowserProxyImpl.getInstance()
-          .requestAndroidAppsInfo();
-    }
+    this.addWebUIListener(
+        'android-apps-info-update', this.androidAppsInfoUpdate_.bind(this));
+    settings.AndroidAppsBrowserProxyImpl.getInstance().requestAndroidAppsInfo();
   },
 
   /**

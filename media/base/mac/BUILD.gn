@@ -25,7 +25,11 @@ jumbo_source_set("mac") {
       "AVFoundation.framework",
       "CoreMedia.framework",
       "CoreVideo.framework",  # Required by video_frame_mac.cc.
-      "VideoToolbox.framework",
+#      "VideoToolbox.framework",
+    ]
+    ldflags = [
+      "-weak_framework",
+      "VideoToolbox",
     ]
   }
   set_sources_assignment_filter(sources_assignment_filter)

@@ -27,7 +27,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_util.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_features.h"
@@ -349,10 +348,8 @@ TEST_F(PermissionsUpdaterTest, RevokingPermissions) {
     AddPattern(&default_policy_blocked_hosts, "http://*.google.com/*");
     PermissionsUpdater updater(profile());
     updater.InitializePermissions(extension.get());
-    updater.SetUsesDefaultHostRestrictions(extension.get());
-    PermissionsData::SetDefaultPolicyHostRestrictions(
-        util::GetBrowserContextId(profile()), default_policy_blocked_hosts,
-        default_policy_allowed_hosts);
+    extension->permissions_data()->SetDefaultPolicyHostRestrictions(
+        default_policy_blocked_hosts, default_policy_allowed_hosts);
 
     // By default, all subdomains of google.com should be blocked.
     const GURL kOrigin("http://foo.com");

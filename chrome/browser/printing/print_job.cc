@@ -26,6 +26,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/printing/pdf_to_emf_converter.h"
 #include "chrome/common/chrome_features.h"
+#include "printing/common/printing_features.h"
 #include "printing/pdf_render_settings.h"
 #include "printing/printed_page_win.h"
 #endif
@@ -92,6 +93,15 @@ std::vector<int> PrintJob::GetFullPageMapping(const std::vector<int>& pages,
       mapping[page_number] = page_number;
   }
   return mapping;
+}
+
+bool PrintJob::ShouldPrintUsingXps() const {
+  // Non-modifiable jobs are PDF, need to check a different flag for those when
+  // determining whether to print with XPS or GDI print API.
+  return document_->settings().is_modifiable()
+             ? base::FeatureList::IsEnabled(features::kUseXpsForPrinting)
+             : base::FeatureList::IsEnabled(
+                   features::kUseXpsForPrintingFromPdf);
 }
 
 void PrintJob::StartConversionToNativeFormat(
@@ -317,7 +327,7 @@ void PrintJob::StartPdfToEmfConversion(
   const PrintSettings& settings = document()->settings();
   bool print_text_with_gdi =
       settings.print_text_with_gdi() && !settings.printer_is_xps() &&
-      base::FeatureList::IsEnabled(features::kGdiTextPrinting);
+      base::FeatureList::IsEnabled(::features::kGdiTextPrinting);
   PdfRenderSettings render_settings(
       content_area, gfx::Point(0, 0), settings.dpi_size(),
       /*autorotate=*/true, settings.color() == COLOR,

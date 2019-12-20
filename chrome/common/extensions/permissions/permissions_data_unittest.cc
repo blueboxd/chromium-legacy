@@ -923,14 +923,12 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, PolicyHostRestrictionsSwap) {
   URLPatternSet default_allowed;
   default_blocked.AddPattern(example_com_pattern);
   default_allowed.AddPattern(test_example_com_pattern);
-  int context_id = 7;
 
   // Test <all_urls> for regular extensions.
   scoped_refptr<Extension> extension =
       LoadManifestStrict("script_and_capture", "extension_regular_all.json");
-  extension->permissions_data()->SetUsesDefaultHostRestrictions(context_id);
-  PermissionsData::SetDefaultPolicyHostRestrictions(context_id, default_blocked,
-                                                    default_allowed);
+  extension->permissions_data()->SetDefaultPolicyHostRestrictions(
+      default_blocked, default_allowed);
 
   // The default policy applies to all extensions at this point. The extension
   // should be able to access test.example.com but be blocked from
@@ -984,7 +982,7 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, PolicyHostRestrictionsSwap) {
             GetExtensionAccess(extension.get(), test_example_com));
 
   // Flip back to using default policy for this extension.
-  extension->permissions_data()->SetUsesDefaultHostRestrictions(context_id);
+  extension->permissions_data()->SetUsesDefaultHostRestrictions();
 
   // Make sure the default policy has the same effect as before we defined an
   // individual policy. Access to test.example.com should be allowed, but all
@@ -1005,8 +1003,6 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, PolicyHostRestrictions) {
       URLPattern(URLPattern::SCHEME_ALL, "https://*.example.com/*"));
   default_allowed.AddPattern(
       URLPattern(URLPattern::SCHEME_ALL, "https://test.example.com/*"));
-  // give the profile some consistent id
-  int context_id = 7;
 
   // In all of these tests, test.example.com should have scripting allowed, with
   // all other subdomains and example.com itself blocked.
@@ -1014,9 +1010,8 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, PolicyHostRestrictions) {
   // Test <all_urls> for regular extensions.
   scoped_refptr<Extension> extension =
       LoadManifestStrict("script_and_capture", "extension_regular_all.json");
-  extension->permissions_data()->SetUsesDefaultHostRestrictions(context_id);
-  PermissionsData::SetDefaultPolicyHostRestrictions(context_id, default_blocked,
-                                                    default_allowed);
+  extension->permissions_data()->SetDefaultPolicyHostRestrictions(
+      default_blocked, default_allowed);
 
   EXPECT_EQ(ALLOWED_SCRIPT_AND_CAPTURE,
             GetExtensionAccess(extension.get(), http_url));
@@ -1058,9 +1053,8 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, PolicyHostRestrictions) {
   // Test * for scheme, which implies just the http/https schemes.
   extension =
       LoadManifestStrict("script_and_capture", "extension_wildcard.json");
-  extension->permissions_data()->SetUsesDefaultHostRestrictions(context_id);
-  PermissionsData::SetDefaultPolicyHostRestrictions(context_id, default_blocked,
-                                                    default_allowed);
+  extension->permissions_data()->SetDefaultPolicyHostRestrictions(
+      default_blocked, default_allowed);
   EXPECT_EQ(ALLOWED_SCRIPT_ONLY, GetExtensionAccess(extension.get(), http_url));
   EXPECT_EQ(DISALLOWED, GetExtensionAccess(extension.get(), example_com));
   EXPECT_EQ(ALLOWED_SCRIPT_ONLY,
@@ -1076,16 +1070,15 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, PolicyHostRestrictions) {
   extension =
       LoadManifest("script_and_capture", "extension_wildcard_settings.json");
   extension->permissions_data()->SetDefaultPolicyHostRestrictions(
-      0, default_blocked, default_allowed);
+      default_blocked, default_allowed);
   EXPECT_EQ(DISALLOWED, GetExtensionAccess(extension.get(), settings_url));
 
   // Component extensions with <all_urls> should get everything regardless of
   // policy, except for chrome scheme URLs.
   extension = LoadManifest("script_and_capture", "extension_component_all.json",
                            Manifest::COMPONENT, Extension::NO_FLAGS);
-  extension->permissions_data()->SetUsesDefaultHostRestrictions(context_id);
-  PermissionsData::SetDefaultPolicyHostRestrictions(0, default_blocked,
-                                                    default_allowed);
+  extension->permissions_data()->SetDefaultPolicyHostRestrictions(
+      default_blocked, default_allowed);
   EXPECT_EQ(ALLOWED_SCRIPT_AND_CAPTURE,
             GetExtensionAccess(extension.get(), http_url));
   EXPECT_EQ(ALLOWED_SCRIPT_AND_CAPTURE,
@@ -1349,14 +1342,9 @@ TEST_F(CaptureVisiblePageTest, PolicyBlockedURLs) {
     URLPattern chrome_settings(URLPattern::SCHEME_ALL,
                                chrome::kChromeUISettingsURL);
     chrome_settings.SetPath("*");
-    int context_id = 7;
     URLPatternSet blocked_patterns({example_com, chrome_settings});
-    all_urls().permissions_data()->SetUsesDefaultHostRestrictions(context_id);
-    PermissionsData::SetDefaultPolicyHostRestrictions(
-        context_id, blocked_patterns, URLPatternSet());
-    active_tab().permissions_data()->SetUsesDefaultHostRestrictions(context_id);
-    page_capture().permissions_data()->SetUsesDefaultHostRestrictions(
-        context_id);
+    PermissionsData::SetDefaultPolicyHostRestrictions(blocked_patterns,
+                                                      URLPatternSet());
   }
 
   const GURL test_urls[] = {

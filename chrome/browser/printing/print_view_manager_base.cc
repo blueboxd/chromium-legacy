@@ -52,10 +52,6 @@
 #include "printing/printed_document.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_WIN)
-#include "printing/common/printing_features.h"
-#endif
-
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/printing/print_error_dialog.h"
 #endif
@@ -165,13 +161,7 @@ void PrintViewManagerBase::PrintDocument(
     const gfx::Rect& content_area,
     const gfx::Point& offsets) {
 #if defined(OS_WIN)
-  // Non-modifiable jobs are PDF, need to check a different flag for those when
-  // determining whether to print with XPS or GDI print API.
-  const bool print_using_xps =
-      print_job_->document()->settings().is_modifiable()
-          ? base::FeatureList::IsEnabled(features::kUseXpsForPrinting)
-          : base::FeatureList::IsEnabled(features::kUseXpsForPrintingFromPdf);
-  if (!print_using_xps) {
+  if (!print_job_->ShouldPrintUsingXps()) {
     // Print using GDI, which first requires conversion to EMF.
     print_job_->StartConversionToNativeFormat(print_data, page_size,
                                               content_area, offsets);

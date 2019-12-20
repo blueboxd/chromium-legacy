@@ -362,11 +362,7 @@ struct ExtensionMsg_Loaded_Params {
   ExtensionMsg_Loaded_Params& operator=(ExtensionMsg_Loaded_Params&& other);
 
   // Creates a new extension from the data in this object.
-  // A context_id needs to be passed because each browser context can have
-  // different values for default_policy_blocked/allowed_hosts.
-  // (see extension_util.cc#GetBrowserContextId)
   scoped_refptr<extensions::Extension> ConvertToExtension(
-      int context_id,
       std::string* error) const;
 
   // The subset of the extension manifest data we send to renderers.

@@ -878,11 +878,6 @@ void ExtensionService::PostActivateExtension(
   profile_->GetExtensionSpecialStoragePolicy()->GrantRightsForExtension(
       extension.get());
 
-  // Update or set the policy settings for the extension
-  // mainly sets the default_polict_hosts_allowed/blocked or
-  // policy_hosts_allowed/blocked settings.
-  SetPolicySettingsForExtension(extension.get());
-
   // TODO(kalman): This is broken. The crash reporter is process-wide so doesn't
   // work properly multi-profile. Besides which, it should be using
   // ExtensionRegistryObserver. See http://crbug.com/355029.
@@ -958,13 +953,20 @@ void ExtensionService::CheckManagementPolicy() {
 
   ExtensionManagement* management =
       ExtensionManagementFactory::GetForBrowserContext(profile());
-
   PermissionsUpdater(profile()).SetDefaultPolicyHostRestrictions(
       management->GetDefaultPolicyBlockedHosts(),
       management->GetDefaultPolicyAllowedHosts());
-
   for (const auto& extension : registry_->enabled_extensions()) {
-    SetPolicySettingsForExtension(extension.get());
+    bool uses_default =
+        management->UsesDefaultPolicyHostRestrictions(extension.get());
+    if (uses_default) {
+      PermissionsUpdater(profile()).SetUsesDefaultHostRestrictions(
+          extension.get());
+    } else {
+      PermissionsUpdater(profile()).SetPolicyHostRestrictions(
+          extension.get(), management->GetPolicyBlockedHosts(extension.get()),
+          management->GetPolicyAllowedHosts(extension.get()));
+    }
   }
 
   // Loop through the disabled extension list, find extensions to re-enable
@@ -1629,19 +1631,6 @@ void ExtensionService::FinishInstallation(
   // was not available.
   if (SharedModuleInfo::IsSharedModule(extension))
     MaybeFinishDelayedInstallations();
-}
-
-void ExtensionService::SetPolicySettingsForExtension(
-    const Extension* extension) {
-  ExtensionManagement* management =
-      ExtensionManagementFactory::GetForBrowserContext(profile());
-  if (management->UsesDefaultPolicyHostRestrictions(extension)) {
-    PermissionsUpdater(profile()).SetUsesDefaultHostRestrictions(extension);
-  } else {
-    PermissionsUpdater(profile()).SetPolicyHostRestrictions(
-        extension, management->GetPolicyBlockedHosts(extension),
-        management->GetPolicyAllowedHosts(extension));
-  }
 }
 
 const Extension* ExtensionService::GetPendingExtensionUpdate(

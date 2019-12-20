@@ -92,7 +92,6 @@ ExtensionMsg_Loaded_Params& ExtensionMsg_Loaded_Params::operator=(
     ExtensionMsg_Loaded_Params&& other) = default;
 
 scoped_refptr<Extension> ExtensionMsg_Loaded_Params::ConvertToExtension(
-    const int context_id,
     std::string* error) const {
   // We pass in the |id| to the create call because it will save work in the
   // normal case, and because in tests, extensions may not have paths or keys,
@@ -105,7 +104,7 @@ scoped_refptr<Extension> ExtensionMsg_Loaded_Params::ConvertToExtension(
     permissions_data->SetPermissions(active_permissions.ToPermissionSet(),
                                      withheld_permissions.ToPermissionSet());
     if (uses_default_policy_blocked_allowed_hosts) {
-      permissions_data->SetUsesDefaultHostRestrictions(context_id);
+      permissions_data->SetUsesDefaultHostRestrictions();
     } else {
       permissions_data->SetPolicyHostRestrictions(policy_blocked_hosts,
                                                   policy_allowed_hosts);

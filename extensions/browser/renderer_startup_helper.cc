@@ -126,20 +126,18 @@ void RendererStartupHelper::InitializeProcess(
         WebViewGuest::GetPartitionID(process)));
   }
 
-  BrowserContext* renderer_context = process->GetBrowserContext();
-
   // Load default policy_blocked_hosts and policy_allowed_hosts settings, part
   // of the ExtensionSettings policy.
   ExtensionMsg_UpdateDefaultPolicyHostRestrictions_Params params;
-  int context_id = util::GetBrowserContextId(renderer_context);
   params.default_policy_blocked_hosts =
-      PermissionsData::GetDefaultPolicyBlockedHosts(context_id);
+      PermissionsData::default_policy_blocked_hosts();
   params.default_policy_allowed_hosts =
-      PermissionsData::GetDefaultPolicyAllowedHosts(context_id);
+      PermissionsData::default_policy_allowed_hosts();
   process->Send(new ExtensionMsg_UpdateDefaultPolicyHostRestrictions(params));
 
   // Loaded extensions.
   std::vector<ExtensionMsg_Loaded_Params> loaded_extensions;
+  BrowserContext* renderer_context = process->GetBrowserContext();
   const ExtensionSet& extensions =
       ExtensionRegistry::Get(browser_context_)->enabled_extensions();
   for (const auto& ext : extensions) {

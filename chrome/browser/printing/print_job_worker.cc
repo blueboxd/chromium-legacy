@@ -42,7 +42,6 @@
 
 #if defined(OS_WIN)
 #include "base/threading/thread_restrictions.h"
-#include "printing/common/printing_features.h"
 #include "printing/printed_page_win.h"
 #endif
 
@@ -353,7 +352,7 @@ void PrintJobWorker::OnNewPage() {
 
   bool do_spool_job = true;
 #if defined(OS_WIN)
-  if (!base::FeatureList::IsEnabled(printing::features::kUseXpsForPrinting)) {
+  if (!print_job_->ShouldPrintUsingXps()) {
     // Using the Windows GDI print API.
     if (!OnNewPageHelperGdi())
       return;

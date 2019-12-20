@@ -4,12 +4,10 @@
 
 #include "extensions/browser/extension_util.h"
 
-#include "base/no_destructor.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/site_instance.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/features/behavior_feature.h"
 #include "extensions/common/features/feature.h"
@@ -156,25 +154,6 @@ bool CanWithholdPermissionsFromExtension(const ExtensionId& extension_id,
          !Manifest::IsPolicyLocation(location) &&
          !Manifest::IsComponentLocation(location) &&
          !PermissionsData::CanExecuteScriptEverywhere(extension_id, location);
-}
-
-// The below functionality maps a context to a unique id by increasing a static
-// counter.
-int GetBrowserContextId(content::BrowserContext* context) {
-  using ContextIdMap = std::map<content::BrowserContext*, int>;
-
-  static int next_id = 0;
-  static base::NoDestructor<ContextIdMap> context_map;
-
-  // we need to get the original context to make sure we take the right context.
-  content::BrowserContext* original_context =
-      ExtensionsBrowserClient::Get()->GetOriginalContext(context);
-  auto iter = context_map->find(original_context);
-  if (iter == context_map->end()) {
-    iter =
-        context_map->insert(std::make_pair(original_context, next_id++)).first;
-  }
-  return iter->second;
 }
 
 }  // namespace util

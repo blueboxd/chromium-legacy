@@ -67,6 +67,10 @@ class PrintJob : public base::RefCountedThreadSafe<PrintJob>,
                           int page_count);
 
 #if defined(OS_WIN)
+  // Find out if job should be printed using the XPS print API; if not then
+  // will use legacy GDI print API.
+  bool ShouldPrintUsingXps() const;
+
   void StartConversionToNativeFormat(
       scoped_refptr<base::RefCountedMemory> print_data,
       const gfx::Size& page_size,

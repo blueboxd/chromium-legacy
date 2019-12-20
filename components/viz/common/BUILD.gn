@@ -71,7 +71,7 @@ if (is_mac) {
     ]
 
     libs = [
-      "Metal.framework",
+#     "Metal.framework",
       "Foundation.framework",
     ]
   }

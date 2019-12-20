@@ -1693,8 +1693,11 @@ class AndroidAppItem extends TreeItem {
       icon.setAttribute('use-generic-provided-icon', '');
     }
 
-    // Create an external link icon. TODO(crbug.com/986169) does this icon
-    // element need aria-label, role, tabindex, etc?
+    // Use aria-describedby attribute to let ChromeVox users know that the link
+    // launches an external app window.
+    this.setAttribute('aria-describedby', 'external-link-label');
+
+    // Create an external link icon.
     const externalLinkIcon = document.createElement('span');
     externalLinkIcon.className = 'external-link-icon align-right-icon';
 

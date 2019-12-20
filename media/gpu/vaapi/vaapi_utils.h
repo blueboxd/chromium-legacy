@@ -117,7 +117,7 @@ class ScopedVASurface {
 
 // Adapts |frame_header| to the Vaapi data types, prepping it for consumption by
 // |vaapi_wrapper|
-bool FillVP8DataStructures(const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
+bool FillVP8DataStructures(VaapiWrapper* vaapi_wrapper,
                            VASurfaceID va_surface_id,
                            const Vp8FrameHeader& frame_header,
                            const Vp8ReferenceFrameVector& reference_frames);

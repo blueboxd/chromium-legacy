@@ -10,9 +10,9 @@
 #include "media/base/limits.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_source.h"
-#include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/blink/renderer/modules/mediastream/mock_constraint_factory.h"
+#include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 
 namespace blink {
 
@@ -67,8 +67,7 @@ class MediaStreamConstraintsUtilVideoContentTest : public testing::Test {
   VideoCaptureSettings SelectSettings(
       mojom::MediaStreamType stream_type =
           mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE) {
-    WebMediaConstraints constraints =
-        constraint_factory_.CreateWebMediaConstraints();
+    MediaConstraints constraints = constraint_factory_.CreateMediaConstraints();
     return SelectSettingsVideoContentCapture(constraints, stream_type,
                                              kDefaultScreenCastWidth,
                                              kDefaultScreenCastHeight);

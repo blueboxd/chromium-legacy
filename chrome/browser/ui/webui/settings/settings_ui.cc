@@ -333,11 +333,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   content::URLDataSource::Add(
       profile, std::make_unique<FaviconSource>(
                    profile, chrome::FaviconUrlFormat::kFavicon2));
-
-#if defined(OS_CHROMEOS)
-  AddHandlerToRegistry(base::BindRepeating(&SettingsUI::BindCrosNetworkConfig,
-                                           base::Unretained(this)));
-#endif  // defined (OS_CHROMEOS)
 }
 
 SettingsUI::~SettingsUI() = default;
@@ -527,11 +522,13 @@ void SettingsUI::AddSettingsPageUIHandler(
 }
 
 #if defined(OS_CHROMEOS)
-void SettingsUI::BindCrosNetworkConfig(
+void SettingsUI::BindInterface(
     mojo::PendingReceiver<chromeos::network_config::mojom::CrosNetworkConfig>
         receiver) {
   ash::GetNetworkConfigService(std::move(receiver));
 }
+
+WEB_UI_CONTROLLER_TYPE_IMPL(SettingsUI)
 #endif  // defined(OS_CHROMEOS)
 
 }  // namespace settings

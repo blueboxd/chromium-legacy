@@ -35,8 +35,8 @@ bool VP8VaapiVideoDecoderDelegate::SubmitDecode(
 
   auto va_surface_id = pic->AsVaapiVP8Picture()->va_surface()->id();
 
-  if (!FillVP8DataStructures(vaapi_wrapper_, va_surface_id, *pic->frame_hdr,
-                             reference_frames)) {
+  if (!FillVP8DataStructures(vaapi_wrapper_.get(), va_surface_id,
+                             *pic->frame_hdr, reference_frames)) {
     return false;
   }
 

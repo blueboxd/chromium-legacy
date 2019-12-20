@@ -50,6 +50,7 @@ struct DataChannelInit;
 
 namespace blink {
 
+class MediaConstraints;
 class RTCAnswerOptionsPlatform;
 class RTCIceCandidatePlatform;
 class RTCOfferOptionsPlatform;
@@ -60,7 +61,6 @@ class RTCSessionDescriptionRequest;
 class RTCStatsRequest;
 class RTCVoidRequest;
 class WebLocalFrame;
-class WebMediaConstraints;
 class WebMediaStream;
 class WebMediaStreamTrack;
 
@@ -81,7 +81,7 @@ class PLATFORM_EXPORT RTCPeerConnectionHandlerPlatform {
 
   virtual bool Initialize(
       const webrtc::PeerConnectionInterface::RTCConfiguration&,
-      const WebMediaConstraints&) = 0;
+      const MediaConstraints&) = 0;
   virtual void AssociateWithFrame(WebLocalFrame*) {}
 
   // Unified Plan: The list of transceivers after the createOffer() call.
@@ -91,12 +91,12 @@ class PLATFORM_EXPORT RTCPeerConnectionHandlerPlatform {
   // Plan B: Returns an empty list.
   virtual Vector<std::unique_ptr<RTCRtpTransceiverPlatform>> CreateOffer(
       RTCSessionDescriptionRequest*,
-      const WebMediaConstraints&) = 0;
+      const MediaConstraints&) = 0;
   virtual Vector<std::unique_ptr<RTCRtpTransceiverPlatform>> CreateOffer(
       RTCSessionDescriptionRequest*,
       RTCOfferOptionsPlatform*) = 0;
   virtual void CreateAnswer(RTCSessionDescriptionRequest*,
-                            const WebMediaConstraints&) = 0;
+                            const MediaConstraints&) = 0;
   virtual void CreateAnswer(RTCSessionDescriptionRequest*,
                             RTCAnswerOptionsPlatform*) = 0;
   virtual void SetLocalDescription(RTCVoidRequest*) = 0;

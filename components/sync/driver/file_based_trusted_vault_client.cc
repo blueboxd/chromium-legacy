@@ -61,14 +61,15 @@ class FileBasedTrustedVaultClient::Backend
 
   void ReadDataFromDisk() { data_ = ReadEncryptedFile(file_path_); }
 
-  std::vector<std::string> FetchKeys(const std::string& gaia_id) {
+  std::vector<std::vector<uint8_t>> FetchKeys(const std::string& gaia_id) {
     const sync_pb::LocalTrustedVaultPerUser* per_user_vault =
         FindUserVault(gaia_id);
 
-    std::vector<std::string> keys;
+    std::vector<std::vector<uint8_t>> keys;
     if (per_user_vault) {
       for (const sync_pb::LocalTrustedVaultKey& key : per_user_vault->key()) {
-        keys.push_back(key.key_material());
+        const std::string& key_material = key.key_material();
+        keys.emplace_back(key_material.begin(), key_material.end());
       }
     }
 
@@ -76,7 +77,7 @@ class FileBasedTrustedVaultClient::Backend
   }
 
   void StoreKeys(const std::string& gaia_id,
-                 const std::vector<std::string>& keys) {
+                 const std::vector<std::vector<uint8_t>>& keys) {
     // Find or create user for |gaid_id|.
     sync_pb::LocalTrustedVaultPerUser* per_user_vault = FindUserVault(gaia_id);
     if (!per_user_vault) {
@@ -86,8 +87,8 @@ class FileBasedTrustedVaultClient::Backend
 
     // Replace all keys.
     per_user_vault->clear_key();
-    for (const std::string& key : keys) {
-      per_user_vault->add_key()->set_key_material(key);
+    for (const std::vector<uint8_t>& key : keys) {
+      per_user_vault->add_key()->set_key_material(key.data(), key.size());
     }
 
     WriteToDisk(data_, file_path_);
@@ -131,7 +132,7 @@ FileBasedTrustedVaultClient::AddKeysChangedObserver(
 
 void FileBasedTrustedVaultClient::FetchKeys(
     const std::string& gaia_id,
-    base::OnceCallback<void(const std::vector<std::string>&)> cb) {
+    base::OnceCallback<void(const std::vector<std::vector<uint8_t>>&)> cb) {
   TriggerLazyInitializationIfNeeded();
   base::PostTaskAndReplyWithResult(
       backend_task_runner_.get(), FROM_HERE,
@@ -140,7 +141,7 @@ void FileBasedTrustedVaultClient::FetchKeys(
 
 void FileBasedTrustedVaultClient::StoreKeys(
     const std::string& gaia_id,
-    const std::vector<std::string>& keys) {
+    const std::vector<std::vector<uint8_t>>& keys) {
   TriggerLazyInitializationIfNeeded();
   backend_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&Backend::StoreKeys, backend_, gaia_id, keys));

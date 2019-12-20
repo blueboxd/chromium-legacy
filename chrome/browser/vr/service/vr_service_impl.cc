@@ -39,16 +39,6 @@
 #endif
 
 namespace {
-bool IsSecureContext(content::RenderFrameHost* host) {
-  if (!host)
-    return false;
-  while (host != nullptr) {
-    if (!content::IsOriginSecure(host->GetLastCommittedURL()))
-      return false;
-    host = host->GetParent();
-  }
-  return true;
-}
 
 device::mojom::XRRuntimeSessionOptionsPtr GetRuntimeOptions(
     device::mojom::XRSessionOptions* options) {
@@ -368,14 +358,6 @@ void VRServiceImpl::RequestSession(
     pending_requests_.push_back(
         base::BindOnce(&VRServiceImpl::RequestSession, base::Unretained(this),
                        std::move(options), std::move(callback)));
-    return;
-  }
-
-  // Check that the request satisfies secure context requirements.
-  if (!IsSecureContext(render_frame_host_)) {
-    std::move(callback).Run(
-        device::mojom::RequestSessionResult::NewFailureReason(
-            device::mojom::RequestSessionError::ORIGIN_NOT_SECURE));
     return;
   }
 

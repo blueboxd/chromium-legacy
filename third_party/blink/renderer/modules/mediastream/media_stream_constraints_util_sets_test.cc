@@ -125,7 +125,7 @@ class MediaStreamConstraintsUtilSetsTest : public testing::Test {
 
   Point SelectClosestPointToIdeal(const ResolutionSet& set) {
     return set.SelectClosestPointToIdeal(
-        factory_.CreateWebMediaConstraints().Basic(), kDefaultHeight,
+        factory_.CreateMediaConstraints().Basic(), kDefaultHeight,
         kDefaultWidth);
   }
 
@@ -1509,7 +1509,7 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, DiscreteSetBool) {
 
 TEST_F(MediaStreamConstraintsUtilSetsTest, RescaleSetFromConstraints) {
   factory_.Reset();
-  factory_.CreateWebMediaConstraints();
+  factory_.CreateMediaConstraints();
   BoolSet set =
       media_constraints::RescaleSetFromConstraint(factory_.basic().resize_mode);
   EXPECT_TRUE(set.is_universal());

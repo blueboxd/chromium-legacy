@@ -120,6 +120,11 @@ void AssertURLIs(const GURL& expectedURL) {
 // TODO(crbug.com/1022029): Enable this test.
 #if defined(CHROME_EARL_GREY_2)
   EARL_GREY_TEST_DISABLED(@"Fails with EG2");
+#elif defined(CHROME_EARL_GREY_1)
+  // TODO(crbug.com/1036221): EG1 Test fails on iOS 12.
+  if (!base::ios::IsRunningOnIOS13OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"EG1 Fails on iOS 12.");
+  }
 #endif
 
   web::test::SetUpFileBasedHttpServer();

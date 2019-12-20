@@ -24,9 +24,13 @@ class NetworkUI : public ui::MojoWebUIController {
 
   static void GetLocalizedStrings(base::DictionaryValue* localized_strings);
 
- private:
-  void BindCrosNetworkConfig(
+  // Instantiates implementor of the mojom::CrosNetworkConfig mojo interface
+  // passing the pending receiver that will be internally bound.
+  void BindInterface(
       mojo::PendingReceiver<network_config::mojom::CrosNetworkConfig> receiver);
+
+ private:
+  WEB_UI_CONTROLLER_TYPE_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(NetworkUI);
 };

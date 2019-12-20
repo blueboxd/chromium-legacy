@@ -54,8 +54,8 @@ base::Closure RequestSender::StartRequestWithAuthRetryInternal(
                    weak_ptr_factory_.GetWeakPtr(), request->GetWeakPtr()));
   } else {
     request->Start(auth_service_->access_token(), custom_user_agent_,
-                   base::Bind(&RequestSender::RetryRequest,
-                              weak_ptr_factory_.GetWeakPtr()));
+                   base::BindRepeating(&RequestSender::RetryRequest,
+                                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   return cancel_closure;

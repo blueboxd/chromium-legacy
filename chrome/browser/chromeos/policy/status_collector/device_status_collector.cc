@@ -439,13 +439,8 @@ int ConvertWifiSignalStrength(int signal_strength) {
 }
 
 bool IsKioskApp() {
-  auto user_type = chromeos::LoginState::Get()->GetLoggedInUserType();
-  // LOGGED_IN_USER_KIOSK_APP encapuslates both Chrome App kiosk and Web App
-  // kiosk.
-  // TODO(crbug.com/1015383): Merge login states for normal kiosk and arc
-  // kiosks into one to reduce duplications.
-  return user_type == chromeos::LoginState::LOGGED_IN_USER_KIOSK_APP ||
-         user_type == chromeos::LoginState::LOGGED_IN_USER_ARC_KIOSK_APP;
+  return chromeos::LoginState::Get()->GetLoggedInUserType() ==
+         chromeos::LoginState::LOGGED_IN_USER_KIOSK_APP;
 }
 
 // Utility method to turn cpu_temp_fetcher_ to OnceCallback

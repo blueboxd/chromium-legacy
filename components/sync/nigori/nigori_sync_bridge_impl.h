@@ -65,7 +65,7 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   void SetEncryptionPassphrase(const std::string& passphrase) override;
   void SetDecryptionPassphrase(const std::string& passphrase) override;
   void AddTrustedVaultDecryptionKeys(
-      const std::vector<std::string>& keys) override;
+      const std::vector<std::vector<uint8_t>>& keys) override;
   void EnableEncryptEverything() override;
   bool IsEncryptEverythingEnabled() const override;
   base::Time GetKeystoreMigrationTime() const override;
@@ -74,7 +74,7 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
 
   // KeystoreKeysHandler implementation.
   bool NeedKeystoreKey() const override;
-  bool SetKeystoreKeys(const std::vector<std::string>& keys) override;
+  bool SetKeystoreKeys(const std::vector<std::vector<uint8_t>>& keys) override;
 
   // NigoriSyncBridge implementation.
   base::Optional<ModelError> MergeSyncData(

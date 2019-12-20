@@ -109,7 +109,8 @@ cr.define('app_management', function() {
 
       } else {
         this.handler = new appManagement.mojom.PageHandlerRemote();
-        const factory = appManagement.mojom.PageHandlerFactory.getRemote();
+        const factory = appManagement.mojom.PageHandlerFactory.getRemote(
+            /*useBrowserInterfaceBroker=*/ true);
         factory.createPageHandler(
             this.callbackRouter.$.bindNewPipeAndPassRemote(),
             this.handler.$.bindNewPipeAndPassReceiver());

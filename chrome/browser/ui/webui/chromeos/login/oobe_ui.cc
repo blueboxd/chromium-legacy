@@ -491,7 +491,7 @@ void OobeUI::ConfigureOobeDisplay() {
     oobe_display_chooser_ = std::make_unique<OobeDisplayChooser>();
 }
 
-void OobeUI::BindMultiDeviceSetup(
+void OobeUI::BindInterface(
     mojo::PendingReceiver<multidevice_setup::mojom::MultiDeviceSetup>
         receiver) {
   multidevice_setup::MultiDeviceSetupService* service =
@@ -501,7 +501,7 @@ void OobeUI::BindMultiDeviceSetup(
     service->BindMultiDeviceSetup(std::move(receiver));
 }
 
-void OobeUI::BindPrivilegedHostDeviceSetter(
+void OobeUI::BindInterface(
     mojo::PendingReceiver<multidevice_setup::mojom::PrivilegedHostDeviceSetter>
         receiver) {
   multidevice_setup::MultiDeviceSetupService* service =
@@ -511,7 +511,7 @@ void OobeUI::BindPrivilegedHostDeviceSetter(
     service->BindPrivilegedHostDeviceSetter(std::move(receiver));
 }
 
-void OobeUI::BindCrosNetworkConfig(
+void OobeUI::BindInterface(
     mojo::PendingReceiver<chromeos::network_config::mojom::CrosNetworkConfig>
         receiver) {
   ash::GetNetworkConfigService(std::move(receiver));
@@ -553,13 +553,6 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
         GURL("chrome://resources/polymer/v1_0/polymer/polymer.html"),
         base::BindOnce(DisablePolymer2));
   }
-
-  AddHandlerToRegistry(base::BindRepeating(&OobeUI::BindMultiDeviceSetup,
-                                           base::Unretained(this)));
-  AddHandlerToRegistry(base::BindRepeating(
-      &OobeUI::BindPrivilegedHostDeviceSetter, base::Unretained(this)));
-  AddHandlerToRegistry(base::BindRepeating(&OobeUI::BindCrosNetworkConfig,
-                                           base::Unretained(this)));
 }
 
 OobeUI::~OobeUI() {
@@ -704,5 +697,7 @@ void OobeUI::OnDisplayConfigurationChanged() {
 void OobeUI::SetLoginUserCount(int user_count) {
   core_handler_->SetLoginUserCount(user_count);
 }
+
+WEB_UI_CONTROLLER_TYPE_IMPL(OobeUI)
 
 }  // namespace chromeos

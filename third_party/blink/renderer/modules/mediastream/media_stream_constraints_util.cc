@@ -18,7 +18,7 @@ namespace blink {
 namespace {
 
 template <typename P, typename T>
-bool ScanConstraintsForExactValue(const WebMediaConstraints& constraints,
+bool ScanConstraintsForExactValue(const MediaConstraints& constraints,
                                   P picker,
                                   T* value) {
   if (constraints.IsNull())
@@ -40,7 +40,7 @@ bool ScanConstraintsForExactValue(const WebMediaConstraints& constraints,
 }
 
 template <typename P, typename T>
-bool ScanConstraintsForMaxValue(const WebMediaConstraints& constraints,
+bool ScanConstraintsForMaxValue(const MediaConstraints& constraints,
                                 P picker,
                                 T* value) {
   if (constraints.IsNull())
@@ -69,7 +69,7 @@ bool ScanConstraintsForMaxValue(const WebMediaConstraints& constraints,
 }
 
 template <typename P, typename T>
-bool ScanConstraintsForMinValue(const WebMediaConstraints& constraints,
+bool ScanConstraintsForMinValue(const MediaConstraints& constraints,
                                 P picker,
                                 T* value) {
   if (constraints.IsNull())
@@ -174,35 +174,35 @@ AudioCaptureSettings& AudioCaptureSettings::operator=(
     AudioCaptureSettings&& other) = default;
 
 bool GetConstraintValueAsBoolean(
-    const WebMediaConstraints& constraints,
+    const MediaConstraints& constraints,
     const BooleanConstraint WebMediaTrackConstraintSet::*picker,
     bool* value) {
   return ScanConstraintsForExactValue(constraints, picker, value);
 }
 
 bool GetConstraintValueAsInteger(
-    const WebMediaConstraints& constraints,
+    const MediaConstraints& constraints,
     const LongConstraint WebMediaTrackConstraintSet::*picker,
     int* value) {
   return ScanConstraintsForExactValue(constraints, picker, value);
 }
 
 bool GetConstraintMinAsInteger(
-    const WebMediaConstraints& constraints,
+    const MediaConstraints& constraints,
     const LongConstraint WebMediaTrackConstraintSet::*picker,
     int* value) {
   return ScanConstraintsForMinValue(constraints, picker, value);
 }
 
 bool GetConstraintMaxAsInteger(
-    const WebMediaConstraints& constraints,
+    const MediaConstraints& constraints,
     const LongConstraint WebMediaTrackConstraintSet::*picker,
     int* value) {
   return ScanConstraintsForMaxValue(constraints, picker, value);
 }
 
 bool GetConstraintValueAsDouble(
-    const WebMediaConstraints& constraints,
+    const MediaConstraints& constraints,
     const DoubleConstraint WebMediaTrackConstraintSet::*picker,
     double* value) {
   return ScanConstraintsForExactValue(constraints, picker, value);

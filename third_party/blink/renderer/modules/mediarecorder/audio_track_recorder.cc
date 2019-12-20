@@ -62,7 +62,10 @@ AudioTrackRecorder::AudioTrackRecorder(CodecId codec,
   ConnectToTrack();
 }
 
-AudioTrackRecorder::~AudioTrackRecorder() = default;
+AudioTrackRecorder::~AudioTrackRecorder() {
+  DCHECK(IsMainThread());
+  DisconnectFromTrack();
+}
 
 // Creates an audio encoder from the codec. Returns nullptr if the codec is
 // invalid.
@@ -133,18 +136,6 @@ void AudioTrackRecorder::DisconnectFromTrack() {
       static_cast<MediaStreamAudioTrack*>(track_->GetPlatformTrack());
   DCHECK(audio_track);
   audio_track->RemoveSink(this);
-}
-
-void AudioTrackRecorder::Trace(blink::Visitor* visitor) {
-  visitor->Trace(track_);
-}
-
-void AudioTrackRecorder::Prefinalize() {
-  // TODO(crbug.com/704136) : Remove this method when moving
-  // MediaStreamAudioTrack to Oilpan's heap.
-  DCHECK(IsMainThread());
-  DisconnectFromTrack();
-  track_ = nullptr;
 }
 
 }  // namespace blink

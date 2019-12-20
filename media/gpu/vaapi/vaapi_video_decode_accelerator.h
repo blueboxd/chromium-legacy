@@ -165,7 +165,7 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   // available VaapiPicture in |available_picture_buffers_| for output. Puts
   // contents of |va_surface| into the latter, releases the surface and passes
   // the resulting picture to |client_| along with |visible_rect|.
-  void OutputPicture(const scoped_refptr<VASurface>& va_surface,
+  void OutputPicture(scoped_refptr<VASurface> va_surface,
                      int32_t input_id,
                      gfx::Rect visible_rect,
                      const VideoColorSpace& picture_color_space);

@@ -63,8 +63,8 @@ class BASE_EXPORT ScopedProcessInformation {
  private:
   ScopedHandle process_handle_;
   ScopedHandle thread_handle_;
-  DWORD process_id_;
-  DWORD thread_id_;
+  DWORD process_id_ = 0;
+  DWORD thread_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedProcessInformation);
 };

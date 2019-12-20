@@ -991,8 +991,10 @@ bool StyleResolver::PseudoStyleForElementInternal(
       UpdateFont(state);
 
       // Don't bother matching rules if there is no style for ::marker
-      if (!state.ParentStyle()->HasPseudoElementStyle(kPseudoIdMarker))
+      if (!state.ParentStyle()->HasPseudoElementStyle(kPseudoIdMarker)) {
+        StyleAdjuster::AdjustComputedStyle(state, nullptr);
         return true;
+      }
     }
 
     MatchUARules(collector);

@@ -107,6 +107,9 @@
   <message name="IDS_FILE_BROWSER_COLUMN_SORTED_DESC_MESSAGE" desc="Message read by Chromevox/screenreader after sorting a column in the File list in descending order.">
     File list sorted by <ph name="COLUMN_NAME">$1<ex>date modified</ex></ph> in descending order.
   </message>
+  <message name="IDS_FILE_BROWSER_EXTERNAL_LINK_MESSAGE" desc="Message read by Chromevox/screenreader when focusing a link that launches an external application.">
+    External link
+  </message>
 
   <!-- File selection a11y -->
   <message name="IDS_FILE_BROWSER_SELECTION_ADD_SINGLE_ENTRY" desc="Message spoken by Chromevox/screenreader when adding a single entry (file or folder) to the existing selection.">

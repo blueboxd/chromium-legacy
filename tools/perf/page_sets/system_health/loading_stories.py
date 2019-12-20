@@ -493,6 +493,16 @@ class LoadDropboxStory(_LoadingStory):
   def _Login(self, action_runner):
     dropbox_login.LoginAccount(action_runner, 'dropbox')
 
+class LoadDropboxStory2019(_LoadingStory):
+  NAME = 'load:tools:dropbox:2019'
+  URL = 'https://www.dropbox.com/'
+  TAGS = [story_tags.YEAR_2019]
+  # Desktop fails to log in
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  SKIP_LOGIN = False
+
+  def _Login(self, action_runner):
+    dropbox_login.LoginAccount(action_runner, 'dropbox')
 
 class LoadWeatherStory(_LoadingStory):
   NAME = 'load:tools:weather'

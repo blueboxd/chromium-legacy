@@ -6562,7 +6562,8 @@ RenderFrameHostImpl::BindFileChooserForTesting() {
 
 void RenderFrameHostImpl::BindCacheStorage(
     mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) {
-  GetProcess()->BindCacheStorage(GetLastCommittedOrigin(), std::move(receiver));
+  GetProcess()->BindCacheStorage(cross_origin_embedder_policy_,
+                                 GetLastCommittedOrigin(), std::move(receiver));
 }
 
 void RenderFrameHostImpl::BindInputInjectorReceiver(

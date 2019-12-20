@@ -41,20 +41,22 @@ class TrustedVaultClientAndroid : public syncer::TrustedVaultClient {
       const base::RepeatingClosure& cb) override;
   void FetchKeys(
       const std::string& gaia_id,
-      base::OnceCallback<void(const std::vector<std::string>&)> cb) override;
+      base::OnceCallback<void(const std::vector<std::vector<uint8_t>>&)> cb)
+      override;
   void StoreKeys(const std::string& gaia_id,
-                 const std::vector<std::string>& keys) override;
+                 const std::vector<std::vector<uint8_t>>& keys) override;
 
  private:
   // Struct representing an in-flight FetchKeys() call invoked from C++.
   struct OngoingFetchKeys {
     OngoingFetchKeys(
         const std::string& gaia_id,
-        base::OnceCallback<void(const std::vector<std::string>&)> callback);
+        base::OnceCallback<void(const std::vector<std::vector<uint8_t>>&)>
+            callback);
     ~OngoingFetchKeys();
 
     const std::string gaia_id;
-    base::OnceCallback<void(const std::vector<std::string>&)> callback;
+    base::OnceCallback<void(const std::vector<std::vector<uint8_t>>&)> callback;
   };
 
   // Null if no in-flight FetchKeys().

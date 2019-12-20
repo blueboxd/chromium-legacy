@@ -28,27 +28,27 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_CONSTRAINTS_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_CONSTRAINTS_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_MEDIA_CONSTRAINTS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_MEDIA_CONSTRAINTS_H_
 
 #include <string>
 #include <vector>
 
-#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_private_ptr.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 
 // Possible values of the echo canceller type constraint.
-BLINK_PLATFORM_EXPORT extern const char kEchoCancellationTypeBrowser[];
-BLINK_PLATFORM_EXPORT extern const char kEchoCancellationTypeAec3[];
-BLINK_PLATFORM_EXPORT extern const char kEchoCancellationTypeSystem[];
+PLATFORM_EXPORT extern const char kEchoCancellationTypeBrowser[];
+PLATFORM_EXPORT extern const char kEchoCancellationTypeAec3[];
+PLATFORM_EXPORT extern const char kEchoCancellationTypeSystem[];
 
-class WebMediaConstraintsPrivate;
+class MediaConstraintsPrivate;
 
-class BLINK_PLATFORM_EXPORT BaseConstraint {
+class PLATFORM_EXPORT BaseConstraint {
  public:
   explicit BaseConstraint(const char* name);
   virtual ~BaseConstraint();
@@ -66,7 +66,7 @@ class BLINK_PLATFORM_EXPORT BaseConstraint {
 
 // Note this class refers to the "long" WebIDL definition which is
 // equivalent to int32_t.
-class BLINK_PLATFORM_EXPORT LongConstraint : public BaseConstraint {
+class PLATFORM_EXPORT LongConstraint : public BaseConstraint {
  public:
   explicit LongConstraint(const char* name);
 
@@ -113,7 +113,7 @@ class BLINK_PLATFORM_EXPORT LongConstraint : public BaseConstraint {
   unsigned has_ideal_ : 1;
 };
 
-class BLINK_PLATFORM_EXPORT DoubleConstraint : public BaseConstraint {
+class PLATFORM_EXPORT DoubleConstraint : public BaseConstraint {
  public:
   // Permit a certain leeway when comparing floats. The offset of 0.00001
   // is chosen based on observed behavior of doubles formatted with
@@ -165,7 +165,7 @@ class BLINK_PLATFORM_EXPORT DoubleConstraint : public BaseConstraint {
   unsigned has_ideal_ : 1;
 };
 
-class BLINK_PLATFORM_EXPORT StringConstraint : public BaseConstraint {
+class PLATFORM_EXPORT StringConstraint : public BaseConstraint {
  public:
   // String-valued options don't have min or max, but can have multiple
   // values for ideal and exact.
@@ -192,7 +192,7 @@ class BLINK_PLATFORM_EXPORT StringConstraint : public BaseConstraint {
   WebVector<WebString> ideal_;
 };
 
-class BLINK_PLATFORM_EXPORT BooleanConstraint : public BaseConstraint {
+class PLATFORM_EXPORT BooleanConstraint : public BaseConstraint {
  public:
   explicit BooleanConstraint(const char* name);
 
@@ -223,7 +223,7 @@ class BLINK_PLATFORM_EXPORT BooleanConstraint : public BaseConstraint {
 
 struct WebMediaTrackConstraintSet {
  public:
-  BLINK_PLATFORM_EXPORT WebMediaTrackConstraintSet();
+  PLATFORM_EXPORT WebMediaTrackConstraintSet();
 
   LongConstraint width;
   LongConstraint height;
@@ -280,51 +280,49 @@ struct WebMediaTrackConstraintSet {
   BooleanConstraint goog_payload_padding;
   LongConstraint goog_latency_ms;
 
-  BLINK_PLATFORM_EXPORT bool IsEmpty() const;
-  BLINK_PLATFORM_EXPORT bool HasMandatory() const;
-  BLINK_PLATFORM_EXPORT bool HasMandatoryOutsideSet(
-      const std::vector<std::string>&,
-      std::string&) const;
-  BLINK_PLATFORM_EXPORT bool HasMin() const;
-  BLINK_PLATFORM_EXPORT bool HasExact() const;
-  BLINK_PLATFORM_EXPORT WebString ToString() const;
+  PLATFORM_EXPORT bool IsEmpty() const;
+  PLATFORM_EXPORT bool HasMandatory() const;
+  PLATFORM_EXPORT bool HasMandatoryOutsideSet(const std::vector<std::string>&,
+                                              std::string&) const;
+  PLATFORM_EXPORT bool HasMin() const;
+  PLATFORM_EXPORT bool HasExact() const;
+  PLATFORM_EXPORT WebString ToString() const;
 
  private:
   std::vector<const BaseConstraint*> AllConstraints() const;
 };
 
-class WebMediaConstraints {
+class MediaConstraints {
  public:
-  WebMediaConstraints() = default;
-  WebMediaConstraints(const WebMediaConstraints& other) { Assign(other); }
-  ~WebMediaConstraints() { Reset(); }
+  MediaConstraints() = default;
+  MediaConstraints(const MediaConstraints& other) { Assign(other); }
+  ~MediaConstraints() { Reset(); }
 
-  WebMediaConstraints& operator=(const WebMediaConstraints& other) {
+  MediaConstraints& operator=(const MediaConstraints& other) {
     Assign(other);
     return *this;
   }
 
-  BLINK_PLATFORM_EXPORT void Assign(const WebMediaConstraints&);
+  PLATFORM_EXPORT void Assign(const MediaConstraints&);
 
-  BLINK_PLATFORM_EXPORT void Reset();
+  PLATFORM_EXPORT void Reset();
   bool IsNull() const { return private_.IsNull(); }
-  BLINK_PLATFORM_EXPORT bool IsEmpty() const;
+  PLATFORM_EXPORT bool IsEmpty() const;
 
-  BLINK_PLATFORM_EXPORT void Initialize();
-  BLINK_PLATFORM_EXPORT void Initialize(
+  PLATFORM_EXPORT void Initialize();
+  PLATFORM_EXPORT void Initialize(
       const WebMediaTrackConstraintSet& basic,
       const WebVector<WebMediaTrackConstraintSet>& advanced);
 
-  BLINK_PLATFORM_EXPORT const WebMediaTrackConstraintSet& Basic() const;
-  BLINK_PLATFORM_EXPORT const WebVector<WebMediaTrackConstraintSet>& Advanced()
-      const;
+  PLATFORM_EXPORT const WebMediaTrackConstraintSet& Basic() const;
+  PLATFORM_EXPORT const WebVector<WebMediaTrackConstraintSet>& Advanced() const;
 
-  BLINK_PLATFORM_EXPORT const WebString ToString() const;
+  PLATFORM_EXPORT const WebString ToString() const;
 
  private:
-  WebPrivatePtr<WebMediaConstraintsPrivate> private_;
+  WebPrivatePtr<MediaConstraintsPrivate> private_;
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_CONSTRAINTS_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_MEDIA_CONSTRAINTS_H_

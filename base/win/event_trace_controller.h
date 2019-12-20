@@ -141,7 +141,7 @@ class BASE_EXPORT EtwTraceController {
 
  private:
   std::wstring session_name_;
-  TRACEHANDLE session_;
+  TRACEHANDLE session_ = NULL;
 
   DISALLOW_COPY_AND_ASSIGN(EtwTraceController);
 };

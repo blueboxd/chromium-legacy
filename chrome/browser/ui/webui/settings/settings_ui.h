@@ -49,18 +49,23 @@ class SettingsUI
   static void InitOSWebUIHandlers(Profile* profile,
                                   content::WebUI* web_ui,
                                   content::WebUIDataSource* html_source);
+
+  // Instantiates implementor of the mojom::CrosNetworkConfig mojo interface
+  // passing the pending receiver that will be internally bound.
+  void BindInterface(
+      mojo::PendingReceiver<chromeos::network_config::mojom::CrosNetworkConfig>
+          receiver);
 #endif  // defined(OS_CHROMEOS)
 
  private:
   void AddSettingsPageUIHandler(
       std::unique_ptr<content::WebUIMessageHandler> handler);
-#if defined(OS_CHROMEOS)
-  void BindCrosNetworkConfig(
-      mojo::PendingReceiver<chromeos::network_config::mojom::CrosNetworkConfig>
-          receiver);
-#endif
 
   WebuiLoadTimer webui_load_timer_;
+
+#if defined(OS_CHROMEOS)
+  WEB_UI_CONTROLLER_TYPE_DECL();
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(SettingsUI);
 };

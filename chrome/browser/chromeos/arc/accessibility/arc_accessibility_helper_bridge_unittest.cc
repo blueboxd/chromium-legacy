@@ -206,8 +206,8 @@ TEST_F(ArcAccessibilityHelperBridgeTest, TaskAndAXTreeLifecycle) {
       accessibility_helper_bridge();
   helper_bridge->set_filter_type_all_for_test();
 
-  const auto& task_id_to_tree = helper_bridge->task_id_to_tree_for_test();
-  ASSERT_EQ(0U, task_id_to_tree.size());
+  const auto& key_to_tree = helper_bridge->trees_for_test();
+  ASSERT_EQ(0U, key_to_tree.size());
 
   auto event1 = arc::mojom::AccessibilityEventData::New();
   event1->source_id = 1;
@@ -231,12 +231,12 @@ TEST_F(ArcAccessibilityHelperBridgeTest, TaskAndAXTreeLifecycle) {
 
   // There's no active window.
   helper_bridge->OnAccessibilityEvent(event1.Clone());
-  ASSERT_EQ(0U, task_id_to_tree.size());
+  ASSERT_EQ(0U, key_to_tree.size());
 
   // Let's make task 1 active by activating the window.
   helper_bridge->SetActiveWindowId(std::string("org.chromium.arc.1"));
   helper_bridge->OnAccessibilityEvent(event1.Clone());
-  ASSERT_EQ(1U, task_id_to_tree.size());
+  ASSERT_EQ(1U, key_to_tree.size());
 
   // Same package name, different task.
   auto event2 = arc::mojom::AccessibilityEventData::New();
@@ -261,12 +261,12 @@ TEST_F(ArcAccessibilityHelperBridgeTest, TaskAndAXTreeLifecycle) {
 
   // Active window is still task 1.
   helper_bridge->OnAccessibilityEvent(event2.Clone());
-  ASSERT_EQ(1U, task_id_to_tree.size());
+  ASSERT_EQ(1U, key_to_tree.size());
 
   // Now make task 2 active.
   helper_bridge->SetActiveWindowId(std::string("org.chromium.arc.2"));
   helper_bridge->OnAccessibilityEvent(event2.Clone());
-  ASSERT_EQ(2U, task_id_to_tree.size());
+  ASSERT_EQ(2U, key_to_tree.size());
 
   // Same task id, different package name.
   event2->node_data.clear();
@@ -282,13 +282,13 @@ TEST_F(ArcAccessibilityHelperBridgeTest, TaskAndAXTreeLifecycle) {
 
   // No new tasks tree mappings should have occurred.
   helper_bridge->OnAccessibilityEvent(event2.Clone());
-  ASSERT_EQ(2U, task_id_to_tree.size());
+  ASSERT_EQ(2U, key_to_tree.size());
 
   helper_bridge->OnTaskDestroyed(1);
-  ASSERT_EQ(1U, task_id_to_tree.size());
+  ASSERT_EQ(1U, key_to_tree.size());
 
   helper_bridge->OnTaskDestroyed(2);
-  ASSERT_EQ(0U, task_id_to_tree.size());
+  ASSERT_EQ(0U, key_to_tree.size());
 }
 
 TEST_F(ArcAccessibilityHelperBridgeTest, EventAnnouncement) {
@@ -326,9 +326,8 @@ TEST_F(ArcAccessibilityHelperBridgeTest, NotificationEventArriveFirst) {
       accessibility_helper_bridge();
   arc_notification_surface_manager_->AddObserver(helper_bridge);
 
-  const auto& notification_key_to_tree_ =
-      helper_bridge->notification_key_to_tree_for_test();
-  ASSERT_EQ(0U, notification_key_to_tree_.size());
+  const auto& key_to_tree_ = helper_bridge->trees_for_test();
+  ASSERT_EQ(0U, key_to_tree_.size());
 
   // mojo: notification 1 created
   helper_bridge->OnNotificationStateChanged(
@@ -340,15 +339,17 @@ TEST_F(ArcAccessibilityHelperBridgeTest, NotificationEventArriveFirst) {
   event1->node_data.push_back(arc::mojom::AccessibilityNodeInfoData::New());
   helper_bridge->OnAccessibilityEvent(event1.Clone());
 
-  EXPECT_EQ(1U, notification_key_to_tree_.size());
+  EXPECT_EQ(1U, key_to_tree_.size());
 
   // wayland: surface 1 added
   MockArcNotificationSurface test_surface(kNotificationKey);
   arc_notification_surface_manager_->AddSurface(&test_surface);
 
   // Confirm that axtree id is set to the surface.
-  auto it = notification_key_to_tree_.find(kNotificationKey);
-  EXPECT_NE(notification_key_to_tree_.end(), it);
+  auto treeKey =
+      ArcAccessibilityHelperBridge::KeyForNotification(kNotificationKey);
+  auto it = key_to_tree_.find(treeKey);
+  EXPECT_NE(key_to_tree_.end(), it);
   AXTreeSourceArc* tree = it->second.get();
   ui::AXTreeData tree_data;
   tree->GetTreeData(&tree_data);
@@ -362,7 +363,7 @@ TEST_F(ArcAccessibilityHelperBridgeTest, NotificationEventArriveFirst) {
   // Ax tree of the surface should be reset as the tree no longer exists.
   EXPECT_EQ(ui::AXTreeIDUnknown(), test_surface.GetAXTreeId());
 
-  EXPECT_EQ(0U, notification_key_to_tree_.size());
+  EXPECT_EQ(0U, key_to_tree_.size());
 
   // mojo: notification 2 created
   helper_bridge->OnNotificationStateChanged(
@@ -374,12 +375,12 @@ TEST_F(ArcAccessibilityHelperBridgeTest, NotificationEventArriveFirst) {
   event3->node_data.push_back(arc::mojom::AccessibilityNodeInfoData::New());
   helper_bridge->OnAccessibilityEvent(event3.Clone());
 
-  EXPECT_EQ(1U, notification_key_to_tree_.size());
+  EXPECT_EQ(1U, key_to_tree_.size());
 
   // Ax tree from the second event is attached to the first surface. This is
   // expected behavior.
-  auto it2 = notification_key_to_tree_.find(kNotificationKey);
-  EXPECT_NE(notification_key_to_tree_.end(), it2);
+  auto it2 = key_to_tree_.find(treeKey);
+  EXPECT_NE(key_to_tree_.end(), it2);
   AXTreeSourceArc* tree2 = it2->second.get();
   ui::AXTreeData tree_data2;
   tree2->GetTreeData(&tree_data2);
@@ -389,7 +390,7 @@ TEST_F(ArcAccessibilityHelperBridgeTest, NotificationEventArriveFirst) {
   arc_notification_surface_manager_->RemoveSurface(&test_surface);
 
   // Tree shouldn't be removed as a surface for the second one will come.
-  EXPECT_EQ(1U, notification_key_to_tree_.size());
+  EXPECT_EQ(1U, key_to_tree_.size());
 
   // wayland: surface 2 added
   MockArcNotificationSurface test_surface_2(kNotificationKey);
@@ -402,7 +403,7 @@ TEST_F(ArcAccessibilityHelperBridgeTest, NotificationEventArriveFirst) {
       kNotificationKey,
       arc::mojom::AccessibilityNotificationStateType::SURFACE_REMOVED);
 
-  EXPECT_EQ(0U, notification_key_to_tree_.size());
+  EXPECT_EQ(0U, key_to_tree_.size());
 
   // wayland: surface 2 removed
   arc_notification_surface_manager_->RemoveSurface(&test_surface_2);
@@ -419,9 +420,8 @@ TEST_F(ArcAccessibilityHelperBridgeTest, NotificationSurfaceArriveFirst) {
       accessibility_helper_bridge();
   arc_notification_surface_manager_->AddObserver(helper_bridge);
 
-  const auto& notification_key_to_tree_ =
-      helper_bridge->notification_key_to_tree_for_test();
-  ASSERT_EQ(0U, notification_key_to_tree_.size());
+  const auto& key_to_tree_ = helper_bridge->trees_for_test();
+  ASSERT_EQ(0U, key_to_tree_.size());
 
   // wayland: surface 1 added
   MockArcNotificationSurface test_surface(kNotificationKey);
@@ -440,14 +440,14 @@ TEST_F(ArcAccessibilityHelperBridgeTest, NotificationSurfaceArriveFirst) {
   event1->node_data.push_back(arc::mojom::AccessibilityNodeInfoData::New());
   helper_bridge->OnAccessibilityEvent(event1.Clone());
 
-  EXPECT_EQ(1U, notification_key_to_tree_.size());
+  EXPECT_EQ(1U, key_to_tree_.size());
 
   // mojo: notification 2 removed
   helper_bridge->OnNotificationStateChanged(
       kNotificationKey,
       arc::mojom::AccessibilityNotificationStateType::SURFACE_REMOVED);
 
-  EXPECT_EQ(0U, notification_key_to_tree_.size());
+  EXPECT_EQ(0U, key_to_tree_.size());
 }
 
 TEST_F(ArcAccessibilityHelperBridgeTest,

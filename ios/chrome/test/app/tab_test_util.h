@@ -18,6 +18,9 @@ namespace chrome_test_util {
 // Opens a new tab, and does not wait for animations to complete.
 void OpenNewTab();
 
+// Simulates opening http://www.example.com/ from another application.
+void SimulateExternalAppURLOpening();
+
 // Opens a new incognito tab, and does not wait for animations to complete.
 void OpenNewIncognitoTab();
 

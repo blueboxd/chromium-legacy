@@ -116,6 +116,10 @@ message OverlayImageProto {
 
 message ClientSettingsProto {
   reserved 10, 11;
+  message IntegrationTestSettings {
+    // Disables animations for the poodle and the progress bar.
+    optional bool disable_header_animations = 1;
+  }
 
   // Time between two periodic script precondition checks.
   optional int32 periodic_script_check_interval_ms = 1;
@@ -168,6 +172,9 @@ message ClientSettingsProto {
 
   // Optional image drawn on top of overlays.
   optional OverlayImageProto overlay_image = 16;
+
+  // Optional settings intended for integration tests.
+  optional IntegrationTestSettings integration_test_settings = 17;
 }
 
 message ScriptTimeoutError {

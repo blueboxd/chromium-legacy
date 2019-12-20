@@ -77,6 +77,7 @@ crbug.com/457718 external/wpt/css/css-pseudo/marker-content-004.html [ Failure ]
 crbug.com/457718 external/wpt/css/css-pseudo/marker-content-006.html [ Failure ]
 crbug.com/457718 external/wpt/css/css-pseudo/marker-content-012.html [ Failure ]
 crbug.com/457718 external/wpt/css/css-pseudo/marker-content-015.html [ Failure ]
+crbug.com/457718 external/wpt/css/css-pseudo/marker-content-016.html [ Failure ]
 crbug.com/1012289 external/wpt/css/css-pseudo/marker-unicode-bidi-default.html [ Failure ]
 crbug.com/1012289 external/wpt/css/css-pseudo/marker-unicode-bidi-normal.html [ Failure ]
 

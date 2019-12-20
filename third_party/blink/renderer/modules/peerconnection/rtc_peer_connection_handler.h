@@ -99,23 +99,23 @@ class MODULES_EXPORT RTCPeerConnectionHandler
   bool InitializeForTest(
       const webrtc::PeerConnectionInterface::RTCConfiguration&
           server_configuration,
-      const blink::WebMediaConstraints& options,
+      const MediaConstraints& options,
       const base::WeakPtr<PeerConnectionTracker>& peer_connection_tracker);
 
   // RTCPeerConnectionHandlerPlatform implementation
   bool Initialize(const webrtc::PeerConnectionInterface::RTCConfiguration&
                       server_configuration,
-                  const blink::WebMediaConstraints& options) override;
+                  const MediaConstraints& options) override;
 
   Vector<std::unique_ptr<RTCRtpTransceiverPlatform>> CreateOffer(
       RTCSessionDescriptionRequest* request,
-      const WebMediaConstraints& options) override;
+      const MediaConstraints& options) override;
   Vector<std::unique_ptr<RTCRtpTransceiverPlatform>> CreateOffer(
       RTCSessionDescriptionRequest* request,
       RTCOfferOptionsPlatform* options) override;
 
   void CreateAnswer(blink::RTCSessionDescriptionRequest* request,
-                    const blink::WebMediaConstraints& options) override;
+                    const MediaConstraints& options) override;
   void CreateAnswer(blink::RTCSessionDescriptionRequest* request,
                     blink::RTCAnswerOptionsPlatform* options) override;
 

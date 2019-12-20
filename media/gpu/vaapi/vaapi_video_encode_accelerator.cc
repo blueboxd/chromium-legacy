@@ -657,7 +657,7 @@ std::unique_ptr<VaapiEncodeJob> VaapiVideoEncodeAccelerator::CreateEncodeJob(
         kVaSurfaceFormat, base::BindOnce(vpp_va_surface_release_cb_));
     available_vpp_va_surface_ids_.pop_back();
     // Crop/Scale the visible area of |frame| -> |blit_visible_rect|.
-    if (!vpp_vaapi_wrapper_->BlitSurface(input_surface, blit_surface,
+    if (!vpp_vaapi_wrapper_->BlitSurface(*input_surface, *blit_surface,
                                          frame->visible_rect(),
                                          blit_visible_rect_)) {
       NOTIFY_ERROR(
@@ -842,6 +842,9 @@ void VaapiVideoEncodeAccelerator::Destroy() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(child_sequence_checker_);
 
   child_weak_this_factory_.InvalidateWeakPtrs();
+
+  // We're destroying; cancel all callbacks.
+  client_ptr_factory_.reset();
 
   encoder_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&VaapiVideoEncodeAccelerator::DestroyTask,

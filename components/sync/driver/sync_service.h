@@ -373,7 +373,7 @@ class SyncService : public KeyedService {
   // ignored on platforms where keys are retrieved by other means.
   virtual void AddTrustedVaultDecryptionKeysFromWeb(
       const std::string& gaia_id,
-      const std::vector<std::string>& keys) = 0;
+      const std::vector<std::vector<uint8_t>>& keys) = 0;
 
   //////////////////////////////////////////////////////////////////////////////
   // USER DEMOGRAPHICS

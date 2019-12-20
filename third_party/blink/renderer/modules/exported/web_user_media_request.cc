@@ -30,13 +30,13 @@
 
 #include "third_party/blink/public/web/web_user_media_request.h"
 
-#include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_request.h"
+#include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -47,8 +47,8 @@ WebUserMediaRequest::WebUserMediaRequest(UserMediaRequest* request)
     : private_(request) {}
 
 WebUserMediaRequest WebUserMediaRequest::CreateForTesting(
-    const WebMediaConstraints& audio,
-    const WebMediaConstraints& video) {
+    const MediaConstraints& audio,
+    const MediaConstraints& video) {
   UserMediaRequest* request = UserMediaRequest::CreateForTesting(audio, video);
   return WebUserMediaRequest(request);
 }
@@ -72,12 +72,12 @@ bool WebUserMediaRequest::Video() const {
   return private_->Video();
 }
 
-WebMediaConstraints WebUserMediaRequest::AudioConstraints() const {
+MediaConstraints WebUserMediaRequest::AudioConstraints() const {
   DCHECK(!IsNull());
   return private_->AudioConstraints();
 }
 
-WebMediaConstraints WebUserMediaRequest::VideoConstraints() const {
+MediaConstraints WebUserMediaRequest::VideoConstraints() const {
   DCHECK(!IsNull());
   return private_->VideoConstraints();
 }

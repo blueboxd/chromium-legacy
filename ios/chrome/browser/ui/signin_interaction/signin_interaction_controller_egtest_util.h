@@ -9,15 +9,6 @@
 
 @protocol GREYMatcher;
 
-// Taps the button with accessibility label |label|.
-void TapButtonWithAccessibilityLabel(NSString* label);
-
-// Taps the button with accessibility labelId |message_id|.
-void TapButtonWithLabelId(int message_id);
-
-// Verifies that the Chrome sign-in view is visible.
-void VerifyChromeSigninViewVisible();
-
 // Wait until |matcher| is accessible (not nil).
 void WaitForMatcher(id<GREYMatcher> matcher);
 

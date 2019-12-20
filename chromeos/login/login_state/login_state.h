@@ -28,9 +28,9 @@ class COMPONENT_EXPORT(LOGIN_STATE) LoginState {
     LOGGED_IN_USER_PUBLIC_ACCOUNT,  // A user is logged in to a public session.
     LOGGED_IN_USER_PUBLIC_ACCOUNT_MANAGED,  // Public session v2.
     LOGGED_IN_USER_SUPERVISED,              // A supervised user is logged in
-    LOGGED_IN_USER_KIOSK_APP,               // Is in kiosk app mode
-    LOGGED_IN_USER_ARC_KIOSK_APP,           // Is in ARC kiosk mode
-    LOGGED_IN_USER_CHILD                    // A child is logged in
+    LOGGED_IN_USER_KIOSK_APP,  // Is in one of the kiosk modes -- Chrome App,
+                               // Arc or Web App
+    LOGGED_IN_USER_CHILD       // A child is logged in
   };
 
   class Observer {

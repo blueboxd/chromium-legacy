@@ -723,7 +723,7 @@ void SyncEncryptionHandlerImpl::SetDecryptionPassphrase(
 }
 
 void SyncEncryptionHandlerImpl::AddTrustedVaultDecryptionKeys(
-    const std::vector<std::string>& keys) {
+    const std::vector<std::vector<uint8_t>>& keys) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NOTIMPLEMENTED();
 }
@@ -821,26 +821,26 @@ bool SyncEncryptionHandlerImpl::NeedKeystoreKey() const {
 }
 
 bool SyncEncryptionHandlerImpl::SetKeystoreKeys(
-    const std::vector<std::string>& keys) {
+    const std::vector<std::vector<uint8_t>>& keys) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   syncable::ReadTransaction trans(FROM_HERE, user_share_->directory.get());
   if (keys.empty())
     return false;
   // The last key in the vector is the current keystore key. The others are kept
   // around for decryption only.
-  const std::string& raw_keystore_key = keys.back();
+  const std::vector<uint8_t>& raw_keystore_key = keys.back();
   if (raw_keystore_key.empty())
     return false;
 
   // Note: in order to Pack the keys, they must all be base64 encoded (else
   // JSON serialization fails).
-  base::Base64Encode(raw_keystore_key, &keystore_key_);
+  keystore_key_ = base::Base64Encode(raw_keystore_key);
 
   // Go through and save the old keystore keys. We always persist all keystore
   // keys the server sends us.
   old_keystore_keys_.resize(keys.size() - 1);
   for (size_t i = 0; i < keys.size() - 1; ++i)
-    base::Base64Encode(keys[i], &old_keystore_keys_[i]);
+    old_keystore_keys_[i] = base::Base64Encode(keys[i]);
 
   DirectoryCryptographer* cryptographer =
       &UnlockVaultMutable(&trans)->cryptographer;

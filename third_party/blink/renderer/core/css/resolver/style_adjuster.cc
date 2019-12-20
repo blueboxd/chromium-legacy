@@ -203,10 +203,6 @@ static void AdjustStyleForMarker(ComputedStyle& style,
   if (style.StyleType() != kPseudoIdMarker)
     return;
 
-  // Style adjustments for markers with 'content: normal' are done in layout.
-  if (!style.GetContentData())
-    return;
-
   bool is_inside =
       parent_style.ListStylePosition() == EListStylePosition::kInside ||
       (element && IsA<HTMLLIElement>(element->parentNode()) &&

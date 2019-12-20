@@ -4,6 +4,8 @@
 
 #include "base/task/single_thread_task_executor.h"
 
+#include "base/message_loop/message_pump.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/task/sequence_manager/sequence_manager.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "build/build_config.h"
@@ -11,6 +13,17 @@
 namespace base {
 
 SingleThreadTaskExecutor::SingleThreadTaskExecutor(MessagePumpType type)
+    : SingleThreadTaskExecutor(type, MessagePump::Create(type)) {
+  DCHECK_NE(type, MessagePumpType::CUSTOM);
+}
+
+SingleThreadTaskExecutor::SingleThreadTaskExecutor(
+    std::unique_ptr<MessagePump> pump)
+    : SingleThreadTaskExecutor(MessagePumpType::CUSTOM, std::move(pump)) {}
+
+SingleThreadTaskExecutor::SingleThreadTaskExecutor(
+    MessagePumpType type,
+    std::unique_ptr<MessagePump> pump)
     : sequence_manager_(sequence_manager::CreateUnboundSequenceManager(
           sequence_manager::SequenceManager::Settings::Builder()
               .SetMessagePumpType(type)
@@ -20,7 +33,7 @@ SingleThreadTaskExecutor::SingleThreadTaskExecutor(MessagePumpType type)
       type_(type),
       simple_task_executor_(sequence_manager_.get(), task_runner()) {
   sequence_manager_->SetDefaultTaskRunner(default_task_queue_->task_runner());
-  sequence_manager_->BindToMessagePump(MessagePump::Create(type));
+  sequence_manager_->BindToMessagePump(std::move(pump));
 }
 
 SingleThreadTaskExecutor::~SingleThreadTaskExecutor() = default;

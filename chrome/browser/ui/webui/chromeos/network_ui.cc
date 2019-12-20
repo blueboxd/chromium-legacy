@@ -400,15 +400,15 @@ NetworkUI::NetworkUI(content::WebUI* web_ui)
 
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                                 html);
-  AddHandlerToRegistry(base::BindRepeating(&NetworkUI::BindCrosNetworkConfig,
-                                           base::Unretained(this)));
 }
 
 NetworkUI::~NetworkUI() {}
 
-void NetworkUI::BindCrosNetworkConfig(
+void NetworkUI::BindInterface(
     mojo::PendingReceiver<network_config::mojom::CrosNetworkConfig> receiver) {
   ash::GetNetworkConfigService(std::move(receiver));
 }
+
+WEB_UI_CONTROLLER_TYPE_IMPL(NetworkUI)
 
 }  // namespace chromeos

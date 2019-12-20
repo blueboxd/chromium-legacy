@@ -379,8 +379,8 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // |va_surface_dest| applying pixel format conversion, cropping and scaling
   // if needed. |src_rect| and |dest_rect| are optional. They can be used to
   // specify the area used in the blit.
-  bool BlitSurface(const scoped_refptr<VASurface>& va_surface_src,
-                   const scoped_refptr<VASurface>& va_surface_dest,
+  bool BlitSurface(const VASurface& va_surface_src,
+                   const VASurface& va_surface_dest,
                    base::Optional<gfx::Rect> src_rect = base::nullopt,
                    base::Optional<gfx::Rect> dest_rect = base::nullopt);
 

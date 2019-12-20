@@ -365,7 +365,7 @@ std::string FakeServer::GetTopLevelPermanentItemId(
   return loopback_server_->GetTopLevelPermanentItemId(model_type);
 }
 
-const std::vector<std::string>& FakeServer::GetKeystoreKeys() const {
+const std::vector<std::vector<uint8_t>>& FakeServer::GetKeystoreKeys() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return loopback_server_->GetKeystoreKeysForTesting();
 }

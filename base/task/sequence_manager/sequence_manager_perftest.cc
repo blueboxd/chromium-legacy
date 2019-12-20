@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_pump_default.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
@@ -153,27 +152,6 @@ class BaseSequenceManagerPerfTestDelegate : public PerfTestDelegate {
   std::vector<scoped_refptr<TestTaskQueue>> owned_task_queues_;
 };
 
-template <class MessageLoopType>
-class SequenceManagerWithMessageLoopPerfTestDelegate
-    : public BaseSequenceManagerPerfTestDelegate {
- public:
-  explicit SequenceManagerWithMessageLoopPerfTestDelegate(const char* name)
-      : name_(name), message_loop_(new MessageLoopType()) {
-    SetSequenceManager(CreateSequenceManagerOnCurrentThread(
-        SequenceManager::Settings::Builder()
-            .SetRandomisedSamplingEnabled(false)
-            .Build()));
-  }
-
-  ~SequenceManagerWithMessageLoopPerfTestDelegate() override { ShutDown(); }
-
-  const char* GetName() const override { return name_; }
-
- private:
-  const char* const name_;
-  std::unique_ptr<MessageLoop> message_loop_;
-};
-
 class SequenceManagerWithMessagePumpPerfTestDelegate
     : public BaseSequenceManagerPerfTestDelegate {
  public:
@@ -205,37 +183,6 @@ class SequenceManagerWithMessagePumpPerfTestDelegate
 
  private:
   const char* const name_;
-};
-
-class MessageLoopPerfTestDelegate : public PerfTestDelegate {
- public:
-  MessageLoopPerfTestDelegate(const char* name,
-                              std::unique_ptr<MessageLoop> message_loop)
-      : name_(name), message_loop_(std::move(message_loop)) {}
-
-  ~MessageLoopPerfTestDelegate() override = default;
-
-  const char* GetName() const override { return name_; }
-
-  bool VirtualTimeIsSupported() const override { return false; }
-
-  bool MultipleQueuesSupported() const override { return false; }
-
-  scoped_refptr<TaskRunner> CreateTaskRunner() override {
-    return message_loop_->task_runner();
-  }
-
-  void WaitUntilDone() override {
-    run_loop_.reset(new RunLoop());
-    run_loop_->Run();
-  }
-
-  void SignalDone() override { run_loop_->Quit(); }
-
- private:
-  const char* const name_;
-  std::unique_ptr<MessageLoop> message_loop_;
-  std::unique_ptr<RunLoop> run_loop_;
 };
 
 class SingleThreadInThreadPoolPerfTestDelegate : public PerfTestDelegate {

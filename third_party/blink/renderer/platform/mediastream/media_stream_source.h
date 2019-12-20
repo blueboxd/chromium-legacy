@@ -37,10 +37,10 @@
 
 #include "base/optional.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_source.h"
-#include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/renderer/platform/audio/audio_destination_consumer.h"
+#include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -138,7 +138,7 @@ class PLATFORM_EXPORT MediaStreamSource final
   HashSet<AudioDestinationConsumer*> audio_consumers_
       GUARDED_BY(audio_consumers_lock_);
   std::unique_ptr<WebPlatformMediaStreamSource> platform_source_;
-  WebMediaConstraints constraints_;
+  MediaConstraints constraints_;
   WebMediaStreamSource::Capabilities capabilities_;
   base::Optional<EchoCancellationMode> echo_cancellation_mode_;
   base::Optional<bool> auto_gain_control_;

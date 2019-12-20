@@ -22,7 +22,8 @@ cr.define('multidevice_setup', function() {
     getMojoServiceRemote() {
       if (!this.remote_) {
         this.remote_ =
-            chromeos.multideviceSetup.mojom.MultiDeviceSetup.getRemote();
+            chromeos.multideviceSetup.mojom.MultiDeviceSetup.getRemote(
+                /*useBrowserInterfaceBroker=*/ true);
       }
 
       return this.remote_;

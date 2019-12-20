@@ -400,6 +400,13 @@ body.mode-switching:not(.streaming) #camera-mode {
   }
 }
 
+body.tab-navigation #switch-device:focus::after {
+  bottom: -8px;
+  left: -8px;
+  right: -8px;
+  top: -8px;
+}
+
 #gallery-enter {
   background-color: rgba(24, 24, 24, 1);
   background-size: cover;

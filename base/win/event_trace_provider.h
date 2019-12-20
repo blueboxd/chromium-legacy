@@ -9,6 +9,7 @@
 
 #include <windows.h>
 
+#include <cguid.h>
 #include <evntrace.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -175,11 +176,11 @@ class BASE_EXPORT EtwTraceProvider {
                                       ULONG* reserved,
                                       PVOID buffer);
 
-  GUID provider_name_;
-  TRACEHANDLE registration_handle_;
-  TRACEHANDLE session_handle_;
-  EtwEventFlags enable_flags_;
-  EtwEventLevel enable_level_;
+  GUID provider_name_ = GUID_NULL;
+  TRACEHANDLE registration_handle_ = NULL;
+  TRACEHANDLE session_handle_ = NULL;
+  EtwEventFlags enable_flags_ = 0;
+  EtwEventLevel enable_level_ = 0;
 
   // We don't use this, but on XP we're obliged to pass one in to
   // RegisterTraceGuids. Non-const, because that's how the API needs it.

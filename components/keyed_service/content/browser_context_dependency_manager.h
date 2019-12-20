@@ -64,7 +64,7 @@ class KEYED_SERVICE_EXPORT BrowserContextDependencyManager
   std::unique_ptr<
       base::CallbackList<void(content::BrowserContext*)>::Subscription>
   RegisterWillCreateBrowserContextServicesCallbackForTesting(
-      const base::Callback<void(content::BrowserContext*)>& callback);
+      const base::RepeatingCallback<void(content::BrowserContext*)>& callback);
 
   // Runtime assertion called as a part of GetServiceForBrowserContext() to
   // check if |context| is considered stale. This will NOTREACHED() or

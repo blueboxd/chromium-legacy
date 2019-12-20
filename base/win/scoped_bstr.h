@@ -22,7 +22,7 @@ namespace win {
 // The class interface is based on unique_ptr.
 class BASE_EXPORT ScopedBstr {
  public:
-  ScopedBstr() : bstr_(nullptr) {}
+  ScopedBstr() {}
 
   // Constructor to create a new BSTR.
   //
@@ -86,7 +86,7 @@ class BASE_EXPORT ScopedBstr {
   bool operator!=(const ScopedBstr& bstr2) const = delete;
 
  protected:
-  BSTR bstr_;
+  BSTR bstr_ = nullptr;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScopedBstr);

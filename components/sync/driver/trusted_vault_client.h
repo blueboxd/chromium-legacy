@@ -38,14 +38,15 @@ class TrustedVaultClient {
   // may not support them.
   virtual void FetchKeys(
       const std::string& gaia_id,
-      base::OnceCallback<void(const std::vector<std::string>&)> cb) = 0;
+      base::OnceCallback<void(const std::vector<std::vector<uint8_t>>&)>
+          cb) = 0;
 
   // Allows implementations to store encryption keys fetched by other means such
   // as Web interactions. Implementations are free to completely ignore these
   // keys, so callers may not assume that later calls to FetchKeys() would
   // necessarily return the keys passed here.
   virtual void StoreKeys(const std::string& gaia_id,
-                         const std::vector<std::string>& keys) = 0;
+                         const std::vector<std::vector<uint8_t>>& keys) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TrustedVaultClient);

@@ -33,8 +33,7 @@ bool CheckAndDuplicateHandle(HANDLE source, ScopedHandle* target) {
 
 }  // namespace
 
-ScopedProcessInformation::ScopedProcessInformation()
-    : process_id_(0), thread_id_(0) {}
+ScopedProcessInformation::ScopedProcessInformation() {}
 
 ScopedProcessInformation::ScopedProcessInformation(
     const PROCESS_INFORMATION& process_info)

@@ -84,8 +84,8 @@ void GenerateMultipartBody(MultipartType multipart_type,
 class AuthenticatedRequestInterface {
  public:
   // Called when re-authentication is required. See Start() for details.
-  typedef base::Callback<void(AuthenticatedRequestInterface* request)>
-      ReAuthenticateCallback;
+  using ReAuthenticateCallback =
+      base::RepeatingCallback<void(AuthenticatedRequestInterface* request)>;
 
   virtual ~AuthenticatedRequestInterface() {}
 
@@ -99,7 +99,7 @@ class AuthenticatedRequestInterface {
   // |callback| must not be null.
   virtual void Start(const std::string& access_token,
                      const std::string& custom_user_agent,
-                     const ReAuthenticateCallback& callback) = 0;
+                     ReAuthenticateCallback callback) = 0;
 
   // Invoked when the authentication failed with an error code |code|.
   virtual void OnAuthFailed(DriveApiErrorCode code) = 0;
@@ -125,7 +125,7 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
   // AuthenticatedRequestInterface overrides.
   void Start(const std::string& access_token,
              const std::string& custom_user_agent,
-             const ReAuthenticateCallback& callback) override;
+             ReAuthenticateCallback callback) override;
   base::WeakPtr<AuthenticatedRequestInterface> GetWeakPtr() override;
   void Cancel() override;
 
@@ -253,7 +253,7 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
   // Continues |Start| function after |Prepare|.
   void StartAfterPrepare(const std::string& access_token,
                          const std::string& custom_user_agent,
-                         const ReAuthenticateCallback& callback,
+                         ReAuthenticateCallback callback,
                          DriveApiErrorCode code);
 
   // Called when the SimpleURLLoader first receives a response.

@@ -384,7 +384,7 @@ bool VaapiMjpegDecodeAccelerator::OutputPictureVppOnTaskRunner(
     VLOGF(1) << "Cannot sync VPP input surface";
     return false;
   }
-  if (!vpp_vaapi_wrapper_->BlitSurface(src_surface, dst_surface)) {
+  if (!vpp_vaapi_wrapper_->BlitSurface(*src_surface, *dst_surface)) {
     VLOGF(1) << "Cannot convert decoded image into output buffer";
     return false;
   }

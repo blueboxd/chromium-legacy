@@ -64,8 +64,9 @@ class SyncEngineImpl : public SyncEngine, public InvalidationHandler {
   void StartSyncingWithServer() override;
   void SetEncryptionPassphrase(const std::string& passphrase) override;
   void SetDecryptionPassphrase(const std::string& passphrase) override;
-  void AddTrustedVaultDecryptionKeys(const std::vector<std::string>& keys,
-                                     base::OnceClosure done_cb) override;
+  void AddTrustedVaultDecryptionKeys(
+      const std::vector<std::vector<uint8_t>>& keys,
+      base::OnceClosure done_cb) override;
   void StopSyncingForShutdown() override;
   void Shutdown(ShutdownReason reason) override;
   void ConfigureDataTypes(ConfigureParams params) override;

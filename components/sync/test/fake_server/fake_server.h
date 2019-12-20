@@ -98,7 +98,7 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
   std::string GetTopLevelPermanentItemId(syncer::ModelType model_type);
 
   // Returns all keystore keys from the server.
-  const std::vector<std::string>& GetKeystoreKeys() const;
+  const std::vector<std::vector<uint8_t>>& GetKeystoreKeys() const;
 
   // Triggers the keystore key rotation events on the server side: generating
   // new keystore key and touching the Nigori node.

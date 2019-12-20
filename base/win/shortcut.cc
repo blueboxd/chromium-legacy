@@ -46,8 +46,7 @@ void InitializeShortcutInterfaces(const wchar_t* shortcut,
 
 }  // namespace
 
-ShortcutProperties::ShortcutProperties()
-    : icon_index(-1), dual_mode(false), options(0U) {}
+ShortcutProperties::ShortcutProperties() {}
 
 ShortcutProperties::ShortcutProperties(const ShortcutProperties& other) =
     default;

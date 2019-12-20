@@ -34,7 +34,6 @@
 #include <memory>
 #include <utility>
 
-#include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -48,6 +47,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_transceiver.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_session_description_enums.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_peer_connection_handler_client.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_peer_connection_handler_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_request.h"
@@ -127,7 +127,7 @@ class MODULES_EXPORT RTCPeerConnection final
   RTCPeerConnection(ExecutionContext*,
                     webrtc::PeerConnectionInterface::RTCConfiguration,
                     bool sdp_semantics_specified,
-                    WebMediaConstraints,
+                    MediaConstraints,
                     ExceptionState&);
   ~RTCPeerConnection() override;
 

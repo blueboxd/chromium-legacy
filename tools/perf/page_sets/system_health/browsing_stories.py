@@ -963,6 +963,19 @@ class BrowseAvitoMobileStory(_ArticleBrowsingStory):
   ITEMS_TO_VISIT = 4
 
 
+class BrowseAvitoMobileStory2019(_ArticleBrowsingStory):
+  NAME = 'browse:shopping:avito:2019'
+  URL = 'https://www.avito.ru/rossiya'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.EMERGING_MARKET, story_tags.HEALTH_CHECK,
+          story_tags.YEAR_2019]
+
+  ITEM_SELECTOR = '._3eXe2'
+  ITEMS_TO_VISIT = 4
+
+  def _WaitForNavigation(self, action_runner):
+    action_runner.WaitForElement(selector='[class="_3uGvV YVMFh"]')
+
 class BrowseTOIMobileStory(_ArticleBrowsingStory):
   NAME = 'browse:news:toi'
   URL = 'http://m.timesofindia.com'

@@ -6,6 +6,7 @@
 
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/grit/theme_resources.h"
 #include "ui/base/theme_provider.h"
 
@@ -23,7 +24,8 @@ void TopContainerBackground::Paint(gfx::Canvas* canvas,
     gfx::Point pos = view->GetMirroredPosition() +
                      browser_view_->GetMirroredPosition().OffsetFromOrigin();
     pos.Offset(browser_view_->frame()->GetThemeBackgroundXInset(),
-               -browser_view_->frame()->GetTopInset());
+               -browser_view_->tabstrip()->GetStrokeThickness() -
+                   browser_view_->frame()->GetTopInset());
     const gfx::Rect bounds = view->GetLocalBounds();
 
     canvas->TileImageInt(*theme_provider->GetImageSkiaNamed(IDR_THEME_TOOLBAR),

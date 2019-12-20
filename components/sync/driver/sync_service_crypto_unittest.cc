@@ -88,20 +88,21 @@ class TestTrustedVaultClient : public TrustedVaultClient {
 
   void FetchKeys(
       const std::string& gaia_id,
-      base::OnceCallback<void(const std::vector<std::string>&)> cb) override {
+      base::OnceCallback<void(const std::vector<std::vector<uint8_t>>&)> cb)
+      override {
     ++fetch_count_;
     pending_responses_.push_back(
         base::BindOnce(std::move(cb), gaia_id_to_keys_[gaia_id]));
   }
 
   void StoreKeys(const std::string& gaia_id,
-                 const std::vector<std::string>& keys) override {
+                 const std::vector<std::vector<uint8_t>>& keys) override {
     gaia_id_to_keys_[gaia_id] = keys;
     observer_list_.Notify();
   }
 
  private:
-  std::map<std::string, std::vector<std::string>> gaia_id_to_keys_;
+  std::map<std::string, std::vector<std::vector<uint8_t>>> gaia_id_to_keys_;
   CallbackList observer_list_;
   int fetch_count_ = 0;
   std::list<base::OnceClosure> pending_responses_;
@@ -172,7 +173,7 @@ TEST_F(SyncServiceCryptoTest,
        ShouldReadValidTrustedVaultKeysFromClientBeforeInitialization) {
   const CoreAccountInfo kSyncingAccount =
       MakeAccountInfoWithGaia("syncingaccount");
-  const std::vector<std::string> kFetchedKeys = {"key1"};
+  const std::vector<std::vector<uint8_t>> kFetchedKeys = {{0, 1, 2, 3, 4}};
 
   EXPECT_CALL(reconfigure_cb_, Run(_)).Times(0);
   ASSERT_FALSE(crypto_.IsTrustedVaultKeyRequired());
@@ -195,9 +196,8 @@ TEST_F(SyncServiceCryptoTest,
   base::OnceClosure add_keys_cb;
   EXPECT_CALL(engine_, AddTrustedVaultDecryptionKeys(kFetchedKeys, _))
       .WillOnce(
-          [&](const std::vector<std::string>& keys, base::OnceClosure done_cb) {
-            add_keys_cb = std::move(done_cb);
-          });
+          [&](const std::vector<std::vector<uint8_t>>& keys,
+              base::OnceClosure done_cb) { add_keys_cb = std::move(done_cb); });
 
   // Mimic completion of the fetch.
   ASSERT_TRUE(trusted_vault_client_.CompleteFetchKeysRequest());
@@ -215,7 +215,7 @@ TEST_F(SyncServiceCryptoTest,
        ShouldReadValidTrustedVaultKeysFromClientAfterInitialization) {
   const CoreAccountInfo kSyncingAccount =
       MakeAccountInfoWithGaia("syncingaccount");
-  const std::vector<std::string> kFetchedKeys = {"key1"};
+  const std::vector<std::vector<uint8_t>> kFetchedKeys = {{0, 1, 2, 3, 4}};
 
   EXPECT_CALL(reconfigure_cb_, Run(_)).Times(0);
   ASSERT_FALSE(crypto_.IsTrustedVaultKeyRequired());
@@ -235,9 +235,8 @@ TEST_F(SyncServiceCryptoTest,
   base::OnceClosure add_keys_cb;
   EXPECT_CALL(engine_, AddTrustedVaultDecryptionKeys(kFetchedKeys, _))
       .WillOnce(
-          [&](const std::vector<std::string>& keys, base::OnceClosure done_cb) {
-            add_keys_cb = std::move(done_cb);
-          });
+          [&](const std::vector<std::vector<uint8_t>>& keys,
+              base::OnceClosure done_cb) { add_keys_cb = std::move(done_cb); });
 
   // Mimic completion of the fetch.
   ASSERT_TRUE(trusted_vault_client_.CompleteFetchKeysRequest());
@@ -254,7 +253,7 @@ TEST_F(SyncServiceCryptoTest,
 TEST_F(SyncServiceCryptoTest, ShouldReadInvalidTrustedVaultKeysFromClient) {
   const CoreAccountInfo kSyncingAccount =
       MakeAccountInfoWithGaia("syncingaccount");
-  const std::vector<std::string> kFetchedKeys = {"key1"};
+  const std::vector<std::vector<uint8_t>> kFetchedKeys = {{0, 1, 2, 3, 4}};
 
   ASSERT_FALSE(crypto_.IsTrustedVaultKeyRequired());
 
@@ -273,9 +272,8 @@ TEST_F(SyncServiceCryptoTest, ShouldReadInvalidTrustedVaultKeysFromClient) {
   base::OnceClosure add_keys_cb;
   EXPECT_CALL(engine_, AddTrustedVaultDecryptionKeys(kFetchedKeys, _))
       .WillOnce(
-          [&](const std::vector<std::string>& keys, base::OnceClosure done_cb) {
-            add_keys_cb = std::move(done_cb);
-          });
+          [&](const std::vector<std::vector<uint8_t>>& keys,
+              base::OnceClosure done_cb) { add_keys_cb = std::move(done_cb); });
 
   // Mimic completion of the client.
   ASSERT_TRUE(trusted_vault_client_.CompleteFetchKeysRequest());
@@ -295,21 +293,22 @@ TEST_F(SyncServiceCryptoTest, ShouldReadInvalidTrustedVaultKeysFromClient) {
 TEST_F(SyncServiceCryptoTest, ShouldRefetchTrustedVaultKeysWhenChangeObserved) {
   const CoreAccountInfo kSyncingAccount =
       MakeAccountInfoWithGaia("syncingaccount");
-  const std::vector<std::string> kInitialKeys = {"key1"};
-  const std::vector<std::string> kNewKeys = {"key1", "key2"};
+  const std::vector<std::vector<uint8_t>> kInitialKeys = {{0, 1, 2, 3, 4}};
+  const std::vector<std::vector<uint8_t>> kNewKeys = {{0, 1, 2, 3, 4},
+                                                      {2, 3, 4, 5}};
 
   trusted_vault_client_.StoreKeys(kSyncingAccount.gaia, kInitialKeys);
 
   // The engine replies with OnTrustedVaultKeyAccepted() only if |kNewKeys| are
   // provided.
   ON_CALL(engine_, AddTrustedVaultDecryptionKeys(_, _))
-      .WillByDefault(
-          [&](const std::vector<std::string>& keys, base::OnceClosure done_cb) {
-            if (keys == kNewKeys) {
-              crypto_.OnTrustedVaultKeyAccepted();
-            }
-            std::move(done_cb).Run();
-          });
+      .WillByDefault([&](const std::vector<std::vector<uint8_t>>& keys,
+                         base::OnceClosure done_cb) {
+        if (keys == kNewKeys) {
+          crypto_.OnTrustedVaultKeyAccepted();
+        }
+        std::move(done_cb).Run();
+      });
 
   // Mimic initialization of the engine where trusted vault keys are needed and
   // |kInitialKeys| are fetched, which are insufficient, and hence
@@ -335,21 +334,22 @@ TEST_F(SyncServiceCryptoTest,
        ShouldDeferTrustedVaultKeyFetchingWhenChangeObservedWhileOngoingFetch) {
   const CoreAccountInfo kSyncingAccount =
       MakeAccountInfoWithGaia("syncingaccount");
-  const std::vector<std::string> kInitialKeys = {"key1"};
-  const std::vector<std::string> kNewKeys = {"key1", "key2"};
+  const std::vector<std::vector<uint8_t>> kInitialKeys = {{0, 1, 2, 3, 4}};
+  const std::vector<std::vector<uint8_t>> kNewKeys = {{0, 1, 2, 3, 4},
+                                                      {2, 3, 4, 5}};
 
   trusted_vault_client_.StoreKeys(kSyncingAccount.gaia, kInitialKeys);
 
   // The engine replies with OnTrustedVaultKeyAccepted() only if |kNewKeys| are
   // provided.
   ON_CALL(engine_, AddTrustedVaultDecryptionKeys(_, _))
-      .WillByDefault(
-          [&](const std::vector<std::string>& keys, base::OnceClosure done_cb) {
-            if (keys == kNewKeys) {
-              crypto_.OnTrustedVaultKeyAccepted();
-            }
-            std::move(done_cb).Run();
-          });
+      .WillByDefault([&](const std::vector<std::vector<uint8_t>>& keys,
+                         base::OnceClosure done_cb) {
+        if (keys == kNewKeys) {
+          crypto_.OnTrustedVaultKeyAccepted();
+        }
+        std::move(done_cb).Run();
+      });
 
   // Mimic initialization of the engine where trusted vault keys are needed and
   // |kInitialKeys| are in the process of being fetched.
@@ -387,22 +387,24 @@ TEST_F(
     ShouldDeferTrustedVaultKeyFetchingWhenChangeObservedWhileOngoingRefetch) {
   const CoreAccountInfo kSyncingAccount =
       MakeAccountInfoWithGaia("syncingaccount");
-  const std::vector<std::string> kInitialKeys = {"key1"};
-  const std::vector<std::string> kIntermediateKeys = {"key1", "key2"};
-  const std::vector<std::string> kLatestKeys = {"key1", "key2", "key3"};
+  const std::vector<std::vector<uint8_t>> kInitialKeys = {{0, 1, 2, 3, 4}};
+  const std::vector<std::vector<uint8_t>> kIntermediateKeys = {{0, 1, 2, 3, 4},
+                                                               {2, 3, 4, 5}};
+  const std::vector<std::vector<uint8_t>> kLatestKeys = {
+      {0, 1, 2, 3, 4}, {2, 3, 4, 5}, {3, 4}};
 
   trusted_vault_client_.StoreKeys(kSyncingAccount.gaia, kInitialKeys);
 
   // The engine replies with OnTrustedVaultKeyAccepted() only if |kLatestKeys|
   // are provided.
   ON_CALL(engine_, AddTrustedVaultDecryptionKeys(_, _))
-      .WillByDefault(
-          [&](const std::vector<std::string>& keys, base::OnceClosure done_cb) {
-            if (keys == kLatestKeys) {
-              crypto_.OnTrustedVaultKeyAccepted();
-            }
-            std::move(done_cb).Run();
-          });
+      .WillByDefault([&](const std::vector<std::vector<uint8_t>>& keys,
+                         base::OnceClosure done_cb) {
+        if (keys == kLatestKeys) {
+          crypto_.OnTrustedVaultKeyAccepted();
+        }
+        std::move(done_cb).Run();
+      });
 
   // Mimic initialization of the engine where trusted vault keys are needed and
   // |kInitialKeys| are fetched, which are insufficient, and hence

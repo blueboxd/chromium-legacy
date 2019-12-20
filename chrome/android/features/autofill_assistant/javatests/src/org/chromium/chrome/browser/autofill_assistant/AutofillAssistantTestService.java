@@ -14,6 +14,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionsResponseProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.ClientSettingsProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ProcessedActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportsScriptResponseProto;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -31,13 +32,27 @@ public class AutofillAssistantTestService
         implements AutofillAssistantService,
                    AutofillAssistantServiceInjector.NativeServiceProvider {
     private final List<AutofillAssistantTestScript> mScripts;
+    private final ClientSettingsProto mClientSettings;
     private List<ActionProto> mNextActions = Collections.emptyList();
     /** The most recently received list of processed actions. */
     private @Nullable List<ProcessedActionProto> mProcessedActions;
     private int mNextActionsCounter;
 
+    /** Default constructor which disables animations. */
     AutofillAssistantTestService(List<AutofillAssistantTestScript> scripts) {
+        this(scripts,
+                (ClientSettingsProto) ClientSettingsProto.newBuilder()
+                        .setIntegrationTestSettings(
+                                ClientSettingsProto.IntegrationTestSettings.newBuilder()
+                                        .setDisableHeaderAnimations(true))
+                        .build());
+    }
+
+    /** Constructor which allows injecting custom client settings. */
+    AutofillAssistantTestService(
+            List<AutofillAssistantTestScript> scripts, ClientSettingsProto clientSettings) {
         mScripts = scripts;
+        mClientSettings = clientSettings;
     }
 
     /**
@@ -70,6 +85,7 @@ public class AutofillAssistantTestService
         for (AutofillAssistantTestScript script : mScripts) {
             builder.addScripts(script.getSupportedScript());
         }
+        builder.setClientSettings(mClientSettings);
         return builder.build();
     }
 

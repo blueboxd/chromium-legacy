@@ -13,7 +13,7 @@
 
 TrustedVaultClientAndroid::OngoingFetchKeys::OngoingFetchKeys(
     const std::string& gaia_id,
-    base::OnceCallback<void(const std::vector<std::string>&)> callback)
+    base::OnceCallback<void(const std::vector<std::vector<uint8_t>>&)> callback)
     : gaia_id(gaia_id), callback(std::move(callback)) {}
 
 TrustedVaultClientAndroid::OngoingFetchKeys::~OngoingFetchKeys() = default;
@@ -41,15 +41,12 @@ void TrustedVaultClientAndroid::FetchKeysCompleted(
 
   // Make a copy of the callback and reset |ongoing_fetch_keys_| before invoking
   // the callback, in case it has side effects.
-  base::OnceCallback<void(const std::vector<std::string>&)> cb =
+  base::OnceCallback<void(const std::vector<std::vector<uint8_t>>&)> cb =
       std::move(ongoing_fetch_keys_->callback);
   ongoing_fetch_keys_.reset();
 
-  // Convert from Java bytes[][] to the C++ equivalent, in this case
-  // std::vector<std::string>.
-  // TODO(crbug.com/1027676): Avoid std::string for binary keys.
-  std::vector<std::string> converted_keys;
-  JavaArrayOfByteArrayToStringVector(env, keys, &converted_keys);
+  std::vector<std::vector<uint8_t>> converted_keys;
+  JavaArrayOfByteArrayToBytesVector(env, keys, &converted_keys);
   std::move(cb).Run(converted_keys);
 }
 
@@ -61,7 +58,7 @@ TrustedVaultClientAndroid::AddKeysChangedObserver(
 
 void TrustedVaultClientAndroid::FetchKeys(
     const std::string& gaia_id,
-    base::OnceCallback<void(const std::vector<std::string>&)> cb) {
+    base::OnceCallback<void(const std::vector<std::vector<uint8_t>>&)> cb) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!ongoing_fetch_keys_)
       << "Only one FetchKeys() request is allowed at any time";
@@ -82,7 +79,7 @@ void TrustedVaultClientAndroid::FetchKeys(
 
 void TrustedVaultClientAndroid::StoreKeys(
     const std::string& gaia_id,
-    const std::vector<std::string>& keys) {
+    const std::vector<std::vector<uint8_t>>& keys) {
   // Not supported on Android, where keys are fetched outside the browser.
   NOTREACHED();
 }

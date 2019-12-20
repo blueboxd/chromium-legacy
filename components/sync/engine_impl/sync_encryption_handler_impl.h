@@ -68,7 +68,7 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
   void SetEncryptionPassphrase(const std::string& passphrase) override;
   void SetDecryptionPassphrase(const std::string& passphrase) override;
   void AddTrustedVaultDecryptionKeys(
-      const std::vector<std::string>& keys) override;
+      const std::vector<std::vector<uint8_t>>& keys) override;
   void EnableEncryptEverything() override;
   bool IsEncryptEverythingEnabled() const override;
   base::Time GetKeystoreMigrationTime() const override;
@@ -94,7 +94,7 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
 
   // KeystoreKeysHandler implementation.
   bool NeedKeystoreKey() const override;
-  bool SetKeystoreKeys(const std::vector<std::string>& keys) override;
+  bool SetKeystoreKeys(const std::vector<std::vector<uint8_t>>& keys) override;
 
   // Unsafe getters. Use only if sync is not up and running and there is no risk
   // of other threads calling this.

@@ -136,7 +136,7 @@ class SyncEngine : public ModelTypeConfigurer {
   // the operation via OnTrustedVaultKeyAccepted if the provided keys
   // successfully decrypted pending keys. |done_cb| is invoked at the very end.
   virtual void AddTrustedVaultDecryptionKeys(
-      const std::vector<std::string>& keys,
+      const std::vector<std::vector<uint8_t>>& keys,
       base::OnceClosure done_cb) = 0;
 
   // Kick off shutdown procedure. Attempts to cut short any long-lived or

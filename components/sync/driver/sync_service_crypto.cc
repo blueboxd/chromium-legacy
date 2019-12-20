@@ -38,12 +38,13 @@ class EmptyTrustedVaultClient : public TrustedVaultClient {
 
   void FetchKeys(
       const std::string& gaia_id,
-      base::OnceCallback<void(const std::vector<std::string>&)> cb) override {
+      base::OnceCallback<void(const std::vector<std::vector<uint8_t>>&)> cb)
+      override {
     std::move(cb).Run({});
   }
 
   void StoreKeys(const std::string& gaia_id,
-                 const std::vector<std::string>& keys) override {
+                 const std::vector<std::vector<uint8_t>>& keys) override {
     // Never invoked by SyncServiceCrypto.
     NOTREACHED();
   }
@@ -582,7 +583,7 @@ void SyncServiceCrypto::FetchTrustedVaultKeys() {
 }
 
 void SyncServiceCrypto::TrustedVaultKeysFetched(
-    const std::vector<std::string>& keys) {
+    const std::vector<std::vector<uint8_t>>& keys) {
   if (state_.required_user_action !=
           RequiredUserAction::kFetchingTrustedVaultKeys &&
       state_.required_user_action !=

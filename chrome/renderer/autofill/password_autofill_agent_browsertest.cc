@@ -2515,8 +2515,8 @@ TEST_F(PasswordAutofillAgentTest,
                   &autofill::PasswordForm::password_value, password)));
   password_generation_->GeneratedPasswordAccepted(password);
 
-  // A user fills username and password, the generated value is gone.
-  EXPECT_CALL(fake_pw_client_, PasswordNoLongerGenerated(testing::_));
+  // The form should not be autofilled on the next call of FillPasswordForm
+  EXPECT_CALL(fake_pw_client_, PasswordNoLongerGenerated(_));
   SimulateOnFillPasswordForm(fill_data_);
   base::RunLoop().RunUntilIdle();
 
@@ -2526,13 +2526,28 @@ TEST_F(PasswordAutofillAgentTest,
   ASSERT_FALSE(element.IsNull());
   WebInputElement password_element = element.To<WebInputElement>();
   EXPECT_FALSE(password_element.ShouldRevealPassword());
+  EXPECT_FALSE(password_element.IsAutofilled());
+
+  SaveAndSubmitForm();
+
+  ExpectFormSubmittedWithUsernameAndPasswords(
+      GetFormUniqueRendererId("LoginTestForm"), kAliceUsername, "NewPass22",
+      "");
+
+  // Then user selects another account on Fill On Account Select
+  SimulateSuggestionChoiceOfUsernameAndPassword(username_element_,
+                                                ASCIIToUTF16(kBobUsername),
+                                                ASCIIToUTF16(kBobPassword));
+  base::RunLoop().RunUntilIdle();
+
+  // The password field still shoudln't reveal the value on focusing.
+  EXPECT_FALSE(password_element.ShouldRevealPassword());
   EXPECT_TRUE(password_element.IsAutofilled());
 
   SaveAndSubmitForm();
 
   ExpectFormSubmittedWithUsernameAndPasswords(
-      GetFormUniqueRendererId("LoginTestForm"), kAliceUsername, kAlicePassword,
-      "");
+      GetFormUniqueRendererId("LoginTestForm"), kBobUsername, kBobPassword, "");
 }
 
 // If password generation is enabled for a field, password autofill should not
@@ -3806,6 +3821,19 @@ TEST_F(PasswordAutofillAgentTest, SingleUsernameClearPreview) {
   EXPECT_TRUE(username_element_.SuggestedValue().IsEmpty());
   CheckTextFieldsDOMState("ali", true, std::string(), false);
   CheckUsernameSelection(3, 3);
+}
+
+// Tests that any fields that have user input are not refilled on the next
+// call of FillPasswordForm.
+TEST_F(PasswordAutofillAgentTest, NoRefillOfUserInput) {
+  ClearUsernameAndPasswordFields();
+  SimulateOnFillPasswordForm(fill_data_);
+  SimulateElementClick(kPasswordName);
+  SimulatePasswordTyping("newpwd");
+  SimulateOnFillPasswordForm(fill_data_);
+  CheckTextFieldsStateForElements(username_element_, kAliceUsername, true,
+                                  password_element_, "newpwd", false, false,
+                                  false);
 }
 
 }  // namespace autofill

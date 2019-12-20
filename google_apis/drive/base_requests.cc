@@ -262,14 +262,14 @@ UrlFetchRequestBase::~UrlFetchRequestBase() {}
 
 void UrlFetchRequestBase::Start(const std::string& access_token,
                                 const std::string& custom_user_agent,
-                                const ReAuthenticateCallback& callback) {
+                                ReAuthenticateCallback callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(!access_token.empty());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
   DCHECK(re_authenticate_callback_.is_null());
   Prepare(base::BindOnce(&UrlFetchRequestBase::StartAfterPrepare,
                          weak_ptr_factory_.GetWeakPtr(), access_token,
-                         custom_user_agent, callback));
+                         custom_user_agent, std::move(callback)));
 }
 
 void UrlFetchRequestBase::Prepare(PrepareCallback callback) {
@@ -281,11 +281,11 @@ void UrlFetchRequestBase::Prepare(PrepareCallback callback) {
 void UrlFetchRequestBase::StartAfterPrepare(
     const std::string& access_token,
     const std::string& custom_user_agent,
-    const ReAuthenticateCallback& callback,
+    ReAuthenticateCallback callback,
     DriveApiErrorCode code) {
   DCHECK(CalledOnValidThread());
   DCHECK(!access_token.empty());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
   DCHECK(re_authenticate_callback_.is_null());
 
   const GURL url = GetURL();

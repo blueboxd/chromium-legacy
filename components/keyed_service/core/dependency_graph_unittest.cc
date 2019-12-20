@@ -207,8 +207,8 @@ TEST_F(DependencyGraphTest, DumpAsGraphviz_Escaping) {
 
   for (const char* name : names) {
     SCOPED_TRACE(testing::Message("name=") << name);
-    std::string graph_str =
-        graph.DumpAsGraphviz("Test", base::Bind(&NodeNameProvider, name));
+    std::string graph_str = graph.DumpAsGraphviz(
+        "Test", base::BindRepeating(&NodeNameProvider, name));
     base::StringPiece dumped_name(LocateNodeNameInGraph(graph_str));
     EXPECT_TRUE(IsValidDotId(dumped_name)) << "dumped_name=" << dumped_name;
   }

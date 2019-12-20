@@ -272,8 +272,6 @@ bool EnrollmentDialogAllowed(Profile* profile) {
       return true;
     case LoginState::LOGGED_IN_USER_KIOSK_APP:
       return false;
-    case LoginState::LOGGED_IN_USER_ARC_KIOSK_APP:
-      return false;
     case LoginState::LOGGED_IN_USER_CHILD:
       return true;
   }

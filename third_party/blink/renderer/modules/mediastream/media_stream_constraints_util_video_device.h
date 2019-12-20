@@ -13,8 +13,8 @@
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
+class MediaConstraints;
 class WebString;
-class WebMediaConstraints;
 }  // namespace blink
 
 namespace blink {
@@ -124,7 +124,7 @@ struct MODULES_EXPORT VideoDeviceCaptureCapabilities {
 // documentation.
 VideoCaptureSettings MODULES_EXPORT SelectSettingsVideoDeviceCapture(
     const VideoDeviceCaptureCapabilities& capabilities,
-    const WebMediaConstraints& constraints,
+    const MediaConstraints& constraints,
     int default_width,
     int default_height,
     double default_frame_rate);

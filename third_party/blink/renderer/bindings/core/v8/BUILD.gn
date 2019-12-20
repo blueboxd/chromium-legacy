@@ -26,6 +26,7 @@ generate_origin_trial_features("bindings_core_origin_trial_features") {
 group("bindings_core_v8_generated") {
   public_deps = [
     ":bindings_core_impl_generated",
+    "//third_party/blink/renderer/bindings:generate_v8_bindings",
   ]
   if (is_win && is_official_build) {
     public_deps += [ ":generate_bindings_core_v8_all_interfaces" ]

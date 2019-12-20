@@ -488,7 +488,7 @@ VideoTrackRecorderImpl::VideoTrackRecorderImpl(
   DCHECK(track_->Source()->GetType() == MediaStreamSource::kTypeVideo);
 
   initialize_encoder_callback_ = WTF::BindRepeating(
-      &VideoTrackRecorderImpl::InitializeEncoder, WrapWeakPersistent(this),
+      &VideoTrackRecorderImpl::InitializeEncoder, weak_factory_.GetWeakPtr(),
       codec, on_encoded_video_callback, bits_per_second);
 
   // InitializeEncoder() will be called on Render Main thread.
@@ -496,7 +496,10 @@ VideoTrackRecorderImpl::VideoTrackRecorderImpl(
       initialize_encoder_callback_, true /* allow_vea_encoder */)));
 }
 
-VideoTrackRecorderImpl::~VideoTrackRecorderImpl() = default;
+VideoTrackRecorderImpl::~VideoTrackRecorderImpl() {
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+  DisconnectFromTrack();
+}
 
 void VideoTrackRecorderImpl::Pause() {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
@@ -556,7 +559,7 @@ void VideoTrackRecorderImpl::InitializeEncoder(
     encoder_ = VEAEncoder::Create(
         on_encoded_video_callback,
         media::BindToCurrentLoop(WTF::BindRepeating(
-            &VideoTrackRecorderImpl::OnError, WrapWeakPersistent(this))),
+            &VideoTrackRecorderImpl::OnError, weak_factory_.GetWeakPtr())),
         bits_per_second, vea_profile, input_size, use_import_mode,
         main_task_runner_);
   } else {
@@ -612,18 +615,6 @@ void VideoTrackRecorderImpl::DisconnectFromTrack() {
   video_track->RemoveSink(this);
 }
 
-void VideoTrackRecorderImpl::Trace(blink::Visitor* visitor) {
-  visitor->Trace(track_);
-}
-
-void VideoTrackRecorderImpl::Prefinalize() {
-  // TODO(crbug.com/704136) : Remove this method when moving
-  // MediaStreamVideoTrack to Oilpan's heap.
-  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
-  DisconnectFromTrack();
-  track_ = nullptr;
-}
-
 VideoTrackRecorderPassthrough::VideoTrackRecorderPassthrough(
     MediaStreamComponent* track,
     OnEncodedVideoCB on_encoded_video_callback,
@@ -643,7 +634,12 @@ VideoTrackRecorderPassthrough::VideoTrackRecorderPassthrough(
   video_track->AddEncodedSink(
       this, media::BindToCurrentLoop(WTF::BindRepeating(
                 &VideoTrackRecorderPassthrough::HandleEncodedVideoFrame,
-                WrapWeakPersistent(this))));
+                weak_factory_.GetWeakPtr())));
+}
+
+VideoTrackRecorderPassthrough::~VideoTrackRecorderPassthrough() {
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+  DisconnectFromTrack();
 }
 
 void VideoTrackRecorderPassthrough::Pause() {
@@ -661,10 +657,6 @@ void VideoTrackRecorderPassthrough::OnEncodedVideoFrameForTesting(
     scoped_refptr<EncodedVideoFrame> frame,
     base::TimeTicks capture_time) {
   HandleEncodedVideoFrame(frame, capture_time);
-}
-
-void VideoTrackRecorderPassthrough::Trace(blink::Visitor* visitor) {
-  visitor->Trace(track_);
 }
 
 void VideoTrackRecorderPassthrough::RequestRefreshFrame() {

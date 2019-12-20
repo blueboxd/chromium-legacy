@@ -8,7 +8,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chromecast/base/version.h"
 #include "chromecast/browser/webview/proto/webview.pb.h"
-#include "chromecast/browser/webview/webview_layout_manager.h"
 #include "chromecast/browser/webview/webview_navigation_throttle.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browsing_data_remover.h"
@@ -139,8 +138,10 @@ void WebContentController::ProcessRequest(
 void WebContentController::AttachTo(aura::Window* window, int window_id) {
   content::WebContents* contents = GetWebContents();
   auto* contents_window = contents->GetNativeView();
-  window->SetLayoutManager(new WebviewLayoutManager(window));
   contents_window->set_id(window_id);
+  contents_window->SetBounds(gfx::Rect(window->bounds().size()));
+  // Set the initial webview size as we depend on the client to do further
+  // sizing.
   contents_window->SetBounds(gfx::Rect(window->bounds().size()));
   // The aura window is hidden to avoid being shown via the usual layer method,
   // instead it is shows via a SurfaceDrawQuad by exo.

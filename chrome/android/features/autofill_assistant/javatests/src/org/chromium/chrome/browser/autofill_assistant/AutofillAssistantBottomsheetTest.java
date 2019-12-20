@@ -7,9 +7,12 @@ package org.chromium.chrome.browser.autofill_assistant;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.actionWithAssertions;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.action.ViewActions.scrollTo;
+import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
@@ -27,6 +30,7 @@ import static org.chromium.chrome.browser.autofill_assistant.proto.ConfigureBott
 
 import android.graphics.Rect;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.espresso.Espresso;
 import android.support.test.espresso.ViewAction;
 import android.support.test.espresso.action.GeneralLocation;
 import android.support.test.espresso.action.GeneralSwipeAction;
@@ -45,6 +49,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ChipProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ChipType;
+import org.chromium.chrome.browser.autofill_assistant.proto.CollectUserDataProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ConfigureBottomSheetProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ConfigureBottomSheetProto.PeekMode;
 import org.chromium.chrome.browser.autofill_assistant.proto.ConfigureBottomSheetProto.ViewportResizing;
@@ -56,6 +61,9 @@ import org.chromium.chrome.browser.autofill_assistant.proto.PromptProto.Choice;
 import org.chromium.chrome.browser.autofill_assistant.proto.ShowDetailsProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto.PresentationProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.TextInputProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.TextInputSectionProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.UserFormSectionProto;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -64,6 +72,7 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Tests autofill assistant bottomsheet.
@@ -241,6 +250,66 @@ public class AutofillAssistantBottomsheetTest {
         onView(withId(R.id.swipe_indicator)).perform(swipeUpToExpand());
         checkElementIsCoveredByBottomsheet("bottom", true);
         onView(withText("Details title")).check(matches(isCompletelyDisplayed()));
+    }
+
+    @Test
+    @MediumTest
+    public void testBottomSheetDoesNotObstructNavBar() {
+        // Create enough additional sections to fill up more than the height of the screen.
+        List<UserFormSectionProto> additionalSections = new ArrayList<>();
+        for (int i = 0; i < 20; ++i) {
+            additionalSections.add(
+                    (UserFormSectionProto) UserFormSectionProto.newBuilder()
+                            .setTextInputSection(TextInputSectionProto.newBuilder().addInputFields(
+                                    TextInputProto.newBuilder()
+                                            .setHint("Text input " + i)
+                                            .setClientMemoryKey("input_" + i)
+                                            .setInputType(TextInputProto.InputType.INPUT_TEXT)))
+                            .setTitle("Title " + i)
+                            .build());
+        }
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setCollectUserData(
+                                 CollectUserDataProto.newBuilder()
+                                         .addAllAdditionalAppendedSections(additionalSections)
+                                         .setRequestTermsAndConditions(false))
+                         .build());
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("bottomsheet_behaviour_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Autostart")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+        waitUntilViewMatchesCondition(withText("Continue"), isCompletelyDisplayed());
+
+        onView(withId(R.id.control_container)).check(matches(isCompletelyDisplayed()));
+        onView(withText("Title 0")).perform(click());
+        waitUntilViewMatchesCondition(
+                withContentDescription("Text input 0"), isCompletelyDisplayed());
+        // Typing text will show the soft keyboard, leading to resize of the Chrome window.
+        onView(withContentDescription("Text input 0")).perform(typeText("Hello World!"));
+        onView(withId(R.id.control_container)).check(matches(isCompletelyDisplayed()));
+        onView(withText("Continue")).check(matches(isCompletelyDisplayed()));
+        // Closing the soft keyboard will restore the window size.
+        Espresso.closeSoftKeyboard();
+        onView(withContentDescription("Text input 0")).check(matches(isDisplayed()));
+        onView(withId(R.id.control_container)).check(matches(isCompletelyDisplayed()));
+        onView(withText("Continue")).check(matches(isCompletelyDisplayed()));
+
+        // Scroll down.
+        onView(withText("Title 19")).check(matches(not(isDisplayed())));
+        onView(withText("Title 19")).perform(scrollTo()).check(matches(isDisplayed()));
+
+        // Scroll up.
+        onView(withText("Title 0")).check(matches(not(isDisplayed())));
+        onView(withText("Title 0")).perform(scrollTo()).check(matches(isDisplayed()));
     }
 
     private ViewAction swipeDownToMinimize() {

@@ -15,6 +15,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -368,6 +369,46 @@ TEST(JniArray, JavaArrayOfByteArrayToStringVector) {
     snprintf(text, sizeof text, "%d", i);
     EXPECT_STREQ(text, vec[i].c_str());
   }
+}
+
+TEST(JniArray, JavaArrayOfByteArrayToBytesVector) {
+  const size_t kMaxItems = 50;
+  const uint8_t kStep = 37;
+  JNIEnv* env = AttachCurrentThread();
+
+  // Create a byte[][] object.
+  ScopedJavaLocalRef<jclass> byte_array_clazz(env, env->FindClass("[B"));
+  ASSERT_TRUE(byte_array_clazz);
+
+  ScopedJavaLocalRef<jobjectArray> array(
+      env, env->NewObjectArray(kMaxItems, byte_array_clazz.obj(), nullptr));
+  ASSERT_TRUE(array);
+
+  // Create kMaxItems byte buffers with size |i|+1 on each step;
+  std::vector<std::vector<uint8_t>> input_bytes;
+  input_bytes.reserve(kMaxItems);
+  for (size_t i = 0; i < kMaxItems; ++i) {
+    std::vector<uint8_t> cur_bytes(i + 1);
+    for (size_t j = 0; j < cur_bytes.size(); ++j)
+      cur_bytes[j] = static_cast<uint8_t>(i + j * kStep);
+    ScopedJavaLocalRef<jbyteArray> byte_array =
+        ToJavaByteArray(env, cur_bytes.data(), cur_bytes.size());
+    ASSERT_TRUE(byte_array);
+
+    env->SetObjectArrayElement(array.obj(), i, byte_array.obj());
+    ASSERT_FALSE(HasException(env));
+
+    input_bytes.push_back(std::move(cur_bytes));
+  }
+  ASSERT_EQ(kMaxItems, input_bytes.size());
+
+  // Convert to std::vector<std::vector<uint8_t>>, check the content.
+  std::vector<std::vector<uint8_t>> result;
+  JavaArrayOfByteArrayToBytesVector(env, array, &result);
+
+  EXPECT_EQ(input_bytes.size(), result.size());
+  for (size_t i = 0; i < kMaxItems; ++i)
+    EXPECT_THAT(result[i], ::testing::ElementsAreArray(input_bytes.at(i)));
 }
 
 TEST(JniArray, JavaArrayOfStringArrayToVectorOfStringVector) {

@@ -42,11 +42,9 @@ using testing::IsEmpty;
 const syncer::SyncFirstSetupCompleteSource kSetSourceFromTest =
     syncer::SyncFirstSetupCompleteSource::BASIC_FLOW;
 
-syncer::KeyParams KeystoreKeyParams(const std::string& key) {
-  std::string encoded_key;
-  base::Base64Encode(key, &encoded_key);
+syncer::KeyParams KeystoreKeyParams(const std::vector<uint8_t>& key) {
   return {syncer::KeyDerivationParams::CreateForPbkdf2(),
-          std::move(encoded_key)};
+          base::Base64Encode(key)};
 }
 
 sync_pb::PasswordSpecifics EncryptPasswordSpecifics(
@@ -342,7 +340,7 @@ class SingleClientPasswordsWithAccountStorageSyncTest : public SyncTest {
   }
 
   void AddKeystoreNigoriToFakeServer() {
-    const std::vector<std::string>& keystore_keys =
+    const std::vector<std::vector<uint8_t>>& keystore_keys =
         GetFakeServer()->GetKeystoreKeys();
     ASSERT_TRUE(keystore_keys.size() == 1);
     const syncer::KeyParams key_params =

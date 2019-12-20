@@ -10,9 +10,9 @@
 #include "base/optional.h"
 #include "media/base/limits.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/renderer/modules/mediastream/mock_constraint_factory.h"
+#include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 
 namespace blink {
 
@@ -60,7 +60,7 @@ double AspectRatio(const media::VideoCaptureFormat& format) {
 
 VideoCaptureSettings SelectSettingsVideoDeviceCapture(
     const VideoDeviceCaptureCapabilities& capabilities,
-    const WebMediaConstraints& constraints) {
+    const MediaConstraints& constraints) {
   return SelectSettingsVideoDeviceCapture(
       capabilities, constraints, MediaStreamVideoSource::kDefaultWidth,
       MediaStreamVideoSource::kDefaultHeight,
@@ -180,8 +180,7 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
 
  protected:
   VideoCaptureSettings SelectSettings() {
-    WebMediaConstraints constraints =
-        constraint_factory_.CreateWebMediaConstraints();
+    MediaConstraints constraints = constraint_factory_.CreateMediaConstraints();
     return SelectSettingsVideoDeviceCapture(capabilities_, constraints);
   }
 
@@ -400,7 +399,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
 
   constraint_factory_.Reset();
   constraint_factory_.basic().goog_noise_reduction.SetExact(true);
-  auto constraints = constraint_factory_.CreateWebMediaConstraints();
+  auto constraints = constraint_factory_.CreateMediaConstraints();
   auto result = SelectSettingsVideoDeviceCapture(capabilities, constraints);
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().goog_noise_reduction.GetName(),
@@ -2459,7 +2458,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, NoDevicesNoConstraints) {
   constraint_factory_.Reset();
   VideoDeviceCaptureCapabilities capabilities;
   auto result = SelectSettingsVideoDeviceCapture(
-      capabilities, constraint_factory_.CreateWebMediaConstraints());
+      capabilities, constraint_factory_.CreateMediaConstraints());
   EXPECT_FALSE(result.HasValue());
   EXPECT_TRUE(std::string(result.failed_constraint_name()).empty());
 }
@@ -2469,7 +2468,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, NoDevicesWithConstraints) {
   constraint_factory_.basic().height.SetExact(100);
   VideoDeviceCaptureCapabilities capabilities;
   auto result = SelectSettingsVideoDeviceCapture(
-      capabilities, constraint_factory_.CreateWebMediaConstraints());
+      capabilities, constraint_factory_.CreateMediaConstraints());
   EXPECT_FALSE(result.HasValue());
   EXPECT_TRUE(std::string(result.failed_constraint_name()).empty());
 }

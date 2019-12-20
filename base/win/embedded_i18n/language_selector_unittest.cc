@@ -37,7 +37,7 @@ std::vector<LanguageSelector::LangToOffset> MakeLanguageOffsetPairs() {
   std::vector<LanguageSelector::LangToOffset> language_offset_pairs;
   int i = 0;
   for (const wchar_t* lang : kExactMatchCandidates) {
-    language_offset_pairs.push_back({lang, i++});
+    language_offset_pairs.emplace_back(lang, i++);
   }
 
   return language_offset_pairs;

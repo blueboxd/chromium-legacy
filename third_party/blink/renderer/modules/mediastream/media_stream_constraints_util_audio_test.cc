@@ -18,12 +18,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_source.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
-#include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/modules/mediastream/local_media_stream_audio_source.h"
 #include "third_party/blink/renderer/modules/mediastream/mock_constraint_factory.h"
 #include "third_party/blink/renderer/modules/mediastream/processed_local_audio_source.h"
 #include "third_party/blink/renderer/modules/webrtc/webrtc_audio_device_impl.h"
+#include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
 #include "third_party/webrtc/rtc_base/ref_counted_object.h"
@@ -170,8 +170,7 @@ class MediaStreamConstraintsUtilAudioTestBase {
       bool is_reconfigurable = false,
       base::Optional<AudioDeviceCaptureCapabilities> capabilities =
           base::nullopt) {
-    blink::WebMediaConstraints constraints =
-        constraint_factory_.CreateWebMediaConstraints();
+    MediaConstraints constraints = constraint_factory_.CreateMediaConstraints();
     if (capabilities) {
       return SelectSettingsAudioCapture(*capabilities, constraints, false,
                                         is_reconfigurable);
@@ -820,7 +819,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, ChannelsWithSource) {
     ResetFactory();
     constraint_factory_.basic().channel_count.SetExact(channel_count);
     auto result = SelectSettingsAudioCapture(
-        source.get(), constraint_factory_.CreateWebMediaConstraints());
+        source.get(), constraint_factory_.CreateMediaConstraints());
     if (channel_count == 2)
       EXPECT_TRUE(result.HasValue());
     else
@@ -938,12 +937,12 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SampleRateWithSource) {
   constraint_factory_.basic().sample_rate.SetExact(
       media::AudioParameters::kAudioCDSampleRate);
   auto result = SelectSettingsAudioCapture(
-      source.get(), constraint_factory_.CreateWebMediaConstraints());
+      source.get(), constraint_factory_.CreateMediaConstraints());
   EXPECT_TRUE(result.HasValue());
 
   constraint_factory_.basic().sample_rate.SetExact(11111);
   result = SelectSettingsAudioCapture(
-      source.get(), constraint_factory_.CreateWebMediaConstraints());
+      source.get(), constraint_factory_.CreateMediaConstraints());
   EXPECT_FALSE(result.HasValue());
 
   // Test set min sampleRate.
@@ -951,13 +950,13 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SampleRateWithSource) {
   constraint_factory_.basic().sample_rate.SetMin(
       media::AudioParameters::kAudioCDSampleRate);
   result = SelectSettingsAudioCapture(
-      source.get(), constraint_factory_.CreateWebMediaConstraints());
+      source.get(), constraint_factory_.CreateMediaConstraints());
   EXPECT_TRUE(result.HasValue());
 
   constraint_factory_.basic().sample_rate.SetMin(
       media::AudioParameters::kAudioCDSampleRate + 1);
   result = SelectSettingsAudioCapture(
-      source.get(), constraint_factory_.CreateWebMediaConstraints());
+      source.get(), constraint_factory_.CreateMediaConstraints());
   EXPECT_FALSE(result.HasValue());
 
   // Test set max sampleRate.
@@ -965,13 +964,13 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SampleRateWithSource) {
   constraint_factory_.basic().sample_rate.SetMax(
       media::AudioParameters::kAudioCDSampleRate);
   result = SelectSettingsAudioCapture(
-      source.get(), constraint_factory_.CreateWebMediaConstraints());
+      source.get(), constraint_factory_.CreateMediaConstraints());
   EXPECT_TRUE(result.HasValue());
 
   constraint_factory_.basic().sample_rate.SetMax(
       media::AudioParameters::kAudioCDSampleRate - 1);
   result = SelectSettingsAudioCapture(
-      source.get(), constraint_factory_.CreateWebMediaConstraints());
+      source.get(), constraint_factory_.CreateMediaConstraints());
   EXPECT_FALSE(result.HasValue());
 
   // Test set ideal sampleRate.
@@ -979,13 +978,13 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SampleRateWithSource) {
   constraint_factory_.basic().sample_rate.SetIdeal(
       media::AudioParameters::kAudioCDSampleRate);
   result = SelectSettingsAudioCapture(
-      source.get(), constraint_factory_.CreateWebMediaConstraints());
+      source.get(), constraint_factory_.CreateMediaConstraints());
   EXPECT_TRUE(result.HasValue());
 
   constraint_factory_.basic().sample_rate.SetIdeal(
       media::AudioParameters::kAudioCDSampleRate - 1);
   result = SelectSettingsAudioCapture(
-      source.get(), constraint_factory_.CreateWebMediaConstraints());
+      source.get(), constraint_factory_.CreateMediaConstraints());
   EXPECT_TRUE(result.HasValue());
 }
 
@@ -1093,12 +1092,12 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, LatencyWithSource) {
   ResetFactory();
   constraint_factory_.basic().latency.SetExact(0.01);
   auto result = SelectSettingsAudioCapture(
-      source.get(), constraint_factory_.CreateWebMediaConstraints());
+      source.get(), constraint_factory_.CreateMediaConstraints());
   EXPECT_TRUE(result.HasValue());
 
   constraint_factory_.basic().latency.SetExact(0.1234);
   result = SelectSettingsAudioCapture(
-      source.get(), constraint_factory_.CreateWebMediaConstraints());
+      source.get(), constraint_factory_.CreateMediaConstraints());
   EXPECT_FALSE(result.HasValue());
 
   // Test set min sampleRate.
@@ -1143,12 +1142,12 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, LatencyWithSource) {
   ResetFactory();
   constraint_factory_.basic().latency.SetIdeal(0.01);
   result = SelectSettingsAudioCapture(
-      source.get(), constraint_factory_.CreateWebMediaConstraints());
+      source.get(), constraint_factory_.CreateMediaConstraints());
   EXPECT_TRUE(result.HasValue());
 
   constraint_factory_.basic().latency.SetIdeal(0.1234);
   result = SelectSettingsAudioCapture(
-      source.get(), constraint_factory_.CreateWebMediaConstraints());
+      source.get(), constraint_factory_.CreateMediaConstraints());
   EXPECT_TRUE(result.HasValue());
 }
 
@@ -1615,7 +1614,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, NoDevicesNoConstraints) {
 
   AudioDeviceCaptureCapabilities capabilities;
   auto result = SelectSettingsAudioCapture(
-      capabilities, constraint_factory_.CreateWebMediaConstraints(), false);
+      capabilities, constraint_factory_.CreateMediaConstraints(), false);
   EXPECT_FALSE(result.HasValue());
   EXPECT_TRUE(std::string(result.failed_constraint_name()).empty());
 }
@@ -1628,7 +1627,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, NoDevicesWithConstraints) {
   AudioDeviceCaptureCapabilities capabilities;
   constraint_factory_.basic().sample_size.SetExact(16);
   auto result = SelectSettingsAudioCapture(
-      capabilities, constraint_factory_.CreateWebMediaConstraints(), false);
+      capabilities, constraint_factory_.CreateMediaConstraints(), false);
   EXPECT_FALSE(result.HasValue());
   EXPECT_TRUE(std::string(result.failed_constraint_name()).empty());
 }
@@ -1657,27 +1656,27 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SourceWithNoAudioProcessing) {
       (constraint_factory_.basic().*kConstraints[i])
           .SetExact(enable_properties);
       auto result = SelectSettingsAudioCapture(
-          source.get(), constraint_factory_.CreateWebMediaConstraints());
+          source.get(), constraint_factory_.CreateMediaConstraints());
       EXPECT_TRUE(result.HasValue());
 
       constraint_factory_.Reset();
       (constraint_factory_.basic().*kConstraints[i])
           .SetExact(!enable_properties);
       result = SelectSettingsAudioCapture(
-          source.get(), constraint_factory_.CreateWebMediaConstraints());
+          source.get(), constraint_factory_.CreateMediaConstraints());
       EXPECT_FALSE(result.HasValue());
 
       // Setting just ideal values should always succeed.
       constraint_factory_.Reset();
       (constraint_factory_.basic().*kConstraints[i]).SetIdeal(true);
       result = SelectSettingsAudioCapture(
-          source.get(), constraint_factory_.CreateWebMediaConstraints());
+          source.get(), constraint_factory_.CreateMediaConstraints());
       EXPECT_TRUE(result.HasValue());
 
       constraint_factory_.Reset();
       (constraint_factory_.basic().*kConstraints[i]).SetIdeal(false);
       result = SelectSettingsAudioCapture(
-          source.get(), constraint_factory_.CreateWebMediaConstraints());
+          source.get(), constraint_factory_.CreateMediaConstraints());
       EXPECT_TRUE(result.HasValue());
     }
   }
@@ -1733,14 +1732,14 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SourceWithAudioProcessing) {
       (constraint_factory_.basic().*kAudioProcessingConstraints[i])
           .SetExact(properties.*kAudioProcessingProperties[i]);
       auto result = SelectSettingsAudioCapture(
-          source.get(), constraint_factory_.CreateWebMediaConstraints());
+          source.get(), constraint_factory_.CreateMediaConstraints());
       EXPECT_TRUE(result.HasValue());
 
       constraint_factory_.Reset();
       (constraint_factory_.basic().*kAudioProcessingConstraints[i])
           .SetExact(!(properties.*kAudioProcessingProperties[i]));
       result = SelectSettingsAudioCapture(
-          source.get(), constraint_factory_.CreateWebMediaConstraints());
+          source.get(), constraint_factory_.CreateMediaConstraints());
       EXPECT_FALSE(result.HasValue());
 
       // Setting just ideal values should always succeed.
@@ -1748,14 +1747,14 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SourceWithAudioProcessing) {
       (constraint_factory_.basic().*kAudioProcessingConstraints[i])
           .SetIdeal(true);
       result = SelectSettingsAudioCapture(
-          source.get(), constraint_factory_.CreateWebMediaConstraints());
+          source.get(), constraint_factory_.CreateMediaConstraints());
       EXPECT_TRUE(result.HasValue());
 
       constraint_factory_.Reset();
       (constraint_factory_.basic().*kAudioProcessingConstraints[i])
           .SetIdeal(false);
       result = SelectSettingsAudioCapture(
-          source.get(), constraint_factory_.CreateWebMediaConstraints());
+          source.get(), constraint_factory_.CreateMediaConstraints());
       EXPECT_TRUE(result.HasValue());
     }
 
@@ -1765,7 +1764,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SourceWithAudioProcessing) {
         properties.echo_cancellation_type ==
         EchoCancellationType::kEchoCancellationAec3);
     auto result = SelectSettingsAudioCapture(
-        source.get(), constraint_factory_.CreateWebMediaConstraints());
+        source.get(), constraint_factory_.CreateMediaConstraints());
     EXPECT_TRUE(result.HasValue());
 
     constraint_factory_.Reset();
@@ -1773,19 +1772,19 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SourceWithAudioProcessing) {
         properties.echo_cancellation_type !=
         EchoCancellationType::kEchoCancellationAec3);
     result = SelectSettingsAudioCapture(
-        source.get(), constraint_factory_.CreateWebMediaConstraints());
+        source.get(), constraint_factory_.CreateMediaConstraints());
     EXPECT_FALSE(result.HasValue());
 
     constraint_factory_.Reset();
     constraint_factory_.basic().echo_cancellation.SetIdeal(true);
     result = SelectSettingsAudioCapture(
-        source.get(), constraint_factory_.CreateWebMediaConstraints());
+        source.get(), constraint_factory_.CreateMediaConstraints());
     EXPECT_TRUE(result.HasValue());
 
     constraint_factory_.Reset();
     constraint_factory_.basic().echo_cancellation.SetIdeal(false);
     result = SelectSettingsAudioCapture(
-        source.get(), constraint_factory_.CreateWebMediaConstraints());
+        source.get(), constraint_factory_.CreateMediaConstraints());
     EXPECT_TRUE(result.HasValue());
 
     // These constraints are false in |source|.
@@ -1800,27 +1799,27 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SourceWithAudioProcessing) {
       (constraint_factory_.basic().*kAudioBrowserConstraints[i])
           .SetExact(use_defaults);
       auto result = SelectSettingsAudioCapture(
-          source.get(), constraint_factory_.CreateWebMediaConstraints());
+          source.get(), constraint_factory_.CreateMediaConstraints());
       EXPECT_TRUE(result.HasValue());
 
       constraint_factory_.Reset();
       (constraint_factory_.basic().*kAudioBrowserConstraints[i])
           .SetExact(!use_defaults);
       result = SelectSettingsAudioCapture(
-          source.get(), constraint_factory_.CreateWebMediaConstraints());
+          source.get(), constraint_factory_.CreateMediaConstraints());
       EXPECT_FALSE(result.HasValue());
 
       constraint_factory_.Reset();
       (constraint_factory_.basic().*kAudioBrowserConstraints[i]).SetIdeal(true);
       result = SelectSettingsAudioCapture(
-          source.get(), constraint_factory_.CreateWebMediaConstraints());
+          source.get(), constraint_factory_.CreateMediaConstraints());
       EXPECT_TRUE(result.HasValue());
 
       constraint_factory_.Reset();
       (constraint_factory_.basic().*kAudioBrowserConstraints[i])
           .SetIdeal(false);
       result = SelectSettingsAudioCapture(
-          source.get(), constraint_factory_.CreateWebMediaConstraints());
+          source.get(), constraint_factory_.CreateMediaConstraints());
       EXPECT_TRUE(result.HasValue());
     }
 
@@ -1828,25 +1827,25 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SourceWithAudioProcessing) {
     constraint_factory_.Reset();
     constraint_factory_.basic().echo_cancellation.SetExact(use_defaults);
     result = SelectSettingsAudioCapture(
-        source.get(), constraint_factory_.CreateWebMediaConstraints());
+        source.get(), constraint_factory_.CreateMediaConstraints());
     EXPECT_TRUE(result.HasValue());
 
     constraint_factory_.Reset();
     constraint_factory_.basic().echo_cancellation.SetExact(!use_defaults);
     result = SelectSettingsAudioCapture(
-        source.get(), constraint_factory_.CreateWebMediaConstraints());
+        source.get(), constraint_factory_.CreateMediaConstraints());
     EXPECT_FALSE(result.HasValue());
 
     constraint_factory_.Reset();
     constraint_factory_.basic().echo_cancellation.SetIdeal(true);
     result = SelectSettingsAudioCapture(
-        source.get(), constraint_factory_.CreateWebMediaConstraints());
+        source.get(), constraint_factory_.CreateMediaConstraints());
     EXPECT_TRUE(result.HasValue());
 
     constraint_factory_.Reset();
     constraint_factory_.basic().echo_cancellation.SetIdeal(false);
     result = SelectSettingsAudioCapture(
-        source.get(), constraint_factory_.CreateWebMediaConstraints());
+        source.get(), constraint_factory_.CreateMediaConstraints());
     EXPECT_TRUE(result.HasValue());
   }
 }
@@ -1874,7 +1873,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, UsedAndUnusedSources) {
     constraint_factory_.basic().echo_cancellation.SetExact(false);
 
     auto result = SelectSettingsAudioCapture(
-        capabilities, constraint_factory_.CreateWebMediaConstraints(),
+        capabilities, constraint_factory_.CreateMediaConstraints(),
         false /* should_disable_hardware_noise_suppression */);
     EXPECT_TRUE(result.HasValue());
     EXPECT_EQ(result.device_id(), kUnusedDeviceID.Utf8());
@@ -1886,7 +1885,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, UsedAndUnusedSources) {
     constraint_factory_.Reset();
     constraint_factory_.basic().echo_cancellation.SetExact(true);
     auto result = SelectSettingsAudioCapture(
-        capabilities, constraint_factory_.CreateWebMediaConstraints(),
+        capabilities, constraint_factory_.CreateMediaConstraints(),
         false /* should_disable_hardware_noise_suppression */);
     EXPECT_TRUE(result.HasValue());
     EXPECT_EQ(result.device_id(), processed_source->device().id);
@@ -1906,7 +1905,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, ExperimetanlEcWithSource) {
   constraint_factory_.basic().echo_cancellation.SetExact(false);
 
   auto result = SelectSettingsAudioCapture(
-      source.get(), constraint_factory_.CreateWebMediaConstraints());
+      source.get(), constraint_factory_.CreateMediaConstraints());
   EXPECT_TRUE(result.HasValue());
 }
 

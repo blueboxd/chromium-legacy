@@ -35,10 +35,10 @@
 #include <memory>
 
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_track.h"
-#include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/renderer/platform/audio/audio_source_provider.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
@@ -84,8 +84,8 @@ class PLATFORM_EXPORT MediaStreamComponent final
   void SetMuted(bool muted) { muted_ = muted; }
   WebMediaStreamTrack::ContentHintType ContentHint() { return content_hint_; }
   void SetContentHint(WebMediaStreamTrack::ContentHintType);
-  const WebMediaConstraints& Constraints() const { return constraints_; }
-  void SetConstraints(const WebMediaConstraints& constraints) {
+  const MediaConstraints& Constraints() const { return constraints_; }
+  void SetConstraints(const MediaConstraints& constraints) {
     constraints_ = constraints;
   }
   AudioSourceProvider* GetAudioSourceProvider() { return &source_provider_; }
@@ -135,7 +135,7 @@ class PLATFORM_EXPORT MediaStreamComponent final
   bool muted_ = false;
   WebMediaStreamTrack::ContentHintType content_hint_ =
       WebMediaStreamTrack::ContentHintType::kNone;
-  WebMediaConstraints constraints_;
+  MediaConstraints constraints_;
   std::unique_ptr<WebPlatformMediaStreamTrack> platform_track_;
 };
 

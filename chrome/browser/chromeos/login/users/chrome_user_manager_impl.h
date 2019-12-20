@@ -186,6 +186,7 @@ class ChromeUserManagerImpl
   friend class UserManagerTest;
   friend class WallpaperManager;
   friend class WallpaperManagerTest;
+  friend class MockRemoveUserManager;
 
   using UserImageManagerMap =
       std::map<AccountId, std::unique_ptr<UserImageManager>>;

@@ -601,7 +601,9 @@ class PasswordStore : protected PasswordStoreSync,
   // Schedules the given |task| to be run on the PasswordStore's TaskRunner.
   // Invokes |consumer|->OnGetPasswordStoreResults() on the caller's thread with
   // the result, after it was post-processed by |processor|.
+  // |trace_name| is the trace to be closed before calling the consumer.
   void PostLoginsTaskAndReplyToConsumerWithProcessedResult(
+      const char* trace_name,
       PasswordStoreConsumer* consumer,
       LoginsTask task,
       LoginsResultProcessor processor);

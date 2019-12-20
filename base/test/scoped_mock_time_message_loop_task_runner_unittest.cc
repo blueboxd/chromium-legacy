@@ -13,8 +13,8 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/test/test_pending_task.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -54,7 +54,7 @@ class ScopedMockTimeMessageLoopTaskRunnerTest : public testing::Test {
  private:
   scoped_refptr<TestMockTimeTaskRunner> original_task_runner_;
 
-  MessageLoop message_loop_;
+  test::SingleThreadTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedMockTimeMessageLoopTaskRunnerTest);
 };

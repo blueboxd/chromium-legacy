@@ -178,6 +178,10 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
   chrome_test_util::OpenNewTab();
 }
 
++ (void)simulateExternalAppURLOpening {
+  chrome_test_util::SimulateExternalAppURLOpening();
+}
+
 + (void)closeCurrentTab {
   chrome_test_util::CloseCurrentTab();
 }

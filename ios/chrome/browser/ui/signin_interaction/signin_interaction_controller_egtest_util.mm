@@ -5,33 +5,12 @@
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_controller_egtest_util.h"
 
 #import "base/test/ios/wait_util.h"
-#include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-void TapButtonWithAccessibilityLabel(NSString* label) {
-  id<GREYMatcher> matcher =
-      chrome_test_util::ButtonWithAccessibilityLabel(label);
-  [[EarlGrey selectElementWithMatcher:matcher] performAction:grey_tap()];
-}
-
-void TapButtonWithLabelId(int message_id) {
-  id<GREYMatcher> matcher =
-      chrome_test_util::ButtonWithAccessibilityLabelId(message_id);
-  [[EarlGrey selectElementWithMatcher:matcher] performAction:grey_tap()];
-}
-
-void VerifyChromeSigninViewVisible() {
-  id<GREYMatcher> signin_matcher =
-      chrome_test_util::StaticTextWithAccessibilityLabelId(
-          IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SYNC_SUBTITLE);
-  [[EarlGrey selectElementWithMatcher:signin_matcher]
-      assertWithMatcher:grey_sufficientlyVisible()];
-}
 
 void WaitForMatcher(id<GREYMatcher> matcher) {
   ConditionBlock condition = ^{

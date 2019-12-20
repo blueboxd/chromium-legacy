@@ -71,8 +71,8 @@ public final class ProfileOAuth2TokenServiceDelegate
     private final AccountManagerFacade mAccountManagerFacade;
 
     private boolean mPendingUpdate;
-    // TODO(crbug.com/934688) Once OAuth2TokenService.java is internalized, use CoreAccountId
-    // instead of String.
+    // TODO(crbug.com/934688) Once ProfileOAuth2TokenServiceDelegate.java is internalized, use
+    // CoreAccountId instead of String.
     private String mPendingUpdateAccountId;
 
     @VisibleForTesting

@@ -27,8 +27,8 @@ class MessageWindow::WindowClass {
   HINSTANCE instance() { return instance_; }
 
  private:
-  ATOM atom_;
-  HINSTANCE instance_;
+  ATOM atom_ = 0;
+  HINSTANCE instance_ = CURRENT_MODULE();
 
   DISALLOW_COPY_AND_ASSIGN(WindowClass);
 };
@@ -36,8 +36,7 @@ class MessageWindow::WindowClass {
 static LazyInstance<MessageWindow::WindowClass>::DestructorAtExit
     g_window_class = LAZY_INSTANCE_INITIALIZER;
 
-MessageWindow::WindowClass::WindowClass()
-    : atom_(0), instance_(CURRENT_MODULE()) {
+MessageWindow::WindowClass::WindowClass() {
   WNDCLASSEX window_class;
   window_class.cbSize = sizeof(window_class);
   window_class.style = 0;
@@ -69,7 +68,7 @@ MessageWindow::WindowClass::~WindowClass() {
   }
 }
 
-MessageWindow::MessageWindow() : window_(nullptr) {}
+MessageWindow::MessageWindow() {}
 
 MessageWindow::~MessageWindow() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

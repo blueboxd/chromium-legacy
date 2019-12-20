@@ -38,9 +38,9 @@
 
 namespace blink {
 
+class MediaConstraints;
 class UserMediaRequest;
 class WebDocument;
-class WebMediaConstraints;
 class WebMediaStream;
 
 class BLINK_EXPORT WebUserMediaRequest {
@@ -83,8 +83,8 @@ class BLINK_EXPORT WebUserMediaRequest {
   MediaType MediaRequestType() const;
   bool Audio() const;
   bool Video() const;
-  WebMediaConstraints AudioConstraints() const;
-  WebMediaConstraints VideoConstraints() const;
+  MediaConstraints AudioConstraints() const;
+  MediaConstraints VideoConstraints() const;
 
   // Flag tied to whether or not the similarly named Origin Trial is
   // enabled. Will be removed at end of trial. See: http://crbug.com/789152.
@@ -100,8 +100,8 @@ class BLINK_EXPORT WebUserMediaRequest {
   void RequestFailed(Error name, const WebString& description = WebString());
 
   // For testing in content/
-  static WebUserMediaRequest CreateForTesting(const WebMediaConstraints& audio,
-                                              const WebMediaConstraints& video);
+  static WebUserMediaRequest CreateForTesting(const MediaConstraints& audio,
+                                              const MediaConstraints& video);
 
 #if INSIDE_BLINK
   WebUserMediaRequest(UserMediaRequest*);

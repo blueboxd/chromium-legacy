@@ -24,14 +24,14 @@
 #include "device/bluetooth/jni_headers/ChromeBluetoothScanFilterBuilder_jni.h"
 #include "device/bluetooth/jni_headers/ChromeBluetoothScanFilterList_jni.h"
 
+using base::android::AppendJavaStringArrayToStringVector;
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
-using base::android::AppendJavaStringArrayToStringVector;
+using base::android::JavaArrayOfByteArrayToBytesVector;
+using base::android::JavaByteArrayToByteVector;
+using base::android::JavaIntArrayToIntVector;
 using base::android::JavaParamRef;
 using base::android::JavaRef;
-using base::android::JavaByteArrayToByteVector;
-using base::android::JavaArrayOfByteArrayToStringVector;
-using base::android::JavaIntArrayToIntVector;
 
 namespace {
 // The poll interval in ms when there is no active discovery. This
@@ -208,31 +208,28 @@ void BluetoothAdapterAndroid::CreateOrUpdateDeviceOnScan(
   }
 
   std::vector<std::string> service_data_keys_vector;
-  std::vector<std::string> service_data_values_vector;
+  std::vector<std::vector<uint8_t>> service_data_values_vector;
   AppendJavaStringArrayToStringVector(env, service_data_keys,
                                       &service_data_keys_vector);
-  JavaArrayOfByteArrayToStringVector(env, service_data_values,
-                                     &service_data_values_vector);
+  JavaArrayOfByteArrayToBytesVector(env, service_data_values,
+                                    &service_data_values_vector);
   BluetoothDeviceAndroid::ServiceDataMap service_data_map;
   for (size_t i = 0; i < service_data_keys_vector.size(); i++) {
-    service_data_map.insert(
-        {BluetoothUUID(service_data_keys_vector[i]),
-         std::vector<uint8_t>(service_data_values_vector[i].begin(),
-                              service_data_values_vector[i].end())});
+    service_data_map.insert({BluetoothUUID(service_data_keys_vector[i]),
+                             service_data_values_vector[i]});
   }
 
   std::vector<jint> manufacturer_data_keys_vector;
-  std::vector<std::string> manufacturer_data_values_vector;
+  std::vector<std::vector<uint8_t>> manufacturer_data_values_vector;
   JavaIntArrayToIntVector(env, manufacturer_data_keys,
                           &manufacturer_data_keys_vector);
-  JavaArrayOfByteArrayToStringVector(env, manufacturer_data_values,
-                                     &manufacturer_data_values_vector);
+  JavaArrayOfByteArrayToBytesVector(env, manufacturer_data_values,
+                                    &manufacturer_data_values_vector);
   BluetoothDeviceAndroid::ManufacturerDataMap manufacturer_data_map;
   for (size_t i = 0; i < manufacturer_data_keys_vector.size(); i++) {
     manufacturer_data_map.insert(
         {static_cast<uint16_t>(manufacturer_data_keys_vector[i]),
-         std::vector<uint8_t>(manufacturer_data_values_vector[i].begin(),
-                              manufacturer_data_values_vector[i].end())});
+         manufacturer_data_values_vector[i]});
   }
 
   int8_t clamped_tx_power = BluetoothDevice::ClampPower(tx_power);

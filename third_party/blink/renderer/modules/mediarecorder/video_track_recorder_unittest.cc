@@ -112,7 +112,7 @@ class VideoTrackRecorderTest
   }
 
   void InitializeRecorder(VideoTrackRecorder::CodecId codec) {
-    video_track_recorder_ = MakeGarbageCollected<VideoTrackRecorderImpl>(
+    video_track_recorder_ = std::make_unique<VideoTrackRecorderImpl>(
         codec, blink_track_,
         ConvertToBaseRepeatingCallback(
             CrossThreadBindRepeating(&VideoTrackRecorderTest::OnEncodedVideo,
@@ -156,7 +156,7 @@ class VideoTrackRecorderTest
   MediaStreamVideoTrack* track_;
   WebMediaStreamTrack blink_track_;
 
-  Persistent<VideoTrackRecorderImpl> video_track_recorder_;
+  std::unique_ptr<VideoTrackRecorderImpl> video_track_recorder_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VideoTrackRecorderTest);
@@ -454,12 +454,12 @@ class VideoTrackRecorderPassthroughTest
   ~VideoTrackRecorderPassthroughTest() {
     blink_track_.Reset();
     blink_source_.Reset();
-    video_track_recorder_ = nullptr;
+    video_track_recorder_.reset();
     WebHeap::CollectAllGarbageForTesting();
   }
 
   void InitializeRecorder() {
-    video_track_recorder_ = MakeGarbageCollected<VideoTrackRecorderPassthrough>(
+    video_track_recorder_ = std::make_unique<VideoTrackRecorderPassthrough>(
         blink_track_,
         ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
             &VideoTrackRecorderPassthroughTest::OnEncodedVideo,
@@ -483,7 +483,7 @@ class VideoTrackRecorderPassthroughTest
   MediaStreamVideoTrack* track_;
   WebMediaStreamTrack blink_track_;
 
-  Persistent<VideoTrackRecorderPassthrough> video_track_recorder_;
+  std::unique_ptr<VideoTrackRecorderPassthrough> video_track_recorder_;
 };
 
 scoped_refptr<FakeEncodedVideoFrame> CreateFrame(

@@ -18,6 +18,7 @@ group("bindings_modules_v8_generated") {
     ":generate_bindings_modules_v8_partial_interfaces",
     ":generate_bindings_modules_v8_partial_interfaces_for_testing",
     ":generate_v8_context_snapshot_external_references",
+    "//third_party/blink/renderer/bindings:generate_v8_bindings",
   ]
 }
 

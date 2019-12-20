@@ -75,7 +75,7 @@ bool SetUsesDiscreteConstraint(
 
 template <typename NumericConstraint>
 bool RequestUsesNumericConstraint(
-    const WebMediaConstraints& constraints,
+    const MediaConstraints& constraints,
     NumericConstraint WebMediaTrackConstraintSet::*field) {
   if (SetUsesNumericConstraint(constraints.Basic(), field))
     return true;
@@ -88,7 +88,7 @@ bool RequestUsesNumericConstraint(
 
 template <typename DiscreteConstraint>
 bool RequestUsesDiscreteConstraint(
-    const WebMediaConstraints& constraints,
+    const MediaConstraints& constraints,
     DiscreteConstraint WebMediaTrackConstraintSet::*field) {
   static_assert(
       std::is_same<decltype(field),
@@ -123,7 +123,7 @@ class FeatureCounter {
 };
 
 void CountAudioConstraintUses(ExecutionContext* context,
-                              const WebMediaConstraints& constraints) {
+                              const MediaConstraints& constraints) {
   FeatureCounter counter(context);
   if (RequestUsesNumericConstraint(constraints,
                                    &WebMediaTrackConstraintSet::sample_rate)) {
@@ -218,7 +218,7 @@ void CountAudioConstraintUses(ExecutionContext* context,
 }
 
 void CountVideoConstraintUses(ExecutionContext* context,
-                              const WebMediaConstraints& constraints) {
+                              const MediaConstraints& constraints) {
   FeatureCounter counter(context);
   if (RequestUsesNumericConstraint(constraints,
                                    &WebMediaTrackConstraintSet::width)) {
@@ -268,10 +268,10 @@ void CountVideoConstraintUses(ExecutionContext* context,
   }
 }
 
-WebMediaConstraints ParseOptions(ExecutionContext* context,
-                                 const BooleanOrMediaTrackConstraints& options,
-                                 MediaErrorState& error_state) {
-  WebMediaConstraints constraints;
+MediaConstraints ParseOptions(ExecutionContext* context,
+                              const BooleanOrMediaTrackConstraints& options,
+                              MediaErrorState& error_state) {
+  MediaConstraints constraints;
 
   if (options.IsNull()) {
     // Do nothing.
@@ -324,13 +324,11 @@ UserMediaRequest* UserMediaRequest::Create(
     const MediaStreamConstraints* options,
     Callbacks* callbacks,
     MediaErrorState& error_state) {
-  WebMediaConstraints audio =
-      ParseOptions(context, options->audio(), error_state);
+  MediaConstraints audio = ParseOptions(context, options->audio(), error_state);
   if (error_state.HadException())
     return nullptr;
 
-  WebMediaConstraints video =
-      ParseOptions(context, options->video(), error_state);
+  MediaConstraints video = ParseOptions(context, options->video(), error_state);
   if (error_state.HadException())
     return nullptr;
 
@@ -407,8 +405,8 @@ UserMediaRequest* UserMediaRequest::Create(
 }
 
 UserMediaRequest* UserMediaRequest::CreateForTesting(
-    const WebMediaConstraints& audio,
-    const WebMediaConstraints& video) {
+    const MediaConstraints& audio,
+    const MediaConstraints& video) {
   return MakeGarbageCollected<UserMediaRequest>(
       nullptr, nullptr, WebUserMediaRequest::MediaType::kUserMedia, audio,
       video, nullptr);
@@ -417,8 +415,8 @@ UserMediaRequest* UserMediaRequest::CreateForTesting(
 UserMediaRequest::UserMediaRequest(ExecutionContext* context,
                                    UserMediaController* controller,
                                    WebUserMediaRequest::MediaType media_type,
-                                   WebMediaConstraints audio,
-                                   WebMediaConstraints video,
+                                   MediaConstraints audio,
+                                   MediaConstraints video,
                                    Callbacks* callbacks)
     : ContextLifecycleObserver(context),
       media_type_(media_type),
@@ -449,11 +447,11 @@ bool UserMediaRequest::Video() const {
   return !video_.IsNull();
 }
 
-WebMediaConstraints UserMediaRequest::AudioConstraints() const {
+MediaConstraints UserMediaRequest::AudioConstraints() const {
   return audio_;
 }
 
-WebMediaConstraints UserMediaRequest::VideoConstraints() const {
+MediaConstraints UserMediaRequest::VideoConstraints() const {
   return video_;
 }
 

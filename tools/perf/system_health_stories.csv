@@ -49,6 +49,7 @@ browse:search:google_india:2018,A typical google search story in India:,desktop,
 browse:shopping:amazon,,mobile,"2016,emerging_market"
 browse:shopping:amazon:2019,,mobile,"2019,emerging_market"
 browse:shopping:avito,,mobile,"2016,emerging_market,health_check"
+browse:shopping:avito:2019,,mobile,"2019,emerging_market,health_check"
 browse:shopping:flipkart,,mobile,"2016,emerging_market"
 browse:shopping:lazada,,mobile,"2016,emerging_market"
 browse:shopping:lazada:2019,,mobile,"2019,emerging_market"
@@ -131,6 +132,7 @@ load:tools:docs:2019,Load a typical google doc page (2019).,"desktop,mobile","20
 load:tools:drive,,"desktop,mobile","2016,javascript_heavy"
 load:tools:drive:2019,,"desktop,mobile","2019,javascript_heavy"
 load:tools:dropbox,,"desktop,mobile",2016
+load:tools:dropbox:2019,,mobile,2019
 load:tools:gmail,,"desktop,mobile",2016
 load:tools:stackoverflow:2018,Load a typical question & answer page of stackoverflow.com,"desktop,mobile","2018,health_check"
 load:tools:weather,,"desktop,mobile","2016,javascript_heavy"

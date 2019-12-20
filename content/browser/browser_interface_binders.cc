@@ -55,6 +55,7 @@
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
 #include "services/device/public/mojom/vibration_manager.mojom.h"
+#include "services/network/public/mojom/cross_origin_embedder_policy.mojom.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
 #include "services/shape_detection/public/mojom/barcodedetection_provider.mojom.h"
 #include "services/shape_detection/public/mojom/facedetection_provider.mojom.h"
@@ -289,6 +290,30 @@ BindWorkerReceiverForOriginAndFrameId(
       base::Unretained(host), method);
 }
 
+template <typename WorkerHost, typename Interface>
+base::RepeatingCallback<void(const url::Origin&,
+                             mojo::PendingReceiver<Interface>)>
+BindWorkerReceiverForOriginAndCOEP(
+    void (RenderProcessHost::*method)(network::mojom::CrossOriginEmbedderPolicy,
+                                      const url::Origin&,
+                                      mojo::PendingReceiver<Interface>),
+    WorkerHost* host,
+    network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy) {
+  return base::BindRepeating(
+      [](WorkerHost* host,
+         void (RenderProcessHost::*method)(
+             network::mojom::CrossOriginEmbedderPolicy, const url::Origin&,
+             mojo::PendingReceiver<Interface>),
+         network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy,
+         const url::Origin& origin, mojo::PendingReceiver<Interface> receiver) {
+        RenderProcessHost* process_host = host->GetProcessHost();
+        if (process_host)
+          (process_host->*method)(cross_origin_embedder_policy, origin,
+                                  std::move(receiver));
+      },
+      base::Unretained(host), method, cross_origin_embedder_policy);
+}
+
 template <typename... Args>
 void RunOrPostTaskToBindServiceWorkerReceiver(
     ServiceWorkerProviderHost* host,
@@ -364,6 +389,33 @@ BindServiceWorkerReceiverForOriginAndFrameId(
             host, method, MSG_ROUTING_NONE, origin, std::move(receiver));
       },
       base::Unretained(host), method);
+}
+
+template <typename Interface>
+base::RepeatingCallback<void(const ServiceWorkerVersionInfo&,
+                             mojo::PendingReceiver<Interface>)>
+BindServiceWorkerReceiverForOriginAndCOEP(
+    void (RenderProcessHost::*method)(network::mojom::CrossOriginEmbedderPolicy,
+                                      const url::Origin&,
+                                      mojo::PendingReceiver<Interface>),
+    ServiceWorkerProviderHost* host,
+    network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy) {
+  return base::BindRepeating(
+      [](ServiceWorkerProviderHost* host,
+         void (RenderProcessHost::*method)(
+             network::mojom::CrossOriginEmbedderPolicy, const url::Origin&,
+             mojo::PendingReceiver<Interface>),
+         network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy,
+         const ServiceWorkerVersionInfo& info,
+         mojo::PendingReceiver<Interface> receiver) {
+        auto origin = info.script_origin;
+        RunOrPostTaskToBindServiceWorkerReceiver<
+            network::mojom::CrossOriginEmbedderPolicy, const url::Origin&,
+            mojo::PendingReceiver<Interface>>(host, method,
+                                              cross_origin_embedder_policy,
+                                              origin, std::move(receiver));
+      },
+      base::Unretained(host), method, cross_origin_embedder_policy);
 }
 
 VibrationManagerBinder& GetVibrationManagerBinderOverride() {
@@ -679,8 +731,6 @@ void PopulateBinderMapWithContext(
   // render process host binders taking an origin
   map->Add<payments::mojom::PaymentManager>(BindWorkerReceiverForOrigin(
       &RenderProcessHost::CreatePaymentManagerForOrigin, host));
-  map->Add<blink::mojom::CacheStorage>(
-      BindWorkerReceiverForOrigin(&RenderProcessHost::BindCacheStorage, host));
   map->Add<blink::mojom::PermissionService>(BindWorkerReceiverForOrigin(
       &RenderProcessHost::CreatePermissionService, host));
   map->Add<blink::mojom::FileSystemManager>(BindWorkerReceiverForOrigin(
@@ -700,6 +750,14 @@ void PopulateBinderMapWithContext(
   map->Add<blink::mojom::QuotaDispatcherHost>(
       BindWorkerReceiverForOriginAndFrameId(
           &RenderProcessHost::BindQuotaDispatcherHost, host));
+
+  // render process host binders taking a Cross-Origin-Embedder-Policy and an
+  // origin.
+  // TODO(https://crbug.com/1031542): Add support enforcing CORP in
+  // cache.match() for DedicatedWorker.
+  map->Add<blink::mojom::CacheStorage>(BindWorkerReceiverForOriginAndCOEP(
+      &RenderProcessHost::BindCacheStorage, host,
+      network::mojom::CrossOriginEmbedderPolicy::kNone));
 }
 
 void PopulateBinderMap(DedicatedWorkerHost* host,
@@ -741,8 +799,6 @@ void PopulateBinderMapWithContext(
     SharedWorkerHost* host,
     service_manager::BinderMapWithContext<const url::Origin&>* map) {
   // render process host binders taking an origin
-  map->Add<blink::mojom::CacheStorage>(
-      BindWorkerReceiverForOrigin(&RenderProcessHost::BindCacheStorage, host));
   map->Add<blink::mojom::FileSystemManager>(BindWorkerReceiverForOrigin(
       &RenderProcessHost::BindFileSystemManager, host));
   map->Add<payments::mojom::PaymentManager>(BindWorkerReceiverForOrigin(
@@ -766,6 +822,14 @@ void PopulateBinderMapWithContext(
   map->Add<blink::mojom::QuotaDispatcherHost>(
       BindWorkerReceiverForOriginAndFrameId(
           &RenderProcessHost::BindQuotaDispatcherHost, host));
+
+  // render process host binders taking a Cross-Origin-Embedder-Policy and an
+  // origin.
+  // TODO(https://crbug.com/1031542): Add support enforcing CORP in
+  // cache.match() for SharedWorker
+  map->Add<blink::mojom::CacheStorage>(BindWorkerReceiverForOriginAndCOEP(
+      &RenderProcessHost::BindCacheStorage, host,
+      network::mojom::CrossOriginEmbedderPolicy::kNone));
 }
 
 void PopulateBinderMap(SharedWorkerHost* host,
@@ -835,8 +899,6 @@ void PopulateBinderMapWithContext(
   // render process host binders taking an origin
   map->Add<payments::mojom::PaymentManager>(BindServiceWorkerReceiverForOrigin(
       &RenderProcessHost::CreatePaymentManagerForOrigin, host));
-  map->Add<blink::mojom::CacheStorage>(BindServiceWorkerReceiverForOrigin(
-      &RenderProcessHost::BindCacheStorage, host));
   map->Add<blink::mojom::PermissionService>(BindServiceWorkerReceiverForOrigin(
       &RenderProcessHost::CreatePermissionService, host));
   if (base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI)) {
@@ -864,6 +926,15 @@ void PopulateBinderMapWithContext(
   map->Add<blink::mojom::QuotaDispatcherHost>(
       BindServiceWorkerReceiverForOriginAndFrameId(
           &RenderProcessHost::BindQuotaDispatcherHost, host));
+
+  // render process host bind taking a Cross-Origin-Embedder-Policy and an
+  // origin.
+  // TODO(https://crbug.com/1031542): Add support enforcing CORP in
+  // cache.match() for ServiceWorker
+  map->Add<blink::mojom::CacheStorage>(
+      BindServiceWorkerReceiverForOriginAndCOEP(
+          &RenderProcessHost::BindCacheStorage, host,
+          network::mojom::CrossOriginEmbedderPolicy::kNone));
 }
 
 void PopulateBinderMap(ServiceWorkerProviderHost* host,

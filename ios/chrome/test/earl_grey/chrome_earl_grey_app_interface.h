@@ -99,6 +99,9 @@
 // Opens a new tab, and does not wait for animations to complete.
 + (void)openNewTab;
 
+// Simulates opening http://www.example.com/ from another application.
++ (void)simulateExternalAppURLOpening;
+
 // Closes current tab.
 + (void)closeCurrentTab;
 

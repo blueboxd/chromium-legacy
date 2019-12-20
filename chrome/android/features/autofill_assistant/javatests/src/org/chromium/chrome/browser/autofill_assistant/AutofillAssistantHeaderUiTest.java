@@ -101,8 +101,7 @@ public class AutofillAssistantHeaderUiTest {
 
             ViewGroup chromeCoordinatorView = getActivity().findViewById(R.id.coordinator);
             chromeCoordinatorView.addView(coordinator.getView(), lp);
-            coordinator.disableAnimationsForTesting(true);
-
+            model.set(AssistantHeaderModel.DISABLE_ANIMATIONS_FOR_TESTING, true);
             return coordinator;
         });
     }

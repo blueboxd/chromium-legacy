@@ -129,7 +129,7 @@ bool ScopedVASurface::IsValid() const {
          va_rt_format_ != kInvalidVaRtFormat;
 }
 
-bool FillVP8DataStructures(const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
+bool FillVP8DataStructures(VaapiWrapper* vaapi_wrapper,
                            VASurfaceID va_surface_id,
                            const Vp8FrameHeader& frame_header,
                            const Vp8ReferenceFrameVector& reference_frames) {

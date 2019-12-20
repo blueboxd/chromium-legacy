@@ -2249,7 +2249,7 @@ bool V4L2SliceVideoDecodeAccelerator::ProcessFrame(
     scoped_refptr<VideoFrame> wrapped_frame = VideoFrame::WrapVideoFrame(
         output_frame, output_frame->format(), output_frame->visible_rect(),
         output_frame->coded_size());
-    DCHECK(output_frame != nullptr);
+    DCHECK(wrapped_frame);
 
     image_processor_->Process(
         std::move(input_frame), std::move(wrapped_frame),

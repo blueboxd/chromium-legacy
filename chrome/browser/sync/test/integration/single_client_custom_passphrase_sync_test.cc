@@ -290,7 +290,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseSyncTestWithUssTests,
 
 IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseSyncTestWithUssTests,
                        ShouldExposeExperimentalAuthenticationKey) {
-  const std::vector<std::string>& keystore_keys =
+  const std::vector<std::vector<uint8_t>>& keystore_keys =
       GetFakeServer()->GetKeystoreKeys();
   ASSERT_THAT(keystore_keys, SizeIs(1));
 
@@ -306,8 +306,8 @@ IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseSyncTestWithUssTests,
   // Default birthday determined by LoopbackServer.
   const std::string kDefaultBirthday = GetFakeServer()->GetStoreBirthday();
   const std::string kSeparator("|");
-  std::string base64_encoded_keystore_key;
-  base::Base64Encode(keystore_keys.back(), &base64_encoded_keystore_key);
+  const std::string base64_encoded_keystore_key =
+      base::Base64Encode(keystore_keys.back());
   const std::string expected_authentication_secret =
       std::string("gaia_id_for_user_gmail.com") + kSeparator +
       kDefaultBirthday + kSeparator + base64_encoded_keystore_key;

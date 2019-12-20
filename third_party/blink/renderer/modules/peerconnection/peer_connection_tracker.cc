@@ -15,7 +15,6 @@
 #include "base/values.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
@@ -23,6 +22,7 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_user_media_request.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_handler.h"
+#include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_answer_options_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_ice_candidate_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_offer_options_platform.h"
@@ -87,8 +87,7 @@ String SerializeServers(
   return result.ToString();
 }
 
-String SerializeMediaConstraints(
-    const blink::WebMediaConstraints& constraints) {
+String SerializeMediaConstraints(const MediaConstraints& constraints) {
   return String(constraints.ToString());
 }
 
@@ -754,7 +753,7 @@ void PeerConnectionTracker::GetLegacyStats() {
 void PeerConnectionTracker::RegisterPeerConnection(
     RTCPeerConnectionHandler* pc_handler,
     const webrtc::PeerConnectionInterface::RTCConfiguration& config,
-    const blink::WebMediaConstraints& constraints,
+    const MediaConstraints& constraints,
     const blink::WebLocalFrame* frame) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
   DCHECK(pc_handler);
@@ -808,7 +807,7 @@ void PeerConnectionTracker::TrackCreateOffer(
 
 void PeerConnectionTracker::TrackCreateOffer(
     RTCPeerConnectionHandler* pc_handler,
-    const blink::WebMediaConstraints& constraints) {
+    const MediaConstraints& constraints) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
   int id = GetLocalIDForHandler(pc_handler);
   if (id == -1)
@@ -831,7 +830,7 @@ void PeerConnectionTracker::TrackCreateAnswer(
 
 void PeerConnectionTracker::TrackCreateAnswer(
     RTCPeerConnectionHandler* pc_handler,
-    const blink::WebMediaConstraints& constraints) {
+    const MediaConstraints& constraints) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
   int id = GetLocalIDForHandler(pc_handler);
   if (id == -1)

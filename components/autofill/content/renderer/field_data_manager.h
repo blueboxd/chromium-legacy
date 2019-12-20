@@ -45,6 +45,8 @@ class FieldDataManager {
   // Check if the string |value| is saved in |field_value_and_properties_map_|.
   bool FindMachedValue(const base::string16& value) const;
 
+  bool DidUserType(uint32_t id) const;
+
  private:
   std::map<uint32_t,
            std::pair<base::Optional<base::string16>, FieldPropertiesMask>>

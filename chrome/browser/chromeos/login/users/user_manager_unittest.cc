@@ -29,11 +29,13 @@
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/known_user.h"
+#include "components/user_manager/remove_user_delegate.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_task_environment.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -50,6 +52,36 @@ class UnittestProfileManager : public ::ProfileManagerWithoutInit {
       return nullptr;
     return std::make_unique<TestingProfile>(path);
   }
+};
+
+class UnittestRemoveUserDelegate : public user_manager::RemoveUserDelegate {
+ public:
+  explicit UnittestRemoveUserDelegate(const AccountId& expected_account_id)
+      : expected_account_id_(expected_account_id) {}
+
+  bool HasBeforeUserRemoved() const { return has_before_user_removed_; }
+
+  bool HasUserRemoved() const { return has_user_removed_; }
+
+  void OnBeforeUserRemoved(const AccountId& account_id) override {
+    has_before_user_removed_ = true;
+    EXPECT_EQ(expected_account_id_, account_id);
+  }
+
+  void OnUserRemoved(const AccountId& account_id) override {
+    has_user_removed_ = true;
+    EXPECT_EQ(expected_account_id_, account_id);
+  }
+
+ private:
+  const AccountId expected_account_id_;
+  bool has_before_user_removed_;
+  bool has_user_removed_;
+};
+
+class MockRemoveUserManager : public ChromeUserManagerImpl {
+ public:
+  MOCK_CONST_METHOD1(AsyncRemoveCryptohome, void(const AccountId&));
 };
 
 class UserManagerTest : public testing::Test {
@@ -132,6 +164,10 @@ class UserManagerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  std::unique_ptr<MockRemoveUserManager> CreateMockRemoveUserManager() const {
+    return std::make_unique<MockRemoveUserManager>();
+  }
+
   void SetDeviceSettings(bool ephemeral_users_enabled,
                          const std::string& owner,
                          bool supervised_users_enabled) {
@@ -176,6 +212,44 @@ TEST_F(UserManagerTest, RetrieveTrustedDevicePolicies) {
 
   EXPECT_FALSE(GetUserManagerEphemeralUsersEnabled());
   EXPECT_EQ(GetUserManagerOwnerId(), owner_account_id_at_invalid_domain_);
+}
+
+TEST_F(UserManagerTest, RemoveUser) {
+  std::unique_ptr<MockRemoveUserManager> user_manager =
+      CreateMockRemoveUserManager();
+
+  // Create owner account and login in.
+  user_manager->UserLoggedIn(owner_account_id_at_invalid_domain_,
+                             owner_account_id_at_invalid_domain_.GetUserEmail(),
+                             false /* browser_restart */, false /* is_child */);
+
+  // Create non-owner account  and login in.
+  user_manager->UserLoggedIn(account_id0_at_invalid_domain_,
+                             account_id0_at_invalid_domain_.GetUserEmail(),
+                             false /* browser_restart */, false /* is_child */);
+
+  ASSERT_EQ(2U, user_manager->GetUsers().size());
+
+  // Removing logged-in account is unacceptable.
+  user_manager->RemoveUser(account_id0_at_invalid_domain_, nullptr);
+  EXPECT_EQ(2U, user_manager->GetUsers().size());
+
+  // Recreate the user manager to log out all accounts.
+  user_manager = CreateMockRemoveUserManager();
+  ASSERT_EQ(2U, user_manager->GetUsers().size());
+  ASSERT_EQ(0U, user_manager->GetLoggedInUsers().size());
+
+  // Removing non-owner account is acceptable.
+  EXPECT_CALL(*user_manager, AsyncRemoveCryptohome(testing::_)).Times(1);
+  UnittestRemoveUserDelegate delegate(account_id0_at_invalid_domain_);
+  user_manager->RemoveUser(account_id0_at_invalid_domain_, &delegate);
+  EXPECT_TRUE(delegate.HasBeforeUserRemoved());
+  EXPECT_TRUE(delegate.HasUserRemoved());
+  EXPECT_EQ(1U, user_manager->GetUsers().size());
+
+  // Removing owner account is unacceptable.
+  user_manager->RemoveUser(owner_account_id_at_invalid_domain_, nullptr);
+  EXPECT_EQ(1U, user_manager->GetUsers().size());
 }
 
 TEST_F(UserManagerTest, RemoveAllExceptOwnerFromList) {

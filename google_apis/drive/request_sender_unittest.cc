@@ -101,10 +101,10 @@ class TestRequest : public AuthenticatedRequestInterface {
 
   void Start(const std::string& access_token,
              const std::string& custom_user_agent,
-             const ReAuthenticateCallback& callback) override {
+             ReAuthenticateCallback callback) override {
     *start_called_ = true;
     passed_access_token_ = access_token;
-    passed_reauth_callback_ = callback;
+    passed_reauth_callback_ = std::move(callback);
 
     // This request class itself does not return any response at this point.
     // Each test case should respond properly by using the above methods.

@@ -21,17 +21,10 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/services/media_perception/public/mojom/media_perception.mojom.h"
-#include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
-#include "chromeos/services/network_config/public/mojom/constants.mojom.h"  // nogncheck
-#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"  // nogncheck
 #endif
 
 #if defined(OS_WIN)
 #include "chrome/common/conflicts/module_event_sink_win.mojom.h"
-#endif
-
-#if !defined(OS_ANDROID)
-#include "chrome/browser/ui/webui/app_management/app_management.mojom.h"
 #endif
 
 const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
@@ -82,23 +75,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
         .RequireCapability("util_win", "util_win")
         .RequireCapability("xr_device_service", "xr_device_provider")
         .RequireCapability("xr_device_service", "xr_device_test_hook")
-#if defined(OS_CHROMEOS) || !defined(OS_ANDROID)
-        .ExposeInterfaceFilterCapability_Deprecated(
-            "navigation:frame", "renderer",
-            service_manager::Manifest::InterfaceList<
-#if defined(OS_CHROMEOS)
-                chromeos::multidevice_setup::mojom::MultiDeviceSetup,
-                chromeos::multidevice_setup::mojom::PrivilegedHostDeviceSetter,
-                chromeos::network_config::mojom::CrosNetworkConfig,
-#endif
-                // WebUI-only interfaces go below this line. These should be
-                // brokered through a dedicated interface, but they're here
-                // for for now.
-#if !defined(OS_ANDROID)
-                app_management::mojom::PageHandlerFactory
-#endif
-                >())
-#endif  // defined(OS_CHROMEOS) || !defined(OS_ANDROID)
         .Build()
   };
   return *manifest;

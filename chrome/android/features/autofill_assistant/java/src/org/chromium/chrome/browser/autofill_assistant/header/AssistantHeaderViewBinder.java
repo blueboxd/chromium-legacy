@@ -11,7 +11,6 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
-import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
@@ -59,9 +58,11 @@ class AssistantHeaderViewBinder
             mProfileIconView.setOnClickListener(unusedView -> mProfileIconMenu.show());
         }
 
-        @VisibleForTesting
-        void disableAnimationsForTesting(boolean disable) {
-            mProgressBar.disableAnimationsForTesting(disable);
+        void disableAnimations(boolean disable) {
+            mProgressBar.disableAnimations(disable);
+            // Hiding the animated poodle seems to be the easiest way to disable its animation since
+            // {@link LogoView#setAnimationEnabled(boolean)} is private.
+            mPoodle.getView().setVisibility(View.INVISIBLE);
         }
     }
 
@@ -90,6 +91,8 @@ class AssistantHeaderViewBinder
             maybeShowChip(model, view);
         } else if (AssistantHeaderModel.BUBBLE_MESSAGE == propertyKey) {
             showOrDismissBubble(model, view);
+        } else if (AssistantHeaderModel.DISABLE_ANIMATIONS_FOR_TESTING == propertyKey) {
+            view.disableAnimations(model.get(AssistantHeaderModel.DISABLE_ANIMATIONS_FOR_TESTING));
         } else {
             assert false : "Unhandled property detected in AssistantHeaderViewBinder!";
         }

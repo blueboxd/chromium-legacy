@@ -60,10 +60,14 @@ class MultiDeviceSetupDialogUI : public ui::MojoWebDialogUI {
   explicit MultiDeviceSetupDialogUI(content::WebUI* web_ui);
   ~MultiDeviceSetupDialogUI() override;
 
- private:
-  void BindMultiDeviceSetup(
+  // Instantiates implementor of the mojom::MultiDeviceSetup mojo interface
+  // passing the pending receiver that will be internally bound.
+  void BindInterface(
       mojo::PendingReceiver<
           chromeos::multidevice_setup::mojom::MultiDeviceSetup> receiver);
+
+ private:
+  WEB_UI_CONTROLLER_TYPE_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(MultiDeviceSetupDialogUI);
 };

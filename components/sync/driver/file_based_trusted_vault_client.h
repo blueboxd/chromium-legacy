@@ -33,9 +33,10 @@ class FileBasedTrustedVaultClient : public TrustedVaultClient {
       const base::RepeatingClosure& cb) override;
   void FetchKeys(
       const std::string& gaia_id,
-      base::OnceCallback<void(const std::vector<std::string>&)> cb) override;
+      base::OnceCallback<void(const std::vector<std::vector<uint8_t>>&)> cb)
+      override;
   void StoreKeys(const std::string& gaia_id,
-                 const std::vector<std::string>& keys) override;
+                 const std::vector<std::vector<uint8_t>>& keys) override;
 
   // Runs |cb| when all requests have completed.
   void WaitForFlushForTesting(base::OnceClosure cb) const;

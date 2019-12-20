@@ -253,6 +253,12 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 }
 
+- (void)simulateExternalAppURLOpening {
+  [ChromeEarlGreyAppInterface simulateExternalAppURLOpening];
+  [self waitForPageToFinishLoading];
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+}
+
 - (void)closeCurrentTab {
   [ChromeEarlGreyAppInterface closeCurrentTab];
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];

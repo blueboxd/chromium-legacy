@@ -35,10 +35,10 @@
 
 namespace blink {
 
+class MediaConstraints;
 class MediaStreamComponent;
 class MediaStreamTrack;
 class WebAudioSourceProvider;
-class WebMediaConstraints;
 class WebMediaStreamSource;
 class WebPlatformMediaStreamTrack;
 class WebString;
@@ -122,8 +122,8 @@ class WebMediaStreamTrack {
   BLINK_PLATFORM_EXPORT bool IsEnabled() const;
   BLINK_PLATFORM_EXPORT bool IsMuted() const;
   BLINK_PLATFORM_EXPORT ContentHintType ContentHint() const;
-  BLINK_PLATFORM_EXPORT WebMediaConstraints Constraints() const;
-  BLINK_PLATFORM_EXPORT void SetConstraints(const WebMediaConstraints&);
+  BLINK_PLATFORM_EXPORT MediaConstraints Constraints() const;
+  BLINK_PLATFORM_EXPORT void SetConstraints(const MediaConstraints&);
 
   BLINK_PLATFORM_EXPORT WebPlatformMediaStreamTrack* GetPlatformTrack() const;
   BLINK_PLATFORM_EXPORT void SetPlatformTrack(

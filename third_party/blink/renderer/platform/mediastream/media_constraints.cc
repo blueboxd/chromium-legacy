@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/public/platform/web_media_constraints.h"
+#include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 
 #include <math.h>
 #include "base/memory/scoped_refptr.h"
@@ -76,11 +76,11 @@ const char kEchoCancellationTypeBrowser[] = "browser";
 const char kEchoCancellationTypeAec3[] = "aec3";
 const char kEchoCancellationTypeSystem[] = "system";
 
-class WebMediaConstraintsPrivate final
-    : public ThreadSafeRefCounted<WebMediaConstraintsPrivate> {
+class MediaConstraintsPrivate final
+    : public ThreadSafeRefCounted<MediaConstraintsPrivate> {
  public:
-  static scoped_refptr<WebMediaConstraintsPrivate> Create();
-  static scoped_refptr<WebMediaConstraintsPrivate> Create(
+  static scoped_refptr<MediaConstraintsPrivate> Create();
+  static scoped_refptr<MediaConstraintsPrivate> Create(
       const WebMediaTrackConstraintSet& basic,
       const WebVector<WebMediaTrackConstraintSet>& advanced);
 
@@ -90,7 +90,7 @@ class WebMediaConstraintsPrivate final
   const String ToString() const;
 
  private:
-  WebMediaConstraintsPrivate(
+  MediaConstraintsPrivate(
       const WebMediaTrackConstraintSet& basic,
       const WebVector<WebMediaTrackConstraintSet>& advanced);
 
@@ -98,39 +98,39 @@ class WebMediaConstraintsPrivate final
   WebVector<WebMediaTrackConstraintSet> advanced_;
 };
 
-scoped_refptr<WebMediaConstraintsPrivate> WebMediaConstraintsPrivate::Create() {
+scoped_refptr<MediaConstraintsPrivate> MediaConstraintsPrivate::Create() {
   WebMediaTrackConstraintSet basic;
   WebVector<WebMediaTrackConstraintSet> advanced;
-  return base::AdoptRef(new WebMediaConstraintsPrivate(basic, advanced));
+  return base::AdoptRef(new MediaConstraintsPrivate(basic, advanced));
 }
 
-scoped_refptr<WebMediaConstraintsPrivate> WebMediaConstraintsPrivate::Create(
+scoped_refptr<MediaConstraintsPrivate> MediaConstraintsPrivate::Create(
     const WebMediaTrackConstraintSet& basic,
     const WebVector<WebMediaTrackConstraintSet>& advanced) {
-  return base::AdoptRef(new WebMediaConstraintsPrivate(basic, advanced));
+  return base::AdoptRef(new MediaConstraintsPrivate(basic, advanced));
 }
 
-WebMediaConstraintsPrivate::WebMediaConstraintsPrivate(
+MediaConstraintsPrivate::MediaConstraintsPrivate(
     const WebMediaTrackConstraintSet& basic,
     const WebVector<WebMediaTrackConstraintSet>& advanced)
     : basic_(basic), advanced_(advanced) {}
 
-bool WebMediaConstraintsPrivate::IsEmpty() const {
+bool MediaConstraintsPrivate::IsEmpty() const {
   // TODO(hta): When generating advanced constraints, make sure no empty
   // elements can be added to the m_advanced vector.
   return basic_.IsEmpty() && advanced_.empty();
 }
 
-const WebMediaTrackConstraintSet& WebMediaConstraintsPrivate::Basic() const {
+const WebMediaTrackConstraintSet& MediaConstraintsPrivate::Basic() const {
   return basic_;
 }
 
-const WebVector<WebMediaTrackConstraintSet>&
-WebMediaConstraintsPrivate::Advanced() const {
+const WebVector<WebMediaTrackConstraintSet>& MediaConstraintsPrivate::Advanced()
+    const {
   return advanced_;
 }
 
-const String WebMediaConstraintsPrivate::ToString() const {
+const String MediaConstraintsPrivate::ToString() const {
   StringBuilder builder;
   if (!IsEmpty()) {
     builder.Append('{');
@@ -506,44 +506,44 @@ WebString WebMediaTrackConstraintSet::ToString() const {
   return builder.ToString();
 }
 
-// WebMediaConstraints
+// MediaConstraints
 
-void WebMediaConstraints::Assign(const WebMediaConstraints& other) {
+void MediaConstraints::Assign(const MediaConstraints& other) {
   private_ = other.private_;
 }
 
-void WebMediaConstraints::Reset() {
+void MediaConstraints::Reset() {
   private_.Reset();
 }
 
-bool WebMediaConstraints::IsEmpty() const {
+bool MediaConstraints::IsEmpty() const {
   return private_.IsNull() || private_->IsEmpty();
 }
 
-void WebMediaConstraints::Initialize() {
+void MediaConstraints::Initialize() {
   DCHECK(IsNull());
-  private_ = WebMediaConstraintsPrivate::Create();
+  private_ = MediaConstraintsPrivate::Create();
 }
 
-void WebMediaConstraints::Initialize(
+void MediaConstraints::Initialize(
     const WebMediaTrackConstraintSet& basic,
     const WebVector<WebMediaTrackConstraintSet>& advanced) {
   DCHECK(IsNull());
-  private_ = WebMediaConstraintsPrivate::Create(basic, advanced);
+  private_ = MediaConstraintsPrivate::Create(basic, advanced);
 }
 
-const WebMediaTrackConstraintSet& WebMediaConstraints::Basic() const {
+const WebMediaTrackConstraintSet& MediaConstraints::Basic() const {
   DCHECK(!IsNull());
   return private_->Basic();
 }
 
-const WebVector<WebMediaTrackConstraintSet>& WebMediaConstraints::Advanced()
+const WebVector<WebMediaTrackConstraintSet>& MediaConstraints::Advanced()
     const {
   DCHECK(!IsNull());
   return private_->Advanced();
 }
 
-const WebString WebMediaConstraints::ToString() const {
+const WebString MediaConstraints::ToString() const {
   if (IsNull())
     return WebString("");
   return private_->ToString();

@@ -1923,8 +1923,8 @@ void VaapiWrapper::DestroyVABuffers() {
   va_buffers_.clear();
 }
 
-bool VaapiWrapper::BlitSurface(const scoped_refptr<VASurface>& va_surface_src,
-                               const scoped_refptr<VASurface>& va_surface_dest,
+bool VaapiWrapper::BlitSurface(const VASurface& va_surface_src,
+                               const VASurface& va_surface_dest,
                                base::Optional<gfx::Rect> src_rect,
                                base::Optional<gfx::Rect> dest_rect) {
   base::AutoLock auto_lock(*va_lock_);
@@ -1952,9 +1952,9 @@ bool VaapiWrapper::BlitSurface(const scoped_refptr<VASurface>& va_surface_src,
 
     memset(pipeline_param, 0, sizeof *pipeline_param);
     if (!src_rect)
-      src_rect.emplace(gfx::Rect(va_surface_src->size()));
+      src_rect.emplace(gfx::Rect(va_surface_src.size()));
     if (!dest_rect)
-      dest_rect.emplace(gfx::Rect(va_surface_dest->size()));
+      dest_rect.emplace(gfx::Rect(va_surface_dest.size()));
 
     VARectangle input_region;
     input_region.x = src_rect->x();
@@ -1962,7 +1962,7 @@ bool VaapiWrapper::BlitSurface(const scoped_refptr<VASurface>& va_surface_src,
     input_region.width = src_rect->width();
     input_region.height = src_rect->height();
     pipeline_param->surface_region = &input_region;
-    pipeline_param->surface = va_surface_src->id();
+    pipeline_param->surface = va_surface_src.id();
     pipeline_param->surface_color_standard = VAProcColorStandardNone;
 
     VARectangle output_region;
@@ -1979,7 +1979,7 @@ bool VaapiWrapper::BlitSurface(const scoped_refptr<VASurface>& va_surface_src,
   }
 
   VA_SUCCESS_OR_RETURN(
-      vaBeginPicture(va_display_, va_context_id_, va_surface_dest->id()),
+      vaBeginPicture(va_display_, va_context_id_, va_surface_dest.id()),
       "vaBeginPicture", false);
 
   VA_SUCCESS_OR_RETURN(

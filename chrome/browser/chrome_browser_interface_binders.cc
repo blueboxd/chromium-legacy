@@ -98,11 +98,6 @@
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_ui.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision.mojom.h"
-#include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision_ui.h"
-#endif
-
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/discards/discards.mojom.h"
@@ -110,17 +105,28 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/webui/chromeos/machine_learning/machine_learning_internals_page_handler.mojom.h"
-#include "chrome/browser/ui/webui/chromeos/machine_learning/machine_learning_internals_ui.h"
-#endif
-
-#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/webui/app_management/app_management.mojom.h"
+#include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision.mojom.h"
+#include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision_ui.h"
 #include "chrome/browser/ui/webui/chromeos/cellular_setup/cellular_setup_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer.mojom.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer_ui.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_upgrader/crostini_upgrader.mojom.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_upgrader/crostini_upgrader_ui.h"
+#include "chrome/browser/ui/webui/chromeos/internet_config_dialog.h"
+#include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/chromeos/machine_learning/machine_learning_internals_page_handler.mojom.h"
+#include "chrome/browser/ui/webui/chromeos/machine_learning/machine_learning_internals_ui.h"
+#include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_dialog.h"
+#include "chrome/browser/ui/webui/chromeos/network_ui.h"
+#include "chrome/browser/ui/webui/settings/chromeos/os_settings_ui.h"
+#include "chrome/browser/ui/webui/settings/settings_ui.h"
+#include "chromeos/components/multidevice/debug_webui/proximity_auth_ui.h"
 #include "chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom.h"
+#include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
+#include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"  // nogncheck
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -134,36 +140,79 @@ namespace internal {
 
 namespace {
 
+template <typename Interface, int N, typename... Subclasses>
+struct BinderHelper;
+
+template <typename Interface, typename WebUIControllerSubclass>
+bool SafeDownCastAndBindInterface(content::WebUI* web_ui,
+                                  mojo::PendingReceiver<Interface>& receiver) {
+  // Performs a safe downcast to the concrete WebUIController subclass.
+  WebUIControllerSubclass* concrete_controller =
+      web_ui ? web_ui->GetController()->GetAs<WebUIControllerSubclass>()
+             : nullptr;
+
+  if (!concrete_controller)
+    return false;
+
+  // Fails to compile if |Subclass| does not implement the appropriate overload
+  // for |Interface|.
+  concrete_controller->BindInterface(std::move(receiver));
+  return true;
+}
+
+template <typename Interface, int N, typename Subclass, typename... Subclasses>
+struct BinderHelper<Interface, N, std::tuple<Subclass, Subclasses...>> {
+  static bool BindInterface(content::WebUI* web_ui,
+                            mojo::PendingReceiver<Interface> receiver) {
+    // Try a different subclass if the current one is not the right
+    // WebUIController for the current WebUI page, and only fail if none of the
+    // passed subclasses match.
+    if (!SafeDownCastAndBindInterface<Interface, Subclass>(web_ui, receiver)) {
+      return BinderHelper<Interface, N - 1, std::tuple<Subclasses...>>::
+          BindInterface(web_ui, std::move(receiver));
+    }
+    return true;
+  }
+};
+
+template <typename Interface, typename Subclass, typename... Subclasses>
+struct BinderHelper<Interface, 0, std::tuple<Subclass, Subclasses...>> {
+  static bool BindInterface(content::WebUI* web_ui,
+                            mojo::PendingReceiver<Interface> receiver) {
+    return SafeDownCastAndBindInterface<Interface, Subclass>(web_ui, receiver);
+  }
+};
+
 // Registers a binder in |map| that binds |Interface| iff the RenderFrameHost
-// has a WebUIController of type |WebUIControllerSubclass|.
-// TODO(calamity): Allow binding of N WebUIControllers to M Interfaces.
-template <typename WebUIControllerSubclass, typename Interface>
+// has a WebUIController among type |WebUIControllerSubclasses|.
+template <typename Interface, typename... WebUIControllerSubclasses>
 void RegisterWebUIControllerInterfaceBinder(
     service_manager::BinderMapWithContext<content::RenderFrameHost*>* map) {
   map->Add<Interface>(
       base::BindRepeating([](content::RenderFrameHost* host,
                              mojo::PendingReceiver<Interface> receiver) {
-        auto* contents = content::WebContents::FromRenderFrameHost(host);
-        content::WebUI* web_ui = contents->GetWebUI();
-
-        // Performs a safe downcast to the concrete WebUIController subclass.
-        WebUIControllerSubclass* concrete_controller =
-            web_ui ? web_ui->GetController()->GetAs<WebUIControllerSubclass>()
-                   : nullptr;
-
-        // This is expected to be called only for main frames and for the right
-        // WebUI pages matching the same WebUI associated to the
-        // RenderFrameHost.
-        if (host->GetParent() || !concrete_controller) {
+        // This is expected to be called only for main frames.
+        if (host->GetParent()) {
           ReceivedBadMessage(
               host->GetProcess(),
               bad_message::BadMessageReason::RFH_INVALID_WEB_UI_CONTROLLER);
           return;
         }
 
-        // Fails to compile if |WebUIControllerSubclass| does not implement the
-        // appropriate overload for |Interface|.
-        concrete_controller->BindInterface(std::move(receiver));
+        const int size = sizeof...(WebUIControllerSubclasses);
+        auto* contents = content::WebContents::FromRenderFrameHost(host);
+        bool is_bound = BinderHelper<Interface, size - 1,
+                                     std::tuple<WebUIControllerSubclasses...>>::
+            BindInterface(contents->GetWebUI(), std::move(receiver));
+
+        // This is expected to be called only for the right WebUI pages matching
+        // the same WebUI associated to the RenderFrameHost.
+        if (!is_bound) {
+          ReceivedBadMessage(
+              host->GetProcess(),
+              bad_message::BadMessageReason::RFH_INVALID_WEB_UI_CONTROLLER);
+          return;
+        }
       }));
 }
 
@@ -402,83 +451,99 @@ void PopulateChromeFrameBinders(
 
 void PopulateChromeWebUIFrameBinders(
     service_manager::BinderMapWithContext<content::RenderFrameHost*>* map) {
-  RegisterWebUIControllerInterfaceBinder<BluetoothInternalsUI,
-                                         ::mojom::BluetoothInternalsHandler>(
+  RegisterWebUIControllerInterfaceBinder<::mojom::BluetoothInternalsHandler,
+                                         BluetoothInternalsUI>(map);
+
+  RegisterWebUIControllerInterfaceBinder<
+      ::mojom::InterventionsInternalsPageHandler, InterventionsInternalsUI>(
       map);
 
   RegisterWebUIControllerInterfaceBinder<
-      InterventionsInternalsUI, ::mojom::InterventionsInternalsPageHandler>(
+      media::mojom::MediaEngagementScoreDetailsProvider, MediaEngagementUI>(
       map);
 
-  RegisterWebUIControllerInterfaceBinder<
-      MediaEngagementUI, media::mojom::MediaEngagementScoreDetailsProvider>(
-      map);
+  RegisterWebUIControllerInterfaceBinder<::mojom::OmniboxPageHandler,
+                                         OmniboxUI>(map);
 
-  RegisterWebUIControllerInterfaceBinder<OmniboxUI,
-                                         ::mojom::OmniboxPageHandler>(map);
+  RegisterWebUIControllerInterfaceBinder<::mojom::SiteEngagementDetailsProvider,
+                                         SiteEngagementUI>(map);
 
-  RegisterWebUIControllerInterfaceBinder<
-      SiteEngagementUI, ::mojom::SiteEngagementDetailsProvider>(map);
-
-  RegisterWebUIControllerInterfaceBinder<UsbInternalsUI,
-                                         ::mojom::UsbInternalsPageHandler>(map);
+  RegisterWebUIControllerInterfaceBinder<::mojom::UsbInternalsPageHandler,
+                                         UsbInternalsUI>(map);
 
 #if defined(OS_ANDROID)
   RegisterWebUIControllerInterfaceBinder<
-      explore_sites::ExploreSitesInternalsUI,
-      explore_sites_internals::mojom::PageHandler>(map);
+      explore_sites_internals::mojom::PageHandler,
+      explore_sites::ExploreSitesInternalsUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
-      SnippetsInternalsUI, snippets_internals::mojom::PageHandlerFactory>(map);
+      snippets_internals::mojom::PageHandlerFactory, SnippetsInternalsUI>(map);
 #else
-  RegisterWebUIControllerInterfaceBinder<DownloadsUI,
-                                         downloads::mojom::PageHandlerFactory>(
-      map);
+  RegisterWebUIControllerInterfaceBinder<downloads::mojom::PageHandlerFactory,
+                                         DownloadsUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
-      NewTabPageUI, new_tab_page::mojom::PageHandlerFactory>(map);
+      new_tab_page::mojom::PageHandlerFactory, NewTabPageUI>(map);
 #endif
 
 #if defined(OS_CHROMEOS)
   RegisterWebUIControllerInterfaceBinder<
-      chromeos::AddSupervisionUI,
-      add_supervision::mojom::AddSupervisionHandler>(map);
+      add_supervision::mojom::AddSupervisionHandler,
+      chromeos::AddSupervisionUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
-      chromeos::cellular_setup::CellularSetupDialogUI,
-      chromeos::cellular_setup::mojom::CellularSetup>(map);
+      app_management::mojom::PageHandlerFactory,
+      chromeos::settings::OSSettingsUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
-      chromeos::CrostiniInstallerUI,
-      chromeos::crostini_installer::mojom::PageHandlerFactory>(map);
+      chromeos::cellular_setup::mojom::CellularSetup,
+      chromeos::cellular_setup::CellularSetupDialogUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
-      chromeos::CrostiniUpgraderUI,
-      chromeos::crostini_upgrader::mojom::PageHandlerFactory>(map);
+      chromeos::crostini_installer::mojom::PageHandlerFactory,
+      chromeos::CrostiniInstallerUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
-      chromeos::machine_learning::MachineLearningInternalsUI,
-      chromeos::machine_learning::mojom::PageHandler>(map);
-#endif  // defined(OS_CHROMEOS)
+      chromeos::crostini_upgrader::mojom::PageHandlerFactory,
+      chromeos::CrostiniUpgraderUI>(map);
+
+  RegisterWebUIControllerInterfaceBinder<
+      chromeos::machine_learning::mojom::PageHandler,
+      chromeos::machine_learning::MachineLearningInternalsUI>(map);
+
+  RegisterWebUIControllerInterfaceBinder<
+      chromeos::multidevice_setup::mojom::MultiDeviceSetup, chromeos::OobeUI,
+      chromeos::multidevice::ProximityAuthUI,
+      chromeos::multidevice_setup::MultiDeviceSetupDialogUI>(map);
+
+  RegisterWebUIControllerInterfaceBinder<
+      chromeos::multidevice_setup::mojom::PrivilegedHostDeviceSetter,
+      chromeos::OobeUI>(map);
+
+  RegisterWebUIControllerInterfaceBinder<
+      chromeos::network_config::mojom::CrosNetworkConfig,
+      chromeos::InternetConfigDialogUI, chromeos::InternetDetailDialogUI,
+      chromeos::NetworkUI, chromeos::OobeUI, chromeos::settings::OSSettingsUI,
+      settings::SettingsUI>(map);
+#endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
-  RegisterWebUIControllerInterfaceBinder<DiscardsUI,
-                                         discards::mojom::DetailsProvider>(map);
+  RegisterWebUIControllerInterfaceBinder<discards::mojom::DetailsProvider,
+                                         DiscardsUI>(map);
 
-  RegisterWebUIControllerInterfaceBinder<DiscardsUI,
-                                         discards::mojom::GraphDump>(map);
+  RegisterWebUIControllerInterfaceBinder<discards::mojom::GraphDump,
+                                         DiscardsUI>(map);
 #endif
 
 #if BUILDFLAG(ENABLE_FEED_IN_CHROME)
-  RegisterWebUIControllerInterfaceBinder<FeedInternalsUI,
-                                         feed_internals::mojom::PageHandler>(
-      map);
+  RegisterWebUIControllerInterfaceBinder<feed_internals::mojom::PageHandler,
+                                         FeedInternalsUI>(map);
 #endif
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
-  RegisterWebUIControllerInterfaceBinder<ResetPasswordUI,
-                                         ::mojom::ResetPasswordHandler>(map);
+  RegisterWebUIControllerInterfaceBinder<::mojom::ResetPasswordHandler,
+                                         ResetPasswordUI>(map);
 #endif
 }
 

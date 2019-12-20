@@ -103,15 +103,18 @@ class ArcAccessibilityHelperBridge
   void OnNotificationSurfaceRemoved(
       ash::ArcNotificationSurface* surface) override {}
 
-  const std::map<int32_t, std::unique_ptr<AXTreeSourceArc>>&
-  task_id_to_tree_for_test() const {
-    return task_id_to_tree_;
-  }
+  enum class TreeKeyType {
+    kTaskId,
+    kNotificationKey,
+    kInputMethod,
+  };
 
-  const std::map<std::string, std::unique_ptr<AXTreeSourceArc>>&
-  notification_key_to_tree_for_test() const {
-    return notification_key_to_tree_;
-  }
+  using TreeKey = std::tuple<TreeKeyType, int32_t, std::string>;
+  using TreeMap = std::map<TreeKey, std::unique_ptr<AXTreeSourceArc>>;
+
+  static TreeKey KeyForNotification(std::string notification_key);
+
+  const TreeMap& trees_for_test() const { return trees_; }
 
   void set_filter_type_all_for_test() { use_filter_type_all_for_test_ = true; }
 
@@ -144,20 +147,15 @@ class ArcAccessibilityHelperBridge
   void HandleFilterTypeFocusEvent(mojom::AccessibilityEventDataPtr event_data);
   void HandleFilterTypeAllEvent(mojom::AccessibilityEventDataPtr event_data);
 
-  AXTreeSourceArc* GetFromTaskId(int32_t task_id);
-  AXTreeSourceArc* CreateFromTaskId(int32_t task_id);
-  AXTreeSourceArc* GetFromNotificationKey(const std::string& notification_key);
-  AXTreeSourceArc* CreateFromNotificationKey(
-      const std::string& notification_key);
+  AXTreeSourceArc* CreateFromKey(TreeKey);
+  AXTreeSourceArc* GetFromKey(const TreeKey&);
   AXTreeSourceArc* GetFromTreeId(ui::AXTreeID tree_id) const;
 
   bool activation_observer_added_ = false;
   Profile* const profile_;
   ArcBridgeService* const arc_bridge_service_;
-  std::map<int32_t, std::unique_ptr<AXTreeSourceArc>> task_id_to_tree_;
-  std::map<std::string, std::unique_ptr<AXTreeSourceArc>>
-      notification_key_to_tree_;
-  std::unique_ptr<AXTreeSourceArc> input_method_tree_;
+  TreeMap trees_;
+
   std::unique_ptr<chromeos::AccessibilityStatusSubscription>
       accessibility_status_subscription_;
   bool use_filter_type_all_for_test_ = false;

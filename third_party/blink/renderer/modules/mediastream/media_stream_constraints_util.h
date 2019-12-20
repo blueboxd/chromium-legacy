@@ -9,11 +9,11 @@
 
 #include "media/base/video_facing.h"
 #include "media/capture/video_capture_types.h"
-#include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_sets.h"
 #include "third_party/blink/renderer/modules/mediastream/video_track_adapter_settings.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_processor_options.h"
 
 namespace blink {
@@ -240,7 +240,7 @@ class MODULES_EXPORT AudioCaptureSettings {
 // Returns true if the constraint is specified in either mandatory or optional
 // constraints.
 MODULES_EXPORT bool GetConstraintValueAsBoolean(
-    const blink::WebMediaConstraints& constraints,
+    const MediaConstraints& constraints,
     const blink::BooleanConstraint blink::WebMediaTrackConstraintSet::*picker,
     bool* value);
 
@@ -248,17 +248,17 @@ MODULES_EXPORT bool GetConstraintValueAsBoolean(
 // Returns true if the constraint is specified in either mandatory or Optional
 // constraints.
 MODULES_EXPORT bool GetConstraintValueAsInteger(
-    const blink::WebMediaConstraints& constraints,
+    const MediaConstraints& constraints,
     const blink::LongConstraint blink::WebMediaTrackConstraintSet::*picker,
     int* value);
 
 MODULES_EXPORT bool GetConstraintMinAsInteger(
-    const blink::WebMediaConstraints& constraints,
+    const MediaConstraints& constraints,
     const blink::LongConstraint blink::WebMediaTrackConstraintSet::*picker,
     int* value);
 
 MODULES_EXPORT bool GetConstraintMaxAsInteger(
-    const blink::WebMediaConstraints& constraints,
+    const MediaConstraints& constraints,
     const blink::LongConstraint blink::WebMediaTrackConstraintSet::*picker,
     int* value);
 
@@ -266,7 +266,7 @@ MODULES_EXPORT bool GetConstraintMaxAsInteger(
 // constraints. Returns true if the constraint is specified in either mandatory
 // or Optional constraints.
 MODULES_EXPORT bool GetConstraintValueAsDouble(
-    const blink::WebMediaConstraints& constraints,
+    const MediaConstraints& constraints,
     const blink::DoubleConstraint blink::WebMediaTrackConstraintSet::*picker,
     double* value);
 

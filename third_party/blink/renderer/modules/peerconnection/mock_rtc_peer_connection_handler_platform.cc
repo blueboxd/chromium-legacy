@@ -248,13 +248,13 @@ MockRTCPeerConnectionHandlerPlatform::~MockRTCPeerConnectionHandlerPlatform() =
 
 bool MockRTCPeerConnectionHandlerPlatform::Initialize(
     const webrtc::PeerConnectionInterface::RTCConfiguration&,
-    const WebMediaConstraints&) {
+    const MediaConstraints&) {
   return true;
 }
 
 Vector<std::unique_ptr<RTCRtpTransceiverPlatform>>
 MockRTCPeerConnectionHandlerPlatform::CreateOffer(RTCSessionDescriptionRequest*,
-                                                  const WebMediaConstraints&) {
+                                                  const MediaConstraints&) {
   return {};
 }
 
@@ -266,7 +266,7 @@ MockRTCPeerConnectionHandlerPlatform::CreateOffer(RTCSessionDescriptionRequest*,
 
 void MockRTCPeerConnectionHandlerPlatform::CreateAnswer(
     RTCSessionDescriptionRequest*,
-    const WebMediaConstraints&) {}
+    const MediaConstraints&) {}
 
 void MockRTCPeerConnectionHandlerPlatform::CreateAnswer(
     RTCSessionDescriptionRequest*,

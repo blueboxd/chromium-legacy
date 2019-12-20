@@ -194,7 +194,10 @@ void SetupOnUIThread(
   if (base::FeatureList::IsEnabled(
           blink::features::kEagerCacheStorageSetupForServiceWorkers) &&
       !params->pause_after_download) {
-    rph->BindCacheStorage(url::Origin::Create(params->script_url),
+    // TODO(https://crbug.com/1031542): Add support enforcing CORP in
+    // cache.match() for ServiceWorker.
+    rph->BindCacheStorage(network::mojom::CrossOriginEmbedderPolicy::kNone,
+                          url::Origin::Create(params->script_url),
                           cache_storage.InitWithNewPipeAndPassReceiver());
   }
 

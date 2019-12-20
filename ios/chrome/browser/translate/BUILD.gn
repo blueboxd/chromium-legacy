@@ -108,12 +108,14 @@ source_set("unit_tests") {
 }
 
 source_set("eg_tests") {
+  defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "translate_egtest.mm",
   ]
   deps = [
+    ":test_support",
     ":translate",
     "//base",
     "//base/test:test_support",
@@ -132,6 +134,7 @@ source_set("eg_tests") {
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/chrome/test/fakes",
+    "//ios/testing/earl_grey:earl_grey_support",
     "//ios/third_party/earl_grey:earl_grey+link",
     "//ios/web:earl_grey_test_support",
     "//ios/web/public/test",
@@ -140,4 +143,58 @@ source_set("eg_tests") {
     "//ui/base",
   ]
   libs = [ "XCTest.framework" ]
+}
+
+source_set("eg2_tests") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+  sources = []
+  deps = []
+  libs = [ "UIKit.framework" ]
+}
+
+source_set("test_support") {
+  defines = [ "CHROME_EARL_GREY_1" ]
+  testonly = true
+  sources = [
+    "translate_app_interface.h",
+    "translate_app_interface.mm",
+  ]
+  deps = [
+    "//components/translate/core/browser:browser",
+    "//components/translate/core/common:common",
+    "//components/translate/ios/browser:browser",
+    "//ios/chrome/browser/browser_state:browser_state",
+    "//ios/chrome/browser/translate",
+    "//ios/chrome/test/app:test_support",
+    "//ios/chrome/test/fakes:fakes",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("eg_app_support+eg2") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+  sources = []
+}
+
+source_set("eg_test_support+eg2") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+  sources = []
+  deps = [
+    "//ios/testing/earl_grey:eg_test_support+eg2",
+  ]
 }

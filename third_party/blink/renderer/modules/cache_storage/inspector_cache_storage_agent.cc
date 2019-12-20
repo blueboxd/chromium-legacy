@@ -167,6 +167,8 @@ std::string CacheStorageErrorString(mojom::blink::CacheStorageError error) {
       return std::string("storage failure.");
     case mojom::blink::CacheStorageError::kErrorDuplicateOperation:
       return std::string("duplicate operation.");
+    case mojom::blink::CacheStorageError::kErrorCrossOriginResourcePolicy:
+      return std::string("failed Cross-Origin-Resource-Policy check.");
     case mojom::blink::CacheStorageError::kSuccess:
       // This function should only be called upon error.
       break;

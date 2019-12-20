@@ -41,9 +41,10 @@ class KEYED_SERVICE_EXPORT DependencyGraph {
       WARN_UNUSED_RESULT;
 
   // Returns representation of the dependency graph in graphviz format.
-  std::string DumpAsGraphviz(const std::string& toplevel_name,
-                             const base::Callback<std::string(DependencyNode*)>&
-                                 node_name_callback) const;
+  std::string DumpAsGraphviz(
+      const std::string& toplevel_name,
+      const base::RepeatingCallback<std::string(DependencyNode*)>&
+          node_name_callback) const;
 
  private:
   typedef std::multimap<DependencyNode*, DependencyNode*> EdgeMap;

@@ -223,6 +223,9 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // timeout, or a GREYAssert is induced.
 - (void)openNewTab;
 
+// Simulates opening http://www.example.com/ from another application.
+- (void)simulateExternalAppURLOpening;
+
 // Closes the current tab and waits for the UI to complete.
 - (void)closeCurrentTab;
 

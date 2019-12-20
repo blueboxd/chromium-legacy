@@ -11,7 +11,8 @@ KeyedServiceShutdownNotifier::~KeyedServiceShutdownNotifier() {
 }
 
 std::unique_ptr<base::CallbackList<void()>::Subscription>
-KeyedServiceShutdownNotifier::Subscribe(const base::Closure& callback) {
+KeyedServiceShutdownNotifier::Subscribe(
+    const base::RepeatingClosure& callback) {
   return callback_list_.Add(callback);
 }
 

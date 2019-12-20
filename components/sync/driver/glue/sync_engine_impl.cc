@@ -120,7 +120,7 @@ void SyncEngineImpl::SetDecryptionPassphrase(const std::string& passphrase) {
 }
 
 void SyncEngineImpl::AddTrustedVaultDecryptionKeys(
-    const std::vector<std::string>& keys,
+    const std::vector<std::vector<uint8_t>>& keys,
     base::OnceClosure done_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sync_task_runner_->PostTaskAndReply(

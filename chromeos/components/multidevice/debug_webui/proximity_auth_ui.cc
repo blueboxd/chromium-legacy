@@ -49,17 +49,17 @@ ProximityAuthUI::ProximityAuthUI(
   content::WebUIDataSource::Add(browser_context, source);
   web_ui->AddMessageHandler(std::make_unique<ProximityAuthWebUIHandler>(
       device_sync_client, secure_channel_client));
-  AddHandlerToRegistry(base::BindRepeating(
-      &ProximityAuthUI::BindMultiDeviceSetup, base::Unretained(this)));
 }
 
 ProximityAuthUI::~ProximityAuthUI() = default;
 
-void ProximityAuthUI::BindMultiDeviceSetup(
+void ProximityAuthUI::BindInterface(
     mojo::PendingReceiver<chromeos::multidevice_setup::mojom::MultiDeviceSetup>
         receiver) {
   multidevice_setup_binder_.Run(std::move(receiver));
 }
+
+WEB_UI_CONTROLLER_TYPE_IMPL(ProximityAuthUI)
 
 }  // namespace multidevice
 

@@ -26,7 +26,6 @@
 #include "media/base/media_switches.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_track.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util.h"
@@ -36,6 +35,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_receiver_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/webrtc_set_description_observer.h"
 #include "third_party/blink/renderer/modules/webrtc/webrtc_audio_device_impl.h"
+#include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_answer_options_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_event_log_output_sink.h"
@@ -153,7 +153,7 @@ void GetRTCSessionDescriptionPlatformFromSessionDescriptionCallback(
 // Converter functions from Blink types to WebRTC types.
 
 absl::optional<bool> ConstraintToOptional(
-    const blink::WebMediaConstraints& constraints,
+    const MediaConstraints& constraints,
     const blink::BooleanConstraint blink::WebMediaTrackConstraintSet::*picker) {
   bool value;
   if (GetConstraintValueAsBoolean(constraints, picker, &value)) {
@@ -163,7 +163,7 @@ absl::optional<bool> ConstraintToOptional(
 }
 
 void CopyConstraintsIntoRtcConfiguration(
-    const blink::WebMediaConstraints constraints,
+    const MediaConstraints constraints,
     webrtc::PeerConnectionInterface::RTCConfiguration* configuration) {
   // Copy info from constraints into configuration, if present.
   if (constraints.IsEmpty()) {
@@ -506,7 +506,7 @@ void ConvertAnswerOptionsToWebrtcAnswerOptions(
 }
 
 void ConvertConstraintsToWebrtcOfferOptions(
-    const blink::WebMediaConstraints& constraints,
+    const MediaConstraints& constraints,
     webrtc::PeerConnectionInterface::RTCOfferAnswerOptions* output) {
   if (constraints.IsEmpty()) {
     return;
@@ -1044,7 +1044,7 @@ void RTCPeerConnectionHandler::AssociateWithFrame(blink::WebLocalFrame* frame) {
 bool RTCPeerConnectionHandler::Initialize(
     const webrtc::PeerConnectionInterface::RTCConfiguration&
         server_configuration,
-    const blink::WebMediaConstraints& options) {
+    const MediaConstraints& options) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK(frame_);
 
@@ -1097,7 +1097,7 @@ bool RTCPeerConnectionHandler::Initialize(
 bool RTCPeerConnectionHandler::InitializeForTest(
     const webrtc::PeerConnectionInterface::RTCConfiguration&
         server_configuration,
-    const blink::WebMediaConstraints& options,
+    const MediaConstraints& options,
     const base::WeakPtr<PeerConnectionTracker>& peer_connection_tracker) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
@@ -1122,7 +1122,7 @@ bool RTCPeerConnectionHandler::InitializeForTest(
 
 Vector<std::unique_ptr<RTCRtpTransceiverPlatform>>
 RTCPeerConnectionHandler::CreateOffer(RTCSessionDescriptionRequest* request,
-                                      const WebMediaConstraints& options) {
+                                      const MediaConstraints& options) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::createOffer");
 
@@ -1196,7 +1196,7 @@ void RTCPeerConnectionHandler::CreateOfferOnSignalingThread(
 
 void RTCPeerConnectionHandler::CreateAnswer(
     blink::RTCSessionDescriptionRequest* request,
-    const blink::WebMediaConstraints& options) {
+    const MediaConstraints& options) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::createAnswer");
   scoped_refptr<CreateSessionDescriptionRequest> description_request(

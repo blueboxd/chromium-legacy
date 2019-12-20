@@ -1153,9 +1153,8 @@ enum AuthenticationState {
   _timerGenerator = [timerGenerator copy];
 }
 
-+ (std::unique_ptr<base::AutoReset<BOOL>>)hideActivityIndicatorForTesting {
-  return std::make_unique<base::AutoReset<BOOL>>(
-      &gChromeSigninViewControllerShowsActivityIndicator, NO);
++ (void)setActivityIndicatorShownForTesting:(BOOL)shown {
+  gChromeSigninViewControllerShowsActivityIndicator = shown;
 }
 
 @end

@@ -34,6 +34,7 @@ from .codegen_utils import make_copyright_header
 from .codegen_utils import make_header_include_directives
 from .codegen_utils import write_code_node_to_file
 from .mako_renderer import MakoRenderer
+from .path_manager import PathManager
 
 
 def bind_blink_api_arguments(code_node, cg_context):
@@ -1416,10 +1417,7 @@ def _blink_property_name(idl_member):
     return property_name
 
 
-def generate_interfaces(web_idl_database, output_dirs):
-    filename = "v8_example_interface.cc"
-    filepath = os.path.join(output_dirs['core'], filename)
-
+def generate_interfaces(web_idl_database):
     interface = web_idl_database.find("TestInterfaceConstructor")
 
     cg_context = CodeGenContext(
@@ -1471,4 +1469,6 @@ def generate_interfaces(web_idl_database, output_dirs):
         enclose_with_namespace(code_node, name_style.namespace("blink")),
     ])
 
-    write_code_node_to_file(root_node, filepath)
+    path_manager = PathManager(interface)
+    filepath = path_manager.impl_path("v8_example_interface.cc")
+    write_code_node_to_file(root_node, path_manager.gen_path_to(filepath))

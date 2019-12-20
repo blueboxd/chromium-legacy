@@ -1895,11 +1895,12 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 }
 
 void RenderProcessHostImpl::BindCacheStorage(
+    network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy,
     const url::Origin& origin,
     mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   storage_partition_impl_->GetCacheStorageContext()->AddReceiver(
-      std::move(receiver), origin);
+      cross_origin_embedder_policy, origin, std::move(receiver));
 }
 
 void RenderProcessHostImpl::BindIndexedDB(

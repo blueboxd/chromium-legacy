@@ -137,8 +137,8 @@ bool DependencyGraph::BuildConstructionOrder() {
 
 std::string DependencyGraph::DumpAsGraphviz(
     const std::string& toplevel_name,
-    const base::Callback<std::string(DependencyNode*)>& node_name_callback)
-    const {
+    const base::RepeatingCallback<std::string(DependencyNode*)>&
+        node_name_callback) const {
   std::string result("digraph {\n");
   std::string escaped_toplevel_name = Escape(toplevel_name);
 

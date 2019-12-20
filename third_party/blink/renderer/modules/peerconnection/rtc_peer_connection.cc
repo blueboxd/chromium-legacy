@@ -675,7 +675,7 @@ RTCPeerConnection* RTCPeerConnection::Create(
   }
 
   MediaErrorState media_error_state;
-  WebMediaConstraints constraints = media_constraints_impl::Create(
+  MediaConstraints constraints = media_constraints_impl::Create(
       context, media_constraints, media_error_state);
   if (media_error_state.HadException()) {
     media_error_state.RaiseException(exception_state);
@@ -702,7 +702,7 @@ RTCPeerConnection::RTCPeerConnection(
     ExecutionContext* context,
     webrtc::PeerConnectionInterface::RTCConfiguration configuration,
     bool sdp_semantics_specified,
-    WebMediaConstraints constraints,
+    MediaConstraints constraints,
     ExceptionState& exception_state)
     : ContextLifecycleObserver(context),
       signaling_state_(
@@ -900,7 +900,7 @@ ScriptPromise RTCPeerConnection::createOffer(
     platform_transceivers = peer_handler_->CreateOffer(request, offer_options);
   } else {
     MediaErrorState media_error_state;
-    WebMediaConstraints constraints = media_constraints_impl::Create(
+    MediaConstraints constraints = media_constraints_impl::Create(
         context, rtc_offer_options, media_error_state);
     // Report constraints parsing errors via the callback, but ignore
     // unknown/unsupported constraints as they would be silently discarded by
@@ -974,7 +974,7 @@ ScriptPromise RTCPeerConnection::createAnswer(
     return ScriptPromise::CastUndefined(script_state);
 
   MediaErrorState media_error_state;
-  WebMediaConstraints constraints = media_constraints_impl::Create(
+  MediaConstraints constraints = media_constraints_impl::Create(
       context, media_constraints, media_error_state);
   // Report constraints parsing errors via the callback, but ignore
   // unknown/unsupported constraints as they would be silently discarded by
@@ -1917,7 +1917,7 @@ void RTCPeerConnection::addStream(ScriptState* script_state,
     return;
   if (!media_constraints.IsUndefinedOrNull()) {
     MediaErrorState media_error_state;
-    WebMediaConstraints constraints =
+    MediaConstraints constraints =
         media_constraints_impl::Create(ExecutionContext::From(script_state),
                                        media_constraints, media_error_state);
     if (media_error_state.HadException()) {

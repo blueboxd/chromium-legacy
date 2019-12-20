@@ -20,6 +20,7 @@
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
@@ -67,13 +68,26 @@ void FilterLogins(
   std::move(callback).Run(std::move(logins));
 }
 
+void CloseTraceAndCallBack(
+    const char* trace_name,
+    PasswordStoreConsumer* consumer,
+    base::OnceCallback<
+        void(std::vector<std::unique_ptr<autofill::PasswordForm>>)> callback,
+    std::vector<std::unique_ptr<PasswordForm>> results) {
+  TRACE_EVENT_NESTABLE_ASYNC_END0("passwords", trace_name, consumer);
+
+  std::move(callback).Run(std::move(results));
+}
+
 }  // namespace
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 PasswordStore::CheckReuseRequest::CheckReuseRequest(
     PasswordReuseDetectorConsumer* consumer)
     : origin_task_runner_(base::SequencedTaskRunnerHandle::Get()),
-      consumer_weak_(consumer->AsWeakPtr()) {}
+      consumer_weak_(consumer->AsWeakPtr()) {
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("passwords", "CheckReuseRequest", this);
+}
 
 PasswordStore::CheckReuseRequest::~CheckReuseRequest() {}
 
@@ -87,6 +101,7 @@ void PasswordStore::CheckReuseRequest::OnReuseFound(
                                 consumer_weak_, password_length,
                                 reused_protected_password_hash,
                                 matching_domains, saved_passwords));
+  TRACE_EVENT_NESTABLE_ASYNC_END0("passwords", "CheckReuseRequest", this);
 }
 #endif
 
@@ -138,6 +153,8 @@ bool PasswordStore::Init(const syncer::SyncableService::StartSyncFlare& flare,
   hash_password_manager_.set_prefs(prefs);
 #endif
   if (background_task_runner_) {
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
+        "passwords", "PasswordStore::InitOnBackgroundSequence", this);
     base::PostTaskAndReplyWithResult(
         background_task_runner_.get(), FROM_HERE,
         base::BindOnce(&PasswordStore::InitOnBackgroundSequence, this, flare),
@@ -230,6 +247,8 @@ void PasswordStore::Unblacklist(const PasswordStore::FormDigest& form_digest,
 void PasswordStore::GetLogins(const FormDigest& form,
                               PasswordStoreConsumer* consumer) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("passwords", "PasswordStore::GetLogins",
+                                    consumer);
   // Per http://crbug.com/121738, we deliberately ignore saved logins for
   // http*://www.google.com/ that were stored prior to 2012. (Google now uses
   // https://accounts.google.com/ for all login forms, so these should be
@@ -259,7 +278,8 @@ void PasswordStore::GetLogins(const FormDigest& form,
                   this, consumer->GetWeakPtr(), form, cutoff));
   } else {
     PostLoginsTaskAndReplyToConsumerWithProcessedResult(
-        consumer, base::BindOnce(&PasswordStore::GetLoginsImpl, this, form),
+        "PasswordStore::GetLogins", consumer,
+        base::BindOnce(&PasswordStore::GetLoginsImpl, this, form),
         base::BindOnce(FilterLogins, cutoff));
   }
 }
@@ -295,7 +315,12 @@ void PasswordStore::GetAllLogins(PasswordStoreConsumer* consumer) {
 void PasswordStore::GetAllLoginsWithAffiliationAndBrandingInformation(
     PasswordStoreConsumer* consumer) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
+      "passwords",
+      "PasswordStore::GetAllLoginsWithAffiliationAndBrandingInformation",
+      consumer);
   PostLoginsTaskAndReplyToConsumerWithProcessedResult(
+      "PasswordStore::GetAllLoginsWithAffiliationAndBrandingInformation",
       consumer, base::BindOnce(&PasswordStore::GetAllLoginsImpl, this),
       base::BindOnce(&PasswordStore::InjectAffiliationAndBrandingInformation,
                      this));
@@ -681,6 +706,7 @@ void PasswordStore::SaveProtectedPasswordHashImpl(
     bool does_primary_account_exists) {
   if (!reuse_detector_ || !protected_password_data_list.has_value())
     return;
+  TRACE_EVENT0("passwords", "PasswordStore::SaveProtectedPasswordHashImpl");
 
   std::vector<PasswordHashData> gaia_password_hash_list;
   std::vector<PasswordHashData> enterprise_password_hash_list;
@@ -706,26 +732,32 @@ void PasswordStore::SaveEnterprisePasswordURLs(
     const GURL& enterprise_change_password_url) {
   if (!reuse_detector_)
     return;
+  TRACE_EVENT0("passwords", "PasswordStore::SaveEnterprisePasswordURLs");
   reuse_detector_->UseEnterprisePasswordURLs(std::move(enterprise_login_urls),
                                              enterprise_change_password_url);
 }
 
 void PasswordStore::ClearGaiaPasswordHashImpl(const std::string& username) {
+  TRACE_EVENT0("passwords", "PasswordStore::ClearGaiaPasswordHashImpl");
   if (reuse_detector_)
     reuse_detector_->ClearGaiaPasswordHash(username);
 }
 
 void PasswordStore::ClearAllGaiaPasswordHashImpl() {
+  TRACE_EVENT0("passwords", "PasswordStore::ClearAllGaiaPasswordHashImpl");
   if (reuse_detector_)
     reuse_detector_->ClearAllGaiaPasswordHash();
 }
 
 void PasswordStore::ClearAllEnterprisePasswordHashImpl() {
+  TRACE_EVENT0("passwords",
+               "PasswordStore::ClearAllEnterprisePasswordHashImpl");
   if (reuse_detector_)
     reuse_detector_->ClearAllEnterprisePasswordHash();
 }
 
 void PasswordStore::ClearAllNonGmailPasswordHashImpl() {
+  TRACE_EVENT0("passwords", "PasswordStore::ClearAllNonGmailPasswordHashImpl");
   if (reuse_detector_)
     reuse_detector_->ClearAllNonGmailPasswordHash();
 }
@@ -737,6 +769,8 @@ void PasswordStore::OnInitCompleted(bool success) {
   init_status_ = success ? InitStatus::kSuccess : InitStatus::kFailure;
 
   UMA_HISTOGRAM_BOOLEAN("PasswordManager.PasswordStoreInitResult", success);
+  TRACE_EVENT_NESTABLE_ASYNC_END0(
+      "passwords", "PasswordStore::InitOnBackgroundSequence", this);
 }
 
 void PasswordStore::PostLoginsTaskAndReplyToConsumerWithResult(
@@ -749,15 +783,17 @@ void PasswordStore::PostLoginsTaskAndReplyToConsumerWithResult(
 }
 
 void PasswordStore::PostLoginsTaskAndReplyToConsumerWithProcessedResult(
+    const char* trace_name,
     PasswordStoreConsumer* consumer,
     LoginsTask task,
     LoginsResultProcessor processor) {
+  auto call_consumer = base::BindOnce(
+      CloseTraceAndCallBack, trace_name, consumer,
+      base::BindOnce(&PasswordStoreConsumer::OnGetPasswordStoreResults,
+                     consumer->GetWeakPtr()));
   consumer->cancelable_task_tracker()->PostTaskAndReplyWithResult(
       background_task_runner_.get(), FROM_HERE, std::move(task),
-      base::BindOnce(
-          std::move(processor),
-          base::BindOnce(&PasswordStoreConsumer::OnGetPasswordStoreResults,
-                         consumer->GetWeakPtr())));
+      base::BindOnce(std::move(processor), std::move(call_consumer)));
 }
 
 void PasswordStore::PostStatsTaskAndReplyToConsumerWithResult(
@@ -780,6 +816,7 @@ void PasswordStore::PostCompromisedCredentialsTaskAndReplyToConsumerWithResult(
 
 void PasswordStore::AddLoginInternal(const PasswordForm& form) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
+  TRACE_EVENT0("passwords", "PasswordStore::AddLoginInternal");
   BeginTransaction();
   PasswordStoreChangeList changes = AddLoginImpl(form);
   NotifyLoginsChanged(changes);
@@ -792,6 +829,7 @@ void PasswordStore::AddLoginInternal(const PasswordForm& form) {
 
 void PasswordStore::UpdateLoginInternal(const PasswordForm& form) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
+  TRACE_EVENT0("passwords", "PasswordStore::UpdateLoginInternal");
   BeginTransaction();
   PasswordStoreChangeList changes = UpdateLoginImpl(form);
   NotifyLoginsChanged(changes);
@@ -804,6 +842,7 @@ void PasswordStore::UpdateLoginInternal(const PasswordForm& form) {
 
 void PasswordStore::RemoveLoginInternal(const PasswordForm& form) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
+  TRACE_EVENT0("passwords", "PasswordStore::RemoveLoginInternal");
   BeginTransaction();
   PasswordStoreChangeList changes = RemoveLoginImpl(form);
   NotifyLoginsChanged(changes);
@@ -818,6 +857,7 @@ void PasswordStore::UpdateLoginWithPrimaryKeyInternal(
     const PasswordForm& new_form,
     const PasswordForm& old_primary_key) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
+  TRACE_EVENT0("passwords", "PasswordStore::UpdateLoginWithPrimaryKeyInternal");
   BeginTransaction();
   PasswordStoreChangeList all_changes = RemoveLoginImpl(old_primary_key);
   PasswordStoreChangeList changes = AddLoginImpl(new_form);
@@ -836,6 +876,7 @@ void PasswordStore::RemoveLoginsByURLAndTimeInternal(
     base::Time delete_end,
     const base::Closure& completion) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
+  TRACE_EVENT0("passwords", "PasswordStore::RemoveLoginsByURLAndTimeInternal");
   BeginTransaction();
   PasswordStoreChangeList changes =
       RemoveLoginsByURLAndTimeImpl(url_filter, delete_begin, delete_end);
@@ -854,6 +895,8 @@ void PasswordStore::RemoveLoginsCreatedBetweenInternal(
     base::Time delete_end,
     const base::Closure& completion) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
+  TRACE_EVENT0("passwords",
+               "PasswordStore::RemoveLoginsCreatedBetweenInternal");
   BeginTransaction();
   PasswordStoreChangeList changes =
       RemoveLoginsCreatedBetweenImpl(delete_begin, delete_end);
@@ -873,6 +916,8 @@ void PasswordStore::RemoveStatisticsByOriginAndTimeInternal(
     base::Time delete_end,
     const base::Closure& completion) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
+  TRACE_EVENT0("passwords",
+               "PasswordStore::RemoveStatisticsByOriginAndTimeInternal");
   RemoveStatisticsByOriginAndTimeImpl(origin_filter, delete_begin, delete_end);
   if (!completion.is_null())
     main_task_runner_->PostTask(FROM_HERE, completion);
@@ -882,6 +927,8 @@ void PasswordStore::DisableAutoSignInForOriginsInternal(
     const base::Callback<bool(const GURL&)>& origin_filter,
     const base::Closure& completion) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
+  TRACE_EVENT0("passwords",
+               "PasswordStore::DisableAutoSignInForOriginsInternal");
   DisableAutoSignInForOriginsImpl(origin_filter);
   if (!completion.is_null())
     main_task_runner_->PostTask(FROM_HERE, completion);
@@ -891,6 +938,7 @@ void PasswordStore::UnblacklistInternal(
     const PasswordStore::FormDigest& form_digest,
     base::OnceClosure completion) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
+  TRACE_EVENT0("passwords", "PasswordStore::UnblacklistInternal");
 
   std::vector<std::unique_ptr<PasswordForm>> all_matches =
       GetLoginsImpl(form_digest);
@@ -934,12 +982,14 @@ std::vector<std::unique_ptr<PasswordForm>>
 PasswordStore::GetLoginsByPasswordImpl(
     const base::string16& plain_text_password) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
+  TRACE_EVENT0("passwords", "PasswordStore::GetLoginsByPasswordImpl");
   return FillMatchingLoginsByPassword(plain_text_password);
 }
 
 std::vector<std::unique_ptr<PasswordForm>>
 PasswordStore::GetAutofillableLoginsImpl() {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
+  TRACE_EVENT0("passwords", "PasswordStore::GetAutofillableLoginsImpl");
   std::vector<std::unique_ptr<PasswordForm>> obtained_forms;
   if (!FillAutofillableLogins(&obtained_forms))
     obtained_forms.clear();
@@ -949,6 +999,7 @@ PasswordStore::GetAutofillableLoginsImpl() {
 std::vector<std::unique_ptr<PasswordForm>>
 PasswordStore::GetBlacklistLoginsImpl() {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
+  TRACE_EVENT0("passwords", "PasswordStore::GetBlacklistLoginsImpl");
   std::vector<std::unique_ptr<PasswordForm>> obtained_forms;
   if (!FillBlacklistLogins(&obtained_forms))
     obtained_forms.clear();
@@ -957,6 +1008,7 @@ PasswordStore::GetBlacklistLoginsImpl() {
 
 std::vector<std::unique_ptr<PasswordForm>> PasswordStore::GetAllLoginsImpl() {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
+  TRACE_EVENT0("passwords", "PasswordStore::GetAllLoginsImpl");
   std::vector<std::unique_ptr<PasswordForm>> results;
   for (auto fill_logins : {&PasswordStore::FillAutofillableLogins,
                            &PasswordStore::FillBlacklistLogins}) {
@@ -1008,7 +1060,7 @@ void PasswordStore::ScheduleGetFilteredLoginsWithAffiliations(
     const std::vector<std::string>& additional_android_realms) {
   if (consumer) {
     PostLoginsTaskAndReplyToConsumerWithProcessedResult(
-        consumer.get(),
+        "PasswordStore::GetLogins", consumer.get(),
         base::BindOnce(&PasswordStore::GetLoginsWithAffiliationsImpl, this,
                        form, additional_android_realms),
         base::BindOnce(FilterLogins, cutoff));

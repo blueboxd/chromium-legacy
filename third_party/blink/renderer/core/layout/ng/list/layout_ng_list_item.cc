@@ -161,7 +161,6 @@ void LayoutNGListItem::UpdateMarker() {
       DestroyMarker();
     if (!marker_)
       marker_ = LayoutNGInsideListMarker::CreateAnonymous(&GetDocument());
-    marker_style->SetDisplay(EDisplay::kInline);
     auto margins =
         LayoutListMarker::InlineMarginsForInside(style, IsMarkerImage());
     marker_style->SetMarginStart(Length::Fixed(margins.first));
@@ -171,7 +170,6 @@ void LayoutNGListItem::UpdateMarker() {
       DestroyMarker();
     if (!marker_)
       marker_ = LayoutNGListMarker::CreateAnonymous(&GetDocument());
-    marker_style->SetDisplay(EDisplay::kInlineBlock);
     // Do not break inside the marker, and honor the trailing spaces.
     marker_style->SetWhiteSpace(EWhiteSpace::kPre);
     // Compute margins for 'outside' during layout, because it requires the

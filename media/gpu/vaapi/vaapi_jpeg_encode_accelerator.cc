@@ -181,7 +181,7 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeWithDmaBufTask(
   auto blit_surface =
       base::MakeRefCounted<VASurface>(va_surface_id_, input_size, va_format,
                                       base::DoNothing() /* release_cb */);
-  if (!vpp_vaapi_wrapper_->BlitSurface(input_surface, blit_surface)) {
+  if (!vpp_vaapi_wrapper_->BlitSurface(*input_surface, *blit_surface)) {
     VLOGF(1) << "Failed to blit surfaces";
     notify_error_cb_.Run(task_id, PLATFORM_FAILURE);
     return;

@@ -148,6 +148,14 @@ BASE_EXPORT void JavaArrayOfByteArrayToStringVector(
     const JavaRef<jobjectArray>& array,
     std::vector<std::string>* out);
 
+// Assuming |array| is an byte[][] (array of byte arrays), replaces the
+// content of |out| with the corresponding vector of vector of uint8. No UTF-8
+// conversion is performed.
+BASE_EXPORT void JavaArrayOfByteArrayToBytesVector(
+    JNIEnv* env,
+    const JavaRef<jobjectArray>& array,
+    std::vector<std::vector<uint8_t>>* out);
+
 // Assuming |array| is an String[][] (array of String arrays), replaces the
 // content of |out| with the corresponding vector of string vectors. No UTF-8
 // conversion is performed.

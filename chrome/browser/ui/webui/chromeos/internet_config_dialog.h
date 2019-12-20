@@ -54,11 +54,14 @@ class InternetConfigDialogUI : public ui::MojoWebDialogUI {
  public:
   explicit InternetConfigDialogUI(content::WebUI* web_ui);
   ~InternetConfigDialogUI() override;
-
- private:
-  void BindCrosNetworkConfig(
+  // Instantiates implementor of the mojom::CrosNetworkConfig mojo interface
+  // passing the pending receiver that will be internally bound.
+  void BindInterface(
       mojo::PendingReceiver<chromeos::network_config::mojom::CrosNetworkConfig>
           receiver);
+
+ private:
+  WEB_UI_CONTROLLER_TYPE_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(InternetConfigDialogUI);
 };

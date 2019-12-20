@@ -15,6 +15,8 @@
 
 namespace base {
 
+class MessagePump;
+
 namespace sequence_manager {
 class SequenceManager;
 class TaskQueue;
@@ -25,8 +27,13 @@ class TaskQueue;
 // TODO(alexclarke): Inherit from TaskExecutor to support base::Here().
 class BASE_EXPORT SingleThreadTaskExecutor {
  public:
+  // For MessagePumpType::CUSTOM use the constructor that takes a pump.
   explicit SingleThreadTaskExecutor(
       MessagePumpType type = MessagePumpType::DEFAULT);
+
+  // Creates a SingleThreadTaskExecutor pumping from a custom |pump|.
+  // The above constructor using MessagePumpType is generally preferred.
+  explicit SingleThreadTaskExecutor(std::unique_ptr<MessagePump> pump);
 
   // Shuts down the SingleThreadTaskExecutor, after this no tasks can be
   // executed and the base::TaskExecutor APIs are non-functional but won't crash
@@ -38,6 +45,9 @@ class BASE_EXPORT SingleThreadTaskExecutor {
   MessagePumpType type() const { return type_; }
 
  private:
+  explicit SingleThreadTaskExecutor(MessagePumpType type,
+                                    std::unique_ptr<MessagePump> pump);
+
   std::unique_ptr<sequence_manager::SequenceManager> sequence_manager_;
   scoped_refptr<sequence_manager::TaskQueue> default_task_queue_;
   MessagePumpType type_;

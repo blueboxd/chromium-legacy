@@ -707,7 +707,7 @@ class FakeRTCPeerConnectionHandlerPlatform
  public:
   Vector<std::unique_ptr<RTCRtpTransceiverPlatform>> CreateOffer(
       RTCSessionDescriptionRequest* request,
-      const WebMediaConstraints&) override {
+      const MediaConstraints&) override {
     PostToCompleteRequest<RTCSessionDescriptionRequest>(async_operation_action_,
                                                         request);
     return {};
@@ -722,7 +722,7 @@ class FakeRTCPeerConnectionHandlerPlatform
   }
 
   void CreateAnswer(RTCSessionDescriptionRequest* request,
-                    const WebMediaConstraints&) override {
+                    const MediaConstraints&) override {
     PostToCompleteRequest<RTCSessionDescriptionRequest>(async_operation_action_,
                                                         request);
   }

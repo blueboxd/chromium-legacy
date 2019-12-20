@@ -145,8 +145,8 @@ class BASE_EXPORT RegKey {
   // Recursively deletes a key and all of its subkeys.
   static LONG RegDelRecurse(HKEY root_key, const wchar_t* name, REGSAM access);
 
-  HKEY key_;  // The registry key being iterated.
-  REGSAM wow64access_;
+  HKEY key_ = nullptr;  // The registry key being iterated.
+  REGSAM wow64access_ = 0;
   std::unique_ptr<Watcher> key_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(RegKey);

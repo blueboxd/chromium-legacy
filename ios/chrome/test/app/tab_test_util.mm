@@ -69,6 +69,13 @@ void OpenNewTab() {
   }
 }
 
+void SimulateExternalAppURLOpening() {
+  NSURL* url = [NSURL URLWithString:@"http://www.example.com"];
+  UIApplication* application = UIApplication.sharedApplication;
+  id<UIApplicationDelegate> applicationDelegate = application.delegate;
+  [applicationDelegate application:application openURL:url options:@{}];
+}
+
 void OpenNewIncognitoTab() {
   @autoreleasepool {  // Make sure that all internals are deallocated.
     OpenNewTabCommand* command = [OpenNewTabCommand incognitoTabCommand];

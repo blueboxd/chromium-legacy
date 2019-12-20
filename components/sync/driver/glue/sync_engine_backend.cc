@@ -417,7 +417,7 @@ void SyncEngineBackend::DoSetEncryptionPassphrase(
 }
 
 void SyncEngineBackend::DoAddTrustedVaultDecryptionKeys(
-    const std::vector<std::string>& keys) {
+    const std::vector<std::vector<uint8_t>>& keys) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sync_manager_->GetEncryptionHandler()->AddTrustedVaultDecryptionKeys(keys);
 }

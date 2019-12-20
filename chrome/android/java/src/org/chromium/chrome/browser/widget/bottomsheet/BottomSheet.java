@@ -10,6 +10,7 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Rect;
+import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -274,6 +275,9 @@ class BottomSheet extends FrameLayout
                 (TouchRestrictingFrameLayout) findViewById(R.id.bottom_sheet_content);
         mBottomSheetContentContainer.setBottomSheet(this);
         mBottomSheetContentContainer.setBackgroundResource(R.drawable.top_round);
+        // TODO(b/146412594): Replace the color with default_bg_color once available.
+        ViewCompat.setBackgroundTintList(mBottomSheetContentContainer,
+                getResources().getColorStateList(R.color.default_bg_color_elev_3));
 
         mContainerWidth = root.getWidth();
         mContainerHeight = root.getHeight();

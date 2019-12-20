@@ -28,7 +28,8 @@ class KEYED_SERVICE_EXPORT KeyedServiceShutdownNotifier : public KeyedService {
   // Subscribe for a notification when the keyed services this object depends on
   // (as defined by its factory) are shut down. The subscription object can be
   // destroyed to unsubscribe.
-  std::unique_ptr<Subscription> Subscribe(const base::Closure& callback);
+  std::unique_ptr<Subscription> Subscribe(
+      const base::RepeatingClosure& callback);
 
  private:
   // KeyedService implementation:

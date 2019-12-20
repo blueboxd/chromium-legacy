@@ -27,16 +27,16 @@ class MockRTCPeerConnectionHandlerPlatform
   ~MockRTCPeerConnectionHandlerPlatform() override;
 
   bool Initialize(const webrtc::PeerConnectionInterface::RTCConfiguration&,
-                  const WebMediaConstraints&) override;
+                  const MediaConstraints&) override;
 
   Vector<std::unique_ptr<RTCRtpTransceiverPlatform>> CreateOffer(
       RTCSessionDescriptionRequest*,
-      const WebMediaConstraints&) override;
+      const MediaConstraints&) override;
   Vector<std::unique_ptr<RTCRtpTransceiverPlatform>> CreateOffer(
       RTCSessionDescriptionRequest*,
       RTCOfferOptionsPlatform*) override;
   void CreateAnswer(RTCSessionDescriptionRequest*,
-                    const WebMediaConstraints&) override;
+                    const MediaConstraints&) override;
   void CreateAnswer(RTCSessionDescriptionRequest*,
                     RTCAnswerOptionsPlatform*) override;
   void SetLocalDescription(RTCVoidRequest*) override;

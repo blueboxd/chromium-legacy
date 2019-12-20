@@ -60,11 +60,18 @@ NDEFMessage* NDEFMessage::Create(const ExecutionContext* execution_context,
   }
 
   if (source.IsArrayBufferView()) {
+    size_t byte_length =
+        source.GetAsArrayBufferView().View()->byteLengthAsSizeT();
+    if (byte_length > std::numeric_limits<wtf_size_t>::max()) {
+      exception_state.ThrowRangeError(
+          "Buffer size exceeds maximum heap object size.");
+      return nullptr;
+    }
     WTF::Vector<uint8_t> payload_data;
     payload_data.Append(
         static_cast<uint8_t*>(
             source.GetAsArrayBufferView().View()->BaseAddress()),
-        source.GetAsArrayBufferView().View()->deprecatedByteLengthAsUnsigned());
+        static_cast<wtf_size_t>(byte_length));
     NDEFMessage* message = MakeGarbageCollected<NDEFMessage>();
     message->records_.push_back(MakeGarbageCollected<NDEFRecord>(
         std::move(payload_data), "application/octet-stream"));

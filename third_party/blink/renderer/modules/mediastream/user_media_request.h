@@ -31,12 +31,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_USER_MEDIA_REQUEST_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_USER_MEDIA_REQUEST_H_
 
-#include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/web/web_user_media_request.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_navigator_user_media_error_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_navigator_user_media_success_callback.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
@@ -83,14 +83,14 @@ class MODULES_EXPORT UserMediaRequest final
                                   V8NavigatorUserMediaSuccessCallback*,
                                   V8NavigatorUserMediaErrorCallback*,
                                   MediaErrorState&);
-  static UserMediaRequest* CreateForTesting(const WebMediaConstraints& audio,
-                                            const WebMediaConstraints& video);
+  static UserMediaRequest* CreateForTesting(const MediaConstraints& audio,
+                                            const MediaConstraints& video);
 
   UserMediaRequest(ExecutionContext*,
                    UserMediaController*,
                    WebUserMediaRequest::MediaType media_type,
-                   WebMediaConstraints audio,
-                   WebMediaConstraints video,
+                   MediaConstraints audio,
+                   MediaConstraints video,
                    Callbacks*);
   virtual ~UserMediaRequest();
 
@@ -105,8 +105,8 @@ class MODULES_EXPORT UserMediaRequest final
   WebUserMediaRequest::MediaType MediaRequestType() const;
   bool Audio() const;
   bool Video() const;
-  WebMediaConstraints AudioConstraints() const;
-  WebMediaConstraints VideoConstraints() const;
+  MediaConstraints AudioConstraints() const;
+  MediaConstraints VideoConstraints() const;
 
   // Flag tied to whether or not the similarly named Origin Trial is
   // enabled. Will be removed at end of trial. See: http://crbug.com/789152.
@@ -123,8 +123,8 @@ class MODULES_EXPORT UserMediaRequest final
 
  private:
   WebUserMediaRequest::MediaType media_type_;
-  WebMediaConstraints audio_;
-  WebMediaConstraints video_;
+  MediaConstraints audio_;
+  MediaConstraints video_;
   bool should_disable_hardware_noise_suppression_;
 
   Member<UserMediaController> controller_;

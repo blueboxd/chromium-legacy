@@ -31,11 +31,7 @@ class Thread;
 // the "capture thread"). It owns an internal thread to use for encoding, on
 // which lives an AudioTrackEncoder with its own threading subtleties, see the
 // implementation file.
-class MODULES_EXPORT AudioTrackRecorder
-    : public GarbageCollected<AudioTrackRecorder>,
-      public WebMediaStreamAudioSink {
-  USING_PRE_FINALIZER(AudioTrackRecorder, Prefinalize);
-
+class MODULES_EXPORT AudioTrackRecorder : public WebMediaStreamAudioSink {
  public:
   enum class CodecId {
     // Do not change the order of codecs. Add new ones right before LAST.
@@ -65,8 +61,6 @@ class MODULES_EXPORT AudioTrackRecorder
   void Pause();
   void Resume();
 
-  void Trace(blink::Visitor*);
-
  private:
   // Creates an audio encoder from |codec|. Returns nullptr if the codec is
   // invalid.
@@ -85,7 +79,7 @@ class MODULES_EXPORT AudioTrackRecorder
   THREAD_CHECKER(capture_thread_checker_);
 
   // We need to hold on to the Blink track to remove ourselves on destruction.
-  Member<MediaStreamComponent> track_;
+  Persistent<MediaStreamComponent> track_;
 
   // Thin wrapper around OpusEncoder.
   // |encoder_| should be initialized before |encoder_thread_| such that

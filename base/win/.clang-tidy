@@ -1,5 +1,22 @@
 ---
 Checks: '-*,
-         modernize-use-nullptr'
+         google-build-namespaces,
+         google-readability-namespace-comments,
+         modernize-avoid-bind,
+         modernize-make-shared,
+         modernize-make-unique,
+         modernize-redundant-void-arg,
+         modernize-replace-auto-ptr,
+         modernize-replace-random-shuffle,
+         modernize-shrink-to-fit,
+         modernize-use-bool-literals,
+         modernize-use-default-member-init,
+         modernize-use-emplace,
+         modernize-use-noexcept,
+         modernize-use-nullptr,
+         modernize-use-transparent-functors'
 HeaderFilterRegex: 'base/win/*'
+CheckOptions:
+  - key: modernize-use-default-member-init.UseAssignment
+    value: 1
 ...

@@ -98,12 +98,10 @@ KeyDerivationParams GetKeyDerivationParamsFromSpecifics(
 // underlying crypto libraries (in particular the Java counterparts in JDK's
 // implementation for PBKDF2) assume the keys are utf8.
 std::vector<std::string> Base64EncodeKeys(
-    const std::vector<std::string>& keys) {
+    const std::vector<std::vector<uint8_t>>& keys) {
   std::vector<std::string> encoded_keystore_keys;
-  for (const std::string& key : keys) {
-    std::string encoded_key;
-    base::Base64Encode(key, &encoded_key);
-    encoded_keystore_keys.push_back(std::move(encoded_key));
+  for (const std::vector<uint8_t>& key : keys) {
+    encoded_keystore_keys.push_back(base::Base64Encode(key));
   }
   return encoded_keystore_keys;
 }
@@ -629,7 +627,7 @@ void NigoriSyncBridgeImpl::SetDecryptionPassphrase(
 }
 
 void NigoriSyncBridgeImpl::AddTrustedVaultDecryptionKeys(
-    const std::vector<std::string>& keys) {
+    const std::vector<std::vector<uint8_t>>& keys) {
   // This API gets plumbed and ultimately exposed to layers outside the sync
   // codebase and even outside the browser, so there are no preconditions and
   // instead we ignore invalid or partially invalid input.
@@ -712,7 +710,7 @@ bool NigoriSyncBridgeImpl::NeedKeystoreKey() const {
 }
 
 bool NigoriSyncBridgeImpl::SetKeystoreKeys(
-    const std::vector<std::string>& keys) {
+    const std::vector<std::vector<uint8_t>>& keys) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (keys.empty() || keys.back().empty()) {
     return false;

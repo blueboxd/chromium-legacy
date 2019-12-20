@@ -132,9 +132,9 @@ using TimerGeneratorBlock = std::unique_ptr<base::OneShotTimer> (^)();
 // base::OneShotTimer.
 @property(nonatomic, copy) TimerGeneratorBlock timerGenerator;
 
-// Returns an AutoReset object that ensures that all future
-// ChromeSigninViewController instances will not present the activity indicator.
-+ (std::unique_ptr<base::AutoReset<BOOL>>)hideActivityIndicatorForTesting;
+// If |shown| is set to NO, activity indicator is not visible while sign-in is
+// in progress. This method is needed for EarlGrey tests.
++ (void)setActivityIndicatorShownForTesting:(BOOL)shown;
 
 @end
 

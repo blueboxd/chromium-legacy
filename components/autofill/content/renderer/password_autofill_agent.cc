@@ -1869,6 +1869,10 @@ void PasswordAutofillAgent::TryFixAutofilledForm(
 
 void PasswordAutofillAgent::AutofillField(const base::string16& value,
                                           WebInputElement field) {
+  // Do not autofill on load fields that have any user typed input.
+  const uint32_t field_id = field.UniqueRendererFormControlId();
+  if (field_data_manager_.DidUserType(field_id))
+    return;
   if (field.Value().Utf16() != value)
     field.SetSuggestedValue(WebString::FromUTF16(value));
   field.SetAutofillState(WebAutofillState::kAutofilled);
@@ -1878,9 +1882,8 @@ void PasswordAutofillAgent::AutofillField(const base::string16& value,
   gatekeeper_.RegisterElement(&field);
   field_data_manager_.UpdateFieldDataMap(
       field, value, FieldPropertiesFlags::AUTOFILLED_ON_PAGELOAD);
-  autofilled_elements_cache_.emplace(field.UniqueRendererFormControlId(),
-                                     WebString::FromUTF16(value));
-  all_autofilled_elements_.insert(field.UniqueRendererFormControlId());
+  autofilled_elements_cache_.emplace(field_id, WebString::FromUTF16(value));
+  all_autofilled_elements_.insert(field_id);
 }
 
 void PasswordAutofillAgent::SetLastUpdatedFormAndField(

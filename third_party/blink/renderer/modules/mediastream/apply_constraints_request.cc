@@ -13,7 +13,7 @@ namespace blink {
 
 ApplyConstraintsRequest::ApplyConstraintsRequest(
     const WebMediaStreamTrack& track,
-    const WebMediaConstraints& constraints,
+    const MediaConstraints& constraints,
     ScriptPromiseResolver* resolver)
     : track_(track), constraints_(constraints), resolver_(resolver) {}
 
@@ -21,7 +21,7 @@ WebMediaStreamTrack ApplyConstraintsRequest::Track() const {
   return track_;
 }
 
-WebMediaConstraints ApplyConstraintsRequest::Constraints() const {
+MediaConstraints ApplyConstraintsRequest::Constraints() const {
   return constraints_;
 }
 

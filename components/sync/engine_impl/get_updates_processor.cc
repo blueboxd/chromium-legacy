@@ -33,6 +33,17 @@ bool ShouldRequestEncryptionKey(SyncCycleContext* context) {
       ->NeedKeystoreKey();
 }
 
+std::vector<std::vector<uint8_t>> ExtractKeystoreKeys(
+    const sync_pb::ClientToServerResponse& update_response) {
+  const google::protobuf::RepeatedPtrField<std::string>& encryption_keys =
+      update_response.get_updates().encryption_keys();
+  std::vector<std::vector<uint8_t>> keystore_keys;
+  keystore_keys.reserve(encryption_keys.size());
+  for (const std::string& key : encryption_keys)
+    keystore_keys.emplace_back(key.begin(), key.end());
+  return keystore_keys;
+}
+
 SyncerError HandleGetEncryptionKeyResponse(
     const sync_pb::ClientToServerResponse& update_response,
     SyncCycleContext* context) {
@@ -42,11 +53,12 @@ SyncerError HandleGetEncryptionKeyResponse(
     return SyncerError(SyncerError::SERVER_RESPONSE_VALIDATION_FAILED);
   }
 
-  const google::protobuf::RepeatedPtrField<std::string>& raw_keys =
-      update_response.get_updates().encryption_keys();
+  std::vector<std::vector<uint8_t>> keystore_keys =
+      ExtractKeystoreKeys(update_response);
+
   success =
       context->model_type_registry()->keystore_keys_handler()->SetKeystoreKeys(
-          std::vector<std::string>(raw_keys.begin(), raw_keys.end()));
+          keystore_keys);
 
   DVLOG(1) << "GetUpdates returned "
            << update_response.get_updates().encryption_keys_size()

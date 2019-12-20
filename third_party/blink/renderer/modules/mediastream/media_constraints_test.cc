@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/renderer/modules/mediastream/media_constraints_impl.h"
 #include "third_party/blink/renderer/modules/mediastream/media_track_constraints.h"
 
 namespace blink {
 
 // The MediaTrackConstraintsTest group tests the types declared in
-// WebKit/public/platform/WebMediaConstraints.h
+// third_party/blink/renderer/platform/mediastream/media_constraints.h
 TEST(MediaTrackConstraintsTest, LongConstraint) {
   LongConstraint range_constraint(nullptr);
   range_constraint.SetMin(5);
@@ -104,7 +104,7 @@ TEST(MediaTrackConstraintsTest, SetToString) {
 }
 
 TEST(MediaTrackConstraintsTest, ConstraintsToString) {
-  WebMediaConstraints the_constraints;
+  MediaConstraints the_constraints;
   WebMediaTrackConstraintSet basic;
   WebVector<WebMediaTrackConstraintSet> advanced(static_cast<size_t>(1));
   basic.width.SetMax(240);
@@ -114,19 +114,19 @@ TEST(MediaTrackConstraintsTest, ConstraintsToString) {
       "{width: {max: 240}, advanced: [{echoCancellation: {exact: true}}]}",
       the_constraints.ToString().Utf8());
 
-  WebMediaConstraints null_constraints;
+  MediaConstraints null_constraints;
   EXPECT_EQ("", null_constraints.ToString().Utf8());
 }
 
 TEST(MediaTrackConstraintsTest, ConvertWebConstraintsBasic) {
-  WebMediaConstraints input;
+  MediaConstraints input;
   MediaTrackConstraints* output =
       media_constraints_impl::ConvertConstraints(input);
   ALLOW_UNUSED_LOCAL(output);
 }
 
 TEST(MediaTrackConstraintsTest, ConvertWebSingleStringConstraint) {
-  WebMediaConstraints input;
+  MediaConstraints input;
 
   WebMediaTrackConstraintSet basic;
   WebVector<WebMediaTrackConstraintSet> advanced;
@@ -141,7 +141,7 @@ TEST(MediaTrackConstraintsTest, ConvertWebSingleStringConstraint) {
 }
 
 TEST(MediaTrackConstraintsTest, ConvertWebDoubleStringConstraint) {
-  WebMediaConstraints input;
+  MediaConstraints input;
 
   WebVector<WebString> buffer(static_cast<size_t>(2u));
   buffer[0] = "foo";
@@ -163,11 +163,12 @@ TEST(MediaTrackConstraintsTest, ConvertWebDoubleStringConstraint) {
 
 TEST(MediaTrackConstraintsTest, ConvertBlinkStringConstraint) {
   MediaTrackConstraints* input = MediaTrackConstraints::Create();
-  WebMediaConstraints output;
+  MediaConstraints output;
   StringOrStringSequenceOrConstrainDOMStringParameters parameter;
   parameter.SetString("foo");
   input->setFacingMode(parameter);
-  output = media_constraints_impl::ConvertConstraintsToWeb(input);
+  output =
+      media_constraints_impl::ConvertTrackConstraintsToMediaConstraints(input);
   ASSERT_TRUE(output.Basic().facing_mode.HasIdeal());
   ASSERT_EQ(1U, output.Basic().facing_mode.Ideal().size());
   ASSERT_EQ("foo", output.Basic().facing_mode.Ideal()[0]);
@@ -175,7 +176,7 @@ TEST(MediaTrackConstraintsTest, ConvertBlinkStringConstraint) {
 
 TEST(MediaTrackConstraintsTest, ConvertBlinkComplexStringConstraint) {
   MediaTrackConstraints* input = MediaTrackConstraints::Create();
-  WebMediaConstraints output;
+  MediaConstraints output;
   StringOrStringSequenceOrConstrainDOMStringParameters parameter;
   ConstrainDOMStringParameters* subparameter =
       ConstrainDOMStringParameters::Create();
@@ -184,7 +185,8 @@ TEST(MediaTrackConstraintsTest, ConvertBlinkComplexStringConstraint) {
   subparameter->setIdeal(inner_string);
   parameter.SetConstrainDOMStringParameters(subparameter);
   input->setFacingMode(parameter);
-  output = media_constraints_impl::ConvertConstraintsToWeb(input);
+  output =
+      media_constraints_impl::ConvertTrackConstraintsToMediaConstraints(input);
   ASSERT_TRUE(output.Basic().facing_mode.HasIdeal());
   ASSERT_EQ(1U, output.Basic().facing_mode.Ideal().size());
   ASSERT_EQ("foo", output.Basic().facing_mode.Ideal()[0]);
@@ -207,8 +209,8 @@ TEST(MediaTrackConstraintsTest, NakedIsExactInAdvanced) {
   advanced[0]->setFacingMode(parameter);
   input->setAdvanced(advanced);
 
-  WebMediaConstraints output =
-      media_constraints_impl::ConvertConstraintsToWeb(input);
+  MediaConstraints output =
+      media_constraints_impl::ConvertTrackConstraintsToMediaConstraints(input);
   ASSERT_TRUE(output.Basic().facing_mode.HasIdeal());
   ASSERT_FALSE(output.Basic().facing_mode.HasExact());
   ASSERT_EQ(1U, output.Basic().facing_mode.Ideal().size());
@@ -221,7 +223,7 @@ TEST(MediaTrackConstraintsTest, NakedIsExactInAdvanced) {
 }
 
 TEST(MediaTrackConstraintsTest, IdealAndExactConvertToNaked) {
-  WebMediaConstraints input;
+  MediaConstraints input;
   WebVector<WebString> buffer(static_cast<size_t>(1u));
 
   WebMediaTrackConstraintSet basic;

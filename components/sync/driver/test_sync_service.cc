@@ -306,7 +306,7 @@ void TestSyncService::SetInvalidationsForSessionsEnabled(bool enabled) {}
 
 void TestSyncService::AddTrustedVaultDecryptionKeysFromWeb(
     const std::string& gaia_id,
-    const std::vector<std::string>& keys) {}
+    const std::vector<std::vector<uint8_t>>& keys) {}
 
 UserDemographicsResult TestSyncService::GetUserNoisedBirthYearAndGender(
     base::Time now) {

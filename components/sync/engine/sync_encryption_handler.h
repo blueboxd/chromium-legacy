@@ -173,7 +173,7 @@ class SyncEncryptionHandler {
   // the operation via OnTrustedVaultKeyAccepted if the provided keys
   // successfully decrypted pending keys.
   virtual void AddTrustedVaultDecryptionKeys(
-      const std::vector<std::string>& keys) = 0;
+      const std::vector<std::vector<uint8_t>>& keys) = 0;
 
   // Enables encryption of all datatypes.
   virtual void EnableEncryptEverything() = 0;

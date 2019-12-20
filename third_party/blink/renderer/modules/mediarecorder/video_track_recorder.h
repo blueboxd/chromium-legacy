@@ -22,7 +22,6 @@
 #include "third_party/blink/public/web/modules/mediastream/encoded_video_frame.h"
 #include "third_party/blink/renderer/modules/mediarecorder/buildflags.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_copier.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -71,8 +70,7 @@ class Thread;
 
 // Base class serving as interface for eventually saving encoded frames stemming
 // from media from a source.
-class VideoTrackRecorder : public GarbageCollectedMixin,
-                           public WebMediaStreamSink {
+class VideoTrackRecorder : public WebMediaStreamSink {
  public:
   // Do not change the order of codecs; add new ones right before LAST.
   enum class CodecId {
@@ -271,12 +269,7 @@ class VideoTrackRecorder : public GarbageCollectedMixin,
 // other MediaStreamVideo* classes that are constructed/configured on Main
 // Render thread but that pass frames on Render IO thread. It has an internal
 // Encoder with its own threading subtleties, see the implementation file.
-class MODULES_EXPORT VideoTrackRecorderImpl
-    : public GarbageCollected<VideoTrackRecorderImpl>,
-      public VideoTrackRecorder {
-  USING_PRE_FINALIZER(VideoTrackRecorderImpl, Prefinalize);
-  USING_GARBAGE_COLLECTED_MIXIN(VideoTrackRecorderImpl);
-
+class MODULES_EXPORT VideoTrackRecorderImpl : public VideoTrackRecorder {
  public:
   static CodecId GetPreferredCodecId();
 
@@ -302,8 +295,6 @@ class MODULES_EXPORT VideoTrackRecorderImpl
   void OnVideoFrameForTesting(scoped_refptr<media::VideoFrame> frame,
                               base::TimeTicks capture_time) override;
 
-  void Trace(blink::Visitor*) override;
-
  private:
   friend class VideoTrackRecorderTest;
   void InitializeEncoder(CodecId codec,
@@ -317,13 +308,11 @@ class MODULES_EXPORT VideoTrackRecorderImpl
   void ConnectToTrack(const VideoCaptureDeliverFrameCB& callback);
   void DisconnectFromTrack();
 
-  void Prefinalize();
-
   // Used to check that we are destroyed on the same thread we were created.
   THREAD_CHECKER(main_thread_checker_);
 
   // We need to hold on to the Blink track to remove ourselves on dtor.
-  Member<MediaStreamComponent> track_;
+  Persistent<MediaStreamComponent> track_;
 
   // Inner class to encode using whichever codec is configured.
   scoped_refptr<Encoder> encoder_;
@@ -336,31 +325,26 @@ class MODULES_EXPORT VideoTrackRecorderImpl
   bool should_pause_encoder_on_initialization_;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+  base::WeakPtrFactory<VideoTrackRecorderImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VideoTrackRecorderImpl);
 };
 
 // VideoTrackRecorderPassthrough uses the inherited WebMediaStreamSink to
 // dispatch EncodedVideoFrame content received from a MediaStreamVideoTrack.
-class MODULES_EXPORT VideoTrackRecorderPassthrough
-    : public GarbageCollected<VideoTrackRecorderPassthrough>,
-      public VideoTrackRecorder {
-  USING_PRE_FINALIZER(VideoTrackRecorderPassthrough, DisconnectFromTrack);
-  USING_GARBAGE_COLLECTED_MIXIN(VideoTrackRecorderPassthrough);
-
+class MODULES_EXPORT VideoTrackRecorderPassthrough : public VideoTrackRecorder {
  public:
   VideoTrackRecorderPassthrough(
       MediaStreamComponent* track,
       OnEncodedVideoCB on_encoded_video_callback,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner);
+  ~VideoTrackRecorderPassthrough() override;
 
   // VideoTrackRecorderBase
   void Pause() override;
   void Resume() override;
   void OnEncodedVideoFrameForTesting(scoped_refptr<EncodedVideoFrame> frame,
                                      base::TimeTicks capture_time) override;
-
-  void Trace(blink::Visitor*) override;
 
  private:
   void RequestRefreshFrame();
@@ -382,10 +366,11 @@ class MODULES_EXPORT VideoTrackRecorderPassthrough
   };
 
   // We need to hold on to the Blink track to remove ourselves on dtor.
-  const Member<MediaStreamComponent> track_;
+  const Persistent<MediaStreamComponent> track_;
   KeyFrameState state_;
   const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   const OnEncodedVideoCB callback_;
+  base::WeakPtrFactory<VideoTrackRecorderPassthrough> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VideoTrackRecorderPassthrough);
 };

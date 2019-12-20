@@ -348,6 +348,20 @@ void JavaArrayOfByteArrayToStringVector(JNIEnv* env,
   }
 }
 
+void JavaArrayOfByteArrayToBytesVector(JNIEnv* env,
+                                       const JavaRef<jobjectArray>& array,
+                                       std::vector<std::vector<uint8_t>>* out) {
+  DCHECK(out);
+  const size_t len = SafeGetArrayLength(env, array);
+  out->resize(len);
+  for (size_t i = 0; i < len; ++i) {
+    ScopedJavaLocalRef<jbyteArray> bytes_array(
+        env,
+        static_cast<jbyteArray>(env->GetObjectArrayElement(array.obj(), i)));
+    JavaByteArrayToByteVector(env, bytes_array, &(*out)[i]);
+  }
+}
+
 void Java2dStringArrayTo2dStringVector(
     JNIEnv* env,
     const JavaRef<jobjectArray>& array,

@@ -66,8 +66,7 @@ source_set("identity_manager") {
   }
 
   if (is_android) {
-    deps +=
-        [ "//components/signin/internal/identity_manager/android:jni_headers" ]
+    deps += [ "//components/signin/public/android:jni_headers" ]
   }
 
   allow_circular_includes_from = [

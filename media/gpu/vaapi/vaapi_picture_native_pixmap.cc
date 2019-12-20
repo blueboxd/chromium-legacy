@@ -38,7 +38,7 @@ VaapiPictureNativePixmap::~VaapiPictureNativePixmap() = default;
 bool VaapiPictureNativePixmap::DownloadFromSurface(
     scoped_refptr<VASurface> va_surface) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return vaapi_wrapper_->BlitSurface(std::move(va_surface), va_surface_);
+  return vaapi_wrapper_->BlitSurface(*va_surface, *va_surface_);
 }
 
 bool VaapiPictureNativePixmap::AllowOverlay() const {

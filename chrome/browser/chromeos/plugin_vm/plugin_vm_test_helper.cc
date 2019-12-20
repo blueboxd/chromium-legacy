@@ -124,8 +124,6 @@ void PluginVmTestHelper::SetUserRequirementsToAllowPluginVm() {
       std::make_unique<testing::NiceMock<chromeos::MockUserManager>>();
   mock_user_manager->AddUserWithAffiliationAndType(
       account_id, true, user_manager::USER_TYPE_REGULAR);
-  chromeos::ProfileHelper::Get()->SetProfileToUserMappingForTesting(
-      mock_user_manager->GetActiveUser());
   scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
       std::move(mock_user_manager));
 }

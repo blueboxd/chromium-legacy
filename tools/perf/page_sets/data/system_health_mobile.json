@@ -123,6 +123,9 @@
         "browse:shopping:avito": {
             "DEFAULT": "system_health_mobile_053.wprgo"
         },
+        "browse:shopping:avito:2019": {
+            "DEFAULT": "system_health_mobile_e3a51d0666.wprgo"
+        },
         "browse:shopping:flipkart": {
             "DEFAULT": "system_health_mobile_061.wprgo"
         },
@@ -368,6 +371,9 @@
         },
         "load:tools:dropbox": {
             "DEFAULT": "system_health_mobile_004.wprgo"
+        },
+        "load:tools:dropbox:2019": {
+            "DEFAULT": "system_health_mobile_c19ba48444.wprgo"
         },
         "load:tools:gmail": {
             "DEFAULT": "system_health_mobile_048.wprgo"

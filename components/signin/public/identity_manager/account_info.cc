@@ -7,8 +7,8 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_string.h"
-#include "components/signin/internal/identity_manager/android/jni_headers/CoreAccountId_jni.h"
-#include "components/signin/internal/identity_manager/android/jni_headers/CoreAccountInfo_jni.h"
+#include "components/signin/public/android/jni_headers/CoreAccountId_jni.h"
+#include "components/signin/public/android/jni_headers/CoreAccountInfo_jni.h"
 #endif
 
 namespace {

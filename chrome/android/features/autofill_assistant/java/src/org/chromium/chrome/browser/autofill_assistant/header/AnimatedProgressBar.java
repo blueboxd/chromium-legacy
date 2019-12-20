@@ -9,8 +9,6 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.view.View;
 
-import androidx.annotation.VisibleForTesting;
-
 import org.chromium.chrome.browser.ui.widget.MaterialProgressBar;
 import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
 
@@ -79,8 +77,8 @@ class AnimatedProgressBar {
         }
     }
 
-    @VisibleForTesting
-    void disableAnimationsForTesting(boolean disable) {
+    /** Intended for integration tests only. */
+    void disableAnimations(boolean disable) {
         mProgressBarSpeedMs = disable ? 0 : PROGRESS_BAR_SPEED_MS;
     }
 }

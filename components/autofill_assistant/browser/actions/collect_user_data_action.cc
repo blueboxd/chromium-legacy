@@ -832,8 +832,8 @@ void CollectUserDataAction::UpdatePersonalDataManagerProfiles(
       (collect_user_data_options_->request_payer_name ||
        collect_user_data_options_->request_payer_phone ||
        collect_user_data_options_->request_payer_email)) {
-    int default_selection = GetDefaultProfile(*collect_user_data_options_,
-                                              user_data->available_profiles);
+    int default_selection = GetDefaultContactProfile(
+        *collect_user_data_options_, user_data->available_profiles);
     if (default_selection != -1) {
       user_data->contact_profile = std::make_unique<autofill::AutofillProfile>(
           *(user_data->available_profiles[default_selection]));
@@ -845,8 +845,8 @@ void CollectUserDataAction::UpdatePersonalDataManagerProfiles(
   }
   if (user_data->shipping_address == nullptr &&
       collect_user_data_options_->request_shipping) {
-    int default_selection = GetDefaultProfile(*collect_user_data_options_,
-                                              user_data->available_profiles);
+    int default_selection = GetDefaultAddressProfile(
+        *collect_user_data_options_, user_data->available_profiles);
     if (default_selection != -1) {
       user_data->shipping_address = std::make_unique<autofill::AutofillProfile>(
           *(user_data->available_profiles[default_selection]));

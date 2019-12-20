@@ -25,12 +25,12 @@ class DataChannelInterface;
 }  // namespace webrtc
 
 namespace blink {
+class MediaConstraints;
 class RTCAnswerOptionsPlatform;
 class RTCIceCandidatePlatform;
 class RTCOfferOptionsPlatform;
 class RTCPeerConnectionHandler;
 class WebLocalFrame;
-class WebMediaConstraints;
 class WebUserMediaRequest;
 
 // This class collects data about each peer connection,
@@ -89,7 +89,7 @@ class MODULES_EXPORT PeerConnectionTracker
   void RegisterPeerConnection(
       RTCPeerConnectionHandler* pc_handler,
       const webrtc::PeerConnectionInterface::RTCConfiguration& config,
-      const blink::WebMediaConstraints& constraints,
+      const MediaConstraints& constraints,
       const blink::WebLocalFrame* frame);
 
   // Sends an update when a PeerConnection has been destroyed.
@@ -102,11 +102,11 @@ class MODULES_EXPORT PeerConnectionTracker
                                 RTCOfferOptionsPlatform* options);
   // TODO(hta): Get rid of the version below.
   virtual void TrackCreateOffer(RTCPeerConnectionHandler* pc_handler,
-                                const blink::WebMediaConstraints& options);
+                                const MediaConstraints& options);
   virtual void TrackCreateAnswer(RTCPeerConnectionHandler* pc_handler,
                                  blink::RTCAnswerOptionsPlatform* options);
   virtual void TrackCreateAnswer(RTCPeerConnectionHandler* pc_handler,
-                                 const blink::WebMediaConstraints& constraints);
+                                 const MediaConstraints& constraints);
 
   // Sends an update when setLocalDescription or setRemoteDescription is called.
   virtual void TrackSetSessionDescription(RTCPeerConnectionHandler* pc_handler,

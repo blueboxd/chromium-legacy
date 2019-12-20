@@ -63,7 +63,7 @@ class BASE_EXPORT MessageWindow {
   MessageCallback message_callback_;
 
   // Handle of the input window.
-  HWND window_;
+  HWND window_ = nullptr;
 
   THREAD_CHECKER(thread_checker_);
 

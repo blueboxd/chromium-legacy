@@ -45,6 +45,47 @@
   };
 
   /**
+   * Tests that the active folder does not change when the directory tree
+   * selected folder is changed, but does change when the selected folder
+   * is activated (via the Enter key for example).
+   */
+  testcase.directoryTreeSelectedDirectory = async () => {
+    // Open FilesApp on Downloads.
+    const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
+
+    // Change to My files folder.
+    await navigateWithDirectoryTree(appId, '/My files');
+
+    // Check: the My files folder should be [selected] and [active].
+    const selectedActiveRow = '.tree-row[selected][active]';
+    let treeRow = await remoteCall.waitForElement(appId, selectedActiveRow);
+    chrome.test.assertTrue(treeRow.text.includes('My files'));
+
+    // Send ArrowUp key to change the selected folder.
+    const arrowUp = ['#directory-tree', 'ArrowUp', false, false, false];
+    await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, arrowUp);
+
+    // Check: no folder should be [selected] and [active].
+    await remoteCall.waitForElementLost(appId, selectedActiveRow);
+
+    // Check: the My files folder should be [active].
+    treeRow = await remoteCall.waitForElement(appId, '.tree-row[active]');
+    chrome.test.assertTrue(treeRow.text.includes('My files'));
+
+    // Check: the Recent folder should be [selected].
+    treeRow = await remoteCall.waitForElement(appId, '.tree-row[selected]');
+    chrome.test.assertTrue(treeRow.text.includes('Recent'));
+
+    // Send Enter key to activate the selected folder.
+    const enter = ['#directory-tree', 'Enter', false, false, false];
+    await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, enter);
+
+    // Check: the Recent folder should be [selected] and [active].
+    treeRow = await remoteCall.waitForElement(appId, selectedActiveRow);
+    chrome.test.assertTrue(treeRow.text.includes('Recent'));
+  };
+
+  /**
    * Tests that the directory tree can be vertically scrolled.
    */
   testcase.directoryTreeVerticalScroll = async () => {

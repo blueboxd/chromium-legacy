@@ -39,7 +39,7 @@ HRESULT EtwTraceProperties::SetLoggerFileName(const wchar_t* logger_file_name) {
   return S_OK;
 }
 
-EtwTraceController::EtwTraceController() : session_(NULL) {}
+EtwTraceController::EtwTraceController() {}
 
 EtwTraceController::~EtwTraceController() {
   if (session_)

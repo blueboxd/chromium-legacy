@@ -23,8 +23,8 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_string.h"
-#include "components/signin/internal/identity_manager/android/jni_headers/IdentityManager_jni.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service_delegate.h"
+#include "components/signin/public/android/jni_headers/IdentityManager_jni.h"
 #endif
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -436,8 +436,7 @@ IdentityManager::GetAccountsWithRefreshTokens(JNIEnv* env) const {
 
   base::android::ScopedJavaLocalRef<jclass> coreaccountinfo_clazz =
       base::android::GetClass(
-          env,
-          "org/chromium/components/signin/identitymanager/CoreAccountInfo");
+          env, "org/chromium/components/signin/base/CoreAccountInfo");
   base::android::ScopedJavaLocalRef<jobjectArray> array(
       env, env->NewObjectArray(accounts.size(), coreaccountinfo_clazz.obj(),
                                nullptr));

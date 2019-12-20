@@ -39,13 +39,16 @@ class ProximityAuthUI : public ui::MojoWebUIController {
                   MultiDeviceSetupBinder multidevice_setup_binder);
   ~ProximityAuthUI() override;
 
- protected:
-  void BindMultiDeviceSetup(
+  // Instantiates implementor of the mojom::MultiDeviceSetup mojo interface
+  // passing the pending receiver that will be internally bound.
+  void BindInterface(
       mojo::PendingReceiver<multidevice_setup::mojom::MultiDeviceSetup>
           receiver);
 
  private:
   const MultiDeviceSetupBinder multidevice_setup_binder_;
+
+  WEB_UI_CONTROLLER_TYPE_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(ProximityAuthUI);
 };

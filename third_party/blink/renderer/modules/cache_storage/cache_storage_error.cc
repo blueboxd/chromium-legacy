@@ -34,6 +34,8 @@ String GetDefaultMessage(mojom::CacheStorageError web_error) {
       return "Method is not implemented.";
     case mojom::CacheStorageError::kErrorDuplicateOperation:
       return "Duplicate operation.";
+    case mojom::CacheStorageError::kErrorCrossOriginResourcePolicy:
+      return "Failed Cross-Origin-Resource-Policy check.";
   }
   NOTREACHED();
   return String();
@@ -74,6 +76,11 @@ DOMException* CacheStorageError::CreateException(
     case mojom::CacheStorageError::kErrorDuplicateOperation:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kInvalidStateError, final_message);
+    // TODO(arthursonzogni): Decide what DOM exception must be used here.
+    // See https://github.com/w3c/ServiceWorker/issues/1490
+    case mojom::CacheStorageError::kErrorCrossOriginResourcePolicy:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kInvalidAccessError, final_message);
   }
   NOTREACHED();
   return nullptr;

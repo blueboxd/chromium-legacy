@@ -14,8 +14,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/optional.h"
-#include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 
 namespace blink {
 

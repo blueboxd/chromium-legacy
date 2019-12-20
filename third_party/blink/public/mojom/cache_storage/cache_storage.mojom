@@ -24,6 +24,7 @@ enum CacheStorageError {
   // TODO(cmumford): kErrorNotImplemented is deprecated. Remove use in code.
   kErrorNotImplemented = 7,
   kErrorDuplicateOperation = 8,
+  kErrorCrossOriginResourcePolicy = 9,
   // Add new values here.
 };
 

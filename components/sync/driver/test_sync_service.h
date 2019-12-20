@@ -108,7 +108,7 @@ class TestSyncService : public SyncService {
   void SetInvalidationsForSessionsEnabled(bool enabled) override;
   void AddTrustedVaultDecryptionKeysFromWeb(
       const std::string& gaia_id,
-      const std::vector<std::string>& keys) override;
+      const std::vector<std::vector<uint8_t>>& keys) override;
   UserDemographicsResult GetUserNoisedBirthYearAndGender(
       base::Time now) override;
 

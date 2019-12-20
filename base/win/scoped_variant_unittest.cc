@@ -28,7 +28,7 @@ void GiveMeAVariant(VARIANT* ret) {
 // when AddRef is called and decrements it when Release is called.
 class FakeComObject : public IDispatch {
  public:
-  FakeComObject() : ref_(0) {}
+  FakeComObject() {}
 
   STDMETHOD_(DWORD, AddRef)() override {
     ref_++;
@@ -60,7 +60,7 @@ class FakeComObject : public IDispatch {
   int ref_count() const { return ref_; }
 
  protected:
-  int ref_;
+  int ref_ = 0;
 };
 
 }  // namespace

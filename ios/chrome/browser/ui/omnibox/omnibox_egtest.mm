@@ -6,6 +6,7 @@
 #import <XCTest/XCTest.h>
 
 #include "base/bind.h"
+#include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
@@ -144,6 +145,12 @@ id<GREYMatcher> SearchCopiedTextButton() {
 // Tests that the XClientData header is sent when navigating to
 // https://google.com through the omnibox.
 - (void)testXClientData {
+#if !TARGET_IPHONE_SIMULATOR
+  // TODO(crbug.com/1036225): Test flaky on iOS 12 device.
+  if (!base::ios::IsRunningOnIOS13OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"Flaky on iOS 12 device.");
+  }
+#endif
   // Rewrite the google URL to localhost URL.
   [OmniboxAppInterface rewriteGoogleURLToLocalhost];
 

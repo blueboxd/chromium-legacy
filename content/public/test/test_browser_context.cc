@@ -8,12 +8,10 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/single_thread_task_runner.h"
-#include "base/task/thread_pool/thread_pool_instance.h"
-#include "base/test/null_task_runner.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/permission_controller_delegate.h"
 #include "content/public/test/mock_resource_context.h"
+#include "content/public/test/test_utils.h"
 #include "content/test/mock_background_sync_controller.h"
 #include "content/test/mock_ssl_host_state_delegate.h"
 #include "storage/browser/quota/special_storage_policy.h"
@@ -45,12 +43,15 @@ TestBrowserContext::~TestBrowserContext() {
   NotifyWillBeDestroyed(this);
   ShutdownStoragePartitions();
 
-  // disk_cache::SimpleBackendImpl performs all disk IO on the ThreadPool
-  // threads. The cache is initialized in the directory owned by
-  // |browser_context_dir_| and so ScopedTempDir destructor may race with cache
-  // IO (see https://crbug.com/910029 for example). Let all pending IO
-  // operations finish before destroying |browser_context_dir_|.
-  base::ThreadPoolInstance::Get()->FlushForTesting();
+  // Various things that were just torn down above post tasks to other
+  // sequences that eventually bounce back to the main thread and out again.
+  // Run all such tasks now before the instance is destroyed so that the
+  // |browser_context_dir_| can be fully cleaned up.
+  RunAllPendingInMessageLoop(BrowserThread::IO);
+  RunAllTasksUntilIdle();
+
+  EXPECT_TRUE(!browser_context_dir_.IsValid() || browser_context_dir_.Delete())
+      << browser_context_dir_.GetPath();
 }
 
 base::FilePath TestBrowserContext::TakePath() {

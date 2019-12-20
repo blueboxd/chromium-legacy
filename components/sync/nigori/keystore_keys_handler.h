@@ -23,7 +23,8 @@ class KeystoreKeysHandler {
 
   // Sets the keystore keys the server returned for this account.
   // Returns true on success, false otherwise.
-  virtual bool SetKeystoreKeys(const std::vector<std::string>& keys) = 0;
+  virtual bool SetKeystoreKeys(
+      const std::vector<std::vector<uint8_t>>& keys) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(KeystoreKeysHandler);

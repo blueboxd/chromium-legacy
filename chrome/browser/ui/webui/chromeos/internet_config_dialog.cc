@@ -155,18 +155,16 @@ InternetConfigDialogUI::InternetConfigDialogUI(content::WebUI* web_ui)
 #endif
 
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
-
-  // Add Mojo bindings to this WebUI so that Mojo calls can occur in JavaScript.
-  AddHandlerToRegistry(base::BindRepeating(
-      &InternetConfigDialogUI::BindCrosNetworkConfig, base::Unretained(this)));
 }
 
 InternetConfigDialogUI::~InternetConfigDialogUI() {}
 
-void InternetConfigDialogUI::BindCrosNetworkConfig(
+void InternetConfigDialogUI::BindInterface(
     mojo::PendingReceiver<chromeos::network_config::mojom::CrosNetworkConfig>
         receiver) {
   ash::GetNetworkConfigService(std::move(receiver));
 }
+
+WEB_UI_CONTROLLER_TYPE_IMPL(InternetConfigDialogUI)
 
 }  // namespace chromeos

@@ -342,7 +342,7 @@ TEST_F(RegistryTest, OpenSubKey) {
 
 class TestChangeDelegate {
  public:
-  TestChangeDelegate() : called_(false) {}
+  TestChangeDelegate() {}
   ~TestChangeDelegate() {}
 
   void OnKeyChanged() {
@@ -357,7 +357,7 @@ class TestChangeDelegate {
   }
 
  private:
-  bool called_;
+  bool called_ = false;
 };
 
 TEST_F(RegistryTest, ChangeCallback) {

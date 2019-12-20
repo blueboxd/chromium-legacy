@@ -89,11 +89,9 @@ GURL GetTrustedVaultRetrievalURL(
                          encryption_key.c_str()));
 }
 
-KeyParams KeystoreKeyParams(const std::string& key) {
-  std::string encoded_key;
-  base::Base64Encode(key, &encoded_key);
+KeyParams KeystoreKeyParams(const std::vector<uint8_t>& key) {
   return {syncer::KeyDerivationParams::CreateForPbkdf2(),
-          std::move(encoded_key)};
+          base::Base64Encode(key)};
 }
 
 std::string ComputeKeyName(const KeyParams& key_params) {
@@ -298,7 +296,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
   sync_pb::NigoriSpecifics specifics;
   EXPECT_TRUE(GetServerNigori(GetFakeServer(), &specifics));
 
-  const std::vector<std::string>& keystore_keys =
+  const std::vector<std::vector<uint8_t>>& keystore_keys =
       GetFakeServer()->GetKeystoreKeys();
   ASSERT_TRUE(keystore_keys.size() == 1);
   EXPECT_THAT(specifics.encryption_keybag(),
@@ -342,7 +340,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
 // successfully received and decrypted this password form.
 IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
                        ShouldDecryptWithKeystoreNigori) {
-  const std::vector<std::string>& keystore_keys =
+  const std::vector<std::vector<uint8_t>>& keystore_keys =
       GetFakeServer()->GetKeystoreKeys();
   ASSERT_THAT(keystore_keys, SizeIs(1));
   const KeyParams kKeystoreKeyParams = KeystoreKeyParams(keystore_keys.back());
@@ -367,7 +365,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
 // with a keystore key).
 IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
                        ShouldDecryptWithBackwardCompatibleKeystoreNigori) {
-  const std::vector<std::string>& keystore_keys =
+  const std::vector<std::vector<uint8_t>>& keystore_keys =
       GetFakeServer()->GetKeystoreKeys();
   ASSERT_THAT(keystore_keys, SizeIs(1));
   const KeyParams kKeystoreKeyParams = KeystoreKeyParams(keystore_keys.back());
@@ -393,7 +391,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
   ASSERT_TRUE(SetupSync());
 
   GetFakeServer()->TriggerKeystoreKeyRotation();
-  const std::vector<std::string>& keystore_keys =
+  const std::vector<std::vector<uint8_t>>& keystore_keys =
       GetFakeServer()->GetKeystoreKeys();
   ASSERT_THAT(keystore_keys, SizeIs(2));
   const KeyParams new_keystore_key_params = KeystoreKeyParams(keystore_keys[1]);
@@ -406,7 +404,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
 
 IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
                        ShouldExposeExperimentalAuthenticationKey) {
-  const std::vector<std::string>& keystore_keys =
+  const std::vector<std::vector<uint8_t>>& keystore_keys =
       GetFakeServer()->GetKeystoreKeys();
   ASSERT_THAT(keystore_keys, SizeIs(1));
   const KeyParams kKeystoreKeyParams = KeystoreKeyParams(keystore_keys.back());
@@ -424,8 +422,8 @@ IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
   // Default birthday determined by LoopbackServer.
   const std::string kDefaultBirthday = GetFakeServer()->GetStoreBirthday();
   const std::string kSeparator("|");
-  std::string base64_encoded_keystore_key;
-  base::Base64Encode(keystore_keys.back(), &base64_encoded_keystore_key);
+  const std::string base64_encoded_keystore_key =
+      base::Base64Encode(keystore_keys.back());
   const std::string authentication_id_before_hashing =
       std::string("gaia_id_for_user_gmail.com") + kSeparator +
       kDefaultBirthday + kSeparator + base64_encoded_keystore_key;
@@ -485,7 +483,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientKeystoreKeysMigrationSyncTest,
   EXPECT_TRUE(SetupClients());
 
   // Ensure that client can decrypt with keystore keys.
-  const std::vector<std::string>& keystore_keys =
+  const std::vector<std::vector<uint8_t>>& keystore_keys =
       GetFakeServer()->GetKeystoreKeys();
   ASSERT_THAT(keystore_keys, SizeIs(1));
   const KeyParams kKeystoreKeyParams = KeystoreKeyParams(keystore_keys.back());

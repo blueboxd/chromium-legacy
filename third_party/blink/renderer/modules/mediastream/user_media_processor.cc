@@ -21,7 +21,6 @@
 #include "third_party/blink/public/common/mediastream/media_stream_controls.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
-#include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
@@ -43,6 +42,7 @@
 #include "third_party/blink/renderer/modules/mediastream/media_stream_video_capturer_source.h"
 #include "third_party/blink/renderer/modules/mediastream/processed_local_audio_source.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_client.h"
+#include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/renderer/platform/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
@@ -170,8 +170,7 @@ void InitializeAudioTrackControls(const blink::WebUserMediaRequest& web_request,
 
   DCHECK_EQ(blink::WebUserMediaRequest::MediaType::kUserMedia,
             web_request.MediaRequestType());
-  const blink::WebMediaConstraints& constraints =
-      web_request.AudioConstraints();
+  const MediaConstraints& constraints = web_request.AudioConstraints();
   DCHECK(!constraints.IsNull());
   track_controls->requested = true;
 
@@ -205,8 +204,7 @@ void InitializeVideoTrackControls(const blink::WebUserMediaRequest& web_request,
 
   DCHECK_EQ(blink::WebUserMediaRequest::MediaType::kUserMedia,
             web_request.MediaRequestType());
-  const blink::WebMediaConstraints& constraints =
-      web_request.VideoConstraints();
+  const MediaConstraints& constraints = web_request.VideoConstraints();
   DCHECK(!constraints.IsNull());
   track_controls->requested = true;
 

@@ -74,7 +74,7 @@ class LoopbackServer {
     }
   }
 
-  const std::vector<std::string>& GetKeystoreKeysForTesting() const {
+  const std::vector<std::vector<uint8_t>>& GetKeystoreKeysForTesting() const {
     return keystore_keys_;
   }
 
@@ -119,7 +119,8 @@ class LoopbackServer {
   // was created.
   std::string GetTopLevelPermanentItemId(syncer::ModelType model_type);
 
-  std::string GenerateNewKeystoreKey() const;
+  // Returns generated key which may contain any bytes (not necessarily UTF-8).
+  std::vector<uint8_t> GenerateNewKeystoreKey() const;
 
   // Saves a |entity| to |entities_|.
   void SaveEntity(std::unique_ptr<LoopbackServerEntity> entity);
@@ -233,7 +234,7 @@ class LoopbackServer {
 
   EntityMap entities_;
   std::map<ModelType, std::string> top_level_permanent_item_ids_;
-  std::vector<std::string> keystore_keys_;
+  std::vector<std::vector<uint8_t>> keystore_keys_;
 
   // The file used to store the local sync data.
   base::FilePath persistent_file_;

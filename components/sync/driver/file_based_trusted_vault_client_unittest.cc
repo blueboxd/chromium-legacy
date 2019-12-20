@@ -4,6 +4,7 @@
 
 #include "components/sync/driver/file_based_trusted_vault_client.h"
 
+#include "base/containers/span.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
@@ -25,7 +26,10 @@ using testing::IsEmpty;
 using testing::Ne;
 
 MATCHER_P(KeyMaterialEq, expected, "") {
-  return arg.key_material() == expected;
+  const std::string& key_material = arg.key_material();
+  const std::vector<uint8_t> key_material_as_bytes(key_material.begin(),
+                                                   key_material.end());
+  return key_material_as_bytes == expected;
 }
 
 base::FilePath CreateUniqueTempDir(base::ScopedTempDir* temp_dir) {
@@ -35,18 +39,19 @@ base::FilePath CreateUniqueTempDir(base::ScopedTempDir* temp_dir) {
 
 // Issues a call to FetchKeys() for client |client| and waits until the callback
 // completes. |client| must not be null.
-std::vector<std::string> FetchKeysAndWaitForClient(
+std::vector<std::vector<uint8_t>> FetchKeysAndWaitForClient(
     const std::string& gaia_id,
     FileBasedTrustedVaultClient* client) {
   DCHECK(client);
 
   base::RunLoop loop;
-  std::vector<std::string> fetched_keys;
-  client->FetchKeys(gaia_id, base::BindLambdaForTesting(
-                                 [&](const std::vector<std::string>& keys) {
-                                   fetched_keys = keys;
-                                   loop.Quit();
-                                 }));
+  std::vector<std::vector<uint8_t>> fetched_keys;
+  client->FetchKeys(gaia_id,
+                    base::BindLambdaForTesting(
+                        [&](const std::vector<std::vector<uint8_t>>& keys) {
+                          fetched_keys = keys;
+                          loop.Quit();
+                        }));
   loop.Run();
   return fetched_keys;
 }
@@ -64,7 +69,8 @@ class FileBasedTrustedVaultClientTest : public testing::Test {
 
   void TearDown() override { OSCryptMocker::TearDown(); }
 
-  std::vector<std::string> FetchKeysAndWait(const std::string& gaia_id) {
+  std::vector<std::vector<uint8_t>> FetchKeysAndWait(
+      const std::string& gaia_id) {
     return FetchKeysAndWaitForClient(gaia_id, &client_);
   }
 
@@ -95,18 +101,18 @@ TEST_F(FileBasedTrustedVaultClientTest, ShouldFetchEmptyKeys) {
 TEST_F(FileBasedTrustedVaultClientTest, ShouldFetchNonEmptyKeys) {
   const std::string kGaiaId1 = "user1";
   const std::string kGaiaId2 = "user2";
-  const std::string kKey1 = "key1";
-  const std::string kKey2 = "key2";
-  const std::string kKey3 = "key3";
+  const std::vector<uint8_t> kKey1 = {0, 1, 2, 3, 4};
+  const std::vector<uint8_t> kKey2 = {1, 2, 3, 4};
+  const std::vector<uint8_t> kKey3 = {2, 3, 4};
 
   sync_pb::LocalTrustedVault initial_data;
   sync_pb::LocalTrustedVaultPerUser* user_data1 = initial_data.add_user();
   sync_pb::LocalTrustedVaultPerUser* user_data2 = initial_data.add_user();
   user_data1->set_gaia_id(kGaiaId1);
   user_data2->set_gaia_id(kGaiaId2);
-  user_data1->add_key()->set_key_material(kKey1);
-  user_data2->add_key()->set_key_material(kKey2);
-  user_data2->add_key()->set_key_material(kKey3);
+  user_data1->add_key()->set_key_material(kKey1.data(), kKey1.size());
+  user_data2->add_key()->set_key_material(kKey2.data(), kKey2.size());
+  user_data2->add_key()->set_key_material(kKey3.data(), kKey3.size());
 
   std::string encrypted_data;
   ASSERT_TRUE(OSCrypt::EncryptString(initial_data.SerializeAsString(),
@@ -122,10 +128,10 @@ TEST_F(FileBasedTrustedVaultClientTest, ShouldFetchNonEmptyKeys) {
 TEST_F(FileBasedTrustedVaultClientTest, ShouldStoreKeys) {
   const std::string kGaiaId1 = "user1";
   const std::string kGaiaId2 = "user2";
-  const std::string kKey1 = "key1";
-  const std::string kKey2 = "key2";
-  const std::string kKey3 = "key3";
-  const std::string kKey4 = "key4";
+  const std::vector<uint8_t> kKey1 = {0, 1, 2, 3, 4};
+  const std::vector<uint8_t> kKey2 = {1, 2, 3, 4};
+  const std::vector<uint8_t> kKey3 = {2, 3, 4};
+  const std::vector<uint8_t> kKey4 = {3, 4};
 
   client_.StoreKeys(kGaiaId1, {kKey1});
   client_.StoreKeys(kGaiaId2, {kKey2});
@@ -152,9 +158,9 @@ TEST_F(FileBasedTrustedVaultClientTest, ShouldStoreKeys) {
 TEST_F(FileBasedTrustedVaultClientTest, ShouldFetchPreviouslyStoredKeys) {
   const std::string kGaiaId1 = "user1";
   const std::string kGaiaId2 = "user2";
-  const std::string kKey1 = "key1";
-  const std::string kKey2 = "key2";
-  const std::string kKey3 = "key3";
+  const std::vector<uint8_t> kKey1 = {0, 1, 2, 3, 4};
+  const std::vector<uint8_t> kKey2 = {1, 2, 3, 4};
+  const std::vector<uint8_t> kKey3 = {2, 3, 4};
 
   client_.StoreKeys(kGaiaId1, {kKey1});
   client_.StoreKeys(kGaiaId2, {kKey2, kKey3});

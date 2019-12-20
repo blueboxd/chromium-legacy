@@ -19,8 +19,8 @@ WebMediaTrackConstraintSet& MockConstraintFactory::AddAdvanced() {
   return advanced_.back();
 }
 
-WebMediaConstraints MockConstraintFactory::CreateWebMediaConstraints() const {
-  WebMediaConstraints constraints;
+MediaConstraints MockConstraintFactory::CreateMediaConstraints() const {
+  MediaConstraints constraints;
   constraints.Initialize(basic_, advanced_);
   return constraints;
 }

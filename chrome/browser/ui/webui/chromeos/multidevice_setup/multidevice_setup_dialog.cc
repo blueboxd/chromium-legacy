@@ -127,15 +127,11 @@ MultiDeviceSetupDialogUI::MultiDeviceSetupDialogUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(std::make_unique<MultideviceSetupHandler>());
   web_ui->AddMessageHandler(std::make_unique<MetricsHandler>());
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
-
-  // Add Mojo bindings to this WebUI so that Mojo calls can occur in JavaScript.
-  AddHandlerToRegistry(base::BindRepeating(
-      &MultiDeviceSetupDialogUI::BindMultiDeviceSetup, base::Unretained(this)));
 }
 
 MultiDeviceSetupDialogUI::~MultiDeviceSetupDialogUI() = default;
 
-void MultiDeviceSetupDialogUI::BindMultiDeviceSetup(
+void MultiDeviceSetupDialogUI::BindInterface(
     mojo::PendingReceiver<chromeos::multidevice_setup::mojom::MultiDeviceSetup>
         receiver) {
   MultiDeviceSetupService* service =
@@ -144,6 +140,8 @@ void MultiDeviceSetupDialogUI::BindMultiDeviceSetup(
   if (service)
     service->BindMultiDeviceSetup(std::move(receiver));
 }
+
+WEB_UI_CONTROLLER_TYPE_IMPL(MultiDeviceSetupDialogUI)
 
 }  // namespace multidevice_setup
 

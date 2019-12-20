@@ -184,14 +184,17 @@ def _GuessTraceProcessorPath():
   """
   build_dirs = ['build', 'out', 'xcodebuild']
   build_types = ['Debug', 'Debug_x64', 'Release', 'Release_x64', 'Default']
+  executable_names = [trace_processor.TP_BINARY_NAME,
+                      trace_processor.TP_BINARY_NAME + '.exe']
   candidate_paths = []
   for build_dir in build_dirs:
     for build_type in build_types:
-      candidate_path = os.path.join(
-          path_util.GetChromiumSrcDir(), build_dir, build_type,
-          trace_processor.TP_BINARY_NAME)
-      if os.path.isfile(candidate_path):
-        candidate_paths.append(candidate_path)
+      for executable_name in executable_names:
+        candidate_path = os.path.join(
+            path_util.GetChromiumSrcDir(), build_dir, build_type,
+            executable_name)
+        if os.path.isfile(candidate_path):
+          candidate_paths.append(candidate_path)
   if len(candidate_paths) == 1:
     return candidate_paths[0]
   else:

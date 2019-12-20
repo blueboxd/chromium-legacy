@@ -115,6 +115,10 @@ class TaskEnvironment {
     DEFAULT = SYSTEM_TIME
   };
 
+  // This type will determine what types of messages will get pumped by the main
+  // thread.
+  // Note: If your test needs to use a custom MessagePump you should
+  // consider using a SingleThreadTaskExecutor instead.
   enum class MainThreadType {
     // The main thread doesn't pump system messages.
     DEFAULT,

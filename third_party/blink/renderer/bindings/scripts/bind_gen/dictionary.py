@@ -662,9 +662,8 @@ def generate_dictionary_cc_file(dictionary):
         enclose_with_namespace(code_node, name_style.namespace("blink")),
     ])
 
-    filename = "example_dictionary.cc"
     filepath = PathManager.gen_path_to(
-        PathManager(dictionary).dict_path(filename=filename))
+        PathManager(dictionary).dict_path(ext="cc"))
     write_code_node_to_file(root_node, filepath)
 
 
@@ -726,14 +725,12 @@ def generate_dictionary_h_file(dictionary):
         header_guard_node,
     ])
 
-    filename = "example_dictionary.h"
     filepath = PathManager.gen_path_to(
-        PathManager(dictionary).dict_path(filename=filename))
+        PathManager(dictionary).dict_path(ext="h"))
     write_code_node_to_file(root_node, filepath)
 
 
 def generate_dictionaries(web_idl_database):
-    dictionary = web_idl_database.find("InternalDictionary")
-
-    generate_dictionary_cc_file(dictionary)
-    generate_dictionary_h_file(dictionary)
+    for dictionary in web_idl_database.dictionaries:
+        generate_dictionary_cc_file(dictionary)
+        generate_dictionary_h_file(dictionary)

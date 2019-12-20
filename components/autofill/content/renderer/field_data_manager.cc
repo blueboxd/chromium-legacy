@@ -81,4 +81,9 @@ void FieldDataManager::UpdateFieldDataMapWithNullValue(
     field_value_and_properties_map_[id] = std::make_pair(base::nullopt, mask);
 }
 
+bool FieldDataManager::DidUserType(uint32_t id) const {
+  return HasFieldData(id) &&
+         (GetFieldPropertiesMask(id) & FieldPropertiesFlags::USER_TYPED);
+}
+
 }  // namespace autofill

@@ -8,6 +8,10 @@ config("media_player_weak_link") {
   ldflags = [
     "-weak_framework",
     "MediaPlayer",
+    "-weak_framework",
+    "VideoToolbox",
+    "-weak_framework",
+    "CoreBluetooth",
   ]
 
   visibility = [ ":system_media_controls" ]

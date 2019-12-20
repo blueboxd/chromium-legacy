@@ -221,7 +221,7 @@ if (!BaseClass::FillWithMembers(isolate, creation_context, v8_dictionary)) {
 
     body.append(
         T("return FillWithOwnMembers("
-          "isolate, creation_context, v8_dictionary)"))
+          "isolate, creation_context, v8_dictionary);"))
 
     return func_def
 

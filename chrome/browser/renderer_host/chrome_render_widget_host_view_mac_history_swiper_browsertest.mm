@@ -21,7 +21,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
-#include "third_party/blink/public/platform/web_mouse_wheel_event.h"
+#include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/ocmock_extensions.h"
 #include "ui/events/base_event_utils.h"

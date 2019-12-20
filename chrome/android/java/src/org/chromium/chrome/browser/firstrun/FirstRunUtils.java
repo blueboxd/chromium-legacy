@@ -33,16 +33,15 @@ public class FirstRunUtils {
         //   - Old versions only set native pref, so this syncs Java pref.
         //   - Backup & restore does not restore native pref, so this needs to update it.
         //   - checkAnyUserHasSeenToS() may be true which needs to sync its state to the prefs.
-        boolean javaPrefValue = javaPrefs.readBoolean(
-                ChromePreferenceKeys.FIRST_RUN_CACHED_TOS_ACCEPTED_PREF, false);
+        boolean javaPrefValue =
+                javaPrefs.readBoolean(ChromePreferenceKeys.FIRST_RUN_CACHED_TOS_ACCEPTED, false);
         boolean nativePrefValue = isFirstRunEulaAccepted();
         boolean userHasSeenTos =
                 ToSAckedReceiver.checkAnyUserHasSeenToS();
         boolean isFirstRunComplete = FirstRunStatus.getFirstRunFlowComplete();
         if (javaPrefValue || nativePrefValue || userHasSeenTos || isFirstRunComplete) {
             if (!javaPrefValue) {
-                javaPrefs.writeBoolean(
-                        ChromePreferenceKeys.FIRST_RUN_CACHED_TOS_ACCEPTED_PREF, true);
+                javaPrefs.writeBoolean(ChromePreferenceKeys.FIRST_RUN_CACHED_TOS_ACCEPTED, true);
             }
             if (!nativePrefValue) {
                 setEulaAccepted();
@@ -57,7 +56,7 @@ public class FirstRunUtils {
         // Note: Does not check FirstRunUtils.isFirstRunEulaAccepted() because this may be called
         // before native is initialized.
         return SharedPreferencesManager.getInstance().readBoolean(
-                       ChromePreferenceKeys.FIRST_RUN_CACHED_TOS_ACCEPTED_PREF, false)
+                       ChromePreferenceKeys.FIRST_RUN_CACHED_TOS_ACCEPTED, false)
                 || ToSAckedReceiver.checkAnyUserHasSeenToS();
     }
 
@@ -68,7 +67,7 @@ public class FirstRunUtils {
     public static void acceptTermsOfService(boolean allowCrashUpload) {
         UmaSessionStats.changeMetricsReportingConsent(allowCrashUpload);
         SharedPreferencesManager.getInstance().writeBoolean(
-                ChromePreferenceKeys.FIRST_RUN_CACHED_TOS_ACCEPTED_PREF, true);
+                ChromePreferenceKeys.FIRST_RUN_CACHED_TOS_ACCEPTED, true);
         setEulaAccepted();
     }
 

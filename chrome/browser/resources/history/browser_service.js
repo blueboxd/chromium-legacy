@@ -2,16 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {RESULTS_PER_PAGE} from './constants.js';
+import {ForeignSession, HistoryEntry, HistoryQuery} from './externs.js';
+
 /**
  * @fileoverview Defines a singleton object, history.BrowserService, which
  * provides access to chrome.send APIs.
  */
 
-cr.define('history', function() {
-  class BrowserService {
+  export class BrowserService {
     /** @return {!Promise<!Array<!ForeignSession>>} */
     getForeignSessions() {
-      return cr.sendWithPromise('getForeignSessions');
+      return sendWithPromise('getForeignSessions');
     }
 
     /** @param {!string} url */
@@ -25,7 +28,7 @@ cr.define('history', function() {
      *     successfully or rejected when deletion fails.
      */
     removeVisits(removalList) {
-      return cr.sendWithPromise('removeVisits', removalList);
+      return sendWithPromise('removeVisits', removalList);
     }
 
     /** @param {string} sessionTag */
@@ -106,7 +109,7 @@ cr.define('history', function() {
      * @return {!Promise<{info: !HistoryQuery, value: !Array<!HistoryEntry>}>}
      */
     queryHistoryContinuation() {
-      return cr.sendWithPromise('queryHistoryContinuation');
+      return sendWithPromise('queryHistoryContinuation');
     }
 
     /**
@@ -114,7 +117,7 @@ cr.define('history', function() {
      * @return {!Promise<{info: !HistoryQuery, value: !Array<!HistoryEntry>}>}
      */
     queryHistory(searchTerm) {
-      return cr.sendWithPromise('queryHistory', searchTerm, RESULTS_PER_PAGE);
+      return sendWithPromise('queryHistory', searchTerm, RESULTS_PER_PAGE);
     }
 
     startSignInFlow() {
@@ -122,7 +125,5 @@ cr.define('history', function() {
     }
   }
 
-  cr.addSingletonGetter(BrowserService);
+  addSingletonGetter(BrowserService);
 
-  return {BrowserService: BrowserService};
-});

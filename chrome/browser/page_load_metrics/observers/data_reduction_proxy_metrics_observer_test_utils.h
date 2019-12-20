@@ -19,7 +19,7 @@
 #include "components/page_load_metrics/common/test/page_load_metrics_test_util.h"
 #include "components/previews/content/previews_user_data.h"
 #include "net/nqe/effective_connection_type.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 
 namespace data_reduction_proxy {
 

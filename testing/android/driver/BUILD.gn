@@ -16,6 +16,7 @@ android_apk("driver_apk") {
     "//testing/android/reporter:reporter_java",
   ]
 
-  java_files =
-      [ "java/src/org/chromium/test/driver/OnDeviceInstrumentationDriver.java" ]
+  sources = [
+    "java/src/org/chromium/test/driver/OnDeviceInstrumentationDriver.java",
+  ]
 }

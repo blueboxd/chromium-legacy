@@ -6,14 +6,13 @@
 
 #include "base/mac/scoped_block.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_interaction_manager_constants.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #include "ios/public/provider/chrome/browser/signin/signin_error_provider.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-NSString* kFakeAddAccountViewIdentifier = @"FakeAddAccountViewIdentifier";
 
 @interface FakeAddAccountViewController : UIViewController {
   __weak FakeChromeIdentityInteractionManager* _manager;

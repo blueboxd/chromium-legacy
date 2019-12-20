@@ -777,7 +777,7 @@ if (is_android) {
 
   android_library("content_browsertests_java") {
     testonly = true
-    java_files = [
+    sources = [
       "../shell/android/browsertests_apk/src/org/chromium/content_browsertests_apk/ContentBrowserTestsActivity.java",
       "../shell/android/browsertests_apk/src/org/chromium/content_browsertests_apk/ContentBrowserTestsApplication.java",
     ]
@@ -985,6 +985,7 @@ test("content_browsertests") {
     "../browser/service_worker/service_worker_file_upload_browsertest.cc",
     "../browser/service_worker/service_worker_no_best_effort_tasks_browsertest.cc",
     "../browser/service_worker/service_worker_process_browsertest.cc",
+    "../browser/service_worker/service_worker_version_browsertest.cc",
     "../browser/session_history_browsertest.cc",
     "../browser/shape_detection/shape_detection_browsertest.cc",
     "../browser/site_per_process_browsertest.cc",
@@ -1875,6 +1876,7 @@ test("content_unittests") {
     "../renderer/media/audio/mojo_audio_output_ipc_unittest.cc",
     "../renderer/media/batching_media_log_unittest.cc",
     "../renderer/media/inspector_media_event_handler_unittest.cc",
+    "../renderer/media/power_status_helper_impl_unittest.cc",
     "../renderer/media/renderer_webaudiodevice_impl_unittest.cc",
     "../renderer/peripheral_content_heuristic_unittest.cc",
     "../renderer/queue_message_swap_promise_unittest.cc",
@@ -2328,7 +2330,7 @@ if (is_android) {
 
   android_library("content_unittests_java") {
     testonly = true
-    java_files = content_java_sources_needing_jni
+    sources = content_java_sources_needing_jni
     deps = [
       "$google_play_services_package:google_play_services_auth_api_phone_java",
       "$google_play_services_package:google_play_services_base_java",

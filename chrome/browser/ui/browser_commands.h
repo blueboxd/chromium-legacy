@@ -105,6 +105,8 @@ void SelectLastTab(
 void DuplicateTab(Browser* browser);
 bool CanDuplicateTab(const Browser* browser);
 bool CanDuplicateKeyboardFocusedTab(const Browser* browser);
+void MoveTabToNewWindow(Browser* browser);
+bool CanMoveTabToNewWindow(Browser* browser);
 bool CanCloseTabsToRight(const Browser* browser);
 bool CanCloseOtherTabs(const Browser* browser);
 content::WebContents* DuplicateTabAt(Browser* browser, int index);

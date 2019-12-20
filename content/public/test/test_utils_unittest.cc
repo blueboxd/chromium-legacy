@@ -9,6 +9,9 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "base/threading/platform_thread.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Regression test for crbug.com/1035189.
@@ -18,7 +21,7 @@ TEST(ContentTestUtils, NestedRunAllTasksUntilIdleWithPendingThreadPoolWork) {
   bool thread_pool_task_completed = false;
   base::PostTask(
       FROM_HERE, {base::ThreadPool()}, base::BindLambdaForTesting([&]() {
-        base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(200));
+        base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
         thread_pool_task_completed = true;
       }));
 
@@ -34,4 +37,95 @@ TEST(ContentTestUtils, NestedRunAllTasksUntilIdleWithPendingThreadPoolWork) {
 
   run_loop.Run();
   EXPECT_TRUE(thread_pool_task_completed);
+}
+
+// Regression test for crbug.com/1035604.
+TEST(ContentTestUtils, FlushRealIOThread) {
+  content::BrowserTaskEnvironment task_environment{
+      content::BrowserTaskEnvironment::REAL_IO_THREAD};
+
+  bool io_task_completed = false;
+  base::PostTask(
+      FROM_HERE, {content::BrowserThread::IO},
+      base::BindLambdaForTesting([&]() {
+        base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+        io_task_completed = true;
+      }));
+
+  content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
+  EXPECT_TRUE(io_task_completed);
+}
+
+TEST(ContentTestUtils, NestedFlushRealIOThread) {
+  content::BrowserTaskEnvironment task_environment{
+      content::BrowserTaskEnvironment::REAL_IO_THREAD};
+
+  bool io_task_completed = false;
+  base::PostTask(
+      FROM_HERE, {content::BrowserThread::IO},
+      base::BindLambdaForTesting([&]() {
+        base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+        io_task_completed = true;
+      }));
+
+  base::RunLoop run_loop;
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() {
+        content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
+        EXPECT_TRUE(io_task_completed);
+        run_loop.Quit();
+      }));
+
+  run_loop.Run();
+  EXPECT_TRUE(io_task_completed);
+}
+
+TEST(ContentTestUtils, FlushRealIOThreadWithPendingBestEffortTask) {
+  content::BrowserTaskEnvironment task_environment{
+      content::BrowserTaskEnvironment::REAL_IO_THREAD};
+
+  bool io_task_completed = false;
+  base::PostTask(
+      FROM_HERE, {content::BrowserThread::IO, base::TaskPriority::BEST_EFFORT},
+      base::BindLambdaForTesting([&]() {
+        base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+        io_task_completed = true;
+      }));
+
+  content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
+  EXPECT_TRUE(io_task_completed);
+}
+
+// Same as FlushRealIOThreadWithPendingBestEffortTask but when BrowserThread::IO
+// is multiplexed with BrowserThread::UI on the main thread (i.e. the default
+// under BrowserTaskEnvironment).
+TEST(ContentTestUtils, FlushFakeIOThread) {
+  content::BrowserTaskEnvironment task_environment;
+
+  bool io_task_completed = false;
+  base::PostTask(
+      FROM_HERE, {content::BrowserThread::IO, base::TaskPriority::BEST_EFFORT},
+      base::BindLambdaForTesting([&]() {
+        base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+        io_task_completed = true;
+      }));
+
+  content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
+  EXPECT_TRUE(io_task_completed);
+}
+
+TEST(ContentTestUtils, FlushUIThread) {
+  content::BrowserTaskEnvironment task_environment;
+
+  bool ui_task_completed = false;
+  base::PostTask(
+      FROM_HERE, {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
+      base::BindLambdaForTesting([&]() {
+        base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+        ui_task_completed = true;
+      }));
+
+  content::RunAllPendingInMessageLoop(content::BrowserThread::UI);
+  EXPECT_TRUE(ui_task_completed);
 }

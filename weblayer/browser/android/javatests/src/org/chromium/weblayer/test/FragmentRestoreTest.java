@@ -10,7 +10,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.shell.InstrumentationActivity;
@@ -18,7 +17,7 @@ import org.chromium.weblayer.shell.InstrumentationActivity;
 /**
  * Tests that fragment restore works as expected.
  */
-@RunWith(BaseJUnit4ClassRunner.class)
+@RunWith(WebLayerJUnit4ClassRunner.class)
 public class FragmentRestoreTest {
     @Rule
     public InstrumentationActivityTestRule mActivityTestRule =

@@ -47,9 +47,7 @@ NET_EXPORT_PRIVATE bool GetTLSServerEndPointChannelBinding(
 // The certificate is signed by the private key in |key|. The key length and
 // signature algorithm may be updated periodically to match best practices.
 //
-// |subject| is a distinguished name defined in RFC4514 with _only_ a CN
-// component, as in:
-//   CN=Michael Wong
+// |subject| is a distinguished name defined in RFC4514.
 //
 // SECURITY WARNING
 //

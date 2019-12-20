@@ -4,19 +4,17 @@
 
 package org.chromium.chrome.modules.image_editor;
 
-import android.app.Activity;
-
-import org.chromium.chrome.browser.image_editor.ImageEditorCoordinator;
+import org.chromium.chrome.browser.image_editor.ImageEditorDialogCoordinator;
 import org.chromium.components.module_installer.builder.ModuleInterface;
 
 /**
- * Interface to get access to the image editor activity.
+ * Interface to get access to the image editor dialog.
  */
 @ModuleInterface(module = "image_editor",
         impl = "org.chromium.chrome.modules.image_editor.ImageEditorProviderImpl")
 public interface ImageEditorProvider {
     /**
-     * Creates and returns the instance tied to the image editor activity.
+     * Creates and returns the instance tied to the image editor dialog.
      */
-    ImageEditorCoordinator getImageEditorCoordinator(Activity activity);
+    ImageEditorDialogCoordinator getImageEditorDialogCoordinator();
 }

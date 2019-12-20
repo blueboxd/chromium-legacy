@@ -298,6 +298,18 @@ export class TabElement extends CustomElement {
       animation.onfinish = () => {
         resolve();
       };
+
+      // TODO(crbug.com/1035678) By the next animation frame, the animation
+      // should start playing. By the time another animation frame happens,
+      // force play the animation if the animation has not yet begun. Remove
+      // if/when the Blink issue has been fixed.
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (animation.pending) {
+            animation.play();
+          }
+        });
+      });
     });
   }
 

@@ -346,14 +346,17 @@ class DiscardableImageGenerator {
     else
       rects->push_back(image_rect);
 
-    auto decoding_mode_it = decoding_mode_map_.find(paint_image.stable_id());
-    // Use the decoding mode if we don't have one yet, otherwise use the more
-    // conservative one of the two existing ones.
-    if (decoding_mode_it == decoding_mode_map_.end()) {
-      decoding_mode_map_[paint_image.stable_id()] = paint_image.decoding_mode();
-    } else {
-      decoding_mode_it->second = PaintImage::GetConservative(
-          decoding_mode_it->second, paint_image.decoding_mode());
+    if (paint_image.IsLazyGenerated()) {
+      auto decoding_mode_it = decoding_mode_map_.find(paint_image.stable_id());
+      // Use the decoding mode if we don't have one yet, otherwise use the more
+      // conservative one of the two existing ones.
+      if (decoding_mode_it == decoding_mode_map_.end()) {
+        decoding_mode_map_[paint_image.stable_id()] =
+            paint_image.decoding_mode();
+      } else {
+        decoding_mode_it->second = PaintImage::GetConservative(
+            decoding_mode_it->second, paint_image.decoding_mode());
+      }
     }
 
     if (paint_image.ShouldAnimate()) {

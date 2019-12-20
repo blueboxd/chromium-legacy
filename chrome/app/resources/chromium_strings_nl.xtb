@@ -22,6 +22,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="1966382378801805537">Chromium kan de standaardbrowser niet bepalen of instellen</translation>
 <translation id="2008474315282236005">Hiermee wordt 1 item verwijderd van dit apparaat. Als je je gegevens later wilt terughalen, log je in bij Chromium als <ph name="USER_EMAIL" />.</translation>
 <translation id="2119636228670142020">Over &amp;Chromium OS</translation>
+<translation id="2147976119693222405">Chromium OS kan je gegevens niet synchroniseren. Los dit nu op.</translation>
 <translation id="2241627712206172106">Als je een computer deelt, kunnen vrienden en familie afzonderlijk surfen en Chromium configureren zoals zij dat willen.</translation>
 <translation id="2347108572062610441">Deze extensie heeft gewijzigd welke pagina wordt weergegeven wanneer je Chromium start.</translation>
 <translation id="2396765026452590966">De extensie '<ph name="EXTENSION_NAME" />' heeft gewijzigd welke pagina wordt weergegeven wanneer je Chromium start.</translation>
@@ -37,6 +38,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="2718390899429598676">Je gegevens worden voor extra beveiliging door Chromium gecodeerd.</translation>
 <translation id="2770231113462710648">Standaardbrowser wijzigen in:</translation>
 <translation id="2799223571221894425">Opnieuw starten</translation>
+<translation id="2805036593126168338">Chromium OS kan je wachtwoorden niet synchroniseren. Los dit nu op.</translation>
 <translation id="2838154144102149890">Chromium moet worden gestopt op deze computer om een update uit te voeren. Hierdoor kunnen andere gebruikers die bij deze computer zijn ingelogd, niet-opgeslagen wijzigingen kwijtraken.</translation>
 <translation id="2847479871509788944">Verwijderen uit Chromium…</translation>
 <translation id="2886012850691518054">Optioneel: help Chromium beter te maken door automatisch gebruiksstatistieken en crashmeldingen naar Google te verzenden.</translation>

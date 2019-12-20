@@ -3203,8 +3203,7 @@ void QuicStreamFactoryTestBase::TestOnNetworkMadeDefaultNonMigratableStream(
             client_maker_.MakeRstAckAndConnectionClosePacket(
                 packet_num++, false,
                 GetNthClientInitiatedBidirectionalStreamId(0),
-                quic::QUIC_STREAM_CANCELLED,
-                quic::QuicTime::Delta::FromMilliseconds(0), 1, 1, 1,
+                quic::QUIC_STREAM_CANCELLED, 1, 1, 1,
                 quic::QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS,
                 "net error"));
       }
@@ -5641,8 +5640,7 @@ void QuicStreamFactoryTestBase::TestMigrateSessionEarlyNonMigratableStream(
             client_maker_.MakeRstAckAndConnectionClosePacket(
                 packet_num++, false,
                 GetNthClientInitiatedBidirectionalStreamId(0),
-                quic::QUIC_STREAM_CANCELLED,
-                quic::QuicTime::Delta::FromMilliseconds(0), 1, 1, 1,
+                quic::QUIC_STREAM_CANCELLED, 1, 1, 1,
                 quic::QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS,
                 "net error"));
       }

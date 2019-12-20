@@ -53,6 +53,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="2290014774651636340">Googles API-nycklar saknas. Vissa funktioner i Google Chrome kommer att vara inaktiverade.</translation>
 <translation id="2290095356545025170">Är du säker på att du vill avinstallera Google Chrome?</translation>
 <translation id="2309047409763057870">Det här är en sekundär installation av Google Chrome. Det går inte att göra den till standardwebbläsare.</translation>
+<translation id="2341767445688917208">Det gick inte att synkronisera lösenord i Chrome OS. Åtgärda nu.</translation>
 <translation id="2348335408836342058">Du behöver ge Chrome behörighet att använda kameran och mikrofonen på webbplatsen</translation>
 <translation id="2429317896000329049">Google Chrome kunde inte synkronisera data eftersom synkronisering inte är tillgängligt för din domän.</translation>
 <translation id="2467438592969358367">Lösenorden exporteras från Google Chrome. Skriv ditt Windows-lösenord om du tillåter detta.</translation>
@@ -169,7 +170,8 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="6235018212288296708">Regel som tillåter inkommande mDNS-trafik för Google Chrome.</translation>
 <translation id="6291089322031436445">Appar i Chrome Dev</translation>
 <translation id="6291549208091401781">Google Chrome har redan installerats för alla användare på datorn.</translation>
-<translation id="6338556085225130112">Uppdatera Google Chrome</translation>
+<translation id="6338556085225130112">Uppdaterar Google Chrome
+</translation>
 <translation id="6368958679917195344">Chrome OS fungerar tack vare <ph name="BEGIN_LINK_CROS_OSS" />öppen källkod<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome Dev</translation>
 <translation id="6566149418543181476">Google Chrome uppdateras (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -214,6 +216,7 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="7855730255114109580">Google Chrome behöver inte uppdateras</translation>
 <translation id="7890208801193284374">Om du delar en dator med vänner och familj kan de konfigurera Chrome precis som de vill och surfa separat.</translation>
 <translation id="7896673875602241923">Någon har tidigare loggat in i Chrome som <ph name="ACCOUNT_EMAIL_LAST" /> på den här datorn. Skapa en ny Chrome-användare så att dina uppgifter hålls separat.</translation>
+<translation id="7916016681687251387">Det gick inte att synkronisera data i Chrome OS. Åtgärda nu.</translation>
 <translation id="7962410387636238736">Den här datorn får inte längre uppdateringar för Google Chrome eftersom Windows XP och Windows Vista inte längre stöds.</translation>
 <translation id="8008534537613507642">Installera om Chrome</translation>
 <translation id="8013993649590906847">Om en bild inte har någon användbar beskrivning görs ett försök att beskriva den åt dig i Chrome. Bilderna skickas till Google så att beskrivningen kan genereras.</translation>

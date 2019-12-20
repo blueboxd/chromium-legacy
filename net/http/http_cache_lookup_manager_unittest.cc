@@ -208,7 +208,7 @@ TEST_P(HttpCacheLookupManagerTest_NetworkIsolationKey, ServerPushCacheStatus) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     HttpCacheLookupManagerTest_NetworkIsolationKey,
     ::testing::Bool());
 

@@ -164,7 +164,7 @@ bool DevToolsAgentHostImpl::DetachClient(DevToolsAgentHostClient* client) {
 
 bool DevToolsAgentHostImpl::DispatchProtocolMessage(
     DevToolsAgentHostClient* client,
-    const std::string& message) {
+    base::span<const uint8_t> message) {
   DevToolsSession* session = SessionByClient(client);
   if (!session)
     return false;

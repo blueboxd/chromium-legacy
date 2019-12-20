@@ -22,6 +22,7 @@
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
 #include "media/video/h264_parser.h"
+#include "media/video/video_encoder_info.h"
 
 namespace media {
 
@@ -208,6 +209,9 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
     // reported here, but will instead be indicated by a false return value
     // there.
     virtual void NotifyError(Error error) = 0;
+
+    // Call VideoEncoderInfo of the VEA is changed.
+    virtual void NotifyEncoderInfoChange(const VideoEncoderInfo& info);
 
    protected:
     // Clients are not owned by VEA instances and should not be deleted through

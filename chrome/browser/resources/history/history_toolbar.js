@@ -2,8 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
+import 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import './shared_style.js';
+import './strings.js';
+
 Polymer({
   is: 'history-toolbar',
+
+  _template: html`{__html_template__}`,
+
   properties: {
     // Number of history items currently selected.
     // TODO(calamity): bind this to

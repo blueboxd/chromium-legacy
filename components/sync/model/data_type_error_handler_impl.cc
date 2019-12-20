@@ -11,7 +11,7 @@ namespace syncer {
 
 DataTypeErrorHandlerImpl::DataTypeErrorHandlerImpl(
     const scoped_refptr<base::SequencedTaskRunner>& ui_thread,
-    const base::Closure& dump_stack,
+    const base::RepeatingClosure& dump_stack,
     const ErrorCallback& sync_callback)
     : ui_thread_(ui_thread),
       dump_stack_(dump_stack),

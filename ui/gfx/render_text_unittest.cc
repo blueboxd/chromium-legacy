@@ -1751,92 +1751,109 @@ INSTANTIATE_TEST_SUITE_P(ItemizeTextToRunsEmoji,
                          ::testing::ValuesIn(kEmojiRunListCases),
                          RenderTextTestWithRunListCase::ParamInfoToString);
 
-TEST_F(RenderTextTest, ElidedText) {
-  // TODO(skanuj) : Add more test cases for following
-  // - RenderText styles.
-  // - Cross interaction of truncate, elide and obscure.
-  // - ElideText tests from text_elider.cc.
-  struct {
-    const wchar_t* text;
-    const wchar_t* display_text;
-    const bool elision_expected;
-  } cases[] = {
-      // Strings shorter than the elision width should be laid out in full.
-      {L"", L"", false},
-      {L"M", L"", false},
-      {L" . ", L" . ", false},  // a wide kWeak
-      {L"abc", L"abc", false},  // a wide kLtr
-      {L"\u05d0\u05d1\u05d2", L"\u05d0\u05d1\u05d2", false},  // a wide kRtl
-      {L"a\u05d0\u05d1", L"a\u05d0\u05d1", false},  // a wide kLtrRtl
-      {L"a\u05d1b", L"a\u05d1b", false},  // a wide kLtrRtlLtr
-      {L"\u05d0\u05d1a", L"\u05d0\u05d1a", false},  // a wide kRtlLtr
-      {L"\u05d0a\u05d1", L"\u05d0a\u05d1", false},  // a wide kRtlLtrRtl
-      // Strings as long as the elision width should be laid out in full.
-      {L"012ab", L"012ab", false},
-      // Long strings should be elided with an ellipsis appended at the end.
-      {L"012abc", L"012a\u2026", true},
-      {L"012ab\u05d0\u05d1", L"012a\u2026", true},
-      {L"012a\u05d1b", L"012a\u2026", true},
-      // No RLM marker added as digits (012) have weak directionality.
-      {L"01\u05d0\u05d1\u05d2", L"01\u05d0\u05d1\u2026", true},
-      // RLM marker added as "ab" have strong LTR directionality.
-      {L"ab\u05d0\u05d1\u05d2", L"ab\u05d0\u05d1\u2026\u200f", true},
-      // Test surrogate pairs. The first pair 𝄞 'MUSICAL SYMBOL G CLEF' U+1D11E
-      // should be kept, and the second pair 𝄢 'MUSICAL SYMBOL F CLEF' U+1D122
-      // should be removed. No surrogate pair should be partially elided.
-      // Windows requires wide strings for \Unnnnnnnn universal character names.
-      {L"0123\U0001D11E\U0001D122", L"0123\U0001D11E\u2026", true},
-      // Test combining character sequences. U+0915 U+093F forms a compound
-      // glyph, as does U+0915 U+0942. The first should be kept; the second
-      // removed. No combining sequence should be partially elided.
-      {L"0123\u0915\u093f\u0915\u0942", L"0123\u0915\u093f\u2026", true},
-      // U+05E9 U+05BC U+05C1 U+05B8 forms a four-character compound glyph.
-      // It should be either fully elided, or not elided at all. If completely
-      // elided, an LTR Mark (U+200E) should be added.
-      {L"0\u05e9\u05bc\u05c1\u05b8", L"0\u05e9\u05bc\u05c1\u05b8", false},
-      {L"0\u05e9\u05bc\u05c1\u05b8", L"0\u2026\u200E", true},
-      {L"01\u05e9\u05bc\u05c1\u05b8", L"01\u2026\u200E", true},
-      {L"012\u05e9\u05bc\u05c1\u05b8", L"012\u2026\u200E", true},
-      // 𝄞 (U+1D11E, MUSICAL SYMBOL G CLEF) should be fully elided.
-      // Windows requires wide strings for \Unnnnnnnn universal character names.
-      {L"012\U0001D11E", L"012\u2026", true},
-  };
+struct ElideTextCase {
+  const char* test_name;
+  const wchar_t* text;
+  const wchar_t* display_text;
+};
 
-  auto expected_render_text = std::make_unique<RenderTextHarfBuzz>();
-  expected_render_text->SetFontList(FontList("serif, Sans serif, 12px"));
-  expected_render_text->SetDisplayRect(Rect(0, 0, 9999, 100));
-
-  RenderText* render_text = GetRenderText();
-  render_text->SetFontList(FontList("serif, Sans serif, 12px"));
-  render_text->SetElideBehavior(ELIDE_TAIL);
-
-  for (size_t i = 0; i < base::size(cases); i++) {
-    SCOPED_TRACE(base::StringPrintf("Testing cases[%" PRIuS "] '%ls'", i,
-                                    cases[i].text));
-
-    // Compute expected width
-    expected_render_text->SetText(WideToUTF16(cases[i].display_text));
-    int expected_width = expected_render_text->GetContentWidth();
-
-    base::string16 input = WideToUTF16(cases[i].text);
-    // Extend the input text to ensure that it is wider than the display_text,
-    // and so it will get elided.
-    if (cases[i].elision_expected)
-      input.append(UTF8ToUTF16(" MMMMMMMMMMM"));
-    render_text->SetText(input);
-    render_text->SetDisplayRect(Rect(0, 0, expected_width, 100));
-    EXPECT_EQ(input, render_text->text());
-    EXPECT_EQ(WideToUTF16(cases[i].display_text),
-              render_text->GetDisplayText());
-    expected_render_text->SetText(base::string16());
+class RenderTextTestWithElideTextCase
+    : public RenderTextTest,
+      public ::testing::WithParamInterface<ElideTextCase> {
+ public:
+  static std::string ParamInfoToString(
+      ::testing::TestParamInfo<ElideTextCase> param_info) {
+    return param_info.param.test_name;
   }
+};
+
+TEST_P(RenderTextTestWithElideTextCase, ElideText) {
+  // This test requires glyphs to be the same width.
+  constexpr int kGlyphWidth = 10;
+  SetGlyphWidth(kGlyphWidth);
+
+  ElideTextCase param = GetParam();
+  const base::string16 text = WideToUTF16(param.text);
+  const base::string16 display_text = WideToUTF16(param.display_text);
+
+  // Retrieve the display_text width without eliding.
+  RenderTextHarfBuzz* render_text = GetRenderText();
+  render_text->SetText(display_text);
+  const int expected_width = render_text->GetContentWidth();
+
+  // Set the text and the eliding behavior.
+  render_text->SetText(text);
+  render_text->SetDisplayRect(
+      Rect(0, 0, expected_width + kGlyphWidth / 2, 100));
+  render_text->SetElideBehavior(ELIDE_TAIL);
+  render_text->SetWhitespaceElision(false);
+  const int elided_width = render_text->GetContentWidth();
+
+  EXPECT_EQ(text, render_text->text());
+  EXPECT_EQ(display_text, render_text->GetDisplayText());
+  EXPECT_EQ(elided_width, expected_width);
 }
 
+const ElideTextCase kElideTailTextCases[] = {
+    {"empty", L"", L""},
+    {"letter_m_tail0", L"M", L""},
+    {"letter_m_tail1", L"M", L"M"},
+    {"letter_weak_3", L" . ", L" . "},
+    {"letter_weak_2", L" . ", L" \u2026"},
+    {"no_eliding", L"012ab", L"012ab"},
+    {"ltr_3", L"abc", L"abc"},
+    {"ltr_2", L"abc", L"a\u2026"},
+    {"ltr_1", L"abc", L"\u2026"},
+    {"ltr_0", L"abc", L""},
+    {"rtl_3", L"\u05d0\u05d1\u05d2", L"\u05d0\u05d1\u05d2"},
+    {"rtl_2", L"\u05d0\u05d1\u05d2", L"\u05d0\u2026"},
+    {"rtl_1", L"\u05d0\u05d1\u05d2", L"\u2026\x200E"},
+    {"rtl_0", L"\u05d0\u05d1\u05d2", L""},
+    {"ltr_rtl_5", L"abc\u05d0\u05d1\u05d2", L"abc\u05d0\u2026\x200F"},
+    {"ltr_rtl_4", L"abc\u05d0\u05d1\u05d2", L"abc\u2026"},
+    {"ltr_rtl_3", L"abc\u05d0\u05d1\u05d2", L"ab\u2026"},
+    {"rtl_ltr_5", L"\u05d0\u05d1\u05d2abc", L"\u05d0\u05d1\u05d2a\u2026\x200E"},
+    {"rtl_ltr_4", L"\u05d0\u05d1\u05d2abc", L"\u05d0\u05d1\u05d2\u2026"},
+    {"rtl_ltr_3", L"\u05d0\u05d1\u05d2abc", L"\u05d0\u05d1\u2026"},
+    {"bidi_1", L"012a\u05d1b\u05d1c", L"012a\u2026"},
+    {"bidi_2", L"012a\u05d1b\u05d1c", L"012a\u05d1\u2026\x200F"},
+    {"bidi_3", L"012a\u05d1b\u05d1c", L"012a\u05d1b\u2026\x200F"},
+    // No RLM marker added as digits (012) have weak directionality.
+    {"no_rlm", L"01\u05d0\u05d1\u05d2", L"01\u05d0\u2026"},
+    // RLM marker added as "ab" have strong LTR directionality.
+    {"with_rlm", L"ab\u05d0\u05d1\u05d2cd", L"ab\u05d0\u05d1\u2026\u200f"},
+    // Test surrogate pairs. The first pair 𝄞 'MUSICAL SYMBOL G CLEF' U+1D11E
+    // should be kept, and the second pair 𝄢 'MUSICAL SYMBOL F CLEF' U+1D122
+    // should be removed. No surrogate pair should be partially elided.
+    {"surrogate", L"0123\U0001D11E\U0001D122x", L"0123\U0001D11E\u2026"},
+    // Test combining character sequences. U+0915 U+093F forms a compound
+    // glyph, as does U+0915 U+0942. The first should be kept; the second
+    // removed. No combining sequence should be partially elided.
+    {"combining", L"0123\u0915\u093f\u0915\u0942456",
+     L"0123\u0915\u093f\u2026"},
+    // U+05E9 U+05BC U+05C1 U+05B8 forms a four-character compound glyph.
+    // It should be either fully elided, or not elided at all. If completely
+    // elided, an LTR Mark (U+200E) should be added.
+    {"grapheme1", L"0\u05e9\u05bc\u05c1\u05b8", L"0\u05e9\u05bc\u05c1\u05b8"},
+    {"grapheme2", L"0\u05e9\u05bc\u05c1\u05b8abc", L"0\u2026\u200E"},
+    {"grapheme3", L"01\u05e9\u05bc\u05c1\u05b8abc", L"01\u2026\u200E"},
+    {"grapheme4", L"012\u05e9\u05bc\u05c1\u05b8abc", L"012\u2026\u200E"},
+    // 𝄞 (U+1D11E, MUSICAL SYMBOL G CLEF) should be fully elided.
+    {"emoji", L"012\U0001D11Ex", L"012\u2026"},
+};
+
+INSTANTIATE_TEST_SUITE_P(ElideTail,
+                         RenderTextTestWithElideTextCase,
+                         ::testing::ValuesIn(kElideTailTextCases),
+                         RenderTextTestWithElideTextCase::ParamInfoToString);
+
 TEST_F(RenderTextTest, ElidedText_NoTrimWhitespace) {
-  const int kGlyphWidth = 10;
+  // This test requires glyphs to be the same width.
+  constexpr int kGlyphWidth = 10;
+  SetGlyphWidth(kGlyphWidth);
+
   RenderText* render_text = GetRenderText();
   gfx::test::RenderTextTestApi render_text_test_api(render_text);
-  render_text_test_api.SetGlyphWidth(kGlyphWidth);
   render_text->SetElideBehavior(ELIDE_TAIL);
   render_text->SetWhitespaceElision(false);
 
@@ -1867,7 +1884,6 @@ TEST_F(RenderTextTest, ElidedText_NoTrimWhitespace) {
 
 TEST_F(RenderTextTest, ElidedObscuredText) {
   auto expected_render_text = std::make_unique<RenderTextHarfBuzz>();
-  expected_render_text->SetFontList(FontList("serif, Sans serif, 12px"));
   expected_render_text->SetDisplayRect(Rect(0, 0, 9999, 100));
   const base::char16 elided_obscured_text[] = {
       RenderText::kPasswordReplacementChar,
@@ -1875,7 +1891,6 @@ TEST_F(RenderTextTest, ElidedObscuredText) {
   expected_render_text->SetText(elided_obscured_text);
 
   RenderText* render_text = GetRenderText();
-  render_text->SetFontList(FontList("serif, Sans serif, 12px"));
   render_text->SetElideBehavior(ELIDE_TAIL);
   render_text->SetDisplayRect(
       Rect(0, 0, expected_render_text->GetContentWidth(), 100));
@@ -2151,7 +2166,7 @@ TEST_F(RenderTextTest, ElidedStyledTextRtl) {
         break;
     }
   }
-}  // namespace gfx
+}
 
 TEST_F(RenderTextTest, ElidedEmail) {
   RenderText* render_text = GetRenderText();
@@ -7275,27 +7290,39 @@ TEST_F(RenderTextTest, MissingFlagEmoji) {
   EXPECT_EQ(whole_width, selection_bounds.width());
 }
 
-// Ensures that glyph spacing is correctly applied to obscured texts.
-TEST_F(RenderTextTest, GlyphSpacing) {
+// Ensures that glyph spacing is correctly applied to obscured text.
+TEST_F(RenderTextTest, ObscuredGlyphSpacing) {
   const base::string16 seuss = UTF8ToUTF16("hop on pop");
   RenderTextHarfBuzz* render_text = GetRenderText();
   render_text->SetText(seuss);
   render_text->SetObscured(true);
-  test_api()->EnsureLayout();
-  const internal::TextRunList* run_list = GetHarfBuzzRunList();
-  ASSERT_EQ(1U, run_list->size());
-  internal::TextRunHarfBuzz* run = run_list->runs()[0].get();
-  // The default glyph spacing is zero.
-  EXPECT_EQ(0, render_text->glyph_spacing());
-  ShapeRunWithFont(render_text->text(), Font(), FontRenderParams(), run);
-  const float width_without_glyph_spacing = run->shape.width;
 
-  const float kGlyphSpacing = 5;
-  render_text->set_glyph_spacing(kGlyphSpacing);
-  ShapeRunWithFont(render_text->text(), Font(), FontRenderParams(), run);
-  // The new width is the sum of |width_without_glyph_spacing| and the spacing.
-  const float total_spacing = seuss.length() * kGlyphSpacing;
-  EXPECT_EQ(width_without_glyph_spacing + total_spacing, run->shape.width);
+  // The default glyph spacing is zero.
+  const int width_without_glyph_spacing = render_text->GetStringSize().width();
+  EXPECT_EQ(0, render_text->obscured_glyph_spacing());
+
+  constexpr int kObscuredGlyphSpacing = 5;
+  render_text->SetObscuredGlyphSpacing(kObscuredGlyphSpacing);
+  const int width_with_glyph_spacing = render_text->GetStringSize().width();
+  EXPECT_EQ(kObscuredGlyphSpacing, render_text->obscured_glyph_spacing());
+
+  EXPECT_EQ(width_without_glyph_spacing +
+                static_cast<int>(seuss.length()) * kObscuredGlyphSpacing,
+            width_with_glyph_spacing);
+}
+
+// Ensures that glyph spacing is ignored for non-obscured text.
+TEST_F(RenderTextTest, ObscuredGlyphSpacingOnNonObscuredText) {
+  const base::string16 seuss = UTF8ToUTF16("hop on pop");
+  RenderTextHarfBuzz* render_text = GetRenderText();
+  render_text->SetText(seuss);
+  render_text->SetObscured(false);
+  const int width_without_glyph_spacing = render_text->GetStringSize().width();
+
+  constexpr int kObscuredGlyphSpacing = 5;
+  render_text->SetObscuredGlyphSpacing(kObscuredGlyphSpacing);
+  const int width_with_glyph_spacing = render_text->GetStringSize().width();
+  EXPECT_EQ(width_without_glyph_spacing, width_with_glyph_spacing);
 }
 
 // Ensure font size overrides propagate through to text runs.

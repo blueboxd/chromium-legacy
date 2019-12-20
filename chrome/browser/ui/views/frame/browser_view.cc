@@ -2415,6 +2415,17 @@ void BrowserView::Layout() {
   if (!initialized_ || in_process_fullscreen_)
     return;
 
+  // Allow only a single layout operation once top controls sliding begins.
+  if (top_controls_slide_controller_ &&
+      top_controls_slide_controller_->IsEnabled() &&
+      top_controls_slide_controller_->IsTopControlsSlidingInProgress()) {
+    if (did_first_layout_while_top_controls_are_sliding_)
+      return;
+    did_first_layout_while_top_controls_are_sliding_ = true;
+  } else {
+    did_first_layout_while_top_controls_are_sliding_ = false;
+  }
+
   views::View::Layout();
 
   // TODO(jamescook): Why was this in the middle of layout code?

@@ -349,7 +349,7 @@
 <translation id="1493892686965953381"><ph name="LOAD_STATE_PARAMETER" />을(를) 기다리는 중...</translation>
 <translation id="1495486559005647033">사용 가능한 다른 기기가 <ph name="NUM_PRINTERS" />개 있습니다.</translation>
 <translation id="1495677929897281669">탭으로 돌아가기</translation>
-<translation id="1499271269825557605">확장 프로그램이 보이지 않거나 브라우저가 예상대로 작동하지 않는다면 여기에서 확장 프로그램을 사용 중지하거나 맞춤설정할 수 있습니다.</translation>
+<translation id="1499271269825557605">알 수 없는 확장 프로그램이 있거나 브라우저가 예상대로 작동하지 않는다면 여기에서 확장 프로그램을 사용 중지하거나 맞춤설정할 수 있습니다.</translation>
 <translation id="1500297251995790841">알 수 없는 기기[<ph name="VENDOR_ID" />:<ph name="PRODUCT_ID" />]</translation>
 <translation id="1503394326855300303">이 소유자 계정이 멀티 로그인 세션에서 처음으로 로그인하는 계정이 되어야 합니다.</translation>
 <translation id="150411034776756821"><ph name="SITE" /> 삭제</translation>
@@ -1303,7 +1303,7 @@
 <translation id="2806891468525657116">바로가기가 이미 존재합니다.</translation>
 <translation id="2807517655263062534">다운로드한 파일이 여기에 표시됩니다.</translation>
 <translation id="2809586584051668049">외 <ph name="NUMBER_ADDITIONAL_DISABLED" />개</translation>
-<translation id="2810390687497823527">확장 프로그램이 보이지 않거나 브라우저가 예상대로 작동하지 않는다면 여기에서 확장 프로그램을 사용 중지하거나 맞춤설정할 수 있습니다.</translation>
+<translation id="2810390687497823527">알 수 없는 확장 프로그램이 있거나 브라우저가 예상대로 작동하지 않는다면 여기에서 확장 프로그램을 사용 중지하거나 맞춤설정할 수 있습니다.</translation>
 <translation id="2812049959647166806">Thunderbolt가 지원되지 않음</translation>
 <translation id="2812944337881233323">로그아웃한 후 다시 로그인하세요.</translation>
 <translation id="2812989263793994277">이미지 표시 안함</translation>

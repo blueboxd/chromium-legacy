@@ -18,7 +18,7 @@ class CC_PAINT_EXPORT PaintRecorder {
  public:
   PaintRecorder();
   PaintRecorder(const PaintRecorder&) = delete;
-  virtual ~PaintRecorder();
+  ~PaintRecorder();
 
   PaintRecorder& operator=(const PaintRecorder&) = delete;
 
@@ -32,18 +32,14 @@ class CC_PAINT_EXPORT PaintRecorder {
 
   // Only valid while recording.
   ALWAYS_INLINE RecordPaintCanvas* getRecordingCanvas() {
-    return canvas_.get();
+    return canvas_.has_value() ? &canvas_.value() : nullptr;
   }
 
   sk_sp<PaintRecord> finishRecordingAsPicture();
 
- protected:
-  virtual std::unique_ptr<RecordPaintCanvas> CreateCanvas(DisplayItemList* list,
-                                                          const SkRect& bounds);
-
  private:
   scoped_refptr<DisplayItemList> display_item_list_;
-  std::unique_ptr<RecordPaintCanvas> canvas_;
+  base::Optional<RecordPaintCanvas> canvas_;
 };
 
 }  // namespace cc

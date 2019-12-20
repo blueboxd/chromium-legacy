@@ -1128,8 +1128,8 @@ SingleBatchableDelegateRequest::GetExtraRequestHeaders() const {
   return delegate_->GetExtraRequestHeaders();
 }
 
-void SingleBatchableDelegateRequest::Prepare(const PrepareCallback& callback) {
-  delegate_->Prepare(callback);
+void SingleBatchableDelegateRequest::Prepare(PrepareCallback callback) {
+  delegate_->Prepare(std::move(callback));
 }
 
 bool SingleBatchableDelegateRequest::GetContentData(
@@ -1225,10 +1225,10 @@ void BatchUploadRequest::Commit() {
   }
 }
 
-void BatchUploadRequest::Prepare(const PrepareCallback& callback) {
+void BatchUploadRequest::Prepare(PrepareCallback callback) {
   DCHECK(CalledOnValidThread());
-  DCHECK(!callback.is_null());
-  prepare_callback_ = callback;
+  DCHECK(callback);
+  prepare_callback_ = std::move(callback);
   MayCompletePrepare();
 }
 
@@ -1290,7 +1290,7 @@ void BatchUploadRequest::MayCompletePrepare() {
   for (size_t i = 0; i < child_requests_.size(); ++i) {
     child_requests_[i]->data_offset += part_data_offset[i];
   }
-  prepare_callback_.Run(HTTP_SUCCESS);
+  std::move(prepare_callback_).Run(HTTP_SUCCESS);
 }
 
 bool BatchUploadRequest::GetContentData(std::string* upload_content_type,

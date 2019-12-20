@@ -630,7 +630,9 @@ public class NfcImpl implements Nfc {
 
         // This tag is not NDEF compatible.
         if (mTagHandler == null) {
+            Log.w(TAG, "This tag is not NDEF compatible.");
             notifyErrorToAllWatchers(NdefErrorType.NOT_SUPPORTED);
+            pendingPushOperationCompleted(createError(NdefErrorType.NOT_SUPPORTED));
             return;
         }
 

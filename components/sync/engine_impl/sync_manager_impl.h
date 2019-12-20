@@ -80,7 +80,7 @@ class SyncManagerImpl
   void ConfigureSyncer(ConfigureReason reason,
                        ModelTypeSet to_download,
                        SyncFeatureState sync_feature_state,
-                       const base::Closure& ready_task) override;
+                       base::OnceClosure ready_task) override;
   void SetInvalidatorEnabled(bool invalidator_enabled) override;
   void OnIncomingInvalidation(
       ModelType type,
@@ -311,7 +311,7 @@ class SyncManagerImpl
 
   ProtocolEventBuffer protocol_event_buffer_;
 
-  base::Closure report_unrecoverable_error_function_;
+  base::RepeatingClosure report_unrecoverable_error_function_;
 
   SyncEncryptionHandler* sync_encryption_handler_;
 

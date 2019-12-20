@@ -11,7 +11,7 @@
 #include "chrome/browser/password_manager/password_accessory_controller.h"
 #include "components/autofill/core/browser/ui/accessory_sheet_data.h"
 #include "components/autofill/core/browser/ui/accessory_sheet_enums.h"
-#include "components/autofill/core/common/mojom/autofill_types.mojom.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom-forward.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

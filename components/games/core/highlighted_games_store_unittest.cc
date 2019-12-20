@@ -25,18 +25,6 @@ using ::testing::_;
 
 namespace games {
 
-namespace {
-
-void SetDateProtoTo(Date* date_proto, const base::Time& time) {
-  base::Time::Exploded exploded;
-  time.UTCExplode(&exploded);
-  date_proto->set_year(exploded.year);
-  date_proto->set_month(exploded.month);
-  date_proto->set_day(exploded.day_of_month);
-}
-
-}  // namespace
-
 class HighlightedGamesStoreTest : public testing::Test {
  protected:
   void SetUp() override {
@@ -68,10 +56,10 @@ class HighlightedGamesStoreTest : public testing::Test {
     // valid.
     HighlightedGame fake_highlighted_game;
     fake_highlighted_game.set_game_id(id);
-    SetDateProtoTo(fake_highlighted_game.mutable_start_date(),
-                   mock_clock_.Now() - base::TimeDelta::FromDays(1));
-    SetDateProtoTo(fake_highlighted_game.mutable_end_date(),
-                   mock_clock_.Now() + base::TimeDelta::FromDays(1));
+    test::SetDateProtoTo(mock_clock_.Now() - base::TimeDelta::FromDays(1),
+                         fake_highlighted_game.mutable_start_date());
+    test::SetDateProtoTo(mock_clock_.Now() + base::TimeDelta::FromDays(1),
+                         fake_highlighted_game.mutable_end_date());
 
     response->mutable_games()->Add(std::move(fake_highlighted_game));
   }
@@ -243,10 +231,10 @@ TEST_F(HighlightedGamesStoreTest, ProcessAsync_NoCurrentGame) {
   // Create a future HighlightedGame.
   HighlightedGame fake_highlighted_game;
   fake_highlighted_game.set_game_id(fake_catalog.games().at(0).id());
-  SetDateProtoTo(fake_highlighted_game.mutable_start_date(),
-                 mock_clock_.Now() + base::TimeDelta::FromDays(1));
-  SetDateProtoTo(fake_highlighted_game.mutable_end_date(),
-                 mock_clock_.Now() + base::TimeDelta::FromDays(2));
+  test::SetDateProtoTo(mock_clock_.Now() + base::TimeDelta::FromDays(1),
+                       fake_highlighted_game.mutable_start_date());
+  test::SetDateProtoTo(mock_clock_.Now() + base::TimeDelta::FromDays(2),
+                       fake_highlighted_game.mutable_end_date());
 
   HighlightedGamesResponse fake_response;
   fake_response.mutable_games()->Add(std::move(fake_highlighted_game));

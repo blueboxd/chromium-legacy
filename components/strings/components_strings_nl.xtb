@@ -326,6 +326,7 @@
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Netwerkcontrole uitvoeren<ph name="END_LINK" /></translation>
 <translation id="2473195200299095979">Deze pagina vertalen</translation>
 <translation id="2479410451996844060">Ongeldige zoek-URL.</translation>
+<translation id="2482370039860827034">Je hebt zojuist je wachtwoord opgegeven op een misleidende site. Chrome raadt je aan naar <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> en andere sites te gaan waarop je dit wachtwoord hebt gebruikt en je wachtwoord nu te wijzigen.</translation>
 <translation id="2482878487686419369">Meldingen</translation>
 <translation id="248348093745724435">Apparaatbeleid</translation>
 <translation id="2491120439723279231">Het servercertificaat bevat fouten.</translation>
@@ -338,6 +339,7 @@
 <translation id="2505268675989099013">Account beschermen</translation>
 <translation id="2515629240566999685">Check of je bereik hebt in je omgeving</translation>
 <translation id="2521385132275182522">Nietje rechtsonder</translation>
+<translation id="2521483867890026383">Je hebt zojuist je wachtwoord opgegeven op een misleidende site. Chromium raadt je aan naar <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> en andere sites te gaan waarop je dit wachtwoord hebt gebruikt en je wachtwoord nu te wijzigen.</translation>
 <translation id="2523886232349826891">Alleen opgeslagen op dit apparaat</translation>
 <translation id="2524461107774643265">Meer informatie toevoegen</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{en nog 1}other{en nog #}}</translation>
@@ -587,6 +589,7 @@
 <translation id="3828924085048779000">Een lege wachtwoordzin is niet toegestaan.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> heeft extensies voor aanvullende functies geïnstalleerd. Extensies hebben toegang tot sommige van je gegevens.</translation>
 <translation id="3832522519263485449">Meerdere perforaties links</translation>
+<translation id="3838154488026099170">Je hebt zojuist je wachtwoord opgegeven op een misleidende site. Chromium raadt je aan naar <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> en andere sites te gaan waarop je dit wachtwoord hebt gebruikt en je wachtwoord nu te wijzigen.</translation>
 <translation id="385051799172605136">Vorige</translation>
 <translation id="3858027520442213535">Datum en tijd updaten</translation>
 <translation id="3884278016824448484">Conflicterende apparaat-ID's</translation>
@@ -624,6 +627,7 @@
 <translation id="4072486802667267160">Er is een fout opgetreden bij het verwerken van je bestelling. Probeer het opnieuw.</translation>
 <translation id="4075732493274867456">De client en server ondersteunen geen algemene SSL-protocolversie of coderingssuite.</translation>
 <translation id="4075941231477579656">Touch ID</translation>
+<translation id="4077092919748553596">Je hebt zojuist je wachtwoord opgegeven op een misleidende site. Chrome raadt je aan naar <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> en andere sites te gaan waarop je dit wachtwoord hebt gebruikt en je wachtwoord nu te wijzigen.</translation>
 <translation id="4079302484614802869">Proxyconfiguratie is ingesteld op het gebruik van een pac-script-URL, niet op het gebruik van vaste proxyservers.</translation>
 <translation id="4082393374666368382">Instellingen: beheer</translation>
 <translation id="4098354747657067197">Misleidende site gedetecteerd</translation>
@@ -703,6 +707,7 @@
 <translation id="4356973930735388585">Cybercriminelen op deze site proberen mogelijk gevaarlijke programma's op je computer te installeren waarmee je gegevens worden gestolen of verwijderd (bijvoorbeeld foto's, wachtwoorden, berichten en creditcards).</translation>
 <translation id="4358059973562876591">De gespecificeerde templates worden misschien niet toegepast door een fout met het beleid DnsOverHttpsMode.</translation>
 <translation id="4358461427845829800">Betaalmethoden beheren...</translation>
+<translation id="4359160567981085931">Je hebt zojuist je wachtwoord opgegeven op een misleidende site. Chrome kan je laten zien wat je nu kunt doen. Klik op 'Account beschermen' om je wachtwoord te wijzigen en Google te laten weten dat je account mogelijk gevaar loopt.</translation>
 <translation id="4367563149485757821">Number-12 (envelop)</translation>
 <translation id="437058704415269440">Accountsaldo</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
@@ -977,6 +982,7 @@
 <translation id="5728056243719941842">C5 (envelop)</translation>
 <translation id="5730040223043577876">Chrome raadt je aan je wachtwoord opnieuw in te stellen als je het voor andere sites hebt hergebruikt.</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Pas opslaan in je Google-account}other{Passen opslaan in je Google-account}}</translation>
+<translation id="5745980000221562234">{NUM_CARDS,plural, =1{Een virtueel nummer voor deze kaart gebruiken}other{Selecteer een kaart}}</translation>
 <translation id="5763042198335101085">Geef een geldig e-mailadres op</translation>
 <translation id="5763703224595565476">Je beheerder heeft Chrome Enterprise User Protect ingeschakeld in je browser. Chrome Enterprise User Protect heeft toegang tot sommige van je gegevens.</translation>
 <translation id="5765072501007116331">Selecteer een adres om bezorgingsmethoden en vereisten te bekijken</translation>
@@ -993,6 +999,7 @@
 <translation id="5804241973901381774">Rechten</translation>
 <translation id="5810442152076338065">Je verbinding met <ph name="DOMAIN" /> is versleuteld via een verouderde Cipher Suite.</translation>
 <translation id="5813119285467412249">&amp;Opnieuw toevoegen</translation>
+<translation id="5824687817967109979">{NUM_CARDS,plural, =1{De kosten worden verrekend met deze kaart als je betaalt, maar het echte nummer van de kaart wordt niet met deze site gedeeld. Voor extra beveiliging wordt een tijdelijke CVC gegenereerd.}other{De kosten worden verrekend met de geselecteerde kaart als je betaalt, maar het echte nummer van de kaart wordt niet met deze site gedeeld. Voor extra beveiliging wordt een tijdelijke CVC gegenereerd.}}</translation>
 <translation id="583281660410589416">Onbekend</translation>
 <translation id="5838278095973806738">Geef geen gevoelige gegevens op op deze site (zoals wachtwoorden of creditcards), want deze kunnen worden gestolen door cybercriminelen.</translation>
 <translation id="5851548754964597211">Tabbladlijst</translation>
@@ -1449,6 +1456,7 @@ Aanvullende informatie:
 <translation id="8042918947222776840">Ophaalmethode kiezen</translation>
 <translation id="8057711352706143257">'<ph name="SOFTWARE_NAME" />' is niet correct geconfigureerd. Als je '<ph name="SOFTWARE_NAME" />' verwijdert, wordt het probleem meestal opgelost. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8066955247577885446">Er is iets misgegaan.</translation>
+<translation id="8067872629359326442">Je hebt zojuist je wachtwoord opgegeven op een misleidende site. Chromium kan je laten zien wat je nu kunt doen. Klik op 'Account beschermen' om je wachtwoord te wijzigen en Google te laten weten dat je account mogelijk gevaar loopt.</translation>
 <translation id="8074253406171541171">10x13 (envelop)</translation>
 <translation id="8078141288243656252">Kan geen aantekeningen maken als het document is gedraaid</translation>
 <translation id="8079031581361219619">Site opnieuw laden?</translation>
@@ -1465,6 +1473,7 @@ Aanvullende informatie:
 <translation id="8105368624971345109">Uitschakelen</translation>
 <translation id="8118489163946903409">Betaalmethode</translation>
 <translation id="8127301229239896662">'<ph name="SOFTWARE_NAME" />' is niet correct geïnstalleerd op je computer of netwerk. Neem contact op met je IT-beheerder om dit probleem op te lossen.</translation>
+<translation id="8128526133099929547">Je hebt zojuist je wachtwoord opgegeven op een misleidende site. Chrome raadt je aan naar <ph name="WEBSITE_1" /> en andere sites te gaan waarop je dit wachtwoord hebt gebruikt en je wachtwoord nu te wijzigen.</translation>
 <translation id="8131740175452115882">Bevestigen</translation>
 <translation id="8149426793427495338">De slaapstand van je computer is geactiveerd.</translation>
 <translation id="8150722005171944719">Het bestand op <ph name="URL" /> is onleesbaar. Het bestand is mogelijk verwijderd of verplaatst of de bestandsrechten zorgen ervoor dat het bestand niet kan worden geopend.</translation>
@@ -1482,6 +1491,7 @@ Aanvullende informatie:
 <translation id="8218327578424803826">Toegewezen locatie:</translation>
 <translation id="8220146938470311105">C7/C6 (envelop)</translation>
 <translation id="8220639454292072926">Bedrijfsrapportage</translation>
+<translation id="8221250263817408492">Je hebt zojuist je wachtwoord opgegeven op een misleidende site. Chromium raadt je aan naar <ph name="WEBSITE_1" /> en andere sites te gaan waarop je dit wachtwoord hebt gebruikt en je wachtwoord nu te wijzigen.</translation>
 <translation id="8225771182978767009">De persoon die deze computer heeft geconfigureerd, heeft deze site geblokkeerd.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">Pagina openen op een nieuw incognitotabblad</translation>

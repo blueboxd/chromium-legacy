@@ -41,7 +41,7 @@
 #include "content/common/widget_messages.h"
 #include "content/public/browser/render_process_host.h"
 #include "gpu/ipc/common/gpu_messages.h"
-#include "third_party/blink/public/platform/web_touch_event.h"
+#include "third_party/blink/public/common/input/web_touch_event.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/size_f.h"

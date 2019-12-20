@@ -430,6 +430,8 @@ class CC_EXPORT LayerImpl {
 
   int CalculateJitter();
 
+  std::string DebugName() const;
+
  protected:
   // When |will_always_push_properties| is true, the layer will not itself set
   // its SetNeedsPushProperties() state, as it expects to be always pushed to

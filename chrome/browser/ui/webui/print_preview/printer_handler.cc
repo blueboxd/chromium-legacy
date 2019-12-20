@@ -71,4 +71,11 @@ void PrinterHandler::StartGrantPrinterAccess(const std::string& printer_id,
   NOTREACHED();
 }
 
+#if defined(OS_CHROMEOS)
+void PrinterHandler::StartGetEulaUrl(const std::string& destination_id,
+                                     GetEulaUrlCallback callback) {
+  NOTREACHED();
+}
+#endif
+
 }  // namespace printing

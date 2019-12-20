@@ -53,6 +53,7 @@ android_library("java") {
     "org/chromium/weblayer_private/WebContentsGestureStateTracker.java",
     "org/chromium/weblayer_private/WebLayerFactoryImpl.java",
     "org/chromium/weblayer_private/WebLayerImpl.java",
+    "org/chromium/weblayer_private/WebLayerNetworkChangeNotifierRegistrationPolicy.java",
     "org/chromium/weblayer_private/metrics/UmaUtils.java",
   ]
 
@@ -70,6 +71,7 @@ android_library("java") {
     "//components/spellcheck/browser/android:java",
     "//components/version_info/android:version_constants_java",
     "//content/public/android:content_java",
+    "//net/android:net_java",
     "//third_party/android_deps:com_android_support_support_compat_java",
     "//ui/android:ui_java",
   ]

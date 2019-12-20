@@ -25,11 +25,11 @@
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "ppapi/c/pp_input_event.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
-#include "third_party/blink/public/platform/web_input_event.h"
-#include "third_party/blink/public/platform/web_keyboard_event.h"
-#include "third_party/blink/public/platform/web_mouse_wheel_event.h"
-#include "third_party/blink/public/platform/web_pointer_event.h"
-#include "third_party/blink/public/platform/web_touch_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/input/web_keyboard_event.h"
+#include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
+#include "third_party/blink/public/common/input/web_pointer_event.h"
+#include "third_party/blink/public/common/input/web_touch_event.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
 #if defined(OS_WIN)
@@ -45,7 +45,6 @@ using blink::WebMouseWheelEvent;
 using blink::WebPointerEvent;
 using blink::WebTouchEvent;
 using blink::WebTouchPoint;
-using blink::WebUChar;
 
 namespace content {
 
@@ -564,12 +563,12 @@ WebMouseWheelEvent* BuildMouseWheelEvent(const InputEventData& event) {
 // src/content/shell/test_runner/event_sender.cc. This
 // is used by CreateSimulatedWebInputEvents to convert keyboard events.
 void GetKeyCode(const std::string& char_text,
-                WebUChar* code,
-                WebUChar* text,
+                uint16_t* code,
+                uint16_t* text,
                 bool* needs_shift_modifier,
                 bool* generate_char) {
-  WebUChar vk_code = 0;
-  WebUChar vk_text = 0;
+  uint16_t vk_code = 0;
+  uint16_t vk_text = 0;
   *needs_shift_modifier = false;
   *generate_char = false;
   if ("\n" == char_text) {
@@ -764,7 +763,7 @@ std::vector<std::unique_ptr<WebInputEvent>> CreateSimulatedWebInputEvents(
       WebKeyboardEvent* web_char_event =
           static_cast<WebKeyboardEvent*>(original_event.get());
 
-      WebUChar code = 0, text = 0;
+      uint16_t code = 0, text = 0;
       bool needs_shift_modifier = false, generate_char = false;
       GetKeyCode(event.character_text,
                  &code,

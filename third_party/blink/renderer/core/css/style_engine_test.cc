@@ -1108,7 +1108,7 @@ TEST_F(StyleEngineTest, ScheduleInvalidationAfterSubtreeRecalc) {
   EXPECT_FALSE(t2->NeedsStyleInvalidation());
 }
 
-TEST_F(StyleEngineTest, NoScheduledRuleSetInvalidationsOnNewShadow) {
+TEST_F(StyleEngineTest, ScheduleRuleSetInvalidationsOnNewShadow) {
   GetDocument().body()->SetInnerHTMLFromString("<div id='host'></div>");
   Element* host = GetDocument().getElementById("host");
   ASSERT_TRUE(host);
@@ -1127,8 +1127,9 @@ TEST_F(StyleEngineTest, NoScheduledRuleSetInvalidationsOnNewShadow) {
   )HTML");
 
   GetStyleEngine().UpdateActiveStyle();
-  EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());
+  EXPECT_TRUE(GetDocument().ChildNeedsStyleInvalidation());
   EXPECT_FALSE(GetDocument().NeedsStyleInvalidation());
+  EXPECT_TRUE(shadow_root.NeedsStyleInvalidation());
 }
 
 TEST_F(StyleEngineTest, EmptyHttpEquivDefaultStyle) {
@@ -2559,10 +2560,9 @@ TEST_F(StyleEngineTest, ForceReattachRecalcRootAttachShadow) {
   EXPECT_EQ(reattach, GetStyleRecalcRoot());
 
   // Attaching the shadow root will call RemovedFromFlatTree() on the span child
-  // of the host and mark the host for style recalc . Make sure the recalc root
-  // is correctly updated.
+  // of the host. The style recalc root should still be #reattach.
   host->AttachShadowRootInternal(ShadowRootType::kOpen);
-  EXPECT_EQ(GetDocument().body(), GetStyleRecalcRoot());
+  EXPECT_EQ(reattach, GetStyleRecalcRoot());
 }
 
 }  // namespace blink

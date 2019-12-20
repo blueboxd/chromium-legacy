@@ -7,6 +7,7 @@
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/fullscreen/animated_scoped_fullscreen_disabler.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
+#import "ios/chrome/browser/ui/infobars/banners/infobar_banner_accessibility_util.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_presentation_state.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator_implementation.h"
 #import "ios/chrome/browser/ui/infobars/infobar_badge_ui_delegate.h"
@@ -476,23 +477,10 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
             (UIViewController*)presentingViewController
                                              presenting:(BOOL)presenting {
   if (presenting) {
-    // Set the banner's superview accessibilityViewIsModal property to NO. This
-    // will allow the selection of the banner sibling views e.g. the
-    // presentingViewController views.
-    self.bannerViewController.view.superview.accessibilityViewIsModal = NO;
-
-    // Make sure the banner is an accessibility element of the
-    // PresentingViewController.
-    presentingViewController.accessibilityElements =
-        @[ self.bannerViewController.view, presentingViewController.view ];
-
-    // Finally, focus the banner.
-    UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification,
-                                    self.bannerViewController.view);
+    UpdateBannerAccessibilityForPresentation(presentingViewController,
+                                             self.bannerViewController.view);
   } else {
-    // Remove the Banner as an A11y element.
-    presentingViewController.accessibilityElements =
-        @[ presentingViewController.view ];
+    UpdateBannerAccessibilityForDismissal(presentingViewController);
   }
 }
 

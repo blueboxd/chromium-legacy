@@ -106,9 +106,9 @@ void FakeSyncEngine::set_fail_initial_download(bool should_fail) {
 
 void FakeSyncEngine::OnCookieJarChanged(bool account_mismatch,
                                         bool empty_jar,
-                                        const base::Closure& callback) {
+                                        base::OnceClosure callback) {
   if (!callback.is_null()) {
-    callback.Run();
+    std::move(callback).Run();
   }
 }
 

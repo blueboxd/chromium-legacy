@@ -29,6 +29,7 @@
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_tree_impl_test_base.h"
+#include "cc/test/property_tree_test_utils.h"
 #include "cc/trees/clip_node.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/effect_node.h"
@@ -7434,6 +7435,60 @@ TEST_F(DrawPropertiesTest, LargeTransformTest) {
   // The root layer should be in the RenderSurfaceList.
   EXPECT_TRUE(base::Contains(GetRenderSurfaceList(), GetRenderSurface(root)));
 }
+
+#if DCHECK_IS_ON()
+class DrawPropertiesTestDoubleBlurCheck : public DrawPropertiesTestBase,
+                                          public testing::Test {
+ public:
+  DrawPropertiesTestDoubleBlurCheck()
+      : DrawPropertiesTestBase(GetTestLayerTreeSettings()) {}
+
+ private:
+  static LayerTreeSettings GetTestLayerTreeSettings() {
+    LayerTreeSettings s;
+    s.log_on_ui_double_background_blur = true;
+    return s;
+  }
+};
+
+TEST_F(DrawPropertiesTestDoubleBlurCheck, CheckForNoDoubleBlurTest) {
+  auto root = Layer::Create();
+  host()->SetRootLayer(root);
+  auto child_1 = Layer::Create();
+  auto child_2 = Layer::Create();
+  root->AddChild(child_1);
+  root->AddChild(child_2);
+
+  child_1->SetIsDrawable(true);
+  child_2->SetIsDrawable(true);
+  root->SetBounds(gfx::Size(100, 100));
+  child_1->SetBounds(gfx::Size(10, 20));
+  child_2->SetBounds(gfx::Size(30, 30));
+
+  FilterOperations blur_filter;
+  blur_filter.Append(FilterOperation::CreateBlurFilter(2.0));
+  child_1->SetBackdropFilters(blur_filter);
+  child_2->SetBackdropFilters(blur_filter);
+
+  ASSERT_DEATH_IF_SUPPORTED(CommitAndActivate(), "");
+
+  gfx::Transform transform;
+  transform.Translate(gfx::Vector2dF(10.0f, 20.0f));
+  child_2->SetTransform(transform);
+
+  // There should be no crash here.
+  CommitAndActivate();
+
+  auto grandchild = Layer::Create();
+  grandchild->SetIsDrawable(true);
+  grandchild->SetBounds(gfx::Size(20, 10));
+  grandchild->SetBackdropFilters(blur_filter);
+  child_1->AddChild(grandchild);
+  grandchild->SetTransform(transform);
+
+  ASSERT_DEATH_IF_SUPPORTED(CommitAndActivate(), "");
+}
+#endif
 
 // In layer tree mode, not using impl-side PropertyTreeBuilder.
 TEST_F(DrawPropertiesTestWithLayerTree, OpacityAnimationsTrackingTest) {

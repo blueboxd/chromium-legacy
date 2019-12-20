@@ -143,14 +143,14 @@ if (!is_android) {
   }
 
   grit("history_resources") {
-    if (optimize_webui) {
-      # The .grd contains references to generated files.
-      source_is_generated = true
-      grit_flags = [
-        "-E",
-        "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
-      ]
+    # The .grd contains references to generated files.
+    source_is_generated = true
+    grit_flags = [
+      "-E",
+      "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+    ]
 
+    if (optimize_webui) {
       source = "history/history_resources_vulcanized.grd"
 
       deps = [
@@ -158,6 +158,10 @@ if (!is_android) {
       ]
     } else {
       source = "history/history_resources.grd"
+
+      deps = [
+        "//chrome/browser/resources/history:polymer3_elements",
+      ]
     }
 
     defines = chrome_grit_defines
@@ -186,6 +190,7 @@ if (!is_android) {
     deps = [
       "//chrome/browser/resources/new_tab_page:polymer3_elements",
       "//chrome/browser/ui/webui/new_tab_page:mojo_bindings_js",
+      "//skia/public/mojom:mojom_js",
     ]
 
     # The .grd contains references to generated files.

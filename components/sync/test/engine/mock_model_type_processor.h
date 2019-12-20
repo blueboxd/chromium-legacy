@@ -35,7 +35,7 @@ namespace syncer {
 // on their value.
 class MockModelTypeProcessor : public ModelTypeProcessor {
  public:
-  using DisconnectCallback = base::Callback<void()>;
+  using DisconnectCallback = base::OnceCallback<void()>;
 
   MockModelTypeProcessor();
   ~MockModelTypeProcessor() override;
@@ -97,7 +97,7 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   bool HasCommitResponse(const ClientTagHash& tag_hash) const;
   CommitResponseData GetCommitResponse(const ClientTagHash& tag_hash) const;
 
-  void SetDisconnectCallback(const DisconnectCallback& callback);
+  void SetDisconnectCallback(DisconnectCallback callback);
 
   // Sets commit request that will be returned by GetLocalChanges().
   void SetCommitRequest(CommitRequestDataList commit_request);

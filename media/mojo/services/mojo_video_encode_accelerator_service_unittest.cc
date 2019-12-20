@@ -54,6 +54,7 @@ class MockMojoVideoEncodeAcceleratorClient
   MOCK_METHOD2(BitstreamBufferReady,
                void(int32_t, const media::BitstreamBufferMetadata&));
   MOCK_METHOD1(NotifyError, void(VideoEncodeAccelerator::Error));
+  MOCK_METHOD1(NotifyEncoderInfoChange, void(const VideoEncoderInfo& info));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockMojoVideoEncodeAcceleratorClient);

@@ -15,7 +15,7 @@ import static org.mockito.Mockito.when;
 
 import static org.chromium.base.ApplicationState.HAS_RUNNING_ACTIVITIES;
 import static org.chromium.base.ApplicationState.HAS_STOPPED_ACTIVITIES;
-import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.UI_THEME_SETTING_KEY;
+import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.UI_THEME_SETTING;
 
 import android.os.Build;
 
@@ -90,14 +90,13 @@ public class GlobalNightModeStateControllerTest {
 
     @After
     public void tearDown() {
-        SharedPreferencesManager.getInstance().removeKey(UI_THEME_SETTING_KEY);
+        SharedPreferencesManager.getInstance().removeKey(UI_THEME_SETTING);
     }
 
     @Test
     public void testUpdateNightMode_PowerSaveMode_DefaultsToSystem() {
         // Set preference to system default and verify that the night mode isn't enabled.
-        SharedPreferencesManager.getInstance().writeInt(
-                UI_THEME_SETTING_KEY, ThemeType.SYSTEM_DEFAULT);
+        SharedPreferencesManager.getInstance().writeInt(UI_THEME_SETTING, ThemeType.SYSTEM_DEFAULT);
         assertFalse(mGlobalNightModeStateController.isInNightMode());
 
         // Enable power save mode and verify night mode is enabled.
@@ -124,8 +123,7 @@ public class GlobalNightModeStateControllerTest {
     @Test
     public void testUpdateNightMode_SystemNightMode_DefaultsToSystem() {
         // Set preference to system default and verify that the night mode isn't enabled.
-        SharedPreferencesManager.getInstance().writeInt(
-                UI_THEME_SETTING_KEY, ThemeType.SYSTEM_DEFAULT);
+        SharedPreferencesManager.getInstance().writeInt(UI_THEME_SETTING, ThemeType.SYSTEM_DEFAULT);
         assertFalse(mGlobalNightModeStateController.isInNightMode());
 
         // Enable system night mode and verify night mode is enabled.
@@ -152,11 +150,11 @@ public class GlobalNightModeStateControllerTest {
     @Test
     public void testUpdateNightMode_Preference() {
         // Set preference to dark theme and verify night mode is enabled.
-        SharedPreferencesManager.getInstance().writeInt(UI_THEME_SETTING_KEY, ThemeType.DARK);
+        SharedPreferencesManager.getInstance().writeInt(UI_THEME_SETTING, ThemeType.DARK);
         assertTrue(mGlobalNightModeStateController.isInNightMode());
 
         // Set preference to light theme and verify night mode is disabled.
-        SharedPreferencesManager.getInstance().writeInt(UI_THEME_SETTING_KEY, ThemeType.LIGHT);
+        SharedPreferencesManager.getInstance().writeInt(UI_THEME_SETTING, ThemeType.LIGHT);
         assertFalse(mGlobalNightModeStateController.isInNightMode());
 
         // Regardless of power save mode and system night mode, night mode is disabled with light
@@ -179,7 +177,7 @@ public class GlobalNightModeStateControllerTest {
         setSystemNightMode(true);
         assertFalse(mGlobalNightModeStateController.isInNightMode());
 
-        SharedPreferencesManager.getInstance().writeInt(UI_THEME_SETTING_KEY, ThemeType.DARK);
+        SharedPreferencesManager.getInstance().writeInt(UI_THEME_SETTING, ThemeType.DARK);
         assertFalse(mGlobalNightModeStateController.isInNightMode());
 
         // Simulate to start listening to night mode state changes. Verify that
@@ -189,8 +187,7 @@ public class GlobalNightModeStateControllerTest {
         mGlobalNightModeStateController.onApplicationStateChange(HAS_RUNNING_ACTIVITIES);
         assertTrue(mGlobalNightModeStateController.isInNightMode());
 
-        SharedPreferencesManager.getInstance().writeInt(
-                UI_THEME_SETTING_KEY, ThemeType.SYSTEM_DEFAULT);
+        SharedPreferencesManager.getInstance().writeInt(UI_THEME_SETTING, ThemeType.SYSTEM_DEFAULT);
         assertTrue(mGlobalNightModeStateController.isInNightMode());
 
         setIsPowerSaveMode(false);
@@ -205,7 +202,7 @@ public class GlobalNightModeStateControllerTest {
         mGlobalNightModeStateController.addObserver(mObserver);
 
         // Verify that observer is called on night mode state changed from false to true.
-        SharedPreferencesManager.getInstance().writeInt(UI_THEME_SETTING_KEY, ThemeType.DARK);
+        SharedPreferencesManager.getInstance().writeInt(UI_THEME_SETTING, ThemeType.DARK);
         assertTrue(mGlobalNightModeStateController.isInNightMode());
         verify(mObserver, times(1)).onNightModeStateChanged();
 
@@ -220,13 +217,13 @@ public class GlobalNightModeStateControllerTest {
         verify(mObserver, times(1)).onNightModeStateChanged();
 
         // Verify that observer is called when set to light theme.
-        SharedPreferencesManager.getInstance().writeInt(UI_THEME_SETTING_KEY, ThemeType.LIGHT);
+        SharedPreferencesManager.getInstance().writeInt(UI_THEME_SETTING, ThemeType.LIGHT);
         assertFalse(mGlobalNightModeStateController.isInNightMode());
         verify(mObserver, times(2)).onNightModeStateChanged();
 
         // Verify that observer is not called after it is removed.
         mGlobalNightModeStateController.removeObserver(mObserver);
-        SharedPreferencesManager.getInstance().writeInt(UI_THEME_SETTING_KEY, ThemeType.DARK);
+        SharedPreferencesManager.getInstance().writeInt(UI_THEME_SETTING, ThemeType.DARK);
         assertTrue(mGlobalNightModeStateController.isInNightMode());
         verify(mObserver, times(2)).onNightModeStateChanged();
     }

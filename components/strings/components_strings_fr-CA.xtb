@@ -850,7 +850,7 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">EDP, Europe</translation>
 <translation id="5115563688576182185">(64 bits)</translation>
-<translation id="5121469660360593280">Partagez avec votre administrateur les données sur les événements relatifs à la sécurité qui ont été signalés par la fonctionnalité de protection des utilisateurs d'entreprise de Chrome. Ces données pourraient comprendre les URL des pages que vous visitez, les noms de fichiers ou des métadonnées ainsi que le nom d'utilisateur que vous utilisez pour vous connecter à votre appareil et à Chrome.</translation>
+<translation id="5121469660360593280">Partagez avec votre administrateur les données sur les événements relatifs à la sécurité qui ont été signalés par la fonctionnalité de protection pour les utilisateurs de Chrome Enterprise. Ces données pourraient comprendre les URL des pages que vous visitez, les noms ou les métadonnées des fichiers ainsi que le nom d'utilisateur que vous utilisez pour vous connecter à votre appareil et à Chrome.</translation>
 <translation id="5125394840236832993">B plus</translation>
 <translation id="5126510351761255129">Vérifier votre carte</translation>
 <translation id="5135404736266831032">Gérer les adresses</translation>
@@ -862,7 +862,7 @@
 <translation id="5159010409087891077">Ouvrir la page dans une nouvelle fenêtre de navigation privée (⇧⌘N)</translation>
 <translation id="516920405563544094">Entrez le code de vérification de carte (CVC) de votre carte <ph name="CREDIT_CARD" />. Après votre confirmation, les détails de la carte provenant de votre compte Google seront partagés avec ce site.</translation>
 <translation id="5169827969064885044">Vous risquez de perdre l'accès au compte de votre organisation ou d'être victime d'un vol d'identité. Chrome recommande de modifier votre mot de passe maintenant.</translation>
-<translation id="5170017743895942767">Protection des utilisateurs d'entreprise de Chrome</translation>
+<translation id="5170017743895942767">Protection pour les utilisateurs de Chrome Enterprise</translation>
 <translation id="5171045022955879922">Effectuez une recherche ou entrez une adresse URL</translation>
 <translation id="5171689220826475070">Pli en éventail, Europe</translation>
 <translation id="5172758083709347301">Machine</translation>
@@ -983,7 +983,7 @@
 <translation id="5730040223043577876">Chrome recommande de réinitialiser votre mot de passe si vous l'avez réutilisé sur d'autres sites.</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Enregistrer la carte dans votre compte Google}one{Enregistrer la carte dans votre compte Google}other{Enregistrer les cartes dans votre compte Google}}</translation>
 <translation id="5763042198335101085">Entrez une adresse de courriel valide</translation>
-<translation id="5763703224595565476">Votre administrateur a activé la protection des utilisateurs d'entreprise de Chrome pour votre navigateur. La protection pour les utilisateurs d'entreprise de Chrome a accès à certaines de vos données.</translation>
+<translation id="5763703224595565476">Votre administrateur a activé la protection pour les utilisateurs de Chrome Enterprise pour votre navigateur. La protection pour les utilisateurs de Chrome Enterprise a accès à certaines de vos données.</translation>
 <translation id="5765072501007116331">Pour voir les exigences et les modes de livraison, sélectionnez une adresse</translation>
 <translation id="5778550464785688721">Contrôle d'appareils MIDI total</translation>
 <translation id="5781136890105823427">Expérience activée</translation>
@@ -1298,7 +1298,7 @@ Détails supplémentaires :
 <translation id="733923710415886693">Le certificat du serveur n'a pas été divulgué par l'intermédiaire de l'outil Certificate Transparency.</translation>
 <translation id="734600844861828519">11 po x 15 po</translation>
 <translation id="7346048084945669753">Affilié :</translation>
-<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> a activé la protection pour les utilisateurs d'entreprise de Chrome pour votre navigateur. La protection pour les utilisateurs d'entreprise de Chrome a accès à certaines de vos données.</translation>
+<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> a activé la protection pour les utilisateurs de Chrome Enterprise pour votre navigateur. La protection pour les utilisateurs de Chrome Enterprise a accès à certaines de vos données.</translation>
 <translation id="7349430561505560861">A4 Extra</translation>
 <translation id="7353601530677266744">Ligne de commande</translation>
 <translation id="7372973238305370288">résultat de la recherche</translation>

@@ -851,13 +851,13 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent choisir d'utiliser 
       Cette règle s'applique également aux extensions de composant telles que l'extension Hangout Services.</translation>
 <translation id="2223598546285729819">Paramètre de notification par défaut</translation>
 <translation id="2231817271680715693">Importer l'historique de navigation du navigateur par défaut à la première exécution</translation>
-<translation id="2234855698900783408">Atténuer les contrôles <ph name="CORS" /> dans la nouvelle mise en œuvre de <ph name="CORS" />, ce qui permet aux extensions de conserver un comportement compatible, et à <ph name="PRODUCT_NAME" /> d'envoyer les en-têtes spécifiés sans contrôles <ph name="CORS" />.
+<translation id="2234855698900783408">Permet d'atténuer les contrôles <ph name="CORS" /> dans la nouvelle mise en œuvre de <ph name="CORS" />. Les extensions peuvent ainsi conserver un comportement compatible, et <ph name="PRODUCT_NAME" /> peut envoyer les en-têtes spécifiés sans contrôles <ph name="CORS" />.
 
       Si la liste est vide, <ph name="PRODUCT_NAME" /> essaie d'exécuter les extensions de manière compatible, et n'introduit pas de modifications de l'<ph name="API" /> pour <ph name="PRODUCT_NAME" /> 79 (comme indiqué à la page <ph name="WEB_REQUEST_API_MANUAL" />).
 
       Si la liste contient des en-têtes de requêtes <ph name="HTTP" />, ces en-têtes sont ignorés lors des contrôles <ph name="CORS" />. Les contrôles sont en outre atténués pour les extensions.
 
-      Si cette liste n'est pas configurée, les deux mesures d'atténuation ci-dessus ne sont pas appliquées.
+      Si cette liste n'est pas configurée, aucune des mesures d'atténuation expliquées ci-dessus n'est appliquée.
 
       Pour en savoir plus sur <ph name="CORS" />, consultez la page <ph name="CORS_HELP_URL" />.
 
@@ -1730,7 +1730,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       Si cette règle est définie sur "DeveloperToolsDisallowed" (valeur 2), les outils pour les développeurs sont inaccessibles et les éléments de sites Web ne peuvent plus être examinés. En outre, les raccourcis clavier, ainsi que les entrées de menu ou de menu contextuel permettant d'ouvrir les outils pour les développeurs ou la console JavaScript sont désactivés.</translation>
 <translation id="3547954654003013442">Paramètres de proxy</translation>
 <translation id="3550875587920006460">Permet de planifier de manière personnalisée la recherche de mises à jour. Cette règle s'applique à l'ensemble des utilisateurs et des interfaces de l'appareil. Une fois la règle définie, l'appareil recherche les mises à jour en fonction du calendrier établi. Pour annuler toute autre recherche planifiée de mises à jour, cette règle doit être supprimée.</translation>
-<translation id="355118380775352753">Sites Web à ouvrir dans le navigateur secondaire</translation>
+<translation id="355118380775352753">Sites Web à ouvrir dans l'autre navigateur</translation>
 <translation id="3554984410014457319">Autoriser l'Assistant Google à écouter l'expression d'activation des commandes vocales</translation>
 <translation id="3557208865710006939">Force l'activation de la vérification orthographique pour certaines langues. Les langues non reconnues dans la liste seront ignorées.
 
@@ -2473,9 +2473,9 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
 <translation id="4693779768620889402">Destinations basées sur des extensions</translation>
 <translation id="4699592681017489215">Cette règle configure un interrupteur local pouvant être utilisé pour désactiver les contrôles d'interception des requêtes DNS. Ces contrôles ont pour but de déterminer si le navigateur est situé derrière un proxy qui redirige les noms d'hôte inconnus.
 
-      Ils ne sont pas forcément nécessaires dans un environnement d'entreprise où la configuration réseau est connue, car cela engendre un certain volume de trafic DNS et HTTP au démarrage, et que chaque configuration DNS change.
+      Ils ne sont pas forcément nécessaires dans un environnement d'entreprise où la configuration réseau est connue, car cela engendre un certain volume de trafic DNS et HTTP au démarrage, et chaque fois que la configuration DNS change.
 
-      Si cette règle n'est pas configurée ou si elle est activée, les contrôles d'interception des requêtes DNS ont lieu. Si elle est explicitement désactivée, les contrôles n'ont pas lieu.</translation>
+      Si cette règle n'est pas configurée ou qu'elle est activée, les contrôles d'interception des requêtes DNS ont lieu. Si elle est explicitement désactivée, les contrôles n'ont pas lieu.</translation>
 <translation id="4703402283970867140">Activer le modèle de réduction intelligente de la luminosité pour augmenter le délai d'assombrissement de l'écran</translation>
 <translation id="4722122254122249791">Activer l'isolation des sites pour des origines définies</translation>
 <translation id="4722399051042571387">Si la règle est configurée sur "false", les utilisateurs ne pourront pas définir un code faible et facile à deviner.
@@ -2606,7 +2606,7 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
        Si cette règle est définie sur "False", le contenu audio et vidéo n'est pas mis à niveau automatiquement, et aucun avertissement ne s'affiche pour les images.
        Cette règle n'influe pas sur les types de contenus mixtes autres que les images et les contenus audio/vidéo.</translation>
 <translation id="4983201894483989687">Autoriser l'exécution de plug-ins obsolètes</translation>
-<translation id="4986560318567565414">Chemin d'accès pour basculer vers Chrome à partir du navigateur secondaire.</translation>
+<translation id="4986560318567565414">Chemin d'accès pour basculer vers Chrome à partir de l'autre navigateur.</translation>
 <translation id="4988291787868618635">Action à effectuer au terme du délai d'inactivité</translation>
 <translation id="5032164758660626397">Empêcher l'utilisateur de transférer des fichiers volumineux</translation>
 <translation id="5047604665028708335">Autoriser l'accès aux sites en dehors des packs de contenu</translation>
@@ -2696,7 +2696,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="5115168755602871392">Permet de transmettre les informations du ou des processeurs d'un appareil.
 
       Si la règle est définie sur "False" ou n'est pas définie, ces informations ne sont pas transmises.
-      Si elle est définie sur "True", le modèle de chaque processeur ainsi que son architecture et la vitesse maximale de son horloge sont transmis.</translation>
+      Si elle est définie sur "True", le modèle de chaque processeur ainsi que son architecture et la cadence maximale de son horloge sont transmis.</translation>
 <translation id="5124368997194894978">Activer le démarrage au branchement de l'alimentation CA (courant alternatif)</translation>
 <translation id="5131211790949066746">Permet de fusionner les règles relatives aux listes d'installation d'extensions <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> et <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
 
@@ -3530,13 +3530,13 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 <translation id="6467613372414922590">Autoriser les hôtes de messagerie natifs au niveau de l'utilisateur (installés sans l'autorisation d'un administrateur)</translation>
 <translation id="6468980648680553776">Cette règle est obsolète. Veuillez utiliser RemoteAccessHostClientDomainList.</translation>
 <translation id="6473623140202114570">Configurez la liste des domaines sur lesquels la navigation sécurisée ne déclenchera aucun avertissement.</translation>
-<translation id="6487780893361255867">Permet d'utiliser l'ancienne mise en œuvre de <ph name="CORS" /> plutôt que la nouvelle mise en œuvre de <ph name="CORS" />.
+<translation id="6487780893361255867">Permet d'utiliser l'ancienne mise en œuvre de <ph name="CORS" /> au lieu de la nouvelle mise en œuvre de <ph name="CORS" />.
 
       Si cette règle est définie sur "True", l'ancienne mise en œuvre est utilisée. Elle est normalement compatible avec les versions précédentes.
 
-      Si cette règle est définie sur "False" ou si elle n'est pas configurée, la nouvelle mise en œuvre est utilisée. Elle peut causer des problèmes de compatibilité spécifiques à l'entreprise.
+      Si cette règle est définie sur "False" ou qu'elle n'est pas configurée, la nouvelle mise en œuvre est utilisée. Elle peut causer des problèmes de compatibilité spécifiques à l'entreprise.
 
-      Cette règle sera supprimée après quelques jalons.
+      Cette règle sera supprimée après quelques étapes intermédiaires.
 
       Pour en savoir plus sur <ph name="CORS" />, consultez la page <ph name="CORS_HELP_URL" />.
 
@@ -3628,7 +3628,7 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
       Lorsque cette règle est définie sur "True", l'appareil peut lancer Powerwash.
       Si cette règle n'est pas configurée, elle est définie par défaut sur "True" : l'appareil peut lancer Powerwash.
       </translation>
-<translation id="66265932317331474">Transmettre les informations concernant le processeur</translation>
+<translation id="66265932317331474">Transmettre les informations concernant le ou les processeurs</translation>
 <translation id="6628043374475466084">Formats d'URL ne déclenchant pas l'analyse des contenus téléchargés pour vérifier s'ils respectent les règles de protection des données sensibles</translation>
 <translation id="6628120204569232711">Envoyer des rapports sur l'état du stockage</translation>
 <translation id="6628646143828354685">Permet d'indiquer si les sites Web sont autorisés à accéder aux appareils Bluetooth à proximité. Soit l'accès est complètement bloqué, soit l'utilisateur reçoit un message chaque fois qu'un site Web souhaite accéder aux appareils Bluetooth à proximité.
@@ -3917,7 +3917,7 @@ En cas de non-configuration de cette règle, aucune restriction ne s'applique qu
       Si vous définissez cette règle, les utilisateurs ne peuvent pas modifier la configuration. Si cette règle n'est pas définie, les utilisateurs peuvent continuer à utiliser la configuration actuelle à condition que les règles autorisent le conteneur Crostini.</translation>
 <translation id="713121532817834879">Cette règle se rapporte à une URL, qui renvoie vers un fichier XML au même format que celui de la règle <ph name="IEEM_SITELIST_POLICY" /> d'Internet Explorer. Les instructions sont ainsi chargées à partir d'un fichier XML, sans être partagées avec Internet Explorer.
 
-      Les règles de ce fichier XML s'appliquent de la même manière que pour la règle <ph name="GREYLIST_POLICY_NAME" />. C'est-à-dire que ces règles empêchent <ph name="PRODUCT_NAME" /> d'ouvrir le navigateur secondaire et empêchent le navigateur secondaire d'ouvrir <ph name="PRODUCT_NAME" />.
+      Les règles de ce fichier XML s'appliquent de la même manière que pour la règle <ph name="GREYLIST_POLICY_NAME" />. C'est-à-dire que ces règles empêchent <ph name="PRODUCT_NAME" /> d'ouvrir l'autre navigateur et empêchent ce dernier d'ouvrir <ph name="PRODUCT_NAME" />.
 
       Si cette règle n'est pas définie, ou si elle est définie sur une URL qui n'est pas valide, <ph name="PRODUCT_NAME" /> ne l'utilise pas comme source des règles qui ne déclenchent pas un changement de navigateur.
 

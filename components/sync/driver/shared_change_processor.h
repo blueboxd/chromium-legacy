@@ -53,9 +53,9 @@ class SharedChangeProcessor
     : public base::RefCountedThreadSafe<SharedChangeProcessor> {
  public:
   using StartDoneCallback =
-      base::Callback<void(DataTypeController::ConfigureResult start_result,
-                          const SyncMergeResult& local_merge_result,
-                          const SyncMergeResult& syncer_merge_result)>;
+      base::OnceCallback<void(DataTypeController::ConfigureResult start_result,
+                              const SyncMergeResult& local_merge_result,
+                              const SyncMergeResult& syncer_merge_result)>;
 
   // Create an uninitialized SharedChangeProcessor.
   explicit SharedChangeProcessor(ModelType type);

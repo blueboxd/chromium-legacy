@@ -850,7 +850,7 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">（64 ビット）</translation>
-<translation id="5121469660360593280">Chrome Enterprise ユーザー保護によって報告されたセキュリティ イベントに関するデータを管理者と共有します。共有されるデータには、アクセスしたページの URL、ファイルの名前やメタデータ、デバイスと Chrome へのログインに使用したユーザー名が含まれることがあります。</translation>
+<translation id="5121469660360593280">Chrome Enterprise User Protect によって報告されたセキュリティ イベントに関するデータを管理者と共有します。共有されるデータには、アクセスしたページの URL、ファイルの名前やメタデータ、デバイスと Chrome へのログインに使用したユーザー名が含まれることがあります。</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">カードの確認</translation>
 <translation id="5135404736266831032">住所を管理...</translation>
@@ -862,7 +862,7 @@
 <translation id="5159010409087891077">ページを新しいシークレット ウィンドウで開く（⇧⌘N）</translation>
 <translation id="516920405563544094"><ph name="CREDIT_CARD" /> の CVC を入力します。確認後、Google アカウントのカード情報がこのサイトと共有されます。</translation>
 <translation id="5169827969064885044">組織のアカウントにアクセスできなくなったり、個人情報が盗まれたりする可能性があります。今すぐパスワードを変更することをおすすめします。</translation>
-<translation id="5170017743895942767">Chrome Enterprise ユーザー保護</translation>
+<translation id="5170017743895942767">Chrome Enterprise User Protect</translation>
 <translation id="5171045022955879922">検索または URL を入力</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">マシン</translation>
@@ -983,7 +983,7 @@
 <translation id="5730040223043577876">パスワードを他のサイトで再使用した場合、Chrome ではパスワードの再設定を促すメッセージが表示されます。</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Google アカウントにカードを保存}other{Google アカウントにカードを保存}}</translation>
 <translation id="5763042198335101085">有効なメールアドレスを入力してください</translation>
-<translation id="5763703224595565476">管理者により、お使いのブラウザで Chrome Enterprise ユーザー保護が有効化されています。Chrome Enterprise ユーザー保護には、一部のユーザーデータへのアクセスが許可されます。</translation>
+<translation id="5763703224595565476">管理者により、お使いのブラウザで Chrome Enterprise User Protect が有効化されています。Chrome Enterprise User Protect には、一部のユーザーデータへのアクセスが許可されます。</translation>
 <translation id="5765072501007116331">配達方法と要件を確認するには、住所を選択してください</translation>
 <translation id="5778550464785688721">MIDI デバイスのフル コントロール</translation>
 <translation id="5781136890105823427">テスト機能を有効にしました</translation>
@@ -1298,7 +1298,7 @@
 <translation id="733923710415886693">サーバーの証明書は、証明書の透明性ポリシーを介して公開されていません。</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">外部のユーザーかどうか:</translation>
-<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> により、お使いのブラウザで Chrome Enterprise ユーザー保護が有効化されています。Chrome Enterprise ユーザー保護には、一部のユーザーデータへのアクセスが許可されます。</translation>
+<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> により、お使いのブラウザで Chrome Enterprise User Protect が有効化されています。Chrome Enterprise User Protect には、一部のユーザーデータへのアクセスが許可されます。</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">コマンドライン</translation>
 <translation id="7372973238305370288">検索結果</translation>
@@ -1343,7 +1343,7 @@
 <translation id="7514365320538308">ダウンロード</translation>
 <translation id="7518003948725431193">次の URL のウェブページは見つかりませんでした:<ph name="URL" /></translation>
 <translation id="7520302887438682816">C8（封筒）</translation>
-<translation id="7521387064766892559">Javascript</translation>
+<translation id="7521387064766892559">JavaScript</translation>
 <translation id="7526934274050461096">このサイトへの接続ではプライバシーが保護されません</translation>
 <translation id="7535087603100972091">値</translation>
 <translation id="7537536606612762813">必須</translation>

@@ -27,9 +27,7 @@ public class BrowserServicesStore {
      * TWAs launched by the given package.
      */
     public void setUserAcceptedTwaDisclosureForPackage(String packageName) {
-        mManager.addToStringSet(
-                ChromePreferenceKeys.TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES,
-                packageName);
+        mManager.addToStringSet(ChromePreferenceKeys.TWA_DISCLOSURE_ACCEPTED_PACKAGES, packageName);
     }
 
     /**
@@ -38,8 +36,7 @@ public class BrowserServicesStore {
      */
     public void removeTwaDisclosureAcceptanceForPackage(String packageName) {
         mManager.removeFromStringSet(
-                ChromePreferenceKeys.TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES,
-                packageName);
+                ChromePreferenceKeys.TWA_DISCLOSURE_ACCEPTED_PACKAGES, packageName);
     }
 
     /**
@@ -47,9 +44,7 @@ public class BrowserServicesStore {
      * {@link #setUserAcceptedTwaDisclosureForPackage(String)}.
      */
     public boolean hasUserAcceptedTwaDisclosureForPackage(String packageName) {
-        return mManager
-                .readStringSet(
-                        ChromePreferenceKeys.TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES)
+        return mManager.readStringSet(ChromePreferenceKeys.TWA_DISCLOSURE_ACCEPTED_PACKAGES)
                 .contains(packageName);
     }
 }

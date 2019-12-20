@@ -144,14 +144,6 @@
                  file="appearance_page/appearance_browser_proxy.js"
                  type="chrome_html"
                  preprocess="true" />
-      <if expr="chromeos">
-        <structure name="IDR_SETTINGS_WALLPAPER_BROWSER_PROXY_HTML"
-                   file="appearance_page/wallpaper_browser_proxy.html"
-                   type="chrome_html" />
-        <structure name="IDR_SETTINGS_WALLPAPER_BROWSER_PROXY_JS"
-                   file="appearance_page/wallpaper_browser_proxy.js"
-                   type="chrome_html" />
-      </if>
       <structure name="IDR_SETTINGS_APPEARANCE_FONTS_PAGE_HTML"
                  file="appearance_page/appearance_fonts_page.html"
                  type="chrome_html"
@@ -557,14 +549,6 @@
                  file="downloads_page/downloads_page.js"
                  type="chrome_html"
                  preprocess="true" />
-      <if expr="chromeos">
-        <structure name="IDR_SETTINGS_SMB_SHARES_PAGE_HTML"
-                   file="downloads_page/smb_shares_page.html"
-                   type="chrome_html" />
-        <structure name="IDR_SETTINGS_SMB_SHARES_PAGE_JS"
-                   file="downloads_page/smb_shares_page.js"
-                   type="chrome_html" />
-      </if>
       <structure name="IDR_SETTINGS_I18n_SETUP_HTML"
                  file="i18n_setup.html"
                  type="chrome_html" />

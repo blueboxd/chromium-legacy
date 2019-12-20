@@ -52,7 +52,6 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/page_importance_signals.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/referrer_type_converters.h"
 #include "content/public/common/three_d_api_types.h"
@@ -97,6 +96,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/common/frame/user_activation_update_source.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/plugin/plugin_action.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/modules/video_capture/web_video_capture_impl_manager.h"
@@ -104,7 +104,6 @@
 #include "third_party/blink/public/platform/web_connection_type.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/public/platform/web_http_body.h"
-#include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/public/platform/web_network_state_notifier.h"
 #include "third_party/blink/public/platform/web_point.h"
@@ -136,7 +135,6 @@
 #include "third_party/blink/public/web/web_input_element.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
-#include "third_party/blink/public/web/web_page_importance_signals.h"
 #include "third_party/blink/public/web/web_page_popup.h"
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_range.h"
@@ -2027,19 +2025,6 @@ void RenderViewImpl::DidUpdateTextAutosizerPageInfo(
   DCHECK(webview()->MainFrame()->IsWebLocalFrame());
   Send(new ViewHostMsg_NotifyTextAutosizerPageInfoChangedInLocalMainFrame(
       GetRoutingID(), page_info));
-}
-
-void RenderViewImpl::PageImportanceSignalsChanged() {
-  if (!webview() || !main_render_frame_)
-    return;
-
-  auto* web_signals = webview()->PageImportanceSignals();
-
-  PageImportanceSignals signals;
-  signals.had_form_interaction = web_signals->HadFormInteraction();
-
-  main_render_frame_->Send(new FrameHostMsg_UpdatePageImportanceSignals(
-      main_render_frame_->GetRoutingID(), signals));
 }
 
 void RenderViewImpl::DidAutoResize(const blink::WebSize& newSize) {

@@ -96,18 +96,17 @@ class WindowPerformanceTest : public testing::Test {
 };
 
 TEST_F(WindowPerformanceTest, LongTaskObserverInstrumentation) {
-  performance_->UpdateLongTaskInstrumentation();
-  EXPECT_FALSE(ObservingLongTasks());
-
-  // Adding LongTask observer (with filer option) enables instrumentation.
-  AddLongTaskObserver();
-  performance_->UpdateLongTaskInstrumentation();
+  // Check that we're always observing longtasks
   EXPECT_TRUE(ObservingLongTasks());
 
-  // Removing LongTask observer disables instrumentation.
+  // Adding LongTask observer.
+  AddLongTaskObserver();
+  EXPECT_TRUE(ObservingLongTasks());
+
+  // Removing LongTask observer doeos not cause us to stop observing. We still
+  // observe because entries should still be added to the longtasks buffer.
   RemoveLongTaskObserver();
-  performance_->UpdateLongTaskInstrumentation();
-  EXPECT_FALSE(ObservingLongTasks());
+  EXPECT_TRUE(ObservingLongTasks());
 }
 
 TEST_F(WindowPerformanceTest, SanitizedLongTaskName) {
@@ -141,7 +140,6 @@ TEST_F(WindowPerformanceTest, SanitizedLongTaskName_CrossOrigin) {
 // to the old window do not cause a crash.
 TEST_F(WindowPerformanceTest, NavigateAway) {
   AddLongTaskObserver();
-  performance_->UpdateLongTaskInstrumentation();
   EXPECT_TRUE(ObservingLongTasks());
 
   // Simulate navigation commit.

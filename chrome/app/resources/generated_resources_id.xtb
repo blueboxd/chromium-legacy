@@ -404,7 +404,7 @@
 <translation id="15662109988763471">Printer yang dipilih tidak tersedia atau tidak diinstal dengan benar. Periksa printer Anda atau coba pilih printer lainnya.</translation>
 <translation id="1567387640189251553">Keyboard yang berbeda telah terhubung sejak Anda terakhir memasukkan sandi. Keyboard tersebut mungkin mencoba mencuri ketukan tombol Anda.</translation>
 <translation id="1567750922576943685">Memverifikasi identitas membantu melindungi informasi pribadi Anda</translation>
-<translation id="1567993339577891801">Konsol Javascript</translation>
+<translation id="1567993339577891801">Konsol JavaScript</translation>
 <translation id="1568323446248056064">Buka setelan perangkat layar</translation>
 <translation id="1572139610531470719"><ph name="WINDOW_TITLE" /> (Tamu)</translation>
 <translation id="1572266655485775982">Wi-Fi aktif</translation>
@@ -3263,7 +3263,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="5687326903064479980">Zona waktu</translation>
 <translation id="5689516760719285838">Lokasi</translation>
 <translation id="56907980372820799">Tautkan data</translation>
-<translation id="5691180005790455277">Semua data cookie yang disimpan oleh <ph name="SITE_GROUP_NAME" /> dan semua situs pada grup tersebut akan dihapus.</translation>
+<translation id="5691180005790455277">Semua data dan cookie yang disimpan oleh <ph name="SITE_GROUP_NAME" /> dan semua situs pada grup tersebut akan dihapus.</translation>
 <translation id="5691511426247308406">Keluarga</translation>
 <translation id="5692183275898619210">Pencetakan selesai</translation>
 <translation id="5696143504434933566">Laporkan penyalahgunaan dari "<ph name="EXTENSION_NAME" />"</translation>

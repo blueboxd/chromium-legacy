@@ -493,7 +493,7 @@
 <translation id="3369192424181595722">ଘଣ୍ଟାରେ ତ୍ରୁଟି</translation>
 <translation id="337363190475750230">ପ୍ରାବଧାନ କରାଯାଇନାହିଁ</translation>
 <translation id="3377188786107721145">ନୀତି ବିଶ୍ଳେଷଣ ତ୍ରୁଟି</translation>
-<translation id="3377736046129930310">କାର୍ଡଗୁଡ଼ିକୁ ତୁରନ୍ତ ସୁନିଶ୍ଚିତ କରିବା ପାଇଁ ସ୍କ୍ରିନ୍ ଲକ୍ ବ୍ୟବହାର କରନ୍ତୁ</translation>
+<translation id="3377736046129930310">କାର୍ଡଗୁଡ଼ିକୁ ଅତି ଶୀଘ୍ର ସୁନିଶ୍ଚିତ କରିବା ପାଇଁ ସ୍କ୍ରିନ୍ ଲକ୍ ବ୍ୟବହାର କରନ୍ତୁ</translation>
 <translation id="3380365263193509176">ଅଜଣା ତୃଟି</translation>
 <translation id="3380864720620200369">କ୍ଲାଏଣ୍ଟ ID:</translation>
 <translation id="3387261909427947069">ପେମେଣ୍ଟ ପଦ୍ଧତି</translation>
@@ -736,7 +736,7 @@
 <translation id="4515275063822566619">କାର୍ଡ ଓ ଠିକଣାଗୁଡ଼ିକ ଆପଣଙ୍କର Google ଆକାଉଣ୍ଟ (<ph name="ACCOUNT_EMAIL" />)ରୁ ଆସିଛି। ଆପଣ ସେଗୁଡ଼ିକୁ <ph name="BEGIN_LINK" />ସେଟିଂସ୍‍<ph name="END_LINK" />ରେ ପରିଚାଳନ କରିପାରିବେ।</translation>
 <translation id="4517607026994743406">Comm-10 (ଏନଭଲପ୍)</translation>
 <translation id="4522570452068850558">ବିବରଣୀ</translation>
-<translation id="4524138615196389145">ବର୍ତ୍ତମାନ ଠାରୁ WebAuthn ବ୍ୟବହାର କରି ଆପଣଙ୍କର କାର୍ଡଗୁଡ଼ିକୁ ତୁରନ୍ତ ସୁନିଶ୍ଚିତ କରନ୍ତୁ</translation>
+<translation id="4524138615196389145">ବର୍ତ୍ତମାନ ଠାରୁ WebAuthn ବ୍ୟବହାର କରି ଆପଣଙ୍କର କାର୍ଡଗୁଡ଼ିକୁ ଅତି ଶୀଘ୍ର ସୁନିଶ୍ଚିତ କରନ୍ତୁ</translation>
 <translation id="4524805452350978254">କାର୍ଡଗୁଡ଼ିକ ପରିଚାଳନା କରନ୍ତୁ</translation>
 <translation id="455113658016510503">A9</translation>
 <translation id="4552089082226364758">ଫ୍ଲାସ୍‍</translation>
@@ -1075,7 +1075,7 @@
 <translation id="6221345481584921695">Google ସେଫ୍ ବ୍ରାଉଜିଂ, ସମ୍ପ୍ରତି <ph name="SITE" />ରେ <ph name="BEGIN_LINK" />ମାଲ୍‌ୱେର୍ ଚିହ୍ନଟ କରିଛି<ph name="END_LINK" />। ପ୍ରାୟତଃ ସୁରକ୍ଷିତ ରହୁଥିବା ୱେବ୍‌ସାଇଟ୍‌ଗୁଡ଼ିକ ବେଳେବେଳେ ମାଲ୍‌ୱେର୍ ଦ୍ୱାରା ସଂକ୍ରମିତ ହୋଇଥାନ୍ତି। ଏହି ଦ୍ୱେଷଯୁକ୍ତ ବିଷୟବସ୍ତୁ <ph name="SUBRESOURCE_HOST" />ରୁ ଆସିଥାଏ, ଯାହା ଏକ ଜଣାଶୁଣା ମାଲ୍‌ୱେର୍ ବିତରକ ଅଟେ।</translation>
 <translation id="6234122620015464377">ପ୍ରତ୍ୟେକ ଡକ୍ୟୁମେଣ୍ଟ ପରେ ଟ୍ରିମ୍ କରନ୍ତୁ</translation>
 <translation id="6240447795304464094">Google Pay ଲୋଗୋ</translation>
-<translation id="6241121617266208201">ପ୍ରାସ୍ତାବଗୁଡ଼ିକୁ ଲୁଚାନ୍ତୁ</translation>
+<translation id="6241121617266208201">ପ୍ରସ୍ତାବଗୁଡ଼ିକୁ ଲୁଚାନ୍ତୁ</translation>
 <translation id="6251924700383757765">ଗୋପନୀୟତା ନୀତି</translation>
 <translation id="6254436959401408446">ଏହି ପୃଷ୍ଠା ଖୋଲିବା ପାଇଁ ପର୍ଯ୍ୟାପ୍ତ ମେମୋରୀ ନାହିଁ</translation>
 <translation id="625755898061068298">ଆପଣ ଏହି ସାଇଟ୍ ପାଇଁ, ସୁରକ୍ଷା ଚେତାବନୀଗୁଡ଼ିକୁ ଅକ୍ଷମ କରିବା ନିମନ୍ତେ ବାଛିଛନ୍ତି।</translation>
@@ -1122,7 +1122,7 @@
 <translation id="6409754798200046165">ଆପଣ ବର୍ତ୍ତମାନ ଏକ ପ୍ରତାରଣାମୂଳକ ୱେବ୍‍ସାଇଟ୍‌ରେ ଆପଣଙ୍କର ପାସ୍‍ୱାର୍ଡ ଲେଖିଛନ୍ତି। ବର୍ତ୍ତମାନ Chrome ଆପଣଙ୍କୁ ପାସ୍‌ୱାର୍ଡ ପରିବର୍ତ୍ତନ କରିବା ପାଇଁ ସୁପାରିଶ କରୁଛି।</translation>
 <translation id="6410264514553301377"><ph name="CREDIT_CARD" /> ପାଇଁ ମିଆଦ ଶେଷ ହେଉଥିବା ତାରିଖ ଏବଂ CVC ଲେଖନ୍ତୁ</translation>
 <translation id="6415778972515849510">Chromium ଆପଣଙ୍କୁ ଆପଣଙ୍କର Google ଆକାଉଣ୍ଟକୁ ସୁରକ୍ଷିତ ରଖିବା ଏବଂ ଆପଣଙ୍କର ପାସ୍‍ୱାର୍ଡ ବଦଳାଇବାରେ ସାହାଯ୍ୟ କରିପାରିବ।</translation>
-<translation id="6423385022588644828">ବର୍ତ୍ତମାନ ଠାରୁ Touch ID ବ୍ୟବହାର କରି ଆପଣଙ୍କର କାର୍ଡଗୁଡ଼ିକୁ ତୁରନ୍ତ ସୁନିଶ୍ଚିତ କରନ୍ତୁ</translation>
+<translation id="6423385022588644828">ବର୍ତ୍ତମାନ ଠାରୁ Touch ID ବ୍ୟବହାର କରି ଆପଣଙ୍କର କାର୍ଡଗୁଡ଼ିକୁ ଅତି ଶୀଘ୍ର ସୁନିଶ୍ଚିତ କରନ୍ତୁ</translation>
 <translation id="6427730057873428458">ଗେଟ୍ ଫୋଲ୍ଡ</translation>
 <translation id="6433490469411711332">ଯୋଗାଯୋଗ ସୂଚନା ଏଡିଟ୍‍ କରନ୍ତୁ</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> ସଂଯୋଗ କରିବାକୁ ଅସ୍ୱୀକାର କରିଛନ୍ତି।</translation>
@@ -1193,7 +1193,7 @@
 <translation id="6786747875388722282">ପରିବର୍ଦ୍ଧନ</translation>
 <translation id="6790428901817661496">ଚଲାନ୍ତୁ</translation>
 <translation id="679355240208270552">ଏହି ନୀତି ଦ୍ୱାରା 'ଡିଫଲ୍ଟ ସନ୍ଧାନ' ସକ୍ଷମ କରାଯାଇନଥିବା ଯୋଗୁଁ ଏହାକୁ ଅଣଦେଖା କରାଗଲା।</translation>
-<translation id="6794951432696553238">ବର୍ତ୍ତମାନ ଠାରୁ Windows Hello ବ୍ୟବହାର କରି ଆପଣଙ୍କର କାର୍ଡଗୁଡ଼ିକୁ ତୁରନ୍ତ ସୁନିଶ୍ଚିତ କରନ୍ତୁ</translation>
+<translation id="6794951432696553238">ବର୍ତ୍ତମାନ ଠାରୁ Windows Hello ବ୍ୟବହାର କରି ଆପଣଙ୍କର କାର୍ଡଗୁଡ଼ିକୁ ଅତି ଶୀଘ୍ର ସୁନିଶ୍ଚିତ କରନ୍ତୁ</translation>
 <translation id="681021252041861472">ଆବଶ୍ୟକୀୟ କ୍ଷେତ୍ର</translation>
 <translation id="6810899417690483278">କଷ୍ଟମାଇଜେସନ୍ ID</translation>
 <translation id="6825578344716086703">ଆପଣ <ph name="DOMAIN" />ପର୍ଯ୍ୟନ୍ତ ପହଞ୍ଚିବାକୁ ପ୍ରଚେଷ୍ଟା କରିଥିଲେ, କିନ୍ତୁ ସର୍ଭର୍‍ ଏକ ଦୁର୍ବଳ ଦସ୍ତଖତ ଏଲଗୋରାଦିମ୍ (ଯେପରିକି SHA-1)କୁ ବ୍ୟବହାର କରି ଏକ ଦସ୍ତଖତ ସାର୍ଟିଫିକେଟ୍ ଉପସ୍ଥାପନ କରିଥିଲା। ଏହାର ଅର୍ଥ ଏହା ଯେ, ସର୍ଭର୍ ଉପସ୍ଥାପନା କରୁଥିବା ସୁରକ୍ଷା କ୍ରେଡେନ୍‍ସିଆଲ୍ସ ନକଲି ହୋଇପାରେ, ଏବଂ ହୁଏତ ଏହି ସର୍ଭର୍‌ଟି ଆପଣଙ୍କର ପ୍ରତ୍ୟାଶିତ ସର୍ଭର୍ ହୋଇନପାରେ (ଆପଣ ହୁଏତ ଜଣେ ଆକ୍ରମଣକାରୀଙ୍କ ସହିତ ସମ୍ପର୍କ କରୁଥାଇପାରନ୍ତି)।</translation>
@@ -1229,7 +1229,7 @@
 <translation id="6989763994942163495">ଉନ୍ନତ ସେଟିଂସ୍‌ ଦେଖାନ୍ତୁ...</translation>
 <translation id="6993898126790112050">6x9 (ଏନଭଲପ୍)</translation>
 <translation id="6996312675313362352">ସର୍ବଦା <ph name="ORIGINAL_LANGUAGE" />କୁ ଅନୁବାଦ କରନ୍ତୁ</translation>
-<translation id="7004583254764674281">କାର୍ଡଗୁଡ଼ିକୁ ତୁରନ୍ତ ସୁନିଶ୍ଚିତ କରିବା ପାଇଁ Windows Hello ବ୍ୟବହାର କରନ୍ତୁ</translation>
+<translation id="7004583254764674281">କାର୍ଡଗୁଡ଼ିକୁ ଅତି ଶୀଘ୍ର ସୁନିଶ୍ଚିତ କରିବା ପାଇଁ Windows Hello ବ୍ୟବହାର କରନ୍ତୁ</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">ଏହି ଶୁଳ୍କଗୁଡ଼ିକ ଗୋଟିଏ ଥର କିମ୍ବା ବାରମ୍ବାର ଲାଗୁ ହୋ‍ଇପାରେ ଏବଂ ସ୍ପଷ୍ଟ ଭାବରେ ଲାଗୁ ହୋ‍ଇନପାରେ।</translation>
 <translation id="7029809446516969842">ପାସୱାର୍ଡଗୁଡିକ</translation>
@@ -1294,7 +1294,7 @@
 <translation id="733923710415886693">ସର୍ଭର୍‍ର ସାର୍ଟିଫିକେଟ୍, ସାର୍ଟିଫିକେଟ୍ ସ୍ଵଚ୍ଛତା ମାଧ୍ୟମରେ ପ୍ରକାଶ କରାଯାଇନାହିଁ।</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">ସ୍ବୀକୃତି ପ୍ରାପ୍ତ କି ନୁହେଁ:</translation>
-<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> ଆପଣଙ୍କର ବ୍ରାଉଜର୍‍‍ରେ Chrome ଏଣ୍ଟର୍‍ପ୍ରାଇଜ୍ ଉପଯୋଗକର୍ତ୍ତା ସୁରକ୍ଷା ସକ୍ଷମ କରିଛନ୍ତି। Chrome ଏଣ୍ଟର୍‍ପ୍ରାଇଜ୍ ଉପଯୋଗକର୍ତ୍ତା ସୁରକ୍ଷାର ଆପଣଙ୍କର କିଛି ଡାଟାକୁ ଆକ୍ସେସ୍ ଅଛି।</translation>
+<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> ଆପଣଙ୍କର ବ୍ରାଉଜର୍‍‍ରେ Chrome ଏଣ୍ଟର୍‍ପ୍ରାଇଜ୍ ଉପଯୋଗକର୍ତ୍ତା ସୁରକ୍ଷା ସକ୍ଷମ କରିଛି। Chrome ଏଣ୍ଟର୍‍ପ୍ରାଇଜ୍ ଉପଯୋଗକର୍ତ୍ତା ସୁରକ୍ଷାର ଆପଣଙ୍କର କିଛି ଡାଟାକୁ ଆକ୍ସେସ୍ ଅଛି।</translation>
 <translation id="7349430561505560861">A4-ଅତିରିକ୍ତ</translation>
 <translation id="7353601530677266744">କମାଣ୍ଡ ଲାଇନ୍‌</translation>
 <translation id="7372973238305370288">ସନ୍ଧାନ ଫଳାଫଳ</translation>
@@ -1549,7 +1549,7 @@
 <translation id="8559762987265718583"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />କୁ ଏକ ବ୍ୟକ୍ତିଗତ ସଂଯୋଗ ସ୍ଥାପନ କରାଯାଇପାରିବ ନାହିଁ କାରଣ, ଆପଣଙ୍କ ଡିଭାଇସ୍‌ର ତାରିଖ ଏବଂ ସମୟ (<ph name="DATE_AND_TIME" />) ଭୁଲ ଅଛି।</translation>
 <translation id="8564985650692024650">ଆପଣ ଯଦି ଆପଣଙ୍କର <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> ପାସ୍‌ୱାର୍ଡକୁ ଅନ୍ୟ ସାଇଟ୍‌ଗୁଡ଼ିକରେ ପୁନଃ ବ୍ୟବହାର କରିଛନ୍ତି, ତେବେ Chromium ଆପଣଙ୍କୁ ଏହି ପାସ୍‌ୱାର୍ଡକୁ ରିସେଟ୍ କରିବା ପାଇଁ ସୁପାରିଶ କରୁଛି।</translation>
 <translation id="8571890674111243710"><ph name="LANGUAGE" />ରେ ପୃଷ୍ଠା ଅନୁବାଦ କରୁଛି...</translation>
-<translation id="8574899947864779331">କାର୍ଡଗୁଡ଼ିକୁ ତୁରନ୍ତ ସୁନିଶ୍ଚିତ କରିବା ପାଇଁ Touch ID ବ୍ୟବହାର କରନ୍ତୁ</translation>
+<translation id="8574899947864779331">କାର୍ଡଗୁଡ଼ିକୁ ଅତି ଶୀଘ୍ର ସୁନିଶ୍ଚିତ କରିବା ପାଇଁ Touch ID ବ୍ୟବହାର କରନ୍ତୁ</translation>
 <translation id="858637041960032120">ଫୋନ୍‌ ନମ୍ବର୍‍ ଯୋଗ କରନ୍ତୁ</translation>
 <translation id="860043288473659153">କାର୍ଡହୋଲ୍ଡର୍‌ର ନାମ</translation>
 <translation id="8616822740383114808">"<ph name="SETTINGS_PAGE" />" ରେ "<ph name="ENFORCING_SETTING" />" ଦ୍ୱାରା ଏହି ସେଟିଂ ଲାଗୁ କରାଯାଇଛି</translation>

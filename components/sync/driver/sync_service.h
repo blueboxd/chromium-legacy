@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/location.h"
@@ -46,12 +47,12 @@ class SyncSetupInProgressHandle {
  public:
   // UIs should not construct this directly, but instead call
   // SyncService::GetSetupInProgress().
-  explicit SyncSetupInProgressHandle(base::Closure on_destroy);
+  explicit SyncSetupInProgressHandle(base::OnceClosure on_destroy);
 
   ~SyncSetupInProgressHandle();
 
  private:
-  base::Closure on_destroy_;
+  base::OnceClosure on_destroy_;
 };
 
 // SyncService is the layer between browser subsystems like bookmarks and the
@@ -368,6 +369,12 @@ class SyncService : public KeyedService {
   // page is opened.
   virtual void SetInvalidationsForSessionsEnabled(bool enabled) = 0;
 
+  // Processes trusted vault encryption keys retrieved from the web. Unused and
+  // ignored on platforms where keys are retrieved by other means.
+  virtual void AddTrustedVaultDecryptionKeysFromWeb(
+      const std::string& gaia_id,
+      const std::vector<std::string>& keys) = 0;
+
   //////////////////////////////////////////////////////////////////////////////
   // USER DEMOGRAPHICS
   //////////////////////////////////////////////////////////////////////////////
@@ -455,8 +462,7 @@ class SyncService : public KeyedService {
   // For safety, the callback should be bound to some sort of WeakPtr<> or
   // scoped_refptr<>.
   virtual void GetAllNodesForDebugging(
-      const base::Callback<void(std::unique_ptr<base::ListValue>)>&
-          callback) = 0;
+      base::OnceCallback<void(std::unique_ptr<base::ListValue>)> callback) = 0;
 
  protected:
   SyncService() {}

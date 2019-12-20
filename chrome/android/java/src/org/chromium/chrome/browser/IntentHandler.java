@@ -46,6 +46,7 @@ import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.chrome.browser.webapps.WebappActivity;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.ContentUrlConstants;
@@ -1117,6 +1118,7 @@ public class IntentHandler {
         if (intent == null) return null;
         String url = getUrlFromVoiceSearchResult(intent);
         if (url == null) url = getUrlForCustomTab(intent);
+        if (url == null) url = getUrlForWebapp(intent);
         if (url == null) url = intent.getDataString();
         if (url == null) return null;
         url = url.trim();
@@ -1128,6 +1130,14 @@ public class IntentHandler {
         Uri data = intent.getData();
         return TextUtils.equals(data.getScheme(), UrlConstants.CUSTOM_TAB_SCHEME)
                 ? data.getQuery() : null;
+    }
+
+    private static String getUrlForWebapp(Intent intent) {
+        if (intent == null || intent.getData() == null) return null;
+        Uri data = intent.getData();
+        return TextUtils.equals(data.getScheme(), WebappActivity.WEBAPP_SCHEME)
+                ? IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_URL)
+                : null;
     }
 
     @VisibleForTesting

@@ -1343,10 +1343,6 @@ const char kNewUsbBackendName[] = "Enable new USB backend";
 const char kNewUsbBackendDescription[] =
     "Enables the new experimental USB backend for Windows.";
 
-const char kNewblueName[] = "Newblue";
-const char kNewblueDescription[] =
-    "Enables the use of Bluetooth dispatcher daemon.";
-
 const char kNewTabstripAnimationName[] = "New tabstrip animations";
 const char kNewTabstripAnimationDescription[] =
     "New implementation of tabstrip animations.";
@@ -3352,10 +3348,6 @@ const char kCrostiniUsbAllowUnsupportedName[] =
     "Crostini Usb Allow Unsupported";
 const char kCrostiniUsbAllowUnsupportedDescription[] =
     "Allow mounting unsupported Usb devices in Crostini. At your own risk. ";
-
-const char kCrostiniWebUIInstallerName[] = "Crostini WebUI Installer";
-const char kCrostiniWebUIInstallerDescription[] =
-    "Enable the new WebUI Crostini Installer.";
 
 const char kCrostiniWebUIUpgraderName[] = "Crostini WebUI Upgrader";
 const char kCrostiniWebUIUpgraderDescription[] =

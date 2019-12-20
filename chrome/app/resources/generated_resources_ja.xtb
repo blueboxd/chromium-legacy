@@ -1421,7 +1421,7 @@
 <translation id="2972581237482394796">やり直し(&amp;R)</translation>
 <translation id="2973324205039581528">サイトをミュート</translation>
 <translation id="2977480621796371840">グループから削除</translation>
-<translation id="2979520980928493164">より快適な Chrome</translation>
+<translation id="2979520980928493164">Chrome をより快適に</translation>
 <translation id="2979639724566107830">新しいウィンドウで開く</translation>
 <translation id="2981113813906970160">大きいマウス カーソルを表示する</translation>
 <translation id="2982970937345031">匿名で報告</translation>
@@ -2209,7 +2209,7 @@
 <translation id="4084682180776658562">ブックマーク</translation>
 <translation id="4084835346725913160"><ph name="TAB_NAME" /> を閉じる</translation>
 <translation id="4085270836953633510">サイトからシリアルポートへのアクセス許可を求められたときに確認する</translation>
-<translation id="4085298594534903246">このページの Javascript はブロックされました。</translation>
+<translation id="4085298594534903246">このページの JavaScript はブロックされました。</translation>
 <translation id="4087089424473531098">拡張機能を作成しました:
 
 <ph name="EXTENSION_FILE" /></translation>
@@ -2969,7 +2969,7 @@
 <translation id="5269977353971873915">印刷の失敗</translation>
 <translation id="5275352920323889391">犬</translation>
 <translation id="5275776633505022322">残り試行回数: <ph name="ATTEMPTS_LEFT" /></translation>
-<translation id="527605982717517565"><ph name="HOST" /> の Javascript を常に許可する</translation>
+<translation id="527605982717517565"><ph name="HOST" /> の JavaScript を常に許可する</translation>
 <translation id="5280174558369304332">削除対象の拡張機能:</translation>
 <translation id="5280426389926346830">ショートカットを作成しますか？</translation>
 <translation id="528208740344463258">Android アプリをダウンロードして使用するには、まずこの必須のアップデートをインストールする必要があります。<ph name="DEVICE_TYPE" /> の更新中、ご利用いただくことはできません。インストールが完了すると、<ph name="DEVICE_TYPE" /> は再起動されます。</translation>
@@ -3801,7 +3801,7 @@
 <translation id="6455894534188563617">新しいフォルダ(&amp;N)</translation>
 <translation id="6456394469623773452">中程度</translation>
 <translation id="6456955391422100996">広告を削除しました。</translation>
-<translation id="645705751491738698">Javascript を引き続きブロックする</translation>
+<translation id="645705751491738698">JavaScript を引き続きブロックする</translation>
 <translation id="6458701200018867744">アップロードできませんでした（<ph name="WEBRTC_LOG_UPLOAD_TIME" />）。</translation>
 <translation id="6459488832681039634">選択部分を検索に使用</translation>
 <translation id="6459799433792303855">アクティブなウィンドウが別のディスプレイに移動しました。</translation>
@@ -4518,7 +4518,7 @@
 <translation id="7513029293694390567">保存されている認証情報を使用してウェブサイトに自動的にログインします。この機能が無効になっている場合は、ウェブサイトにログインするときに毎回確認を求められます。</translation>
 <translation id="7514239104543605883">デバイスにコピー</translation>
 <translation id="7514365320538308">ダウンロード</translation>
-<translation id="7521387064766892559">Javascript</translation>
+<translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">「OK Google」と言ってください</translation>
 <translation id="7525067979554623046">作成</translation>
 <translation id="7529411698175791732">インターネット接続を確認してください。問題が解消しない場合は、ログアウトして再度ログインしてみてください。</translation>

@@ -7,15 +7,15 @@ const pinchtest = (function() {
 
   function assertTrue(condition, message) {
     if (!condition) {
-      message = message || "Assertion failed";
+      message = message || 'Assertion failed';
       console.trace();
       throw new Error(message);
     }
   }
 
   function assertClose(a, b, message) {
-    if (Math.abs(a-b) > 1e-5) {
-      message = message || "Assertion failed";
+    if (Math.abs(a - b) > 1e-5) {
+      message = message || 'Assertion failed';
       console.log('"', a, '" and "', b, '" are not close.');
       console.trace();
       throw new Error(message);
@@ -50,7 +50,7 @@ const pinchtest = (function() {
 
   function assertEqual(a, b, message) {
     if (!isEquivalent(a, b)) {
-      message = message || "Assertion failed";
+      message = message || 'Assertion failed';
       console.log('"', a, '" and "', b, '" are not equal');
       console.trace();
       throw new Error(message);
@@ -62,22 +62,17 @@ const pinchtest = (function() {
     const points = {};
     function lowestID() {
       let ans = -1;
-      for(const key in points) {
+      for (const key in points) {
         ans = Math.max(ans, key);
       }
       return ans + 1;
     }
-    function changeTouchPoint (key, x, y, offsetX, offsetY) {
-      const e = {
-        clientX: x,
-        clientY: y,
-        pageX: x,
-        pageY: y
-      };
-      if (typeof(offsetX) === 'number') {
+    function changeTouchPoint(key, x, y, offsetX, offsetY) {
+      const e = {clientX: x, clientY: y, pageX: x, pageY: y};
+      if (typeof (offsetX) === 'number') {
         e.clientX += offsetX;
       }
-      if (typeof(offsetY) === 'number') {
+      if (typeof (offsetY) === 'number') {
         e.clientY += offsetY;
       }
       points[key] = e;
@@ -92,13 +87,10 @@ const pinchtest = (function() {
       },
       events: function() {
         const arr = [];
-        for(const key in points) {
+        for (const key in points) {
           arr.push(points[key]);
         }
-        return {
-          touches: arr,
-          preventDefault: function(){}
-        };
+        return {touches: arr, preventDefault: function() {}};
       }
     };
   });
@@ -414,7 +406,7 @@ const pinchtest = (function() {
   }
 
   return {
-    run: function(){
+    run: function() {
       testZoomOut();
       testZoomIn();
       testZoomOutAndPan();
@@ -427,7 +419,7 @@ const pinchtest = (function() {
       testFontScaling();
       pincher.reset();
 
-      return {success: true};
+      return true;
     }
   };
 }());

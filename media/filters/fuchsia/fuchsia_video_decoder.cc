@@ -51,13 +51,10 @@ namespace media {
 
 namespace {
 
-// Value passed to the codec as packet_count_for_client. It's number of output
-// buffers that we expect to hold on to in the renderer.
-//
-// TODO(sergeyu): Figure out the right number of buffers to request. Currently
-// the codec doesn't allow to reserve more than 2 client buffers, but it still
-// works properly when the client holds to more than that.
-const uint32_t kMaxUsedOutputFrames = 8;
+// Maximum number of frames we expect to keep while playing video. Higher values
+// require more memory for output buffers. Lower values make it more likely that
+// renderer will stall because decoded frames are not available on time.
+const uint32_t kMaxUsedOutputFrames = 6;
 
 // Helper used to hold mailboxes for the output textures. OutputMailbox may
 // outlive FuchsiaVideoDecoder if is referenced by a VideoFrame.
@@ -880,14 +877,9 @@ void FuchsiaVideoDecoder::OnOutputPacket(fuchsia::media::Packet output_packet,
   }
 
   size_t buffer_index = output_packet.buffer_index();
-  if (buffer_index >= output_mailboxes_.size()) {
-    DLOG(ERROR)
-        << "mediacodec generated output packet with an invalid buffer_index="
-        << buffer_index << " for output buffer collection with only "
-        << output_mailboxes_.size() << " packets.";
-    OnError();
-    return;
-  }
+
+  if (buffer_index >= output_mailboxes_.size())
+    output_mailboxes_.resize(buffer_index + 1, nullptr);
 
   auto coded_size = gfx::Size(output_format_.primary_width_pixels,
                               output_format_.primary_height_pixels);
@@ -1050,11 +1042,9 @@ void FuchsiaVideoDecoder::InitializeOutputBufferCollection(
   decoder_->CompleteOutputBufferPartialSettings(
       output_buffer_lifetime_ordinal_);
 
+  // Exact number of buffers sysmem will allocate is unknown here.
+  // |output_mailboxes_| is resized when we start receiving output frames.
   DCHECK(output_mailboxes_.empty());
-  output_mailboxes_.resize(
-      max_used_output_buffers_ +
-          constraints.packet_count_for_server_recommended(),
-      nullptr);
 }
 
 void FuchsiaVideoDecoder::ReleaseInputBuffers() {

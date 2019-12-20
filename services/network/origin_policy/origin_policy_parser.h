@@ -29,11 +29,21 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) OriginPolicyParser {
   OriginPolicyParser();
   ~OriginPolicyParser();
 
+  // The older spec treated parsing errors as failures that would cause an
+  // interstitial, so we have a boolean return value to represent that. The
+  // newer spec does not treat parsing errors as failures; see
+  // https://github.com/WICG/origin-policy/issues/49.
+  // TODO(domenic): update everything to the newer spec and remove all boolean
+  // return values.
+
   bool DoParse(base::StringPiece);
+
+  // The following methods are implemented according to the older spec:
   bool ParseContentSecurityPolicies(const base::Value&);
   bool ParseContentSecurityPolicy(const base::Value&);
-  bool ParseFeaturePolicies(const base::Value&);
-  bool ParseFeaturePolicy(const base::Value&);
+
+  // The following method is implemented according to the newer spec:
+  void ParseFeatures(const base::Value&);
 
   OriginPolicyContentsPtr policy_contents_;
 

@@ -66,7 +66,7 @@ class TestSyncService : public syncer::FakeSyncService {
   }
 
   void GetAllNodesForDebugging(
-      const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback)
+      base::OnceCallback<void(std::unique_ptr<base::ListValue>)> callback)
       override {
     get_all_nodes_callback_ = std::move(callback);
   }
@@ -79,7 +79,7 @@ class TestSyncService : public syncer::FakeSyncService {
   int remove_type_debug_info_observer_count() const {
     return remove_type_debug_info_observer_count_;
   }
-  base::Callback<void(std::unique_ptr<base::ListValue>)>
+  base::OnceCallback<void(std::unique_ptr<base::ListValue>)>
   get_all_nodes_callback() {
     return std::move(get_all_nodes_callback_);
   }
@@ -90,7 +90,7 @@ class TestSyncService : public syncer::FakeSyncService {
   int add_type_debug_info_observer_count_ = 0;
   int remove_type_debug_info_observer_count_ = 0;
   syncer::MockJsController js_controller_;
-  base::Callback<void(std::unique_ptr<base::ListValue>)>
+  base::OnceCallback<void(std::unique_ptr<base::ListValue>)>
       get_all_nodes_callback_;
 };
 

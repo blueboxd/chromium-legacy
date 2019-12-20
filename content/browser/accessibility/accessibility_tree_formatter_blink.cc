@@ -110,6 +110,7 @@ std::string IntAttrToString(const BrowserAccessibility& node,
     case ax::mojom::IntAttribute::kBackgroundColor:
     case ax::mojom::IntAttribute::kColor:
     case ax::mojom::IntAttribute::kColorValue:
+    case ax::mojom::IntAttribute::kDOMNodeId:
     case ax::mojom::IntAttribute::kDetailsId:
     case ax::mojom::IntAttribute::kErrormessageId:
     case ax::mojom::IntAttribute::kHierarchicalLevel:

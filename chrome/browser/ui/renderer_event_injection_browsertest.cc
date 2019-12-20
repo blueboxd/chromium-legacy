@@ -19,8 +19,8 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
-#include "third_party/blink/public/platform/web_input_event.h"
-#include "third_party/blink/public/platform/web_touch_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/input/web_touch_event.h"
 #include "ui/display/display_switches.h"
 
 namespace {

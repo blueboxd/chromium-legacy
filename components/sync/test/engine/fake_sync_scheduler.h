@@ -31,7 +31,7 @@ class FakeSyncScheduler : public SyncScheduler {
       ModelType type,
       std::unique_ptr<InvalidationInterface> interface,
       const base::Location& nudge_location) override;
-  void ScheduleConfiguration(const ConfigurationParams& params) override;
+  void ScheduleConfiguration(ConfigurationParams params) override;
 
   void ScheduleInitialSyncNudge(ModelType model_type) override;
   void SetNotificationsEnabled(bool notifications_enabled) override;

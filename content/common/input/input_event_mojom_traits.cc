@@ -7,14 +7,14 @@
 #include "base/i18n/char_iterator.h"
 #include "content/common/input_messages.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
-#include "third_party/blink/public/platform/web_keyboard_event.h"
-#include "third_party/blink/public/platform/web_mouse_wheel_event.h"
+#include "third_party/blink/public/common/input/web_keyboard_event.h"
+#include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
 #include "ui/latency/mojom/latency_info_mojom_traits.h"
 
 namespace mojo {
 namespace {
 
-void CopyString(blink::WebUChar* dst, const base::string16& text) {
+void CopyString(base::char16* dst, const base::string16& text) {
   base::i18n::UTF16CharIterator iter(&text);
   size_t pos = 0;
   while (!iter.end() && pos < blink::WebKeyboardEvent::kTextLengthCap - 1) {

@@ -30,7 +30,10 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.test.CommandLineInitRule;
 import org.chromium.chrome.browser.util.UrlConstants;
+import org.chromium.chrome.browser.webapps.WebappInfo;
+import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
+import org.chromium.chrome.test.util.browser.webapps.WebappTestHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -204,6 +207,19 @@ public class IntentHandlerTest {
             }
         }
         Assert.assertTrue(failedTests.toString(), failedTests.isEmpty());
+    }
+
+    @Test
+    @SmallTest
+    @UiThreadTest
+    @Feature({"Android-Appbase"})
+    public void testUrlFromIntent_WebappUrl() {
+        Intent webappLauncherActivityIntent =
+                WebappTestHelper.createMinimalWebappIntent("id", GOOGLE_URL);
+        WebappInfo webappInfo = WebappInfo.create(webappLauncherActivityIntent);
+        mIntent = WebappLauncherActivity.createIntentToLaunchForWebapp(
+                webappLauncherActivityIntent, webappInfo, 0);
+        Assert.assertEquals(GOOGLE_URL, IntentHandler.getUrlFromIntent(mIntent));
     }
 
     @Test

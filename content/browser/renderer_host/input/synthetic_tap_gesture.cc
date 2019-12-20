@@ -5,7 +5,7 @@
 #include "content/browser/renderer_host/input/synthetic_tap_gesture.h"
 
 #include "base/logging.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/latency/latency_info.h"
 
 namespace content {

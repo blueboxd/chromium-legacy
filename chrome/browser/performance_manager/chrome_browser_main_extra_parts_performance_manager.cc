@@ -36,6 +36,10 @@
 #endif  // BUILDFLAG(USE_TCMALLOC)
 #endif  // defined(OS_LINUX)
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
+#endif  // !defined(OS_ANDROID)
+
 namespace {
 ChromeBrowserMainExtraPartsPerformanceManager* g_instance = nullptr;
 }
@@ -87,6 +91,10 @@ void ChromeBrowserMainExtraPartsPerformanceManager::CreatePoliciesAndDecorators(
   }
 #endif  // BUILDFLAG(USE_TCMALLOC)
 #endif  // defined(OS_LINUX)
+
+#if !defined(OS_ANDROID)
+  graph->PassToGraph(FormInteractionTabHelper::CreateGraphObserver());
+#endif  // !defined(OS_ANDROID)
 }
 
 content::LockObserver*

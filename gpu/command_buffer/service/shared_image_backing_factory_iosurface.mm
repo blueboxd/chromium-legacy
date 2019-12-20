@@ -390,23 +390,23 @@ class SharedImageBackingIOSurface : public ClearTrackingSharedImageBacking {
   gfx::Rect ClearedRect() const final {
     // If a |legacy_texture_| exists, defer to that. Once created,
     // |legacy_texture_| is never destroyed, so no need to synchronize with
-    // ClearedRectInternal.
+    // ClearedRect.
     if (legacy_texture_) {
       return legacy_texture_->GetLevelClearedRect(legacy_texture_->target(), 0);
     } else {
-      return ClearedRectInternal();
+      return ClearTrackingSharedImageBacking::ClearedRect();
     }
   }
 
   void SetClearedRect(const gfx::Rect& cleared_rect) final {
     // If a |legacy_texture_| exists, defer to that. Once created,
     // |legacy_texture_| is never destroyed, so no need to synchronize with
-    // ClearedRectInternal.
+    // SetClearedRect.
     if (legacy_texture_) {
       legacy_texture_->SetLevelClearedRect(legacy_texture_->target(), 0,
                                            cleared_rect);
     } else {
-      SetClearedRectInternal(cleared_rect);
+      ClearTrackingSharedImageBacking::SetClearedRect(cleared_rect);
     }
   }
 
@@ -421,8 +421,9 @@ class SharedImageBackingIOSurface : public ClearTrackingSharedImageBacking {
     }
 
     // Make sure our |legacy_texture_| has the right initial cleared rect.
-    legacy_texture_->SetLevelClearedRect(legacy_texture_->target(), 0,
-                                         ClearedRectInternal());
+    legacy_texture_->SetLevelClearedRect(
+        legacy_texture_->target(), 0,
+        ClearTrackingSharedImageBacking::ClearedRect());
 
     mailbox_manager->ProduceTexture(mailbox(), legacy_texture_);
     return true;

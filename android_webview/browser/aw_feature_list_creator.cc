@@ -25,6 +25,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/base/switches.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -212,6 +213,8 @@ void AwFeatureListCreator::CreateLocalState() {
 }
 
 void AwFeatureListCreator::CreateFeatureListAndFieldTrials() {
+  TRACE_EVENT0("startup",
+               "AwFeatureListCreator::CreateFeatureListAndFieldTrials");
   CreateLocalState();
   AwMetricsServiceClient::GetInstance()->Initialize(local_state_.get());
   SetUpFieldTrials();

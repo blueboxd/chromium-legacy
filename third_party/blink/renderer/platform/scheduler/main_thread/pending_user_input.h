@@ -7,7 +7,7 @@
 
 #include <array>
 
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/renderer/platform/scheduler/public/pending_user_input_type.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 

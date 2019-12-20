@@ -268,7 +268,14 @@ TYPED_TEST_P(GLImageCopyTest, CopyTexImage) {
   if (this->delegate_.SkipTest())
     return;
 
-  const gfx::Size image_size(256, 256);
+  // CopyTexImage follows different code paths depending whether the image is
+  // > 1 MiB or not. This range of sizes should cover both possibilities
+  // regardless of format.
+  const std::vector<gfx::Size> image_size_list{
+      {256, 256},
+      {512, 512},
+      {1024, 1024},
+  };
   const uint8_t* image_color = this->delegate_.GetImageColor();
   const uint8_t texture_color[] = {0, 0, 0xff, 0xff};
 
@@ -279,47 +286,51 @@ TYPED_TEST_P(GLImageCopyTest, CopyTexImage) {
     glBindVertexArrayOES(vao);
   }
 
-  GLuint framebuffer =
-      GLTestHelper::SetupFramebuffer(image_size.width(), image_size.height());
-  ASSERT_TRUE(framebuffer);
-  glBindFramebufferEXT(GL_FRAMEBUFFER, framebuffer);
-  glViewport(0, 0, image_size.width(), image_size.height());
+  for (auto image_size : image_size_list) {
+    LOG(INFO) << "Testing with size " << image_size.ToString();
+    GLuint framebuffer =
+        GLTestHelper::SetupFramebuffer(image_size.width(), image_size.height());
+    ASSERT_TRUE(framebuffer);
+    glBindFramebufferEXT(GL_FRAMEBUFFER, framebuffer);
+    glViewport(0, 0, image_size.width(), image_size.height());
 
-  // Create a solid color green image of preferred format. This must succeed
-  // in order for a GLImage to be conformant.
-  scoped_refptr<GLImage> image =
-      this->delegate_.CreateSolidColorImage(image_size, image_color);
-  ASSERT_TRUE(image);
+    // Create a solid color green image of preferred format. This must succeed
+    // in order for a GLImage to be conformant.
+    scoped_refptr<GLImage> image =
+        this->delegate_.CreateSolidColorImage(image_size, image_color);
+    ASSERT_TRUE(image);
 
-  // Create a solid color blue texture of the same size as |image|.
-  unsigned target = this->delegate_.GetTextureTarget();
-  GLuint texture = GLTestHelper::CreateTexture(target);
-  std::unique_ptr<uint8_t[]> pixels(new uint8_t[BufferSizeForBufferFormat(
-      image_size, gfx::BufferFormat::RGBA_8888)]);
-  GLImageTestSupport::SetBufferDataToColor(
-      image_size.width(), image_size.height(),
-      static_cast<int>(RowSizeForBufferFormat(image_size.width(),
-                                              gfx::BufferFormat::RGBA_8888, 0)),
-      0, gfx::BufferFormat::RGBA_8888, texture_color, pixels.get());
-  glBindTexture(target, texture);
-  glTexImage2D(target, 0, GL_RGBA, image_size.width(), image_size.height(), 0,
-               GL_RGBA, GL_UNSIGNED_BYTE, pixels.get());
+    // Create a solid color blue texture of the same size as |image|.
+    unsigned target = this->delegate_.GetTextureTarget();
+    GLuint texture = GLTestHelper::CreateTexture(target);
+    std::unique_ptr<uint8_t[]> pixels(new uint8_t[BufferSizeForBufferFormat(
+        image_size, gfx::BufferFormat::RGBA_8888)]);
+    GLImageTestSupport::SetBufferDataToColor(
+        image_size.width(), image_size.height(),
+        static_cast<int>(RowSizeForBufferFormat(
+            image_size.width(), gfx::BufferFormat::RGBA_8888, 0)),
+        0, gfx::BufferFormat::RGBA_8888, texture_color, pixels.get());
+    glBindTexture(target, texture);
+    glTexImage2D(target, 0, GL_RGBA, image_size.width(), image_size.height(), 0,
+                 GL_RGBA, GL_UNSIGNED_BYTE, pixels.get());
 
-  // Copy |image| to |texture|.
-  bool rv = image->CopyTexImage(target);
-  EXPECT_TRUE(rv);
+    // Copy |image| to |texture|.
+    bool rv = image->CopyTexImage(target);
+    EXPECT_TRUE(rv);
 
-  // Draw |texture| to viewport.
-  internal::DrawTextureQuad(target, image_size);
+    // Draw |texture| to viewport.
+    internal::DrawTextureQuad(target, image_size);
 
-  // Read back pixels to check expectations.
-  GLTestHelper::CheckPixelsWithError(
-      0, 0, image_size.width(), image_size.height(),
-      this->delegate_.GetAdmissibleError(), image_color);
+    // Read back pixels to check expectations.
+    GLTestHelper::CheckPixelsWithError(
+        0, 0, image_size.width(), image_size.height(),
+        this->delegate_.GetAdmissibleError(), image_color);
 
-  // Clean up.
-  glDeleteTextures(1, &texture);
-  glDeleteFramebuffersEXT(1, &framebuffer);
+    // Clean up.
+    glDeleteTextures(1, &texture);
+    glDeleteFramebuffersEXT(1, &framebuffer);
+  }
+
   if (vao) {
     glDeleteVertexArraysOES(1, &vao);
   }

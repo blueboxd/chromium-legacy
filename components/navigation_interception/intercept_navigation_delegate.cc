@@ -71,7 +71,8 @@ InterceptNavigationDelegate::CreateThrottleFor(
     content::NavigationHandle* handle,
     navigation_interception::SynchronyMode mode) {
   return std::make_unique<InterceptNavigationThrottle>(
-      handle, base::Bind(&CheckIfShouldIgnoreNavigationOnUIThread), mode);
+      handle, base::BindRepeating(&CheckIfShouldIgnoreNavigationOnUIThread),
+      mode);
 }
 
 InterceptNavigationDelegate::InterceptNavigationDelegate(

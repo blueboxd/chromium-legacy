@@ -42,8 +42,10 @@ class TestAuthenticationRequester
 
 #if !defined(OS_IOS)
   // CreditCardFIDOAuthenticator::Requester:
-  void OnFIDOAuthenticationComplete(bool did_succeed,
-                                    const CreditCard* card = nullptr) override;
+  void OnFIDOAuthenticationComplete(
+      bool did_succeed,
+      const CreditCard* card = nullptr,
+      const base::string16& cvc = base::string16()) override;
   void OnFidoAuthorizationComplete(bool did_succeed) override;
 
   void IsUserVerifiableCallback(bool is_user_verifiable);

@@ -20,11 +20,13 @@
 #include "chrome/browser/chromeos/printing/cups_print_job_manager_factory.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager_factory.h"
+#include "chrome/browser/chromeos/printing/ppd_provider_factory.h"
 #include "chrome/browser/chromeos/printing/printer_configurer.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_utils.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/printing/printer_configuration.h"
@@ -34,6 +36,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "printing/backend/print_backend_consts.h"
 #include "printing/backend/printing_restrictions.h"
+#include "url/gurl.h"
 
 namespace printing {
 
@@ -41,6 +44,7 @@ namespace {
 
 using chromeos::CupsPrintersManager;
 using chromeos::CupsPrintersManagerFactory;
+using chromeos::PpdProvider;
 using chromeos::PrinterClass;
 
 // We only support sending username for named users but just in case.
@@ -109,11 +113,13 @@ LocalPrinterHandlerChromeos::LocalPrinterHandlerChromeos(
     Profile* profile,
     content::WebContents* preview_web_contents,
     chromeos::CupsPrintersManager* printers_manager,
-    std::unique_ptr<chromeos::PrinterConfigurer> printer_configurer)
+    std::unique_ptr<chromeos::PrinterConfigurer> printer_configurer,
+    scoped_refptr<PpdProvider> ppd_provider)
     : profile_(profile),
       preview_web_contents_(preview_web_contents),
       printers_manager_(printers_manager),
-      printer_configurer_(std::move(printer_configurer)) {
+      printer_configurer_(std::move(printer_configurer)),
+      ppd_provider_(std::move(ppd_provider)) {
   // Construct the CupsPrintJobManager to listen for printing events.
   chromeos::CupsPrintJobManagerFactory::GetForBrowserContext(profile);
 }
@@ -127,10 +133,11 @@ LocalPrinterHandlerChromeos::CreateDefault(
       CupsPrintersManagerFactory::GetForBrowserContext(profile));
   std::unique_ptr<chromeos::PrinterConfigurer> printer_configurer(
       chromeos::PrinterConfigurer::Create(profile));
+  scoped_refptr<PpdProvider> ppd_provider(chromeos::CreatePpdProvider(profile));
   // Using 'new' to access non-public constructor.
   return base::WrapUnique(new LocalPrinterHandlerChromeos(
       profile, preview_web_contents, printers_manager,
-      std::move(printer_configurer)));
+      std::move(printer_configurer), std::move(ppd_provider)));
 }
 
 // static
@@ -139,11 +146,12 @@ LocalPrinterHandlerChromeos::CreateForTesting(
     Profile* profile,
     content::WebContents* preview_web_contents,
     chromeos::CupsPrintersManager* printers_manager,
-    std::unique_ptr<chromeos::PrinterConfigurer> printer_configurer) {
+    std::unique_ptr<chromeos::PrinterConfigurer> printer_configurer,
+    scoped_refptr<PpdProvider> ppd_provider) {
   // Using 'new' to access non-public constructor.
   return base::WrapUnique(new LocalPrinterHandlerChromeos(
       profile, preview_web_contents, printers_manager,
-      std::move(printer_configurer)));
+      std::move(printer_configurer), std::move(ppd_provider)));
 }
 
 LocalPrinterHandlerChromeos::~LocalPrinterHandlerChromeos() {
@@ -216,6 +224,25 @@ void LocalPrinterHandlerChromeos::StartGetCapability(
                      weak_factory_.GetWeakPtr(), *printer, std::move(cb)));
 }
 
+void LocalPrinterHandlerChromeos::StartGetEulaUrl(
+    const std::string& destination_id,
+    GetEulaUrlCallback cb) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  base::Optional<chromeos::Printer> printer =
+      printers_manager_->GetPrinter(destination_id);
+  if (!printer) {
+    // If the printer does not exist, fetching for the license will fail.
+    std::move(cb).Run(std::string());
+    return;
+  }
+
+  ppd_provider_->ResolvePpdLicense(
+      printer->ppd_reference().effective_make_and_model,
+      base::BindOnce(&LocalPrinterHandlerChromeos::OnResolvedEulaUrl,
+                     weak_factory_.GetWeakPtr(), std::move(cb)));
+}
+
 void LocalPrinterHandlerChromeos::OnPrinterInstalled(
     const chromeos::Printer& printer,
     GetCapabilityCallback cb,
@@ -229,6 +256,21 @@ void LocalPrinterHandlerChromeos::OnPrinterInstalled(
   }
 
   HandlePrinterSetup(printer, std::move(cb), printer.IsUsbProtocol(), result);
+}
+
+void LocalPrinterHandlerChromeos::OnResolvedEulaUrl(
+    GetEulaUrlCallback cb,
+    PpdProvider::CallbackResultCode result,
+    const std::string& license) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (result != PpdProvider::CallbackResultCode::SUCCESS || license.empty()) {
+    std::move(cb).Run(std::string());
+    return;
+  }
+
+  GURL eula_url(chrome::kChromeUIOSCreditsURL + license);
+  std::move(cb).Run(eula_url.spec());
 }
 
 void LocalPrinterHandlerChromeos::HandlePrinterSetup(

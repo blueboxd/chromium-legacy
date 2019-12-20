@@ -77,8 +77,13 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
   bool IsKeyframeEffect() const override { return true; }
 
   // IDL implementation.
-  Element* target() const { return effect_target_; }
+
+  // Returns the target element. If the animation targets a pseudo-element,
+  // this returns the originating element.
+  Element* target() const { return target_element_; }
   void setTarget(Element*);
+  const String& pseudoElement();
+  void setPseudoElement(String, ExceptionState&);
   String composite() const;
   void setComposite(String);
   HeapVector<ScriptValue> getKeyframes(ScriptState*);
@@ -138,6 +143,7 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
   void Detach() override;
   void AttachTarget(Animation*);
   void DetachTarget(Animation*);
+  void RefreshTarget();
   AnimationTimeDelta CalculateTimeToEffectChange(
       bool forwards,
       base::Optional<double> inherited_time,
@@ -148,6 +154,8 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
   bool AnimationsPreserveAxisAlignment(const PropertyHandle&) const;
 
   Member<Element> effect_target_;
+  Member<Element> target_element_;
+  String target_pseudo_;
   Member<KeyframeEffectModelBase> model_;
   Member<SampledEffect> sampled_effect_;
 

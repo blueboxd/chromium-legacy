@@ -1143,6 +1143,8 @@ ScrollEvent::ScrollEvent(const PlatformEvent& native_event)
       finger_count_(0),
       momentum_phase_(EventMomentumPhase::NONE),
       scroll_event_phase_(ScrollEventPhase::kNone) {
+  // TODO(bokan): This should be populating the |scroll_event_phase_| member but
+  // currently isn't.
   if (type() == ET_SCROLL) {
     GetScrollOffsets(native_event, &x_offset_, &y_offset_, &x_offset_ordinal_,
                      &y_offset_ordinal_, &finger_count_, &momentum_phase_);

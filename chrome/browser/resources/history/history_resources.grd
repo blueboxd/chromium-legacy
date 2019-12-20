@@ -12,15 +12,50 @@
   </outputs>
   <release seq="1">
     <includes>
-      <include name="IDR_HISTORY_CONSTANTS_HTML"
-               file="constants.html"
-               type="BINDATA" />
+      <!-- Generated Polymer 3 elements -->
+      <include name="IDR_HISTORY_APP_JS"
+               file="${root_gen_dir}/chrome/browser/resources/history/app.js"
+               use_base_dir="false" type="BINDATA" preprocess="true" />
+      <include name="IDR_HISTORY_HISTORY_ITEM_JS"
+               file="${root_gen_dir}/chrome/browser/resources/history/history_item.js"
+               use_base_dir="false" type="BINDATA" />
+      <include name="IDR_HISTORY_HISTORY_LIST_JS"
+               file="${root_gen_dir}/chrome/browser/resources/history/history_list.js"
+               use_base_dir="false" type="BINDATA" />
+      <include name="IDR_HISTORY_HISTORY_TOOLBAR_JS"
+               file="${root_gen_dir}/chrome/browser/resources/history/history_toolbar.js"
+               use_base_dir="false" type="BINDATA" />
+      <include name="IDR_HISTORY_ROUTER_JS"
+               file="${root_gen_dir}/chrome/browser/resources/history/router.js"
+               use_base_dir="false" type="BINDATA" />
+      <include name="IDR_HISTORY_SHARED_STYLE_JS"
+               file="${root_gen_dir}/chrome/browser/resources/history/shared_style.js"
+               use_base_dir="false" type="BINDATA" />
+      <include name="IDR_HISTORY_SHARED_VARS_JS"
+               file="${root_gen_dir}/chrome/browser/resources/history/shared_vars.js"
+               use_base_dir="false" type="BINDATA" />
+      <include name="IDR_HISTORY_SIDE_BAR_JS"
+               file="${root_gen_dir}/chrome/browser/resources/history/side_bar.js"
+               use_base_dir="false" type="BINDATA" />
+      <include name="IDR_HISTORY_SYNCED_DEVICE_CARD_JS"
+               file="${root_gen_dir}/chrome/browser/resources/history/synced_device_card.js"
+               use_base_dir="false" type="BINDATA" />
+      <include name="IDR_HISTORY_SYNCED_DEVICE_MANAGER_JS"
+               file="${root_gen_dir}/chrome/browser/resources/history/synced_device_manager.js"
+               use_base_dir="false" type="BINDATA" />
+
       <include name="IDR_HISTORY_CONSTANTS_JS"
                file="constants.js"
+               type="BINDATA" />
+      <include name="IDR_HISTORY_EXTERNS_JS"
+               file="externs.js"
                type="BINDATA" />
       <include name="IDR_HISTORY_HISTORY_HTML"
                file="history.html"
                preprocess="true"
+               type="BINDATA" />
+      <include name="IDR_HISTORY_HISTORY_JS"
+               file="history.js"
                type="BINDATA" />
       <include name="IDR_HISTORY_IMAGES_SIGN_IN_PROMO_DARK_SVG"
                file="images\sign_in_promo_dark.svg"
@@ -28,84 +63,17 @@
       <include name="IDR_HISTORY_IMAGES_SIGN_IN_PROMO_SVG"
                file="images\sign_in_promo.svg"
                type="BINDATA" />
-      <include name="IDR_HISTORY_STRINGS_HTML"
-               file="strings.html"
-               type="BINDATA" />
-      <include name="IDR_HISTORY_APP_HTML"
-               file="app.html"
-               type="BINDATA" />
-      <include name="IDR_HISTORY_APP_JS"
-               file="app.js"
-               preprocess="true"
-               type="BINDATA" />
-      <include name="IDR_HISTORY_BROWSER_SERVICE_HTML"
-               file="browser_service.html"
-               type="BINDATA" />
       <include name="IDR_HISTORY_BROWSER_SERVICE_JS"
                file="browser_service.js"
                type="BINDATA" />
-      <include name="IDR_HISTORY_HISTORY_ITEM_HTML"
-               file="history_item.html"
-               type="BINDATA" />
-      <include name="IDR_HISTORY_HISTORY_ITEM_JS"
-               file="history_item.js"
-               type="BINDATA" />
-      <include name="IDR_HISTORY_HISTORY_LIST_HTML"
-               file="history_list.html"
-               type="BINDATA" />
-      <include name="IDR_HISTORY_HISTORY_LIST_JS"
-               file="history_list.js"
-               type="BINDATA" />
-      <include name="IDR_HISTORY_HISTORY_TOOLBAR_HTML"
-               file="history_toolbar.html"
-               type="BINDATA" />
-      <include name="IDR_HISTORY_HISTORY_TOOLBAR_JS"
-               file="history_toolbar.js"
-               type="BINDATA" />
-      <include name="IDR_HISTORY_LAZY_LOAD_HTML"
-               file="lazy_load.html"
-               type="BINDATA" />
-      <include name="IDR_HISTORY_QUERY_MANAGER_HTML"
-               file="query_manager.html"
+      <include name="IDR_HISTORY_LAZY_LOAD_JS"
+               file="lazy_load.js"
                type="BINDATA" />
       <include name="IDR_HISTORY_QUERY_MANAGER_JS"
                file="query_manager.js"
                type="BINDATA" />
-      <include name="IDR_HISTORY_ROUTER_HTML"
-               file="router.html"
-               type="BINDATA" />
-      <include name="IDR_HISTORY_ROUTER_JS"
-               file="router.js"
-               type="BINDATA" />
-      <include name="IDR_HISTORY_SEARCHED_LABEL_HTML"
-               file="searched_label.html"
-               type="BINDATA" />
       <include name="IDR_HISTORY_SEARCHED_LABEL_JS"
                file="searched_label.js"
-               type="BINDATA" />
-      <include name="IDR_HISTORY_SHARED_STYLE_HTML"
-               file="shared_style.html"
-               type="BINDATA" />
-      <include name="IDR_HISTORY_SHARED_VARS_HTML"
-               file="shared_vars.html"
-               type="BINDATA" />
-      <include name="IDR_HISTORY_SIDE_BAR_HTML"
-               file="side_bar.html"
-               type="BINDATA" />
-      <include name="IDR_HISTORY_SIDE_BAR_JS"
-               file="side_bar.js"
-               type="BINDATA" />
-      <include name="IDR_HISTORY_SYNCED_DEVICE_CARD_HTML"
-               file="synced_device_card.html"
-               type="BINDATA" />
-      <include name="IDR_HISTORY_SYNCED_DEVICE_CARD_JS"
-               file="synced_device_card.js"
-               type="BINDATA" />
-      <include name="IDR_HISTORY_SYNCED_DEVICE_MANAGER_HTML"
-               file="synced_device_manager.html"
-               type="BINDATA" />
-      <include name="IDR_HISTORY_SYNCED_DEVICE_MANAGER_JS"
-               file="synced_device_manager.js"
                type="BINDATA" />
     </includes>
   </release>

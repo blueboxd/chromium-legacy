@@ -23,8 +23,8 @@
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 
 #include "build/build_config.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/renderer/core/editing/ime/input_method_controller.h"
 #include "third_party/blink/renderer/core/event_interface_names.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"

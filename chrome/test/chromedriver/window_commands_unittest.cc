@@ -58,6 +58,19 @@ Status CallWindowCommand(Command command,
                  &timeout);
 }
 
+Status CallWindowCommand(Command command,
+                         StubWebView* web_view,
+                         const base::DictionaryValue& params = {},
+                         std::unique_ptr<base::Value>* value = nullptr) {
+  MockChrome* chrome = new MockChrome();
+  Session session("id", std::unique_ptr<Chrome>(chrome));
+
+  std::unique_ptr<base::Value> local_value;
+  Timeout timeout;
+  return command(&session, web_view, params, value ? value : &local_value,
+                 &timeout);
+}
+
 }  // namespace
 
 TEST(WindowCommandsTest, ExecuteFreeze) {
@@ -239,4 +252,119 @@ TEST(WindowCommandsTest, ProcessInputActionSequencePointerTouch) {
   ASSERT_EQ("pointer1", id);
   action3->GetString("subtype", &action_type);
   ASSERT_EQ("pointerUp", action_type);
+}
+
+namespace {
+
+class AddCookieWebView : public StubWebView {
+ public:
+  explicit AddCookieWebView(std::string documentUrl)
+      : StubWebView("1"), documentUrl_(documentUrl) {}
+  ~AddCookieWebView() override = default;
+
+  Status CallFunction(const std::string& frame,
+                      const std::string& function,
+                      const base::ListValue& args,
+                      std::unique_ptr<base::Value>* result) override {
+    if (function.find("document.URL") != std::string::npos) {
+      *result = std::make_unique<base::Value>(documentUrl_);
+    }
+    return Status(kOk);
+  }
+
+ private:
+  std::string documentUrl_;
+};
+
+}  // namespace
+
+TEST(WindowCommandsTest, ExecuteAddCookie_Valid) {
+  AddCookieWebView webview = AddCookieWebView("http://chromium.org");
+  base::DictionaryValue params;
+  std::unique_ptr<base::DictionaryValue> cookie_params =
+      std::make_unique<base::DictionaryValue>();
+  cookie_params->SetString("name", "testcookie");
+  cookie_params->SetString("value", "cookievalue");
+  cookie_params->SetString("sameSite", "Strict");
+  params.SetDictionary("cookie", std::move(cookie_params));
+  std::unique_ptr<base::Value> result_value;
+  Status status =
+      CallWindowCommand(ExecuteAddCookie, &webview, params, &result_value);
+  ASSERT_EQ(kOk, status.code()) << status.message();
+}
+
+TEST(WindowCommandsTest, ExecuteAddCookie_NameMissing) {
+  AddCookieWebView webview = AddCookieWebView("http://chromium.org");
+  base::DictionaryValue params;
+  std::unique_ptr<base::DictionaryValue> cookie_params =
+      std::make_unique<base::DictionaryValue>();
+  cookie_params->SetString("value", "cookievalue");
+  cookie_params->SetString("sameSite", "invalid");
+  params.SetDictionary("cookie", std::move(cookie_params));
+  std::unique_ptr<base::Value> result_value;
+  Status status =
+      CallWindowCommand(ExecuteAddCookie, &webview, params, &result_value);
+  ASSERT_EQ(kInvalidArgument, status.code()) << status.message();
+  ASSERT_NE(status.message().find("'name'"), std::string::npos)
+      << status.message();
+}
+
+TEST(WindowCommandsTest, ExecuteAddCookie_MissingValue) {
+  AddCookieWebView webview = AddCookieWebView("http://chromium.org");
+  base::DictionaryValue params;
+  std::unique_ptr<base::DictionaryValue> cookie_params =
+      std::make_unique<base::DictionaryValue>();
+  cookie_params->SetString("name", "testcookie");
+  cookie_params->SetString("sameSite", "Strict");
+  params.SetDictionary("cookie", std::move(cookie_params));
+  std::unique_ptr<base::Value> result_value;
+  Status status =
+      CallWindowCommand(ExecuteAddCookie, &webview, params, &result_value);
+  ASSERT_EQ(kInvalidArgument, status.code()) << status.message();
+  ASSERT_NE(status.message().find("'value'"), std::string::npos)
+      << status.message();
+}
+
+TEST(WindowCommandsTest, ExecuteAddCookie_DomainInvalid) {
+  AddCookieWebView webview = AddCookieWebView("file://chromium.org");
+  base::DictionaryValue params;
+  std::unique_ptr<base::DictionaryValue> cookie_params =
+      std::make_unique<base::DictionaryValue>();
+  cookie_params->SetString("name", "testcookie");
+  cookie_params->SetString("value", "cookievalue");
+  cookie_params->SetString("sameSite", "Strict");
+  params.SetDictionary("cookie", std::move(cookie_params));
+  std::unique_ptr<base::Value> result_value;
+  Status status =
+      CallWindowCommand(ExecuteAddCookie, &webview, params, &result_value);
+  ASSERT_EQ(kInvalidCookieDomain, status.code()) << status.message();
+}
+
+TEST(WindowCommandsTest, ExecuteAddCookie_SameSiteEmpty) {
+  AddCookieWebView webview = AddCookieWebView("https://chromium.org");
+  base::DictionaryValue params;
+  std::unique_ptr<base::DictionaryValue> cookie_params =
+      std::make_unique<base::DictionaryValue>();
+  cookie_params->SetString("name", "testcookie");
+  cookie_params->SetString("value", "cookievalue");
+  cookie_params->SetString("sameSite", "");
+  params.SetDictionary("cookie", std::move(cookie_params));
+  std::unique_ptr<base::Value> result_value;
+  Status status =
+      CallWindowCommand(ExecuteAddCookie, &webview, params, &result_value);
+  ASSERT_EQ(kOk, status.code()) << status.message();
+}
+
+TEST(WindowCommandsTest, ExecuteAddCookie_SameSiteNotSet) {
+  AddCookieWebView webview = AddCookieWebView("ftp://chromium.org");
+  base::DictionaryValue params;
+  std::unique_ptr<base::DictionaryValue> cookie_params =
+      std::make_unique<base::DictionaryValue>();
+  cookie_params->SetString("name", "testcookie");
+  cookie_params->SetString("value", "cookievalue");
+  params.SetDictionary("cookie", std::move(cookie_params));
+  std::unique_ptr<base::Value> result_value;
+  Status status =
+      CallWindowCommand(ExecuteAddCookie, &webview, params, &result_value);
+  ASSERT_EQ(kOk, status.code()) << status.message();
 }

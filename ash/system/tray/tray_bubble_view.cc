@@ -250,8 +250,10 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
     layer()->SetColor(UnifiedSystemTrayView::GetBackgroundColor());
     layer()->SetFillsBoundsOpaquely(false);
     layer()->SetIsFastRoundedCorner(true);
-    if (features::IsBackgroundBlurEnabled())
+    if (features::IsBackgroundBlurEnabled()) {
       layer()->SetBackgroundBlur(kUnifiedMenuBackgroundBlur);
+      layer()->SetName("trayBubble");
+    }
   }
 
   auto layout = std::make_unique<BottomAlignedBoxLayout>(this);

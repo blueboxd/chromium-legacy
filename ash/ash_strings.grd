@@ -1937,6 +1937,9 @@ This file contains the strings for ash.
       </message>
 
       <!-- Message center -->
+      <message name="IDS_ASH_MESSAGE_CENTER_ACCESSIBLE_NAME" desc="The spoken feedback name for when accessible focus moves to the message center">
+        Notification Center
+      </message>
       <message name="IDS_ASH_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOOLTIP" desc="The tooltip text for the do not disturb button.">
         Do not disturb
       </message>

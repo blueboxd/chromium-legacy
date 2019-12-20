@@ -2,6 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {FocusGrid} from 'chrome://resources/js/cr/ui/focus_grid.m.js';
+import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
+import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import './shared_style.js';
+import './synced_device_card.js';
+import './strings.js';
+import {BrowserService} from './browser_service.js';
+import {ForeignSession, ForeignSessionTab} from './externs.js';
+import {SyncedTabsHistogram, SYNCED_TABS_HISTOGRAM_NAME} from './constants.js';
+
 /**
  * @typedef {{device: string,
  *           lastUpdateTime: string,
@@ -15,6 +32,8 @@ let ForeignDeviceInternal;
 
 Polymer({
   is: 'history-synced-device-manager',
+
+  _template: html`{__html_template__}`,
 
   properties: {
     /**
@@ -74,16 +93,16 @@ Polymer({
     'update-focus-grid': 'updateFocusGrid_',
   },
 
-  /** @type {?cr.ui.FocusGrid} */
+  /** @type {?FocusGrid} */
   focusGrid_: null,
 
   /** @override */
   attached: function() {
-    this.focusGrid_ = new cr.ui.FocusGrid();
+    this.focusGrid_ = new FocusGrid();
 
     // Update the sign in state.
-    history.BrowserService.getInstance().otherDevicesInitialized();
-    history.BrowserService.getInstance().recordHistogram(
+    BrowserService.getInstance().otherDevicesInitialized();
+    BrowserService.getInstance().recordHistogram(
         SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.INITIALIZED,
         SyncedTabsHistogram.LIMIT);
   },
@@ -149,7 +168,7 @@ Polymer({
 
   /** @private */
   onSignInTap_: function() {
-    history.BrowserService.getInstance().startSignInFlow();
+    BrowserService.getInstance().startSignInFlow();
   },
 
   /** @private */
@@ -157,7 +176,7 @@ Polymer({
     const menu = /** @type {CrActionMenuElement} */ (this.$.menu.get());
     this.actionMenuModel_ = e.detail.tag;
     menu.showAt(e.detail.target);
-    history.BrowserService.getInstance().recordHistogram(
+    BrowserService.getInstance().recordHistogram(
         SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.SHOW_SESSION_MENU,
         SyncedTabsHistogram.LIMIT);
   },
@@ -165,7 +184,7 @@ Polymer({
   /** @private */
   onOpenAllTap_: function() {
     const menu = assert(this.$.menu.getIfExists());
-    const browserService = history.BrowserService.getInstance();
+    const browserService = BrowserService.getInstance();
     browserService.recordHistogram(
         SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.OPEN_ALL,
         SyncedTabsHistogram.LIMIT);
@@ -195,7 +214,7 @@ Polymer({
   /** @private */
   onDeleteSessionTap_: function() {
     const menu = assert(this.$.menu.getIfExists());
-    const browserService = history.BrowserService.getInstance();
+    const browserService = BrowserService.getInstance();
     browserService.recordHistogram(
         SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.HIDE_FOR_NOW,
         SyncedTabsHistogram.LIMIT);
@@ -235,7 +254,7 @@ Polymer({
   showSignInGuide: function(signInState, guestSession) {
     const show = !signInState && !guestSession;
     if (show) {
-      history.BrowserService.getInstance().recordAction(
+      BrowserService.getInstance().recordAction(
           'Signin_Impression_FromRecentTabs');
     }
 
@@ -272,7 +291,7 @@ Polymer({
 
     if (sessionList.length > 0 && !this.hasSeenForeignData_) {
       this.hasSeenForeignData_ = true;
-      history.BrowserService.getInstance().recordHistogram(
+      BrowserService.getInstance().recordHistogram(
           SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.HAS_FOREIGN_DATA,
           SyncedTabsHistogram.LIMIT);
     }

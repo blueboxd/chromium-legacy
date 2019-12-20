@@ -74,9 +74,7 @@ def generate_api(api_jar, output_filename):
     if CLASS_RE.match(line):
       skip_to_next_class = (
           # Skip internal classes, they aren't exposed.
-          UNNAMED_CLASS_RE.match(line) or
-          # Skip experimental classes, they can be modified.
-          'Experimental' in line
+          UNNAMED_CLASS_RE.match(line)
       )
     if skip_to_next_class:
       skip_to_next_class = line != '}'

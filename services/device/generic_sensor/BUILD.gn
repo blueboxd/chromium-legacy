@@ -137,7 +137,7 @@ if (is_android) {
       "//services/device:*",
     ]
 
-    java_files = device_sensors_jni_sources
+    sources = device_sensors_jni_sources
     deps = [
       "//base:base_java",
       "//base:jni_java",

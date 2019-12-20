@@ -325,6 +325,7 @@
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Tarmoq diagnostikasini ishga tushiring<ph name="END_LINK" /></translation>
 <translation id="2473195200299095979">Bu sahifani tarjima qilish</translation>
 <translation id="2479410451996844060">Qidiruv tizimi URL manzili noto‘g‘ri.</translation>
+<translation id="2482370039860827034">Hozirgina shubhali saytda parol kiritdingiz. Chrome hoziroq <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> va boshqa saytlardagi shu parolingizni yangilashni tavsiya qiladi.</translation>
 <translation id="2482878487686419369">Bildirishnomalar</translation>
 <translation id="248348093745724435">Kompyuter parametrlari</translation>
 <translation id="2491120439723279231">Server sertifikatida xatoliklar mavjud.</translation>
@@ -337,6 +338,7 @@
 <translation id="2505268675989099013">Hisobni himoyalash</translation>
 <translation id="2515629240566999685">Mobil aloqa signalini tekshirish</translation>
 <translation id="2521385132275182522">Quyi oʻngdan steplerlash</translation>
+<translation id="2521483867890026383">Hozirgina shubhali saytda parol kiritdingiz. Chromium hoziroq <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> va boshqa saytlardagi shu parolingizni yangilashni tavsiya qiladi.</translation>
 <translation id="2523886232349826891">Faqat shu qurilmada saqlanadi</translation>
 <translation id="2524461107774643265">Qo‘shimcha axborot qo‘shish</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{va yana 1 ta}other{va yana # ta}}</translation>
@@ -602,6 +604,7 @@
 <translation id="3828924085048779000">Parol jumlasini bo‘sh qoldirib bo‘lmaydi.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> tomonidan qoʻshimcha funksiyali kengaytmalar oʻrnatildi. Kengaytmalarda ayrim maʼlumotlaringizga ruxsat bor.</translation>
 <translation id="3832522519263485449">Chapdan bir nechta teshik ochish</translation>
+<translation id="3838154488026099170">Hozirgina shubhali saytda parol kiritdingiz. Chromium hoziroq <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> va boshqa saytlardagi shu parolingizni yangilashni tavsiya qiladi.</translation>
 <translation id="385051799172605136">Orqaga</translation>
 <translation id="3858027520442213535">Sana va vaqtni yangilash</translation>
 <translation id="3884278016824448484">Ziddiyatli qurilma identifikatori</translation>
@@ -639,6 +642,7 @@
 <translation id="4072486802667267160">To‘lovni amalga oshirishda xatolik yuz berdi. Qayta urinib ko‘ring.</translation>
 <translation id="4075732493274867456">Mijoz va server turli xil SSL protokoli versiyasi yoki shifrlar to‘plamidan foydalanmoqda.</translation>
 <translation id="4075941231477579656">Touch ID</translation>
+<translation id="4077092919748553596">Hozirgina shubhali saytda parol kiritdingiz. Chrome hoziroq <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> va boshqa saytlardagi shu parolingizni yangilashni tavsiya qiladi.</translation>
 <translation id="4079302484614802869">Proksi-serverlar o‘zgarmas manzil orqali emas, PAC-fayli manzil orqali sozlangan.</translation>
 <translation id="4082393374666368382">Sozlamalar – Boshqaruv</translation>
 <translation id="4098354747657067197">Ehtiyot bo‘ling, qalbaki sayt!</translation>
@@ -718,6 +722,7 @@
 <translation id="4356973930735388585">Buzg‘unchilar shaxsiy ma’lumotlaringizni (m-n, rasmlar, parollar, xabar va bank karta ma’lumotlari) o‘g‘irlash yoki o‘chirish maqsadida bu sayt orqali zararli dasturlarni o‘rnatishi mumkin.</translation>
 <translation id="4358059973562876591">DnsOverHttpsMode qoidasi bilan xatolik sababli siz tanlagan andozalar tatbiq qilinmasligi mumkin.</translation>
 <translation id="4358461427845829800">To‘lov usullarini boshqarish</translation>
+<translation id="4359160567981085931">Hozirgina shubhali saytda parol kiritdingiz. Chrome yordamga tayyor. Parolni almashtirish va Googlega bu hisob xavf ostida ekanini xabar qilish uchun Hisobni himoyalash ustiga bosing.</translation>
 <translation id="4367563149485757821">Number-12 (Envelope)</translation>
 <translation id="437058704415269440">Hisob balansi</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
@@ -993,6 +998,7 @@
 <translation id="5728056243719941842">C5 (Envelope)</translation>
 <translation id="5730040223043577876">Parolingizni tashkilot domenidan tashqaridagi saytda kiritgan bo‘lsangiz, uni zudlik bilan o‘zgartirishingizni tavsiya etamiz.</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Kartangizni Google hisobingizda saqlang}other{Kartalaringizni Google hisobingizda saqlang}}</translation>
+<translation id="5745980000221562234">{NUM_CARDS,plural, =1{Bu karta uchun virtual raqam ishlatish}other{Kartani tanlang}}</translation>
 <translation id="5763042198335101085">Email manzilini xatosiz kiriting</translation>
 <translation id="5763703224595565476">Brauzeringizda administrator tomonidan Chrome Enterprise foydalanuvchilarini himoyalash tizimi faollashtirildi. Chrome Enterprise foydalanuvchilarini himoyalash tizimida ayrim maʼlumotlaringizga ruxsat bor.</translation>
 <translation id="5765072501007116331">Yetkazib berish usuli va talablari bilan tanishish uchun manzilni tanlang</translation>
@@ -1009,6 +1015,7 @@
 <translation id="5804241973901381774">Ruxsatlar</translation>
 <translation id="5810442152076338065"><ph name="DOMAIN" /> domeniga ulanish eski shifrlar to‘plami bilan shifrlangan.</translation>
 <translation id="5813119285467412249">&amp;Qo‘shish amaliga qaytish</translation>
+<translation id="5824687817967109979">{NUM_CARDS,plural, =1{Toʻlov vaqtida bu kartadan haq olinadi, lekin uning haqiqiy raqamlari bu saytga ulashilmaydi. Qoʻshimcha himoya maqsadida vaqtinchalik CVC kod yaratiladi.}other{Toʻlov vaqtida tanlangan kartadan haq olinadi, lekin uning haqiqiy raqamlari bu saytga ulashilmaydi. Qoʻshimcha himoya maqsadida vaqtinchalik CVC kod yaratiladi.}}</translation>
 <translation id="583281660410589416">Noma’lum</translation>
 <translation id="5838278095973806738">Bu saytda muhim ma’lumotlaringizni (parollar va bank kartalar kabi) kiritmasligingiz kerak, chunki firibgarlar tomonidan o‘g‘irlanishi mumkin.</translation>
 <translation id="5851548754964597211">Ichki oynalar ro‘yxati</translation>
@@ -1465,6 +1472,7 @@ Batafsil axborot:
 <translation id="8042918947222776840">Olib ketish usulini tanlang</translation>
 <translation id="8057711352706143257">“<ph name="SOFTWARE_NAME" />” noto‘g‘ri sozlangan. “<ph name="SOFTWARE_NAME" />” dasturini o‘chirib ko‘ring. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8066955247577885446">Xatolik yuz berdi.</translation>
+<translation id="8067872629359326442">Hozirgina shubhali saytda parol kiritdingiz. Chromium yordamga tayyor. Parolni almashtirish va Googlega bu hisob xavf ostida ekanini xabar qilish uchun Hisobni himoyalash ustiga bosing.</translation>
 <translation id="8074253406171541171">10x13 (Envelope)</translation>
 <translation id="8078141288243656252">Aylantirilganda izohlanmaydi</translation>
 <translation id="8079031581361219619">Sayt qayta yuklansinmi?</translation>
@@ -1481,6 +1489,7 @@ Batafsil axborot:
 <translation id="8105368624971345109">O‘chirib qo‘yish</translation>
 <translation id="8118489163946903409">To‘lov usuli</translation>
 <translation id="8127301229239896662">Kompyuter yoki tarmog‘ingizda “<ph name="SOFTWARE_NAME" />” dasturi noto‘g‘ri o‘rnatilgan. Muammo yechimini administratordan so‘rang.</translation>
+<translation id="8128526133099929547">Hozirgina shubhali saytda parol kiritdingiz. Chrome hoziroq <ph name="WEBSITE_1" /> va boshqa saytlardagi shu parolingizni yangilashni tavsiya qiladi.</translation>
 <translation id="8131740175452115882">Tasdiqlash</translation>
 <translation id="8149426793427495338">Kompyuteringiz uyqu rejimiga o‘tib qoldi.</translation>
 <translation id="8150722005171944719"><ph name="URL" /> manzilidagi faylni o‘qib bo‘lmadi. U o‘chirilgan, ko‘chirilgan yoki ko‘rishni taqiqlovchi ruxsat cheklamalariga ega bo‘lishi mumkin.</translation>
@@ -1498,6 +1507,7 @@ Batafsil axborot:
 <translation id="8218327578424803826">Tayinlangan joylashuv:</translation>
 <translation id="8220146938470311105">C7/C6 (Envelope)</translation>
 <translation id="8220639454292072926">Korporativ hisobotlar</translation>
+<translation id="8221250263817408492">Hozirgina shubhali saytda parol kiritdingiz. Chromium hoziroq <ph name="WEBSITE_1" /> va boshqa saytlardagi shu parolingizni yangilashni tavsiya qiladi.</translation>
 <translation id="8225771182978767009">Bu saytga kirish ushbu kompyuter sozlamalarida taqiqlab qo‘yilgan.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">Sahifani yangi inkognito varaqda ochish</translation>

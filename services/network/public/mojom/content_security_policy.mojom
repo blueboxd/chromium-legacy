@@ -73,6 +73,12 @@ struct CSPDirective {
 struct ContentSecurityPolicy {
   array<CSPDirective> directives;
 
+  // When set to kReport, this CSP will not enforce the directives, just report
+  // the violations.
+  ContentSecurityPolicyType type = kEnforce;
+
+  ContentSecurityPolicySource source = kHTTP;
+
   // Whether this CSP policy uses the new reporting API.
   // https://w3c.github.io/reporting/
   bool use_reporting_api = false;

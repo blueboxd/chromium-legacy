@@ -4,6 +4,8 @@
 
 #include "components/sync/driver/sync_service_crypto.h"
 
+#include <list>
+#include <map>
 #include <utility>
 
 #include "base/bind_helpers.h"
@@ -21,6 +23,7 @@ namespace syncer {
 namespace {
 
 using testing::_;
+using testing::Eq;
 
 sync_pb::EncryptedData MakeEncryptedData(
     const std::string& passphrase,
@@ -56,18 +59,52 @@ class MockCryptoSyncPrefs : public CryptoSyncPrefs {
   MOCK_METHOD1(SetKeystoreEncryptionBootstrapToken, void(const std::string&));
 };
 
-class MockTrustedVaultClient : public TrustedVaultClient {
+// Simple in-memory implementation of TrustedVaultClient.
+class TestTrustedVaultClient : public TrustedVaultClient {
  public:
-  MockTrustedVaultClient() = default;
-  ~MockTrustedVaultClient() override = default;
+  TestTrustedVaultClient() = default;
+  ~TestTrustedVaultClient() override = default;
 
-  MOCK_METHOD2(
-      FetchKeys,
-      void(const std::string& gaia_id,
-           base::OnceCallback<void(const std::vector<std::string>&)> cb));
-  MOCK_METHOD2(StoreKeys,
-               void(const std::string& gaia_id,
-                    const std::vector<std::string>& keys));
+  // Exposes the total number of calls to FetchKeys().
+  int fetch_count() const { return fetch_count_; }
+
+  // Mimics the completion of the next (FIFO) FetchKeys() request.
+  bool CompleteFetchKeysRequest() {
+    if (pending_responses_.empty()) {
+      return false;
+    }
+
+    base::OnceClosure cb = std::move(pending_responses_.front());
+    pending_responses_.pop_front();
+    std::move(cb).Run();
+    return true;
+  }
+
+  // TrustedVaultClient implementation.
+  std::unique_ptr<Subscription> AddKeysChangedObserver(
+      const base::RepeatingClosure& cb) override {
+    return observer_list_.Add(cb);
+  }
+
+  void FetchKeys(
+      const std::string& gaia_id,
+      base::OnceCallback<void(const std::vector<std::string>&)> cb) override {
+    ++fetch_count_;
+    pending_responses_.push_back(
+        base::BindOnce(std::move(cb), gaia_id_to_keys_[gaia_id]));
+  }
+
+  void StoreKeys(const std::string& gaia_id,
+                 const std::vector<std::string>& keys) override {
+    gaia_id_to_keys_[gaia_id] = keys;
+    observer_list_.Notify();
+  }
+
+ private:
+  std::map<std::string, std::vector<std::string>> gaia_id_to_keys_;
+  CallbackList observer_list_;
+  int fetch_count_ = 0;
+  std::list<base::OnceClosure> pending_responses_;
 };
 
 class SyncServiceCryptoTest : public testing::Test {
@@ -93,7 +130,7 @@ class SyncServiceCryptoTest : public testing::Test {
       base::MockCallback<base::RepeatingCallback<void(ConfigureReason)>>>
       reconfigure_cb_;
   testing::NiceMock<MockCryptoSyncPrefs> prefs_;
-  testing::NiceMock<MockTrustedVaultClient> trusted_vault_client_;
+  testing::NiceMock<TestTrustedVaultClient> trusted_vault_client_;
   testing::NiceMock<MockSyncEngine> engine_;
   SyncServiceCrypto crypto_;
 };
@@ -103,6 +140,7 @@ TEST_F(SyncServiceCryptoTest, ShouldExposePassphraseRequired) {
 
   crypto_.SetSyncEngine(CoreAccountInfo(), &engine_);
   ASSERT_FALSE(crypto_.IsPassphraseRequired());
+  ASSERT_THAT(trusted_vault_client_.fetch_count(), Eq(0));
 
   // Mimic the engine determining that a passphrase is required.
   EXPECT_CALL(reconfigure_cb_, Run(CONFIGURE_REASON_CRYPTO));
@@ -131,38 +169,6 @@ TEST_F(SyncServiceCryptoTest, ShouldExposePassphraseRequired) {
 }
 
 TEST_F(SyncServiceCryptoTest,
-       ShouldStoreTrustedVaultKeysBeforeEngineInitialization) {
-  const std::string kAccount = "account1";
-  const std::vector<std::string> kKeys = {"key1"};
-  EXPECT_CALL(trusted_vault_client_, StoreKeys("account1", kKeys));
-  crypto_.AddTrustedVaultDecryptionKeys(kAccount, kKeys);
-}
-
-TEST_F(SyncServiceCryptoTest,
-       ShouldStoreTrustedVaultKeysAfterEngineInitialization) {
-  const CoreAccountInfo kSyncingAccount =
-      MakeAccountInfoWithGaia("syncingaccount");
-  const CoreAccountInfo kOtherAccount = MakeAccountInfoWithGaia("otheraccount");
-  const std::vector<std::string> kSyncingAccountKeys = {"key1"};
-  const std::vector<std::string> kOtherAccountKeys = {"key2"};
-
-  crypto_.SetSyncEngine(kSyncingAccount, &engine_);
-
-  EXPECT_CALL(trusted_vault_client_,
-              StoreKeys(kOtherAccount.gaia, kOtherAccountKeys));
-  EXPECT_CALL(trusted_vault_client_,
-              StoreKeys(kSyncingAccount.gaia, kSyncingAccountKeys));
-
-  // Only the sync-ing account should be propagated to the engine.
-  EXPECT_CALL(engine_, AddTrustedVaultDecryptionKeys(kOtherAccountKeys, _))
-      .Times(0);
-  EXPECT_CALL(engine_, AddTrustedVaultDecryptionKeys(kSyncingAccountKeys, _));
-  crypto_.AddTrustedVaultDecryptionKeys(kOtherAccount.gaia, kOtherAccountKeys);
-  crypto_.AddTrustedVaultDecryptionKeys(kSyncingAccount.gaia,
-                                        kSyncingAccountKeys);
-}
-
-TEST_F(SyncServiceCryptoTest,
        ShouldReadValidTrustedVaultKeysFromClientBeforeInitialization) {
   const CoreAccountInfo kSyncingAccount =
       MakeAccountInfoWithGaia("syncingaccount");
@@ -173,24 +179,17 @@ TEST_F(SyncServiceCryptoTest,
 
   // OnTrustedVaultKeyRequired() called during initialization of the sync
   // engine (i.e. before SetSyncEngine()).
-  EXPECT_CALL(trusted_vault_client_, FetchKeys(_, _)).Times(0);
   crypto_.OnTrustedVaultKeyRequired();
 
-  base::OnceCallback<void(const std::vector<std::string>&)> fetch_keys_cb;
-  EXPECT_CALL(trusted_vault_client_, FetchKeys(kSyncingAccount.gaia, _))
-      .WillOnce(
-          [&](const std::string& gaia_id,
-              base::OnceCallback<void(const std::vector<std::string>&)> cb) {
-            fetch_keys_cb = std::move(cb);
-          });
+  trusted_vault_client_.StoreKeys(kSyncingAccount.gaia, kFetchedKeys);
 
   // Trusted vault keys should be fetched only after the engine initialization
   // is completed.
+  ASSERT_THAT(trusted_vault_client_.fetch_count(), Eq(0));
   crypto_.SetSyncEngine(kSyncingAccount, &engine_);
-  VerifyAndClearExpectations();
 
   // While there is an ongoing fetch, there should be no user action required.
-  ASSERT_TRUE(fetch_keys_cb);
+  EXPECT_THAT(trusted_vault_client_.fetch_count(), Eq(1));
   EXPECT_FALSE(crypto_.IsTrustedVaultKeyRequired());
 
   base::OnceClosure add_keys_cb;
@@ -201,7 +200,7 @@ TEST_F(SyncServiceCryptoTest,
           });
 
   // Mimic completion of the fetch.
-  std::move(fetch_keys_cb).Run(kFetchedKeys);
+  ASSERT_TRUE(trusted_vault_client_.CompleteFetchKeysRequest());
   ASSERT_TRUE(add_keys_cb);
   EXPECT_FALSE(crypto_.IsTrustedVaultKeyRequired());
 
@@ -221,21 +220,16 @@ TEST_F(SyncServiceCryptoTest,
   EXPECT_CALL(reconfigure_cb_, Run(_)).Times(0);
   ASSERT_FALSE(crypto_.IsTrustedVaultKeyRequired());
 
-  base::OnceCallback<void(const std::vector<std::string>&)> fetch_keys_cb;
-  EXPECT_CALL(trusted_vault_client_, FetchKeys(kSyncingAccount.gaia, _))
-      .WillOnce(
-          [&](const std::string& gaia_id,
-              base::OnceCallback<void(const std::vector<std::string>&)> cb) {
-            fetch_keys_cb = std::move(cb);
-          });
+  trusted_vault_client_.StoreKeys(kSyncingAccount.gaia, kFetchedKeys);
 
   // Mimic the engine determining that trusted vault keys are required.
   crypto_.SetSyncEngine(kSyncingAccount, &engine_);
+  ASSERT_THAT(trusted_vault_client_.fetch_count(), Eq(0));
+
   crypto_.OnTrustedVaultKeyRequired();
-  VerifyAndClearExpectations();
 
   // While there is an ongoing fetch, there should be no user action required.
-  ASSERT_TRUE(fetch_keys_cb);
+  EXPECT_THAT(trusted_vault_client_.fetch_count(), Eq(1));
   EXPECT_FALSE(crypto_.IsTrustedVaultKeyRequired());
 
   base::OnceClosure add_keys_cb;
@@ -246,7 +240,7 @@ TEST_F(SyncServiceCryptoTest,
           });
 
   // Mimic completion of the fetch.
-  std::move(fetch_keys_cb).Run(kFetchedKeys);
+  ASSERT_TRUE(trusted_vault_client_.CompleteFetchKeysRequest());
   ASSERT_TRUE(add_keys_cb);
   EXPECT_FALSE(crypto_.IsTrustedVaultKeyRequired());
 
@@ -264,21 +258,16 @@ TEST_F(SyncServiceCryptoTest, ShouldReadInvalidTrustedVaultKeysFromClient) {
 
   ASSERT_FALSE(crypto_.IsTrustedVaultKeyRequired());
 
-  base::OnceCallback<void(const std::vector<std::string>&)> fetch_keys_cb;
-  EXPECT_CALL(trusted_vault_client_, FetchKeys(kSyncingAccount.gaia, _))
-      .WillOnce(
-          [&](const std::string& gaia_id,
-              base::OnceCallback<void(const std::vector<std::string>&)> cb) {
-            fetch_keys_cb = std::move(cb);
-          });
+  trusted_vault_client_.StoreKeys(kSyncingAccount.gaia, kFetchedKeys);
 
   // Mimic the engine determining that trusted vault keys are required.
   crypto_.SetSyncEngine(kSyncingAccount, &engine_);
+  ASSERT_THAT(trusted_vault_client_.fetch_count(), Eq(0));
+
   crypto_.OnTrustedVaultKeyRequired();
-  VerifyAndClearExpectations();
 
   // While there is an ongoing fetch, there should be no user action required.
-  ASSERT_TRUE(fetch_keys_cb);
+  EXPECT_THAT(trusted_vault_client_.fetch_count(), Eq(1));
   EXPECT_FALSE(crypto_.IsTrustedVaultKeyRequired());
 
   base::OnceClosure add_keys_cb;
@@ -289,7 +278,7 @@ TEST_F(SyncServiceCryptoTest, ShouldReadInvalidTrustedVaultKeysFromClient) {
           });
 
   // Mimic completion of the client.
-  std::move(fetch_keys_cb).Run(kFetchedKeys);
+  ASSERT_TRUE(trusted_vault_client_.CompleteFetchKeysRequest());
   ASSERT_TRUE(add_keys_cb);
   EXPECT_FALSE(crypto_.IsTrustedVaultKeyRequired());
 
@@ -297,6 +286,157 @@ TEST_F(SyncServiceCryptoTest, ShouldReadInvalidTrustedVaultKeysFromClient) {
   EXPECT_CALL(reconfigure_cb_, Run(CONFIGURE_REASON_CRYPTO));
   std::move(add_keys_cb).Run();
   EXPECT_TRUE(crypto_.IsTrustedVaultKeyRequired());
+}
+
+// Similar to ShouldReadInvalidTrustedVaultKeysFromClient: the vault
+// initially has no valid keys, leading to IsTrustedVaultKeyRequired().
+// Later, the vault gets populated with the keys, which should trigger
+// a fetch and eventually resolve the encryption issue.
+TEST_F(SyncServiceCryptoTest, ShouldRefetchTrustedVaultKeysWhenChangeObserved) {
+  const CoreAccountInfo kSyncingAccount =
+      MakeAccountInfoWithGaia("syncingaccount");
+  const std::vector<std::string> kInitialKeys = {"key1"};
+  const std::vector<std::string> kNewKeys = {"key1", "key2"};
+
+  trusted_vault_client_.StoreKeys(kSyncingAccount.gaia, kInitialKeys);
+
+  // The engine replies with OnTrustedVaultKeyAccepted() only if |kNewKeys| are
+  // provided.
+  ON_CALL(engine_, AddTrustedVaultDecryptionKeys(_, _))
+      .WillByDefault(
+          [&](const std::vector<std::string>& keys, base::OnceClosure done_cb) {
+            if (keys == kNewKeys) {
+              crypto_.OnTrustedVaultKeyAccepted();
+            }
+            std::move(done_cb).Run();
+          });
+
+  // Mimic initialization of the engine where trusted vault keys are needed and
+  // |kInitialKeys| are fetched, which are insufficient, and hence
+  // IsTrustedVaultKeyRequired() is exposed.
+  crypto_.SetSyncEngine(kSyncingAccount, &engine_);
+  crypto_.OnTrustedVaultKeyRequired();
+  ASSERT_THAT(trusted_vault_client_.fetch_count(), Eq(1));
+  ASSERT_TRUE(trusted_vault_client_.CompleteFetchKeysRequest());
+  ASSERT_TRUE(crypto_.IsTrustedVaultKeyRequired());
+
+  // Mimic keys being added to the vault, which triggers a notification to
+  // observers (namely |crypto_|), leading to a second fetch.
+  trusted_vault_client_.StoreKeys(kSyncingAccount.gaia, kNewKeys);
+  EXPECT_THAT(trusted_vault_client_.fetch_count(), Eq(2));
+  EXPECT_CALL(reconfigure_cb_, Run(CONFIGURE_REASON_CRYPTO));
+  EXPECT_TRUE(trusted_vault_client_.CompleteFetchKeysRequest());
+  EXPECT_FALSE(crypto_.IsTrustedVaultKeyRequired());
+}
+
+// Same as above but the new keys become available during an ongoing FetchKeys()
+// request.
+TEST_F(SyncServiceCryptoTest,
+       ShouldDeferTrustedVaultKeyFetchingWhenChangeObservedWhileOngoingFetch) {
+  const CoreAccountInfo kSyncingAccount =
+      MakeAccountInfoWithGaia("syncingaccount");
+  const std::vector<std::string> kInitialKeys = {"key1"};
+  const std::vector<std::string> kNewKeys = {"key1", "key2"};
+
+  trusted_vault_client_.StoreKeys(kSyncingAccount.gaia, kInitialKeys);
+
+  // The engine replies with OnTrustedVaultKeyAccepted() only if |kNewKeys| are
+  // provided.
+  ON_CALL(engine_, AddTrustedVaultDecryptionKeys(_, _))
+      .WillByDefault(
+          [&](const std::vector<std::string>& keys, base::OnceClosure done_cb) {
+            if (keys == kNewKeys) {
+              crypto_.OnTrustedVaultKeyAccepted();
+            }
+            std::move(done_cb).Run();
+          });
+
+  // Mimic initialization of the engine where trusted vault keys are needed and
+  // |kInitialKeys| are in the process of being fetched.
+  crypto_.SetSyncEngine(kSyncingAccount, &engine_);
+  crypto_.OnTrustedVaultKeyRequired();
+  ASSERT_THAT(trusted_vault_client_.fetch_count(), Eq(1));
+  ASSERT_FALSE(crypto_.IsTrustedVaultKeyRequired());
+
+  // While there is an ongoing fetch, mimic keys being added to the vault, which
+  // triggers a notification to observers (namely |crypto_|).
+  trusted_vault_client_.StoreKeys(kSyncingAccount.gaia, kNewKeys);
+
+  // Because there's already an ongoing fetch, a second one should not have been
+  // triggered yet and should be deferred instead.
+  EXPECT_THAT(trusted_vault_client_.fetch_count(), Eq(1));
+
+  // As soon as the first fetch completes, the second one (deferred) should be
+  // started.
+  EXPECT_TRUE(trusted_vault_client_.CompleteFetchKeysRequest());
+  EXPECT_THAT(trusted_vault_client_.fetch_count(), Eq(2));
+  EXPECT_FALSE(crypto_.IsTrustedVaultKeyRequired());
+
+  // The completion of the second fetch should resolve the encryption issue.
+  EXPECT_CALL(reconfigure_cb_, Run(CONFIGURE_REASON_CRYPTO));
+  EXPECT_TRUE(trusted_vault_client_.CompleteFetchKeysRequest());
+  EXPECT_THAT(trusted_vault_client_.fetch_count(), Eq(2));
+  EXPECT_FALSE(crypto_.IsTrustedVaultKeyRequired());
+}
+
+// The engine gets initialized and the vault initially has insufficient keys,
+// leading to IsTrustedVaultKeyRequired(). Later, keys are added to the vault
+// *twice*, where the later event should be handled as a deferred fetch.
+TEST_F(
+    SyncServiceCryptoTest,
+    ShouldDeferTrustedVaultKeyFetchingWhenChangeObservedWhileOngoingRefetch) {
+  const CoreAccountInfo kSyncingAccount =
+      MakeAccountInfoWithGaia("syncingaccount");
+  const std::vector<std::string> kInitialKeys = {"key1"};
+  const std::vector<std::string> kIntermediateKeys = {"key1", "key2"};
+  const std::vector<std::string> kLatestKeys = {"key1", "key2", "key3"};
+
+  trusted_vault_client_.StoreKeys(kSyncingAccount.gaia, kInitialKeys);
+
+  // The engine replies with OnTrustedVaultKeyAccepted() only if |kLatestKeys|
+  // are provided.
+  ON_CALL(engine_, AddTrustedVaultDecryptionKeys(_, _))
+      .WillByDefault(
+          [&](const std::vector<std::string>& keys, base::OnceClosure done_cb) {
+            if (keys == kLatestKeys) {
+              crypto_.OnTrustedVaultKeyAccepted();
+            }
+            std::move(done_cb).Run();
+          });
+
+  // Mimic initialization of the engine where trusted vault keys are needed and
+  // |kInitialKeys| are fetched, which are insufficient, and hence
+  // IsTrustedVaultKeyRequired() is exposed.
+  crypto_.SetSyncEngine(kSyncingAccount, &engine_);
+  crypto_.OnTrustedVaultKeyRequired();
+  ASSERT_THAT(trusted_vault_client_.fetch_count(), Eq(1));
+  ASSERT_TRUE(trusted_vault_client_.CompleteFetchKeysRequest());
+  ASSERT_TRUE(crypto_.IsTrustedVaultKeyRequired());
+
+  // Mimic keys being added to the vault, which triggers a notification to
+  // observers (namely |crypto_|), leading to a second fetch.
+  trusted_vault_client_.StoreKeys(kSyncingAccount.gaia, kIntermediateKeys);
+  EXPECT_THAT(trusted_vault_client_.fetch_count(), Eq(2));
+
+  // While the second fetch is ongoing, mimic more keys being added to the
+  // vault, which triggers a notification to observers (namely |crypto_|).
+  trusted_vault_client_.StoreKeys(kSyncingAccount.gaia, kLatestKeys);
+
+  // Because there's already an ongoing fetch, a third one should not have been
+  // triggered yet and should be deferred instead.
+  EXPECT_THAT(trusted_vault_client_.fetch_count(), Eq(2));
+
+  // As soon as the second fetch completes, the third one (deferred) should be
+  // started.
+  EXPECT_TRUE(trusted_vault_client_.CompleteFetchKeysRequest());
+  EXPECT_THAT(trusted_vault_client_.fetch_count(), Eq(3));
+  EXPECT_TRUE(crypto_.IsTrustedVaultKeyRequired());
+
+  // The completion of the third fetch should resolve the encryption issue.
+  EXPECT_CALL(reconfigure_cb_, Run(CONFIGURE_REASON_CRYPTO));
+  EXPECT_TRUE(trusted_vault_client_.CompleteFetchKeysRequest());
+  EXPECT_THAT(trusted_vault_client_.fetch_count(), Eq(3));
+  EXPECT_FALSE(crypto_.IsTrustedVaultKeyRequired());
 }
 
 }  // namespace

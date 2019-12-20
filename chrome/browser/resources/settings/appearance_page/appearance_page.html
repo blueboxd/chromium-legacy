@@ -17,10 +17,6 @@
 <link rel="import" href="../settings_vars_css.html">
 <link rel="import" href="home_url_input.html">
 
-<if expr="chromeos">
-<link rel="import" href="../appearance_page/wallpaper_browser_proxy.html">
-</if>
-
 <dom-module id="settings-appearance-page">
   <template>
     <style include="settings-shared md-select iron-flex">
@@ -47,20 +43,6 @@
     <settings-animated-pages id="pages" section="appearance"
         focus-config="[[focusConfig_]]">
       <div route-path="default">
-<if expr="chromeos">
-        <cr-link-row  id="wallpaperButton"
-            hidden="[[!pageVisibility.setWallpaper]]"
-            on-click="openWallpaperManager_" label="$i18n{setWallpaper}"
-            sub-label="$i18n{openWallpaperApp}"
-            disabled="[[isWallpaperPolicyControlled_]]" external>
-          <template is="dom-if" if="[[isWallpaperPolicyControlled_]]">
-            <cr-policy-indicator id="wallpaperPolicyIndicator"
-                indicator-type="devicePolicy">
-            </cr-policy-indicator>
-          </template>
-        </cr-link-row>
-        <div class="hr"></div>
-</if>
         <div class="settings-row continuation" id="themeRow"
             hidden="[[!pageVisibility.setTheme]]">
           <cr-link-row class="first" hidden="[[!pageVisibility.setTheme]]"

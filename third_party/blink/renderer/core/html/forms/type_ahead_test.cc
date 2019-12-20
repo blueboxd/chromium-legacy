@@ -6,7 +6,7 @@
 
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/web_keyboard_event.h"
+#include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 
 namespace blink {

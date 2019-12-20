@@ -23,7 +23,7 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/resource_type.h"
 #include "net/cookies/canonical_cookie.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 
 namespace content {
 class NavigationHandle;

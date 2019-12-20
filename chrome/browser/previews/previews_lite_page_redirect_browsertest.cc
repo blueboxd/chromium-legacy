@@ -921,7 +921,7 @@ class PreviewsLitePageRedirectServerBrowserTest
 
 // Param is true if DRP holdback should be enabled.
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     PreviewsLitePageRedirectServerBrowserTest,
     ::testing::Bool());
 
@@ -1637,7 +1637,7 @@ class PreviewsLitePageRedirectServerTimeoutBrowserTest
 
 // Param is true if DRP holdback should be enabled.
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     PreviewsLitePageRedirectServerTimeoutBrowserTest,
     ::testing::Bool());
 
@@ -1705,7 +1705,7 @@ class PreviewsLitePageRedirectServerBadServerBrowserTest
 
 // Param is true if DRP holdback should be enabled.
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     PreviewsLitePageRedirectServerBadServerBrowserTest,
     ::testing::Bool());
 
@@ -1751,7 +1751,7 @@ class PreviewsLitePageRedirectServerDataSaverBrowserTest
 
 // Param is true if DRP holdback should be enabled.
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     PreviewsLitePageRedirectServerDataSaverBrowserTest,
     ::testing::Bool());
 
@@ -1788,7 +1788,7 @@ class PreviewsLitePageRedirectServerNoDataSaverHeaderBrowserTest
 
 // Param is true if DRP holdback should be enabled.
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     PreviewsLitePageRedirectServerNoDataSaverHeaderBrowserTest,
     ::testing::Bool());
 
@@ -1829,7 +1829,7 @@ class PreviewsLitePageRedirectNotificationDSEnabledBrowserTest
 
 // Pecond param is true if DRP holdback should be enabled.
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     PreviewsLitePageRedirectNotificationDSEnabledBrowserTest,
     ::testing::Bool());
 
@@ -1889,7 +1889,7 @@ class PreviewsLitePageRedirectDSDisabledBrowserTest
 
 // Param is true if DRP holdback should be enabled.
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     PreviewsLitePageRedirectDSDisabledBrowserTest,
     ::testing::Bool());
 
@@ -1921,7 +1921,7 @@ class PreviewsLitePageRedirectControlBrowserTest
 
 // Param is true if DRP holdback should be enabled.
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     PreviewsLitePageRedirectControlBrowserTest,
     ::testing::Bool());
 
@@ -2010,7 +2010,7 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     PreviewsLitePageRedirectServerNetworkIsolationBrowserTest,
     ::testing::Values(NetworkIsolationKeyMode::kNone,
                       NetworkIsolationKeyMode::kTopFrameOrigin,
@@ -2053,7 +2053,7 @@ class PreviewsLitePageRedirectAndPageHintsBrowserTest
 
 // Param is true if DRP holdback should be enabled.
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     PreviewsLitePageRedirectAndPageHintsBrowserTest,
     ::testing::Bool());
 
@@ -2295,22 +2295,22 @@ class CoinFlipHoldbackExperimentBrowserTestWithCoinFlipHoldbackDisabled
 
 // Param is true if DRP holdback should be enabled.
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     CoinFlipHoldbackExperimentBrowserTest,
     ::testing::Bool());
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     CoinFlipHoldbackExperimentBrowserTestWithRandomNavigationCoinFlip,
     ::testing::Bool());
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     CoinFlipHoldbackExperimentBrowserTestWithoutRandomNavigationCoinFlip,
     ::testing::Bool());
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     CoinFlipHoldbackExperimentBrowserTestWithCoinFlipHoldbackDisabled,
     ::testing::Bool());
 

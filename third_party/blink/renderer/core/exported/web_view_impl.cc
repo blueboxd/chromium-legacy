@@ -39,12 +39,12 @@
 #include "build/build_config.h"
 #include "cc/layers/picture_layer.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/input/web_menu_source_type.h"
 #include "third_party/blink/public/common/media/media_player_action.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/common/plugin/plugin_action.h"
 #include "third_party/blink/public/platform/web_float_point.h"
-#include "third_party/blink/public/platform/web_input_event.h"
-#include "third_party/blink/public/platform/web_menu_source_type.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
 #include "third_party/blink/public/platform/web_text_input_info.h"
@@ -301,7 +301,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
 
   AllInstances().insert(this);
 
-  page_importance_signals_.SetObserver(client);
   resize_viewport_anchor_ =
       MakeGarbageCollected<ResizeViewportAnchor>(*AsView().page);
 }
@@ -2979,10 +2978,8 @@ void WebViewImpl::DidCommitLoad(bool is_new_navigation,
     should_dispatch_first_layout_after_finished_parsing_ = true;
     should_dispatch_first_layout_after_finished_loading_ = true;
 
-    if (is_new_navigation) {
+    if (is_new_navigation)
       GetPageScaleConstraintsSet().SetNeedsReset(true);
-      page_importance_signals_.OnCommitLoad();
-    }
   }
 
   // Give the visual viewport's scroll layer its initial size.
@@ -3104,10 +3101,6 @@ void WebViewImpl::SetMainFrameOverlayColor(SkColor color) {
   DCHECK(AsView().page->MainFrame());
   if (auto* local_frame = DynamicTo<LocalFrame>(AsView().page->MainFrame()))
     local_frame->SetMainFrameColorOverlay(color);
-}
-
-WebPageImportanceSignals* WebViewImpl::PageImportanceSignals() {
-  return &page_importance_signals_;
 }
 
 Element* WebViewImpl::FocusedElement() const {

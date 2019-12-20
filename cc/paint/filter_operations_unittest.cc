@@ -3,7 +3,11 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+#include <limits>
+#include <string>
+#include <utility>
 
+#include "cc/paint/filter_operation.h"
 #include "cc/paint/filter_operations.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -904,6 +908,28 @@ TEST(FilterOperationsTest, ToString) {
   EXPECT_EQ(std::string("{\"FilterOperations\":[{\"type\":2,\"amount\":3.0},"
                         "{\"type\":8,\"amount\":2.0}]}"),
             filters.ToString());
+}
+
+TEST(FilterOperationsTest, HasFilterOfType) {
+  FilterOperations filters;
+
+  EXPECT_FALSE(filters.HasFilterOfType(FilterOperation::GRAYSCALE));
+  EXPECT_FALSE(filters.HasFilterOfType(FilterOperation::BLUR));
+  EXPECT_FALSE(filters.HasReferenceFilter());
+  EXPECT_FALSE(filters.HasFilterOfType(FilterOperation::OPACITY));
+  EXPECT_FALSE(filters.HasFilterOfType(FilterOperation::ZOOM));
+
+  filters.Append(FilterOperation::CreateGrayscaleFilter(0.5f));
+  filters.Append(FilterOperation::CreateBlurFilter(20));
+  sk_sp<PaintFilter> filter(sk_make_sp<BlurPaintFilter>(
+      1.f, 1.f, BlurPaintFilter::TileMode::kClampToBlack_TileMode, nullptr));
+  filters.Append(FilterOperation::CreateReferenceFilter(std::move(filter)));
+
+  EXPECT_TRUE(filters.HasFilterOfType(FilterOperation::GRAYSCALE));
+  EXPECT_TRUE(filters.HasFilterOfType(FilterOperation::BLUR));
+  EXPECT_TRUE(filters.HasReferenceFilter());
+  EXPECT_FALSE(filters.HasFilterOfType(FilterOperation::OPACITY));
+  EXPECT_FALSE(filters.HasFilterOfType(FilterOperation::ZOOM));
 }
 
 }  // namespace

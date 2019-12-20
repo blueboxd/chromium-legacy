@@ -19,6 +19,6 @@ if (current_toolchain == default_toolchain) {
     deps = [
       "//base:base_java",
     ]
-    java_files = _jni_sources
+    sources = _jni_sources
   }
 }

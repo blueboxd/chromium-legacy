@@ -54,7 +54,7 @@
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/web/web_ime_text_span.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/platform/aura_window_properties.h"

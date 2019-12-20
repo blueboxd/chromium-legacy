@@ -31,7 +31,7 @@ bool IsLogicalWidthTreatedAsAuto(const ComputedStyle& style) {
   return IsTable(style) || style.LogicalWidth().IsAuto();
 }
 
-bool IsLogicalHeightTreatAsAuto(const ComputedStyle& style) {
+bool IsLogicalHeightTreatedAsAuto(const ComputedStyle& style) {
   return IsTable(style) || style.LogicalHeight().IsAuto();
 }
 
@@ -334,7 +334,7 @@ bool AbsoluteNeedsChildBlockSize(const ComputedStyle& style) {
   return is_logical_height_intrinsic ||
          style.LogicalMinHeight().IsIntrinsic() ||
          style.LogicalMaxHeight().IsIntrinsic() ||
-         (IsLogicalHeightTreatAsAuto(style) &&
+         (IsLogicalHeightTreatedAsAuto(style) &&
           (style.LogicalTop().IsAuto() || style.LogicalBottom().IsAuto()));
 }
 
@@ -463,7 +463,7 @@ void ComputeFullAbsoluteWithChildBlockSize(
       child_block_size.value_or(kIndefiniteSize);
 
   base::Optional<LayoutUnit> block_size;
-  if (!IsLogicalHeightTreatAsAuto(style)) {
+  if (!IsLogicalHeightTreatedAsAuto(style)) {
     block_size = ResolveMainBlockLength(
         space, style, border_padding, style.LogicalHeight(),
         child_block_size_or_indefinite, LengthResolvePhase::kLayout);

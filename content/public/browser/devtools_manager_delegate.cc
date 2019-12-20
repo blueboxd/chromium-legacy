@@ -62,7 +62,7 @@ void DevToolsManagerDelegate::ClientDetached(DevToolsAgentHost* agent_host,
 void DevToolsManagerDelegate::HandleCommand(DevToolsAgentHost* agent_host,
                                             DevToolsAgentHostClient* client,
                                             const std::string& method,
-                                            const std::string& message,
+                                            base::span<const uint8_t> message,
                                             NotHandledCallback callback) {
   std::move(callback).Run(message);
 }

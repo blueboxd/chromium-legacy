@@ -16,10 +16,9 @@ namespace blink {
 
 // Origin Policy spec: https://wicg.github.io/origin-policy/
 struct BLINK_EXPORT WebOriginPolicy {
-  // The feature policy that is dictated by the origin policy. Each feature
-  // is one member of the array.
+  // The feature policy that is dictated by the origin policy, if any.
   // https://w3c.github.io/webappsec-feature-policy/
-  WebVector<WebString> features;
+  WebString feature_policy;
 
   // These two fields together represent the CSP that should be applied to the
   // origin, based on the origin policy.

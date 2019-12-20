@@ -48,6 +48,12 @@ id<GREYAction> TapWebElementWithId(const std::string& element_id);
 id<GREYAction> TapWebElementWithIdInFrame(const std::string& element_id,
                                           const int frame_index);
 
+// Action to scroll to top of a UIScrollView.
+// On iOS 13 the settings menu appears as a card that can be dismissed with a
+// downward swipe, for this reason we need to swipe up programmatically to
+// avoid dismissing the VC.
+id<GREYAction> ScrollToTop();
+
 }  // namespace chrome_test_util
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_ACTIONS_H_

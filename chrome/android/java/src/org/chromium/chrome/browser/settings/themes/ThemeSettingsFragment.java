@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.settings.themes;
 
-import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.DARKEN_WEBSITES_ENABLED_KEY;
-import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.UI_THEME_SETTING_KEY;
+import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.UI_THEME_DARKEN_WEBSITES_ENABLED;
+import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.UI_THEME_SETTING;
 
 import android.os.Build;
 import android.os.Bundle;
@@ -35,16 +35,16 @@ public class ThemeSettingsFragment extends PreferenceFragmentCompat {
         RadioButtonGroupThemePreference radioButtonGroupThemePreference =
                 (RadioButtonGroupThemePreference) findPreference(PREF_UI_THEME_PREF);
         radioButtonGroupThemePreference.initialize(NightModeUtils.getThemeSetting(),
-                sharedPreferencesManager.readBoolean(DARKEN_WEBSITES_ENABLED_KEY, false));
+                sharedPreferencesManager.readBoolean(UI_THEME_DARKEN_WEBSITES_ENABLED, false));
 
         radioButtonGroupThemePreference.setOnPreferenceChangeListener((preference, newValue) -> {
             if (ChromeFeatureList.isEnabled(
                         ChromeFeatureList.DARKEN_WEBSITES_CHECKBOX_IN_THEMES_SETTING)) {
-                sharedPreferencesManager.writeBoolean(DARKEN_WEBSITES_ENABLED_KEY,
+                sharedPreferencesManager.writeBoolean(UI_THEME_DARKEN_WEBSITES_ENABLED,
                         radioButtonGroupThemePreference.isDarkenWebsitesEnabled());
             }
             int theme = (int) newValue;
-            sharedPreferencesManager.writeInt(UI_THEME_SETTING_KEY, theme);
+            sharedPreferencesManager.writeInt(UI_THEME_SETTING, theme);
             return true;
         });
     }

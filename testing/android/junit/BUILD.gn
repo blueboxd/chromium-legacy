@@ -10,7 +10,7 @@ java_library("junit_test_support") {
   # Skip platform checks since Robolectric depends on requires_android targets.
   bypass_platform_checks = true
   testonly = true
-  java_files = [
+  sources = [
     "java/src/org/chromium/testing/local/CustomShadowApplicationPackageManager.java",
     "java/src/org/chromium/testing/local/CustomShadowUserManager.java",
     "java/src/org/chromium/testing/local/GtestComputer.java",
@@ -34,7 +34,7 @@ java_library("junit_test_support") {
 }
 
 junit_binary("junit_unit_tests") {
-  java_files = [
+  sources = [
     "javatests/src/org/chromium/testing/local/GtestFilterTest.java",
     "javatests/src/org/chromium/testing/local/GtestLoggerTest.java",
     "javatests/src/org/chromium/testing/local/PackageFilterTest.java",

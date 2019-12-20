@@ -104,10 +104,10 @@
 #include "url/url_constants.h"
 
 #if defined(OS_ANDROID)
+#include "third_party/blink/public/common/input/web_gesture_device.h"
+#include "third_party/blink/public/common/input/web_gesture_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
-#include "third_party/blink/public/platform/web_gesture_device.h"
-#include "third_party/blink/public/platform/web_gesture_event.h"
-#include "third_party/blink/public/platform/web_input_event.h"
 #endif
 
 #if defined(OS_WIN)

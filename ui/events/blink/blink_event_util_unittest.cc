@@ -7,10 +7,10 @@
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/web_gesture_event.h"
-#include "third_party/blink/public/platform/web_input_event.h"
-#include "third_party/blink/public/platform/web_mouse_wheel_event.h"
-#include "third_party/blink/public/platform/web_pointer_event.h"
+#include "third_party/blink/public/common/input/web_gesture_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
+#include "third_party/blink/public/common/input/web_pointer_event.h"
 #include "ui/events/gesture_event_details.h"
 
 namespace ui {

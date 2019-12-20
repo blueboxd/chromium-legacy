@@ -497,7 +497,8 @@ void CreditCardAccessManager::OnCVCAuthenticationComplete(
 #if !defined(OS_IOS)
 void CreditCardAccessManager::OnFIDOAuthenticationComplete(
     bool did_succeed,
-    const CreditCard* card) {
+    const CreditCard* card,
+    const base::string16& cvc) {
 #if !defined(OS_ANDROID)
   // Close the Webauthn verify pending dialog. If FIDO authentication succeeded,
   // card is filled to the form, otherwise fall back to CVC authentication which
@@ -507,7 +508,7 @@ void CreditCardAccessManager::OnFIDOAuthenticationComplete(
 
   if (did_succeed) {
     is_authentication_in_progress_ = false;
-    accessor_->OnCreditCardFetched(did_succeed, card);
+    accessor_->OnCreditCardFetched(did_succeed, card, cvc);
     can_fetch_unmask_details_.Signal();
   } else {
     // Fall back to CVC if WebAuthn failed.

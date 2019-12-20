@@ -155,30 +155,32 @@ void PowerButtonMenuView::CreateItems() {
       l10n_util::GetStringUTF16(IDS_ASH_POWER_BUTTON_MENU_POWER_OFF_BUTTON));
   AddChildView(power_off_item_);
 
-  const LoginStatus login_status =
-      Shell::Get()->session_controller()->login_status();
+  const SessionControllerImpl* const session_controller =
+      Shell::Get()->session_controller();
+  const LoginStatus login_status = session_controller->login_status();
   if (login_status != LoginStatus::NOT_LOGGED_IN) {
     sign_out_item_ = new PowerButtonMenuItemView(
         this, kSystemPowerButtonMenuSignOutIcon,
         user::GetLocalizedSignOutStringForStatus(login_status, false));
     AddChildView(sign_out_item_);
+  }
 
-    const SessionControllerImpl* const session_controller =
-        Shell::Get()->session_controller();
-    if (!session_controller->IsScreenLocked()) {
-      if (session_controller->CanLockScreen()) {
-        lock_screen_item_ = new PowerButtonMenuItemView(
-            this, kSystemPowerButtonMenuLockScreenIcon,
-            l10n_util::GetStringUTF16(
-                IDS_ASH_POWER_BUTTON_MENU_LOCK_SCREEN_BUTTON));
-        AddChildView(lock_screen_item_);
-      }
+  if (login_status != LoginStatus::LOCKED &&
+      session_controller->CanLockScreen()) {
+    lock_screen_item_ = new PowerButtonMenuItemView(
+        this, kSystemPowerButtonMenuLockScreenIcon,
+        l10n_util::GetStringUTF16(
+            IDS_ASH_POWER_BUTTON_MENU_LOCK_SCREEN_BUTTON));
+    AddChildView(lock_screen_item_);
+  }
 
-      feedback_item_ = new PowerButtonMenuItemView(
-          this, kSystemPowerButtonMenuFeedbackIcon,
-          l10n_util::GetStringUTF16(IDS_ASH_POWER_BUTTON_MENU_FEEDBACK_BUTTON));
-      AddChildView(feedback_item_);
-    }
+  if (login_status != LoginStatus::NOT_LOGGED_IN &&
+      login_status != LoginStatus::LOCKED &&
+      login_status != LoginStatus::KIOSK_APP) {
+    feedback_item_ = new PowerButtonMenuItemView(
+        this, kSystemPowerButtonMenuFeedbackIcon,
+        l10n_util::GetStringUTF16(IDS_ASH_POWER_BUTTON_MENU_FEEDBACK_BUTTON));
+    AddChildView(feedback_item_);
   }
 }
 

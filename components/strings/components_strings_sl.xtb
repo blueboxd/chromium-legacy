@@ -326,6 +326,7 @@
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Izvajanje orodja za omrežno diagnostiko<ph name="END_LINK" /></translation>
 <translation id="2473195200299095979">Prevede to stran</translation>
 <translation id="2479410451996844060">Neveljaven URL iskanja.</translation>
+<translation id="2482370039860827034">Pravkar ste vnesli geslo na zavajajočem spletnem mestu. Chrome priporoča, da obiščete <ph name="WEBSITE_1" /> in <ph name="WEBSITE_2" /> ter druga spletna mesta, na katerih uporabljate to geslo, in ga takoj spremenite.</translation>
 <translation id="2482878487686419369">Obvestila</translation>
 <translation id="248348093745724435">Pravilniki naprave</translation>
 <translation id="2491120439723279231">V potrdilu strežnika so napake.</translation>
@@ -338,6 +339,7 @@
 <translation id="2505268675989099013">Zaščita računa</translation>
 <translation id="2515629240566999685">preveriti signal na svojem območju</translation>
 <translation id="2521385132275182522">Spenjanje spodaj desno</translation>
+<translation id="2521483867890026383">Pravkar ste vnesli geslo na zavajajočem spletnem mestu. Chromium priporoča, da obiščete <ph name="WEBSITE_1" /> in <ph name="WEBSITE_2" /> ter druga spletna mesta, na katerih uporabljate to geslo, in ga takoj spremenite.</translation>
 <translation id="2523886232349826891">Shranjena samo v tej napravi</translation>
 <translation id="2524461107774643265">Dodajanje več podatkov</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{in še 1}one{in še #}two{in še #}few{in še #}other{in še #}}</translation>
@@ -607,6 +609,7 @@
 <translation id="3828924085048779000">Prazno geslo ni dovoljeno.</translation>
 <translation id="3831915413245941253">Domena <ph name="ENROLLMENT_DOMAIN" /> je namestila razširitve zaradi dodatnih funkcij. Razširitve imajo dostop do nekaterih vaših podatkov.</translation>
 <translation id="3832522519263485449">Večkratno luknjanje na levi</translation>
+<translation id="3838154488026099170">Pravkar ste vnesli geslo na zavajajočem spletnem mestu. Chromium priporoča, da obiščete <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, in <ph name="WEBSITE_3" /> ter druga spletna mesta, na katerih uporabljate to geslo, in ga takoj spremenite.</translation>
 <translation id="385051799172605136">Nazaj</translation>
 <translation id="3858027520442213535">Posodobi datum in uro</translation>
 <translation id="3884278016824448484">Identifikator naprave je v sporu</translation>
@@ -644,6 +647,7 @@
 <translation id="4072486802667267160">Pri obdelavi naročila je prišlo do napake. Poskusite znova.</translation>
 <translation id="4075732493274867456">Odjemalec in strežnik ne podpirata skupne različice protokola SSL ali šifrirne zbirke.</translation>
 <translation id="4075941231477579656">Touch ID</translation>
+<translation id="4077092919748553596">Pravkar ste vnesli geslo na zavajajočem spletnem mestu. Chrome priporoča, da obiščete <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, in <ph name="WEBSITE_3" /> ter druga spletna mesta, na katerih uporabljate to geslo, in ga takoj spremenite.</translation>
 <translation id="4079302484614802869">Konfiguracija strežnika proxy je nastavljena na uporabo URL-ja skripta .pac, ne na stalne strežnike proxy.</translation>
 <translation id="4082393374666368382">Nastavitve – upravljanje</translation>
 <translation id="4098354747657067197">Zavajajoče spletno mesto</translation>
@@ -723,6 +727,7 @@
 <translation id="4356973930735388585">Napadalci na tem spletnem mestu lahko poskusijo v vašem računalniku namestiti nevarne programe, ki kradejo ali brišejo podatke (na primer fotografije, gesla, sporočila in podatke kreditnih kartic).</translation>
 <translation id="4358059973562876591">Navedenih predlog morda ne bo mogoče uporabiti zaradi napake pravilnika DnsOverHttpsMode.</translation>
 <translation id="4358461427845829800">Upravljanje plačilnih sredstev ...</translation>
+<translation id="4359160567981085931">Pravkar ste vnesli geslo na zavajajočem spletnem mestu. Chrome lahko pomaga. Če želite spremeniti geslo in obvestiti Google, da je vaš račun morda ogrožen, kliknite »Zaščita računa«.</translation>
 <translation id="4367563149485757821">Number-12 (Envelope)</translation>
 <translation id="437058704415269440">Stanje na računu</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
@@ -998,6 +1003,7 @@
 <translation id="5728056243719941842">C5 (Envelope)</translation>
 <translation id="5730040223043577876">Chrome priporoča, da ponastavite geslo, če ste ga uporabljali na drugih spletnih mestih.</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Shranjevanje kartice v Google Računu}one{Shranjevanje kartic v Google Računu}two{Shranjevanje kartic v Google Računu}few{Shranjevanje kartic v Google Računu}other{Shranjevanje kartic v Google Računu}}</translation>
+<translation id="5745980000221562234">{NUM_CARDS,plural, =1{Za to kartico uporabite navidezno številko}one{Izbira kartice}two{Izbira kartice}few{Izbira kartice}other{Izbira kartice}}</translation>
 <translation id="5763042198335101085">Vnesite veljaven e-poštni naslov</translation>
 <translation id="5763703224595565476">Skrbnik je v brskalniku omogočil Chromovo funkcijo zaščite uporabnikov različice za podjetja. Chromova funkcija zaščite uporabnikov različice za podjetja ima dostop do nekaterih vaših podatkov.</translation>
 <translation id="5765072501007116331">Če si želite ogledati načine dostave in zahteve, izberite naslov</translation>
@@ -1014,6 +1020,7 @@
 <translation id="5804241973901381774">Dovoljenja</translation>
 <translation id="5810442152076338065">Povezava z domeno <ph name="DOMAIN" /> je šifrirana z zastarelo šifrirno zbirko.</translation>
 <translation id="5813119285467412249">&amp;Uveljavi dodajanje</translation>
+<translation id="5824687817967109979">{NUM_CARDS,plural, =1{Ta kartica bo bremenjena ob plačilu, vendar temu spletnemu mestu ne bo razkrita njena prava številka. Zaradi dodatne varnosti bo ustvarjena začasna številka CVC.}one{Izbrana kartica bo bremenjena ob plačilu, vendar njena prava številka ne bo razkrita temu spletnemu mestu. Zaradi dodatne varnosti bo ustvarjena začasna številka CVC.}two{Izbrana kartica bo bremenjena ob plačilu, vendar njena prava številka ne bo razkrita temu spletnemu mestu. Zaradi dodatne varnosti bo ustvarjena začasna številka CVC.}few{Izbrana kartica bo bremenjena ob plačilu, vendar njena prava številka ne bo razkrita temu spletnemu mestu. Zaradi dodatne varnosti bo ustvarjena začasna številka CVC.}other{Izbrana kartica bo bremenjena ob plačilu, vendar njena prava številka ne bo razkrita temu spletnemu mestu. Zaradi dodatne varnosti bo ustvarjena začasna številka CVC.}}</translation>
 <translation id="583281660410589416">Neznano</translation>
 <translation id="5838278095973806738">Na tem spletnem mestu ne vnašajte občutljivih informacij (npr. gesel ali številk kreditnih kartic), ker jih lahko ukradejo napadalci.</translation>
 <translation id="5851548754964597211">Seznam zavihkov</translation>
@@ -1347,7 +1354,7 @@ Dodatne podrobnosti:
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Preberite več<ph name="END_LINK" /> o tej težavi.</translation>
 <translation id="7455133967321480974">Uporabi globalno privzeto (Blokiraj)</translation>
 <translation id="7460618730930299168">Predvajanje se razlikuje od tega, kar ste izbrali. Želite nadaljevati?</translation>
-<translation id="7464821087936825778">Izhod iz način iskanja</translation>
+<translation id="7464821087936825778">Izhod iz načina iskanja</translation>
 <translation id="7473891865547856676">Ne, hvala</translation>
 <translation id="7481312909269577407">Naprej</translation>
 <translation id="7485870689360869515">Ni podatkov.</translation>
@@ -1471,6 +1478,7 @@ Dodatne podrobnosti:
 <translation id="8042918947222776840">Izbira načina prevzema</translation>
 <translation id="8057711352706143257">Programska oprema »<ph name="SOFTWARE_NAME" />« ni pravilno konfigurirana. Običajno težavo odpravite tako, da odstranite programsko opremo »<ph name="SOFTWARE_NAME" />«. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8066955247577885446">Prišlo je do napake.</translation>
+<translation id="8067872629359326442">Pravkar ste vnesli geslo na zavajajočem spletnem mestu. Chromium lahko pomaga. Če želite spremeniti geslo in obvestiti Google, da je vaš račun morda ogrožen, kliknite »Zaščita računa«.</translation>
 <translation id="8074253406171541171">10x13 (Envelope)</translation>
 <translation id="8078141288243656252">Ko je dokument zasukan, pripisovanje ni mogoče</translation>
 <translation id="8079031581361219619">Želite znova naložiti spletno mesto?</translation>
@@ -1487,6 +1495,7 @@ Dodatne podrobnosti:
 <translation id="8105368624971345109">Izklop</translation>
 <translation id="8118489163946903409">Plačilno sredstvo</translation>
 <translation id="8127301229239896662">Programska oprema »<ph name="SOFTWARE_NAME" />« ni bila pravilno nameščena v računalniku ali omrežju. Obrnite se na skrbnika za IT glede odpravljanja te težave.</translation>
+<translation id="8128526133099929547">Pravkar ste vnesli geslo na zavajajočem spletnem mestu. Chrome priporoča, da obiščete <ph name="WEBSITE_1" /> ter druga spletna mesta, na katerih uporabljate to geslo, in ga takoj spremenite.</translation>
 <translation id="8131740175452115882">Potrdi</translation>
 <translation id="8149426793427495338">Računalnik je preklopil v stanje pripravljenosti.</translation>
 <translation id="8150722005171944719">Datoteke na <ph name="URL" /> ni mogoče prebrati. Morda je odstranjena, premaknjena ali pa dostop preprečujejo dovoljenja za datoteke.</translation>
@@ -1504,6 +1513,7 @@ Dodatne podrobnosti:
 <translation id="8218327578424803826">Dodeljena lokacija:</translation>
 <translation id="8220146938470311105">C7/C6 (Envelope)</translation>
 <translation id="8220639454292072926">Poročanje za podjetja</translation>
+<translation id="8221250263817408492">Pravkar ste vnesli geslo na zavajajočem spletnem mestu. Chromium priporoča, da obiščete <ph name="WEBSITE_1" /> ter druga spletna mesta, na katerih uporabljate to geslo, in ga takoj spremenite.</translation>
 <translation id="8225771182978767009">Oseba, ki je nastavila ta računalnik, je blokirala to spletno mesto.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">Odpiranje strani v novem zavihku brez beleženja zgodovine.</translation>

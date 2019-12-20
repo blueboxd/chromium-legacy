@@ -177,7 +177,7 @@ if (is_android) {
   }
 
   android_library("java") {
-    java_files = [
+    sources = [
       "android/java/src/org/chromium/device/gamepad/GamepadDevice.java",
       "android/java/src/org/chromium/device/gamepad/GamepadList.java",
       "android/java/src/org/chromium/device/gamepad/GamepadMappings.java",

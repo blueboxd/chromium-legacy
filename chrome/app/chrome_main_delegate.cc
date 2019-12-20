@@ -614,6 +614,10 @@ void ChromeMainDelegate::PostFieldTrialInitialization() {
     chromeos::LockMainProgramText();
 #endif
   }
+
+#if defined(OS_WIN)
+  base::Time::ReadMinTimerIntervalLowResMs();
+#endif
 }
 
 bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {

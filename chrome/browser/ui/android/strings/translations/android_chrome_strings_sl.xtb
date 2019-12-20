@@ -37,6 +37,7 @@
 <translation id="1231733316453485619">Želite vklopiti sinhronizacijo?</translation>
 <translation id="123724288017357924">Vnov. nalag. tren. strani s prezrtjem predp. vseb.</translation>
 <translation id="124116460088058876">Več jezikov</translation>
+<translation id="1242008676835033345">Vdelano v <ph name="WEBSITE_URL" /></translation>
 <translation id="124678866338384709">Zapiranje trenutnega zavihka</translation>
 <translation id="1258753120186372309">Googlov priložnostni logotip: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Iščite in raziskujte</translation>
@@ -95,6 +96,7 @@
 <translation id="1672586136351118594">Tega ne prikaži več</translation>
 <translation id="1692118695553449118">Sinhroniziranje je vklopljeno</translation>
 <translation id="169515064810179024">Spletnim mestom prepreči dostop do tipal gibanja</translation>
+<translation id="1711267867945983636">Če želite nadaljevati, vklopite tehnologijo NFC v telefonu</translation>
 <translation id="1717218214683051432">Tipala gibanja</translation>
 <translation id="1718835860248848330">Zadnja ura</translation>
 <translation id="1736419249208073774">Razišči</translation>
@@ -151,6 +153,7 @@
 <translation id="2082238445998314030"><ph name="RESULT_NUMBER" />. rezultat od <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Zvok</translation>
 <translation id="2096012225669085171">Sinhronizacija in prilagajanje med napravami</translation>
+<translation id="2099625543891475722">vaše fizične poteze, na primer višina,</translation>
 <translation id="2100273922101894616">Samodejna prijava</translation>
 <translation id="2100314319871056947">Poskusite deliti besedilo v manjših kosih</translation>
 <translation id="2107397443965016585">Prikaži poziv, preden se spletnim mestom dovoli predvajanje zaščitene vsebine (priporočeno)</translation>
@@ -427,6 +430,7 @@
 <translation id="4226663524361240545">Ob prejemanju obvestil naprava morda vibrira</translation>
 <translation id="423219824432660969">Šifriranje sinhroniziranih podatkov z geslom za Google Račun z dnem <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Odpri nastavitve</translation>
+<translation id="4250229828105606438">Posnetek zaslona</translation>
 <translation id="4256782883801055595">Odprtokodne licence</translation>
 <translation id="4259722352634471385">Krmarjenje je blokirano: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopiraj naslov povezave</translation>
@@ -480,6 +484,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="4634124774493850572">Uporabi geslo</translation>
 <translation id="4645575059429386691">Upravlja starš</translation>
 <translation id="4650364565596261010">Sistemsko privzeto</translation>
+<translation id="4660838440047236328">tloris sobe.</translation>
 <translation id="4663756553811254707">Št. izbrisanih zaznamkov: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822">Spletno mesto <ph name="NAME" /> je bilo dodano na začetni zaslon</translation>
 <translation id="4684427112815847243">Sinhroniziraj vse</translation>
@@ -604,6 +609,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="5487521232677179737">Izbriši podatke</translation>
 <translation id="5494752089476963479">Blokiranje oglasov na spletnih mestih, ki prikazujejo vsiljive ali zavajajoče oglase</translation>
 <translation id="5500777121964041360">Morda ni na voljo na vaši lokaciji</translation>
+<translation id="5505264765875738116">Spletna mesta vas ne smejo vprašati, ali želite, da vam pošiljajo obvestila</translation>
 <translation id="5512137114520586844">Ta račun upravlja <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Onemogoči skrbnik te naprave</translation>
 <translation id="5515439363601853141">Odklenite, če si želite ogledati geslo</translation>
@@ -701,6 +707,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="6192792657125177640">Izjeme</translation>
 <translation id="6194112207524046168">Če želite Chromu omogočiti dostop do fotoaparata, fotoaparat vklopite tudi v <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Blokiraj piškotke drugih spletnih mest</translation>
+<translation id="6201345951596836663">Povezava kopirana</translation>
 <translation id="6206551242102657620">Povezava je varna. Podatki o spletnem mestu.</translation>
 <translation id="6210748933810148297">Niste <ph name="EMAIL" />?</translation>
 <translation id="6216432067784365534">Možnosti za <ph name="NAME_OF_LIST_ITEM" /></translation>
@@ -710,6 +717,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažejo oglase, ki ne temeljijo na drugih spletnih mestih, ki ste jih obiskali. Veliko spletnih mest bo še vedno zbiralo in uporabljalo vaše podatke o brskanju, na primer za izboljšanje varnosti, zagotavljanje vsebine, oglasov in priporočil ter za pridobivanje statističnih podatkov za poročanje.</translation>
 <translation id="624789221780392884">Posodobitev je pripravljena</translation>
 <translation id="6255999984061454636">Predlogi za vsebino</translation>
+<translation id="6270391203985052864">Spletna mesta vas lahko vprašajo, ali želite, da vam pošiljajo obvestila</translation>
 <translation id="6277522088822131679">Pri tiskanju strani je prišlo do težave. Poskusite znova.</translation>
 <translation id="6295158916970320988">Vsa spletna mesta</translation>
 <translation id="629730747756840877">Račun</translation>
@@ -754,6 +762,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="6545864417968258051">Iskanje naprav Bluetooth</translation>
 <translation id="6560414384669816528">Iskanje z iskalnikom Sogou</translation>
 <translation id="656065428026159829">Prikaži več</translation>
+<translation id="6561560012278703671">Uporaba manj vsiljivih sporočil (preprečuje, da bi vas motili pozivi za pošiljanje obvestil)</translation>
 <translation id="6566259936974865419">S Chromom ste prihranili <ph name="GIGABYTES" /> GB</translation>
 <translation id="6573096386450695060">Vedno dovoli</translation>
 <translation id="6573431926118603307">Zavihki, ki ste jih odprli v Chromu v drugih napravah, bodo prikazani tukaj.</translation>
@@ -851,6 +860,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="729975465115245577">V napravi ni aplikacije za shranjevanje datoteke z gesli.</translation>
 <translation id="7302081693174882195">Podrobnosti: razvrščeno po količini prihranjenih podatkov</translation>
 <translation id="7302486331832100261">Obvestila običajno blokirate. Če želite to omogočiti, se dotaknite Podrobnosti.</translation>
+<translation id="7311441321349344333">Tehnologija NFC je izklopljena za to napravo. Vklopite tehnologijo NFC v <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" />.</translation>
 <translation id="7328017930301109123">Chrome v lahkem načinu naloži strani hitreje in uporabi do 60 odstotkov manj podatkov.</translation>
 <translation id="7333031090786104871">Dodajanje prejšnjega spletnega mesta še vedno poteka</translation>
 <translation id="7352939065658542140">VIDEOPOSNETEK</translation>

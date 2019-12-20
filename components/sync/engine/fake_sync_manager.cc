@@ -5,6 +5,7 @@
 #include "components/sync/engine/fake_sync_manager.h"
 
 #include <cstddef>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -148,7 +149,7 @@ void FakeSyncManager::StartConfiguration() {
 void FakeSyncManager::ConfigureSyncer(ConfigureReason reason,
                                       ModelTypeSet to_download,
                                       SyncFeatureState sync_feature_state,
-                                      const base::Closure& ready_task) {
+                                      base::OnceClosure ready_task) {
   last_configure_reason_ = reason;
   ModelTypeSet success_types = to_download;
   success_types.RemoveAll(configure_fail_types_);
@@ -171,7 +172,7 @@ void FakeSyncManager::ConfigureSyncer(ConfigureReason reason,
   initial_sync_ended_types_.PutAll(success_types);
   downloaded_types_.PutAll(success_types);
 
-  ready_task.Run();
+  std::move(ready_task).Run();
 }
 
 void FakeSyncManager::AddObserver(Observer* observer) {

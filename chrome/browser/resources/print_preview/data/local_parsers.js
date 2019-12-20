@@ -55,9 +55,6 @@ function parseLocalDestination(destinationInfo) {
         Object.keys(destinationInfo.printerOptions).map(function(key) {
           return '__cp__' + key + '=' + this[key];
         }, destinationInfo.printerOptions);
-    // <if expr="chromeos">
-    options.eulaUrl = destinationInfo.printerOptions['printerEulaUrl'];
-    // </if>
   }
   return new Destination(
       destinationInfo.deviceName, DestinationType.LOCAL,

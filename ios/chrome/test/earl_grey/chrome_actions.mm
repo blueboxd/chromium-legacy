@@ -53,4 +53,8 @@ id<GREYAction> TapWebElementWithIdInFrame(const std::string& element_id,
                                           inFrameWithIndex:frame_index]];
 }
 
+id<GREYAction> ScrollToTop() {
+  return [ChromeActionsAppInterface scrollToTop];
+}
+
 }  // namespace chrome_test_util

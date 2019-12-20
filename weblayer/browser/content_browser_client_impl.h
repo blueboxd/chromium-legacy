@@ -74,6 +74,11 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
       service_manager::BinderRegistry* registry,
       blink::AssociatedInterfaceRegistry* associated_registry,
       content::RenderProcessHost* render_process_host) override;
+  void GetQuotaSettings(
+      content::BrowserContext* context,
+      content::StoragePartition* partition,
+      base::OnceCallback<void(base::Optional<storage::QuotaSettings>)> callback)
+      override;
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   void GetAdditionalMappedFilesForChildProcess(

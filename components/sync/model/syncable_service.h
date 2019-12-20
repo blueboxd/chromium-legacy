@@ -40,8 +40,8 @@ class SyncableService : public base::SupportsWeakPtr<SyncableService> {
   // 3) You want to signal to sync that it's safe to start now that the
   // browser's IO-intensive startup process is over. The ModelType parameter is
   // included so that the recieving end can track usage and timing statistics,
-  // make pptimizations or tradeoffs by type, etc.
-  using StartSyncFlare = base::Callback<void(ModelType)>;
+  // make optimizations or tradeoffs by type, etc.
+  using StartSyncFlare = base::RepeatingCallback<void(ModelType)>;
 
   // Allows the SyncableService to delay sync events (all below) until the model
   // becomes ready to sync. Callers must ensure there is no previous ongoing

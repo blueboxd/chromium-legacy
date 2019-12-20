@@ -93,6 +93,7 @@ class PageNodeImpl
   const GURL& main_frame_url() const;
   int64_t navigation_id() const;
   const std::string& contents_mime_type() const;
+  bool had_form_interaction() const;
 
   void set_usage_estimate_time(base::TimeTicks usage_estimate_time);
   void set_cumulative_cpu_usage_estimate(
@@ -111,6 +112,10 @@ class PageNodeImpl
 
   void SetIsHoldingWebLockForTesting(bool is_holding_weblock) {
     SetIsHoldingWebLock(is_holding_weblock);
+  }
+
+  void SetHadFormInteractionForTesting(bool had_form_interaction) {
+    SetHadFormInteraction(had_form_interaction);
   }
 
   base::WeakPtr<PageNodeImpl> GetWeakPtr() {
@@ -141,6 +146,7 @@ class PageNodeImpl
   const FrameNode* GetMainFrameNode() const override;
   const base::flat_set<const FrameNode*> GetMainFrameNodes() const override;
   const GURL& GetMainFrameUrl() const override;
+  bool HadFormInteraction() const override;
   const WebContentsProxy& GetContentsProxy() const override;
 
   void AddFrame(FrameNodeImpl* frame_node);
@@ -153,6 +159,7 @@ class PageNodeImpl
   void SetOriginTrialFreezePolicy(InterventionPolicy policy);
   void SetIsHoldingWebLock(bool is_holding_weblock);
   void SetIsHoldingIndexedDBLock(bool is_holding_indexeddb_lock);
+  void SetHadFormInteraction(bool had_form_interaction);
 
   // The WebContentsProxy associated with this page.
   const WebContentsProxy contents_proxy_;
@@ -258,6 +265,12 @@ class PageNodeImpl
       bool,
       &PageNodeObserver::OnPageIsHoldingIndexedDBLockChanged>
       is_holding_indexeddb_lock_{false};
+  // Indicates if at least one frame of the page has received some form
+  // interactions.
+  ObservedProperty::NotifiesOnlyOnChanges<
+      bool,
+      &PageNodeObserver::OnHadFormInteractionChanged>
+      had_form_interaction_{false};
 
   // Storage for PageAlmostIdle user data.
   std::unique_ptr<NodeAttachedData> page_almost_idle_data_;
@@ -266,7 +279,7 @@ class PageNodeImpl
   InternalNodeAttachedDataStorage<sizeof(uintptr_t) + 8> frozen_frame_data_;
 
   // Inline storage for PageAggregatorAccess user data.
-  InternalNodeAttachedDataStorage<sizeof(uintptr_t) + 20> page_aggregator_data_;
+  InternalNodeAttachedDataStorage<sizeof(uintptr_t) + 24> page_aggregator_data_;
 
   base::WeakPtrFactory<PageNodeImpl> weak_factory_{this};
 

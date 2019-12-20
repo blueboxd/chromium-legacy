@@ -1384,13 +1384,17 @@ void DocumentLoader::DidCommitNavigation() {
 // origin policy (if any).
 // Headers go first, which means that the per-page headers override the
 // origin policy features.
+//
+// TODO(domenic): we want to treat origin policy feature policy as a single
+// feature policy, not a header serialization, so it should be processed
+// differently.
 void MergeFeaturesFromOriginPolicy(WTF::StringBuilder& feature_policy,
                                    const WebOriginPolicy& origin_policy) {
-  for (const auto& policy : origin_policy.features) {
+  if (!origin_policy.feature_policy.IsNull()) {
     if (!feature_policy.IsEmpty()) {
       feature_policy.Append(',');
     }
-    feature_policy.Append(policy);
+    feature_policy.Append(origin_policy.feature_policy);
   }
 }
 

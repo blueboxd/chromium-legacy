@@ -10,12 +10,16 @@ import android.content.Intent;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.Promise;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.util.IntentUtils;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Client used to communicate with GmsCore about sync encryption keys.
@@ -29,9 +33,9 @@ public class TrustedVaultClient {
          * Reads and returns available encryption keys without involving any user action.
          *
          * @param gaiaId String representation of the Gaia ID.
-         * @return the list of known keys, if any, where the last one is the most recent.
+         * @return a promise with known keys, if any, where the last one is the most recent.
          */
-        List<byte[]> fetchKeys(String gaiaId);
+        Promise<List<byte[]>> fetchKeys(String gaiaId);
 
         /**
          * Gets an Intent that can be used to display a UI that allows the user to reauthenticate
@@ -48,8 +52,8 @@ public class TrustedVaultClient {
      */
     public static class EmptyBackend implements Backend {
         @Override
-        public List<byte[]> fetchKeys(String gaiaId) {
-            return Collections.emptyList();
+        public Promise<List<byte[]>> fetchKeys(String gaiaId) {
+            return Promise.fulfilled(Collections.emptyList());
         }
 
         @Override
@@ -61,6 +65,9 @@ public class TrustedVaultClient {
     private static TrustedVaultClient sInstance;
 
     private final Backend mBackend;
+
+    // Registered native TrustedVaultClientAndroid instances. Usually exactly one.
+    private final Set<Long> mNativeTrustedVaultClientAndroidSet = new TreeSet<Long>();
 
     @VisibleForTesting
     public TrustedVaultClient(Backend backend) {
@@ -107,11 +114,56 @@ public class TrustedVaultClient {
     }
 
     /**
-     * Forwards calls to Backend.fetchKeys().
+     * Registers a C++ client, which is a prerequisite before interacting with Java.
      */
     @CalledByNative
-    private static byte[][] fetchKeys(String gaiaId) {
-        List<byte[]> keys = get().mBackend.fetchKeys(gaiaId);
-        return keys.toArray(new byte[0][]);
+    private static void registerNative(long nativeTrustedVaultClientAndroid) {
+        assert !isNativeRegistered(nativeTrustedVaultClientAndroid);
+        get().mNativeTrustedVaultClientAndroidSet.add(nativeTrustedVaultClientAndroid);
+    }
+
+    /**
+     * Unregisters a previously-registered client, canceling any in-flight requests.
+     */
+    @CalledByNative
+    private static void unregisterNative(long nativeTrustedVaultClientAndroid) {
+        assert isNativeRegistered(nativeTrustedVaultClientAndroid);
+        get().mNativeTrustedVaultClientAndroidSet.remove(nativeTrustedVaultClientAndroid);
+    }
+
+    /**
+     * Convenience function to check if a native client has been registered.
+     */
+    private static boolean isNativeRegistered(long nativeTrustedVaultClientAndroid) {
+        return get().mNativeTrustedVaultClientAndroidSet.contains(nativeTrustedVaultClientAndroid);
+    }
+
+    /**
+     * Forwards calls to Backend.fetchKeys() and upon completion invokes native method
+     * fetchKeysCompleted().
+     */
+    @CalledByNative
+    private static void fetchKeys(long nativeTrustedVaultClientAndroid, String gaiaId) {
+        assert isNativeRegistered(nativeTrustedVaultClientAndroid);
+        get().mBackend.fetchKeys(gaiaId).then(
+                (keys)
+                        -> {
+                    if (isNativeRegistered(nativeTrustedVaultClientAndroid)) {
+                        TrustedVaultClientJni.get().fetchKeysCompleted(
+                                nativeTrustedVaultClientAndroid, gaiaId,
+                                keys.toArray(new byte[0][]));
+                    }
+                },
+                (exception) -> {
+                    if (isNativeRegistered(nativeTrustedVaultClientAndroid)) {
+                        TrustedVaultClientJni.get().fetchKeysCompleted(
+                                nativeTrustedVaultClientAndroid, gaiaId, new byte[0][]);
+                    }
+                });
+    }
+
+    @NativeMethods
+    interface Natives {
+        void fetchKeysCompleted(long nativeTrustedVaultClientAndroid, String gaiaId, byte[][] keys);
     }
 }

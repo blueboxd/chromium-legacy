@@ -141,7 +141,7 @@ if (is_android) {
   }
 
   android_library("geolocation_java") {
-    java_files = [
+    sources = [
       "android/java/src/org/chromium/device/geolocation/LocationProviderAdapter.java",
       "android/java/src/org/chromium/device/geolocation/LocationProviderAndroid.java",
       "android/java/src/org/chromium/device/geolocation/LocationProviderFactory.java",

@@ -1656,6 +1656,13 @@ void WebAXObject::HandleAutofillStateChanged(
   private_->HandleAutofillStateChanged(state);
 }
 
+int WebAXObject::GetDOMNodeId() const {
+  if (IsDetached())
+    return 0;
+
+  return private_->GetDOMNodeId();
+}
+
 WebString WebAXObject::ToString() const {
   if (IsDetached())
     return WebString();

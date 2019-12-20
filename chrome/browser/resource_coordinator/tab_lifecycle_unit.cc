@@ -29,6 +29,7 @@
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/resource_coordinator/utils.h"
+#include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/usb/usb_tab_helper.h"
 #include "components/device_event_log/device_event_log.h"
@@ -703,8 +704,13 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanDiscard(
 #endif  // defined(OS_CHROMEOS)
 
   // Do not discard tabs in which the user has entered text in a form.
-  if (web_contents()->GetPageImportanceSignals().had_form_interaction)
-    decision_details->AddReason(DecisionFailureReason::LIVE_STATE_FORM_ENTRY);
+
+  // The FormInteractionTabHelper isn't available in some unit tests.
+  if (auto* form_interaction_helper =
+          FormInteractionTabHelper::FromWebContents(web_contents())) {
+    if (form_interaction_helper->had_form_interaction())
+      decision_details->AddReason(DecisionFailureReason::LIVE_STATE_FORM_ENTRY);
+  }
 
   // Do not discard PDFs as they might contain entry that is not saved and they
   // don't remember their scrolling positions. See crbug.com/547286 and

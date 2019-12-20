@@ -410,6 +410,10 @@ void BlinkAXTreeSource::SetLoadInlineTextBoxesForId(int32_t id) {
   load_inline_text_boxes_ids_.insert(id);
 }
 
+void BlinkAXTreeSource::EnableDOMNodeIDs() {
+  enable_dom_node_ids_ = true;
+}
+
 bool BlinkAXTreeSource::GetTreeData(AXContentTreeData* tree_data) const {
   CHECK(frozen_);
   tree_data->doctype = "html";
@@ -589,6 +593,16 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
   if (src.IsLineBreakingObject()) {
     dst->AddBoolAttribute(ax::mojom::BoolAttribute::kIsLineBreakingObject,
                           true);
+  }
+
+  if (enable_dom_node_ids_) {
+    // The DOMNodeID from Blink. Currently only populated when using
+    // the accessibility tree for PDF exporting. Warning, this is totally
+    // unrelated to the accessibility node ID, or the ID attribute for an
+    // HTML element - it's an ID used to uniquely identify nodes in Blink.
+    int dom_node_id = src.GetDOMNodeId();
+    if (dom_node_id)
+      dst->AddIntAttribute(ax::mojom::IntAttribute::kDOMNodeId, dom_node_id);
   }
 
   AXContentNodeDataSparseAttributeAdapter sparse_attribute_adapter(dst);

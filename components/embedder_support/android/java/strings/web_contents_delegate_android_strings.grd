@@ -6,8 +6,12 @@
     <output filename="values-af/web_contents_delegate_android_strings.xml" lang="af" type="android" />
     <output filename="values-am/web_contents_delegate_android_strings.xml" lang="am" type="android" />
     <output filename="values-ar/web_contents_delegate_android_strings.xml" lang="ar" type="android" />
+    <output filename="values-as/web_contents_delegate_android_strings.xml" lang="as" type="android" />
+    <output filename="values-az/web_contents_delegate_android_strings.xml" lang="az" type="android" />
+    <output filename="values-be/web_contents_delegate_android_strings.xml" lang="be" type="android" />
     <output filename="values-bg/web_contents_delegate_android_strings.xml" lang="bg" type="android" />
     <output filename="values-bn/web_contents_delegate_android_strings.xml" lang="bn" type="android" />
+    <output filename="values-bs/web_contents_delegate_android_strings.xml" lang="bs" type="android" />
     <output filename="values-ca/web_contents_delegate_android_strings.xml" lang="ca" type="android" />
     <output filename="values-cs/web_contents_delegate_android_strings.xml" lang="cs" type="android" />
     <output filename="values-da/web_contents_delegate_android_strings.xml" lang="da" type="android" />
@@ -18,34 +22,52 @@
     <output filename="values-es/web_contents_delegate_android_strings.xml" lang="es" type="android" />
     <output filename="values-es-rUS/web_contents_delegate_android_strings.xml" lang="es-419" type="android" />
     <output filename="values-et/web_contents_delegate_android_strings.xml" lang="et" type="android" />
+    <output filename="values-eu/web_contents_delegate_android_strings.xml" lang="eu" type="android" />
     <output filename="values-fa/web_contents_delegate_android_strings.xml" lang="fa" type="android" />
     <output filename="values-fi/web_contents_delegate_android_strings.xml" lang="fi" type="android" />
     <output filename="values-tl/web_contents_delegate_android_strings.xml" lang="fil" type="android" />
     <output filename="values-fr/web_contents_delegate_android_strings.xml" lang="fr" type="android" />
+    <output filename="values-fr-rCA/web_contents_delegate_android_strings.xml" lang="fr-CA" type="android" />
+    <output filename="values-gl/web_contents_delegate_android_strings.xml" lang="gl" type="android" />
     <output filename="values-gu/web_contents_delegate_android_strings.xml" lang="gu" type="android" />
-    <output filename="values-iw/web_contents_delegate_android_strings.xml" lang="iw" type="android" />
     <output filename="values-hi/web_contents_delegate_android_strings.xml" lang="hi" type="android" />
     <output filename="values-hr/web_contents_delegate_android_strings.xml" lang="hr" type="android" />
     <output filename="values-hu/web_contents_delegate_android_strings.xml" lang="hu" type="android" />
+    <output filename="values-hy/web_contents_delegate_android_strings.xml" lang="hy" type="android" />
     <output filename="values-in/web_contents_delegate_android_strings.xml" lang="id" type="android" />
+    <output filename="values-is/web_contents_delegate_android_strings.xml" lang="is" type="android" />
     <output filename="values-it/web_contents_delegate_android_strings.xml" lang="it" type="android" />
+    <output filename="values-iw/web_contents_delegate_android_strings.xml" lang="iw" type="android" />
     <output filename="values-ja/web_contents_delegate_android_strings.xml" lang="ja" type="android" />
+    <output filename="values-ka/web_contents_delegate_android_strings.xml" lang="ka" type="android" />
+    <output filename="values-kk/web_contents_delegate_android_strings.xml" lang="kk" type="android" />
+    <output filename="values-km/web_contents_delegate_android_strings.xml" lang="km" type="android" />
     <output filename="values-kn/web_contents_delegate_android_strings.xml" lang="kn" type="android" />
     <output filename="values-ko/web_contents_delegate_android_strings.xml" lang="ko" type="android" />
+    <output filename="values-ky/web_contents_delegate_android_strings.xml" lang="ky" type="android" />
+    <output filename="values-lo/web_contents_delegate_android_strings.xml" lang="lo" type="android" />
     <output filename="values-lt/web_contents_delegate_android_strings.xml" lang="lt" type="android" />
     <output filename="values-lv/web_contents_delegate_android_strings.xml" lang="lv" type="android" />
+    <output filename="values-mk/web_contents_delegate_android_strings.xml" lang="mk" type="android" />
     <output filename="values-ml/web_contents_delegate_android_strings.xml" lang="ml" type="android" />
+    <output filename="values-mn/web_contents_delegate_android_strings.xml" lang="mn" type="android" />
     <output filename="values-mr/web_contents_delegate_android_strings.xml" lang="mr" type="android" />
     <output filename="values-ms/web_contents_delegate_android_strings.xml" lang="ms" type="android" />
+    <output filename="values-my/web_contents_delegate_android_strings.xml" lang="my" type="android" />
+    <output filename="values-ne/web_contents_delegate_android_strings.xml" lang="ne" type="android" />
     <output filename="values-nl/web_contents_delegate_android_strings.xml" lang="nl" type="android" />
     <output filename="values-nb/web_contents_delegate_android_strings.xml" lang="no" type="android" />
+    <output filename="values-or/web_contents_delegate_android_strings.xml" lang="or" type="android" />
+    <output filename="values-pa/web_contents_delegate_android_strings.xml" lang="pa" type="android" />
     <output filename="values-pl/web_contents_delegate_android_strings.xml" lang="pl" type="android" />
     <output filename="values-pt-rBR/web_contents_delegate_android_strings.xml" lang="pt-BR" type="android" />
     <output filename="values-pt-rPT/web_contents_delegate_android_strings.xml" lang="pt-PT" type="android" />
     <output filename="values-ro/web_contents_delegate_android_strings.xml" lang="ro" type="android" />
     <output filename="values-ru/web_contents_delegate_android_strings.xml" lang="ru" type="android" />
+    <output filename="values-si/web_contents_delegate_android_strings.xml" lang="si" type="android" />
     <output filename="values-sk/web_contents_delegate_android_strings.xml" lang="sk" type="android" />
     <output filename="values-sl/web_contents_delegate_android_strings.xml" lang="sl" type="android" />
+    <output filename="values-sq/web_contents_delegate_android_strings.xml" lang="sq" type="android" />
     <output filename="values-sr/web_contents_delegate_android_strings.xml" lang="sr" type="android" />
     <output filename="values-sv/web_contents_delegate_android_strings.xml" lang="sv" type="android" />
     <output filename="values-sw/web_contents_delegate_android_strings.xml" lang="sw" type="android" />
@@ -54,9 +76,12 @@
     <output filename="values-th/web_contents_delegate_android_strings.xml" lang="th" type="android" />
     <output filename="values-tr/web_contents_delegate_android_strings.xml" lang="tr" type="android" />
     <output filename="values-uk/web_contents_delegate_android_strings.xml" lang="uk" type="android" />
+    <output filename="values-ur/web_contents_delegate_android_strings.xml" lang="ur" type="android" />
+    <output filename="values-uz/web_contents_delegate_android_strings.xml" lang="uz" type="android" />
     <output filename="values-vi/web_contents_delegate_android_strings.xml" lang="vi" type="android" />
     <output filename="values-zh-rCN/web_contents_delegate_android_strings.xml" lang="zh-CN" type="android" />
     <output filename="values-zh-rTW/web_contents_delegate_android_strings.xml" lang="zh-TW" type="android" />
+    <output filename="values-zu/web_contents_delegate_android_strings.xml" lang="zu" type="android" />
   </outputs>
   <translations>
     <file lang="af" path="translations/web_contents_delegate_android_strings_af.xtb" />

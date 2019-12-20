@@ -132,17 +132,24 @@ gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferHandle(
       break;
     case VideoFrame::STORAGE_DMABUFS: {
       const size_t num_planes = VideoFrame::NumPlanes(video_frame->format());
-      if (num_planes != video_frame->DmabufFds().size()) {
-        VLOGF(1) << "The number of fds =" << video_frame->DmabufFds().size()
-                 << " is different from the number of planes =" << num_planes;
-        return handle;
+      std::vector<base::ScopedFD> duped_fds =
+          DuplicateFDs(video_frame->DmabufFds());
+      // TODO(crbug.com/1036174): Replace this duplication with a check.
+      // Duplicate the fd of the last plane until the number of fds are the same
+      // as the number of planes.
+      while (num_planes != duped_fds.size()) {
+        int duped_fd = -1;
+        duped_fd = HANDLE_EINTR(dup(duped_fds.back().get()));
+        if (duped_fd == -1) {
+          DLOG(ERROR) << "Failed duplicating dmabuf fd";
+          return handle;
+        }
+        duped_fds.emplace_back(duped_fd);
       }
 
       handle.type = gfx::NATIVE_PIXMAP;
       DCHECK_EQ(video_frame->layout().planes().size(), num_planes);
       handle.native_pixmap_handle.modifier = video_frame->layout().modifier();
-      std::vector<base::ScopedFD> duped_fds =
-          DuplicateFDs(video_frame->DmabufFds());
       for (size_t i = 0; i < num_planes; ++i) {
         const auto& plane = video_frame->layout().planes()[i];
         handle.native_pixmap_handle.planes.emplace_back(

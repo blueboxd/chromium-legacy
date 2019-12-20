@@ -178,6 +178,9 @@ ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf_widget)
       focus_cycler_(nullptr),
       opaque_background_(ui::LAYER_SOLID_COLOR),
       animating_background_(ui::LAYER_SOLID_COLOR) {
+  opaque_background_.SetName("shelf/Background");
+  animating_background_.SetName("shelf/Animation");
+
   DCHECK(shelf_widget_);
   set_owned_by_client();  // Deleted by DeleteDelegate().
 

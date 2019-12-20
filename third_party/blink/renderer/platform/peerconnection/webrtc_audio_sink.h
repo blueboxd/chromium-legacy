@@ -102,6 +102,8 @@ class PLATFORM_EXPORT WebRtcAudioSink : public WebMediaStreamAudioSink {
                                  size_t number_of_channels,
                                  size_t number_of_frames);
 
+    std::string label() const { return label_; }
+
     // webrtc::MediaStreamTrack implementation.
     std::string kind() const override;
     bool set_enabled(bool enable) override;
@@ -118,6 +120,8 @@ class PLATFORM_EXPORT WebRtcAudioSink : public WebMediaStreamAudioSink {
     ~Adapter() override;
 
    private:
+    const std::string label_;
+
     const scoped_refptr<webrtc::AudioSourceInterface> source_;
 
     // Task runner for operations that must be done on libjingle's signaling

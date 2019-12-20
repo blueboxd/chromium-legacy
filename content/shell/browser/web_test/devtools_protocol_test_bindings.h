@@ -28,7 +28,7 @@ class DevToolsProtocolTestBindings : public WebContentsObserver,
   // content::DevToolsAgentHostClient implementation.
   void AgentHostClosed(DevToolsAgentHost* agent_host) override;
   void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
-                               const std::string& message) override;
+                               base::span<const uint8_t> message) override;
 
   // WebContentsObserver overrides
   void ReadyToCommitNavigation(NavigationHandle* navigation_handle) override;

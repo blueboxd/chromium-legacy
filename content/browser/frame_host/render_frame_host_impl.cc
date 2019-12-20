@@ -3136,16 +3136,9 @@ void RenderFrameHostImpl::OnRunJavaScriptDialog(
     const base::string16& default_prompt,
     JavaScriptDialogType dialog_type,
     IPC::Message* reply_msg) {
-  // If a dialog tries to show for a document in the BackForwardCache, evict it.
-  if (is_in_back_forward_cache_) {
-    EvictFromBackForwardCacheWithReason(
-        BackForwardCacheMetrics::NotRestoredReason::kDialog);
-    return;
-  }
-
   // Don't show the dialog if it's triggered on a frame that's pending deletion
   // (e.g., from an unload handler), or when the tab is being closed.
-  if (IsWaitingForUnloadACK()) {
+  if (!is_active()) {
     SendJavaScriptDialogReply(reply_msg, true, base::string16());
     return;
   }
@@ -5864,10 +5857,6 @@ void RenderFrameHostImpl::ResetLoadingState() {
     else
       OnDidStopLoading();
   }
-}
-
-void RenderFrameHostImpl::SuppressFurtherDialogs() {
-  Send(new FrameMsg_SuppressFurtherDialogs(GetRoutingID()));
 }
 
 void RenderFrameHostImpl::ClearFocusedElement() {

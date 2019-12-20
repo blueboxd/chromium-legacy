@@ -98,8 +98,12 @@ bool ShouldAnchorToAction(const extensions::Extension* extension) {
   }
 }
 
-bool ShouldAnchorToOmnibox(const extensions::Extension* extension) {
+bool HasOmniboxKeyword(const Extension* extension) {
   return !extensions::OmniboxInfo::GetKeyword(extension).empty();
+}
+
+bool ShouldAnchorToOmnibox(const extensions::Extension* extension) {
+  return !ShouldAnchorToAction(extension) && HasOmniboxKeyword(extension);
 }
 
 views::View* AnchorViewForBrowser(const extensions::Extension* extension,
@@ -163,10 +167,6 @@ gfx::ImageSkia MakeIconFromBitmap(const SkBitmap& bitmap) {
   return gfx::ImageSkiaOperations::CreateResizedImage(
       gfx::ImageSkia::CreateFrom1xBitmap(bitmap),
       skia::ImageOperations::RESIZE_BEST, size);
-}
-
-bool HasOmniboxKeyword(const Extension* extension) {
-  return extensions::OmniboxInfo::GetKeyword(extension).empty();
 }
 
 bool ShouldShowHowToUse(const extensions::Extension* extension) {
@@ -334,7 +334,7 @@ ExtensionInstalledBubbleView::ExtensionInstalledBubbleView(
     scoped_refptr<const extensions::Extension> extension,
     const SkBitmap& icon)
     : BubbleDialogDelegateView(nullptr,
-                               HasOmniboxKeyword(extension.get())
+                               ShouldAnchorToOmnibox(extension.get())
                                    ? views::BubbleBorder::TOP_LEFT
                                    : views::BubbleBorder::TOP_RIGHT),
       bubble_reference_(bubble_reference),

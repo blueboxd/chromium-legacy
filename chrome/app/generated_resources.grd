@@ -15,6 +15,31 @@ are declared in tools/grit/grit_rule.gni.
     </output>
     <if expr="is_android">
       <output filename="generated_resources_af.pak" type="data_package" lang="af" />
+      <output filename="generated_resources_as.pak" type="data_package" lang="as" />
+      <output filename="generated_resources_az.pak" type="data_package" lang="az" />
+      <output filename="generated_resources_be.pak" type="data_package" lang="be" />
+      <output filename="generated_resources_bs.pak" type="data_package" lang="bs" />
+      <output filename="generated_resources_eu.pak" type="data_package" lang="eu" />
+      <output filename="generated_resources_fr-CA.pak" type="data_package" lang="fr-CA" />
+      <output filename="generated_resources_gl.pak" type="data_package" lang="gl" />
+      <output filename="generated_resources_hy.pak" type="data_package" lang="hy" />
+      <output filename="generated_resources_is.pak" type="data_package" lang="is" />
+      <output filename="generated_resources_ka.pak" type="data_package" lang="ka" />
+      <output filename="generated_resources_kk.pak" type="data_package" lang="kk" />
+      <output filename="generated_resources_km.pak" type="data_package" lang="km" />
+      <output filename="generated_resources_ky.pak" type="data_package" lang="ky" />
+      <output filename="generated_resources_lo.pak" type="data_package" lang="lo" />
+      <output filename="generated_resources_mk.pak" type="data_package" lang="mk" />
+      <output filename="generated_resources_mn.pak" type="data_package" lang="mn" />
+      <output filename="generated_resources_my.pak" type="data_package" lang="my" />
+      <output filename="generated_resources_ne.pak" type="data_package" lang="ne" />
+      <output filename="generated_resources_or.pak" type="data_package" lang="or" />
+      <output filename="generated_resources_pa.pak" type="data_package" lang="pa" />
+      <output filename="generated_resources_si.pak" type="data_package" lang="si" />
+      <output filename="generated_resources_sq.pak" type="data_package" lang="sq" />
+      <output filename="generated_resources_ur.pak" type="data_package" lang="ur" />
+      <output filename="generated_resources_uz.pak" type="data_package" lang="uz" />
+      <output filename="generated_resources_zu.pak" type="data_package" lang="zu" />
     </if>
     <output filename="generated_resources_am.pak" type="data_package" lang="am" />
     <output filename="generated_resources_ar.pak" type="data_package" lang="ar" />
@@ -79,8 +104,12 @@ are declared in tools/grit/grit_rule.gni.
       <output filename="java/res/values-af/generated_resources.xml" lang="af" type="android" context="android_java" />
       <output filename="java/res/values-am/generated_resources.xml" lang="am" type="android" context="android_java" />
       <output filename="java/res/values-ar/generated_resources.xml" lang="ar" type="android" context="android_java" />
+      <output filename="java/res/values-as/generated_resources.xml" lang="as" type="android" context="android_java" />
+      <output filename="java/res/values-az/generated_resources.xml" lang="az" type="android" context="android_java" />
+      <output filename="java/res/values-be/generated_resources.xml" lang="be" type="android" context="android_java" />
       <output filename="java/res/values-bg/generated_resources.xml" lang="bg" type="android" context="android_java" />
       <output filename="java/res/values-bn/generated_resources.xml" lang="bn" type="android" context="android_java" />
+      <output filename="java/res/values-bs/generated_resources.xml" lang="bs" type="android" context="android_java" />
       <output filename="java/res/values-ca/generated_resources.xml" lang="ca" type="android" context="android_java" />
       <output filename="java/res/values-cs/generated_resources.xml" lang="cs" type="android" context="android_java" />
       <output filename="java/res/values-da/generated_resources.xml" lang="da" type="android" context="android_java" />
@@ -91,34 +120,52 @@ are declared in tools/grit/grit_rule.gni.
       <output filename="java/res/values-es/generated_resources.xml" lang="es" type="android" context="android_java" />
       <output filename="java/res/values-es-rUS/generated_resources.xml" lang="es-419" type="android" context="android_java" />
       <output filename="java/res/values-et/generated_resources.xml" lang="et" type="android" context="android_java" />
+      <output filename="java/res/values-eu/generated_resources.xml" lang="eu" type="android" context="android_java" />
       <output filename="java/res/values-fa/generated_resources.xml" lang="fa" type="android" context="android_java" />
       <output filename="java/res/values-fi/generated_resources.xml" lang="fi" type="android" context="android_java" />
       <output filename="java/res/values-tl/generated_resources.xml" lang="fil" type="android" context="android_java" />
       <output filename="java/res/values-fr/generated_resources.xml" lang="fr" type="android" context="android_java" />
+      <output filename="java/res/values-fr-rCA/generated_resources.xml" lang="fr-CA" type="android" context="android_java" />
+      <output filename="java/res/values-gl/generated_resources.xml" lang="gl" type="android" context="android_java" />
       <output filename="java/res/values-gu/generated_resources.xml" lang="gu" type="android" context="android_java" />
       <output filename="java/res/values-iw/generated_resources.xml" lang="he" type="android" context="android_java" />
       <output filename="java/res/values-hi/generated_resources.xml" lang="hi" type="android" context="android_java" />
       <output filename="java/res/values-hr/generated_resources.xml" lang="hr" type="android" context="android_java" />
       <output filename="java/res/values-hu/generated_resources.xml" lang="hu" type="android" context="android_java" />
+      <output filename="java/res/values-hy/generated_resources.xml" lang="hy" type="android" context="android_java" />
       <output filename="java/res/values-in/generated_resources.xml" lang="id" type="android" context="android_java" />
+      <output filename="java/res/values-is/generated_resources.xml" lang="is" type="android" context="android_java" />
       <output filename="java/res/values-it/generated_resources.xml" lang="it" type="android" context="android_java" />
       <output filename="java/res/values-ja/generated_resources.xml" lang="ja" type="android" context="android_java" />
+      <output filename="java/res/values-ka/generated_resources.xml" lang="ka" type="android" context="android_java" />
+      <output filename="java/res/values-kk/generated_resources.xml" lang="kk" type="android" context="android_java" />
+      <output filename="java/res/values-km/generated_resources.xml" lang="km" type="android" context="android_java" />
       <output filename="java/res/values-kn/generated_resources.xml" lang="kn" type="android" context="android_java" />
       <output filename="java/res/values-ko/generated_resources.xml" lang="ko" type="android" context="android_java" />
+      <output filename="java/res/values-ky/generated_resources.xml" lang="ky" type="android" context="android_java" />
+      <output filename="java/res/values-lo/generated_resources.xml" lang="lo" type="android" context="android_java" />
       <output filename="java/res/values-lt/generated_resources.xml" lang="lt" type="android" context="android_java" />
       <output filename="java/res/values-lv/generated_resources.xml" lang="lv" type="android" context="android_java" />
+      <output filename="java/res/values-mk/generated_resources.xml" lang="mk" type="android" context="android_java" />
       <output filename="java/res/values-ml/generated_resources.xml" lang="ml" type="android" context="android_java" />
+      <output filename="java/res/values-mn/generated_resources.xml" lang="mn" type="android" context="android_java" />
       <output filename="java/res/values-mr/generated_resources.xml" lang="mr" type="android" context="android_java" />
       <output filename="java/res/values-ms/generated_resources.xml" lang="ms" type="android" context="android_java" />
+      <output filename="java/res/values-my/generated_resources.xml" lang="my" type="android" context="android_java" />
+      <output filename="java/res/values-ne/generated_resources.xml" lang="ne" type="android" context="android_java" />
       <output filename="java/res/values-nl/generated_resources.xml" lang="nl" type="android" context="android_java" />
       <output filename="java/res/values-nb/generated_resources.xml" lang="no" type="android" context="android_java" />
+      <output filename="java/res/values-or/generated_resources.xml" lang="or" type="android" context="android_java" />
+      <output filename="java/res/values-pa/generated_resources.xml" lang="pa" type="android" context="android_java" />
       <output filename="java/res/values-pl/generated_resources.xml" lang="pl" type="android" context="android_java" />
       <output filename="java/res/values-pt-rBR/generated_resources.xml" lang="pt-BR" type="android" context="android_java" />
       <output filename="java/res/values-pt-rPT/generated_resources.xml" lang="pt-PT" type="android" context="android_java" />
       <output filename="java/res/values-ro/generated_resources.xml" lang="ro" type="android" context="android_java" />
       <output filename="java/res/values-ru/generated_resources.xml" lang="ru" type="android" context="android_java" />
+      <output filename="java/res/values-si/generated_resources.xml" lang="si" type="android" context="android_java" />
       <output filename="java/res/values-sk/generated_resources.xml" lang="sk" type="android" context="android_java" />
       <output filename="java/res/values-sl/generated_resources.xml" lang="sl" type="android" context="android_java" />
+      <output filename="java/res/values-sq/generated_resources.xml" lang="sq" type="android" context="android_java" />
       <output filename="java/res/values-sr/generated_resources.xml" lang="sr" type="android" context="android_java" />
       <output filename="java/res/values-sv/generated_resources.xml" lang="sv" type="android" context="android_java" />
       <output filename="java/res/values-sw/generated_resources.xml" lang="sw" type="android" context="android_java" />
@@ -127,9 +174,12 @@ are declared in tools/grit/grit_rule.gni.
       <output filename="java/res/values-th/generated_resources.xml" lang="th" type="android" context="android_java" />
       <output filename="java/res/values-tr/generated_resources.xml" lang="tr" type="android" context="android_java" />
       <output filename="java/res/values-uk/generated_resources.xml" lang="uk" type="android" context="android_java" />
+      <output filename="java/res/values-ur/generated_resources.xml" lang="ur" type="android" context="android_java" />
+      <output filename="java/res/values-uz/generated_resources.xml" lang="uz" type="android" context="android_java" />
       <output filename="java/res/values-vi/generated_resources.xml" lang="vi" type="android" context="android_java" />
       <output filename="java/res/values-zh-rCN/generated_resources.xml" lang="zh-CN" type="android" context="android_java" />
       <output filename="java/res/values-zh-rTW/generated_resources.xml" lang="zh-TW" type="android" context="android_java" />
+      <output filename="java/res/values-zu/generated_resources.xml" lang="zu" type="android" context="android_java" />
     </if>
   </outputs>
   <translations>
@@ -989,6 +1039,9 @@ are declared in tools/grit/grit_rule.gni.
           <message name="IDS_OPEN_IN_APP_WINDOW" desc="The text label of the menu item for moving the current tab to a standalone app window">
             Open in <ph name="APP">$1<ex>Gmail App</ex></ph>
           </message>
+          <message name="IDS_MOVE_TAB_TO_NEW_WINDOW" desc="The text label of the Move Tab to Window menu item.">
+            Move tab to new window
+          </message>
         </if>
         <if expr="use_titlecase">
           <message name="IDS_NEW_TAB" desc="In Title Case: The text label of a menu item for opening a new tab">
@@ -1059,6 +1112,9 @@ are declared in tools/grit/grit_rule.gni.
           </message>
           <message name="IDS_OPEN_IN_APP_WINDOW" desc="In Title Case: The text label of the menu item for moving the current tab to a standalone app window">
             Open in <ph name="APP">$1<ex>Gmail App</ex></ph>
+          </message>
+          <message name="IDS_MOVE_TAB_TO_NEW_WINDOW" desc="In Title Case: The text label of the Move Tab to New Window menu item.">
+            Move Tab to New Window
           </message>
         </if>
       </if>

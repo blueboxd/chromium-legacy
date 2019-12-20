@@ -29,6 +29,7 @@
 <translation id="7792771145871471484">Pregled predlogov.</translation>
 <translation id="7885132941432959125">Premakni zavihek v desno</translation>
 <translation id="7966321538264951561">Opustitev predlogov.</translation>
+<translation id="8205266828577616993">Premakni zavihek navzgor</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Zapiranje <ph name="TABS_COUNT_ONE" /> izbranega zavihka}one{Zapiranje <ph name="TABS_COUNT_MANY" /> izbranega zavihka}two{Zapiranje <ph name="TABS_COUNT_MANY" /> izbranih zavihkov}few{Zapiranje <ph name="TABS_COUNT_MANY" /> izbranih zavihkov}other{Zapiranje <ph name="TABS_COUNT_MANY" /> izbranih zavihkov}}</translation>
 <translation id="9150694013019234766">Preklapljanje med zavihki v skupini zavihkov pri dnu zaslona</translation>
 <translation id="9169594135889675189">Skupini dodaj nov zavihek</translation>

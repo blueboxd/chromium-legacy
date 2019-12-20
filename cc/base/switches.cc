@@ -56,6 +56,11 @@ const char kCompositedRenderPassBorders[] = "renderpass";
 const char kCompositedSurfaceBorders[] = "surface";
 const char kCompositedLayerBorders[] = "layer";
 
+#if DCHECK_IS_ON()
+// Checks and logs double background blur as an error if any.
+const char kLogOnUIDoubleBackgroundBlur[] = "log-on-ui-double-background-blur";
+#endif
+
 // Draws a heads-up-display showing Frames Per Second as well as GPU memory
 // usage. If you also use --enable-logging=stderr --vmodule="head*=1" then FPS
 // will also be output to the console log.

@@ -438,6 +438,7 @@ class AppListBackgroundShieldView : public views::View {
     layer()->SetFillsBoundsOpaquely(false);
     SetBackgroundRadius(shelf_background_corner_radius_);
     layer()->SetColor(color_);
+    layer()->SetName("launcher/BackgroundShield");
   }
 
   ~AppListBackgroundShieldView() override = default;

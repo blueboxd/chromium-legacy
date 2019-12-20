@@ -326,6 +326,7 @@
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Uruchom diagnostykę sieci<ph name="END_LINK" /></translation>
 <translation id="2473195200299095979">Przetłumacz tę stronę</translation>
 <translation id="2479410451996844060">Nieprawidłowy URL wyszukiwania</translation>
+<translation id="2482370039860827034">Przed chwilą wpisano hasło na stronie wprowadzającej w błąd. Chrome zaleca, by natychmiast zmienić je na <ph name="WEBSITE_1" /> i <ph name="WEBSITE_2" /> oraz na innych stronach, na których używasz tego hasła.</translation>
 <translation id="2482878487686419369">Powiadomienia</translation>
 <translation id="248348093745724435">Zasady dotyczące komputera</translation>
 <translation id="2491120439723279231">Certyfikat serwera zawiera błędy.</translation>
@@ -338,6 +339,7 @@
 <translation id="2505268675989099013">Chroń konto</translation>
 <translation id="2515629240566999685">Sprawdź sygnał w swojej okolicy</translation>
 <translation id="2521385132275182522">Zszywka w prawym dolnym rogu</translation>
+<translation id="2521483867890026383">Przed chwilą wpisano hasło na stronie wprowadzającej w błąd. Chromium zaleca, by natychmiast zmienić je na <ph name="WEBSITE_1" /> i <ph name="WEBSITE_2" /> oraz na innych stronach, na których używasz tego hasła.</translation>
 <translation id="2523886232349826891">Zapisana tylko na tym urządzeniu</translation>
 <translation id="2524461107774643265">Dodaj więcej informacji</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{i jeszcze 1}few{i jeszcze #}many{i jeszcze #}other{i jeszcze #}}</translation>
@@ -607,6 +609,7 @@
 <translation id="3828924085048779000">Puste hasło jest niedozwolone.</translation>
 <translation id="3831915413245941253">Administrator <ph name="ENROLLMENT_DOMAIN" /> zainstalował rozszerzenia obsługujące dodatkowe funkcje. Rozszerzenia mają dostęp do niektórych Twoich danych.</translation>
 <translation id="3832522519263485449">Wiele otworów po lewej</translation>
+<translation id="3838154488026099170">Przed chwilą wpisano hasło na stronie wprowadzającej w błąd. Chromium zaleca, by natychmiast zmienić je na <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> oraz na innych stronach, na których używasz tego hasła.</translation>
 <translation id="385051799172605136">Wstecz</translation>
 <translation id="3858027520442213535">Zaktualizuj datę i godzinę</translation>
 <translation id="3884278016824448484">Konflikt identyfikatorów urządzeń</translation>
@@ -644,6 +647,7 @@
 <translation id="4072486802667267160">Podczas przetwarzania zamówienia wystąpił błąd. Spróbuj ponownie.</translation>
 <translation id="4075732493274867456">Klient i serwer nie obsługują wspólnej wersji protokołu SSL lub mechanizmu szyfrowania.</translation>
 <translation id="4075941231477579656">Touch ID</translation>
+<translation id="4077092919748553596">Przed chwilą wpisano hasło na stronie wprowadzającej w błąd. Chrome zaleca, by natychmiast zmienić je na <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> i <ph name="WEBSITE_3" /> oraz na innych stronach, na których używasz tego hasła.</translation>
 <translation id="4079302484614802869">Proxy skonfigurowano do używania URL-a skryptu PAC, a nie ustalonych serwerów proxy.</translation>
 <translation id="4082393374666368382">Ustawienia – Zarządzanie</translation>
 <translation id="4098354747657067197">Wchodzisz na stronę wprowadzającą w błąd</translation>
@@ -723,6 +727,7 @@
 <translation id="4356973930735388585">Osoby atakujące tę stronę mogą próbować zainstalować na Twoim komputerze niebezpieczne programy przeznaczone do kradzieży lub usuwania Twoich danych (na przykład zdjęć, haseł, wiadomości czy numerów kart kredytowych).</translation>
 <translation id="4358059973562876591">Nie można zastosować wybranych szablonów z powodu błędu związanego z zasadą DnsOverHttpsMode.</translation>
 <translation id="4358461427845829800">Zarządzaj formami płatności…</translation>
+<translation id="4359160567981085931">Przed chwilą wpisano hasło na stronie wprowadzającej w błąd. Chrome może pomóc. Aby zmienić hasło i powiadomić Google, że Twoje konto może być zagrożone, kliknij Chroń konto.</translation>
 <translation id="4367563149485757821">Number-12 (koperta)</translation>
 <translation id="437058704415269440">Saldo konta</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
@@ -998,6 +1003,7 @@
 <translation id="5728056243719941842">C5 (koperta)</translation>
 <translation id="5730040223043577876">Chrome zaleca zresetowanie hasła, jeśli zostało użyte na innej stronie.</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Zapisywanie karty na koncie Google}few{Zapisywanie kart na koncie Google}many{Zapisywanie kart na koncie Google}other{Zapisywanie kart na koncie Google}}</translation>
+<translation id="5745980000221562234">{NUM_CARDS,plural, =1{W przypadku tej karty użyj numeru wirtualnego}few{Wybierz kartę}many{Wybierz kartę}other{Wybierz kartę}}</translation>
 <translation id="5763042198335101085">Wpisz prawidłowy adres e-mail</translation>
 <translation id="5763703224595565476">Twój administrator włączył w Twojej przeglądarce Ochronę użytkowników Chrome Enterprise. Ochrona użytkowników Chrome Enterprise ma dostęp do niektórych Twoich danych.</translation>
 <translation id="5765072501007116331">Aby zobaczyć metody dostawy oraz wymagania, wybierz adres</translation>
@@ -1014,6 +1020,7 @@
 <translation id="5804241973901381774">Uprawnienia</translation>
 <translation id="5810442152076338065">Połączenie z <ph name="DOMAIN" /> jest szyfrowane przy użyciu przestarzałego zestawu szyfrów.</translation>
 <translation id="5813119285467412249">&amp;Ponów dodanie</translation>
+<translation id="5824687817967109979">{NUM_CARDS,plural, =1{Gdy zapłacisz, na karcie pojawi się obciążenie, ale dana strona nie pozna jej rzeczywistego numeru. Jako dodatkowe zabezpieczenie zostanie wygenerowany tymczasowy kod CVC.}few{Gdy zapłacisz, na wybranej karcie pojawi się obciążenie, ale dana strona nie pozna jej rzeczywistego numeru. Jako dodatkowe zabezpieczenie zostanie wygenerowany tymczasowy kod CVC.}many{Gdy zapłacisz, na wybranej karcie pojawi się obciążenie, ale dana strona nie pozna jej rzeczywistego numeru. Jako dodatkowe zabezpieczenie zostanie wygenerowany tymczasowy kod CVC.}other{Gdy zapłacisz, na wybranej karcie pojawi się obciążenie, ale dana strona nie pozna jej rzeczywistego numeru. Jako dodatkowe zabezpieczenie zostanie wygenerowany tymczasowy kod CVC.}}</translation>
 <translation id="583281660410589416">Nieznany</translation>
 <translation id="5838278095973806738">Nie podawaj żadnych informacji poufnych (takich jak hasła czy dane kart kredytowych) w tej witrynie, bo osoby atakujące będą mogły je wykraść.</translation>
 <translation id="5851548754964597211">Lista kart</translation>
@@ -1471,6 +1478,7 @@ Dodatkowe informacje:
 <translation id="8042918947222776840">Wybierz metodę odbioru</translation>
 <translation id="8057711352706143257">Oprogramowanie „<ph name="SOFTWARE_NAME" />” nie jest prawidłowo skonfigurowane. Odinstalowanie oprogramowania „<ph name="SOFTWARE_NAME" />” zwykle rozwiązuje problem. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8066955247577885446">Coś poszło nie tak.</translation>
+<translation id="8067872629359326442">Przed chwilą wpisano hasło na stronie wprowadzającej w błąd. Chromium może pomóc. Aby zmienić hasło i powiadomić Google, że Twoje konto może być zagrożone, kliknij Chroń konto.</translation>
 <translation id="8074253406171541171">10x13 (koperta)</translation>
 <translation id="8078141288243656252">Nie można dodawać adnotacji, gdy dokument jest obrócony</translation>
 <translation id="8079031581361219619">Załadować ponownie stronę?</translation>
@@ -1487,6 +1495,7 @@ Dodatkowe informacje:
 <translation id="8105368624971345109">Wyłącz</translation>
 <translation id="8118489163946903409">Forma płatności</translation>
 <translation id="8127301229239896662">Oprogramowanie „<ph name="SOFTWARE_NAME" />” nie zostało prawidłowo zainstalowane na komputerze lub w sieci. Poproś administratora o rozwiązanie tego problemu.</translation>
+<translation id="8128526133099929547">Przed chwilą wpisano hasło na stronie wprowadzającej w błąd. Chrome zaleca, by natychmiast zmienić je na <ph name="WEBSITE_1" /> oraz na innych stronach, na których używasz tego hasła.</translation>
 <translation id="8131740175452115882">Potwierdź</translation>
 <translation id="8149426793427495338">Twój komputer przeszedł w tryb uśpienia.</translation>
 <translation id="8150722005171944719">Nie można odczytać pliku <ph name="URL" />. Być może został usunięty lub uprawnienia dostępu uniemożliwiają jego odczyt.</translation>
@@ -1504,6 +1513,7 @@ Dodatkowe informacje:
 <translation id="8218327578424803826">Przypisana lokalizacja:</translation>
 <translation id="8220146938470311105">C7/C6 (koperta)</translation>
 <translation id="8220639454292072926">Raportowanie w firmie</translation>
+<translation id="8221250263817408492">Przed chwilą wpisano hasło na stronie wprowadzającej w błąd. Chromium zaleca, by natychmiast zmienić je na <ph name="WEBSITE_1" /> oraz na innych stronach, na których używasz tego hasła.</translation>
 <translation id="8225771182978767009">Administrator tego komputera zablokował tę witrynę.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">Otwórz stronę w nowej karcie incognito</translation>

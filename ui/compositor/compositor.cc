@@ -5,9 +5,9 @@
 #include "ui/compositor/compositor.h"
 
 #include <stddef.h>
-
 #include <algorithm>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -203,6 +203,12 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
           features::kCompositorThreadedScrollbarScrolling)) {
     settings.compositor_threaded_scrollbar_scrolling = true;
   }
+
+#if DCHECK_IS_ON()
+  if (command_line->HasSwitch(cc::switches::kLogOnUIDoubleBackgroundBlur))
+    settings.log_on_ui_double_background_blur = true;
+#endif
+
   animation_host_ = cc::AnimationHost::CreateMainInstance();
 
   cc::LayerTreeHost::InitParams params;

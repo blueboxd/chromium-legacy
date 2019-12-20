@@ -21,7 +21,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/ppapi_test_utils.h"
 #include "content/public/test/test_utils.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "url/gurl.h"
 
 namespace {

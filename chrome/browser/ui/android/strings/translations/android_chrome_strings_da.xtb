@@ -427,6 +427,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4226663524361240545">Notifikationer kan få enheden til at vibrere</translation>
 <translation id="423219824432660969">Kryptér synkroniserede data med Google-adgangskoden fra <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Åbn Indstillinger</translation>
+<translation id="4250229828105606438">Screenshot</translation>
 <translation id="4256782883801055595">Open source-licenser</translation>
 <translation id="4259722352634471385">Navigationen er blokeret: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopiér linkadresse</translation>
@@ -850,7 +851,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7293171162284876153">Aktivér "Synkroniser dine Chrome-data" for starte synkroniseringen.</translation>
 <translation id="729975465115245577">Der er ikke nogen app på din enhed, hvor filen med adgangskoder kan gemmes.</translation>
 <translation id="7302081693174882195">Info: Sorteret efter mængden af sparede data</translation>
-<translation id="7302486331832100261">Du blokerer som regel notifikationer. Tryk på Oplysninger for at give tilladelse.</translation>
+<translation id="7302486331832100261">Du blokerer som regel notifikationer. Tryk på Info for at give tilladelse.</translation>
 <translation id="7328017930301109123">Chrome indlæser sider hurtigere og bruger op til 60 procent mindre data i Lite-tilstand.</translation>
 <translation id="7333031090786104871">Det forrige website er stadig ved at blive tilføjet</translation>
 <translation id="7352939065658542140">VIDEO</translation>

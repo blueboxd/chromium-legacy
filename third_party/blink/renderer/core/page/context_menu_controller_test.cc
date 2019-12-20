@@ -6,9 +6,9 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/context_menu_data/edit_flags.h"
+#include "third_party/blink/public/common/input/web_menu_source_type.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
-#include "third_party/blink/public/platform/web_menu_source_type.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/web/web_context_menu_data.h"
 #include "third_party/blink/renderer/core/dom/xml_document.h"

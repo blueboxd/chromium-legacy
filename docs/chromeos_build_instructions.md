@@ -11,7 +11,7 @@ etc.) are stubbed out. The entire system UI runs in a single X11 window on your
 desktop.
 
 First, follow the [normal Linux build
-instructions](https://chromium.googlesource.com/chromium/src/+/master/docs/linux_build_instructions.md)
+instructions](https://chromium.googlesource.com/chromium/src/+/master/docs/linux/build_instructions.md)
 as usual to get a Chromium checkout.
 
 ## Updating your gclient config

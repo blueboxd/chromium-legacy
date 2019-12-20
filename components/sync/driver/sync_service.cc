@@ -4,17 +4,20 @@
 
 #include "components/sync/driver/sync_service.h"
 
+#include <utility>
+
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 
 namespace syncer {
 
-SyncSetupInProgressHandle::SyncSetupInProgressHandle(base::Closure on_destroy)
-    : on_destroy_(on_destroy) {}
+SyncSetupInProgressHandle::SyncSetupInProgressHandle(
+    base::OnceClosure on_destroy)
+    : on_destroy_(std::move(on_destroy)) {}
 
 SyncSetupInProgressHandle::~SyncSetupInProgressHandle() {
-  on_destroy_.Run();
+  std::move(on_destroy_).Run();
 }
 
 CoreAccountId SyncService::GetAuthenticatedAccountId() const {

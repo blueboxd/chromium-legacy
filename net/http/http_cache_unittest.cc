@@ -863,7 +863,7 @@ TEST_P(HttpCacheTest_SplitCacheFeature, SimpleGETVerifyGoogleFontMetrics) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     HttpCacheTest_SplitCacheFeature,
     testing::Bool());
 
@@ -12599,7 +12599,7 @@ class HttpCacheMemoryDumpTest
       public WithTaskEnvironment {};
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     HttpCacheMemoryDumpTest,
     ::testing::Values(base::trace_event::MemoryDumpLevelOfDetail::DETAILED,
                       base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND));

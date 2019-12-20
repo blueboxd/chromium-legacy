@@ -100,7 +100,7 @@ class DirectoryBackingStore {
   // already a handler, the existing handler is overwritten with
   // |catastrophic_error_handler|.
   virtual void SetCatastrophicErrorHandler(
-      const base::Closure& catastrophic_error_handler);
+      const base::RepeatingClosure& catastrophic_error_handler);
 
   // Returns true on success, false on error.
   bool GetDatabasePageSize(int* page_size);
@@ -272,7 +272,7 @@ class DirectoryBackingStore {
 
   // We keep a copy of the Closure so we reinstall it when the underlying
   // sql::Database is destroyed/recreated.
-  base::Closure catastrophic_error_handler_;
+  base::RepeatingClosure catastrophic_error_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectoryBackingStore);
 };

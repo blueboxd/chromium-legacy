@@ -15,7 +15,7 @@
 #include "components/page_load_metrics/common/test/page_load_metrics_test_util.h"
 #include "content/public/browser/web_contents.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
-#include "third_party/blink/public/platform/web_mouse_event.h"
+#include "third_party/blink/public/common/input/web_mouse_event.h"
 
 namespace {
 const char kExampleUrl[] = "http://www.example.com/";

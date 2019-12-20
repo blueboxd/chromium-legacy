@@ -18,13 +18,13 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/shell/test_runner/test_runner_export.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
+#include "third_party/blink/public/common/input/web_touch_point.h"
 #include "third_party/blink/public/platform/web_drag_data.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
-#include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
-#include "third_party/blink/public/platform/web_mouse_wheel_event.h"
 #include "third_party/blink/public/platform/web_point.h"
-#include "third_party/blink/public/platform/web_touch_point.h"
 
 namespace blink {
 class WebFrameWidget;

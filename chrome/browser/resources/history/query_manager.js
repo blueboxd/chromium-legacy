@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {BrowserService} from './browser_service.js';
+import {HistoryQuery, HistoryEntry, QueryResult} from './externs.js';
+import {QueryState} from './externs.js';
+
 Polymer({
   is: 'history-query-manager',
 
@@ -67,7 +72,7 @@ Polymer({
     this.set('queryState.querying', true);
     this.set('queryState.incremental', incremental);
 
-    const browserService = history.BrowserService.getInstance();
+    const browserService = BrowserService.getInstance();
     const promise = incremental ?
         browserService.queryHistoryContinuation() :
         browserService.queryHistory(this.queryState.searchTerm);
@@ -123,7 +128,7 @@ Polymer({
   searchTermChanged_: function() {
     // TODO(tsergeant): Ignore incremental searches in this metric.
     if (this.queryState.searchTerm) {
-      history.BrowserService.getInstance().recordAction('Search');
+      BrowserService.getInstance().recordAction('Search');
     }
   },
 });

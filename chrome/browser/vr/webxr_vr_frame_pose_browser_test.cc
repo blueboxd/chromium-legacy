@@ -161,7 +161,6 @@ std::string GetPoseAsString(const Frame& frame) {
 
 }  // namespace
 
-// TODO(crbug.com/986621) - OpenXR currently hard codes data
 // Pixel test for WebXR - start presentation, submit frames, get data back out.
 // Validates that submitted frames used expected pose.
 WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestPresentationPoses) {

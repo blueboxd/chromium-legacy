@@ -8,8 +8,10 @@
 
 #include "build/build_config.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
+#include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/ipc/common/gpu_surface_lookup.h"
 #include "gpu/vulkan/vulkan_fence_helper.h"
+#include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_implementation.h"
 #include "gpu/vulkan/vulkan_surface.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -41,6 +43,10 @@ SkiaOutputDeviceVulkan::~SkiaOutputDeviceVulkan() {
     fence_helper->EnqueueVulkanObjectCleanupForSubmittedWork(
         std::move(vulkan_surface_));
   }
+  for (auto it = sk_surface_size_pairs_.begin();
+       it != sk_surface_size_pairs_.end(); ++it) {
+    memory_type_tracker_->TrackMemFree(it->bytes_allocated);
+  }
 }
 
 bool SkiaOutputDeviceVulkan::Reshape(const gfx::Size& size,
@@ -64,8 +70,12 @@ bool SkiaOutputDeviceVulkan::Reshape(const gfx::Size& size,
   if (vulkan_surface_->swap_chain_generation() != generation ||
       !SkColorSpace::Equals(sk_color_space.get(), sk_color_space_.get())) {
     // swapchain is changed, we need recreate all cached sk surfaces.
-    sk_surfaces_.clear();
-    sk_surfaces_.resize(vulkan_surface_->swap_chain()->num_images());
+    for (auto it = sk_surface_size_pairs_.begin();
+         it != sk_surface_size_pairs_.end(); ++it) {
+      memory_type_tracker_->TrackMemFree(it->bytes_allocated);
+    }
+    sk_surface_size_pairs_.clear();
+    sk_surface_size_pairs_.resize(vulkan_surface_->swap_chain()->num_images());
     sk_color_space_ = std::move(sk_color_space);
   }
   return true;
@@ -93,7 +103,8 @@ SkSurface* SkiaOutputDeviceVulkan::BeginPaint() {
     scoped_write_.reset();
     return nullptr;
   }
-  auto& sk_surface = sk_surfaces_[scoped_write_->image_index()];
+  auto& sk_surface =
+      sk_surface_size_pairs_[scoped_write_->image_index()].sk_surface;
 
   if (!sk_surface) {
     SkSurfaceProps surface_props =
@@ -112,6 +123,16 @@ SkSurface* SkiaOutputDeviceVulkan::BeginPaint() {
     GrBackendRenderTarget render_target(vk_image_size.width(),
                                         vk_image_size.height(),
                                         0 /* sample_cnt */, vk_image_info);
+
+    // Estimate size of GPU memory needed for the GrBackendRenderTarget.
+    VkMemoryRequirements requirements;
+    vkGetImageMemoryRequirements(
+        context_provider_->GetDeviceQueue()->GetVulkanDevice(),
+        vk_image_info.fImage, &requirements);
+    sk_surface_size_pairs_[scoped_write_->image_index()].bytes_allocated =
+        requirements.size;
+    memory_type_tracker_->TrackMemAlloc(requirements.size);
+
     auto sk_color_type = surface_format == VK_FORMAT_B8G8R8A8_UNORM
                              ? kBGRA_8888_SkColorType
                              : kRGBA_8888_SkColorType;
@@ -138,7 +159,8 @@ SkSurface* SkiaOutputDeviceVulkan::BeginPaint() {
 void SkiaOutputDeviceVulkan::EndPaint(const GrBackendSemaphore& semaphore) {
   DCHECK(scoped_write_);
 
-  auto& sk_surface = sk_surfaces_[scoped_write_->image_index()];
+  auto& sk_surface =
+      sk_surface_size_pairs_[scoped_write_->image_index()].sk_surface;
   auto backend = sk_surface->getBackendRenderTarget(
       SkSurface::kFlushRead_BackendHandleAccess);
   GrVkImageInfo vk_image_info;
@@ -175,5 +197,10 @@ bool SkiaOutputDeviceVulkan::CreateVulkanSurface() {
   vulkan_surface_ = std::move(vulkan_surface);
   return true;
 }
+
+SkiaOutputDeviceVulkan::SkSurfaceSizePair::SkSurfaceSizePair() = default;
+SkiaOutputDeviceVulkan::SkSurfaceSizePair::SkSurfaceSizePair(
+    const SkSurfaceSizePair& other) = default;
+SkiaOutputDeviceVulkan::SkSurfaceSizePair::~SkSurfaceSizePair() = default;
 
 }  // namespace viz

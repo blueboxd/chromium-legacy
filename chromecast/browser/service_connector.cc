@@ -73,9 +73,10 @@ void ServiceConnector::Connect(const std::string& service_name,
   // If the client is browser code, forward indscriminately through the Service
   // Manager. The browser generally has access unfettered to everything.
   if (client_id == kBrowserProcessClientId) {
+    auto interface_name = *receiver.interface_name();
     content::GetSystemConnector()->BindInterface(
         service_manager::ServiceFilter::ByName(service_name),
-        *receiver.interface_name(), receiver.PassPipe());
+        interface_name, receiver.PassPipe());
     return;
   }
 

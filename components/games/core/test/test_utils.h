@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/time/time.h"
 #include "components/games/core/proto/date.pb.h"
 #include "components/games/core/proto/game.pb.h"
 #include "components/games/core/proto/game_image.pb.h"
@@ -30,6 +31,8 @@ HighlightedGamesResponse CreateHighlightedGamesResponse();
 
 void ExpectProtosEqual(const google::protobuf::MessageLite& expected,
                        const google::protobuf::MessageLite& actual);
+
+void SetDateProtoTo(const base::Time& time, Date* date_proto);
 
 }  // namespace test
 }  // namespace games

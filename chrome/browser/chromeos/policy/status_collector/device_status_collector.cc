@@ -1444,10 +1444,6 @@ bool DeviceStatusCollector::GetNetworkInterfaces(
           em::NetworkInterface::TYPE_WIFI,
       },
       {
-          shill::kTypeBluetooth,
-          em::NetworkInterface::TYPE_BLUETOOTH,
-      },
-      {
           shill::kTypeCellular,
           em::NetworkInterface::TYPE_CELLULAR,
       },

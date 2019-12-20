@@ -224,13 +224,6 @@ bool SyncUserSettingsImpl::SetDecryptionPassphrase(
   return result;
 }
 
-void SyncUserSettingsImpl::AddTrustedVaultDecryptionKeys(
-    const std::string& gaia_id,
-    const std::vector<std::string>& keys) {
-  DVLOG(1) << "Adding trusted vault decryption keys.";
-  crypto_->AddTrustedVaultDecryptionKeys(gaia_id, keys);
-}
-
 void SyncUserSettingsImpl::SetSyncRequestedIfNotSetExplicitly() {
   prefs_->SetSyncRequestedIfNotSetExplicitly();
 }

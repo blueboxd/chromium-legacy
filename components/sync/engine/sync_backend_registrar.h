@@ -32,7 +32,7 @@ struct UserShare;
 class SyncBackendRegistrar : public SyncManager::ChangeDelegate {
  public:
   using ModelSafeWorkerFactory =
-      base::Callback<scoped_refptr<ModelSafeWorker>(ModelSafeGroup)>;
+      base::RepeatingCallback<scoped_refptr<ModelSafeWorker>(ModelSafeGroup)>;
 
   // |name| is used for debugging. Must be created on the UI thread.
   SyncBackendRegistrar(const std::string& name,

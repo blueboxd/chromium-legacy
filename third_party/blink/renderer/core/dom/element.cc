@@ -3483,15 +3483,9 @@ ShadowRoot& Element::CreateAndAttachShadowRoot(ShadowRootType type) {
   EnsureElementRareData().SetShadowRoot(*shadow_root);
   shadow_root->SetParentOrShadowHostNode(this);
   shadow_root->SetParentTreeScope(GetTreeScope());
-  if (type == ShadowRootType::V0) {
+  if (type == ShadowRootType::V0)
     shadow_root->SetNeedsDistributionRecalc();
-  }
-
   shadow_root->InsertedInto(*this);
-  if (InActiveDocument() && GetComputedStyle())
-    SetChildNeedsStyleRecalc();
-  SetNeedsStyleRecalc(kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
-                                               style_change_reason::kShadow));
 
   probe::DidPushShadowRoot(this, shadow_root);
 

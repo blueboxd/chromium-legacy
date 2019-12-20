@@ -1436,6 +1436,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityHeading) {
   RunHtmlTest(FILE_PATH_LITERAL("heading.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityHeadingWithTabIndex) {
+  RunHtmlTest(FILE_PATH_LITERAL("heading-with-tabIndex.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityHidden) {
   RunAriaTest(FILE_PATH_LITERAL("hidden.html"));
 }

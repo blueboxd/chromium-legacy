@@ -8,14 +8,15 @@
 
 #include "components/performance_manager/graph/node_attached_data_impl.h"
 #include "components/performance_manager/graph/page_node_impl.h"
+#include "components/performance_manager/public/graph/frame_node.h"
+#include "components/performance_manager/public/graph/graph_operations.h"
 #include "components/performance_manager/public/mojom/coordination_unit.mojom.h"
 
 namespace performance_manager {
 
 using performance_manager::mojom::InterventionPolicy;
 
-// Provides PageAggregator machinery access to some internals
-// of a PageNodeImpl.
+// Provides PageAggregator machinery access to some internals of a PageNodeImpl.
 class PageAggregatorAccess {
  public:
   using StorageType = decltype(PageNodeImpl::page_aggregator_data_);
@@ -37,6 +38,10 @@ class PageAggregatorAccess {
                                             bool value) {
     page_node->SetIsHoldingIndexedDBLock(value);
   }
+
+  static void SetPageHadFormInteraction(PageNodeImpl* page_node, bool value) {
+    page_node->SetHadFormInteraction(value);
+  }
 };
 
 // Specify the packing alignment for this class as it's expected to have a
@@ -51,6 +56,7 @@ class PageAggregator::Data : public NodeAttachedDataImpl<Data> {
   ~Data() override {
     DCHECK_EQ(num_frames_holding_web_lock_, 0U);
     DCHECK_EQ(num_frames_holding_indexeddb_lock_, 0U);
+    DCHECK_EQ(num_current_frames_with_form_interaction_, 0U);
   }
 
   static StorageType* GetInternalStorage(PageNodeImpl* page_node) {
@@ -68,12 +74,12 @@ class PageAggregator::Data : public NodeAttachedDataImpl<Data> {
     --num_current_frames_for_freezing_policy[static_cast<size_t>(policy)];
   }
 
-  // Updates the counter of page using WebLocks and sets the corresponding
+  // Updates the counter of frames using WebLocks and sets the corresponding
   // page-level property.
   void UpdateFrameCountForWebLockUsage(bool frame_is_holding_weblock,
                                        PageNodeImpl* page_node);
 
-  // Updates the counter of page using IndexedDB locks and sets the
+  // Updates the counter of frames using IndexedDB locks and sets the
   // corresponding page-level property.
   void UpdateFrameCountForIndexedDBLockUsage(
       bool frame_is_holding_indexeddb_lock,
@@ -84,6 +90,14 @@ class PageAggregator::Data : public NodeAttachedDataImpl<Data> {
     PageAggregatorAccess::SetOriginTrialFreezePolicy(
         page_node, ComputeOriginTrialFreezePolicy());
   }
+
+  // Updates the counter of frames with form interaction and sets the
+  // corresponding page-level property.  |frame_node_being_removed| indicates
+  // if this function is called while removing a frame node.
+  void UpdateCurrentFrameCountForFormInteraction(
+      bool frame_had_form_interaction,
+      PageNodeImpl* page_node,
+      const FrameNode* frame_node_being_removed);
 
  private:
   // Computes the page's origin trial freeze policy from current data.
@@ -105,6 +119,9 @@ class PageAggregator::Data : public NodeAttachedDataImpl<Data> {
   // counts all frames, not just the current ones.
   uint32_t num_frames_holding_web_lock_ = 0;
   uint32_t num_frames_holding_indexeddb_lock_ = 0;
+
+  // The number of current frames which have received some form interaction.
+  uint32_t num_current_frames_with_form_interaction_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(Data);
 };
@@ -149,6 +166,36 @@ void PageAggregator::Data::UpdateFrameCountForIndexedDBLockUsage(
       page_node, num_frames_holding_indexeddb_lock_ > 0);
 }
 
+void PageAggregator::Data::UpdateCurrentFrameCountForFormInteraction(
+    bool frame_had_form_interaction,
+    PageNodeImpl* page_node,
+    const FrameNode* frame_node_being_removed) {
+  if (frame_had_form_interaction) {
+    ++num_current_frames_with_form_interaction_;
+  } else {
+    DCHECK_GT(num_current_frames_with_form_interaction_, 0U);
+    --num_current_frames_with_form_interaction_;
+  }
+  // DCHECK that the |num_current_frames_with_form_interaction_| accounting is
+  // correct.
+  DCHECK_EQ(
+      [&]() {
+        const auto frame_nodes = GraphOperations::GetFrameNodes(page_node);
+        size_t num_current_frames_with_form_interaction = 0;
+        for (const auto* node : frame_nodes) {
+          if (node != frame_node_being_removed && node->IsCurrent() &&
+              node->HadFormInteraction()) {
+            ++num_current_frames_with_form_interaction;
+          }
+        }
+        return num_current_frames_with_form_interaction;
+      }(),
+      num_current_frames_with_form_interaction_);
+
+  PageAggregatorAccess::SetPageHadFormInteraction(
+      page_node, num_current_frames_with_form_interaction_ > 0);
+}
+
 PageAggregator::PageAggregator() = default;
 PageAggregator::~PageAggregator() = default;
 
@@ -165,10 +212,15 @@ void PageAggregator::OnBeforeFrameNodeRemoved(const FrameNode* frame_node) {
     data->DecrementFrameCountForFreezingPolicy(
         frame_node->GetOriginTrialFreezePolicy());
     data->UpdateOriginTrialFreezePolicy(page_node);
+    if (frame_node->HadFormInteraction()) {
+      // Decrement the form interaction counter for this page.
+      data->UpdateCurrentFrameCountForFormInteraction(false, page_node,
+                                                      frame_node);
+    }
   }
 
-  // It is not guaranteed that the graph will be notified that the frame
-  // has released its lock before it is notified of the frame being deleted.
+  // It is not guaranteed that the graph will be notified that the frame has
+  // released its lock before it is notified of the frame being deleted.
   if (frame_node->IsHoldingWebLock())
     data->UpdateFrameCountForWebLockUsage(false, page_node);
   if (frame_node->IsHoldingIndexedDBLock())
@@ -186,6 +238,17 @@ void PageAggregator::OnIsCurrentChanged(const FrameNode* frame_node) {
         frame_node->GetOriginTrialFreezePolicy());
   }
   data->UpdateOriginTrialFreezePolicy(page_node);
+
+  // Check if the frame node had some form interaction, in this case there's two
+  // possibilities:
+  //   - The frame became current: The counter of current frames with form
+  //     interactions should be increased.
+  //   - The frame became non current: The counter of current frames with form
+  //     interactions should be decreased.
+  if (frame_node->HadFormInteraction()) {
+    data->UpdateCurrentFrameCountForFormInteraction(frame_node->IsCurrent(),
+                                                    page_node, nullptr);
+  }
 }
 
 void PageAggregator::OnOriginTrialFreezePolicyChanged(
@@ -218,6 +281,15 @@ void PageAggregator::OnFrameIsHoldingIndexedDBLockChanged(
   Data* data = Data::GetOrCreate(page_node);
   data->UpdateFrameCountForIndexedDBLockUsage(
       frame_node->IsHoldingIndexedDBLock(), page_node);
+}
+
+void PageAggregator::OnHadFormInteractionChanged(const FrameNode* frame_node) {
+  if (frame_node->IsCurrent()) {
+    auto* page_node = PageNodeImpl::FromNode(frame_node->GetPageNode());
+    Data* data = Data::GetOrCreate(page_node);
+    data->UpdateCurrentFrameCountForFormInteraction(
+        frame_node->HadFormInteraction(), page_node, nullptr);
+  }
 }
 
 void PageAggregator::OnPassedToGraph(Graph* graph) {

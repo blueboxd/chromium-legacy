@@ -13159,14 +13159,12 @@ TEST_F(LayerTreeHostImplTest,
 }
 
 // Tests ScrollBy() to see if the method sets the scroll tree's currently
-// scrolling node and the ScrollState properly.
-TEST_F(LayerTreeHostImplTest, ScrollByScrollingNode) {
+// scrolling node.
+TEST_F(LayerTreeHostImplTest, ScrollByDoesNotSetScrollingNode) {
   SetupViewportLayersInnerScrolls(gfx::Size(50, 50), gfx::Size(100, 100));
   UpdateDrawProperties(host_impl_->active_tree());
 
-  // Create a ScrollState object with no scrolling element.
   ScrollStateData scroll_state_data;
-  scroll_state_data.set_current_native_scrolling_element(ElementId());
   std::unique_ptr<ScrollState> scroll_state(new ScrollState(scroll_state_data));
 
   ScrollTree& scroll_tree =
@@ -13184,22 +13182,16 @@ TEST_F(LayerTreeHostImplTest, ScrollByScrollingNode) {
   host_impl_->ScrollBy(scroll_state.get());
 
   // Check to see the scroll tree's currently scrolling node is
-  // still the same. |scroll_state|'s scrolling node should match
-  // it.
+  // still the same.
   EXPECT_EQ(scroll_node, scroll_tree.CurrentlyScrollingNode());
-  EXPECT_EQ(scroll_state->data()->current_native_scrolling_element(),
-            scroll_tree.CurrentlyScrollingNode()->element_id);
 
-  // Set the scroll tree's currently scrolling node to null. Calling
-  // ScrollBy() should set the node to the one inside |scroll_state|.
+  // Set the scroll tree's currently scrolling node to null.
   host_impl_->active_tree()->SetCurrentlyScrollingNode(nullptr);
   EXPECT_FALSE(scroll_tree.CurrentlyScrollingNode());
 
   host_impl_->ScrollBy(scroll_state.get());
 
-  EXPECT_EQ(scroll_node, scroll_tree.CurrentlyScrollingNode());
-  EXPECT_EQ(scroll_state->data()->current_native_scrolling_element(),
-            scroll_tree.CurrentlyScrollingNode()->element_id);
+  EXPECT_EQ(nullptr, scroll_tree.CurrentlyScrollingNode());
 }
 
 class HitTestRegionListGeneratingLayerTreeHostImplTest

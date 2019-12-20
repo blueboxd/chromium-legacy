@@ -172,12 +172,8 @@ source_set("eg_tests") {
     ":eg_test_support",
     "//base",
     "//base/test:test_support",
-    "//components/prefs",
     "//components/strings",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser",
-    "//ios/chrome/browser/bookmarks:bookmarks_utils",
-    "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/ui/authentication:eg_test_support",
     "//ios/chrome/browser/ui/popup_menu:constants",
     "//ios/chrome/browser/ui/table_view:feature_flags",
@@ -203,8 +199,6 @@ source_set("eg_test_support") {
     "bookmark_earl_grey_app_interface.mm",
     "bookmark_earl_grey_ui.h",
     "bookmark_earl_grey_ui.mm",
-    "bookmark_earl_grey_utils.h",
-    "bookmark_earl_grey_utils.mm",
   ]
   deps = [
     ":bookmarks",
@@ -246,6 +240,7 @@ source_set("eg2_tests") {
     "bookmarks_accessibility_egtest.mm",
     "bookmarks_egtest.mm",
     "bookmarks_entries_egtest.mm",
+    "bookmarks_folders_egtest.mm",
     "bookmarks_promo_egtest.mm",
     "bookmarks_search_egtest.mm",
   ]

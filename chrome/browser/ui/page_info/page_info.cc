@@ -924,7 +924,7 @@ __attribute__((optnone)) void PageInfo::ComputeUIInputs(
   // Safe Browsing error (since otherwise it's confusing which warning you're
   // re-enabling).
   show_ssl_decision_revoke_button_ =
-      delegate->HasAllowException(url.host()) &&
+      delegate->HasAllowException(url.host(), web_contents()) &&
       visible_security_state.malicious_content_status ==
           security_state::MALICIOUS_CONTENT_STATUS_NONE;
 }

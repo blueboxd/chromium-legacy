@@ -119,6 +119,7 @@ bool SharedImageBacking::HasAnyRefs() const {
 }
 
 void SharedImageBacking::OnReadSucceeded() {
+  AutoLock auto_lock(this);
   if (scoped_write_uma_) {
     scoped_write_uma_->SetConsumed();
     scoped_write_uma_.reset();
@@ -126,6 +127,7 @@ void SharedImageBacking::OnReadSucceeded() {
 }
 
 void SharedImageBacking::OnWriteSucceeded() {
+  AutoLock auto_lock(this);
   scoped_write_uma_.emplace();
 }
 
@@ -134,16 +136,9 @@ size_t SharedImageBacking::EstimatedSizeForMemTracking() const {
 }
 
 bool SharedImageBacking::have_context() const {
-  AssertLockedIfNecessary();
-
   DCHECK(refs_.empty());
 
   return have_context_;
-}
-
-void SharedImageBacking::AssertLockedIfNecessary() const {
-  if (lock_)
-    lock_->AssertAcquired();
 }
 
 SharedImageBacking::AutoLock::AutoLock(
@@ -188,13 +183,11 @@ void ClearTrackingSharedImageBacking::SetClearedRect(
 }
 
 gfx::Rect ClearTrackingSharedImageBacking::ClearedRectInternal() const {
-  AssertLockedIfNecessary();
   return cleared_rect_;
 }
 
 void ClearTrackingSharedImageBacking::SetClearedRectInternal(
     const gfx::Rect& cleared_rect) {
-  AssertLockedIfNecessary();
   cleared_rect_ = cleared_rect;
 }
 

@@ -37,6 +37,7 @@
 <translation id="1231733316453485619">አስምር ይብራ?</translation>
 <translation id="123724288017357924">የተሸጎጠ ይዘትን ችላ በማለት የአሁኑን ገጽ ዳግም ጫን</translation>
 <translation id="124116460088058876">ተጨማሪ ቋንቋዎች</translation>
+<translation id="1242008676835033345"><ph name="WEBSITE_URL" /> ላይ ተካትቷል</translation>
 <translation id="124678866338384709">የአሁኑን ትር ዝጋ</translation>
 <translation id="1258753120186372309">Google doodle፦ <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">ይፈልጉ እና ያስሱ</translation>
@@ -95,6 +96,7 @@
 <translation id="1672586136351118594">ዳግም አታሳይ</translation>
 <translation id="1692118695553449118">አመሳስል በርቷል</translation>
 <translation id="169515064810179024">ጣቢያዎች የእንቅስቃሴ ዳሳሾችን እንዳይደርሱ ያግዱ</translation>
+<translation id="1711267867945983636">ለመቀጠል በእርስዎ ስልክ ላይ NFCን ያብሩ</translation>
 <translation id="1717218214683051432">የእንቅስቃሴ ዳሳሾች</translation>
 <translation id="1718835860248848330">የመጨረሻው ሰዓት</translation>
 <translation id="1736419249208073774">አስስ</translation>
@@ -151,6 +153,7 @@
 <translation id="2082238445998314030">ውጤት <ph name="RESULT_NUMBER" /> ከ<ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">ድምፅ</translation>
 <translation id="2096012225669085171">በመላ መሣሪያዎች ላይ ያመሳስሉ እና ግላዊነት ያላብሱ</translation>
+<translation id="2099625543891475722">እንደ ቁመት ያሉ የእርስዎ አካላዊ ባህሪያት</translation>
 <translation id="2100273922101894616">በራስ-ግባ</translation>
 <translation id="2100314319871056947">በትናንሽ ክፍሎች ጽሑፉን ለማጋራት ይሞክሩ</translation>
 <translation id="2107397443965016585">ጣቢያዎች የተጠበቀ ይዘትን እንዲያጫውቱ ከመፍቀድዎ በፊት ይጠይቁ (የሚመከር)</translation>
@@ -427,6 +430,7 @@
 <translation id="4226663524361240545">ማሳወቂያዎች መሣሪያውን እንዲነዝር ሊያደርጉት ይችላሉ</translation>
 <translation id="423219824432660969">የተሳመረ ውሂብ <ph name="TIME" /> ላይ በነበረው የGoogle ይለፍ ቃል ያመስጥሩ</translation>
 <translation id="4242533952199664413">ቅንብሮችን ክፈት</translation>
+<translation id="4250229828105606438">ቅጽበታዊ ገጽ እይታ</translation>
 <translation id="4256782883801055595">የክፍት ምንጭ ፍቃዶች</translation>
 <translation id="4259722352634471385">ዳሰሳ ታግዷል፦ <ph name="URL" /></translation>
 <translation id="4269820728363426813">የአገናኝ አድራሻ ቅዳ</translation>
@@ -480,6 +484,7 @@
 <translation id="4634124774493850572">የይለፍ ቃል ይጠቀሙ</translation>
 <translation id="4645575059429386691">በእርስዎ ወላጅ የሚቀናበር</translation>
 <translation id="4650364565596261010">የሥርዓት ነባሪ</translation>
+<translation id="4660838440047236328">የክፍልዎ አቀማመጥ</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> ዕልባቶች ተሰርዘዋል</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> ወደ እርስዎ መነሻ ገፅ ታክሏል</translation>
 <translation id="4684427112815847243">ሁሉንም ያመሳስሉ</translation>
@@ -604,6 +609,7 @@
 <translation id="5487521232677179737">ውሂብን አጽዳ</translation>
 <translation id="5494752089476963479">ረባሽ ወይም አሳሳች ማስታወቂያዎችን ከሚያሳዩ ጣቢያዎች የሚመጡ ማስታወቂያዎችን አግድ</translation>
 <translation id="5500777121964041360">በአካባቢዎ ውስጥ ላይገኝ ይችላል</translation>
+<translation id="5505264765875738116">ጣቢያዎች ማሳወቂያዎችን ለመላክ መጠየቅ አይችሉም</translation>
 <translation id="5512137114520586844">ይህ መለያ የሚቀናበረው በ<ph name="PARENT_NAME" /> ነው።</translation>
 <translation id="5514904542973294328">በዚህ መሣሪያ አስተዳዳሪ ተሰናክሏል</translation>
 <translation id="5515439363601853141">የይለፍ ቃልዎን ለመመልከት ይክፈቱ</translation>
@@ -701,6 +707,7 @@
 <translation id="6192792657125177640">የተለዩ</translation>
 <translation id="6194112207524046168">የእርስዎን ካሜራ Chrome እንዲደርስበት ለማድረግ፣ በ <ph name="BEGIN_LINK" />Android ቅንብሮች<ph name="END_LINK" /> ውስጥ ካሜራን በተጨማሪ ያብሩ።</translation>
 <translation id="6196640612572343990">የሦስተኛ ወገን ኩኪዎችን አግድ</translation>
+<translation id="6201345951596836663">አገናኝ ተቀድቷል</translation>
 <translation id="6206551242102657620">ግንኙነት ደህንነቱ የተጠበቀ ነው። የጣቢያ መረጃ</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> አይደለም?</translation>
 <translation id="6216432067784365534">የ<ph name="NAME_OF_LIST_ITEM" /> አማራጮች</translation>
@@ -710,6 +717,7 @@
 ለምሳሌ፣ አንዳንድ ድር ጣቢያዎች ሌሎች በጎበኟቸው ድር ጣቢያዎች ላይ ያልተመሠረቱ ማስታወቂያዎችን በማሳየት ለዚህ ጥያቄ ምላሽ ሊሰጡ ይችላሉ። ብዙ ድር ጣቢያዎች አሁንም የአሰሳ ውሂብዎን ይሰበስቡና ይጠቀሙበታል — ለምሳሌ ደህንነትን ለማሻሻል፤ ይዘት፣ ማስታወቂያዎችና ምክሮች በድር ጣቢያዎች ላይ ለማቅረብ፤ እና የሪፖርት አደራረግ ስታቲስቲክስን ለማመንጨት።</translation>
 <translation id="624789221780392884">ማዘመኛ ዝግጁ ነው</translation>
 <translation id="6255999984061454636">የይዘት አስተያየት ጥቆማዎች</translation>
+<translation id="6270391203985052864">ጣቢያዎች ማሳወቂያዎችን ለመላክ መጠየቅ ይችላሉ</translation>
 <translation id="6277522088822131679">ገጹን ማተም ላይ ችግር ነበር። እባክዎ እንደገና ይሞክሩ።</translation>
 <translation id="6295158916970320988">ሁሉም ጣቢያዎች</translation>
 <translation id="629730747756840877">መለያ</translation>
@@ -754,6 +762,7 @@
 <translation id="6545864417968258051">የብሉቱዝ ቅኝት</translation>
 <translation id="6560414384669816528">ከSogou ጋር ይፈልጉ</translation>
 <translation id="656065428026159829">ተጨማሪ ይመልከቱ</translation>
+<translation id="6561560012278703671">ይበልጥ ጸጥ ያለ መልዕክት አላላክ ይጠቀሙ (ማሳወቂያ ጥያቄዎች እርስዎን እንዳያቋርጡ ያግዳል)</translation>
 <translation id="6566259936974865419">Chrome <ph name="GIGABYTES" /> ጊባ ቆጥቦልዎታል</translation>
 <translation id="6573096386450695060">ሁልጊዜ ፍቀድ</translation>
 <translation id="6573431926118603307">በሌሎች መሣሪያዎችዎ ላይ ባለ Chrome ላይ የከፈቷቸው ትሮች እዚህ ይመጣሉ።</translation>
@@ -851,6 +860,7 @@
 <translation id="729975465115245577">የእርስዎ መሣሪያ የይለፍ ቃላት ፋይሉን የሚያከማችበት መተግበሪያ የለውም።</translation>
 <translation id="7302081693174882195">ዝርዝሮች፦ በተቀመጠው የውሂብ መጠን ተደርድረዋል</translation>
 <translation id="7302486331832100261">ማሳወቂያዎችን ብዙውን ጊዜ ያግዳሉ። ለመፍቀድ፣ ዝርዝሮች ላይ መታ ያድርጉ።</translation>
+<translation id="7311441321349344333">NFC ለዚህ መሣሪያ ጠፍቷል። NFCን በ<ph name="BEGIN_LINK" />Android ቅንብሮች<ph name="END_LINK" /> ውስጥ ያብሩት።</translation>
 <translation id="7328017930301109123">በቀላል ሁነታ ላይ Chrome ገጾችን በበለጠ ፍጥነት የሚጭን ሲሆን እስከ 60 በመቶ ያነሰ ውሂብ ይጠቀማል።</translation>
 <translation id="7333031090786104871">አሁንም ቀዳሚ ጣቢያን በማከል ላይ</translation>
 <translation id="7352939065658542140">ቪድዮ</translation>

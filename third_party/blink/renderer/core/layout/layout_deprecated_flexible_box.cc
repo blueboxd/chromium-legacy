@@ -43,11 +43,7 @@ class FlexBoxIterator {
  public:
   FlexBoxIterator(LayoutDeprecatedFlexibleBox* parent)
       : box_(parent), largest_ordinal_(1) {
-    if (box_->StyleRef().BoxOrient() == EBoxOrient::kHorizontal &&
-        !box_->StyleRef().IsLeftToRightDirection())
-      forward_ = box_->StyleRef().BoxDirection() != EBoxDirection::kNormal;
-    else
-      forward_ = box_->StyleRef().BoxDirection() == EBoxDirection::kNormal;
+    forward_ = box_->StyleRef().BoxDirection() == EBoxDirection::kNormal;
     if (!forward_) {
       // No choice, since we're going backwards, we have to find out the highest
       // ordinal up front.
@@ -274,7 +270,6 @@ static void ClearTruncation(LayoutBlockFlow* block_flow) {
 LayoutDeprecatedFlexibleBox::LayoutDeprecatedFlexibleBox(Element& element)
     : LayoutBlock(&element) {
   DCHECK(!ChildrenInline());
-  stretching_children_ = false;
   if (!IsAnonymous()) {
     const KURL& url = GetDocument().Url();
     if (url.ProtocolIs("chrome")) {
@@ -305,18 +300,6 @@ static LayoutUnit MarginWidthForChild(LayoutBox* child) {
   return margin;
 }
 
-static LayoutUnit WidthForChild(LayoutBox* child) {
-  if (child->HasOverrideLogicalWidth())
-    return child->OverrideLogicalWidth();
-  return child->LogicalWidth();
-}
-
-static LayoutUnit ContentWidthForChild(LayoutBox* child) {
-  // TODO(rego): Shouldn't we subtract the scrollbar width too?
-  return (WidthForChild(child) - child->BorderAndPaddingLogicalWidth())
-      .ClampNegativeToZero();
-}
-
 static LayoutUnit HeightForChild(LayoutBox* child) {
   if (child->HasOverrideLogicalHeight())
     return child->OverrideLogicalHeight();
@@ -342,29 +325,17 @@ void LayoutDeprecatedFlexibleBox::StyleWillChange(
 void LayoutDeprecatedFlexibleBox::ComputeIntrinsicLogicalWidths(
     LayoutUnit& min_logical_width,
     LayoutUnit& max_logical_width) const {
-  if (IsVertical()) {
-    for (LayoutBox* child = FirstChildBox(); child;
-         child = child->NextSiblingBox()) {
-      if (child->IsOutOfFlowPositioned())
-        continue;
+  for (LayoutBox* child = FirstChildBox(); child;
+       child = child->NextSiblingBox()) {
+    if (child->IsOutOfFlowPositioned())
+      continue;
 
-      LayoutUnit margin = MarginWidthForChild(child);
-      LayoutUnit width = child->MinPreferredLogicalWidth() + margin;
-      min_logical_width = std::max(width, min_logical_width);
+    LayoutUnit margin = MarginWidthForChild(child);
+    LayoutUnit width = child->MinPreferredLogicalWidth() + margin;
+    min_logical_width = std::max(width, min_logical_width);
 
-      width = child->MaxPreferredLogicalWidth() + margin;
-      max_logical_width = std::max(width, max_logical_width);
-    }
-  } else {
-    for (LayoutBox* child = FirstChildBox(); child;
-         child = child->NextSiblingBox()) {
-      if (child->IsOutOfFlowPositioned())
-        continue;
-
-      LayoutUnit margin = MarginWidthForChild(child);
-      min_logical_width += child->MinPreferredLogicalWidth() + margin;
-      max_logical_width += child->MaxPreferredLogicalWidth() + margin;
-    }
+    width = child->MaxPreferredLogicalWidth() + margin;
+    max_logical_width = std::max(width, max_logical_width);
   }
 
   max_logical_width = std::max(min_logical_width, max_logical_width);
@@ -376,6 +347,7 @@ void LayoutDeprecatedFlexibleBox::ComputeIntrinsicLogicalWidths(
 
 void LayoutDeprecatedFlexibleBox::UpdateBlockLayout(bool relayout_children) {
   DCHECK(NeedsLayout());
+  DCHECK_EQ(StyleRef().BoxOrient(), EBoxOrient::kVertical);
 
   UseCounter::Count(GetDocument(), WebFeature::kWebkitBoxLayout);
 
@@ -417,23 +389,13 @@ void LayoutDeprecatedFlexibleBox::UpdateBlockLayout(bool relayout_children) {
 
     TextAutosizer::LayoutScope text_autosizer_layout_scope(this);
 
-    if (previous_size != Size() ||
-        (Parent()->StyleRef().IsDeprecatedWebkitBox() &&
-         Parent()->StyleRef().BoxOrient() == EBoxOrient::kHorizontal &&
-         Parent()->StyleRef().BoxAlign() == EBoxAlignment::kStretch))
+    if (previous_size != Size())
       relayout_children = true;
 
     SetHeight(LayoutUnit());
 
-    stretching_children_ = false;
-
-    if (IsHorizontal()) {
-      UseCounter::Count(GetDocument(), WebFeature::kWebkitBoxLayoutHorizontal);
-      LayoutHorizontalBox(relayout_children);
-    } else {
-      UseCounter::Count(GetDocument(), WebFeature::kWebkitBoxLayoutVertical);
-      LayoutVerticalBox(relayout_children);
-    }
+    UseCounter::Count(GetDocument(), WebFeature::kWebkitBoxLayoutVertical);
+    LayoutVerticalBox(relayout_children);
 
     LayoutUnit old_client_after_edge = ClientLogicalBottom();
     UpdateLogicalHeight();
@@ -478,322 +440,6 @@ static void GatherFlexChildrenInfo(FlexBoxIterator& iterator,
       have_flex = true;
     }
   }
-}
-
-void LayoutDeprecatedFlexibleBox::LayoutHorizontalBox(bool relayout_children) {
-  LayoutUnit to_add =
-      BorderBottom() + PaddingBottom() + HorizontalScrollbarHeight();
-  LayoutUnit y_pos = BorderTop() + PaddingTop();
-  LayoutUnit x_pos = BorderLeft() + PaddingLeft();
-  bool height_specified = false;
-  bool paginated = View()->GetLayoutState()->IsPaginated();
-  LayoutUnit old_height;
-
-  LayoutUnit remaining_space;
-
-  FlexBoxIterator iterator(this);
-  bool have_flex = false, flexing_children = false;
-  GatherFlexChildrenInfo(iterator, GetDocument(), relayout_children, have_flex);
-
-  PaintLayerScrollableArea::DelayScrollOffsetClampScope delay_clamp_scope;
-
-  // We do 2 passes.  The first pass is simply to lay everyone out at
-  // their preferred widths.  The second pass handles flexing the children.
-  do {
-    // Reset our height.
-    SetHeight(y_pos);
-
-    x_pos = BorderLeft() + PaddingLeft();
-
-    // Our first pass is done without flexing.  We simply lay the children
-    // out within the box.  We have to do a layout first in order to determine
-    // our box's intrinsic height.
-    LayoutUnit max_ascent;
-    LayoutUnit max_descent;
-    for (LayoutBox* child = iterator.First(); child; child = iterator.Next()) {
-      if (child->IsOutOfFlowPositioned())
-        continue;
-
-      SubtreeLayoutScope layout_scope(*child);
-      // TODO(jchaffraix): It seems incorrect to check isAtomicInlineLevel in
-      // this file.
-      // We probably want to check if the element is replaced.
-      if (relayout_children || (child->IsAtomicInlineLevel() &&
-                                (child->StyleRef().Width().IsPercentOrCalc() ||
-                                 child->StyleRef().Height().IsPercentOrCalc())))
-        layout_scope.SetChildNeedsLayout(child);
-
-      // Compute the child's vertical margins.
-      child->ComputeAndSetBlockDirectionMargins(this);
-
-      if (!child->NeedsLayout())
-        MarkChildForPaginationRelayoutIfNeeded(*child, layout_scope);
-
-      // Now do the layout.
-      child->LayoutIfNeeded();
-
-      // Update our height and overflow height.
-      if (StyleRef().BoxAlign() == EBoxAlignment::kBaseline) {
-        LayoutUnit ascent(child->FirstLineBoxBaseline());
-        if (ascent == -1)
-          ascent = child->Size().Height() + child->MarginBottom();
-        ascent += child->MarginTop();
-        LayoutUnit descent =
-            (child->Size().Height() + child->MarginHeight()) - ascent;
-
-        // Update our maximum ascent.
-        max_ascent = std::max(max_ascent, ascent);
-
-        // Update our maximum descent.
-        max_descent = std::max(max_descent, descent);
-
-        // Now update our height.
-        SetHeight(std::max(y_pos + max_ascent + max_descent, Size().Height()));
-      } else {
-        SetHeight(std::max(Size().Height(), y_pos + child->Size().Height() +
-                                                child->MarginHeight()));
-      }
-
-      if (paginated)
-        UpdateFragmentationInfoForChild(*child);
-    }
-
-    if (!iterator.First() && HasLineIfEmpty()) {
-      SetHeight(Size().Height() +
-                LineHeight(true,
-                           StyleRef().IsHorizontalWritingMode()
-                               ? kHorizontalLine
-                               : kVerticalLine,
-                           kPositionOfInteriorLineBoxes));
-    }
-
-    SetHeight(Size().Height() + to_add);
-
-    old_height = Size().Height();
-    UpdateLogicalHeight();
-
-    relayout_children = false;
-    if (old_height != Size().Height())
-      height_specified = true;
-
-    // Now that our height is actually known, we can place our boxes.
-    stretching_children_ = (StyleRef().BoxAlign() == EBoxAlignment::kStretch);
-    for (LayoutBox* child = iterator.First(); child; child = iterator.Next()) {
-      if (child->IsOutOfFlowPositioned()) {
-        child->ContainingBlock()->InsertPositionedObject(child);
-        PaintLayer* child_layer = child->Layer();
-        child_layer->SetStaticInlinePosition(x_pos);
-        if (child_layer->StaticBlockPosition() != y_pos) {
-          child_layer->SetStaticBlockPosition(y_pos);
-          if (child->StyleRef().HasStaticBlockPosition(
-                  StyleRef().IsHorizontalWritingMode()))
-            child->SetChildNeedsLayout(kMarkOnlyThis);
-        }
-        continue;
-      }
-
-      SubtreeLayoutScope layout_scope(*child);
-
-      // We need to see if this child's height will change, since we make block
-      // elements fill the height of a containing box by default. We cannot
-      // actually *set* the new height here, though. Need to do that from
-      // within layout, or we won't be able to detect the change and duly
-      // notify any positioned descendants that are affected by it.
-      LayoutUnit old_child_height = child->LogicalHeight();
-      LogicalExtentComputedValues computed_values;
-      child->ComputeLogicalHeight(child->LogicalHeight(), child->LogicalTop(),
-                                  computed_values);
-      LayoutUnit new_child_height = computed_values.extent_;
-      if (old_child_height != new_child_height)
-        layout_scope.SetChildNeedsLayout(child);
-
-      if (!child->NeedsLayout())
-        MarkChildForPaginationRelayoutIfNeeded(*child, layout_scope);
-
-      child->LayoutIfNeeded();
-
-      // We can place the child now, using our value of box-align.
-      x_pos += child->MarginLeft();
-      LayoutUnit child_y = y_pos;
-      switch (StyleRef().BoxAlign()) {
-        case EBoxAlignment::kCenter:
-          child_y += child->MarginTop() +
-                     ((ContentHeight() -
-                       (child->Size().Height() + child->MarginHeight())) /
-                      2)
-                         .ClampNegativeToZero();
-          break;
-        case EBoxAlignment::kBaseline: {
-          LayoutUnit ascent(child->FirstLineBoxBaseline());
-          if (ascent == -1)
-            ascent = child->Size().Height() + child->MarginBottom();
-          ascent += child->MarginTop();
-          child_y += child->MarginTop() + (max_ascent - ascent);
-          break;
-        }
-        case EBoxAlignment::kEnd:
-          child_y +=
-              ContentHeight() - child->MarginBottom() - child->Size().Height();
-          break;
-        default:  // BSTART
-          child_y += child->MarginTop();
-          break;
-      }
-
-      PlaceChild(child, LayoutPoint(x_pos, child_y));
-
-      x_pos += child->Size().Width() + child->MarginRight();
-    }
-
-    remaining_space = Size().Width() - BorderRight() - PaddingRight() -
-                      VerticalScrollbarWidth() - x_pos;
-
-    stretching_children_ = false;
-    if (flexing_children) {
-      have_flex = false;  // We're done.
-    } else if (have_flex) {
-      // We have some flexible objects.  See if we need to grow/shrink them at
-      // all.
-      if (!remaining_space)
-        break;
-
-      // Allocate the remaining space among the flexible objects.
-      bool expanding = remaining_space > 0;
-      do {
-        // Flexing consists of multiple passes, since we have to change
-        // ratios every time an object hits its max/min-width For a given
-        // pass, we always start off by computing the totalFlex of all
-        // objects that can grow/shrink at all, and computing the allowed
-        // growth before an object hits its min/max width (and thus forces a
-        // totalFlex recomputation).
-        LayoutUnit remaining_space_at_beginning = remaining_space;
-        float total_flex = 0.0f;
-        for (LayoutBox* child = iterator.First(); child;
-             child = iterator.Next()) {
-          if (AllowedChildFlex(child, expanding))
-            total_flex += child->StyleRef().BoxFlex();
-        }
-        LayoutUnit space_available_this_pass = remaining_space;
-        for (LayoutBox* child = iterator.First(); child;
-             child = iterator.Next()) {
-          LayoutUnit allowed_flex = AllowedChildFlex(child, expanding);
-          if (allowed_flex) {
-            LayoutUnit projected_flex =
-                (allowed_flex == LayoutUnit::Max())
-                    ? allowed_flex
-                    : LayoutUnit(allowed_flex *
-                                 (total_flex / child->StyleRef().BoxFlex()));
-            space_available_this_pass =
-                expanding ? std::min(space_available_this_pass, projected_flex)
-                          : std::max(space_available_this_pass, projected_flex);
-          }
-        }
-
-        // If we can't grow/shrink anymore, break.
-        if (!space_available_this_pass || total_flex == 0.0f)
-          break;
-
-        // Now distribute the space to objects.
-        for (LayoutBox* child = iterator.First();
-             child && space_available_this_pass && total_flex;
-             child = iterator.Next()) {
-          if (AllowedChildFlex(child, expanding)) {
-            LayoutUnit space_add =
-                LayoutUnit(space_available_this_pass *
-                           (child->StyleRef().BoxFlex() / total_flex));
-            if (space_add) {
-              child->SetOverrideLogicalWidth(WidthForChild(child) + space_add);
-              flexing_children = true;
-              relayout_children = true;
-            }
-
-            space_available_this_pass -= space_add;
-            remaining_space -= space_add;
-
-            total_flex -= child->StyleRef().BoxFlex();
-          }
-        }
-        if (remaining_space == remaining_space_at_beginning) {
-          // This is not advancing, avoid getting stuck by distributing the
-          // remaining pixels.
-          LayoutUnit space_add = LayoutUnit(remaining_space > 0 ? 1 : -1);
-          for (LayoutBox* child = iterator.First(); child && remaining_space;
-               child = iterator.Next()) {
-            if (AllowedChildFlex(child, expanding)) {
-              child->SetOverrideLogicalWidth(WidthForChild(child) + space_add);
-              flexing_children = true;
-              relayout_children = true;
-              remaining_space -= space_add;
-            }
-          }
-        }
-      } while (AbsoluteValue(remaining_space) >= 1);
-
-      // We didn't find any children that could grow.
-      if (have_flex && !flexing_children)
-        have_flex = false;
-    }
-  } while (have_flex);
-
-  if (remaining_space > 0 && ((StyleRef().IsLeftToRightDirection() &&
-                               StyleRef().BoxPack() != EBoxPack::kStart) ||
-                              (!StyleRef().IsLeftToRightDirection() &&
-                               StyleRef().BoxPack() != EBoxPack::kEnd))) {
-    // Children must be repositioned.
-    LayoutUnit offset;
-    if (StyleRef().BoxPack() == EBoxPack::kJustify) {
-      // Determine the total number of children.
-      int total_children = 0;
-      for (LayoutBox* child = iterator.First(); child;
-           child = iterator.Next()) {
-        if (child->IsOutOfFlowPositioned())
-          continue;
-        ++total_children;
-      }
-
-      // Iterate over the children and space them out according to the
-      // justification level.
-      if (total_children > 1) {
-        --total_children;
-        bool first_child = true;
-        for (LayoutBox* child = iterator.First(); child;
-             child = iterator.Next()) {
-          if (child->IsOutOfFlowPositioned())
-            continue;
-
-          if (first_child) {
-            first_child = false;
-            continue;
-          }
-
-          offset += remaining_space / total_children;
-          remaining_space -= (remaining_space / total_children);
-          --total_children;
-
-          PlaceChild(child,
-                     child->Location() + LayoutSize(offset, LayoutUnit()));
-        }
-      }
-    } else {
-      if (StyleRef().BoxPack() == EBoxPack::kCenter)
-        offset += remaining_space / 2;
-      else  // END for LTR, START for RTL
-        offset += remaining_space;
-      for (LayoutBox* child = iterator.First(); child;
-           child = iterator.Next()) {
-        if (child->IsOutOfFlowPositioned())
-          continue;
-
-        PlaceChild(child, child->Location() + LayoutSize(offset, LayoutUnit()));
-      }
-    }
-  }
-
-  // So that the computeLogicalHeight in layoutBlock() knows to relayout
-  // positioned objects because of a height change, we revert our height back
-  // to the intrinsic height before returning.
-  if (height_specified)
-    SetHeight(old_height);
 }
 
 void LayoutDeprecatedFlexibleBox::LayoutVerticalBox(bool relayout_children) {
@@ -1255,16 +901,6 @@ LayoutUnit LayoutDeprecatedFlexibleBox::AllowedChildFlex(LayoutBox* child,
     return LayoutUnit();
 
   if (expanding) {
-    if (IsHorizontal()) {
-      // FIXME: For now just handle fixed values.
-      LayoutUnit max_width = LayoutUnit::Max();
-      LayoutUnit width = ContentWidthForChild(child);
-      if (child->StyleRef().MaxWidth().IsFixed())
-        max_width = LayoutUnit(child->StyleRef().MaxWidth().Value());
-      if (max_width == LayoutUnit::Max())
-        return max_width;
-      return (max_width - width).ClampNegativeToZero();
-    }
     // FIXME: For now just handle fixed values.
     LayoutUnit max_height = LayoutUnit::Max();
     LayoutUnit height = ContentHeightForChild(child);
@@ -1276,18 +912,6 @@ LayoutUnit LayoutDeprecatedFlexibleBox::AllowedChildFlex(LayoutBox* child,
   }
 
   // FIXME: For now just handle fixed values.
-  if (IsHorizontal()) {
-    LayoutUnit min_width = child->MinPreferredLogicalWidth();
-    LayoutUnit width = ContentWidthForChild(child);
-    const Length& min_width_length = child->StyleRef().MinWidth();
-    if (min_width_length.IsFixed())
-      min_width = LayoutUnit(min_width_length.Value());
-    else if (min_width_length.IsAuto())
-      min_width = LayoutUnit();
-
-    LayoutUnit allowed_shrinkage = (min_width - width).ClampPositiveToZero();
-    return allowed_shrinkage;
-  }
   const Length& min_height_length = child->StyleRef().MinHeight();
   if (min_height_length.IsFixed() || min_height_length.IsAuto()) {
     LayoutUnit min_height(min_height_length.Value());

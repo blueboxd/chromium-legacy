@@ -149,7 +149,7 @@ class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
   void DoConfigureSyncer(ModelTypeConfigurer::ConfigureParams params);
   void DoFinishConfigureDataTypes(
       ModelTypeSet types_to_config,
-      const base::Callback<void(ModelTypeSet, ModelTypeSet)>& ready_task);
+      base::OnceCallback<void(ModelTypeSet, ModelTypeSet)> ready_task);
 
   // Set the base request context to use when making HTTP calls.
   // This method will add a reference to the context to persist it
@@ -176,7 +176,7 @@ class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
   // Notify the syncer that the cookie jar has changed.
   void DoOnCookieJarChanged(bool account_mismatch,
                             bool empty_jar,
-                            const base::Closure& callback);
+                            base::OnceClosure callback);
 
   // Notify about change in client id.
   void DoOnInvalidatorClientIdChange(const std::string& client_id);

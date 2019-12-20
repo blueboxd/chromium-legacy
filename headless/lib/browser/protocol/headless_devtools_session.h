@@ -36,7 +36,7 @@ class HeadlessDevToolsSession : public FrontendChannel {
 
   void HandleCommand(
       const std::string& method,
-      const std::string& message,
+      base::span<const uint8_t> message,
       content::DevToolsManagerDelegate::NotHandledCallback callback);
 
  private:

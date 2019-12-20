@@ -87,25 +87,30 @@ void AdjustBoundsToEnsureMinimumWindowVisibility(const gfx::Rect& visible_area,
 }
 
 gfx::Rect GetDefaultLeftSnappedWindowBoundsInParent(aura::Window* window) {
-  DCHECK(!Shell::Get()->tablet_mode_controller()->InTabletMode());
-  gfx::Rect work_area_in_parent(
-      screen_util::GetDisplayWorkAreaBoundsInParent(window));
-  const int middle = work_area_in_parent.CenterPoint().x();
-  return gfx::Rect(
-      work_area_in_parent.x(), work_area_in_parent.y(),
-      GetSnappedWindowWidth(middle - work_area_in_parent.x(), window),
-      work_area_in_parent.height());
+  return GetDefaultLeftSnappedWindowBounds(
+      screen_util::GetDisplayWorkAreaBoundsInParent(window), window);
 }
 
 gfx::Rect GetDefaultRightSnappedWindowBoundsInParent(aura::Window* window) {
+  return GetDefaultRightSnappedWindowBounds(
+      screen_util::GetDisplayWorkAreaBoundsInParent(window), window);
+}
+
+gfx::Rect GetDefaultLeftSnappedWindowBounds(const gfx::Rect& work_area,
+                                            aura::Window* window) {
   DCHECK(!Shell::Get()->tablet_mode_controller()->InTabletMode());
-  gfx::Rect work_area_in_parent(
-      screen_util::GetDisplayWorkAreaBoundsInParent(window));
-  const int middle = work_area_in_parent.CenterPoint().x();
-  const int width =
-      GetSnappedWindowWidth(work_area_in_parent.right() - middle, window);
-  return gfx::Rect(work_area_in_parent.right() - width, work_area_in_parent.y(),
-                   width, work_area_in_parent.height());
+  const int width = GetSnappedWindowWidth(
+      work_area.CenterPoint().x() - work_area.x(), window);
+  return gfx::Rect(work_area.x(), work_area.y(), width, work_area.height());
+}
+
+gfx::Rect GetDefaultRightSnappedWindowBounds(const gfx::Rect& work_area,
+                                             aura::Window* window) {
+  DCHECK(!Shell::Get()->tablet_mode_controller()->InTabletMode());
+  const int width = GetSnappedWindowWidth(
+      work_area.right() - work_area.CenterPoint().x(), window);
+  return gfx::Rect(work_area.right() - width, work_area.y(), width,
+                   work_area.height());
 }
 
 void CenterWindow(aura::Window* window) {

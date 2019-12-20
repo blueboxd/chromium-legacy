@@ -33,6 +33,7 @@ ActionTracker::ActionTracker(content::BrowserContext* browser_context)
 
 ActionTracker::~ActionTracker() {
   DCHECK(actions_matched_.empty());
+  DCHECK(pending_navigation_actions_.empty());
 }
 
 void ActionTracker::OnRuleMatched(const RequestAction& request_action,
@@ -50,9 +51,20 @@ void ActionTracker::OnRuleMatched(const RequestAction& request_action,
   }
 
   const ExtensionId& extension_id = request_action.extension_id;
-  ExtensionTabIdKey key(extension_id, tab_id);
 
-  size_t action_count = ++actions_matched_[std::move(key)].action_count;
+  // Increment action count for |pending_navigation_actions_| if the request is
+  // a main-frame navigation request.
+  if (request_info.is_navigation_request &&
+      request_info.type == content::ResourceType::kMainFrame) {
+    DCHECK(request_info.navigation_id);
+    pending_navigation_actions_[{extension_id, *request_info.navigation_id}]
+        .action_count++;
+    return;
+  }
+
+  // Otherwise, increment action count for |actions_matched_| and update the
+  // badge text for the current tab.
+  size_t action_count = ++actions_matched_[{extension_id, tab_id}].action_count;
   if (extension_prefs_->GetDNRUseActionCountAsBadgeText(extension_id)) {
     DCHECK(ExtensionsAPIClient::Get());
     ExtensionsAPIClient::Get()->UpdateActionCount(
@@ -72,31 +84,44 @@ void ActionTracker::OnPreferenceEnabled(const ExtensionId& extension_id) const {
       continue;
 
     ExtensionsAPIClient::Get()->UpdateActionCount(
-        browser_context_, extension_id, key.tab_id, value.action_count,
-        true /* clear_badge_text */);
+        browser_context_, extension_id, key.secondary_id /* tab_id */,
+        value.action_count, true /* clear_badge_text */);
   }
 }
 
 void ActionTracker::ClearExtensionData(const ExtensionId& extension_id) {
-  auto compare_by_extension_id =
-      [&extension_id](
-          const std::pair<const ExtensionTabIdKey, TrackedInfo>& it) {
-        return it.first.extension_id == extension_id;
-      };
+  auto compare_by_extension_id = [&extension_id](const auto& it) {
+    return it.first.extension_id == extension_id;
+  };
 
   base::EraseIf(actions_matched_, compare_by_extension_id);
+  base::EraseIf(pending_navigation_actions_, compare_by_extension_id);
 }
 
 void ActionTracker::ClearTabData(int tab_id) {
   auto compare_by_tab_id =
       [&tab_id](const std::pair<const ExtensionTabIdKey, TrackedInfo>& it) {
-        return it.first.tab_id == tab_id;
+        return it.first.secondary_id == tab_id;
       };
 
   base::EraseIf(actions_matched_, compare_by_tab_id);
 }
 
-void ActionTracker::ResetActionCountForTab(int tab_id) {
+void ActionTracker::ClearPendingNavigation(int64_t navigation_id) {
+  RulesMonitorService* rules_monitor_service =
+      RulesMonitorService::Get(browser_context_);
+
+  DCHECK(rules_monitor_service);
+  auto compare_by_navigation_id =
+      [navigation_id](
+          const std::pair<const ExtensionNavigationIdKey, TrackedInfo>& it) {
+        return it.first.secondary_id == navigation_id;
+      };
+
+  base::EraseIf(pending_navigation_actions_, compare_by_navigation_id);
+}
+
+void ActionTracker::ResetActionCountForTab(int tab_id, int64_t navigation_id) {
   DCHECK_NE(tab_id, extension_misc::kUnknownTabId);
 
   RulesMonitorService* rules_monitor_service =
@@ -105,32 +130,51 @@ void ActionTracker::ResetActionCountForTab(int tab_id) {
   DCHECK(rules_monitor_service);
   for (const auto& extension_id :
        rules_monitor_service->extensions_with_rulesets()) {
-    ExtensionTabIdKey key(extension_id, tab_id);
-    actions_matched_[std::move(key)].action_count = 0;
+    ExtensionNavigationIdKey navigation_key(extension_id, navigation_id);
+
+    size_t actions_matched_for_navigation = 0;
+    auto iter = pending_navigation_actions_.find(navigation_key);
+    if (iter != pending_navigation_actions_.end()) {
+      actions_matched_for_navigation = iter->second.action_count;
+      pending_navigation_actions_.erase(iter);
+    }
+
+    actions_matched_[{extension_id, tab_id}].action_count =
+        actions_matched_for_navigation;
 
     if (extension_prefs_->GetDNRUseActionCountAsBadgeText(extension_id)) {
       DCHECK(ExtensionsAPIClient::Get());
       ExtensionsAPIClient::Get()->UpdateActionCount(
-          browser_context_, extension_id, tab_id, 0 /* action_count */,
-          false /* clear_badge_text */);
+          browser_context_, extension_id, tab_id,
+          actions_matched_for_navigation, false /* clear_badge_text */);
     }
   }
+
+  // Double check to make sure the pending counts for |navigation_id| are really
+  // cleared from |pending_navigation_actions_|.
+  ClearPendingNavigation(navigation_id);
 }
 
-ActionTracker::ExtensionTabIdKey::ExtensionTabIdKey(ExtensionId extension_id,
-                                                    int tab_id)
-    : extension_id(std::move(extension_id)), tab_id(tab_id) {}
+template <typename T>
+ActionTracker::TrackedInfoContextKey<T>::TrackedInfoContextKey(
+    ExtensionId extension_id,
+    T secondary_id)
+    : extension_id(std::move(extension_id)), secondary_id(secondary_id) {}
 
-ActionTracker::ExtensionTabIdKey::ExtensionTabIdKey(
-    ActionTracker::ExtensionTabIdKey&&) = default;
+template <typename T>
+ActionTracker::TrackedInfoContextKey<T>::TrackedInfoContextKey(
+    ActionTracker::TrackedInfoContextKey<T>&&) = default;
 
-ActionTracker::ExtensionTabIdKey& ActionTracker::ExtensionTabIdKey::operator=(
-    ActionTracker::ExtensionTabIdKey&&) = default;
+template <typename T>
+ActionTracker::TrackedInfoContextKey<T>&
+ActionTracker::TrackedInfoContextKey<T>::operator=(
+    ActionTracker::TrackedInfoContextKey<T>&&) = default;
 
-bool ActionTracker::ExtensionTabIdKey::operator<(
-    const ExtensionTabIdKey& other) const {
-  return std::tie(tab_id, extension_id) <
-         std::tie(other.tab_id, other.extension_id);
+template <typename T>
+bool ActionTracker::TrackedInfoContextKey<T>::operator<(
+    const TrackedInfoContextKey<T>& other) const {
+  return std::tie(secondary_id, extension_id) <
+         std::tie(other.secondary_id, other.extension_id);
 }
 
 void ActionTracker::DispatchOnRuleMatchedDebugIfNeeded(

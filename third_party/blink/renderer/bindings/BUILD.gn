@@ -167,10 +167,14 @@ if (use_v8_bind_gen_for_dictionary) {
       "dictionary",
       "--web_idl_database",
       rebase_path(web_idl_database, root_build_dir),
-      "--output_dir_core",
-      rebase_path("${bindings_output_dir}/core/v8/", root_build_dir),
-      "--output_dir_modules",
-      rebase_path("${bindings_output_dir}/modules/v8/", root_build_dir),
+      "--root_src_dir",
+      rebase_path("//", root_build_dir),
+      "--root_gen_dir",
+      rebase_path(root_gen_dir, root_build_dir),
+      "--output_core_reldir",
+      rebase_path("${bindings_output_dir}/core/v8/", root_gen_dir),
+      "--output_modules_reldir",
+      rebase_path("${bindings_output_dir}/modules/v8/", root_gen_dir),
     ]
 
     deps = [

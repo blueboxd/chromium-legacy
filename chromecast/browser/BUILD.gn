@@ -186,6 +186,7 @@ cast_source_set("browser") {
     "//chromecast/media/service",
     "//chromecast/media/service/mojom",
     "//chromecast/net",
+    "//chromecast/net:connectivity_checker",
     "//chromecast/service",
     "//components/download/public/common:public",
     "//components/metrics",

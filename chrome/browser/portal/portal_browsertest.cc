@@ -44,13 +44,13 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, MAYBE_PortalActivation) {
   WebContents* contents = tab_strip_model->GetActiveWebContents();
   EXPECT_EQ(1, tab_strip_model->count());
 
-  EXPECT_TRUE(content::ExecJs(contents, "loadPromise"));
+  EXPECT_EQ(true, content::EvalJs(contents, "loadPromise"));
   std::vector<WebContents*> inner_web_contents =
       contents->GetInnerWebContents();
   EXPECT_EQ(1u, inner_web_contents.size());
   WebContents* portal_contents = inner_web_contents[0];
 
-  EXPECT_TRUE(content::ExecJs(contents, "activate()"));
+  EXPECT_EQ(true, content::EvalJs(contents, "activate()"));
   EXPECT_EQ(1, tab_strip_model->count());
   EXPECT_EQ(portal_contents, tab_strip_model->GetActiveWebContents());
 }
@@ -70,7 +70,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
   ui_test_utils::NavigateToURL(browser(), url);
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
 
-  EXPECT_TRUE(content::ExecJs(contents, "loadPromise"));
+  EXPECT_EQ(true, content::EvalJs(contents, "loadPromise"));
   DevToolsWindow* dev_tools_window =
       DevToolsWindowTesting::OpenDevToolsWindowSync(browser(), true);
   WebContents* main_web_contents =
@@ -78,7 +78,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
   EXPECT_EQ(main_web_contents,
             DevToolsWindow::GetInTabWebContents(contents, nullptr));
 
-  EXPECT_TRUE(content::ExecJs(contents, "activate()"));
+  EXPECT_EQ(true, content::EvalJs(contents, "activate()"));
   EXPECT_EQ(main_web_contents,
             DevToolsWindow::GetInTabWebContents(
                 browser()->tab_strip_model()->GetActiveWebContents(), nullptr));

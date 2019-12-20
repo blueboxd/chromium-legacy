@@ -116,7 +116,7 @@ void ZygoteHostImpl::Init(const base::CommandLine& command_line) {
     LOG(FATAL)
         << "No usable sandbox! Update your kernel or see "
            "https://chromium.googlesource.com/chromium/src/+/master/"
-           "docs/linux_suid_sandbox_development.md for more information on "
+           "docs/linux/suid_sandbox_development.md for more information on "
            "developing with the SUID sandbox. "
            "If you want to live dangerously and need an immediate workaround, "
            "you can try using --"

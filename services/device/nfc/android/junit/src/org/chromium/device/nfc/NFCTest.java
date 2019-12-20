@@ -831,7 +831,7 @@ public class NFCTest {
 
     /**
      * Test that when the tag in proximity is found to be not NDEF compatible, an error event will
-     * be dispatched to the client.
+     * be dispatched to the client and the pending push operation will also be ended with an error.
      */
     @Test
     @Feature({"NFCTest"})
@@ -842,6 +842,9 @@ public class NFCTest {
         // Prepare at least one watcher, otherwise the error won't be notified.
         WatchResponse mockWatchCallback = mock(WatchResponse.class);
         nfc.watch(createNdefScanOptions(), mNextWatchId, mockWatchCallback);
+        // Start a push.
+        PushResponse mockCallback = mock(PushResponse.class);
+        nfc.push(createMojoNdefMessage(), createNdefPushOptions(), mockCallback);
 
         // Pass null tag handler to simulate that the tag is not NDEF compatible.
         nfc.processPendingOperationsForTesting(null);
@@ -852,6 +855,11 @@ public class NFCTest {
         verify(mNfcClient, times(0))
                 .onWatch(mOnWatchCallbackCaptor.capture(), nullable(String.class),
                         any(NdefMessage.class));
+
+        // The pending push failed with the correct error.
+        verify(mockCallback).call(mErrorCaptor.capture());
+        assertNotNull(mErrorCaptor.getValue());
+        assertEquals(NdefErrorType.NOT_SUPPORTED, mErrorCaptor.getValue().errorType);
     }
 
     /**

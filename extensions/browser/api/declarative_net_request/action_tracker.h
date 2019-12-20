@@ -47,27 +47,36 @@ class ActionTracker {
   // Called when the tab has been closed.
   void ClearTabData(int tab_id);
 
-  // Sets the action count for every extension for the specified |tab_id| to 0
-  // and notifies the extension action to set the badge text to 0 for that tab.
-  // Called when the a main-frame navigation to a different document finishes on
-  // the tab.
-  void ResetActionCountForTab(int tab_id);
+  // Clears the pending action count for every extension in
+  // |pending_navigation_actions_| for the specified |navigation_id|.
+  void ClearPendingNavigation(int64_t navigation_id);
+
+  // Called when a main-frame navigation to a different document commits.
+  // Updates the badge count for all extensions for the given |tab_id|.
+  void ResetActionCountForTab(int tab_id, int64_t navigation_id);
 
  private:
-  struct ExtensionTabIdKey {
-    ExtensionTabIdKey(ExtensionId extension_id, int tab_id);
-    ExtensionTabIdKey(const ExtensionTabIdKey& other) = delete;
-    ExtensionTabIdKey& operator=(const ExtensionTabIdKey& other) = delete;
-    ExtensionTabIdKey(ExtensionTabIdKey&&);
-    ExtensionTabIdKey& operator=(ExtensionTabIdKey&&);
+  // Template key type used for TrackedInfo, specified by an extension_id and
+  // another ID.
+  template <typename T>
+  struct TrackedInfoContextKey {
+    TrackedInfoContextKey(ExtensionId extension_id, T secondary_id);
+    TrackedInfoContextKey(const TrackedInfoContextKey& other) = delete;
+    TrackedInfoContextKey& operator=(const TrackedInfoContextKey& other) =
+        delete;
+    TrackedInfoContextKey(TrackedInfoContextKey&&);
+    TrackedInfoContextKey& operator=(TrackedInfoContextKey&&);
 
     ExtensionId extension_id;
-    int tab_id;
+    T secondary_id;
 
-    bool operator<(const ExtensionTabIdKey& other) const;
+    bool operator<(const TrackedInfoContextKey& other) const;
   };
 
-  // Info tracked for each ExtensionTabIdKey.
+  using ExtensionTabIdKey = TrackedInfoContextKey<int>;
+  using ExtensionNavigationIdKey = TrackedInfoContextKey<int64_t>;
+
+  // Info tracked for each ExtensionTabIdKey or ExtensionNavigationIdKey.
   struct TrackedInfo {
     size_t action_count = 0;
   };
@@ -81,6 +90,12 @@ class ActionTracker {
   // Maps a pair of (extension ID, tab ID) to the number of actions matched for
   // the extension and tab specified.
   std::map<ExtensionTabIdKey, TrackedInfo> actions_matched_;
+
+  // Maps a pair of (extension ID, navigation ID) to the number of actions
+  // matched for the main-frame request associated with the navigation ID in the
+  // key. These actions are added to |actions_matched_| once the navigation
+  // commits.
+  std::map<ExtensionNavigationIdKey, TrackedInfo> pending_navigation_actions_;
 
   content::BrowserContext* browser_context_;
 

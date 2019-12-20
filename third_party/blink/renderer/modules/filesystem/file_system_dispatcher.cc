@@ -573,13 +573,7 @@ void FileSystemDispatcher::DidCreateSnapshotFile(
     FileMetadata file_metadata = FileMetadata::From(file_info);
     file_metadata.platform_path = FilePathToWebString(platform_path);
 
-    auto blob_data = std::make_unique<BlobData>();
-    blob_data->AppendFile(file_metadata.platform_path, 0, file_metadata.length,
-                          base::nullopt);
-    scoped_refptr<BlobDataHandle> snapshot_blob =
-        BlobDataHandle::Create(std::move(blob_data), file_metadata.length);
-
-    callbacks->DidCreateSnapshotFile(file_metadata, snapshot_blob);
+    callbacks->DidCreateSnapshotFile(file_metadata);
 
     if (listener) {
       mojo::Remote<mojom::blink::ReceivedSnapshotListener>(std::move(listener))

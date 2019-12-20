@@ -18,10 +18,10 @@
 #include "content/common/drag_event_source_info.h"
 #include "content/public/common/drop_data.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
-#include "third_party/blink/public/platform/web_input_event.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace blink {

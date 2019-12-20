@@ -49,6 +49,10 @@ class PrinterHandler {
   using PrintCallback = base::OnceCallback<void(const base::Value& error)>;
   using GetPrinterInfoCallback =
       base::OnceCallback<void(const base::DictionaryValue& printer_info)>;
+#if defined(OS_CHROMEOS)
+  using GetEulaUrlCallback =
+      base::OnceCallback<void(const std::string& license)>;
+#endif
 
   // Creates an instance of a PrinterHandler for cloud printers.
   // Note: Implementation currently empty, see https://crbug.com/829414
@@ -93,7 +97,7 @@ class PrinterHandler {
 
   // Starts getting printing capability of the printer with the provided
   // destination ID.
-  // |callback| should be called in the response to the request.
+  // |callback| should be called in response to the request.
   virtual void StartGetCapability(const std::string& destination_id,
                                   GetCapabilityCallback callback) = 0;
 
@@ -114,6 +118,14 @@ class PrinterHandler {
                           base::Value settings,
                           scoped_refptr<base::RefCountedMemory> print_data,
                           PrintCallback callback) = 0;
+
+#if defined(OS_CHROMEOS)
+  // Starts getting the printer's PPD EULA URL with the provided destination ID.
+  // |destination_id|: The ID of the printer.
+  // |callback| should be called in response to the request.
+  virtual void StartGetEulaUrl(const std::string& destination_id,
+                               GetEulaUrlCallback callback);
+#endif
 };
 
 }  // namespace printing

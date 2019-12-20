@@ -11,6 +11,7 @@
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_factory.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_webcontents_observer.h"
 #include "chrome/browser/resource_coordinator/tab_helper.h"
+#include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/system_connector.h"
@@ -102,6 +103,11 @@ void ChromeTestHarnessWithLocalDB::SetUp() {
   performance_manager_ =
       performance_manager::PerformanceManagerImpl::Create(base::DoNothing());
   registry_ = performance_manager::PerformanceManagerRegistry::Create();
+
+  performance_manager_->CallOnGraph(
+      FROM_HERE, base::BindOnce([](performance_manager::Graph* graph) {
+        graph->PassToGraph(FormInteractionTabHelper::CreateGraphObserver());
+      }));
 
   LocalSiteCharacteristicsDataStoreFactory::EnableForTesting();
 

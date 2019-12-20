@@ -16,6 +16,7 @@
 #include "chrome/browser/resource_coordinator/tab_ranker/tab_features.h"
 #include "chrome/browser/resource_coordinator/tab_ranker/tab_features_test_helper.h"
 #include "chrome/browser/resource_coordinator/tab_ranker/window_features.h"
+#include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_activity_simulator.h"
@@ -25,7 +26,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/page_importance_signals.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_base_types.h"
@@ -186,9 +186,9 @@ class TabMetricsLoggerTest : public ChromeRenderViewHostTestHarness {
 // Tests has_form_entry.
 TEST_F(TabMetricsLoggerTest, MAYBE_GetHasFormEntry) {
   EXPECT_FALSE(CurrentTabFeatures().has_form_entry);
-  content::PageImportanceSignals signal;
-  signal.had_form_interaction = true;
-  web_contents_tester_->SetPageImportanceSignals(signal);
+  FormInteractionTabHelper::CreateForWebContents(web_contents_);
+  FormInteractionTabHelper::FromWebContents(web_contents_)
+      ->OnHadFormInteractionChangedForTesting(true);
   EXPECT_TRUE(CurrentTabFeatures().has_form_entry);
 }
 

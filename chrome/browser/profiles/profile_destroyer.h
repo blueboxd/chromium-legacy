@@ -39,9 +39,6 @@ class ProfileDestroyer : public content::RenderProcessHostObserver {
   // content::RenderProcessHostObserver override.
   void RenderProcessHostDestroyed(content::RenderProcessHost* host) override;
 
-  // Called by the timer to cancel the pending destruction and do it now.
-  void DestroyProfile();
-
   // Fetch the list of render process hosts that still point to |profile_ptr|.
   // |profile_ptr| is a void* because the Profile object may be freed. Only
   // pointer comparison is allowed, it will never be dereferenced as a Profile.

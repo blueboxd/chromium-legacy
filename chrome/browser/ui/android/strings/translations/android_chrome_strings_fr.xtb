@@ -37,6 +37,7 @@
 <translation id="1231733316453485619">Activer la synchronisation ?</translation>
 <translation id="123724288017357924">Actualiser page active et ignorer contenu en cache</translation>
 <translation id="124116460088058876">Plus de langues</translation>
+<translation id="1242008676835033345">Intégration sur <ph name="WEBSITE_URL" /></translation>
 <translation id="124678866338384709">Fermer l'onglet actuel</translation>
 <translation id="1258753120186372309">Doodle : <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Rechercher et explorer</translation>
@@ -95,6 +96,7 @@
 <translation id="1672586136351118594">Ne plus afficher</translation>
 <translation id="1692118695553449118">La synchronisation est activée.</translation>
 <translation id="169515064810179024">Empêcher les sites d'accéder aux capteurs de mouvement</translation>
+<translation id="1711267867945983636">Pour continuer, activez la fonctionnalité NFC sur votre téléphone</translation>
 <translation id="1717218214683051432">Capteurs de mouvement</translation>
 <translation id="1718835860248848330">Dernière heure</translation>
 <translation id="1736419249208073774">Découvrir</translation>
@@ -151,6 +153,7 @@
 <translation id="2082238445998314030">Résultat <ph name="RESULT_NUMBER" /> sur <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Son</translation>
 <translation id="2096012225669085171">Synchroniser et personnaliser les données sur tous les appareils</translation>
+<translation id="2099625543891475722">vos caractéristiques physiques, telles que votre taille ;</translation>
 <translation id="2100273922101894616">Connexion automatique</translation>
 <translation id="2100314319871056947">Essayez de scinder le texte pour le partager en plusieurs fois</translation>
 <translation id="2107397443965016585">Demander avant d'autoriser les sites à lire les contenus protégés (recommandé)</translation>
@@ -427,6 +430,7 @@ Pour modifier le terme de recherche, appuyez dessus de manière prolongée afin 
 <translation id="4226663524361240545">L'appareil vibrera en cas de notifications.</translation>
 <translation id="423219824432660969">Chiffrer les données synchronisées avec le mot de passe Google à la date suivante : <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Ouvrir les paramètres</translation>
+<translation id="4250229828105606438">Capture d'écran</translation>
 <translation id="4256782883801055595">Licences Open Source</translation>
 <translation id="4259722352634471385">La navigation sur <ph name="URL" /> est bloquée.</translation>
 <translation id="4269820728363426813">Copier l'adresse du lien</translation>
@@ -480,6 +484,7 @@ Votre compte Google conserve peut-être d'autres contenus d'historique de naviga
 <translation id="4634124774493850572">Utiliser le mot de passe</translation>
 <translation id="4645575059429386691">Géré par ton papa/ta maman</translation>
 <translation id="4650364565596261010">Paramètre par défaut du système</translation>
+<translation id="4660838440047236328">la disposition de la pièce.</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> favoris ont été supprimés.</translation>
 <translation id="4665282149850138822">Le site "<ph name="NAME" />" a bien été ajouté à votre écran d'accueil.</translation>
 <translation id="4684427112815847243">Tout synchroniser</translation>
@@ -604,6 +609,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5487521232677179737">Effacer les données</translation>
 <translation id="5494752089476963479">Bloquer les annonces sur les sites qui affichent des annonces intrusives ou trompeuses</translation>
 <translation id="5500777121964041360">Cette fonctionnalité n'est peut-être pas disponible dans votre pays</translation>
+<translation id="5505264765875738116">Les sites ne peuvent pas vous demander l'autorisation d'envoyer des notifications</translation>
 <translation id="5512137114520586844">Ce compte est géré par <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Désactivé par l'administrateur de cet appareil</translation>
 <translation id="5515439363601853141">Déverrouillez pour afficher votre mot de passe</translation>
@@ -701,6 +707,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="6192792657125177640">Exceptions</translation>
 <translation id="6194112207524046168">Pour autoriser Chrome à accéder à votre appareil photo, activez également ce dernier dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Bloquer les cookies tiers</translation>
+<translation id="6201345951596836663">Lien copié</translation>
 <translation id="6206551242102657620">La connexion est sécurisée. Informations sur le site</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> n'est pas votre adresse e-mail ?</translation>
 <translation id="6216432067784365534">Options pour <ph name="NAME_OF_LIST_ITEM" /></translation>
@@ -710,6 +717,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 Par exemple, certains sites Web peuvent répondre à cette demande en diffusant des annonces qui ne sont pas déterminées en fonction des autres sites Web que vous avez consultés. Toutefois, nombre d'entre eux recueillent et utilisent vos données de navigation afin, par exemple, d'améliorer la sécurité ou d'afficher du contenu, des services, des annonces et des recommandations, ou encore pour générer des rapports statistiques.</translation>
 <translation id="624789221780392884">Mise à jour prête</translation>
 <translation id="6255999984061454636">Recommandations de contenus</translation>
+<translation id="6270391203985052864">Les sites peuvent vous demander l'autorisation d'envoyer des notifications</translation>
 <translation id="6277522088822131679">Un problème est survenu lors de l'impression de la page. Veuillez réessayer.</translation>
 <translation id="6295158916970320988">Tous les sites</translation>
 <translation id="629730747756840877">Compte</translation>
@@ -754,6 +762,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6545864417968258051">Recherche Bluetooth</translation>
 <translation id="6560414384669816528">Rechercher avec Sogou</translation>
 <translation id="656065428026159829">Voir plus</translation>
+<translation id="6561560012278703671">Activer l'affichage discret (permet d'empêcher les invites liées aux notifications de vous interrompre)</translation>
 <translation id="6566259936974865419">Chrome vous a permis de gagner <ph name="GIGABYTES" /> Go</translation>
 <translation id="6573096386450695060">Toujours autoriser</translation>
 <translation id="6573431926118603307">Les onglets que vous avez ouverts dans Chrome sur vos autres appareils s'affichent ici.</translation>
@@ -851,6 +860,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="729975465115245577">Aucune application n'est installée sur votre appareil pour stocker le fichier de mots de passe.</translation>
 <translation id="7302081693174882195">Détails : tri effectué par volume de données enregistrées</translation>
 <translation id="7302486331832100261">Vous avez l'habitude de bloquer les notifications. Pour les autoriser, appuyez sur "Détails".</translation>
+<translation id="7311441321349344333">La fonctionnalité NFC est désactivée pour cet appareil. Activez-la dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" />.</translation>
 <translation id="7328017930301109123">En mode simplifié, Chrome charge les pages plus rapidement et consomme jusqu'à 60 pour cent de données en moins.</translation>
 <translation id="7333031090786104871">L'ajout du site précédent est toujours en cours</translation>
 <translation id="7352939065658542140">VIDÉO</translation>

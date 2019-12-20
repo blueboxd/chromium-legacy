@@ -661,8 +661,8 @@ void Textfield::SetAccessibleName(const base::string16& name) {
   OnPropertyChanged(&accessible_name_, kPropertyEffectsNone);
 }
 
-void Textfield::SetGlyphSpacing(int spacing) {
-  GetRenderText()->set_glyph_spacing(spacing);
+void Textfield::SetObscuredGlyphSpacing(int spacing) {
+  GetRenderText()->SetObscuredGlyphSpacing(spacing);
 }
 
 void Textfield::SetExtraInsets(const gfx::Insets& insets) {

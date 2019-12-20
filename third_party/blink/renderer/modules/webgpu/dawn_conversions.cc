@@ -221,6 +221,50 @@ WGPUTextureFormat AsDawnEnum<WGPUTextureFormat>(
     return WGPUTextureFormat_Depth24PlusStencil8;
   }
 
+  // Block Compression (BC) formats
+  if (webgpu_enum == "bc1-rgba-unorm") {
+    return WGPUTextureFormat_BC1RGBAUnorm;
+  }
+  if (webgpu_enum == "bc1-rgba-unorm-srgb") {
+    return WGPUTextureFormat_BC1RGBAUnormSrgb;
+  }
+  if (webgpu_enum == "bc2-rgba-unorm") {
+    return WGPUTextureFormat_BC2RGBAUnorm;
+  }
+  if (webgpu_enum == "bc2-rgba-unorm-srgb") {
+    return WGPUTextureFormat_BC2RGBAUnormSrgb;
+  }
+  if (webgpu_enum == "bc3-rgba-unorm") {
+    return WGPUTextureFormat_BC3RGBAUnorm;
+  }
+  if (webgpu_enum == "bc3-rgba-unorm-srgb") {
+    return WGPUTextureFormat_BC3RGBAUnormSrgb;
+  }
+  if (webgpu_enum == "bc4-r-unorm") {
+    return WGPUTextureFormat_BC4RUnorm;
+  }
+  if (webgpu_enum == "bc4-r-snorm") {
+    return WGPUTextureFormat_BC4RSnorm;
+  }
+  if (webgpu_enum == "bc5-rg-unorm") {
+    return WGPUTextureFormat_BC5RGUnorm;
+  }
+  if (webgpu_enum == "bc5-rg-snorm") {
+    return WGPUTextureFormat_BC5RGSnorm;
+  }
+  if (webgpu_enum == "bc6h-rgb-ufloat") {
+    return WGPUTextureFormat_BC6HRGBUfloat;
+  }
+  if (webgpu_enum == "bc6h-rgb-sfloat") {
+    return WGPUTextureFormat_BC6HRGBSfloat;
+  }
+  if (webgpu_enum == "bc7-rgba-unorm") {
+    return WGPUTextureFormat_BC7RGBAUnorm;
+  }
+  if (webgpu_enum == "bc7-rgba-unorm-srgb") {
+    return WGPUTextureFormat_BC7RGBAUnormSrgb;
+  }
+
   return WGPUTextureFormat_Force32;
 }
 

@@ -37,6 +37,7 @@
 <translation id="1231733316453485619">Vill du aktivera synkronisering?</translation>
 <translation id="123724288017357924">Läs in den aktuella sidan igen och ignorera cachelagrat innehåll</translation>
 <translation id="124116460088058876">Fler språk</translation>
+<translation id="1242008676835033345">Inbäddad på <ph name="WEBSITE_URL" /></translation>
 <translation id="124678866338384709">Stäng den aktuella fliken</translation>
 <translation id="1258753120186372309">Googles doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Sök och utforska</translation>
@@ -95,6 +96,7 @@
 <translation id="1672586136351118594">Visa inte igen</translation>
 <translation id="1692118695553449118">Synkronisering är på</translation>
 <translation id="169515064810179024">Blockera webbplatser från att använda enhetens rörelsesensorer</translation>
+<translation id="1711267867945983636">Fortsätt genom att aktivera NFC på telefonen</translation>
 <translation id="1717218214683051432">Rörelsesensorer</translation>
 <translation id="1718835860248848330">Senaste timmen</translation>
 <translation id="1736419249208073774">Utforska</translation>
@@ -151,6 +153,7 @@
 <translation id="2082238445998314030">Resultat <ph name="RESULT_NUMBER" /> av <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Ljud</translation>
 <translation id="2096012225669085171">Synkronisera och anpassa på alla enheter</translation>
+<translation id="2099625543891475722">dina fysiska egenskaper, t.ex. hur lång du är</translation>
 <translation id="2100273922101894616">Automatisk inloggning</translation>
 <translation id="2100314319871056947">Testa att dela upp texten i mindre bitar</translation>
 <translation id="2107397443965016585">Fråga innan webbplatser tillåts att spela upp skyddat innehåll (rekommenderas)</translation>
@@ -224,7 +227,7 @@
 <translation id="2587052924345400782">Det finns en nyare version</translation>
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="2612676031748830579">Kortnummer</translation>
-<translation id="2621115761605608342">Tillåt Javascript på en specifik webbplats.</translation>
+<translation id="2621115761605608342">Tillåt JavaScript på en specifik webbplats.</translation>
 <translation id="2625189173221582860">Lösenordet har kopierats</translation>
 <translation id="2631006050119455616">Sparat</translation>
 <translation id="2647434099613338025">Lägg till språk</translation>
@@ -427,6 +430,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill finju
 <translation id="4226663524361240545">Aviseringar kan göra att enheten vibrerar</translation>
 <translation id="423219824432660969">Kryptera synkroniserad data med Google-lösenordet från <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Öppna Inställningar</translation>
+<translation id="4250229828105606438">Skärmdump</translation>
 <translation id="4256782883801055595">Licenser för öppen källkod</translation>
 <translation id="4259722352634471385">Webbadressen har blockerats: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopiera länkadress</translation>
@@ -480,6 +484,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="4634124774493850572">Använd lösenordet</translation>
 <translation id="4645575059429386691">Hanteras av din förälder</translation>
 <translation id="4650364565596261010">Systemets standardinställning</translation>
+<translation id="4660838440047236328">hur ditt rum ser ut</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bokmärken har raderats</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> har lagts till på startskärmen.</translation>
 <translation id="4684427112815847243">Synkronisera allt</translation>
@@ -578,7 +583,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5317780077021120954">Spara</translation>
 <translation id="5324858694974489420">Föräldrainställningar</translation>
 <translation id="5327248766486351172">Namn</translation>
-<translation id="5335288049665977812">Tillåt att Javascript körs på webbplatser (rekommenderas)</translation>
+<translation id="5335288049665977812">Tillåt att JavaScript körs på webbplatser (rekommenderas)</translation>
 <translation id="5342314432463739672">Behörighetsförfrågningar</translation>
 <translation id="534295439873310000">NFC-enheter</translation>
 <translation id="5357811892247919462">En flik har tagits emot</translation>
@@ -604,6 +609,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5487521232677179737">Rensa data</translation>
 <translation id="5494752089476963479">Blockera annonser på webbplatser där påträngande eller vilseledande annonser visas</translation>
 <translation id="5500777121964041360">Kanske inte tillgängligt i ditt land</translation>
+<translation id="5505264765875738116">Webbplatser får inte be om tillåtelse att skicka aviseringar</translation>
 <translation id="5512137114520586844">Det här kontot hanteras av <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Har inaktiverats av enhetens administratör</translation>
 <translation id="5515439363601853141">Lås upp om du vill visa lösenordet</translation>
@@ -701,6 +707,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="6192792657125177640">Undantag</translation>
 <translation id="6194112207524046168">Om du vill ge Chrome åtkomst till kameran måste du även aktivera kameran i <ph name="BEGIN_LINK" />inställningarna för Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Blockera cookies från tredje part</translation>
+<translation id="6201345951596836663">Länken har kopierats</translation>
 <translation id="6206551242102657620">Anslutningen är säker. Webbplatsinformation</translation>
 <translation id="6210748933810148297">Inte <ph name="EMAIL" />?</translation>
 <translation id="6216432067784365534">Alternativ för <ph name="NAME_OF_LIST_ITEM" /></translation>
@@ -710,6 +717,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 Vissa webbplatser kan till exempel svara på begäran genom att visa annonser som inte baseras på andra webbplatser du har besökt. Många webbplatser samlar ändå in och använder din webbinformation – till exempel för att förbättra säkerheten, tillhandahålla innehåll, annonser och rekommendationer samt generera rapportstatistik.</translation>
 <translation id="624789221780392884">Uppdateringen är klar</translation>
 <translation id="6255999984061454636">Förslag på innehåll</translation>
+<translation id="6270391203985052864">Webbplatser får be om tillåtelse att skicka aviseringar</translation>
 <translation id="6277522088822131679">Det gick inte att skriva ut sidan. Försök igen.</translation>
 <translation id="6295158916970320988">Alla webbplatser</translation>
 <translation id="629730747756840877">Konto</translation>
@@ -754,6 +762,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6545864417968258051">Bluetooth-sökning</translation>
 <translation id="6560414384669816528">Sök med Sogou</translation>
 <translation id="656065428026159829">Visa fler</translation>
+<translation id="6561560012278703671">Få mer diskreta meddelanden (blockera störande aviseringar)</translation>
 <translation id="6566259936974865419">Du har sparat <ph name="GIGABYTES" /> GB med Chrome</translation>
 <translation id="6573096386450695060">Tillåt alltid</translation>
 <translation id="6573431926118603307">Här visas flikar som du har öppnat i Chrome på andra enheter.</translation>
@@ -851,6 +860,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="729975465115245577">Det finns ingen app som kan spara lösenordsfilen på enheten.</translation>
 <translation id="7302081693174882195">Mer information: Sorterad efter databesparing</translation>
 <translation id="7302486331832100261">Du brukar blockera aviseringar. Tryck på Info om du vill tillåta dem.</translation>
+<translation id="7311441321349344333">NFC är inte aktiverat på enheten. Aktivera NFC i <ph name="BEGIN_LINK" />Android-inställningarna<ph name="END_LINK" />.</translation>
 <translation id="7328017930301109123">I begränsat läge läses sidorna in snabbare och dataförbrukningen minskar med upp till 60 procent.</translation>
 <translation id="7333031090786104871">Processen pågår fortfarande för den förra webbplatsen</translation>
 <translation id="7352939065658542140">VIDEO</translation>

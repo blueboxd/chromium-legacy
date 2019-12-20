@@ -100,7 +100,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/gl/gl_switches.h"
 #include "url/gurl.h"

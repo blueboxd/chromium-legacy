@@ -68,23 +68,24 @@ class SharedImageBackingEglImage : public ClearTrackingSharedImageBacking {
   // Use to create EGLImage texture target from the same EGLImage object.
   gles2::Texture* GenEGLImageSibling();
 
-  // This class encapsulates the EGLImage object for android.
-  scoped_refptr<gles2::NativeImageBuffer> egl_image_buffer_;
+  const GLuint gl_format_;
+  const GLuint gl_type_;
 
-  GLuint gl_format_;
-  GLuint gl_type_;
-  bool is_cleared_ = false;
+  // This class encapsulates the EGLImage object for android.
+  scoped_refptr<gles2::NativeImageBuffer> egl_image_buffer_ GUARDED_BY(lock_);
 
   // All reads and writes must wait for exiting writes to complete.
-  std::unique_ptr<gl::GLFenceEGL> write_fence_;
-  bool is_writing_ = false;
+  std::unique_ptr<gl::GLFenceEGL> write_fence_ GUARDED_BY(lock_);
+  bool is_writing_ GUARDED_BY(lock_) = false;
 
   // All writes must wait for existing reads to complete. For a given GL
   // context, we only need to keep the most recent fence. Waiting on the most
   // recent read fence is enough to make sure all past read fences have been
   // signalled.
-  base::flat_map<gl::GLApi*, std::unique_ptr<gl::GLFenceEGL>> read_fences_;
-  base::flat_set<const SharedImageRepresentation*> active_readers_;
+  base::flat_map<gl::GLApi*, std::unique_ptr<gl::GLFenceEGL>> read_fences_
+      GUARDED_BY(lock_);
+  base::flat_set<const SharedImageRepresentation*> active_readers_
+      GUARDED_BY(lock_);
   DISALLOW_COPY_AND_ASSIGN(SharedImageBackingEglImage);
 };
 

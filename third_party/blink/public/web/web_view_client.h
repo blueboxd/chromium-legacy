@@ -104,9 +104,6 @@ class WebViewClient {
   // should be printed.
   virtual void PrintPage(WebLocalFrame*) {}
 
-  // Called when PageImportanceSignals for the WebView is updated.
-  virtual void PageImportanceSignalsChanged() {}
-
   // UI ------------------------------------------------------------------
 
   // Called when hovering over an anchor with the given URL.

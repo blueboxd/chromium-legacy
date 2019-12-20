@@ -15,7 +15,7 @@
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/blink/public/platform/web_mouse_event.h"
+#include "third_party/blink/public/common/input/web_mouse_event.h"
 
 using content::NavigationSimulator;
 using content::RenderFrameHost;

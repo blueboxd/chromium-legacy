@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "ash/shelf/hotseat_widget.h"
+#include <memory>
+#include <utility>
 
 #include "ash/focus_cycler.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
@@ -90,7 +92,9 @@ class HotseatWidget::DelegateView : public views::WidgetDelegateView,
  public:
   explicit DelegateView(WallpaperControllerImpl* wallpaper_controller)
       : opaque_background_(ui::LAYER_SOLID_COLOR),
-        wallpaper_controller_(wallpaper_controller) {}
+        wallpaper_controller_(wallpaper_controller) {
+    opaque_background_.SetName("hotseat/Background");
+  }
   ~DelegateView() override;
 
   // Initializes the view.
@@ -161,6 +165,8 @@ void HotseatWidget::DelegateView::Init(
 void HotseatWidget::DelegateView::UpdateOpaqueBackground() {
   if (!ShouldShowHotseatBackground()) {
     opaque_background_.SetVisible(false);
+    if (features::IsBackgroundBlurEnabled())
+      opaque_background_.SetBackgroundBlur(0);
     return;
   }
 

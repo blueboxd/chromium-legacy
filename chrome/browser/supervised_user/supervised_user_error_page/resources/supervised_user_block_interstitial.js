@@ -6,35 +6,10 @@ var mobileNav = false;
 
 var showDetails = false;
 
-/**
- * For small screen mobile the navigation buttons are moved
- * below the advanced text.
- */
-function onResize() {
-  var mediaQuery = '(min-width: 240px) and (max-width: 420px) and ' +
-      '(max-height: 736px) and (min-height: 401px) and ' +
-      '(orientation: portrait), (max-width: 736px) and ' +
-      '(max-height: 420px) and (min-height: 240px) and ' +
-      '(min-width: 421px) and (orientation: landscape)';
-
-  // Check for change in nav status.
-  if (mobileNav != window.matchMedia(mediaQuery).matches) {
-    mobileNav = !mobileNav;
-    updateDetails();
-  }
-}
 
 function updateDetails() {
-  $('information-container').hidden = mobileNav && showDetails;
   $('details').hidden = !showDetails;
 }
-
-function setupMobileNav() {
-  window.addEventListener('resize', onResize);
-  onResize();
-}
-
-document.addEventListener('DOMContentLoaded', setupMobileNav);
 
 function sendCommand(cmd) {
   if (window.supervisedUserErrorPageController) {

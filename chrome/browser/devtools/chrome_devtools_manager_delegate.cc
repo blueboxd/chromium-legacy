@@ -103,7 +103,7 @@ void ChromeDevToolsManagerDelegate::HandleCommand(
     DevToolsAgentHost* agent_host,
     content::DevToolsAgentHostClient* client,
     const std::string& method,
-    const std::string& message,
+    base::span<const uint8_t> message,
     NotHandledCallback callback) {
   if (sessions_.find(client) == sessions_.end()) {
     std::move(callback).Run(message);

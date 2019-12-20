@@ -158,7 +158,12 @@ WindowPerformance::WindowPerformance(LocalDOMWindow* window)
     : Performance(
           ToTimeOrigin(window),
           window->document()->GetTaskRunner(TaskType::kPerformanceTimeline)),
-      DOMWindowClient(window) {}
+      DOMWindowClient(window) {
+  DCHECK(GetFrame());
+  DCHECK(GetFrame()->GetPerformanceMonitor());
+  GetFrame()->GetPerformanceMonitor()->Subscribe(
+      PerformanceMonitor::kLongTask, kLongTaskObserverThreshold, this);
+}
 
 WindowPerformance::~WindowPerformance() = default;
 
@@ -211,19 +216,6 @@ WindowPerformance::CreateNavigationTimingInstance() {
 
   return MakeGarbageCollected<PerformanceNavigationTiming>(
       GetFrame(), info, time_origin_, server_timing);
-}
-
-void WindowPerformance::UpdateLongTaskInstrumentation() {
-  if (!GetFrame() || !GetFrame()->GetDocument())
-    return;
-
-  if (HasObserverFor(PerformanceEntry::kLongTask)) {
-    UseCounter::Count(GetFrame()->GetDocument(), WebFeature::kLongTaskObserver);
-    GetFrame()->GetPerformanceMonitor()->Subscribe(
-        PerformanceMonitor::kLongTask, kLongTaskObserverThreshold, this);
-  } else {
-    GetFrame()->GetPerformanceMonitor()->UnsubscribeAll(this);
-  }
 }
 
 void WindowPerformance::BuildJSONValue(V8ObjectBuilder& builder) const {

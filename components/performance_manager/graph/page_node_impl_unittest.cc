@@ -200,6 +200,20 @@ TEST_F(PageNodeImplTest, IsLoading) {
   EXPECT_FALSE(page_node->is_loading());
 }
 
+TEST_F(PageNodeImplTest, HadFormInteractions) {
+  MockSinglePageInSingleProcessGraph mock_graph(graph());
+  auto* page_node = mock_graph.page.get();
+
+  // This should be initialized to false.
+  EXPECT_FALSE(page_node->had_form_interaction());
+
+  page_node->SetHadFormInteractionForTesting(true);
+  EXPECT_TRUE(page_node->had_form_interaction());
+
+  page_node->SetHadFormInteractionForTesting(false);
+  EXPECT_FALSE(page_node->had_form_interaction());
+}
+
 namespace {
 
 class LenientMockObserver : public PageNodeImpl::Observer {
@@ -222,6 +236,7 @@ class LenientMockObserver : public PageNodeImpl::Observer {
   MOCK_METHOD1(OnMainFrameDocumentChanged, void(const PageNode*));
   MOCK_METHOD1(OnTitleUpdated, void(const PageNode*));
   MOCK_METHOD1(OnFaviconUpdated, void(const PageNode*));
+  MOCK_METHOD1(OnHadFormInteractionChanged, void(const PageNode*));
 
   void SetNotifiedPageNode(const PageNode* page_node) {
     notified_page_node_ = page_node;

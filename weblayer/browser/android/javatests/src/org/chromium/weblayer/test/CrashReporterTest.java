@@ -15,7 +15,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.CrashReporterCallback;
@@ -30,7 +29,7 @@ import java.util.Arrays;
 /**
  * Tests for crash reporting in WebLayer.
  */
-@RunWith(BaseJUnit4ClassRunner.class)
+@RunWith(WebLayerJUnit4ClassRunner.class)
 public class CrashReporterTest {
     private static final String UUID = "032b90a6-836c-49bc-a9f4-aa210458eaf3";
     private static final String LOCAL_ID = "aa210458eaf3";

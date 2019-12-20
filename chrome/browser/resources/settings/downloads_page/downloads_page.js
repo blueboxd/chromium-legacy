@@ -6,14 +6,6 @@
  * @fileoverview
  * 'settings-downloads-page' is the settings page containing downloads
  * settings.
- *
- * Example:
- *
- *    <iron-animated-pages>
- *      <settings-downloads-page prefs="{{prefs}}">
- *      </settings-downloads-page>
- *      ... other pages ...
- *    </iron-animated-pages>
  */
 Polymer({
   is: 'settings-downloads-page',
@@ -29,12 +21,6 @@ Polymer({
       notify: true,
     },
 
-    /**
-     * Dictionary defining page visibility.
-     * @type {!DownloadsPageVisibility}
-     */
-    pageVisibility: Object,
-
     /** @private */
     autoOpenDownloads_: {
       type: Boolean,
@@ -47,21 +33,6 @@ Polymer({
      */
     downloadLocation_: String,
     // </if>
-
-    /** @private {!Map<string, string>} */
-    focusConfig_: {
-      type: Object,
-      value: function() {
-        const map = new Map();
-        // <if expr="chromeos">
-        if (settings.routes.SMB_SHARES) {
-          map.set(settings.routes.SMB_SHARES.path, '#smbShares');
-        }
-        // </if>
-        return map;
-      },
-    },
-
   },
 
   // <if expr="chromeos">
@@ -95,11 +66,6 @@ Polymer({
   },
 
   // <if expr="chromeos">
-  /** @private */
-  onTapSmbShares_: function() {
-    settings.navigateTo(settings.routes.SMB_SHARES);
-  },
-
   /**
    * @private
    */

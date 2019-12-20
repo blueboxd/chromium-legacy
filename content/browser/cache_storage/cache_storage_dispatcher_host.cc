@@ -727,12 +727,14 @@ void CacheStorageDispatcherHost::AddCacheReceiver(
 CacheStorageHandle CacheStorageDispatcherHost::OpenCacheStorage(
     const url::Origin& origin) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!context_ || !context_->CacheManager() ||
-      !OriginCanAccessCacheStorage(origin))
+  if (!context_ || !OriginCanAccessCacheStorage(origin))
     return CacheStorageHandle();
 
-  return context_->CacheManager()->OpenCacheStorage(
-      origin, CacheStorageOwner::kCacheAPI);
+  scoped_refptr<CacheStorageManager> manager = context_->CacheManager();
+  if (!manager)
+    return CacheStorageHandle();
+
+  return manager->OpenCacheStorage(origin, CacheStorageOwner::kCacheAPI);
 }
 
 }  // namespace content

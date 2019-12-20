@@ -34,7 +34,7 @@
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/common/context_menu_data/input_field_type.h"
 #include "third_party/blink/public/common/context_menu_data/media_type.h"
-#include "third_party/blink/public/platform/web_menu_source_type.h"
+#include "third_party/blink/public/common/input/web_menu_source_type.h"
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_string.h"

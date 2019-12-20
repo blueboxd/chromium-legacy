@@ -238,6 +238,9 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
 #if defined(OS_CHROMEOS)
   // Opens printer settings in the Chrome OS Settings App.
   void HandleOpenPrinterSettings(const base::ListValue* args);
+
+  // Gets the EULA URL.
+  void HandleGetEulaUrl(const base::ListValue* args);
 #endif
 
   void SendInitialSettings(const std::string& callback_id,
@@ -247,6 +250,9 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   // Send OAuth2 access token.
   void SendAccessToken(const std::string& callback_id,
                        const std::string& access_token);
+
+  // Send the EULA URL;
+  void SendEulaUrl(const std::string& callback_id, const std::string& eula_url);
 #endif
 
   // Sends the printer capabilities to the Web UI. |settings_info| contains

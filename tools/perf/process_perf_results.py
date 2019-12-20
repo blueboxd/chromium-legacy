@@ -514,7 +514,11 @@ def _handle_perf_results(
         build_properties, output_json_file))
 
   # Kick off the uploads in multiple processes
-  pool = multiprocessing.Pool(_GetCpuCount())
+  # crbug.com/1035930: We are hitting HTTP Response 429. Limit ourselves
+  # to 2 processes to avoid this error. Uncomment the following code once
+  # the problem is fixed on the dashboard side.
+  # pool = multiprocessing.Pool(_GetCpuCount())
+  pool = multiprocessing.Pool(2)
   try:
     async_result = pool.map_async(
         _upload_individual_benchmark, invocations)
@@ -569,21 +573,23 @@ def _write_perf_data_to_logfile(benchmark_name, output_file,
   viewer_url = None
   # logdog file to write perf results to
   if os.path.exists(output_file):
+    results = None
     with open(output_file) as f:
       try:
         results = json.load(f)
       except ValueError:
         print('Error parsing perf results JSON for benchmark  %s' %
               benchmark_name)
-    try:
-      output_json_file = logdog_helper.open_text(benchmark_name)
-      json.dump(results, output_json_file,
-                indent=4, separators=(',', ': '))
-    except ValueError as e:
-      print('ValueError: "%s" while dumping output to logdog' % e)
-    finally:
-      output_json_file.close()
-    viewer_url = output_json_file.get_viewer_url()
+    if results:
+      try:
+        output_json_file = logdog_helper.open_text(benchmark_name)
+        json.dump(results, output_json_file,
+                  indent=4, separators=(',', ': '))
+      except ValueError as e:
+        print('ValueError: "%s" while dumping output to logdog' % e)
+      finally:
+        output_json_file.close()
+      viewer_url = output_json_file.get_viewer_url()
   else:
     print("Perf results JSON file doesn't exist for benchmark %s" %
           benchmark_name)
@@ -596,7 +602,8 @@ def _write_perf_data_to_logfile(benchmark_name, output_file,
   # add links for the perf results and the dashboard url to
   # the logs section of buildbot
   if is_ref:
-    logdog_dict[base_benchmark_name]['perf_results_ref'] = viewer_url
+    if viewer_url:
+      logdog_dict[base_benchmark_name]['perf_results_ref'] = viewer_url
     if upload_failure:
       logdog_dict[base_benchmark_name]['ref_upload_failed'] = 'True'
   else:
@@ -606,7 +613,8 @@ def _write_perf_data_to_logfile(benchmark_name, output_file,
             configuration_name, RESULTS_URL,
             build_properties['got_revision_cp'],
             _GetMachineGroup(build_properties)))
-    logdog_dict[base_benchmark_name]['perf_results'] = viewer_url
+    if viewer_url:
+      logdog_dict[base_benchmark_name]['perf_results'] = viewer_url
     if upload_failure:
       logdog_dict[base_benchmark_name]['upload_failed'] = 'True'
 

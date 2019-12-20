@@ -29,6 +29,7 @@
 <translation id="7792771145871471484">Revisar as sugestões.</translation>
 <translation id="7885132941432959125">Mover guia para a direita</translation>
 <translation id="7966321538264951561">Dispensar as sugestões.</translation>
+<translation id="8205266828577616993">Mover guia para cima</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Fechar <ph name="TABS_COUNT_ONE" /> guia selecionada}one{Fechar <ph name="TABS_COUNT_MANY" /> guia selecionada}other{Fechar <ph name="TABS_COUNT_MANY" /> guias selecionadas}}</translation>
 <translation id="9150694013019234766">Alterne entre as guias do seu grupo de guias perto da parte inferior da tela</translation>
 <translation id="9169594135889675189">Adicionar nova guia ao grupo</translation>

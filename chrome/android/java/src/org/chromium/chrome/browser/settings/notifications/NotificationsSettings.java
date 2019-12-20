@@ -18,7 +18,7 @@ import org.chromium.chrome.browser.offlinepages.prefetch.PrefetchPrefs;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
 import org.chromium.chrome.browser.settings.SettingsUtils;
 import org.chromium.chrome.browser.settings.website.ContentSettingsResources;
-import org.chromium.chrome.browser.settings.website.SingleCategoryPreferences;
+import org.chromium.chrome.browser.settings.website.SingleCategorySettings;
 import org.chromium.chrome.browser.settings.website.SiteSettingsCategory;
 import org.chromium.chrome.browser.settings.website.WebsitePreferenceBridge;
 
@@ -54,7 +54,7 @@ public class NotificationsSettings extends PreferenceFragmentCompat {
         });
 
         mFromWebsitesPref = findPreference(PREF_FROM_WEBSITES);
-        mFromWebsitesPref.getExtras().putString(SingleCategoryPreferences.EXTRA_CATEGORY,
+        mFromWebsitesPref.getExtras().putString(SingleCategorySettings.EXTRA_CATEGORY,
                 SiteSettingsCategory.preferenceKey(SiteSettingsCategory.Type.NOTIFICATIONS));
     }
 

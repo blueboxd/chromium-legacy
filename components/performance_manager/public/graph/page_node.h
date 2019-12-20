@@ -107,6 +107,10 @@ class PageNode : public Node {
   // See PageNodeObserver::OnMainFrameNavigationCommitted.
   virtual const GURL& GetMainFrameUrl() const = 0;
 
+  // Indicates if at least one of the frames in the page has received some form
+  // interactions.
+  virtual bool HadFormInteraction() const = 0;
+
   // Returns the web contents associated with this page node. It is valid to
   // call this function on any thread but the weak pointer must only be
   // dereferenced on the UI thread.
@@ -170,6 +174,9 @@ class PageNodeObserver {
   // |MainFrameUrl| properties have changed.
   virtual void OnMainFrameDocumentChanged(const PageNode* page_node) = 0;
 
+  // Invoked when the HadFormInteraction property changes.
+  virtual void OnHadFormInteractionChanged(const PageNode* page_node) = 0;
+
   // Events with no property changes.
 
   // Fired when the tab title associated with a page changes. This property is
@@ -208,6 +215,7 @@ class PageNode::ObserverDefaultImpl : public PageNodeObserver {
   void OnPageAlmostIdleChanged(const PageNode* page_node) override {}
   void OnMainFrameUrlChanged(const PageNode* page_node) override {}
   void OnMainFrameDocumentChanged(const PageNode* page_node) override {}
+  void OnHadFormInteractionChanged(const PageNode* page_node) override {}
   void OnTitleUpdated(const PageNode* page_node) override {}
   void OnFaviconUpdated(const PageNode* page_node) override {}
 

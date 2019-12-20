@@ -9,7 +9,6 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_store.h"
-#include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
@@ -21,15 +20,6 @@
 #endif
 
 @implementation PasswordManagerAppInterface
-
-+ (void)setAutosigninPreferences {
-  chrome_test_util::SetBooleanUserPref(
-      chrome_test_util::GetOriginalBrowserState(),
-      password_manager::prefs::kWasAutoSignInFirstRunExperienceShown, true);
-  chrome_test_util::SetBooleanUserPref(
-      chrome_test_util::GetOriginalBrowserState(),
-      password_manager::prefs::kCredentialsEnableAutosignin, true);
-}
 
 + (NSError*)storeCredentialWithUsername:(NSString*)username
                                password:(NSString*)password {

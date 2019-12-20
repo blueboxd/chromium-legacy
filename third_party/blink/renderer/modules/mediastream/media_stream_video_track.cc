@@ -539,6 +539,8 @@ void MediaStreamVideoTrack::SetEnabled(bool enabled) {
   frame_deliverer_->SetEnabled(enabled, maybe_await_key_frame);
   for (auto* sink : sinks_)
     sink->OnEnabledChanged(enabled);
+  for (auto* encoded_sink : encoded_sinks_)
+    encoded_sink->OnEnabledChanged(enabled);
 }
 
 size_t MediaStreamVideoTrack::CountEncodedSinks() const {
@@ -551,6 +553,8 @@ void MediaStreamVideoTrack::SetContentHint(
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   for (auto* sink : sinks_)
     sink->OnContentHintChanged(content_hint);
+  for (auto* encoded_sink : encoded_sinks_)
+    encoded_sink->OnContentHintChanged(content_hint);
 }
 
 void MediaStreamVideoTrack::StopAndNotify(base::OnceClosure callback) {
@@ -611,6 +615,8 @@ void MediaStreamVideoTrack::OnReadyStateChanged(
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   for (auto* sink : sinks_)
     sink->OnReadyStateChanged(state);
+  for (auto* encoded_sink : encoded_sinks_)
+    encoded_sink->OnReadyStateChanged(state);
 }
 
 void MediaStreamVideoTrack::SetTrackAdapterSettings(

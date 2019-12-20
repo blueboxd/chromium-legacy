@@ -65,7 +65,7 @@ class DirectoryDataTypeController : public DataTypeController {
  protected:
   // |dump_stack| is called when an unrecoverable error occurs.
   DirectoryDataTypeController(ModelType type,
-                              const base::Closure& dump_stack,
+                              const base::RepeatingClosure& dump_stack,
                               SyncService* sync_service,
                               ModelSafeGroup model_safe_group);
 
@@ -80,7 +80,7 @@ class DirectoryDataTypeController : public DataTypeController {
   virtual ChangeProcessor* GetChangeProcessor() const = 0;
 
   // Function to capture and upload a stack trace when an error occurs.
-  base::Closure dump_stack_;
+  base::RepeatingClosure dump_stack_;
 
  private:
   SyncService* const sync_service_;

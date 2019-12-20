@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "content/common/content_export.h"
-#include "third_party/blink/public/platform/web_mouse_wheel_event.h"
+#include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
 
 namespace content {
 

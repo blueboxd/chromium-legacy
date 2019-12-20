@@ -8,8 +8,8 @@
 #include "base/feature_list.h"
 #include "base/time/time.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/platform/web_float_point.h"
-#include "third_party/blink/public/platform/web_input_event.h"
 
 namespace page_load_metrics {
 

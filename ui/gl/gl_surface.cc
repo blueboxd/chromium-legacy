@@ -254,13 +254,21 @@ GLSurface* GLSurface::GetCurrent() {
   return current_surface_.Pointer()->Get();
 }
 
-GLSurface::~GLSurface() {
-  if (GetCurrent() == this)
-    SetCurrent(NULL);
+bool GLSurface::IsCurrent() {
+  return GetCurrent() == this;
 }
 
-void GLSurface::SetCurrent(GLSurface* surface) {
-  current_surface_.Pointer()->Set(surface);
+GLSurface::~GLSurface() {
+  if (GetCurrent() == this)
+    ClearCurrent();
+}
+
+void GLSurface::ClearCurrent() {
+  current_surface_.Pointer()->Set(nullptr);
+}
+
+void GLSurface::SetCurrent() {
+  current_surface_.Pointer()->Set(this);
 }
 
 bool GLSurface::ExtensionsContain(const char* c_extensions, const char* name) {
@@ -514,6 +522,14 @@ void GLSurfaceAdapter::SetGpuVSyncEnabled(bool enabled) {
 
 void GLSurfaceAdapter::SetDisplayTransform(gfx::OverlayTransform transform) {
   return surface_->SetDisplayTransform(transform);
+}
+
+void GLSurfaceAdapter::SetCurrent() {
+  surface_->SetCurrent();
+}
+
+bool GLSurfaceAdapter::IsCurrent() {
+  return surface_->IsCurrent();
 }
 
 GLSurfaceAdapter::~GLSurfaceAdapter() {}

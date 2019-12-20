@@ -5,6 +5,7 @@
 import("//chrome/common/features.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
+import("//tools/polymer/polymer.gni")
 import("../optimize_webui.gni")
 
 if (optimize_webui) {
@@ -13,27 +14,22 @@ if (optimize_webui) {
 
   optimize_webui("build") {
     host = "history"
-    html_in_files = [
-      "app.html",
-      "lazy_load.html",
-    ]
-    html_out_files = [
-      "app.vulcanized.html",
-      "lazy_load.vulcanized.html",
+    js_module_in_files = [
+      "history.js",
+      "lazy_load.js",
     ]
     input = rebase_path("$target_gen_dir/$unpak_folder", root_build_dir)
     js_out_files = [
-      "app.crisper.js",
-      "lazy_load.crisper.js",
+      "history.rollup.js",
+      "lazy_load.rollup.js",
+      "shared.rollup.js",
     ]
 
     deps = [
       ":unpak",
+      "../../../../ui/webui/resources:modulize",
     ]
-    excludes = [
-      "chrome://resources/html/util.html",
-      "constants.html",
-    ]
+    excludes = [ "chrome://resources/js/cr.m.js" ]
   }
 
   unpak("unpak") {
@@ -48,6 +44,16 @@ if (optimize_webui) {
   grit("flattened_resources") {
     source = "history_resources.grd"
 
+    # The .grd contains references to generated files.
+    source_is_generated = true
+    grit_flags = [
+      "-E",
+      "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+    ]
+
+    deps = [
+      ":polymer3_elements",
+    ]
     defines = chrome_grit_defines
     outputs = [
       "grit/history_resources.h",
@@ -60,6 +66,7 @@ if (optimize_webui) {
 }
 
 js_type_check("closure_compile") {
+  is_polymer3 = true
   deps = [
     ":app",
     ":browser_service",
@@ -82,7 +89,7 @@ js_library("constants") {
 js_library("browser_service") {
   deps = [
     ":externs",
-    "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js:cr.m",
   ]
 }
 
@@ -97,10 +104,10 @@ js_library("history_item") {
     ":browser_service",
     ":constants",
     ":externs",
-    "//ui/webui/resources/js:icon",
-    "//ui/webui/resources/js:load_time_data",
-    "//ui/webui/resources/js:util",
-    "//ui/webui/resources/js/cr/ui:focus_row_behavior",
+    "//ui/webui/resources/js:icon.m",
+    "//ui/webui/resources/js:load_time_data.m",
+    "//ui/webui/resources/js:util.m",
+    "//ui/webui/resources/js/cr/ui:focus_row_behavior.m",
   ]
 }
 
@@ -110,15 +117,16 @@ js_library("history_list") {
     ":constants",
     ":externs",
     ":history_item",
-    "//third_party/polymer/v1_0/components-chromium/iron-a11y-announcer:iron-a11y-announcer-extracted",
-    "//third_party/polymer/v1_0/components-chromium/iron-list:iron-list-extracted",
-    "//third_party/polymer/v1_0/components-chromium/iron-scroll-threshold:iron-scroll-threshold-extracted",
-    "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
-    "//ui/webui/resources/cr_elements/cr_lazy_render:cr_lazy_render",
-    "//ui/webui/resources/js:i18n_behavior",
-    "//ui/webui/resources/js:load_time_data",
-    "//ui/webui/resources/js:util",
-    "//ui/webui/resources/js:web_ui_listener_behavior",
+    "//third_party/polymer/v3_0/components-chromium/iron-a11y-announcer:iron-a11y-announcer",
+    "//third_party/polymer/v3_0/components-chromium/iron-list:iron-list",
+    "//third_party/polymer/v3_0/components-chromium/iron-scroll-threshold:iron-scroll-threshold",
+    "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu.m",
+    "//ui/webui/resources/cr_elements/cr_lazy_render:cr_lazy_render.m",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/js:load_time_data.m",
+    "//ui/webui/resources/js:util.m",
+    "//ui/webui/resources/js:web_ui_listener_behavior.m",
   ]
 }
 
@@ -126,10 +134,10 @@ js_library("history_toolbar") {
   deps = [
     ":constants",
     ":externs",
-    "//ui/webui/resources/cr_elements/cr_toolbar:cr_toolbar",
-    "//ui/webui/resources/cr_elements/cr_toolbar:cr_toolbar_selection_overlay",
-    "//ui/webui/resources/js:load_time_data",
-    "//ui/webui/resources/js:util",
+    "//ui/webui/resources/cr_elements/cr_toolbar:cr_toolbar.m",
+    "//ui/webui/resources/cr_elements/cr_toolbar:cr_toolbar_selection_overlay.m",
+    "//ui/webui/resources/js:load_time_data.m",
+    "//ui/webui/resources/js:util.m",
   ]
 }
 
@@ -142,9 +150,10 @@ js_library("app") {
     ":side_bar",
     ":synced_device_card",
     ":synced_device_manager",
-    "//ui/webui/resources/cr_elements/cr_drawer:cr_drawer",
-    "//ui/webui/resources/js:find_shortcut_behavior",
-    "//ui/webui/resources/js:web_ui_listener_behavior",
+    "//ui/webui/resources/cr_elements/cr_drawer:cr_drawer.m",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:find_shortcut_behavior.m",
+    "//ui/webui/resources/js:web_ui_listener_behavior.m",
   ]
 }
 
@@ -166,10 +175,10 @@ js_library("router") {
 js_library("side_bar") {
   deps = [
     ":browser_service",
-    "//third_party/polymer/v1_0/components-chromium/iron-a11y-keys-behavior:iron-a11y-keys-behavior-extracted",
-    "//third_party/polymer/v1_0/components-chromium/iron-selector:iron-selector-extracted",
-    "//third_party/polymer/v1_0/components-chromium/paper-ripple:paper-ripple-extracted",
-    "//ui/webui/resources/js:load_time_data",
+    "//third_party/polymer/v3_0/components-chromium/iron-a11y-keys-behavior:iron-a11y-keys-behavior",
+    "//third_party/polymer/v3_0/components-chromium/iron-selector:iron-selector",
+    "//third_party/polymer/v3_0/components-chromium/paper-ripple:paper-ripple",
+    "//ui/webui/resources/js:load_time_data.m",
   ]
 }
 
@@ -178,9 +187,9 @@ js_library("synced_device_card") {
     ":browser_service",
     ":constants",
     ":externs",
-    "//ui/webui/resources/js:icon",
-    "//ui/webui/resources/js:load_time_data",
-    "//ui/webui/resources/js/cr/ui:focus_row",
+    "//ui/webui/resources/js:icon.m",
+    "//ui/webui/resources/js:load_time_data.m",
+    "//ui/webui/resources/js/cr/ui:focus_row.m",
   ]
 }
 
@@ -188,8 +197,85 @@ js_library("synced_device_manager") {
   deps = [
     ":browser_service",
     ":synced_device_card",
-    "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
-    "//ui/webui/resources/cr_elements/cr_lazy_render:cr_lazy_render",
-    "//ui/webui/resources/js/cr/ui:focus_grid",
+    "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu.m",
+    "//ui/webui/resources/cr_elements/cr_lazy_render:cr_lazy_render.m",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:load_time_data.m",
+    "//ui/webui/resources/js/cr/ui:focus_grid.m",
   ]
+}
+
+group("polymer3_elements") {
+  deps = [
+    ":app_module",
+    ":history_item_module",
+    ":history_list_module",
+    ":history_toolbar_module",
+    ":router_module",
+    ":shared_style_module",
+    ":shared_vars_module",
+    ":side_bar_module",
+    ":synced_device_card_module",
+    ":synced_device_manager_module",
+  ]
+}
+
+polymer_modulizer("app") {
+  html_file = "app.html"
+  js_file = "app.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("history_item") {
+  html_file = "history_item.html"
+  js_file = "history_item.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("history_list") {
+  html_file = "history_list.html"
+  js_file = "history_list.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("history_toolbar") {
+  html_file = "history_toolbar.html"
+  js_file = "history_toolbar.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("router") {
+  html_file = "router.html"
+  js_file = "router.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("shared_style") {
+  html_file = "shared_style.html"
+  js_file = "shared_style.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("shared_vars") {
+  html_file = "shared_vars.html"
+  js_file = "shared_vars.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("side_bar") {
+  html_file = "side_bar.html"
+  js_file = "side_bar.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("synced_device_card") {
+  html_file = "synced_device_card.html"
+  js_file = "synced_device_card.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("synced_device_manager") {
+  html_file = "synced_device_manager.html"
+  js_file = "synced_device_manager.js"
+  html_type = "v3-ready"
 }

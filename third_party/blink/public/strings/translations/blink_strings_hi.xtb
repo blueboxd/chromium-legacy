@@ -114,6 +114,7 @@
 <translation id="4812940957355064477">कृपया कोई संख्या डालें.</translation>
 <translation id="4912536737030637138">संदर्भ सूची प्रविष्टि</translation>
 <translation id="492244087561876220">टिप्पणी</translation>
+<translation id="4971739861736909480"><ph name="ACCNAME" /> चुना गया</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> चुने गए</translation>
 <translation id="4992066212339426712">अनम्यूट करें</translation>
 <translation id="49969490063480558">कृपया '<ph name="ATSIGN" />' के बाद आने वाला भाग डालें. '<ph name="INVALIDADDRESS" />' अधूरा है.</translation>
@@ -218,6 +219,7 @@
 <translation id="7888071071722539607">कृपया ईमेल पते में '<ph name="ATSIGN" />' शामिल करें. '<ph name="INVALIDADDRESS" />' में '<ph name="ATSIGN" />' नहीं है.</translation>
 <translation id="7891486169920085145">विभाजक</translation>
 <translation id="795667975304826397">कोई फाइल नहीं चुनी गई</translation>
+<translation id="7962328325860248200"><ph name="ACCNAME" /> नहीं चुना गया</translation>
 <translation id="8034303206267677282">मज़बूत</translation>
 <translation id="8053789581856978548">लेख फ़ील्ड खोजें</translation>
 <translation id="8057695513531652401">सूचना</translation>

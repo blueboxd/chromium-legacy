@@ -1190,13 +1190,13 @@ struct ShapeRunWithFontInput {
                         Range full_range,
                         bool obscured,
                         float glyph_width_for_test,
-                        int glyph_spacing,
+                        int obscured_glyph_spacing,
                         bool subpixel_rendering_suppressed)
       : skia_face(font_params.skia_face),
         render_params(font_params.render_params),
         script(font_params.script),
         font_size(font_params.font_size),
-        glyph_spacing(glyph_spacing),
+        obscured_glyph_spacing(obscured_glyph_spacing),
         glyph_width_for_test(glyph_width_for_test),
         is_rtl(font_params.is_rtl),
         obscured(obscured),
@@ -1233,7 +1233,7 @@ struct ShapeRunWithFontInput {
            script == other.script && is_rtl == other.is_rtl &&
            obscured == other.obscured &&
            glyph_width_for_test == other.glyph_width_for_test &&
-           glyph_spacing == other.glyph_spacing &&
+           obscured_glyph_spacing == other.obscured_glyph_spacing &&
            subpixel_rendering_suppressed == other.subpixel_rendering_suppressed;
   }
 
@@ -1247,7 +1247,7 @@ struct ShapeRunWithFontInput {
   FontRenderParams render_params;
   UScriptCode script;
   int font_size;
-  int glyph_spacing;
+  int obscured_glyph_spacing;
   float glyph_width_for_test;
   bool is_rtl;
   bool obscured;
@@ -1321,7 +1321,6 @@ void ShapeRunWithFont(const ShapeRunWithFontInput& in,
 #endif
   constexpr uint16_t kMissingGlyphId = 0;
 
-  DCHECK(in.obscured || in.glyph_spacing == 0);
   out->missing_glyph_count = 0;
   for (size_t i = 0; i < out->glyph_count; ++i) {
     DCHECK_LE(infos[i].codepoint, std::numeric_limits<uint16_t>::max());
@@ -1337,10 +1336,15 @@ void ShapeRunWithFont(const ShapeRunWithFontInput& in,
     const SkScalar y_offset =
         HarfBuzzUnitsToSkiaScalar(hb_positions[i].y_offset);
     out->positions[i].set(out->width + x_offset, -y_offset);
-    out->width += (in.glyph_width_for_test > 0)
-                      ? in.glyph_width_for_test
-                      : HarfBuzzUnitsToFloat(hb_positions[i].x_advance) +
-                            in.glyph_spacing;
+
+    if (in.glyph_width_for_test == 0)
+      out->width += HarfBuzzUnitsToFloat(hb_positions[i].x_advance);
+    else if (hb_positions[i].x_advance)  // Leave zero-width glyphs alone.
+      out->width += in.glyph_width_for_test;
+
+    if (in.obscured)
+      out->width += in.obscured_glyph_spacing;
+
     // Round run widths if subpixel positioning is off to match native behavior.
     if (!in.render_params.subpixel_positioning)
       out->width = std::round(out->width);
@@ -2250,7 +2254,7 @@ void RenderTextHarfBuzz::ShapeRunsWithFont(
     bool found_in_cache = false;
     const internal::ShapeRunWithFontInput cache_key(
         text, font_params, run->range, obscured(), glyph_width_for_test_,
-        glyph_spacing(), subpixel_rendering_suppressed());
+        obscured_glyph_spacing(), subpixel_rendering_suppressed());
     if (can_use_cache) {
       auto found = cache.get()->Get(cache_key);
       if (found != cache.get()->end()) {

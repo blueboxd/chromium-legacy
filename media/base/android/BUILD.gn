@@ -178,7 +178,7 @@ if (is_android) {
       ":java_switches",
       "//media/base:java_enums",
     ]
-    java_files = [
+    sources = [
       "java/src/org/chromium/media/AudioManagerAndroid.java",
       "java/src/org/chromium/media/AudioTrackOutputStream.java",
       "java/src/org/chromium/media/BitrateAdjuster.java",
@@ -186,8 +186,8 @@ if (is_android) {
       "java/src/org/chromium/media/HdrMetadata.java",
       "java/src/org/chromium/media/MediaCodecBridge.java",
       "java/src/org/chromium/media/MediaCodecBridgeBuilder.java",
-      "java/src/org/chromium/media/MediaCodecUtil.java",
       "java/src/org/chromium/media/MediaCodecEncoder.java",
+      "java/src/org/chromium/media/MediaCodecUtil.java",
       "java/src/org/chromium/media/MediaDrmBridge.java",
       "java/src/org/chromium/media/MediaDrmSessionManager.java",
       "java/src/org/chromium/media/MediaDrmStorageBridge.java",
@@ -199,7 +199,7 @@ if (is_android) {
   }
 
   junit_binary("media_base_junit_tests") {
-    java_files = [
+    sources = [
       "java/src/test/org/chromium/media/AudioTrackOutputStreamTest.java",
       "java/src/test/org/chromium/media/BitrateAdjusterTest.java",
       "java/src/test/org/chromium/media/MediaFormatBuilderTest.java",

@@ -299,7 +299,6 @@ class TaskTracker;
 class AdjustOOMScoreHelper;
 class FileDescriptorWatcher;
 class GetAppOutputScopedAllowBaseSyncPrimitives;
-class MessageLoopImpl;
 class ScopedAllowThreadRecallForStackSamplingProfiler;
 class SimpleThread;
 class StackSamplingProfiler;
@@ -475,7 +474,6 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   friend class base::sequence_manager::internal::TaskQueueImpl;
   friend class base::FileDescriptorWatcher;
   friend class base::internal::JobTaskSource;
-  friend class base::MessageLoopImpl;
   friend class base::ScopedAllowThreadRecallForStackSamplingProfiler;
   friend class base::StackSamplingProfiler;
   friend class blink::RTCVideoDecoderAdapter;

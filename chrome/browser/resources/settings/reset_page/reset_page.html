@@ -9,10 +9,6 @@
 <link rel="import" href="../settings_page/settings_animated_pages.html">
 <link rel="import" href="../settings_shared_css.html">
 
-<if expr="chromeos">
-<link rel="import" href="powerwash_dialog.html">
-</if>
-
 <if expr="_google_chrome and is_win">
 <link rel="import" href="../chrome_cleanup_page/chrome_cleanup_page.html">
 <link rel="import" href="../incompatible_applications_page/incompatible_applications_page.html">
@@ -34,15 +30,6 @@
             </settings-reset-profile-dialog>
           </template>
         </cr-lazy-render>
-<if expr="chromeos">
-        <cr-link-row class="hr" hidden="[[!allowPowerwash_]]" id="powerwash"
-            label="$i18n{powerwashTitle}" on-click="onShowPowerwashDialog_"
-            sub-label="$i18n{powerwashDescription}"></cr-link-row>
-        <template is="dom-if" if="[[showPowerwashDialog_]]" restamp>
-          <settings-powerwash-dialog on-close="onPowerwashDialogClose_">
-          </settings-powerwash-dialog>
-        </template>
-</if>
 <if expr="_google_chrome and is_win">
         <cr-link-row class="hr" id="chromeCleanupSubpageTrigger"
             label="$i18n{resetCleanupComputerTrigger}"

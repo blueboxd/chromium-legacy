@@ -328,7 +328,7 @@ IN_PROC_BROWSER_TEST_P(ImmersiveModeControllerAshWebAppBrowserTest,
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     ImmersiveModeControllerAshWebAppBrowserTest,
     ::testing::Values(
         web_app::ControllerType::kHostedAppController,

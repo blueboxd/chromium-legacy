@@ -69,16 +69,18 @@ void SharedChangeProcessor::StartAssociation(
     SyncError error(FROM_HERE, SyncError::DATATYPE_ERROR,
                     "Failed to connect to syncer.", type_);
     local_merge_result.set_error(error);
-    start_done.Run(DataTypeController::ASSOCIATION_FAILED, local_merge_result,
-                   syncer_merge_result);
+    std::move(start_done)
+        .Run(DataTypeController::ASSOCIATION_FAILED, local_merge_result,
+             syncer_merge_result);
     return;
   }
 
   if (!CryptoReadyIfNecessary()) {
     SyncError error(FROM_HERE, SyncError::CRYPTO_ERROR, "", type_);
     local_merge_result.set_error(error);
-    start_done.Run(DataTypeController::NEEDS_CRYPTO, local_merge_result,
-                   syncer_merge_result);
+    std::move(start_done)
+        .Run(DataTypeController::NEEDS_CRYPTO, local_merge_result,
+             syncer_merge_result);
     return;
   }
 
@@ -87,8 +89,9 @@ void SharedChangeProcessor::StartAssociation(
     SyncError error(FROM_HERE, SyncError::UNRECOVERABLE_ERROR,
                     "Failed to load sync nodes", type_);
     local_merge_result.set_error(error);
-    start_done.Run(DataTypeController::UNRECOVERABLE_ERROR, local_merge_result,
-                   syncer_merge_result);
+    std::move(start_done)
+        .Run(DataTypeController::UNRECOVERABLE_ERROR, local_merge_result,
+             syncer_merge_result);
     return;
   }
 
@@ -100,8 +103,9 @@ void SharedChangeProcessor::StartAssociation(
     SyncError error = GetAllSyncDataReturnError(type_, &initial_sync_data);
     if (error.IsSet()) {
       local_merge_result.set_error(error);
-      start_done.Run(DataTypeController::ASSOCIATION_FAILED, local_merge_result,
-                     syncer_merge_result);
+      std::move(start_done)
+          .Run(DataTypeController::ASSOCIATION_FAILED, local_merge_result,
+               syncer_merge_result);
       return;
     }
 
@@ -113,17 +117,19 @@ void SharedChangeProcessor::StartAssociation(
                                       new SharedChangeProcessorRef(this)),
         std::unique_ptr<SyncErrorFactory>(new SharedChangeProcessorRef(this)));
     if (local_merge_result.error().IsSet()) {
-      start_done.Run(DataTypeController::ASSOCIATION_FAILED, local_merge_result,
-                     syncer_merge_result);
+      std::move(start_done)
+          .Run(DataTypeController::ASSOCIATION_FAILED, local_merge_result,
+               syncer_merge_result);
       return;
     }
   }
 
   syncer_merge_result.set_num_items_after_association(GetSyncCount());
 
-  start_done.Run(!sync_has_nodes ? DataTypeController::OK_FIRST_RUN
-                                 : DataTypeController::OK,
-                 local_merge_result, syncer_merge_result);
+  std::move(start_done)
+      .Run(!sync_has_nodes ? DataTypeController::OK_FIRST_RUN
+                           : DataTypeController::OK,
+           local_merge_result, syncer_merge_result);
 }
 
 base::WeakPtr<SyncableService> SharedChangeProcessor::Connect(

@@ -259,6 +259,9 @@ class ShelfView::FadeOutAnimationDelegate : public gfx::AnimationDelegate {
     view_->layer()->ScheduleDraw();
   }
   void AnimationEnded(const Animation* animation) override {
+    // Ensures that |view| is not used after destruction.
+    shelf_view_->StopAnimatingViewIfAny(view_.get());
+
     // Remove the view which has been faded away.
     view_.reset();
 
@@ -460,6 +463,11 @@ ShelfAppButton* ShelfView::GetShelfAppButton(const ShelfID& id) {
   views::View* const view = view_model_->view_at(index);
   DCHECK_EQ(ShelfAppButton::kViewClassName, view->GetClassName());
   return static_cast<ShelfAppButton*>(view);
+}
+
+void ShelfView::StopAnimatingViewIfAny(views::View* view) {
+  if (bounds_animator_->IsAnimating(view))
+    bounds_animator_->StopAnimatingView(view);
 }
 
 bool ShelfView::ShouldHideTooltip(const gfx::Point& cursor_location) const {
@@ -2281,10 +2289,17 @@ void ShelfView::ShelfItemRemoved(int model_index, const ShelfItem& old_item) {
         view.get(), std::unique_ptr<gfx::AnimationDelegate>(
                         new FadeOutAnimationDelegate(this, std::move(view))));
   } else {
+    // Ensures that |view| is not used after destruction.
+    StopAnimatingViewIfAny(view.get());
+
+    // Removes |view| to trigger ViewHierarchyChanged function in the parent
+    // view if any.
+    view.reset();
+
     // If there is no fade out animation, notify the parent view of the
     // changed size before bounds animations start.
     if (chromeos::switches::ShouldShowScrollableShelf())
-      HandleInvisibleViewRemovedInScrollableShelf(std::move(view));
+      PreferredSizeChanged();
 
     // We don't need to show a fade out animation for invisible |view|. When an
     // item is ripped out from the shelf, its |view| is already invisible.
@@ -2631,22 +2646,6 @@ bool ShelfView::UpdateVisibleIndices() {
 
   return (first_visible_index_ != previous_first_visible_index) ||
          (last_visible_index_ != previous_last_visible_index);
-}
-
-void ShelfView::HandleInvisibleViewRemovedInScrollableShelf(
-    std::unique_ptr<views::View> view) {
-  DCHECK(chromeos::switches::ShouldShowScrollableShelf());
-  DCHECK(!view->GetVisible());
-
-  // Ensures that |view| is not used after destruction.
-  if (bounds_animator_->IsAnimating(view.get()))
-    bounds_animator_->StopAnimatingView(view.get());
-
-  // Remove |view| so that the visible index is updated before triggering
-  // PreferredSizeChanged().
-  view.reset();
-
-  PreferredSizeChanged();
 }
 
 }  // namespace ash

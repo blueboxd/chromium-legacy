@@ -137,14 +137,13 @@ class DriveApiPartialFieldRequest : public UrlFetchRequestBase {
 template<class DataType>
 class DriveApiDataRequest : public DriveApiPartialFieldRequest {
  public:
-  typedef base::Callback<void(DriveApiErrorCode error,
-                              std::unique_ptr<DataType> data)>
-      Callback;
+  using Callback = base::OnceCallback<void(DriveApiErrorCode error,
+                                           std::unique_ptr<DataType> data)>;
 
   // |callback| is called when the request finishes either by success or by
   // failure. On success, a JSON Value object is passed. It must not be null.
-  DriveApiDataRequest(RequestSender* sender, const Callback& callback)
-      : DriveApiPartialFieldRequest(sender), callback_(callback) {
+  DriveApiDataRequest(RequestSender* sender, Callback callback)
+      : DriveApiPartialFieldRequest(sender), callback_(std::move(callback)) {
     DCHECK(!callback_.is_null());
   }
   ~DriveApiDataRequest() override {}
@@ -174,7 +173,7 @@ class DriveApiDataRequest : public DriveApiPartialFieldRequest {
   }
 
   void RunCallbackOnPrematureFailure(DriveApiErrorCode error) override {
-    callback_.Run(error, std::unique_ptr<DataType>());
+    std::move(callback_).Run(error, std::unique_ptr<DataType>());
   }
 
  private:
@@ -188,11 +187,11 @@ class DriveApiDataRequest : public DriveApiPartialFieldRequest {
   void OnDataParsed(DriveApiErrorCode error, std::unique_ptr<DataType> value) {
     if (!value)
       error = DRIVE_PARSE_ERROR;
-    callback_.Run(error, std::move(value));
+    std::move(callback_).Run(error, std::move(value));
     OnProcessURLFetchResultsComplete();
   }
 
-  const Callback callback_;
+  Callback callback_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
@@ -1155,7 +1154,7 @@ class SingleBatchableDelegateRequest : public UrlFetchRequestBase {
   GURL GetURL() const override;
   std::string GetRequestType() const override;
   std::vector<std::string> GetExtraRequestHeaders() const override;
-  void Prepare(const PrepareCallback& callback) override;
+  void Prepare(PrepareCallback callback) override;
   bool GetContentData(std::string* upload_content_type,
                       std::string* upload_content) override;
   void RunCallbackOnPrematureFailure(DriveApiErrorCode code) override;
@@ -1215,7 +1214,7 @@ class BatchUploadRequest : public UrlFetchRequestBase {
   const DriveApiUrlGenerator& url_generator() const { return url_generator_; }
 
   // UrlFetchRequestBase overrides.
-  void Prepare(const PrepareCallback& callback) override;
+  void Prepare(PrepareCallback callback) override;
   void Cancel() override;
   GURL GetURL() const override;
   std::string GetRequestType() const override;

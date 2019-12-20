@@ -22,6 +22,7 @@ Neke funkcije možda neće biti dostupne i promjene postavki se neće sačuvati.
 <translation id="1966382378801805537">Chromium ne može utvrditi niti postaviti zadani preglednik</translation>
 <translation id="2008474315282236005">Ovim će se izbrisati jedna stavka s uređaja. Za preuzimanje podataka kasnije, prijavite se u Chromium kao <ph name="USER_EMAIL" />.</translation>
 <translation id="2119636228670142020">O &amp;Chromium OS-u</translation>
+<translation id="2147976119693222405">OS Chromium nije mogao sinkronizirati vaše podatke. Ispravite to odmah.</translation>
 <translation id="2241627712206172106">Ako dijelite računar, prijatelji i porodica mogu odvojeno pretraživati i postaviti Chromium na način koji njima odgovara.</translation>
 <translation id="2347108572062610441">Ova ekstenzija je promijenila stranicu koja se prikazuje prilikom pokretanja Chromiuma.</translation>
 <translation id="2396765026452590966">Ekstenzija "<ph name="EXTENSION_NAME" />" je promijenila stranicu koja se prikazuje prilikom pokretanja Chromiuma.</translation>
@@ -37,6 +38,7 @@ Neke funkcije možda neće biti dostupne i promjene postavki se neće sačuvati.
 <translation id="2718390899429598676">Chromium će šifrirati vaše podatke radi dodatne sigurnosti.</translation>
 <translation id="2770231113462710648">Promijenite zadani preglednik u:</translation>
 <translation id="2799223571221894425">Ponovo pokreni</translation>
+<translation id="2805036593126168338">OS Chromium nije mogao sinkronizirati vaše zaporke. Ispravite to odmah.</translation>
 <translation id="2838154144102149890">Za potrebe ažuriranja, Chromium mora prestati raditi na ovom uređaju. Zbog toga drugi korisnici koji su prijavljeni na ovaj računar mogu izgubiti izmjene koje nisu sačuvane.</translation>
 <translation id="2847479871509788944">Ukloni iz Chromiuma...</translation>
 <translation id="2886012850691518054">Nije obavezno: Pomozite nam poboljšati Chromium automatskim slanjem Googleu statistika korištenja i izvještaja o padovima aplikacija.</translation>

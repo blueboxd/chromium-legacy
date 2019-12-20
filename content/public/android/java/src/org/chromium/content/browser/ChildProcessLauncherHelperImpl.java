@@ -350,23 +350,25 @@ public final class ChildProcessLauncherHelperImpl {
     @VisibleForTesting
     static ChildConnectionAllocator getConnectionAllocator(Context context, boolean sandboxed) {
         assert LauncherThread.runningOnLauncherThread();
-        final String packageName = ChildProcessCreationParamsImpl.getPackageNameForService();
         boolean bindToCaller = ChildProcessCreationParamsImpl.getBindToCallerCheck();
         boolean bindAsExternalService =
                 sandboxed && ChildProcessCreationParamsImpl.getIsSandboxedServiceExternal();
 
         if (!sandboxed) {
             if (sPrivilegedChildConnectionAllocator == null) {
-                sPrivilegedChildConnectionAllocator = ChildConnectionAllocator.create(context,
-                        LauncherThread.getHandler(), null, packageName,
-                        ChildProcessCreationParamsImpl.getPrivilegedServicesName(),
-                        NUM_PRIVILEGED_SERVICES_KEY, bindToCaller, bindAsExternalService,
-                        true /* useStrongBinding */);
+                sPrivilegedChildConnectionAllocator =
+                        ChildConnectionAllocator.create(context, LauncherThread.getHandler(), null,
+                                ChildProcessCreationParamsImpl.getPackageNameForPrivilegedService(),
+                                ChildProcessCreationParamsImpl.getPrivilegedServicesName(),
+                                NUM_PRIVILEGED_SERVICES_KEY, bindToCaller, bindAsExternalService,
+                                true /* useStrongBinding */);
             }
             return sPrivilegedChildConnectionAllocator;
         }
 
         if (sSandboxedChildConnectionAllocator == null) {
+            final String packageName =
+                    ChildProcessCreationParamsImpl.getPackageNameForSandboxedService();
             Log.d(TAG,
                     "Create a new ChildConnectionAllocator with package name = %s,"
                             + " sandboxed = true",

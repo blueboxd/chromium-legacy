@@ -320,7 +320,12 @@ std::unique_ptr<gl::GLVersionInfo> GLContext::GenerateGLVersionInfo() {
 
 void GLContext::SetCurrent(GLSurface* surface) {
   current_context_.Pointer()->Set(surface ? this : nullptr);
-  GLSurface::SetCurrent(surface);
+  if (surface) {
+    surface->SetCurrent();
+  } else {
+    GLSurface::ClearCurrent();
+  }
+
   // Leave the real GL api current so that unit tests work correctly.
   // TODO(sievers): Remove this, but needs all gpu_unittest classes
   // to create and make current a context.
@@ -377,8 +382,8 @@ bool GLContext::MakeVirtuallyCurrent(
   if (!ForceGpuSwitchIfNeeded())
     return false;
   bool switched_real_contexts = GLContext::GetRealCurrent() != this;
-  GLSurface* current_surface = GLSurface::GetCurrent();
-  if (switched_real_contexts || surface != current_surface) {
+  if (switched_real_contexts || !surface->IsCurrent()) {
+    GLSurface* current_surface = GLSurface::GetCurrent();
     // MakeCurrent 'lite' path that avoids potentially expensive MakeCurrent()
     // calls if the GLSurface uses the same underlying surface or renders to
     // an FBO.

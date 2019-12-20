@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {BrowserService, ensureLazyLoaded} from 'chrome://history/history.js';
+import {TestBrowserService} from 'chrome://test/history/test_browser_service.js';
+
 suite('#overflow-menu', function() {
   let listContainer;
   let sharedMenu;
@@ -12,17 +15,16 @@ suite('#overflow-menu', function() {
   setup(function() {
     PolymerTest.clearBody();
     const testService = new TestBrowserService();
-    history.BrowserService.instance_ = testService;
+    BrowserService.instance_ = testService;
 
     const app = document.createElement('history-app');
     document.body.appendChild(app);
     return Promise
         .all([
           testService.whenCalled('queryHistory'),
-          history.ensureLazyLoaded(),
+          ensureLazyLoaded(),
         ])
         .then(function() {
-          element = app.$.history;
           listContainer = app.$['history'];
           const element1 = document.createElement('div');
           const element2 = document.createElement('div');

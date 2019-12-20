@@ -359,14 +359,24 @@ bool ContentSecurityPolicy::Parse(const GURL& base_url,
   std::string header_value;
   while (headers.EnumerateHeader(&iter, "content-security-policy",
                                  &header_value)) {
-    if (!Parse(base_url, header_value))
+    if (!Parse(base_url, network::mojom::ContentSecurityPolicyType::kEnforce,
+               header_value))
+      return false;
+  }
+  iter = 0;
+  while (headers.EnumerateHeader(&iter, "content-security-policy-report-only",
+                                 &header_value)) {
+    if (!Parse(base_url, network::mojom::ContentSecurityPolicyType::kReport,
+               header_value))
       return false;
   }
   return true;
 }
 
-bool ContentSecurityPolicy::Parse(const GURL& base_url,
-                                  base::StringPiece header_value) {
+bool ContentSecurityPolicy::Parse(
+    const GURL& base_url,
+    network::mojom::ContentSecurityPolicyType type,
+    base::StringPiece header_value) {
   // RFC7230, section 3.2.2 specifies that headers appearing multiple times can
   // be combined with a comma. Walk the header string, and parse each comma
   // separated chunk as a separate header.
@@ -375,6 +385,7 @@ bool ContentSecurityPolicy::Parse(const GURL& base_url,
                               base::SPLIT_WANT_NONEMPTY)) {
     DirectivesMap directives = ParseHeaderValue(header);
     auto content_security_policy_ptr = mojom::ContentSecurityPolicy::New();
+    content_security_policy_ptr->type = type;
 
     auto frame_ancestors = directives.find("frame-ancestors");
     if (frame_ancestors != directives.end()) {

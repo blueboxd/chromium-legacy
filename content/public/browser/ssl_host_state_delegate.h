@@ -14,6 +14,8 @@
 
 namespace content {
 
+class WebContents;
+
 // The SSLHostStateDelegate encapulates the host-specific state for SSL errors.
 // For example, SSLHostStateDelegate remembers whether the user has whitelisted
 // a particular broken cert for use with particular host.  We separate this
@@ -44,7 +46,8 @@ class SSLHostStateDelegate {
   // a specified |error| type.
   virtual void AllowCert(const std::string&,
                          const net::X509Certificate& cert,
-                         int error) = 0;
+                         int error,
+                         WebContents* web_contents) = 0;
 
   // Clear allow preferences matched by |host_filter|. If the filter is null,
   // clear all preferences.
@@ -54,7 +57,8 @@ class SSLHostStateDelegate {
   // Queries whether |cert| is allowed for |host| and |error|. Returns true in
   virtual CertJudgment QueryPolicy(const std::string& host,
                                    const net::X509Certificate& cert,
-                                   int error) = 0;
+                                   int error,
+                                   WebContents* web_contents) = 0;
 
   // Records that a host has run insecure content of the given |content_type|.
   virtual void HostRanInsecureContent(const std::string& host,
@@ -75,7 +79,8 @@ class SSLHostStateDelegate {
   // |host|. This does not mean that *all* certificate errors are allowed, just
   // that there exists an exception. To see if a particular certificate and
   // error combination exception is allowed, use QueryPolicy().
-  virtual bool HasAllowException(const std::string& host) = 0;
+  virtual bool HasAllowException(const std::string& host,
+                                 WebContents* web_contents) = 0;
 
  protected:
   virtual ~SSLHostStateDelegate() {}

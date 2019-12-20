@@ -4,7 +4,10 @@
 
 #include "chrome/browser/ui/views/frame/top_controls_slide_controller_chromeos.h"
 
+#include <vector>
+
 #include "ash/public/cpp/tablet_mode.h"
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/search/search.h"
@@ -27,7 +30,9 @@
 #include "content/public/common/browser_controls_state.h"
 #include "extensions/common/constants.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/display/screen.h"
 #include "ui/views/controls/native/native_view_host.h"
 
 namespace {
@@ -299,6 +304,7 @@ TopControlsSlideControllerChromeOS::TopControlsSlideControllerChromeOS(
     ash::TabletMode::Get()->AddObserver(this);
 
   browser_view_->browser()->tab_strip_model()->AddObserver(this);
+  display::Screen::GetScreen()->AddObserver(this);
 
   chromeos::AccessibilityManager* accessibility_manager =
       chromeos::AccessibilityManager::Get();
@@ -315,6 +321,7 @@ TopControlsSlideControllerChromeOS::TopControlsSlideControllerChromeOS(
 TopControlsSlideControllerChromeOS::~TopControlsSlideControllerChromeOS() {
   OnEnabledStateChanged(false);
 
+  display::Screen::GetScreen()->RemoveObserver(this);
   browser_view_->browser()->tab_strip_model()->RemoveObserver(this);
 
   if (ash::TabletMode::Get())
@@ -333,6 +340,9 @@ void TopControlsSlideControllerChromeOS::SetShownRatio(
     content::WebContents* contents,
     float ratio) {
   DCHECK(contents);
+
+  if (pause_updates_)
+    return;
 
   // Make sure the value tracked per tab is always updated even when sliding is
   // disabled, so that we're always synchronized with the renderer.
@@ -362,7 +372,7 @@ void TopControlsSlideControllerChromeOS::SetShownRatio(
     return;
   }
 
-  // Skip |shown_ratio_| update if the changes is not from the active
+  // Skip |shown_ratio_| update if the changes are not from the active
   // WebContents.
   if (contents != browser_view_->GetActiveWebContents())
     return;
@@ -406,7 +416,18 @@ bool TopControlsSlideControllerChromeOS::DoBrowserControlsShrinkRendererSize(
 
 void TopControlsSlideControllerChromeOS::SetTopControlsGestureScrollInProgress(
     bool in_progress) {
+  if (is_gesture_scrolling_in_progress_ == in_progress)
+    return;
+
   is_gesture_scrolling_in_progress_ = in_progress;
+
+  if (update_state_after_gesture_scrolling_ends_) {
+    DCHECK(!is_gesture_scrolling_in_progress_);
+    DCHECK(pause_updates_);
+    OnEnabledStateChanged(CanEnable(base::nullopt));
+    update_state_after_gesture_scrolling_ends_ = false;
+    pause_updates_ = false;
+  }
 
   if (!IsEnabled())
     return;
@@ -444,6 +465,11 @@ void TopControlsSlideControllerChromeOS::SetTopControlsGestureScrollInProgress(
 bool TopControlsSlideControllerChromeOS::IsTopControlsGestureScrollInProgress()
     const {
   return is_gesture_scrolling_in_progress_;
+}
+
+bool TopControlsSlideControllerChromeOS::IsTopControlsSlidingInProgress()
+    const {
+  return is_sliding_in_progress_;
 }
 
 void TopControlsSlideControllerChromeOS::OnTabletModeStarted() {
@@ -521,6 +547,54 @@ void TopControlsSlideControllerChromeOS::Observe(
   // top-chrome is able to be hidden again.
   if (node_details->is_editable_node || shown_ratio_ == 1.f)
     UpdateBrowserControlsStateShown(active_contents, true /* animate */);
+}
+
+void TopControlsSlideControllerChromeOS::OnDisplayMetricsChanged(
+    const display::Display& display,
+    uint32_t changed_metrics) {
+  if (!IsEnabled())
+    return;
+
+  if (!is_sliding_in_progress_ || !is_gesture_scrolling_in_progress_)
+    return;
+
+  // If any of the below display metrics changes while both sliding and gesture
+  // scrolling are in progress, we force-set the top controls to be fully shown,
+  // and temporarily disables the state of the top controls sliding feature
+  // until the user lifts their finger to end gesture scrolling, at which point
+  // we set it back to its correct value.
+  // This is necessary, since this way the browser view will layout properly,
+  // avoiding having a broken page or a broken browser view if one of the below
+  // changes happen while the top controls are not in a steady state.
+  constexpr int kCheckedMetrics =
+      display::DisplayObserver::DISPLAY_METRIC_BOUNDS |
+      display::DisplayObserver::DISPLAY_METRIC_WORK_AREA |
+      display::DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR |
+      display::DisplayObserver::DISPLAY_METRIC_ROTATION |
+      display::DisplayObserver::DISPLAY_METRIC_PRIMARY |
+      display::DisplayObserver::DISPLAY_METRIC_MIRROR_STATE;
+
+  if ((changed_metrics & kCheckedMetrics) == 0)
+    return;
+
+  if (browser_view_->GetNativeWindow()->GetHost()->GetDisplayId() !=
+      display.id()) {
+    return;
+  }
+
+  content::WebContents* active_contents = browser_view_->GetActiveWebContents();
+  if (!active_contents)
+    return;
+
+  update_state_after_gesture_scrolling_ends_ = true;
+  {
+    // Setting |is_gesture_scrolling_in_progress_| to false temporarily will end
+    // the sliding when we set the shown ratio to a terminal value of 1.f.
+    base::AutoReset<bool> resetter{&is_gesture_scrolling_in_progress_, false};
+    SetShownRatio(active_contents, 1.f);
+  }
+  pause_updates_ = true;
+  OnEnabledStateChanged(false);
 }
 
 bool TopControlsSlideControllerChromeOS::CanEnable(

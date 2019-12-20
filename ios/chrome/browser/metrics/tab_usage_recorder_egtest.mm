@@ -266,10 +266,6 @@ void SwitchToNormalMode() {
   SwitchToNormalMode();
 
   [ChromeEarlGrey selectTabAtIndex:0];
-#if defined(CHROME_EARL_GREY_2)
-  // TODO(crbug.com/1033879): Remove this timer once the sync is fixed.
-  base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSeconds(1));
-#endif
   [ChromeEarlGrey waitForWebStateContainingText:kURL1FirstWord];
 
   // Verify that one page-load count has been recorded. It should contain two
@@ -747,10 +743,6 @@ void SwitchToNormalMode() {
   SwitchToNormalMode();
 
   [ChromeEarlGrey selectTabAtIndex:tabIndex];
-#if defined(CHROME_EARL_GREY_2)
-  // TODO(crbug.com/1033879): Remove this timer once the sync is fixed.
-  base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSeconds(1));
-#endif
   [ChromeEarlGrey waitForWebStateContainingText:"arrived"];
 
   // Verify that one page-load count has been recorded.  It should contain a

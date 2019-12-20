@@ -51,10 +51,10 @@ def FetchLLVM(checkout_dir, revision):
     # Otherwise, try to update it.
     print('-- Attempting to update existing repo')
     args = ['git', 'pull', '--rebase', 'origin', 'master']
-    subprocess.check_call(args, cwd=checkout_dir)
+    subprocess.check_call(args, cwd=checkout_dir, shell=sys.platform == 'win32')
   if revision:
     args = ['git', 'checkout', revision]
-    subprocess.check_call(args, cwd=checkout_dir)
+    subprocess.check_call(args, cwd=checkout_dir, shell=sys.platform == 'win32')
 
 
 def BuildTargets(build_dir, targets):

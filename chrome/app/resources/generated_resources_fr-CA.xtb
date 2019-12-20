@@ -349,7 +349,7 @@
 <translation id="1493892686965953381">En attente de <ph name="LOAD_STATE_PARAMETER" />...</translation>
 <translation id="1495486559005647033"><ph name="NUM_PRINTERS" /> autres appareils accessibles.</translation>
 <translation id="1495677929897281669">Retour à l'onglet</translation>
-<translation id="1499271269825557605">Si vous ne reconnaissez pas une extension, ou si votre navigateur ne fonctionne pas comme prévu, vous pouvez ici désactiver ou personnaliser les extensions.</translation>
+<translation id="1499271269825557605">Si vous ne reconnaissez pas une extension, ou si votre navigateur ne fonctionne pas comme prévu, vous pouvez désactiver ou personnaliser les extensions ici.</translation>
 <translation id="1500297251995790841">Appareil inconnu [<ph name="VENDOR_ID" />:<ph name="PRODUCT_ID" />]</translation>
 <translation id="1503394326855300303">Ce compte de propriétaire doit être le premier compte à être connecté lors de sessions de connexion multicompte.</translation>
 <translation id="150411034776756821">Supprimer <ph name="SITE" /></translation>
@@ -988,7 +988,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2379232090534544565">Un site accède aux entrées audio et vidéo de votre appareil</translation>
 <translation id="2379281330731083556">Imprimer à l'aide de la boîte de dialogue du système… <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Demander avant d'envoyer (recommandé)</translation>
-<translation id="2382818385048255866">Vérifier vos extensions</translation>
+<translation id="2382818385048255866">Vérifiez vos extensions</translation>
 <translation id="2384436799579181135">Une erreur s'est produite. Veuillez vérifier votre imprimante, puis réessayer.</translation>
 <translation id="2387458720915042159">Type de connexion de mandataire</translation>
 <translation id="2391419135980381625">Police standard</translation>
@@ -1040,7 +1040,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2462724976360937186">Identifiant de clé d'autorité de certification</translation>
 <translation id="2462752602710430187">Imprimante <ph name="PRINTER_NAME" /> ajoutée</translation>
 <translation id="2464089476039395325">Mandataire HTTP</translation>
-<translation id="2467267713099745100">Réseau <ph name="NETWORK_TYPE" /> : désactivé</translation>
+<translation id="2467267713099745100">Réseau <ph name="NETWORK_TYPE" />; désactivé</translation>
 <translation id="2468205691404969808">Utilise des témoins pour mémoriser vos préférences, même si vous ne visitez pas ces pages</translation>
 <translation id="2468402215065996499">Tamagotchi</translation>
 <translation id="2469259292033957819">Vous n'avez aucune imprimante enregistrée.</translation>
@@ -1304,7 +1304,7 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="2806891468525657116">Le raccourci existe déjà</translation>
 <translation id="2807517655263062534">Les fichiers que vous téléchargez apparaissent ici</translation>
 <translation id="2809586584051668049">et <ph name="NUMBER_ADDITIONAL_DISABLED" /> autres</translation>
-<translation id="2810390687497823527">Si vous ne reconnaissez pas une extension, ou si votre navigateur ne fonctionne pas comme prévu, vous pouvez ici désactiver ou personnaliser les extensions.</translation>
+<translation id="2810390687497823527">Si vous ne reconnaissez pas une extension, ou si votre navigateur ne fonctionne pas comme prévu, vous pouvez désactiver ou personnaliser les extensions ici.</translation>
 <translation id="2812049959647166806">Les connexions Thunderbolt ne sont pas prises en charge</translation>
 <translation id="2812944337881233323">Essayez de vous déconnecter et de vous reconnecter</translation>
 <translation id="2812989263793994277">Ne pas afficher les images</translation>
@@ -1528,7 +1528,7 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="3143515551205905069">Annuler la synchronisation</translation>
 <translation id="3143754809889689516">Faire jouer depuis le début</translation>
 <translation id="3144647712221361880">Ouvrir le lien en tant que</translation>
-<translation id="3145187901750964977">Impossible d'installer la machine virtuelle. Veuillez essayer de nouveau, ou communiquer avec l'administrateur des appareils de votre organisation. Code d'erreur : <ph name="ERROR_CODE" />.</translation>
+<translation id="3145187901750964977">Impossible d'installer la machine virtuelle. Veuillez essayer de nouveau ou communiquer avec l'administrateur des appareils de votre organisation. Code d'erreur : <ph name="ERROR_CODE" />.</translation>
 <translation id="3149477159749171726">Version :
     <ph name="LINUX_VERSION" />
 
@@ -1567,7 +1567,7 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="3192947282887913208">Fichiers audio</translation>
 <translation id="3194737229810486521">L'URL <ph name="URL" /> veut stocker de façon permanente des données sur votre appareil</translation>
 <translation id="3199127022143353223">Serveurs</translation>
-<translation id="3201306578844503970">Impossible d'installer la machine virtuelle en raison d'une erreur réseau. Veuillez essayer de nouveau, ou communiquer avec l'administrateur des appareils de votre organisation. Code d'erreur : <ph name="ERROR_CODE" />.</translation>
+<translation id="3201306578844503970">Impossible d'installer la machine virtuelle en raison d'une erreur réseau. Veuillez essayer de nouveau ou communiquer avec l'administrateur des appareils de votre organisation. Code d'erreur : <ph name="ERROR_CODE" />.</translation>
 <translation id="3201422919974259695">Les appareils USB disponibles s'afficheront ici.</translation>
 <translation id="3202131003361292969">Chemin d'accès</translation>
 <translation id="3202173864863109533">L'audio de cet onglet est désactivé.</translation>
@@ -2503,7 +2503,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4549791035683739768">Votre clé de sécurité ne contient aucune empreinte digitale enregistrée</translation>
 <translation id="4551763574344810652">Appuyez sur <ph name="MODIFIER_KEY_DESCRIPTION" /> pour annuler l'action</translation>
 <translation id="4552089082226364758">Flash</translation>
-<translation id="4552759165874948005">Réseau : <ph name="NETWORK_TYPE" />; intensité du signal : <ph name="SIGNAL_STRENGTH" /> %</translation>
+<translation id="4552759165874948005">Réseau <ph name="NETWORK_TYPE" />; intensité du signal : <ph name="SIGNAL_STRENGTH" /> %</translation>
 <translation id="4554591392113183336">La version d'extension externe est égale ou inférieure à celle existante.</translation>
 <translation id="4555769855065597957">Ombre</translation>
 <translation id="4555863373929230635">Pour enregistrer des mots de passe dans votre compte Google, connectez-vous et activez la synchronisation.</translation>
@@ -2766,7 +2766,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4943691134276646401">« <ph name="CHROME_EXTENSION_NAME" /> » veut se connecter à un port de série</translation>
 <translation id="4944310289250773232">Ce service d'authentification est hébergé par <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">Actions</translation>
-<translation id="4952981627953231344">L'utilisation de Plugin VM n'est pas permise sur cet appareil. Communiquez avec l'administrateur des appareils de votre organisation</translation>
+<translation id="4952981627953231344">L'utilisation de Plugin VM n'est pas permise sur cet appareil. Communiquez avec l'administrateur des appareils de votre organisation.</translation>
 <translation id="4953689047182316270">Répondre aux événements d'accessibilité</translation>
 <translation id="4953808748584563296">Avatar orange par défaut</translation>
 <translation id="4955710816792587366">Choisir votre NIP</translation>
@@ -3524,7 +3524,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6053401458108962351">&amp;Effacer les données de navigation…</translation>
 <translation id="6055171183283175969">Le mot de passe saisi est non valide.</translation>
 <translation id="6055392876709372977">PKCS #1 SHA-256 avec chiffrement RSA</translation>
-<translation id="6055907707645252013">Réseau <ph name="NETWORK_TYPE" /> : non connecté</translation>
+<translation id="6055907707645252013">Réseau <ph name="NETWORK_TYPE" />; non connecté</translation>
 <translation id="6056710589053485679">Actualisation normale</translation>
 <translation id="6057381398996433816">L'utilisation de capteurs de mouvement et de luminosité a été bloquée pour ce site.</translation>
 <translation id="6058567592298841668">Plugiciel de machine virtuelle : <ph name="PLUGIN_VM_NAME" /></translation>
@@ -3588,7 +3588,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6136114942382973861">Fermer la barre des téléchargements</translation>
 <translation id="6137767437444130246">Certificat utilisateur</translation>
 <translation id="6138680304137685902">Signature X9.62 ECDSA avec SHA-384</translation>
-<translation id="6138894911715675297"><ph name="NETWORK_TYPE" />, aucun réseau</translation>
+<translation id="6138894911715675297"><ph name="NETWORK_TYPE" />; aucun réseau</translation>
 <translation id="6141988275892716286">Confirmer le téléchargement</translation>
 <translation id="6143186082490678276">Obtenir de l'aide</translation>
 <translation id="6144938890088808325">Aidez-nous à améliorer les Chromebook</translation>
@@ -3998,7 +3998,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6769712124046837540">Ajout d'une imprimante en cours…</translation>
 <translation id="6770664076092644100">Vérifier par l'intermédiaire de la technologie NFC</translation>
 <translation id="6771503742377376720">Est une autorité de certification</translation>
-<translation id="6772339735733515807">Gérer vos extensions</translation>
+<translation id="6772339735733515807">Gérez vos extensions</translation>
 <translation id="6775163072363532304">Les appareils accessibles s'afficheront ici.</translation>
 <translation id="6777817260680419853">Redirection bloquée</translation>
 <translation id="6778737459546443941">L'un de tes parents n'a pas encore donné son autorisation</translation>
@@ -4870,7 +4870,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7987814697832569482">Toujours se connecter au moyen de ce RPV</translation>
 <translation id="7988355189918024273">Activer les fonctionnalités d'accessibilité</translation>
 <translation id="7991296728590311172">Paramètres de Switch Access</translation>
-<translation id="7994350303002908848">Impossible d'installer Plugin VM. Veuillez essayer de nouveau, ou communiquer avec l'administrateur des appareils de votre organisation. Code d'erreur : <ph name="ERROR_CODE" />.</translation>
+<translation id="7994350303002908848">Impossible d'installer Plugin VM. Veuillez essayer de nouveau ou communiquer avec l'administrateur des appareils de votre organisation. Code d'erreur : <ph name="ERROR_CODE" />.</translation>
 <translation id="7994702968232966508">Méthode EAP</translation>
 <translation id="7997826902155442747">Priorité de processus</translation>
 <translation id="7999229196265990314">Les fichiers suivants ont été créés :
@@ -5162,7 +5162,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8400146488506985033">Gérer les personnes</translation>
 <translation id="8401432541486058167">Entrez le NIP associé à votre carte à puce.</translation>
 <translation id="8405046151008197676">Consultez les faits saillants de la dernière mise à jour</translation>
-<translation id="8408068190360279472">Réseau : <ph name="NETWORK_TYPE" />. Connexion en cours…</translation>
+<translation id="8408068190360279472">Réseau <ph name="NETWORK_TYPE" />; connexion en cours…</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Demander d'abord (recommandé)</translation>
 <translation id="8418445294933751433">Afficher dan&amp;s un onglet</translation>

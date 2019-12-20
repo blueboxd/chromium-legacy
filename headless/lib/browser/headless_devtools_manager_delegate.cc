@@ -26,7 +26,7 @@ void HeadlessDevToolsManagerDelegate::HandleCommand(
     content::DevToolsAgentHost* agent_host,
     content::DevToolsAgentHostClient* client,
     const std::string& method,
-    const std::string& message,
+    base::span<const uint8_t> message,
     NotHandledCallback callback) {
   DCHECK(sessions_.find(client) != sessions_.end());
   sessions_[client]->HandleCommand(method, message, std::move(callback));

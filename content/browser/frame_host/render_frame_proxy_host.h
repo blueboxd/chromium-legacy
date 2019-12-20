@@ -16,9 +16,9 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "third_party/blink/public/common/input/web_scroll_types.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
-#include "third_party/blink/public/platform/web_scroll_types.h"
 
 struct FrameHostMsg_OpenURL_Params;
 struct FrameMsg_PostMessage_Params;

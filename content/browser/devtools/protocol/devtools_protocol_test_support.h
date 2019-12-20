@@ -129,7 +129,7 @@ class DevToolsProtocolTest : public ContentBrowserTest,
  private:
   void RunLoopUpdatingQuitClosure();
   void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
-                               const std::string& message) override;
+                               base::span<const uint8_t> message) override;
 
   void AgentHostClosed(DevToolsAgentHost* agent_host) override;
 

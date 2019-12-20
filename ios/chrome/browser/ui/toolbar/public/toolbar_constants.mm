@@ -16,7 +16,7 @@ const CGFloat kNTPBackgroundColorBrightnessIncognito = 34.0 / 255.0;
 
 const CGFloat kTopButtonsBottomMargin = 3.0f;
 const CGFloat kBottomButtonsBottomMargin = 2.0f;
-const CGFloat kAdaptiveToolbarMargin = 4.0f;
+const CGFloat kAdaptiveToolbarMargin = 10.0f;
 const CGFloat kAdaptiveToolbarStackViewSpacing = 11.0f;
 
 const CGFloat kProgressBarHeight = 2.0f;

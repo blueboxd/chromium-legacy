@@ -265,7 +265,8 @@ void ShellDevToolsBindings::HandleMessageFromDevToolsFrontend(
     std::string protocol_message;
     if (!agent_host_ || !params->GetString(0, &protocol_message))
       return;
-    agent_host_->DispatchProtocolMessage(this, protocol_message);
+    agent_host_->DispatchProtocolMessage(
+        this, base::as_bytes(base::make_span(protocol_message)));
   } else if (method == "loadCompleted") {
     web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
         base::ASCIIToUTF16("DevToolsAPI.setUseSoftMenu(true);"),
@@ -372,10 +373,12 @@ void ShellDevToolsBindings::HandleMessageFromDevToolsFrontend(
 
 void ShellDevToolsBindings::DispatchProtocolMessage(
     DevToolsAgentHost* agent_host,
-    const std::string& message) {
-  if (message.length() < kShellMaxMessageChunkSize) {
+    base::span<const uint8_t> message) {
+  base::StringPiece str_message(reinterpret_cast<const char*>(message.data()),
+                                message.size());
+  if (str_message.length() < kShellMaxMessageChunkSize) {
     std::string param;
-    base::EscapeJSONString(message, true, &param);
+    base::EscapeJSONString(str_message, true, &param);
     std::string code = "DevToolsAPI.dispatchMessage(" + param + ");";
     base::string16 javascript = base::UTF8ToUTF16(code);
     web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
@@ -383,12 +386,12 @@ void ShellDevToolsBindings::DispatchProtocolMessage(
     return;
   }
 
-  size_t total_size = message.length();
-  for (size_t pos = 0; pos < message.length();
+  size_t total_size = str_message.length();
+  for (size_t pos = 0; pos < str_message.length();
        pos += kShellMaxMessageChunkSize) {
     std::string param;
-    base::EscapeJSONString(message.substr(pos, kShellMaxMessageChunkSize), true,
-                           &param);
+    base::EscapeJSONString(str_message.substr(pos, kShellMaxMessageChunkSize),
+                           true, &param);
     std::string code = "DevToolsAPI.dispatchMessageChunk(" + param + "," +
                        std::to_string(pos ? 0 : total_size) + ");";
     base::string16 javascript = base::UTF8ToUTF16(code);

@@ -22,7 +22,7 @@
 #include "content/public/test/test_renderer_host.h"
 #include "net/base/ip_endpoint.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "url/gurl.h"
 
 namespace page_load_metrics {

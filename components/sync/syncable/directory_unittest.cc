@@ -8,6 +8,7 @@
 
 #include <cstdlib>
 
+#include "base/bind_helpers.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -78,7 +79,7 @@ DirOpenResult SyncableDirectoryTest::ReopenDirectory() {
   // performance benefits of not writing to disk.
   dir_ = std::make_unique<Directory>(
       std::make_unique<TestDirectoryBackingStore>(kDirectoryName, &connection_),
-      MakeWeakHandle(handler_.GetWeakPtr()), base::Closure(), nullptr);
+      MakeWeakHandle(handler_.GetWeakPtr()), base::NullCallback(), nullptr);
 
   DirOpenResult open_result =
       dir_->Open(kDirectoryName, &delegate_, NullTransactionObserver());

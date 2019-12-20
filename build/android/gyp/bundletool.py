@@ -27,7 +27,7 @@ BUNDLETOOL_JAR_PATH = os.path.join(
 def RunBundleTool(args):
   args = [build_utils.JAVA_PATH, '-jar', BUNDLETOOL_JAR_PATH] + args
   logging.debug(' '.join(args))
-  build_utils.CheckOutput(
+  return build_utils.CheckOutput(
       args,
       print_stdout=True,
       print_stderr=True,

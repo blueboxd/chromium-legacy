@@ -227,9 +227,9 @@ class VIEWS_EXPORT TableView
  protected:
   // View overrides:
   gfx::Point GetKeyboardContextMenuLocation() override;
-  void OnPaint(gfx::Canvas* canvas) override;
   void OnFocus() override;
   void OnBlur() override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
  private:
   friend class TableViewTestHelper;
@@ -251,6 +251,8 @@ class VIEWS_EXPORT TableView
     int min_column = 0;
     int max_column = 0;
   };
+
+  void OnPaintImpl(gfx::Canvas* canvas);
 
   // Returns the horizontal margin between the bounds of a cell and its
   // contents.

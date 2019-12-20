@@ -10,7 +10,7 @@
 #include "content/renderer/render_view_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/web_mouse_event.h"
+#include "third_party/blink/public/common/input/web_mouse_event.h"
 
 using ::testing::_;
 

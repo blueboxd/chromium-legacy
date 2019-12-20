@@ -11,7 +11,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -28,7 +27,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * Tests that TabCallback methods are invoked as expected.
  */
-@RunWith(BaseJUnit4ClassRunner.class)
+@RunWith(WebLayerJUnit4ClassRunner.class)
 public class TabCallbackTest {
     @Rule
     public InstrumentationActivityTestRule mActivityTestRule =

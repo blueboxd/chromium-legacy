@@ -25,7 +25,7 @@ void MockModelTypeProcessor::ConnectSync(
 
 void MockModelTypeProcessor::DisconnectSync() {
   if (!disconnect_callback_.is_null()) {
-    disconnect_callback_.Run();
+    std::move(disconnect_callback_).Run();
   }
 }
 
@@ -193,8 +193,8 @@ CommitResponseData MockModelTypeProcessor::GetCommitResponse(
 }
 
 void MockModelTypeProcessor::SetDisconnectCallback(
-    const DisconnectCallback& callback) {
-  disconnect_callback_ = callback;
+    DisconnectCallback callback) {
+  disconnect_callback_ = std::move(callback);
 }
 
 void MockModelTypeProcessor::SetCommitRequest(

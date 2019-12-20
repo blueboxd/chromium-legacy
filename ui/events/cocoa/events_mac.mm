@@ -196,6 +196,8 @@ bool GetScrollOffsets(const PlatformEvent& native_event,
 
   // If a user just rests two fingers on the touchpad without moving, AppKit
   // uses NSEventPhaseMayBegin. Treat this the same as NSEventPhaseBegan.
+  // TODO(bokan): Now that ui::ScrollEvent supports the scroll phase as well as
+  // the momentum phase, we should plumb these through individually.
   const NSUInteger kBeginPhaseMask = NSEventPhaseBegan | NSEventPhaseMayBegin;
   const NSUInteger kEndPhaseMask = NSEventPhaseCancelled | NSEventPhaseEnded;
 

@@ -157,6 +157,10 @@ void UnifiedMessageCenterView::ExpandMessageCenter() {
   message_center_bubble_->ExpandMessageCenter();
 }
 
+bool UnifiedMessageCenterView::IsNotificationBarVisible() {
+  return notification_bar_->GetVisible();
+}
+
 void UnifiedMessageCenterView::OnNotificationSlidOut() {
   if (notification_bar_->GetVisible() &&
       message_list_view_->GetTotalNotificationCount() <= 1) {

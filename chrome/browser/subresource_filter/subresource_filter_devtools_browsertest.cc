@@ -27,7 +27,7 @@ class TestClient : public content::DevToolsAgentHostClient {
   TestClient() {}
   ~TestClient() override {}
   void DispatchProtocolMessage(content::DevToolsAgentHost* agent_host,
-                               const std::string& message) override {}
+                               base::span<const uint8_t> message) override {}
   void AgentHostClosed(content::DevToolsAgentHost* agent_host) override {}
 };
 
@@ -39,8 +39,9 @@ class ScopedDevtoolsOpener {
     EXPECT_TRUE(agent_host_);
     agent_host_->AttachClient(&test_client_);
     // Send Page.enable, which is required before any Page methods.
+    constexpr char kMsg[] = R"({"id": 0, "method": "Page.enable"})";
     agent_host_->DispatchProtocolMessage(
-        &test_client_, "{\"id\": 0, \"method\": \"Page.enable\"}");
+        &test_client_, base::as_bytes(base::make_span(kMsg, strlen(kMsg))));
   }
 
   explicit ScopedDevtoolsOpener(content::WebContents* web_contents)
@@ -60,7 +61,8 @@ class ScopedDevtoolsOpener {
     std::string json_string;
     JSONStringValueSerializer serializer(&json_string);
     ASSERT_TRUE(serializer.Serialize(ad_blocking_command));
-    agent_host_->DispatchProtocolMessage(&test_client_, json_string);
+    agent_host_->DispatchProtocolMessage(
+        &test_client_, base::as_bytes(base::make_span(json_string)));
   }
 
  private:

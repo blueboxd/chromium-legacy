@@ -8230,6 +8230,11 @@ MULTI_THREAD_TEST_F(
 
 class LayerTreeHostTestImageDecodingHints : public LayerTreeHostTest {
  public:
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    LayerTreeHostTest::InitializeSettings(settings);
+    settings->enable_checker_imaging = true;
+  }
+
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void SetupTree() override {

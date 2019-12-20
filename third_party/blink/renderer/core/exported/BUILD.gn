@@ -48,7 +48,6 @@ blink_core_sources("exported") {
     "web_navigation_params.cc",
     "web_node.cc",
     "web_option_element.cc",
-    "web_page_importance_signals.cc",
     "web_page_popup_impl.cc",
     "web_page_popup_impl.h",
     "web_performance.cc",

@@ -267,15 +267,15 @@ void UrlFetchRequestBase::Start(const std::string& access_token,
   DCHECK(!access_token.empty());
   DCHECK(!callback.is_null());
   DCHECK(re_authenticate_callback_.is_null());
-  Prepare(base::Bind(&UrlFetchRequestBase::StartAfterPrepare,
-                     weak_ptr_factory_.GetWeakPtr(), access_token,
-                     custom_user_agent, callback));
+  Prepare(base::BindOnce(&UrlFetchRequestBase::StartAfterPrepare,
+                         weak_ptr_factory_.GetWeakPtr(), access_token,
+                         custom_user_agent, callback));
 }
 
-void UrlFetchRequestBase::Prepare(const PrepareCallback& callback) {
+void UrlFetchRequestBase::Prepare(PrepareCallback callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(!callback.is_null());
-  callback.Run(HTTP_SUCCESS);
+  std::move(callback).Run(HTTP_SUCCESS);
 }
 
 void UrlFetchRequestBase::StartAfterPrepare(
@@ -894,34 +894,35 @@ std::vector<std::string> MultipartUploadRequestBase::GetExtraRequestHeaders()
   return std::vector<std::string>();
 }
 
-void MultipartUploadRequestBase::Prepare(const PrepareCallback& callback) {
+void MultipartUploadRequestBase::Prepare(PrepareCallback callback) {
   // If the request is cancelled, the request instance will be deleted in
   // |UrlFetchRequestBase::Cancel| and OnPrepareUploadContent won't be called.
   std::string* const upload_content_type = new std::string();
   std::string* const upload_content_data = new std::string();
   PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
-      base::Bind(&GetMultipartContent, boundary_, metadata_json_, content_type_,
-                 local_path_, base::Unretained(upload_content_type),
-                 base::Unretained(upload_content_data)),
-      base::Bind(&MultipartUploadRequestBase::OnPrepareUploadContent,
-                 weak_ptr_factory_.GetWeakPtr(), callback,
-                 base::Owned(upload_content_type),
-                 base::Owned(upload_content_data)));
+      base::BindOnce(&GetMultipartContent, boundary_, metadata_json_,
+                     content_type_, local_path_,
+                     base::Unretained(upload_content_type),
+                     base::Unretained(upload_content_data)),
+      base::BindOnce(&MultipartUploadRequestBase::OnPrepareUploadContent,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     base::Owned(upload_content_type),
+                     base::Owned(upload_content_data)));
 }
 
 void MultipartUploadRequestBase::OnPrepareUploadContent(
-    const PrepareCallback& callback,
+    PrepareCallback callback,
     std::string* upload_content_type,
     std::string* upload_content_data,
     bool result) {
   if (!result) {
-    callback.Run(DRIVE_FILE_ERROR);
+    std::move(callback).Run(DRIVE_FILE_ERROR);
     return;
   }
   upload_content_type_.swap(*upload_content_type);
   upload_content_data_.swap(*upload_content_data);
-  callback.Run(HTTP_SUCCESS);
+  std::move(callback).Run(HTTP_SUCCESS);
 }
 
 void MultipartUploadRequestBase::SetBoundaryForTesting(

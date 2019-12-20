@@ -38,11 +38,11 @@ SyncStoppedReporter::SyncStoppedReporter(
     const GURL& sync_service_url,
     const std::string& user_agent,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    const ResultCallback& callback)
+    ResultCallback callback)
     : sync_event_url_(GetSyncEventURL(sync_service_url)),
       user_agent_(user_agent),
       url_loader_factory_(std::move(url_loader_factory)),
-      callback_(callback) {
+      callback_(std::move(callback)) {
   DCHECK(!sync_service_url.is_empty());
   DCHECK(!user_agent_.empty());
   DCHECK(url_loader_factory_);
@@ -117,7 +117,7 @@ void SyncStoppedReporter::OnSimpleLoaderComplete(
   timer_.Stop();
   if (!callback_.is_null()) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback_, result));
+        FROM_HERE, base::BindOnce(std::move(callback_), result));
   }
 }
 
@@ -125,7 +125,7 @@ void SyncStoppedReporter::OnTimeout() {
   simple_url_loader_.reset();
   if (!callback_.is_null()) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback_, RESULT_TIMEOUT));
+        FROM_HERE, base::BindOnce(std::move(callback_), RESULT_TIMEOUT));
   }
 }
 

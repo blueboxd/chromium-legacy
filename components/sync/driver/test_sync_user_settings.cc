@@ -196,10 +196,6 @@ bool TestSyncUserSettings::SetDecryptionPassphrase(
   return false;
 }
 
-void TestSyncUserSettings::AddTrustedVaultDecryptionKeys(
-    const std::string& gaia_id,
-    const std::vector<std::string>& keys) {}
-
 void TestSyncUserSettings::SetFirstSetupComplete() {
   first_setup_complete_ = true;
 }

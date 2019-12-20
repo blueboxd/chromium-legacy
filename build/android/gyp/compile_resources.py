@@ -22,6 +22,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import textwrap
 import zipfile
 from xml.etree import ElementTree
@@ -718,7 +719,7 @@ def _PackageApk(options, build):
 
   # Note: only one of --proto-format, --shared-lib or --app-as-shared-lib
   #       can be used with recent versions of aapt2.
-  if options.shared_resources and not options.proto_path:
+  if options.shared_resources:
     link_command.append('--shared-lib')
 
   if options.no_xml_namespaces:
@@ -756,10 +757,12 @@ def _PackageApk(options, build):
   for partial in partials:
     link_command += ['-R', partial]
 
-  if options.proto_path:
-    link_command += ['--proto-format', '-o', build.proto_path]
-  else:
-    link_command += ['-o', build.arsc_path]
+  # We always create a binary arsc file first, then convert to proto, so flags
+  # such as --shared-lib can be supported.
+  arsc_path = build.arsc_path
+  if arsc_path is None:
+    _, arsc_path = tempfile.mkstmp()
+  link_command += ['-o', build.arsc_path]
 
   link_proc = subprocess.Popen(link_command)
 
@@ -784,10 +787,13 @@ def _PackageApk(options, build):
                   '''.format(package=desired_manifest_package_name)
       proguard_file.write(textwrap.dedent(keep_rule))
 
-  if options.proto_path and options.arsc_path:
-    build_utils.CheckOutput([
-        options.aapt2_path, 'convert', '-o', build.arsc_path, build.proto_path
-    ])
+  build_utils.CheckOutput([
+      options.aapt2_path, 'convert', '--output-format', 'proto', '-o',
+      build.proto_path, build.arsc_path
+  ])
+
+  if build.arsc_path is None:
+    os.remove(arsc_path)
 
   if options.optimized_proto_path:
     _OptimizeApk(build.optimized_proto_path, options, build.temp_dir,

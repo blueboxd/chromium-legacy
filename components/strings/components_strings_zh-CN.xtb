@@ -286,7 +286,7 @@
 <translation id="2270484714375784793">电话号码</translation>
 <translation id="2277103315734023688">快进</translation>
 <translation id="2283340219607151381">保存并填写地址</translation>
-<translation id="2288422996159078444">您输入的任何内容、查看的任何网页或从事的任何其他网络活动都正被监视。网站上的内容可能会在您不知情的情况下遭到改动。</translation>
+<translation id="2288422996159078444">您输入的任何内容、查看的任何网页或从事的任何其他网络活动都在被监视。网站上的内容可能会在您不知情的情况下遭到改动。</translation>
 <translation id="2289385804009217824">裁切</translation>
 <translation id="2292556288342944218">您被禁止访问互联网</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
@@ -846,7 +846,7 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">（64 位）</translation>
-<translation id="5121469660360593280">与您的管理员分享“Chrome 企业级用户保护”功能所报告的安全性事件的相关数据。这可能包括您所访网页的网址、文件名或元数据，以及您在登录设备和 Chrome 时使用的用户名。</translation>
+<translation id="5121469660360593280">与您的管理员分享“Chrome 企业级用户保护”功能报告的安全性事件的相关数据。这可能包括您所访问网页的网址、文件名或元数据，以及您在登录设备和 Chrome 时使用的用户名。</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">验证您的银行卡</translation>
 <translation id="5135404736266831032">管理地址…</translation>
@@ -1059,7 +1059,7 @@
 <translation id="6094273045989040137">注释</translation>
 <translation id="6104072995492677441">JIS B6</translation>
 <translation id="610911394827799129">您的 Google 帐号在 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 上可能有其他形式的浏览记录</translation>
-<translation id="6120179357481664955">还记得您的 UPI ID 吗？</translation>
+<translation id="6120179357481664955">要记住您的 UPI ID 吗？</translation>
 <translation id="6132597952260690497">与已安装的扩展程序和插件相关的信息</translation>
 <translation id="6146055958333702838">请检查所有网线是否都已连好，然后重新启动您可能正在使用的任何路由器、调制解调器或其他网络设备。</translation>
 <translation id="614940544461990577">请试试以下办法：</translation>

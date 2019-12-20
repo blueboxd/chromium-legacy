@@ -18,6 +18,7 @@
 import re
 import gdb
 import sys
+from builtins import chr
 
 if sys.version_info[0] > 2:
     # Python 3 stuff
@@ -148,7 +149,7 @@ class StringPrinter:
             len = sl['__size_']
             ptr = sl['__data_']
 
-        return u''.join(unichr(ptr[i]) for i in range(len))
+        return u''.join(chr(ptr[i]) for i in range(len))
 
     def display_hint(self):
         return 'string'

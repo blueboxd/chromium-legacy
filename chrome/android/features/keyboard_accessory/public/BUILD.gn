@@ -11,11 +11,11 @@ android_library("public_java") {
     "//components/autofill/android:autofill_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
   ]
-  java_files = [
+  sources = [
     "java/src/org/chromium/chrome/browser/keyboard_accessory/ManualFillingComponent.java",
     "java/src/org/chromium/chrome/browser/keyboard_accessory/data/KeyboardAccessoryData.java",
-    "java/src/org/chromium/chrome/browser/keyboard_accessory/data/Provider.java",
     "java/src/org/chromium/chrome/browser/keyboard_accessory/data/PropertyProvider.java",
+    "java/src/org/chromium/chrome/browser/keyboard_accessory/data/Provider.java",
     "java/src/org/chromium/chrome/browser/keyboard_accessory/data/UserInfoField.java",
   ]
   srcjar_deps = [ ":java_enums_srcjar" ]

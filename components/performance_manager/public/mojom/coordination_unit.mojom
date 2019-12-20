@@ -37,6 +37,8 @@ interface DocumentCoordinationUnit {
   SetNetworkAlmostIdle();
   SetLifecycleState(LifecycleState state);
   SetHasNonEmptyBeforeUnload(bool has_nonempty_beforeunload);
+  // Called the first time a form in this document is interacted with.
+  SetHadFormInteraction();
 
   // Sets the freeze policy set via origin trial for the document. Invoked once
   // after finishing to parse the document. The freeze policies of all frames on

@@ -39,6 +39,7 @@
 #include "media/blink/learning_experiment_helper.h"
 #include "media/blink/media_blink_export.h"
 #include "media/blink/multibuffer_data_source.h"
+#include "media/blink/power_status_helper.h"
 #include "media/blink/video_frame_compositor.h"
 #include "media/blink/webmediaplayer_params.h"
 #include "media/filters/pipeline_controller.h"
@@ -1013,6 +1014,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   SimpleWatchTimer simple_watch_timer_;
 
   LearningExperimentHelper will_play_helper_;
+
+  std::unique_ptr<PowerStatusHelper> power_status_helper_;
 
   base::WeakPtr<WebMediaPlayerImpl> weak_this_;
   base::WeakPtrFactory<WebMediaPlayerImpl> weak_factory_{this};

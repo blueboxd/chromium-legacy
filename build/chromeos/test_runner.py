@@ -412,6 +412,7 @@ class GTestTest(RemoteTest):
 
     self._on_device_script = None
     self._stop_ui = args.stop_ui
+    self._trace_dir = args.trace_dir
 
   @property
   def suite_name(self):
@@ -443,6 +444,22 @@ class GTestTest(RemoteTest):
           result_dir,
       ]
 
+    if self._trace_dir and self._logs_dir:
+      trace_path = os.path.dirname(self._trace_dir) or '.'
+      if os.path.abspath(trace_path) != os.path.abspath(self._logs_dir):
+        raise TestFormatError(
+            '--trace-dir and --logs-dir must point to the same directory.')
+
+    if self._trace_dir:
+      trace_path, trace_dirname = os.path.split(self._trace_dir)
+      device_trace_dir = '/tmp/%s' % trace_dirname
+      self._test_cmd += [
+          '--results-src',
+          device_trace_dir,
+          '--results-dest-dir',
+          trace_path,
+      ]
+
     # Build the shell script that will be used on the device to invoke the test.
     device_test_script_contents = self.BASIC_SHELL_SCRIPT[:]
     if self._llvm_profile_var:
@@ -468,6 +485,14 @@ class GTestTest(RemoteTest):
     if self._test_launcher_summary_output:
       test_invocation += ' --test-launcher-summary-output=%s' % (
           device_result_file)
+
+    if self._trace_dir:
+      device_test_script_contents.extend([
+          'rm -rf %s' % device_trace_dir,
+          'su chronos -c -- "mkdir -p %s"' % device_trace_dir,
+      ])
+      test_invocation += ' --trace-dir=%s' % device_trace_dir
+
     if self._additional_args:
       test_invocation += ' %s' % ' '.join(self._additional_args)
 
@@ -805,6 +830,11 @@ def main():
       '--stop-ui',
       action='store_true',
       help='Will stop the UI service in the device before running the test.')
+  gtest_parser.add_argument(
+      '--trace-dir',
+      type=str,
+      help='When set, will pass down to the test to generate the trace and '
+      'retrieve the trace files to the specified location.')
 
   # Tast test args.
   # pylint: disable=line-too-long

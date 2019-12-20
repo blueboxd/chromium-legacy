@@ -78,8 +78,8 @@ class NetExportFileWriter {
     bool log_exists;
   };
 
-  using FilePathCallback = base::Callback<void(const base::FilePath&)>;
-  using DirectoryGetter = base::Callback<bool(base::FilePath*)>;
+  using FilePathCallback = base::OnceCallback<void(const base::FilePath&)>;
+  using DirectoryGetter = base::RepeatingCallback<bool(base::FilePath*)>;
 
   // Constructs a NetExportFileWriter. Only one instance is created in browser
   // process.
@@ -136,7 +136,7 @@ class NetExportFileWriter {
   //
   // |path_callback| will be executed at the end of GetFilePathToCompletedLog()
   // asynchronously.
-  void GetFilePathToCompletedLog(const FilePathCallback& path_callback) const;
+  void GetFilePathToCompletedLog(FilePathCallback path_callback) const;
 
   // Converts to/from the string representation of a capture mode used by
   // net_export.js.

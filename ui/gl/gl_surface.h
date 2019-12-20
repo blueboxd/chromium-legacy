@@ -313,14 +313,17 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
 
   static GLSurface* GetCurrent();
 
+  virtual void SetCurrent();
+  virtual bool IsCurrent();
+
  protected:
   virtual ~GLSurface();
-
-  static void SetCurrent(GLSurface* surface);
 
   static bool ExtensionsContain(const char* extensions, const char* name);
 
  private:
+  static void ClearCurrent();
+
   friend class base::RefCounted<GLSurface>;
   friend class GLContext;
 
@@ -406,6 +409,8 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   bool SupportsGpuVSync() const override;
   void SetGpuVSyncEnabled(bool enabled) override;
   void SetDisplayTransform(gfx::OverlayTransform transform) override;
+  void SetCurrent() override;
+  bool IsCurrent() override;
 
   GLSurface* surface() const { return surface_.get(); }
 

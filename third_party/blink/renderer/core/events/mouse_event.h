@@ -24,7 +24,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_MOUSE_EVENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_MOUSE_EVENT_H_
 
-#include "third_party/blink/public/platform/web_menu_source_type.h"
+#include "third_party/blink/public/common/input/web_menu_source_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/simulated_click_options.h"
 #include "third_party/blink/renderer/core/events/mouse_event_init.h"

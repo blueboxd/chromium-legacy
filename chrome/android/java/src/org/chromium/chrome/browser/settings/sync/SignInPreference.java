@@ -168,7 +168,7 @@ public class SignInPreference
         }
 
         boolean personalizedPromoDismissed = SharedPreferencesManager.getInstance().readBoolean(
-                ChromePreferenceKeys.SETTINGS_PERSONALIZED_SIGNIN_PROMO_DISMISSED, false);
+                ChromePreferenceKeys.SIGNIN_PROMO_SETTINGS_PERSONALIZED_DISMISSED, false);
         if (!mPersonalizedPromoEnabled || personalizedPromoDismissed) {
             setupGenericPromo();
             return;
@@ -280,7 +280,7 @@ public class SignInPreference
         SigninPromoUtil.setupPromoViewFromCache(
                 mSigninPromoController, mProfileDataCache, signinPromoView, () -> {
                     SharedPreferencesManager.getInstance().writeBoolean(
-                            ChromePreferenceKeys.SETTINGS_PERSONALIZED_SIGNIN_PROMO_DISMISSED,
+                            ChromePreferenceKeys.SIGNIN_PROMO_SETTINGS_PERSONALIZED_DISMISSED,
                             true);
                     update();
                 });

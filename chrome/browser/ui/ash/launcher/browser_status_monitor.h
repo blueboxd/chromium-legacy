@@ -12,7 +12,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/ui/ash/launcher/app_service_instance_registry_helper.h"
+#include "chrome/browser/ui/ash/launcher/app_service/app_service_instance_registry_helper.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker.h"

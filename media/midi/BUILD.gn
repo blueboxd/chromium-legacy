@@ -53,7 +53,7 @@ if (is_android) {
     ]
     annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 
-    java_files = [
+    sources = [
       "java/src/org/chromium/midi/MidiDeviceAndroid.java",
       "java/src/org/chromium/midi/MidiInputPortAndroid.java",
       "java/src/org/chromium/midi/MidiManagerAndroid.java",

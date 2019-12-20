@@ -31,7 +31,7 @@ android_library("glue") {
   alternative_android_sdk_dep =
       "//third_party/android_sdk:public_framework_system_java"
 
-  java_files = [
+  sources = [
     "java/src/com/android/webview/chromium/CallbackConverter.java",
     "java/src/com/android/webview/chromium/ContentSettingsAdapter.java",
     "java/src/com/android/webview/chromium/CookieManagerAdapter.java",

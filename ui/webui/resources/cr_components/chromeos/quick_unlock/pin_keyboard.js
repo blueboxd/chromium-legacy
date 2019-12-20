@@ -413,8 +413,24 @@ Polymer({
       return true;
     }
 
+    // Valid if the key is CTRL+- or CTRL+= to zoom in and out of the screen.
+    if ((event.keyCode == 187 || event.keyCode == 189) && event.ctrlKey) {
+      return true;
+    }
+
     // The rest of the keys are invalid.
     return false;
+  },
+
+  /**
+   * Called when the row container is pressed while the input element has focus.
+   * @param {Event} event The event object.
+   * @private
+   */
+  onRowContainerMousedown_: function(event) {
+    // Prevent the pin input from losing focus when extraneous areas of the
+    // row container are clicked.
+    event.preventDefault();
   },
 
   /**

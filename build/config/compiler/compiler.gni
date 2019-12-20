@@ -200,7 +200,7 @@ declare_args() {
 # results independent of the checkout and build directory names, which
 # in turn is important for goma compile hit rate.
 # Setting this to true may make it harder to debug binaries on Linux, see
-# https://chromium.googlesource.com/chromium/src/+/master/docs/linux_debugging.md#Source-level-debug-with-fdebug_compilation_dir
+# https://chromium.googlesource.com/chromium/src/+/master/docs/linux/debugging.md#Source-level-debug-with-fdebug_compilation_dir
 # It's not clear if the crash server will correctly handle dSYMs with relative
 # paths, so we disable this feature for official benefit. The main benefit is
 # deterministic builds to reduce compile times, so this is less relevant for

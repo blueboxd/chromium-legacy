@@ -326,6 +326,7 @@
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Executar o Diagnóstico de rede<ph name="END_LINK" /></translation>
 <translation id="2473195200299095979">Traduzir esta página</translation>
 <translation id="2479410451996844060">URL de pesquisa inválido.</translation>
+<translation id="2482370039860827034">Acabou de introduzir a sua palavra-passe num site fraudulento. O Chrome recomenda que aceda a <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> e outros sites em que utilize esta palavra-passe e que a altere agora.</translation>
 <translation id="2482878487686419369">Notificações</translation>
 <translation id="248348093745724435">Políticas do computador</translation>
 <translation id="2491120439723279231">O certificado do servidor contém erros.</translation>
@@ -338,6 +339,7 @@
 <translation id="2505268675989099013">Proteger conta</translation>
 <translation id="2515629240566999685">Verificar o sinal na área</translation>
 <translation id="2521385132275182522">Agrafar parte inferior direita</translation>
+<translation id="2521483867890026383">Acabou de introduzir a sua palavra-passe num site fraudulento. O Chromium recomenda que aceda a <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> e outros sites em que utilize esta palavra-passe e que a altere agora.</translation>
 <translation id="2523886232349826891">Guardado apenas neste dispositivo.</translation>
 <translation id="2524461107774643265">Adicionar mais informações</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{e mais 1}other{e mais #}}</translation>
@@ -607,6 +609,7 @@
 <translation id="3828924085048779000">Não é permitida uma frase de acesso vazia.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> instalou extensões para funções adicionais. As extensões têm acesso a alguns dos seus dados.</translation>
 <translation id="3832522519263485449">Perfuração múltipla à esquerda</translation>
+<translation id="3838154488026099170">Acabou de introduzir a sua palavra-passe num site fraudulento. O Chromium recomenda que aceda a <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> e outros sites em que utilize esta palavra-passe e que a altere agora.</translation>
 <translation id="385051799172605136">Anterior</translation>
 <translation id="3858027520442213535">Atualizar a data e a hora</translation>
 <translation id="3884278016824448484">Identificador do dispositivo em conflito</translation>
@@ -644,6 +647,7 @@
 <translation id="4072486802667267160">Ocorreu um erro ao processar a sua encomenda. Tente novamente.</translation>
 <translation id="4075732493274867456">O cliente e o servidor não suportam uma versão do protocolo SSL ou um conjunto de cifras comum.</translation>
 <translation id="4075941231477579656">Touch ID</translation>
+<translation id="4077092919748553596">Acabou de introduzir a sua palavra-passe num site fraudulento. O Chrome recomenda que aceda a <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> e outros sites em que utilize esta palavra-passe e que a altere agora.</translation>
 <translation id="4079302484614802869">A configuração do proxy está definida para utilizar um URL de script .pac e não servidores proxy fixos.</translation>
 <translation id="4082393374666368382">Definições – Gestão</translation>
 <translation id="4098354747657067197">O site seguinte é fraudulento</translation>
@@ -723,6 +727,7 @@
 <translation id="4356973930735388585">Os utilizadores mal intencionados neste site podem tentar instalar programas perigosos no seu computador que roubam ou eliminam as suas informações (por exemplo, fotos, palavras-passe, mensagens e cartões de crédito).</translation>
 <translation id="4358059973562876591">Os modelos que especificou podem não ser aplicados devido a um erro com a política DnsOverHttpsMode.</translation>
 <translation id="4358461427845829800">Gerir métodos de pagamento…</translation>
+<translation id="4359160567981085931">Acabou de introduzir a sua palavra-passe num site fraudulento. O Chrome pode ajudar. Para alterar a sua palavra-passe e notificar a Google de que a sua conta pode estar em risco, clique em Proteger conta.</translation>
 <translation id="4367563149485757821">Number-12 (Envelope)</translation>
 <translation id="437058704415269440">Saldo da conta</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
@@ -998,6 +1003,7 @@
 <translation id="5728056243719941842">C5 (Envelope)</translation>
 <translation id="5730040223043577876">O Chrome recomenda a reposição da palavra-passe se a tiver reutilizado noutros sites.</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Guardar o cartão na sua Conta Google}other{Guardar os cartões na sua Conta Google}}</translation>
+<translation id="5745980000221562234">{NUM_CARDS,plural, =1{Utilize um número virtual para este cartão}other{Selecione um cartão}}</translation>
 <translation id="5763042198335101085">Introduza um endereço de email válido</translation>
 <translation id="5763703224595565476">O seu administrador ativou o Chrome Enterprise User Protect no seu navegador. O Chrome Enterprise User Protect tem acesso a alguns dos seus dados.</translation>
 <translation id="5765072501007116331">Para ver os métodos de fornecimento e os requisitos, selecione um endereço</translation>
@@ -1014,6 +1020,7 @@
 <translation id="5804241973901381774">Permissões</translation>
 <translation id="5810442152076338065">A sua ligação a <ph name="DOMAIN" /> está encriptada através de um conjunto de cifras obsoleto.</translation>
 <translation id="5813119285467412249">&amp;Refazer adição</translation>
+<translation id="5824687817967109979">{NUM_CARDS,plural, =1{Será efetuada uma cobrança neste cartão quando pagar, mas o respetivo número verdadeiro não será partilhado com este site. Como medida de segurança adicional, será gerado um CVC temporário.}other{Será efetuada uma cobrança no cartão que selecionar quando pagar, mas o respetivo número verdadeiro não será partilhado com este site. Como medida de segurança adicional, será gerado um CVC temporário.}}</translation>
 <translation id="583281660410589416">Desconhecido</translation>
 <translation id="5838278095973806738">Não deve introduzir informações confidenciais neste site (por exemplo, palavras-passe ou números de cartões de crédito), porque podem ser roubadas por atacantes.</translation>
 <translation id="5851548754964597211">Lista de separadores</translation>
@@ -1470,6 +1477,7 @@ Detalhes adicionais:
 <translation id="8042918947222776840">Escolher método de levantamento</translation>
 <translation id="8057711352706143257">O "<ph name="SOFTWARE_NAME" />" não está configurado corretamente. Normalmente, a desinstalação do "<ph name="SOFTWARE_NAME" />" resolve o problema. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8066955247577885446">Lamentamos, mas ocorreu um erro.</translation>
+<translation id="8067872629359326442">Acabou de introduzir a sua palavra-passe num site fraudulento. O Chromium pode ajudar. Para alterar a sua palavra-passe e notificar a Google de que a sua conta pode estar em risco, clique em Proteger conta.</translation>
 <translation id="8074253406171541171">10x13 (Envelope)</translation>
 <translation id="8078141288243656252">Não é possível criar anotação se tiver sido aplicada uma rotação ao documento</translation>
 <translation id="8079031581361219619">Pretende atualizar o site?</translation>
@@ -1486,6 +1494,7 @@ Detalhes adicionais:
 <translation id="8105368624971345109">Desativar</translation>
 <translation id="8118489163946903409">Método de pagamento</translation>
 <translation id="8127301229239896662">O "<ph name="SOFTWARE_NAME" />" não foi instalado corretamente no computador ou na rede. Peça ao gestor de TI que resolva este problema.</translation>
+<translation id="8128526133099929547">Acabou de introduzir a sua palavra-passe num site fraudulento. O Chrome recomenda que aceda a <ph name="WEBSITE_1" /> e outros sites em que utilize esta palavra-passe e que a altere agora.</translation>
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8149426793427495338">O computador entrou em suspensão.</translation>
 <translation id="8150722005171944719">O ficheiro em <ph name="URL" /> não é legível. Pode ter sido removido, movido ou as permissões do ficheiro podem estar a impedir o acesso.</translation>
@@ -1503,6 +1512,7 @@ Detalhes adicionais:
 <translation id="8218327578424803826">Localização atribuída:</translation>
 <translation id="8220146938470311105">C7/C6 (Envelope)</translation>
 <translation id="8220639454292072926">Relatórios empresariais</translation>
+<translation id="8221250263817408492">Acabou de introduzir a sua palavra-passe num site fraudulento. O Chromium recomenda que aceda a <ph name="WEBSITE_1" /> e outros sites em que utilize esta palavra-passe e que a altere agora.</translation>
 <translation id="8225771182978767009">A pessoa que configurou este computador optou por bloquear este site.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">Abrir página num novo separador anónimo</translation>

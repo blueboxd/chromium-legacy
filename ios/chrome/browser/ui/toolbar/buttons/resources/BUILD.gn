@@ -90,7 +90,6 @@ imageset("toolbar_share") {
 imageset("toolbar_back") {
   sources = [
     "toolbar_back.imageset/Contents.json",
-    "toolbar_back.imageset/toolbar_back.png",
     "toolbar_back.imageset/toolbar_back@2x.png",
     "toolbar_back.imageset/toolbar_back@3x.png",
   ]
@@ -108,7 +107,6 @@ imageset("toolbar_switcher") {
 imageset("toolbar_forward") {
   sources = [
     "toolbar_forward.imageset/Contents.json",
-    "toolbar_forward.imageset/toolbar_forward.png",
     "toolbar_forward.imageset/toolbar_forward@2x.png",
     "toolbar_forward.imageset/toolbar_forward@3x.png",
   ]

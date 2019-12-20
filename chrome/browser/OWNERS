@@ -78,3 +78,6 @@ per-file chrome_content_browser_client_receiver_bindings.cc=file://ipc/SECURITY_
 per-file chrome_back_forward_cache_browsertest.cc=arthursonzogni@chromium.org
 per-file chrome_back_forward_cache_browsertest.cc=altimin@chromium.org
 per-file chrome_back_forward_cache_browsertest.cc=file://content/OWNERS
+
+# COMPONENT: UI>Browser
+# TEAM: chromium-reviews@chromium.org

@@ -278,6 +278,9 @@ bool CheckerImageTracker::ShouldCheckerImage(const DrawImage& draw_image,
   if (!enable_checker_imaging_)
     return false;
 
+  if (!image.IsLazyGenerated())
+    return false;
+
   // If the image was invalidated on the current sync tree and the tile is
   // for the active tree, continue checkering it on the active tree to ensure
   // the image update is atomic for the frame.
@@ -455,6 +458,9 @@ void CheckerImageTracker::ScheduleNextImageDecode() {
 void CheckerImageTracker::UpdateImageDecodingHints(
     base::flat_map<PaintImage::Id, PaintImage::DecodingMode>
         decoding_mode_map) {
+  if (!enable_checker_imaging_)
+    return;
+
   // Merge the |decoding_mode_map| with our member map, keeping the more
   // conservative values.
   // TODO(vmpstr): Figure out if and how do we clear this value to ensure that

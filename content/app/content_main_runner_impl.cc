@@ -883,6 +883,7 @@ int ContentMainRunnerImpl::Run(bool start_service_manager_only) {
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
 int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
                                              bool start_service_manager_only) {
+  TRACE_EVENT0("startup", "ContentMainRunnerImpl::RunServiceManager");
   if (is_browser_main_loop_started_)
     return -1;
 

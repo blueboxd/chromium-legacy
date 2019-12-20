@@ -16,7 +16,7 @@ namespace {
 
 void AssertEmptyPolicy(
     const network::OriginPolicyContentsPtr& policy_contents) {
-  ASSERT_EQ(0u, policy_contents->features.size());
+  ASSERT_FALSE(policy_contents->feature_policy.has_value());
   ASSERT_EQ(0u, policy_contents->content_security_policies.size());
   ASSERT_EQ(0u, policy_contents->content_security_policies_report_only.size());
 }
@@ -155,37 +155,77 @@ TEST(OriginPolicyParser, CSPDispositionAbsent) {
 
 TEST(OriginPolicyParser, FeatureOne) {
   auto policy_contents = OriginPolicyParser::Parse(R"(
-      { "feature-policy": ["geolocation 'self' http://maps.google.com"] } )");
-  ASSERT_EQ(1U, policy_contents->features.size());
+      { "features": { "policy":
+        "geolocation 'self' http://maps.google.com"
+      } } )");
   ASSERT_EQ("geolocation 'self' http://maps.google.com",
-            policy_contents->features[0]);
+            policy_contents->feature_policy);
 }
 
 TEST(OriginPolicyParser, FeatureTwo) {
   auto policy_contents = OriginPolicyParser::Parse(R"(
-      { "feature-policy": ["geolocation 'self' http://maps.google.com",
-                     "camera https://example.com"]} )");
-  ASSERT_EQ(2U, policy_contents->features.size());
-  ASSERT_EQ("geolocation 'self' http://maps.google.com",
-            policy_contents->features[0]);
-  ASSERT_EQ("camera https://example.com", policy_contents->features[1]);
+      { "features": { "policy":
+        "geolocation 'self' http://maps.google.com; camera https://example.com"
+      } } )");
+  ASSERT_EQ(
+      "geolocation 'self' http://maps.google.com; camera https://example.com",
+      policy_contents->feature_policy);
 }
 
-TEST(OriginPolicyParser, FeatureTwoPolicies) {
+TEST(OriginPolicyParser, FeatureTwoFeatures) {
   auto policy_contents = OriginPolicyParser::Parse(R"(
-      { "feature-policy": ["geolocation 'self' http://maps.google.com"],
-        "feature-policy": ["camera https://example.com"] } )");
+      { "features": { "policy": "geolocation 'self' http://maps.google.com" },
+        "features": { "policy": "camera https://example.com"}
+      } )");
 
-  // TODO(vogelheim): Determine whether this is the correct behaviour.
-  ASSERT_EQ(1U, policy_contents->features.size());
+  ASSERT_EQ("camera https://example.com", policy_contents->feature_policy);
 }
 
+TEST(OriginPolicyParser, FeatureTwoPolicy) {
+  auto policy_contents = OriginPolicyParser::Parse(R"(
+      { "features": { "policy": "geolocation 'self' http://maps.google.com",
+                      "policy": "camera https://example.com"
+      } } )");
+
+  ASSERT_EQ("camera https://example.com", policy_contents->feature_policy);
+}
+
+// At this level we don't validate the syntax, so commas get passed through.
+// Integration tests will show that comma-containing policies get discarded,
+// though.
 TEST(OriginPolicyParser, FeatureComma) {
   auto policy_contents = OriginPolicyParser::Parse(R"(
-      { "feature-policy": ["geolocation 'self' http://maps.google.com, camera https://example.com"]} )");
+      { "features": { "policy":
+        "geolocation 'self' http://maps.google.com, camera https://example.com"
+      } } )");
 
-  // TODO: Determine what to do with this case !
-  ASSERT_EQ(1U, policy_contents->features.size());
+  ASSERT_EQ(
+      "geolocation 'self' http://maps.google.com, camera https://example.com",
+      policy_contents->feature_policy);
+}
+
+// Similarly, complete garbage will be passed through; this is expected.
+TEST(OriginPolicyParser, FeatureGarbage) {
+  auto policy_contents = OriginPolicyParser::Parse(R"(
+      { "features": { "policy":
+        "Lorem ipsum! dolor sit amet"
+      } } )");
+
+  ASSERT_EQ("Lorem ipsum! dolor sit amet", policy_contents->feature_policy);
+}
+
+TEST(OriginPolicyParser, FeatureNonDict) {
+  auto policy_contents = OriginPolicyParser::Parse(R"(
+      { "features": "geolocation 'self' http://maps.google.com"
+      } )");
+  ASSERT_FALSE(policy_contents->feature_policy.has_value());
+}
+
+TEST(OriginPolicyParser, FeatureNonString) {
+  auto policy_contents = OriginPolicyParser::Parse(R"(
+      { "features": { "policy": ["geolocation 'self' http://maps.google.com"]
+      } )");
+  ASSERT_FALSE(policy_contents->feature_policy.has_value());
 }
 
 }  // namespace network

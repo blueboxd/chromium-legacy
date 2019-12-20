@@ -34,7 +34,7 @@ class ChromeDevToolsSession : public protocol::FrontendChannel {
 
   void HandleCommand(
       const std::string& method,
-      const std::string& message,
+      base::span<const uint8_t> message,
       content::DevToolsManagerDelegate::NotHandledCallback callback);
 
   TargetHandler* target_handler() { return target_handler_.get(); }

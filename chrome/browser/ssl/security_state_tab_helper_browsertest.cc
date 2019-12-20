@@ -1582,48 +1582,6 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithHttpWarningsDisabled,
   EXPECT_EQ(security_state::WARNING, helper->GetSecurityLevel());
 }
 
-// A Browser subclass that keeps track of messages that have been
-// added to the console. Messages can be retrieved or cleared with
-// console_messages() and ClearConsoleMessages(). The user of this class
-// can set a callback to run when the next console message notification
-// arrives.
-class ConsoleWebContentsDelegate : public Browser {
- public:
-  explicit ConsoleWebContentsDelegate(const Browser::CreateParams& params)
-      : Browser(params) {}
-  ~ConsoleWebContentsDelegate() override {}
-
-  const std::vector<base::string16>& console_messages() const {
-    return console_messages_;
-  }
-
-  void set_console_message_callback(const base::Closure& callback) {
-    console_message_callback_ = callback;
-  }
-
-  void ClearConsoleMessages() { console_messages_.clear(); }
-
-  // content::WebContentsDelegate
-  bool DidAddMessageToConsole(content::WebContents* source,
-                              blink::mojom::ConsoleMessageLevel log_level,
-                              const base::string16& message,
-                              int32_t line_no,
-                              const base::string16& source_id) override {
-    console_messages_.push_back(message);
-    if (!console_message_callback_.is_null()) {
-      console_message_callback_.Run();
-      console_message_callback_.Reset();
-    }
-    return true;
-  }
-
- private:
-  std::vector<base::string16> console_messages_;
-  base::Closure console_message_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(ConsoleWebContentsDelegate);
-};
-
 // Tests that the security state for a WebContents is up to date when the
 // WebContents is inserted into a Browser's TabStripModel.
 IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, AddedTab) {

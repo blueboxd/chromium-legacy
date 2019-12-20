@@ -9,7 +9,7 @@
 # https://chromium.googlesource.com/chromium/src/+/master/docs/testing/web_test_expectations.md
 
 # Those stress V8's simulator, making them very slow under MSan.
-crbug.com/420198 [ Linux ] fast/js/regress [ Skip ]
+crbug.com/420198 [ Linux ] fast/js/regress/* [ Skip ]
 crbug.com/420198 [ Linux ] fast/css/fontface-arraybuffer.html [ Skip ]
 
 # Deliberate infinite recursion. A JS exception is expected, but may crash with
@@ -17,7 +17,7 @@ crbug.com/420198 [ Linux ] fast/css/fontface-arraybuffer.html [ Skip ]
 crbug.com/420606 [ Linux ] external/wpt/workers/constructors/Worker/Worker-constructor.html [ Skip ]
 
 # Flaky under MSan (hang forever).
-crbug.com/422982 [ Linux ] virtual/threaded [ Skip ]
+crbug.com/422982 [ Linux ] virtual/threaded/* [ Skip ]
 
 crbug.com/700795 [ Linux ] http/tests/devtools/animation/animation-transition-setTiming-crash.js [ Skip ]
 
@@ -61,7 +61,7 @@ crbug.com/810963 [ Linux ] external/wpt/dom/interfaces.html [ Timeout ]
 crbug.com/577889 [ Linux ] fast/js/typed-array-allocation-failure.html [ Crash ]
 
 # These tests use OpenGl, which crashes on MSAN builds due to missing instrumentation
-crbug.com/555703 [ Linux ] virtual/media-gpu-accelerated [ Skip ]
+crbug.com/555703 [ Linux ] virtual/media-gpu-accelerated/* [ Skip ]
 
 crbug.com/769729 [ Linux ] paint/invalidation/video-paint-invalidation.html [ Crash ]
 

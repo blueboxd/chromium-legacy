@@ -31,7 +31,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 
 // Use a 1-day max for tab visibility histograms since it's not uncommon to keep
 // a tab in the same visibility state for a very long time (see Tab.VisibleTime

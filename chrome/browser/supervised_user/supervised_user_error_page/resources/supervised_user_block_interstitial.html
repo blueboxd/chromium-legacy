@@ -13,9 +13,11 @@
 <script src="supervised_user_block_interstitial.js"></script>
 </head>
 <body class="supervised-user-block">
-<div class="main-frame-blocked">
-  <div id="information-container">
-    <div class="icon" id="icon"></div>
+<div class="frame-blocked">
+  <div>
+    <div class="icon" id="icon" aria-hidden="true">
+      <img id="family-link-kite">
+    </div>
     <div id="main-message">
       <h1 id="block-page-header">$i18n{blockPageHeader}</h1>
       <p id="block-page-message">$i18n{blockPageMessage}</p>
@@ -25,14 +27,14 @@
     <div id="custodians-information" hidden>
       <div id="custodian-information" class="custodian-information">
         <img id="custodian-avatar-img" class="avatar-img">
-        <div id="custodian-contact">
+        <div id="custodian-contact" class="custodian-contact">
           <div id="custodian-name" class="custodian-name"></div>
           <div id="custodian-email" class="custodian-email"></div>
         </div>
       </div>
       <div id="second-custodian-information" class="custodian-information" hidden>
         <img id="second-custodian-avatar-img" class="avatar-img" hidden>
-        <div id="second-custodian-contact">
+        <div id="second-custodian-contact" class="custodian-contact">
           <div id="second-custodian-name" class="custodian-name"></div>
           <div id="second-custodian-email" class="custodian-email"></div>
         </div>
@@ -57,7 +59,6 @@
   </div>
   <div id="details" hidden>
     <p id="details-header">$i18n{blockReasonHeader}</p>
-    <p id="details-message">$i18n{blockReasonMessage}</p>
     <p id="feedback">$i18nRaw{feedbackLink}</p>
   </div>
 </div>

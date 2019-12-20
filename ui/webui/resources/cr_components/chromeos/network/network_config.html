@@ -75,8 +75,7 @@
         </network-config-input>
         <network-config-select id="outer" label="[[i18n('OncVPN-Type')]]"
             value="{{vpnType_}}" items="[[vpnTypeItems_]]"
-            onc-prefix="VPN.Type" disabled="[[hasGuid_(guid)]]"
-            property="[[managedProperties_.typeProperties.vpn.type]]">
+            onc-prefix="VPN.Type" disabled="[[hasGuid_(guid)]]">
         </network-config-select>
         <template is="dom-if" if="[[!showVpn_.OpenVPN]]">
           <network-config-input label="[[i18n('OncVPN-L2TP-Username')]]"

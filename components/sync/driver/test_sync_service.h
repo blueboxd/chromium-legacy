@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -42,7 +43,6 @@ class TestSyncService : public SyncService {
       const UserDemographicsResult& user_demographics_result);
   void SetExperimentalAuthenticationKey(
       std::unique_ptr<crypto::ECPrivateKey> experimental_authentication_key);
-
   // Convenience versions of the above, for when the caller doesn't care about
   // the particular values in the snapshot, just whether there is one.
   void SetEmptyLastCycleSnapshot();
@@ -103,9 +103,12 @@ class TestSyncService : public SyncService {
   void RemoveTypeDebugInfoObserver(TypeDebugInfoObserver* observer) override;
   base::WeakPtr<JsController> GetJsController() override;
   void GetAllNodesForDebugging(
-      const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback)
+      base::OnceCallback<void(std::unique_ptr<base::ListValue>)> callback)
       override;
   void SetInvalidationsForSessionsEnabled(bool enabled) override;
+  void AddTrustedVaultDecryptionKeysFromWeb(
+      const std::string& gaia_id,
+      const std::vector<std::string>& keys) override;
   UserDemographicsResult GetUserNoisedBirthYearAndGender(
       base::Time now) override;
 

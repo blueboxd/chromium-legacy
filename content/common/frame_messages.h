@@ -40,7 +40,6 @@
 #include "content/public/common/favicon_url.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/javascript_dialog_type.h"
-#include "content/public/common/page_importance_signals.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
@@ -56,6 +55,7 @@
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
+#include "third_party/blink/public/common/input/web_scroll_types.h"
 #include "third_party/blink/public/common/media/media_player_action.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
@@ -71,7 +71,6 @@
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/platform/web_intrinsic_sizing_info.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
-#include "third_party/blink/public/platform/web_scroll_types.h"
 #include "third_party/blink/public/web/web_frame_owner_properties.h"
 #include "third_party/blink/public/web/web_tree_scope_type.h"
 #include "ui/events/types/scroll_types.h"
@@ -292,10 +291,6 @@ IPC_STRUCT_TRAITS_BEGIN(blink::ViewportIntersectionState)
   IPC_STRUCT_TRAITS_MEMBER(viewport_intersection)
   IPC_STRUCT_TRAITS_MEMBER(compositor_visible_rect)
   IPC_STRUCT_TRAITS_MEMBER(occlusion_state)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(content::PageImportanceSignals)
-  IPC_STRUCT_TRAITS_MEMBER(had_form_interaction)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::ResourceLoadTiming)
@@ -854,10 +849,6 @@ IPC_MESSAGE_ROUTED2(FrameMsg_SetPepperVolume,
                     double /* volume */)
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
-// Tells the frame to suppress any further modal dialogs. This ensures that no
-// ScopedPageLoadDeferrer is on the stack for SwapOut.
-IPC_MESSAGE_ROUTED0(FrameMsg_SuppressFurtherDialogs)
-
 // Notifies a parent frame that the child frame requires information about
 // whether it is occluded or has visual effects applied.
 IPC_MESSAGE_ROUTED1(FrameMsg_SetNeedsOcclusionTracking,
@@ -1284,10 +1275,6 @@ IPC_MESSAGE_ROUTED0(FrameHostMsg_SavableResourceLinksError)
 IPC_MESSAGE_ROUTED2(FrameHostMsg_SerializedHtmlWithLocalLinksResponse,
                     std::string /* data buffer */,
                     bool /* end of data? */)
-
-// Sent when the renderer updates hint for importance of a tab.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdatePageImportanceSignals,
-                    content::PageImportanceSignals)
 
 // This message is sent from a RenderFrameProxy when sequential focus
 // navigation needs to advance into its actual frame.  |source_routing_id|

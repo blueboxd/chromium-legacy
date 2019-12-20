@@ -1,6 +1,7 @@
 <!doctype html>
 <html dir="$i18n{textdirection}" lang="$i18n{language}" $i18n{a11yenhanced}>
 <head>
+  <base href="chrome://history">
   <meta charset="utf8">
   <title>$i18n{title}</title>
 
@@ -88,9 +89,8 @@
   </div>
 
   <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
-  <link rel="import" href="constants.html">
 
-  <link rel="import" href="app.html">
+  <script type="module" src="history.js"></script>
 </body>
 
 </html>

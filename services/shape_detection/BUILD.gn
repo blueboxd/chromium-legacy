@@ -83,14 +83,14 @@ if (is_android) {
   }
 
   android_library("shape_detection_java") {
-    java_files = [
+    sources = [
       "android/java/src/org/chromium/shape_detection/BarcodeDetectionImpl.java",
       "android/java/src/org/chromium/shape_detection/BarcodeDetectionProviderImpl.java",
+      "android/java/src/org/chromium/shape_detection/BitmapUtils.java",
       "android/java/src/org/chromium/shape_detection/FaceDetectionImpl.java",
       "android/java/src/org/chromium/shape_detection/FaceDetectionImplGmsCore.java",
       "android/java/src/org/chromium/shape_detection/FaceDetectionProviderImpl.java",
       "android/java/src/org/chromium/shape_detection/InterfaceRegistrar.java",
-      "android/java/src/org/chromium/shape_detection/BitmapUtils.java",
       "android/java/src/org/chromium/shape_detection/TextDetectionImpl.java",
     ]
 

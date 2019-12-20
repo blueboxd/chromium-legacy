@@ -5,8 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_DEVTOOLS_AGENT_HOST_CLIENT_H_
 #define CONTENT_PUBLIC_BROWSER_DEVTOOLS_AGENT_HOST_CLIENT_H_
 
-#include <string>
-
+#include "base/containers/span.h"
 #include "content/common/content_export.h"
 
 class GURL;
@@ -22,7 +21,7 @@ class CONTENT_EXPORT DevToolsAgentHostClient {
 
   // Dispatches given protocol message on the client.
   virtual void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
-                                       const std::string& message) = 0;
+                                       base::span<const uint8_t> message) = 0;
 
   // This method is called when attached agent host is closed.
   virtual void AgentHostClosed(DevToolsAgentHost* agent_host) = 0;

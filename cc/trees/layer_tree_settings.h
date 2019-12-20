@@ -171,6 +171,11 @@ class CC_EXPORT LayerTreeSettings {
 
   // Whether experimental de-jelly effect is allowed.
   bool allow_de_jelly_effect = false;
+
+#if DCHECK_IS_ON()
+  // Whether to check if any double blur exists.
+  bool log_on_ui_double_background_blur = false;
+#endif
 };
 
 class CC_EXPORT LayerListSettings : public LayerTreeSettings {

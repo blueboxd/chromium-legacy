@@ -5,7 +5,8 @@
 #include "cc/trees/draw_property_utils.h"
 
 #include <stddef.h>
-
+#include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "base/containers/adapters.h"
@@ -1113,6 +1114,22 @@ void ComputeDrawPropertiesOfVisibleLayers(const LayerImplList* layer_list,
   }
 }
 
+#if DCHECK_IS_ON()
+// See property_tree_builder.cc ComputeRenderSurfaceReason.
+bool NodeMayContainBackdropBlurFilter(const EffectNode& node) {
+  switch (node.render_surface_reason) {
+    case RenderSurfaceReason::kMask:
+    case RenderSurfaceReason::kTrilinearFiltering:
+    case RenderSurfaceReason::kFilter:
+    case RenderSurfaceReason::kBackdropFilter:
+      return true;
+    default:
+      return false;
+  }
+  return false;
+}
+#endif
+
 }  // namespace
 
 void ConcatInverseSurfaceContentsScale(const EffectNode* effect_node,
@@ -1329,6 +1346,13 @@ void CalculateDrawProperties(
                                     output_render_surface_list,
                                     layer_tree_impl->max_texture_size());
   }
+
+#if DCHECK_IS_ON()
+  if (layer_tree_impl->settings().log_on_ui_double_background_blur)
+    DCHECK(
+        LogDoubleBackgroundBlur(*layer_tree_impl, *output_render_surface_list));
+#endif
+
   RecordRenderSurfaceReasonsForTracing(property_trees,
                                        output_render_surface_list);
 
@@ -1340,6 +1364,47 @@ void CalculateDrawProperties(
   if (output_update_layer_list_for_testing)
     *output_update_layer_list_for_testing = std::move(visible_layer_list);
 }
+
+#if DCHECK_IS_ON()
+bool LogDoubleBackgroundBlur(const LayerTreeImpl& layer_tree_impl,
+                             const RenderSurfaceList& render_surface_list) {
+  const PropertyTrees& property_trees = *layer_tree_impl.property_trees();
+  std::vector<std::pair<const LayerImpl*, gfx::Rect>> rects;
+  rects.reserve(render_surface_list.size());
+
+  for (const auto* render_surface : render_surface_list) {
+    const auto* effect_node =
+        property_trees.effect_tree.Node(render_surface->EffectTreeIndex());
+    if (NodeMayContainBackdropBlurFilter(*effect_node)) {
+      const FilterOperations& filters = render_surface->BackdropFilters();
+      if (filters.HasFilterOfType(FilterOperation::BLUR)) {
+        if (!render_surface->content_rect().IsEmpty()) {
+          const LayerImpl* layer_impl =
+              layer_tree_impl.LayerById(effect_node->stable_id);
+          gfx::Rect screen_space_rect = MathUtil::MapEnclosingClippedRect(
+              render_surface->screen_space_transform(),
+              render_surface->content_rect());
+          auto it = std::find_if(
+              rects.begin(), rects.end(),
+              [&screen_space_rect](
+                  const std::pair<const LayerImpl*, gfx::Rect>& r) {
+                return r.second.Intersects(screen_space_rect);
+              });
+          if (rects.end() == it) {
+            rects.push_back(std::make_pair(layer_impl, screen_space_rect));
+          } else {
+            LOG(ERROR) << "Double blur detected between layers: "
+                       << it->first->DebugName() << " and "
+                       << layer_impl->DebugName();
+            return false;
+          }
+        }
+      }
+    }
+  }
+  return true;
+}
+#endif
 
 }  // namespace draw_property_utils
 

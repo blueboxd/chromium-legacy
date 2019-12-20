@@ -59,7 +59,8 @@ base::DictionaryValue* DevToolsProtocolTest::SendCommand(
 
   std::string json_command;
   base::JSONWriter::Write(command, &json_command);
-  agent_host_->DispatchProtocolMessage(this, json_command);
+  agent_host_->DispatchProtocolMessage(
+      this, base::as_bytes(base::make_span(json_command)));
   // Some messages are dispatched synchronously.
   // Only run loop if we are not finished yet.
   if (in_dispatch_ && wait) {
@@ -230,10 +231,11 @@ void DevToolsProtocolTest::RunLoopUpdatingQuitClosure() {
 
 void DevToolsProtocolTest::DispatchProtocolMessage(
     DevToolsAgentHost* agent_host,
-    const std::string& message) {
-  std::unique_ptr<base::DictionaryValue> root(
-      static_cast<base::DictionaryValue*>(
-          base::JSONReader::ReadDeprecated(message).release()));
+    base::span<const uint8_t> message) {
+  base::StringPiece message_str(reinterpret_cast<const char*>(message.data()),
+                                message.size());
+  auto root = base::DictionaryValue::From(
+      base::JSONReader::ReadDeprecated(message_str));
   int id;
   if (root->GetInteger("id", &id)) {
     result_ids_.push_back(id);

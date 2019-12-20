@@ -5,8 +5,8 @@
 #include "third_party/blink/renderer/core/input/touch_event_manager.h"
 
 #include <memory>
+#include "third_party/blink/public/common/input/web_touch_event.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
-#include "third_party/blink/public/platform/web_touch_event.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/events/touch_event.h"

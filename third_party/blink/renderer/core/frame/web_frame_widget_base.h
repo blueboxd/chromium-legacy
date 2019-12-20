@@ -7,9 +7,9 @@
 
 #include "base/single_thread_task_runner.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
+#include "third_party/blink/public/common/input/web_gesture_device.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/platform/web_drag_data.h"
-#include "third_party/blink/public/platform/web_gesture_device.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
 #include "third_party/blink/renderer/core/core_export.h"

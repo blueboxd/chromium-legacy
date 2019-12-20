@@ -78,6 +78,7 @@ class MEDIA_MOJO_EXPORT MojoVideoEncodeAcceleratorService
       int32_t bitstream_buffer_id,
       const media::BitstreamBufferMetadata& metadata) override;
   void NotifyError(::media::VideoEncodeAccelerator::Error error) override;
+  void NotifyEncoderInfoChange(const ::media::VideoEncoderInfo& info) override;
 
   const CreateAndInitializeVideoEncodeAcceleratorCallback create_vea_callback_;
   const gpu::GpuPreferences& gpu_preferences_;

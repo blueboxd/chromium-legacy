@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
 #import "ios/chrome/browser/passwords/password_manager_app_interface.h"
 #include "ios/chrome/browser/passwords/password_manager_features.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -115,7 +116,13 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   EARL_GREY_TEST_DISABLED(@"Fails on iOS 11.0.");
 #endif
 
-  [PasswordManagerAppInterface setAutosigninPreferences];
+  // Set Autosignin preferences
+  [ChromeEarlGrey setBoolValue:YES
+                   forUserPref:password_manager::prefs::
+                                   kWasAutoSignInFirstRunExperienceShown];
+  [ChromeEarlGrey
+      setBoolValue:YES
+       forUserPref:password_manager::prefs::kCredentialsEnableAutosignin];
   [self loadSimplePageAndStoreACredential];
 
   // Call get() from JavaScript.
@@ -164,7 +171,13 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 #if defined(CHROME_EARL_GREY_1)
   EARL_GREY_TEST_DISABLED(@"Fails on iOS 11.0.");
 #endif
-  [PasswordManagerAppInterface setAutosigninPreferences];
+  // Set Autosignin preferences
+  [ChromeEarlGrey setBoolValue:YES
+                   forUserPref:password_manager::prefs::
+                                   kWasAutoSignInFirstRunExperienceShown];
+  [ChromeEarlGrey
+      setBoolValue:YES
+       forUserPref:password_manager::prefs::kCredentialsEnableAutosignin];
   [self loadSimplePageAndStoreACredential];
 
   // Open new tab.

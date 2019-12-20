@@ -526,8 +526,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<chromeos::cellular_setup::CellularSetupDialogUI>;
   if (url.host_piece() == chrome::kChromeUICertificateManagerHost)
     return &NewWebUI<chromeos::CertificateManagerDialogUI>;
-  if (chromeos::CrostiniInstallerUI::IsEnabled() &&
-      url.host_piece() == chrome::kChromeUICrostiniInstallerHost)
+  if (url.host_piece() == chrome::kChromeUICrostiniInstallerHost)
     return &NewWebUI<chromeos::CrostiniInstallerUI>;
   if (chromeos::CrostiniUpgraderUI::IsEnabled() &&
       url.host_piece() == chrome::kChromeUICrostiniUpgraderHost)

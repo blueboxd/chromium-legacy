@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/model/data_type_error_handler_impl.h"
 #include "components/sync/model/sync_merge_result.h"
@@ -17,7 +18,7 @@ namespace syncer {
 
 FakeDataTypeController::FakeDataTypeController(ModelType type)
     : DirectoryDataTypeController(type,
-                                  base::Closure(),
+                                  base::NullCallback(),
                                   nullptr,
                                   GROUP_PASSIVE),
       state_(NOT_RUNNING),
@@ -160,7 +161,7 @@ std::unique_ptr<DataTypeErrorHandler>
 FakeDataTypeController::CreateErrorHandler() {
   DCHECK(CalledOnValidThread());
   return std::make_unique<DataTypeErrorHandlerImpl>(
-      base::SequencedTaskRunnerHandle::Get(), base::Closure(),
+      base::SequencedTaskRunnerHandle::Get(), base::NullCallback(),
       base::BindRepeating(model_load_callback_, type()));
 }
 

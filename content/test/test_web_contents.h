@@ -161,8 +161,6 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
 
   void ResetPauseSubresourceLoadingCalled() override;
 
-  void SetPageImportanceSignals(PageImportanceSignals signals) override;
-
   void SetLastActiveTime(base::TimeTicks last_active_time) override;
 
   void TestIncrementBluetoothConnectedDeviceCount() override;

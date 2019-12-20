@@ -2507,6 +2507,72 @@ message RsuLookupKeyUploadResponse {
   optional bool rsu_lookup_key_updated = 1;
 }
 
+// Provides information about an installed app.
+message App {
+  // Enum listing the available types of the apps.
+  // Aligned with apps::mojom::AppType.
+  enum AppType {
+    // Unknown/undefined.
+    UNKNOWN = 0;
+    // ARC++/Android app.
+    ARC = 1;
+    // Built-in app.
+    BUILT_IN = 2;
+    // Linux/crostini app.
+    CROSTINI = 3;
+    // Chrome extension.
+    EXTENSION = 4;
+    // Progressive web app.
+    WEB = 5;
+  }
+
+  // ID of the installed application. Package name for Android apps and 32
+  // character long app id for other applications (PWAs, Extensions, Built-in
+  // apps).
+  optional string app_id = 1;
+
+  // Type of the application.
+  optional AppType app_type = 2;
+
+  // Additional IDs of the installed application if exist.
+  // For example it will contain Chrome style 32 character long ids for Android
+  // apps, that use package name as their primary ID.
+  repeated string additional_app_id = 3;
+}
+
+// Information about app activity used for Per-App Time Limits feature.
+message AppActivity {
+  // Enumerates different states that the app can have.
+  enum AppState {
+    // State not known.
+    UNKNOWN = 0;
+    // Default state - no restrictions enforced.
+    DEFAULT = 1;
+    // Important app that cannot be blocked, because it is essential for the OS.
+    ALWAYS_AVAILABLE = 2;
+    // App blocked on the client.
+    BLOCKED = 3;
+    // App reached usage limit on the client.
+    LIMIT_REACHED = 4;
+    // App was uninstalled. It still might have some recent unreported activity.
+    UNINSTALLED = 5;
+  }
+
+  // App identifying information.
+  optional App app_info = 1;
+
+  // A list of time periods when the app was active.
+  repeated TimePeriod active_time_periods = 2;
+
+  // Timestamp when this activity data were populated.
+  // Specified in milliseconds since Epoch in UTC timezone (Java time).
+  optional int64 populated_at = 3;
+
+  // State of the app on client at the time of reporting. To maintain
+  // consistency and help debugging between client and Family Link.
+  optional AppState app_state = 4;
+}
+
 // Models a window for screen time.
 message ScreenTimeSpan {
   optional TimePeriod time_period = 1;
@@ -2543,7 +2609,11 @@ message ChildStatusReportRequest {
   // If the mode is unknown, this field should not be set.
   optional string boot_mode = 7;
 
-  // Next id: 8.
+  // A list of per-app activity used for Per-App Time Limits feature.
+  // It might not be sent in every report.
+  repeated AppActivity app_activity = 8;
+
+  // Next id: 9.
 }
 
 // Response from DMServer to update user devices' status.

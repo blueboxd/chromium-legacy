@@ -33,7 +33,7 @@ class ClientProxy : public content::DevToolsAgentHostClient {
   ~ClientProxy() override {}
 
   void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
-                               const std::string& message) override {
+                               base::span<const uint8_t> message) override {
     proxy_->DispatchOnClientHost(message);
   }
 
@@ -129,7 +129,7 @@ class TabProxyDelegate : public content::DevToolsExternalAgentProxyDelegate {
   }
 
   void SendMessageToBackend(content::DevToolsExternalAgentProxy* proxy,
-                            const std::string& message) override {
+                            base::span<const uint8_t> message) override {
     auto it = proxies_.find(proxy);
     if (it == proxies_.end())
       return;

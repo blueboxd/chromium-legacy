@@ -157,6 +157,13 @@ void WebContentController::AttachTo(aura::Window* window, int window_id) {
   // Unretained is safe because we unset this in the destructor.
   surface_->SetEmbeddedSurfaceId(
       base::Bind(&WebContentController::GetSurfaceId, base::Unretained(this)));
+
+  current_rfh_ = GetWebContents()->GetMainFrame();
+  if (current_rfh_) {
+    auto size = current_rfh_->GetFrameSize();
+    if (size.has_value())
+      surface_->SetEmbeddedSurfaceSize(*size);
+  }
 }
 
 void WebContentController::ProcessInputEvent(const webview::InputEvent& ev) {
@@ -399,6 +406,13 @@ void WebContentController::OnSurfaceDestroying(exo::Surface* surface) {
   surface_ = nullptr;
 }
 
+void WebContentController::FrameSizeChanged(
+    content::RenderFrameHost* render_frame_host,
+    const gfx::Size& frame_size) {
+  if (render_frame_host == current_rfh_ && surface_)
+    surface_->SetEmbeddedSurfaceSize(frame_size);
+}
+
 void WebContentController::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
   current_render_frame_set_.insert(render_frame_host);
@@ -414,6 +428,8 @@ void WebContentController::RenderFrameCreated(
 void WebContentController::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
   current_render_frame_set_.erase(render_frame_host);
+  if (render_frame_host == current_rfh_)
+    current_rfh_ = nullptr;
 }
 
 void WebContentController::RenderFrameHostChanged(
@@ -421,8 +437,15 @@ void WebContentController::RenderFrameHostChanged(
     content::RenderFrameHost* new_host) {
   // The surface ID may have changed, so trigger a new commit to re-issue the
   // draw quad.
-  if (surface_)
+  current_rfh_ = new_host;
+  if (surface_) {
+    if (new_host) {
+      auto size = new_host->GetFrameSize();
+      if (size.has_value())
+        surface_->SetEmbeddedSurfaceSize(*size);
+    }
     surface_->Commit();
+  }
 }
 
 void WebContentController::OnJsClientInstanceRegistered(

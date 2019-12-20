@@ -40,10 +40,8 @@ void LayoutNGMixin<Base>::Paint(const PaintInfo& paint_info) const {
     return;
   }
 
-  if (const NGLayoutResult* result = Base::GetCachedLayoutResult()) {
-    NGBoxFragmentPainter(To<NGPhysicalBoxFragment>(result->PhysicalFragment()))
-        .Paint(paint_info);
-  }
+  if (const NGPhysicalBoxFragment* fragment = CurrentFragment())
+    NGBoxFragmentPainter(*fragment).Paint(paint_info);
 }
 
 // The current fragment from the last layout cycle for this box.

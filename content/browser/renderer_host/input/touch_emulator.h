@@ -13,7 +13,7 @@
 #include "content/browser/renderer_host/input/touch_emulator_client.h"
 #include "content/common/cursors/webcursor.h"
 #include "content/public/common/input_event_ack_state.h"
-#include "third_party/blink/public/platform/web_touch_event.h"
+#include "third_party/blink/public/common/input/web_touch_event.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 #include "ui/gfx/geometry/size_f.h"

@@ -100,7 +100,8 @@ class NetworkStateHandler::ActiveNetworkState {
         connection_state_(network->connection_state()),
         activation_state_(network->activation_state()),
         connect_requested_(network->connect_requested()),
-        signal_strength_(network->signal_strength()) {}
+        signal_strength_(network->signal_strength()),
+        network_technology_(network->network_technology()) {}
 
   bool MatchesNetworkState(const NetworkState* network) {
     return guid_ == network->guid() &&
@@ -108,7 +109,8 @@ class NetworkStateHandler::ActiveNetworkState {
            activation_state_ == network->activation_state() &&
            connect_requested_ == network->connect_requested() &&
            (abs(signal_strength_ - network->signal_strength()) <
-            kSignalStrengthChangeThreshold);
+            kSignalStrengthChangeThreshold) &&
+           network_technology_ == network->network_technology();
   }
 
  private:
@@ -124,6 +126,9 @@ class NetworkStateHandler::ActiveNetworkState {
   const bool connect_requested_;
   // We care about signal strength changes to active networks.
   const int signal_strength_;
+  // Network technology is indicated in network icons in the UI, so we need to
+  // track changes to this value.
+  const std::string network_technology_;
 };
 
 const char NetworkStateHandler::kDefaultCheckPortalList[] =
@@ -2043,8 +2048,6 @@ std::vector<std::string> NetworkStateHandler::GetTechnologiesForType(
     technologies.emplace_back(shill::kTypeWifi);
   if (type.MatchesType(shill::kTypeCellular))
     technologies.emplace_back(shill::kTypeCellular);
-  if (type.MatchesType(shill::kTypeBluetooth))
-    technologies.emplace_back(shill::kTypeBluetooth);
   if (type.MatchesType(shill::kTypeVPN))
     technologies.emplace_back(shill::kTypeVPN);
   if (type.MatchesType(kTypeTether))

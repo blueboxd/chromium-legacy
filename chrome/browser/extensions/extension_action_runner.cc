@@ -507,11 +507,21 @@ bool ExtensionActionRunner::OnMessageReceived(
 
 void ExtensionActionRunner::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() ||
-      !navigation_handle->HasCommitted() ||
-      navigation_handle->IsSameDocument()) {
-    return;
+  declarative_net_request::RulesMonitorService* rules_monitor_service =
+      declarative_net_request::RulesMonitorService::Get(browser_context_);
+
+  const bool is_main_frame = navigation_handle->IsInMainFrame();
+  const bool has_committed = navigation_handle->HasCommitted();
+
+  if (is_main_frame && !has_committed && rules_monitor_service) {
+    // Clean up any pending actions recorded in the action tracker for this
+    // navigation.
+    rules_monitor_service->action_tracker().ClearPendingNavigation(
+        navigation_handle->GetNavigationId());
   }
+
+  if (!is_main_frame || !has_committed || navigation_handle->IsSameDocument())
+    return;
 
   LogUMA();
   num_page_requests_ = 0;
@@ -526,17 +536,13 @@ void ExtensionActionRunner::DidFinishNavigation(
   // run".
   ExtensionActionAPI::Get(browser_context_)
       ->ClearAllValuesForTab(web_contents());
-
-  declarative_net_request::RulesMonitorService* rules_monitor_service =
-      declarative_net_request::RulesMonitorService::Get(browser_context_);
-
   // |rules_monitor_service| can be null for some unit tests.
   if (rules_monitor_service) {
+    int tab_id = ExtensionTabUtil::GetTabId(web_contents());
     declarative_net_request::ActionTracker& action_tracker =
         rules_monitor_service->action_tracker();
-
-    int tab_id = ExtensionTabUtil::GetTabId(web_contents());
-    action_tracker.ResetActionCountForTab(tab_id);
+    action_tracker.ResetActionCountForTab(tab_id,
+                                          navigation_handle->GetNavigationId());
   }
 }
 

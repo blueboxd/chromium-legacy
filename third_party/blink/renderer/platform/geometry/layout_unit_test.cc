@@ -155,8 +155,20 @@ TEST(LayoutUnitTest, LayoutUnitSnapSizeToPixel) {
   EXPECT_EQ(1, SnapSizeToPixel(LayoutUnit(1.5), LayoutUnit(0.99)));
   EXPECT_EQ(2, SnapSizeToPixel(LayoutUnit(1.5), LayoutUnit(1)));
 
-  EXPECT_EQ(0, SnapSizeToPixel(LayoutUnit(0.5), LayoutUnit(1.5)));
-  EXPECT_EQ(0, SnapSizeToPixel(LayoutUnit(0.99), LayoutUnit(1.5)));
+  // 0.046875 is 3/64, lower than 4 * LayoutUnit::Epsilon()
+  EXPECT_EQ(0, SnapSizeToPixel(LayoutUnit(0.046875), LayoutUnit(0)));
+  // 0.078125 is 5/64, higher than 4 * LayoutUnit::Epsilon()
+  EXPECT_EQ(1, SnapSizeToPixel(LayoutUnit(0.078125), LayoutUnit(0)));
+
+  // Negative versions
+  EXPECT_EQ(0, SnapSizeToPixel(LayoutUnit(-0.046875), LayoutUnit(0)));
+  EXPECT_EQ(-1, SnapSizeToPixel(LayoutUnit(-0.078125), LayoutUnit(0)));
+
+  // The next 2 would snap to zero but for the requirement that we not snap
+  // sizes greater than 4 * LayoutUnit::Epsilon() to 0.
+  EXPECT_EQ(1, SnapSizeToPixel(LayoutUnit(0.5), LayoutUnit(1.5)));
+  EXPECT_EQ(1, SnapSizeToPixel(LayoutUnit(0.99), LayoutUnit(1.5)));
+
   EXPECT_EQ(1, SnapSizeToPixel(LayoutUnit(1.0), LayoutUnit(1.5)));
   EXPECT_EQ(1, SnapSizeToPixel(LayoutUnit(1.49), LayoutUnit(1.5)));
   EXPECT_EQ(1, SnapSizeToPixel(LayoutUnit(1.5), LayoutUnit(1.5)));

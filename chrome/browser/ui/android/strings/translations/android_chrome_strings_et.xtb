@@ -427,6 +427,7 @@ Otsingutermini korrigeerimiseks vajutage valimiseks pikalt. Otsingu täpsustamis
 <translation id="4226663524361240545">Seade võib märguannete korral vibreerida</translation>
 <translation id="423219824432660969">Krüpteeri sünkroonitud andmed Google'i parooli abil <ph name="TIME" /> seisuga</translation>
 <translation id="4242533952199664413">Ava seaded</translation>
+<translation id="4250229828105606438">Ekraanipilt</translation>
 <translation id="4256782883801055595">Avatud lähtekoodi litsentsid</translation>
 <translation id="4259722352634471385">Navigeerimine on blokeeritud: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopeeri lingi aadress</translation>
@@ -885,7 +886,7 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="7498271377022651285">Oodake ...</translation>
 <translation id="7514365320538308">Laadi alla</translation>
 <translation id="751961395872307827">Saidiga ei saa ühendust luua</translation>
-<translation id="7521387064766892559">Javascript</translation>
+<translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">Soovitusi ei saa hankida</translation>
 <translation id="7559975015014302720">Lihtsustatud režiim on väljas</translation>
 <translation id="7562080006725997899">Sirvimisandmete kustutamine</translation>

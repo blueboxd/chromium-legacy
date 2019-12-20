@@ -12,7 +12,10 @@ from .blink_v8_bridge import blink_class_name
 
 class PathManager(object):
     """
-    Provides a variety of paths such as Blink headers and output files.
+    Provides a variety of paths such as Blink headers and output files.  Unless
+    explicitly specified, returned paths are relative to the project's root
+    directory or the root directory of generated files.
+    e.g. "third_party/blink/renderer/..."
 
     About output files, there are two cases.
     - cross-components case:
@@ -26,17 +29,41 @@ class PathManager(object):
     _is_initialized = False
 
     @classmethod
-    def init(cls, output_dirs):
+    def init(cls, root_src_dir, root_gen_dir, component_reldirs):
         """
         Args:
-            output_dirs: Pairs of component and output directory.
+            root_src_dir: Project's root directory, which corresponds to "//"
+                in GN.
+            root_gen_dir: Root directory of generated files, which corresponds
+                to "//out/Default/gen" in GN.
+            component_reldirs: Pairs of component and output directory relative
+                to |root_gen_dir|.
         """
         assert not cls._is_initialized
-        assert isinstance(output_dirs, dict)
-        cls._output_dirs = output_dirs
+        assert isinstance(root_src_dir, str)
+        assert isinstance(root_gen_dir, str)
+        assert isinstance(component_reldirs, dict)
+
         cls._blink_path_prefix = posixpath.sep + posixpath.join(
             "third_party", "blink", "renderer", "")
+
+        cls._root_src_dir = posixpath.abspath(root_src_dir)
+        cls._root_gen_dir = posixpath.abspath(root_gen_dir)
+        cls._component_reldirs = {
+            component: posixpath.normpath(rel_dir)
+            for component, rel_dir in component_reldirs.iteritems()
+        }
         cls._is_initialized = True
+
+    @staticmethod
+    def gen_path_to(path):
+        """
+        Returns the absolute path of |path| that must be relative to the root
+        directory of generated files.
+        """
+        assert PathManager._is_initialized, PathManager._REQUIRE_INIT_MESSAGE
+        return posixpath.abspath(
+            posixpath.join(PathManager._root_gen_dir, path))
 
     @classmethod
     def relpath_to_project_root(cls, path):
@@ -49,9 +76,10 @@ class PathManager(object):
     def __init__(self, idl_definition):
         assert self._is_initialized, self._REQUIRE_INIT_MESSAGE
 
-        idl_path = idl_definition.debug_info.location.filepath
-        self._idl_basepath, _ = posixpath.splitext(idl_path)
-        self._idl_dir, self._idl_basename = posixpath.split(self._idl_basepath)
+        idl_path = PathManager.relpath_to_project_root(
+            posixpath.normpath(idl_definition.debug_info.location.filepath))
+        idl_basepath, _ = posixpath.splitext(idl_path)
+        self._idl_dir, self._idl_basename = posixpath.split(idl_basepath)
 
         components = sorted(idl_definition.components)
 
@@ -69,15 +97,12 @@ class PathManager(object):
         else:
             assert False
 
-        self._api_dir = self._output_dirs[self._api_component]
-        self._impl_dir = self._output_dirs[self._impl_component]
-        self._out_basename = name_style.file("v8", idl_definition.identifier)
+        self._api_dir = self._component_reldirs[self._api_component]
+        self._impl_dir = self._component_reldirs[self._impl_component]
+        self._v8_bind_basename = name_style.file("v8",
+                                                 idl_definition.identifier)
 
-        if isinstance(idl_definition,
-                      (web_idl.CallbackFunction, web_idl.CallbackInterface)):
-            self._blink_dir = self._api_dir
-        else:
-            self._blink_dir = self._idl_dir
+        self._blink_dir = self._idl_dir
         self._blink_basename = name_style.file(
             blink_class_name(idl_definition))
 
@@ -90,11 +115,10 @@ class PathManager(object):
         Returns a path to a Blink implementation file relative to the project
         root directory, e.g. "third_party/blink/renderer/..."
         """
-        return self.relpath_to_project_root(
-            self._join(
-                dirpath=self._blink_dir,
-                filename=(filename or self._blink_basename),
-                ext=ext))
+        return self._join(
+            dirpath=self._blink_dir,
+            filename=(filename or self._blink_basename),
+            ext=ext)
 
     @property
     def is_cross_components(self):
@@ -111,7 +135,7 @@ class PathManager(object):
     def api_path(self, filename=None, ext=None):
         return self._join(
             dirpath=self.api_dir,
-            filename=(filename or self._out_basename),
+            filename=(filename or self._v8_bind_basename),
             ext=ext)
 
     @property
@@ -125,8 +149,12 @@ class PathManager(object):
     def impl_path(self, filename=None, ext=None):
         return self._join(
             dirpath=self.impl_dir,
-            filename=(filename or self._out_basename),
+            filename=(filename or self._v8_bind_basename),
             ext=ext)
+
+    # TODO(crbug.com/1034398): Remove this API
+    def dict_path(self, filename=None, ext=None):
+        return self.blink_path(filename, ext)
 
     @staticmethod
     def _join(dirpath, filename, ext=None):

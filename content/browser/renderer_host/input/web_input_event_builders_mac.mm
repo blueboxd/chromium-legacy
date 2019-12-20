@@ -38,7 +38,7 @@
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/blink_event_util.h"

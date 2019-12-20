@@ -720,7 +720,25 @@ gfx::Point TableView::GetKeyboardContextMenuLocation() {
   return screen_loc;
 }
 
+void TableView::OnFocus() {
+  SchedulePaintForSelection();
+  focus_ring_->SchedulePaint();
+  needs_update_accessibility_focus_ = true;
+}
+
+void TableView::OnBlur() {
+  SchedulePaintForSelection();
+  focus_ring_->SchedulePaint();
+  needs_update_accessibility_focus_ = true;
+}
+
 void TableView::OnPaint(gfx::Canvas* canvas) {
+  OnPaintImpl(canvas);
+  if (needs_update_accessibility_focus_)
+    UpdateAccessibilityFocus();
+}
+
+void TableView::OnPaintImpl(gfx::Canvas* canvas) {
   // Don't invoke View::OnPaint so that we can render our own focus border.
 
   if (sort_on_paint_)
@@ -815,21 +833,6 @@ void TableView::OnPaint(gfx::Canvas* canvas) {
         grouping_flags);
     i = last + 1;
   }
-
-  if (needs_update_accessibility_focus_)
-    UpdateAccessibilityFocus();
-}
-
-void TableView::OnFocus() {
-  SchedulePaintForSelection();
-  focus_ring_->SchedulePaint();
-  needs_update_accessibility_focus_ = true;
-}
-
-void TableView::OnBlur() {
-  SchedulePaintForSelection();
-  focus_ring_->SchedulePaint();
-  needs_update_accessibility_focus_ = true;
 }
 
 int TableView::GetCellMargin() const {

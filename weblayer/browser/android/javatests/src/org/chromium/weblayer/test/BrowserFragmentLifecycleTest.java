@@ -14,7 +14,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.Navigation;
 import org.chromium.weblayer.NavigationCallback;
@@ -27,7 +26,7 @@ import java.util.concurrent.CountDownLatch;
 /**
  * Tests that fragment lifecycle works as expected.
  */
-@RunWith(BaseJUnit4ClassRunner.class)
+@RunWith(WebLayerJUnit4ClassRunner.class)
 public class BrowserFragmentLifecycleTest {
     @Rule
     public InstrumentationActivityTestRule mActivityTestRule =

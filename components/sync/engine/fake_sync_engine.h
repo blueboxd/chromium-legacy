@@ -94,7 +94,7 @@ class FakeSyncEngine : public SyncEngine {
 
   void OnCookieJarChanged(bool account_mismatch,
                           bool empty_jar,
-                          const base::Closure& callback) override;
+                          base::OnceClosure callback) override;
   void SetInvalidationsForSessionsEnabled(bool enabled) override;
   void GetNigoriNodeForDebugging(AllNodesCallback callback) override;
   void set_fail_initial_download(bool should_fail);

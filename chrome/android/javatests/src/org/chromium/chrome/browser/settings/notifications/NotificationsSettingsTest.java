@@ -27,7 +27,7 @@ import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsActivityTest;
 import org.chromium.chrome.browser.settings.website.ContentSettingsResources;
-import org.chromium.chrome.browser.settings.website.SingleCategoryPreferences;
+import org.chromium.chrome.browser.settings.website.SingleCategorySettings;
 import org.chromium.chrome.browser.settings.website.SiteSettingsCategory;
 import org.chromium.chrome.browser.settings.website.WebsitePreferenceBridge;
 import org.chromium.chrome.browser.test.ScreenShooter;
@@ -134,11 +134,11 @@ public class NotificationsSettingsTest {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return getTopFragment() instanceof SingleCategoryPreferences;
+                return getTopFragment() instanceof SingleCategorySettings;
             }
         });
 
-        SingleCategoryPreferences fragment = (SingleCategoryPreferences) getTopFragment();
+        SingleCategorySettings fragment = (SingleCategorySettings) getTopFragment();
         Assert.assertTrue(
                 fragment.getCategoryForTest().showSites(SiteSettingsCategory.Type.NOTIFICATIONS));
 

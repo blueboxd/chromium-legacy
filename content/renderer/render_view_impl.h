@@ -42,9 +42,9 @@
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
-#include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/web/web_ax_object.h"
 #include "third_party/blink/public/web/web_console_message.h"
@@ -254,7 +254,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void PageScaleFactorChanged(float page_scale_factor) override;
   void DidUpdateTextAutosizerPageInfo(
       const blink::WebTextAutosizerPageInfo& page_info) override;
-  void PageImportanceSignalsChanged() override;
   void DidAutoResize(const blink::WebSize& newSize) override;
   void DidFocus(blink::WebLocalFrame* calling_frame) override;
   bool CanHandleGestureEvent() override;

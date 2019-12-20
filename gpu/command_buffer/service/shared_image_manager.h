@@ -71,7 +71,7 @@ class GPU_GLES2_EXPORT SharedImageManager {
   // The lock for protecting |images_|.
   base::Optional<base::Lock> lock_;
 
-  base::flat_set<std::unique_ptr<SharedImageBacking>> images_;
+  base::flat_set<std::unique_ptr<SharedImageBacking>> images_ GUARDED_BY(lock_);
 
   THREAD_CHECKER(thread_checker_);
 

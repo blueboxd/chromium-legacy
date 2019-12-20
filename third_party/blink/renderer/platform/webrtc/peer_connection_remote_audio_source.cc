@@ -5,8 +5,10 @@
 #include "third_party/blink/renderer/platform/webrtc/peer_connection_remote_audio_source.h"
 
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "media/base/audio_bus.h"
+#include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 
 namespace blink {
 
@@ -14,19 +16,26 @@ namespace {
 // Used as an identifier for the down-casters.
 void* const kPeerConnectionRemoteTrackIdentifier =
     const_cast<void**>(&kPeerConnectionRemoteTrackIdentifier);
+
+void SendLogMessage(const std::string& message) {
+  blink::WebRtcLogMessage("PCRAS::" + message);
+}
+
 }  // namespace
 
 PeerConnectionRemoteAudioTrack::PeerConnectionRemoteAudioTrack(
     scoped_refptr<webrtc::AudioTrackInterface> track_interface)
     : MediaStreamAudioTrack(false /* is_local_track */),
       track_interface_(std::move(track_interface)) {
-  DVLOG(1)
-      << "PeerConnectionRemoteAudioTrack::PeerConnectionRemoteAudioTrack()";
+  blink::WebRtcLogMessage(
+      base::StringPrintf("PCRAT::PeerConnectionRemoteAudioTrack({id=%s})",
+                         track_interface_->id().c_str()));
 }
 
 PeerConnectionRemoteAudioTrack::~PeerConnectionRemoteAudioTrack() {
-  DVLOG(1)
-      << "PeerConnectionRemoteAudioTrack::~PeerConnectionRemoteAudioTrack()";
+  blink::WebRtcLogMessage(
+      base::StringPrintf("PCRAT::~PeerConnectionRemoteAudioTrack([id=%s])",
+                         track_interface_->id().c_str()));
   // Ensure the track is stopped.
   MediaStreamAudioTrack::Stop();
 }
@@ -42,6 +51,9 @@ PeerConnectionRemoteAudioTrack* PeerConnectionRemoteAudioTrack::From(
 
 void PeerConnectionRemoteAudioTrack::SetEnabled(bool enabled) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  blink::WebRtcLogMessage(base::StringPrintf(
+      "PCRAT::SetEnabled([id=%s] {enabled=%s})", track_interface_->id().c_str(),
+      (enabled ? "true" : "false")));
 
   // This affects the shared state of the source for whether or not it's a part
   // of the mixed audio that's rendered for remote tracks from WebRTC.
@@ -67,13 +79,13 @@ PeerConnectionRemoteAudioSource::PeerConnectionRemoteAudioSource(
       track_interface_(std::move(track_interface)),
       is_sink_of_peer_connection_(false) {
   DCHECK(track_interface_);
-  DVLOG(1)
-      << "PeerConnectionRemoteAudioSource::PeerConnectionRemoteAudioSource()";
+  SendLogMessage(base::StringPrintf("PeerConnectionRemoteAudioSource([id=%s])",
+                                    track_interface_->id().c_str()));
 }
 
 PeerConnectionRemoteAudioSource::~PeerConnectionRemoteAudioSource() {
-  DVLOG(1)
-      << "PeerConnectionRemoteAudioSource::~PeerConnectionRemoteAudioSource()";
+  SendLogMessage(base::StringPrintf("~PeerConnectionRemoteAudioSource([id=%s])",
+                                    track_interface_->id().c_str()));
   EnsureSourceIsStopped();
 }
 
@@ -88,8 +100,8 @@ bool PeerConnectionRemoteAudioSource::EnsureSourceIsStarted() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (is_sink_of_peer_connection_)
     return true;
-  VLOG(1) << "Starting PeerConnection remote audio source with id="
-          << track_interface_->id();
+  SendLogMessage(base::StringPrintf("EnsureSourceIsStarted([id=%s])",
+                                    track_interface_->id().c_str()));
   track_interface_->AddSink(this);
   is_sink_of_peer_connection_ = true;
   return true;
@@ -98,10 +110,10 @@ bool PeerConnectionRemoteAudioSource::EnsureSourceIsStarted() {
 void PeerConnectionRemoteAudioSource::EnsureSourceIsStopped() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (is_sink_of_peer_connection_) {
+    SendLogMessage(base::StringPrintf("EnsureSourceIsStopped([id=%s])",
+                                      track_interface_->id().c_str()));
     track_interface_->RemoveSink(this);
     is_sink_of_peer_connection_ = false;
-    VLOG(1) << "Stopped PeerConnection remote audio source with id="
-            << track_interface_->id();
   }
 }
 

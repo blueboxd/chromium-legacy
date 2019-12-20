@@ -995,11 +995,12 @@ TEST_F(PageInfoTest, ReEnableWarnings) {
       // In the case where the button should be visible, add an exception to
       // the profile settings for the site (since the exception is what
       // will make the button visible).
-      ssl_state->AllowCert(host, *cert(), net::ERR_CERT_DATE_INVALID);
+      ssl_state->AllowCert(host, *cert(), net::ERR_CERT_DATE_INVALID,
+                           web_contents());
       page_info();
       if (test.button_clicked) {
         page_info()->OnRevokeSSLErrorBypassButtonPressed();
-        EXPECT_FALSE(ssl_state->HasAllowException(host));
+        EXPECT_FALSE(ssl_state->HasAllowException(host, web_contents()));
         ClearPageInfo();
         histograms.ExpectTotalCount(kGenericHistogram, 1);
         histograms.ExpectBucketCount(
@@ -1009,7 +1010,7 @@ TEST_F(PageInfoTest, ReEnableWarnings) {
             1);
       } else {  // Case where button is visible but not clicked.
         ClearPageInfo();
-        EXPECT_TRUE(ssl_state->HasAllowException(host));
+        EXPECT_TRUE(ssl_state->HasAllowException(host, web_contents()));
         histograms.ExpectTotalCount(kGenericHistogram, 1);
         histograms.ExpectBucketCount(
             kGenericHistogram,
@@ -1020,7 +1021,7 @@ TEST_F(PageInfoTest, ReEnableWarnings) {
     } else {
       page_info();
       ClearPageInfo();
-      EXPECT_FALSE(ssl_state->HasAllowException(host));
+      EXPECT_FALSE(ssl_state->HasAllowException(host, web_contents()));
       // Button is not visible, so check histogram is empty after opening and
       // closing page info.
       histograms.ExpectTotalCount(kGenericHistogram, 0);

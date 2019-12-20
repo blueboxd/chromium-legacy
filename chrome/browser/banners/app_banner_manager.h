@@ -22,7 +22,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/app_banner/app_banner.mojom.h"
-#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom-forward.h"
 #include "url/gurl.h"
 
 enum class WebappInstallSource;

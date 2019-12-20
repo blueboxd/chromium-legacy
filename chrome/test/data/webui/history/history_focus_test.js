@@ -8,31 +8,33 @@
  */
 
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_interactive_ui_test.js']);
+GEN('#include "services/network/public/cpp/features.h"');
 
 const HistoryFocusTest = class extends PolymerInteractiveUITest {
   /** @override */
   get browsePreload() {
-    return 'chrome://history';
+    return 'chrome://history/';
   }
 
   /** @override */
   get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'test_util.js',
-    ]);
+    return [
+      '//third_party/mocha/mocha.js',
+      '//chrome/test/data/webui/mocha_adapter.js',
+    ];
+  }
+
+  /** @override */
+  get featureList() {
+    return {enabled: ['network::features::kOutOfBlinkCors']};
   }
 };
 
 // eslint-disable-next-line no-var
 var HistoryToolbarFocusTest = class extends HistoryFocusTest {
   /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_browser_proxy.js',
-      'test_browser_service.js',
-      'history_toolbar_focus_test.js',
-    ]);
+  get browsePreload() {
+    return 'chrome://history/test_loader.html?module=history/history_toolbar_focus_test.js';
   }
 };
 
@@ -43,12 +45,8 @@ TEST_F('HistoryToolbarFocusTest', 'All', function() {
 // eslint-disable-next-line no-var
 var HistoryListFocusTest = class extends HistoryFocusTest {
   /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_browser_proxy.js',
-      'test_browser_service.js',
-      'history_list_focus_test.js',
-    ]);
+  get browsePreload() {
+    return 'chrome://history/test_loader.html?module=history/history_list_focus_test.js';
   }
 };
 
@@ -59,10 +57,8 @@ TEST_F('HistoryListFocusTest', 'All', function() {
 // eslint-disable-next-line no-var
 var HistorySyncedDeviceManagerFocusTest = class extends HistoryFocusTest {
   /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'history_synced_device_manager_focus_test.js',
-    ]);
+  get browsePreload() {
+    return 'chrome://history/test_loader.html?module=history/history_synced_device_manager_focus_test.js';
   }
 };
 
@@ -73,12 +69,8 @@ TEST_F('HistorySyncedDeviceManagerFocusTest', 'All', function() {
 // eslint-disable-next-line no-var
 var HistoryItemFocusTest = class extends HistoryFocusTest {
   /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_browser_proxy.js',
-      'test_browser_service.js',
-      'history_item_focus_test.js',
-    ]);
+  get browsePreload() {
+    return 'chrome://history/test_loader.html?module=history/history_item_focus_test.js';
   }
 };
 

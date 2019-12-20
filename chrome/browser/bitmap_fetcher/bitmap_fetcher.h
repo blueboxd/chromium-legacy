@@ -14,8 +14,8 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
-#include "services/network/public/mojom/fetch_api.mojom.h"
-#include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/fetch_api.mojom-forward.h"
+#include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "url/gurl.h"
 
 class SkBitmap;

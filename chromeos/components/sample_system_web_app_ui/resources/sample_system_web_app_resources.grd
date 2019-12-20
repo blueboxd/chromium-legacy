@@ -15,7 +15,10 @@
       <!-- Privileged app host contents. -->
       <if expr="is_official_build == false">
         <include name="IDR_SAMPLE_SYSTEM_WEB_APP_INDEX_HTML" file="index.html" type="BINDATA" compress="gzip" />
+        <include name="IDR_SAMPLE_SYSTEM_WEB_APP_PWA_HTML" file="pwa.html" type="BINDATA" compress="gzip" />
         <include name="IDR_SAMPLE_SYSTEM_WEB_APP_JS" file="js/app.js" type="BINDATA" compress="gzip" />
+        <include name="IDR_SAMPLE_SYSTEM_WEB_APP_MANIFEST" file="manifest.json" type="BINDATA" compress="gzip" />
+        <include name="IDR_SAMPLE_SYSTEM_WEB_APP_ICON_192" file="app_icon_192.png" type="BINDATA" compress="gzip" />
       </if>
     </includes>
   </release>

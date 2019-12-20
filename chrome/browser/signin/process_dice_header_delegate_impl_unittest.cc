@@ -154,7 +154,7 @@ TEST_P(ProcessDiceHeaderDelegateImplTestEnableSync, EnableSync) {
   EXPECT_FALSE(show_error_called_);
 }
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          ProcessDiceHeaderDelegateImplTestEnableSync,
                          ::testing::ValuesIn(kEnableSyncTestCases));
 
@@ -195,7 +195,7 @@ TEST_P(ProcessDiceHeaderDelegateImplTestHandleTokenExchangeFailure,
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     ProcessDiceHeaderDelegateImplTestHandleTokenExchangeFailure,
     ::testing::ValuesIn(kHandleTokenExchangeFailureTestCases));
 

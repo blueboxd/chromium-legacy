@@ -4415,7 +4415,7 @@ TEST_F(DirectoryBackingStoreTest, CatastrophicErrorHandler_KeptAcrossReset) {
   ASSERT_FALSE(dbs.db_->has_error_callback());
   // Set one and see that it was set.
   dbs.SetCatastrophicErrorHandler(
-      base::Bind(&CatastrophicErrorHandler, nullptr));
+      base::BindRepeating(&CatastrophicErrorHandler, nullptr));
   EXPECT_TRUE(dbs.db_->has_error_callback());
   // Recreate the Connection and see that the handler remains set.
   dbs.ResetAndCreateConnection();
@@ -4427,8 +4427,8 @@ TEST_F(DirectoryBackingStoreTest, CatastrophicErrorHandler_KeptAcrossReset) {
 TEST_F(DirectoryBackingStoreTest,
        CatastrophicErrorHandler_InvocationDuringLoad) {
   bool was_called = false;
-  const base::Closure handler =
-      base::Bind(&CatastrophicErrorHandler, &was_called);
+  const base::RepeatingClosure handler =
+      base::BindRepeating(&CatastrophicErrorHandler, &was_called);
   {
     OnDiskDirectoryBackingStoreForTest dbs(GetUsername(), GetDatabasePath());
     dbs.SetCatastrophicErrorHandler(handler);
@@ -4471,8 +4471,8 @@ TEST_F(DirectoryBackingStoreTest,
 TEST_F(DirectoryBackingStoreTest,
        CatastrophicErrorHandler_InvocationDuringSaveChanges) {
   bool was_called = false;
-  const base::Closure handler =
-      base::Bind(&CatastrophicErrorHandler, &was_called);
+  const base::RepeatingClosure handler =
+      base::BindRepeating(&CatastrophicErrorHandler, &was_called);
   // Create a DB with many entries.
   OnDiskDirectoryBackingStoreForTest dbs(GetUsername(), GetDatabasePath());
   dbs.SetCatastrophicErrorHandler(handler);

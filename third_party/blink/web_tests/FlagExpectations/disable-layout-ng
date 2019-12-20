@@ -48,7 +48,7 @@ crbug.com/591099 external/wpt/css/css-fonts/font-features-across-space-1.html [ 
 crbug.com/591099 external/wpt/css/css-fonts/font-features-across-space-3.html [ Failure ]
 
 ### external/wpt/css/css-layout-api/
-crbug.com/591099 external/wpt/css/css-layout-api/ [ Skip ]
+crbug.com/591099 external/wpt/css/css-layout-api/* [ Skip ]
 
 ### external/wpt/css/css-multicol/
 crbug.com/591099 external/wpt/css/css-multicol/multicol-span-all-list-item-002.html [ Failure ]
@@ -341,7 +341,7 @@ crbug.com/591099 virtual/forced-high-contrast-colors/external/wpt/forced-colors-
 crbug.com/874695 http/tests/credentialmanager/credentialscontainer-create-with-virtual-authenticator.html [ Failure ]
 
 ### http/tests/csslayout/
-crbug.com/591099 http/tests/csslayout/ [ Skip ]
+crbug.com/591099 http/tests/csslayout/* [ Skip ]
 
 ### virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/
 crbug.com/591099 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/registration-updateviacache.https.html [ Failure ]
@@ -450,4 +450,4 @@ virtual/controls-refresh/color-scheme/suggestion-picker/datetimelocal-suggestion
 virtual/controls-refresh/color-scheme/suggestion-picker/time-suggestion-picker-appearance.html [ Failure ]
 
 # MathML depends on LayoutNG.
-crbug.com/6606 external/wpt/mathml/ [ Skip ]
+crbug.com/6606 external/wpt/mathml/* [ Skip ]

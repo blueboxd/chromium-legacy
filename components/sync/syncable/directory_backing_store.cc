@@ -222,7 +222,7 @@ namespace {
 // modifies all the columns in the entry table.
 static const string::size_type kUpdateStatementBufferSize = 2048;
 
-void OnSqliteError(const base::Closure& catastrophic_error_handler,
+void OnSqliteError(const base::RepeatingClosure& catastrophic_error_handler,
                    int err,
                    sql::Statement* statement) {
   // An error has been detected. Ignore unless it is catastrophic.
@@ -1779,12 +1779,12 @@ void DirectoryBackingStore::ResetAndCreateConnection() {
 }
 
 void DirectoryBackingStore::SetCatastrophicErrorHandler(
-    const base::Closure& catastrophic_error_handler) {
+    const base::RepeatingClosure& catastrophic_error_handler) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!catastrophic_error_handler.is_null());
   catastrophic_error_handler_ = catastrophic_error_handler;
   sql::Database::ErrorCallback error_callback =
-      base::Bind(&OnSqliteError, catastrophic_error_handler_);
+      base::BindRepeating(&OnSqliteError, catastrophic_error_handler_);
   db_->set_error_callback(error_callback);
 }
 

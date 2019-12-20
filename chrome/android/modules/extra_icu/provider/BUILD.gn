@@ -9,7 +9,9 @@ android_library("java") {
     "//base:base_java",
     "//chrome/android/modules/extra_icu/public:java",
   ]
-  java_files = [ "java/src/org/chromium/chrome/modules/extra_icu/ExtraIcuModuleProvider.java" ]
+  sources = [
+    "java/src/org/chromium/chrome/modules/extra_icu/ExtraIcuModuleProvider.java",
+  ]
 }
 
 generate_jni("jni_headers") {

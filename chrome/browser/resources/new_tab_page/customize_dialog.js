@@ -4,15 +4,56 @@
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/polymer/v3_0/iron-selector/iron-selector.js';
+import './theme_icon.js';
 
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-/** @typedef {{label:string, icon:string}} */
-let Color;
+import {BrowserProxy} from './browser_proxy.js';
+
+/**
+ * @typedef {{
+ *   id:number,
+ *   label:string,
+ *   frameColor:string,
+ *   activeTabColor:string,
+ * }}
+ */
+let ChromeTheme;
+
+/**
+ * @param {skia.mojom.SkColor} skColor
+ * @return {string}
+ */
+function skColorToRgb(skColor) {
+  const r = (skColor.value >> 16) & 0xff;
+  const g = (skColor.value >> 8) & 0xff;
+  const b = skColor.value & 0xff;
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
+/**
+ * @param {string} hexColor
+ * @return {skia.mojom.SkColor}
+ */
+function hexColorToSkColor(hexColor) {
+  if (!/^#[0-9a-f]{6}$/.test(hexColor)) {
+    return {value: 0};
+  }
+  const r = parseInt(hexColor.substring(1, 3), 16);
+  const g = parseInt(hexColor.substring(3, 5), 16);
+  const b = parseInt(hexColor.substring(5, 7), 16);
+  return {value: 0xff000000 + (r << 16) + (g << 8) + b};
+}
 
 /**
  * Dialog that lets the user customize the NTP such as the background color or
  * image.
+ * TODO(crbug.com/1032327): Display currently selected color on open.
+ * TODO(crbug.com/1032327): Persist theme selection.
+ * TODO(crbug.com/1032327): Add keyboard support.
+ * TODO(crbug.com/1032328): Add support for selecting background image.
+ * TODO(crbug.com/1032333): Add support for selecting shortcuts vs most visited.
  */
 class CustomizeDialogElement extends PolymerElement {
   static get is() {
@@ -25,35 +66,30 @@ class CustomizeDialogElement extends PolymerElement {
 
   static get properties() {
     return {
-      /** @private {!Array<!Color>} */
-      colors_: Array,
+      /** @private {!Array<!ChromeTheme>} */
+      themes_: Array,
     };
   }
 
   constructor() {
     super();
-    // Create a few rows of sample data.
-    // TODO(crbug.com/1030459): Add real data source.
-    this.colors_ = [];
-    for (let i = 0; i < 20; i++) {
-      this.colors_.push({
-        label: 'Warm grey',
-        icon:
-            'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iNjQiIGhlaWdodD0iNjQiPjxkZWZzPjxwYXRoIGQ9Ik0zMiA2NEMxNC4zNCA2NCAwIDQ5LjY2IDAgMzJTMTQuMzQgMCAzMiAwczMyIDE0LjM0IDMyIDMyLTE0LjM0IDMyLTMyIDMyeiIgaWQ9ImEiLz48bGluZWFyR3JhZGllbnQgaWQ9ImIiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMzIiIHkxPSIzMiIgeDI9IjMyLjA4IiB5Mj0iMzIiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNGRkZGRkYiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNFM0RCRDciLz48L2xpbmVhckdyYWRpZW50PjxjbGlwUGF0aCBpZD0iYyI+PHVzZSB4bGluazpocmVmPSIjYSIvPjwvY2xpcFBhdGg+PC9kZWZzPjx1c2UgeGxpbms6aHJlZj0iI2EiIGZpbGw9InVybCgjYikiLz48ZyBjbGlwLXBhdGg9InVybCgjYykiPjx1c2UgeGxpbms6aHJlZj0iI2EiIGZpbGwtb3BhY2l0eT0iMCIgc3Ryb2tlPSIjRTNEQkQ3IiBzdHJva2Utd2lkdGg9IjIiLz48L2c+PC9zdmc+',
-      });
-      this.colors_.push(
-          {
-            label: 'Cool grey',
-            icon:
-                'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iNjQiIGhlaWdodD0iNjQiPjxkZWZzPjxwYXRoIGQ9Ik0zMiA2NEMxNC4zNCA2NCAwIDQ5LjY2IDAgMzJTMTQuMzQgMCAzMiAwczMyIDE0LjM0IDMyIDMyLTE0LjM0IDMyLTMyIDMyeiIgaWQ9ImEiLz48bGluZWFyR3JhZGllbnQgaWQ9ImIiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMzIiIHkxPSIzMiIgeDI9IjMyLjA4IiB5Mj0iMzIiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNEOURBREYiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNBN0FCQjciLz48L2xpbmVhckdyYWRpZW50PjxjbGlwUGF0aCBpZD0iYyI+PHVzZSB4bGluazpocmVmPSIjYSIvPjwvY2xpcFBhdGg+PC9kZWZzPjx1c2UgeGxpbms6aHJlZj0iI2EiIGZpbGw9InVybCgjYikiLz48ZyBjbGlwLXBhdGg9InVybCgjYykiPjx1c2UgeGxpbms6aHJlZj0iI2EiIGZpbGwtb3BhY2l0eT0iMCIgc3Ryb2tlPSIjQTdBQkI3IiBzdHJva2Utd2lkdGg9IjIiLz48L2c+PC9zdmc+',
-          },
-      );
-    }
+    /** @private {newTabPage.mojom.PageHandlerRemote} */
+    this.pageHandler_ = BrowserProxy.getInstance().handler;
   }
 
+  /** @override */
   connectedCallback() {
     super.connectedCallback();
-    this.$.dialog.showModal();
+    this.pageHandler_.getChromeThemes().then(({themes}) => {
+      this.themes_ =
+          themes.map(theme => ({
+                       id: theme.id,
+                       label: theme.label,
+                       frameColor: skColorToRgb(theme.frameColor),
+                       activeTabColor: skColorToRgb(theme.activeTabColor),
+                     }));
+      this.$.dialog.showModal();
+    });
   }
 
   /** @private */
@@ -64,6 +100,34 @@ class CustomizeDialogElement extends PolymerElement {
   /** @private */
   onDoneClick_() {
     this.$.dialog.close();
+  }
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onCustomFrameColorChange_(e) {
+    this.pageHandler_.applyAutogeneratedTheme(
+        hexColorToSkColor(e.target.value));
+  }
+
+  /** @private */
+  onAutogeneratedThemeClick_() {
+    this.$.colorPicker.click();
+  }
+
+  /** @private */
+  onDefaultThemeClick_() {
+    this.pageHandler_.applyDefaultTheme();
+  }
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onChromeThemeClick_(e) {
+    this.pageHandler_.applyChromeTheme(
+        this.$.themes.itemForElement(e.target).id);
   }
 }
 

@@ -70,4 +70,4 @@ in Gerrit.
 [clang_code_coverage_wrapper]: clang_code_coverage_wrapper.md
 [chromium-coverage Gerrit plugin]: https://chromium.googlesource.com/infra/gerrit-plugins/code-coverage/
 [Chromium on Chromium OS]: https://chromium.googlesource.com/chromium/src/+/master/docs/chromeos_build_instructions.md
-[Chromium on Linux]: https://chromium.googlesource.com/chromium/src/+/master/docs/linux_build_instructions.md
+[Chromium on Linux]: https://chromium.googlesource.com/chromium/src/+/master/docs/linux/build_instructions.md

@@ -2,11 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('history.history_routing_test', function() {
-  function registerTests() {
+import {BrowserService} from 'chrome://history/history.js';
+import {TestBrowserService} from 'chrome://test/history/test_browser_service.js';
+import {flushTasks} from 'chrome://test/test_util.m.js';
+import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+
     suite('routing-test', function() {
       let app;
       let list;
+      let sidebar;
       let toolbar;
 
       function navigateTo(route) {
@@ -19,20 +23,20 @@ cr.define('history.history_routing_test', function() {
       setup(function() {
         window.history.replaceState({}, '', '/');
         PolymerTest.clearBody();
-        history.BrowserService.instance_ = new TestBrowserService();
+        BrowserService.instance_ = new TestBrowserService();
         app = document.createElement('history-app');
         document.body.appendChild(app);
 
         assertEquals('chrome://history/', window.location.href);
         sidebar = app.$['content-side-bar'];
         toolbar = app.$['toolbar'];
-        return test_util.flushTasks();
+        return flushTasks();
       });
 
       test('changing route changes active view', function() {
         assertEquals('history', app.$.content.selected);
         navigateTo('/syncedTabs');
-        return test_util.flushTasks().then(function() {
+        return flushTasks().then(function() {
           assertEquals('syncedTabs', app.$.content.selected);
           assertEquals('chrome://history/syncedTabs', window.location.href);
         });
@@ -43,11 +47,11 @@ cr.define('history.history_routing_test', function() {
         assertEquals('history', app.selectedPage_);
         assertEquals('chrome://history/', window.location.href);
 
-        MockInteractions.tap(menu.children[1]);
+        menu.children[1].click();
         assertEquals('syncedTabs', app.selectedPage_);
         assertEquals('chrome://history/syncedTabs', window.location.href);
 
-        MockInteractions.keyDownOn(menu.children[0], 32, '', 'Space');
+        keyDownOn(menu.children[0], 32, '', 'Space');
         assertEquals('history', app.selectedPage_);
         assertEquals('chrome://history/', window.location.href);
       });
@@ -73,62 +77,16 @@ cr.define('history.history_routing_test', function() {
         assertEquals('history', app.selectedPage_);
         navigateTo('/?q=' + searchTerm);
 
-        MockInteractions.tap(menu.children[1]);
+        menu.children[1].click();
         assertEquals('syncedTabs', app.selectedPage_);
         assertEquals(searchTerm, toolbar.searchTerm);
         assertEquals(
             'chrome://history/syncedTabs?q=' + searchTerm,
             window.location.href);
 
-        MockInteractions.tap(menu.children[0]);
+        menu.children[0].click();
         assertEquals('history', app.selectedPage_);
         assertEquals(searchTerm, toolbar.searchTerm);
         assertEquals('chrome://history/?q=' + searchTerm, window.location.href);
       });
     });
-  }
-  return {registerTests: registerTests};
-});
-
-cr.define('history.history_routing_test_with_query_param', function() {
-  function registerTests() {
-    suite('routing-with-query-param', function() {
-      let app;
-      let toolbar;
-      let expectedQuery;
-      let testService;
-
-      setup(function() {
-        PolymerTest.clearBody();
-        testService = new TestBrowserService();
-        history.BrowserService.instance_ = testService;
-        // Ignore the initial empty query so that we can correctly check the
-        // search term for the second call to queryHistory().
-        testService.ignoreNextQuery();
-
-        testService.setQueryResult({
-          info: createHistoryInfo('query'),
-          value: [],
-        });
-        app = document.createElement('history-app');
-        document.body.appendChild(app);
-        toolbar = app.$['toolbar'];
-        expectedQuery = 'query';
-      });
-
-      test('search initiated on load', function() {
-        return testService.whenCalled('queryHistory')
-            .then(query => {
-              assertEquals(expectedQuery, query);
-              return test_util.flushTasks();
-            })
-            .then(function() {
-              assertEquals(
-                  expectedQuery,
-                  toolbar.$['main-toolbar'].getSearchField().getValue());
-            });
-      });
-    });
-  }
-  return {registerTests: registerTests};
-});

@@ -26,6 +26,7 @@
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/quota/quota_manager.h"
+#include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 

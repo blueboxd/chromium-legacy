@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/resource_coordinator/tab_metrics_logger.h"
+#include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -23,7 +24,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "components/ukm/content/source_url_recorder.h"
-#include "content/public/common/page_importance_signals.h"
 
 namespace chromeos {
 namespace power {
@@ -478,7 +478,8 @@ TabProperty UserActivityManager::UpdateOpenTabURL() {
       property.engagement_score =
           TabMetricsLogger::GetSiteEngagementScore(contents);
       property.has_form_entry =
-          contents->GetPageImportanceSignals().had_form_interaction;
+          FormInteractionTabHelper::FromWebContents(contents)
+              ->had_form_interaction();
     }
     return property;
   }

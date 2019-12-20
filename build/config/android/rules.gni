@@ -2837,6 +2837,7 @@ if (enable_java_templates) {
                                "processor_args_javac",
                                "secondary_abi_loadable_modules",
                                "secondary_native_lib_placeholders",
+                               "sources",
                                "static_library_dependent_targets",
                              ])
       deps = _deps
@@ -3510,6 +3511,7 @@ if (enable_java_templates) {
                                "shared_resources_whitelist_locales",
                                "shared_resources_whitelist_target",
                                "short_resource_paths",
+                               "sources",
                                "srcjar_deps",
                                "static_library_dependent_targets",
                                "static_library_provider",
@@ -4729,7 +4731,11 @@ if (enable_java_templates) {
       _module_zip_path = "$target_gen_dir/$target_name/${_module.name}.zip"
 
       create_android_app_bundle_module(_create_module_target) {
-        forward_variables_from(invoker, [ "is_multi_abi" ])
+        forward_variables_from(invoker,
+                               [
+                                 "is_multi_abi",
+                                 "uncompress_dex",
+                               ])
         module_name = _module.name
         build_config = _module_build_config
         module_zip_path = _module_zip_path

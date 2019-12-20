@@ -188,6 +188,13 @@ Polymer({
         assert(this.destinationStore_),
         DestinationStore.EventType.DESTINATIONS_INSERTED,
         this.updateDropdownDestinations_.bind(this));
+
+    // <if expr="chromeos">
+    this.tracker_.add(
+        this.destinationStore_,
+        DestinationStore.EventType.DESTINATION_EULA_READY,
+        this.updateDestinationEulaUrl_.bind(this));
+    // </if>
   },
 
   /** @override */
@@ -539,4 +546,19 @@ Polymer({
       }
     });
   },
+
+  // <if expr="chromeos">
+  /**
+   * @param {!CustomEvent<string>} e Event containing the current destination's
+   * EULA URL.
+   */
+  updateDestinationEulaUrl_: function(e) {
+    if (!this.destination) {
+      return;
+    }
+
+    this.destination.eulaUrl = e.detail;
+    this.notifyPath('destination.eulaUrl');
+  },
+  // </if>
 });

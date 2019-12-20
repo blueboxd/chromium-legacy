@@ -39,7 +39,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPage;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
-import org.chromium.chrome.browser.settings.website.SingleWebsitePreferences;
+import org.chromium.chrome.browser.settings.website.SingleWebsiteSettings;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.vr.mock.MockVrDaydreamApi;
 import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
@@ -376,7 +376,7 @@ public class VrBrowserTransitionTest {
         NativeUiUtils.enableMockedInput();
         NativeUiUtils.performActionAndWaitForUiQuiescence(() -> {
             TestThreadUtils.runOnUiThreadBlocking(() -> {
-                SettingsLauncher.launchSettingsPage(context, SingleWebsitePreferences.class);
+                SettingsLauncher.launchSettingsPage(context, SingleWebsiteSettings.class);
             });
         });
         TestThreadUtils.runOnUiThreadBlocking(
@@ -421,7 +421,7 @@ public class VrBrowserTransitionTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Intent preferencesIntent = SettingsLauncher.createIntentForSettingsPage(
-                    context, SingleWebsitePreferences.class.getName());
+                    context, SingleWebsiteSettings.class.getName());
             Assert.assertFalse("Starting an activity did not trigger DOFF",
                     context.startActivityIfNeeded(preferencesIntent, 0));
         });

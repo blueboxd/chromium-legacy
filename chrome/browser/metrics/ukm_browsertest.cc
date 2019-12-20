@@ -185,6 +185,11 @@ class UkmBrowserTestBase : public SyncTest {
     if (service)
       service->UpdateSourceURL(source_id, GURL("http://example.com"));
   }
+  bool IsSourceMarkedAsObsolete(ukm::SourceId source_id) {
+    auto* service = ukm_service();
+    DCHECK(service);
+    return base::Contains(service->recordings_.obsolete_source_ids, source_id);
+  }
   void BuildAndStoreUkmLog() {
     auto* service = ukm_service();
     DCHECK(service);
@@ -1134,6 +1139,93 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, EvictObsoleteSources) {
   EXPECT_FALSE(has_source_id2);
 
   CloseBrowserSynchronously(sync_browser);
+}
+
+// Verify that correct sources are marked as obsolete when same-document
+// navigation happens.
+IN_PROC_BROWSER_TEST_F(UkmBrowserTest,
+                       MarkObsoleteSourcesSameDocumentNavigation) {
+  MetricsConsentOverride metrics_consent(true);
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  std::unique_ptr<ProfileSyncServiceHarness> harness =
+      EnableSyncForProfile(profile);
+  Browser* sync_browser = CreateBrowser(profile);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // First navigation.
+  const ukm::SourceId source_id1 =
+      NavigateAndGetSource(sync_browser,
+                           embedded_test_server()->GetURL("/title1.html"))
+          ->id();
+
+  EXPECT_FALSE(IsSourceMarkedAsObsolete(source_id1));
+
+  // Cross-document navigation where the previous navigation is cross-document.
+  const ukm::SourceId source_id2 =
+      NavigateAndGetSource(sync_browser,
+                           embedded_test_server()->GetURL("/title2.html"))
+          ->id();
+  EXPECT_TRUE(IsSourceMarkedAsObsolete(source_id1));
+  EXPECT_FALSE(IsSourceMarkedAsObsolete(source_id2));
+
+  // Same-document navigation where the previous navigation is cross-document.
+  const ukm::SourceId source_id3 =
+      NavigateAndGetSource(sync_browser,
+                           embedded_test_server()->GetURL("/title2.html#a"))
+          ->id();
+  EXPECT_TRUE(IsSourceMarkedAsObsolete(source_id1));
+  EXPECT_FALSE(IsSourceMarkedAsObsolete(source_id2));
+  EXPECT_FALSE(IsSourceMarkedAsObsolete(source_id3));
+
+  // Same-document navigation where the previous navigation is same-document.
+  const ukm::SourceId source_id4 =
+      NavigateAndGetSource(sync_browser,
+                           embedded_test_server()->GetURL("/title2.html#b"))
+          ->id();
+  EXPECT_TRUE(IsSourceMarkedAsObsolete(source_id1));
+  EXPECT_FALSE(IsSourceMarkedAsObsolete(source_id2));
+  EXPECT_TRUE(IsSourceMarkedAsObsolete(source_id3));
+  EXPECT_FALSE(IsSourceMarkedAsObsolete(source_id4));
+
+  // Cross-document navigation where the previous navigation is same-document.
+  NavigateAndGetSource(sync_browser,
+                       embedded_test_server()->GetURL("/title1.html"))
+      ->id();
+  EXPECT_TRUE(IsSourceMarkedAsObsolete(source_id1));
+  EXPECT_TRUE(IsSourceMarkedAsObsolete(source_id2));
+  EXPECT_TRUE(IsSourceMarkedAsObsolete(source_id3));
+  EXPECT_TRUE(IsSourceMarkedAsObsolete(source_id4));
+}
+
+// Verify that sources are not marked as obsolete by a new navigation that does
+// not commit.
+IN_PROC_BROWSER_TEST_F(UkmBrowserTest, NotMarkSourcesIfNavigationNotCommitted) {
+  MetricsConsentOverride metrics_consent(true);
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  std::unique_ptr<ProfileSyncServiceHarness> harness =
+      EnableSyncForProfile(profile);
+  Browser* sync_browser = CreateBrowser(profile);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // An example navigation that commits.
+  const GURL test_url_with_commit =
+      embedded_test_server()->GetURL("/title1.html");
+
+  // An example of a navigation returning "204 No Content" which does not commit
+  // (i.e. the WebContents stays at the existing URL).
+  const GURL test_url_no_commit =
+      embedded_test_server()->GetURL("/page204.html");
+
+  // Get the source id from the committed navigation.
+  const ukm::SourceId source_id =
+      NavigateAndGetSource(sync_browser, test_url_with_commit)->id();
+
+  // Initial default state.
+  EXPECT_FALSE(IsSourceMarkedAsObsolete(source_id));
+
+  // New navigation did not commit, thus the source should still be kept alive.
+  ui_test_utils::NavigateToURL(sync_browser, test_url_no_commit);
+  EXPECT_FALSE(IsSourceMarkedAsObsolete(source_id));
 }
 
 }  // namespace metrics

@@ -27,8 +27,8 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "third_party/blink/public/common/input/web_gesture_event.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
-#include "third_party/blink/public/platform/web_gesture_event.h"
 
 using content::WebContents;
 

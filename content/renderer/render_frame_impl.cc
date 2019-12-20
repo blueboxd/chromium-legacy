@@ -33,6 +33,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/process/process.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
@@ -164,6 +165,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
+#include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/common/logging/logging_utils.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
@@ -181,7 +183,6 @@
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_http_body.h"
-#include "third_party/blink/public/platform/web_keyboard_event.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_media_player_source.h"
 #include "third_party/blink/public/platform/web_point.h"
@@ -1029,9 +1030,11 @@ void FillNavigationParamsOriginPolicy(
   if (head.origin_policy.has_value() && head.origin_policy.value().contents) {
     navigation_params->origin_policy = blink::WebOriginPolicy();
 
-    for (const auto& feature : head.origin_policy.value().contents->features) {
-      navigation_params->origin_policy->features.emplace_back(
-          WebString::FromUTF8(feature));
+    const base::Optional<std::string>& feature_policy =
+        head.origin_policy.value().contents->feature_policy;
+    if (feature_policy) {
+      navigation_params->origin_policy->feature_policy =
+          WebString::FromUTF8(*feature_policy);
     }
 
     for (const auto& csp :
@@ -1808,7 +1811,6 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
       handling_select_range_(false),
       render_accessibility_(nullptr),
       is_pasting_(false),
-      suppress_further_dialogs_(false),
       blame_context_(nullptr),
 #if BUILDFLAG(ENABLE_PLUGINS)
       focused_pepper_plugin_(nullptr),
@@ -2218,8 +2220,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnGetSavableResourceLinks)
     IPC_MESSAGE_HANDLER(FrameMsg_GetSerializedHtmlWithLocalLinks,
                         OnGetSerializedHtmlWithLocalLinks)
-    IPC_MESSAGE_HANDLER(FrameMsg_SuppressFurtherDialogs,
-                        OnSuppressFurtherDialogs)
     IPC_MESSAGE_HANDLER(FrameMsg_BlinkFeatureUsageReport,
                         OnBlinkFeatureUsageReport)
     IPC_MESSAGE_HANDLER(FrameMsg_MixedContentFound, OnMixedContentFound)
@@ -2329,6 +2329,7 @@ void RenderFrameImpl::OnSwapOut(
     const FrameReplicationState& replicated_frame_state) {
   TRACE_EVENT1("navigation,rail", "RenderFrameImpl::OnSwapOut",
                "id", routing_id_);
+  DCHECK(!base::RunLoop::IsNestedOnCurrentThread());
 
   // Send an UpdateState message before we get deleted.
   SendUpdateState();
@@ -2856,11 +2857,6 @@ bool RenderFrameImpl::RunJavaScriptDialog(JavaScriptDialogType type,
                                           const base::string16& message,
                                           const base::string16& default_value,
                                           base::string16* result) {
-  // Don't allow further dialogs if we are waiting to swap out, since the
-  // ScopedPageLoadDeferrer in our stack prevents it.
-  if (suppress_further_dialogs_)
-    return false;
-
   int32_t message_length = static_cast<int32_t>(message.length());
   if (WebUserGestureIndicator::ProcessedUserGestureSinceLoad(frame_)) {
     UMA_HISTOGRAM_COUNTS_1M("JSDialogs.CharacterCount.UserGestureSinceLoad",
@@ -4889,11 +4885,6 @@ bool RenderFrameImpl::RunModalPromptDialog(
 }
 
 bool RenderFrameImpl::RunModalBeforeUnloadDialog(bool is_reload) {
-  // Don't allow further dialogs if we are waiting to swap out, since the
-  // ScopedPageLoadDeferrer in our stack prevents it.
-  if (suppress_further_dialogs_)
-    return false;
-
   bool success = false;
   // This is an ignored return value, but is included so we can accept the same
   // response as RunJavaScriptDialog.
@@ -6207,10 +6198,6 @@ void RenderFrameImpl::OnWriteMHTMLComplete(
                 "mismatching enums: " #a)
 #undef STATIC_ASSERT_ENUM
 #endif
-
-void RenderFrameImpl::OnSuppressFurtherDialogs() {
-  suppress_further_dialogs_ = true;
-}
 
 void RenderFrameImpl::OnBlinkFeatureUsageReport(
     const std::set<blink::mojom::WebFeature>& features) {

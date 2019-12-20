@@ -12,7 +12,7 @@ android_library("java") {
     "//components/module_installer/android:module_installer_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
-  java_files = [
+  sources = [
     "java/src/org/chromium/chrome/features/dev_ui/DevUiInstallListener.java",
     "java/src/org/chromium/chrome/features/dev_ui/DevUiModuleProvider.java",
   ]

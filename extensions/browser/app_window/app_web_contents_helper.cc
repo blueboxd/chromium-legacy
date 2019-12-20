@@ -13,8 +13,8 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/suggest_permission_util.h"
 #include "extensions/common/permissions/api_permission.h"
+#include "third_party/blink/public/common/input/web_gesture_event.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
-#include "third_party/blink/public/platform/web_gesture_event.h"
 
 namespace extensions {
 

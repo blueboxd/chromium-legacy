@@ -23,8 +23,8 @@ import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.settings.ChromeImageViewPreference;
 import org.chromium.chrome.browser.settings.ExpandablePreferenceGroup;
 import org.chromium.chrome.browser.settings.SettingsActivity;
-import org.chromium.chrome.browser.settings.website.SingleCategoryPreferences;
-import org.chromium.chrome.browser.settings.website.SingleWebsitePreferences;
+import org.chromium.chrome.browser.settings.website.SingleCategorySettings;
+import org.chromium.chrome.browser.settings.website.SingleWebsiteSettings;
 import org.chromium.chrome.browser.settings.website.SiteSettingsCategory;
 import org.chromium.chrome.browser.settings.website.SiteSettingsTestUtils;
 import org.chromium.chrome.browser.settings.website.Website;
@@ -78,10 +78,10 @@ public class TrustedWebActivityPreferencesUiTest {
                 SiteSettingsCategory.Type.NOTIFICATIONS);
         final String groupName = "managed_group";
 
-        final SingleCategoryPreferences websitePreferences =
+        final SingleCategorySettings websitePreferences =
                 TestThreadUtils.runOnUiThreadBlocking(() -> {
-                    final SingleCategoryPreferences preferences =
-                            (SingleCategoryPreferences) settingsActivity.getMainFragment();
+                    final SingleCategorySettings preferences =
+                            (SingleCategorySettings) settingsActivity.getMainFragment();
                     final ExpandablePreferenceGroup group =
                             (ExpandablePreferenceGroup) preferences.findPreference(groupName);
                     preferences.onPreferenceClick(group);
@@ -133,8 +133,8 @@ public class TrustedWebActivityPreferencesUiTest {
                 SiteSettingsTestUtils.startSingleWebsitePreferences(website);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            final SingleWebsitePreferences websitePreferences =
-                    (SingleWebsitePreferences) settingsActivity.getMainFragment();
+            final SingleWebsiteSettings websitePreferences =
+                    (SingleWebsiteSettings) settingsActivity.getMainFragment();
             final ChromeImageViewPreference notificationPreference =
                     (ChromeImageViewPreference) websitePreferences.findPreference(
                             "push_notifications_list");

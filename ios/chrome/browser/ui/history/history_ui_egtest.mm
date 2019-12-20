@@ -10,36 +10,20 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#include "components/browsing_data/core/pref_names.h"
-#include "components/prefs/pref_service.h"
-#include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/chrome_url_constants.h"
-#import "ios/chrome/browser/ui/authentication/cells/signin_promo_view.h"
-#import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/history/history_ui_constants.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_constants.h"
-#import "ios/chrome/browser/ui/settings/settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/table_view/feature_flags.h"
-#import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
-#import "ios/chrome/browser/ui/util/transparent_link_button.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/common/string_util.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
-#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
-#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #import "ios/web/public/test/http_server/http_server_util.h"
 #import "net/base/mac/url_conversions.h"
-#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -123,8 +107,6 @@ id<GREYMatcher> OpenInNewIncognitoTabButton() {
 - (void)loadTestURLs;
 // Displays the history UI.
 - (void)openHistoryPanel;
-// Resets which data is selected in the Clear Browsing Data UI.
-- (void)resetBrowsingDataPrefs;
 
 @end
 
@@ -152,7 +134,7 @@ id<GREYMatcher> OpenInNewIncognitoTabButton() {
   [ChromeEarlGrey clearBrowsingHistory];
   // Some tests rely on a clean state for the "Clear Browsing Data" settings
   // screen.
-  [self resetBrowsingDataPrefs];
+  [ChromeEarlGrey resetBrowsingDataPrefs];
 }
 
 - (void)tearDown {
@@ -169,7 +151,7 @@ id<GREYMatcher> OpenInNewIncognitoTabButton() {
 
   // Some tests change the default values for the "Clear Browsing Data" settings
   // screen.
-  [self resetBrowsingDataPrefs];
+  [ChromeEarlGrey resetBrowsingDataPrefs];
   [super tearDown];
 }
 
@@ -531,15 +513,6 @@ id<GREYMatcher> OpenInNewIncognitoTabButton() {
 - (void)openHistoryPanel {
   [ChromeEarlGreyUI openToolsMenu];
   [ChromeEarlGreyUI tapToolsMenuButton:HistoryButton()];
-}
-
-- (void)resetBrowsingDataPrefs {
-  PrefService* prefs = chrome_test_util::GetOriginalBrowserState()->GetPrefs();
-  prefs->ClearPref(browsing_data::prefs::kDeleteBrowsingHistory);
-  prefs->ClearPref(browsing_data::prefs::kDeleteCookies);
-  prefs->ClearPref(browsing_data::prefs::kDeleteCache);
-  prefs->ClearPref(browsing_data::prefs::kDeletePasswords);
-  prefs->ClearPref(browsing_data::prefs::kDeleteFormData);
 }
 
 @end

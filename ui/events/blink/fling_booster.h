@@ -5,7 +5,7 @@
 #ifndef UI_EVENTS_BLINK_FLING_BOOSTER_H_
 #define UI_EVENTS_BLINK_FLING_BOOSTER_H_
 
-#include "third_party/blink/public/platform/web_gesture_event.h"
+#include "third_party/blink/public/common/input/web_gesture_event.h"
 
 namespace ui {
 

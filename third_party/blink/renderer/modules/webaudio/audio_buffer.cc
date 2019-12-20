@@ -220,7 +220,7 @@ void AudioBuffer::copyFromChannel(NotShared<DOMFloat32Array> destination,
 
 void AudioBuffer::copyFromChannel(NotShared<DOMFloat32Array> destination,
                                   int32_t channel_number,
-                                  uint32_t buffer_offset,
+                                  size_t buffer_offset,
                                   ExceptionState& exception_state) {
   if (channel_number < 0 ||
       static_cast<uint32_t>(channel_number) >= channels_.size()) {
@@ -237,23 +237,24 @@ void AudioBuffer::copyFromChannel(NotShared<DOMFloat32Array> destination,
 
   DOMFloat32Array* channel_data = channels_[channel_number].Get();
 
-  if (buffer_offset >= channel_data->deprecatedLengthAsUnsigned()) {
+  size_t data_length = channel_data->lengthAsSizeT();
+
+  if (buffer_offset >= data_length) {
     // Nothing to copy if the buffer offset is past the end of the AudioBuffer.
     return;
   }
 
-  unsigned int count =
-      channel_data->deprecatedLengthAsUnsigned() - buffer_offset;
+  size_t count = data_length - buffer_offset;
 
-  count = std::min(destination.View()->deprecatedLengthAsUnsigned(), count);
+  count = std::min(destination.View()->lengthAsSizeT(), count);
 
   const float* src = channel_data->Data();
   float* dst = destination.View()->Data();
 
   DCHECK(src);
   DCHECK(dst);
-  DCHECK_LE(count, channel_data->deprecatedLengthAsUnsigned());
-  DCHECK_LE(buffer_offset + count, channel_data->deprecatedLengthAsUnsigned());
+  DCHECK_LE(count, data_length);
+  DCHECK_LE(buffer_offset + count, data_length);
 
   memcpy(dst, src + buffer_offset, count * sizeof(*src));
 }
@@ -266,7 +267,7 @@ void AudioBuffer::copyToChannel(NotShared<DOMFloat32Array> source,
 
 void AudioBuffer::copyToChannel(NotShared<DOMFloat32Array> source,
                                 int32_t channel_number,
-                                uint32_t buffer_offset,
+                                size_t buffer_offset,
                                 ExceptionState& exception_state) {
   if (channel_number < 0 ||
       static_cast<uint32_t>(channel_number) >= channels_.size()) {
@@ -282,22 +283,21 @@ void AudioBuffer::copyToChannel(NotShared<DOMFloat32Array> source,
 
   DOMFloat32Array* channel_data = channels_[channel_number].Get();
 
-  if (buffer_offset >= channel_data->deprecatedLengthAsUnsigned()) {
+  if (buffer_offset >= channel_data->lengthAsSizeT()) {
     // Nothing to copy if the buffer offset is past the end of the AudioBuffer.
     return;
   }
 
-  unsigned int count =
-      channel_data->deprecatedLengthAsUnsigned() - buffer_offset;
+  size_t count = channel_data->lengthAsSizeT() - buffer_offset;
 
-  count = std::min(source.View()->deprecatedLengthAsUnsigned(), count);
+  count = std::min(source.View()->lengthAsSizeT(), count);
   const float* src = source.View()->Data();
   float* dst = channel_data->Data();
 
   DCHECK(src);
   DCHECK(dst);
-  DCHECK_LE(buffer_offset + count, channel_data->deprecatedLengthAsUnsigned());
-  DCHECK_LE(count, source.View()->deprecatedLengthAsUnsigned());
+  DCHECK_LE(buffer_offset + count, channel_data->lengthAsSizeT());
+  DCHECK_LE(count, source.View()->lengthAsSizeT());
 
   memcpy(dst + buffer_offset, src, count * sizeof(*dst));
 }

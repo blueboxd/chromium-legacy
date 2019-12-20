@@ -4,6 +4,7 @@
 <translation id="1002439864875515590">Nếu bạn đặt chính sách này thành một chuỗi trống hoặc không định cấu hình, thì <ph name="PRODUCT_OS_NAME" /> sẽ không hiển thị tùy chọn tự động hoàn thành trong quy trình đăng nhập của người dùng.
       Nếu bạn đặt chính sách này thành một chuỗi biểu thị tên miền, thì <ph name="PRODUCT_OS_NAME" /> sẽ hiển thị tùy chọn tự động hoàn thành khi người dùng đăng nhập để họ chỉ cần nhập tên người dùng mà không cần nhập phần mở rộng tên miền.  Người dùng có thể ghi đè phần mở rộng tên miền này.
       Nếu giá trị của chính sách không phải là một miền hợp lệ, thì chính sách sẽ không áp dụng.</translation>
+<translation id="1010151305531217567">Chuyển nút chuột chính thành nút phải</translation>
 <translation id="101438888985615157">Xoay màn hình 180 độ</translation>
 <translation id="1016912092715201525">Định cấu hình các lần kiểm tra trình duyệt mặc định trong <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi những cấu hình này.
 
@@ -372,6 +373,15 @@
       Nếu cài đặt này bị tắt hoặc không được định cấu hình thì người dùng
       doanh nghiệp sẽ không thể sử dụng ARC.</translation>
 <translation id="1553956579506604198">Chặn không cho cài đặt các tiện ích bên ngoài</translation>
+<translation id="1556072857949466438">Chính sách này cho phép quản trị viên chỉ định rằng trang có thể hiển thị cửa sổ bật lên khi đang hủy tải trang.
+
+      Khi bạn đặt chính sách này thành bật, các trang sẽ được phép hiển thị cửa sổ bật lên khi đang hủy tải trang.
+
+      Khi bạn không đặt chính sách này hoặc đặt chính sách thành tắt, các trang sẽ không được phép hiển thị cửa sổ bật lên khi đang hủy tải trang, theo thông số kỹ thuật (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      Chính sách này sẽ bị xóa trong Chrome 88.
+
+      Vui lòng xem tại https://www.chromestatus.com/feature/5989473649164288.</translation>
 <translation id="1559980755219453326">Chính sách này kiểm soát việc có nên báo cáo thông tin về tiện ích và plugin hay không.
 
       Khi bạn không đặt hoặc đặt chính sách này thành True, thì dữ liệu về tiện ích và plugin sẽ được thu thập.
@@ -834,6 +844,17 @@
       Chính sách này cũng áp dụng cho các tiện ích thành phần, chẳng hạn như tiện ích Dịch vụ Hangout.</translation>
 <translation id="2223598546285729819">Cài đặt thông báo mặc định</translation>
 <translation id="2231817271680715693">Nhập lịch sử duyệt từ trình duyệt mặc định trong lần chạy đầu tiên</translation>
+<translation id="2234855698900783408">Bật tùy chọn giảm thiểu kiểm tra <ph name="CORS" /> trong quy trình triển khai <ph name="CORS" /> mới, cho phép Tiện ích duy trì hành vi tương thích và cho phép <ph name="PRODUCT_NAME" /> gửi các tiêu đề đã chỉ định mà không cần kiểm tra <ph name="CORS" />.
+
+      Nếu bạn để trống danh sách này, thì <ph name="PRODUCT_NAME" /> sẽ cố chạy Tiện ích theo cách tương thích và không làm thay đổi <ph name="API" /> đối với <ph name="PRODUCT_NAME" /> 79 như giải thích tại <ph name="WEB_REQUEST_API_MANUAL" />.
+
+      Nếu bạn đặt danh sách này thành có tên tiêu đề yêu cầu <ph name="HTTP" />, thì quá trình kiểm tra <ph name="CORS" /> sẽ bật tùy chọn giảm thiểu cho Tiện ích và bỏ qua các tiêu đề có trong danh sách.
+
+      Nếu bạn không đặt danh sách này, thì cả hai tùy chọn giảm thiểu giải thích ở trên đều không áp dụng.
+
+      Để biết thông tin chi tiết về <ph name="CORS" />, hãy truy cập vào: <ph name="CORS_HELP_URL" />.
+
+      Xin lưu ý rằng chính sách này sẽ bị xóa trong <ph name="PRODUCT_NAME" /> phiên bản 82.</translation>
 <translation id="2236488539271255289">Không cho phép bất kỳ trang web nào lưu dữ liệu trên máy</translation>
 <translation id="2240879329269430151">Cho phép bạn đặt liệu các trang web có được phép hiển thị cửa sổ bật lên hay không. Bạn có thể cho phép hoặc từ chối hiển thị cửa sổ bật lên đối với tất cả các trang web.
 
@@ -1523,6 +1544,15 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu cài đặt này được bật hoặc không được định cấu hình, người dùng có thể bật proxy máy in máy chủ ảo bằng cách xác thực bằng tài khoản Google của họ.
 
       Nếu cài đặt này được bật, người dùng không thể bật proxy và máy sẽ không được phép chia sẻ máy in với <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="3295118731207421797">Chính sách này cho phép quản trị viên chỉ định rằng một trang có thể gửi các yêu cầu XHR đồng bộ trong khi đóng trang.
+
+      Khi bạn đặt chính sách này thành bật, các trang sẽ được phép gửi các yêu cầu XHR đồng bộ trong khi đóng trang.
+
+      Khi bạn không đặt chính sách này hoặc đặt chính sách thành tắt, các trang sẽ không được phép gửi các yêu cầu XHR đồng bộ trong khi đóng trang.
+
+      Chính sách này sẽ bị xóa trong Chrome 88.
+
+      Vui lòng xem tại https://www.chromestatus.com/feature/4664843055398912.</translation>
 <translation id="3303653927512453822">Cho phép bạn đưa tất cả các cookie quay lại về hành vi <ph name="ATTRIBUTE_SAMESITE_NAME" /> cũ. Việc quay lại về hành vi cũ sẽ khiến những cookie không chỉ định thuộc tính <ph name="ATTRIBUTE_SAMESITE_NAME" /> sẽ được xử lý như thể là "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />" và loại bỏ yêu cầu cookie "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />" phải mang thuộc tính "<ph name="ATTRIBUTE_SECURE_NAME" />". Để xem thông tin chi tiết, vui lòng truy cập https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies.
 
           Khi bạn không đặt chính sách này, thì hành vi <ph name="ATTRIBUTE_SAMESITE_NAME" /> mặc định đối với các cookie không chỉ định thuộc tính <ph name="ATTRIBUTE_SAMESITE_NAME" /> sẽ phụ thuộc vào cấu hình cá nhân của người dùng dành cho tính năng <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" />. Bạn có thể đặt tính năng này trong giai đoạn thử nghiệm hiện trường hoặc bằng cách bật hay tắt cờ <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" />.</translation>
@@ -2436,6 +2466,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu bạn đã tắt hoặc chưa đặt chính sách này, các trang web sẽ không được phép chuyển tới và mở cửa sổ/tab mới cùng một lúc.</translation>
 <translation id="4680961954980851756">Bật Tự động điền</translation>
 <translation id="4693779768620889402">Đích dựa trên tiện ích</translation>
+<translation id="4699592681017489215">Chính sách này định cấu hình một nút chuyển cục bộ có thể dùng để tắt các tùy chọn kiểm tra chặn hệ thống tên miền (DNS). Các tùy chọn kiểm tra dùng để khám phá xem trình duyệt có ở sau một proxy chuyển hướng các tên máy chủ không xác định không.
+
+      Tính năng phát hiện này có thể không cần thiết trong môi trường doanh nghiệp có cấu hình mạng xác định, do tạo ra một số lưu lượng truy cập HTTP và DNS khi khởi động cũng như mỗi khi thay đổi cấu hình DNS.
+
+      Khi bạn không đặt chính sách này hoặc đặt chính sách thành bật, các tùy chọn kiểm tra chặn DNS sẽ được áp dụng. Khi bạn tắt hoàn toàn chính sách này, các tùy chọn kiểm tra nói trên sẽ không được áp dụng.</translation>
 <translation id="4703402283970867140">Bật mô hình giảm độ sáng thông minh để kéo dài thời gian cho đến khi màn hình tối đi</translation>
 <translation id="4722122254122249791">Bật chính sách Cô lập trang web cho các nguồn gốc đã xác định</translation>
 <translation id="4722399051042571387">Nếu đặt thành false, người dùng sẽ không thể đặt các mã PIN yếu và dễ đoán.
@@ -2657,6 +2692,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu bạn không đặt chính sách này, thì kính lúp sẽ tắt khi màn hình đăng nhập hiển thị lần đầu tiên. Người dùng có thể bật hoặc tắt kính lúp bất cứ lúc nào. Ngoài ra, trạng thái của kính lúp trên màn hình đăng nhập sẽ không thay đổi giữa những người dùng.
 
           Lưu ý: <ph name="DEVICE_LOGIN_SCREEN_SCREEN_MAGNIFIER_TYPE_POLICY_NAME" /> (nếu đã được chỉ định) sẽ ghi đè chính sách này.</translation>
+<translation id="5115168755602871392">Báo cáo thông tin về (các) CPU của thiết bị.
+
+      Nếu bạn không đặt chính sách này hoặc đặt chính sách thành false, thì thông tin sẽ không được báo cáo.
+      Nếu bạn đặt chính sách này thành true, thì tên kiểu máy, cấu trúc và tốc độ xung nhịp tối đa của mỗi CPU sẽ
+      được báo cáo.</translation>
 <translation id="5124368997194894978">Bật tính năng khởi động trên AC (dòng điện xoay chiều)</translation>
 <translation id="5131211790949066746">Cho phép hợp nhất các chính sách trong danh sách cài đặt tiện ích <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> và <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
 
@@ -3489,6 +3529,17 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="6467613372414922590">Cho phép các máy chủ Nhắn tin gốc ở cấp người dùng (cài đặt mà không cần có quyền quản trị).</translation>
 <translation id="6468980648680553776">Chính sách này không còn dùng nữa. Thay vào đó, hãy sử dụng RemoteAccessHostClientDomainList.</translation>
 <translation id="6473623140202114570">Định cấu hình danh sách các miền mà Duyệt web an toàn sẽ không kích hoạt cảnh báo.</translation>
+<translation id="6487780893361255867">Sử dụng quy trình triển khai <ph name="CORS" /> cũ thay vì <ph name="CORS" /> mới.
+
+      Nếu bạn đặt tùy chọn cài đặt này thành True, thì quy trình triển khai cũ tương thích với các phiên bản trước sẽ được sử dụng.
+
+      Nếu bạn đặt tùy chọn cài đặt này thành False hoặc không đặt, thì quy trình triển khai mới sẽ được sử dụng và có thể gây ra các sự cố tương thích cụ thể đối với doanh nghiệp.
+
+      Chính sách này sẽ bị xóa sau một số mốc thời gian.
+
+      Để biết thông tin chi tiết về <ph name="CORS" />, hãy truy cập vào: <ph name="CORS_HELP_URL" />.
+
+      Xin lưu ý rằng chính sách này sẽ bị xóa trong <ph name="PRODUCT_NAME" /> phiên bản 82.</translation>
 <translation id="6488627892044759800">Định cấu hình loại trang chủ mặc định trong <ph name="PRODUCT_NAME" /> và ngăn không cho người dùng thay đổi các tùy chọn trang chủ. Bạn có thể đặt trang chủ thành một URL mà bạn chỉ định hoặc đặt thành trang tab mới.
 
           Nếu bạn bật tùy chọn cài đặt này, thì Trang tab mới luôn được dùng cho trang chủ và vị trí URL trang chủ sẽ bị bỏ qua.
@@ -3577,6 +3628,7 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Khi bạn đặt chính sách này thành True, thì chính sách này sẽ cho phép thiết bị kích hoạt chức năng Powerwash.
       Nếu bạn không đặt chính sách này, thì chính sách này sẽ mặc định được đặt thành True, nghĩa là cho phép thiết bị kích hoạt chức năng Powerwash.
       </translation>
+<translation id="66265932317331474">Báo cáo thông tin CPU</translation>
 <translation id="6628043374475466084">Các mẫu URL không cần phải kiểm tra nội dung đã tải lên để xem có vi phạm quy tắc bảo vệ dữ liệu nhạy cảm hay không</translation>
 <translation id="6628120204569232711">Báo cáo trạng thái bộ nhớ</translation>
 <translation id="6628646143828354685">Cho phép bạn đặt có cho phép trang web truy cập vào các thiết bị Bluetooth lân cận hay không. Quyền truy cập có thể bị chặn hoàn toàn hoặc người dùng có thể được hỏi mỗi lần trang web muốn truy cập vào các thiết bị Bluetooth lân cận.
@@ -3782,6 +3834,7 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Xem https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables để biết danh sách các biến có thể được sử dụng.
 
       Nếu chính sách này không được đặt thì đường dẫn hồ sơ mặc định sẽ được sử dụng và người dùng có thể ghi đè bằng cờ dòng lệnh '--user-data-dir'.</translation>
+<translation id="7008308728445338159">Đã bật các tùy chọn kiểm tra chặn hệ thống tên miền (DNS)</translation>
 <translation id="7027785306666625591">Định cấu hình việc quản lý nguồn trong <ph name="PRODUCT_OS_NAME" />.
 
       Những chính sách này cho phép bạn định cấu hình cách <ph name="PRODUCT_OS_NAME" /> hoạt động khi người dùng duy trì chế độ rảnh trong một khoảng thời gian.</translation>
@@ -3876,6 +3929,15 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 
       Để biết thêm thông tin về chính sách <ph name="IEEM_SITELIST_POLICY" /> của Internet Explorer, hãy truy cập vào trang web: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">Các URL sẽ được cấp quyền truy cập thiết bị quay video mà không cần phải hiển thị lời nhắc</translation>
+<translation id="7134420220355750019">Chuyển nút chuột chính thành nút phải.
+
+          Nếu bạn đặt chính sách này thành bật, thì nút chuột phải sẽ luôn là nút chuột chính.
+
+          Nếu bạn đặt chính sách này thành tắt, thì nút chuột trái sẽ luôn là nút chuột chính.
+
+          Nếu bạn đặt chính sách này, người dùng sẽ không thể thay đổi hay ghi đè chính sách.
+
+          Nếu bạn không đặt chính sách này, thì ban đầu, nút chuột trái sẽ là nút chuột chính. Tuy nhiên, người dùng có thể chuyển đổi bất kỳ lúc nào.</translation>
 <translation id="713712866686796666">Đặt cấu hình ngày cho chế độ chuyển đổi điện năng cao điểm.
 
           Chỉ dùng chính sách này nếu bạn đặt <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" /> thành true.

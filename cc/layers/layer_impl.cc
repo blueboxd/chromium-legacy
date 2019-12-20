@@ -1022,4 +1022,8 @@ int LayerImpl::CalculateJitter() {
   return jitter;
 }
 
+std::string LayerImpl::DebugName() const {
+  return debug_info_ ? debug_info_->name : "";
+}
+
 }  // namespace cc

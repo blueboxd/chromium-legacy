@@ -43,8 +43,8 @@
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_browser_window_drag_delegate.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "ash/wm/tablet_mode/tablet_mode_window_drag_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_drag_delegate.h"
+#include "ash/wm/tablet_mode/tablet_mode_window_resizer.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
@@ -2759,7 +2759,7 @@ class SplitViewTabDraggingTest : public SplitViewControllerTest {
     }
   }
 
-  TabletModeWindowDragController* GetBrowserWindowDragController(
+  TabletModeWindowResizer* GetBrowserWindowDragController(
       WindowResizer* resizer) {
     WindowResizer* real_window_resizer;
     // TODO(xdai): This piece of codes seems knowing too much impl details about
@@ -2767,7 +2767,7 @@ class SplitViewTabDraggingTest : public SplitViewControllerTest {
     // we can do to simplify the logic and hide impl details.
     real_window_resizer = static_cast<DragWindowResizer*>(resizer)
                               ->next_window_resizer_for_testing();
-    return static_cast<TabletModeWindowDragController*>(real_window_resizer);
+    return static_cast<TabletModeWindowResizer*>(real_window_resizer);
   }
 
   SplitViewDragIndicators::WindowDraggingState GetWindowDraggingState(
@@ -4564,7 +4564,7 @@ class SplitViewAppDraggingTest : public SplitViewControllerTest {
     WindowState* window_state = WindowState::Get(window());
     window_state->CreateDragDetails(location, HTCAPTION,
                                     ::wm::WINDOW_MOVE_SOURCE_TOUCH);
-    controller_ = std::make_unique<TabletModeWindowDragController>(
+    controller_ = std::make_unique<TabletModeWindowResizer>(
         window_state, std::make_unique<TabletModeBrowserWindowDragDelegate>());
     controller_->drag_delegate_for_testing()
         ->set_drag_start_deadline_for_testing(base::Time::Now());
@@ -4594,7 +4594,7 @@ class SplitViewAppDraggingTest : public SplitViewControllerTest {
 
   aura::Window* window() { return window_.get(); }
 
-  std::unique_ptr<TabletModeWindowDragController> controller_;
+  std::unique_ptr<TabletModeWindowResizer> controller_;
 
   std::unique_ptr<aura::Window> window_;
 

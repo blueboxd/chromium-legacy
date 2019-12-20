@@ -18,10 +18,20 @@ declare_args() {
   # on which you are going to install WebView is configured to load a
   # different package name than the default used in AOSP.
   system_webview_package_name = "com.android.webview"
+
+  # Whether to enable standalone and trichrome WebView bundle build targets.
+  enable_webview_bundles = false
 }
 
-template("system_webview_apk_tmpl") {
-  android_apk(target_name) {
+template("system_webview_apk_or_module_tmpl") {
+  if (!defined(invoker.target_type)) {
+    _is_bundle_module = false
+    _target_type = "android_apk"
+  } else {
+    _is_bundle_module = invoker.target_type == "android_app_bundle_module"
+    _target_type = invoker.target_type
+  }
+  target(_target_type, target_name) {
     forward_variables_from(invoker,
                            "*",
                            [
@@ -40,7 +50,11 @@ template("system_webview_apk_tmpl") {
     product_config_java_packages = [ webview_product_config_java_package ]
 
     if (webview_includes_weblayer) {
-      deps += [ "//weblayer:locale_pak_assets" ]
+      if (_is_bundle_module) {
+        deps += [ "//weblayer:bundle_locale_pak_assets" ]
+      } else {
+        deps += [ "//weblayer:locale_pak_assets" ]
+      }
       product_config_java_packages += [ weblayer_product_config_java_package ]
     }
 
@@ -66,7 +80,13 @@ template("system_webview_apk_tmpl") {
     if (!_use_trichrome_library) {
       shared_libraries = [ "//android_webview:libwebviewchromium" ]
       _include_primary_support = true
-      shared_resources = true
+      if (_is_bundle_module) {
+        # TODO(b/146491000): aapt2 currently doesn't support the --shared-lib
+        # flag for bundles, so this will only work on M+.
+        app_as_shared_lib = true
+      } else {
+        shared_resources = true
+      }
       if (android_64bit_target_cpu) {
         secondary_abi_shared_libraries = [ "//android_webview:libwebviewchromium($android_secondary_abi_toolchain)" ]
         _include_secondary_support = true
@@ -137,8 +157,11 @@ template("system_webview_apk_tmpl") {
       "*.9.*",  # Most nine-patches contain shadows.
     ]
 
-    # Used as an additional apk in test scripts.
-    never_incremental = true
+    if (!_is_bundle_module) {
+      # Used as an additional apk in test scripts.
+      never_incremental = true
+      command_line_flags_file = "webview-command-line"
+    }
 
     if (!is_java_debug) {
       proguard_enabled = true
@@ -159,7 +182,6 @@ template("system_webview_apk_tmpl") {
       }
       png_to_webp = true
     }
-    command_line_flags_file = "webview-command-line"
 
     if (!defined(version_code)) {
       if (_use_trichrome_library) {
@@ -191,5 +213,13 @@ template("system_webview_apk_tmpl") {
     if (!defined(version_name)) {
       version_name = chrome_version_name
     }
+  }
+}
+
+# TODO(cduvall): Remove this once src/clank uses
+# system_webview_apk_or_module_tmpl.
+template("system_webview_apk_tmpl") {
+  system_webview_apk_or_module_tmpl(target_name) {
+    forward_variables_from(invoker, "*")
   }
 }

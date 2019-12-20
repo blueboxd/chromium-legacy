@@ -818,9 +818,6 @@ extern const char kUseSurfaceLayerForVideoDescription[];
 extern const char kNewUsbBackendName[];
 extern const char kNewUsbBackendDescription[];
 
-extern const char kNewblueName[];
-extern const char kNewblueDescription[];
-
 extern const char kNewTabstripAnimationName[];
 extern const char kNewTabstripAnimationDescription[];
 
@@ -1987,9 +1984,6 @@ extern const char kCrostiniGpuSupportDescription[];
 
 extern const char kCrostiniUsbAllowUnsupportedName[];
 extern const char kCrostiniUsbAllowUnsupportedDescription[];
-
-extern const char kCrostiniWebUIInstallerName[];
-extern const char kCrostiniWebUIInstallerDescription[];
 
 extern const char kCrostiniWebUIUpgraderName[];
 extern const char kCrostiniWebUIUpgraderDescription[];

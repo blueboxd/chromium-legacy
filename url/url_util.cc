@@ -7,7 +7,6 @@
 #include <stddef.h>
 #include <string.h>
 
-#include "base/debug/leak_annotations.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
@@ -20,6 +19,12 @@
 namespace url {
 
 namespace {
+
+// A pair for representing a standard scheme name and the SchemeType for it.
+struct SchemeWithType {
+  std::string scheme;
+  SchemeType type;
+};
 
 // List of currently registered schemes and associated properties.
 struct SchemeRegistry {
@@ -439,7 +444,6 @@ bool DoReplaceComponents(const char* spec,
 }
 
 void DoAddScheme(const char* new_scheme, std::vector<std::string>* schemes) {
-  DCHECK(schemes);
   // If this assert triggers, it means you've called Add*Scheme after
   // LockSchemeRegistries has been called (see the header file for
   // LockSchemeRegistries for more).
@@ -450,43 +454,23 @@ void DoAddScheme(const char* new_scheme, std::vector<std::string>* schemes) {
   DCHECK(!scheme_registries_locked)
       << "Trying to add a scheme after the lists have been locked.";
 
-  size_t scheme_len = strlen(new_scheme);
-  if (scheme_len == 0)
-    return;
-
+  DCHECK(schemes);
+  DCHECK(strlen(new_scheme) > 0);
   DCHECK_EQ(base::ToLowerASCII(new_scheme), new_scheme);
-  schemes->push_back(std::string(new_scheme));
+  schemes->push_back(new_scheme);
 }
 
 void DoAddSchemeWithType(const char* new_scheme,
                          SchemeType type,
                          std::vector<SchemeWithType>* schemes) {
-  DCHECK(schemes);
-  // If this assert triggers, it means you've called Add*Scheme after
-  // LockSchemeRegistries has been called (see the header file for
-  // LockSchemeRegistries for more).
-  //
-  // This normally means you're trying to set up a new scheme too late in your
-  // application's init process. Locate where your app does this initialization
-  // and calls LockSchemeRegistries, and add your new scheme there.
+  // See DoAddScheme above.
   DCHECK(!scheme_registries_locked)
       << "Trying to add a scheme after the lists have been locked.";
 
-  size_t scheme_len = strlen(new_scheme);
-  if (scheme_len == 0)
-    return;
-
+  DCHECK(schemes);
+  DCHECK(strlen(new_scheme) > 0);
   DCHECK_EQ(base::ToLowerASCII(new_scheme), new_scheme);
-  // Duplicate the scheme into a new buffer and add it to the list of standard
-  // schemes. This pointer will be leaked on shutdown.
-  char* dup_scheme = new char[scheme_len + 1];
-  ANNOTATE_LEAKING_OBJECT_PTR(dup_scheme);
-  memcpy(dup_scheme, new_scheme, scheme_len + 1);
-
-  SchemeWithType scheme_with_type;
-  scheme_with_type.scheme = dup_scheme;
-  scheme_with_type.type = type;
-  schemes->push_back(scheme_with_type);
+  schemes->push_back({new_scheme, type});
 }
 
 }  // namespace
@@ -496,6 +480,9 @@ void ResetForTests() {
 }
 
 void EnableNonStandardSchemesForAndroidWebView() {
+  // See DoAddScheme above.
+  DCHECK(!scheme_registries_locked)
+      << "Trying to modify schemes after the lists have been locked.";
   GetSchemeRegistry()->allow_non_standard_schemes = true;
 }
 

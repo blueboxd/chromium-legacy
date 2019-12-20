@@ -112,7 +112,7 @@ Directory::Kernel::~Kernel() {}
 Directory::Directory(
     std::unique_ptr<DirectoryBackingStore> store,
     const WeakHandle<UnrecoverableErrorHandler>& unrecoverable_error_handler,
-    const base::Closure& report_unrecoverable_error_function,
+    const base::RepeatingClosure& report_unrecoverable_error_function,
     NigoriHandler* nigori_handler)
     : store_(std::move(store)),
       unrecoverable_error_handler_(unrecoverable_error_handler),
@@ -202,7 +202,7 @@ DirOpenResult Directory::OpenImpl(
   // Now that we've successfully opened the store, install an error handler to
   // deal with catastrophic errors that may occur later on. Use a weak pointer
   // because we cannot guarantee that this Directory will outlive the Closure.
-  store_->SetCatastrophicErrorHandler(base::Bind(
+  store_->SetCatastrophicErrorHandler(base::BindRepeating(
       &Directory::OnCatastrophicError, weak_ptr_factory_.GetWeakPtr()));
 
   return result;

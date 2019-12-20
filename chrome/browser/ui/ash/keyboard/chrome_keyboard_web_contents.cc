@@ -27,7 +27,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
-#include "third_party/blink/public/platform/web_gesture_event.h"
+#include "third_party/blink/public/common/input/web_gesture_event.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/platform/aura_window_properties.h"
 #include "ui/aura/window.h"

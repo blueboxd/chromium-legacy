@@ -240,14 +240,8 @@ gles2::Texture* SharedImageBackingEglImage::GenEGLImageSibling() {
 
   // If the backing is already cleared, no need to clear it again.
   gfx::Rect cleared_rect;
-
-  // Access to all members needs to be lock protected for thread safety. Hence
-  // using AutoLock with scope.
-  {
-    AutoLock auto_lock(this);
-    if (is_cleared_)
-      cleared_rect = gfx::Rect(size());
-  }
+  if (IsCleared())
+    cleared_rect = gfx::Rect(size());
 
   // Set the level info.
   texture->SetLevelInfo(target, 0, gl_format_, size().width(), size().height(),

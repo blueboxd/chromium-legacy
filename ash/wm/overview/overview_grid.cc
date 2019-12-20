@@ -194,6 +194,7 @@ std::unique_ptr<views::Widget> CreateDropTargetWidget(
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.activatable = views::Widget::InitParams::Activatable::ACTIVATABLE_NO;
   params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
+  params.name = "OverviewDropTarget";
   params.accept_events = false;
   params.parent = desks_util::GetActiveDeskContainerForRoot(root_window);
   params.init_properties_container.SetProperty(kHideInDeskMiniViewKey, true);
@@ -201,15 +202,7 @@ std::unique_ptr<views::Widget> CreateDropTargetWidget(
   widget->set_focus_on_creation(false);
   widget->Init(std::move(params));
   widget->SetVisibilityAnimationTransition(views::Widget::ANIMATE_NONE);
-  // |OverviewGrid::PositionWindows| will set the bounds of the drop target,
-  // overwriting the size that we set here. However, the drop target bounds
-  // computation will use the aspect ratio from the size that we set here.
-  gfx::Size size_for_aspect_ratio = dragged_window->bounds().size();
-  DCHECK_GT(size_for_aspect_ratio.height(),
-            dragged_window->GetProperty(aura::client::kTopViewInset));
-  size_for_aspect_ratio.Enlarge(
-      0, -dragged_window->GetProperty(aura::client::kTopViewInset));
-  widget->SetSize(size_for_aspect_ratio);
+
   // Show plus icon if drag a tab from a multi-tab window.
   widget->SetContentsView(new DropTargetView(
       dragged_window->GetProperty(ash::kTabDraggingSourceWindowKey)));
@@ -1515,20 +1508,26 @@ int OverviewGrid::CalculateWidthAndMaybeSetUnclippedBounds(OverviewItem* item,
   const gfx::Size item_size(0, height);
   gfx::RectF target_bounds = item->GetTargetBoundsInScreen();
   float scale = item->GetItemScale(item_size);
+  ScopedOverviewTransformWindow::GridWindowFillMode grid_fill_mode =
+      item->GetWindowDimensionsType();
 
   // The drop target, unlike the other windows has its bounds set directly, so
   // |GetTargetBoundsInScreen()| won't return the value we want. Instead, get
   // the scale from the window it was meant to be a placeholder for.
   if (IsDropTargetWindow(item->GetWindow())) {
     aura::Window* dragged_window = nullptr;
-    OverviewItem* item =
+    OverviewItem* grid_dragged_item =
         overview_session_->window_drag_controller()
             ? overview_session_->window_drag_controller()->item()
             : nullptr;
-    if (item)
-      dragged_window = item->GetWindow();
-    else if (dragged_window_)
+    if (grid_dragged_item) {
+      dragged_window = grid_dragged_item->GetWindow();
+      grid_fill_mode = grid_dragged_item->GetWindowDimensionsType();
+    } else if (dragged_window_) {
       dragged_window = dragged_window_;
+      grid_fill_mode = ScopedOverviewTransformWindow::GetWindowDimensionsType(
+          dragged_window);
+    }
 
     if (dragged_window && dragged_window->parent()) {
       target_bounds = ::ash::GetTargetBoundsInScreen(dragged_window);
@@ -1542,7 +1541,7 @@ int OverviewGrid::CalculateWidthAndMaybeSetUnclippedBounds(OverviewItem* item,
 
   int width = std::max(
       1, gfx::ToFlooredInt(target_bounds.width() * scale) + 2 * kWindowMargin);
-  switch (item->GetWindowDimensionsType()) {
+  switch (grid_fill_mode) {
     case ScopedOverviewTransformWindow::GridWindowFillMode::kLetterBoxed:
       width =
           ScopedOverviewTransformWindow::kExtremeWindowRatioThreshold * height;

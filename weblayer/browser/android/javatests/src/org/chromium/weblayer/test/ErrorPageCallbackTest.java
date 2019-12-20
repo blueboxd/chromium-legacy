@@ -14,7 +14,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.ServerCertificate;
@@ -26,7 +25,7 @@ import org.chromium.weblayer.shell.InstrumentationActivity;
 /**
  * Tests that ErrorPageCallback works as expected for handling error page interactions.
  */
-@RunWith(BaseJUnit4ClassRunner.class)
+@RunWith(WebLayerJUnit4ClassRunner.class)
 public class ErrorPageCallbackTest {
     @Rule
     public InstrumentationActivityTestRule mActivityTestRule =

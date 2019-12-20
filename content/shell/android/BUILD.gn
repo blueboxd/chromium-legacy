@@ -86,7 +86,7 @@ android_library("content_shell_java") {
     "//net/android:net_java",
     "//ui/android:ui_java",
   ]
-  java_files = [
+  sources = [
     "java/src/org/chromium/content_shell/Shell.java",
     "java/src/org/chromium/content_shell/ShellManager.java",
     "java/src/org/chromium/content_shell/ShellViewAndroidDelegate.java",
@@ -138,7 +138,7 @@ android_library("content_shell_apk_java") {
     "//ui/android:ui_java",
   ]
 
-  java_files = [
+  sources = [
     "shell_apk/src/org/chromium/content_shell_apk/ChildProcessLauncherTestHelperService.java",
     "shell_apk/src/org/chromium/content_shell_apk/ChildProcessLauncherTestUtils.java",
     "shell_apk/src/org/chromium/content_shell_apk/ContentShellActivity.java",
@@ -247,10 +247,10 @@ android_library("content_shell_test_java") {
     "//third_party/junit:junit",
     "//ui/android:ui_java",
   ]
-  java_files = [
+  sources = [
+    "javatests/src/org/chromium/content_shell_apk/ContentShellActivityTestRule.java",
     "javatests/src/org/chromium/content_shell_apk/ContentShellPreconditionsTest.java",
     "javatests/src/org/chromium/content_shell_apk/ContentShellShellManagementTest.java",
-    "javatests/src/org/chromium/content_shell_apk/ContentShellActivityTestRule.java",
     "javatests/src/org/chromium/content_shell_apk/ContentShellUrlTest.java",
   ]
 }
@@ -296,7 +296,7 @@ if (current_cpu != "x64") {
     use_chromium_linker = true
     enable_chromium_linker_tests = true
     jni_registration_header = _linker_test_jni_registration_header
-    java_files = [
+    sources = [
       "linker_test_apk/src/org/chromium/chromium_linker_test_apk/ChromiumLinkerTestActivity.java",
       "linker_test_apk/src/org/chromium/chromium_linker_test_apk/ChromiumLinkerTestApplication.java",
       "linker_test_apk/src/org/chromium/chromium_linker_test_apk/LinkerTests.java",
@@ -367,5 +367,7 @@ android_library("content_shell_browsertests_java") {
     "//third_party/android_deps:com_android_support_support_compat_java",
     "//ui/android:ui_java",
   ]
-  java_files = [ "browsertests/src/org/chromium/content_shell/browsertests/ContentShellBrowserTestActivity.java" ]
+  sources = [
+    "browsertests/src/org/chromium/content_shell/browsertests/ContentShellBrowserTestActivity.java",
+  ]
 }

@@ -37,6 +37,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/hash_value.h"
 #include "net/base/url_util.h"
@@ -251,7 +252,26 @@ void ChromeSSLHostStateDelegate::RegisterProfilePrefs(
 
 void ChromeSSLHostStateDelegate::AllowCert(const std::string& host,
                                            const net::X509Certificate& cert,
-                                           int error) {
+                                           int error,
+                                           content::WebContents* web_contents) {
+  DCHECK(web_contents);
+  content::StoragePartition* storage_partition =
+      content::BrowserContext::GetStoragePartition(
+          profile_, web_contents->GetMainFrame()->GetSiteInstance(),
+          false /* can_create */);
+  if (!storage_partition ||
+      storage_partition !=
+          content::BrowserContext::GetDefaultStoragePartition(profile_)) {
+    // Decisions for non-default storage partitions are stored in memory only;
+    // see comment on declaration of
+    // |allowed_certs_for_non_default_storage_partitions_|.
+    auto allowed_cert =
+        AllowedCert(GetKey(cert, error), storage_partition->GetPath());
+    allowed_certs_for_non_default_storage_partitions_[host].insert(
+        allowed_cert);
+    return;
+  }
+
   GURL url = GetSecureGURLForHost(host);
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile_);
@@ -304,20 +324,44 @@ void ChromeSSLHostStateDelegate::Clear(
 content::SSLHostStateDelegate::CertJudgment
 ChromeSSLHostStateDelegate::QueryPolicy(const std::string& host,
                                         const net::X509Certificate& cert,
-                                        int error) {
-  HostContentSettingsMap* map =
-      HostContentSettingsMapFactory::GetForProfile(profile_);
-  GURL url = GetSecureGURLForHost(host);
-  std::unique_ptr<base::Value> value(map->GetWebsiteSetting(
-      url, url, ContentSettingsType::SSL_CERT_DECISIONS, std::string(), NULL));
+                                        int error,
+                                        content::WebContents* web_contents) {
+  DCHECK(web_contents);
 
   // If the appropriate flag is set, let requests on localhost go
   // through even if there are certificate errors. Errors on localhost
   // are unlikely to indicate actual security problems.
+  GURL url = GetSecureGURLForHost(host);
   bool allow_localhost = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAllowInsecureLocalhost);
   if (allow_localhost && net::IsLocalhost(url))
     return ALLOWED;
+
+  content::StoragePartition* storage_partition =
+      content::BrowserContext::GetStoragePartition(
+          profile_, web_contents->GetMainFrame()->GetSiteInstance(),
+          false /* can_create */);
+  if (!storage_partition ||
+      storage_partition !=
+          content::BrowserContext::GetDefaultStoragePartition(profile_)) {
+    if (allowed_certs_for_non_default_storage_partitions_.find(host) ==
+        allowed_certs_for_non_default_storage_partitions_.end()) {
+      return DENIED;
+    }
+    AllowedCert allowed_cert =
+        AllowedCert(GetKey(cert, error), storage_partition->GetPath());
+    if (base::Contains(allowed_certs_for_non_default_storage_partitions_[host],
+                       allowed_cert)) {
+      return ALLOWED;
+    }
+    return DENIED;
+  }
+
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile_);
+  std::unique_ptr<base::Value> value(
+      map->GetWebsiteSetting(url, url, ContentSettingsType::SSL_CERT_DECISIONS,
+                             std::string(), nullptr));
 
   if (!value.get() || !value->is_dict())
     return DENIED;
@@ -387,9 +431,28 @@ void ChromeSSLHostStateDelegate::RevokeUserAllowExceptions(
   map->SetWebsiteSettingDefaultScope(url, GURL(),
                                      ContentSettingsType::SSL_CERT_DECISIONS,
                                      std::string(), nullptr);
+
+  // Decisions for non-default storage partitions are stored separately in
+  // memory; delete those as well.
+  allowed_certs_for_non_default_storage_partitions_.erase(host);
 }
 
-bool ChromeSSLHostStateDelegate::HasAllowException(const std::string& host) {
+bool ChromeSSLHostStateDelegate::HasAllowException(
+    const std::string& host,
+    content::WebContents* web_contents) {
+  DCHECK(web_contents);
+
+  content::StoragePartition* storage_partition =
+      content::BrowserContext::GetStoragePartition(
+          profile_, web_contents->GetMainFrame()->GetSiteInstance(),
+          false /* can_create */);
+  if (!storage_partition ||
+      storage_partition !=
+          content::BrowserContext::GetDefaultStoragePartition(profile_)) {
+    return allowed_certs_for_non_default_storage_partitions_.find(host) !=
+           allowed_certs_for_non_default_storage_partitions_.end();
+  }
+
   GURL url = GetSecureGURLForHost(host);
   const ContentSettingsPattern pattern =
       ContentSettingsPattern::FromURLNoWildcard(url);

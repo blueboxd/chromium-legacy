@@ -7,6 +7,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/installable/installable_logging.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
 namespace banners {
 

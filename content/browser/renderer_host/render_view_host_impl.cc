@@ -405,6 +405,9 @@ void RenderViewHostImpl::SetMainFrameRoutingId(int routing_id) {
 }
 
 void RenderViewHostImpl::EnterBackForwardCache() {
+  if (!will_enter_back_forward_cache_callback_for_testing_.is_null())
+    will_enter_back_forward_cache_callback_for_testing_.Run();
+
   TRACE_EVENT0("navigation", "RenderViewHostImpl::EnterBackForwardCache");
   FrameTree* frame_tree = GetDelegate()->GetFrameTree();
   frame_tree->UnregisterRenderViewHost(this);
@@ -1090,6 +1093,11 @@ bool RenderViewHostImpl::IsDocumentOnLoadCompletedInMainFrame() {
 
 bool RenderViewHostImpl::IsTestRenderViewHost() const {
   return false;
+}
+
+void RenderViewHostImpl::SetWillEnterBackForwardCacheCallbackForTesting(
+    const WillEnterBackForwardCacheCallbackForTesting& callback) {
+  will_enter_back_forward_cache_callback_for_testing_ = callback;
 }
 
 }  // namespace content

@@ -4613,11 +4613,13 @@ interface KeyboardLayoutMap
 interface KeyframeEffect : AnimationEffect
     attribute @@toStringTag
     getter composite
+    getter pseudoElement
     getter target
     method constructor
     method getKeyframes
     method setKeyframes
     setter composite
+    setter pseudoElement
     setter target
 interface LargestContentfulPaint : PerformanceEntry
     attribute @@toStringTag

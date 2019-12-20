@@ -49,8 +49,6 @@
   await test('class Foo{}; await 1;');
   await test('Foo');
   await test('await 0;function* gen(){}');
-  await test('for (var i = 0; i < 10; ++i) { await i; }')
-  await test('i');
   await test('for (let j = 0; j < 5; ++j) { await j; }')
   await test('j');
   await test('gen');

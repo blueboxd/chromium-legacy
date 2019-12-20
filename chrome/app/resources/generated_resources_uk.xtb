@@ -1125,7 +1125,7 @@
 <translation id="2566124945717127842">Виконайте Powerwash, щоб відновити заводські налаштування пристрою <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="2568774940984945469">Контейнер інформаційної панелі</translation>
 <translation id="257088987046510401">Теми</translation>
-<translation id="2571655996835834626">Змінювати налаштування, які контролюють доступ веб-сайтів до файлів cookie, файлів Javascript, плагінів, даних геолокації, мікрофона, камери тощо.</translation>
+<translation id="2571655996835834626">Змінювати налаштування, які контролюють доступ веб-сайтів до файлів cookie, файлів JavaScript, плагінів, даних геолокації, мікрофона, камери тощо.</translation>
 <translation id="2572032849266859634">Надано доступ лише для перегляду (<ph name="VOLUME_NAME" />).</translation>
 <translation id="2575247648642144396">Цей значок відображатиметься, якщо розширення зможе працювати на поточній сторінці. Запустіть розширення, натиснувши значок або комбінацію клавіш <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="257779572837908839">Налаштувати як Chromebox для відеоконференцій</translation>
@@ -4624,7 +4624,7 @@
 <translation id="7684212569183643648">Установив адміністратор</translation>
 <translation id="7684559058815332124">Перейти на сторінку входу приєднаного порталу</translation>
 <translation id="7684718995427157417">Щоб створювати й перевіряти додатки, увімкніть Android Debug Bridge (ADB). Зауважте, що цією дією ви дозволяєте встановлювати додатки для Android, які не були перевірені Google. Щоб вимкнути інструмент, доведеться відновити заводські налаштування.</translation>
-<translation id="7685049629764448582">Пам'ять Javascript</translation>
+<translation id="7685049629764448582">Пам'ять JavaScript</translation>
 <translation id="7685087414635069102">Потрібен PIN-код</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Підтвердьте новий пароль</translation>

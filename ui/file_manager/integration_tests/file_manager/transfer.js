@@ -138,14 +138,14 @@ async function transferBetweenVolumes(transferInfo) {
       SHARED_DRIVE_ENTRY_SET :
       BASIC_DRIVE_ENTRY_SET;
 
-  const myDriveContent = TestEntryInfo.getExpectedRows(
-      driveFiles.filter(e => e.teamDriveName === '' && e.computerName === ''));
   // Open files app.
   const appId =
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, localFiles, driveFiles);
 
   // Expand Drive root if either src or dst is within Drive.
   if (transferInfo.source.isTeamDrive || transferInfo.destination.isTeamDrive) {
+    const myDriveContent = TestEntryInfo.getExpectedRows(
+        driveFiles.filter(e => e.teamDriveName === '' && e.computerName === ''));
     // Select + expand + wait for its content.
     chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
         'selectFolderInTree', appId, ['Google Drive']));
@@ -206,7 +206,7 @@ async function transferBetweenVolumes(transferInfo) {
 
   // If we expected the transfer to succeed, add the pasted file to the list
   // of expected rows.
-  if (!transferInfo.expectFailure && !transferInfo.isMove &&
+  if (!transferInfo.expectFailure &&
       transferInfo.source !== transferInfo.destination) {
     const pasteFile = transferInfo.fileToTransfer.getExpectedRow();
     // Check if we need to add (1) to the filename, in the case of a

@@ -205,6 +205,17 @@ export class NativeLayer {
 
   // <if expr="chromeos">
   /**
+   * Requests the destination's end user license information. Returns a promise
+   * that will be resolved with the destination's EULA URL if obtained
+   * successfully.
+   * @param {!string} destinationId ID of the destination.
+   * @return {!Promise<string>}
+   */
+  getEulaUrl(destinationId) {
+    return sendWithPromise('getEulaUrl', destinationId);
+  }
+
+  /**
    * Requests Chrome to resolve provisional extension destination by granting
    * the provider extension access to the printer.
    * @param {string} provisionalDestinationId

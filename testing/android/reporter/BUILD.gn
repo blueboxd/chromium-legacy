@@ -13,7 +13,7 @@ android_library("reporter_java") {
     "//third_party/android_sdk:android_test_base_java",
   ]
 
-  java_files = [
+  sources = [
     "java/src/org/chromium/test/reporter/TestStatusListener.java",
     "java/src/org/chromium/test/reporter/TestStatusReceiver.java",
     "java/src/org/chromium/test/reporter/TestStatusReporter.java",

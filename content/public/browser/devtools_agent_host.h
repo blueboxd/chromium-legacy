@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
@@ -135,7 +136,7 @@ class CONTENT_EXPORT DevToolsAgentHost
   // Sends |message| from |client| to the agent.
   // Returns true if the message is dispatched and handled.
   virtual bool DispatchProtocolMessage(DevToolsAgentHostClient* client,
-                                       const std::string& message) = 0;
+                                       base::span<const uint8_t> message) = 0;
 
   // Starts inspecting element at position (|x|, |y|) in the frame
   // represented by |frame_host|.

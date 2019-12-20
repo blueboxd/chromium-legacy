@@ -289,7 +289,7 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
 
  private:
   class UpdateShelfObserver;
-  friend class DimShelfLayoutManagerTest;
+  friend class DimShelfLayoutManagerTestBase;
   friend class PanelLayoutManagerTest;
   friend class ShelfLayoutManagerTestBase;
   friend class ShelfLayoutManagerWindowDraggingTest;

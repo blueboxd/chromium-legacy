@@ -357,5 +357,7 @@
 	<string>banner</string>
 	<key>NSRequiresAquaSystemAppearance</key>
 	<false/>
+	<key>GPUEjectPolicy</key>
+	<string>wait</string>
 </dict>
 </plist>

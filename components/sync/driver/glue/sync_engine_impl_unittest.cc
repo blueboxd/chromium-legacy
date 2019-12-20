@@ -69,8 +69,8 @@ scoped_refptr<ModelSafeWorker> CreateModelWorkerForGroup(ModelSafeGroup group) {
 class TestSyncEngineHost : public SyncEngineHostStub {
  public:
   explicit TestSyncEngineHost(
-      base::Callback<void(ModelTypeSet)> set_engine_types)
-      : set_engine_types_(set_engine_types) {}
+      base::OnceCallback<void(ModelTypeSet)> set_engine_types)
+      : set_engine_types_(std::move(set_engine_types)) {}
 
   void OnEngineInitialized(ModelTypeSet initial_types,
                            const WeakHandle<JsBackend>&,
@@ -81,7 +81,7 @@ class TestSyncEngineHost : public SyncEngineHostStub {
                            const std::string&,
                            bool success) override {
     EXPECT_EQ(expect_success_, success);
-    set_engine_types_.Run(initial_types);
+    std::move(set_engine_types_).Run(initial_types);
     std::move(quit_closure_).Run();
   }
 
@@ -94,7 +94,7 @@ class TestSyncEngineHost : public SyncEngineHostStub {
   }
 
  private:
-  base::Callback<void(ModelTypeSet)> set_engine_types_;
+  base::OnceCallback<void(ModelTypeSet)> set_engine_types_;
   bool expect_success_ = false;
   base::OnceClosure quit_closure_;
 };
@@ -176,8 +176,8 @@ class SyncEngineImplTest : public testing::Test {
  protected:
   SyncEngineImplTest()
       : sync_thread_("SyncThreadForTest"),
-        host_(base::Bind(&SyncEngineImplTest::SetEngineTypes,
-                         base::Unretained(this))),
+        host_(base::BindOnce(&SyncEngineImplTest::SetEngineTypes,
+                             base::Unretained(this))),
         fake_manager_(nullptr) {}
 
   ~SyncEngineImplTest() override {}
@@ -230,7 +230,7 @@ class SyncEngineImplTest : public testing::Test {
     params.sync_task_runner = sync_thread_.task_runner();
     params.host = &host_;
     params.registrar = std::make_unique<SyncBackendRegistrar>(
-        std::string(), base::Bind(&CreateModelWorkerForGroup));
+        std::string(), base::BindRepeating(&CreateModelWorkerForGroup));
     params.http_factory_getter = base::BindOnce(&CreateHttpBridgeFactory);
     params.authenticated_account_id = CoreAccountId("account_id");
     params.sync_manager_factory = std::move(fake_manager_factory_);
@@ -265,8 +265,8 @@ class SyncEngineImplTest : public testing::Test {
       params.to_download.Put(NIGORI);
     }
     params.to_purge = Intersection(engine_types_, disabled_types);
-    params.ready_task =
-        base::Bind(&SyncEngineImplTest::DownloadReady, base::Unretained(this));
+    params.ready_task = base::BindOnce(&SyncEngineImplTest::DownloadReady,
+                                       base::Unretained(this));
 
     ModelTypeSet ready_types =
         Difference(params.enabled_types, params.to_download);

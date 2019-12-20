@@ -235,14 +235,14 @@ public class ManageSpaceActivity extends AppCompatActivity implements View.OnCli
             mUnimportantDialog.show();
         } else if (view == mManageSiteDataButton) {
             Bundle initialArguments = new Bundle();
-            initialArguments.putString(SingleCategoryPreferences.EXTRA_CATEGORY,
+            initialArguments.putString(SingleCategorySettings.EXTRA_CATEGORY,
                     SiteSettingsCategory.preferenceKey(SiteSettingsCategory.Type.USE_STORAGE));
-            initialArguments.putString(SingleCategoryPreferences.EXTRA_TITLE,
+            initialArguments.putString(SingleCategorySettings.EXTRA_TITLE,
                     getString(R.string.website_settings_storage));
             RecordHistogram.recordEnumeratedHistogram(
                     "Android.ManageSpace.ActionTaken", OPTION_MANAGE_STORAGE, OPTION_MAX);
             SettingsLauncher.launchSettingsPage(
-                    this, SingleCategoryPreferences.class, initialArguments);
+                    this, SingleCategorySettings.class, initialArguments);
         } else if (view == mClearAllDataButton) {
             final ActivityManager activityManager =
                     (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);

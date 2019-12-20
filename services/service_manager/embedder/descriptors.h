@@ -11,7 +11,7 @@ namespace service_manager {
 // base::GlobalDescriptors object (see base/posix/global_descriptors.h)
 enum {
   kCrashDumpSignal = 0,
-  kSandboxIPCChannel,  // https://chromium.googlesource.com/chromium/src/+/master/docs/linux_sandbox_ipc.md
+  kSandboxIPCChannel,  // https://chromium.googlesource.com/chromium/src/+/master/docs/linux/sandbox_ipc.md
   kMojoIPCChannel,
   kFieldTrialDescriptor,
 

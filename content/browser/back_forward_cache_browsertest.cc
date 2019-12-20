@@ -45,6 +45,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
+#include "content/shell/browser/shell_javascript_dialog_manager.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/echo.mojom.h"
 #include "media/base/media_switches.h"
@@ -4712,6 +4713,158 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   // 3) Navigate back and expect the page to be restored from bfcache.
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+}
+
+// A class to help with waiting for at least one javascript dialog to be
+// requested.
+//
+// On creation or RestartObserving, it uses set_dialog_request_callback to
+// capture any future dialog request. Calling WaitForAppModalDialog() will
+// either return immediately because a dialog has already been called or it will
+// wait, processing events until one is requested.
+class DialogObserver {
+ public:
+  explicit DialogObserver(Shell* shell) : shell_(shell) {}
+
+  void RestartObserving() {
+    dialog_requested_ = false;
+    ShellJavaScriptDialogManager* dialog_manager =
+        static_cast<ShellJavaScriptDialogManager*>(
+            shell_->GetJavaScriptDialogManager(shell_->web_contents()));
+    dialog_manager->set_dialog_request_callback(
+        base::BindLambdaForTesting([&]() { dialog_requested_ = true; }));
+  }
+
+  bool WasDialogRequested() { return dialog_requested_; }
+
+  void WaitForAppModalDialog() {
+    if (!dialog_requested_) {
+      content::WaitForAppModalDialog(shell_);
+      dialog_requested_ = true;
+    }
+  }
+
+ private:
+  bool dialog_requested_ = false;
+  Shell* shell_;
+};
+
+// Start an inifite dialogs in JS, yielding after each. The first dialog should
+// be dismissed by navigation. The later dialogs should be handled gracefully
+// and not appear while in BFCache. Finally, when the page comes out of BFCache,
+// dialogs should appear again.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       CanUseCacheWhenPageAlertsInTimeoutLoop) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+
+  DialogObserver dialog_observer(shell());
+
+  EXPECT_TRUE(ExecJs(rfh_a, R"(
+    function alertLoop() {
+      setTimeout(alertLoop, 0);
+      window.alert("alert");
+    }
+    // Don't block this script.
+    setTimeout(alertLoop, 0);
+  )"));
+
+  dialog_observer.WaitForAppModalDialog();
+
+  // Navigate to B.
+  ASSERT_TRUE(NavigateToURL(shell(), url_b));
+  RenderFrameHostImpl* rfh_b = current_frame_host();
+
+  ASSERT_FALSE(delete_observer_rfh_a.deleted());
+  ASSERT_THAT(rfh_a, InBackForwardCache());
+  ASSERT_NE(rfh_a, rfh_b);
+
+  dialog_observer.RestartObserving();
+
+  // Go back.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(rfh_a, current_frame_host());
+  EXPECT_FALSE(rfh_a->is_in_back_forward_cache());
+
+  // The page should still be requesting dialogs in a loop. Wait for one to be
+  // requested.
+  dialog_observer.WaitForAppModalDialog();
+}
+
+// SwapOutOldFrame will clear all dialogs. We test that further requests for
+// dialogs coming from JS do not result in the creation of a dialog. This test
+// posts some dialog creation JS to the render from inside the
+// CommitNavigationCallback task. This JS is then able to post a task back to
+// the renders to show a dialog. By the time this task runs, we the
+// RenderFrameHostImpl's is_active() should be false.
+//
+// This test is not perfect, it can pass simply because the renderer thread does
+// not run the JS in time. Ideally it would block until the renderer posts the
+// request for a dialog but it's possible to do that without creating a nested
+// message loop and if we do that, we risk processing the dialog request.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       DialogsCancelledAndSuppressedWhenCached) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+
+  // Let's us know whether the following callback ran. Not strictly necessary
+  // since it really should run.
+  bool posted_dialog_js = false;
+  // Create a callback that will be called during the DidCommitNavigation task.
+  WillEnterBackForwardCacheCallbackForTesting
+      will_enter_back_forward_cache_callback =
+          base::BindLambdaForTesting([&]() {
+            // Post a dialog, it should not result in a dialog being created.
+            ExecuteScriptAsync(rfh_a, R"(window.alert("alert");)");
+            posted_dialog_js = true;
+          });
+  rfh_a->render_view_host()->SetWillEnterBackForwardCacheCallbackForTesting(
+      will_enter_back_forward_cache_callback);
+
+  DialogObserver dialog_observer(shell());
+
+  // Try show another dialog. It should work.
+  ExecuteScriptAsync(rfh_a, R"(window.alert("alert");)");
+  dialog_observer.WaitForAppModalDialog();
+
+  dialog_observer.RestartObserving();
+
+  // Navigate to B.
+  ASSERT_TRUE(NavigateToURL(shell(), url_b));
+  RenderFrameHostImpl* rfh_b = current_frame_host();
+
+  ASSERT_FALSE(delete_observer_rfh_a.deleted());
+  ASSERT_THAT(rfh_a, InBackForwardCache());
+  ASSERT_NE(rfh_a, rfh_b);
+  // Test that the JS was run and that it didn't result in a dialog.
+  ASSERT_TRUE(posted_dialog_js);
+  ASSERT_FALSE(dialog_observer.WasDialogRequested());
+
+  // Go back.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  EXPECT_EQ(rfh_a, current_frame_host());
+  EXPECT_FALSE(rfh_a->is_in_back_forward_cache());
+
+  // Try show another dialog. It should work.
+  ExecuteScriptAsync(rfh_a, R"(window.alert("alert");)");
+  dialog_observer.WaitForAppModalDialog();
 }
 
 namespace {

@@ -214,7 +214,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
     // We don't get to own this object. The |worker_| keeps a unique_ptr to it.
     auto processor = std::make_unique<MockModelTypeProcessor>();
     mock_type_processor_ = processor.get();
-    processor->SetDisconnectCallback(base::Bind(
+    processor->SetDisconnectCallback(base::BindOnce(
         &ModelTypeWorkerTest::DisconnectProcessor, base::Unretained(this)));
 
     std::unique_ptr<Cryptographer> cryptographer_copy;

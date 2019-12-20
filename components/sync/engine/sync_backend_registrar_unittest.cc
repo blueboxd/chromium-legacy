@@ -37,8 +37,9 @@ class SyncBackendRegistrarTest : public testing::Test {
     sync_thread_.StartAndWaitForTesting();
     test_user_share_.SetUp();
     registrar_ = std::make_unique<SyncBackendRegistrar>(
-        "test", base::Bind(&SyncBackendRegistrarTest::CreateModelWorkerForGroup,
-                           base::Unretained(this)));
+        "test", base::BindRepeating(
+                    &SyncBackendRegistrarTest::CreateModelWorkerForGroup,
+                    base::Unretained(this)));
   }
 
   void TearDown() override {

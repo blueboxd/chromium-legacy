@@ -13,7 +13,6 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/sync_encryption_keys_extension.mojom.h"
 #include "components/sync/driver/sync_service.h"
-#include "components/sync/driver/sync_user_settings.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_receiver_set.h"
@@ -76,7 +75,7 @@ class SyncEncryptionKeysTabHelper::EncryptionKeyApi
     CHECK_EQ(receivers_.GetCurrentTargetFrame()->GetLastCommittedOrigin(),
              GetAllowedOrigin());
 
-    sync_service_->GetUserSettings()->AddTrustedVaultDecryptionKeys(
+    sync_service_->AddTrustedVaultDecryptionKeysFromWeb(
         gaia_id, EncryptionKeysAsStrings(encryption_keys));
     std::move(callback).Run();
   }

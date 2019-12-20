@@ -58,7 +58,7 @@ class BackForwardCacheMetrics
     kJavaScriptExecution = 14,
     kRendererProcessKilled = 15,
     kRendererProcessCrashed = 16,
-    kDialog = 17,
+    // 17: Dialogs are no longer a reason to exclude from BackForwardCache
     kGrantedMediaStreamAccess = 18,
     kSchedulerTrackedFeatureUsed = 19,
     kConflictingBrowsingInstance = 20,

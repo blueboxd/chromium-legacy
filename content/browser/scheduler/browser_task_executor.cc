@@ -246,8 +246,8 @@ void BrowserTaskExecutor::ResetForTesting() {
 // static
 void BrowserTaskExecutor::PostFeatureListSetup() {
   DCHECK(g_browser_task_executor);
-  DCHECK(g_browser_task_executor->ui_thread_executor_);
-  DCHECK(g_browser_task_executor->io_thread_executor_);
+  DCHECK(g_browser_task_executor->browser_ui_thread_handle_);
+  DCHECK(g_browser_task_executor->browser_io_thread_handle_);
   g_browser_task_executor->browser_ui_thread_handle_
       ->PostFeatureListInitializationSetup();
   g_browser_task_executor->browser_io_thread_handle_
@@ -285,12 +285,6 @@ void BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(
           ->ScheduleRunAllPendingTasksForTesting(run_loop.QuitClosure());
       break;
     case BrowserThread::IO: {
-      // In tests there may not be a functional IO thread.
-      if (!g_browser_task_executor->io_thread_executor_ ||
-          !g_browser_task_executor->io_thread_executor_
-               ->HasDelegateForTesting()) {
-        return;
-      }
       g_browser_task_executor->browser_io_thread_handle_
           ->ScheduleRunAllPendingTasksForTesting(run_loop.QuitClosure());
       break;

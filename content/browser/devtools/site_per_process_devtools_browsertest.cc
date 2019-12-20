@@ -36,9 +36,8 @@ class TestClient: public DevToolsAgentHostClient {
 
   bool closed() { return closed_; }
 
-  void DispatchProtocolMessage(
-      DevToolsAgentHost* agent_host,
-      const std::string& message) override {
+  void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
+                               base::span<const uint8_t> message) override {
     if (waiting_for_reply_) {
       waiting_for_reply_ = false;
       base::RunLoop::QuitCurrentDeprecated();
@@ -117,7 +116,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsBrowserTest,
   parent_host->AttachClient(&parent_client);
 
   // Send message to parent and child frames and get result back.
-  char message[] = "{\"id\": 0, \"method\": \"incorrect.method\"}";
+  constexpr char kMsg[] = R"({"id":0,"method":"incorrect.method"})";
+  auto message = base::as_bytes(base::make_span(kMsg, strlen(kMsg)));
   child_host->DispatchProtocolMessage(&child_client, message);
   child_client.WaitForReply();
   parent_host->DispatchProtocolMessage(&parent_client, message);
@@ -237,7 +237,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDownloadDevToolsBrowserTest,
       DevToolsAgentHost::GetOrCreateFor(shell()->web_contents());
   TestClient client;
   agent->AttachClient(&client);
-  char message[] = "{\"id\": 0, \"method\": \"incorrect.method\"}";
+  constexpr char kMsg[] = R"({"id":0,"method":"incorrect.method"})";
+  auto message = base::as_bytes(base::make_span(kMsg, strlen(kMsg)));
   // Check that client is responsive.
   agent->DispatchProtocolMessage(&client, message);
   client.WaitForReply();

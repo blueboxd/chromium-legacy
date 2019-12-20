@@ -110,7 +110,7 @@ public class SignInPromo extends OptionalLeaf {
     public static boolean shouldCreatePromo() {
         return !sDisablePromoForTests
                 && !SharedPreferencesManager.getInstance().readBoolean(
-                        ChromePreferenceKeys.NTP_SIGNIN_PROMO_DISMISSED, false)
+                        ChromePreferenceKeys.SIGNIN_PROMO_NTP_PROMO_DISMISSED, false)
                 && !getSuppressionStatus();
     }
 
@@ -166,7 +166,7 @@ public class SignInPromo extends OptionalLeaf {
         updateVisibility();
 
         SharedPreferencesManager.getInstance().writeBoolean(
-                ChromePreferenceKeys.NTP_SIGNIN_PROMO_DISMISSED, true);
+                ChromePreferenceKeys.SIGNIN_PROMO_NTP_PROMO_DISMISSED, true);
 
         final @StringRes int promoHeader = mSigninPromoController.getDescriptionStringId();
 

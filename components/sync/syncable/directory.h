@@ -241,7 +241,7 @@ class Directory {
   Directory(
       std::unique_ptr<DirectoryBackingStore> store,
       const WeakHandle<UnrecoverableErrorHandler>& unrecoverable_error_handler,
-      const base::Closure& report_unrecoverable_error_function,
+      const base::RepeatingClosure& report_unrecoverable_error_function,
       NigoriHandler* nigori_handler);
   virtual ~Directory();
 
@@ -610,7 +610,7 @@ class Directory {
   std::unique_ptr<DirectoryBackingStore> store_;
 
   const WeakHandle<UnrecoverableErrorHandler> unrecoverable_error_handler_;
-  base::Closure report_unrecoverable_error_function_;
+  base::RepeatingClosure report_unrecoverable_error_function_;
   bool unrecoverable_error_set_;
 
   // Not owned.

@@ -162,6 +162,7 @@ bool IsNodeIdIntAttribute(ax::mojom::IntAttribute attr) {
     case ax::mojom::IntAttribute::kAriaCellRowSpan:
     case ax::mojom::IntAttribute::kImageAnnotationStatus:
     case ax::mojom::IntAttribute::kDropeffect:
+    case ax::mojom::IntAttribute::kDOMNodeId:
       return false;
   }
 
@@ -1325,6 +1326,9 @@ std::string AXNodeData::ToString() const {
         break;
       case ax::mojom::IntAttribute::kDropeffect:
         result += " dropeffect=" + value;
+        break;
+      case ax::mojom::IntAttribute::kDOMNodeId:
+        result += " dom_node_id=" + value;
         break;
       case ax::mojom::IntAttribute::kNone:
         break;

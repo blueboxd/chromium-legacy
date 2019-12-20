@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "content/public/browser/web_contents.h"
-#include "third_party/blink/public/platform/web_gesture_event.h"
+#include "third_party/blink/public/common/input/web_gesture_event.h"
 
 using content::BrowserContext;
 using content::OpenURLParams;

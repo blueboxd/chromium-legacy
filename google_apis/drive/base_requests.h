@@ -48,7 +48,7 @@ struct ContentTypeAndData {
   std::string data;
 };
 
-typedef base::Callback<void(DriveApiErrorCode)> PrepareCallback;
+using PrepareCallback = base::OnceCallback<void(DriveApiErrorCode)>;
 
 // Callback used for requests that the server returns FileResource data
 // formatted into JSON value.
@@ -137,7 +137,7 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
 
   // Does async initialization for the request. |Start| calls this method so you
   // don't need to call this before |Start|.
-  virtual void Prepare(const PrepareCallback& callback);
+  virtual void Prepare(PrepareCallback callback);
 
   // Gets URL for the request.
   virtual GURL GetURL() const = 0;
@@ -298,7 +298,7 @@ class BatchableDelegate {
   virtual GURL GetURL() const = 0;
   virtual std::string GetRequestType() const = 0;
   virtual std::vector<std::string> GetExtraRequestHeaders() const = 0;
-  virtual void Prepare(const PrepareCallback& callback) = 0;
+  virtual void Prepare(PrepareCallback callback) = 0;
   virtual bool GetContentData(std::string* upload_content_type,
                               std::string* upload_content) = 0;
 
@@ -570,7 +570,7 @@ class MultipartUploadRequestBase : public BatchableDelegate {
 
   // BatchableDelegate.
   std::vector<std::string> GetExtraRequestHeaders() const override;
-  void Prepare(const PrepareCallback& callback) override;
+  void Prepare(PrepareCallback callback) override;
   bool GetContentData(std::string* upload_content_type,
                       std::string* upload_content) override;
   void NotifyResult(DriveApiErrorCode code,
@@ -586,7 +586,7 @@ class MultipartUploadRequestBase : public BatchableDelegate {
  private:
   // Continues to rest part of |Start| method after determining boundary string
   // of multipart/related.
-  void OnPrepareUploadContent(const PrepareCallback& callback,
+  void OnPrepareUploadContent(PrepareCallback callback,
                               std::string* upload_content_type,
                               std::string* upload_content_data,
                               bool result);

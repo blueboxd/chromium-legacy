@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/containers/span.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -67,11 +68,12 @@ class CONTENT_EXPORT DevToolsManagerDelegate {
                               DevToolsAgentHostClient* client);
 
   // Call callback if command was not handled.
-  using NotHandledCallback = base::OnceCallback<void(const std::string&)>;
+  using NotHandledCallback =
+      base::OnceCallback<void(base::span<const uint8_t>)>;
   virtual void HandleCommand(DevToolsAgentHost* agent_host,
                              DevToolsAgentHostClient* client,
                              const std::string& method,
-                             const std::string& message,
+                             base::span<const uint8_t> message,
                              NotHandledCallback callback);
 
   // Should return discovery page HTML that should list available tabs

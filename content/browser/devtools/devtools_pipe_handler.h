@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_PIPE_HANDLER_H_
 #define CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_PIPE_HANDLER_H_
 
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/devtools_agent_host_client.h"
@@ -22,12 +23,12 @@ class DevToolsPipeHandler : public DevToolsAgentHostClient {
   DevToolsPipeHandler();
   ~DevToolsPipeHandler() override;
 
-  void HandleMessage(const std::string& message);
+  void HandleMessage(std::vector<uint8_t> message);
   void DetachFromTarget();
 
   // DevToolsAgentHostClient overrides
   void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
-                               const std::string& message) override;
+                               base::span<const uint8_t> message) override;
   void AgentHostClosed(DevToolsAgentHost* agent_host) override;
   bool UsesBinaryProtocol() override;
 

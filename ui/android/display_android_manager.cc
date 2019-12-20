@@ -9,6 +9,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/stl_util.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/android/screen_android.h"
 #include "ui/android/ui_android_jni_headers/DisplayAndroidManager_jni.h"
 #include "ui/android/window_android.h"
@@ -22,6 +23,7 @@ using display::Display;
 using display::DisplayList;
 
 void SetScreenAndroid(bool use_display_wide_color_gamut) {
+  TRACE_EVENT0("startup", "SetScreenAndroid");
   // Do not override existing Screen.
   DCHECK_EQ(display::Screen::GetScreen(), nullptr);
 

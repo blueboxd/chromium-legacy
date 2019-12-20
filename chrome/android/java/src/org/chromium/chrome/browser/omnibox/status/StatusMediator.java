@@ -9,10 +9,12 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.text.TextUtils;
 import android.view.View;
+
 import androidx.annotation.ColorRes;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.Callback;
 import org.chromium.base.MathUtils;
 import org.chromium.base.library_loader.LibraryProcessType;
@@ -459,8 +461,8 @@ class StatusMediator {
         mIsSecurityButtonShown = false;
         if (mUrlHasFocus) {
             if (mShowStatusIconWhenUrlFocused) {
-                icon = mFirstSuggestionIsSearchQuery ? R.drawable.omnibox_search
-                                                     : R.drawable.ic_omnibox_page;
+                icon = mFirstSuggestionIsSearchQuery ? R.drawable.ic_suggestion_magnifier
+                                                     : R.drawable.ic_globe_24dp;
                 tint = mNavigationIconTintRes;
             }
         } else if (mSecurityIconRes != 0) {

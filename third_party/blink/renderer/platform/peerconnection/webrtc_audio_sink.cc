@@ -11,9 +11,19 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
+#include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/webrtc/rtc_base/ref_counted_object.h"
+
+namespace {
+
+void SendLogMessage(const std::string& message) {
+  blink::WebRtcLogMessage("WRAS::" + message);
+}
+
+}  // namespace
 
 namespace WTF {
 
@@ -48,12 +58,14 @@ WebRtcAudioSink::WebRtcAudioSink(
       fifo_(ConvertToBaseRepeatingCallback(
           CrossThreadBindRepeating(&WebRtcAudioSink::DeliverRebufferedAudio,
                                    CrossThreadUnretained(this)))) {
-  DVLOG(1) << "WebRtcAudioSink::WebRtcAudioSink()";
+  SendLogMessage(base::StringPrintf("WebRtcAudioSink({label=%s})",
+                                    adapter_->label().c_str()));
 }
 
 WebRtcAudioSink::~WebRtcAudioSink() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DVLOG(1) << "WebRtcAudioSink::~WebRtcAudioSink()";
+  SendLogMessage(base::StringPrintf("~WebRtcAudioSink([label=%s])",
+                                    adapter_->label().c_str()));
 }
 
 void WebRtcAudioSink::SetAudioProcessor(
@@ -72,6 +84,9 @@ void WebRtcAudioSink::SetLevel(
 
 void WebRtcAudioSink::OnEnabledChanged(bool enabled) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  SendLogMessage(base::StringPrintf("OnEnabledChanged([label=%s] {enabled=%s})",
+                                    adapter_->label().c_str(),
+                                    (enabled ? "true" : "false")));
   PostCrossThreadTask(
       *adapter_->signaling_task_runner(), FROM_HERE,
       CrossThreadBindOnce(
@@ -90,6 +105,9 @@ void WebRtcAudioSink::OnData(const media::AudioBus& audio_bus,
 
 void WebRtcAudioSink::OnSetFormat(const media::AudioParameters& params) {
   DCHECK(params.IsValid());
+  SendLogMessage(base::StringPrintf("OnSetFormat([label=%s] {params=[%s]})",
+                                    adapter_->label().c_str(),
+                                    params.AsHumanReadableString().c_str()));
   params_ = params;
   // Make sure that our params always reflect a buffer size of 10ms.
   params_.set_frames_per_buffer(params_.sample_rate() / 100);
@@ -129,14 +147,19 @@ WebRtcAudioSink::Adapter::Adapter(
     scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner)
     : webrtc::MediaStreamTrack<webrtc::AudioTrackInterface>(label),
+      label_(label),
       source_(std::move(source)),
       signaling_task_runner_(std::move(signaling_task_runner)),
       main_task_runner_(std::move(main_task_runner)) {
   DCHECK(signaling_task_runner_);
   DCHECK(main_task_runner_);
+  SendLogMessage(
+      base::StringPrintf("Adapter::Adapter({label=%s})", label_.c_str()));
 }
 
 WebRtcAudioSink::Adapter::~Adapter() {
+  SendLogMessage(
+      base::StringPrintf("Adapter::~Adapter([label=%s])", label_.c_str()));
   if (audio_processor_) {
     PostCrossThreadTask(*main_task_runner_.get(), FROM_HERE,
                         CrossThreadBindOnce(&DereferenceOnMainThread,
@@ -163,6 +186,9 @@ std::string WebRtcAudioSink::Adapter::kind() const {
 bool WebRtcAudioSink::Adapter::set_enabled(bool enable) {
   DCHECK(!signaling_task_runner_ ||
          signaling_task_runner_->RunsTasksInCurrentSequence());
+  SendLogMessage(
+      base::StringPrintf("Adapter::set_enabled([label=%s] {enable=%s})",
+                         label_.c_str(), (enable ? "true" : "false")));
   return webrtc::MediaStreamTrack<webrtc::AudioTrackInterface>::set_enabled(
       enable);
 }
@@ -171,6 +197,8 @@ void WebRtcAudioSink::Adapter::AddSink(webrtc::AudioTrackSinkInterface* sink) {
   DCHECK(!signaling_task_runner_ ||
          signaling_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(sink);
+  SendLogMessage(
+      base::StringPrintf("Adapter::AddSink({label=%s})", label_.c_str()));
   base::AutoLock auto_lock(lock_);
   DCHECK(!base::Contains(sinks_, sink));
   sinks_.push_back(sink);
@@ -180,6 +208,8 @@ void WebRtcAudioSink::Adapter::RemoveSink(
     webrtc::AudioTrackSinkInterface* sink) {
   DCHECK(!signaling_task_runner_ ||
          signaling_task_runner_->RunsTasksInCurrentSequence());
+  SendLogMessage(
+      base::StringPrintf("Adapter::RemoveSink([label=%s])", label_.c_str()));
   base::AutoLock auto_lock(lock_);
   const auto it = std::find(sinks_.begin(), sinks_.end(), sink);
   if (it != sinks_.end())
@@ -200,6 +230,9 @@ bool WebRtcAudioSink::Adapter::GetSignalLevel(int* level) {
   // Convert from float in range [0.0,1.0] to an int in range [0,32767].
   *level = static_cast<int>(signal_level * std::numeric_limits<int16_t>::max() +
                             0.5f /* rounding to nearest int */);
+  SendLogMessage(
+      base::StringPrintf("Adapter::GetSignalLevel([label=%s]) => (level=%d)",
+                         label_.c_str(), *level));
   return true;
 }
 

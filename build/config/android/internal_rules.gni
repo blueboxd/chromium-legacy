@@ -3681,6 +3681,9 @@ template("create_android_app_bundle_module") {
     if (defined(invoker.is_multi_abi) && invoker.is_multi_abi) {
       args += [ "--is-multi-abi" ]
     }
+    if (defined(invoker.uncompress_dex) && invoker.uncompress_dex) {
+      args += [ "--uncompress-dex" ]
+    }
 
     # Use either provided dex path or build config path based on type of module.
     if (defined(invoker.dex_path)) {

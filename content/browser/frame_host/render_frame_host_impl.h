@@ -84,6 +84,7 @@
 #include "third_party/blink/public/common/frame/blocked_navigation_types.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
+#include "third_party/blink/public/common/input/web_scroll_types.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/commit_result/commit_result.mojom.h"
@@ -112,7 +113,6 @@
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host_factory.mojom.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
-#include "third_party/blink/public/platform/web_scroll_types.h"
 #include "third_party/blink/public/web/web_text_direction.h"
 #include "third_party/blink/public/web/web_tree_scope_type.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -811,12 +811,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Returns the feature policy which should be enforced on this RenderFrame.
   blink::FeaturePolicy* feature_policy() { return feature_policy_.get(); }
-
-  // Tells the renderer that this RenderFrame will soon be swapped out, and thus
-  // not to create any new modal dialogs until it happens.  This must be done
-  // separately so that the ScopedPageLoadDeferrers of any current dialogs are
-  // no longer on the stack when we attempt to swap it out.
-  void SuppressFurtherDialogs();
 
   void ClearFocusedElement();
 

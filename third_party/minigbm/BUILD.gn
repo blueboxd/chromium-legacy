@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromecast_build.gni")
 import("//build/config/linux/pkg_config.gni")
 
 assert(is_linux)
@@ -10,7 +11,7 @@ declare_args() {
   # Controls whether the build should use the version of minigbm library shipped
   # with the system. In release builds of desktop Linux and Chrome OS we use the
   # system version.
-  use_system_minigbm = is_desktop_linux
+  use_system_minigbm = is_desktop_linux && !is_chromecast
 
   use_amdgpu_minigbm = false
   use_exynos_minigbm = false

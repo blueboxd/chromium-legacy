@@ -427,6 +427,7 @@
 <translation id="4226663524361240545">通知を受け取るとデバイスが振動します</translation>
 <translation id="423219824432660969"><ph name="TIME" />時点の Google パスワードで同期データを暗号化する</translation>
 <translation id="4242533952199664413">設定を開く</translation>
+<translation id="4250229828105606438">スクリーンショット</translation>
 <translation id="4256782883801055595">オープンソース ライセンス</translation>
 <translation id="4259722352634471385"><ph name="URL" /> へのアクセスがブロックされました</translation>
 <translation id="4269820728363426813">リンクアドレスをコピー</translation>
@@ -578,7 +579,7 @@
 <translation id="5317780077021120954">保存</translation>
 <translation id="5324858694974489420">保護者設定</translation>
 <translation id="5327248766486351172">名前</translation>
-<translation id="5335288049665977812">サイトに Javascript の実行を許可する（推奨）</translation>
+<translation id="5335288049665977812">サイトに JavaScript の実行を許可する（推奨）</translation>
 <translation id="5342314432463739672">権限のリクエスト</translation>
 <translation id="534295439873310000">NFC デバイス</translation>
 <translation id="5357811892247919462">タブが共有されました</translation>
@@ -885,7 +886,7 @@
 <translation id="7498271377022651285">お待ちください…</translation>
 <translation id="7514365320538308">ダウンロード</translation>
 <translation id="751961395872307827">サイトに接続できません</translation>
-<translation id="7521387064766892559">Javascript</translation>
+<translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">おすすめの記事を取得できません</translation>
 <translation id="7559975015014302720">ライトモードはオフです</translation>
 <translation id="7562080006725997899">閲覧データの消去</translation>

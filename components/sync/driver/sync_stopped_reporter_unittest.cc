@@ -58,8 +58,8 @@ class SyncStoppedReporterTest : public testing::Test {
   std::string user_agent() const { return std::string(kTestUserAgent); }
 
   SyncStoppedReporter::ResultCallback callback() {
-    return base::Bind(&SyncStoppedReporterTest::RequestFinishedCallback,
-                      base::Unretained(this));
+    return base::BindOnce(&SyncStoppedReporterTest::RequestFinishedCallback,
+                          base::Unretained(this));
   }
 
   const SyncStoppedReporter::Result& request_result() const {

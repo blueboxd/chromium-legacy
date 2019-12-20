@@ -107,6 +107,9 @@ gcc_toolchain("host") {
   if (cxx != get_path_info(cxx, "file") && string_replace(cxx, " ", "") == cxx) {
     cxx = rebase_path(cxx, root_build_dir)
   }
+  if (ar != get_path_info(ar, "file") && string_replace(ar, " ", "") == ar) {
+    ar = rebase_path(ar, root_build_dir)
+  }
   ld = cxx
   if (cros_host_ld != "") {
     ld = cros_host_ld
@@ -145,6 +148,9 @@ gcc_toolchain("v8_snapshot") {
   }
   if (cxx != get_path_info(cxx, "file") && string_replace(cxx, " ", "") == cxx) {
     cxx = rebase_path(cxx, root_build_dir)
+  }
+  if (ar != get_path_info(ar, "file") && string_replace(ar, " ", "") == ar) {
+    ar = rebase_path(ar, root_build_dir)
   }
   ld = cxx
   if (cros_v8_snapshot_ld != "") {

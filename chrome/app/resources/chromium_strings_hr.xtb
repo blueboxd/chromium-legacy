@@ -20,6 +20,7 @@
 <translation id="1966382378801805537">Chromium ne može utvrditi niti postaviti zadani preglednik</translation>
 <translation id="2008474315282236005">Time će se izbrisati jedna stavka s uređaja. Da biste kasnije dohvatili svoje podatke, prijavite se na Chromium kao <ph name="USER_EMAIL" />.</translation>
 <translation id="2119636228670142020">O OS-u &amp;Chromium</translation>
+<translation id="2147976119693222405">OS Chromium nije mogao sinkronizirati vaše podatke. Ispravite to odmah.</translation>
 <translation id="2241627712206172106">Ako dijelite računalo, prijatelji i članovi obitelji mogu zasebno pregledavati i postaviti Chromium prema svojim željama.</translation>
 <translation id="2347108572062610441">Ovo proširenje promijenilo je stranicu koja se prikazuje prilikom pokretanja Chromiuma.</translation>
 <translation id="2396765026452590966">Proširenje "<ph name="EXTENSION_NAME" />" promijenilo je stranicu koja se prikazuje prilikom pokretanja Chromiuma.</translation>
@@ -35,6 +36,7 @@
 <translation id="2718390899429598676">Radi dodatne sigurnosti Chromium će šifrirati vaše podatke.</translation>
 <translation id="2770231113462710648">Promijeni zadani preglednik na:</translation>
 <translation id="2799223571221894425">Pokreni ponovo</translation>
+<translation id="2805036593126168338">OS Chromium nije mogao sinkronizirati vaše zaporke. Ispravite to odmah.</translation>
 <translation id="2838154144102149890">Chromium se radi ažuriranja mora zaustaviti na ovom računalu. Drugi korisnici koji su prijavljeni na računalu mogli bi zbog toga izgubiti promjene koje nisu spremljene.</translation>
 <translation id="2847479871509788944">Ukloni iz Chromiuma...</translation>
 <translation id="2886012850691518054">Dodatno: pomognite nam da poboljšamo Chromium automatskim slanjem statistike o upotrebi i izvješća o padu programa Googleu.</translation>

@@ -60,6 +60,10 @@ class PRINTING_EXPORT PrintedDocument
   // requests to have this page be rendered and returns NULL.
   // Note: locks for a short amount of time.
   scoped_refptr<PrintedPage> GetPage(int page_number);
+
+  // Drop the specified page's reference for the particular page number.
+  // Note: locks for a short amount of time.
+  void DropPage(const PrintedPage* page);
 #endif  // defined(OS_WIN)
 
   // Sets the document data. Note: locks for a short amount of time.

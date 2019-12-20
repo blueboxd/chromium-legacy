@@ -37,6 +37,7 @@
 <translation id="1231733316453485619">Hidupkan penyegerakan?</translation>
 <translation id="123724288017357924">Muat semula laman semasa dan abaikan kdgn dicache</translation>
 <translation id="124116460088058876">Lagi bahasa</translation>
+<translation id="1242008676835033345">Dibenamkan pada <ph name="WEBSITE_URL" /></translation>
 <translation id="124678866338384709">Tutup tab semasa</translation>
 <translation id="1258753120186372309">Coretan Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Cari &amp; teroka</translation>
@@ -95,6 +96,7 @@
 <translation id="1672586136351118594">Jangan tunjukkan lagi</translation>
 <translation id="1692118695553449118">Penyegerakan dihidupkan</translation>
 <translation id="169515064810179024">Sekat tapak daripada mengakses penderia gerakan</translation>
+<translation id="1711267867945983636">Hidupkan NFC pada telefon anda untuk meneruskan</translation>
 <translation id="1717218214683051432">Penderia gerakan</translation>
 <translation id="1718835860248848330">Jam terakhir</translation>
 <translation id="1736419249208073774">Teroka</translation>
@@ -151,6 +153,7 @@
 <translation id="2082238445998314030">Hasil carian <ph name="RESULT_NUMBER" /> daripada <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Bunyi</translation>
 <translation id="2096012225669085171">Segerakkan dan peribadikan pada semua peranti</translation>
+<translation id="2099625543891475722">ciri fizikal anda, seperti ketinggian</translation>
 <translation id="2100273922101894616">Auto Log masuk</translation>
 <translation id="2100314319871056947">Cuba kongsikan teks itu dalam bahagian yang lebih kecil</translation>
 <translation id="2107397443965016585">Tanya sebelum membenarkan tapak memainkan kandungan yang dilindungi (disyorkan)</translation>
@@ -427,6 +430,7 @@ Untuk melaraskan istilah carian anda, tekan lama untuk memilih. Untuk memperhalu
 <translation id="4226663524361240545">Pemberitahuan boleh menggetarkan peranti</translation>
 <translation id="423219824432660969">Sulitkan data yang disegerakkan dengan kata laluan Google bermula dari <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Buka tetapan</translation>
+<translation id="4250229828105606438">Tangkapan skrin</translation>
 <translation id="4256782883801055595">Lesen sumber terbuka</translation>
 <translation id="4259722352634471385">Navigasi disekat: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Salin alamat pautan</translation>
@@ -480,6 +484,7 @@ Akaun Google anda mungkin mempunyai sejarah penyemakan imbas dalam bentuk lain s
 <translation id="4634124774493850572">Gunakan kata laluan</translation>
 <translation id="4645575059429386691">Diurus oleh ibu bapa anda</translation>
 <translation id="4650364565596261010">Lalai sistem</translation>
+<translation id="4660838440047236328">reka letak bilik anda</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> penanda halaman dipadamkan</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> telah ditambahkan ke skrin Utama anda</translation>
 <translation id="4684427112815847243">Segerakkan semua</translation>
@@ -604,6 +609,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5487521232677179737">Kosongkan data</translation>
 <translation id="5494752089476963479">Sekat iklan di tapak yang menyiarkan iklan yang mengganggu atau mengelirukan</translation>
 <translation id="5500777121964041360">Mungkin tidak tersedia di lokasi anda</translation>
+<translation id="5505264765875738116">Tapak tidak boleh meminta untuk menghantar pemberitahuan</translation>
 <translation id="5512137114520586844">Akaun ini diurus oleh <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Dilumpuhkan oleh pentadbir peranti ini</translation>
 <translation id="5515439363601853141">Buka kunci untuk melihat kata laluan anda</translation>
@@ -701,6 +707,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="6192792657125177640">Pengecualian</translation>
 <translation id="6194112207524046168">Untuk membenarkan Chrome mengakses kamera anda, hidupkan kamera dalam <ph name="BEGIN_LINK" />Tetapan Android<ph name="END_LINK" /> juga.</translation>
 <translation id="6196640612572343990">Sekat kuki pihak ketiga</translation>
+<translation id="6201345951596836663">Pautan Disalin</translation>
 <translation id="6206551242102657620">Sambungan selamat. Maklumat tapak</translation>
 <translation id="6210748933810148297">Bukan <ph name="EMAIL" />?</translation>
 <translation id="6216432067784365534">Pilihan <ph name="NAME_OF_LIST_ITEM" /></translation>
@@ -710,6 +717,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan ini dengan memaparkan iklan yang tidak berdasarkan tapak web lain yang anda lawati. Pelbagai tapak web masih akan mengumpul dan menggunakan data penyemakan imbas anda — contohnya, untuk meningkatkan keselamatan, untuk menyediakan kandungan, iklan dan cadangan serta untuk menjana statistik pelaporan.</translation>
 <translation id="624789221780392884">Kemaskini bersedia</translation>
 <translation id="6255999984061454636">Cadangan kandungan</translation>
+<translation id="6270391203985052864">Tapak boleh meminta untuk menghantar pemberitahuan</translation>
 <translation id="6277522088822131679">Terdapat masalah semasa mencetak halaman. Sila cuba sekali lagi.</translation>
 <translation id="6295158916970320988">Semua tapak</translation>
 <translation id="629730747756840877">Akaun</translation>
@@ -754,6 +762,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="6545864417968258051">Pengimbasan Bluetooth</translation>
 <translation id="6560414384669816528">Cari dengan Sogou</translation>
 <translation id="656065428026159829">Lihat lagi</translation>
+<translation id="6561560012278703671">Gunakan pemesejan yang lebih senyap (menyekat gesaan pemberitahuan daripada mengganggu anda)</translation>
 <translation id="6566259936974865419">Chrome telah menjimatkan data anda sebanyak <ph name="GIGABYTES" /> GB</translation>
 <translation id="6573096386450695060">Sentiasa benarkan</translation>
 <translation id="6573431926118603307">Tab yang telah anda buka dalam Chrome pada peranti anda yang lain akan dipaparkan di sini.</translation>
@@ -850,7 +859,8 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="7293171162284876153">Untuk memulakan penyegerakan, hidupkan "Segerakkan data Chrome anda".</translation>
 <translation id="729975465115245577">Peranti anda tiada apl untuk menyimpan fail kata laluan.</translation>
 <translation id="7302081693174882195">Butiran: Diisih mengikut jumlah penjimatan data</translation>
-<translation id="7302486331832100261">Anda biasanya menyekat pemberitahuan. Untuk membenarkan, ketik Butiran.</translation>
+<translation id="7302486331832100261">Anda biasanya menyekat pemberitahuan. Untuk membenarkan pemberitahuan, ketik Butiran.</translation>
+<translation id="7311441321349344333">NFC dimatikan untuk peranti ini. Hidupkan NFC dalam <ph name="BEGIN_LINK" />Tetapan Android<ph name="END_LINK" />.</translation>
 <translation id="7328017930301109123">Dalam mod Ringkas, Chrome memuatkan halaman lebih pantas dan mengurangkan penggunaan data sehingga 60 peratus.</translation>
 <translation id="7333031090786104871">Masih menambahkan tapak yang terdahulu</translation>
 <translation id="7352939065658542140">VIDEO</translation>

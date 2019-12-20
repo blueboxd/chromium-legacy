@@ -19,9 +19,9 @@
 #include "content/public/common/input_event_ack_state.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_sender.h"
+#include "third_party/blink/public/common/input/web_gesture_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
-#include "third_party/blink/public/platform/web_gesture_event.h"
-#include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/web/web_text_direction.h"
 #include "ui/surface/transport_dib.h"
 

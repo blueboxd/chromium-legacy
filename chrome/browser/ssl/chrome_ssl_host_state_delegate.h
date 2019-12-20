@@ -42,12 +42,14 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
   // content::SSLHostStateDelegate overrides:
   void AllowCert(const std::string& host,
                  const net::X509Certificate& cert,
-                 int error) override;
+                 int error,
+                 content::WebContents* web_contents) override;
   void Clear(
       base::RepeatingCallback<bool(const std::string&)> host_filter) override;
   CertJudgment QueryPolicy(const std::string& host,
                            const net::X509Certificate& cert,
-                           int error) override;
+                           int error,
+                           content::WebContents* web_contents) override;
   void HostRanInsecureContent(const std::string& host,
                               int child_id,
                               InsecureContentType content_type) override;
@@ -55,7 +57,8 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
                                  int child_id,
                                  InsecureContentType content_type) override;
   void RevokeUserAllowExceptions(const std::string& host) override;
-  bool HasAllowException(const std::string& host) override;
+  bool HasAllowException(const std::string& host,
+                         content::WebContents* web_contents) override;
 
   // RevokeUserAllowExceptionsHard is the same as RevokeUserAllowExceptions but
   // additionally may close idle connections in the process. This should be used
@@ -115,9 +118,22 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
   std::unique_ptr<base::Clock> clock_;
   Profile* profile_;
 
+  using AllowedCert = std::pair<std::string /* certificate fingerprint */,
+                                base::FilePath /* StoragePartition path */>;
+
+  // Typically, cert decisions are stored in ContentSettings and persisted to
+  // disk. For non-default StoragePartitions, particularly a <webview> in a
+  // Chrome App, the decisions should be isolated from normal browsing and don't
+  // need to be persisted to disk. In fact, persisting them is undesirable
+  // because they may not have UI exposed to the user when a certificate error
+  // is bypassed. So we track these decisions purely in memory. See
+  // https://crbug.com/639173.
+  std::map<std::string /* host */, std::set<AllowedCert>>
+      allowed_certs_for_non_default_storage_partitions_;
+
   // A BrokenHostEntry is a pair of (host, child_id) that indicates the host
   // contains insecure content in that renderer process.
-  typedef std::pair<std::string, int> BrokenHostEntry;
+  using BrokenHostEntry = std::pair<std::string, int>;
 
   // Hosts which have been contaminated with insecure mixed content in the
   // specified process.  Note that insecure content can travel between

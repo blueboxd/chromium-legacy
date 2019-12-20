@@ -688,12 +688,12 @@ class RawDevtoolsProtocolTest
     devtools_client_->SendRawDevToolsMessage(json_message);
   }
 
-  bool OnProtocolMessage(const std::string& json_message,
+  bool OnProtocolMessage(base::span<const uint8_t> json_message,
                          const base::DictionaryValue& parsed_message) override {
     EXPECT_EQ(
         "{\"id\":1,\"result\":{\"result\":{\"type\":\"number\","
         "\"value\":2,\"description\":\"2\"}}}",
-        json_message);
+        std::string(json_message.begin(), json_message.end()));
 
     FinishAsynchronousTest();
     return true;

@@ -4,6 +4,8 @@
 
 #include "components/sync/test/engine/fake_sync_scheduler.h"
 
+#include <utility>
+
 namespace syncer {
 
 FakeSyncScheduler::FakeSyncScheduler() {}
@@ -27,9 +29,8 @@ void FakeSyncScheduler::ScheduleInvalidationNudge(
     std::unique_ptr<InvalidationInterface> interface,
     const base::Location& nudge_location) {}
 
-void FakeSyncScheduler::ScheduleConfiguration(
-    const ConfigurationParams& params) {
-  params.ready_task.Run();
+void FakeSyncScheduler::ScheduleConfiguration(ConfigurationParams params) {
+  std::move(params.ready_task).Run();
 }
 
 void FakeSyncScheduler::ScheduleInitialSyncNudge(ModelType model_type) {}

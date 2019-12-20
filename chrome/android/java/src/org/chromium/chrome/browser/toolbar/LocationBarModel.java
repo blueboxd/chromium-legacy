@@ -369,7 +369,7 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
         // If we're showing a query in the omnibox, and the security level is high enough to show
         // the search icon, return that instead of the security icon.
         if (getDisplaySearchTerms() != null) {
-                return R.drawable.omnibox_search;
+            return R.drawable.ic_suggestion_magnifier;
         }
 
         return getSecurityIconResource(getSecurityLevel(), !isTablet, isOfflinePage(), isPreview());

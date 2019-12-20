@@ -110,7 +110,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/test/test_url_loader_client.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/base/ui_base_features.h"
 
 #if defined(OS_CHROMEOS)

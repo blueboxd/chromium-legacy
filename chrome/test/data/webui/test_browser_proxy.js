@@ -7,7 +7,8 @@
 
 /**
  * @typedef {{resolver: !PromiseResolver,
- *            callCount: number}}
+ *            callCount: number,
+ *            result?: *}}
  */
 let MethodData;
 
@@ -102,6 +103,27 @@ let MethodData;
    */
   getCallCount(methodName) {
     return this.getMethodData_(methodName).callCount;
+  }
+
+  /**
+   * Sets the return value of a method.
+   * @param {string} methodName
+   * @paran {*} value
+   */
+  setResultFor(methodName, value) {
+    this.getMethodData_(methodName).result = value;
+  }
+
+  /**
+   * Returns the return value of a method or the default value if no return
+   * value is registered.
+   * @param {string} methodName
+   * @param {*} defaultValue
+   * @return {*}
+   */
+  getResultFor(methodName, defaultValue) {
+    const methodData = this.getMethodData_(methodName);
+    return 'result' in methodData ? methodData.result : defaultValue;
   }
 
   /**

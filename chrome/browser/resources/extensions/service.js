@@ -329,11 +329,34 @@ export class Service {
   }
 
   /** @override */
-  updateAllExtensions() {
+  updateAllExtensions(extensions) {
+    /**
+     * Attempt to reload local extensions. If an extension fails to load, the
+     * user is prompted to try updating the broken extension using loadUnpacked
+     * and we skip reloading the remaining local extensions.
+     */
     return new Promise((resolve) => {
-      chrome.developerPrivate.autoUpdate(resolve);
-      chrome.metricsPrivate.recordUserAction('Options_UpdateExtensions');
-    });
+             chrome.developerPrivate.autoUpdate(resolve);
+             chrome.metricsPrivate.recordUserAction('Options_UpdateExtensions');
+           })
+        .then(() => {
+          return new Promise((resolve, reject) => {
+            const loadLocalExtensions = async () => {
+              for (const extension of extensions) {
+                if (extension.location === 'UNPACKED') {
+                  try {
+                    await this.reloadItem(extension.id);
+                  } catch (loadError) {
+                    reject(loadError);
+                    break;
+                  }
+                }
+              }
+              resolve('Loaded local extensions.');
+            };
+            loadLocalExtensions();
+          });
+        });
   }
 
   /** @override */

@@ -165,6 +165,37 @@ translate::TranslateBubbleUiEvent TranslateBubbleResultToUiEvent(
   }
 }
 
+// Creates a new tabbed browser window, with the same size, type and profile as
+// |original_browser|'s window, inserts |contents| into it, and shows it.
+void CreateAndShowNewWindowWithContents(
+    std::unique_ptr<content::WebContents> contents,
+    const Browser* original_browser) {
+  Browser* new_browser = nullptr;
+  if (original_browser->deprecated_is_app()) {
+    new_browser = new Browser(Browser::CreateParams::CreateForApp(
+        original_browser->app_name(), original_browser->is_trusted_source(),
+        gfx::Rect(), original_browser->profile(), true));
+  } else {
+    new_browser = new Browser(Browser::CreateParams(
+        original_browser->type(), original_browser->profile(), true));
+  }
+  // Preserve the size of the original window. The new window has already
+  // been given an offset by the OS, so we shouldn't copy the old bounds.
+  BrowserWindow* new_window = new_browser->window();
+  new_window->SetBounds(
+      gfx::Rect(new_window->GetRestoredBounds().origin(),
+                original_browser->window()->GetRestoredBounds().size()));
+
+  // We need to show the browser now.  Otherwise ContainerWin assumes the
+  // WebContents is invisible and won't size it.
+  new_browser->window()->Show();
+
+  // The page transition below is only for the purpose of inserting the tab.
+  new_browser->tab_strip_model()->AddWebContents(std::move(contents), -1,
+                                                 ui::PAGE_TRANSITION_LINK,
+                                                 TabStripModel::ADD_ACTIVE);
+}
+
 }  // namespace
 
 using base::UserMetricsAction;
@@ -728,6 +759,17 @@ bool CanDuplicateKeyboardFocusedTab(const Browser* browser) {
   return CanDuplicateTabAt(browser, *GetKeyboardFocusedTabIndex(browser));
 }
 
+bool CanMoveTabToNewWindow(Browser* browser) {
+  return browser->tab_strip_model()->count() > 1;
+}
+
+void MoveTabToNewWindow(Browser* browser) {
+  int index = browser->tab_strip_model()->active_index();
+  auto contents = browser->tab_strip_model()->DetachWebContentsAt(index);
+  CHECK(contents);
+  CreateAndShowNewWindowWithContents(std::move(contents), browser);
+}
+
 bool CanCloseTabsToRight(const Browser* browser) {
   return browser->tab_strip_model()->IsContextMenuCommandEnabled(
       browser->tab_strip_model()->active_index(),
@@ -760,30 +802,7 @@ WebContents* DuplicateTabAt(Browser* browser, int index) {
     tab_strip_model->InsertWebContentsAt(index + 1, std::move(contents_dupe),
                                          add_types, old_group);
   } else {
-    Browser* new_browser = nullptr;
-    if (browser->deprecated_is_app()) {
-      new_browser = new Browser(Browser::CreateParams::CreateForApp(
-          browser->app_name(), browser->is_trusted_source(), gfx::Rect(),
-          browser->profile(), true));
-    } else {
-      new_browser = new Browser(
-          Browser::CreateParams(browser->type(), browser->profile(), true));
-    }
-    // Preserve the size of the original window. The new window has already
-    // been given an offset by the OS, so we shouldn't copy the old bounds.
-    BrowserWindow* new_window = new_browser->window();
-    new_window->SetBounds(
-        gfx::Rect(new_window->GetRestoredBounds().origin(),
-                  browser->window()->GetRestoredBounds().size()));
-
-    // We need to show the browser now.  Otherwise ContainerWin assumes the
-    // WebContents is invisible and won't size it.
-    new_browser->window()->Show();
-
-    // The page transition below is only for the purpose of inserting the tab.
-    new_browser->tab_strip_model()->AddWebContents(std::move(contents_dupe), -1,
-                                                   ui::PAGE_TRANSITION_LINK,
-                                                   TabStripModel::ADD_ACTIVE);
+    CreateAndShowNewWindowWithContents(std::move(contents_dupe), browser);
   }
 
   SessionService* session_service =

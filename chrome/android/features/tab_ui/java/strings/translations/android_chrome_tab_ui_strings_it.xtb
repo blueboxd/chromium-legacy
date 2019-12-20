@@ -29,6 +29,7 @@
 <translation id="7792771145871471484">Controlla i suggerimenti.</translation>
 <translation id="7885132941432959125">Sposta scheda a destra</translation>
 <translation id="7966321538264951561">Ignora i suggerimenti.</translation>
+<translation id="8205266828577616993">Sposta scheda in alto</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Chiudi <ph name="TABS_COUNT_ONE" /> scheda selezionata}other{Chiudi <ph name="TABS_COUNT_MANY" /> schede selezionate}}</translation>
 <translation id="9150694013019234766">Passa da una scheda all'altra del gruppo di schede nella parte inferiore dello schermo</translation>
 <translation id="9169594135889675189">Aggiungi una nuova scheda al gruppo</translation>

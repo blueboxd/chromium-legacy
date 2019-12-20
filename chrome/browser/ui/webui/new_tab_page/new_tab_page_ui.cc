@@ -59,12 +59,16 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource() {
       {"urlField", IDS_NTP_CUSTOM_LINKS_URL},
 
       // Customize button and dialog.
-      {"customizeButton", IDS_NTP_CUSTOMIZE_BUTTON_LABEL},
       {"cancelButton", IDS_CANCEL},
+      {"colorPickerLabel", IDS_NTP_CUSTOMIZE_COLOR_PICKER_LABEL},
+      {"customizeButton", IDS_NTP_CUSTOMIZE_BUTTON_LABEL},
+      {"defaultColorLabel", IDS_NTP_CUSTOMIZE_DEFAULT_LABEL},
       {"doneButton", IDS_DONE},
   };
   AddLocalizedStringsBulk(source, kStrings);
 
+  source->AddResourcePath("skcolor.mojom-lite.js",
+                          IDR_NEW_TAB_PAGE_SKCOLOR_MOJO_LITE_JS);
   source->AddResourcePath("new_tab_page.mojom-lite.js",
                           IDR_NEW_TAB_PAGE_MOJO_LITE_JS);
   webui::SetupWebUIDataSource(

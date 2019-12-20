@@ -22,7 +22,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/background_sync_registration.h"
 #include "content/public/browser/browser_thread.h"
-#include "third_party/blink/public/mojom/background_sync/background_sync.mojom.h"
+#include "third_party/blink/public/mojom/background_sync/background_sync.mojom-forward.h"
 #include "url/gurl.h"
 
 namespace content {

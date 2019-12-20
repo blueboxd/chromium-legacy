@@ -475,6 +475,7 @@ void PrintJob::OnNotifyPrintJobEvent(const JobEventDetails& event_details) {
         pdf_conversion_state_->OnPageProcessed(
             base::BindRepeating(&PrintJob::OnPdfPageConverted, this));
       }
+      document_->DropPage(event_details.page());
       break;
 #endif  // defined(OS_WIN)
     default: {

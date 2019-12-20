@@ -72,7 +72,8 @@ enum class CrostiniResult {
   CONCIERGE_START_FAILED = 46,
   CONTAINER_CONFIGURATION_FAILED = 47,
   LOAD_COMPONENT_UPDATE_IN_PROGRESS = 48,
-  kMaxValue = LOAD_COMPONENT_UPDATE_IN_PROGRESS,
+  NEVER_FINISHED = 49,
+  kMaxValue = NEVER_FINISHED,
 };
 
 enum class InstallLinuxPackageProgressStatus {

@@ -67,5 +67,13 @@ void ExpectProtosEqual(const google::protobuf::MessageLite& expected,
   EXPECT_EQ(expected.SerializeAsString(), actual.SerializeAsString());
 }
 
+void SetDateProtoTo(const base::Time& time, Date* date_proto) {
+  base::Time::Exploded exploded;
+  time.UTCExplode(&exploded);
+  date_proto->set_year(exploded.year);
+  date_proto->set_month(exploded.month);
+  date_proto->set_day(exploded.day_of_month);
+}
+
 }  // namespace test
 }  // namespace games

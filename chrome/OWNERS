@@ -28,5 +28,5 @@ per-file VERSION=amineer@chromium.org
 per-file VERSION=anantha@chromium.org
 per-file VERSION=govind@chromium.org
 per-file VERSION=mmoss@chromium.org
-# COMPONENT: Build
+# COMPONENT: UI>Browser
 # TEAM: chromium-reviews@chromium.org

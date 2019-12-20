@@ -80,6 +80,9 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
     // The Play button in the top right corner. Only shown for videos.
     private ImageView mPlayButton;
 
+    // The large Play button (in the middle when in full-screen mode). Only shown for videos.
+    private ImageView mPlayButtonLarge;
+
     // The little shader in the top left corner (provides backdrop for selection ring on
     // unfavorable image backgrounds).
     private ImageView mScrim;
@@ -133,6 +136,8 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
         mVideoDuration = findViewById(R.id.video_duration);
         mPlayButton = findViewById(R.id.small_play_button);
         mPlayButton.setOnClickListener(this);
+        mPlayButtonLarge = findViewById(R.id.large_play_button);
+        mPlayButtonLarge.setOnClickListener(this);
     }
 
     @Override
@@ -160,7 +165,7 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
 
     @Override
     public final void onClick(View view) {
-        if (view == mPlayButton) {
+        if (view == mPlayButton || view == mPlayButtonLarge) {
             mCategoryView.playVideo(mBitmapDetails.getUri());
         } else {
             super.onClick(view);
@@ -448,6 +453,7 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
     private void resetTile() {
         mBitmapDetails = null;
         mIconView.setImageBitmap(null);
+        mPlayButtonLarge.setVisibility(View.GONE);
         mVideoDuration.setText("");
         mVideoControlsSmall.setVisibility(View.GONE);
         mUnselectedView.setVisibility(View.GONE);
@@ -490,9 +496,15 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
                 && mCategoryView.isMultiSelectAllowed();
         mUnselectedView.setVisibility(showUnselectedToggle ? View.VISIBLE : View.GONE);
         mScrim.setVisibility(showUnselectedToggle ? View.VISIBLE : View.GONE);
-        mVideoControlsSmall.setVisibility(
-                mImageLoaded && mBitmapDetails.type() == PickerBitmap.TileTypes.VIDEO ? View.VISIBLE
-                                                                                      : View.GONE);
+
+        boolean showVideoControls =
+                mImageLoaded && mBitmapDetails.type() == PickerBitmap.TileTypes.VIDEO;
+        mVideoControlsSmall.setVisibility(showVideoControls && !mCategoryView.isInMagnifyingMode()
+                        ? View.VISIBLE
+                        : View.GONE);
+        mPlayButtonLarge.setVisibility(
+                showVideoControls && mCategoryView.isInMagnifyingMode() ? View.VISIBLE : View.GONE);
+
         if (!special) {
             updateSelectionBorder(animateBorderChanges);
         }

@@ -11,6 +11,7 @@ js_type_check("closure_compile") {
     ":app",
     ":browser_proxy",
     ":customize_dialog",
+    ":theme_icon",
   ]
 }
 
@@ -53,6 +54,12 @@ js_library("customize_dialog") {
   ]
 }
 
+js_library("theme_icon") {
+  deps = [
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+}
+
 polymer_modulizer("app") {
   js_file = "app.js"
   html_file = "app.html"
@@ -71,10 +78,17 @@ polymer_modulizer("customize_dialog") {
   html_type = "v3-ready"
 }
 
+polymer_modulizer("theme_icon") {
+  js_file = "theme_icon.js"
+  html_file = "theme_icon.html"
+  html_type = "v3-ready"
+}
+
 group("polymer3_elements") {
   deps = [
     ":app_module",
     ":customize_dialog_module",
     ":most_visited_module",
+    ":theme_icon_module",
   ]
 }

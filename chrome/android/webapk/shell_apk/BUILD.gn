@@ -18,7 +18,9 @@ h2o_junit_manifest_target_name = "h2o_j_unit_manifest_target"
 # old copy of the runtime library.
 android_library("compiled_in_runtime_library_java") {
   chromium_code = false
-  java_files = [ "src/org/chromium/webapk/lib/runtime_library/IWebApkApi.java" ]
+  sources = [
+    "src/org/chromium/webapk/lib/runtime_library/IWebApkApi.java",
+  ]
 }
 
 mustache_pass("generate_old_style_manifest_for_upload") {
@@ -50,12 +52,12 @@ template("webapk_java") {
                              "deps",
                            ])
 
-    java_files = [
+    sources = [
+      "src/org/chromium/webapk/shell_apk/ChooseHostBrowserDialog.java",
+      "src/org/chromium/webapk/shell_apk/DexLoader.java",
       "src/org/chromium/webapk/shell_apk/HostBrowserClassLoader.java",
       "src/org/chromium/webapk/shell_apk/HostBrowserLauncher.java",
       "src/org/chromium/webapk/shell_apk/HostBrowserLauncherParams.java",
-      "src/org/chromium/webapk/shell_apk/ChooseHostBrowserDialog.java",
-      "src/org/chromium/webapk/shell_apk/DexLoader.java",
       "src/org/chromium/webapk/shell_apk/HostBrowserUtils.java",
       "src/org/chromium/webapk/shell_apk/IdentityService.java",
       "src/org/chromium/webapk/shell_apk/InstallHostBrowserDialog.java",
@@ -88,7 +90,7 @@ template("webapk_with_service_java") {
                              "deps",
                            ])
 
-    java_files = [
+    sources = [
       "src/org/chromium/webapk/shell_apk/WebApkServiceFactory.java",
       "src/org/chromium/webapk/shell_apk/WebApkServiceImplWrapper.java",
     ]
@@ -260,7 +262,7 @@ webapk_tmpl("h2o_j_unit_webapk") {
 
 android_library("shell_apk_javatests") {
   testonly = true
-  java_files = [
+  sources = [
     "javatests/src/org/chromium/webapk/shell_apk/DexLoaderTest.java",
     "javatests/src/org/chromium/webapk/shell_apk/h2o/SplashUtilsTest.java",
   ]
@@ -277,7 +279,7 @@ android_library("shell_apk_javatests") {
 }
 
 junit_binary("webapk_shell_apk_junit_tests") {
-  java_files = [
+  sources = [
     "junit/src/org/chromium/webapk/shell_apk/HostBrowserClassLoaderTest.java",
     "junit/src/org/chromium/webapk/shell_apk/HostBrowserLauncherParamsTest.java",
     "junit/src/org/chromium/webapk/shell_apk/HostBrowserUtilsTest.java",
@@ -295,7 +297,7 @@ junit_binary("webapk_shell_apk_junit_tests") {
 }
 
 junit_binary("webapk_shell_apk_h2o_junit_tests") {
-  java_files = [
+  sources = [
     "junit/src/org/chromium/webapk/shell_apk/CustomAndroidOsShadowAsyncTask.java",
     "junit/src/org/chromium/webapk/shell_apk/TestBrowserInstaller.java",
     "junit/src/org/chromium/webapk/shell_apk/h2o/LaunchTest.java",

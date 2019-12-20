@@ -615,11 +615,6 @@
     "expiry_milestone": 82
   },
   {
-    "name": "crostini-webui-installer",
-    "owners": [ "lxj", "timloh", "benwells" ],
-    "expiry_milestone": 82
-  },
-  {
     "name": "crostini-webui-upgrader",
     "owners": [ "nverne", "davidmunro", "benwells" ],
     "expiry_milestone": 84
@@ -2629,11 +2624,6 @@
     "name": "new-usb-backend",
     "owners": [ "reillyg@chromium.org" ],
     "expiry_milestone": 83
-  },
-  {
-    "name": "newblue",
-    "owners": [ "sonnysasaka" ],
-    "expiry_milestone": 81
   },
   {
     "name": "no-credit-card-abort",

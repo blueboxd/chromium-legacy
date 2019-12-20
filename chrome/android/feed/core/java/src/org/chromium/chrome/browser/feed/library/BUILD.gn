@@ -455,7 +455,7 @@ android_resources("sharedstream_contextmenumanager_resources") {
 
 android_library("feed_lib_java") {
   chromium_code = false
-  java_files = feed_lib_java_sources
+  sources = feed_lib_java_sources
 
   deps = [
     ":basicstream_internal_drivers_resources",
@@ -485,7 +485,7 @@ android_library("feed_lib_java") {
 
 android_library("feed_conformance_test_lib_android_java") {
   chromium_code = false
-  java_files = feed_conformance_test_lib_sources
+  sources = feed_conformance_test_lib_sources
   testonly = true
   deps = [
     ":feed_lib_java",

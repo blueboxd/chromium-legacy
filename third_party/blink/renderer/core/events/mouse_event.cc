@@ -22,7 +22,7 @@
 
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 
-#include "third_party/blink/public/platform/web_pointer_properties.h"
+#include "third_party/blink/public/common/input/web_pointer_properties.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatcher.h"
 #include "third_party/blink/renderer/core/dom/events/event_path.h"

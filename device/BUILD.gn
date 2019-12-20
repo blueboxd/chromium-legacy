@@ -373,7 +373,7 @@ if (is_android) {
 
   android_library("bluetooth_test_java") {
     testonly = true
-    java_files = bluetooth_java_sources_needing_jni
+    sources = bluetooth_java_sources_needing_jni
     deps = [
       "//base:base_java",
       "//components/location/android:location_java",
@@ -386,7 +386,9 @@ if (is_android) {
   }
 
   junit_binary("device_junit_tests") {
-    java_files = [ "gamepad/android/junit/src/org/chromium/device/gamepad/GamepadMappingsTest.java" ]
+    sources = [
+      "gamepad/android/junit/src/org/chromium/device/gamepad/GamepadMappingsTest.java",
+    ]
     deps = [
       "$google_play_services_package:google_play_services_base_java",
       "$google_play_services_package:google_play_services_basement_java",

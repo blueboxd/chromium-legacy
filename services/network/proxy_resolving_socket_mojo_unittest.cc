@@ -180,7 +180,7 @@ class ProxyResolvingSocketTest : public ProxyResolvingSocketTestBase,
   DISALLOW_COPY_AND_ASSIGN(ProxyResolvingSocketTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          ProxyResolvingSocketTest,
                          ::testing::Bool());
 

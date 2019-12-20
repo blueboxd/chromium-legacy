@@ -35,7 +35,7 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.website.ContentSettingValues;
 import org.chromium.chrome.browser.settings.website.PermissionInfo;
-import org.chromium.chrome.browser.settings.website.SingleWebsitePreferences;
+import org.chromium.chrome.browser.settings.website.SingleWebsiteSettings;
 import org.chromium.chrome.browser.settings.website.WebsitePreferenceBridge;
 import org.chromium.components.location.LocationUtils;
 import org.chromium.components.search_engines.TemplateUrl;
@@ -468,8 +468,8 @@ public class SearchEngineAdapter extends BaseAdapter
         if (linkBeingShown == R.string.search_engine_system_location_disabled) {
             mContext.startActivity(LocationUtils.getInstance().getSystemLocationSettingsIntent());
         } else {
-            SettingsLauncher.launchSettingsPage(mContext, SingleWebsitePreferences.class,
-                    SingleWebsitePreferences.createFragmentArgsForSite(url));
+            SettingsLauncher.launchSettingsPage(mContext, SingleWebsiteSettings.class,
+                    SingleWebsiteSettings.createFragmentArgsForSite(url));
         }
     }
 

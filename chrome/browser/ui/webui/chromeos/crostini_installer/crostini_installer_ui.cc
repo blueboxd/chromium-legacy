@@ -101,11 +101,6 @@ void AddStringResources(content::WebUIDataSource* source) {
 
 namespace chromeos {
 
-bool CrostiniInstallerUI::IsEnabled() {
-  return base::FeatureList::IsEnabled(
-      chromeos::features::kCrostiniWebUIInstaller);
-}
-
 CrostiniInstallerUI::CrostiniInstallerUI(content::WebUI* web_ui)
     : ui::MojoWebDialogUI{web_ui} {
   content::WebUIDataSource* source =

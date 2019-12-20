@@ -7,10 +7,10 @@ import("//chrome/android/webapk/libs/runtime_library_version.gni")
 import("//chrome/android/webapk/shell_apk/request_update_for_version.gni")
 
 android_library("client_java") {
-  java_files = [
+  sources = [
     "src/org/chromium/webapk/lib/client/DexOptimizer.java",
-    "src/org/chromium/webapk/lib/client/WebApkNavigationClient.java",
     "src/org/chromium/webapk/lib/client/WebApkIdentityServiceClient.java",
+    "src/org/chromium/webapk/lib/client/WebApkNavigationClient.java",
     "src/org/chromium/webapk/lib/client/WebApkServiceConnectionManager.java",
     "src/org/chromium/webapk/lib/client/WebApkValidator.java",
     "src/org/chromium/webapk/lib/client/WebApkVerifySignature.java",
@@ -36,7 +36,7 @@ java_cpp_template("runtime_library_version_java") {
 }
 
 junit_binary("webapk_client_junit_tests") {
-  java_files = [
+  sources = [
     "junit/src/org/chromium/webapk/lib/client/WebApkIdentityServiceClientTest.java",
     "junit/src/org/chromium/webapk/lib/client/WebApkServiceConnectionManagerTest.java",
     "junit/src/org/chromium/webapk/lib/client/WebApkValidatorTest.java",

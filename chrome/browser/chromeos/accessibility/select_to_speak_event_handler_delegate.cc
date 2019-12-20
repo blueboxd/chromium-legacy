@@ -15,7 +15,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
-#include "third_party/blink/public/platform/web_mouse_event.h"
+#include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "ui/content_accelerators/accelerator_util.h"
 #include "ui/events/blink/web_input_event.h"
 #include "ui/events/event.h"

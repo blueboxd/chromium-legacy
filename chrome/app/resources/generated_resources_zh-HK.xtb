@@ -1119,7 +1119,7 @@
 <translation id="255747371423522804">新增至現有群組</translation>
 <translation id="2558896001721082624">一律在系統選單中顯示無障礙功能選項</translation>
 <translation id="2562743677925229011">未登入「<ph name="SHORT_PRODUCT_NAME" />」</translation>
-<translation id="2564520396658920462">透過 AppleScript 執行 Javascript 的功能已關閉。如要開啟此功能，請從選單列前往「檢視模式」&gt;「開發人員」&gt;「允許透過 Apple 活動執行 Javascript」。如需瞭解詳情，請瀏覽：https://support.google.com/chrome/?p=applescript</translation>
+<translation id="2564520396658920462">透過 AppleScript 執行 JavaScript 的功能已關閉。如要開啟此功能，請從選單列前往「檢視模式」&gt;「開發人員」&gt;「允許透過 Apple 活動執行 JavaScript」。如需瞭解詳情，請瀏覽：https://support.google.com/chrome/?p=applescript</translation>
 <translation id="2564653188463346023">強化的拼字檢查</translation>
 <translation id="2566124945717127842">執行「清空」(恢復原廠設定) 會將您的 <ph name="IDS_SHORT_PRODUCT_NAME" /> 裝置重設並恢復為原廠設定。</translation>
 <translation id="2568774940984945469">資料列容器</translation>
@@ -1302,7 +1302,7 @@
 <translation id="2806891468525657116">捷徑已存在</translation>
 <translation id="2807517655263062534">您下載的檔案會在這裡顯示</translation>
 <translation id="2809586584051668049">和另外 <ph name="NUMBER_ADDITIONAL_DISABLED" /> 個</translation>
-<translation id="2810390687497823527">如果您無法識別任何擴充程式，或瀏覽器無法預期運作，您可以在這裡關閉或自訂擴充程式。</translation>
+<translation id="2810390687497823527">如果您無法識別任何擴充程式，或瀏覽器無法如期運作，您可以在這裡關閉或自訂擴充程式。</translation>
 <translation id="2812049959647166806">系統不支援 Thunderbolt</translation>
 <translation id="2812944337881233323">請嘗試登出並重新登入</translation>
 <translation id="2812989263793994277">不顯示任何圖片</translation>
@@ -5754,7 +5754,7 @@
 <translation id="960719561871045870">流動網絡供應商代碼</translation>
 <translation id="960987915827980018">還有約 1 個小時</translation>
 <translation id="962802172452141067">樹狀分枝書籤</translation>
-<translation id="964057662886721376">有些擴充程式可能會拖慢上網速度，特別是那些您意外下載的擴充程式。</translation>
+<translation id="964057662886721376">有些擴充程式可能會拖慢上網速度，特別是您意外下載的擴充程式。</translation>
 <translation id="964286338916298286">IT 管理員已為您的裝置停用 Chrome Goodies。</translation>
 <translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{應用程式}other{應用程式}}</translation>
 <translation id="965211523698323809">在 <ph name="DEVICE_TYPE" /> 上收發短訊。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>

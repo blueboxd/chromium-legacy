@@ -17,6 +17,10 @@
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/window_tracker.h"
 
+namespace display {
+class Display;
+}  // namespace display
+
 namespace ash {
 class PhantomWindowController;
 class WindowSize;
@@ -140,7 +144,7 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   int PrimaryAxisCoordinate(int x, int y) const;
 
   // Updates the bounds of the phantom window for window snapping.
-  void UpdateSnapPhantomWindow(const gfx::Point& location,
+  void UpdateSnapPhantomWindow(const gfx::Point& location_in_screen,
                                const gfx::Rect& bounds);
 
   // Restacks the windows z-order position so that one of the windows is at the
@@ -150,7 +154,8 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // Returns the edge to which the window should be snapped to if the user does
   // no more dragging. SNAP_NONE is returned if the window should not be
   // snapped.
-  SnapType GetSnapType(const gfx::Point& location) const;
+  SnapType GetSnapType(const display::Display& display,
+                       const gfx::Point& location_in_screen) const;
 
   // Returns true if |bounds_in_parent| are valid bounds for snapped state type
   // |snapped_type|.

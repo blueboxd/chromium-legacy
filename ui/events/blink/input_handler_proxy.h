@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "cc/input/input_handler.h"
 #include "cc/input/snap_fling_controller.h"
-#include "third_party/blink/public/platform/web_gesture_event.h"
+#include "third_party/blink/public/common/input/web_gesture_event.h"
 #include "ui/events/blink/blink_features.h"
 #include "ui/events/blink/input_scroll_elasticity_controller.h"
 #include "ui/events/blink/synchronous_input_handler_proxy.h"

@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/posix/global_descriptors.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/resource/resource_bundle_android.h"
 #include "ui/base/ui_base_paths.h"
@@ -20,6 +21,7 @@
 namespace android_webview {
 
 void InitIcuAndResourceBundleBrowserSide() {
+  TRACE_EVENT0("startup", "InitIcuAndResourceBundleBrowserSide");
   ui::SetLocalePaksStoredInApk(true);
   std::string locale = ui::ResourceBundle::InitSharedInstanceWithLocale(
       base::android::GetDefaultLocaleString(), NULL,

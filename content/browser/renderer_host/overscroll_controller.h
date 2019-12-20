@@ -11,8 +11,8 @@
 #include "base/time/time.h"
 #include "cc/input/overscroll_behavior.h"
 #include "content/common/content_export.h"
-#include "third_party/blink/public/platform/web_gesture_event.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_gesture_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/events/blink/did_overscroll_params.h"
 
 namespace content {

@@ -37,6 +37,7 @@
 <translation id="1231733316453485619">Sinxronizatsiya yoqilsinmi?</translation>
 <translation id="123724288017357924">Keshga yuklangan ma’lumotlarsiz sahifani qayta yuklang.</translation>
 <translation id="124116460088058876">Boshqa tillar</translation>
+<translation id="1242008676835033345"><ph name="WEBSITE_URL" /> saytida joylangan</translation>
 <translation id="124678866338384709">Joriy varaqni yopish</translation>
 <translation id="1258753120186372309">Google-dudl: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Qidiruv va tanishuv</translation>
@@ -95,6 +96,7 @@
 <translation id="1672586136351118594">Boshqa ko‘rsatilmasin</translation>
 <translation id="1692118695553449118">Sinxronlash yoniq</translation>
 <translation id="169515064810179024">Saytlarga harakat sensorlaridan foydalanishni taqiqlash</translation>
+<translation id="1711267867945983636">Davom etish uchun telefonda NFC funksiyasini yoqing</translation>
 <translation id="1717218214683051432">Harakat sensorlari</translation>
 <translation id="1718835860248848330">Oxirgi bir soat</translation>
 <translation id="1736419249208073774">Tanishuv</translation>
@@ -151,6 +153,7 @@
 <translation id="2082238445998314030">Natija: <ph name="RESULT_NUMBER" /> / <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Tovush</translation>
 <translation id="2096012225669085171">Barcha qurilmalardagi sinxronizatsiya va shaxsiy sozlamalar</translation>
+<translation id="2099625543891475722">boʻy kabi jismoniy xususiyatlaringiz</translation>
 <translation id="2100273922101894616">Avtomatik kirish</translation>
 <translation id="2100314319871056947">Yuboriladigan matnni biroz qisqartiring</translation>
 <translation id="2107397443965016585">Himoyalangan kontentni ijro etishdan avval ruxsat soʻralsin (tavsiya etiladi)</translation>
@@ -427,6 +430,7 @@ Yangi qidiruv so‘rovi belgilash uchun, kerakli so‘z ustiga barmoq bilan uzoq
 <translation id="4226663524361240545">Bildirishnoma kelganida qurilma tebranishi mumkin</translation>
 <translation id="423219824432660969">Google hisobi paroli yordamida <ph name="TIME" /> sanasidan keyingi barcha ma’lumotlarni shifrlash</translation>
 <translation id="4242533952199664413">Sozlamalarni ochish</translation>
+<translation id="4250229828105606438">Skrinshot</translation>
 <translation id="4256782883801055595">Ochiq kodli DT litsenziyalari</translation>
 <translation id="4259722352634471385">Sahifa bloklandi: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Havola manzilini nusxalash</translation>
@@ -480,6 +484,7 @@ Google hisobingiz orqali amalga oshirgan qidiruvlaringiz, brauzer tarixi va bosh
 <translation id="4634124774493850572">Paroldan foydalanish</translation>
 <translation id="4645575059429386691">Ota-onangiz tomonidan boshqariladi</translation>
 <translation id="4650364565596261010">Tizim standarti</translation>
+<translation id="4660838440047236328">xonangiz dizayni</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> ta xatcho‘p o‘chirib tashlandi</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> sayti bosh ekranga qo‘shildi</translation>
 <translation id="4684427112815847243">Hamma narsa sinxronlansin</translation>
@@ -604,6 +609,7 @@ Bu sozlamani almashtirish uchun <ph name="BEGIN_LINK" />sinxronizatsiyani tiklan
 <translation id="5487521232677179737">Tarixni tozalash</translation>
 <translation id="5494752089476963479">Saytlarda chiquvchi yoqimsiz yoki befoyda reklamalar bloklansin</translation>
 <translation id="5500777121964041360">Hududingizda ishlamasligi mumkin</translation>
+<translation id="5505264765875738116">Saytlar bildirgi chiqarishga ruxsat soʻray olmaydi</translation>
 <translation id="5512137114520586844">Bu hisob <ph name="PARENT_NAME" /> tomonidan boshqariladi.</translation>
 <translation id="5514904542973294328">Qurilma administratori o‘chirib qo‘ygan</translation>
 <translation id="5515439363601853141">Paolni ko‘rish uchun qulfni oching</translation>
@@ -701,6 +707,7 @@ Bu sozlamani almashtirish uchun <ph name="BEGIN_LINK" />sinxronizatsiyani tiklan
 <translation id="6192792657125177640">Istisno saytlar</translation>
 <translation id="6194112207524046168">Chrome kameradan foydalanishiga ruxsat berish uchun <ph name="BEGIN_LINK" />Android sozlamalari<ph name="END_LINK" /> orqali kamerani yoqing.</translation>
 <translation id="6196640612572343990">Tashqi cookie-fayllarni bloklash.</translation>
+<translation id="6201345951596836663">Nusxalandi</translation>
 <translation id="6206551242102657620">Aloqa himoyalangan. Sayt axboroti</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> emasmi?</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> parametrlar</translation>
@@ -710,6 +717,7 @@ Bu sozlamani almashtirish uchun <ph name="BEGIN_LINK" />sinxronizatsiyani tiklan
 Masalan, qaysi sahifalarga kirganligingizdan qat’i nazar, ba’zi saytlarda reklama e’lonlari ko‘rsatilishi mumkin. Boshqa saytlar esa brauzer faoliyati haqidagi ma’lumotlarni (m-n, xavfsizlikni mustahkamlash, kontent ko‘rsatish, reklama taqdimoti, statistik hisobotlar yasash kabi) to‘plashda va bu ma’lumotlardan foydalanishda davom etmoqda.</translation>
 <translation id="624789221780392884">Yangilanish tayyor</translation>
 <translation id="6255999984061454636">Kontent takliflari</translation>
+<translation id="6270391203985052864">Saytlar bildirgi chiqarishga ruxsat soʻray oladi</translation>
 <translation id="6277522088822131679">Sahifani chop etishda muammo yuzaga keldi. Qayta urinib ko‘ring.</translation>
 <translation id="6295158916970320988">Barcha saytlar</translation>
 <translation id="629730747756840877">Hisob</translation>
@@ -754,6 +762,7 @@ Masalan, qaysi sahifalarga kirganligingizdan qat’i nazar, ba’zi saytlarda re
 <translation id="6545864417968258051">Bluetooth qurilmalarni qidirish</translation>
 <translation id="6560414384669816528">Sogou orqali qidirib ko‘ring</translation>
 <translation id="656065428026159829">Yana</translation>
+<translation id="6561560012278703671">Xabarlar tinchroq kelsin (bezovta qiluvchi bildirgilar bloklanadi)</translation>
 <translation id="6566259936974865419">Chrome <ph name="GIGABYTES" /> GB tejab qoldi</translation>
 <translation id="6573096386450695060">Har doim ruxsat berilsin</translation>
 <translation id="6573431926118603307">Boshqa qurilmalaringizda ochilgan Chrome sahifalari shu yerda ko‘rsatiladi.</translation>
@@ -851,6 +860,7 @@ Masalan, qaysi sahifalarga kirganligingizdan qat’i nazar, ba’zi saytlarda re
 <translation id="729975465115245577">Qurilmangizda parollarni saqlovchi ilova yo‘q.</translation>
 <translation id="7302081693174882195">Tafsilot: Tejalgan trafik asosida saralandi</translation>
 <translation id="7302486331832100261">Odatda bildirishnomalarni bloklaysiz. Ruxsat berish uchun Tafsilotlar ustiga bosing.</translation>
+<translation id="7311441321349344333">Telefonda NFC yoqilmaggan. NFC funksiyasini <ph name="BEGIN_LINK" />Android sozlamalari<ph name="END_LINK" /> orqali yoqing.</translation>
 <translation id="7328017930301109123">Lite rejimida Chrome sahifalarni tezroq yuklaydi va 60 foizgacha trafik tejaydi.</translation>
 <translation id="7333031090786104871">Avvalgi sayt qo‘shilmoqda</translation>
 <translation id="7352939065658542140">VIDEO</translation>

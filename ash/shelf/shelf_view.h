@@ -296,6 +296,10 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // scrollable shelf is enabled. Returns whether those two indices are changed.
   bool UpdateVisibleIndices();
 
+  // If there is animation associated with |view| in |bounds_animator_|,
+  // stops the animation.
+  void StopAnimatingViewIfAny(views::View* view);
+
   // Return the view model for test purposes.
   const views::ViewModel* view_model_for_test() const {
     return view_model_.get();
@@ -566,10 +570,6 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
 
   // Different from GetTitleForView, |view| here must be a child view.
   base::string16 GetTitleForChildView(const views::View* view) const;
-
-  // |view| is the unique pointer to the shelf icon to be removed.
-  void HandleInvisibleViewRemovedInScrollableShelf(
-      std::unique_ptr<views::View> view);
 
   // The model; owned by Launcher.
   ShelfModel* model_;

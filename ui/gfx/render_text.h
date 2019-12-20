@@ -260,9 +260,6 @@ class GFX_EXPORT RenderText {
   bool clip_to_display_rect() const { return clip_to_display_rect_; }
   void set_clip_to_display_rect(bool clip) { clip_to_display_rect_ = clip; }
 
-  int glyph_spacing() const { return glyph_spacing_; }
-  void set_glyph_spacing(int spacing) { glyph_spacing_ = spacing; }
-
   // In an obscured (password) field, all text is drawn as bullets.
   bool obscured() const { return obscured_; }
   void SetObscured(bool obscured);
@@ -273,6 +270,10 @@ class GFX_EXPORT RenderText {
   // or out of range, no char will be revealed. The revealed index is also
   // cleared when SetText or SetObscured is called.
   void SetObscuredRevealIndex(int index);
+
+  // For obscured (password) fields, the extra spacing between glyphs.
+  int obscured_glyph_spacing() const { return obscured_glyph_spacing_; }
+  void SetObscuredGlyphSpacing(int spacing);
 
   bool multiline() const { return multiline_; }
   void SetMultiline(bool multiline);
@@ -980,8 +981,8 @@ class GFX_EXPORT RenderText {
   // The ratio of strike-through line thickness to text height.
   SkScalar strike_thickness_factor_;
 
-  // Extra spacing placed between glyphs; used for obscured text styling.
-  int glyph_spacing_ = 0;
+  // Extra spacing placed between glyphs; used only for obscured text styling.
+  int obscured_glyph_spacing_ = 0;
 
   // The cursor position in view space, used to traverse lines of varied widths.
   base::Optional<int> cached_cursor_x_;

@@ -94,41 +94,81 @@ void OpenXrTestHelper::SetTestHook(device::VRTestHook* hook) {
 }
 
 void OpenXrTestHelper::OnPresentedFrame() {
-  static uint32_t frame_id = 1;
+  DCHECK_NE(textures_arr_.size(), 0ull);
+  D3D11_TEXTURE2D_DESC desc;
+
+  device::SubmittedFrameData left_data = {};
+
+  textures_arr_[acquired_swapchain_texture_]->GetDesc(&desc);
+  left_data.image_width = desc.Width;
+  left_data.image_height = desc.Height;
+
+  device::SubmittedFrameData right_data = left_data;
+  left_data.left_eye = true;
+  right_data.left_eye = false;
+
+  CopyTextureDataIntoFrameData(&left_data, true);
+  CopyTextureDataIntoFrameData(&right_data, false);
 
   base::AutoLock auto_lock(lock_);
   if (!test_hook_)
     return;
 
-  // TODO(https://crbug.com/986621): The frame color is currently hard-coded to
-  // what the pixel tests expects. We should instead store the actual WebGL
-  // texture and read from it, which will also verify the correct swapchain
-  // texture was used.
+  test_hook_->OnFrameSubmitted(left_data);
+  test_hook_->OnFrameSubmitted(right_data);
+}
 
-  device::DeviceConfig device_config = test_hook_->WaitGetDeviceConfig();
-  device::SubmittedFrameData frame_data = {};
+void OpenXrTestHelper::CopyTextureDataIntoFrameData(
+    device::SubmittedFrameData* data,
+    bool left) {
+  DCHECK(d3d_device_);
+  DCHECK_NE(textures_arr_.size(), 0ull);
+  Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
+  d3d_device_->GetImmediateContext(&context);
 
-  if (std::abs(device_config.interpupillary_distance - 0.2f) <
-      std::numeric_limits<float>::epsilon()) {
-    // TestPresentationPoses sets the ipd to 0.2f, whereas tests by default have
-    // an ipd of 0.1f. This test has specific formulas to determine the colors,
-    // specified in test_webxr_poses.html.
-    frame_data.color = {
-        frame_id % 256, ((frame_id - frame_id % 256) / 256) % 256,
-        ((frame_id - frame_id % (256 * 256)) / (256 * 256)) % 256, 255};
+  size_t buffer_size = sizeof(device::SubmittedFrameData::raw_buffer);
+  size_t buffer_size_pixels = buffer_size / sizeof(device::Color);
+
+  // We copy the submitted texture to a new texture, so we can map it, and
+  // read back pixel data.
+  auto desc = CD3D11_TEXTURE2D_DESC();
+  desc.ArraySize = 1;
+  desc.Width = buffer_size_pixels;
+  desc.Height = 1;
+  desc.MipLevels = 1;
+  desc.SampleDesc.Count = 1;
+  desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+  desc.Usage = D3D11_USAGE_STAGING;
+  desc.BindFlags = 0;
+  desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> texture_destination;
+  HRESULT hr =
+      d3d_device_->CreateTexture2D(&desc, nullptr, &texture_destination);
+  DCHECK_EQ(hr, S_OK);
+
+  // A strip of pixels along the top of the texture, however many will fit into
+  // our buffer.
+  D3D11_BOX box;
+  if (left) {
+    box = {0, 0, 0, buffer_size_pixels, 1, 1};
   } else {
-    // The WebXR tests by default clears to blue. TestPresentationPixels
-    // verifies this color.
-    frame_data.color = {0, 0, 255, 255};
+    box = {kDimension, 0, 0, kDimension + buffer_size_pixels, 1, 1};
   }
+  context->CopySubresourceRegion(
+      texture_destination.Get(), 0, 0, 0, 0,
+      textures_arr_[acquired_swapchain_texture_].Get(), 0, &box);
 
-  frame_data.left_eye = true;
-  test_hook_->OnFrameSubmitted(frame_data);
+  D3D11_MAPPED_SUBRESOURCE map_data = {};
+  hr = context->Map(texture_destination.Get(), 0, D3D11_MAP_READ, 0, &map_data);
+  DCHECK_EQ(hr, S_OK);
+  // We have a 1-pixel image, so store it in the provided SubmittedFrameData
+  // along with the raw data.
+  device::Color* color = static_cast<device::Color*>(map_data.pData);
+  data->color = color[0];
+  memcpy(&data->raw_buffer, map_data.pData, buffer_size);
 
-  frame_data.left_eye = false;
-  test_hook_->OnFrameSubmitted(frame_data);
-
-  frame_id++;
+  context->Unmap(texture_destination.Get(), 0);
 }
 
 XrSystemId OpenXrTestHelper::GetSystemId() {

@@ -8,6 +8,7 @@
 namespace chromeos {
 
 extern const char kChromeUISampleSystemWebAppHost[];
+extern const char kChromeUISampleSystemWebAppURL[];
 
 }  // namespace chromeos
 

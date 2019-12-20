@@ -1580,12 +1580,12 @@ void ProfileSyncService::OnAccountsInCookieUpdated(
     const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
     const GoogleServiceAuthError& error) {
   OnAccountsInCookieUpdatedWithCallback(
-      accounts_in_cookie_jar_info.signed_in_accounts, base::Closure());
+      accounts_in_cookie_jar_info.signed_in_accounts, base::NullCallback());
 }
 
 void ProfileSyncService::OnAccountsInCookieUpdatedWithCallback(
     const std::vector<gaia::ListedAccount>& signed_in_accounts,
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!engine_ || !engine_->IsInitialized())
     return;
@@ -1595,7 +1595,8 @@ void ProfileSyncService::OnAccountsInCookieUpdatedWithCallback(
 
   DVLOG(1) << "Cookie jar mismatch: " << cookie_jar_mismatch;
   DVLOG(1) << "Cookie jar empty: " << cookie_jar_empty;
-  engine_->OnCookieJarChanged(cookie_jar_mismatch, cookie_jar_empty, callback);
+  engine_->OnCookieJarChanged(cookie_jar_mismatch, cookie_jar_empty,
+                              std::move(callback));
 }
 
 bool ProfileSyncService::HasCookieJarMismatch(
@@ -1711,19 +1712,19 @@ void GetAllNodesRequestHelper::OnReceivedNodesForType(
 }  // namespace
 
 void ProfileSyncService::GetAllNodesForDebugging(
-    const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback) {
+    base::OnceCallback<void(std::unique_ptr<base::ListValue>)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // If the engine isn't initialized yet, then there are no nodes to return.
   if (!engine_ || !engine_->IsInitialized()) {
-    callback.Run(std::make_unique<base::ListValue>());
+    std::move(callback).Run(std::make_unique<base::ListValue>());
     return;
   }
 
   ModelTypeSet all_types = GetActiveDataTypes();
   all_types.PutAll(ControlTypes());
   scoped_refptr<GetAllNodesRequestHelper> helper =
-      new GetAllNodesRequestHelper(all_types, callback);
+      new GetAllNodesRequestHelper(all_types, std::move(callback));
 
   for (ModelType type : all_types) {
     const auto dtc_iter = data_type_controllers_.find(type);
@@ -1776,6 +1777,12 @@ void ProfileSyncService::SetInvalidationsForSessionsEnabled(bool enabled) {
   if (engine_ && engine_->IsInitialized()) {
     engine_->SetInvalidationsForSessionsEnabled(enabled);
   }
+}
+
+void ProfileSyncService::AddTrustedVaultDecryptionKeysFromWeb(
+    const std::string& gaia_id,
+    const std::vector<std::string>& keys) {
+  sync_client_->GetTrustedVaultClient()->StoreKeys(gaia_id, keys);
 }
 
 UserDemographicsResult ProfileSyncService::GetUserNoisedBirthYearAndGender(

@@ -18,5 +18,7 @@ android_library("java") {
     "//base:base_java",
     "//chrome/android/features/dev_ui/public:java",
   ]
-  java_files = [ "java/src/org/chromium/chrome/features/dev_ui/DevUiImpl.java" ]
+  sources = [
+    "java/src/org/chromium/chrome/features/dev_ui/DevUiImpl.java",
+  ]
 }

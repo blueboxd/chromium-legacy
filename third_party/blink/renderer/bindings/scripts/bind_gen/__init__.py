@@ -51,10 +51,16 @@ def _setup_clang_format():
     clang_format.init(command_path=command_path)
 
 
-def init(output_dirs):
+def init(root_src_dir, root_gen_dir, component_reldirs):
     """
     Args:
-        output_dirs: Pairs of component and output directory.
+        root_src_dir: Project's root directory, which corresponds to "//" in GN.
+        root_gen_dir: Root directory of generated files, which corresponds to
+            "//out/Default/gen" in GN.
+        component_reldirs: Pairs of component and output directory.
     """
     _setup_clang_format()
-    PathManager.init(output_dirs)
+    PathManager.init(
+        root_src_dir=root_src_dir,
+        root_gen_dir=root_gen_dir,
+        component_reldirs=component_reldirs)

@@ -99,8 +99,6 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   virtual ScriptPromise measureMemory(ScriptState*,
                                       MeasureMemoryOptions*) const;
 
-  virtual void UpdateLongTaskInstrumentation() {}
-
   // Reduce the resolution to prevent timing attacks. See:
   // http://www.w3.org/TR/hr-time-2/#privacy-security
   static double ClampTimeResolution(double time_seconds);
@@ -365,6 +363,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   unsigned element_timing_buffer_max_size_;
   PerformanceEntryVector layout_shift_buffer_;
   PerformanceEntryVector largest_contentful_paint_buffer_;
+  PerformanceEntryVector longtask_buffer_;
   Member<PerformanceEntry> navigation_timing_;
   Member<UserTiming> user_timing_;
   Member<PerformanceEntry> first_paint_timing_;

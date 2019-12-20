@@ -92,7 +92,7 @@ template("android_library_factory") {
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
-    java_files = get_target_outputs(":$_process_factory_target_name")
+    sources = get_target_outputs(":$_process_factory_target_name")
     jar_excluded_patterns = [ "*" ]
   }
 }

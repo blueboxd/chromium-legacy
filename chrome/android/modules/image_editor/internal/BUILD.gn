@@ -7,7 +7,9 @@ import("//build/config/android/rules.gni")
 # Upstream ImageEditor DFM implementation which does nothing. Actual
 # implementation lives downstream.
 android_library("java") {
-  java_files = [ "java/src/org/chromium/chrome/modules/image_editor/ImageEditorProviderImpl.java" ]
+  sources = [
+    "java/src/org/chromium/chrome/modules/image_editor/ImageEditorProviderImpl.java",
+  ]
 
   deps = [
     "//chrome/android/modules/image_editor/public:java",

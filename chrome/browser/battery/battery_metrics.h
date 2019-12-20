@@ -13,7 +13,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
-#include "services/device/public/mojom/battery_status.mojom.h"
+#include "services/device/public/mojom/battery_status.mojom-forward.h"
 
 // Records metrics around battery usage on all platforms. Connects to
 // Battery monitor via mojo.

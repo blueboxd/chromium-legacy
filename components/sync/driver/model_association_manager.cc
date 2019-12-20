@@ -241,9 +241,10 @@ void ModelAssociationManager::LoadEnabledTypes() {
     if (dtc->state() == DataTypeController::NOT_RUNNING) {
       DCHECK(!loaded_types_.Has(dtc->type()));
       DCHECK(!associated_types_.Has(dtc->type()));
-      dtc->LoadModels(configure_context_,
-                      base::Bind(&ModelAssociationManager::ModelLoadCallback,
-                                 weak_ptr_factory_.GetWeakPtr()));
+      dtc->LoadModels(
+          configure_context_,
+          base::BindRepeating(&ModelAssociationManager::ModelLoadCallback,
+                              weak_ptr_factory_.GetWeakPtr()));
     }
   }
   NotifyDelegateIfReadyForConfigure();
@@ -291,7 +292,7 @@ void ModelAssociationManager::StartAssociationAsync(
       TRACE_EVENT_ASYNC_BEGIN1("sync", "ModelAssociation", dtc, "DataType",
                                ModelTypeToString(type));
 
-      dtc->StartAssociating(base::Bind(
+      dtc->StartAssociating(base::BindOnce(
           &ModelAssociationManager::TypeStartCallback,
           weak_ptr_factory_.GetWeakPtr(), type, base::TimeTicks::Now()));
     }
@@ -362,7 +363,7 @@ void ModelAssociationManager::ModelLoadCallback(ModelType type,
     // TODO(pavely): Add test for this scenario in DataTypeManagerImpl
     // unittests.
     if (dtc->state() == DataTypeController::MODEL_LOADED) {
-      dtc->StartAssociating(base::Bind(
+      dtc->StartAssociating(base::BindOnce(
           &ModelAssociationManager::TypeStartCallback,
           weak_ptr_factory_.GetWeakPtr(), type, base::TimeTicks::Now()));
     }

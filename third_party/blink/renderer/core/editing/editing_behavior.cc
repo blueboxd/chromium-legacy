@@ -27,7 +27,7 @@
 #include "third_party/blink/renderer/core/editing/editing_behavior.h"
 
 #include "build/build_config.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"

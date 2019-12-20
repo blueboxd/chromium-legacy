@@ -13,6 +13,7 @@
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "content/public/browser/device_service.h"
+#include "services/device/public/mojom/battery_status.mojom.h"
 
 namespace {
 

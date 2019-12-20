@@ -9,7 +9,7 @@
 #include <limits>
 
 #include "base/time/time.h"
-#include "third_party/blink/public/platform/web_pointer_properties.h"
+#include "third_party/blink/public/common/input/web_pointer_properties.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
 

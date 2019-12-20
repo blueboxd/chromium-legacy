@@ -1,26 +1,31 @@
+# tags: [ Android Fuchsia IOS IOS12.2 IOS13.0 Linux Mac Mac10.10 Mac10.11 Mac10.12 Retina
+#         Mac10.13 Win Win7 Win10 ]
+# tags: [ Release Debug ]
+# results: [ Timeout Crash Pass Failure Slow Skip ]
+
 # Expectations for CompositeAfterPaint
 # See: https://docs.google.com/document/d/1QCM912Dr6u38DqyQqd7pxQxDy8FFOoWMMDq7uAXqKdA/view
-http/tests/devtools/tracing/ [ Skip ]
+http/tests/devtools/tracing/* [ Skip ]
 
-virtual/composite-after-paint/ [ Skip ]
+virtual/composite-after-paint/* [ Skip ]
 
-virtual/gpu/fast/canvas/ [ Skip ]
-virtual/layout_ng_block_frag/ [ Skip ]
-virtual/layout_ng_fieldset/ [ Skip ]
-virtual/layout_ng_flex_box/ [ Skip ]
-virtual/prefer_compositing_to_lcd_text/compositing/overflow/ [ Skip ]
-virtual/stable/ [ Skip ]
+virtual/gpu/fast/canvas/* [ Skip ]
+virtual/layout_ng_block_frag/* [ Skip ]
+virtual/layout_ng_fieldset/* [ Skip ]
+virtual/layout_ng_flex_box/* [ Skip ]
+virtual/prefer_compositing_to_lcd_text/compositing/overflow/* [ Skip ]
+virtual/stable/* [ Skip ]
 
 # For now we track the failures of the base tests of the following virtual suites.
-virtual/exotic-color-space/images/ [ Skip ]
-virtual/gpu-rasterization/images/ [ Skip ]
-virtual/mouseevent_fractional/fast/events/touch/ [ Skip ]
-virtual/scroll_customization/fast/events/touch/ [ Skip ]
-virtual/threaded/printing/ [ Skip ]
-virtual/threaded/http/tests/devtools/tracing/ [ Skip ]
-virtual/controls-refresh/ [ Skip ]
-virtual/controls-refresh-hc/ [ Skip ]
-virtual/web-components-v0-disabled/ [ Skip ]
+virtual/exotic-color-space/images/* [ Skip ]
+virtual/gpu-rasterization/images/* [ Skip ]
+virtual/mouseevent_fractional/fast/events/touch/* [ Skip ]
+virtual/scroll_customization/fast/events/touch/* [ Skip ]
+virtual/threaded/printing/* [ Skip ]
+virtual/threaded/http/tests/devtools/tracing/* [ Skip ]
+virtual/controls-refresh/* [ Skip ]
+virtual/controls-refresh-hc/* [ Skip ]
+virtual/web-components-v0-disabled/* [ Skip ]
 
 # Can't rebaseline because the file path is too long.
 virtual/compositor_threaded_scrollbar_scrolling/paint/invalidation/scroll/sticky/invalidate-after-composited-scroll-with-sticky.html [ Skip ]

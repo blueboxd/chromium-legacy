@@ -62,6 +62,7 @@ class LocalDeviceTestRun(test_run.TestRun):
 
     @local_device_environment.handle_shard_failures
     def run_tests_on_device(dev, tests, results):
+      consecutive_device_errors = 0
       for test in tests:
         if exit_now.isSet():
           thread.exit()
@@ -72,6 +73,7 @@ class LocalDeviceTestRun(test_run.TestRun):
           result, rerun = crash_handler.RetryOnSystemCrash(
               lambda d, t=test: self._RunTest(d, t),
               device=dev)
+          consecutive_device_errors = 0
           if isinstance(result, base_test_result.BaseTestResult):
             results.AddResult(result)
           elif isinstance(result, list):
@@ -80,6 +82,10 @@ class LocalDeviceTestRun(test_run.TestRun):
             raise Exception(
                 'Unexpected result type: %s' % type(result).__name__)
         except device_errors.CommandTimeoutError:
+          # Test timeouts don't count as device errors for the purpose
+          # of bad device detection.
+          consecutive_device_errors = 0
+
           if isinstance(test, list):
             results.AddResults(
                 base_test_result.BaseTestResult(
@@ -100,6 +106,20 @@ class LocalDeviceTestRun(test_run.TestRun):
             # reachable, attempt to continue using it. Otherwise, raise
             # the exception and terminate this run_tests_on_device call.
             raise
+
+          consecutive_device_errors += 1
+          if consecutive_device_errors >= 3:
+            # We believe the device is still reachable and may still be usable,
+            # but if it fails repeatedly, we shouldn't attempt to keep using
+            # it.
+            logging.error('Repeated failures on device %s. Abandoning.',
+                          str(dev))
+            raise
+
+          logging.exception(
+              'Attempting to continue using device %s despite failure (%d/3).',
+              str(dev), consecutive_device_errors)
+
         finally:
           if isinstance(tests, test_collection.TestCollection):
             if rerun:

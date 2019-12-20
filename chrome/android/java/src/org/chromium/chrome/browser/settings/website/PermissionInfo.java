@@ -23,7 +23,7 @@ public class PermissionInfo implements Serializable {
     public @interface Type {
         // Values used to address index - should be enumerated from 0 and can't have gaps.
         // All updates here must also be reflected in {@link #getContentSettingsType(int)
-        // getContentSettingsType} and {@link SingleWebsitePreferences.PERMISSION_PREFERENCE_KEYS}.
+        // getContentSettingsType} and {@link SingleWebsiteSettings.PERMISSION_PREFERENCE_KEYS}.
         int CAMERA = 0;
         int CLIPBOARD = 1;
         int GEOLOCATION = 2;

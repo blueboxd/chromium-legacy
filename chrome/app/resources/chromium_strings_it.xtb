@@ -20,6 +20,7 @@
 <translation id="1966382378801805537">Chromium non è in grado di determinare o impostare il browser predefinito</translation>
 <translation id="2008474315282236005">Verrà eliminato 1 elemento da questo dispositivo. Per recuperare i dati in un secondo momento, accedi a Chromium come <ph name="USER_EMAIL" />.</translation>
 <translation id="2119636228670142020">Informazioni su &amp;Chromium OS</translation>
+<translation id="2147976119693222405">Impossibile sincronizzare i dati in Chromium OS. Risolvi subito il problema.</translation>
 <translation id="2241627712206172106">Se condividi un computer, i tuoi amici e la tua famiglia possono navigare separatamente e configurare Chromium in base alle proprie esigenze.</translation>
 <translation id="2347108572062610441">Questa estensione ha cambiato la pagina mostrata all'avvio di Chromium.</translation>
 <translation id="2396765026452590966">L'estensione "<ph name="EXTENSION_NAME" />" ha cambiato la pagina mostrata all'avvio di Chromium.</translation>
@@ -35,6 +36,7 @@
 <translation id="2718390899429598676">Per maggiore sicurezza, Chromium cripterà i tuoi dati.</translation>
 <translation id="2770231113462710648">Cambia browser predefinito con:</translation>
 <translation id="2799223571221894425">Riavvia</translation>
+<translation id="2805036593126168338">Impossibile sincronizzare le password in Chromium OS. Risolvi subito il problema.</translation>
 <translation id="2838154144102149890">Per aggiornarsi, Chromium deve essere chiuso su questo computer. Questo potrebbe causare la perdita di modifiche non salvate di altri utenti che hanno eseguito l'accesso a questo computer.</translation>
 <translation id="2847479871509788944">Rimuovi da Chromium...</translation>
 <translation id="2886012850691518054">Facoltativo: aiutaci a migliorare Chromium inviando automaticamente a Google statistiche sull'utilizzo e rapporti sugli arresti anomali.</translation>

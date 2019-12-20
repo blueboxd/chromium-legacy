@@ -119,7 +119,7 @@ class BrowserToPageConnector {
       host->AttachClient(this);
     }
     void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
-                                 const std::string& message) override {
+                                 base::span<const uint8_t> message) override {
       connector_->DispatchProtocolMessage(agent_host, message);
     }
     void AgentHostClosed(DevToolsAgentHost* agent_host) override {
@@ -175,14 +175,17 @@ class BrowserToPageConnector {
     message.Set("params", std::move(params));
     std::string json_message;
     base::JSONWriter::Write(message, &json_message);
-    page_host_->DispatchProtocolMessage(page_host_client_.get(), json_message);
+    page_host_->DispatchProtocolMessage(
+        page_host_client_.get(), base::as_bytes(base::make_span(json_message)));
   }
 
   void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
-                               const std::string& message) {
+                               base::span<const uint8_t> message) {
+    base::StringPiece message_sp(reinterpret_cast<const char*>(message.data()),
+                                 message.size());
     if (agent_host == page_host_.get()) {
       std::unique_ptr<base::Value> value =
-          base::JSONReader::ReadDeprecated(message);
+          base::JSONReader::ReadDeprecated(message_sp);
       if (!value || !value->is_dict())
         return;
       // Make sure this is a binding call.
@@ -199,14 +202,16 @@ class BrowserToPageConnector {
       base::Value* payload = params->FindKey("payload");
       if (!payload || !payload->is_string())
         return;
-      browser_host_->DispatchProtocolMessage(browser_host_client_.get(),
-                                             payload->GetString());
+      const std::string& payload_str = payload->GetString();
+      browser_host_->DispatchProtocolMessage(
+          browser_host_client_.get(),
+          base::as_bytes(base::make_span(payload_str)));
       return;
     }
     DCHECK(agent_host == browser_host_.get());
 
     std::string encoded;
-    base::Base64Encode(message, &encoded);
+    base::Base64Encode(message_sp, &encoded);
     std::string eval_code =
         "try { window." + binding_name_ + ".onmessage(atob(\"";
     std::string eval_suffix = "\")); } catch(e) { console.error(e); }";
@@ -214,9 +219,8 @@ class BrowserToPageConnector {
     eval_code.append(encoded);
     eval_code.append(eval_suffix);
 
-    std::unique_ptr<base::DictionaryValue> params =
-        std::make_unique<base::DictionaryValue>();
-    params->SetString("expression", eval_code);
+    auto params = std::make_unique<base::DictionaryValue>();
+    params->SetString("expression", std::move(eval_code));
     SendProtocolMessageToPage("Runtime.evaluate", std::move(params));
   }
 
@@ -324,7 +328,7 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
       throttle_->Clear();
   }
 
-  void SendMessageToAgentHost(const std::string& message) {
+  void SendMessageToAgentHost(base::span<const uint8_t> message) {
     // This method is only used in the non-flat mode, it's the implementation
     // for Target.SendMessageToTarget. And since the binary mode implies
     // flatten_protocol_ (we force the flag to true), we can assume in this
@@ -332,7 +336,9 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
     DCHECK(!flatten_protocol_);
 
     if (throttle_) {
-      base::Optional<base::Value> value = base::JSONReader::Read(message);
+      base::Optional<base::Value> value =
+          base::JSONReader::Read(base::StringPiece(
+              reinterpret_cast<const char*>(message.data()), message.size()));
       const std::string* method;
       if (value.has_value() && (method = value->FindStringKey(kMethod)) &&
           *method == kResumeMethod) {
@@ -366,14 +372,18 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
 
   // DevToolsAgentHostClient implementation.
   void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
-                               const std::string& message) override {
+                               base::span<const uint8_t> message) override {
     DCHECK(agent_host == agent_host_.get());
     if (flatten_protocol_) {
       handler_->root_session_->SendMessageFromChildSession(id_, message);
       return;
     }
-
-    handler_->frontend_->ReceivedMessageFromTarget(id_, message,
+    // TODO(johannes): For now, We need to copy here because
+    // ReceivedMessageFromTarget is generated code and we're using const
+    // std::string& for such parameters. Perhaps we should switch this to
+    // base::StringPiece?
+    std::string message_copy(message.begin(), message.end());
+    handler_->frontend_->ReceivedMessageFromTarget(id_, message_copy,
                                                    agent_host_->GetId());
   }
 
@@ -657,7 +667,7 @@ Response TargetHandler::SendMessageToTarget(const std::string& message,
         "When using flat protocol, messages are routed to the target "
         "via the sessionId attribute.");
   }
-  session->SendMessageToAgentHost(message);
+  session->SendMessageToAgentHost(base::as_bytes(base::make_span(message)));
   return Response::OK();
 }
 

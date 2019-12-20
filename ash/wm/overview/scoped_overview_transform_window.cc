@@ -54,23 +54,6 @@ bool immediate_close_for_tests = false;
 // Delay closing window to allow it to shrink and fade out.
 constexpr int kCloseWindowDelayInMilliseconds = 150;
 
-ScopedOverviewTransformWindow::GridWindowFillMode GetWindowDimensionsType(
-    aura::Window* window) {
-  if (window->bounds().width() >
-      window->bounds().height() *
-          ScopedOverviewTransformWindow::kExtremeWindowRatioThreshold) {
-    return ScopedOverviewTransformWindow::GridWindowFillMode::kLetterBoxed;
-  }
-
-  if (window->bounds().height() >
-      window->bounds().width() *
-          ScopedOverviewTransformWindow::kExtremeWindowRatioThreshold) {
-    return ScopedOverviewTransformWindow::GridWindowFillMode::kPillarBoxed;
-  }
-
-  return ScopedOverviewTransformWindow::GridWindowFillMode::kNormal;
-}
-
 }  // namespace
 
 class ScopedOverviewTransformWindow::LayerCachingAndFilteringObserver
@@ -182,6 +165,19 @@ float ScopedOverviewTransformWindow::GetItemScale(const gfx::SizeF& source,
                                                   int title_height) {
   return std::min(2.0f, (target.height() - title_height) /
                             (source.height() - top_view_inset));
+}
+
+// static
+ScopedOverviewTransformWindow::GridWindowFillMode
+ScopedOverviewTransformWindow::GetWindowDimensionsType(aura::Window* window) {
+  const gfx::Size size = window->bounds().size();
+  if (size.width() > size.height() * kExtremeWindowRatioThreshold)
+    return ScopedOverviewTransformWindow::GridWindowFillMode::kLetterBoxed;
+
+  if (size.height() > size.width() * kExtremeWindowRatioThreshold)
+    return ScopedOverviewTransformWindow::GridWindowFillMode::kPillarBoxed;
+
+  return ScopedOverviewTransformWindow::GridWindowFillMode::kNormal;
 }
 
 void ScopedOverviewTransformWindow::RestoreWindow(bool reset_transform) {

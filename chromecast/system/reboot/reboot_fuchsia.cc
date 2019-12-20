@@ -2,34 +2,53 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <fuchsia/hardware/power/statecontrol/cpp/fidl.h>
+
+#include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/service_directory_client.h"
+#include "base/no_destructor.h"
 #include "chromecast/public/reboot_shlib.h"
+
+using fuchsia::hardware::power::statecontrol::Admin_Suspend_Result;
+using fuchsia::hardware::power::statecontrol::AdminSyncPtr;
+using fuchsia::hardware::power::statecontrol::SystemPowerState;
 
 namespace chromecast {
 
 // RebootShlib implementation:
 
-// static
-void RebootShlib::Initialize(const std::vector<std::string>& argv) {}
+AdminSyncPtr& GetAdminSyncPtr() {
+  static base::NoDestructor<AdminSyncPtr> g_admin;
+  return *g_admin;
+}
 
+// static
+void RebootShlib::Initialize(const std::vector<std::string>& argv) {
+  base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()->ConnectToService(
+      GetAdminSyncPtr().NewRequest());
+}
+
+// static
 void RebootShlib::Finalize() {}
 
 // static
 bool RebootShlib::IsSupported() {
-  return false;
+  return true;
 }
 
 // static
-// Chromecast devices support all RebootSources
 bool RebootShlib::IsRebootSourceSupported(
     RebootShlib::RebootSource /* reboot_source */) {
-  return false;
+  return true;
 }
 
 // static
-// Chromecast devices support all RebootSources
-bool RebootShlib::RebootNow(RebootSource /* reboot_source */) {
-  // TODO(b/140491587): Implement reboot on Fuchsia.
-  return false;
+bool RebootShlib::RebootNow(RebootSource reboot_source) {
+  Admin_Suspend_Result out_result;
+  zx_status_t status =
+      GetAdminSyncPtr()->Suspend(SystemPowerState::REBOOT, &out_result);
+  ZX_CHECK(status == ZX_OK, status) << "Failed to suspend device";
+  return !out_result.is_err();
 }
 
 // static

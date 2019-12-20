@@ -54,7 +54,7 @@
 #include "ui/display/display_switches.h"
 
 #if defined(USE_AURA)
-#include "third_party/blink/public/platform/web_mouse_event.h"
+#include "third_party/blink/public/common/input/web_mouse_event.h"
 #endif
 
 using guest_view::GuestViewManager;

@@ -54,7 +54,9 @@ class H264Encoder : public AcceleratedVideoEncoder {
     unsigned int cpb_size_bits;
 
     // Quantization parameter.
-    int qp;
+    int initial_qp;
+    int min_qp;
+    int max_qp;
 
     // Maxium Number of Reference frames.
     size_t max_num_ref_frames;

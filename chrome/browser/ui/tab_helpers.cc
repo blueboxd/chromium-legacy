@@ -112,6 +112,7 @@
 #else
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/safe_browsing/safe_browsing_tab_observer.h"
+#include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/intent_picker_tab_helper.h"
 #include "chrome/browser/ui/sad_tab_helper.h"
@@ -302,6 +303,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents);
   extensions::WebNavigationTabObserver::CreateForWebContents(web_contents);
+  FormInteractionTabHelper::CreateForWebContents(web_contents);
   FramebustBlockTabHelper::CreateForWebContents(web_contents);
   IntentPickerTabHelper::CreateForWebContents(web_contents);
   JavaScriptDialogTabHelper::CreateForWebContents(web_contents);

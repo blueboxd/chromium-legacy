@@ -97,10 +97,10 @@ class PipeReaderBase {
     return bytes_read;
   }
 
-  void HandleMessage(std::string buffer) {
+  void HandleMessage(std::vector<uint8_t> message) {
     base::PostTask(FROM_HERE, {BrowserThread::UI},
                    base::BindOnce(&DevToolsPipeHandler::HandleMessage,
-                                  devtools_handler_, std::move(buffer)));
+                                  devtools_handler_, std::move(message)));
   }
 
  protected:
@@ -148,12 +148,12 @@ void WriteBytes(int write_fd, const char* bytes, size_t size) {
   }
 }
 
-void WriteIntoPipeASCIIZ(int write_fd, const std::string& message) {
+void WriteIntoPipeASCIIZ(int write_fd, std::string message) {
   WriteBytes(write_fd, message.data(), message.size());
   WriteBytes(write_fd, "\0", 1);
 }
 
-void WriteIntoPipeCBOR(int write_fd, const std::string& message) {
+void WriteIntoPipeCBOR(int write_fd, std::string message) {
   DCHECK(crdtp::cbor::IsCBORMessage(crdtp::SpanFrom(message)));
 
   WriteBytes(write_fd, message.data(), message.size());
@@ -188,8 +188,9 @@ class PipeReaderASCIIZ : public PipeReaderBase {
       for (int i = read_buffer_->GetSize() - bytes_read;
            i < read_buffer_->GetSize(); ++i) {
         if (read_buffer_->StartOfBuffer()[i] == '\0') {
-          std::string str(read_buffer_->StartOfBuffer() + offset, i - offset);
-          HandleMessage(std::move(str));
+          HandleMessage(
+              std::vector<uint8_t>(read_buffer_->StartOfBuffer() + offset,
+                                   read_buffer_->StartOfBuffer() + i));
           offset = i + 1;
         }
       }
@@ -215,10 +216,10 @@ class PipeReaderCBOR : public PipeReaderBase {
   void ReadLoopInternal() override {
     while (true) {
       const size_t kHeaderSize = 6;  // tag? type length*4
-      std::string buffer(kHeaderSize, '\0');
+      std::vector<uint8_t> buffer(kHeaderSize);
       if (!ReadBytes(&buffer.front(), kHeaderSize, true))
         break;
-      const uint8_t* prefix = reinterpret_cast<const uint8_t*>(buffer.data());
+      const uint8_t* prefix = buffer.data();
       if (prefix[0] != crdtp::cbor::InitialByteForEnvelope() ||
           prefix[1] != crdtp::cbor::InitialByteFor32BitLengthByteString()) {
         LOG(ERROR) << "Unexpected start of CBOR envelope " << prefix[0] << ","
@@ -226,7 +227,7 @@ class PipeReaderCBOR : public PipeReaderBase {
         return;
       }
       uint32_t msg_size = UInt32FromCBOR(prefix + 2);
-      buffer.resize(kHeaderSize + msg_size, '\0');
+      buffer.resize(kHeaderSize + msg_size);
       if (!ReadBytes(&buffer.front() + kHeaderSize, msg_size, true))
         return;
       HandleMessage(std::move(buffer));
@@ -338,15 +339,16 @@ DevToolsPipeHandler::~DevToolsPipeHandler() {
   Shutdown();
 }
 
-void DevToolsPipeHandler::HandleMessage(const std::string& message) {
+void DevToolsPipeHandler::HandleMessage(std::vector<uint8_t> message) {
   if (browser_target_)
     browser_target_->DispatchProtocolMessage(this, message);
 }
 
 void DevToolsPipeHandler::DetachFromTarget() {}
 
-void DevToolsPipeHandler::DispatchProtocolMessage(DevToolsAgentHost* agent_host,
-                                                  const std::string& message) {
+void DevToolsPipeHandler::DispatchProtocolMessage(
+    DevToolsAgentHost* agent_host,
+    base::span<const uint8_t> message) {
   if (!write_thread_)
     return;
   base::TaskRunner* task_runner = write_thread_->task_runner().get();
@@ -354,7 +356,7 @@ void DevToolsPipeHandler::DispatchProtocolMessage(DevToolsAgentHost* agent_host,
       FROM_HERE,
       base::BindOnce(mode_ == ProtocolMode::kASCIIZ ? WriteIntoPipeASCIIZ
                                                     : WriteIntoPipeCBOR,
-                     write_fd_, std::move(message)));
+                     write_fd_, std::string(message.begin(), message.end())));
 }
 
 void DevToolsPipeHandler::AgentHostClosed(DevToolsAgentHost* agent_host) {}

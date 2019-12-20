@@ -31,6 +31,9 @@ using ::testing::InSequence;
 using ::testing::Invoke;
 using ::testing::Mock;
 using ::testing::Return;
+using ::testing::Values;
+
+using ContentHintType = WebMediaStreamTrack::ContentHintType;
 
 const uint8_t kBlackValue = 0x00;
 const uint8_t kColorValue = 0xAB;
@@ -41,7 +44,8 @@ ACTION_P(RunClosure, closure) {
   closure.Run();
 }
 
-class MediaStreamVideoTrackTest : public testing::Test {
+class MediaStreamVideoTrackTest
+    : public testing::TestWithParam<ContentHintType> {
  public:
   MediaStreamVideoTrackTest() : mock_source_(nullptr), source_started_(false) {}
 
@@ -385,6 +389,16 @@ TEST_F(MediaStreamVideoTrackTest, DeliverFramesAndGetSettings) {
   sink.DisconnectFromTrack();
 }
 
+TEST_P(MediaStreamVideoTrackTest, PropagatesContentHintType) {
+  InitializeSource();
+  MockMediaStreamVideoSink sink;
+  WebMediaStreamTrack track = CreateTrack();
+  sink.ConnectToTrack(track);
+  MediaStreamVideoTrack::GetVideoTrack(track)->SetContentHint(GetParam());
+  EXPECT_EQ(sink.content_hint(), GetParam());
+  sink.DisconnectFromTrack();
+}
+
 class MediaStreamVideoTrackEncodedTest : public MediaStreamVideoTrackTest {
  public:
   void InitializeSource() override {
@@ -466,6 +480,7 @@ TEST_F(MediaStreamVideoTrackEncodedTest, SupportsEncodedDisableEnable) {
 
   // Key frame when disabled -> shouldn't get dispatched
   MediaStreamVideoTrack::GetVideoTrack(track)->SetEnabled(false);
+  EXPECT_FALSE(sink.enabled());
   {
     EXPECT_CALL(sink, OnEncodedVideoFrame).Times(0);
     mock_source()->DeliverEncodedVideoFrame(key_frame);
@@ -476,6 +491,7 @@ TEST_F(MediaStreamVideoTrackEncodedTest, SupportsEncodedDisableEnable) {
   // appears.
   EXPECT_CALL(*mock_source(), OnRequestRefreshFrame);
   MediaStreamVideoTrack::GetVideoTrack(track)->SetEnabled(true);
+  EXPECT_TRUE(sink.enabled());
   {
     EXPECT_CALL(sink, OnEncodedVideoFrame).Times(0);
     mock_source()->DeliverEncodedVideoFrame(delta_frame);
@@ -489,6 +505,40 @@ TEST_F(MediaStreamVideoTrackEncodedTest, SupportsEncodedDisableEnable) {
   Mock::VerifyAndClearExpectations(mock_source());
   sink.DisconnectEncodedFromTrack();
 }
+
+TEST_P(MediaStreamVideoTrackEncodedTest, PropagatesContentHintType) {
+  InitializeSource();
+  MockMediaStreamVideoSink sink;
+  WebMediaStreamTrack track = CreateTrack();
+  sink.ConnectEncodedToTrack(track);
+  MediaStreamVideoTrack::GetVideoTrack(track)->SetContentHint(GetParam());
+  EXPECT_EQ(sink.content_hint(), GetParam());
+  sink.DisconnectEncodedFromTrack();
+}
+
+TEST_F(MediaStreamVideoTrackEncodedTest, SourceStopped) {
+  InitializeSource();
+  MockMediaStreamVideoSink sink;
+  WebMediaStreamTrack track = CreateTrack();
+  sink.ConnectEncodedToTrack(track);
+  EXPECT_EQ(WebMediaStreamSource::kReadyStateLive, sink.state());
+
+  mock_source()->StopSource();
+  EXPECT_EQ(WebMediaStreamSource::kReadyStateEnded, sink.state());
+  sink.DisconnectEncodedFromTrack();
+}
+
+INSTANTIATE_TEST_SUITE_P(,
+                         MediaStreamVideoTrackTest,
+                         Values(ContentHintType::kVideoMotion,
+                                ContentHintType::kVideoDetail,
+                                ContentHintType::kVideoText));
+
+INSTANTIATE_TEST_SUITE_P(,
+                         MediaStreamVideoTrackEncodedTest,
+                         Values(ContentHintType::kVideoMotion,
+                                ContentHintType::kVideoDetail,
+                                ContentHintType::kVideoText));
 
 }  // namespace media_stream_video_track_test
 }  // namespace blink

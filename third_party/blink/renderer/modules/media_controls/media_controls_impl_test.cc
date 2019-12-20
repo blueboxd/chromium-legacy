@@ -9,8 +9,8 @@
 
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_client.h"
-#include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"

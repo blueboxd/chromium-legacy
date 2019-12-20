@@ -20,7 +20,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/cookies/canonical_cookie.h"
 #include "services/metrics/public/cpp/ukm_source.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "url/gurl.h"
 
 namespace content {

@@ -69,7 +69,8 @@ class CreditCardFIDOAuthenticator
     virtual ~Requester() {}
     virtual void OnFIDOAuthenticationComplete(
         bool did_succeed,
-        const CreditCard* card = nullptr) = 0;
+        const CreditCard* card = nullptr,
+        const base::string16& cvc = base::string16()) = 0;
     virtual void OnFidoAuthorizationComplete(bool did_succeed) = 0;
   };
   CreditCardFIDOAuthenticator(AutofillDriver* driver, AutofillClient* client);

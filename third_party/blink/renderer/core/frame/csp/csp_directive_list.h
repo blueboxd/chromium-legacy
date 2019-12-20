@@ -60,6 +60,10 @@ class CORE_EXPORT CSPDirectiveList final
                    const WTF::OrdinalNumber& context_line,
                    SecurityViolationReportingPolicy) const;
 
+  // Returns whether or not the Javascript code generation should call back the
+  // CSP checker before any script evaluation from a string is being made.
+  bool ShouldCheckEval() const;
+
   bool AllowEval(SecurityViolationReportingPolicy,
                  ContentSecurityPolicy::ExceptionStatus,
                  const String& script_content) const;

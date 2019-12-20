@@ -3010,7 +3010,7 @@
           "--benchmarks=rendering.desktop",
         ],
         'swarming': {},
-        'experiment_percentage': 25,
+        'experiment_percentage': 100,
       }
     },
 
@@ -3035,7 +3035,7 @@
           "--browser=android-chromium"
         ],
         'swarming': {},
-        'experiment_percentage': 25,
+        'experiment_percentage': 10,
       }
     },
 
@@ -3227,44 +3227,6 @@
         'hard_timeout': 14400,
         'io_timeout': 14400,
         'script': 'test_traffic_annotation_auditor.py',
-      },
-    },
-
-    'viz_chromeos_fyi_gtests': {
-       'non_viz_interactive_ui_tests': {
-         'args': [
-          '--disable-features=VizDisplayCompositor',
-        ],
-         'test': 'interactive_ui_tests',
-       },
-    },
-
-    'viz_chromeos_gtests': {
-      # TODO(kylechar): Remove once VizDisplayCompositor is lauched on CrOS.
-      # https://crbug.com/732805
-      'non_viz_browser_tests': {
-        'args': [
-          '--disable-features=VizDisplayCompositor',
-        ],
-        'swarming': {
-          'shards': 20,
-        },
-        'test': 'browser_tests',
-      },
-      'non_viz_content_browsertests': {
-        'args': [
-          '--disable-features=VizDisplayCompositor',
-        ],
-        'swarming': {
-          'shards': 4,
-        },
-        'test': 'content_browsertests',
-      },
-      'non_viz_content_unittests': {
-        'args': [
-          '--disable-features=VizDisplayCompositor',
-        ],
-        'test': 'content_unittests',
       },
     },
 
@@ -4214,7 +4176,6 @@
       'linux_chromeos_specific_gtests',
       'linux_flavor_specific_chromium_gtests',
       'non_android_chromium_gtests',
-      'viz_chromeos_gtests',
     ],
 
     'linux_viz_gtests': [
@@ -4243,8 +4204,6 @@
       'aura_gtests',
       'mojo_chromiumos_specific_gtests',
       'network_service_gtests',
-      'viz_chromeos_fyi_gtests',
-      'viz_chromeos_gtests',
     ],
 
     'mojo_linux_gtests': [

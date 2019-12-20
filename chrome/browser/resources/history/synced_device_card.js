@@ -2,8 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {Polymer, dom, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import {FocusRow} from 'chrome://resources/js/cr/ui/focus_row.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import {getFaviconForPageURL} from 'chrome://resources/js/icon.m.js';
+import {BrowserService} from './browser_service.js';
+import {SyncedTabsHistogram, SYNCED_TABS_HISTOGRAM_NAME} from './constants.js';
+import {ForeignSessionTab} from './externs.js';
+import './searched_label.js';
+import './shared_style.js';
+import './strings.js';
+
 Polymer({
   is: 'history-synced-device-card',
+
+  _template: html`{__html_template__}`,
 
   properties: {
     /**
@@ -48,16 +66,16 @@ Polymer({
   /**
    * Create FocusRows for this card. One is always made for the card heading and
    * one for each result if the card is open.
-   * @return {!Array<!cr.ui.FocusRow>}
+   * @return {!Array<!FocusRow>}
    */
   createFocusRows: function() {
-    const titleRow = new cr.ui.FocusRow(this.$['card-heading'], null);
+    const titleRow = new FocusRow(this.$['card-heading'], null);
     titleRow.addItem('menu', '#menu-button');
     titleRow.addItem('collapse', '#collapse-button');
     const rows = [titleRow];
     if (this.opened) {
       this.shadowRoot.querySelectorAll('.item-container').forEach(function(el) {
-        const row = new cr.ui.FocusRow(el, null);
+        const row = new FocusRow(el, null);
         row.addItem('link', '.website-link');
         rows.push(row);
       });
@@ -67,12 +85,13 @@ Polymer({
 
   /**
    * Open a single synced tab.
-   * @param {DomRepeatClickEvent} e
+   * @param {MouseEvent} e
    * @private
    */
   openTab_: function(e) {
-    const tab = /** @type {ForeignSessionTab} */ (e.model.tab);
-    const browserService = history.BrowserService.getInstance();
+    const model = /** @type {{model: Object}} */ (e).model;
+    const tab = /** @type {ForeignSessionTab} */ (model.tab);
+    const browserService = BrowserService.getInstance();
     browserService.recordHistogram(
         SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.LINK_CLICKED,
         SyncedTabsHistogram.LIMIT);
@@ -89,7 +108,7 @@ Polymer({
         SyncedTabsHistogram.COLLAPSE_SESSION :
         SyncedTabsHistogram.EXPAND_SESSION;
 
-    history.BrowserService.getInstance().recordHistogram(
+    BrowserService.getInstance().recordHistogram(
         SYNCED_TABS_HISTOGRAM_NAME, histogramValue, SyncedTabsHistogram.LIMIT);
 
     this.$.collapse.toggle();
@@ -115,7 +134,7 @@ Polymer({
       for (let i = 0; i < this.tabs.length; i++) {
         // Entries on this UI are coming strictly from sync, so we can set
         // |isSyncedUrlForHistoryUi| to true on the getFavicon call below.
-        icons[i].style.backgroundImage = cr.icon.getFaviconForPageURL(
+        icons[i].style.backgroundImage = getFaviconForPageURL(
             this.tabs[i].url, true, this.tabs[i].remoteIconUrlForUma);
       }
     });
@@ -151,14 +170,14 @@ Polymer({
    */
   onMenuButtonTap_: function(e) {
     this.fire('open-menu', {
-      target: Polymer.dom(e).localTarget,
+      target: dom(e).localTarget,
       tag: this.sessionTag,
     });
     e.stopPropagation();  // Prevent iron-collapse.
   },
 
   onLinkRightClick_: function() {
-    history.BrowserService.getInstance().recordHistogram(
+    BrowserService.getInstance().recordHistogram(
         SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.LINK_RIGHT_CLICKED,
         SyncedTabsHistogram.LIMIT);
   },

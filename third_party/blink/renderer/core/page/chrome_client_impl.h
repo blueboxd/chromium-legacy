@@ -71,7 +71,6 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
                              base::TimeDelta timeout) override;
   void StopDeferringCommits(LocalFrame& main_frame,
                             cc::PaintHoldingCommitTrigger) override;
-  bool HadFormInteraction() const override;
   void StartDragging(LocalFrame*,
                      const WebDragData&,
                      WebDragOperationsMask,

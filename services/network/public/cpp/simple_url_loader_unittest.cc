@@ -2812,7 +2812,7 @@ TEST_P(SimpleURLLoaderTest, GetFinalURLAfterRedirect) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* No prefix */,
+    All,
     SimpleURLLoaderTest,
     testing::Values(SimpleLoaderTestHelper::DownloadType::TO_STRING,
                     SimpleLoaderTestHelper::DownloadType::TO_FILE,

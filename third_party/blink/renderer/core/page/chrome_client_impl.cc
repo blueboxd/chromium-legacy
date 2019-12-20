@@ -102,6 +102,7 @@
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/document_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
@@ -230,11 +231,6 @@ void ChromeClientImpl::FocusedElementChanged(Element* from_element,
       to_element->ShouldHaveFocusAppearance())
     focus_url = to_element->HrefURL();
   web_view_->Client()->SetKeyboardFocusURL(focus_url);
-}
-
-bool ChromeClientImpl::HadFormInteraction() const {
-  return web_view_->PageImportanceSignals() &&
-         web_view_->PageImportanceSignals()->HadFormInteraction();
 }
 
 void ChromeClientImpl::StartDragging(LocalFrame* frame,
@@ -1184,7 +1180,9 @@ void ChromeClientImpl::DidChangeValueInTextField(
                                ? WebFeature::kFieldEditInSecureContext
                                : WebFeature::kFieldEditInNonSecureContext);
     doc.MaybeQueueSendDidEditFieldInInsecureContext();
-    web_view_->PageImportanceSignals()->SetHadFormInteraction();
+    // The resource coordinator is not available in some tests.
+    if (auto* rc = doc.GetResourceCoordinator())
+      rc->SetHadFormInteraction();
   }
 }
 

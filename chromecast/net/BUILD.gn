@@ -7,14 +7,6 @@ import("//testing/test.gni")
 
 cast_source_set("net") {
   sources = [
-    "connectivity_checker.cc",
-    "connectivity_checker.h",
-    "connectivity_checker_impl.cc",
-    "connectivity_checker_impl.h",
-    "fake_connectivity_checker.cc",
-    "fake_connectivity_checker.h",
-    "net_switches.cc",
-    "net_switches.h",
     "net_util_cast.cc",
     "net_util_cast.h",
   ]
@@ -27,15 +19,11 @@ cast_source_set("net") {
   }
 
   deps = [
+    ":net_switches",
     "//base",
-    "//chromecast:chromecast_buildflags",
     "//chromecast/base:cast_sys_info_util",
-    "//chromecast/base/metrics",
     "//chromecast/public",
-    "//components/proxy_config",
     "//net",
-    "//services/network/public/cpp",
-    "//services/network/public/mojom",
   ]
 
   if (is_fuchsia) {
@@ -49,6 +37,32 @@ cast_source_set("net") {
       "//third_party/fuchsia-sdk/sdk:fuchsia-hardware-ethernet",
     ]
   }
+}
+
+cast_source_set("net_switches") {
+  sources = [
+    "net_switches.cc",
+    "net_switches.h",
+  ]
+}
+
+cast_source_set("connectivity_checker") {
+  sources = [
+    "connectivity_checker.cc",
+    "connectivity_checker.h",
+    "connectivity_checker_impl.cc",
+    "connectivity_checker_impl.h",
+    "fake_connectivity_checker.cc",
+    "fake_connectivity_checker.h",
+  ]
+  deps = [
+    ":net_switches",
+    "//base",
+    "//chromecast:chromecast_buildflags",
+    "//chromecast/base/metrics",
+    "//services/network/public/cpp",
+    "//services/network/public/mojom",
+  ]
 }
 
 cast_source_set("io_buffer_pool") {

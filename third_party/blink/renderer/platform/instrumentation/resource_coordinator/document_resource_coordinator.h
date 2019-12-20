@@ -34,12 +34,15 @@ class PLATFORM_EXPORT DocumentResourceCoordinator final {
   // A one way switch that marks a frame as being an adframe.
   void SetIsAdFrame();
   void OnNonPersistentNotificationCreated();
+  void SetHadFormInteraction();
 
  private:
   explicit DocumentResourceCoordinator(const BrowserInterfaceBrokerProxy&);
 
   mojo::Remote<performance_manager::mojom::blink::DocumentCoordinationUnit>
       service_;
+
+  bool had_form_interaction_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DocumentResourceCoordinator);
 };

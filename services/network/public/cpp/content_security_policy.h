@@ -33,7 +33,9 @@ class COMPONENT_EXPORT(NETWORK_CPP) ContentSecurityPolicy {
   bool Parse(const GURL& request_url, const net::HttpResponseHeaders& headers);
 
   // Parses a Content-Security-Policy |header|.
-  bool Parse(const GURL& base_url, base::StringPiece header);
+  bool Parse(const GURL& base_url,
+             network::mojom::ContentSecurityPolicyType type,
+             base::StringPiece header);
 
   const std::vector<mojom::ContentSecurityPolicyPtr>&
   content_security_policies() {

@@ -294,7 +294,7 @@ void SyncEngineImpl::FinishConfigureDataTypesOnFrontendLoop(
     const ModelTypeSet enabled_types,
     const ModelTypeSet succeeded_configuration_types,
     const ModelTypeSet failed_configuration_types,
-    const base::Callback<void(ModelTypeSet, ModelTypeSet)>& ready_task) {
+    base::OnceCallback<void(ModelTypeSet, ModelTypeSet)> ready_task) {
   last_enabled_types_ = enabled_types;
   if (invalidator_) {
     ModelTypeSet invalidation_enabled_types(enabled_types);
@@ -310,8 +310,10 @@ void SyncEngineImpl::FinishConfigureDataTypesOnFrontendLoop(
     DCHECK(success);
   }
 
-  if (!ready_task.is_null())
-    ready_task.Run(succeeded_configuration_types, failed_configuration_types);
+  if (!ready_task.is_null()) {
+    std::move(ready_task)
+        .Run(succeeded_configuration_types, failed_configuration_types);
+  }
 }
 
 void SyncEngineImpl::HandleInitializationSuccessOnFrontendLoop(
@@ -436,12 +438,12 @@ void SyncEngineImpl::UpdateInvalidationVersions(
 
 void SyncEngineImpl::OnCookieJarChanged(bool account_mismatch,
                                         bool empty_jar,
-                                        const base::Closure& callback) {
+                                        base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sync_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&SyncEngineBackend::DoOnCookieJarChanged, backend_,
-                     account_mismatch, empty_jar, callback));
+                     account_mismatch, empty_jar, std::move(callback)));
 }
 
 void SyncEngineImpl::SetInvalidationsForSessionsEnabled(bool enabled) {
@@ -476,9 +478,9 @@ void SyncEngineImpl::OnInvalidatorClientIdChange(const std::string& client_id) {
 }
 
 void SyncEngineImpl::OnCookieJarChangedDoneOnFrontendLoop(
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  callback.Run();
+  std::move(callback).Run();
 }
 
 }  // namespace syncer

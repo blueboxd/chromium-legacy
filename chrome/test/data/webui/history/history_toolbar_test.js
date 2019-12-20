@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {BrowserService, ensureLazyLoaded} from 'chrome://history/history.js';
+import {TestBrowserService} from 'chrome://test/history/test_browser_service.js';
+import {createHistoryEntry, createHistoryInfo} from 'chrome://test/history/test_util.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {flushTasks} from 'chrome://test/test_util.m.js';
+
 suite('history-toolbar', function() {
   let app;
   let element;
@@ -13,7 +19,7 @@ suite('history-toolbar', function() {
   setup(function() {
     PolymerTest.clearBody();
     testService = new TestBrowserService();
-    history.BrowserService.instance_ = testService;
+    BrowserService.instance_ = testService;
 
     app = document.createElement('history-app');
     document.body.appendChild(app);
@@ -21,10 +27,10 @@ suite('history-toolbar', function() {
     toolbar = app.$.toolbar;
     return Promise
         .all([
-          history.ensureLazyLoaded(),
+          ensureLazyLoaded(),
           testService.whenCalled('queryHistory'),
         ])
-        .then(test_util.flushTasks);
+        .then(flushTasks);
   });
 
   test('selecting checkbox causes toolbar to change', function() {
@@ -32,10 +38,10 @@ suite('history-toolbar', function() {
         {info: createHistoryInfo(), value: TEST_HISTORY_RESULTS});
     element.fire('query-history', true);
     return testService.whenCalled('queryHistoryContinuation')
-        .then(test_util.flushTasks)
+        .then(flushTasks)
         .then(function() {
           const item = element.$$('history-item');
-          MockInteractions.tap(item.$.checkbox);
+          item.$.checkbox.click();
 
           // Ensure that when an item is selected that the count held by the
           // toolbar increases.
@@ -44,7 +50,7 @@ suite('history-toolbar', function() {
           // selected.
           assertTrue(toolbar.itemsSelected_);
 
-          MockInteractions.tap(item.$.checkbox);
+          item.$.checkbox.click();
 
           // Ensure that when an item is deselected the count held by the
           // toolbar decreases.
@@ -73,12 +79,12 @@ suite('history-toolbar', function() {
     });
     toolbar.$$('cr-toolbar').fire('search-changed', 'Test2');
     return testService.whenCalled('queryHistory')
-        .then(test_util.flushTasks)
+        .then(flushTasks)
         .then(() => {
           assertTrue(toolbar.spinnerActive);
           testService.finishQueryHistory();
         })
-        .then(test_util.flushTasks)
+        .then(flushTasks)
         .then(() => {
           assertFalse(toolbar.spinnerActive);
         });
@@ -87,8 +93,8 @@ suite('history-toolbar', function() {
   test('menu promo hides when drawer is opened', function() {
     app.showMenuPromo_ = true;
     app.hasDrawer_ = true;
-    Polymer.dom.flush();
-    MockInteractions.tap(toolbar.$['main-toolbar'].$$('#menuButton'));
+    flush();
+    toolbar.$['main-toolbar'].$$('#menuButton').click();
     assertFalse(app.showMenuPromo_);
   });
 });

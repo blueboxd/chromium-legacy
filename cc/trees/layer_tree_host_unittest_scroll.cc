@@ -1119,6 +1119,8 @@ void DoGestureScroll(LayerTreeHostImpl* host_impl,
   ScrollStateData begin_scroll_state_data;
   begin_scroll_state_data.set_current_native_scrolling_element(
       scroller->element_id());
+  begin_scroll_state_data.delta_x_hint = offset.x();
+  begin_scroll_state_data.delta_y_hint = offset.y();
   std::unique_ptr<ScrollState> begin_scroll_state(
       new ScrollState(begin_scroll_state_data));
   auto scroll_status = host_impl->ScrollBegin(begin_scroll_state.get(),
@@ -1129,19 +1131,12 @@ void DoGestureScroll(LayerTreeHostImpl* host_impl,
   EXPECT_EQ(scrolling_node->element_id, scroller->element_id());
 
   ScrollStateData update_scroll_state_data;
-  update_scroll_state_data.set_current_native_scrolling_element(
-      scroller->element_id());
   update_scroll_state_data.delta_x = offset.x();
   update_scroll_state_data.delta_y = offset.y();
   std::unique_ptr<ScrollState> update_scroll_state(
       new ScrollState(update_scroll_state_data));
   host_impl->ScrollBy(update_scroll_state.get());
 
-  ScrollStateData end_scroll_state_data;
-  end_scroll_state_data.set_current_native_scrolling_element(
-      scroller->element_id());
-  std::unique_ptr<ScrollState> end_scroll_state(
-      new ScrollState(end_scroll_state_data));
   host_impl->ScrollEnd(true /* should_snap */);
 }
 

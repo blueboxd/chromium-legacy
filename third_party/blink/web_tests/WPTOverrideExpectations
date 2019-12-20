@@ -11,7 +11,7 @@
 
 # Bluetooth not supported in Chrome as per
 # https://github.com/web-platform-tests/wpt/blob/master/bluetooth/README.md#web-bluetooth-testing
-external/wpt/bluetooth [ Skip ]
+external/wpt/bluetooth/* [ Skip ]
 
 # This is a mass dump of all the current WPT failures seen on Waterfall. They are untriaged.
 external/wpt/2dcontext/wide-gamut-canvas/canvas-createImageBitmap-e_srgb.html [ Pass Failure ]

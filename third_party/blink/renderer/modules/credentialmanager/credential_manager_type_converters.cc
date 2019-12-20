@@ -174,13 +174,12 @@ Vector<uint8_t> ConvertFixedSizeArray(
     const blink::ArrayBufferOrArrayBufferView& buffer,
     unsigned length) {
   if (buffer.IsArrayBuffer() &&
-      (buffer.GetAsArrayBuffer()->DeprecatedByteLengthAsUnsigned() != length)) {
+      (buffer.GetAsArrayBuffer()->ByteLengthAsSizeT() != length)) {
     return Vector<uint8_t>();
   }
 
   if (buffer.IsArrayBufferView() &&
-      buffer.GetAsArrayBufferView().View()->deprecatedByteLengthAsUnsigned() !=
-          length) {
+      buffer.GetAsArrayBufferView().View()->byteLengthAsSizeT() != length) {
     return Vector<uint8_t>();
   }
 

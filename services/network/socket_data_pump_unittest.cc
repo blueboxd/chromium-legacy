@@ -138,7 +138,7 @@ class SocketDataPumpTest : public testing::Test,
   DISALLOW_COPY_AND_ASSIGN(SocketDataPumpTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          SocketDataPumpTest,
                          testing::Values(net::SYNCHRONOUS, net::ASYNC));
 

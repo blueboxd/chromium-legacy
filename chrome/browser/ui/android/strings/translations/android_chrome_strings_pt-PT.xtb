@@ -37,6 +37,7 @@
 <translation id="1231733316453485619">Pretende ativar a sincronização?</translation>
 <translation id="123724288017357924">Atualizar página atual e ignorar conteúdo em cache</translation>
 <translation id="124116460088058876">Mais idiomas</translation>
+<translation id="1242008676835033345">Incorporada em <ph name="WEBSITE_URL" /></translation>
 <translation id="124678866338384709">Fechar o separador atual</translation>
 <translation id="1258753120186372309">Doodle da Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Pesquisar e explorar</translation>
@@ -95,6 +96,7 @@
 <translation id="1672586136351118594">Não mostrar de novo</translation>
 <translation id="1692118695553449118">A sincronização está ativada</translation>
 <translation id="169515064810179024">Impedir que os sites acedam aos sensores de movimentos</translation>
+<translation id="1711267867945983636">Para continuar, ative o NFC no telemóvel.</translation>
 <translation id="1717218214683051432">Sensores de movimento</translation>
 <translation id="1718835860248848330">Última hora</translation>
 <translation id="1736419249208073774">Explorar</translation>
@@ -151,6 +153,7 @@
 <translation id="2082238445998314030">Resultado <ph name="RESULT_NUMBER" /> de <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Som</translation>
 <translation id="2096012225669085171">Sincronizar e personalizar entre dispositivos</translation>
+<translation id="2099625543891475722">as suas caraterísticas físicas, como a altura</translation>
 <translation id="2100273922101894616">Início de sessão automático</translation>
 <translation id="2100314319871056947">Experimente partilhar o texto em partes mais pequenas.</translation>
 <translation id="2107397443965016585">Perguntar antes de permitir que os sites reproduzam conteúdos protegidos (recomendado)</translation>
@@ -427,6 +430,7 @@ Para ajustar o termo de pesquisa, mantenha-o premido para selecionar. Para refin
 <translation id="4226663524361240545">As notificações podem fazer com que o dispositivo vibre</translation>
 <translation id="423219824432660969">Encriptar dados sincronizados com a palavra-passe do Google a partir de <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Abrir definições</translation>
+<translation id="4250229828105606438">Captura de ecrã</translation>
 <translation id="4256782883801055595">Licenças de código aberto</translation>
 <translation id="4259722352634471385">A navegação está bloqueada: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Copiar endereço do link</translation>
@@ -480,6 +484,7 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="4634124774493850572">Utilizar palavra-passe</translation>
 <translation id="4645575059429386691">Gerido pelos teus pais</translation>
 <translation id="4650364565596261010">Predefinição do sistema</translation>
+<translation id="4660838440047236328">a disposição da divisão</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> marcadores eliminados</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> foi adicionado ao seu Ecrã principal</translation>
 <translation id="4684427112815847243">Sincronizar tudo</translation>
@@ -604,6 +609,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5487521232677179737">Limpar dados</translation>
 <translation id="5494752089476963479">Bloquear anúncios em sites que apresentam anúncios intrusivos ou enganadores</translation>
 <translation id="5500777121964041360">Pode não estar disponível na sua localização</translation>
+<translation id="5505264765875738116">Os sites não podem pedir para enviar notificações.</translation>
 <translation id="5512137114520586844">Esta conta é gerida por <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Desativada pelo gestor do dispositivo</translation>
 <translation id="5515439363601853141">Desbloqueie para ver a palavra-passe.</translation>
@@ -701,6 +707,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="6192792657125177640">Excepções</translation>
 <translation id="6194112207524046168">Para permitir que o Chrome aceda à câmara, ative também a câmara nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Bloquear cookies de terceiros</translation>
+<translation id="6201345951596836663">Link copiado</translation>
 <translation id="6206551242102657620">A ligação é segura. Informações do site</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> não é o seu email?</translation>
 <translation id="6216432067784365534">Opções de <ph name="NAME_OF_LIST_ITEM" /></translation>
@@ -710,6 +717,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios que não são baseados noutros Sites que tenha visitado. Ainda assim, muitos Sites continuam a recolher e a utilizar os seus dados de navegação para, por exemplo, melhorar a segurança, fornecer conteúdo, anúncios e recomendações, e gerar estatísticas de relatórios.</translation>
 <translation id="624789221780392884">Atualização pronta</translation>
 <translation id="6255999984061454636">Sugestões de conteúdo</translation>
+<translation id="6270391203985052864">Os sites podem pedir para enviar notificações.</translation>
 <translation id="6277522088822131679">Ocorreu um problema ao imprimir a página. Tente novamente.</translation>
 <translation id="6295158916970320988">Todos os sites</translation>
 <translation id="629730747756840877">Conta</translation>
@@ -754,6 +762,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6545864417968258051">Procura de Bluetooth</translation>
 <translation id="6560414384669816528">Pesquisar com o Sogou</translation>
 <translation id="656065428026159829">Ver mais</translation>
+<translation id="6561560012278703671">Utilizar mensagens mais discretas (impede interrupções de pedidos de notificação)</translation>
 <translation id="6566259936974865419">O Chrome permitiu-lhe poupar <ph name="GIGABYTES" /> GB</translation>
 <translation id="6573096386450695060">Permitir sempre</translation>
 <translation id="6573431926118603307">Os separadores que abriu no Chrome nos seus outros dispositivos são apresentados aqui.</translation>
@@ -851,6 +860,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="729975465115245577">O dispositivo não tem uma aplicação para armazenar o ficheiro de palavras-passe.</translation>
 <translation id="7302081693174882195">Detalhes: ordenado por quantidade de dados guardados</translation>
 <translation id="7302486331832100261">Normalmente, bloqueia as notificações. Para permitir, toque em Detalhes.</translation>
+<translation id="7311441321349344333">O NFC está desativado para este dispositivo. Ative o NFC nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
 <translation id="7328017930301109123">No Modo Lite, o Chrome carrega páginas mais rapidamente e utiliza até menos 60 por cento de dados.</translation>
 <translation id="7333031090786104871">Ainda a adicionar o site anterior…</translation>
 <translation id="7352939065658542140">VÍDEO</translation>

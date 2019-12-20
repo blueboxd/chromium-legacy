@@ -466,7 +466,6 @@ QuicTestPacketMaker::MakeRstAckAndConnectionClosePacket(
     bool include_version,
     quic::QuicStreamId stream_id,
     quic::QuicRstStreamErrorCode error_code,
-    quic::QuicTime::Delta ack_delay_time,
     uint64_t largest_received,
     uint64_t smallest_received,
     uint64_t least_unacked,
@@ -489,7 +488,7 @@ QuicTestPacketMaker::MakeRstAckAndConnectionClosePacket(
   }
 
   quic::QuicAckFrame ack(MakeAckFrame(largest_received));
-  ack.ack_delay_time = ack_delay_time;
+  ack.ack_delay_time = quic::QuicTime::Delta::Zero();
   for (uint64_t i = smallest_received; i <= largest_received; ++i) {
     ack.received_packet_times.push_back(
         std::make_pair(quic::QuicPacketNumber(i), clock_->Now()));
@@ -648,7 +647,6 @@ std::unique_ptr<quic::QuicReceivedPacket>
 QuicTestPacketMaker::MakeAckAndConnectionClosePacket(
     uint64_t num,
     bool include_version,
-    quic::QuicTime::Delta ack_delay_time,
     uint64_t largest_received,
     uint64_t smallest_received,
     uint64_t least_unacked,
@@ -658,7 +656,7 @@ QuicTestPacketMaker::MakeAckAndConnectionClosePacket(
   InitializeHeader(num, include_version);
 
   quic::QuicAckFrame ack(MakeAckFrame(largest_received));
-  ack.ack_delay_time = ack_delay_time;
+  ack.ack_delay_time = quic::QuicTime::Delta::Zero();
   for (uint64_t i = smallest_received; i <= largest_received; ++i) {
     ack.received_packet_times.push_back(
         std::make_pair(quic::QuicPacketNumber(i), clock_->Now()));
@@ -715,8 +713,7 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeAckPacket(
     uint64_t least_unacked,
     bool send_feedback) {
   return MakeAckPacket(packet_number, 1, largest_received, smallest_received,
-                       least_unacked, send_feedback,
-                       quic::QuicTime::Delta::Zero());
+                       least_unacked, send_feedback);
 }
 
 std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeAckPacket(
@@ -726,34 +723,10 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeAckPacket(
     uint64_t smallest_received,
     uint64_t least_unacked,
     bool send_feedback) {
-  return MakeAckPacket(packet_number, first_received, largest_received,
-                       smallest_received, least_unacked, send_feedback,
-                       quic::QuicTime::Delta::Zero());
-}
-
-std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeAckPacket(
-    uint64_t packet_number,
-    uint64_t largest_received,
-    uint64_t smallest_received,
-    uint64_t least_unacked,
-    bool send_feedback,
-    quic::QuicTime::Delta ack_delay_time) {
-  return MakeAckPacket(packet_number, 1, largest_received, smallest_received,
-                       least_unacked, send_feedback, ack_delay_time);
-}
-
-std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeAckPacket(
-    uint64_t packet_number,
-    uint64_t first_received,
-    uint64_t largest_received,
-    uint64_t smallest_received,
-    uint64_t least_unacked,
-    bool send_feedback,
-    quic::QuicTime::Delta ack_delay_time) {
   InitializeHeader(packet_number, /*include_version=*/false);
 
   quic::QuicAckFrame ack(MakeAckFrame(largest_received));
-  ack.ack_delay_time = ack_delay_time;
+  ack.ack_delay_time = quic::QuicTime::Delta::Zero();
   for (uint64_t i = smallest_received; i <= largest_received; ++i) {
     ack.received_packet_times.push_back(
         std::make_pair(quic::QuicPacketNumber(i), clock_->Now()));

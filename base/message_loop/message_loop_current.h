@@ -23,10 +23,7 @@ class WebTaskEnvironment;
 
 namespace base {
 
-class MessageLoopImpl;
-
 namespace sequence_manager {
-
 namespace internal {
 class SequenceManagerImpl;
 }
@@ -181,7 +178,6 @@ class BASE_EXPORT MessageLoopCurrent {
   static sequence_manager::internal::SequenceManagerImpl*
   GetCurrentSequenceManagerImpl();
 
-  friend class MessageLoopImpl;
   friend class MessagePumpLibeventTest;
   friend class ScheduleWorkTest;
   friend class Thread;

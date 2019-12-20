@@ -5,6 +5,7 @@
 <translation id="1010200102790553230">पेज नंतर लोड करा</translation>
 <translation id="1015730422737071372">अतिरिक्त तपशील प्रदान करा</translation>
 <translation id="1021110881106174305">स्वीकारलेली कार्ड</translation>
+<translation id="1021753677514347426">तुम्ही किंवा इतर कोणीतरी तुमच्या डिव्हाइसवर इंस्टॉल केलेल्या सर्टिफिकेटमुळे ही समस्या येते. हे सर्टिफिकेट नेटवर्कचे नियंत्रण करण्यासाठी आणि व्यत्यय आणण्यासाठी वापरले जाते आणि Chromium ला यावर विश्वास नाही. दरम्यान नियंत्रण करण्यासाठी काही कायदेशीर प्रकरणे अस्तित्त्वात आहेत, जसे की शाळा किंवा कंपनीच्या नेटवर्कवर, तुम्ही हे थांबवू शकत नसलात तरीही तुम्हाला याची जाणीव आहे याची Chromium ला खात्री करायची आहे. वेबचा ॲक्सेस असणाऱ्या कोणत्याही ब्राउझर किंवा ॲप्लिकेशनचे नियंत्रण केले जाऊ शकते.</translation>
 <translation id="1032854598605920125">घड्याळाच्या दिशेने फिरवा</translation>
 <translation id="1036348656032585052">बंद करा</translation>
 <translation id="1038842779957582377">अज्ञात नाव</translation>
@@ -67,6 +68,7 @@
 <translation id="1264126396475825575"><ph name="CRASH_TIME" /> वाजता क्रॅश अहवाल कॅप्चर केला (अद्याप अपलोड केलेला नाही किंवा दुर्लक्ष केले)</translation>
 <translation id="1270502636509132238">घेण्याची पद्धत</translation>
 <translation id="1285320974508926690">या साइटचा कधीही भाषांतर करु नका</translation>
+<translation id="1285400217480592994">तुम्ही Chrome मध्ये डाउनलोड किंवा अपलोड करता त्या फाइलचे आशय स्कॅन करा</translation>
 <translation id="1292701964462482250">"तुमच्या कॉंप्युटरवरील सॉफ्टवेअर Chrome ला सुरक्षितपणे वेबशी कनेक्ट होण्यापासून थांबवत आहे" (फक्‍त Windows कॉंप्युटरचा)</translation>
 <translation id="1294154142200295408">विविध कमांड लाइन</translation>
 <translation id="129553762522093515">अलीकडे बंद केलेले</translation>
@@ -284,6 +286,7 @@
 <translation id="2270484714375784793">फोन नंबर</translation>
 <translation id="2277103315734023688">पुढे जा</translation>
 <translation id="2283340219607151381">पत्ते भरा आणि सेव्ह करा</translation>
+<translation id="2288422996159078444">तुम्ही टाइप करत असलेले काहीही, तुम्ही पाहत असलेली कोणतीही पेज किंवा वेबवरील इतर कोणत्याही अ‍ॅक्टिव्हिटीवर नजर ठेवली जाते. साइटवरचा आशय कदाचित तुमच्या नकळत बदलला जाऊ शकतो.</translation>
 <translation id="2289385804009217824">ट्रिम करा</translation>
 <translation id="2292556288342944218">तुमचा इंटरनेट ॲक्सेस ब्लॉक केला आहे</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
@@ -436,6 +439,7 @@
 <translation id="2989742184762224133">ड्युअल स्टेपल टॉप</translation>
 <translation id="2991174974383378012">वेबसाइटसह शेअर करीत आहे</translation>
 <translation id="2991571918955627853">ही वेबसाइट HSTS वापरत असल्यामुळे तुम्ही <ph name="SITE" /> आत्ता पाहू शकत नाही. नेटवर्क एरर आणि आक्रमण शक्यतो तात्पुरती असतात, त्यामुळे हे पेज नंतर पाहता येईल.</translation>
+<translation id="2996674880327704673">Google च्या सूचना</translation>
 <translation id="3005723025932146533">सेव्ह केलेली प्रत दर्शवा</translation>
 <translation id="3008447029300691911"><ph name="CREDIT_CARD" /> साठी CVC प्रविष्‍ट करा. तुम्ही पुष्टी केल्यावर, तुमचे कार्ड तपशील या साइटसह शेअर केले जातील.</translation>
 <translation id="3010559122411665027">सूची प्रविष्टी "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
@@ -448,6 +452,7 @@
 <translation id="3060227939791841287">C9 (Envelope)</translation>
 <translation id="3061707000357573562">पॅच सेवा</translation>
 <translation id="3064966200440839136">बाह्य ॲप्लिकेशन द्वारे पेमेंट देण्यासाठी गुप्त मोड सोडत आहे. सुरु ठेवायचे?</translation>
+<translation id="3086579638707268289">वेबवरील तुमच्या ॲक्टिव्हिटीचे नियंत्रण केले जात आहे</translation>
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">पिकअप पत्ता जोडा</translation>
 <translation id="3105172416063519923">मालमत्ता आयडी:</translation>
@@ -500,6 +505,7 @@
 <translation id="3369192424181595722">घड्याळ एरर</translation>
 <translation id="337363190475750230">तरतूद रद्द केली</translation>
 <translation id="3377188786107721145">धोरण पार्स एरर</translation>
+<translation id="3377736046129930310">कार्डांची जलद खात्री करण्यासाठी स्क्रीन लॉक वापरा</translation>
 <translation id="3380365263193509176">अज्ञात एरर</translation>
 <translation id="3380864720620200369">क्लायंट आयडी:</translation>
 <translation id="3387261909427947069">पेमेंट पद्धती</translation>
@@ -664,6 +670,7 @@
 <translation id="4194250254487269611">तुमचे कार्ड आता सेव्ह केले जाऊ शकत नाही</translation>
 <translation id="4196861286325780578">&amp;हलवा पुन्हा करा</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />फायरवॉल आणि अँटीव्हायरस कॉन्फिगरेशन तपासणे<ph name="END_LINK" /></translation>
+<translation id="4214357935346142455">साइन इन करा स्क्रीन प्रोफाइल</translation>
 <translation id="4215751373031079683">7x9 (Envelope)</translation>
 <translation id="4220128509585149162">क्रॅश होते</translation>
 <translation id="422022731706691852"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> वरील हल्लेखोर कदाचित तुमच्या ब्राउझ करण्याच्या अनुभवाला हानिकारक असे प्रोग्राम (उदाहरणार्थ, तुमचे होमपेज बदलणे किंवा तुम्ही भेट दिलेल्या साइटवर जास्तीच्या जाहिराती दाखवणे) इंस्टॉल करण्यासाठी तुम्हाला फसवण्याचा प्रयत्न करू शकतात. <ph name="BEGIN_LEARN_MORE_LINK" />आणखी जाणून घ्या<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -746,6 +753,7 @@
 <translation id="4515275063822566619">कार्ड आणि पत्ते Chrome आणि आपल्या Google खात्याकडील (<ph name="ACCOUNT_EMAIL" />) आहेत. तुम्ही त्यांना <ph name="BEGIN_LINK" />सेटिंग्‍ज<ph name="END_LINK" /> मधून व्यवस्थापित करू शकता.</translation>
 <translation id="4517607026994743406">Comm-10 (Envelope)</translation>
 <translation id="4522570452068850558">तपशील</translation>
+<translation id="4524138615196389145">आतापासून WebAuthn वापरून तुमच्या कार्डांची जलद खात्री करा</translation>
 <translation id="4524805452350978254">कार्डे व्यवस्थापित करा</translation>
 <translation id="455113658016510503">A9</translation>
 <translation id="4552089082226364758">फ्लॅश</translation>
@@ -857,6 +865,7 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64-बिट)</translation>
+<translation id="5121469660360593280">तुमच्या अ‍ॅडमिनिस्ट्रेटरसह Chrome एंटरप्राइझ वापरकर्ता सुरक्षितता ने फ्लॅग केलेल्या सुरक्षितता इव्‍हेंटसंबंधित डेटा शेअर करा. यामध्ये तुम्ही भेट देता त्या पेजच्या URL, फाइलची नावे किंवा मेटाडेटा आणि तुम्ही तुमच्या डिव्हाइस आणि Chrome वर साइन इन करण्यासाठी वापरता त्या वापरकर्ता नावांचा समावेश असू शकतो.</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">तुमच्या कार्डाची पडताळणी करा</translation>
 <translation id="5135404736266831032">पत्ते व्यवस्थापित करा...</translation>
@@ -868,6 +877,7 @@
 <translation id="5159010409087891077">नवीन गुप्त विंडोमध्ये पेज उघडा (⇧⌘N)</translation>
 <translation id="516920405563544094"><ph name="CREDIT_CARD" /> चा CVC टाका. तुम्ही निश्चित केल्यानंतर तुमच्या Google खात्यामधील कार्डाचा तपशील या साइटसोबत शेअर केला जाईल.</translation>
 <translation id="5169827969064885044">तुम्ही तुमच्या संस्थेच्या खात्याचा ॲक्सेस गमावू शकता किंवा तुमची संवेदनशील माहिती चोरीला जाऊ शकते. Chrome लगेच तुमचा पासवर्ड बदलण्याची शिफारस करत आहे.</translation>
+<translation id="5170017743895942767">Chrome एंटरप्राइझ वापरकर्ता सुरक्षितता</translation>
 <translation id="5171045022955879922">URL शोधा किंवा टाइप करा</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">मशीन</translation>
@@ -988,6 +998,7 @@
 <translation id="5730040223043577876">तुम्ही तुमच्या पासवर्डचा इतर साइटवर पुन्हा वापर केला असेल तर Chrome तुम्हाला तो रीसेट करण्याची शिफारस करत आहे.</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{तुमच्या Google खात्यामध्ये कार्ड सेव्ह करा}other{तुमच्या Google खात्यामध्ये कार्डे सेव्ह करा}}</translation>
 <translation id="5763042198335101085">वैध ईमेल ॲड्रेस एंटर करा</translation>
+<translation id="5763703224595565476">तुमच्या अ‍ॅडमिनिस्ट्रेटरने तुमच्या ब्राउझरवर Chrome एंटरप्राइझ वापरकर्ता सुरक्षितता सुरू केली आहे. Chrome एंटरप्राइझ वापरकर्ता सुरक्षितता ला तुमच्या काही डेटाचा ॲक्सेस आहे.</translation>
 <translation id="5765072501007116331">वितरण पद्धती आणि आवश्यकता पाहण्यासाठी, एक पत्ता निवडा</translation>
 <translation id="5778550464785688721">MIDI डिव्हाइसेस पूर्ण नियंत्रण</translation>
 <translation id="5781136890105823427">प्रयोग सुरू केला आहे</translation>
@@ -1067,6 +1078,7 @@
 <translation id="6094273045989040137">भाष्य करा</translation>
 <translation id="6104072995492677441">JIS B6</translation>
 <translation id="610911394827799129">तुमच्या Google खात्यामध्ये <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> वर ब्राउझिंग इतिहासाची अन्य स्वरूपे असू शकतात.</translation>
+<translation id="6120179357481664955">तुमचा UPI आयडी लक्षात ठेवायचा आहे का?</translation>
 <translation id="6132597952260690497">इंस्टॉल केलेल्या एक्स्टेंशन आणि प्लग-इनविषयी माहिती</translation>
 <translation id="6146055958333702838">कोणत्याही केबल तपासा आणि कोणतेही राउटर, मोडेम किंवा तुम्ही
 वापरत असलेले
@@ -1083,6 +1095,7 @@
 <translation id="6221345481584921695">Google सुरक्षित ब्राउझिंगला अलीकडे <ph name="SITE" /> वर <ph name="BEGIN_LINK" />मालवेअर आढळले आहे<ph name="END_LINK" />. सामान्यतः सुरक्षित असलेल्या वेबसाइट काहीवेळा मालवेअरमुळे संक्रमित झालेल्या असतात. एक ज्ञात मालवेअर वितरक असलेल्या, <ph name="SUBRESOURCE_HOST" /> कडून दुर्भावनापूर्ण सामग्री येते.</translation>
 <translation id="6234122620015464377">प्रत्येक दस्तऐवजानंतर ट्रिम करा</translation>
 <translation id="6240447795304464094">Google Pay लोगो</translation>
+<translation id="6241121617266208201">सूचना लपवा</translation>
 <translation id="6251924700383757765">गोपनीयता धोरण</translation>
 <translation id="6254436959401408446">हे पृष्‍ठ उघडण्‍यासाठी पुरेशी मेमरी नाही</translation>
 <translation id="625755898061068298">तुम्ही या साइटसाठी सुरक्षा चेतावणी अक्षम करणे निवडले आहे.</translation>
@@ -1129,6 +1142,7 @@
 <translation id="6409754798200046165">तुम्ही आताच एका फसव्या साइटवर तुमचा पासवर्ड एंटर केला आहे. Chrome तुमचा पासवर्ड आता बदलण्याची शिफारस करते.</translation>
 <translation id="6410264514553301377"><ph name="CREDIT_CARD" /> साठी कालबाह्यता तारीख आणि CVC प्रविष्‍ट करा</translation>
 <translation id="6415778972515849510">तुमच्या Google खात्याचे संरक्षण करण्यात आणि तुमचा पासवर्ड बदलण्यात Chromium तुम्हाला मदत करू शकते.</translation>
+<translation id="6423385022588644828">यापुढे टच आयडी वापरून तुमच्या कार्डांची जलद खात्री करा</translation>
 <translation id="6427730057873428458">गेट फोल्ड</translation>
 <translation id="6433490469411711332">संपर्क माहिती संपादित करा</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> नी कनेक्ट करण्यास नकार दिला.</translation>
@@ -1199,12 +1213,14 @@
 <translation id="6786747875388722282">विस्तार</translation>
 <translation id="6790428901817661496">प्ले करा</translation>
 <translation id="679355240208270552">दुर्लक्ष केले कारण डीफॉल्ट शोध धोरणाने सुरू केलेले नाही</translation>
+<translation id="6794951432696553238">यापुढे Windows Hello वापरून तुमच्या कार्डांची जलद खात्री करा</translation>
 <translation id="681021252041861472">या जागा भरणे आवश्यक</translation>
 <translation id="6810899417690483278">सानुकूलीकरण आयडी</translation>
 <translation id="6825578344716086703">तुम्ही <ph name="DOMAIN" /> वर पोहोचण्याचा प्रयत्न केला, परंतु सर्व्हरने एका कमकुवत स्वाक्षरी अल्गोरिदमचा (जसे SHA-1) वापर करून स्वाक्षरीकृत केलेले प्रमाणपत्र सादर केले. याचा अर्थ असा आहे, की सर्व्हरने सादर केलेली सुरक्षितता क्रेडेंशियल बनावट असू शकतात आणि हा सर्व्हर तुम्ही अपेक्षा करत असलेला नसेल. (तुम्ही कदाचित एखाद्या हल्लेखोराशी संभाषण करत आहात).</translation>
 <translation id="6826370046007623921">डेटा गमावण्यास प्रतिबंध</translation>
 <translation id="6831043979455480757">भाषांतर करा</translation>
 <translation id="6839929833149231406">क्षेत्र</translation>
+<translation id="6846340164947227603">व्हर्च्युअल कार्ड नंबर वापरा...</translation>
 <translation id="6852204201400771460">ॲप रीलोड करायचे?</translation>
 <translation id="6865412394715372076">या कार्डची पडताळणी आता करू शकत नाही</translation>
 <translation id="6868206169573555318">अपडेट करण्यासाठी पुन्हा लाँच करा</translation>
@@ -1233,6 +1249,7 @@
 <translation id="6989763994942163495">प्रगत सेटिंग्ज दर्शवा...</translation>
 <translation id="6993898126790112050">6x9 (Envelope)6x9 (Envelope)</translation>
 <translation id="6996312675313362352"><ph name="ORIGINAL_LANGUAGE" />चे नेहमी भाषांतर करा</translation>
+<translation id="7004583254764674281">कार्डांची जलद खात्री करण्यासाठी Windows Hello वापरा</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">हे शुल्क एकाच वेळी द्यायचे किंवा आवर्ती असू शकतात आणि स्पष्ट नसू शकतात.</translation>
 <translation id="7029809446516969842">पासवर्ड</translation>
@@ -1243,6 +1260,7 @@
 <translation id="7064851114919012435">संपर्क माहिती</translation>
 <translation id="7075452647191940183">विनंती खूपच मोठी आहे</translation>
 <translation id="7079718277001814089">या साइटमध्ये मालवेअर आहे</translation>
+<translation id="7081308185095828845">हे वैशिष्ट्य तुमच्या डिव्हाइसवर उपलब्ध नाही</translation>
 <translation id="7087282848513945231">परगणा</translation>
 <translation id="7090678807593890770">Google वर <ph name="LINK" /> शोधा</translation>
 <translation id="7108338896283013870">लपवा</translation>
@@ -1296,9 +1314,11 @@
 <translation id="733923710415886693">सर्टिफिकेट पारदर्शकतेअंतर्गत सर्व्हरचे सर्टिफिकेट उघड केले नाही.</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">याच्याशी संबंधित आहे:</translation>
+<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> ने तुमच्या ब्राउझरवर Chrome एंटरप्राइझ वापरकर्ता सुरक्षितता सुरू केली आहे. Chrome एंटरप्राइझ वापरकर्ता सुरक्षितता ला तुमच्या काही डेटाचा ॲक्सेस आहे.</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">कमांड लाइन</translation>
 <translation id="7372973238305370288">शोध परिणाम</translation>
+<translation id="7374733840632556089">तुम्ही किंवा इतर कोणीतरी तुमच्या डिव्हाइसवर इंस्टॉल केलेल्या सर्टिफिकेटमुळे ही समस्या येते. हे सर्टिफिकेट नेटवर्कचे नियंत्रण करण्यासाठी आणि व्यत्यय आणण्यासाठी वापरले जाते आणि Chrome ला यावर विश्वास नाही. दरम्यान नियंत्रण करण्यासाठी काही कायदेशीर प्रकरणे अस्तित्त्वात आहेत, जसे की शाळा किंवा कंपनीच्या नेटवर्कवर, तुम्ही हे थांबवू शकत नसलात तरीही तुम्हाला याची जाणीव आहे याची Chrome ला खात्री करायची आहे. वेबचा ॲक्सेस असणाऱ्या कोणत्याही ब्राउझर किंवा ॲप्लिकेशनचे नियंत्रण केले जाऊ शकते.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">मीडिया नियंत्रणे</translation>
 <translation id="7378627244592794276">नाही</translation>
@@ -1327,6 +1347,7 @@
 <translation id="7451311239929941790">या समस्येविषयी <ph name="BEGIN_LINK" />अधिक जाणून घेणे<ph name="END_LINK" />.</translation>
 <translation id="7455133967321480974">सार्वत्रिक डीफॉल्‍ट वापरा (अवरोधित करा)</translation>
 <translation id="7460618730930299168">तुम्ही जे निवडले, त्यापेक्षा स्क्रीनिंग वेगळे आहे. सुरू ठेवायचे का?</translation>
+<translation id="7464821087936825778">शोध मोडमधून बाहेर पडत आहे</translation>
 <translation id="7473891865547856676">नाही, नको</translation>
 <translation id="7481312909269577407">पुढील</translation>
 <translation id="7485870689360869515">डेटा आढळला नाही.</translation>
@@ -1548,6 +1569,7 @@
 <translation id="8559762987265718583">आपल्या डिव्हाइसची तारीख आणि वेळ (<ph name="DATE_AND_TIME" />) चुकीची असल्याने <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> सह खाजगी कनेक्शन इंस्टॉल केले जाऊ शकले नाही.</translation>
 <translation id="8564985650692024650">जर तुम्ही तुमच्या <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> पासवर्डचा इतर साइटवर पुन्हा वापर केला असेल तर Chromium तुम्हाला तो रीसेट करण्याची शिफारस करतो.</translation>
 <translation id="8571890674111243710"><ph name="LANGUAGE" /> मध्ये पृष्ठ अनुवादित करत आहे...</translation>
+<translation id="8574899947864779331">कार्डांची जलद खात्री करण्यासाठी टच आयडी वापरा</translation>
 <translation id="858637041960032120">फोन नंबर जोडा</translation>
 <translation id="860043288473659153">कार्डधारकाचे नाव</translation>
 <translation id="8616822740383114808">या सेटिंगची "<ph name="SETTINGS_PAGE" />" मध्ये "<ph name="ENFORCING_SETTING" />" द्वारे अंमलबजावणी केली जाते</translation>

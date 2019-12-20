@@ -36,6 +36,7 @@
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/wm/core/coordinate_conversion.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 
@@ -75,6 +76,8 @@ class DragWindowFromShelfController::WindowsHider
         Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
     for (auto* window : windows) {
       if (window == dragged_window_)
+        continue;
+      if (::wm::HasTransientAncestor(window, dragged_window_))
         continue;
       if (!window->IsVisible())
         continue;

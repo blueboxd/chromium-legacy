@@ -15,7 +15,9 @@ android_apk("apk_with_webapk_service") {
 
   android_manifest = "AndroidManifest.xml"
   apk_name = "ApkWithWebApkService"
-  java_files = [ "src/org/chromium/webapk/lib/runtime_library/test/TestWebApkServiceImplWrapper.java" ]
+  sources = [
+    "src/org/chromium/webapk/lib/runtime_library/test/TestWebApkServiceImplWrapper.java",
+  ]
   deps = [
     "//chrome/android/webapk/libs/runtime_library:runtime_library_for_tests_java",
     "//chrome/android/webapk/libs/runtime_library:webapk_service_aidl_java",

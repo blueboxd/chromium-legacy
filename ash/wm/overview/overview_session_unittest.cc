@@ -56,7 +56,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_browser_window_drag_delegate.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
-#include "ash/wm/tablet_mode/tablet_mode_window_drag_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_window_resizer.h"
 #include "ash/wm/window_preview_view.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -2829,7 +2829,7 @@ TEST_P(OverviewSessionTest, DraggingFromTopAnimation) {
   WindowState* window_state = WindowState::Get(widget->GetNativeWindow());
   window_state->CreateDragDetails(event.location(), HTCAPTION,
                                   ::wm::WINDOW_MOVE_SOURCE_TOUCH);
-  auto drag_controller = std::make_unique<TabletModeWindowDragController>(
+  auto drag_controller = std::make_unique<TabletModeWindowResizer>(
       window_state, std::make_unique<TabletModeBrowserWindowDragDelegate>());
   ui::Event::DispatcherApi dispatch_helper(&event);
   dispatch_helper.set_target(widget->GetNativeWindow());

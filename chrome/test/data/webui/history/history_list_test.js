@@ -2,6 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {BrowserService, ensureLazyLoaded} from 'chrome://history/history.js';
+import {TestBrowserService} from 'chrome://test/history/test_browser_service.js';
+import {createHistoryEntry, createHistoryInfo, polymerSelectAll, shiftClick, waitForEvent} from 'chrome://test/history/test_util.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {flushTasks, waitAfterNextRender} from 'chrome://test/test_util.m.js';
+import {isMac} from 'chrome://resources/js/cr.m.js';
+import {pressAndReleaseKeyOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+
 suite('<history-list>', function() {
   let app;
   let element;
@@ -27,7 +35,7 @@ suite('<history-list>', function() {
     window.history.replaceState({}, '', '/');
     PolymerTest.clearBody();
     testService = new TestBrowserService();
-    history.BrowserService.instance_ = testService;
+    BrowserService.instance_ = testService;
 
     app = document.createElement('history-app');
   });
@@ -49,26 +57,26 @@ suite('<history-list>', function() {
     app.queryState_.incremental = true;
     return Promise.all([
       testService.whenCalled('queryHistory'),
-      history.ensureLazyLoaded(),
+      ensureLazyLoaded(),
     ]);
   }
 
   test('deleting single item', function() {
     return finishSetup([createHistoryEntry('2015-01-01', 'http://example.com')])
-        .then(test_util.flushTasks)
+        .then(flushTasks)
         .then(function() {
           assertEquals(element.historyData_.length, 1);
-          Polymer.dom.flush();
+          flush();
           const items = polymerSelectAll(element, 'history-item');
 
           assertEquals(1, items.length);
           items[0].$.checkbox.click();
           assertDeepEquals([true], element.historyData_.map(i => i.selected));
-          return test_util.flushTasks();
+          return flushTasks();
         })
         .then(function() {
           toolbar.deleteSelectedItems();
-          return test_util.flushTasks();
+          return flushTasks();
         })
         .then(function() {
           const dialog = element.$.dialog.get();
@@ -91,9 +99,13 @@ suite('<history-list>', function() {
 
   test('cancelling selection of multiple items', function() {
     return finishSetup(TEST_HISTORY_RESULTS)
-        .then(test_util.flushTasks)
+        .then(flushTasks)
         .then(function() {
-          Polymer.dom.flush();
+          element.$$('iron-list').fire('iron-resize');
+          return waitAfterNextRender(element);
+        })
+        .then(function() {
+          flush();
           const items = polymerSelectAll(element, 'history-item');
 
           items[2].$.checkbox.click();
@@ -120,9 +132,13 @@ suite('<history-list>', function() {
 
   test('selection of multiple items using shift click', function() {
     return finishSetup(TEST_HISTORY_RESULTS)
-        .then(test_util.flushTasks)
+        .then(flushTasks)
         .then(function() {
-          Polymer.dom.flush();
+          element.$$('iron-list').fire('iron-resize');
+          return waitAfterNextRender(element);
+        })
+        .then(function() {
+          flush();
           const items = polymerSelectAll(element, 'history-item');
 
           items[1].$.checkbox.click();
@@ -187,15 +203,15 @@ suite('<history-list>', function() {
     return finishSetup(TEST_HISTORY_RESULTS)
         .then(function() {
           app.selectedPage_ = 'syncedTabs';
-          return test_util.flushTasks();
+          return flushTasks();
         })
         .then(function() {
           const field = toolbar.$['main-toolbar'].getSearchField();
           field.blur();
           assertFalse(field.showingSearch);
 
-          const modifier = cr.isMac ? 'meta' : 'ctrl';
-          MockInteractions.pressAndReleaseKeyOn(
+          const modifier = isMac ? 'meta' : 'ctrl';
+          pressAndReleaseKeyOn(
               document.body, 65, modifier, 'a');
 
           assertDeepEquals(
@@ -206,9 +222,13 @@ suite('<history-list>', function() {
 
   test('setting first and last items', function() {
     return finishSetup(TEST_HISTORY_RESULTS)
-        .then(test_util.flushTasks)
+        .then(flushTasks)
         .then(function() {
-          Polymer.dom.flush();
+          element.$$('iron-list').fire('iron-resize');
+          return waitAfterNextRender(element);
+        })
+        .then(function() {
+          flush();
           const items = polymerSelectAll(element, 'history-item');
           assertTrue(items[0].isCardStart);
           assertTrue(items[0].isCardEnd);
@@ -229,32 +249,41 @@ suite('<history-list>', function() {
           element.fire('query-history', true);
           return testService.whenCalled('queryHistoryContinuation');
         })
-        .then(test_util.flushTasks);
+        .then(flushTasks);
   }
 
   test('updating history results', function() {
-    return loadWithAdditionalResults().then(function() {
-      Polymer.dom.flush();
-      const items = polymerSelectAll(element, 'history-item');
-      assertTrue(items[3].isCardStart);
-      assertTrue(items[5].isCardEnd);
+    return loadWithAdditionalResults()
+        .then(function() {
+          element.$$('iron-list').fire('iron-resize');
+          return waitAfterNextRender(element);
+        })
+        .then(function() {
+          flush();
+          const items = polymerSelectAll(element, 'history-item');
+          assertTrue(items[3].isCardStart);
+          assertTrue(items[5].isCardEnd);
 
-      assertTrue(items[6].isCardStart);
-      assertTrue(items[6].isCardEnd);
+          assertTrue(items[6].isCardStart);
+          assertTrue(items[6].isCardEnd);
 
-      assertTrue(items[7].isCardStart);
-      assertTrue(items[7].isCardEnd);
-    });
+          assertTrue(items[7].isCardStart);
+          assertTrue(items[7].isCardEnd);
+        });
   });
 
   test('deleting multiple items from view', function() {
     return loadWithAdditionalResults()
         .then(function() {
           element.removeItemsByIndex_([2, 5, 7]);
-          return test_util.flushTasks();
+          return flushTasks();
         })
         .then(function() {
-          Polymer.dom.flush();
+          element.$$('iron-list').fire('iron-resize');
+          return waitAfterNextRender(element);
+        })
+        .then(function() {
+          flush();
           const items = polymerSelectAll(element, 'history-item');
 
           assertEquals(element.historyData_.length, 5);
@@ -275,10 +304,10 @@ suite('<history-list>', function() {
                [createHistoryEntry('2016-03-15', 'https://www.google.com')])
         .then(function() {
           element.searchedTerm = 'Google';
-          test_util.flushTasks();
+          flushTasks();
         })
         .then(function() {
-          Polymer.dom.flush();
+          flush();
           const item = element.$$('history-item');
           assertTrue(item.isCardStart);
           const heading = item.$$('#date-accessed').textContent;
@@ -295,7 +324,7 @@ suite('<history-list>', function() {
 
   test('correct display message when no history available', function() {
     return finishSetup([])
-        .then(test_util.flushTasks)
+        .then(flushTasks)
         .then(function() {
           assertFalse(element.$['no-results'].hidden);
           assertNotEquals('', element.$['no-results'].textContent.trim());
@@ -306,7 +335,7 @@ suite('<history-list>', function() {
           element.fire('query-history', false);
           return testService.whenCalled('queryHistory');
         })
-        .then(test_util.flushTasks)
+        .then(flushTasks)
         .then(function() {
           assertTrue(element.$['no-results'].hidden);
           assertFalse(element.$['infinite-list'].hidden);
@@ -316,9 +345,13 @@ suite('<history-list>', function() {
   test('more from this site sends and sets correct data', function() {
     let items;
     return finishSetup(TEST_HISTORY_RESULTS)
-        .then(test_util.flushTasks())
+        .then(flushTasks)
         .then(function() {
-          Polymer.dom.flush();
+          element.$$('iron-list').fire('iron-resize');
+          return waitAfterNextRender(element);
+        })
+        .then(function() {
+          flush();
           testService.resetResolver('queryHistory');
           testService.setQueryResult({
             info: createHistoryInfo('www.google.com'),
@@ -332,7 +365,7 @@ suite('<history-list>', function() {
         })
         .then(function(query) {
           assertEquals('www.google.com', query);
-          return test_util.flushTasks();
+          return flushTasks();
         })
         .then(function() {
           assertEquals(
@@ -363,7 +396,11 @@ suite('<history-list>', function() {
     };
     return finishSetup(TEST_HISTORY_RESULTS)
         .then(loadMoreResults(9))
-        .then(test_util.flushTasks)
+        .then(flushTasks)
+        .then(function() {
+          element.$$('iron-list').fire('iron-resize');
+          return waitAfterNextRender(element);
+        })
         .then(() => {
           assertFalse(app.toolbarShadow_);
           element.$['infinite-list'].scrollToIndex(20);
@@ -383,9 +420,9 @@ suite('<history-list>', function() {
     return finishSetup(
                [createHistoryEntry('2016-06-9', 'https://www.example.com')],
                'ex')
-        .then(test_util.flushTasks(20))
+        .then(flushTasks(20))
         .then(function() {
-          Polymer.dom.flush();
+          flush();
           const item = element.$$('history-item');
           item.$.checkbox.click();
 
@@ -409,22 +446,26 @@ suite('<history-list>', function() {
     let dialog;
     return loadWithAdditionalResults()
         .then(function() {
-          dialog = element.$.dialog.get();
-          return test_util.flushTasks();
+          element.$$('iron-list').fire('iron-resize');
+          return waitAfterNextRender(element);
         })
         .then(function() {
-          Polymer.dom.flush();
+          dialog = element.$.dialog.get();
+          return flushTasks();
+        })
+        .then(function() {
+          flush();
           const items = polymerSelectAll(element, 'history-item');
 
           items[2].$.checkbox.click();
           items[5].$.checkbox.click();
           items[7].$.checkbox.click();
 
-          return test_util.flushTasks();
+          return flushTasks();
         })
         .then(function() {
           toolbar.deleteSelectedItems();
-          return test_util.flushTasks();
+          return flushTasks();
         })
         .then(function() {
           testService.resetResolver('removeVisits');
@@ -445,9 +486,9 @@ suite('<history-list>', function() {
           assertEquals(ADDITIONAL_RESULTS[3].url, visits[2].url);
           assertEquals(
               ADDITIONAL_RESULTS[3].allTimestamps[0], visits[2].timestamps[0]);
-          return test_util.flushTasks();
+          return flushTasks();
         })
-        .then(test_util.flushTasks)
+        .then(flushTasks)
         .then(function() {
           assertEquals(5, element.historyData_.length);
           assertEquals(element.historyData_[0].dateRelativeDay, '2016-03-15');
@@ -455,7 +496,7 @@ suite('<history-list>', function() {
           assertEquals(element.historyData_[4].dateRelativeDay, '2016-03-11');
           assertFalse(dialog.open);
 
-          Polymer.dom.flush();
+          flush();
           // Ensure the UI is correctly updated.
           const items = polymerSelectAll(element, 'history-item');
 
@@ -470,9 +511,13 @@ suite('<history-list>', function() {
   test('delete via menu button', function() {
     let items;
     return finishSetup(TEST_HISTORY_RESULTS)
-        .then(test_util.flushTasks())
+        .then(flushTasks)
         .then(function() {
-          Polymer.dom.flush();
+          element.$$('iron-list').fire('iron-resize');
+          return waitAfterNextRender(element);
+        })
+        .then(function() {
+          flush();
           items = polymerSelectAll(element, 'history-item');
           items[1].$.checkbox.click();
           items[3].$.checkbox.click();
@@ -487,9 +532,9 @@ suite('<history-list>', function() {
           assertEquals(
               TEST_HISTORY_RESULTS[1].allTimestamps[0],
               visits[0].timestamps[0]);
-          return test_util.flushTasks();
+          return flushTasks();
         })
-        .then(test_util.flushTasks)
+        .then(flushTasks)
         .then(function() {
           assertDeepEquals(
               [
@@ -511,10 +556,14 @@ suite('<history-list>', function() {
     return finishSetup(TEST_HISTORY_RESULTS)
         .then(function() {
           testService.delayDelete();
-          return test_util.flushTasks();
+          return flushTasks();
         })
         .then(function() {
-          Polymer.dom.flush();
+          element.$$('iron-list').fire('iron-resize');
+          return waitAfterNextRender(element);
+        })
+        .then(function() {
+          flush();
           items = polymerSelectAll(element, 'history-item');
           items[1].$.checkbox.click();
           items[2].$.checkbox.click();
@@ -538,17 +587,17 @@ suite('<history-list>', function() {
 
           // Key event should be ignored.
           assertEquals(1, testService.getCallCount('removeVisits'));
-          MockInteractions.pressAndReleaseKeyOn(
+          pressAndReleaseKeyOn(
               document.body, 46, '', 'Delete');
 
-          return test_util.flushTasks();
+          return flushTasks();
         })
         .then(function() {
           assertEquals(1, testService.getCallCount('removeVisits'));
           testService.finishRemoveVisits();
-          return test_util.flushTasks();
+          return flushTasks();
         })
-        .then(test_util.flushTasks)
+        .then(flushTasks)
         .then(function() {
           // Reselect some items.
           items = polymerSelectAll(element, 'history-item');
@@ -573,16 +622,20 @@ suite('<history-list>', function() {
     return finishSetup(TEST_HISTORY_RESULTS)
         .then(function() {
           dialog = element.$.dialog.get();
-          test_util.flushTasks();
+          flushTasks();
         })
         .then(function() {
-          Polymer.dom.flush();
+          element.$$('iron-list').fire('iron-resize');
+          return waitAfterNextRender(element);
+        })
+        .then(function() {
+          flush();
           items = polymerSelectAll(element, 'history-item');
 
           // Dialog should not appear when there is no item selected.
-          MockInteractions.pressAndReleaseKeyOn(
+          pressAndReleaseKeyOn(
               document.body, 46, '', 'Delete');
-          return test_util.flushTasks();
+          return flushTasks();
         })
         .then(function() {
           assertFalse(dialog.open);
@@ -592,18 +645,18 @@ suite('<history-list>', function() {
 
           assertEquals(2, toolbar.count);
 
-          MockInteractions.pressAndReleaseKeyOn(
+          pressAndReleaseKeyOn(
               document.body, 46, '', 'Delete');
-          return test_util.flushTasks();
+          return flushTasks();
         })
         .then(function() {
           assertTrue(dialog.open);
           element.$$('.cancel-button').click();
           assertFalse(dialog.open);
 
-          MockInteractions.pressAndReleaseKeyOn(
+          pressAndReleaseKeyOn(
               document.body, 8, '', 'Backspace');
-          return test_util.flushTasks();
+          return flushTasks();
         })
         .then(function() {
           assertTrue(dialog.open);
@@ -644,17 +697,17 @@ suite('<history-list>', function() {
           element.fire('query-history', true);
           return testService.whenCalled('queryHistoryContinuation');
         })
-        .then(test_util.flushTasks)
+        .then(flushTasks)
         .then(function() {
-          Polymer.dom.flush();
+          flush();
           const items = polymerSelectAll(element, 'history-item');
 
           items[2].$.checkbox.click();
-          return test_util.flushTasks();
+          return flushTasks();
         })
         .then(function() {
           toolbar.deleteSelectedItems();
-          return test_util.flushTasks();
+          return flushTasks();
         })
         .then(function() {
           // Confirmation dialog should appear.
@@ -664,7 +717,7 @@ suite('<history-list>', function() {
 
           return waitForEvent(window, 'popstate');
         })
-        .then(test_util.flushTasks)
+        .then(flushTasks)
         .then(function() {
           assertFalse(element.$.dialog.getIfExists().open);
         });
@@ -673,9 +726,9 @@ suite('<history-list>', function() {
   test('clicking file:// url sends message to chrome', function() {
     const fileURL = 'file:///home/myfile';
     return finishSetup([createHistoryEntry('2016-03-15', fileURL)])
-        .then(test_util.flushTasks)
+        .then(flushTasks)
         .then(function() {
-          Polymer.dom.flush();
+          flush();
           const items = polymerSelectAll(element, 'history-item');
           items[0].$.link.click();
           return testService.whenCalled('navigateToUrl');
@@ -691,8 +744,13 @@ suite('<history-list>', function() {
           testService.resetResolver('queryHistory');
           cr.webUIListenerCallback('history-deleted');
         })
+        .then(flushTasks)
         .then(function() {
-          Polymer.dom.flush();
+          element.$$('iron-list').fire('iron-resize');
+          return waitAfterNextRender(element);
+        })
+        .then(function() {
+          flush();
           const items = polymerSelectAll(element, 'history-item');
 
           items[2].$.checkbox.click();
@@ -700,7 +758,7 @@ suite('<history-list>', function() {
 
           testService.resetResolver('queryHistory');
           cr.webUIListenerCallback('history-deleted');
-          test_util.flushTasks();
+          flushTasks();
           assertEquals(0, testService.getCallCount('queryHistory'));
         });
   });

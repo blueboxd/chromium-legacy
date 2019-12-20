@@ -23,7 +23,7 @@
 #include "content/common/input/web_touch_event_traits.h"
 #include "content/public/common/content_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/events/base_event_utils.h"
 
 using blink::WebGestureEvent;

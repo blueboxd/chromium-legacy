@@ -58,7 +58,7 @@ android_library("capture_java") {
 
   srcjar_deps = [ ":media_java_enums_srcjar" ]
 
-  java_files = [
+  sources = [
     "java/src/org/chromium/media/PhotoCapabilities.java",
     "java/src/org/chromium/media/VideoCapture.java",
     "java/src/org/chromium/media/VideoCaptureCamera.java",

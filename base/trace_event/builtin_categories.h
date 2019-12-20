@@ -171,6 +171,7 @@
   X(TRACE_DISABLED_BY_DEFAULT("devtools.screenshot"))                    \
   X(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"))                      \
   X(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.frame"))                \
+  X(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.inputs"))               \
   X(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking")) \
   X(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.layers"))               \
   X(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.picture"))              \

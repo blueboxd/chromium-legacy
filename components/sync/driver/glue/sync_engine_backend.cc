@@ -177,8 +177,8 @@ void SyncEngineBackend::OnInitializationComplete(
                                     ModelTypeSet());
   sync_manager_->ConfigureSyncer(
       reason, new_control_types, SyncManager::SyncFeatureState::INITIALIZING,
-      base::Bind(&SyncEngineBackend::DoInitialProcessControlTypes,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&SyncEngineBackend::DoInitialProcessControlTypes,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SyncEngineBackend::OnConnectionStatusChange(ConnectionStatus status) {
@@ -555,20 +555,21 @@ void SyncEngineBackend::DoConfigureSyncer(
 
   registrar_->ConfigureDataTypes(params.enabled_types, params.disabled_types);
 
-  base::Closure chained_ready_task(base::Bind(
-      &SyncEngineBackend::DoFinishConfigureDataTypes,
-      weak_ptr_factory_.GetWeakPtr(), params.to_download, params.ready_task));
+  base::OnceClosure chained_ready_task(
+      base::BindOnce(&SyncEngineBackend::DoFinishConfigureDataTypes,
+                     weak_ptr_factory_.GetWeakPtr(), params.to_download,
+                     std::move(params.ready_task)));
 
   sync_manager_->ConfigureSyncer(params.reason, params.to_download,
                                  params.is_sync_feature_enabled
                                      ? SyncManager::SyncFeatureState::ON
                                      : SyncManager::SyncFeatureState::OFF,
-                                 chained_ready_task);
+                                 std::move(chained_ready_task));
 }
 
 void SyncEngineBackend::DoFinishConfigureDataTypes(
     ModelTypeSet types_to_config,
-    const base::Callback<void(ModelTypeSet, ModelTypeSet)>& ready_task) {
+    base::OnceCallback<void(ModelTypeSet, ModelTypeSet)> ready_task) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Update the enabled types for the bridge and sync manager.
@@ -583,7 +584,7 @@ void SyncEngineBackend::DoFinishConfigureDataTypes(
       Difference(types_to_config, failed_configuration_types);
   host_.Call(FROM_HERE, &SyncEngineImpl::FinishConfigureDataTypesOnFrontendLoop,
              enabled_types, succeeded_configuration_types,
-             failed_configuration_types, ready_task);
+             failed_configuration_types, std::move(ready_task));
 }
 
 void SyncEngineBackend::SendBufferedProtocolEventsAndEnableForwarding() {
@@ -649,12 +650,12 @@ void SyncEngineBackend::SaveChanges() {
 
 void SyncEngineBackend::DoOnCookieJarChanged(bool account_mismatch,
                                              bool empty_jar,
-                                             const base::Closure& callback) {
+                                             base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sync_manager_->OnCookieJarChanged(account_mismatch, empty_jar);
   if (!callback.is_null()) {
     host_.Call(FROM_HERE, &SyncEngineImpl::OnCookieJarChangedDoneOnFrontendLoop,
-               callback);
+               std::move(callback));
   }
 }
 

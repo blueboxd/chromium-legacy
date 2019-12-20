@@ -19,10 +19,10 @@
 namespace syncer {
 namespace {
 
-syncer::WorkCallback ClosureToWorkCallback(base::Closure work) {
+syncer::WorkCallback ClosureToWorkCallback(base::OnceClosure work) {
   return base::BindOnce(
-      [](base::Closure work) {
-        work.Run();
+      [](base::OnceClosure work) {
+        std::move(work).Run();
         return syncer::SyncerError(syncer::SyncerError::SYNCER_OK);
       },
       std::move(work));
@@ -63,11 +63,12 @@ class ModelSafeWorkerTest : public ::testing::Test {
     sync_thread_.Start();
   }
 
-  void DoWorkAndWaitUntilDoneOnSyncThread(base::Closure work) {
+  void DoWorkAndWaitUntilDoneOnSyncThread(base::OnceClosure work) {
     sync_thread_.task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(base::IgnoreResult(
-                                      &ModelSafeWorker::DoWorkAndWaitUntilDone),
-                                  worker_, ClosureToWorkCallback(work)));
+        FROM_HERE,
+        base::BindOnce(
+            base::IgnoreResult(&ModelSafeWorker::DoWorkAndWaitUntilDone),
+            worker_, ClosureToWorkCallback(std::move(work))));
     sync_thread_.task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&base::AtomicFlag::Set,
                                   base::Unretained(&sync_thread_unblocked_)));
@@ -122,7 +123,7 @@ TEST_F(ModelSafeWorkerTest, GetRoutingInfoTypes) {
 
 TEST_F(ModelSafeWorkerTest, DoWorkAndWaitUntilDone) {
   bool did_work = false;
-  DoWorkAndWaitUntilDoneOnSyncThread(base::Bind(
+  DoWorkAndWaitUntilDoneOnSyncThread(base::BindOnce(
       [](bool* did_work) { *did_work = true; }, base::Unretained(&did_work)));
 
   EXPECT_FALSE(did_work);
@@ -141,7 +142,7 @@ TEST_F(ModelSafeWorkerTest, DoWorkAndWaitUntilDone) {
 
 TEST_F(ModelSafeWorkerTest, DoWorkAndWaitUntilDoneRequestStopBeforeRunWork) {
   bool did_work = false;
-  DoWorkAndWaitUntilDoneOnSyncThread(base::Bind(
+  DoWorkAndWaitUntilDoneOnSyncThread(base::BindOnce(
       [](bool* did_work) { *did_work = true; }, base::Unretained(&did_work)));
 
   EXPECT_FALSE(did_work);
@@ -164,7 +165,7 @@ TEST_F(ModelSafeWorkerTest, DoWorkAndWaitUntilDoneRequestStopBeforeRunWork) {
 
 TEST_F(ModelSafeWorkerTest, DoWorkAndWaitUntilDoneDeleteWorkBeforeRun) {
   bool did_work = false;
-  DoWorkAndWaitUntilDoneOnSyncThread(base::Bind(
+  DoWorkAndWaitUntilDoneOnSyncThread(base::BindOnce(
       [](bool* did_work) { *did_work = true; }, base::Unretained(&did_work)));
 
   EXPECT_FALSE(did_work);
@@ -184,7 +185,7 @@ TEST_F(ModelSafeWorkerTest, DoWorkAndWaitUntilDoneDeleteWorkBeforeRun) {
 
 TEST_F(ModelSafeWorkerTest, DoWorkAndWaitUntilDoneRequestStopDuringRunWork) {
   bool did_work = false;
-  DoWorkAndWaitUntilDoneOnSyncThread(base::Bind(
+  DoWorkAndWaitUntilDoneOnSyncThread(base::BindOnce(
       [](scoped_refptr<ModelSafeWorker> worker,
          base::AtomicFlag* sync_thread_unblocked, bool* did_work) {
         worker->RequestStop();

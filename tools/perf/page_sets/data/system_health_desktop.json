@@ -160,6 +160,9 @@
         "load:media:dailymotion": {
             "DEFAULT": "system_health_desktop_003.wprgo"
         },
+        "load:media:dailymotion:2019": {
+            "DEFAULT": "system_health_desktop_fb04043fc0.wprgo"
+        },
         "load:media:facebook_photos:2018": {
             "DEFAULT": "system_health_desktop_eba368f102.wprgo"
         },

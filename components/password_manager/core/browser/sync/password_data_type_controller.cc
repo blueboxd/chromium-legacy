@@ -31,11 +31,11 @@ PasswordDataTypeController::~PasswordDataTypeController() {}
 
 bool PasswordDataTypeController::PostTaskOnModelThread(
     const base::Location& from_here,
-    const base::RepeatingClosure& task) {
+    base::OnceClosure task) {
   DCHECK(CalledOnValidThread());
   if (!password_store_)
     return false;
-  return password_store_->ScheduleTask(task);
+  return password_store_->ScheduleTask(std::move(task));
 }
 
 bool PasswordDataTypeController::StartModels() {

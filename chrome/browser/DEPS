@@ -381,6 +381,7 @@ include_rules = [
   # Ensure that only the public interface of performance_manager gets used.
   "-chrome/browser/performance_manager",
   "+chrome/browser/performance_manager/public",
+  "+chrome/browser/performance_manager/test_support",
   "+chrome/browser/performance_manager/chrome_browser_main_extra_parts_performance_manager.h",
   "+chrome/browser/performance_manager/chrome_content_browser_client_performance_manager_part.h",
   "+chrome/browser/performance_manager/graph/policies/policy_features.h",
@@ -414,11 +415,6 @@ include_rules = [
   "-third_party/blink",
   "+third_party/blink/public/common",
   "+third_party/blink/public/mojom",
-  "+third_party/blink/public/platform/web_gesture_event.h",
-  "+third_party/blink/public/platform/web_input_event.h",
-  "+third_party/blink/public/platform/web_mouse_event.h",
-  "+third_party/blink/public/platform/web_mouse_wheel_event.h",
-  "+third_party/blink/public/platform/web_touch_event.h",
   "+third_party/blink/public/public_buildflags.h",
 ]
 

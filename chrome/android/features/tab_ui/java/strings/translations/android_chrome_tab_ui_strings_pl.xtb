@@ -29,6 +29,7 @@
 <translation id="7792771145871471484">Sprawdź sugestie.</translation>
 <translation id="7885132941432959125">Przenieś kartę w prawo</translation>
 <translation id="7966321538264951561">Zamknij sugestie.</translation>
+<translation id="8205266828577616993">Przesuń kartę w górę</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Zamknij <ph name="TABS_COUNT_ONE" /> wybraną kartę}few{Zamknij <ph name="TABS_COUNT_MANY" /> wybrane karty}many{Zamknij <ph name="TABS_COUNT_MANY" /> wybranych kart}other{Zamknij <ph name="TABS_COUNT_MANY" /> wybranej karty}}</translation>
 <translation id="9150694013019234766">W grupie kart w dolnej części ekranu możesz przełączać się między kartami</translation>
 <translation id="9169594135889675189">Dodaj nową kartę do grupy</translation>

@@ -350,6 +350,12 @@ class LoadDailymotionStory(_LoadingStory):
   TAGS = [story_tags.YEAR_2016]
 
 
+class LoadDailymotionStory2019(_LoadingStory):
+  NAME = 'load:media:dailymotion:2019'
+  URL = ('https://www.dailymotion.com/video/x7paozv')
+  TAGS = [story_tags.YEAR_2019]
+
+
 class LoadGoogleImagesStory2018(_LoadingStory):
   NAME = 'load:media:google_images:2018'
   URL = 'https://www.google.co.uk/search?tbm=isch&q=love'

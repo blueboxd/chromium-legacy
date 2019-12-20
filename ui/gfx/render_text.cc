@@ -529,6 +529,13 @@ void RenderText::SetObscuredRevealIndex(int index) {
   }
 }
 
+void RenderText::SetObscuredGlyphSpacing(int spacing) {
+  if (obscured_glyph_spacing_ != spacing) {
+    obscured_glyph_spacing_ = spacing;
+    OnLayoutTextAttributeChanged(true);
+  }
+}
+
 void RenderText::SetMultiline(bool multiline) {
   if (multiline != multiline_) {
     multiline_ = multiline;

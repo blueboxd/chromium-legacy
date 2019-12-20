@@ -17,6 +17,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/gmock_move_support.h"
 #include "base/test/task_environment.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
@@ -2499,7 +2500,10 @@ class MockSyncScheduler : public FakeSyncScheduler {
   ~MockSyncScheduler() override {}
 
   MOCK_METHOD2(Start, void(SyncScheduler::Mode, base::Time));
-  MOCK_METHOD1(ScheduleConfiguration, void(const ConfigurationParams&));
+  void ScheduleConfiguration(ConfigurationParams params) override {
+    ScheduleConfiguration_(params);
+  }
+  MOCK_METHOD1(ScheduleConfiguration_, void(ConfigurationParams&));
 };
 
 class ComponentsFactory : public TestEngineComponentsFactory {
@@ -2551,14 +2555,14 @@ TEST_F(SyncManagerTestWithMockScheduler, BasicConfiguration) {
 
   ConfigurationParams params;
   EXPECT_CALL(*scheduler(), Start(SyncScheduler::CONFIGURATION_MODE, _));
-  EXPECT_CALL(*scheduler(), ScheduleConfiguration(_))
-      .WillOnce(SaveArg<0>(&params));
+  EXPECT_CALL(*scheduler(), ScheduleConfiguration_(_))
+      .WillOnce(MoveArg<0>(&params));
 
   CallbackCounter ready_task_counter;
   sync_manager_.ConfigureSyncer(
       reason, types_to_download, SyncManager::SyncFeatureState::ON,
-      base::Bind(&CallbackCounter::Callback,
-                 base::Unretained(&ready_task_counter)));
+      base::BindOnce(&CallbackCounter::Callback,
+                     base::Unretained(&ready_task_counter)));
   EXPECT_EQ(0, ready_task_counter.times_called());
   EXPECT_EQ(sync_pb::SyncEnums::RECONFIGURATION, params.origin);
   EXPECT_EQ(types_to_download, params.types_to_download);

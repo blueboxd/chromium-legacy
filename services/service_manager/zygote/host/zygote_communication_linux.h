@@ -28,7 +28,7 @@ namespace service_manager {
 
 // Handles interprocess communication with the Linux zygote process. The zygote
 // does not use standard Chrome IPC or mojo, see:
-// https://chromium.googlesource.com/chromium/src/+/master/docs/linux_sandbox_ipc.md
+// https://chromium.googlesource.com/chromium/src/+/master/docs/linux/sandbox_ipc.md
 class COMPONENT_EXPORT(SERVICE_MANAGER_ZYGOTE) ZygoteCommunication {
  public:
   ZygoteCommunication();

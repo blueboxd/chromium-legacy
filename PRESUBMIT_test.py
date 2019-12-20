@@ -1979,14 +1979,20 @@ class BannedTypeCheckTest(unittest.TestCase):
     input_api.files = [
       MockFile('some/cpp/problematic/file.cc',
                ['using namespace std;']),
+      MockFile('third_party/blink/problematic/file.cc',
+               ['GetInterfaceProvider()']),
       MockFile('some/cpp/ok/file.cc',
                ['using std::string;']),
     ]
 
-    errors = PRESUBMIT._CheckNoBannedFunctions(input_api, MockOutputApi())
-    self.assertEqual(1, len(errors))
-    self.assertTrue('some/cpp/problematic/file.c' in errors[0].message)
-    self.assertTrue('some/cpp/ok/file.cc' not in errors[0].message)
+    results = PRESUBMIT._CheckNoBannedFunctions(input_api, MockOutputApi())
+
+     # warnings are results[0], errors are results[1]
+    self.assertEqual(2, len(results))
+    self.assertTrue('some/cpp/problematic/file.cc' in results[1].message)
+    self.assertTrue(
+        'third_party/blink/problematic/file.cc' in results[0].message)
+    self.assertTrue('some/cpp/ok/file.cc' not in results[1].message)
 
   def testBannedBlinkDowncastHelpers(self):
     input_api = MockInputApi()

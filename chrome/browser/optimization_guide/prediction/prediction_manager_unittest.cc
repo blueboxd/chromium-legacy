@@ -62,6 +62,8 @@ std::unique_ptr<proto::PredictionModel> CreatePredictionModel() {
   model_info->set_version(1);
   model_info->add_supported_model_features(
       proto::CLIENT_MODEL_FEATURE_EFFECTIVE_CONNECTION_TYPE);
+  prediction_model->mutable_model_info()->add_supported_host_model_features(
+      "host_feat1");
   model_info->set_optimization_target(
       proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
   model_info->add_supported_model_types(
@@ -91,6 +93,8 @@ std::unique_ptr<proto::GetModelsResponse> BuildGetModelsResponse(
     prediction_model->mutable_model_info()->add_supported_model_features(
         client_model_feature);
   }
+  prediction_model->mutable_model_info()->add_supported_host_model_features(
+      "host_feat1");
   prediction_model->mutable_model_info()->set_version(2);
   *get_models_response->add_models() = *prediction_model.get();
 
@@ -115,6 +119,8 @@ class TestPredictionModel : public PredictionModel {
     }
     *prediction_score = 0.6;
     model_evaluated_ = true;
+    last_evaluated_features_ =
+        base::flat_map<std::string, float>(model_features);
     return OptimizationTargetDecision::kPageLoadMatches;
   }
 
@@ -122,10 +128,15 @@ class TestPredictionModel : public PredictionModel {
 
   void ResetModelEvaluationState() { model_evaluated_ = false; }
 
+  base::flat_map<std::string, float> last_evaluated_features() {
+    return last_evaluated_features_;
+  }
+
  private:
   bool ValidatePredictionModel() const override { return true; }
 
   bool model_evaluated_ = false;
+  base::flat_map<std::string, float> last_evaluated_features_;
 };
 
 // A mock class implementation of TopHostProvider.
@@ -1198,6 +1209,7 @@ TEST_F(PredictionManagerTest, NoHostModelFeaturesForHost) {
       "OptimizationGuide.PredictionManager."
       "HasHostModelFeaturesForHost",
       false, 1);
+  EXPECT_LT(test_prediction_model->last_evaluated_features()["host_feat1"], 0);
 
   EXPECT_FALSE(prediction_manager()->GetHostModelFeaturesForTesting().contains(
       "bar.com"));

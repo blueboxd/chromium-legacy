@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/test/mock_callback.h"
 #include "base/values.h"
 #include "components/offline_pages/core/renovations/script_injector.h"
@@ -74,12 +75,12 @@ PageRenovatorTest::~PageRenovatorTest() {}
 
 TEST_F(PageRenovatorTest, InjectsScript) {
   EXPECT_FALSE(script_injector_inject_called_);
-  page_renovator_->RunRenovations(base::Closure());
+  page_renovator_->RunRenovations(base::NullCallback());
   EXPECT_TRUE(script_injector_inject_called_);
 }
 
 TEST_F(PageRenovatorTest, CallsCallback) {
-  base::MockCallback<base::Closure> mock_callback;
+  base::MockCallback<base::OnceClosure> mock_callback;
   EXPECT_CALL(mock_callback, Run()).Times(1);
 
   page_renovator_->RunRenovations(mock_callback.Get());

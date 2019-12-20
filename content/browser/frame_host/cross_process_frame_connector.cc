@@ -26,7 +26,7 @@
 #include "content/public/common/screen_info.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "gpu/ipc/common/gpu_messages.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/gfx/geometry/dip_util.h"
 

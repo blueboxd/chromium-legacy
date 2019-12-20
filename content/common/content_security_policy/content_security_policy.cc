@@ -177,7 +177,8 @@ ContentSecurityPolicy::ContentSecurityPolicy(
 // struct.
 ContentSecurityPolicy::ContentSecurityPolicy(
     network::mojom::ContentSecurityPolicyPtr csp)
-    : report_endpoints(std::move(csp->report_endpoints)),
+    : header("", csp->type, csp->source),
+      report_endpoints(std::move(csp->report_endpoints)),
       use_reporting_api(csp->use_reporting_api) {
   for (auto& directive : csp->directives)
     directives.emplace_back(std::move(directive));

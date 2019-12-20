@@ -88,8 +88,8 @@ class TestBatchableDelegate : public BatchableDelegate {
   std::vector<std::string> GetExtraRequestHeaders() const override {
     return std::vector<std::string>();
   }
-  void Prepare(const PrepareCallback& callback) override {
-    callback.Run(HTTP_SUCCESS);
+  void Prepare(PrepareCallback callback) override {
+    std::move(callback).Run(HTTP_SUCCESS);
   }
   bool GetContentData(std::string* upload_content_type,
                       std::string* upload_content) override {

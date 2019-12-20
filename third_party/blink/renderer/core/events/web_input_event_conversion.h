@@ -31,12 +31,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_WEB_INPUT_EVENT_CONVERSION_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_WEB_INPUT_EVENT_CONVERSION_H_
 
+#include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/input/web_keyboard_event.h"
+#include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
+#include "third_party/blink/public/common/input/web_pointer_event.h"
+#include "third_party/blink/public/common/input/web_touch_event.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
-#include "third_party/blink/public/platform/web_input_event.h"
-#include "third_party/blink/public/platform/web_keyboard_event.h"
-#include "third_party/blink/public/platform/web_mouse_wheel_event.h"
-#include "third_party/blink/public/platform/web_pointer_event.h"
-#include "third_party/blink/public/platform/web_touch_event.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 

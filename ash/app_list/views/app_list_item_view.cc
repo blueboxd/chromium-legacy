@@ -189,6 +189,7 @@ class AppListItemView::IconImageView : public views::ImageView {
     if (!layer()) {
       SetPaintToLayer();
       layer()->SetFillsBoundsOpaquely(false);
+      layer()->SetName(GetClassName());
     }
   }
 

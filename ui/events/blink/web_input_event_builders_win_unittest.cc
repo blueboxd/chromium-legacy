@@ -8,7 +8,7 @@
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/display/display.h"
 #include "ui/display/display_switches.h"
 #include "ui/events/event_constants.h"

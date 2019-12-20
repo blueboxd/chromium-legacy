@@ -28,8 +28,8 @@
 #include <algorithm>
 #include "base/feature_list.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/platform/web_gesture_event.h"
-#include "third_party/blink/public/platform/web_mouse_event.h"
+#include "third_party/blink/public/common/input/web_gesture_event.h"
+#include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/platform/web_scrollbar_overlay_color_theme.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"

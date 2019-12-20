@@ -11,6 +11,8 @@
     android:layout_width="match_parent"
     android:orientation="vertical">
 
+    <!-- Please update R.dimens.touch_to_fill_sheet_height_single_credential
+         when modifying the margins. -->
     <ImageView
         android:id="@+id/drag_handlebar"
         android:layout_width="wrap_content"
@@ -23,6 +25,8 @@
         android:importantForAccessibility="no"
         app:srcCompat="@drawable/drag_handlebar" />
 
+    <!-- Please update R.dimens.touch_to_fill_sheet_height_second_credential
+         when modifying paddingBottom. -->
     <android.support.v7.widget.RecyclerView
         android:id="@+id/sheet_item_list"
         android:layout_width="match_parent"

@@ -100,7 +100,7 @@ class AsyncDirectoryTypeControllerFake : public AsyncDirectoryTypeController {
       SharedChangeProcessor* change_processor,
       scoped_refptr<base::SequencedTaskRunner> backend_task_runner)
       : AsyncDirectoryTypeController(kType,
-                                     base::Closure(),
+                                     base::NullCallback(),
                                      sync_service,
                                      sync_client,
                                      GROUP_PASSWORD,
@@ -119,10 +119,8 @@ class AsyncDirectoryTypeControllerFake : public AsyncDirectoryTypeController {
   // to be posted on the backend thread again.
   void UnblockBackendTasks() {
     blocked_ = false;
-    for (std::vector<PendingTask>::const_iterator it = pending_tasks_.begin();
-         it != pending_tasks_.end(); ++it) {
-      PostTaskOnModelThread(it->from_here, it->task);
-    }
+    for (auto& entry : pending_tasks_)
+      PostTaskOnModelThread(entry.from_here, std::move(entry.task));
     pending_tasks_.clear();
   }
 
@@ -136,12 +134,12 @@ class AsyncDirectoryTypeControllerFake : public AsyncDirectoryTypeController {
 
  protected:
   bool PostTaskOnModelThread(const base::Location& from_here,
-                             const base::Closure& task) override {
+                             base::OnceClosure task) override {
     if (blocked_) {
-      pending_tasks_.push_back(PendingTask(from_here, task));
+      pending_tasks_.push_back(PendingTask(from_here, std::move(task)));
       return true;
     } else {
-      return backend_task_runner_->PostTask(from_here, task);
+      return backend_task_runner_->PostTask(from_here, std::move(task));
     }
   }
 
@@ -155,11 +153,11 @@ class AsyncDirectoryTypeControllerFake : public AsyncDirectoryTypeController {
 
  private:
   struct PendingTask {
-    PendingTask(const base::Location& from_here, const base::Closure& task)
-        : from_here(from_here), task(task) {}
+    PendingTask(const base::Location& from_here, base::OnceClosure task)
+        : from_here(from_here), task(std::move(task)) {}
 
     base::Location from_here;
-    base::Closure task;
+    base::OnceClosure task;
   };
 
   bool blocked_;
@@ -240,9 +238,9 @@ class SyncAsyncDirectoryTypeControllerTest : public testing::Test {
   void Start() {
     non_ui_dtc_->LoadModels(
         ConfigureContext(),
-        base::Bind(&ModelLoadCallbackMock::Run,
-                   base::Unretained(&model_load_callback_)));
-    non_ui_dtc_->StartAssociating(base::Bind(
+        base::BindRepeating(&ModelLoadCallbackMock::Run,
+                            base::Unretained(&model_load_callback_)));
+    non_ui_dtc_->StartAssociating(base::BindOnce(
         &StartCallbackMock::Run, base::Unretained(&start_callback_)));
   }
 
@@ -295,9 +293,10 @@ TEST_F(SyncAsyncDirectoryTypeControllerTest, AbortDuringStartModels) {
   EXPECT_CALL(*dtc_mock_, StartModels()).WillOnce(Return(false));
   EXPECT_CALL(*dtc_mock_, StopModels());
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_ui_dtc_->state());
-  non_ui_dtc_->LoadModels(ConfigureContext(),
-                          base::Bind(&ModelLoadCallbackMock::Run,
-                                     base::Unretained(&model_load_callback_)));
+  non_ui_dtc_->LoadModels(
+      ConfigureContext(),
+      base::BindRepeating(&ModelLoadCallbackMock::Run,
+                          base::Unretained(&model_load_callback_)));
   WaitForDTC();
   EXPECT_EQ(DataTypeController::MODEL_STARTING, non_ui_dtc_->state());
   non_ui_dtc_->Stop(STOP_SYNC);

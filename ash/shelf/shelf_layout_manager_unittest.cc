@@ -1033,7 +1033,7 @@ class ShelfLayoutManagerTest : public ShelfLayoutManagerTestBase,
             chromeos::features::kShelfHotseat);
       }
     }
-    AshTestBase::SetUp();
+    ShelfLayoutManagerTestBase::SetUp();
   }
 
  private:
@@ -1418,7 +1418,7 @@ TEST_P(ShelfLayoutManagerTest, VisibleWhenLockScreenShowing) {
 
   UnlockScreen();
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
-  EXPECT_EQ(ShelfBackgroundType::kMaximized,
+  EXPECT_EQ(ShelfBackgroundType::kDefaultBg,
             GetShelfWidget()->GetBackgroundType());
 }
 
@@ -2637,8 +2637,8 @@ TEST_P(ShelfLayoutManagerTest, TabletModeTransitionWithAppListVisible) {
   EXPECT_EQ(ShelfBackgroundType::kInApp, GetShelfWidget()->GetBackgroundType());
 }
 
-// Verify that the auto-hide shelf has default background by default and has
-// maxmimized background when a window is maximized.
+// Verify that the auto-hide shelf has default background by default and still
+// has the default background when a window is maximized in clamshell mode.
 TEST_P(ShelfLayoutManagerTest, ShelfBackgroundColorAutoHide) {
   EXPECT_EQ(ShelfBackgroundType::kDefaultBg,
             GetShelfWidget()->GetBackgroundType());
@@ -2651,7 +2651,7 @@ TEST_P(ShelfLayoutManagerTest, ShelfBackgroundColorAutoHide) {
             GetShelfWidget()->GetBackgroundType());
 
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
-  EXPECT_EQ(ShelfBackgroundType::kMaximized,
+  EXPECT_EQ(ShelfBackgroundType::kDefaultBg,
             GetShelfWidget()->GetBackgroundType());
 }
 
@@ -3314,7 +3314,7 @@ class HotseatShelfLayoutManagerTest
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(
         chromeos::features::kShelfHotseat);
-    AshTestBase::SetUp();
+    ShelfLayoutManagerTestBase::SetUp();
   }
 
  private:
@@ -4920,13 +4920,13 @@ class ShelfLayoutManagerWindowDraggingTest : public ShelfLayoutManagerTestBase {
   ShelfLayoutManagerWindowDraggingTest() = default;
   ~ShelfLayoutManagerWindowDraggingTest() override = default;
 
-  // AshTestBase:
+  // ShelfLayoutManagerTestBase:
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
         {chromeos::features::kShelfHotseat,
          features::kDragFromShelfToHomeOrOverview},
         {});
-    AshTestBase::SetUp();
+    ShelfLayoutManagerTestBase::SetUp();
 
     TabletModeControllerTestApi().EnterTabletMode();
     base::RunLoop().RunUntilIdle();
@@ -5725,20 +5725,10 @@ TEST_P(ShelfLayoutManagerTest, ScrollUpFromShelfToShowPeekingAppList) {
   }
 }
 
-// Parameterized tests for shelf with and without shelf dimming enabled.
-class DimShelfLayoutManagerTest : public ShelfLayoutManagerTestBase,
-                                  public testing::WithParamInterface<bool> {
+// Test base for unit test related to shelf dimming.
+class DimShelfLayoutManagerTestBase : public ShelfLayoutManagerTestBase {
  public:
-  DimShelfLayoutManagerTest() = default;
-
-  // testing::Test:
-  void SetUp() override {
-    if (GetParam()) {
-      base::CommandLine::ForCurrentProcess()->AppendSwitch(
-          ash::switches::kEnableDimShelf);
-    }
-    AshTestBase::SetUp();
-  }
+  DimShelfLayoutManagerTestBase() = default;
 
   bool AutoDimEventHandlerInitialized() {
     return GetPrimaryShelf()->auto_dim_event_handler_ ? true : false;
@@ -5762,6 +5752,22 @@ class DimShelfLayoutManagerTest : public ShelfLayoutManagerTestBase,
 
   // Expected opacity for shelf without dimming.
   const float kExpectedDefaultShelfOpacity = 1.0f;
+};
+
+// Paramaterized tests for shelf with and without shelf dimming enabled.
+class DimShelfLayoutManagerTest : public DimShelfLayoutManagerTestBase,
+                                  public testing::WithParamInterface<bool> {
+ public:
+  DimShelfLayoutManagerTest() = default;
+
+  // testing::Test:
+  void SetUp() override {
+    if (GetParam()) {
+      base::CommandLine::ForCurrentProcess()->AppendSwitch(
+          ash::switches::kEnableDimShelf);
+    }
+    DimShelfLayoutManagerTestBase::SetUp();
+  }
 };
 
 // Used to test shelf dimming.
@@ -5853,8 +5859,10 @@ TEST_P(DimShelfLayoutManagerTest, MaximizedShelfDimAlpha) {
                         : kExpectedDefaultShelfOpacity);
 }
 
-// Parameterized tests for shelf dimming with hotseat enabled or disabled.
-class HotseatDimShelfLayoutManagerTest : public DimShelfLayoutManagerTest {
+// Paramaterized tests for shelf dimming with and without hotseat enabled.
+class HotseatDimShelfLayoutManagerTest
+    : public DimShelfLayoutManagerTestBase,
+      public testing::WithParamInterface<bool> {
  public:
   HotseatDimShelfLayoutManagerTest() = default;
 
@@ -5870,7 +5878,7 @@ class HotseatDimShelfLayoutManagerTest : public DimShelfLayoutManagerTest {
 
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         ash::switches::kEnableDimShelf);
-    AshTestBase::SetUp();
+    DimShelfLayoutManagerTestBase::SetUp();
   }
 
  private:

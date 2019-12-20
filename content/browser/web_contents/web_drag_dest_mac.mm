@@ -17,7 +17,7 @@
 #include "content/public/browser/web_drag_dest_delegate.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/drop_data.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/clipboard_util_mac.h"

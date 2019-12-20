@@ -39,7 +39,7 @@ class StubDevToolsAgentHostClient : public content::DevToolsAgentHostClient {
   ~StubDevToolsAgentHostClient() override {}
   void AgentHostClosed(content::DevToolsAgentHost* agent_host) override {}
   void DispatchProtocolMessage(content::DevToolsAgentHost* agent_host,
-                               const std::string& message) override {}
+                               base::span<const uint8_t> message) override {}
 };
 
 }  // namespace
@@ -165,9 +165,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameDevToolsAgentHostBrowserTest,
 
   // 3) Reload from DevTools.
   TestNavigationObserver reload_observer(shell()->web_contents());
+  constexpr char kMsg[] = R"({"id":1,"method":"Page.reload"})";
   devtools_agent_host->DispatchProtocolMessage(
       &devtools_agent_host_client,
-      R"({"id":1,"method": "Page.reload"})");
+      base::as_bytes(base::make_span(kMsg, strlen(kMsg))));
   reload_observer.Wait();
   devtools_agent_host->DetachClient(&devtools_agent_host_client);
 }

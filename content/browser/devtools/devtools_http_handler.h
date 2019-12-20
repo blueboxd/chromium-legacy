@@ -72,7 +72,7 @@ class DevToolsHttpHandler {
   void OnFrontendResourceRequest(int connection_id, const std::string& path);
   void OnWebSocketRequest(int connection_id,
                           const net::HttpServerRequestInfo& info);
-  void OnWebSocketMessage(int connection_id, const std::string& data);
+  void OnWebSocketMessage(int connection_id, std::string data);
   void OnClose(int connection_id);
 
   void ServerStarted(std::unique_ptr<base::Thread> thread,

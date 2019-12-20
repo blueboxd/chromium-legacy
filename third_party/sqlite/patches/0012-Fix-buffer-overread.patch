@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Darwin Huang <huangdarwin@chromium.org>
 Date: Mon, 16 Dec 2019 11:49:51 -0800
-Subject: [PATCH 12/15] Fix buffer overread
+Subject: [PATCH 12/17] Fix buffer overread
 
 Backports https://www.sqlite.org/src/info/e01fdbf9f700e1bd
 

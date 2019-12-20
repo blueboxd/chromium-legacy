@@ -1046,6 +1046,40 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPWithBrokenHTTPSResource) {
       browser()->tab_strip_model()->GetActiveWebContents(), AuthState::NONE);
 }
 
+// Tests that after loading mixed content and then making a same-document
+// navigation, the mixed content security indicator remains. See
+// https://crbug.com/959571.
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestMixedContentWithSamePageNavigation) {
+  ASSERT_TRUE(https_server_.Start());
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Navigate to a secure page (no mixed content).
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL("/ssl/google.html"));
+  ssl_test_util::CheckAuthenticatedState(tab, AuthState::NONE);
+
+  // Add a mixed form after a same-document navigation.
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL("/ssl/google.html#foo"));
+  ssl_test_util::SecurityStateWebContentsObserver observer(tab);
+  ASSERT_NE(false, content::EvalJs(tab,
+                                   "var f = document.createElement('form');"
+                                   "f.action = 'http://foo.test';"
+                                   "document.body.appendChild(f)"));
+  observer.WaitForDidChangeVisibleSecurityState();
+  ssl_test_util::CheckSecurityState(
+      tab, CertError::NONE, security_state::NONE,
+      AuthState::DISPLAYED_FORM_WITH_INSECURE_ACTION);
+
+  // Go back (which should also be a same-document navigation) and test that the
+  // security indicator is still downgraded because of the mixed form.
+  chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
+  content::WaitForLoadStop(tab);
+  ssl_test_util::CheckSecurityState(
+      tab, CertError::NONE, security_state::NONE,
+      AuthState::DISPLAYED_FORM_WITH_INSECURE_ACTION);
+}
+
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestBrokenHTTPSWithInsecureContent) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(https_server_expired_.Start());
@@ -4425,19 +4459,19 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, BadCertFollowedByGoodCert) {
       browser(), https_server_expired_.GetURL("/ssl/google.html"));
 
   ProceedThroughInterstitial(tab);
-  EXPECT_TRUE(state->HasAllowException(https_server_host));
+  EXPECT_TRUE(state->HasAllowException(https_server_host, tab));
 
   ui_test_utils::NavigateToURL(browser(),
                                https_server_.GetURL("/ssl/google.html"));
   ASSERT_FALSE(tab->GetInterstitialPage());
-  EXPECT_FALSE(state->HasAllowException(https_server_host));
+  EXPECT_FALSE(state->HasAllowException(https_server_host, tab));
 
   // Now check that subresource requests revoke the decision.
   ui_test_utils::NavigateToURL(
       browser(), https_server_expired_.GetURL("/ssl/google.html"));
 
   ProceedThroughInterstitial(tab);
-  EXPECT_TRUE(state->HasAllowException(https_server_host));
+  EXPECT_TRUE(state->HasAllowException(https_server_host, tab));
 
   GURL image = https_server_.GetURL("/ssl/google_files/logo.gif");
   bool result = false;
@@ -4450,7 +4484,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, BadCertFollowedByGoodCert) {
           "document.body.appendChild(img);",
       &result));
   EXPECT_TRUE(result);
-  EXPECT_FALSE(state->HasAllowException(https_server_host));
+  EXPECT_FALSE(state->HasAllowException(https_server_host, tab));
 }
 
 // Tests that the SSLStatus of a navigation entry for an SSL

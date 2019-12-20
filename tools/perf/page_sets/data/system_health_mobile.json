@@ -195,6 +195,9 @@
         "load:media:dailymotion": {
             "DEFAULT": "system_health_mobile_003.wprgo"
         },
+        "load:media:dailymotion:2019": {
+            "DEFAULT": "system_health_mobile_eb4a1d8292.wprgo"
+        },
         "load:media:facebook_photos": {
             "DEFAULT": "system_health_mobile_040.wprgo"
         },

@@ -576,7 +576,7 @@
 <translation id="1885782360784839335">タブ全体にプロモーション コンテンツを表示する</translation>
 <translation id="1888871729456797026">パソコンでのクラウド ポリシーの登録トークン</translation>
 <translation id="1894790493260633497">背景のグラフィックの印刷モードをデフォルトで有効にする</translation>
-<translation id="1897365952389968758">すべてのサイトに対して Javascript の実行を許可する</translation>
+<translation id="1897365952389968758">すべてのサイトに対して JavaScript の実行を許可する</translation>
 <translation id="1902043648529789224">シェルフの位置を管理する</translation>
 <translation id="1906888171268104594">使用状況に関する統計情報と診断データ（障害レポートなど）を Google に送信するかどうかを指定します。
 
@@ -1490,7 +1490,7 @@
 
       設定したウェブサイトは、<ph name="PRODUCT_NAME" /> ではなく別のブラウザで自動的に表示されるようになります。</translation>
 <translation id="3264793472749429012">デフォルトの検索プロバイダのエンコード</translation>
-<translation id="3273221114520206906">デフォルトのJavascript 設定</translation>
+<translation id="3273221114520206906">デフォルトのJavaScript 設定</translation>
 <translation id="3284094172359247914">WebUSB API の使用を管理する</translation>
 <translation id="3288595667065905535">リリース チャンネル</translation>
 <translation id="3292147213643666827"><ph name="CLOUD_PRINT_NAME" /> と、パソコンに接続している従来のプリンタとの間で、<ph name="PRODUCT_NAME" /> がプロキシとして動作できるようにします。
@@ -1907,7 +1907,7 @@
       このポリシーを無効に設定すると、SPDY を使用できるようになります。
 
       このポリシーが未設定の場合は、SPDY を使用できます。</translation>
-<translation id="3891357445869647828">Javascript を有効にする</translation>
+<translation id="3891357445869647828">JavaScript を有効にする</translation>
 <translation id="3895557476567727016"><ph name="PRODUCT_NAME" /> でファイルをダウンロードするときに使用するデフォルトのディレクトリを設定します。
 
       このポリシーを設定した場合は、<ph name="PRODUCT_NAME" /> でファイルをダウンロードするときのデフォルトのディレクトリが、このポリシーの設定内容に変更されます。ただし、このポリシーは強制的なものではなく、ユーザーはディレクトリを変更できます。
@@ -2014,7 +2014,7 @@
 
       警告: ユーザーが各自のデバイスでソフトウェアのアップデートや重要なセキュリティ修正を取得できるように、自動更新は有効のままにしておくことをおすすめします。自動更新を無効にすると、ユーザーが危険にさらされる恐れがあります。</translation>
 <translation id="4020682745012723568">Android アプリは、ユーザーのプロフィールに送信された Cookie にアクセスすることはできません。</translation>
-<translation id="402759845255257575">すべてのサイトに対して Javascript の実行を許可しない</translation>
+<translation id="402759845255257575">すべてのサイトに対して JavaScript の実行を許可しない</translation>
 <translation id="4027608872760987929">デフォルトの検索プロバイダを有効にする</translation>
 <translation id="4039085364173654945">ページ上のサードパーティ製のサブコンテンツで [HTTP 基本認証] ダイアログボックスのポップアップ表示を許可するかどうかを設定します。通常、これはフィッシング詐欺の防衛策として無効になっています。このポリシーが未設定の場合は無効になり、サブコンテンツで [HTTP 基本認証] ダイアログボックスのポップアップ表示は許可されません。</translation>
 <translation id="4056910949759281379">SPDY プロトコルを無効にする</translation>
@@ -3385,7 +3385,7 @@
 
           このポリシーは「DefaultSearchProviderEnabled」ポリシーが有効な場合にのみ適用されます。</translation>
 <translation id="6368011194414932347">ホームページの URL を指定する</translation>
-<translation id="6368403635025849609">これらのサイトの Javascript を許可する</translation>
+<translation id="6368403635025849609">これらのサイトの JavaScript を許可する</translation>
 <translation id="6376659517206731212">必須に設定可能</translation>
 <translation id="6377355597423503887">このポリシーはサポート終了となりました。代わりに BrowserSignin の使用を検討してください。
 
@@ -3599,7 +3599,7 @@
 <translation id="6786747875388722282">拡張機能</translation>
 <translation id="6786967369487349613">ローミング プロフィール ディレクトリの設定</translation>
 <translation id="6795485990775913659">PIN なしの印刷のみを許可します</translation>
-<translation id="6810445994095397827">これらのサイトの Javascript をブロックする</translation>
+<translation id="6810445994095397827">これらのサイトの JavaScript をブロックする</translation>
 <translation id="6813263547126514821">電源とシャットダウン</translation>
 <translation id="681446116407619279">サポートされる認証スキーム</translation>
 <translation id="6821268164692776674"><ph name="CLOUD_PRINT_NAME" />と「Google ドライブに保存」の送信先</translation>

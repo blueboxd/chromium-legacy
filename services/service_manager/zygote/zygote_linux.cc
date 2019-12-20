@@ -47,7 +47,7 @@
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 
 // See
-// https://chromium.googlesource.com/chromium/src/+/master/docs/linux_zygote.md
+// https://chromium.googlesource.com/chromium/src/+/master/docs/linux/zygote.md
 
 namespace service_manager {
 
@@ -99,7 +99,7 @@ bool Zygote::ProcessRequests() {
   // browser on it.
   // A SOCK_DGRAM is installed in fd 5. This is the sandbox IPC channel.
   // See
-  // https://chromium.googlesource.com/chromium/src/+/master/docs/linux_sandbox_ipc.md
+  // https://chromium.googlesource.com/chromium/src/+/master/docs/linux/sandbox_ipc.md
 
   // We need to accept SIGCHLD, even though our handler is a no-op because
   // otherwise we cannot wait on children. (According to POSIX 2001.)

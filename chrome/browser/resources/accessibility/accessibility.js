@@ -233,8 +233,12 @@ cr.define('accessibility', function() {
     if (hasTree) {
       row.appendChild(createHideAccessibilityTreeElement(row.id));
     }
-    row.appendChild(
-        createStartStopAccessibilityEventRecordingElement(data, row.id));
+    // The accessibility event recorder currently only works for pages.
+    // TODO(abigailbklein): Add event recording for native as well.
+    if (data.type == 'page') {
+      row.appendChild(
+          createStartStopAccessibilityEventRecordingElement(data, row.id));
+    }
 
     if (hasTree) {
       row.appendChild(createAccessibilityOutputElement(data, row.id, 'tree'));

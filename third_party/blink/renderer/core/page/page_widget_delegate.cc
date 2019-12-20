@@ -30,7 +30,7 @@
 
 #include "third_party/blink/renderer/core/page/page_widget_delegate.h"
 
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/events/web_input_event_conversion.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"

@@ -5,6 +5,7 @@
 #include "components/sync/engine/ui_model_worker.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -24,16 +25,17 @@ namespace {
 // Does |work| and checks that we're on the |thread_verifier| thread.
 SyncerError DoWork(
     const scoped_refptr<base::SingleThreadTaskRunner>& thread_verifier,
-    base::Closure work) {
+    base::OnceClosure work) {
   DCHECK(thread_verifier->BelongsToCurrentThread());
-  work.Run();
+  std::move(work).Run();
   return SyncerError(SyncerError::SYNCER_OK);
 }
 
 // Converts |work| to a WorkCallback that will verify that it's run on the
 // thread it was constructed on.
-WorkCallback ClosureToWorkCallback(base::Closure work) {
-  return base::BindOnce(&DoWork, base::ThreadTaskRunnerHandle::Get(), work);
+WorkCallback ClosureToWorkCallback(base::OnceClosure work) {
+  return base::BindOnce(&DoWork, base::ThreadTaskRunnerHandle::Get(),
+                        std::move(work));
 }
 
 // Increments |counter|.
@@ -48,11 +50,12 @@ class SyncUIModelWorkerTest : public testing::Test {
     worker_ = new UIModelWorker(base::ThreadTaskRunnerHandle::Get());
   }
 
-  void PostWorkToSyncThread(base::Closure work) {
+  void PostWorkToSyncThread(base::OnceClosure work) {
     sync_thread_.task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(base::IgnoreResult(
-                                      &UIModelWorker::DoWorkAndWaitUntilDone),
-                                  worker_, ClosureToWorkCallback(work)));
+        FROM_HERE,
+        base::BindOnce(
+            base::IgnoreResult(&UIModelWorker::DoWorkAndWaitUntilDone), worker_,
+            ClosureToWorkCallback(std::move(work))));
   }
 
  protected:
@@ -76,7 +79,7 @@ TEST_F(SyncUIModelWorkerTest, MultipleDoWork) {
   int counter = 0;
   for (int i = 0; i < kNumWorkCallbacks; ++i) {
     PostWorkToSyncThread(
-        base::Bind(&IncrementCounter, base::Unretained(&counter)));
+        base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
   }
 
   base::RunLoop run_loop;

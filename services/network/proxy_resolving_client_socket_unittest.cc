@@ -77,7 +77,7 @@ class ProxyResolvingClientSocketTest
   const bool use_tls_;
 };
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          ProxyResolvingClientSocketTest,
                          ::testing::Bool());
 
@@ -817,7 +817,7 @@ const int kProxyTestMockErrors[] = {net::ERR_PROXY_CONNECTION_FAILED,
                                     net::ERR_SSL_PROTOCOL_ERROR};
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     ReconsiderProxyAfterErrorTest,
     testing::Combine(testing::Bool(),
                      testing::Bool(),

@@ -837,6 +837,14 @@ class BrowserView : public BrowserWindow,
   // This is non-null on Chrome OS only.
   std::unique_ptr<TopControlsSlideController> top_controls_slide_controller_;
 
+  // Used to allow a single layout operation once the top controls slide
+  // behavior starts. This needed since sliding the top controls and the page
+  // contents is done using layer transform. A layout operation while sliding is
+  // in progress might break the view, and will make sliding feel janky.
+  // A single layout is needed right before sliding begins. (See
+  // TopControlsSlideControllerChromeOS::OnBeginSliding()).
+  bool did_first_layout_while_top_controls_are_sliding_ = false;
+
   std::unique_ptr<ImmersiveModeController> immersive_mode_controller_;
 
   ScopedObserver<ui::MaterialDesignController,

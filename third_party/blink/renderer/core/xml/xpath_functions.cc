@@ -583,13 +583,11 @@ Value FunStringLength::Evaluate(EvaluationContext& context) const {
 }
 
 Value FunNormalizeSpace::Evaluate(EvaluationContext& context) const {
-  if (!ArgCount()) {
-    String s = Value(context.node.Get()).ToString();
-    return s.SimplifyWhiteSpace();
-  }
-
-  String s = Arg(0)->Evaluate(context).ToString();
-  return s.SimplifyWhiteSpace();
+  // https://www.w3.org/TR/1999/REC-xpath-19991116/#function-normalize-space
+  String s =
+      (ArgCount() == 0 ? Value(context.node.Get()) : Arg(0)->Evaluate(context))
+          .ToString();
+  return s.SimplifyWhiteSpace(IsXMLSpace);
 }
 
 Value FunTranslate::Evaluate(EvaluationContext& context) const {

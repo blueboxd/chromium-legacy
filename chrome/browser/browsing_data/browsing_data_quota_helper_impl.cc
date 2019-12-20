@@ -19,6 +19,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/storage_partition.h"
 #include "storage/browser/quota/quota_manager.h"
+#include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/origin.h"
 
 using blink::mojom::StorageType;

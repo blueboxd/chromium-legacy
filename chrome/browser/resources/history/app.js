@@ -2,21 +2,45 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @typedef {{
- *   managed: boolean,
- *   otherFormsOfHistory: boolean,
- * }}
- */
-let FooterInfo;
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {FindShortcutBehavior} from 'chrome://resources/js/find_shortcut_behavior.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import 'chrome://resources/polymer/v3_0/iron-media-query/iron-media-query.js';
+import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
+import {IronScrollTargetBehavior} from 'chrome://resources/polymer/v3_0/iron-scroll-target-behavior/iron-scroll-target-behavior.js';
+import {BrowserService} from './browser_service.js';
+import {HistoryPageViewHistogram} from './constants.js';
+import {ForeignSession, QueryResult, QueryState} from './externs.js';
+import './history_list.js';
+import './history_toolbar.js';
+import './query_manager.js';
+import './router.js';
+import './shared_style.js';
+import {FooterInfo} from './side_bar.js';
+import './strings.js';
 
-cr.define('history', function() {
   let lazyLoadPromise = null;
-  function ensureLazyLoaded() {
+  export function ensureLazyLoaded() {
     if (!lazyLoadPromise) {
-      lazyLoadPromise = new Promise(function(resolve, reject) {
-        Polymer.Base.importHref('lazy_load.html', resolve, reject, true);
-      });
+      const script = document.createElement('script');
+      script.type = 'module';
+      script.src = './lazy_load.js';
+      document.body.appendChild(script);
+
+      lazyLoadPromise = Promise.all([
+        customElements.whenDefined('history-synced-device-manager'),
+        customElements.whenDefined('cr-action-menu'),
+        customElements.whenDefined('cr-button'),
+        customElements.whenDefined('cr-checkbox'),
+        customElements.whenDefined('cr-dialog'),
+        customElements.whenDefined('cr-drawer'),
+        customElements.whenDefined('cr-icon-button'),
+        customElements.whenDefined('cr-toolbar-selection-overlay'),
+      ]);
     }
     return lazyLoadPromise;
   }
@@ -26,7 +50,7 @@ cr.define('history', function() {
   // navigation. Note: This method is *not* re-entrant. Every call to it, will
   // re-add listeners on |document|. It's up to callers to ensure this is only
   // called once.
-  function listenForPrivilegedLinkClicks() {
+  export function listenForPrivilegedLinkClicks() {
     ['click', 'auxclick'].forEach(function(eventName) {
       document.addEventListener(eventName, function(e) {
         // Ignore buttons other than left and middle.
@@ -63,7 +87,7 @@ cr.define('history', function() {
         anchor = /** @type {!HTMLAnchorElement} */ (anchor);
         if ((anchor.protocol == 'file:' || anchor.protocol == 'about:') &&
             (e.button == 0 || e.button == 1)) {
-          history.BrowserService.getInstance().navigateToUrl(
+          BrowserService.getInstance().navigateToUrl(
               anchor.href, anchor.target, /** @type {!MouseEvent} */ (e));
           e.preventDefault();
         }
@@ -71,18 +95,14 @@ cr.define('history', function() {
     });
   }
 
-  return {
-    ensureLazyLoaded: ensureLazyLoaded,
-    listenForPrivilegedLinkClicks: listenForPrivilegedLinkClicks,
-  };
-});
-
 Polymer({
   is: 'history-app',
 
+  _template: html`{__html_template__}`,
+
   behaviors: [
     FindShortcutBehavior,
-    Polymer.IronScrollTargetBehavior,
+    IronScrollTargetBehavior,
     WebUIListenerBehavior,
   ],
 
@@ -163,12 +183,12 @@ Polymer({
   /** @private {?function(!Event)} */
   boundOnKeyDown_: null,
 
-  /** @private {?history.BrowserService} */
+  /** @private {?BrowserService} */
   browserService_: null,
 
   /** @override */
   created: function() {
-    history.listenForPrivilegedLinkClicks();
+    listenForPrivilegedLinkClicks();
   },
 
   /** @override */
@@ -184,7 +204,7 @@ Polymer({
     this.addWebUIListener(
         'foreign-sessions-changed',
         sessionList => this.setForeignSessions_(sessionList));
-    this.browserService_ = history.BrowserService.getInstance();
+    this.browserService_ = BrowserService.getInstance();
     this.$$('history-query-manager').initialize();
     this.browserService_.getForeignSessions().then(
         sessionList => this.setForeignSessions_(sessionList));
@@ -212,7 +232,7 @@ Polymer({
     }
 
     // Lazily load the remainder of the UI.
-    history.ensureLazyLoaded().then(function() {
+    ensureLazyLoaded().then(function() {
       window.requestIdleCallback(function() {
         document.fonts.load('bold 12px Roboto');
       });

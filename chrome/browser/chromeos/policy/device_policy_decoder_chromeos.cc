@@ -141,8 +141,6 @@ std::unique_ptr<base::Value> DecodeConnectionType(int value) {
       {em::AutoUpdateSettingsProto::CONNECTION_TYPE_ETHERNET,
        shill::kTypeEthernet},
       {em::AutoUpdateSettingsProto::CONNECTION_TYPE_WIFI, shill::kTypeWifi},
-      {em::AutoUpdateSettingsProto::CONNECTION_TYPE_BLUETOOTH,
-       shill::kTypeBluetooth},
       {em::AutoUpdateSettingsProto::CONNECTION_TYPE_CELLULAR,
        shill::kTypeCellular},
   };

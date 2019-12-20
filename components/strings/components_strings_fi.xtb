@@ -5,7 +5,7 @@
 <translation id="1010200102790553230">Lataa sivu myöhemmin</translation>
 <translation id="1015730422737071372">Lisätietoja</translation>
 <translation id="1021110881106174305">Hyväksytyt kortit</translation>
-<translation id="1021753677514347426">Tämän virheen syynä on varmenne, jonka sinä asensit tai joku muu asensi laitteelle. Varmennetta on aiemmin käytetty verkkojen valvontaan ja kaappaamiseen, eikä Chromium luota siihen. Valvomiselle voi olla oikea syy esimerkiksi oppilaitoksen tai yrityksen verkossa. Chromium haluaa kuitenkin varmistaa, että tiedät valvonnasta, vaikka et voi lopettaa sitä. Valvonta voi tapahtua missä tahansa selaimessa tai sovelluksessa, jolla on pääsy verkkoon.</translation>
+<translation id="1021753677514347426">Tämän virheen syynä on varmenne, jonka sinä tai joku muu asensi laitteellesi. Varmennetta on aiemmin käytetty verkkojen valvontaan ja kaappaamiseen, eikä Chromium luota siihen. Valvomiselle voi olla oikea syy esimerkiksi oppilaitoksen tai yrityksen verkossa, mutta Chromium haluaa sinun tietävän valvonnasta, vaikket voi lopettaa sitä. Valvonta voi tapahtua missä tahansa selaimessa tai sovelluksessa, jolla on pääsy verkkoon.</translation>
 <translation id="1032854598605920125">Käännä myötäpäivään</translation>
 <translation id="1036348656032585052">Poista käytöstä</translation>
 <translation id="1038842779957582377">tuntematon nimi</translation>
@@ -326,6 +326,7 @@
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />verkon diagnostiikkaa<ph name="END_LINK" /></translation>
 <translation id="2473195200299095979">Käännä tämä sivu</translation>
 <translation id="2479410451996844060">Virheellinen hakukoneen URL-osoite.</translation>
+<translation id="2482370039860827034">Lisäsit juuri salasanasi petolliselle sivustolle. Chrome suosittelee vaihtamaan salasanan heti kaikilla sivustoilla, joilla käytät sitä (esim. <ph name="WEBSITE_1" /> ja <ph name="WEBSITE_2" />).</translation>
 <translation id="2482878487686419369">Ilmoitukset</translation>
 <translation id="248348093745724435">Laitteen käytännöt</translation>
 <translation id="2491120439723279231">Palvelimen varmenteessa on virheitä.</translation>
@@ -338,6 +339,7 @@
 <translation id="2505268675989099013">Suojaa tili</translation>
 <translation id="2515629240566999685">Tarkista alueesi mobiilisignaali.</translation>
 <translation id="2521385132275182522">Niitti oikeassa alareunassa</translation>
+<translation id="2521483867890026383">Lisäsit juuri salasanasi petolliselle sivustolle. Chromium suosittelee vaihtamaan salasanan heti kaikilla sivustoilla, joilla käytät sitä (esim. <ph name="WEBSITE_1" /> ja <ph name="WEBSITE_2" />).</translation>
 <translation id="2523886232349826891">Tallennetaan vain tälle laitteelle</translation>
 <translation id="2524461107774643265">Lisää tietoja</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{ja 1 muu}other{ja # muuta}}</translation>
@@ -608,6 +610,7 @@
 <translation id="3828924085048779000">Tunnuslause ei voi olla tyhjä.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> on asentanut lisätoimintojen laajennuksia. Laajennuksilla on pääsy osaan datastasi.</translation>
 <translation id="3832522519263485449">Useita reikiä oikealla</translation>
+<translation id="3838154488026099170">Lisäsit juuri salasanasi petolliselle sivustolle. Chromium suosittelee vaihtamaan salasanan heti kaikilla sivustoilla, joilla käytät sitä (esim. <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> ja <ph name="WEBSITE_3" />).</translation>
 <translation id="385051799172605136">Edellinen</translation>
 <translation id="3858027520442213535">Päivitä päivämäärä ja aika</translation>
 <translation id="3884278016824448484">Ristiriitainen laitteen tunnus</translation>
@@ -645,6 +648,7 @@
 <translation id="4072486802667267160">Virhe tilausta käsiteltäessä. Yritä uudelleen.</translation>
 <translation id="4075732493274867456">Asiakassovellus ja palvelin eivät tue samaa SSL-protokollaversiota tai salaustekniikkaa.</translation>
 <translation id="4075941231477579656">Touch ID</translation>
+<translation id="4077092919748553596">Lisäsit juuri salasanasi petolliselle sivustolle. Chrome suosittelee vaihtamaan salasanan heti kaikilla sivustoilla, joilla käytät sitä (esim. <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> ja <ph name="WEBSITE_3" />).</translation>
 <translation id="4079302484614802869">Välityspalvelinmääritykset on asetettu käyttämään .pac-URL-osoitteita, ei kiinteitä välityspalvelimia.</translation>
 <translation id="4082393374666368382">Asetukset – Ylläpito</translation>
 <translation id="4098354747657067197">Seuraava sivusto on petollinen</translation>
@@ -724,6 +728,7 @@
 <translation id="4356973930735388585">Tälle sivustolle hyökännyt taho voi yrittää asentaa tietokoneellesi vaarallisia ohjelmia, jotka varastavat tai poistavat tietojasi, kuten kuviasi, salasanojasi, viestejäsi ja luottokorttiesi tietoja.</translation>
 <translation id="4358059973562876591">Määrittämiäsi malleja ei välttämättä käytetä DnsOverHttpsMode-käytännön virheen vuoksi.</translation>
 <translation id="4358461427845829800">Hallinnoi maksutapoja…</translation>
+<translation id="4359160567981085931">Lisäsit juuri salasanasi petolliselle sivustolle. Chrome voi auttaa. Valitse Suojaa tili, niin voit vaihtaa salasanasi ja Googlelle ilmoitetaan tilin mahdollisesta vaarantumisesta.</translation>
 <translation id="4367563149485757821">Numero-12 (kirjekuori)</translation>
 <translation id="437058704415269440">Tilin saldo</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
@@ -999,6 +1004,7 @@
 <translation id="5728056243719941842">C5 (kirjekuori)</translation>
 <translation id="5730040223043577876">Chrome suosittelee salasanan vaihtamista, jos olet käyttänyt sitä myös muilla sivustoilla.</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Tallenna kortti Google-tilillesi}other{Tallenna kortit Google-tilillesi}}</translation>
+<translation id="5745980000221562234">{NUM_CARDS,plural, =1{Käytä tämän kortin kanssa virtuaalinumeroa}other{Valitse kortti}}</translation>
 <translation id="5763042198335101085">Anna voimassa oleva sähköpostiosoite.</translation>
 <translation id="5763703224595565476">Järjestelmänvalvoja on ottanut Chrome Enterprisen käyttäjäsuojan käyttöön selaimellasi. Chrome Enterprisen käyttäjäsuoja pääsee osaan datastasi.</translation>
 <translation id="5765072501007116331">Valitse osoite, niin näet toimitustavat ja vaatimukset.</translation>
@@ -1015,6 +1021,7 @@
 <translation id="5804241973901381774">Käyttöoikeudet</translation>
 <translation id="5810442152076338065">Yhteytesi kohteeseen <ph name="DOMAIN" /> on salattu vanhentuneella salaustekniikalla.</translation>
 <translation id="5813119285467412249">&amp;Toista lisäys</translation>
+<translation id="5824687817967109979">{NUM_CARDS,plural, =1{Tätä korttia veloitetaan kun maksat, mutta sen oikeaa numeroa ei jaeta sivustolle. Väliaikainen CVC luodaan turvallisuuden parantamiseksi.}other{Valitsemaasi korttia veloitetaan kun maksat, mutta sen oikeaa numeroa ei jaeta sivustolle. Väliaikainen CVC luodaan turvallisuuden parantamiseksi.}}</translation>
 <translation id="583281660410589416">Tuntematon</translation>
 <translation id="5838278095973806738">Älä anna tälle sivustolle salasanoja, luottokorttinumeroita tai muita arkaluonteisia tietoja, sillä hyökkääjät saattavat varastaa ne.</translation>
 <translation id="5851548754964597211">Välilehtiluettelo</translation>
@@ -1319,7 +1326,7 @@ Lisätietoja:
 <translation id="7349430561505560861">A4-ekstra</translation>
 <translation id="7353601530677266744">Komentorivi</translation>
 <translation id="7372973238305370288">hakutulos</translation>
-<translation id="7374733840632556089">Tämän virheen syynä on varmenne, jonka sinä asensit tai joku muu asensi laitteelle. Varmennetta on aiemmin käytetty verkkojen valvontaan ja kaappaamiseen, eikä Chrome luota siihen. Valvomiselle voi olla oikea syy esimerkiksi oppilaitoksen tai yrityksen verkossa. Chrome haluaa kuitenkin varmistaa, että tiedät valvonnasta, vaikka et voi lopettaa sitä. Valvonta voi tapahtua missä tahansa selaimessa tai sovelluksessa, jolla on pääsy verkkoon.</translation>
+<translation id="7374733840632556089">Tämän virheen syynä on varmenne, jonka sinä tai joku muu asensi laitteellesi. Varmennetta on aiemmin käytetty verkkojen valvontaan ja kaappaamiseen, eikä Chrome luota siihen. Valvomiselle voi olla oikea syy esimerkiksi oppilaitoksen tai yrityksen verkossa, mutta Chrome haluaa sinun tietävän valvonnasta, vaikket voi lopettaa sitä. Valvonta voi tapahtua missä tahansa selaimessa tai sovelluksessa, jolla on pääsy verkkoon.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Mediaohjaimet</translation>
 <translation id="7378627244592794276">Ei</translation>
@@ -1472,6 +1479,7 @@ Lisätietoja:
 <translation id="8042918947222776840">Valitse noutotapa</translation>
 <translation id="8057711352706143257"><ph name="SOFTWARE_NAME" /> on määritetty virheellisesti. Ongelma korjaantuu yleensä, jos <ph name="SOFTWARE_NAME" /> poistetaan. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8066955247577885446">Jotain meni pieleen.</translation>
+<translation id="8067872629359326442">Lisäsit juuri salasanasi petolliselle sivustolle. Chromium voi auttaa. Valitse Suojaa tili, niin voit vaihtaa salasanasi ja Googlelle ilmoitetaan tilin mahdollisesta vaarantumisesta.</translation>
 <translation id="8074253406171541171">10x13 (kirjekuori)</translation>
 <translation id="8078141288243656252">Kierrettyyn asiakirjaan ei voi tehdä merkintöjä</translation>
 <translation id="8079031581361219619">Ladataanko sivusto uudelleen?</translation>
@@ -1488,6 +1496,7 @@ Lisätietoja:
 <translation id="8105368624971345109">Poista käytöstä</translation>
 <translation id="8118489163946903409">Maksutapa</translation>
 <translation id="8127301229239896662"><ph name="SOFTWARE_NAME" /> on asennettu virheellisesti tietokoneellesi tai verkkoon. Pyydä järjestelmänvalvojaasi ratkaisemaan ongelma.</translation>
+<translation id="8128526133099929547">Lisäsit juuri salasanasi petolliselle sivustolle. Chrome suosittelee vaihtamaan salasanan heti kaikilla sivustoilla, joilla käytät sitä (esim. <ph name="WEBSITE_1" />).</translation>
 <translation id="8131740175452115882">Vahvista</translation>
 <translation id="8149426793427495338">Tietokoneesi siirtyi virransäästötilaan.</translation>
 <translation id="8150722005171944719">Tiedosto osoitteessa <ph name="URL" /> ei ole luettavissa. Se on voitu poistaa tai siirtää, tai tiedoston käyttöluvat voivat estää sen käytön.</translation>
@@ -1505,6 +1514,7 @@ Lisätietoja:
 <translation id="8218327578424803826">Määrätty sijainti:</translation>
 <translation id="8220146938470311105">C7/C6 (kirjekuori)</translation>
 <translation id="8220639454292072926">Yrityksen raportointi</translation>
+<translation id="8221250263817408492">Lisäsit juuri salasanasi petolliselle sivustolle. Chromium suosittelee vaihtamaan salasanan heti kaikilla sivustoilla, joilla käytät sitä (esim. <ph name="WEBSITE_1" />).</translation>
 <translation id="8225771182978767009">Tämän tietokoneen määrittänyt henkilö on estänyt tämän sivuston.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">Avaa sivu uudessa incognito-välilehdessä.</translation>

@@ -5,7 +5,7 @@
 <translation id="1010200102790553230">Muat halaman nanti</translation>
 <translation id="1015730422737071372">Berikan detail tambahan</translation>
 <translation id="1021110881106174305">Kartu yang diterima</translation>
-<translation id="1021753677514347426">Masalah ini terjadi karena sertifikat yang diinstal di perangkat oleh Anda atau orang lain. Sertifikat ini diketahui sebagai sertifikat yang digunakan untuk memantau dan melakukan intersepsi jaringan dan tidak dipercaya oleh Chromium. Sementara terdapat beberapa kasus pemantauan yang sah, seperti pada jaringan sekolah atau perusahaan, Chromium ingin memastikan Anda menyadari terjadinya masalah tersebut, meskipun Anda tidak dapat menghentikannya. Pemantauan dapat terjadi di browser atau aplikasi yang mengakses web.</translation>
+<translation id="1021753677514347426">Masalah ini terjadi karena sertifikat yang diinstal di perangkat oleh Anda atau orang lain. Sertifikat ini diketahui sebagai sertifikat yang digunakan untuk memantau dan melakukan intersepsi jaringan dan tidak dipercaya oleh Chromium. Walau terdapat beberapa kasus pemantauan yang sah, seperti pada jaringan sekolah atau perusahaan, Chromium ingin memastikan Anda menyadari terjadinya masalah tersebut, meskipun Anda tidak dapat menghentikannya. Pemantauan dapat terjadi di browser atau aplikasi yang mengakses web.</translation>
 <translation id="1032854598605920125">Putar searah jarum jam</translation>
 <translation id="1036348656032585052">Matikan</translation>
 <translation id="1038842779957582377">nama tidak diketahui</translation>
@@ -1315,7 +1315,7 @@
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Baris Perintah</translation>
 <translation id="7372973238305370288">hasil penelusuran</translation>
-<translation id="7374733840632556089">Masalah ini terjadi karena sertifikat yang diinstal di perangkat oleh Anda atau orang lain. Sertifikat ini diketahui sebagai sertifikat yang digunakan untuk memantau dan melakukan intersepsi jaringan dan tidak dipercaya oleh Chrome. Sementara terdapat beberapa kasus pemantauan yang sah, seperti pada jaringan sekolah atau perusahaan, Chrome ingin memastikan Anda mengetahui adanya pemantauan ini, meskipun Anda tidak dapat menghentikannya. Pemantauan dapat terjadi di browser atau aplikasi yang mengakses web.</translation>
+<translation id="7374733840632556089">Masalah ini terjadi karena sertifikat yang diinstal di perangkat oleh Anda atau orang lain. Sertifikat ini diketahui sebagai sertifikat yang digunakan untuk memantau dan melakukan intersepsi jaringan dan tidak dipercaya oleh Chrome. Walau terdapat beberapa kasus pemantauan yang sah, seperti pada jaringan sekolah atau perusahaan, Chrome ingin memastikan Anda mengetahui adanya pemantauan ini, meskipun Anda tidak dapat menghentikannya. Pemantauan dapat terjadi di browser atau aplikasi yang mengakses web.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Kontrol Media</translation>
 <translation id="7378627244592794276">Tidak</translation>

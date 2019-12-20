@@ -37,6 +37,7 @@
 <translation id="1231733316453485619">Turn on sync?</translation>
 <translation id="123724288017357924">Reload the current page, ignoring cached content</translation>
 <translation id="124116460088058876">More languages</translation>
+<translation id="1242008676835033345">Embedded on <ph name="WEBSITE_URL" /></translation>
 <translation id="124678866338384709">Close current tab</translation>
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Search and explore</translation>
@@ -95,6 +96,7 @@
 <translation id="1672586136351118594">Don‘t show again</translation>
 <translation id="1692118695553449118">Sync is on</translation>
 <translation id="169515064810179024">Block sites from accessing motion sensors</translation>
+<translation id="1711267867945983636">To continue, turn on NFC on your phone</translation>
 <translation id="1717218214683051432">Motion sensors</translation>
 <translation id="1718835860248848330">Last hour</translation>
 <translation id="1736419249208073774">Explore</translation>
@@ -151,6 +153,7 @@
 <translation id="2082238445998314030">Result <ph name="RESULT_NUMBER" /> of <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Sound</translation>
 <translation id="2096012225669085171">Sync and personalise across devices</translation>
+<translation id="2099625543891475722">your physical features, such as height</translation>
 <translation id="2100273922101894616">Auto Sign-in</translation>
 <translation id="2100314319871056947">Try sharing the text in smaller chunks</translation>
 <translation id="2107397443965016585">Ask before allowing sites to play protected content (recommended)</translation>
@@ -427,6 +430,7 @@ To adjust your search term, long-press to select. To refine your search, slide t
 <translation id="4226663524361240545">Notifications may vibrate the device</translation>
 <translation id="423219824432660969">Encrypt synced data with Google password as of <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Open settings</translation>
+<translation id="4250229828105606438">Screenshot</translation>
 <translation id="4256782883801055595">Open-source licences</translation>
 <translation id="4259722352634471385">Navigation is blocked: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Copy link address</translation>
@@ -480,6 +484,7 @@ Your Google Account may have other forms of browsing history such as searches an
 <translation id="4634124774493850572">Use password</translation>
 <translation id="4645575059429386691">Managed by your parent</translation>
 <translation id="4650364565596261010">System default</translation>
+<translation id="4660838440047236328">the layout of your room</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bookmarks deleted</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> was added to your Home screen</translation>
 <translation id="4684427112815847243">Sync everything</translation>
@@ -604,6 +609,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5487521232677179737">Clear data</translation>
 <translation id="5494752089476963479">Block ads on sites that show intrusive or misleading ads</translation>
 <translation id="5500777121964041360">May not be available in your location</translation>
+<translation id="5505264765875738116">Sites can't ask to send notifications</translation>
 <translation id="5512137114520586844">This account is managed by <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Disabled by the administrator of this device</translation>
 <translation id="5515439363601853141">Unlock to view your password</translation>
@@ -701,6 +707,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="6192792657125177640">Exceptions</translation>
 <translation id="6194112207524046168">To let Chrome access your camera, also turn on camera in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Block third-party cookies</translation>
+<translation id="6201345951596836663">Link copied</translation>
 <translation id="6206551242102657620">Connection is secure. Site information</translation>
 <translation id="6210748933810148297">Not <ph name="EMAIL" />?</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> Options</translation>
@@ -710,6 +717,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 For example, some websites may respond to this request by showing you ads that aren’t based on other websites that you’ve visited. Many websites will still collect and use your browsing data – for example to improve security, to provide content, ads and recommendations and to generate reporting statistics.</translation>
 <translation id="624789221780392884">Update ready</translation>
 <translation id="6255999984061454636">Content suggestions</translation>
+<translation id="6270391203985052864">Sites can ask to send notifications</translation>
 <translation id="6277522088822131679">There was a problem printing the page. Please try again.</translation>
 <translation id="6295158916970320988">All sites</translation>
 <translation id="629730747756840877">Account</translation>
@@ -754,6 +762,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6545864417968258051">Bluetooth scanning</translation>
 <translation id="6560414384669816528">Search with Sogou</translation>
 <translation id="656065428026159829">See more</translation>
+<translation id="6561560012278703671">Use quieter messaging (blocks notification prompts from interrupting you)</translation>
 <translation id="6566259936974865419">Chrome has saved you <ph name="GIGABYTES" /> GB</translation>
 <translation id="6573096386450695060">Always allow</translation>
 <translation id="6573431926118603307">Tabs that you've opened in Chrome on your other devices will appear here.</translation>
@@ -851,6 +860,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="729975465115245577">Your device doesn’t have an app to store the passwords file.</translation>
 <translation id="7302081693174882195">Details: Sorted by amount of data saved</translation>
 <translation id="7302486331832100261">You usually block notifications. To allow, tap Details.</translation>
+<translation id="7311441321349344333">NFC is off for this device. Turn on NFC in <ph name="BEGIN_LINK" />Android settings<ph name="END_LINK" />.</translation>
 <translation id="7328017930301109123">In Lite mode, Chrome loads pages faster and uses up to 60 per cent less data.</translation>
 <translation id="7333031090786104871">Still adding previous site</translation>
 <translation id="7352939065658542140">VIDEO</translation>

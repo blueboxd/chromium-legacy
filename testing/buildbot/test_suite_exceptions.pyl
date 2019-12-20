@@ -698,7 +698,7 @@
             {
               'gpu': '10de:1cb3',
               'os': 'Ubuntu',
-              'pool': 'Chrome-GPU',
+              'pool': 'chromium.tests.gpu',
             },
           ],
         },
@@ -714,7 +714,7 @@
             {
               'gpu': '10de:1cb3',
               'os': 'Ubuntu',
-              'pool': 'Chrome-GPU',
+              'pool': 'chromium.tests.gpu',
             },
           ],
         },
@@ -730,7 +730,7 @@
             {
               'gpu': '10de:1cb3',
               'os': 'Ubuntu',
-              'pool': 'Chrome-GPU',
+              'pool': 'chromium.tests.gpu',
             },
           ],
         },
@@ -746,7 +746,7 @@
             {
               'gpu': '10de:1cb3',
               'os': 'Ubuntu',
-              'pool': 'Chrome-GPU',
+              'pool': 'chromium.tests.gpu',
             },
           ],
         },
@@ -780,7 +780,7 @@
             {
               'gpu': '10de:1cb3',
               'os': 'Ubuntu',
-              'pool': 'Chrome-GPU',
+              'pool': 'chromium.tests.gpu',
             },
           ],
         },
@@ -797,7 +797,7 @@
             {
               'gpu': '10de:1cb3',
               'os': 'Ubuntu',
-              'pool': 'Chrome-GPU',
+              'pool': 'chromium.tests.gpu',
             },
           ],
         },
@@ -1311,67 +1311,6 @@
       # chromium.fyi
       'android-code-coverage-native', # https://crbug.com/1018431
     ],
-  },
-  'non_viz_browser_tests': {
-    'modifications': {
-      # chromium.fyi
-      'linux-code-coverage': {
-        'swarming': {
-          'shards': 21,
-        },
-      },
-      'linux-chromeos-code-coverage': {
-        'swarming': {
-          'shards': 20,
-        },
-      },
-      'linux-chromeos-chrome': {
-        # TODO(https://crbug.com/932269): Promote out of experiment when the
-        # tests are green.
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.browser_tests.filter',
-        ],
-      },
-      # chromium.chromiumos
-      'linux-chromeos-dbg': {
-        'swarming': {
-          'shards': 30,
-        },
-      },
-      # chromium.memory
-      'Linux ChromiumOS MSan Tests': {
-        # These are very slow on the Chrome OS MSAN trybot for some reason.
-        # crbug.com/865455
-        'swarming': {
-          'shards': 30,
-        },
-      },
-      'Linux Chromium OS ASan LSan Tests (1)': {
-        # These are very slow on the ASAN trybot for some reason.
-        # crbug.com/794372
-        'swarming': {
-          'shards': 30,
-        },
-      },
-    },
-  },
-  'non_viz_content_browsertests': {
-    'modifications': {
-      # chromium.memory
-      'Linux Chromium OS ASan LSan Tests (1)': {
-        # content_browsertests is slow on ASAN try bot. crbug.com/822461.
-        'swarming': {
-          'shards': 4,
-        }
-      },
-      'Linux ChromiumOS MSan Tests': {
-        # These are very slow on the Chrome OS MSAN trybot for some reason.
-        # crbug.com/865455
-        'swarming': {
-          'shards': 2,
-        },
-      },
-    },
   },
   'not_site_per_process_webkit_layout_tests': {
     'remove_from': [
@@ -2304,6 +2243,12 @@
         },
       },
     },
+  },
+  'weblayer_browsertests': {
+    'remove_from': [
+      # TODO(crbug.com/1034002): Remove this entry once the bug is fixed.
+      'linux-code-coverage',
+    ],
   },
   'webview_instrumentation_test_apk': {
     'remove_from': [

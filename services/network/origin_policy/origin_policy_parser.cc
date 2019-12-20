@@ -40,10 +40,12 @@ bool OriginPolicyParser::DoParse(base::StringPiece policy_contents_text) {
   base::Value* csp = json->FindListKey("content-security-policy");
   bool csp_ok = !csp || ParseContentSecurityPolicies(*csp);
 
-  base::Value* features = json->FindListKey("feature-policy");
-  bool features_ok = !features || ParseFeaturePolicies(*features);
+  base::Value* features = json->FindDictKey("features");
+  if (features) {
+    ParseFeatures(*features);
+  }
 
-  return csp_ok && features_ok;
+  return csp_ok;
 }
 
 bool OriginPolicyParser::ParseContentSecurityPolicies(
@@ -71,17 +73,12 @@ bool OriginPolicyParser::ParseContentSecurityPolicy(const base::Value& csp) {
   return true;
 }
 
-bool OriginPolicyParser::ParseFeaturePolicies(const base::Value& policies) {
-  bool ok = true;
-  for (const auto& feature : policies.GetList()) {
-    ok &= feature.is_string() && ParseFeaturePolicy(feature);
-  }
-  return ok;
-}
+void OriginPolicyParser::ParseFeatures(const base::Value& features) {
+  const std::string* policy = features.FindStringKey("policy");
 
-bool OriginPolicyParser::ParseFeaturePolicy(const base::Value& policy) {
-  policy_contents_->features.push_back(policy.GetString());
-  return true;
+  if (policy) {
+    policy_contents_->feature_policy = *policy;
+  }
 }
 
 }  // namespace network

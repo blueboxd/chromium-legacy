@@ -163,7 +163,7 @@ cast_locales = locales
 # If Cast will also the android files update this and the Cast grd files.
 if (is_android) {
   # Subtract out additional Android locales
-  cast_locales -= [ "af" ]
+  cast_locales -= android_only_chrome_locales - [ "zh-HK" ]
 }
 
 enable_chromecast_extensions = enable_extensions

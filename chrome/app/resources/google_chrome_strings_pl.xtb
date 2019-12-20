@@ -48,6 +48,7 @@
 <translation id="2290014774651636340">Brakuje kluczy interfejsu Google API. Niektóre funkcje Google Chrome będą wyłączone.</translation>
 <translation id="2290095356545025170">Czy na pewno chcesz odinstalować przeglądarkę Google Chrome?</translation>
 <translation id="2309047409763057870">To jest druga instalacja Google Chrome. Nie można ustawić jej jako przeglądarki domyślnej.</translation>
+<translation id="2341767445688917208">System operacyjny Chrome nie może zsynchronizować haseł. Napraw teraz.</translation>
 <translation id="2348335408836342058">Chrome potrzebuje uprawnień dostępu do aparatu i mikrofonu na tej stronie</translation>
 <translation id="2429317896000329049">Google Chrome nie może zsynchronizować danych, ponieważ synchronizacja jest niedostępna w Twojej domenie.</translation>
 <translation id="2467438592969358367">Google Chrome chce wyeksportować Twoje hasła. Wpisz swoje hasło do Windows, by na to zezwolić.</translation>
@@ -204,6 +205,7 @@
 <translation id="7855730255114109580">Masz aktualną wersję Google Chrome</translation>
 <translation id="7890208801193284374">Jeśli dzielisz komputer ze znajomymi lub rodziną, wszyscy możecie niezależnie przeglądać internet i po swojemu skonfigurować Chrome.</translation>
 <translation id="7896673875602241923">Ktoś zalogował się wcześniej w Chrome na tym komputerze jako <ph name="ACCOUNT_EMAIL_LAST" />. Utwórz nowego użytkownika Chrome, by Twoje informacje były przechowywane oddzielnie.</translation>
+<translation id="7916016681687251387">System operacyjny Chrome nie może zsynchronizować danych. Napraw teraz.</translation>
 <translation id="7962410387636238736">Google Chrome nie będzie już aktualizować się na tym komputerze, ponieważ systemy Windows XP i Windows Vista nie są już obsługiwane.</translation>
 <translation id="8008534537613507642">Ponownie zainstaluj Chrome</translation>
 <translation id="8013993649590906847">Jeśli obraz nie ma przydatnego opisu, Chrome spróbuje go dla Ciebie stworzyć. W tym celu obrazy zostaną wysłane do Google.</translation>

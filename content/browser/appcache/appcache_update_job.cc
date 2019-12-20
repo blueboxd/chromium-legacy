@@ -34,6 +34,15 @@ namespace {
 const int kAppCacheFetchBufferSize = 32768;
 const size_t kMaxConcurrentUrlFetches = 2;
 
+const base::Feature kAppCacheCorruptionRecoveryFeature{
+    "AppCacheCorruptionRecovery", base::FEATURE_DISABLED_BY_DEFAULT};
+
+enum class ResourceCheck {
+  kValid,
+  kInvalid,
+  kCorrupt,
+};
+
 std::string FormatUrlErrorMessage(
       const char* format, const GURL& url,
       AppCacheUpdateJob::ResultType error,
@@ -70,12 +79,13 @@ bool IsEvictableError(AppCacheUpdateJob::ResultType result,
   }
 }
 
-bool CanUseExistingResource(const net::HttpResponseInfo* http_info,
-                            AppCacheUpdateMetricsRecorder& update_metrics) {
+ResourceCheck CanUseExistingResource(
+    const net::HttpResponseInfo* http_info,
+    AppCacheUpdateMetricsRecorder& update_metrics) {
   update_metrics.IncrementExistingResourceCheck();
 
   if (!http_info->headers)
-    return false;
+    return ResourceCheck::kInvalid;
 
   base::Time request_time = http_info->request_time;
   base::Time response_time = http_info->response_time;
@@ -141,8 +151,13 @@ bool CanUseExistingResource(const net::HttpResponseInfo* http_info,
     found_corruption = true;
   }
 
-  if (found_corruption)
+  if (found_corruption) {
     update_metrics.IncrementExistingResourceCorrupt();
+    if (base::FeatureList::IsEnabled(kAppCacheCorruptionRecoveryFeature)) {
+      update_metrics.IncrementExistingResourceCorruptionRecovery();
+      return ResourceCheck::kCorrupt;
+    }
+  }
 
   // Record the max age / expiry value on this entry in days.
   net::HttpResponseHeaders::FreshnessLifetimes lifetimes =
@@ -153,7 +168,7 @@ bool CanUseExistingResource(const net::HttpResponseInfo* http_info,
   // Check HTTP caching semantics based on max-age and expiration headers.
   if (http_info->headers->RequiresValidation(request_time, response_time,
                                              base::Time::Now())) {
-    return false;
+    return ResourceCheck::kInvalid;
   }
 
   // Responses with a "vary" header generally get treated as expired,
@@ -166,12 +181,12 @@ bool CanUseExistingResource(const net::HttpResponseInfo* http_info,
   while (http_info->headers->EnumerateHeader(&iter, "vary", &value)) {
     if (!base::EqualsCaseInsensitiveASCII(value, "Accept-Encoding") &&
         !base::EqualsCaseInsensitiveASCII(value, "Origin")) {
-      return false;
+      return ResourceCheck::kInvalid;
     }
   }
 
   update_metrics.IncrementExistingResourceReused();
-  return true;
+  return ResourceCheck::kValid;
 }
 
 void EmptyCompletionCallback(int result) {}
@@ -1534,23 +1549,36 @@ void AppCacheUpdateJob::OnResponseInfoLoaded(
 
   if (!http_info) {
     LoadFromNewestCacheFailed(url, nullptr);  // no response found
-  } else if (!CanUseExistingResource(http_info, update_metrics_)) {
-    LoadFromNewestCacheFailed(url, response_info);
   } else {
-    DCHECK(group_->newest_complete_cache());
-    AppCacheEntry* copy_me = group_->newest_complete_cache()->GetEntry(url);
-    DCHECK(copy_me);
-    DCHECK_EQ(copy_me->response_id(), response_id);
+    ResourceCheck result = CanUseExistingResource(http_info, update_metrics_);
+    if (result == ResourceCheck::kCorrupt) {
+      // A corrupt resource was found.  In this case, we want to cause the next
+      // fetch attempt for this resource to be issued without conditional
+      // headers so a 200 OK response is the only result.  We do that by not
+      // passing along |response_info| here.  This case can only occur when the
+      // AppCacheCorruptionRecovery feature is enabled.
+      LoadFromNewestCacheFailed(url, nullptr);
+    } else if (result == ResourceCheck::kInvalid) {
+      // An invalid resource was found, but we may want to add conditional
+      // headers that could result in a 304 NOT MODIFIED response.
+      LoadFromNewestCacheFailed(url, response_info);
+    } else {
+      DCHECK(result == ResourceCheck::kValid);
+      DCHECK(group_->newest_complete_cache());
+      AppCacheEntry* copy_me = group_->newest_complete_cache()->GetEntry(url);
+      DCHECK(copy_me);
+      DCHECK_EQ(copy_me->response_id(), response_id);
 
-    auto it = url_file_list_.find(url);
-    DCHECK(it != url_file_list_.end());
-    AppCacheEntry& entry = it->second;
-    entry.set_response_id(response_id);
-    entry.SetResponseAndPaddingSizes(copy_me->response_size(),
-                                     copy_me->padding_size());
-    inprogress_cache_->AddOrModifyEntry(url, entry);
-    NotifyAllProgress(url);
-    ++url_fetches_completed_;
+      auto it = url_file_list_.find(url);
+      DCHECK(it != url_file_list_.end());
+      AppCacheEntry& entry = it->second;
+      entry.set_response_id(response_id);
+      entry.SetResponseAndPaddingSizes(copy_me->response_size(),
+                                       copy_me->padding_size());
+      inprogress_cache_->AddOrModifyEntry(url, entry);
+      NotifyAllProgress(url);
+      ++url_fetches_completed_;
+    }
   }
 
   loading_responses_.erase(found);

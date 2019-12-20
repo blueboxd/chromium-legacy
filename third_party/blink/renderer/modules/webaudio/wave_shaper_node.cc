@@ -82,16 +82,26 @@ WaveShaperProcessor* WaveShaperNode::GetWaveShaperProcessor() const {
 }
 
 void WaveShaperNode::SetCurveImpl(const float* curve_data,
-                                  unsigned curve_length,
+                                  size_t curve_length,
                                   ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  if (curve_data && curve_length < 2) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidAccessError,
-        ExceptionMessages::IndexExceedsMinimumBound<unsigned>("curve length",
-                                                              curve_length, 2));
-    return;
+  unsigned length = static_cast<unsigned>(curve_length);
+
+  if (curve_data) {
+    if (!base::CheckedNumeric<unsigned>(curve_length).AssignIfValid(&length)) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kNotSupportedError,
+          "The curve length exceeds the maximum supported length");
+      return;
+    }
+    if (length < 2) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kInvalidAccessError,
+          ExceptionMessages::IndexExceedsMinimumBound<unsigned>("curve length",
+                                                                length, 2));
+      return;
+    }
   }
 
   // This is to synchronize with the changes made in
@@ -99,7 +109,7 @@ void WaveShaperNode::SetCurveImpl(const float* curve_data,
   // Initialize() and Uninitialize(), changing the number of kernels.
   BaseAudioContext::GraphAutoLocker context_locker(context());
 
-  GetWaveShaperProcessor()->SetCurve(curve_data, curve_length);
+  GetWaveShaperProcessor()->SetCurve(curve_data, length);
 }
 
 void WaveShaperNode::setCurve(NotShared<DOMFloat32Array> curve,
@@ -107,8 +117,8 @@ void WaveShaperNode::setCurve(NotShared<DOMFloat32Array> curve,
   DCHECK(IsMainThread());
 
   if (curve) {
-    SetCurveImpl(curve.View()->Data(),
-                 curve.View()->deprecatedLengthAsUnsigned(), exception_state);
+    SetCurveImpl(curve.View()->Data(), curve.View()->lengthAsSizeT(),
+                 exception_state);
   } else {
     SetCurveImpl(nullptr, 0, exception_state);
   }

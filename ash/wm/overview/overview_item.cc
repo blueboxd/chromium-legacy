@@ -150,7 +150,8 @@ void SetWidgetBoundsAndMaybeAnimateTransform(
       new_bounds_in_screen,
       display::Screen::GetScreen()->GetDisplayNearestWindow(window));
   if (animation_type == OVERVIEW_ANIMATION_NONE ||
-      animation_type == OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER) {
+      animation_type == OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER ||
+      previous_bounds.IsEmpty()) {
     window->SetTransform(gfx::Transform());
 
     // Make sure that |observer|, which could be a self-deleting object, will

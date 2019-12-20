@@ -320,7 +320,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
                               base::Unretained(this)),
           base::BindRepeating(&WebMediaPlayerImpl::GetCurrentTimeInternal,
                               base::Unretained(this))),
-      will_play_helper_(nullptr) {
+      will_play_helper_(nullptr),
+      power_status_helper_(params->TakePowerStatusHelper()) {
   DVLOG(1) << __func__;
   DCHECK(adjust_allocated_memory_cb_);
   DCHECK(renderer_factory_selector_);
@@ -568,9 +569,15 @@ void WebMediaPlayerImpl::EnteredFullscreen() {
   // info before returning.
   if (!decoder_requires_restart_for_overlay_)
     MaybeSendOverlayInfoToDecoder();
+
+  if (power_status_helper_)
+    power_status_helper_->SetIsFullscreen(true);
 }
 
 void WebMediaPlayerImpl::ExitedFullscreen() {
+  if (power_status_helper_)
+    power_status_helper_->SetIsFullscreen(false);
+
   overlay_info_.is_fullscreen = false;
 
   // If we're in overlay mode, then exit it unless we're supposed to allow
@@ -1822,6 +1829,13 @@ void WebMediaPlayerImpl::OnMetadata(const PipelineMetadata& metadata) {
   MaybeSetContainerName();
 
   pipeline_metadata_ = metadata;
+  if (power_status_helper_) {
+    power_status_helper_->SetMetadata(metadata);
+    // TODO(liberato): This shouldn't be set here, but it'll do until we get
+    // the fps estimator.
+    power_status_helper_->SetAverageDuration(
+        base::TimeDelta::FromSecondsD(1. / 30));
+  }
 
   UMA_HISTOGRAM_ENUMERATION(
       "Media.VideoRotation",
@@ -2789,6 +2803,12 @@ void WebMediaPlayerImpl::UpdatePlayState() {
   SetDelegateState(state.delegate_state, state.is_idle);
   SetMemoryReportingState(state.is_memory_reporting_enabled);
   SetSuspendState(state.is_suspended || pending_suspend_resume_cycle_);
+  if (power_status_helper_) {
+    // Make sure that we're in something like steady-state before recording.
+    power_status_helper_->SetIsPlaying(
+        !paused_ && !seeking_ && !IsHidden() && !state.is_suspended &&
+        ready_state_ == kReadyStateHaveEnoughData);
+  }
 }
 
 void WebMediaPlayerImpl::UpdateMediaPositionState() {

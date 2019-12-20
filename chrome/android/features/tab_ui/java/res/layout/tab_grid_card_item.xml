@@ -37,7 +37,7 @@
                 android:minWidth="8dp"
                 android:adjustViewBounds="true"
                 android:importantForAccessibility="no"
-                android:src="@drawable/ic_omnibox_page"/>
+                app:srcCompat="@drawable/ic_globe_24dp"/>
             <TextView
                 android:id="@+id/tab_title"
                 android:layout_width="match_parent"

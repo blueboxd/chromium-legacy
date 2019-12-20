@@ -51,6 +51,9 @@
 // Verifies the absence of a Bookmark with |URL|.
 + (NSError*)verifyAbsenceOfBookmarkWithURL:(NSString*)URL;
 
+// Verifies that a folder called |title| exists.
++ (NSError*)verifyExistenceOfFolderWithTitle:(NSString*)title;
+
 // Checks that the promo has already been seen or not.
 + (NSError*)verifyPromoAlreadySeen:(BOOL)seen;
 

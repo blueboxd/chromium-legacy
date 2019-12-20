@@ -77,7 +77,7 @@ NetExportFileWriter::NetExportFileWriter()
       log_exists_(false),
       log_capture_mode_known_(false),
       log_capture_mode_(net::NetLogCaptureMode::kDefault),
-      default_log_base_dir_getter_(base::Bind(&base::GetTempDir)) {}
+      default_log_base_dir_getter_(base::BindRepeating(&base::GetTempDir)) {}
 
 NetExportFileWriter::~NetExportFileWriter() {
   if (net_log_exporter_) {
@@ -110,9 +110,9 @@ void NetExportFileWriter::Initialize() {
 
   base::PostTaskAndReplyWithResult(
       file_task_runner_.get(), FROM_HERE,
-      base::Bind(&SetUpDefaultLogPath, default_log_base_dir_getter_),
-      base::Bind(&NetExportFileWriter::SetStateAfterSetUpDefaultLogPath,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&SetUpDefaultLogPath, default_log_base_dir_getter_),
+      base::BindOnce(&NetExportFileWriter::SetStateAfterSetUpDefaultLogPath,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void NetExportFileWriter::StartNetLog(
@@ -266,11 +266,11 @@ std::unique_ptr<base::DictionaryValue> NetExportFileWriter::GetState() const {
 }
 
 void NetExportFileWriter::GetFilePathToCompletedLog(
-    const FilePathCallback& path_callback) const {
+    FilePathCallback path_callback) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!(log_exists_ && state_ == STATE_NOT_LOGGING)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(path_callback, base::FilePath()));
+        FROM_HERE, base::BindOnce(std::move(path_callback), base::FilePath()));
     return;
   }
 
@@ -278,8 +278,8 @@ void NetExportFileWriter::GetFilePathToCompletedLog(
   DCHECK(!log_path_.empty());
 
   base::PostTaskAndReplyWithResult(file_task_runner_.get(), FROM_HERE,
-                                   base::Bind(&GetPathIfExists, log_path_),
-                                   path_callback);
+                                   base::BindOnce(&GetPathIfExists, log_path_),
+                                   std::move(path_callback));
 }
 
 std::string NetExportFileWriter::CaptureModeToString(

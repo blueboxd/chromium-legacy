@@ -37,6 +37,7 @@
 <translation id="1231733316453485619">Synchronisatie inschakelen?</translation>
 <translation id="123724288017357924">De pagina opnieuw laden, gecachte content negeren</translation>
 <translation id="124116460088058876">Meer talen</translation>
+<translation id="1242008676835033345">Ingesloten in <ph name="WEBSITE_URL" /></translation>
 <translation id="124678866338384709">Huidig tabblad sluiten</translation>
 <translation id="1258753120186372309">Google-doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Zoeken en verkennen</translation>
@@ -95,6 +96,7 @@
 <translation id="1672586136351118594">Niet opnieuw weergeven</translation>
 <translation id="1692118695553449118">Synchronisatie is ingeschakeld</translation>
 <translation id="169515064810179024">Sites geen toegang tot bewegingssensoren geven</translation>
+<translation id="1711267867945983636">Schakel NFC in op je telefoon om door te gaan</translation>
 <translation id="1717218214683051432">Bewegingssensoren</translation>
 <translation id="1718835860248848330">Afgelopen uur</translation>
 <translation id="1736419249208073774">Verkennen</translation>
@@ -151,6 +153,7 @@
 <translation id="2082238445998314030">Resultaat <ph name="RESULT_NUMBER" /> van <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Geluid</translation>
 <translation id="2096012225669085171">Synchronisatie en personalisatie op meerdere apparaten</translation>
+<translation id="2099625543891475722">je fysieke kenmerken, zoals je lengte</translation>
 <translation id="2100273922101894616">Automatisch inloggen</translation>
 <translation id="2100314319871056947">Verdeel de tekst in kleinere stukken en deel in meerdere keren.</translation>
 <translation id="2107397443965016585">Vragen voordat sites beschermde content mogen afspelen (aanbevolen)</translation>
@@ -427,6 +430,7 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="4226663524361240545">Het apparaat kan trillen bij meldingen</translation>
 <translation id="423219824432660969">Gesynchroniseerde gegevens versleutelen met Google-wachtwoord vanaf <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Instellingen openen</translation>
+<translation id="4250229828105606438">Screenshot</translation>
 <translation id="4256782883801055595">Open-sourcelicenties</translation>
 <translation id="4259722352634471385">Navigatie is geblokkeerd: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Linkadres kopiëren</translation>
@@ -480,6 +484,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="4634124774493850572">Wachtwoord gebruiken</translation>
 <translation id="4645575059429386691">Beheerd door je ouder</translation>
 <translation id="4650364565596261010">Systeemstandaard</translation>
+<translation id="4660838440047236328">de indeling van je kamer</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bladwijzers verwijderd</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> is toegevoegd aan je startscherm</translation>
 <translation id="4684427112815847243">Alles synchroniseren</translation>
@@ -604,6 +609,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5487521232677179737">Gegevens wissen</translation>
 <translation id="5494752089476963479">Advertenties blokkeren op sites die opdringerige of misleidende advertenties weergeven</translation>
 <translation id="5500777121964041360">Mogelijk niet beschikbaar op jouw locatie</translation>
+<translation id="5505264765875738116">Sites kunnen niet vragen of ze je meldingen mogen sturen</translation>
 <translation id="5512137114520586844">Dit account wordt beheerd door <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Uitgeschakeld door de beheerder van dit apparaat</translation>
 <translation id="5515439363601853141">Ontgrendelen om je wachtwoord te bekijken</translation>
@@ -701,6 +707,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="6192792657125177640">Uitzonderingen</translation>
 <translation id="6194112207524046168">Als je Chrome toegang wilt geven tot je camera, moet je de camera ook inschakelen via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Indirecte cookies blokkeren</translation>
+<translation id="6201345951596836663">Link gekopieerd</translation>
 <translation id="6206551242102657620">De verbinding is beveiligd. Site-informatie</translation>
 <translation id="6210748933810148297">Niet <ph name="EMAIL" />?</translation>
 <translation id="6216432067784365534">Opties voor <ph name="NAME_OF_LIST_ITEM" /></translation>
@@ -710,6 +717,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te geven die niet zijn gebaseerd op andere websites die je hebt bezocht. Toch blijven veel websites je browsegegevens nog verzamelen en gebruiken, bijvoorbeeld om de beveiliging te verbeteren, om content, services, advertenties en aanbevelingen te leveren en om rapportagestatistieken te genereren.</translation>
 <translation id="624789221780392884">Update gereed</translation>
 <translation id="6255999984061454636">Contentsuggesties</translation>
+<translation id="6270391203985052864">Sites kunnen vragen of ze je meldingen mogen sturen</translation>
 <translation id="6277522088822131679">Er is een fout opgetreden bij het afdrukken van de pagina. Probeer het opnieuw.</translation>
 <translation id="6295158916970320988">Alle sites</translation>
 <translation id="629730747756840877">Account</translation>
@@ -754,6 +762,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6545864417968258051">Bluetooth-scannen</translation>
 <translation id="6560414384669816528">Zoeken met Sogou</translation>
 <translation id="656065428026159829">Meer weergeven</translation>
+<translation id="6561560012278703671">Stillere meldingen gebruiken (zorgt ervoor dat je niet wordt gestoord door meldingprompts)</translation>
 <translation id="6566259936974865419">Chrome bespaart je <ph name="GIGABYTES" /> GB</translation>
 <translation id="6573096386450695060">Altijd toestaan</translation>
 <translation id="6573431926118603307">Tabbladen die je op andere apparaten in Chrome hebt geopend, worden hier weergegeven.</translation>
@@ -851,6 +860,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="729975465115245577">Je apparaat bevat geen app om het wachtwoordbestand in op te slaan.</translation>
 <translation id="7302081693174882195">Details: gesorteerd op de hoeveelheid bespaarde data</translation>
 <translation id="7302486331832100261">Meestal blokkeer je meldingen. Tik op Details om meldingen toe te staan.</translation>
+<translation id="7311441321349344333">NFC is uitgeschakeld voor dit apparaat. Schakel NFC in via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
 <translation id="7328017930301109123">In de Lite-versie van Chrome worden pagina's sneller geladen en wordt tot wel 60 procent minder data verbruikt.</translation>
 <translation id="7333031090786104871">Nog steeds bezig met toevoegen van vorige site</translation>
 <translation id="7352939065658542140">VIDEO</translation>

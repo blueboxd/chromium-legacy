@@ -143,8 +143,6 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
 
   virtual void FocusedElementChanged(Element*, Element*) = 0;
 
-  virtual bool HadFormInteraction() const = 0;
-
   // Allow document lifecycle updates to be run in order to produce composited
   // outputs. Updates are blocked from occurring during loading navigation in
   // order to prevent contention and allow Blink to proceed more quickly. This

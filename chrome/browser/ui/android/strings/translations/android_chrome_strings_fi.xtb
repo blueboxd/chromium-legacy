@@ -37,6 +37,7 @@
 <translation id="1231733316453485619">Otetaanko synkronointi käyttöön?</translation>
 <translation id="123724288017357924">Päivitä nykyinen sivu, ohita välimuistin sisältö</translation>
 <translation id="124116460088058876">Lisää kieliä</translation>
+<translation id="1242008676835033345">Upotettu sivustolle <ph name="WEBSITE_URL" /></translation>
 <translation id="124678866338384709">Sulje nykyinen välilehti</translation>
 <translation id="1258753120186372309">Google-piirros: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Hae ja tutki</translation>
@@ -95,6 +96,7 @@
 <translation id="1672586136351118594">Älä näytä uudelleen</translation>
 <translation id="1692118695553449118">Synkronointi on käytössä.</translation>
 <translation id="169515064810179024">Estä sivustoja käyttämästä liiketunnistimien lukemia</translation>
+<translation id="1711267867945983636">Laita NFC päälle puhelimella jatkaaksesi</translation>
 <translation id="1717218214683051432">Liiketunnistimet</translation>
 <translation id="1718835860248848330">Viimeinen tunti</translation>
 <translation id="1736419249208073774">Tutustu</translation>
@@ -151,6 +153,7 @@
 <translation id="2082238445998314030">Tulos <ph name="RESULT_NUMBER" />/<ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Ääni</translation>
 <translation id="2096012225669085171">Synkronoi ja yksilöi kaikilla laitteilla</translation>
+<translation id="2099625543891475722">fyysiset piirteesi, kuten pituutesi</translation>
 <translation id="2100273922101894616">Automaattinen kirjautuminen</translation>
 <translation id="2100314319871056947">Kokeile jakaa teksti pienempinä pätkinä</translation>
 <translation id="2107397443965016585">Kysy, saavatko sivustot toistaa suojattua sisältöä (suositus)</translation>
@@ -427,6 +430,7 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4226663524361240545">Laite voi väristä ilmoitusten yhteydessä.</translation>
 <translation id="423219824432660969">Salaa synkronoitu data Google-salasanalla (<ph name="TIME" />)</translation>
 <translation id="4242533952199664413">Avaa asetukset</translation>
+<translation id="4250229828105606438">Kuvakaappaus</translation>
 <translation id="4256782883801055595">Avoimen lähdekoodin käyttöluvat</translation>
 <translation id="4259722352634471385">Kohde on estetty: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopioi linkin osoite</translation>
@@ -480,6 +484,7 @@ Google-tililläsi voi olla muita selaushistoriatietoja, kuten hakuja ja toiminta
 <translation id="4634124774493850572">Käytä salasanaa</translation>
 <translation id="4645575059429386691">Vanhempasi hallinnoima</translation>
 <translation id="4650364565596261010">Järjestelmän oletusarvo</translation>
+<translation id="4660838440047236328">huoneesi asettelun</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> kirjanmerkkiä poistettiin</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> lisättiin aloitusnäytölle.</translation>
 <translation id="4684427112815847243">Synkronoi kaikki</translation>
@@ -604,6 +609,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5487521232677179737">Poista tiedot</translation>
 <translation id="5494752089476963479">Estä häiritseviä tai harhaanjohtavia mainoksia näyttävien sivustojen mainokset</translation>
 <translation id="5500777121964041360">Ei ole välttämättä käytettävissä asuinpaikassasi</translation>
+<translation id="5505264765875738116">Sivustot eivät saa pyytää lupaa lähettää ilmoituksia</translation>
 <translation id="5512137114520586844">Tätä tiliä hallinnoi <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Laitteen järjestelmänvalvojan estämä</translation>
 <translation id="5515439363601853141">Avaa lukitus nähdäksesi salasanan</translation>
@@ -701,6 +707,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="6192792657125177640">Poikkeukset</translation>
 <translation id="6194112207524046168">Ota kamera käyttöön myös <ph name="BEGIN_LINK" />Android-asetuksissa<ph name="END_LINK" />, niin Chrome voi käyttää kameraasi.</translation>
 <translation id="6196640612572343990">Estä kolmannen osapuolen evästeet</translation>
+<translation id="6201345951596836663">Linkki kopioitu</translation>
 <translation id="6206551242102657620">Yhteys on turvallinen. Sivuston tiedot</translation>
 <translation id="6210748933810148297">Etkö ole <ph name="EMAIL" />?</translation>
 <translation id="6216432067784365534">Vaihtoehdot: <ph name="NAME_OF_LIST_ITEM" /></translation>
@@ -710,6 +717,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämällä sinulle mainoksia, jotka eivät perustu muihin vierailemiisi verkkosivustoihin. Monet sivustot keräävät ja käyttävät silti edelleen selaustietojasi – esimerkiksi turvallisuuden parantamiseen, sisällön, mainosten ja suositusten tarjoamiseen sekä raportointitilastojen luomiseen.</translation>
 <translation id="624789221780392884">Päivitys on valmis</translation>
 <translation id="6255999984061454636">Sisältöehdotukset</translation>
+<translation id="6270391203985052864">Sivustot saavat pyytää lupaa lähettää ilmoituksia</translation>
 <translation id="6277522088822131679">Sivua tulostettaessa tapahtui virhe. Yritä uudelleen.</translation>
 <translation id="6295158916970320988">Kaikki sivustot</translation>
 <translation id="629730747756840877">Tili</translation>
@@ -754,6 +762,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="6545864417968258051">Bluetooth-haku</translation>
 <translation id="6560414384669816528">Käytä Sogouta</translation>
 <translation id="656065428026159829">Katso lisää</translation>
+<translation id="6561560012278703671">Hiljaisemmat viestit (estää ilmoituksia häiritsemästä sinua)</translation>
 <translation id="6566259936974865419">Chrome on säästänyt <ph name="GIGABYTES" /> Gt tilaa</translation>
 <translation id="6573096386450695060">Salli aina</translation>
 <translation id="6573431926118603307">Muilla laitteilla Chromessa avaamasi välilehdet näytetään täällä.</translation>
@@ -851,6 +860,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="729975465115245577">Laitteella ei ole sovellusta, johon salasanatiedoston voisi tallentaa.</translation>
 <translation id="7302081693174882195">Lisätiedot: Lajiteltu säästetyn datan mukaan</translation>
 <translation id="7302486331832100261">Estät yleensä ilmoitukset. Voit sallia ne valitsemalla Tiedot.</translation>
+<translation id="7311441321349344333">NFC on pois päältä tällä laitteella. Laita se päälle <ph name="BEGIN_LINK" />Androidin asetuksista<ph name="END_LINK" />.</translation>
 <translation id="7328017930301109123">Yksinkertaistetussa tilassa Chrome lataa sivuja nopeammin ja käyttää jopa 60 prosenttia vähemmän dataa.</translation>
 <translation id="7333031090786104871">Edellisen sivuston lisääminen kesken</translation>
 <translation id="7352939065658542140">VIDEO</translation>

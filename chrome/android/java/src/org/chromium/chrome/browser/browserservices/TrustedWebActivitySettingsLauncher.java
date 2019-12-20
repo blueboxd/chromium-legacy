@@ -13,8 +13,8 @@ import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.website.SettingsNavigationSource;
-import org.chromium.chrome.browser.settings.website.SingleCategoryPreferences;
-import org.chromium.chrome.browser.settings.website.SingleWebsitePreferences;
+import org.chromium.chrome.browser.settings.website.SingleCategorySettings;
+import org.chromium.chrome.browser.settings.website.SingleWebsiteSettings;
 import org.chromium.chrome.browser.settings.website.SiteSettingsCategory;
 
 import java.util.ArrayList;
@@ -56,7 +56,7 @@ public class TrustedWebActivitySettingsLauncher {
     public static void launch(Context context, Collection<String> origins,
             Collection<String> domains) {
         if (origins.size() == 1) {
-            // When launched with EXTRA_SITE_ADDRESS, SingleWebsitePreferences will merge the
+            // When launched with EXTRA_SITE_ADDRESS, SingleWebsiteSettings will merge the
             // settings for top-level origin, so that given https://peconn.github.io and
             // peconn.github.io, we'll get the permission and data settings of both.
             openSingleWebsitePrefs(context, origins.iterator().next());
@@ -75,16 +75,16 @@ public class TrustedWebActivitySettingsLauncher {
 
     private static void openFilteredAllSiteSettings(Context context, Collection<String> domains) {
         Bundle extras = new Bundle();
-        extras.putString(SingleCategoryPreferences.EXTRA_CATEGORY,
+        extras.putString(SingleCategorySettings.EXTRA_CATEGORY,
                 SiteSettingsCategory.preferenceKey(SiteSettingsCategory.Type.ALL_SITES));
-        extras.putString(SingleCategoryPreferences.EXTRA_TITLE,
+        extras.putString(SingleCategorySettings.EXTRA_TITLE,
                 context.getString(R.string.twa_clear_data_site_selection_title));
         extras.putStringArrayList(
-                SingleCategoryPreferences.EXTRA_SELECTED_DOMAINS, new ArrayList<>(domains));
+                SingleCategorySettings.EXTRA_SELECTED_DOMAINS, new ArrayList<>(domains));
         extras.putInt(SettingsNavigationSource.EXTRA_KEY,
                 SettingsNavigationSource.TWA_CLEAR_DATA_DIALOG);
 
-        SettingsLauncher.launchSettingsPage(context, SingleCategoryPreferences.class, extras);
+        SettingsLauncher.launchSettingsPage(context, SingleCategorySettings.class, extras);
     }
 
     /**
@@ -92,9 +92,9 @@ public class TrustedWebActivitySettingsLauncher {
      */
     private static Intent createIntentForSingleWebsitePreferences(
             Context context, String url, @SettingsNavigationSource int navigationSource) {
-        Bundle args = SingleWebsitePreferences.createFragmentArgsForSite(url);
+        Bundle args = SingleWebsiteSettings.createFragmentArgsForSite(url);
         args.putInt(SettingsNavigationSource.EXTRA_KEY, navigationSource);
         return SettingsLauncher.createIntentForSettingsPage(
-                context, SingleWebsitePreferences.class.getName(), args);
+                context, SingleWebsiteSettings.class.getName(), args);
     }
 }

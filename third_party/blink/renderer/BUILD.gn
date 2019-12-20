@@ -52,6 +52,7 @@ config("inside_blink") {
     if (llvm_force_head_revision) {
       cflags += [
         "-Wno-enum-enum-conversion",
+        "-Wno-enum-float-conversion",
       ]
     }
   }

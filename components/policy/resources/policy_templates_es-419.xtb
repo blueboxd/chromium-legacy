@@ -498,7 +498,7 @@
 <translation id="1802205074307397126">Demorar las cargas hasta conocer el resultado del análisis</translation>
 <translation id="1803646570632580723">Lista de aplicaciones fijas para mostrar en el menú de aplicaciones</translation>
 <translation id="1808715480127969042">Bloquear cookies en estos sitios</translation>
-<translation id="1810261428246410396">Permitir usar la conexión instantánea mediante dispositivo portátil</translation>
+<translation id="1810261428246410396">Permitir usar la conexión instantánea mediante dispositivo móvil</translation>
 <translation id="1817685358399181673">Esta política especifica la imagen de <ph name="PLUGIN_VM_NAME" /> para un usuario. Para configurar la política, especifica la URL desde donde el dispositivo puede descargar la imagen y un hash SHA-256 para verificar la integridad de la descarga.
 
       La política debe especificarse como un string que expresa la URL y el hash en formato JSON.</translation>

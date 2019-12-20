@@ -127,8 +127,12 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
 
     self.assertEqual(test_result['actual'], 'PASS')
     self.assertEqual(test_result['expected'], 'PASS')
-    self.assertEqual(test_result['times'], [1.1, 1.2])
-    self.assertEqual(test_result['time'], 1.1)
+    # Amortization of processing time across test durations prevents us from
+    # being exact here.
+    self.assertGreaterEqual(test_result['times'][0], 1.1)
+    self.assertGreaterEqual(test_result['times'][1], 1.2)
+    self.assertEqual(len(test_result['times']), 2)
+    self.assertGreaterEqual(test_result['time'], 1.1)
     self.assertEqual(test_result['shard'], 7)
 
   def testJson3OutputWithArtifacts(self):

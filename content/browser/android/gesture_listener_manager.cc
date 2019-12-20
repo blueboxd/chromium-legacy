@@ -10,7 +10,7 @@
 #include "content/public/android/content_jni_headers/GestureListenerManagerImpl_jni.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/events/android/gesture_event_type.h"
 #include "ui/gfx/geometry/size_f.h"
 

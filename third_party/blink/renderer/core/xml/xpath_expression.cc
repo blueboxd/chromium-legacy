@@ -70,11 +70,13 @@ XPathResult* XPathExpression::evaluate(Node* context_node,
     return nullptr;
   }
 
-  xpath::EvaluationContext evaluation_context(*context_node);
+  bool had_type_conversion_error = false;
+  xpath::EvaluationContext evaluation_context(*context_node,
+                                              had_type_conversion_error);
   auto* result = MakeGarbageCollected<XPathResult>(
       evaluation_context, top_expression_->Evaluate(evaluation_context));
 
-  if (evaluation_context.had_type_conversion_error) {
+  if (had_type_conversion_error) {
     // It is not specified what to do if type conversion fails while evaluating
     // an expression.
     exception_state.ThrowDOMException(

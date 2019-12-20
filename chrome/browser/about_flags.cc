@@ -1803,9 +1803,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"instant-tethering", flag_descriptions::kTetherName,
      flag_descriptions::kTetherDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kInstantTethering)},
-    {"newblue", flag_descriptions::kNewblueName,
-     flag_descriptions::kNewblueDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(device::kNewblueDaemon)},
     {"shelf-hotseat", flag_descriptions::kShelfHotseatName,
      flag_descriptions::kShelfHotseatDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kShelfHotseat)},
@@ -4429,9 +4426,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
 #if defined(OS_CHROMEOS)
-    {"crostini-webui-installer", flag_descriptions::kCrostiniWebUIInstallerName,
-     flag_descriptions::kCrostiniWebUIInstallerDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kCrostiniWebUIInstaller)},
     {"crostini-webui-upgrader", flag_descriptions::kCrostiniWebUIUpgraderName,
      flag_descriptions::kCrostiniWebUIUpgraderDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniWebUIUpgrader)},

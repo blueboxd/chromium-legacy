@@ -658,9 +658,9 @@ ModelTypeSet DataTypeManagerImpl::PrepareConfigureParams(
   params->to_purge = types_to_purge;
   params->to_journal = types_to_journal;
   params->to_unapply = unapply_types;
-  params->ready_task =
-      base::Bind(&DataTypeManagerImpl::DownloadReady,
-                 weak_ptr_factory_.GetWeakPtr(), download_types_queue_.front());
+  params->ready_task = base::BindOnce(&DataTypeManagerImpl::DownloadReady,
+                                      weak_ptr_factory_.GetWeakPtr(),
+                                      download_types_queue_.front());
   params->is_sync_feature_enabled =
       last_requested_context_.sync_mode == SyncMode::kFull;
 

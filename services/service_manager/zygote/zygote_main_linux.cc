@@ -109,7 +109,7 @@ static bool EnterSuidSandbox(sandbox::SetuidSandboxClient* setuid_sandbox,
     LOG(WARNING) << "You are using a wrong version of the setuid binary!\n"
                     "Please read "
                     "https://chromium.googlesource.com/chromium/src/+/master/"
-                    "docs/linux_suid_sandbox_development.md."
+                    "docs/linux/suid_sandbox_development.md."
                     "\n\n";
   }
 

@@ -43,6 +43,9 @@ enum class SystemAppType {
   TERMINAL,
   MEDIA,
   HELP,
+#if !defined(OFFICIAL_BUILD)
+  SAMPLE,
+#endif  // !defined(OFFICIAL_BUILD)
 };
 
 // The configuration options for a System App.

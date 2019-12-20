@@ -116,9 +116,9 @@ crbug.com/759632 http/tests/devtools/network/network-datasaver-warning.js [ Fail
 # --- Begin CompositeAfterPaint Tests --
 # Only whitelisted tests run under the virtual suite.
 # More tests run with CompositeAfterPaint on the flag-specific try bot.
-virtual/composite-after-paint/ [ Skip ]
-virtual/composite-after-paint/compositing/backface-visibility/ [ Pass ]
-virtual/composite-after-paint/compositing/backgrounds/ [ Pass ]
+virtual/composite-after-paint/* [ Skip ]
+virtual/composite-after-paint/compositing/backface-visibility/* [ Pass ]
+virtual/composite-after-paint/compositing/backgrounds/* [ Pass ]
 virtual/composite-after-paint/compositing/geometry/abs-position-inside-opacity.html [ Pass ]
 virtual/composite-after-paint/compositing/geometry/composited-html-size.html [ Pass ]
 virtual/composite-after-paint/compositing/geometry/outline-change.html [ Pass ]
@@ -129,17 +129,17 @@ virtual/composite-after-paint/compositing/iframes/iframe-in-composited-layer.htm
 virtual/composite-after-paint/compositing/masks/mask-of-clipped-layer.html [ Pass ]
 virtual/composite-after-paint/compositing/overflow/clip-rotate-opacity-fixed.html [ Pass ]
 virtual/composite-after-paint/compositing/overlap-blending/children-opacity-huge.html [ Pass ]
-virtual/composite-after-paint/compositing/plugins/ [ Pass ]
+virtual/composite-after-paint/compositing/plugins/* [ Pass ]
 virtual/composite-after-paint/compositing/reflections/reflection-ordering.html [ Pass ]
 virtual/composite-after-paint/compositing/rtl/rtl-overflow-scrolling.html [ Pass ]
 virtual/composite-after-paint/compositing/squashing/squash-composited-input.html [ Pass ]
 virtual/composite-after-paint/compositing/transitions/opacity-on-inline.html [ Pass ]
 virtual/composite-after-paint/compositing/will-change/stacking-context-creation.html [ Pass ]
-virtual/composite-after-paint/compositing/z-order/ [ Pass ]
-virtual/composite-after-paint/paint/background/ [ Pass ]
-virtual/composite-after-paint/paint/filters/ [ Pass ]
-virtual/composite-after-paint/paint/frames [ Pass ]
-virtual/composite-after-paint/scrollingcoordinator [ Pass ]
+virtual/composite-after-paint/compositing/z-order/* [ Pass ]
+virtual/composite-after-paint/paint/background/* [ Pass ]
+virtual/composite-after-paint/paint/filters/* [ Pass ]
+virtual/composite-after-paint/paint/frames/* [ Pass ]
+virtual/composite-after-paint/scrollingcoordinator/* [ Pass ]
 # --- End CompositeAfterPaint Tests --
 
 # Subpixel differences
@@ -322,8 +322,8 @@ crbug.com/981719 [ Win ] external/wpt/css/css-ui/webkit-appearance-textfield-001
 
 # WebGPU tests are only run on GPU bots, so they are skipped by default and run
 # separately from other Web Tests.
-external/wpt/webgpu/ [ Skip ]
-wpt_internal/webgpu/ [ Skip ]
+external/wpt/webgpu/* [ Skip ]
+wpt_internal/webgpu/* [ Skip ]
 
 crbug.com/1018273 [ Mac ] compositing/gestures/gesture-tapHighlight-1-iframe-scrolled.html [ Failure ]
 crbug.com/1018273 [ Mac ] compositing/gestures/gesture-tapHighlight-1-iframe.html [ Failure ]
@@ -590,7 +590,6 @@ crbug.com/881057 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central
 crbug.com/881057 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-clip-004.html [ Failure ]
 crbug.com/881057 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-clip-005.html [ Failure ]
 crbug.com/880802 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-ignored-cases-ruby-stacking-and-clipping-001.html [ Failure ]
-crbug.com/881057 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-stacking-context-001b.html [ Failure ]
 
 crbug.com/880802 virtual/layout_ng_fieldset/external/wpt/css/css-contain/contain-layout-017.html [ Failure ]
 crbug.com/626703 virtual/layout_ng_fieldset/external/wpt/css/css-contain/contain-layout-breaks-002.html [ Failure ]
@@ -615,7 +614,6 @@ crbug.com/881057 [ Mac ] virtual/layout_ng_fieldset/external/wpt/css/vendor-impo
 crbug.com/881057 [ Mac ] virtual/layout_ng_fieldset/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-clip-004.html [ Failure ]
 crbug.com/881057 [ Mac ] virtual/layout_ng_fieldset/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-clip-005.html [ Failure ]
 crbug.com/880802 virtual/layout_ng_fieldset/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-ignored-cases-ruby-stacking-and-clipping-001.html [ Failure ]
-crbug.com/881057 virtual/layout_ng_fieldset/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-stacking-context-001b.html [ Failure ]
 crbug.com/965491 virtual/layout_ng_fieldset/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-fieldset-002.html [ Failure ]
 crbug.com/845235 virtual/layout_ng_fieldset/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-flex-001.html [ Failure ]
 crbug.com/845235 virtual/layout_ng_fieldset/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-inline-flex-001.html [ Failure ]
@@ -1707,7 +1705,7 @@ crbug.com/803276 [ Mac ] inspector-protocol/memory/sampling-native-snapshot.js [
 crbug.com/803276 [ Win ] inspector-protocol/memory/sampling-native-snapshot.js [ Skip ]
 
 # Run these tests with under virtual/scalefactor... only.
-crbug.com/567837 fast/hidpi/static [ Skip ]
+crbug.com/567837 fast/hidpi/static/* [ Skip ]
 
 # For win10, see crbug.com/955109
 crbug.com/538697 [ Win ] virtual/threaded/printing/webgl-oversized-printing.html [ Failure Crash ]
@@ -1795,10 +1793,10 @@ crbug.com/326139 crbug.com/390125 virtual/audio-service/media/video-frame-accura
 crbug.com/421283 html/marquee/marquee-scrollamount.html [ Pass Failure ]
 
 # TODO(oshima): Mac Android are currently not supported.
-crbug.com/567837 [ Mac ] virtual/scalefactor200withzoom/fast/hidpi/static/ [ Skip ]
+crbug.com/567837 [ Mac ] virtual/scalefactor200withzoom/fast/hidpi/static/* [ Skip ]
 
 # Mac does not support fractional scale factor.
-crbug.com/567837 [ Mac ] virtual/scalefactor150/fast/hidpi/static [ Skip ]
+crbug.com/567837 [ Mac ] virtual/scalefactor150/fast/hidpi/static/* [ Skip ]
 
 # TODO(oshima): Move the event scaling code to eventSender and remove this.
 crbug.com/567837 virtual/scalefactor200/fast/hidpi/static/mousewheel-scroll-amount.html [ Skip ]
@@ -1972,7 +1970,7 @@ crbug.com/626703 [ Win7 ] external/wpt/html/dom/documents/resource-metadata-mana
 crbug.com/626703 [ Win7 ] virtual/omt-worker-fetch/external/wpt/xhr/responsexml-document-properties.htm [ Failure ]
 
 # These are added to W3CImportExpectations as Skip, remove when next import is done.
-crbug.com/666657 external/wpt/css/css-text/hanging-punctuation [ Skip ]
+crbug.com/666657 external/wpt/css/css-text/hanging-punctuation/* [ Skip ]
 
 crbug.com/909597 external/wpt/css/css-ui/text-overflow-ruby.html [ Failure ]
 
@@ -2062,10 +2060,10 @@ crbug.com/630342 virtual/audio-service/http/tests/media/media-source/stream_memo
 
 # On these platforms (all but Android) media tests don't currently use gpu-accelerated (proprietary) codecs, so no
 # benefit to running them again with gpu acceleration enabled.
-crbug.com/555703 [ Linux ] virtual/media-gpu-accelerated/ [ Skip ]
-crbug.com/555703 [ Mac ] virtual/media-gpu-accelerated/ [ Skip ]
-crbug.com/555703 [ Win ] virtual/media-gpu-accelerated/ [ Skip ]
-crbug.com/555703 [ Fuchsia ] virtual/media-gpu-accelerated/ [ Skip ]
+crbug.com/555703 [ Linux ] virtual/media-gpu-accelerated/* [ Skip ]
+crbug.com/555703 [ Mac ] virtual/media-gpu-accelerated/* [ Skip ]
+crbug.com/555703 [ Win ] virtual/media-gpu-accelerated/* [ Skip ]
+crbug.com/555703 [ Fuchsia ] virtual/media-gpu-accelerated/* [ Skip ]
 
 crbug.com/467477 fast/multicol/vertical-rl/nested-columns.html [ Failure ]
 
@@ -2080,7 +2078,7 @@ crbug.com/924308 http/tests/devtools/console/console-dir-es6.js [ Pass Failure ]
 crbug.com/924308 http/tests/devtools/console/console-format-es6-2.js [ Pass Failure ]
 
 # We only want to run one of the web-animations-api tests in stable mode.
-crbug.com/441553 virtual/stable/web-animations-api [ Skip ]
+crbug.com/441553 virtual/stable/web-animations-api/* [ Skip ]
 # These tests *only* run in stable, to verify that these features are unsupported and throw exceptions.
 crbug.com/441559 virtual/stable/web-animations-api/partial-keyframes-unsupported.html [ Pass ]
 crbug.com/437696 virtual/stable/web-animations-api/additive-animations-unsupported.html [ Pass ]
@@ -2315,20 +2313,6 @@ crbug.com/491764 http/tests/devtools/service-workers/user-agent-override.js [ Pa
 crbug.com/492511 [ Mac ] virtual/text-antialias/atsui-negative-spacing-features.html [ Failure ]
 crbug.com/492511 [ Mac ] virtual/text-antialias/international/arabic-justify.html [ Failure ]
 
-# Temporarily disable top-level await tests as the implementation moves
-# from the DevTools frontend to native V8
-crbug.com/1021921 http/tests/devtools/console/console-top-level-await.js [ Skip ]
-crbug.com/1021921 http/tests/devtools/unit/preprocess-top-level-awaits.js [ Skip ]
-crbug.com/1021921 http/tests/devtools/console/console-eval-exception-report.js [ Skip ]
-crbug.com/1021921 http/tests/devtools/console/console-eval-object-literal.js [ Skip ]
-crbug.com/1021921 http/tests/devtools/console/console-eval-throw.js [ Skip ]
-crbug.com/1021921 http/tests/devtools/console/console-eval-undefined-override.js [ Skip ]
-crbug.com/1021921 http/tests/devtools/console/console-group-similar.js [ Skip ]
-crbug.com/1021921 http/tests/devtools/console/console-xpath.js [ Skip ]
-crbug.com/1021921 http/tests/devtools/console/exception-objects.js [ Skip ]
-crbug.com/1021921 http/tests/devtools/console/nested-worker-eval-contains-stack.js [ Skip ]
-crbug.com/1021921 http/tests/devtools/console/worker-eval-contains-stack.js [ Skip ]
-
 # Ref tests that fail due to differences in inline box structure, even though they contain the same text.
 # This happens because inline box layout uses fixed-point measurements, which can cause rounding differences.
 crbug.com/321237 [ Mac ] fast/selectors/007a.html [ Failure ]
@@ -2440,9 +2424,6 @@ crbug.com/705125 fast/mediacapturefromelement/CanvasCaptureMediaStream-capture-o
 crbug.com/763830 http/tests/security/cors-rfc1918/external-to-internal-fetch.php [ Skip ]
 crbug.com/763830 http/tests/security/cors-rfc1918/external-to-internal-xhr.php [ Skip ]
 
-crbug.com/831729 external/wpt/event-timing/crossiframe.html [ Timeout ]
-crbug.com/831729 external/wpt/event-timing/observer-manual.html [ Skip ]
-
 # Working on getting the CSP tests going:
 crbug.com/694525 external/wpt/content-security-policy/connect-src/worker-from-guid.sub.html [ Skip ]
 crbug.com/694525 external/wpt/content-security-policy/connect-src/worker-connect-src-blocked.sub.html [ Skip ]
@@ -2468,7 +2449,7 @@ crbug.com/911114 external/wpt/content-security-policy/plugin-types/plugintypes-m
 crbug.com/911114 external/wpt/content-security-policy/plugin-types/plugintypes-mismatched-url.html [ Skip ]
 
 # Remove these from virtual tests when Network Error Logging is turned on by default
-crbug.com/748549 external/wpt/network-error-logging [ Skip ]
+crbug.com/748549 external/wpt/network-error-logging/* [ Skip ]
 
 # Remove from virtual tests when FreezeUserAgent is turned on by default.
 crbug.com/955620 http/tests/navigation/frozen-useragent.html [ Skip ]
@@ -2903,7 +2884,7 @@ crbug.com/626703 external/wpt/css/css-writing-modes/text-combine-upright-digits-
 crbug.com/626703 external/wpt/css/css-ui/webkit-appearance-button-bevel-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/text-combine-upright-all-002-manual.html [ Skip ]
 crbug.com/626703 virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/json-module/parse-error.tentative.html [ Timeout ]
-crbug.com/967018 virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/css-module [ Failure ]
+crbug.com/967018 virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/css-module/* [ Failure ]
 crbug.com/967018 external/wpt/html/semantics/scripting-1/the-script-element/css-module/import-css-module-basic.html [ Failure ]
 crbug.com/967018 external/wpt/html/semantics/scripting-1/the-script-element/css-module/css-module-worker-test.html [ Failure ]
 crbug.com/967018 external/wpt/html/semantics/scripting-1/the-script-element/css-module/utf8.tentative.html [ Failure ]
@@ -3969,7 +3950,7 @@ crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-04.html [ Failu
 crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-horiz-04.html [ Failure ]
 
 # Subgrid is not implemented yet
-crbug.com/618969 external/wpt/css/css-grid/subgrid/ [ Skip ]
+crbug.com/618969 external/wpt/css/css-grid/subgrid/* [ Skip ]
 
 # [css-logical]
 crbug.com/865579 external/wpt/css/css-logical/animation-001.html [ Failure Pass ]
@@ -4008,12 +3989,12 @@ crbug.com/826419 external/wpt/html/semantics/embedded-content/media-elements/tra
 
 crbug.com/825798 external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-webvtt-non-snap-to-lines.html [ Failure ]
 
-crbug.com/927477 external/wpt/import-maps/acquire-import-maps-flag/worker-request/ [ Skip ]
-crbug.com/927477 virtual/import-maps-without-builtin-modules/external/wpt/import-maps/acquire-import-maps-flag/worker-request/ [ Skip ]
+crbug.com/927477 external/wpt/import-maps/acquire-import-maps-flag/worker-request/* [ Skip ]
+crbug.com/927477 virtual/import-maps-without-builtin-modules/external/wpt/import-maps/acquire-import-maps-flag/worker-request/* [ Skip ]
 
 # Excludes tests that require built-in module supports.
-crbug.com/1010751 virtual/import-maps-without-builtin-modules/external/wpt/import-maps/builtin-support.tentative/ [ Skip ]
-crbug.com/1010751 external/wpt/import-maps/imported/ [ Skip ]
+crbug.com/1010751 virtual/import-maps-without-builtin-modules/external/wpt/import-maps/builtin-support.tentative/* [ Skip ]
+crbug.com/1010751 external/wpt/import-maps/imported/* [ Skip ]
 
 # This test requires a special browser flag and seems not suitable for a wpt test, see bug.
 crbug.com/691944 external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
@@ -4121,7 +4102,7 @@ crbug.com/789139 http/tests/devtools/sources/debugger/live-edit-no-reveal.js [ F
 # ====== Begin web-components-v0-disabled virtual suite tests ======
 
 # Ignore these - they are tests of the disabled features. Eventually remove these.
-crbug.com/937746 virtual/web-components-v0-disabled/fast/html/imports [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/html/imports/* [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/custom/callback-context.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/custom/crash-without-dom-wrapper.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/custom/created-callback.html [ Skip ]
@@ -4379,7 +4360,7 @@ crbug.com/681468 [ Win ] virtual/scalefactor150/fast/hidpi/static/data-suggestio
 crbug.com/681468 [ Win ] virtual/scalefactor200withzoom/fast/hidpi/static/data-suggestion-picker-appearance.html [ Failure Pass Timeout ]
 crbug.com/681468 [ Win ] virtual/scalefactor200/fast/hidpi/static/data-suggestion-picker-appearance.html [ Failure Pass Timeout ]
 
-crbug.com/683800 [ Win7 Debug ] external/wpt/selection/ [ Failure Pass ]
+crbug.com/683800 [ Win7 Debug ] external/wpt/selection/* [ Failure Pass ]
 
 # Arrow function name inferring
 crbug.com/916975 http/tests/devtools/console/console-repeat-count.js [ Pass Failure ]
@@ -4986,7 +4967,7 @@ crbug.com/853360 [ Mac ] http/tests/misc/slow-loading-image-in-pattern.html [ Pa
 
 # Origin Policy: Skip tests that rely on --feature-enabled=OriginPolicy, so
 #   they can be run via virtual/origin-policy instead.
-crbug.com/751996 external/wpt/origin-policy [ Skip ]
+crbug.com/751996 external/wpt/origin-policy/* [ Skip ]
 
 crbug.com/854538 [ Win7 ] http/tests/security/contentSecurityPolicy/1.1/form-action-src-default-ignored-with-redirect.html [ Skip ]
 
@@ -5440,7 +5421,7 @@ crbug.com/919789 virtual/audio-service/media/controls/overflow-menu-hide-on-resi
 crbug.com/919789 [ Linux ] paint/invalidation/resize-iframe-text.html [ Pass Timeout ]
 crbug.com/919789 [ Mac10.13 ] paint/invalidation/resize-iframe-text.html [ Pass Timeout ]
 crbug.com/919789 paint/invalidation/scroll/scrollbar-damage-and-full-viewport-repaint.html [ Pass Timeout ]
-crbug.com/919789 paint/invalidation/window-resize/ [ Pass Timeout ]
+crbug.com/919789 paint/invalidation/window-resize/* [ Pass Timeout ]
 
 # Sheriff 2019-03-27
 crbug.com/835943 [ Release ] http/tests/appcache/non-html.xhtml [ Crash Pass Failure Timeout ]
@@ -5741,7 +5722,7 @@ crbug.com/991243 [ Linux ] virtual/omt-worker-fetch/external/wpt/workers/semanti
 
 # Expected failures for forced colors mode tests when the corresponding flags
 # are not enabled.
-crbug.com/970285 external/wpt/forced-colors-mode [ Failure ]
+crbug.com/970285 external/wpt/forced-colors-mode/* [ Failure ]
 
 # Sheriff 2019-08-14
 crbug.com/993671 [ Win ] http/tests/media/video-frame-size-change.html [ Pass Failure ]
@@ -5995,8 +5976,6 @@ crbug.com/1025944 [ Linux ] external/wpt/pointerevents/pointerlock/pointerevent_
 # Timeout media preload test until preloading media destinations gets enabled.
 crbug.com/977033 http/tests/priorities/resource-load-priorities-media-preload.html [ Timeout ]
 
-crbug.com/1016815 external/wpt/longtask-timing/buffered-flag.window.html [ Failure ]
-
 # Sheriff 2019-11-21
 crbug.com/1027287 css3/filters/effect-reference-image-lazy-attach.html [ Pass Failure ]
 
@@ -6082,10 +6061,6 @@ crbug.com/1006759 inspector-protocol/heap-profiler/heap-snapshot-with-detached-i
 crbug.com/1006759 inspector-protocol/heap-profiler/heap-snapshot-with-event-listener.js [ Pass Failure ]
 crbug.com/1006759 inspector-protocol/heap-profiler/heap-snapshot-with-multiple-retainers.js [ Pass Failure ]
 crbug.com/1006759 inspector-protocol/heap-profiler/heap-snapshot-with-no-detached-iframe.js [ Pass Failure ]
-
-# Temporarily disabled for landing changes to treeoutline in DevTools
-crbug.com/1033213 http/tests/devtools/security/interstitial-sidebar.js [ Pass Failure ]
-crbug.com/1033213 http/tests/devtools/security/mixed-content-sidebar.js [ Pass Failure ]
 
 # Sheriff 2019-12-13
 crbug.com/1032451 [ Win7 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/idlharness.https.window.html [ Failure ]

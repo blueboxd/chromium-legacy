@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/aom/accessible_node_list.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
+#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -2996,6 +2997,13 @@ const AXObject* AXObject::TableParent() const {
          table->RoleValue() == ax::mojom::Role::kGenericContainer)
     table = table->ParentObjectUnignored();
   return table;
+}
+
+int AXObject::GetDOMNodeId() const {
+  Node* node = GetNode();
+  if (node)
+    return DOMNodeIds::IdForNode(node);
+  return 0;
 }
 
 void AXObject::GetRelativeBounds(AXObject** out_container,

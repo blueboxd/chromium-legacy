@@ -237,7 +237,7 @@ ModelTypeSet SyncManagerImpl::GetTypesWithEmptyProgressMarkerToken(
 void SyncManagerImpl::ConfigureSyncer(ConfigureReason reason,
                                       ModelTypeSet to_download,
                                       SyncFeatureState sync_feature_state,
-                                      const base::Closure& ready_task) {
+                                      base::OnceClosure ready_task) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!ready_task.is_null());
   DCHECK(initialized_);
@@ -246,10 +246,10 @@ void SyncManagerImpl::ConfigureSyncer(ConfigureReason reason,
            << "\n\t"
            << "types to download: " << ModelTypeSetToString(to_download);
   ConfigurationParams params(GetOriginFromReason(reason), to_download,
-                             ready_task);
+                             std::move(ready_task));
 
   scheduler_->Start(SyncScheduler::CONFIGURATION_MODE, base::Time());
-  scheduler_->ScheduleConfiguration(params);
+  scheduler_->ScheduleConfiguration(std::move(params));
   if (sync_feature_state != SyncFeatureState::INITIALIZING) {
     cycle_context_->set_is_sync_feature_enabled(sync_feature_state ==
                                                 SyncFeatureState::ON);
@@ -371,7 +371,7 @@ void SyncManagerImpl::Init(InitArgs* args) {
   allstatus_.SetInvalidatorClientId(args->invalidator_client_id);
 
   model_type_registry_ = std::make_unique<ModelTypeRegistry>(
-      args->workers, share_, this, base::Bind(&MigrateDirectoryData),
+      args->workers, share_, this, base::BindRepeating(&MigrateDirectoryData),
       args->cancelation_signal,
       sync_encryption_handler_->GetKeystoreKeysHandler());
   sync_encryption_handler_->AddObserver(model_type_registry_.get());

@@ -29,7 +29,7 @@ android_library("internal_java") {
     "//ui/android:ui_java",
     "//ui/android:ui_utils_java",
   ]
-  java_files = [
+  sources = [
     "java/src/org/chromium/chrome/browser/keyboard_accessory/AutofillKeyboardAccessoryViewBridge.java",
     "java/src/org/chromium/chrome/browser/keyboard_accessory/KeyboardExtensionViewResizer.java",
     "java/src/org/chromium/chrome/browser/keyboard_accessory/ManualFillingComponentBridge.java",
@@ -40,10 +40,10 @@ android_library("internal_java") {
     "java/src/org/chromium/chrome/browser/keyboard_accessory/ManualFillingState.java",
     "java/src/org/chromium/chrome/browser/keyboard_accessory/ManualFillingStateCache.java",
     "java/src/org/chromium/chrome/browser/keyboard_accessory/bar_component/KeyboardAccessoryCoordinator.java",
-    "java/src/org/chromium/chrome/browser/keyboard_accessory/bar_component/KeyboardAccessoryMediator.java",
-    "java/src/org/chromium/chrome/browser/keyboard_accessory/bar_component/KeyboardAccessoryModernView.java",
-    "java/src/org/chromium/chrome/browser/keyboard_accessory/bar_component/KeyboardAccessoryMetricsRecorder.java",
     "java/src/org/chromium/chrome/browser/keyboard_accessory/bar_component/KeyboardAccessoryIPHUtils.java",
+    "java/src/org/chromium/chrome/browser/keyboard_accessory/bar_component/KeyboardAccessoryMediator.java",
+    "java/src/org/chromium/chrome/browser/keyboard_accessory/bar_component/KeyboardAccessoryMetricsRecorder.java",
+    "java/src/org/chromium/chrome/browser/keyboard_accessory/bar_component/KeyboardAccessoryModernView.java",
     "java/src/org/chromium/chrome/browser/keyboard_accessory/bar_component/KeyboardAccessoryModernViewBinder.java",
     "java/src/org/chromium/chrome/browser/keyboard_accessory/bar_component/KeyboardAccessoryProperties.java",
     "java/src/org/chromium/chrome/browser/keyboard_accessory/bar_component/KeyboardAccessoryRecyclerViewMcp.java",

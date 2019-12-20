@@ -67,7 +67,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/page_importance_signals.h"
 #include "net/base/network_change_notifier.h"
 
 #if defined(OS_CHROMEOS)

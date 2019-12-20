@@ -111,6 +111,11 @@ const GURL GetFrenchUrl() {
       [BookmarkEarlGreyAppInterface verifyAbsenceOfBookmarkWithURL:URL]);
 }
 
+- (void)verifyExistenceOfFolderWithTitle:(NSString*)title {
+  EG_TEST_HELPER_ASSERT_NO_ERROR(
+      [BookmarkEarlGreyAppInterface verifyExistenceOfFolderWithTitle:title]);
+}
+
 #pragma mark - Promo
 
 - (void)verifyPromoAlreadySeen:(BOOL)seen {

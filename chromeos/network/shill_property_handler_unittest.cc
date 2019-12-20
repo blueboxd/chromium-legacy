@@ -258,7 +258,6 @@ class ShillPropertyHandlerTest : public testing::Test {
     return (type == shill::kTypeEthernet ||
             type == shill::kTypeEthernetEap ||
             type == shill::kTypeWifi ||
-            type == shill::kTypeBluetooth ||
             type == shill::kTypeCellular ||
             type == shill::kTypeVPN);
   }

@@ -90,7 +90,7 @@ class FakeSyncManager : public SyncManager {
   void ConfigureSyncer(ConfigureReason reason,
                        ModelTypeSet to_download,
                        SyncFeatureState sync_feature_state,
-                       const base::Closure& ready_task) override;
+                       base::OnceClosure ready_task) override;
   void OnIncomingInvalidation(
       ModelType type,
       std::unique_ptr<InvalidationInterface> interface) override;

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -156,6 +157,12 @@ const char kPDFURL[] = "http://ios/testing/data/http_server_files/testpage.pdf";
 // Navigates to a pdf page and verifies that the "Find in Page..." tool
 // is not enabled
 - (void)testNoSearchForPDF {
+#if defined(CHROME_EARL_GREY_1)
+  // TODO(crbug.com/1036078): EG1 Test flaky on iOS 12.
+  if (!base::ios::IsRunningOnIOS13OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"EG1 flaky on iOS 12.");
+  }
+#endif
   web::test::SetUpFileBasedHttpServer();
   const GURL URL = web::test::HttpServer::MakeUrl(kPDFURL);
 

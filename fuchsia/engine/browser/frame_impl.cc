@@ -6,7 +6,6 @@
 
 #include <lib/sys/cpp/component_context.h>
 #include <lib/ui/scenic/cpp/view_ref_pair.h>
-#include <limits>
 
 #include "base/bind_helpers.h"
 #include "base/fuchsia/default_context.h"
@@ -50,6 +49,10 @@ namespace {
 // value much lower than logging::LOG_VERBOSE here.
 const logging::LogSeverity kLogSeverityNone =
     std::numeric_limits<logging::LogSeverity>::min();
+
+// Size of screen bounds when using headless rendering.
+constexpr gfx::Size kSemanticsTestingWindowSize = {720, 640};
+constexpr gfx::Size kHeadlessWindowSize = {1, 1};
 
 // Used for attaching popup-related metadata to a WebContents.
 constexpr char kPopupCreationInfo[] = "popup-creation-info";
@@ -528,22 +531,19 @@ void FrameImpl::CreateView(fuchsia::ui::views::ViewToken view_token) {
   fuchsia::ui::views::ViewRef accessibility_view_ref;
   zx_status_t status = properties.view_ref_pair.view_ref.reference.duplicate(
       ZX_RIGHT_SAME_RIGHTS, &accessibility_view_ref.reference);
-  if (status == ZX_OK) {
-    fuchsia::accessibility::semantics::SemanticsManagerPtr semantics_manager;
-    if (test_semantics_manager_ptr_) {
-      semantics_manager = std::move(test_semantics_manager_ptr_);
-    } else {
-      semantics_manager =
-          base::fuchsia::ComponentContextForCurrentProcess()
-              ->svc()
-              ->Connect<fuchsia::accessibility::semantics::SemanticsManager>();
-    }
-    accessibility_bridge_ = std::make_unique<AccessibilityBridge>(
-        std::move(semantics_manager), std::move(accessibility_view_ref),
-        web_contents_.get());
-  } else {
+  if (status != ZX_OK) {
     ZX_LOG(ERROR, status) << "zx_object_duplicate";
+    context_->DestroyFrame(this);
+    return;
   }
+
+  fuchsia::accessibility::semantics::SemanticsManagerPtr semantics_manager =
+      base::fuchsia::ComponentContextForCurrentProcess()
+          ->svc()
+          ->Connect<fuchsia::accessibility::semantics::SemanticsManager>();
+  accessibility_bridge_ = std::make_unique<AccessibilityBridge>(
+      std::move(semantics_manager), std::move(accessibility_view_ref),
+      web_contents_.get());
 
   SetWindowTreeHost(
       std::make_unique<FrameWindowTreeHost>(std::move(properties)));
@@ -744,6 +744,19 @@ void FrameImpl::EnableHeadlessRendering() {
 
   SetWindowTreeHost(std::make_unique<FrameWindowTreeHost>(
       ui::PlatformWindowInitProperties()));
+
+  gfx::Rect bounds(kHeadlessWindowSize);
+  if (semantics_manager_for_test_) {
+    scenic::ViewRefPair view_ref_pair = scenic::ViewRefPair::New();
+    accessibility_bridge_ = std::make_unique<AccessibilityBridge>(
+        std::move(semantics_manager_for_test_),
+        std::move(view_ref_pair.view_ref), web_contents_.get());
+
+    // Set bounds for testing hit testing.
+    bounds.set_size(kSemanticsTestingWindowSize);
+  }
+
+  window_tree_host_->SetBoundsInPixels(bounds);
 }
 
 void FrameImpl::DisableHeadlessRendering() {

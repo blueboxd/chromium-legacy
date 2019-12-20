@@ -260,8 +260,8 @@ class ProfileSyncServiceTest : public ::testing::Test {
   }
 
   FakeDataTypeManager::ConfigureCalled GetDefaultConfigureCalledCallback() {
-    return base::Bind(&ProfileSyncServiceTest::OnConfigureCalled,
-                      base::Unretained(this));
+    return base::BindRepeating(&ProfileSyncServiceTest::OnConfigureCalled,
+                               base::Unretained(this));
   }
 
   FakeDataTypeManager::ConfigureCalled GetRecordingConfigureCalledCallback(

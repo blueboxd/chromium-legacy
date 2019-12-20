@@ -23,7 +23,6 @@
 
 namespace base {
 
-class MessageLoopImpl;
 class MessagePump;
 class TaskObserver;
 

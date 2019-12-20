@@ -30,7 +30,7 @@
 #include "extensions/browser/guest_view/mime_handler_view/test_mime_handler_view_guest.h"
 #include "extensions/test/result_catcher.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "third_party/blink/public/platform/web_pointer_properties.h"
+#include "third_party/blink/public/common/input/web_pointer_properties.h"
 
 using guest_view::GuestViewManager;
 using guest_view::GuestViewManagerDelegate;

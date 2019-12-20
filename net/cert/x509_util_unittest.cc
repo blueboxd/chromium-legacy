@@ -30,11 +30,8 @@ TEST(X509UtilTest, CreateKeyAndSelfSigned) {
 
   std::string der_cert;
   ASSERT_TRUE(x509_util::CreateKeyAndSelfSignedCert(
-      "CN=subject",
-      1,
-      base::Time::Now(),
-      base::Time::Now() + base::TimeDelta::FromDays(1),
-      &private_key,
+      "CN=subject, OU=org unit, O=org, C=CA", 1, base::Time::Now(),
+      base::Time::Now() + base::TimeDelta::FromDays(1), &private_key,
       &der_cert));
 
   ASSERT_TRUE(private_key.get());
@@ -43,7 +40,10 @@ TEST(X509UtilTest, CreateKeyAndSelfSigned) {
       der_cert.data(), der_cert.size()));
   ASSERT_TRUE(cert.get());
 
-  EXPECT_EQ("subject", cert->subject().GetDisplayName());
+  EXPECT_EQ("subject", cert->subject().common_name);
+  EXPECT_EQ("org unit", cert->subject().organization_unit_names[0]);
+  EXPECT_EQ("org", cert->subject().organization_names[0]);
+  EXPECT_EQ("CA", cert->subject().country_name);
   EXPECT_FALSE(cert->HasExpired());
 }
 

@@ -201,7 +201,7 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
  private:
   class AutoDimEventHandler;
   class AutoHideEventHandler;
-  friend class DimShelfLayoutManagerTest;
+  friend class DimShelfLayoutManagerTestBase;
   friend class ShelfLayoutManagerTest;
 
   // Uses Auto Dim Event Handler to update the shelf dim state.

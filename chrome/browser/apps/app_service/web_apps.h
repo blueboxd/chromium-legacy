@@ -96,7 +96,7 @@ class WebApps : public apps::mojom::Publisher,
 
   // web_app::AppRegistrarObserver:
   void OnWebAppInstalled(const web_app::AppId& app_id) override;
-  void OnWebAppUninstalled(const web_app::AppId& app_id) override;
+  void OnWebAppWillBeUninstalled(const web_app::AppId& app_id) override;
   void OnAppRegistrarDestroyed() override;
   // TODO(loyso): Implement app->last_launch_time field for the new system.
 

@@ -4,16 +4,20 @@
 
 package org.chromium.chrome.browser.touch_to_fill;
 
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FIELD_TRIAL_PARAM_BRANDING_MESSAGE;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FIELD_TRIAL_PARAM_SHOW_CONFIRMATION_BUTTON;
 
 import android.content.Context;
-import android.support.annotation.DimenRes;
+import android.content.res.Resources;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
+
+import androidx.annotation.DimenRes;
+import androidx.annotation.Px;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -156,8 +160,7 @@ class TouchToFillView implements BottomSheetContent {
 
     @Override
     public float getHalfHeightRatio() {
-        return Math.min(mContext.getResources().getDimensionPixelSize(getDesiredSheetHeight()),
-                       mBottomSheetController.getContainerHeight())
+        return Math.min(getDesiredSheetHeight(), mBottomSheetController.getContainerHeight())
                 / (float) mBottomSheetController.getContainerHeight();
     }
 
@@ -187,18 +190,48 @@ class TouchToFillView implements BottomSheetContent {
     }
 
     // TODO(crbug.com/1009331): This should add up the height of all items up to the 2nd credential.
-    private @DimenRes int getDesiredSheetHeight() {
-        if (mSheetItemListView.getAdapter() != null
+    private @Px int getDesiredSheetHeight() {
+        Resources resources = mContext.getResources();
+        @Px
+        int totalHeight = resources.getDimensionPixelSize(
+                R.dimen.touch_to_fill_sheet_height_single_credential);
+
+        final boolean hasMultipleCredentials = mSheetItemListView.getAdapter() != null
                 && mSheetItemListView.getAdapter().getItemCount() > 2
                 && mSheetItemListView.getAdapter().getItemViewType(2)
-                        == TouchToFillProperties.ItemType.CREDENTIAL) {
-            return R.dimen.touch_to_fill_sheet_height_multiple_credentials;
+                        == TouchToFillProperties.ItemType.CREDENTIAL;
+        if (hasMultipleCredentials) {
+            totalHeight += resources.getDimensionPixelSize(
+                    R.dimen.touch_to_fill_sheet_height_second_credential);
         }
-        if (ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                    ChromeFeatureList.TOUCH_TO_FILL_ANDROID,
-                    FIELD_TRIAL_PARAM_SHOW_CONFIRMATION_BUTTON, false)) {
-            return R.dimen.touch_to_fill_sheet_height_single_credential_with_button;
+
+        final boolean hasButton = !hasMultipleCredentials
+                && ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                        ChromeFeatureList.TOUCH_TO_FILL_ANDROID,
+                        FIELD_TRIAL_PARAM_SHOW_CONFIRMATION_BUTTON, false);
+        if (hasButton) {
+            totalHeight +=
+                    resources.getDimensionPixelSize(R.dimen.touch_to_fill_sheet_height_button);
         }
-        return R.dimen.touch_to_fill_sheet_height_single_credential;
+
+        final boolean hasBranding = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                                            ChromeFeatureList.TOUCH_TO_FILL_ANDROID,
+                                            FIELD_TRIAL_PARAM_BRANDING_MESSAGE, 0)
+                != 0;
+        if (hasBranding) {
+            totalHeight +=
+                    resources.getDimensionPixelSize(R.dimen.touch_to_fill_sheet_height_branding);
+        }
+
+        return totalHeight + getDesiredBottomPadding(hasButton, hasBranding);
+    }
+
+    private @Px int getDesiredBottomPadding(boolean hasButton, boolean hasBranding) {
+        @DimenRes
+        int bottomPaddingId = R.dimen.touch_to_fill_sheet_bottom_padding_credentials;
+        if (hasButton) bottomPaddingId = R.dimen.touch_to_fill_sheet_bottom_padding_button;
+        if (hasBranding) bottomPaddingId = R.dimen.touch_to_fill_sheet_bottom_padding_branding;
+
+        return mContext.getResources().getDimensionPixelSize(bottomPaddingId);
     }
 }

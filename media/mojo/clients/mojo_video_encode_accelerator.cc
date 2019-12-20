@@ -12,6 +12,7 @@
 #include "media/base/video_frame.h"
 #include "media/gpu/gpu_video_accelerator_util.h"
 #include "media/mojo/common/mojo_shared_buffer_video_frame.h"
+#include "media/mojo/mojom/video_encoder_info.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -39,6 +40,7 @@ class VideoEncodeAcceleratorClient
       int32_t bitstream_buffer_id,
       const media::BitstreamBufferMetadata& metadata) override;
   void NotifyError(VideoEncodeAccelerator::Error error) override;
+  void NotifyEncoderInfoChange(const VideoEncoderInfo& info) override;
 
  private:
   VideoEncodeAccelerator::Client* client_;
@@ -78,6 +80,12 @@ void VideoEncodeAcceleratorClient::NotifyError(
     VideoEncodeAccelerator::Error error) {
   DVLOG(2) << __func__;
   client_->NotifyError(error);
+}
+
+void VideoEncodeAcceleratorClient::NotifyEncoderInfoChange(
+    const VideoEncoderInfo& info) {
+  DVLOG(2) << __func__;
+  client_->NotifyEncoderInfoChange(info);
 }
 
 }  // anonymous namespace

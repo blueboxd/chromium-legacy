@@ -18,7 +18,7 @@ namespace syncer {
 
 DirectoryDataTypeController::DirectoryDataTypeController(
     ModelType type,
-    const base::Closure& dump_stack,
+    const base::RepeatingClosure& dump_stack,
     SyncService* sync_service,
     ModelSafeGroup model_safe_group)
     : DataTypeController(type),

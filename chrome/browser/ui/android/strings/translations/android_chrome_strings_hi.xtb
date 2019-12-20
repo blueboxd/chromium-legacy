@@ -427,6 +427,7 @@
 <translation id="4226663524361240545">नोटिफ़िकेशन से डिवाइस में कंपन हो सकता है</translation>
 <translation id="423219824432660969"><ph name="TIME" /> तक का सुरक्षित किया गया किया गया डेटा 'Google पासवर्ड' से सिंक करें</translation>
 <translation id="4242533952199664413">सेटिंग खोलें</translation>
+<translation id="4250229828105606438">स्क्रीनशॉट</translation>
 <translation id="4256782883801055595">ओपन सोर्स लाइसेंस</translation>
 <translation id="4259722352634471385">मार्गदर्शक अवरोधित है: <ph name="URL" /></translation>
 <translation id="4269820728363426813">लिंक पते को कॉपी करें</translation>
@@ -753,6 +754,7 @@
 <translation id="6545017243486555795">सभी डेटा साफ़ करें</translation>
 <translation id="6545864417968258051">ब्लूटूथ स्कैन करना</translation>
 <translation id="6560414384669816528">Sogou से खोजें</translation>
+<translation id="656065428026159829">ज़्यादा देखें</translation>
 <translation id="6566259936974865419">Chrome ने आपके <ph name="GIGABYTES" /> जीबी की बचत की</translation>
 <translation id="6573096386450695060">हमेशा मंज़ूरी दें</translation>
 <translation id="6573431926118603307">  अपने अन्य डिवाइस पर खोले गए टैब यहां दिखाई देंगे.</translation>
@@ -849,6 +851,7 @@
 <translation id="7293171162284876153">सिंक शुरू करने के लिए, "अपना Chrome डेटा सिंक करें" को चालू करें.</translation>
 <translation id="729975465115245577">आपके डिवाइस में पासवर्ड फ़ाइल को स्टोर करने वाला कोई ऐप्लिकेशन नहीं है.</translation>
 <translation id="7302081693174882195">जानकारी: बचाए गए डेटा की मात्रा के अनुसार क्रम से लगाया गया</translation>
+<translation id="7302486331832100261">आप आम तौर पर, सूचनाओंं पर रोक लगाते हैं. अनुमति देने के लिए, 'जानकारी' पर टैप करें.</translation>
 <translation id="7328017930301109123">'लाइट मोड' में, Chrome पेजों को ज़्यादा तेज़ी से लोड करता है और 60 प्रतिशत तक कम डेटा इस्तेमाल करता है.</translation>
 <translation id="7333031090786104871">पिछली साइट अब भी जोड़ी जा रही है</translation>
 <translation id="7352939065658542140">वीडियो</translation>

@@ -25,6 +25,7 @@ from .codegen_context import CodeGenContext
 from .codegen_expr import expr_from_exposure
 from .codegen_format import format_template as _format
 from .codegen_utils import collect_include_headers
+from .codegen_utils import enclose_with_header_guard
 from .codegen_utils import enclose_with_namespace
 from .codegen_utils import make_copyright_header
 from .codegen_utils import make_forward_declarations
@@ -607,10 +608,7 @@ void FillMembersInternal(
     return node
 
 
-def generate_dictionary_cc_file(dictionary, output_dirs):
-    filename = "example_dictionary.cc"
-    filepath = os.path.join(output_dirs['core'], filename)
-
+def generate_dictionary_cc_file(dictionary):
     class_name = blink_class_name(dictionary)
     base_class_name = (blink_class_name(dictionary.inherited)
                        if dictionary.inherited else "bindings::DictionaryBase")
@@ -645,7 +643,7 @@ def generate_dictionary_cc_file(dictionary, output_dirs):
 
     # TODO(crbug.com/1034398): Use api_path() or impl_path() once we migrate
     # IDL compiler and move generated code of dictionaries.
-    h_file_path = PathManager(dictionary).blink_path(ext="h")
+    h_file_path = PathManager(dictionary).dict_path(ext="h")
 
     root_node.accumulator.add_include_headers([
         "third_party/blink/renderer/platform/bindings/exception_messages.h",
@@ -664,13 +662,13 @@ def generate_dictionary_cc_file(dictionary, output_dirs):
         enclose_with_namespace(code_node, name_style.namespace("blink")),
     ])
 
+    filename = "example_dictionary.cc"
+    filepath = PathManager.gen_path_to(
+        PathManager(dictionary).dict_path(filename=filename))
     write_code_node_to_file(root_node, filepath)
 
 
-def generate_dictionary_h_file(dictionary, output_dirs):
-    filename = "example_dictionary.h"
-    filepath = os.path.join(output_dirs['core'], filename)
-
+def generate_dictionary_h_file(dictionary):
     class_name = blink_class_name(dictionary)
     base_class_name = (blink_class_name(dictionary.inherited)
                        if dictionary.inherited else "bindings::DictionaryBase")
@@ -696,7 +694,7 @@ def generate_dictionary_h_file(dictionary, output_dirs):
         # TODO(crbug.com/1034398): Use api_path() or impl_path() once we
         # migrate IDL compiler and move generated code of dictionaries.
         base_class_header = PathManager(
-            dictionary.inherited).blink_path(ext="h")
+            dictionary.inherited).dict_path(ext="h")
     root_node.accumulator.add_include_headers([
         base_class_header,
         "v8/include/v8.h",
@@ -706,24 +704,36 @@ def generate_dictionary_h_file(dictionary, output_dirs):
         "Visitor",
     ])
 
+    namespace_node = enclose_with_namespace(
+        ListNode([
+            make_forward_declarations(root_node.accumulator),
+            TextNode(""),
+            code_node,
+        ]), name_style.namespace("blink"))
+
+    header_guard = name_style.header_guard(
+        PathManager(dictionary).dict_path(ext="h"))
+    header_guard_node = enclose_with_header_guard(
+        ListNode([
+            make_header_include_directives(root_node.accumulator),
+            TextNode(""),
+            namespace_node,
+        ]), header_guard)
+
     root_node.extend([
         make_copyright_header(),
         TextNode(""),
-        make_header_include_directives(root_node.accumulator),
-        TextNode(""),
-        enclose_with_namespace(
-            ListNode([
-                make_forward_declarations(root_node.accumulator),
-                TextNode(""),
-                code_node,
-            ]), name_style.namespace("blink")),
+        header_guard_node,
     ])
 
+    filename = "example_dictionary.h"
+    filepath = PathManager.gen_path_to(
+        PathManager(dictionary).dict_path(filename=filename))
     write_code_node_to_file(root_node, filepath)
 
 
-def generate_dictionaries(web_idl_database, output_dirs):
+def generate_dictionaries(web_idl_database):
     dictionary = web_idl_database.find("InternalDictionary")
 
-    generate_dictionary_cc_file(dictionary, output_dirs)
-    generate_dictionary_h_file(dictionary, output_dirs)
+    generate_dictionary_cc_file(dictionary)
+    generate_dictionary_h_file(dictionary)

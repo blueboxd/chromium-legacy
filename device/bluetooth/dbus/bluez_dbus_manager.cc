@@ -68,7 +68,7 @@ BluezDBusManager::BluezDBusManager(dbus::Bus* bus,
                                dbus::kObjectManagerGetManagedObjects);
   GetSystemBus()
       ->GetObjectProxy(
-          GetBluetoothServiceName(),
+          bluez_object_manager::kBluezObjectManagerServiceName,
           dbus::ObjectPath(
               bluetooth_object_manager::kBluetoothObjectManagerServicePath))
       ->CallMethodWithErrorCallback(
@@ -206,7 +206,8 @@ void BluezDBusManager::OnObjectManagerNotSupported(
 }
 
 void BluezDBusManager::InitializeClients() {
-  std::string bluetooth_service_name = GetBluetoothServiceName();
+  std::string bluetooth_service_name =
+      bluez_object_manager::kBluezObjectManagerServiceName;
   client_bundle_->bluetooth_adapter_client()->Init(GetSystemBus(),
                                                    bluetooth_service_name);
   client_bundle_->bluetooth_agent_manager_client()->Init(
@@ -241,12 +242,6 @@ void BluezDBusManager::InitializeClients() {
       alternate_bus_, bluetooth_service_name);
   client_bundle_->alternate_bluetooth_device_client()->Init(
       alternate_bus_, bluetooth_service_name);
-}
-
-std::string BluezDBusManager::GetBluetoothServiceName() {
-  // TODO(b/145163508): Remove the NewBlue feature flag as Bluetooth service is
-  // now always BlueZ.
-  return bluez_object_manager::kBluezObjectManagerServiceName;
 }
 
 // static

@@ -134,7 +134,6 @@ class QuicTestPacketMaker {
       bool include_version,
       quic::QuicStreamId stream_id,
       quic::QuicRstStreamErrorCode error_code,
-      quic::QuicTime::Delta delta_time_largest_observed,
       uint64_t largest_received,
       uint64_t smallest_received,
       uint64_t least_unacked,
@@ -172,7 +171,6 @@ class QuicTestPacketMaker {
   std::unique_ptr<quic::QuicReceivedPacket> MakeAckAndConnectionClosePacket(
       uint64_t num,
       bool include_version,
-      quic::QuicTime::Delta delta_time_largest_observed,
       uint64_t largest_received,
       uint64_t smallest_received,
       uint64_t least_unacked,
@@ -201,21 +199,6 @@ class QuicTestPacketMaker {
       uint64_t smallest_received,
       uint64_t least_unacked,
       bool send_feedback);
-  std::unique_ptr<quic::QuicReceivedPacket> MakeAckPacket(
-      uint64_t packet_number,
-      uint64_t largest_received,
-      uint64_t smallest_received,
-      uint64_t least_unacked,
-      bool send_feedback,
-      quic::QuicTime::Delta ack_delay_time);
-  std::unique_ptr<quic::QuicReceivedPacket> MakeAckPacket(
-      uint64_t packet_number,
-      uint64_t first_received,
-      uint64_t largest_received,
-      uint64_t smallest_received,
-      uint64_t least_unacked,
-      bool send_feedback,
-      quic::QuicTime::Delta ack_delay_time);
   std::unique_ptr<quic::QuicReceivedPacket> MakeDataPacket(
       uint64_t packet_number,
       quic::QuicStreamId stream_id,

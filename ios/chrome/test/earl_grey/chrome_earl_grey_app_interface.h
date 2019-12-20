@@ -383,6 +383,10 @@
 // Sets the value of a boolean user pref in the original browser state.
 + (void)setBoolValue:(BOOL)value forUserPref:(NSString*)prefName;
 
+// Resets the BrowsingDataPrefs, which defines if its selected or not when
+// clearing Browsing data.
++ (void)resetBrowsingDataPrefs;
+
 #pragma mark - Keyboard Command utilities
 
 // The count of key commands registered with the currently active BVC.

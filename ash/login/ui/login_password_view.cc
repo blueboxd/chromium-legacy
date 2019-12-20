@@ -376,7 +376,7 @@ LoginPasswordView::LoginPasswordView() {
   textfield_->set_placeholder_font_list(views::Textfield::GetDefaultFontList());
   textfield_->set_placeholder_text_color(
       login_constants::kAuthMethodsTextColor);
-  textfield_->SetGlyphSpacing(6);
+  textfield_->SetObscuredGlyphSpacing(6);
   textfield_->SetBorder(nullptr);
   textfield_->SetBackgroundColor(SK_ColorTRANSPARENT);
 

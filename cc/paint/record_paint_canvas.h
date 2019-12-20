@@ -21,7 +21,7 @@ namespace cc {
 class DisplayItemList;
 class PaintFlags;
 
-class CC_PAINT_EXPORT RecordPaintCanvas : public PaintCanvas {
+class CC_PAINT_EXPORT RecordPaintCanvas final : public PaintCanvas {
  public:
   RecordPaintCanvas(DisplayItemList* list, const SkRect& bounds);
   RecordPaintCanvas(const RecordPaintCanvas&) = delete;

@@ -412,7 +412,7 @@ export class Destination {
      * EULA url for printer's PPD. Empty string indicates no provided EULA.
      * @private {string}
      */
-    this.eulaUrl_ = (opt_params && opt_params.eulaUrl) || '';
+    this.eulaUrl_ = '';
     // </if>
 
     assert(
@@ -592,6 +592,11 @@ export class Destination {
   /** @return {string} The EULA URL for a the destination */
   get eulaUrl() {
     return this.eulaUrl_;
+  }
+
+  /** @param {string} eulaUrl The EULA URL to be set. */
+  set eulaUrl(eulaUrl) {
+    this.eulaUrl_ = eulaUrl;
   }
   // </if>
 

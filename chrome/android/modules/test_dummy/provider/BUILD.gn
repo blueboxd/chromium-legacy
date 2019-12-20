@@ -11,5 +11,7 @@ android_library("java") {
     "//chrome/android/features/test_dummy/public:java",
     "//chrome/android/modules/test_dummy/public:java",
   ]
-  java_files = [ "java/src/org/chromium/chrome/modules/test_dummy/TestDummyModuleProvider.java" ]
+  sources = [
+    "java/src/org/chromium/chrome/modules/test_dummy/TestDummyModuleProvider.java",
+  ]
 }

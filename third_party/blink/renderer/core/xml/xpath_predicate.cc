@@ -237,12 +237,9 @@ Value Union::Evaluate(EvaluationContext& context) const {
   EvaluationContext cloned_context = context;
   Value lhs_result = SubExpr(0)->Evaluate(context);
   Value rhs = SubExpr(1)->Evaluate(cloned_context);
-  context.had_type_conversion_error |= cloned_context.had_type_conversion_error;
 
   NodeSet& result_set = lhs_result.ModifiableNodeSet(context);
-  // We should pass |&context|, not |&cloned_context|, in order to propagate
-  // a type conversion error to the parent context.
-  const NodeSet& rhs_nodes = rhs.ToNodeSet(&context);
+  const NodeSet& rhs_nodes = rhs.ToNodeSet(&cloned_context);
 
   HeapHashSet<Member<Node>> nodes;
   for (const auto& node : result_set)
@@ -273,7 +270,6 @@ bool Predicate::Evaluate(EvaluationContext& context) const {
   // context node.
   EvaluationContext cloned_context = context;
   Value result(expr_->Evaluate(cloned_context));
-  context.had_type_conversion_error |= cloned_context.had_type_conversion_error;
 
   // foo[3] means foo[position()=3]
   if (result.IsNumber())

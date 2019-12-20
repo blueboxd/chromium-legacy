@@ -10,7 +10,7 @@
 
 #include "content/common/content_export.h"
 #include "ppapi/c/ppb_input_event.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 
 struct PP_InputEvent;
 

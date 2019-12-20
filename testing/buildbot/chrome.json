@@ -1103,30 +1103,6 @@
         "test_target": "//chrome/test:browser_tests"
       },
       {
-        "args": [
-          "--disable-features=VizDisplayCompositor",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.browser_tests.filter"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "non_viz_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
-              "ssd": "0"
-            }
-          ],
-          "shards": 20
-        },
-        "test": "browser_tests",
-        "test_target": "//chrome/test:browser_tests"
-      },
-      {
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -1347,55 +1323,10 @@
         "test_target": "//content/test:content_browsertests"
       },
       {
-        "args": [
-          "--disable-features=VizDisplayCompositor"
-        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "non_viz_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
-              "ssd": "0"
-            }
-          ],
-          "shards": 4
-        },
-        "test": "content_browsertests",
-        "test_target": "//content/test:content_browsertests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
-              "ssd": "0"
-            }
-          ]
-        },
-        "test": "content_unittests",
-        "test_target": "//content/test:content_unittests"
-      },
-      {
-        "args": [
-          "--disable-features=VizDisplayCompositor"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "non_viz_content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [

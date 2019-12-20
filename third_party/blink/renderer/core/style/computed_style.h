@@ -1223,7 +1223,6 @@ class ComputedStyle : public ComputedStyleBase,
   }
   bool IsDeprecatedFlexboxUsingFlexLayout() const {
     return IsDeprecatedWebkitBox() &&
-           RuntimeEnabledFeatures::WebkitBoxLayoutUsesFlexLayoutEnabled() &&
            (!HasLineClamp() || BoxOrient() == EBoxOrient::kHorizontal);
   }
 

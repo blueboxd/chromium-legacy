@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/core/inspector/inspector_emulation_agent.h"
 
+#include "third_party/blink/public/common/input/web_touch_event.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_touch_event.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"

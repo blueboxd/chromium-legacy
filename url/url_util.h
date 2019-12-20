@@ -37,12 +37,6 @@ COMPONENT_EXPORT(URL) void EnableNonStandardSchemesForAndroidWebView();
 // Whether or not SchemeHostPort and Origin allow non-standard schemes.
 COMPONENT_EXPORT(URL) bool AllowNonStandardSchemesForAndroidWebView();
 
-// A pair for representing a standard scheme name and the SchemeType for it.
-struct COMPONENT_EXPORT(URL) SchemeWithType {
-  const char* scheme;
-  SchemeType type;
-};
-
 // The following Add*Scheme method are not threadsafe and can not be called
 // concurrently with any other url_util function. They will assert if the lists
 // of schemes have been locked (see LockSchemeRegistries).

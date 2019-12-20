@@ -259,12 +259,11 @@ class TestStateObserver : public NetExportFileWriter::StateObserver {
 // file path callback and retrieve the result.
 class TestFilePathCallback {
  public:
-  TestFilePathCallback()
-      : callback_(base::Bind(&TestFilePathCallback::SetResultThenNotify,
-                             base::Unretained(this))) {}
+  TestFilePathCallback() = default;
 
-  const base::Callback<void(const base::FilePath&)>& callback() const {
-    return callback_;
+  base::OnceCallback<void(const base::FilePath&)> GetCallback() {
+    return base::BindOnce(&TestFilePathCallback::SetResultThenNotify,
+                          base::Unretained(this));
   }
 
   const base::FilePath& WaitForResult() {
@@ -280,7 +279,6 @@ class TestFilePathCallback {
 
   net::TestClosure test_closure_;
   base::FilePath result_;
-  base::Callback<void(const base::FilePath&)> callback_;
 };
 
 class NetExportFileWriterTest : public ::testing::Test {
@@ -307,8 +305,8 @@ class NetExportFileWriterTest : public ::testing::Test {
 
     // Override |file_writer_|'s default-log-base-directory-getter to
     // a getter that returns the temp dir created for the test.
-    file_writer_.SetDefaultLogBaseDirectoryGetterForTest(
-        base::Bind(&SetPathToGivenAndReturnTrue, log_temp_dir_.GetPath()));
+    file_writer_.SetDefaultLogBaseDirectoryGetterForTest(base::BindRepeating(
+        &SetPathToGivenAndReturnTrue, log_temp_dir_.GetPath()));
 
     default_log_path_ = log_temp_dir_.GetPath().Append(kLogRelativePath);
 
@@ -326,7 +324,7 @@ class NetExportFileWriterTest : public ::testing::Test {
 
   base::FilePath FileWriterGetFilePathToCompletedLog() {
     TestFilePathCallback test_callback;
-    file_writer_.GetFilePathToCompletedLog(test_callback.callback());
+    file_writer_.GetFilePathToCompletedLog(test_callback.GetCallback());
     return test_callback.WaitForResult();
   }
 
@@ -498,7 +496,7 @@ TEST_F(NetExportFileWriterTest, InitFail) {
   // Override file_writer_'s default log base directory getter to always
   // fail.
   file_writer()->SetDefaultLogBaseDirectoryGetterForTest(
-      base::Bind([](base::FilePath* path) -> bool { return false; }));
+      base::BindRepeating([](base::FilePath* path) -> bool { return false; }));
 
   // Initialization should fail due to the override.
   ASSERT_TRUE(InitializeThenVerifyNewState(false, false));

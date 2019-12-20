@@ -1631,6 +1631,8 @@ const char* ToString(ax::mojom::IntAttribute int_attribute) {
       return "nextFocusId";
     case ax::mojom::IntAttribute::kImageAnnotationStatus:
       return "imageAnnotationStatus";
+    case ax::mojom::IntAttribute::kDOMNodeId:
+      return "domNodeId";
   }
 
   return "";
@@ -1757,6 +1759,8 @@ ax::mojom::IntAttribute ParseIntAttribute(const char* int_attribute) {
     return ax::mojom::IntAttribute::kNextFocusId;
   if (0 == strcmp(int_attribute, "imageAnnotationStatus"))
     return ax::mojom::IntAttribute::kImageAnnotationStatus;
+  if (0 == strcmp(int_attribute, "domNodeId"))
+    return ax::mojom::IntAttribute::kDOMNodeId;
   return ax::mojom::IntAttribute::kNone;
 }
 

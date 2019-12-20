@@ -14,8 +14,8 @@
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "content/public/common/process_type.h"
 #include "net/http/http_response_headers.h"
-#include "third_party/blink/public/platform/web_gesture_event.h"
-#include "third_party/blink/public/platform/web_mouse_event.h"
+#include "third_party/blink/public/common/input/web_gesture_event.h"
+#include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/events/blink/blink_features.h"
 

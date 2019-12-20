@@ -198,7 +198,7 @@ class CrostiniManager::CrostiniRestarter
     observer_list_.Clear();
     completed_callback_.Reset();
     abort_callback_ = std::move(callback);
-    ReportRestarterResult(CrostiniResult::RESTART_ABORTED);
+    result_ = CrostiniResult::RESTART_ABORTED;
   }
 
   bool ReturnEarlyIfAborted() {
@@ -221,11 +221,18 @@ class CrostiniManager::CrostiniRestarter
   std::string vm_name() const { return vm_name_; }
   std::string container_name() const { return container_name_; }
   bool is_aborted() const { return is_aborted_; }
+  CrostiniResult result_ = CrostiniResult::NEVER_FINISHED;
 
  private:
   friend class base::RefCountedThreadSafe<CrostiniRestarter>;
 
   ~CrostiniRestarter() override {
+    // Do not record results if this restart was triggered by the installer.
+    // The crostini installer has its own histograms that should be kept
+    // separate.
+    if (!is_initial_install_) {
+      base::UmaHistogramEnumeration("Crostini.RestarterResult", result_);
+    }
     crostini_manager_->RemoveVmShutdownObserver(this);
     if (completed_callback_) {
       LOG(ERROR) << "Destroying without having called the callback.";
@@ -241,16 +248,8 @@ class CrostiniManager::CrostiniRestarter
     }
   }
 
-  void ReportRestarterResult(CrostiniResult result) {
-    // Do not record results if this restart was triggered by the installer. The
-    // crostini installer has its own histograms that should be kept separate.
-    if (!is_initial_install_)
-      base::UmaHistogramEnumeration("Crostini.RestarterResult", result);
-  }
-
   void FinishRestart(CrostiniResult result) {
     DCHECK(!is_aborted_);
-    ReportRestarterResult(result);
 
     // FinishRestart will delete this, so it's not safe to call any methods
     // after this point.
@@ -568,7 +567,7 @@ class CrostiniManager::CrostiniRestarter
   std::string container_name_;
   RestartOptions options_;
   std::string source_path_;
-  bool is_initial_install_ = true;
+  bool is_initial_install_ = false;
   CrostiniManager::CrostiniResultCallback completed_callback_;
   base::OnceClosure abort_callback_;
   base::ObserverList<CrostiniManager::RestartObserver>::Unchecked
@@ -1782,6 +1781,11 @@ CrostiniManager::RestartId CrostiniManager::RestartCrostiniWithOptions(
     RestartOptions options,
     CrostiniResultCallback callback,
     RestartObserver* observer) {
+  if (GetInstallerViewStatus()) {
+    base::UmaHistogramBoolean("Crostini.Setup.Started", true);
+  } else {
+    base::UmaHistogramBoolean("Crostini.Restarter.Started", true);
+  }
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // Currently, |remove_crostini_callbacks_| is only used just before running
   // CrostiniRemover. If that changes, then we should check for a currently
@@ -2777,6 +2781,7 @@ void CrostiniManager::FinishRestart(CrostiniRestarter* restarter,
   }
   restarters_by_container_.erase(range.first, range.second);
   for (const auto& pending_restarter : pending_restarters) {
+    pending_restarter->result_ = result;
     pending_restarter->RunCallback(result);
   }
 }

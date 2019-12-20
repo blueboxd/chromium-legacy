@@ -38,6 +38,8 @@ class MockMediaStreamVideoSink : public MediaStreamVideoSink {
 
   void OnReadyStateChanged(WebMediaStreamSource::ReadyState state) override;
   void OnEnabledChanged(bool enabled) override;
+  void OnContentHintChanged(
+      WebMediaStreamTrack::ContentHintType content_hint) override;
 
   // Triggered when OnVideoFrame(scoped_refptr<media::VideoFrame> frame)
   // is called.
@@ -54,6 +56,9 @@ class MockMediaStreamVideoSink : public MediaStreamVideoSink {
 
   bool enabled() const { return enabled_; }
   WebMediaStreamSource::ReadyState state() const { return state_; }
+  base::Optional<WebMediaStreamTrack::ContentHintType> content_hint() const {
+    return content_hint_;
+  }
 
  private:
   void DeliverVideoFrame(scoped_refptr<media::VideoFrame> frame,
@@ -67,6 +72,7 @@ class MockMediaStreamVideoSink : public MediaStreamVideoSink {
   WebMediaStreamSource::ReadyState state_;
   gfx::Size frame_size_;
   scoped_refptr<media::VideoFrame> last_frame_;
+  base::Optional<WebMediaStreamTrack::ContentHintType> content_hint_;
   base::WeakPtrFactory<MockMediaStreamVideoSink> weak_factory_{this};
 };
 

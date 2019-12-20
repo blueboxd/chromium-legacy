@@ -113,7 +113,12 @@ NSString* const kTranslateNotificationSnackbarCategory =
 - (void)translateInfoBarDelegate:(translate::TranslateInfoBarDelegate*)delegate
           didChangeTranslateStep:(translate::TranslateStep)step
                    withErrorType:(translate::TranslateErrors::Type)errorType {
-  DCHECK(self.currentStep != step);
+  if (self.currentStep == step) {
+    // No need to re-present or take any action if the new step is already the
+    // same as the current state. (e.g. the page is already translated and
+    // Translate is tapped in the overflow menu).
+    return;
+  }
   self.currentStep = step;
   self.mediator.currentStep = step;
   switch (self.currentStep) {

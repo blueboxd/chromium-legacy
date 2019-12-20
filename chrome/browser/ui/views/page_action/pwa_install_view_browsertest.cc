@@ -25,6 +25,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/omnibox/browser/omnibox_popup_model.h"
+#include "components/omnibox/browser/omnibox_view.h"
 #include "content/public/common/referrer.h"
 #include "extensions/browser/extension_system.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -300,6 +302,20 @@ IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest, LabelAnimation) {
   chrome::SelectPreviousTab(browser());
   EXPECT_TRUE(pwa_install_view_->GetVisible());
   EXPECT_FALSE(pwa_install_view_->is_animating_label());
+}
+
+// Tests that the plus icon becomes invisible when the user is typing in the
+// omnibox.
+IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest, InputInOmnibox) {
+  StartNavigateToUrl(GetInstallableAppURL());
+  ASSERT_TRUE(app_banner_manager_->WaitForInstallableCheck());
+  EXPECT_TRUE(pwa_install_view_->GetVisible());
+
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
+  LocationBar* location_bar = browser_view->GetLocationBarView();
+  OmniboxView* omnibox_view = location_bar->GetOmniboxView();
+  omnibox_view->model()->SetInputInProgress(true);
+  EXPECT_FALSE(pwa_install_view_->GetVisible());
 }
 
 // Tests that the icon persists while loading the same scope and omits running

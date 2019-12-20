@@ -18,7 +18,7 @@
 # FIXME: Remove the Skip keyword and have that be implied for tests in this file.
 
 # Perf tests are really slow in debug builds and there are few benefits in running them.
-[ Debug ] http/tests/perf [ Skip ]
+[ Debug ] http/tests/perf/* [ Skip ]
 
 # This test verifies that a mismatch reftest will fail if both results are the
 # same.  Because the whole point is that this test should fail when run, it's
@@ -69,8 +69,8 @@ fast/harness/results.html [ Skip ]
  # Mac's popup behavior is different.
 [ Mac ] fast/forms/select/menulist-onchange-fired-with-key-up-down.html [ Skip ]
 [ Mac ] fast/forms/select/popup-with-display-none-optgroup.html [ Skip ]
-[ Mac ] fast/forms/select-popup [ Skip ]
-[ Mac ] virtual/cascade/fast/forms/select-popup [ Skip ]
+[ Mac ] fast/forms/select-popup/* [ Skip ]
+[ Mac ] virtual/cascade/fast/forms/select-popup/* [ Skip ]
 
 # These tests are specific to Windows and Linux.
 [ Mac ] fast/forms/calendar-picker/date-open-picker-with-f4-key.html [ Skip ]
@@ -163,15 +163,15 @@ crbug.com/1004945 [ Win ] fast/text/mac-aat-morx-kern.html [ Skip ]
 [ Linux ] inspector-protocol/layout-fonts/font-weight-granularity-matching.js [ Skip ]
 
 # Tests in media/stable are only supposed to be run as virtual test (see virtual/stable/media).
-media/stable [ Skip ]
+media/stable/* [ Skip ]
 
 # This test requires a compositor, so only the virtual/threaded/ version is run.
 external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Skip ]
 virtual/unified-autoplay/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Skip ]
 
 # Only run fake-Android tests on Linux
- [ Mac ] virtual/android/ [ Skip ]
- [ Win ] virtual/android/ [ Skip ]
+ [ Mac ] virtual/android/* [ Skip ]
+ [ Win ] virtual/android/* [ Skip ]
 
 # Android doesn't support plugins
 virtual/android/fullscreen/rendering/backdrop-object.html [ Skip ]
@@ -321,10 +321,10 @@ crbug.com/627953 [ Mac ] virtual/text-antialias/symbol-cmap.html [ Skip ]
 
 # These tests require audio codecs which are generally not available;
 # these tests can still be run manually with --skipped=ignore.
-webaudio/codec-tests/aac [ Skip ]
+webaudio/codec-tests/aac/* [ Skip ]
 
 # WPT for CSS cascade
-crbug.com/763610 external/wpt/css/CSS2/cascade [ Skip ]
+crbug.com/763610 external/wpt/css/CSS2/cascade/* [ Skip ]
 # The revert keyword is not yet supported.
 external/wpt/css/css-cascade/revert-val-001.html [ Skip ]
 
@@ -442,7 +442,7 @@ external/wpt/css/css-text/text-transform/text-transform-full-size-kana-006.html 
 external/wpt/css/css-text/text-transform/text-transform-full-size-kana-007.html [ Skip ]
 external/wpt/css/css-text/text-transform/text-transform-fullwidth-008.html [ Skip ]
 external/wpt/css/css-text/text-transform/text-transform-fullwidth-009.html [ Skip ]
-external/wpt/css/css-text/word-boundary/ [ Skip ]
+external/wpt/css/css-text/word-boundary/* [ Skip ]
 external/wpt/css/css-text/writing-system/writing-system-line-break-001.html [ Skip ]
 external/wpt/css/css-text/writing-system/writing-system-line-break-002.html [ Skip ]
 external/wpt/css/css-text/writing-system/writing-system-segment-break-001.html [ Skip ]
@@ -1382,7 +1382,7 @@ virtual/audio-service/external/wpt/mediacapture-streams/MediaStream-default-feat
 
 # These directories have manual tests that don't have to run with
 # run_web_tests.py; see https://crbug.com/359838.
-http/tests/ManualTests/ [ Skip ]
+http/tests/ManualTests/* [ Skip ]
 
 # These test produce invisible different pixels on Win7 Debug.
 [ Win7 Debug ] fast/table/backgr_border-table-column-group-collapsed-border.html [ Skip ]
@@ -1413,7 +1413,7 @@ crbug.com/869492 virtual/threaded/external/wpt/feature-policy/experimental-featu
 
 # Tests that only work when the mixed content autoupgrade feature is enabled.
 # Covered in virtual test suite.
-http/tests/mixed-autoupgrade [ Skip ]
+http/tests/mixed-autoupgrade/* [ Skip ]
 
 # Not expected to pass in default configuration, only virtual test suite.
 crbug.com/830901 fast/webgl/video-metadata/texImage-video-last-uploaded-metadata.html [ Skip ]
@@ -1997,7 +1997,7 @@ virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechRecognition-s
 # Skip below.  Note that by default Site Isolation isolates *sites* rather
 # than *origin* and therefore avoids problems related to document.domain
 # compatibility.
-external/wpt/html/browsers/origin/relaxing-the-same-origin-restriction [ Skip ]
+external/wpt/html/browsers/origin/relaxing-the-same-origin-restriction/* [ Skip ]
 external/wpt/FileAPI/url/multi-global-origin-serialization.sub.html [ Skip ]
 external/wpt/dom/events/EventListener-incumbent-global-1.sub.html [ Skip ]
 external/wpt/dom/events/EventListener-incumbent-global-2.sub.html [ Skip ]
@@ -2059,7 +2059,7 @@ crbug.com/946022 [ Win7 ] media/controls/overflow-menu-hide-on-resize.html [ Ski
 crbug.com/946022 [ Win7 ] virtual/audio-service/media/controls/overflow-menu-hide-on-resize.html [ Skip ]
 crbug.com/946022 [ Win7 ] paint/invalidation/resize-iframe-text.html [ Skip ]
 crbug.com/946022 [ Win7 ] paint/invalidation/scroll/scrollbar-damage-and-full-viewport-repaint.html [ Skip ]
-crbug.com/946022 [ Win7 ] paint/invalidation/window-resize/ [ Skip ]
+crbug.com/946022 [ Win7 ] paint/invalidation/window-resize/* [ Skip ]
 
 # We don't plan to support this use-case in the near future.
 crbug.com/940797 external/wpt/signed-exchange/appcache/sxg-served-from-appcache.tentative.https.html [ Skip ]
@@ -2109,7 +2109,7 @@ crbug.com/870173 virtual/omt-worker-fetch/external/wpt/resource-timing/cors-pref
 crbug.com/870173 virtual/omt-worker-fetch/http/tests/workers/worker-redirect.html [ Skip ]
 
 # Windows doesn't have native overlay scrollbar
-[ Win ] virtual/overlay-scrollbar [ Skip ]
+[ Win ] virtual/overlay-scrollbar/* [ Skip ]
 
 # Blink implements additional privacy measures that cause the regular test in
 # WPT to time out.

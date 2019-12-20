@@ -68,14 +68,15 @@ used when committed.
 
 ### Integrated Development Environment (IDE) Set Up Guides
 *   [Android Studio](android_studio.md) - Android Studio for Android builds
+*   [Atom](atom.md) - Atom multi-platform code editor
+*   [CLion](clion.md) - CLion IDE, supports GUI debugging.
 *   [Eclipse for Android](eclipse.md) - Eclipse for Android
 *   [Eclipse for Linux](linux_eclipse_dev.md) - Eclipse for other platforms
     (This guide was written for Linux, but is probably usable on Windows/MacOS
     as well)
-*   [Qt Creator](qtcreator.md) - Using Qt Creator as an IDE or GUI debugger
-*   [Setting up Visual Studio Code](vscode.md) - Visual Studio Code
 *   [EMACS Notes](emacs.md) - EMACS commands/styles/tool integrations
-*   [Atom](atom.md) - Atom multi-platform code editor
+*   [Qt Creator](qtcreator.md) - Using Qt Creator as an IDE or GUI debugger
+*   [Visual Studio Code](vscode.md) - Visual Studio Code
 
 ### Git
 *   [Git Cookbook](git_cookbook.md) - A collection of git recipes for common

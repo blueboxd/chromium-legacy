@@ -47,6 +47,7 @@ HomeButton::HomeButton(Shelf* shelf)
   set_has_ink_drop_action_on_click(false);
 
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
+  layer()->SetName("shelf/Homebutton");
 }
 
 HomeButton::~HomeButton() = default;

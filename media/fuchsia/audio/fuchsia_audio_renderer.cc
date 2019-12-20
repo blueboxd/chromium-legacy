@@ -347,10 +347,8 @@ void FuchsiaAudioRenderer::OnAudioConsumerStatusChanged(
   }
 
   if (status.has_presentation_timeline()) {
-    bool playing = status.presentation_timeline().subject_delta > 0;
-
     base::AutoLock lock(state_lock_);
-    if (playing && state_ != PlaybackState::kStopped) {
+    if (state_ != PlaybackState::kStopped) {
       if (state_ == PlaybackState::kStarting) {
         state_ = PlaybackState::kPlaying;
       }

@@ -535,6 +535,24 @@ export class DestinationStore extends EventTarget {
     });
   }
 
+  // <if expr="chromeos">
+  /**
+   * Attempts to find the EULA URL of the the destination ID.
+   * @param {string} destinationId ID of the destination.
+   */
+  fetchEulaUrl(destinationId) {
+    this.nativeLayer_.getEulaUrl(destinationId).then(response => {
+      // Check that the currently selected destination ID still matches the
+      // destination ID we used to fetch the EULA URL.
+      if (destinationId === this.selectedDestination_.id) {
+        this.dispatchEvent(new CustomEvent(
+            DestinationStore.EventType.DESTINATION_EULA_READY,
+            {detail: response}));
+      }
+    });
+  }
+  // </if>
+
   /**
    * @param {?string} serializedDefaultDestinationSelectionRulesStr Serialized
    *     default destination selection rules.
@@ -1185,6 +1203,10 @@ export class DestinationStore extends EventTarget {
       }
       dest.capabilities = settingsInfo.capabilities;
       this.updateDestination_(dest);
+      // <if expr="chromeos">
+      // Start the fetch for the PPD EULA URL.
+      this.fetchEulaUrl(this.selectedDestination_.id);
+      // </if>
     }
   }
 
@@ -1346,6 +1368,9 @@ DestinationStore.EventType = {
   ERROR: 'DestinationStore.ERROR',
   SELECTED_DESTINATION_CAPABILITIES_READY: 'DestinationStore' +
       '.SELECTED_DESTINATION_CAPABILITIES_READY',
+  // <if expr="chromeos">
+  DESTINATION_EULA_READY: 'DestinationStore.DESTINATION_EULA_READY',
+  // </if>
 };
 
 /**

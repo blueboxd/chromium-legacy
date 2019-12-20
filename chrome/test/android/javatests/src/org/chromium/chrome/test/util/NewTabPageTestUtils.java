@@ -101,6 +101,6 @@ public class NewTabPageTestUtils {
         fakeAccountManager.addAccountHolderExplicitly(new AccountHolder.Builder(account).build());
         assertFalse(AccountManagerFacade.get().isUpdatePending().get());
         assertFalse(SharedPreferencesManager.getInstance().readBoolean(
-                ChromePreferenceKeys.NTP_SIGNIN_PROMO_DISMISSED, false));
+                ChromePreferenceKeys.SIGNIN_PROMO_NTP_PROMO_DISMISSED, false));
     }
 }

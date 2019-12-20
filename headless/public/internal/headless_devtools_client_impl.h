@@ -8,6 +8,7 @@
 #include <unordered_map>
 
 #include "base/containers/flat_map.h"
+#include "base/containers/span.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "headless/public/devtools/domains/accessibility.h"
@@ -104,13 +105,13 @@ class HEADLESS_EXPORT HeadlessDevToolsClientImpl
   int GetNextRawDevToolsMessageId() override;
   void SendRawDevToolsMessage(const std::string& json_message) override;
   void DispatchMessageFromExternalHost(
-      const std::string& json_message) override;
+      base::span<const uint8_t> json_message) override;
   void AttachToChannel(
       std::unique_ptr<HeadlessDevToolsChannel> channel) override;
   void DetachFromChannel() override;
 
   // HeadlessDevToolsChannel::Client implementation.
-  void ReceiveProtocolMessage(const std::string& message) override;
+  void ReceiveProtocolMessage(base::span<const uint8_t> message) override;
   void ChannelClosed() override;
 
   // internal::MessageDispatcher implementation:
@@ -174,7 +175,7 @@ class HEADLESS_EXPORT HeadlessDevToolsClientImpl
                          const EventHandler* event_handler,
                          const base::DictionaryValue* result_dict);
 
-  void ReceiveProtocolMessage(const std::string& json_message,
+  void ReceiveProtocolMessage(base::span<const uint8_t> json_message,
                               std::unique_ptr<base::DictionaryValue> message);
   void SendProtocolMessage(const base::DictionaryValue* message);
 

@@ -4,11 +4,9 @@
 
 package org.chromium.chrome.modules.image_editor;
 
-import android.app.Activity;
-
 import org.chromium.base.annotations.UsedByReflection;
-import org.chromium.chrome.browser.image_editor.ImageEditorCoordinator;
-import org.chromium.chrome.browser.image_editor.ImageEditorCoordinatorImpl;
+import org.chromium.chrome.browser.image_editor.ImageEditorDialogCoordinator;
+import org.chromium.chrome.browser.image_editor.ImageEditorDialogCoordinatorImpl;
 
 /**
  * Upstream implementation for DFM module hook. Does nothing. Actual implementation lives
@@ -17,7 +15,7 @@ import org.chromium.chrome.browser.image_editor.ImageEditorCoordinatorImpl;
 @UsedByReflection("ImageEditorModule")
 public class ImageEditorProviderImpl implements ImageEditorProvider {
     @Override
-    public ImageEditorCoordinator getImageEditorCoordinator(Activity activity) {
-        return new ImageEditorCoordinatorImpl(activity);
+    public ImageEditorDialogCoordinator getImageEditorDialogCoordinator() {
+        return new ImageEditorDialogCoordinatorImpl();
     }
 }

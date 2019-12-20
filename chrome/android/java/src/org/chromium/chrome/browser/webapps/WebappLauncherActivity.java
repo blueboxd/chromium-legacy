@@ -28,6 +28,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
+import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
@@ -187,6 +188,10 @@ public class WebappLauncherActivity extends Activity {
         WebappActivity.addWebappInfo(webappInfo.id(), webappInfo);
 
         Intent launchIntent = createIntentToLaunchForWebapp(intent, webappInfo, createTimestamp);
+
+        WarmupManager.getInstance().maybePrefetchDnsForUrlInBackground(
+                launchingActivity, webappInfo.url());
+
         IntentUtils.safeStartActivity(launchingActivity, launchIntent);
         if (IntentUtils.isIntentForNewTaskOrNewDocument(launchIntent)) {
             ApiCompatibilityUtils.finishAndRemoveTask(launchingActivity);
@@ -303,7 +308,8 @@ public class WebappLauncherActivity extends Activity {
     }
 
     /** Returns intent to launch for the web app. */
-    private static Intent createIntentToLaunchForWebapp(
+    @VisibleForTesting
+    public static Intent createIntentToLaunchForWebapp(
             Intent intent, @NonNull WebappInfo webappInfo, long createTimestamp) {
         String launchActivityClassName = selectWebappActivitySubclass(webappInfo);
 

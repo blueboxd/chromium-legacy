@@ -31,9 +31,9 @@
 #include "third_party/blink/renderer/core/html/forms/external_popup_menu.h"
 
 #include "build/build_config.h"
+#include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
-#include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_external_popup_menu.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"

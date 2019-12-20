@@ -340,7 +340,7 @@ public class NewTabPageAdapterTest {
     public void tearDown() {
         CardsVariationParameters.setTestVariationParams(null);
         SharedPreferencesManager.getInstance().writeBoolean(
-                ChromePreferenceKeys.NTP_SIGNIN_PROMO_DISMISSED, false);
+                ChromePreferenceKeys.SIGNIN_PROMO_NTP_PROMO_DISMISSED, false);
         ChromePreferenceManager.getInstance().clearNewTabPageSigninPromoSuppressionPeriodStart();
         PrefServiceBridge.setInstanceForTesting(null);
         ShadowPostTask.reset();
@@ -1043,7 +1043,7 @@ public class NewTabPageAdapterTest {
         when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
         when(mMockIdentityManager.hasPrimaryAccount()).thenReturn(false);
         SharedPreferencesManager.getInstance().writeBoolean(
-                ChromePreferenceKeys.NTP_SIGNIN_PROMO_DISMISSED, false);
+                ChromePreferenceKeys.SIGNIN_PROMO_NTP_PROMO_DISMISSED, false);
         useArticleCategory();
 
         final int signInPromoPosition = mAdapter.getFirstPositionForType(ItemViewType.PROMO);
@@ -1055,7 +1055,7 @@ public class NewTabPageAdapterTest {
         verify(itemDismissedCallback).onResult(anyString());
         assertFalse(isSignInPromoVisible());
         assertTrue(SharedPreferencesManager.getInstance().readBoolean(
-                ChromePreferenceKeys.NTP_SIGNIN_PROMO_DISMISSED, false));
+                ChromePreferenceKeys.SIGNIN_PROMO_NTP_PROMO_DISMISSED, false));
         reloadNtp();
         assertFalse(isSignInPromoVisible());
     }

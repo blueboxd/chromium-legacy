@@ -43,14 +43,16 @@ struct CORE_EXPORT EvaluationContext {
   STACK_ALLOCATED();
 
  public:
-  explicit EvaluationContext(Node&);
+  // |had_type_conversion_error| must be a reference to a variable of
+  // which lifetime is same as this object, or longer than this object.
+  EvaluationContext(Node&, bool& had_type_conversion_error);
 
   Member<Node> node;
   wtf_size_t size;
   wtf_size_t position;
   HashMap<String, String> variable_bindings;
 
-  bool had_type_conversion_error;
+  bool& had_type_conversion_error;
 };
 
 class CORE_EXPORT ParseNode : public GarbageCollected<ParseNode> {

@@ -94,7 +94,7 @@ public class DataReductionProxySettings {
         ThreadUtils.assertOnUiThread();
         boolean enabled = getInstance().isDataReductionProxyEnabled();
         SharedPreferencesManager.getInstance().writeBoolean(
-                ChromePreferenceKeys.DATA_REDUCTION_ENABLED_PREF, enabled);
+                ChromePreferenceKeys.DATA_REDUCTION_ENABLED, enabled);
     }
 
     /**
@@ -159,7 +159,7 @@ public class DataReductionProxySettings {
                     System.currentTimeMillis());
         }
         SharedPreferencesManager.getInstance().writeBoolean(
-                ChromePreferenceKeys.DATA_REDUCTION_ENABLED_PREF, enabled);
+                ChromePreferenceKeys.DATA_REDUCTION_ENABLED, enabled);
         DataReductionProxySettingsJni.get().setDataReductionProxyEnabled(
                 mNativeDataReductionProxySettings, DataReductionProxySettings.this, enabled);
     }

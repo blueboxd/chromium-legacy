@@ -123,6 +123,12 @@ FileBasedTrustedVaultClient::FileBasedTrustedVaultClient(
 
 FileBasedTrustedVaultClient::~FileBasedTrustedVaultClient() = default;
 
+std::unique_ptr<FileBasedTrustedVaultClient::Subscription>
+FileBasedTrustedVaultClient::AddKeysChangedObserver(
+    const base::RepeatingClosure& cb) {
+  return observer_list_.Add(cb);
+}
+
 void FileBasedTrustedVaultClient::FetchKeys(
     const std::string& gaia_id,
     base::OnceCallback<void(const std::vector<std::string>&)> cb) {
@@ -138,6 +144,7 @@ void FileBasedTrustedVaultClient::StoreKeys(
   TriggerLazyInitializationIfNeeded();
   backend_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&Backend::StoreKeys, backend_, gaia_id, keys));
+  observer_list_.Notify();
 }
 
 void FileBasedTrustedVaultClient::WaitForFlushForTesting(

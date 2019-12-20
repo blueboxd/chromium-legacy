@@ -109,6 +109,14 @@ class FakeModelTypeConfigurer : public ModelTypeConfigurer {
     // TODO(stanisc): crbug.com/515962: Add test coverage.
   }
 
+  void FinishDownload(ModelTypeSet types_to_configure,
+                      ModelTypeSet failed_download_types) {
+    ASSERT_FALSE(last_params_.ready_task.is_null());
+    std::move(last_params_.ready_task)
+        .Run(Difference(types_to_configure, failed_download_types),
+             failed_download_types);
+  }
+
   const ModelTypeSet registered_directory_types() {
     return registered_directory_types_;
   }
@@ -283,10 +291,12 @@ class SyncDataTypeManagerImplTest : public testing::Test {
   void FinishDownload(ModelTypeSet types_to_configure,
                       ModelTypeSet failed_download_types) {
     EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
-    ASSERT_FALSE(last_configure_params().ready_task.is_null());
-    last_configure_params().ready_task.Run(
-        Difference(types_to_configure, failed_download_types),
-        failed_download_types);
+    configurer_.FinishDownload(types_to_configure, failed_download_types);
+  }
+
+  void FinishDownloadWhileStopped(ModelTypeSet types_to_configure,
+                                  ModelTypeSet failed_download_types) {
+    configurer_.FinishDownload(types_to_configure, failed_download_types);
   }
 
   // Adds a fake controller for the given type to |controllers_|.
@@ -400,8 +410,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOneStopWhileDownloadPending) {
     EXPECT_TRUE(configurer_.registered_directory_types().Empty());
   }
 
-  last_configure_params().ready_task.Run(ModelTypeSet(BOOKMARKS),
-                                         ModelTypeSet());
+  FinishDownloadWhileStopped(ModelTypeSet(BOOKMARKS), ModelTypeSet());
   EXPECT_TRUE(configurer_.activated_types().Empty());
 }
 

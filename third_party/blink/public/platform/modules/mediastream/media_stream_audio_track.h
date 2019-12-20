@@ -111,6 +111,10 @@ class BLINK_PLATFORM_EXPORT MediaStreamAudioTrack
   // Buffer used to deliver silent audio data while this track is disabled.
   std::unique_ptr<media::AudioBus> silent_bus_;
 
+  // Set to true once at first audio callback after calling Start().
+  // Only used for logging purposes.
+  bool received_audio_callback_ = false;
+
   // Provides weak pointers that are valid until Stop() is called.
   base::WeakPtrFactory<MediaStreamAudioTrack> weak_factory_{this};
 

@@ -39,9 +39,9 @@ public class MonochromeApplication extends ChromeApplication {
         // and are external, and will fail to bind otherwise.
         boolean bindToCaller = false;
         boolean ignoreVisibilityForImportance = false;
-        ChildProcessCreationParams.set(getPackageName(), true /* isExternalService */,
-                LibraryProcessType.PROCESS_CHILD, bindToCaller, ignoreVisibilityForImportance,
-                null /* privilegedServicesName */, null /* sandboxedServicesName */);
+        ChildProcessCreationParams.set(getPackageName(), null /* privilegedServicesName */,
+                getPackageName(), null /* sandboxedServicesName */, true /* isExternalService */,
+                LibraryProcessType.PROCESS_CHILD, bindToCaller, ignoreVisibilityForImportance);
     }
 
     @Override

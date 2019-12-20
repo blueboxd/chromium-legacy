@@ -156,9 +156,9 @@ export class TestService extends TestBrowserProxy {
   }
 
   /** @override */
-  updateAllExtensions() {
+  updateAllExtensions(extensions) {
     this.methodCalled('updateAllExtensions');
-    return Promise.resolve();
+    return this.forceReloadItemError_ ? Promise.reject() : Promise.resolve();
   }
 
   /** @override */

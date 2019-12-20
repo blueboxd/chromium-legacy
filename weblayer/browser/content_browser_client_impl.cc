@@ -21,6 +21,7 @@
 #include "content/public/browser/generated_code_cache_settings.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/user_agent.h"
@@ -31,6 +32,7 @@
 #include "services/network/network_service.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
+#include "storage/browser/quota/quota_settings.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "url/gurl.h"
@@ -350,6 +352,15 @@ void ContentBrowserClientImpl::ExposeInterfacesToRenderer(
     GetSafeBrowsingService()->AddInterface(registry, render_process_host);
   }
 #endif  // defined(OS_ANDROID)
+}
+
+void ContentBrowserClientImpl::GetQuotaSettings(
+    content::BrowserContext* context,
+    content::StoragePartition* partition,
+    base::OnceCallback<void(base::Optional<storage::QuotaSettings>)> callback) {
+  storage::GetNominalDynamicSettings(
+      partition->GetPath(), context->IsOffTheRecord(),
+      storage::GetDefaultDeviceInfoHelper(), std::move(callback));
 }
 
 #if defined(OS_ANDROID)

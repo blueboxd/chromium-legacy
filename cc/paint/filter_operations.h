@@ -6,8 +6,8 @@
 #define CC_PAINT_FILTER_OPERATIONS_H_
 
 #include <stddef.h>
-
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/logging.h"
@@ -65,6 +65,7 @@ class CC_PAINT_EXPORT FilterOperations {
   float MaximumPixelMovement() const;
   bool HasFilterThatAffectsOpacity() const;
   bool HasReferenceFilter() const;
+  bool HasFilterOfType(FilterOperation::FilterType type) const;
 
   size_t size() const { return operations_.size(); }
 

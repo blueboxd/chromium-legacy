@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -436,10 +437,10 @@ TEST_F(SyncSchedulerImplTest, Config) {
   StartSyncConfiguration();
 
   CallbackCounter ready_counter;
-  ConfigurationParams params(
-      sync_pb::SyncEnums::RECONFIGURATION, model_types,
-      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)));
-  scheduler()->ScheduleConfiguration(params);
+  ConfigurationParams params(sync_pb::SyncEnums::RECONFIGURATION, model_types,
+                             base::BindOnce(&CallbackCounter::Callback,
+                                            base::Unretained(&ready_counter)));
+  scheduler()->ScheduleConfiguration(std::move(params));
   PumpLoop();
   ASSERT_EQ(1, ready_counter.times_called());
 }
@@ -461,10 +462,10 @@ TEST_F(SyncSchedulerImplTest, ConfigWithBackingOff) {
                       RecordSyncShare(&times, false)));
 
   CallbackCounter ready_counter;
-  ConfigurationParams params(
-      sync_pb::SyncEnums::RECONFIGURATION, model_types,
-      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)));
-  scheduler()->ScheduleConfiguration(params);
+  ConfigurationParams params(sync_pb::SyncEnums::RECONFIGURATION, model_types,
+                             base::BindOnce(&CallbackCounter::Callback,
+                                            base::Unretained(&ready_counter)));
+  scheduler()->ScheduleConfiguration(std::move(params));
   RunLoop();
   ASSERT_EQ(0, ready_counter.times_called());
 
@@ -502,10 +503,10 @@ TEST_F(SyncSchedulerImplTest, ConfigWithStop) {
                       RecordSyncShare(&times, false)));
 
   CallbackCounter ready_counter;
-  ConfigurationParams params(
-      sync_pb::SyncEnums::RECONFIGURATION, model_types,
-      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)));
-  scheduler()->ScheduleConfiguration(params);
+  ConfigurationParams params(sync_pb::SyncEnums::RECONFIGURATION, model_types,
+                             base::BindOnce(&CallbackCounter::Callback,
+                                            base::Unretained(&ready_counter)));
+  scheduler()->ScheduleConfiguration(std::move(params));
   PumpLoop();
   ASSERT_EQ(0, ready_counter.times_called());
 }
@@ -520,10 +521,10 @@ TEST_F(SyncSchedulerImplTest, ConfigNoAccessToken) {
   StartSyncConfiguration();
 
   CallbackCounter ready_counter;
-  ConfigurationParams params(
-      sync_pb::SyncEnums::RECONFIGURATION, model_types,
-      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)));
-  scheduler()->ScheduleConfiguration(params);
+  ConfigurationParams params(sync_pb::SyncEnums::RECONFIGURATION, model_types,
+                             base::BindOnce(&CallbackCounter::Callback,
+                                            base::Unretained(&ready_counter)));
+  scheduler()->ScheduleConfiguration(std::move(params));
   PumpLoop();
   ASSERT_EQ(0, ready_counter.times_called());
 }
@@ -544,10 +545,10 @@ TEST_F(SyncSchedulerImplTest, ConfigNoAccessTokenLocalSync) {
   StartSyncConfiguration();
 
   CallbackCounter ready_counter;
-  ConfigurationParams params(
-      sync_pb::SyncEnums::RECONFIGURATION, model_types,
-      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)));
-  scheduler()->ScheduleConfiguration(params);
+  ConfigurationParams params(sync_pb::SyncEnums::RECONFIGURATION, model_types,
+                             base::BindOnce(&CallbackCounter::Callback,
+                                            base::Unretained(&ready_counter)));
+  scheduler()->ScheduleConfiguration(std::move(params));
   PumpLoop();
   ASSERT_EQ(1, ready_counter.times_called());
 }
@@ -568,10 +569,10 @@ TEST_F(SyncSchedulerImplTest, NudgeWithConfigWithBackingOff) {
       .WillOnce(DoAll(Invoke(test_util::SimulateConfigureFailed),
                       RecordSyncShare(&times, false)));
   CallbackCounter ready_counter;
-  ConfigurationParams params(
-      sync_pb::SyncEnums::RECONFIGURATION, model_types,
-      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)));
-  scheduler()->ScheduleConfiguration(params);
+  ConfigurationParams params(sync_pb::SyncEnums::RECONFIGURATION, model_types,
+                             base::BindOnce(&CallbackCounter::Callback,
+                                            base::Unretained(&ready_counter)));
+  scheduler()->ScheduleConfiguration(std::move(params));
   RunLoop();
   ASSERT_EQ(0, ready_counter.times_called());
   Mock::VerifyAndClearExpectations(syncer());
@@ -826,10 +827,10 @@ TEST_F(SyncSchedulerImplTest, ThrottlingDoesThrottle) {
   StartSyncConfiguration();
 
   CallbackCounter ready_counter;
-  ConfigurationParams params(
-      sync_pb::SyncEnums::RECONFIGURATION, types,
-      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)));
-  scheduler()->ScheduleConfiguration(params);
+  ConfigurationParams params(sync_pb::SyncEnums::RECONFIGURATION, types,
+                             base::BindOnce(&CallbackCounter::Callback,
+                                            base::Unretained(&ready_counter)));
+  scheduler()->ScheduleConfiguration(std::move(params));
   PumpLoop();
   ASSERT_EQ(0, ready_counter.times_called());
 }
@@ -907,10 +908,10 @@ TEST_F(SyncSchedulerImplTest, ThrottlingExpiresFromConfigure) {
   StartSyncConfiguration();
 
   CallbackCounter ready_counter;
-  ConfigurationParams params(
-      sync_pb::SyncEnums::RECONFIGURATION, types,
-      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)));
-  scheduler()->ScheduleConfiguration(params);
+  ConfigurationParams params(sync_pb::SyncEnums::RECONFIGURATION, types,
+                             base::BindOnce(&CallbackCounter::Callback,
+                                            base::Unretained(&ready_counter)));
+  scheduler()->ScheduleConfiguration(std::move(params));
   PumpLoop();
   EXPECT_EQ(0, ready_counter.times_called());
   EXPECT_TRUE(scheduler()->IsGlobalThrottle());
@@ -1237,10 +1238,10 @@ TEST_F(SyncSchedulerImplTest, ConfigurationMode) {
                       RecordSyncShare(&times, true)))
       .RetiresOnSaturation();
   CallbackCounter ready_counter;
-  ConfigurationParams params(
-      sync_pb::SyncEnums::RECONFIGURATION, config_types,
-      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)));
-  scheduler()->ScheduleConfiguration(params);
+  ConfigurationParams params(sync_pb::SyncEnums::RECONFIGURATION, config_types,
+                             base::BindOnce(&CallbackCounter::Callback,
+                                            base::Unretained(&ready_counter)));
+  scheduler()->ScheduleConfiguration(std::move(params));
   RunLoop();
   ASSERT_EQ(1, ready_counter.times_called());
 
@@ -1326,10 +1327,10 @@ TEST_F(BackoffTriggersSyncSchedulerImplTest, FailGetEncryptionKey) {
 
   ModelTypeSet types(THEMES);
   CallbackCounter ready_counter;
-  ConfigurationParams params(
-      sync_pb::SyncEnums::RECONFIGURATION, types,
-      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)));
-  scheduler()->ScheduleConfiguration(params);
+  ConfigurationParams params(sync_pb::SyncEnums::RECONFIGURATION, types,
+                             base::BindOnce(&CallbackCounter::Callback,
+                                            base::Unretained(&ready_counter)));
+  scheduler()->ScheduleConfiguration(std::move(params));
   RunLoop();
 
   EXPECT_TRUE(scheduler()->IsGlobalBackoff());
@@ -1373,10 +1374,10 @@ TEST_F(SyncSchedulerImplTest, BackoffDropsJobs) {
   StartSyncConfiguration();
 
   CallbackCounter ready_counter;
-  ConfigurationParams params(
-      sync_pb::SyncEnums::RECONFIGURATION, types,
-      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)));
-  scheduler()->ScheduleConfiguration(params);
+  ConfigurationParams params(sync_pb::SyncEnums::RECONFIGURATION, types,
+                             base::BindOnce(&CallbackCounter::Callback,
+                                            base::Unretained(&ready_counter)));
+  scheduler()->ScheduleConfiguration(std::move(params));
   PumpLoop();
   ASSERT_EQ(0, ready_counter.times_called());
 }
@@ -1629,10 +1630,10 @@ TEST_F(SyncSchedulerImplTest, DoubleCanaryInConfigure) {
 
   ModelTypeSet model_types(THEMES);
   CallbackCounter ready_counter;
-  ConfigurationParams params(
-      sync_pb::SyncEnums::RECONFIGURATION, model_types,
-      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)));
-  scheduler()->ScheduleConfiguration(params);
+  ConfigurationParams params(sync_pb::SyncEnums::RECONFIGURATION, model_types,
+                             base::BindOnce(&CallbackCounter::Callback,
+                                            base::Unretained(&ready_counter)));
+  scheduler()->ScheduleConfiguration(std::move(params));
 
   scheduler()->OnConnectionStatusChange(
       network::mojom::ConnectionType::CONNECTION_WIFI);

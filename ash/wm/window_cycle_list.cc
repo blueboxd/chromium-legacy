@@ -285,6 +285,7 @@ class WindowCycleView : public views::WidgetDelegateView {
     mirror_container_->layer()->SetBackdropFilterQuality(
         kBackgroundBlurQuality);
     mirror_container_->layer()->AddCacheRenderSurfaceRequest();
+    mirror_container_->layer()->SetName("windowCycleList/MirrorContainer");
 
     for (auto* window : windows) {
       // |mirror_container_| owns |view|. The |preview_view_| in |view| will

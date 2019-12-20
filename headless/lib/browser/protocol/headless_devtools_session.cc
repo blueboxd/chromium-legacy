@@ -44,7 +44,7 @@ HeadlessDevToolsSession::~HeadlessDevToolsSession() {
 
 void HeadlessDevToolsSession::HandleCommand(
     const std::string& method,
-    const std::string& message,
+    base::span<const uint8_t> message,
     content::DevToolsManagerDelegate::NotHandledCallback callback) {
   if (!browser_ || !dispatcher_.canDispatch(method)) {
     std::move(callback).Run(message);
@@ -76,11 +76,10 @@ static void SendProtocolResponseOrNotification(
     std::unique_ptr<protocol::Serializable> message) {
   std::vector<uint8_t> cbor = std::move(*message).TakeSerialized();
   if (client->UsesBinaryProtocol()) {
-    client->DispatchProtocolMessage(agent_host,
-                                    std::string(cbor.begin(), cbor.end()));
+    client->DispatchProtocolMessage(agent_host, cbor);
     return;
   }
-  std::string json;
+  std::vector<uint8_t> json;
   crdtp::Status status =
       crdtp::json::ConvertCBORToJSON(crdtp::SpanFrom(cbor), &json);
   LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
@@ -106,7 +105,7 @@ void HeadlessDevToolsSession::fallThrough(int call_id,
                                           crdtp::span<uint8_t> message) {
   auto callback = std::move(pending_commands_[call_id]);
   pending_commands_.erase(call_id);
-  std::move(callback).Run(std::string(message.begin(), message.end()));
+  std::move(callback).Run(message);
 }
 }  // namespace protocol
 }  // namespace headless

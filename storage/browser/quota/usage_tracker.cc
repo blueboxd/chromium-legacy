@@ -32,6 +32,17 @@ void StripUsageWithBreakdownCallback(
 
 }  // namespace
 
+struct UsageTracker::AccumulateInfo {
+  AccumulateInfo() = default;
+  ~AccumulateInfo() = default;
+
+  size_t pending_clients = 0;
+  int64_t usage = 0;
+  int64_t unlimited_usage = 0;
+  blink::mojom::UsageBreakdownPtr usage_breakdown =
+      blink::mojom::UsageBreakdown::New();
+};
+
 UsageTracker::UsageTracker(
     const std::vector<scoped_refptr<QuotaClient>>& clients,
     blink::mojom::StorageType type,
@@ -200,10 +211,6 @@ void UsageTracker::SetUsageCacheEnabled(QuotaClient::ID client_id,
 
   client_tracker->SetUsageCacheEnabled(origin, enabled);
 }
-
-UsageTracker::AccumulateInfo::AccumulateInfo() = default;
-
-UsageTracker::AccumulateInfo::~AccumulateInfo() = default;
 
 void UsageTracker::AccumulateClientGlobalLimitedUsage(AccumulateInfo* info,
                                                       int64_t limited_usage) {

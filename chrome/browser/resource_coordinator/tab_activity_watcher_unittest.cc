@@ -33,8 +33,8 @@
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "services/metrics/public/mojom/ukm_interface.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/web_input_event.h"
-#include "third_party/blink/public/platform/web_mouse_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/input/web_mouse_event.h"
 
 using blink::WebInputEvent;
 using content::WebContentsTester;

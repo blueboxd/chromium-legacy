@@ -895,8 +895,6 @@ bool WebContentsImpl::OnMessageReceived(RenderFrameHostImpl* render_frame_host,
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidRunContentWithCertificateErrors,
                         OnDidRunContentWithCertificateErrors)
     IPC_MESSAGE_HANDLER(FrameHostMsg_GoToEntryAtOffset, OnGoToEntryAtOffset)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_UpdatePageImportanceSignals,
-                        OnUpdatePageImportanceSignals)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
 #if BUILDFLAG(ENABLE_PLUGINS)
     IPC_MESSAGE_HANDLER(FrameHostMsg_PepperInstanceCreated,
@@ -1305,10 +1303,6 @@ bool WebContentsImpl::IsWebContentsOnlyAccessibilityModeForTesting() {
 
 bool WebContentsImpl::IsFullAccessibilityModeForTesting() {
   return accessibility_mode_ == ui::kAXModeComplete;
-}
-
-const PageImportanceSignals& WebContentsImpl::GetPageImportanceSignals() {
-  return page_importance_signals_;
 }
 
 #if defined(OS_ANDROID)
@@ -4990,14 +4984,6 @@ void WebContentsImpl::UnregisterProtocolHandler(RenderFrameHostImpl* source,
   }
 
   delegate_->UnregisterProtocolHandler(this, protocol, url, user_gesture);
-}
-
-void WebContentsImpl::OnUpdatePageImportanceSignals(
-    RenderFrameHostImpl* source,
-    const PageImportanceSignals& signals) {
-  // TODO(nick, kouhei): Fix this for oopifs; currently all frames' state gets
-  // written to this one field.
-  page_importance_signals_ = signals;
 }
 
 void WebContentsImpl::OnDomOperationResponse(RenderFrameHostImpl* source,

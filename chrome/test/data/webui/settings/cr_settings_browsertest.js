@@ -627,7 +627,6 @@ CrSettingsAppearancePageTest.prototype = {
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '//ui/webui/resources/js/promise_resolver.js',
     '../test_browser_proxy.js',
-    'test_wallpaper_browser_proxy.js',
     'appearance_page_test.js',
   ]),
 };

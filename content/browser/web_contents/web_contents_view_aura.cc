@@ -53,7 +53,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "net/base/filename_util.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/drag_drop_delegate.h"

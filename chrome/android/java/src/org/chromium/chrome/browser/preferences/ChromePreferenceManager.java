@@ -74,7 +74,8 @@ public class ChromePreferenceManager {
      * @return the epoch time in milliseconds (see {@link System#currentTimeMillis()}).
      */
     public long getNewTabPageSigninPromoSuppressionPeriodStart() {
-        return mManager.readLong(ChromePreferenceKeys.NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START);
+        return mManager.readLong(
+                ChromePreferenceKeys.SIGNIN_PROMO_NTP_PROMO_SUPPRESSION_PERIOD_START);
     }
 
     /**
@@ -84,7 +85,7 @@ public class ChromePreferenceManager {
      */
     public void setNewTabPageSigninPromoSuppressionPeriodStart(long timeMillis) {
         mManager.writeLong(
-                ChromePreferenceKeys.NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START, timeMillis);
+                ChromePreferenceKeys.SIGNIN_PROMO_NTP_PROMO_SUPPRESSION_PERIOD_START, timeMillis);
     }
 
     /**
@@ -92,6 +93,6 @@ public class ChromePreferenceManager {
      * Tab Page are no longer suppressed.
      */
     public void clearNewTabPageSigninPromoSuppressionPeriodStart() {
-        mManager.removeKey(ChromePreferenceKeys.NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START);
+        mManager.removeKey(ChromePreferenceKeys.SIGNIN_PROMO_NTP_PROMO_SUPPRESSION_PERIOD_START);
     }
 }

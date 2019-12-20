@@ -9,7 +9,7 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/input_event_ack_source.h"
 #include "content/public/common/input_event_ack_state.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 
 namespace content {
 

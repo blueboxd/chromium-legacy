@@ -52,7 +52,7 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxLinux {
  public:
   // This is a list of sandbox IPC methods which the renderer may send to the
   // sandbox host. See
-  // https://chromium.googlesource.com/chromium/src/+/master/docs/linux_sandbox_ipc.md
+  // https://chromium.googlesource.com/chromium/src/+/master/docs/linux/sandbox_ipc.md
   // This isn't the full list, values < 32 are reserved for methods called from
   // Skia, and values < 64 are reserved for libc_interceptor.cc.
   enum LinuxSandboxIPCMethods {

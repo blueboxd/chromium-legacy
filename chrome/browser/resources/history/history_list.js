@@ -2,8 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
+import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
+import 'chrome://resources/polymer/v3_0/iron-scroll-threshold/iron-scroll-threshold.js';
+import {BrowserService} from './browser_service.js';
+import {HistoryEntry, HistoryQuery, QueryState} from './externs.js';
+import {BROWSING_GAP_TIME, UMA_MAX_BUCKET_VALUE, UMA_MAX_SUBSET_BUCKET_VALUE} from './constants.js';
+import {searchResultsTitle} from './history_item.js';
+import './shared_style.js';
+
 Polymer({
   is: 'history-list',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [I18nBehavior, WebUIListenerBehavior],
 
@@ -104,9 +123,9 @@ Polymer({
     this.closeMenu_();
 
     if (info.term && !this.queryState.incremental) {
-      Polymer.IronA11yAnnouncer.requestAvailability();
+      IronA11yAnnouncer.requestAvailability();
       this.fire('iron-announce', {
-        text: history.HistoryItem.searchResultsTitle(results.length, info.term)
+        text: searchResultsTitle(results.length, info.term)
       });
     }
 
@@ -207,7 +226,7 @@ Polymer({
       return;
     }
 
-    const browserService = history.BrowserService.getInstance();
+    const browserService = BrowserService.getInstance();
     browserService.recordAction('RemoveSelected');
     if (this.queryState.searchTerm != '') {
       browserService.recordAction('SearchResultRemove');
@@ -303,7 +322,7 @@ Polymer({
 
   /** @private */
   onDialogConfirmTap_: function() {
-    history.BrowserService.getInstance().recordAction('ConfirmRemoveSelected');
+    BrowserService.getInstance().recordAction('ConfirmRemoveSelected');
 
     this.deleteSelected_();
     const dialog = assert(this.$.dialog.getIfExists());
@@ -312,7 +331,7 @@ Polymer({
 
   /** @private */
   onDialogCancelTap_: function() {
-    history.BrowserService.getInstance().recordAction('CancelRemoveSelected');
+    BrowserService.getInstance().recordAction('CancelRemoveSelected');
 
     const dialog = assert(this.$.dialog.getIfExists());
     dialog.close();
@@ -374,8 +393,7 @@ Polymer({
 
   /** @private */
   onMoreFromSiteTap_: function() {
-    history.BrowserService.getInstance().recordAction(
-        'EntryMenuShowMoreFromSite');
+    BrowserService.getInstance().recordAction('EntryMenuShowMoreFromSite');
 
     const menu = assert(this.$.sharedMenu.getIfExists());
     this.fire('change-query', {search: this.actionMenuModel_.item.domain});
@@ -395,12 +413,12 @@ Polymer({
                                   }));
 
     this.pendingDelete = true;
-    return history.BrowserService.getInstance().removeVisits(removalList);
+    return BrowserService.getInstance().removeVisits(removalList);
   },
 
   /** @private */
   onRemoveFromHistoryTap_: function() {
-    const browserService = history.BrowserService.getInstance();
+    const browserService = BrowserService.getInstance();
     browserService.recordAction('EntryMenuRemoveFromHistory');
 
     assert(!this.pendingDelete);
@@ -429,7 +447,7 @@ Polymer({
         }
       }, 1);
 
-      const browserService = history.BrowserService.getInstance();
+      const browserService = BrowserService.getInstance();
       browserService.recordHistogram(
           'HistoryPage.RemoveEntryPosition',
           Math.min(index, UMA_MAX_BUCKET_VALUE), UMA_MAX_BUCKET_VALUE);

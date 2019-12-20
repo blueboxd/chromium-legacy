@@ -5,6 +5,7 @@
 import("//build/config/android/rules.gni")
 
 android_library("java") {
-  java_files =
-      [ "java/src/org/chromium/chrome/features/test_dummy/TestDummy.java" ]
+  sources = [
+    "java/src/org/chromium/chrome/features/test_dummy/TestDummy.java",
+  ]
 }

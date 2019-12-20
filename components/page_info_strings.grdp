@@ -430,7 +430,7 @@
           You just entered your password on a deceptive site. Chrome recommends going to <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph> and other sites where you use this password and changing it now.
         </message>
         <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED_2_DOMAINS" desc="A short paragraph explaining to a Chrome user that they have reused their saved password on the current website and to change their password on two domains.">
-          You just entered your password on a deceptive site. Chrome recommends going to <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph> and <ph name="WEBSITE_2">$2<ex>www.reddit.com</ex></ph>, and other sites where you use this password and changing it now.
+          You just entered your password on a deceptive site. Chrome recommends going to <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>, <ph name="WEBSITE_2">$2<ex>www.reddit.com</ex></ph>, and other sites where you use this password and changing it now.
         </message>
         <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED_3_DOMAINS" desc="A short paragraph explaining to a Chrome user that they have reused their saved password on the current website and to change their password on three domains.">
           You just entered your password on a deceptive site. Chrome recommends going to <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>, <ph name="WEBSITE_2">$2<ex>www.reddit.com</ex></ph>, and <ph name="WEBSITE_3">$3<ex>www.amazon.com</ex></ph>, and other sites where you use this password and changing it now.
@@ -459,7 +459,7 @@
           You just entered your password on a deceptive site. Chromium recommends going to <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph> and other sites where you use this password and changing it now.
         </message>
         <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED_2_DOMAINS" desc="A short paragraph explaining to a Chromium user that they have reused their saved password on the current website and to change their password on two domains.">
-          You just entered your password on a deceptive site. Chromium recommends going to <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph> and <ph name="WEBSITE_2">$2<ex>www.reddit.com</ex></ph>, and other sites where you use this password and changing it now.
+          You just entered your password on a deceptive site. Chromium recommends going to <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>, <ph name="WEBSITE_2">$2<ex>www.reddit.com</ex></ph>, and other sites where you use this password and changing it now.
         </message>
         <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED_3_DOMAINS" desc="A short paragraph explaining to a Chromium user that they have reused their saved password on the current website and to change their password on three domains.">
           You just entered your password on a deceptive site. Chromium recommends going to <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>, <ph name="WEBSITE_2">$2<ex>www.reddit.com</ex></ph>, and <ph name="WEBSITE_3">$3<ex>www.amazon.com</ex></ph>, and other sites where you use this password and changing it now.

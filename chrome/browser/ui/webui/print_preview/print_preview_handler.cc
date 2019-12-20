@@ -605,6 +605,10 @@ void PrintPreviewHandler::RegisterMessages() {
       "openPrinterSettings",
       base::BindRepeating(&PrintPreviewHandler::HandleOpenPrinterSettings,
                           base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "getEulaUrl", base::BindRepeating(&PrintPreviewHandler::HandleGetEulaUrl,
+                                        base::Unretained(this)));
 #endif
 }
 
@@ -1034,6 +1038,23 @@ void PrintPreviewHandler::HandleOpenPrinterSettings(
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
       Profile::FromWebUI(web_ui()), chrome::kNativePrintingSettingsSubPage);
 }
+
+void PrintPreviewHandler::HandleGetEulaUrl(const base::ListValue* args) {
+  CHECK_EQ(2U, args->GetSize());
+
+  const std::string& callback_id = args->GetList()[0].GetString();
+  const std::string& destination_id = args->GetList()[1].GetString();
+
+  PrinterHandler* handler = GetPrinterHandler(kLocalPrinter);
+  if (!handler) {
+    RejectJavascriptCallback(base::Value(callback_id), base::Value());
+    return;
+  }
+
+  handler->StartGetEulaUrl(
+      destination_id, base::BindOnce(&PrintPreviewHandler::SendEulaUrl,
+                                     weak_factory_.GetWeakPtr(), callback_id));
+}
 #endif
 
 void PrintPreviewHandler::GetLocaleInformation(base::Value* settings) {
@@ -1170,6 +1191,12 @@ void PrintPreviewHandler::SendAccessToken(const std::string& callback_id,
   VLOG(1) << "Get getAccessToken finished";
   ResolveJavascriptCallback(base::Value(callback_id),
                             base::Value(access_token));
+}
+
+void PrintPreviewHandler::SendEulaUrl(const std::string& callback_id,
+                                      const std::string& eula_url) {
+  VLOG(1) << "Get PPD license finished";
+  ResolveJavascriptCallback(base::Value(callback_id), base::Value(eula_url));
 }
 #endif
 

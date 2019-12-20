@@ -248,7 +248,7 @@ class VIEWS_EXPORT Textfield : public View,
   void SetAssociatedLabel(View* labelling_view);
 
   // Set extra spacing placed between glyphs; used for obscured text styling.
-  void SetGlyphSpacing(int spacing);
+  void SetObscuredGlyphSpacing(int spacing);
 
   int GetPasswordCharRevealIndex() const { return password_char_reveal_index_; }
 

@@ -297,6 +297,11 @@ Polymer({
                   destination.policies = response.policies;
                 }
                 this.selectDestination_(destination);
+                // <if expr="chromeos">
+                // After destination is selected, start fetching for the EULA
+                // URL.
+                this.destinationStore.fetchEulaUrl(destination.id);
+                // </if>
               }
             },
             () => {

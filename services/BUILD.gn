@@ -96,10 +96,10 @@ if (!is_ios) {
 
 if (is_android) {
   junit_binary("service_junit_tests") {
-    java_files = [
+    sources = [
       "device/generic_sensor/android/junit/src/org/chromium/device/sensors/PlatformSensorAndProviderTest.java",
-      "device/nfc/android/junit/src/org/chromium/device/nfc/NFCTest.java",
       "device/geolocation/android/junit/src/org/chromium/device/geolocation/LocationProviderTest.java",
+      "device/nfc/android/junit/src/org/chromium/device/nfc/NFCTest.java",
       "shape_detection/android/junit/src/org/chromium/shape_detection/BitmapUtilsTest.java",
     ]
     deps = [
@@ -127,7 +127,7 @@ if (is_android) {
 
   android_library("service_javatests") {
     testonly = true
-    java_files = [
+    sources = [
       "shape_detection/android/javatests/src/org/chromium/shape_detection/BarcodeDetectionImplTest.java",
       "shape_detection/android/javatests/src/org/chromium/shape_detection/FaceDetectionImplTest.java",
       "shape_detection/android/javatests/src/org/chromium/shape_detection/TestUtils.java",

@@ -10,7 +10,7 @@ android_library("java") {
     "//services:*",
     "//services/device:*",
   ]
-  java_files = [
+  sources = [
     "java/src/org/chromium/device/nfc/InvalidNdefMessageException.java",
     "java/src/org/chromium/device/nfc/NdefMessageUtils.java",
     "java/src/org/chromium/device/nfc/NdefMessageValidator.java",

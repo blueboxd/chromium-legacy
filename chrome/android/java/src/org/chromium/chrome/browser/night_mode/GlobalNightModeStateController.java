@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.night_mode;
 
-import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.UI_THEME_SETTING_KEY;
+import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.UI_THEME_SETTING;
 
 import android.support.v7.app.AppCompatDelegate;
 import android.text.TextUtils;
@@ -58,7 +58,7 @@ class GlobalNightModeStateController implements NightModeStateProvider,
         mPowerSaveModeMonitor = powerSaveModeMonitor;
 
         mPreferenceObserver = key -> {
-            if (TextUtils.equals(key, UI_THEME_SETTING_KEY)) updateNightMode();
+            if (TextUtils.equals(key, UI_THEME_SETTING)) updateNightMode();
         };
 
         updateNightMode();

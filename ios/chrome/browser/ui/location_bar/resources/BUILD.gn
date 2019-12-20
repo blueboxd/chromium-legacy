@@ -52,7 +52,6 @@ imageset("omnibox_voice") {
 imageset("location_bar_share") {
   sources = [
     "location_bar_share.imageset/Contents.json",
-    "location_bar_share.imageset/location_bar_share.png",
     "location_bar_share.imageset/location_bar_share@2x.png",
     "location_bar_share.imageset/location_bar_share@3x.png",
   ]
@@ -79,7 +78,6 @@ imageset("location_bar_offline") {
 imageset("location_bar_secure") {
   sources = [
     "location_bar_secure.imageset/Contents.json",
-    "location_bar_secure.imageset/location_bar_secure.png",
     "location_bar_secure.imageset/location_bar_secure@2x.png",
     "location_bar_secure.imageset/location_bar_secure@3x.png",
   ]

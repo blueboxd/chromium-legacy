@@ -30,12 +30,43 @@
 
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 
+#include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 
 namespace {
+
+void SendLogMessage(const std::string& message) {
+  blink::WebRtcLogMessage("MSS::" + message);
+}
+
+const char* StreamTypeToString(MediaStreamSource::StreamType type) {
+  switch (type) {
+    case MediaStreamSource::kTypeAudio:
+      return "Audio";
+    case MediaStreamSource::kTypeVideo:
+      return "Video";
+    default:
+      NOTREACHED();
+  }
+  return "Invalid";
+}
+
+const char* ReadyStateToString(MediaStreamSource::ReadyState state) {
+  switch (state) {
+    case MediaStreamSource::kReadyStateLive:
+      return "Live";
+    case MediaStreamSource::kReadyStateMuted:
+      return "Muted";
+    case MediaStreamSource::kReadyStateEnded:
+      return "Ended";
+    default:
+      NOTREACHED();
+  }
+  return "Invalid";
+}
 
 void GetSourceSettings(const blink::WebMediaStreamSource& web_source,
                        blink::WebMediaStreamTrack::Settings& settings) {
@@ -68,13 +99,28 @@ MediaStreamSource::MediaStreamSource(const String& id,
       name_(name),
       remote_(remote),
       ready_state_(ready_state),
-      requires_consumer_(requires_consumer) {}
+      requires_consumer_(requires_consumer) {
+  SendLogMessage(
+      String::Format(
+          "MediaStreamSource({id=%s}, {type=%s}, {name=%s}, {remote=%d}, "
+          "{ready_state=%s}",
+          id.Utf8().c_str(), StreamTypeToString(type), name.Utf8().c_str(),
+          remote, ReadyStateToString(ready_state))
+          .Utf8());
+}
 
 void MediaStreamSource::SetGroupId(const String& group_id) {
+  SendLogMessage(
+      String::Format("SetGroupId({group_id=%s})", group_id.Utf8().c_str())
+          .Utf8());
   group_id_ = group_id;
 }
 
 void MediaStreamSource::SetReadyState(ReadyState ready_state) {
+  SendLogMessage(String::Format("SetReadyState({id=%s}, {ready_state=%s})",
+                                Id().Utf8().c_str(),
+                                ReadyStateToString(ready_state))
+                     .Utf8());
   if (ready_state_ != kReadyStateEnded && ready_state_ != ready_state) {
     ready_state_ = ready_state;
 
@@ -171,6 +217,12 @@ void MediaStreamSource::GetSettings(WebMediaStreamTrack::Settings& settings) {
 
 void MediaStreamSource::SetAudioFormat(size_t number_of_channels,
                                        float sample_rate) {
+  SendLogMessage(
+      String::Format(
+          "SetAudioFormat({id=%s}, {number_of_channels=%d}, {sample_rate=%f})",
+          Id().Utf8().c_str(), static_cast<int>(number_of_channels),
+          sample_rate)
+          .Utf8());
   DCHECK(requires_consumer_);
   MutexLocker locker(audio_consumers_lock_);
   for (AudioDestinationConsumer* consumer : audio_consumers_)

@@ -104,7 +104,8 @@ void DevtoolsClient::SendMessageWithParams(
   std::string json_message;
   base::JSONWriter::Write(message, &json_message);
 
-  bool success = agent_host_->DispatchProtocolMessage(this, json_message);
+  bool success = agent_host_->DispatchProtocolMessage(
+      this, base::as_bytes(base::make_span(json_message)));
   DCHECK(success);
 }
 
@@ -122,11 +123,13 @@ void DevtoolsClient::UnregisterEventHandler(const char* method) {
 
 void DevtoolsClient::DispatchProtocolMessage(
     content::DevToolsAgentHost* agent_host,
-    const std::string& json_message) {
+    base::span<const uint8_t> json_message) {
   DCHECK_EQ(agent_host, agent_host_.get());
 
+  base::StringPiece str_message(
+      reinterpret_cast<const char*>(json_message.data()), json_message.size());
   std::unique_ptr<base::Value> message =
-      base::JSONReader::ReadDeprecated(json_message, base::JSON_PARSE_RFC);
+      base::JSONReader::ReadDeprecated(str_message, base::JSON_PARSE_RFC);
   DCHECK(message && message->is_dict());
 
   const base::DictionaryValue* message_dict;
@@ -137,7 +140,7 @@ void DevtoolsClient::DispatchProtocolMessage(
                 ? DispatchMessageReply(std::move(message), *message_dict)
                 : DispatchEvent(std::move(message), *message_dict);
   if (!success)
-    DVLOG(2) << "Unhandled protocol message: " << json_message;
+    DVLOG(2) << "Unhandled protocol message: " << str_message;
 }
 
 bool DevtoolsClient::DispatchMessageReply(

@@ -159,13 +159,15 @@ class HeadlessProtocolBrowserTest
   }
 
   // HeadlessDevToolsClient::RawProtocolListener
-  bool OnProtocolMessage(const std::string& json_message,
+  bool OnProtocolMessage(base::span<const uint8_t> json_message,
                          const base::DictionaryValue& parsed_message) override {
-    SendMessageToJS(json_message);
+    SendMessageToJS(
+        base::StringPiece(reinterpret_cast<const char*>(json_message.data()),
+                          json_message.size()));
     return true;
   }
 
-  void SendMessageToJS(const std::string& message) {
+  void SendMessageToJS(base::StringPiece message) {
     if (test_finished_)
       return;
 

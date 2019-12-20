@@ -35,7 +35,8 @@ fuchsia::web::CreateContextParams BuildCreateContextParamsForIsolatedRunners(
   output.set_features(
       fuchsia::web::ContextFeatureFlags::AUDIO |
       fuchsia::web::ContextFeatureFlags::VULKAN |
-      fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER);
+      fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER |
+      fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER_ONLY);
 
   if (create_context_params.has_user_agent_product()) {
     output.set_user_agent_product(create_context_params.user_agent_product());

@@ -90,7 +90,8 @@
       android:networkSecurityConfig="@xml/network_security_config"
       android:roundIcon="@drawable/ic_launcher_round"
       android:supportsRtl="true"
-      android:use32bitAbi="true">
+      android:use32bitAbi="true"
+      android:zygotePreloadName="org.chromium.content.app.ZygotePreload">
     <activity
         android:autoRemoveFromRecents="false"
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode|density"
@@ -1672,6 +1673,7 @@
         android:name="org.chromium.content.app.SandboxedProcessService0"
         android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
         android:process=":sandboxed_process0"
+        android:useAppZygote="true"
         android:visibleToInstantApps="true"
         tools:ignore="ExportedService"/>
     <service

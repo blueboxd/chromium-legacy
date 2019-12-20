@@ -34,7 +34,7 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
-#include "third_party/blink/public/platform/web_gesture_event.h"
+#include "third_party/blink/public/common/input/web_gesture_event.h"
 
 using content::WebContents;
 using guest_view::GuestViewBase;

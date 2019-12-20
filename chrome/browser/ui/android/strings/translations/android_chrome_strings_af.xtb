@@ -37,6 +37,7 @@
 <translation id="1231733316453485619">Skakel sinkronisering aan?</translation>
 <translation id="123724288017357924">Herlaai die huidige bladsy en ignoreer kasinhoud</translation>
 <translation id="124116460088058876">Meer tale</translation>
+<translation id="1242008676835033345">Ingebed op <ph name="WEBSITE_URL" /></translation>
 <translation id="124678866338384709">Maak huidige oortjie toe</translation>
 <translation id="1258753120186372309">Google-logoskets: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Soek en verken</translation>
@@ -95,6 +96,7 @@
 <translation id="1672586136351118594">Moenie weer wys nie</translation>
 <translation id="1692118695553449118">Sinkronisering is aan</translation>
 <translation id="169515064810179024">Blokkeer werwe om toegang tot bewegingsensors te kry</translation>
+<translation id="1711267867945983636">Skakel NFC op jou foon aan om voort te gaan</translation>
 <translation id="1717218214683051432">Bewegingsensors</translation>
 <translation id="1718835860248848330">Afgelope uur</translation>
 <translation id="1736419249208073774">Verken</translation>
@@ -151,6 +153,7 @@
 <translation id="2082238445998314030">Resultaat <ph name="RESULT_NUMBER" /> van <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Klank</translation>
 <translation id="2096012225669085171">Sinkroniseer en personaliseer oor toestelle heen</translation>
+<translation id="2099625543891475722">jou fisieke kenmerke, soos lengte</translation>
 <translation id="2100273922101894616">Outomatiese aanmelding</translation>
 <translation id="2100314319871056947">Probeer die teks in kleiner stukkies deel</translation>
 <translation id="2107397443965016585">Vra voordat jy werwe toelaat om beskermde inhoud te speel (aanbeveel)</translation>
@@ -427,6 +430,7 @@ Om jou soekterm aan te pas, druk lank om te kies. Om jou soektog te verfyn, gly 
 <translation id="4226663524361240545">Kennisgewings kan die toestel laat vibreer</translation>
 <translation id="423219824432660969">Enkripteer gesinkroniseerde data met Google-wagwoord vanaf <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Maak instellings oop</translation>
+<translation id="4250229828105606438">Skermkiekie</translation>
 <translation id="4256782883801055595">Oopbronlisensies</translation>
 <translation id="4259722352634471385">Navigasie is geblokkeer: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopieer skakeladres</translation>
@@ -480,6 +484,7 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="4634124774493850572">Gebruik wagwoord</translation>
 <translation id="4645575059429386691">Deur jou ouer bestuur</translation>
 <translation id="4650364565596261010">Stelsel se verstek</translation>
+<translation id="4660838440047236328">die uitleg van jou vertrek</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> boekmerke is uitgevee</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> is by jou tuisskerm gevoeg</translation>
 <translation id="4684427112815847243">Sinkroniseer alles</translation>
@@ -604,6 +609,7 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="5487521232677179737">Vee data uit</translation>
 <translation id="5494752089476963479">Blokkeer advertensies op werwe wat indringerige of misleidende advertensies wys</translation>
 <translation id="5500777121964041360">Dalk nie in jou ligging beskikbaar nie</translation>
+<translation id="5505264765875738116">Werwe kan nie vra om kennisgewings te stuur nie</translation>
 <translation id="5512137114520586844">Hierdie rekening word bestuur deur <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Gedeaktiveer deur die administrateur van hierdie toestel</translation>
 <translation id="5515439363601853141">Ontsluit om jou wagwoord te sien</translation>
@@ -701,6 +707,7 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="6192792657125177640">Uitsonderings</translation>
 <translation id="6194112207524046168">Vir Chrome om toegang tot jou kamera te kry, moet jy kamera ook in <ph name="BEGIN_LINK" />Android-instellings<ph name="END_LINK" /> aanskakel.</translation>
 <translation id="6196640612572343990">Blokkeer derdeparty-webkoekies</translation>
+<translation id="6201345951596836663">Skakel is gekopieer</translation>
 <translation id="6206551242102657620">Verbinding is veilig. Werfinligting</translation>
 <translation id="6210748933810148297">Nie <ph name="EMAIL" /> nie?</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />-opsies</translation>
@@ -710,6 +717,7 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advertensies te wys wat nie gegrond is op ander webwerwe wat jy besoek het nie. Baie webwerwe sal steeds jou blaaidata insamel en gebruik – byvoorbeeld om sekuriteit te verbeter, om inhoud, advertensies en aanbevelings te verskaf en om verslagdoeningstatistiek te genereer.</translation>
 <translation id="624789221780392884">Opdatering gereed</translation>
 <translation id="6255999984061454636">Inhoudvoorstelle</translation>
+<translation id="6270391203985052864">Werwe kan vra om kennisgewings te stuur</translation>
 <translation id="6277522088822131679">Kon nie die bladsy uitdruk nie. Probeer asseblief weer.</translation>
 <translation id="6295158916970320988">Alle werwe</translation>
 <translation id="629730747756840877">Rekening</translation>
@@ -754,6 +762,7 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="6545864417968258051">Bluetooth-opsporing</translation>
 <translation id="6560414384669816528">Soek met Sogou</translation>
 <translation id="656065428026159829">Sien meer</translation>
+<translation id="6561560012278703671">Gebruik stiller boodskappe (keer dat kennisgewingporboodskappe jou onderbreek)</translation>
 <translation id="6566259936974865419">Chrome het vir jou <ph name="GIGABYTES" /> GB bespaar</translation>
 <translation id="6573096386450695060">Laat altyd toe</translation>
 <translation id="6573431926118603307">Oortjies wat jy op jou ander toestelle in Chrome oopgemaak het, sal hier verskyn.</translation>
@@ -851,6 +860,7 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="729975465115245577">Jou toestel het nie 'n program om die wagwoordlêer te berg nie.</translation>
 <translation id="7302081693174882195">Besonderhede: Gerangskik volgens hoeveelheid data bespaar</translation>
 <translation id="7302486331832100261">Jy blokkeer gewoonlik kennisgewings. Tik op Besonderhede om toe te laat.</translation>
+<translation id="7311441321349344333">NFC is af vir hierdie toestel. Skakel NFC aan in <ph name="BEGIN_LINK" />Android-instellings<ph name="END_LINK" />.</translation>
 <translation id="7328017930301109123">In Ligte modus laai Chrome bladsye vinniger en gebruik tot 60 persent minder data.</translation>
 <translation id="7333031090786104871">Voeg steeds vorige werf by</translation>
 <translation id="7352939065658542140">VIDEO</translation>

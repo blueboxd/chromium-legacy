@@ -449,13 +449,6 @@ void RenderFrameHostManager::SwapOutOldFrame(
   TRACE_EVENT1("navigation", "RenderFrameHostManager::SwapOutOldFrame",
                "FrameTreeNode id", frame_tree_node_->frame_tree_node_id());
 
-  // Tell the renderer to suppress any further modal dialogs so that we can swap
-  // it out.  This must be done before canceling any current dialog, in case
-  // there is a loop creating additional dialogs.
-  // TODO(arthursonzogni): Undo this for documents restored from the
-  // BackForwardCache.
-  old_render_frame_host->SuppressFurtherDialogs();
-
   // Now close any modal dialogs that would prevent us from swapping out.  This
   // must be done separately from SwapOut, so that the ScopedPageLoadDeferrer is
   // no longer on the stack when we send the SwapOut message.

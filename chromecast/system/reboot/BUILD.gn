@@ -59,11 +59,19 @@ cast_shared_library("libcast_reboot_1.0") {
   ]
 }
 
-cast_source_set("fuchsia") {
-  sources = [
-    "reboot_fuchsia.cc",
-  ]
-  public_deps = [
-    "//chromecast/public",
-  ]
+if (is_fuchsia) {
+  cast_source_set("fuchsia") {
+    sources = [
+      "reboot_fuchsia.cc",
+    ]
+    public_deps = [
+      "//chromecast/public",
+    ]
+    deps = [
+      "//base",
+      "//third_party/fuchsia-sdk/sdk:fidl",
+      "//third_party/fuchsia-sdk/sdk:fidl_cpp",
+      "//third_party/fuchsia-sdk/sdk:fuchsia-hardware-power-statecontrol",
+    ]
+  }
 }

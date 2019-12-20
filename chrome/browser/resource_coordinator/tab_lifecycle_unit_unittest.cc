@@ -32,6 +32,7 @@
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/resource_coordinator/usage_clock.h"
 #include "chrome/browser/resource_coordinator/utils.h"
+#include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
@@ -425,6 +426,25 @@ TEST_F(TabLifecycleUnitTest, CannotDiscardVideoCapture) {
                                   DecisionFailureReason::LIVE_STATE_CAPTURING);
 
   ui.reset();
+  ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
+}
+
+TEST_F(TabLifecycleUnitTest, CannotDiscardHasFormInteractions) {
+  TabLifecycleUnit tab_lifecycle_unit(GetTabLifecycleUnitSource(), &observers_,
+                                      usage_clock_.get(), web_contents_,
+                                      tab_strip_model_.get());
+  // Advance time enough that the tab is urgent discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
+  ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
+
+  FormInteractionTabHelper::CreateForWebContents(web_contents_);
+  FormInteractionTabHelper::FromWebContents(web_contents_)
+      ->OnHadFormInteractionChangedForTesting(true);
+  ExpectCanDiscardFalseAllReasons(&tab_lifecycle_unit,
+                                  DecisionFailureReason::LIVE_STATE_FORM_ENTRY);
+
+  FormInteractionTabHelper::FromWebContents(web_contents_)
+      ->OnHadFormInteractionChangedForTesting(false);
   ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
 }
 

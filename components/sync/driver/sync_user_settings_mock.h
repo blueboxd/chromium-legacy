@@ -56,8 +56,6 @@ class SyncUserSettingsMock : public SyncUserSettings {
 
   MOCK_METHOD1(SetEncryptionPassphrase, void(const std::string&));
   MOCK_METHOD1(SetDecryptionPassphrase, bool(const std::string&));
-  MOCK_METHOD2(AddTrustedVaultDecryptionKeys,
-               void(const std::string&, const std::vector<std::string>&));
 };
 
 }  // namespace syncer

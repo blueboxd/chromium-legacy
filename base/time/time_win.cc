@@ -87,25 +87,14 @@ void InitializeClock() {
   g_initial_time = CurrentWallclockMicroseconds();
 }
 
-// The two values that ActivateHighResolutionTimer uses to set the systemwide
-// timer interrupt frequency on Windows. It controls how precise timers are
-// but also has a big impact on battery life.
-// Used when running on AC power - plugged in - when a fast timer is wanted.
-UINT MinTimerIntervalHighResMs() {
-  return 1;
-}
-
-UINT MinTimerIntervalLowResMs() {
-  // Traditionally Chrome has used an interval of 4 ms when raising the timer
-  // interrupt frequency on battery power. However even 4 ms is too short an
-  // interval on modern CPUs - it wastes non-trivial power - so this experiment
-  // tests an interval of 8 ms, recommended by Intel.
-  static const UINT s_interval =
-      base::FeatureList::IsEnabled(base::kSlowDCTimerInterruptsWin) ? 8 : 4;
-  return s_interval;
-}
-
+// Interval to use when on DC power.
+UINT g_battery_power_interval_ms = 4;
+// Track the last value passed to timeBeginPeriod so that we can cancel that
+// call by calling timeEndPeriod with the same value. A value of zero means that
+// the timer frequency is not currently raised.
+UINT g_last_interval_requested_ms = 0;
 // Track if MinTimerIntervalHighResMs() or MinTimerIntervalLowResMs() is active.
+// For most purposes this could also be named g_is_on_ac_power.
 bool g_high_res_timer_enabled = false;
 // How many times the high resolution timer has been called.
 uint32_t g_high_res_timer_count = 0;
@@ -118,10 +107,60 @@ TimeDelta g_high_res_timer_usage;
 // Timestamp of the last activation change of the high resolution timer. This
 // is used to calculate the cumulative usage.
 TimeTicks g_high_res_timer_last_activation;
-// The lock to control access to the above two variables.
+// The lock to control access to the above set of variables.
 Lock* GetHighResLock() {
   static auto* lock = new Lock();
   return lock;
+}
+
+// The two values that ActivateHighResolutionTimer uses to set the systemwide
+// timer interrupt frequency on Windows. These control how precise timers are
+// but also have a big impact on battery life.
+
+// Used when a faster timer has been requested (g_high_res_timer_count > 0) and
+// the computer is running on AC power (plugged in) so that it's okay to go to
+// the highest frequency.
+UINT MinTimerIntervalHighResMs() {
+  return 1;
+}
+
+// Used when a faster timer has been requested (g_high_res_timer_count > 0) and
+// the computer is running on DC power (battery) so that we don't want to raise
+// the timer frequency as much.
+UINT MinTimerIntervalLowResMs() {
+  return g_battery_power_interval_ms;
+}
+
+// Calculate the desired timer interrupt interval. Note that zero means that the
+// system default should be used.
+UINT GetIntervalMs() {
+  if (!g_high_res_timer_count)
+    return 0;  // Use the default, typically 15.625
+  if (g_high_res_timer_enabled)
+    return MinTimerIntervalHighResMs();
+  return MinTimerIntervalLowResMs();
+}
+
+// Compare the currently requested timer interrupt interval to the last interval
+// requested and update if necessary (by cancelling the old request and making a
+// new request). If there is no change then do nothing.
+void UpdateTimerIntervalLocked() {
+  UINT new_interval = GetIntervalMs();
+  if (new_interval == g_last_interval_requested_ms)
+    return;
+  if (g_last_interval_requested_ms) {
+    // Record how long the timer interrupt frequency was raised.
+    g_high_res_timer_usage += subtle::TimeTicksNowIgnoringOverride() -
+                              g_high_res_timer_last_activation;
+    // Reset the timer interrupt back to the default.
+    timeEndPeriod(g_last_interval_requested_ms);
+  }
+  g_last_interval_requested_ms = new_interval;
+  if (g_last_interval_requested_ms) {
+    // Record when the timer interrupt was raised.
+    g_high_res_timer_last_activation = subtle::TimeTicksNowIgnoringOverride();
+    timeBeginPeriod(g_last_interval_requested_ms);
+  }
 }
 
 // Returns the current value of the performance counter.
@@ -206,29 +245,34 @@ FILETIME Time::ToFileTime() const {
   return utc_ft;
 }
 
-// static
-void Time::EnableHighResolutionTimer(bool enable) {
+void Time::ReadMinTimerIntervalLowResMs() {
   AutoLock lock(*GetHighResLock());
-  if (g_high_res_timer_enabled == enable)
-    return;
-  g_high_res_timer_enabled = enable;
-  if (!g_high_res_timer_count)
-    return;
-  // Since g_high_res_timer_count != 0, an ActivateHighResolutionTimer(true)
-  // was called which called timeBeginPeriod with g_high_res_timer_enabled
-  // with a value which is the opposite of |enable|. With that information we
-  // call timeEndPeriod with the same value used in timeBeginPeriod and
-  // therefore undo the period effect.
-  if (enable) {
-    timeEndPeriod(MinTimerIntervalLowResMs());
-    timeBeginPeriod(MinTimerIntervalHighResMs());
-  } else {
-    timeEndPeriod(MinTimerIntervalHighResMs());
-    timeBeginPeriod(MinTimerIntervalLowResMs());
-  }
+  // Read the setting for what interval to use on battery power.
+  g_battery_power_interval_ms =
+      base::FeatureList::IsEnabled(base::kSlowDCTimerInterruptsWin) ? 8 : 4;
+  UpdateTimerIntervalLocked();
 }
 
 // static
+// Enable raising of the system-global timer interrupt frequency to 1 kHz (when
+// enable is true, which happens when on AC power) or some lower frequency when
+// on battery power (when enable is false). If the g_high_res_timer_enabled
+// setting hasn't actually changed or if if there are no outstanding requests
+// (if g_high_res_timer_count is zero) then do nothing.
+// TL;DR - call this when going from AC to DC power or vice-versa.
+void Time::EnableHighResolutionTimer(bool enable) {
+  AutoLock lock(*GetHighResLock());
+  g_high_res_timer_enabled = enable;
+  UpdateTimerIntervalLocked();
+}
+
+// static
+// Request that the system-global Windows timer interrupt frequency be raised.
+// How high the frequency is raised depends on the system's power state and
+// possibly other options.
+// TL;DR - call this at the beginning and end of a time period where you want
+// higher frequency timer interrupts. Each call with activating=true must be
+// paired with a subsequent activating=false call.
 bool Time::ActivateHighResolutionTimer(bool activating) {
   // We only do work on the transition from zero to one or one to zero so we
   // can easily undo the effect (if necessary) when EnableHighResolutionTimer is
@@ -236,31 +280,22 @@ bool Time::ActivateHighResolutionTimer(bool activating) {
   const uint32_t max = std::numeric_limits<uint32_t>::max();
 
   AutoLock lock(*GetHighResLock());
-  UINT period = g_high_res_timer_enabled ? MinTimerIntervalHighResMs()
-                                         : MinTimerIntervalLowResMs();
   if (activating) {
     DCHECK_NE(g_high_res_timer_count, max);
     ++g_high_res_timer_count;
-    if (g_high_res_timer_count == 1) {
-      g_high_res_timer_last_activation = subtle::TimeTicksNowIgnoringOverride();
-      timeBeginPeriod(period);
-    }
   } else {
     DCHECK_NE(g_high_res_timer_count, 0u);
     --g_high_res_timer_count;
-    if (g_high_res_timer_count == 0) {
-      g_high_res_timer_usage += subtle::TimeTicksNowIgnoringOverride() -
-                                g_high_res_timer_last_activation;
-      timeEndPeriod(period);
-    }
   }
-  return period == MinTimerIntervalHighResMs();
+  UpdateTimerIntervalLocked();
+  return true;
 }
 
 // static
+// See if the timer interrupt interval has been set to the lowest value.
 bool Time::IsHighResolutionTimerInUse() {
   AutoLock lock(*GetHighResLock());
-  return g_high_res_timer_enabled && g_high_res_timer_count > 0;
+  return g_last_interval_requested_ms == MinTimerIntervalHighResMs();
 }
 
 // static

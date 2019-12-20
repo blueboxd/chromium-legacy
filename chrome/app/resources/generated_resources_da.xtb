@@ -349,7 +349,7 @@
 <translation id="1493892686965953381">Venter på <ph name="LOAD_STATE_PARAMETER" />...</translation>
 <translation id="1495486559005647033"><ph name="NUM_PRINTERS" /> andre tilgængelige enheder.</translation>
 <translation id="1495677929897281669">Tilbage til fanen</translation>
-<translation id="1499271269825557605">Hvis du ikke kan genkende en udvidelse, eller hvis din browser ikke fungerer som forventet, kan du deaktivere eller tilpasse udvidelser her.</translation>
+<translation id="1499271269825557605">Hvis du ikke kan genkende en udvidelse, eller hvis din browser ikke fungerer som forventet, kan du deaktivere og tilpasse udvidelser her.</translation>
 <translation id="1500297251995790841">Ukendt enhed [<ph name="VENDOR_ID" />:<ph name="PRODUCT_ID" />]</translation>
 <translation id="1503394326855300303">Denne ejerkonto skal være den første konto, der logges ind på i en loginsession med flere brugere.</translation>
 <translation id="150411034776756821">Fjern <ph name="SITE" /></translation>
@@ -1421,7 +1421,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2972581237482394796">&amp;Annuller fortryd</translation>
 <translation id="2973324205039581528">Slå lyden fra på dette website</translation>
 <translation id="2977480621796371840">Fjern fra gruppe</translation>
-<translation id="2979520980928493164">Et sundere og bedre Chrome</translation>
+<translation id="2979520980928493164">En bedre Chrome-browser</translation>
 <translation id="2979639724566107830">Åbn i nyt vindue</translation>
 <translation id="2981113813906970160">Vis stor musemarkør</translation>
 <translation id="2982970937345031">Rapportér anonymt</translation>
@@ -3265,7 +3265,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5687326903064479980">Tidszone</translation>
 <translation id="5689516760719285838">Placering</translation>
 <translation id="56907980372820799">Link data</translation>
-<translation id="5691180005790455277">Alle data og cookies, der gemmes af <ph name="SITE_GROUP_NAME" />, og eventuelle sider under denne gruppe af websites ryddes.</translation>
+<translation id="5691180005790455277">Alle data og cookies, der gemmes af <ph name="SITE_GROUP_NAME" />, og eventuelle sider i denne gruppe af websites ryddes.</translation>
 <translation id="5691511426247308406">Familie</translation>
 <translation id="5692183275898619210">Udskrivning er gennemført</translation>
 <translation id="5696143504434933566">Rapportér misbrug fra "<ph name="EXTENSION_NAME" />"</translation>
@@ -3523,7 +3523,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6053401458108962351">&amp;Slet browserdata...</translation>
 <translation id="6055171183283175969">Den indtastede adgangskode er forkert.</translation>
 <translation id="6055392876709372977">PKCS #1 SHA-256 med RSA-kryptering</translation>
-<translation id="6055907707645252013"><ph name="NETWORK_TYPE" />-netværk, der er ikke oprettet forbindelse</translation>
+<translation id="6055907707645252013"><ph name="NETWORK_TYPE" />-netværk, ingen forbindelse</translation>
 <translation id="6056710589053485679">Genindlæs som normalt</translation>
 <translation id="6057381398996433816">Dette website er blevet blokeret fra at anvende bevægelses- og lyssensorer.</translation>
 <translation id="6058567592298841668">Plugin for virtuel maskine: <ph name="PLUGIN_VM_NAME" /></translation>
@@ -3964,7 +3964,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6709133671862442373">Nyheder</translation>
 <translation id="6709357832553498500">Opret forbindelse ved hjælp af <ph name="EXTENSIONNAME" /></translation>
 <translation id="6710213216561001401">Forrige</translation>
-<translation id="6715803357256707211">Der opstod en fejl ved installationen af Linux-appen. Klik på notifikationen for at få flere oplysninger.</translation>
+<translation id="6715803357256707211">Der opstod en fejl ved installationen af Linux-programmmet. Klik på notifikationen for at få flere oplysninger.</translation>
 <translation id="6721678857435001674">Se din sikkerhedsnøgles fabrikat og model</translation>
 <translation id="6721972322305477112">&amp;Fil</translation>
 <translation id="672213144943476270">Lås din profil op, før du kan bruge internettet som gæst.</translation>
@@ -3998,7 +3998,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6769712124046837540">Tilføjer printer...</translation>
 <translation id="6770664076092644100">Bekræft via NFC</translation>
 <translation id="6771503742377376720">Er en certificeringsautoritet</translation>
-<translation id="6772339735733515807">Styr dine udvidelser</translation>
+<translation id="6772339735733515807">Administrer dine udvidelser</translation>
 <translation id="6775163072363532304">Tilgængelige enheder vises her.</translation>
 <translation id="6777817260680419853">Omdirigeringen blev blokeret</translation>
 <translation id="6778737459546443941">Din forælder har ikke godkendt det endnu</translation>
@@ -4783,7 +4783,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7877451762676714207">Ukendt serverfejl. Prøv igen, eller kontakt serveradministratoren.</translation>
 <translation id="7877680364634660272">Rundvisning</translation>
 <translation id="7878562273885520351">Din adgangskode kan være kompromitteret</translation>
-<translation id="7879631849810108578">Genvejen blev indstillet: <ph name="IDS_SHORT_SET_COMMAND" /></translation>
+<translation id="7879631849810108578">Genvejen blev gemt: <ph name="IDS_SHORT_SET_COMMAND" /></translation>
 <translation id="7880823633812189969">Lokale data slettes, når du genstarter</translation>
 <translation id="7881483672146086348">Vis konto</translation>
 <translation id="7882358943899516840">Udbydertype</translation>
@@ -5758,7 +5758,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="960719561871045870">Operatørkode</translation>
 <translation id="960987915827980018">Omkring én time tilbage</translation>
 <translation id="962802172452141067">Bogmærkemappe i trævisning</translation>
-<translation id="964057662886721376">Nogle udvidelser kan nedsætte din hastighed. Dette er især tilfældet for dem, du ikke bevidst installerede.</translation>
+<translation id="964057662886721376">Nogle udvidelser kan gøre systemet langsommere. Dette er især tilfældet for dem, du ikke har installeret bevidst.</translation>
 <translation id="964286338916298286">Din it-administrator har deaktiveret Chrome Goodies for din enhed.</translation>
 <translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{App}one{App}other{Apps}}</translation>
 <translation id="965211523698323809">Send og modtag sms-beskeder fra din <ph name="DEVICE_TYPE" /> <ph name="LINK_BEGIN" />Få flere oplysninger<ph name="LINK_END" /></translation>

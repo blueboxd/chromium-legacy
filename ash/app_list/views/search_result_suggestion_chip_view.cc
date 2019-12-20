@@ -85,6 +85,7 @@ void SearchResultSuggestionChipView::SetBackgroundBlurEnabled(bool enabled) {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
   layer()->SetBackgroundBlur(kBlurRadius);
+  layer()->SetName("launcher/SearchResultSuggestionChip");
   SetRoundedCornersForLayer(kPreferredHeightDip / 2);
 }
 

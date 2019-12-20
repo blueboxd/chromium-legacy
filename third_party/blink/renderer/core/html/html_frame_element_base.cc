@@ -30,6 +30,8 @@
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/frame_console.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -37,6 +39,7 @@
 #include "third_party/blink/renderer/core/frame/remote_frame_view.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -85,6 +88,21 @@ void HTMLFrameElementBase::OpenURL(bool replace_current_item) {
     return;
 
   KURL url = GetDocument().CompleteURL(url_);
+  // There is no (easy) way to tell if |url_| is relative at this point. That
+  // is determined in the KURL constructor. If we fail to create an absolute
+  // URL at this point, *and* the base URL is a data URL, assume |url_| was
+  // relative and give a warning.
+  if (!url.IsValid() && GetDocument().BaseURL().ProtocolIsData()) {
+    if (LocalDOMWindow* window = GetDocument().ExecutingWindow()) {
+      if (LocalFrame* frame = window->GetFrame()) {
+        frame->Console().AddMessage(
+            ConsoleMessage::Create(mojom::ConsoleMessageSource::kRendering,
+                                   mojom::ConsoleMessageLevel::kWarning,
+                                   "Invalid relative frame source URL (" +
+                                       url_ + ") within data URL."));
+      }
+    }
+  }
   LoadOrRedirectSubframe(url, frame_name_, replace_current_item);
 }
 

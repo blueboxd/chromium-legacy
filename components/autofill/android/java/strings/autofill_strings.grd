@@ -6,8 +6,12 @@
     <output filename="values-af/autofill_strings.xml" lang="af" type="android" />
     <output filename="values-am/autofill_strings.xml" lang="am" type="android" />
     <output filename="values-ar/autofill_strings.xml" lang="ar" type="android" />
+    <output filename="values-as/autofill_strings.xml" lang="as" type="android" />
+    <output filename="values-az/autofill_strings.xml" lang="az" type="android" />
+    <output filename="values-be/autofill_strings.xml" lang="be" type="android" />
     <output filename="values-bg/autofill_strings.xml" lang="bg" type="android" />
     <output filename="values-bn/autofill_strings.xml" lang="bn" type="android" />
+    <output filename="values-bs/autofill_strings.xml" lang="bs" type="android" />
     <output filename="values-ca/autofill_strings.xml" lang="ca" type="android" />
     <output filename="values-cs/autofill_strings.xml" lang="cs" type="android" />
     <output filename="values-da/autofill_strings.xml" lang="da" type="android" />
@@ -18,34 +22,52 @@
     <output filename="values-es/autofill_strings.xml" lang="es" type="android" />
     <output filename="values-es-rUS/autofill_strings.xml" lang="es-419" type="android" />
     <output filename="values-et/autofill_strings.xml" lang="et" type="android" />
+    <output filename="values-eu/autofill_strings.xml" lang="eu" type="android" />
     <output filename="values-fa/autofill_strings.xml" lang="fa" type="android" />
     <output filename="values-fi/autofill_strings.xml" lang="fi" type="android" />
     <output filename="values-tl/autofill_strings.xml" lang="fil" type="android" />
     <output filename="values-fr/autofill_strings.xml" lang="fr" type="android" />
+    <output filename="values-fr-rCA/autofill_strings.xml" lang="fr-CA" type="android" />
+    <output filename="values-gl/autofill_strings.xml" lang="gl" type="android" />
     <output filename="values-gu/autofill_strings.xml" lang="gu" type="android" />
-    <output filename="values-iw/autofill_strings.xml" lang="iw" type="android" />
     <output filename="values-hi/autofill_strings.xml" lang="hi" type="android" />
     <output filename="values-hr/autofill_strings.xml" lang="hr" type="android" />
     <output filename="values-hu/autofill_strings.xml" lang="hu" type="android" />
+    <output filename="values-hy/autofill_strings.xml" lang="hy" type="android" />
     <output filename="values-in/autofill_strings.xml" lang="id" type="android" />
+    <output filename="values-is/autofill_strings.xml" lang="is" type="android" />
     <output filename="values-it/autofill_strings.xml" lang="it" type="android" />
+    <output filename="values-iw/autofill_strings.xml" lang="iw" type="android" />
     <output filename="values-ja/autofill_strings.xml" lang="ja" type="android" />
+    <output filename="values-ka/autofill_strings.xml" lang="ka" type="android" />
+    <output filename="values-kk/autofill_strings.xml" lang="kk" type="android" />
+    <output filename="values-km/autofill_strings.xml" lang="km" type="android" />
     <output filename="values-kn/autofill_strings.xml" lang="kn" type="android" />
     <output filename="values-ko/autofill_strings.xml" lang="ko" type="android" />
+    <output filename="values-ky/autofill_strings.xml" lang="ky" type="android" />
+    <output filename="values-lo/autofill_strings.xml" lang="lo" type="android" />
     <output filename="values-lt/autofill_strings.xml" lang="lt" type="android" />
     <output filename="values-lv/autofill_strings.xml" lang="lv" type="android" />
+    <output filename="values-mk/autofill_strings.xml" lang="mk" type="android" />
     <output filename="values-ml/autofill_strings.xml" lang="ml" type="android" />
+    <output filename="values-mn/autofill_strings.xml" lang="mn" type="android" />
     <output filename="values-mr/autofill_strings.xml" lang="mr" type="android" />
     <output filename="values-ms/autofill_strings.xml" lang="ms" type="android" />
+    <output filename="values-my/autofill_strings.xml" lang="my" type="android" />
+    <output filename="values-ne/autofill_strings.xml" lang="ne" type="android" />
     <output filename="values-nl/autofill_strings.xml" lang="nl" type="android" />
     <output filename="values-nb/autofill_strings.xml" lang="no" type="android" />
+    <output filename="values-or/autofill_strings.xml" lang="or" type="android" />
+    <output filename="values-pa/autofill_strings.xml" lang="pa" type="android" />
     <output filename="values-pl/autofill_strings.xml" lang="pl" type="android" />
     <output filename="values-pt-rBR/autofill_strings.xml" lang="pt-BR" type="android" />
     <output filename="values-pt-rPT/autofill_strings.xml" lang="pt-PT" type="android" />
     <output filename="values-ro/autofill_strings.xml" lang="ro" type="android" />
     <output filename="values-ru/autofill_strings.xml" lang="ru" type="android" />
+    <output filename="values-si/autofill_strings.xml" lang="si" type="android" />
     <output filename="values-sk/autofill_strings.xml" lang="sk" type="android" />
     <output filename="values-sl/autofill_strings.xml" lang="sl" type="android" />
+    <output filename="values-sq/autofill_strings.xml" lang="sq" type="android" />
     <output filename="values-sr/autofill_strings.xml" lang="sr" type="android" />
     <output filename="values-sv/autofill_strings.xml" lang="sv" type="android" />
     <output filename="values-sw/autofill_strings.xml" lang="sw" type="android" />
@@ -54,9 +76,12 @@
     <output filename="values-th/autofill_strings.xml" lang="th" type="android" />
     <output filename="values-tr/autofill_strings.xml" lang="tr" type="android" />
     <output filename="values-uk/autofill_strings.xml" lang="uk" type="android" />
+    <output filename="values-ur/autofill_strings.xml" lang="ur" type="android" />
+    <output filename="values-uz/autofill_strings.xml" lang="uz" type="android" />
     <output filename="values-vi/autofill_strings.xml" lang="vi" type="android" />
     <output filename="values-zh-rCN/autofill_strings.xml" lang="zh-CN" type="android" />
     <output filename="values-zh-rTW/autofill_strings.xml" lang="zh-TW" type="android" />
+    <output filename="values-zu/autofill_strings.xml" lang="zu" type="android" />
   </outputs>
   <translations>
     <file lang="af" path="translations/autofill_strings_af.xtb" />

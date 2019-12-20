@@ -292,7 +292,7 @@ class HEADLESS_EXPORT HeadlessBrowser::Options::Builder {
 // }
 //
 // [1]
-// https://chromium.googlesource.com/chromium/src/+/master/docs/linux_zygote.md
+// https://chromium.googlesource.com/chromium/src/+/master/docs/linux/zygote.md
 void RunChildProcessIfNeeded(int argc, const char** argv);
 #else
 // In Windows, the headless browser may need to create child processes. This is

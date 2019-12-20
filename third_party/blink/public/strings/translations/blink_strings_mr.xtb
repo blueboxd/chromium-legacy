@@ -114,6 +114,7 @@
 <translation id="4812940957355064477">कृपया एक नंबर एंटर करा.</translation>
 <translation id="4912536737030637138">ग्रंथसूची नोंद</translation>
 <translation id="492244087561876220">टिप्पणी</translation>
+<translation id="4971739861736909480"><ph name="ACCNAME" /> निवडले आहे</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> निवडले</translation>
 <translation id="4992066212339426712">सशब्द करा</translation>
 <translation id="49969490063480558">कृपया '<ph name="ATSIGN" />' चे फॉलो करणारा भाग एंटर करा. '<ph name="INVALIDADDRESS" />' अपूर्ण आहे.</translation>
@@ -218,6 +219,7 @@
 <translation id="7888071071722539607">कृपया ईमेल पत्त्यामध्ये '<ph name="ATSIGN" />' समाविष्ट करा. '<ph name="INVALIDADDRESS" />' '<ph name="ATSIGN" />' गमावत आहे.</translation>
 <translation id="7891486169920085145">विभाजक</translation>
 <translation id="795667975304826397">कोणतीही फाइल निवडलेली नाही</translation>
+<translation id="7962328325860248200"><ph name="ACCNAME" /> निवडलेले नाही</translation>
 <translation id="8034303206267677282">महत्त्वाचा</translation>
 <translation id="8053789581856978548">मजकूर फील्ड दर्शवा</translation>
 <translation id="8057695513531652401">सूचना</translation>

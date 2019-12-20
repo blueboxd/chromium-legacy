@@ -11,8 +11,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "third_party/blink/public/common/input/web_gesture_device.h"
 #include "third_party/blink/public/platform/web_gesture_curve.h"
-#include "third_party/blink/public/platform/web_gesture_device.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 

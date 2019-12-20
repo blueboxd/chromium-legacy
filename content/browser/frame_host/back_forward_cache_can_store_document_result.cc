@@ -92,8 +92,6 @@ std::string BackForwardCacheCanStoreDocumentResult::NotRestoredReasonToString(
       return "renderer process is killed";
     case Reason::kRendererProcessCrashed:
       return "renderer process crashed";
-    case Reason::kDialog:
-      return "dialog";
     case Reason::kGrantedMediaStreamAccess:
       return "granted media stream access";
     case Reason::kSchedulerTrackedFeatureUsed:

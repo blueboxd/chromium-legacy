@@ -25,13 +25,13 @@ class SyncStoppedReporter {
  public:
   enum Result { RESULT_SUCCESS, RESULT_ERROR, RESULT_TIMEOUT };
 
-  using ResultCallback = base::Callback<void(const Result&)>;
+  using ResultCallback = base::OnceCallback<void(const Result&)>;
 
   SyncStoppedReporter(
       const GURL& sync_service_url,
       const std::string& user_agent,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      const ResultCallback& callback);
+      ResultCallback callback);
   ~SyncStoppedReporter();
 
   // Inform the sync server that sync was stopped on this device.

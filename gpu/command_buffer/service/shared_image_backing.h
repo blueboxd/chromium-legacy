@@ -65,6 +65,7 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   uint32_t usage() const { return usage_; }
   const Mailbox& mailbox() const { return mailbox_; }
   size_t estimated_size() const { return estimated_size_; }
+  bool is_thread_safe() const { return !!lock_; }
   void OnContextLost();
 
   // Concrete functions to manage a ref count.
@@ -132,15 +133,15 @@ class GPU_GLES2_EXPORT SharedImageBacking {
       SharedImageManager* manager,
       MemoryTypeTracker* tracker);
 
-  // Used by subclasses in Destroy.
-  bool have_context() const;
+  // Used by subclasses during destruction.
+  bool have_context() const EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
-  void AssertLockedIfNecessary() const;
-
-  class GPU_GLES2_EXPORT AutoLock {
+  // Helper class used by subclasses to acquire |lock_| if it exists.
+  class SCOPED_LOCKABLE GPU_GLES2_EXPORT AutoLock {
    public:
-    explicit AutoLock(const SharedImageBacking* shared_image_backing);
-    ~AutoLock();
+    explicit AutoLock(const SharedImageBacking* shared_image_backing)
+        EXCLUSIVE_LOCK_FUNCTION(shared_image_backing->lock_);
+    ~AutoLock() UNLOCK_FUNCTION();
 
     AutoLock(const AutoLock&) = delete;
     AutoLock& operator=(const AutoLock&) = delete;
@@ -151,6 +152,11 @@ class GPU_GLES2_EXPORT SharedImageBacking {
    private:
     base::AutoLockMaybe auto_lock_;
   };
+
+  // Protects non-const members here and in derived classes. Protected access
+  // to allow GUARDED_BY macros in derived classes. Should not be used
+  // directly. Use AutoLock instead.
+  mutable base::Optional<base::Lock> lock_;
 
  private:
   class ScopedWriteUMA {
@@ -176,18 +182,15 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   const uint32_t usage_;
   const size_t estimated_size_;
 
-  // Protects non-const members here and in derived classes.
-  mutable base::Optional<base::Lock> lock_;
-
-  bool have_context_ = true;
+  bool have_context_ GUARDED_BY(lock_) = true;
 
   // A scoped object for recording write UMA.
-  base::Optional<ScopedWriteUMA> scoped_write_uma_;
+  base::Optional<ScopedWriteUMA> scoped_write_uma_ GUARDED_BY(lock_);
 
   // A vector of SharedImageRepresentations which hold references to this
   // backing. The first reference is considered the owner, and the vector is
   // ordered by the order in which references were taken.
-  std::vector<SharedImageRepresentation*> refs_;
+  std::vector<SharedImageRepresentation*> refs_ GUARDED_BY(lock_);
 };
 
 // Helper implementation of SharedImageBacking which tracks a simple
@@ -208,11 +211,12 @@ class GPU_GLES2_EXPORT ClearTrackingSharedImageBacking
   void SetClearedRect(const gfx::Rect& cleared_rect) override;
 
  protected:
-  gfx::Rect ClearedRectInternal() const;
-  void SetClearedRectInternal(const gfx::Rect& cleared_rect);
+  gfx::Rect ClearedRectInternal() const EXCLUSIVE_LOCKS_REQUIRED(lock_);
+  void SetClearedRectInternal(const gfx::Rect& cleared_rect)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
  private:
-  gfx::Rect cleared_rect_;
+  gfx::Rect cleared_rect_ GUARDED_BY(lock_);
 };
 
 }  // namespace gpu

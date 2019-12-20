@@ -224,7 +224,7 @@
 <translation id="2587052924345400782">Доступна новіша версія</translation>
 <translation id="2593272815202181319">Однакової ширини</translation>
 <translation id="2612676031748830579">Номер картки</translation>
-<translation id="2621115761605608342">Увімкнути Javascript на певному сайті.</translation>
+<translation id="2621115761605608342">Увімкнути JavaScript на певному сайті.</translation>
 <translation id="2625189173221582860">Пароль скопійовано</translation>
 <translation id="2631006050119455616">Збережено</translation>
 <translation id="2647434099613338025">Додати мову</translation>
@@ -427,6 +427,7 @@
 <translation id="4226663524361240545">Коли надходитимуть сповіщення, пристрій може вібрувати</translation>
 <translation id="423219824432660969">Зашифрувати синхронізовані дані за допомогою пароля Google від <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Відкрити налаштування</translation>
+<translation id="4250229828105606438">Знімок екрана</translation>
 <translation id="4256782883801055595">Ліцензії ПЗ з відкритим кодом</translation>
 <translation id="4259722352634471385">Веб-сторінку <ph name="URL" /> заблоковано</translation>
 <translation id="4269820728363426813">Копіювати адресу посилання</translation>
@@ -578,7 +579,7 @@
 <translation id="5317780077021120954">Зберегти</translation>
 <translation id="5324858694974489420">Батьківські налаштування</translation>
 <translation id="5327248766486351172">Назва</translation>
-<translation id="5335288049665977812">Дозволити сайтам запускати Javascript (рекомендується)</translation>
+<translation id="5335288049665977812">Дозволити сайтам запускати JavaScript (рекомендується)</translation>
 <translation id="5342314432463739672">Запити на дозволи</translation>
 <translation id="534295439873310000">Пристрої NFC</translation>
 <translation id="5357811892247919462">Вкладку отримано</translation>
@@ -1057,7 +1058,7 @@
 <translation id="8758557275681689734">Як переглянути всі відкриті вкладки</translation>
 <translation id="8788265440806329501">Історію навігації закрито</translation>
 <translation id="8788968922598763114">Відкрити останню закриту вкладку</translation>
-<translation id="8801436777607969138">Блокувати Javascript на певному сайті.</translation>
+<translation id="8801436777607969138">Блокувати JavaScript на певному сайті.</translation>
 <translation id="8812260976093120287">На деяких веб-сайтах ви можна оплачувати за допомогою перелічених вище підтримуваних додатків для платежів на вашому пристрої.</translation>
 <translation id="8816026460808729765">Заборонити сайтам доступ до датчиків</translation>
 <translation id="8816439037877937734">Додаток <ph name="APP_NAME" /> відкриватиметься в Chrome. Продовжуючи, ви приймаєте <ph name="BEGIN_LINK1" />Умови використання<ph name="END_LINK1" /> та <ph name="BEGIN_LINK2" />Примітку про конфіденційність<ph name="END_LINK2" /> Chrome, а також <ph name="BEGIN_LINK3" />Примітку про конфіденційність для облікових записів Google, якими можна керувати у Family Link<ph name="END_LINK3" />.</translation>

@@ -240,7 +240,7 @@ class SyncManager {
     syncable::NigoriHandler* nigori_handler;
 
     WeakHandle<UnrecoverableErrorHandler> unrecoverable_error_handler;
-    base::Closure report_unrecoverable_error_function;
+    base::RepeatingClosure report_unrecoverable_error_function;
 
     // Carries shutdown requests across threads and will be used to cut short
     // any network I/O and tell the syncer to exit early.
@@ -312,7 +312,7 @@ class SyncManager {
   virtual void ConfigureSyncer(ConfigureReason reason,
                                ModelTypeSet to_download,
                                SyncFeatureState sync_feature_state,
-                               const base::Closure& ready_task) = 0;
+                               base::OnceClosure ready_task) = 0;
 
   // Inform the syncer of a change in the invalidator's state.
   virtual void SetInvalidatorEnabled(bool invalidator_enabled) = 0;

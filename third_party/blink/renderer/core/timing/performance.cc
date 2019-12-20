@@ -107,6 +107,7 @@ constexpr size_t kDefaultEventTimingBufferSize = 150;
 constexpr size_t kDefaultElementTimingBufferSize = 150;
 constexpr size_t kDefaultLayoutShiftBufferSize = 150;
 constexpr size_t kDefaultLargestContenfulPaintSize = 150;
+constexpr size_t kDefaultLongTaskBufferSize = 200;
 
 Performance::Performance(
     base::TimeTicks time_origin,
@@ -262,11 +263,11 @@ PerformanceEntryVector Performance::getEntriesByTypeInternal(
       if (first_contentful_paint_timing_)
         entries.push_back(first_contentful_paint_timing_);
       break;
-    // Unsupported for LongTask, TaskAttribution.
-    // Per the spec, these entries can only be accessed via
-    // Performance Observer. No separate buffer is maintained.
     case PerformanceEntry::kLongTask:
+      for (const auto& entry : longtask_buffer_)
+        entries.push_back(entry);
       break;
+    // TaskAttribution entries are only associated to longtask entries.
     case PerformanceEntry::kTaskAttribution:
       break;
     case PerformanceEntry::kLayoutShift:
@@ -660,10 +661,16 @@ void Performance::AddLongTaskTiming(base::TimeTicks start_time,
   if (!HasObserverFor(PerformanceEntry::kLongTask))
     return;
 
+  UseCounter::Count(GetExecutionContext(), WebFeature::kLongTaskObserver);
   auto* entry = MakeGarbageCollected<PerformanceLongTaskTiming>(
       MonotonicTimeToDOMHighResTimeStamp(start_time),
       MonotonicTimeToDOMHighResTimeStamp(end_time), name, container_type,
       container_src, container_id, container_name);
+  if (longtask_buffer_.size() < kDefaultLongTaskBufferSize) {
+    longtask_buffer_.push_back(entry);
+  } else {
+    UseCounter::Count(GetExecutionContext(), WebFeature::kLongTaskBufferFull);
+  }
   NotifyObserversOfEntry(*entry);
 }
 
@@ -853,14 +860,12 @@ ScriptPromise Performance::profile(ScriptState* script_state,
 void Performance::RegisterPerformanceObserver(PerformanceObserver& observer) {
   observer_filter_options_ |= observer.FilterOptions();
   observers_.insert(&observer);
-  UpdateLongTaskInstrumentation();
 }
 
 void Performance::UnregisterPerformanceObserver(
     PerformanceObserver& old_observer) {
   observers_.erase(&old_observer);
   UpdatePerformanceObserverFilterOptions();
-  UpdateLongTaskInstrumentation();
 }
 
 void Performance::UpdatePerformanceObserverFilterOptions() {
@@ -868,7 +873,6 @@ void Performance::UpdatePerformanceObserverFilterOptions() {
   for (const auto& observer : observers_) {
     observer_filter_options_ |= observer->FilterOptions();
   }
-  UpdateLongTaskInstrumentation();
 }
 
 void Performance::NotifyObserversOfEntry(PerformanceEntry& entry) const {
@@ -965,6 +969,7 @@ void Performance::Trace(blink::Visitor* visitor) {
   visitor->Trace(event_timing_buffer_);
   visitor->Trace(layout_shift_buffer_);
   visitor->Trace(largest_contentful_paint_buffer_);
+  visitor->Trace(longtask_buffer_);
   visitor->Trace(navigation_timing_);
   visitor->Trace(user_timing_);
   visitor->Trace(first_paint_timing_);

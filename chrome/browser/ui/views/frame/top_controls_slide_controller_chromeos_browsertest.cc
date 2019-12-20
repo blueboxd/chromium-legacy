@@ -39,9 +39,12 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/display/display.h"
 #include "ui/display/display_switches.h"
+#include "ui/display/screen.h"
+#include "ui/events/event_constants.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/controls/native/native_view_host.h"
+#include "ui/views/view.h"
 #include "ui/views/view_observer.h"
 
 namespace {
@@ -82,6 +85,34 @@ void CompareTranslations(const gfx::Transform& t1, const gfx::Transform& t2) {
   EXPECT_FLOAT_EQ(t1_translation.x(), t2_translation.x());
   EXPECT_FLOAT_EQ(t1_translation.y(), t2_translation.y());
 }
+
+// A test view that will be added as a child to the BrowserView to verify how
+// many times it's laid out while sliding is in progress.
+class LayoutTestView : public views::View {
+ public:
+  explicit LayoutTestView(BrowserView* parent) {
+    DCHECK(parent);
+    parent->AddChildView(this);
+    parent->Layout();
+    layout_count_ = 0;
+  }
+  ~LayoutTestView() override = default;
+  LayoutTestView(const LayoutTestView&) = delete;
+  LayoutTestView& operator=(const LayoutTestView&) = delete;
+
+  int layout_count() const { return layout_count_; }
+
+  void Reset() {
+    InvalidateLayout();
+    layout_count_ = 0;
+  }
+
+  // views::View:
+  void Layout() override { ++layout_count_; }
+
+ private:
+  int layout_count_ = 0;
+};
 
 // Waits for the first non-empty paint for a given WebContents. To be able to
 // test gesture scroll events reliably, we must wait until the tab is fully
@@ -173,6 +204,10 @@ class TestController : public TopControlsSlideController {
     return real_controller_->IsTopControlsGestureScrollInProgress();
   }
 
+  bool IsTopControlsSlidingInProgress() const override {
+    return real_controller_->IsTopControlsSlidingInProgress();
+  }
+
  private:
   std::unique_ptr<TopControlsSlideController> real_controller_;
 
@@ -239,6 +274,52 @@ class TopControlsShownRatioWaiter : public TestControllerObserver {
   float waiting_for_shown_ratio_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TopControlsShownRatioWaiter);
+};
+
+// Waits for a given |is_gesture_scrolling_in_progress_| value.
+class GestureScrollInProgressChangeWaiter : public TestControllerObserver {
+ public:
+  explicit GestureScrollInProgressChangeWaiter(TestController* controller)
+      : controller_(controller) {
+    controller_->AddObserver(this);
+  }
+
+  ~GestureScrollInProgressChangeWaiter() override {
+    controller_->RemoveObserver(this);
+  }
+
+  GestureScrollInProgressChangeWaiter(
+      const GestureScrollInProgressChangeWaiter&) = delete;
+  GestureScrollInProgressChangeWaiter& operator=(
+      const GestureScrollInProgressChangeWaiter&) = delete;
+
+  // TestControllerObserver:
+  void OnShownRatioChanged(float shown_ratio) override {}
+
+  void OnGestureScrollInProgressChanged(bool in_progress) override {
+    if (in_progress == waited_for_in_progress_state_ && run_loop_)
+      std::move(run_loop_)->Quit();
+  }
+
+  void WaitForInProgressState(bool in_progress_state) {
+    if (controller_->IsTopControlsGestureScrollInProgress() ==
+        in_progress_state)
+      return;
+
+    waited_for_in_progress_state_ = in_progress_state;
+    // Use kNestableTasksAllowed to make it possible to wait inside a posted
+    // task.
+    run_loop_ = std::make_unique<base::RunLoop>(
+        base::RunLoop::Type::kNestableTasksAllowed);
+    run_loop_->Run();
+  }
+
+ private:
+  TestController* controller_;
+
+  std::unique_ptr<base::RunLoop> run_loop_;
+
+  bool waited_for_in_progress_state_ = false;
 };
 
 }  // namespace
@@ -373,14 +454,22 @@ class TopControlsSlideControllerTest : public InProcessBrowserTest {
   // scrolled by touch gestures in such a way that will result in the top
   // controls shown ratio becoming a fractional value (i.e. sliding top-chrome
   // is in progress).
+  // The |layout_test_view| will be used to verify that the BrowserView doesn't
+  // get laid out more than once while sliding is in progress.
   // The |expected_shrink_renderer_size| will be checked against the
   // `DoBrowserControlsShrinkRendererSize` bit while sliding.
-  void CheckIntermediateScrollStep(bool expected_shrink_renderer_size) {
+  void CheckIntermediateScrollStep(LayoutTestView* layout_test_view,
+                                   bool expected_shrink_renderer_size) {
     const float shown_ratio = top_controls_slide_controller()->GetShownRatio();
 
     // This should only be used to verify the state of the browser while sliding
     // is in progress.
     ASSERT_TRUE(shown_ratio != 1.f && shown_ratio != 0.f);
+
+    // While scrolling is in progress, only a single layout is expected.
+    EXPECT_TRUE(
+        top_controls_slide_controller()->IsTopControlsSlidingInProgress());
+    EXPECT_EQ(layout_test_view->layout_count(), 1);
 
     const int top_controls_height = browser_view()->GetTopControlsHeight();
     EXPECT_NE(top_controls_height, 0);
@@ -1065,6 +1154,7 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
       event_generator.CalculateScrollDurationForFlingVelocity(
           start_point, end_point, 2 /* velocity */, scroll_steps);
 
+  LayoutTestView layout_test_view{browser_view()};
   {
     // We will start scrolling while top-chrome is fully shown, in which case
     // the `DoBrowserControlsShrinkRendererSize` bit is true ...
@@ -1079,7 +1169,9 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
         top_controls_slide_controller(),
         base::BindOnce(
             &TopControlsSlideControllerTest::CheckIntermediateScrollStep,
-            base::Unretained(this), expected_shrink_renderer_size));
+            base::Unretained(this), &layout_test_view,
+            expected_shrink_renderer_size));
+    layout_test_view.Reset();
     event_generator.GestureScrollSequence(start_point, end_point,
                                           scroll_step_delay, scroll_steps);
     fractional_ratio_waiter.Wait();
@@ -1105,8 +1197,9 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
         top_controls_slide_controller(),
         base::BindOnce(
             &TopControlsSlideControllerTest::CheckIntermediateScrollStep,
-            base::Unretained(this), expected_shrink_renderer_size));
-
+            base::Unretained(this), &layout_test_view,
+            expected_shrink_renderer_size));
+    layout_test_view.Reset();
     event_generator.GestureScrollSequence(end_point, start_point,
                                           scroll_step_delay, scroll_steps);
     fractional_ratio_waiter.Wait();
@@ -1119,6 +1212,66 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
     EXPECT_TRUE(
         browser_view()->DoBrowserControlsShrinkRendererSize(active_contents));
   }
+}
+
+IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
+                       DisplayMetricsChangeWhileInProgress) {
+  ToggleTabletMode();
+  ASSERT_TRUE(GetTabletModeEnabled());
+  EXPECT_TRUE(top_controls_slide_controller()->IsEnabled());
+  EXPECT_FLOAT_EQ(top_controls_slide_controller()->GetShownRatio(), 1.f);
+
+  OpenUrlAtIndex(embedded_test_server()->GetURL("/top_controls_scroll.html"),
+                 0);
+
+  // Triggers a display metrics change event while both gesture scrolling and
+  // sliding are in progress.
+  auto rotate_display_while_in_progress =
+      [](TestController* slide_controller,
+         ui::test::EventGenerator* generator) {
+        ASSERT_TRUE(slide_controller->IsTopControlsGestureScrollInProgress());
+        ASSERT_TRUE(slide_controller->IsTopControlsSlidingInProgress());
+
+        // Trigger the keyboard shrotcut for changing the device scale factor.
+        // This should result in a display metric change.
+        constexpr int kFlags = ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN;
+        generator->PressKey(ui::VKEY_OEM_PLUS, kFlags);
+        generator->ReleaseKey(ui::VKEY_OEM_PLUS, kFlags);
+
+        // Test that as result of the above, sliding has been temporarily
+        // disabled, and that the top controls are fully shown.
+        EXPECT_FALSE(slide_controller->IsEnabled());
+        EXPECT_FLOAT_EQ(slide_controller->GetShownRatio(), 1.f);
+        // Even though gesture scrolling hasn't ended.
+        EXPECT_TRUE(slide_controller->IsTopControlsGestureScrollInProgress());
+      };
+
+  aura::Window* browser_window = browser()->window()->GetNativeWindow();
+  ui::test::EventGenerator event_generator(browser_window->GetRootWindow(),
+                                           browser_window);
+  const gfx::Point start_point = event_generator.current_screen_location();
+  const gfx::Point end_point = start_point + gfx::Vector2d(0, -100);
+
+  IntermediateShownRatioWaiter fractional_ratio_waiter(
+      top_controls_slide_controller(),
+      base::BindOnce(rotate_display_while_in_progress,
+                     top_controls_slide_controller(), &event_generator));
+
+  event_generator.set_current_screen_location(start_point);
+  event_generator.PressTouch();
+  event_generator.MoveTouch(end_point);
+  fractional_ratio_waiter.Wait();
+
+  // Release touch and wait for gesture scrolling to end.
+  GestureScrollInProgressChangeWaiter waiter{top_controls_slide_controller()};
+  event_generator.ReleaseTouch();
+  waiter.WaitForInProgressState(false);
+
+  // Expect that sliding has been re-enabled, and the top controls are still
+  // fully shown.
+  EXPECT_TRUE(top_controls_slide_controller()->IsEnabled());
+  EXPECT_FLOAT_EQ(top_controls_slide_controller()->GetShownRatio(), 1.f);
+  CheckBrowserLayout(browser_view(), TopChromeShownState::kFullyShown);
 }
 
 IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestPermissionBubble) {

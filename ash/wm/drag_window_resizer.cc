@@ -67,18 +67,18 @@ void DragWindowResizer::Drag(const gfx::Point& location, int event_flags) {
 }
 
 void DragWindowResizer::CompleteDrag() {
-  next_window_resizer_->CompleteDrag();
   EndDragImpl();
+  next_window_resizer_->CompleteDrag();
 }
 
 void DragWindowResizer::RevertDrag() {
-  next_window_resizer_->RevertDrag();
   drag_window_controller_.reset();
+  next_window_resizer_->RevertDrag();
 }
 
 void DragWindowResizer::FlingOrSwipe(ui::GestureEvent* event) {
-  next_window_resizer_->FlingOrSwipe(event);
   EndDragImpl();
+  next_window_resizer_->FlingOrSwipe(event);
 }
 
 DragWindowResizer::DragWindowResizer(

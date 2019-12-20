@@ -3570,37 +3570,18 @@ void LayoutBox::ComputeLogicalHeight(
       return;
     }
 
-    // FIXME: Account for writing-mode in flexible boxes.
-    // https://bugs.webkit.org/show_bug.cgi?id=46418
-    bool in_horizontal_box =
-        Parent()->IsDeprecatedFlexibleBox() &&
-        Parent()->StyleRef().BoxOrient() == EBoxOrient::kHorizontal;
-    bool stretching =
-        Parent()->StyleRef().BoxAlign() == EBoxAlignment::kStretch;
-    bool treat_as_replaced =
-        ShouldComputeSizeAsReplaced() && (!in_horizontal_box || !stretching);
     bool check_min_max_height = false;
 
     // The parent box is flexing us, so it has increased or decreased our
     // height. We have to grab our cached flexible height.
     if (HasOverrideLogicalHeight()) {
       h = Length::Fixed(OverrideLogicalHeight());
-    } else if (treat_as_replaced) {
+    } else if (ShouldComputeSizeAsReplaced()) {
       h = Length::Fixed(ComputeReplacedLogicalHeight() +
                         BorderAndPaddingLogicalHeight());
     } else {
       h = StyleRef().LogicalHeight();
       check_min_max_height = true;
-    }
-
-    // Block children of horizontal flexible boxes fill the height of the box.
-    // FIXME: Account for writing-mode in flexible boxes.
-    // https://bugs.webkit.org/show_bug.cgi?id=46418
-    if (h.IsAuto() && in_horizontal_box &&
-        ToLayoutDeprecatedFlexibleBox(Parent())->IsStretchingChildren()) {
-      h = Length::Fixed(ParentBox()->ContentLogicalHeight() - MarginBefore() -
-                        MarginAfter());
-      check_min_max_height = false;
     }
 
     LayoutUnit height_result;

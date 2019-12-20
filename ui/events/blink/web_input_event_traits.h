@@ -5,7 +5,7 @@
 #ifndef UI_EVENTS_BLINK_WEB_INPUT_EVENT_TRAITS_H_
 #define UI_EVENTS_BLINK_WEB_INPUT_EVENT_TRAITS_H_
 
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/latency/latency_info.h"
 
 namespace blink {

@@ -34,6 +34,7 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_interaction_manager.h"
+#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_interaction_manager_constants.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #import "ios/testing/earl_grey/matchers.h"
 #import "ios/web/public/web_state.h"

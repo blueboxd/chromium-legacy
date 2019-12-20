@@ -29,7 +29,7 @@
 #include <memory>
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/public/platform/web_menu_source_type.h"
+#include "third_party/blink/public/common/input/web_menu_source_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"

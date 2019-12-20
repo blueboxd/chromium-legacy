@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -122,7 +123,7 @@ TestDirectory::TestDirectory(
     TestBackingStore* backing_store)
     : Directory(base::WrapUnique(backing_store),
                 handler,
-                base::Closure(),
+                base::NullCallback(),
                 nullptr),
       backing_store_(backing_store) {}
 
@@ -327,7 +328,7 @@ TEST_F(OnDiskSyncableDirectoryTest,
           }),
           file_path_),
       MakeWeakHandle(unrecoverable_error_handler()->GetWeakPtr()),
-      base::Closure(), nullptr);
+      base::NullCallback(), nullptr);
 
   ASSERT_TRUE(dir().get());
   ASSERT_EQ(OPENED_EXISTING,
@@ -542,7 +543,7 @@ TEST_F(SyncableDirectoryManagement, TestFileRelease) {
                         return "test_cache_guid";
                       }),
                       path),
-                  MakeWeakHandle(handler_.GetWeakPtr()), base::Closure(),
+                  MakeWeakHandle(handler_.GetWeakPtr()), base::NullCallback(),
                   nullptr);
     DirOpenResult result =
         dir.Open("ScopeTest", &delegate_, NullTransactionObserver());

@@ -5,10 +5,20 @@
 #include "third_party/blink/renderer/modules/peerconnection/webrtc_media_stream_track_adapter.h"
 
 #include "base/bind.h"
+#include "base/strings/stringprintf.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
+#include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/renderer/modules/mediastream/processed_local_audio_source.h"
 #include "third_party/blink/renderer/modules/peerconnection/media_stream_video_webrtc_sink.h"
 #include "third_party/blink/renderer/modules/peerconnection/peer_connection_dependency_factory.h"
+
+namespace {
+
+void SendLogMessage(const std::string& message) {
+  blink::WebRtcLogMessage("WRMSTA::" + message);
+}
+
+}  // namespace
 
 namespace blink {
 
@@ -155,6 +165,8 @@ void WebRtcMediaStreamTrackAdapter::InitializeLocalAudioTrack(
   DCHECK(!web_track.IsNull());
   DCHECK_EQ(web_track.Source().GetType(),
             blink::WebMediaStreamSource::kTypeAudio);
+  SendLogMessage(base::StringPrintf("InitializeLocalAudioTrack({id=%s})",
+                                    web_track.Id().Utf8().c_str()));
   web_track_ = web_track;
   blink::MediaStreamAudioTrack* native_track =
       blink::MediaStreamAudioTrack::From(web_track_);
@@ -208,6 +220,8 @@ void WebRtcMediaStreamTrackAdapter::InitializeRemoteAudioTrack(
   DCHECK(webrtc_audio_track);
   DCHECK_EQ(webrtc_audio_track->kind(),
             webrtc::MediaStreamTrackInterface::kAudioKind);
+  SendLogMessage(
+      base::StringPrintf("InitializeRemoteAudioTrack([this=%p])", this));
   remote_audio_track_adapter_ =
       base::MakeRefCounted<blink::RemoteAudioTrackAdapter>(
           main_thread_, webrtc_audio_track.get());

@@ -125,6 +125,7 @@ ShelfNavigationWidget::Delegate::Delegate(Shelf* shelf, ShelfView* shelf_view)
   GetViewAccessibility().OverrideNextFocus(
       shelf->shelf_widget()->hotseat_widget());
   GetViewAccessibility().OverridePreviousFocus(shelf->GetStatusAreaWidget());
+  opaque_background_.SetName("shelfNavigation/Background");
 }
 
 ShelfNavigationWidget::Delegate::~Delegate() = default;

@@ -34,7 +34,9 @@ import traceback
 from blinkpy.common import exit_codes
 from blinkpy.common.host import Host
 from blinkpy.common.system.log_utils import configure_logging
-from blinkpy.web_tests.models import test_expectations
+from blinkpy.web_tests.models.test_expectations import (
+    TestExpectations, TestExpectationLine, ParseError)
+
 from blinkpy.web_tests.port.factory import platform_options
 from blinkpy.web_tests.models.test_expectations import TestExpectationLine
 
@@ -60,6 +62,9 @@ def lint(host, options):
     expectations_dict = {}
     all_system_specifiers = set()
     all_build_specifiers = set(ports_to_lint[0].ALL_BUILD_TYPES)
+
+    # TODO(crbug.com/986447) Remove the checks below after migrating the expectations
+    # parsing to Typ. All the checks below can be handled by Typ.
     for path in paths:
         if host.filesystem.exists(path):
             expectations_dict[path] = host.filesystem.read_text_file(path)
@@ -76,19 +81,24 @@ def lint(host, options):
                 expectations_dict[path] = host.filesystem.read_text_file(path)
     for path, content in expectations_dict.items():
         try:
-            test_expectations.TestExpectations(
+            TestExpectations(
                 ports_to_lint[0],
                 expectations_dict={path: content},
                 is_lint_mode=True)
-        except test_expectations.ParseError as error:
+        except ParseError as error:
             _log.error('')
             for warning in error.warnings:
                 _log.error(warning)
                 failures.append('%s: %s' % (path, warning))
                 _log.error('')
+
+        # check for expectations which start with the Bug(...) token
         exp_lines = content.split('\n')
         for lineno, line in enumerate(exp_lines, 1):
-            if line.strip().startswith('Bug('):
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+            if line.startswith('Bug('):
                 error = (("%s:%d Expectation '%s' has the Bug(...) token, "
                           "The token has been removed in the new expectations format") %
                           (host.filesystem.basename(path), lineno, line))
@@ -96,8 +106,10 @@ def lint(host, options):
                 failures.append(error)
                 _log.error('')
 
+        # check for expectations which have more than one mutually exclusive specifier
         for lineno, line in enumerate(exp_lines, 1):
-            if line.strip().startswith('#') or not line.strip():
+            line = line.strip()
+            if not line or line.startswith('#'):
                 continue
             exp_line = TestExpectationLine.tokenize_line(
                 host.filesystem.basename(path), line, lineno, ports_to_lint[0])
@@ -113,6 +125,28 @@ def lint(host, options):
                 _log.error(error)
                 _log.error('')
                 failures.append(error)
+
+        # check for directories in test expectations which do not have a glob at the end
+        for lineno, line in enumerate(exp_lines, 1):
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+            test_exp_line = TestExpectationLine.tokenize_line(
+                host.filesystem.basename(path), line, lineno, ports_to_lint[0])
+            if not test_exp_line.name or test_exp_line.name.endswith('*'):
+                continue
+            testname, _ = ports_to_lint[0].split_webdriver_test_name(test_exp_line.name)
+            index = testname.find('?')
+            if index != -1:
+                testname = testname[:index]
+            if ports_to_lint[0].test_isdir(testname):
+                error = (("%s:%d Expectation '%s' is for a directory, however "
+                          "the name in the expectation does not have a glob in the end") %
+                          (host.filesystem.basename(path), lineno, line))
+                _log.error(error)
+                failures.append(error)
+                _log.error('')
+
     return failures
 
 

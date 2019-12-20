@@ -516,6 +516,7 @@ if (is_android) {
       "//chrome/android:app_hooks_java",
       "//chrome/browser/profiling_host:profiling_browsertests",
       "//components/crash/android:crashpad_main",
+      "//components/games/core/test:test_support",
 
       # TODO(crbug.com/961849): This is needed for ShellManager which is what
       # the ChromeBrowserTestsActivity is using to build the java UI. It's
@@ -532,6 +533,7 @@ if (is_android) {
 
     sources = [
       "../browser/engagement/important_sites_util_browsertest.cc",
+      "../browser/games/games_service_browsertest.cc",
       "../browser/payments/empty_parameters_browsertest.cc",
       "../browser/payments/has_enrolled_instrument_browsertest.cc",
       "../browser/payments/has_enrolled_instrument_query_quota_browsertest.cc",
@@ -1079,7 +1081,9 @@ if (!is_android) {
       "../browser/policy/cloud/cloud_policy_test_utils.h",
       "../browser/policy/cloud/component_cloud_policy_browsertest.cc",
       "../browser/policy/cloud/device_management_service_browsertest.cc",
+      "../browser/policy/component_updater_policy_browsertest.cc",
       "../browser/policy/content_settings_policy_browsertest.cc",
+      "../browser/policy/media_stream_policy_browsertest.cc",
       "../browser/policy/policy_browsertest.cc",
       "../browser/policy/policy_initialization_browsertest.cc",
       "../browser/policy/policy_network_browsertest.cc",
@@ -2381,7 +2385,7 @@ if (!is_android) {
         "../browser/ui/ash/chrome_screenshot_grabber_browsertest.cc",
         "../browser/ui/ash/keyboard/keyboard_controller_browsertest.cc",
         "../browser/ui/ash/keyboard/keyboard_end_to_end_browsertest.cc",
-        "../browser/ui/ash/launcher/app_service_app_window_browsertest.cc",
+        "../browser/ui/ash/launcher/app_service/app_service_app_window_browsertest.cc",
         "../browser/ui/ash/launcher/arc_app_launcher_browsertest.cc",
         "../browser/ui/ash/launcher/browser_shortcut_launcher_item_controller_browsertest.cc",
         "../browser/ui/ash/launcher/chrome_launcher_controller_browsertest.cc",
@@ -2440,6 +2444,9 @@ if (!is_android) {
         "base/interactive_test_utils_aura.h",
         "base/interactive_test_utils_views.cc",
       ]
+      if (!is_official_build) {
+        sources += [ "../browser/chromeos/web_applications/sample_system_web_app_integration_browsertest.cc" ]
+      }
       if (use_cups) {
         sources +=
             [ "../browser/chromeos/extensions/printing/printing_apitest.cc" ]
@@ -3242,6 +3249,8 @@ test("unit_tests") {
     "../browser/performance_manager/persistence/site_data/unittest_utils.cc",
     "../browser/performance_manager/persistence/site_data/unittest_utils.h",
     "../browser/performance_manager/render_process_host_proxy_unittest.cc",
+    "../browser/performance_manager/test_support/page_aggregator.cc",
+    "../browser/performance_manager/test_support/page_aggregator.h",
     "../browser/performance_monitor/metric_evaluator_helper_win_unittest.cc",
     "../browser/performance_monitor/system_monitor_unittest.cc",
     "../browser/permissions/chooser_context_base_mock_permission_observer.cc",
@@ -3507,6 +3516,7 @@ test("unit_tests") {
   if (!is_android) {
     sources += [
       "../browser/profiles/profile_avatar_icon_util_unittest.cc",
+      "../browser/tab_contents/form_interaction_tab_helper_unittest.cc",
       "../browser/ui/autofill/payments/autofill_dialog_models_unittest.cc",
       "../browser/ui/bookmarks/bookmark_editor_unittest.cc",
       "../browser/ui/bookmarks/bookmark_ui_utils_desktop_unittest.cc",

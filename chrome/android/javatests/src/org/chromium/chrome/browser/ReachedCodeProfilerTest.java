@@ -103,7 +103,7 @@ public final class ReachedCodeProfilerTest {
         mActivityTestRule.startMainActivityFromLauncher();
         Assert.assertEquals(FAKE_GROUP_NAME,
                 SharedPreferencesManager.getInstance().readString(
-                        ChromePreferenceKeys.REACHED_CODE_PROFILER_GROUP_KEY, null));
+                        ChromePreferenceKeys.REACHED_CODE_PROFILER_GROUP, null));
     }
 
     /**

@@ -189,7 +189,7 @@ decoding backend:
 
 ### VaAPI on Linux
 
-This configuration is **unsupported** (see [docs/linux_hw_video_decode.md]), the
+This configuration is **unsupported** (see [docs/linux/hw_video_decode.md]), the
 following instructions are provided only as a reference for developers to test
 the code paths on a Linux machine.
 
@@ -223,6 +223,6 @@ non-sandboxed mode.
 Refer to the [previous section](#verify-vaapi) to verify support and use of
 the VaAPI.
 
-[docs/linux_hw_video_decode.md]: https://chromium.googlesource.com/chromium/src/+/HEAD/docs/linux_hw_video_decode.md
-[Linux build setup]: https://chromium.googlesource.com/chromium/src/+/HEAD/docs/linux_build_instructions.md
-[Setting up the build]: https://chromium.googlesource.com/chromium/src/+/HEAD/docs/linux_build_instructions.md#setting-up-the-build
+[docs/linux/hw_video_decode.md]: https://chromium.googlesource.com/chromium/src/+/HEAD/docs/linux/hw_video_decode.md
+[Linux build setup]: https://chromium.googlesource.com/chromium/src/+/HEAD/docs/linux/build_instructions.md
+[Setting up the build]: https://chromium.googlesource.com/chromium/src/+/HEAD/docs/linux/build_instructions.md#setting-up-the-build

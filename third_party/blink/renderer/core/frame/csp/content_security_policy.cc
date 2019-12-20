@@ -525,6 +525,14 @@ bool ContentSecurityPolicy::IsScriptInlineType(InlineType inline_type) {
   }
 }
 
+bool ContentSecurityPolicy::ShouldCheckEval() const {
+  for (const auto& policy : policies_) {
+    if (policy->ShouldCheckEval())
+      return true;
+  }
+  return IsRequireTrustedTypes();
+}
+
 bool ContentSecurityPolicy::AllowEval(
     SecurityViolationReportingPolicy reporting_policy,
     ContentSecurityPolicy::ExceptionStatus exception_status,

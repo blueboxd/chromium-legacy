@@ -11,7 +11,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
@@ -20,7 +19,7 @@ import java.util.concurrent.CountDownLatch;
 /**
  * Tests that embedding support works as expected.
  */
-@RunWith(BaseJUnit4ClassRunner.class)
+@RunWith(WebLayerJUnit4ClassRunner.class)
 public class RenderingTest {
     @Rule
     public InstrumentationActivityTestRule mActivityTestRule =

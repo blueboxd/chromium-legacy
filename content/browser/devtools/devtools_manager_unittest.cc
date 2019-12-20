@@ -38,7 +38,7 @@ namespace {
 
 class TestDevToolsClientHost : public DevToolsAgentHostClient {
  public:
-  TestDevToolsClientHost() : last_sent_message(nullptr), closed_(false) {}
+  TestDevToolsClientHost() : closed_(false) {}
 
   ~TestDevToolsClientHost() override { EXPECT_TRUE(closed_); }
 
@@ -52,9 +52,7 @@ class TestDevToolsClientHost : public DevToolsAgentHostClient {
   void AgentHostClosed(DevToolsAgentHost* agent_host) override { FAIL(); }
 
   void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
-                               const std::string& message) override {
-    last_sent_message = &message;
-  }
+                               base::span<const uint8_t> message) override {}
 
   void InspectAgentHost(DevToolsAgentHost* agent_host) {
     agent_host_ = agent_host;
@@ -68,8 +66,6 @@ class TestDevToolsClientHost : public DevToolsAgentHostClient {
   }
 
   static int close_counter;
-
-  const std::string* last_sent_message;
 
  private:
   bool closed_;
@@ -221,8 +217,9 @@ class TestExternalAgentDelegate: public DevToolsExternalAgentProxyDelegate {
   base::TimeTicks GetLastActivityTime() override { return base::TimeTicks(); }
 
   void SendMessageToBackend(DevToolsExternalAgentProxy* proxy,
-                            const std::string& message) override {
-    recordEvent(std::string("SendMessageToBackend.") + message);
+                            base::span<const uint8_t> message) override {
+    recordEvent(std::string("SendMessageToBackend.") +
+                std::string(message.begin(), message.end()));
   }
 };
 
@@ -236,9 +233,16 @@ TEST_F(DevToolsManagerTest, TestExternalProxy) {
 
   TestDevToolsClientHost client_host;
   client_host.InspectAgentHost(agent_host.get());
-  agent_host->DispatchProtocolMessage(&client_host, "message1");
-  agent_host->DispatchProtocolMessage(&client_host, "message2");
-  agent_host->DispatchProtocolMessage(&client_host, "message2");
+
+  agent_host->DispatchProtocolMessage(
+      &client_host,
+      base::as_bytes(base::make_span("message1", strlen("message1"))));
+  agent_host->DispatchProtocolMessage(
+      &client_host,
+      base::as_bytes(base::make_span("message2", strlen("message2"))));
+  agent_host->DispatchProtocolMessage(
+      &client_host,
+      base::as_bytes(base::make_span("message2", strlen("message2"))));
 
   client_host.Close();
 }

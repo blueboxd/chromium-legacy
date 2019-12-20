@@ -620,10 +620,10 @@ TEST_P(SharedImageBackingFactoryD3DTest, Dawn_SkiaGL) {
 }
 #endif  // BUILDFLAG(USE_DAWN)
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          SharedImageBackingFactoryD3DTestSwapChain,
                          testing::Bool());
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          SharedImageBackingFactoryD3DTest,
                          testing::Values(true));
 }  // anonymous namespace

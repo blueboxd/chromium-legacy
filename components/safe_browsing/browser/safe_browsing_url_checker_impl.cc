@@ -5,6 +5,7 @@
 #include "components/safe_browsing/browser/safe_browsing_url_checker_impl.h"
 
 #include "base/bind.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_macros_local.h"
 #include "base/task/post_task.h"
@@ -452,20 +453,24 @@ void SafeBrowsingUrlCheckerImpl::OnCheckUrlForHighConfidenceAllowlist(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(
           &SafeBrowsingUrlCheckerImpl::StartGetCachedRealTimeUrlVerdictOnUI,
-          weak_factory_.GetWeakPtr(), cache_manager_on_ui_, url));
+          weak_factory_.GetWeakPtr(), cache_manager_on_ui_, url,
+          base::TimeTicks::Now()));
 }
 
 // static
 void SafeBrowsingUrlCheckerImpl::StartGetCachedRealTimeUrlVerdictOnUI(
     base::WeakPtr<SafeBrowsingUrlCheckerImpl> weak_checker_on_io,
     base::WeakPtr<VerdictCacheManager> cache_manager_on_ui,
-    const GURL& url) {
+    const GURL& url,
+    base::TimeTicks get_cache_start_time) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   std::unique_ptr<RTLookupResponse::ThreatInfo> cached_threat_info =
       std::make_unique<RTLookupResponse::ThreatInfo>();
-  // TODO(crbug.com/1030989): Add metrics for the proportion of cache_manager
-  // not valid.
+
+  base::UmaHistogramBoolean("SafeBrowsing.RT.HasValidCacheManager",
+                            !!cache_manager_on_ui);
+
   RTLookupResponse::ThreatInfo::VerdictType verdict_type =
       cache_manager_on_ui
           ? cache_manager_on_ui->GetCachedRealTimeUrlVerdict(
@@ -475,17 +480,21 @@ void SafeBrowsingUrlCheckerImpl::StartGetCachedRealTimeUrlVerdictOnUI(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(
           &SafeBrowsingUrlCheckerImpl::OnGetCachedRealTimeUrlVerdictDoneOnIO,
-          weak_checker_on_io, verdict_type, std::move(cached_threat_info),
-          url));
+          weak_checker_on_io, verdict_type, std::move(cached_threat_info), url,
+          get_cache_start_time));
 }
 
 void SafeBrowsingUrlCheckerImpl::OnGetCachedRealTimeUrlVerdictDoneOnIO(
     RTLookupResponse::ThreatInfo::VerdictType verdict_type,
     std::unique_ptr<RTLookupResponse::ThreatInfo> cached_threat_info,
-    const GURL& url) {
+    const GURL& url,
+    base::TimeTicks get_cache_start_time) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  // TODO(crbug.com/1030989): Add metrics for cache hit rate and latency.
+  base::UmaHistogramSparse("SafeBrowsing.RT.GetCacheResult", verdict_type);
+  UMA_HISTOGRAM_TIMES("SafeBrowsing.RT.GetCache.Time",
+                      base::TimeTicks::Now() - get_cache_start_time);
+
   if (verdict_type == RTLookupResponse::ThreatInfo::SAFE) {
     OnUrlResult(url, SB_THREAT_TYPE_SAFE, ThreatMetadata());
     return;

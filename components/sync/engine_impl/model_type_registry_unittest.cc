@@ -36,8 +36,8 @@ class ModelTypeRegistryTest : public ::testing::Test {
 
     registry_ = std::make_unique<ModelTypeRegistry>(
         workers_, test_user_share_.user_share(), &mock_nudge_handler_,
-        base::Bind(&ModelTypeRegistryTest::MigrateDirectory,
-                   base::Unretained(this)),
+        base::BindRepeating(&ModelTypeRegistryTest::MigrateDirectory,
+                            base::Unretained(this)),
         &cancelation_signal_, test_user_share_.keystore_keys_handler());
   }
 

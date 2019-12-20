@@ -326,6 +326,7 @@
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Executar o Diagnóstico de Rede<ph name="END_LINK" /></translation>
 <translation id="2473195200299095979">Traduzir esta página</translation>
 <translation id="2479410451996844060">URL de pesquisa inválido.</translation>
+<translation id="2482370039860827034">Você acabou de digitar sua senha em um site suspeito. O Chrome recomenda acessar <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> e outros sites em que você usa essa senha para mudá-la agora mesmo.</translation>
 <translation id="2482878487686419369">Notificações</translation>
 <translation id="248348093745724435">Políticas do computador</translation>
 <translation id="2491120439723279231">O certificado do servidor contém erros.</translation>
@@ -338,6 +339,7 @@
 <translation id="2505268675989099013">Proteger conta</translation>
 <translation id="2515629240566999685">Verificar o sinal na sua área</translation>
 <translation id="2521385132275182522">Grampo na parte inferior direita</translation>
+<translation id="2521483867890026383">Você acabou de digitar sua senha em um site suspeito. O Chromium recomenda acessar <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> e outros sites em que você usa essa senha para mudá-la agora mesmo.</translation>
 <translation id="2523886232349826891">Salvo apenas neste dispositivo</translation>
 <translation id="2524461107774643265">Adicione Mais Informações</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{e mais 1}one{e mais #}other{e mais #}}</translation>
@@ -592,6 +594,7 @@
 <translation id="3828924085048779000">Uma senha vazia não é permitida.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> instalou extensões para funções adicionais. As extensões têm acesso a alguns dos seus dados.</translation>
 <translation id="3832522519263485449">Perfuração múltipla no lado esquerdo</translation>
+<translation id="3838154488026099170">Você acabou de digitar sua senha em um site suspeito. O Chromium recomenda acessar <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> e outros sites em que você usa essa senha para mudá-la agora mesmo.</translation>
 <translation id="385051799172605136">Voltar</translation>
 <translation id="3858027520442213535">Atualizar data e hora</translation>
 <translation id="3884278016824448484">Identificador de dispositivo em conflito</translation>
@@ -629,6 +632,7 @@
 <translation id="4072486802667267160">Ocorreu um erro ao processar seu pedido. Tente novamente.</translation>
 <translation id="4075732493274867456">O cliente e o servidor não são compatíveis com uma versão do protocolo SSL comum ou com o pacote de criptografia.</translation>
 <translation id="4075941231477579656">Touch ID</translation>
+<translation id="4077092919748553596">Você acabou de digitar sua senha em um site suspeito. O Chrome recomenda acessar <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> e outros sites em que você usa essa senha para mudá-la agora mesmo.</translation>
 <translation id="4079302484614802869">A configuração do proxy definida utiliza um URL de script .pac, e não servidores proxy fixos.</translation>
 <translation id="4082393374666368382">Configurações: gerenciamento</translation>
 <translation id="4098354747657067197">Site enganoso</translation>
@@ -708,6 +712,7 @@
 <translation id="4356973930735388585">Invasores nesse site podem tentar instalar programas perigosos no seu computador para roubar ou excluir informações (por exemplo, fotos, senhas, mensagens e cartões de crédito).</translation>
 <translation id="4358059973562876591">Os modelos que você especificou podem não ser aplicados devido a um erro na política DnsOverHttpsMode.</translation>
 <translation id="4358461427845829800">Gerenciar formas de pagamento…</translation>
+<translation id="4359160567981085931">Você acabou de digitar sua senha em um site suspeito. O Chrome pode ajudar. Para mudar a senha e notificar o Google de que sua conta pode estar em risco, clique em "Proteger conta".</translation>
 <translation id="4367563149485757821">Nº 12 (Envelope)</translation>
 <translation id="437058704415269440">Saldo da conta</translation>
 <translation id="4372516964750095882">216 mm x 304 mm</translation>
@@ -982,6 +987,7 @@
 <translation id="5728056243719941842">C5 (Envelope)</translation>
 <translation id="5730040223043577876">O Chrome recomenda redefinir sua senha se você a reutilizou em outros sites.</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Salvar cartão na Conta do Google}one{Salvar cartão na Conta do Google}other{Salvar cartões na Conta do Google}}</translation>
+<translation id="5745980000221562234">{NUM_CARDS,plural, =1{Usar um número virtual para este cartão}one{Selecionar um cartão}other{Selecionar cartões}}</translation>
 <translation id="5763042198335101085">Informe um endereço de e-mail válido.</translation>
 <translation id="5763703224595565476">Seu administrador ativou o serviço de proteção ao usuário do Chrome Enterprise no seu navegador. O serviço de proteção ao usuário do Chrome Enterprise tem acesso a parte dos seus dados.</translation>
 <translation id="5765072501007116331">Para ver métodos e requisitos de entrega, selecione um endereço</translation>
@@ -998,6 +1004,7 @@
 <translation id="5804241973901381774">Permissões</translation>
 <translation id="5810442152076338065">Sua conexão com <ph name="DOMAIN" /> está criptografada com um pacote de criptografia obsoleto.</translation>
 <translation id="5813119285467412249">&amp;Refazer adicionar</translation>
+<translation id="5824687817967109979">{NUM_CARDS,plural, =1{Quando você fizer o pagamento, a cobrança será feita neste cartão, mas o número verdadeiro não será compartilhado com este site. Para mais segurança, um CVC temporário será gerado.}one{Quando você fizer o pagamento, a cobrança será feita no cartão selecionado, mas o número verdadeiro não será compartilhado com este site. Para mais segurança, um CVC temporário será gerado.}other{Quando você fizer o pagamento, a cobrança será feita nos cartões selecionados, mas os números verdadeiros não serão compartilhados com este site. Para mais segurança, um CVC temporário será gerado.}}</translation>
 <translation id="583281660410589416">Desconhecido</translation>
 <translation id="5838278095973806738">É recomendado não fornecer informações confidencial a esse site (por exemplo, senhas ou cartões de crédito), porque elas podem ser roubadas por invasores.</translation>
 <translation id="5851548754964597211">Lista de guias</translation>
@@ -1455,6 +1462,7 @@ Mais detalhes:
 <translation id="8042918947222776840">Escolher método de retirada</translation>
 <translation id="8057711352706143257">O software "<ph name="SOFTWARE_NAME" />" não foi configurado corretamente. A desinstalação do "<ph name="SOFTWARE_NAME" />" costuma resolver o problema. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8066955247577885446">Algo deu errado.</translation>
+<translation id="8067872629359326442">Você acabou de digitar sua senha em um site suspeito. O Chromium pode ajudar. Para mudar a senha e notificar o Google de que sua conta pode estar em risco, clique em "Proteger conta".</translation>
 <translation id="8074253406171541171">10x13 (Envelope)</translation>
 <translation id="8078141288243656252">Não é possível fazer anotações em documentos girados</translation>
 <translation id="8079031581361219619">Atualizar o site?</translation>
@@ -1471,6 +1479,7 @@ Mais detalhes:
 <translation id="8105368624971345109">Desativar</translation>
 <translation id="8118489163946903409">Método de pagamento</translation>
 <translation id="8127301229239896662">O software "<ph name="SOFTWARE_NAME" />" não foi instalado corretamente no computador ou na rede. Peça ao administrador de TI para resolver o problema.</translation>
+<translation id="8128526133099929547">Você acabou de digitar sua senha em um site suspeito. O Chrome recomenda acessar <ph name="WEBSITE_1" /> e outros sites em que você usa essa senha para mudá-la agora mesmo.</translation>
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8149426793427495338">Seu computador entrou em modo de suspensão.</translation>
 <translation id="8150722005171944719">O arquivo em <ph name="URL" /> não está legível. Ele pode ter sido removido ou movido, ou as permissões do arquivo podem estar impedindo o acesso.</translation>
@@ -1488,6 +1497,7 @@ Mais detalhes:
 <translation id="8218327578424803826">Local designado:</translation>
 <translation id="8220146938470311105">C7/C6 (Envelope)</translation>
 <translation id="8220639454292072926">Relatório para empresas</translation>
+<translation id="8221250263817408492">Você acabou de digitar sua senha em um site suspeito. O Chromium recomenda acessar <ph name="WEBSITE_1" /> e outros sites em que você usa essa senha para mudá-la agora mesmo.</translation>
 <translation id="8225771182978767009">A pessoa que configurou este computador optou por bloquear esse site.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">Abrir página em uma nova guia anônima</translation>

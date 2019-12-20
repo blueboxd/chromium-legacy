@@ -89,7 +89,7 @@ if (is_android) {
       "//services:*",
       "//services/device:*",
     ]
-    java_files = java_sources_needing_jni
+    sources = java_sources_needing_jni
     deps = [
       "//base:base_java",
     ]

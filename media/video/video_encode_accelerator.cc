@@ -80,6 +80,11 @@ std::string VideoEncodeAccelerator::Config::AsHumanReadableString() const {
   return str;
 }
 
+void VideoEncodeAccelerator::Client::NotifyEncoderInfoChange(
+    const VideoEncoderInfo& info) {
+  // Do nothing if a client doesn't use the info.
+}
+
 VideoEncodeAccelerator::~VideoEncodeAccelerator() = default;
 
 VideoEncodeAccelerator::SupportedProfile::SupportedProfile()

@@ -326,6 +326,7 @@
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Eseguire lo strumento Diagnostica di rete<ph name="END_LINK" /></translation>
 <translation id="2473195200299095979">Traduci questa pagina</translation>
 <translation id="2479410451996844060">URL ricerca non valido.</translation>
+<translation id="2482370039860827034">Hai appena inserito la tua password su un sito ingannevole. Chrome ti consiglia di visitare i siti <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> e altri siti in cui utilizzi questa password e di cambiarla subito.</translation>
 <translation id="2482878487686419369">Notifiche</translation>
 <translation id="248348093745724435">Norme macchina</translation>
 <translation id="2491120439723279231">Il certificato del server contiene degli errori.</translation>
@@ -338,6 +339,7 @@
 <translation id="2505268675989099013">Proteggi account</translation>
 <translation id="2515629240566999685">Controllare il segnale nella tua area</translation>
 <translation id="2521385132275182522">Pinzatura in basso a destra</translation>
+<translation id="2521483867890026383">Hai appena inserito la tua password su un sito ingannevole. Chromium ti consiglia di visitare i siti <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> e altri siti in cui utilizzi questa password e di cambiarla subito.</translation>
 <translation id="2523886232349826891">Salvataggio effettuato solo su questo dispositivo</translation>
 <translation id="2524461107774643265">Aggiungi altre informazioni</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{e 1 altro}other{e altro #}}</translation>
@@ -604,6 +606,7 @@
 <translation id="3828924085048779000">Non è consentita una passphrase vuota.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> ha installato estensioni relative a funzioni aggiuntive. Le estensioni hanno accesso ad alcuni tuoi dati.</translation>
 <translation id="3832522519263485449">Perforatura multipla a sinistra</translation>
+<translation id="3838154488026099170">Hai appena inserito la tua password su un sito ingannevole. Chromium ti consiglia di visitare i siti <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> e altri siti in cui utilizzi questa password e di cambiarla subito.</translation>
 <translation id="385051799172605136">Indietro</translation>
 <translation id="3858027520442213535">Aggiorna data e ora</translation>
 <translation id="3884278016824448484">Identificativo del dispositivo in conflitto</translation>
@@ -641,6 +644,7 @@
 <translation id="4072486802667267160">Si è verificato un errore durante l'elaborazione dell'ordine. Riprova.</translation>
 <translation id="4075732493274867456">Il client e il server non supportano un pacchetto di crittografia o una versione del protocollo SSL comuni.</translation>
 <translation id="4075941231477579656">Touch ID</translation>
+<translation id="4077092919748553596">Hai appena inserito la tua password su un sito ingannevole. Chrome ti consiglia di visitare i siti <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> e altri siti in cui utilizzi questa password e di cambiarla subito.</translation>
 <translation id="4079302484614802869">L'impostazione della configurazione proxy prevede l'utilizzo di un URL script .pac, non di server proxy fissi.</translation>
 <translation id="4082393374666368382">Impostazioni - Gestione</translation>
 <translation id="4098354747657067197">Sito ingannevole in vista</translation>
@@ -720,6 +724,7 @@
 <translation id="4356973930735388585">I malintenzionati su questo sito potrebbero tentare di installare sul tuo computer programmi pericolosi che scoprono o eliminano i tuoi dati (ad esempio foto, password, messaggi e carte di credito).</translation>
 <translation id="4358059973562876591">I modelli che hai specificato potrebbero non essere applicati a causa di un errore con il criterio DnsOverHttpsMode.</translation>
 <translation id="4358461427845829800">Gestisci metodi di pagamento…</translation>
+<translation id="4359160567981085931">Hai appena inserito la tua password su un sito ingannevole. Chrome può aiutarti. Per cambiare la password e informare Google che il tuo account potrebbe essere a rischio, fai clic su Proteggi account.</translation>
 <translation id="4367563149485757821">Number-12 (Envelope)</translation>
 <translation id="437058704415269440">Saldo dell'account</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
@@ -995,6 +1000,7 @@
 <translation id="5728056243719941842">C5 (Envelope)</translation>
 <translation id="5730040223043577876">Chrome ti consiglia di reimpostare la password, se l'hai utilizzata su altri siti.</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Salva la carta nel tuo Account Google}other{Salva carte nel tuo Account Google}}</translation>
+<translation id="5745980000221562234">{NUM_CARDS,plural, =1{Usa un numero virtuale per questa carta}other{Seleziona una carta}}</translation>
 <translation id="5763042198335101085">Inserisci un indirizzo email valido</translation>
 <translation id="5763703224595565476">L'amministratore ha attivato Chrome Enterprise User Protect sul tuo browser. Chrome Enterprise User Protect ha accesso ad alcuni tuoi dati.</translation>
 <translation id="5765072501007116331">Seleziona un indirizzo per conoscere i requisiti e i metodi di consegna</translation>
@@ -1011,6 +1017,7 @@
 <translation id="5804241973901381774">Autorizzazioni</translation>
 <translation id="5810442152076338065">La connessione a <ph name="DOMAIN" /> è criptata tramite un pacchetto di crittografia obsoleto.</translation>
 <translation id="5813119285467412249">&amp;Ripeti aggiunta</translation>
+<translation id="5824687817967109979">{NUM_CARDS,plural, =1{Gli importi dei pagamenti che effettuerai verranno addebitati su questa carta, ma il numero effettivo della carta non verrà condiviso con questo sito. Per maggiore sicurezza verrà generato un codice CVC temporaneo.}other{Gli importi dei pagamenti che effettuerai verranno addebitati sulla carta selezionata, ma il numero effettivo della carta non verrà condiviso con questo sito. Per maggiore sicurezza verrà generato un codice CVC temporaneo.}}</translation>
 <translation id="583281660410589416">Sconosciuto</translation>
 <translation id="5838278095973806738">Non dovresti inserire dati sensibili in questo sito (ad esempio password o carte di credito) perché potrebbero essere intercettati da utenti malintenzionati.</translation>
 <translation id="5851548754964597211">Elenco schede</translation>
@@ -1467,6 +1474,7 @@ Ulteriori dettagli:
 <translation id="8042918947222776840">Scegli il metodo di ritiro</translation>
 <translation id="8057711352706143257">"<ph name="SOFTWARE_NAME" />" non è configurato correttamente. La disinstallazione di "<ph name="SOFTWARE_NAME" />" solitamente risolve il problema. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8066955247577885446">Si è verificato un problema.</translation>
+<translation id="8067872629359326442">Hai appena inserito la tua password su un sito ingannevole. Chromium può aiutarti. Per cambiare la password e informare Google che il tuo account potrebbe essere a rischio, fai clic su Proteggi account.</translation>
 <translation id="8074253406171541171">10x13 (Envelope)</translation>
 <translation id="8078141288243656252">Non è possibile inserire annotazioni se il documento è ruotato</translation>
 <translation id="8079031581361219619">Vuoi ricaricare il sito?</translation>
@@ -1483,6 +1491,7 @@ Ulteriori dettagli:
 <translation id="8105368624971345109">Disattiva</translation>
 <translation id="8118489163946903409">Metodo di pagamento</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" non è stato installato correttamente sul computer o sulla rete. Chiedi all'amministratore IT di risolvere il problema.</translation>
+<translation id="8128526133099929547">Hai appena inserito la tua password su un sito ingannevole. Chrome ti consiglia di visitare il sito <ph name="WEBSITE_1" /> e altri siti in cui utilizzi questa password e di cambiarla subito.</translation>
 <translation id="8131740175452115882">Conferma</translation>
 <translation id="8149426793427495338">Il computer è entrato in modalità sospensione.</translation>
 <translation id="8150722005171944719">Il file all'indirizzo <ph name="URL" /> non è leggibile. Potrebbe essere stato rimosso, spostato oppure delle autorizzazioni del file potrebbero impedire l'accesso.</translation>
@@ -1500,6 +1509,7 @@ Ulteriori dettagli:
 <translation id="8218327578424803826">Posizione assegnata:</translation>
 <translation id="8220146938470311105">C7/C6 (Busta)</translation>
 <translation id="8220639454292072926">Rapporti Enterprise</translation>
+<translation id="8221250263817408492">Hai appena inserito la tua password su un sito ingannevole. Chromium ti consiglia di visitare il sito <ph name="WEBSITE_1" /> e altri siti in cui utilizzi questa password e di cambiarla subito.</translation>
 <translation id="8225771182978767009">La persona che ha configurato il computer ha deciso di bloccare questo sito.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">Apri la pagina in una nuova scheda di navigazione in incognito</translation>

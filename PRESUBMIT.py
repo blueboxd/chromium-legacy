@@ -1081,6 +1081,16 @@ _BANNED_CPP_FUNCTIONS = (
       ),
     ),
     (
+      'GetInterfaceProvider',
+      (
+        'InterfaceProvider is deprecated.',
+        'Please use ExecutionContext::GetBrowserInterfaceBroker and overrides',
+        'or Platform::GetBrowserInterfaceBroker.'
+      ),
+      False,
+      (),
+    ),
+    (
       'CComPtr',
       (
         'New code should use Microsoft::WRL::ComPtr from wrl/client.h as a ',

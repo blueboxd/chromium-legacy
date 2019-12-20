@@ -638,6 +638,12 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 // Tests that only the "Cancel", "Delete" and "Mark Unread" buttons are showing
 // when not editing.
 - (void)testVisibleButtonsOnlyReadEntrySelected {
+#if defined(CHROME_EARL_GREY_1)
+  // TODO(crbug.com/1036071): EG1 Test flaky on iOS 12.
+  if (!base::ios::IsRunningOnIOS13OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"EG1 flaky on iOS 12.");
+  }
+#endif
   AddEntriesAndEnterEdit();
   TapEntry(kReadTitle);
 
@@ -651,6 +657,12 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 // Tests that the "Cancel", "Edit" and "Mark Unread" buttons are not visible
 // after delete (using swipe).
 - (void)testVisibleButtonsAfterSwipeDeletion {
+#if defined(CHROME_EARL_GREY_1)
+  // TODO(crbug.com/1036071): EG1 Test flaky on iOS 12.
+  if (!base::ios::IsRunningOnIOS13OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"EG1 flaky on iOS 12.");
+  }
+#endif
   // Reading list's view width is narrower on Ipad Air (iOS 12) than on other
   // devices. The grey_swipeSlowInDirection action deletes the element instead
   // of displaying the 'Delete' button.
@@ -696,6 +708,12 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 // Tests that only the "Cancel", "Delete" and "Mark…" buttons are showing when
 // not editing.
 - (void)testVisibleButtonsMixedEntriesSelected {
+#if defined(CHROME_EARL_GREY_1)
+  // TODO(crbug.com/1036071): EG1 Test flaky on iOS 12.
+  if (!base::ios::IsRunningOnIOS13OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"EG1 flaky on iOS 12.");
+  }
+#endif
   AddEntriesAndEnterEdit();
   TapEntry(kReadTitle);
   TapEntry(kUnreadTitle);
@@ -838,6 +856,12 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 
 // Selects an read entry and mark it as unread.
 - (void)testMarkEntriesUnread {
+#if defined(CHROME_EARL_GREY_1)
+  // TODO(crbug.com/1036071): EG1 Test flaky on iOS 12.
+  if (!base::ios::IsRunningOnIOS13OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"EG1 flaky on iOS 12.");
+  }
+#endif
   AddEntriesAndEnterEdit();
   TapEntry(kReadTitle);
 
@@ -853,6 +877,12 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 
 // Selects read and unread entries and mark them as unread.
 - (void)testMarkMixedEntriesUnread {
+#if defined(CHROME_EARL_GREY_1)
+  // TODO(crbug.com/1036071): EG1 Test flaky on iOS 12.
+  if (!base::ios::IsRunningOnIOS13OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"EG1 flaky on iOS 12.");
+  }
+#endif
   AddEntriesAndEnterEdit();
   TapEntry(kReadTitle);
   TapEntry(kUnreadTitle);

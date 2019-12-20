@@ -427,6 +427,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4226663524361240545">Es posible que las notificaciones hagan que el dispositivo vibre</translation>
 <translation id="423219824432660969">Cifrar los datos sincronizados con la contraseña de Google desde el <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Abrir Configuración</translation>
+<translation id="4250229828105606438">Captura de pantalla</translation>
 <translation id="4256782883801055595">Licencias de código abierto</translation>
 <translation id="4259722352634471385">Se ha bloqueado la navegación: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Copiar la dirección del enlace</translation>
@@ -435,7 +436,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="429312253194641664">Un sitio web está reproduciendo elementos multimedia</translation>
 <translation id="4298388696830689168">Sitios web enlazados</translation>
 <translation id="4307992518367153382">Configuración básica</translation>
-<translation id="4314815835985389558">Gestionar la sincronización</translation>
+<translation id="4314815835985389558">Gestionar sincronización</translation>
 <translation id="4351244548802238354">Cerrar cuadro de diálogo</translation>
 <translation id="4353114845960720315">Mientras estés en RV, este sitio web puede saber:</translation>
 <translation id="4378154925671717803">Teléfono</translation>
@@ -850,7 +851,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7293171162284876153">Para iniciar la sincronización, activa "Sincronizar tus datos de Chrome".</translation>
 <translation id="729975465115245577">Tu dispositivo no tiene ninguna aplicación para almacenar el archivo de contraseñas.</translation>
 <translation id="7302081693174882195">Detalles: ordenados por cantidad de datos ahorrados</translation>
-<translation id="7302486331832100261">Normalmente bloqueas todas las notificaciones. Para permitirlas, toca Detalles.</translation>
+<translation id="7302486331832100261">Sueles bloquear las notificaciones. Para permitirlas, toca Detalles.</translation>
 <translation id="7328017930301109123">En el modo básico, Chrome carga las páginas más rápido y reduce el uso de datos hasta un 60 por ciento.</translation>
 <translation id="7333031090786104871">Aún se está añadiendo el sitio web anterior</translation>
 <translation id="7352939065658542140">VÍDEO</translation>

@@ -111,6 +111,9 @@ class ASH_EXPORT UnifiedMessageCenterView
   // Called when user clicks the see all notifications button.
   void ExpandMessageCenter();
 
+  // Returns true if the notification bar is visible.
+  bool IsNotificationBarVisible();
+
   // views::View:
   void AddedToWidget() override;
   void RemovedFromWidget() override;

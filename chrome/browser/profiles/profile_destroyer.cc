@@ -113,6 +113,7 @@ void ProfileDestroyer::DestroyProfileWhenAppropriate(Profile* const profile) {
 void ProfileDestroyer::DestroyOffTheRecordProfileNow(Profile* const profile) {
   DCHECK(profile);
   DCHECK(profile->IsOffTheRecord());
+  DCHECK(profile->GetOriginalProfile());
   if (pending_destroyers_) {
     for (auto i = pending_destroyers_->begin(); i != pending_destroyers_->end();
          ++i) {
@@ -120,18 +121,23 @@ void ProfileDestroyer::DestroyOffTheRecordProfileNow(Profile* const profile) {
         // We want to signal this in debug builds so that we don't lose sight of
         // these potential leaks, but we handle it in release so that we don't
         // crash or corrupt profile data on disk.
-        NOTREACHED() << "A render process host wasn't destroyed early enough.";
+        LOG(WARNING) << "A render process host wasn't destroyed early enough.";
         (*i)->profile_ = NULL;
         break;
       }
     }
   }
-  DCHECK(profile->GetOriginalProfile());
-  profile->GetOriginalProfile()->DestroyOffTheRecordProfile();
+
+  if (profile->IsIndependentOffTheRecordProfile()) {
+    delete profile;
+  } else {
+    profile->GetOriginalProfile()->DestroyOffTheRecordProfile();
+  }
 }
 
 ProfileDestroyer::ProfileDestroyer(Profile* const profile, HostSet* hosts)
     : num_hosts_(0), profile_(profile) {
+  DCHECK(profile_->IsOffTheRecord());
   if (pending_destroyers_ == NULL)
     pending_destroyers_ = new DestroyerSet;
   pending_destroyers_->insert(this);
@@ -144,19 +150,17 @@ ProfileDestroyer::ProfileDestroyer(Profile* const profile, HostSet* hosts)
   // If we are going to wait for render process hosts, we don't want to do it
   // for longer than kTimerDelaySeconds.
   if (num_hosts_) {
-    timer_.Start(FROM_HERE,
-                 base::TimeDelta::FromSeconds(kTimerDelaySeconds),
-                 base::Bind(&ProfileDestroyer::DestroyProfile,
-                            weak_ptr_factory_.GetWeakPtr()));
+    timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(kTimerDelaySeconds),
+                 base::BindOnce(
+                     [](base::WeakPtr<ProfileDestroyer> ptr) {
+                       if (ptr)
+                         delete ptr.get();
+                     },
+                     weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
 ProfileDestroyer::~ProfileDestroyer() {
-  // Check again, in case other render hosts were added while we were
-  // waiting for the previous ones to go away...
-  if (profile_)
-    DestroyProfileWhenAppropriate(profile_);
-
 #ifdef NDEBUG
   // Don't wait for pending registrations, if any, these hosts are buggy.
   // Note: this can happen, but if so, it's better to crash here than wait
@@ -172,6 +176,11 @@ ProfileDestroyer::~ProfileDestroyer() {
     delete pending_destroyers_;
     pending_destroyers_ = NULL;
   }
+
+  if (profile_) {
+    ProfileDestroyer::DestroyOffTheRecordProfileNow(profile_);
+    profile_ = nullptr;
+  }
 }
 
 void ProfileDestroyer::RenderProcessHostDestroyed(
@@ -182,31 +191,13 @@ void ProfileDestroyer::RenderProcessHostDestroyed(
     // Delay the destruction one step further in case other observers need to
     // look at the profile attached to the host.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&ProfileDestroyer::DestroyProfile,
-                                  weak_ptr_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(
+                       [](base::WeakPtr<ProfileDestroyer> ptr) {
+                         if (ptr)
+                           delete ptr.get();
+                       },
+                       weak_ptr_factory_.GetWeakPtr()));
   }
-}
-
-void ProfileDestroyer::DestroyProfile() {
-  // We might have been cancelled externally before the timer expired.
-  if (!profile_) {
-    delete this;
-    return;
-  }
-
-  DCHECK(profile_->IsOffTheRecord());
-  DCHECK(profile_->GetOriginalProfile());
-  if (profile_->IsIndependentOffTheRecordProfile())
-    delete profile_;
-  else
-    profile_->GetOriginalProfile()->DestroyOffTheRecordProfile();
-
-  profile_ = nullptr;
-
-  // And stop the timer so we can be released early too.
-  timer_.Stop();
-
-  delete this;
 }
 
 // static

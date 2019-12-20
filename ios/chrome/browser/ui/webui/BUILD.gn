@@ -19,7 +19,6 @@ source_set("webui") {
     "flags_ui.h",
     "inspect/inspect_ui.h",
     "inspect/inspect_ui.mm",
-    "mojo_web_ui_ios_controller.h",
     "ntp_tiles_internals_ui.cc",
     "ntp_tiles_internals_ui.h",
     "prefs_internals_ui.cc",

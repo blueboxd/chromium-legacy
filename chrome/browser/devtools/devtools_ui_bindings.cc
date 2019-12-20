@@ -708,14 +708,17 @@ void DevToolsUIBindings::HandleMessageFromDevToolsFrontend(
 
 // content::DevToolsAgentHostClient implementation --------------------------
 void DevToolsUIBindings::DispatchProtocolMessage(
-    content::DevToolsAgentHost* agent_host, const std::string& message) {
+    content::DevToolsAgentHost* agent_host,
+    base::span<const uint8_t> message) {
   DCHECK(agent_host == agent_host_.get());
   if (!frontend_host_)
     return;
 
-  if (message.length() < kMaxMessageChunkSize) {
+  base::StringPiece message_sp(reinterpret_cast<const char*>(message.data()),
+                               message.size());
+  if (message_sp.length() < kMaxMessageChunkSize) {
     std::string param;
-    base::EscapeJSONString(message, true, &param);
+    base::EscapeJSONString(message_sp, true, &param);
     base::string16 javascript =
         base::UTF8ToUTF16("DevToolsAPI.dispatchMessage(" + param + ");");
     web_contents_->GetMainFrame()->ExecuteJavaScript(javascript,
@@ -723,9 +726,9 @@ void DevToolsUIBindings::DispatchProtocolMessage(
     return;
   }
 
-  base::Value total_size(static_cast<int>(message.length()));
-  for (size_t pos = 0; pos < message.length(); pos += kMaxMessageChunkSize) {
-    base::Value message_value(message.substr(pos, kMaxMessageChunkSize));
+  base::Value total_size(static_cast<int>(message_sp.length()));
+  for (size_t pos = 0; pos < message_sp.length(); pos += kMaxMessageChunkSize) {
+    base::Value message_value(message_sp.substr(pos, kMaxMessageChunkSize));
     CallClientFunction("DevToolsAPI.dispatchMessageChunk",
                        &message_value, pos ? NULL : &total_size, NULL);
   }
@@ -1206,8 +1209,10 @@ void DevToolsUIBindings::SetOpenNewWindowForPopups(bool value) {
 
 void DevToolsUIBindings::DispatchProtocolMessageFromDevToolsFrontend(
     const std::string& message) {
-  if (agent_host_.get())
-    agent_host_->DispatchProtocolMessage(this, message);
+  if (!agent_host_)
+    return;
+  agent_host_->DispatchProtocolMessage(
+      this, base::as_bytes(base::make_span(message)));
 }
 
 void DevToolsUIBindings::RecordEnumeratedHistogram(const std::string& name,

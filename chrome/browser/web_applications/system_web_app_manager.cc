@@ -97,6 +97,13 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
     infos.emplace(SystemAppType::MEDIA,
                   SystemAppInfo("Media", GURL("chrome://media-app/pwa.html")));
   }
+
+#if !defined(OFFICIAL_BUILD)
+  infos.emplace(
+      SystemAppType::SAMPLE,
+      SystemAppInfo("Sample", GURL("chrome://sample-system-web-app/pwa.html")));
+#endif  // !defined(OFFICIAL_BUILD)
+
 #endif  // OS_CHROMEOS
 
   return infos;
@@ -150,6 +157,11 @@ bool SystemWebAppManager::IsAppEnabled(SystemAppType type) {
       return base::FeatureList::IsEnabled(chromeos::features::kMediaApp);
     case SystemAppType::HELP:
       return base::FeatureList::IsEnabled(chromeos::features::kHelpAppV2);
+#if !defined(OFFICIAL_BUILD)
+    case SystemAppType::SAMPLE:
+      NOTREACHED();
+      return false;
+#endif  // !defined(OFFICIAL_BUILD)
   }
 #else
   return false;

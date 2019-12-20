@@ -52,7 +52,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_receiver_set.h"
-#include "content/public/common/page_importance_signals.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/three_d_api_types.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -332,7 +331,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void EnableWebContentsOnlyAccessibilityMode() override;
   bool IsWebContentsOnlyAccessibilityModeForTesting() override;
   bool IsFullAccessibilityModeForTesting() override;
-  const PageImportanceSignals& GetPageImportanceSignals() override;
   const base::string16& GetTitle() override;
   void UpdateTitleForEntry(NavigationEntry* entry,
                            const base::string16& title) override;
@@ -1352,8 +1350,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   void OnDomOperationResponse(RenderFrameHostImpl* source,
                               const std::string& json_string);
-  void OnUpdatePageImportanceSignals(RenderFrameHostImpl* source,
-                                     const PageImportanceSignals& signals);
 #if BUILDFLAG(ENABLE_PLUGINS)
   void OnPepperInstanceCreated(RenderFrameHostImpl* source,
                                int32_t pp_instance);
@@ -1868,8 +1864,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
   std::unique_ptr<RenderWidgetHostInputEventRouter> rwh_input_event_router_;
-
-  PageImportanceSignals page_importance_signals_;
 
 #if !defined(OS_ANDROID)
   bool page_scale_factor_is_one_;

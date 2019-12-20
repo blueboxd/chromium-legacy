@@ -2912,6 +2912,7 @@ struct Select {
 #define SF_IncludeHidden  0x20000  /* Include hidden columns in output */
 #define SF_ComplexResult  0x40000  /* Result contains subquery or function */
 #define SF_WhereBegin     0x80000  /* Really a WhereBegin() call.  Debug Only */
+#define SF_View          0x0200000 /* SELECT statement is a view */
 
 /*
 ** The results of a SELECT can be distributed in several ways, as defined
@@ -4484,6 +4485,12 @@ void sqlite3AutoLoadExtensions(sqlite3*);
      void(*)(void*)
    );
 #  define sqlite3VtabInSync(db) ((db)->nVTrans>0 && (db)->aVTrans==0)
+#endif
+int sqlite3ReadOnlyShadowTables(sqlite3 *db);
+#ifndef SQLITE_OMIT_VIRTUALTABLE
+  int sqlite3ShadowTableName(sqlite3 *db, const char *zName);
+#else
+# define sqlite3ShadowTableName(A,B) 0
 #endif
 int sqlite3VtabEponymousTableInit(Parse*,Module*);
 void sqlite3VtabEponymousTableClear(sqlite3*,Module*);

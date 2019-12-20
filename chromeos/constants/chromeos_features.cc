@@ -63,10 +63,6 @@ const base::Feature kCrostiniGpuSupport{"CrostiniGpuSupport",
 const base::Feature kCrostiniUsbAllowUnsupported{
     "CrostiniUsbAllowUnsupported", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables or disables the new WebUI Crostini installer.
-const base::Feature kCrostiniWebUIInstaller{"CrostiniWebUIInstaller",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables or disables the new WebUI Crostini upgrader.
 const base::Feature kCrostiniWebUIUpgrader{"CrostiniWebUIUpgrader",
                                            base::FEATURE_DISABLED_BY_DEFAULT};

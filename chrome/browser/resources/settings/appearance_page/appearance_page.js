@@ -100,11 +100,6 @@ Polymer({
   /** @private {?settings.AppearanceBrowserProxy} */
   appearanceBrowserProxy_: null,
 
-  // <if expr="chromeos">
-  /** @private {?settings.WallpaperBrowserProxy} */
-  wallpaperBrowserProxy_: null,
-  // </if>
-
   observers: [
     'defaultFontSizeChanged_(prefs.webkit.webprefs.default_font_size.value)',
     'themeChanged_(prefs.extensions.theme.id.value, useSystemTheme_)',
@@ -119,10 +114,6 @@ Polymer({
   created: function() {
     this.appearanceBrowserProxy_ =
         settings.AppearanceBrowserProxyImpl.getInstance();
-    // <if expr="chromeos">
-    this.wallpaperBrowserProxy_ =
-        settings.WallpaperBrowserProxyImpl.getInstance();
-    // </if>
   },
 
   /** @override */
@@ -136,18 +127,6 @@ Polymer({
 
     this.pageZoomLevels_ = /** @type {!Array<number>} */ (
         JSON.parse(loadTimeData.getString('presetZoomFactors')));
-
-    // <if expr="chromeos">
-    this.wallpaperBrowserProxy_.isWallpaperSettingVisible().then(
-        isWallpaperSettingVisible => {
-          assert(this.pageVisibility);
-          this.pageVisibility.setWallpaper = isWallpaperSettingVisible;
-        });
-    this.wallpaperBrowserProxy_.isWallpaperPolicyControlled().then(
-        isPolicyControlled => {
-          this.isWallpaperPolicyControlled_ = isPolicyControlled;
-        });
-    // </if>
   },
 
   /**
@@ -205,16 +184,6 @@ Polymer({
   openThemeUrl_: function() {
     window.open(this.themeUrl_ || loadTimeData.getString('themesGalleryUrl'));
   },
-
-  // <if expr="chromeos">
-  /**
-   * ChromeOS only.
-   * @private
-   */
-  openWallpaperManager_: function() {
-    this.wallpaperBrowserProxy_.openWallpaperManager();
-  },
-  // </if>
 
   /** @private */
   onUseDefaultTap_: function() {

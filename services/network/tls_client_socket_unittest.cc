@@ -875,7 +875,7 @@ TEST_P(TLSClientSocketTest, WriteErrorBeforeUpgradeToTLS) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     TLSClientSocketTest,
     ::testing::Values(TLSClientSocketTestBase::kDirect,
                       TLSClientSocketTestBase::kProxyResolving));
@@ -954,7 +954,7 @@ class TLSClientSocketIoModeTest : public TLSClientSocketTestBase,
   DISALLOW_COPY_AND_ASSIGN(TLSClientSocketIoModeTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          TLSClientSocketIoModeTest,
                          testing::Values(net::SYNCHRONOUS, net::ASYNC));
 
@@ -1185,7 +1185,7 @@ TEST_P(TLSClientSocketTestWithEmbeddedTestServer, ServerCertError) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     TLSClientSocketTestWithEmbeddedTestServer,
     ::testing::Values(TLSClientSocketTestBase::kDirect,
                       TLSClientSocketTestBase::kProxyResolving));

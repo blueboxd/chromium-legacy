@@ -7,6 +7,7 @@
 
 #include "base/base64.h"
 #include "base/callback.h"
+#include "base/containers/span.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/values.h"
@@ -43,8 +44,10 @@ class DevToolsProtocolTest : public InProcessBrowserTest,
 
   // DevToolsAgentHostClient interface
   void DispatchProtocolMessage(content::DevToolsAgentHost* agent_host,
-                               const std::string& message) override {
-    auto parsed_message = base::JSONReader::Read(message);
+                               base::span<const uint8_t> message) override {
+    base::StringPiece message_str(reinterpret_cast<const char*>(message.data()),
+                                  message.size());
+    auto parsed_message = base::JSONReader::Read(message_str);
     auto id = parsed_message->FindIntPath("id");
     if (id) {
       // TODO: implement handling of results from method calls (when needed).
@@ -72,7 +75,8 @@ class DevToolsProtocolTest : public InProcessBrowserTest,
     command.SetKey(kMethodParam, base::Value(method));
     std::string json_command;
     base::JSONWriter::Write(command, &json_command);
-    agent_host_->DispatchProtocolMessage(this, json_command);
+    agent_host_->DispatchProtocolMessage(
+        this, base::as_bytes(base::make_span(json_command)));
   }
 
   void RunLoopUpdatingQuitClosure() {

@@ -378,6 +378,9 @@ class WebAXObject {
                                       SkMatrix44& container_transform,
                                       bool* clips_children = nullptr) const;
 
+  // Blink-internal DOM Node ID. Currently used for PDF exporting.
+  BLINK_EXPORT int GetDOMNodeId() const;
+
   // Exchanges a WebAXObject with another.
   BLINK_EXPORT void Swap(WebAXObject& other);
 

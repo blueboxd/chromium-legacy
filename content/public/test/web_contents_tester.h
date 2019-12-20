@@ -11,8 +11,8 @@
 
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
-#include "third_party/blink/public/platform/web_input_event.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;
@@ -170,9 +170,6 @@ class WebContentsTester {
 
   // Resets the state around PauseSubresourceLoadingCalled.
   virtual void ResetPauseSubresourceLoadingCalled() = 0;
-
-  // Sets the return value of GetPageImportanceSignals().
-  virtual void SetPageImportanceSignals(PageImportanceSignals signals) = 0;
 
   // Sets the last active time.
   virtual void SetLastActiveTime(base::TimeTicks last_active_time) = 0;

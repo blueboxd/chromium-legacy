@@ -145,7 +145,7 @@ class ExtensionDevToolsClientHost : public content::DevToolsAgentHostClient,
   // DevToolsAgentHostClient interface.
   void AgentHostClosed(DevToolsAgentHost* agent_host) override;
   void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
-                               const std::string& message) override;
+                               base::span<const uint8_t> message) override;
   bool MayAttachToURL(const GURL& url, bool is_webui) override;
   bool MayAttachToBrowser() override;
   bool MayReadLocalFiles() override;
@@ -266,9 +266,11 @@ void ExtensionDevToolsClientHost::SendMessageToBackend(
         "params", command_params->additional_properties.CreateDeepCopy());
   }
 
-  std::string json_args;
-  base::JSONWriter::Write(protocol_request, &json_args);
-  agent_host_->DispatchProtocolMessage(this, json_args);
+  std::string json;
+  base::JSONWriter::Write(protocol_request, &json);
+
+  agent_host_->DispatchProtocolMessage(this,
+                                       base::as_bytes(base::make_span(json)));
 }
 
 void ExtensionDevToolsClientHost::InfoBarDismissed() {
@@ -314,15 +316,18 @@ void ExtensionDevToolsClientHost::Observe(
 }
 
 void ExtensionDevToolsClientHost::DispatchProtocolMessage(
-    DevToolsAgentHost* agent_host, const std::string& message) {
+    DevToolsAgentHost* agent_host,
+    base::span<const uint8_t> message) {
   DCHECK(agent_host == agent_host_.get());
   if (!EventRouter::Get(profile_))
     return;
 
+  base::StringPiece message_str(reinterpret_cast<const char*>(message.data()),
+                                message.size());
   std::unique_ptr<base::Value> result = base::JSONReader::ReadDeprecated(
-      message, base::JSON_REPLACE_INVALID_CHARACTERS);
+      message_str, base::JSON_REPLACE_INVALID_CHARACTERS);
   if (!result || !result->is_dict()) {
-    LOG(ERROR) << "Tried to send invalid message to extension: " << message;
+    LOG(ERROR) << "Tried to send invalid message to extension: " << message_str;
     return;
   }
   base::DictionaryValue* dictionary =

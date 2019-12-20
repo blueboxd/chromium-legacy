@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.night_mode;
 
-import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.DARKEN_WEBSITES_ENABLED_KEY;
+import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.UI_THEME_DARKEN_WEBSITES_ENABLED;
 
 import android.text.TextUtils;
 
@@ -58,7 +58,7 @@ public class WebContentsDarkModeController implements ApplicationStateListener {
     private static boolean shouldEnableWebContentsDarkMode() {
         return GlobalNightModeStateProviderHolder.getInstance().isInNightMode()
                 && SharedPreferencesManager.getInstance().readBoolean(
-                        DARKEN_WEBSITES_ENABLED_KEY, false);
+                        UI_THEME_DARKEN_WEBSITES_ENABLED, false);
     }
 
     /**
@@ -68,7 +68,7 @@ public class WebContentsDarkModeController implements ApplicationStateListener {
         if (mNightModeObserver != null) return;
         mNightModeObserver = () -> enableWebContentsDarkMode(shouldEnableWebContentsDarkMode());
         mPreferenceObserver = (key) -> {
-            if (TextUtils.equals(key, DARKEN_WEBSITES_ENABLED_KEY)) {
+            if (TextUtils.equals(key, UI_THEME_DARKEN_WEBSITES_ENABLED)) {
                 enableWebContentsDarkMode(shouldEnableWebContentsDarkMode());
             }
         };

@@ -33,9 +33,10 @@ export class ToolbarDelegate {
 
   /**
    * Updates all extensions.
+   * @param {!Array<!chrome.developerPrivate.ExtensionInfo>} extensions
    * @return {!Promise}
    */
-  updateAllExtensions() {}
+  updateAllExtensions(extensions) {}
 }
 
 Polymer({
@@ -44,6 +45,9 @@ Polymer({
   _template: html`{__html_template__}`,
 
   properties: {
+    /** @type {!Array<!chrome.developerPrivate.ExtensionInfo>} */
+    extensions: Array,
+
     /** @type {ToolbarDelegate} */
     delegate: Object,
 
@@ -188,16 +192,18 @@ Polymer({
     // Keep the toast open indefinitely.
     toastManager.duration = 0;
     toastManager.show(this.i18n('toolbarUpdatingToast'));
-    this.delegate.updateAllExtensions().then(
-        () => {
-          toastManager.hide();
-          toastManager.duration = 3000;
-          toastManager.show(this.i18n('toolbarUpdateDone'));
-          this.isUpdating_ = false;
-        },
-        () => {
-          toastManager.hide();
-          this.isUpdating_ = false;
-        });
+    this.delegate.updateAllExtensions(this.extensions)
+        .then(
+            () => {
+              toastManager.hide();
+              toastManager.duration = 3000;
+              toastManager.show(this.i18n('toolbarUpdateDone'));
+              this.isUpdating_ = false;
+            },
+            loadError => {
+              this.fire('load-error', loadError);
+              toastManager.hide();
+              this.isUpdating_ = false;
+            });
   },
 });

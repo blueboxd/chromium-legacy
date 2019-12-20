@@ -24,6 +24,7 @@ import java.lang.annotation.RetentionPolicy;
  */
 class TouchToFillProperties {
     static final String FIELD_TRIAL_PARAM_SHOW_CONFIRMATION_BUTTON = "show_confirmation_button";
+    static final String FIELD_TRIAL_PARAM_BRANDING_MESSAGE = "branding_message";
 
     static final PropertyModel.WritableBooleanPropertyKey VISIBLE =
             new PropertyModel.WritableBooleanPropertyKey("visible");
@@ -97,7 +98,14 @@ class TouchToFillProperties {
         private HeaderProperties() {}
     }
 
-    @IntDef({ItemType.HEADER, ItemType.CREDENTIAL, ItemType.FILL_BUTTON})
+    static class FooterProperties {
+        static final PropertyModel.ReadableIntPropertyKey BRANDING_MESSAGE_ID =
+                new PropertyModel.ReadableIntPropertyKey("branding_message_id");
+        static final PropertyKey[] ALL_KEYS = {BRANDING_MESSAGE_ID};
+        private FooterProperties() {}
+    }
+
+    @IntDef({ItemType.HEADER, ItemType.CREDENTIAL, ItemType.FILL_BUTTON, ItemType.FOOTER})
     @Retention(RetentionPolicy.SOURCE)
     @interface ItemType {
         /**
@@ -114,6 +122,11 @@ class TouchToFillProperties {
          * The fill button at the end of the sheet that filling more obvious for one suggestion.
          */
         int FILL_BUTTON = 3;
+
+        /**
+         * The branding message at the bottom of the sheet to draw attention to the feature.
+         */
+        int FOOTER = 4;
     }
 
     /**

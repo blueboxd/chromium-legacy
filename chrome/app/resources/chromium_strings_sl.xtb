@@ -22,6 +22,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="1966382378801805537">Chromium ne more določiti ali nastaviti privzetega brskalnika</translation>
 <translation id="2008474315282236005">S tem bo iz te naprave izbrisan 1 element. Če želite pozneje prenesti podatke, se v Chromium prijavite kot <ph name="USER_EMAIL" />.</translation>
 <translation id="2119636228670142020">O sistemu &amp;Chromium OS</translation>
+<translation id="2147976119693222405">Chromium OS ni mogel sinhronizirati podatkov. Odpravite težavo.</translation>
 <translation id="2241627712206172106">Če računalnik souporabljate z drugimi, lahko prijatelji in sorodniki ločeno brskajo ter nastavijo Chromium tako, kot ga želijo.</translation>
 <translation id="2347108572062610441">Zaradi te razširitve se je spremenila stran, ki je prikazana, ko zaženete Chromium.</translation>
 <translation id="2396765026452590966">Zaradi razširitve »<ph name="EXTENSION_NAME" />« se je spremenila stran, ki je prikazana, ko zaženete Chromium.</translation>
@@ -37,6 +38,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="2718390899429598676">Zaradi večje varnosti bo Chromium šifriral vaše podatke.</translation>
 <translation id="2770231113462710648">Spremeni privzeti brskalnik na:</translation>
 <translation id="2799223571221894425">Vnovičen zagon</translation>
+<translation id="2805036593126168338">Chromium OS ni mogel sinhronizirati gesel. Odpravite težavo.</translation>
 <translation id="2838154144102149890">Če želite opraviti posodobitev, se mora Chromium nehati izvajati v tem računalniku. Zaradi tega bodo morda drugi uporabniki, prijavljeni v tem računalniku, ob neshranjene spremembe.</translation>
 <translation id="2847479871509788944">Odstranitev iz Chromiuma ...</translation>
 <translation id="2886012850691518054">Izbirno: Pomagajte izboljšati Chromium, tako da Googlu samodejno pošiljate statistične podatke o uporabi in poročila o zrušitvah.</translation>

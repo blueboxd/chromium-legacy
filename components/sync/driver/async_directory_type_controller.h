@@ -28,7 +28,7 @@ class AsyncDirectoryTypeController : public DirectoryDataTypeController {
   // |dump_stack| is called when an unrecoverable error occurs.
   AsyncDirectoryTypeController(
       ModelType type,
-      const base::Closure& dump_stack,
+      const base::RepeatingClosure& dump_stack,
       SyncService* sync_service,
       SyncClient* sync_client,
       ModelSafeGroup model_safe_group,
@@ -71,7 +71,7 @@ class AsyncDirectoryTypeController : public DirectoryDataTypeController {
   // Default implementation posts task to model_thread_. Types that don't use
   // TaskRunner need to override this method.
   virtual bool PostTaskOnModelThread(const base::Location& from_here,
-                                     const base::Closure& task);
+                                     base::OnceClosure task);
 
   // Start up complete, update the state and invoke the callback.
   virtual void StartDone(DataTypeController::ConfigureResult start_result,

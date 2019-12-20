@@ -5,7 +5,7 @@
 <translation id="1010200102790553230">Indlæs side senere</translation>
 <translation id="1015730422737071372">Angiv yderligere oplysninger</translation>
 <translation id="1021110881106174305">Accepterede kort</translation>
-<translation id="1021753677514347426">Dette problem opstår på grund af et certifikat, som du eller en anden har installeret på din enhed. Certifikatet anvendes ofte til at overvåge og opfange netværk, og Chromium har ikke tillid til det. Der findes legitime årsager til at overvåge, f.eks. på skole- og virksomhedsnetværk, men Chromium vil sikre, at du er bevidst om det, når det sker, selvom du ikke kan stoppe det. Overvågning kan finde sted i enhver browser eller app, der har adgang til nettet.</translation>
+<translation id="1021753677514347426">Dette problem opstår på grund af et certifikat, som du eller en anden har installeret på din enhed. Certifikatet anvendes ofte til at overvåge og opfange netværk, og Chromium har ikke tillid til det. Der findes legitime årsager til at overvåge, f.eks. på skole- og virksomhedsnetværk, men Chromium vil sikre, at du er bevidst om det, når det sker, også selvom du ikke kan stoppe det. Overvågning kan finde sted i enhver browser eller app, der har adgang til nettet.</translation>
 <translation id="1032854598605920125">Rotér med uret</translation>
 <translation id="1036348656032585052">Deaktiver</translation>
 <translation id="1038842779957582377">ukendt navn</translation>
@@ -286,7 +286,7 @@
 <translation id="2270484714375784793">Telefonnummer</translation>
 <translation id="2277103315734023688">Spol frem</translation>
 <translation id="2283340219607151381">Gem og udfyld adresser</translation>
-<translation id="2288422996159078444">Alt det, du skriver, alle de sider, du besøger, og alle dine andre aktiviteter på nettet overvåges. Indholdet på websites kan blive ændret, uden at du underrettes.</translation>
+<translation id="2288422996159078444">Alt det, du skriver, alle de sider, du besøger, og alle dine andre aktiviteter på nettet overvåges. Indholdet på websites kan blive ændret uden din viden.</translation>
 <translation id="2289385804009217824">Beskær</translation>
 <translation id="2292556288342944218">Din internetadgang er blokeret</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
@@ -866,7 +866,7 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64-bit)</translation>
-<translation id="5121469660360593280">Del data om sikkerhedshændelser, der blev rapporteret af Chrome Enterprise User Protect, med din administrator. Dette kan omfatte webadresserne til de sider, du besøger, filnavne eller metadata samt det brugernavn, du brugte til at logge ind med på din enhed og i Chrome.</translation>
+<translation id="5121469660360593280">Del data om sikkerhedshændelser, der blev rapporteret af Chrome Enterprise User Protect, med din administrator. Dette kan omfatte webadresserne til de sider, du besøger, filnavne eller metadata samt det brugernavn, du brugte, da du loggede ind på din enhed og i Chrome.</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">Bekræft dit kort</translation>
 <translation id="5135404736266831032">Administrer adresser...</translation>
@@ -1318,7 +1318,7 @@ Yderligere oplysninger:
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Kommandolinje</translation>
 <translation id="7372973238305370288">søgeresultat</translation>
-<translation id="7374733840632556089">Dette problem opstår på grund af et certifikat, som du eller en anden har installeret på din enhed. Certifikatet anvendes ofte til at overvåge og opfange netværk, og Chrome har ikke tillid til det. Der findes legitime årsager til at overvåge, f.eks. på skole- og virksomhedsnetværk, men Chrome vil sikre, at du er bevidst om det, når det sker, selvom du ikke kan stoppe det. Overvågning kan finde sted i enhver browser eller app, der har adgang til nettet.</translation>
+<translation id="7374733840632556089">Dette problem opstår på grund af et certifikat, som du eller en anden har installeret på din enhed. Certifikatet anvendes ofte til at overvåge og opfange netværk, og Chrome har ikke tillid til det. Der findes legitime årsager til at overvåge, f.eks. på skole- og virksomhedsnetværk, men Chrome vil sikre, at du er bevidst om det, når det sker, også selvom du ikke kan stoppe det. Overvågning kan finde sted i enhver browser eller app, der har adgang til nettet.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Mediestyring</translation>
 <translation id="7378627244592794276">Nej</translation>

@@ -12,7 +12,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -22,7 +21,7 @@ import org.chromium.weblayer.shell.InstrumentationActivity;
 /**
  * Tests that FullscreenCallback methods are invoked as expected.
  */
-@RunWith(BaseJUnit4ClassRunner.class)
+@RunWith(WebLayerJUnit4ClassRunner.class)
 public class FullscreenCallbackTest {
     @Rule
     public InstrumentationActivityTestRule mActivityTestRule =

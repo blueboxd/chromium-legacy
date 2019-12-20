@@ -150,6 +150,9 @@ class FrameNode : public Node {
   // having that particular priority.
   virtual const PriorityAndReason& GetPriorityAndReason() const = 0;
 
+  // Returns true if at least one form of the frame has been interacted with.
+  virtual bool HadFormInteraction() const = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(FrameNode);
 };
@@ -207,6 +210,9 @@ class FrameNodeObserver {
       const FrameNode* frame_node,
       const PriorityAndReason& previous_value) = 0;
 
+  // Called when the frame receives a form interaction.
+  virtual void OnHadFormInteractionChanged(const FrameNode* frame_node) = 0;
+
   // Events with no property changes.
 
   // Invoked when a non-persistent notification has been issued by the frame.
@@ -245,6 +251,7 @@ class FrameNode::ObserverDefaultImpl : public FrameNodeObserver {
   void OnPriorityAndReasonChanged(
       const FrameNode* frame_node,
       const PriorityAndReason& previous_value) override {}
+  void OnHadFormInteractionChanged(const FrameNode* frame_node) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ObserverDefaultImpl);

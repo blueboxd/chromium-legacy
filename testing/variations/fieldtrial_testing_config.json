@@ -7016,6 +7016,21 @@
             ]
         }
     ],
+    "UsePreferredIntervalForVideo": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "UsePreferredIntervalForVideo"
+                    ]
+                }
+            ]
+        }
+    ],
     "UseRegistrableDomainInNetworkIsolationKey": [
         {
             "platforms": [

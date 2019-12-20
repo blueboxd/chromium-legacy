@@ -15,16 +15,24 @@ import web_idl
 
 def parse_options():
     parser = optparse.OptionParser(usage="%prog [options] TASK...")
-    parser.add_option('--web_idl_database', type='string',
+    parser.add_option("--web_idl_database", type="string",
                       help="filepath of the input database")
-    parser.add_option('--output_dir_core', type='string',
-                      help="outout directory for 'core' component")
-    parser.add_option('--output_dir_modules', type='string',
-                      help="outout directory for 'modules' component")
+    parser.add_option("--root_src_dir", type="string",
+                      help='root directory of chromium project, i.e. "//"')
+    parser.add_option("--root_gen_dir", type="string",
+                      help='root directory of generated code files, i.e. '
+                      '"//out/Default/gen"')
+    parser.add_option("--output_core_reldir", type="string",
+                      help='output directory for "core" component relative to '
+                      'root_gen_dir')
+    parser.add_option("--output_modules_reldir", type="string",
+                      help='output directory for "modules" component relative '
+                      'to root_gen_dir')
     options, args = parser.parse_args()
 
     required_option_names = (
-        'web_idl_database', 'output_dir_core', 'output_dir_modules')
+        "web_idl_database", "root_src_dir", "root_gen_dir",
+        "output_core_reldir", "output_modules_reldir")
     for opt_name in required_option_names:
         if getattr(options, opt_name) is None:
             parser.error("--{} is a required option.".format(opt_name))
@@ -48,16 +56,17 @@ def main():
             sys.exit("Unknown task: {}".format(task))
 
     web_idl_database = web_idl.Database.read_from_file(options.web_idl_database)
-    output_dirs = {
-        web_idl.Component('core'): options.output_dir_core,
-        web_idl.Component('modules'): options.output_dir_modules,
+    component_reldirs = {
+        web_idl.Component('core'): options.output_core_reldir,
+        web_idl.Component('modules'): options.output_modules_reldir,
     }
 
-    bind_gen.init(output_dirs)
+    bind_gen.init(root_src_dir=options.root_src_dir,
+                  root_gen_dir=options.root_gen_dir,
+                  component_reldirs=component_reldirs)
 
     for task in tasks:
-        dispatch_table[task](web_idl_database=web_idl_database,
-                             output_dirs=output_dirs)
+        dispatch_table[task](web_idl_database=web_idl_database)
 
 
 if __name__ == '__main__':

@@ -187,8 +187,8 @@ void ImagePainter::PaintReplaced(const PaintInfo& paint_info,
 void ImagePainter::PaintIntoRect(GraphicsContext& context,
                                  const PhysicalRect& dest_rect,
                                  const PhysicalRect& content_rect) {
-  if (!layout_image_.ImageResource()->HasImage() ||
-      layout_image_.ImageResource()->ErrorOccurred())
+  const LayoutImageResource& image_resource = *layout_image_.ImageResource();
+  if (!image_resource.HasImage() || image_resource.ErrorOccurred())
     return;  // FIXME: should we just ASSERT these conditions? (audit all
              // callers).
 
@@ -197,11 +197,11 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
     return;
 
   scoped_refptr<Image> image =
-      layout_image_.ImageResource()->GetImage(pixel_snapped_dest_rect.Size());
+      image_resource.GetImage(FloatSize(dest_rect.size));
   if (!image || image->IsNull())
     return;
 
-  FloatRect src_rect = FloatRect(image->Rect());
+  FloatRect src_rect(FloatPoint(), image->SizeAsFloat());
   // If the content rect requires clipping, adjust |srcRect| and
   // |pixelSnappedDestRect| over using a clip.
   if (!content_rect.Contains(dest_rect)) {
@@ -249,17 +249,19 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
       layout_image_.StyleRef().HasFilterInducingProperty(),
       SkBlendMode::kSrcOver,
       LayoutObject::ShouldRespectImageOrientation(&layout_image_));
+
+  ImageResourceContent* image_content = image_resource.CachedImage();
   if ((IsA<HTMLImageElement>(node) || IsA<HTMLVideoElement>(node)) &&
-      !context.ContextDisabled() && layout_image_.CachedImage() &&
-      layout_image_.CachedImage()->IsLoaded()) {
+      !context.ContextDisabled() && image_content &&
+      image_content->IsLoaded()) {
     LocalDOMWindow* window = layout_image_.GetDocument().domWindow();
     DCHECK(window);
     ImageElementTiming::From(*window).NotifyImagePainted(
-        &layout_image_, layout_image_.CachedImage(),
+        &layout_image_, image_content,
         context.GetPaintController().CurrentPaintChunkProperties());
   }
   PaintTimingDetector::NotifyImagePaint(
-      layout_image_, image->Size(), layout_image_.CachedImage(),
+      layout_image_, image->Size(), image_content,
       context.GetPaintController().CurrentPaintChunkProperties());
 }
 

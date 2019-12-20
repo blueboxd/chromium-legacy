@@ -25,7 +25,7 @@
 
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
 
-#include "third_party/blink/public/platform/web_mouse_event.h"
+#include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/pointer_lock_options.h"

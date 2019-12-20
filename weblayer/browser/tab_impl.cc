@@ -5,6 +5,7 @@
 #include "weblayer/browser/tab_impl.h"
 
 #include "base/auto_reset.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/interstitial_page.h"
@@ -43,11 +44,18 @@ namespace weblayer {
 namespace {
 
 #if defined(OS_ANDROID)
+const base::Feature kImmediatelyHideBrowserControlsForTest{
+    "ImmediatelyHideBrowserControlsForTest", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // The time that must elapse after a navigation before the browser controls can
 // be hidden. This value matches what chrome has in
 // TabStateBrowserControlsVisibilityDelegate.
-constexpr base::TimeDelta kBrowserControlsAllowHideDelay =
-    base::TimeDelta::FromSeconds(3);
+base::TimeDelta GetBrowserControlsAllowHideDelay() {
+  if (base::FeatureList::IsEnabled(kImmediatelyHideBrowserControlsForTest))
+    return base::TimeDelta();
+
+  return base::TimeDelta::FromSeconds(3);
+}
 #endif
 
 NewTabType NewTabTypeFromWindowDisposition(WindowOpenDisposition disposition) {
@@ -391,7 +399,7 @@ void TabImpl::DidFinishNavigation(
     UpdateBrowserControlsState(content::BROWSER_CONTROLS_STATE_SHOWN,
                                content::BROWSER_CONTROLS_STATE_BOTH, true);
     update_browser_controls_state_timer_.Start(
-        FROM_HERE, kBrowserControlsAllowHideDelay,
+        FROM_HERE, GetBrowserControlsAllowHideDelay(),
         base::BindOnce(&TabImpl::UpdateBrowserControlsState,
                        base::Unretained(this),
                        content::BROWSER_CONTROLS_STATE_BOTH,

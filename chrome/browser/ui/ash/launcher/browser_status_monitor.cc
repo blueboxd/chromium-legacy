@@ -8,7 +8,7 @@
 
 #include "ash/public/cpp/shelf_types.h"
 #include "base/macros.h"
-#include "chrome/browser/ui/ash/launcher/app_service_app_window_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/app_service/app_service_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"

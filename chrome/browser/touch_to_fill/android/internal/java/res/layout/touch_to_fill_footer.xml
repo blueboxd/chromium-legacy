@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2019 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+ <!-- Please update R.dimens.touch_to_fill_sheet_height_branding when modifying
+      the margins. -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/touch_to_fill_branding_message"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="16dp"
+    android:layout_width="match_parent"
+    android:gravity="center"
+    android:minHeight="20dp"
+    android:textAppearance="@style/TextAppearance.BlackBody" />

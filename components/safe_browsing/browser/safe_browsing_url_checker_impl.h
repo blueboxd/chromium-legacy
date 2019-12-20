@@ -126,13 +126,15 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
   static void StartGetCachedRealTimeUrlVerdictOnUI(
       base::WeakPtr<SafeBrowsingUrlCheckerImpl> weak_checker_on_io,
       base::WeakPtr<VerdictCacheManager> cache_manager_on_ui,
-      const GURL& url);
+      const GURL& url,
+      base::TimeTicks get_cache_start_time);
 
   // This function will start real time url lookup if there is no cache match.
   void OnGetCachedRealTimeUrlVerdictDoneOnIO(
       RTLookupResponse::ThreatInfo::VerdictType verdict_type,
       std::unique_ptr<RTLookupResponse::ThreatInfo> cached_threat_info,
-      const GURL& url);
+      const GURL& url,
+      base::TimeTicks get_cache_start_time);
 
   void OnTimeout();
 

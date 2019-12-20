@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.night_mode;
 
-import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.UI_THEME_SETTING_KEY;
+import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.UI_THEME_SETTING;
 
 import android.app.Activity;
 import android.content.Context;
@@ -136,7 +136,7 @@ public class NightModeUtils {
      * @return The current theme setting. See {@link ThemeType}.
      */
     public static @ThemeType int getThemeSetting() {
-        int userSetting = SharedPreferencesManager.getInstance().readInt(UI_THEME_SETTING_KEY, -1);
+        int userSetting = SharedPreferencesManager.getInstance().readInt(UI_THEME_SETTING, -1);
         if (userSetting == -1) {
             return FeatureUtilities.isNightModeDefaultToLight() ? ThemeType.LIGHT
                                                                 : ThemeType.SYSTEM_DEFAULT;

@@ -188,17 +188,6 @@ void SourceUrlRecorderWebContentsObserver::DidFinishNavigation(
     return;
   }
 
-  // Inform the UKM recorder that the previous source is no longer needed to
-  // be kept alive in memory since we had navigated away. In case of same-
-  // document navigation, a new source id would have been created similarly to
-  // full-navigation, thus we are marking the last committed source id
-  // regardless of which case it came from.
-  ukm::DelegatingUkmRecorder* ukm_recorder = ukm::DelegatingUkmRecorder::Get();
-  if (ukm_recorder) {
-    ukm_recorder->MarkSourceForDeletion(
-        GetLastCommittedFullNavigationOrSameDocumentSourceId());
-  }
-
   if (navigation_handle->IsSameDocument()) {
     DCHECK(it == pending_navigations_.end());
     HandleSameDocumentNavigation(navigation_handle);
@@ -217,10 +206,24 @@ void SourceUrlRecorderWebContentsObserver::HandleSameDocumentNavigation(
   if (!navigation_handle->HasCommitted())
     return;
 
-  // Only record same document sources if we were also recording the associated
+  // Only record same-document sources if we were also recording the associated
   // full source.
   if (last_committed_full_navigation_source_id_ == ukm::kInvalidSourceId) {
     return;
+  }
+
+  // Since the navigation has committed, inform the UKM recorder that the
+  // previous same-document source (if applicable) is no longer needed to be
+  // kept alive in memory since we had navigated away. If the previous
+  // navigation was a full navigation, we do not mark its source id since events
+  // could be continued to be reported for it until the next full navigation
+  // source is committed.
+  ukm::DelegatingUkmRecorder* ukm_recorder = ukm::DelegatingUkmRecorder::Get();
+  if (ukm_recorder &&
+      GetLastCommittedSourceId() !=
+          GetLastCommittedFullNavigationOrSameDocumentSourceId()) {
+    ukm_recorder->MarkSourceForDeletion(
+        GetLastCommittedFullNavigationOrSameDocumentSourceId());
   }
 
   const int max_same_document_sources_per_full_source =
@@ -245,6 +248,18 @@ void SourceUrlRecorderWebContentsObserver::HandleDifferentDocumentNavigation(
   // UKM doesn't want to record URLs for navigations that result in downloads.
   if (navigation_handle->IsDownload())
     return;
+
+  // If a new full navigation has been committed, there will be no more events
+  // associated with previous navigation sources, so we mark them as obsolete.
+  ukm::DelegatingUkmRecorder* ukm_recorder = ukm::DelegatingUkmRecorder::Get();
+  if (navigation_handle->HasCommitted() && ukm_recorder) {
+    // Source id of the previous full navigation.
+    ukm_recorder->MarkSourceForDeletion(GetLastCommittedSourceId());
+    // Source id of the previous navigation. If the previous navigation is a
+    // full navigation, marking it again has no additional effect.
+    ukm_recorder->MarkSourceForDeletion(
+        GetLastCommittedFullNavigationOrSameDocumentSourceId());
+  }
 
   MaybeRecordUrl(navigation_handle, initial_url);
 

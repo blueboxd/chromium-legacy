@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <algorithm>
 #include <unordered_set>
 #include <utility>

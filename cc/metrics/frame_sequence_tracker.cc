@@ -432,6 +432,7 @@ void FrameSequenceTracker::ReportBeginImplFrame(
 #if DCHECK_IS_ON()
   DCHECK(!is_inside_frame_) << TRACKER_DCHECK_MSG;
   is_inside_frame_ = true;
+  last_started_impl_sequence_ = args.frame_id.sequence_number;
 
   if (args.type == viz::BeginFrameArgs::NORMAL)
     impl_frames_.insert(args.frame_id);
@@ -489,6 +490,7 @@ void FrameSequenceTracker::ReportSubmitFrame(
 
 #if DCHECK_IS_ON()
   DCHECK(is_inside_frame_) << TRACKER_DCHECK_MSG;
+  last_processed_impl_sequence_ = ack.frame_id.sequence_number;
 #endif
   if (first_submitted_frame_ == 0)
     first_submitted_frame_ = frame_token;
@@ -508,7 +510,7 @@ void FrameSequenceTracker::ReportSubmitFrame(
   if (!ShouldIgnoreBeginFrameSource(origin_args.frame_id.source_id) &&
       main_changes_after_sequence_started && main_changes_include_new_changes &&
       !main_change_had_no_damage) {
-    TRACKER_TRACE_STREAM << 'S';
+    TRACKER_TRACE_STREAM << "S(" << origin_args.frame_id.sequence_number << ")";
 
     last_submitted_main_sequence_ = origin_args.frame_id.sequence_number;
     main_frames_.push_back(frame_token);
@@ -529,13 +531,15 @@ void FrameSequenceTracker::ReportFrameEnd(const viz::BeginFrameArgs& args) {
   if (ShouldIgnoreBeginFrameSource(args.frame_id.source_id))
     return;
 
+  TRACKER_TRACE_STREAM << "e(" << args.frame_id.sequence_number << ")";
   if (ShouldIgnoreSequence(args.frame_id.sequence_number)) {
     is_inside_frame_ = false;
     return;
   }
 
-  TRACKER_TRACE_STREAM << "e(" << args.frame_id.sequence_number << ")";
   DCHECK(is_inside_frame_) << TRACKER_DCHECK_MSG;
+  DCHECK_EQ(last_started_impl_sequence_, last_processed_impl_sequence_)
+      << TRACKER_DCHECK_MSG;
   is_inside_frame_ = false;
 #endif
 }
@@ -639,6 +643,9 @@ void FrameSequenceTracker::ReportImplFrameCausedNoDamage(
   // dispatched for this frame-sequence. In such cases, ignore this call.
   if (ShouldIgnoreSequence(ack.frame_id.sequence_number))
     return;
+#if DCHECK_IS_ON()
+  last_processed_impl_sequence_ = ack.frame_id.sequence_number;
+#endif
 
   TRACKER_TRACE_STREAM << 'n';
   DCHECK_GT(impl_throughput().frames_expected, 0u) << TRACKER_DCHECK_MSG;
@@ -683,6 +690,7 @@ void FrameSequenceTracker::PauseFrameProduction() {
   // received begin-frame.
   begin_impl_frame_data_ = {0, 0, 0};
   begin_main_frame_data_ = {0, 0, 0};
+  TRACKER_TRACE_STREAM << 'R';
 }
 
 void FrameSequenceTracker::UpdateTrackedFrameData(TrackedFrameData* frame_data,
@@ -703,7 +711,7 @@ void FrameSequenceTracker::UpdateTrackedFrameData(TrackedFrameData* frame_data,
 bool FrameSequenceTracker::ShouldIgnoreBeginFrameSource(
     uint64_t source_id) const {
   if (begin_impl_frame_data_.previous_source == 0)
-    return false;
+    return source_id == viz::BeginFrameArgs::kManualSourceId;
   return source_id != begin_impl_frame_data_.previous_source;
 }
 

@@ -438,10 +438,6 @@ void TestWebContents::ResetPauseSubresourceLoadingCalled() {
   pause_subresource_loading_called_ = false;
 }
 
-void TestWebContents::SetPageImportanceSignals(PageImportanceSignals signals) {
-  page_importance_signals_ = signals;
-}
-
 void TestWebContents::SetLastActiveTime(base::TimeTicks last_active_time) {
   last_active_time_ = last_active_time;
 }

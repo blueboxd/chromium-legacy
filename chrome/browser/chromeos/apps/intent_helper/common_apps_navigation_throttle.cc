@@ -12,6 +12,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/intent_picker_tab_helper.h"
+#include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/display/types/display_constants.h"

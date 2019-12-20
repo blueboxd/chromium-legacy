@@ -91,6 +91,8 @@ class WebContentController : public exo::SurfaceObserver,
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
   void RenderFrameHostChanged(content::RenderFrameHost* old_host,
                               content::RenderFrameHost* new_host) override;
+  void FrameSizeChanged(content::RenderFrameHost* render_frame_host,
+                        const gfx::Size& frame_size) override;
 
   // JsClientInstance::Observer
   void OnJsClientInstanceRegistered(int process_id,
@@ -100,6 +102,7 @@ class WebContentController : public exo::SurfaceObserver,
   ui::GestureRecognizerImpl gesture_recognizer_;
 
   exo::Surface* surface_ = nullptr;
+  content::RenderFrameHost* current_rfh_ = nullptr;
 
   std::set<std::string> current_javascript_channel_set_;
   std::set<content::RenderFrameHost*> current_render_frame_set_;

@@ -11,7 +11,9 @@ android_library("java") {
     "//base:base_java",
     "//chrome/android/features/stack_unwinder/public:java",
   ]
-  java_files = [ "java/src/org/chromium/chrome/features/stack_unwinder/StackUnwinderImpl.java" ]
+  sources = [
+    "java/src/org/chromium/chrome/features/stack_unwinder/StackUnwinderImpl.java",
+  ]
 
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   deps += [ "//base:jni_java" ]

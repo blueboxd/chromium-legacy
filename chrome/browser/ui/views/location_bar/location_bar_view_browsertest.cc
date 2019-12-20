@@ -291,7 +291,7 @@ IN_PROC_BROWSER_TEST_P(SecurityIndicatorTest, CheckIndicatorText) {
 const base::string16 kEvString = base::ASCIIToUTF16("Test CA [US]");
 const base::string16 kEmptyString = base::string16();
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     SecurityIndicatorTest,
     ::testing::Values(
         // Disabled (show EV UI in omnibox)

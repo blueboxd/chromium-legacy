@@ -10,8 +10,8 @@
 #include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/history_overlay_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "third_party/blink/public/platform/web_gesture_event.h"
-#include "third_party/blink/public/platform/web_mouse_wheel_event.h"
+#include "third_party/blink/public/common/input/web_gesture_event.h"
+#include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
 #include "ui/events/blink/did_overscroll_params.h"
 
 namespace {

@@ -121,14 +121,15 @@ class WebSocketProxy : public AndroidDeviceManager::AndroidWebSocket::Delegate {
   }
 
   void OnFrameRead(const std::string& message) override {
-    proxy_->DispatchOnClientHost(message);
+    proxy_->DispatchOnClientHost(base::as_bytes(base::make_span(message)));
   }
 
   void OnSocketClosed() override {
-    std::string message =
-        "{ \"method\": \"Inspector.detached\", "
-        "\"params\": { \"reason\": \"Connection lost.\"} }";
-    proxy_->DispatchOnClientHost(message);
+    constexpr char kMsg[] =
+        "{\"method\":\"Inspector.detached\",\"params\":"
+        "{\"reason\":\"Connection lost.\"}}";
+    proxy_->DispatchOnClientHost(
+        base::as_bytes(base::make_span(kMsg, strlen(kMsg))));
     web_socket_.reset();
     socket_opened_ = false;
     proxy_->ConnectionClosed();  // Deletes |this|.
@@ -176,7 +177,7 @@ class AgentHostDelegate : public content::DevToolsExternalAgentProxyDelegate {
   bool Close() override;
   base::TimeTicks GetLastActivityTime() override;
   void SendMessageToBackend(content::DevToolsExternalAgentProxy* proxy,
-                            const std::string& message) override;
+                            base::span<const uint8_t> message) override;
 
   scoped_refptr<AndroidDeviceManager::Device> device_;
   std::string browser_id_;
@@ -354,12 +355,12 @@ base::TimeTicks AgentHostDelegate::GetLastActivityTime() {
 
 void AgentHostDelegate::SendMessageToBackend(
     content::DevToolsExternalAgentProxy* proxy,
-    const std::string& message) {
+    base::span<const uint8_t> message) {
   auto it = proxies_.find(proxy);
   // We could have detached due to physical connection being closed.
   if (it == proxies_.end())
     return;
-  it->second->SendMessageToBackend(message);
+  it->second->SendMessageToBackend(std::string(message.begin(), message.end()));
 }
 
 }  // namespace

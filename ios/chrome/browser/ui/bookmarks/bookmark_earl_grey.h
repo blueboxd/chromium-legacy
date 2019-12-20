@@ -72,6 +72,10 @@ const GURL GetFrenchUrl();
 // bookmarks does exist.
 - (void)verifyAbsenceOfBookmarkWithURL:(NSString*)URL;
 
+// Verifies that a folder called |title| exists. GREYAssert is induced if the
+// folder doesn't exist.
+- (void)verifyExistenceOfFolderWithTitle:(NSString*)title;
+
 #pragma mark - Promo
 
 // Checks that the promo has already been seen or not. GREYAssert is induced if

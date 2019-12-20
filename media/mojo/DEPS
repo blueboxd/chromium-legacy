@@ -12,7 +12,6 @@ include_rules = [
   "+services/metrics",
   "+services/service_manager",
 
-
   # For converting GpuMemoryBufferHandle to GpuMemoryBuffer in
   # video_frame_mojom_traits.cc.
   "+gpu/ipc/common/gpu_memory_buffer_support.h",

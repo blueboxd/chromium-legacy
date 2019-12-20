@@ -326,6 +326,7 @@
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Running Network Diagnostics<ph name="END_LINK" /></translation>
 <translation id="2473195200299095979">Translate this page</translation>
 <translation id="2479410451996844060">Invalid search URL.</translation>
+<translation id="2482370039860827034">You just entered your password on a deceptive site. Chrome recommends going to <ph name="WEBSITE_1" /> and <ph name="WEBSITE_2" />, and other sites where you use this password, and changing it now.</translation>
 <translation id="2482878487686419369">Notifications</translation>
 <translation id="248348093745724435">Machine policies</translation>
 <translation id="2491120439723279231">Server's certificate contains errors.</translation>
@@ -338,6 +339,7 @@
 <translation id="2505268675989099013">Protect Account</translation>
 <translation id="2515629240566999685">Checking the signal in your area</translation>
 <translation id="2521385132275182522">Staple bottom right</translation>
+<translation id="2521483867890026383">You just entered your password on a deceptive site. Chromium recommends going to <ph name="WEBSITE_1" /> and <ph name="WEBSITE_2" />, and other sites where you use this password, and changing it now.</translation>
 <translation id="2523886232349826891">Saved on this device only</translation>
 <translation id="2524461107774643265">Add More Information</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{and 1 more}other{and # more}}</translation>
@@ -594,6 +596,7 @@
 <translation id="3828924085048779000">Empty passphrase is not allowed.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> has installed extensions for additional functions. Extensions have access to some of your data.</translation>
 <translation id="3832522519263485449">Multiple punch left</translation>
+<translation id="3838154488026099170">You just entered your password on a deceptive site. Chromium recommends going to <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> and <ph name="WEBSITE_3" />, and other sites where you use this password, and changing it now.</translation>
 <translation id="385051799172605136">Back</translation>
 <translation id="3858027520442213535">Update date and time</translation>
 <translation id="3884278016824448484">Conflicting device identifier</translation>
@@ -631,6 +634,7 @@
 <translation id="4072486802667267160">There was an error processing your order. Please try again.</translation>
 <translation id="4075732493274867456">The client and server don't support a common SSL protocol version or cipher suite.</translation>
 <translation id="4075941231477579656">Touch ID</translation>
+<translation id="4077092919748553596">You just entered your password on a deceptive site. Chrome recommends going to <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> and <ph name="WEBSITE_3" />, and other sites where you use this password, and changing it now.</translation>
 <translation id="4079302484614802869">Proxy configuration is set to use a .pac script URL, not fixed proxy servers.</translation>
 <translation id="4082393374666368382">Settings – Management</translation>
 <translation id="4098354747657067197">Deceptive site ahead</translation>
@@ -710,6 +714,7 @@
 <translation id="4356973930735388585">Attackers on this site might attempt to install dangerous programs on your computer that steal or delete your information (for example, photos, passwords, messages and credit cards).</translation>
 <translation id="4358059973562876591">The templates that you've specified may not be applied due to an error with the DnsOverHttpsMode policy.</translation>
 <translation id="4358461427845829800">Manage payment methods...</translation>
+<translation id="4359160567981085931">You just entered your password on a deceptive site. Chrome can help. To change your password and notify Google that your account may be at risk, click 'Protect account'.</translation>
 <translation id="4367563149485757821">Number-12 (Envelope)</translation>
 <translation id="437058704415269440">Account balance</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
@@ -984,6 +989,7 @@
 <translation id="5728056243719941842">C5 (Envelope)</translation>
 <translation id="5730040223043577876">Chrome recommends resetting your password if you reused it on other sites.</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Save card in your Google Account}other{Save cards in your Google Account}}</translation>
+<translation id="5745980000221562234">{NUM_CARDS,plural, =1{Use a virtual number for this card}other{Select a card}}</translation>
 <translation id="5763042198335101085">Enter a valid email address</translation>
 <translation id="5763703224595565476">Your administrator has enabled Chrome Enterprise user protect on your browser. Chrome Enterprise user protect has access to some of your data.</translation>
 <translation id="5765072501007116331">To see delivery methods and requirements, select an address</translation>
@@ -1000,6 +1006,7 @@
 <translation id="5804241973901381774">Permissions</translation>
 <translation id="5810442152076338065">Your connection to <ph name="DOMAIN" /> is encrypted using an obsolete cipher suite.</translation>
 <translation id="5813119285467412249">&amp;Redo Add</translation>
+<translation id="5824687817967109979">{NUM_CARDS,plural, =1{This card will be charged when you pay, but its real number won't be shared with this site. For extra security, a temporary CVC will be generated.}other{The card that you select will be charged when you pay, but its real number won't be shared with this site. For extra security, a temporary CVC will be generated.}}</translation>
 <translation id="583281660410589416">Unknown</translation>
 <translation id="5838278095973806738">You should not enter any sensitive information on this site (for example, passwords or credit cards) because it could be stolen by attackers.</translation>
 <translation id="5851548754964597211">Tab list</translation>
@@ -1457,6 +1464,7 @@ Additional details:
 <translation id="8042918947222776840">Choose pickup method</translation>
 <translation id="8057711352706143257">'<ph name="SOFTWARE_NAME" />' isn’t configured correctly. Uninstalling '<ph name="SOFTWARE_NAME" />' usually fixes the problem. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8066955247577885446">Sorry, something went wrong.</translation>
+<translation id="8067872629359326442">You just entered your password on a deceptive site. Chromium can help. To change your password and notify Google that your account may be at risk, click 'Protect account'.</translation>
 <translation id="8074253406171541171">10x13 (Envelope)</translation>
 <translation id="8078141288243656252">Cannot annotate when rotated</translation>
 <translation id="8079031581361219619">Reload site?</translation>
@@ -1473,6 +1481,7 @@ Additional details:
 <translation id="8105368624971345109">Turn Off</translation>
 <translation id="8118489163946903409">Payment method</translation>
 <translation id="8127301229239896662">'<ph name="SOFTWARE_NAME" />' wasn’t installed properly on your computer or network. Ask your IT administrator to resolve this issue.</translation>
+<translation id="8128526133099929547">You just entered your password on a deceptive site. Chrome recommends going to <ph name="WEBSITE_1" /> and other sites where you use this password, and changing it now.</translation>
 <translation id="8131740175452115882">Confirm</translation>
 <translation id="8149426793427495338">Your computer went to sleep.</translation>
 <translation id="8150722005171944719">The file at <ph name="URL" /> is not readable.  It may have been removed, moved or file permissions may be preventing access.</translation>
@@ -1490,6 +1499,7 @@ Additional details:
 <translation id="8218327578424803826">Assigned Location:</translation>
 <translation id="8220146938470311105">C7/C6 (Envelope)</translation>
 <translation id="8220639454292072926">Enterprise Reporting</translation>
+<translation id="8221250263817408492">You just entered your password on a deceptive site. Chromium recommends going to <ph name="WEBSITE_1" /> and other sites where you use this password, and changing it now.</translation>
 <translation id="8225771182978767009">The person who set up this computer has chosen to block this site.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">Open page in a new Incognito tab</translation>

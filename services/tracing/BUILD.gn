@@ -138,7 +138,8 @@ if (is_android) {
     deps = [
       "//base:base_java",
     ]
-    java_files =
-        [ "android/test/src/org/chromium/tracing/UnwindTestHelper.java" ]
+    sources = [
+      "android/test/src/org/chromium/tracing/UnwindTestHelper.java",
+    ]
   }
 }

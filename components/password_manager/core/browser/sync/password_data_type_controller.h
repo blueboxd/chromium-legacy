@@ -38,7 +38,7 @@ class PasswordDataTypeController : public syncer::AsyncDirectoryTypeController,
  protected:
   // AsyncDirectoryTypeController interface.
   bool PostTaskOnModelThread(const base::Location& from_here,
-                             const base::RepeatingClosure& task) override;
+                             base::OnceClosure task) override;
   bool StartModels() override;
   void StopModels() override;
 

@@ -17,10 +17,6 @@ DEVICE_BASE_EXPORT extern const base::Feature kNewUsbBackend;
 DEVICE_BASE_EXPORT extern const base::Feature kNewBLEWinImplementation;
 #endif  // defined(OS_WIN)
 
-#if defined(OS_CHROMEOS)
-DEVICE_BASE_EXPORT extern const base::Feature kNewblueDaemon;
-#endif  // defined(OS_CHROMEOS)
-
 #if BUILDFLAG(ENABLE_VR)
 DEVICE_BASE_EXPORT extern const base::Feature kWebXrOrientationSensorDevice;
 #endif  // BUILDFLAG(ENABLE_VR)

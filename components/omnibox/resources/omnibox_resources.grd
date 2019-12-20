@@ -10,6 +10,31 @@
     </output>
     <if expr="is_android">
       <output filename="omnibox_resources_af.pak" type="data_package" lang="af" />
+      <output filename="omnibox_resources_as.pak" type="data_package" lang="as" />
+      <output filename="omnibox_resources_az.pak" type="data_package" lang="az" />
+      <output filename="omnibox_resources_be.pak" type="data_package" lang="be" />
+      <output filename="omnibox_resources_bs.pak" type="data_package" lang="bs" />
+      <output filename="omnibox_resources_eu.pak" type="data_package" lang="eu" />
+      <output filename="omnibox_resources_fr-CA.pak" type="data_package" lang="fr-CA" />
+      <output filename="omnibox_resources_gl.pak" type="data_package" lang="gl" />
+      <output filename="omnibox_resources_hy.pak" type="data_package" lang="hy" />
+      <output filename="omnibox_resources_is.pak" type="data_package" lang="is" />
+      <output filename="omnibox_resources_ka.pak" type="data_package" lang="ka" />
+      <output filename="omnibox_resources_kk.pak" type="data_package" lang="kk" />
+      <output filename="omnibox_resources_km.pak" type="data_package" lang="km" />
+      <output filename="omnibox_resources_ky.pak" type="data_package" lang="ky" />
+      <output filename="omnibox_resources_lo.pak" type="data_package" lang="lo" />
+      <output filename="omnibox_resources_mk.pak" type="data_package" lang="mk" />
+      <output filename="omnibox_resources_mn.pak" type="data_package" lang="mn" />
+      <output filename="omnibox_resources_my.pak" type="data_package" lang="my" />
+      <output filename="omnibox_resources_ne.pak" type="data_package" lang="ne" />
+      <output filename="omnibox_resources_or.pak" type="data_package" lang="or" />
+      <output filename="omnibox_resources_pa.pak" type="data_package" lang="pa" />
+      <output filename="omnibox_resources_si.pak" type="data_package" lang="si" />
+      <output filename="omnibox_resources_sq.pak" type="data_package" lang="sq" />
+      <output filename="omnibox_resources_ur.pak" type="data_package" lang="ur" />
+      <output filename="omnibox_resources_uz.pak" type="data_package" lang="uz" />
+      <output filename="omnibox_resources_zu.pak" type="data_package" lang="zu" />
     </if>
     <output filename="omnibox_resources_am.pak" type="data_package" lang="am" />
     <output filename="omnibox_resources_ar.pak" type="data_package" lang="ar" />

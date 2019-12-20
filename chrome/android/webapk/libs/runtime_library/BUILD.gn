@@ -31,8 +31,9 @@ android_library("webapk_service_aidl_java") {
 # library because the dx tool expects files ending in .dex.jar
 android_library("runtime_library_for_assets_java") {
   jacoco_never_instrument = true
-  java_files =
-      [ "src/org/chromium/webapk/lib/runtime_library/WebApkServiceImpl.java" ]
+  sources = [
+    "src/org/chromium/webapk/lib/runtime_library/WebApkServiceImpl.java",
+  ]
   srcjar_deps = [ ":webapk_service_aidl" ]
   deps = [
     "//third_party/android_deps:com_android_support_support_compat_java",
@@ -41,8 +42,9 @@ android_library("runtime_library_for_assets_java") {
 
 # The subset of runtime_library_from_assets_java needed for tests.
 android_library("runtime_library_for_tests_java") {
-  java_files =
-      [ "src/org/chromium/webapk/lib/runtime_library/WebApkServiceImpl.java" ]
+  sources = [
+    "src/org/chromium/webapk/lib/runtime_library/WebApkServiceImpl.java",
+  ]
   deps = [
     ":webapk_service_aidl_java",
     "//third_party/android_deps:com_android_support_support_compat_java",
@@ -76,7 +78,9 @@ android_assets("runtime_library_assets") {
 
 android_library("runtime_library_javatests") {
   testonly = true
-  java_files = [ "javatests/src/org/chromium/webapk/lib/runtime_library/WebApkServiceImplTest.java" ]
+  sources = [
+    "javatests/src/org/chromium/webapk/lib/runtime_library/WebApkServiceImplTest.java",
+  ]
   deps = [
     ":runtime_library_for_tests_java",
     ":webapk_service_aidl_java",

@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/input/mouse_wheel_event_manager.h"
 
 #include "build/build_config.h"
-#include "third_party/blink/public/platform/web_mouse_wheel_event.h"
+#include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/events/wheel_event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"

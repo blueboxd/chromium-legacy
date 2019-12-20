@@ -8,11 +8,14 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/browsing_data/core/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #import "components/payments/core/features.h"
+#include "components/prefs/pref_service.h"
 #import "components/ukm/ios/features.h"
 #import "ios/chrome/app/main_controller.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/ui/settings/autofill/features.h"
@@ -654,6 +657,15 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
   chrome_test_util::SetBooleanUserPref(
       chrome_test_util::GetOriginalBrowserState(),
       base::SysNSStringToUTF8(prefName).c_str(), value);
+}
+
++ (void)resetBrowsingDataPrefs {
+  PrefService* prefs = chrome_test_util::GetOriginalBrowserState()->GetPrefs();
+  prefs->ClearPref(browsing_data::prefs::kDeleteBrowsingHistory);
+  prefs->ClearPref(browsing_data::prefs::kDeleteCookies);
+  prefs->ClearPref(browsing_data::prefs::kDeleteCache);
+  prefs->ClearPref(browsing_data::prefs::kDeletePasswords);
+  prefs->ClearPref(browsing_data::prefs::kDeleteFormData);
 }
 
 #pragma mark - Keyboard Command Utilities

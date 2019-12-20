@@ -80,7 +80,7 @@ class WeakHandleCoreBase {
 
   // May be called on any thread.
   void PostToOwnerThread(const base::Location& from_here,
-                         const base::Closure& fn) const;
+                         base::OnceClosure fn) const;
 
  private:
   // May be used on any thread.
@@ -110,8 +110,8 @@ class WeakHandleCore : public WeakHandleCoreBase,
   void Call(const base::Location& from_here,
             Method method,
             Args&&... args) const {
-    PostToOwnerThread(from_here,
-                      base::Bind(method, ptr_, std::forward<Args>(args)...));
+    PostToOwnerThread(
+        from_here, base::BindOnce(method, ptr_, std::forward<Args>(args)...));
   }
 
  private:

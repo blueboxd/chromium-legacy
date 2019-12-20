@@ -349,7 +349,7 @@
 <translation id="1493892686965953381">Esperando <ph name="LOAD_STATE_PARAMETER" />...</translation>
 <translation id="1495486559005647033">Hay otros <ph name="NUM_PRINTERS" /> dispositivos disponibles.</translation>
 <translation id="1495677929897281669">Volver a la pestaña</translation>
-<translation id="1499271269825557605">Si no reconoces una extensión o si el navegador no funciona correctamente, puedes desactivar o personalizar extensiones aquí.</translation>
+<translation id="1499271269825557605">Si no reconoces una extensión o el navegador no funciona correctamente, puedes desactivar o personalizar extensiones aquí.</translation>
 <translation id="1500297251995790841">Dispositivo desconocido [<ph name="VENDOR_ID" />:<ph name="PRODUCT_ID" />]</translation>
 <translation id="1503394326855300303">El propietario de esta cuenta requiere que sea la primera a la que se acceda al crear una sesión de acceso múltiple.</translation>
 <translation id="150411034776756821">Quitar <ph name="SITE" /></translation>
@@ -1292,7 +1292,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2800760947029405028">Cargar una imagen</translation>
 <translation id="2803375539583399270">Ingresar PIN</translation>
 <translation id="2804043232879091219">No se pudo abrir el otro navegador</translation>
-<translation id="2804667941345577550">Saldrás de este sitio, incluidas las pestañas abiertas</translation>
+<translation id="2804667941345577550">Saldrás de este sitio y de las pestañas abiertas</translation>
 <translation id="2804680522274557040">Se desactivó la cámara</translation>
 <translation id="2805646850212350655">Sistema de encriptación de archivos de Microsoft</translation>
 <translation id="2805756323405976993">Aplicaciones</translation>
@@ -1300,7 +1300,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2806891468525657116">El acceso directo ya existe</translation>
 <translation id="2807517655263062534">Los archivos que descargas aparecen aquí</translation>
 <translation id="2809586584051668049">y <ph name="NUMBER_ADDITIONAL_DISABLED" /> más</translation>
-<translation id="2810390687497823527">Si no reconoces una extensión o si el navegador no funciona correctamente, puedes desactivar o personalizar extensiones aquí.</translation>
+<translation id="2810390687497823527">Si no reconoces una extensión o si navegador no funciona correctamente, puedes desactivar o personalizar extensiones aquí.</translation>
 <translation id="2812049959647166806">No se admite Thunderbolt</translation>
 <translation id="2812944337881233323">Intenta salir y volver a acceder</translation>
 <translation id="2812989263793994277">No mostrar imágenes</translation>
@@ -4690,7 +4690,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="778330624322499012">No se pudo cargar el complemento <ph name="PLUGIN_NAME" />.</translation>
 <translation id="7784067724422331729">La configuración de seguridad de tu computadora bloqueó este archivo.</translation>
 <translation id="7784796923038949829">No se pueden leer ni cambiar los datos del sitio</translation>
-<translation id="778480864305029524">Para usar la conexión instantánea mediante dispositivo portátil, activa las notificaciones para los Servicios de Google Play</translation>
+<translation id="778480864305029524">Para usar la conexión instantánea mediante dispositivo móvil, activa las notificaciones para los Servicios de Google Play</translation>
 <translation id="7786207843293321886">Salir de la sesión de invitado</translation>
 <translation id="7786889348652477777">&amp;Volver a cargar la aplicación</translation>
 <translation id="7787308148023287649">Mostrar en otra pantalla</translation>
@@ -5240,7 +5240,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8526666462501866815">Cancelando la actualización de Linux</translation>
 <translation id="8528074251912154910">Agregar idiomas</translation>
 <translation id="8528962588711550376">Accediendo.</translation>
-<translation id="8529925957403338845">Se produjo un error en la conexión instantánea mediante dispositivo portátil</translation>
+<translation id="8529925957403338845">Se produjo un error en la conexión instantánea mediante dispositivo móvil</translation>
 <translation id="8534656636775144800">Se produjo un error al intentar unirse al dominio. Vuelve a intentarlo.</translation>
 <translation id="8535005006684281994">URL de renovación del certificado Netscape</translation>
 <translation id="8538358978858059843">¿Quieres habilitar la transmisión de contenido a servicios basados en la nube?</translation>

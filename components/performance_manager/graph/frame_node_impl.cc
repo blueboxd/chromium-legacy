@@ -90,6 +90,11 @@ void FrameNodeImpl::OnNonPersistentNotificationCreated() {
     observer->OnNonPersistentNotificationCreated(this);
 }
 
+void FrameNodeImpl::SetHadFormInteraction() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  document_.had_form_interaction.SetAndMaybeNotify(this, true);
+}
+
 bool FrameNodeImpl::IsMainFrame() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return !parent_frame_node_;
@@ -185,6 +190,11 @@ const base::flat_set<WorkerNodeImpl*>& FrameNodeImpl::child_worker_nodes()
 
 const PriorityAndReason& FrameNodeImpl::priority_and_reason() const {
   return priority_and_reason_.value();
+}
+
+bool FrameNodeImpl::had_form_interaction() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return document_.had_form_interaction.value();
 }
 
 void FrameNodeImpl::SetIsCurrent(bool is_current) {
@@ -386,6 +396,11 @@ const PriorityAndReason& FrameNodeImpl::GetPriorityAndReason() const {
   return priority_and_reason();
 }
 
+bool FrameNodeImpl::HadFormInteraction() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return had_form_interaction();
+}
+
 void FrameNodeImpl::AddChildFrame(FrameNodeImpl* child_frame_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(child_frame_node);
@@ -482,6 +497,7 @@ void FrameNodeImpl::DocumentProperties::Reset(FrameNodeImpl* frame_node,
   network_almost_idle.SetAndMaybeNotify(frame_node, false);
   origin_trial_freeze_policy.SetAndMaybeNotify(
       frame_node, mojom::InterventionPolicy::kDefault);
+  had_form_interaction.SetAndMaybeNotify(frame_node, false);
 }
 
 }  // namespace performance_manager

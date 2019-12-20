@@ -165,6 +165,8 @@ class OpenXrTestHelper : public device::ServiceTestHook {
     ActionProperties(const ActionProperties& other);
   };
 
+  void CopyTextureDataIntoFrameData(device::SubmittedFrameData* data,
+                                    bool left);
   XrResult UpdateAction(XrAction action);
   void SetSessionState(XrSessionState state);
   base::Optional<gfx::Transform> GetPose();

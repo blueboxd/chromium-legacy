@@ -218,6 +218,8 @@ TEST_F(CrostiniInstallerTest, InstallFlow) {
       static_cast<base::HistogramBase::Sample>(
           CrostiniInstaller::SetupResult::kSuccess),
       1);
+  histogram_tester_.ExpectTotalCount("Crostini.Setup.Started", 1);
+  histogram_tester_.ExpectTotalCount("Crostini.Restarter.Started", 0);
 
   EXPECT_TRUE(crostini_installer_->CanInstall())
       << "Installer should recover to installable state";
@@ -352,6 +354,8 @@ TEST_F(CrostiniInstallerTest, InstallerError) {
       static_cast<base::HistogramBase::Sample>(
           CrostiniInstaller::SetupResult::kErrorStartingTermina),
       1);
+  histogram_tester_.ExpectTotalCount("Crostini.Setup.Started", 1);
+  histogram_tester_.ExpectTotalCount("Crostini.Restarter.Started", 0);
 
   EXPECT_TRUE(crostini_installer_->CanInstall())
       << "Installer should recover to installable state";

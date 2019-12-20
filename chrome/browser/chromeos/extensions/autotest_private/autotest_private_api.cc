@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/extensions/autotest_private/autotest_private_api.h"
 
+#include <algorithm>
+#include <deque>
 #include <set>
 #include <sstream>
 #include <utility>
@@ -569,6 +571,7 @@ ui::KeyboardCode StringToKeyCode(const std::string& str) {
     ui::KeyboardCode key_code;
   } map[] = {
       {"search", ui::VKEY_LWIN},
+      {"assistant", ui::VKEY_ASSISTANT},
   };
   DCHECK(base::IsStringASCII(str));
   if (str.length() == 1) {
@@ -3789,7 +3792,7 @@ ExtensionFunction::ResponseAction AutotestPrivateMouseMoveFunction::Run() {
   int flags = env->mouse_button_flags();
   ui::EventType type = (flags == 0) ? ui::ET_MOUSE_MOVED : ui::ET_MOUSE_DRAGGED;
   for (int64_t i = 1; i <= steps; ++i) {
-    double progress = double(i) / double(steps);
+    double progress = static_cast<double>(i) / static_cast<double>(steps);
     gfx::PointF point(gfx::Tween::FloatValueBetween(progress, start_in_host.x(),
                                                     location_in_host.x()),
                       gfx::Tween::FloatValueBetween(progress, start_in_host.y(),

@@ -10,17 +10,6 @@ js_type_check("closure_compile") {
     ":reset_page",
     ":reset_profile_dialog",
   ]
-
-  if (is_chromeos) {
-    deps += [ ":powerwash_dialog" ]
-  }
-}
-
-js_library("powerwash_dialog") {
-  deps = [
-    ":reset_browser_proxy",
-    "..:lifetime_browser_proxy",
-  ]
 }
 
 js_library("reset_page") {

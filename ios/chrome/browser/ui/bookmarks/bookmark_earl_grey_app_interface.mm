@@ -257,6 +257,31 @@
   return nil;
 }
 
++ (NSError*)verifyExistenceOfFolderWithTitle:(NSString*)title {
+  base::string16 folderTitle16(base::SysNSStringToUTF16(title));
+
+  ui::TreeNodeIterator<const bookmarks::BookmarkNode> iterator(
+      [self bookmarkModel] -> root_node());
+  BOOL folderExists = NO;
+
+  while (iterator.has_next()) {
+    const bookmarks::BookmarkNode* bookmark = iterator.Next();
+    if (bookmark->is_url())
+      continue;
+    // This is a folder.
+    if (bookmark->GetTitle() == folderTitle16) {
+      // Folder exists, return.
+      return nil;
+    }
+  }
+
+  if (!folderExists)
+    return testing::NSErrorWithLocalizedDescription(
+        [NSString stringWithFormat:@"Folder %@ doesn't exist", title]);
+
+  return nil;
+}
+
 + (NSError*)verifyPromoAlreadySeen:(BOOL)seen {
   ios::ChromeBrowserState* browserState =
       chrome_test_util::GetOriginalBrowserState();

@@ -231,6 +231,13 @@ class CORE_EXPORT ContentSecurityPolicy final
 
   Vector<CSPHeaderAndType> Headers() const;
 
+  // Returns whether or not the Javascript code generation should call back the
+  // CSP checker before any script evaluation from a string attempts.
+  //
+  // CSP has two mechanisms for controlling eval: script-src and TrustedTypes.
+  // This returns true when any of those should to be checked.
+  bool ShouldCheckEval() const;
+
   // When the reporting status is |SendReport|, the |ExceptionStatus|
   // should indicate whether the caller will throw a JavaScript
   // exception in the event of a violation. When the caller will throw

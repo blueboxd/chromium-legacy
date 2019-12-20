@@ -6,8 +6,8 @@ package org.chromium.chrome.browser.settings.themes;
 
 import static org.chromium.chrome.browser.ChromeFeatureList.ANDROID_NIGHT_MODE;
 import static org.chromium.chrome.browser.ChromeFeatureList.DARKEN_WEBSITES_CHECKBOX_IN_THEMES_SETTING;
-import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.DARKEN_WEBSITES_ENABLED_KEY;
-import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.UI_THEME_SETTING_KEY;
+import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.UI_THEME_DARKEN_WEBSITES_ENABLED;
+import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.UI_THEME_SETTING;
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
@@ -65,8 +65,8 @@ public class ThemeSettingsFragmentTest extends DummyUiActivityTestCase {
     @Override
     public void setUpTest() throws Exception {
         super.setUpTest();
-        SharedPreferencesManager.getInstance().removeKey(UI_THEME_SETTING_KEY);
-        SharedPreferencesManager.getInstance().removeKey(DARKEN_WEBSITES_ENABLED_KEY);
+        SharedPreferencesManager.getInstance().removeKey(UI_THEME_SETTING);
+        SharedPreferencesManager.getInstance().removeKey(UI_THEME_DARKEN_WEBSITES_ENABLED);
         SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
                 InstrumentationRegistry.getInstrumentation(),
                 ThemeSettingsFragment.class.getName());
@@ -78,8 +78,8 @@ public class ThemeSettingsFragmentTest extends DummyUiActivityTestCase {
     @Override
     public void tearDownTest() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            SharedPreferencesManager.getInstance().removeKey(UI_THEME_SETTING_KEY);
-            SharedPreferencesManager.getInstance().removeKey(DARKEN_WEBSITES_ENABLED_KEY);
+            SharedPreferencesManager.getInstance().removeKey(UI_THEME_SETTING);
+            SharedPreferencesManager.getInstance().removeKey(UI_THEME_DARKEN_WEBSITES_ENABLED);
         });
 
         FeatureUtilities.setNightModeDefaultToLightForTesting(null);
@@ -110,7 +110,7 @@ public class ThemeSettingsFragmentTest extends DummyUiActivityTestCase {
             assertButtonCheckedCorrectly("System default", 0);
             Assert.assertEquals(ThemeType.SYSTEM_DEFAULT, mPreference.getSetting());
             Assert.assertEquals(mPreference.getSetting(),
-                    SharedPreferencesManager.getInstance().readInt(UI_THEME_SETTING_KEY));
+                    SharedPreferencesManager.getInstance().readInt(UI_THEME_SETTING));
 
             // Select Light
             Assert.assertEquals(R.id.light, getButton(1).getId());
@@ -118,7 +118,7 @@ public class ThemeSettingsFragmentTest extends DummyUiActivityTestCase {
             assertButtonCheckedCorrectly("Light", 1);
             Assert.assertEquals(ThemeType.LIGHT, mPreference.getSetting());
             Assert.assertEquals(mPreference.getSetting(),
-                    SharedPreferencesManager.getInstance().readInt(UI_THEME_SETTING_KEY));
+                    SharedPreferencesManager.getInstance().readInt(UI_THEME_SETTING));
 
             // Select Dark
             Assert.assertEquals(R.id.dark, getButton(2).getId());
@@ -126,7 +126,7 @@ public class ThemeSettingsFragmentTest extends DummyUiActivityTestCase {
             assertButtonCheckedCorrectly("Dark", 2);
             Assert.assertEquals(ThemeType.DARK, mPreference.getSetting());
             Assert.assertEquals(mPreference.getSetting(),
-                    SharedPreferencesManager.getInstance().readInt(UI_THEME_SETTING_KEY));
+                    SharedPreferencesManager.getInstance().readInt(UI_THEME_SETTING));
         });
     }
 
@@ -185,7 +185,7 @@ public class ThemeSettingsFragmentTest extends DummyUiActivityTestCase {
                     mPreference.isDarkenWebsitesEnabled());
             Assert.assertTrue("Darken website feature should be enabled when darken website button"
                             + " is checked",
-                    sharedPreferencesManager.readBoolean(DARKEN_WEBSITES_ENABLED_KEY, false));
+                    sharedPreferencesManager.readBoolean(UI_THEME_DARKEN_WEBSITES_ENABLED, false));
 
             // Check system default, darken website button should stay checked
             selectButton(1);
@@ -194,7 +194,7 @@ public class ThemeSettingsFragmentTest extends DummyUiActivityTestCase {
                     mPreference.isDarkenWebsitesEnabled());
             Assert.assertTrue(
                     "Darken website button should stay its state when changing theme preference",
-                    sharedPreferencesManager.readBoolean(DARKEN_WEBSITES_ENABLED_KEY, false));
+                    sharedPreferencesManager.readBoolean(UI_THEME_DARKEN_WEBSITES_ENABLED, false));
         });
     }
 

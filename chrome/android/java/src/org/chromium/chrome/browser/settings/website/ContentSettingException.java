@@ -25,7 +25,7 @@ public class ContentSettingException implements Serializable {
     public @interface Type {
         // Values used to address array index - should be enumerated from 0 and can't have gaps.
         // All updates here must also be reflected in {@link #getContentSettingsType(int)
-        // getContentSettingsType} and {@link SingleWebsitePreferences.PERMISSION_PREFERENCE_KEYS}.
+        // getContentSettingsType} and {@link SingleWebsiteSettings.PERMISSION_PREFERENCE_KEYS}.
         int ADS = 0;
         int BACKGROUND_SYNC = 1;
         int COOKIE = 2;

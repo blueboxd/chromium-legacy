@@ -147,6 +147,8 @@ TEST_P(FakeVideoCaptureDeviceTest, CaptureUsing) {
   resolutions_to_test.emplace_back(gfx::Size(0, 720), gfx::Size(96, 96));
   resolutions_to_test.emplace_back(gfx::Size(1920, 1080),
                                    gfx::Size(1920, 1080));
+  resolutions_to_test.emplace_back(gfx::Size(3840, 2160),
+                                   gfx::Size(3840, 2160));
 
   for (const auto& resolution : resolutions_to_test) {
     std::unique_ptr<MockVideoCaptureDeviceClient> client = CreateClient();
@@ -201,7 +203,7 @@ TEST_F(FakeVideoCaptureDeviceTest, GetDeviceSupportedFormats) {
     VideoCaptureFormats supported_formats;
     video_capture_device_factory_->GetSupportedFormats(descriptors_iterator,
                                                        &supported_formats);
-    ASSERT_EQ(5u, supported_formats.size());
+    ASSERT_EQ(6u, supported_formats.size());
     VideoPixelFormat expected_format =
         expected_format_by_device_index[device_index];
     EXPECT_EQ(96, supported_formats[0].frame_size.width());
@@ -224,6 +226,10 @@ TEST_F(FakeVideoCaptureDeviceTest, GetDeviceSupportedFormats) {
     EXPECT_EQ(1080, supported_formats[4].frame_size.height());
     EXPECT_EQ(expected_format, supported_formats[4].pixel_format);
     EXPECT_GE(supported_formats[4].frame_rate, 20.0);
+    EXPECT_EQ(3840, supported_formats[5].frame_size.width());
+    EXPECT_EQ(2160, supported_formats[5].frame_size.height());
+    EXPECT_EQ(expected_format, supported_formats[5].pixel_format);
+    EXPECT_GE(supported_formats[5].frame_rate, 20.0);
     device_index++;
   }
 }

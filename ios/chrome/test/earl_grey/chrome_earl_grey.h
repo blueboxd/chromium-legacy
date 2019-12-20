@@ -479,6 +479,10 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Sets the value of a boolean user pref in the original browser state.
 - (void)setBoolValue:(BOOL)value forUserPref:(const std::string&)UTF8PrefName;
 
+// Resets the BrowsingDataPrefs, which defines if its selected or not when
+// clearing Browsing data.
+- (void)resetBrowsingDataPrefs;
+
 @end
 
 // Helpers that only compile under EarlGrey 1 are included in this "EG1"

@@ -60,7 +60,7 @@ class DevtoolsClient : public MessageDispatcher,
 
   // content::DevToolsAgentHostClient overrides:
   void DispatchProtocolMessage(content::DevToolsAgentHost* agent_host,
-                               const std::string& message) override;
+                               base::span<const uint8_t> message) override;
   void AgentHostClosed(content::DevToolsAgentHost* agent_host) override;
 
  private:

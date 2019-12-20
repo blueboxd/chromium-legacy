@@ -335,7 +335,7 @@ base::flat_map<std::string, float> PredictionManager::BuildFeatureMap(
       continue;
     }
     if (!host_model_features || !host_model_features->contains(model_feature)) {
-      feature_map[model_feature] = 0.0;
+      feature_map[model_feature] = -1.0;
       continue;
     }
     feature_map[model_feature] =

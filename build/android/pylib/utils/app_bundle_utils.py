@@ -8,7 +8,6 @@ import os
 import re
 import sys
 import tempfile
-import zipfile
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'gyp'))
 
@@ -25,10 +24,9 @@ _ALL_ABIS = ['armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64']
 
 
 def _CreateDeviceSpec(bundle_path, sdk_version, locales):
-  # Could also use "bundletool dump resources", but reading directly is faster.
   if not sdk_version:
-    with zipfile.ZipFile(bundle_path) as f:
-      manifest_data = f.read('base/manifest/AndroidManifest.xml')
+    manifest_data = bundletool.RunBundleTool(
+        ['dump', 'manifest', '--bundle', bundle_path])
     sdk_version = int(
         re.search(r'minSdkVersion.*?(\d+)', manifest_data).group(1))
 

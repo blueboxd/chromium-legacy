@@ -21,8 +21,6 @@ class CrostiniInstallerUI
     : public ui::MojoWebDialogUI,
       public chromeos::crostini_installer::mojom::PageHandlerFactory {
  public:
-  static bool IsEnabled();
-
   explicit CrostiniInstallerUI(content::WebUI* web_ui);
   ~CrostiniInstallerUI() override;
 

@@ -22,6 +22,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="1966382378801805537">Chromium kan inte fastställa eller ange standardwebbläsaren</translation>
 <translation id="2008474315282236005">Ett objekt tas bort från enheten. Logga in i Chromium som <ph name="USER_EMAIL" /> om du vill kunna återställa datan senare.</translation>
 <translation id="2119636228670142020">Om &amp;Chromium OS</translation>
+<translation id="2147976119693222405">Det gick inte att synkronisera data i Chromium OS. Åtgärda nu.</translation>
 <translation id="2241627712206172106">Om du delar en dator med vänner och familj kan de konfigurera Chromium precis som de vill och surfa separat.</translation>
 <translation id="2347108572062610441">Det här tillägget har ändrat vilken sida som visas när du startar Chromium.</translation>
 <translation id="2396765026452590966">Tillägget <ph name="EXTENSION_NAME" /> har ändrat vilken sida som visas när du startar Chromium.</translation>
@@ -37,6 +38,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="2718390899429598676">Din data krypteras i Chromium för att öka säkerheten.</translation>
 <translation id="2770231113462710648">Ändra standardwebbläsare till:</translation>
 <translation id="2799223571221894425">Starta om</translation>
+<translation id="2805036593126168338">Det gick inte att synkronisera lösenord i Chromium OS. Åtgärda nu.</translation>
 <translation id="2838154144102149890">Chromium måste avslutas på datorn före uppdateringen. Detta kan leda till att andra användare som är inloggade på datorn förlorar ändringar som inte har sparats.</translation>
 <translation id="2847479871509788944">Ta bort från Chromium …</translation>
 <translation id="2886012850691518054">Valfritt: Hjälp till att göra Chromium bättre genom att automatiskt skicka användningsstatistik och felrapporter till Google.</translation>

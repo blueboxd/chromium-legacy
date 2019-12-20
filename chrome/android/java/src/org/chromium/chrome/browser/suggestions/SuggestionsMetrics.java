@@ -30,10 +30,10 @@ public abstract class SuggestionsMetrics {
 
     public static void recordSurfaceVisible() {
         if (!SharedPreferencesManager.getInstance().readBoolean(
-                    ChromePreferenceKeys.CONTENT_SUGGESTIONS_SHOWN_KEY, false)) {
+                    ChromePreferenceKeys.CONTENT_SUGGESTIONS_SHOWN, false)) {
             RecordUserAction.record("Suggestions.FirstTimeSurfaceVisible");
             SharedPreferencesManager.getInstance().writeBoolean(
-                    ChromePreferenceKeys.CONTENT_SUGGESTIONS_SHOWN_KEY, true);
+                    ChromePreferenceKeys.CONTENT_SUGGESTIONS_SHOWN, true);
         }
 
         RecordUserAction.record("Suggestions.SurfaceVisible");

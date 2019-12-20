@@ -464,6 +464,9 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       base::RecordAction(base::UserMetricsAction("OpenActiveTabInPwaWindow"));
       web_app::ReparentWebAppForSecureActiveTab(browser_);
       break;
+    case IDC_MOVE_TAB_TO_NEW_WINDOW:
+      MoveTabToNewWindow(browser_);
+      break;
 
 #if defined(OS_CHROMEOS)
     case IDC_VISIT_DESKTOP_OF_LRU_USER_2:
@@ -1140,6 +1143,8 @@ void BrowserCommandController::UpdateCommandsForTabState() {
                                         CanCloseTabsToRight(browser_));
   command_updater_.UpdateCommandEnabled(IDC_WINDOW_CLOSE_OTHER_TABS,
                                         CanCloseOtherTabs(browser_));
+  command_updater_.UpdateCommandEnabled(IDC_MOVE_TAB_TO_NEW_WINDOW,
+                                        CanMoveTabToNewWindow(browser_));
 
   // Page-related commands
   window()->SetStarredState(

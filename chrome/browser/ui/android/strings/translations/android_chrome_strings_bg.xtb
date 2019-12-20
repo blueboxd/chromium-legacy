@@ -427,6 +427,7 @@
 <translation id="4226663524361240545">Възможно е устройството да вибрира при известия</translation>
 <translation id="423219824432660969">Шифроване на синхронизираните данни с паролата за Google от <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Отваряне на настройките</translation>
+<translation id="4250229828105606438">Eкранна снимка</translation>
 <translation id="4256782883801055595">Лицензи за отворен код</translation>
 <translation id="4259722352634471385">Навигирането е блокирано: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Копиране на адреса на връзката</translation>
@@ -885,7 +886,7 @@
 <translation id="7498271377022651285">Моля, изчакайте...</translation>
 <translation id="7514365320538308">Изтегляне</translation>
 <translation id="751961395872307827">Не може да се установи връзка със сайта</translation>
-<translation id="7521387064766892559">Javascript</translation>
+<translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">Предложенията не могат да бъдат показани</translation>
 <translation id="7559975015014302720">Олекотеният режим е изключен</translation>
 <translation id="7562080006725997899">Данните за сърфирането се изчистват</translation>

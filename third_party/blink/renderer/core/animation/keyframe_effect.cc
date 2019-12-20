@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/animation/timing_input.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -48,6 +49,34 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
+
+namespace {
+
+// Verifies that a pseudo-element selector lexes and canonicalizes legacy forms
+bool ValidateAndCanonicalizePseudo(String& selector) {
+  if (selector.IsEmpty()) {
+    if (!selector.IsNull())
+      selector = String();  // null
+    return true;
+  } else if (selector.StartsWith("::")) {
+    return true;
+  } else if (selector == ":before") {
+    selector = "::before";
+    return true;
+  } else if (selector == ":after") {
+    selector = "::after";
+    return true;
+  } else if (selector == ":first-letter") {
+    selector = "::first-letter";
+    return true;
+  } else if (selector == ":first-line") {
+    selector = "::first-line";
+    return true;
+  }
+  return false;
+}
+
+}  // namespace
 
 KeyframeEffect* KeyframeEffect::Create(
     ScriptState* script_state,
@@ -61,17 +90,40 @@ KeyframeEffect* KeyframeEffect::Create(
     return nullptr;
 
   EffectModel::CompositeOperation composite = EffectModel::kCompositeReplace;
+  String pseudo = String();
   if (options.IsKeyframeEffectOptions()) {
-    composite = EffectModel::StringToCompositeOperation(
-                    options.GetAsKeyframeEffectOptions()->composite())
-                    .value();
+    auto* effect_options = options.GetAsKeyframeEffectOptions();
+    composite =
+        EffectModel::StringToCompositeOperation(effect_options->composite())
+            .value();
+    if (RuntimeEnabledFeatures::WebAnimationsAPIEnabled() &&
+        !effect_options->pseudoElement().IsEmpty()) {
+      pseudo = effect_options->pseudoElement();
+      if (!ValidateAndCanonicalizePseudo(pseudo)) {
+        // TODO(gtsteel): update when
+        // https://github.com/w3c/csswg-drafts/issues/4586 resolves
+        exception_state.ThrowDOMException(
+            DOMExceptionCode::kSyntaxError,
+            "A valid pseudo-selector must start with ::.");
+      }
+    }
   }
 
   KeyframeEffectModelBase* model = EffectInput::Convert(
       element, keyframes, composite, script_state, exception_state);
   if (exception_state.HadException())
     return nullptr;
-  return MakeGarbageCollected<KeyframeEffect>(element, model, timing);
+  KeyframeEffect* effect =
+      MakeGarbageCollected<KeyframeEffect>(element, model, timing);
+
+  if (!pseudo.IsEmpty()) {
+    effect->target_pseudo_ = pseudo;
+    if (element) {
+      effect->effect_target_ =
+          element->GetPseudoElement(CSSSelector::ParsePseudoId(pseudo));
+    }
+  }
+  return effect;
 }
 
 KeyframeEffect* KeyframeEffect::Create(ScriptState* script_state,
@@ -103,23 +155,63 @@ KeyframeEffect::KeyframeEffect(Element* target,
                                EventDelegate* event_delegate)
     : AnimationEffect(timing, event_delegate),
       effect_target_(target),
+      target_element_(target),
+      target_pseudo_(),
       model_(model),
       sampled_effect_(nullptr),
       priority_(priority) {
   DCHECK(model_);
+
+  // fix target for css animations and transitions
+  if (target && target->IsPseudoElement()) {
+    target_element_ = target->parentElement();
+    DCHECK(!target_element_->IsPseudoElement());
+    target_pseudo_ = target->tagName();
+  }
 }
 
 KeyframeEffect::~KeyframeEffect() = default;
 
-void KeyframeEffect::setTarget(Element* target) {
-  if (effect_target_ == target)
-    return;
+void KeyframeEffect::setTarget(Element* new_target) {
+  DCHECK(!new_target || !new_target->IsPseudoElement());
+  target_element_ = new_target;
+  RefreshTarget();
+}
 
-  DetachTarget(GetAnimation());
-  effect_target_ = target;
-  AttachTarget(GetAnimation());
+const String& KeyframeEffect::pseudoElement() {
+  return target_pseudo_;
+}
 
-  InvalidateAndNotifyOwner();
+void KeyframeEffect::setPseudoElement(String pseudo,
+                                      ExceptionState& exception_state) {
+  if (ValidateAndCanonicalizePseudo(pseudo)) {
+    target_pseudo_ = pseudo;
+  } else {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kSyntaxError,
+        "A valid pseudo-selector must start with ::.");
+  }
+
+  RefreshTarget();
+}
+
+void KeyframeEffect::RefreshTarget() {
+  Element* new_target;
+  if (!target_element_) {
+    new_target = nullptr;
+  } else if (target_pseudo_.IsEmpty()) {
+    new_target = target_element_;
+  } else {
+    PseudoId pseudoId = CSSSelector::ParsePseudoId(target_pseudo_);
+    new_target = target_element_->GetPseudoElement(pseudoId);
+  }
+
+  if (new_target != effect_target_) {
+    DetachTarget(GetAnimation());
+    effect_target_ = new_target;
+    AttachTarget(GetAnimation());
+    InvalidateAndNotifyOwner();
+  }
 }
 
 String KeyframeEffect::composite() const {
@@ -320,6 +412,7 @@ bool KeyframeEffect::HasPlayingAnimation() const {
 
 void KeyframeEffect::Trace(blink::Visitor* visitor) {
   visitor->Trace(effect_target_);
+  visitor->Trace(target_element_);
   visitor->Trace(model_);
   visitor->Trace(sampled_effect_);
   AnimationEffect::Trace(visitor);

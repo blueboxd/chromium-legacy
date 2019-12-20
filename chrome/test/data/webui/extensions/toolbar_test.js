@@ -10,7 +10,7 @@ import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min
 import {eventToPromise} from '../test_util.m.js';
 
 import {TestService} from './test_service.js';
-import {testVisible} from './test_util.js';
+import {createExtensionInfo, testVisible} from './test_util.js';
 
 /** @fileoverview Suite of tests for extension-toolbar. */
 window.extension_toolbar_tests = {};
@@ -20,7 +20,8 @@ extension_toolbar_tests.TestNames = {
   Layout: 'layout',
   ClickHandlers: 'click handlers',
   DevModeToggle: 'dev mode toggle',
-  KioskMode: 'kiosk mode button'
+  KioskMode: 'kiosk mode button',
+  FailedUpdateFiresLoadError: 'failed local extension update files load error'
 };
 
 suite(extension_toolbar_tests.suiteName, function() {
@@ -135,6 +136,54 @@ suite(extension_toolbar_tests.suiteName, function() {
           }
         });
   });
+
+  /** Tests that the update button properly fires the load-error event. */
+  test(
+      assert(extension_toolbar_tests.TestNames.FailedUpdateFiresLoadError),
+      function() {
+        let item = document.createElement('extensions-item');
+        item.data = createExtensionInfo();
+        item.delegate = mockDelegate;
+        document.body.appendChild(item);
+        item.set('inDevMode', true);
+        item.set('data.location', chrome.developerPrivate.Location.UNPACKED);
+
+        toolbar.set('inDevMode', true);
+        flush();
+
+        const proxyDelegate = new TestService();
+        toolbar.delegate = proxyDelegate;
+
+        let firedLoadError = false;
+        toolbar.addEventListener('load-error', () => {
+          firedLoadError = true;
+        }, {once: true});
+
+        const verifyLoadErrorFired = function(expectCalled) {
+          return new Promise((resolve, reject) => {
+            setTimeout(() => {
+              expectEquals(expectCalled, firedLoadError);
+              resolve();
+            });
+          });
+        };
+
+        toolbar.$.devMode.click();
+        toolbar.$.updateNow.click();
+        return proxyDelegate.whenCalled('updateAllExtensions')
+            .then(function() {
+              return verifyLoadErrorFired(false);
+            })
+            .then(function() {
+              proxyDelegate.resetResolver('updateAllExtensions');
+              proxyDelegate.setForceReloadItemError(true);
+              toolbar.$.updateNow.click();
+              return proxyDelegate.whenCalled('updateAllExtensions');
+            })
+            .then(function() {
+              return verifyLoadErrorFired(true);
+            });
+      });
 
   if (isChromeOS) {
     test(assert(extension_toolbar_tests.TestNames.KioskMode), function() {

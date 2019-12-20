@@ -220,12 +220,9 @@ bool ComputedStyle::NeedsReattachLayoutTree(const ComputedStyle* old_style,
   // line-clamping is currently only handled by LayoutDeprecatedFlexibleBox,
   // so that if line-clamping changes then the LayoutObject needs to be
   // recreated.
-  if (RuntimeEnabledFeatures::WebkitBoxLayoutUsesFlexLayoutEnabled() &&
-      (new_style->IsDeprecatedWebkitBox()) &&
-      (old_style->HasLineClamp() != new_style->HasLineClamp() &&
-       new_style->BoxOrient() == EBoxOrient::kVertical)) {
+  if (old_style->IsDeprecatedFlexboxUsingFlexLayout() !=
+      new_style->IsDeprecatedFlexboxUsingFlexLayout())
     return true;
-  }
   // We need to perform a reattach if a "display: layout(foo)" has changed to a
   // "display: layout(bar)". This is because one custom layout could be
   // registered and the other may not, affecting the box-tree construction.
@@ -1020,6 +1017,7 @@ static bool HasPropertyThatCreatesStackingContext(
       case CSSPropertyID::kPosition:
       case CSSPropertyID::kMixBlendMode:
       case CSSPropertyID::kIsolation:
+      case CSSPropertyID::kContain:
         return true;
       default:
         break;

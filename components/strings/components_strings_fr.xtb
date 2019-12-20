@@ -326,6 +326,7 @@
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Exécuter les diagnostics du réseau<ph name="END_LINK" /></translation>
 <translation id="2473195200299095979">Traduire cette page</translation>
 <translation id="2479410451996844060">URL de recherche incorrecte</translation>
+<translation id="2482370039860827034">Vous venez de saisir votre mot de passe sur un site trompeur. Nous vous recommandons d'accéder à <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> ainsi qu'à d'autres sites sur lesquels vous utilisez ce mot de passe pour le modifier immédiatement.</translation>
 <translation id="2482878487686419369">Notifications</translation>
 <translation id="248348093745724435">Règles associées à la machine</translation>
 <translation id="2491120439723279231">Le certificat du serveur contient des erreurs.</translation>
@@ -338,6 +339,7 @@
 <translation id="2505268675989099013">Protéger le compte</translation>
 <translation id="2515629240566999685">Vérifiez le signal dans votre zone.</translation>
 <translation id="2521385132275182522">Agrafe en bas à droite</translation>
+<translation id="2521483867890026383">Vous venez de saisir votre mot de passe sur un site trompeur. Nous vous recommandons d'accéder à <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> ainsi qu'à d'autres sites sur lesquels vous utilisez ce mot de passe pour le modifier immédiatement.</translation>
 <translation id="2523886232349826891">Enregistrée sur cet appareil uniquement</translation>
 <translation id="2524461107774643265">Ajouter des informations</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{et 1 autre}one{et # autre}other{et # autres}}</translation>
@@ -592,6 +594,7 @@
 <translation id="3828924085048779000">La phrase secrète est obligatoire.</translation>
 <translation id="3831915413245941253">L'administrateur du domaine <ph name="ENROLLMENT_DOMAIN" /> a installé des extensions permettant d'utiliser des fonctions supplémentaires. Ces extensions ont accès à certaines de vos données.</translation>
 <translation id="3832522519263485449">Multiple perforation à gauche</translation>
+<translation id="3838154488026099170">Vous venez de saisir votre mot de passe sur un site trompeur. Nous vous recommandons d'accéder à <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> ainsi qu'à d'autres sites sur lesquels vous utilisez ce mot de passe pour le modifier immédiatement.</translation>
 <translation id="385051799172605136">Retour</translation>
 <translation id="3858027520442213535">Mettre à jour la date et l'heure</translation>
 <translation id="3884278016824448484">Identifiant de l'appareil en conflit.</translation>
@@ -629,6 +632,7 @@
 <translation id="4072486802667267160">Une erreur s'est produite lors du traitement de votre commande. Veuillez réessayer.</translation>
 <translation id="4075732493274867456">Le client et le serveur ne sont pas compatibles avec une version de protocole ou une méthode de chiffrement SSL commune.</translation>
 <translation id="4075941231477579656">Touch ID</translation>
+<translation id="4077092919748553596">Vous venez de saisir votre mot de passe sur un site trompeur. Nous vous recommandons d'accéder à <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> ainsi qu'à d'autres sites sur lesquels vous utilisez ce mot de passe pour le modifier immédiatement.</translation>
 <translation id="4079302484614802869">La configuration du proxy est définie pour utiliser une URL de script .pac, et non pas des serveurs proxy déterminés.</translation>
 <translation id="4082393374666368382">Paramètres - Gestion</translation>
 <translation id="4098354747657067197">Le site Web que vous allez ouvrir est trompeur</translation>
@@ -708,6 +712,7 @@
 <translation id="4356973930735388585">Des individus malveillants à l'œuvre sur ce site pourraient tenter d'installer des applications dangereuses sur votre ordinateur afin de récupérer ou de supprimer certaines informations : photos, mots de passe, messages, numéros de carte de paiement, etc.</translation>
 <translation id="4358059973562876591">Les modèles que vous avez spécifiés risquent de ne pas être appliqués en raison d'une erreur liée à la règle DnsOverHttpsMode.</translation>
 <translation id="4358461427845829800">Gérer les modes de paiement…</translation>
+<translation id="4359160567981085931">Vous venez de saisir votre mot de passe sur un site trompeur. Chrome peut vous aider. Pour modifier votre mot de passe et informer Google que votre compte a peut-être été piraté, cliquez sur "Protéger le compte".</translation>
 <translation id="4367563149485757821">Number-12 (enveloppe)</translation>
 <translation id="437058704415269440">Solde du compte</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
@@ -982,6 +987,7 @@
 <translation id="5728056243719941842">C5 (enveloppe)</translation>
 <translation id="5730040223043577876">L'équipe Chrome vous recommande de réinitialiser votre mot de passe si vous l'avez réutilisé sur d'autres sites.</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Enregistrer une carte dans votre compte Google}one{Enregistrer une carte dans votre compte Google}other{Enregistrer des cartes dans votre compte Google}}</translation>
+<translation id="5745980000221562234">{NUM_CARDS,plural, =1{Utiliser un numéro virtuel pour cette carte}one{Sélectionner une carte}other{Sélectionner plusieurs cartes}}</translation>
 <translation id="5763042198335101085">Saisissez une adresse e-mail valide</translation>
 <translation id="5763703224595565476">Votre administrateur a activé la protection de l'utilisateur de Chrome Enterprise dans votre navigateur. La protection de l'utilisateur de Chrome Enterprise a accès à certaines de vos données.</translation>
 <translation id="5765072501007116331">Sélectionnez une adresse pour consulter les modes et conditions de livraison disponibles</translation>
@@ -998,6 +1004,7 @@
 <translation id="5804241973901381774">Autorisations</translation>
 <translation id="5810442152076338065">Votre connexion à <ph name="DOMAIN" /> est chiffrée à l'aide d'une méthode de chiffrement obsolète.</translation>
 <translation id="5813119285467412249">&amp;Rétablir l'ajout</translation>
+<translation id="5824687817967109979">{NUM_CARDS,plural, =1{Cette carte sera débitée lorsque vous effectuerez un paiement, mais son vrai numéro ne sera pas communiqué à ce site. Pour plus de sécurité, un code CVC provisoire sera généré.}one{La carte que vous aurez sélectionnée sera débitée lorsque vous effectuerez un paiement, mais son vrai numéro ne sera pas communiqué à ce site. Pour plus de sécurité, un code CVC provisoire sera généré.}other{Les cartes que vous aurez sélectionnées seront débitées lorsque vous effectuerez des paiements, mais leur vrai numéro ne sera pas communiqué à ce site. Pour plus de sécurité, un code CVC provisoire sera généré.}}</translation>
 <translation id="583281660410589416">Inconnu</translation>
 <translation id="5838278095973806738">Vous ne devriez pas saisir d'informations sensibles sur ce site (par exemple, vos mots de passe ou les informations de votre carte de paiement), car elles risquent d'être dérobées par des pirates informatiques.</translation>
 <translation id="5851548754964597211">Liste d'onglets</translation>
@@ -1455,6 +1462,7 @@ Informations supplémentaires :
 <translation id="8042918947222776840">Sélectionner un mode d'enlèvement</translation>
 <translation id="8057711352706143257">Le logiciel "<ph name="SOFTWARE_NAME" />" n'est pas configuré correctement. En général, la désinstallation de "<ph name="SOFTWARE_NAME" />" permet de remédier à la situation. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8066955247577885446">Désolé, un problème est survenu.</translation>
+<translation id="8067872629359326442">Vous venez de saisir votre mot de passe sur un site trompeur. Chromium peut vous aider. Pour modifier votre mot de passe et informer Google que votre compte a peut-être été piraté, cliquez sur "Protéger le compte".</translation>
 <translation id="8074253406171541171">10x13 (enveloppe)</translation>
 <translation id="8078141288243656252">Impossible d'ajouter des annotations si le document a pivoté</translation>
 <translation id="8079031581361219619">Actualiser le site Web ?</translation>
@@ -1471,6 +1479,7 @@ Informations supplémentaires :
 <translation id="8105368624971345109">Désactiver</translation>
 <translation id="8118489163946903409">Mode de paiement</translation>
 <translation id="8127301229239896662">Le logiciel "<ph name="SOFTWARE_NAME" />" n'a pas été installé correctement sur votre ordinateur ou sur votre réseau. Demandez à l'administrateur informatique de résoudre le problème.</translation>
+<translation id="8128526133099929547">Vous venez de saisir votre mot de passe sur un site trompeur. Nous vous recommandons d'accéder à <ph name="WEBSITE_1" /> ainsi qu'à d'autres sites sur lesquels vous utilisez ce mot de passe pour le modifier immédiatement.</translation>
 <translation id="8131740175452115882">Confirmer</translation>
 <translation id="8149426793427495338">Votre ordinateur s'est mis en veille.</translation>
 <translation id="8150722005171944719">Le fichier disponible à l'adresse <ph name="URL" /> n'est pas lisible. Il est possible qu'il ait été supprimé ou déplacé, ou que les autorisations associées empêchent d'y accéder.</translation>
@@ -1488,6 +1497,7 @@ Informations supplémentaires :
 <translation id="8218327578424803826">Position attribuée : </translation>
 <translation id="8220146938470311105">C7/C6 (enveloppe)</translation>
 <translation id="8220639454292072926">Rapports d'entreprise</translation>
+<translation id="8221250263817408492">Vous venez de saisir votre mot de passe sur un site trompeur. Nous vous recommandons d'accéder à <ph name="WEBSITE_1" /> ainsi qu'à d'autres sites sur lesquels vous utilisez ce mot de passe pour le modifier immédiatement.</translation>
 <translation id="8225771182978767009">La personne qui a configuré cet ordinateur a choisi de bloquer ce site.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">Ouvrir la page dans un nouvel onglet de navigation privée</translation>

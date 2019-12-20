@@ -24,7 +24,7 @@ android_library("java") {
     "//third_party/android_deps:com_android_support_support_compat_java",
     "//third_party/android_media:android_media_java",
   ]
-  java_files = [
+  sources = [
     "java/src/org/chromium/chrome/browser/media/router/BaseMediaRouteDialogManager.java",
     "java/src/org/chromium/chrome/browser/media/router/CastRequestIdGenerator.java",
     "java/src/org/chromium/chrome/browser/media/router/CastSessionUtil.java",
@@ -81,7 +81,7 @@ generate_jni("jni_headers") {
 android_library("test_java") {
   testonly = true
 
-  java_files = [
+  sources = [
     "javatests/src/org/chromium/chrome/browser/media/router/MediaRouterIntegrationTest.java",
     "javatests/src/org/chromium/chrome/browser/media/router/MockMediaRouteProvider.java",
   ]
@@ -102,7 +102,7 @@ android_library("test_java") {
 }
 
 junit_binary("media_router_junit_tests") {
-  java_files = [
+  sources = [
     "junit/src/org/chromium/chrome/browser/media/router/ChromeMediaRouterRouteTest.java",
     "junit/src/org/chromium/chrome/browser/media/router/ChromeMediaRouterSinkObservationTest.java",
     "junit/src/org/chromium/chrome/browser/media/router/ChromeMediaRouterTestBase.java",

@@ -47,9 +47,10 @@ bool operator<(const std::unique_ptr<SharedImageBacking>& lhs,
   return lhs->mailbox() < rhs;
 }
 
-class SharedImageManager::AutoLock {
+class SCOPED_LOCKABLE SharedImageManager::AutoLock {
  public:
   explicit AutoLock(SharedImageManager* manager)
+      EXCLUSIVE_LOCK_FUNCTION(manager->lock_)
       : start_time_(base::TimeTicks::Now()),
         auto_lock_(manager->is_thread_safe() ? &manager->lock_.value()
                                              : nullptr) {
@@ -62,7 +63,7 @@ class SharedImageManager::AutoLock {
     }
   }
 
-  ~AutoLock() = default;
+  ~AutoLock() UNLOCK_FUNCTION() = default;
 
  private:
   base::TimeTicks start_time_;

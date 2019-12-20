@@ -180,6 +180,9 @@ class Surface final : public ui::PropertyHandler {
   void SetEmbeddedSurfaceId(
       base::RepeatingCallback<viz::SurfaceId()> surface_id_callback);
 
+  // Set the size of the embedded surface, to allow proper scaling.
+  void SetEmbeddedSurfaceSize(const gfx::Size& size);
+
   // Request that the attached surface buffer at the next commit is associated
   // with a gpu fence to be signaled when the buffer is ready for use.
   void SetAcquireFence(std::unique_ptr<gfx::GpuFence> gpu_fence);
@@ -457,6 +460,10 @@ class Surface final : public ui::PropertyHandler {
   viz::SurfaceId first_embedded_surface_id_;
   viz::SurfaceId latest_embedded_surface_id_;
   base::RepeatingCallback<viz::SurfaceId()> get_current_surface_id_;
+
+  // The embedded surface is actually |embedded_surface_size_|. This is used
+  // for calculating clipping and scaling.
+  gfx::SizeF embedded_surface_size_;
 
   DISALLOW_COPY_AND_ASSIGN(Surface);
 };

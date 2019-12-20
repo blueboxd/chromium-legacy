@@ -17,6 +17,8 @@
 #include "third_party/blink/renderer/core/css/invalidation/invalidation_set.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/events/keyboard_event.h"
+#include "third_party/blink/renderer/core/events/wheel_event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
@@ -74,6 +76,20 @@ std::unique_ptr<TracedValue> GetNavigationTracingData(Document* document) {
                   IdentifiersFactory::LoaderId(document->Loader()));
   return data;
 }
+
+int GetModifierFromEvent(const UIEventWithKeyState& event) {
+  int modifier = 0;
+  if (event.altKey())
+    modifier |= 1;
+  if (event.ctrlKey())
+    modifier |= 2;
+  if (event.metaKey())
+    modifier |= 4;
+  if (event.shiftKey())
+    modifier |= 8;
+  return modifier;
+}
+
 }  //  namespace
 
 String ToHexString(const void* p) {
@@ -1284,6 +1300,37 @@ std::unique_ptr<TracedValue> inspector_event_dispatch_event::Data(
     const Event& event) {
   auto value = std::make_unique<TracedValue>();
   value->SetString("type", event.type());
+  bool record_input_enabled;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(
+      TRACE_DISABLED_BY_DEFAULT("devtools.timeline.inputs"),
+      &record_input_enabled);
+  if (record_input_enabled) {
+    if (event.IsKeyboardEvent()) {
+      const KeyboardEvent& keyboard_event = ToKeyboardEvent(event);
+      value->SetInteger("modifier", GetModifierFromEvent(keyboard_event));
+      value->SetDouble(
+          "timestamp",
+          keyboard_event.PlatformTimeStamp().since_origin().InMicroseconds());
+      value->SetString("code", keyboard_event.code());
+      value->SetString("key", keyboard_event.key());
+    }
+    if (event.IsMouseEvent() || event.IsWheelEvent()) {
+      const MouseEvent& mouse_event = ToMouseEvent(event);
+      value->SetDouble("x", mouse_event.x());
+      value->SetDouble("y", mouse_event.y());
+      value->SetInteger("modifier", GetModifierFromEvent(mouse_event));
+      value->SetDouble(
+          "timestamp",
+          mouse_event.PlatformTimeStamp().since_origin().InMicroseconds());
+      value->SetInteger("button", mouse_event.button());
+      value->SetInteger("buttons", mouse_event.buttons());
+      value->SetInteger("clickCount", mouse_event.detail());
+      if (event.IsWheelEvent()) {
+        value->SetDouble("deltaX", ToWheelEvent(mouse_event).deltaX());
+        value->SetDouble("deltaY", ToWheelEvent(mouse_event).deltaY());
+      }
+    }
+  }
   SetCallStack(value.get());
   return value;
 }

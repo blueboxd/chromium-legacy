@@ -46,7 +46,7 @@ class SyncSchedulerImpl : public SyncScheduler {
   ~SyncSchedulerImpl() override;
 
   void Start(Mode mode, base::Time last_poll_time) override;
-  void ScheduleConfiguration(const ConfigurationParams& params) override;
+  void ScheduleConfiguration(ConfigurationParams params) override;
   void Stop() override;
   void ScheduleLocalNudge(ModelTypeSet types,
                           const base::Location& nudge_location) override;

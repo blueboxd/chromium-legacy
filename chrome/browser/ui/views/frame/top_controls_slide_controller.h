@@ -53,6 +53,10 @@ class TopControlsSlideController {
   // Returns true while gesture scrolls are in progress.
   virtual bool IsTopControlsGestureScrollInProgress() const = 0;
 
+  // Returns true while the top controls are sliding up or down, and hasn't
+  // reached a final steady state.
+  virtual bool IsTopControlsSlidingInProgress() const = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TopControlsSlideController);
 };

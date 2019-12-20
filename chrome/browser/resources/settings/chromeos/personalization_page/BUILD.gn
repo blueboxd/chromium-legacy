@@ -12,8 +12,15 @@ js_type_check("closure_compile") {
 
 js_library("personalization_page") {
   deps = [
-    "../../appearance_page:wallpaper_browser_proxy",
+    ":wallpaper_browser_proxy",
     "../../settings_page:settings_animated_pages",
     "//ui/webui/resources/js:cr",
   ]
+}
+
+js_library("wallpaper_browser_proxy") {
+  deps = [
+    "//ui/webui/resources/js:cr",
+  ]
+  externs_list = [ "$externs_path/chrome_send.js" ]
 }

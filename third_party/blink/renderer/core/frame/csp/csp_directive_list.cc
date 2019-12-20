@@ -741,6 +741,10 @@ bool CSPDirectiveList::AllowInline(
   return !directive || directive->AllowAllInline();
 }
 
+bool CSPDirectiveList::ShouldCheckEval() const {
+  return script_src_ && !script_src_->AllowEval();
+}
+
 bool CSPDirectiveList::AllowEval(
     SecurityViolationReportingPolicy reporting_policy,
     ContentSecurityPolicy::ExceptionStatus exception_status,

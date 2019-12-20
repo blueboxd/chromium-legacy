@@ -5,7 +5,7 @@
 #include "ui/content_accelerators/accelerator_util.h"
 
 #include "build/build_config.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"

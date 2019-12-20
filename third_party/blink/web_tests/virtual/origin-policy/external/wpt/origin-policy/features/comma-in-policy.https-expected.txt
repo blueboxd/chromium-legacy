@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Commas in "features/policy" cause parse errors and thus no feature policy assert_equals: camera expected false but got true
+Harness: the test ran to completion.
+

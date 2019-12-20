@@ -30,7 +30,7 @@
 #include "third_party/blink/renderer/core/editing/selection_controller.h"
 
 #include "base/auto_reset.h"
-#include "third_party/blink/public/platform/web_menu_source_type.h"
+#include "third_party/blink/public/common/input/web_menu_source_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"

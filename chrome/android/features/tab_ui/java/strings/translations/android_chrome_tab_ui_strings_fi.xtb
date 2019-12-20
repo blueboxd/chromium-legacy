@@ -29,6 +29,7 @@
 <translation id="7792771145871471484">Tarkista ehdotukset.</translation>
 <translation id="7885132941432959125">Siirrä välilehti oikealle</translation>
 <translation id="7966321538264951561">Ohita ehdotukset.</translation>
+<translation id="8205266828577616993">Siirrä välilehti ylöspäin</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Sulje <ph name="TABS_COUNT_ONE" /> valittu välilehti}other{Sulje <ph name="TABS_COUNT_MANY" /> valittua välilehteä}}</translation>
 <translation id="9150694013019234766">Vaihda välilehteä välilehtiryhmässä näytön alalaidassa</translation>
 <translation id="9169594135889675189">Luo ryhmään uusi välilehti</translation>

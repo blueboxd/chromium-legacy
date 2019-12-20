@@ -37,6 +37,7 @@
 <translation id="1231733316453485619">Włączyć synchronizację?</translation>
 <translation id="123724288017357924">Ponowie załaduj stronę, bez pamięci podręcznej</translation>
 <translation id="124116460088058876">Więcej języków</translation>
+<translation id="1242008676835033345">Umieszczono na <ph name="WEBSITE_URL" /></translation>
 <translation id="124678866338384709">Zamknij bieżącą kartę</translation>
 <translation id="1258753120186372309">Doodle Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Szukaj i przeglądaj</translation>
@@ -95,6 +96,7 @@
 <translation id="1672586136351118594">Nie pokazuj ponownie</translation>
 <translation id="1692118695553449118">Synchronizacja jest włączona</translation>
 <translation id="169515064810179024">Blokuj stronom dostęp do czujników ruchu</translation>
+<translation id="1711267867945983636">Aby kontynuować, włącz na telefonie NFC</translation>
 <translation id="1717218214683051432">Czujniki ruchu</translation>
 <translation id="1718835860248848330">Ostatnia godzina</translation>
 <translation id="1736419249208073774">Odkrywaj</translation>
@@ -151,6 +153,7 @@
 <translation id="2082238445998314030">Wynik <ph name="RESULT_NUMBER" /> z <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Dźwięk</translation>
 <translation id="2096012225669085171">Synchronizacja i personalizacja na urządzeniach</translation>
+<translation id="2099625543891475722">Twoje cechy fizyczne, np. wzrost;</translation>
 <translation id="2100273922101894616">Automatyczne logowanie</translation>
 <translation id="2100314319871056947">Spróbuj udostępnić mniejsze fragmenty tekstu</translation>
 <translation id="2107397443965016585">Pytaj, zanim pozwolisz stronom na odtwarzanie treści chronionej (zalecane)</translation>
@@ -427,6 +430,7 @@ Jeśli chcesz dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je
 <translation id="4226663524361240545">Powiadomienia będą sygnalizowane wibracjami</translation>
 <translation id="423219824432660969">Zaszyfruj synchronizowane dane hasłem Google z <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Otwórz ustawienia</translation>
+<translation id="4250229828105606438">Zrzut ekranu</translation>
 <translation id="4256782883801055595">Licencje open source</translation>
 <translation id="4259722352634471385">Adres zablokowany: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopiuj adres linku</translation>
@@ -480,6 +484,7 @@ Na stronie <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> n
 <translation id="4634124774493850572">Użyj hasła</translation>
 <translation id="4645575059429386691">Zarządzany przez Twojego rodzica</translation>
 <translation id="4650364565596261010">Ustawienie domyślne</translation>
+<translation id="4660838440047236328">układ Twojego pokoju.</translation>
 <translation id="4663756553811254707">Usunięte zakładki: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822">Strona <ph name="NAME" /> została dodana do ekranu głównego</translation>
 <translation id="4684427112815847243">Synchronizuj wszystko</translation>
@@ -604,6 +609,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5487521232677179737">Wyczyść dane</translation>
 <translation id="5494752089476963479">Blokuj reklamy na stronach, które wyświetlają reklamy uciążliwe lub wprowadzające w błąd</translation>
 <translation id="5500777121964041360">Funkcja może być niedostępna w Twojej lokalizacji</translation>
+<translation id="5505264765875738116">Strony nie mogą prosić o zgodę na wysyłanie powiadomień</translation>
 <translation id="5512137114520586844">Tym kontem zarządza <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Wyłączone przez administratora tego urządzenia</translation>
 <translation id="5515439363601853141">Odblokuj, by wyświetlić hasło</translation>
@@ -701,6 +707,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="6192792657125177640">Wyjątki</translation>
 <translation id="6194112207524046168">Aby zezwolić Chrome na dostęp do aparatu, musisz też włączyć aparat w <ph name="BEGIN_LINK" />Ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Blokuj pliki cookie innych firm</translation>
+<translation id="6201345951596836663">Link skopiowany</translation>
 <translation id="6206551242102657620">Połączenie jest bezpieczne. Informacje o witrynie</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> to nie Ty?</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> – opcje</translation>
@@ -710,6 +717,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy bez związku ze stronami odwiedzonymi przez Ciebie wcześniej. Wiele stron będzie nadal gromadzić dane przeglądania i używać ich na przykład do poprawy bezpieczeństwa, pokazywania treści, reklam i rekomendacji oraz do generowania statystyk.</translation>
 <translation id="624789221780392884">Aktualizacja jest gotowa</translation>
 <translation id="6255999984061454636">Polecane treści</translation>
+<translation id="6270391203985052864">Strony mogą prosić o zgodę na wysyłanie powiadomień</translation>
 <translation id="6277522088822131679">Podczas drukowania strony wystąpił problem. Spróbuj ponownie.</translation>
 <translation id="6295158916970320988">Wszystkie witryny</translation>
 <translation id="629730747756840877">Konto</translation>
@@ -754,6 +762,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6545864417968258051">Skanowanie Bluetooth</translation>
 <translation id="6560414384669816528">Szukaj w Sogou</translation>
 <translation id="656065428026159829">Pokaż więcej</translation>
+<translation id="6561560012278703671">Pokazuj wiadomości dyskretnie (blokuje powiadomienia, by Ci nie przeszkadzały)</translation>
 <translation id="6566259936974865419">Chrome pozwolił Ci zaoszczędzić <ph name="GIGABYTES" /> GB</translation>
 <translation id="6573096386450695060">Zawsze zezwalaj</translation>
 <translation id="6573431926118603307">Tutaj wyświetlą się karty otwarte w Chrome na innych urządzeniach.</translation>
@@ -851,6 +860,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="729975465115245577">Na urządzeniu nie ma aplikacji umożliwiającej zapisanie pliku z hasłami.</translation>
 <translation id="7302081693174882195">Szczegóły: posortowane według zaoszczędzonych danych</translation>
 <translation id="7302486331832100261">Zazwyczaj blokujesz powiadomienia. Aby na nie zezwolić, kliknij Szczegóły.</translation>
+<translation id="7311441321349344333">Funkcja NFC na tym urządzeniu jest wyłączona. Włącz ją w <ph name="BEGIN_LINK" />Ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="7328017930301109123">Chrome szybciej ładuje strony w wersji uproszczonej, przesyłając nawet o 60 procent mniej danych.</translation>
 <translation id="7333031090786104871">Nadal dodaję poprzednią stronę</translation>
 <translation id="7352939065658542140">FILM</translation>

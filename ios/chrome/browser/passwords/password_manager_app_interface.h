@@ -9,9 +9,6 @@
 
 @interface PasswordManagerAppInterface : NSObject
 
-// Sets preferences required for autosign-in to true.
-+ (void)setAutosigninPreferences;
-
 // Stores a credential to the password store.
 + (NSError*)storeCredentialWithUsername:(NSString*)username
                                password:(NSString*)password;

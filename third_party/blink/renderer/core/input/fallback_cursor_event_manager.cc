@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/input/fallback_cursor_event_manager.h"
 
-#include "third_party/blink/public/platform/web_mouse_event.h"
+#include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"

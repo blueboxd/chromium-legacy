@@ -12,6 +12,8 @@ component("metal_util") {
   sources = [
     "device.h",
     "device.mm",
+    "device_removal.h",
+    "device_removal.mm",
     "metal_util_export.h",
     "test_shader.h",
     "test_shader.mm",

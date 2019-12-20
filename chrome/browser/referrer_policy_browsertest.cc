@@ -35,8 +35,8 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
-#include "third_party/blink/public/platform/web_input_event.h"
-#include "third_party/blink/public/platform/web_mouse_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 

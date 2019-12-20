@@ -161,9 +161,11 @@ class MODULES_EXPORT UserMediaProcessor
   bool IsCurrentRequestInfo(
       const blink::WebUserMediaRequest& web_request) const;
   void DelayedGetUserMediaRequestSucceeded(
+      int request_id,
       const blink::WebMediaStream& stream,
       blink::WebUserMediaRequest web_request);
   void DelayedGetUserMediaRequestFailed(
+      int request_id,
       blink::WebUserMediaRequest web_request,
       blink::mojom::blink::MediaStreamRequestResult result,
       const String& constraint_name);

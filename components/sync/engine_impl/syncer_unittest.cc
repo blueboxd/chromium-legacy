@@ -2371,7 +2371,7 @@ TEST_F(EntryCreatedInNewFolderTest, EntryCreatedInNewFolderMidSync) {
     entry.PutSpecifics(DefaultBookmarkSpecifics());
   }
 
-  mock_server_->SetMidCommitCallback(base::Bind(
+  mock_server_->SetMidCommitCallback(base::BindOnce(
       &EntryCreatedInNewFolderTest::CreateFolderInBob, base::Unretained(this)));
   EXPECT_TRUE(SyncShareNudge());
 
@@ -5106,7 +5106,7 @@ TEST_F(SyncerBookmarksTest, CreateThenDeleteDuringCommit) {
 
   // In the middle of the initial creation commit, perform a deletion.
   mock_server_->SetMidCommitCallback(
-      base::Bind(&SyncerBookmarksTest::Delete, base::Unretained(this)));
+      base::BindOnce(&SyncerBookmarksTest::Delete, base::Unretained(this)));
 
   // Commits creation.
   EXPECT_TRUE(SyncShareNudge());
@@ -5124,7 +5124,7 @@ TEST_F(SyncerBookmarksTest, CreateThenUpdateAndDeleteDuringCommit) {
   // In the middle of the initial creation commit, perform an updated followed
   // by a deletion. This should trigger performing two consecutive commit
   // cycles, resulting in the bookmark being both deleted and synced.
-  mock_server_->SetMidCommitCallback(base::Bind(
+  mock_server_->SetMidCommitCallback(base::BindOnce(
       &SyncerBookmarksTest::UpdateAndDelete, base::Unretained(this)));
 
   // Commits creation.
@@ -5307,7 +5307,7 @@ TEST_F(SyncerUndeletionTest, UndeleteDuringCommit) {
   Delete();
   ExpectUnsyncedDeletion();
   mock_server_->SetMidCommitCallback(
-      base::Bind(&SyncerUndeletionTest::Undelete, base::Unretained(this)));
+      base::BindOnce(&SyncerUndeletionTest::Undelete, base::Unretained(this)));
 
   // Commits deletion.
   EXPECT_TRUE(SyncShareNudge());

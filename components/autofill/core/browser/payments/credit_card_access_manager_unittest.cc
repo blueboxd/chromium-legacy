@@ -80,6 +80,7 @@ namespace {
 
 const char kTestGUID[] = "00000000-0000-0000-0000-000000000001";
 const char kTestNumber[] = "4234567890123456";  // Visa
+const char kTestCvc[] = "123";
 
 #if !defined(OS_IOS)
 // Base64 encoding of "This is a test challenge".
@@ -110,10 +111,12 @@ class TestAccessor : public CreditCardAccessManager::Accessor {
     if (did_succeed_) {
       DCHECK(card);
       number_ = card->number();
+      cvc_ = cvc;
     }
   }
 
   base::string16 number() { return number_; }
+  base::string16 cvc() { return cvc_; }
 
   bool did_succeed() { return did_succeed_; }
 
@@ -122,6 +125,8 @@ class TestAccessor : public CreditCardAccessManager::Accessor {
   bool did_succeed_ = false;
   // The card number returned from OnCreditCardFetched().
   base::string16 number_;
+  // The returned CVC, if any.
+  base::string16 cvc_;
   base::WeakPtrFactory<TestAccessor> weak_ptr_factory_{this};
 };
 
@@ -238,7 +243,7 @@ class CreditCardAccessManagerTest : public testing::Test {
 
     // Mock user response.
     payments::FullCardRequest::UserProvidedUnmaskDetails details;
-    details.cvc = base::ASCIIToUTF16("123");
+    details.cvc = base::ASCIIToUTF16(kTestCvc);
     full_card_request->OnUnmaskPromptAccepted(details);
 
     payments::PaymentsClient::UnmaskResponseDetails response;
@@ -301,7 +306,8 @@ class CreditCardAccessManagerTest : public testing::Test {
 
   // Returns true if full card request was sent from FIDO auth.
   bool GetRealPanForFIDOAuth(AutofillClient::PaymentsRpcResult result,
-                             const std::string& real_pan) {
+                             const std::string& real_pan,
+                             const std::string& dcvv = std::string()) {
     payments::FullCardRequest* full_card_request =
         GetFIDOAuthenticator()->full_card_request_.get();
 
@@ -309,8 +315,8 @@ class CreditCardAccessManagerTest : public testing::Test {
       return false;
 
     payments::PaymentsClient::UnmaskResponseDetails response;
-    full_card_request->OnDidGetRealPan(result,
-                                       response.with_real_pan(real_pan));
+    full_card_request->OnDidGetRealPan(
+        result, response.with_real_pan(real_pan).with_dcvv(dcvv));
     return true;
   }
 
@@ -471,6 +477,7 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardCVCSuccess) {
   EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber));
   EXPECT_TRUE(accessor_->did_succeed());
   EXPECT_EQ(ASCIIToUTF16(kTestNumber), accessor_->number());
+  EXPECT_EQ(ASCIIToUTF16(kTestCvc), accessor_->cvc());
 }
 
 // Ensures that FetchCreditCard() returns a failure upon a negative response
@@ -519,6 +526,7 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardCVCTryAgainFailure) {
   EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber));
   EXPECT_TRUE(accessor_->did_succeed());
   EXPECT_EQ(ASCIIToUTF16(kTestNumber), accessor_->number());
+  EXPECT_EQ(ASCIIToUTF16(kTestCvc), accessor_->cvc());
 }
 
 // Ensures that CardUnmaskPreflightCalled metrics are logged correctly.
@@ -639,6 +647,45 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardFIDOSuccess) {
       "Autofill.BetterAuth.CardUnmaskDuration.Fido.Success", 1);
 }
 
+// Ensures that FetchCreditCard() returns the full PAN upon a successful
+// WebAuthn verification and response from payments.
+TEST_F(CreditCardAccessManagerTest, FetchServerCardFIDOSuccessWithDcvv) {
+  // Enable both features and opt user in for FIDO auth.
+  scoped_feature_list_.Reset();
+  scoped_feature_list_.InitWithFeatures(
+      {features::kAutofillCreditCardAuthentication,
+       features::kAutofillAlwaysReturnCloudTokenizedCard},
+      {});
+  ::autofill::prefs::SetCreditCardFIDOAuthEnabled(autofill_client_.GetPrefs(),
+                                                  true);
+
+  // General setup.
+  CreateServerCard(kTestGUID, kTestNumber);
+  CreditCard* card = credit_card_access_manager_->GetCreditCard(kTestGUID);
+  GetFIDOAuthenticator()->SetUserVerifiable(true);
+  payments_client_->AddFidoEligibleCard(card->server_id(), kCredentialId,
+                                        kGooglePaymentsRpid);
+
+  credit_card_access_manager_->PrepareToFetchCreditCard();
+  WaitForCallbacks();
+
+  credit_card_access_manager_->FetchCreditCard(card, accessor_->GetWeakPtr());
+  WaitForCallbacks();
+
+  // FIDO Success.
+  TestCreditCardFIDOAuthenticator::GetAssertion(GetFIDOAuthenticator(),
+                                                /*did_succeed=*/true);
+
+  // Mock Payments response that includes DCVV along with Full PAN.
+  EXPECT_TRUE(
+      GetRealPanForFIDOAuth(AutofillClient::SUCCESS, kTestNumber, kTestCvc));
+
+  // Expect accessor to successfully retrieve the DCVV.
+  EXPECT_TRUE(accessor_->did_succeed());
+  EXPECT_EQ(ASCIIToUTF16(kTestNumber), accessor_->number());
+  EXPECT_EQ(ASCIIToUTF16(kTestCvc), accessor_->cvc());
+}
+
 // Ensures that CVC prompt is invoked after WebAuthn fails.
 TEST_F(CreditCardAccessManagerTest,
        FetchServerCardFIDOVerificationFailureCVCFallback) {
@@ -673,6 +720,7 @@ TEST_F(CreditCardAccessManagerTest,
   EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber));
   EXPECT_TRUE(accessor_->did_succeed());
   EXPECT_EQ(ASCIIToUTF16(kTestNumber), accessor_->number());
+  EXPECT_EQ(ASCIIToUTF16(kTestCvc), accessor_->cvc());
 
   histogram_tester.ExpectUniqueSample(
       histogram_name, AutofillMetrics::WebauthnResultMetric::kNotAllowedError,
@@ -715,6 +763,7 @@ TEST_F(CreditCardAccessManagerTest,
   EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber));
   EXPECT_TRUE(accessor_->did_succeed());
   EXPECT_EQ(ASCIIToUTF16(kTestNumber), accessor_->number());
+  EXPECT_EQ(ASCIIToUTF16(kTestCvc), accessor_->cvc());
 
   histogram_tester.ExpectUniqueSample(
       histogram_name, AutofillMetrics::WebauthnResultMetric::kSuccess, 1);
@@ -750,6 +799,7 @@ TEST_F(CreditCardAccessManagerTest,
   EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber));
   EXPECT_TRUE(accessor_->did_succeed());
   EXPECT_EQ(ASCIIToUTF16(kTestNumber), accessor_->number());
+  EXPECT_EQ(ASCIIToUTF16(kTestCvc), accessor_->cvc());
 }
 
 // Ensures that CVC prompt is invoked when the pre-flight call to Google
@@ -767,6 +817,7 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardFIDOTimeoutCVCFallback) {
   EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber));
   EXPECT_TRUE(accessor_->did_succeed());
   EXPECT_EQ(ASCIIToUTF16(kTestNumber), accessor_->number());
+  EXPECT_EQ(ASCIIToUTF16(kTestCvc), accessor_->cvc());
 }
 
 // Ensures that FetchCreditCard() returns the full PAN upon a successful
@@ -914,6 +965,7 @@ TEST_F(CreditCardAccessManagerTest, FetchExpiredServerCardInvokesCvcPrompt) {
   // Expect CVC prompt to be invoked.
   EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber));
   EXPECT_EQ(ASCIIToUTF16(kTestNumber), accessor_->number());
+  EXPECT_EQ(ASCIIToUTF16(kTestCvc), accessor_->cvc());
 }
 
 #if defined(OS_ANDROID)

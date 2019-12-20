@@ -809,6 +809,12 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
   }
 
   if (maximized) {
+    // When a window is maximized, if the auto-hide shelf is enabled and we are
+    // in clamshell mode, the shelf will keep the default transparent
+    // background.
+    if (!IsTabletModeEnabled() && state_.visibility_state == SHELF_AUTO_HIDE)
+      return ShelfBackgroundType::kDefaultBg;
+
     return ShelfBackgroundType::kMaximized;
   }
 

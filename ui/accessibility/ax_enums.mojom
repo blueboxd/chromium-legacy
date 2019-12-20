@@ -651,6 +651,12 @@ enum IntAttribute {
   // is released on the drop target.
   // Note: aria-dropeffect is deprecated in WAI-ARIA 1.1.
   kDropeffect,
+
+  // The DOMNodeID from Blink. Currently only populated when using
+  // the accessibility tree for PDF exporting. Warning, this is totally
+  // unrelated to the accessibility node ID, or the ID attribute for an
+  // HTML element - it's an ID used to uniquely identify nodes in Blink.
+  kDOMNodeId,
 };
 
 enum FloatAttribute {

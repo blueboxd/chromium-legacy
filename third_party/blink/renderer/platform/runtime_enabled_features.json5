@@ -1830,10 +1830,6 @@
       status: "experimental",
     },
     {
-      name: "WebkitBoxLayoutUsesFlexLayout",
-      status: "stable",
-    },
-    {
       name: "WebNFC",
       status: "experimental",
     },

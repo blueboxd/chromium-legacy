@@ -67,9 +67,9 @@ void OnAllowCertificate(SSLErrorHandler* handler,
       // ContinueRequest() gets posted to a different thread. Calling
       // AllowCert() first ensures deterministic ordering.
       if (record_decision && state_delegate) {
-        state_delegate->AllowCert(handler->request_url().host(),
-                                  *handler->ssl_info().cert.get(),
-                                  handler->cert_error());
+        state_delegate->AllowCert(
+            handler->request_url().host(), *handler->ssl_info().cert.get(),
+            handler->cert_error(), handler->web_contents());
       }
       handler->ContinueRequest();
       return;
@@ -169,16 +169,18 @@ void SSLManager::DidCommitProvisionalLoad(const LoadCommittedDetails& details) {
   int add_content_status_flags = 0;
   int remove_content_status_flags = 0;
 
-  if (!details.is_main_frame) {
-    // If it wasn't a main-frame navigation, then carry over content
-    // status flags. (For example, the mixed content flag shouldn't
-    // clear because of a frame navigation.)
+  if (!details.is_main_frame || details.is_same_document) {
+    // For subframe navigations, and for same-document main-frame navigations,
+    // carry over content status flags from the previously committed entry. For
+    // example, the mixed content flag shouldn't clear because of a subframe
+    // navigation, or because of a back/forward navigation that doesn't leave
+    // the current document. (See https://crbug.com/959571.)
     NavigationEntryImpl* previous_entry =
         controller_->GetEntryAtIndex(details.previous_entry_index);
     if (previous_entry) {
       add_content_status_flags = previous_entry->GetSSL().content_status;
     }
-  } else if (!details.is_same_document) {
+  } else {
     // For main-frame non-same-page navigations, clear content status
     // flags. These flags are set based on the content on the page, and thus
     // should reflect the current content, even if the navigation was to an
@@ -298,7 +300,7 @@ void SSLManager::OnCertError(std::unique_ptr<SSLErrorHandler> handler) {
       ssl_host_state_delegate_
           ? ssl_host_state_delegate_->QueryPolicy(
                 handler->request_url().host(), *handler->ssl_info().cert.get(),
-                handler->cert_error())
+                handler->cert_error(), handler->web_contents())
           : SSLHostStateDelegate::DENIED;
 
   if (judgment == SSLHostStateDelegate::ALLOWED) {
@@ -321,8 +323,8 @@ void SSLManager::DidStartResourceResponse(
 
   // If the scheme is https: or wss and the cert did not have any errors, revoke
   // any previous decisions that have occurred.
-  if (!ssl_host_state_delegate_ ||
-      !ssl_host_state_delegate_->HasAllowException(host)) {
+  if (!ssl_host_state_delegate_ || !ssl_host_state_delegate_->HasAllowException(
+                                       host, controller_->GetWebContents())) {
     return;
   }
 

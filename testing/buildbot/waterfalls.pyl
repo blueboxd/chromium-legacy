@@ -759,7 +759,7 @@
             {
               'kvm': '1',
               'os': 'Ubuntu-16.04',
-              'pool': 'Chrome-CrOS-VM',
+              'pool': 'chromium.tests.cros.vm',
             },
           ],
         },
@@ -1697,7 +1697,7 @@
             {
               'kvm': '1',
               'os': 'Ubuntu-16.04',
-              'pool': 'Chrome-CrOS-VM',
+              'pool': 'chromium.tests.cros.vm',
             },
           ],
           'hard_timeout': 3600,
@@ -2054,7 +2054,7 @@
               'gpu': '1002:6821',
               'hidpi': '1',
               'os': 'Mac-10.13.6',
-              'pool': 'Chrome-GPU',
+              'pool': 'chromium.tests.gpu',
             }
           ],
         },
@@ -2370,6 +2370,22 @@
           'gtest_tests': 'gpu_win_gtests',
           'gpu_telemetry_tests': 'gpu_common_win_and_linux_telemetry_tests',
           'isolated_scripts': 'rendering_desktop_representative_perf_tests_isolated_scripts_experimental',
+        },
+        # We keep this value enabled to provide minimal regression testing.
+        'use_multi_dimension_trigger_script': True,
+      },
+      # TODO(crbug.com/1004523) Delete 'Win10 x64 Release (NVIDIA) Code Coverage'
+      # when 'Win10 x64 Release (NVIDIA)' has code coverage enabled by default.
+      'Win10 x64 Release (NVIDIA) Code Coverage': {
+        'browser_config': 'release_x64',
+        'os_type': 'win',
+        'mixins': [
+          'win10_nvidia_quadro_p400_stable',
+          'code-coverage',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_win_gtests',
+          'gpu_telemetry_tests': 'gpu_common_win_and_linux_telemetry_tests',
         },
         # We keep this value enabled to provide minimal regression testing.
         'use_multi_dimension_trigger_script': True,
@@ -2932,7 +2948,7 @@
               'gpu': '1002:6821',
               'hidpi': '1',
               'os': 'mac-amd-stable',
-              'pool': 'Chrome-GPU',
+              'pool': 'chromium.tests.gpu',
             },
           ],
         },
@@ -3387,7 +3403,7 @@
           {
             'gpu': '10de:1cb3-23.21.14.1195',
             'os': 'Windows-2008ServerR2-SP1',
-            'pool': 'Chrome-GPU',
+            'pool': 'chromium.tests.gpu',
           },
         ],
       },
@@ -3406,7 +3422,7 @@
           {
             'gpu': '10de:1cb3-23.21.14.1195',
             'os': 'Windows-2008ServerR2-SP1',
-            'pool': 'Chrome-GPU',
+            'pool': 'chromium.tests.gpu',
           },
         ],
       }
@@ -3722,7 +3738,7 @@
               'gpu': '1002:6821',
               'hidpi': '1',
               'os': 'Mac-10.13.6',
-              'pool': 'Chrome-GPU',
+              'pool': 'chromium.tests.gpu',
             }
           ],
         },
@@ -4153,6 +4169,19 @@
           'scripts': 'check_network_annotations_script',
         },
       },
+      # TODO(crbug.com/1004523) Delete 'Win x64 Builder Code Coverage' when
+      # coverage is turned on in 'Win x64 Builder' by default.
+      'Win x64 Builder Code Coverage': {
+        'mixins': [
+          'code-coverage',
+        ],
+        'additional_compile_targets': [
+          'pdf_fuzzers'
+        ],
+        'test_suites': {
+          'scripts': 'check_network_annotations_script',
+        },
+      },
       # 'Win10 Tests x64' and 'Win7 Tests (1)' should have the same set of
       # additional_compile_targets and test_suites.
       'Win10 Tests x64': {
@@ -4174,6 +4203,20 @@
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
           'isolated_scripts': 'chromium_win_dbg_isolated_scripts',
+        },
+      },
+      # TODO(crbug.com/1004523) Delete 'Win10 Tests x64 Code Coverage' when
+      # coverage is turned on in 'Win10 Tests x64' by default.
+      'Win10 Tests x64 Code Coverage': {
+        'mixins': [
+          'x86-64',
+          'win10',
+          'code-coverage',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_win_gtests',
+          'isolated_scripts': 'chromium_win_rel_isolated_scripts',
+          'scripts': 'chromium_scripts',
         },
       },
       'Win7 (32) Tests': {

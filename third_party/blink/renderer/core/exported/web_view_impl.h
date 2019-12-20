@@ -35,10 +35,10 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
+#include "third_party/blink/public/common/input/web_gesture_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/blink/public/platform/web_float_size.h"
-#include "third_party/blink/public/platform/web_gesture_event.h"
-#include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -46,7 +46,6 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
-#include "third_party/blink/public/web/web_page_importance_signals.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/blink/public/web/web_widget.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -195,7 +194,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void CancelPagePopup() override;
   WebPagePopupImpl* GetPagePopup() const override { return page_popup_.get(); }
   void SetMainFrameOverlayColor(SkColor) override;
-  WebPageImportanceSignals* PageImportanceSignals() override;
   void AcceptLanguagesChanged() override;
   void SetPageFrozen(bool frozen) override;
   void PutPageIntoBackForwardCache() override;
@@ -692,8 +690,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // The WebWidget for the main frame. This is expected to be unset when the
   // WebWidget destroys itself.
   WebWidget* web_widget_ = nullptr;
-
-  WebPageImportanceSignals page_importance_signals_;
 
   // We defer commits when transitioning to a new page. ChromeClientImpl calls
   // StopDeferringCommits() to release this when a new page is loaded.

@@ -14,8 +14,7 @@ class YouTubeRestrictTest(ChromeEnterpriseTestCase):
 
   See https://cloud.google.com/docs/chrome-enterprise/policies/?policy=ForceYouTubeRestrict"""
 
-  RestrictedText = "This video is restricted. " \
-      + "Try signing in with a Google Apps account."
+  RestrictedText = "This video is restricted. "
 
   @before_all
   def setup(self):

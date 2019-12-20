@@ -3096,20 +3096,21 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
       ExtensionActionManager::Get(incognito_contents->GetBrowserContext())
           ->GetExtensionAction(*dnr_extension);
 
-  // TODO(crbug.com/992251): This should be a "1" after the main-frame
-  // navigation case is fixed.
-  EXPECT_EQ("0", incognito_action->GetDisplayBadgeText(
+  EXPECT_EQ("1", incognito_action->GetDisplayBadgeText(
                      ExtensionTabUtil::GetTabId(incognito_contents)));
 }
 
 // Test that the actions matched badge text for an extension will be reset
 // when a main-frame navigation finishes.
-// TODO(crbug.com/992251): Edit this test to add more main-frame cases.
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
                        ActionsMatchedCountAsBadgeTextMainFrame) {
   auto get_url_for_host = [this](std::string hostname) {
     return embedded_test_server()->GetURL(hostname,
                                           "/pages_with_script/index.html");
+  };
+
+  auto get_set_cookie_url = [this](std::string hostname) {
+    return embedded_test_server()->GetURL(hostname, "/set-cookie?a=b");
   };
 
   struct {
@@ -3119,11 +3120,23 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
     std::string action_type;
     std::vector<std::string> resource_types;
     base::Optional<std::string> redirect_url;
+    base::Optional<std::vector<std::string>> remove_headers_list;
   } rules_data[] = {
       {"abc.com", 1, 1, "block", std::vector<std::string>({"script"}),
-       base::nullopt},
-      {"def.com", 2, 1, "redirect", std::vector<std::string>({"main_frame"}),
-       get_url_for_host("abc.com").spec()},
+       base::nullopt, base::nullopt},
+      {"||def.com", 2, 1, "redirect", std::vector<std::string>({"main_frame"}),
+       get_url_for_host("abc.com").spec(), base::nullopt},
+      {"gotodef.com", 3, 1, "redirect",
+       std::vector<std::string>({"main_frame"}),
+       get_url_for_host("def.com").spec(), base::nullopt},
+      {"ghi.com", 4, 1, "block", std::vector<std::string>({"main_frame"}),
+       base::nullopt, base::nullopt},
+      {"gotosetcookie.com", 5, 1, "redirect",
+       std::vector<std::string>({"main_frame"}),
+       get_set_cookie_url("setcookie.com").spec(), base::nullopt},
+      {"setcookie.com", 6, 1, "removeHeaders",
+       std::vector<std::string>({"main_frame"}), base::nullopt,
+       std::vector<std::string>({"setCookie"})},
   };
 
   // Load the extension.
@@ -3137,6 +3150,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
     rule.action->type = rule_data.action_type;
     rule.action->redirect.emplace();
     rule.action->redirect->url = rule_data.redirect_url;
+    rule.action->remove_headers_list = rule_data.remove_headers_list;
     rules.push_back(rule);
   }
 
@@ -3157,6 +3171,9 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
     std::string frame_hostname;
     std::string expected_badge_text;
   } test_cases[] = {
+      // The request to ghi.com should be blocked, so the badge text should be 1
+      // once navigation finishes.
+      {"ghi.com", "1"},
       // The script on get_url_for_host("abc.com") matches with a rule and
       // should increment the badge text.
       {"abc.com", "1"},
@@ -3164,7 +3181,15 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
       {"nomatch.com", "0"},
       // The request to def.com will redirect to get_url_for_host("abc.com") and
       // the script on abc.com should match with a rule.
-      {"def.com", "1"},
+      {"def.com", "2"},
+      // Same as the above test, except with an additional redirect from
+      // gotodef.com to def.com caused by a rule match. Therefore the badge text
+      // should be 3.
+      {"gotodef.com", "3"},
+      // The request to gotosetcookie.com will match with a rule and redirect to
+      // setcookie.com. The Set-Cookie header on setcookie.com will also match
+      // with a rule and get removed. Therefore the badge text should be 2.
+      {"gotosetcookie.com", "2"},
   };
 
   int first_tab_id = ExtensionTabUtil::GetTabId(web_contents());

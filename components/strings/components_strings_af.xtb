@@ -326,6 +326,7 @@
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Voer tans netwerkdiagnostiek uit<ph name="END_LINK" /></translation>
 <translation id="2473195200299095979">Vertaal hierdie bladsy</translation>
 <translation id="2479410451996844060">Ongeldige soektog-URL.</translation>
+<translation id="2482370039860827034">Jy het sopas jou wagwoord op 'n misleidende werf ingevoer. Chrome beveel aan dat jy gaan na <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> en ander werwe waarop jy hierdie wagwoord gebruik en dit nou verander.</translation>
 <translation id="2482878487686419369">Kennisgewings</translation>
 <translation id="248348093745724435">Masjienbeleide</translation>
 <translation id="2491120439723279231">Bediener se sertifikaat bevat foute.</translation>
@@ -338,6 +339,7 @@
 <translation id="2505268675989099013">Beskerm rekening</translation>
 <translation id="2515629240566999685">Die sein in jou omgewing nagaan</translation>
 <translation id="2521385132275182522">Kram regs onder</translation>
+<translation id="2521483867890026383">Jy het sopas jou wagwoord op 'n misleidende werf ingevoer. Chromium beveel aan dat jy gaan na <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> en ander werwe waarop jy hierdie wagwoord gebruik en dit nou verander.</translation>
 <translation id="2523886232349826891">Net op hierdie toestel gestoor</translation>
 <translation id="2524461107774643265">Voeg meer inligting by</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{en nog 1}other{en nog #}}</translation>
@@ -607,6 +609,7 @@
 <translation id="3828924085048779000">Leë wagfrase word nie toegelaat nie.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> het uitbreidings vir bykomende funksies geïnstalleer. Uitbreidings het toegang tot sommige van jou data.</translation>
 <translation id="3832522519263485449">Veelvuldige pons links</translation>
+<translation id="3838154488026099170">Jy het sopas jou wagwoord op 'n misleidende werf ingevoer. Chromium beveel aan dat jy gaan na <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> en ander werwe waarop jy hierdie wagwoord gebruik en dit nou verander.</translation>
 <translation id="385051799172605136">Terug</translation>
 <translation id="3858027520442213535">Dateer datum en tyd op</translation>
 <translation id="3884278016824448484">Teenstrydige toestelidentifiseerder</translation>
@@ -644,6 +647,7 @@
 <translation id="4072486802667267160">Kon nie jou betaling verwerk nie. Probeer weer.</translation>
 <translation id="4075732493274867456">Die kliënt en bediener steun nie 'n gemeenskaplike SSL-protokolweergawe of kodesuite nie.</translation>
 <translation id="4075941231477579656">Aanraak-ID</translation>
+<translation id="4077092919748553596">Jy het sopas jou wagwoord op 'n misleidende werf ingevoer. Chrome beveel aan dat jy gaan na <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> en ander werwe waarop jy hierdie wagwoord gebruik en dit nou verander.</translation>
 <translation id="4079302484614802869">Instaanbedieneropstelling is gestel om 'n .pac-skrip-URL te gebruik, nie vaste instaanbedieners nie.</translation>
 <translation id="4082393374666368382">Instellings – Bestuur</translation>
 <translation id="4098354747657067197">Misleidende werf voor</translation>
@@ -723,6 +727,7 @@
 <translation id="4356973930735388585">Aanvallers op hierdie werf kan probeer om gevaarlike programme op jou rekenaar te installeer wat jou inligting (byvoorbeeld foto's, wagwoorde, boodskappe en kredietkaarte) steel of uitvee.</translation>
 <translation id="4358059973562876591">Die template wat jy gespesifiseer het, kan weens 'n fout met die DnsOverHttpsMode-beleid dalk nie toegepas word nie.</translation>
 <translation id="4358461427845829800">Bestuur betaalmetodes …</translation>
+<translation id="4359160567981085931">Jy het sopas jou wagwoord op 'n misleidende werf ingevoer. Chrome kan help. Klik Beskerm Rekening om jou wagwoord te verander en stel Google in kennis dat jou rekening dalk in gevaar is.</translation>
 <translation id="4367563149485757821">Number-12 (Envelope)</translation>
 <translation id="437058704415269440">Rekeningsaldo</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
@@ -998,6 +1003,7 @@
 <translation id="5728056243719941842">C5 (Envelope)</translation>
 <translation id="5730040223043577876">Chrome beveel aan dat jy jou wagwoord terugstel as jy dit ook op ander werwe gebruik het.</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Stoor kaart in jou Google-rekening}other{Stoor kaarte in jou Google-rekening}}</translation>
+<translation id="5745980000221562234">{NUM_CARDS,plural, =1{Gebruik 'n virtuele nommer vir hierdie kaart}other{Kies 'n kaart}}</translation>
 <translation id="5763042198335101085">Voer 'n geldige e-posadres in</translation>
 <translation id="5763703224595565476">Jou administrateur het Chrome Enterprise se gebruikerbeskerming op jou blaaier geaktiveer. Chrome Enterprise se gebruikerbeskerming het toegang tot van jou data.</translation>
 <translation id="5765072501007116331">Kies 'n adres om afleweringmetodes en -vereistes te sien</translation>
@@ -1014,6 +1020,7 @@
 <translation id="5804241973901381774">Toestemmings</translation>
 <translation id="5810442152076338065">Jou verbinding aan <ph name="DOMAIN" /> is geënkripteer deur 'n verouderde syferreeks te gebruik.</translation>
 <translation id="5813119285467412249">Herdoen byvoeging</translation>
+<translation id="5824687817967109979">{NUM_CARDS,plural, =1{Betaling sal van hierdie kaart gehef word wanneer jy betaal, maar sy regte nommer sal nie met hierdie werf gedeel word nie. 'n Tydelike CVC sal gegenereer word vir bykomende sekuriteit.}other{Betaling sal van die kaart wat jy kies gehef word wanneer jy betaal, maar sy regte nommer sal nie met hierdie werf gedeel word nie. 'n Tydelike CVC sal gegenereer word vir bykomende sekuriteit.}}</translation>
 <translation id="583281660410589416">Onbekend</translation>
 <translation id="5838278095973806738">Jy moenie enige sensitiewe inligting (byvoorbeeld, wagwoorde en kredietkaartnommers) op hierdie werf invoer nie, want aanvallers kan dit steel.</translation>
 <translation id="5851548754964597211">Oortjielys</translation>
@@ -1471,6 +1478,7 @@ om uit te vind hoe om die sagteware permanent van jou rekenaar te verwyder&lt;/o
 <translation id="8042918947222776840">Kies oplaaimetode</translation>
 <translation id="8057711352706143257">"<ph name="SOFTWARE_NAME" />" is nie reg opgestel nie."<ph name="SOFTWARE_NAME" />" stel gewoonlik die probleem reg. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8066955247577885446">Jammer, iets is fout.</translation>
+<translation id="8067872629359326442">Jy het sopas jou wagwoord op 'n misleidende werf ingevoer. Chromium kan help. Klik Beskerm Rekening om jou wagwoord te verander en stel Google in kennis dat jou rekening dalk in gevaar is.</translation>
 <translation id="8074253406171541171">10x13 (Envelope)</translation>
 <translation id="8078141288243656252">Kan nie aantekeninge maak wanneer gedraai nie</translation>
 <translation id="8079031581361219619">Herlaai werf?</translation>
@@ -1487,6 +1495,7 @@ om uit te vind hoe om die sagteware permanent van jou rekenaar te verwyder&lt;/o
 <translation id="8105368624971345109">Skakel af</translation>
 <translation id="8118489163946903409">Betalingmetode</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" is nie behoorlik op jou rekenaar of netwerk geïnstalleer nie. Vra jou IT-administrateur om hierdie probleem op te los.</translation>
+<translation id="8128526133099929547">Jy het sopas jou wagwoord op 'n misleidende werf ingevoer. Chrome beveel aan dat jy gaan na <ph name="WEBSITE_1" /> en ander werwe waarop jy hierdie wagwoord gebruik en dit nou verander.</translation>
 <translation id="8131740175452115882">Bevestig</translation>
 <translation id="8149426793427495338">Jou rekenaar het gaan slaap.</translation>
 <translation id="8150722005171944719">Die lêer by <ph name="URL" /> is nie leesbaar nie. Dit is dalk verwyder, geskuif of lêertoestemmings kan dalk toegang verhinder.</translation>
@@ -1504,6 +1513,7 @@ om uit te vind hoe om die sagteware permanent van jou rekenaar te verwyder&lt;/o
 <translation id="8218327578424803826">Toegewysde ligging:</translation>
 <translation id="8220146938470311105">C7/C6 (Envelope)</translation>
 <translation id="8220639454292072926">Ondernemingrapportering</translation>
+<translation id="8221250263817408492">Jy het sopas jou wagwoord op 'n misleidende werf ingevoer. Chromium beveel aan dat jy gaan na <ph name="WEBSITE_1" /> en ander werwe waarop jy hierdie wagwoord gebruik en dit nou verander.</translation>
 <translation id="8225771182978767009">Die persoon wat hierdie rekenaar opgestel het, het besluit om hierdie werf te blokkeer.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">Maak bladsy in nuwe incognito-oortjie oop</translation>

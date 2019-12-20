@@ -612,15 +612,37 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
   // Restore the window to clear snapped state.
   window_state->Restore();
 
-  // Test if the restore bounds is correct in multiple displays.
+  // Test dragging to another display and snapping there.
   UpdateDisplay("800x600,500x600");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  EXPECT_EQ(root_windows[0], window_->GetRootWindow());
-  window_->SetBoundsInScreen(gfx::Rect(800, 10, 400, 60),
-                             GetSecondaryDisplay());
-  EXPECT_EQ(root_windows[1], window_->GetRootWindow());
   {
-    EXPECT_EQ("800,10 400x60", window_->GetBoundsInScreen().ToString());
+    EXPECT_EQ("20,30 400x60", window_->GetBoundsInScreen().ToString());
+
+    std::unique_ptr<WindowResizer> resizer(
+        CreateResizerForTest(window_.get(), gfx::Point(), HTCAPTION));
+    ASSERT_TRUE(resizer.get());
+    // TODO(crbug.com/990589): Unit tests should be able to simulate mouse input
+    // without having to call |CursorManager::SetDisplay|.
+    Shell::Get()->cursor_manager()->SetDisplay(
+        display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]));
+    resizer->Drag(CalculateDragPoint(*resizer, 499, 0), 0);
+    int bottom =
+        screen_util::GetDisplayWorkAreaBoundsInParent(window_.get()).bottom();
+    EXPECT_EQ(root_windows[0], window_->GetRootWindow());
+    resizer->CompleteDrag();
+    EXPECT_EQ(root_windows[1], window_->GetRootWindow());
+    EXPECT_EQ("0,0 250x" + base::NumberToString(bottom),
+              window_->bounds().ToString());
+    EXPECT_EQ("820,30 400x60",
+              window_state->GetRestoreBoundsInScreen().ToString());
+  }
+
+  // Restore the window to clear snapped state.
+  window_state->Restore();
+
+  // Test dragging from a secondary display and snapping on the same display.
+  {
+    EXPECT_EQ("820,30 400x60", window_->GetBoundsInScreen().ToString());
 
     std::unique_ptr<WindowResizer> resizer(
         CreateResizerForTest(window_.get(), gfx::Point(), HTCAPTION));
@@ -636,7 +658,7 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
     // TODO(varkha): Insets are updated because of http://crbug.com/292238
     EXPECT_EQ("250,0 250x" + base::NumberToString(bottom),
               window_->bounds().ToString());
-    EXPECT_EQ("800,10 400x60",
+    EXPECT_EQ("820,30 400x60",
               window_state->GetRestoreBoundsInScreen().ToString());
   }
 }
@@ -655,7 +677,7 @@ TEST_F(WorkspaceWindowResizerTest, NonResizableWindows) {
   EXPECT_EQ("0,30 50x60", window_->bounds().ToString());
 }
 
-TEST_F(WorkspaceWindowResizerTest, CancelSnapPhantom) {
+TEST_F(WorkspaceWindowResizerTest, MultiDisplaySnapPhantom) {
   UpdateDisplay("800x600,800x600");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   ASSERT_EQ(2U, root_windows.size());
@@ -681,9 +703,9 @@ TEST_F(WorkspaceWindowResizerTest, CancelSnapPhantom) {
     EXPECT_TRUE(snap_phantom_window_controller());
 
     // Move the cursor across the edge. Now the snap phantom window controller
-    // should be canceled.
+    // should still be non-null.
     resizer->Drag(CalculateDragPoint(*resizer, 800, 0), 0);
-    EXPECT_FALSE(snap_phantom_window_controller());
+    EXPECT_TRUE(snap_phantom_window_controller());
   }
 }
 

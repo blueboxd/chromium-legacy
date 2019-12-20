@@ -2,11 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('history', function() {
-  const HistoryItem = Polymer({
+import {Polymer, html, afterNextRender} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {BrowserService} from './browser_service.js';
+import {UMA_MAX_BUCKET_VALUE, UMA_MAX_SUBSET_BUCKET_VALUE} from './constants.js';
+import './searched_label.js';
+import './shared_style.js';
+import './strings.js';
+import 'chrome://resources/cr_elements/cr_icons_css.m.js';
+import {getFaviconForPageURL} from 'chrome://resources/js/icon.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import {FocusRowBehavior} from 'chrome://resources/js/cr/ui/focus_row_behavior.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import 'chrome://resources/js/icon.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import 'chrome://resources/js/util.m.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+
+Polymer({
     is: 'history-item',
 
-    behaviors: [cr.ui.FocusRowBehavior],
+    _template: html`{__html_template__}`,
+
+    behaviors: [FocusRowBehavior],
 
     properties: {
       // Underlying HistoryEntry data for this item. Contains read-only fields
@@ -77,7 +94,7 @@ cr.define('history', function() {
 
     /** @override */
     attached: function() {
-      Polymer.RenderStatus.afterNextRender(this, function() {
+      afterNextRender(this, function() {
         // Adding listeners asynchronously to reduce blocking time, since these
         // history items are items in a potentially long list.
         this.listen(this.$.checkbox, 'keydown', 'onCheckboxKeydown_');
@@ -90,7 +107,7 @@ cr.define('history', function() {
     },
 
     focusOnMenuButton: function() {
-      cr.ui.focusWithoutInk(this.$['menu-button']);
+      focusWithoutInk(this.$['menu-button']);
     },
 
     /** @param {!KeyboardEvent} e */
@@ -195,10 +212,10 @@ cr.define('history', function() {
       }
 
       if (this.$$('#bookmark-star') == this.root.activeElement) {
-        cr.ui.focusWithoutInk(this.$['menu-button']);
+        focusWithoutInk(this.$['menu-button']);
       }
 
-      const browserService = history.BrowserService.getInstance();
+      const browserService = BrowserService.getInstance();
       browserService.removeBookmark(this.item.url);
       browserService.recordAction('BookmarkStarClicked');
 
@@ -225,7 +242,7 @@ cr.define('history', function() {
      * @private
      */
     onLinkClick_: function() {
-      const browserService = history.BrowserService.getInstance();
+      const browserService = BrowserService.getInstance();
       browserService.recordAction('EntryLinkClick');
 
       if (this.searchTerm) {
@@ -262,7 +279,7 @@ cr.define('history', function() {
     },
 
     onLinkRightClick_: function() {
-      history.BrowserService.getInstance().recordAction('EntryLinkRightClick');
+      BrowserService.getInstance().recordAction('EntryLinkRightClick');
     },
 
     /**
@@ -270,7 +287,7 @@ cr.define('history', function() {
      * @private
      */
     itemChanged_: function() {
-      this.$.icon.style.backgroundImage = cr.icon.getFaviconForPageURL(
+      this.$.icon.style.backgroundImage = getFaviconForPageURL(
           this.item.url, this.item.isUrlInRemoteUserData,
           this.item.remoteIconUrlForUma);
       this.listen(this.$['time-accessed'], 'mouseover', 'addTimeTitle_');
@@ -291,7 +308,7 @@ cr.define('history', function() {
       if (!search) {
         return this.item.dateRelativeDay;
       }
-      return HistoryItem.searchResultsTitle(numberOfItems, search);
+      return searchResultsTitle(numberOfItems, search);
     },
 
     /** @private */
@@ -318,12 +335,10 @@ cr.define('history', function() {
    * @param {string} searchTerm
    * @return {string} The title for a page of search results.
    */
-  HistoryItem.searchResultsTitle = function(numberOfResults, searchTerm) {
+  export function searchResultsTitle(numberOfResults, searchTerm) {
     const resultId = numberOfResults == 1 ? 'searchResult' : 'searchResults';
     return loadTimeData.getStringF(
         'foundSearchResults', numberOfResults, loadTimeData.getString(resultId),
         searchTerm);
-  };
+  }
 
-  return {HistoryItem: HistoryItem};
-});

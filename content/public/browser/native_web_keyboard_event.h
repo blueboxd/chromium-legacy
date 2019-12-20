@@ -10,7 +10,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "third_party/blink/public/platform/web_keyboard_event.h"
+#include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_ANDROID)

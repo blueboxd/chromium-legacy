@@ -85,7 +85,6 @@ class WebContentsDelegate;
 struct CustomContextMenuContext;
 struct DropData;
 struct MHTMLGenerationParams;
-struct PageImportanceSignals;
 
 // WebContents is the core class in content/. A WebContents renders web content
 // (usually HTML) in a rectangular area.
@@ -425,8 +424,6 @@ class WebContents : public PageNavigator,
   // starting or stopping.
   virtual void RecordAccessibilityEvents(AccessibilityEventCallback callback,
                                          bool start) = 0;
-
-  virtual const PageImportanceSignals& GetPageImportanceSignals() = 0;
 
   // Tab navigation state ------------------------------------------------------
 

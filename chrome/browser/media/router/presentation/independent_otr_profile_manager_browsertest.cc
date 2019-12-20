@@ -116,8 +116,35 @@ class IndependentOTRProfileManagerTest : public InProcessBrowserTest {
     chromeos::ProfileHelper::Get()->SetAlwaysReturnPrimaryUserForTesting(true);
   }
 
+  void SafelyDestroyOriginalProfile() {
+    if (!original_profile_) {
+      return;
+    }
+
+    // We are about to destroy a profile. In production that will only happen
+    // as part of the destruction of BrowserProcess's ProfileManager. This
+    // happens in PostMainMessageLoopRun(). This means that to have this test
+    // represent production we have to make sure that no tasks are pending on
+    // the main thread before we destroy the profile. We also would need to
+    // prohibit the posting of new tasks on the main thread as in production the
+    // main thread's message loop will not be accepting them. We fallback on
+    // flushing as many runners as possible here to avoid the posts coming from
+    // any of them.
+    content::RunAllTasksUntilIdle();
+
+    original_profile_.reset();
+
+    // Pending tasks on the ThreadPool initiated by |profile_| could depend on
+    // |temp_dir_|. We need to let them complete before |temp_dir| goes out of
+    // scope.
+    content::RunAllTasksUntilIdle();
+  }
+
   IndependentOTRProfileManager* manager_ =
       IndependentOTRProfileManager::GetInstance();
+
+  base::ScopedTempDir temp_dir_;
+  std::unique_ptr<Profile> original_profile_;
 };
 
 IN_PROC_BROWSER_TEST_F(IndependentOTRProfileManagerTest, CreateAndDestroy) {
@@ -233,28 +260,25 @@ IN_PROC_BROWSER_TEST_F(IndependentOTRProfileManagerTest,
   ProfileDestructionWatcher watcher;
 
   base::ScopedAllowBlockingForTesting allow_blocking;
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 #if defined(OS_CHROMEOS)
   EnableProfileHelperTestSettings();
 #endif
-  auto original_profile = Profile::CreateProfile(
-      temp_dir.GetPath(), nullptr, Profile::CREATE_MODE_SYNCHRONOUS);
-  ASSERT_TRUE(original_profile);
-  auto profile_owner = RegistrationOwner(manager_, original_profile.get());
+  original_profile_ = Profile::CreateProfile(temp_dir_.GetPath(), nullptr,
+                                             Profile::CREATE_MODE_SYNCHRONOUS);
+  ASSERT_TRUE(original_profile_);
+  auto profile_owner = RegistrationOwner(manager_, original_profile_.get());
   auto* otr_profile = profile_owner.profile();
 
-  ASSERT_NE(original_profile.get(), otr_profile);
-  EXPECT_NE(original_profile->GetOffTheRecordProfile(), otr_profile);
+  ASSERT_NE(original_profile_.get(), otr_profile);
+  EXPECT_NE(original_profile_->GetOffTheRecordProfile(), otr_profile);
 
   watcher.Watch(otr_profile);
-  // Run tasks to ensure that Mojo connections are created before the profile is
-  // destroyed.
-  base::RunLoop().RunUntilIdle();
-  original_profile.reset();
-  // |original_profile| being destroyed should trigger the dependent OTR
+
+  SafelyDestroyOriginalProfile();
+
+  // |original_profile_| being destroyed should trigger the dependent OTR
   // profile to be destroyed.
-  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(watcher.destroyed());
 }
 
@@ -264,29 +288,26 @@ IN_PROC_BROWSER_TEST_F(IndependentOTRProfileManagerTest,
   ProfileDestructionWatcher watcher2;
 
   base::ScopedAllowBlockingForTesting allow_blocking;
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 #if defined(OS_CHROMEOS)
   EnableProfileHelperTestSettings();
 #endif
-  auto original_profile = Profile::CreateProfile(
-      temp_dir.GetPath(), nullptr, Profile::CREATE_MODE_SYNCHRONOUS);
-  ASSERT_TRUE(original_profile);
-  auto profile_owner1 = RegistrationOwner(manager_, original_profile.get());
+  original_profile_ = Profile::CreateProfile(temp_dir_.GetPath(), nullptr,
+                                             Profile::CREATE_MODE_SYNCHRONOUS);
+  ASSERT_TRUE(original_profile_);
+  auto profile_owner1 = RegistrationOwner(manager_, original_profile_.get());
   auto* otr_profile1 = profile_owner1.profile();
 
-  auto profile_owner2 = RegistrationOwner(manager_, original_profile.get());
+  auto profile_owner2 = RegistrationOwner(manager_, original_profile_.get());
   auto* otr_profile2 = profile_owner2.profile();
 
   watcher1.Watch(otr_profile1);
   watcher2.Watch(otr_profile2);
-  // Run tasks to ensure that Mojo connections are created before the profile is
-  // destroyed.
-  base::RunLoop().RunUntilIdle();
-  original_profile.reset();
-  // |original_profile| being destroyed should trigger the dependent OTR
+
+  SafelyDestroyOriginalProfile();
+
+  // |original_profile_| being destroyed should trigger the dependent OTR
   // profiles to be destroyed.
-  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(watcher1.destroyed());
   EXPECT_TRUE(watcher2.destroyed());
 }
@@ -297,19 +318,18 @@ IN_PROC_BROWSER_TEST_F(IndependentOTRProfileManagerTest,
   ProfileDestructionWatcher watcher2;
 
   base::ScopedAllowBlockingForTesting allow_blocking;
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 #if defined(OS_CHROMEOS)
   EnableProfileHelperTestSettings();
 #endif
-  auto original_profile = Profile::CreateProfile(
-      temp_dir.GetPath(), nullptr, Profile::CREATE_MODE_SYNCHRONOUS);
-  ASSERT_TRUE(original_profile);
-  auto profile_owner1 = RegistrationOwner(manager_, original_profile.get());
+  original_profile_ = Profile::CreateProfile(temp_dir_.GetPath(), nullptr,
+                                             Profile::CREATE_MODE_SYNCHRONOUS);
+  ASSERT_TRUE(original_profile_);
+  auto profile_owner1 = RegistrationOwner(manager_, original_profile_.get());
   auto* otr_profile1 = profile_owner1.profile();
   Browser* otr_browser = nullptr;
   {
-    auto profile_owner2 = RegistrationOwner(manager_, original_profile.get());
+    auto profile_owner2 = RegistrationOwner(manager_, original_profile_.get());
     auto* otr_profile2 = profile_owner2.profile();
 
     otr_browser = CreateBrowser(otr_profile2);
@@ -324,8 +344,9 @@ IN_PROC_BROWSER_TEST_F(IndependentOTRProfileManagerTest,
   EXPECT_TRUE(watcher2.destroyed());
 
   watcher1.Watch(otr_profile1);
-  original_profile.reset();
-  base::RunLoop().RunUntilIdle();
+
+  SafelyDestroyOriginalProfile();
+
   EXPECT_TRUE(watcher1.destroyed());
 }
 

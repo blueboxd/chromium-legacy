@@ -136,6 +136,7 @@ class LenientMockObserver : public FrameNodeImpl::Observer {
   MOCK_METHOD1(OnNonPersistentNotificationCreated, void(const FrameNode*));
   MOCK_METHOD2(OnPriorityAndReasonChanged,
                void(const FrameNode*, const PriorityAndReason& previous_value));
+  MOCK_METHOD1(OnHadFormInteractionChanged, void(const FrameNode*));
 
   void SetCreatedFrameNode(const FrameNode* frame_node) {
     created_frame_node_ = frame_node;
@@ -320,6 +321,21 @@ TEST_F(FrameNodeImplTest, Priority) {
   graph()->RemoveFrameNodeObserver(&obs);
 }
 
+TEST_F(FrameNodeImplTest, FormInteractions) {
+  auto process = CreateNode<ProcessNodeImpl>();
+  auto page = CreateNode<PageNodeImpl>();
+  auto frame_node = CreateFrameNodeAutoId(process.get(), page.get());
+
+  MockObserver obs;
+  graph()->AddFrameNodeObserver(&obs);
+
+  EXPECT_CALL(obs, OnHadFormInteractionChanged(frame_node.get()));
+  frame_node->SetHadFormInteraction();
+  EXPECT_TRUE(frame_node->had_form_interaction());
+
+  graph()->RemoveFrameNodeObserver(&obs);
+}
+
 TEST_F(FrameNodeImplTest, PublicInterface) {
   auto process = CreateNode<ProcessNodeImpl>();
   auto page = CreateNode<PageNodeImpl>();
@@ -364,6 +380,8 @@ TEST_F(FrameNodeImplTest, PublicInterface) {
             public_frame_node->IsHoldingWebLock());
   EXPECT_EQ(frame_node->is_holding_indexeddb_lock(),
             public_frame_node->IsHoldingIndexedDBLock());
+  EXPECT_EQ(frame_node->had_form_interaction(),
+            public_frame_node->HadFormInteraction());
 }
 
 }  // namespace performance_manager

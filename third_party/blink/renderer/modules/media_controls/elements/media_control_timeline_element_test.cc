@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_timeline_element.h"
 
-#include "third_party/blink/public/platform/web_pointer_properties.h"
+#include "third_party/blink/public/common/input/web_pointer_properties.h"
 #include "third_party/blink/renderer/core/events/pointer_event.h"
 #include "third_party/blink/renderer/core/events/pointer_event_init.h"
 #include "third_party/blink/renderer/core/events/touch_event.h"

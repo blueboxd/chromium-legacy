@@ -9,7 +9,7 @@
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/common/content_export.h"
 #include "content/public/common/input_event_ack_state.h"
-#include "third_party/blink/public/platform/web_mouse_wheel_event.h"
+#include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
 
 namespace content {
 class RenderWidgetHostViewBase;

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "headless/public/headless_devtools_channel.h"
 #include "headless/public/headless_export.h"
@@ -129,7 +130,7 @@ class HEADLESS_EXPORT HeadlessDevToolsClient {
    public:
     ExternalHost() {}
     virtual ~ExternalHost() {}
-    virtual void SendProtocolMessage(const std::string& message) = 0;
+    virtual void SendProtocolMessage(base::span<const uint8_t> message) = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(ExternalHost);
@@ -188,7 +189,7 @@ class HEADLESS_EXPORT HeadlessDevToolsClient {
 
     // Returns true if the listener handled the message.
     virtual bool OnProtocolMessage(
-        const std::string& json_message,
+        base::span<const uint8_t> json_message,
         const base::DictionaryValue& parsed_message) = 0;
 
    private:
@@ -213,7 +214,7 @@ class HEADLESS_EXPORT HeadlessDevToolsClient {
 
   // TODO(dgozman): remove this method together with ExternalHost.
   virtual void DispatchMessageFromExternalHost(
-      const std::string& json_message) = 0;
+      base::span<const uint8_t> json_message) = 0;
 
   // TODO(skyostil): Add notification for disconnection.
 

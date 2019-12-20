@@ -200,8 +200,8 @@ bool BrowserAccessibilityAndroid::IsClickable() const {
   if (IsIframe() || (GetRole() == ax::mojom::Role::kRootWebArea))
     return false;
 
-  // Otherwise it's clickable if it's focusable.
-  return IsFocusable();
+  // Otherwise it's clickable if it's a control.
+  return ui::IsControlOnAndroid(GetRole(), IsFocusable());
 }
 
 bool BrowserAccessibilityAndroid::IsCollapsed() const {

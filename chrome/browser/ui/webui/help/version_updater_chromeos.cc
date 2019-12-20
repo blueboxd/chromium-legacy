@@ -55,9 +55,6 @@ NetworkStatus GetNetworkStatus(bool interactive,
   if (!network || !network->IsConnectedState())  // Offline state.
     return NETWORK_STATUS_OFFLINE;
 
-  if (network->type() == shill::kTypeBluetooth)
-    return NETWORK_STATUS_DISALLOWED;
-
   // Treats tethered networks as cellular networks.
   if (network->IsUsingMobileData() &&
       !help_utils_chromeos::IsUpdateOverCellularAllowed(interactive)) {

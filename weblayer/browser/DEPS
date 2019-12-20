@@ -22,6 +22,7 @@ include_rules = [
   "+services/network/network_service.h",
   "+services/network/public",
   "+services/service_manager",
+  "+storage/browser/quota",
   "+third_party/blink/public/common",
   "+third_party/blink/public/mojom",
   "+ui/aura",

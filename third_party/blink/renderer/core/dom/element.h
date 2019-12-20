@@ -25,7 +25,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ELEMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ELEMENT_H_
 
-#include "third_party/blink/public/platform/pointer_id.h"
+#include "third_party/blink/public/common/input/pointer_id.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/renderer/core/animation/animatable.h"
 #include "third_party/blink/renderer/core/core_export.h"

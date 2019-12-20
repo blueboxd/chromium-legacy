@@ -91,6 +91,7 @@
 
 #if defined(OS_MACOSX)
 #include "base/message_loop/message_pump_mac.h"
+#include "components/metal_util/device_removal.h"
 #include "components/metal_util/test_shader.h"
 #include "content/public/common/content_features.h"
 #include "media/gpu/mac/vt_video_decode_accelerator_mac.h"
@@ -385,6 +386,22 @@ int GpuMain(const MainFunctionParams& parameters) {
       tracing::TracingSamplerProfiler::CreateOnMainThread();
 
 #if defined(OS_MACOSX)
+  // A GPUEjectPolicy of 'wait' is set in the Info.plist of the browser
+  // process, meaning it is "responsible" for making sure it and its
+  // subordinate processes (i.e. the GPU process) drop references to the
+  // external GPU. Despite this, the system still sends the device removal
+  // notifications to the GPU process, so the GPU process handles its own
+  // graceful shutdown without help from the browser process.
+  //
+  // Using the "SafeEjectGPU" tool, we can see that when the browser process
+  // has a policy of 'wait', the GPU process gets the 'rwait' policy: "Eject
+  // actions apply to the responsible process, who in turn deals with
+  // subordinates to eliminate their ejecting eGPU references" [man 8
+  // SafeEjectGPU]. Empirically, the browser does not relaunch. Once the GPU
+  // process exits, it appears that the browser process is no longer considered
+  // to be using the GPU, so it "succeeds" the 'wait'.
+  metal::RegisterGracefulExitOnDeviceRemoval();
+
   // Launch a test metal shader compile to see how long it takes to complete (if
   // it ever completes).
   // https://crbug.com/974219

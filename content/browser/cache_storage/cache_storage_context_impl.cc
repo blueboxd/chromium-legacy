@@ -180,29 +180,32 @@ void CacheStorageContextImpl::GetAllOriginsInfo(
       base::BindOnce(
           [](scoped_refptr<CacheStorageContextImpl> context,
              GetUsageInfoCallback callback) {
-            if (!context->CacheManager()) {
+            scoped_refptr<CacheStorageManager> manager =
+                context->CacheManager();
+            if (!manager) {
               std::move(callback).Run(std::vector<StorageUsageInfo>());
               return;
             }
-            context->CacheManager()->GetAllOriginsUsage(
-                CacheStorageOwner::kCacheAPI, std::move(callback));
+            manager->GetAllOriginsUsage(CacheStorageOwner::kCacheAPI,
+                                        std::move(callback));
           },
           base::RetainedRef(this), std::move(callback)));
 }
 
 void CacheStorageContextImpl::DeleteForOrigin(const GURL& origin) {
   // Can be called on any sequence.
-  task_runner_->PostTask(FROM_HERE,
-                         base::BindOnce(
-                             [](scoped_refptr<CacheStorageContextImpl> context,
-                                const GURL& origin) {
-                               if (!context->CacheManager())
-                                 return;
-                               context->CacheManager()->DeleteOriginData(
-                                   url::Origin::Create(origin),
-                                   CacheStorageOwner::kCacheAPI);
-                             },
-                             base::RetainedRef(this), origin));
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(
+                     [](scoped_refptr<CacheStorageContextImpl> context,
+                        const GURL& origin) {
+                       scoped_refptr<CacheStorageManager> manager =
+                           context->CacheManager();
+                       if (!manager)
+                         return;
+                       manager->DeleteOriginData(url::Origin::Create(origin),
+                                                 CacheStorageOwner::kCacheAPI);
+                     },
+                     base::RetainedRef(this), origin));
 }
 
 void CacheStorageContextImpl::AddObserver(
@@ -298,12 +301,15 @@ void CacheStorageContextImpl::CreateQuotaClientsOnIOThread(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!quota_manager_proxy.get())
     return;
+  scoped_refptr<CacheStorageManager> manager = CacheManager();
+  if (!manager)
+    return;
   quota_manager_proxy->RegisterClient(
       base::MakeRefCounted<CacheStorageQuotaClient>(
-          CacheManager(), CacheStorageOwner::kCacheAPI));
+          manager, CacheStorageOwner::kCacheAPI));
   quota_manager_proxy->RegisterClient(
       base::MakeRefCounted<CacheStorageQuotaClient>(
-          CacheManager(), CacheStorageOwner::kBackgroundFetch));
+          manager, CacheStorageOwner::kBackgroundFetch));
 }
 
 }  // namespace content

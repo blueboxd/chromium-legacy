@@ -131,9 +131,7 @@ by a child template that "extends" this file.
         android:largeHeap="false"
         android:manageSpaceActivity="@string/manage_space_activity"
         android:supportsRtl="true"
-        {% if (use_zygote|default(false) == 'true') %}
         android:zygotePreloadName="org.chromium.content.app.ZygotePreload"
-        {% endif %}
         {% if backup_key is defined %}
         android:allowBackup="true"
         android:backupAgent="org.chromium.chrome.browser.ChromeBackupAgent"
@@ -1193,7 +1191,7 @@ by a child template that "extends" this file.
             android:permission="{{ manifest_package }}.permission.CHILD_SERVICE"
             android:isolatedProcess="true"
             android:exported="{{sandboxed_service_exported|default(false)}}"
-            {% if (use_zygote|default(false) == 'true') and (i == 0) %}
+            {% if (i == 0) %}
             android:useAppZygote="true"
             {% endif %}
             {% if (sandboxed_service_exported|default(false)) == 'true' %}

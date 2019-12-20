@@ -124,6 +124,7 @@ public class WebViewChromiumAwInit {
     protected void startChromiumLocked() {
         try (ScopedSysTraceEvent event =
                         ScopedSysTraceEvent.scoped("WebViewChromiumAwInit.startChromiumLocked")) {
+            TraceEvent.setATraceEnabled(mFactory.getWebViewDelegate().isTraceTagEnabled());
             assert Thread.holdsLock(mLock) && ThreadUtils.runningOnUiThread();
 
             // The post-condition of this method is everything is ready, so notify now to cover all
@@ -166,8 +167,6 @@ public class WebViewChromiumAwInit {
             // finishVariationsInitLocked() must precede native initialization so the seed is
             // available when AwFeatureListCreator::SetUpFieldTrials() runs.
             finishVariationsInitLocked();
-
-            TraceEvent.setATraceEnabled(mFactory.getWebViewDelegate().isTraceTagEnabled());
 
             AwBrowserProcess.start();
             AwBrowserProcess.handleMinidumpsAndSetMetricsConsent(true /* updateMetricsConsent */);

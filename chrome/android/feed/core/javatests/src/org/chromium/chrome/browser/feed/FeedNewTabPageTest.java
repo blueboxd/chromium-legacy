@@ -179,10 +179,10 @@ import java.util.List;
     @Feature({"FeedNewTabPage"})
     public void testSignInPromo_DismissBySwipe() {
         boolean dismissed = SharedPreferencesManager.getInstance().readBoolean(
-                ChromePreferenceKeys.NTP_SIGNIN_PROMO_DISMISSED, false);
+                ChromePreferenceKeys.SIGNIN_PROMO_NTP_PROMO_DISMISSED, false);
         if (dismissed) {
             SharedPreferencesManager.getInstance().writeBoolean(
-                    ChromePreferenceKeys.NTP_SIGNIN_PROMO_DISMISSED, false);
+                    ChromePreferenceKeys.SIGNIN_PROMO_NTP_PROMO_DISMISSED, false);
         }
 
         // Verify that sign-in promo is displayed initially.
@@ -206,7 +206,7 @@ import java.util.List;
 
         // Reset state.
         SharedPreferencesManager.getInstance().writeBoolean(
-                ChromePreferenceKeys.NTP_SIGNIN_PROMO_DISMISSED, dismissed);
+                ChromePreferenceKeys.SIGNIN_PROMO_NTP_PROMO_DISMISSED, dismissed);
     }
 
     @Test

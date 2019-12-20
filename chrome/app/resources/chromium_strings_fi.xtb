@@ -20,6 +20,7 @@
 <translation id="1966382378801805537">Chromium ei voi tunnistaa tai asettaa oletusselainta.</translation>
 <translation id="2008474315282236005">Tämä poistaa yhden kohteen pysyvästi laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromiumiin käyttäjänä <ph name="USER_EMAIL" />.</translation>
 <translation id="2119636228670142020">Tietoja &amp;Chromium-käyttöjärjestelmästä</translation>
+<translation id="2147976119693222405">Chromium-käyttöjärjestelmä ei voinut synkronoida tietojasi. Korjaa tämä nyt.</translation>
 <translation id="2241627712206172106">Jos käytät jaettua tietokonetta, kaverisi ja perheenjäsenesi voivat selata verkkoa omista profiileistaan käsin ja muokata Chromiumista juuri itselleen sopivan.</translation>
 <translation id="2347108572062610441">Tämä laajennus on vaihtanut Chromiumin aloitussivun.</translation>
 <translation id="2396765026452590966">Laajennus <ph name="EXTENSION_NAME" /> on vaihtanut Chromiumin aloitussivun.</translation>
@@ -35,6 +36,7 @@
 <translation id="2718390899429598676">Chromium lisää suojausta salaamalla tietosi.</translation>
 <translation id="2770231113462710648">Vaihda oletusselaimeksi:</translation>
 <translation id="2799223571221894425">Käynnistä uudelleen</translation>
+<translation id="2805036593126168338">Chromium-käyttöjärjestelmä ei voinut synkronoida salasanojasi. Korjaa tämä nyt.</translation>
 <translation id="2838154144102149890">Päivittämistä varten Chromium on suljettava tällä tietokoneella. Tämän takia muut tietokoneelle kirjautuneet voivat menettää tallentamattomat muutokset.</translation>
 <translation id="2847479871509788944">Poista Chromiumista…</translation>
 <translation id="2886012850691518054">Valinnainen: Lähetä Googlelle automaattisesti käyttötilastoja ja virheraportteja Chromiumin kehittämiseksi.</translation>

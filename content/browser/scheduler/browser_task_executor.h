@@ -230,8 +230,6 @@ class CONTENT_EXPORT BrowserTaskExecutor : public BaseBrowserTaskExecutor {
       return std::move(browser_io_thread_delegate_);
     }
 
-    bool HasDelegateForTesting() const { return !!browser_io_thread_delegate_; }
-
    private:
     BrowserThread::ID GetCurrentThreadID() const override;
 

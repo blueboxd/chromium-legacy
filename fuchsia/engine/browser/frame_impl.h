@@ -74,7 +74,7 @@ class FrameImpl : public fuchsia::web::Frame,
   void set_semantics_manager_for_test(
       fuchsia::accessibility::semantics::SemanticsManagerPtr
           semantics_manager) {
-    test_semantics_manager_ptr_ = std::move(semantics_manager);
+    semantics_manager_for_test_ = std::move(semantics_manager);
   }
 
  private:
@@ -203,7 +203,7 @@ class FrameImpl : public fuchsia::web::Frame,
   ContextImpl* const context_;
   std::unique_ptr<AccessibilityBridge> accessibility_bridge_;
   fuchsia::accessibility::semantics::SemanticsManagerPtr
-      test_semantics_manager_ptr_;
+      semantics_manager_for_test_;
 
   DiscardingEventFilter discarding_event_filter_;
   NavigationControllerImpl navigation_controller_;

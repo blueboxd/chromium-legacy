@@ -252,6 +252,11 @@ const std::string& PageNodeImpl::contents_mime_type() const {
   return contents_mime_type_;
 }
 
+bool PageNodeImpl::had_form_interaction() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return had_form_interaction_.value();
+}
+
 void PageNodeImpl::set_usage_estimate_time(
     base::TimeTicks usage_estimate_time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -378,13 +383,18 @@ const base::flat_set<const FrameNode*> PageNodeImpl::GetMainFrameNodes() const {
   return main_frame_nodes;
 }
 
-const WebContentsProxy& PageNodeImpl::GetContentsProxy() const {
-  return contents_proxy();
-}
-
 const GURL& PageNodeImpl::GetMainFrameUrl() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return main_frame_url();
+}
+
+bool PageNodeImpl::HadFormInteraction() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return had_form_interaction();
+}
+
+const WebContentsProxy& PageNodeImpl::GetContentsProxy() const {
+  return contents_proxy();
 }
 
 void PageNodeImpl::SetPageAlmostIdle(bool page_almost_idle) {
@@ -410,6 +420,11 @@ void PageNodeImpl::SetIsHoldingWebLock(bool is_holding_weblock) {
 void PageNodeImpl::SetIsHoldingIndexedDBLock(bool is_holding_indexeddb_lock) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   is_holding_indexeddb_lock_.SetAndMaybeNotify(this, is_holding_indexeddb_lock);
+}
+
+void PageNodeImpl::SetHadFormInteraction(bool had_form_interaction) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  had_form_interaction_.SetAndMaybeNotify(this, had_form_interaction);
 }
 
 }  // namespace performance_manager

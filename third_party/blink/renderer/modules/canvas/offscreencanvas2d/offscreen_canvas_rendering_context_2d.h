@@ -103,9 +103,7 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
   bool ParseColorOrCurrentColor(Color&, const String& color_string) const final;
 
   cc::PaintCanvas* DrawingCanvas() const final;
-  cc::PaintCanvas* ExistingDrawingCanvas() const final {
-    return DrawingCanvas();
-  }
+  cc::PaintCanvas* ExistingDrawingCanvas() const final;
 
   void DidDraw() final;
   void DidDraw(const SkIRect& dirty_rect) final;
@@ -162,8 +160,6 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
 
   std::mt19937 random_generator_;
   std::bernoulli_distribution bernoulli_distribution_;
-
-  base::RepeatingClosure finalize_frame_callback_;
 };
 
 DEFINE_TYPE_CASTS(OffscreenCanvasRenderingContext2D,

@@ -19,6 +19,7 @@ import posixpath
 import random
 import re
 import shutil
+import time
 
 from py_utils import cloud_storage
 from core.results_processor import command_line
@@ -76,6 +77,7 @@ def ProcessResults(options):
   should_compute_metrics = any(
       fmt in FORMATS_WITH_METRICS for fmt in options.output_formats)
 
+  begin_time = time.time()
   util.ApplyInParallel(
       lambda result: ProcessTestResult(
           result, upload_bucket, results_label, run_identifier,
@@ -84,6 +86,8 @@ def ProcessResults(options):
       test_results,
       on_failure=util.SetUnexpectedFailure,
   )
+  processing_duration = time.time() - begin_time
+  _AmortizeProcessingDuration(processing_duration, test_results)
 
   if should_compute_metrics:
     histogram_dicts = ExtractHistograms(test_results)
@@ -98,6 +102,20 @@ def ProcessResults(options):
     print('View results at file://', output_file, sep='')
 
   return GenerateExitCode(test_results)
+
+
+def _AmortizeProcessingDuration(processing_duration, test_results):
+  test_results_count = len(test_results)
+  if test_results_count:
+    per_story_cost = processing_duration / len(test_results)
+    logging.info(
+        'Amortizing processing cost to story runtimes: %.2fs per story.',
+        per_story_cost)
+    for result in test_results:
+      if 'runDuration' in result and result['runDuration']:
+        current_duration = float(result['runDuration'].rstrip('s'))
+        new_story_cost = current_duration + per_story_cost
+        result['runDuration'] = unicode(str(new_story_cost) + 's', 'utf-8')
 
 
 def ProcessTestResult(test_result, upload_bucket, results_label,

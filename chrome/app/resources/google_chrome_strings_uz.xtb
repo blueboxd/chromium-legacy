@@ -50,6 +50,7 @@
 <translation id="2290014774651636340">Google API kalitlari topilmadi. Google Chrome’ning ba’zi funksiyalari o‘chirib qo‘yiladi.</translation>
 <translation id="2290095356545025170">Haqiqatan ham Google Chrome brauzerini o‘chirib tashlamoqchimisiz?</translation>
 <translation id="2309047409763057870">Google Chrome takroran o‘rnatilgan, shuning uchun u asosiy brauzer bo‘la olmaydi.</translation>
+<translation id="2341767445688917208">Chrome OS tizimidagi parollaringiz sinxronlanmadi. Tuzatish.</translation>
 <translation id="2348335408836342058">Bu sayt kamera va mikrofoningizdan foydalanishi uchun Chrome brauzeriga ruxsat berishingiz lozim</translation>
 <translation id="2429317896000329049">Google Chrome domeningizda Sync xizmati yo‘qligi sababli ma’lumotlaringizni sinxronlay olmadi.</translation>
 <translation id="2467438592969358367">Google Chrome parollaringizni eksport qilmoqchi. Ruxsat berish uchun Windows platformasidagi parolingizni kiriting.</translation>
@@ -211,6 +212,7 @@ Google Chrome sozlamalaringizni qaytadan tiklay olmadi.</translation>
 <translation id="7855730255114109580">Google Chrome versiyasi yangi</translation>
 <translation id="7890208801193284374">Agar kompyuterdan yaqinlaringiz va do‘stlaringiz ham foydalansa, ular Chrome brauzerini o‘zlari xohlagancha sozlab olishlari mumkin.</translation>
 <translation id="7896673875602241923">Oldinroq Chrome profiliga kimdir bu kompyuterdan <ph name="ACCOUNT_EMAIL_LAST" /> sifatida kirgan. Ma’lumotlaringizni alohida saqlash uchun yangi Chrome profilini yarating.</translation>
+<translation id="7916016681687251387">Chrome OS tizimidagi maʼlumotlaringiz sinxronlanmadi. Tuzatish.</translation>
 <translation id="7962410387636238736">Endi kompyuteringizda Google Chrome yangilanmaydi, chunki uning yangi versiyalarida Windows XP va Windows Vista tizimlari ta’minoti to‘xtatilgan</translation>
 <translation id="8008534537613507642">Chrome‘ni qaytadan o‘rnatish</translation>
 <translation id="8013993649590906847">Agar rasmga foydali tavsif berilmagan boʻlsa, Google Chrome uni sizga tavsiflaydi. Tavsif yaratish uchun rasmlar Googlega yuboriladi.</translation>

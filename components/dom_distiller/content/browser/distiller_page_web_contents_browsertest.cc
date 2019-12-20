@@ -83,6 +83,24 @@ namespace dom_distiller {
 
 const char* kSimpleArticlePath = "/simple_article.html";
 const char* kVideoArticlePath = "/video_article.html";
+const char* kDistilledPagePath = "/distilled_page.html";
+
+void ExecuteJsScript(content::WebContents* web_contents,
+                     const std::string& script) {
+  base::Value result;
+  base::RunLoop run_loop;
+  web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
+      base::UTF8ToUTF16(script),
+      base::BindOnce(
+          [](base::Closure callback, base::Value* out, base::Value result) {
+            (*out) = std::move(result);
+            callback.Run();
+          },
+          run_loop.QuitClosure(), &result));
+  run_loop.Run();
+  ASSERT_EQ(base::Value::Type::BOOLEAN, result.type());
+  EXPECT_TRUE(result.GetBool());
+}
 
 class DistillerPageWebContentsTest : public ContentBrowserTest {
  public:
@@ -112,11 +130,6 @@ class DistillerPageWebContentsTest : public ContentBrowserTest {
     quit_closure.Run();
   }
 
-  void OnJsExecutionDone(base::Closure callback, base::Value value) {
-    js_result_ = std::move(value);
-    callback.Run();
-  }
-
  private:
   void AddComponentsResources() {
     base::FilePath pak_file;
@@ -143,7 +156,7 @@ class DistillerPageWebContentsTest : public ContentBrowserTest {
         path.AppendASCII("components/dom_distiller/core/javascript"));
 
     response_ = std::make_unique<net::test_server::ControllableHttpResponse>(
-        embedded_test_server(), "/pinch_tester.html");
+        embedded_test_server(), kDistilledPagePath);
 
     ASSERT_TRUE(embedded_test_server()->Start());
   }
@@ -155,7 +168,6 @@ class DistillerPageWebContentsTest : public ContentBrowserTest {
 
   DistillerPageWebContents* distiller_page_;
   std::unique_ptr<proto::DomDistillerResult> distiller_result_;
-  base::Value js_result_;
 
   std::unique_ptr<net::test_server::ControllableHttpResponse> response_;
 };
@@ -533,7 +545,7 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, MAYBE_TestPinch) {
   WebContentsMainFrameHelper main_frame_loaded(
       web_contents, url_loaded_runner.QuitClosure(), true);
   web_contents->GetController().LoadURL(
-      embedded_test_server()->GetURL("/pinch_tester.html"), content::Referrer(),
+      embedded_test_server()->GetURL(kDistilledPagePath), content::Referrer(),
       ui::PAGE_TRANSITION_TYPED, std::string());
 
   const std::string html_template = viewer::GetArticleTemplateHtml(
@@ -550,19 +562,7 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, MAYBE_TestPinch) {
   response_->Done();
   url_loaded_runner.Run();
 
-  // Execute the JS to run the tests, and wait until it has finished.
-  base::RunLoop run_loop;
-  web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::UTF8ToUTF16("(function() {return pinchtest.run();})();"),
-      base::BindOnce(&DistillerPageWebContentsTest::OnJsExecutionDone,
-                     base::Unretained(this), run_loop.QuitClosure()));
-  run_loop.Run();
-
-  ASSERT_TRUE(js_result_.is_dict());
-
-  base::Optional<bool> value = js_result_.FindBoolKey("success");
-  ASSERT_TRUE(value.has_value());
-  EXPECT_TRUE(value.value());
+  ExecuteJsScript(web_contents, "pinchtest.run()");
 }
 
 }  // namespace dom_distiller

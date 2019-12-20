@@ -33,6 +33,7 @@ import org.chromium.components.embedder_support.application.ClassLoaderContextWr
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.ChildProcessCreationParams;
 import org.chromium.content_public.browser.DeviceUtils;
+import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.ResourceBundle;
 import org.chromium.weblayer_private.interfaces.IBrowserFragment;
 import org.chromium.weblayer_private.interfaces.ICrashReporterController;
@@ -61,6 +62,11 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     // "//chrome/test/chromedriver/chrome/device_manager.cc"). If you change this variable, update
     // "device_manager.cc" too.
     private static final String COMMAND_LINE_FILE = "/data/local/tmp/weblayer-command-line";
+    // This metadata key, if defined, overrides the default behaviour of loading WebLayer from the
+    // current WebView implementation. This is only intended for testing, and does not enforce any
+    // signature requirements on the implementation, nor does it use the production code path to
+    // load the code. Do not set this in production APKs!
+    private static final String PACKAGE_MANIFEST_KEY = "org.chromium.weblayer.WebLayerPackage";
 
     private final ProfileManager mProfileManager = new ProfileManager();
 
@@ -154,11 +160,7 @@ public final class WebLayerImpl extends IWebLayer.Stub {
 
         ResourceBundle.setAvailablePakLocales(new String[] {}, ProductConfig.UNCOMPRESSED_LOCALES);
 
-        ChildProcessCreationParams.set(appContext.getPackageName(), false /* isExternalService */,
-                LibraryProcessType.PROCESS_WEBLAYER_CHILD, true /* bindToCaller */,
-                false /* ignoreVisibilityForImportance */,
-                "org.chromium.weblayer.ChildProcessService$Privileged",
-                "org.chromium.weblayer.ChildProcessService$Sandboxed");
+        setChildProcessCreationParams(appContext, packageInfo.packageName);
 
         if (!CommandLine.isInitialized()) {
             if (BuildInfo.isDebugAndroid()) {
@@ -186,6 +188,12 @@ public final class WebLayerImpl extends IWebLayer.Stub {
             LibraryLoader.getInstance().ensureInitialized();
         }
         GmsBridge.getInstance().setSafeBrowsingHandler();
+
+        // Configure NetworkChangeNotifier to auto detect changes in network
+        // connectivity.
+        NetworkChangeNotifier.init();
+        NetworkChangeNotifier.setAutoDetectConnectivityState(
+                new WebLayerNetworkChangeNotifierRegistrationPolicy());
     }
 
     @Override
@@ -310,6 +318,50 @@ public final class WebLayerImpl extends IWebLayer.Stub {
             } catch (ReflectiveOperationException e) {
                 Log.e(TAG, "Failed to load native library.", e);
             }
+        }
+    }
+
+    private void setChildProcessCreationParams(Context appContext, String implPackageName) {
+        final boolean bindToCaller = true;
+        final boolean ignoreVisibilityForImportance = false;
+        final String privilegedServicesPackageName = appContext.getPackageName();
+        final String privilegedServicesName =
+                "org.chromium.weblayer.ChildProcessService$Privileged";
+
+        String sandboxedServicesPackageName = appContext.getPackageName();
+        String sandboxedServicesName = "org.chromium.weblayer.ChildProcessService$Sandboxed";
+        boolean isExternalService = false;
+        boolean loadedFromWebView = wasLoadedFromWebView(appContext);
+        if (loadedFromWebView && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // On O+ when loading from a WebView implementation, we can just use WebView's declared
+            // external services as our renderers, which means we benefit from the webview zygote
+            // process. We still need to use the client's privileged services, as only isolated
+            // services can be external.
+            isExternalService = true;
+            sandboxedServicesPackageName = implPackageName;
+            sandboxedServicesName = null;
+        }
+
+        ChildProcessCreationParams.set(privilegedServicesPackageName, privilegedServicesName,
+                sandboxedServicesPackageName, sandboxedServicesName, isExternalService,
+                LibraryProcessType.PROCESS_WEBLAYER_CHILD, bindToCaller,
+                ignoreVisibilityForImportance);
+    }
+
+    private static boolean wasLoadedFromWebView(Context appContext) {
+        try {
+            Bundle metaData = appContext.getPackageManager()
+                                      .getApplicationInfo(appContext.getPackageName(),
+                                              PackageManager.GET_META_DATA)
+                                      .metaData;
+            if (metaData != null && metaData.getString(PACKAGE_MANIFEST_KEY) != null) {
+                return false;
+            }
+            return true;
+        } catch (PackageManager.NameNotFoundException e) {
+            // This would indicate the client app doesn't exist;
+            // just return true as there's nothing sensible to do here.
+            return true;
         }
     }
 

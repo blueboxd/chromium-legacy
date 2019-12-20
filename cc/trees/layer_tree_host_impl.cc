@@ -3923,7 +3923,18 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
   ScrollNode* scrolling_node = nullptr;
   bool scroll_on_main_thread = false;
 
-  if (!scrolling_node) {
+  // If this element is specified, the caller already knows which scroller they
+  // want to target so skip all the hit testing bits.
+  ElementId current_native_scrolling_element =
+      scroll_state->data()->current_native_scrolling_element();
+  if (current_native_scrolling_element) {
+    auto& scroll_tree = active_tree_->property_trees()->scroll_tree;
+    scrolling_node =
+        scroll_tree.FindNodeFromElementId(current_native_scrolling_element);
+  } else if (!scrolling_node) {
+    // TODO(bokan): ClearCurrentlyScrollingNode shouldn't happen in
+    // ScrollBegin, this should only happen in ScrollEnd. We should DCHECK here
+    // that the state is cleared instead. https://crbug.com/1016229
     ClearCurrentlyScrollingNode();
 
     gfx::Point viewport_point(scroll_state->position_x(),
@@ -3958,17 +3969,9 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
       }
     }
 
-    ElementId current_native_scrolling_element =
-        scroll_state->data()->current_native_scrolling_element();
-    if (current_native_scrolling_element) {
-      auto& scroll_tree = active_tree_->property_trees()->scroll_tree;
-      scrolling_node =
-          scroll_tree.FindNodeFromElementId(current_native_scrolling_element);
-    } else {
-      scrolling_node = FindScrollNodeForDeviceViewportPoint(
-          device_viewport_point, layer_impl, &scroll_on_main_thread,
-          &scroll_status.main_thread_scrolling_reasons);
-    }
+    scrolling_node = FindScrollNodeForDeviceViewportPoint(
+        device_viewport_point, layer_impl, &scroll_on_main_thread,
+        &scroll_status.main_thread_scrolling_reasons);
   }
 
   if (scroll_on_main_thread) {
@@ -4592,9 +4595,6 @@ void LayerTreeHostImpl::ScrollLatchedScroller(ScrollState* scroll_state) {
       std::abs(delta_applied_to_content.x()) > kEpsilon,
       std::abs(delta_applied_to_content.y()) > kEpsilon);
   scroll_state->ConsumeDelta(applied_delta.x(), applied_delta.y());
-
-  scroll_state->data()->set_current_native_scrolling_element(
-      scroll_node->element_id);
 }
 
 void LayerTreeHostImpl::LatchToScroller(ScrollState* scroll_state,
@@ -4704,33 +4704,15 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
     ScrollState* scroll_state) {
   DCHECK(scroll_state);
 
+  // The current_native_scrolling_element should only be set for ScrollBegin.
+  DCHECK(!scroll_state->data()->current_native_scrolling_element());
+
   TRACE_EVENT0("cc", "LayerTreeHostImpl::ScrollBy");
-  auto& scroll_tree = active_tree_->property_trees()->scroll_tree;
 
   scroll_accumulated_this_frame_ +=
       gfx::ScrollOffset(scroll_state->delta_x(), scroll_state->delta_y());
 
-  ElementId provided_element =
-      scroll_state->data()->current_native_scrolling_element();
-  const auto* provided_scroll_node =
-      scroll_tree.FindNodeFromElementId(provided_element);
-
-  // If the currently scrolling node is not set, set it with
-  // |provided_scroll_node|.
-  ScrollNode* scroll_node = scroll_tree.CurrentlyScrollingNode();
-  if (scroll_node) {
-    // If |provided_scroll_node| is not null, make sure it matches
-    // |scroll_node|.
-    DCHECK(!provided_scroll_node || scroll_node == provided_scroll_node);
-  } else {
-    TRACE_EVENT_INSTANT1("cc", "SetCurrentlyScrollingNode ScrollBy",
-                         TRACE_EVENT_SCOPE_THREAD, "isNull",
-                         provided_scroll_node ? false : true);
-    active_tree_->SetCurrentlyScrollingNode(provided_scroll_node);
-    scroll_node = scroll_tree.CurrentlyScrollingNode();
-  }
-
-  if (!scroll_node)
+  if (!CurrentlyScrollingNode())
     return InputHandlerScrollResult();
 
   // Flash the overlay scrollbar even if the scroll dalta is 0.
@@ -4738,7 +4720,8 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
     FlashAllScrollbars(false);
   } else {
     ScrollbarAnimationController* animation_controller =
-        ScrollbarAnimationControllerForElementId(scroll_node->element_id);
+        ScrollbarAnimationControllerForElementId(
+            CurrentlyScrollingNode()->element_id);
     if (animation_controller)
       animation_controller->WillUpdateScroll();
   }
@@ -4748,17 +4731,7 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
 
   scroll_state->set_is_direct_manipulation(touch_scrolling_);
 
-  scroll_state->data()->set_current_native_scrolling_element(
-      scroll_node->element_id);
   ScrollLatchedScroller(scroll_state);
-
-  ScrollNode* current_scrolling_node = scroll_tree.FindNodeFromElementId(
-      scroll_state->data()->current_native_scrolling_element());
-
-  TRACE_EVENT_INSTANT1("cc", "SetCurrentlyScrollingNode ApplyDelta",
-                       TRACE_EVENT_SCOPE_THREAD, "isNull",
-                       current_scrolling_node ? false : true);
-  active_tree_->SetCurrentlyScrollingNode(current_scrolling_node);
 
   bool did_scroll_x = scroll_state->caused_scroll_x();
   bool did_scroll_y = scroll_state->caused_scroll_y();
@@ -4766,7 +4739,7 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
   did_scroll_y_for_scroll_gesture_ |= did_scroll_y;
   bool did_scroll_content = did_scroll_x || did_scroll_y;
   if (did_scroll_content) {
-    ShowScrollbarsForImplScroll(current_scrolling_node->element_id);
+    ShowScrollbarsForImplScroll(CurrentlyScrollingNode()->element_id);
 
     client_->SetNeedsCommitOnImplThread();
     SetNeedsRedraw();
@@ -4784,8 +4757,7 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
     accumulated_root_overscroll_.set_y(0);
 
   gfx::Vector2dF unused_root_delta;
-  if (current_scrolling_node &&
-      viewport().ShouldScroll(*current_scrolling_node)) {
+  if (viewport().ShouldScroll(*CurrentlyScrollingNode())) {
     unused_root_delta =
         gfx::Vector2dF(scroll_state->delta_x(), scroll_state->delta_y());
   }
@@ -4822,7 +4794,7 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
   }
 
   scroll_result.current_visual_offset =
-      ScrollOffsetToVector2dF(GetVisualScrollOffset(*scroll_node));
+      ScrollOffsetToVector2dF(GetVisualScrollOffset(*CurrentlyScrollingNode()));
   float scale_factor = active_tree()->page_scale_factor_for_scroll();
   scroll_result.current_visual_offset.Scale(scale_factor);
 

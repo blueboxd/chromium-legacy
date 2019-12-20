@@ -97,7 +97,7 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver, SignInStateObs
         mPromoState = calculatePromoState();
         if (mPromoState == PromoState.PROMO_SYNC) {
             SharedPreferencesManager.getInstance().incrementInt(
-                    ChromePreferenceKeys.PREF_SIGNIN_AND_SYNC_PROMO_SHOW_COUNT);
+                    ChromePreferenceKeys.SIGNIN_AND_SYNC_PROMO_SHOW_COUNT);
         }
     }
 
@@ -170,7 +170,7 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver, SignInStateObs
      */
     private void setPersonalizedSigninPromoDeclined() {
         SharedPreferencesManager.getInstance().writeBoolean(
-                ChromePreferenceKeys.PREF_PERSONALIZED_SIGNIN_PROMO_DECLINED, true);
+                ChromePreferenceKeys.SIGNIN_PROMO_PERSONALIZED_DECLINED, true);
         mPromoState = calculatePromoState();
         triggerPromoUpdate();
     }
@@ -180,7 +180,7 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver, SignInStateObs
      */
     private boolean wasPersonalizedSigninPromoDeclined() {
         return SharedPreferencesManager.getInstance().readBoolean(
-                ChromePreferenceKeys.PREF_PERSONALIZED_SIGNIN_PROMO_DECLINED, false);
+                ChromePreferenceKeys.SIGNIN_PROMO_PERSONALIZED_DECLINED, false);
     }
 
     private @PromoState int calculatePromoState() {
@@ -204,7 +204,7 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver, SignInStateObs
 
         boolean impressionLimitNotReached =
                 SharedPreferencesManager.getInstance().readInt(
-                        ChromePreferenceKeys.PREF_SIGNIN_AND_SYNC_PROMO_SHOW_COUNT)
+                        ChromePreferenceKeys.SIGNIN_AND_SYNC_PROMO_SHOW_COUNT)
                 < MAX_SIGNIN_AND_SYNC_PROMO_SHOW_COUNT;
         if (!AndroidSyncSettings.get().isChromeSyncEnabled() && impressionLimitNotReached) {
             return PromoState.PROMO_SYNC;
@@ -264,6 +264,6 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver, SignInStateObs
     @VisibleForTesting
     static void setPrefPersonalizedSigninPromoDeclinedForTests(boolean isDeclined) {
         SharedPreferencesManager.getInstance().writeBoolean(
-                ChromePreferenceKeys.PREF_PERSONALIZED_SIGNIN_PROMO_DECLINED, isDeclined);
+                ChromePreferenceKeys.SIGNIN_PROMO_PERSONALIZED_DECLINED, isDeclined);
     }
 }

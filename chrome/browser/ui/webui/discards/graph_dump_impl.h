@@ -89,6 +89,9 @@ class DiscardsGraphDumpImpl : public discards::mojom::GraphDump,
   void OnPriorityAndReasonChanged(
       const performance_manager::FrameNode* frame_node,
       const PriorityAndReason& previous_value) override {}
+  // Ignored.
+  void OnHadFormInteractionChanged(
+      const performance_manager::FrameNode* frame_node) override {}
 
   // PageNodeObserver implementation:
   void OnPageNodeAdded(const performance_manager::PageNode* page_node) override;
@@ -120,6 +123,8 @@ class DiscardsGraphDumpImpl : public discards::mojom::GraphDump,
   void OnPageAlmostIdleChanged(
       const performance_manager::PageNode* page_node) override {}
   void OnMainFrameDocumentChanged(
+      const performance_manager::PageNode* page_node) override {}
+  void OnHadFormInteractionChanged(
       const performance_manager::PageNode* page_node) override {}
   void OnTitleUpdated(const performance_manager::PageNode* page_node) override {
   }  // Ignored.

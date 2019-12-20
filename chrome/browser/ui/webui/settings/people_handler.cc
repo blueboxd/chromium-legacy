@@ -56,6 +56,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/quick_unlock/pin_backend.h"
+#include "chromeos/constants/chromeos_features.h"
 #else
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ui/webui/profile_helper.h"
@@ -88,11 +89,15 @@ struct SyncConfigInfo {
 };
 
 bool IsSyncSubpage(const GURL& current_url) {
-  return (current_url == chrome::GetSettingsUrl(chrome::kSyncSetupSubPage)
+  if (current_url == chrome::GetSettingsUrl(chrome::kSyncSetupSubPage))
+    return true;
 #if defined(OS_CHROMEOS)
-          || current_url == chrome::GetOSSettingsUrl(chrome::kSyncSetupSubPage)
+  if (!chromeos::features::IsSplitSettingsSyncEnabled() &&
+      current_url == chrome::GetOSSettingsUrl(chrome::kSyncSetupSubPage)) {
+    return true;
+  }
 #endif  // defined(OS_CHROMEOS)
-  );
+  return false;
 }
 
 SyncConfigInfo::SyncConfigInfo()

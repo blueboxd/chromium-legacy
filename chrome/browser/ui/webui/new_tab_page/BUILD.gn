@@ -10,6 +10,7 @@ mojom("mojo_bindings") {
   ]
 
   public_deps = [
+    "//skia/public/mojom",
     "//url/mojom:url_mojom_gurl",
   ]
 }

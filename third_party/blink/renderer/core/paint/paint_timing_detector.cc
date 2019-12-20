@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"

@@ -156,6 +156,14 @@ scoped_refptr<PrintedPage> PrintedDocument::GetPage(int page_number) {
   }
   return page;
 }
+
+void PrintedDocument::DropPage(const PrintedPage* page) {
+  base::AutoLock lock(lock_);
+  PrintedPages::const_iterator it =
+      mutable_.pages_.find(page->page_number() - 1);
+  DCHECK_EQ(page, it->second.get());
+  mutable_.pages_.erase(it);
+}
 #endif  // defined(OS_WIN)
 
 void PrintedDocument::SetDocument(std::unique_ptr<MetafilePlayer> metafile,

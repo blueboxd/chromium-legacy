@@ -55,4 +55,9 @@ void MockMediaStreamVideoSink::OnEnabledChanged(bool enabled) {
   enabled_ = enabled;
 }
 
+void MockMediaStreamVideoSink::OnContentHintChanged(
+    WebMediaStreamTrack::ContentHintType content_hint) {
+  content_hint_ = content_hint;
+}
+
 }  // namespace blink

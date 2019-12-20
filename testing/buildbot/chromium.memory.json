@@ -3838,7 +3838,7 @@
             {
               "gpu": "10de:1cb3",
               "os": "Ubuntu",
-              "pool": "Chrome-GPU"
+              "pool": "chromium.tests.gpu"
             }
           ]
         },
@@ -5459,7 +5459,7 @@
             {
               "gpu": "10de:1cb3",
               "os": "Ubuntu",
-              "pool": "Chrome-GPU"
+              "pool": "chromium.tests.gpu"
             }
           ]
         },
@@ -5482,7 +5482,7 @@
             {
               "gpu": "10de:1cb3",
               "os": "Ubuntu",
-              "pool": "Chrome-GPU"
+              "pool": "chromium.tests.gpu"
             }
           ]
         },
@@ -6539,28 +6539,6 @@
       },
       {
         "args": [
-          "--disable-features=VizDisplayCompositor",
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "non_viz_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ],
-          "shards": 30
-        },
-        "test": "browser_tests",
-        "test_target": "//chrome/test:browser_tests"
-      },
-      {
-        "args": [
           "--test-launcher-print-test-stdio=always"
         ],
         "merge": {
@@ -6792,55 +6770,12 @@
       },
       {
         "args": [
-          "--disable-features=VizDisplayCompositor",
           "--test-launcher-print-test-stdio=always"
         ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "non_viz_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ],
-          "shards": 4
-        },
-        "test": "content_browsertests",
-        "test_target": "//content/test:content_browsertests"
-      },
-      {
-        "args": [
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
-        },
-        "test": "content_unittests",
-        "test_target": "//content/test:content_unittests"
-      },
-      {
-        "args": [
-          "--disable-features=VizDisplayCompositor",
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "non_viz_content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -8344,29 +8279,6 @@
       },
       {
         "args": [
-          "--disable-features=VizDisplayCompositor",
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "non_viz_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Ubuntu-16.04"
-            }
-          ],
-          "shards": 30
-        },
-        "test": "browser_tests",
-        "test_target": "//chrome/test:browser_tests"
-      },
-      {
-        "args": [
           "--test-launcher-print-test-stdio=always"
         ],
         "merge": {
@@ -8609,29 +8521,6 @@
       },
       {
         "args": [
-          "--disable-features=VizDisplayCompositor",
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "non_viz_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Ubuntu-16.04"
-            }
-          ],
-          "shards": 2
-        },
-        "test": "content_browsertests",
-        "test_target": "//content/test:content_browsertests"
-      },
-      {
-        "args": [
           "--test-launcher-print-test-stdio=always"
         ],
         "merge": {
@@ -8647,28 +8536,6 @@
             }
           ],
           "shards": 2
-        },
-        "test": "content_unittests",
-        "test_target": "//content/test:content_unittests"
-      },
-      {
-        "args": [
-          "--disable-features=VizDisplayCompositor",
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "non_viz_content_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Ubuntu-16.04"
-            }
-          ]
         },
         "test": "content_unittests",
         "test_target": "//content/test:content_unittests"
@@ -12349,7 +12216,7 @@
             {
               "gpu": "10de:1cb3",
               "os": "Ubuntu",
-              "pool": "Chrome-GPU"
+              "pool": "chromium.tests.gpu"
             }
           ]
         },

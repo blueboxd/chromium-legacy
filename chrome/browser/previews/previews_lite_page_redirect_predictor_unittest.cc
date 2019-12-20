@@ -307,6 +307,6 @@ TEST_P(PreviewsLitePageRedirectPredictorUnitTest,
 }
 
 // True if preresolving, false for preconnecting.
-INSTANTIATE_TEST_SUITE_P(/* empty prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          PreviewsLitePageRedirectPredictorUnitTest,
                          testing::Bool());

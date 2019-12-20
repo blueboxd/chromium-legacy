@@ -62,6 +62,15 @@
     </FrameLayout>
 
     <ImageView
+        android:id="@+id/large_play_button"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="center"
+        android:contentDescription="@string/accessibility_play_video"
+        android:visibility="gone"
+        app:srcCompat="@drawable/ic_play_circle_24dp_white" />
+
+    <ImageView
         android:id="@+id/selected"
         android:layout_width="26dp"
         android:layout_height="26dp"

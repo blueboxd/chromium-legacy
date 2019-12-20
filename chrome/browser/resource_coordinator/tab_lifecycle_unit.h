@@ -16,7 +16,6 @@
 #include "components/performance_manager/public/mojom/coordination_unit.mojom.h"
 #include "content/public/browser/visibility.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/page_importance_signals.h"
 
 class TabStripModel;
 

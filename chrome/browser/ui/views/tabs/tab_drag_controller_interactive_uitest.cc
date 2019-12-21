@@ -46,7 +46,9 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/tab_groups/tab_group_color.h"
 #include "components/tab_groups/tab_group_id.h"
+#include "components/tab_groups/tab_group_visual_data.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
@@ -1072,8 +1074,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   AddTabsAndResetBrowser(browser(), 3);
   tab_groups::TabGroupId group1 = model->AddToNewGroup({2, 3});
   tab_groups::TabGroupId group2 = model->AddToNewGroup({1});
-  const tab_groups::TabGroupVisualData new_data(base::ASCIIToUTF16("Foo"),
-                                                SK_ColorCYAN);
+  const tab_groups::TabGroupVisualData new_data(
+      base::ASCIIToUTF16("Foo"), tab_groups::TabGroupColorId::kCyan);
   group_model->GetTabGroup(group2)->SetVisualData(new_data);
   StopAnimating(tab_strip);
 
@@ -2032,7 +2034,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   TabStripModel* model = browser()->tab_strip_model();
   AddTabsAndResetBrowser(browser(), 1);
   tab_groups::TabGroupId group = model->AddToNewGroup({0, 1});
-  SkColor group_color = tab_strip->GetVisualDataForGroup(group)->color();
+  tab_groups::TabGroupColorId group_color = tab_strip->GetGroupColorId(group);
   StopAnimating(tab_strip);
 
   // Create another browser.
@@ -2056,8 +2058,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   EXPECT_THAT(model2->group_model()->GetTabGroup(groups2[0])->ListTabs(),
               testing::ElementsAre(1, 2));
   EXPECT_NE(groups2[0], group);
-  EXPECT_EQ(tab_strip2->GetVisualDataForGroup(groups2[0])->color(),
-            group_color);
+  EXPECT_EQ(tab_strip2->GetGroupColorId(groups2[0]), group_color);
 }
 
 namespace {

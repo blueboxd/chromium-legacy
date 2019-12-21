@@ -352,6 +352,9 @@ HtmlFieldType FieldTypeFromAutocompleteAttributeValue(
       autocomplete_attribute_value == "upi")
     return HTML_TYPE_UPI_VPA;
 
+  if (autocomplete_attribute_value == "one-time-code")
+    return HTML_TYPE_ONE_TIME_CODE;
+
   return HTML_TYPE_UNRECOGNIZED;
 }
 

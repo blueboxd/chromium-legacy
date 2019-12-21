@@ -32,8 +32,6 @@
 #include "third_party/blink/public/common/input/web_pointer_event.h"
 #include "third_party/blink/public/common/input/web_touch_event.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
-#include "third_party/blink/public/platform/web_float_point.h"
-#include "third_party/blink/public/platform/web_float_size.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -48,8 +46,6 @@
 #include <android/keycodes.h>
 #endif
 
-using blink::WebFloatPoint;
-using blink::WebFloatSize;
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
 using blink::WebInputEventResult;
@@ -512,19 +508,16 @@ void RenderWidgetInputHandler::HandleInputEvent(
 }
 
 void RenderWidgetInputHandler::DidOverscrollFromBlink(
-    const WebFloatSize& overscrollDelta,
-    const WebFloatSize& accumulatedOverscroll,
-    const WebFloatPoint& position,
-    const WebFloatSize& velocity,
+    const gfx::Vector2dF& overscrollDelta,
+    const gfx::Vector2dF& accumulatedOverscroll,
+    const gfx::PointF& position,
+    const gfx::Vector2dF& velocity,
     const cc::OverscrollBehavior& behavior) {
   std::unique_ptr<DidOverscrollParams> params(new DidOverscrollParams());
-  params->accumulated_overscroll = gfx::Vector2dF(
-      accumulatedOverscroll.width, accumulatedOverscroll.height);
-  params->latest_overscroll_delta =
-      gfx::Vector2dF(overscrollDelta.width, overscrollDelta.height);
-  params->current_fling_velocity =
-      gfx::Vector2dF(velocity.width, velocity.height);
-  params->causal_event_viewport_point = gfx::PointF(position.x, position.y);
+  params->accumulated_overscroll = accumulatedOverscroll;
+  params->latest_overscroll_delta = overscrollDelta;
+  params->current_fling_velocity = velocity;
+  params->causal_event_viewport_point = position;
   params->overscroll_behavior = behavior;
 
   // If we're currently handling an event, stash the overscroll data such that
@@ -539,7 +532,7 @@ void RenderWidgetInputHandler::DidOverscrollFromBlink(
 
 void RenderWidgetInputHandler::InjectGestureScrollEvent(
     blink::WebGestureDevice device,
-    const blink::WebFloatSize& delta,
+    const gfx::Vector2dF& delta,
     ui::input_types::ScrollGranularity granularity,
     cc::ElementId scrollable_area_element_id,
     WebInputEvent::Type injected_type) {
@@ -570,9 +563,8 @@ void RenderWidgetInputHandler::InjectGestureScrollEvent(
   } else {
     base::TimeTicks now = base::TimeTicks::Now();
     std::unique_ptr<WebGestureEvent> gesture_event =
-        ui::GenerateInjectedScrollGesture(injected_type, now, device,
-                                          WebFloatPoint(0, 0), delta,
-                                          granularity);
+        ui::GenerateInjectedScrollGesture(
+            injected_type, now, device, gfx::PointF(0, 0), delta, granularity);
     if (injected_type == WebInputEvent::Type::kGestureScrollBegin) {
       gesture_event->data.scroll_begin.scrollable_area_element_id =
           scrollable_area_element_id.GetStableId();
@@ -606,7 +598,7 @@ void RenderWidgetInputHandler::HandleInjectedScrollGestures(
       ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, &original_timestamp);
   DCHECK(found_original_component);
 
-  WebFloatPoint position = ui::PositionInWidgetFromInputEvent(input_event);
+  gfx::PointF position = ui::PositionInWidgetFromInputEvent(input_event);
   for (const InjectScrollGestureParams& params : injected_scroll_params) {
     // Set up a new LatencyInfo for the injected scroll - this is the original
     // LatencyInfo for the input event that was being handled when the scroll

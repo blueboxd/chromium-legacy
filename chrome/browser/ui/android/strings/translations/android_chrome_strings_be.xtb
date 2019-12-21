@@ -37,6 +37,7 @@
 <translation id="1231733316453485619">Уключыць сінхранізацыю?</translation>
 <translation id="123724288017357924">Перазагрузіць бягучую старонку, ігнаруючы змесціва кэша</translation>
 <translation id="124116460088058876">Іншыя мовы</translation>
+<translation id="1242008676835033345">Убудавана на сайце <ph name="WEBSITE_URL" /></translation>
 <translation id="124678866338384709">Закрыць бягучую ўкладку</translation>
 <translation id="1258753120186372309">Дудл Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Агляд прапанаванага змесціва і пошук</translation>
@@ -95,6 +96,7 @@
 <translation id="1672586136351118594">Больш не паказваць</translation>
 <translation id="1692118695553449118">Сінхранізацыя ўключана</translation>
 <translation id="169515064810179024">Заблакіраваць сайтам доступ да датчыкаў руху</translation>
+<translation id="1711267867945983636">Каб працягнуць, уключыце на тэлефоне функцыю NFC</translation>
 <translation id="1717218214683051432">Датчыкі руху</translation>
 <translation id="1718835860248848330">За апошнюю гадзіну</translation>
 <translation id="1736419249208073774">Агляд</translation>
@@ -151,6 +153,7 @@
 <translation id="2082238445998314030">Вынік <ph name="RESULT_NUMBER" /> з <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Гук</translation>
 <translation id="2096012225669085171">Сінхранізацыя і персаналізацыя на ўсіх прыладах</translation>
+<translation id="2099625543891475722">вашы фізічныя характарыстыкі, такія як рост</translation>
 <translation id="2100273922101894616">Аўтаматычны ўваход</translation>
 <translation id="2100314319871056947">Паспрабуйце абагуліць тэкст меншымі кавалкамі</translation>
 <translation id="2107397443965016585">Пытаць, перш чым дазволіць прайграванне абароненага змесціва на сайтах (рэкамендуецца)</translation>
@@ -481,6 +484,7 @@
 <translation id="4634124774493850572">Выкарыстаць пароль</translation>
 <translation id="4645575059429386691">Пад кіраваннем вашых бацькоў</translation>
 <translation id="4650364565596261010">Стандартная сістэмная</translation>
+<translation id="4660838440047236328">планіроўку вашага пакоя</translation>
 <translation id="4663756553811254707">Закладкі (<ph name="NUMBER_OF_BOOKMARKS" />) выдалены</translation>
 <translation id="4665282149850138822">Карыстальнік <ph name="NAME" /> дададзены на галоўны экран</translation>
 <translation id="4684427112815847243">Сінхранізаваць усё</translation>
@@ -605,6 +609,7 @@
 <translation id="5487521232677179737">Ачысціць даныя</translation>
 <translation id="5494752089476963479">Блакіраваць рэкламу на сайтах, якія паказваюць назойлівую рэкламу або рэкламу, якая ўводзіць у зман</translation>
 <translation id="5500777121964041360">Функцыя можа быць недаступна ў вашай мясцовасці</translation>
+<translation id="5505264765875738116">Сайтам забаронена запытваць дазвол на паказ апавяшчэнняў</translation>
 <translation id="5512137114520586844">Гэтым уліковым запісам кіруе <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Выключана адміністратарам гэтай прылады</translation>
 <translation id="5515439363601853141">Каб паглядзець пароль, трэба зняць блакіроўку</translation>
@@ -702,6 +707,7 @@
 <translation id="6192792657125177640">Выключэнні</translation>
 <translation id="6194112207524046168">Каб Chrome атрымаў доступ да камеры, уключыце камеру таксама ў <ph name="BEGIN_LINK" />наладах Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Блакіраваць староннія файлы cookie</translation>
+<translation id="6201345951596836663">Спасылка скапіравана</translation>
 <translation id="6206551242102657620">Падключэнне бяспечнае. Звесткі пра сайт</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> – гэта не вы?</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />: параметры</translation>
@@ -711,6 +717,7 @@
 Напрыклад, некаторыя вэб-сайты могуць пачаць паказ неперсаналізаванай рэкламы. Многія сайты працягнуць збіраць і выкарыстоўваць даныя аб вашых дзеяннях у браўзеры, напрыклад для павышэння бяспекі, паказу змесціва, рэкламы і рэкамендацый або генерацыі статыстыкі для справаздач.</translation>
 <translation id="624789221780392884">Абнаўленне гатовае</translation>
 <translation id="6255999984061454636">Рэкамендацыі па змесціве</translation>
+<translation id="6270391203985052864">Сайтам дазволена запытваць дазвол на паказ апавяшчэнняў</translation>
 <translation id="6277522088822131679">Узнікла праблема з друкам старонкі. Паўтарыце спробу.</translation>
 <translation id="6295158916970320988">Усе сайты</translation>
 <translation id="629730747756840877">Уліковы запіс</translation>
@@ -755,6 +762,7 @@
 <translation id="6545864417968258051">Пошук прылад Bluetooth</translation>
 <translation id="6560414384669816528">Пошук праз Sogou</translation>
 <translation id="656065428026159829">Яшчэ</translation>
+<translation id="6561560012278703671">Забараніць сайтам адцягваць вашу ўвагу запытамі дазволу на паказ апавяшчэнняў. Паказваць замест іх індыкатар блакіроўкі ў адрасным радку</translation>
 <translation id="6566259936974865419">Chrome сэканоміў вам <ph name="GIGABYTES" /> ГБ</translation>
 <translation id="6573096386450695060">Заўсёды дазваляць</translation>
 <translation id="6573431926118603307">Тут з'явяцца ўкладкі, адкрытыя вамі ў браўзеры Chrome на іншых прыладах.</translation>
@@ -852,6 +860,7 @@
 <translation id="729975465115245577">На вашай прыладзе няма праграмы для захоўвання файла з паролямі.</translation>
 <translation id="7302081693174882195">Падрабязныя звесткі: Адсартавана па аб'ёме захаваных даных</translation>
 <translation id="7302486331832100261">Звычайна вы блакіруеце апавяшчэнні. Каб дазволіць іх, націсніце "Падрабязнасці".</translation>
+<translation id="7311441321349344333">Функцыя NFC выключана на гэтай прыладзе. Уключыць яе можна ў <ph name="BEGIN_LINK" />Наладах Android<ph name="END_LINK" />.</translation>
 <translation id="7328017930301109123">У спрошчаным рэжыме Chrome загружае старонкі хутчэй і зніжае выкарыстанне трафіка максімум на 60 працэнтаў.</translation>
 <translation id="7333031090786104871">Ідзе дадаванне папярэдняга сайта</translation>
 <translation id="7352939065658542140">ВІДЭА</translation>

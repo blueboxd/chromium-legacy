@@ -91,6 +91,10 @@ class PrinterConfigurer {
   // Records UMA metrics for USB printer setup.
   static void RecordUsbPrinterSetupSource(UsbPrinterSetupSource source);
 
+  // Test method to override the printer configurer for testing.
+  static void SetPrinterConfigurerForTesting(
+      std::unique_ptr<PrinterConfigurer> printer_configurer);
+
  protected:
   PrinterConfigurer() = default;
 

@@ -115,8 +115,7 @@ PaintImage BitmapImage::PaintImageForTesting() {
 
 PaintImage BitmapImage::CreatePaintImage() {
   sk_sp<PaintImageGenerator> generator =
-      decoder_ ? decoder_->CreateGenerator(PaintImage::kDefaultFrameIndex)
-               : nullptr;
+      decoder_ ? decoder_->CreateGenerator() : nullptr;
   if (!generator)
     return PaintImage();
 

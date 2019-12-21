@@ -375,7 +375,6 @@ def _OnStaleMd5(changes, options, final_dex_inputs, dex_cmd):
 
     _CreateFinalDex(
         final_dex_inputs, options.output, tmp_dir, dex_cmd, options=options)
-  logging.debug('Dex finished for: %s', options.output)
 
 
 def MergeDexForIncrementalInstall(r8_jar_path, src_paths, dest_dex_jar):
@@ -390,9 +389,7 @@ def MergeDexForIncrementalInstall(r8_jar_path, src_paths, dest_dex_jar):
 
 
 def main(args):
-  logging.basicConfig(
-      level=logging.INFO if os.environ.get('DEX_DEBUG') else logging.WARNING,
-      format='%(levelname).1s %(relativeCreated)6d %(message)s')
+  build_utils.InitLogging('DEX_DEBUG')
   options = _ParseArgs(args)
 
   options.class_inputs += options.class_inputs_filearg

@@ -90,9 +90,15 @@ class BrowserReportGeneratorTest : public ::testing::Test {
         [&run_loop](std::unique_ptr<em::BrowserReport> report) {
           EXPECT_TRUE(report.get());
 
+#if defined(OS_CHROMEOS)
+          EXPECT_FALSE(report->has_browser_version());
+          EXPECT_FALSE(report->has_channel());
+#else
           EXPECT_NE(std::string(), report->browser_version());
-          EXPECT_NE(std::string(), report->executable_path());
           EXPECT_TRUE(report->has_channel());
+#endif
+
+          EXPECT_NE(std::string(), report->executable_path());
 
           EXPECT_EQ(1, report->chrome_user_profile_infos_size());
           em::ChromeUserProfileInfo profile =
@@ -101,12 +107,16 @@ class BrowserReportGeneratorTest : public ::testing::Test {
           EXPECT_EQ(kProfileName, profile.name());
           EXPECT_FALSE(profile.is_full_report());
 
+#if defined(OS_CHROMEOS)
+          EXPECT_EQ(0, report->plugins_size());
+#else
           EXPECT_LE(1, report->plugins_size());
           em::Plugin plugin = report->plugins(0);
           EXPECT_EQ(kPluginName, plugin.name());
           EXPECT_EQ(kPluginVersion, plugin.version());
           EXPECT_EQ(kPluginFileName, plugin.filename());
           EXPECT_EQ(kPluginDescription, plugin.description());
+#endif
           run_loop.Quit();
         }));
     run_loop.Run();

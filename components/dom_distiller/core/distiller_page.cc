@@ -76,12 +76,12 @@ DistillerPage::~DistillerPage() {}
 void DistillerPage::DistillPage(
     const GURL& gurl,
     const dom_distiller::proto::DomDistillerOptions options,
-    const DistillerPageCallback& callback) {
+    DistillerPageCallback callback) {
   DCHECK(ready_);
   // It is only possible to distill one page at a time. |ready_| is reset when
   // the callback to OnDistillationDone happens.
   ready_ = false;
-  distiller_page_callback_ = callback;
+  distiller_page_callback_ = std::move(callback);
   distillation_start_ = base::TimeTicks::Now();
   DistillPageImpl(gurl,
                   GetDistillerScriptWithOptions(options, StringifyOutput()));
@@ -152,7 +152,7 @@ void DistillerPage::OnDistillationDone(const GURL& page_url,
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(distiller_page_callback_,
+      FROM_HERE, base::BindOnce(std::move(distiller_page_callback_),
                                 std::move(distiller_result), found_content));
 }
 

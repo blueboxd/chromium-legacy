@@ -142,14 +142,6 @@
       </Synthetic>
     </Expand>
   </Type>
-  <Type Name="blink::WebPoint">
-    <AlternativeType Name="blink::WebFloatPoint"/>
-    <DisplayString>({x}, {y})</DisplayString>
-    <Expand>
-      <Item Name="x">x</Item>
-      <Item Name="y">y</Item>
-    </Expand>
-  </Type>
   <!-- Component build version -->
   <Type Name="blink::WebString">
     <DisplayString>{(wtf.dll!WTF::StringImpl*)(impl_.ptr_)}</DisplayString>

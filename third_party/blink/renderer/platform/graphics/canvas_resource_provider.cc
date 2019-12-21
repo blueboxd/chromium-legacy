@@ -97,7 +97,8 @@ class CanvasResourceProviderSharedBitmap : public CanvasResourceProviderBitmap {
     if (!IsBitmapFormatSupported(color_params.TransferableResourceFormat())) {
       // If the rendering format is not supported, downgrate to 8-bits.
       // TODO(junov): Should we try 12-12-12-12 and 10-10-10-2?
-      color_params.SetCanvasPixelFormat(CanvasPixelFormat::kRGBA8);
+      color_params.SetCanvasPixelFormat(
+          CanvasColorParams::GetNativeCanvasPixelFormat());
     }
 
     return CanvasResourceSharedBitmap::Create(Size(), color_params,
@@ -144,10 +145,11 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
             // TODO(khushalsagar): The software path seems to be assuming N32
             // somewhere in the later pipeline but for offscreen canvas only.
             CanvasColorParams(color_params.ColorSpace(),
-                              color_params.PixelFormat(),
-                              color_params.GetOpacityMode(),
-                              is_accelerated ? CanvasForceRGBA::kForced
-                                             : CanvasForceRGBA::kNotForced),
+                              is_accelerated && color_params.PixelFormat() !=
+                                                    CanvasPixelFormat::kF16
+                                  ? CanvasPixelFormat::kRGBA8
+                                  : color_params.PixelFormat(),
+                              color_params.GetOpacityMode()),
             is_origin_top_left,
             std::move(context_provider_wrapper),
             std::move(resource_dispatcher)),
@@ -167,18 +169,19 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     return shared_image_usage_flags_ &
            gpu::SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE;
   }
-  GLuint GetBackingTextureHandleForOverwrite() override {
+  gpu::Mailbox GetBackingMailboxForOverwrite(
+      MailboxSyncMode sync_mode) override {
     DCHECK(is_accelerated_);
 
     if (IsGpuContextLost())
-      return 0u;
+      return gpu::Mailbox();
 
-    FlushGrContext();
-    WillDraw();
-    return resource()->GetTextureIdForWriteAccess();
+    WillDrawInternal(false);
+    return resource_->GetOrCreateGpuMailbox(sync_mode);
   }
+
   GLenum GetBackingTextureTarget() const override {
-    return resource_->TextureTarget();
+    return resource()->TextureTarget();
   }
 
   scoped_refptr<CanvasResource> CreateResource() final {
@@ -256,7 +259,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     return cached_snapshot_;
   }
 
-  void WillDraw() override {
+  void WillDrawInternal(bool write_to_local_texture) {
     DCHECK(resource_);
 
     if (IsGpuContextLost())
@@ -301,9 +304,15 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
       }
     }
 
-    EnsureWriteAccess();
+    if (write_to_local_texture)
+      EnsureWriteAccess();
+    else
+      EndWriteAccess();
+
     resource()->WillDraw();
   }
+
+  void WillDraw() override { WillDrawInternal(true); }
 
   bool DoCopyOnWrite() {
     // If the canvas is single buffered, concurrent read/writes to the resource
@@ -356,7 +365,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
 
     GrGLTextureInfo texture_info = {};
     texture_info.fID = resource()->GetTextureIdForWriteAccess();
-    texture_info.fTarget = resource_->TextureTarget();
+    texture_info.fTarget = resource()->TextureTarget();
     texture_info.fFormat = ColorParams().GLSizedInternalFormat();
     return GrBackendTexture(Size().Width(), Size().Height(), GrMipMapped::kNo,
                             texture_info);

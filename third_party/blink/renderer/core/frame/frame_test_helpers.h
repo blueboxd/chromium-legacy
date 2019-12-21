@@ -199,7 +199,7 @@ class LayerTreeViewFactory {
 };
 
 struct InjectedScrollGestureData {
-  WebFloatSize delta;
+  gfx::Vector2dF delta;
   ScrollGranularity granularity;
   CompositorElementId scrollable_area_element_id;
   WebInputEvent::Type type;
@@ -221,7 +221,7 @@ class TestWebWidgetClient : public WebWidgetClient {
                                   float minimum,
                                   float maximum) override;
   void InjectGestureScrollEvent(WebGestureDevice device,
-                                const WebFloatSize& delta,
+                                const gfx::Vector2dF& delta,
                                 ScrollGranularity granularity,
                                 cc::ElementId scrollable_area_element_id,
                                 WebInputEvent::Type injected_type) override;

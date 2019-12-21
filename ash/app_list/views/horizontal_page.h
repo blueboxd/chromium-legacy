@@ -25,7 +25,7 @@ class APP_LIST_EXPORT HorizontalPage : public views::View {
   virtual views::View* GetLastFocusableView();
 
   // Returns the page bounds in the parent view when the given state is active.
-  virtual gfx::Rect GetPageBoundsForState(ash::AppListState state) const;
+  virtual gfx::Rect GetPageBoundsForState(AppListState state) const;
 
   // Returns true if the search box should be shown in this page.
   virtual bool ShouldShowSearchBox() const;

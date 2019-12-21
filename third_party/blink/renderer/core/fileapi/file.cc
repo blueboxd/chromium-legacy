@@ -298,10 +298,13 @@ base::Time File::LastModifiedTime() const {
   if (HasValidSnapshotMetadata() && snapshot_modification_time_)
     return *snapshot_modification_time_;
 
+  uint64_t size;
   base::Optional<base::Time> modification_time;
-  if (HasBackingFile() && GetFileModificationTime(path_, modification_time) &&
-      modification_time)
+  if (HasBackingFile() &&
+      GetBlobDataHandle()->CaptureSnapshot(&size, &modification_time) &&
+      modification_time) {
     return *modification_time;
+  }
 
   // lastModified / lastModifiedDate getters should return the current time
   // when the last modification time isn't known.
@@ -327,10 +330,13 @@ uint64_t File::size() const {
 
   // FIXME: JavaScript cannot represent sizes as large as uint64_t, we need
   // to come up with an exception to throw if file size is not representable.
-  int64_t size;
-  if (!HasBackingFile() || !GetFileSize(path_, size))
+  uint64_t size;
+  base::Optional<base::Time> modification_time;
+  if (!HasBackingFile() ||
+      !GetBlobDataHandle()->CaptureSnapshot(&size, &modification_time)) {
     return 0;
-  return static_cast<uint64_t>(size);
+  }
+  return size;
 }
 
 Blob* File::slice(int64_t start,
@@ -370,14 +376,12 @@ void File::CaptureSnapshot(
   // If we fail to retrieve the size or modification time, probably due to that
   // the file has been deleted, 0 size is returned.
   FileMetadata metadata;
-  if (!HasBackingFile() || !GetFileMetadata(path_, metadata)) {
+  if (!HasBackingFile() || !GetBlobDataHandle()->CaptureSnapshot(
+                               &snapshot_size, &snapshot_modification_time)) {
     snapshot_size = 0;
     snapshot_modification_time = base::nullopt;
     return;
   }
-
-  snapshot_size = static_cast<uint64_t>(metadata.length);
-  snapshot_modification_time = metadata.modification_time;
 }
 
 void File::AppendTo(BlobData& blob_data) const {

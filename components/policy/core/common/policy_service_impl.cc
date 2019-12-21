@@ -195,11 +195,11 @@ bool PolicyServiceImpl::IsInitializationComplete(PolicyDomain domain) const {
   return initialization_complete_[domain];
 }
 
-void PolicyServiceImpl::RefreshPolicies(const base::Closure& callback) {
+void PolicyServiceImpl::RefreshPolicies(base::OnceClosure callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!callback.is_null())
-    refresh_callbacks_.push_back(callback);
+    refresh_callbacks_.push_back(std::move(callback));
 
   if (providers_.empty()) {
     // Refresh is immediately complete if there are no providers. See the note
@@ -410,11 +410,10 @@ void PolicyServiceImpl::MaybeNotifyInitializationComplete(
 void PolicyServiceImpl::CheckRefreshComplete() {
   // Invoke all the callbacks if a refresh has just fully completed.
   if (refresh_pending_.empty() && !refresh_callbacks_.empty()) {
-    std::vector<base::Closure> callbacks;
+    std::vector<base::OnceClosure> callbacks;
     callbacks.swap(refresh_callbacks_);
-    std::vector<base::Closure>::iterator it;
-    for (it = callbacks.begin(); it != callbacks.end(); ++it)
-      it->Run();
+    for (auto& callback : callbacks)
+      std::move(callback).Run();
   }
 }
 

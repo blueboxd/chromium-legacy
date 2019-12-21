@@ -46,12 +46,12 @@ void InitializeShortcutInterfaces(const wchar_t* shortcut,
 
 }  // namespace
 
-ShortcutProperties::ShortcutProperties() {}
+ShortcutProperties::ShortcutProperties() = default;
 
 ShortcutProperties::ShortcutProperties(const ShortcutProperties& other) =
     default;
 
-ShortcutProperties::~ShortcutProperties() {}
+ShortcutProperties::~ShortcutProperties() = default;
 
 bool CreateOrUpdateShortcutLink(const FilePath& shortcut_path,
                                 const ShortcutProperties& properties,

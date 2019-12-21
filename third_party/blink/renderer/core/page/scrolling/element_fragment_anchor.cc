@@ -168,16 +168,6 @@ void ElementFragmentAnchor::DidScroll(ScrollType type) {
   needs_invoke_ = false;
 }
 
-void ElementFragmentAnchor::DidCompleteLoad() {
-  DCHECK(frame_);
-  DCHECK(frame_->View());
-
-  // If there is a pending layout, the fragment anchor will be cleared when it
-  // finishes.
-  if (!frame_->View()->NeedsLayout())
-    needs_invoke_ = false;
-}
-
 void ElementFragmentAnchor::Trace(blink::Visitor* visitor) {
   visitor->Trace(anchor_node_);
   visitor->Trace(frame_);

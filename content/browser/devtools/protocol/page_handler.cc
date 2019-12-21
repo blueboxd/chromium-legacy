@@ -711,12 +711,11 @@ void PageHandler::CaptureScreenshot(
 
   // Set up viewport in renderer.
   if (clip.isJust()) {
-    modified_params.viewport_offset.x = clip.fromJust()->GetX();
-    modified_params.viewport_offset.y = clip.fromJust()->GetY();
+    modified_params.viewport_offset.SetPoint(clip.fromJust()->GetX(),
+                                             clip.fromJust()->GetY());
     modified_params.viewport_scale = clip.fromJust()->GetScale() * dpfactor;
     if (IsUseZoomForDSFEnabled()) {
-      modified_params.viewport_offset.x *= screen_info.device_scale_factor;
-      modified_params.viewport_offset.y *= screen_info.device_scale_factor;
+      modified_params.viewport_offset.Scale(screen_info.device_scale_factor);
     }
   }
 

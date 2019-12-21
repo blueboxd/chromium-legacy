@@ -1622,7 +1622,7 @@ ImageData* BaseRenderingContext2D::getImageData(
   }
 
   // Convert pixels to proper storage format if needed
-  if (PixelFormat() != CanvasPixelFormat::kRGBA8) {
+  if (PixelFormat() != CanvasColorParams::GetNativeCanvasPixelFormat()) {
     ImageDataStorageFormat storage_format =
         ImageData::GetImageDataStorageFormat(color_settings->storageFormat());
     DOMArrayBufferView* array_buffer_view =
@@ -1743,8 +1743,7 @@ void BaseRenderingContext2D::putImageData(ImageData* data,
   // additional swizzling is needed.
   CanvasColorParams data_color_params = data->GetCanvasColorParams();
   CanvasColorParams context_color_params =
-      CanvasColorParams(ColorParams().ColorSpace(), PixelFormat(), kNonOpaque,
-                        CanvasForceRGBA::kNotForced);
+      CanvasColorParams(ColorParams().ColorSpace(), PixelFormat(), kNonOpaque);
   if (data_color_params.NeedsColorConversion(context_color_params) ||
       PixelFormat() == CanvasPixelFormat::kF16) {
     size_t data_length;

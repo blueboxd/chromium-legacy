@@ -18,6 +18,7 @@
 #include "components/sessions/core/base_session_service_delegate.h"
 #include "components/sessions/core/session_command.h"
 #include "components/sessions/core/session_types.h"
+#include "components/tab_groups/tab_group_color.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "components/tab_groups/tab_group_visual_data.h"
 
@@ -62,6 +63,7 @@ static const SessionCommand::id_type kCommandSetWindowWorkspace2 = 23;
 static const SessionCommand::id_type kCommandTabNavigationPathPruned = 24;
 static const SessionCommand::id_type kCommandSetTabGroup = 25;
 static const SessionCommand::id_type kCommandSetTabGroupMetadata = 26;
+static const SessionCommand::id_type kCommandSetTabGroupMetadata2 = 27;
 
 namespace {
 
@@ -626,7 +628,8 @@ bool CreateTabsAndWindows(
         break;
       }
 
-      case kCommandSetTabGroupMetadata: {
+      case kCommandSetTabGroupMetadata:
+      case kCommandSetTabGroupMetadata2: {
         std::unique_ptr<base::Pickle> pickle = command->PayloadAsPickle();
         base::PickleIterator iter(*pickle);
 
@@ -642,10 +645,35 @@ bool CreateTabsAndWindows(
         if (!iter.ReadString16(&title))
           return true;
 
-        SkColor color;
-        if (!iter.ReadUInt32(&color))
-          return true;
-        group->visual_data = tab_groups::TabGroupVisualData(title, color);
+        if (command->id() == kCommandSetTabGroupMetadata) {
+          SkColor color;
+          if (!iter.ReadUInt32(&color))
+            return true;
+
+          // crrev.com/c/1968039 changes the color of a tab group from a SkColor
+          // to a TabGroupColorId. Here we ignore the old SkColor and assign the
+          // default TabGroupColorId because the fallback is acceptable while
+          // the tab groups feature isn't yet launched. Once it is,
+          // kCommandSetTabGroupMetadata will be deprecated in favor of
+          // kCommandSetTabGroupMetadata2, which properly restores
+          // TabGroupColorIds.
+          group->visual_data = tab_groups::TabGroupVisualData(
+              title, tab_groups::TabGroupColorId::kGrey);
+        } else {
+          uint32_t color_int;
+          if (!iter.ReadUInt32(&color_int))
+            return true;
+
+          // Check for the existence of the enum value in the color set, which
+          // is the source of truth for allowed colors in tab groups. If the
+          // enum value doesn't exist, fall back to kGrey per UX preference.
+          tab_groups::TabGroupColorId color_id =
+              static_cast<tab_groups::TabGroupColorId>(color_int);
+          group->visual_data = tab_groups::TabGroupVisualData(
+              title, base::Contains(tab_groups::GetTabGroupColorSet(), color_id)
+                         ? color_id
+                         : tab_groups::TabGroupColorId::kGrey);
+        }
         break;
       }
 
@@ -870,8 +898,8 @@ std::unique_ptr<SessionCommand> CreateTabGroupMetadataUpdateCommand(
   base::Pickle pickle;
   WriteTokenToPickle(&pickle, group.token());
   pickle.WriteString16(visual_data->title());
-  pickle.WriteUInt32(visual_data->color());
-  return std::make_unique<SessionCommand>(kCommandSetTabGroupMetadata, pickle);
+  pickle.WriteUInt32(static_cast<int>(visual_data->color()));
+  return std::make_unique<SessionCommand>(kCommandSetTabGroupMetadata2, pickle);
 }
 
 std::unique_ptr<SessionCommand> CreatePinnedStateCommand(

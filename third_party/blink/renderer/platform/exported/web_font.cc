@@ -4,7 +4,6 @@
 
 #include "third_party/blink/public/platform/web_font.h"
 
-#include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_font_description.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -82,7 +81,7 @@ float WebFont::XHeight() const {
 
 void WebFont::DrawText(cc::PaintCanvas* canvas,
                        const WebTextRun& run,
-                       const WebFloatPoint& left_baseline,
+                       const gfx::PointF& left_baseline,
                        SkColor color) const {
   FontCachePurgePreventer font_cache_purge_preventer;
   TextRun text_run(run);
@@ -95,7 +94,7 @@ void WebFont::DrawText(cc::PaintCanvas* canvas,
     DrawingRecorder recorder(context, builder, DisplayItem::kWebFont);
     context.Save();
     context.SetFillColor(color);
-    context.DrawText(private_->GetFont(), run_info, left_baseline,
+    context.DrawText(private_->GetFont(), run_info, FloatPoint(left_baseline),
                      kInvalidDOMNodeId);
     context.Restore();
   }
@@ -113,12 +112,12 @@ int WebFont::OffsetForPosition(const WebTextRun& run, float position) const {
 }
 
 WebFloatRect WebFont::SelectionRectForText(const WebTextRun& run,
-                                           const WebFloatPoint& left_baseline,
+                                           const gfx::PointF& left_baseline,
                                            int height,
                                            int from,
                                            int to) const {
-  return private_->GetFont().SelectionRectForText(run, left_baseline, height,
-                                                  from, to);
+  return private_->GetFont().SelectionRectForText(
+      run, FloatPoint(left_baseline), height, from, to);
 }
 
 }  // namespace blink

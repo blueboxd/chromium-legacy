@@ -44,13 +44,13 @@ NSString* const kEncodedChromePolicyKey = @"EncodedChromePolicy";
 // Helper that observes notifications for NSUserDefaults and triggers an update
 // at the loader on the right thread.
 @interface PolicyNotificationObserver : NSObject {
-  base::Closure _callback;
+  base::RepeatingClosure _callback;
   scoped_refptr<base::SequencedTaskRunner> _taskRunner;
 }
 
 // Designated initializer. |callback| will be posted to |taskRunner| whenever
 // the NSUserDefaults change.
-- (id)initWithCallback:(const base::Closure&)callback
+- (id)initWithCallback:(const base::RepeatingClosure&)callback
             taskRunner:(scoped_refptr<base::SequencedTaskRunner>)taskRunner;
 
 // Invoked when the NSUserDefaults change.
@@ -62,7 +62,7 @@ NSString* const kEncodedChromePolicyKey = @"EncodedChromePolicy";
 
 @implementation PolicyNotificationObserver
 
-- (id)initWithCallback:(const base::Closure&)callback
+- (id)initWithCallback:(const base::RepeatingClosure&)callback
             taskRunner:(scoped_refptr<base::SequencedTaskRunner>)taskRunner {
   if ((self = [super init])) {
     _callback = callback;
@@ -102,8 +102,8 @@ PolicyLoaderIOS::~PolicyLoaderIOS() {
 
 void PolicyLoaderIOS::InitOnBackgroundThread() {
   DCHECK(task_runner()->RunsTasksInCurrentSequence());
-  base::Closure callback = base::Bind(&PolicyLoaderIOS::UserDefaultsChanged,
-                                      weak_factory_.GetWeakPtr());
+  base::RepeatingClosure callback = base::BindRepeating(
+      &PolicyLoaderIOS::UserDefaultsChanged, weak_factory_.GetWeakPtr());
   notification_observer_.reset(
       [[PolicyNotificationObserver alloc] initWithCallback:callback
                                                 taskRunner:task_runner()]);

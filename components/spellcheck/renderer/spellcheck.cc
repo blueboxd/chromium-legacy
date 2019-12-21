@@ -18,12 +18,14 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/spellcheck/common/spellcheck_common.h"
 #include "components/spellcheck/common/spellcheck_features.h"
 #include "components/spellcheck/common/spellcheck_result.h"
 #include "components/spellcheck/renderer/spellcheck_language.h"
 #include "components/spellcheck/renderer/spellcheck_provider.h"
+#include "components/spellcheck/renderer/spellcheck_renderer_metrics.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_visitor.h"
@@ -119,19 +121,25 @@ class SpellCheck::SpellcheckRequest {
   SpellcheckRequest(
       const base::string16& text,
       std::unique_ptr<blink::WebTextCheckingCompletion> completion)
-      : text_(text), completion_(std::move(completion)) {
+      : text_(text),
+        completion_(std::move(completion)),
+        start_ticks_(base::TimeTicks::Now()) {
     DCHECK(completion_);
   }
   ~SpellcheckRequest() {}
 
   base::string16 text() { return text_; }
   blink::WebTextCheckingCompletion* completion() { return completion_.get(); }
+  base::TimeTicks start_ticks() { return start_ticks_; }
 
  private:
   base::string16 text_;  // Text to be checked in this task.
 
   // The interface to send the misspelled ranges to WebKit.
   std::unique_ptr<blink::WebTextCheckingCompletion> completion_;
+
+  // The time ticks at which this request was created
+  base::TimeTicks start_ticks_;
 
   DISALLOW_COPY_AND_ASSIGN(SpellcheckRequest);
 };
@@ -475,6 +483,11 @@ void SpellCheck::PerformSpellCheck(SpellcheckRequest* param) {
     WebVector<blink::WebTextCheckingResult> results;
     SpellCheckParagraph(param->text(), &results);
     param->completion()->DidFinishCheckingText(results);
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+    spellcheck_renderer_metrics::RecordSpellcheckDuration(
+        base::TimeTicks::Now() - param->start_ticks(),
+        /*used_hunspell=*/true, /*used_native=*/false);
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
   }
 }
 #endif

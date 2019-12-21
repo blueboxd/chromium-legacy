@@ -72,7 +72,7 @@ void AppListTestHelper::CheckVisibility(bool visible) {
   EXPECT_EQ(visible, app_list_controller_->GetTargetVisibility());
 }
 
-void AppListTestHelper::CheckState(ash::AppListViewState state) {
+void AppListTestHelper::CheckState(AppListViewState state) {
   EXPECT_EQ(state, app_list_controller_->GetAppListViewState());
 }
 

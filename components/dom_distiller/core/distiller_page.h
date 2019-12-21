@@ -30,10 +30,9 @@ class SourcePageHandle {
 // thrown away without ever being used.
 class DistillerPage {
  public:
-  typedef base::Callback<void(
+  using DistillerPageCallback = base::OnceCallback<void(
       std::unique_ptr<proto::DomDistillerResult> distilled_page,
-      bool distillation_successful)>
-      DistillerPageCallback;
+      bool distillation_successful)>;
 
   DistillerPage();
   virtual ~DistillerPage();
@@ -44,7 +43,7 @@ class DistillerPage {
   // extract the same content.
   void DistillPage(const GURL& url,
                    const proto::DomDistillerOptions options,
-                   const DistillerPageCallback& callback);
+                   DistillerPageCallback callback);
 
   // Called when the JavaScript execution completes. |page_url| is the url of
   // the distilled page. |value| contains data returned by the script.

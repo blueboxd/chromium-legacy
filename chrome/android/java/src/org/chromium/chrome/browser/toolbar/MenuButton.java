@@ -294,7 +294,7 @@ public class MenuButton extends FrameLayout implements TintObserver {
         badgeFadeAnimator.setInterpolator(BakedBezierInterpolator.FADE_IN_CURVE);
 
         int pixelTranslation = menuBadge.getResources().getDimensionPixelSize(
-                R.dimen.menu_badge_translation_y_distance);
+                R.dimen.menu_badge_translation_y);
         ObjectAnimator badgeTranslateYAnimator =
                 ObjectAnimator.ofFloat(menuBadge, View.TRANSLATION_Y, pixelTranslation, 0.f);
         badgeTranslateYAnimator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);

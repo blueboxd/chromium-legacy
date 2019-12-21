@@ -643,14 +643,15 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 }
 
 // Tests that an error dialog is dismissed if the camera becomes available.
-// TODO(crbug.com/1019211): Re-enable test on iOS12.
-- (void)testDialogDismissedIfCameraBecomesAvailable {
-#if defined(CHROME_EARL_GREY_1)
-  // TODO(crbug.com/1036094): EG1 Test flaky on iOS 12.
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"EG1 flaky on iOS 12.");
-  }
+// TODO(crbug.com/1036094): Re-enable test on device.
+#if defined(CHROME_EARL_GREY_1) && !TARGET_IPHONE_SIMULATOR
+#define MAYBE_testDialogDismissedIfCameraBecomesAvailable \
+  DISABLED_testDialogDismissedIfCameraBecomesAvailable
+#else
+#define MAYBE_testDialogDismissedIfCameraBecomesAvailable \
+  testDialogDismissedIfCameraBecomesAvailable
 #endif
+- (void)MAYBE_testDialogDismissedIfCameraBecomesAvailable {
   id cameraControllerMock =
       [QRScannerAppInterface cameraControllerMockWithAuthorizationStatus:
                                  AVAuthorizationStatusAuthorized];

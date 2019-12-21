@@ -23,12 +23,12 @@ AppListMenuModelAdapter::AppListMenuModelAdapter(
     AppListViewAppType type,
     base::OnceClosure on_menu_closed_callback,
     bool is_tablet_mode)
-    : ash::AppMenuModelAdapter(app_id,
-                               std::move(menu_model),
-                               widget_owner,
-                               source_type,
-                               std::move(on_menu_closed_callback),
-                               is_tablet_mode),
+    : AppMenuModelAdapter(app_id,
+                          std::move(menu_model),
+                          widget_owner,
+                          source_type,
+                          std::move(on_menu_closed_callback),
+                          is_tablet_mode),
       metric_params_(metric_params),
       type_(type) {
   DCHECK_NE(AppListViewAppType::APP_LIST_APP_TYPE_LAST, type);
@@ -145,10 +145,10 @@ bool AppListMenuModelAdapter::IsCommandEnabled(int id) const {
   // NOTIFICATION_CONTAINER is always enabled. It is added to this model by
   // NotificationMenuController. It is not known by model()'s delegate (i.e.
   // an instance of AppContextMenu). Check for it first.
-  if (id == ash::NOTIFICATION_CONTAINER)
+  if (id == NOTIFICATION_CONTAINER)
     return true;
 
-  return ash::AppMenuModelAdapter::IsCommandEnabled(id);
+  return AppMenuModelAdapter::IsCommandEnabled(id);
 }
 
 void AppListMenuModelAdapter::ExecuteCommand(int id, int mouse_event_flags) {
@@ -156,7 +156,7 @@ void AppListMenuModelAdapter::ExecuteCommand(int id, int mouse_event_flags) {
   MaybeRecordAppLaunched(id);
 
   // Note that ExecuteCommand might delete us.
-  ash::AppMenuModelAdapter::ExecuteCommand(id, mouse_event_flags);
+  AppMenuModelAdapter::ExecuteCommand(id, mouse_event_flags);
 }
 
 void AppListMenuModelAdapter::MaybeRecordAppLaunched(int command_id) {
@@ -168,9 +168,9 @@ void AppListMenuModelAdapter::MaybeRecordAppLaunched(int command_id) {
   // kLaunchedFromSearchBox. Early out if it is not launched as an app search
   // result.
   if (metric_params_.launched_from ==
-          ash::AppListLaunchedFrom::kLaunchedFromSearchBox &&
+          AppListLaunchedFrom::kLaunchedFromSearchBox &&
       metric_params_.search_launch_type !=
-          ash::AppListLaunchType::kAppSearchResult) {
+          AppListLaunchType::kAppSearchResult) {
     return;
   }
 

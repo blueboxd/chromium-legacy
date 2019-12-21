@@ -10,7 +10,6 @@
 #include "components/feedback/proto/dom.pb.h"
 #include "components/feedback/proto/extension.pb.h"
 #include "components/feedback/proto/math.pb.h"
-#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

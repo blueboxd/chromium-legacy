@@ -214,13 +214,11 @@
 #include "third_party/blink/public/web/web_plugin_document.h"
 #include "third_party/blink/public/web/web_plugin_params.h"
 #include "third_party/blink/public/web/web_range.h"
-#include "third_party/blink/public/web/web_scoped_user_gesture.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_searchable_form_data.h"
 #include "third_party/blink/public/web/web_security_policy.h"
 #include "third_party/blink/public/web/web_serialized_script_value.h"
 #include "third_party/blink/public/web/web_settings.h"
-#include "third_party/blink/public/web/web_user_gesture_indicator.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/blink/public/web/web_widget.h"
 #include "ui/events/base_event_utils.h"
@@ -248,7 +246,6 @@
 #include <cpu-features.h>
 
 #include "content/renderer/java/gin_java_bridge_dispatcher.h"
-#include "third_party/blink/public/platform/web_float_point.h"
 #endif
 
 using base::Time;
@@ -297,14 +294,12 @@ using blink::WebURL;
 using blink::WebURLError;
 using blink::WebURLRequest;
 using blink::WebURLResponse;
-using blink::WebUserGestureIndicator;
 using blink::WebVector;
 using blink::WebView;
 using blink::mojom::SelectionMenuBehavior;
 using network::mojom::ReferrerPolicy;
 
 #if defined(OS_ANDROID)
-using blink::WebFloatPoint;
 using blink::WebFloatRect;
 #endif
 
@@ -2560,9 +2555,8 @@ void RenderFrameImpl::JavaScriptExecuteRequestForTests(
 
   // A bunch of tests expect to run code in the context of a user gesture, which
   // can grant additional privileges (e.g. the ability to create popups).
-  base::Optional<blink::WebScopedUserGesture> gesture;
   if (has_user_gesture)
-    gesture.emplace(frame_);
+    frame_->NotifyUserActivation();
 
   v8::HandleScope handle_scope(blink::MainThreadIsolate());
   v8::Local<v8::Value> result;
@@ -2858,7 +2852,7 @@ bool RenderFrameImpl::RunJavaScriptDialog(JavaScriptDialogType type,
                                           const base::string16& default_value,
                                           base::string16* result) {
   int32_t message_length = static_cast<int32_t>(message.length());
-  if (WebUserGestureIndicator::ProcessedUserGestureSinceLoad(frame_)) {
+  if (frame_->HasStickyUserActivation()) {
     UMA_HISTOGRAM_COUNTS_1M("JSDialogs.CharacterCount.UserGestureSinceLoad",
                             message_length);
   } else {
@@ -3121,7 +3115,7 @@ void RenderFrameImpl::RequestFullscreenVideoElement() {
     // This is always initiated from browser side (which should require the user
     // interacting with ui) which suffices for a user gesture even though there
     // will have been no input to the frame at this point.
-    blink::WebScopedUserGesture gesture(frame_);
+    frame_->NotifyUserActivation();
 
     video_element.RequestFullscreen();
   }
@@ -5043,8 +5037,7 @@ void RenderFrameImpl::WillSendRequestInternal(
   // don't register this id on the browser side, since the download manager
   // expects to find a RenderViewHost based off the id.
   request.SetRequestorID(render_view_->GetRoutingID());
-  request.SetHasUserGesture(
-      WebUserGestureIndicator::IsProcessingUserGesture(frame_));
+  request.SetHasUserGesture(frame_->HasTransientUserActivation());
 
   if (!render_view_->renderer_preferences_.enable_referrers) {
     request.SetReferrerString(WebString());
@@ -6258,7 +6251,8 @@ void RenderFrameImpl::OnSelectPopupMenuItem(int selected_index) {
   if (external_popup_menu_ == NULL)
     return;
 
-  blink::WebScopedUserGesture gesture(frame_);
+  if (frame_)
+    frame_->NotifyUserActivation();
   // We need to reset |external_popup_menu_| before calling DidSelectItem(),
   // which might delete |this|.
   // See ExternalPopupMenuRemoveTest.RemoveFrameOnChange
@@ -6277,7 +6271,8 @@ void RenderFrameImpl::OnSelectPopupMenuItems(
   if (!external_popup_menu_)
     return;
 
-  blink::WebScopedUserGesture gesture(frame_);
+  if (frame_)
+    frame_->NotifyUserActivation();
   // We need to reset |external_popup_menu_| before calling DidSelectItems(),
   // which might delete |this|.
   // See ExternalPopupMenuRemoveTest.RemoveFrameOnChange
@@ -6321,7 +6316,7 @@ void RenderFrameImpl::OpenURL(std::unique_ptr<blink::WebNavigationInfo> info) {
       policy == blink::kWebNavigationPolicyNewForegroundTab ||
       policy == blink::kWebNavigationPolicyNewWindow ||
       policy == blink::kWebNavigationPolicyNewPopup) {
-    WebUserGestureIndicator::ConsumeUserGesture(frame_);
+    frame_->ConsumeTransientUserActivation();
   }
 
   params.href_translate = info->href_translate.Latin1();

@@ -931,7 +931,7 @@ void GpuBenchmarking::SetBrowserControlsShown(bool show) {
 
 float GpuBenchmarking::VisualViewportY() {
   GpuBenchmarkingContext context(render_frame_.get());
-  float y = context.web_view()->VisualViewportOffset().y;
+  float y = context.web_view()->VisualViewportOffset().y();
   blink::WebRect rect(0, y, 0, 0);
   context.render_widget()->ConvertViewportToWindow(&rect);
   return rect.y;
@@ -939,7 +939,7 @@ float GpuBenchmarking::VisualViewportY() {
 
 float GpuBenchmarking::VisualViewportX() {
   GpuBenchmarkingContext context(render_frame_.get());
-  float x = context.web_view()->VisualViewportOffset().x;
+  float x = context.web_view()->VisualViewportOffset().x();
   blink::WebRect rect(x, 0, 0, 0);
   context.render_widget()->ConvertViewportToWindow(&rect);
   return rect.x;
@@ -947,7 +947,7 @@ float GpuBenchmarking::VisualViewportX() {
 
 float GpuBenchmarking::VisualViewportHeight() {
   GpuBenchmarkingContext context(render_frame_.get());
-  float height = context.web_view()->VisualViewportSize().height;
+  float height = context.web_view()->VisualViewportSize().height();
   blink::WebRect rect(0, 0, 0, height);
   context.render_widget()->ConvertViewportToWindow(&rect);
   return rect.height;
@@ -955,7 +955,7 @@ float GpuBenchmarking::VisualViewportHeight() {
 
 float GpuBenchmarking::VisualViewportWidth() {
   GpuBenchmarkingContext context(render_frame_.get());
-  float width = context.web_view()->VisualViewportSize().width;
+  float width = context.web_view()->VisualViewportSize().width();
   blink::WebRect rect(0, 0, width, 0);
   context.render_widget()->ConvertViewportToWindow(&rect);
   return rect.width;

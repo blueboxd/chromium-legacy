@@ -12,15 +12,14 @@
 namespace ash {
 
 SearchResult::SearchResult()
-    : metadata_(std::make_unique<ash::SearchResultMetadata>()) {}
+    : metadata_(std::make_unique<SearchResultMetadata>()) {}
 
 SearchResult::~SearchResult() {
   for (auto& observer : observers_)
     observer.OnResultDestroying();
 }
 
-void SearchResult::SetMetadata(
-    std::unique_ptr<ash::SearchResultMetadata> metadata) {
+void SearchResult::SetMetadata(std::unique_ptr<SearchResultMetadata> metadata) {
   metadata_ = std::move(metadata);
   for (auto& observer : observers_)
     observer.OnMetadataChanged();

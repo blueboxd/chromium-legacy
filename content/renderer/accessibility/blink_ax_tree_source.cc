@@ -573,8 +573,7 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
     container_transform_gfx->Scale(web_view->PageScaleFactor(),
                                    web_view->PageScaleFactor());
     container_transform_gfx->Translate(
-        gfx::Vector2dF(-web_view->VisualViewportOffset().x,
-                       -web_view->VisualViewportOffset().y));
+        -web_view->VisualViewportOffset().OffsetFromOrigin());
     if (!container_transform_gfx->IsIdentity())
       dst->relative_bounds.transform = std::move(container_transform_gfx);
   } else if (!container_transform.isIdentity())

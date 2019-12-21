@@ -41,6 +41,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@MinAndroidSdkLevel(Build.VERSION_CODES.M) // NotificationManager.getActiveNotifications
 @TargetApi(Build.VERSION_CODES.M)
 public class WebappActionsNotificationTest {
     private static final String WEB_APP_PATH = "/chrome/test/data/banners/manifest_test_page.html";
@@ -59,7 +60,6 @@ public class WebappActionsNotificationTest {
     @SmallTest
     @Feature({"Webapps"})
     @RetryOnFailure
-    @MinAndroidSdkLevel(Build.VERSION_CODES.M) // NotificationManager.getActiveNotifications
     public void testNotification_openInChrome() throws Exception {
         Notification notification = getWebappNotification();
 
@@ -89,7 +89,6 @@ public class WebappActionsNotificationTest {
       @SmallTest
       @Feature({"Webapps"})
       @RetryOnFailure
-      @MinAndroidSdkLevel(Build.VERSION_CODES.M) // NotificationManager.getActiveNotifications
     */
     @DisabledTest(message = "crbug.com/774491")
     public void testNotification_copyUrl() throws Exception {

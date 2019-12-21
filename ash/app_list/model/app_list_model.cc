@@ -30,7 +30,7 @@ void AppListModel::RemoveObserver(AppListModelObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void AppListModel::SetStatus(ash::AppListModelStatus status) {
+void AppListModel::SetStatus(AppListModelStatus status) {
   if (status_ == status)
     return;
 
@@ -39,7 +39,7 @@ void AppListModel::SetStatus(ash::AppListModelStatus status) {
     observer.OnAppListModelStatusChanged();
 }
 
-void AppListModel::SetState(ash::AppListState state) {
+void AppListModel::SetState(AppListState state) {
   if (state_ == state)
     return;
 
@@ -49,7 +49,7 @@ void AppListModel::SetState(ash::AppListState state) {
     observer.OnAppListStateChanged(state_, old_state);
 }
 
-void AppListModel::SetStateFullscreen(ash::AppListViewState state) {
+void AppListModel::SetStateFullscreen(AppListViewState state) {
   state_fullscreen_ = state;
 }
 

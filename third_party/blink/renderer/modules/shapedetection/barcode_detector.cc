@@ -127,8 +127,8 @@ void BarcodeDetector::OnDetectBarcodes(
     HeapVector<Member<Point2D>> corner_points;
     for (const auto& corner_point : barcode->corner_points) {
       Point2D* point = Point2D::Create();
-      point->setX(corner_point.x);
-      point->setY(corner_point.y);
+      point->setX(corner_point.x());
+      point->setY(corner_point.y());
       corner_points.push_back(point);
     }
     detected_barcodes.push_back(MakeGarbageCollected<DetectedBarcode>(

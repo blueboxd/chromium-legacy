@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/test/scoped_feature_list.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
@@ -153,16 +152,11 @@ id<GREYMatcher> NavigationBarEditButton() {
 @end
 
 @implementation LanguageSettingsTestCase {
-  base::test::ScopedFeatureList _featureList;
-
   std::unique_ptr<translate::TranslatePrefs> _translatePrefs;
 }
 
 - (void)setUp {
   [super setUp];
-
-  // Enable the Language Settings UI.
-  _featureList.InitAndEnableFeature(kLanguageSettings);
 
   // Create TranslatePrefs.
   ios::ChromeBrowserState* browserState = GetOriginalBrowserState();

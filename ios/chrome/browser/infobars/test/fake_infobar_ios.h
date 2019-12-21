@@ -5,7 +5,10 @@
 #ifndef IOS_CHROME_BROWSER_INFOBARS_TEST_FAKE_INFOBAR_IOS_H_
 #define IOS_CHROME_BROWSER_INFOBARS_TEST_FAKE_INFOBAR_IOS_H_
 
+#include <memory>
+
 #include "ios/chrome/browser/infobars/infobar_ios.h"
+#import "ios/chrome/browser/infobars/infobar_type.h"
 
 @class FakeInfobarUIDelegate;
 class FakeInfobarDelegate;
@@ -15,6 +18,11 @@ class FakeInfobarIOS : public InfoBarIOS {
  public:
   FakeInfobarIOS();
   ~FakeInfobarIOS() override;
+
+  // Creates a FakeInfobarIOS whose FakeInfobarUIDelegate's infobar type is
+  // |type|, optionally with badge support.
+  static std::unique_ptr<FakeInfobarIOS> Create(InfobarType type,
+                                                bool has_badge = false);
 
   // The fake UI delegate.
   FakeInfobarUIDelegate* fake_ui_delegate() const { return fake_ui_delegate_; }

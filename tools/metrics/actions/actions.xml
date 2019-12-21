@@ -5905,6 +5905,24 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Extensions.ExtensionDisabled">
+  <owner>archanasimha@chromium.org</owner>
+  <description>
+    The user interacted with the toggle in the chrome://extensions page to
+    disable an extension from either the main page(card view) or detail page for
+    a specific extension.
+  </description>
+</action>
+
+<action name="Extensions.ExtensionEnabled">
+  <owner>archanasimha@chromium.org</owner>
+  <description>
+    The user interacted with the toggle in the chrome://extensions page to
+    enable an extension from either the main page(card view) or detail page for
+    a specific extension.
+  </description>
+</action>
+
 <action name="Extensions.ExtensionInstalled">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -5918,6 +5936,15 @@ should be able to be added at any place in this file.
 <action name="Extensions.IDChangedError">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="Extensions.RemoveExtensionClick">
+  <owner>archanasimha@chromium.org</owner>
+  <description>
+    User clicked the &quot;Remove&quot; button in the chrome://extensions page.
+    This triggers the uninstallation flow which prompts the user to cancel or
+    confirm the uninstallation.
+  </description>
 </action>
 
 <action name="Extensions.WebStoreLaunch">

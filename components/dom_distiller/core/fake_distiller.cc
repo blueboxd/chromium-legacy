@@ -41,10 +41,10 @@ FakeDistiller::~FakeDistiller() {
 void FakeDistiller::DistillPage(
     const GURL& url,
     std::unique_ptr<DistillerPage> distiller_page,
-    const DistillationFinishedCallback& article_callback,
+    DistillationFinishedCallback article_callback,
     const DistillationUpdateCallback& page_callback) {
   url_ = url;
-  article_callback_ = article_callback;
+  article_callback_ = std::move(article_callback);
   page_callback_ = page_callback;
   if (distillation_initiated_callback_) {
     std::move(distillation_initiated_callback_).Run();
@@ -82,8 +82,7 @@ void FakeDistiller::RunDistillerCallbackInternal(
 
   base::AutoReset<bool> dont_delete_this_in_callback(&destruction_allowed_,
                                                      false);
-  article_callback_.Run(std::move(proto));
-  article_callback_.Reset();
+  std::move(article_callback_).Run(std::move(proto));
 }
 
 }  // namespace test

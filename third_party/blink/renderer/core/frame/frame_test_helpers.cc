@@ -677,7 +677,7 @@ void TestWebWidgetClient::SetPageScaleStateAndLimits(
 
 void TestWebWidgetClient::InjectGestureScrollEvent(
     WebGestureDevice device,
-    const WebFloatSize& delta,
+    const gfx::Vector2dF& delta,
     ScrollGranularity granularity,
     cc::ElementId scrollable_area_element_id,
     WebInputEvent::Type injected_type) {

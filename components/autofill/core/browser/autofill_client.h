@@ -63,6 +63,7 @@ class FormStructure;
 class LogManager;
 class MigratableCreditCard;
 class PersonalDataManager;
+class SmsClient;
 class StrikeDatabase;
 enum class WebauthnDialogCallbackType;
 enum class WebauthnDialogState;
@@ -127,23 +128,6 @@ class AutofillClient : public RiskDataLoader {
     CVC = 1,
     // Suggest use of FIDO authenticator for card unmasking.
     FIDO = 2,
-  };
-
-  // Details for card unmasking, such as the suggested method of authentication,
-  // along with any information required to facilitate the authentication.
-  struct UnmaskDetails {
-    UnmaskDetails();
-    ~UnmaskDetails();
-
-    // The type of authentication method suggested for card unmask.
-    UnmaskAuthMethod unmask_auth_method = UnmaskAuthMethod::UNKNOWN;
-    // Set to true if the user should be offered opt-in for FIDO Authentication.
-    bool offer_fido_opt_in = false;
-    // Public Key Credential Request Options required for authentication.
-    // https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialrequestoptions
-    base::Value fido_request_options;
-    // Set of credit cards ids that are eligible for FIDO Authentication.
-    std::set<std::string> fido_eligible_card_ids;
   };
 
   // Used for explicitly requesting the user to enter/confirm cardholder name,
@@ -250,6 +234,10 @@ class AutofillClient : public RiskDataLoader {
 
   // Gets the payments::PaymentsClient instance owned by the client.
   virtual payments::PaymentsClient* GetPaymentsClient() = 0;
+
+  // Gets the SmsClient instance owned by the client. May be null for platforms
+  // that don't support this.
+  virtual SmsClient* GetSmsClient() = 0;
 
   // Gets the StrikeDatabase associated with the client.
   virtual StrikeDatabase* GetStrikeDatabase() = 0;

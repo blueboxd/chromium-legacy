@@ -13,5 +13,5 @@ enum WakeLockType {
   Exposed=(DedicatedWorker,Window),
   RuntimeEnabled=WakeLock
 ] interface WakeLock {
-  [CallWith=ScriptState] Promise<WakeLockSentinel> request(WakeLockType type);
+  [CallWith=ScriptState, RaisesException] Promise<WakeLockSentinel> request(WakeLockType type);
 };

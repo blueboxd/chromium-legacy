@@ -22,9 +22,9 @@ using testing::_;
 namespace policy {
 
 ConfigurationPolicyPrefStoreTest::ConfigurationPolicyPrefStoreTest()
-    : handler_list_(base::Bind(&ConfigurationPolicyPrefStoreTest::
-                                   PopulatePolicyHandlerParameters,
-                               base::Unretained(this)),
+    : handler_list_(base::BindRepeating(&ConfigurationPolicyPrefStoreTest::
+                                            PopulatePolicyHandlerParameters,
+                                        base::Unretained(this)),
                     GetChromePolicyDetailsCallback()) {
   EXPECT_CALL(provider_, IsInitializationComplete(_))
       .WillRepeatedly(Return(false));

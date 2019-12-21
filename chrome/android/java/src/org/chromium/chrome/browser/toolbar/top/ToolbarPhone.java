@@ -1684,6 +1684,11 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         if (mLayoutUpdateHost != null) mLayoutUpdateHost.requestUpdate();
     }
 
+    @Override
+    public HomeButton getHomeButtonForTesting() {
+        return mHomeButton;
+    }
+
     private void removeHomeButton() {
         mHomeButton.setVisibility(GONE);
     }

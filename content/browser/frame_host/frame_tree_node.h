@@ -376,7 +376,7 @@ class CONTENT_EXPORT FrameTreeNode {
 
   // Returns the sticky bit of the User Activation v2 state of the
   // |FrameTreeNode|.
-  bool HasBeenActivated() const {
+  bool HasStickyUserActivation() const {
     return user_activation_state_.HasBeenActive();
   }
 

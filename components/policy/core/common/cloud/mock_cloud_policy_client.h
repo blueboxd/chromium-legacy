@@ -21,8 +21,8 @@ class SharedURLLoaderFactory;
 namespace policy {
 
 ACTION_P(ScheduleStatusCallback, status) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::BindOnce(arg0, status));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(arg0), status));
 }
 
 class MockCloudPolicyClient : public CloudPolicyClient {
@@ -43,21 +43,32 @@ class MockCloudPolicyClient : public CloudPolicyClient {
   MOCK_METHOD0(FetchPolicy, void(void));
   MOCK_METHOD0(Unregister, void(void));
   MOCK_METHOD2(UploadEnterpriseMachineCertificate,
-               void(const std::string&, const StatusCallback&));
+               void(const std::string&, StatusCallback));
   MOCK_METHOD2(UploadEnterpriseEnrollmentCertificate,
-               void(const std::string&, const StatusCallback&));
+               void(const std::string&, StatusCallback));
   MOCK_METHOD2(UploadEnterpriseEnrollmentId,
-               void(const std::string&, const StatusCallback&));
-  MOCK_METHOD4(UploadDeviceStatus,
+               void(const std::string&, StatusCallback));
+  void UploadDeviceStatus(
+      const enterprise_management::DeviceStatusReportRequest* device_status,
+      const enterprise_management::SessionStatusReportRequest* session_status,
+      const enterprise_management::ChildStatusReportRequest* child_status,
+      StatusCallback callback) override {
+    UploadDeviceStatus_(device_status, session_status, child_status, callback);
+  }
+
+  MOCK_METHOD4(UploadDeviceStatus_,
                void(const enterprise_management::DeviceStatusReportRequest*,
                     const enterprise_management::SessionStatusReportRequest*,
                     const enterprise_management::ChildStatusReportRequest*,
-                    const StatusCallback&));
+                    StatusCallback&));
   MOCK_METHOD2(UploadAppInstallReport,
                void(const enterprise_management::AppInstallReportRequest*,
-                    const StatusCallback& callback));
+                    StatusCallback callback));
   MOCK_METHOD0(CancelAppInstallReportUpload, void(void));
-  MOCK_METHOD2(UpdateGcmId, void(const std::string&, const StatusCallback&));
+  void UpdateGcmId(const std::string& id, StatusCallback callback) override {
+    UpdateGcmId_(id, callback);
+  }
+  MOCK_METHOD2(UpdateGcmId_, void(const std::string&, StatusCallback&));
   MOCK_METHOD4(UploadPolicyValidationReport,
                void(CloudPolicyValidatorBase::Status,
                     const std::vector<ValueValidationIssue>&,
@@ -67,25 +78,29 @@ class MockCloudPolicyClient : public CloudPolicyClient {
   void UploadChromeDesktopReport(
       std::unique_ptr<enterprise_management::ChromeDesktopReportRequest>
           request,
-      const StatusCallback& callback) override {
+      StatusCallback callback) override {
     UploadChromeDesktopReportProxy(request.get(), callback);
   }
   // Use Proxy function because unique_ptr can't be used in mock function.
   MOCK_METHOD2(UploadChromeDesktopReportProxy,
                void(enterprise_management::ChromeDesktopReportRequest*,
-                    const StatusCallback&));
+                    StatusCallback&));
 
   void UploadChromeOsUserReport(
       std::unique_ptr<enterprise_management::ChromeOsUserReportRequest> request,
-      const StatusCallback& callback) override {
+      StatusCallback callback) override {
     UploadChromeOsUserReportProxy(request.get(), callback);
   }
   // Use Proxy function because unique_ptr can't be used in mock function.
   MOCK_METHOD2(UploadChromeOsUserReportProxy,
                void(enterprise_management::ChromeOsUserReportRequest*,
-                    const StatusCallback&));
+                    StatusCallback&));
 
-  MOCK_METHOD2(UploadRealtimeReport, void(base::Value, const StatusCallback&));
+  void UploadRealtimeReport(base::Value value,
+                            StatusCallback callback) override {
+    UploadRealtimeReport_(value, callback);
+  }
+  MOCK_METHOD2(UploadRealtimeReport_, void(base::Value&, StatusCallback&));
 
   // Sets the DMToken.
   void SetDMToken(const std::string& token);

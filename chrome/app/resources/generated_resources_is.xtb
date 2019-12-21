@@ -1758,7 +1758,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="347670947055184738">Úbbs!  Kerfið gat ekki sótt stefnu úr tækinu þínu.</translation>
 <translation id="347785443197175480">Halda áfram að veita <ph name="HOST" /> aðgang að myndavélinni og hljóðnemanum</translation>
 <translation id="3478685642445675458">Opnaðu prófílinn þinn áður en aðili er fjarlægður.</translation>
-<translation id="3479539252931486093">Bjóstu ekki við þessu? <ph name="BEGIN_LINK" />Sendu okkur línu<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Ekki núna</translation>
 <translation id="3481268647794498892">Opnar í <ph name="ALTERNATIVE_BROWSER_NAME" /> eftir <ph name="COUNTDOWN_SECONDS" /> sekúndur</translation>
 <translation id="3484273680291419129">Fjarlægir skaðlegan hugbúnað...</translation>
@@ -3502,7 +3501,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="6007240208646052708">Raddleit er ekki í boði á þínu tungumáli.</translation>
 <translation id="6009781704028455063">Innbyggður skynjari</translation>
 <translation id="6010869025736512584">Fær aðgang að myndinntaki</translation>
-<translation id="6011074160056912900">Ethernet-net</translation>
+<translation id="6011074160056912900">Ethernet</translation>
 <translation id="6011193465932186973">Fingrafar</translation>
 <translation id="6011449291337289699">Hreinsa vefsvæðagögn</translation>
 <translation id="6015266928248016057">Ógilt PUK-númer. Tilraunir eftir: <ph name="RETRIES" />.</translation>
@@ -4490,7 +4489,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="7442465037756169001">Hangouts Meet hardware er reiðubúinn til uppsetningar.</translation>
 <translation id="744341768939279100">Búa til nýjan prófíl</translation>
 <translation id="7443806024147773267">Hafðu aðgang að aðgangsorðunum þínum hvenær sem þú ert skráð(ur) inn á Google reikninginn þinn</translation>
-<translation id="7444046173054089907">Lokað er fyrir þetta vefsvæði</translation>
 <translation id="7444983668544353857">Slökkva á <ph name="NETWORKDEVICE" /></translation>
 <translation id="7448430327655618736">Setja forrit upp sjálfkrafa</translation>
 <translation id="7450761244949417357">Opnar núna í <ph name="ALTERNATIVE_BROWSER_NAME" /></translation>

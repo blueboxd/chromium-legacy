@@ -18,7 +18,8 @@ class CompositorFrameReporterTest : public testing::Test {
   const base::flat_set<FrameSequenceTrackerType> active_trackers = {};
   CompositorFrameReporterTest()
       : pipeline_reporter_(
-            std::make_unique<CompositorFrameReporter>(&active_trackers)) {
+            std::make_unique<CompositorFrameReporter>(&active_trackers,
+                                                      nullptr)) {
     AdvanceNowByMs(1);
   }
 

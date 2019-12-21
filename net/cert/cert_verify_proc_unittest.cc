@@ -39,6 +39,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
 #include "net/cert_net/cert_net_fetcher_url_request.h"
+#include "net/cert_net/nss_ocsp_session_url_request.h"
 #include "net/der/input.h"
 #include "net/der/parser.h"
 #include "net/proxy_resolution/proxy_config.h"

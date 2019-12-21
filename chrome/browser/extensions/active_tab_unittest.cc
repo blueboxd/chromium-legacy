@@ -33,7 +33,6 @@
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/test/browser_side_navigation_test_utils.h"
 #include "content/public/test/navigation_simulator.h"
-#include "content/public/test/test_browser_thread.h"
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_registry.h"

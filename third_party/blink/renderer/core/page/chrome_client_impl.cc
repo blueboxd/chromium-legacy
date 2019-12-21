@@ -278,10 +278,11 @@ Page* ChromeClientImpl::CreateWindowDelegate(
   return new_view->GetPage();
 }
 
-void ChromeClientImpl::DidOverscroll(const FloatSize& overscroll_delta,
-                                     const FloatSize& accumulated_overscroll,
-                                     const FloatPoint& position_in_viewport,
-                                     const FloatSize& velocity_in_viewport) {
+void ChromeClientImpl::DidOverscroll(
+    const gfx::Vector2dF& overscroll_delta,
+    const gfx::Vector2dF& accumulated_overscroll,
+    const gfx::PointF& position_in_viewport,
+    const gfx::Vector2dF& velocity_in_viewport) {
   if (!web_view_->does_composite())
     return;
 
@@ -295,7 +296,7 @@ void ChromeClientImpl::DidOverscroll(const FloatSize& overscroll_delta,
 void ChromeClientImpl::InjectGestureScrollEvent(
     LocalFrame& local_frame,
     WebGestureDevice device,
-    const WebFloatSize& delta,
+    const gfx::Vector2dF& delta,
     ScrollGranularity granularity,
     CompositorElementId scrollable_area_element_id,
     WebInputEvent::Type injected_type) {
@@ -727,14 +728,14 @@ void ChromeClientImpl::SetCursorOverridden(bool overridden) {
   cursor_overridden_ = overridden;
 }
 
-void ChromeClientImpl::AutoscrollStart(WebFloatPoint viewport_point,
+void ChromeClientImpl::AutoscrollStart(const gfx::PointF& viewport_point,
                                        LocalFrame* local_frame) {
   if (WebFrameWidgetBase* widget =
           WebLocalFrameImpl::FromFrame(local_frame)->LocalRootFrameWidget())
     widget->Client()->AutoscrollStart(viewport_point);
 }
 
-void ChromeClientImpl::AutoscrollFling(WebFloatSize velocity,
+void ChromeClientImpl::AutoscrollFling(const gfx::Vector2dF& velocity,
                                        LocalFrame* local_frame) {
   if (WebFrameWidgetBase* widget =
           WebLocalFrameImpl::FromFrame(local_frame)->LocalRootFrameWidget())

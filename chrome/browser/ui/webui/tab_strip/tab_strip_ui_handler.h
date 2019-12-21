@@ -1,0 +1,73 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_UI_WEBUI_TAB_STRIP_TAB_STRIP_UI_HANDLER_H_
+#define CHROME_BROWSER_UI_WEBUI_TAB_STRIP_TAB_STRIP_UI_HANDLER_H_
+
+#include "base/macros.h"
+#include "base/values.h"
+#include "chrome/browser/ui/tabs/tab_change_type.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "chrome/browser/ui/webui/tab_strip/thumbnail_tracker.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui_message_handler.h"
+
+class Browser;
+class TabStripUIEmbedder;
+
+class TabStripUIHandler : public content::WebUIMessageHandler,
+                          public TabStripModelObserver {
+ public:
+  explicit TabStripUIHandler(Browser* browser, TabStripUIEmbedder* embedder);
+  ~TabStripUIHandler() override;
+
+  void NotifyLayoutChanged();
+  void NotifyReceivedKeyboardFocus();
+
+  // TabStripModelObserver:
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override;
+  void TabChangedAt(content::WebContents* contents,
+                    int index,
+                    TabChangeType change_type) override;
+  void TabPinnedStateChanged(TabStripModel* tab_strip_model,
+                             content::WebContents* contents,
+                             int index) override;
+  void TabBlockedStateChanged(content::WebContents* contents,
+                              int index) override;
+
+ protected:
+  // content::WebUIMessageHandler:
+  void OnJavascriptAllowed() override;
+  void RegisterMessages() override;
+
+ private:
+  void HandleCreateNewTab(const base::ListValue* args);
+  base::DictionaryValue GetTabData(content::WebContents* contents, int index);
+  void HandleGetTabs(const base::ListValue* args);
+  void HandleGetThemeColors(const base::ListValue* args);
+  void HandleCloseContainer(const base::ListValue* args);
+  void HandleShowBackgroundContextMenu(const base::ListValue* args);
+  void HandleShowTabContextMenu(const base::ListValue* args);
+  void HandleGetLayout(const base::ListValue* args);
+  void HandleSetThumbnailTracked(const base::ListValue* args);
+  void HandleReportTabActivationDuration(const base::ListValue* args);
+  void HandleReportTabDataReceivedDuration(const base::ListValue* args);
+  void HandleReportTabCreationDuration(const base::ListValue* args);
+  void HandleThumbnailUpdate(content::WebContents* tab,
+                             ThumbnailTracker::CompressedThumbnailData image);
+  void ReportTabDurationHistogram(const char* histogram_fragment,
+                                  int tab_count,
+                                  base::TimeDelta duration);
+
+  Browser* const browser_;
+  TabStripUIEmbedder* const embedder_;
+  ThumbnailTracker thumbnail_tracker_;
+
+  DISALLOW_COPY_AND_ASSIGN(TabStripUIHandler);
+};
+
+#endif  // CHROME_BROWSER_UI_WEBUI_TAB_STRIP_TAB_STRIP_UI_HANDLER_H_

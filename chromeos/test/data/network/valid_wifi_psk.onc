@@ -31,7 +31,6 @@
         "HexSSID": "4F70656E577274", // "OpenWrt"
         "HiddenSSID": false,
         "Passphrase": "some passphrase",
-        "RoamThreshold": 20,
         "Security": "WPA-PSK"
     }
 }

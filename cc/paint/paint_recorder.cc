@@ -17,7 +17,7 @@ PaintRecorder::~PaintRecorder() = default;
 
 PaintCanvas* PaintRecorder::beginRecording(const SkRect& bounds) {
   display_item_list_->StartPaint();
-  canvas_.emplace(display_item_list_.get(), bounds);
+  canvas_ = CreateCanvas(display_item_list_.get(), bounds);
   return getRecordingCanvas();
 }
 
@@ -39,6 +39,12 @@ sk_sp<PaintRecord> PaintRecorder::finishRecordingAsPicture() {
   display_item_list_->EndPaintOfUnpaired(gfx::Rect());
   display_item_list_->Finalize();
   return display_item_list_->ReleaseAsRecord();
+}
+
+std::unique_ptr<RecordPaintCanvas> PaintRecorder::CreateCanvas(
+    DisplayItemList* list,
+    const SkRect& bounds) {
+  return std::make_unique<RecordPaintCanvas>(list, bounds);
 }
 
 }  // namespace cc

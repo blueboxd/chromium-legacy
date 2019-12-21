@@ -216,7 +216,7 @@ WebFloatRect FindInPage::ActiveFindMatchRect() {
 }
 
 void FindInPage::ActivateNearestFindResult(int request_id,
-                                           const WebFloatPoint& point) {
+                                           const gfx::PointF& point) {
   WebRect active_match_rect;
   const int ordinal =
       EnsureTextFinder().SelectNearestFindMatch(point, &active_match_rect);
@@ -239,10 +239,10 @@ void FindInPage::SetClient(
   client_.Bind(std::move(remote));
 }
 
-void FindInPage::GetNearestFindResult(const WebFloatPoint& point,
+void FindInPage::GetNearestFindResult(const gfx::PointF& point,
                                       GetNearestFindResultCallback callback) {
   float distance;
-  EnsureTextFinder().NearestFindMatch(point, &distance);
+  EnsureTextFinder().NearestFindMatch(FloatPoint(point), &distance);
   std::move(callback).Run(distance);
 }
 

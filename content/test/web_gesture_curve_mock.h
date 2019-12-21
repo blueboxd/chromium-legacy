@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_gesture_curve.h"
 #include "third_party/blink/public/platform/web_size.h"
 
@@ -16,7 +15,7 @@
 // indefinitely.
 class WebGestureCurveMock : public blink::WebGestureCurve {
  public:
-  WebGestureCurveMock(const blink::WebFloatPoint& velocity,
+  WebGestureCurveMock(const gfx::Vector2dF& velocity,
                       const blink::WebSize& cumulative_scroll);
   ~WebGestureCurveMock() override;
 
@@ -26,7 +25,7 @@ class WebGestureCurveMock : public blink::WebGestureCurve {
                gfx::Vector2dF& out_delta_to_scroll) override;
 
  private:
-  blink::WebFloatPoint velocity_;
+  gfx::Vector2dF velocity_;
   blink::WebSize cumulative_scroll_;
 
   DISALLOW_COPY_AND_ASSIGN(WebGestureCurveMock);

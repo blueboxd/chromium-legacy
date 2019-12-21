@@ -932,16 +932,6 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
       Jika kebijakan ini tidak dikonfigurasi atau disetel ke True, pengguna dapat menggunakan fitur Berbagi File Jaringan.
 
       Jika kebijakan ini disetel ke False, pengguna tidak dapat menggunakan fitur Berbagi File Jaringan.</translation>
-<translation id="2437706973218087361">Kebijakan ini mengontrol fitur keamanan di TLS 1.3 yang melindungi koneksi terhadap serangan downgrade. Kebijakan ini kompatibel dengan versi sebelumnya dan tidak akan memengaruhi koneksi ke server atau proxy TLS 1.2 yang sudah patuh. Namun, versi lama dari beberapa proxy yang menginterupsi TLS memiliki cacat dalam proses implementasi, sehingga versi tersebut menjadi tidak kompatibel.
-
-      Jika kebijakan ini ditetapkan ke True, <ph name="PRODUCT_NAME" /> akan mengaktifkan perlindungan keamanan ini untuk semua koneksi.
-
-      Jika kebijakan ini ditetapkan ke False atau tidak ditetapkan, <ph name="PRODUCT_NAME" /> akan menonaktifkan perlindungan keamanan ini untuk koneksi yang diautentikasi dengan sertifikat CA yang diinstal secara lokal. Perlindungan ini akan selalu diaktifkan untuk koneksi yang diautentikasi dengan sertifikat CA yang dipercaya publik.
-
-      Kebijakan ini dapat digunakan untuk menguji proxy yang terpengaruh dan mengupgradenya. Proxy yang terpengaruh akan menyebabkan kegagalan koneksi dengan kode error ERR_TLS13_DOWNGRADE_DETECTED. Versi baru <ph name="PRODUCT_NAME" /> akan mengaktifkan opsi ini secara default.
-
-      Setelah opsi diaktifkan secara default, administrator yang memerlukan waktu tambahan untuk mengupgrade proxy yang terpengaruh dapat menggunakan kebijakan ini untuk sementara menonaktifkan fitur keamanan ini. Kebijakan ini akan dihapus setelah versi 85.
-      </translation>
 <translation id="2438609638493026652">Mengaktifkan pelaporan peristiwa penting selama penginstalan aplikasi Android ke Google. Peristiwa direkam hanya untuk aplikasi yang penginstalannya dipicu melalui kebijakan.
 
       Jika kebijakan disetel ke true, peristiwa akan dicatat dalam log.

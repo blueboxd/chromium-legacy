@@ -40,7 +40,7 @@ TypedURLModelTypeController::TypedURLModelTypeController(
   pref_registrar_.Init(pref_service_);
   pref_registrar_.Add(
       history_disabled_pref_name_,
-      base::Bind(
+      base::BindRepeating(
           &TypedURLModelTypeController::OnSavingBrowserHistoryDisabledChanged,
           base::AsWeakPtr(this)));
 }

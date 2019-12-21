@@ -83,6 +83,16 @@ static std::unique_ptr<protocol::DOM::Rect> BuildObjectForRect(
       .build();
 }
 
+static std::unique_ptr<protocol::DOM::Rect> BuildObjectForRect(
+    const gfx::RectF& rect) {
+  return protocol::DOM::Rect::create()
+      .setX(rect.x())
+      .setY(rect.y())
+      .setHeight(rect.height())
+      .setWidth(rect.width())
+      .build();
+}
+
 static std::unique_ptr<protocol::LayerTree::ScrollRect> BuildScrollRect(
     const gfx::Rect& rect,
     const String& type) {

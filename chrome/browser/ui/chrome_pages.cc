@@ -21,6 +21,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/default_web_app_ids.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/extensions/launch_util.h"
@@ -110,7 +111,7 @@ const std::string BuildQueryString(Profile* profile) {
   std::string region;
   chromeos::system::StatisticsProvider::GetInstance()->GetMachineStatistic(
       "region", &region);
-  const std::string language = l10n_util::GetApplicationLocale(std::string());
+  const std::string language = g_browser_process->GetApplicationLocale();
   const std::string version = version_info::GetVersionNumber();
   const std::string milestone = version_info::GetMajorVersionNumber();
   std::string channel_name =

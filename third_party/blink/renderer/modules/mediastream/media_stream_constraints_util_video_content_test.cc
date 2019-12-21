@@ -188,8 +188,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, OverconstrainedOnFrameRate) {
 TEST_F(MediaStreamConstraintsUtilVideoContentTest,
        OverconstrainedOnInvalidResizeMode) {
   constraint_factory_.Reset();
-  constraint_factory_.basic().resize_mode.SetExact(
-      WebString::FromASCII("invalid"));
+  constraint_factory_.basic().resize_mode.SetExact("invalid");
   auto result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().resize_mode.GetName(),
@@ -199,7 +198,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
 TEST_F(MediaStreamConstraintsUtilVideoContentTest,
        OverconstrainedOnEmptyResizeMode) {
   constraint_factory_.Reset();
-  constraint_factory_.basic().resize_mode.SetExact(WebString::FromASCII(""));
+  constraint_factory_.basic().resize_mode.SetExact("");
   auto result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().resize_mode.GetName(),
@@ -209,13 +208,12 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
 // The "Mandatory" and "Ideal" tests check that various selection criteria work
 // for each individual constraint in the basic constraint set.
 TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryDeviceID) {
-  const std::string kDeviceID = "Some ID";
+  const String kDeviceID = "Some ID";
   constraint_factory_.Reset();
-  constraint_factory_.basic().device_id.SetExact(
-      WebString::FromASCII(kDeviceID));
+  constraint_factory_.basic().device_id.SetExact(kDeviceID);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
-  EXPECT_EQ(kDeviceID, result.device_id());
+  EXPECT_EQ(kDeviceID.Utf8(), result.device_id());
   // Other settings should have default values.
   EXPECT_EQ(kDefaultScreenCastHeight, result.Height());
   EXPECT_EQ(kDefaultScreenCastWidth, result.Width());
@@ -225,21 +223,21 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryDeviceID) {
 }
 
 TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealDeviceID) {
-  const std::string kDeviceID = "Some ID";
-  const std::string kIdealID = "Ideal ID";
-  WebVector<WebString> device_ids(static_cast<size_t>(2));
-  device_ids[0] = WebString::FromASCII(kDeviceID);
-  device_ids[1] = WebString::FromASCII(kIdealID);
+  const String kDeviceID = "Some ID";
+  const String kIdealID = "Ideal ID";
+  Vector<String> device_ids(static_cast<size_t>(2));
+  device_ids[0] = kDeviceID;
+  device_ids[1] = kIdealID;
   constraint_factory_.Reset();
   constraint_factory_.basic().device_id.SetExact(device_ids);
 
-  WebVector<WebString> ideal_id(static_cast<size_t>(1));
-  ideal_id[0] = WebString::FromASCII(kIdealID);
+  Vector<String> ideal_id(static_cast<size_t>(1));
+  ideal_id[0] = kIdealID;
   constraint_factory_.basic().device_id.SetIdeal(ideal_id);
 
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
-  EXPECT_EQ(kIdealID, result.device_id());
+  EXPECT_EQ(kIdealID.Utf8(), result.device_id());
   // Other settings should have default values.
   EXPECT_EQ(kDefaultScreenCastHeight, result.Height());
   EXPECT_EQ(kDefaultScreenCastWidth, result.Width());
@@ -1542,8 +1540,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryResizeMode) {
   constraint_factory_.Reset();
   constraint_factory_.basic().width.SetIdeal(kIdealWidth);
   constraint_factory_.basic().height.SetIdeal(kIdealHeight);
-  constraint_factory_.basic().resize_mode.SetExact(
-      WebString::FromASCII("none"));
+  constraint_factory_.basic().resize_mode.SetExact("none");
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // Screen capture will proceed at 641x480, which will be considered "native".
@@ -1552,8 +1549,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryResizeMode) {
   EXPECT_EQ(result.Height(), kIdealHeight);
   EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
 
-  constraint_factory_.basic().resize_mode.SetExact(
-      WebString::FromASCII("crop-and-scale"));
+  constraint_factory_.basic().resize_mode.SetExact("crop-and-scale");
   result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   EXPECT_EQ(result.Width(), kIdealWidth);
@@ -1979,74 +1975,62 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
 }
 
 TEST_F(MediaStreamConstraintsUtilVideoContentTest, AdvancedDeviceID) {
-  const std::string kDeviceID1 = "fake_device_1";
-  const std::string kDeviceID2 = "fake_device_2";
-  const std::string kDeviceID3 = "fake_device_3";
-  const std::string kDeviceID4 = "fake_device_4";
+  const String kDeviceID1 = "fake_device_1";
+  const String kDeviceID2 = "fake_device_2";
+  const String kDeviceID3 = "fake_device_3";
+  const String kDeviceID4 = "fake_device_4";
   constraint_factory_.Reset();
   WebMediaTrackConstraintSet& advanced1 = constraint_factory_.AddAdvanced();
-  WebString id_vector1[] = {WebString::FromASCII(kDeviceID1),
-                            WebString::FromASCII(kDeviceID2)};
-  advanced1.device_id.SetExact(
-      WebVector<WebString>(id_vector1, base::size(id_vector1)));
-  WebString id_vector2[] = {WebString::FromASCII(kDeviceID2),
-                            WebString::FromASCII(kDeviceID3)};
+  Vector<String> id_vector1 = {kDeviceID1, kDeviceID2};
+  advanced1.device_id.SetExact(id_vector1);
+  Vector<String> id_vector2 = {kDeviceID2, kDeviceID3};
   WebMediaTrackConstraintSet& advanced2 = constraint_factory_.AddAdvanced();
-  advanced2.device_id.SetExact(
-      WebVector<WebString>(id_vector2, base::size(id_vector2)));
+  advanced2.device_id.SetExact(id_vector2);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // kDeviceID2 must be selected because it is the only one that satisfies both
   // advanced sets.
-  EXPECT_EQ(kDeviceID2, result.device_id());
+  EXPECT_EQ(kDeviceID2.Utf8(), result.device_id());
   CheckTrackAdapterSettingsEqualsFormatDefaultAspectRatio(result);
 }
 
 TEST_F(MediaStreamConstraintsUtilVideoContentTest,
        AdvancedContradictoryDeviceID) {
-  const std::string kDeviceID1 = "fake_device_1";
-  const std::string kDeviceID2 = "fake_device_2";
-  const std::string kDeviceID3 = "fake_device_3";
-  const std::string kDeviceID4 = "fake_device_4";
+  const String kDeviceID1 = "fake_device_1";
+  const String kDeviceID2 = "fake_device_2";
+  const String kDeviceID3 = "fake_device_3";
+  const String kDeviceID4 = "fake_device_4";
   constraint_factory_.Reset();
   WebMediaTrackConstraintSet& advanced1 = constraint_factory_.AddAdvanced();
-  WebString id_vector1[] = {WebString::FromASCII(kDeviceID1),
-                            WebString::FromASCII(kDeviceID2)};
-  advanced1.device_id.SetExact(
-      WebVector<WebString>(id_vector1, base::size(id_vector1)));
-  WebString id_vector2[] = {WebString::FromASCII(kDeviceID3),
-                            WebString::FromASCII(kDeviceID4)};
+  Vector<String> id_vector1 = {kDeviceID1, kDeviceID2};
+  advanced1.device_id.SetExact(id_vector1);
+  Vector<String> id_vector2 = {kDeviceID3, kDeviceID4};
   WebMediaTrackConstraintSet& advanced2 = constraint_factory_.AddAdvanced();
-  advanced2.device_id.SetExact(
-      WebVector<WebString>(id_vector2, base::size(id_vector2)));
+  advanced2.device_id.SetExact(id_vector2);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // The second advanced set must be ignored because it contradicts the first
   // set.
-  EXPECT_EQ(std::string(kDeviceID1), result.device_id());
+  EXPECT_EQ(kDeviceID1.Utf8(), result.device_id());
   CheckTrackAdapterSettingsEqualsFormatDefaultAspectRatio(result);
 }
 
 TEST_F(MediaStreamConstraintsUtilVideoContentTest, AdvancedIdealDeviceID) {
-  const std::string kDeviceID1 = "fake_device_1";
-  const std::string kDeviceID2 = "fake_device_2";
-  const std::string kDeviceID3 = "fake_device_3";
+  const String kDeviceID1 = "fake_device_1";
+  const String kDeviceID2 = "fake_device_2";
+  const String kDeviceID3 = "fake_device_3";
   constraint_factory_.Reset();
   WebMediaTrackConstraintSet& advanced = constraint_factory_.AddAdvanced();
-  WebString id_vector1[] = {WebString::FromASCII(kDeviceID1),
-                            WebString::FromASCII(kDeviceID2)};
-  advanced.device_id.SetExact(
-      WebVector<WebString>(id_vector1, base::size(id_vector1)));
+  Vector<String> id_vector1 = {kDeviceID1, kDeviceID2};
+  advanced.device_id.SetExact(id_vector1);
 
-  WebString id_vector2[] = {WebString::FromASCII(kDeviceID2),
-                            WebString::FromASCII(kDeviceID3)};
-  constraint_factory_.basic().device_id.SetIdeal(
-      WebVector<WebString>(id_vector2, base::size(id_vector2)));
+  Vector<String> id_vector2 = {kDeviceID2, kDeviceID3};
+  constraint_factory_.basic().device_id.SetIdeal(id_vector2);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // Should select kDeviceID2, which appears in ideal and satisfies the advanced
   // set.
-  EXPECT_EQ(std::string(kDeviceID2), result.device_id());
+  EXPECT_EQ(kDeviceID2.Utf8(), result.device_id());
   CheckTrackAdapterSettingsEqualsFormatDefaultAspectRatio(result);
 }
 
@@ -2057,7 +2041,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, AdvancedResizeMode) {
   constraint_factory_.basic().width.SetIdeal(kIdealWidth);
   constraint_factory_.basic().height.SetIdeal(kIdealHeight);
   WebMediaTrackConstraintSet& advanced = constraint_factory_.AddAdvanced();
-  advanced.resize_mode.SetExact(WebString::FromASCII("none"));
+  advanced.resize_mode.SetExact("none");
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // Screen capture will proceed at 641x480, which will be considered "native".
@@ -2067,7 +2051,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, AdvancedResizeMode) {
   EXPECT_EQ(result.Height(), kIdealHeight);
   EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
 
-  advanced.resize_mode.SetExact(WebString::FromASCII("crop-and-scale"));
+  advanced.resize_mode.SetExact("crop-and-scale");
   result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // Screen capture will proceed at 641x480, which will be considered "native".

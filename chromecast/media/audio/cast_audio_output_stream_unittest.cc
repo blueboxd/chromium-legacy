@@ -28,7 +28,6 @@
 #include "chromecast/public/task_runner.h"
 #include "chromecast/public/volume_control.h"
 #include "content/public/test/browser_task_environment.h"
-#include "content/public/test/test_browser_thread.h"
 #include "media/audio/mock_audio_source_callback.h"
 #include "media/audio/test_audio_thread.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"

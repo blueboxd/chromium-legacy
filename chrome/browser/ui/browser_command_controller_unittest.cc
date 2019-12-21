@@ -268,7 +268,8 @@ class FullscreenTestBrowserWindow : public TestBrowserWindow,
   bool ShouldHideUIForFullscreen() const override { return fullscreen_; }
   bool IsFullscreen() const override { return fullscreen_; }
   void EnterFullscreen(const GURL& url,
-                       ExclusiveAccessBubbleType type) override {
+                       ExclusiveAccessBubbleType type,
+                       int64_t display_id) override {
     fullscreen_ = true;
   }
   void ExitFullscreen() override { fullscreen_ = false; }

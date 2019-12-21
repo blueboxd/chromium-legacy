@@ -37,7 +37,7 @@ template <class ImplClass>
 class EtwTraceConsumerBase {
  public:
   // Constructs a closed consumer.
-  EtwTraceConsumerBase() {}
+  EtwTraceConsumerBase() = default;
 
   ~EtwTraceConsumerBase() { Close(); }
 

@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/run_loop.h"
+#include "base/test/gmock_move_support.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
@@ -136,7 +137,7 @@ class StatusUploaderTest : public testing::Test {
     // Running the status collected callback should trigger
     // CloudPolicyClient::UploadDeviceStatus.
     CloudPolicyClient::StatusCallback callback;
-    EXPECT_CALL(client_, UploadDeviceStatus).WillOnce(SaveArg<3>(&callback));
+    EXPECT_CALL(client_, UploadDeviceStatus_).WillOnce(MoveArg<3>(&callback));
 
     // Send some "valid" (read: non-nullptr) device/session data to the
     // callback in order to simulate valid status data.
@@ -155,7 +156,7 @@ class StatusUploaderTest : public testing::Test {
         .Times(upload_success ? 1 : 0);
 
     // Now invoke the response.
-    callback.Run(upload_success);
+    std::move(callback).Run(upload_success);
 
     // Now that the previous request was satisfied, a task to do the next
     // upload should be queued.
@@ -290,7 +291,7 @@ TEST_F(StatusUploaderTest, ResetTimerAfterUnregisteredClient) {
   EXPECT_FALSE(task_runner_->HasPendingTask());
 
   // StatusUploader should not try to upload using an unregistered client
-  EXPECT_CALL(client_, UploadDeviceStatus).Times(0);
+  EXPECT_CALL(client_, UploadDeviceStatus_).Times(0);
   StatusCollectorParams status_params;
   status_callback.Run(std::move(status_params));
 

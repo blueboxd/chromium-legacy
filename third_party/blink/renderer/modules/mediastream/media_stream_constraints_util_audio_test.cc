@@ -96,7 +96,7 @@ class MediaStreamConstraintsUtilAudioTestBase {
   void ResetFactory() {
     constraint_factory_.Reset();
     constraint_factory_.basic().media_stream_source.SetExact(
-        blink::WebString::FromASCII(GetMediaStreamSource()));
+        String::FromUTF8(GetMediaStreamSource()));
   }
 
   // If not overridden, this function will return device capture by default.
@@ -399,24 +399,21 @@ class MediaStreamConstraintsUtilAudioTestBase {
                               double min_latency,
                               double max_latency) {
     constraint_factory_.Reset();
-    constraint_factory_.basic().device_id.SetExact(
-        blink::WebString(device->DeviceID()));
+    constraint_factory_.basic().device_id.SetExact(device->DeviceID());
     constraint_factory_.basic().echo_cancellation.SetExact(false);
     constraint_factory_.basic().latency.SetExact(0.0);
     auto result = SelectSettings();
     EXPECT_FALSE(result.HasValue());
 
     constraint_factory_.Reset();
-    constraint_factory_.basic().device_id.SetExact(
-        blink::WebString(device->DeviceID()));
+    constraint_factory_.basic().device_id.SetExact(device->DeviceID());
     constraint_factory_.basic().echo_cancellation.SetExact(false);
     constraint_factory_.basic().latency.SetMin(max_latency + 0.001);
     result = SelectSettings();
     EXPECT_FALSE(result.HasValue());
 
     constraint_factory_.Reset();
-    constraint_factory_.basic().device_id.SetExact(
-        blink::WebString(device->DeviceID()));
+    constraint_factory_.basic().device_id.SetExact(device->DeviceID());
     constraint_factory_.basic().echo_cancellation.SetExact(false);
     constraint_factory_.basic().latency.SetMax(min_latency - 0.001);
     result = SelectSettings();
@@ -433,8 +430,7 @@ class MediaStreamConstraintsUtilAudioTestBase {
       double requested_latency,
       int expected_buffer_size) {
     constraint_factory_.Reset();
-    constraint_factory_.basic().device_id.SetExact(
-        blink::WebString(device->DeviceID()));
+    constraint_factory_.basic().device_id.SetExact(device->DeviceID());
     constraint_factory_.basic().echo_cancellation.SetExact(false);
     constraint_factory_.basic().latency.SetIdeal(requested_latency);
     auto result = SelectSettings();
@@ -1153,9 +1149,8 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, LatencyWithSource) {
 
 // DeviceID tests.
 TEST_P(MediaStreamConstraintsUtilAudioTest, ExactArbitraryDeviceID) {
-  const std::string kArbitraryDeviceID = "arbitrary";
-  constraint_factory_.basic().device_id.SetExact(
-      blink::WebString::FromASCII(kArbitraryDeviceID));
+  const String kArbitraryDeviceID = "arbitrary";
+  constraint_factory_.basic().device_id.SetExact(kArbitraryDeviceID);
   auto result = SelectSettings();
   // kArbitraryDeviceID is invalid for device capture, but it is considered
   // valid for content capture. For content capture, validation of device
@@ -1166,7 +1161,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, ExactArbitraryDeviceID) {
               std::string(result.failed_constraint_name()));
   } else {
     EXPECT_TRUE(result.HasValue());
-    EXPECT_EQ(kArbitraryDeviceID, result.device_id());
+    EXPECT_EQ(kArbitraryDeviceID.Utf8(), result.device_id());
     CheckBoolDefaults(AudioSettingsBoolMembers(), AudioPropertiesBoolMembers(),
                       result);
     CheckEchoCancellationTypeDefault(result);
@@ -1175,9 +1170,8 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, ExactArbitraryDeviceID) {
 
 // DeviceID tests check various ways to deal with the device_id constraint.
 TEST_P(MediaStreamConstraintsUtilAudioTest, IdealArbitraryDeviceID) {
-  const std::string kArbitraryDeviceID = "arbitrary";
-  constraint_factory_.basic().device_id.SetIdeal(
-      blink::WebString::FromASCII(kArbitraryDeviceID));
+  const String kArbitraryDeviceID = "arbitrary";
+  constraint_factory_.basic().device_id.SetIdeal(kArbitraryDeviceID);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // kArbitraryDeviceID is invalid for device capture, but it is considered
@@ -1186,7 +1180,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, IdealArbitraryDeviceID) {
   if (IsDeviceCapture())
     CheckDeviceDefaults(result);
   else
-    EXPECT_EQ(kArbitraryDeviceID, result.device_id());
+    EXPECT_EQ(kArbitraryDeviceID.Utf8(), result.device_id());
   CheckProcessingType(result);
   CheckBoolDefaults(AudioSettingsBoolMembers(), AudioPropertiesBoolMembers(),
                     result);
@@ -1195,8 +1189,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, IdealArbitraryDeviceID) {
 
 TEST_P(MediaStreamConstraintsUtilAudioTest, ExactValidDeviceID) {
   for (const auto& device : capabilities_) {
-    constraint_factory_.basic().device_id.SetExact(
-        blink::WebString(device.DeviceID()));
+    constraint_factory_.basic().device_id.SetExact(device.DeviceID());
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     CheckDevice(device, result);
@@ -1221,8 +1214,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, ExactValidDeviceID) {
 
 TEST_P(MediaStreamConstraintsUtilAudioTest, ExactGroupID) {
   for (const auto& device : capabilities_) {
-    constraint_factory_.basic().group_id.SetExact(
-        blink::WebString(device.GroupID()));
+    constraint_factory_.basic().group_id.SetExact(device.GroupID());
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     CheckDevice(device, result);
@@ -1326,7 +1318,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, EchoCancellationWithSystem) {
       for (bool value : kBoolValues) {
         ResetFactory();
         constraint_factory_.basic().device_id.SetExact(
-            blink::WebString(system_echo_canceller_device_->DeviceID()));
+            system_echo_canceller_device_->DeviceID());
         ((constraint_factory_.*accessor)().echo_cancellation.*
          set_function)(value);
         auto result = SelectSettings();
@@ -1422,7 +1414,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, GoogEchoCancellationWithSystem) {
       for (bool value : kBoolValues) {
         ResetFactory();
         constraint_factory_.basic().device_id.SetExact(
-            blink::WebString(system_echo_canceller_device_->DeviceID()));
+            system_echo_canceller_device_->DeviceID());
         ((constraint_factory_.*accessor)().goog_echo_cancellation.*
          set_function)(value);
         auto result = SelectSettings();
@@ -1537,14 +1529,14 @@ TEST_P(MediaStreamConstraintsUtilAudioTest,
 
   constraint_factory_.Reset();
   constraint_factory_.basic().device_id.SetExact(
-      blink::WebString(system_echo_canceller_with_source->DeviceID()));
+      system_echo_canceller_with_source->DeviceID());
   constraint_factory_.basic().echo_cancellation.SetExact(true);
   auto result = SelectSettings(true, capabilities);
   EXPECT_TRUE(result.HasValue());
 
   constraint_factory_.Reset();
   constraint_factory_.basic().device_id.SetExact(
-      blink::WebString(system_echo_canceller_with_source->DeviceID()));
+      system_echo_canceller_with_source->DeviceID());
   constraint_factory_.basic().echo_cancellation.SetExact(false);
   result = SelectSettings(true, capabilities);
   EXPECT_FALSE(result.HasValue());

@@ -22,8 +22,6 @@ import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
-import org.chromium.chrome.browser.omnibox.UrlBar;
-import org.chromium.chrome.browser.omnibox.UrlBar.OmniboxAction;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionUiType;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionProcessor;
@@ -107,12 +105,6 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
 
     /** The original title of the page. */
     private String mOriginalTitle;
-
-    /** The last time that the omnibox was focused. */
-    private long mLastOmniboxFocusTime;
-
-    /** Whether a timing event should be recorded. This will be true once per omnibox focus. */
-    private boolean mShouldRecordTimingEvent;
 
     /** Whether this processor should ignore all subsequent suggestion. */
     private boolean mIgnoreSuggestions;
@@ -238,15 +230,12 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
 
     @Override
     public void onUrlFocusChange(boolean hasFocus) {
-        if (hasFocus) {
-            mLastOmniboxFocusTime = System.currentTimeMillis();
-        } else {
-            mOriginalTitle = null;
-            mHasClearedOmniboxForFocus = false;
-            mLastProcessedSuggestion = null;
-            mIgnoreSuggestions = false;
-        }
-        mShouldRecordTimingEvent = hasFocus;
+        if (hasFocus) return;
+
+        mOriginalTitle = null;
+        mHasClearedOmniboxForFocus = false;
+        mLastProcessedSuggestion = null;
+        mIgnoreSuggestions = false;
     }
 
     @Override
@@ -257,18 +246,10 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
         if (R.id.url_copy_icon == view.getId()) {
             ENUMERATED_SUGGESTION_ACTION.record(SuggestionAction.COPY);
             ACTION_EDIT_URL_SUGGESTION_COPY.record();
-            if (mShouldRecordTimingEvent) {
-                UrlBar.recordTimedActionForMetrics(OmniboxAction.COPY, mLastOmniboxFocusTime);
-                mShouldRecordTimingEvent = false;
-            }
             Clipboard.getInstance().copyUrlToClipboard(mLastProcessedSuggestion.getUrl());
         } else if (R.id.url_share_icon == view.getId()) {
             ENUMERATED_SUGGESTION_ACTION.record(SuggestionAction.SHARE);
             ACTION_EDIT_URL_SUGGESTION_SHARE.record();
-            if (mShouldRecordTimingEvent) {
-                UrlBar.recordTimedActionForMetrics(OmniboxAction.SHARE, mLastOmniboxFocusTime);
-                mShouldRecordTimingEvent = false;
-            }
             mLocationBarDelegate.clearOmniboxFocus();
             // TODO(mdjones): This should only share the displayed URL instead of the background
             //                tab.

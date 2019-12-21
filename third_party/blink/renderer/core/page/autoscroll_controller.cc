@@ -47,15 +47,15 @@ constexpr base::TimeDelta kAutoscrollDelay = base::TimeDelta::FromSecondsD(0.2);
 
 static const int kNoMiddleClickAutoscrollRadius = 15;
 
-static const Cursor& MiddleClickAutoscrollCursor(const FloatSize& velocity,
+static const Cursor& MiddleClickAutoscrollCursor(const gfx::Vector2dF& velocity,
                                                  bool scroll_vert,
                                                  bool scroll_horiz) {
   // At the original click location we draw a 4 arrowed icon. Over this icon
   // there won't be any scroll, So don't change the cursor over this area.
-  bool east = velocity.Width() < 0;
-  bool west = velocity.Width() > 0;
-  bool north = velocity.Height() > 0;
-  bool south = velocity.Height() < 0;
+  bool east = velocity.x() < 0;
+  bool west = velocity.x() > 0;
+  bool north = velocity.y() > 0;
+  bool south = velocity.y() < 0;
 
   if (north && scroll_vert) {
     if (scroll_horiz) {
@@ -243,7 +243,7 @@ void AutoscrollController::HandleMouseMoveForMiddleClickAutoscroll(
   const float kMultiplier = -0.000008f;
   const int x_signum = (distance.Width() < 0) ? -1 : (distance.Width() > 0);
   const int y_signum = (distance.Height() < 0) ? -1 : (distance.Height() > 0);
-  FloatSize velocity(
+  gfx::Vector2dF velocity(
       pow(fabs(distance.Width()), kExponent) * kMultiplier * x_signum,
       pow(fabs(distance.Height()), kExponent) * kMultiplier * y_signum);
 
@@ -310,7 +310,7 @@ void AutoscrollController::StartMiddleClickAutoscroll(
   UseCounter::Count(frame->GetDocument(),
                     WebFeature::kMiddleClickAutoscrollStart);
 
-  last_velocity_ = FloatSize();
+  last_velocity_ = gfx::Vector2dF();
 
   if (LocalFrameView* view = frame->View()) {
     view->SetCursor(MiddleClickAutoscrollCursor(

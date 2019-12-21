@@ -97,7 +97,7 @@ class PEImage {
     module_ = reinterpret_cast<HMODULE>(const_cast<void*>(module));
   }
 
-  virtual ~PEImage() {}
+  virtual ~PEImage() = default;
 
   // Gets the HMODULE for this object.
   HMODULE module() const;

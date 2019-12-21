@@ -61,7 +61,9 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
                       GLint x,
                       GLint y,
                       GLsizei width,
-                      GLsizei height) override;
+                      GLsizei height,
+                      GLboolean unpack_flip_y,
+                      GLboolean unpack_premultiply_alpha) override;
 
   // OOP-Raster
   void BeginRasterCHROMIUM(GLuint sk_color,

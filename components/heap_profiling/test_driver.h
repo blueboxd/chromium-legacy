@@ -97,7 +97,7 @@ class TestDriver {
   // signal |wait_for_ui_thread_|.
   void CollectResults(bool synchronous);
 
-  void TraceFinished(base::Closure closure,
+  void TraceFinished(base::OnceClosure closure,
                      bool success,
                      std::string trace_json);
 

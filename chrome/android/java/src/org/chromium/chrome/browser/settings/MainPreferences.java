@@ -209,7 +209,7 @@ public class MainPreferences extends PreferenceFragmentCompat
         updateSearchEnginePreference();
 
         Preference homepagePref = addPreferenceIfAbsent(PREF_HOMEPAGE);
-        setOnOffSummary(homepagePref, HomepageManager.getInstance().getPrefHomepageEnabled());
+        setOnOffSummary(homepagePref, HomepageManager.isHomepageEnabled());
 
         if (NightModeUtils.isNightModeSupported() && FeatureUtilities.isNightModeAvailable()) {
             addPreferenceIfAbsent(PREF_UI_THEME);

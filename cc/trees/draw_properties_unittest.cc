@@ -4868,9 +4868,9 @@ TEST_F(DrawPropertiesStickyPositionTest, StickyPositionTop) {
   sticky_position.is_anchored_top = true;
   sticky_position.top_offset = 10.0f;
   sticky_position.scroll_container_relative_sticky_box_rect =
-      gfx::Rect(10, 20, 10, 10);
+      gfx::RectF(10, 20, 10, 10);
   sticky_position.scroll_container_relative_containing_block_rect =
-      gfx::Rect(0, 0, 50, 50);
+      gfx::RectF(0, 0, 50, 50);
 
   CommitAndUpdateImplPointers();
 
@@ -4908,6 +4908,54 @@ TEST_F(DrawPropertiesStickyPositionTest, StickyPositionTop) {
       sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 }
 
+TEST_F(DrawPropertiesStickyPositionTest, StickyPositionTopRounded) {
+  CreateTree();
+
+  SetPostTranslation(sticky_pos_.get(), gfx::Vector2dF(10, 20));
+  auto& sticky_position = EnsureStickyData(sticky_pos_.get()).constraints;
+  sticky_position.is_anchored_top = true;
+  sticky_position.top_offset = 10.5f;
+  sticky_position.scroll_container_relative_sticky_box_rect =
+      gfx::RectF(10, 20, 10, 10);
+  sticky_position.scroll_container_relative_containing_block_rect =
+      gfx::RectF(0, 0, 50, 50);
+
+  CommitAndUpdateImplPointers();
+
+  EXPECT_VECTOR2DF_EQ(
+      gfx::Vector2dF(10.f, 20.f),
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
+
+  // Scroll less than sticking point, sticky element should move with scroll as
+  // we haven't gotten to the initial sticky item location yet.
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(5.f, 5.f));
+
+  UpdateActiveTreeDrawProperties();
+  EXPECT_VECTOR2DF_EQ(
+      gfx::Vector2dF(5.f, 15.f),
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
+
+  // Scroll past the sticking point, the Y coordinate should now be clamped.
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(15.f, 15.f));
+  UpdateActiveTreeDrawProperties();
+  EXPECT_VECTOR2DF_EQ(
+      gfx::Vector2dF(-5.f, 11.f),
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(15.f, 25.f));
+  UpdateActiveTreeDrawProperties();
+  EXPECT_VECTOR2DF_EQ(
+      gfx::Vector2dF(-5.f, 11.f),
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
+
+  // Scroll past the end of the sticky container (note: this element does not
+  // have its own layer as it does not need to be composited).
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(15.f, 50.f));
+  UpdateActiveTreeDrawProperties();
+  EXPECT_VECTOR2DF_EQ(
+      gfx::Vector2dF(-5.f, -10.f),
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
+}
+
 TEST_F(DrawPropertiesStickyPositionTest, StickyPositionSubpixelScroll) {
   CreateTree();
 
@@ -4915,11 +4963,11 @@ TEST_F(DrawPropertiesStickyPositionTest, StickyPositionSubpixelScroll) {
   auto& sticky_position = EnsureStickyData(sticky_pos_.get()).constraints;
   sticky_position.is_anchored_bottom = true;
   sticky_position.bottom_offset = 10.0f;
-  sticky_position.constraint_box_rect = gfx::Rect(0, 0, 100, 100);
+  sticky_position.constraint_box_rect = gfx::RectF(0, 0, 100, 100);
   sticky_position.scroll_container_relative_sticky_box_rect =
-      gfx::Rect(0, 200, 10, 10);
+      gfx::RectF(0, 200, 10, 10);
   sticky_position.scroll_container_relative_containing_block_rect =
-      gfx::Rect(0, 0, 100, 500);
+      gfx::RectF(0, 0, 100, 500);
 
   CommitAndUpdateImplPointers();
 
@@ -4938,11 +4986,11 @@ TEST_F(DrawPropertiesStickyPositionTest, StickyPositionBottom) {
   auto& sticky_position = EnsureStickyData(sticky_pos_.get()).constraints;
   sticky_position.is_anchored_bottom = true;
   sticky_position.bottom_offset = 10.0f;
-  sticky_position.constraint_box_rect = gfx::Rect(0, 0, 100, 100);
+  sticky_position.constraint_box_rect = gfx::RectF(0, 0, 100, 100);
   sticky_position.scroll_container_relative_sticky_box_rect =
-      gfx::Rect(0, 150, 10, 10);
+      gfx::RectF(0, 150, 10, 10);
   sticky_position.scroll_container_relative_containing_block_rect =
-      gfx::Rect(0, 100, 50, 50);
+      gfx::RectF(0, 100, 50, 50);
 
   CommitAndUpdateImplPointers();
 
@@ -4978,6 +5026,46 @@ TEST_F(DrawPropertiesStickyPositionTest, StickyPositionBottom) {
       sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 }
 
+TEST_F(DrawPropertiesStickyPositionTest, StickyPositionBottomRounded) {
+  CreateTree();
+
+  SetPostTranslation(sticky_pos_.get(), gfx::Vector2dF(0, 150));
+  auto& sticky_position = EnsureStickyData(sticky_pos_.get()).constraints;
+  sticky_position.is_anchored_bottom = true;
+  sticky_position.bottom_offset = 10.5f;
+  sticky_position.constraint_box_rect = gfx::RectF(0, 0, 100, 100);
+  sticky_position.scroll_container_relative_sticky_box_rect =
+      gfx::RectF(0, 150, 10, 10);
+  sticky_position.scroll_container_relative_containing_block_rect =
+      gfx::RectF(0, 100, 50, 50);
+
+  CommitAndUpdateImplPointers();
+
+  // Initially the sticky element is moved up to the top of the container.
+  EXPECT_VECTOR2DF_EQ(
+      gfx::Vector2dF(0.f, 100.f),
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(0.f, 5.f));
+
+  UpdateActiveTreeDrawProperties();
+  EXPECT_VECTOR2DF_EQ(
+      gfx::Vector2dF(0.f, 95.f),
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
+
+  // Once we get past the top of the container it moves to be aligned 10px
+  // up from the the bottom of the scroller.
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(0.f, 25.f));
+  UpdateActiveTreeDrawProperties();
+  EXPECT_VECTOR2DF_EQ(
+      gfx::Vector2dF(0.f, 79.f),
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(0.f, 30.f));
+  UpdateActiveTreeDrawProperties();
+  EXPECT_VECTOR2DF_EQ(
+      gfx::Vector2dF(0.f, 79.f),
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
+}
+
 TEST_F(DrawPropertiesStickyPositionTest,
        StickyPositionBottomOuterViewportDelta) {
   CreateTree();
@@ -4991,11 +5079,11 @@ TEST_F(DrawPropertiesStickyPositionTest,
   auto& sticky_position = EnsureStickyData(sticky_pos_.get()).constraints;
   sticky_position.is_anchored_bottom = true;
   sticky_position.bottom_offset = 10.0f;
-  sticky_position.constraint_box_rect = gfx::Rect(0, 0, 100, 100);
+  sticky_position.constraint_box_rect = gfx::RectF(0, 0, 100, 100);
   sticky_position.scroll_container_relative_sticky_box_rect =
-      gfx::Rect(0, 70, 10, 10);
+      gfx::RectF(0, 70, 10, 10);
   sticky_position.scroll_container_relative_containing_block_rect =
-      gfx::Rect(0, 60, 100, 100);
+      gfx::RectF(0, 60, 100, 100);
 
   CommitAndUpdateImplPointers();
 
@@ -5043,11 +5131,11 @@ TEST_F(DrawPropertiesStickyPositionTest, StickyPositionLeftRight) {
   sticky_position.is_anchored_right = true;
   sticky_position.left_offset = 10.0f;
   sticky_position.right_offset = 10.0f;
-  sticky_position.constraint_box_rect = gfx::Rect(0, 0, 100, 100);
+  sticky_position.constraint_box_rect = gfx::RectF(0, 0, 100, 100);
   sticky_position.scroll_container_relative_sticky_box_rect =
-      gfx::Rect(145, 0, 10, 10);
+      gfx::RectF(145, 0, 10, 10);
   sticky_position.scroll_container_relative_containing_block_rect =
-      gfx::Rect(100, 0, 100, 100);
+      gfx::RectF(100, 0, 100, 100);
 
   CommitAndUpdateImplPointers();
 
@@ -5125,9 +5213,9 @@ TEST_F(DrawPropertiesStickyPositionTest, StickyPositionMainThreadUpdates) {
   sticky_position.is_anchored_top = true;
   sticky_position.top_offset = 10.0f;
   sticky_position.scroll_container_relative_sticky_box_rect =
-      gfx::Rect(10, 20, 10, 10);
+      gfx::RectF(10, 20, 10, 10);
   sticky_position.scroll_container_relative_containing_block_rect =
-      gfx::Rect(0, 0, 50, 50);
+      gfx::RectF(0, 0, 50, 50);
 
   CommitAndUpdateImplPointers();
 
@@ -5197,9 +5285,9 @@ TEST_F(DrawPropertiesStickyPositionTest, StickyPositionCompositedContainer) {
   sticky_position.is_anchored_top = true;
   sticky_position.top_offset = 10.0f;
   sticky_position.scroll_container_relative_sticky_box_rect =
-      gfx::Rect(20, 30, 10, 10);
+      gfx::RectF(20, 30, 10, 10);
   sticky_position.scroll_container_relative_containing_block_rect =
-      gfx::Rect(20, 20, 30, 30);
+      gfx::RectF(20, 20, 30, 30);
 
   CommitAndUpdateImplPointers();
 
@@ -5267,9 +5355,9 @@ TEST_F(DrawPropertiesStickyPositionTest, StickyPositionScaledStickyBox) {
   sticky_position.is_anchored_top = true;
   sticky_position.top_offset = 0.0f;
   sticky_position.scroll_container_relative_sticky_box_rect =
-      gfx::Rect(0, 20, 10, 10);
+      gfx::RectF(0, 20, 10, 10);
   sticky_position.scroll_container_relative_containing_block_rect =
-      gfx::Rect(0, 0, 50, 50);
+      gfx::RectF(0, 0, 50, 50);
 
   CommitAndUpdateImplPointers();
 
@@ -5324,9 +5412,9 @@ TEST_F(DrawPropertiesStickyPositionTest, StickyPositionScaledContainer) {
   sticky_position.is_anchored_top = true;
   sticky_position.top_offset = 0.0f;
   sticky_position.scroll_container_relative_sticky_box_rect =
-      gfx::Rect(0, 20, 10, 10);
+      gfx::RectF(0, 20, 10, 10);
   sticky_position.scroll_container_relative_containing_block_rect =
-      gfx::Rect(0, 0, 50, 50);
+      gfx::RectF(0, 0, 50, 50);
 
   CommitAndUpdateImplPointers();
 
@@ -5371,18 +5459,18 @@ TEST_F(DrawPropertiesStickyPositionTest, StickyPositionNested) {
   outer_sticky_pos.is_anchored_top = true;
   outer_sticky_pos.top_offset = 10.0f;
   outer_sticky_pos.scroll_container_relative_sticky_box_rect =
-      gfx::Rect(0, 50, 10, 50);
+      gfx::RectF(0, 50, 10, 50);
   outer_sticky_pos.scroll_container_relative_containing_block_rect =
-      gfx::Rect(0, 0, 50, 400);
+      gfx::RectF(0, 0, 50, 400);
 
   scoped_refptr<Layer> inner_sticky = CreateSticky(sticky_pos_.get());
   auto& inner_sticky_pos = EnsureStickyData(inner_sticky.get()).constraints;
   inner_sticky_pos.is_anchored_top = true;
   inner_sticky_pos.top_offset = 25.0f;
   inner_sticky_pos.scroll_container_relative_sticky_box_rect =
-      gfx::Rect(0, 50, 10, 10);
+      gfx::RectF(0, 50, 10, 10);
   inner_sticky_pos.scroll_container_relative_containing_block_rect =
-      gfx::Rect(0, 50, 10, 50);
+      gfx::RectF(0, 50, 10, 50);
   EnsureStickyData(inner_sticky.get()).nearest_node_shifting_containing_block =
       sticky_pos_->transform_tree_index();
 

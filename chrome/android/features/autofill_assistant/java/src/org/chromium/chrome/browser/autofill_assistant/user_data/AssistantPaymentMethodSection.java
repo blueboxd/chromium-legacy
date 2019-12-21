@@ -56,7 +56,7 @@ public class AssistantPaymentMethodSection
             String guid = method.getCard().getBillingAddressId();
             PersonalDataManager.AutofillProfile profile = personalDataManager.getProfile(guid);
             if (profile != null) {
-                addAutocompleteInformationToEditor(new AutofillAddress(mContext, profile));
+                addAutocompleteInformationToEditor(profile);
             }
         }
     }
@@ -166,10 +166,10 @@ public class AssistantPaymentMethodSection
         return TextUtils.equals(profileA.getGUID(), profileB.getGUID());
     }
 
-    void onAddressesChanged(List<AutofillAddress> addresses) {
+    void onProfilesChanged(List<PersonalDataManager.AutofillProfile> profiles) {
         // TODO(crbug.com/806868): replace suggested billing addresses (remove if necessary).
-        for (AutofillAddress address : addresses) {
-            addAutocompleteInformationToEditor(address);
+        for (PersonalDataManager.AutofillProfile profile : profiles) {
+            addAutocompleteInformationToEditor(profile);
         }
     }
 
@@ -204,12 +204,12 @@ public class AssistantPaymentMethodSection
         mBillingPostalCodeMissingText = text;
     }
 
-    private void addAutocompleteInformationToEditor(AutofillAddress address) {
+    private void addAutocompleteInformationToEditor(PersonalDataManager.AutofillProfile profile) {
         // The check for non-null label is necessary to prevent crash in editor when opening.
-        if (mEditor == null || address.getProfile().getLabel() == null) {
+        if (mEditor == null || profile.getLabel() == null) {
             return;
         }
-        mEditor.updateBillingAddressIfComplete(address);
+        mEditor.updateBillingAddressIfComplete(new AutofillAddress(mContext, profile));
     }
 
     private boolean hasAllRequiredFields(AutofillPaymentInstrument method) {

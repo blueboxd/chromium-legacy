@@ -167,9 +167,10 @@ class SplitViewDragIndicators::RotatedImageLabelView : public views::View {
       return;
     }
 
-    // When dragging ends, any label that is showing shall fade out with the
-    // corresponding indicator.
-    if (window_dragging_state == WindowDraggingState::kNoDrag) {
+    // If there is no drag currently in this display, any label that is showing
+    // shall fade out with the corresponding indicator.
+    if (window_dragging_state == WindowDraggingState::kNoDrag ||
+        window_dragging_state == WindowDraggingState::kOtherDisplay) {
       DoSplitviewOpacityAnimation(
           layer(), SPLITVIEW_ANIMATION_TEXT_FADE_OUT_WITH_HIGHLIGHT);
       return;
@@ -186,8 +187,10 @@ class SplitViewDragIndicators::RotatedImageLabelView : public views::View {
         can_dragged_window_be_snapped ? IDS_ASH_SPLIT_VIEW_GUIDANCE
                                       : IDS_ASH_SPLIT_VIEW_CANNOT_SNAP));
 
-    // When dragging begins (without a snap preview), fade in with an indicator.
-    if (previous_window_dragging_state == WindowDraggingState::kNoDrag) {
+    // When dragging begins in this display or comes in from another display, if
+    // there is now no snap preview, fade in with an indicator.
+    if (previous_window_dragging_state == WindowDraggingState::kNoDrag ||
+        previous_window_dragging_state == WindowDraggingState::kOtherDisplay) {
       DoSplitviewOpacityAnimation(
           layer(), SPLITVIEW_ANIMATION_TEXT_FADE_IN_WITH_HIGHLIGHT);
       return;

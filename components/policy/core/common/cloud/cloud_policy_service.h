@@ -31,7 +31,7 @@ class POLICY_EXPORT CloudPolicyService : public CloudPolicyClient::Observer,
 
   // Callback invoked once the unregister attempt has completed. Passed bool
   // parameter is true if unregistering was successful (no error).
-  using UnregisterCallback = base::Callback<void(bool)>;
+  using UnregisterCallback = base::OnceCallback<void(bool)>;
 
   class POLICY_EXPORT Observer {
    public:
@@ -61,7 +61,7 @@ class POLICY_EXPORT CloudPolicyService : public CloudPolicyClient::Observer,
   // Unregisters the device. |callback| will be invoked after the operation
   // completes or aborts because of errors. All pending refresh policy requests
   // will be aborted, and no further refresh policy requests will be allowed.
-  void Unregister(const UnregisterCallback& callback);
+  void Unregister(UnregisterCallback callback);
 
   // Adds/Removes an Observer for this object.
   void AddObserver(Observer* observer);

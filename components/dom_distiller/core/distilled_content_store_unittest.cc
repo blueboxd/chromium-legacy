@@ -82,15 +82,15 @@ TEST_F(InMemoryContentStoreTest, SaveAndLoadSingleArticle) {
   const DistilledArticleProto stored_proto =
       CreateDistilledArticleForEntry(entry);
   store_->SaveContent(entry, stored_proto,
-                      base::Bind(&InMemoryContentStoreTest::OnSaveCallback,
-                                 base::Unretained(this)));
+                      base::BindOnce(&InMemoryContentStoreTest::OnSaveCallback,
+                                     base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(save_success_);
   save_success_ = false;
 
   store_->LoadContent(entry,
-                      base::Bind(&InMemoryContentStoreTest::OnLoadCallback,
-                                 base::Unretained(this)));
+                      base::BindOnce(&InMemoryContentStoreTest::OnLoadCallback,
+                                     base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(load_success_);
   EXPECT_EQ(stored_proto.SerializeAsString(),
@@ -105,8 +105,8 @@ TEST_F(InMemoryContentStoreTest, LoadNonExistentArticle) {
       CreateEntry("bogus-id", GURL("https://url1"), GURL("https://url2"),
                   GURL("https://url3"));
   store_->LoadContent(entry,
-                      base::Bind(&InMemoryContentStoreTest::OnLoadCallback,
-                                 base::Unretained(this)));
+                      base::BindOnce(&InMemoryContentStoreTest::OnLoadCallback,
+                                     base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(load_success_);
 }
@@ -123,8 +123,8 @@ TEST_F(InMemoryContentStoreTest, SaveAndLoadMultipleArticles) {
   const DistilledArticleProto first_stored_proto =
       CreateDistilledArticleForEntry(first_entry);
   store_->SaveContent(first_entry, first_stored_proto,
-                      base::Bind(&InMemoryContentStoreTest::OnSaveCallback,
-                                 base::Unretained(this)));
+                      base::BindOnce(&InMemoryContentStoreTest::OnSaveCallback,
+                                     base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(save_success_);
   save_success_ = false;
@@ -136,16 +136,16 @@ TEST_F(InMemoryContentStoreTest, SaveAndLoadMultipleArticles) {
   const DistilledArticleProto second_stored_proto =
       CreateDistilledArticleForEntry(second_entry);
   store_->SaveContent(second_entry, second_stored_proto,
-                      base::Bind(&InMemoryContentStoreTest::OnSaveCallback,
-                                 base::Unretained(this)));
+                      base::BindOnce(&InMemoryContentStoreTest::OnSaveCallback,
+                                     base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(save_success_);
   save_success_ = false;
 
   // Load second article.
   store_->LoadContent(second_entry,
-                      base::Bind(&InMemoryContentStoreTest::OnLoadCallback,
-                                 base::Unretained(this)));
+                      base::BindOnce(&InMemoryContentStoreTest::OnLoadCallback,
+                                     base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(load_success_);
   load_success_ = false;
@@ -155,8 +155,8 @@ TEST_F(InMemoryContentStoreTest, SaveAndLoadMultipleArticles) {
 
   // Load first article.
   store_->LoadContent(first_entry,
-                      base::Bind(&InMemoryContentStoreTest::OnLoadCallback,
-                                 base::Unretained(this)));
+                      base::BindOnce(&InMemoryContentStoreTest::OnLoadCallback,
+                                     base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(load_success_);
   EXPECT_EQ(first_stored_proto.SerializeAsString(),
@@ -179,8 +179,8 @@ TEST_F(InMemoryContentStoreTest, SaveAndLoadMoreThanMaxArticles) {
   const DistilledArticleProto first_stored_proto =
       CreateDistilledArticleForEntry(first_entry);
   store_->SaveContent(first_entry, first_stored_proto,
-                      base::Bind(&InMemoryContentStoreTest::OnSaveCallback,
-                                 base::Unretained(this)));
+                      base::BindOnce(&InMemoryContentStoreTest::OnSaveCallback,
+                                     base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(save_success_);
   save_success_ = false;
@@ -192,8 +192,8 @@ TEST_F(InMemoryContentStoreTest, SaveAndLoadMoreThanMaxArticles) {
   const DistilledArticleProto second_stored_proto =
       CreateDistilledArticleForEntry(second_entry);
   store_->SaveContent(second_entry, second_stored_proto,
-                      base::Bind(&InMemoryContentStoreTest::OnSaveCallback,
-                                 base::Unretained(this)));
+                      base::BindOnce(&InMemoryContentStoreTest::OnSaveCallback,
+                                     base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(save_success_);
   save_success_ = false;
@@ -205,8 +205,8 @@ TEST_F(InMemoryContentStoreTest, SaveAndLoadMoreThanMaxArticles) {
   const DistilledArticleProto third_stored_proto =
       CreateDistilledArticleForEntry(third_entry);
   store_->SaveContent(third_entry, third_stored_proto,
-                      base::Bind(&InMemoryContentStoreTest::OnSaveCallback,
-                                 base::Unretained(this)));
+                      base::BindOnce(&InMemoryContentStoreTest::OnSaveCallback,
+                                     base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(save_success_);
   save_success_ = false;
@@ -214,8 +214,8 @@ TEST_F(InMemoryContentStoreTest, SaveAndLoadMoreThanMaxArticles) {
   // Load first article. This will make the first article the most recent
   // accessed article.
   store_->LoadContent(first_entry,
-                      base::Bind(&InMemoryContentStoreTest::OnLoadCallback,
-                                 base::Unretained(this)));
+                      base::BindOnce(&InMemoryContentStoreTest::OnLoadCallback,
+                                     base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(load_success_);
   load_success_ = false;
@@ -230,8 +230,8 @@ TEST_F(InMemoryContentStoreTest, SaveAndLoadMoreThanMaxArticles) {
   const DistilledArticleProto fourth_stored_proto =
       CreateDistilledArticleForEntry(fourth_entry);
   store_->SaveContent(fourth_entry, fourth_stored_proto,
-                      base::Bind(&InMemoryContentStoreTest::OnSaveCallback,
-                                 base::Unretained(this)));
+                      base::BindOnce(&InMemoryContentStoreTest::OnSaveCallback,
+                                     base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(save_success_);
   save_success_ = false;
@@ -239,8 +239,8 @@ TEST_F(InMemoryContentStoreTest, SaveAndLoadMoreThanMaxArticles) {
   // Load second article, which by now is the oldest accessed article, since
   // the first article has been loaded once.
   store_->LoadContent(second_entry,
-                      base::Bind(&InMemoryContentStoreTest::OnLoadCallback,
-                                 base::Unretained(this)));
+                      base::BindOnce(&InMemoryContentStoreTest::OnLoadCallback,
+                                     base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
   // Since the store can only contain |kMaxNumArticles| entries, this load
   // should fail.
@@ -256,8 +256,8 @@ TEST_F(InMemoryContentStoreTest, LookupArticleByURL) {
   const DistilledArticleProto stored_proto =
       CreateDistilledArticleForEntry(entry);
   store_->SaveContent(entry, stored_proto,
-                      base::Bind(&InMemoryContentStoreTest::OnSaveCallback,
-                                 base::Unretained(this)));
+                      base::BindOnce(&InMemoryContentStoreTest::OnSaveCallback,
+                                     base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(save_success_);
   save_success_ = false;
@@ -266,8 +266,8 @@ TEST_F(InMemoryContentStoreTest, LookupArticleByURL) {
   const ArticleEntry lookup_entry1 =
       CreateEntry("lookup-id", GURL("https://url1"));
   store_->LoadContent(lookup_entry1,
-                      base::Bind(&InMemoryContentStoreTest::OnLoadCallback,
-                                 base::Unretained(this)));
+                      base::BindOnce(&InMemoryContentStoreTest::OnLoadCallback,
+                                     base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(load_success_);
   EXPECT_EQ(stored_proto.SerializeAsString(),
@@ -277,8 +277,8 @@ TEST_F(InMemoryContentStoreTest, LookupArticleByURL) {
   const ArticleEntry lookup_entry2 =
       CreateEntry("lookup-id", GURL("bogus"), GURL("https://url2"));
   store_->LoadContent(lookup_entry2,
-                      base::Bind(&InMemoryContentStoreTest::OnLoadCallback,
-                                 base::Unretained(this)));
+                      base::BindOnce(&InMemoryContentStoreTest::OnLoadCallback,
+                                     base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(load_success_);
   EXPECT_EQ(stored_proto.SerializeAsString(),
@@ -301,8 +301,8 @@ TEST_F(InMemoryContentStoreTest, LoadArticleByURLAfterExpungedFromCache) {
   const DistilledArticleProto first_stored_proto =
       CreateDistilledArticleForEntry(first_entry);
   store_->SaveContent(first_entry, first_stored_proto,
-                      base::Bind(&InMemoryContentStoreTest::OnSaveCallback,
-                                 base::Unretained(this)));
+                      base::BindOnce(&InMemoryContentStoreTest::OnSaveCallback,
+                                     base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(save_success_);
   save_success_ = false;
@@ -312,8 +312,8 @@ TEST_F(InMemoryContentStoreTest, LoadArticleByURLAfterExpungedFromCache) {
   const ArticleEntry first_entry_lookup =
       CreateEntry("lookup-id", GURL("https://url1"));
   store_->LoadContent(first_entry_lookup,
-                      base::Bind(&InMemoryContentStoreTest::OnLoadCallback,
-                                 base::Unretained(this)));
+                      base::BindOnce(&InMemoryContentStoreTest::OnLoadCallback,
+                                     base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(load_success_);
   EXPECT_EQ(first_stored_proto.SerializeAsString(),
@@ -326,16 +326,16 @@ TEST_F(InMemoryContentStoreTest, LoadArticleByURLAfterExpungedFromCache) {
   const DistilledArticleProto second_stored_proto =
       CreateDistilledArticleForEntry(second_entry);
   store_->SaveContent(second_entry, second_stored_proto,
-                      base::Bind(&InMemoryContentStoreTest::OnSaveCallback,
-                                 base::Unretained(this)));
+                      base::BindOnce(&InMemoryContentStoreTest::OnSaveCallback,
+                                     base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(save_success_);
   save_success_ = false;
 
   // Looking up the first entry by URL should fail when it is not in the cache.
   store_->LoadContent(first_entry_lookup,
-                      base::Bind(&InMemoryContentStoreTest::OnLoadCallback,
-                                 base::Unretained(this)));
+                      base::BindOnce(&InMemoryContentStoreTest::OnLoadCallback,
+                                     base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(load_success_);
 }

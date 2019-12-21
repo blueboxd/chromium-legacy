@@ -77,7 +77,7 @@ bool NavigatorVibration::vibrate(Navigator& navigator,
   if (!frame->GetPage()->IsPageVisible())
     return false;
 
-  if (!frame->HasBeenActivated()) {
+  if (!frame->HasStickyUserActivation()) {
     String message;
     if (frame->IsCrossOriginSubframe()) {
       message =
@@ -103,7 +103,7 @@ bool NavigatorVibration::vibrate(Navigator& navigator,
 void NavigatorVibration::CollectHistogramMetrics(const Navigator& navigator) {
   NavigatorVibrationType type;
   LocalFrame* frame = navigator.GetFrame();
-  bool user_gesture = frame->HasBeenActivated();
+  bool user_gesture = frame->HasStickyUserActivation();
   UseCounter::Count(navigator.DomWindow()->document(),
                     WebFeature::kNavigatorVibrate);
   if (!frame->IsMainFrame()) {

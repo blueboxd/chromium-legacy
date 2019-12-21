@@ -63,7 +63,7 @@ class CORE_EXPORT Screen final : public ScriptWrappable,
   void Trace(blink::Visitor*) override;
 
   // Proposed extensions to the Screen interface.
-  // https://github.com/spark008/screen-enumeration/blob/master/EXPLAINER.md
+  // https://github.com/webscreens/screen-enumeration
   // TODO(msw): Resolve different info sources, caching, and lifetimes.
   Screen(display::mojom::blink::DisplayPtr display, bool primary);
   int left() const;
@@ -72,6 +72,10 @@ class CORE_EXPORT Screen final : public ScriptWrappable,
   bool primary() const;
   float scaleFactor() const;
   const String name() const;
+
+  // Not web-exposed; for internal usage only.
+  static constexpr int64_t kInvalidDisplayId = -1;
+  int64_t DisplayId() const;
 
  private:
   // A static snapshot of the display's information, provided upon construction.

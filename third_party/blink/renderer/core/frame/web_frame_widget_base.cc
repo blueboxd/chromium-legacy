@@ -112,8 +112,8 @@ WebRect WebFrameWidgetBase::ComputeBlockBound(
 
 WebDragOperation WebFrameWidgetBase::DragTargetDragEnter(
     const WebDragData& web_drag_data,
-    const WebFloatPoint& point_in_viewport,
-    const WebFloatPoint& screen_point,
+    const gfx::PointF& point_in_viewport,
+    const gfx::PointF& screen_point,
     WebDragOperationsMask operations_allowed,
     int modifiers) {
   DCHECK(!current_drag_data_);
@@ -126,8 +126,8 @@ WebDragOperation WebFrameWidgetBase::DragTargetDragEnter(
 }
 
 WebDragOperation WebFrameWidgetBase::DragTargetDragOver(
-    const WebFloatPoint& point_in_viewport,
-    const WebFloatPoint& screen_point,
+    const gfx::PointF& point_in_viewport,
+    const gfx::PointF& screen_point,
     WebDragOperationsMask operations_allowed,
     int modifiers) {
   operations_allowed_ = operations_allowed;
@@ -137,8 +137,8 @@ WebDragOperation WebFrameWidgetBase::DragTargetDragOver(
 }
 
 void WebFrameWidgetBase::DragTargetDragLeave(
-    const WebFloatPoint& point_in_viewport,
-    const WebFloatPoint& screen_point) {
+    const gfx::PointF& point_in_viewport,
+    const gfx::PointF& screen_point) {
   DCHECK(current_drag_data_);
 
   // TODO(paulmeyer): It shouldn't be possible for |m_currentDragData| to be
@@ -151,9 +151,9 @@ void WebFrameWidgetBase::DragTargetDragLeave(
     return;
   }
 
-  WebFloatPoint point_in_root_frame(ViewportToRootFrame(point_in_viewport));
-  DragData drag_data(current_drag_data_.Get(), point_in_root_frame,
-                     screen_point,
+  gfx::PointF point_in_root_frame(ViewportToRootFrame(point_in_viewport));
+  DragData drag_data(current_drag_data_.Get(), FloatPoint(point_in_root_frame),
+                     FloatPoint(screen_point),
                      static_cast<DragOperation>(operations_allowed_));
 
   GetPage()->GetDragController().DragExited(&drag_data,
@@ -166,10 +166,10 @@ void WebFrameWidgetBase::DragTargetDragLeave(
 }
 
 void WebFrameWidgetBase::DragTargetDrop(const WebDragData& web_drag_data,
-                                        const WebFloatPoint& point_in_viewport,
-                                        const WebFloatPoint& screen_point,
+                                        const gfx::PointF& point_in_viewport,
+                                        const gfx::PointF& screen_point,
                                         int modifiers) {
-  WebFloatPoint point_in_root_frame(ViewportToRootFrame(point_in_viewport));
+  gfx::PointF point_in_root_frame(ViewportToRootFrame(point_in_viewport));
 
   DCHECK(current_drag_data_);
   current_drag_data_ = DataObject::Create(web_drag_data);
@@ -189,8 +189,9 @@ void WebFrameWidgetBase::DragTargetDrop(const WebDragData& web_drag_data,
 
   if (!IgnoreInputEvents()) {
     current_drag_data_->SetModifiers(modifiers);
-    DragData drag_data(current_drag_data_.Get(), point_in_root_frame,
-                       screen_point,
+    DragData drag_data(current_drag_data_.Get(),
+                       FloatPoint(point_in_root_frame),
+                       FloatPoint(screen_point),
                        static_cast<DragOperation>(operations_allowed_));
 
     GetPage()->GetDragController().PerformDrag(&drag_data,
@@ -200,10 +201,9 @@ void WebFrameWidgetBase::DragTargetDrop(const WebDragData& web_drag_data,
   current_drag_data_ = nullptr;
 }
 
-void WebFrameWidgetBase::DragSourceEndedAt(
-    const WebFloatPoint& point_in_viewport,
-    const WebFloatPoint& screen_point,
-    WebDragOperation operation) {
+void WebFrameWidgetBase::DragSourceEndedAt(const gfx::PointF& point_in_viewport,
+                                           const gfx::PointF& screen_point,
+                                           WebDragOperation operation) {
   if (!local_root_) {
     // We should figure out why |local_root_| could be nullptr
     // (https://crbug.com/792345).
@@ -215,13 +215,13 @@ void WebFrameWidgetBase::DragSourceEndedAt(
     return;
   }
   gfx::PointF point_in_root_frame(
-      GetPage()->GetVisualViewport().ViewportToRootFrame(point_in_viewport));
+      GetPage()->GetVisualViewport().ViewportToRootFrame(
+          FloatPoint(point_in_viewport)));
 
-  WebMouseEvent fake_mouse_move(WebInputEvent::kMouseMove, point_in_root_frame,
-                                gfx::PointF(screen_point.x, screen_point.y),
-                                WebPointerProperties::Button::kLeft, 0,
-                                WebInputEvent::kNoModifiers,
-                                base::TimeTicks::Now());
+  WebMouseEvent fake_mouse_move(
+      WebInputEvent::kMouseMove, point_in_root_frame, screen_point,
+      WebPointerProperties::Button::kLeft, 0, WebInputEvent::kNoModifiers,
+      base::TimeTicks::Now());
   fake_mouse_move.SetFrameScale(1);
   local_root_->GetFrame()->GetEventHandler().DragSourceEndedAt(
       fake_mouse_move, static_cast<DragOperation>(operation));
@@ -250,8 +250,8 @@ void WebFrameWidgetBase::StartDragging(network::mojom::ReferrerPolicy policy,
 }
 
 WebDragOperation WebFrameWidgetBase::DragTargetDragEnterOrOver(
-    const WebFloatPoint& point_in_viewport,
-    const WebFloatPoint& screen_point,
+    const gfx::PointF& point_in_viewport,
+    const gfx::PointF& screen_point,
     DragAction drag_action,
     int modifiers) {
   DCHECK(current_drag_data_);
@@ -268,8 +268,8 @@ WebDragOperation WebFrameWidgetBase::DragTargetDragEnterOrOver(
   FloatPoint point_in_root_frame(ViewportToRootFrame(point_in_viewport));
 
   current_drag_data_->SetModifiers(modifiers);
-  DragData drag_data(current_drag_data_.Get(), point_in_root_frame,
-                     screen_point,
+  DragData drag_data(current_drag_data_.Get(), FloatPoint(point_in_root_frame),
+                     FloatPoint(screen_point),
                      static_cast<DragOperation>(operations_allowed_));
 
   DragOperation drag_operation =
@@ -311,9 +311,10 @@ void WebFrameWidgetBase::SendScrollEndEventFromImplSide(
     target_node->GetDocument().EnqueueScrollEndEventForNode(target_node);
 }
 
-WebFloatPoint WebFrameWidgetBase::ViewportToRootFrame(
-    const WebFloatPoint& point_in_viewport) const {
-  return GetPage()->GetVisualViewport().ViewportToRootFrame(point_in_viewport);
+gfx::PointF WebFrameWidgetBase::ViewportToRootFrame(
+    const gfx::PointF& point_in_viewport) const {
+  return GetPage()->GetVisualViewport().ViewportToRootFrame(
+      FloatPoint(point_in_viewport));
 }
 
 WebViewImpl* WebFrameWidgetBase::View() const {

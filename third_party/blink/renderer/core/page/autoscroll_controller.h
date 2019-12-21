@@ -113,7 +113,7 @@ class CORE_EXPORT AutoscrollController final
 
   // Middle-click autoscroll.
   FloatPoint middle_click_autoscroll_start_pos_global_;
-  FloatSize last_velocity_;
+  gfx::Vector2dF last_velocity_;
   MiddleClickMode middle_click_mode_ = kMiddleClickInitial;
   bool can_scroll_vertically_ = false;
   bool can_scroll_horizontally_ = false;

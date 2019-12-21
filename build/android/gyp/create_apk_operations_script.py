@@ -9,6 +9,7 @@ import os
 import string
 import sys
 
+from util import build_utils
 
 SCRIPT_TEMPLATE = string.Template("""\
 #!/usr/bin/env python
@@ -29,6 +30,7 @@ def main():
     apk_operations.Run(
         output_dir,
         resolve(${APK_PATH}),
+        [resolve(p) for p in ${ADDITIONAL_APK_PATHS}],
         resolve(${INC_JSON_PATH}),
         ${FLAGS_FILE},
         ${TARGET_CPU},
@@ -47,6 +49,7 @@ if __name__ == '__main__':
 
 
 def main(args):
+  args = build_utils.ExpandFileArgs(args)
   parser = argparse.ArgumentParser()
   parser.add_argument('--script-output-path',
                       help='Output path for executable script.')
@@ -54,6 +57,12 @@ def main(args):
   parser.add_argument('--incremental-install-json-path')
   parser.add_argument('--command-line-flags-file')
   parser.add_argument('--target-cpu')
+  parser.add_argument(
+      '--additional-apk-path',
+      action='append',
+      dest='additional_apk_paths',
+      default=[],
+      help='Paths to APKs to be installed prior to --apk-path.')
   parser.add_argument('--proguard-mapping-path')
   args = parser.parse_args(args)
 
@@ -70,6 +79,8 @@ def main(args):
         'APK_OPERATIONS_DIR': repr(apk_operations_dir),
         'OUTPUT_DIR': repr(relativize('.')),
         'APK_PATH': repr(relativize(args.apk_path)),
+        'ADDITIONAL_APK_PATHS':
+        [relativize(p) for p in args.additional_apk_paths],
         'INC_JSON_PATH': repr(relativize(args.incremental_install_json_path)),
         'MAPPING_PATH': repr(relativize(args.proguard_mapping_path)),
         'FLAGS_FILE': repr(args.command_line_flags_file),

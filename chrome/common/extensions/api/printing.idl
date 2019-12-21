@@ -48,6 +48,52 @@ namespace printing {
     long? recentlyUsedRank;
   };
 
+  // The status of the printer.
+  enum PrinterStatus {
+    // The door of the printer is open. Printer still accepts print jobs.
+    DOOR_OPEN,
+
+    // The tray of the printer is missing. Printer still accepts print jobs.
+    TRAY_MISSING,
+
+    // The printer is out of ink. Printer still accepts print jobs.
+    OUT_OF_INK,
+
+    // The printer is out of paper. Printer still accepts print jobs.
+    OUT_OF_PAPER,
+
+    // The output area of the printer (e.g. tray) is full. Printer still accepts
+    // print jobs.
+    OUTPUT_FULL,
+
+    // The printer has a paper jam. Printer still accepts print jobs.
+    PAPER_JAM,
+
+    // Some generic issue. Printer still accepts print jobs.
+    GENERIC_ISSUE,
+
+    // The printer is stopped and doesn't print but still accepts print jobs.
+    STOPPED,
+
+    // The printer is unreachable and doesn't accept print jobs.
+    UNREACHABLE,
+
+    // The printer is available.
+    AVAILABLE
+  };
+
+  // Response for $(ref:getPrinterInfo) request.
+  dictionary GetPrinterInfoResponse {
+    // Printer capabilities in
+    // <a href="https://developers.google.com/cloud-print/docs/cdd#cdd">
+    // CDD format</a>.
+    // The property may be missing.
+    object? capabilities;
+
+    // The status of the printer.
+    PrinterStatus status;
+  };
+
   // Status of the print job.
   enum JobStatus {
     // Print job is received on Chrome side but was not processed yet.
@@ -67,11 +113,20 @@ namespace printing {
   };
 
   callback GetPrintersCallback = void(Printer[] printers);
+  callback GetPrinterInfoCallback = void(GetPrinterInfoResponse response);
 
   interface Functions {
     // Returns the list of available printers on the device. This includes
     // manually added, enterprise and discovered printers.
     static void getPrinters(GetPrintersCallback callback);
+
+    // Returns the status and capabilities of the printer in
+    // <a href="https://developers.google.com/cloud-print/docs/cdd#cdd">
+    // CDD format</a>.
+    // This call will fail with a runtime error if no printers with given id are
+    // installed.
+    static void getPrinterInfo(DOMString printerId,
+                               GetPrinterInfoCallback callback);
   };
 
   interface Events {

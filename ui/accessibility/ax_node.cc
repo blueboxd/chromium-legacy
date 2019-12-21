@@ -764,12 +764,9 @@ base::Optional<int> AXNode::GetPosInSet() {
 base::Optional<int> AXNode::GetSetSize() {
   // Only allow this to be called on nodes that can hold set_size values, which
   // are defined in the ARIA spec.
-  if (!(IsOrderedSetItem() || IsOrderedSet()))
+  if (!(IsOrderedSetItem() || IsOrderedSet()) ||
+      data().HasState(ax::mojom::State::kIgnored))
     return base::nullopt;
-
-  if (data().HasState(ax::mojom::State::kIgnored)) {
-    return base::nullopt;
-  }
 
   // If node is item-like, find its outerlying ordered set. Otherwise,
   // this node is the ordered set.
@@ -784,7 +781,10 @@ base::Optional<int> AXNode::GetSetSize() {
     return base::nullopt;
 
   // See AXTree::GetSetSize
-  return tree_->GetSetSize(*this, ordered_set);
+  int32_t set_size = tree_->GetSetSize(*this, ordered_set);
+  if (set_size < 0)
+    return base::nullopt;
+  return set_size;
 }
 
 // Returns true if the role of ordered set matches the role of item.

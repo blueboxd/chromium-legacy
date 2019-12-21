@@ -78,6 +78,7 @@ template("chrome_bundle") {
                              "sign_bundle",
                              "static_library_proguard_disabled",
                              "static_library_provider",
+                             "static_library_synchronized_proguard",
                              "verify_proguard_flags",
                            ])
     command_line_flags_file = "chrome-command-line"

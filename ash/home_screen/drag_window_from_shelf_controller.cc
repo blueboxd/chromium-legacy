@@ -173,17 +173,16 @@ void DragWindowFromShelfController::Drag(const gfx::PointF& location_in_screen,
   if (overview_controller->InOverviewSession()) {
     const SplitViewController::SnapPosition snap_position =
         GetSnapPosition(location_in_screen);
-    OverviewSession* overview_session = overview_controller->overview_session();
-    overview_session->UpdateSplitViewDragIndicatorsWindowDraggingStates(
-        Shell::GetPrimaryRootWindow(), /*is_dragging=*/true,
-        SplitViewDragIndicators::WindowDraggingState::kFromShelf,
-        snap_position);
-    overview_session->OnWindowDragContinued(
-        window_, location_in_screen,
+    const SplitViewDragIndicators::WindowDraggingState window_dragging_state =
         SplitViewDragIndicators::ComputeWindowDraggingState(
             /*is_dragging=*/true,
             SplitViewDragIndicators::WindowDraggingState::kFromShelf,
-            snap_position));
+            snap_position);
+    OverviewSession* overview_session = overview_controller->overview_session();
+    overview_session->UpdateSplitViewDragIndicatorsWindowDraggingStates(
+        Shell::GetPrimaryRootWindow(), window_dragging_state);
+    overview_session->OnWindowDragContinued(window_, location_in_screen,
+                                            window_dragging_state);
 
     if (snap_position != SplitViewController::NONE) {
       // If the dragged window is in snap preview area, make sure overview is
@@ -346,10 +345,7 @@ void DragWindowFromShelfController::OnDragEnded(
     ShowOverviewDuringOrAfterDrag();
 
     OverviewSession* overview_session = overview_controller->overview_session();
-    overview_session->UpdateSplitViewDragIndicatorsWindowDraggingStates(
-        Shell::GetPrimaryRootWindow(), /*is_dragging=*/false,
-        SplitViewDragIndicators::WindowDraggingState::kNoDrag,
-        SplitViewController::NONE);
+    overview_session->ResetSplitViewDragIndicatorsWindowDraggingStates();
     overview_session->OnWindowDragEnded(
         window_, location_in_screen, should_drop_window_in_overview,
         /*snap=*/snap_position != SplitViewController::NONE);

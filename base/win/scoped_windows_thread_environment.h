@@ -13,8 +13,8 @@ namespace win {
 // Serves as a root class for ScopedCOMInitializer and ScopedWinrtInitializer.
 class ScopedWindowsThreadEnvironment {
  public:
-  ScopedWindowsThreadEnvironment() {}
-  virtual ~ScopedWindowsThreadEnvironment() {}
+  ScopedWindowsThreadEnvironment() = default;
+  virtual ~ScopedWindowsThreadEnvironment() = default;
 
   virtual bool Succeeded() const = 0;
 

@@ -118,7 +118,6 @@
 #include "third_party/blink/public/web/web_print_preset_options.h"
 #include "third_party/blink/public/web/web_print_scaling_option.h"
 #include "third_party/blink/public/web/web_script_source.h"
-#include "third_party/blink/public/web/web_user_gesture_indicator.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/events/blink/blink_event_util.h"
@@ -181,7 +180,6 @@ using blink::WebURLError;
 using blink::WebAssociatedURLLoaderClient;
 using blink::WebURLRequest;
 using blink::WebURLResponse;
-using blink::WebUserGestureIndicator;
 using blink::WebView;
 using blink::WebWidget;
 
@@ -2275,8 +2273,7 @@ void PepperPluginInstanceImpl::RemovePluginObject(PluginObject* plugin_object) {
 }
 
 bool PepperPluginInstanceImpl::HasTransientUserActivation() const {
-  return WebUserGestureIndicator::IsProcessingUserGesture(
-      render_frame_->GetWebFrame());
+  return render_frame_->GetWebFrame()->HasTransientUserActivation();
 }
 
 void PepperPluginInstanceImpl::OnLockMouseACK(bool succeeded) {

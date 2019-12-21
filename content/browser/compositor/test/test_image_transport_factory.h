@@ -55,9 +55,6 @@ class TestImageTransportFactory : public ui::ContextFactory,
   void RemoveObserver(ui::ContextFactoryObserver* observer) override;
 
   // ui::ContextFactoryPrivate implementation.
-  std::unique_ptr<ui::Reflector> CreateReflector(ui::Compositor* source,
-                                                 ui::Layer* target) override;
-  void RemoveReflector(ui::Reflector* reflector) override {}
   viz::FrameSinkId AllocateFrameSinkId() override;
   viz::HostFrameSinkManager* GetHostFrameSinkManager() override;
   void SetDisplayVisible(ui::Compositor* compositor, bool visible) override {}

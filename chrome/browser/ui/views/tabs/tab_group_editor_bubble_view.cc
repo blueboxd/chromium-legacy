@@ -23,11 +23,11 @@
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/tab_groups/tab_group_color.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "components/tab_groups/tab_group_visual_data.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button.h"
@@ -44,21 +44,6 @@ constexpr int TAB_GROUP_HEADER_CXMENU_NEW_TAB_IN_GROUP = 13;
 constexpr int TAB_GROUP_HEADER_CXMENU_UNGROUP = 14;
 constexpr int TAB_GROUP_HEADER_CXMENU_CLOSE_GROUP = 15;
 constexpr int TAB_GROUP_HEADER_CXMENU_FEEDBACK = 16;
-
-// Returns our hard-coded set of colors.
-const std::vector<std::pair<SkColor, base::string16>>& GetColorPickerList() {
-  static const base::NoDestructor<
-      std::vector<std::pair<SkColor, base::string16>>>
-      list({{gfx::kGoogleBlue600, base::ASCIIToUTF16("Blue")},
-            {gfx::kGoogleRed600, base::ASCIIToUTF16("Red")},
-            {gfx::kGoogleYellow600, base::ASCIIToUTF16("Yellow")},
-            {gfx::kGoogleGreen600, base::ASCIIToUTF16("Green")},
-            {gfx::kGoogleOrange600, base::ASCIIToUTF16("Orange")},
-            {gfx::kGooglePink600, base::ASCIIToUTF16("Pink")},
-            {gfx::kGooglePurple600, base::ASCIIToUTF16("Purple")},
-            {gfx::kGoogleCyan600, base::ASCIIToUTF16("Cyan")}});
-  return *list;
-}
 }  // namespace
 
 // static
@@ -99,8 +84,7 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
   DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
 
   const auto* layout_provider = ChromeLayoutProvider::Get();
-  const tab_groups::TabGroupVisualData* current_data =
-      tab_controller_->GetVisualDataForGroup(group_);
+  const base::string16 title = tab_controller_->GetGroupTitle(group_);
   const int horizontal_spacing = layout_provider->GetDistanceMetric(
       views::DISTANCE_RELATED_CONTROL_HORIZONTAL);
   const int vertical_menu_spacing = layout_provider->GetDistanceMetric(
@@ -122,13 +106,17 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
   // Add the text field for editing the title.
   title_field_ = group_modifier_container->AddChildView(
       std::make_unique<views::Textfield>());
-  title_field_->SetText(current_data->title());
+  title_field_->SetText(title);
   title_field_->SetAccessibleName(base::ASCIIToUTF16("Group title"));
   title_field_->set_controller(&title_field_controller_);
 
+  InitColorSet();
+  const SkColor current_color = tab_controller_->GetPaintedGroupColor(
+      tab_controller_->GetGroupColorId(group_));
+
   color_selector_ =
       group_modifier_container->AddChildView(std::make_unique<ColorPickerView>(
-          GetColorPickerList(), background_color(), current_data->color(),
+          colors_, background_color(), current_color,
           base::Bind(&TabGroupEditorBubbleView::UpdateGroup,
                      base::Unretained(this))));
   color_selector_->SetBorder(views::CreateEmptyBorder(
@@ -186,15 +174,25 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
 
 TabGroupEditorBubbleView::~TabGroupEditorBubbleView() = default;
 
+void TabGroupEditorBubbleView::InitColorSet() {
+  base::flat_map<tab_groups::TabGroupColorId, tab_groups::TabGroupColor>
+      all_colors = tab_groups::GetTabGroupColorSet();
+
+  color_ids_.reserve(all_colors.size());
+  colors_.reserve(all_colors.size());
+  for (auto const color_pair : all_colors) {
+    color_ids_.push_back(color_pair.first);
+    SkColor color = tab_controller_->GetPaintedGroupColor(color_pair.first);
+    colors_.push_back({color, color_pair.second.label});
+  }
+}
+
 void TabGroupEditorBubbleView::UpdateGroup() {
-  tab_groups::TabGroupVisualData old_data =
-      *tab_controller_->GetVisualDataForGroup(group_);
-
-  base::Optional<SkColor> selected_color = color_selector_->GetSelectedColor();
-  const SkColor color =
-      selected_color.has_value() ? selected_color.value() : old_data.color();
-  tab_groups::TabGroupVisualData new_data(title_field_->GetText(), color);
-
+  base::Optional<int> selected_element = color_selector_->GetSelectedElement();
+  const tab_groups::TabGroupColorId color_id =
+      selected_element.has_value() ? color_ids_[selected_element.value()]
+                                   : tab_controller_->GetGroupColorId(group_);
+  tab_groups::TabGroupVisualData new_data(title_field_->GetText(), color_id);
   tab_controller_->SetVisualDataForGroup(group_, new_data);
 }
 

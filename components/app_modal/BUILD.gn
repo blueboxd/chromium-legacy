@@ -41,6 +41,18 @@ static_library("app_modal") {
 
     deps += [ "//ui/views" ]
   }
+
+  if (is_android) {
+    sources += [
+      "android/javascript_app_modal_dialog_android.cc",
+      "android/javascript_app_modal_dialog_android.h",
+    ]
+
+    deps += [
+      "//components/app_modal/android:jni_headers",
+      "//ui/android",
+    ]
+  }
 }
 
 source_set("unit_tests") {

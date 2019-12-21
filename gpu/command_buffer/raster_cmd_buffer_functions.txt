@@ -36,7 +36,7 @@ GL_APICALL void         GL_APIENTRY glClearPaintCacheINTERNAL (void);
 
 // TOOD(backer): Remove GL encoding. These are not GL functions.
 // |mailboxes| argument is the concatenation of the source mailbox and the destination mailbox (32 bytes total)
-GL_APICALL void         GL_APIENTRY glCopySubTextureINTERNAL (GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height, const GLbyte* mailboxes);
+GL_APICALL void         GL_APIENTRY glCopySubTextureINTERNAL (GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height, GLboolean unpack_flip_y, GLboolean unpack_premultiply_alpha, const GLbyte* mailboxes);
 GL_APICALL void         GL_APIENTRY glTraceBeginCHROMIUM (const char* category_name, const char* trace_name);
 GL_APICALL void         GL_APIENTRY glTraceEndCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glSetActiveURLCHROMIUM (const char* url);

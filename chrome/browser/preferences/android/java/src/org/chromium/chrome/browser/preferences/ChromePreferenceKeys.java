@@ -360,6 +360,11 @@ public final class ChromePreferenceKeys {
     public static final String HOMEPAGE_USE_DEFAULT_URI = "homepage_partner_enabled";
 
     /**
+     * Key used to save homepage location set by enterprise policy
+     */
+    public static final String HOMEPAGE_LOCATION_POLICY = "Chrome.Policy.HomepageLocation";
+
+    /**
      * When the user is shown a badge that the current Android OS version is unsupported, and they
      * tap it to display the menu (which has additional information), we store the current version
      * of Chrome to this preference to ensure we only show the badge once. The value is cleared
@@ -546,6 +551,7 @@ public final class ChromePreferenceKeys {
                 HOMEPAGE_CUSTOM_URI,
                 HOMEPAGE_ENABLED,
                 HOMEPAGE_USE_DEFAULT_URI,
+                HOMEPAGE_LOCATION_POLICY,
                 LATEST_UNSUPPORTED_VERSION,
                 OFFLINE_INDICATOR_V2_ENABLED,
                 PROMOS_SKIPPED_ON_FIRST_START,

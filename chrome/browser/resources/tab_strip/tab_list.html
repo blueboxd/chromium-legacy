@@ -18,6 +18,9 @@
     display: flex;
     min-width: fit-content;
     overflow: hidden;
+    padding-inline-end: calc(
+        var(--tabstrip-new-tab-button-width) +
+        var(--tabstrip-new-tab-button-margin));
   }
 
   #pinnedTabs {
@@ -47,8 +50,7 @@
   }
 
   #newTabButton {
-    --new-tab-button-margin: 24px;
-    --cr-icon-button-size: 50px;
+    --cr-icon-button-size: var(--tabstrip-new-tab-button-width);
     --cr-icon-button-icon-size: 32px;
     --cr-icon-button-fill-color: var(--tabstrip-tab-text-color);
     --cr-icon-button-margin-end: var(--new-tab-button-margin);
@@ -57,19 +59,17 @@
     border-radius: 50%;
     box-shadow: 0 1px 3px 0 rgba(var(--google-grey-800-rgb), .3),
                 0 4px 8px 3px rgba(var(--google-grey-800-rgb), .15);
-    height: 50px;
-    position: sticky;
-    right: var(--new-tab-button-margin);
+    height: var(--tabstrip-new-tab-button-width);
+    margin: 0;
+    position: fixed;
+    right: var(--tabstrip-new-tab-button-margin);
     top: 50%;
     transform: translateY(-50%);
-    width: 50px;
+    width: var(--tabstrip-new-tab-button-width);
   }
 
   :host-context([dir='rtl']) #newTabButton {
-    /* TODO(crbug.com/1015605): Sticky positioning does not work with RTL. */
-    --cr-icon-button-margin-end: 0;
-    left: var(--new-tab-button-margin);
-    position: fixed;
+    left: var(--tabstrip-new-tab-button-margin);
     right: auto;
   }
 

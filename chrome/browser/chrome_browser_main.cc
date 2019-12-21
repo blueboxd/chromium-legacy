@@ -64,6 +64,7 @@
 #include "chrome/browser/component_updater/optimization_hints_component_installer.h"
 #include "chrome/browser/component_updater/origin_trials_component_installer.h"
 #include "chrome/browser/component_updater/safety_tips_component_installer.h"
+#include "chrome/browser/component_updater/soda_component_installer.h"
 #include "chrome/browser/component_updater/ssl_error_assistant_component_installer.h"
 #include "chrome/browser/component_updater/sth_set_component_remover.h"
 #include "chrome/browser/component_updater/subresource_filter_component_installer.h"
@@ -562,6 +563,10 @@ void RegisterComponentsForUpdate(bool is_off_the_record_profile,
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OS_ANDROID)
   component_updater::RegisterGamesComponent(cus, profile_prefs);
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OS_ANDROID)
+
+  if (profile_prefs->GetBoolean(prefs::kLiveCaptionEnabled))
+    component_updater::RegisterSODAComponent(cus, profile_prefs,
+                                             base::OnceClosure());
 }
 
 #if !defined(OS_ANDROID)

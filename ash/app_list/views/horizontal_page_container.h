@@ -22,9 +22,8 @@ class PaginationController;
 
 // HorizontalPageContainer contains a list of HorizontalPage that are
 // horizontally laid out. These pages can be switched with gesture scrolling.
-class APP_LIST_EXPORT HorizontalPageContainer
-    : public AppListPage,
-      public ash::PaginationModelObserver {
+class APP_LIST_EXPORT HorizontalPageContainer : public AppListPage,
+                                                public PaginationModelObserver {
  public:
   HorizontalPageContainer(ContentsView* contents_view, AppListModel* model);
   ~HorizontalPageContainer() override;
@@ -37,13 +36,13 @@ class APP_LIST_EXPORT HorizontalPageContainer
 
   // AppListPage overrides:
   void OnWillBeHidden() override;
-  void OnAnimationStarted(ash::AppListState from_state,
-                          ash::AppListState to_state) override;
+  void OnAnimationStarted(AppListState from_state,
+                          AppListState to_state) override;
   gfx::Rect GetPageBoundsForState(
-      ash::AppListState state,
+      AppListState state,
       const gfx::Rect& contents_bounds,
       const gfx::Rect& search_box_bounds) const override;
-  void UpdateOpacityForState(ash::AppListState state) override;
+  void UpdateOpacityForState(AppListState state) override;
   views::View* GetFirstFocusableView() override;
   views::View* GetLastFocusableView() override;
   bool ShouldShowSearchBox() const override;
@@ -75,10 +74,10 @@ class APP_LIST_EXPORT HorizontalPageContainer
   gfx::Vector2d GetOffsetForPageIndex(int index) const;
 
   // Manages the pagination for the horizontal pages.
-  ash::PaginationModel pagination_model_{this};
+  PaginationModel pagination_model_{this};
 
   // Must appear after |pagination_model_|.
-  std::unique_ptr<ash::PaginationController> pagination_controller_;
+  std::unique_ptr<PaginationController> pagination_controller_;
 
   ContentsView* contents_view_;  // Not owned
 

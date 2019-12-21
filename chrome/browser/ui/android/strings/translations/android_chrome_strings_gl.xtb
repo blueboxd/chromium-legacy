@@ -37,6 +37,7 @@
 <translation id="1231733316453485619">Queres activar a sincronización?</translation>
 <translation id="123724288017357924">Cargar a páxina, ignorando o contido da caché</translation>
 <translation id="124116460088058876">Máis idiomas</translation>
+<translation id="1242008676835033345">Inserido en <ph name="WEBSITE_URL" /></translation>
 <translation id="124678866338384709">Pechar a pestana actual</translation>
 <translation id="1258753120186372309">Doodle de Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Buscar e explorar</translation>
@@ -95,6 +96,7 @@
 <translation id="1672586136351118594">Non mostrar outra vez</translation>
 <translation id="1692118695553449118">A sincronización está activada</translation>
 <translation id="169515064810179024">Impide que os sitios accedan aos sensores de movemento</translation>
+<translation id="1711267867945983636">Para continuar, activa a NFC no teu teléfono</translation>
 <translation id="1717218214683051432">Sensores de movemento</translation>
 <translation id="1718835860248848330">Última hora</translation>
 <translation id="1736419249208073774">Explorar</translation>
@@ -151,6 +153,7 @@
 <translation id="2082238445998314030">Resultado <ph name="RESULT_NUMBER" /> de <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Son</translation>
 <translation id="2096012225669085171">Sincroniza e personaliza o contido en todos os dispositivos</translation>
+<translation id="2099625543891475722">as túas características físicas, como a altura</translation>
 <translation id="2100273922101894616">Inicio de sesión automático</translation>
 <translation id="2100314319871056947">Proba a compartir o texto dividíndoo en fragmentos máis pequenos</translation>
 <translation id="2107397443965016585">Preguntar antes de permitir que os sitios reproduzan contido protexido (recomendado)</translation>
@@ -481,6 +484,7 @@ Se queres axustar o termo de busca, manteno premido para seleccionalo. Se queres
 <translation id="4634124774493850572">Usar contrasinal</translation>
 <translation id="4645575059429386691">Xestionado por teus pais</translation>
 <translation id="4650364565596261010">Opción predeterminada do sistema</translation>
+<translation id="4660838440047236328">a distribución do teu cuarto</translation>
 <translation id="4663756553811254707">Elimináronse <ph name="NUMBER_OF_BOOKMARKS" /> marcadores</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> engadiuse á túa pantalla de inicio</translation>
 <translation id="4684427112815847243">Sincronizar todo</translation>
@@ -605,6 +609,7 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5487521232677179737">Borrar datos</translation>
 <translation id="5494752089476963479">Bloquear anuncios en sitios que mostran anuncios enganosos ou intrusivos</translation>
 <translation id="5500777121964041360">É posible que non estea dispoñible na túa localización</translation>
+<translation id="5505264765875738116">Os sitios non poden pedir permiso para enviar notificacións</translation>
 <translation id="5512137114520586844"><ph name="PARENT_NAME" /> xestiona esta conta.</translation>
 <translation id="5514904542973294328">Desactivado polo administrador deste dispositivo</translation>
 <translation id="5515439363601853141">Desbloquea a pantalla para ver o teu contrasinal</translation>
@@ -702,6 +707,7 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="6192792657125177640">Excepcións</translation>
 <translation id="6194112207524046168">Para permitir que Chrome acceda á túa cámara, actívaa tamén en <ph name="BEGIN_LINK" />Configuración de Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Bloquear cookies de terceiros</translation>
+<translation id="6201345951596836663">Copiouse a ligazón</translation>
 <translation id="6206551242102657620">A conexión é segura. Información do sitio</translation>
 <translation id="6210748933810148297">Non es <ph name="EMAIL" />?</translation>
 <translation id="6216432067784365534">Opcións de <ph name="NAME_OF_LIST_ITEM" /></translation>
@@ -711,6 +717,7 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche anuncios que non estean baseados noutros sitios web que visitases. Moitos sitios web seguirán recompilando e utilizando os teus datos de navegación para, por exemplo, mellorar a seguranza, fornecer contido, anuncios e recomendacións e para crear estatísticas de informes.</translation>
 <translation id="624789221780392884">Actualización lista</translation>
 <translation id="6255999984061454636">Suxestións de contido</translation>
+<translation id="6270391203985052864">Os sitios poden pedir permiso para enviar notificacións</translation>
 <translation id="6277522088822131679">Produciuse un problema ao imprimir a páxina. Téntao de novo.</translation>
 <translation id="6295158916970320988">Todos os sitios</translation>
 <translation id="629730747756840877">Conta</translation>
@@ -755,6 +762,7 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="6545864417968258051">Busca de dispositivos Bluetooth</translation>
 <translation id="6560414384669816528">Buscar con Sogou</translation>
 <translation id="656065428026159829">Ver máis</translation>
+<translation id="6561560012278703671">Utilizar mensaxaría máis silenciosa (impide que as notificacións te interrompan)</translation>
 <translation id="6566259936974865419">Chrome permitiuche aforrar <ph name="GIGABYTES" /> GB</translation>
 <translation id="6573096386450695060">Permitir sempre</translation>
 <translation id="6573431926118603307">Aquí aparecerán as pestanas que abrises en Chrome noutros dispositivos.</translation>
@@ -852,6 +860,7 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="729975465115245577">O dispositivo non ten unha aplicación para almacenar o ficheiro de contrasinais.</translation>
 <translation id="7302081693174882195">Detalles: filas ordenadas por cantidade de datos aforrados</translation>
 <translation id="7302486331832100261">Adoitas bloquear as notificacións. Para permitilas, toca Detalles.</translation>
+<translation id="7311441321349344333">A NFC está desactivada para este dispositivo. Actívaa na <ph name="BEGIN_LINK" />Configuración de Android<ph name="END_LINK" />.</translation>
 <translation id="7328017930301109123">No modo básico, Chrome carga as páxinas máis rápido e usa un 60 por cento menos de datos.</translation>
 <translation id="7333031090786104871">Aínda se está engadindo o sitio anterior</translation>
 <translation id="7352939065658542140">VÍDEO</translation>

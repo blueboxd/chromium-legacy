@@ -376,7 +376,7 @@ DeviceCloudPolicyInitializer::TpmEnrollmentKeySigningService::
 
 void DeviceCloudPolicyInitializer::TpmEnrollmentKeySigningService::SignData(
     const std::string& data,
-    const SigningCallback& callback) {
+    SigningCallback callback) {
   const chromeos::attestation::AttestationCertificateProfile cert_profile =
       chromeos::attestation::PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE;
   const cryptohome::Identification identification;
@@ -386,14 +386,16 @@ void DeviceCloudPolicyInitializer::TpmEnrollmentKeySigningService::SignData(
       identification,
       chromeos::attestation::AttestationFlow::GetKeyNameForProfile(cert_profile,
                                                                    ""),
-      data, base::Bind(&DeviceCloudPolicyInitializer::
-                           TpmEnrollmentKeySigningService::OnDataSigned,
-                       weak_ptr_factory_.GetWeakPtr(), data, callback));
+      data,
+      base::BindOnce(&DeviceCloudPolicyInitializer::
+                         TpmEnrollmentKeySigningService::OnDataSigned,
+                     weak_ptr_factory_.GetWeakPtr(), data,
+                     std::move(callback)));
 }
 
 void DeviceCloudPolicyInitializer::TpmEnrollmentKeySigningService::OnDataSigned(
     const std::string& data,
-    const SigningCallback& callback,
+    SigningCallback callback,
     bool success,
     const std::string& signed_data) {
   enterprise_management::SignedData em_signed_data;
@@ -404,7 +406,7 @@ void DeviceCloudPolicyInitializer::TpmEnrollmentKeySigningService::OnDataSigned(
     em_signed_data.set_extra_data_bytes(att_signed_data.data().size() -
                                         data.size());
   }
-  callback.Run(success, em_signed_data);
+  std::move(callback).Run(success, em_signed_data);
 }
 
 }  // namespace policy

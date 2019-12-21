@@ -33,13 +33,13 @@ class APP_LIST_EXPORT AppListPage : public views::View {
   virtual void OnHidden();
 
   // Triggered when the page transition animation started.
-  virtual void OnAnimationStarted(ash::AppListState from_state,
-                                  ash::AppListState to_state) = 0;
+  virtual void OnAnimationStarted(AppListState from_state,
+                                  AppListState to_state) = 0;
 
   // Triggered after the page transition animation has updated.
   virtual void OnAnimationUpdated(double progress,
-                                  ash::AppListState from_state,
-                                  ash::AppListState to_state);
+                                  AppListState from_state,
+                                  AppListState to_state);
 
   // Returns the search box size that is preferred by the page. Used by
   // ContentsView to calculate the search box widget bounds that
@@ -63,7 +63,7 @@ class APP_LIST_EXPORT AppListPage : public views::View {
   // bounds, if a different behavior is required, this method should be changed
   // to return an origin point instead of just Y coordinate.
   virtual base::Optional<int> GetSearchBoxTop(
-      ash::AppListViewState view_state) const;
+      AppListViewState view_state) const;
 
   // Returns the intended page bounds when the app list is in the provided
   // state.
@@ -71,7 +71,7 @@ class APP_LIST_EXPORT AppListPage : public views::View {
   // |search_box_bounds| - The expected search box bounds when the app list is
   //                       in state |state|.
   virtual gfx::Rect GetPageBoundsForState(
-      ash::AppListState state,
+      AppListState state,
       const gfx::Rect& contents_bounds,
       const gfx::Rect& search_box_bounds) const = 0;
 
@@ -80,11 +80,11 @@ class APP_LIST_EXPORT AppListPage : public views::View {
   // it should make sure the page transition animation updates the opacity as
   // well.
   // Default implementation is no-op.
-  virtual void UpdateOpacityForState(ash::AppListState state);
+  virtual void UpdateOpacityForState(AppListState state);
 
   // Convenience method that sets the page bounds to the bounds returned by
   // GetPageBoundsForState().
-  void UpdatePageBoundsForState(ash::AppListState state,
+  void UpdatePageBoundsForState(AppListState state,
                                 const gfx::Rect& contents_bounds,
                                 const gfx::Rect& search_box_bounds);
 

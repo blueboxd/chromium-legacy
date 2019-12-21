@@ -228,9 +228,7 @@ TEST(StringToIntEnumListPolicyHandlerTest, CheckPolicySettings) {
   PolicyMap policy_map;
   PolicyErrorMap errors;
   StringMappingListPolicyHandler handler(
-      kTestPolicy,
-      kTestPref,
-      base::Bind(GetIntegerTypeMap));
+      kTestPolicy, kTestPref, base::BindRepeating(GetIntegerTypeMap));
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                  POLICY_SOURCE_CLOUD, list.CreateDeepCopy(), nullptr);
@@ -269,9 +267,7 @@ TEST(StringMappingListPolicyHandlerTest, ApplyPolicySettings) {
   PrefValueMap prefs;
   base::Value* value;
   StringMappingListPolicyHandler handler(
-      kTestPolicy,
-      kTestPref,
-      base::Bind(GetIntegerTypeMap));
+      kTestPolicy, kTestPref, base::BindRepeating(GetIntegerTypeMap));
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                  POLICY_SOURCE_CLOUD, list.CreateDeepCopy(), nullptr);

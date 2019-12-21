@@ -3490,6 +3490,22 @@
       "features": [
         "force_low_power_gpu"
       ]
+    },
+    {
+      "id": 327,
+      "cr_bugs": [1027981],
+      "description": "Disable dual source blending support",
+      "os": {
+        "type": "macosx",
+        "version": {
+          "op": "<",
+          "value": "10.14"
+        }
+      },
+      "gl_vendor": "Intel.*",
+      "features": [
+        "disable_dual_source_blending_support"
+      ]
     }
   ]
 }

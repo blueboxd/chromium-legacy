@@ -65,4 +65,14 @@ suite('localized_link', function() {
         `<a href="http://google.com" id="id0" aria-labelledby="id0">` +
             `pre-populated link</a>`);
   });
+
+  test('NoLinkPresent', function() {
+    document.body.innerHTML = GetLocalizedStringWithLinkElementHtml(
+        `No anchor tags in this sentence.`, ``);
+    localizedStringWithLink =
+        document.body.querySelector('settings-localized-link');
+    assertEquals(
+        localizedStringWithLink.$.container.innerHTML,
+        `No anchor tags in this sentence.`);
+  });
 });

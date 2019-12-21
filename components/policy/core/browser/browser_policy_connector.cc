@@ -106,7 +106,7 @@ void BrowserPolicyConnector::InitInternal(
   device_management_service_ = std::move(device_management_service);
 
   policy_statistics_collector_.reset(new policy::PolicyStatisticsCollector(
-      base::Bind(&GetChromePolicyDetails), GetChromeSchema(),
+      base::BindRepeating(&GetChromePolicyDetails), GetChromeSchema(),
       GetPolicyService(), local_state, base::ThreadTaskRunnerHandle::Get()));
   policy_statistics_collector_->Initialize();
 }

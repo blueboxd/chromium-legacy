@@ -32,7 +32,6 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "url/gurl.h"
 
 class TranslateManagerRenderViewHostAndroidTest

@@ -261,7 +261,7 @@ namespace {
 // the content comes through.
 class EtwTraceConsumerDataTest : public EtwTraceConsumerBaseTest {
  public:
-  EtwTraceConsumerDataTest() {}
+  EtwTraceConsumerDataTest() = default;
 
   void SetUp() override {
     EtwTraceConsumerBaseTest::SetUp();

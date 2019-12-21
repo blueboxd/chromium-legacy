@@ -129,8 +129,9 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
 
   // Sets |unmask_details_|. May be ignored if response is too late and user is
   // not opted-in for FIDO auth, or if user does not select a card.
-  void OnDidGetUnmaskDetails(AutofillClient::PaymentsRpcResult result,
-                             AutofillClient::UnmaskDetails& unmask_details);
+  void OnDidGetUnmaskDetails(
+      AutofillClient::PaymentsRpcResult result,
+      payments::PaymentsClient::UnmaskDetails& unmask_details);
 
   // If OnDidGetUnmaskDetails() was invoked by PaymentsClient, then
   // |get_unmask_details_returned| should be set to true. Based on the
@@ -225,7 +226,7 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
 
   // Suggested authentication method and other information to facilitate card
   // unmasking.
-  AutofillClient::UnmaskDetails unmask_details_;
+  payments::PaymentsClient::UnmaskDetails unmask_details_;
 
   // Resets when PrepareToFetchCreditCard() is called, if not already reset.
   // Signaled when OnDidGetUnmaskDetails() is called or after timeout.

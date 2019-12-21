@@ -23,3 +23,12 @@ FakeInfobarIOS::FakeInfobarIOS()
 }
 
 FakeInfobarIOS::~FakeInfobarIOS() = default;
+
+// static
+std::unique_ptr<FakeInfobarIOS> FakeInfobarIOS::Create(InfobarType type,
+                                                       bool has_badge) {
+  std::unique_ptr<FakeInfobarIOS> infobar = std::make_unique<FakeInfobarIOS>();
+  infobar->fake_ui_delegate().infobarType = type;
+  infobar->fake_ui_delegate().hasBadge = has_badge;
+  return infobar;
+}

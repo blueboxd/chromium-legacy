@@ -110,6 +110,13 @@ function onComponentEvent(eventArgs) {
   const filteredComponents = currentComponentsData.filter(function(entry) {
     return entry.id === id;
   });
+
+  // A component may be added from another page so the status and version
+  // should only be updated if the component is listed on this page.
+  if (filteredComponents.length === 0) {
+    return;
+  }
+
   const component = filteredComponents[0];
 
   const status = eventArgs['event'];

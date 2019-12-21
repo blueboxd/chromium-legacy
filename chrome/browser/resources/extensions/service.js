@@ -191,6 +191,7 @@ export class Service {
     if (this.isDeleting_) {
       return;
     }
+    chrome.metricsPrivate.recordUserAction('Extensions.RemoveExtensionClick');
     this.isDeleting_ = true;
     chrome.management.uninstall(id, {showConfirmDialog: true}, () => {
       // The "last error" was almost certainly the user canceling the dialog.
@@ -203,6 +204,9 @@ export class Service {
 
   /** @override */
   setItemEnabled(id, isEnabled) {
+    chrome.metricsPrivate.recordUserAction(
+        isEnabled ? 'Extensions.ExtensionEnabled' :
+                    'Extensions.ExtensionDisabled');
     chrome.management.setEnabled(id, isEnabled);
   }
 

@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_GEOMETRY_MOJOM_TRAITS_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_GEOMETRY_MOJOM_TRAITS_H_
 
-#include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -20,13 +19,6 @@ struct StructTraits<gfx::mojom::PointDataView, ::blink::WebPoint> {
   static int x(const ::blink::WebPoint& point) { return point.x; }
   static int y(const ::blink::WebPoint& point) { return point.y; }
   static bool Read(gfx::mojom::PointDataView, ::blink::WebPoint* out);
-};
-
-template <>
-struct StructTraits<gfx::mojom::PointFDataView, ::blink::WebFloatPoint> {
-  static float x(const ::blink::WebFloatPoint& point) { return point.x; }
-  static float y(const ::blink::WebFloatPoint& point) { return point.y; }
-  static bool Read(gfx::mojom::PointFDataView, ::blink::WebFloatPoint* out);
 };
 
 template <>

@@ -280,7 +280,7 @@ TEST_F(CreditCardFIDOAuthenticatorTest, SyncUserOptIn_OnOfferedOptIn) {
   EXPECT_TRUE(fido_authenticator_->IsUserOptedIn());
 
   // If payments is offering to opt-in, then that means user is not opted in.
-  AutofillClient::UnmaskDetails unmask_details;
+  payments::PaymentsClient::UnmaskDetails unmask_details;
   unmask_details.offer_fido_opt_in = true;
   fido_authenticator_->SyncUserOptIn(unmask_details);
   EXPECT_FALSE(fido_authenticator_->IsUserOptedIn());
@@ -293,7 +293,7 @@ TEST_F(CreditCardFIDOAuthenticatorTest, SyncUserOptIn_OnFIDOAuthRequest) {
   EXPECT_FALSE(fido_authenticator_->IsUserOptedIn());
 
   // If payments is requesting a FIDO auth, then that means user is opted in.
-  AutofillClient::UnmaskDetails unmask_details;
+  payments::PaymentsClient::UnmaskDetails unmask_details;
   unmask_details.unmask_auth_method = AutofillClient::UnmaskAuthMethod::FIDO;
   fido_authenticator_->SyncUserOptIn(unmask_details);
   EXPECT_TRUE(fido_authenticator_->IsUserOptedIn());

@@ -32,7 +32,7 @@ class APP_LIST_EXPORT SearchResultTileItemView
       public views::ContextMenuController {
  public:
   SearchResultTileItemView(AppListViewDelegate* view_delegate,
-                           ash::PaginationModel* pagination_model,
+                           PaginationModel* pagination_model,
                            bool show_in_apps_page);
   ~SearchResultTileItemView() override;
 
@@ -112,7 +112,7 @@ class APP_LIST_EXPORT SearchResultTileItemView
   base::string16 GetTooltipText(const gfx::Point& p) const override;
 
   AppListViewDelegate* const view_delegate_;           // Owned by AppListView.
-  ash::PaginationModel* const pagination_model_;       // Owned by AppsGridView.
+  PaginationModel* const pagination_model_;            // Owned by AppsGridView.
 
   views::ImageView* icon_ = nullptr;         // Owned by views hierarchy.
   views::ImageView* badge_ = nullptr;        // Owned by views hierarchy.

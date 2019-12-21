@@ -8,7 +8,7 @@
 #include "content/renderer/render_view_impl.h"
 #include "ipc/ipc_message.h"
 #include "third_party/blink/public/web/web_frame.h"
-#include "third_party/blink/public/web/web_user_gesture_indicator.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/blink/public/web/web_widget.h"
 
@@ -23,11 +23,11 @@ RenderWidgetMouseLockDispatcher::~RenderWidgetMouseLockDispatcher() {}
 void RenderWidgetMouseLockDispatcher::SendLockMouseRequest(
     blink::WebLocalFrame* requester_frame,
     bool request_unadjusted_movement) {
-  bool user_gesture =
-      blink::WebUserGestureIndicator::IsProcessingUserGesture(requester_frame);
-  render_widget_->Send(
-      new WidgetHostMsg_LockMouse(render_widget_->routing_id(), user_gesture,
-                                  false, request_unadjusted_movement));
+  bool has_transient_user_activation =
+      requester_frame ? requester_frame->HasTransientUserActivation() : false;
+  render_widget_->Send(new WidgetHostMsg_LockMouse(
+      render_widget_->routing_id(), has_transient_user_activation, false,
+      request_unadjusted_movement));
 }
 
 void RenderWidgetMouseLockDispatcher::SendUnlockMouseRequest() {

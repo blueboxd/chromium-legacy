@@ -100,9 +100,6 @@ class CORE_EXPORT HTMLImageElement final
   ImageResourceContent* CachedImage() const {
     return GetImageLoader().GetContent();
   }
-  ImageResource* CachedImageResourceForImageDocument() const {
-    return GetImageLoader().ImageResourceForImageDocument();
-  }
   void LoadDeferredImage() {
     GetImageLoader().LoadDeferredImage(referrer_policy_);
   }
@@ -110,7 +107,7 @@ class CORE_EXPORT HTMLImageElement final
     GetImageLoader().SetImageForTest(content);
   }
 
-  void SetLoadingImageDocument() { GetImageLoader().SetLoadingImageDocument(); }
+  void StartLoadingImageDocument(ImageResourceContent* image_content);
 
   void setHeight(unsigned);
   void setWidth(unsigned);

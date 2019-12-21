@@ -15,7 +15,7 @@
         android:layout_height="wrap_content"
         style="@style/AlertDialogContent">
 
-            <org.chromium.chrome.browser.ui.widget.text.AlertDialogEditText
+            <org.chromium.components.browser_ui.widget.text.AlertDialogEditText
                 android:id="@+id/file_name"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"

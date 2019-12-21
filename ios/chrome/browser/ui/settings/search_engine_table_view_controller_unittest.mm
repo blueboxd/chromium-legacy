@@ -346,7 +346,12 @@ TEST_F(SearchEngineTableViewControllerTest, TestUrlModifiedByService) {
 
 // Tests that when user change default search engine, all items can be displayed
 // correctly and the change can be synced to the prefs.
-TEST_F(SearchEngineTableViewControllerTest, TestChangeProvider) {
+// TODO(crbug.com/1036445): When selecting prepopulated search engines the test
+// relies on the assumption that setting search engine as default will leave it
+// intact. The actual behavior is that if search engine's prepopulated id
+// matches the one from the record in search engines table then the later one
+// will be used.
+TEST_F(SearchEngineTableViewControllerTest, DISABLED_TestChangeProvider) {
   // This test also needs to test the UMA, so load some real prepopulated search
   // engines to ensure the SearchEngineType is logged correctly. Don't use any
   // literal symbol(e.g. "google" or "AOL") from

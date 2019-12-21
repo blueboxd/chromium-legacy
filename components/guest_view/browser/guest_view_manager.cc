@@ -252,8 +252,9 @@ bool GuestViewManager::ForEachGuest(WebContents* owner_web_contents,
 WebContents* GuestViewManager::GetFullPageGuest(
     WebContents* embedder_web_contents) {
   WebContents* result = nullptr;
-  ForEachGuest(embedder_web_contents,
-               base::Bind(&GuestViewManager::GetFullPageGuestHelper, &result));
+  ForEachGuest(
+      embedder_web_contents,
+      base::BindRepeating(&GuestViewManager::GetFullPageGuestHelper, &result));
   return result;
 }
 

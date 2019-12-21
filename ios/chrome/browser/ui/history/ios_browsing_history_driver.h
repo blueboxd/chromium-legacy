@@ -51,7 +51,7 @@ class IOSBrowsingHistoryDriver : public history::BrowsingHistoryDriver {
   void ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
       const syncer::SyncService* sync_service,
       history::WebHistoryService* history_service,
-      base::Callback<void(bool)> callback) override;
+      base::OnceCallback<void(bool)> callback) override;
 
   // The current browser state.
   ios::ChromeBrowserState* browser_state_;  // weak

@@ -52,9 +52,6 @@ class CORE_EXPORT ElementFragmentAnchor final : public FragmentAnchor {
   // so we can't do it in Invoke.
   void PerformPreRafActions() override;
 
-  // We can dispose of the fragment once load has been completed.
-  void DidCompleteLoad() override;
-
   // Does nothing as an element anchor does not have any dismissal work.
   bool Dismiss() override;
 

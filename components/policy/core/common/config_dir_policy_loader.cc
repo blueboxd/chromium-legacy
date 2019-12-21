@@ -72,8 +72,8 @@ ConfigDirPolicyLoader::~ConfigDirPolicyLoader() {}
 
 void ConfigDirPolicyLoader::InitOnBackgroundThread() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  base::FilePathWatcher::Callback callback =
-      base::Bind(&ConfigDirPolicyLoader::OnFileUpdated, base::Unretained(this));
+  base::FilePathWatcher::Callback callback = base::BindRepeating(
+      &ConfigDirPolicyLoader::OnFileUpdated, base::Unretained(this));
   mandatory_watcher_.Watch(config_dir_.Append(kMandatoryConfigDir), false,
                            callback);
   recommended_watcher_.Watch(config_dir_.Append(kRecommendedConfigDir), false,

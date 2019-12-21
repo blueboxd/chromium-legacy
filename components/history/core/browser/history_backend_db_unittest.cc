@@ -25,6 +25,7 @@
 #include <unordered_set>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/format_macros.h"
 #include "base/guid.h"
 #include "base/i18n/case_conversion.h"
@@ -1390,8 +1391,8 @@ TEST_F(HistoryBackendDBTest, MigratePresentations) {
   // Re-open the db, triggering migration.
   CreateBackendAndDatabase();
 
-  std::vector<std::unique_ptr<PageUsageData>> results = db_->QuerySegmentUsage(
-      segment_time, 10, base::Callback<bool(const GURL&)>());
+  std::vector<std::unique_ptr<PageUsageData>> results =
+      db_->QuerySegmentUsage(segment_time, 10, base::NullCallback());
   ASSERT_EQ(1u, results.size());
   EXPECT_EQ(url, results[0]->GetURL());
   EXPECT_EQ(segment_id, results[0]->GetID());
@@ -1537,9 +1538,8 @@ TEST_F(HistoryBackendDBTest, MigrateVisitSegmentNames) {
   // Re-open the db, triggering migration.
   CreateBackendAndDatabase();
 
-  std::vector<std::unique_ptr<PageUsageData>> results =
-      db_->QuerySegmentUsage(segment_time, /*max_result_count=*/10,
-                             base::Callback<bool(const GURL&)>());
+  std::vector<std::unique_ptr<PageUsageData>> results = db_->QuerySegmentUsage(
+      segment_time, /*max_result_count=*/10, base::NullCallback());
   ASSERT_EQ(1u, results.size());
   EXPECT_THAT(results[0]->GetURL(), testing::AnyOf(url1, url2));
   EXPECT_THAT(results[0]->GetTitle(), testing::AnyOf(title1, title2));
@@ -1881,7 +1881,7 @@ TEST_F(HistoryBackendDBTest, QuerySegmentUsage) {
 
   // Without a filter, the "file://" URL should win.
   std::vector<std::unique_ptr<PageUsageData>> results =
-      db_->QuerySegmentUsage(time, 1, base::Callback<bool(const GURL&)>());
+      db_->QuerySegmentUsage(time, 1, base::NullCallback());
   ASSERT_EQ(1u, results.size());
   EXPECT_EQ(url1, results[0]->GetURL());
   EXPECT_EQ(segment_id1, results[0]->GetID());
@@ -1889,7 +1889,7 @@ TEST_F(HistoryBackendDBTest, QuerySegmentUsage) {
   // With the filter, the "file://" URL should be filtered out, so the "http://"
   // URL should win instead.
   std::vector<std::unique_ptr<PageUsageData>> results2 =
-      db_->QuerySegmentUsage(time, 1, base::Bind(&FilterURL));
+      db_->QuerySegmentUsage(time, 1, base::BindRepeating(&FilterURL));
   ASSERT_EQ(1u, results2.size());
   EXPECT_EQ(url2, results2[0]->GetURL());
   EXPECT_EQ(segment_id2, results2[0]->GetID());

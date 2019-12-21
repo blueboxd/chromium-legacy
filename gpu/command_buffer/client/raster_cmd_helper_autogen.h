@@ -190,6 +190,8 @@ void CopySubTextureINTERNALImmediate(GLint xoffset,
                                      GLint y,
                                      GLsizei width,
                                      GLsizei height,
+                                     GLboolean unpack_flip_y,
+                                     GLboolean unpack_premultiply_alpha,
                                      const GLbyte* mailboxes) {
   const uint32_t size =
       raster::cmds::CopySubTextureINTERNALImmediate::ComputeSize();
@@ -197,7 +199,8 @@ void CopySubTextureINTERNALImmediate(GLint xoffset,
       GetImmediateCmdSpaceTotalSize<
           raster::cmds::CopySubTextureINTERNALImmediate>(size);
   if (c) {
-    c->Init(xoffset, yoffset, x, y, width, height, mailboxes);
+    c->Init(xoffset, yoffset, x, y, width, height, unpack_flip_y,
+            unpack_premultiply_alpha, mailboxes);
   }
 }
 

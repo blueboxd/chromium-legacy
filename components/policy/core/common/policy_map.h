@@ -159,11 +159,12 @@ class POLICY_EXPORT PolicyMap {
   void Erase(const std::string& policy);
 
   // Erase all entries for which |filter| returns true.
-  void EraseMatching(const base::Callback<bool(const const_iterator)>& filter);
+  void EraseMatching(
+      const base::RepeatingCallback<bool(const const_iterator)>& filter);
 
   // Erase all entries for which |filter| returns false.
   void EraseNonmatching(
-      const base::Callback<bool(const const_iterator)>& filter);
+      const base::RepeatingCallback<bool(const const_iterator)>& filter);
 
   // Swaps the internal representation of |this| with |other|.
   void Swap(PolicyMap* other);
@@ -220,8 +221,9 @@ class POLICY_EXPORT PolicyMap {
                              const PolicyMapType::value_type& b);
 
   // Erase all entries for which |filter| returns |deletion_value|.
-  void FilterErase(const base::Callback<bool(const const_iterator)>& filter,
-                   bool deletion_value);
+  void FilterErase(
+      const base::RepeatingCallback<bool(const const_iterator)>& filter,
+      bool deletion_value);
 
   PolicyMapType map_;
 

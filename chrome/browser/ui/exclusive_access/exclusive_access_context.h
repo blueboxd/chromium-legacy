@@ -46,7 +46,8 @@ class ExclusiveAccessContext {
 
   // Enters fullscreen and update exit bubble.
   virtual void EnterFullscreen(const GURL& url,
-                               ExclusiveAccessBubbleType bubble_type) = 0;
+                               ExclusiveAccessBubbleType bubble_type,
+                               const int64_t display_id) = 0;
 
   // Exits fullscreen and update exit bubble.
   virtual void ExitFullscreen() = 0;

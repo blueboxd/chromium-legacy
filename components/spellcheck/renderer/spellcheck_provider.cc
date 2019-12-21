@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/spellcheck/common/spellcheck.mojom.h"
 #include "components/spellcheck/common/spellcheck_common.h"
@@ -168,13 +169,13 @@ void SpellCheckProvider::RequestTextChecking(
   last_identifier_ = text_check_completions_.Add(std::move(completion));
 
 #if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-  size_t enabled_count = spellcheck_->EnabledLanguageCount();
-  request_start_times_[last_identifier_] = {
-      enabled_count > 0,                              // used_hunspell
-      enabled_count != spellcheck_->LanguageCount(),  // used_native
-      base::TimeTicks::Now()};
-
   if (spellcheck::UseWinHybridSpellChecker()) {
+    size_t enabled_count = spellcheck_->EnabledLanguageCount();
+    request_start_times_[last_identifier_] = {
+        /*used_hunspell=*/enabled_count > 0,
+        /*used_native=*/enabled_count != spellcheck_->LanguageCount(),
+        base::TimeTicks::Now()};
+
     // Do a first spellcheck pass with Hunspell, then check the rest of the
     // locales with the native spellchecker.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -323,10 +324,6 @@ void SpellCheckProvider::OnRespondSpellingService(
   blink::WebVector<blink::WebTextCheckingResult> textcheck_results;
   spellcheck_->CreateTextCheckingResults(SpellCheck::USE_NATIVE_CHECKER, 0,
                                          line, results, &textcheck_results);
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-  RecordRequestDuration(identifier);
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-
   completion->DidFinishCheckingText(textcheck_results);
 
   // Cache the request and the converted results.
@@ -368,7 +365,13 @@ void SpellCheckProvider::OnRespondTextCheck(
                                          results,
                                          &textcheck_results);
 #if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-  RecordRequestDuration(identifier);
+  const auto& request_info = request_start_times_.find(identifier);
+  if (request_info != request_start_times_.end()) {
+    spellcheck_renderer_metrics::RecordSpellcheckDuration(
+        base::TimeTicks::Now() - request_info->second.request_start_ticks,
+        request_info->second.used_hunspell, request_info->second.used_native);
+    request_start_times_.erase(request_info);
+  }
 #endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 
   completion->DidFinishCheckingText(textcheck_results);
@@ -424,17 +427,3 @@ bool SpellCheckProvider::SatisfyRequestFromCache(
 void SpellCheckProvider::OnDestruct() {
   delete this;
 }
-
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-void SpellCheckProvider::RecordRequestDuration(int identifier) {
-  const auto& request_info = request_start_times_.find(identifier);
-  if (request_info == request_start_times_.end()) {
-    return;
-  }
-
-  spellcheck_renderer_metrics::RecordSpellcheckDuration(
-      base::TimeTicks::Now() - request_info->second.request_start_ticks,
-      request_info->second.used_hunspell, request_info->second.used_native);
-  request_start_times_.erase(request_info);
-}
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)

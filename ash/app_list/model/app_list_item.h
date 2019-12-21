@@ -38,8 +38,8 @@ class APP_LIST_MODEL_EXPORT AppListItem {
   explicit AppListItem(const std::string& id);
   virtual ~AppListItem();
 
-  void SetIcon(ash::AppListConfigType config_type, const gfx::ImageSkia& icon);
-  const gfx::ImageSkia& GetIcon(ash::AppListConfigType config_type) const;
+  void SetIcon(AppListConfigType config_type, const gfx::ImageSkia& icon);
+  const gfx::ImageSkia& GetIcon(AppListConfigType config_type) const;
 
   const std::string& GetDisplayName() const {
     return short_name_.empty() ? name() : short_name_;
@@ -97,7 +97,7 @@ class APP_LIST_MODEL_EXPORT AppListItem {
   AppListItemMetadata* metadata() { return metadata_.get(); }
 
   friend class ::FastShowPickler;
-  friend class ash::AppListControllerImpl;
+  friend class AppListControllerImpl;
   friend class AppListItemList;
   friend class AppListItemListTest;
   friend class AppListModel;
@@ -133,7 +133,7 @@ class APP_LIST_MODEL_EXPORT AppListItem {
   // config type, the item will always use the icon provided by |metadata_|.
   // This is currently used for folder icons only (which are all generated in
   // ash), when app_list_features::kScalableAppList feature is enabled.
-  std::map<ash::AppListConfigType, gfx::ImageSkia> per_config_icons_;
+  std::map<AppListConfigType, gfx::ImageSkia> per_config_icons_;
 
   // A shortened name for the item, used for display.
   std::string short_name_;

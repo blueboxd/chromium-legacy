@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="../chromeos/localized_link/localized_link.html">
 <link rel="import" href="../icons.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../route_origin_behavior.html">
@@ -39,10 +40,11 @@
         </slot>
         <div id="item-text-container" class="middle">
           <div id="featureName">[[getFeatureName(feature)]]</div>
-          <div class="secondary"
+          <settings-localized-link
+              class="secondary"
               id="featureSecondary"
-              inner-h-t-m-l="[[getFeatureSummaryHtml(feature)]]">
-          </div>
+              localized-string="[[getFeatureSummaryHtml(feature)]]">
+          </settings-localized-link>
         </div>
         <template is="dom-if"
                   if="[[hasSubpageClickHandler_(

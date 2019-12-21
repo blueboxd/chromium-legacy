@@ -9,7 +9,7 @@
 #include "base/time/time.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
-#include "third_party/blink/public/platform/web_float_point.h"
+#include "ui/gfx/geometry/point_f.h"
 
 namespace page_load_metrics {
 
@@ -65,7 +65,7 @@ class ClickInputTracker {
   base::TimeTicks last_click_timestamp_;
 
   // Position of the last click input.
-  blink::WebFloatPoint last_click_position_;
+  gfx::PointF last_click_position_;
 
   DISALLOW_COPY_AND_ASSIGN(ClickInputTracker);
 };

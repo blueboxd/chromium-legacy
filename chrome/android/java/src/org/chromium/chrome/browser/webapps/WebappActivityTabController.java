@@ -11,25 +11,39 @@ import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityTabProvider.HintlessActivityTabObserver;
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.browserservices.BrowserServicesActivityTabController;
+import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory;
+import org.chromium.chrome.browser.customtabs.CustomTabTabPersistencePolicy;
+import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabFactory;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.customtabs.content.TabCreationMode;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
+import org.chromium.content_public.browser.WebContents;
 
 import javax.inject.Inject;
+
+import dagger.Lazy;
 
 /**
  * Shortcut/WebAPK implementation of {@link BrowserServicesActivityTabController}.
  */
 @ActivityScope
 public class WebappActivityTabController implements BrowserServicesActivityTabController {
-    private final ActivityTabProvider mActivityTabProvider;
-    private final CustomTabActivityTabProvider mTabProvider;
+    private final Lazy<CustomTabDelegateFactory> mTabDelegateFactory;
+    private final ChromeActivity mActivity;
     private final TabObserverRegistrar mTabObserverRegistrar;
+    private final CustomTabTabPersistencePolicy mTabPersistencePolicy;
+    private final CustomTabActivityTabFactory mTabFactory;
+    private final ActivityTabProvider mActivityTabProvider;
+    private final WebContentsFactory mWebContentsFactory;
+    private final CustomTabActivityTabProvider mTabProvider;
 
     private HintlessActivityTabObserver mTabSwapObserver = new HintlessActivityTabObserver() {
         @Override
@@ -39,17 +53,19 @@ public class WebappActivityTabController implements BrowserServicesActivityTabCo
     };
 
     @Inject
-    public WebappActivityTabController(ActivityTabProvider activityTabProvider,
-            CustomTabActivityTabProvider tabProvider, TabObserverRegistrar tabObserverRegistrar) {
-        mActivityTabProvider = activityTabProvider;
-        mTabProvider = tabProvider;
+    public WebappActivityTabController(ChromeActivity activity,
+            Lazy<CustomTabDelegateFactory> tabDelegateFactory,
+            ActivityTabProvider activityTabProvider, TabObserverRegistrar tabObserverRegistrar,
+            CustomTabTabPersistencePolicy persistencePolicy, CustomTabActivityTabFactory tabFactory,
+            WebContentsFactory webContentsFactory, CustomTabActivityTabProvider tabProvider) {
+        mTabDelegateFactory = tabDelegateFactory;
+        mActivity = activity;
         mTabObserverRegistrar = tabObserverRegistrar;
-    }
-
-    public void setInitialTab(Tab tab) {
-        mTabProvider.setInitialTab(tab, TabCreationMode.DEFAULT);
-        mActivityTabProvider.addObserverAndTrigger(mTabSwapObserver);
-        mTabObserverRegistrar.addObserversForTab(tab);
+        mTabPersistencePolicy = persistencePolicy;
+        mTabFactory = tabFactory;
+        mActivityTabProvider = activityTabProvider;
+        mWebContentsFactory = webContentsFactory;
+        mTabProvider = tabProvider;
     }
 
     @Override
@@ -58,26 +74,94 @@ public class WebappActivityTabController implements BrowserServicesActivityTabCo
 
     @Override
     public void closeTab() {
-        Tab tab = mTabProvider.getTab();
-        if (tab == null) return;
-
-        getTabModelSelector().closeAllTabs(true);
+        mTabFactory.getTabModelSelector().getCurrentModel().closeTab(
+                mTabProvider.getTab(), false, false, false);
     }
 
     @Override
     public void closeAndForgetTab() {
-        closeTab();
+        mTabFactory.getTabModelSelector().closeAllTabs(true);
+        mTabPersistencePolicy.deleteMetadataStateFileAsync();
     }
 
     @Override
-    public void saveState() {}
+    public void saveState() {
+        mTabFactory.getTabModelSelector().saveState();
+    }
 
     @Override
     @Nullable
     public TabModelSelector getTabModelSelector() {
-        Tab tab = mTabProvider.getTab();
-        if (tab == null) return null;
+        return mTabFactory.getTabModelSelector();
+    }
 
-        return ((TabImpl) tab).getActivity().getTabModelSelector();
+    public void initializeState() {
+        TabModelSelectorImpl tabModelSelector = mTabFactory.getTabModelSelector();
+
+        TabModel tabModel = tabModelSelector.getModel(false /* incognito */);
+        tabModel.addObserver(mTabObserverRegistrar);
+
+        finalizeCreatingTab(tabModelSelector, tabModel);
+        Tab tab = mTabProvider.getTab();
+        assert tab != null;
+        assert mTabProvider.getInitialTabCreationMode() != TabCreationMode.NONE;
+
+        // Put Sync in the correct state by calling tab state initialized. crbug.com/581811.
+        tabModelSelector.markTabStateInitialized();
+    }
+
+    // Creates the tab on native init, if it hasn't been created yet, and does all the additional
+    // initialization steps necessary at this stage.
+    private void finalizeCreatingTab(TabModelSelectorImpl tabModelSelector, TabModel tabModel) {
+        Tab tab = null;
+        @TabCreationMode
+        int mode = mTabProvider.getInitialTabCreationMode();
+
+        Tab restoredTab = tryRestoringTab(tabModelSelector);
+        if (restoredTab != null) {
+            tab = restoredTab;
+            mode = TabCreationMode.RESTORED;
+        }
+
+        if (tab == null) {
+            // No tab was restored, creating a new tab.
+            tab = createTab();
+            mode = TabCreationMode.DEFAULT;
+        }
+
+        assert tab != null;
+
+        if (mode != TabCreationMode.RESTORED) {
+            tabModel.addTab(tab, 0, tab.getLaunchType());
+        }
+
+        mTabProvider.setInitialTab(tab, mode);
+
+        // Listen to tab swapping and closing.
+        mActivityTabProvider.addObserverAndTrigger(mTabSwapObserver);
+    }
+
+    @Nullable
+    private Tab tryRestoringTab(TabModelSelectorImpl tabModelSelector) {
+        if (mActivity.getSavedInstanceState() == null) return null;
+        tabModelSelector.loadState(true);
+        tabModelSelector.restoreTabs(true);
+        Tab tab = tabModelSelector.getCurrentTab();
+        if (tab != null) {
+            initializeTab(tab);
+        }
+        return tab;
+    }
+
+    private Tab createTab() {
+        WebContents webContents =
+                mWebContentsFactory.createWebContentsWithWarmRenderer(false /* incognito */, false);
+        Tab tab = mTabFactory.createTab(webContents, mTabDelegateFactory.get());
+        initializeTab(tab);
+        return tab;
+    }
+
+    private void initializeTab(Tab tab) {
+        mTabObserverRegistrar.addObserversForTab(tab);
     }
 }

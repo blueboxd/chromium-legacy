@@ -163,6 +163,7 @@ std::unique_ptr<gfx::GpuFence>
 SkiaOutputDeviceBufferQueue::Image::CreateFence() {
   if (!fence_)
     fence_ = gl::GLFence::CreateForGpuFence();
+  DCHECK(fence_) << "Failed to create fence.";
   return fence_->GetGpuFence();
 }
 
@@ -336,10 +337,16 @@ gl::GLImage* SkiaOutputDeviceBufferQueue::GetOverlayImage() {
 
 std::unique_ptr<gfx::GpuFence>
 SkiaOutputDeviceBufferQueue::SubmitOverlayGpuFence() {
-  if (current_image_) {
-    return current_image_->CreateFence();
+  if (!current_image_)
+    return nullptr;
+
+  // For vulkan, we should use fence from vulkan instead.
+  // TODO(https://crbug.com/1012401): don't depend on GL.
+  if (!dependency_->GetSharedContextState()->MakeCurrent(
+          nullptr /* gl_surface */, true /* needs_gl */)) {
+    return nullptr;
   }
-  return nullptr;
+  return current_image_->CreateFence();
 }
 
 void SkiaOutputDeviceBufferQueue::ScheduleOverlays(

@@ -74,6 +74,14 @@ const char* AssistantCardElementView::GetClassName() const {
   return "AssistantCardElementView";
 }
 
+ui::Layer* AssistantCardElementView::GetLayerForAnimating() {
+  return native_view()->layer();
+}
+
+std::string AssistantCardElementView::ToStringForTesting() const {
+  return card_element_->html();
+}
+
 void AssistantCardElementView::AddedToWidget() {
   aura::Window* const top_level_window = native_view()->GetToplevelWindow();
 
@@ -223,7 +231,7 @@ void AssistantCardElementView::InitLayout(
 }
 
 content::NavigableContents* AssistantCardElementView::contents() {
-  return const_cast<AssistantCardElement*>(card_element_)->contents();
+  return const_cast<content::NavigableContents*>(card_element_->contents());
 }
 
 }  // namespace ash

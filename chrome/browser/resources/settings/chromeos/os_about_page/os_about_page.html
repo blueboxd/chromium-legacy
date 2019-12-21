@@ -1,8 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="../../about_page/about_page_browser_proxy.html">
-<link rel="import" href="../../about_page/detailed_build_info.html">
-<link rel="import" href="../../about_page/update_warning_dialog.html">
 <link rel="import" href="../../i18n_setup.html">
 <!-- TODO(crbug.com/986596): Don't use browser icons here. Fork them. -->
 <link rel="import" href="../../icons.html">
@@ -18,6 +16,8 @@
 <link rel="import" href="../os_icons.html">
 <link rel="import" href="../os_reset_page/os_powerwash_dialog.html">
 <link rel="import" href="../localized_link/localized_link.html">
+<link rel="import" href="detailed_build_info.html">
+<link rel="import" href="update_warning_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
@@ -117,12 +117,10 @@
                   $i18n{learnMore}
                 </a>
               </div>
-              <div id="endOfLifeMessageContainer" hidden="[[!hasEndOfLife_]]">
-                <settings-localized-link
-                    localized-string="$i18n{endOfLifeMessage}"
-                    link-url="$i18n{endOfLifeLearnMoreURL}">
-                </settings-localized-link>
-             </div>
+              <settings-localized-link
+                  id="endOfLifeMessageContainer" hidden="[[!hasEndOfLife_]]"
+                  localized-string="$i18n{endOfLifeMessage}">
+              </settings-localized-link>
               <div class="secondary">$i18n{aboutBrowserVersion}</div>
             </div>
             <div class="separator" hidden="[[!showButtonContainer_]]"></div>

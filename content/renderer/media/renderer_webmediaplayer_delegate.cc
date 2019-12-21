@@ -18,7 +18,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
 #include "third_party/blink/public/platform/web_size.h"
-#include "third_party/blink/public/web/web_scoped_user_gesture.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 #include "ui/gfx/geometry/size.h"
 
 #if defined(OS_ANDROID)
@@ -274,13 +274,10 @@ void RendererWebMediaPlayerDelegate::OnMediaDelegatePause(
 
   Observer* observer = id_map_.Lookup(player_id);
   if (observer) {
-    if (triggered_by_user) {
+    if (triggered_by_user && render_frame()) {
       // TODO(avayvod): remove when default play/pause is handled via
       // the MediaSession code path.
-      std::unique_ptr<blink::WebScopedUserGesture> gesture(
-          render_frame()
-              ? new blink::WebScopedUserGesture(render_frame()->GetWebFrame())
-              : nullptr);
+      render_frame()->GetWebFrame()->NotifyUserActivation();
     }
     observer->OnPause();
   }
@@ -293,10 +290,8 @@ void RendererWebMediaPlayerDelegate::OnMediaDelegatePlay(int player_id) {
   if (observer) {
     // TODO(avayvod): remove when default play/pause is handled via
     // the MediaSession code path.
-    std::unique_ptr<blink::WebScopedUserGesture> gesture(
-        render_frame()
-            ? new blink::WebScopedUserGesture(render_frame()->GetWebFrame())
-            : nullptr);
+    if (render_frame())
+      render_frame()->GetWebFrame()->NotifyUserActivation();
     observer->OnPlay();
   }
 }

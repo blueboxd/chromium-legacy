@@ -62,32 +62,10 @@ public abstract class UrlBar extends AutocompleteEditText {
     private static final CachedMetrics.ActionEvent ACTION_LONG_PRESS_SHARE =
             new CachedMetrics.ActionEvent("Omnibox.LongPress.Share");
 
-    private static final CachedMetrics.TimesHistogramSample TIME_UNTIL_COPY =
-            new CachedMetrics.TimesHistogramSample("Omnibox.TimeUntilFirst.Copy");
-    private static final CachedMetrics.TimesHistogramSample TIME_UNTIL_CUT =
-            new CachedMetrics.TimesHistogramSample("Omnibox.TimeUntilFirst.Cut");
-    private static final CachedMetrics.TimesHistogramSample TIME_UNTIL_SHARE =
-            new CachedMetrics.TimesHistogramSample("Omnibox.TimeUntilFirst.Share");
-
-    @IntDef({OmniboxAction.CUT, OmniboxAction.COPY, OmniboxAction.SHARE})
-    @Retention(RetentionPolicy.SOURCE)
-    /** Actions that can be taken from the omnibox. */
-    public @interface OmniboxAction {
-        int CUT = 0;
-        int COPY = 1;
-        int SHARE = 2;
-    }
-
     // TextView becomes very slow on long strings, so we limit maximum length
     // of what is displayed to the user, see limitDisplayableLength().
     private static final int MAX_DISPLAYABLE_LENGTH = 4000;
     private static final int MAX_DISPLAYABLE_LENGTH_LOW_END = 1000;
-
-    /** The last time that the omnibox was focused. */
-    private long mLastOmniboxFocusTime;
-
-    /** Whether a timing event should be recorded. This will be true once per omnibox focus. */
-    private boolean mShouldRecordTimingEvent;
 
     private boolean mFirstDrawComplete;
 
@@ -300,30 +278,6 @@ public abstract class UrlBar extends AutocompleteEditText {
     }
 
     /**
-     * Record than an action occurred in the omnibox.
-     * @param actionTaken The action taken that triggered the recording.
-     * @param lastOmniboxFocusTime The time that the last omnibox focus event occurred.
-     */
-    public static void recordTimedActionForMetrics(
-            @OmniboxAction int actionTaken, long lastOmniboxFocusTime) {
-        final long finalTime = System.currentTimeMillis() - lastOmniboxFocusTime;
-        assert finalTime >= 0;
-        switch (actionTaken) {
-            case OmniboxAction.COPY:
-                TIME_UNTIL_COPY.record(finalTime);
-                break;
-            case OmniboxAction.CUT:
-                TIME_UNTIL_CUT.record(finalTime);
-                break;
-            case OmniboxAction.SHARE:
-                TIME_UNTIL_SHARE.record(finalTime);
-                break;
-            default:
-                break;
-        }
-    }
-
-    /**
      * Initialize the delegate that allows interaction with the Window.
      */
     public void setWindowDelegate(WindowDelegate windowDelegate) {
@@ -364,10 +318,7 @@ public abstract class UrlBar extends AutocompleteEditText {
 
         if (focused) {
             mPendingScroll = false;
-            mLastOmniboxFocusTime = System.currentTimeMillis();
         }
-        mShouldRecordTimingEvent = focused;
-
         fixupTextDirection();
     }
 
@@ -653,12 +604,6 @@ public abstract class UrlBar extends AutocompleteEditText {
             } else {
                 ACTION_LONG_PRESS_COPY.record();
             }
-            if (mShouldRecordTimingEvent) {
-                recordTimedActionForMetrics(
-                        id == android.R.id.copy ? OmniboxAction.COPY : OmniboxAction.CUT,
-                        mLastOmniboxFocusTime);
-                mShouldRecordTimingEvent = false;
-            }
             String currentText = getText().toString();
             String replacementCutCopyText = mTextContextMenuDelegate.getReplacementCutCopyText(
                     currentText, getSelectionStart(), getSelectionEnd());
@@ -686,10 +631,6 @@ public abstract class UrlBar extends AutocompleteEditText {
 
         if (id == android.R.id.shareText) {
             ACTION_LONG_PRESS_SHARE.record();
-            if (mShouldRecordTimingEvent) {
-                recordTimedActionForMetrics(OmniboxAction.SHARE, mLastOmniboxFocusTime);
-                mShouldRecordTimingEvent = false;
-            }
         }
 
         return super.onTextContextMenuItem(id);

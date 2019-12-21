@@ -1453,6 +1453,10 @@ gpu_fyi_linux_builder(
     name = 'Linux FYI GPU TSAN Release',
 )
 
+# Builder + tester.
+gpu_fyi_linux_builder(
+    name = 'Linux FYI SkiaRenderer Dawn Release (Intel HD 630)',
+)
 
 # Many of the GPU testers are thin testers, they use linux VMS regardless of the
 # actual OS that the tests are built for

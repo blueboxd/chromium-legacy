@@ -395,7 +395,7 @@ bool FacingModeSatisfiesConstraint(media::VideoFacingMode value,
                                    const StringConstraint& constraint) {
   WebString string_value = ToWebString(value);
   if (string_value.IsNull())
-    return constraint.Exact().empty();
+    return constraint.Exact().IsEmpty();
 
   return constraint.Matches(string_value);
 }

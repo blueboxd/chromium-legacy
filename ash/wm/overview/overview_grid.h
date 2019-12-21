@@ -146,9 +146,8 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
       bool animate);
 
   // Updates overview bounds and hides the drop target when a preview area is
-  // shown or |root_window_being_dragged_in| does not equal |root_window_|.
+  // shown or the drag is currently outside of |root_window_|.
   void RearrangeDuringDrag(
-      aura::Window* root_window_being_dragged_in,
       aura::Window* dragged_window,
       SplitViewDragIndicators::WindowDraggingState window_dragging_state);
 

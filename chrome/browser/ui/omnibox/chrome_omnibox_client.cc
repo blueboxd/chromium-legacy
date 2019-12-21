@@ -22,7 +22,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
-#include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/command_updater.h"
@@ -86,45 +85,11 @@
 
 using predictors::AutocompleteActionPredictor;
 
-namespace {
-
-typedef base::RepeatingCallback<void(const SkBitmap& bitmap)>
-    RichSuggestionImageCallback;
-
-// Calls the specified callback when the requested image is downloaded.  This
-// is a separate class instead of being implemented on ChromeOmniboxClient
-// because BitmapFetcherService currently takes ownership of this object.
-// TODO(dschuyler): Make BitmapFetcherService use the more typical non-owning
-// ObserverList pattern and have ChromeOmniboxClient implement the Observer
-// call directly.
-class RichSuggestionImageObserver : public BitmapFetcherService::Observer {
- public:
-  explicit RichSuggestionImageObserver(
-      const RichSuggestionImageCallback& callback)
-      : callback_(callback) {}
-
-  void OnImageChanged(BitmapFetcherService::RequestId request_id,
-                      const SkBitmap& image) override;
-
- private:
-  const RichSuggestionImageCallback callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(RichSuggestionImageObserver);
-};
-
-void RichSuggestionImageObserver::OnImageChanged(
-    BitmapFetcherService::RequestId request_id,
-    const SkBitmap& image) {
-  DCHECK(!image.empty());
-  callback_.Run(image);
-}
-
-}  // namespace
-
 ChromeOmniboxClient::ChromeOmniboxClient(OmniboxEditController* controller,
                                          Profile* profile)
     : controller_(static_cast<ChromeOmniboxEditController*>(controller)),
       profile_(profile),
+      bitmap_fetcher_helper_(profile),
       scheme_classifier_(profile),
       favicon_cache_(FaviconServiceFactory::GetForProfile(
                          profile,
@@ -134,12 +99,8 @@ ChromeOmniboxClient::ChromeOmniboxClient(OmniboxEditController* controller,
                          ServiceAccessType::EXPLICIT_ACCESS)) {}
 
 ChromeOmniboxClient::~ChromeOmniboxClient() {
-  BitmapFetcherService* image_service =
-      BitmapFetcherServiceFactory::GetForBrowserContext(profile_);
-  if (image_service) {
-    for (auto request_id : request_ids_) {
-      image_service->CancelRequest(request_id);
-    }
+  for (auto request_id : request_ids_) {
+    bitmap_fetcher_helper_.CancelRequest(request_id);
   }
 }
 
@@ -305,14 +266,9 @@ void ChromeOmniboxClient::OnResultChanged(
     const AutocompleteResult& result,
     bool default_match_changed,
     const BitmapFetchedCallback& on_bitmap_fetched) {
-  BitmapFetcherService* image_service =
-      BitmapFetcherServiceFactory::GetForBrowserContext(profile_);
-  if (!image_service) {
-    return;
-  }
   // Clear out the old requests.
   for (auto request_id : request_ids_) {
-    image_service->CancelRequest(request_id);
+    bitmap_fetcher_helper_.CancelRequest(request_id);
   }
   request_ids_.clear();
   // Create new requests.
@@ -322,52 +278,12 @@ void ChromeOmniboxClient::OnResultChanged(
     if (match.ImageUrl().is_empty()) {
       continue;
     }
-    // TODO(jdonnelly, rhalavati): Create a helper function with Callback to
-    // create annotation and pass it to image_service, merging the annotations
-    // in omnibox_page_handler.cc, chrome_omnibox_client.cc,
-    // and chrome_autocomplete_provider_client.cc.
-    constexpr net::NetworkTrafficAnnotationTag traffic_annotation =
-        net::DefineNetworkTrafficAnnotation("omnibox_result_change", R"(
-          semantics {
-            sender: "Omnibox"
-            description:
-              "Chromium provides answers in the suggestion list for "
-              "certain queries that user types in the omnibox. This request "
-              "retrieves a small image (for example, an icon illustrating "
-              "the current weather conditions) when this can add information "
-              "to an answer."
-            trigger:
-              "Change of results for the query typed by the user in the "
-              "omnibox."
-            data:
-              "The only data sent is the path to an image. No user data is "
-              "included, although some might be inferrable (e.g. whether the "
-              "weather is sunny or rainy in the user's current location) "
-              "from the name of the image in the path."
-            destination: WEBSITE
-          }
-          policy {
-            cookies_allowed: YES
-            cookies_store: "user"
-            setting:
-              "You can enable or disable this feature via 'Use a prediction "
-              "service to help complete searches and URLs typed in the "
-              "address bar.' in Chromium's settings under Advanced. The "
-              "feature is enabled by default."
-            chrome_policy {
-              SearchSuggestEnabled {
-                  policy_options {mode: MANDATORY}
-                  SearchSuggestEnabled: false
-              }
-            }
-          })");
 
-    request_ids_.push_back(image_service->RequestImage(
+    request_ids_.push_back(bitmap_fetcher_helper_.RequestImage(
         match.ImageUrl(),
-        new RichSuggestionImageObserver(base::BindRepeating(
-            &ChromeOmniboxClient::OnBitmapFetched, base::Unretained(this),
-            on_bitmap_fetched, result_index)),
-        traffic_annotation));
+        base::BindRepeating(&ChromeOmniboxClient::OnBitmapFetched,
+                            base::Unretained(this), on_bitmap_fetched,
+                            result_index)));
   }
 }
 

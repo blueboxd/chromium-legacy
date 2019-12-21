@@ -568,15 +568,15 @@ void TestDriver::MakeTestAllocations() {
 
 void TestDriver::CollectResults(bool synchronous) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  base::Closure finish_tracing_closure;
+  base::OnceClosure finish_tracing_closure;
   std::unique_ptr<base::RunLoop> run_loop;
 
   if (synchronous) {
     run_loop.reset(new base::RunLoop);
     finish_tracing_closure = run_loop->QuitClosure();
   } else {
-    finish_tracing_closure = base::Bind(&base::WaitableEvent::Signal,
-                                        base::Unretained(&wait_for_ui_thread_));
+    finish_tracing_closure = base::BindOnce(
+        &base::WaitableEvent::Signal, base::Unretained(&wait_for_ui_thread_));
   }
 
   Supervisor::GetInstance()->RequestTraceWithHeapDump(
@@ -588,7 +588,7 @@ void TestDriver::CollectResults(bool synchronous) {
     run_loop->Run();
 }
 
-void TestDriver::TraceFinished(base::Closure closure,
+void TestDriver::TraceFinished(base::OnceClosure closure,
                                bool success,
                                std::string trace_json) {
   serialized_trace_.swap(trace_json);

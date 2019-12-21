@@ -26,7 +26,6 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -71,13 +70,9 @@ public class CloseTabDirectActionHandlerTest {
         assertThat(
                 mSelector.getCurrentTab(), Matchers.not(Matchers.sameInstance(initiallyCurrent)));
 
-        if (!(mSelector instanceof SingleTabModelSelector)) {
-            assertEquals(1, mSelector.getTotalTabCount());
-            // Close last tab
-            performAction("close_tab");
-        } else {
-            assertEquals(0, mSelector.getTotalTabCount());
-        }
+        assertEquals(1, mSelector.getTotalTabCount());
+        // Close last tab
+        performAction("close_tab");
 
         // No tabs are left, so actions aren't available anymore.
         assertThat(getDirectActions(), Matchers.empty());

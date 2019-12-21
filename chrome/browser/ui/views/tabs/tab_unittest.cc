@@ -120,9 +120,18 @@ class FakeTabController : public TabController {
   }
   float GetHoverOpacityForRadialHighlight() const override { return 1.0f; }
 
-  const tab_groups::TabGroupVisualData* GetVisualDataForGroup(
-      tab_groups::TabGroupId group) const override {
-    return nullptr;
+  base::string16 GetGroupTitle(tab_groups::TabGroupId group_id) const override {
+    return base::string16();
+  }
+
+  tab_groups::TabGroupColorId GetGroupColorId(
+      tab_groups::TabGroupId group_id) const override {
+    return tab_groups::TabGroupColorId();
+  }
+
+  SkColor GetPaintedGroupColor(
+      tab_groups::TabGroupColorId color_id) const override {
+    return SkColor();
   }
 
   void SetVisualDataForGroup(

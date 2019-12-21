@@ -934,16 +934,6 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
       Quando esta política não for configurada ou for definida como verdadeira, os usuários poderão usar o Compartilhamento de arquivos de rede.
 
       Quando esta política for definida como falsa, os usuários não poderão usar o Compartilhamento de arquivos de rede.</translation>
-<translation id="2437706973218087361">Esta política controla um recurso de segurança no TLS 1.3 que protege conexões contra ataques de downgrade. Ela é compatível com versões anteriores e não afetará conexões para servidores e proxies em conformidade com o TLS 1.2. No entanto, versões mais antigas de alguns proxies com interceptação de TLS apresentam uma falha de implementação que causa incompatibilidade.
-
-      Se esta política for definida como "Verdadeira", o <ph name="PRODUCT_NAME" /> ativará essas proteções de segurança para todas as conexões.
-
-      Se esta política for definida como "Falsa" ou não for configurada, o <ph name="PRODUCT_NAME" /> desativará essas proteções de segurança para conexões autenticadas com certificados CA instalados localmente. Essas proteções estão sempre ativas para conexões autenticadas com certificados CA de confiança pública.
-
-      Esta política pode ser usada para testar todos os proxies afetados e atualizá-los. Os proxies afetados devem causar uma falha nas conexões, apresentando o código do erro ERR_TLS13_DOWNGRADE_DETECTED. A versão mais recente do <ph name="PRODUCT_NAME" /> ativará essa opção por padrão.
-
-      Depois de ativada por padrão, os administradores que precisarem de mais tempo para atualizar os proxies afetados poderão usar esta política para desativar temporariamente esse recurso de segurança. Esta política será removida em versões posteriores à 85.
-      </translation>
 <translation id="2438609638493026652">Ativa a geração de relatórios dos principais eventos durante a instalação do app Android no Google. Os eventos são capturados apenas para os apps cuja instalação foi acionada por meio da política.
 
       Se a política estiver definida como verdadeira, os eventos serão registrados.

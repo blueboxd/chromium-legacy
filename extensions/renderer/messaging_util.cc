@@ -18,7 +18,7 @@
 #include "extensions/renderer/script_context.h"
 #include "gin/converter.h"
 #include "gin/dictionary.h"
-#include "third_party/blink/public/web/web_user_gesture_indicator.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 
 namespace extensions {
 namespace messaging_util {
@@ -119,9 +119,9 @@ std::unique_ptr<Message> MessageFromJSONString(
     return nullptr;
   }
 
-  return std::make_unique<Message>(
-      message,
-      blink::WebUserGestureIndicator::IsProcessingUserGesture(web_frame));
+  bool has_transient_user_activation =
+      web_frame ? web_frame->HasTransientUserActivation() : false;
+  return std::make_unique<Message>(message, has_transient_user_activation);
 }
 
 v8::Local<v8::Value> MessageToV8(v8::Local<v8::Context> context,

@@ -53,6 +53,7 @@ class SharedImageBackingD3D;
 class SharedImageVideo;
 class StreamTexture;
 class SharedImageBackingFactoryD3D;
+class TestSharedImageBacking;
 
 namespace gles2 {
 class GLStreamTextureImage;
@@ -448,12 +449,12 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   friend class gpu::SharedImageRepresentationGLTextureIOSurface;
   friend class gpu::SharedImageRepresentationSkiaIOSurface;
   friend class gpu::StreamTexture;
+  friend class gpu::TestSharedImageBacking;
   friend class AbstractTextureImplOnSharedContext;
   friend class TextureDefinition;
   friend class TextureManager;
   friend class TextureRef;
   friend class TextureTestHelper;
-  friend class TestSharedImageBacking;
   FRIEND_TEST_ALL_PREFIXES(TextureMemoryTrackerTest, LightweightRef);
 
   ~Texture() override;

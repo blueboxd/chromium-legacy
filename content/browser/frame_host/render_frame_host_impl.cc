@@ -4420,11 +4420,32 @@ void RenderFrameHostImpl::CreateNewWindow(
         dom_storage_context, params->session_storage_namespace_id);
   }
 
+  // On popup creation, if the opener and the openers's top-level document
+  // are same origin, then the popup's initial empty document inherits its COOP
+  // policy from the opener's top-level document.
+  // See https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e#model
+  network::mojom::CrossOriginOpenerPolicy popup_coop =
+      network::mojom::CrossOriginOpenerPolicy::kUnsafeNone;
+  if (base::FeatureList::IsEnabled(network::features::kCrossOriginIsolation)) {
+    RenderFrameHostImpl* top_level_opener = this;
+    while (top_level_opener->GetParent()) {
+      top_level_opener = top_level_opener->GetParent();
+    }
+    // Verify that they are same origin. Otherwise leave it to default
+    // unsafe-none.
+    if (top_level_opener->GetLastCommittedOrigin().IsSameOriginWith(
+            GetLastCommittedOrigin())) {
+      popup_coop = top_level_opener->cross_origin_opener_policy();
+    }
+  }
+
   // If the opener is suppressed or script access is disallowed, we should
   // open the window in a new BrowsingInstance, and thus a new process. That
   // means the current renderer process will not be able to route messages to
   // it. Because of this, we will immediately show and navigate the window
   // in OnCreateNewWindowOnUI, using the params provided here.
+  // TODO(pmeuleman): Switch BrowsingInstance when Cross-Origin-Opener-Policy of
+  // the main document and the opened document are incompatible.
   bool is_new_browsing_instance =
       params->opener_suppressed || no_javascript_access;
 
@@ -4457,6 +4478,7 @@ void RenderFrameHostImpl::CreateNewWindow(
   // above.
   main_frame->SetOriginAndNetworkIsolationKeyOfNewFrame(
       GetLastCommittedOrigin());
+  main_frame->cross_origin_opener_policy_ = popup_coop;
 
   if (main_frame->waiting_for_init_) {
     // Need to check |waiting_for_init_| as some paths inside CreateNewWindow

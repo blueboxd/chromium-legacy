@@ -32,8 +32,8 @@ class MockMixerSource : public MixerInput::Source {
   ~MockMixerSource() override;
 
   // MixerInput::Source implementation:
-  int num_channels() override { return 2; }
-  int input_samples_per_second() override { return samples_per_second_; }
+  size_t num_channels() const override { return 2; }
+  int sample_rate() const override { return samples_per_second_; }
   bool primary() override { return primary_; }
   const std::string& device_id() override { return device_id_; }
   AudioContentType content_type() override { return content_type_; }

@@ -28,7 +28,6 @@
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_remote_frame.h"
-#include "third_party/blink/public/web/web_scoped_user_gesture.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "v8/include/v8.h"
 
@@ -342,7 +341,8 @@ void GuestViewInternalCustomBindings::RunWithGesture(
   // TODO(devlin): All this needs to do is enter fullscreen. We should make this
   // EnterFullscreen() and do it directly rather than having a generic "run with
   // user gesture" function.
-  blink::WebScopedUserGesture user_gesture(context()->web_frame());
+  if (context()->web_frame())
+    context()->web_frame()->NotifyUserActivation();
   CHECK_EQ(args.Length(), 1);
   CHECK(args[0]->IsFunction());
   context()->SafeCallFunction(

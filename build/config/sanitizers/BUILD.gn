@@ -493,7 +493,6 @@ config("ubsan_flags") {
       "-fsanitize=integer-divide-by-zero",
       "-fsanitize=null",
       "-fsanitize=object-size",
-      "-fsanitize=pointer-overflow",
       "-fsanitize=return",
       "-fsanitize=returns-nonnull-attribute",
       "-fsanitize=shift-exponent",
@@ -536,7 +535,6 @@ config("ubsan_security_flags") {
     }
     cflags = [
       "-fsanitize=function",
-      "-fsanitize=pointer-overflow",
       "-fsanitize=shift",
       "-fsanitize=signed-integer-overflow",
       "-fsanitize=vla-bound",

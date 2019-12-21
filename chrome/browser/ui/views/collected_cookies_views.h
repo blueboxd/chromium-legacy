@@ -67,16 +67,12 @@ class CollectedCookiesViews
 
   // views::View:
   gfx::Size GetMinimumSize() const override;
-  void ViewHierarchyChanged(
-      const views::ViewHierarchyChangedDetails& details) override;
 
  private:
   friend class CollectedCookiesViewsTest;
   friend class content::WebContentsUserData<CollectedCookiesViews>;
 
   explicit CollectedCookiesViews(content::WebContents* web_contents);
-
-  void Init();
 
   std::unique_ptr<views::View> CreateAllowedPane();
 

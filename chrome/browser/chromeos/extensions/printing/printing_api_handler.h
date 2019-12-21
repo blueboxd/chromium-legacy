@@ -5,11 +5,15 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_PRINTING_PRINTING_API_HANDLER_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_PRINTING_PRINTING_API_HANDLER_H_
 
+#include <memory>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/chromeos/extensions/printing/printer_capabilities_provider.h"
 #include "chrome/browser/chromeos/printing/cups_print_job_manager.h"
 #include "chrome/browser/chromeos/printing/cups_print_job_manager_factory.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager_factory.h"
@@ -17,9 +21,20 @@
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router_factory.h"
 
+namespace chromeos {
+class CupsWrapper;
+class Printer;
+class PrinterConfigurer;
+}  // namespace chromeos
+
 namespace content {
 class BrowserContext;
 }  // namespace content
+
+namespace printing {
+struct PrinterSemanticCapsAndDefaults;
+struct PrinterStatus;
+}  // namespace printing
 
 namespace extensions {
 
@@ -30,6 +45,20 @@ class ExtensionRegistry;
 class PrintingAPIHandler : public BrowserContextKeyedAPI,
                            public chromeos::CupsPrintJobManager::Observer {
  public:
+  using GetPrinterInfoCallback = base::OnceCallback<void(
+      base::Optional<base::Value> capabilities,
+      base::Optional<api::printing::PrinterStatus> status,
+      base::Optional<std::string> error)>;
+
+  static std::unique_ptr<PrintingAPIHandler> CreateForTesting(
+      content::BrowserContext* browser_context,
+      EventRouter* event_router,
+      ExtensionRegistry* extension_registry,
+      chromeos::CupsPrintJobManager* print_job_manager,
+      chromeos::CupsPrintersManager* printers_manager,
+      std::unique_ptr<chromeos::PrinterConfigurer> printer_configurer,
+      std::unique_ptr<chromeos::CupsWrapper> cups_wrapper);
+
   explicit PrintingAPIHandler(content::BrowserContext* browser_context);
   ~PrintingAPIHandler() override;
 
@@ -42,9 +71,31 @@ class PrintingAPIHandler : public BrowserContextKeyedAPI,
 
   std::vector<api::printing::Printer> GetPrinters();
 
+  void GetPrinterInfo(const std::string& printer_id,
+                      GetPrinterInfoCallback callback);
+
  private:
   // Needed for BrowserContextKeyedAPI implementation.
   friend class BrowserContextKeyedAPIFactory<PrintingAPIHandler>;
+
+  PrintingAPIHandler(
+      content::BrowserContext* browser_context,
+      EventRouter* event_router,
+      ExtensionRegistry* extension_registry,
+      chromeos::CupsPrintJobManager* print_job_manager,
+      chromeos::CupsPrintersManager* printers_manager,
+      std::unique_ptr<chromeos::PrinterConfigurer> printer_configurer,
+      std::unique_ptr<chromeos::CupsWrapper> cups_wrapper);
+
+  void GetPrinterStatus(
+      const std::string& printer_id,
+      GetPrinterInfoCallback callback,
+      base::Optional<printing::PrinterSemanticCapsAndDefaults> capabilities);
+
+  void OnPrinterStatusRetrieved(
+      GetPrinterInfoCallback callback,
+      base::Value capabilities,
+      std::unique_ptr<::printing::PrinterStatus> printer_status);
 
   // CupsPrintJobManager::Observer:
   void OnPrintJobCreated(base::WeakPtr<chromeos::CupsPrintJob> job) override;
@@ -66,6 +117,8 @@ class PrintingAPIHandler : public BrowserContextKeyedAPI,
 
   chromeos::CupsPrintJobManager* print_job_manager_;
   chromeos::CupsPrintersManager* const printers_manager_;
+  PrinterCapabilitiesProvider printer_capabilities_provider_;
+  std::unique_ptr<chromeos::CupsWrapper> cups_wrapper_;
 
   ScopedObserver<chromeos::CupsPrintJobManager,
                  chromeos::CupsPrintJobManager::Observer>

@@ -16,8 +16,6 @@
 #include "chrome/browser/autocomplete/in_memory_url_index_factory.h"
 #include "chrome/browser/autocomplete/remote_suggestions_service_factory.h"
 #include "chrome/browser/autocomplete/shortcuts_backend_factory.h"
-#include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service.h"
-#include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -96,6 +94,7 @@ const char* const kChromeOSSettingsSubPages[] = {
 ChromeAutocompleteProviderClient::ChromeAutocompleteProviderClient(
     Profile* profile)
     : profile_(profile),
+      bitmap_fetcher_helper_(profile),
       scheme_classifier_(profile),
       url_consent_helper_(
           unified_consent::UrlKeyedDataCollectionConsentHelper::
@@ -323,51 +322,7 @@ void ChromeAutocompleteProviderClient::PrefetchImage(const GURL& url) {
   // Note: Android uses different image fetching mechanism to avoid
   // penalty of copying byte buffers from C++ to Java.
 #if !defined(OS_ANDROID)
-  BitmapFetcherService* image_service =
-      BitmapFetcherServiceFactory::GetForBrowserContext(profile_);
-  DCHECK(image_service);
-
-  // TODO(jdonnelly, rhalavati): Create a helper function with Callback to
-  // create annotation and pass it to image_service, merging the annotations
-  // in omnibox_page_handler.cc, chrome_omnibox_client.cc,
-  // and chrome_autocomplete_provider_client.cc.
-  net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("omnibox_prefetch_image", R"(
-        semantics {
-          sender: "Omnibox"
-          description:
-            "Chromium provides answers in the suggestion list for certain "
-            "queries that the user types in the omnibox. This request "
-            "retrieves a small image (for example, an icon illustrating the "
-            "current weather conditions) when this can add information to an "
-            "answer."
-          trigger:
-            "Change of results for the query typed by the user in the "
-            "omnibox."
-          data:
-            "The only data sent is the path to an image. No user data is "
-            "included, although some might be inferrable (e.g. whether the "
-            "weather is sunny or rainy in the user's current location) from "
-            "the name of the image in the path."
-          destination: WEBSITE
-        }
-        policy {
-          cookies_allowed: YES
-          cookies_store: "user"
-          setting:
-            "You can enable or disable this feature via 'Use a prediction "
-            "service to help complete searches and URLs typed in the "
-            "address bar.' in Chromium's settings under Advanced. The "
-            "feature is enabled by default."
-          chrome_policy {
-            SearchSuggestEnabled {
-                policy_options {mode: MANDATORY}
-                SearchSuggestEnabled: false
-            }
-          }
-        })");
-
-  image_service->Prefetch(url, traffic_annotation);
+  bitmap_fetcher_helper_.PrefetchImage(url);
 #endif  // !defined(OS_ANDROID)
 }
 

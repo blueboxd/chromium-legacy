@@ -29,7 +29,7 @@ class AppListItemList;
 class APP_LIST_MODEL_EXPORT FolderImageObserver {
  public:
   // Called when the folder icon has changed.
-  virtual void OnFolderImageUpdated(ash::AppListConfigType config_type) {}
+  virtual void OnFolderImageUpdated(AppListConfigType config_type) {}
 
  protected:
   virtual ~FolderImageObserver() {}
@@ -84,7 +84,7 @@ class APP_LIST_MODEL_EXPORT FolderImage : public AppListItemListObserver,
   void RemoveObserver(FolderImageObserver* observer);
 
   // AppListItemObserver overrides:
-  void ItemIconChanged(ash::AppListConfigType config_type) override;
+  void ItemIconChanged(AppListConfigType config_type) override;
 
   // AppListItemListObserver overrides:
   void OnListItemAdded(size_t index, AppListItem* item) override;

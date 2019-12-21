@@ -149,39 +149,40 @@ public class ApplicationTestUtils {
                 }));
     }
 
-    /** Finishes the given activity and waits for its onDestroy() to be called. */
-    public static void finishActivity(final Activity activity) throws Exception {
+    /** Waits until the given activity transitions to the given state. */
+    public static void waitForActivityState(Activity activity, @ActivityState int state)
+            throws Exception {
         final CallbackHelper callbackHelper = new CallbackHelper();
         final ApplicationStatus.ActivityStateListener activityStateListener =
-                new ApplicationStatus.ActivityStateListener() {
-                    @Override
-                    public void onActivityStateChange(Activity activity, int newState) {
-                        if (newState == ActivityState.DESTROYED) {
-                            callbackHelper.notifyCalled();
-                        }
-                    }
-                };
+                (activity1, newState) -> {
+            if (newState == state) {
+                callbackHelper.notifyCalled();
+            }
+        };
         try {
-            boolean alreadyDestroyed =
-                    TestThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
-                        @Override
-                        public Boolean call() {
-                            if (ApplicationStatus.getStateForActivity(activity)
-                                    == ActivityState.DESTROYED) {
-                                return true;
-                            }
-                            ApplicationStatus.registerStateListenerForActivity(
-                                    activityStateListener, activity);
-                            activity.finish();
-                            return false;
-                        }
-                    });
-            if (!alreadyDestroyed) {
+            boolean correctState = TestThreadUtils.runOnUiThreadBlocking(() -> {
+                if (ApplicationStatus.getStateForActivity(activity) == state) {
+                    return true;
+                }
+                ApplicationStatus.registerStateListenerForActivity(activityStateListener, activity);
+                return false;
+            });
+            if (!correctState) {
                 callbackHelper.waitForCallback(0);
             }
         } finally {
             ApplicationStatus.unregisterActivityStateListener(activityStateListener);
         }
+    }
+
+    /** Finishes the given activity and waits for its onDestroy() to be called. */
+    public static void finishActivity(final Activity activity) throws Exception {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            if (ApplicationStatus.getStateForActivity(activity) != ActivityState.DESTROYED) {
+                activity.finish();
+            }
+        });
+        waitForActivityState(activity, ActivityState.DESTROYED);
     }
 
     /** Finishes all tasks Chrome has listed in Android's Overview. */

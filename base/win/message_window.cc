@@ -68,7 +68,7 @@ MessageWindow::WindowClass::~WindowClass() {
   }
 }
 
-MessageWindow::MessageWindow() {}
+MessageWindow::MessageWindow() = default;
 
 MessageWindow::~MessageWindow() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

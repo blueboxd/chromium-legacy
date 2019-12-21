@@ -238,8 +238,8 @@ Response EmulationHandler::SetDeviceMetricsOverride(
   params.screen_orientation_angle = orientationAngle;
 
   if (viewport.isJust()) {
-    params.viewport_offset.x = viewport.fromJust()->GetX();
-    params.viewport_offset.y = viewport.fromJust()->GetY();
+    params.viewport_offset.SetPoint(viewport.fromJust()->GetX(),
+                                    viewport.fromJust()->GetY());
 
     ScreenInfo screen_info;
     host_->GetRenderWidgetHost()->GetScreenInfo(&screen_info);

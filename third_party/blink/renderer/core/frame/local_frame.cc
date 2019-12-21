@@ -1088,7 +1088,7 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
     // A frame navigating its top may blocked if the document initiating
     // the navigation has never received a user gesture and the navigation
     // isn't same-origin with the target.
-    if (HasBeenActivated() ||
+    if (HasStickyUserActivation() ||
         target_frame.GetSecurityContext()->GetSecurityOrigin()->CanAccess(
             SecurityOrigin::Create(destination_url).get())) {
       return true;
@@ -1529,7 +1529,7 @@ void LocalFrame::NotifyUserActivation(LocalFrame* frame,
 
 // static
 bool LocalFrame::HasTransientUserActivation(LocalFrame* frame) {
-  return frame ? frame->HasTransientUserActivation() : false;
+  return frame ? frame->Frame::HasTransientUserActivation() : false;
 }
 
 // static
@@ -1544,14 +1544,10 @@ void LocalFrame::NotifyUserActivation(bool need_browser_verification) {
   NotifyUserActivationInLocalTree();
 }
 
-bool LocalFrame::HasTransientUserActivation() {
-  return user_activation_state_.IsActive();
-}
-
 bool LocalFrame::ConsumeTransientUserActivation(
     UserActivationUpdateSource update_source) {
   if (update_source == UserActivationUpdateSource::kRenderer)
-    Client()->ConsumeUserActivation();
+    Client()->ConsumeTransientUserActivation();
   return ConsumeTransientUserActivationInLocalTree();
 }
 
@@ -1752,7 +1748,7 @@ void LocalFrame::SetLifecycleState(mojom::FrameLifecycleState state) {
 }
 
 void LocalFrame::MaybeLogAdClickNavigation() {
-  if (HasTransientUserActivation() && IsAdSubframe())
+  if (HasTransientUserActivation(this) && IsAdSubframe())
     UseCounter::Count(GetDocument(), WebFeature::kAdClickNavigation);
 }
 

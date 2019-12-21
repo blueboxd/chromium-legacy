@@ -28,7 +28,7 @@ void GiveMeAVariant(VARIANT* ret) {
 // when AddRef is called and decrements it when Release is called.
 class FakeComObject : public IDispatch {
  public:
-  FakeComObject() {}
+  FakeComObject() = default;
 
   STDMETHOD_(DWORD, AddRef)() override {
     ref_++;

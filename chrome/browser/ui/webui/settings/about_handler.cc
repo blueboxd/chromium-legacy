@@ -340,12 +340,11 @@ AboutHandler* AboutHandler::Create(content::WebUIDataSource* html_source,
                          os_with_linux_license);
   html_source->AddBoolean("aboutEnterpriseManaged", IsEnterpriseManaged());
 
-  html_source->AddString(
-      "endOfLifeMessage",
-      l10n_util::GetStringFUTF16(IDS_SETTINGS_ABOUT_PAGE_LAST_UPDATE_MESSAGE,
-                                 ui::GetChromeOSDeviceName()));
-  html_source->AddString("endOfLifeLearnMoreURL",
-                         base::ASCIIToUTF16(chrome::kEolNotificationURL));
+  html_source->AddString("endOfLifeMessage",
+                         l10n_util::GetStringFUTF16(
+                             IDS_SETTINGS_ABOUT_PAGE_LAST_UPDATE_MESSAGE,
+                             ui::GetChromeOSDeviceName(),
+                             base::ASCIIToUTF16(chrome::kEolNotificationURL)));
 #endif
 
   return new AboutHandler();

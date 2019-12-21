@@ -65,10 +65,6 @@ class InProcessContextFactory : public ContextFactory,
   // ContextFactory implementation.
   void CreateLayerTreeFrameSink(base::WeakPtr<Compositor> compositor) override;
 
-  std::unique_ptr<Reflector> CreateReflector(Compositor* mirrored_compositor,
-                                             Layer* mirroring_layer) override;
-  void RemoveReflector(Reflector* reflector) override;
-
   scoped_refptr<viz::ContextProvider> SharedMainThreadContextProvider()
       override;
   scoped_refptr<viz::RasterContextProvider>

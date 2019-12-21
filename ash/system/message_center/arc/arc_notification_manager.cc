@@ -74,15 +74,16 @@ class ArcNotificationManager::InstanceOwner {
   InstanceOwner() = default;
   ~InstanceOwner() = default;
 
-  void SetInstancePtr(NotificationsInstancePtr instance_ptr) {
+  void SetInstanceRemote(
+      mojo::PendingRemote<arc::mojom::NotificationsInstance> instance_remote) {
     DCHECK(!channel_);
 
     channel_ =
         std::make_unique<MojoChannel<NotificationsInstance, NotificationsHost>>(
-            &holder_, std::move(instance_ptr));
+            &holder_, std::move(instance_remote));
 
     // Using base::Unretained because |this| owns |channel_|.
-    channel_->set_connection_error_handler(
+    channel_->set_disconnect_handler(
         base::BindOnce(&InstanceOwner::OnDisconnected, base::Unretained(this)));
     channel_->QueryVersion();
   }
@@ -139,8 +140,9 @@ ArcNotificationManager::~ArcNotificationManager() {
   instance_owner_.reset();
 }
 
-void ArcNotificationManager::SetInstance(NotificationsInstancePtr instance) {
-  instance_owner_->SetInstancePtr(std::move(instance));
+void ArcNotificationManager::SetInstance(
+    mojo::PendingRemote<arc::mojom::NotificationsInstance> instance_remote) {
+  instance_owner_->SetInstanceRemote(std::move(instance_remote));
 }
 
 ConnectionHolder<NotificationsInstance, NotificationsHost>*

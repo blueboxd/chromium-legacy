@@ -166,7 +166,9 @@ if (is_android) {
   cast_locales -= android_only_chrome_locales - [ "zh-HK" ]
 }
 
-enable_chromecast_extensions = enable_extensions
+declare_args() {
+  enable_chromecast_extensions = enable_extensions
+}
 
 # Use Chromecast CDMs for protected content. Some Android platforms use
 # MediaDrm for CDM support.

@@ -44,9 +44,9 @@ struct RequestParams {
 using SuccessCallback = base::OnceCallback<void(base::Value result)>;
 using ErrorCallback = base::OnceCallback<void(const std::string& error)>;
 using ParseJSONCallback =
-    base::Callback<void(const std::string& raw_json_string,
-                        SuccessCallback success_callback,
-                        ErrorCallback error_callback)>;
+    base::RepeatingCallback<void(const std::string& raw_json_string,
+                                 SuccessCallback success_callback,
+                                 ErrorCallback error_callback)>;
 
 }  // namespace ntp_snippets
 

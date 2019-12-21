@@ -10,7 +10,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -192,7 +191,6 @@ public class FlagsActivity extends Activity {
 
     private class FlagsServiceConnection implements ServiceConnection {
         public void start() {
-            enableDeveloperMode();
             Intent intent = new Intent();
             intent.setClassName(
                     FlagsActivity.this.getPackageName(), ServiceNames.DEVELOPER_UI_SERVICE);
@@ -224,13 +222,6 @@ public class FlagsActivity extends Activity {
     private void sendFlagsToService() {
         FlagsServiceConnection connection = new FlagsServiceConnection();
         connection.start();
-    }
-
-    private void enableDeveloperMode() {
-        ComponentName developerModeService =
-                new ComponentName(this, ServiceNames.DEVELOPER_UI_SERVICE);
-        this.getPackageManager().setComponentEnabledSetting(developerModeService,
-                PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
     }
 
     private void resetAllFlags() {

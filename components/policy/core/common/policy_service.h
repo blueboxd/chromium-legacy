@@ -96,15 +96,15 @@ class POLICY_EXPORT PolicyService {
   // Asks the PolicyService to reload policy from all available policy sources.
   // |callback| is invoked once every source has reloaded its policies, and
   // GetPolicies() is guaranteed to return the updated values at that point.
-  virtual void RefreshPolicies(const base::Closure& callback) = 0;
+  virtual void RefreshPolicies(base::OnceClosure callback) = 0;
 };
 
 // A registrar that only observes changes to particular policies within the
 // PolicyMap for the given policy namespace.
 class POLICY_EXPORT PolicyChangeRegistrar : public PolicyService::Observer {
  public:
-  typedef base::Callback<void(const base::Value*,
-                              const base::Value*)> UpdateCallback;
+  typedef base::RepeatingCallback<void(const base::Value*, const base::Value*)>
+      UpdateCallback;
 
   // Observes updates to the given (domain, component_id) namespace in the given
   // |policy_service|, and notifies |observer| whenever any of the registered

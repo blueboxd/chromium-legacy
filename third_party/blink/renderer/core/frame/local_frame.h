@@ -505,9 +505,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // Activates the user activation states of this frame and all its ancestors.
   void NotifyUserActivation(bool need_browser_verification);
 
-  // Returns the transient user activation state of this frame
-  bool HasTransientUserActivation();
-
   // Consumes and returns the transient user activation state this frame, after
   // updating all other frames in the frame tree.
   bool ConsumeTransientUserActivation(UserActivationUpdateSource update_source);

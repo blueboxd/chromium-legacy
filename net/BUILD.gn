@@ -940,6 +940,8 @@ component("net") {
       "quic/quic_session_key.h",
       "quic/quic_stream_factory.cc",
       "quic/quic_stream_factory.h",
+      "quic/quic_transport_client.cc",
+      "quic/quic_transport_client.h",
       "quic/quic_utils_chromium.cc",
       "quic/quic_utils_chromium.h",
       "quiche/common/platform/impl/quiche_arraysize_impl.h",
@@ -2022,6 +2024,8 @@ component("net") {
         "cert/x509_util_nss.h",
         "cert_net/nss_ocsp.cc",
         "cert_net/nss_ocsp.h",
+        "cert_net/nss_ocsp_session_url_request.cc",
+        "cert_net/nss_ocsp_session_url_request.h",
       ]
       if (!is_chromecast) {
         sources += [
@@ -5359,6 +5363,7 @@ test("net_unittests") {
     "quic/quic_stream_factory_test.cc",
     "quic/quic_test_packet_maker.cc",
     "quic/quic_test_packet_maker.h",
+    "quic/quic_transport_end_to_end_test.cc",
     "quic/quic_utils_chromium_test.cc",
     "quic/test_quic_crypto_client_config_handle.cc",
     "quic/test_quic_crypto_client_config_handle.h",

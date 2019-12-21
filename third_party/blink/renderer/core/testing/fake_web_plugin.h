@@ -68,8 +68,8 @@ class FakeWebPlugin : public WebPlugin {
   bool HandleDragStatusUpdate(WebDragStatus,
                               const WebDragData&,
                               WebDragOperationsMask,
-                              const WebFloatPoint& position,
-                              const WebFloatPoint& screen_position) override {
+                              const gfx::PointF& position,
+                              const gfx::PointF& screen_position) override {
     return false;
   }
   void DidReceiveResponse(const WebURLResponse&) override {}

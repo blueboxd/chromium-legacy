@@ -4,7 +4,7 @@
 
 /**
  * @fileoverview 'settings-localized-link' takes a localized string that
- * contains exactly one anchor tag, and labels the string contained within the
+ * contains up to one anchor tag, and labels the string contained within the
  * anchor tag with the entire localized string. The string should not be bound
  * by element tags. The string should not contain any elements other than the
  * single anchor tagged element that will be aria-labelledby the entire string.
@@ -13,6 +13,11 @@
  *
  * The "Learn More" will be aria-labelledby like so: "lorem ipsum Learn More
  * dolor sit". Meanwhile, "Lorem ipsum" and "dolor sit" will be aria-hidden.
+ *
+ * This element also supports strings that do not contain anchor tags; in this
+ * case, the element gracefully falls back to normal text. This can be useful
+ * when the property is data-bound to a function which sometimes returns a
+ * string with a link and sometimes returns a normal string.
  */
 
 Polymer({
@@ -20,8 +25,8 @@ Polymer({
 
   properties: {
     /**
-     * The localized string that should contain one anchor tag, the text within
-     * which will be aria-labelledby the entire localizedString.
+     * The localized string that contains up to one anchor tag, the text
+     * within which will be aria-labelledby the entire localizedString.
      */
     localizedString: String,
 
@@ -73,6 +78,12 @@ Polymer({
     });
 
     const anchorTags = tempEl.getElementsByTagName('a');
+    // In the event the provided localizedString contains only text nodes,
+    // populate the contents with the provided localizedString.
+    if (anchorTags.length == 0) {
+      return localizedString;
+    }
+
     assert(anchorTags.length == 1,
         'settings-localized-link should contain exactly one anchor tag');
     anchorTags[0].setAttribute('aria-labelledby', ariaLabelledByIds.join(' '));

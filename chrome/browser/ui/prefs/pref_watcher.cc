@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/component_updater/soda_component_installer.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
@@ -87,6 +88,11 @@ PrefWatcher::PrefWatcher(Profile* profile) : profile_(profile) {
                                      renderer_callback);
 #endif
 
+  profile_pref_change_registrar_.Add(
+      prefs::kLiveCaptionEnabled,
+      base::BindRepeating(&PrefWatcher::OnLiveCaptionEnabledPrefChanged,
+                          base::Unretained(this)));
+
   PrefChangeRegistrar::NamedChangeCallback webkit_callback =
       base::BindRepeating(&PrefWatcher::OnWebPrefChanged,
                           base::Unretained(this));
@@ -135,6 +141,17 @@ void PrefWatcher::UpdateRendererPreferences() {
 void PrefWatcher::OnWebPrefChanged(const std::string& pref_name) {
   for (auto* helper : tab_helpers_)
     helper->OnWebPrefChanged(pref_name);
+}
+
+void PrefWatcher::OnLiveCaptionEnabledPrefChanged(
+    const std::string& pref_name) {
+  PrefService* profile_prefs = profile_->GetPrefs();
+  if (profile_prefs->GetBoolean(prefs::kLiveCaptionEnabled)) {
+    component_updater::RegisterSODAComponent(
+        g_browser_process->component_updater(), profile_prefs,
+        base::BindOnce(&component_updater::SODAComponentInstallerPolicy::
+                           UpdateSODAComponentOnDemand));
+  }
 }
 
 // static

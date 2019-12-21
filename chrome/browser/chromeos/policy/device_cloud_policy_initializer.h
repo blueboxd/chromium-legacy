@@ -126,12 +126,11 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
         cryptohome::AsyncMethodCaller* async_method_caller);
     ~TpmEnrollmentKeySigningService() override;
 
-    void SignData(const std::string& data,
-                  const SigningCallback& callback) override;
+    void SignData(const std::string& data, SigningCallback callback) override;
 
    private:
     void OnDataSigned(const std::string& data,
-                      const SigningCallback& callback,
+                      SigningCallback callback,
                       bool success,
                       const std::string& signed_data);
 

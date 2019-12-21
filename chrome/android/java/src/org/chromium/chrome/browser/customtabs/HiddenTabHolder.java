@@ -127,7 +127,7 @@ public class HiddenTabHolder {
         int width = bounds.right - bounds.left;
         int height = bounds.bottom - bounds.top;
         tab.getWebContents().setSize(width, height);
-        ReparentingTask.from(tab).detach();
+        ReparentingTask.detach(tab);
         return tab;
     }
 

@@ -101,10 +101,10 @@ class WavMixerInputSource : public MixerInput::Source {
   bool AtEnd() { return input_handler_->AtEnd(cursor_); }
 
   // MixerInput::Source implementation:
-  int num_channels() override { return input_handler_->num_channels(); }
-  int input_samples_per_second() override {
-    return input_handler_->sample_rate();
+  size_t num_channels() const override {
+    return input_handler_->num_channels();
   }
+  int sample_rate() const override { return input_handler_->sample_rate(); }
   bool primary() override { return true; }
   bool active() override { return true; }
   const std::string& device_id() override { return device_id_; }
@@ -284,12 +284,11 @@ int CplayMain(int argc, char* argv[]) {
   // Read input file.
   WavMixerInputSource input_source(params);
   if (params.output_samples_per_second <= 0) {
-    params.output_samples_per_second = input_source.input_samples_per_second();
+    params.output_samples_per_second = input_source.sample_rate();
   }
-  if (params.output_samples_per_second !=
-      input_source.input_samples_per_second()) {
-    LOG(INFO) << "Resampling from " << input_source.input_samples_per_second()
-              << " to " << params.output_samples_per_second;
+  if (params.output_samples_per_second != input_source.sample_rate()) {
+    LOG(INFO) << "Resampling from " << input_source.sample_rate() << " to "
+              << params.output_samples_per_second;
   } else {
     LOG(INFO) << "Sample rate: " << params.output_samples_per_second;
   }

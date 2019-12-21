@@ -178,7 +178,7 @@ void InitializeAudioTrackControls(const blink::WebUserMediaRequest& web_request,
   *stream_type = MediaStreamType::NO_SERVICE;
 
   String source_constraint =
-      constraints.Basic().media_stream_source.Exact().empty()
+      constraints.Basic().media_stream_source.Exact().IsEmpty()
           ? String()
           : String(constraints.Basic().media_stream_source.Exact()[0]);
   if (!source_constraint.IsEmpty()) {
@@ -212,7 +212,7 @@ void InitializeVideoTrackControls(const blink::WebUserMediaRequest& web_request,
   *stream_type = MediaStreamType::NO_SERVICE;
 
   String source_constraint =
-      constraints.Basic().media_stream_source.Exact().empty()
+      constraints.Basic().media_stream_source.Exact().IsEmpty()
           ? String()
           : String(constraints.Basic().media_stream_source.Exact()[0]);
   if (!source_constraint.IsEmpty()) {

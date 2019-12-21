@@ -17,6 +17,8 @@ public class ServiceNames {
             "org.chromium.android_webview.services.CrashReceiverService";
     public static final String DEVELOPER_UI_SERVICE =
             "org.chromium.android_webview.services.DeveloperUiService";
+    public static final String FLAG_OVERRIDE_CONTENT_PROVIDER =
+            "org.chromium.android_webview.services.FlagOverrideContentProvider";
     public static final String VARIATIONS_SEED_SERVER =
             "org.chromium.android_webview.services.VariationsSeedServer";
 

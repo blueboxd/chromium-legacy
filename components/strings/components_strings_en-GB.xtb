@@ -326,7 +326,6 @@
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Running Network Diagnostics<ph name="END_LINK" /></translation>
 <translation id="2473195200299095979">Translate this page</translation>
 <translation id="2479410451996844060">Invalid search URL.</translation>
-<translation id="2482370039860827034">You just entered your password on a deceptive site. Chrome recommends going to <ph name="WEBSITE_1" /> and <ph name="WEBSITE_2" />, and other sites where you use this password, and changing it now.</translation>
 <translation id="2482878487686419369">Notifications</translation>
 <translation id="248348093745724435">Machine policies</translation>
 <translation id="2491120439723279231">Server's certificate contains errors.</translation>
@@ -339,7 +338,6 @@
 <translation id="2505268675989099013">Protect Account</translation>
 <translation id="2515629240566999685">Checking the signal in your area</translation>
 <translation id="2521385132275182522">Staple bottom right</translation>
-<translation id="2521483867890026383">You just entered your password on a deceptive site. Chromium recommends going to <ph name="WEBSITE_1" /> and <ph name="WEBSITE_2" />, and other sites where you use this password, and changing it now.</translation>
 <translation id="2523886232349826891">Saved on this device only</translation>
 <translation id="2524461107774643265">Add More Information</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{and 1 more}other{and # more}}</translation>

@@ -206,9 +206,10 @@ class ContentSuggestionsService : public KeyedService,
   // suggestions, which are based on history from that time range. Providers
   // should immediately clear any data related to history from the specified
   // time range where the URL matches the |filter|.
-  void ClearHistory(base::Time begin,
-                    base::Time end,
-                    const base::Callback<bool(const GURL& url)>& filter);
+  void ClearHistory(
+      base::Time begin,
+      base::Time end,
+      const base::RepeatingCallback<bool(const GURL& url)>& filter);
 
   // Removes all suggestions from all caches or internal stores in all
   // providers. It does, however, not remove any suggestions from the provider's

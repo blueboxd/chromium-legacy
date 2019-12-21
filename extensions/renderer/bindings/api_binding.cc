@@ -24,7 +24,6 @@
 #include "gin/arguments.h"
 #include "gin/handle.h"
 #include "gin/per_context_data.h"
-#include "third_party/blink/public/web/web_user_gesture_indicator.h"
 
 namespace extensions {
 

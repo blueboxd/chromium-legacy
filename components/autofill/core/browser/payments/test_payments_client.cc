@@ -33,8 +33,10 @@ TestPaymentsClient::TestPaymentsClient(
 
 TestPaymentsClient::~TestPaymentsClient() {}
 
-void TestPaymentsClient::GetUnmaskDetails(GetUnmaskDetailsCallback callback,
-                                          const std::string& app_locale) {
+void TestPaymentsClient::GetUnmaskDetails(
+    base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
+                            PaymentsClient::UnmaskDetails&)> callback,
+    const std::string& app_locale) {
   if (should_return_unmask_details_)
     std::move(callback).Run(AutofillClient::SUCCESS, unmask_details_);
 }
@@ -108,12 +110,12 @@ void TestPaymentsClient::AddFidoEligibleCard(std::string server_id,
   //       "credential_id": credential_id,
   //       "authenticator_transport_support": ["INTERNAL"]
   // }]}
-  unmask_details_.fido_request_options.SetKey("challenge",
-                                              base::Value(kTestChallenge));
-  unmask_details_.fido_request_options.SetKey("timeout_millis",
-                                              base::Value(kTestTimeoutSeconds));
-  unmask_details_.fido_request_options.SetKey("relying_party_id",
-                                              base::Value(relying_party_id));
+  unmask_details_.fido_request_options->SetKey("challenge",
+                                               base::Value(kTestChallenge));
+  unmask_details_.fido_request_options->SetKey(
+      "timeout_millis", base::Value(kTestTimeoutSeconds));
+  unmask_details_.fido_request_options->SetKey("relying_party_id",
+                                               base::Value(relying_party_id));
 
   base::Value key_info(base::Value::Type::DICTIONARY);
   if (!credential_id.empty())
@@ -123,10 +125,10 @@ void TestPaymentsClient::AddFidoEligibleCard(std::string server_id,
   key_info
       .FindKeyOfType("authenticator_transport_support", base::Value::Type::LIST)
       ->Append("INTERNAL");
-  unmask_details_.fido_request_options.SetKey(
+  unmask_details_.fido_request_options->SetKey(
       "key_info", base::Value(base::Value::Type::LIST));
   unmask_details_.fido_request_options
-      .FindKeyOfType("key_info", base::Value::Type::LIST)
+      ->FindKeyOfType("key_info", base::Value::Type::LIST)
       ->Append(std::move(key_info));
 }
 

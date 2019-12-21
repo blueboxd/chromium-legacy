@@ -536,9 +536,7 @@ def _ParseOptions(argv):
 
 
 def main(argv):
-  logging.basicConfig(
-      level=logging.INFO if os.environ.get('JAVAC_DEBUG') else logging.WARNING,
-      format='%(levelname).1s %(relativeCreated)6d %(message)s')
+  build_utils.InitLogging('JAVAC_DEBUG')
   colorama.init()
 
   argv = build_utils.ExpandFileArgs(argv)
@@ -626,7 +624,6 @@ def main(argv):
       input_paths=input_paths,
       input_strings=input_strings,
       output_paths=output_paths)
-  logging.info('Script complete: %s', __file__)
 
 
 if __name__ == '__main__':

@@ -475,7 +475,7 @@ TEST_F(SharedImageBackingFactoryAHBTest, LegacyClearing) {
     return;
 
   GlLegacySharedImage gl_legacy_shared_image{
-      backing_factory_.get(),     true /* is_thread_safe */,
+      backing_factory_.get(),     false /* is_thread_safe */,
       &mailbox_manager_,          &shared_image_manager_,
       memory_type_tracker_.get(), shared_image_representation_factory_.get()};
 
@@ -552,24 +552,31 @@ GlLegacySharedImage::GlLegacySharedImage(
     EXPECT_TRUE(backing_->IsCleared());
   }
 
-  // First, validate via a legacy mailbox.
   GLenum expected_target = GL_TEXTURE_2D;
-  EXPECT_TRUE(backing_->ProduceLegacyMailbox(mailbox_manager_));
 
-  TextureBase* texture_base = mailbox_manager_->ConsumeTexture(mailbox_);
+  // First, validate via a legacy mailbox (only available when not
+  // |is_thread_safe|).
+  if (!is_thread_safe) {
+    EXPECT_TRUE(backing_->ProduceLegacyMailbox(mailbox_manager_));
 
-  // Currently there is no support for passthrough texture on android and hence
-  // in AHB backing. So the TextureBase* should be pointing to a Texture object.
-  auto* texture = gles2::Texture::CheckedCast(texture_base);
-  EXPECT_TRUE(texture);
-  EXPECT_EQ(texture->target(), expected_target);
-  EXPECT_TRUE(texture->IsImmutable());
-  int width, height, depth;
-  bool has_level =
-      texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height, &depth);
-  EXPECT_TRUE(has_level);
-  EXPECT_EQ(width, size_.width());
-  EXPECT_EQ(height, size_.height());
+    TextureBase* texture_base = mailbox_manager_->ConsumeTexture(mailbox_);
+
+    // Currently there is no support for passthrough texture on android and
+    // hence in AHB backing. So the TextureBase* should be pointing to a Texture
+    // object.
+    auto* texture = gles2::Texture::CheckedCast(texture_base);
+    EXPECT_TRUE(texture);
+    EXPECT_EQ(texture->target(), expected_target);
+    EXPECT_TRUE(texture->IsImmutable());
+    int width, height, depth;
+    bool has_level =
+        texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height, &depth);
+    EXPECT_TRUE(has_level);
+    EXPECT_EQ(width, size_.width());
+    EXPECT_EQ(height, size_.height());
+  } else {
+    EXPECT_FALSE(backing_->ProduceLegacyMailbox(mailbox_manager_));
+  }
 
   shared_image_ =
       shared_image_manager->Register(std::move(backing_), memory_type_tracker);

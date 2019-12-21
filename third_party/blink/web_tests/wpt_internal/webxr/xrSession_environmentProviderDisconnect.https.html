@@ -11,7 +11,7 @@
 // chromium specific.
 let testName = "Outstanding promises get rejected if environmentProvider disconencts";
 
-let fakeDeviceInitParams = { supportsImmersive: true,
+let fakeDeviceInitParams = { supportedModes: ["immersive-ar"],
                              views: VALID_VIEWS,
                              supportsEnvironmentIntegration: true,
                              supportedFeatures: ALL_FEATURES };

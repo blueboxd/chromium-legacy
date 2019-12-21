@@ -16,11 +16,18 @@ This script also contains hard-coded exclusion lists of files to never
 instrument, indexed by target operating system. Files in these lists have their
 flags removed in both modes. The OS can be selected with --target-os.
 
+This script also contains hard-coded force lists of files to always instrument,
+indexed by target operating system. Files in these lists never have their flags
+removed in either mode. The OS can be selected with --target-os.
+
+The order of precedence is: force list, exclusion list, --files-to-instrument.
+
 The path to the coverage instrumentation input file should be relative to the
 root build directory, and the file consists of multiple lines where each line
 represents a path to a source file, and the specified paths must be relative to
 the root build directory. e.g. ../../base/task/post_task.cc for build
-directory 'out/Release'.
+directory 'out/Release'. The paths should be written using OS-native path
+separators for the current platform.
 
 One caveat with this compiler wrapper is that it may introduce unexpected
 behaviors in incremental builds when the file path to the coverage
@@ -50,12 +57,14 @@ import sys
 # Flags should be listed in the same order that they are added in
 # build/config/coverage/BUILD.gn
 _COVERAGE_FLAGS = [
-    '-fprofile-instr-generate', '-fcoverage-mapping',
+    '-fprofile-instr-generate',
+    '-fcoverage-mapping',
     # Following experimental flags remove unused header functions from the
     # coverage mapping data embedded in the test binaries, and the reduction
     # of binary size enables building Chrome's large unit test targets on
     # MacOS. Please refer to crbug.com/796290 for more details.
-    '-mllvm', '-limited-coverage-experimental=true'
+    '-mllvm',
+    '-limited-coverage-experimental=true',
 ]
 
 # Files that should not be built with coverage flags by default.
@@ -89,6 +98,16 @@ _COVERAGE_EXCLUSION_LIST_MAP = {
     'win': [],
 }
 
+# Map of force lists indexed by target OS.
+_COVERAGE_FORCE_LIST_MAP = {
+    # clang_coverage.cc refers to the symbol `__llvm_profile_dump` from the
+    # profiling runtime. In a partial coverage build, it is possible for a
+    # binary to include clang_coverage.cc but have no instrumented files, thus
+    # causing an unresolved symbol error because the profiling runtime will not
+    # be linked in. Therefore we force coverage for this file to ensure that
+    # any target that includes it will also get the profiling runtime.
+    'win': [r'..\..\base\test\clang_coverage.cc'],
+}
 
 
 def _remove_flags_from_command(command):
@@ -104,11 +123,12 @@ def _remove_flags_from_command(command):
     while True:
       idx = command.index(start_flag, start_idx)
       start_idx = idx + 1
-      if command[idx:idx+num_flags] == _COVERAGE_FLAGS:
-        del command[idx:idx+num_flags]
+      if command[idx:idx + num_flags] == _COVERAGE_FLAGS:
+        del command[idx:idx + num_flags]
         break
   except ValueError:
     pass
+
 
 def main():
   # TODO(crbug.com/898695): Make this wrapper work on Windows platform.
@@ -119,9 +139,7 @@ def main():
       type=str,
       help='Path to a file that contains a list of file names to instrument.')
   arg_parser.add_argument(
-      '--target-os',
-      required=False,
-      help='The OS to compile for.')
+      '--target-os', required=False, help='The OS to compile for.')
   arg_parser.add_argument('args', nargs=argparse.REMAINDER)
   parsed_args = arg_parser.parse_args()
 
@@ -159,15 +177,22 @@ def main():
   compile_source_file = os.path.normpath(compile_command[source_flag_index + 1])
   exclusion_list = _COVERAGE_EXCLUSION_LIST_MAP.get(
       target_os, _DEFAULT_COVERAGE_EXCLUSION_LIST)
+  force_list = _COVERAGE_FORCE_LIST_MAP.get(target_os, [])
 
-  if compile_source_file in exclusion_list:
+  should_remove_flags = False
+  if compile_source_file not in force_list:
+    if compile_source_file in exclusion_list:
+      should_remove_flags = True
+    elif parsed_args.files_to_instrument:
+      with open(parsed_args.files_to_instrument) as f:
+        if compile_source_file not in f.read():
+          should_remove_flags = True
+
+  if should_remove_flags:
     _remove_flags_from_command(compile_command)
-  elif parsed_args.files_to_instrument:
-    with open(parsed_args.files_to_instrument) as f:
-      if compile_source_file not in f.read():
-        _remove_flags_from_command(compile_command)
 
   return subprocess.call(compile_command)
+
 
 if __name__ == '__main__':
   sys.exit(main())

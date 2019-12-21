@@ -44,9 +44,9 @@ class DistillerURLFetcherTest : public testing::Test {
   }
 
   void Fetch(const std::string& url, const std::string& expected_response) {
-    url_fetcher_->FetchURL(url,
-                           base::Bind(&DistillerURLFetcherTest::FetcherCallback,
-                                      base::Unretained(this)));
+    url_fetcher_->FetchURL(
+        url, base::BindOnce(&DistillerURLFetcherTest::FetcherCallback,
+                            base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
     CHECK_EQ(expected_response, response_);
   }

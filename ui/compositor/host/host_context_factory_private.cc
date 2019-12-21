@@ -18,7 +18,6 @@
 #include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom.h"
 #include "services/viz/privileged/mojom/compositing/vsync_parameter_observer.mojom.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
-#include "ui/compositor/reflector.h"
 
 #if defined(OS_WIN)
 #include "ui/gfx/win/rendering_window_manager.h"
@@ -182,19 +181,6 @@ base::flat_set<Compositor*> HostContextFactoryPrivate::GetAllCompositors() {
   for (auto& pair : compositor_data_map_)
     all_compositors.insert(pair.first);
   return all_compositors;
-}
-
-std::unique_ptr<Reflector> HostContextFactoryPrivate::CreateReflector(
-    Compositor* source,
-    Layer* target) {
-  // TODO(crbug.com/601869): Reflector needs to be rewritten for viz.
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
-void HostContextFactoryPrivate::RemoveReflector(Reflector* reflector) {
-  // TODO(crbug.com/601869): Reflector needs to be rewritten for viz.
-  NOTIMPLEMENTED();
 }
 
 viz::FrameSinkId HostContextFactoryPrivate::AllocateFrameSinkId() {

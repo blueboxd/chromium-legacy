@@ -292,11 +292,9 @@ enum TabletModeAnimationTransition {
 // Parameters to call RecordAppListAppLaunched. Passed to code that does not
 // directly have access to them, such ash AppListMenuModelAdapter.
 struct AppLaunchedMetricParams {
-  ash::AppListLaunchedFrom launched_from =
-      ash::AppListLaunchedFrom::kLaunchedFromGrid;
-  ash::AppListLaunchType search_launch_type =
-      ash::AppListLaunchType::kSearchResult;
-  ash::AppListViewState app_list_view_state = ash::AppListViewState::kClosed;
+  AppListLaunchedFrom launched_from = AppListLaunchedFrom::kLaunchedFromGrid;
+  AppListLaunchType search_launch_type = AppListLaunchType::kSearchResult;
+  AppListViewState app_list_view_state = AppListViewState::kClosed;
   bool is_tablet_mode = false;
   bool home_launcher_shown = false;
 };
@@ -335,11 +333,10 @@ APP_LIST_EXPORT void RecordSearchLaunchIndexAndQueryLength(
     int query_length,
     int suggestion_index);
 
-APP_LIST_EXPORT void RecordAppListAppLaunched(
-    ash::AppListLaunchedFrom launched_from,
-    ash::AppListViewState app_list_state,
-    bool is_tablet_mode,
-    bool home_launcher_shown);
+APP_LIST_EXPORT void RecordAppListAppLaunched(AppListLaunchedFrom launched_from,
+                                              AppListViewState app_list_state,
+                                              bool is_tablet_mode,
+                                              bool home_launcher_shown);
 
 APP_LIST_EXPORT bool IsCommandIdAnAppLaunch(int command_id);
 

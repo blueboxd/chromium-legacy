@@ -190,6 +190,13 @@ void SplitViewHighlightView::OnWindowDraggingStateChanged(
     return;
   }
 
+  if (window_dragging_state ==
+      SplitViewDragIndicators::WindowDraggingState::kOtherDisplay) {
+    DoSplitviewOpacityAnimation(layer(),
+                                SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_OUT);
+    return;
+  }
+
   const SplitViewController::SnapPosition preview_position =
       SplitViewDragIndicators::GetSnapPosition(window_dragging_state);
   const SplitViewController::SnapPosition previous_preview_position =

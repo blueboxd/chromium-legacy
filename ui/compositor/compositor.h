@@ -75,7 +75,6 @@ namespace ui {
 
 class Compositor;
 class Layer;
-class Reflector;
 class ScopedAnimationDurationScaleMode;
 class ScrollInputHandler;
 
@@ -100,15 +99,6 @@ class COMPOSITOR_EXPORT ContextFactoryObserver {
 class COMPOSITOR_EXPORT ContextFactoryPrivate {
  public:
   virtual ~ContextFactoryPrivate() {}
-
-  // Creates a reflector that copies the content of the |mirrored_compositor|
-  // onto |mirroring_layer|.
-  virtual std::unique_ptr<Reflector> CreateReflector(
-      Compositor* mirrored_compositor,
-      Layer* mirroring_layer) = 0;
-
-  // Removes the reflector, which stops the mirroring.
-  virtual void RemoveReflector(Reflector* reflector) = 0;
 
   // Allocate a new client ID for the display compositor.
   virtual viz::FrameSinkId AllocateFrameSinkId() = 0;

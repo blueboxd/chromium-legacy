@@ -29,7 +29,6 @@
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display_embedder/skia_output_surface_dependency_impl.h"
 #include "components/viz/service/display_embedder/skia_output_surface_impl.h"
-#include "components/viz/service/frame_sinks/direct_layer_tree_frame_sink.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/test/test_gpu_service_holder.h"
 #include "gpu/command_buffer/client/context_support.h"
@@ -37,7 +36,7 @@
 #include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/layer.h"
-#include "ui/compositor/reflector.h"
+#include "ui/compositor/test/direct_layer_tree_frame_sink.h"
 #include "ui/compositor/test/in_process_context_provider.h"
 #include "ui/display/display_switches.h"
 #include "ui/gfx/presentation_feedback.h"
@@ -59,15 +58,6 @@ namespace {
 
 // This should not conflict with ids from RenderWidgetHostImpl or WindowService.
 constexpr uint32_t kDefaultClientId = std::numeric_limits<uint32_t>::max() / 2;
-
-class FakeReflector : public Reflector {
- public:
-  FakeReflector() {}
-  ~FakeReflector() override {}
-  void OnMirroringCompositorResized() override {}
-  void AddMirroringLayer(Layer* layer) override {}
-  void RemoveMirroringLayer(Layer* layer) override {}
-};
 
 // An OutputSurface implementation that directly draws and swaps to an actual
 // GL surface.
@@ -298,23 +288,13 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
   data->begin_frame_source = std::move(begin_frame_source);
 
   auto* display = per_compositor_data_[compositor.get()]->display.get();
-  auto layer_tree_frame_sink = std::make_unique<viz::DirectLayerTreeFrameSink>(
-      compositor->frame_sink_id(), GetHostFrameSinkManager(),
-      frame_sink_manager_, display, nullptr /* display_client */,
+  auto layer_tree_frame_sink = std::make_unique<DirectLayerTreeFrameSink>(
+      compositor->frame_sink_id(), frame_sink_manager_, display,
       context_provider, shared_worker_context_provider_,
       compositor->task_runner(), &gpu_memory_buffer_manager_);
   compositor->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
 
   data->display->Resize(compositor->size());
-}
-
-std::unique_ptr<Reflector> InProcessContextFactory::CreateReflector(
-    Compositor* mirrored_compositor,
-    Layer* mirroring_layer) {
-  return base::WrapUnique(new FakeReflector);
-}
-
-void InProcessContextFactory::RemoveReflector(Reflector* reflector) {
 }
 
 scoped_refptr<viz::ContextProvider>

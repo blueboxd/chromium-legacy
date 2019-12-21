@@ -28,9 +28,6 @@ extern const base::Feature kNewOmniboxPopupLayout;
 // in the omnibox.
 extern const base::Feature kOmniboxUseDefaultSearchEngineFavicon;
 
-// Feature flag for the language settings page.
-extern const base::Feature kLanguageSettings;
-
 // Feature flag for embedders to block restore urls.
 extern const base::Feature kEmbedderBlockRestoreUrl;
 

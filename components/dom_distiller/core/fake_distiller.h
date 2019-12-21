@@ -43,7 +43,7 @@ class FakeDistiller : public Distiller {
 
   void DistillPage(const GURL& url,
                    std::unique_ptr<DistillerPage> distiller_page,
-                   const DistillationFinishedCallback& article_callback,
+                   DistillationFinishedCallback article_callback,
                    const DistillationUpdateCallback& page_callback) override;
 
   void RunDistillerCallback(std::unique_ptr<DistilledArticleProto> proto);
@@ -51,7 +51,7 @@ class FakeDistiller : public Distiller {
 
   GURL GetUrl() { return url_; }
 
-  DistillationFinishedCallback GetArticleCallback() {
+  const DistillationFinishedCallback& GetArticleCallback() const {
     return article_callback_;
   }
 

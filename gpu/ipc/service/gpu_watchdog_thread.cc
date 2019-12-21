@@ -401,6 +401,7 @@ void GpuWatchdogThreadImplV1::DeliberatelyTerminateToRecoverFromHang() {
   // Don't crash if we're not on the TTY of our host X11 server.
   int active_tty = GetActiveTTY();
   if (host_tty_ != -1 && active_tty != -1 && host_tty_ != active_tty) {
+    OnAcknowledge();
     return;
   }
 #endif

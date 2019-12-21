@@ -32,8 +32,10 @@ class FakeBlob : public mojom::blink::Blob {
   void ReadAll(mojo::ScopedDataPipeProducerHandle,
                mojo::PendingRemote<mojom::blink::BlobReaderClient>) override;
   void ReadSideData(ReadSideDataCallback) override;
+  void CaptureSnapshot(CaptureSnapshotCallback) override;
   void GetInternalUUID(GetInternalUUIDCallback) override;
- private:
+
+ protected:
   String uuid_;
   String body_;
   State* state_;

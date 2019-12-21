@@ -83,7 +83,7 @@ class POLICY_EXPORT PolicyScheduler {
   // End time of the previous task. Zero in case no task has ended yet.
   base::TimeTicks last_task_;
 
-  std::unique_ptr<base::CancelableClosure> job_;
+  std::unique_ptr<base::CancelableOnceClosure> job_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

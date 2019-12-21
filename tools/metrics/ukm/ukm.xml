@@ -3486,6 +3486,248 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Graphics.Smoothness.Latency">
+  <owner>animations-dev@chromium.org</owner>
+  <owner>sadrul@chromium.org</owner>
+  <owner>schenney@chromium.org</owner>
+  <summary>
+    Tracks the duration of stages in the rendering pipeline while processing a
+    single frame. All times are in microseconds.
+  </summary>
+  <metric name="Activation">
+    <summary>
+      The duration of the activation stage.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="BeginImplFrameToSendBeginMainFrame">
+    <summary>
+      The time from when the Impl frame is started to when BeginMainFrame is
+      sent.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Commit">
+    <summary>
+      The duration of the commit stage.&quot;
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="CompositorAnimation" enum="Boolean">
+    <summary>
+      True when a compositor-driven animation was active this frame.
+    </summary>
+  </metric>
+  <metric name="EndActivateToSubmitCompositorFrame">
+    <summary>
+      The time from when an activation is complete to the next
+      SubmitCompositorFrame.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="EndCommitToActivation">
+    <summary>
+      The time from when a commit is complete to the beginning of the next
+      activation.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="MainThreadAnimation" enum="Boolean">
+    <summary>
+      True when a main-thread-driven animation was active this frame.
+    </summary>
+  </metric>
+  <metric name="MissedFrame" enum="Boolean">
+    <summary>
+      True when the main frame missed its deadline for this frame.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="PinchZoom" enum="Boolean">
+    <summary>
+      True when a pinch-to-zoom interaction was active this frame.
+    </summary>
+  </metric>
+  <metric name="RAF" enum="Boolean">
+    <summary>
+      True when a rAF-driven animation was active this frame.
+    </summary>
+  </metric>
+  <metric name="SendBeginMainFrameToCommit">
+    <summary>
+      The time from when the BeginMainFrame is sent to the beginning of the
+      commit.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="SubmitCompositorFrameToPresentationCompositorFrame">
+    <summary>
+      The time from when the a compositor frame is submitted to the display
+      compositor to when it is presented.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric
+      name="SubmitCompositorFrameToPresentationCompositorFrame.ReceivedCompositorFrameToStartDraw">
+    <summary>
+      The time from when a compositor frame is received to when it starts to
+      draw.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric
+      name="SubmitCompositorFrameToPresentationCompositorFrame.StartDrawToSwapEnd">
+    <summary>
+      The time from when the a compositor frame is started to draw to when it
+      ends swap.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric
+      name="SubmitCompositorFrameToPresentationCompositorFrame.SubmitToReceiveCompositorFrame">
+    <summary>
+      The time from when the a compositor frame is submitted to when it is
+      received.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric
+      name="SubmitCompositorFrameToPresentationCompositorFrame.SwapEndToPresentationCompositorFrame">
+    <summary>
+      The time from when the a compositor frame ends swap to when it is
+      presented.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="TotalLatency">
+    <summary>
+      The total time starting from BeginImplFrame to when
+      CompositorFramePresentation is done with updates from the MainThread (i.e.
+      the time it takes for BeginImplFrame, BeginMainFrame, Commit, Activate,
+      SubmitCompositorFrame and PresentCompositorFrame).
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="TouchScroll" enum="Boolean">
+    <summary>
+      True when a touchscreen driven interaction was active this frame.
+    </summary>
+  </metric>
+  <metric name="Unknown">
+    <summary>
+      The time within a stage not attributed to any system.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Video" enum="Boolean">
+    <summary>
+      True when video playback was active this frame.
+    </summary>
+  </metric>
+  <metric name="WheelScroll" enum="Boolean">
+    <summary>
+      True when a mouse driven scroll was active this frame.
+    </summary>
+  </metric>
+</event>
+
 <event name="Graphics.Smoothness.Throughput">
   <owner>animations-dev@chromium.org</owner>
   <owner>sadrul@chromium.org</owner>
@@ -3585,48 +3827,112 @@ be describing additional metrics about the same event.
       The worse throughput of the main and the compositor thread during a
       compositor animation.
     </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="SlowerThread.MainThreadAnimation">
     <summary>
       The worse throughput of the main and the compositor thread during a main
       thread animation.
     </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="SlowerThread.PinchZoom">
     <summary>
       The worse throughput of the main and the compositor thread during
       pinch-zoom interactions.
     </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="SlowerThread.RAF">
     <summary>
       The worse throughput of the main and the compositor thread during rAF
       callback driven animation.
     </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="SlowerThread.TouchScroll">
     <summary>
       The worse throughput of the main and the compositor thread during
       touchscroll driven interactions.
     </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="SlowerThread.Universal">
     <summary>
       The worse throughput of the main and the compositor thread for all frame
       production.
     </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="SlowerThread.Video">
     <summary>
       The worse throughput of the main and the compositor thread during video
       play.
     </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="SlowerThread.WheelScroll">
     <summary>
       The worse throughput of the main and the compositor thread during
       mousewheel scroll driven interactions.
     </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 

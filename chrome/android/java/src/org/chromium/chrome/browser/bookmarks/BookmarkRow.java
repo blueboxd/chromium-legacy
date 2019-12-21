@@ -151,7 +151,6 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId> implements Boo
         if (mDelegate != null) mDelegate.removeUIObserver(this);
     }
 
-    // TODO(lazzzis): try to clean up reference to mLocation if position.
     private ModelList getItems() {
         // Rebuild listItems, cause mLocation may be changed anytime.
         boolean canMove = false;

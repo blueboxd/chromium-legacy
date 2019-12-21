@@ -31,7 +31,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cookies/canonical_cookie.h"

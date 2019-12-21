@@ -95,10 +95,10 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   void FocusedElementChanged(Element*, Element*) override {}
   void Show(NavigationPolicy) override {}
 
-  void DidOverscroll(const FloatSize&,
-                     const FloatSize&,
-                     const FloatPoint&,
-                     const FloatSize&) override {}
+  void DidOverscroll(const gfx::Vector2dF&,
+                     const gfx::Vector2dF&,
+                     const gfx::PointF&,
+                     const gfx::Vector2dF&) override {}
   void SetOverscrollBehavior(LocalFrame& frame,
                              const cc::OverscrollBehavior&) override {}
 

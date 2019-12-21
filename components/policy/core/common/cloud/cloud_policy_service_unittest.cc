@@ -200,8 +200,8 @@ TEST_F(CloudPolicyServiceTest, UnregisterSucceeds) {
   EXPECT_CALL(client_, Unregister());
   EXPECT_CALL(*this, OnUnregister(true));
 
-  service_.Unregister(base::Bind(&CloudPolicyServiceTest::OnUnregister,
-                                 base::Unretained(this)));
+  service_.Unregister(base::BindOnce(&CloudPolicyServiceTest::OnUnregister,
+                                     base::Unretained(this)));
   client_.NotifyRegistrationStateChanged();
 }
 
@@ -209,8 +209,8 @@ TEST_F(CloudPolicyServiceTest, UnregisterFailsOnClientError) {
   EXPECT_CALL(client_, Unregister());
   EXPECT_CALL(*this, OnUnregister(false));
 
-  service_.Unregister(base::Bind(&CloudPolicyServiceTest::OnUnregister,
-                                 base::Unretained(this)));
+  service_.Unregister(base::BindOnce(&CloudPolicyServiceTest::OnUnregister,
+                                     base::Unretained(this)));
   client_.NotifyClientError();
 }
 
@@ -222,16 +222,16 @@ TEST_F(CloudPolicyServiceTest, UnregisterRevokesAllOnGoingPolicyRefreshes) {
       &CloudPolicyServiceTest::OnPolicyRefresh, base::Unretained(this)));
   service_.RefreshPolicy(base::BindOnce(
       &CloudPolicyServiceTest::OnPolicyRefresh, base::Unretained(this)));
-  service_.Unregister(base::Bind(&CloudPolicyServiceTest::OnUnregister,
-                                 base::Unretained(this)));
+  service_.Unregister(base::BindOnce(&CloudPolicyServiceTest::OnUnregister,
+                                     base::Unretained(this)));
 }
 
 TEST_F(CloudPolicyServiceTest, RefreshPolicyFailsWhenUnregistering) {
   EXPECT_CALL(client_, Unregister());
   EXPECT_CALL(*this, OnPolicyRefresh(false));
 
-  service_.Unregister(base::Bind(&CloudPolicyServiceTest::OnUnregister,
-                                 base::Unretained(this)));
+  service_.Unregister(base::BindOnce(&CloudPolicyServiceTest::OnUnregister,
+                                     base::Unretained(this)));
   service_.RefreshPolicy(base::BindOnce(
       &CloudPolicyServiceTest::OnPolicyRefresh, base::Unretained(this)));
 }

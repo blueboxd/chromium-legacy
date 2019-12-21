@@ -40,8 +40,8 @@ struct POLICY_EXPORT PolicyDetails {
 // GetChromePolicyDetails(). This can be used to inject that
 // function into objects, so that it can be easily mocked for
 // tests.
-typedef base::Callback<const PolicyDetails*(const std::string&)>
-    GetChromePolicyDetailsCallback;
+using GetChromePolicyDetailsCallback =
+    base::RepeatingCallback<const PolicyDetails*(const std::string&)>;
 
 }  // namespace policy
 

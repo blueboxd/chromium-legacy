@@ -25,8 +25,8 @@ enum class RemoteSuggestionsStatus : int {
 class RemoteSuggestionsStatusService {
  public:
   using StatusChangeCallback =
-      base::Callback<void(RemoteSuggestionsStatus old_status,
-                          RemoteSuggestionsStatus new_status)>;
+      base::RepeatingCallback<void(RemoteSuggestionsStatus old_status,
+                                   RemoteSuggestionsStatus new_status)>;
   virtual ~RemoteSuggestionsStatusService() = default;
 
   // Starts listening for changes from the dependencies. |callback| will be

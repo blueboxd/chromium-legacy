@@ -5,8 +5,14 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_PRINTING_PRINTING_API_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_PRINTING_PRINTING_API_H_
 
+#include "base/optional.h"
+#include "chrome/common/extensions/api/printing.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_function_histogram_value.h"
+
+namespace base {
+class Value;
+}  // namespace base
 
 namespace extensions {
 
@@ -19,6 +25,21 @@ class PrintingGetPrintersFunction : public ExtensionFunction {
 
  private:
   DECLARE_EXTENSION_FUNCTION("printing.getPrinters", PRINTING_GETPRINTERS)
+};
+
+class PrintingGetPrinterInfoFunction : public ExtensionFunction {
+ protected:
+  ~PrintingGetPrinterInfoFunction() override;
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+
+ private:
+  void OnPrinterInfoRetrieved(
+      base::Optional<base::Value> capabilities,
+      base::Optional<api::printing::PrinterStatus> status,
+      base::Optional<std::string> error);
+  DECLARE_EXTENSION_FUNCTION("printing.getPrinterInfo", PRINTING_GETPRINTERINFO)
 };
 
 }  // namespace extensions

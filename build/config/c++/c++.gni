@@ -29,10 +29,7 @@ declare_args() {
   # http://crbug.com/966687.
   libcxx_natvis_include = true
 
-  # When set, enables C++ iterator debugging in debug builds. Iterator
-  # debugging is always off in release builds (technically, this flag affects
-  # the "debug" config, which is always available but applied by default only
-  # in debug builds).
+  # When set, enables libc++ debug mode with iterator debugging.
   #
   # Iterator debugging is generally useful for catching bugs. But it can
   # introduce extra locking to check the state of an iterator against the state

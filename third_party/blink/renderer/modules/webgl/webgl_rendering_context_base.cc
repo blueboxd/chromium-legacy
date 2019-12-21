@@ -1622,23 +1622,23 @@ bool WebGLRenderingContextBase::CopyRenderingResultsFromDrawingBuffer(
         SharedGpuContext::ContextProviderWrapper();
     if (!shared_context_wrapper || !shared_context_wrapper->ContextProvider())
       return false;
-    gpu::gles2::GLES2Interface* gl =
-        shared_context_wrapper->ContextProvider()->ContextGL();
-    GLuint texture_id =
-        resource_provider->GetBackingTextureHandleForOverwrite();
+    gpu::raster::RasterInterface* raster_interface =
+        shared_context_wrapper->ContextProvider()->RasterInterface();
+    const gpu::Mailbox& mailbox =
+        resource_provider->GetBackingMailboxForOverwrite(
+            MailboxSyncMode::kOrderingBarrier);
     GLenum texture_target = resource_provider->GetBackingTextureTarget();
-    if (!texture_id)
+    if (mailbox.IsZero())
       return false;
 
     // TODO(xlai): Flush should not be necessary if the synchronization in
     // CopyToPlatformTexture is done correctly. See crbug.com/794706.
-    gl->Flush();
+    raster_interface->Flush();
 
     bool flip_y = IsOriginTopLeft() != resource_provider->IsOriginTopLeft();
-    return drawing_buffer_->CopyToPlatformTexture(
-        gl, texture_target, texture_id, 0 /*texture LOD */, true, flip_y,
-        IntPoint(0, 0), IntRect(IntPoint(0, 0), drawing_buffer_->Size()),
-        source_buffer);
+    return drawing_buffer_->CopyToPlatformMailbox(
+        raster_interface, mailbox, texture_target, flip_y, IntPoint(0, 0),
+        IntRect(IntPoint(0, 0), drawing_buffer_->Size()), source_buffer);
   }
 
   // Note: This code path could work for all cases. The only reason there
@@ -2186,8 +2186,12 @@ void WebGLRenderingContextBase::compressedTexImage2D(
   if (!ValidateCompressedTexFormat("compressedTexImage2D", internalformat))
     return;
   GLsizei data_length;
-  if (!ExtractDataLengthIfValid("compressedTexImage2D", data, &data_length))
+  if (!base::CheckedNumeric<GLsizei>(data.View()->byteLengthAsSizeT())
+           .AssignIfValid(&data_length)) {
+    SynthesizeGLError(GL_INVALID_VALUE, "compressedTexImage2D",
+                      "src_length exceeds the maximum supported length");
     return;
+  }
   ContextGL()->CompressedTexImage2D(target, level, internalformat, width,
                                     height, border, data_length,
                                     data.View()->BaseAddressMaybeShared());
@@ -2209,8 +2213,12 @@ void WebGLRenderingContextBase::compressedTexSubImage2D(
   if (!ValidateCompressedTexFormat("compressedTexSubImage2D", format))
     return;
   GLsizei data_length;
-  if (!ExtractDataLengthIfValid("compressedTexSubImage2D", data, &data_length))
+  if (!base::CheckedNumeric<GLsizei>(data.View()->byteLengthAsSizeT())
+           .AssignIfValid(&data_length)) {
+    SynthesizeGLError(GL_INVALID_VALUE, "compressedTexImage2D",
+                      "src_length exceeds the maximum supported length");
     return;
+  }
   ContextGL()->CompressedTexSubImage2D(target, level, xoffset, yoffset, width,
                                        height, format, data_length,
                                        data.View()->BaseAddressMaybeShared());

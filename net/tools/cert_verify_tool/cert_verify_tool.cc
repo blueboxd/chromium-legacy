@@ -36,6 +36,7 @@
 
 #if defined(USE_NSS_CERTS)
 #include "net/cert_net/nss_ocsp.h"
+#include "net/cert_net/nss_ocsp_session_url_request.h"
 #endif
 
 namespace {

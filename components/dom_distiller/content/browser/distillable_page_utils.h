@@ -26,7 +26,7 @@ class DistillablePageDetector;
 // |web_contents| and |detector| must be non-null.
 void IsDistillablePageForDetector(content::WebContents* web_contents,
                                   const DistillablePageDetector* detector,
-                                  base::Callback<void(bool)> callback);
+                                  base::OnceCallback<void(bool)> callback);
 
 struct DistillabilityResult {
   bool is_distillable;

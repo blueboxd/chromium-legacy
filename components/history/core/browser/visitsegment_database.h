@@ -56,7 +56,7 @@ class VisitSegmentDatabase {
   std::vector<std::unique_ptr<PageUsageData>> QuerySegmentUsage(
       base::Time from_time,
       int max_result_count,
-      const base::Callback<bool(const GURL&)>& url_filter);
+      const base::RepeatingCallback<bool(const GURL&)>& url_filter);
 
   // Delete the segment currently using the provided url for representation.
   // This will also delete any associated segment usage data.

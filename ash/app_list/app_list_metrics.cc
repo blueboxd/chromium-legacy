@@ -174,15 +174,15 @@ APP_LIST_EXPORT void RecordSearchResultOpenSource(
     const AppListModel* model,
     const SearchModel* search_model) {
   // Record the search metric if the SearchResult is not a suggested app.
-  if (result->display_type() == ash::SearchResultDisplayType::kRecommendation)
+  if (result->display_type() == SearchResultDisplayType::kRecommendation)
     return;
 
   ApplistSearchResultOpenedSource source;
-  ash::AppListViewState state = model->state_fullscreen();
+  AppListViewState state = model->state_fullscreen();
   if (search_model->tablet_mode()) {
     source = ApplistSearchResultOpenedSource::kFullscreenTablet;
   } else {
-    source = state == ash::AppListViewState::kHalf
+    source = state == AppListViewState::kHalf
                  ? ApplistSearchResultOpenedSource::kHalfClamshell
                  : ApplistSearchResultOpenedSource::kFullscreenClamshell;
   }
@@ -232,22 +232,22 @@ void RecordZeroStateSearchResultRemovalHistogram(
                             removal_decision);
 }
 
-void RecordAppListAppLaunched(ash::AppListLaunchedFrom launched_from,
-                              ash::AppListViewState app_list_state,
+void RecordAppListAppLaunched(AppListLaunchedFrom launched_from,
+                              AppListViewState app_list_state,
                               bool is_tablet_mode,
                               bool home_launcher_shown) {
   UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunched, launched_from);
   switch (app_list_state) {
-    case ash::AppListViewState::kClosed:
+    case AppListViewState::kClosed:
       UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunchedClosed, launched_from);
       break;
-    case ash::AppListViewState::kPeeking:
+    case AppListViewState::kPeeking:
       UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunchedPeeking, launched_from);
       break;
-    case ash::AppListViewState::kHalf:
+    case AppListViewState::kHalf:
       UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunchedHalf, launched_from);
       break;
-    case ash::AppListViewState::kFullscreenAllApps:
+    case AppListViewState::kFullscreenAllApps:
       if (is_tablet_mode) {
         if (home_launcher_shown) {
           UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunchedHomecherAllApps,
@@ -261,7 +261,7 @@ void RecordAppListAppLaunched(ash::AppListLaunchedFrom launched_from,
                                   launched_from);
       }
       break;
-    case ash::AppListViewState::kFullscreenSearch:
+    case AppListViewState::kFullscreenSearch:
       if (is_tablet_mode) {
         if (home_launcher_shown) {
           UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunchedHomecherSearch,
@@ -281,62 +281,62 @@ void RecordAppListAppLaunched(ash::AppListLaunchedFrom launched_from,
 }
 
 bool IsCommandIdAnAppLaunch(int command_id_number) {
-  ash::CommandId command_id = static_cast<ash::CommandId>(command_id_number);
+  CommandId command_id = static_cast<CommandId>(command_id_number);
 
   // Consider all platform app menu options as launches.
-  if (command_id >= ash::CommandId::EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
-      command_id < ash::CommandId::EXTENSIONS_CONTEXT_CUSTOM_LAST) {
+  if (command_id >= CommandId::EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
+      command_id < CommandId::EXTENSIONS_CONTEXT_CUSTOM_LAST) {
     return true;
   }
 
   // Consider all arc app shortcut options as launches.
-  if (command_id >= ash::CommandId::LAUNCH_APP_SHORTCUT_FIRST &&
-      command_id < ash::CommandId::LAUNCH_APP_SHORTCUT_LAST) {
+  if (command_id >= CommandId::LAUNCH_APP_SHORTCUT_FIRST &&
+      command_id < CommandId::LAUNCH_APP_SHORTCUT_LAST) {
     return true;
   }
 
   switch (command_id) {
     // Used by ShelfContextMenu (shelf).
-    case ash::CommandId::MENU_OPEN_NEW:
-    case ash::CommandId::MENU_NEW_WINDOW:
-    case ash::CommandId::MENU_NEW_INCOGNITO_WINDOW:
+    case CommandId::MENU_OPEN_NEW:
+    case CommandId::MENU_NEW_WINDOW:
+    case CommandId::MENU_NEW_INCOGNITO_WINDOW:
     // Used by AppContextMenu.
-    case ash::CommandId::LAUNCH_NEW:
-    case ash::CommandId::SHOW_APP_INFO:
-    case ash::CommandId::OPTIONS:
-    case ash::CommandId::APP_CONTEXT_MENU_NEW_WINDOW:
-    case ash::CommandId::APP_CONTEXT_MENU_NEW_INCOGNITO_WINDOW:
+    case CommandId::LAUNCH_NEW:
+    case CommandId::SHOW_APP_INFO:
+    case CommandId::OPTIONS:
+    case CommandId::APP_CONTEXT_MENU_NEW_WINDOW:
+    case CommandId::APP_CONTEXT_MENU_NEW_INCOGNITO_WINDOW:
     // Used by both AppContextMenu and ShelfContextMenu for app shortcuts.
-    case ash::CommandId::LAUNCH_APP_SHORTCUT_FIRST:
-    case ash::CommandId::LAUNCH_APP_SHORTCUT_LAST:
+    case CommandId::LAUNCH_APP_SHORTCUT_FIRST:
+    case CommandId::LAUNCH_APP_SHORTCUT_LAST:
       return true;
 
     // Used by ShelfContextMenu (shelf).
-    case ash::CommandId::MENU_CLOSE:
-    case ash::CommandId::MENU_PIN:
-    case ash::CommandId::LAUNCH_TYPE_PINNED_TAB:
-    case ash::CommandId::LAUNCH_TYPE_REGULAR_TAB:
-    case ash::CommandId::LAUNCH_TYPE_FULLSCREEN:
-    case ash::CommandId::LAUNCH_TYPE_WINDOW:
+    case CommandId::MENU_CLOSE:
+    case CommandId::MENU_PIN:
+    case CommandId::LAUNCH_TYPE_PINNED_TAB:
+    case CommandId::LAUNCH_TYPE_REGULAR_TAB:
+    case CommandId::LAUNCH_TYPE_FULLSCREEN:
+    case CommandId::LAUNCH_TYPE_WINDOW:
     // Used by AppMenuModelAdapter
-    case ash::CommandId::NOTIFICATION_CONTAINER:
+    case CommandId::NOTIFICATION_CONTAINER:
     // Used by CrostiniShelfContextMenu.
-    case ash::CommandId::CROSTINI_USE_LOW_DENSITY:
-    case ash::CommandId::CROSTINI_USE_HIGH_DENSITY:
+    case CommandId::CROSTINI_USE_LOW_DENSITY:
+    case CommandId::CROSTINI_USE_HIGH_DENSITY:
     // Used by AppContextMenu.
-    case ash::CommandId::TOGGLE_PIN:
-    case ash::CommandId::UNINSTALL:
-    case ash::CommandId::REMOVE_FROM_FOLDER:
-    case ash::CommandId::INSTALL:
-    case ash::CommandId::USE_LAUNCH_TYPE_PINNED:
-    case ash::CommandId::USE_LAUNCH_TYPE_REGULAR:
-    case ash::CommandId::USE_LAUNCH_TYPE_FULLSCREEN:
-    case ash::CommandId::USE_LAUNCH_TYPE_WINDOW:
-    case ash::CommandId::USE_LAUNCH_TYPE_COMMAND_END:
-    case ash::CommandId::STOP_APP:
-    case ash::CommandId::EXTENSIONS_CONTEXT_CUSTOM_FIRST:
-    case ash::CommandId::EXTENSIONS_CONTEXT_CUSTOM_LAST:
-    case ash::CommandId::COMMAND_ID_COUNT:
+    case CommandId::TOGGLE_PIN:
+    case CommandId::UNINSTALL:
+    case CommandId::REMOVE_FROM_FOLDER:
+    case CommandId::INSTALL:
+    case CommandId::USE_LAUNCH_TYPE_PINNED:
+    case CommandId::USE_LAUNCH_TYPE_REGULAR:
+    case CommandId::USE_LAUNCH_TYPE_FULLSCREEN:
+    case CommandId::USE_LAUNCH_TYPE_WINDOW:
+    case CommandId::USE_LAUNCH_TYPE_COMMAND_END:
+    case CommandId::STOP_APP:
+    case CommandId::EXTENSIONS_CONTEXT_CUSTOM_FIRST:
+    case CommandId::EXTENSIONS_CONTEXT_CUSTOM_LAST:
+    case CommandId::COMMAND_ID_COUNT:
       return false;
   }
   NOTREACHED();

@@ -8,6 +8,7 @@ import android.text.TextUtils;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.homepage.HomepagePolicyManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
@@ -18,8 +19,7 @@ import org.chromium.chrome.browser.util.UrlConstants;
  *
  * This class serves as a single homepage logic gateway.
  */
-public class HomepageManager {
-
+public class HomepageManager implements HomepagePolicyManager.HomepagePolicyStateListener {
     /**
      * An interface to use for getting homepage related updates.
      */
@@ -38,6 +38,7 @@ public class HomepageManager {
     private HomepageManager() {
         mSharedPreferencesManager = SharedPreferencesManager.getInstance();
         mHomepageStateListeners = new ObserverList<>();
+        HomepagePolicyManager.getInstance().addListener(this);
     }
 
     /**
@@ -78,7 +79,8 @@ public class HomepageManager {
      * @return Whether or not homepage is enabled.
      */
     public static boolean isHomepageEnabled() {
-        return getInstance().getPrefHomepageEnabled();
+        return HomepagePolicyManager.isHomepageManagedByPolicy()
+                || getInstance().getPrefHomepageEnabled();
     }
 
     /**
@@ -107,9 +109,13 @@ public class HomepageManager {
      *         if the homepage button is force enabled via flag.
      */
     public static String getDefaultHomepageUri() {
-        return PartnerBrowserCustomizations.isHomepageProviderAvailableAndEnabled()
-                ? PartnerBrowserCustomizations.getHomePageUrl()
-                : UrlConstants.NTP_NON_NATIVE_URL;
+        if (HomepagePolicyManager.isHomepageManagedByPolicy()) {
+            return HomepagePolicyManager.getHomepageUrl();
+        }
+        if (PartnerBrowserCustomizations.isHomepageProviderAvailableAndEnabled()) {
+            return PartnerBrowserCustomizations.getHomePageUrl();
+        }
+        return UrlConstants.NTP_NON_NATIVE_URL;
     }
 
     /**
@@ -118,7 +124,7 @@ public class HomepageManager {
      *
      * @see #isHomepageEnabled
      */
-    public boolean getPrefHomepageEnabled() {
+    private boolean getPrefHomepageEnabled() {
         return mSharedPreferencesManager.readBoolean(ChromePreferenceKeys.HOMEPAGE_ENABLED, true);
     }
 
@@ -152,7 +158,8 @@ public class HomepageManager {
      */
     public boolean getPrefHomepageUseDefaultUri() {
         return mSharedPreferencesManager.readBoolean(
-                ChromePreferenceKeys.HOMEPAGE_USE_DEFAULT_URI, true);
+                       ChromePreferenceKeys.HOMEPAGE_USE_DEFAULT_URI, true)
+                || HomepagePolicyManager.isHomepageManagedByPolicy();
     }
 
     /**
@@ -162,5 +169,10 @@ public class HomepageManager {
         RecordHistogram.recordBooleanHistogram("Settings.HomePageIsCustomized", !useDefaultUri);
         mSharedPreferencesManager.writeBoolean(
                 ChromePreferenceKeys.HOMEPAGE_USE_DEFAULT_URI, useDefaultUri);
+    }
+
+    @Override
+    public void onHomepagePolicyUpdate() {
+        notifyHomepageUpdated();
     }
 }

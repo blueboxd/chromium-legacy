@@ -57,7 +57,7 @@ namespace media {
 
 namespace {
 
-const int kMinInputChannels = 2;
+const size_t kMinInputChannels = 2;
 const int kDefaultInputChannels = 2;
 const int kInvalidNumChannels = 0;
 
@@ -616,13 +616,12 @@ void StreamMixer::AddInput(MixerInput::Source* input_source) {
   // We only change the output rate if it is not set to a fixed value.
   if (input_source->primary() || inputs_.empty()) {
     CheckChangeOutputParams(GetEffectiveChannelCount(input_source),
-                            input_source->input_samples_per_second());
+                            input_source->sample_rate());
   }
 
   if (state_ == kStateStopped) {
     requested_input_channels_ = GetEffectiveChannelCount(input_source);
-    requested_output_samples_per_second_ =
-        input_source->input_samples_per_second();
+    requested_output_samples_per_second_ = input_source->sample_rate();
     Start();
   }
 

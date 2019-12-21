@@ -38,14 +38,14 @@ class APP_LIST_MODEL_EXPORT AppListModel : public AppListItemListObserver {
   void AddObserver(AppListModelObserver* observer);
   void RemoveObserver(AppListModelObserver* observer);
 
-  void SetStatus(ash::AppListModelStatus status);
+  void SetStatus(AppListModelStatus status);
 
-  void SetState(ash::AppListState state);
-  ash::AppListState state() const { return state_; }
+  void SetState(AppListState state);
+  AppListState state() const { return state_; }
 
   // The current state of the AppListView. Controlled by AppListView.
-  void SetStateFullscreen(ash::AppListViewState state);
-  ash::AppListViewState state_fullscreen() const { return state_fullscreen_; }
+  void SetStateFullscreen(AppListViewState state);
+  AppListViewState state_fullscreen() const { return state_fullscreen_; }
 
   // Finds the item matching |id|.
   AppListItem* FindItem(const std::string& id);
@@ -122,7 +122,7 @@ class APP_LIST_MODEL_EXPORT AppListModel : public AppListItemListObserver {
 
   AppListItemList* top_level_item_list() { return top_level_item_list_.get(); }
 
-  ash::AppListModelStatus status() const { return status_; }
+  AppListModelStatus status() const { return status_; }
 
  private:
   // AppListItemListObserver
@@ -159,10 +159,10 @@ class APP_LIST_MODEL_EXPORT AppListModel : public AppListItemListObserver {
 
   std::unique_ptr<AppListItemList> top_level_item_list_;
 
-  ash::AppListModelStatus status_ = ash::AppListModelStatus::kStatusNormal;
-  ash::AppListState state_ = ash::AppListState::kInvalidState;
+  AppListModelStatus status_ = AppListModelStatus::kStatusNormal;
+  AppListState state_ = AppListState::kInvalidState;
   // The AppListView state. Controlled by the AppListView.
-  ash::AppListViewState state_fullscreen_ = ash::AppListViewState::kClosed;
+  AppListViewState state_fullscreen_ = AppListViewState::kClosed;
   base::ObserverList<AppListModelObserver, true>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListModel);

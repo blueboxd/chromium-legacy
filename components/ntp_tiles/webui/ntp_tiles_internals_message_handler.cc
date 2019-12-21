@@ -310,8 +310,8 @@ void NTPTilesInternalsMessageHandler::OnURLsAvailable(
     for (const auto& entry : kIconTypesAndNames) {
       favicon_service_->GetLargestRawFaviconForPageURL(
           tile.url, std::vector<favicon_base::IconTypeSet>({{entry.type_enum}}),
-          /*minimum_size_in_pixels=*/0, base::Bind(on_lookup_done, tile.url),
-          &cancelable_task_tracker_);
+          /*minimum_size_in_pixels=*/0,
+          base::BindOnce(on_lookup_done, tile.url), &cancelable_task_tracker_);
     }
   }
 }

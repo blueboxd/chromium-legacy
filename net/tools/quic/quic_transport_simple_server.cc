@@ -14,7 +14,6 @@
 #include "net/quic/quic_chromium_alarm_factory.h"
 #include "net/quic/quic_chromium_connection_helper.h"
 #include "net/socket/udp_server_socket.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_default_proof_providers.h"
 #include "net/third_party/quiche/src/quic/tools/quic_transport_simple_server_dispatcher.h"
 #include "net/tools/quic/quic_simple_server_packet_writer.h"
 #include "net/tools/quic/quic_simple_server_socket.h"
@@ -52,13 +51,14 @@ class QuicTransportSimpleServerSessionHelper
 
 QuicTransportSimpleServer::QuicTransportSimpleServer(
     int port,
-    std::vector<url::Origin> accepted_origins)
+    std::vector<url::Origin> accepted_origins,
+    std::unique_ptr<quic::ProofSource> proof_source)
     : port_(port),
       version_manager_({ParsedQuicVersion{PROTOCOL_TLS1_3, QUIC_VERSION_99}}),
       clock_(QuicChromiumClock::GetInstance()),
       crypto_config_(kSourceAddressTokenSecret,
                      quic::QuicRandom::GetInstance(),
-                     quic::CreateDefaultProofSource(),
+                     std::move(proof_source),
                      quic::KeyExchangeSource::Default()),
       dispatcher_(&config_,
                   &crypto_config_,
@@ -76,7 +76,7 @@ QuicTransportSimpleServer::QuicTransportSimpleServer(
 
 QuicTransportSimpleServer::~QuicTransportSimpleServer() {}
 
-int QuicTransportSimpleServer::Run() {
+int QuicTransportSimpleServer::Start() {
   socket_ = CreateQuicSimpleServerSocket(
       IPEndPoint{IPAddress::IPv6AllZeros(), port_}, &server_address_);
   if (socket_ == nullptr)
@@ -86,7 +86,6 @@ int QuicTransportSimpleServer::Run() {
       new QuicSimpleServerPacketWriter(socket_.get(), &dispatcher_));
 
   ScheduleReadPackets();
-  base::RunLoop().Run();
   return EXIT_SUCCESS;
 }
 

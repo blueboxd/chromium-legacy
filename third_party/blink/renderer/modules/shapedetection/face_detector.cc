@@ -82,8 +82,8 @@ void FaceDetector::OnDetectFaces(
       HeapVector<Member<Point2D>> locations;
       for (const auto& location : landmark->locations) {
         Point2D* web_location = Point2D::Create();
-        web_location->setX(location.x);
-        web_location->setY(location.y);
+        web_location->setX(location.x());
+        web_location->setY(location.y());
         locations.push_back(web_location);
       }
 

@@ -29,6 +29,7 @@
 <translation id="7792771145871471484">सुझावों की समीक्षा करें.</translation>
 <translation id="7885132941432959125">टैब को दाईं ओर ले जाएं</translation>
 <translation id="7966321538264951561">सुझावों को खारिज करें.</translation>
+<translation id="8205266828577616993">टैब ऊपर भेजें</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> चुना गया टैब बंद करें}one{<ph name="TABS_COUNT_MANY" /> चुने गए टैब बंद करें}other{<ph name="TABS_COUNT_MANY" /> चुने गए टैब बंद करें}}</translation>
 <translation id="9150694013019234766">स्क्रीन के सबसे नीचे दिए गए अपने टैब समूह में एक से दूसरे टैब पर जाएं</translation>
 <translation id="9169594135889675189">समूह में नया टैब जोड़ें</translation>

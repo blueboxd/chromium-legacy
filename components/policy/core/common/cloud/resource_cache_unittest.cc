@@ -166,7 +166,7 @@ TEST_F(ResourceCacheTest, FilterSubkeys) {
   EXPECT_EQ(kData0, contents[kSubC]);
 
   // Filter some subkeys.
-  cache.FilterSubkeys(kKey1, base::Bind(&Matches, kSubA));
+  cache.FilterSubkeys(kKey1, base::BindRepeating(&Matches, kSubA));
 
   // Check the contents of kKey1 again.
   cache.LoadAllSubkeys(kKey1, &contents);

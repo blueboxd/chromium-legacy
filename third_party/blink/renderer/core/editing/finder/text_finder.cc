@@ -559,9 +559,9 @@ Vector<WebFloatRect> TextFinder::FindMatchRects() {
   return match_rects;
 }
 
-int TextFinder::SelectNearestFindMatch(const WebFloatPoint& point,
+int TextFinder::SelectNearestFindMatch(const gfx::PointF& point,
                                        WebRect* selection_rect) {
-  int index = NearestFindMatch(point, nullptr);
+  int index = NearestFindMatch(FloatPoint(point), nullptr);
   if (index != -1)
     return SelectFindMatch(static_cast<unsigned>(index), selection_rect);
 

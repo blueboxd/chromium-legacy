@@ -1400,8 +1400,6 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
       wifi->hidden_ssid =
           GetManagedBoolean(wifi_dict, ::onc::wifi::kHiddenSSID);
       wifi->passphrase = GetManagedString(wifi_dict, ::onc::wifi::kPassphrase);
-      wifi->roam_threshold =
-          GetManagedInt32(wifi_dict, ::onc::wifi::kRoamThreshold);
       wifi->ssid = GetRequiredManagedString(wifi_dict, ::onc::wifi::kSSID);
       CHECK(wifi->ssid);
       wifi->signal_strength = GetInt32(wifi_dict, ::onc::wifi::kSignalStrength);

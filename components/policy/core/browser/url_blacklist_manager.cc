@@ -179,8 +179,8 @@ URLBlacklistManager::URLBlacklistManager(PrefService* pref_service)
       {base::ThreadPool(), base::TaskPriority::BEST_EFFORT});
 
   pref_change_registrar_.Init(pref_service_);
-  base::Closure callback = base::Bind(&URLBlacklistManager::ScheduleUpdate,
-                                      base::Unretained(this));
+  base::RepeatingClosure callback = base::BindRepeating(
+      &URLBlacklistManager::ScheduleUpdate, base::Unretained(this));
   pref_change_registrar_.Add(policy_prefs::kUrlBlacklist, callback);
   pref_change_registrar_.Add(policy_prefs::kUrlWhitelist, callback);
 

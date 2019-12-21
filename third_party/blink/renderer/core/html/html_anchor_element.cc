@@ -428,13 +428,6 @@ void HTMLAnchorElement::HandleClick(Event& event) {
   }
   if (HasRel(kRelationNoOpener))
     frame_request.SetNoOpener();
-  if (RuntimeEnabledFeatures::HrefTranslateEnabled(&GetDocument()) &&
-      FastHasAttribute(html_names::kHreftranslateAttr)) {
-    frame_request.SetHrefTranslate(
-        FastGetAttribute(html_names::kHreftranslateAttr));
-    UseCounter::Count(GetDocument(),
-                      WebFeature::kHTMLAnchorElementHrefTranslateAttribute);
-  }
   frame_request.SetTriggeringEventInfo(
       event.isTrusted() ? TriggeringEventInfo::kFromTrustedEvent
                         : TriggeringEventInfo::kFromUntrustedEvent);
@@ -448,6 +441,18 @@ void HTMLAnchorElement::HandleClick(Event& event) {
               frame_request,
               target.IsEmpty() ? GetDocument().BaseTarget() : target)
           .frame;
+
+  // If hrefTranslate is enabled and set restrict processing it
+  // to same frame or navigations with noopener set.
+  if (RuntimeEnabledFeatures::HrefTranslateEnabled(&GetDocument()) &&
+      FastHasAttribute(html_names::kHreftranslateAttr) &&
+      (target_frame == frame || frame_request.GetWindowFeatures().noopener)) {
+    frame_request.SetHrefTranslate(
+        FastGetAttribute(html_names::kHreftranslateAttr));
+    UseCounter::Count(GetDocument(),
+                      WebFeature::kHTMLAnchorElementHrefTranslateAttribute);
+  }
+
   if (target_frame)
     target_frame->Navigate(frame_request, WebFrameLoadType::kStandard);
 }

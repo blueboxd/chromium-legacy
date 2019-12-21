@@ -14,6 +14,7 @@
 #include "components/arc/mojom/oemcrypto_daemon.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace content {
 class BrowserContext;
@@ -48,7 +49,8 @@ class ArcOemCryptoBridge : public KeyedService,
   void OnMojoConnectionError();
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
-  arc_oemcrypto::mojom::OemCryptoHostDaemonPtr oemcrypto_host_daemon_ptr_;
+  mojo::Remote<arc_oemcrypto::mojom::OemCryptoHostDaemon>
+      oemcrypto_host_daemon_remote_;
 
   // WeakPtrFactory to use for callbacks.
   base::WeakPtrFactory<ArcOemCryptoBridge> weak_factory_{this};

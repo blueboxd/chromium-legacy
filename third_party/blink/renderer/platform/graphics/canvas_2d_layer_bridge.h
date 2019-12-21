@@ -255,6 +255,10 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
 
   sk_sp<cc::PaintRecord> last_recording_;
 
+  void SetNeedsFlush();
+  base::RepeatingClosure set_needs_flush_callback_;
+  bool needs_flush_ = false;
+
   base::WeakPtrFactory<Canvas2DLayerBridge> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Canvas2DLayerBridge);

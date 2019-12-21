@@ -46,7 +46,9 @@ struct BrowserControlsParams;
 
 namespace gfx {
 class Point;
+class PointF;
 class Rect;
+class SizeF;
 }
 
 namespace blink {
@@ -64,8 +66,6 @@ class WebViewClient;
 class WebWidget;
 struct PluginAction;
 struct WebDeviceEmulationParams;
-struct WebFloatPoint;
-struct WebFloatSize;
 struct WebRect;
 struct WebSize;
 struct WebTextAutosizerPageInfo;
@@ -215,14 +215,14 @@ class WebView {
   // Sets the offset of the visual viewport within the main frame, in
   // fractional CSS pixels. The offset will be clamped so the visual viewport
   // stays within the frame's bounds.
-  virtual void SetVisualViewportOffset(const WebFloatPoint&) = 0;
+  virtual void SetVisualViewportOffset(const gfx::PointF&) = 0;
 
   // Gets the visual viewport's current offset within the page's main frame,
   // in fractional CSS pixels.
-  virtual WebFloatPoint VisualViewportOffset() const = 0;
+  virtual gfx::PointF VisualViewportOffset() const = 0;
 
   // Get the visual viewport's size in CSS pixels.
-  virtual WebFloatSize VisualViewportSize() const = 0;
+  virtual gfx::SizeF VisualViewportSize() const = 0;
 
   // Resizes the unscaled (page scale = 1.0) visual viewport. Normally the
   // unscaled visual viewport is the same size as the main frame. The passed

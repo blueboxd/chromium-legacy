@@ -9,10 +9,9 @@
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/browser_task_environment.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_status.h"
@@ -60,10 +59,7 @@ namespace {
 class DigitalAssetLinksHandlerTest : public ::testing::Test {
  public:
   DigitalAssetLinksHandlerTest()
-      : num_invocations_(0),
-        result_(RelationshipCheckResult::SUCCESS),
-        io_thread_(content::BrowserThread::IO,
-                   base::ThreadTaskRunnerHandle::Get()) {}
+      : num_invocations_(0), result_(RelationshipCheckResult::SUCCESS) {}
 
   void OnRelationshipCheckComplete(RelationshipCheckResult result) {
     ++num_invocations_;
@@ -111,9 +107,8 @@ class DigitalAssetLinksHandlerTest : public ::testing::Test {
   GURL request_url_;
 
  private:
-  base::test::SingleThreadTaskEnvironment task_environment_;
+  content::BrowserTaskEnvironment task_environment_;
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
-  content::TestBrowserThread io_thread_;
   network::TestURLLoaderFactory test_url_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DigitalAssetLinksHandlerTest);

@@ -24,41 +24,18 @@ cast_source_set("audio_io_thread") {
   ]
 }
 
-cast_source_set("audio_provider") {
-  sources = [
-    "audio_provider.h",
-  ]
-}
-
-cast_source_set("fader") {
-  sources = [
-    "audio_fader.cc",
-    "audio_fader.h",
-  ]
-
-  deps = [
-    "//base",
-    "//media",
-  ]
-
-  public_deps = [
-    "//chromecast/public/media",
-  ]
-
-  # Use fastest possible float math.
-  configs -= [ "//build/config/compiler:default_optimization" ]
-  configs += [ "//build/config/compiler:optimize_speed" ]
-  cflags = [ "-ffast-math" ]
-}
-
-cast_source_set("audio_clock_simulator") {
+cast_source_set("processing") {
   sources = [
     "audio_clock_simulator.cc",
     "audio_clock_simulator.h",
+    "audio_fader.cc",
+    "audio_fader.h",
+    "audio_provider.h",
+    "interleaved_channel_mixer.cc",
+    "interleaved_channel_mixer.h",
   ]
 
   deps = [
-    ":audio_provider",
     "//base",
     "//media",
   ]
@@ -78,22 +55,6 @@ cast_source_set("audio_resampler") {
   deps = [
     "//base",
     "//chromecast/media/cma/base",
-    "//media",
-  ]
-
-  # Use fastest possible float math.
-  configs -= [ "//build/config/compiler:default_optimization" ]
-  configs += [ "//build/config/compiler:optimize_speed" ]
-  cflags = [ "-ffast-math" ]
-}
-
-cast_source_set("interleaved_channel_mixer") {
-  sources = [
-    "interleaved_channel_mixer.cc",
-    "interleaved_channel_mixer.h",
-  ]
-  deps = [
-    "//base",
     "//media",
   ]
 
@@ -236,9 +197,7 @@ cast_source_set("unittests") {
   ]
 
   deps = [
-    ":audio_clock_simulator",
-    ":fader",
-    ":interleaved_channel_mixer",
+    ":processing",
     "//base",
     "//media",
     "//testing/gmock",

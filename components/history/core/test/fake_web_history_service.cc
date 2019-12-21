@@ -47,7 +47,7 @@ class FakeWebHistoryService::FakeRequest : public WebHistoryService::Request {
               const GURL& url,
               bool emulate_success,
               int emulate_response_code,
-              const WebHistoryService::CompletionCallback& callback,
+              WebHistoryService::CompletionCallback callback,
               base::Time begin,
               base::Time end,
               int max_count);
@@ -67,7 +67,7 @@ class FakeWebHistoryService::FakeRequest : public WebHistoryService::Request {
   GURL url_;
   bool emulate_success_;
   int emulate_response_code_;
-  const WebHistoryService::CompletionCallback& callback_;
+  WebHistoryService::CompletionCallback callback_;
   base::Time begin_;
   base::Time end_;
   int max_count_;
@@ -82,7 +82,7 @@ FakeWebHistoryService::FakeRequest::FakeRequest(
     const GURL& url,
     bool emulate_success,
     int emulate_response_code,
-    const WebHistoryService::CompletionCallback& callback,
+    WebHistoryService::CompletionCallback callback,
     base::Time begin,
     base::Time end,
     int max_count)
@@ -90,7 +90,7 @@ FakeWebHistoryService::FakeRequest::FakeRequest(
       url_(url),
       emulate_success_(emulate_success),
       emulate_response_code_(emulate_response_code),
-      callback_(callback),
+      callback_(std::move(callback)),
       begin_(begin),
       end_(end),
       max_count_(max_count),
@@ -172,7 +172,7 @@ void FakeWebHistoryService::FakeRequest::SetUserAgent(
 
 void FakeWebHistoryService::FakeRequest::Start() {
   is_pending_ = true;
-  callback_.Run(this, emulate_success_);
+  std::move(callback_).Run(this, emulate_success_);
 }
 
 // FakeWebHistoryService -------------------------------------------------------
@@ -251,7 +251,7 @@ base::Time FakeWebHistoryService::GetTimeForKeyInQuery(
 
 FakeWebHistoryService::Request* FakeWebHistoryService::CreateRequest(
     const GURL& url,
-    const CompletionCallback& callback,
+    CompletionCallback callback,
     const net::PartialNetworkTrafficAnnotationTag& partial_traffic_annotation) {
   // Find the time range endpoints in the URL.
   base::Time begin = GetTimeForKeyInQuery(url, "min");
@@ -266,7 +266,7 @@ FakeWebHistoryService::Request* FakeWebHistoryService::CreateRequest(
     base::StringToInt(max_count_str, &max_count);
 
   return new FakeRequest(this, url, emulate_success_, emulate_response_code_,
-                         callback, begin, end, max_count);
+                         std::move(callback), begin, end, max_count);
 }
 
 bool FakeWebHistoryService::IsWebAndAppActivityEnabled() {

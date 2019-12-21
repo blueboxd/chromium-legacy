@@ -7,6 +7,7 @@ include_rules = [
   "+gpu/command_buffer/common",
   "+gpu/ipc",
   "+gpu/skia_bindings",
+  "+services/viz/public/mojom",
   "+skia/ext",
   "+ui/accelerated_widget_mac",
   "+ui/base/x",

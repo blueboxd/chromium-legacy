@@ -566,7 +566,8 @@ sql::Database* TopSitesDatabase::CreateDB(const base::FilePath& db_name) {
   std::unique_ptr<sql::Database> db(new sql::Database());
   // Settings copied from ThumbnailDatabase.
   db->set_histogram_tag("TopSites");
-  db->set_error_callback(base::Bind(&DatabaseErrorCallback, db.get(), db_name));
+  db->set_error_callback(
+      base::BindRepeating(&DatabaseErrorCallback, db.get(), db_name));
   db->set_page_size(4096);
   db->set_cache_size(32);
 

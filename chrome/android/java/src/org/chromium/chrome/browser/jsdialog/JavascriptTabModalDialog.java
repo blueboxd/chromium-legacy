@@ -4,10 +4,12 @@
 
 package org.chromium.chrome.browser.jsdialog;
 
+import android.content.Context;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.components.app_modal.JavascriptModalDialog;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -46,9 +48,11 @@ public class JavascriptTabModalDialog extends JavascriptModalDialog {
     @CalledByNative
     private void showDialog(WindowAndroid window, long nativeDialogPointer) {
         assert window != null;
-        ChromeActivity activity = (ChromeActivity) window.getActivity().get();
-        // If the activity has gone away, then just clean up the native pointer.
-        if (activity == null) {
+        Context context = window.getContext().get();
+        ModalDialogManager dialogManager = window.getModalDialogManager();
+        // If the context has gone away, then just clean up the native pointer.
+        // TODO(estade): consider changing null checks to an assert.
+        if (context == null || dialogManager == null) {
             JavascriptTabModalDialogJni.get().cancel(
                     nativeDialogPointer, JavascriptTabModalDialog.this, false);
             return;
@@ -56,7 +60,7 @@ public class JavascriptTabModalDialog extends JavascriptModalDialog {
 
         // Cache the native dialog pointer so that we can use it to return the response.
         mNativeDialogPointer = nativeDialogPointer;
-        show(activity, ModalDialogManager.ModalDialogType.TAB);
+        show(context, dialogManager, ModalDialogManager.ModalDialogType.TAB);
     }
 
     @CalledByNative

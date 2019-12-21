@@ -293,7 +293,8 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
     }
     case kImageBitmapTag: {
       SerializedColorSpace canvas_color_space = SerializedColorSpace::kSRGB;
-      SerializedPixelFormat canvas_pixel_format = SerializedPixelFormat::kRGBA8;
+      SerializedPixelFormat canvas_pixel_format =
+          SerializedPixelFormat::kNative8_LegacyObsolete;
       SerializedOpacityMode canvas_opacity_mode =
           SerializedOpacityMode::kOpaque;
       uint32_t origin_clean = 0, is_premultiplied = 0, width = 0, height = 0,
@@ -415,7 +416,7 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
       }
 
       SerializedColorParams color_params(
-          canvas_color_space, SerializedPixelFormat::kRGBA8,
+          canvas_color_space, SerializedPixelFormat::kNative8_LegacyObsolete,
           SerializedOpacityMode::kNonOpaque, image_data_storage_format);
       ImageDataStorageFormat storage_format = color_params.GetStorageFormat();
       base::CheckedNumeric<size_t> computed_byte_length = width;

@@ -10,7 +10,7 @@
 namespace ash {
 
 AppListItem::AppListItem(const std::string& id)
-    : metadata_(std::make_unique<ash::AppListItemMetadata>()),
+    : metadata_(std::make_unique<AppListItemMetadata>()),
       is_installing_(false),
       percent_downloaded_(-1) {
   metadata_->id = id;
@@ -21,9 +21,9 @@ AppListItem::~AppListItem() {
     observer.ItemBeingDestroyed();
 }
 
-void AppListItem::SetIcon(ash::AppListConfigType config_type,
+void AppListItem::SetIcon(AppListConfigType config_type,
                           const gfx::ImageSkia& icon) {
-  if (config_type == ash::AppListConfigType::kShared) {
+  if (config_type == AppListConfigType::kShared) {
     metadata_->icon = icon;
   } else {
     per_config_icons_[config_type] = icon;
@@ -35,8 +35,8 @@ void AppListItem::SetIcon(ash::AppListConfigType config_type,
 }
 
 const gfx::ImageSkia& AppListItem::GetIcon(
-    ash::AppListConfigType config_type) const {
-  if (config_type != ash::AppListConfigType::kShared) {
+    AppListConfigType config_type) const {
+  if (config_type != AppListConfigType::kShared) {
     const auto& it = per_config_icons_.find(config_type);
     if (it != per_config_icons_.end())
       return it->second;

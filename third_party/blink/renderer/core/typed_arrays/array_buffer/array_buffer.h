@@ -73,9 +73,6 @@ class CORE_EXPORT ArrayBuffer : public RefCounted<ArrayBuffer> {
   inline void* DataMaybeShared();
   inline const void* DataMaybeShared() const;
   inline size_t ByteLengthAsSizeT() const;
-  // This function is deprecated and should not be used. Use {ByteLengthAsSizeT}
-  // instead.
-  inline unsigned ByteLengthAsUnsigned() const;
 
   void AddView(ArrayBufferView*);
   void RemoveView(ArrayBufferView*);
@@ -235,15 +232,6 @@ const void* ArrayBuffer::DataMaybeShared() const {
 
 size_t ArrayBuffer::ByteLengthAsSizeT() const {
   return contents_.DataLength();
-}
-
-// This function is deprecated and should not be used. Use {ByteLengthAsSizeT}
-// instead.
-unsigned ArrayBuffer::ByteLengthAsUnsigned() const {
-  // TODO(dtapuska): Revisit this cast. ArrayBufferContents
-  // uses size_t for storing data. Whereas ArrayBuffer IDL is
-  // only uint32_t based.
-  return base::checked_cast<unsigned>(contents_.DataLength());
 }
 }  // namespace blink
 

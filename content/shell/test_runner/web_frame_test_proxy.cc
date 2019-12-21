@@ -11,7 +11,7 @@
 #include "content/shell/test_runner/web_test_delegate.h"
 #include "content/shell/test_runner/web_test_interfaces.h"
 #include "content/shell/test_runner/web_view_test_proxy.h"
-#include "third_party/blink/public/web/web_user_gesture_indicator.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 
 namespace test_runner {
 
@@ -20,8 +20,7 @@ namespace {
 void PrintFrameUserGestureStatus(WebTestDelegate* delegate,
                                  blink::WebLocalFrame* frame,
                                  const char* msg) {
-  bool is_user_gesture =
-      blink::WebUserGestureIndicator::IsProcessingUserGesture(frame);
+  bool is_user_gesture = frame->HasTransientUserActivation();
   delegate->PrintMessage(std::string("Frame with user gesture \"") +
                          (is_user_gesture ? "true" : "false") + "\"" + msg);
 }

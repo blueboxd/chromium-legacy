@@ -80,7 +80,7 @@ void ArcOemCryptoBridge::OnBootstrapMojoConnection(
     // it as an error.
     DVLOG(1) << "ArcOemCryptoBridge had a failure in D-Bus with the daemon";
     // Reset this so we don't think it is bound on future calls to Connect.
-    oemcrypto_host_daemon_ptr_.reset();
+    oemcrypto_host_daemon_remote_.reset();
     return;
   }
   DVLOG(1) << "ArcOemCryptoBridge succeeded with Mojo bootstrapping.";
@@ -107,7 +107,7 @@ void ArcOemCryptoBridge::Connect(mojom::OemCryptoServiceRequest request) {
     return;
   }
 
-  if (oemcrypto_host_daemon_ptr_.is_bound()) {
+  if (oemcrypto_host_daemon_remote_.is_bound()) {
     DVLOG(1) << "Re-using bootstrap connection for OemCryptoService Connect";
     ConnectToDaemon(std::move(request));
     return;
@@ -126,12 +126,13 @@ void ArcOemCryptoBridge::Connect(mojom::OemCryptoServiceRequest request) {
   // Bind the Mojo pipe to the interface before we send the D-Bus message
   // to avoid any kind of race condition with detecting it's been bound.
   // It's safe to do this before the other end binds anyways.
-  oemcrypto_host_daemon_ptr_.Bind(
-      mojo::InterfacePtrInfo<arc_oemcrypto::mojom::OemCryptoHostDaemon>(
+  oemcrypto_host_daemon_remote_.reset();
+  oemcrypto_host_daemon_remote_.Bind(
+      mojo::PendingRemote<arc_oemcrypto::mojom::OemCryptoHostDaemon>(
           std::move(server_pipe), 0u));
   DVLOG(1) << "Bound remote OemCryptoHostDaemon interface to pipe";
 
-  oemcrypto_host_daemon_ptr_.set_connection_error_handler(base::BindOnce(
+  oemcrypto_host_daemon_remote_.set_disconnect_handler(base::BindOnce(
       &ArcOemCryptoBridge::OnMojoConnectionError, weak_factory_.GetWeakPtr()));
   chromeos::DBusThreadManager::Get()
       ->GetArcOemCryptoClient()
@@ -143,7 +144,7 @@ void ArcOemCryptoBridge::Connect(mojom::OemCryptoServiceRequest request) {
 
 void ArcOemCryptoBridge::ConnectToDaemon(
     mojom::OemCryptoServiceRequest request) {
-  if (!oemcrypto_host_daemon_ptr_) {
+  if (!oemcrypto_host_daemon_remote_) {
     VLOG(1) << "Mojo connection is already lost.";
     return;
   }
@@ -160,18 +161,18 @@ void ArcOemCryptoBridge::ConnectToDaemon(
 void ArcOemCryptoBridge::FinishConnectingToDaemon(
     mojom::OemCryptoServiceRequest request,
     mojo::PendingRemote<mojom::ProtectedBufferManager> gpu_buffer_manager) {
-  if (!oemcrypto_host_daemon_ptr_) {
+  if (!oemcrypto_host_daemon_remote_) {
     VLOG(1) << "Mojo connection is already lost.";
     return;
   }
 
-  oemcrypto_host_daemon_ptr_->Connect(std::move(request),
-                                      std::move(gpu_buffer_manager));
+  oemcrypto_host_daemon_remote_->Connect(std::move(request),
+                                         std::move(gpu_buffer_manager));
 }
 
 void ArcOemCryptoBridge::OnMojoConnectionError() {
   LOG(ERROR) << "ArcOemCryptoBridge Mojo connection lost.";
-  oemcrypto_host_daemon_ptr_.reset();
+  oemcrypto_host_daemon_remote_.reset();
 }
 
 }  // namespace arc

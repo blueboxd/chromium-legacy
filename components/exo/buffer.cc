@@ -264,7 +264,8 @@ gpu::SyncToken Buffer::Texture::CopyTexImage(
     ri->BeginQueryEXT(query_type_, query_id_);
     ri->CopySubTexture(mailbox_, destination->mailbox_,
                        destination->texture_target_, 0, 0, 0, 0, size_.width(),
-                       size_.height());
+                       size_.height(), /*unpack_flip_y=*/false,
+                       /*unpack_premultiply_alpha=*/false);
     ri->EndQueryEXT(query_type_);
     // Run callback when query result is available.
     ReleaseWhenQueryResultIsAvailable(std::move(callback));

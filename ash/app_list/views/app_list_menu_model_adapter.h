@@ -20,8 +20,7 @@ namespace ash {
 
 // A class wrapping menu operations for apps in AppListView. Responsible for
 // building, running, and recording histograms.
-class APP_LIST_EXPORT AppListMenuModelAdapter
-    : public ash::AppMenuModelAdapter {
+class APP_LIST_EXPORT AppListMenuModelAdapter : public AppMenuModelAdapter {
  public:
   // The kinds of apps which show menus. This enum is used to record
   // metrics, if a new value is added make sure to modify

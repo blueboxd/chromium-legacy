@@ -358,7 +358,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="1514888685242892912">Activer <ph name="PRODUCT_NAME" /></translation>
 <translation id="1515824657887788963">Autoriser une page à exécuter des requêtes XHR synchrones pendant sa fermeture.</translation>
 <translation id="1522425503138261032">Autoriser les sites à suivre la position géographique des utilisateurs</translation>
-<translation id="1523774894176285446">Navigateur secondaire à lancer pour les sites Web configurés.</translation>
+<translation id="1523774894176285446">Autre navigateur à lancer pour les sites Web configurés.</translation>
 <translation id="152657506688053119">Liste d'URL alternatives pour le moteur de recherche par défaut</translation>
 <translation id="1530812829012954197">Toujours rendre les formats d'URL suivants dans le navigateur hôte</translation>
 <translation id="1541170838458414064">Limiter le format de la page d'impression</translation>
@@ -968,16 +968,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si cette règle n'est pas configurée ou définie sur "True", les utilisateurs peuvent utiliser la fonctionnalité Partages de fichiers en réseau.
 
       Si cette règle est définie sur "False", les utilisateurs ne peuvent pas utiliser la fonctionnalité Partages de fichiers en réseau.</translation>
-<translation id="2437706973218087361">Cette règle contrôle une fonctionnalité de sécurité TLS 1.3 qui protège les connexions contre les attaques par déclassement. Elle est rétrocompatible et n'affecte pas les connexions à des serveurs ou proxys conformes aux normes TLS 1.2. Toutefois, les versions plus anciennes de certains proxys interceptant les paramètres TLS sont incompatibles en raison de défauts d'intégration.
-
-      Si cette règle est définie sur "True", <ph name="PRODUCT_NAME" /> active ces protections de sécurité pour toutes les connexions.
-
-      Si elle est définie sur "False" ou n'est pas définie, <ph name="PRODUCT_NAME" /> désactive ces protections de sécurité pour les connexions authentifiées par des certificats CA installés localement. Ces protections sont toujours activées pour les connexions authentifiées par des certificats CA reconnus publiquement.
-
-      Cette règle peut être utilisée pour détecter la présence de proxys affectés et les mettre à niveau. En principe, les proxys affectés provoqueront un échec de connexion avec le code d'erreur "ERR_TLS13_DOWNGRADE_DETECTED". Une version ultérieure de <ph name="PRODUCT_NAME" /> activera cette option par défaut.
-
-      Lorsque ce sera le cas, les administrateurs ayant besoin de plus de temps pour mettre à niveau les proxys affectés pourront utiliser cette règle pour désactiver provisoirement cette fonctionnalité de sécurité. Cette règle sera supprimée après la version 85.
-      </translation>
 <translation id="2438609638493026652">Permet de signaler des événements clés à Google pendant l'installation d'une application Android. Les événements ne sont enregistrés que pour les applications dont l'installation a été déclenchée via des règles.
 
       Si cette règle est définie sur "True", les événements sont enregistrés.

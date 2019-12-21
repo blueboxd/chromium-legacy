@@ -25,10 +25,13 @@ namespace net {
 class QuicTransportSimpleServer {
  public:
   QuicTransportSimpleServer(int port,
-                            std::vector<url::Origin> accepted_origins);
+                            std::vector<url::Origin> accepted_origins,
+                            std::unique_ptr<quic::ProofSource> proof_source);
   ~QuicTransportSimpleServer();
 
-  int Run();
+  int Start();
+
+  IPEndPoint server_address() const { return server_address_; }
 
  private:
   // Schedules a ReadPackets() call on the next iteration of the event loop.

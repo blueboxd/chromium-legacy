@@ -12,10 +12,6 @@ js_type_check("closure_compile") {
     ":languages_page",
     ":languages_types",
   ]
-
-  if (is_chromeos) {
-    deps += [ ":manage_input_methods_page" ]
-  }
 }
 
 js_library("languages_browser_proxy") {
@@ -73,14 +69,6 @@ js_library("languages_page") {
 
 js_library("languages_types") {
   deps = []
-  externs_list = [ "$externs_path/language_settings_private.js" ]
-}
-
-js_library("manage_input_methods_page") {
-  deps = [
-    ":languages_types",
-    "../prefs",
-  ]
   externs_list = [ "$externs_path/language_settings_private.js" ]
 }
 

@@ -17,8 +17,11 @@ namespace cc {
 class PaintCanvas;
 }
 
+namespace gfx {
+class PointF;
+}
+
 namespace blink {
-struct WebFloatPoint;
 struct WebFloatRect;
 struct WebFontDescription;
 struct WebTextRun;
@@ -36,14 +39,14 @@ class WebFont {
   BLINK_PLATFORM_EXPORT float XHeight() const;
   BLINK_PLATFORM_EXPORT void DrawText(cc::PaintCanvas*,
                                       const WebTextRun&,
-                                      const WebFloatPoint& left_baseline,
+                                      const gfx::PointF& left_baseline,
                                       SkColor) const;
   BLINK_PLATFORM_EXPORT int CalculateWidth(const WebTextRun&) const;
   BLINK_PLATFORM_EXPORT int OffsetForPosition(const WebTextRun&,
                                               float position) const;
   BLINK_PLATFORM_EXPORT WebFloatRect
   SelectionRectForText(const WebTextRun&,
-                       const WebFloatPoint& left_baseline,
+                       const gfx::PointF& left_baseline,
                        int height,
                        int from = 0,
                        int to = -1) const;

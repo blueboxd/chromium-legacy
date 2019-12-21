@@ -67,18 +67,15 @@ MediaConstraints CreateDeviceConstraints(
     const char* advanced_exact_value = nullptr) {
   blink::MockConstraintFactory factory;
   if (basic_exact_value) {
-    factory.basic().device_id.SetExact(
-        blink::WebString::FromUTF8(basic_exact_value));
+    factory.basic().device_id.SetExact(basic_exact_value);
   }
   if (basic_ideal_value) {
-    blink::WebString value = blink::WebString::FromUTF8(basic_ideal_value);
-    factory.basic().device_id.SetIdeal(
-        blink::WebVector<blink::WebString>(&value, 1));
+    factory.basic().device_id.SetIdeal(Vector<String>({basic_ideal_value}));
   }
 
   auto& advanced = factory.AddAdvanced();
   if (advanced_exact_value) {
-    blink::WebString value = blink::WebString::FromUTF8(advanced_exact_value);
+    String value = String::FromUTF8(advanced_exact_value);
     advanced.device_id.SetExact(value);
   }
 
@@ -91,18 +88,15 @@ MediaConstraints CreateFacingModeConstraints(
     const char* advanced_exact_value = nullptr) {
   blink::MockConstraintFactory factory;
   if (basic_exact_value) {
-    factory.basic().facing_mode.SetExact(
-        blink::WebString::FromUTF8(basic_exact_value));
+    factory.basic().facing_mode.SetExact(String::FromUTF8(basic_exact_value));
   }
   if (basic_ideal_value) {
-    blink::WebString value = blink::WebString::FromUTF8(basic_ideal_value);
-    factory.basic().device_id.SetIdeal(
-        blink::WebVector<blink::WebString>(&value, 1));
+    factory.basic().device_id.SetIdeal(Vector<String>({basic_ideal_value}));
   }
 
   auto& advanced = factory.AddAdvanced();
   if (advanced_exact_value) {
-    blink::WebString value = blink::WebString::FromUTF8(advanced_exact_value);
+    String value = String::FromUTF8(advanced_exact_value);
     advanced.device_id.SetExact(value);
   }
 
@@ -954,8 +948,7 @@ TEST_F(UserMediaClientTest, DefaultConstraintsPropagate) {
 
 TEST_F(UserMediaClientTest, DefaultTabCapturePropagate) {
   blink::MockConstraintFactory factory;
-  factory.basic().media_stream_source.SetExact(
-      blink::WebString::FromASCII(blink::kMediaStreamSourceTab));
+  factory.basic().media_stream_source.SetExact(kMediaStreamSourceTab);
   MediaConstraints audio_constraints = factory.CreateMediaConstraints();
   MediaConstraints video_constraints = factory.CreateMediaConstraints();
   blink::WebUserMediaRequest request =
@@ -1010,8 +1003,7 @@ TEST_F(UserMediaClientTest, DefaultTabCapturePropagate) {
 
 TEST_F(UserMediaClientTest, DefaultDesktopCapturePropagate) {
   blink::MockConstraintFactory factory;
-  factory.basic().media_stream_source.SetExact(
-      blink::WebString::FromASCII(blink::kMediaStreamSourceDesktop));
+  factory.basic().media_stream_source.SetExact(kMediaStreamSourceDesktop);
   MediaConstraints audio_constraints = factory.CreateMediaConstraints();
   MediaConstraints video_constraints = factory.CreateMediaConstraints();
   blink::WebUserMediaRequest request =
@@ -1069,8 +1061,7 @@ TEST_F(UserMediaClientTest, NonDefaultAudioConstraintsPropagate) {
   mock_dispatcher_host_.DoNotRunCallback();
 
   blink::MockConstraintFactory factory;
-  factory.basic().device_id.SetExact(
-      blink::WebString::FromASCII(kFakeAudioInputDeviceId1));
+  factory.basic().device_id.SetExact(kFakeAudioInputDeviceId1);
   factory.basic().disable_local_echo.SetExact(true);
   factory.basic().render_to_associated_sink.SetExact(true);
   factory.basic().echo_cancellation.SetExact(false);
@@ -1429,8 +1420,7 @@ TEST_F(UserMediaClientTest, DesktopCaptureChangeSource) {
 
 TEST_F(UserMediaClientTest, DesktopCaptureChangeSourceWithoutAudio) {
   blink::MockConstraintFactory factory;
-  factory.basic().media_stream_source.SetExact(
-      blink::WebString::FromASCII(blink::kMediaStreamSourceDesktop));
+  factory.basic().media_stream_source.SetExact(kMediaStreamSourceDesktop);
   MediaConstraints audio_constraints = factory.CreateMediaConstraints();
   MediaConstraints video_constraints = factory.CreateMediaConstraints();
   blink::WebUserMediaRequest request =

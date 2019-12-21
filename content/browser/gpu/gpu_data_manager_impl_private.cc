@@ -879,7 +879,15 @@ void GpuDataManagerImplPrivate::HandleGpuSwitch() {
 bool GpuDataManagerImplPrivate::UpdateActiveGpu(uint32_t vendor_id,
                                                 uint32_t device_id) {
   // Heuristics for dual-GPU detection.
+#if defined(OS_WIN)
+  // On Windows, "Microsoft Basic Render Driver" now shows up as a
+  // secondary GPU.
+  bool is_dual_gpu = gpu_info_.secondary_gpus.size() == 2;
+#else
   bool is_dual_gpu = gpu_info_.secondary_gpus.size() == 1;
+#endif
+  // TODO(kbr/zmo): on Windows, at least, it's now possible to have a
+  // system with both low-power and high-performance GPUs from AMD.
   const uint32_t kIntelID = 0x8086;
   bool saw_intel_gpu = false;
   bool saw_non_intel_gpu = false;

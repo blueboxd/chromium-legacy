@@ -75,10 +75,10 @@ const gfx::Size kTinySize = gfx::Size(kTinyEdgeSize, kTinyEdgeSize);
 const gfx::Size kSmallSize = gfx::Size(kSmallEdgeSize, kSmallEdgeSize);
 const gfx::Size kLargeSize = gfx::Size(kLargeEdgeSize, kLargeEdgeSize);
 
-typedef base::Callback<void(const history::URLRow*,
-                            const history::URLRow*,
-                            const history::URLRow*)>
-    SimulateNotificationCallback;
+using SimulateNotificationCallback =
+    base::RepeatingCallback<void(const history::URLRow*,
+                                 const history::URLRow*,
+                                 const history::URLRow*)>;
 
 void SimulateNotificationURLVisited(history::HistoryServiceObserver* observer,
                                     const history::URLRow* row1,
@@ -3816,12 +3816,12 @@ void InMemoryHistoryBackendTest::TestAddingAndChangingURLRows(
 }
 
 TEST_F(InMemoryHistoryBackendTest, OnURLsModified) {
-  TestAddingAndChangingURLRows(base::Bind(
+  TestAddingAndChangingURLRows(base::BindRepeating(
       &SimulateNotificationURLsModified, base::Unretained(mem_backend_.get())));
 }
 
 TEST_F(InMemoryHistoryBackendTest, OnURLsVisisted) {
-  TestAddingAndChangingURLRows(base::Bind(
+  TestAddingAndChangingURLRows(base::BindRepeating(
       &SimulateNotificationURLVisited, base::Unretained(mem_backend_.get())));
 }
 

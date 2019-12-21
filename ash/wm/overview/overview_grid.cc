@@ -19,8 +19,6 @@
 #include "ash/root_window_settings.h"
 #include "ash/rotator/screen_rotation_animator.h"
 #include "ash/screen_util.h"
-#include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/desks/desk_mini_view.h"
@@ -212,30 +210,39 @@ std::unique_ptr<views::Widget> CreateDropTargetWidget(
   return widget;
 }
 
+// Returns 1 if the name of |window_dragging_state| begins with "kFrom," else 0.
+float GetWantedDropTargetOpacity(
+    SplitViewDragIndicators::WindowDraggingState window_dragging_state) {
+  switch (window_dragging_state) {
+    case SplitViewDragIndicators::WindowDraggingState::kNoDrag:
+      return 0.f;
+    case SplitViewDragIndicators::WindowDraggingState::kOtherDisplay:
+      return 0.f;
+    case SplitViewDragIndicators::WindowDraggingState::kFromOverview:
+      return 1.f;
+    case SplitViewDragIndicators::WindowDraggingState::kFromTop:
+      return 1.f;
+    case SplitViewDragIndicators::WindowDraggingState::kFromShelf:
+      return 1.f;
+    case SplitViewDragIndicators::WindowDraggingState::kToSnapLeft:
+      return 0.f;
+    case SplitViewDragIndicators::WindowDraggingState::kToSnapRight:
+      return 0.f;
+  }
+}
+
 // Returns the bounds for the overview window grid according to the split view
 // state. If split view mode is active, the overview window should open on the
 // opposite side of the default snap window. If |divider_changed| is true, maybe
 // clamp the bounds to a minimum size and shift the bounds offscreen.
 gfx::Rect GetGridBoundsInScreen(aura::Window* root_window,
                                 bool divider_changed) {
-  gfx::Rect grid_bounds =
+  const gfx::Rect work_area =
       WorkAreaInsets::ForWindow(root_window)->ComputeStableWorkArea();
-
-  // If the hotseat is extended, exclude its bounds when calculating overview
-  // bounds otherwise there may be overlap between it and overview items.
-  Shelf* shelf = Shelf::ForWindow(root_window);
-  if (shelf->shelf_layout_manager()->hotseat_state() ==
-      HotseatState::kExtended) {
-    const int hotseat_bottom_inset =
-        ShelfConfig::Get()->hotseat_size() +
-        ShelfConfig::Get()->hotseat_bottom_padding();
-    grid_bounds.Inset(0, 0, 0, hotseat_bottom_inset);
-  }
-
   SplitViewController* split_view_controller =
       SplitViewController::Get(root_window);
   if (!split_view_controller->InSplitViewMode())
-    return grid_bounds;
+    return work_area;
 
   SplitViewController::SnapPosition opposite_position =
       (split_view_controller->default_snap_position() ==
@@ -249,7 +256,7 @@ gfx::Rect GetGridBoundsInScreen(aura::Window* root_window,
 
   const bool horizontal = SplitViewController::IsLayoutHorizontal();
   const int min_length =
-      (horizontal ? grid_bounds.width() : grid_bounds.height()) / 3;
+      (horizontal ? work_area.width() : work_area.height()) / 3;
   const int current_length = horizontal ? bounds.width() : bounds.height();
 
   if (current_length > min_length)
@@ -692,7 +699,6 @@ void OverviewGrid::SetBoundsAndUpdatePositions(
 }
 
 void OverviewGrid::RearrangeDuringDrag(
-    aura::Window* root_window_being_dragged_in,
     aura::Window* dragged_window,
     SplitViewDragIndicators::WindowDraggingState window_dragging_state) {
   OverviewItem* drop_target = GetDropTarget();
@@ -702,12 +708,7 @@ void OverviewGrid::RearrangeDuringDrag(
     ScopedOverviewAnimationSettings settings(
         OVERVIEW_ANIMATION_DROP_TARGET_FADE,
         drop_target_widget_->GetNativeWindow());
-    drop_target->SetOpacity(root_window_being_dragged_in == root_window_ &&
-                                    SplitViewDragIndicators::GetSnapPosition(
-                                        window_dragging_state) ==
-                                        SplitViewController::NONE
-                                ? 1.f
-                                : 0.f);
+    drop_target->SetOpacity(GetWantedDropTargetOpacity(window_dragging_state));
   }
 
   // Update the grid's bounds.
@@ -789,7 +790,7 @@ void OverviewGrid::OnWindowDragContinued(
   DCHECK_EQ(dragged_window_, dragged_window);
   DCHECK_EQ(dragged_window->GetRootWindow(), root_window_);
 
-  RearrangeDuringDrag(root_window_, dragged_window, window_dragging_state);
+  RearrangeDuringDrag(dragged_window, window_dragging_state);
   UpdateDropTargetBackgroundVisibility(nullptr, location_in_screen);
 
   aura::Window* target_window =

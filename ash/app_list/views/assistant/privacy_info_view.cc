@@ -104,7 +104,7 @@ void PrivacyInfoView::StyledLabelLinkClicked(views::StyledLabel* label,
                                              int event_flags) {
   constexpr char url[] = "https://support.google.com/chromebook?p=assistant";
   view_delegate_->GetAssistantViewDelegate()->OpenUrlFromView(
-      ash::assistant::util::CreateLocalizedGURL(url));
+      assistant::util::CreateLocalizedGURL(url));
 }
 
 void PrivacyInfoView::InitLayout() {

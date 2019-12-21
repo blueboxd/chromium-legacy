@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
@@ -25,6 +26,7 @@
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/tab_groups/tab_group_color.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
@@ -3425,14 +3427,38 @@ TEST_F(TabStripModelTest, DiscontinuousNewTabIndexTooLow) {
   strip.CloseAllTabs();
 }
 
+TEST_F(TabStripModelTest, CreateGroupSetsVisualData) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  base::flat_map<tab_groups::TabGroupColorId, tab_groups::TabGroupColor>
+      all_colors = tab_groups::GetTabGroupColorSet();
+  PrepareTabs(&strip, all_colors.size() + 1);
+
+  // Expect groups to cycle through the available color set.
+  int index = 0;
+  for (const auto& color_pair : all_colors) {
+    const tab_groups::TabGroupId group = strip.AddToNewGroup({index});
+    EXPECT_EQ(strip.group_model()->GetTabGroup(group)->visual_data()->color(),
+              color_pair.first);
+    ++index;
+  }
+
+  // Expect the last group to cycle back to the first color.
+  const tab_groups::TabGroupId group = strip.AddToNewGroup({index});
+  EXPECT_EQ(strip.group_model()->GetTabGroup(group)->visual_data()->color(),
+            all_colors.begin()->first);
+
+  strip.CloseAllTabs();
+}
+
 TEST_F(TabStripModelTest, SetVisualDataForGroup) {
   TestTabStripModelDelegate delegate;
   TabStripModel strip(&delegate, profile());
   PrepareTabs(&strip, 1);
   const tab_groups::TabGroupId group = strip.AddToNewGroup({0});
 
-  const tab_groups::TabGroupVisualData new_data(base::ASCIIToUTF16("Foo"),
-                                                SK_ColorCYAN);
+  const tab_groups::TabGroupVisualData new_data(
+      base::ASCIIToUTF16("Foo"), tab_groups::TabGroupColorId::kCyan);
   strip.group_model()->GetTabGroup(group)->SetVisualData(new_data);
   const tab_groups::TabGroupVisualData* data =
       strip.group_model()->GetTabGroup(group)->visual_data();
@@ -3455,8 +3481,8 @@ TEST_F(TabStripModelTest, VisualDataChangeNotifiesObservers) {
   ASSERT_EQ(1u, observer.group_updates().size());
   EXPECT_EQ(1, observer.group_update(group).contents_update_count);
 
-  const tab_groups::TabGroupVisualData new_data(base::ASCIIToUTF16("Foo"),
-                                                SK_ColorBLUE);
+  const tab_groups::TabGroupVisualData new_data(
+      base::ASCIIToUTF16("Foo"), tab_groups::TabGroupColorId::kBlue);
   strip.group_model()->GetTabGroup(group)->SetVisualData(new_data);
 
   // Now check that we are notified when we change it, once at creation

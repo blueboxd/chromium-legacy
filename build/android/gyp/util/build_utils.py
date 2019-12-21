@@ -4,11 +4,13 @@
 
 """Contains common helpers for GN action()s."""
 
+import atexit
 import collections
 import contextlib
 import filecmp
 import fnmatch
 import json
+import logging
 import os
 import pipes
 import re
@@ -578,6 +580,23 @@ def _ForceLazyModulesToLoad():
     num_modules_after = len(sys.modules.keys())
     if num_modules_before == num_modules_after:
       break
+
+
+def InitLogging(enabling_env):
+  logging.basicConfig(
+      level=logging.DEBUG if os.environ.get(enabling_env) else logging.WARNING,
+      format='%(levelname).1s %(process)d %(relativeCreated)6d %(message)s')
+  script_name = os.path.basename(sys.argv[0])
+  logging.info('Started (%s)', script_name)
+
+  my_pid = os.getpid()
+
+  def log_exit():
+    # Do not log for fork'ed processes.
+    if os.getpid() == my_pid:
+      logging.info("Job's done (%s)", script_name)
+
+  atexit.register(log_exit)
 
 
 def AddDepfileOption(parser):

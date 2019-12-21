@@ -209,7 +209,7 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
   void OnBlur() override;
 
   // AppListItemObserver overrides:
-  void ItemIconChanged(ash::AppListConfigType config_type) override;
+  void ItemIconChanged(AppListConfigType config_type) override;
   void ItemNameChanged() override;
   void ItemIsInstallingChanged() override;
   void ItemPercentDownloadedChanged() override;

@@ -1256,8 +1256,8 @@ TEST_F(RemoteSuggestionsProviderImplTest, ShouldFetchMore) {
   ASSERT_THAT(provider()->GetSuggestionsForTesting(articles_category()),
               ElementsAre(Pointee(Property(&RemoteSuggestion::id, "first"))));
 
-  auto expect_only_second_suggestion_received =
-      base::Bind([](Status status, std::vector<ContentSuggestion> suggestions) {
+  auto expect_only_second_suggestion_received = base::BindOnce(
+      [](Status status, std::vector<ContentSuggestion> suggestions) {
         EXPECT_THAT(suggestions, SizeIs(1));
         EXPECT_THAT(suggestions[0].id().id_within_category(), Eq("second"));
       });
@@ -1270,7 +1270,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, ShouldFetchMore) {
   FetchMoreTheseSuggestions(
       articles_category(),
       /*known_suggestion_ids=*/std::set<std::string>(),
-      /*fetch_done_callback=*/expect_only_second_suggestion_received,
+      /*fetch_done_callback=*/std::move(expect_only_second_suggestion_received),
       Status::Success(), std::move(fetched_categories));
 }
 
@@ -1287,15 +1287,15 @@ TEST_F(RemoteSuggestionsProviderImplTest,
           .AddSuggestionViaBuilder(RemoteSuggestionBuilder().AddId("id"))
           .Build());
 
-  auto assert_only_first_suggestion_received =
-      base::Bind([](Status status, std::vector<ContentSuggestion> suggestions) {
+  auto assert_only_first_suggestion_received = base::BindOnce(
+      [](Status status, std::vector<ContentSuggestion> suggestions) {
         ASSERT_THAT(suggestions, SizeIs(1));
         ASSERT_THAT(suggestions[0].id().id_within_category(), Eq("id"));
       });
   FetchMoreTheseSuggestions(
       articles_category(),
       /*known_suggestion_ids=*/std::set<std::string>(),
-      /*fetch_done_callback=*/assert_only_first_suggestion_received,
+      /*fetch_done_callback=*/std::move(assert_only_first_suggestion_received),
       Status::Success(), std::move(fetched_categories));
 
   image_decoder()->SetDecodedImage(gfx::test::CreateImage(1, 1));
@@ -1340,8 +1340,8 @@ TEST_F(RemoteSuggestionsProviderImplTest,
           .Build());
 
   // The surface issuing the fetch more gets response via callback.
-  auto assert_receiving_one_new_suggestion =
-      base::Bind([](Status status, std::vector<ContentSuggestion> suggestions) {
+  auto assert_receiving_one_new_suggestion = base::BindOnce(
+      [](Status status, std::vector<ContentSuggestion> suggestions) {
         ASSERT_THAT(suggestions, SizeIs(1));
         ASSERT_THAT(suggestions[0].id().id_within_category(),
                     Eq("http://fetched-more.com/"));
@@ -1349,7 +1349,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   FetchMoreTheseSuggestions(
       articles_category(),
       /*known_suggestion_ids=*/{"http://old.com/"},
-      /*fetch_done_callback=*/assert_receiving_one_new_suggestion,
+      /*fetch_done_callback=*/std::move(assert_receiving_one_new_suggestion),
       Status::Success(), std::move(fetched_categories));
 
   // Other surfaces should remain the same.
@@ -1377,8 +1377,8 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   fetched_categories[0].suggestions.push_back(
       CreateTestRemoteSuggestion("http://fetched-more.com/"));
 
-  auto assert_receiving_one_new_suggestion =
-      base::Bind([](Status status, std::vector<ContentSuggestion> suggestions) {
+  auto assert_receiving_one_new_suggestion = base::BindOnce(
+      [](Status status, std::vector<ContentSuggestion> suggestions) {
         ASSERT_THAT(suggestions, SizeIs(1));
         ASSERT_THAT(suggestions[0].id().id_within_category(),
                     Eq("http://fetched-more.com/"));
@@ -1392,7 +1392,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
       .RetiresOnSaturation();
   provider()->Fetch(articles_category(),
                     /*known_suggestion_ids=*/std::set<std::string>(),
-                    assert_receiving_one_new_suggestion);
+                    std::move(assert_receiving_one_new_suggestion));
   std::move(snippets_callback)
       .Run(Status::Success(), std::move(fetched_categories));
 
@@ -1406,8 +1406,8 @@ TEST_F(RemoteSuggestionsProviderImplTest,
       CreateTestRemoteSuggestion("http://fetched-more.com/"));
 
   // B should receive the same suggestion as was fetched more on A.
-  auto expect_receiving_same_suggestion =
-      base::Bind([](Status status, std::vector<ContentSuggestion> suggestions) {
+  auto expect_receiving_same_suggestion = base::BindOnce(
+      [](Status status, std::vector<ContentSuggestion> suggestions) {
         ASSERT_THAT(suggestions, SizeIs(1));
         EXPECT_THAT(suggestions[0].id().id_within_category(),
                     Eq("http://fetched-more.com/"));
@@ -1425,7 +1425,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
       .RetiresOnSaturation();
   provider()->Fetch(articles_category(),
                     /*known_suggestion_ids=*/std::set<std::string>(),
-                    expect_receiving_same_suggestion);
+                    std::move(expect_receiving_same_suggestion));
   std::move(snippets_callback)
       .Run(Status::Success(), std::move(fetched_categories));
 }
@@ -1475,7 +1475,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   ASSERT_EQ(1, image.Width());
 
   provider()->ClearHistory(base::Time::UnixEpoch(), base::Time::Max(),
-                           base::Callback<bool(const GURL& url)>());
+                           base::RepeatingCallback<bool(const GURL& url)>());
 
   // Make sure images of both batches are gone.
   // Verify we cannot resolve the image of the new suggestions.
@@ -2090,7 +2090,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, ClearHistoryRemovesAllSuggestions) {
 
   base::Time begin = base::Time::FromTimeT(123),
              end = base::Time::FromTimeT(456);
-  base::Callback<bool(const GURL& url)> filter;
+  base::RepeatingCallback<bool(const GURL& url)> filter;
   provider()->ClearHistory(begin, end, filter);
 
   // Verify that the observer received the update with the empty data as well.
@@ -2112,7 +2112,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   ASSERT_THAT(observer().StatusForCategory(articles_category()),
               Eq(CategoryStatus::AVAILABLE));
   provider()->ClearHistory(base::Time::UnixEpoch(), base::Time::Max(),
-                           base::Callback<bool(const GURL& url)>());
+                           base::RepeatingCallback<bool(const GURL& url)>());
 
   EXPECT_THAT(observer().StatusForCategory(articles_category()),
               Eq(CategoryStatus::AVAILABLE));
@@ -2270,7 +2270,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, CallsSchedulerWhenHistoryCleared) {
   // The scheduler should be notified of clearing the history.
   EXPECT_CALL(*scheduler(), OnHistoryCleared());
   provider()->ClearHistory(GetDefaultCreationTime(), GetDefaultExpirationTime(),
-                           base::Callback<bool(const GURL& url)>());
+                           base::RepeatingCallback<bool(const GURL& url)>());
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest, CallsSchedulerWhenSignedIn) {

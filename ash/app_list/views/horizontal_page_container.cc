@@ -40,10 +40,9 @@ HorizontalPageContainer::HorizontalPageContainer(ContentsView* contents_view,
       AppListConfig::instance().page_transition_duration(),
       AppListConfig::instance().overscroll_page_transition_duration());
   pagination_model_.AddObserver(this);
-  pagination_controller_ = std::make_unique<ash::PaginationController>(
-      &pagination_model_, ash::PaginationController::SCROLL_AXIS_HORIZONTAL,
-      base::DoNothing(),
-      contents_view_->app_list_view()->is_tablet_mode());
+  pagination_controller_ = std::make_unique<PaginationController>(
+      &pagination_model_, PaginationController::SCROLL_AXIS_HORIZONTAL,
+      base::DoNothing(), contents_view_->app_list_view()->is_tablet_mode());
 
   // Add horizontal pages.
   apps_container_view_ = new AppsContainerView(contents_view_, model);
@@ -91,8 +90,8 @@ void HorizontalPageContainer::OnWillBeHidden() {
   GetSelectedPage()->OnWillBeHidden();
 }
 
-void HorizontalPageContainer::OnAnimationStarted(ash::AppListState from_state,
-                                                 ash::AppListState to_state) {
+void HorizontalPageContainer::OnAnimationStarted(AppListState from_state,
+                                                 AppListState to_state) {
   gfx::Rect contents_bounds = GetDefaultContentsBounds();
 
   const gfx::Rect from_rect =
@@ -136,10 +135,10 @@ void HorizontalPageContainer::OnAnimationStarted(ash::AppListState from_state,
 }
 
 gfx::Rect HorizontalPageContainer::GetPageBoundsForState(
-    ash::AppListState state,
+    AppListState state,
     const gfx::Rect& contents_bounds,
     const gfx::Rect& search_box_bounds) const {
-  if (state == ash::AppListState::kStateApps)
+  if (state == AppListState::kStateApps)
     return contents_bounds;
   if (!app_list_features::IsScalableAppListEnabled())
     return GetBelowContentsOffscreenBounds(contents_bounds.size());
@@ -149,11 +148,11 @@ gfx::Rect HorizontalPageContainer::GetPageBoundsForState(
   return bounds;
 }
 
-void HorizontalPageContainer::UpdateOpacityForState(ash::AppListState state) {
+void HorizontalPageContainer::UpdateOpacityForState(AppListState state) {
   if (!app_list_features::IsScalableAppListEnabled())
     return;
-  layer()->SetOpacity(
-      state == ash::AppListState::kStateApps ? 1.0f : kNonAppsStateOpacity);
+  layer()->SetOpacity(state == AppListState::kStateApps ? 1.0f
+                                                        : kNonAppsStateOpacity);
 }
 
 views::View* HorizontalPageContainer::GetFirstFocusableView() {
@@ -190,7 +189,7 @@ void HorizontalPageContainer::TransitionChanged() {
   // Transition the search box opacity.
   const int current_page = pagination_model_.selected_page();
   DCHECK(pagination_model_.is_valid_page(current_page));
-  const ash::PaginationModel::Transition& transition =
+  const PaginationModel::Transition& transition =
       pagination_model_.transition();
   const bool is_valid = pagination_model_.is_valid_page(transition.target_page);
   float search_box_opacity =
@@ -239,7 +238,7 @@ const HorizontalPage* HorizontalPageContainer::GetSelectedPage() const {
 gfx::Vector2d HorizontalPageContainer::GetOffsetForPageIndex(int index) const {
   const int current_page = pagination_model_.selected_page();
   DCHECK(pagination_model_.is_valid_page(current_page));
-  const ash::PaginationModel::Transition& transition =
+  const PaginationModel::Transition& transition =
       pagination_model_.transition();
   const bool is_valid = pagination_model_.is_valid_page(transition.target_page);
   const int dir = transition.target_page > current_page ? -1 : 1;

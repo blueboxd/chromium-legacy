@@ -132,21 +132,20 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // Sets the dragged window on the split view drag indicators.
   void SetSplitViewDragIndicatorsDraggedWindow(aura::Window* dragged_window);
 
-  // This function sets the window dragging state on the split view drag
-  // indicators on every root window. On |root_window_being_dragged_in|, the
-  // state is determined by forwarding the other three arguments to
-  // |SplitViewDragIndicators::ComputeWindowDraggingState|. On other root
-  // windows, as snap previews are not appropriate, the state is determined
-  // similarly but with |SplitViewController::NONE| instead of |snap_position|.
+  // If |state_on_root_window_being_dragged_in| is kNoDrag, this function sets
+  // the state on every root window to kNoDrag. Otherwise it sets the state on
+  // |root_window_being_dragged_in| to |state_on_root_window_being_dragged_in|,
+  // and sets the state on other root windows to kOtherDisplay.
   void UpdateSplitViewDragIndicatorsWindowDraggingStates(
       const aura::Window* root_window_being_dragged_in,
-      bool is_dragging,
-      SplitViewDragIndicators::WindowDraggingState non_snap_state,
-      SplitViewController::SnapPosition snap_position);
+      SplitViewDragIndicators::WindowDraggingState
+          state_on_root_window_being_dragged_in);
+
+  // Sets the state on every root window to kNoDrag.
+  void ResetSplitViewDragIndicatorsWindowDraggingStates();
 
   // See |OverviewGrid::RearrangeDuringDrag|.
-  void RearrangeDuringDrag(aura::Window* root_window_being_dragged_in,
-                           aura::Window* dragged_window);
+  void RearrangeDuringDrag(aura::Window* dragged_window);
 
   // Updates the appearance of each drop target to visually indicate when the
   // dragged window is being dragged over it.

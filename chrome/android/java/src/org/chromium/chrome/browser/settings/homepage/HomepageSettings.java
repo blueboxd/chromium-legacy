@@ -12,8 +12,10 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.homepage.HomepagePolicyManager;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
+import org.chromium.chrome.browser.settings.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.SettingsUtils;
 
 /**
@@ -22,7 +24,19 @@ import org.chromium.chrome.browser.settings.SettingsUtils;
 public class HomepageSettings extends PreferenceFragmentCompat {
     @VisibleForTesting
     public static final String PREF_HOMEPAGE_SWITCH = "homepage_switch";
-    private static final String PREF_HOMEPAGE_EDIT = "homepage_edit";
+    @VisibleForTesting
+    public static final String PREF_HOMEPAGE_EDIT = "homepage_edit";
+
+    /**
+     * Delegate used to mark that the homepage is being managed.
+     * Created for {@link org.chromium.chrome.browser.settings.HomepagePreferences}
+     */
+    private static class HomepageManagedPreferenceDelegate implements ManagedPreferenceDelegate {
+        @Override
+        public boolean isPreferenceControlledByPolicy(Preference preference) {
+            return HomepagePolicyManager.isHomepageManagedByPolicy();
+        }
+    }
 
     private HomepageManager mHomepageManager;
     private Preference mHomepageEdit;
@@ -36,11 +50,12 @@ public class HomepageSettings extends PreferenceFragmentCompat {
 
         ChromeSwitchPreference homepageSwitch =
                 (ChromeSwitchPreference) findPreference(PREF_HOMEPAGE_SWITCH);
+        homepageSwitch.setManagedPreferenceDelegate(new HomepageManagedPreferenceDelegate());
 
         if (FeatureUtilities.isBottomToolbarEnabled()) {
             homepageSwitch.setVisible(false);
         } else {
-            boolean isHomepageEnabled = mHomepageManager.getPrefHomepageEnabled();
+            boolean isHomepageEnabled = HomepageManager.isHomepageEnabled();
             homepageSwitch.setChecked(isHomepageEnabled);
             homepageSwitch.setOnPreferenceChangeListener((preference, newValue) -> {
                 mHomepageManager.setPrefHomepageEnabled((boolean) newValue);
@@ -53,6 +68,8 @@ public class HomepageSettings extends PreferenceFragmentCompat {
     }
 
     private void updateCurrentHomepageUrl() {
+        if (HomepagePolicyManager.isHomepageManagedByPolicy()) mHomepageEdit.setEnabled(false);
+
         mHomepageEdit.setSummary(mHomepageManager.getPrefHomepageUseDefaultUri()
                         ? HomepageManager.getDefaultHomepageUri()
                         : mHomepageManager.getPrefHomepageCustomUri());

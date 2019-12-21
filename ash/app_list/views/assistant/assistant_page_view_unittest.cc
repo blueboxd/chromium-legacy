@@ -107,7 +107,7 @@ TEST_F(AssistantPageViewTest, ShouldStartAtMinimumHeight) {
   ShowAssistantUi();
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(ash::kMinHeightEmbeddedDip, main_view()->size().height());
+  EXPECT_EQ(kMinHeightEmbeddedDip, main_view()->size().height());
 }
 
 TEST_F(AssistantPageViewTest,
@@ -117,7 +117,7 @@ TEST_F(AssistantPageViewTest,
   MockAssistantInteractionWithResponse("Short one-liner");
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(ash::kMinHeightEmbeddedDip, main_view()->size().height());
+  EXPECT_EQ(kMinHeightEmbeddedDip, main_view()->size().height());
 }
 
 TEST_F(AssistantPageViewTest, ShouldGetBiggerWithMultilineText) {
@@ -127,7 +127,7 @@ TEST_F(AssistantPageViewTest, ShouldGetBiggerWithMultilineText) {
       "This\ntext\nhas\na\nlot\nof\nlinebreaks.");
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(ash::kMaxHeightEmbeddedDip, main_view()->size().height());
+  EXPECT_EQ(kMaxHeightEmbeddedDip, main_view()->size().height());
 }
 
 TEST_F(AssistantPageViewTest, ShouldGetBiggerWhenWrappingTextLine) {
@@ -139,7 +139,7 @@ TEST_F(AssistantPageViewTest, ShouldGetBiggerWhenWrappingTextLine) {
       "If it doesn't, this looks really bad. This is what caused b/134963994.");
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(ash::kMaxHeightEmbeddedDip, main_view()->size().height());
+  EXPECT_EQ(kMaxHeightEmbeddedDip, main_view()->size().height());
 }
 
 TEST_F(AssistantPageViewTest, ShouldNotRequestFocusWhenOtherAppWindowOpens) {

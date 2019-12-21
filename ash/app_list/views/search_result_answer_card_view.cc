@@ -227,8 +227,8 @@ class SearchResultAnswerCardView::AnswerCardResultView
                                    view_delegate_->GetSearchModel());
       view_delegate_->OpenSearchResult(
           result()->id(), event_flags,
-          ash::AppListLaunchedFrom::kLaunchedFromSearchBox,
-          ash::AppListLaunchType::kSearchResult, -1 /* suggestion_index */,
+          AppListLaunchedFrom::kLaunchedFromSearchBox,
+          AppListLaunchType::kSearchResult, -1 /* suggestion_index */,
           !by_button_press && is_default_result() /* launch_as_default */);
     }
   }
@@ -346,7 +346,7 @@ int SearchResultAnswerCardView::GetYSize() {
 int SearchResultAnswerCardView::DoUpdate() {
   std::vector<SearchResult*> display_results =
       SearchModel::FilterSearchResultsByDisplayType(
-          results(), ash::SearchResultDisplayType::kCard, /*excludes=*/{}, 1);
+          results(), SearchResultDisplayType::kCard, /*excludes=*/{}, 1);
   SearchResult* top_result =
       display_results.empty() ? nullptr : display_results.front();
 

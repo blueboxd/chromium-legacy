@@ -85,8 +85,8 @@ void FakeOverlayPresentationContext::ShowOverlayUI(
     OverlayDismissalCallback dismissal_callback) {
   FakeUIState& state = states_[request];
   state.presentation_state = PresentationState::kPresented;
-  state.presentation_callback = std::move(presentation_callback);
   state.dismissal_callback = std::move(dismissal_callback);
+  std::move(presentation_callback).Run();
 }
 
 void FakeOverlayPresentationContext::HideOverlayUI(OverlayPresenter* presenter,

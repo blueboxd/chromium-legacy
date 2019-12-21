@@ -22,7 +22,7 @@ namespace win {
 // The class interface is based on unique_ptr.
 class BASE_EXPORT ScopedBstr {
  public:
-  ScopedBstr() {}
+  ScopedBstr() = default;
 
   // Constructor to create a new BSTR.
   //

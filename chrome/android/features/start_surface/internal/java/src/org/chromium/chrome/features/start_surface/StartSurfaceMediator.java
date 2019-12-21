@@ -208,7 +208,7 @@ class StartSurfaceMediator
                             mSecondaryTasksSurfacePropertyModel.set(
                                     IS_FAKE_SEARCH_BOX_VISIBLE, !hasFocus);
                         } else {
-                            mPropertyModel.set(IS_FAKE_SEARCH_BOX_VISIBLE, !hasFocus);
+                            setFakeBoxVisibility(!hasFocus);
                         }
                     }
                     notifyStateChange();
@@ -255,6 +255,7 @@ class StartSurfaceMediator
             setTabCarouselVisibility(
                     mTabModelSelector.getModel(false).getCount() > 0 && !mIsIncognito);
             setMVTilesVisibility(!mIsIncognito);
+            setFakeBoxVisibility(!mIsIncognito);
             setSecondaryTasksSurfaceVisibility(mIsIncognito);
 
             // Only pad single pane home page since tabs grid has already been padding for the
@@ -266,6 +267,7 @@ class StartSurfaceMediator
             setExploreSurfaceVisibility(false);
             setTabCarouselVisibility(false);
             setMVTilesVisibility(false);
+            setFakeBoxVisibility(false);
             setSecondaryTasksSurfaceVisibility(true);
         } else if (mOverviewModeState == OverviewModeState.SHOWN_TWO_PANES) {
             RecordUserAction.record("StartSurface.TwoPanes");
@@ -289,6 +291,7 @@ class StartSurfaceMediator
             RecordUserAction.record("StartSurface.TasksOnly");
             setMVTilesVisibility(!mIsIncognito);
             setExploreSurfaceVisibility(false);
+            setFakeBoxVisibility(true);
         } else if (mOverviewModeState == OverviewModeState.NOT_SHOWN) {
             if (mSecondaryTasksSurfaceController != null) setSecondaryTasksSurfaceVisibility(false);
         }
@@ -463,16 +466,6 @@ class StartSurfaceMediator
         if (isIncognito == mIsIncognito) return;
         mIsIncognito = isIncognito;
 
-        // This is because LocationBarVoiceRecognitionHandler monitors incognito mode and returns
-        // false in incognito mode. However, when switching incognito mode, this class is notified
-        // earlier than the LocationBarVoiceRecognitionHandler, so isVoiceSearchEnabled returns
-        // incorrect state if check synchronously.
-        ThreadUtils.postOnUiThread(() -> {
-            mPropertyModel.set(IS_VOICE_RECOGNITION_BUTTON_VISIBLE,
-                    mFakeboxDelegate.getLocationBarVoiceRecognitionHandler()
-                            .isVoiceSearchEnabled());
-        });
-
         mPropertyModel.set(IS_INCOGNITO, mIsIncognito);
         setOverviewStateInternal();
 
@@ -525,6 +518,9 @@ class StartSurfaceMediator
         }
 
         // Do not show Tab switcher toolbar when focusing the Omnibox.
+        if (mPropertyModel.get(IS_SECONDARY_SURFACE_VISIBLE)) {
+            return mSecondaryTasksSurfacePropertyModel.get(IS_FAKE_SEARCH_BOX_VISIBLE);
+        }
         return mPropertyModel.get(IS_FAKE_SEARCH_BOX_VISIBLE);
     }
 
@@ -537,6 +533,21 @@ class StartSurfaceMediator
     private void setMVTilesVisibility(boolean isVisible) {
         if (isVisible == mPropertyModel.get(MV_TILES_VISIBLE)) return;
         mPropertyModel.set(MV_TILES_VISIBLE, isVisible);
+    }
+
+    private void setFakeBoxVisibility(boolean isVisible) {
+        if (mPropertyModel == null) return;
+        mPropertyModel.set(IS_FAKE_SEARCH_BOX_VISIBLE, isVisible);
+
+        // This is because LocationBarVoiceRecognitionHandler monitors incognito mode and returns
+        // false in incognito mode. However, when switching incognito mode, this class is notified
+        // earlier than the LocationBarVoiceRecognitionHandler, so isVoiceSearchEnabled returns
+        // incorrect state if check synchronously.
+        ThreadUtils.postOnUiThread(() -> {
+            mPropertyModel.set(IS_VOICE_RECOGNITION_BUTTON_VISIBLE,
+                    mFakeboxDelegate.getLocationBarVoiceRecognitionHandler()
+                            .isVoiceSearchEnabled());
+        });
     }
 
     private void setIncognitoModeDescriptionVisibility(boolean isVisible) {

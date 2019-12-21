@@ -730,7 +730,7 @@ void GpuMessageHandler::OnGpuInfoUpdate() {
                                          *(gpu_info_val.get()));
 }
 
-void GpuMessageHandler::OnGpuSwitched(gl::GpuPreference active_gpu_heuristic_) {
+void GpuMessageHandler::OnGpuSwitched(gl::GpuPreference active_gpu_heuristic) {
   // Currently, about:gpu page does not update GPU info after the GPU switch.
   // If there is something to be updated, the code should be added here.
 }

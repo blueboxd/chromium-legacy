@@ -16,8 +16,6 @@ source_set("infobars") {
     "//base",
     "//components/infobars/core",
     "//ios/chrome/browser/infobars",
-    "//ios/chrome/browser/infobars",
-    "//ios/chrome/browser/infobars:public",
     "//ios/chrome/browser/infobars:public",
     "//ios/chrome/browser/overlays",
     "//ios/chrome/browser/ui/infobars:infobars_ui",

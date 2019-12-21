@@ -326,7 +326,6 @@
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />да извршите дијагностика на мрежата<ph name="END_LINK" /></translation>
 <translation id="2473195200299095979">Преведи ја страницата</translation>
 <translation id="2479410451996844060">Невалидна URL-адреса за пребарување.</translation>
-<translation id="2482370039860827034">Тукушто ја внесовте својата лозинка на измамнички сајт. Chrome препорачува да одите на <ph name="WEBSITE_1" /> и <ph name="WEBSITE_2" /> и на други сајтови каде што ја користите лозинката и да ја промените веднаш.</translation>
 <translation id="2482878487686419369">Известувања</translation>
 <translation id="248348093745724435">Правила на уредот</translation>
 <translation id="2491120439723279231">Сертификатот на серверот содржи грешки.</translation>
@@ -339,7 +338,6 @@
 <translation id="2505268675989099013">Заштити ја сметката</translation>
 <translation id="2515629240566999685">Да го проверите сигналот во вашата област</translation>
 <translation id="2521385132275182522">Спојување долу десно</translation>
-<translation id="2521483867890026383">Тукушто ја внесовте својата лозинка на измамнички сајт. Chromium препорачува да одите на <ph name="WEBSITE_1" /> и <ph name="WEBSITE_2" /> и на други сајтови каде што ја користите лозинката и да ја промените веднаш.</translation>
 <translation id="2523886232349826891">Зачувано само на овој уред</translation>
 <translation id="2524461107774643265">Додајте повеќе информации</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{и уште 1}one{и уште #}other{и уште #}}</translation>

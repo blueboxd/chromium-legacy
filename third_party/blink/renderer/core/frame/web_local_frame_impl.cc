@@ -585,6 +585,23 @@ WebLocalFrame* WebLocalFrame::FrameForCurrentContext() {
   return FrameForContext(context);
 }
 
+void WebLocalFrameImpl::NotifyUserActivation() {
+  LocalFrame::NotifyUserActivation(GetFrame());
+}
+
+bool WebLocalFrameImpl::HasStickyUserActivation() {
+  return GetFrame()->HasStickyUserActivation();
+}
+
+bool WebLocalFrameImpl::HasTransientUserActivation() {
+  return LocalFrame::HasTransientUserActivation(GetFrame());
+}
+
+bool WebLocalFrameImpl::ConsumeTransientUserActivation(
+    UserActivationUpdateSource update_source) {
+  return LocalFrame::ConsumeTransientUserActivation(GetFrame(), update_source);
+}
+
 WebLocalFrame* WebLocalFrame::FrameForContext(v8::Local<v8::Context> context) {
   return WebLocalFrameImpl::FromFrame(ToLocalFrameIfNotDetached(context));
 }

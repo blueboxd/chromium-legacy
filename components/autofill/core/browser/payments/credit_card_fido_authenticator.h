@@ -108,7 +108,7 @@ class CreditCardFIDOAuthenticator
   virtual bool IsUserOptedIn();
 
   // Ensures that local user opt-in pref is in-sync with payments server.
-  void SyncUserOptIn(AutofillClient::UnmaskDetails& unmask_details);
+  void SyncUserOptIn(payments::PaymentsClient::UnmaskDetails& unmask_details);
 
   // Cancel the ongoing verification process. Used to reset states in this class
   // and in the FullCardRequest if any.

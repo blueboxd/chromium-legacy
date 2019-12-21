@@ -329,7 +329,8 @@ class BrowserView : public BrowserWindow,
   void Minimize() override;
   void Restore() override;
   void EnterFullscreen(const GURL& url,
-                       ExclusiveAccessBubbleType bubble_type) override;
+                       ExclusiveAccessBubbleType bubble_type,
+                       int64_t display_id) override;
   void ExitFullscreen() override;
   void UpdateExclusiveAccessExitBubbleContent(
       const GURL& url,
@@ -633,9 +634,13 @@ class BrowserView : public BrowserWindow,
   // (via the fullscreen JS API).
   // |bubble_type| determines what should be shown in the fullscreen exit
   // bubble.
+  // If the Window Placement experiment is enabled, fullscreen may be requested
+  // on a particular display. In that case, |display_id| is the display's id;
+  // otherwise, display::kInvalidDisplayId indicates no display is specified.
   void ProcessFullscreen(bool fullscreen,
                          const GURL& url,
-                         ExclusiveAccessBubbleType bubble_type);
+                         ExclusiveAccessBubbleType bubble_type,
+                         int64_t display_id);
 
   // Returns whether immmersive fullscreen should replace fullscreen. This
   // should only occur for "browser-fullscreen" for tabbed-typed windows (not
@@ -860,6 +865,11 @@ class BrowserView : public BrowserWindow,
   std::unique_ptr<BrowserWindowHistogramHelper> histogram_helper_;
 
   std::unique_ptr<FullscreenControlHost> fullscreen_control_host_;
+
+  // If the Window Placement experiment is enabled and fullscreen is requested
+  // on a particular display, these are the original bounds before the window
+  // was moved to the requested display; they are restored on fullscreen exit.
+  base::Optional<gfx::Rect> pre_fullscreen_bounds_;
 
   ReopenTabPromoController reopen_tab_promo_controller_{this};
 

@@ -226,9 +226,9 @@ void ConfigurationPolicyProviderTest::TearDown() {
 void ConfigurationPolicyProviderTest::CheckValue(
     const char* policy_name,
     const base::Value& expected_value,
-    base::Closure install_value) {
+    base::OnceClosure install_value) {
   // Install the value, reload policy and check the provider for the value.
-  install_value.Run();
+  std::move(install_value).Run();
   provider_->RefreshPolicies();
   task_environment_.RunUntilIdle();
   PolicyBundle expected_bundle;
@@ -251,44 +251,36 @@ TEST_P(ConfigurationPolicyProviderTest, Empty) {
 TEST_P(ConfigurationPolicyProviderTest, StringValue) {
   const char kTestString[] = "string_value";
   base::Value expected_value(kTestString);
-  CheckValue(test_keys::kKeyString,
-             expected_value,
-             base::Bind(&PolicyProviderTestHarness::InstallStringPolicy,
-                        base::Unretained(test_harness_.get()),
-                        test_keys::kKeyString,
-                        kTestString));
+  CheckValue(test_keys::kKeyString, expected_value,
+             base::BindOnce(&PolicyProviderTestHarness::InstallStringPolicy,
+                            base::Unretained(test_harness_.get()),
+                            test_keys::kKeyString, kTestString));
 }
 
 TEST_P(ConfigurationPolicyProviderTest, BooleanValue) {
   base::Value expected_value(true);
-  CheckValue(test_keys::kKeyBoolean,
-             expected_value,
-             base::Bind(&PolicyProviderTestHarness::InstallBooleanPolicy,
-                        base::Unretained(test_harness_.get()),
-                        test_keys::kKeyBoolean,
-                        true));
+  CheckValue(test_keys::kKeyBoolean, expected_value,
+             base::BindOnce(&PolicyProviderTestHarness::InstallBooleanPolicy,
+                            base::Unretained(test_harness_.get()),
+                            test_keys::kKeyBoolean, true));
 }
 
 TEST_P(ConfigurationPolicyProviderTest, IntegerValue) {
   base::Value expected_value(42);
-  CheckValue(test_keys::kKeyInteger,
-             expected_value,
-             base::Bind(&PolicyProviderTestHarness::InstallIntegerPolicy,
-                        base::Unretained(test_harness_.get()),
-                        test_keys::kKeyInteger,
-                        42));
+  CheckValue(test_keys::kKeyInteger, expected_value,
+             base::BindOnce(&PolicyProviderTestHarness::InstallIntegerPolicy,
+                            base::Unretained(test_harness_.get()),
+                            test_keys::kKeyInteger, 42));
 }
 
 TEST_P(ConfigurationPolicyProviderTest, StringListValue) {
   base::ListValue expected_value;
   expected_value.AppendString("first");
   expected_value.AppendString("second");
-  CheckValue(test_keys::kKeyStringList,
-             expected_value,
-             base::Bind(&PolicyProviderTestHarness::InstallStringListPolicy,
-                        base::Unretained(test_harness_.get()),
-                        test_keys::kKeyStringList,
-                        &expected_value));
+  CheckValue(test_keys::kKeyStringList, expected_value,
+             base::BindOnce(&PolicyProviderTestHarness::InstallStringListPolicy,
+                            base::Unretained(test_harness_.get()),
+                            test_keys::kKeyStringList, &expected_value));
 }
 
 TEST_P(ConfigurationPolicyProviderTest, DictionaryValue) {
@@ -317,12 +309,10 @@ TEST_P(ConfigurationPolicyProviderTest, DictionaryValue) {
   dict->Set("sublist", std::move(list));
   expected_value.Set("dictionary", std::move(dict));
 
-  CheckValue(test_keys::kKeyDictionary,
-             expected_value,
-             base::Bind(&PolicyProviderTestHarness::InstallDictionaryPolicy,
-                        base::Unretained(test_harness_.get()),
-                        test_keys::kKeyDictionary,
-                        &expected_value));
+  CheckValue(test_keys::kKeyDictionary, expected_value,
+             base::BindOnce(&PolicyProviderTestHarness::InstallDictionaryPolicy,
+                            base::Unretained(test_harness_.get()),
+                            test_keys::kKeyDictionary, &expected_value));
 }
 
 TEST_P(ConfigurationPolicyProviderTest, RefreshPolicies) {

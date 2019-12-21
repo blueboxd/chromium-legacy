@@ -849,10 +849,10 @@ void WebPluginContainerImpl::HandleDragEvent(MouseEvent& event) {
   WebDragData drag_data = data_transfer->GetDataObject()->ToWebDragData();
   WebDragOperationsMask drag_operation_mask =
       static_cast<WebDragOperationsMask>(data_transfer->SourceOperation());
-  WebFloatPoint drag_screen_location(event.screenX(), event.screenY());
+  gfx::PointF drag_screen_location(event.screenX(), event.screenY());
   IntPoint location(Location());
-  WebFloatPoint drag_location(event.AbsoluteLocation().X() - location.X(),
-                              event.AbsoluteLocation().Y() - location.Y());
+  gfx::PointF drag_location(event.AbsoluteLocation().X() - location.X(),
+                            event.AbsoluteLocation().Y() - location.Y());
 
   web_plugin_->HandleDragStatusUpdate(drag_status, drag_data,
                                       drag_operation_mask, drag_location,

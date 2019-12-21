@@ -123,8 +123,8 @@ class DeviceManagementServiceTestBase : public testing::Test {
         std::make_unique<FakeJobConfiguration>(
             service_.get(), type, kClientID, critical, std::move(auth_data),
             oauth_token, shared_url_loader_factory_,
-            base::Bind(&DeviceManagementServiceTestBase::OnJobDone,
-                       base::Unretained(this)),
+            base::BindOnce(&DeviceManagementServiceTestBase::OnJobDone,
+                           base::Unretained(this)),
             base::BindRepeating(&DeviceManagementServiceTestBase::OnJobRetry,
                                 base::Unretained(this)));
     config->SetRequestPayload(payload);

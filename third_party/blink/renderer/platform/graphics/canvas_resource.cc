@@ -422,10 +422,6 @@ CanvasResourceSharedImage::~CanvasResourceSharedImage() {
   OnDestroy();
 }
 
-GLenum CanvasResourceSharedImage::TextureTarget() const {
-  return texture_target_;
-}
-
 void CanvasResourceSharedImage::TearDown() {
   DCHECK(!is_cross_thread());
 
@@ -882,7 +878,8 @@ void CanvasResourceSwapChain::PresentSwapChain() {
   // The wait sync token ensure that the present executes before we do the copy.
   raster_interface->CopySubTexture(front_buffer_mailbox_, back_buffer_mailbox_,
                                    GL_TEXTURE_2D, 0, 0, 0, 0, size_.Width(),
-                                   size_.Height());
+                                   size_.Height(), false /* unpack_flip_y */,
+                                   false /* unpack_premultiply_alpha */);
 }
 
 base::WeakPtr<WebGraphicsContext3DProviderWrapper>

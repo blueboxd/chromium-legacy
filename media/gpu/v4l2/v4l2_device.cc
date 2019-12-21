@@ -35,6 +35,9 @@
 #if defined(ARCH_CPU_ARMEL)
 #include "media/gpu/v4l2/tegra_v4l2_device.h"
 #endif
+#if defined(AML_V4L2)
+#include "media/gpu/v4l2/aml_v4l2_device.h"
+#endif
 
 #define REQUEST_DEVICE "/dev/media-dec0"
 
@@ -1178,6 +1181,12 @@ scoped_refptr<V4L2Device> V4L2Device::Create() {
 
 #if defined(ARCH_CPU_ARMEL)
   device = new TegraV4L2Device();
+  if (device->Initialize())
+    return device;
+#endif
+
+#if defined(AML_V4L2)
+  device = new AmlV4L2Device();
   if (device->Initialize())
     return device;
 #endif

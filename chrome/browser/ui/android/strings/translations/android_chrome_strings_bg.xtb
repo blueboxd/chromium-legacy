@@ -37,6 +37,7 @@
 <translation id="1231733316453485619">Да се включи ли синхронизирането?</translation>
 <translation id="123724288017357924">Презареждане на страницата (кешът се пренебрегва)</translation>
 <translation id="124116460088058876">Още езици</translation>
+<translation id="1242008676835033345">Вграден в <ph name="WEBSITE_URL" /></translation>
 <translation id="124678866338384709">Затваряне на текущия раздел</translation>
 <translation id="1258753120186372309">Драскулка на Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Търсене и разглеждане</translation>
@@ -95,6 +96,7 @@
 <translation id="1672586136351118594">Да не се показва отново</translation>
 <translation id="1692118695553449118">Синхронизирането е включено</translation>
 <translation id="169515064810179024">Блокиране на достъпа на сайтовете до сензорите за движение</translation>
+<translation id="1711267867945983636">За да продължите, включете NFC на телефона си</translation>
 <translation id="1717218214683051432">Сензори за движение</translation>
 <translation id="1718835860248848330">Последния час</translation>
 <translation id="1736419249208073774">Разглеждане</translation>
@@ -151,6 +153,7 @@
 <translation id="2082238445998314030">Резултат <ph name="RESULT_NUMBER" /> от <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Звук</translation>
 <translation id="2096012225669085171">Синхронизиране и персонализиране на всички устройства</translation>
+<translation id="2099625543891475722">физическите ви черти, като ръст;</translation>
 <translation id="2100273922101894616">Автоматичен вход</translation>
 <translation id="2100314319871056947">Опитайте да споделите текста на по-малки части</translation>
 <translation id="2107397443965016585">Запитване преди разрешаване на сайтовете да възпроизвеждат защитено съдържание (препоръчително)</translation>
@@ -481,6 +484,7 @@
 <translation id="4634124774493850572">Използване на паролата</translation>
 <translation id="4645575059429386691">Управлява се от ваш родител</translation>
 <translation id="4650364565596261010">Стандартно за системата</translation>
+<translation id="4660838440047236328">плана на стаята ви.</translation>
 <translation id="4663756553811254707">Изтрихте <ph name="NUMBER_OF_BOOKMARKS" /> отметки</translation>
 <translation id="4665282149850138822">Добавихте <ph name="NAME" /> към началния екран</translation>
 <translation id="4684427112815847243">Синхронизиране на всичко</translation>
@@ -605,6 +609,7 @@
 <translation id="5487521232677179737">Изчиств. на данните</translation>
 <translation id="5494752089476963479">Блокиране на рекламите от сайтове, на които се показват натрапчиви или подвеждащи реклами</translation>
 <translation id="5500777121964041360">Може да не се предлага за местоположението ви</translation>
+<translation id="5505264765875738116">Сайтовете не могат да извеждат подкани за изпращане на известия</translation>
 <translation id="5512137114520586844">Този профил се управлява от <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Деактивирано от администратора на това устройство</translation>
 <translation id="5515439363601853141">Отключете, за да видите паролата си</translation>
@@ -702,6 +707,7 @@
 <translation id="6192792657125177640">Изключения</translation>
 <translation id="6194112207524046168">За да разрешите на Chrome да осъществява достъп до камерата ви, тя трябва да бъде включена и от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Блокиране на „бисквитките“ на трети страни</translation>
+<translation id="6201345951596836663">Връзката е копирана</translation>
 <translation id="6206551242102657620">Връзката е защитена. Информация за сайта</translation>
 <translation id="6210748933810148297">Не сте <ph name="EMAIL" />?</translation>
 <translation id="6216432067784365534">Опции за <ph name="NAME_OF_LIST_ITEM" /></translation>
@@ -711,6 +717,7 @@
 Някои уебсайтове например може да отговорят на тази заявка, като ви покажат реклами, които не се базират на други посетени от вас сайтове. Много уебсайтове ще продължат да събират и използват данните ви за сърфиране – например с цел подобряване на сигурността, предоставяне на съдържание, реклами и препоръки и генериране на статистически данни за отчитане.</translation>
 <translation id="624789221780392884">Актуализацията е готова</translation>
 <translation id="6255999984061454636">Предложения за съдържание</translation>
+<translation id="6270391203985052864">Сайтовете могат да извеждат подкани за изпращане на известия</translation>
 <translation id="6277522088822131679">При отпечатването на страницата възникна проблем. Моля, опитайте отново.</translation>
 <translation id="6295158916970320988">Всички сайтове</translation>
 <translation id="629730747756840877">Профил</translation>
@@ -755,6 +762,7 @@
 <translation id="6545864417968258051">Сканиране за устройства с Bluetooth</translation>
 <translation id="6560414384669816528">Търсене със Sogou</translation>
 <translation id="656065428026159829">Вижте още</translation>
+<translation id="6561560012278703671">Използване на по-малко натрапчиви съобщения (подканите за известия се блокират, така че да не ви прекъсват)</translation>
 <translation id="6566259936974865419">Chrome ви спести <ph name="GIGABYTES" /> ГБ</translation>
 <translation id="6573096386450695060">Разрешаване винаги</translation>
 <translation id="6573431926118603307">Тук ще се показват разделите, които сте отворили в Chrome на другите си устройства.</translation>
@@ -852,6 +860,7 @@
 <translation id="729975465115245577">На устройството ви няма приложение за съхраняване на файла с паролите.</translation>
 <translation id="7302081693174882195">Подробности: сортирани по количество спестени данни</translation>
 <translation id="7302486331832100261">Обикновено блокирате известията. За да разрешите, докоснете „Подробности“.</translation>
+<translation id="7311441321349344333">Функцията за NFC е изключена на това устройство. Включете я от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
 <translation id="7328017930301109123">В олекотения режим на Chrome страниците се зареждат по-бързо и се използват до 60 процента по-малко данни.</translation>
 <translation id="7333031090786104871">Още се добавя предишният сайт</translation>
 <translation id="7352939065658542140">ВИДЕОКЛИП</translation>

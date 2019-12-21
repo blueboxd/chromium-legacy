@@ -29,36 +29,6 @@
 #include "ui/views/layout/animating_layout_manager.h"
 #include "ui/views/test/widget_test.h"
 
-// Helper to wait until the hover card widget is visible.
-class AnimatingLayoutWaiter : public views::AnimatingLayoutManager::Observer {
- public:
-  explicit AnimatingLayoutWaiter(
-      views::AnimatingLayoutManager* animating_layout)
-      : animating_layout_(animating_layout) {
-    observer_.Add(animating_layout_);
-  }
-
-  void Wait() {
-    if (!animating_layout_->is_animating())
-      return;
-    run_loop_.Run();
-  }
-
-  // views::AnimatingLayoutManager overrides:
-  void OnLayoutIsAnimatingChanged(views::AnimatingLayoutManager* source,
-                                  bool is_animating) override {
-    if (!is_animating)
-      run_loop_.Quit();
-  }
-
- private:
-  views::AnimatingLayoutManager* const animating_layout_;
-  ScopedObserver<views::AnimatingLayoutManager,
-                 views::AnimatingLayoutManager::Observer>
-      observer_{this};
-  base::RunLoop run_loop_;
-};
-
 class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
  protected:
   void LoadTestExtension(const std::string& extension) {
@@ -121,12 +91,16 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
         ->primary_action_button_for_testing()
         ->button_controller()
         ->OnMouseReleased(click_event);
-    AnimatingLayoutWaiter waiter(static_cast<views::AnimatingLayoutManager*>(
+
+    // Wait for animations to finish.
+    base::RunLoop loop;
+    static_cast<views::AnimatingLayoutManager*>(
         BrowserView::GetBrowserViewForBrowser(browser())
             ->toolbar()
             ->extensions_container()
-            ->GetLayoutManager()));
-    waiter.Wait();
+            ->GetLayoutManager())
+        ->PostOrQueueAction(loop.QuitClosure());
+    loop.Run();
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;

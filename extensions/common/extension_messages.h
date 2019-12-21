@@ -183,8 +183,8 @@ IPC_STRUCT_BEGIN(ExtensionMsg_ExecuteCode_Params)
   // are examples of when this will be false.
   IPC_STRUCT_MEMBER(bool, wants_result)
 
-  // The URL of the file that was injected, if any.
-  IPC_STRUCT_MEMBER(GURL, file_url)
+  // The URL of the script that was injected, if any.
+  IPC_STRUCT_MEMBER(GURL, script_url)
 
   // Whether the code to be executed should be associated with a user gesture.
   IPC_STRUCT_MEMBER(bool, user_gesture)

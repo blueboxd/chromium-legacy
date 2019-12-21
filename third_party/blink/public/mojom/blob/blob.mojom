@@ -5,6 +5,7 @@
 module blink.mojom;
 
 import "mojo/public/mojom/base/big_buffer.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "services/network/public/mojom/data_pipe_getter.mojom";
 import "services/network/public/mojom/http_request_headers.mojom";
 
@@ -52,6 +53,10 @@ interface Blob {
   // data that would be passed to OnReceivedCachedMetadata if you were reading
   // this blob through a blob URL.
   ReadSideData() => (mojo_base.mojom.BigBuffer? data);
+
+  // If this blob represents a single file on disk, this will capture the
+  // current snapshot state of that file.
+  [Sync] CaptureSnapshot() => (uint64 length, mojo_base.mojom.Time? modification_time);
 
   // This method is an implementation detail of the blob system. You should not
   // ever need to call it directly.

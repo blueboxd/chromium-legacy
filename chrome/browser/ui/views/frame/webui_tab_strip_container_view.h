@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui.h"
+#include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_embedder.h"
 #include "chrome/common/buildflags.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -40,7 +41,7 @@ class WebView;
 class Browser;
 class FeaturePromoBubbleView;
 
-class WebUITabStripContainerView : public TabStripUI::Embedder,
+class WebUITabStripContainerView : public TabStripUIEmbedder,
                                    public gfx::AnimationDelegate,
                                    public views::AccessiblePaneView,
                                    public views::ButtonListener,

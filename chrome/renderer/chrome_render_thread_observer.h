@@ -20,7 +20,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/renderer/chromeos_delayed_callback_group.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace content {

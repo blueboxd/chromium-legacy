@@ -160,7 +160,7 @@ void SearchResultView::CreateDetailsRenderText() {
 void SearchResultView::OnQueryRemovalAccepted(bool accepted, int event_flags) {
   if (accepted) {
     list_view_->SearchResultActionActivated(
-        this, ash::OmniBoxZeroStateAction::kRemoveSuggestion, event_flags);
+        this, OmniBoxZeroStateAction::kRemoveSuggestion, event_flags);
   }
 
   if (confirm_remove_by_long_press_) {
@@ -229,7 +229,7 @@ bool SearchResultView::OnKeyPressed(const ui::KeyEvent& event) {
   switch (event.key_code()) {
     case ui::VKEY_RETURN:
       if (actions_view()->HasSelectedAction()) {
-        OnSearchResultActionActivated(static_cast<ash::OmniBoxZeroStateAction>(
+        OnSearchResultActionActivated(static_cast<OmniBoxZeroStateAction>(
                                           actions_view()->GetSelectedAction()),
                                       event.flags());
       } else {
@@ -245,8 +245,8 @@ bool SearchResultView::OnKeyPressed(const ui::KeyEvent& event) {
     case ui::VKEY_DELETE:
     case ui::VKEY_BROWSER_BACK:
       // Allows alt+(back or delete) to trigger the 'remove result' dialog.
-      OnSearchResultActionActivated(
-          ash::OmniBoxZeroStateAction::kRemoveSuggestion, event.flags());
+      OnSearchResultActionActivated(OmniBoxZeroStateAction::kRemoveSuggestion,
+                                    event.flags());
       return true;
     default:
       return false;
@@ -353,13 +353,13 @@ void SearchResultView::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
     case ui::ET_GESTURE_LONG_PRESS:
       if (actions_view()->IsValidActionIndex(
-              ash::OmniBoxZeroStateAction::kRemoveSuggestion)) {
+              OmniBoxZeroStateAction::kRemoveSuggestion)) {
         ScrollRectToVisible(GetLocalBounds());
         NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
         SetSelected(true, base::nullopt);
         confirm_remove_by_long_press_ = true;
-        OnSearchResultActionActivated(
-            ash::OmniBoxZeroStateAction::kRemoveSuggestion, event->flags());
+        OnSearchResultActionActivated(OmniBoxZeroStateAction::kRemoveSuggestion,
+                                      event->flags());
         event->SetHandled();
       }
       break;
@@ -424,10 +424,9 @@ void SearchResultView::OnSearchResultActionActivated(size_t index,
   DCHECK_LT(index, result()->actions().size());
 
   if (result()->is_omnibox_search()) {
-    ash::OmniBoxZeroStateAction button_action =
-        ash::GetOmniBoxZeroStateAction(index);
+    OmniBoxZeroStateAction button_action = GetOmniBoxZeroStateAction(index);
 
-    if (button_action == ash::OmniBoxZeroStateAction::kRemoveSuggestion) {
+    if (button_action == OmniBoxZeroStateAction::kRemoveSuggestion) {
       RecordZeroStateSearchResultUserActionHistogram(
           ZeroStateSearchResultUserActionType::kRemoveResult);
       RemoveQueryConfirmationDialog* dialog = new RemoveQueryConfirmationDialog(
@@ -437,8 +436,7 @@ void SearchResultView::OnSearchResultActionActivated(size_t index,
           event_flags, list_view_->app_list_main_view()->contents_view());
 
       dialog->Show(GetWidget()->GetNativeWindow());
-    } else if (button_action ==
-               ash::OmniBoxZeroStateAction::kAppendSuggestion) {
+    } else if (button_action == OmniBoxZeroStateAction::kAppendSuggestion) {
       RecordZeroStateSearchResultUserActionHistogram(
           ZeroStateSearchResultUserActionType::kAppendResult);
       list_view_->SearchResultActionActivated(this, index, event_flags);
@@ -479,8 +477,8 @@ void SearchResultView::OnGetContextMenu(
     return;
 
   AppLaunchedMetricParams metric_params = {
-      ash::AppListLaunchedFrom::kLaunchedFromSearchBox,
-      ash::AppListLaunchType::kSearchResult};
+      AppListLaunchedFrom::kLaunchedFromSearchBox,
+      AppListLaunchType::kSearchResult};
   view_delegate_->GetAppLaunchedMetricParams(&metric_params);
 
   context_menu_ = std::make_unique<AppListMenuModelAdapter>(

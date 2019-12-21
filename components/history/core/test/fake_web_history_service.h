@@ -82,7 +82,7 @@ class FakeWebHistoryService : public WebHistoryService {
 
   // WebHistoryService implementation.
   Request* CreateRequest(const GURL& url,
-                         const CompletionCallback& callback,
+                         CompletionCallback callback,
                          const net::PartialNetworkTrafficAnnotationTag&
                              partial_traffic_annotation) override;
 

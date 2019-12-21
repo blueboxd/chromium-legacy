@@ -36,6 +36,7 @@
 <translation id="1041175011127912238">このページは応答していません</translation>
 <translation id="1041263367839475438">使用可能なデバイス</translation>
 <translation id="1042174272890264476">お使いのパソコンには <ph name="SHORT_PRODUCT_NAME" /> の RLZ ライブラリも組み込まれています。RLZ は、個人を特定できないタグを割り当てて、特定の販促キャンペーンで生じた検索や <ph name="SHORT_PRODUCT_NAME" /> の利用状況を計測します。これらのラベルは <ph name="PRODUCT_NAME" /> で Google 検索キーワード内に表示されることがあります。</translation>
+<translation id="1043818413152647937">次のアプリのデータも削除しますか？</translation>
 <translation id="1045692658517323508">{0,plural, =1{1 分以内に更新してください}other{# 分以内に更新してください}}</translation>
 <translation id="1046635659603195359">別のデバイスの Google アシスタントで Voice Match をすでに設定しているようです。そこですでに登録してある音声を使ってこのデバイスで音声モデルを作成できます。処理にかかる時間は 1 分以内です。</translation>
 <translation id="1047431265488717055">リンクテキストをコピー(&amp;X)</translation>
@@ -109,6 +110,7 @@
 <translation id="114721135501989771">Chrome で Google の最先端技術を活用</translation>
 <translation id="1147991416141538220">アクセスをリクエストするには、このデバイスの管理者にご連絡ください。</translation>
 <translation id="1149401351239820326">有効期限（月）</translation>
+<translation id="1150490752229770117">この <ph name="DEVICE_TYPE" /> でソフトウェアとセキュリティの自動アップデートが行われるのは今回が最後です。今後もアップデートを取得するには、新しいモデルにアップグレードしてください。<ph name="LINK_BEGIN" />詳細<ph name="LINK_END" /></translation>
 <translation id="1150565364351027703">サングラス</translation>
 <translation id="1151917987301063366"><ph name="HOST" /> によるセンサーへのアクセスを常に許可する</translation>
 <translation id="1153356358378277386">ペア設定されたデバイス</translation>
@@ -511,7 +513,9 @@
 <translation id="1709217939274742847">認証に使用するチケットを選択します。<ph name="LINK_BEGIN" />詳細<ph name="LINK_END" /></translation>
 <translation id="1712349894969001173">このパスワードを iPhone で取得</translation>
 <translation id="1712552549805331520"><ph name="URL" /> から、ローカルのパソコンにデータを永続的に保存する許可を求められています</translation>
+<translation id="1714644264617423774">ユーザー補助機能を有効にするとデバイスが使いやすくなります。<ph name="LINK_BEGIN" />詳細<ph name="LINK_END" /></translation>
 <translation id="1717218214683051432">モーション センサー</translation>
+<translation id="171824261579749339">逆スクロール（<ph name="LINK_BEGIN" />詳細<ph name="LINK_END" />）</translation>
 <translation id="1718835860248848330">1 時間以内</translation>
 <translation id="1719312230114180055">注: 指紋は複雑なパスワードや PIN より安全面で劣る場合があります。</translation>
 <translation id="1720318856472900922">TLS WWW サーバー認証</translation>
@@ -773,6 +777,7 @@
 <translation id="2096715839409389970">サードパーティの Cookie を消去</translation>
 <translation id="2097372108957554726">新しいデバイスを登録するには、Chrome にログインする必要があります</translation>
 <translation id="2099172618127234427">Chrome OS デバッグ機能を有効にしています。この機能を有効にすると、sshd デーモンが設定され USB デバイスからの起動が可能になります。</translation>
+<translation id="2099625543891475722">あなたの身体的特徴（身長など）</translation>
 <translation id="2099686503067610784">サーバー証明書「<ph name="CERTIFICATE_NAME" />」を削除しますか？</translation>
 <translation id="2100273922101894616">自動ログイン</translation>
 <translation id="2101225219012730419">バージョン:</translation>
@@ -1027,6 +1032,7 @@
 <translation id="2445484935443597917">新しいプロフィールを作成</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> が本人確認を求めています</translation>
 <translation id="2448312741937722512">種類</translation>
+<translation id="2448734521821581858">Cookie は、アクセスしたウェブサイトによって作成されるファイルです。Cookie には 2 種類あります。1 つ目の「ファーストパーティの Cookie」は、現在アクセスしているサイト、つまりアドレスバーに表示されているサイトによって作成されます。2 つ目の「サードパーティの Cookie」は、他のサイト、つまりアクセス中のウェブサイトに表示されているコンテンツの一部（広告、画像など）を所有しているサイトによって作成されます。</translation>
 <translation id="2450223707519584812">Google API キーがないため、ユーザーを追加できません。詳しくは、<ph name="DETAILS_URL" /> をご覧ください。</translation>
 <translation id="2450849356604136918">アクティブ ビューなし</translation>
 <translation id="2451298179137331965">2 倍</translation>
@@ -1140,6 +1146,7 @@
 <translation id="2587922766792651800">タイムアウトしました</translation>
 <translation id="2588636910004461974"><ph name="VENDOR_NAME" /> のデバイス</translation>
 <translation id="2594999711683503743">Google で検索、または URL を入力</translation>
+<translation id="2600522410036850735">このデバイスでは、<ph name="MONTH_AND_YEAR" />までソフトウェアとセキュリティが自動更新されます。&lt;a target="_blank" href="<ph name="URL" />"&gt;詳細&lt;/a&gt;</translation>
 <translation id="2603115962224169880">パソコンのクリーンアップ</translation>
 <translation id="2603463522847370204">シークレット ウィンドウで開く(&amp;I)</translation>
 <translation id="2604255671529671813">ネットワーク接続エラー</translation>
@@ -1560,6 +1567,7 @@
 <translation id="3181954750937456830">セーフ ブラウジング（危険なサイトからユーザーとデバイスを保護します）</translation>
 <translation id="3182749001423093222">スペルチェック</translation>
 <translation id="3183139917765991655">プロフィール インポーター</translation>
+<translation id="3184536091884214176">CUPS プリンタを設定または管理します。<ph name="LINK_BEGIN" />詳細<ph name="LINK_END" /></translation>
 <translation id="3188257591659621405">マイファイル</translation>
 <translation id="3188465121994729530">移動平均</translation>
 <translation id="3190558889382726167">パスワードを保存しました</translation>
@@ -1750,7 +1758,6 @@
 <translation id="347670947055184738">デバイスのポリシーを取得できませんでした。</translation>
 <translation id="347785443197175480"><ph name="HOST" /> によるカメラとマイクへのアクセスを引き続き許可する</translation>
 <translation id="3478685642445675458">ユーザーを削除するにはまずプロフィールのロックを解除してください。</translation>
-<translation id="3479539252931486093">想定外の動作である場合は、<ph name="BEGIN_LINK" />問題を報告<ph name="END_LINK" />してください。</translation>
 <translation id="3479552764303398839">後で</translation>
 <translation id="3481268647794498892"><ph name="COUNTDOWN_SECONDS" /> 秒後に <ph name="ALTERNATIVE_BROWSER_NAME" /> で開きます</translation>
 <translation id="3484273680291419129">有害なソフトウェアを削除しています...</translation>
@@ -2257,6 +2264,7 @@
 <translation id="4138267921960073861">ログイン ページにユーザー名と写真を表示する</translation>
 <translation id="413915106327509564"><ph name="WINDOW_TITLE" /> - HID デバイスに接続中</translation>
 <translation id="4142052906269098341">スマートフォンを使って <ph name="DEVICE_TYPE" /> のロックを解除します。<ph name="LINK_BEGIN" />詳細<ph name="LINK_END" /></translation>
+<translation id="4142518881503042940">検出されたプリンタをプロフィールに保存するか、新しいプリンタを追加してください。<ph name="LINK_BEGIN" />詳細<ph name="LINK_END" /></translation>
 <translation id="4144218403971135344">動画の品質を向上させ、バッテリー消費を抑えます。動画はキャスト対応のスクリーンでのみ再生されます。</translation>
 <translation id="4146026355784316281">常にシステム ビューアで開く</translation>
 <translation id="4146785383423576110">リセットとクリーンアップ</translation>
@@ -2381,6 +2389,7 @@
 <translation id="4364327530094270451">メロン</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> がウィンドウを共有しています。</translation>
 <translation id="4364830672918311045">通知を表示</translation>
+<translation id="436499142539576997">アプリのデータを取得できませんでした。引き続きアプリの実行を試みています...</translation>
 <translation id="4370975561335139969">入力したメールアドレスとパスワードが一致しません</translation>
 <translation id="437184764829821926">フォントの詳細設定</translation>
 <translation id="4374831787438678295">Linux インストーラ</translation>
@@ -2571,6 +2580,7 @@
 <translation id="465878909996028221">ブラウザのリダイレクトでは、http、https、file プロトコルのみサポートされています。</translation>
 <translation id="4659077111144409915">メイン アカウント</translation>
 <translation id="4660476621274971848">バージョン「<ph name="EXPECTED_VERSION" />」が必要ですが、バージョン「<ph name="NEW_ID" />」が検出されました</translation>
+<translation id="4660838440047236328">あなたの部屋のレイアウト</translation>
 <translation id="4662788913887017617">このブックマークは iPhone と共有できます</translation>
 <translation id="4663373278480897665">カメラを使用できます</translation>
 <translation id="4664482161435122549">PKCS #12 エクスポート エラー</translation>
@@ -2734,6 +2744,7 @@
 <translation id="4900392736118574277">起動ページが <ph name="URL" /> に変更されました。</translation>
 <translation id="4902546322522096650"><ph name="NETWORK_INDEX" /> 番目のネットワーク（全 <ph name="NETWORK_COUNT" /> 件）、<ph name="NETWORK_NAME" />、<ph name="SECURITY_STATUS" />、信号強度 <ph name="SIGNAL_STRENGTH" />%、接続</translation>
 <translation id="49027928311173603">サーバーからダウンロードされたポリシーが無効です: <ph name="VALIDATION_ERROR" />。</translation>
+<translation id="4906490889887219338">ネットワーク ファイル共有を設定または管理します。<ph name="LINK_BEGIN" />詳細<ph name="LINK_END" /></translation>
 <translation id="4907161631261076876">このファイルは一般的にダウンロードされているファイルではなく、危害を及ぼす可能性があります。</translation>
 <translation id="4907306957610201395">権限のカテゴリ</translation>
 <translation id="4908811072292128752">新しいタブを開いて 2 つのサイトを同時に閲覧できます</translation>
@@ -2821,6 +2832,7 @@
 <translation id="5038863510258510803">有効にしています...</translation>
 <translation id="5039804452771397117">許可</translation>
 <translation id="5042282098504489593"><ph name="USB_DEVICE_NAME" /> を Linux に接続する設定を開きます</translation>
+<translation id="5043913660911154449">または、プリンタの PPD を指定してください（<ph name="LINK_BEGIN" />詳細<ph name="LINK_END" />）</translation>
 <translation id="5045550434625856497">パスワードが正しくありません</translation>
 <translation id="504561833207953641">既存のブラウザ セッションで開いています。</translation>
 <translation id="5047421709274785093">サイトによるモーション センサーと光センサーの使用をブロックする</translation>
@@ -3106,6 +3118,7 @@
 <translation id="5464660706533281090">子ユーザーはこの設定を変更できません。</translation>
 <translation id="5466374726908360271">「<ph name="SEARCH_TERMS" />」を貼り付けて検索</translation>
 <translation id="5468173180030470402">ファイル共有を探しています</translation>
+<translation id="5470735824776589490">デバイスを Powerwash でリセットするにはまず再起動が必要です。<ph name="LINK_BEGIN" />詳細<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">こんにちは。テキスト読み上げの音声です。</translation>
 <translation id="5472133193607270166">オンにすると、サイトはあなたが別のサイトで閲覧した内容に基づいて広告をカスタマイズできなくなります。一部のサイトは適切に機能しなくなる可能性があります。</translation>
 <translation id="5473333559083690127">新しい PIN を再入力</translation>
@@ -3129,6 +3142,7 @@
 <translation id="5496587651328244253">管理</translation>
 <translation id="5499313591153584299">このファイルはパソコンに危害を加える可能性があります。</translation>
 <translation id="5502500733115278303">Firefox ブックマーク</translation>
+<translation id="5505264765875738116">通知を送信するかどうかの確認をサイトに許可しない</translation>
 <translation id="5505307013568720083">インクがありません</translation>
 <translation id="5507756662695126555">否認防止</translation>
 <translation id="5509693895992845810">別名で保存(&amp;A)...</translation>
@@ -3343,6 +3357,7 @@
 <translation id="5801568494490449797">設定</translation>
 <translation id="5804175651771201311">ローミング オフ</translation>
 <translation id="5804241973901381774">権限</translation>
+<translation id="5804427196348435412">NFC デバイスの使用</translation>
 <translation id="5805697420284793859">ウィンドウ マネージャ</translation>
 <translation id="5806773519584576205">0°（デフォルト）</translation>
 <translation id="5811750797187914944">設定を完了</translation>
@@ -3558,6 +3573,7 @@
 <translation id="6096047740730590436">最大化して開く</translation>
 <translation id="6096326118418049043">X.500 名</translation>
 <translation id="6097480669505687979">空き領域を確保しない場合、ユーザーとデータが自動的に削除される可能性があります。</translation>
+<translation id="6097600385983390082">音声検索が閉じられました</translation>
 <translation id="6098793583803863900">不明なファイルで危険なコンテンツがないかどうかのスキャンが行われています。</translation>
 <translation id="6100736666660498114">スタート メニュー</translation>
 <translation id="6101226222197207147">新しいアプリが追加されました（<ph name="EXTENSION_NAME" />）</translation>
@@ -3653,6 +3669,7 @@
 <translation id="6233154960150021497">キーボードではなく音声をデフォルトで使用します</translation>
 <translation id="6234474535228214774">インストールを準備しています</translation>
 <translation id="6237816943013845465">画面の解像度を調整できます</translation>
+<translation id="6238624845858322552">Bluetooth デバイスに接続</translation>
 <translation id="6238767809035845642">他のデバイスから共有されたテキスト</translation>
 <translation id="6238923052227198598">ロック画面に最新のメモを表示する</translation>
 <translation id="6239558157302047471">フレームを再読み込み(&amp;F)</translation>
@@ -3679,6 +3696,7 @@
 <translation id="6267547857941397424"><ph name="NETWORK_INDEX" /> 番目のネットワーク（全 <ph name="NETWORK_COUNT" /> 件）、<ph name="PHONE_NAME" />、信号強度 <ph name="SIGNAL_STRENGTH" />%、電池残量 <ph name="BATTERY_STATUS" />%、接続</translation>
 <translation id="6268252012308737255"><ph name="APP" /> で開く</translation>
 <translation id="6268718011101775129">NFC</translation>
+<translation id="6270391203985052864">通知を送信するかどうかの確認をサイトに許可する</translation>
 <translation id="6270770586500173387"><ph name="BEGIN_LINK1" />システムとアプリの情報<ph name="END_LINK1" />と<ph name="BEGIN_LINK2" />指標<ph name="END_LINK2" />を送信する</translation>
 <translation id="6272643420381259437">プラグインのダウンロード中にエラー（<ph name="ERROR" />）が発生しました。</translation>
 <translation id="6273677812470008672">品質</translation>
@@ -3700,6 +3718,7 @@
 <translation id="629730747756840877">アカウント</translation>
 <translation id="6298962879096096191">Google Play を使用して Android アプリをインストールします</translation>
 <translation id="630065524203833229">終了(&amp;X)</translation>
+<translation id="6300718114348072351"><ph name="PRINTER_NAME" /> を自動的に設定できませんでした。プリンタの詳細設定を指定してください。<ph name="LINK_BEGIN" />詳細<ph name="LINK_END" /></translation>
 <translation id="6305607932814307878">グローバル ポリシー:</translation>
 <translation id="6307990684951724544">システムがビジー状態です</translation>
 <translation id="6308493641021088955"><ph name="EXTENSION_NAME" /> によるログイン</translation>
@@ -3869,6 +3888,7 @@
 <translation id="6555810572223193255">現在、クリーンアップ ツールをご利用いただけません</translation>
 <translation id="6556866813142980365">やり直す</translation>
 <translation id="6557290421156335491">カスタム ショートカット</translation>
+<translation id="6561560012278703671">静かな方法で通知する（割り込み通知を行わない）</translation>
 <translation id="6561726789132298588">Enter</translation>
 <translation id="656293578423618167">ファイルのパスまたは名前が長すぎます。名前を短くするか、別の場所に保存してください。</translation>
 <translation id="6563469144985748109">管理者がまだサイトを開くことを許可していません</translation>
@@ -4052,6 +4072,7 @@
 <translation id="6840155290835956714">送信する前に確認する</translation>
 <translation id="6840184929775541289">認証局ではない</translation>
 <translation id="6841186874966388268">エラー</translation>
+<translation id="6843267103192918276">ログインすると、どのデバイスでも同じブックマーク、履歴、パスワード、その他の設定を利用できます。また、利用している Google サービスでも自動的にログイン状態となります。<ph name="LINK_BEGIN" />詳細<ph name="LINK_END" /></translation>
 <translation id="6843423766595476978">OK Google の設定が完了しました</translation>
 <translation id="6845038076637626672">最大化して開く</translation>
 <translation id="6845325883481699275">Chrome のセキュリティ改善に協力する</translation>
@@ -4468,7 +4489,6 @@
 <translation id="7442465037756169001">Hangouts Meet ハードウェアを設定できます。</translation>
 <translation id="744341768939279100">新しいプロフィールを作成</translation>
 <translation id="7443806024147773267">Google アカウントにログインすれば、いつでもパスワードにアクセスできます。</translation>
-<translation id="7444046173054089907">このサイトはブロックされています</translation>
 <translation id="7444983668544353857"><ph name="NETWORKDEVICE" /> を無効にする</translation>
 <translation id="7448430327655618736">アプリの自動インストール</translation>
 <translation id="7450761244949417357">まもなく <ph name="ALTERNATIVE_BROWSER_NAME" /> で開きます</translation>
@@ -5033,6 +5053,7 @@
 <translation id="8214962590150211830">このユーザーを削除</translation>
 <translation id="8215295261562449873">Linux をアップグレードする前に、アプリとファイルをダウンロード フォルダにバックアップします。</translation>
 <translation id="8217399928341212914">複数ファイルの自動ダウンロードを今後もブロックする</translation>
+<translation id="8218847192766059983">言語を追加するか、リストを並べ替えます。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="8221491193165283816">通知はデフォルトでブロックされています。このサイトの通知を表示するには、ここをクリックしてください。</translation>
 <translation id="8225265270453771718">アプリケーション ウィンドウの共有</translation>
 <translation id="8225753906568652947">特典を利用</translation>
@@ -5646,6 +5667,7 @@
 <translation id="9065203028668620118">編集</translation>
 <translation id="9066773882585798925">テキストを読み上げます</translation>
 <translation id="9066782832737749352">テキスト読み上げ</translation>
+<translation id="9067559831321817373">ログインしているアカウントを管理します。Chrome と Google Play のウェブサイト、アプリ、拡張機能では、許可されている場合に、これらのアカウントを使用してユーザー エクスペリエンスのカスタマイズが行われることがあります。&lt;a&gt;詳細&lt;/a&gt;</translation>
 <translation id="9068849894565669697">色の選択</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

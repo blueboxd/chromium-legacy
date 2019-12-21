@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.webapps.WebApkActivity;
 import org.chromium.ui.base.ActivityAndroidPermissionDelegate;
 import org.chromium.ui.base.ActivityKeyboardVisibilityDelegate;
 import org.chromium.ui.base.ActivityWindowAndroid;
+import org.chromium.ui.modaldialog.ModalDialogManager;
 
 import java.lang.ref.WeakReference;
 
@@ -51,6 +52,13 @@ public class ChromeWindow extends ActivityWindowAndroid {
         return chromeActivity.getCompositorViewHolder() == null
                 ? null
                 : chromeActivity.getCompositorViewHolder().getActiveSurfaceView();
+    }
+
+    @Override
+    public ModalDialogManager getModalDialogManager() {
+        // TODO(estade): consider replacing null check with an assert.
+        ChromeActivity activity = (ChromeActivity) getActivity().get();
+        return activity == null ? null : activity.getModalDialogManager();
     }
 
     @Override

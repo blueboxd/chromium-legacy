@@ -24,6 +24,8 @@ import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.chrome.browser.webapps.WebappActivity;
+import org.chromium.chrome.browser.webapps.WebappTabDelegate;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ActivityWindowAndroid;
 
@@ -42,6 +44,8 @@ public class CustomTabActivityTabFactory {
     private final Lazy<ActivityWindowAndroid> mActivityWindowAndroid;
     private final Lazy<CustomTabDelegateFactory> mCustomTabDelegateFactory;
     private final BrowserServicesIntentDataProvider mIntentDataProvider;
+
+    @Nullable
     private final StartupTabPreloader mStartupTabPreloader;
 
     @Nullable
@@ -53,7 +57,7 @@ public class CustomTabActivityTabFactory {
             Lazy<ActivityWindowAndroid> activityWindowAndroid,
             Lazy<CustomTabDelegateFactory> customTabDelegateFactory,
             BrowserServicesIntentDataProvider intentDataProvider,
-            StartupTabPreloader startupTabPreloader) {
+            @Nullable StartupTabPreloader startupTabPreloader) {
         mActivity = activity;
         mPersistencePolicy = persistencePolicy;
         mActivityWindowAndroid = activityWindowAndroid;
@@ -84,6 +88,10 @@ public class CustomTabActivityTabFactory {
     }
 
     private ChromeTabCreator createTabCreator(boolean incognito) {
+        if (mIntentDataProvider.getWebappExtras() != null) {
+            return new WebappTabDelegate((WebappActivity) mActivity, mActivityWindowAndroid.get(),
+                    mStartupTabPreloader, mCustomTabDelegateFactory::get, incognito);
+        }
         return new ChromeTabCreator(mActivity, mActivityWindowAndroid.get(), mStartupTabPreloader,
                 mCustomTabDelegateFactory::get, incognito) {
             @Override

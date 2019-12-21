@@ -84,7 +84,7 @@ TEST_F(ImageDataTest,
       data->BaseAddress(), rgba32_pixels, kNumPixels, kPixelFormat_8888,
       kAlphaUnmultiplied, kNoUnpremulRoundTripTolerance);
 
-  // Testing CanvasPixelFormat::kRGBA8prN32->
+  // Testing CanvasPixelFormat::kRGBA8->
   // kUint16ArrayStorageFormat
   data = ImageData::ConvertPixelsFromCanvasPixelFormatToImageDataStorageFormat(
       contents_rgba32_2, CanvasPixelFormat::kRGBA8, kUint16ArrayStorageFormat);
@@ -92,8 +92,7 @@ TEST_F(ImageDataTest,
   ColorCorrectionTestUtils::CompareColorCorrectedPixels(
       data->BaseAddress(), u16_pixels, kNumPixels, kPixelFormat_16161616,
       kAlphaUnmultiplied, kUnpremulRoundTripTolerance);
-
-  // Testing CanvasPixelFormat::kRGBA8prN32 ->
+  // Testing CanvasPixelFormat::kRGBA8 ->
   // kFloat32ArrayStorageFormat
   data = ImageData::ConvertPixelsFromCanvasPixelFormatToImageDataStorageFormat(
       contents_rgba32_2, CanvasPixelFormat::kRGBA8, kFloat32ArrayStorageFormat);

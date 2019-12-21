@@ -82,7 +82,7 @@ bool RemoteSuggestionsDatabase::IsErrorState() const {
 }
 
 void RemoteSuggestionsDatabase::SetErrorCallback(
-    const base::Closure& error_callback) {
+    const base::RepeatingClosure& error_callback) {
   error_callback_ = error_callback;
 }
 

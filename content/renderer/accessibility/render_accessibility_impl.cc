@@ -36,7 +36,6 @@
 #include "third_party/blink/public/web/web_input_element.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_settings.h"
-#include "third_party/blink/public/web/web_user_gesture_indicator.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_enum_util.h"
@@ -879,9 +878,10 @@ void RenderAccessibilityImpl::OnHitTest(const gfx::Point& point,
       // fairly well. It will fail with CSS transforms that rotate or shear.
       // https://crbug.com/981959.
       WebView* web_view = render_frame_->GetRenderView()->GetWebView();
-      blink::WebFloatPoint viewport_offset = web_view->VisualViewportOffset();
-      transformed_point += gfx::Vector2d(viewport_offset.x, viewport_offset.y) -
-                           gfx::Rect(rect).OffsetFromOrigin();
+      gfx::PointF viewport_offset = web_view->VisualViewportOffset();
+      transformed_point +=
+          gfx::Vector2d(viewport_offset.x(), viewport_offset.y()) -
+          gfx::Rect(rect).OffsetFromOrigin();
     }
     Send(new AccessibilityHostMsg_ChildFrameHitTestResult(
         routing_id(), action_request_id, transformed_point,

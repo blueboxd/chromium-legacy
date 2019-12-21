@@ -19,7 +19,6 @@
 #include "ppapi/thunk/ppb_image_data_api.h"
 #include "ppapi/thunk/thunk.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_font.h"
 #include "third_party/blink/public/platform/web_font_description.h"
@@ -31,7 +30,6 @@
 using ppapi::StringVar;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_ImageData_API;
-using blink::WebFloatPoint;
 using blink::WebFloatRect;
 using blink::WebFont;
 using blink::WebFontDescription;
@@ -401,8 +399,8 @@ int32_t BrowserFontResource_Trusted::PixelOffsetForCharacter(
       // a 0-width rect around the insertion point. But that will be on the
       // right side of the character for an RTL run, which would be wrong.
       WebFloatRect rect = font_->SelectionRectForText(
-          run, WebFloatPoint(0.0f, 0.0f), font_->Height(),
-          char_offset - run_begin, char_offset - run_begin + 1);
+          run, gfx::PointF(), font_->Height(), char_offset - run_begin,
+          char_offset - run_begin + 1);
       return cur_pixel_offset + static_cast<int>(rect.x);
     } else {
       // Character is past this run, account for the pixels and continue
@@ -420,8 +418,8 @@ void BrowserFontResource_Trusted::DrawTextToCanvas(
     uint32_t color,
     const PP_Rect* clip) {
   // Convert position and clip.
-  WebFloatPoint web_position(static_cast<float>(position->x),
-                             static_cast<float>(position->y));
+  gfx::PointF web_position(static_cast<float>(position->x),
+                           static_cast<float>(position->y));
 
   cc::PaintCanvasAutoRestore auto_restore(destination, !!clip);
   if (clip) {
@@ -440,7 +438,7 @@ void BrowserFontResource_Trusted::DrawTextToCanvas(
     // since it's unnecessary, measuring text is slow, and most of the time
     // there will be only one run anyway.
     if (i != runs.num_runs() - 1)
-      web_position.x += font_->CalculateWidth(run);
+      web_position.Offset(font_->CalculateWidth(run), 0);
   }
 }
 

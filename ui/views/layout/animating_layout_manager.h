@@ -93,10 +93,6 @@ class VIEWS_EXPORT AnimatingLayoutManager : public LayoutManagerBase {
     kSlideFromTrailingEdge,
   };
 
-  // Call QueueDelayedAction() to queue up an action to be performed when the
-  // current animation ends.
-  using DelayedAction = base::OnceCallback<void()>;
-
   AnimatingLayoutManager();
   ~AnimatingLayoutManager() override;
 
@@ -117,6 +113,10 @@ class VIEWS_EXPORT AnimatingLayoutManager : public LayoutManagerBase {
   AnimatingLayoutManager& SetDefaultFadeMode(FadeInOutMode default_fade_mode);
 
   bool is_animating() const { return is_animating_; }
+
+  const std::vector<base::OnceClosure>& delayed_actions_for_testing() {
+    return delayed_actions_;
+  }
 
   // Sets the owned (non-animating) layout manager which defines the target
   // layout that will be animated to when it changes. This layout manager can
@@ -160,14 +160,13 @@ class VIEWS_EXPORT AnimatingLayoutManager : public LayoutManagerBase {
   std::vector<View*> GetChildViewsInPaintOrder(const View* host) const override;
 
   // Queues an action to take place after the current animation completes.
-  // Must be called during an animation. If |delayed_action| needs access to
-  // external resources, views, etc. then it must check that those resources are
-  // still available and valid when it is run.
-  void QueueDelayedAction(DelayedAction delayed_action);
-
-  // Identical to QueueDelayedAction() except that if the layout is not
-  // animating the action is run immediately.
-  void RunOrQueueAction(DelayedAction action);
+  // If |action| needs access to external resources, views, etc. then it must
+  // check that those resources are still available and valid when it is run. If
+  // the layout is not animating the action is posted immediately.
+  // There is no guarantee that this action runs as the AnimatingLayoutManager
+  // may get torn down before the task is posted. There is also no guarantees
+  // that AnimatingLayoutManager is still alive when the task does finally run.
+  void PostOrQueueAction(base::OnceClosure action);
 
   // Returns a flex rule for the host view that will work in the vast majority
   // of cases where the host view is embedded in a FlexLayout.
@@ -217,8 +216,8 @@ class VIEWS_EXPORT AnimatingLayoutManager : public LayoutManagerBase {
   // Notifies all observers that the animation state has changed.
   void NotifyIsAnimatingChanged();
 
-  // Runs all delayed actions. See QueueDelayedAction() for more information.
-  void RunDelayedActions();
+  // Posts all delayed actions. See PostOrQueueAction() for more information.
+  void PostDelayedActions();
 
   // Updates the current layout to |percent| interpolated between the starting
   // and target layouts.
@@ -305,7 +304,7 @@ class VIEWS_EXPORT AnimatingLayoutManager : public LayoutManagerBase {
 
   std::unique_ptr<AnimationDelegate> animation_delegate_;
   base::ObserverList<Observer, true> observers_;
-  std::vector<DelayedAction> delayed_actions_;
+  std::vector<base::OnceClosure> delayed_actions_;
 
   DISALLOW_COPY_AND_ASSIGN(AnimatingLayoutManager);
 };

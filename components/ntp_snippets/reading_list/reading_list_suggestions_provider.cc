@@ -108,7 +108,7 @@ void ReadingListSuggestionsProvider::Fetch(
 void ReadingListSuggestionsProvider::ClearHistory(
     base::Time begin,
     base::Time end,
-    const base::Callback<bool(const GURL& url)>& filter) {
+    const base::RepeatingCallback<bool(const GURL& url)>& filter) {
   // Ignored, Reading List does not depend on history.
 }
 

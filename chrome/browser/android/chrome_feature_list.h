@@ -77,6 +77,7 @@ extern const base::Feature kExploreSites;
 extern const base::Feature kFocusOmniboxInIncognitoTabIntents;
 extern const base::Feature kHandleMediaIntents;
 extern const base::Feature kHomepageLocation;
+extern const base::Feature kHomepageSettingsUIConversion;
 extern const base::Feature kHorizontalTabSwitcherAndroid;
 extern const base::Feature kImmersiveUiMode;
 extern const base::Feature kImprovedA2HS;

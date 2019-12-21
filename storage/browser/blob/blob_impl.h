@@ -43,6 +43,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobImpl
       mojo::ScopedDataPipeProducerHandle handle,
       mojo::PendingRemote<blink::mojom::BlobReaderClient> client) override;
   void ReadSideData(ReadSideDataCallback callback) override;
+  void CaptureSnapshot(CaptureSnapshotCallback callback) override;
   void GetInternalUUID(GetInternalUUIDCallback callback) override;
 
   // network::mojom::DataPipeGetter:

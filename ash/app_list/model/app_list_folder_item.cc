@@ -15,17 +15,16 @@ namespace ash {
 
 AppListFolderItem::AppListFolderItem(const std::string& id)
     : AppListItem(id),
-      folder_type_(id == ash::kOemFolderId ? FOLDER_TYPE_OEM
-                                           : FOLDER_TYPE_NORMAL),
+      folder_type_(id == kOemFolderId ? FOLDER_TYPE_OEM : FOLDER_TYPE_NORMAL),
       item_list_(new AppListItemList) {
   if (app_list_features::IsScalableAppListEnabled()) {
     EnsureIconsForAvailableConfigTypes(
-        {ash::AppListConfigType::kLarge, ash::AppListConfigType::kMedium,
-         ash::AppListConfigType::kSmall},
+        {AppListConfigType::kLarge, AppListConfigType::kMedium,
+         AppListConfigType::kSmall},
         false /*request_icon_update*/);
     config_provider_observer_.Add(&AppListConfigProvider::Get());
   } else {
-    EnsureIconsForAvailableConfigTypes({ash::AppListConfigType::kShared},
+    EnsureIconsForAvailableConfigTypes({AppListConfigType::kShared},
                                        false /*reqest_icon_update*/);
   }
   set_is_folder(true);
@@ -60,8 +59,7 @@ size_t AppListFolderItem::ChildItemCount() const {
   return item_list_->item_count();
 }
 
-void AppListFolderItem::OnAppListConfigCreated(
-    ash::AppListConfigType config_type) {
+void AppListFolderItem::OnAppListConfigCreated(AppListConfigType config_type) {
   // Ensure that the folder image icon gets created for the newly created config
   // type (this might get called after model initialization, so the FolderImage
   // might have missed |item_list_| updates).
@@ -85,7 +83,7 @@ std::string AppListFolderItem::GenerateId() {
   return base::GenerateGUID();
 }
 
-void AppListFolderItem::OnFolderImageUpdated(ash::AppListConfigType config) {
+void AppListFolderItem::OnFolderImageUpdated(AppListConfigType config) {
   SetIcon(config, folder_images_[config]->icon());
 }
 
@@ -95,7 +93,7 @@ void AppListFolderItem::NotifyOfDraggedItem(AppListItem* dragged_item) {
 }
 
 FolderImage* AppListFolderItem::GetFolderImageForTesting(
-    ash::AppListConfigType type) const {
+    AppListConfigType type) const {
   const auto& image_it = folder_images_.find(type);
   if (image_it == folder_images_.end())
     return nullptr;
@@ -103,7 +101,7 @@ FolderImage* AppListFolderItem::GetFolderImageForTesting(
 }
 
 void AppListFolderItem::EnsureIconsForAvailableConfigTypes(
-    const std::vector<ash::AppListConfigType>& config_types,
+    const std::vector<AppListConfigType>& config_types,
     bool request_icon_update) {
   for (const auto& config_type : config_types) {
     if (folder_images_.count(config_type))

@@ -11,6 +11,8 @@
 
 #include "base/bind.h"
 #include "base/containers/span.h"
+#include "base/files/file_util.h"
+#include "base/task/post_task.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/io_buffer.h"
 #include "storage/browser/blob/blob_data_handle.h"
@@ -128,6 +130,7 @@ void BlobImpl::ReadSideData(ReadSideDataCallback callback) {
       [](BlobDataHandle handle, ReadSideDataCallback callback,
          BlobStatus status) {
         if (status != BlobStatus::DONE) {
+          DCHECK(BlobStatusIsError(status));
           std::move(callback).Run(base::nullopt);
           return;
         }
@@ -163,6 +166,68 @@ void BlobImpl::ReadSideData(ReadSideDataCallback callback) {
             std::move(callback)));
       },
       *handle_, std::move(callback)));
+}
+
+void BlobImpl::CaptureSnapshot(CaptureSnapshotCallback callback) {
+  handle_->RunOnConstructionComplete(base::BindOnce(
+      [](base::WeakPtr<BlobImpl> blob_impl, CaptureSnapshotCallback callback,
+         BlobStatus status) {
+        if (!blob_impl) {
+          // No need to call callback, since blob_impl is only destroyed if the
+          // mojo pipe is disconnected.
+          return;
+        }
+
+        auto* handle = blob_impl->handle_.get();
+
+        if (status != BlobStatus::DONE) {
+          DCHECK(BlobStatusIsError(status));
+          std::move(callback).Run(0, base::nullopt);
+          return;
+        }
+
+        auto snapshot = handle->CreateSnapshot();
+        // Only blobs consisting of a single file can have a modification
+        // time.
+        const auto& items = snapshot->items();
+        if (items.size() != 1) {
+          std::move(callback).Run(handle->size(), base::nullopt);
+          return;
+        }
+
+        const auto& item = items[0];
+        if (item->type() != BlobDataItem::Type::kFile) {
+          std::move(callback).Run(handle->size(), base::nullopt);
+          return;
+        }
+
+        // TODO(mek): Use cached snapshot state, rather than always looking up
+        // the current size and modification time.
+
+        struct SizeAndTime {
+          uint64_t size;
+          base::Optional<base::Time> time;
+        };
+        base::PostTaskAndReplyWithResult(
+            FROM_HERE,
+            {base::ThreadPool(), base::MayBlock(),
+             base::TaskPriority::USER_VISIBLE},
+            base::BindOnce(
+                [](const base::FilePath& path) {
+                  base::File::Info info;
+                  if (!base::GetFileInfo(path, &info))
+                    return SizeAndTime{0, base::nullopt};
+                  return SizeAndTime{info.size, info.last_modified};
+                },
+                item->path()),
+            base::BindOnce(
+                [](CaptureSnapshotCallback callback,
+                   const SizeAndTime& result) {
+                  std::move(callback).Run(result.size, result.time);
+                },
+                std::move(callback)));
+      },
+      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void BlobImpl::GetInternalUUID(GetInternalUUIDCallback callback) {

@@ -182,7 +182,7 @@ void ParsePolicy(const RegistryDict* gpo_dict,
 // Returns a name, using the |get_name| callback, which may refuse the call if
 // the name is longer than _MAX_PATH. So this helper function takes care of the
 // retry with the required size.
-bool GetName(const base::Callback<BOOL(LPWSTR, LPDWORD)>& get_name,
+bool GetName(const base::RepeatingCallback<BOOL(LPWSTR, LPDWORD)>& get_name,
              base::string16* name) {
   DCHECK(name);
   DWORD size = _MAX_PATH;
@@ -267,10 +267,11 @@ void CollectEnterpriseUMAs() {
                             base::IsMachineExternallyManaged());
 
   base::string16 machine_name;
-  if (GetName(base::Bind(&::GetComputerNameEx, ::ComputerNameDnsHostname),
-              &machine_name)) {
+  if (GetName(
+          base::BindRepeating(&::GetComputerNameEx, ::ComputerNameDnsHostname),
+          &machine_name)) {
     base::string16 user_name;
-    if (GetName(base::Bind(&GetUserNameExBool, ::NameSamCompatible),
+    if (GetName(base::BindRepeating(&GetUserNameExBool, ::NameSamCompatible),
                 &user_name)) {
       // A local user has the machine name in its sam compatible name, e.g.,
       // 'MACHINE_NAME\username', otherwise it is perfixed with the domain name
@@ -283,9 +284,9 @@ void CollectEnterpriseUMAs() {
     }
 
     base::string16 full_machine_name;
-    if (GetName(
-            base::Bind(&::GetComputerNameEx, ::ComputerNameDnsFullyQualified),
-            &full_machine_name)) {
+    if (GetName(base::BindRepeating(&::GetComputerNameEx,
+                                    ::ComputerNameDnsFullyQualified),
+                &full_machine_name)) {
       // ComputerNameDnsFullyQualified is the same as the
       // ComputerNameDnsHostname when not domain joined, otherwise it has a
       // suffix.

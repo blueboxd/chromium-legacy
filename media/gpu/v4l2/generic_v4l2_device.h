@@ -78,14 +78,15 @@ class GenericV4L2Device : public V4L2Device {
   bool IsJpegDecodingSupported() override;
   bool IsJpegEncodingSupported() override;
 
+ protected:
+  ~GenericV4L2Device() override;
+
+  bool Initialize() override;
+
  private:
   // Vector of video device node paths and corresponding pixelformats supported
   // by each device node.
   using Devices = std::vector<std::pair<std::string, std::vector<uint32_t>>>;
-
-  ~GenericV4L2Device() override;
-
-  bool Initialize() override;
 
   // Open device node for |path| as a device of |type|.
   bool OpenDevicePath(const std::string& path, Type type);

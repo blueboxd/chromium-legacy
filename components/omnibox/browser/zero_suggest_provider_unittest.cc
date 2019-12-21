@@ -41,7 +41,7 @@ class FakeEmptyTopSites : public history::TopSites {
   }
 
   // history::TopSites:
-  void GetMostVisitedURLs(const GetMostVisitedURLsCallback& callback) override;
+  void GetMostVisitedURLs(GetMostVisitedURLsCallback callback) override;
   void SyncWithHistory() override {}
   bool HasBlacklistedItems() const override {
     return false;
@@ -68,7 +68,7 @@ class FakeEmptyTopSites : public history::TopSites {
   // set per call.
   void RunACallback(const history::MostVisitedURLList& urls) {
     DCHECK(!callbacks.empty());
-    callbacks.front().Run(urls);
+    std::move(callbacks.front()).Run(urls);
     callbacks.pop_front();
   }
 
@@ -83,8 +83,8 @@ class FakeEmptyTopSites : public history::TopSites {
 };
 
 void FakeEmptyTopSites::GetMostVisitedURLs(
-    const GetMostVisitedURLsCallback& callback) {
-  callbacks.push_back(callback);
+    GetMostVisitedURLsCallback callback) {
+  callbacks.push_back(std::move(callback));
 }
 
 class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {

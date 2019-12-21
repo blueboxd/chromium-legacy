@@ -637,13 +637,15 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 
 // Tests that only the "Cancel", "Delete" and "Mark Unread" buttons are showing
 // when not editing.
-- (void)testVisibleButtonsOnlyReadEntrySelected {
-#if defined(CHROME_EARL_GREY_1)
-  // TODO(crbug.com/1036071): EG1 Test flaky on iOS 12.
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"EG1 flaky on iOS 12.");
-  }
+// TODO(crbug.com/1036071): EG1 Test flaky on device.
+#if defined(CHROME_EARL_GREY_1) && !TARGET_IPHONE_SIMULATOR
+#define MAYBE_testVisibleButtonsOnlyReadEntrySelected \
+  DISABLED_testVisibleButtonsOnlyReadEntrySelected
+#else
+#define MAYBE_testVisibleButtonsOnlyReadEntrySelected \
+  testVisibleButtonsOnlyReadEntrySelected
 #endif
+- (void)MAYBE_testVisibleButtonsOnlyReadEntrySelected {
   AddEntriesAndEnterEdit();
   TapEntry(kReadTitle);
 
@@ -656,13 +658,15 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 
 // Tests that the "Cancel", "Edit" and "Mark Unread" buttons are not visible
 // after delete (using swipe).
-- (void)testVisibleButtonsAfterSwipeDeletion {
-#if defined(CHROME_EARL_GREY_1)
-  // TODO(crbug.com/1036071): EG1 Test flaky on iOS 12.
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"EG1 flaky on iOS 12.");
-  }
+// TODO(crbug.com/1036071): EG1 Test flaky on device.
+#if defined(CHROME_EARL_GREY_1) && !TARGET_IPHONE_SIMULATOR
+#define MAYBE_testVisibleButtonsAfterSwipeDeletion \
+  DISABLED_testVisibleButtonsAfterSwipeDeletion
+#else
+#define MAYBE_testVisibleButtonsAfterSwipeDeletion \
+  testVisibleButtonsAfterSwipeDeletion
 #endif
+- (void)MAYBE_testVisibleButtonsAfterSwipeDeletion {
   // Reading list's view width is narrower on Ipad Air (iOS 12) than on other
   // devices. The grey_swipeSlowInDirection action deletes the element instead
   // of displaying the 'Delete' button.
@@ -707,13 +711,15 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 
 // Tests that only the "Cancel", "Delete" and "Mark…" buttons are showing when
 // not editing.
-- (void)testVisibleButtonsMixedEntriesSelected {
-#if defined(CHROME_EARL_GREY_1)
-  // TODO(crbug.com/1036071): EG1 Test flaky on iOS 12.
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"EG1 flaky on iOS 12.");
-  }
+// TODO(crbug.com/1036071): EG1 Test flaky on device.
+#if defined(CHROME_EARL_GREY_1) && !TARGET_IPHONE_SIMULATOR
+#define MAYBE_testVisibleButtonsMixedEntriesSelected \
+  DISABLED_testVisibleButtonsMixedEntriesSelected
+#else
+#define MAYBE_testVisibleButtonsMixedEntriesSelected \
+  testVisibleButtonsMixedEntriesSelected
 #endif
+- (void)MAYBE_testVisibleButtonsMixedEntriesSelected {
   AddEntriesAndEnterEdit();
   TapEntry(kReadTitle);
   TapEntry(kUnreadTitle);
@@ -855,13 +861,13 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 }
 
 // Selects an read entry and mark it as unread.
-- (void)testMarkEntriesUnread {
-#if defined(CHROME_EARL_GREY_1)
-  // TODO(crbug.com/1036071): EG1 Test flaky on iOS 12.
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"EG1 flaky on iOS 12.");
-  }
+// TODO(crbug.com/1036071): EG1 Test flaky on device.
+#if defined(CHROME_EARL_GREY_1) && !TARGET_IPHONE_SIMULATOR
+#define MAYBE_testMarkEntriesUnread DISABLED_testMarkEntriesUnread
+#else
+#define MAYBE_testMarkEntriesUnread testMarkEntriesUnread
 #endif
+- (void)MAYBE_testMarkEntriesUnread {
   AddEntriesAndEnterEdit();
   TapEntry(kReadTitle);
 
@@ -876,13 +882,13 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 }
 
 // Selects read and unread entries and mark them as unread.
-- (void)testMarkMixedEntriesUnread {
-#if defined(CHROME_EARL_GREY_1)
-  // TODO(crbug.com/1036071): EG1 Test flaky on iOS 12.
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"EG1 flaky on iOS 12.");
-  }
+// TODO(crbug.com/1036071): EG1 Test flaky on device.
+#if defined(CHROME_EARL_GREY_1) && !TARGET_IPHONE_SIMULATOR
+#define MAYBE_testMarkMixedEntriesUnread DISABLED_testMarkMixedEntriesUnread
+#else
+#define MAYBE_testMarkMixedEntriesUnread testMarkMixedEntriesUnread
 #endif
+- (void)MAYBE_testMarkMixedEntriesUnread {
   AddEntriesAndEnterEdit();
   TapEntry(kReadTitle);
   TapEntry(kUnreadTitle);

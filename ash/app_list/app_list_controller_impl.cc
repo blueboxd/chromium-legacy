@@ -525,6 +525,9 @@ void AppListControllerImpl::OnAppListStateChanged(AppListState new_state,
   if (!app_list_features::IsAssistantLauncherUIEnabled())
     return;
 
+  ash::ShelfConfig::Get()->SetAssistantVisible(
+      new_state == AppListState::kStateEmbeddedAssistant);
+
   UpdateLauncherContainer();
 
   // Band-aid for https://b/144056527 to update visibility after AppListState

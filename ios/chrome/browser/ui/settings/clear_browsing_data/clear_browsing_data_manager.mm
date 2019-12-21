@@ -388,8 +388,7 @@ static NSDictionary* _imageNamesByItemTypes = @{
 
   __weak ClearBrowsingDataManager* weakSelf = self;
   browsing_data::ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
-      syncService, historyService,
-      base::BindRepeating(^(bool shouldShowNotice) {
+      syncService, historyService, base::BindOnce(^(bool shouldShowNotice) {
         ClearBrowsingDataManager* strongSelf = weakSelf;
         [strongSelf
             setShouldShowNoticeAboutOtherFormsOfBrowsingHistory:shouldShowNotice
@@ -398,7 +397,7 @@ static NSDictionary* _imageNamesByItemTypes = @{
 
   browsing_data::ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(
       syncService, historyService, GetChannel(),
-      base::BindRepeating(^(bool shouldShowPopup) {
+      base::BindOnce(^(bool shouldShowPopup) {
         ClearBrowsingDataManager* strongSelf = weakSelf;
         [strongSelf setShouldPopupDialogAboutOtherFormsOfBrowsingHistory:
                         shouldShowPopup];

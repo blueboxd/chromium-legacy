@@ -26,8 +26,8 @@
 
 // MSVC_PUSH_DISABLE_WARNING pushes |n| onto a stack of warnings to be disabled.
 // The warning remains disabled until popped by MSVC_POP_WARNING.
-#define MSVC_PUSH_DISABLE_WARNING(n) __pragma(warning(push)) \
-                                     __pragma(warning(disable:n))
+#define MSVC_PUSH_DISABLE_WARNING(n) \
+  __pragma(warning(push)) __pragma(warning(disable : n))
 
 // Pop effects of innermost MSVC_PUSH_* macro.
 #define MSVC_POP_WARNING() __pragma(warning(pop))
@@ -141,7 +141,7 @@
 // For member functions, the implicit this parameter counts as index 1.
 #if defined(COMPILER_GCC) || defined(__clang__)
 #define PRINTF_FORMAT(format_param, dots_param) \
-    __attribute__((format(printf, format_param, dots_param)))
+  __attribute__((format(printf, format_param, dots_param)))
 #else
 #define PRINTF_FORMAT(format_param, dots_param)
 #endif
@@ -170,14 +170,14 @@
 // Mark a memory region fully initialized.
 // Use this to annotate code that deliberately reads uninitialized data, for
 // example a GC scavenging root set pointers from the stack.
-#define MSAN_UNPOISON(p, size)  __msan_unpoison(p, size)
+#define MSAN_UNPOISON(p, size) __msan_unpoison(p, size)
 
 // Check a memory region for initializedness, as if it was being used here.
 // If any bits are uninitialized, crash with an MSan report.
 // Use this to sanitize data which MSan won't be able to track, e.g. before
 // passing data to another process via shared memory.
 #define MSAN_CHECK_MEM_IS_INITIALIZED(p, size) \
-    __msan_check_mem_is_initialized(p, size)
+  __msan_check_mem_is_initialized(p, size)
 #else  // MEMORY_SANITIZER
 #define MSAN_UNPOISON(p, size)
 #define MSAN_CHECK_MEM_IS_INITIALIZED(p, size)
@@ -258,6 +258,41 @@
 #if defined(__mips_msa) && defined(__mips_isa_rev) && (__mips_isa_rev >= 5)
 #define HAVE_MIPS_MSA_INTRINSICS 1
 #endif
+#endif
+
+#if defined(__clang__) && __has_attribute(uninitialized)
+// Attribute "uninitialized" disables -ftrivial-auto-var-init=pattern for
+// the specified variable.
+// Library-wide alternative is
+// 'configs -= [ "//build/config/compiler:default_init_stack_vars" ]' in .gn
+// file.
+//
+// See "init_stack_vars" in build/config/compiler/BUILD.gn and
+// http://crbug.com/977230
+// "init_stack_vars" is enabled for non-official builds and we hope to enable it
+// in official build in 2020 as well. The flag writes fixed pattern into
+// uninitialized parts of all local variables. In rare cases such initialization
+// is undesirable and attribute can be used:
+//   1. Degraded performance
+// In most cases compiler is able to remove additional stores. E.g. if memory is
+// never accessed or properly initialized later. Preserved stores mostly will
+// not affect program performance. However if compiler failed on some
+// performance critical code we can get a visible regression in a benchmark.
+//   2. memset, memcpy calls
+// Compiler may replaces some memory writes with memset or memcpy calls. This is
+// not -ftrivial-auto-var-init specific, but it can happen more likely with the
+// flag. It can be a problem if code is not linked with C run-time library.
+//
+// Note: The flag is security risk mitigation feature. So in future the
+// attribute uses should be avoided when possible. However to enable this
+// mitigation on the most of the code we need to be less strict now and minimize
+// number of exceptions later. So if in doubt feel free to use attribute, but
+// please document the problem for someone who is going to cleanup it later.
+// E.g. platform, bot, benchmark or test name in patch description or next to
+// the attribute.
+#define STACK_UNINITIALIZED __attribute__((uninitialized))
+#else
+#define STACK_UNINITIALIZED
 #endif
 
 #endif  // BASE_COMPILER_SPECIFIC_H_

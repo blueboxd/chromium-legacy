@@ -494,7 +494,7 @@ class HistoryService : public KeyedService {
   // Testing -------------------------------------------------------------------
 
   // Runs |flushed| after bouncing off the history thread.
-  void FlushForTest(const base::Closure& flushed);
+  void FlushForTest(base::OnceClosure flushed);
 
   // Designed for unit tests, this passes the given task on to the history
   // backend to be called once the history backend has terminated. This allows
@@ -505,7 +505,7 @@ class HistoryService : public KeyedService {
   // There can be only one closing task, so this will override any previously
   // set task. We will take ownership of the pointer and delete it when done.
   // The task will be run on the calling thread (this function is threadsafe).
-  void SetOnBackendDestroyTask(const base::Closure& task);
+  void SetOnBackendDestroyTask(base::OnceClosure task);
 
   // Used for unit testing and potentially importing to get known information
   // into the database. This assumes the URL doesn't exist in the database

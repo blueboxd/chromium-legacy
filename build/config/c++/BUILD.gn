@@ -67,7 +67,7 @@ config("runtime_library") {
     # libc++ has two levels of debug mode. Setting _LIBCPP_DEBUG to zero
     # enables most assertions. Setting it to one additionally enables iterator
     # debugging. See https://libcxx.llvm.org/docs/DesignDocs/DebugMode.html
-    if (enable_iterator_debugging && is_debug) {
+    if (enable_iterator_debugging) {
       defines += [ "_LIBCPP_DEBUG=1" ]
     } else if (is_debug || dcheck_always_on) {
       defines += [ "_LIBCPP_DEBUG=0" ]

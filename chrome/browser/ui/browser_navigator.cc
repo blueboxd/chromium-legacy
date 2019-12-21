@@ -605,18 +605,7 @@ void Navigate(NavigateParams* params) {
   // inform the target WebContents, and we may need to update the UI.
   bool user_initiated =
       params->transition & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR ||
-      ui::PageTransitionCoreTypeIs(params->transition,
-                                   ui::PAGE_TRANSITION_TYPED) ||
-      ui::PageTransitionCoreTypeIs(params->transition,
-                                   ui::PAGE_TRANSITION_AUTO_BOOKMARK) ||
-      ui::PageTransitionCoreTypeIs(params->transition,
-                                   ui::PAGE_TRANSITION_GENERATED) ||
-      ui::PageTransitionCoreTypeIs(params->transition,
-                                   ui::PAGE_TRANSITION_AUTO_TOPLEVEL) ||
-      ui::PageTransitionCoreTypeIs(params->transition,
-                                   ui::PAGE_TRANSITION_RELOAD) ||
-      ui::PageTransitionCoreTypeIs(params->transition,
-                                   ui::PAGE_TRANSITION_KEYWORD);
+      !ui::PageTransitionIsWebTriggerable(params->transition);
 
   // Did we use a prerender?
   bool swapped_in_prerender = false;

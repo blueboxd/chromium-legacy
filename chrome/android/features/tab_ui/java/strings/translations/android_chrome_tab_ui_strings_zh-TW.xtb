@@ -29,6 +29,7 @@
 <translation id="7792771145871471484">查看建議項目。</translation>
 <translation id="7885132941432959125">將分頁向右移</translation>
 <translation id="7966321538264951561">關閉建議項目。</translation>
+<translation id="8205266828577616993">將分頁上移</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{關閉 <ph name="TABS_COUNT_ONE" /> 個所選分頁}other{關閉 <ph name="TABS_COUNT_MANY" /> 個所選分頁}}</translation>
 <translation id="9150694013019234766">在靠近畫面底部的分頁群組中切換分頁</translation>
 <translation id="9169594135889675189">在群組中新增分頁</translation>

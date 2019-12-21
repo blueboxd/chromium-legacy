@@ -4,6 +4,8 @@
 
 component("tab_groups") {
   sources = [
+    "tab_group_color.cc",
+    "tab_group_color.h",
     "tab_group_id.cc",
     "tab_group_id.h",
     "tab_group_visual_data.cc",
@@ -14,6 +16,7 @@ component("tab_groups") {
 
   deps = [
     "//base",
+    "//components/strings",
     "//skia",
     "//ui/base",
     "//ui/gfx",

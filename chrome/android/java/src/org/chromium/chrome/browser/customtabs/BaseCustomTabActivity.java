@@ -4,8 +4,10 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import android.util.Pair;
 import android.view.KeyEvent;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.R;
@@ -13,12 +15,17 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.KeyboardShortcuts;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
+import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabFactory;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.customtabs.content.TabCreationMode;
 import org.chromium.chrome.browser.customtabs.dependency_injection.BaseCustomTabActivityComponent;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityComponent;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
 
 /**
@@ -33,6 +40,7 @@ public abstract class BaseCustomTabActivity<C extends ChromeActivityComponent>
     protected CustomTabActivityNavigationController mNavigationController;
     protected CustomTabActivityTabProvider mTabProvider;
     protected CustomTabStatusBarColorProvider mStatusBarColorProvider;
+    protected CustomTabActivityTabFactory mTabFactory;
 
     // This is to give the right package name while using the client's resources during an
     // overridePendingTransition call.
@@ -60,9 +68,37 @@ public abstract class BaseCustomTabActivity<C extends ChromeActivityComponent>
         mNavigationController = component.resolveNavigationController();
         mTabProvider = component.resolveTabProvider();
         mStatusBarColorProvider = component.resolveCustomTabStatusBarColorProvider();
+        mTabFactory = component.resolveTabFactory();
 
         component.resolveCompositorContentInitializer();
         component.resolveTaskDescriptionHelper();
+    }
+
+    @Override
+    protected TabModelSelector createTabModelSelector() {
+        return mTabFactory.createTabModelSelector();
+    }
+
+    @Override
+    protected Pair<ChromeTabCreator, ChromeTabCreator> createTabCreators() {
+        return mTabFactory.createTabCreators();
+    }
+
+    @Override
+    public void initializeCompositor() {
+        super.initializeCompositor();
+        getTabModelSelector().onNativeLibraryReady(getTabContentManager());
+    }
+
+    @Override
+    public TabModelSelectorImpl getTabModelSelector() {
+        return (TabModelSelectorImpl) super.getTabModelSelector();
+    }
+
+    @Override
+    @Nullable
+    public Tab getActivityTab() {
+        return mTabProvider.getTab();
     }
 
     @Override

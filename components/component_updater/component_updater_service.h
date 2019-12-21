@@ -165,6 +165,7 @@ class OnDemandUpdater {
   friend class ::ComponentsHandler;
   friend class ::PluginObserver;
   friend class SwReporterOnDemandFetcher;
+  friend class SODAComponentInstallerPolicy;
 #if defined(OS_CHROMEOS)
   friend class CrOSComponentInstaller;
 #endif  // defined(OS_CHROMEOS)

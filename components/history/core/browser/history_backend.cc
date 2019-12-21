@@ -125,10 +125,10 @@ class HistoryPathsTracker {
 #endif
 
 void RunUnlessCanceled(
-    const base::Closure& closure,
+    base::OnceClosure closure,
     const base::CancelableTaskTracker::IsCanceledCallback& is_canceled) {
   if (!is_canceled.Run())
-    closure.Run();
+    std::move(closure).Run();
 }
 
 // How long we'll wait to do a commit, so that things are batched together.
@@ -230,10 +230,11 @@ bool QueuedHistoryDBTask::Run(HistoryBackend* backend, HistoryDatabase* db) {
 
 void QueuedHistoryDBTask::DoneRun() {
   origin_loop_->PostTask(
-      FROM_HERE, base::BindOnce(&RunUnlessCanceled,
-                                base::Bind(&HistoryDBTask::DoneRunOnMainThread,
-                                           base::Unretained(task_.get())),
-                                is_canceled_));
+      FROM_HERE,
+      base::BindOnce(&RunUnlessCanceled,
+                     base::BindOnce(&HistoryDBTask::DoneRunOnMainThread,
+                                    base::Unretained(task_.get())),
+                     is_canceled_));
 }
 
 // HistoryBackendHelper --------------------------------------------------------
@@ -290,7 +291,8 @@ HistoryBackend::~HistoryBackend() {
   if (!backend_destroy_task_.is_null()) {
     // Notify an interested party (typically a unit test) that we're done.
     DCHECK(backend_destroy_task_runner_);
-    backend_destroy_task_runner_->PostTask(FROM_HERE, backend_destroy_task_);
+    backend_destroy_task_runner_->PostTask(FROM_HERE,
+                                           std::move(backend_destroy_task_));
   }
 
 #if DCHECK_IS_ON()
@@ -328,18 +330,19 @@ void HistoryBackend::Init(
           syncer::TYPED_URLS, /*dump_stack=*/base::RepeatingClosure()));
   typed_url_sync_bridge_->Init();
 
-  memory_pressure_listener_.reset(new base::MemoryPressureListener(
-      base::Bind(&HistoryBackend::OnMemoryPressure, base::Unretained(this))));
+  memory_pressure_listener_.reset(
+      new base::MemoryPressureListener(base::BindRepeating(
+          &HistoryBackend::OnMemoryPressure, base::Unretained(this))));
 }
 
 void HistoryBackend::SetOnBackendDestroyTask(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    const base::Closure& task) {
+    base::OnceClosure task) {
   TRACE_EVENT0("browser", "HistoryBackend::SetOnBackendDestroyTask");
   if (!backend_destroy_task_.is_null())
     DLOG(WARNING) << "Setting more than one destroy task, overriding";
   backend_destroy_task_runner_ = std::move(task_runner);
-  backend_destroy_task_ = task;
+  backend_destroy_task_ = std::move(task);
 }
 
 void HistoryBackend::Closing() {
@@ -776,8 +779,8 @@ void HistoryBackend::InitImpl(
       history_database_params.download_interrupt_reason_crash));
 
   // Unretained to avoid a ref loop with db_.
-  db_->set_error_callback(base::Bind(&HistoryBackend::DatabaseErrorCallback,
-                                     base::Unretained(this)));
+  db_->set_error_callback(base::BindRepeating(
+      &HistoryBackend::DatabaseErrorCallback, base::Unretained(this)));
 
   db_diagnostics_.clear();
   sql::InitStatus status = db_->Init(history_name);
@@ -1568,10 +1571,11 @@ MostVisitedURLList HistoryBackend::QueryMostVisitedURLs(int result_count,
 
   base::TimeTicks begin_time = base::TimeTicks::Now();
 
-  auto url_filter = backend_client_
-                        ? base::Bind(&HistoryBackendClient::IsWebSafe,
-                                     base::Unretained(backend_client_.get()))
-                        : base::Callback<bool(const GURL&)>();
+  auto url_filter =
+      backend_client_
+          ? base::BindRepeating(&HistoryBackendClient::IsWebSafe,
+                                base::Unretained(backend_client_.get()))
+          : base::NullCallback();
   std::vector<std::unique_ptr<PageUsageData>> data = db_->QuerySegmentUsage(
       base::Time::Now() - base::TimeDelta::FromDays(days_back), result_count,
       url_filter);
@@ -2564,7 +2568,7 @@ void HistoryBackend::ScheduleCommit() {
     return;
 
   scheduled_commit_.Reset(
-      base::Bind(&HistoryBackend::Commit, base::Unretained(this)));
+      base::BindOnce(&HistoryBackend::Commit, base::Unretained(this)));
 
   task_runner_->PostDelayedTask(
       FROM_HERE, scheduled_commit_.callback(),

@@ -911,7 +911,8 @@ void ScrollableArea::InjectGestureScrollEvent(
   // it is not hit-testable.
   DCHECK(GetLayoutBox());
   GetChromeClient()->InjectGestureScrollEvent(
-      *GetLayoutBox()->GetFrame(), device, delta, granularity,
+      *GetLayoutBox()->GetFrame(), device,
+      gfx::Vector2dF(delta.Width(), delta.Height()), granularity,
       GetScrollElementId(), gesture_type);
 }
 

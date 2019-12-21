@@ -1714,14 +1714,18 @@
             ]
         }
     ],
-    "ContextMenuSearchWithGoogleLens": [
+    "ContextMenuSearchWithGoogleLensMultiArm": [
         {
             "platforms": [
                 "android"
             ],
             "experiments": [
                 {
-                    "name": "ContextMenuSearchWithGoogleLensActivate",
+                    "name": "ContextMenuSearchWithGoogleLensActivateSearchByImageTextDisabled",
+                    "params": {
+                        "minAgsaVersionName": "10.65",
+                        "useSearchByImageText": "false"
+                    },
                     "enable_features": [
                         "ContextMenuSearchWithGoogleLens"
                     ]
@@ -4203,6 +4207,26 @@
                     "name": "Beta_OnDeviceHeadSuggest_Enabled",
                     "enable_features": [
                         "OmniboxOnDeviceHeadProvider"
+                    ]
+                }
+            ]
+        }
+    ],
+    "OmniboxPreserveDefaultMatchAgainstAsyncUpdate": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Beta_Enabled",
+                    "enable_features": [
+                        "OmniboxPreserveDefaultMatchAgainstAsyncUpdate"
                     ]
                 }
             ]

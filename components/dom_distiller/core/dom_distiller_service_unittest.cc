@@ -35,11 +35,6 @@ class FakeViewRequestDelegate : public ViewRequestDelegate {
                void(ArticleDistillationUpdate article_update));
 };
 
-class MockArticleAvailableCallback {
- public:
-  MOCK_METHOD1(DistillationCompleted, void(bool));
-};
-
 void RunDistillerCallback(FakeDistiller* distiller,
                           std::unique_ptr<DistilledArticleProto> proto) {
   distiller->RunDistillerCallback(std::move(proto));

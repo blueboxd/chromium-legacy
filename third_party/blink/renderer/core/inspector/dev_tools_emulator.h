@@ -8,13 +8,16 @@
 #include <memory>
 #include "base/optional.h"
 #include "third_party/blink/public/platform/pointer_properties.h"
-#include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_viewport_style.h"
 #include "third_party/blink/public/web/web_device_emulation_params.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+
+namespace gfx {
+class PointF;
+}  // namespace gfx
 
 namespace blink {
 
@@ -75,7 +78,7 @@ class CORE_EXPORT DevToolsEmulator final
   // device metics.
   float InputEventsScaleForEmulation();
 
-  TransformationMatrix ForceViewportForTesting(const WebFloatPoint& position,
+  TransformationMatrix ForceViewportForTesting(const gfx::PointF& position,
                                                float scale) {
     return ForceViewport(position, scale);
   }
@@ -88,8 +91,7 @@ class CORE_EXPORT DevToolsEmulator final
   // Enables viewport override and returns the emulation transform to be used.
   // The |position| is in CSS pixels, and |scale| is relative to a page scale of
   // 1.0.
-  TransformationMatrix ForceViewport(const WebFloatPoint& position,
-                                     float scale);
+  TransformationMatrix ForceViewport(const gfx::PointF& position, float scale);
   // Disables viewport override and returns the emulation transform to be used.
   TransformationMatrix ResetViewport();
 

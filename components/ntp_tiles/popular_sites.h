@@ -46,7 +46,7 @@ class PopularSites {
   };
 
   using SitesVector = std::vector<Site>;
-  using FinishedCallback = base::Callback<void(bool /* success */)>;
+  using FinishedCallback = base::OnceCallback<void(bool /* success */)>;
 
   virtual ~PopularSites() = default;
 
@@ -63,7 +63,7 @@ class PopularSites {
   //
   // Must be called at most once on a given PopularSites object.
   virtual bool MaybeStartFetch(bool force_download,
-                               const FinishedCallback& callback) = 0;
+                               FinishedCallback callback) = 0;
 
   // Returns the cached list of available sections and their sites.
   virtual const std::map<SectionType, SitesVector>& sections() const = 0;

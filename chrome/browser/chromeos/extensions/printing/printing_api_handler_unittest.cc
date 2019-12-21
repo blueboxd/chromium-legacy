@@ -7,10 +7,13 @@
 #include <memory>
 #include <string>
 
+#include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/printing/cups_print_job.h"
 #include "chrome/browser/chromeos/printing/test_cups_print_job_manager.h"
 #include "chrome/browser/chromeos/printing/test_cups_printers_manager.h"
+#include "chrome/browser/chromeos/printing/test_cups_wrapper.h"
+#include "chrome/browser/chromeos/printing/test_printer_configurer.h"
 #include "chrome/browser/printing/print_preview_sticky_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
@@ -19,12 +22,15 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/printing/printer_configuration.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/event_router_factory.h"
 #include "extensions/browser/test_event_router.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/features/feature_channel.h"
+#include "printing/backend/print_backend.h"
+#include "printing/backend/test_print_backend.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -85,19 +91,6 @@ constexpr char kName[] = "name";
 constexpr char kDescription[] = "description";
 constexpr char kUri[] = "ipp://1.2.3.4/";
 
-// Creates a new TestCupsPrintJobManager for the given |context|.
-std::unique_ptr<KeyedService> BuildCupsPrintJobManager(
-    content::BrowserContext* context) {
-  return std::make_unique<chromeos::TestCupsPrintJobManager>(
-      Profile::FromBrowserContext(context));
-}
-
-// Creates a new TestCupsPrintersManager for the given |context|.
-std::unique_ptr<KeyedService> BuildCupsPrintersManager(
-    content::BrowserContext* context) {
-  return std::make_unique<chromeos::TestCupsPrintersManager>();
-}
-
 chromeos::Printer ConstructPrinter(const std::string& id,
                                    const std::string& name,
                                    const std::string& description,
@@ -126,12 +119,6 @@ class PrintingAPIHandlerUnittest : public testing::Test {
     testing_profile_ =
         profile_manager_->CreateTestingProfile(chrome::kInitialProfile);
 
-    chromeos::CupsPrintJobManagerFactory::GetInstance()->SetTestingFactory(
-        testing_profile_, base::BindRepeating(&BuildCupsPrintJobManager));
-    chromeos::CupsPrintersManagerFactory::GetInstance()->SetTestingFactory(
-        testing_profile_, base::BindRepeating(&BuildCupsPrintersManager));
-    event_router_ = CreateAndUseTestEventRouter(testing_profile_);
-
     const char kExtensionName[] = "Printing extension";
     const char kPermissionName[] = "printing";
     scoped_refptr<const Extension> extension =
@@ -141,22 +128,60 @@ class PrintingAPIHandlerUnittest : public testing::Test {
             .Build();
     ExtensionRegistry::Get(testing_profile_)->AddEnabled(extension);
 
-    printing_api_handler_ =
-        std::make_unique<PrintingAPIHandler>(testing_profile_);
+    print_job_manager_ = std::make_unique<chromeos::TestCupsPrintJobManager>(
+        Profile::FromBrowserContext(testing_profile_));
+    printers_manager_ = std::make_unique<chromeos::TestCupsPrintersManager>();
+    auto cups_wrapper = std::make_unique<chromeos::TestCupsWrapper>();
+    cups_wrapper_ = cups_wrapper.get();
+    test_backend_ = base::MakeRefCounted<printing::TestPrintBackend>();
+    printing::PrintBackend::SetPrintBackendForTesting(test_backend_.get());
+    event_router_ = CreateAndUseTestEventRouter(testing_profile_);
+
+    printing_api_handler_ = PrintingAPIHandler::CreateForTesting(
+        testing_profile_, event_router_,
+        ExtensionRegistry::Get(testing_profile_), print_job_manager_.get(),
+        printers_manager_.get(),
+        std::make_unique<chromeos::TestPrinterConfigurer>(),
+        std::move(cups_wrapper));
   }
 
   void TearDown() override {
     printing_api_handler_.reset();
 
+    test_backend_.reset();
+    printers_manager_.reset();
+    print_job_manager_.reset();
+
     testing_profile_ = nullptr;
     profile_manager_->DeleteTestingProfile(chrome::kInitialProfile);
+  }
+
+  void OnPrinterInfoRetrieved(
+      base::RepeatingClosure run_loop_closure,
+      base::Optional<base::Value> capabilities,
+      base::Optional<api::printing::PrinterStatus> status,
+      base::Optional<std::string> error) {
+    if (capabilities)
+      capabilities_ = capabilities.value().Clone();
+    else
+      capabilities_ = base::nullopt;
+    status_ = status;
+    error_ = error;
+    run_loop_closure.Run();
   }
 
  protected:
   content::BrowserTaskEnvironment task_environment_;
   TestingProfile* testing_profile_;
+  scoped_refptr<printing::TestPrintBackend> test_backend_;
   TestEventRouter* event_router_ = nullptr;
+  std::unique_ptr<chromeos::TestCupsPrintJobManager> print_job_manager_;
+  std::unique_ptr<chromeos::TestCupsPrintersManager> printers_manager_;
+  chromeos::TestCupsWrapper* cups_wrapper_;
   std::unique_ptr<PrintingAPIHandler> printing_api_handler_;
+  base::Optional<base::Value> capabilities_;
+  base::Optional<api::printing::PrinterStatus> status_;
+  base::Optional<std::string> error_;
 
  private:
   // TODO(crbug.com/992889): Remove this once the API is launched for stable.
@@ -172,16 +197,12 @@ TEST_F(PrintingAPIHandlerUnittest, EventIsDispatched) {
   PrintingEventObserver event_observer(
       event_router_, api::printing::OnJobStatusChanged::kEventName);
 
-  chromeos::TestCupsPrintJobManager* print_job_manager =
-      static_cast<chromeos::TestCupsPrintJobManager*>(
-          chromeos::CupsPrintJobManagerFactory::GetForBrowserContext(
-              testing_profile_));
   std::unique_ptr<chromeos::CupsPrintJob> print_job =
       std::make_unique<chromeos::CupsPrintJob>(
           chromeos::Printer(kPrinterId), kJobId, "title",
           /*total_page_number=*/3, ::printing::PrintJob::Source::EXTENSION,
           kExtensionId, chromeos::printing::proto::PrintSettings());
-  print_job_manager->CreatePrintJob(print_job.get());
+  print_job_manager_->CreatePrintJob(print_job.get());
 
   EXPECT_EQ(kExtensionId, event_observer.extension_id());
   const base::Value& event_args = event_observer.event_args();
@@ -203,16 +224,12 @@ TEST_F(PrintingAPIHandlerUnittest, PrintPreviewEventIsNotDispatched) {
   PrintingEventObserver event_observer(
       event_router_, api::printing::OnJobStatusChanged::kEventName);
 
-  chromeos::TestCupsPrintJobManager* print_job_manager =
-      static_cast<chromeos::TestCupsPrintJobManager*>(
-          chromeos::CupsPrintJobManagerFactory::GetForBrowserContext(
-              testing_profile_));
   std::unique_ptr<chromeos::CupsPrintJob> print_job =
       std::make_unique<chromeos::CupsPrintJob>(
           chromeos::Printer(kPrinterId), kJobId, "title",
           /*total_page_number=*/3, ::printing::PrintJob::Source::PRINT_PREVIEW,
           /*source_id=*/"", chromeos::printing::proto::PrintSettings());
-  print_job_manager->CreatePrintJob(print_job.get());
+  print_job_manager_->CreatePrintJob(print_job.get());
 
   // Check that the print job created on Print Preview doesn't show up.
   EXPECT_EQ("", event_observer.extension_id());
@@ -229,13 +246,9 @@ TEST_F(PrintingAPIHandlerUnittest, GetPrinters_NoPrinters) {
 
 // Test that calling GetPrinters() returns the mock printer.
 TEST_F(PrintingAPIHandlerUnittest, GetPrinters_OnePrinter) {
-  chromeos::TestCupsPrintersManager* printers_manager =
-      static_cast<chromeos::TestCupsPrintersManager*>(
-          chromeos::CupsPrintersManagerFactory::GetForBrowserContext(
-              testing_profile_));
   chromeos::Printer printer = ConstructPrinter(kId1, kName, kDescription, kUri,
                                                chromeos::Printer::SRC_POLICY);
-  printers_manager->AddPrinter(printer, chromeos::PrinterClass::kEnterprise);
+  printers_manager_->AddPrinter(printer, chromeos::PrinterClass::kEnterprise);
 
   std::vector<api::printing::Printer> printers =
       printing_api_handler_->GetPrinters();
@@ -254,16 +267,12 @@ TEST_F(PrintingAPIHandlerUnittest, GetPrinters_OnePrinter) {
 
 // Test that calling GetPrinters() returns printers of all classes.
 TEST_F(PrintingAPIHandlerUnittest, GetPrinters_ThreePrinters) {
-  chromeos::TestCupsPrintersManager* printers_manager =
-      static_cast<chromeos::TestCupsPrintersManager*>(
-          chromeos::CupsPrintersManagerFactory::GetForBrowserContext(
-              testing_profile_));
   chromeos::Printer printer1 = chromeos::Printer(kId1);
   chromeos::Printer printer2 = chromeos::Printer(kId2);
   chromeos::Printer printer3 = chromeos::Printer(kId3);
-  printers_manager->AddPrinter(printer1, chromeos::PrinterClass::kEnterprise);
-  printers_manager->AddPrinter(printer2, chromeos::PrinterClass::kSaved);
-  printers_manager->AddPrinter(printer3, chromeos::PrinterClass::kAutomatic);
+  printers_manager_->AddPrinter(printer1, chromeos::PrinterClass::kEnterprise);
+  printers_manager_->AddPrinter(printer2, chromeos::PrinterClass::kSaved);
+  printers_manager_->AddPrinter(printer3, chromeos::PrinterClass::kAutomatic);
 
   std::vector<api::printing::Printer> printers =
       printing_api_handler_->GetPrinters();
@@ -281,13 +290,9 @@ TEST_F(PrintingAPIHandlerUnittest, GetPrinters_IsDefault) {
   testing_profile_->GetPrefs()->SetString(
       prefs::kPrintPreviewDefaultDestinationSelectionRules,
       R"({"kind": "local", "idPattern": "id.*"})");
-  chromeos::TestCupsPrintersManager* printers_manager =
-      static_cast<chromeos::TestCupsPrintersManager*>(
-          chromeos::CupsPrintersManagerFactory::GetForBrowserContext(
-              testing_profile_));
   chromeos::Printer printer = ConstructPrinter(kId1, kName, kDescription, kUri,
                                                chromeos::Printer::SRC_POLICY);
-  printers_manager->AddPrinter(printer, chromeos::PrinterClass::kEnterprise);
+  printers_manager_->AddPrinter(printer, chromeos::PrinterClass::kEnterprise);
 
   std::vector<api::printing::Printer> printers =
       printing_api_handler_->GetPrinters();
@@ -316,13 +321,10 @@ TEST_F(PrintingAPIHandlerUnittest, GetPrinters_RecentlyUsedRank) {
     ]
   })");
   sticky_settings->SaveInPrefs(testing_profile_->GetPrefs());
-  chromeos::TestCupsPrintersManager* printers_manager =
-      static_cast<chromeos::TestCupsPrintersManager*>(
-          chromeos::CupsPrintersManagerFactory::GetForBrowserContext(
-              testing_profile_));
+
   chromeos::Printer printer = ConstructPrinter(kId1, kName, kDescription, kUri,
                                                chromeos::Printer::SRC_POLICY);
-  printers_manager->AddPrinter(printer, chromeos::PrinterClass::kEnterprise);
+  printers_manager_->AddPrinter(printer, chromeos::PrinterClass::kEnterprise);
 
   std::vector<api::printing::Printer> printers =
       printing_api_handler_->GetPrinters();
@@ -335,6 +337,97 @@ TEST_F(PrintingAPIHandlerUnittest, GetPrinters_RecentlyUsedRank) {
   // The "id1" printer is listed as second printer in the recently used printers
   // list, so we expect 1 as its rank.
   EXPECT_EQ(1, *idl_printer.recently_used_rank);
+}
+
+TEST_F(PrintingAPIHandlerUnittest, GetPrinterInfo_InvalidId) {
+  base::RunLoop run_loop;
+  printing_api_handler_->GetPrinterInfo(
+      kPrinterId,
+      base::BindOnce(&PrintingAPIHandlerUnittest::OnPrinterInfoRetrieved,
+                     base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
+
+  // Printer is not added to CupsPrintersManager, so we expect "Invalid printer
+  // id" error.
+  EXPECT_FALSE(capabilities_.has_value());
+  EXPECT_FALSE(status_.has_value());
+  ASSERT_TRUE(error_.has_value());
+  EXPECT_EQ("Invalid printer ID", error_.value());
+}
+
+TEST_F(PrintingAPIHandlerUnittest, GetPrinterInfo_NoCapabilities) {
+  chromeos::Printer printer = chromeos::Printer(kPrinterId);
+  printers_manager_->AddPrinter(printer, chromeos::PrinterClass::kEnterprise);
+  printers_manager_->InstallPrinter(kPrinterId);
+
+  base::RunLoop run_loop;
+  printing_api_handler_->GetPrinterInfo(
+      kPrinterId,
+      base::BindOnce(&PrintingAPIHandlerUnittest::OnPrinterInfoRetrieved,
+                     base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
+
+  EXPECT_FALSE(capabilities_.has_value());
+  ASSERT_TRUE(status_.has_value());
+  EXPECT_EQ(api::printing::PRINTER_STATUS_UNREACHABLE, status_.value());
+  EXPECT_FALSE(error_.has_value());
+}
+
+TEST_F(PrintingAPIHandlerUnittest, GetPrinterInfo) {
+  chromeos::Printer printer = chromeos::Printer(kPrinterId);
+  printers_manager_->AddPrinter(printer, chromeos::PrinterClass::kEnterprise);
+
+  // Add printer capabilities to |test_backend_|.
+  test_backend_->AddValidPrinter(
+      kPrinterId, std::make_unique<printing::PrinterSemanticCapsAndDefaults>());
+
+  // Mock CUPS wrapper to return predefined status for given printer.
+  printing::PrinterStatus::PrinterReason reason;
+  reason.reason = printing::PrinterStatus::PrinterReason::MEDIA_EMPTY;
+  cups_wrapper_->SetPrinterStatus(kPrinterId, reason);
+
+  base::RunLoop run_loop;
+  printing_api_handler_->GetPrinterInfo(
+      kPrinterId,
+      base::BindOnce(&PrintingAPIHandlerUnittest::OnPrinterInfoRetrieved,
+                     base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
+
+  ASSERT_TRUE(capabilities_.has_value());
+  const base::Value* capabilities_value = capabilities_->FindDictKey("printer");
+  ASSERT_TRUE(capabilities_value);
+
+  const base::Value* color = capabilities_value->FindDictKey("color");
+  ASSERT_TRUE(color);
+  const base::Value* color_options = color->FindListKey("option");
+  ASSERT_TRUE(color_options);
+  ASSERT_EQ(1u, color_options->GetList().size());
+  const std::string* color_type =
+      color_options->GetList()[0].FindStringKey("type");
+  ASSERT_TRUE(color_type);
+  EXPECT_EQ("STANDARD_MONOCHROME", *color_type);
+
+  const base::Value* page_orientation =
+      capabilities_value->FindDictKey("page_orientation");
+  ASSERT_TRUE(page_orientation);
+  const base::Value* page_orientation_options =
+      page_orientation->FindListKey("option");
+  ASSERT_TRUE(page_orientation_options);
+  ASSERT_EQ(3u, page_orientation_options->GetList().size());
+  std::vector<std::string> page_orientation_types;
+  for (const base::Value& page_orientation_option :
+       page_orientation_options->GetList()) {
+    const std::string* page_orientation_type =
+        page_orientation_option.FindStringKey("type");
+    ASSERT_TRUE(page_orientation_type);
+    page_orientation_types.push_back(*page_orientation_type);
+  }
+  EXPECT_THAT(page_orientation_types,
+              testing::UnorderedElementsAre("PORTRAIT", "LANDSCAPE", "AUTO"));
+
+  ASSERT_TRUE(status_.has_value());
+  EXPECT_EQ(api::printing::PRINTER_STATUS_OUT_OF_PAPER, status_.value());
+  EXPECT_FALSE(error_.has_value());
 }
 
 }  // namespace extensions

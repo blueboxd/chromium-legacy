@@ -942,6 +942,7 @@ class _Command(object):
     self._from_wrapper_script = from_wrapper_script
     self.args = None
     self.apk_helper = None
+    self.additional_apk_helpers = None
     self.install_dict = None
     self.devices = None
     self.is_bundle = is_bundle
@@ -1038,7 +1039,7 @@ class _Command(object):
 
     self._RegisterExtraArgs(group)
 
-  def _CreateApkHelper(self, args, incremental_apk_path, install_dict):
+  def _CreateApkHelpers(self, args, incremental_apk_path, install_dict):
     """Returns true iff self.apk_helper was created and assigned."""
     if self.apk_helper is None:
       if args.apk_path:
@@ -1050,6 +1051,11 @@ class _Command(object):
         _GenerateBundleApks(self.bundle_generation_info)
         self.apk_helper = apk_helper.ToHelper(
             self.bundle_generation_info.bundle_apks_path)
+    if args.additional_apk_paths and self.additional_apk_helpers is None:
+      self.additional_apk_helpers = [
+          apk_helper.ToHelper(apk_path)
+          for apk_path in args.additional_apk_paths
+      ]
     return self.apk_helper is not None
 
   def ProcessArgs(self, args):
@@ -1087,15 +1093,15 @@ class _Command(object):
                            'Select using --incremental or --non-incremental')
 
 
-    # Gate apk_helper creation with _CreateApkHelper since for bundles it takes
+    # Gate apk_helper creation with _CreateApkHelpers since for bundles it takes
     # a while to unpack the apks file from the aab file, so avoid this slowdown
     # for simple commands that don't need apk_helper.
     if self.needs_apk_helper:
-      if not self._CreateApkHelper(args, incremental_apk_path, install_dict):
+      if not self._CreateApkHelpers(args, incremental_apk_path, install_dict):
         self._parser.error('App is not built.')
 
     if self.needs_package_name and not args.package_name:
-      if self._CreateApkHelper(args, incremental_apk_path, install_dict):
+      if self._CreateApkHelpers(args, incremental_apk_path, install_dict):
         args.package_name = self.apk_helper.GetPackageName()
       elif self._from_wrapper_script:
         self._parser.error('App is not built.')
@@ -1105,7 +1111,7 @@ class _Command(object):
     self.devices = []
     if self.need_device_args:
       abis = None
-      if self._CreateApkHelper(args, incremental_apk_path, install_dict):
+      if self._CreateApkHelpers(args, incremental_apk_path, install_dict):
         abis = self.apk_helper.GetAbis()
       self.devices = device_utils.DeviceUtils.HealthyDevices(
           device_arg=args.devices,
@@ -1179,6 +1185,9 @@ class _InstallCommand(_Command):
               BASE_MODULE))
 
   def Run(self):
+    if self.additional_apk_helpers:
+      for additional_apk_helper in self.additional_apk_helpers:
+        _InstallApk(self.devices, additional_apk_helper, None)
     if self.is_bundle:
       _InstallBundle(self.devices, self.apk_helper, self.args.package_name,
                      self.args.command_line_flags_file, self.args.module,
@@ -1656,24 +1665,30 @@ def _RunInternal(parser, output_directory=None, bundle_generation_info=None):
     _SaveDeviceCaches(args.command.devices, output_directory)
 
 
-def Run(output_directory, apk_path, incremental_json, command_line_flags_file,
-        target_cpu, proguard_mapping_path):
+def Run(output_directory, apk_path, additional_apk_paths, incremental_json,
+        command_line_flags_file, target_cpu, proguard_mapping_path):
   """Entry point for generated wrapper scripts."""
   constants.SetOutputDirectory(output_directory)
   devil_chromium.Initialize(output_directory=output_directory)
   parser = argparse.ArgumentParser()
   exists_or_none = lambda p: p if p and os.path.exists(p) else None
+
+  for path in additional_apk_paths:
+    if not path or not os.path.exists(path):
+      raise Exception('Invalid additional APK path "{}"'.format(path))
   parser.set_defaults(
       command_line_flags_file=command_line_flags_file,
       target_cpu=target_cpu,
       apk_path=exists_or_none(apk_path),
+      additional_apk_paths=additional_apk_paths,
       incremental_json=exists_or_none(incremental_json),
       proguard_mapping_path=proguard_mapping_path)
   _RunInternal(parser, output_directory=output_directory)
 
 
-def RunForBundle(output_directory, bundle_path, bundle_apks_path, aapt2_path,
-                 keystore_path, keystore_password, keystore_alias, package_name,
+def RunForBundle(output_directory, bundle_path, bundle_apks_path,
+                 additional_apk_paths, aapt2_path, keystore_path,
+                 keystore_password, keystore_alias, package_name,
                  command_line_flags_file, proguard_mapping_path, target_cpu,
                  system_image_locales):
   """Entry point for generated app bundle wrapper scripts.
@@ -1682,6 +1697,7 @@ def RunForBundle(output_directory, bundle_path, bundle_apks_path, aapt2_path,
     output_dir: Chromium output directory path.
     bundle_path: Input bundle path.
     bundle_apks_path: Output bundle .apks archive path.
+    additional_apk_paths: Additional APKs to install prior to bundle install.
     aapt2_path: Aapt2 tool path.
     keystore_path: Keystore file path.
     keystore_password: Keystore password.
@@ -1706,8 +1722,12 @@ def RunForBundle(output_directory, bundle_path, bundle_apks_path, aapt2_path,
       keystore_alias=keystore_alias,
       system_image_locales=system_image_locales)
 
+  for path in additional_apk_paths:
+    if not path or not os.path.exists(path):
+      raise Exception('Invalid additional APK path "{}"'.format(path))
   parser = argparse.ArgumentParser()
   parser.set_defaults(
+      additional_apk_paths=additional_apk_paths,
       package_name=package_name,
       command_line_flags_file=command_line_flags_file,
       proguard_mapping_path=proguard_mapping_path,

@@ -75,7 +75,7 @@ template("weblayer_instrumentation") {
 weblayer_instrumentation("weblayer_instrumentation_test_apk") {
   apk_name = "WebLayerInstrumentationTest"
   apk_under_test = "//weblayer/shell/android:weblayer_shell_system_webview_apk"
-  use_webview_provider = "//android_webview:system_webview_apk"
+  use_webview_provider = system_webview_apk_target
 }
 
 # Runs the instrumentation tests loading the implementation from the WebLayer

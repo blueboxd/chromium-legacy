@@ -190,10 +190,11 @@ void JsonRequest::OnSimpleLoaderComplete(
              /*error_details=*/base::StringPrintf(" %d", response_code));
   } else {
     last_response_string_ = std::move(*response_body);
-    parse_json_callback_.Run(
-        last_response_string_,
-        base::Bind(&JsonRequest::OnJsonParsed, weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&JsonRequest::OnJsonError, weak_ptr_factory_.GetWeakPtr()));
+    parse_json_callback_.Run(last_response_string_,
+                             base::BindOnce(&JsonRequest::OnJsonParsed,
+                                            weak_ptr_factory_.GetWeakPtr()),
+                             base::BindOnce(&JsonRequest::OnJsonError,
+                                            weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

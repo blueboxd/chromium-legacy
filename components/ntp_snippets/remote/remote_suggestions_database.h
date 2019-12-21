@@ -61,7 +61,7 @@ class RemoteSuggestionsDatabase {
   bool IsErrorState() const;
 
   // Set a callback to be called when the database enters an error state.
-  void SetErrorCallback(const base::Closure& error_callback);
+  void SetErrorCallback(const base::RepeatingClosure& error_callback);
 
   // Loads all snippets from storage and passes them to |callback|.
   void LoadSnippets(SnippetsCallback callback);
@@ -144,7 +144,7 @@ class RemoteSuggestionsDatabase {
   std::vector<std::pair<std::string, SnippetImageCallback>>
       pending_image_callbacks_;
 
-  base::Closure error_callback_;
+  base::RepeatingClosure error_callback_;
 
   base::WeakPtrFactory<RemoteSuggestionsDatabase> weak_ptr_factory_{this};
 

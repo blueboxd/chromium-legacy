@@ -608,7 +608,6 @@ struct ManagedWiFiProperties {
   ManagedBoolean? hidden_ssid;
   // Note: |passphrase| contains a placeholder if set to avoid leaking secrets.
   ManagedString? passphrase;
-  ManagedInt32? roam_threshold;
   ManagedString ssid;
   SecurityType security;
   int32 signal_strength = 0;

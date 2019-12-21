@@ -6,23 +6,31 @@ import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
   deps = [
+    ":manage_input_methods_page",
     ":os_add_languages_dialog",
     ":os_languages_page",
     ":os_languages_section",
     "../../languages_page:languages",
     "../../languages_page:languages_browser_proxy",
     "../../languages_page:languages_types",
-    "../../languages_page:manage_input_methods_page",
   ]
+}
+
+js_library("manage_input_methods_page") {
+  deps = [
+    "../../languages_page:languages_types",
+    "../../prefs",
+  ]
+  externs_list = [ "$externs_path/language_settings_private.js" ]
 }
 
 js_library("os_languages_section") {
   deps = [
+    ":manage_input_methods_page",
     ":os_languages_page",
     "../..:route",
     "../../languages_page:languages",
     "../../languages_page:languages_types",
-    "../../languages_page:manage_input_methods_page",
     "../../settings_page:settings_animated_pages",
     "../../settings_page:settings_subpage",
     "//ui/webui/resources/js:assert",

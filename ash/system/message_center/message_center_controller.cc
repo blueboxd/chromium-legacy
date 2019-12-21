@@ -97,7 +97,8 @@ MessageCenterController::~MessageCenterController() {
 }
 
 void MessageCenterController::SetArcNotificationsInstance(
-    arc::mojom::NotificationsInstancePtr arc_notification_instance) {
+    mojo::PendingRemote<arc::mojom::NotificationsInstance>
+        arc_notification_instance) {
   if (!arc_notification_manager_) {
     arc_notification_manager_ = std::make_unique<ArcNotificationManager>(
         std::make_unique<ArcNotificationManagerDelegateImpl>(),

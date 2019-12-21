@@ -42,6 +42,7 @@ class ASH_EXPORT DictationButtonTray : public TrayBackgroundView,
   void OnAccessibilityStatusChanged() override;
 
   // TrayBackgroundView:
+  void Initialize() override;
   void ClickedOutsideBubble() override;
   base::string16 GetAccessibleNameForTray() override;
   void HideBubbleWithView(const TrayBubbleView* bubble_view) override;

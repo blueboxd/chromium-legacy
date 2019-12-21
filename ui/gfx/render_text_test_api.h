@@ -29,12 +29,11 @@ class RenderTextTestApi {
 
   // Callers must ensure that the associated RenderText object is a
   // RenderTextHarfBuzz instance.
-  const internal::TextRunList* GetHarfBuzzRunList() const {
+  internal::TextRunList* GetHarfBuzzRunList() {
     return render_text_->GetRunList();
   }
 
   void DrawVisualText(internal::SkiaTextRenderer* renderer, Range selection) {
-    render_text_->EnsureLayout();
     render_text_->DrawVisualText(renderer, selection);
   }
 

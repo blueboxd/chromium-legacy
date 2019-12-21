@@ -16,6 +16,7 @@ import argparse
 import collections
 import contextlib
 import filecmp
+import logging
 import multiprocessing.pool
 import os
 import re
@@ -32,11 +33,6 @@ from util import diff_utils
 from util import manifest_utils
 from util import resource_utils
 
-
-# Name of environment variable that can be used to force this script to
-# put temporary resource files into specific sub-directories, instead of
-# temporary ones.
-_ENV_DEBUG_VARIABLE = 'ANDROID_DEBUG_TEMP_RESOURCES_DIR'
 
 # Import jinja2 from third_party/jinja2
 sys.path.insert(1, os.path.join(build_utils.DIR_SOURCE_ROOT, 'third_party'))
@@ -661,8 +657,10 @@ def _PackageApk(options, build):
   Returns:
     The manifest package name for the APK.
   """
+  logging.debug('Extracting resource .zips')
   dep_subdirs = resource_utils.ExtractDeps(options.dependencies_res_zips,
                                            build.deps_dir)
+  logging.debug('Applying locale transformations')
   path_info = resource_utils.ResourceInfoFile()
   _DuplicateZhResources(dep_subdirs, path_info)
   _RenameLocaleResourceDirs(dep_subdirs, path_info)
@@ -672,6 +670,7 @@ def _PackageApk(options, build):
   # Create a function that selects which resource files should be packaged
   # into the final output. Any file that does not pass the predicate will
   # be removed below.
+  logging.debug('Applying file-based blacklist')
   keep_predicate = _CreateKeepPredicate(options.resource_blacklist_regex,
                                         options.resource_blacklist_exceptions)
   png_paths = []
@@ -682,7 +681,9 @@ def _PackageApk(options, build):
       elif f.endswith('.png'):
         png_paths.append((f, directory))
   if png_paths and options.png_to_webp:
+    logging.debug('Converting png->webp')
     _ConvertToWebP(options.webp_binary, png_paths, path_info)
+  logging.debug('Applying drawable transformations')
   for directory in dep_subdirs:
     _MoveImagesToNonMdpiFolders(directory, path_info)
     _RemoveImageExtensions(directory, path_info)
@@ -764,13 +765,16 @@ def _PackageApk(options, build):
     _, arsc_path = tempfile.mkstmp()
   link_command += ['-o', build.arsc_path]
 
+  logging.debug('Starting: aapt2 link')
   link_proc = subprocess.Popen(link_command)
 
   # Create .res.info file in parallel.
   _CreateResourceInfoFile(path_info, build.info_path,
                           options.dependencies_res_zips)
+  logging.debug('Created .res.info file')
 
   exit_code = link_proc.wait()
+  logging.debug('Finished: aapt2 link')
   if exit_code:
     raise subprocess.CalledProcessError(exit_code, link_command)
 
@@ -787,6 +791,7 @@ def _PackageApk(options, build):
                   '''.format(package=desired_manifest_package_name)
       proguard_file.write(textwrap.dedent(keep_rule))
 
+  logging.debug('Running aapt2 convert')
   build_utils.CheckOutput([
       options.aapt2_path, 'convert', '--output-format', 'proto', '-o',
       build.proto_path, build.arsc_path
@@ -851,6 +856,7 @@ def _OptimizeApk(output, options, temp_dir, unoptimized_path, r_txt_path):
         '--resource-path-shortening-map', options.resources_path_map_out_path
     ]
 
+  logging.debug('Running aapt2 optimize')
   build_utils.CheckOutput(
       optimize_command, print_stdout=False, print_stderr=False)
 
@@ -915,11 +921,12 @@ def _WriteOutputs(options, build):
 
 
 def main(args):
+  build_utils.InitLogging('RESOURCE_DEBUG')
   args = build_utils.ExpandFileArgs(args)
   options = _ParseArgs(args)
 
   path = options.arsc_path or options.proto_path
-  debug_temp_resources_dir = os.environ.get(_ENV_DEBUG_VARIABLE)
+  debug_temp_resources_dir = os.environ.get('TEMP_RESOURCES_DIR')
   if debug_temp_resources_dir:
     path = os.path.join(debug_temp_resources_dir, os.path.basename(path))
   else:
@@ -968,15 +975,16 @@ def main(args):
     else:
       package_for_library = None
 
+    logging.debug('Creating R.srcjar')
     resource_utils.CreateRJavaFiles(
         build.srcjar_dir, package_for_library, build.r_txt_path,
         options.extra_res_packages, options.extra_r_text_files,
         rjava_build_options, options.srcjar_out, custom_root_package_name,
         grandparent_custom_package_name, options.extra_main_r_text_files)
-
     build_utils.ZipDir(build.srcjar_path, build.srcjar_dir)
 
     # Sanity check that the created resources have the expected package ID.
+    logging.debug('Performing sanity check')
     if options.package_id:
       expected_id = options.package_id
     elif options.shared_resources:
@@ -990,6 +998,7 @@ def main(args):
       raise Exception(
           'Invalid package ID 0x%x (expected 0x%x)' % (package_id, expected_id))
 
+    logging.debug('Copying outputs')
     _WriteOutputs(options, build)
 
   if options.depfile:

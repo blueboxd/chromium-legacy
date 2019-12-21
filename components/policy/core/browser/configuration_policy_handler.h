@@ -221,8 +221,8 @@ class POLICY_EXPORT StringMappingListPolicyHandler
   };
 
   // Callback that generates the map for this instance.
-  using GenerateMapCallback =
-      base::Callback<void(std::vector<std::unique_ptr<MappingEntry>>*)>;
+  using GenerateMapCallback = base::RepeatingCallback<void(
+      std::vector<std::unique_ptr<MappingEntry>>*)>;
 
   StringMappingListPolicyHandler(const char* policy_name,
                                  const char* pref_path,

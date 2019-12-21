@@ -41,6 +41,10 @@
 #include "third_party/blink/public/web/web_input_method_controller.h"
 #include "v8/include/v8.h"
 
+namespace gfx {
+class PointF;
+}  // namespace gfx
+
 namespace blink {
 
 class WebCoalescedInputEvent;
@@ -52,7 +56,6 @@ struct WebCursorInfo;
 struct WebPrintParams;
 struct WebPrintPresetOptions;
 struct WebPoint;
-struct WebFloatPoint;
 struct WebRect;
 struct WebURLError;
 template <typename T>
@@ -124,8 +127,8 @@ class WebPlugin {
   virtual bool HandleDragStatusUpdate(WebDragStatus,
                                       const WebDragData&,
                                       WebDragOperationsMask,
-                                      const WebFloatPoint& position,
-                                      const WebFloatPoint& screen_position) {
+                                      const gfx::PointF& position,
+                                      const gfx::PointF& screen_position) {
     return false;
   }
 

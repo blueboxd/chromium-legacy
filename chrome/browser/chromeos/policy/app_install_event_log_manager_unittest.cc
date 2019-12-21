@@ -13,6 +13,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
+#include "base/test/gmock_move_support.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/test/test_simple_task_runner.h"
@@ -40,7 +41,6 @@ using testing::AnyNumber;
 using testing::Invoke;
 using testing::Mock;
 using testing::Pointee;
-using testing::SaveArg;
 using testing::_;
 
 namespace em = enterprise_management;
@@ -240,12 +240,12 @@ class AppInstallEventLogManagerTest : public testing::Test {
     BuildReport();
 
     EXPECT_CALL(cloud_policy_client_,
-                UploadRealtimeReport(MatchEvents(&events_value_), _))
-        .WillOnce(SaveArg<1>(callback));
+                UploadRealtimeReport_(MatchEvents(&events_value_), _))
+        .WillOnce(MoveArg<1>(callback));
   }
 
-  void ReportUploadSuccess(const CloudPolicyClient::StatusCallback& callback) {
-    callback.Run(true /* success */);
+  void ReportUploadSuccess(CloudPolicyClient::StatusCallback callback) {
+    std::move(callback).Run(true /* success */);
     FlushNonDelayedTasks();
   }
 
@@ -254,10 +254,10 @@ class AppInstallEventLogManagerTest : public testing::Test {
     BuildReport();
 
     EXPECT_CALL(cloud_policy_client_,
-                UploadRealtimeReport(MatchEvents(&events_value_), _))
+                UploadRealtimeReport_(MatchEvents(&events_value_), _))
         .WillOnce(Invoke(
-            [](base::Value, const CloudPolicyClient::StatusCallback& callback) {
-              callback.Run(true /* success */);
+            [](base::Value&, CloudPolicyClient::StatusCallback& callback) {
+              std::move(callback).Run(true /* success */);
             }));
   }
 
@@ -622,7 +622,7 @@ TEST_F(AppInstallEventLogManagerTest, RequestUploadAddUpload) {
   EXPECT_FALSE(base::PathExists(log_file_path_));
 
   AddLogEntry(0 /* app_index */);
-  ReportUploadSuccess(upload_callback);
+  ReportUploadSuccess(std::move(upload_callback));
   VerifyAndDeleteLogFile();
 
   EXPECT_CALL(cloud_policy_client_, UploadAppInstallReport(_, _)).Times(0);
@@ -670,7 +670,7 @@ TEST_F(AppInstallEventLogManagerTest, RequestUploadAddExpeditedUpload) {
   for (int i = 0; i <= kMaxSizeExpeditedUploadThreshold; ++i) {
     AddLogEntry(0 /* app_index */);
   }
-  ReportUploadSuccess(upload_callback);
+  ReportUploadSuccess(std::move(upload_callback));
   VerifyAndDeleteLogFile();
 
   EXPECT_CALL(cloud_policy_client_, UploadAppInstallReport(_, _)).Times(0);
@@ -722,7 +722,7 @@ TEST_F(AppInstallEventLogManagerTest, RequestExpeditedUploadAddUpload) {
   EXPECT_FALSE(base::PathExists(log_file_path_));
 
   AddLogEntry(0 /* app_index */);
-  ReportUploadSuccess(upload_callback);
+  ReportUploadSuccess(std::move(upload_callback));
   VerifyAndDeleteLogFile();
 
   EXPECT_CALL(cloud_policy_client_, UploadAppInstallReport(_, _)).Times(0);

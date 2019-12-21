@@ -28,7 +28,7 @@ class Schema;
 // up policy values for display.
 class POLICY_EXPORT ConfigurationPolicyHandlerList {
  public:
-  typedef base::Callback<void(PolicyHandlerParameters*)>
+  typedef base::RepeatingCallback<void(PolicyHandlerParameters*)>
       PopulatePolicyHandlerParametersCallback;
 
   explicit ConfigurationPolicyHandlerList(
@@ -61,9 +61,9 @@ class POLICY_EXPORT ConfigurationPolicyHandlerList {
 
 // Callback with signature of BuildHandlerList(), to be used in constructor of
 // BrowserPolicyConnector.
-typedef base::Callback<std::unique_ptr<ConfigurationPolicyHandlerList>(
-    const Schema&)>
-    HandlerListFactory;
+using HandlerListFactory =
+    base::RepeatingCallback<std::unique_ptr<ConfigurationPolicyHandlerList>(
+        const Schema&)>;
 
 }  // namespace policy
 

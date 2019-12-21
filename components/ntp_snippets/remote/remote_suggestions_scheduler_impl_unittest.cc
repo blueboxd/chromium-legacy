@@ -112,10 +112,11 @@ class MockRemoteSuggestionsProvider : public RemoteSuggestionsProvider {
   MOCK_CONST_METHOD0(ready, bool());
   MOCK_METHOD1(GetCategoryStatus, CategoryStatus(Category));
   MOCK_METHOD1(GetCategoryInfo, CategoryInfo(Category));
-  MOCK_METHOD3(ClearHistory,
-               void(base::Time begin,
-                    base::Time end,
-                    const base::Callback<bool(const GURL& url)>& filter));
+  MOCK_METHOD3(
+      ClearHistory,
+      void(base::Time begin,
+           base::Time end,
+           const base::RepeatingCallback<bool(const GURL& url)>& filter));
   // Gmock cannot mock a method with movable-only type callback
   // FetchDoneCallback as a parameter. As a work-around, this function calls the
   // mock function with value passed by pointer. The mock function may then be

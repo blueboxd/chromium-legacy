@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/views/tabs/tab_group_header.h"
 #include "chrome/browser/ui/views/tabs/tab_group_views.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "components/tab_groups/tab_group_visual_data.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/material_design/material_design_controller_observer.h"
 #include "ui/gfx/color_palette.h"
@@ -177,9 +178,10 @@ class TabStrip : public views::AccessiblePaneView,
   // This should be called when a tab is added to or removed from a group.
   void OnGroupContentsChanged(tab_groups::TabGroupId group);
 
-  // Updates the group's tabs and header when its associated
-  // tab_groups::TabGroupVisualData changes. This should be called when the
-  // result of |TabStripController::GetVisualDataForGroup(group)| changes.
+  // Updates the group's tabs and header when its associated TabGroupVisualData
+  // changes. This should be called when the result of
+  // |TabStripController::GetGroupTitle(group)| or
+  // |TabStripController::GetGroupColorId(group)| changes.
   void OnGroupVisualsChanged(tab_groups::TabGroupId group);
 
   // Destroys the views associated with a recently deleted tab group. The
@@ -303,8 +305,11 @@ class TabStrip : public views::AccessiblePaneView,
   gfx::Rect GetTabAnimationTargetBounds(const Tab* tab) override;
   float GetHoverOpacityForTab(float range_parameter) const override;
   float GetHoverOpacityForRadialHighlight() const override;
-  const tab_groups::TabGroupVisualData* GetVisualDataForGroup(
+  base::string16 GetGroupTitle(tab_groups::TabGroupId group) const override;
+  tab_groups::TabGroupColorId GetGroupColorId(
       tab_groups::TabGroupId group) const override;
+  SkColor GetPaintedGroupColor(
+      tab_groups::TabGroupColorId color_id) const override;
   void SetVisualDataForGroup(
       tab_groups::TabGroupId group,
       tab_groups::TabGroupVisualData visual_data) override;

@@ -31,7 +31,6 @@ INNER JOIN (
     `httparchive.summary_pages.2018_07_15_desktop`) AS pages
 ON
   requests.pageid = pages.pageid
-  
 UNION ALL
 
 SELECT
@@ -84,7 +83,7 @@ An example using [EasyList](https://easylist.to/easylist/easylist.txt) follows:
 ## 3. Generate the smaller filter list
 ```sh
 1. ninja -C out/Release subresource_filter_tools
-2. cat site_urls.*.json.gz | gunzip - | out/Release/subresource_filter_tool --ruleset=easylist_indexed match_rules > ordered_list.txt
+2. sh components/subresource_filter/tools/filter_many.sh 8 . out/Release/subresource_filter_tool easylist_indexed > ordered_list.txt
 3. head -n 1000 ordered_list.txt | cut -d' ' -f2 > smaller_list.txt
 ```
 

@@ -130,6 +130,10 @@ public class SearchActivity extends AsyncInitializationActivity
             protected ActivityKeyboardVisibilityDelegate createKeyboardVisibilityDelegate() {
                 return new SingleWindowKeyboardVisibilityDelegate(getActivity());
             }
+            @Override
+            public ModalDialogManager getModalDialogManager() {
+                return SearchActivity.this.getModalDialogManager();
+            }
         };
     }
 

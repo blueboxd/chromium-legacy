@@ -41,11 +41,10 @@ class DistillerURLFetcher {
   virtual ~DistillerURLFetcher();
 
   // Indicates when a fetch is done.
-  typedef base::Callback<void(const std::string& data)> URLFetcherCallback;
+  using URLFetcherCallback = base::OnceCallback<void(const std::string& data)>;
 
   // Fetches a |url|. Notifies when the fetch is done via |callback|.
-  virtual void FetchURL(const std::string& url,
-                        const URLFetcherCallback& callback);
+  virtual void FetchURL(const std::string& url, URLFetcherCallback callback);
 
  protected:
   virtual std::unique_ptr<network::SimpleURLLoader> CreateURLFetcher(

@@ -15,7 +15,7 @@ TRACE_GUID_REGISTRATION EtwTraceProvider::obligatory_guid_registration_ = {
 EtwTraceProvider::EtwTraceProvider(const GUID& provider_name)
     : provider_name_(provider_name) {}
 
-EtwTraceProvider::EtwTraceProvider() {}
+EtwTraceProvider::EtwTraceProvider() = default;
 
 EtwTraceProvider::~EtwTraceProvider() {
   Unregister();

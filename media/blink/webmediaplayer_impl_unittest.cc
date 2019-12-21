@@ -63,8 +63,6 @@
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
-#include "third_party/blink/public/web/web_scoped_user_gesture.h"
-#include "third_party/blink/public/web/web_user_gesture_indicator.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/blink/public/web/web_widget.h"
 #include "url/gurl.h"
@@ -1880,17 +1878,17 @@ TEST_F(WebMediaPlayerImplTest, VideoLockedWhenPausedWhenHidden) {
   EXPECT_TRUE(IsVideoLockedWhenPausedWhenHidden());
 
   // With a user gesture it does unlock the player.
-  blink::WebScopedUserGesture user_gesture1(GetWebLocalFrame());
+  GetWebLocalFrame()->NotifyUserActivation();
   Play();
   EXPECT_FALSE(IsVideoLockedWhenPausedWhenHidden());
 
   // Pause without a user gesture doesn't lock the player.
-  blink::WebUserGestureIndicator::ConsumeUserGesture(GetWebLocalFrame());
+  GetWebLocalFrame()->ConsumeTransientUserActivation();
   Pause();
   EXPECT_FALSE(IsVideoLockedWhenPausedWhenHidden());
 
   // With a user gesture, pause does lock the player.
-  blink::WebScopedUserGesture user_gesture2(GetWebLocalFrame());
+  GetWebLocalFrame()->NotifyUserActivation();
   Pause();
   EXPECT_TRUE(IsVideoLockedWhenPausedWhenHidden());
 

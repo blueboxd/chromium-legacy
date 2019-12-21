@@ -414,10 +414,8 @@ NSString* kDevViewSourceKey = @"DevViewSource";
   _articlesForYouItem = [self articlesForYouSwitchItem];
   [model addItem:_articlesForYouItem
       toSectionWithIdentifier:SectionIdentifierAdvanced];
-  if (base::FeatureList::IsEnabled(kLanguageSettings)) {
-    [model addItem:[self languageSettingsDetailItem]
-        toSectionWithIdentifier:SectionIdentifierAdvanced];
-  }
+  [model addItem:[self languageSettingsDetailItem]
+      toSectionWithIdentifier:SectionIdentifierAdvanced];
   [model addItem:[self contentSettingsDetailItem]
       toSectionWithIdentifier:SectionIdentifierAdvanced];
   [model addItem:[self bandwidthManagementDetailItem]

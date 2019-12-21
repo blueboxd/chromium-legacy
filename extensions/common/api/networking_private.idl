@@ -652,7 +652,6 @@ namespace networkingPrivate {
     DOMString? HexSSID;
     boolean? HiddenSSID;
     DOMString? Passphrase;
-    long? RoamThreshold;
     DOMString? SSID;
     DOMString? Security;
     long? SignalStrength;
@@ -670,7 +669,6 @@ namespace networkingPrivate {
     ManagedDOMString? HexSSID;
     ManagedBoolean? HiddenSSID;
     ManagedDOMString? Passphrase;
-    ManagedLong? RoamThreshold;
     ManagedDOMString? SSID;
     ManagedDOMString Security;
     long? SignalStrength;

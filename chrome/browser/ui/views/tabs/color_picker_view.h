@@ -22,8 +22,6 @@ class ColorPickerElementView;
 // Lets users pick from a list of colors displayed as circles that can be
 // clicked on. Similar to radio buttons, exactly one is selected after the first
 // selection is made.
-//
-// TODO(crbug.com/989174): make this keyboard and screenreader accessible.
 class ColorPickerView : public views::View {
  public:
   using ColorSelectedCallback = base::RepeatingCallback<void()>;
@@ -36,8 +34,9 @@ class ColorPickerView : public views::View {
       ColorSelectedCallback callback);
   ~ColorPickerView() override;
 
+  // Returns the index of the selected element, if any.
   // After the callback is called, this is guaranteed to never return nullopt.
-  base::Optional<SkColor> GetSelectedColor() const;
+  base::Optional<int> GetSelectedElement() const;
 
   // views::View:
   views::View* GetSelectedViewForGroup(int group) override;

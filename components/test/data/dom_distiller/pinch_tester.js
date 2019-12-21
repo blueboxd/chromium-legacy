@@ -2,10 +2,51 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-const pinchtest = (function() {
-  'use strict';
+class Touch {
+  constructor() {
+    this.points = {};
+  }
 
-  function assertTrue(condition, message) {
+  /** @private */
+  lowestID_() {
+    let ans = -1;
+    for (const key in this.points) {
+      ans = Math.max(ans, key);
+    }
+    return ans + 1;
+  }
+
+  updateTouchPoint(key, x, y, offsetX, offsetY) {
+    const e = {clientX: x, clientY: y, pageX: x, pageY: y};
+    if (typeof (offsetX) === 'number') {
+      e.clientX += offsetX;
+    }
+    if (typeof (offsetY) === 'number') {
+      e.clientY += offsetY;
+    }
+    this.points[key] = e;
+  }
+
+  addTouchPoint(x, y, offsetX, offsetY) {
+    this.updateTouchPoint(this.lowestID_(), x, y, offsetX, offsetY);
+  }
+
+  releaseTouchPoint(key) {
+    delete this.points[key];
+  }
+
+  events() {
+    const arr = [];
+    for (const key in this.points) {
+      arr.push(this.points[key]);
+    }
+    return {touches: arr, preventDefault: function() {}};
+  }
+}
+
+class PinchTest {
+  /** @private */
+  assertTrue_(condition, message) {
     if (!condition) {
       message = message || 'Assertion failed';
       console.trace();
@@ -13,7 +54,8 @@ const pinchtest = (function() {
     }
   }
 
-  function assertClose(a, b, message) {
+  /** @private */
+  assertClose_(a, b, message) {
     if (Math.abs(a - b) > 1e-5) {
       message = message || 'Assertion failed';
       console.log('"', a, '" and "', b, '" are not close.');
@@ -22,7 +64,8 @@ const pinchtest = (function() {
     }
   }
 
-  function isEquivalent(a, b) {
+  /** @private */
+  isEquivalent_(a, b) {
     // Create arrays of property names
     const aProps = Object.getOwnPropertyNames(a);
     const bProps = Object.getOwnPropertyNames(b);
@@ -48,8 +91,9 @@ const pinchtest = (function() {
     return true;
   }
 
-  function assertEqual(a, b, message) {
-    if (!isEquivalent(a, b)) {
+  /** @private */
+  assertEqual_(a, b, message) {
+    if (!this.isEquivalent_(a, b)) {
       message = message || 'Assertion failed';
       console.log('"', a, '" and "', b, '" are not equal');
       console.trace();
@@ -57,105 +101,67 @@ const pinchtest = (function() {
     }
   }
 
-  const touch = (function() {
-    'use strict';
-    const points = {};
-    function lowestID() {
-      let ans = -1;
-      for (const key in points) {
-        ans = Math.max(ans, key);
-      }
-      return ans + 1;
-    }
-    function changeTouchPoint(key, x, y, offsetX, offsetY) {
-      const e = {clientX: x, clientY: y, pageX: x, pageY: y};
-      if (typeof (offsetX) === 'number') {
-        e.clientX += offsetX;
-      }
-      if (typeof (offsetY) === 'number') {
-        e.clientY += offsetY;
-      }
-      points[key] = e;
-    }
-    return {
-      addTouchPoint: function(x, y, offsetX, offsetY) {
-        changeTouchPoint(lowestID(), x, y, offsetX, offsetY);
-      },
-      updateTouchPoint: changeTouchPoint,
-      releaseTouchPoint: function(key) {
-        delete points[key];
-      },
-      events: function() {
-        const arr = [];
-        for (const key in points) {
-          arr.push(points[key]);
-        }
-        return {touches: arr, preventDefault: function() {}};
-      }
-    };
-  });
-
-  function testZoomOut() {
+  testZoomOut() {
     pincher.reset();
-    const t = new touch();
+    const t = new Touch();
 
     // Make sure start event doesn't change state
     let oldState = pincher.status();
     t.addTouchPoint(100, 100);
     pincher.handleTouchStart(t.events());
-    assertEqual(oldState, pincher.status());
+    this.assertEqual_(oldState, pincher.status());
     t.addTouchPoint(300, 300);
     pincher.handleTouchStart(t.events());
-    assertEqual(oldState, pincher.status());
+    this.assertEqual_(oldState, pincher.status());
 
     // Make sure extra move event doesn't change state
     pincher.handleTouchMove(t.events());
-    assertEqual(oldState, pincher.status());
+    this.assertEqual_(oldState, pincher.status());
 
     t.updateTouchPoint(0, 150, 150);
     t.updateTouchPoint(1, 250, 250);
     pincher.handleTouchMove(t.events());
-    assertTrue(pincher.status().clampedScale < 0.9);
+    this.assertTrue_(pincher.status().clampedScale < 0.9);
 
     // Make sure end event doesn't change state
     oldState = pincher.status();
     t.releaseTouchPoint(1);
     pincher.handleTouchEnd(t.events());
-    assertEqual(oldState, pincher.status());
+    this.assertEqual_(oldState, pincher.status());
     t.releaseTouchPoint(0);
     pincher.handleTouchEnd(t.events());
-    assertEqual(oldState, pincher.status());
+    this.assertEqual_(oldState, pincher.status());
   }
 
-  function testZoomIn() {
+  testZoomIn() {
     pincher.reset();
-    const t = new touch();
+    const t = new Touch();
 
     let oldState = pincher.status();
     t.addTouchPoint(150, 150);
     pincher.handleTouchStart(t.events());
-    assertEqual(oldState, pincher.status());
+    this.assertEqual_(oldState, pincher.status());
     t.addTouchPoint(250, 250);
     pincher.handleTouchStart(t.events());
-    assertEqual(oldState, pincher.status());
+    this.assertEqual_(oldState, pincher.status());
 
     t.updateTouchPoint(0, 100, 100);
     t.updateTouchPoint(1, 300, 300);
     pincher.handleTouchMove(t.events());
-    assertTrue(pincher.status().clampedScale > 1.1);
+    this.assertTrue_(pincher.status().clampedScale > 1.1);
 
     oldState = pincher.status();
     t.releaseTouchPoint(1);
     pincher.handleTouchEnd(t.events());
-    assertEqual(oldState, pincher.status());
+    this.assertEqual_(oldState, pincher.status());
     t.releaseTouchPoint(0);
     pincher.handleTouchEnd(t.events());
-    assertEqual(oldState, pincher.status());
+    this.assertEqual_(oldState, pincher.status());
   }
 
-  function testZoomOutAndPan() {
+  testZoomOutAndPan() {
     pincher.reset();
-    const t = new touch();
+    const t = new Touch();
     t.addTouchPoint(100, 100);
     pincher.handleTouchStart(t.events());
     t.addTouchPoint(300, 300);
@@ -171,14 +177,14 @@ const pinchtest = (function() {
     t.releaseTouchPoint(0);
     pincher.handleTouchEnd(t.events());
 
-    assertClose(pincher.status().shiftX, 10);
-    assertClose(pincher.status().shiftY, -5);
-    assertTrue(pincher.status().clampedScale < 0.9);
+    this.assertClose_(pincher.status().shiftX, 10);
+    this.assertClose_(pincher.status().shiftY, -5);
+    this.assertTrue_(pincher.status().clampedScale < 0.9);
   }
 
-  function testReversible() {
+  testReversible() {
     pincher.reset();
-    const t = new touch();
+    const t = new Touch();
     t.addTouchPoint(100, 100);
     pincher.handleTouchStart(t.events());
     t.addTouchPoint(300, 300);
@@ -201,26 +207,26 @@ const pinchtest = (function() {
     pincher.handleTouchEnd(t.events());
     t.releaseTouchPoint(0);
     pincher.handleTouchEnd(t.events());
-    assertClose(pincher.status().clampedScale, 1);
+    this.assertClose_(pincher.status().clampedScale, 1);
   }
 
-  function testMultitouchZoomOut() {
+  testMultitouchZoomOut() {
     pincher.reset();
-    const t = new touch();
+    const t = new Touch();
 
     let oldState = pincher.status();
     t.addTouchPoint(100, 100);
     pincher.handleTouchStart(t.events());
-    assertEqual(oldState, pincher.status());
+    this.assertEqual_(oldState, pincher.status());
     t.addTouchPoint(300, 300);
     pincher.handleTouchStart(t.events());
-    assertEqual(oldState, pincher.status());
+    this.assertEqual_(oldState, pincher.status());
     t.addTouchPoint(100, 300);
     pincher.handleTouchStart(t.events());
-    assertEqual(oldState, pincher.status());
+    this.assertEqual_(oldState, pincher.status());
     t.addTouchPoint(300, 100);
     pincher.handleTouchStart(t.events());
-    assertEqual(oldState, pincher.status());
+    this.assertEqual_(oldState, pincher.status());
 
     // Multi-touch zoom out.
     t.updateTouchPoint(0, 150, 150);
@@ -232,60 +238,60 @@ const pinchtest = (function() {
     oldState = pincher.status();
     t.releaseTouchPoint(3);
     pincher.handleTouchEnd(t.events());
-    assertEqual(oldState, pincher.status());
+    this.assertEqual_(oldState, pincher.status());
     t.releaseTouchPoint(2);
     pincher.handleTouchEnd(t.events());
-    assertEqual(oldState, pincher.status());
+    this.assertEqual_(oldState, pincher.status());
     t.releaseTouchPoint(1);
     pincher.handleTouchEnd(t.events());
-    assertEqual(oldState, pincher.status());
+    this.assertEqual_(oldState, pincher.status());
     t.releaseTouchPoint(0);
     pincher.handleTouchEnd(t.events());
-    assertEqual(oldState, pincher.status());
+    this.assertEqual_(oldState, pincher.status());
 
-    assertTrue(pincher.status().clampedScale < 0.9);
+    this.assertTrue_(pincher.status().clampedScale < 0.9);
   }
 
-  function testZoomOutThenMulti() {
+  testZoomOutThenMulti() {
     pincher.reset();
-    const t = new touch();
+    const t = new Touch();
 
     let oldState = pincher.status();
     t.addTouchPoint(100, 100);
     pincher.handleTouchStart(t.events());
-    assertEqual(oldState, pincher.status());
+    this.assertEqual_(oldState, pincher.status());
     t.addTouchPoint(300, 300);
     pincher.handleTouchStart(t.events());
-    assertEqual(oldState, pincher.status());
+    this.assertEqual_(oldState, pincher.status());
 
     // Zoom out.
     t.updateTouchPoint(0, 150, 150);
     t.updateTouchPoint(1, 250, 250);
     pincher.handleTouchMove(t.events());
-    assertTrue(pincher.status().clampedScale < 0.9);
+    this.assertTrue_(pincher.status().clampedScale < 0.9);
 
     // Make sure adding and removing more point doesn't change state
     oldState = pincher.status();
     t.addTouchPoint(600, 600);
     pincher.handleTouchStart(t.events());
-    assertEqual(oldState, pincher.status());
+    this.assertEqual_(oldState, pincher.status());
     t.releaseTouchPoint(2);
     pincher.handleTouchEnd(t.events());
-    assertEqual(oldState, pincher.status());
+    this.assertEqual_(oldState, pincher.status());
 
     // More than two fingers.
     t.addTouchPoint(150, 250);
     pincher.handleTouchStart(t.events());
     t.addTouchPoint(250, 150);
     pincher.handleTouchStart(t.events());
-    assertEqual(oldState, pincher.status());
+    this.assertEqual_(oldState, pincher.status());
 
     t.updateTouchPoint(0, 100, 100);
     t.updateTouchPoint(1, 300, 300);
     t.updateTouchPoint(2, 100, 300);
     t.updateTouchPoint(3, 300, 100);
     pincher.handleTouchMove(t.events());
-    assertClose(pincher.status().scale, 1);
+    this.assertClose_(pincher.status().scale, 1);
 
     oldState = pincher.status();
     t.releaseTouchPoint(3);
@@ -293,12 +299,12 @@ const pinchtest = (function() {
     t.releaseTouchPoint(1);
     t.releaseTouchPoint(0);
     pincher.handleTouchEnd(t.events());
-    assertEqual(oldState, pincher.status());
+    this.assertEqual_(oldState, pincher.status());
   }
 
-  function testCancel() {
+  testCancel() {
     pincher.reset();
-    const t = new touch();
+    const t = new Touch();
 
     t.addTouchPoint(100, 100);
     pincher.handleTouchStart(t.events());
@@ -307,13 +313,13 @@ const pinchtest = (function() {
     t.updateTouchPoint(0, 150, 150);
     t.updateTouchPoint(1, 250, 250);
     pincher.handleTouchMove(t.events());
-    assertTrue(pincher.status().clampedScale < 0.9);
+    this.assertTrue_(pincher.status().clampedScale < 0.9);
 
     const oldState = pincher.status();
     t.releaseTouchPoint(1);
     t.releaseTouchPoint(0);
     pincher.handleTouchCancel(t.events());
-    assertEqual(oldState, pincher.status());
+    this.assertEqual_(oldState, pincher.status());
 
     t.addTouchPoint(150, 150);
     pincher.handleTouchStart(t.events());
@@ -322,12 +328,12 @@ const pinchtest = (function() {
     t.updateTouchPoint(0, 100, 100);
     t.updateTouchPoint(1, 300, 300);
     pincher.handleTouchMove(t.events());
-    assertClose(pincher.status().clampedScale, 1);
+    this.assertClose_(pincher.status().clampedScale, 1);
   }
 
-  function testSingularity() {
+  testSingularity() {
     pincher.reset();
-    const t = new touch();
+    const t = new Touch();
 
     t.addTouchPoint(100, 100);
     pincher.handleTouchStart(t.events());
@@ -336,16 +342,16 @@ const pinchtest = (function() {
     t.updateTouchPoint(0, 150, 150);
     t.updateTouchPoint(1, 50, 50);
     pincher.handleTouchMove(t.events());
-    assertTrue(pincher.status().clampedScale > 1.1);
-    assertTrue(pincher.status().clampedScale < 100);
-    assertTrue(pincher.status().scale < 100);
+    this.assertTrue_(pincher.status().clampedScale > 1.1);
+    this.assertTrue_(pincher.status().clampedScale < 100);
+    this.assertTrue_(pincher.status().scale < 100);
 
     pincher.handleTouchCancel();
   }
 
-  function testMinSpan() {
+  testMinSpan() {
     pincher.reset();
-    const t = new touch();
+    const t = new Touch();
 
     t.addTouchPoint(50, 50);
     pincher.handleTouchStart(t.events());
@@ -354,19 +360,19 @@ const pinchtest = (function() {
     t.updateTouchPoint(0, 100, 100);
     t.updateTouchPoint(1, 100, 100);
     pincher.handleTouchMove(t.events());
-    assertTrue(pincher.status().clampedScale < 0.9);
-    assertTrue(pincher.status().clampedScale > 0);
-    assertTrue(pincher.status().scale > 0);
+    this.assertTrue_(pincher.status().clampedScale < 0.9);
+    this.assertTrue_(pincher.status().clampedScale > 0);
+    this.assertTrue_(pincher.status().scale > 0);
 
     pincher.handleTouchCancel();
   }
 
-  function testFontScaling() {
+  testFontScaling() {
     pincher.reset();
     useFontScaling(1.5);
-    assertClose(pincher.status().clampedScale, 1.5);
+    this.assertClose_(pincher.status().clampedScale, 1.5);
 
-    let t = new touch();
+    let t = new Touch();
 
     // Start touch.
     let oldState = pincher.status();
@@ -381,14 +387,15 @@ const pinchtest = (function() {
     pincher.handleTouchMove(t.events());
 
     // Verify scale is smaller.
-    assertTrue(pincher.status().clampedScale < 0.9 * oldState.clampedScale);
+    this.assertTrue_(
+        pincher.status().clampedScale < 0.9 * oldState.clampedScale);
     pincher.handleTouchCancel();
 
     useFontScaling(0.8);
-    assertClose(pincher.status().clampedScale, 0.8);
+    this.assertClose_(pincher.status().clampedScale, 0.8);
 
     // Start touch.
-    t = new touch();
+    t = new Touch();
     oldState = pincher.status();
     t.addTouchPoint(150, 150);
     pincher.handleTouchStart(t.events());
@@ -401,25 +408,25 @@ const pinchtest = (function() {
     pincher.handleTouchMove(t.events());
 
     // Verify scale is larger.
-    assertTrue(pincher.status().clampedScale > 1.1 * oldState.clampedScale);
+    this.assertTrue_(
+        pincher.status().clampedScale > 1.1 * oldState.clampedScale);
     pincher.handleTouchCancel();
   }
 
-  return {
-    run: function() {
-      testZoomOut();
-      testZoomIn();
-      testZoomOutAndPan();
-      testReversible();
-      testMultitouchZoomOut();
-      testZoomOutThenMulti();
-      testCancel();
-      testSingularity();
-      testMinSpan();
-      testFontScaling();
-      pincher.reset();
+  run() {
+    this.testZoomOut();
+    this.testZoomIn();
+    this.testZoomOutAndPan();
+    this.testReversible();
+    this.testMultitouchZoomOut();
+    this.testZoomOutThenMulti();
+    this.testCancel();
+    this.testSingularity();
+    this.testMinSpan();
+    this.testFontScaling();
+    pincher.reset();
 
-      return true;
-    }
-  };
-}());
+    return true;
+  }
+}
+const pinchtest = new PinchTest;

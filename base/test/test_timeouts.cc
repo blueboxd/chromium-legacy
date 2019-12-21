@@ -60,6 +60,10 @@ void InitializeTimeout(const char* switch_name, int min_value, int* value) {
 #elif BUILDFLAG(CLANG_COVERAGE)
   // On coverage build, tests run 3x slower.
   constexpr int kTimeoutMultiplier = 3;
+#elif !defined(NDEBUG) && defined(OS_CHROMEOS)
+  // A number of tests on ChromeOS run very close to the base limit, so ChromeOS
+  // gets 2x.
+  constexpr int kTimeoutMultiplier = 2;
 #else
   constexpr int kTimeoutMultiplier = 1;
 #endif

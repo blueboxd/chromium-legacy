@@ -18,6 +18,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/button/label_button.h"
@@ -126,6 +127,8 @@ DeviceChooserContentView::DeviceChooserContentView(
   table_view_ = table_view.get();
   table_view->SetSelectOnRemove(false);
   table_view->set_observer(table_view_observer);
+  table_view->GetViewAccessibility().OverrideName(l10n_util::GetStringUTF16(
+      IDS_DEVICE_CHOOSER_ACCNAME_COMPATIBLE_DEVICES_LIST));
 
   table_parent_ = AddChildView(
       views::TableView::CreateScrollViewWithTable(std::move(table_view)));

@@ -79,7 +79,10 @@ class PrintSessionImpl : public mojom::PrintSessionHost,
   void Close();
 
   // Opens Chrome print preview after waiting for the PDF plugin to load.
-  void StartPrintAfterDelay();
+  void StartPrintAfterPluginIsLoaded();
+
+  // Opens Chrome print preview without waiting.
+  void StartPrintNow();
 
   // Used to send messages to ARC and request a new print document.
   mojom::PrintSessionInstancePtr instance_;

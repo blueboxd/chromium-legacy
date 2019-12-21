@@ -107,7 +107,7 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
   void ClearHistory(
       base::Time begin,
       base::Time end,
-      const base::Callback<bool(const GURL& url)>& filter) override;
+      const base::RepeatingCallback<bool(const GURL& url)>& filter) override;
   void ClearCachedSuggestions() override;
   void OnSignInStateChanged(bool has_signed_in) override;
   void GetDismissedSuggestionsForDebugging(

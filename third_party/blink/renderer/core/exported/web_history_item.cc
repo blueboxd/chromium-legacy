@@ -30,7 +30,6 @@
 
 #include "third_party/blink/public/web/web_history_item.h"
 
-#include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_http_body.h"
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -88,17 +87,17 @@ void WebHistoryItem::SetTarget(const WebString& target) {
   target_ = target;
 }
 
-WebFloatPoint WebHistoryItem::VisualViewportScrollOffset() const {
+gfx::PointF WebHistoryItem::VisualViewportScrollOffset() const {
   const auto& scroll_and_view_state = private_->GetViewState();
   ScrollOffset offset =
       scroll_and_view_state
           ? scroll_and_view_state->visual_viewport_scroll_offset_
           : ScrollOffset();
-  return WebFloatPoint(offset.Width(), offset.Height());
+  return gfx::PointF(offset.Width(), offset.Height());
 }
 
 void WebHistoryItem::SetVisualViewportScrollOffset(
-    const WebFloatPoint& scroll_offset) {
+    const gfx::PointF& scroll_offset) {
   private_->SetVisualViewportScrollOffset(ToScrollOffset(scroll_offset));
 }
 

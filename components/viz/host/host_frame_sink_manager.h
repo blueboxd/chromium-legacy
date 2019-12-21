@@ -23,7 +23,6 @@
 #include "components/viz/host/hit_test/hit_test_region_observer.h"
 #include "components/viz/host/host_frame_sink_client.h"
 #include "components/viz/host/viz_host_export.h"
-#include "components/viz/service/frame_sinks/compositor_frame_sink_support_manager.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -46,8 +45,7 @@ enum class ReportFirstSurfaceActivation { kYes, kNo };
 // UI thread. Manages frame sinks and is intended to replace all usage of
 // FrameSinkManagerImpl.
 class VIZ_HOST_EXPORT HostFrameSinkManager
-    : public mojom::FrameSinkManagerClient,
-      public CompositorFrameSinkSupportManager {
+    : public mojom::FrameSinkManagerClient {
  public:
   using DisplayHitTestQueryMap =
       base::flat_map<FrameSinkId, std::unique_ptr<HitTestQuery>>;
@@ -191,14 +189,11 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   void AddHitTestRegionObserver(HitTestRegionObserver* observer);
   void RemoveHitTestRegionObserver(HitTestRegionObserver* observer);
 
-  // CompositorFrameSinkSupportManager:
+  // TODO(crbug.com/1033683): Remove test usage and delete function.
   std::unique_ptr<CompositorFrameSinkSupport> CreateCompositorFrameSinkSupport(
       mojom::CompositorFrameSinkClient* client,
       const FrameSinkId& frame_sink_id,
-      bool is_root) override;
-
-  void OnFrameTokenChanged(const FrameSinkId& frame_sink_id,
-                           uint32_t frame_token) override;
+      bool is_root);
 
   void SetHitTestAsyncQueriedDebugRegions(
       const FrameSinkId& root_frame_sink_id,
@@ -266,6 +261,8 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   void RegisterAfterConnectionLoss();
 
   // mojom::FrameSinkManagerClient:
+  void OnFrameTokenChanged(const FrameSinkId& frame_sink_id,
+                           uint32_t frame_token) override;
   void OnFirstSurfaceActivation(const SurfaceInfo& surface_info) override;
   void OnAggregatedHitTestRegionListUpdated(
       const FrameSinkId& frame_sink_id,

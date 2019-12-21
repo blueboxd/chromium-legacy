@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.toolbar.HomeButton;
 import org.chromium.chrome.browser.toolbar.MenuButton;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarColors;
@@ -923,4 +924,12 @@ public abstract class ToolbarLayout
      * it.
      */
     void setTabModelSelector(TabModelSelector selector) {}
+
+    /**
+     * @return {@link HomeButton} this {@link ToolbarLayout} contains.
+     */
+    @VisibleForTesting
+    public HomeButton getHomeButtonForTesting() {
+        return null;
+    }
 }

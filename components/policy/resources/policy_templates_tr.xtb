@@ -955,16 +955,6 @@
       Bu politika True (Doğru) değerine yapılandırılmaz veya ayarlanmazsa, kullanıcılar Ağ Üzerinde Dosya Paylaşımı özelliğini kullanabilirler.
 
       Bu politika False (Yanlış) değerine ayarlanırsa, kullanıcılar Ağ Üzerinde Dosya Paylaşımı özelliğini kullanamazlar</translation>
-<translation id="2437706973218087361">Bu politika, TLS 1.3'te yer alan ve düşürme saldırılarına karşı bağlantıları koruyan bir güvenlik özelliğini kontrol eder. Geriye dönük olarak uyumludur ve uyumlu TLS 1.2 sunucuları veya proxyleri ile kurulan bağlantıları etkilemez. Ancak TLS'ye müdahale eden bazı eski proxy sürümlerinde uyumsuz olmalarına yol açan bir uygulama hatası söz konusudur.
-
-      Bu politika True (Doğru) değerine ayarlanırsa <ph name="PRODUCT_NAME" /> bu güvenlik korumalarını tüm bağlantılar için etkinleştirir.
-
-      Bu politika False (Yanlış) değerine ayarlanırsa veya ayarlanmadan bırakılırsa <ph name="PRODUCT_NAME" />, yerel olarak yüklenmiş CA sertifikaları ile kimliği doğrulanan bağlantılar için bu güvenlik korumalarını devre dışı bırakır. Bu korumalar, herkes tarafından güvenilen CA sertifikaları ile kimliği doğrulanan bağlantılar için her zaman etkinleştirilir.
-
-      Bu politika, etkilenen proxy'leri test edip yükseltmek için kullanılabilir. Etkilenen proxy'lerin ERR_TLS13_DOWNGRADE_DETECTED hata kodu göstererek bağlantı kuramaması beklenir. Sonraki <ph name="PRODUCT_NAME" /> sürümlerinden birinde bu seçenek varsayılan olarak etkinleştirilecektir.
-
-      Bu seçenek varsayılan olarak etkinleştirildikten sonra, etkilenen proxyleri yükseltmek için daha fazla zamana ihtiyacı olan yöneticiler bu politikayı kullanarak bu güvenlik özelliğini geçici bir süreliğine devre dışı bırakabilirler. Bu politika, 85 sürümünden sonra kaldırılacaktır.
-      </translation>
 <translation id="2438609638493026652">Android uygulaması yüklemesi sırasında önemli etkinliklerin Google'a bildirilmesini sağlar. Etkinlikler yalnızca yüklemesini politikanın tetiklediği uygulamalar için yakalanır.
 
       Politika true (doğru) değerine ayarlanırsa etkinlikler günlüğe kaydedilir.

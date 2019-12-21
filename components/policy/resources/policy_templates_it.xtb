@@ -917,16 +917,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Quando questa norma non è configurata o è impostata su True, gli utenti possono utilizzare la funzione Condivisioni file di rete.
 
       Quando questa norma è impostata su False, gli utenti non possono utilizzare la funzione Condivisioni file di rete.</translation>
-<translation id="2437706973218087361">Questo criterio controlla una funzionalità di sicurezza nel protocollo TLS 1.3 che protegge le connessioni da attacchi di downgrade. È compatibile con le versioni precedenti e non interesserà le connessioni a server o proxy TLS 1.2 conformi. Tuttavia, un difetto di implementazione nelle versioni precedenti di alcuni proxy che intercettano connessioni TLS li rende incompatibili.
-
-      Se questo criterio è impostato su True, <ph name="PRODUCT_NAME" /> attiverà queste protezioni di sicurezza per tutte le connessioni.
-
-      Se questo criterio viene impostato su False o non viene impostato, <ph name="PRODUCT_NAME" /> disattiverà le protezioni di sicurezza per le connessioni autenticate tramite certificati CA installati localmente. Queste protezioni sono sempre attive per le connessioni autenticate con certificati CA considerati pubblicamente attendibili.
-
-      Questo criterio potrebbe essere usato per identificare eventuali proxy interessati e aggiornarli. Il codice di errore previsto per il problema di connessione dei proxy interessati è ERR_TLS13_DOWNGRADE_DETECTED. Una versione successiva di <ph name="PRODUCT_NAME" /> attiverà questa opzione per impostazione predefinita.
-
-      Quando verrà attivata per impostazione predefinita, gli amministratori a cui occorre più tempo per eseguire l'upgrade dei proxy interessati potrebbero usare questo criterio per disattivare temporaneamente questa funzionalità di sicurezza. Dopo la versione 85, questo criterio verrà rimosso.
-      </translation>
 <translation id="2438609638493026652">Attiva la segnalazione di eventi chiave durante l'installazione di app Android a Google. Gli eventi vengono acquisiti solo per le app la cui installazione è stata lanciata tramite norma.
 
       Se la norma viene impostata su True, gli eventi saranno registrati.

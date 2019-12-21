@@ -167,7 +167,6 @@ class ImageLoader::Task {
 ImageLoader::ImageLoader(Element* element)
     : element_(element),
       image_complete_(true),
-      loading_image_document_(false),
       suppress_error_events_(false),
       was_fully_deferred_(false),
       lazy_image_load_state_(LazyImageLoadState::kNone) {
@@ -185,7 +184,7 @@ void ImageLoader::Dispose() {
   if (image_content_) {
     image_content_->RemoveObserver(this);
     image_content_ = nullptr;
-    image_resource_for_image_document_ = nullptr;
+    image_content_for_image_document_ = nullptr;
     delay_until_image_notify_finished_ = nullptr;
   }
 }
@@ -266,7 +265,7 @@ void ImageLoader::RejectPendingDecodes(UpdateType update_type) {
 
 void ImageLoader::Trace(blink::Visitor* visitor) {
   visitor->Trace(image_content_);
-  visitor->Trace(image_resource_for_image_document_);
+  visitor->Trace(image_content_for_image_document_);
   visitor->Trace(element_);
   visitor->Trace(decode_requests_);
 }
@@ -308,8 +307,8 @@ bool ImageLoader::ImageIsPotentiallyAvailable() const {
                              !HasPendingError() &&
                              !element_->ImageSourceURL().IsEmpty();
   bool image_has_image = image_content_ && image_content_->HasImage();
-  bool image_is_document = loading_image_document_ && image_content_ &&
-                           !image_content_->ErrorOccurred();
+  bool image_is_document = element_->GetDocument().IsImageDocument() &&
+                           image_content_ && !image_content_->ErrorOccurred();
 
   // Icky special case for deferred images:
   // A deferred image is not loading, does have pending activity, does not
@@ -329,20 +328,6 @@ bool ImageLoader::ImageIsPotentiallyAvailable() const {
 
 void ImageLoader::ClearImage() {
   SetImageWithoutConsideringPendingLoadEvent(nullptr);
-}
-
-void ImageLoader::SetImageForImageDocument(ImageResource* new_image_resource) {
-  DCHECK(loading_image_document_);
-  DCHECK(new_image_resource);
-  DCHECK(new_image_resource->GetContent());
-
-  image_resource_for_image_document_ = new_image_resource;
-  SetImageWithoutConsideringPendingLoadEvent(new_image_resource->GetContent());
-
-  // |image_complete_| is always true for ImageDocument loading, while the
-  // loading is just started.
-  // TODO(hiroshige): clean up the behavior of flags. https://crbug.com/719759
-  image_complete_ = true;
 }
 
 void ImageLoader::SetImageWithoutConsideringPendingLoadEvent(
@@ -435,7 +420,7 @@ inline void ImageLoader::EnqueueImageLoadingMicroTask(
 void ImageLoader::UpdateImageState(ImageResourceContent* new_image_content) {
   image_content_ = new_image_content;
   if (!new_image_content) {
-    image_resource_for_image_document_ = nullptr;
+    image_content_for_image_document_ = nullptr;
     image_complete_ = true;
     if (lazy_image_load_state_ == LazyImageLoadState::kDeferred) {
       LazyImageHelper::StopMonitoring(GetElement());
@@ -663,28 +648,16 @@ void ImageLoader::UpdateFromElement(
   if (!failed_load_url_.IsEmpty() && image_source_url == failed_load_url_)
     return;
 
-  if (loading_image_document_ && update_behavior == kUpdateForcedReload) {
-    // Prepares for reloading ImageDocument.
-    // We turn the ImageLoader into non-ImageDocument here, and proceed to
-    // reloading just like an ordinary <img> element below.
-    loading_image_document_ = false;
-    image_resource_for_image_document_ = nullptr;
-    ClearImage();
-  }
-
-  KURL url = ImageSourceToKURL(image_source_url);
-
   // Prevent the creation of a ResourceLoader (and therefore a network request)
   // for ImageDocument loads. In this case, the image contents have already been
   // requested as a main resource and ImageDocumentParser will take care of
-  // funneling the main resource bytes into |image_content_|, so just create an
-  // ImageResource to be populated later.
-  if (loading_image_document_) {
-    ResourceRequest request(url);
-    request.SetCredentialsMode(network::mojom::CredentialsMode::kOmit);
-    ImageResource* image_resource = ImageResource::Create(request);
-    image_resource->NotifyStartLoad();
-    SetImageForImageDocument(image_resource);
+  // funneling the main resource bytes into |image_content_for_image_document_|,
+  // so just pick up the ImageResourceContent that has been provided.
+  if (image_content_for_image_document_) {
+    DCHECK_NE(update_behavior, kUpdateForcedReload);
+    SetImageWithoutConsideringPendingLoadEvent(
+        image_content_for_image_document_);
+    image_content_for_image_document_ = nullptr;
     return;
   }
 
@@ -697,6 +670,8 @@ void ImageLoader::UpdateFromElement(
     // a memory leak in case it's already created.
     delay_until_do_update_from_element_ = nullptr;
   }
+
+  KURL url = ImageSourceToKURL(image_source_url);
 
   if (ShouldLoadImmediately(url)) {
     DoUpdateFromElement(kDoNotBypassMainWorldCSP, update_behavior, url,
@@ -711,7 +686,7 @@ void ImageLoader::UpdateFromElement(
       image->RemoveObserver(this);
     }
     image_content_ = nullptr;
-    image_resource_for_image_document_ = nullptr;
+    image_content_for_image_document_ = nullptr;
     delay_until_image_notify_finished_ = nullptr;
     if (lazy_image_load_state_ != LazyImageLoadState::kNone) {
       LazyImageHelper::StopMonitoring(GetElement());
@@ -784,15 +759,7 @@ void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
   DCHECK(failed_load_url_.IsEmpty());
   DCHECK_EQ(resource, image_content_.Get());
 
-  // |image_complete_| is always true for entire ImageDocument loading for
-  // historical reason.
-  // DoUpdateFromElement() is not called and SetImageForImageDocument()
-  // is called instead for ImageDocument loading.
-  // TODO(hiroshige): Turn the CHECK()s to DCHECK()s before going to beta.
-  if (loading_image_document_)
-    CHECK(image_complete_);
-  else
-    CHECK(!image_complete_);
+  CHECK(!image_complete_);
 
   if (lazy_image_load_state_ == LazyImageLoadState::kDeferred) {
     // LazyImages: if a placeholder is loaded, suppress load events and do not
@@ -843,11 +810,6 @@ void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
 
   if (html_image_element)
     LazyImageHelper::RecordMetricsOnLoadFinished(html_image_element);
-
-  if (loading_image_document_) {
-    CHECK(!pending_load_event_.IsActive());
-    return;
-  }
 
   if (resource->ErrorOccurred()) {
     pending_load_event_.Cancel();
@@ -911,7 +873,7 @@ void ImageLoader::UpdateLayoutObject() {
 
 bool ImageLoader::HasPendingEvent() const {
   // Regular image loading is in progress.
-  if (image_content_ && !image_complete_ && !loading_image_document_)
+  if (image_content_ && !image_complete_)
     return true;
 
   if (pending_load_event_.IsActive() || pending_error_event_.IsActive())

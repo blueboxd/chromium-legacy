@@ -54,6 +54,11 @@ class Unwinder {
   // |thread_context|, appending the frames to |stack|. When invoked
   // stack->back() contains the frame corresponding to the state in
   // |thread_context|.
+  // Precondition: RegisterContextStackPointer(thread_context) is less than
+  // |stack_top|.
+  // Postcondition: If the implementation returns UNRECOGNIZED_FRAME, indicating
+  // that it successfully unwound, RegisterContextStackPointer(thread_context)
+  // is greater than the previous value and less than |stack_top|.
   virtual UnwindResult TryUnwind(RegisterContext* thread_context,
                                  uintptr_t stack_top,
                                  ModuleCache* module_cache,

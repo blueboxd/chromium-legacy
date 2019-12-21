@@ -77,6 +77,9 @@ class FakeBlob final : public blink::mojom::Blob {
   void ReadSideData(ReadSideDataCallback callback) override {
     std::move(callback).Run(side_data_);
   }
+  void CaptureSnapshot(CaptureSnapshotCallback callback) override {
+    std::move(callback).Run(body_.size(), base::nullopt);
+  }
   void GetInternalUUID(GetInternalUUIDCallback callback) override {
     NOTREACHED();
   }

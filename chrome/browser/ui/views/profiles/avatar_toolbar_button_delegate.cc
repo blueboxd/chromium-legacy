@@ -313,6 +313,17 @@ void AvatarToolbarButtonDelegate::OnUnconsentedPrimaryAccountChanged(
 }
 
 void AvatarToolbarButtonDelegate::OnRefreshTokensLoaded() {
+  if (refresh_tokens_loaded_) {
+    // This is possible, if |AvatarToolbarButtonDelegate::Init| is called within
+    // the loop in |IdentityManager::OnRefreshTokensLoaded()| to notify
+    // observers. In that case, |OnRefreshTokensLoaded| will be called twice,
+    // once from |AvatarToolbarButtonDelegate::Init| and another time from the
+    // |IdentityManager|. This happens for new signed in profiles.
+    // See https://crbug.com/1035480
+    return;
+  }
+
+  refresh_tokens_loaded_ = true;
   if (!signin_ui_util::ShouldShowAnimatedIdentityOnOpeningWindow(
           GetProfileAttributesStorage(), profile_)) {
     return;

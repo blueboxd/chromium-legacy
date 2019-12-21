@@ -2774,9 +2774,9 @@ void ArcBluetoothBridge::RfcommListen(int32_t channel,
     return;
   }
   std::move(callback).Run(mojom::BluetoothStatus::SUCCESS, listen_channel,
-                          mojo::MakeRequest(&sock_wrapper->remote));
+                          sock_wrapper->remote.BindNewPipeAndPassReceiver());
 
-  sock_wrapper->remote.set_connection_error_handler(
+  sock_wrapper->remote.set_disconnect_handler(
       base::BindOnce(&ArcBluetoothBridge::RfcommCloseListeningSocket,
                      weak_factory_.GetWeakPtr(), sock_wrapper.get()));
   listening_sockets_.insert(std::move(sock_wrapper));
@@ -2808,8 +2808,8 @@ void ArcBluetoothBridge::RfcommConnect(mojom::BluetoothAddressPtr remote_addr,
   }
 
   std::move(callback).Run(mojom::BluetoothStatus::SUCCESS,
-                          mojo::MakeRequest(&sock_wrapper->remote));
-  sock_wrapper->remote.set_connection_error_handler(
+                          sock_wrapper->remote.BindNewPipeAndPassReceiver());
+  sock_wrapper->remote.set_disconnect_handler(
       base::BindOnce(&ArcBluetoothBridge::RfcommCloseConnectingSocket,
                      weak_factory_.GetWeakPtr(), sock_wrapper.get()));
   connecting_sockets_.insert(std::move(sock_wrapper));

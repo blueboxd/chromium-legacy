@@ -47,8 +47,8 @@ class MixerInput {
     };
 
     // TODO(b/139311908) Track channel layout.
-    virtual int num_channels() = 0;
-    virtual int input_samples_per_second() = 0;
+    virtual size_t num_channels() const = 0;
+    virtual int sample_rate() const = 0;
     virtual bool primary() = 0;
     virtual const std::string& device_id() = 0;
     virtual AudioContentType content_type() = 0;

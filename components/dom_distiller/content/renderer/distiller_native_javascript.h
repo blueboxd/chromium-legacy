@@ -31,7 +31,7 @@ class DistillerNativeJavaScript {
   void BindFunctionToObject(v8::Isolate* isolate,
                             v8::Local<v8::Object> javascript_object,
                             const std::string& name,
-                            const base::Callback<Sig> callback);
+                            const base::RepeatingCallback<Sig>& callback);
   // Make sure the mojo service is connected.
   void EnsureServiceConnected();
 

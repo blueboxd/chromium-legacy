@@ -204,7 +204,7 @@ const PrepopulatedEngine* const engines_CR[] = {
 // Czech Republic
 const PrepopulatedEngine* const engines_CZ[] = {
     &google,
-    &seznam,
+    &seznam_cz,
     &bing,
     &yahoo,
 };

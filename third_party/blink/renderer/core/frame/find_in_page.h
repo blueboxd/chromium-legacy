@@ -60,14 +60,14 @@ class CORE_EXPORT FindInPage final : public GarbageCollected<FindInPage>,
 
   void SetClient(mojo::PendingRemote<mojom::blink::FindInPageClient>) final;
 
-  void ActivateNearestFindResult(int request_id, const WebFloatPoint&) final;
+  void ActivateNearestFindResult(int request_id, const gfx::PointF&) final;
 
   // Stops the current find-in-page, following the given |action|
   void StopFinding(mojom::StopFindAction action) final;
 
   // Returns the distance (squared) to the closest find-in-page match from the
   // provided point, in find-in-page coordinates.
-  void GetNearestFindResult(const WebFloatPoint&,
+  void GetNearestFindResult(const gfx::PointF&,
                             GetNearestFindResultCallback) final;
 
   // Returns the bounding boxes of the find-in-page match markers in the frame,

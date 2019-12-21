@@ -167,7 +167,7 @@ cast_source_set("for_mixer_audio") {
     "//base",
     "//chromecast/base",
     "//chromecast/media/audio:audio_resampler",
-    "//chromecast/media/audio:fader",
+    "//chromecast/media/audio:processing",
     "//chromecast/media/audio/mixer_service:common",
     "//chromecast/media/audio/mixer_service:control_connection",
     "//chromecast/media/audio/mixer_service:output_stream_connection",

@@ -7,6 +7,7 @@
 
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/views/tabs/tab_group_header.h"
+#include "components/tab_groups/tab_group_color.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "components/tab_groups/tab_group_visual_data.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
@@ -86,7 +87,11 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
 
   views::Textfield* title_field_;
 
+  std::vector<tab_groups::TabGroupColorId> color_ids_;
+  std::vector<std::pair<SkColor, base::string16>> colors_;
   ColorPickerView* color_selector_;
+
+  void InitColorSet();
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_GROUP_EDITOR_BUBBLE_VIEW_H_

@@ -106,7 +106,7 @@ TEST(MediaTrackConstraintsTest, SetToString) {
 TEST(MediaTrackConstraintsTest, ConstraintsToString) {
   MediaConstraints the_constraints;
   WebMediaTrackConstraintSet basic;
-  WebVector<WebMediaTrackConstraintSet> advanced(static_cast<size_t>(1));
+  Vector<WebMediaTrackConstraintSet> advanced(static_cast<size_t>(1));
   basic.width.SetMax(240);
   advanced[0].echo_cancellation.SetExact(true);
   the_constraints.Initialize(basic, advanced);
@@ -129,9 +129,9 @@ TEST(MediaTrackConstraintsTest, ConvertWebSingleStringConstraint) {
   MediaConstraints input;
 
   WebMediaTrackConstraintSet basic;
-  WebVector<WebMediaTrackConstraintSet> advanced;
+  Vector<WebMediaTrackConstraintSet> advanced;
 
-  basic.facing_mode.SetIdeal(WebVector<WebString>(&"foo", 1));
+  basic.facing_mode.SetIdeal(Vector<String>({"foo"}));
   input.Initialize(basic, advanced);
   MediaTrackConstraints* output =
       media_constraints_impl::ConvertConstraints(input);
@@ -143,12 +143,12 @@ TEST(MediaTrackConstraintsTest, ConvertWebSingleStringConstraint) {
 TEST(MediaTrackConstraintsTest, ConvertWebDoubleStringConstraint) {
   MediaConstraints input;
 
-  WebVector<WebString> buffer(static_cast<size_t>(2u));
+  Vector<String> buffer(static_cast<size_t>(2u));
   buffer[0] = "foo";
   buffer[1] = "bar";
 
   WebMediaTrackConstraintSet basic;
-  std::vector<WebMediaTrackConstraintSet> advanced;
+  Vector<WebMediaTrackConstraintSet> advanced;
   basic.facing_mode.SetIdeal(buffer);
   input.Initialize(basic, advanced);
 
@@ -224,7 +224,7 @@ TEST(MediaTrackConstraintsTest, NakedIsExactInAdvanced) {
 
 TEST(MediaTrackConstraintsTest, IdealAndExactConvertToNaked) {
   MediaConstraints input;
-  WebVector<WebString> buffer(static_cast<size_t>(1u));
+  Vector<String> buffer(static_cast<size_t>(1u));
 
   WebMediaTrackConstraintSet basic;
   WebMediaTrackConstraintSet advanced_element1;
@@ -234,7 +234,7 @@ TEST(MediaTrackConstraintsTest, IdealAndExactConvertToNaked) {
   advanced_element1.facing_mode.SetIdeal(buffer);
   buffer[0] = "exact";
   advanced_element2.facing_mode.SetExact(buffer);
-  std::vector<WebMediaTrackConstraintSet> advanced;
+  Vector<WebMediaTrackConstraintSet> advanced;
   advanced.push_back(advanced_element1);
   advanced.push_back(advanced_element2);
   input.Initialize(basic, advanced);

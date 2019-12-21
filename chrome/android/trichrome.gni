@@ -48,9 +48,6 @@ template("trichrome_library_apk_tmpl") {
                              "apk_name",
                              "min_sdk_version",
                              "proguard_jar_path",
-                             "shared_resources_whitelist_target",
-                             "shared_resources_whitelist_locales",
-                             "static_library_dependent_targets",
                              "target_sdk_version",
                            ])
 
@@ -64,6 +61,19 @@ template("trichrome_library_apk_tmpl") {
       # TODO(crbug.com/956839): Remove this once R8 fixes the class merging
       # and/or inlining bugs.
       disable_r8_outlining = true
+      if (defined(invoker.webview_target) && defined(invoker.chrome_target)) {
+        shared_resources_whitelist_locales = locales
+        static_library_dependent_targets = [
+          {
+            name = invoker.webview_target
+            is_resource_ids_provider = true
+          },
+          {
+            name = invoker.chrome_target
+            is_resource_ids_provider = false
+          },
+        ]
+      }
     } else {
       # TODO(crbug.com/901465): Remove r_java_root_package_name once shared
       # Java code is moved to the shared library even in debug.
@@ -100,11 +110,12 @@ template("trichrome_library_apk_tmpl") {
 
     min_sdk_version = 29
     target_sdk_version = android_sdk_version
-    if (!enable_trichrome_synchronized_proguard) {
-      generate_buildconfig_java = false
-    } else {
+
+    if (trichrome_synchronized_proguard) {
       product_version_resources_dep =
           "//chrome/android:product_version_resources"
+    } else {
+      generate_buildconfig_java = false
     }
 
     # TODO(torne): using icon_resources just to get a temporary icon

@@ -36,6 +36,10 @@ const char kGSuiteNonSyncPasswordEntryRequestOutcomeHistogram[] =
     "PasswordProtection.RequestOutcome.GSuiteNonSyncPasswordEntry";
 const char kSavedPasswordEntryRequestOutcomeHistogram[] =
     "PasswordProtection.RequestOutcome.SavedPasswordEntry";
+const char kUnknownPrimaryAccountPasswordEntryVerdictHistogram[] =
+    "PasswordProtection.Verdict.UnknownPrimaryPasswordEntry";
+const char kUnknownNonPrimaryAccountPasswordEntryVerdictHistogram[] =
+    "PasswordProtection.Verdict.UnknownNonPrimaryPasswordEntry";
 const char kGSuiteSyncPasswordEntryVerdictHistogram[] =
     "PasswordProtection.Verdict.GSuiteSyncPasswordEntry";
 const char kGSuiteNonSyncPasswordEntryVerdictHistogram[] =
@@ -62,7 +66,6 @@ const char kNonSyncPasswordInterstitialHistogram[] =
     "PasswordProtection.InterstitialAction.NonSyncPasswordEntry";
 const char kNonSyncPasswordPageInfoHistogram[] =
     "PasswordProtection.PageInfoAction.NonSyncPasswordEntry";
-
 const char kGSuiteSyncPasswordInterstitialHistogram[] =
     "PasswordProtection.InterstitialAction.GSuiteSyncPasswordEntry";
 const char kGSuiteNonSyncPasswordInterstitialHistogram[] =
@@ -197,6 +200,12 @@ void LogPasswordProtectionVerdict(
           kAnyPasswordEntryVerdictHistogram, verdict_type,
           (LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1));
       if (is_account_syncing) {
+        if (password_account_type.account_type() ==
+            ReusedPasswordAccountType::UNKNOWN) {
+          UMA_HISTOGRAM_ENUMERATION(
+              kUnknownPrimaryAccountPasswordEntryVerdictHistogram, verdict_type,
+              (LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1));
+        }
         UMA_HISTOGRAM_ENUMERATION(
             kSyncPasswordEntryVerdictHistogram, verdict_type,
             (LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1));
@@ -234,6 +243,11 @@ void LogPasswordProtectionVerdict(
                  ReusedPasswordAccountType::SAVED_PASSWORD) {
         UMA_HISTOGRAM_ENUMERATION(
             kSavedPasswordEntryVerdictHistogram, verdict_type,
+            (LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1));
+      } else {
+        UMA_HISTOGRAM_ENUMERATION(
+            kUnknownNonPrimaryAccountPasswordEntryVerdictHistogram,
+            verdict_type,
             (LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1));
       }
       break;

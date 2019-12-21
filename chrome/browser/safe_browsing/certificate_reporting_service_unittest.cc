@@ -27,7 +27,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
-#include "content/public/test/test_browser_thread.h"
 #include "crypto/rsa_private_key.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"

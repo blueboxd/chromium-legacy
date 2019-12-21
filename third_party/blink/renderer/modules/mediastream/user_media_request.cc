@@ -348,8 +348,8 @@ UserMediaRequest* UserMediaRequest::Create(
     // either a dictionary value or a value of true.
     // 4. If requestedMediaTypes is the empty set, set requestedMediaTypes to a
     // set containing "video".
-    if ((!audio.IsNull() && !audio.Advanced().empty()) ||
-        (!video.IsNull() && !video.Advanced().empty())) {
+    if ((!audio.IsNull() && !audio.Advanced().IsEmpty()) ||
+        (!video.IsNull() && !video.Advanced().IsEmpty())) {
       error_state.ThrowTypeError("Advanced constraints are not supported");
       return nullptr;
     }

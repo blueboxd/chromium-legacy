@@ -16,27 +16,13 @@ namespace autofill_assistant {
 // vector of profile indices in sorted order. Full profiles will be ordered
 // before empty ones, and for equally complete profiles, this falls back to
 // sorting based on the profile names.
-std::vector<int> SortContactsByCompleteness(
+std::vector<int> SortByCompleteness(
     const CollectUserDataOptions& collect_user_data_options,
     const std::vector<std::unique_ptr<autofill::AutofillProfile>>& profiles);
 
 // Get the default selection for the current list of profiles. Returns -1 if no
 // default selection is possible.
-int GetDefaultContactProfile(
-    const CollectUserDataOptions& collect_user_data_options,
-    const std::vector<std::unique_ptr<autofill::AutofillProfile>>& profiles);
-
-// Sorts the given autofill profiles based on completeness, and returns a
-// vector of profile indices in sorted order. Full profiles will be ordered
-// before empty ones, and for equally complete profiles, this falls back to
-// sorting based on the profile names.
-std::vector<int> SortAddressesByCompleteness(
-    const CollectUserDataOptions& collect_user_data_options,
-    const std::vector<std::unique_ptr<autofill::AutofillProfile>>& profiles);
-
-// Get the default selection for the current list of profiles. Returns -1 if no
-// default selection is possible.
-int GetDefaultAddressProfile(
+int GetDefaultProfile(
     const CollectUserDataOptions& collect_user_data_options,
     const std::vector<std::unique_ptr<autofill::AutofillProfile>>& profiles);
 
@@ -44,7 +30,7 @@ int GetDefaultAddressProfile(
 // of payment instrument indices in sorted order. Full payment instruments will
 // be ordered before empty ones, and for equally complete payment instruments,
 // this falls back to sorting based on the full name on the credit card.
-std::vector<int> SortPaymentInstrumentsByCompleteness(
+std::vector<int> SortByCompleteness(
     const CollectUserDataOptions& collect_user_data_options,
     const std::vector<std::unique_ptr<PaymentInstrument>>& payment_instruments);
 

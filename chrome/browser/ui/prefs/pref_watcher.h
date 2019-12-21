@@ -35,6 +35,7 @@ class PrefWatcher : public KeyedService {
 
   void UpdateRendererPreferences();
   void OnWebPrefChanged(const std::string& pref_name);
+  void OnLiveCaptionEnabledPrefChanged(const std::string& pref_name);
 
   Profile* profile_;
   PrefChangeRegistrar profile_pref_change_registrar_;

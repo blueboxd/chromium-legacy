@@ -27,7 +27,6 @@ import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -91,8 +90,6 @@ public class MenuDirectActionHandlerTest {
                 Matchers.containsInAnyOrder("bookmark_this_page", "reload", "downloads", "help",
                         "new_tab", "open_history", "preferences", "close_all_tabs"));
 
-        // Tabs can't be closed for SingleTab Activities.
-        if (mTabModelSelector instanceof SingleTabModelSelector) return;
         TestThreadUtils.runOnUiThreadBlocking(() -> { mTabModelSelector.closeAllTabs(); });
         // Wait for any pending animations for tab closures to complete.
         CriteriaHelper.pollUiThread(Criteria.equals(0, () -> mTabModelSelector.getTotalTabCount()));

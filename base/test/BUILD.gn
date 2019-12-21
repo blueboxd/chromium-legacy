@@ -509,7 +509,7 @@ if (is_android) {
       "//third_party/jsr-305:jsr_305_javalib",
     ]
     srcjar_deps = [ ":test_support_java_aidl" ]
-    java_files = [
+    sources = [
       "android/java/src/org/chromium/base/GarbageCollectionTestUtils.java",
       "android/java/src/org/chromium/base/MainReturnCodeResult.java",
       "android/java/src/org/chromium/base/MultiprocessTestClientLauncher.java",

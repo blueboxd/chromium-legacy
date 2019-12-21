@@ -33,7 +33,6 @@
 
 #include "base/macros.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom-blink-forward.h"
-#include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -47,7 +46,6 @@ class LocalFrame;
 class Range;
 class WebLocalFrameImpl;
 class WebString;
-struct WebFloatPoint;
 struct WebFloatRect;
 struct WebRect;
 
@@ -65,7 +63,7 @@ class CORE_EXPORT TextFinder final : public GarbageCollected<TextFinder> {
   int FindMatchMarkersVersion() const { return find_match_markers_version_; }
   WebFloatRect ActiveFindMatchRect();
   Vector<WebFloatRect> FindMatchRects();
-  int SelectNearestFindMatch(const WebFloatPoint&, WebRect* selection_rect);
+  int SelectNearestFindMatch(const gfx::PointF&, WebRect* selection_rect);
 
   // Starts brand new scoping request: resets the scoping state and
   // asyncronously calls scopeStringMatches().

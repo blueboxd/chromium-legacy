@@ -6,6 +6,7 @@
 #define CC_TREES_UKM_MANAGER_H_
 
 #include "cc/cc_export.h"
+#include "cc/metrics/compositor_frame_reporter.h"
 #include "cc/metrics/frame_sequence_tracker.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "url/gurl.h"
@@ -43,6 +44,11 @@ class CC_EXPORT UkmManager {
   void RecordThroughputUKM(FrameSequenceTrackerType tracker_type,
                            FrameSequenceMetrics::ThreadType thread_type,
                            int64_t throughput) const;
+  void RecordLatencyUKM(
+      bool missed_frame,
+      const std::vector<CompositorFrameReporter::StageData>& stage_history,
+      const base::flat_set<FrameSequenceTrackerType>* active_trackers,
+      const viz::FrameTimingDetails& viz_breakdown) const;
 
   ukm::UkmRecorder* recorder_for_testing() { return recorder_.get(); }
 

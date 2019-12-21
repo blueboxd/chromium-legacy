@@ -173,6 +173,7 @@ _LINUX_BENCHMARK_CONFIGS = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
 _MAC_HIGH_END_BENCHMARK_CONFIGS = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
 _MAC_LOW_END_BENCHMARK_CONFIGS = _OFFICIAL_EXCEPT_JETSTREAM2
 _WIN_10_BENCHMARK_CONFIGS = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
+_WIN_10_LOW_END_BENCHMARK_CONFIGS = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
 _WIN_10_LOW_END_HP_CANDIDATE_BENCHMARK_CONFIGS = frozenset([
     _GetBenchmarkConfig('v8.browsing_desktop')])
 _WIN_7_BENCHMARK_CONFIGS = (_OFFICIAL_EXCEPT_DISPLAY_LOCKING_JETSTREAM2 -
@@ -244,6 +245,14 @@ MAC_LOW_END = PerfPlatform(
     _MAC_LOW_END_BENCHMARK_CONFIGS, 26, 'mac')
 
 # Win
+WIN_10_LOW_END = PerfPlatform(
+    'win-10_laptop_low_end-perf',
+    'Low end windows 10 HP laptops. HD Graphics 5500, x86-64-i3-5005U, '
+    'SSD, 4GB RAM.', _WIN_10_LOW_END_BENCHMARK_CONFIGS,
+    # TODO(crbug.com/998161): Increase the number of shards once you
+    # have enough test data to make a shard map and when more devices
+    # are added to the data center.
+    26, 'win')
 WIN_10 = PerfPlatform(
     'win-10-perf',
     'Windows Intel HD 630 towers, Core i7-7700 3.6 GHz, 16GB RAM,'

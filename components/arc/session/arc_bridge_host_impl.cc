@@ -67,14 +67,15 @@
 
 namespace arc {
 
-ArcBridgeHostImpl::ArcBridgeHostImpl(ArcBridgeService* arc_bridge_service,
-                                     mojom::ArcBridgeInstancePtr instance)
+ArcBridgeHostImpl::ArcBridgeHostImpl(
+    ArcBridgeService* arc_bridge_service,
+    mojo::PendingRemote<mojom::ArcBridgeInstance> instance)
     : arc_bridge_service_(arc_bridge_service),
       receiver_(this),
       instance_(std::move(instance)) {
   DCHECK(arc_bridge_service_);
   DCHECK(instance_.is_bound());
-  instance_.set_connection_error_handler(
+  instance_.set_disconnect_handler(
       base::BindOnce(&ArcBridgeHostImpl::OnClosed, base::Unretained(this)));
   mojom::ArcBridgeHostPtr host_proxy;
   receiver_.Bind(mojo::MakeRequest(&host_proxy));
@@ -232,7 +233,7 @@ void ArcBridgeHostImpl::OnNotificationsInstanceReady(
     mojom::NotificationsInstancePtr notifications_ptr) {
   // Forward notification instance to ash.
   ash::ArcNotificationsHostInitializer::Get()->SetArcNotificationsInstance(
-      std::move(notifications_ptr));
+      notifications_ptr.PassInterface());
 }
 
 void ArcBridgeHostImpl::OnObbMounterInstanceReady(
@@ -382,13 +383,13 @@ void ArcBridgeHostImpl::OnInstanceReady(
   // closed on ArcBridgeHost/Instance closing or the ArcBridgeHostImpl's
   // destruction.
   auto* channel =
-      new MojoChannel<InstanceType, HostType>(holder, std::move(ptr));
+      new MojoChannel<InstanceType, HostType>(holder, ptr.PassInterface());
   mojo_channels_.emplace_back(channel);
 
   // Since |channel| is managed by |mojo_channels_|, its lifetime is shorter
   // than |this|. Thus, the connection error handler will be invoked only
   // when |this| is alive and base::Unretained is safe here.
-  channel->set_connection_error_handler(base::BindOnce(
+  channel->set_disconnect_handler(base::BindOnce(
       &ArcBridgeHostImpl::OnChannelClosed, base::Unretained(this), channel));
 
   // Call QueryVersion so that the version info is properly stored in the

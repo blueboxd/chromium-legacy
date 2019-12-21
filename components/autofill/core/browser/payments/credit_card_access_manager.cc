@@ -222,25 +222,21 @@ void CreditCardAccessManager::GetUnmaskDetailsIfUserIsVerifiable(
 
 void CreditCardAccessManager::OnDidGetUnmaskDetails(
     AutofillClient::PaymentsRpcResult result,
-    AutofillClient::UnmaskDetails& unmask_details) {
+    payments::PaymentsClient::UnmaskDetails& unmask_details) {
   // Log latency for preflight call.
   AutofillMetrics::LogCardUnmaskPreflightDuration(
       AutofillTickClock::NowTicks() - preflight_call_timestamp_);
 
   unmask_details_request_in_progress_ = false;
-  unmask_details_.offer_fido_opt_in = unmask_details.offer_fido_opt_in &&
+  unmask_details_ = unmask_details;
+  unmask_details_.offer_fido_opt_in = unmask_details_.offer_fido_opt_in &&
                                       !payments_client_->is_off_the_record();
-  unmask_details_.unmask_auth_method = unmask_details.unmask_auth_method;
-  unmask_details_.fido_request_options =
-      std::move(unmask_details.fido_request_options);
-  unmask_details_.fido_eligible_card_ids =
-      unmask_details.fido_eligible_card_ids;
 
   // Set delay as fido request timeout if available, otherwise set to default.
   int delay_ms = kDelayForGetUnmaskDetails;
-  if (unmask_details_.fido_request_options.is_dict()) {
+  if (unmask_details_.fido_request_options.has_value()) {
     const auto* request_timeout =
-        unmask_details_.fido_request_options.FindKeyOfType(
+        unmask_details_.fido_request_options->FindKeyOfType(
             "timeout_millis", base::Value::Type::INTEGER);
     if (request_timeout)
       delay_ms = request_timeout->GetInt();
@@ -401,10 +397,10 @@ void CreditCardAccessManager::Authenticate(bool get_unmask_details_returned) {
     if (!is_authentication_in_progress_)
       return;
 
-    DCHECK(unmask_details_.fido_request_options.is_dict());
+    DCHECK(unmask_details_.fido_request_options.has_value());
     GetOrCreateFIDOAuthenticator()->Authenticate(
         card_.get(), weak_ptr_factory_.GetWeakPtr(), form_parsed_timestamp_,
-        std::move(unmask_details_.fido_request_options));
+        std::move(unmask_details_.fido_request_options.value()));
 #endif
   } else {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
@@ -482,14 +478,14 @@ void CreditCardAccessManager::OnCVCAuthenticationComplete(
   if (should_offer_fido_auth) {
     ShowWebauthnOfferDialog(response.card_authorization_token);
   } else if (should_follow_up_cvc_with_fido_auth_) {
-    DCHECK(unmask_details_.fido_request_options.is_dict());
+    DCHECK(unmask_details_.fido_request_options.has_value());
 
     // Save credit card for after authorization.
     card_ = std::make_unique<CreditCard>(*(response.card));
     cvc_ = response.cvc;
     GetOrCreateFIDOAuthenticator()->Authorize(
         weak_ptr_factory_.GetWeakPtr(), response.card_authorization_token,
-        std::move(unmask_details_.fido_request_options));
+        std::move(unmask_details_.fido_request_options.value()));
   }
 #endif
 }

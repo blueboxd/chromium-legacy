@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/optional.h"
+#include "components/tab_groups/tab_group_color.h"
 
 class TabGroup;
 class TabGroupController;
@@ -56,6 +57,11 @@ class TabGroupModel {
   std::map<tab_groups::TabGroupId, std::unique_ptr<TabGroup>> groups_;
 
   TabGroupController* controller_;
+
+  // Returns the least-used color in the color set, breaking ties toward the
+  // first color in the set. Used to initialize a new group's color, which
+  // should be as distinct from the other groups as possible.
+  tab_groups::TabGroupColorId GetNextColor() const;
 };
 
 #endif  // CHROME_BROWSER_UI_TABS_TAB_GROUP_MODEL_H_

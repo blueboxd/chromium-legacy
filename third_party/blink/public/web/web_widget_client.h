@@ -64,18 +64,17 @@ class PaintImage;
 
 namespace gfx {
 class Point;
+class PointF;
 class Vector2d;
 }
 
 namespace blink {
 class WebDragData;
 class WebGestureEvent;
+struct WebFloatRect;
 class WebString;
 class WebWidget;
 struct WebCursorInfo;
-struct WebFloatPoint;
-struct WebFloatRect;
-struct WebFloatSize;
 class WebLocalFrame;
 
 class WebWidgetClient {
@@ -127,8 +126,8 @@ class WebWidgetClient {
   // Called when the cursor for the widget changes.
   virtual void DidChangeCursor(const WebCursorInfo&) {}
 
-  virtual void AutoscrollStart(const WebFloatPoint&) {}
-  virtual void AutoscrollFling(const WebFloatSize& velocity) {}
+  virtual void AutoscrollStart(const gfx::PointF&) {}
+  virtual void AutoscrollFling(const gfx::Vector2dF& velocity) {}
   virtual void AutoscrollEnd() {}
 
   // Called to show the widget according to the given policy.
@@ -175,10 +174,10 @@ class WebWidgetClient {
 
   // Called when overscrolled on main thread. All parameters are in
   // viewport-space.
-  virtual void DidOverscroll(const WebFloatSize& overscroll_delta,
-                             const WebFloatSize& accumulated_overscroll,
-                             const WebFloatPoint& position_in_viewport,
-                             const WebFloatSize& velocity_in_viewport) {}
+  virtual void DidOverscroll(const gfx::Vector2dF& overscroll_delta,
+                             const gfx::Vector2dF& accumulated_overscroll,
+                             const gfx::PointF& position_in_viewport,
+                             const gfx::Vector2dF& velocity_in_viewport) {}
 
   // Requests that a gesture of |injected_type| be reissued at a later point in
   // time. |injected_type| is required to be one of
@@ -187,7 +186,7 @@ class WebWidgetClient {
   // delta + granularity.
   virtual void InjectGestureScrollEvent(
       WebGestureDevice device,
-      const WebFloatSize& delta,
+      const gfx::Vector2dF& delta,
       ui::input_types::ScrollGranularity granularity,
       cc::ElementId scrollable_area_element_id,
       WebInputEvent::Type injected_type) {}

@@ -29,6 +29,7 @@
 <translation id="7792771145871471484">Revisar las sugerencias.</translation>
 <translation id="7885132941432959125">Mover pestaña a la derecha</translation>
 <translation id="7966321538264951561">Cerrar las sugerencias.</translation>
+<translation id="8205266828577616993">Subir pestaña</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Cerrar <ph name="TABS_COUNT_ONE" /> pestaña seleccionada}other{Cerrar <ph name="TABS_COUNT_MANY" /> pestañas seleccionadas}}</translation>
 <translation id="9150694013019234766">Cambia de una pestaña a otra en tu grupo de pestañas de la parte inferior de la pantalla</translation>
 <translation id="9169594135889675189">Añadir una pestaña al grupo</translation>

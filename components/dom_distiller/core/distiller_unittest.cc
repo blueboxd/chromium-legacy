@@ -244,11 +244,10 @@ class TestDistillerURLFetcher : public DistillerURLFetcher {
     responses_[kImageURLs[1]] = string(kImageData[1]);
   }
 
-  void FetchURL(const string& url,
-                const URLFetcherCallback& callback) override {
+  void FetchURL(const string& url, URLFetcherCallback callback) override {
     ASSERT_FALSE(callback.is_null());
     url_ = url;
-    callback_ = callback;
+    callback_ = std::move(callback);
     if (!delay_fetch_) {
       PostCallbackTask();
     }
@@ -258,7 +257,7 @@ class TestDistillerURLFetcher : public DistillerURLFetcher {
     ASSERT_TRUE(base::MessageLoopCurrent::Get());
     ASSERT_FALSE(callback_.is_null());
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback_, responses_[url_]));
+        FROM_HERE, base::BindOnce(std::move(callback_), responses_[url_]));
   }
 
  private:
@@ -300,11 +299,12 @@ class DistillerTest : public testing::Test {
 
   void DistillPage(const std::string& url,
                    std::unique_ptr<DistillerPage> distiller_page) {
-    distiller_->DistillPage(GURL(url), std::move(distiller_page),
-                            base::Bind(&DistillerTest::OnDistillArticleDone,
-                                       base::Unretained(this)),
-                            base::Bind(&DistillerTest::OnDistillArticleUpdate,
-                                       base::Unretained(this)));
+    distiller_->DistillPage(
+        GURL(url), std::move(distiller_page),
+        base::BindOnce(&DistillerTest::OnDistillArticleDone,
+                       base::Unretained(this)),
+        base::BindRepeating(&DistillerTest::OnDistillArticleUpdate,
+                            base::Unretained(this)));
   }
 
  protected:

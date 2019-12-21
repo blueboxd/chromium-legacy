@@ -25,6 +25,10 @@
 class SpellCheck;
 struct SpellCheckResult;
 
+namespace base {
+class TimeTicks;
+}
+
 namespace blink {
 class WebTextCheckingCompletion;
 struct WebTextCheckingResult;

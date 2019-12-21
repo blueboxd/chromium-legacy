@@ -64,7 +64,7 @@ class POLICY_EXPORT ResourceCache {
   void Clear(const std::string& key);
 
   // Deletes the subkeys of |key| for which the |filter| returns true.
-  typedef base::Callback<bool(const std::string&)> SubkeyFilter;
+  typedef base::RepeatingCallback<bool(const std::string&)> SubkeyFilter;
   void FilterSubkeys(const std::string& key, const SubkeyFilter& filter);
 
   // Deletes all keys not in |keys_to_keep|, along with their subkeys.

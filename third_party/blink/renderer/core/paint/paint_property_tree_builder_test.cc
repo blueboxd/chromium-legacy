@@ -6024,26 +6024,6 @@ TEST_P(PaintPropertyTreeBuilderTest, StickyConstraintChain) {
                 ->nearest_element_shifting_containing_block);
 }
 
-TEST_P(PaintPropertyTreeBuilderTest, RoundedStickyConstraints) {
-  // This test verifies that sticky constraint rects are rounded to the nearest
-  // integer.
-  SetBodyInnerHTML(R"HTML(
-    <div id="scroller" style="overflow:scroll; width:300px; height:199.5px;">
-      <div id="outer" style="position:sticky; top:10px; height:300px">
-      </div>
-      <div style="height:1000px;"></div>
-    </div>
-  )HTML");
-  GetDocument().getElementById("scroller")->setScrollTop(50);
-  UpdateAllLifecyclePhasesForTest();
-
-  const auto* outer_properties = PaintPropertiesForElement("outer");
-  ASSERT_TRUE(outer_properties && outer_properties->StickyTranslation());
-  EXPECT_EQ(gfx::Rect(0, 0, 300, 200), outer_properties->StickyTranslation()
-                                           ->GetStickyConstraint()
-                                           ->constraint_box_rect);
-}
-
 TEST_P(PaintPropertyTreeBuilderTest, NonScrollableSticky) {
   // This test verifies the property tree builder applies sticky offset
   // correctly when the clipping container cannot be scrolled, and

@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_layout.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_types.h"
+#include "components/tab_groups/tab_group_color.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "components/tab_groups/tab_group_visual_data.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -90,6 +91,10 @@ void TabGroupHeader::OnMouseEntered(const ui::MouseEvent& event) {
   tab_strip_->UpdateHoverCard(nullptr);
 }
 
+void TabGroupHeader::OnThemeChanged() {
+  VisualsChanged();
+}
+
 void TabGroupHeader::OnGestureEvent(ui::GestureEvent* event) {
   tab_strip_->UpdateHoverCard(nullptr);
   switch (event->type()) {
@@ -148,18 +153,21 @@ int TabGroupHeader::CalculateWidth() const {
   // both should look nestled against the group stroke of the tab to the right.
   // This requires a +/- 2px adjustment to the width, which causes the tab to
   // the right to be positioned in the right spot.
-  const tab_groups::TabGroupVisualData* data =
-      tab_strip_->controller()->GetVisualDataForGroup(group().value());
-  const int right_adjust = data->title().empty() ? 2 : -2;
+  const base::string16 title =
+      tab_strip_->controller()->GetGroupTitle(group().value());
+  const int right_adjust = title.empty() ? 2 : -2;
 
   return overlap_margin + title_chip_->width() + right_adjust;
 }
 
 void TabGroupHeader::VisualsChanged() {
-  const tab_groups::TabGroupVisualData* data =
-      tab_strip_->controller()->GetVisualDataForGroup(group().value());
+  const base::string16 title =
+      tab_strip_->controller()->GetGroupTitle(group().value());
+  const tab_groups::TabGroupColorId color_id =
+      tab_strip_->controller()->GetGroupColorId(group().value());
+  const SkColor color = tab_strip_->GetPaintedGroupColor(color_id);
 
-  if (data->title().empty()) {
+  if (title.empty()) {
     // If the title is empty, the chip is just a circle.
     title_->SetVisible(false);
 
@@ -169,14 +177,13 @@ void TabGroupHeader::VisualsChanged() {
     title_chip_->SetBounds(TabGroupUnderline::GetStrokeInset(), y,
                            kEmptyChipSize, kEmptyChipSize);
     title_chip_->SetBackground(
-        views::CreateRoundedRectBackground(data->color(), kEmptyChipSize / 2));
+        views::CreateRoundedRectBackground(color, kEmptyChipSize / 2));
   } else {
     // If the title is set, the chip is a rounded rect that matches the active
     // tab shape, particularly the tab's corner radius.
     title_->SetVisible(true);
-    title_->SetEnabledColor(
-        color_utils::GetColorWithMaxContrast(data->color()));
-    title_->SetText(data->title());
+    title_->SetEnabledColor(color_utils::GetColorWithMaxContrast(color));
+    title_->SetText(title);
 
     // Set the radius such that the chip nestles snugly against the tab corner
     // radius, taking into account the group underline stroke.
@@ -200,7 +207,7 @@ void TabGroupHeader::VisualsChanged() {
                            text_width + 2 * text_horizontal_inset,
                            text_height + 2 * text_vertical_inset);
     title_chip_->SetBackground(
-        views::CreateRoundedRectBackground(data->color(), corner_radius));
+        views::CreateRoundedRectBackground(color, corner_radius));
 
     title_->SetBounds(text_horizontal_inset, text_vertical_inset, text_width,
                       text_height);

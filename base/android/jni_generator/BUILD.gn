@@ -15,9 +15,9 @@ generate_jni("jni_sample_header") {
 }
 
 android_library("jni_sample_java") {
-  java_files = [
-    "java/src/org/chromium/example/jni_generator/SampleForTests.java",
+  sources = [
     "java/src/org/chromium/example/jni_generator/SampleForAnnotationProcessor.java",
+    "java/src/org/chromium/example/jni_generator/SampleForTests.java",
   ]
 
   deps = [
@@ -29,7 +29,9 @@ android_library("jni_sample_java") {
 }
 
 android_library("jni_annotation_sample_java") {
-  java_files = [ "java/src/org/chromium/example/jni_generator/SampleForAnnotationProcessor.java" ]
+  sources = [
+    "java/src/org/chromium/example/jni_generator/SampleForAnnotationProcessor.java",
+  ]
   deps = [
     "//base:base_java",
     "//base:jni_java",
@@ -91,13 +93,13 @@ java_cpp_template("processor_args_java") {
 }
 
 java_annotation_processor("jni_processor") {
-  java_files = [
+  sources = [
     "java/src/org/chromium/jni_generator/JniProcessor.java",
 
     # Avoids a circular dependency with base:base_java. This is okay because
     # no target should ever expect to package an annotation processor.
-    "//base/android/java/src/org/chromium/base/annotations/MainDex.java",
     "//base/android/java/src/org/chromium/base/annotations/CheckDiscard.java",
+    "//base/android/java/src/org/chromium/base/annotations/MainDex.java",
   ]
 
   main_class = "org.chromium.jni_generator.JniProcessor"

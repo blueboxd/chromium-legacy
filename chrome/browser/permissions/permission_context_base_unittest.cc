@@ -248,11 +248,11 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
           0, 1);
 #if defined(OS_ANDROID)
       histograms.ExpectUniqueSample(
-          "Permissions.Prompt.Disposition.ModalDialog",
+          "Permissions.Action.WithDisposition.ModalDialog",
           static_cast<int>(action.value()), 1);
 #else
       histograms.ExpectUniqueSample(
-          "Permissions.Prompt.Disposition.AnchoredBubble",
+          "Permissions.Action.WithDisposition.AnchoredBubble",
           static_cast<int>(action.value()), 1);
 #endif
     }

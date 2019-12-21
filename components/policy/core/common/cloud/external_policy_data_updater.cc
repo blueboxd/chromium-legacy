@@ -207,8 +207,8 @@ void ExternalPolicyDataUpdater::FetchJob::Start() {
   // destructor cancels the fetcher job if one is still running.
   fetch_job_ = updater_->external_policy_data_fetcher_->StartJob(
       GURL(request_.url), request_.max_size,
-      base::Bind(&ExternalPolicyDataUpdater::FetchJob::OnFetchFinished,
-                 base::Unretained(this)));
+      base::BindOnce(&ExternalPolicyDataUpdater::FetchJob::OnFetchFinished,
+                     base::Unretained(this)));
 }
 
 void ExternalPolicyDataUpdater::FetchJob::OnFetchFinished(

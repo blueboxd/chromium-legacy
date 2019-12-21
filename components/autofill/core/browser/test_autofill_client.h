@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/mock_autocomplete_history_manager.h"
+#include "components/autofill/core/browser/mock_sms_client.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/payments/test_payments_client.h"
 #include "components/autofill/core/browser/payments/test_strike_database.h"
@@ -131,6 +132,7 @@ class TestAutofillClient : public AutofillClient {
   bool ShouldShowSigninPromo() override;
   bool AreServerCardsSupported() override;
   void ExecuteCommand(int id) override;
+  SmsClient* GetSmsClient() override;
 
   // RiskDataLoader:
   void LoadRiskData(
@@ -198,6 +200,8 @@ class TestAutofillClient : public AutofillClient {
     return &mock_autocomplete_history_manager_;
   }
 
+  MockSmsClient* GetMockSmsClient() { return &mock_sms_client_; }
+
   void set_migration_card_selections(
       const std::vector<std::string>& migration_card_selection) {
     migration_card_selection_ = migration_card_selection;
@@ -214,6 +218,7 @@ class TestAutofillClient : public AutofillClient {
   TestAddressNormalizer test_address_normalizer_;
   TestPersonalDataManager test_personal_data_manager_;
   MockAutocompleteHistoryManager mock_autocomplete_history_manager_;
+  MockSmsClient mock_sms_client_;
 
   // NULL by default.
   std::unique_ptr<PrefService> prefs_;

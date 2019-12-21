@@ -66,7 +66,7 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
 
   // Updates the visibility of the items in this view according to
   // |app_list_state| and |is_in_drag|.
-  void UpdateControlVisibility(ash::AppListViewState app_list_state,
+  void UpdateControlVisibility(AppListViewState app_list_state,
                                bool is_in_drag);
 
   // Animates the container opacity from the opacity for the current app list
@@ -76,7 +76,7 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
   using OpacityAnimator =
       base::RepeatingCallback<void(views::View*, bool target_visibility)>;
   void AnimateOpacity(float current_progress,
-                      ash::AppListViewState target_view_state,
+                      AppListViewState target_view_state,
                       const OpacityAnimator& animator);
 
   // Sets the expected y position for apps container children, and runs
@@ -84,7 +84,7 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
   // (This assumes that animator knows the offset between current apps container
   // bounds and target apps container bounds).
   using TransformAnimator = base::RepeatingCallback<void(views::View*)>;
-  void AnimateYPosition(ash::AppListViewState target_view_state,
+  void AnimateYPosition(AppListViewState target_view_state,
                         const TransformAnimator& animator);
 
   // Updates y position and opacity of the items in this view during dragging.
@@ -124,7 +124,7 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
   // HorizontalPage overrides:
   void OnWillBeHidden() override;
   views::View* GetFirstFocusableView() override;
-  gfx::Rect GetPageBoundsForState(ash::AppListState state) const override;
+  gfx::Rect GetPageBoundsForState(AppListState state) const override;
 
   SuggestionChipContainerView* suggestion_chip_container_view_for_test() {
     return suggestion_chip_container_view_;

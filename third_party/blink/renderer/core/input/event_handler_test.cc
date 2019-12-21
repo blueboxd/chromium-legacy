@@ -1416,8 +1416,8 @@ TEST_F(EventHandlerSimTest, MAYBE_GestureTapWithScrollSnaps) {
                       WebInputEvent::GetStaticTimeStampForTests()};
   gsb.SetFrameScale(1);
   gsb.SetSourceDevice(WebGestureDevice::kScrollbar);
-  gsb.data.scroll_begin.delta_x_hint = -gsb_data.delta.width;
-  gsb.data.scroll_begin.delta_y_hint = -gsb_data.delta.height;
+  gsb.data.scroll_begin.delta_x_hint = -gsb_data.delta.x();
+  gsb.data.scroll_begin.delta_y_hint = -gsb_data.delta.y();
   gsb.data.scroll_begin.scrollable_area_element_id =
       gsb_data.scrollable_area_element_id.GetStableId();
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(gsb);
@@ -1426,8 +1426,8 @@ TEST_F(EventHandlerSimTest, MAYBE_GestureTapWithScrollSnaps) {
                       WebInputEvent::GetStaticTimeStampForTests()};
   gsu.SetSourceDevice(WebGestureDevice::kScrollbar);
   gsu.SetFrameScale(1);
-  gsu.data.scroll_update.delta_x = -gsu_data.delta.width;
-  gsu.data.scroll_update.delta_y = -gsu_data.delta.height;
+  gsu.data.scroll_update.delta_x = -gsu_data.delta.x();
+  gsu.data.scroll_update.delta_y = -gsu_data.delta.y();
   gsu.data.scroll_update.delta_units = gsu_data.granularity;
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(gsu);
   WebGestureEvent gse{WebInputEvent::kGestureScrollEnd,

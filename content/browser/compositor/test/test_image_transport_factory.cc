@@ -14,7 +14,6 @@
 #include "content/browser/compositor/surface_utils.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "ui/compositor/reflector.h"
 #include "ui/compositor/test/in_process_context_provider.h"
 
 namespace content {
@@ -22,16 +21,6 @@ namespace {
 
 // TODO(kylechar): Use the same client id for the browser everywhere.
 constexpr uint32_t kDefaultClientId = std::numeric_limits<uint32_t>::max();
-
-class FakeReflector : public ui::Reflector {
- public:
-  FakeReflector() = default;
-  ~FakeReflector() override = default;
-
-  void OnMirroringCompositorResized() override {}
-  void AddMirroringLayer(ui::Layer* layer) override {}
-  void RemoveMirroringLayer(ui::Layer* layer) override {}
-};
 
 }  // namespace
 
@@ -122,17 +111,6 @@ void TestImageTransportFactory::AddObserver(
 void TestImageTransportFactory::RemoveObserver(
     ui::ContextFactoryObserver* observer) {
   observer_list_.RemoveObserver(observer);
-}
-
-std::unique_ptr<ui::Reflector> TestImageTransportFactory::CreateReflector(
-    ui::Compositor* source,
-    ui::Layer* target) {
-  if (!enable_viz_)
-    return std::make_unique<FakeReflector>();
-
-  // TODO(crbug.com/601869): Reflector needs to be rewritten for viz.
-  NOTIMPLEMENTED();
-  return nullptr;
 }
 
 viz::FrameSinkId TestImageTransportFactory::AllocateFrameSinkId() {

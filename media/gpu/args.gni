@@ -10,6 +10,10 @@ declare_args() {
   # platforms which have v4l2 hardware encoder / decoder.
   use_v4l2_codec = false
 
+  # Indicates if Video4Linux2 AML encoder is used. This is used for AML
+  # platforms which have v4l2 hardware encoder
+  use_v4l2_codec_aml = false
+
   # Indicates if VA-API-based hardware acceleration is to be used. This
   # is typically the case on x86-based ChromeOS devices.
   use_vaapi = false

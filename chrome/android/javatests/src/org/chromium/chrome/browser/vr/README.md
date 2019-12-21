@@ -13,6 +13,10 @@
         --test-filter=<failing test case>`
    Don't touch phone while the tests are running.
 
+If you are reproducing an issue with the AR tests, run
+`export DOWNLOAD_VR_TEST_APKS=1 && gclient runhooks` in order to get the
+playback datasets that are necessary.
+
 **NOTE** The message "Main  Unable to find package info for org.chromium.chrome"
          is usually displayed when the test package is being installed and does
          not indicate any problem.

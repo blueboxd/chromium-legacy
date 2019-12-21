@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "chrome/browser/autocomplete/bitmap_fetcher_helper.h"
 #include "chrome/browser/ui/webui/omnibox/omnibox.mojom.h"
 #include "components/omnibox/browser/autocomplete_controller_delegate.h"
 #include "components/omnibox/browser/autocomplete_input.h"
@@ -61,6 +62,8 @@ class OmniboxPageHandler : public AutocompleteControllerDelegate,
                          int32_t page_classification) override;
 
  private:
+  void OnBitmapFetched(const std::string& image_url, const SkBitmap& bitmap);
+
   // Looks up whether the hostname is a typed host (i.e., has received
   // typed visits).  Return true if the lookup succeeded; if so, the
   // value of |is_typed_host| is set appropriately.
@@ -87,6 +90,8 @@ class OmniboxPageHandler : public AutocompleteControllerDelegate,
 
   // The Profile* handed to us in our constructor.
   Profile* profile_;
+
+  BitmapFetcherHelper bitmap_fetcher_helper_;
 
   mojo::Receiver<mojom::OmniboxPageHandler> receiver_;
 

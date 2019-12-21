@@ -188,7 +188,7 @@ OSInfo::OSInfo(const _OSVERSIONINFOEXW& version_info,
   }
 }
 
-OSInfo::~OSInfo() {}
+OSInfo::~OSInfo() = default;
 
 Version OSInfo::Kernel32Version() const {
   static const Version kernel32_version =

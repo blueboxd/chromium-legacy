@@ -7,6 +7,7 @@
 
 #include "chrome/browser/ui/tabs/tab_types.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_types.h"
+#include "components/tab_groups/tab_group_color.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
 
@@ -188,10 +189,19 @@ class TabController {
   // Returns opacity for use on tab hover radial highlight.
   virtual float GetHoverOpacityForRadialHighlight() const = 0;
 
-  // Returns the tab_groups::TabGroupVisualData instance for the given |group|.
-  virtual const tab_groups::TabGroupVisualData* GetVisualDataForGroup(
+  // Returns the displayed title of the given |group|.
+  virtual base::string16 GetGroupTitle(tab_groups::TabGroupId group) const = 0;
+
+  // Returns the color ID of the given |group|.
+  virtual tab_groups::TabGroupColorId GetGroupColorId(
       tab_groups::TabGroupId group) const = 0;
 
+  // Returns the actual painted color of the given |group|, which depends on the
+  // current theme.
+  virtual SkColor GetPaintedGroupColor(
+      tab_groups::TabGroupColorId color_id) const = 0;
+
+  // Sets the title and color ID of the given |group|.
   virtual void SetVisualDataForGroup(
       tab_groups::TabGroupId group,
       tab_groups::TabGroupVisualData visual_data) = 0;

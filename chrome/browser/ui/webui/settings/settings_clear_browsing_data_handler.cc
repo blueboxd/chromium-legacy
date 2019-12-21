@@ -460,11 +460,10 @@ void ClearBrowsingDataHandler::RefreshHistoryNotice() {
 
   if (notice_shown_times < kMaxTimesHistoryNoticeShown) {
     browsing_data::ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(
-        sync_service_,
-        WebHistoryServiceFactory::GetForProfile(profile_),
+        sync_service_, WebHistoryServiceFactory::GetForProfile(profile_),
         chrome::GetChannel(),
-        base::Bind(&ClearBrowsingDataHandler::UpdateHistoryDeletionDialog,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&ClearBrowsingDataHandler::UpdateHistoryDeletionDialog,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

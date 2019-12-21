@@ -85,6 +85,18 @@
       element.focus();
       if (!window.eventSender)
         reject(new Error("No eventSender"));
+      if (element.localName === 'input' && element.type === 'file') {
+          element.addEventListener('drop', resolve);
+          eventSender.beginDragWithFiles([keys]);
+          const centerX = element.offsetLeft + element.offsetWidth / 2;
+          const centerY = element.offsetTop + element.offsetHeight / 2;
+          // Moving the mouse could interfere with the test, if it also tries to control
+          // mouse movements. This can cause differences between tests run with run_web_tests
+          // and tests run with wptrunner.
+          eventSender.mouseMoveTo(centerX * devicePixelRatio, centerY * devicePixelRatio);
+          eventSender.mouseUp();
+          return;
+      }
       if (keys.length > 1)
         reject(new Error("No support for a sequence of multiple keys"));
       let eventSenderKeys = keys;

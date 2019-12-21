@@ -368,7 +368,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   // Tell the embedder that the associated frame has consumed user activation so
   // that the replicated states in the browser and other renderers can be
   // updated.
-  virtual void ConsumeUserActivation() {}
+  virtual void ConsumeTransientUserActivation() {}
 
   virtual void AbortClientNavigation() {}
 

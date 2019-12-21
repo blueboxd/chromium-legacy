@@ -149,7 +149,7 @@ void ExtensionsToolbarContainer::PopOutAction(
   icons_[popped_out_action_->GetId()]->SetVisible(true);
   ReorderViews();
   static_cast<views::AnimatingLayoutManager*>(GetLayoutManager())
-      ->RunOrQueueAction(closure);
+      ->PostOrQueueAction(closure);
 }
 
 bool ExtensionsToolbarContainer::ShowToolbarActionPopup(
@@ -174,7 +174,7 @@ void ExtensionsToolbarContainer::ShowToolbarActionBubble(
   anchor_view->SetVisible(true);
 
   static_cast<views::AnimatingLayoutManager*>(GetLayoutManager())
-      ->RunOrQueueAction(
+      ->PostOrQueueAction(
           base::BindOnce(&ExtensionsToolbarContainer::ShowActiveBubble,
                          weak_ptr_factory_.GetWeakPtr(), anchor_view,
                          base::Passed(std::move(controller))));
@@ -404,7 +404,7 @@ void ExtensionsToolbarContainer::OnDragExited() {
   drop_info_.reset();
   ReorderViews();
   static_cast<views::AnimatingLayoutManager*>(GetLayoutManager())
-      ->RunOrQueueAction(base::BindOnce(
+      ->PostOrQueueAction(base::BindOnce(
           &ExtensionsToolbarContainer::SetExtensionIconVisibility,
           weak_ptr_factory_.GetWeakPtr(), dragged_extension_id, true));
 }

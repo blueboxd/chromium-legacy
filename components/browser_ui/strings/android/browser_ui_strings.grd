@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<grit latest_public_release="0" current_release="1"
+      output_all_resource_defines="false" source_lang_id="en" enc_check="möl">
+  <outputs>
+    <output filename="values-af/browser_ui_strings.xml" lang="af" type="android" />
+    <output filename="values-am/browser_ui_strings.xml" lang="am" type="android" />
+    <output filename="values-ar/browser_ui_strings.xml" lang="ar" type="android" />
+    <output filename="values-as/browser_ui_strings.xml" lang="as" type="android" />
+    <output filename="values-az/browser_ui_strings.xml" lang="az" type="android" />
+    <output filename="values-be/browser_ui_strings.xml" lang="be" type="android" />
+    <output filename="values-bg/browser_ui_strings.xml" lang="bg" type="android" />
+    <output filename="values-bn/browser_ui_strings.xml" lang="bn" type="android" />
+    <output filename="values-bs/browser_ui_strings.xml" lang="bs" type="android" />
+    <output filename="values-ca/browser_ui_strings.xml" lang="ca" type="android" />
+    <output filename="values-cs/browser_ui_strings.xml" lang="cs" type="android" />
+    <output filename="values-da/browser_ui_strings.xml" lang="da" type="android" />
+    <output filename="values-de/browser_ui_strings.xml" lang="de" type="android" />
+    <output filename="values-el/browser_ui_strings.xml" lang="el" type="android" />
+    <output filename="values/browser_ui_strings.xml" lang="en" type="android" />
+    <output filename="values-en-rGB/browser_ui_strings.xml" lang="en-GB" type="android" />
+    <output filename="values-es/browser_ui_strings.xml" lang="es" type="android" />
+    <output filename="values-es-rUS/browser_ui_strings.xml" lang="es-419" type="android" />
+    <output filename="values-et/browser_ui_strings.xml" lang="et" type="android" />
+    <output filename="values-eu/browser_ui_strings.xml" lang="eu" type="android" />
+    <output filename="values-fa/browser_ui_strings.xml" lang="fa" type="android" />
+    <output filename="values-fi/browser_ui_strings.xml" lang="fi" type="android" />
+    <output filename="values-tl/browser_ui_strings.xml" lang="fil" type="android" />
+    <output filename="values-fr/browser_ui_strings.xml" lang="fr" type="android" />
+    <output filename="values-fr-rCA/browser_ui_strings.xml" lang="fr-CA" type="android" />
+    <output filename="values-gl/browser_ui_strings.xml" lang="gl" type="android" />
+    <output filename="values-gu/browser_ui_strings.xml" lang="gu" type="android" />
+    <output filename="values-hi/browser_ui_strings.xml" lang="hi" type="android" />
+    <output filename="values-hr/browser_ui_strings.xml" lang="hr" type="android" />
+    <output filename="values-hu/browser_ui_strings.xml" lang="hu" type="android" />
+    <output filename="values-hy/browser_ui_strings.xml" lang="hy" type="android" />
+    <output filename="values-in/browser_ui_strings.xml" lang="id" type="android" />
+    <output filename="values-is/browser_ui_strings.xml" lang="is" type="android" />
+    <output filename="values-it/browser_ui_strings.xml" lang="it" type="android" />
+    <output filename="values-iw/browser_ui_strings.xml" lang="iw" type="android" />
+    <output filename="values-ja/browser_ui_strings.xml" lang="ja" type="android" />
+    <output filename="values-ka/browser_ui_strings.xml" lang="ka" type="android" />
+    <output filename="values-kk/browser_ui_strings.xml" lang="kk" type="android" />
+    <output filename="values-km/browser_ui_strings.xml" lang="km" type="android" />
+    <output filename="values-kn/browser_ui_strings.xml" lang="kn" type="android" />
+    <output filename="values-ko/browser_ui_strings.xml" lang="ko" type="android" />
+    <output filename="values-ky/browser_ui_strings.xml" lang="ky" type="android" />
+    <output filename="values-lo/browser_ui_strings.xml" lang="lo" type="android" />
+    <output filename="values-lt/browser_ui_strings.xml" lang="lt" type="android" />
+    <output filename="values-lv/browser_ui_strings.xml" lang="lv" type="android" />
+    <output filename="values-mk/browser_ui_strings.xml" lang="mk" type="android" />
+    <output filename="values-ml/browser_ui_strings.xml" lang="ml" type="android" />
+    <output filename="values-mn/browser_ui_strings.xml" lang="mn" type="android" />
+    <output filename="values-mr/browser_ui_strings.xml" lang="mr" type="android" />
+    <output filename="values-ms/browser_ui_strings.xml" lang="ms" type="android" />
+    <output filename="values-my/browser_ui_strings.xml" lang="my" type="android" />
+    <output filename="values-ne/browser_ui_strings.xml" lang="ne" type="android" />
+    <output filename="values-nl/browser_ui_strings.xml" lang="nl" type="android" />
+    <output filename="values-nb/browser_ui_strings.xml" lang="no" type="android" />
+    <output filename="values-or/browser_ui_strings.xml" lang="or" type="android" />
+    <output filename="values-pa/browser_ui_strings.xml" lang="pa" type="android" />
+    <output filename="values-pl/browser_ui_strings.xml" lang="pl" type="android" />
+    <output filename="values-pt-rBR/browser_ui_strings.xml" lang="pt-BR" type="android" />
+    <output filename="values-pt-rPT/browser_ui_strings.xml" lang="pt-PT" type="android" />
+    <output filename="values-ro/browser_ui_strings.xml" lang="ro" type="android" />
+    <output filename="values-ru/browser_ui_strings.xml" lang="ru" type="android" />
+    <output filename="values-si/browser_ui_strings.xml" lang="si" type="android" />
+    <output filename="values-sk/browser_ui_strings.xml" lang="sk" type="android" />
+    <output filename="values-sl/browser_ui_strings.xml" lang="sl" type="android" />
+    <output filename="values-sq/browser_ui_strings.xml" lang="sq" type="android" />
+    <output filename="values-sr/browser_ui_strings.xml" lang="sr" type="android" />
+    <output filename="values-sv/browser_ui_strings.xml" lang="sv" type="android" />
+    <output filename="values-sw/browser_ui_strings.xml" lang="sw" type="android" />
+    <output filename="values-ta/browser_ui_strings.xml" lang="ta" type="android" />
+    <output filename="values-te/browser_ui_strings.xml" lang="te" type="android" />
+    <output filename="values-th/browser_ui_strings.xml" lang="th" type="android" />
+    <output filename="values-tr/browser_ui_strings.xml" lang="tr" type="android" />
+    <output filename="values-uk/browser_ui_strings.xml" lang="uk" type="android" />
+    <output filename="values-ur/browser_ui_strings.xml" lang="ur" type="android" />
+    <output filename="values-uz/browser_ui_strings.xml" lang="uz" type="android" />
+    <output filename="values-vi/browser_ui_strings.xml" lang="vi" type="android" />
+    <output filename="values-zh-rCN/browser_ui_strings.xml" lang="zh-CN" type="android" />
+    <output filename="values-zh-rTW/browser_ui_strings.xml" lang="zh-TW" type="android" />
+    <output filename="values-zu/browser_ui_strings.xml" lang="zu" type="android" />
+  </outputs>
+  <translations>
+    <file lang="af" path="translations/browser_ui_strings_af.xtb" />
+    <file lang="am" path="translations/browser_ui_strings_am.xtb" />
+    <file lang="ar" path="translations/browser_ui_strings_ar.xtb" />
+    <file lang="as" path="translations/browser_ui_strings_as.xtb" />
+    <file lang="az" path="translations/browser_ui_strings_az.xtb" />
+    <file lang="be" path="translations/browser_ui_strings_be.xtb" />
+    <file lang="bg" path="translations/browser_ui_strings_bg.xtb" />
+    <file lang="bn" path="translations/browser_ui_strings_bn.xtb" />
+    <file lang="bs" path="translations/browser_ui_strings_bs.xtb" />
+    <file lang="ca" path="translations/browser_ui_strings_ca.xtb" />
+    <file lang="cs" path="translations/browser_ui_strings_cs.xtb" />
+    <file lang="da" path="translations/browser_ui_strings_da.xtb" />
+    <file lang="de" path="translations/browser_ui_strings_de.xtb" />
+    <file lang="el" path="translations/browser_ui_strings_el.xtb" />
+    <file lang="en-GB" path="translations/browser_ui_strings_en-GB.xtb" />
+    <file lang="es" path="translations/browser_ui_strings_es.xtb" />
+    <file lang="es-419" path="translations/browser_ui_strings_es-419.xtb" />
+    <file lang="et" path="translations/browser_ui_strings_et.xtb" />
+    <file lang="eu" path="translations/browser_ui_strings_eu.xtb" />
+    <file lang="fa" path="translations/browser_ui_strings_fa.xtb" />
+    <file lang="fi" path="translations/browser_ui_strings_fi.xtb" />
+    <file lang="fil" path="translations/browser_ui_strings_fil.xtb" />
+    <file lang="fr" path="translations/browser_ui_strings_fr.xtb" />
+    <file lang="fr-CA" path="translations/browser_ui_strings_fr-CA.xtb" />
+    <file lang="gl" path="translations/browser_ui_strings_gl.xtb" />
+    <file lang="gu" path="translations/browser_ui_strings_gu.xtb" />
+    <file lang="hi" path="translations/browser_ui_strings_hi.xtb" />
+    <file lang="hr" path="translations/browser_ui_strings_hr.xtb" />
+    <file lang="hu" path="translations/browser_ui_strings_hu.xtb" />
+    <file lang="hy" path="translations/browser_ui_strings_hy.xtb" />
+    <file lang="id" path="translations/browser_ui_strings_id.xtb" />
+    <file lang="is" path="translations/browser_ui_strings_is.xtb" />
+    <file lang="it" path="translations/browser_ui_strings_it.xtb" />
+    <file lang="iw" path="translations/browser_ui_strings_iw.xtb" />
+    <file lang="ja" path="translations/browser_ui_strings_ja.xtb" />
+    <file lang="ka" path="translations/browser_ui_strings_ka.xtb" />
+    <file lang="kk" path="translations/browser_ui_strings_kk.xtb" />
+    <file lang="km" path="translations/browser_ui_strings_km.xtb" />
+    <file lang="kn" path="translations/browser_ui_strings_kn.xtb" />
+    <file lang="ko" path="translations/browser_ui_strings_ko.xtb" />
+    <file lang="ky" path="translations/browser_ui_strings_ky.xtb" />
+    <file lang="lo" path="translations/browser_ui_strings_lo.xtb" />
+    <file lang="lt" path="translations/browser_ui_strings_lt.xtb" />
+    <file lang="lv" path="translations/browser_ui_strings_lv.xtb" />
+    <file lang="mk" path="translations/browser_ui_strings_mk.xtb" />
+    <file lang="ml" path="translations/browser_ui_strings_ml.xtb" />
+    <file lang="mn" path="translations/browser_ui_strings_mn.xtb" />
+    <file lang="mr" path="translations/browser_ui_strings_mr.xtb" />
+    <file lang="ms" path="translations/browser_ui_strings_ms.xtb" />
+    <file lang="my" path="translations/browser_ui_strings_my.xtb" />
+    <file lang="ne" path="translations/browser_ui_strings_ne.xtb" />
+    <file lang="nl" path="translations/browser_ui_strings_nl.xtb" />
+    <file lang="no" path="translations/browser_ui_strings_no.xtb" />
+    <file lang="or" path="translations/browser_ui_strings_or.xtb" />
+    <file lang="pa" path="translations/browser_ui_strings_pa.xtb" />
+    <file lang="pl" path="translations/browser_ui_strings_pl.xtb" />
+    <file lang="pt-BR" path="translations/browser_ui_strings_pt-BR.xtb" />
+    <file lang="pt-PT" path="translations/browser_ui_strings_pt-PT.xtb" />
+    <file lang="ro" path="translations/browser_ui_strings_ro.xtb" />
+    <file lang="ru" path="translations/browser_ui_strings_ru.xtb" />
+    <file lang="si" path="translations/browser_ui_strings_si.xtb" />
+    <file lang="sk" path="translations/browser_ui_strings_sk.xtb" />
+    <file lang="sl" path="translations/browser_ui_strings_sl.xtb" />
+    <file lang="sq" path="translations/browser_ui_strings_sq.xtb" />
+    <file lang="sr" path="translations/browser_ui_strings_sr.xtb" />
+    <file lang="sv" path="translations/browser_ui_strings_sv.xtb" />
+    <file lang="sw" path="translations/browser_ui_strings_sw.xtb" />
+    <file lang="ta" path="translations/browser_ui_strings_ta.xtb" />
+    <file lang="te" path="translations/browser_ui_strings_te.xtb" />
+    <file lang="th" path="translations/browser_ui_strings_th.xtb" />
+    <file lang="tr" path="translations/browser_ui_strings_tr.xtb" />
+    <file lang="uk" path="translations/browser_ui_strings_uk.xtb" />
+    <file lang="ur" path="translations/browser_ui_strings_ur.xtb" />
+    <file lang="uz" path="translations/browser_ui_strings_uz.xtb" />
+    <file lang="vi" path="translations/browser_ui_strings_vi.xtb" />
+    <file lang="zh-CN" path="translations/browser_ui_strings_zh-CN.xtb" />
+    <file lang="zh-HK" path="translations/browser_ui_strings_zh-HK.xtb" />
+    <file lang="zh-TW" path="translations/browser_ui_strings_zh-TW.xtb" />
+    <file lang="zu" path="translations/browser_ui_strings_zu.xtb" />
+  </translations>
+  <release allow_pseudo="false" seq="1">
+    <messages fallback_to_english="true">
+      <message name="IDS_DELETED" desc='Text that announces to the user that something was deleted.'>
+        Deleted
+      </message>
+      <message name="IDS_OK" desc="Label for a confirm button. Used in multiple contexts. [CHAR-LIMIT=20]">
+        OK
+      </message>
+      <message name="IDS_OK_GOT_IT" desc="Label of a button by which the user confirms that they read and understood the information or instructions. Used in multiple contexts. [CHAR-LIMIT=20]">
+        OK, got it
+      </message>
+      <message name="IDS_CANCEL" desc="Label for a cancel button. Used in multiple contexts. [CHAR-LIMIT=20]">
+        Cancel
+      </message>
+      <message name="IDS_NOT_NOW" desc="Label for a not now button. Used in multiple contexts. [CHAR-LIMIT=20]">
+        Not now
+      </message>
+      <message name="IDS_SAVE" desc="Label for a button to save a change. Used in multiple contexts. [CHAR-LIMIT=20]">
+        Save
+      </message>
+      <message name="IDS_DETAILS_LINK" desc="In 1) Settings > Clean up computer (desktop), a link to open details of incompatible applications. In 2) Settings > Lite mode (mobile), static title for data usage breakdown." meaning="Short for 'view details'. Link; static title.">
+        Details
+      </message>
+      <message name="IDS_DONE" desc="Label for a button to save a change or finish editing data. Used in multiple contexts. [CHAR-LIMIT=20]">
+        Done
+      </message>
+      <message name="IDS_DELETE" desc="Label for a delete button. Used in multiple contexts. [CHAR-LIMIT=20]">
+        Delete
+      </message>
+      <message name="IDS_REMOVE" desc="Label for a button to remove an item (e.g. a bookmark) from a list. [CHAR-LIMIT=20]">
+        Remove
+      </message>
+      <message name="IDS_RESET" desc="Label for a button to reset information you are editing to a default.">
+        Reset
+      </message>
+      <message name="IDS_TITLE" desc="Text indicating the title of a button or a textfield. Ued in multiple contexts. [CHAR-LIMIT=32]">
+        Title
+      </message>
+      <message name="IDS_TEXT_ON" desc="Text indicating that an option is turned on. [CHAR-LIMIT=20]">
+        On
+      </message>
+      <message name="IDS_TEXT_OFF" desc="Text indicating that an option is turned off. [CHAR-LIMIT=20]">
+        Off
+      </message>
+      <message name="IDS_LEARN_MORE" desc="Generic label for menu item to learn more about a feature. [CHAR-LIMIT=32]">
+        Learn more
+      </message>
+      <message name="IDS_MORE" desc="Generic label for a button to show more items or options. [CHAR-LIMIT=20]">
+        More
+      </message>
+      <message name="IDS_CLOSE" desc="Content description for a button to close a dialog or popup" >
+        Close
+      </message>
+      <message name="IDS_RELOAD" desc="Label for a button that reloads the page. Used in multiple contexts. [CHAR-LIMIT=20]">
+        Reload
+      </message>
+      <message name="IDS_NO_THANKS" desc="Generic label to say no thanks for a feature. [CHAR-LIMIT=32]">
+        No thanks
+      </message>
+      <message name="IDS_NEXT" desc="Generic label for a button to advance to the next item. [CHAR-LIMIT=20]">
+        Next
+      </message>
+      <message name="IDS_CONTINUE_BUTTON" desc="Generic label for a button to continue to the next screen. Used in multiple contexts. [CHAR-LIMIT=20]">
+        Continue
+      </message>
+      <message name="IDS_SUBMIT" desc="Generic label for a button to submit data. Used in multiple contexts. [CHAR-LIMIT=20]">
+        Submit
+      </message>
+      <message name="IDS_UNDO" desc="Generic label for a button to undo the previous action.">
+        Undo
+      </message>
+      <message name="IDS_HELP" desc="Generic label for a button that displays help for the current screen.">
+        Help
+      </message>
+      <message name="IDS_TODAY" desc="Generic Label saying the date is today.">
+        Today
+      </message>
+      <message name="IDS_YESTERDAY" desc="Generic Label saying the date is yesterday.">
+        Yesterday
+      </message>
+      <message name="IDS_SELECT" desc="Prompt for user to select something. [CHAR-LIMIT=20]">
+        Select
+      </message>
+      <message name="IDS_ADD" desc="Prompt for the user to add something, like a new address. [CHAR-LIMIT=20]">
+        Add
+      </message>
+      <message name="IDS_SHARE" desc="Content description for a button to share item(s). [CHAR-LIMIT=20]">
+        Share
+      </message>
+      <message name="IDS_SEARCH" desc="The label for a search button.">
+        Search
+      </message>
+      <message name="IDS_SHOW_INFO" desc="The label for a info button to show info.">
+        Show Info
+      </message>
+      <message name="IDS_HIDE_INFO" desc="The label for a info button to hide info.">
+        Hide Info
+      </message>
+      <message name="IDS_COPY_LINK" desc="The label for a menu item to copy a link. [CHAR-LIMIT=30]">
+        Copy link
+      </message>
+      <message name="IDS_COPIED" desc="Notification telling the user that something has been copied to the clipboard.">
+        Copied
+      </message>
+      <message name="IDS_TRY_AGAIN" desc="The label for a button allowing the user to try an action again. [CHAR-LIMIT=20]">
+        Try again
+      </message>
+      <message name="IDS_BACK" desc="Label for a back button to return to a previous UI state or screen. Used in multiple contexts. [CHAR-LIMIT=20]">
+        Back
+      </message>
+      <message name="IDS_CONFIRM" desc="Label for a confirm button. Used in multiple contexts. [CHAR-LIMIT=20]">
+        Confirm
+      </message>
+      <message name="IDS_SHOW" desc="Label for a show button. Used in multiple contexts. [CHAR-LIMIT=20]">
+        Show
+      </message>
+      <message name="IDS_USER" desc="Generic label for UI elements with information about user.">
+        User
+      </message>
+      <message name="IDS_MENU_ITEM_MOVE_UP" desc="Option in item menu. User can click the 'Move up' option to move the item up by one position in its list. [CHAR-LIMIT=24]">
+        Move up
+      </message>
+      <message name="IDS_MENU_ITEM_MOVE_DOWN" desc="Option in item menu. User can click the 'Move down' option to move the item down by one position in its list. [CHAR-LIMIT=24]">
+        Move down
+      </message>
+      <message name="IDS_MENU_ITEM_MOVE_TO_TOP" desc="Option in item menu. User can click the 'Move to top' option to move the item up to the top of its list. [CHAR-LIMIT=24]">
+        Move to top
+      </message>
+    </messages>
+  </release>
+</grit>

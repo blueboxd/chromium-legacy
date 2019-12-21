@@ -4,31 +4,83 @@
 
 #include "chrome/browser/chromeos/extensions/printing/printing_api_handler.h"
 
+#include "base/bind.h"
+#include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
+#include "base/task/post_task.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/chromeos/extensions/printing/printing_api_utils.h"
 #include "chrome/browser/chromeos/printing/cups_print_job.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
+#include "chrome/browser/chromeos/printing/cups_wrapper.h"
+#include "chrome/browser/chromeos/printing/printer_configurer.h"
+#include "chrome/browser/chromeos/printing/printer_error_codes.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/printing/print_preview_sticky_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/printing/printer_configuration.h"
 #include "components/prefs/pref_service.h"
+#include "components/printing/common/cloud_print_cdd_conversion.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
+#include "printing/backend/cups_jobs.h"
+#include "printing/backend/print_backend.h"
 
 namespace extensions {
 
+namespace {
+
+constexpr char kInvalidPrinterIdError[] = "Invalid printer ID";
+
+}  // namespace
+
+// static
+std::unique_ptr<PrintingAPIHandler> PrintingAPIHandler::CreateForTesting(
+    content::BrowserContext* browser_context,
+    EventRouter* event_router,
+    ExtensionRegistry* extension_registry,
+    chromeos::CupsPrintJobManager* print_job_manager,
+    chromeos::CupsPrintersManager* printers_manager,
+    std::unique_ptr<chromeos::PrinterConfigurer> printer_configurer,
+    std::unique_ptr<chromeos::CupsWrapper> cups_wrapper) {
+  return base::WrapUnique(new PrintingAPIHandler(
+      browser_context, event_router, extension_registry, print_job_manager,
+      printers_manager, std::move(printer_configurer),
+      std::move(cups_wrapper)));
+}
+
 PrintingAPIHandler::PrintingAPIHandler(content::BrowserContext* browser_context)
-    : browser_context_(browser_context),
-      event_router_(EventRouter::Get(browser_context)),
-      extension_registry_(ExtensionRegistry::Get(browser_context)),
-      print_job_manager_(
+    : PrintingAPIHandler(
+          browser_context,
+          EventRouter::Get(browser_context),
+          ExtensionRegistry::Get(browser_context),
           chromeos::CupsPrintJobManagerFactory::GetForBrowserContext(
-              browser_context)),
-      printers_manager_(
+              browser_context),
           chromeos::CupsPrintersManagerFactory::GetForBrowserContext(
-              browser_context)),
+              browser_context),
+          chromeos::PrinterConfigurer::Create(
+              Profile::FromBrowserContext(browser_context)),
+          chromeos::CupsWrapper::Create()) {}
+
+PrintingAPIHandler::PrintingAPIHandler(
+    content::BrowserContext* browser_context,
+    EventRouter* event_router,
+    ExtensionRegistry* extension_registry,
+    chromeos::CupsPrintJobManager* print_job_manager,
+    chromeos::CupsPrintersManager* printers_manager,
+    std::unique_ptr<chromeos::PrinterConfigurer> printer_configurer,
+    std::unique_ptr<chromeos::CupsWrapper> cups_wrapper)
+    : browser_context_(browser_context),
+      event_router_(event_router),
+      extension_registry_(extension_registry),
+      print_job_manager_(print_job_manager),
+      printers_manager_(printers_manager),
+      printer_capabilities_provider_(printers_manager,
+                                     std::move(printer_configurer)),
+      cups_wrapper_(std::move(cups_wrapper)),
       print_job_manager_observer_(this) {
   print_job_manager_observer_.Add(print_job_manager_);
 }
@@ -78,6 +130,62 @@ std::vector<api::printing::Printer> PrintingAPIHandler::GetPrinters() {
     }
   }
   return all_printers;
+}
+
+void PrintingAPIHandler::GetPrinterInfo(const std::string& printer_id,
+                                        GetPrinterInfoCallback callback) {
+  if (!printers_manager_->GetPrinter(printer_id)) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback), /*capabilities=*/base::nullopt,
+                       /*status=*/base::nullopt, kInvalidPrinterIdError));
+    return;
+  }
+  printer_capabilities_provider_.GetPrinterCapabilities(
+      printer_id, base::BindOnce(&PrintingAPIHandler::GetPrinterStatus,
+                                 weak_ptr_factory_.GetWeakPtr(), printer_id,
+                                 std::move(callback)));
+}
+
+void PrintingAPIHandler::GetPrinterStatus(
+    const std::string& printer_id,
+    GetPrinterInfoCallback callback,
+    base::Optional<printing::PrinterSemanticCapsAndDefaults> capabilities) {
+  if (!capabilities.has_value()) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback), /*capabilities=*/base::nullopt,
+                       api::printing::PRINTER_STATUS_UNREACHABLE,
+                       /*error=*/base::nullopt));
+    return;
+  }
+  base::Value capabilities_value =
+      cloud_print::PrinterSemanticCapsAndDefaultsToCdd(capabilities.value());
+  cups_wrapper_->QueryCupsPrinterStatus(
+      printer_id,
+      base::BindOnce(&PrintingAPIHandler::OnPrinterStatusRetrieved,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     std::move(capabilities_value)));
+}
+
+void PrintingAPIHandler::OnPrinterStatusRetrieved(
+    GetPrinterInfoCallback callback,
+    base::Value capabilities,
+    std::unique_ptr<::printing::PrinterStatus> printer_status) {
+  if (!printer_status) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), std::move(capabilities),
+                                  api::printing::PRINTER_STATUS_UNREACHABLE,
+                                  /*error=*/base::nullopt));
+    return;
+  }
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          std::move(callback), std::move(capabilities),
+          PrinterStatusToIdl(chromeos::PrinterErrorCodeFromPrinterStatusReasons(
+              *printer_status)),
+          /*error=*/base::nullopt));
 }
 
 void PrintingAPIHandler::OnPrintJobCreated(

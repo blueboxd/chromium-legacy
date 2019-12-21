@@ -8783,7 +8783,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
                             ->GetFrameTree()
                             ->root();
 
-  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasStickyUserActivation());
   EXPECT_FALSE(root->HasTransientUserActivation());
 
   // Navigate to a new same-site document from the renderer without a user
@@ -8838,7 +8838,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
                             ->GetFrameTree()
                             ->root();
 
-  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasStickyUserActivation());
   EXPECT_FALSE(root->HasTransientUserActivation());
 
   // Navigate to a new cross-site document from the renderer with a user
@@ -8892,7 +8892,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerDisableHistoryIntervention,
                             ->GetFrameTree()
                             ->root();
 
-  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasStickyUserActivation());
   EXPECT_FALSE(root->HasTransientUserActivation());
 
   // Navigate to a new same-site document from the renderer without a user
@@ -8943,7 +8943,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
                             ->GetFrameTree()
                             ->root();
 
-  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasStickyUserActivation());
   EXPECT_FALSE(root->HasTransientUserActivation());
 
   // Navigate to a new same-site document from the renderer without a user
@@ -9000,7 +9000,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
                             ->GetFrameTree()
                             ->root();
 
-  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasStickyUserActivation());
   EXPECT_FALSE(root->HasTransientUserActivation());
 
   // Navigate to a new same-site document from the renderer without a user
@@ -9057,7 +9057,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerDisableHistoryIntervention,
                             ->GetFrameTree()
                             ->root();
 
-  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasStickyUserActivation());
   EXPECT_FALSE(root->HasTransientUserActivation());
 
   // Navigate to a new same-site document from the renderer without a user
@@ -9107,7 +9107,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
                             ->GetFrameTree()
                             ->root();
 
-  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasStickyUserActivation());
   EXPECT_FALSE(root->HasTransientUserActivation());
 
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
@@ -9227,7 +9227,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
                             ->GetFrameTree()
                             ->root();
 
-  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasStickyUserActivation());
   EXPECT_FALSE(root->HasTransientUserActivation());
 
   // Navigate to a new same-site document from the renderer without a user
@@ -9272,7 +9272,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
                             ->GetFrameTree()
                             ->root();
 
-  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasStickyUserActivation());
   EXPECT_FALSE(root->HasTransientUserActivation());
 
   // Navigate to a new same-site document from the renderer.
@@ -9320,7 +9320,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
                             ->GetFrameTree()
                             ->root();
 
-  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasStickyUserActivation());
   EXPECT_FALSE(root->HasTransientUserActivation());
 
   GURL url(embedded_test_server()->GetURL("/title1.html"));
@@ -9365,7 +9365,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
                             ->GetFrameTree()
                             ->root();
 
-  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasStickyUserActivation());
   EXPECT_FALSE(root->HasTransientUserActivation());
 
   // Navigate to a new same-site document from the renderer without a user
@@ -9415,7 +9415,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
                             ->GetFrameTree()
                             ->root();
 
-  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasStickyUserActivation());
   EXPECT_FALSE(root->HasTransientUserActivation());
 
   // Navigate to a new same-site document from the renderer without a user
@@ -9473,7 +9473,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
                             ->GetFrameTree()
                             ->root();
 
-  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasStickyUserActivation());
   EXPECT_FALSE(root->HasTransientUserActivation());
 
   // Navigate to a new same-site document from the renderer without a user
@@ -9529,7 +9529,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
                             ->GetFrameTree()
                             ->root();
 
-  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasStickyUserActivation());
   EXPECT_FALSE(root->HasTransientUserActivation());
 
   // Navigate to a new same-site document from the renderer without a user
@@ -9575,7 +9575,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
       embedded_test_server()->GetURL("/frame_tree/page_with_one_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), skippable_url));
 
-  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasStickyUserActivation());
   EXPECT_FALSE(root->HasTransientUserActivation());
 
   // Invoke pushstate from a subframe.
@@ -9614,7 +9614,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
   // entries to be marked as non-skippable.
   root->UpdateUserActivationState(
       blink::UserActivationUpdateType::kNotifyActivation);
-  EXPECT_TRUE(root->HasBeenActivated());
+  EXPECT_TRUE(root->HasStickyUserActivation());
   EXPECT_TRUE(root->HasTransientUserActivation());
   EXPECT_FALSE(controller.GetEntryAtIndex(0)->should_skip_on_back_forward_ui());
   EXPECT_FALSE(controller.GetEntryAtIndex(1)->should_skip_on_back_forward_ui());
@@ -9641,7 +9641,7 @@ IN_PROC_BROWSER_TEST_F(
       embedded_test_server()->GetURL("/frame_tree/page_with_one_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url_with_frames));
 
-  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasStickyUserActivation());
   EXPECT_FALSE(root->HasTransientUserActivation());
 
   // Simulate user gesture in the main frame. Subframes creating entries without
@@ -9649,7 +9649,7 @@ IN_PROC_BROWSER_TEST_F(
   // skippable.
   root->UpdateUserActivationState(
       blink::UserActivationUpdateType::kNotifyActivation);
-  EXPECT_TRUE(root->HasBeenActivated());
+  EXPECT_TRUE(root->HasStickyUserActivation());
   EXPECT_TRUE(root->HasTransientUserActivation());
 
   // Invoke pushstate from a subframe.
@@ -9693,7 +9693,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetFrameTree()
                             ->root();
-  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasStickyUserActivation());
   EXPECT_FALSE(root->HasTransientUserActivation());
 
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
@@ -9714,7 +9714,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
   script = "history.pushState('', '','" + a4_url.spec() + "');";
   ASSERT_TRUE(ExecJs(shell()->web_contents(), script));
 
-  EXPECT_TRUE(root->HasBeenActivated());
+  EXPECT_TRUE(root->HasStickyUserActivation());
   EXPECT_TRUE(root->HasTransientUserActivation());
 
   // None of the entries should be skippable.

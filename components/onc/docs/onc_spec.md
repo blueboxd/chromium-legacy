@@ -488,12 +488,6 @@ field **WiFi** must be set to an object of type [WiFi](#WiFi-type).
       must be of the format 0x&lt;hex-number&gt;, where &lt;hex-number&gt; is
       40, 104, 128, or 232 bits.
 
-* **RoamThreshold**
-    * (optional) - **integer**
-    * The roam threshold for this network, which is the signal-to-noise value
-      (in dB) below which we will attempt to roam to a new network. If this
-      value is not set, the default value will be used.
-
 * **Security**
     * (required) - **string**
     * Allowed values are:

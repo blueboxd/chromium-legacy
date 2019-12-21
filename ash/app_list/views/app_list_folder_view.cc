@@ -600,7 +600,7 @@ void AppListFolderView::UpdatePreferredBounds() {
 
   gfx::Rect container_bounds = container_view_->GetContentsBounds();
   const gfx::Size search_box_size =
-      contents_view_->GetSearchBoxSize(ash::AppListState::kStateApps);
+      contents_view_->GetSearchBoxSize(AppListState::kStateApps);
   // Adjust for apps container margins.
   if (app_list_features::IsScalableAppListEnabled()) {
     container_bounds.Inset(container_view_->CalculateMarginsForAvailableBounds(

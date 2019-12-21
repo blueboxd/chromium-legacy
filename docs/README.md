@@ -71,7 +71,7 @@ used when committed.
 *   [Atom](atom.md) - Atom multi-platform code editor
 *   [CLion](clion.md) - CLion IDE, supports GUI debugging.
 *   [Eclipse for Android](eclipse.md) - Eclipse for Android
-*   [Eclipse for Linux](linux_eclipse_dev.md) - Eclipse for other platforms
+*   [Eclipse for Linux](linux/eclipse_dev.md) - Eclipse for other platforms
     (This guide was written for Linux, but is probably usable on Windows/MacOS
     as well)
 *   [EMACS Notes](emacs.md) - EMACS commands/styles/tool integrations

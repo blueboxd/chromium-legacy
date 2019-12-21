@@ -597,8 +597,7 @@ namespace networking.onc {
     // set - properties returned by $(ref:getProperties) will not contain this
     // value.
     DOMString? Passphrase;
-    // Signal-to-noise value (in dB) below which roaming to a new network
-    // should be attempted.
+    // Deprecated, ignored.
     long? RoamThreshold;
     // The network SSID.
     DOMString? SSID;
@@ -625,7 +624,7 @@ namespace networking.onc {
     ManagedDOMString? HexSSID;
     // See $(ref:WiFiProperties.HiddenSSID).
     ManagedBoolean? HiddenSSID;
-    // See $(ref:WiFiProperties.RoamThreshold).
+    // Deprecated, ignored. See $(ref:WiFiProperties.RoamThreshold).
     ManagedLong? RoamThreshold;
     // See $(ref:WiFiProperties.SSID).
     ManagedDOMString? SSID;

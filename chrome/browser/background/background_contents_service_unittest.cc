@@ -25,7 +25,6 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_task_environment.h"
-#include "content/public/test/test_browser_thread.h"
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"

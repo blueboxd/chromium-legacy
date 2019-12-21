@@ -2599,6 +2599,13 @@ const char kHomepageLocationDescription[] =
     "Enable enterprice policy HomepageLocation, a rule of configure the home "
     "page URL";
 
+const char kHomepageSettingsUIConversionName[] =
+    "Enable new homepage setting UI";
+const char kHomepageSettingsUIConversionDescription[] =
+    "Enable new homepage setting UI, which allows user set up customized "
+    "homepage URL through a radio button group, and add promo box on NTP "
+    "if homepage is not enabled.";
+
 const char kInterestFeedNotificationsName[] = "Interest Feed Notifications";
 const char kInterestFeedNotificationsDescription[] =
     "Show notifications for some suggested content from the interest feed. "

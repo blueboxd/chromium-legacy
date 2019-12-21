@@ -126,36 +126,6 @@ const double kFakeGeolocationLatitude = 1.23;
 const double kFakeGeolocationLongitude = 4.56;
 }  // namespace
 
-// Helper to wait until the hover card widget is visible.
-class AnimatingLayoutWaiter : public views::AnimatingLayoutManager::Observer {
- public:
-  explicit AnimatingLayoutWaiter(
-      views::AnimatingLayoutManager* animating_layout)
-      : animating_layout_(animating_layout) {
-    observer_.Add(animating_layout_);
-  }
-
-  void Wait() {
-    if (!animating_layout_->is_animating())
-      return;
-    run_loop_.Run();
-  }
-
-  // views::AnimatingLayoutManager overrides:
-  void OnLayoutIsAnimatingChanged(views::AnimatingLayoutManager* source,
-                                  bool is_animating) override {
-    if (!is_animating)
-      run_loop_.Quit();
-  }
-
- private:
-  views::AnimatingLayoutManager* const animating_layout_;
-  ScopedObserver<views::AnimatingLayoutManager,
-                 views::AnimatingLayoutManager::Observer>
-      observer_{this};
-  base::RunLoop run_loop_;
-};
-
 namespace autofill {
 
 class SaveCardBubbleViewsFullFormBrowserTest
@@ -813,12 +783,15 @@ class SaveCardBubbleViewsFullFormBrowserTest
   void WaitForAnimationToEnd() {
     if (base::FeatureList::IsEnabled(
             features::kAutofillEnableToolbarStatusChip)) {
-      AnimatingLayoutWaiter waiter(static_cast<views::AnimatingLayoutManager*>(
+      // Wait for animations to finish.
+      base::RunLoop loop;
+      static_cast<views::AnimatingLayoutManager*>(
           BrowserView::GetBrowserViewForBrowser(browser())
               ->toolbar()
               ->toolbar_account_icon_container()
-              ->GetLayoutManager()));
-      waiter.Wait();
+              ->GetLayoutManager())
+          ->PostOrQueueAction(loop.QuitClosure());
+      loop.Run();
     }
   }
 

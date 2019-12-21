@@ -781,6 +781,18 @@ EvalJsResult EvalJsWithManualReply(const ToRenderFrameHost& execution_target,
                                    int32_t world_id = ISOLATED_WORLD_ID_GLOBAL)
     WARN_UNUSED_RESULT;
 
+// Like EvalJs(), but runs |raf_script| inside a requestAnimationFrame handler,
+// and runs |script| after the rendering update has completed. By the time
+// this method returns, any IPCs sent from the renderer process to the browser
+// process during the lifecycle update should already have been received and
+// processed by the browser.
+EvalJsResult EvalJsAfterLifecycleUpdate(
+    const ToRenderFrameHost& execution_target,
+    const std::string& raf_script,
+    const std::string& script,
+    int options = EXECUTE_SCRIPT_DEFAULT_OPTIONS,
+    int32_t world_id = ISOLATED_WORLD_ID_GLOBAL) WARN_UNUSED_RESULT;
+
 // Run a script exactly the same as EvalJs(), but ignore the resulting value.
 //
 // Returns AssertionSuccess() if |script| ran successfully, and
@@ -1053,7 +1065,7 @@ class RenderProcessHostWatcher : public RenderProcessHostObserver {
 
   RenderProcessHostWatcher(RenderProcessHost* render_process_host,
                            WatchType type);
-  // Waits for the render process that contains the specified web contents.
+  // Waits for the renderer process that contains the specified web contents.
   RenderProcessHostWatcher(WebContents* web_contents, WatchType type);
   ~RenderProcessHostWatcher() override;
 

@@ -18,8 +18,6 @@
 #include "base/values.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
-#include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service.h"
-#include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -36,37 +34,12 @@
 #include "components/search_engines/template_url.h"
 #include "content/public/browser/web_ui.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
 
 using bookmarks::BookmarkModel;
-using OmniboxPageImageCallback =
-    base::RepeatingCallback<void(const SkBitmap& bitmap)>;
 
 namespace {
-
-using ImageReciever = std::function<void(std::string)>;
-
-class OmniboxPageImageObserver : public BitmapFetcherService::Observer {
- public:
-  explicit OmniboxPageImageObserver(ImageReciever image_reciever)
-      : image_reciever_(image_reciever) {}
-
-  void OnImageChanged(BitmapFetcherService::RequestId request_id,
-                      const SkBitmap& bitmap) override {
-    auto data = gfx::Image::CreateFrom1xBitmap(bitmap).As1xPNGBytes();
-    std::string base_64;
-    base::Base64Encode(base::StringPiece(data->front_as<char>(), data->size()),
-                       &base_64);
-    const char kDataUrlPrefix[] = "data:image/png;base64,";
-    std::string data_url = GURL(kDataUrlPrefix + base_64).spec();
-    image_reciever_(data_url);
-  }
-
- private:
-  const ImageReciever image_reciever_;
-
-  DISALLOW_COPY_AND_ASSIGN(OmniboxPageImageObserver);
-};
 
 std::string SuggestionAnswerTypeToString(int answer_type) {
   switch (answer_type) {
@@ -223,7 +196,10 @@ struct TypeConverter<mojom::AutocompleteResultsForProviderPtr,
 OmniboxPageHandler::OmniboxPageHandler(
     Profile* profile,
     mojo::PendingReceiver<mojom::OmniboxPageHandler> receiver)
-    : profile_(profile), receiver_(this, std::move(receiver)), observer_(this) {
+    : profile_(profile),
+      bitmap_fetcher_helper_(profile),
+      receiver_(this, std::move(receiver)),
+      observer_(this) {
   observer_.Add(OmniboxControllerEmitter::GetForBrowserContext(profile_));
   ResetController();
 }
@@ -304,60 +280,26 @@ void OmniboxPageHandler::OnOmniboxResultChanged(
                                        controller == controller_.get());
 
   // Fill in image data
-  BitmapFetcherService* image_service =
-      BitmapFetcherServiceFactory::GetForBrowserContext(profile_);
-  if (!image_service)
-    return;
   for (std::string image_url : image_urls) {
-    const ImageReciever handleAnswerImageData = [this,
-                                                 image_url](std::string data) {
-      page_->HandleAnswerImageData(image_url, data);
-    };
-    if (!image_url.empty()) {
-      // TODO(jdonnelly, rhalavati, manukh): Create a helper function with
-      // Callback to create annotation and pass it to image_service, merging
-      // the annotations in omnibox_page_handler.cc, chrome_omnibox_client.cc,
-      // and chrome_autocomplete_provider_client.cc.
-      auto traffic_annotation = net::DefineNetworkTrafficAnnotation(
-          "omnibox_debug_results_change", R"(
-          semantics {
-            sender: "Omnibox"
-            description:
-              "Chromium provides answers in the suggestion list for "
-              "certain queries that user types in the omnibox. This request "
-              "retrieves a small image (for example, an icon illustrating "
-              "the current weather conditions) when this can add information "
-              "to an answer."
-            trigger:
-              "Change of results for the query typed by the user in the "
-              "omnibox."
-            data:
-              "The only data sent is the path to an image. No user data is "
-              "included, although some might be inferrable (e.g. whether the "
-              "weather is sunny or rainy in the user's current location) "
-              "from the name of the image in the path."
-            destination: WEBSITE
-          }
-          policy {
-            cookies_allowed: YES
-            cookies_store: "user"
-            setting:
-              "You can enable or disable this feature via 'Use a prediction "
-              "service to help complete searches and URLs typed in the "
-              "address bar.' in Chromium's settings under Advanced. The "
-              "feature is enabled by default."
-            chrome_policy {
-              SearchSuggestEnabled {
-                  policy_options {mode: MANDATORY}
-                  SearchSuggestEnabled: false
-              }
-            }
-          })");
-      image_service->RequestImage(
-          GURL(image_url), new OmniboxPageImageObserver(handleAnswerImageData),
-          traffic_annotation);
+    if (image_url.empty()) {
+      continue;
     }
+    bitmap_fetcher_helper_.RequestImage(
+        GURL(image_url),
+        base::BindRepeating(&OmniboxPageHandler::OnBitmapFetched,
+                            base::Unretained(this), image_url));
   }
+}
+
+void OmniboxPageHandler::OnBitmapFetched(const std::string& image_url,
+                                         const SkBitmap& bitmap) {
+  auto data = gfx::Image::CreateFrom1xBitmap(bitmap).As1xPNGBytes();
+  std::string base_64;
+  base::Base64Encode(base::StringPiece(data->front_as<char>(), data->size()),
+                     &base_64);
+  const char kDataUrlPrefix[] = "data:image/png;base64,";
+  std::string data_url = GURL(kDataUrlPrefix + base_64).spec();
+  page_->HandleAnswerImageData(image_url, data_url);
 }
 
 bool OmniboxPageHandler::LookupIsTypedHost(const base::string16& host,

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_AUTOCOMPLETE_CHROME_AUTOCOMPLETE_PROVIDER_CLIENT_H_
 
 #include "base/macros.h"
+#include "chrome/browser/autocomplete/bitmap_fetcher_helper.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 
@@ -92,6 +93,7 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
 
  private:
   Profile* profile_;
+  BitmapFetcherHelper bitmap_fetcher_helper_;
   ChromeAutocompleteSchemeClassifier scheme_classifier_;
   std::unique_ptr<OmniboxPedalProvider> pedal_provider_;
   std::unique_ptr<unified_consent::UrlKeyedDataCollectionConsentHelper>

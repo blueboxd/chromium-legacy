@@ -28,7 +28,7 @@ PolicyDetailsMap::PolicyDetailsMap() {}
 PolicyDetailsMap::~PolicyDetailsMap() {}
 
 GetChromePolicyDetailsCallback PolicyDetailsMap::GetCallback() const {
-  return base::Bind(&PolicyDetailsMap::Lookup, base::Unretained(this));
+  return base::BindRepeating(&PolicyDetailsMap::Lookup, base::Unretained(this));
 }
 
 void PolicyDetailsMap::SetDetails(const std::string& policy,

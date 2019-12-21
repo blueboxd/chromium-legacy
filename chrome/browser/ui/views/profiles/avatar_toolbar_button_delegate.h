@@ -107,6 +107,7 @@ class AvatarToolbarButtonDelegate : public BrowserListObserver,
   Profile* profile_ = nullptr;
   IdentityAnimationState identity_animation_state_ =
       IdentityAnimationState::kNotShowing;
+  bool refresh_tokens_loaded_ = false;
 
   // Whether the avatar highlight animation is visible. The animation is shown
   // when an Autofill datatype is saved. When this is true the avatar button

@@ -182,7 +182,7 @@ void AnimatingLayoutManager::AnimationDelegate::AnimationEnded(
 
 // AnimatingLayoutManager:
 
-AnimatingLayoutManager::AnimatingLayoutManager() {}
+AnimatingLayoutManager::AnimatingLayoutManager() = default;
 AnimatingLayoutManager::~AnimatingLayoutManager() = default;
 
 AnimatingLayoutManager& AnimatingLayoutManager::SetShouldAnimateBounds(
@@ -332,16 +332,12 @@ std::vector<View*> AnimatingLayoutManager::GetChildViewsInPaintOrder(
   return result;
 }
 
-void AnimatingLayoutManager::QueueDelayedAction(DelayedAction delayed_action) {
-  DCHECK(is_animating());
-  delayed_actions_.emplace_back(std::move(delayed_action));
-}
-
-void AnimatingLayoutManager::RunOrQueueAction(DelayedAction action) {
-  if (!is_animating())
-    std::move(action).Run();
-  else
-    QueueDelayedAction(std::move(action));
+void AnimatingLayoutManager::PostOrQueueAction(base::OnceClosure action) {
+  if (!is_animating()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(action));
+  } else {
+    delayed_actions_.push_back(std::move(action));
+  }
 }
 
 FlexRule AnimatingLayoutManager::GetDefaultFlexRule() const {
@@ -425,8 +421,7 @@ void AnimatingLayoutManager::LayoutImpl() {
 void AnimatingLayoutManager::OnAnimationEnded() {
   DCHECK(is_animating_);
   is_animating_ = false;
-  RunDelayedActions();
-  DCHECK(!is_animating_) << "Queued actions should not change animation state.";
+  PostDelayedActions();
   NotifyIsAnimatingChanged();
 }
 
@@ -520,9 +515,9 @@ void AnimatingLayoutManager::NotifyIsAnimatingChanged() {
     observer.OnLayoutIsAnimatingChanged(this, is_animating());
 }
 
-void AnimatingLayoutManager::RunDelayedActions() {
+void AnimatingLayoutManager::PostDelayedActions() {
   for (auto& action : delayed_actions_)
-    std::move(action).Run();
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(action));
   delayed_actions_.clear();
 }
 

@@ -1033,10 +1033,6 @@ void Dispatcher::OnDispatchEvent(
   content::RenderFrame* background_frame =
       ExtensionFrameHelper::GetBackgroundPageFrame(params.extension_id);
 
-  // Required for |web_user_gesture|.
-  std::unique_ptr<HandleScopeHelper> v8_handle_scope;
-
-  std::unique_ptr<InteractionProvider::Scope> web_user_gesture;
   // Synthesize a user gesture if this was in response to user action; this is
   // necessary if the gesture was e.g. by clicking on the extension toolbar
   // icon, context menu entry, etc.
@@ -1051,9 +1047,7 @@ void Dispatcher::OnDispatchEvent(
         ScriptContextSet::GetMainWorldContextForFrame(background_frame);
     if (background_context && bindings_system_->HasEventListenerInContext(
                                   params.event_name, background_context)) {
-      v8_handle_scope = std::make_unique<HandleScopeHelper>(background_context);
-      web_user_gesture = ExtensionInteractionProvider::Scope::ForFrame(
-          background_frame->GetWebFrame());
+      background_frame->GetWebFrame()->NotifyUserActivation();
     }
   }
 

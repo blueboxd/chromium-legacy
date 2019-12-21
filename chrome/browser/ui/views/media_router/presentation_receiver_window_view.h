@@ -87,7 +87,8 @@ class PresentationReceiverWindowView final
   Profile* GetProfile() final;
   bool IsFullscreen() const final;
   void EnterFullscreen(const GURL& url,
-                       ExclusiveAccessBubbleType bubble_type) final;
+                       ExclusiveAccessBubbleType bubble_type,
+                       const int64_t display_id) final;
   void ExitFullscreen() final;
   void UpdateExclusiveAccessExitBubbleContent(
       const GURL& url,

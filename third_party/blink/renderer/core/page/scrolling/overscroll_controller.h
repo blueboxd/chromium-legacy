@@ -42,7 +42,7 @@ class OverscrollController : public GarbageCollected<OverscrollController> {
   WeakMember<const VisualViewport> visual_viewport_;
   WeakMember<ChromeClient> chrome_client_;
 
-  FloatSize accumulated_root_overscroll_;
+  gfx::Vector2dF accumulated_root_overscroll_;
 };
 
 }  // namespace blink

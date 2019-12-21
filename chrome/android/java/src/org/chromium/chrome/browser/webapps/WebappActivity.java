@@ -15,7 +15,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.text.TextUtils;
-import android.util.Pair;
 import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
@@ -25,7 +24,6 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
-import org.chromium.base.StrictModeContext;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
@@ -48,16 +46,10 @@ import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBrowserControlsConstraintsHelper;
-import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabImpl;
-import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.chrome.browser.tab.TabSelectionType;
-import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tab.TabThemeColorHelper;
-import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
-import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.ui.system.StatusBarColorController;
 import org.chromium.chrome.browser.usage_stats.UsageStatsService;
@@ -72,7 +64,6 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.PageTransition;
 
-import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -88,8 +79,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     private static final long MS_BEFORE_NAVIGATING_BACK_FROM_INTERSTITIAL = 1000;
 
     protected static final String BUNDLE_TAB_ID = "tabId";
-
-    private final WebappDirectoryManager mDirectoryManager;
 
     private WebappInfo mWebappInfo;
 
@@ -153,7 +142,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
      */
     public WebappActivity() {
         mWebappInfo = createWebappInfo(null);
-        mDirectoryManager = new WebappDirectoryManager();
         mDisclosureSnackbarController = new WebappDisclosureSnackbarController();
     }
 
@@ -211,8 +199,7 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     public void initializeState() {
         super.initializeState();
 
-        createAndShowTab();
-        mTabController.setInitialTab(getActivityTab());
+        mTabController.initializeState();
         initializeUI(getSavedInstanceState());
     }
 
@@ -386,46 +373,15 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        mDirectoryManager.cancelCleanup();
-        saveState(outState);
-    }
-
-    @Override
     public void onStartWithNative() {
         super.onStartWithNative();
-        mDirectoryManager.cleanUpDirectories(this, getActivityId());
+        WebappDirectoryManager.cleanUpDirectories();
     }
 
     @Override
     public void onStopWithNative() {
         super.onStopWithNative();
         getFullscreenManager().exitPersistentFullscreenMode();
-    }
-
-    /**
-     * Saves the tab data out to a file.
-     */
-    private void saveState(Bundle outState) {
-        if (getActivityTab() == null || getActivityTab().getUrl() == null
-                || getActivityTab().getUrl().isEmpty()) {
-            return;
-        }
-
-        outState.putInt(BUNDLE_TAB_ID, getActivityTab().getId());
-
-        String tabFileName = TabState.getTabStateFilename(getActivityTab().getId(), false);
-        File tabFile = new File(getActivityDirectory(), tabFileName);
-
-        // TODO(crbug.com/525785): Temporarily allowing disk access until more permanent fix is in.
-        try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
-            TabState.saveState(tabFile, TabState.from(getActivityTab()), false);
-        }
-    }
-
-    private TabState restoreTabState(Bundle savedInstanceState, int tabId) {
-        return TabState.restoreTabState(getActivityDirectory(), tabId);
     }
 
     @Override
@@ -706,15 +662,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         return mWebappInfo.id();
     }
 
-    /**
-     * Get the active directory by this web app.
-     *
-     * @return The directory used for the current web app.
-     */
-    private File getActivityDirectory() {
-        return mDirectoryManager.getWebappDirectory(this, getActivityId());
-    }
-
     @VisibleForTesting
     SplashController getSplashControllerForTests() {
         return mSplashController;
@@ -730,10 +677,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
      */
     private TabDelegateFactory createTabDelegateFactory() {
         return mDelegateFactory;
-    }
-
-    private TabCreator createNormalTabCreator() {
-        return new WebappTabDelegate(false /* incognito */, mWebappInfo);
     }
 
     // We're temporarily disable CS on webapp since there are some issues. (http://crbug.com/471950)
@@ -803,65 +746,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
      */
     protected void removeSplashscreenObserver(SplashscreenObserver observer) {
         mSplashController.removeObserver(observer);
-    }
-
-    @Override
-    protected TabModelSelector createTabModelSelector() {
-        return new SingleTabModelSelector(this, this, false);
-    }
-
-    @Override
-    protected Pair<? extends TabCreator, ? extends TabCreator> createTabCreators() {
-        return Pair.create(createNormalTabCreator(), null);
-    }
-
-    protected void createAndShowTab() {
-        TabImpl tab = (TabImpl) createTab();
-        getTabModelSelector().setTab(tab);
-        tab.show(TabSelectionType.FROM_NEW);
-    }
-
-    @Override
-    public SingleTabModelSelector getTabModelSelector() {
-        return (SingleTabModelSelector) super.getTabModelSelector();
-    }
-
-    /**
-     * Creates the {@link Tab} used by the {@link SingleTabActivity}.
-     * If the {@code savedInstanceState} exists, then the user did not intentionally close the app
-     * by swiping it away in the recent tasks list.  In that case, we try to restore the tab from
-     * disk.
-     */
-    protected Tab createTab() {
-        Tab tab = null;
-        TabState tabState = null;
-        int tabId = Tab.INVALID_TAB_ID;
-        Bundle savedInstanceState = getSavedInstanceState();
-        if (savedInstanceState != null) {
-            tabId = savedInstanceState.getInt(BUNDLE_TAB_ID, Tab.INVALID_TAB_ID);
-            if (tabId != Tab.INVALID_TAB_ID) {
-                tabState = restoreTabState(savedInstanceState, tabId);
-            }
-        }
-        boolean unfreeze = tabId != Tab.INVALID_TAB_ID && tabState != null;
-        if (unfreeze) {
-            tab = TabBuilder.createFromFrozenState()
-                          .setId(tabId)
-                          .setWindow(getWindowAndroid())
-                          .setDelegateFactory(createTabDelegateFactory())
-                          .setTabState(tabState)
-                          .setUnfreeze(unfreeze)
-                          .build();
-        } else {
-            tab = new TabBuilder()
-                          .setWindow(getWindowAndroid())
-                          .setLaunchType(TabLaunchType.FROM_CHROME_UI)
-                          .setDelegateFactory(createTabDelegateFactory())
-                          .setTabState(tabState)
-                          .setUnfreeze(unfreeze)
-                          .build();
-        }
-        return tab;
     }
 
     @Override

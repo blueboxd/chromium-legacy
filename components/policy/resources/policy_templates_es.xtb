@@ -843,9 +843,9 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
 <translation id="2231817271680715693">Importar el historial de navegación desde el navegador predeterminado en la primera ejecución</translation>
 <translation id="2234855698900783408">Permite habilitar las mitigaciones de comprobación de <ph name="CORS" /> en la nueva implementación de <ph name="CORS" />. Así, las extensiones continúan siendo compatibles y <ph name="PRODUCT_NAME" /> puede enviar encabezados definidos sin comprobaciones de <ph name="CORS" />.
 
-      Si esta lista se deja vacía, <ph name="PRODUCT_NAME" /> intenta ejecutar las extensiones de forma compatible y no introduce cambios de <ph name="API" /> en <ph name="PRODUCT_NAME" /> 79, tal y como se explica en <ph name="WEB_REQUEST_API_MANUAL" />.
+      Si esta lista se deja vacía, <ph name="PRODUCT_NAME" /> intentará ejecutar las extensiones de forma compatible y no introducirá cambios de <ph name="API" /> en <ph name="PRODUCT_NAME" /> 79, tal y como se explica en <ph name="WEB_REQUEST_API_MANUAL" />.
 
-      Si la lista se configura para que tenga nombres de encabezado de solicitud <ph name="HTTP" />, la comprobación de <ph name="CORS" /> ignora los encabezados de la lista y habilita la mitigación de extensiones.
+      Si la lista se configura para que tenga nombres de encabezado de solicitud <ph name="HTTP" />, la comprobación de <ph name="CORS" /> ignorará los encabezados de la lista y habilitará la mitigación en el caso de las extensiones.
 
       Si no se establece esta lista, no se aplicará ninguna de las dos mitigaciones explicadas arriba.
 
@@ -958,16 +958,6 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Si esta política no está configurada o tiene asignado el valor "True", los usuarios podrán usar esta función.
 
       En cambio, si tiene asignado el valor "False", no podrán usarla.</translation>
-<translation id="2437706973218087361">Esta política controla una función de seguridad de TLS 1.3 que protege las conexiones frente a ataques de cambio a versión inferior. Es retrocompatible y no afectará a las conexiones de servidores y proxies que cumplan con el protocolo TLS 1.2. Sin embargo, las versiones anteriores de algunos proxies que interceptan TLS tienen un error de implementación que provoca que los proxies sean incompatibles.
-
-      Si se le asigna el valor "True", <ph name="PRODUCT_NAME" /> habilitará estas protecciones de seguridad en todas las conexiones.
-
-      Si no se define esta política o se le asigna el valor "False", <ph name="PRODUCT_NAME" /> inhabilitará estas protecciones de seguridad en las conexiones autenticadas con certificados de CA instalados localmente. Estas protecciones siempre están habilitadas en las conexiones autenticadas con certificados de CA en los que se confíe públicamente.
-
-      Se puede usar esta política para probar cualquier proxy afectado y actualizarlo. Los proxies afectados deberían mostrar el código de error ERR_TLS13_DOWNGRADE_DETECTED cuando falle la conexión. En una versión posterior de <ph name="PRODUCT_NAME" /> se habilitará esta opción de forma predeterminada.
-
-      Cuando se habilite de forma predeterminada, los administradores que necesiten más tiempo para actualizar los proxies afectados podrán usar esta política para inhabilitar temporalmente esta función de seguridad. Esta política se eliminará después de la versión 85.
-      </translation>
 <translation id="2438609638493026652">Habilita el envío de informes de eventos clave durante la instalación de aplicaciones para Android a Google. Solo se registran eventos de aplicaciones cuya instalación haya provocado la política.
 
       Si se le asigna el valor "True" a la política, se registrarán los eventos.
@@ -2696,7 +2686,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
           Si no se establece esta política, se inhabilitará la lupa la primera vez que se muestre la pantalla de inicio de sesión. Los usuarios podrán habilitar o inhabilitar la lupa en cualquier momento, y este ajuste se quedará en la pantalla de inicio de sesión tal como lo dejen hasta que otro usuario inicie sesión.
 
           Nota: <ph name="DEVICE_LOGIN_SCREEN_SCREEN_MAGNIFIER_TYPE_POLICY_NAME" /> anula esta política si se especifica la anterior.</translation>
-<translation id="5115168755602871392">Proporcionar información sobre la CPU (o las CPU) de un dispositivo.
+<translation id="5115168755602871392">Proporciona información sobre la CPU (o las CPU) de un dispositivo.
 
       Si se asigna el valor "false" a esta política o no se establece, no se enviará ninguna información.
       Si se le asigna el valor "true", se enviará información sobre el nombre del modelo, la arquitectura y la velocidad máxima de reloj
@@ -3933,7 +3923,7 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
 
       Para obtener más información sobre la política <ph name="IEEM_SITELIST_POLICY" /> de Internet Explorer, consulta esta página web: https://docs.microsoft.com/es-es/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">URLs a las que se concederá acceso a dispositivos de captura de vídeo sin confirmación</translation>
-<translation id="7134420220355750019">Cambiar el botón primario del ratón al botón derecho.
+<translation id="7134420220355750019">Cambia el botón primario del ratón al botón derecho.
 
           Si se habilita esta política, el botón derecho del ratón siempre será el primario.
 

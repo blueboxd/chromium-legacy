@@ -742,6 +742,10 @@ gpu_linux_builder(
 )
 
 gpu_linux_builder(
+    name = 'gpu-fyi-try-linux-intel-sk-dawn-rel',
+)
+
+gpu_linux_builder(
     name = 'gpu-fyi-try-linux-intel-skv',
 )
 

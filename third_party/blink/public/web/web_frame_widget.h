@@ -43,7 +43,6 @@ class WebDragData;
 class WebLocalFrame;
 class WebInputMethodController;
 class WebWidgetClient;
-struct WebFloatPoint;
 
 class WebFrameWidget : public WebWidget {
  public:
@@ -77,25 +76,25 @@ class WebFrameWidget : public WebWidget {
   // on the WebFrameWidget.
   virtual WebDragOperation DragTargetDragEnter(
       const WebDragData&,
-      const WebFloatPoint& point_in_viewport,
-      const WebFloatPoint& screen_point,
+      const gfx::PointF& point_in_viewport,
+      const gfx::PointF& screen_point,
       WebDragOperationsMask operations_allowed,
       int modifiers) = 0;
   virtual WebDragOperation DragTargetDragOver(
-      const WebFloatPoint& point_in_viewport,
-      const WebFloatPoint& screen_point,
+      const gfx::PointF& point_in_viewport,
+      const gfx::PointF& screen_point,
       WebDragOperationsMask operations_allowed,
       int modifiers) = 0;
-  virtual void DragTargetDragLeave(const WebFloatPoint& point_in_viewport,
-                                   const WebFloatPoint& screen_point) = 0;
+  virtual void DragTargetDragLeave(const gfx::PointF& point_in_viewport,
+                                   const gfx::PointF& screen_point) = 0;
   virtual void DragTargetDrop(const WebDragData&,
-                              const WebFloatPoint& point_in_viewport,
-                              const WebFloatPoint& screen_point,
+                              const gfx::PointF& point_in_viewport,
+                              const gfx::PointF& screen_point,
                               int modifiers) = 0;
 
   // Notifies the WebFrameWidget that a drag has terminated.
-  virtual void DragSourceEndedAt(const WebFloatPoint& point_in_viewport,
-                                 const WebFloatPoint& screen_point,
+  virtual void DragSourceEndedAt(const gfx::PointF& point_in_viewport,
+                                 const gfx::PointF& screen_point,
                                  WebDragOperation) = 0;
 
   // Notifies the WebFrameWidget that the system drag and drop operation has

@@ -33,7 +33,8 @@
 #include "components/arc/session/arc_bridge_host_impl.h"
 #include "components/user_manager/user_manager.h"
 #include "components/version_info/channel.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/platform/platform_handle.h"
@@ -294,11 +295,9 @@ void ArcSessionDelegateImpl::OnMojoConnected(
     return;
   }
 
-  mojom::ArcBridgeInstancePtr instance;
-  instance.Bind(mojo::InterfacePtrInfo<mojom::ArcBridgeInstance>(
-      std::move(server_pipe), 0u));
   std::move(callback).Run(std::make_unique<ArcBridgeHostImpl>(
-      arc_bridge_service_, std::move(instance)));
+      arc_bridge_service_, mojo::PendingRemote<mojom::ArcBridgeInstance>(
+                               std::move(server_pipe), 0u)));
 }
 
 }  // namespace

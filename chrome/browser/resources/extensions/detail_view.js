@@ -237,7 +237,7 @@ Polymer({
 
   /** @private */
   onEnableChange_: function() {
-    this.delegate.setItemEnabled(this.data.id, this.$['enable-toggle'].checked);
+    this.delegate.setItemEnabled(this.data.id, this.$.enableToggle.checked);
   },
 
   /**

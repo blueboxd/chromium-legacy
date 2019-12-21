@@ -30,8 +30,10 @@ class TestPaymentsClient : public payments::PaymentsClient {
 
   ~TestPaymentsClient() override;
 
-  void GetUnmaskDetails(GetUnmaskDetailsCallback callback,
-                        const std::string& app_locale) override;
+  void GetUnmaskDetails(
+      base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
+                              PaymentsClient::UnmaskDetails&)> callback,
+      const std::string& app_locale) override;
 
   void GetUploadDetails(
       const std::vector<AutofillProfile>& addresses,
@@ -99,7 +101,7 @@ class TestPaymentsClient : public payments::PaymentsClient {
   // Some metrics are affected by the latency of GetUnmaskDetails, so it is
   // useful to control whether or not GetUnmaskDetails() is responded to.
   bool should_return_unmask_details_ = true;
-  AutofillClient::UnmaskDetails unmask_details_;
+  payments::PaymentsClient::UnmaskDetails unmask_details_;
   std::vector<std::pair<int, int>> supported_card_bin_ranges_;
   std::vector<AutofillProfile> upload_details_addresses_;
   std::vector<AutofillProfile> upload_card_addresses_;

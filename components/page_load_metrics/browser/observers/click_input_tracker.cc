@@ -36,7 +36,7 @@ void ClickInputTracker::OnUserInput(const blink::WebInputEvent& event) {
     return;
   }
 
-  blink::WebFloatPoint position;
+  gfx::PointF position;
   if (event.GetType() == blink::WebInputEvent::kGestureTap) {
     const blink::WebGestureEvent& gesture =
         static_cast<const blink::WebGestureEvent&>(event);
@@ -53,9 +53,9 @@ void ClickInputTracker::OnUserInput(const blink::WebInputEvent& event) {
   if (!last_click_timestamp_.is_null()) {
     base::TimeDelta delta = event.TimeStamp() - last_click_timestamp_;
     if (delta < time_delta_threshold_ &&
-        std::abs(position.x - last_click_position_.x) <
+        std::abs(position.x() - last_click_position_.x()) <
             position_delta_threshold_ &&
-        std::abs(position.y - last_click_position_.y) <
+        std::abs(position.y() - last_click_position_.y()) <
             position_delta_threshold_) {
       current_click_input_burst_++;
       max_click_input_burst_ =

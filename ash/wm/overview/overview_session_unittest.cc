@@ -1700,44 +1700,28 @@ TEST_P(OverviewSessionTest, DragMinimizedWindowHasStableSize) {
   overview_session()->CompleteDrag(overview_item, drag_point);
 }
 
-class HotseatOverviewSessionTest : public OverviewSessionTest {
+class HotseatDisabledOverviewSessionTest : public OverviewSessionTest {
  public:
-  HotseatOverviewSessionTest() = default;
-  ~HotseatOverviewSessionTest() override = default;
+  HotseatDisabledOverviewSessionTest() = default;
+  ~HotseatDisabledOverviewSessionTest() override = default;
 
   // AshTestBase:
   void SetUp() override {
-    if (GetParam())
-      feature_list_.InitAndEnableFeature(chromeos::features::kShelfHotseat);
-    else
-      feature_list_.InitAndDisableFeature(chromeos::features::kShelfHotseat);
+    feature_list_.InitAndDisableFeature(chromeos::features::kShelfHotseat);
     OverviewSessionTest::SetUp();
   }
 
  private:
   base::test::ScopedFeatureList feature_list_;
-  DISALLOW_COPY_AND_ASSIGN(HotseatOverviewSessionTest);
+  DISALLOW_COPY_AND_ASSIGN(HotseatDisabledOverviewSessionTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(All, HotseatOverviewSessionTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         HotseatDisabledOverviewSessionTest,
+                         testing::Bool());
 
-// Tests that the bounds of the grid do not intersect the shelf or its hotseat.
-TEST_P(HotseatOverviewSessionTest, OverviewGridBounds) {
-  EnterTabletMode();
-  std::unique_ptr<aura::Window> window(CreateTestWindow());
-
-  ToggleOverview();
-  ASSERT_TRUE(overview_session());
-
-  Shelf* shelf = Shelf::ForWindow(Shell::GetPrimaryRootWindow());
-  const gfx::Rect shelf_bounds = shelf->GetIdealBounds();
-  const gfx::Rect hotseat_bounds =
-      shelf->shelf_widget()->hotseat_widget()->GetWindowBoundsInScreen();
-  EXPECT_FALSE(GetGridBounds().Intersects(shelf_bounds));
-  EXPECT_FALSE(GetGridBounds().Intersects(hotseat_bounds));
-}
-
-TEST_P(HotseatOverviewSessionTest, NoWindowsIndicatorPositionSplitview) {
+TEST_P(HotseatDisabledOverviewSessionTest,
+       NoWindowsIndicatorPositionSplitview) {
   UpdateDisplay("400x300");
   EnterTabletMode();
   std::unique_ptr<aura::Window> window(CreateTestWindow());
@@ -1762,6 +1746,44 @@ TEST_P(HotseatOverviewSessionTest, NoWindowsIndicatorPositionSplitview) {
   if (chromeos::switches::ShouldShowShelfHotseat())
     workarea_bottom_inset = ShelfConfig::Get()->in_app_shelf_size();
   const int expected_y = (300 - workarea_bottom_inset) / 2;
+  EXPECT_EQ(gfx::Point(expected_x, expected_y),
+            no_windows_widget->GetWindowBoundsInScreen().CenterPoint());
+
+  // Tests that when snapping a window to the right in splitview, the no windows
+  // indicator shows up in the middle of the left side of the screen.
+  split_view_controller()->SnapWindow(window.get(), SplitViewController::RIGHT);
+  expected_x = /*bounds_right=*/(200 - 4) / 2;
+  EXPECT_EQ(gfx::Point(expected_x, expected_y),
+            no_windows_widget->GetWindowBoundsInScreen().CenterPoint());
+}
+
+TEST_P(OverviewSessionTest, NoWindowsIndicatorPositionSplitview) {
+  // TODO(https://crbug.com/1009550): Make the shelf in-app for split view and
+  // overview.
+  if (chromeos::switches::ShouldShowShelfHotseat())
+    return;
+
+  UpdateDisplay("400x300");
+  EnterTabletMode();
+  std::unique_ptr<aura::Window> window(CreateTestWindow());
+
+  ToggleOverview();
+  ASSERT_TRUE(overview_session());
+  RoundedLabelWidget* no_windows_widget =
+      overview_session()->no_windows_widget_for_testing();
+  EXPECT_FALSE(no_windows_widget);
+
+  // Tests that when snapping a window to the left in splitview, the no windows
+  // indicator shows up in the middle of the right side of the screen.
+  split_view_controller()->SnapWindow(window.get(), SplitViewController::LEFT);
+  no_windows_widget = overview_session()->no_windows_widget_for_testing();
+  ASSERT_TRUE(no_windows_widget);
+
+  // There is a 8dp divider in splitview, the indicator should take that into
+  // account.
+  const int bounds_left = 200 + 4;
+  int expected_x = bounds_left + (400 - (bounds_left)) / 2;
+  const int expected_y = (300 - ShelfConfig::Get()->shelf_size()) / 2;
   EXPECT_EQ(gfx::Point(expected_x, expected_y),
             no_windows_widget->GetWindowBoundsInScreen().CenterPoint());
 
@@ -6133,7 +6155,7 @@ TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
           ->GetSnappedWindowBoundsInScreen(SplitViewController::RIGHT,
                                            /*window_for_minimum_size=*/nullptr),
       grid_on_root1->bounds());
-  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kFromOverview,
+  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kOtherDisplay,
             indicators_on_root2->current_window_dragging_state());
   EXPECT_EQ(display_with_root2.work_area(), grid_on_root2->bounds());
 
@@ -6142,7 +6164,7 @@ TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kFromOverview,
             indicators_on_root1->current_window_dragging_state());
   EXPECT_EQ(display_with_root1.work_area(), grid_on_root1->bounds());
-  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kFromOverview,
+  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kOtherDisplay,
             indicators_on_root2->current_window_dragging_state());
   EXPECT_EQ(display_with_root2.work_area(), grid_on_root2->bounds());
 
@@ -6155,14 +6177,14 @@ TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
           ->GetSnappedWindowBoundsInScreen(SplitViewController::LEFT,
                                            /*window_for_minimum_size=*/nullptr),
       grid_on_root1->bounds());
-  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kFromOverview,
+  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kOtherDisplay,
             indicators_on_root2->current_window_dragging_state());
   EXPECT_EQ(display_with_root2.work_area(), grid_on_root2->bounds());
 
   const gfx::PointF root2_left_snap_point(800.f, 300.f);
   cursor_manager->SetDisplay(display_with_root2);
   overview_session()->Drag(item1, root2_left_snap_point);
-  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kFromOverview,
+  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kOtherDisplay,
             indicators_on_root1->current_window_dragging_state());
   EXPECT_EQ(display_with_root1.work_area(), grid_on_root1->bounds());
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kToSnapLeft,
@@ -6175,7 +6197,7 @@ TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
 
   const gfx::PointF root2_right_snap_point(1599.f, 300.f);
   overview_session()->Drag(item1, root2_right_snap_point);
-  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kFromOverview,
+  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kOtherDisplay,
             indicators_on_root1->current_window_dragging_state());
   EXPECT_EQ(display_with_root1.work_area(), grid_on_root1->bounds());
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kToSnapRight,
@@ -6188,7 +6210,7 @@ TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
 
   const gfx::PointF root2_middle_point(1200.f, 300.f);
   overview_session()->Drag(item1, root2_middle_point);
-  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kFromOverview,
+  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kOtherDisplay,
             indicators_on_root1->current_window_dragging_state());
   EXPECT_EQ(display_with_root1.work_area(), grid_on_root1->bounds());
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kFromOverview,

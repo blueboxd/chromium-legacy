@@ -172,9 +172,11 @@ class PLATFORM_EXPORT CanvasResourceProvider
                    size_t row_bytes,
                    int x,
                    int y);
-  virtual GLuint GetBackingTextureHandleForOverwrite() {
+
+  virtual gpu::Mailbox GetBackingMailboxForOverwrite(
+      MailboxSyncMode sync_mode) {
     NOTREACHED();
-    return 0;
+    return gpu::Mailbox();
   }
   virtual GLenum GetBackingTextureTarget() const { return GL_TEXTURE_2D; }
   virtual void* GetPixelBufferAddressForOverwrite() {

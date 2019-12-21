@@ -85,7 +85,7 @@ class APP_LIST_EXPORT AppListMainView
   void AddContentsViews();
 
   // Gets the PaginationModel owned by the AppsGridView.
-  ash::PaginationModel* GetAppsPaginationModel();
+  PaginationModel* GetAppsPaginationModel();
 
   // Overridden from SearchBoxViewDelegate:
   void QueryChanged(search_box::SearchBoxViewBase* sender) override;

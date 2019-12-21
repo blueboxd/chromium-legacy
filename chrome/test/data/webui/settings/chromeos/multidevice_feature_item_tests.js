@@ -94,7 +94,8 @@ suite('Multidevice', function() {
   });
 
   test('link click does not navigate to subpage', function() {
-    const link = featureItem.$$('#featureSecondary > a');
+    const link =
+        featureItem.$$('#featureSecondary').$.container.querySelector('a');
     assertTrue(!!link);
     checkWhetherClickRoutesAway(link, false);
   });

@@ -49,8 +49,7 @@ class PopularSitesImpl : public PopularSites {
   ~PopularSitesImpl() override;
 
   // PopularSites implementation.
-  bool MaybeStartFetch(bool force_download,
-                       const FinishedCallback& callback) override;
+  bool MaybeStartFetch(bool force_download, FinishedCallback callback) override;
   const std::map<SectionType, SitesVector>& sections() const override;
   GURL GetLastURLFetched() const override;
   GURL GetURLToFetch() override;

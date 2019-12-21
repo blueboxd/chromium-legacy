@@ -45,6 +45,11 @@ class ASH_EXPORT SplitViewDragIndicators {
     // Not dragging, or split view is unsupported (see |ShouldAllowSplitView|).
     kNoDrag,
 
+    // Dragging is in another display. Split view is supported.
+    // Note: The distinction between |kNoDrag| and |kOtherDisplay| affects
+    // animation when the previous state is |kToSnapLeft| or |kToSnapRight|.
+    kOtherDisplay,
+
     // Started dragging from overview or from the shelf. Split view is
     // supported. Not currently dragging in a snap area, or the dragged window
     // is not eligible to be snapped in split view.

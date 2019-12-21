@@ -613,12 +613,13 @@ the browser process. Somewhere in `src/chrome/browser`, we can write:
 // to most service interfaces.
 service_manager::Connector* connector = content::GetSystemConnector();
 
-// Recall from the earlier Mojo section that mojo::MakeRequest creates a new
-// message pipe for our interface. Connector passes the request endpoint to
-// the Service Manager along with the name of our target service, "math".
-math::mojom::DividerPtr divider;
-connector->BindInterface(math::mojom::kServiceName,
-                         mojo::MakeRequest(&divider));
+// Recall from the earlier Mojo section that BindNewPipeAndPassReceiver()
+// creates a message pipe and yields a PendingReceiver as its return value.
+// Connector passes the receiver endpoint to the Service Manager along with
+// the name of our target service, "math".
+mojo::Remote<math::mojom::Divider> divider;
+connector->Connect(math::mojom::kServiceName,
+                   divider.BindNewPipeAndPassReceiver());
 
 // As a client, we do not have to wait for any acknowledgement or confirmation
 // of a connection. We can start queueing messages immediately and they will be
@@ -627,8 +628,8 @@ divider->Divide(
     42, 6, base::BindOnce([](int32_t quotient) { LOG(INFO) << quotient; }));
 ```
 *** aside
-NOTE: To ensure the execution of the response callback, the DividerPtr
-object must be kept alive (see
+NOTE: To ensure the execution of the response callback, the
+mojo::Remote<Divider> object must be kept alive (see
 [this section](/mojo/public/cpp/bindings/README.md#A-Note-About-Endpoint-Lifetime-and-Callbacks)
 and [this note from an earlier section](#sending-a-message)).
 ***
@@ -646,7 +647,7 @@ If we did not update the `content_browser` manifest overlay as we did in this
 example, the `Divide` call would never reach the `math` service (in fact the
 service wouldn't even be started) and instead we'd get an error message (or in
 developer builds, an assertion failure) informing us that the Service Manager
-blocked the `BindInterface` call.
+blocked the `Connect` call.
 
 ## Content-Layer Services Overview
 

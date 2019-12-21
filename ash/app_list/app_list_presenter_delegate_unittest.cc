@@ -777,26 +777,26 @@ TEST_F(AppListPresenterDelegateTest, TabletModeTextStateTransitions) {
 TEST_F(AppListPresenterDelegateTest, AppListClosesWhenLeavingTabletMode) {
   EnableTabletMode(true);
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
-  GetAppListTestHelper()->CheckState(ash::AppListViewState::kFullscreenAllApps);
+  GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
 
   EnableTabletMode(false);
   GetAppListTestHelper()->WaitUntilIdle();
-  GetAppListTestHelper()->CheckState(ash::AppListViewState::kClosed);
+  GetAppListTestHelper()->CheckState(AppListViewState::kClosed);
 
   EnableTabletMode(true);
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
-  GetAppListTestHelper()->CheckState(ash::AppListViewState::kFullscreenAllApps);
+  GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
 
   // Enter text in the searchbox, the app list should transition to fullscreen
   // search.
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->PressKey(ui::KeyboardCode::VKEY_0, 0);
   GetAppListTestHelper()->WaitUntilIdle();
-  GetAppListTestHelper()->CheckState(ash::AppListViewState::kFullscreenSearch);
+  GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenSearch);
 
   EnableTabletMode(false);
   GetAppListTestHelper()->WaitUntilIdle();
-  GetAppListTestHelper()->CheckState(ash::AppListViewState::kClosed);
+  GetAppListTestHelper()->CheckState(AppListViewState::kClosed);
 }
 
 // Tests that the app list state responds correctly to tablet mode being
@@ -1949,11 +1949,11 @@ class AppListPresenterDelegateScalableAppListTest
     if (GetParam()) {
       scoped_feature_list_.InitWithFeatures(
           {app_list_features::kScalableAppList,
-           ash::features::kEnableBackgroundBlur},
+           features::kEnableBackgroundBlur},
           {});
     } else {
       scoped_feature_list_.InitWithFeatures(
-          {ash::features::kEnableBackgroundBlur},
+          {features::kEnableBackgroundBlur},
           {app_list_features::kScalableAppList});
     }
   }
@@ -2012,11 +2012,9 @@ class AppListPresenterDelegateScalableAppListTest
     // offset by the difference between search box bottom bounds in the apps and
     // search results page.
     const int search_box_diff =
+        contents_view()->GetSearchBoxBounds(AppListState::kStateApps).bottom() -
         contents_view()
-            ->GetSearchBoxBounds(ash::AppListState::kStateApps)
-            .bottom() -
-        contents_view()
-            ->GetSearchBoxBounds(ash::AppListState::kStateSearchResults)
+            ->GetSearchBoxBounds(AppListState::kStateSearchResults)
             .bottom();
     return top + search_box_diff +
            24 /*apps grid offset in fullscreen search state*/;

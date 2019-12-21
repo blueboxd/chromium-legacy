@@ -8,9 +8,6 @@
 
 namespace autofill {
 
-AutofillClient::UnmaskDetails::UnmaskDetails() {}
-AutofillClient::UnmaskDetails::~UnmaskDetails() {}
-
 version_info::Channel AutofillClient::GetChannel() const {
   return version_info::Channel::UNKNOWN;
 }

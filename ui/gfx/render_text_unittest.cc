@@ -432,7 +432,8 @@ class RenderTextTest : public testing::Test {
   }
 
   void DrawVisualText(Range selection = {}) {
-    test_api_->DrawVisualText(renderer(), selection);
+    test_api()->EnsureLayout();
+    test_api()->DrawVisualText(renderer(), selection);
     renderer()->GetTextLogAndReset(&text_log_);
   }
 
@@ -451,8 +452,9 @@ class RenderTextTest : public testing::Test {
     test_canvas.GetTextLogAndReset(&text_log_);
   }
 
-  const internal::TextRunList* GetHarfBuzzRunList() const {
-    return test_api_->GetHarfBuzzRunList();
+  internal::TextRunList* GetHarfBuzzRunList() {
+    test_api()->EnsureLayout();
+    return test_api()->GetHarfBuzzRunList();
   }
 
   // For testing purposes, returns which fonts were chosen for which parts of
@@ -486,7 +488,9 @@ class RenderTextTest : public testing::Test {
   //
   // For example, the the logical bidirectional string "abc+\u05d0\u05d1\u05d2"
   // (visual string: "abc+אבג") yields "[0->2][3][6<-4]".
-  std::string GetRunListStructureString() const {
+  std::string GetRunListStructureString() {
+    test_api()->EnsureLayout();
+
     const internal::TextRunList* run_list = GetHarfBuzzRunList();
     std::string result;
     for (size_t i = 0; i < run_list->size(); ++i) {
@@ -560,7 +564,6 @@ class RenderTextTest : public testing::Test {
 
     // Use a wide display rect to avoid scrolling.
     render_text_->SetDisplayRect(gfx::Rect(0, 0, 1000, 50));
-    test_api()->EnsureLayout();
     EXPECT_LT(render_text_->GetContentWidthF(),
               render_text_->display_rect().width());
 
@@ -617,13 +620,10 @@ class RenderTextTest : public testing::Test {
         GetRenderText()->selection_model());
   }
 
-  // Do not use this function to ensure layout. This is only used to run a
-  // subset of the EnsureLayout functionality and check intermediate state.
-  void EnsureLayoutRunList() { GetRenderText()->EnsureLayoutRunList(); }
-
   Canvas* canvas() { return &canvas_; }
   TestSkiaTextRenderer* renderer() { return &renderer_; }
   test::RenderTextTestApi* test_api() { return test_api_.get(); }
+  const test::RenderTextTestApi* test_api() const { return test_api_.get(); }
   const std::vector<TextLog>& text_log() const { return text_log_; }
 
   void ExpectTextLog(std::vector<GlyphCountAndColor> runs) {
@@ -1437,7 +1437,6 @@ TEST_P(RenderTextTestWithRunListCase, ItemizeTextToRuns) {
   RunListCase param = GetParam();
   RenderTextHarfBuzz* render_text = GetRenderText();
   render_text->SetText(WideToUTF16(param.text));
-  test_api()->EnsureLayout();
   EXPECT_EQ(param.expected, GetRunListStructureString());
 }
 
@@ -3027,7 +3026,6 @@ TEST_F(RenderTextTest, MoveCursorLeftRight_MeiryoUILigatures) {
   render_text->SetFontList(FontList("Meiryo UI, 12px"));
   render_text->SetText(UTF8ToUTF16("ff ffi"));
   render_text->SetDisplayRect(gfx::Rect(100, 100));
-  test_api()->EnsureLayout();
   EXPECT_EQ(0U, render_text->cursor_position());
 
   gfx::Rect last_selection_bounds = GetSelectionBoundsUnion();
@@ -3270,7 +3268,6 @@ TEST_F(RenderTextTest, MidGraphemeSelectionBounds) {
 
     // Verify that the selection bounds extend over the entire grapheme, even if
     // the selection is set amid the grapheme.
-    test_api()->EnsureLayout();
     const gfx::Rect mid_grapheme_bounds = GetSelectionBoundsUnion();
     render_text->SelectAll(false);
     EXPECT_EQ(GetSelectionBoundsUnion(), mid_grapheme_bounds);
@@ -3315,8 +3312,7 @@ TEST_F(RenderTextTest, FindCursorPositionMultiline) {
 
   for (size_t i = 0; i < base::size(kTestStrings); i++) {
     render_text->SetText(UTF8ToUTF16(kTestStrings[i]));
-    test_api()->EnsureLayout();
-    EXPECT_EQ(2u, test_api()->lines().size());
+    EXPECT_EQ(2u, render_text->GetNumLines());
 
     const bool is_ltr =
         render_text->GetDisplayTextDirection() == base::i18n::LEFT_TO_RIGHT;
@@ -3358,7 +3354,6 @@ TEST_F(RenderTextTest, FindCursorPosition_GraphemeBoundaries) {
   for (size_t i = 0; i < base::size(cases); i++) {
     SCOPED_TRACE(base::StringPrintf("Testing case %" PRIuS "", i));
     render_text->SetText(cases[i].text);
-    test_api()->EnsureLayout();
     std::set<size_t> obtained_cursor_positions;
     size_t cursor_y = GetCursorYForTesting();
     for (int x = -5; x < 105; x++)
@@ -5290,8 +5285,7 @@ TEST_F(RenderTextTest, Multiline_ZeroWidthNewline) {
 
   const base::string16 text(UTF8ToUTF16("\n\n"));
   render_text->SetText(text);
-  test_api()->EnsureLayout();
-  EXPECT_EQ(3u, test_api()->lines().size());
+  EXPECT_EQ(3u, render_text->GetNumLines());
   for (const auto& line : test_api()->lines()) {
     EXPECT_EQ(0, line.size.width());
     EXPECT_LT(0, line.size.height());
@@ -5423,7 +5417,6 @@ TEST_F(RenderTextTest, HarfBuzz_HorizontalPositions) {
     SCOPED_TRACE(base::StringPrintf("kTestStrings[%" PRIuS "]", i));
     render_text->SetText(UTF8ToUTF16(kTestStrings[i].text));
 
-    test_api()->EnsureLayout();
     EXPECT_EQ(kTestStrings[i].expected_runs, GetRunListStructureString());
 
     DrawVisualText();
@@ -5531,7 +5524,6 @@ TEST_F(RenderTextTest, HarfBuzz_SubglyphGraphemeCases) {
 
     base::string16 text = UTF8ToUTF16(cases[i]);
     render_text->SetText(text);
-    test_api()->EnsureLayout();
     const internal::TextRunList* run_list = GetHarfBuzzRunList();
     ASSERT_EQ(1U, run_list->size());
     internal::TextRunHarfBuzz* run = run_list->runs()[0].get();
@@ -5604,11 +5596,9 @@ TEST_F(RenderTextTest, HarfBuzz_RunDirection) {
 
   // Get the run list for both display directions.
   render_text->SetDirectionalityMode(DIRECTIONALITY_FORCE_LTR);
-  test_api()->EnsureLayout();
   EXPECT_EQ("[7<-6][2->5][1<-0][8->10]", GetRunListStructureString());
 
   render_text->SetDirectionalityMode(DIRECTIONALITY_FORCE_RTL);
-  test_api()->EnsureLayout();
   EXPECT_EQ("[8->10][7<-6][2->5][1<-0]", GetRunListStructureString());
 }
 
@@ -5624,7 +5614,6 @@ TEST_F(RenderTextTest, HarfBuzz_RunDirection_URLs) {
   // Normal LTR text should treat URL syntax as weak (as per the normal Bidi
   // algorithm).
   render_text->SetDirectionalityMode(DIRECTIONALITY_FORCE_LTR);
-  test_api()->EnsureLayout();
 
   // This is complex because a new run is created for each punctuation mark, but
   // it simplifies down to: [0->3][11<-4][12->19][24<-20]
@@ -5637,7 +5626,6 @@ TEST_F(RenderTextTest, HarfBuzz_RunDirection_URLs) {
   // DIRECTIONALITY_AS_URL should be exactly the same as
   // DIRECTIONALITY_FORCE_LTR by default.
   render_text->SetDirectionalityMode(DIRECTIONALITY_AS_URL);
-  test_api()->EnsureLayout();
   EXPECT_EQ(kExpectedRunListNormalBidi, GetRunListStructureString());
 }
 
@@ -5646,12 +5634,10 @@ TEST_F(RenderTextTest, HarfBuzz_BreakRunsByUnicodeBlocks) {
 
   // The ▶ (U+25B6) "play character" should break runs. http://crbug.com/278913
   render_text->SetText(UTF8ToUTF16("x\u25B6y"));
-  test_api()->EnsureLayout();
   EXPECT_EQ(ToString16Vec({"x", "▶", "y"}), GetRunListStrings());
   EXPECT_EQ("[0][1][2]", GetRunListStructureString());
 
   render_text->SetText(UTF8ToUTF16("x \u25B6 y"));
-  test_api()->EnsureLayout();
   EXPECT_EQ(ToString16Vec({"x", " ", "▶", " ", "y"}), GetRunListStrings());
   EXPECT_EQ("[0][1][2][3][4]", GetRunListStructureString());
 }
@@ -5663,14 +5649,12 @@ TEST_F(RenderTextTest, HarfBuzz_BreakRunsByEmoji) {
   // drawn with color emoji fonts, so runs should be separated. crbug.com/448909
   // Windows requires wide strings for \Unnnnnnnn universal character names.
   render_text->SetText(WideToUTF16(L"x\U0001F601y\u2728"));
-  test_api()->EnsureLayout();
   EXPECT_EQ(ToString16Vec({"x", "😁", "y", "✨"}), GetRunListStrings());
   // U+1F601 is represented as a surrogate pair in UTF-16.
   EXPECT_EQ("[0][1->2][3][4]", GetRunListStructureString());
 
   // Ensure non-latin 「foo」 brackets around Emoji correctly break runs.
   render_text->SetText(UTF8ToUTF16("「🦋」「"));
-  test_api()->EnsureLayout();
   EXPECT_EQ(ToString16Vec({"「", "🦋", "」「"}), GetRunListStrings());
   // Note 🦋 is a surrogate pair [1->2].
   EXPECT_EQ("[0][1->2][3->4]", GetRunListStructureString());
@@ -5680,7 +5664,6 @@ TEST_F(RenderTextTest, HarfBuzz_BreakRunsByNewline) {
   RenderText* render_text = GetRenderText();
   render_text->SetMultiline(true);
   render_text->SetText(WideToUTF16(L"x\ny"));
-  test_api()->EnsureLayout();
   EXPECT_EQ(ToString16Vec({"x", "\n", "y"}), GetRunListStrings());
   EXPECT_EQ("[0][1][2]", GetRunListStructureString());
 
@@ -5716,7 +5699,6 @@ TEST_F(RenderTextTest, HarfBuzz_BreakRunsByEmojiVariationSelectors) {
   // not break between the codepoints, or the incorrect glyph will be chosen.
   render_text->SetText(WideToUTF16(L"z\u260E\uFE0Fy"));
   render_text->SetDisplayRect(Rect(1000, 50));
-  test_api()->EnsureLayout();
   EXPECT_EQ(ToString16Vec({"z", "☎\uFE0F", "y"}), GetRunListStrings());
   EXPECT_EQ("[0][1->2][3]", GetRunListStructureString());
 
@@ -5760,7 +5742,6 @@ TEST_F(RenderTextTest, HarfBuzz_OrphanedVariationSelector) {
   // It should never happen in normal usage, but a variation selector can appear
   // by itself. In this case, it can form its own text run, with no glyphs.
   render_text->SetText(WideToUTF16(L"\uFE0F"));
-  test_api()->EnsureLayout();
   EXPECT_EQ(ToString16Vec({"\uFE0F"}), GetRunListStrings());
   EXPECT_EQ("[0]", GetRunListStructureString());
   CheckBoundsForCursorPositions();
@@ -5777,7 +5758,6 @@ TEST_F(RenderTextTest, HarfBuzz_AsciiVariationSelector) {
   // cause the typesetter to render tofu in this case, but it should not break
   // a text run.
   render_text->SetText(WideToUTF16(L"z\uFE0Fy"));
-  test_api()->EnsureLayout();
   EXPECT_EQ(ToString16Vec({"z\uFE0Fy"}), GetRunListStrings());
   EXPECT_EQ("[0->2]", GetRunListStructureString());
   CheckBoundsForCursorPositions();
@@ -5789,7 +5769,6 @@ TEST_F(RenderTextTest, HarfBuzz_LeadingVariationSelector) {
   // When a variation selector appears either side of an emoji, ensure the one
   // after is in the same run.
   render_text->SetText(WideToUTF16(L"\uFE0F\u260E\uFE0Fy"));
-  test_api()->EnsureLayout();
   EXPECT_EQ(ToString16Vec({"\uFE0F", "☎\uFE0F", "y"}), GetRunListStrings());
   EXPECT_EQ("[0][1->2][3]", GetRunListStructureString());
   CheckBoundsForCursorPositions();
@@ -5803,7 +5782,6 @@ TEST_F(RenderTextTest, HarfBuzz_TrailingVariationSelector) {
   // ultimately up to the typeface but, however it choses, cursor and glyph
   // positions should behave.
   render_text->SetText(WideToUTF16(L"z\u260E\uFE0F\uFE0Fy"));
-  test_api()->EnsureLayout();
   EXPECT_EQ(ToString16Vec({"z", "☎\uFE0F\uFE0F", "y"}), GetRunListStrings());
   EXPECT_EQ("[0][1->3][4]", GetRunListStructureString());
   CheckBoundsForCursorPositions();
@@ -5815,7 +5793,6 @@ TEST_F(RenderTextTest, HarfBuzz_MultipleVariationSelectorEmoji) {
   // Two emoji with variation selectors appearing in a correct sequence should
   // be in the same run.
   render_text->SetText(WideToUTF16(L"z\u260E\uFE0F\u260E\uFE0Fy"));
-  test_api()->EnsureLayout();
   EXPECT_EQ(ToString16Vec({"z", "☎\uFE0F☎\uFE0F", "y"}), GetRunListStrings());
   EXPECT_EQ("[0][1->4][5]", GetRunListStructureString());
   CheckBoundsForCursorPositions();
@@ -5860,7 +5837,6 @@ TEST_F(RenderTextTest, EmojiFlagGlyphCount) {
   // Each flag is 4 UTF16 characters (2 surrogate pair code points).
   EXPECT_EQ(8u, text.length());
   render_text->SetText(text);
-  test_api()->EnsureLayout();
 
   const internal::TextRunList* run_list = GetHarfBuzzRunList();
   ASSERT_EQ(1U, run_list->runs().size());
@@ -5890,7 +5866,6 @@ TEST_F(RenderTextTest, HarfBuzz_ShapeRunsWithMultipleFonts) {
   // different fonts.
   render_text->SetText(
       UTF8ToUTF16(u8"\U0001F3F3\U0000FE0F\U00000020\U0001F308\U000020E0"));
-  test_api()->EnsureLayout();
   std::vector<base::string16> expected;
   expected.push_back(WideToUTF16(L"\U0001F3F3\U0000FE0F"));
   expected.push_back(WideToUTF16(L" "));
@@ -5919,7 +5894,6 @@ TEST_F(RenderTextTest, GlyphBounds) {
 
   for (size_t i = 0; i < base::size(kTestStrings); ++i) {
     render_text->SetText(UTF8ToUTF16(kTestStrings[i]));
-    test_api()->EnsureLayout();
 
     for (size_t j = 0; j < render_text->text().length(); ++j)
       EXPECT_FALSE(render_text->GetCursorSpan(Range(j, j + 1)).is_empty());
@@ -5930,7 +5904,6 @@ TEST_F(RenderTextTest, GlyphBounds) {
 TEST_F(RenderTextTest, HarfBuzz_NonExistentFont) {
   RenderTextHarfBuzz* render_text = GetRenderText();
   render_text->SetText(UTF8ToUTF16("test"));
-  test_api()->EnsureLayout();
   const internal::TextRunList* run_list = GetHarfBuzzRunList();
   ASSERT_EQ(1U, run_list->size());
   internal::TextRunHarfBuzz* run = run_list->runs()[0].get();
@@ -6024,7 +5997,6 @@ TEST_F(RenderTextTest, HarfBuzz_UnicodeFallback) {
 
   // An invalid Unicode character that somehow yields Korean character "han".
   render_text->SetText(UTF8ToUTF16("\ud55c"));
-  test_api()->EnsureLayout();
   const internal::TextRunList* run_list = GetHarfBuzzRunList();
   ASSERT_EQ(1U, run_list->size());
   EXPECT_EQ(0U, run_list->runs()[0]->CountMissingGlyphs());
@@ -6042,7 +6014,6 @@ TEST_F(RenderTextTest, HarfBuzz_FallbackFontsSupportGlyphs) {
   for (const wchar_t* text : kLanguageTests) {
     RenderTextHarfBuzz* render_text = GetRenderText();
     render_text->SetText(WideToUTF16(text));
-    test_api()->EnsureLayout();
 
     const internal::TextRunList* run_list = GetHarfBuzzRunList();
     ASSERT_EQ(1U, run_list->size());
@@ -6066,7 +6037,6 @@ TEST_F(RenderTextTest, HarfBuzz_MultiRunsSupportGlyphs) {
   for (const wchar_t* text : kLanguageTests) {
     RenderTextHarfBuzz* render_text = GetRenderText();
     render_text->SetText(WideToUTF16(text));
-    test_api()->EnsureLayout();
 
     int missing_glyphs = 0;
     const internal::TextRunList* run_list = GetHarfBuzzRunList();
@@ -6099,7 +6069,6 @@ TEST_P(RenderTextTestWithFallbackFontCase, FallbackFont) {
   FallbackFontCase param = GetParam();
   RenderTextHarfBuzz* render_text = GetRenderText();
   render_text->SetText(WideToUTF16(param.text));
-  test_api()->EnsureLayout();
 
   int missing_glyphs = 0;
   const internal::TextRunList* run_list = GetHarfBuzzRunList();
@@ -6330,7 +6299,6 @@ TEST_F(RenderTextTest, CJKFontWithLocale) {
 
     RenderTextHarfBuzz* render_text = GetRenderText();
     render_text->SetText(WideToUTF16(kCJKTest));
-    test_api()->EnsureLayout();
 
     const std::vector<FontSpan> font_spans = GetFontSpans();
     ASSERT_EQ(font_spans.size(), 1U);
@@ -6354,7 +6322,6 @@ TEST_F(RenderTextTest, ZeroWidthCharacters) {
   for (const wchar_t* text : kEmptyText) {
     RenderTextHarfBuzz* render_text = GetRenderText();
     render_text->SetText(WideToUTF16(text));
-    test_api()->EnsureLayout();
 
     const internal::TextRunList* run_list = GetHarfBuzzRunList();
     EXPECT_EQ(0, run_list->width());
@@ -6995,9 +6962,8 @@ TEST_F(RenderTextTest, LineEndSelections) {
   for (size_t i = 0; i < base::size(cases); i++) {
     SCOPED_TRACE(base::StringPrintf("Testing case %" PRIuS "", i));
     render_text->SetText(UTF8ToUTF16(cases[i].text));
-    test_api()->EnsureLayout();
 
-    EXPECT_EQ(3u, test_api()->lines().size());
+    EXPECT_EQ(3u, render_text->GetNumLines());
     // Position the cursor at the logical beginning of text.
     render_text->SelectRange(Range(0));
 
@@ -7014,13 +6980,12 @@ TEST_F(RenderTextTest, GetSubstringBoundsMultiline) {
   render_text->SetMultiline(true);
   render_text->SetDisplayRect(Rect(200, 1000));
   render_text->SetText(UTF8ToUTF16("abc\n\ndef"));
-  test_api()->EnsureLayout();
 
   const std::vector<Range> line_char_range = {Range(0, 4), Range(4, 5),
                                               Range(5, 8)};
 
   // Test bounds for individual lines.
-  EXPECT_EQ(3u, test_api()->lines().size());
+  EXPECT_EQ(3u, render_text->GetNumLines());
   Rect expected_total_bounds;
   for (size_t i = 0; i < test_api()->lines().size(); i++) {
     SCOPED_TRACE(base::StringPrintf("Testing bounds for line %" PRIuS "", i));
@@ -7080,18 +7045,6 @@ TEST_F(RenderTextTest, ExpandToBeVerticallySymmetric) {
   EXPECT_EQ(Rect(20, 20, 400, 80),
             test::RenderTextTestApi::ExpandToBeVerticallySymmetric(
                 Rect(20, 20, 400, 40), test_display_rect));
-}
-
-TEST_F(RenderTextTest, LinesInvalidationOnElideBehaviorChange) {
-  RenderTextHarfBuzz* render_text = GetRenderText();
-  render_text->SetText(UTF8ToUTF16("This is an example"));
-  test_api()->EnsureLayout();
-  EXPECT_FALSE(test_api()->lines().empty());
-
-  // Lines are cleared when elide behavior changes.
-  render_text->SetElideBehavior(gfx::ELIDE_TAIL);
-  EnsureLayoutRunList();
-  EXPECT_TRUE(test_api()->lines().empty());
 }
 
 // Ensures that text is centered vertically and consistently when either the
@@ -7241,7 +7194,6 @@ TEST_F(RenderTextTest, MissingFlagEmoji) {
   EXPECT_EQ(8u, text.length());
 
   render_text->SetText(text);
-  test_api()->EnsureLayout();
 
   const int whole_width = render_text->GetStringSize().width();
   const int half_width = whole_width / 2;
@@ -7332,7 +7284,6 @@ TEST_F(RenderTextTest, FontSizeOverride) {
   const int test_font_size_override = default_font_size + 5;
   render_text->SetText(UTF8ToUTF16("0123456789"));
   render_text->ApplyFontSizeOverride(test_font_size_override, gfx::Range(3, 7));
-  test_api()->EnsureLayout();
   EXPECT_EQ(ToString16Vec({"012", "3456", "789"}), GetRunListStrings());
 
   const internal::TextRunList* run_list = GetHarfBuzzRunList();

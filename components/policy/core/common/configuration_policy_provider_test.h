@@ -131,7 +131,7 @@ class ConfigurationPolicyProviderTest
   // |expected_value|.
   void CheckValue(const char* policy_name,
                   const base::Value& expected_value,
-                  base::Closure install_value);
+                  base::OnceClosure install_value);
 
   std::unique_ptr<PolicyProviderTestHarness> test_harness_;
   std::unique_ptr<ConfigurationPolicyProvider> provider_;

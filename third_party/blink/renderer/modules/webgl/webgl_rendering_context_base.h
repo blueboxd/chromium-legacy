@@ -1511,21 +1511,6 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                             GLenum type,
                             int64_t offset);
 
-  // Helper function to check if the byte length of {data} fits into an integer
-  // of type {T.} If so, the byte length is stored in {data_length}.
-  template <typename T>
-  bool ExtractDataLengthIfValid(const char* function_name,
-                                MaybeShared<DOMArrayBufferView> data,
-                                T* data_length) {
-    if (base::CheckedNumeric<GLuint>(data.View()->byteLengthAsSizeT())
-            .AssignIfValid(data_length)) {
-      return true;
-    }
-    SynthesizeGLError(GL_INVALID_VALUE, function_name,
-                      "provided data exceeds the maximum supported length");
-    return false;
-  }
-
   // State updates and operations necessary before or at draw call time.
   virtual void OnBeforeDrawCall();
 

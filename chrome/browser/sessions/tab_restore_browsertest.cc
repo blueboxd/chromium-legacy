@@ -39,6 +39,7 @@
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/core/tab_restore_service_observer.h"
+#include "components/tab_groups/tab_group_color.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "components/tab_groups/tab_group_visual_data.h"
 #include "content/public/browser/navigation_controller.h"
@@ -917,8 +918,8 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTestWithTabGroupsEnabled,
   const int grouped_tab_index = tab_count - 1;
   tab_groups::TabGroupId group_id =
       browser()->tab_strip_model()->AddToNewGroup({grouped_tab_index});
-  const tab_groups::TabGroupVisualData visual_data(base::ASCIIToUTF16("Foo"),
-                                                   SK_ColorCYAN);
+  const tab_groups::TabGroupVisualData visual_data(
+      base::ASCIIToUTF16("Foo"), tab_groups::TabGroupColorId::kCyan);
 
   TabGroup* group =
       browser()->tab_strip_model()->group_model()->GetTabGroup(group_id);
@@ -951,10 +952,10 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTestWithTabGroupsEnabled,
 
   tab_groups::TabGroupId group_id =
       browser()->tab_strip_model()->AddToNewGroup({0, 1});
-  const tab_groups::TabGroupVisualData visual_data_1(base::ASCIIToUTF16("Foo1"),
-                                                     SK_ColorCYAN);
-  const tab_groups::TabGroupVisualData visual_data_2(base::ASCIIToUTF16("Foo2"),
-                                                     SK_ColorCYAN);
+  const tab_groups::TabGroupVisualData visual_data_1(
+      base::ASCIIToUTF16("Foo1"), tab_groups::TabGroupColorId::kCyan);
+  const tab_groups::TabGroupVisualData visual_data_2(
+      base::ASCIIToUTF16("Foo2"), tab_groups::TabGroupColorId::kCyan);
   TabGroup* group =
       browser()->tab_strip_model()->group_model()->GetTabGroup(group_id);
 
@@ -988,13 +989,13 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTestWithTabGroupsEnabled,
   tab_groups::TabGroupId group1 = browser()->tab_strip_model()->AddToNewGroup(
       {tab_count - 3, tab_count - 2});
   tab_groups::TabGroupVisualData group1_data(base::ASCIIToUTF16("Foo"),
-                                             SK_ColorRED);
+                                             tab_groups::TabGroupColorId::kRed);
   group_model->GetTabGroup(group1)->SetVisualData(group1_data);
 
   tab_groups::TabGroupId group2 =
       browser()->tab_strip_model()->AddToNewGroup({tab_count - 1});
-  tab_groups::TabGroupVisualData group2_data(base::ASCIIToUTF16("Bar"),
-                                             SK_ColorBLUE);
+  tab_groups::TabGroupVisualData group2_data(
+      base::ASCIIToUTF16("Bar"), tab_groups::TabGroupColorId::kBlue);
   group_model->GetTabGroup(group2)->SetVisualData(group2_data);
 
   CloseBrowserSynchronously(browser());

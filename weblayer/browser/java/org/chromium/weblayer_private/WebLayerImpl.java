@@ -60,8 +60,11 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     // Command line flags are only read in debug builds.
     // WARNING: this file is written to by testing code in chrome (see
     // "//chrome/test/chromedriver/chrome/device_manager.cc"). If you change this variable, update
-    // "device_manager.cc" too.
-    private static final String COMMAND_LINE_FILE = "/data/local/tmp/weblayer-command-line";
+    // "device_manager.cc" too. If the command line file exists in the app's private files
+    // directory, it will be read from there, otherwise it will be read from
+    // PUBLIC_COMMAND_LINE_FILE.
+    private static final String COMMAND_LINE_FILE = "weblayer-command-line";
+    private static final String PUBLIC_COMMAND_LINE_FILE = "/data/local/tmp/" + COMMAND_LINE_FILE;
     // This metadata key, if defined, overrides the default behaviour of loading WebLayer from the
     // current WebView implementation. This is only intended for testing, and does not enforce any
     // signature requirements on the implementation, nor does it use the production code path to
@@ -166,7 +169,13 @@ public final class WebLayerImpl extends IWebLayer.Stub {
             if (BuildInfo.isDebugAndroid()) {
                 // This disk read in the critical path is for development purposes only.
                 try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-                    CommandLine.initFromFile(COMMAND_LINE_FILE);
+                    File localCommandLineFile =
+                            new File(appContext.getFilesDir(), COMMAND_LINE_FILE);
+                    if (localCommandLineFile.exists()) {
+                        CommandLine.initFromFile(localCommandLineFile.getPath());
+                    } else {
+                        CommandLine.initFromFile(PUBLIC_COMMAND_LINE_FILE);
+                    }
                 }
             } else {
                 CommandLine.init(null);

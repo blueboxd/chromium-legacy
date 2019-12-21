@@ -7,6 +7,7 @@
 
 #include "ash/public/cpp/ash_public_export.h"
 #include "components/arc/mojom/notifications.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace ash {
 
@@ -15,7 +16,8 @@ class ASH_PUBLIC_EXPORT ArcNotificationsHostInitializer {
   static ArcNotificationsHostInitializer* Get();
 
   virtual void SetArcNotificationsInstance(
-      arc::mojom::NotificationsInstancePtr arc_notification_instance) = 0;
+      mojo::PendingRemote<arc::mojom::NotificationsInstance>
+          arc_notification_instance) = 0;
 
  protected:
   ArcNotificationsHostInitializer();

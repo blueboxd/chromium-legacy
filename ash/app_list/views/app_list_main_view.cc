@@ -70,7 +70,7 @@ void AppListMainView::Init(int initial_apps_page,
   AddContentsViews();
 
   // Switch the apps grid view to the specified page.
-  ash::PaginationModel* pagination_model = GetAppsPaginationModel();
+  PaginationModel* pagination_model = GetAppsPaginationModel();
   if (pagination_model->is_valid_page(initial_apps_page))
     pagination_model->SelectPage(initial_apps_page, false);
 }
@@ -103,7 +103,7 @@ void AppListMainView::SetDragAndDropHostOfCurrentAppList(
   contents_view_->SetDragAndDropHostOfCurrentAppList(drag_and_drop_host);
 }
 
-ash::PaginationModel* AppListMainView::GetAppsPaginationModel() {
+PaginationModel* AppListMainView::GetAppsPaginationModel() {
   return contents_view_->GetAppsContainerView()
       ->apps_grid_view()
       ->pagination_model();
@@ -142,7 +142,7 @@ void AppListMainView::ActivateApp(AppListItem* item, int event_flags) {
     // may bring the crash like https://crbug.com/990282.
     const std::string id = item->id();
     delegate_->ActivateItem(id, event_flags,
-                            ash::AppListLaunchedFrom::kLaunchedFromGrid);
+                            AppListLaunchedFrom::kLaunchedFromGrid);
   }
 }
 
@@ -186,7 +186,7 @@ void AppListMainView::ActiveChanged(search_box::SearchBoxViewBase* sender) {
   if (!app_list_features::IsZeroStateSuggestionsEnabled())
     return;
   // Do not update views on closing.
-  if (app_list_view_->app_list_state() == ash::AppListViewState::kClosed)
+  if (app_list_view_->app_list_state() == AppListViewState::kClosed)
     return;
 
   if (search_box_view_->is_search_box_active()) {

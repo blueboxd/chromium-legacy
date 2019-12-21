@@ -378,7 +378,7 @@ RemoteSuggestionsProviderImpl::RemoteSuggestionsProviderImpl(
     return;
   }
 
-  database_->SetErrorCallback(base::Bind(
+  database_->SetErrorCallback(base::BindRepeating(
       &RemoteSuggestionsProviderImpl::OnDatabaseError, base::Unretained(this)));
 
   // We transition to other states while finalizing the initialization, when the
@@ -686,7 +686,7 @@ void RemoteSuggestionsProviderImpl::DismissSuggestion(
 void RemoteSuggestionsProviderImpl::ClearHistory(
     base::Time begin,
     base::Time end,
-    const base::Callback<bool(const GURL& url)>& filter) {
+    const base::RepeatingCallback<bool(const GURL& url)>& filter) {
   // Both time range and the filter are ignored and all suggestions are removed,
   // because it is not known which history entries were used for the suggestions
   // personalization.
@@ -1408,7 +1408,7 @@ void RemoteSuggestionsProviderImpl::FetchSuggestionImageData(
 void RemoteSuggestionsProviderImpl::FinishInitialization() {
   // Note: Initializing the status service will run the callback right away with
   // the current state.
-  status_service_->Init(base::Bind(
+  status_service_->Init(base::BindRepeating(
       &RemoteSuggestionsProviderImpl::OnStatusChanged, base::Unretained(this)));
 
   // Always notify here even if we got nothing from the database, because we

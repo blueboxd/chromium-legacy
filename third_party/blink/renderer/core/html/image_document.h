@@ -25,14 +25,14 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_IMAGE_DOCUMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_IMAGE_DOCUMENT_H_
 
-#include "base/memory/scoped_refptr.h"
-#include "third_party/blink/renderer/core/html/html_div_element.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
-#include "third_party/blink/renderer/core/html/html_image_element.h"
 
 namespace blink {
 
-class ImageResource;
+class HTMLDivElement;
+class HTMLImageElement;
+class ImageResourceContent;
+class IntSize;
 
 class CORE_EXPORT ImageDocument final : public HTMLDocument {
  public:
@@ -40,25 +40,22 @@ class CORE_EXPORT ImageDocument final : public HTMLDocument {
 
   ImageResourceContent* CachedImage();
 
-  // TODO(hiroshige): Remove this.
-  ImageResource* CachedImageResourceDeprecated();
-
   HTMLImageElement* ImageElement() const { return image_element_.Get(); }
   IntSize ImageSize() const;
 
+  void CreateDocumentStructure(ImageResourceContent*);
   void WindowSizeChanged();
   void ImageUpdated();
   void ImageClicked(int x, int y);
   void ImageLoaded();
   void UpdateImageStyle();
+  void UpdateTitle();
   bool ShouldShrinkToFit() const;
 
   void Trace(Visitor*) override;
 
  private:
   DocumentParser* CreateParser() override;
-
-  void CreateDocumentStructure();
 
   // Calculates how large the div needs to be to properly center the image.
   int CalculateDivWidth();

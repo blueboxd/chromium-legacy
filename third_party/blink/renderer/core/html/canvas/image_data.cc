@@ -693,7 +693,7 @@ ImageData::ConvertPixelsFromCanvasPixelFormatToImageDataStorageFormat(
   if (!content.DataLength())
     return nullptr;
 
-  if (pixel_format == CanvasPixelFormat::kRGBA8 &&
+  if (pixel_format == CanvasColorParams::GetNativeCanvasPixelFormat() &&
       storage_format == kUint8ClampedArrayStorageFormat) {
     DOMArrayBuffer* array_buffer = DOMArrayBuffer::Create(content);
     return DOMUint8ClampedArray::Create(array_buffer, 0,
@@ -756,11 +756,12 @@ CanvasColorParams ImageData::GetCanvasColorParams() {
     return CanvasColorParams();
   CanvasColorSpace color_space =
       ImageData::GetCanvasColorSpace(color_settings_->colorSpace());
-  CanvasPixelFormat pixel_format = CanvasPixelFormat::kRGBA8;
-  if (color_settings_->storageFormat() != kUint8ClampedArrayStorageFormatName)
-    pixel_format = CanvasPixelFormat::kF16;
-  return CanvasColorParams(color_space, pixel_format, kNonOpaque,
-                           CanvasForceRGBA::kNotForced);
+  return CanvasColorParams(
+      color_space,
+      color_settings_->storageFormat() != kUint8ClampedArrayStorageFormatName
+          ? CanvasPixelFormat::kF16
+          : CanvasColorParams::GetNativeCanvasPixelFormat(),
+      kNonOpaque);
 }
 
 bool ImageData::ImageDataInCanvasColorSettings(
@@ -774,8 +775,7 @@ bool ImageData::ImageDataInCanvasColorSettings(
     return false;
 
   CanvasColorParams canvas_color_params =
-      CanvasColorParams(canvas_color_space, canvas_pixel_format, kNonOpaque,
-                        CanvasForceRGBA::kNotForced);
+      CanvasColorParams(canvas_color_space, canvas_pixel_format, kNonOpaque);
 
   unsigned char* src_data = static_cast<unsigned char*>(BufferBase()->Data());
 
@@ -788,7 +788,7 @@ bool ImageData::ImageDataInCanvasColorSettings(
     src_pixel_format = skcms_PixelFormat_RGBA_ffff;
 
   skcms_PixelFormat dst_pixel_format = skcms_PixelFormat_RGBA_8888;
-  if (canvas_pixel_format == CanvasPixelFormat::kRGBA8 &&
+  if (canvas_pixel_format == CanvasColorParams::GetNativeCanvasPixelFormat() &&
       u8_color_type == kN32ColorType &&
       kN32_SkColorType == kBGRA_8888_SkColorType) {
     dst_pixel_format = skcms_PixelFormat_BGRA_8888;

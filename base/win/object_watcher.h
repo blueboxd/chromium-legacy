@@ -57,7 +57,7 @@ class BASE_EXPORT ObjectWatcher {
  public:
   class BASE_EXPORT Delegate {
    public:
-    virtual ~Delegate() {}
+    virtual ~Delegate() = default;
     // Called from the sequence that started the watch when a signaled object is
     // detected. To continue watching the object, StartWatching must be called
     // again.

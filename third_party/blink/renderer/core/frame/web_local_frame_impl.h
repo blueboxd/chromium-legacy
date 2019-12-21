@@ -314,8 +314,10 @@ class CORE_EXPORT WebLocalFrameImpl final
   void WasHidden() override;
   void WasShown() override;
   void SetAllowsCrossBrowsingInstanceFrameLookup() override;
-
-  void CollectGarbageForTesting();
+  void NotifyUserActivation() override;
+  bool HasStickyUserActivation() override;
+  bool HasTransientUserActivation() override;
+  bool ConsumeTransientUserActivation(UserActivationUpdateSource) override;
 
   // WebNavigationControl overrides:
   bool DispatchBeforeUnloadEvent(bool) override;
@@ -354,6 +356,7 @@ class CORE_EXPORT WebLocalFrameImpl final
 
   void WillBeDetached();
   void WillDetachParent();
+  void CollectGarbageForTesting();
 
   static WebLocalFrameImpl* CreateMainFrame(WebView*,
                                             WebLocalFrameClient*,

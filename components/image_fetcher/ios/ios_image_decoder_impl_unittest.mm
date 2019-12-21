@@ -78,8 +78,8 @@ TEST_F(IOSImageDecoderImplTest, JPGImage) {
       std::string(reinterpret_cast<char*>(kJPGImage), sizeof(kJPGImage));
   ios_image_decoder_impl_->DecodeImage(
       image_data, gfx::Size(),
-      base::Bind(&IOSImageDecoderImplTest::OnImageDecoded,
-                 base::Unretained(this)));
+      base::BindOnce(&IOSImageDecoderImplTest::OnImageDecoded,
+                     base::Unretained(this)));
 
   scoped_task_evironment_.RunUntilIdle();
 
@@ -93,8 +93,8 @@ TEST_F(IOSImageDecoderImplTest, WebpImage) {
       std::string(reinterpret_cast<char*>(kWEBPImage), sizeof(kWEBPImage));
   ios_image_decoder_impl_->DecodeImage(
       image_data, gfx::Size(),
-      base::Bind(&IOSImageDecoderImplTest::OnImageDecoded,
-                 base::Unretained(this)));
+      base::BindOnce(&IOSImageDecoderImplTest::OnImageDecoded,
+                     base::Unretained(this)));
 
   scoped_task_evironment_.RunUntilIdle();
 

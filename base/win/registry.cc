@@ -45,8 +45,8 @@ const REGSAM kWow64AccessMask = KEY_WOW64_32KEY | KEY_WOW64_64KEY;
 // Watches for modifications to a key.
 class RegKey::Watcher : public ObjectWatcher::Delegate {
  public:
-  Watcher() {}
-  ~Watcher() override {}
+  Watcher() = default;
+  ~Watcher() override = default;
 
   bool StartWatching(HKEY key, ChangeCallback callback);
 
@@ -90,12 +90,11 @@ bool RegKey::Watcher::StartWatching(HKEY key, ChangeCallback callback) {
 
 // RegKey ----------------------------------------------------------------------
 
-RegKey::RegKey() {}
+RegKey::RegKey() = default;
 
-RegKey::RegKey(HKEY key) : key_(key), wow64access_(0) {}
+RegKey::RegKey(HKEY key) : key_(key) {}
 
-RegKey::RegKey(HKEY rootkey, const wchar_t* subkey, REGSAM access)
-    : key_(nullptr), wow64access_(0) {
+RegKey::RegKey(HKEY rootkey, const wchar_t* subkey, REGSAM access) {
   if (rootkey) {
     if (access & (KEY_SET_VALUE | KEY_CREATE_SUB_KEY | KEY_CREATE_LINK))
       Create(rootkey, subkey, access);

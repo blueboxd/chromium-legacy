@@ -67,7 +67,7 @@ class AssistantTextfield : public views::Textfield {
 
 // AssistantDialogPlate --------------------------------------------------------
 
-AssistantDialogPlate::AssistantDialogPlate(ash::AssistantViewDelegate* delegate)
+AssistantDialogPlate::AssistantDialogPlate(AssistantViewDelegate* delegate)
     : delegate_(delegate),
       animation_observer_(std::make_unique<ui::CallbackLayerAnimationObserver>(
           /*start_animation_callback=*/base::BindRepeating(
@@ -146,7 +146,7 @@ bool AssistantDialogPlate::HandleKeyEvent(views::Textfield* textfield,
 }
 
 void AssistantDialogPlate::OnInputModalityChanged(
-    ash::InputModality input_modality) {
+    InputModality input_modality) {
   using ash::assistant::util::CreateLayerAnimationSequence;
   using ash::assistant::util::CreateOpacityElement;
   using ash::assistant::util::CreateTransformElement;
@@ -156,7 +156,7 @@ void AssistantDialogPlate::OnInputModalityChanged(
   voice_layout_container_->SetVisible(true);
 
   switch (input_modality) {
-    case ash::InputModality::kKeyboard: {
+    case InputModality::kKeyboard: {
       // Animate voice layout container opacity to 0%.
       voice_layout_container_->layer()->GetAnimator()->StartAnimation(
           CreateLayerAnimationSequence(
@@ -190,7 +190,7 @@ void AssistantDialogPlate::OnInputModalityChanged(
       animation_observer_->SetActive();
       break;
     }
-    case ash::InputModality::kVoice: {
+    case InputModality::kVoice: {
       // Animate keyboard layout container opacity to 0%.
       keyboard_layout_container_->layer()->GetAnimator()->StartAnimation(
           CreateLayerAnimationSequence(
@@ -224,26 +224,26 @@ void AssistantDialogPlate::OnInputModalityChanged(
       animation_observer_->SetActive();
       break;
     }
-    case ash::InputModality::kStylus:
+    case InputModality::kStylus:
       // No action necessary.
       break;
   }
 }
 
 void AssistantDialogPlate::OnCommittedQueryChanged(
-    const ash::AssistantQuery& committed_query) {
+    const AssistantQuery& committed_query) {
   DCHECK(query_history_iterator_);
   query_history_iterator_->ResetToLast();
 }
 
 void AssistantDialogPlate::OnUiVisibilityChanged(
-    ash::AssistantVisibility new_visibility,
-    ash::AssistantVisibility old_visibility,
-    base::Optional<ash::AssistantEntryPoint> entry_point,
-    base::Optional<ash::AssistantExitPoint> exit_point) {
+    AssistantVisibility new_visibility,
+    AssistantVisibility old_visibility,
+    base::Optional<AssistantEntryPoint> entry_point,
+    base::Optional<AssistantExitPoint> exit_point) {
   // When the Assistant UI is no longer visible we need to clear the dialog
   // plate so that text does not persist across Assistant launches.
-  if (old_visibility == ash::AssistantVisibility::kVisible)
+  if (old_visibility == AssistantVisibility::kVisible)
     textfield_->SetText(base::string16());
 }
 
@@ -252,16 +252,16 @@ void AssistantDialogPlate::RequestFocus() {
 }
 
 views::View* AssistantDialogPlate::FindFirstFocusableView() {
-  ash::InputModality input_modality =
+  InputModality input_modality =
       delegate_->GetInteractionModel()->input_modality();
 
   // The first focusable view depends entirely on current input modality.
   switch (input_modality) {
-    case ash::InputModality::kKeyboard:
+    case InputModality::kKeyboard:
       return textfield_;
-    case ash::InputModality::kVoice:
+    case InputModality::kVoice:
       return animated_voice_input_toggle_;
-    case ash::InputModality::kStylus:
+    case InputModality::kStylus:
       // Default views::FocusSearch behavior is acceptable.
       return nullptr;
   }
@@ -278,10 +278,10 @@ void AssistantDialogPlate::InitLayout() {
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
   // Molecule icon.
-  molecule_icon_ = ash::LogoView::Create();
+  molecule_icon_ = LogoView::Create();
   molecule_icon_->SetID(AssistantViewID::kModuleIcon);
   molecule_icon_->SetPreferredSize(gfx::Size(kIconSizeDip, kIconSizeDip));
-  molecule_icon_->SetState(ash::LogoView::State::kMoleculeWavy,
+  molecule_icon_->SetState(LogoView::State::kMoleculeWavy,
                            /*animate=*/false);
   AddChildView(molecule_icon_);
 
@@ -320,7 +320,7 @@ void AssistantDialogPlate::InitKeyboardLayoutContainer() {
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
   gfx::FontList font_list =
-      ash::assistant::ui::GetDefaultFontList().DeriveWithSizeDelta(2);
+      assistant::ui::GetDefaultFontList().DeriveWithSizeDelta(2);
 
   // Textfield.
   textfield_ = new AssistantTextfield();
@@ -334,8 +334,8 @@ void AssistantDialogPlate::InitKeyboardLayoutContainer() {
       l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_DIALOG_PLATE_HINT);
   textfield_->SetPlaceholderText(textfield_hint);
   textfield_->SetAccessibleName(textfield_hint);
-  textfield_->set_placeholder_text_color(ash::kTextColorSecondary);
-  textfield_->SetTextColor(ash::kTextColorPrimary);
+  textfield_->set_placeholder_text_color(kTextColorSecondary);
+  textfield_->SetTextColor(kTextColorPrimary);
   keyboard_layout_container_->AddChildView(textfield_);
 
   layout_manager->SetFlexForView(textfield_, 1);
@@ -382,8 +382,8 @@ void AssistantDialogPlate::InitVoiceLayoutContainer() {
   layout_manager->SetFlexForView(spacer, 1);
 
   // Animated voice input toggle.
-  animated_voice_input_toggle_ = new ash::MicView(
-      this, delegate_, ash::AssistantButtonId::kVoiceInputToggle);
+  animated_voice_input_toggle_ =
+      new MicView(this, delegate_, AssistantButtonId::kVoiceInputToggle);
   animated_voice_input_toggle_->SetID(AssistantViewID::kMicView);
   animated_voice_input_toggle_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_DIALOG_PLATE_MIC_ACCNAME));
@@ -395,11 +395,11 @@ void AssistantDialogPlate::InitVoiceLayoutContainer() {
   layout_manager->SetFlexForView(spacer, 1);
 
   // Keyboard input toggle.
-  keyboard_input_toggle_ = ash::AssistantButton::Create(
-      this, ash::kKeyboardIcon, kButtonSizeDip, kIconSizeDip,
-      IDS_ASH_ASSISTANT_DIALOG_PLATE_KEYBOARD_ACCNAME,
-      ash::AssistantButtonId::kKeyboardInputToggle,
-      IDS_ASH_ASSISTANT_DIALOG_PLATE_KEYBOARD_TOOLTIP);
+  keyboard_input_toggle_ =
+      AssistantButton::Create(this, kKeyboardIcon, kButtonSizeDip, kIconSizeDip,
+                              IDS_ASH_ASSISTANT_DIALOG_PLATE_KEYBOARD_ACCNAME,
+                              AssistantButtonId::kKeyboardInputToggle,
+                              IDS_ASH_ASSISTANT_DIALOG_PLATE_KEYBOARD_TOOLTIP);
   keyboard_input_toggle_->SetID(AssistantViewID::kKeyboardInputToggle);
   voice_layout_container_->AddChildView(keyboard_input_toggle_);
 
@@ -414,19 +414,19 @@ void AssistantDialogPlate::OnAnimationStarted(
 
 bool AssistantDialogPlate::OnAnimationEnded(
     const ui::CallbackLayerAnimationObserver& observer) {
-  ash::InputModality input_modality =
+  InputModality input_modality =
       delegate_->GetInteractionModel()->input_modality();
 
   switch (input_modality) {
-    case ash::InputModality::kKeyboard:
+    case InputModality::kKeyboard:
       keyboard_layout_container_->set_can_process_events_within_subtree(true);
       voice_layout_container_->SetVisible(false);
       break;
-    case ash::InputModality::kVoice:
+    case InputModality::kVoice:
       voice_layout_container_->set_can_process_events_within_subtree(true);
       keyboard_layout_container_->SetVisible(false);
       break;
-    case ash::InputModality::kStylus:
+    case InputModality::kStylus:
       // No action necessary.
       break;
   }
@@ -437,15 +437,15 @@ bool AssistantDialogPlate::OnAnimationEnded(
   return false;
 }
 
-void AssistantDialogPlate::SetFocus(ash::InputModality input_modality) {
+void AssistantDialogPlate::SetFocus(InputModality input_modality) {
   switch (input_modality) {
-    case ash::InputModality::kKeyboard:
+    case InputModality::kKeyboard:
       textfield_->RequestFocus();
       break;
-    case ash::InputModality::kVoice:
+    case InputModality::kVoice:
       animated_voice_input_toggle_->RequestFocus();
       break;
-    case ash::InputModality::kStylus:
+    case InputModality::kStylus:
       break;
   }
 }

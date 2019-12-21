@@ -28,11 +28,8 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantCardElement
   ~AssistantCardElement() override;
 
   const std::string& html() const { return html_; }
-
   const std::string& fallback() const { return fallback_; }
-
   const content::NavigableContents* contents() const { return contents_.get(); }
-  content::NavigableContents* contents() { return contents_.get(); }
 
   void set_contents(std::unique_ptr<content::NavigableContents> contents) {
     contents_ = std::move(contents);

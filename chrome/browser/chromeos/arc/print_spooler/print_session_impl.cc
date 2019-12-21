@@ -170,6 +170,38 @@ base::ReadOnlySharedMemoryRegion ReadPreviewDocument(
   return std::move(region_mapping.region);
 }
 
+// Checks if |web_contents| contains a subframe with a Chrome extension URL
+// that claims to be done loading.  This isn't foolproof, but it ensures that
+// print preview will find the embedded plugin element instead of trying to
+// print the top-level frame.
+bool IsPdfPluginLoaded(content::WebContents* web_contents) {
+  if (!web_contents->IsDocumentOnLoadCompletedInMainFrame()) {
+    VLOG(1) << "Top-level WebContents not ready yet.";
+    return false;
+  }
+
+  content::WebContents* contents_to_use =
+      printing::GetWebContentsToUse(web_contents);
+  if (contents_to_use == web_contents) {
+    VLOG(1) << "No plugin WebContents found yet.";
+    return false;
+  }
+
+  GURL url = contents_to_use->GetMainFrame()->GetLastCommittedURL();
+  if (!url.SchemeIs("chrome-extension")) {
+    VLOG(1) << "Plugin frame URL not loaded yet.";
+    return false;
+  }
+
+  if (!contents_to_use->IsDocumentOnLoadCompletedInMainFrame()) {
+    VLOG(1) << "Plugin frame still loading.";
+    return false;
+  }
+
+  VLOG(1) << "PDF plugin has loaded.";
+  return true;
+}
+
 }  // namespace
 
 // static
@@ -207,11 +239,8 @@ PrintSessionImpl::PrintSessionImpl(
 
   // TODO(jschettler): Handle this correctly once crbug.com/636642 is
   // resolved. Until then, give the PDF plugin time to load.
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&PrintSessionImpl::StartPrintAfterDelay,
-                     weak_ptr_factory_.GetWeakPtr()),
-      base::TimeDelta::FromSeconds(1));
+  VLOG(1) << "Waiting for PDF plugin to load.";
+  StartPrintAfterPluginIsLoaded();
 }
 
 PrintSessionImpl::~PrintSessionImpl() {
@@ -286,7 +315,34 @@ void PrintSessionImpl::OnPrintPreviewClosed() {
   instance_->OnPrintPreviewClosed();
 }
 
-void PrintSessionImpl::StartPrintAfterDelay() {
+void PrintSessionImpl::StartPrintAfterPluginIsLoaded() {
+  // We know that we loaded a PDF into our WebContents.  It takes some time for
+  // the PDF plugin to load and create its document structure.  If StartPrint()
+  // is called too soon, it won't find this structure and will attach to the
+  // top-level frame instead of the correct PDF element.  The PDF plugin doesn't
+  // have a way to notify the browser when it's ready (crbug.com/636642), so we
+  // need to poll for the PDF frame to "look ready" before we start printing.
+  if (!IsPdfPluginLoaded(web_contents_.get())) {
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&PrintSessionImpl::StartPrintAfterPluginIsLoaded,
+                       weak_ptr_factory_.GetWeakPtr()),
+        base::TimeDelta::FromMilliseconds(100));
+    LOG(WARNING) << "PDF plugin not ready yet.  Can't start print preview.";
+    return;
+  }
+
+  // The inner doc has been marked done, but the PDF plugin might not be quite
+  // done updating the DOM yet.  We don't have a way to check that, so launch
+  // printing after one final delay to give that time to finish.
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&PrintSessionImpl::StartPrintNow,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::TimeDelta::FromMilliseconds(100));
+}
+
+void PrintSessionImpl::StartPrintNow() {
   printing::StartPrint(web_contents_.get(),
                        print_renderer_receiver_.BindNewEndpointAndPassRemote(),
                        false, false);

@@ -1495,6 +1495,12 @@ jumbo_component("base") {
         "trace_event/cfi_backtrace_android.h",
       ]
     }
+    if (current_cpu == "arm") {
+      sources += [
+        "profiler/chrome_unwinder_android.cc",
+        "profiler/chrome_unwinder_android.h",
+      ]
+    }
 
     if (current_cpu != "arm") {
       # The reached code profiler is only supported on Android with 32-bit arm
@@ -2914,6 +2920,9 @@ test("base_unittests") {
       add_unwind_tables_in_apk = true
       sources += [ "trace_event/cfi_backtrace_android_unittest.cc" ]
     }
+    if (current_cpu == "arm") {
+      sources += [ "profiler/chrome_unwinder_android_unittest.cc" ]
+    }
 
     sources += [
       "android/android_image_reader_compat_unittest.cc",
@@ -3214,9 +3223,9 @@ if (is_android) {
 
   java_library("jni_java") {
     supports_android = true
-    java_files = [
-      "android/java/src/org/chromium/base/annotations/NativeMethods.java",
+    sources = [
       "android/java/src/org/chromium/base/JniStaticTestMocker.java",
+      "android/java/src/org/chromium/base/annotations/NativeMethods.java",
     ]
   }
 
@@ -3237,7 +3246,7 @@ if (is_android) {
       "//third_party/jsr-305:jsr_305_javalib",
     ]
 
-    java_files = [
+    sources = [
       "android/java/src/org/chromium/base/ActivityState.java",
       "android/java/src/org/chromium/base/AnimationFrameTimeHistogram.java",
       "android/java/src/org/chromium/base/ApiCompatibilityUtils.java",
@@ -3271,11 +3280,11 @@ if (is_android) {
       "android/java/src/org/chromium/base/MathUtils.java",
       "android/java/src/org/chromium/base/MemoryPressureListener.java",
       "android/java/src/org/chromium/base/NonThreadSafe.java",
-      "android/java/src/org/chromium/base/ObserverList.java",
       "android/java/src/org/chromium/base/ObservableSupplier.java",
       "android/java/src/org/chromium/base/ObservableSupplierImpl.java",
-      "android/java/src/org/chromium/base/PackageUtils.java",
+      "android/java/src/org/chromium/base/ObserverList.java",
       "android/java/src/org/chromium/base/PackageManagerUtils.java",
+      "android/java/src/org/chromium/base/PackageUtils.java",
       "android/java/src/org/chromium/base/PathService.java",
       "android/java/src/org/chromium/base/PathUtils.java",
       "android/java/src/org/chromium/base/PiiElider.java",
@@ -3324,11 +3333,15 @@ if (is_android) {
       "android/java/src/org/chromium/base/library_loader/LibraryLoader.java",
       "android/java/src/org/chromium/base/library_loader/LibraryPrefetcher.java",
       "android/java/src/org/chromium/base/library_loader/Linker.java",
-      "android/java/src/org/chromium/base/library_loader/LoaderErrors.java",
       "android/java/src/org/chromium/base/library_loader/LoadStatusRecorder.java",
+      "android/java/src/org/chromium/base/library_loader/LoaderErrors.java",
       "android/java/src/org/chromium/base/library_loader/ModernLinker.java",
       "android/java/src/org/chromium/base/library_loader/NativeLibraryPreloader.java",
       "android/java/src/org/chromium/base/library_loader/ProcessInitException.java",
+      "android/java/src/org/chromium/base/memory/JavaHeapDumpGenerator.java",
+      "android/java/src/org/chromium/base/memory/MemoryPressureCallback.java",
+      "android/java/src/org/chromium/base/memory/MemoryPressureMonitor.java",
+      "android/java/src/org/chromium/base/memory/MemoryPressureUma.java",
       "android/java/src/org/chromium/base/metrics/CachedMetrics.java",
       "android/java/src/org/chromium/base/metrics/NativeUmaRecorder.java",
       "android/java/src/org/chromium/base/metrics/NoopUmaRecorder.java",
@@ -3346,15 +3359,11 @@ if (is_android) {
       "android/java/src/org/chromium/base/process_launcher/ChildProcessService.java",
       "android/java/src/org/chromium/base/process_launcher/ChildProcessServiceDelegate.java",
       "android/java/src/org/chromium/base/process_launcher/FileDescriptorInfo.java",
-      "android/java/src/org/chromium/base/memory/JavaHeapDumpGenerator.java",
-      "android/java/src/org/chromium/base/memory/MemoryPressureMonitor.java",
-      "android/java/src/org/chromium/base/memory/MemoryPressureCallback.java",
-      "android/java/src/org/chromium/base/memory/MemoryPressureUma.java",
       "android/java/src/org/chromium/base/task/AsyncTask.java",
       "android/java/src/org/chromium/base/task/BackgroundOnlyAsyncTask.java",
-      "android/java/src/org/chromium/base/task/DefaultTaskExecutor.java",
       "android/java/src/org/chromium/base/task/ChoreographerTaskRunner.java",
       "android/java/src/org/chromium/base/task/ChromeThreadPoolExecutor.java",
+      "android/java/src/org/chromium/base/task/DefaultTaskExecutor.java",
       "android/java/src/org/chromium/base/task/PostTask.java",
       "android/java/src/org/chromium/base/task/SequencedTaskRunner.java",
       "android/java/src/org/chromium/base/task/SequencedTaskRunnerImpl.java",
@@ -3398,12 +3407,12 @@ if (is_android) {
       "//third_party/hamcrest:hamcrest_java",
       "//third_party/junit:junit",
     ]
-    java_files = [
+    sources = [
       # AssertsTest doesn't really belong in //base but it's preferable to
       # stick it here than create another target for a single test.
-      "android/javatests/src/org/chromium/base/AssertsTest.java",
       "android/javatests/src/org/chromium/base/AdvancedMockContextTest.java",
       "android/javatests/src/org/chromium/base/ApiCompatibilityUtilsTest.java",
+      "android/javatests/src/org/chromium/base/AssertsTest.java",
       "android/javatests/src/org/chromium/base/CommandLineInitUtilTest.java",
       "android/javatests/src/org/chromium/base/CommandLineTest.java",
       "android/javatests/src/org/chromium/base/EarlyTraceEventTest.java",
@@ -3464,7 +3473,7 @@ if (is_android) {
       "//third_party/ub-uiautomator:ub_uiautomator_java",
     ]
 
-    java_files = [
+    sources = [
       "test/android/javatests/src/org/chromium/base/test/BaseChromiumAndroidJUnitRunner.java",
       "test/android/javatests/src/org/chromium/base/test/BaseChromiumRunnerCommon.java",
       "test/android/javatests/src/org/chromium/base/test/BaseJUnit4ClassRunner.java",
@@ -3481,29 +3490,29 @@ if (is_android) {
       "test/android/javatests/src/org/chromium/base/test/SetUpTestRule.java",
       "test/android/javatests/src/org/chromium/base/test/TestListInstrumentationRunListener.java",
       "test/android/javatests/src/org/chromium/base/test/TestTraceEvent.java",
-      "test/android/javatests/src/org/chromium/base/test/params/ParameterizedRunner.java",
-      "test/android/javatests/src/org/chromium/base/test/params/BlockJUnit4RunnerDelegate.java",
       "test/android/javatests/src/org/chromium/base/test/params/BaseJUnit4RunnerDelegate.java",
+      "test/android/javatests/src/org/chromium/base/test/params/BlockJUnit4RunnerDelegate.java",
       "test/android/javatests/src/org/chromium/base/test/params/MethodParamAnnotationRule.java",
       "test/android/javatests/src/org/chromium/base/test/params/MethodParamRule.java",
       "test/android/javatests/src/org/chromium/base/test/params/ParameterAnnotations.java",
-      "test/android/javatests/src/org/chromium/base/test/params/ParameterizedFrameworkMethod.java",
-      "test/android/javatests/src/org/chromium/base/test/params/ParameterizedRunnerDelegate.java",
-      "test/android/javatests/src/org/chromium/base/test/params/ParameterizedRunnerDelegateCommon.java",
-      "test/android/javatests/src/org/chromium/base/test/params/ParameterizedRunnerDelegateFactory.java",
       "test/android/javatests/src/org/chromium/base/test/params/ParameterProvider.java",
       "test/android/javatests/src/org/chromium/base/test/params/ParameterSet.java",
       "test/android/javatests/src/org/chromium/base/test/params/ParameterizedCommandLineFlags.java",
+      "test/android/javatests/src/org/chromium/base/test/params/ParameterizedFrameworkMethod.java",
+      "test/android/javatests/src/org/chromium/base/test/params/ParameterizedRunner.java",
+      "test/android/javatests/src/org/chromium/base/test/params/ParameterizedRunnerDelegate.java",
+      "test/android/javatests/src/org/chromium/base/test/params/ParameterizedRunnerDelegateCommon.java",
+      "test/android/javatests/src/org/chromium/base/test/params/ParameterizedRunnerDelegateFactory.java",
       "test/android/javatests/src/org/chromium/base/test/params/SkipCommandLineParameterization.java",
       "test/android/javatests/src/org/chromium/base/test/task/SchedulerTestHelpers.java",
       "test/android/javatests/src/org/chromium/base/test/task/ThreadPoolTestHelpers.java",
       "test/android/javatests/src/org/chromium/base/test/util/AdvancedMockContext.java",
+      "test/android/javatests/src/org/chromium/base/test/util/AnnotationProcessingUtils.java",
       "test/android/javatests/src/org/chromium/base/test/util/AnnotationRule.java",
       "test/android/javatests/src/org/chromium/base/test/util/CallbackHelper.java",
       "test/android/javatests/src/org/chromium/base/test/util/CommandLineFlags.java",
       "test/android/javatests/src/org/chromium/base/test/util/DisableIf.java",
       "test/android/javatests/src/org/chromium/base/test/util/DisableIfSkipCheck.java",
-      "test/android/javatests/src/org/chromium/base/test/util/AnnotationProcessingUtils.java",
       "test/android/javatests/src/org/chromium/base/test/util/DisabledTest.java",
       "test/android/javatests/src/org/chromium/base/test/util/EnormousTest.java",
       "test/android/javatests/src/org/chromium/base/test/util/Feature.java",
@@ -3526,8 +3535,8 @@ if (is_android) {
       "test/android/javatests/src/org/chromium/base/test/util/TestFileUtil.java",
       "test/android/javatests/src/org/chromium/base/test/util/TimeoutScale.java",
       "test/android/javatests/src/org/chromium/base/test/util/TimeoutTimer.java",
-      "test/android/javatests/src/org/chromium/base/test/util/UserActionTester.java",
       "test/android/javatests/src/org/chromium/base/test/util/UrlUtils.java",
+      "test/android/javatests/src/org/chromium/base/test/util/UserActionTester.java",
     ]
     annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   }
@@ -3538,14 +3547,18 @@ if (is_android) {
       ":base_java",
       ":base_java_test_support",
     ]
-    java_files = [ "test/android/javatests/src/org/chromium/base/test/TestChildProcessConnection.java" ]
+    sources = [
+      "test/android/javatests/src/org/chromium/base/test/TestChildProcessConnection.java",
+    ]
   }
 
   android_library("base_junit_test_support") {
     # Platform checks are broken for Robolectric.
     bypass_platform_checks = true
     testonly = true
-    java_files = [
+    sources = [
+      "//third_party/robolectric/custom_asynctask/java/src/org/chromium/base/task/test/ShadowAsyncTask.java",
+      "//third_party/robolectric/custom_asynctask/java/src/org/chromium/base/task/test/ShadowAsyncTaskBridge.java",
       "android/junit/src/org/chromium/base/metrics/test/DisableHistogramsRule.java",
       "android/junit/src/org/chromium/base/metrics/test/ShadowRecordHistogram.java",
       "test/android/junit/src/org/chromium/base/task/test/BackgroundShadowAsyncTask.java",
@@ -3553,8 +3566,6 @@ if (is_android) {
       "test/android/junit/src/org/chromium/base/task/test/ShadowPostTask.java",
       "test/android/junit/src/org/chromium/base/test/BaseRobolectricTestRunner.java",
       "test/android/junit/src/org/chromium/base/test/util/TestRunnerTestRule.java",
-      "//third_party/robolectric/custom_asynctask/java/src/org/chromium/base/task/test/ShadowAsyncTask.java",
-      "//third_party/robolectric/custom_asynctask/java/src/org/chromium/base/task/test/ShadowAsyncTaskBridge.java",
     ]
     deps = [
       ":base_java",
@@ -3567,7 +3578,7 @@ if (is_android) {
   }
 
   junit_binary("base_junit_tests") {
-    java_files = [
+    sources = [
       "android/junit/src/org/chromium/base/AnimationFrameTimeHistogramTest.java",
       "android/junit/src/org/chromium/base/ApplicationStatusTest.java",
       "android/junit/src/org/chromium/base/DiscardableReferencePoolTest.java",
@@ -3585,16 +3596,16 @@ if (is_android) {
       "android/junit/src/org/chromium/base/util/GarbageCollectionTestUtilsUnitTest.java",
       "test/android/junit/src/org/chromium/base/test/SetUpStatementTest.java",
       "test/android/junit/src/org/chromium/base/test/TestListInstrumentationRunListenerTest.java",
+      "test/android/junit/src/org/chromium/base/test/params/ExampleParameterizedTest.java",
+      "test/android/junit/src/org/chromium/base/test/params/ParameterizedRunnerDelegateCommonTest.java",
+      "test/android/junit/src/org/chromium/base/test/params/ParameterizedRunnerDelegateFactoryTest.java",
+      "test/android/junit/src/org/chromium/base/test/params/ParameterizedRunnerTest.java",
+      "test/android/junit/src/org/chromium/base/test/params/ParameterizedTestNameTest.java",
       "test/android/junit/src/org/chromium/base/test/util/AnnotationProcessingUtilsTest.java",
       "test/android/junit/src/org/chromium/base/test/util/DisableIfTest.java",
       "test/android/junit/src/org/chromium/base/test/util/MinAndroidSdkLevelSkipCheckTest.java",
       "test/android/junit/src/org/chromium/base/test/util/RestrictionSkipCheckTest.java",
       "test/android/junit/src/org/chromium/base/test/util/SkipCheckTest.java",
-      "test/android/junit/src/org/chromium/base/test/params/ExampleParameterizedTest.java",
-      "test/android/junit/src/org/chromium/base/test/params/ParameterizedRunnerTest.java",
-      "test/android/junit/src/org/chromium/base/test/params/ParameterizedRunnerDelegateCommonTest.java",
-      "test/android/junit/src/org/chromium/base/test/params/ParameterizedRunnerDelegateFactoryTest.java",
-      "test/android/junit/src/org/chromium/base/test/params/ParameterizedTestNameTest.java",
     ]
     deps = [
       ":base_java",
@@ -3633,7 +3644,7 @@ if (is_android) {
     deps = [
       ":base_java",
     ]
-    java_files = [
+    sources = [
       "test/android/java/src/org/chromium/base/ContentUriTestUtils.java",
       "test/android/java/src/org/chromium/base/JavaHandlerThreadHelpers.java",
     ]

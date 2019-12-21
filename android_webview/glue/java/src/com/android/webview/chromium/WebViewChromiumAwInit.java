@@ -168,6 +168,10 @@ public class WebViewChromiumAwInit {
             // available when AwFeatureListCreator::SetUpFieldTrials() runs.
             finishVariationsInitLocked();
 
+            if (AwBrowserProcess.isDeveloperModeEnabled()) {
+                AwBrowserProcess.getAndApplyFlagOverridesSync();
+            }
+
             AwBrowserProcess.start();
             AwBrowserProcess.handleMinidumpsAndSetMetricsConsent(true /* updateMetricsConsent */);
 

@@ -265,6 +265,7 @@ def write_machine_model_info(entry_id, is_exception, exception_id,
                              data_file, data_helper_file):
   model_name_var_name = None
   if machine_model_name:
+    assert isinstance(machine_model_name, list)
     model_name_var_name = 'kMachineModelNameForEntry' + str(entry_id)
     if is_exception:
       model_name_var_name += 'Exception' + str(exception_id)

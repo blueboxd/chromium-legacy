@@ -20,6 +20,7 @@ struct FrameTimingDetails;
 }
 
 namespace cc {
+class LatencyUkmReporter;
 class RollingTimeDeltaHistory;
 
 // This is used for tracing and reporting the duration of pipeline stages within
@@ -103,8 +104,21 @@ class CC_EXPORT CompositorFrameReporter {
     kBreakdownCount
   };
 
+  struct StageData {
+    StageType stage_type;
+    base::TimeTicks start_time;
+    base::TimeTicks end_time;
+    StageData();
+    StageData(StageType stage_type,
+              base::TimeTicks start_time,
+              base::TimeTicks end_time);
+    StageData(const StageData&);
+    ~StageData();
+  };
+
   CompositorFrameReporter(
       const base::flat_set<FrameSequenceTrackerType>* active_trackers,
+      LatencyUkmReporter* latency_ukm_reporter,
       bool is_single_threaded = false);
   ~CompositorFrameReporter();
 
@@ -134,18 +148,6 @@ class CC_EXPORT CompositorFrameReporter {
   }
 
  private:
-  struct StageData {
-    StageType stage_type;
-    base::TimeTicks start_time;
-    base::TimeTicks end_time;
-    StageData();
-    StageData(StageType stage_type,
-              base::TimeTicks start_time,
-              base::TimeTicks end_time);
-    StageData(const StageData&);
-    ~StageData();
-  };
-
   void TerminateReporter();
   void EndCurrentStage(base::TimeTicks end_time);
   void ReportStageHistograms(bool missed_frame) const;
@@ -186,6 +188,8 @@ class CC_EXPORT CompositorFrameReporter {
       FrameTerminationStatus::kUnknown;
 
   const base::flat_set<FrameSequenceTrackerType>* active_trackers_;
+
+  LatencyUkmReporter* latency_ukm_reporter_;
 
   // Indicates if work on Impl frame is finished.
   bool did_finish_impl_frame_ = false;

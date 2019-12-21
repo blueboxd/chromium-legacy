@@ -10,8 +10,6 @@
 
 #include "base/macros.h"
 
-#include "mojo/public/cpp/bindings/binding.h"
-
 #include "net/third_party/quiche/src/quic/core/quic_connection.h"
 #include "net/third_party/quiche/src/quic/core/quic_packet_writer.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"

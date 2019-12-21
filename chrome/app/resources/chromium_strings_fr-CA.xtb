@@ -22,6 +22,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles et les modificat
 <translation id="1966382378801805537">Chromium ne parvient pas à déterminer quel est le navigateur par défaut ou à le définir</translation>
 <translation id="2008474315282236005">Cette action entraînera la suppression d'un élément de cet appareil. Pour récupérer vos données plus tard, connectez-vous à Chromium en tant que <ph name="USER_EMAIL" />.</translation>
 <translation id="2119636228670142020">À propos de &amp;Chromium OS</translation>
+<translation id="2147976119693222405">Chromium OS n'a pas pu synchroniser vos données. Corriger maintenant.</translation>
 <translation id="2241627712206172106">Si vous partagez un ordinateur avec vos proches, ceux-ci peuvent configurer Google Chrome comme bon leur semble et naviguer sur le Web à leur manière.</translation>
 <translation id="2347108572062610441">Cette extension a modifié la page qui s'affiche au démarrage de Chromium.</translation>
 <translation id="2396765026452590966">L'extension « <ph name="EXTENSION_NAME" /> » a modifié la page qui s'affiche au démarrage de Chromium.</translation>
@@ -37,6 +38,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles et les modificat
 <translation id="2718390899429598676">Pour une sécurité accrue, Chromium va chiffrer vos données.</translation>
 <translation id="2770231113462710648">Remplacer le navigateur par défaut par :</translation>
 <translation id="2799223571221894425">Redémarrer</translation>
+<translation id="2805036593126168338">Chromium OS n'a pas pu synchroniser vos mots de passe. Corriger maintenant.</translation>
 <translation id="2838154144102149890">Pour installer la mise à jour, vous devez fermer Chromium sur cet ordinateur. Cela pourrait engendrer la perte de modifications non enregistrées pour d'autres utilisateurs connectés à cet ordinateur.</translation>
 <translation id="2847479871509788944">Supprimer de Chromium...</translation>
 <translation id="2886012850691518054">Facultatif : aidez-nous à améliorer Chromium en envoyant automatiquement des statistiques d'utilisation et des rapports d'erreur à Google.</translation>

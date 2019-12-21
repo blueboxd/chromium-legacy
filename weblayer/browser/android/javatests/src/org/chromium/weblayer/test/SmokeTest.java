@@ -11,6 +11,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -24,7 +25,7 @@ import java.util.concurrent.CountDownLatch;
 /**
  * Basic tests to make sure WebLayer works as expected.
  */
-@RunWith(WebLayerJUnit4ClassRunner.class)
+@RunWith(BaseJUnit4ClassRunner.class)
 public class SmokeTest {
     @Rule
     public InstrumentationActivityTestRule mActivityTestRule =

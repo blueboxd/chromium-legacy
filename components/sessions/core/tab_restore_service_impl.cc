@@ -26,6 +26,7 @@
 #include "components/sessions/core/base_session_service_delegate.h"
 #include "components/sessions/core/session_command.h"
 #include "components/sessions/core/session_constants.h"
+#include "components/tab_groups/tab_group_color.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "components/tab_groups/tab_group_visual_data.h"
 
@@ -704,7 +705,7 @@ void TabRestoreServiceImpl::PersistenceDelegate::ScheduleCommandsForTab(
     const tab_groups::TabGroupVisualData* visual_data =
         &tab.group_visual_data.value();
     pickle.WriteString16(visual_data->title());
-    pickle.WriteUInt32(visual_data->color());
+    pickle.WriteUInt32(static_cast<int>(visual_data->color()));
     std::unique_ptr<SessionCommand> command(
         new SessionCommand(kCommandGroup, pickle));
     base_session_service_->ScheduleCommand(std::move(command));
@@ -966,18 +967,26 @@ void TabRestoreServiceImpl::PersistenceDelegate::CreateEntriesFromCommands(
         base::PickleIterator iter(*pickle);
         base::Optional<base::Token> group_token = ReadTokenFromPickle(&iter);
         base::string16 title;
-        SkColor color;
+        uint32_t color_int;
         if (!iter.ReadString16(&title)) {
           break;
         }
-        if (!iter.ReadUInt32(&color)) {
+        if (!iter.ReadUInt32(&color_int)) {
           break;
         }
 
         current_tab->group =
             tab_groups::TabGroupId::FromRawToken(group_token.value());
-        current_tab->group_visual_data =
-            tab_groups::TabGroupVisualData(title, color);
+
+        // Check for the existence of the enum value in the color set, which is
+        // the source of truth for allowed colors in tab groups. If the enum
+        // value doesn't exist, fall back to kGrey per UX preference.
+        tab_groups::TabGroupColorId color_id =
+            static_cast<tab_groups::TabGroupColorId>(color_int);
+        current_tab->group_visual_data = tab_groups::TabGroupVisualData(
+            title, base::Contains(tab_groups::GetTabGroupColorSet(), color_id)
+                       ? color_id
+                       : tab_groups::TabGroupColorId::kGrey);
         break;
       }
 

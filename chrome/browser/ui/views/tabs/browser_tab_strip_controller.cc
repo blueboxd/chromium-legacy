@@ -46,6 +46,9 @@
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/prefs/pref_service.h"
+#include "components/tab_groups/tab_group_color.h"
+#include "components/tab_groups/tab_group_id.h"
+#include "components/tab_groups/tab_group_visual_data.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -55,6 +58,7 @@
 #include "ipc/ipc_message.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "ui/base/models/list_selection_model.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/widget/widget.h"
@@ -433,10 +437,14 @@ void BrowserTabStripController::OnKeyboardFocusedTabChanged(
       index);
 }
 
-const tab_groups::TabGroupVisualData*
-BrowserTabStripController::GetVisualDataForGroup(
+base::string16 BrowserTabStripController::GetGroupTitle(
     tab_groups::TabGroupId group) const {
-  return model_->group_model()->GetTabGroup(group)->visual_data();
+  return model_->group_model()->GetTabGroup(group)->visual_data()->title();
+}
+
+tab_groups::TabGroupColorId BrowserTabStripController::GetGroupColorId(
+    tab_groups::TabGroupId group) const {
+  return model_->group_model()->GetTabGroup(group)->visual_data()->color();
 }
 
 void BrowserTabStripController::SetVisualDataForGroup(

@@ -94,4 +94,30 @@ idl::Printer PrinterToIdl(
   return idl_printer;
 }
 
+idl::PrinterStatus PrinterStatusToIdl(chromeos::PrinterErrorCode status) {
+  switch (status) {
+    case chromeos::PrinterErrorCode::NO_ERROR:
+      return idl::PRINTER_STATUS_AVAILABLE;
+    case chromeos::PrinterErrorCode::PAPER_JAM:
+      return idl::PRINTER_STATUS_PAPER_JAM;
+    case chromeos::PrinterErrorCode::OUT_OF_PAPER:
+      return idl::PRINTER_STATUS_OUT_OF_PAPER;
+    case chromeos::PrinterErrorCode::OUT_OF_INK:
+      return idl::PRINTER_STATUS_OUT_OF_INK;
+    case chromeos::PrinterErrorCode::DOOR_OPEN:
+      return idl::PRINTER_STATUS_DOOR_OPEN;
+    case chromeos::PrinterErrorCode::PRINTER_UNREACHABLE:
+      return idl::PRINTER_STATUS_UNREACHABLE;
+    case chromeos::PrinterErrorCode::TRAY_MISSING:
+      return idl::PRINTER_STATUS_TRAY_MISSING;
+    case chromeos::PrinterErrorCode::OUTPUT_FULL:
+      return idl::PRINTER_STATUS_OUTPUT_FULL;
+    case chromeos::PrinterErrorCode::STOPPED:
+      return idl::PRINTER_STATUS_STOPPED;
+    default:
+      return idl::PRINTER_STATUS_GENERIC_ISSUE;
+  }
+  return idl::PRINTER_STATUS_GENERIC_ISSUE;
+}
+
 }  // namespace extensions

@@ -12,47 +12,20 @@
 #include "content/public/browser/web_ui_controller.h"
 
 class Browser;
+class TabStripUIEmbedder;
 class TabStripUIHandler;
-struct TabStripUILayout;
-
-namespace gfx {
-class Point;
-}  // namespace gfx
-
-namespace ui {
-class AcceleratorProvider;
-class MenuModel;
-}
 
 // The WebUI version of the tab strip in the browser. It is currently only
 // supported on ChromeOS in tablet mode.
 class TabStripUI : public content::WebUIController {
  public:
-  // Interface to be implemented by the embedder. Provides native UI
-  // functionality such as showing context menus.
-  class Embedder {
-   public:
-    Embedder() = default;
-    virtual ~Embedder() {}
-
-    virtual const ui::AcceleratorProvider* GetAcceleratorProvider() const = 0;
-
-    virtual void CloseContainer() = 0;
-
-    virtual void ShowContextMenuAtPoint(
-        gfx::Point point,
-        std::unique_ptr<ui::MenuModel> menu_model) = 0;
-
-    virtual TabStripUILayout GetLayout() = 0;
-  };
-
   explicit TabStripUI(content::WebUI* web_ui);
   ~TabStripUI() override;
 
   // Initialize TabStripUI with its embedder and the Browser it's
   // running in. Must be called exactly once. The WebUI won't work until
   // this is called.
-  void Initialize(Browser* browser, Embedder* embedder);
+  void Initialize(Browser* browser, TabStripUIEmbedder* embedder);
 
   // The embedder should call this whenever the result of
   // Embedder::GetLayout() changes.

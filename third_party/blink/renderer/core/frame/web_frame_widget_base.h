@@ -25,6 +25,7 @@ class Layer;
 
 namespace gfx {
 class Point;
+class PointF;
 }
 
 namespace blink {
@@ -36,7 +37,6 @@ class PaintWorkletPaintDispatcher;
 class WebLocalFrameImpl;
 class WebViewImpl;
 struct IntrinsicSizingInfo;
-struct WebFloatPoint;
 
 class CORE_EXPORT WebFrameWidgetBase
     : public GarbageCollected<WebFrameWidgetBase>,
@@ -81,22 +81,22 @@ class CORE_EXPORT WebFrameWidgetBase
   void Close() override;
   WebLocalFrame* LocalRoot() const override;
   WebDragOperation DragTargetDragEnter(const WebDragData&,
-                                       const WebFloatPoint& point_in_viewport,
-                                       const WebFloatPoint& screen_point,
+                                       const gfx::PointF& point_in_viewport,
+                                       const gfx::PointF& screen_point,
                                        WebDragOperationsMask operations_allowed,
                                        int modifiers) override;
-  WebDragOperation DragTargetDragOver(const WebFloatPoint& point_in_viewport,
-                                      const WebFloatPoint& screen_point,
+  WebDragOperation DragTargetDragOver(const gfx::PointF& point_in_viewport,
+                                      const gfx::PointF& screen_point,
                                       WebDragOperationsMask operations_allowed,
                                       int modifiers) override;
-  void DragTargetDragLeave(const WebFloatPoint& point_in_viewport,
-                           const WebFloatPoint& screen_point) override;
+  void DragTargetDragLeave(const gfx::PointF& point_in_viewport,
+                           const gfx::PointF& screen_point) override;
   void DragTargetDrop(const WebDragData&,
-                      const WebFloatPoint& point_in_viewport,
-                      const WebFloatPoint& screen_point,
+                      const gfx::PointF& point_in_viewport,
+                      const gfx::PointF& screen_point,
                       int modifiers) override;
-  void DragSourceEndedAt(const WebFloatPoint& point_in_viewport,
-                         const WebFloatPoint& screen_point,
+  void DragSourceEndedAt(const gfx::PointF& point_in_viewport,
+                         const gfx::PointF& screen_point,
                          WebDragOperation) override;
   void DragSourceSystemDragEnded() override;
   void SendOverscrollEventFromImplSide(
@@ -147,14 +147,13 @@ class CORE_EXPORT WebFrameWidgetBase
   // updating a drag over a target. If we're starting a drag, |isEntering|
   // should be true.
   WebDragOperation DragTargetDragEnterOrOver(
-      const WebFloatPoint& point_in_viewport,
-      const WebFloatPoint& screen_point,
+      const gfx::PointF& point_in_viewport,
+      const gfx::PointF& screen_point,
       DragAction,
       int modifiers);
 
   // Helper function to call VisualViewport::viewportToRootFrame().
-  WebFloatPoint ViewportToRootFrame(
-      const WebFloatPoint& point_in_viewport) const;
+  gfx::PointF ViewportToRootFrame(const gfx::PointF& point_in_viewport) const;
 
   WebViewImpl* View() const;
 

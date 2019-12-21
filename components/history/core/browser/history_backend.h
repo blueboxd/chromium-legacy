@@ -516,7 +516,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // complete description.
   void SetOnBackendDestroyTask(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      const base::Closure& task);
+      base::OnceClosure task);
 
   // Adds the given rows to the database if it doesn't exist. A visit will be
   // added for each given URL at the last visit time in the URLRow if the
@@ -910,10 +910,10 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // A commit has been scheduled to occur sometime in the future. We can check
   // !IsCancelled() to see if there is a commit scheduled in the future (note
-  // that CancelableClosure starts cancelled with the default constructor), and
-  // we can use Cancel() to cancel the scheduled commit. There can be only one
-  // scheduled commit at a time (see ScheduleCommit).
-  base::CancelableClosure scheduled_commit_;
+  // that CancelableOnceClosure starts cancelled with the default constructor),
+  // and we can use Cancel() to cancel the scheduled commit. There can be only
+  // one scheduled commit at a time (see ScheduleCommit).
+  base::CancelableOnceClosure scheduled_commit_;
 
   // Maps recent redirect destination pages to the chain of redirects that
   // brought us to there. Pages that did not have redirects or were not the
@@ -932,7 +932,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // When set, this is the task that should be invoked on destruction.
   scoped_refptr<base::SingleThreadTaskRunner> backend_destroy_task_runner_;
-  base::Closure backend_destroy_task_;
+  base::OnceClosure backend_destroy_task_;
 
   // Tracks page transition types.
   VisitTracker tracker_;

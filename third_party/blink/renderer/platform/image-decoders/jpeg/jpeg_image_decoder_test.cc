@@ -552,4 +552,23 @@ INSTANTIATE_TEST_SUITE_P(JPEGImageDecoderTest,
                          ColorSpaceUMATest,
                          ::testing::ValuesIn(kColorSpaceUMATestParams));
 
+TEST(JPEGImageDecoderTest, PartialDataWithoutSize) {
+  const char* jpeg_file = "/images/resources/lenna.jpg";
+  scoped_refptr<SharedBuffer> full_data = ReadFile(jpeg_file);
+  ASSERT_TRUE(full_data);
+
+  constexpr size_t kDataLengthWithoutSize = 4;
+  ASSERT_LT(kDataLengthWithoutSize, full_data->size());
+  scoped_refptr<SharedBuffer> partial_data =
+      SharedBuffer::Create(full_data->Data(), kDataLengthWithoutSize);
+
+  std::unique_ptr<ImageDecoder> decoder = CreateJPEGDecoder();
+  decoder->SetData(partial_data.get(), false);
+  EXPECT_FALSE(decoder->IsSizeAvailable());
+  EXPECT_FALSE(decoder->Failed());
+  decoder->SetData(full_data.get(), true);
+  EXPECT_TRUE(decoder->IsSizeAvailable());
+  EXPECT_FALSE(decoder->Failed());
+}
+
 }  // namespace blink

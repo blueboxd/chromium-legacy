@@ -55,7 +55,7 @@ class POLICY_EXPORT PolicyServiceImpl
   bool HasProvider(ConfigurationPolicyProvider* provider) const override;
   const PolicyMap& GetPolicies(const PolicyNamespace& ns) const override;
   bool IsInitializationComplete(PolicyDomain domain) const override;
-  void RefreshPolicies(const base::Closure& callback) override;
+  void RefreshPolicies(base::OnceClosure callback) override;
 
   // If this PolicyServiceImpl has been created using
   // |CreateWithThrottledInitialization|, calling UnthrottleInitialization will
@@ -124,7 +124,7 @@ class POLICY_EXPORT PolicyServiceImpl
 
   // List of callbacks to invoke once all providers refresh after a
   // RefreshPolicies() call.
-  std::vector<base::Closure> refresh_callbacks_;
+  std::vector<base::OnceClosure> refresh_callbacks_;
 
   // Observers for propagation of policy updates by
   // ConfigurationPolicyProviders.

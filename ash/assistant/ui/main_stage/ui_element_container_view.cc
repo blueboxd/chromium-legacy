@@ -18,14 +18,10 @@
 #include "ash/assistant/ui/main_stage/assistant_card_element_view.h"
 #include "ash/assistant/ui/main_stage/assistant_text_element_view.h"
 #include "ash/assistant/ui/main_stage/element_animator.h"
-#include "ash/assistant/util/animation_util.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/callback.h"
 #include "base/time/time.h"
 #include "ui/aura/window.h"
-#include "ui/compositor/callback_layer_animation_observer.h"
-#include "ui/compositor/layer_animation_element.h"
-#include "ui/compositor/layer_animator.h"
 #include "ui/views/border.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -33,36 +29,11 @@ namespace ash {
 
 namespace {
 
-using assistant::util::CreateLayerAnimationSequence;
-using assistant::util::CreateOpacityElement;
-using assistant::util::CreateTransformElement;
-using assistant::util::StartLayerAnimationSequence;
-
 // Appearance.
 constexpr int kEmbeddedUiFirstCardMarginTopDip = 8;
 constexpr int kEmbeddedUiPaddingBottomDip = 8;
 constexpr int kMainUiFirstCardMarginTopDip = 40;
 constexpr int kMainUiPaddingBottomDip = 24;
-
-// Main UI element animation.
-constexpr base::TimeDelta kMainUiElementAnimationFadeInDelay =
-    base::TimeDelta::FromMilliseconds(83);
-constexpr base::TimeDelta kMainUiElementAnimationFadeInDuration =
-    base::TimeDelta::FromMilliseconds(250);
-constexpr base::TimeDelta kMainUiElementAnimationFadeOutDuration =
-    base::TimeDelta::FromMilliseconds(167);
-// Text elements must fade out to 0 as the thinking dots will appear in the
-// location of the first text element.
-constexpr float kMainUiTextElementAnimationFadeOutOpacity = 0.f;
-
-// Embedded UI element animation.
-constexpr base::TimeDelta kEmbeddedUiElementAnimationFadeInDuration =
-    base::TimeDelta::FromMilliseconds(250);
-constexpr base::TimeDelta kEmbeddedUiElementAnimationMoveUpDuration =
-    base::TimeDelta::FromMilliseconds(250);
-constexpr base::TimeDelta kEmbeddedUiElementAnimationFadeOutDuration =
-    base::TimeDelta::FromMilliseconds(200);
-constexpr int kEmbeddedUiElementAnimationMoveUpDistanceDip = 32;
 
 // Helpers ---------------------------------------------------------------------
 
@@ -76,159 +47,6 @@ int GetPaddingBottomDip() {
   return app_list_features::IsAssistantLauncherUIEnabled()
              ? kEmbeddedUiPaddingBottomDip
              : kMainUiPaddingBottomDip;
-}
-
-// Animator for elements in the main (non-embedded) UI.
-class MainUiAnimator : public ElementAnimator {
- public:
-  using ElementAnimator::ElementAnimator;
-  ~MainUiAnimator() override = default;
-
-  // ElementAnimator:
-  void AnimateOut(ui::CallbackLayerAnimationObserver* observer) override {
-    StartLayerAnimationSequence(
-        layer()->GetAnimator(),
-        CreateLayerAnimationSequence(CreateOpacityElement(
-            kMinimumAnimateOutOpacity, kMainUiElementAnimationFadeOutDuration,
-            gfx::Tween::Type::FAST_OUT_SLOW_IN)),
-        observer);
-  }
-
-  void AnimateIn(ui::CallbackLayerAnimationObserver* observer) override {
-    // We fade in the views to full opacity after a slight delay.
-    assistant::util::StartLayerAnimationSequence(
-        layer()->GetAnimator(),
-        CreateLayerAnimationSequence(
-            ui::LayerAnimationElement::CreatePauseElement(
-                ui::LayerAnimationElement::AnimatableProperty::OPACITY,
-                kMainUiElementAnimationFadeInDelay),
-            CreateOpacityElement(1.f, kMainUiElementAnimationFadeInDuration)),
-        observer);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MainUiAnimator);
-};
-
-// Animator used for card elements in the main (non-embedded) UI.
-class MainUiCardAnimator : public MainUiAnimator {
- public:
-  // Constructor used for card elements.
-  explicit MainUiCardAnimator(AssistantCardElementView* element)
-      : MainUiAnimator(element), element_(element) {}
-
-  ui::Layer* layer() const override { return element_->native_view()->layer(); }
-
- private:
-  AssistantCardElementView* const element_;
-
-  DISALLOW_COPY_AND_ASSIGN(MainUiCardAnimator);
-};
-
-// Animator used for text elements in the main (non-embedded) UI.
-class MainUiTextAnimator : public MainUiAnimator {
- public:
-  // Constructor used for text elements.
-  explicit MainUiTextAnimator(AssistantTextElementView* element)
-      : MainUiAnimator(element) {}
-
-  void FadeOut(ui::CallbackLayerAnimationObserver* observer) override {
-    assistant::util::StartLayerAnimationSequence(
-        layer()->GetAnimator(),
-        assistant::util::CreateLayerAnimationSequence(
-            assistant::util::CreateOpacityElement(
-                kMainUiTextElementAnimationFadeOutOpacity, kFadeOutDuration)),
-        observer);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MainUiTextAnimator);
-};
-
-// Animator for elements in the embedded UI.
-class EmbeddedUiAnimator : public ElementAnimator {
- public:
-  using ElementAnimator::ElementAnimator;
-  ~EmbeddedUiAnimator() override = default;
-
-  // ElementAnimator:
-  void AnimateOut(ui::CallbackLayerAnimationObserver* observer) override {
-    StartLayerAnimationSequence(
-        layer()->GetAnimator(),
-        CreateLayerAnimationSequence(
-            CreateOpacityElement(kMinimumAnimateOutOpacity,
-                                 kEmbeddedUiElementAnimationFadeOutDuration)),
-        observer);
-  }
-
-  void AnimateIn(ui::CallbackLayerAnimationObserver* observer) override {
-    // As part of the animation we will move up the element from the bottom
-    // so we need to start by moving it down.
-    MoveElementDown();
-
-    assistant::util::StartLayerAnimationSequencesTogether(
-        layer()->GetAnimator(),
-        {
-            CreateFadeInAnimation(),
-            CreateMoveUpAnimation(),
-        },
-        observer);
-  }
-
- private:
-  void MoveElementDown() const {
-    gfx::Transform transform;
-    transform.Translate(0, kEmbeddedUiElementAnimationMoveUpDistanceDip);
-    layer()->SetTransform(transform);
-  }
-
-  ui::LayerAnimationSequence* CreateFadeInAnimation() const {
-    return CreateLayerAnimationSequence(
-        CreateOpacityElement(1.f, kEmbeddedUiElementAnimationFadeInDuration,
-                             gfx::Tween::Type::FAST_OUT_SLOW_IN));
-  }
-
-  ui::LayerAnimationSequence* CreateMoveUpAnimation() const {
-    return CreateLayerAnimationSequence(CreateTransformElement(
-        gfx::Transform(), kEmbeddedUiElementAnimationMoveUpDuration,
-        gfx::Tween::Type::FAST_OUT_SLOW_IN));
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(EmbeddedUiAnimator);
-};
-
-// Animator for card elements in the embedded UI.
-class EmbeddedUiCardAnimator : public EmbeddedUiAnimator {
- public:
-  // Constructor used for card elements.
-  explicit EmbeddedUiCardAnimator(AssistantCardElementView* element)
-      : EmbeddedUiAnimator(element), element_(element) {}
-
-  ui::Layer* layer() const override { return element_->native_view()->layer(); }
-
- private:
-  AssistantCardElementView* const element_;
-
-  DISALLOW_COPY_AND_ASSIGN(EmbeddedUiCardAnimator);
-};
-
-// Animator for text elements in the embedded UI.
-using EmbeddedUiTextAnimator = EmbeddedUiAnimator;
-
-std::unique_ptr<ElementAnimator> CreateCardAnimator(
-    AssistantCardElementView* card_element) {
-  if (app_list_features::IsAssistantLauncherUIEnabled())
-    return std::make_unique<EmbeddedUiCardAnimator>(card_element);
-  else
-    return std::make_unique<MainUiCardAnimator>(card_element);
-}
-
-std::unique_ptr<ElementAnimator> CreateTextAnimator(
-    AssistantTextElementView* text_element) {
-  if (app_list_features::IsAssistantLauncherUIEnabled())
-    return std::make_unique<EmbeddedUiTextAnimator>(text_element);
-  else
-    return std::make_unique<MainUiTextAnimator>(text_element);
 }
 
 }  // namespace
@@ -335,7 +153,7 @@ void UiElementContainerView::OnCardElementAdded(
   card_element_view->native_view()->layer()->SetOpacity(0.f);
 
   // We set the animator to handle all animations for this view.
-  AddElementAnimator(CreateCardAnimator(card_element_view));
+  AddElementAnimator(card_element_view->CreateAnimator());
 }
 
 void UiElementContainerView::OnTextElementAdded(
@@ -351,7 +169,7 @@ void UiElementContainerView::OnTextElementAdded(
   content_view()->AddChildView(text_element_view);
 
   // We set the animator to handle all animations for this view.
-  AddElementAnimator(CreateTextAnimator(text_element_view));
+  AddElementAnimator(text_element_view->CreateAnimator());
 }
 
 void UiElementContainerView::OnAllViewsRemoved() {

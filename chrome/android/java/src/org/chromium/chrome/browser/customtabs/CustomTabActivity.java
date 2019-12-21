@@ -18,7 +18,6 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Browser;
-import android.util.Pair;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -38,7 +37,6 @@ import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantFacade;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
-import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabFactory;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler.IntentIgnoringCriterion;
@@ -58,9 +56,6 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
-import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
-import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.usage_stats.UsageStatsService;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -74,7 +69,6 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
     private CustomTabIntentDataProvider mIntentDataProvider;
     private CustomTabsSessionToken mSession;
     private CustomTabActivityTabController mTabController;
-    private CustomTabActivityTabFactory mTabFactory;
     private CustomTabIntentHandler mCustomTabIntentHandler;
 
     private final CustomTabsConnection mConnection = CustomTabsConnection.getInstance();
@@ -190,16 +184,6 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
     }
 
     @Override
-    protected TabModelSelector createTabModelSelector() {
-        return mTabFactory.createTabModelSelector();
-    }
-
-    @Override
-    protected Pair<ChromeTabCreator, ChromeTabCreator> createTabCreators() {
-        return mTabFactory.createTabCreators();
-    }
-
-    @Override
     protected NightModeStateProvider createNightModeStateProvider() {
         // This is called before Dagger component is created, so using getInstance() directly.
         mNightModeStateController = new CustomTabNightModeStateController(getLifecycleDispatcher(),
@@ -266,26 +250,9 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
     }
 
     @Override
-    public void initializeCompositor() {
-        super.initializeCompositor();
-        getTabModelSelector().onNativeLibraryReady(getTabContentManager());
-    }
-
-    @Override
     public void createContextualSearchTab(String searchUrl) {
         if (getActivityTab() == null) return;
         getActivityTab().loadUrl(new LoadUrlParams(searchUrl));
-    }
-
-    @Override
-    public TabModelSelectorImpl getTabModelSelector() {
-        return (TabModelSelectorImpl) super.getTabModelSelector();
-    }
-
-    @Override
-    @Nullable
-    public Tab getActivityTab() {
-        return mTabProvider.getTab();
     }
 
     @Override
@@ -473,7 +440,6 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
         onComponentCreated(component);
 
         mTabController = component.resolveTabController();
-        mTabFactory = component.resolveTabFactory();
         component.resolveUmaTracker();
         CustomTabActivityClientConnectionKeeper connectionKeeper =
                 component.resolveConnectionKeeper();

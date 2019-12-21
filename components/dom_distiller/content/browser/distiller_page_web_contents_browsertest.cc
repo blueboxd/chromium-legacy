@@ -51,29 +51,29 @@ namespace {
 class WebContentsMainFrameHelper : public content::WebContentsObserver {
  public:
   WebContentsMainFrameHelper(content::WebContents* web_contents,
-                             const base::Closure& callback,
+                             base::OnceClosure callback,
                              bool wait_for_document_loaded)
       : WebContentsObserver(web_contents),
-        callback_(callback),
+        callback_(std::move(callback)),
         wait_for_document_loaded_(wait_for_document_loaded) {}
 
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override {
-    if (wait_for_document_loaded_)
+    if (wait_for_document_loaded_ || !callback_)
       return;
     if (navigation_handle->HasCommitted() && navigation_handle->IsInMainFrame())
-      callback_.Run();
+      std::move(callback_).Run();
   }
 
   void DOMContentLoaded(content::RenderFrameHost* render_frame_host) override {
-    if (wait_for_document_loaded_) {
+    if (wait_for_document_loaded_ && callback_) {
       if (!render_frame_host->GetParent())
-        callback_.Run();
+        std::move(callback_).Run();
     }
   }
 
  private:
-  base::Closure callback_;
+  base::OnceClosure callback_;
   bool wait_for_document_loaded_;
 };
 
@@ -92,9 +92,9 @@ void ExecuteJsScript(content::WebContents* web_contents,
   web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
       base::UTF8ToUTF16(script),
       base::BindOnce(
-          [](base::Closure callback, base::Value* out, base::Value result) {
+          [](base::OnceClosure callback, base::Value* out, base::Value result) {
             (*out) = std::move(result);
-            callback.Run();
+            std::move(callback).Run();
           },
           run_loop.QuitClosure(), &result));
   run_loop.Run();
@@ -114,20 +114,21 @@ class DistillerPageWebContentsTest : public ContentBrowserTest {
     ContentBrowserTest::SetUpOnMainThread();
   }
 
-  void DistillPage(const base::Closure& quit_closure, const std::string& url) {
+  void DistillPage(base::OnceClosure quit_closure, const std::string& url) {
     distiller_page_->DistillPage(
         embedded_test_server()->GetURL(url),
         dom_distiller::proto::DomDistillerOptions(),
-        base::Bind(&DistillerPageWebContentsTest::OnPageDistillationFinished,
-                   base::Unretained(this), quit_closure));
+        base::BindOnce(
+            &DistillerPageWebContentsTest::OnPageDistillationFinished,
+            base::Unretained(this), std::move(quit_closure)));
   }
 
   void OnPageDistillationFinished(
-      base::Closure quit_closure,
+      base::OnceClosure quit_closure,
       std::unique_ptr<proto::DomDistillerResult> distiller_result,
       bool distillation_successful) {
     distiller_result_ = std::move(distiller_result);
-    quit_closure.Run();
+    std::move(quit_closure).Run();
   }
 
  private:

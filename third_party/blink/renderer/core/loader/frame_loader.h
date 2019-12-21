@@ -238,6 +238,8 @@ class CORE_EXPORT FrameLoader final {
 
   bool IsClientNavigationInitialHistoryLoad();
 
+  static bool NeedsHistoryItemRestore(WebFrameLoadType type);
+
  private:
   bool AllowRequestForThisFrame(const FrameLoadRequest&);
   WebFrameLoadType DetermineFrameLoadType(const KURL& url,

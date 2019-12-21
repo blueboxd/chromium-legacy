@@ -29,6 +29,7 @@
 <translation id="7792771145871471484">Prezrieť návrhy.</translation>
 <translation id="7885132941432959125">Presunúť kartu doprava</translation>
 <translation id="7966321538264951561">Zavrieť návrhy.</translation>
+<translation id="8205266828577616993">Presunúť kartu nahor</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Zavrieť <ph name="TABS_COUNT_ONE" /> vybranú kartu}few{Zavrieť <ph name="TABS_COUNT_MANY" /> vybrané karty}many{Close <ph name="TABS_COUNT_MANY" /> selected tabs}other{Zavrieť <ph name="TABS_COUNT_MANY" /> vybraných kariet}}</translation>
 <translation id="9150694013019234766">Prepínajte karty v skupine kariet v dolnej časti obrazovky</translation>
 <translation id="9169594135889675189">Pridať novú kartu do skupiny</translation>

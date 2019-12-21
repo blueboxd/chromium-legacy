@@ -1,0 +1,149 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "gpu/command_buffer/service/test_shared_image_backing.h"
+#include "components/viz/common/resources/resource_format_utils.h"
+#include "gpu/command_buffer/service/shared_context_state.h"
+#include "third_party/skia/include/core/SkPromiseImageTexture.h"
+#include "third_party/skia/include/gpu/GrBackendSurface.h"
+#include "third_party/skia/include/gpu/mock/GrMockTypes.h"
+
+namespace gpu {
+namespace {
+class TestSharedImageRepresentationGLTexture
+    : public SharedImageRepresentationGLTexture {
+ public:
+  TestSharedImageRepresentationGLTexture(SharedImageManager* manager,
+                                         SharedImageBacking* backing,
+                                         MemoryTypeTracker* tracker,
+                                         gles2::Texture* texture)
+      : SharedImageRepresentationGLTexture(manager, backing, tracker),
+        texture_(texture) {}
+
+  gles2::Texture* GetTexture() override { return texture_; }
+  bool BeginAccess(GLenum mode) override {
+    return static_cast<TestSharedImageBacking*>(backing())->can_access();
+  }
+
+ private:
+  gles2::Texture* const texture_;
+};
+
+class TestSharedImageRepresentationGLTexturePassthrough
+    : public SharedImageRepresentationGLTexturePassthrough {
+ public:
+  TestSharedImageRepresentationGLTexturePassthrough(
+      SharedImageManager* manager,
+      SharedImageBacking* backing,
+      MemoryTypeTracker* tracker,
+      scoped_refptr<gles2::TexturePassthrough> texture)
+      : SharedImageRepresentationGLTexturePassthrough(manager,
+                                                      backing,
+                                                      tracker),
+        texture_(std::move(texture)) {}
+
+  const scoped_refptr<gles2::TexturePassthrough>& GetTexturePassthrough()
+      override {
+    return texture_;
+  }
+  bool BeginAccess(GLenum mode) override {
+    return static_cast<TestSharedImageBacking*>(backing())->can_access();
+  }
+
+ private:
+  const scoped_refptr<gles2::TexturePassthrough> texture_;
+};
+
+}  // namespace
+
+TestSharedImageBacking::TestSharedImageBacking(
+    const Mailbox& mailbox,
+    viz::ResourceFormat format,
+    const gfx::Size& size,
+    const gfx::ColorSpace& color_space,
+    uint32_t usage,
+    size_t estimated_size,
+    GLuint texture_id)
+    : SharedImageBacking(mailbox,
+                         format,
+                         size,
+                         color_space,
+                         usage,
+                         estimated_size,
+                         false /* is_thread_safe */),
+      service_id_(texture_id) {
+  texture_ = new gles2::Texture(service_id_);
+  texture_->SetLightweightRef();
+  texture_->SetTarget(GL_TEXTURE_2D, 1);
+  texture_->sampler_state_.min_filter = GL_LINEAR;
+  texture_->sampler_state_.mag_filter = GL_LINEAR;
+  texture_->sampler_state_.wrap_s = GL_CLAMP_TO_EDGE;
+  texture_->sampler_state_.wrap_t = GL_CLAMP_TO_EDGE;
+  texture_->SetLevelInfo(GL_TEXTURE_2D, 0, GLInternalFormat(format),
+                         size.width(), size.height(), 1, 0,
+                         GLDataFormat(format), GLDataType(format), gfx::Rect());
+  texture_->SetImmutable(true, true);
+  texture_passthrough_ = base::MakeRefCounted<gles2::TexturePassthrough>(
+      service_id_, GL_TEXTURE_2D);
+}
+
+TestSharedImageBacking::TestSharedImageBacking(
+    const Mailbox& mailbox,
+    viz::ResourceFormat format,
+    const gfx::Size& size,
+    const gfx::ColorSpace& color_space,
+    uint32_t usage,
+    size_t estimated_size)
+    : TestSharedImageBacking(mailbox,
+                             format,
+                             size,
+                             color_space,
+                             usage,
+                             estimated_size,
+                             203 /* texture_id */) {
+  // Using a dummy |texture_id|, so lose our context so we don't do anything
+  // real with it.
+  OnContextLost();
+}
+
+TestSharedImageBacking::~TestSharedImageBacking() {
+  // Pretend our context is lost to avoid actual cleanup in |texture_| or
+  // |passthrough_texture_|.
+  texture_->RemoveLightweightRef(false /* have_context */);
+  texture_passthrough_->MarkContextLost();
+  texture_passthrough_.reset();
+
+  if (have_context())
+    glDeleteTextures(1, &service_id_);
+}
+
+gfx::Rect TestSharedImageBacking::ClearedRect() const {
+  return texture_->GetLevelClearedRect(texture_->target(), 0);
+}
+
+void TestSharedImageBacking::SetClearedRect(const gfx::Rect& cleared_rect) {
+  texture_->SetLevelClearedRect(texture_->target(), 0, cleared_rect);
+}
+
+bool TestSharedImageBacking::ProduceLegacyMailbox(
+    MailboxManager* mailbox_manager) {
+  return false;
+}
+
+std::unique_ptr<SharedImageRepresentationGLTexture>
+TestSharedImageBacking::ProduceGLTexture(SharedImageManager* manager,
+                                         MemoryTypeTracker* tracker) {
+  return std::make_unique<TestSharedImageRepresentationGLTexture>(
+      manager, this, tracker, texture_);
+}
+
+std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
+TestSharedImageBacking::ProduceGLTexturePassthrough(
+    SharedImageManager* manager,
+    MemoryTypeTracker* tracker) {
+  return std::make_unique<TestSharedImageRepresentationGLTexturePassthrough>(
+      manager, this, tracker, texture_passthrough_);
+}
+
+}  // namespace gpu

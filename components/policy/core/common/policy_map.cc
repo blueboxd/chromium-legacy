@@ -238,12 +238,12 @@ void PolicyMap::Erase(const std::string& policy) {
 }
 
 void PolicyMap::EraseMatching(
-    const base::Callback<bool(const const_iterator)>& filter) {
+    const base::RepeatingCallback<bool(const const_iterator)>& filter) {
   FilterErase(filter, true);
 }
 
 void PolicyMap::EraseNonmatching(
-    const base::Callback<bool(const const_iterator)>& filter) {
+    const base::RepeatingCallback<bool(const const_iterator)>& filter) {
   FilterErase(filter, false);
 }
 
@@ -374,7 +374,7 @@ bool PolicyMap::MapEntryEquals(const PolicyMap::PolicyMapType::value_type& a,
 }
 
 void PolicyMap::FilterErase(
-    const base::Callback<bool(const const_iterator)>& filter,
+    const base::RepeatingCallback<bool(const const_iterator)>& filter,
     bool deletion_value) {
   auto iter(map_.begin());
   while (iter != map_.end()) {

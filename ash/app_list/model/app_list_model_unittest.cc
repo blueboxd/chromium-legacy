@@ -83,7 +83,7 @@ class AppListModelTest : public testing::Test {
  protected:
   static bool ItemObservedByFolder(const AppListFolderItem* folder,
                                    const AppListItem* item,
-                                   ash::AppListConfigType config) {
+                                   AppListConfigType config) {
     return item->observers_.HasObserver(
         folder->GetFolderImageForTesting(config));
   }
@@ -110,14 +110,14 @@ class AppListModelTest : public testing::Test {
 };
 
 TEST_F(AppListModelTest, SetStatus) {
-  EXPECT_EQ(ash::AppListModelStatus::kStatusNormal, model_.status());
-  model_.SetStatus(ash::AppListModelStatus::kStatusSyncing);
+  EXPECT_EQ(AppListModelStatus::kStatusNormal, model_.status());
+  model_.SetStatus(AppListModelStatus::kStatusSyncing);
   EXPECT_EQ(1, observer_.status_changed_count());
-  EXPECT_EQ(ash::AppListModelStatus::kStatusSyncing, model_.status());
-  model_.SetStatus(ash::AppListModelStatus::kStatusNormal);
+  EXPECT_EQ(AppListModelStatus::kStatusSyncing, model_.status());
+  model_.SetStatus(AppListModelStatus::kStatusNormal);
   EXPECT_EQ(2, observer_.status_changed_count());
   // Set the same status, no change is expected.
-  model_.SetStatus(ash::AppListModelStatus::kStatusNormal);
+  model_.SetStatus(AppListModelStatus::kStatusNormal);
   EXPECT_EQ(2, observer_.status_changed_count());
 }
 
@@ -243,14 +243,14 @@ TEST_F(AppListModelFolderTest, FolderItem) {
   ASSERT_EQ(num_folder_apps, folder->item_list()->item_count());
   // Check that items 0 and 3 are observed.
   EXPECT_TRUE(ItemObservedByFolder(folder, folder->item_list()->item_at(0),
-                                   ash::AppListConfigType::kShared));
+                                   AppListConfigType::kShared));
   EXPECT_TRUE(ItemObservedByFolder(
       folder, folder->item_list()->item_at(num_observed_apps - 1),
-      ash::AppListConfigType::kShared));
+      AppListConfigType::kShared));
   // Check that item 4 is not observed.
   EXPECT_FALSE(ItemObservedByFolder(
       folder, folder->item_list()->item_at(num_observed_apps),
-      ash::AppListConfigType::kShared));
+      AppListConfigType::kShared));
   folder->item_list()->MoveItem(num_observed_apps, 0);
   // Confirm that everything was moved where expected.
   EXPECT_EQ(model_.GetItemName(num_observed_apps),
@@ -260,14 +260,14 @@ TEST_F(AppListModelFolderTest, FolderItem) {
             folder->item_list()->item_at(num_observed_apps)->id());
   // Check that items 0 and 3 are observed.
   EXPECT_TRUE(ItemObservedByFolder(folder, folder->item_list()->item_at(0),
-                                   ash::AppListConfigType::kShared));
+                                   AppListConfigType::kShared));
   EXPECT_TRUE(ItemObservedByFolder(
       folder, folder->item_list()->item_at(num_observed_apps - 1),
-      ash::AppListConfigType::kShared));
+      AppListConfigType::kShared));
   // Check that item 4 is not observed.
   EXPECT_FALSE(ItemObservedByFolder(
       folder, folder->item_list()->item_at(num_observed_apps),
-      ash::AppListConfigType::kShared));
+      AppListConfigType::kShared));
 }
 
 TEST_F(AppListModelFolderTest, NonSharedConfigIconGeneration) {
@@ -280,8 +280,8 @@ TEST_F(AppListModelFolderTest, NonSharedConfigIconGeneration) {
 
   // Start with kLarge config available.
   const AppListConfig* large_config =
-      AppListConfigProvider::Get().GetConfigForType(
-          ash::AppListConfigType::kLarge, true);
+      AppListConfigProvider::Get().GetConfigForType(AppListConfigType::kLarge,
+                                                    true);
   ASSERT_TRUE(large_config);
 
   AppListFolderItem* folder = new AppListFolderItem("folder1");
@@ -295,7 +295,7 @@ TEST_F(AppListModelFolderTest, NonSharedConfigIconGeneration) {
 
   // Verify that the folder has folder image for large config.
   FolderImage* large_config_image =
-      folder->GetFolderImageForTesting(ash::AppListConfigType::kLarge);
+      folder->GetFolderImageForTesting(AppListConfigType::kLarge);
   ASSERT_TRUE(large_config_image);
   EXPECT_EQ(large_config->folder_unclipped_icon_size(),
             large_config_image->icon().size());
@@ -303,22 +303,21 @@ TEST_F(AppListModelFolderTest, NonSharedConfigIconGeneration) {
   // Verify that the folder is observing the app list item.
   EXPECT_TRUE(ItemObservedByFolder(
       folder, folder->item_list()->item_at(num_observed_apps - 1),
-      ash::AppListConfigType::kLarge));
+      AppListConfigType::kLarge));
   EXPECT_FALSE(ItemObservedByFolder(
       folder, folder->item_list()->item_at(num_observed_apps),
-      ash::AppListConfigType::kLarge));
+      AppListConfigType::kLarge));
 
   // Not medium folder image, as the config does not exist yet.
-  EXPECT_FALSE(
-      folder->GetFolderImageForTesting(ash::AppListConfigType::kMedium));
+  EXPECT_FALSE(folder->GetFolderImageForTesting(AppListConfigType::kMedium));
 
   // Create medium config, and verify the folder image for medium config gets
   // created.
   const AppListConfig* medium_config =
-      AppListConfigProvider::Get().GetConfigForType(
-          ash::AppListConfigType::kMedium, true);
+      AppListConfigProvider::Get().GetConfigForType(AppListConfigType::kMedium,
+                                                    true);
   FolderImage* medium_config_image =
-      folder->GetFolderImageForTesting(ash::AppListConfigType::kMedium);
+      folder->GetFolderImageForTesting(AppListConfigType::kMedium);
   ASSERT_TRUE(medium_config_image);
   EXPECT_EQ(medium_config->folder_unclipped_icon_size(),
             medium_config_image->icon().size());
@@ -326,13 +325,12 @@ TEST_F(AppListModelFolderTest, NonSharedConfigIconGeneration) {
   // Verify that the folder is observing the app list item.
   EXPECT_TRUE(ItemObservedByFolder(
       folder, folder->item_list()->item_at(num_observed_apps - 1),
-      ash::AppListConfigType::kMedium));
+      AppListConfigType::kMedium));
   EXPECT_FALSE(ItemObservedByFolder(
       folder, folder->item_list()->item_at(num_observed_apps),
-      ash::AppListConfigType::kMedium));
+      AppListConfigType::kMedium));
 
-  EXPECT_FALSE(
-      folder->GetFolderImageForTesting(ash::AppListConfigType::kSmall));
+  EXPECT_FALSE(folder->GetFolderImageForTesting(AppListConfigType::kSmall));
 
   AppListConfigProvider::Get().ResetForTesting();
 }
@@ -576,7 +574,7 @@ TEST_F(AppListModelFolderTest, FindItemInFolder) {
 }
 
 TEST_F(AppListModelFolderTest, OemFolder) {
-  AppListFolderItem* folder = new AppListFolderItem(ash::kOemFolderId);
+  AppListFolderItem* folder = new AppListFolderItem(kOemFolderId);
   model_.AddItem(folder);
   std::string folder_id = folder->id();
 
@@ -610,12 +608,12 @@ TEST_F(AppListModelFolderTest, DisableFolders) {
   AppListFolderItem* folder_item = model_.FindFolderItem(folder_id);
   ASSERT_TRUE(folder_item);
   EXPECT_EQ(2u, folder_item->item_list()->item_count());
-  AppListFolderItem* oem_folder = new AppListFolderItem(ash::kOemFolderId);
+  AppListFolderItem* oem_folder = new AppListFolderItem(kOemFolderId);
   model_.AddItem(oem_folder);
   AppListItem* oem_item = new AppListItem("OEM Item");
   std::string oem_folder_id = oem_folder->id();
   model_.AddItemToFolder(oem_item, oem_folder_id);
-  EXPECT_EQ(std::string("folder1,") + ash::kOemFolderId, GetModelContents());
+  EXPECT_EQ(std::string("folder1,") + kOemFolderId, GetModelContents());
 }
 
 }  // namespace ash

@@ -10,6 +10,7 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/arc_notifications_host_initializer.h"
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 class PrefRegistrySimple;
 
@@ -36,7 +37,8 @@ class ASH_EXPORT MessageCenterController
 
   // ArcNotificationsHostInitializer:
   void SetArcNotificationsInstance(
-      arc::mojom::NotificationsInstancePtr arc_notification_instance) override;
+      mojo::PendingRemote<arc::mojom::NotificationsInstance>
+          arc_notification_instance) override;
 
   InactiveUserNotificationBlocker*
   inactive_user_notification_blocker_for_testing() {

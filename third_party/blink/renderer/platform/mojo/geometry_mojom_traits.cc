@@ -41,15 +41,6 @@ bool StructTraits<gfx::mojom::PointDataView, ::blink::WebPoint>::Read(
   return true;
 }
 
-// static
-bool StructTraits<gfx::mojom::PointFDataView, ::blink::WebFloatPoint>::Read(
-    gfx::mojom::PointFDataView data,
-    ::blink::WebFloatPoint* out) {
-  out->x = data.x();
-  out->y = data.y();
-  return true;
-}
-
 bool StructTraits<gfx::mojom::Point3FDataView, ::blink::FloatPoint3D>::Read(
     gfx::mojom::Point3FDataView data,
     ::blink::FloatPoint3D* out) {

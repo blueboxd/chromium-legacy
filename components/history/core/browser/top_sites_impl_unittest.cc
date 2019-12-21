@@ -63,8 +63,8 @@ class TopSitesQuerier {
     int start_number_of_callbacks = number_of_callbacks_;
     base::RunLoop run_loop;
     top_sites->GetMostVisitedURLs(
-        base::Bind(&TopSitesQuerier::OnTopSitesAvailable,
-                   weak_ptr_factory_.GetWeakPtr(), &run_loop));
+        base::BindOnce(&TopSitesQuerier::OnTopSitesAvailable,
+                       weak_ptr_factory_.GetWeakPtr(), &run_loop));
     if (wait && start_number_of_callbacks == number_of_callbacks_) {
       waiting_ = true;
       run_loop.Run();
@@ -214,8 +214,8 @@ class TopSitesImplTest : public HistoryUnitTestBase {
     prepopulated_pages.push_back(
         PrepopulatedPage(GURL(kPrepopulatedPageURL), base::string16(), -1, 0));
     top_sites_impl_ = new TopSitesImpl(
-        pref_service_.get(), history_service_.get(),
-        prepopulated_pages, base::Bind(MockCanAddURLToHistory));
+        pref_service_.get(), history_service_.get(), prepopulated_pages,
+        base::BindRepeating(MockCanAddURLToHistory));
     top_sites_impl_->Init(scoped_temp_dir_.GetPath().Append(kTopSitesFilename));
   }
 

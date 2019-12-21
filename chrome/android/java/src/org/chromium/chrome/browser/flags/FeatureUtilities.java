@@ -127,6 +127,7 @@ public class FeatureUtilities {
         cacheReachedCodeProfilerTrialGroup();
         cacheStartSurfaceEnabled();
         cacheNativeTabSwitcherUiFlags();
+        cacheHomepageLocationPolicyEnabled();
 
         // Propagate REACHED_CODE_PROFILER feature value to LibraryLoader. This can't be done in
         // LibraryLoader itself because it lives in //base and can't depend on ChromeFeatureList.
@@ -668,6 +669,34 @@ public class FeatureUtilities {
         }
 
         return sReachedCodeProfilerTrialGroup;
+    }
+
+    /**
+     * Caches the feature flag for whether we enable the homepage location policy.
+     */
+    private static void cacheHomepageLocationPolicyEnabled() {
+        cacheFlag(ChromePreferenceKeys.FLAGS_CACHED.createKey(
+                          ChromeFeatureList.HOMEPAGE_LOCATION_POLICY),
+                ChromeFeatureList.HOMEPAGE_LOCATION_POLICY);
+    }
+
+    /**
+     * @return True if homepage location policy is supported to be enabled.
+     */
+    public static boolean isHomepageLocationPolicyEnabled() {
+        return isFlagEnabled(ChromePreferenceKeys.FLAGS_CACHED.createKey(
+                                     ChromeFeatureList.HOMEPAGE_LOCATION_POLICY),
+                false);
+    }
+
+    /**
+     * Expose an interface to set the homepage policy feature flag to be enabled during tests.
+     */
+    @VisibleForTesting
+    public static void setHomepageLocationPolicyEnabledForTesting(@Nullable Boolean isEnabled) {
+        sFlags.put(ChromePreferenceKeys.FLAGS_CACHED.createKey(
+                           ChromeFeatureList.HOMEPAGE_LOCATION_POLICY),
+                isEnabled);
     }
 
     private static void cacheFlag(String preferenceName, String featureName) {

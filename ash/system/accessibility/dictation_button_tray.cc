@@ -23,8 +23,6 @@ namespace ash {
 
 DictationButtonTray::DictationButtonTray(Shelf* shelf)
     : TrayBackgroundView(shelf), icon_(new views::ImageView()) {
-  UpdateVisibility();
-
   off_image_ = gfx::CreateVectorIcon(kDictationOffNewuiIcon,
                                      ShelfConfig::Get()->shelf_icon_color());
   on_image_ = gfx::CreateVectorIcon(kDictationOnNewuiIcon,
@@ -52,6 +50,11 @@ bool DictationButtonTray::PerformAction(const ui::Event& event) {
 
   CheckDictationStatusAndUpdateIcon();
   return true;
+}
+
+void DictationButtonTray::Initialize() {
+  TrayBackgroundView::Initialize();
+  UpdateVisibility();
 }
 
 void DictationButtonTray::ClickedOutsideBubble() {}

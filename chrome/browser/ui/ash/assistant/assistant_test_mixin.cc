@@ -6,8 +6,7 @@
 
 #include "ash/assistant/model/ui/assistant_card_element.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
-#include "ash/assistant/ui/main_stage/assistant_card_element_view.h"
-#include "ash/assistant/ui/main_stage/assistant_text_element_view.h"
+#include "ash/assistant/ui/main_stage/assistant_ui_element_view.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
@@ -211,8 +210,8 @@ class TextResponseWaiter : public ResponseWaiter {
   base::Optional<std::string> GetResponseTextOfView(
       views::View* view) const override {
     if (Equals(view->GetClassName(), "AssistantTextElementView")) {
-      auto* text_view = static_cast<ash::AssistantTextElementView*>(view);
-      return base::UTF16ToUTF8(text_view->GetText());
+      auto* text_view = static_cast<ash::AssistantUiElementView*>(view);
+      return text_view->ToStringForTesting();
     }
 
     return base::nullopt;
@@ -226,8 +225,8 @@ class CardResponseWaiter : public ResponseWaiter {
   base::Optional<std::string> GetResponseTextOfView(
       views::View* view) const override {
     if (Equals(view->GetClassName(), "AssistantCardElementView")) {
-      auto* card_view = static_cast<ash::AssistantCardElementView*>(view);
-      return card_view->GetCardElementForTesting()->html();
+      auto* card_view = static_cast<ash::AssistantUiElementView*>(view);
+      return card_view->ToStringForTesting();
     }
 
     return base::nullopt;

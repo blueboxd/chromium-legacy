@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.ActivityTabProvider.ActivityTabTabObserver;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.ThemeColorProvider.TintObserver;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.homepage.HomepagePolicyManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.tab.Tab;
@@ -49,11 +50,8 @@ public class HomeButton extends ChromeImageButton
 
         final int homeButtonIcon = R.drawable.btn_toolbar_home;
         setImageDrawable(ContextCompat.getDrawable(context, homeButtonIcon));
-        if (!FeatureUtilities.isBottomToolbarEnabled()) {
-            setOnCreateContextMenuListener(this);
-        }
-
         HomepageManager.getInstance().addListener(this);
+        updateContextMenuListener();
     }
 
     public void destroy() {
@@ -88,6 +86,7 @@ public class HomeButton extends ChromeImageButton
     @Override
     public boolean onMenuItemClick(MenuItem item) {
         assert item.getItemId() == ID_REMOVE;
+        assert !isManagedByPolicy();
         HomepageManager.getInstance().setPrefHomepageEnabled(false);
         return true;
     }
@@ -137,6 +136,7 @@ public class HomeButton extends ChromeImageButton
             isEnabled = !isTabNTP(tab);
         }
         setEnabled(isEnabled);
+        updateContextMenuListener();
     }
 
     /**
@@ -155,5 +155,18 @@ public class HomeButton extends ChromeImageButton
         if (mActivityTabProvider == null) return null;
 
         return mActivityTabProvider.get();
+    }
+
+    private boolean isManagedByPolicy() {
+        return HomepagePolicyManager.isHomepageManagedByPolicy();
+    }
+
+    private void updateContextMenuListener() {
+        if (!FeatureUtilities.isBottomToolbarEnabled() && !isManagedByPolicy()) {
+            setOnCreateContextMenuListener(this);
+        } else {
+            setOnCreateContextMenuListener(null);
+            setLongClickable(false);
+        }
     }
 }

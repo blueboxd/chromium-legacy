@@ -195,130 +195,7 @@ CHAR-LIMIT guidelines:
   </translations>
   <release allow_pseudo="false" seq="1">
     <messages fallback_to_english="true">
-      <!-- Generic strings -->
-      <message name="IDS_DELETED" desc='Text that announces to the user that something was deleted.'>
-        Deleted
-      </message>
-      <message name="IDS_OK" desc="Label for a confirm button. Used in multiple contexts. [CHAR-LIMIT=20]">
-        OK
-      </message>
-      <message name="IDS_OK_GOT_IT" desc="Label of a button by which the user confirms that they read and understood the information or instructions. Used in multiple contexts. [CHAR-LIMIT=20]">
-        OK, got it
-      </message>
-      <message name="IDS_CANCEL" desc="Label for a cancel button. Used in multiple contexts. [CHAR-LIMIT=20]">
-        Cancel
-      </message>
-      <message name="IDS_NOT_NOW" desc="Label for a not now button. Used in multiple contexts. [CHAR-LIMIT=20]">
-        Not now
-      </message>
-      <message name="IDS_SAVE" desc="Label for a button to save a change. Used in multiple contexts. [CHAR-LIMIT=20]">
-        Save
-      </message>
-      <message name="IDS_DETAILS_LINK" desc="In 1) Settings > Clean up computer (desktop), a link to open details of incompatible applications. In 2) Settings > Lite mode (mobile), static title for data usage breakdown." meaning="Short for 'view details'. Link; static title.">
-        Details
-      </message>
-      <message name="IDS_DONE" desc="Label for a button to save a change or finish editing data. Used in multiple contexts. [CHAR-LIMIT=20]">
-        Done
-      </message>
-      <message name="IDS_DELETE" desc="Label for a delete button. Used in multiple contexts. [CHAR-LIMIT=20]">
-        Delete
-      </message>
-      <message name="IDS_REMOVE" desc="Label for a button to remove an item (e.g. a bookmark) from a list. [CHAR-LIMIT=20]">
-        Remove
-      </message>
-      <message name="IDS_RESET" desc="Label for a button to reset information you are editing to a default.">
-        Reset
-      </message>
-      <message name="IDS_TITLE" desc="Text indicating the title of a button or a textfield. Ued in multiple contexts. [CHAR-LIMIT=32]">
-        Title
-      </message>
-      <message name="IDS_TEXT_ON" desc="Text indicating that an option is turned on. [CHAR-LIMIT=20]">
-        On
-      </message>
-      <message name="IDS_TEXT_OFF" desc="Text indicating that an option is turned off. [CHAR-LIMIT=20]">
-        Off
-      </message>
-      <message name="IDS_LEARN_MORE" desc="Generic label for menu item to learn more about a feature. [CHAR-LIMIT=32]">
-        Learn more
-      </message>
-      <message name="IDS_MORE" desc="Generic label for a button to show more items or options. [CHAR-LIMIT=20]">
-        More
-      </message>
-      <message name="IDS_CLOSE" desc="Content description for a button to close a dialog or popup" >
-        Close
-      </message>
-      <message name="IDS_NO_THANKS" desc="Generic label to say no thanks for a feature. [CHAR-LIMIT=32]">
-        No thanks
-      </message>
-      <message name="IDS_NEXT" desc="Generic label for a button to advance to the next item. [CHAR-LIMIT=20]">
-        Next
-      </message>
-      <message name="IDS_CONTINUE_BUTTON" desc="Generic label for a button to continue to the next screen. Used in multiple contexts. [CHAR-LIMIT=20]">
-        Continue
-      </message>
-      <message name="IDS_SUBMIT" desc="Generic label for a button to submit data. Used in multiple contexts. [CHAR-LIMIT=20]">
-        Submit
-      </message>
-      <message name="IDS_UNDO" desc="Generic label for a button to undo the previous action.">
-        Undo
-      </message>
-      <message name="IDS_HELP" desc="Generic label for a button that displays help for the current screen.">
-        Help
-      </message>
-      <message name="IDS_TODAY" desc="Generic Label saying the date is today.">
-        Today
-      </message>
-      <message name="IDS_YESTERDAY" desc="Generic Label saying the date is yesterday.">
-        Yesterday
-      </message>
-      <message name="IDS_SELECT" desc="Prompt for user to select something. [CHAR-LIMIT=20]">
-        Select
-      </message>
-      <message name="IDS_ADD" desc="Prompt for the user to add something, like a new address. [CHAR-LIMIT=20]">
-        Add
-      </message>
-      <message name="IDS_SHARE" desc="Content description for a button to share item(s). [CHAR-LIMIT=20]">
-        Share
-      </message>
-      <message name="IDS_SEARCH" desc="The label for a search button.">
-        Search
-      </message>
-      <message name="IDS_SHOW_INFO" desc="The label for a info button to show info.">
-        Show Info
-      </message>
-      <message name="IDS_HIDE_INFO" desc="The label for a info button to hide info.">
-        Hide Info
-      </message>
-      <message name="IDS_COPY_LINK" desc="The label for a menu item to copy a link. [CHAR-LIMIT=30]">
-        Copy link
-      </message>
-      <message name="IDS_COPIED" desc="Notification telling the user that something has been copied to the clipboard.">
-        Copied
-      </message>
-      <message name="IDS_TRY_AGAIN" desc="The label for a button allowing the user to try an action again. [CHAR-LIMIT=20]">
-        Try again
-      </message>
-      <message name="IDS_BACK" desc="Label for a back button to return to a previous UI state or screen. Used in multiple contexts. [CHAR-LIMIT=20]">
-        Back
-      </message>
-      <message name="IDS_CONFIRM" desc="Label for a confirm button. Used in multiple contexts. [CHAR-LIMIT=20]">
-        Confirm
-      </message>
-      <message name="IDS_SHOW" desc="Label for a show button. Used in multiple contexts. [CHAR-LIMIT=20]">
-        Show
-      </message>
-      <message name="IDS_USER" desc="Generic label for UI elements with information about user.">
-        User
-      </message>
-      <message name="IDS_MENU_ITEM_MOVE_UP" desc="Option in item menu. User can click the 'Move up' option to move the item up by one position in its list. [CHAR-LIMIT=24]">
-        Move up
-      </message>
-      <message name="IDS_MENU_ITEM_MOVE_DOWN" desc="Option in item menu. User can click the 'Move down' option to move the item down by one position in its list. [CHAR-LIMIT=24]">
-        Move down
-      </message>
-      <message name="IDS_MENU_ITEM_MOVE_TO_TOP" desc="Option in item menu. User can click the 'Move to top' option to move the item up to the top of its list. [CHAR-LIMIT=24]">
-        Move to top
-      </message>
+      <!-- NOTE: Generic strings used across multiple features belong in //components/browser_ui/strings/android. -->
 
       <!-- Main Preferences -->
       <message name="IDS_SETTINGS" desc="Title for Chrome's Settings.">
@@ -1628,17 +1505,6 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
       <message name="IDS_FAMILY_LINK_PRIVACY_POLICY_URL" desc="URL for the Family Link privacy policy" translateable="false">
         https://families.google.com/intl/$LOCALE/familylink/privacy/child-policy/
-      </message>
-
-      <!-- JavaScript dialogs -->
-      <message name="IDS_LEAVE" desc="Dialog button to leave the current page and navigate to a new page. [CHAR-LIMIT=20]">
-        Leave
-      </message>
-      <message name="IDS_RELOAD" desc="Dialog button to reload the current page. [CHAR-LIMIT=20]">
-        Reload
-      </message>
-      <message name="IDS_SUPPRESS_JS_MODAL_DIALOGS" desc="Checkbox allowing users to forgo additional prompts from a web page.">
-        Prevent this page from creating additional dialogs
       </message>
 
       <!-- Certificate viewer -->

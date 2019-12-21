@@ -32,7 +32,6 @@ class ViewRequestDelegate;
 // thread. Callbacks will be called on that same thread.
 class DomDistillerServiceInterface {
  public:
-  typedef base::Callback<void(bool)> ArticleAvailableCallback;
   virtual ~DomDistillerServiceInterface() {}
 
   // Request to view an article by url.

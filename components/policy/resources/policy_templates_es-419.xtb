@@ -933,16 +933,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Cuando no se configura o se establece como verdadera, los usuarios podrán usar esta función.
 
       Cuando se establece como falsa, los usuarios no podrán usar esta función.</translation>
-<translation id="2437706973218087361">Esta política controla una función de seguridad en TLS 1.3 que protege las conexiones contra ataques para cambiar a una versión anterior. Esta función es retrocompatible y no afecta las conexiones a proxies o servidores que cumplen con el protocolo TLS 1.2. Sin embargo, las versiones anteriores de algunos proxies de intercepción TLS tienen una falla en la implementación que genera la incompatibilidad.
-
-      Si se establece esta política como verdadera, <ph name="PRODUCT_NAME" /> habilitará estas protecciones de seguridad para todas las conexiones.
-
-      Si se establece como falsa o no se establece, <ph name="PRODUCT_NAME" /> inhabilitará estas protecciones de seguridad para las conexiones autenticadas con certificados de CA instalados de forma local. Estas protecciones están siempre habilitadas para las conexiones autenticadas con los certificados de CA con confianza pública.
-
-      Es posible que esta política se utilice para probar proxies afectados y actualizarlos. Se espera que los proxies afectados generen un error en las conexiones (código de error: ERR_TLS13_DOWNGRADE_DETECTED). En una versión posterior de <ph name="PRODUCT_NAME" />, se habilitará esta opción de forma predeterminada.
-
-      Una vez habilitada de forma predeterminada, es posible que los administradores que necesiten más tiempo para actualizar los proxies afectados utilicen esta política para inhabilitar de forma temporal esta función de seguridad. Después de la versión 85, se quitará esta política.
-      </translation>
 <translation id="2438609638493026652">Permite informar eventos clave durante la instalación de apps de Android en Google. Solo se capturan los eventos de las apps cuya instalación se activó a través de la política.
 
       Si la política se establece como verdadera, se registrarán los eventos.

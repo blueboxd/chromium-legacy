@@ -16,10 +16,13 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "components/tab_groups/tab_group_color.h"
 
 class Browser;
 class BrowserNonClientFrameView;
 class Tab;
+class TabGroupId;
+class TabGroupVisualData;
 
 namespace content {
 class WebContents;
@@ -75,7 +78,8 @@ class BrowserTabStripController : public TabStripController,
   void OnStartedDragging() override;
   void OnStoppedDragging() override;
   void OnKeyboardFocusedTabChanged(base::Optional<int> index) override;
-  const tab_groups::TabGroupVisualData* GetVisualDataForGroup(
+  base::string16 GetGroupTitle(tab_groups::TabGroupId group_id) const override;
+  tab_groups::TabGroupColorId GetGroupColorId(
       tab_groups::TabGroupId group_id) const override;
   void SetVisualDataForGroup(
       tab_groups::TabGroupId group,

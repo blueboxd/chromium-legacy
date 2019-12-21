@@ -77,16 +77,16 @@ if (public_android_sdk) {
         is_64_bit_browser = false
         include_64_bit_webview = true
       }
-
-      if (trichrome_synchronized_proguard) {
-        static_library_provider = "//chrome/android:trichrome_library_apk"
-      }
+      static_library_provider = "//chrome/android:trichrome_library_apk"
     }
   }
 
   trichrome_webview_tmpl("trichrome_webview_apk") {
     apk_name = "TrichromeWebView"
     uncompress_dex = true
+    if (!is_java_debug) {
+      static_library_synchronized_proguard = trichrome_synchronized_proguard
+    }
   }
 
   if (enable_webview_bundles) {
@@ -100,6 +100,7 @@ if (public_android_sdk) {
       bundle_name = "TrichromeWebView"
       uncompress_dex = true
       min_sdk_version = 29
+      static_library_provider = "//chrome/android:trichrome_library_apk"
     }
   }
 
@@ -118,9 +119,7 @@ if (public_android_sdk) {
         min_sdk_version = 29
 
         deps = upstream_only_webview_deps
-        if (trichrome_synchronized_proguard) {
-          static_library_provider = "//chrome/android:trichrome_library_apk"
-        }
+        static_library_provider = "//chrome/android:trichrome_library_64_32_apk"
       }
     }
 
@@ -141,6 +140,7 @@ if (public_android_sdk) {
         bundle_name = "TrichromeWebView6432"
         uncompress_dex = true
         min_sdk_version = 29
+        static_library_provider = "//chrome/android:trichrome_library_64_32_apk"
       }
     }
   }
@@ -495,6 +495,7 @@ android_library("common_java") {
   sources = [
     "java/src/org/chromium/android_webview/common/AwResource.java",
     "java/src/org/chromium/android_webview/common/Flag.java",
+    "java/src/org/chromium/android_webview/common/FlagOverrideConstants.java",
     "java/src/org/chromium/android_webview/common/FlagOverrideHelper.java",
     "java/src/org/chromium/android_webview/common/ProductionSupportedFlagList.java",
     "java/src/org/chromium/android_webview/common/services/ServiceNames.java",

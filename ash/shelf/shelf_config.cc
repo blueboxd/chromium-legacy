@@ -122,6 +122,14 @@ void ShelfConfig::OnAppListVisibilityWillChange(bool shown,
   OnShelfConfigUpdated();
 }
 
+void ShelfConfig::SetAssistantVisible(bool visible) {
+  if (is_assistant_visible_ == visible)
+    return;
+
+  is_assistant_visible_ = visible;
+  OnShelfConfigUpdated();
+}
+
 int ShelfConfig::shelf_size() const {
   return GetShelfSize(false /*ignore_in_app_state*/);
 }
@@ -204,8 +212,9 @@ bool ShelfConfig::is_in_app() const {
   const auto* session = shell->session_controller();
   if (!session)
     return false;
+
   return session->GetSessionState() == session_manager::SessionState::ACTIVE &&
-         !is_app_list_visible_;
+         (!is_app_list_visible_ || is_assistant_visible_);
 }
 
 void ShelfConfig::UpdateIsDense() {

@@ -20,6 +20,7 @@
 <translation id="1966382378801805537">Chromium tidak dapat menentukan atau menyetel browser default</translation>
 <translation id="2008474315282236005">Tindakan ini akan menghapus 1 item dari perangkat. Untuk mengambil data nanti, login ke Chromium sebagai <ph name="USER_EMAIL" />.</translation>
 <translation id="2119636228670142020">Tentang &amp;Chromium OS</translation>
+<translation id="2147976119693222405">Chromium OS tidak dapat menyinkronkan data Anda. Perbaiki sekarang.</translation>
 <translation id="2241627712206172106">Jika Anda berbagi komputer, teman dan keluarga bisa menjelajah secara terpisah dan menyiapkan Chromium sesuai keinginannya.</translation>
 <translation id="2347108572062610441">Ekstensi ini telah mengubah apa yang ditampilkan oleh halaman saat Anda memulai Chromium.</translation>
 <translation id="2396765026452590966">Ekstensi "<ph name="EXTENSION_NAME" />" telah mengubah apa yang ditampilkan oleh halaman saat Anda memulai Chromium.</translation>
@@ -35,6 +36,7 @@
 <translation id="2718390899429598676">Untuk keamanan tambahan, Chromium akan mengenkripsi data Anda.</translation>
 <translation id="2770231113462710648">Ubah browser default ke:</translation>
 <translation id="2799223571221894425">Luncurkan Ulang</translation>
+<translation id="2805036593126168338">Chromium OS tidak dapat menyinkronkan sandi Anda. Perbaiki sekarang.</translation>
 <translation id="2838154144102149890">Untuk menjalankan update, Chromium harus ditutup di komputer ini. Proses ini dapat menyebabkan pengguna lain yang login ke komputer ini kehilangan perubahan yang belum tersimpan.</translation>
 <translation id="2847479871509788944">Buang dari Chromium...</translation>
 <translation id="2886012850691518054">Opsional: Bantu menjadikan Chrome lebih baik dengan mengirim statistik penggunaan dan laporan kerusakan secara otomatis ke Google.</translation>

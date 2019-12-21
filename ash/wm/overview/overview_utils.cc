@@ -21,6 +21,7 @@
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_utils.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
 #include "ash/wm/wm_event.h"
@@ -261,6 +262,8 @@ gfx::Rect GetGridBoundsInScreenForSplitview(
 base::Optional<gfx::RectF> GetSplitviewBoundsMaintainingAspectRatio(
     aura::Window* window) {
   if (!ShouldAllowSplitView())
+    return base::nullopt;
+  if (!Shell::Get()->tablet_mode_controller()->InTabletMode())
     return base::nullopt;
   auto* overview_session =
       Shell::Get()->overview_controller()->overview_session();

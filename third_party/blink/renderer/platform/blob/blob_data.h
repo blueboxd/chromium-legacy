@@ -219,6 +219,16 @@ class PLATFORM_EXPORT BlobDataHandle
                  mojo::ScopedDataPipeProducerHandle,
                  mojo::PendingRemote<mojom::blink::BlobReaderClient>);
 
+  // This does synchronous IPC, and possibly synchronous file operations. Think
+  // twice before calling this function.
+  bool CaptureSnapshot(uint64_t* snapshot_size,
+                       base::Optional<base::Time>* snapshot_modification_time);
+
+  void SetBlobRemoteForTesting(mojo::PendingRemote<mojom::blink::Blob> remote) {
+    MutexLocker locker(blob_remote_mutex_);
+    blob_remote_ = std::move(remote);
+  }
+
   static mojom::blink::BlobRegistry* GetBlobRegistry();
   static void SetBlobRegistryForTesting(mojom::blink::BlobRegistry*);
 

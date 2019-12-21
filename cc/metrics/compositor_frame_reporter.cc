@@ -11,6 +11,7 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/base/rolling_time_delta_history.h"
 #include "cc/metrics/frame_sequence_tracker.h"
+#include "cc/metrics/latency_ukm_reporter.h"
 
 namespace cc {
 namespace {
@@ -144,14 +145,17 @@ std::string HistogramName(const int report_type_index,
 
 CompositorFrameReporter::CompositorFrameReporter(
     const base::flat_set<FrameSequenceTrackerType>* active_trackers,
+    LatencyUkmReporter* latency_ukm_reporter,
     bool is_single_threaded)
     : is_single_threaded_(is_single_threaded),
-      active_trackers_(active_trackers) {
+      active_trackers_(active_trackers),
+      latency_ukm_reporter_(latency_ukm_reporter) {
   TRACE_EVENT_ASYNC_BEGIN1("cc,benchmark", "PipelineReporter", this,
                            "is_single_threaded", is_single_threaded);
 }
 
 CompositorFrameReporter::~CompositorFrameReporter() {
+  latency_ukm_reporter_ = nullptr;
   TerminateReporter();
 }
 
@@ -281,6 +285,10 @@ void CompositorFrameReporter::ReportStageHistograms(bool missed_frame) const {
       ReportStageHistogramWithBreakdown(report_type, stage,
                                         frame_sequence_tracker_type);
     }
+  }
+  if (latency_ukm_reporter_) {
+    latency_ukm_reporter_->ReportLatencyUkm(missed_frame, stage_history_,
+                                            active_trackers_, viz_breakdown_);
   }
 }
 

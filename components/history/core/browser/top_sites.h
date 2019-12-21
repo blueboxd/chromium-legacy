@@ -45,15 +45,14 @@ class TopSites : public RefcountedKeyedService {
  public:
   TopSites();
 
-  typedef base::Callback<void(const MostVisitedURLList&)>
-      GetMostVisitedURLsCallback;
+  using GetMostVisitedURLsCallback =
+      base::OnceCallback<void(const MostVisitedURLList&)>;
 
   // Returns a list of most visited URLs via a callback. This may be invoked on
   // any thread. NOTE: The callback is called immediately if we have the data
   // cached. If data is not available yet, callback will later be posted to the
   // thread that called this function.
-  virtual void GetMostVisitedURLs(
-      const GetMostVisitedURLsCallback& callback) = 0;
+  virtual void GetMostVisitedURLs(GetMostVisitedURLsCallback callback) = 0;
 
   // Asks TopSites to refresh what it thinks the top sites are. This may do
   // nothing. Should be called from the UI thread.

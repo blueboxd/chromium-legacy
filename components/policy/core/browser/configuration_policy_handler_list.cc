@@ -43,9 +43,9 @@ void ConfigurationPolicyHandlerList::ApplyPolicySettings(
   // applying the policies.
   // TODO(aberent): split into two functions.
   std::unique_ptr<PolicyMap> filtered_policies = policies.DeepCopy();
-  filtered_policies->EraseMatching(
-      base::Bind(&ConfigurationPolicyHandlerList::IsPlatformDevicePolicy,
-                 base::Unretained(this)));
+  filtered_policies->EraseMatching(base::BindRepeating(
+      &ConfigurationPolicyHandlerList::IsPlatformDevicePolicy,
+      base::Unretained(this)));
 
   PolicyErrorMap scoped_errors;
   if (!errors)

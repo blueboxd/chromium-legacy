@@ -26,7 +26,7 @@ namespace policy {
 // response.
 const char kGetHostedDomainKey[] = "hd";
 
-typedef base::Callback<void(const std::string&)> StringCallback;
+typedef base::OnceCallback<void(const std::string&)> StringCallback;
 
 // This class fetches an OAuth2 token scoped for the userinfo and DM services.
 class CloudPolicyClientRegistrationHelper::IdentityManagerHelper {
@@ -35,7 +35,7 @@ class CloudPolicyClientRegistrationHelper::IdentityManagerHelper {
 
   void FetchAccessToken(signin::IdentityManager* identity_manager,
                         const CoreAccountId& account_id,
-                        const StringCallback& callback);
+                        StringCallback callback);
 
  private:
   void OnAccessTokenFetchComplete(GoogleServiceAuthError error,
@@ -48,13 +48,13 @@ class CloudPolicyClientRegistrationHelper::IdentityManagerHelper {
 void CloudPolicyClientRegistrationHelper::IdentityManagerHelper::
     FetchAccessToken(signin::IdentityManager* identity_manager,
                      const CoreAccountId& account_id,
-                     const StringCallback& callback) {
+                     StringCallback callback) {
   DCHECK(!access_token_fetcher_);
   // The caller must supply a username.
   DCHECK(!account_id.empty());
   DCHECK(identity_manager->HasAccountWithRefreshToken(account_id));
 
-  callback_ = callback;
+  callback_ = std::move(callback);
 
   identity::ScopeSet scopes;
   scopes.insert(GaiaConstants::kDeviceManagementServiceOAuth);
@@ -75,9 +75,9 @@ void CloudPolicyClientRegistrationHelper::IdentityManagerHelper::
   access_token_fetcher_.reset();
 
   if (error.state() == GoogleServiceAuthError::NONE)
-    callback_.Run(token_info.token);
+    std::move(callback_).Run(token_info.token);
   else
-    callback_.Run("");
+    std::move(callback_).Run("");
 }
 
 CloudPolicyClientRegistrationHelper::CloudPolicyClientRegistrationHelper(
@@ -106,8 +106,8 @@ void CloudPolicyClientRegistrationHelper::StartRegistration(
   identity_manager_helper_.reset(new IdentityManagerHelper());
   identity_manager_helper_->FetchAccessToken(
       identity_manager, account_id,
-      base::Bind(&CloudPolicyClientRegistrationHelper::OnTokenFetched,
-                 base::Unretained(this)));
+      base::BindOnce(&CloudPolicyClientRegistrationHelper::OnTokenFetched,
+                     base::Unretained(this)));
 }
 
 void CloudPolicyClientRegistrationHelper::StartRegistrationWithEnrollmentToken(

@@ -65,6 +65,8 @@ class CC_EXPORT CompositorFrameReportingController {
 
   void SetBlinkBreakdown(std::unique_ptr<BeginMainFrameMetrics> details);
 
+  void SetUkmManager(UkmManager* manager);
+
   virtual void AddActiveTracker(FrameSequenceTrackerType type);
   virtual void RemoveActiveTracker(FrameSequenceTrackerType type);
 
@@ -95,6 +97,10 @@ class CC_EXPORT CompositorFrameReportingController {
   // Mapping of frame token to pipeline reporter for submitted compositor
   // frames.
   base::circular_deque<SubmittedCompositorFrame> submitted_compositor_frames_;
+
+  // The latency reporter passed to each CompositorFrameReporter. Owned here
+  // because it must be common among all reporters.
+  std::unique_ptr<LatencyUkmReporter> latency_ukm_reporter_;
 
   // These keep track of stage durations for when a frame did not miss a
   // deadline. The history is used by reporter instances to determine if a

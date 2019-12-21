@@ -263,6 +263,8 @@ message LoginReputationClientRequest {
       optional bool is_account_syncing = 1;
 
       enum AccountType {
+        // User reused a password that is not a signed-in account, saved
+        // password, or a non-GAIA enterprise account.
         UNKNOWN = 0;
 
         // User signed in with a dasher account.

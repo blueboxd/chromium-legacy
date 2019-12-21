@@ -8,6 +8,8 @@
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -67,6 +69,7 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
   // currently, (See the comment on RequestCheck, below.)
   virtual void OnServerIncomingRequest(
       const net::test_server::HttpRequest& request) {
+    base::AutoLock lock(check_on_requests_lock_);
     if (!check_on_requests_)
       return;
 
@@ -217,8 +220,10 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
           base::UTF16ToASCII(expected_title)
               .substr(base::StringPiece("Referrer is ").size());
     }
+    base::ReleasableAutoLock releaseable_lock(&check_on_requests_lock_);
     check_on_requests_ = RequestCheck{
         expected_referrer_value, "/referrer_policy/referrer-policy-log.html"};
+    releaseable_lock.Release();
 
     // Watch for all possible outcomes to avoid timeouts if something breaks.
     AddAllPossibleTitles(start_url, &title_watcher);
@@ -260,6 +265,7 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
     EXPECT_EQ(expected_referrer_policy,
               tab->GetController().GetVisibleEntry()->GetReferrer().policy);
 
+    base::AutoLock lock(check_on_requests_lock_);
     check_on_requests_.reset();
 
     return start_url;
@@ -290,7 +296,10 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
     std::string expected_spec;
     std::string destination_url_to_match;
   };
-  base::Optional<RequestCheck> check_on_requests_;
+
+  base::Lock check_on_requests_lock_;
+  base::Optional<RequestCheck> check_on_requests_
+      GUARDED_BY(check_on_requests_lock_);
 };
 
 // The basic behavior of referrer policies is covered by layout tests in
@@ -872,6 +881,7 @@ class ReferrerOverrideTest
     content::WebContents* tab =
         browser()->tab_strip_model()->GetActiveWebContents();
 
+    base::ReleasableAutoLock lock(&check_on_requests_lock_);
     check_on_requests_ = RequestCheck{"", "/referrer_policy/logo.gif"};
     switch (expectation) {
       case ReferrerPolicyTest::EXPECT_EMPTY_REFERRER:
@@ -884,6 +894,7 @@ class ReferrerOverrideTest
         check_on_requests_->expected_spec = start_url.GetWithEmptyPath().spec();
         break;
     }
+    lock.Release();
 
     // set by referrer-policy-subresource.html JS after the embedded image loads
     base::string16 expected_title(base::ASCIIToUTF16("loaded"));

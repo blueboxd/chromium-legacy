@@ -28,7 +28,7 @@ class DistilledContentStore;
 // be cancelled when the handle is destroyed.
 class ViewerHandle {
  public:
-  typedef base::Callback<void()> CancelCallback;
+  using CancelCallback = base::OnceCallback<void()>;
   explicit ViewerHandle(CancelCallback callback);
   ~ViewerHandle();
 
@@ -72,10 +72,9 @@ class ViewRequestDelegate {
 // and at least one of the sources should be started.
 class TaskTracker {
  public:
-  typedef base::Callback<void(TaskTracker*)> CancelCallback;
-  typedef base::Callback<
-      void(const ArticleEntry&, const DistilledArticleProto*, bool)>
-      SaveCallback;
+  using CancelCallback = base::OnceCallback<void(TaskTracker*)>;
+  using SaveCallback = base::OnceCallback<
+      void(const ArticleEntry&, const DistilledArticleProto*, bool)>;
 
   TaskTracker(const ArticleEntry& entry,
               CancelCallback callback,
@@ -87,7 +86,7 @@ class TaskTracker {
                       std::unique_ptr<DistillerPage> distiller_page);
   void StartBlobFetcher();
 
-  void AddSaveCallback(const SaveCallback& callback);
+  void AddSaveCallback(SaveCallback callback);
 
   void CancelSaveCallbacks();
 

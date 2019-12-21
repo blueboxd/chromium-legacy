@@ -37,6 +37,7 @@
 <translation id="1231733316453485619">开启同步功能？</translation>
 <translation id="123724288017357924">重新加载当前网页（忽略缓存的内容）</translation>
 <translation id="124116460088058876">更多语言</translation>
+<translation id="1242008676835033345">嵌在 <ph name="WEBSITE_URL" /> 上</translation>
 <translation id="124678866338384709">关闭当前标签页</translation>
 <translation id="1258753120186372309">Google 涂鸦：<ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">搜索内容与浏览相关建议</translation>
@@ -95,6 +96,7 @@
 <translation id="1672586136351118594">不再显示</translation>
 <translation id="1692118695553449118">同步功能已开启</translation>
 <translation id="169515064810179024">禁止网站使用动态传感器</translation>
+<translation id="1711267867945983636">要继续，请开启手机的 NFC 功能</translation>
 <translation id="1717218214683051432">动态传感器</translation>
 <translation id="1718835860248848330">过去一小时</translation>
 <translation id="1736419249208073774">探索</translation>
@@ -151,6 +153,7 @@
 <translation id="2082238445998314030">第 <ph name="RESULT_NUMBER" /> 条结果，共 <ph name="TOTAL_RESULTS" /> 条</translation>
 <translation id="2091887806945687916">声音</translation>
 <translation id="2096012225669085171">在所有设备上保持同步并进行个性化设置</translation>
+<translation id="2099625543891475722">您的身体特征，例如身高</translation>
 <translation id="2100273922101894616">自动登录</translation>
 <translation id="2100314319871056947">请尝试使用较小的文本块进行分享</translation>
 <translation id="2107397443965016585">网站需先询问并得到许可才能播放受保护内容 （推荐）</translation>
@@ -481,6 +484,7 @@
 <translation id="4634124774493850572">使用密码</translation>
 <translation id="4645575059429386691">由您父母管理</translation>
 <translation id="4650364565596261010">系统默认设置</translation>
+<translation id="4660838440047236328">您房间的布局</translation>
 <translation id="4663756553811254707">已删除 <ph name="NUMBER_OF_BOOKMARKS" /> 个书签</translation>
 <translation id="4665282149850138822"><ph name="NAME" />已添加到您的主屏幕</translation>
 <translation id="4684427112815847243">同步所有数据类型</translation>
@@ -605,6 +609,7 @@
 <translation id="5487521232677179737">清除数据</translation>
 <translation id="5494752089476963479">禁止会展示侵扰性或误导性广告的网站显示广告</translation>
 <translation id="5500777121964041360">可能无法在您所在的国家/地区使用</translation>
+<translation id="5505264765875738116">网站无法询问能否向您发送通知</translation>
 <translation id="5512137114520586844">该帐号由 <ph name="PARENT_NAME" /> 管理。</translation>
 <translation id="5514904542973294328">已被此设备的管理员停用</translation>
 <translation id="5515439363601853141">需解锁才能查看您的密码</translation>
@@ -702,6 +707,7 @@
 <translation id="6192792657125177640">例外</translation>
 <translation id="6194112207524046168">要让 Chrome 使用您的摄像头，您还需要在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中开启摄像头。</translation>
 <translation id="6196640612572343990">阻止第三方 Cookie</translation>
+<translation id="6201345951596836663">已复制链接</translation>
 <translation id="6206551242102657620">连接是安全的。网站信息</translation>
 <translation id="6210748933810148297">不是 <ph name="EMAIL" />？</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />选项</translation>
@@ -711,6 +717,7 @@
 例如：某些网站在收到该请求后，可能会向您展示相应的广告（这些广告并不是根据您访问过的其他网站而展示的）。许多网站仍会出于一些目的收集并使用您的浏览数据，例如，为了提高安全性，为了提供相关内容、广告和推荐内容，以及为了生成报告统计信息。</translation>
 <translation id="624789221780392884">有可用的更新</translation>
 <translation id="6255999984061454636">内容建议</translation>
+<translation id="6270391203985052864">网站可以询问能否向您发送通知</translation>
 <translation id="6277522088822131679">打印该页面时出现问题，请重试。</translation>
 <translation id="6295158916970320988">所有网站</translation>
 <translation id="629730747756840877">帐号</translation>
@@ -755,6 +762,7 @@
 <translation id="6545864417968258051">蓝牙扫描</translation>
 <translation id="6560414384669816528">改用搜狗搜索</translation>
 <translation id="656065428026159829">查看更多</translation>
+<translation id="6561560012278703671">改用更静默的提示方式（不直接弹出提示来询问能否向您发送通知，以免造成打扰）</translation>
 <translation id="6566259936974865419">Chrome 已为您保存的数据量：<ph name="GIGABYTES" /> GB</translation>
 <translation id="6573096386450695060">一律允许</translation>
 <translation id="6573431926118603307">您在其他设备上的 Chrome 中打开的标签页将列在此处。</translation>
@@ -852,6 +860,7 @@
 <translation id="729975465115245577">您的设备上没有可以存储密码文件的应用。</translation>
 <translation id="7302081693174882195">详细信息：按已节省的数据流量排序</translation>
 <translation id="7302486331832100261">您通常会屏蔽通知。要允许显示通知，请点按“详细信息”。</translation>
+<translation id="7311441321349344333">此设备的 NFC 功能处于关闭状态。请在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中开启 NFC 功能。</translation>
 <translation id="7328017930301109123">在精简模式下，Chrome 可更快速地加载网页，并可节省多达百分之 60 的流量。</translation>
 <translation id="7333031090786104871">仍在添加先前的网站</translation>
 <translation id="7352939065658542140">视频</translation>

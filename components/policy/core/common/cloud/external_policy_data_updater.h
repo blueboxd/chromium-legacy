@@ -60,7 +60,8 @@ class POLICY_EXPORT ExternalPolicyDataUpdater {
   // bind base::Passed() scoped_ptrs to the callback in such cases as these
   // become invalid after a callback has been run once. base::Owned() can be
   // used in all cases.
-  typedef base::Callback<bool(const std::string&)> FetchSuccessCallback;
+  typedef base::RepeatingCallback<bool(const std::string&)>
+      FetchSuccessCallback;
 
   // This class runs on the background thread represented by |task_runner|,
   // which must support file I/O. All network I/O is forwarded to a different

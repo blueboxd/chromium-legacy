@@ -646,6 +646,11 @@ CoreAccountId AccountTrackerService::SeedAccountInfo(AccountInfo info) {
 
     SaveToPrefs(account_info);
   }
+
+  if (!already_exists && !info.account_image.IsEmpty()) {
+    SetAccountImage(account_info.account_id, info.account_image);
+  }
+
   return info.account_id;
 }
 

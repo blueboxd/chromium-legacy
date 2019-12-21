@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "components/security_state/content/content_utils.h"
@@ -304,6 +305,10 @@ HeadlessWebContentsImpl::~HeadlessWebContentsImpl() {
   agent_host_->RemoveObserver(this);
   if (render_process_host_)
     render_process_host_->RemoveObserver(this);
+  // Defer destruction of WindowTreeHost, as it does sync mojo calls
+  // in the destructor of ui::Compositor.
+  base::DeleteSoon(FROM_HERE, {base::CurrentThread()},
+                   std::move(window_tree_host_));
 }
 
 void HeadlessWebContentsImpl::RenderFrameCreated(

@@ -58,7 +58,8 @@ class FakeBaseTabStripController : public TabStripController {
   void OnStartedDragging() override;
   void OnStoppedDragging() override;
   void OnKeyboardFocusedTabChanged(base::Optional<int> index) override;
-  const tab_groups::TabGroupVisualData* GetVisualDataForGroup(
+  base::string16 GetGroupTitle(tab_groups::TabGroupId group_id) const override;
+  tab_groups::TabGroupColorId GetGroupColorId(
       tab_groups::TabGroupId group_id) const override;
   void SetVisualDataForGroup(
       tab_groups::TabGroupId group,

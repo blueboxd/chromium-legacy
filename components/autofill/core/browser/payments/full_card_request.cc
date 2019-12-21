@@ -50,7 +50,8 @@ void FullCardRequest::GetFullCard(const CreditCard& card,
                                   base::WeakPtr<ResultDelegate> result_delegate,
                                   base::WeakPtr<UIDelegate> ui_delegate) {
   DCHECK(ui_delegate);
-  GetFullCard(card, reason, result_delegate, ui_delegate, base::Value());
+  GetFullCard(card, reason, result_delegate, ui_delegate,
+              /*fido_assertion_info=*/base::nullopt);
 }
 
 void FullCardRequest::GetFullCardViaFIDO(
@@ -63,15 +64,16 @@ void FullCardRequest::GetFullCardViaFIDO(
               std::move(fido_assertion_info));
 }
 
-void FullCardRequest::GetFullCard(const CreditCard& card,
-                                  AutofillClient::UnmaskCardReason reason,
-                                  base::WeakPtr<ResultDelegate> result_delegate,
-                                  base::WeakPtr<UIDelegate> ui_delegate,
-                                  base::Value fido_assertion_info) {
+void FullCardRequest::GetFullCard(
+    const CreditCard& card,
+    AutofillClient::UnmaskCardReason reason,
+    base::WeakPtr<ResultDelegate> result_delegate,
+    base::WeakPtr<UIDelegate> ui_delegate,
+    base::Optional<base::Value> fido_assertion_info) {
   // Retrieval of card information should happen via CVC auth or FIDO, but not
   // both. Use |ui_delegate|'s existence as evidence of doing CVC auth and
   // |fido_assertion_info| as evidence of doing FIDO auth.
-  DCHECK_NE(fido_assertion_info.is_dict(), !!ui_delegate);
+  DCHECK_NE(fido_assertion_info.has_value(), !!ui_delegate);
   DCHECK(result_delegate);
 
   // Only one request can be active at a time. If the member variable
@@ -153,7 +155,7 @@ void FullCardRequest::OnUnmaskPromptClosed() {
 void FullCardRequest::OnDidGetUnmaskRiskData(const std::string& risk_data) {
   request_->risk_data = risk_data;
   if (!request_->user_response.cvc.empty() ||
-      !request_->fido_assertion_info.is_none()) {
+      request_->fido_assertion_info.has_value()) {
     SendUnmaskCardRequest();
   }
 }
@@ -171,12 +173,12 @@ void FullCardRequest::OnDidGetRealPan(
   // If the CVC field is populated, that means the user performed a CVC check.
   // If FIDO AssertionInfo is populated, then the user must have performed FIDO
   // authentication. Exactly one of these fields must be populated.
-  DCHECK_NE(request_->user_response.cvc.empty(),
-            request_->fido_assertion_info.is_none());
+  DCHECK_NE(!request_->user_response.cvc.empty(),
+            request_->fido_assertion_info.has_value());
   if (!request_->user_response.cvc.empty()) {
     AutofillMetrics::LogRealPanDuration(
         AutofillTickClock::NowTicks() - real_pan_request_timestamp_, result);
-  } else if (!request_->fido_assertion_info.is_none()) {
+  } else if (request_->fido_assertion_info.has_value()) {
     AutofillMetrics::LogCardUnmaskDurationAfterWebauthn(
         AutofillTickClock::NowTicks() - real_pan_request_timestamp_, result);
   }

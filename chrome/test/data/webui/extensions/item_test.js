@@ -25,7 +25,7 @@ const normalElements = [
   {selector: '#name', text: extensionData.name},
   {selector: '#icon'},
   {selector: '#description', text: extensionData.description},
-  {selector: '#enable-toggle'},
+  {selector: '#enableToggle'},
   {selector: '#detailsButton'},
   {selector: '#remove-button'},
 ];
@@ -118,11 +118,11 @@ suite(extension_item_tests.suiteName, function() {
         testNormalElementsAreVisible(item);
         testDeveloperElementsAreHidden(item);
 
-        expectTrue(item.$['enable-toggle'].checked);
+        expectTrue(item.$['enableToggle'].checked);
         item.set('data.state', 'DISABLED');
-        expectFalse(item.$['enable-toggle'].checked);
+        expectFalse(item.$['enableToggle'].checked);
         item.set('data.state', 'BLACKLISTED');
-        expectFalse(item.$['enable-toggle'].checked);
+        expectFalse(item.$['enableToggle'].checked);
       });
 
   test(
@@ -158,7 +158,7 @@ suite(extension_item_tests.suiteName, function() {
     mockDelegate.testClickingCalls(
         item.$['remove-button'], 'deleteItem', [item.data.id]);
     mockDelegate.testClickingCalls(
-        item.$['enable-toggle'], 'setItemEnabled', [item.data.id, false]);
+        item.$['enableToggle'], 'setItemEnabled', [item.data.id, false]);
     mockDelegate.testClickingCalls(
         item.$$('#inspect-views a[is="action-link"]'), 'inspectItemView',
         [item.data.id, item.data.views[0]]);
@@ -321,18 +321,18 @@ suite(extension_item_tests.suiteName, function() {
   });
 
   test(assert(extension_item_tests.TestNames.EnableToggle), function() {
-    expectFalse(item.$['enable-toggle'].disabled);
+    expectFalse(item.$['enableToggle'].disabled);
 
     // Test case where user does not have permission.
     item.set('data.userMayModify', false);
     flush();
-    expectTrue(item.$['enable-toggle'].disabled);
+    expectTrue(item.$['enableToggle'].disabled);
 
     // Test case of a blacklisted extension.
     item.set('data.userMayModify', true);
     item.set('data.state', 'BLACKLISTED');
     flush();
-    expectTrue(item.$['enable-toggle'].disabled);
+    expectTrue(item.$['enableToggle'].disabled);
   });
 
   test(assert(extension_item_tests.TestNames.RemoveButton), function() {

@@ -24,10 +24,10 @@ const int kDefaultMaxNumCachedEntries = 32;
 // ArticleEntry.
 class DistilledContentStore {
  public:
-  typedef base::Callback<void(bool /* success */,
-                              std::unique_ptr<DistilledArticleProto>)>
+  typedef base::OnceCallback<void(bool /* success */,
+                                  std::unique_ptr<DistilledArticleProto>)>
       LoadCallback;
-  typedef base::Callback<void(bool /* success */)> SaveCallback;
+  typedef base::OnceCallback<void(bool /* success */)> SaveCallback;
 
   virtual void SaveContent(const ArticleEntry& entry,
                            const DistilledArticleProto& proto,

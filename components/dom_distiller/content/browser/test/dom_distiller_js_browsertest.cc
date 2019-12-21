@@ -34,16 +34,16 @@ namespace {
 class WebContentsMainFrameHelper : public content::WebContentsObserver {
  public:
   WebContentsMainFrameHelper(content::WebContents* web_contents,
-                             const base::Closure& callback)
-      : WebContentsObserver(web_contents), callback_(callback) {}
+                             base::OnceClosure callback)
+      : WebContentsObserver(web_contents), callback_(std::move(callback)) {}
 
   void DOMContentLoaded(content::RenderFrameHost* render_frame_host) override {
-    if (!render_frame_host->GetParent())
-      callback_.Run();
+    if (!render_frame_host->GetParent() && callback_)
+      std::move(callback_).Run();
   }
 
  private:
-  base::Closure callback_;
+  base::OnceClosure callback_;
 };
 
 }  // namespace
@@ -77,11 +77,11 @@ class DomDistillerJsTest : public content::ContentBrowserTest {
 
   void OnJsTestExecutionDone(base::Value value) {
     result_ = std::move(value);
-    js_test_execution_done_callback_.Run();
+    std::move(js_test_execution_done_callback_).Run();
   }
 
  protected:
-  base::Closure js_test_execution_done_callback_;
+  base::OnceClosure js_test_execution_done_callback_;
   base::Value result_;
 
  private:

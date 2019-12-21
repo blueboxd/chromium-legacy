@@ -1045,7 +1045,9 @@ void RasterImplementation::CopySubTexture(const gpu::Mailbox& source_mailbox,
                                           GLint x,
                                           GLint y,
                                           GLsizei width,
-                                          GLsizei height) {
+                                          GLsizei height,
+                                          GLboolean unpack_flip_y,
+                                          GLboolean unpack_premultiply_alpha) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glCopySubTexture("
                      << source_mailbox.ToDebugString() << ", "
@@ -1065,7 +1067,8 @@ void RasterImplementation::CopySubTexture(const gpu::Mailbox& source_mailbox,
   memcpy(mailboxes + sizeof(source_mailbox.name), dest_mailbox.name,
          sizeof(dest_mailbox.name));
   helper_->CopySubTextureINTERNALImmediate(xoffset, yoffset, x, y, width,
-                                           height, mailboxes);
+                                           height, unpack_flip_y,
+                                           unpack_premultiply_alpha, mailboxes);
   CheckGLError();
 }
 

@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/debug/dump_without_crashing.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -105,6 +104,11 @@ void FirstWebContentsProfiler::DidStartNavigation(
     return;
   }
 
+  // TODO(https://crbug.com/1035419): Ensure that all visible tabs start
+  // navigating before FirstWebContentsProfiler creation and always handle
+  // a top-level DidStartNavigation() as a new navigation.
+  // Upcoming CL: https://crrev.com/c/chromium/src/+/1976500
+
   if (first_navigation_id_ != kInvalidNavigationId) {
     // Abandon if this is not the first observed top-level navigation.
     DCHECK_NE(first_navigation_id_, navigation_handle->GetNavigationId());
@@ -148,19 +152,6 @@ void FirstWebContentsProfiler::DidFinishNavigation(
   } else if (first_navigation_id_ != navigation_handle->GetNavigationId()) {
     // Abandon if this is not the first observed top-level navigation.
     FinishedCollectingMetrics(FinishReason::kAbandonNewNavigation);
-
-    // TODO(https://crbug.com/1027947): If FirstWebContentsProfiler is created
-    // after 2 DidStartNavigation(), but before the 2 corresponding
-    // DidFinishNavigation(), this condition will be entered on the 2nd
-    // DidFinishNavigation(). Also, if FirstWebContentsProfiler is created after
-    // 1 DidStartNavigation() but before another DidStartNavigation() and 2
-    // DidFinishNavigation(), this condition will be entered for one of the 2
-    // DidFinishNavigation(). These cases aren't expected, but a fuzzer suggests
-    // that they do happen. The DumpWithoutCrashing() below will allow us to
-    // determine whether this happens in the wild. Remove it once the problem is
-    // understood.
-    base::debug::DumpWithoutCrashing();
-
     return;
   }
 

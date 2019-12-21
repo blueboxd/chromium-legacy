@@ -505,11 +505,159 @@ cr.define('settings_about_page', function() {
     });
   }
 
+  function registerDetailedBuildInfoTests() {
+    suite('DetailedBuildInfoTest', function() {
+      let page = null;
+      let browserProxy = null;
+
+      setup(function() {
+        browserProxy = new TestAboutPageBrowserProxy();
+        settings.AboutPageBrowserProxyImpl.instance_ = browserProxy;
+        PolymerTest.clearBody();
+      });
+
+      teardown(function() {
+        page.remove();
+        page = null;
+      });
+
+      test('Initialization', async () => {
+        page = document.createElement('settings-detailed-build-info');
+        document.body.appendChild(page);
+
+        await Promise.all([
+          browserProxy.whenCalled('pageReady'),
+          browserProxy.whenCalled('getChannelInfo'),
+        ]);
+      });
+
+      /**
+       * Checks whether the "change channel" button state (enabled/disabled)
+       * correctly reflects whether the user is allowed to change channel (as
+       * dictated by the browser via loadTimeData boolean).
+       * @param {boolean} canChangeChannel Whether to simulate the case where
+       *     changing channels is allowed.
+       * @return {!Promise}
+       */
+      async function checkChangeChannelButton(canChangeChannel) {
+        browserProxy.setCanChangeChannel(canChangeChannel);
+        page = document.createElement('settings-detailed-build-info');
+        document.body.appendChild(page);
+        await browserProxy.whenCalled('getChannelInfo');
+        const changeChannelButton = page.$$('cr-button');
+        assertTrue(!!changeChannelButton);
+        assertEquals(canChangeChannel, !changeChannelButton.disabled);
+      }
+
+      test('ChangeChannel_Enabled', function() {
+        return checkChangeChannelButton(true);
+      });
+
+      test('ChangeChannel_Disabled', function() {
+        return checkChangeChannelButton(false);
+      });
+    });
+  }
+
+  function registerChannelSwitcherDialogTests() {
+    suite('ChannelSwitcherDialogTest', function() {
+      let dialog = null;
+      let radioButtons = null;
+      let browserProxy = null;
+      const currentChannel = BrowserChannel.BETA;
+
+      setup(function() {
+        browserProxy = new TestAboutPageBrowserProxy();
+        browserProxy.setChannels(currentChannel, currentChannel);
+        settings.AboutPageBrowserProxyImpl.instance_ = browserProxy;
+        PolymerTest.clearBody();
+        dialog = document.createElement('settings-channel-switcher-dialog');
+        document.body.appendChild(dialog);
+
+        radioButtons = dialog.shadowRoot.querySelectorAll('cr-radio-button');
+        assertEquals(3, radioButtons.length);
+        return browserProxy.whenCalled('getChannelInfo');
+      });
+
+      teardown(function() {
+        dialog.remove();
+      });
+
+      test('Initialization', function() {
+        const radioGroup = dialog.$$('cr-radio-group');
+        assertTrue(!!radioGroup);
+        assertTrue(!!dialog.$.warningSelector);
+        assertTrue(!!dialog.$.changeChannel);
+        assertTrue(!!dialog.$.changeChannelAndPowerwash);
+
+        // Check that upon initialization the radio button corresponding to
+        // the current release channel is pre-selected.
+        assertEquals(currentChannel, radioGroup.selected);
+        assertEquals(dialog.$.warningSelector.selected, -1);
+
+        // Check that action buttons are hidden when current and target
+        // channel are the same.
+        assertTrue(dialog.$.changeChannel.hidden);
+        assertTrue(dialog.$.changeChannelAndPowerwash.hidden);
+      });
+
+      // Test case where user switches to a less stable channel.
+      test('ChangeChannel_LessStable', async () => {
+        assertEquals(BrowserChannel.DEV, radioButtons.item(2).name);
+        radioButtons.item(2).click();
+        Polymer.dom.flush();
+
+        await browserProxy.whenCalled('getChannelInfo');
+        assertEquals(dialog.$.warningSelector.selected, 2);
+        // Check that only the "Change channel" button becomes visible.
+        assertTrue(dialog.$.changeChannelAndPowerwash.hidden);
+        assertFalse(dialog.$.changeChannel.hidden);
+
+        const whenTargetChannelChangedFired =
+            test_util.eventToPromise('target-channel-changed', dialog);
+
+        dialog.$.changeChannel.click();
+        const [channel, isPowerwashAllowed] =
+            await browserProxy.whenCalled('setChannel');
+        assertEquals(BrowserChannel.DEV, channel);
+        assertFalse(isPowerwashAllowed);
+        const {detail} = await whenTargetChannelChangedFired;
+        assertEquals(BrowserChannel.DEV, detail);
+      });
+
+      // Test case where user switches to a more stable channel.
+      test('ChangeChannel_MoreStable', async () => {
+        assertEquals(BrowserChannel.STABLE, radioButtons.item(0).name);
+        radioButtons.item(0).click();
+        Polymer.dom.flush();
+
+        await browserProxy.whenCalled('getChannelInfo');
+        assertEquals(dialog.$.warningSelector.selected, 1);
+        // Check that only the "Change channel and Powerwash" button becomes
+        // visible.
+        assertFalse(dialog.$.changeChannelAndPowerwash.hidden);
+        assertTrue(dialog.$.changeChannel.hidden);
+
+        const whenTargetChannelChangedFired =
+            test_util.eventToPromise('target-channel-changed', dialog);
+
+        dialog.$.changeChannelAndPowerwash.click();
+        const [channel, isPowerwashAllowed] =
+            await browserProxy.whenCalled('setChannel');
+        assertEquals(BrowserChannel.STABLE, channel);
+        assertTrue(isPowerwashAllowed);
+        const {detail} = await whenTargetChannelChangedFired;
+        assertEquals(BrowserChannel.STABLE, detail);
+      });
+    });
+  }
+
   return {
-    // TODO(crbug.com/950007): Move the channel switch dialog tests to here
-    // from the browser about page tests when those CrOS-specific parts are
-    // removed from the browser about page.
-    registerTests: registerAboutPageTests,
+    registerTests: function() {
+      registerDetailedBuildInfoTests();
+      registerChannelSwitcherDialogTests();
+      registerAboutPageTests();
+    },
     registerOfficialBuildTests: registerOfficialBuildTests,
   };
 });

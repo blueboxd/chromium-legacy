@@ -174,6 +174,18 @@ test class, it should be added to the `java_files` list of the
 should be added to the `java_files` list of the `chrome_test_ar_java`
 `android_library` target.
 
+## AR Playback Datasets
+
+If you are adding an AR test and none of the existing datasets work for it, you
+can create and upload a new dataset that fits your needs. Dataset creation
+requires some internal tools, so contact either bsheedy@ or bialpio@ for
+instructions.
+
+Once you have your playback dataset (.mp4 file), simply place it in
+`//chrome/test/data/xr/ar_playback_datasets/` and upload it using
+`upload_to_google_storage.py` to the `chromium-ar-test-apks/playback_datasets`
+bucket.
+
 
 [xr_instrumentation_deep_dive]: https://chromium.googlesource.com/chromium/src/+/master/chrome/android/javatests/src/org/chromium/chrome/browser/vr/xr_instrumentation_deep_dive.md
 [webxr_vr_transition_test]: https://chromium.googlesource.com/chromium/src/+/master/chrome/android/javatests/src/org/chromium/chrome/browser/vr/WebXrVrTransitionTest.java

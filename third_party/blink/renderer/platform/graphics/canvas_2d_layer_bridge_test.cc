@@ -932,9 +932,8 @@ TEST_F(Canvas2DLayerBridgeTest, ReleaseResourcesAfterBridgeDestroyed) {
 }
 
 TEST_F(Canvas2DLayerBridgeTest, EnsureCCImageCacheUse) {
-  auto color_params =
-      CanvasColorParams(CanvasColorSpace::kSRGB, CanvasPixelFormat::kF16,
-                        kOpaque, CanvasForceRGBA::kNotForced);
+  auto color_params = CanvasColorParams(CanvasColorSpace::kSRGB,
+                                        CanvasPixelFormat::kF16, kOpaque);
 
   std::unique_ptr<Canvas2DLayerBridge> bridge =
       MakeBridge(IntSize(300, 300), Canvas2DLayerBridge::kEnableAcceleration,
@@ -958,9 +957,9 @@ TEST_F(Canvas2DLayerBridgeTest, EnsureCCImageCacheUse) {
 }
 
 TEST_F(Canvas2DLayerBridgeTest, EnsureCCImageCacheUseWithColorConversion) {
-  auto color_params =
-      CanvasColorParams(CanvasColorSpace::kSRGB, CanvasPixelFormat::kRGBA8,
-                        kOpaque, CanvasForceRGBA::kNotForced);
+  auto color_params = CanvasColorParams(
+      CanvasColorSpace::kSRGB, CanvasColorParams::GetNativeCanvasPixelFormat(),
+      kOpaque);
   std::unique_ptr<Canvas2DLayerBridge> bridge =
       MakeBridge(IntSize(300, 300), Canvas2DLayerBridge::kEnableAcceleration,
                  color_params);
@@ -982,9 +981,8 @@ TEST_F(Canvas2DLayerBridgeTest, EnsureCCImageCacheUseWithColorConversion) {
 }
 
 TEST_F(Canvas2DLayerBridgeTest, ImagesLockedUntilCacheLimit) {
-  auto color_params =
-      CanvasColorParams(CanvasColorSpace::kSRGB, CanvasPixelFormat::kF16,
-                        kOpaque, CanvasForceRGBA::kNotForced);
+  auto color_params = CanvasColorParams(CanvasColorSpace::kSRGB,
+                                        CanvasPixelFormat::kF16, kOpaque);
   std::unique_ptr<Canvas2DLayerBridge> bridge =
       MakeBridge(IntSize(300, 300), Canvas2DLayerBridge::kEnableAcceleration,
                  color_params);
@@ -1022,9 +1020,8 @@ TEST_F(Canvas2DLayerBridgeTest, ImagesLockedUntilCacheLimit) {
 }
 
 TEST_F(Canvas2DLayerBridgeTest, QueuesCleanupTaskForLockedImages) {
-  auto color_params =
-      CanvasColorParams(CanvasColorSpace::kSRGB, CanvasPixelFormat::kF16,
-                        kOpaque, CanvasForceRGBA::kNotForced);
+  auto color_params = CanvasColorParams(CanvasColorSpace::kSRGB,
+                                        CanvasPixelFormat::kF16, kOpaque);
   std::unique_ptr<Canvas2DLayerBridge> bridge =
       MakeBridge(IntSize(300, 300), Canvas2DLayerBridge::kEnableAcceleration,
                  color_params);
@@ -1046,9 +1043,8 @@ TEST_F(Canvas2DLayerBridgeTest, QueuesCleanupTaskForLockedImages) {
 }
 
 TEST_F(Canvas2DLayerBridgeTest, ImageCacheOnContextLost) {
-  auto color_params =
-      CanvasColorParams(CanvasColorSpace::kSRGB, CanvasPixelFormat::kF16,
-                        kOpaque, CanvasForceRGBA::kNotForced);
+  auto color_params = CanvasColorParams(CanvasColorSpace::kSRGB,
+                                        CanvasPixelFormat::kF16, kOpaque);
   std::unique_ptr<Canvas2DLayerBridge> bridge =
       MakeBridge(IntSize(300, 300), Canvas2DLayerBridge::kEnableAcceleration,
                  color_params);
@@ -1104,8 +1100,7 @@ class CustomFakeCanvasResourceHost : public FakeCanvasResourceHost {
 
 TEST_F(Canvas2DLayerBridgeTest, WritePixelsRestoresClipStack) {
   CanvasColorParams color_params(CanvasColorSpace::kSRGB,
-                                 CanvasPixelFormat::kF16, kOpaque,
-                                 CanvasForceRGBA::kNotForced);
+                                 CanvasPixelFormat::kF16, kOpaque);
   IntSize size = IntSize(300, 300);
   auto host = std::make_unique<CustomFakeCanvasResourceHost>(size);
   std::unique_ptr<Canvas2DLayerBridge> bridge =

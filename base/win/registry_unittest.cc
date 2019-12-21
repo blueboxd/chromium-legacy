@@ -36,7 +36,7 @@ class RegistryTest : public testing::Test {
   static const REGSAM kRedirectedViewMask = KEY_WOW64_64KEY;
 #endif  //  _WIN64
 
-  RegistryTest() {}
+  RegistryTest() = default;
   void SetUp() override {
     // Create a temporary key.
     RegKey key(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS);
@@ -342,8 +342,8 @@ TEST_F(RegistryTest, OpenSubKey) {
 
 class TestChangeDelegate {
  public:
-  TestChangeDelegate() {}
-  ~TestChangeDelegate() {}
+  TestChangeDelegate() = default;
+  ~TestChangeDelegate() = default;
 
   void OnKeyChanged() {
     RunLoop::QuitCurrentWhenIdleDeprecated();

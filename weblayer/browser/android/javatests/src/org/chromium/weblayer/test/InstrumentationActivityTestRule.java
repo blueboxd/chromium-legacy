@@ -7,6 +7,7 @@ package org.chromium.weblayer.test;
 import android.app.Activity;
 import android.app.Instrumentation.ActivityMonitor;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
@@ -31,7 +32,6 @@ import org.chromium.weblayer.WebLayer;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.lang.reflect.Field;
@@ -44,7 +44,7 @@ import java.util.concurrent.TimeoutException;
  * Test can use this ActivityTestRule to launch or get InstrumentationActivity.
  */
 public class InstrumentationActivityTestRule extends ActivityTestRule<InstrumentationActivity> {
-    private static final String COMMAND_LINE_FILE = "/data/local/tmp/weblayer-command-line";
+    private static final String COMMAND_LINE_FILE = "weblayer-command-line";
 
     @Rule
     private EmbeddedTestServerRule mTestServerRule = new EmbeddedTestServerRule();
@@ -68,32 +68,29 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
 
     @Override
     public Statement apply(final Statement base, Description description) {
-        Statement testServer = mTestServerRule.apply(base, description);
+        Statement testServer = super.apply(mTestServerRule.apply(base, description), description);
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
                 try {
-                    // The command line file has to be created with shell commands since normally
-                    // apps are not allowed to write to /data/local/tmp. The CommandLine instance we
-                    // have here will not be picked up in the implementation since they use
-                    // different class loaders, so we need to write all the switches to the WebLayer
-                    // command line file.
-                    InstrumentationRegistry.getInstrumentation()
-                            .getUiAutomation()
-                            .executeShellCommand("touch " + COMMAND_LINE_FILE);
-                    CriteriaHelper.pollInstrumentationThread(
-                            () -> new File(COMMAND_LINE_FILE).exists());
-
+                    // The CommandLine instance we have here will not be picked up in the
+                    // implementation since they use different class loaders, so we need to write
+                    // all the switches to the WebLayer command line file.
                     try (Writer writer = new OutputStreamWriter(
-                                 new FileOutputStream(new File(COMMAND_LINE_FILE)), "UTF-8")) {
+                                 InstrumentationRegistry.getInstrumentation()
+                                         .getTargetContext()
+                                         .openFileOutput(COMMAND_LINE_FILE, Context.MODE_PRIVATE),
+                                 "UTF-8")) {
                         writer.write(TextUtils.join(" ", CommandLine.getJavaSwitchesOrNull()));
                     }
 
                     testServer.evaluate();
                 } finally {
-                    InstrumentationRegistry.getInstrumentation()
-                            .getUiAutomation()
-                            .executeShellCommand("rm " + COMMAND_LINE_FILE);
+                    new File(InstrumentationRegistry.getInstrumentation()
+                                     .getTargetContext()
+                                     .getFilesDir(),
+                            COMMAND_LINE_FILE)
+                            .delete();
                 }
             }
         };

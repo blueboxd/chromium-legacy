@@ -16,6 +16,7 @@ luci.list_view(
         'try/gpu-fyi-try-linux-intel-dqp',
         'try/gpu-fyi-try-linux-intel-exp',
         'try/gpu-fyi-try-linux-intel-rel',
+        'try/gpu-fyi-try-linux-intel-sk-dawn-rel',
         'try/gpu-fyi-try-linux-intel-skv',
         'try/gpu-fyi-try-linux-nvidia-dbg',
         'try/gpu-fyi-try-linux-nvidia-dqp',

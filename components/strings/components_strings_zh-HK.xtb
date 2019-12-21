@@ -591,6 +591,7 @@
 <translation id="3828924085048779000">複雜密碼欄位不得留空。</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> 的管理員已安裝支援額外功能的擴充程式。擴充程式可存取您的部分資料。</translation>
 <translation id="3832522519263485449">多孔 (左側)</translation>
+<translation id="3838154488026099170">你剛才在詐騙網站上輸入了密碼。Chromium 建議你立即前往 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 和 <ph name="WEBSITE_3" />，以及使用這個密碼的其他網站變更密碼。</translation>
 <translation id="385051799172605136">返回</translation>
 <translation id="3858027520442213535">更新日期和時間</translation>
 <translation id="3884278016824448484">裝置識別碼發生衝突</translation>
@@ -628,6 +629,7 @@
 <translation id="4072486802667267160">處理您的訂單時發生錯誤，請再試一次。</translation>
 <translation id="4075732493274867456">用戶端和伺服器不支援共通 SSL 通訊協定版本或加密套件。</translation>
 <translation id="4075941231477579656">Touch ID</translation>
+<translation id="4077092919748553596">你剛才在詐騙網站上輸入了密碼。Chrome 建議你立即前往 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 和 <ph name="WEBSITE_3" />，以及使用這個密碼的其他網站變更密碼。</translation>
 <translation id="4079302484614802869">Proxy 設定已設為使用 .pac 指令碼網址，而非固定的 Proxy 伺服器。</translation>
 <translation id="4082393374666368382">設定 - 管理</translation>
 <translation id="4098354747657067197">前往的是欺詐網站</translation>
@@ -707,6 +709,7 @@
 <translation id="4356973930735388585">攻擊者可能會透過此網站試圖在您的電腦上安裝危險程式，藉此竊取或刪除您的資料 (例如相片、密碼、訊息或信用卡資料)。</translation>
 <translation id="4358059973562876591">DnsOverHttpsMode 政策發生錯誤，因此系統無法套用您指定的範本。</translation>
 <translation id="4358461427845829800">管理付款方法…</translation>
+<translation id="4359160567981085931">你剛才在詐騙網站上輸入了密碼。Chrome 能夠幫助你。如要變更密碼並通知 Google 你的帳戶可能面臨風險，請按一下 [保護帳戶]。</translation>
 <translation id="4367563149485757821">Number-12 (信封)</translation>
 <translation id="437058704415269440">帳戶餘額</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
@@ -981,6 +984,7 @@
 <translation id="5728056243719941842">C5 (信封)</translation>
 <translation id="5730040223043577876">如果您已在其他網站上重用密碼，Chrome 建議您重設密碼。</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{將卡儲存至您的 Google 帳戶}other{將卡儲存至您的 Google 帳戶}}</translation>
+<translation id="5745980000221562234">{NUM_CARDS,plural, =1{使用這張卡片的虛擬卡號}other{請選取卡片}}</translation>
 <translation id="5763042198335101085">請輸入有效的電郵地址</translation>
 <translation id="5763703224595565476">管理員已在瀏覽器上啟用了「Chrome Enterprise 使用者防護」功能。此功能可以存取您的資料。</translation>
 <translation id="5765072501007116331">如要查看送貨方式和要求，請選取一個地址</translation>
@@ -997,6 +1001,7 @@
 <translation id="5804241973901381774">權限</translation>
 <translation id="5810442152076338065">您與 <ph name="DOMAIN" /> 之間的連線透過過時的加密套件加密處理。</translation>
 <translation id="5813119285467412249">重做新增(&amp;R)</translation>
+<translation id="5824687817967109979">{NUM_CARDS,plural, =1{當你付款時，系統會向這張卡片收取費用。別擔心，我們不會將卡片的實際卡號提供給這個網站。為了加強安全性，系統會產生暫時性的信用卡安全碼。}other{當你付款時，系統會向你選取的卡片收取費用。別擔心，我們不會將卡片的實際卡號提供給這個網站。為了加強安全性，系統會產生暫時性的信用卡安全碼。}}</translation>
 <translation id="583281660410589416">不明</translation>
 <translation id="5838278095973806738">您不應在此網站上輸入任何敏感資料 (例如密碼或信用卡資料)，因為攻擊者可能會竊取這些資料。</translation>
 <translation id="5851548754964597211">分頁清單</translation>
@@ -1454,6 +1459,7 @@
 <translation id="8042918947222776840">選擇取貨方式</translation>
 <translation id="8057711352706143257">無法正確安裝「<ph name="SOFTWARE_NAME" />」，解除安裝「<ph name="SOFTWARE_NAME" />」通常能修正相關問題。<ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8066955247577885446">很抱歉，系統發生錯誤。</translation>
+<translation id="8067872629359326442">你剛才在詐騙網站上輸入了密碼。Chromium 能夠幫助你。如要變更密碼並通知 Google 你的帳戶可能面臨風險，請按一下 [保護帳戶]。</translation>
 <translation id="8074253406171541171">10x13 (信封)</translation>
 <translation id="8078141288243656252">文件旋轉後無法加入註釋</translation>
 <translation id="8079031581361219619">要重新載入網站嗎？</translation>
@@ -1470,6 +1476,7 @@
 <translation id="8105368624971345109">關閉</translation>
 <translation id="8118489163946903409">付款方式</translation>
 <translation id="8127301229239896662">無法在您的電腦或網絡上正確安裝「<ph name="SOFTWARE_NAME" />」。請要求您的 IT 管理員解決此問題。</translation>
+<translation id="8128526133099929547">你剛才在詐騙網站上輸入了密碼。Chrome 建議你立即前往 <ph name="WEBSITE_1" /> 和使用這個密碼的其他網站變更密碼。</translation>
 <translation id="8131740175452115882">確定</translation>
 <translation id="8149426793427495338">您的電腦已進入休眠狀態。</translation>
 <translation id="8150722005171944719">無法讀取位於 <ph name="URL" /> 的檔案。這個檔案可能已被移除或移動位置，或者檔案權限為禁止存取。</translation>
@@ -1487,6 +1494,7 @@
 <translation id="8218327578424803826">已指派的位置：</translation>
 <translation id="8220146938470311105">C7/C6 (信封)</translation>
 <translation id="8220639454292072926">企業報告</translation>
+<translation id="8221250263817408492">你剛才在詐騙網站上輸入了密碼。Chromium 建議你立即前往 <ph name="WEBSITE_1" /> 和使用這個密碼的其他網站變更密碼。</translation>
 <translation id="8225771182978767009">設定此電腦的用戶已封鎖此網站。</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />、<ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">在新無痕式分頁中開啟網頁</translation>

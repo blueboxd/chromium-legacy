@@ -12,6 +12,7 @@
 
 namespace {
 
+constexpr char kAtlasBoardType[] = "atlas";
 constexpr char kEveBoardType[] = "eve";
 constexpr char kNocturneBoardType[] = "nocturne";
 
@@ -83,6 +84,7 @@ bool ShouldAttemptWarmerWelcome(AssistantEntryPoint entry_point) {
 bool IsGoogleDevice() {
   const std::string board_name = base::SysInfo::GetLsbReleaseBoard();
   return g_override_is_google_device ||
+         IsBoardType(board_name, kAtlasBoardType) ||
          IsBoardType(board_name, kEveBoardType) ||
          IsBoardType(board_name, kNocturneBoardType);
 }

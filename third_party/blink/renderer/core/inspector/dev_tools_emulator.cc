@@ -254,7 +254,7 @@ TransformationMatrix DevToolsEmulator::EnableDeviceEmulation(
       document->MediaQueryAffectingValueChanged();
   }
 
-  if (params.viewport_offset.x >= 0)
+  if (params.viewport_offset.x() >= 0)
     return ForceViewport(params.viewport_offset, params.viewport_scale);
   else
     return ResetViewport();
@@ -361,12 +361,12 @@ void DevToolsEmulator::DisableMobileEmulation() {
 }
 
 TransformationMatrix DevToolsEmulator::ForceViewport(
-    const WebFloatPoint& position,
+    const gfx::PointF& position,
     float scale) {
   if (!viewport_override_)
     viewport_override_ = ViewportOverride();
 
-  viewport_override_->position = FloatPoint(position.x, position.y);
+  viewport_override_->position = FloatPoint(position);
   viewport_override_->scale = scale;
 
   // Move the correct (scaled) content area to show in the top left of the
@@ -400,9 +400,9 @@ void DevToolsEmulator::ApplyViewportOverride(TransformationMatrix* transform) {
       web_view_->MainFrame()->IsWebLocalFrame()
           ? web_view_->MainFrame()->ToWebLocalFrame()->GetScrollOffset()
           : WebSize();
-  WebFloatPoint visual_offset = web_view_->VisualViewportOffset();
-  float scroll_x = scroll_offset.width + visual_offset.x;
-  float scroll_y = scroll_offset.height + visual_offset.y;
+  gfx::PointF visual_offset = web_view_->VisualViewportOffset();
+  float scroll_x = scroll_offset.width + visual_offset.x();
+  float scroll_y = scroll_offset.height + visual_offset.y();
   transform->Translate(-viewport_override_->position.X() + scroll_x,
                        -viewport_override_->position.Y() + scroll_y);
 

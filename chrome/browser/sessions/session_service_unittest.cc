@@ -39,6 +39,7 @@
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
 #include "components/sessions/core/session_command.h"
 #include "components/sessions/core/session_types.h"
+#include "components/tab_groups/tab_group_color.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "components/tab_groups/tab_group_visual_data.h"
 #include "content/public/browser/navigation_entry.h"
@@ -1145,8 +1146,10 @@ TEST_F(SessionServiceTest, TabGroupMetadataSaved) {
       tab_groups::TabGroupId::GenerateNew(),
       tab_groups::TabGroupId::GenerateNew()};
   const std::array<tab_groups::TabGroupVisualData, kNumGroups> visual_data = {
-      tab_groups::TabGroupVisualData(base::ASCIIToUTF16("Foo"), SK_ColorBLUE),
-      tab_groups::TabGroupVisualData(base::ASCIIToUTF16("Bar"), SK_ColorGREEN)};
+      tab_groups::TabGroupVisualData(base::ASCIIToUTF16("Foo"),
+                                     tab_groups::TabGroupColorId::kBlue),
+      tab_groups::TabGroupVisualData(base::ASCIIToUTF16("Bar"),
+                                     tab_groups::TabGroupColorId::kGreen)};
 
   // Create |kNumGroups| tab groups, each with one tab.
   for (int group_ndx = 0; group_ndx < kNumGroups; ++group_ndx) {

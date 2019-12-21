@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/metrics/user_metrics.h"
@@ -204,8 +205,8 @@ void MostVisitedSites::SetMostVisitedURLsObserver(Observer* observer,
   if (popular_sites_ && NeedPopularSites(prefs_, max_num_sites_) &&
       ShouldShowPopularSites()) {
     popular_sites_->MaybeStartFetch(
-        false, base::Bind(&MostVisitedSites::OnPopularSitesDownloaded,
-                          base::Unretained(this)));
+        false, base::BindOnce(&MostVisitedSites::OnPopularSitesDownloaded,
+                              base::Unretained(this)));
   }
 
   if (top_sites_) {
@@ -220,8 +221,9 @@ void MostVisitedSites::SetMostVisitedURLsObserver(Observer* observer,
             &MostVisitedSites::OnCustomLinksChanged, base::Unretained(this)));
   }
 
-  suggestions_subscription_ = suggestions_service_->AddCallback(base::Bind(
-      &MostVisitedSites::OnSuggestionsProfileChanged, base::Unretained(this)));
+  suggestions_subscription_ = suggestions_service_->AddCallback(
+      base::BindRepeating(&MostVisitedSites::OnSuggestionsProfileChanged,
+                          base::Unretained(this)));
 
   // Immediately build the current set of tiles, getting suggestions from the
   // SuggestionsService's cache or, if that is empty, sites from TopSites.
@@ -430,8 +432,8 @@ void MostVisitedSites::InitiateTopSitesQuery() {
   if (top_sites_weak_ptr_factory_.HasWeakPtrs())
     return;  // Ongoing query.
   top_sites_->GetMostVisitedURLs(
-      base::Bind(&MostVisitedSites::OnMostVisitedURLsAvailable,
-                 top_sites_weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&MostVisitedSites::OnMostVisitedURLsAvailable,
+                     top_sites_weak_ptr_factory_.GetWeakPtr()));
 }
 
 base::FilePath MostVisitedSites::GetWhitelistLargeIconPath(const GURL& url) {
@@ -652,11 +654,12 @@ NTPTilesVector MostVisitedSites::CreatePopularSitesTiles(
     tile.source = popular_site.baked_in ? TileSource::POPULAR_BAKED_IN
                                         : TileSource::POPULAR;
     popular_sites_tiles.push_back(std::move(tile));
-    base::Closure icon_available =
-        base::Bind(&MostVisitedSites::OnIconMadeAvailable,
-                   base::Unretained(this), popular_site.url);
-    icon_cacher_->StartFetchPopularSites(popular_site, icon_available,
-                                         icon_available);
+    icon_cacher_->StartFetchPopularSites(
+        popular_site,
+        base::BindOnce(&MostVisitedSites::OnIconMadeAvailable,
+                       base::Unretained(this), popular_site.url),
+        base::BindOnce(&MostVisitedSites::OnIconMadeAvailable,
+                       base::Unretained(this), popular_site.url));
   }
   return popular_sites_tiles;
 }
@@ -863,8 +866,8 @@ void MostVisitedSites::OnPopularSitesDownloaded(bool success) {
   for (const auto& section : popular_sites_->sections()) {
     for (const PopularSites::Site& site : section.second) {
       // Ignore callback; these icons will be seen on the *next* NTP.
-      icon_cacher_->StartFetchPopularSites(site, base::Closure(),
-                                           base::Closure());
+      icon_cacher_->StartFetchPopularSites(site, base::NullCallback(),
+                                           base::NullCallback());
     }
   }
 }

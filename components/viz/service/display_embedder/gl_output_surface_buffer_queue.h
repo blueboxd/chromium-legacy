@@ -40,8 +40,6 @@ class GLOutputSurfaceBufferQueue : public GLOutputSurface {
 
   ~GLOutputSurfaceBufferQueue() override;
 
-  // TODO(rjkroege): Implement the equivalent of Reflector.
-
  protected:
   // OutputSurface implementation.
   void SetDisplayTransformHint(gfx::OverlayTransform transform) override;

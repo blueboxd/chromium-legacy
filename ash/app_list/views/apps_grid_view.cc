@@ -358,10 +358,10 @@ AppsGridView::AppsGridView(ContentsView* contents_view,
       GetAppListConfig().overscroll_page_transition_duration());
 
   pagination_model_.AddObserver(this);
-  pagination_controller_ = std::make_unique<ash::PaginationController>(
+  pagination_controller_ = std::make_unique<PaginationController>(
       &pagination_model_,
-      folder_delegate_ ? ash::PaginationController::SCROLL_AXIS_HORIZONTAL
-                       : ash::PaginationController::SCROLL_AXIS_VERTICAL,
+      folder_delegate_ ? PaginationController::SCROLL_AXIS_HORIZONTAL
+                       : PaginationController::SCROLL_AXIS_VERTICAL,
       folder_delegate_
           ? base::DoNothing()
           : base::BindRepeating(&AppListRecordPageSwitcherSourceByEventType),
@@ -983,7 +983,7 @@ void AppsGridView::Layout() {
   const int pages = pagination_model_.total_pages();
   const int current_page = pagination_model_.selected_page();
   if (pagination_controller_->scroll_axis() ==
-      ash::PaginationController::SCROLL_AXIS_HORIZONTAL) {
+      PaginationController::SCROLL_AXIS_HORIZONTAL) {
     const int page_width =
         page_size.width() + GetAppListConfig().page_spacing();
     items_container_->SetBoundsRect(gfx::Rect(-page_width * current_page, 0,
@@ -1009,9 +1009,9 @@ void AppsGridView::Layout() {
   views::ViewModelUtils::SetViewBoundsToIdealBounds(pulsing_blocks_model_);
 }
 
-void AppsGridView::UpdateControlVisibility(ash::AppListViewState app_list_state,
+void AppsGridView::UpdateControlVisibility(AppListViewState app_list_state,
                                            bool is_in_drag) {
-  if (!folder_delegate_ && ash::features::IsBackgroundBlurEnabled()) {
+  if (!folder_delegate_ && features::IsBackgroundBlurEnabled()) {
     if (is_in_drag) {
       layer()->SetMaskLayer(nullptr);
     } else {
@@ -1030,10 +1030,9 @@ void AppsGridView::UpdateControlVisibility(ash::AppListViewState app_list_state,
   }
 
   const bool fullscreen_or_in_drag =
-      is_in_drag ||
-      app_list_state == ash::AppListViewState::kFullscreenAllApps ||
+      is_in_drag || app_list_state == AppListViewState::kFullscreenAllApps ||
       (app_list_features::IsScalableAppListEnabled() &&
-       app_list_state == ash::AppListViewState::kFullscreenSearch);
+       app_list_state == AppListViewState::kFullscreenSearch);
   SetVisible(fullscreen_or_in_drag);
 }
 
@@ -1164,7 +1163,7 @@ void AppsGridView::OnMouseEvent(ui::MouseEvent* event) {
       event->SetHandled();
       if (!is_in_mouse_drag_) {
         if (abs(point_in_screen.y() - mouse_drag_start_point_.y()) <
-            ash::kMouseDragThreshold) {
+            kMouseDragThreshold) {
           break;
         }
         pagination_controller_->StartMouseDrag(point_in_screen -
@@ -1275,10 +1274,9 @@ void AppsGridView::UpdatePulsingBlockViews() {
   int current_page = pagination_model_.selected_page();
   const int available_slots =
       TilesPerPage(current_page) - existing_items % TilesPerPage(current_page);
-  const int desired =
-      model_->status() == ash::AppListModelStatus::kStatusSyncing
-          ? available_slots
-          : 0;
+  const int desired = model_->status() == AppListModelStatus::kStatusSyncing
+                          ? available_slots
+                          : 0;
 
   if (pulsing_blocks_model_.view_size() == desired)
     return;
@@ -1362,7 +1360,7 @@ const gfx::Vector2d AppsGridView::CalculateTransitionOffset(
 
   // If there is a transition, calculates offset for current and target page.
   const int current_page = pagination_model_.selected_page();
-  const ash::PaginationModel::Transition& transition =
+  const PaginationModel::Transition& transition =
       pagination_model_.transition();
   const bool is_valid = pagination_model_.is_valid_page(transition.target_page);
 
@@ -1379,7 +1377,7 @@ const gfx::Vector2d AppsGridView::CalculateTransitionOffset(
   }
 
   if (pagination_controller_->scroll_axis() ==
-      ash::PaginationController::SCROLL_AXIS_HORIZONTAL) {
+      PaginationController::SCROLL_AXIS_HORIZONTAL) {
     // Page size including padding pixels. A tile.x + page_width means the same
     // tile slot in the next page.
     const int page_width =
@@ -2199,7 +2197,7 @@ void AppsGridView::MaybeStartPageFlipTimer(const gfx::Point& drag_point) {
 
   // Drag zones are at the edges of the scroll axis.
   if (pagination_controller_->scroll_axis() ==
-      ash::PaginationController::SCROLL_AXIS_VERTICAL) {
+      PaginationController::SCROLL_AXIS_VERTICAL) {
     if (drag_point.y() <
         GetAppListConfig().page_flip_zone_size() + GetInsets().top()) {
       new_page_flip_target = pagination_model_.selected_page() - 1;
@@ -2726,7 +2724,7 @@ void AppsGridView::SelectedPageChanged(int old_selected, int new_selected) {
     gfx::Size grid_size = GetTileGridSize();
     gfx::Vector2d update;
     if (pagination_controller_->scroll_axis() ==
-        ash::PaginationController::SCROLL_AXIS_HORIZONTAL) {
+        PaginationController::SCROLL_AXIS_HORIZONTAL) {
       const int page_width =
           grid_size.width() + GetAppListConfig().page_spacing();
       update.set_x(page_width * (new_selected - old_selected));
@@ -2774,7 +2772,7 @@ void AppsGridView::TransitionStarted() {
 }
 
 void AppsGridView::TransitionChanged() {
-  const ash::PaginationModel::Transition& transition =
+  const PaginationModel::Transition& transition =
       pagination_model_.transition();
   if (!pagination_model_.is_valid_page(transition.target_page))
     return;
@@ -2785,7 +2783,7 @@ void AppsGridView::TransitionChanged() {
   const int dir =
       transition.target_page > pagination_model_.selected_page() ? -1 : 1;
   if (pagination_controller_->scroll_axis() ==
-      ash::PaginationController::SCROLL_AXIS_HORIZONTAL) {
+      PaginationController::SCROLL_AXIS_HORIZONTAL) {
     const int page_width =
         grid_size.width() + GetAppListConfig().page_spacing();
     translate.set_x(page_width * transition.progress * dir);
@@ -2832,11 +2830,11 @@ void AppsGridView::ScrollStarted() {
   DCHECK(!presentation_time_recorder_);
 
   if (IsTabletMode()) {
-    presentation_time_recorder_ = ash::CreatePresentationTimeHistogramRecorder(
+    presentation_time_recorder_ = CreatePresentationTimeHistogramRecorder(
         GetWidget()->GetCompositor(), kPageDragScrollInTabletHistogram,
         kPageDragScrollInTabletMaxLatencyHistogram);
   } else {
-    presentation_time_recorder_ = ash::CreatePresentationTimeHistogramRecorder(
+    presentation_time_recorder_ = CreatePresentationTimeHistogramRecorder(
         GetWidget()->GetCompositor(), kPageDragScrollInClamshellHistogram,
         kPageDragScrollInClamshellMaxLatencyHistogram);
   }

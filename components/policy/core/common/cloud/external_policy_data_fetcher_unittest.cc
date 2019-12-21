@@ -85,10 +85,9 @@ void ExternalPolicyDataFetcherTest::SetUp() {
 
 void ExternalPolicyDataFetcherTest::StartJob(int index) {
   jobs_[index] = fetcher_->StartJob(
-      GURL(kExternalPolicyDataURLs[index]),
-      kExternalPolicyDataMaxSize,
-      base::Bind(&ExternalPolicyDataFetcherTest::OnJobFinished,
-                 base::Unretained(this), index));
+      GURL(kExternalPolicyDataURLs[index]), kExternalPolicyDataMaxSize,
+      base::BindOnce(&ExternalPolicyDataFetcherTest::OnJobFinished,
+                     base::Unretained(this), index));
   base::RunLoop().RunUntilIdle();
 }
 

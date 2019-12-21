@@ -29,6 +29,9 @@ shared_library("chromium_android_linker") {
   configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
   configs += [ "//build/config/android:hide_all_but_jni" ]
 
+  # Disable coverage to avoid linker issue.
+  configs -= [ "//build/config/coverage:default_coverage" ]
+
   # Avoid linking libc++ and support libraries, to avoid 100 kiB of
   # un-necessary code.
   no_default_deps = true

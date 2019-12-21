@@ -589,6 +589,7 @@ template("test_runner_script") {
         _install_artifacts_json,
       ]
       data_keys = [ "install_artifacts" ]
+      walk_keys = [ "install_artifacts_barrier" ]
       rebase = root_build_dir
     }
   }

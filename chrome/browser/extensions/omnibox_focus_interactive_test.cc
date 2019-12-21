@@ -6,7 +6,9 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/test/base/interactive_test_utils.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "extensions/test/test_extension_dir.h"
 
 namespace extensions {
@@ -56,6 +58,51 @@ IN_PROC_BROWSER_TEST_F(OmniboxFocusInteractiveTest, NtpReplacementExtension) {
   EXPECT_EQ(final_ntp_url, web_contents->GetLastCommittedURL());
   EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
+}
+
+// Verify that non-NTP extension->web navigations do NOT steal focus from the
+// omnibox.
+IN_PROC_BROWSER_TEST_F(OmniboxFocusInteractiveTest, OmniboxFocusStealing) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Install a test extension.
+  TestExtensionDir dir;
+  const char kManifest[] = R"(
+      {
+        "manifest_version": 2,
+        "name": "Omnibox focus-testing extension",
+        "version": "1.0"
+      } )";
+  dir.WriteManifest(kManifest);
+  dir.WriteFile(FILE_PATH_LITERAL("ext.html"), "<p>Blah<p>");
+  const Extension* extension = LoadExtension(dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+
+  // Navigate to an extension resource.
+  GURL ext_url = extension->GetResourceURL("ext.html");
+  ui_test_utils::NavigateToURL(browser(), ext_url);
+
+  // Focus the location bar / omnibox.
+  chrome::FocusLocationBar(browser());
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
+  EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
+
+  // Trigger a renderer-initiated navigation from an extension resource to a web
+  // page.  In the past such navigation might have resulted in
+  // ShouldFork/OpenURL code path and might have stolen the focus from the
+  // location bar / omnibox.
+  GURL web_url = embedded_test_server()->GetURL("/title1.html");
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::TestNavigationObserver nav_observer(web_contents, 1);
+  ASSERT_TRUE(content::ExecuteScript(
+      web_contents, content::JsReplace("window.location = $1", web_url)));
+  nav_observer.Wait();
+  EXPECT_EQ(web_url, web_contents->GetLastCommittedURL());
+
+  // Verify that the omnibox retained its focus.
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
+  EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
 }
 
 }  // namespace extensions

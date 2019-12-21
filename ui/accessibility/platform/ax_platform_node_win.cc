@@ -4187,7 +4187,8 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
         result->vt = VT_I4;
         result->intVal = *set_size;
       }
-    } break;
+      break;
+    }
 
     case UIA_LandmarkTypePropertyId: {
       base::Optional<LONG> landmark_type = ComputeUIALandmarkType();

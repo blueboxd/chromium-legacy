@@ -60,7 +60,8 @@ class FullscreenControllerTestWindow : public TestBrowserWindow,
   void HideDownloadShelf() override;
   void UnhideDownloadShelf() override;
   void EnterFullscreen(const GURL& url,
-                       ExclusiveAccessBubbleType type) override;
+                       ExclusiveAccessBubbleType type,
+                       int64_t display_id) override;
   void ExitFullscreen() override;
   void UpdateExclusiveAccessExitBubbleContent(
       const GURL& url,
@@ -91,7 +92,8 @@ FullscreenControllerTestWindow::FullscreenControllerTestWindow()
 
 void FullscreenControllerTestWindow::EnterFullscreen(
     const GURL& url,
-    ExclusiveAccessBubbleType type) {
+    ExclusiveAccessBubbleType type,
+    int64_t display_id) {
   EnterFullscreen();
 }
 

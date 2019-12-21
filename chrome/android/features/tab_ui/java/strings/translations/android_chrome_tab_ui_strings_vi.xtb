@@ -29,6 +29,7 @@
 <translation id="7792771145871471484">Xem lại các đề xuất.</translation>
 <translation id="7885132941432959125">Chuyển tab sang phải</translation>
 <translation id="7966321538264951561">Đóng nội dung đề xuất.</translation>
+<translation id="8205266828577616993">Chuyển tab lên trên</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Đóng <ph name="TABS_COUNT_ONE" /> tab đã chọn}other{Đóng <ph name="TABS_COUNT_MANY" /> tab đã chọn}}</translation>
 <translation id="9150694013019234766">Chuyển đổi giữa các tab trong nhóm tab ở gần cuối màn hình</translation>
 <translation id="9169594135889675189">Thêm tab mới vào nhóm</translation>

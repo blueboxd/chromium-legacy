@@ -68,7 +68,7 @@ class BrowsingHistoryDriver {
   virtual void ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
       const syncer::SyncService* sync_service,
       WebHistoryService* history_service,
-      base::Callback<void(bool)> callback) = 0;
+      base::OnceCallback<void(bool)> callback) = 0;
 
  protected:
   BrowsingHistoryDriver() {}

@@ -17,6 +17,7 @@
 #include "base/thread_annotations.h"
 #include "base/timer/timer.h"
 #include "chromecast/media/audio/audio_fader.h"
+#include "chromecast/media/audio/audio_provider.h"
 #include "chromecast/media/audio/mixer_service/mixer_service.pb.h"
 #include "chromecast/media/audio/mixer_service/mixer_socket.h"
 #include "chromecast/media/cma/backend/mixer/mixer_input.h"
@@ -54,7 +55,7 @@ class OutputStreamParams;
 // externally deleted.
 class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
                              public MixerInput::Source,
-                             public AudioFader::Source {
+                             public AudioProvider {
  public:
   using RenderingDelay = MediaPipelineBackend::AudioDecoder::RenderingDelay;
 
@@ -92,8 +93,8 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
   void SetPaused(bool paused);
 
   // MixerInput::Source implementation:
-  int num_channels() override;
-  int input_samples_per_second() override;
+  size_t num_channels() const override;
+  int sample_rate() const override;
   bool primary() override;
   const std::string& device_id() override;
   AudioContentType content_type() override;
@@ -109,10 +110,10 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
   void OnAudioPlaybackError(MixerError error) override;
   void FinalizeAudioPlayback() override;
 
-  // AudioFader::Source implementation:
-  int FillFaderFrames(int num_frames,
-                      RenderingDelay rendering_delay,
-                      float* const* channels)
+  // AudioProvider implementation:
+  int FillFrames(int num_frames,
+                 int64_t playout_timestamp,
+                 float* const* channels)
       EXCLUSIVE_LOCKS_REQUIRED(lock_) override;
 
   bool PrepareDataForFill(int num_frames) EXCLUSIVE_LOCKS_REQUIRED(lock_);

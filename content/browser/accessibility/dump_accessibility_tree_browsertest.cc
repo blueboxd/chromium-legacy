@@ -1808,6 +1808,17 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityListItemLevel) {
   RunHtmlTest(FILE_PATH_LITERAL("list-item-level.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityListItemAriaSetsizeUnknown) {
+  RunHtmlTest(FILE_PATH_LITERAL("list-item-aria-setsize-unknown.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityListItemAriaSetsizeUnknownFlattened) {
+  RunHtmlTest(
+      FILE_PATH_LITERAL("list-item-aria-setsize-unknown-flattened.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityListMarkers) {
   RunHtmlTest(FILE_PATH_LITERAL("list-markers.html"));
 }

@@ -38,13 +38,16 @@
 #include "third_party/blink/public/platform/web_scroll_anchor_data.h"
 #include "third_party/blink/public/platform/web_string.h"
 
+namespace gfx {
+class PointF;
+}  // namespace gfx
+
 namespace blink {
 
 class HistoryItem;
 class WebHTTPBody;
 class WebString;
 class WebSerializedScriptValue;
-struct WebFloatPoint;
 struct WebPoint;
 template <typename T>
 class WebVector;
@@ -82,8 +85,8 @@ class WebHistoryItem {
   BLINK_EXPORT const WebString& Target() const;
   BLINK_EXPORT void SetTarget(const WebString&);
 
-  BLINK_EXPORT WebFloatPoint VisualViewportScrollOffset() const;
-  BLINK_EXPORT void SetVisualViewportScrollOffset(const WebFloatPoint&);
+  BLINK_EXPORT gfx::PointF VisualViewportScrollOffset() const;
+  BLINK_EXPORT void SetVisualViewportScrollOffset(const gfx::PointF&);
 
   BLINK_EXPORT WebPoint GetScrollOffset() const;
   BLINK_EXPORT void SetScrollOffset(const WebPoint&);

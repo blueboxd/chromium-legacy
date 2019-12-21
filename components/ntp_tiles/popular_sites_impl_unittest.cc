@@ -187,7 +187,7 @@ class PopularSitesTest : public ::testing::Test {
     base::RunLoop loop;
     base::Optional<bool> save_success;
     if (popular_sites->MaybeStartFetch(
-            force_download, base::Bind(
+            force_download, base::BindOnce(
                                 [](base::Optional<bool>* save_success,
                                    base::RunLoop* loop, bool success) {
                                   save_success->emplace(success);
@@ -326,7 +326,7 @@ TEST_F(PopularSitesTest, ProvidesDefaultSitesUntilCallbackReturns) {
   base::Optional<bool> save_success = false;
 
   bool callback_was_scheduled = popular_sites->MaybeStartFetch(
-      /*force_download=*/true, base::Bind(
+      /*force_download=*/true, base::BindOnce(
                                    [](base::Optional<bool>* save_success,
                                       base::RunLoop* loop, bool success) {
                                      save_success->emplace(success);

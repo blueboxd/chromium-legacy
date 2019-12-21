@@ -10,7 +10,6 @@
 #include "base/strings/string16.h"
 #include "chrome/test/data/webui/web_ui_test.mojom.h"
 #include "content/public/browser/web_ui_message_handler.h"
-#include "mojo/public/cpp/bindings/binding.h"
 
 namespace base {
 class Value;

@@ -346,10 +346,10 @@ void ReportTimeUntilPersistentFetch(
 
 class EulaState final : public web_resource::EulaAcceptedNotifier::Observer {
  public:
-  EulaState(PrefService* local_state_prefs, base::Closure eula_accepted)
+  EulaState(PrefService* local_state_prefs, base::OnceClosure eula_accepted)
       : eula_notifier_(
             web_resource::EulaAcceptedNotifier::Create(local_state_prefs)),
-        eula_accepted_(eula_accepted) {
+        eula_accepted_(std::move(eula_accepted)) {
     // EulaNotifier is not constructed on some platforms (such as desktop).
     if (!eula_notifier_) {
       return;
@@ -375,12 +375,13 @@ class EulaState final : public web_resource::EulaAcceptedNotifier::Observer {
     // executed once the setting flips to accepted. Hence, we can assume that
     // at the time this code runs, a background-fetch trigger is queued in the
     // scheduler.
-    eula_accepted_.Run();
+    if (eula_accepted_)
+      std::move(eula_accepted_).Run();
   }
 
  private:
   std::unique_ptr<web_resource::EulaAcceptedNotifier> eula_notifier_;
-  base::Callback<void()> eula_accepted_;
+  base::OnceClosure eula_accepted_;
 
   DISALLOW_COPY_AND_ASSIGN(EulaState);
 };
@@ -464,8 +465,9 @@ RemoteSuggestionsSchedulerImpl::RemoteSuggestionsSchedulerImpl(
       time_until_first_startup_trigger_reported_(false),
       eula_state_(std::make_unique<EulaState>(
           local_state_prefs,
-          base::Bind(&RemoteSuggestionsSchedulerImpl::RunQueuedTriggersIfReady,
-                     base::Unretained(this)))),
+          base::BindOnce(
+              &RemoteSuggestionsSchedulerImpl::RunQueuedTriggersIfReady,
+              base::Unretained(this)))),
       profile_prefs_(profile_prefs),
       clock_(clock),
       enabled_triggers_(GetEnabledTriggerTypes()) {

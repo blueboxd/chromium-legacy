@@ -56,9 +56,8 @@ class MockFetchSuccessCallbackListener {
 
 ExternalPolicyDataUpdater::FetchSuccessCallback
     MockFetchSuccessCallbackListener::CreateCallback(const std::string& key) {
-  return base::Bind(&MockFetchSuccessCallbackListener::OnFetchSuccess,
-                    base::Unretained(this),
-                    key);
+  return base::BindRepeating(&MockFetchSuccessCallbackListener::OnFetchSuccess,
+                             base::Unretained(this), key);
 }
 
 }  // namespace

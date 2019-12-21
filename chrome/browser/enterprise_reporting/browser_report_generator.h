@@ -35,6 +35,17 @@ class BrowserReportGenerator {
   void Generate(ReportCallback callback);
 
  private:
+  // Generate browser_version, channel, executable_path info in the given
+  // report instance.
+  void GenerateBasicInfos(em::BrowserReport* report);
+
+  // Generate user profiles info in the given report instance.
+  void GenerateProfileInfos(em::BrowserReport* report);
+
+  // Generate plugin info in the given report instance. It requires the
+  // ownership of report instance to pass into ReportCallback method.
+  void GeneratePlugins(std::unique_ptr<em::BrowserReport> report);
+
   void OnPluginsReady(std::unique_ptr<em::BrowserReport> report,
                       const std::vector<content::WebPluginInfo>& plugins);
 

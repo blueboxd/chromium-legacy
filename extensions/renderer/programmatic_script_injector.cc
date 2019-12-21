@@ -110,7 +110,7 @@ std::vector<blink::WebScriptSource> ProgrammaticScriptInjector::GetJsSources(
 
   return std::vector<blink::WebScriptSource>(
       1, blink::WebScriptSource(blink::WebString::FromUTF8(params_->code),
-                                params_->file_url));
+                                params_->script_url));
 }
 
 std::vector<blink::WebString> ProgrammaticScriptInjector::GetCssSources(

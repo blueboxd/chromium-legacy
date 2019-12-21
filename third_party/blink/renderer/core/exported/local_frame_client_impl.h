@@ -225,7 +225,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   KURL OverrideFlashEmbedWithHTML(const KURL&) override;
 
   void NotifyUserActivation(bool need_browser_verification) override;
-  void ConsumeUserActivation() override;
+  void ConsumeTransientUserActivation() override;
 
   void AbortClientNavigation() override;
 

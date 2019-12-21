@@ -440,12 +440,12 @@ TEST_F(PolicyServiceTest, PolicyChangeRegistrar) {
 
   // Starting to observe existing policies doesn't trigger a notification.
   EXPECT_CALL(*this, OnPolicyValueUpdated(_, _)).Times(0);
-  registrar->Observe("pre", base::Bind(
-      &PolicyServiceTest::OnPolicyValueUpdated,
-      base::Unretained(this)));
-  registrar->Observe("aaa", base::Bind(
-      &PolicyServiceTest::OnPolicyValueUpdated,
-      base::Unretained(this)));
+  registrar->Observe(
+      "pre", base::BindRepeating(&PolicyServiceTest::OnPolicyValueUpdated,
+                                 base::Unretained(this)));
+  registrar->Observe(
+      "aaa", base::BindRepeating(&PolicyServiceTest::OnPolicyValueUpdated,
+                                 base::Unretained(this)));
   RunUntilIdle();
   Mock::VerifyAndClearExpectations(this);
 
@@ -497,9 +497,8 @@ TEST_F(PolicyServiceTest, RefreshPolicies) {
   EXPECT_CALL(provider2_, RefreshPolicies()).Times(AnyNumber());
 
   EXPECT_CALL(*this, OnPolicyRefresh()).Times(0);
-  policy_service_->RefreshPolicies(base::Bind(
-      &PolicyServiceTest::OnPolicyRefresh,
-      base::Unretained(this)));
+  policy_service_->RefreshPolicies(base::BindOnce(
+      &PolicyServiceTest::OnPolicyRefresh, base::Unretained(this)));
   // Let any queued observer tasks run.
   RunUntilIdle();
   Mock::VerifyAndClearExpectations(this);
@@ -530,9 +529,8 @@ TEST_F(PolicyServiceTest, RefreshPolicies) {
   // If another RefreshPolicies() call happens while waiting for a previous
   // one to complete, then all providers must refresh again.
   EXPECT_CALL(*this, OnPolicyRefresh()).Times(0);
-  policy_service_->RefreshPolicies(base::Bind(
-      &PolicyServiceTest::OnPolicyRefresh,
-      base::Unretained(this)));
+  policy_service_->RefreshPolicies(base::BindOnce(
+      &PolicyServiceTest::OnPolicyRefresh, base::Unretained(this)));
   RunUntilIdle();
   Mock::VerifyAndClearExpectations(this);
 

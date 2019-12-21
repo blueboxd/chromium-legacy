@@ -37,6 +37,7 @@
 <translation id="1231733316453485619">Միացնե՞լ համաժամացումը</translation>
 <translation id="123724288017357924">Վերաբեռնել ընթացիկ էջը` անտեսելով հիշապահեստի բովանդակությունը</translation>
 <translation id="124116460088058876">Այլ լեզուներ</translation>
+<translation id="1242008676835033345">Զետեղված է <ph name="WEBSITE_URL" /> կայքում</translation>
 <translation id="124678866338384709">Փակել ընթացիկ ներդիրը</translation>
 <translation id="1258753120186372309">Google doodle՝ <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Որոնում և առաջարկներ</translation>
@@ -95,6 +96,7 @@
 <translation id="1672586136351118594">Այլևս ցույց չտալ</translation>
 <translation id="1692118695553449118">Համաժամացումը միացված է</translation>
 <translation id="169515064810179024">Արգելել կայքերին օգտագործել շարժման տվիչները</translation>
+<translation id="1711267867945983636">Շարունակելու համար ձեր հեռախոսում միացրեք NFC-ն</translation>
 <translation id="1717218214683051432">Շարժման տվիչներ</translation>
 <translation id="1718835860248848330">Վերջին 1 ժամվա</translation>
 <translation id="1736419249208073774">Ուսումնասիրել</translation>
@@ -151,6 +153,7 @@
 <translation id="2082238445998314030"><ph name="RESULT_NUMBER" />-ից <ph name="TOTAL_RESULTS" /> արդյունք</translation>
 <translation id="2091887806945687916">Ձայն</translation>
 <translation id="2096012225669085171">Համաժամացում և անհատականացում բոլոր սարքերում</translation>
+<translation id="2099625543891475722">ձեր ֆիզիկական բնութագրերը, օրինակ՝ հասակը</translation>
 <translation id="2100273922101894616">Ավտոմատ մուտք</translation>
 <translation id="2100314319871056947">Փորձեք ուղարկել տեքստը մաս-մաս</translation>
 <translation id="2107397443965016585">Հարցնել՝ նախքան թույլատրելը կայքերին նվագարկել պաշտպանված բովանդակություն (խորհուրդ է տրվում)</translation>
@@ -481,6 +484,7 @@
 <translation id="4634124774493850572">Օգտագործել գաղտնաբառը</translation>
 <translation id="4645575059429386691">Կառավարվում է ձեր ծնողի կողմից</translation>
 <translation id="4650364565596261010">Կանխադրված</translation>
+<translation id="4660838440047236328">ձեր սենյակի դասավորությունը</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> էջանիշ ջնջվեց</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> կայքն ավելացվեց ձեր հիմնական էկրանին</translation>
 <translation id="4684427112815847243">Համաժամացնել բոլորը</translation>
@@ -605,6 +609,7 @@
 <translation id="5487521232677179737">Ջնջել տվյալները</translation>
 <translation id="5494752089476963479">Արգելափակել գովազդը կայքերում, որոնք հոգնեցնող կամ մոլորեցնող գովազդ են ցուցադրում</translation>
 <translation id="5500777121964041360">Գործառույթը կարող է հասանելի չլինել ձեր երկրում։</translation>
+<translation id="5505264765875738116">Կայքերը չեն կարող խնդրել ծանուցումներ ուղարկել</translation>
 <translation id="5512137114520586844">Այս հաշիվը կառավարվում է <ph name="PARENT_NAME" /> հաշվի կողմից:</translation>
 <translation id="5514904542973294328">Անջատվել է այս սարքի ադմինիստրատորի կողմից</translation>
 <translation id="5515439363601853141">Գաղտնաբառը տեսնելու համար ապակողպեք էկրանը</translation>
@@ -702,6 +707,7 @@
 <translation id="6192792657125177640">Բացառություններ</translation>
 <translation id="6194112207524046168">Որպեսզի տեսախցիկը հասանելի դառնա Chrome-ին, միացրեք այն <ph name="BEGIN_LINK" />Android-ի կարգավորումներում<ph name="END_LINK" />։</translation>
 <translation id="6196640612572343990">Արգելափակել երրորդ կողմի քուքիները</translation>
+<translation id="6201345951596836663">Հղումը պատճենվեց</translation>
 <translation id="6206551242102657620">Կապակցումը պաշտպանված չէ: Տեղեկություններ կայքի մասին:</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> հաշիվը ձե՞րը չէ</translation>
 <translation id="6216432067784365534">Ընտրանքներ՝ <ph name="NAME_OF_LIST_ITEM" /></translation>
@@ -711,6 +717,7 @@
 Օրինակ, որոշ վեբկայքեր կարող են այս հարցմանը պատասխանել՝ ներկայացնելով գովազդ, որը հիմնված չէ ձեր այցելությունների վրա: Շատ վեբկայքեր կշարունակեն հավաքել և օգտագործել ձեր այցելությունների պատմությունը: Այն կարող է օգտագործվել, օրինակ, անվտանգությունը բարելավելու, բովանդակություն, գովազդ և խորհուրդներ տրամադրելու և վիճակագրական տվյալներ հավաքելու նպատակով:</translation>
 <translation id="624789221780392884">Թարմացումը պատրաստ է</translation>
 <translation id="6255999984061454636">Բովանդակության առաջարկներ</translation>
+<translation id="6270391203985052864">Կայքերը կարող են խնդրել ծանուցումներ ուղարկել</translation>
 <translation id="6277522088822131679">Այս էջը տպելիս խնդիր առաջացավ: Նորից փորձեք:</translation>
 <translation id="6295158916970320988">Բոլոր կայքերը</translation>
 <translation id="629730747756840877">Հաշիվ</translation>
@@ -755,6 +762,7 @@
 <translation id="6545864417968258051">Bluetooth սարքերի որոնում</translation>
 <translation id="6560414384669816528">Որոնել Sogou որոնման համակարգով</translation>
 <translation id="656065428026159829">Տեսնել ավելին</translation>
+<translation id="6561560012278703671">Օգտագործել ավելի հանգիստ հաղորդագրություններ (արգելափակում է շեղող ծանուցումները)</translation>
 <translation id="6566259936974865419">Chrome-ը խնայել է <ph name="GIGABYTES" /> ԳԲ տարածք</translation>
 <translation id="6573096386450695060">Միշտ թույլատրել</translation>
 <translation id="6573431926118603307">Ձեր մյուս սարքերում Chrome-ով բացված ներդիրները կտեսնեք այստեղ:</translation>
@@ -852,6 +860,7 @@
 <translation id="729975465115245577">Ձեր սարքը գաղտնաբառերի ֆայլ պահելու հավելված չունի:</translation>
 <translation id="7302081693174882195">Տեղեկություններ․ տեսակավորված է ըստ պահված տվյալների ծավալի</translation>
 <translation id="7302486331832100261">Դուք սովորաբար արգելափակում եք ծանուցումները։ Թույլատրելու համար սեղմեք «Մանրամասներ»։</translation>
+<translation id="7311441321349344333">Սարքի NFC-ն անջատված է։ Միացրեք այն <ph name="BEGIN_LINK" />Android-ի կարգավորումներում<ph name="END_LINK" />։</translation>
 <translation id="7328017930301109123">Lite ռեժիմում Chrome-ն ավելի արագ է բեռնում էջերը և օգտագործում է մինչև 60 տոկոս պակաս թրաֆիկ:</translation>
 <translation id="7333031090786104871">Դեռ նախորդ կայքն է ավելացվում</translation>
 <translation id="7352939065658542140">ՏԵՍԱՆՅՈՒԹ</translation>

@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/gmock_move_support.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_simple_task_runner.h"
 #include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
@@ -391,8 +392,8 @@ TEST_F(HeartbeatSchedulerTest, SendGcmIdUpdate) {
   // Verifies that GCM id update request was sent after GCM registration.
   cloud_policy_client_.SetDMToken(kDMToken);
   policy::CloudPolicyClient::StatusCallback callback;
-  EXPECT_CALL(cloud_policy_client_, UpdateGcmId(kRegistrationId, _))
-      .WillOnce(SaveArg<1>(&callback));
+  EXPECT_CALL(cloud_policy_client_, UpdateGcmId_(kRegistrationId, _))
+      .WillOnce(MoveArg<1>(&callback));
 
   // Enable heartbeats.
   EXPECT_CALL(gcm_driver_, RegisterImpl(kHeartbeatGCMAppID, _));
@@ -407,7 +408,7 @@ TEST_F(HeartbeatSchedulerTest, SendGcmIdUpdate) {
   // callback.
   testing::Mock::VerifyAndClearExpectations(&cloud_policy_client_);
   EXPECT_FALSE(callback.is_null());
-  callback.Run(true);
+  std::move(callback).Run(true);
 }
 
 TEST_F(HeartbeatSchedulerTest, GcmUpstreamNotificationSignup) {
@@ -415,7 +416,7 @@ TEST_F(HeartbeatSchedulerTest, GcmUpstreamNotificationSignup) {
   cloud_policy_client_.SetDMToken(kDMToken);
   EXPECT_CALL(gcm_driver_, RegisterImpl(kHeartbeatGCMAppID, _))
       .Times(AnyNumber());
-  EXPECT_CALL(cloud_policy_client_, UpdateGcmId(kRegistrationId, _));
+  EXPECT_CALL(cloud_policy_client_, UpdateGcmId_(kRegistrationId, _));
 
   // GCM connected event before the registration should be ignored.
   scoped_testing_cros_settings_.device_settings()->SetBoolean(

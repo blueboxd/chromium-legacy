@@ -204,7 +204,7 @@ PageSwitcherButton* GetButtonByIndex(views::View* buttons, size_t index) {
 
 }  // namespace
 
-PageSwitcher::PageSwitcher(ash::PaginationModel* model,
+PageSwitcher::PageSwitcher(PaginationModel* model,
                            bool is_root_app_grid_page_switcher,
                            bool is_tablet_mode)
     : model_(model),

@@ -56,7 +56,7 @@ void CloudPolicyService::RefreshPolicy(RefreshPolicyCallback callback) {
   client_->FetchPolicy();
 }
 
-void CloudPolicyService::Unregister(const UnregisterCallback& callback) {
+void CloudPolicyService::Unregister(UnregisterCallback callback) {
   // Abort all pending refresh requests.
   if (refresh_state_ != REFRESH_NONE)
     RefreshCompleted(false);
@@ -65,7 +65,7 @@ void CloudPolicyService::Unregister(const UnregisterCallback& callback) {
   if (unregister_state_  != UNREGISTER_NONE)
     UnregisterCompleted(false);
 
-  unregister_callback_ = callback;
+  unregister_callback_ = std::move(callback);
   unregister_state_ = UNREGISTER_PENDING;
   client_->Unregister();
 }
@@ -237,8 +237,7 @@ void CloudPolicyService::UnregisterCompleted(bool success) {
     LOG(ERROR) << "Unregister request failed.";
 
   unregister_state_ = UNREGISTER_NONE;
-  unregister_callback_.Run(success);
-  unregister_callback_ = UnregisterCallback();  // Reset.
+  std::move(unregister_callback_).Run(success);
 }
 
 void CloudPolicyService::AddObserver(Observer* observer) {

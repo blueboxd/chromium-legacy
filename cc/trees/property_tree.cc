@@ -297,7 +297,7 @@ bool TransformTree::CombineInversesBetween(int source_id,
 }
 
 // This function should match the offset we set for sticky position layer in
-// CompositedLayerMapping::UpdateMainGraphicsLayerGeometry.
+// blink::LayoutBoxModelObject::StickyPositionOffset.
 gfx::Vector2dF TransformTree::StickyPositionOffset(TransformNode* node) {
   StickyPositionNodeData* sticky_data = MutableStickyPositionData(node->id);
   if (!sticky_data)
@@ -317,7 +317,7 @@ gfx::Vector2dF TransformTree::StickyPositionOffset(TransformNode* node) {
     scroll_position -= transform_node->snap_amount;
   }
 
-  gfx::Rect clip = constraint.constraint_box_rect;
+  gfx::RectF clip = constraint.constraint_box_rect;
   clip.Offset(scroll_position.x(), scroll_position.y());
 
   // The clip region may need to be offset by the outer viewport bounds, e.g. if
@@ -418,7 +418,8 @@ gfx::Vector2dF TransformTree::StickyPositionOffset(TransformNode* node) {
       ancestor_sticky_box_offset + ancestor_containing_block_offset +
       sticky_offset;
 
-  return sticky_offset;
+  // return
+  return gfx::Vector2dF(roundf(sticky_offset.x()), roundf(sticky_offset.y()));
 }
 
 void TransformTree::UpdateLocalTransform(TransformNode* node) {

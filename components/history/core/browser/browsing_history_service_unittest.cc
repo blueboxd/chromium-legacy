@@ -113,7 +113,7 @@ class TestBrowsingHistoryDriver : public BrowsingHistoryDriver {
   void ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
       const syncer::SyncService* sync_service,
       WebHistoryService* local_history,
-      base::Callback<void(bool)> callback) override {}
+      base::OnceCallback<void(bool)> callback) override {}
 
   int history_deleted_count_ = 0;
   std::vector<QueryResult> query_results_;
@@ -165,7 +165,7 @@ class TimeoutWebHistoryService : public TestWebHistoryService {
  private:
   // WebHistoryService implementation.
   Request* CreateRequest(const GURL& url,
-                         const CompletionCallback& callback,
+                         CompletionCallback callback,
                          const net::PartialNetworkTrafficAnnotationTag&
                              partial_traffic_annotation) override {
     return new TestWebHistoryService::TestRequest();

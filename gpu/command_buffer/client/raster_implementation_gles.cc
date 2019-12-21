@@ -105,17 +105,28 @@ void RasterImplementationGLES::CopySubTexture(
     GLint x,
     GLint y,
     GLsizei width,
-    GLsizei height) {
+    GLsizei height,
+    GLboolean unpack_flip_y,
+    GLboolean unpack_premultiply_alpha) {
   GLuint texture_ids[2] = {
-      gl_->CreateAndConsumeTextureCHROMIUM(source_mailbox.name),
-      gl_->CreateAndConsumeTextureCHROMIUM(dest_mailbox.name),
+      CreateAndConsumeForGpuRaster(source_mailbox),
+      CreateAndConsumeForGpuRaster(dest_mailbox),
   };
   DCHECK(texture_ids[0]);
   DCHECK(texture_ids[1]);
 
+  BeginSharedImageAccessDirectCHROMIUM(
+      texture_ids[0], GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
+  BeginSharedImageAccessDirectCHROMIUM(
+      texture_ids[1], GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
+
   gl_->CopySubTextureCHROMIUM(texture_ids[0], 0, dest_target, texture_ids[1], 0,
-                              xoffset, yoffset, x, y, width, height, false,
-                              false, false);
+                              xoffset, yoffset, x, y, width, height,
+                              unpack_flip_y, unpack_premultiply_alpha,
+                              false /* upack_unmultiply_alpha */);
+
+  EndSharedImageAccessDirectCHROMIUM(texture_ids[0]);
+  EndSharedImageAccessDirectCHROMIUM(texture_ids[1]);
   gl_->DeleteTextures(2, texture_ids);
 }
 

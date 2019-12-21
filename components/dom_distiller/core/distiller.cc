@@ -112,11 +112,11 @@ DistillerImpl::DistilledPageData* DistillerImpl::GetPageAtIndex(
 
 void DistillerImpl::DistillPage(const GURL& url,
                                 std::unique_ptr<DistillerPage> distiller_page,
-                                const DistillationFinishedCallback& finished_cb,
+                                DistillationFinishedCallback finished_cb,
                                 const DistillationUpdateCallback& update_cb) {
   DCHECK(AreAllPagesFinished());
   distiller_page_ = std::move(distiller_page);
-  finished_cb_ = finished_cb;
+  finished_cb_ = std::move(finished_cb);
   update_cb_ = update_cb;
 
   AddToDistillationQueue(0, url);
@@ -416,8 +416,7 @@ void DistillerImpl::RunDistillerCallbackIfDone() {
 
     base::AutoReset<bool> dont_delete_this_in_callback(&destruction_allowed_,
                                                        false);
-    finished_cb_.Run(std::move(article_proto));
-    finished_cb_.Reset();
+    std::move(finished_cb_).Run(std::move(article_proto));
   }
 }
 

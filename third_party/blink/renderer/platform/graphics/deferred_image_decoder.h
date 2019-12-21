@@ -62,7 +62,7 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
 
   String FilenameExtension() const;
 
-  sk_sp<PaintImageGenerator> CreateGenerator(size_t index);
+  sk_sp<PaintImageGenerator> CreateGenerator();
 
   scoped_refptr<SharedBuffer> Data();
   void SetData(scoped_refptr<SharedBuffer> data, bool all_data_received);
@@ -119,6 +119,10 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
   IntPoint hot_spot_;
   const PaintImage::ContentId complete_frame_content_id_;
   base::Optional<bool> incremental_decode_needed_;
+
+  // Set to true if the image is detected to be invalid after parsing the
+  // metadata.
+  bool invalid_image_ = false;
 
   // Caches an image's metadata so it can outlive |metadata_decoder_| after all
   // data is received in cases where multiple generators are created.

@@ -271,9 +271,9 @@ PopularSitesImpl::PopularSitesImpl(
 PopularSitesImpl::~PopularSitesImpl() {}
 
 bool PopularSitesImpl::MaybeStartFetch(bool force_download,
-                                       const FinishedCallback& callback) {
+                                       FinishedCallback callback) {
   DCHECK(!callback_);
-  callback_ = callback;
+  callback_ = std::move(callback);
 
   const base::Time last_download_time = base::Time::FromInternalValue(
       prefs_->GetInt64(prefs::kPopularSitesLastDownloadPref));
@@ -484,7 +484,7 @@ void PopularSitesImpl::OnJsonParsed(
   prefs_->SetString(prefs::kPopularSitesURLPref, pending_url_.spec());
 
   sections_ = ParseSites(*list, version_in_pending_url_);
-  callback_.Run(true);
+  std::move(callback_).Run(true);
 }
 
 void PopularSitesImpl::OnDownloadFailed() {
@@ -497,7 +497,7 @@ void PopularSitesImpl::OnDownloadFailed() {
     FetchPopularSites();
   } else {
     DLOG(WARNING) << "Download fallback site list failed";
-    callback_.Run(false);
+    std::move(callback_).Run(false);
   }
 }
 

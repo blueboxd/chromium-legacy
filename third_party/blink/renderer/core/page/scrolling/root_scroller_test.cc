@@ -239,10 +239,10 @@ class OverscrollTestWebWidgetClient
     : public frame_test_helpers::TestWebWidgetClient {
  public:
   MOCK_METHOD4(DidOverscroll,
-               void(const WebFloatSize&,
-                    const WebFloatSize&,
-                    const WebFloatPoint&,
-                    const WebFloatSize&));
+               void(const gfx::Vector2dF&,
+                    const gfx::Vector2dF&,
+                    const gfx::PointF&,
+                    const gfx::Vector2dF&));
 };
 
 // Tests that setting an element as the root scroller causes it to control url
@@ -286,8 +286,9 @@ TEST_F(RootScrollerTest, TestSetRootScroller) {
   {
     // Scroll 50 pixels past the end. Ensure we report the 50 pixels as
     // overscroll.
-    EXPECT_CALL(client, DidOverscroll(WebFloatSize(0, 50), WebFloatSize(0, 50),
-                                      WebFloatPoint(100, 100), WebFloatSize()));
+    EXPECT_CALL(client,
+                DidOverscroll(gfx::Vector2dF(0, 50), gfx::Vector2dF(0, 50),
+                              gfx::PointF(100, 100), gfx::Vector2dF()));
     GetWebView()->MainFrameWidget()->HandleInputEvent(GenerateTouchGestureEvent(
         WebInputEvent::kGestureScrollUpdate, 0, -500));
     EXPECT_FLOAT_EQ(maximum_scroll, container->scrollTop());
@@ -298,8 +299,9 @@ TEST_F(RootScrollerTest, TestSetRootScroller) {
 
   {
     // Continue the gesture overscroll.
-    EXPECT_CALL(client, DidOverscroll(WebFloatSize(0, 20), WebFloatSize(0, 70),
-                                      WebFloatPoint(100, 100), WebFloatSize()));
+    EXPECT_CALL(client,
+                DidOverscroll(gfx::Vector2dF(0, 20), gfx::Vector2dF(0, 70),
+                              gfx::PointF(100, 100), gfx::Vector2dF()));
     GetWebView()->MainFrameWidget()->HandleInputEvent(
         GenerateTouchGestureEvent(WebInputEvent::kGestureScrollUpdate, 0, -20));
     EXPECT_FLOAT_EQ(maximum_scroll, container->scrollTop());
@@ -317,8 +319,9 @@ TEST_F(RootScrollerTest, TestSetRootScroller) {
     GetWebView()->MainFrameWidget()->HandleInputEvent(
         GenerateTouchGestureEvent(WebInputEvent::kGestureScrollBegin));
 
-    EXPECT_CALL(client, DidOverscroll(WebFloatSize(0, 30), WebFloatSize(0, 30),
-                                      WebFloatPoint(100, 100), WebFloatSize()));
+    EXPECT_CALL(client,
+                DidOverscroll(gfx::Vector2dF(0, 30), gfx::Vector2dF(0, 30),
+                              gfx::PointF(100, 100), gfx::Vector2dF()));
     GetWebView()->MainFrameWidget()->HandleInputEvent(
         GenerateTouchGestureEvent(WebInputEvent::kGestureScrollUpdate, 0, -30));
     EXPECT_FLOAT_EQ(maximum_scroll, container->scrollTop());

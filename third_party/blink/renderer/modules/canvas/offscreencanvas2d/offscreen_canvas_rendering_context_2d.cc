@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/platform/fonts/text_run_paint_info.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
+#include "third_party/blink/renderer/platform/graphics/memory_managed_paint_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
@@ -85,6 +86,11 @@ OffscreenCanvasRenderingContext2D::OffscreenCanvasRenderingContext2D(
       bernoulli_distribution_(kUMASampleProbability) {
   is_valid_size_ = IsValidImageSize(Host()->Size());
 
+  // A raw pointer is safe here because the callback is only used by the
+  // recorder_
+  set_needs_flush_callback_ =
+      WTF::BindRepeating(&OffscreenCanvasRenderingContext2D::SetNeedsFlush,
+                         WrapWeakPersistent(this));
   StartRecording();
 
   // Clear the background transparent or opaque. Similar code at
@@ -126,13 +132,12 @@ void OffscreenCanvasRenderingContext2D::commit() {
 }
 
 void OffscreenCanvasRenderingContext2D::StartRecording() {
-  recorder_ = std::make_unique<PaintRecorder>();
-
+  recorder_ =
+      std::make_unique<MemoryManagedPaintRecorder>(set_needs_flush_callback_);
   cc::PaintCanvas* canvas = recorder_->beginRecording(Width(), Height());
   // Always save an initial frame, to support resetting the top level matrix
   // and clip.
   canvas->save();
-
   RestoreMatrixClipStack(canvas);
 }
 
@@ -160,6 +165,7 @@ void OffscreenCanvasRenderingContext2D::FinalizeFrame() {
   if (!GetOrCreateCanvasResourceProvider())
     return;
   FlushRecording();
+  needs_flush_ = false;
 }
 
 // BaseRenderingContext2D implementation
@@ -293,23 +299,20 @@ cc::PaintCanvas* OffscreenCanvasRenderingContext2D::DrawingCanvas() const {
   return recorder_->getRecordingCanvas();
 }
 
-cc::PaintCanvas* OffscreenCanvasRenderingContext2D::ExistingDrawingCanvas()
-    const {
-  if (!is_valid_size_)
-    return nullptr;
-  return recorder_->getRecordingCanvas();
-}
-
 void OffscreenCanvasRenderingContext2D::DidDraw() {
   have_recorded_draw_commands_ = true;
-  Host()->DidDraw();
   dirty_rect_for_commit_.setWH(Width(), Height());
+  Host()->DidDraw();
+  if (needs_flush_)
+    FinalizeFrame();
 }
 
 void OffscreenCanvasRenderingContext2D::DidDraw(const SkIRect& dirty_rect) {
   have_recorded_draw_commands_ = true;
   dirty_rect_for_commit_.join(dirty_rect);
   Host()->DidDraw(SkRect::Make(dirty_rect_for_commit_));
+  if (needs_flush_)
+    FinalizeFrame();
 }
 
 bool OffscreenCanvasRenderingContext2D::StateHasFilter() {
@@ -641,5 +644,9 @@ bool OffscreenCanvasRenderingContext2D::IsCanvas2DBufferValid() const {
   if (IsPaintable())
     return GetCanvasResourceProvider()->IsValid();
   return false;
+}
+
+void OffscreenCanvasRenderingContext2D::SetNeedsFlush() {
+  needs_flush_ = true;
 }
 }  // namespace blink

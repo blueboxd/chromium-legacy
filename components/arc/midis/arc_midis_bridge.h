@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "components/arc/mojom/midis.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace content {
 class BrowserContext;
@@ -43,7 +44,7 @@ class ArcMidisBridge : public KeyedService,
   void OnMojoConnectionError();
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
-  mojom::MidisHostPtr midis_host_ptr_;
+  mojo::Remote<mojom::MidisHost> midis_host_remote_;
 
   // WeakPtrFactory to use for callbacks.
   base::WeakPtrFactory<ArcMidisBridge> weak_factory_{this};

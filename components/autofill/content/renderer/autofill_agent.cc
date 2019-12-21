@@ -59,7 +59,6 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_node.h"
 #include "third_party/blink/public/web/web_option_element.h"
-#include "third_party/blink/public/web/web_user_gesture_indicator.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -80,7 +79,6 @@ using blink::WebLocalFrame;
 using blink::WebNode;
 using blink::WebOptionElement;
 using blink::WebString;
-using blink::WebUserGestureIndicator;
 using blink::WebVector;
 
 namespace autofill {
@@ -232,8 +230,8 @@ void AutofillAgent::FocusedElementChanged(const WebElement& element) {
   was_focused_before_now_ = false;
 
   if ((IsKeyboardAccessoryEnabled() || !focus_requires_scroll_) &&
-      WebUserGestureIndicator::IsProcessingUserGesture(
-          element.IsNull() ? nullptr : element.GetDocument().GetFrame())) {
+      !element.IsNull() &&
+      element.GetDocument().GetFrame()->HasTransientUserActivation()) {
     focused_node_was_last_clicked_ = true;
     HandleFocusChangeComplete();
   }

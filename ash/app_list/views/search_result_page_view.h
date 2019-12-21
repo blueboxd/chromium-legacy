@@ -55,16 +55,16 @@ class APP_LIST_EXPORT SearchResultPageView
   void OnHidden() override;
   void OnShown() override;
 
-  void OnAnimationStarted(ash::AppListState from_state,
-                          ash::AppListState to_state) override;
+  void OnAnimationStarted(AppListState from_state,
+                          AppListState to_state) override;
   void OnAnimationUpdated(double progress,
-                          ash::AppListState from_state,
-                          ash::AppListState to_state) override;
+                          AppListState from_state,
+                          AppListState to_state) override;
   gfx::Size GetPreferredSearchBoxSize() const override;
   base::Optional<int> GetSearchBoxTop(
-      ash::AppListViewState view_state) const override;
+      AppListViewState view_state) const override;
   gfx::Rect GetPageBoundsForState(
-      ash::AppListState state,
+      AppListState state,
       const gfx::Rect& contents_bounds,
       const gfx::Rect& search_box_bounds) const override;
   views::View* GetFirstFocusableView() override;
@@ -164,7 +164,7 @@ class APP_LIST_EXPORT SearchResultPageView
 
   views::View* assistant_privacy_info_view_ = nullptr;
 
-  std::unique_ptr<ash::ViewShadow> view_shadow_;
+  std::unique_ptr<ViewShadow> view_shadow_;
 
   ScopedObserver<SearchBoxModel, SearchBoxModelObserver> search_box_observer_{
       this};

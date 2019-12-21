@@ -86,7 +86,7 @@ history::WebHistoryService* IOSBrowsingHistoryDriver::GetWebHistoryService() {
 void IOSBrowsingHistoryDriver::ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
     const syncer::SyncService* sync_service,
     history::WebHistoryService* history_service,
-    base::Callback<void(bool)> callback) {
+    base::OnceCallback<void(bool)> callback) {
   browsing_data::ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
       sync_service, history_service, std::move(callback));
 }

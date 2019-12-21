@@ -15,7 +15,7 @@ namespace chromeos {
 namespace tether {
 
 // static
-const uint32_t KeepAliveScheduler::kKeepAliveIntervalMinutes = 4;
+const uint32_t KeepAliveScheduler::kKeepAliveIntervalMinutes = 3;
 
 KeepAliveScheduler::KeepAliveScheduler(
     device_sync::DeviceSyncClient* device_sync_client,

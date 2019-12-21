@@ -966,7 +966,7 @@ void LocalFrameClientImpl::NotifyUserActivation(
     autofill_client->UserGestureObserved();
 }
 
-void LocalFrameClientImpl::ConsumeUserActivation() {
+void LocalFrameClientImpl::ConsumeTransientUserActivation() {
   DCHECK(web_frame_->Client());
   web_frame_->Client()->UpdateUserActivationState(
       UserActivationUpdateType::kConsumeTransientActivation);

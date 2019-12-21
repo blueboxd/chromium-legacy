@@ -59,7 +59,7 @@ class POLICY_EXPORT PolicyStatisticsCollector {
   PolicyService* policy_service_;
   PrefService* prefs_;
 
-  base::CancelableClosure update_callback_;
+  base::CancelableOnceClosure update_callback_;
 
   const scoped_refptr<base::TaskRunner> task_runner_;
 

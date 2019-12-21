@@ -516,6 +516,9 @@ bool TrayBackgroundView::GetEffectiveVisibility() {
   if (!visible_preferred_)
     return false;
 
+  if (!GetWidget())
+    return false;
+
   // When the status area is collapsed, the effective visibility of the view is
   // determined by |show_when_collapsed_|.
   StatusAreaWidget::CollapseState collapse_state =

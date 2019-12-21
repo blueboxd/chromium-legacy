@@ -621,7 +621,7 @@ void FlagsState::GetFlagFeatureEntries(
     FlagAccess access,
     base::ListValue* supported_entries,
     base::ListValue* unsupported_entries,
-    base::Callback<bool(const FeatureEntry&)> skip_feature_entry) {
+    base::RepeatingCallback<bool(const FeatureEntry&)> skip_feature_entry) {
   std::set<std::string> enabled_entries;
   GetSanitizedEnabledFlags(flags_storage, &enabled_entries);
 

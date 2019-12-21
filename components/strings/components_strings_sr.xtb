@@ -326,7 +326,6 @@
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />да покренете дијагностику мреже<ph name="END_LINK" /></translation>
 <translation id="2473195200299095979">Преведите ову страницу</translation>
 <translation id="2479410451996844060">Неважећа URL адреса претраге.</translation>
-<translation id="2482370039860827034">Управо сте унели лозинку на обмањујућем сајту. Chrome вам препоручује да одете на <ph name="WEBSITE_1" /> и <ph name="WEBSITE_2" />, као и на друге сајтове где користите ову лозинку, и да је одмах промените.</translation>
 <translation id="2482878487686419369">Обавештења</translation>
 <translation id="248348093745724435">Смернице за уређаје</translation>
 <translation id="2491120439723279231">Сертификат сервера садржи грешке.</translation>
@@ -339,7 +338,6 @@
 <translation id="2505268675989099013">Заштити налог</translation>
 <translation id="2515629240566999685">да проверите сигнал у својој области</translation>
 <translation id="2521385132275182522">Спајање у доњем десном углу</translation>
-<translation id="2521483867890026383">Управо сте унели лозинку на обмањујућем сајту. Chromium вам препоручује да одете на <ph name="WEBSITE_1" /> и <ph name="WEBSITE_2" />, као и на друге сајтове где користите ову лозинку, и да је одмах промените.</translation>
 <translation id="2523886232349826891">Сачувано је само на овом уређају</translation>
 <translation id="2524461107774643265">Додајте још информација</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{и још 1}one{и још #}few{и још #}other{и још #}}</translation>

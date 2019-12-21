@@ -52,10 +52,9 @@ void CertCallbackBadRequestFailure(
       base::BindOnce(callback, ATTESTATION_SERVER_BAD_REQUEST_FAILURE, ""));
 }
 
-void StatusCallbackSuccess(
-    const policy::CloudPolicyClient::StatusCallback& callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::BindOnce(callback, true));
+void StatusCallbackSuccess(policy::CloudPolicyClient::StatusCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
 }
 
 }  // namespace

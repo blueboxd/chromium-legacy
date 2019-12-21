@@ -49,6 +49,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/grit/components_scaled_resources.h"
+#include "components/tab_groups/tab_group_color.h"
 #include "components/tab_groups/tab_group_visual_data.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
@@ -740,10 +741,11 @@ void Tab::SetClosing(bool closing) {
 }
 
 base::Optional<SkColor> Tab::GetGroupColor() const {
-  return group().has_value()
-             ? base::make_optional(
-                   controller_->GetVisualDataForGroup(group().value())->color())
-             : base::nullopt;
+  if (!group().has_value())
+    return base::nullopt;
+
+  return controller_->GetPaintedGroupColor(
+      controller_->GetGroupColorId(group().value()));
 }
 
 SkColor Tab::GetAlertIndicatorColor(TabAlertState state) const {

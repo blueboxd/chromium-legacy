@@ -1071,7 +1071,7 @@ crbug.com/982194 external/wpt/html/user-activation/activation-hierarchy-parent-m
 crbug.com/982194 external/wpt/html/user-activation/message-event-activation-api-iframe-cross-origin.sub.tentative.html [ Pass Timeout ]
 crbug.com/982194 external/wpt/infrastructure/assumptions/blank.html [ Pass ]
 crbug.com/982194 external/wpt/infrastructure/reftest/reftest_fuzzy_1.html [ Pass ]
-crbug.com/982194 external/wpt/infrastructure/reftest/reftest_fuzzy_chain_ini.html [ Pass ]
+crbug.com/982194 external/wpt/infrastructure/reftest/legacy/reftest_fuzzy_chain_ini.html [ Pass ]
 crbug.com/982194 external/wpt/infrastructure/reftest/reftest_fuzzy_ini_full.html [ Pass ]
 crbug.com/982194 external/wpt/infrastructure/reftest/reftest_fuzzy_ini_ref_only.html [ Pass ]
 crbug.com/982194 external/wpt/infrastructure/reftest/reftest_fuzzy_ini_short.html [ Pass ]

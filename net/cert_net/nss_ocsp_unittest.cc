@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "net/cert_net/nss_ocsp.h"
+#include "net/cert_net/nss_ocsp_session_url_request.h"
 
 #include <string>
 #include <utility>

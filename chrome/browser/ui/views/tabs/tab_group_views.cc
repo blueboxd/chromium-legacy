@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_types.h"
+#include "components/tab_groups/tab_group_color.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -71,10 +72,9 @@ Tab* TabGroupViews::GetLastTabInGroup() const {
 }
 
 SkColor TabGroupViews::GetGroupColor() const {
-  const tab_groups::TabGroupVisualData* data =
-      tab_strip_->controller()->GetVisualDataForGroup(group_);
-
-  return data->color();
+  const tab_groups::TabGroupColorId color_id =
+      tab_strip_->controller()->GetGroupColorId(group_);
+  return tab_strip_->GetPaintedGroupColor(color_id);
 }
 
 SkColor TabGroupViews::GetTabBackgroundColor() const {

@@ -49,7 +49,6 @@
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
-#include "components/viz/service/frame_sinks/direct_layer_tree_frame_sink.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/compositor_util.h"
@@ -440,7 +439,6 @@ void CompositorImpl::SetVisible(bool visible) {
     // Hide the LayerTreeHost and release its frame sink.
     host_->SetVisible(false);
     host_->ReleaseLayerTreeFrameSink();
-    has_layer_tree_frame_sink_ = false;
     pending_frames_ = 0;
 
     // Notify CompositorDependenciesAndroid of visibility changes last, to
@@ -485,6 +483,9 @@ void CompositorImpl::RegisterRootFrameSink() {
       frame_sink_id_, this, viz::ReportFirstSurfaceActivation::kNo);
   GetHostFrameSinkManager()->SetFrameSinkDebugLabel(frame_sink_id_,
                                                     "CompositorImpl");
+  for (auto& frame_sink_id : pending_child_frame_sink_ids_)
+    AddChildFrameSink(frame_sink_id);
+  pending_child_frame_sink_ids_.clear();
 }
 
 void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
@@ -548,11 +549,6 @@ void CompositorImpl::RequestNewLayerTreeFrameSink() {
 
 void CompositorImpl::DidInitializeLayerTreeFrameSink() {
   layer_tree_frame_sink_request_pending_ = false;
-  has_layer_tree_frame_sink_ = true;
-  for (auto& frame_sink_id : pending_child_frame_sink_ids_)
-    AddChildFrameSink(frame_sink_id);
-
-  pending_child_frame_sink_ids_.clear();
 }
 
 void CompositorImpl::DidFailToInitializeLayerTreeFrameSink() {
@@ -676,7 +672,6 @@ void CompositorImpl::DidReceiveCompositorFrameAck() {
 
 void CompositorImpl::DidLoseLayerTreeFrameSink() {
   TRACE_EVENT0("compositor", "CompositorImpl::DidLoseLayerTreeFrameSink");
-  has_layer_tree_frame_sink_ = false;
   client_->DidSwapFrame(0);
 }
 
@@ -712,11 +707,10 @@ viz::FrameSinkId CompositorImpl::GetFrameSinkId() {
 }
 
 void CompositorImpl::AddChildFrameSink(const viz::FrameSinkId& frame_sink_id) {
-  if (has_layer_tree_frame_sink_) {
+  if (GetHostFrameSinkManager()->IsFrameSinkIdRegistered(frame_sink_id_)) {
     bool result = GetHostFrameSinkManager()->RegisterFrameSinkHierarchy(
         frame_sink_id_, frame_sink_id);
-    // TODO(samans): Delete this once https://crbug.com/1030618 is resolved.
-    CHECK(result);
+    DCHECK(result);
   } else {
     pending_child_frame_sink_ids_.insert(frame_sink_id);
   }

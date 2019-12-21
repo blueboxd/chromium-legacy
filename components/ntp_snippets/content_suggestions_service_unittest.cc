@@ -475,7 +475,7 @@ TEST_F(ContentSuggestionsServiceTest,
   base::Time begin = base::Time::FromTimeT(123),
              end = base::Time::FromTimeT(456);
   EXPECT_CALL(*raw_mock_ranker, ClearHistory(begin, end));
-  base::Callback<bool(const GURL& url)> filter;
+  base::RepeatingCallback<bool(const GURL& url)> filter;
   service()->ClearHistory(begin, end, filter);
 }
 

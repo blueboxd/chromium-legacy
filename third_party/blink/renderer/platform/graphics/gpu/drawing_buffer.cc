@@ -41,8 +41,6 @@
 #include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/common/resources/shared_bitmap.h"
 #include "components/viz/common/resources/transferable_resource.h"
-#include "gpu/GLES2/gl2extchromium.h"
-#include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
@@ -64,7 +62,6 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
-#include "ui/gl/gpu_preference.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -850,15 +847,10 @@ bool DrawingBuffer::Initialize(const IntSize& size, bool use_multisampling) {
   return true;
 }
 
-bool DrawingBuffer::CopyToPlatformTexture(gpu::gles2::GLES2Interface* dst_gl,
-                                          GLenum dst_texture_target,
-                                          GLuint dst_texture,
-                                          GLint dst_level,
-                                          bool premultiply_alpha,
-                                          bool flip_y,
-                                          const IntPoint& dst_texture_offset,
-                                          const IntRect& src_sub_rectangle,
-                                          SourceDrawingBuffer src_buffer) {
+template <typename CopyFunction>
+bool DrawingBuffer::CopyToPlatformInternal(gpu::InterfaceBase* dst_interface,
+                                           SourceDrawingBuffer src_buffer,
+                                           const CopyFunction& copy_function) {
   ScopedStateRestorer scoped_state_restorer(this);
 
   gpu::gles2::GLES2Interface* src_gl = gl_;
@@ -867,9 +859,6 @@ bool DrawingBuffer::CopyToPlatformTexture(gpu::gles2::GLES2Interface* dst_gl,
     ResolveIfNeeded();
     src_gl->Flush();
   }
-
-  if (!Extensions3DUtil::CanUseCopyTextureCHROMIUM(dst_texture_target))
-    return false;
 
   // Contexts may be in a different share group. We must transfer the texture
   // through a mailbox first.
@@ -899,10 +888,32 @@ bool DrawingBuffer::CopyToPlatformTexture(gpu::gles2::GLES2Interface* dst_gl,
     return false;
   }
 
-  dst_gl->WaitSyncTokenCHROMIUM(produce_sync_token.GetConstData());
+  dst_interface->WaitSyncTokenCHROMIUM(produce_sync_token.GetConstData());
 
-  GLuint src_texture =
-      dst_gl->CreateAndTexStorage2DSharedImageCHROMIUM(mailbox.name);
+  copy_function(mailbox);
+
+  gpu::SyncToken sync_token;
+  dst_interface->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
+  src_gl->WaitSyncTokenCHROMIUM(sync_token.GetData());
+  if (texture_id_to_restore_access) {
+    src_gl->BeginSharedImageAccessDirectCHROMIUM(
+        texture_id_to_restore_access,
+        GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
+  }
+  return true;
+}
+
+bool DrawingBuffer::CopyToPlatformTexture(gpu::gles2::GLES2Interface* dst_gl,
+                                          GLenum dst_texture_target,
+                                          GLuint dst_texture,
+                                          GLint dst_level,
+                                          bool premultiply_alpha,
+                                          bool flip_y,
+                                          const IntPoint& dst_texture_offset,
+                                          const IntRect& src_sub_rectangle,
+                                          SourceDrawingBuffer src_buffer) {
+  if (!Extensions3DUtil::CanUseCopyTextureCHROMIUM(dst_texture_target))
+    return false;
 
   GLboolean unpack_premultiply_alpha_needed = GL_FALSE;
   GLboolean unpack_unpremultiply_alpha_needed = GL_FALSE;
@@ -911,26 +922,45 @@ bool DrawingBuffer::CopyToPlatformTexture(gpu::gles2::GLES2Interface* dst_gl,
   else if (want_alpha_channel_ && !premultiplied_alpha_ && premultiply_alpha)
     unpack_premultiply_alpha_needed = GL_TRUE;
 
-  dst_gl->BeginSharedImageAccessDirectCHROMIUM(
-      src_texture, GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
-  dst_gl->CopySubTextureCHROMIUM(
-      src_texture, 0, dst_texture_target, dst_texture, dst_level,
-      dst_texture_offset.X(), dst_texture_offset.Y(), src_sub_rectangle.X(),
-      src_sub_rectangle.Y(), src_sub_rectangle.Width(),
-      src_sub_rectangle.Height(), flip_y, unpack_premultiply_alpha_needed,
-      unpack_unpremultiply_alpha_needed);
-  dst_gl->EndSharedImageAccessDirectCHROMIUM(src_texture);
-  dst_gl->DeleteTextures(1, &src_texture);
+  auto copy_function = [&](gpu::Mailbox src_mailbox) {
+    GLuint src_texture =
+        dst_gl->CreateAndTexStorage2DSharedImageCHROMIUM(src_mailbox.name);
+    dst_gl->BeginSharedImageAccessDirectCHROMIUM(
+        src_texture, GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
+    dst_gl->CopySubTextureCHROMIUM(
+        src_texture, 0, dst_texture_target, dst_texture, dst_level,
+        dst_texture_offset.X(), dst_texture_offset.Y(), src_sub_rectangle.X(),
+        src_sub_rectangle.Y(), src_sub_rectangle.Width(),
+        src_sub_rectangle.Height(), flip_y, unpack_premultiply_alpha_needed,
+        unpack_unpremultiply_alpha_needed);
+    dst_gl->EndSharedImageAccessDirectCHROMIUM(src_texture);
+    dst_gl->DeleteTextures(1, &src_texture);
+  };
+  return CopyToPlatformInternal(dst_gl, src_buffer, copy_function);
+}
 
-  gpu::SyncToken sync_token;
-  dst_gl->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
-  src_gl->WaitSyncTokenCHROMIUM(sync_token.GetData());
-  if (texture_id_to_restore_access) {
-    src_gl->BeginSharedImageAccessDirectCHROMIUM(
-        texture_id_to_restore_access,
-        GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
-  }
-  return true;
+bool DrawingBuffer::CopyToPlatformMailbox(
+    gpu::raster::RasterInterface* dst_raster_interface,
+    gpu::Mailbox dst_mailbox,
+    GLenum dst_texture_target,
+    bool flip_y,
+    const IntPoint& dst_texture_offset,
+    const IntRect& src_sub_rectangle,
+    SourceDrawingBuffer src_buffer) {
+  GLboolean unpack_premultiply_alpha_needed = GL_FALSE;
+  if (want_alpha_channel_ && !premultiplied_alpha_)
+    unpack_premultiply_alpha_needed = GL_TRUE;
+
+  auto copy_function = [&](gpu::Mailbox src_mailbox) {
+    dst_raster_interface->CopySubTexture(
+        src_mailbox, dst_mailbox, dst_texture_target, dst_texture_offset.X(),
+        dst_texture_offset.Y(), src_sub_rectangle.X(), src_sub_rectangle.Y(),
+        src_sub_rectangle.Width(), src_sub_rectangle.Height(), flip_y,
+        unpack_premultiply_alpha_needed);
+  };
+
+  return CopyToPlatformInternal(dst_raster_interface, src_buffer,
+                                copy_function);
 }
 
 cc::Layer* DrawingBuffer::CcLayer() {
@@ -1052,7 +1082,8 @@ bool DrawingBuffer::ResizeDefaultFramebuffer(const IntSize& size) {
     premultiplied_alpha_false_mailbox_ = sii->CreateSharedImage(
         format, static_cast<gfx::Size>(size), storage_color_space_,
         gpu::SHARED_IMAGE_USAGE_GLES2 |
-            gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT);
+            gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT |
+            gpu::SHARED_IMAGE_USAGE_RASTER);
     gpu::SyncToken sync_token = sii->GenUnverifiedSyncToken();
     gl_->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
     premultiplied_alpha_false_texture_ =

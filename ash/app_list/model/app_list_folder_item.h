@@ -72,7 +72,7 @@ class APP_LIST_MODEL_EXPORT AppListFolderItem
   size_t ChildItemCount() const override;
 
   // AppListConfigProvider::Observer override:
-  void OnAppListConfigCreated(ash::AppListConfigType config_type) override;
+  void OnAppListConfigCreated(AppListConfigType config_type) override;
 
   // Persistent folders will be retained even if there is 1 app in them.
   bool IsPersistent() const;
@@ -86,13 +86,13 @@ class APP_LIST_MODEL_EXPORT AppListFolderItem
   static std::string GenerateId();
 
   // FolderImageObserver overrides:
-  void OnFolderImageUpdated(ash::AppListConfigType config_type) override;
+  void OnFolderImageUpdated(AppListConfigType config_type) override;
 
   // Informs the folder item of an item being dragged, that it may notify its
   // image.
   void NotifyOfDraggedItem(AppListItem* dragged_item);
 
-  FolderImage* GetFolderImageForTesting(ash::AppListConfigType type) const;
+  FolderImage* GetFolderImageForTesting(AppListConfigType type) const;
 
  private:
   // Creates FolderImages for config types in |config_types| that also exist in
@@ -101,7 +101,7 @@ class APP_LIST_MODEL_EXPORT AppListFolderItem
   //     on the created icon images - this should be set if called outside app
   //     list model initialization (i.e. outside constructor).
   void EnsureIconsForAvailableConfigTypes(
-      const std::vector<ash::AppListConfigType>& config_types,
+      const std::vector<AppListConfigType>& config_types,
       bool request_icon_update);
 
   // The type of folder; may affect behavior of folder views.
@@ -110,7 +110,7 @@ class APP_LIST_MODEL_EXPORT AppListFolderItem
   // List of items in the folder.
   std::unique_ptr<AppListItemList> item_list_;
 
-  std::map<ash::AppListConfigType, std::unique_ptr<FolderImage>> folder_images_;
+  std::map<AppListConfigType, std::unique_ptr<FolderImage>> folder_images_;
 
   ScopedObserver<AppListConfigProvider, AppListConfigProvider::Observer>
       config_provider_observer_{this};

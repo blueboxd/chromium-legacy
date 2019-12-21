@@ -304,6 +304,11 @@ luci.console_view(
             short_name = 'dqp',
         ),
         luci.console_view_entry(
+            builder = 'ci/Linux FYI SkiaRenderer Dawn Release (Intel HD 630)',
+            category = 'Linux|Intel',
+            short_name = 'skd',
+        ),
+        luci.console_view_entry(
             builder = 'ci/Linux FYI SkiaRenderer Vulkan (Intel HD 630)',
             category = 'Linux|Intel',
             short_name = 'skv',

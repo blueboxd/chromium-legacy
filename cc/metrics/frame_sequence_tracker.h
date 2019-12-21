@@ -37,6 +37,8 @@ class ThroughputUkmReporter;
 class UkmManager;
 
 enum FrameSequenceTrackerType {
+  // Used as an enum for metrics. DO NOT reorder or delete values. Rather,
+  // add them at the end and increment kMaxType.
   kCompositorAnimation = 0,
   kMainThreadAnimation = 1,
   kPinchZoom = 2,

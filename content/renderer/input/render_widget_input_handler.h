@@ -18,11 +18,6 @@
 #include "ui/events/blink/did_overscroll_params.h"
 #include "ui/events/types/scroll_types.h"
 
-namespace blink {
-struct WebFloatPoint;
-struct WebFloatSize;
-}  // namespace blink
-
 namespace cc {
 struct ElementId;
 struct OverscrollBehavior;
@@ -62,14 +57,14 @@ class CONTENT_EXPORT RenderWidgetInputHandler {
       HandledEventCallback callback);
 
   // Handle overscroll from Blink.
-  void DidOverscrollFromBlink(const blink::WebFloatSize& overscrollDelta,
-                              const blink::WebFloatSize& accumulatedOverscroll,
-                              const blink::WebFloatPoint& position,
-                              const blink::WebFloatSize& velocity,
+  void DidOverscrollFromBlink(const gfx::Vector2dF& overscrollDelta,
+                              const gfx::Vector2dF& accumulatedOverscroll,
+                              const gfx::PointF& position,
+                              const gfx::Vector2dF& velocity,
                               const cc::OverscrollBehavior& behavior);
 
   void InjectGestureScrollEvent(blink::WebGestureDevice device,
-                                const blink::WebFloatSize& delta,
+                                const gfx::Vector2dF& delta,
                                 ui::input_types::ScrollGranularity granularity,
                                 cc::ElementId scrollable_area_element_id,
                                 blink::WebInputEvent::Type injected_type);

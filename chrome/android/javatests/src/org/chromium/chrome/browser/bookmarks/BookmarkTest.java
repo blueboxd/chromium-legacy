@@ -25,10 +25,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ActivityState;
-import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterizedRunner;
-import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
@@ -48,6 +46,7 @@ import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.util.ActivityUtils;
+import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.BookmarkTestUtil;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -483,17 +482,12 @@ public class BookmarkTest {
 
         openBookmarkManager();
 
-        CallbackHelper activityDestroyedCallback = new CallbackHelper();
-        ApplicationStatus.registerStateListenerForActivity((activity, newState) -> {
-            if (newState == ActivityState.DESTROYED) activityDestroyedCallback.notifyCalled();
-        }, mBookmarkActivity);
-
         final BookmarkActionBar toolbar = mManager.getToolbarForTests();
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> toolbar.onMenuItemClick(toolbar.getMenu().findItem(R.id.close_menu_id)));
 
-        activityDestroyedCallback.waitForCallback(0);
+        ApplicationTestUtils.waitForActivityState(mBookmarkActivity, ActivityState.DESTROYED);
 
         BookmarkManager.preventLoadingForTesting(false);
     }

@@ -1958,14 +1958,14 @@ void AXTree::ComputeSetSizePosInSetAndCache(const AXNode& node,
   int32_t num_elements = 0;
   // Necessary for calculating set_size.
   int32_t largest_assigned_set_size = 0;
-  int hierarchical_level =
-      node.GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel);
 
   // Compute pos_in_set_values.
   for (size_t i = 0; i < items.size(); ++i) {
     const AXNode* item = items[i];
     ordered_set_info_map_[item->id()] = OrderedSetInfo();
     int32_t pos_in_set_value = 0;
+    int hierarchical_level =
+        item->GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel);
 
     pos_in_set_value = num_elements + 1;
 
@@ -2016,6 +2016,8 @@ void AXTree::ComputeSetSizePosInSetAndCache(const AXNode& node,
   if (node.SetRoleMatchesItemRole(ordered_set) || ordered_set == &node) {
     auto ordered_set_info_result =
         ordered_set_info_map_.find(ordered_set->id());
+    int hierarchical_level =
+        node.GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel);
     // If ordered_set is not in the cache, assign it a new set_size.
     if (ordered_set_info_result == ordered_set_info_map_.end()) {
       ordered_set_info_map_[ordered_set->id()] = OrderedSetInfo();
@@ -2034,6 +2036,8 @@ void AXTree::ComputeSetSizePosInSetAndCache(const AXNode& node,
   // Assign set_size to items.
   for (size_t j = 0; j < items.size(); ++j) {
     const AXNode* item = items[j];
+    int hierarchical_level =
+        item->GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel);
     // If level is specified, use author-provided value, if present.
     if (hierarchical_level != 0 &&
         item->HasIntAttribute(ax::mojom::IntAttribute::kSetSize))

@@ -411,8 +411,8 @@ class CONTENT_EXPORT RenderWidget
       const blink::WebIntrinsicSizingInfo&) override;
   void DidMeaningfulLayout(blink::WebMeaningfulLayout layout_type) override;
   void DidChangeCursor(const blink::WebCursorInfo&) override;
-  void AutoscrollStart(const blink::WebFloatPoint& point) override;
-  void AutoscrollFling(const blink::WebFloatSize& velocity) override;
+  void AutoscrollStart(const gfx::PointF& point) override;
+  void AutoscrollFling(const gfx::Vector2dF& velocity) override;
   void AutoscrollEnd() override;
   void ClosePopupWidgetSoon() override;
   void Show(blink::WebNavigationPolicy) override;
@@ -424,13 +424,13 @@ class CONTENT_EXPORT RenderWidget
   void SetWindowRect(const blink::WebRect&) override;
   void DidHandleGestureEvent(const blink::WebGestureEvent& event,
                              bool event_cancelled) override;
-  void DidOverscroll(const blink::WebFloatSize& overscroll_delta,
-                     const blink::WebFloatSize& accumulated_overscroll,
-                     const blink::WebFloatPoint& position,
-                     const blink::WebFloatSize& velocity) override;
+  void DidOverscroll(const gfx::Vector2dF& overscroll_delta,
+                     const gfx::Vector2dF& accumulated_overscroll,
+                     const gfx::PointF& position,
+                     const gfx::Vector2dF& velocity) override;
   void InjectGestureScrollEvent(
       blink::WebGestureDevice device,
-      const blink::WebFloatSize& delta,
+      const gfx::Vector2dF& delta,
       ui::input_types::ScrollGranularity granularity,
       cc::ElementId scrollable_area_element_id,
       blink::WebInputEvent::Type injected_type) override;

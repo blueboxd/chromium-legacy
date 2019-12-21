@@ -37,10 +37,6 @@
 <link rel="import" href="edit_dictionary_page.html">
 </if>
 
-<if expr="chromeos">
-<link rel="import" href="manage_input_methods_page.html">
-</if>
-
 <dom-module id="settings-languages-page">
   <template>
     <style include="settings-shared action-link">
@@ -255,56 +251,6 @@
               label="$i18n{offerToEnableTranslate}">
           </settings-toggle-button>
         </iron-collapse>
-<if expr="chromeos">
-        <cr-expand-button
-            hidden="[[!pageVisibility.inputMethodsList]]"
-            alt="$i18n{inputMethodsExpandA11yLabel}"
-            class="settings-box two-line"
-            expanded="{{inputMethodsOpened_}}"
-            id="manageInputMethodsSubpageTrigger">
-          <div>$i18n{inputMethodsListTitle}</div>
-          <div class="secondary">
-            [[getInputMethodName_(languages.inputMethods.currentId)]]
-          </div>
-        </cr-expand-button>
-        <iron-collapse id="inputMethodsCollapse"
-            hidden="[[!pageVisibility.inputMethodsList]]"
-            opened="[[inputMethodsOpened_]]">
-          <div class="list-frame vertical-list">
-            <template is="dom-repeat"
-                items="[[languages.inputMethods.enabled]]">
-              <div class$="list-item [[getInputMethodItemClass_(
-                      item.id, languages.inputMethods.currentId)]]"
-                  on-click="onInputMethodTap_" on-keypress="onInputMethodTap_"
-                  actionable tabindex="0">
-                <div class="start">
-                  <div>[[item.displayName]]</div>
-                  <div class="explain-selected"
-                      hidden="[[!isCurrentInputMethod_(
-                          item.id, languages.inputMethods.currentId)]]">
-                    $i18n{inputMethodEnabled}
-                  </div>
-                </div>
-                <div class="external-wrapper" hidden="[[!item.hasOptionsPage]]">
-                  <div class="separator"></div>
-                  <cr-icon-button class="icon-external"
-                      on-click="onInputMethodOptionsTap_"></cr-icon-button>
-                </div>
-              </div>
-            </template>
-            <cr-link-row class="hr list-item" id="manageInputMethods"
-                on-click="onManageInputMethodsTap_"
-                label="$i18n{manageInputMethods}"
-                role-description="$i18n{subpageArrowRoleDescription}">
-            </cr-link-row>
-          </div>
-          <settings-toggle-button
-              pref="{{prefs.settings.language.ime_menu_activated}}"
-              label="$i18n{showImeMenu}">
-          </settings-toggle-button>
-        </iron-collapse>
-</if>
-
         <settings-toggle-button
             id="enableSpellcheckingToggle"
             label="$i18n{spellCheckTitle}"
@@ -462,19 +408,6 @@
           </template>
         </cr-lazy-render>
       </div>
-<if expr="chromeos">
-      <template is="dom-if" route-path="/inputMethods">
-        <settings-subpage
-            hidden="[[!pageVisibility.manageInputMethods]]"
-            associated-control="[[$$('#manageInputMethodsSubpageTrigger')]]"
-            page-title="$i18n{manageInputMethodsPageTitle}">
-          <settings-manage-input-methods-page languages="{{languages}}"
-              language-helper="[[languageHelper]]"
-              prefs="{{prefs}}">
-          </settings-manage-input-methods-page>
-        </settings-subpage>
-      </template>
-</if>
 <if expr="not is_macosx">
       <template is="dom-if" route-path="/editDictionary"
            no-search="[[!prefs.browser.enable_spellchecking.value]]">

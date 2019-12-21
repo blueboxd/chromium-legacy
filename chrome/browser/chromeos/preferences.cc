@@ -32,6 +32,7 @@
 #include "chrome/browser/chromeos/net/wake_on_wifi_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/sync/turn_sync_on_helper.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
@@ -160,6 +161,10 @@ void Preferences::RegisterPrefs(PrefRegistrySimple* registry) {
 // static
 void Preferences::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
+  // Some classes register their own prefs.
+  TurnSyncOnHelper::RegisterProfilePrefs(registry);
+  input_method::InputMethodSyncer::RegisterProfilePrefs(registry);
+
   std::string hardware_keyboard_id;
   // TODO(yusukes): Remove the runtime hack.
   if (IsRunningAsSystemCompositor()) {
@@ -333,8 +338,6 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterStringPref(prefs::kTermsOfServiceURL, "");
 
   registry->RegisterBooleanPref(prefs::kTouchVirtualKeyboardEnabled, false);
-
-  input_method::InputMethodSyncer::RegisterProfilePrefs(registry);
 
   std::string current_timezone_id;
   if (chromeos::CrosSettings::IsInitialized()) {

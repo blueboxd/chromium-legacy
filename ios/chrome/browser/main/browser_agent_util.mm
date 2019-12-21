@@ -4,6 +4,9 @@
 
 #import "ios/chrome/browser/main/browser_agent_util.h"
 
+#include "base/feature_list.h"
+#import "ios/chrome/browser/infobars/infobar_badge_browser_agent.h"
+#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/web_state_list/tab_insertion_browser_agent.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -12,4 +15,8 @@
 
 void AttachBrowserAgents(Browser* browser) {
   TabInsertionBrowserAgent::CreateForBrowser(browser);
+
+  if (base::FeatureList::IsEnabled(kInfobarOverlayUI)) {
+    InfobarBadgeBrowserAgent::CreateForBrowser(browser);
+  }
 }

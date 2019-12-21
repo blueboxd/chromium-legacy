@@ -58,6 +58,7 @@ extern const base::Feature kAutofillUploadThrottling;
 extern const base::Feature kAutofillUseApi;
 extern const base::Feature kAutofillUseImprovedLabelDisambiguation;
 extern const base::Feature kAutofillUseServerCVCPrediction;
+extern const base::Feature kAutofillSmsReceiver;
 #if defined(OS_ANDROID)
 extern const base::Feature kAutofillManualFallbackAndroid;
 extern const base::Feature kAutofillRefreshStyleAndroid;

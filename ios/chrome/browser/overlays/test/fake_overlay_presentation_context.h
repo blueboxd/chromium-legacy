@@ -63,7 +63,6 @@ class FakeOverlayPresentationContext : public OverlayPresentationContext {
     ~FakeUIState();
 
     PresentationState presentation_state = PresentationState::kNotPresented;
-    OverlayPresentationCallback presentation_callback;
     OverlayDismissalCallback dismissal_callback;
   };
 

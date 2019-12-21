@@ -11,9 +11,8 @@
 // Because AR is not yet in the core webxr spec, this is an internal-chrome only test.
 let testName = "Ensures DOM Overlay feature works for immersive-ar";
 
-let fakeDeviceInitParams = { supportsImmersive: true,
+let fakeDeviceInitParams = { supportedModes: ["immersive-ar"],
                              views: VALID_VIEWS,
-                             supportsEnvironmentIntegration: true,
                              supportedFeatures: ALL_FEATURES.concat([
                                  'dom-overlay-for-handheld-ar'])};
 

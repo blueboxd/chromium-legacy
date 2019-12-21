@@ -188,7 +188,7 @@ std::vector<gfx::Rect> FolderImage::GetTopIconsBounds(
   std::vector<gfx::Rect> top_icon_bounds;
 
   const AppListConfig& base_config =
-      app_list_config.type() == ash::AppListConfigType::kShared
+      app_list_config.type() == AppListConfigType::kShared
           ? AppListConfig::instance()
           : *AppListConfigProvider::Get().GetConfigForType(
                 app_list_config.type(), true /*can_create*/);
@@ -311,8 +311,8 @@ void FolderImage::RemoveObserver(FolderImageObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void FolderImage::ItemIconChanged(ash::AppListConfigType config_type) {
-  if (config_type != ash::AppListConfigType::kShared &&
+void FolderImage::ItemIconChanged(AppListConfigType config_type) {
+  if (config_type != AppListConfigType::kShared &&
       config_type != app_list_config_->type()) {
     return;
   }

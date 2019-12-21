@@ -452,7 +452,8 @@ gpu::SyncToken OneCopyRasterBufferProvider::CopyOnWorkerThread(
 
     ri->CopySubTexture(staging_buffer->mailbox, *mailbox,
                        mailbox_texture_target, 0, y, 0, y, rect_to_copy.width(),
-                       rows_to_copy);
+                       rows_to_copy, false /* unpack_flip_y */,
+                       false /* unpack_premultiply_alpha */);
     y += rows_to_copy;
 
     // Increment |bytes_scheduled_since_last_flush_| by the amount of memory

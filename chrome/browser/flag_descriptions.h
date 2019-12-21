@@ -1542,6 +1542,9 @@ extern const char kGamesHubDescription[];
 extern const char kHomepageLocationName[];
 extern const char kHomepageLocationDescription[];
 
+extern const char kHomepageSettingsUIConversionName[];
+extern const char kHomepageSettingsUIConversionDescription[];
+
 extern const char kInterestFeedNotificationsName[];
 extern const char kInterestFeedNotificationsDescription[];
 

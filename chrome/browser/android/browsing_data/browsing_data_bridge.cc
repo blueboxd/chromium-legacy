@@ -190,8 +190,8 @@ static void JNI_BrowsingDataBridge_RequestInfoAboutOtherFormsOfBrowsingHistory(
   browsing_data::ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(
       ProfileSyncServiceFactory::GetForProfile(profile),
       WebHistoryServiceFactory::GetForProfile(profile), chrome::GetChannel(),
-      base::Bind(&EnableDialogAboutOtherFormsOfBrowsingHistory,
-                 ScopedJavaGlobalRef<jobject>(env, listener)));
+      base::BindOnce(&EnableDialogAboutOtherFormsOfBrowsingHistory,
+                     ScopedJavaGlobalRef<jobject>(env, listener)));
 }
 
 static void JNI_BrowsingDataBridge_FetchImportantSites(

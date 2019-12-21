@@ -124,8 +124,9 @@ class PaymentsClientTest : public testing::Test {
     base::FieldTrialList::CreateFieldTrial(trial_name, group_name)->group();
   }
 
-  void OnDidGetUnmaskDetails(AutofillClient::PaymentsRpcResult result,
-                             AutofillClient::UnmaskDetails& unmask_details) {
+  void OnDidGetUnmaskDetails(
+      AutofillClient::PaymentsRpcResult result,
+      payments::PaymentsClient::UnmaskDetails& unmask_details) {
     result_ = result;
     unmask_details_ = &unmask_details;
   }
@@ -294,7 +295,7 @@ class PaymentsClientTest : public testing::Test {
   }
 
   AutofillClient::PaymentsRpcResult result_;
-  AutofillClient::UnmaskDetails* unmask_details_;
+  payments::PaymentsClient::UnmaskDetails* unmask_details_;
 
   // Server ID of a saved card via credit card upload save.
   std::string server_id_;

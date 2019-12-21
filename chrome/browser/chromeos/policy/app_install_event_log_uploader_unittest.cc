@@ -10,6 +10,7 @@
 
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/ref_counted.h"
+#include "base/test/gmock_move_support.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -25,7 +26,6 @@
 
 using testing::Invoke;
 using testing::Mock;
-using testing::SaveArg;
 using testing::WithArgs;
 using testing::_;
 
@@ -56,22 +56,16 @@ MATCHER_P(MatchValue, expected, "matches base::Value") {
   return arg_serialized_string == expected_serialized_string;
 }
 
-ACTION_TEMPLATE(MoveArg,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_1_VALUE_PARAMS(out)) {
-  *out = std::move(*testing::get<k>(args));
-}
-
 class MockAppInstallEventLogUploaderDelegate
     : public AppInstallEventLogUploader::Delegate {
  public:
   MockAppInstallEventLogUploaderDelegate() {}
 
   void SerializeForUpload(SerializationCallback callback) override {
-    SerializeForUpload_(&callback);
+    SerializeForUpload_(callback);
   }
 
-  MOCK_METHOD1(SerializeForUpload_, void(SerializationCallback*));
+  MOCK_METHOD1(SerializeForUpload_, void(SerializationCallback&));
   MOCK_METHOD0(OnUploadSuccess, void());
 
  private:
@@ -109,8 +103,8 @@ class AppInstallEventLogUploaderTest : public testing::Test {
   void CompleteSerialize() {
     EXPECT_CALL(delegate_, SerializeForUpload_(_))
         .WillOnce(WithArgs<0>(Invoke(
-            [=](AppInstallEventLogUploader::Delegate::SerializationCallback*
-                    callback) { std::move(*callback).Run(&log_); })));
+            [=](AppInstallEventLogUploader::Delegate::SerializationCallback&
+                    callback) { std::move(callback).Run(&log_); })));
   }
 
   void CaptureSerialize(
@@ -133,10 +127,10 @@ class AppInstallEventLogUploaderTest : public testing::Test {
         ConvertProtoToValue(&log_, /*profile=*/nullptr),
         reporting::GetContext(/*profile=*/nullptr));
 
-    EXPECT_CALL(client_, UploadRealtimeReport(MatchValue(&value_report_), _))
+    EXPECT_CALL(client_, UploadRealtimeReport_(MatchValue(&value_report_), _))
         .WillOnce(WithArgs<1>(
-            Invoke([=](const CloudPolicyClient::StatusCallback& callback) {
-              callback.Run(success);
+            Invoke([=](CloudPolicyClient::StatusCallback& callback) {
+              std::move(callback).Run(success);
             })));
   }
 
@@ -147,8 +141,8 @@ class AppInstallEventLogUploaderTest : public testing::Test {
         reporting::GetContext(/*profile=*/nullptr));
 
     CloudPolicyClient::StatusCallback status_callback;
-    EXPECT_CALL(client_, UploadRealtimeReport(MatchValue(&value_report_), _))
-        .WillOnce(SaveArg<1>(callback));
+    EXPECT_CALL(client_, UploadRealtimeReport_(MatchValue(&value_report_), _))
+        .WillOnce(MoveArg<1>(callback));
   }
 
   void CompleteSerializeAndUpload(bool success) {
@@ -205,7 +199,7 @@ TEST_F(AppInstallEventLogUploaderTest, RequestSerializeRequestAndUpload) {
 
   EXPECT_CALL(delegate_, OnUploadSuccess());
   EXPECT_CALL(delegate_, SerializeForUpload_(_)).Times(0);
-  status_callback.Run(true);
+  std::move(status_callback).Run(true);
 }
 
 // Make a log upload request. Have serialization begin. Make a second upload
@@ -248,7 +242,7 @@ TEST_F(AppInstallEventLogUploaderTest, RequestCancelAndSerialize) {
   uploader_->CancelUpload();
   Mock::VerifyAndClearExpectations(&client_);
 
-  EXPECT_CALL(client_, UploadRealtimeReport(_, _)).Times(0);
+  EXPECT_CALL(client_, UploadRealtimeReport_(_, _)).Times(0);
   EXPECT_CALL(delegate_, OnUploadSuccess()).Times(0);
   std::move(serialization_callback).Run(&log_);
 }
@@ -398,7 +392,7 @@ TEST_F(AppInstallEventLogUploaderTest,
   UnregisterClient();
   Mock::VerifyAndClearExpectations(&client_);
 
-  EXPECT_CALL(client_, UploadRealtimeReport(_, _)).Times(0);
+  EXPECT_CALL(client_, UploadRealtimeReport_(_, _)).Times(0);
   EXPECT_CALL(delegate_, OnUploadSuccess()).Times(0);
   std::move(serialization_callback).Run(&log_);
   Mock::VerifyAndClearExpectations(&delegate_);
@@ -437,7 +431,7 @@ TEST_F(AppInstallEventLogUploaderTest,
   CaptureSerialize(&serialization_callback_2);
   RegisterClient();
 
-  EXPECT_CALL(client_, UploadRealtimeReport(_, _)).Times(0);
+  EXPECT_CALL(client_, UploadRealtimeReport_(_, _)).Times(0);
   EXPECT_CALL(delegate_, OnUploadSuccess()).Times(0);
   std::move(serialization_callback_1).Run(&log_);
   Mock::VerifyAndClearExpectations(&delegate_);

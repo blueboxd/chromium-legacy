@@ -79,7 +79,8 @@ class POLICY_EXPORT AsyncPolicyLoader {
   // Allow AsyncPolicyProvider to call Init().
   friend class AsyncPolicyProvider;
 
-  typedef base::Callback<void(std::unique_ptr<PolicyBundle>)> UpdateCallback;
+  typedef base::RepeatingCallback<void(std::unique_ptr<PolicyBundle>)>
+      UpdateCallback;
 
   // Used by the AsyncPolicyProvider to install the |update_callback_|.
   // Invoked on the background thread.

@@ -38,12 +38,12 @@ namespace {
 
 void RunOrPostGetMostVisitedURLsCallback(
     base::SequencedTaskRunner* task_runner,
-    const TopSitesImpl::GetMostVisitedURLsCallback& callback,
+    TopSitesImpl::GetMostVisitedURLsCallback callback,
     const MostVisitedURLList& urls) {
   if (task_runner->RunsTasksInCurrentSequence())
-    callback.Run(urls);
+    std::move(callback).Run(urls);
   else
-    task_runner->PostTask(FROM_HERE, base::BindOnce(callback, urls));
+    task_runner->PostTask(FROM_HERE, base::BindOnce(std::move(callback), urls));
 }
 
 // Checks if the titles stored in |old_list| and |new_list| have changes.
@@ -110,22 +110,22 @@ void TopSitesImpl::Init(const base::FilePath& db_name) {
 }
 
 // WARNING: this function may be invoked on any thread.
-void TopSitesImpl::GetMostVisitedURLs(
-    const GetMostVisitedURLsCallback& callback) {
+void TopSitesImpl::GetMostVisitedURLs(GetMostVisitedURLsCallback callback) {
   MostVisitedURLList filtered_urls;
   {
     base::AutoLock lock(lock_);
     if (!loaded_) {
       // A request came in before we finished loading. Store the callback and
       // we'll run it on current thread when we finish loading.
-      pending_callbacks_.push_back(base::Bind(
-          &RunOrPostGetMostVisitedURLsCallback,
-          base::RetainedRef(base::ThreadTaskRunnerHandle::Get()), callback));
+      pending_callbacks_.push_back(
+          base::BindOnce(&RunOrPostGetMostVisitedURLsCallback,
+                         base::RetainedRef(base::ThreadTaskRunnerHandle::Get()),
+                         std::move(callback)));
       return;
     }
     filtered_urls = thread_safe_cache_;
   }
-  callback.Run(filtered_urls);
+  std::move(callback).Run(filtered_urls);
 }
 
 static bool Contains(const MostVisitedURLList& urls, const GURL& url) {
@@ -401,7 +401,7 @@ void TopSitesImpl::MoveStateToLoaded() {
   }
 
   for (auto& callback : pending_callbacks)
-    callback.Run(urls);
+    std::move(callback).Run(urls);
 
   if (history_service_)
     history_service_observer_.Add(history_service_);

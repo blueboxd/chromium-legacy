@@ -81,20 +81,20 @@ class WebHistoryService : public KeyedService {
   // Callback with the result of a call to QueryHistory(). Currently, the
   // DictionaryValue is just the parsed JSON response from the server.
   // TODO(dubroy): Extract the DictionaryValue into a structured results object.
-  typedef base::Callback<void(Request*, const base::DictionaryValue*)>
-      QueryWebHistoryCallback;
+  using QueryWebHistoryCallback =
+      base::OnceCallback<void(Request*, const base::DictionaryValue*)>;
 
-  typedef base::Callback<void(bool success)> ExpireWebHistoryCallback;
+  using ExpireWebHistoryCallback = base::OnceCallback<void(bool success)>;
 
-  typedef base::Callback<void(bool success, bool new_enabled_value)>
-      AudioWebHistoryCallback;
+  using AudioWebHistoryCallback =
+      base::OnceCallback<void(bool success, bool new_enabled_value)>;
 
-  typedef base::Callback<void(bool success)> QueryWebAndAppActivityCallback;
+  using QueryWebAndAppActivityCallback = base::OnceCallback<void(bool success)>;
 
-  typedef base::Callback<void(bool success)>
-      QueryOtherFormsOfBrowsingHistoryCallback;
+  using QueryOtherFormsOfBrowsingHistoryCallback =
+      base::OnceCallback<void(bool success)>;
 
-  typedef base::Callback<void(Request*, bool success)> CompletionCallback;
+  using CompletionCallback = base::OnceCallback<void(Request*, bool success)>;
 
   WebHistoryService(
       signin::IdentityManager* identity_manager,
@@ -113,14 +113,14 @@ class WebHistoryService : public KeyedService {
   std::unique_ptr<Request> QueryHistory(
       const base::string16& text_query,
       const QueryOptions& options,
-      const QueryWebHistoryCallback& callback,
+      QueryWebHistoryCallback callback,
       const net::PartialNetworkTrafficAnnotationTag&
           partial_traffic_annotation);
 
   // Removes all visits to specified URLs in specific time ranges.
   // This is the of equivalent HistoryService::ExpireHistory().
   void ExpireHistory(const std::vector<ExpireHistoryArgs>& expire_list,
-                     const ExpireWebHistoryCallback& callback,
+                     ExpireWebHistoryCallback callback,
                      const net::PartialNetworkTrafficAnnotationTag&
                          partial_traffic_annotation);
 
@@ -129,26 +129,26 @@ class WebHistoryService : public KeyedService {
   void ExpireHistoryBetween(const std::set<GURL>& restrict_urls,
                             base::Time begin_time,
                             base::Time end_time,
-                            const ExpireWebHistoryCallback& callback,
+                            ExpireWebHistoryCallback callback,
                             const net::PartialNetworkTrafficAnnotationTag&
                                 partial_traffic_annotation);
 
   // Requests whether audio history recording is enabled.
   virtual void GetAudioHistoryEnabled(
-      const AudioWebHistoryCallback& callback,
+      AudioWebHistoryCallback callback,
       const net::PartialNetworkTrafficAnnotationTag&
           partial_traffic_annotation);
 
   // Sets the state of audio history recording to |new_enabled_value|.
   virtual void SetAudioHistoryEnabled(
       bool new_enabled_value,
-      const AudioWebHistoryCallback& callback,
+      AudioWebHistoryCallback callback,
       const net::PartialNetworkTrafficAnnotationTag&
           partial_traffic_annotation);
 
   // Queries whether web and app activity is enabled on the server.
   virtual void QueryWebAndAppActivity(
-      const QueryWebAndAppActivityCallback& callback,
+      QueryWebAndAppActivityCallback callback,
       const net::PartialNetworkTrafficAnnotationTag&
           partial_traffic_annotation);
 
@@ -158,7 +158,7 @@ class WebHistoryService : public KeyedService {
   // Whether there are other forms of browsing history stored on the server.
   void QueryOtherFormsOfBrowsingHistory(
       version_info::Channel channel,
-      const QueryOtherFormsOfBrowsingHistoryCallback& callback,
+      QueryOtherFormsOfBrowsingHistoryCallback callback,
       const net::PartialNetworkTrafficAnnotationTag&
           partial_traffic_annotation);
 
@@ -166,7 +166,7 @@ class WebHistoryService : public KeyedService {
   // This function is pulled out for testing purposes. Caller takes ownership of
   // the new Request.
   virtual Request* CreateRequest(const GURL& url,
-                                 const CompletionCallback& callback,
+                                 CompletionCallback callback,
                                  const net::PartialNetworkTrafficAnnotationTag&
                                      partial_traffic_annotation);
 
@@ -179,7 +179,7 @@ class WebHistoryService : public KeyedService {
   // response and calls |callback|, which is the original callback that was
   // passed to QueryHistory().
   static void QueryHistoryCompletionCallback(
-      const WebHistoryService::QueryWebHistoryCallback& callback,
+      WebHistoryService::QueryWebHistoryCallback callback,
       WebHistoryService::Request* request,
       bool success);
 
@@ -187,7 +187,7 @@ class WebHistoryService : public KeyedService {
   // completed. Unpacks the response and calls |callback|, which is the original
   // callback that was passed to ExpireHistory().
   void ExpireHistoryCompletionCallback(
-      const WebHistoryService::ExpireWebHistoryCallback& callback,
+      WebHistoryService::ExpireWebHistoryCallback callback,
       WebHistoryService::Request* request,
       bool success);
 
@@ -195,25 +195,25 @@ class WebHistoryService : public KeyedService {
   // server has completed. Unpacks the response and calls |callback|, which is
   // the original callback that was passed to AudioHistory().
   void AudioHistoryCompletionCallback(
-    const WebHistoryService::AudioWebHistoryCallback& callback,
-    WebHistoryService::Request* request,
-    bool success);
+      WebHistoryService::AudioWebHistoryCallback callback,
+      WebHistoryService::Request* request,
+      bool success);
 
   // Called by |request| when a web and app activity query has completed.
   // Unpacks the response and calls |callback|, which is the original callback
   // that was passed to QueryWebAndAppActivity().
   void QueryWebAndAppActivityCompletionCallback(
-    const WebHistoryService::QueryWebAndAppActivityCallback& callback,
-    WebHistoryService::Request* request,
-    bool success);
+      WebHistoryService::QueryWebAndAppActivityCallback callback,
+      WebHistoryService::Request* request,
+      bool success);
 
   // Called by |request| when a query for other forms of browsing history has
   // completed. Unpacks the response and calls |callback|, which is the original
   // callback that was passed to QueryOtherFormsOfBrowsingHistory().
   void QueryOtherFormsOfBrowsingHistoryCompletionCallback(
-    const WebHistoryService::QueryWebAndAppActivityCallback& callback,
-    WebHistoryService::Request* request,
-    bool success);
+      WebHistoryService::QueryWebAndAppActivityCallback callback,
+      WebHistoryService::Request* request,
+      bool success);
 
  private:
   friend class WebHistoryServiceTest;

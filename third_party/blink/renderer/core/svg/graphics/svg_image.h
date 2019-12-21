@@ -210,8 +210,6 @@ class CORE_EXPORT SVGImage final : public Image {
                            const KURL&);
 
   void StopAnimation();
-  void ScheduleTimelineRewind();
-  void FlushPendingTimelineRewind();
 
   Page* GetPageForTesting() { return page_; }
   void LoadCompleted();
@@ -227,9 +225,8 @@ class CORE_EXPORT SVGImage final : public Image {
   // object size, which in turn depends on the container. One SVGImage may
   // belong to multiple containers so the final image size can't be known in
   // SVGImage. SVGImageForContainer carries the final image size, also called
-  // the "concrete object size". For more, see: SVGImageForContainer.h
+  // the "concrete object size". For more, see svg_image_for_container.h.
   LayoutSize intrinsic_size_;
-  bool has_pending_timeline_rewind_;
 
   enum LoadState {
     kDataChangedNotStarted,

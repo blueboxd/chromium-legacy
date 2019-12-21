@@ -46,7 +46,6 @@
 -org.chromium.shape_detection.TextDetectionImplTest.testDetectSucceedsOnValidBitmap
 -org.chromium.chrome.browser.autofill_assistant.AutofillAssistantDirectActionHandlerTest.testReportAvailableDirectActions
 -org.chromium.chrome.browser.media.ui.PictureInPictureControllerTest.testEnterPip
--org.chromium.chrome.browser.media.ui.PictureInPictureControllerTest.testNoExitOnIframeNavigation
 -org.chromium.chrome.browser.media.ui.PictureInPictureControllerTest.testReenterPip
 -org.chromium.chrome.browser.usage_stats.TabSuspensionTest.testEagerSuspension
 -org.chromium.chrome.browser.usage_stats.TabSuspensionTest.testNavigateToSuspended

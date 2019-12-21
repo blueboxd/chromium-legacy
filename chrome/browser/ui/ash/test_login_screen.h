@@ -11,7 +11,6 @@
 #include "ash/public/cpp/login_screen.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/ash/test_login_screen_model.h"
-#include "mojo/public/cpp/bindings/binding.h"
 
 namespace ash {
 class ScopedGuestButtonBlocker;

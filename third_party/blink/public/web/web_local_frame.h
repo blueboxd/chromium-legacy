@@ -12,6 +12,7 @@
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
+#include "third_party/blink/public/common/frame/user_activation_update_source.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-shared.h"
 #include "third_party/blink/public/mojom/commit_result/commit_result.mojom-shared.h"
@@ -733,6 +734,22 @@ class WebLocalFrame : public WebFrame {
   // This setter is available in case the embedder has more information about
   // whether or not the frame is an ad.
   virtual void SetIsAdSubframe(blink::mojom::AdFrameType ad_frame_type) = 0;
+
+  // User activation -----------------------------------------------------------
+
+  // See blink::LocalFrame::NotifyUserActivation().
+  virtual void NotifyUserActivation() = 0;
+
+  // See blink::LocalFrame::HasStickyUserActivation().
+  virtual bool HasStickyUserActivation() = 0;
+
+  // See blink::LocalFrame::HasTransientUserActivation().
+  virtual bool HasTransientUserActivation() = 0;
+
+  // See blink::LocalFrame::ConsumeTransientUserActivation().
+  virtual bool ConsumeTransientUserActivation(
+      UserActivationUpdateSource update_source =
+          UserActivationUpdateSource::kRenderer) = 0;
 
   // Testing ------------------------------------------------------------------
 

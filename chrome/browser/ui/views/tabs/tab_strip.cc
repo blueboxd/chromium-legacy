@@ -54,6 +54,7 @@
 #include "chrome/browser/ui/views/touch_uma/touch_uma.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/tab_groups/tab_group_color.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "components/tab_groups/tab_group_visual_data.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
@@ -1919,9 +1920,25 @@ float TabStrip::GetHoverOpacityForRadialHighlight() const {
   return radial_highlight_opacity_;
 }
 
-const tab_groups::TabGroupVisualData* TabStrip::GetVisualDataForGroup(
+base::string16 TabStrip::GetGroupTitle(tab_groups::TabGroupId group) const {
+  return controller_->GetGroupTitle(group);
+}
+
+tab_groups::TabGroupColorId TabStrip::GetGroupColorId(
     tab_groups::TabGroupId group) const {
-  return controller_->GetVisualDataForGroup(group);
+  return controller_->GetGroupColorId(group);
+}
+
+SkColor TabStrip::GetPaintedGroupColor(
+    tab_groups::TabGroupColorId color_id) const {
+  const tab_groups::TabGroupColor color_data =
+      tab_groups::GetTabGroupColorSet().at(color_id);
+
+  const SkColor background = GetTabBackgroundColor(
+      TabActive::kInactive, BrowserFrameActiveState::kUseCurrent);
+
+  return color_utils::IsDark(background) ? color_data.dark_theme_color
+                                         : color_data.light_theme_color;
 }
 
 void TabStrip::SetVisualDataForGroup(

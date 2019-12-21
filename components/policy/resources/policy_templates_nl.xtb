@@ -837,7 +837,7 @@
       Dit beleid is ook van toepassing op componentextensies zoals de Hangout Services-extensie.</translation>
 <translation id="2223598546285729819">Standaardinstelling voor meldingen</translation>
 <translation id="2231817271680715693">Browsegeschiedenis importeren uit standaardbrowser bij eerste uitvoering</translation>
-<translation id="2234855698900783408">Schakel <ph name="CORS" />-controlebeperkingen voor de nieuwe <ph name="CORS" />-implementatie in, waardoor extensies geschikt gedrag kunnen behouden en <ph name="PRODUCT_NAME" /> toestemming heeft om opgegeven headers te versturen zonder <ph name="CORS" />-controle.
+<translation id="2234855698900783408">Schakel <ph name="CORS" />-controlebeperkingen voor de nieuwe <ph name="CORS" />-implementatie in, waardoor extensies geschikt gedrag kunnen behouden en <ph name="PRODUCT_NAME" /> toestemming heeft om opgegeven headers te sturen zonder <ph name="CORS" />-controle.
 
       Als deze lijst leeg is, probeert <ph name="PRODUCT_NAME" /> extensies op geschikte manieren uit te voeren en worden er geen <ph name="API" />-wijzingen geïntroduceerd voor <ph name="PRODUCT_NAME" /> 79, zoals uitgelegd in <ph name="WEB_REQUEST_API_MANUAL" />.
 
@@ -954,16 +954,6 @@
       Wanneer dit beleid niet is geconfigureerd of is ingesteld op 'True', kunnen gebruikers Network File Shares gebruiken.
 
       Wanneer dit beleid is ingesteld op 'False', kunnen gebruikers Network File Shares niet gebruiken.</translation>
-<translation id="2437706973218087361">Met dit beleid wordt een beveiligingsfunctie in TLS 1.3 beheerd waarmee verbindingen worden beschermd tegen downgrade-aanvallen. De functie is compatibel met eerdere versies en heeft geen invloed op verbindingen met servers of proxy's die voldoen aan TLS 1.2. Oudere versies van bepaalde proxy's die TLS onderscheppen, bevatten een implementatiefout waardoor ze incompatibel zijn.
-
-      Als dit beleid is ingesteld op True, schakelt <ph name="PRODUCT_NAME" /> deze beveiligingsmaatregelen in voor alle verbindingen.
-
-      Als dit beleid is ingesteld op False of niet is ingesteld, schakelt <ph name="PRODUCT_NAME" /> deze beveiligingsmaatregelen in voor verbindingen die zijn geverifieerd met lokaal geïnstalleerde certificaten van certificeringsinstanties. Deze beveiligingsmaatregelen zijn altijd ingeschakeld voor verbindingen die zijn geverifieerd met openbaar vertrouwde certificaten van certificeringsinstanties.
-
-      Dit beleid kan worden gebruikt om te testen welke proxy's zijn getroffen en om deze te upgraden. Van getroffen proxy's wordt verwacht dat ze verbindingen met de foutcode ERR_TLS13_DOWNGRADE_DETECTED niet tot stand kunnen brengen. In een latere versie van <ph name="PRODUCT_NAME" /> wordt deze optie standaard ingeschakeld.
-
-      Nadat deze optie standaard is ingeschakeld, kunnen beheerders die meer tijd nodig hebben om getroffen proxy's te upgraden dit beleid gebruiken om deze beveiligingsfunctie tijdelijk uit te schakelen. Dit beleid wordt verwijderd na versie 85.
-      </translation>
 <translation id="2438609638493026652">Hiermee schakel je de rapportage aan Google in van belangrijke gebeurtenissen tijdens de installatie van Android-apps. Gebeurtenissen worden alleen geregistreerd voor apps waarvan de installatie via beleid is geactiveerd.
 
       Als het beleid is ingesteld op 'True', worden gebeurtenissen geregistreerd.
@@ -1537,11 +1527,11 @@
       Als deze instelling is ingeschakeld of niet is geconfigureerd, kunnen gebruikers de proxy voor Cloudprinter inschakelen met authenticatie via hun Google-account.
 
       Als deze instelling is uitgeschakeld, kunnen gebruikers de proxy niet inschakelen en kan de computer zijn printers niet delen met <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="3295118731207421797">Via dit beleid kan een beheerder opgeven dat een pagina synchrone XHR-verzoeken mag versturen tijdens de afwijzing van de pagina.
+<translation id="3295118731207421797">Via dit beleid kan een beheerder opgeven dat een pagina synchrone XHR-verzoeken mag sturen tijdens de afwijzing van de pagina.
 
-      Als het beleid is ingeschakeld, mogen pagina's synchrone XHR-verzoeken versturen tijdens de afwijzing van de pagina.
+      Als het beleid is ingeschakeld, mogen pagina's synchrone XHR-verzoeken sturen tijdens de afwijzing van de pagina.
 
-      Als het beleid is uitgeschakeld of niet is ingesteld, mogen pagina's geen synchrone XHR-verzoeken versturen tijdens de afwijzing van de pagina.
+      Als het beleid is uitgeschakeld of niet is ingesteld, mogen pagina's geen synchrone XHR-verzoeken sturen tijdens de afwijzing van de pagina.
 
       Dit beleid wordt verwijderd in Chrome 88.
 

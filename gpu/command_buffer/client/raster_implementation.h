@@ -119,7 +119,9 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
                       GLint x,
                       GLint y,
                       GLsizei width,
-                      GLsizei height) override;
+                      GLsizei height,
+                      GLboolean unpack_flip_y,
+                      GLboolean unpack_premultiply_alpha) override;
 
   void BeginRasterCHROMIUM(GLuint sk_color,
                            GLuint msaa_sample_count,

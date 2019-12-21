@@ -133,7 +133,7 @@ class POLICY_EXPORT CloudPolicyRefreshScheduler
   network::NetworkConnectionTracker* network_connection_tracker_;
 
   // The delayed refresh callback.
-  base::CancelableClosure refresh_callback_;
+  base::CancelableOnceClosure refresh_callback_;
 
   // Whether the refresh is scheduled for soon (using |RefreshSoon| or
   // |RefreshNow|).

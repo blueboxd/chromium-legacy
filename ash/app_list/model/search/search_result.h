@@ -168,12 +168,12 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   // Invokes a custom action on the result. It does nothing by default.
   virtual void InvokeAction(int action_index, int event_flags);
 
-  void SetMetadata(std::unique_ptr<ash::SearchResultMetadata> metadata);
-  std::unique_ptr<ash::SearchResultMetadata> TakeMetadata() {
+  void SetMetadata(std::unique_ptr<SearchResultMetadata> metadata);
+  std::unique_ptr<SearchResultMetadata> TakeMetadata() {
     return std::move(metadata_);
   }
-  std::unique_ptr<ash::SearchResultMetadata> CloneMetadata() const {
-    return std::make_unique<ash::SearchResultMetadata>(*metadata_);
+  std::unique_ptr<SearchResultMetadata> CloneMetadata() const {
+    return std::make_unique<SearchResultMetadata>(*metadata_);
   }
 
  protected:
@@ -193,7 +193,7 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   int percent_downloaded_ = 0;
   bool is_visible_ = true;
 
-  std::unique_ptr<ash::SearchResultMetadata> metadata_;
+  std::unique_ptr<SearchResultMetadata> metadata_;
 
   base::ObserverList<SearchResultObserver>::Unchecked observers_;
 

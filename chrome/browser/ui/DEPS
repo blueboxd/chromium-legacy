@@ -12,4 +12,7 @@ specific_include_rules = {
     "+ash/wm/desks/desks_controller.h",
     "+ash/wm/desks/desks_test_util.h",
   ],
+  "fullscreen_controller_interactive_browsertest\.cc": [
+    "+ash/shell.h",
+  ],
 }

@@ -41,6 +41,10 @@ void FakeBlob::ReadSideData(ReadSideDataCallback) {
   NOTREACHED();
 }
 
+void FakeBlob::CaptureSnapshot(CaptureSnapshotCallback) {
+  NOTREACHED();
+}
+
 void FakeBlob::GetInternalUUID(GetInternalUUIDCallback callback) {
   std::move(callback).Run(uuid_);
 }

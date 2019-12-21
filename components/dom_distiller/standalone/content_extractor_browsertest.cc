@@ -223,9 +223,10 @@ class ContentExtractionRequest : public ViewRequestDelegate {
  public:
   ContentExtractionRequest(const GURL& url) : url_(url) {}
 
-  void Start(DomDistillerService* service, const gfx::Size& render_view_size,
-             base::Closure finished_callback) {
-    finished_callback_ = finished_callback;
+  void Start(DomDistillerService* service,
+             const gfx::Size& render_view_size,
+             base::OnceClosure finished_callback) {
+    finished_callback_ = std::move(finished_callback);
     viewer_handle_ =
         service->ViewUrl(this,
                          service->CreateDefaultDistillerPage(render_view_size),
@@ -294,14 +295,14 @@ class ContentExtractionRequest : public ViewRequestDelegate {
   void OnArticleReady(const DistilledArticleProto* article_proto) override {
     article_proto_ = article_proto;
     CHECK(article_proto->pages_size()) << "Failed extracting " << url_;
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  finished_callback_);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, std::move(finished_callback_));
   }
 
   const DistilledArticleProto* article_proto_;
   std::unique_ptr<ViewerHandle> viewer_handle_;
   GURL url_;
-  base::Closure finished_callback_;
+  base::OnceClosure finished_callback_;
 };
 
 class ContentExtractor : public ContentBrowserTest {
@@ -348,9 +349,9 @@ class ContentExtractor : public ContentBrowserTest {
   void PumpQueue() {
     while (pending_tasks_ < max_tasks_ && next_request_ < requests_.size()) {
       requests_[next_request_]->Start(
-          service_.get(),
-          shell()->web_contents()->GetContainerBounds().size(),
-          base::Bind(&ContentExtractor::FinishRequest, base::Unretained(this)));
+          service_.get(), shell()->web_contents()->GetContainerBounds().size(),
+          base::BindOnce(&ContentExtractor::FinishRequest,
+                         base::Unretained(this)));
       ++next_request_;
       ++pending_tasks_;
     }

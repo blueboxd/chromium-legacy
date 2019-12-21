@@ -31,10 +31,10 @@ class UiElementContainerView;
 class APP_LIST_EXPORT AppListAssistantMainStage
     : public views::View,
       public views::ViewObserver,
-      public ash::AssistantInteractionModelObserver,
-      public ash::AssistantUiModelObserver {
+      public AssistantInteractionModelObserver,
+      public AssistantUiModelObserver {
  public:
-  explicit AppListAssistantMainStage(ash::AssistantViewDelegate* delegate);
+  explicit AppListAssistantMainStage(AssistantViewDelegate* delegate);
   ~AppListAssistantMainStage() override;
 
   // views::View:
@@ -45,18 +45,18 @@ class APP_LIST_EXPORT AppListAssistantMainStage
   void OnViewPreferredSizeChanged(views::View* view) override;
 
   // AssistantInteractionModelObserver:
-  void OnCommittedQueryChanged(const ash::AssistantQuery& query) override;
-  void OnPendingQueryChanged(const ash::AssistantQuery& query) override;
+  void OnCommittedQueryChanged(const AssistantQuery& query) override;
+  void OnPendingQueryChanged(const AssistantQuery& query) override;
   void OnPendingQueryCleared(bool due_to_commit) override;
   void OnResponseChanged(
-      const scoped_refptr<ash::AssistantResponse>& response) override;
+      const scoped_refptr<AssistantResponse>& response) override;
 
   // AssistantUiModelObserver:
   void OnUiVisibilityChanged(
-      ash::AssistantVisibility new_visibility,
-      ash::AssistantVisibility old_visibility,
-      base::Optional<ash::AssistantEntryPoint> entry_point,
-      base::Optional<ash::AssistantExitPoint> exit_point) override;
+      AssistantVisibility new_visibility,
+      AssistantVisibility old_visibility,
+      base::Optional<AssistantEntryPoint> entry_point,
+      base::Optional<AssistantExitPoint> exit_point) override;
 
  private:
   void InitLayout();
@@ -71,15 +71,15 @@ class APP_LIST_EXPORT AppListAssistantMainStage
 
   void MaybeHideGreetingLabel();
 
-  ash::AssistantViewDelegate* const delegate_;  // Owned by Shell.
+  AssistantViewDelegate* const delegate_;  // Owned by Shell.
 
   // Owned by view hierarchy.
-  ash::AssistantProgressIndicator* progress_indicator_;
+  AssistantProgressIndicator* progress_indicator_;
   views::View* horizontal_separator_;
-  ash::AssistantQueryView* query_view_;
-  ash::UiElementContainerView* ui_element_container_;
+  AssistantQueryView* query_view_;
+  UiElementContainerView* ui_element_container_;
   views::Label* greeting_label_;
-  ash::AssistantFooterView* footer_;
+  AssistantFooterView* footer_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListAssistantMainStage);
 };

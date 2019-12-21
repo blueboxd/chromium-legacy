@@ -243,9 +243,11 @@ void OverviewWindowDragController::StartNormalDragMode(
     overview_session_->SetSplitViewDragIndicatorsDraggedWindow(
         item_->GetWindow());
     overview_session_->UpdateSplitViewDragIndicatorsWindowDraggingStates(
-        GetRootWindowBeingDraggedIn(), /*is_dragging=*/true,
-        SplitViewDragIndicators::WindowDraggingState::kFromOverview,
-        SplitViewController::NONE);
+        GetRootWindowBeingDraggedIn(),
+        SplitViewDragIndicators::ComputeWindowDraggingState(
+            /*is_dragging=*/true,
+            SplitViewDragIndicators::WindowDraggingState::kFromOverview,
+            SplitViewController::NONE));
     item_->HideCannotSnapWarning();
 
     // Update the split view divider bar status if necessary. If splitview is
@@ -340,10 +342,7 @@ void OverviewWindowDragController::ResetGesture() {
     if (should_allow_split_view_) {
       SplitViewController::Get(Shell::GetPrimaryRootWindow())
           ->OnWindowDragCanceled();
-      overview_session_->UpdateSplitViewDragIndicatorsWindowDraggingStates(
-          item_->overview_grid()->root_window(), /*is_dragging=*/false,
-          SplitViewDragIndicators::WindowDraggingState::kNoDrag,
-          SplitViewController::NONE);
+      overview_session_->ResetSplitViewDragIndicatorsWindowDraggingStates();
       item_->UpdateCannotSnapWarningVisibility();
     }
   }
@@ -542,10 +541,7 @@ OverviewWindowDragController::CompleteNormalDrag(
     // Update window grid bounds and |snap_position_| in case the screen
     // orientation was changed.
     UpdateDragIndicatorsAndOverviewGrid(location_in_screen);
-    overview_session_->UpdateSplitViewDragIndicatorsWindowDraggingStates(
-        GetRootWindowBeingDraggedIn(), /*is_dragging=*/true,
-        SplitViewDragIndicators::WindowDraggingState::kNoDrag,
-        SplitViewController::NONE);
+    overview_session_->ResetSplitViewDragIndicatorsWindowDraggingStates();
     item_->UpdateCannotSnapWarningVisibility();
   }
 
@@ -605,12 +601,13 @@ void OverviewWindowDragController::UpdateDragIndicatorsAndOverviewGrid(
     return;
 
   snap_position_ = GetSnapPosition(location_in_screen);
-  aura::Window* root_window = GetRootWindowBeingDraggedIn();
   overview_session_->UpdateSplitViewDragIndicatorsWindowDraggingStates(
-      root_window, /*is_dragging=*/true,
-      SplitViewDragIndicators::WindowDraggingState::kFromOverview,
-      snap_position_);
-  overview_session_->RearrangeDuringDrag(root_window, item_->GetWindow());
+      GetRootWindowBeingDraggedIn(),
+      SplitViewDragIndicators::ComputeWindowDraggingState(
+          /*is_dragging=*/true,
+          SplitViewDragIndicators::WindowDraggingState::kFromOverview,
+          snap_position_));
+  overview_session_->RearrangeDuringDrag(item_->GetWindow());
 }
 
 aura::Window* OverviewWindowDragController::GetRootWindowBeingDraggedIn()

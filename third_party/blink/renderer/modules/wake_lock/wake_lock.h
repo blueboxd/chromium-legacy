@@ -27,6 +27,7 @@ class String;
 namespace blink {
 
 class ExecutionContext;
+class ExceptionState;
 class ScriptState;
 class WakeLockManager;
 
@@ -40,7 +41,9 @@ class MODULES_EXPORT WakeLock final : public ScriptWrappable,
   explicit WakeLock(Document&);
   explicit WakeLock(DedicatedWorkerGlobalScope&);
 
-  ScriptPromise request(ScriptState*, const WTF::String& type);
+  ScriptPromise request(ScriptState*,
+                        const WTF::String& type,
+                        ExceptionState& exception_state);
 
   void Trace(blink::Visitor*) override;
 

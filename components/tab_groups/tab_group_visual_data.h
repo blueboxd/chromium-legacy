@@ -10,6 +10,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "components/tab_groups/tab_group_color.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace tab_groups {
@@ -19,7 +20,7 @@ class COMPONENT_EXPORT(TAB_GROUPS) TabGroupVisualData {
   // Construct a TabGroupVisualData with placeholder name and random color.
   TabGroupVisualData();
 
-  TabGroupVisualData(base::string16 title, SkColor color);
+  TabGroupVisualData(base::string16 title, tab_groups::TabGroupColorId color);
 
   TabGroupVisualData(const TabGroupVisualData& other) = default;
   TabGroupVisualData(TabGroupVisualData&& other) = default;
@@ -28,7 +29,7 @@ class COMPONENT_EXPORT(TAB_GROUPS) TabGroupVisualData {
   TabGroupVisualData& operator=(TabGroupVisualData&& other) = default;
 
   base::string16 title() const { return title_; }
-  SkColor color() const { return color_; }
+  tab_groups::TabGroupColorId color() const { return color_; }
 
   // Checks whether two instances are visually equivalent.
   bool operator==(const TabGroupVisualData& other) const {
@@ -40,7 +41,7 @@ class COMPONENT_EXPORT(TAB_GROUPS) TabGroupVisualData {
 
  private:
   base::string16 title_;
-  SkColor color_;
+  tab_groups::TabGroupColorId color_;
 };
 
 }  // namespace tab_groups

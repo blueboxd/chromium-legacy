@@ -21,9 +21,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ActivityState;
-import org.chromium.base.ApplicationStatus;
-import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -299,37 +296,10 @@ public class SyncAndServicesPreferencesTest {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 
-    // TODO(https://crbug.com/1015449): Move this function to ApplicationTestUtils.
-    private void waitForActivityState(Activity activity, @ActivityState int state)
-            throws Exception {
-        final CallbackHelper callbackHelper = new CallbackHelper();
-        final ApplicationStatus.ActivityStateListener activityStateListener =
-                (activity1, newState) -> {
-            if (newState == state) {
-                callbackHelper.notifyCalled();
-            }
-        };
-        try {
-            boolean correctState = TestThreadUtils.runOnUiThreadBlocking(() -> {
-                if (ApplicationStatus.getStateForActivity(activity) == state) {
-                    return true;
-                }
-                ApplicationStatus.registerStateListenerForActivity(activityStateListener, activity);
-                activity.finish();
-                return false;
-            });
-            if (!correctState) {
-                callbackHelper.waitForCallback(0);
-            }
-        } finally {
-            ApplicationStatus.unregisterActivityStateListener(activityStateListener);
-        }
-    }
-
     private void pressBackAndDismissActivity(Activity activity) throws Exception {
         UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
         device.pressBack();
-        waitForActivityState(activity, ActivityState.DESTROYED);
+        ApplicationTestUtils.finishActivity(activity);
     }
 
     private ChromeSwitchPreference getSyncSwitch(SyncAndServicesPreferences fragment) {

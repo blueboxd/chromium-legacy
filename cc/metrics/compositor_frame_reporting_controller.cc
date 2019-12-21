@@ -5,6 +5,7 @@
 #include "cc/metrics/compositor_frame_reporting_controller.h"
 
 #include "cc/metrics/compositor_frame_reporter.h"
+#include "cc/metrics/latency_ukm_reporter.h"
 #include "components/viz/common/frame_timing_details.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 
@@ -15,7 +16,8 @@ using StageType = CompositorFrameReporter::StageType;
 
 CompositorFrameReportingController::CompositorFrameReportingController(
     bool is_single_threaded)
-    : is_single_threaded_(is_single_threaded) {}
+    : is_single_threaded_(is_single_threaded),
+      latency_ukm_reporter_(std::make_unique<LatencyUkmReporter>()) {}
 
 CompositorFrameReportingController::~CompositorFrameReportingController() {
   base::TimeTicks now = Now();
@@ -59,8 +61,8 @@ void CompositorFrameReportingController::WillBeginImplFrame() {
         begin_time);
   }
   std::unique_ptr<CompositorFrameReporter> reporter =
-      std::make_unique<CompositorFrameReporter>(&active_trackers_,
-                                                is_single_threaded_);
+      std::make_unique<CompositorFrameReporter>(
+          &active_trackers_, latency_ukm_reporter_.get(), is_single_threaded_);
   reporter->StartStage(StageType::kBeginImplFrameToSendBeginMainFrame,
                        begin_time);
   reporters_[PipelineStage::kBeginImplFrame] = std::move(reporter);
@@ -82,6 +84,7 @@ void CompositorFrameReportingController::WillBeginMainFrame() {
     // deadline yet). So will start a new reporter at BeginMainFrame.
     std::unique_ptr<CompositorFrameReporter> reporter =
         std::make_unique<CompositorFrameReporter>(&active_trackers_,
+                                                  latency_ukm_reporter_.get(),
                                                   is_single_threaded_);
     reporter->StartStage(StageType::kSendBeginMainFrameToCommit, Now());
     reporters_[PipelineStage::kBeginMainFrame] = std::move(reporter);
@@ -236,4 +239,9 @@ void CompositorFrameReportingController::AdvanceReporterStage(
   }
   reporters_[target] = std::move(reporters_[start]);
 }
+
+void CompositorFrameReportingController::SetUkmManager(UkmManager* manager) {
+  latency_ukm_reporter_->SetUkmManager(manager);
+}
+
 }  // namespace cc

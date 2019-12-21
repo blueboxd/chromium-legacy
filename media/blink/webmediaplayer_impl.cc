@@ -73,7 +73,6 @@
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_local_frame.h"
-#include "third_party/blink/public/web/web_user_gesture_indicator.h"
 #include "third_party/blink/public/web/web_view.h"
 
 #if defined(OS_ANDROID)
@@ -739,7 +738,7 @@ void WebMediaPlayerImpl::Play() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   // User initiated play unlocks background video playback.
-  if (blink::WebUserGestureIndicator::IsProcessingUserGesture(frame_))
+  if (frame_->HasTransientUserActivation())
     video_locked_when_paused_when_hidden_ = false;
 
   // TODO(sandersd): Do we want to reset the idle timer here?
@@ -788,7 +787,7 @@ void WebMediaPlayerImpl::Pause() {
   paused_when_hidden_ = false;
 
   // User initiated pause locks background videos.
-  if (blink::WebUserGestureIndicator::IsProcessingUserGesture(frame_))
+  if (frame_->HasTransientUserActivation())
     video_locked_when_paused_when_hidden_ = true;
 
   pipeline_controller_->SetPlaybackRate(0.0);

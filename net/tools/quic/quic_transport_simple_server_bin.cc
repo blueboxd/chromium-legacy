@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/strings/string_split.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_default_proof_providers.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_system_event_loop.h"
 #include "net/tools/quic/quic_transport_simple_server.h"
@@ -39,6 +40,12 @@ int main(int argc, char** argv) {
   }
 
   net::QuicTransportSimpleServer server(GetQuicFlag(FLAGS_port),
-                                        accepted_origins);
-  return server.Run();
+                                        accepted_origins,
+                                        quic::CreateDefaultProofSource());
+  if (server.Start() != EXIT_SUCCESS)
+    return EXIT_FAILURE;
+
+  base::RunLoop run_loop;
+  run_loop.Run();
+  return EXIT_SUCCESS;
 }

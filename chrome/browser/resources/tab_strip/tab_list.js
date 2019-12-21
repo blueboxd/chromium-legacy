@@ -40,6 +40,8 @@ export function setScrollAnimationEnabledForTesting(enabled) {
  */
 const LayoutVariable = {
   VIEWPORT_WIDTH: '--tabstrip-viewport-width',
+  NEW_TAB_BUTTON_MARGIN: '--tabstrip-new-tab-button-margin',
+  NEW_TAB_BUTTON_WIDTH: '--tabstrip-new-tab-button-width',
   TAB_WIDTH: '--tabstrip-tab-thumbnail-width',
 };
 
@@ -595,21 +597,30 @@ class TabListElement extends CustomElement {
     const tabElementLeft =
         isRTL() ? tabElementRect.right - tabElementWidth : tabElementRect.left;
 
+    const newTabButtonSpace =
+        this.getLayoutVariable_(LayoutVariable.NEW_TAB_BUTTON_WIDTH) +
+        this.getLayoutVariable_(LayoutVariable.NEW_TAB_BUTTON_MARGIN);
+    const leftBoundary =
+        isRTL() ? SCROLL_PADDING + newTabButtonSpace : SCROLL_PADDING;
+
     let scrollBy = 0;
-    if (tabElementLeft === SCROLL_PADDING) {
+    if (tabElementLeft === leftBoundary) {
       // Perfectly aligned to the left.
       return;
-    } else if (tabElementLeft < SCROLL_PADDING) {
-      // If the element's left is to the left of the visible screen, scroll
-      // such that the element's left edge is aligned with the screen's edge.
-      scrollBy = tabElementLeft - SCROLL_PADDING;
+    } else if (tabElementLeft < leftBoundary) {
+      // If the element's left is to the left of the left boundary, scroll
+      // such that the element's left edge is aligned with the left boundary.
+      scrollBy = tabElementLeft - leftBoundary;
     } else {
       const tabElementRight = tabElementLeft + tabElementWidth;
-      const viewportWidth =
-          this.getLayoutVariable_(LayoutVariable.VIEWPORT_WIDTH);
+      const rightBoundary = isRTL() ?
+          this.getLayoutVariable_(LayoutVariable.VIEWPORT_WIDTH) -
+              SCROLL_PADDING :
+          this.getLayoutVariable_(LayoutVariable.VIEWPORT_WIDTH) -
+              SCROLL_PADDING - newTabButtonSpace;
 
-      if (tabElementRight + SCROLL_PADDING > viewportWidth) {
-        scrollBy = (tabElementRight + SCROLL_PADDING) - viewportWidth;
+      if (tabElementRight > rightBoundary) {
+        scrollBy = (tabElementRight) - rightBoundary;
       } else {
         // Perfectly aligned to the right.
         return;

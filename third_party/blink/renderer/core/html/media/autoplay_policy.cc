@@ -92,7 +92,7 @@ bool AutoplayPolicy::IsDocumentAllowedToPlay(const Document& document) {
 
   for (Frame* frame = document.GetFrame(); frame;
        frame = frame->Tree().Parent()) {
-    if (frame->HasBeenActivated() ||
+    if (frame->HasStickyUserActivation() ||
         frame->HadStickyUserActivationBeforeNavigation()) {
       return true;
     }
@@ -365,7 +365,7 @@ void AutoplayPolicy::MaybeSetAutoplayInitiated() {
 
   for (Frame* frame = document.GetFrame(); frame;
        frame = frame->Tree().Parent()) {
-    if (frame->HasBeenActivated() ||
+    if (frame->HasStickyUserActivation() ||
         frame->HadStickyUserActivationBeforeNavigation()) {
       autoplay_initiated_ = false;
       break;

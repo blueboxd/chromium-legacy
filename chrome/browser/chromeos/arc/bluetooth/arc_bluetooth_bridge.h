@@ -37,6 +37,7 @@
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
 #include "device/bluetooth/bluez/bluetooth_adapter_bluez.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace content {
 class BrowserContext;
@@ -521,14 +522,14 @@ class ArcBluetoothBridge
   // Data structures for RFCOMM listening/connecting sockets that live in
   // Chrome.
   struct RfcommListeningSocket {
-    mojom::RfcommListeningSocketClientPtr remote;
+    mojo::Remote<mojom::RfcommListeningSocketClient> remote;
     base::ScopedFD file;
     std::unique_ptr<base::FileDescriptorWatcher::Controller> controller;
     RfcommListeningSocket();
     ~RfcommListeningSocket();
   };
   struct RfcommConnectingSocket {
-    mojom::RfcommConnectingSocketClientPtr remote;
+    mojo::Remote<mojom::RfcommConnectingSocketClient> remote;
     base::ScopedFD file;
     std::unique_ptr<base::FileDescriptorWatcher::Controller> controller;
     RfcommConnectingSocket();

@@ -50,7 +50,6 @@
 #include "chrome/chrome_cleaner/test/test_settings_util.h"
 #include "chrome/chrome_cleaner/ui/silent_main_dialog.h"
 #include "chrome/chrome_cleaner/zip_archiver/zip_archiver.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "sandbox/win/src/sandbox_factory.h"
 #include "testing/multiprocess_func_list.h"

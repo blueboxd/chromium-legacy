@@ -230,7 +230,6 @@ const OncFieldSignature wifi_fields[] = {
     {::onc::wifi::kHexSSID, &kStringSignature},
     {::onc::wifi::kHiddenSSID, &kBoolSignature},
     {::onc::wifi::kPassphrase, &kStringSignature},
-    {::onc::wifi::kRoamThreshold, &kIntegerSignature},
     {::onc::wifi::kSSID, &kStringSignature},
     {::onc::wifi::kSecurity, &kStringSignature},
     {NULL}};

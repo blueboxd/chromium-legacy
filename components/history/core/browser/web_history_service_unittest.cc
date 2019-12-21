@@ -46,7 +46,7 @@ class TestingWebHistoryService : public WebHistoryService {
 
   WebHistoryService::Request* CreateRequest(
       const GURL& url,
-      const CompletionCallback& callback,
+      CompletionCallback callback,
       const net::PartialNetworkTrafficAnnotationTag& partial_traffic_annotation)
       override;
 
@@ -93,24 +93,23 @@ class TestingWebHistoryService : public WebHistoryService {
 class TestRequest : public WebHistoryService::Request {
  public:
   TestRequest(const GURL& url,
-              const WebHistoryService::CompletionCallback& callback,
+              WebHistoryService::CompletionCallback callback,
               int response_code,
               const std::string& response_body)
       : web_history_service_(nullptr),
         url_(url),
-        callback_(callback),
+        callback_(std::move(callback)),
         response_code_(response_code),
         response_body_(response_body),
         post_data_(""),
-        is_pending_(false) {
-  }
+        is_pending_(false) {}
 
   TestRequest(const GURL& url,
-              const WebHistoryService::CompletionCallback& callback,
+              WebHistoryService::CompletionCallback callback,
               TestingWebHistoryService* web_history_service)
       : web_history_service_(web_history_service),
         url_(url),
-        callback_(callback),
+        callback_(std::move(callback)),
         response_code_(net::HTTP_OK),
         response_body_(""),
         post_data_(""),
@@ -146,7 +145,7 @@ class TestRequest : public WebHistoryService::Request {
     // Mimic a successful fetch and return. We don't actually send out a request
     // in unittests.
     EXPECT_EQ(web_history_service_->GetExpectedPostData(this), post_data_);
-    callback_.Run(this, true);
+    std::move(callback_).Run(this, true);
   }
 
  private:
@@ -163,11 +162,11 @@ class TestRequest : public WebHistoryService::Request {
 
 WebHistoryService::Request* TestingWebHistoryService::CreateRequest(
     const GURL& url,
-    const CompletionCallback& callback,
+    CompletionCallback callback,
     const net::PartialNetworkTrafficAnnotationTag& partial_traffic_annotation) {
   EXPECT_EQ(expected_url_, url);
   WebHistoryService::Request* request =
-      new TestRequest(url, callback, this);
+      new TestRequest(url, std::move(callback), this);
   expected_post_data_[request] = current_expected_post_data_;
   return request;
 }
@@ -250,8 +249,8 @@ TEST_F(WebHistoryServiceTest, GetAudioHistoryEnabled) {
       GURL("https://history.google.com/history/api/lookup?client=audio"));
   web_history_service()->SetExpectedAudioHistoryValue(true);
   web_history_service()->GetAudioHistoryEnabled(
-      base::Bind(&TestingWebHistoryService::GetAudioHistoryCallback,
-                 base::Unretained(web_history_service())),
+      base::BindOnce(&TestingWebHistoryService::GetAudioHistoryCallback,
+                     base::Unretained(web_history_service())),
       PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
@@ -267,8 +266,8 @@ TEST_F(WebHistoryServiceTest, SetAudioHistoryEnabledTrue) {
       "{\"client\":\"audio\",\"enable_history_recording\":true}");
   web_history_service()->SetAudioHistoryEnabled(
       true,
-      base::Bind(&TestingWebHistoryService::SetAudioHistoryCallback,
-                 base::Unretained(web_history_service())),
+      base::BindOnce(&TestingWebHistoryService::SetAudioHistoryCallback,
+                     base::Unretained(web_history_service())),
       PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
@@ -284,8 +283,8 @@ TEST_F(WebHistoryServiceTest, SetAudioHistoryEnabledFalse) {
       "{\"client\":\"audio\",\"enable_history_recording\":false}");
   web_history_service()->SetAudioHistoryEnabled(
       false,
-      base::Bind(&TestingWebHistoryService::SetAudioHistoryCallback,
-                 base::Unretained(web_history_service())),
+      base::BindOnce(&TestingWebHistoryService::SetAudioHistoryCallback,
+                     base::Unretained(web_history_service())),
       PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
@@ -301,16 +300,16 @@ TEST_F(WebHistoryServiceTest, MultipleRequests) {
       "{\"client\":\"audio\",\"enable_history_recording\":false}");
   web_history_service()->SetAudioHistoryEnabled(
       false,
-      base::Bind(&TestingWebHistoryService::MultipleRequestsCallback,
-                 base::Unretained(web_history_service())),
+      base::BindOnce(&TestingWebHistoryService::MultipleRequestsCallback,
+                     base::Unretained(web_history_service())),
       PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS);
 
   web_history_service()->SetExpectedURL(
       GURL("https://history.google.com/history/api/lookup?client=audio"));
   web_history_service()->SetExpectedPostData("");
   web_history_service()->GetAudioHistoryEnabled(
-      base::Bind(&TestingWebHistoryService::MultipleRequestsCallback,
-                 base::Unretained(web_history_service())),
+      base::BindOnce(&TestingWebHistoryService::MultipleRequestsCallback,
+                     base::Unretained(web_history_service())),
       PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS);
 
   // Check that both requests are no longer pending.
@@ -323,9 +322,8 @@ TEST_F(WebHistoryServiceTest, MultipleRequests) {
 TEST_F(WebHistoryServiceTest, VerifyReadResponse) {
   // Test that properly formatted response with good response code returns true
   // as expected.
-  WebHistoryService::CompletionCallback completion_callback;
   std::unique_ptr<WebHistoryService::Request> request(
-      new TestRequest(GURL("http://history.google.com/"), completion_callback,
+      new TestRequest(GURL("http://history.google.com/"), base::DoNothing(),
                       net::HTTP_OK, /* response code */
                       "{\n"         /* response body */
                       "  \"history_recording_enabled\": true\n"
@@ -340,7 +338,7 @@ TEST_F(WebHistoryServiceTest, VerifyReadResponse) {
   // Test that properly formatted response with good response code returns false
   // as expected.
   std::unique_ptr<WebHistoryService::Request> request2(new TestRequest(
-      GURL("http://history.google.com/"), completion_callback, net::HTTP_OK,
+      GURL("http://history.google.com/"), base::DoNothing(), net::HTTP_OK,
       "{\n"
       "  \"history_recording_enabled\": false\n"
       "}"));
@@ -353,7 +351,7 @@ TEST_F(WebHistoryServiceTest, VerifyReadResponse) {
 
   // Test that a bad response code returns false.
   std::unique_ptr<WebHistoryService::Request> request3(
-      new TestRequest(GURL("http://history.google.com/"), completion_callback,
+      new TestRequest(GURL("http://history.google.com/"), base::DoNothing(),
                       net::HTTP_UNAUTHORIZED,
                       "{\n"
                       "  \"history_recording_enabled\": true\n"
@@ -368,7 +366,7 @@ TEST_F(WebHistoryServiceTest, VerifyReadResponse) {
   //   "Non-JSON response received from history server".
   // This test tests how that situation is handled.
   std::unique_ptr<WebHistoryService::Request> request4(new TestRequest(
-      GURL("http://history.google.com/"), completion_callback, net::HTTP_OK,
+      GURL("http://history.google.com/"), base::DoNothing(), net::HTTP_OK,
       "{\n"
       "  \"history_recording_enabled\": not true\n"
       "}"));
@@ -379,7 +377,7 @@ TEST_F(WebHistoryServiceTest, VerifyReadResponse) {
 
   // Test that improperly formatted response returns false.
   std::unique_ptr<WebHistoryService::Request> request5(new TestRequest(
-      GURL("http://history.google.com/"), completion_callback, net::HTTP_OK,
+      GURL("http://history.google.com/"), base::DoNothing(), net::HTTP_OK,
       "{\n"
       "  \"history_recording\": true\n"
       "}"));

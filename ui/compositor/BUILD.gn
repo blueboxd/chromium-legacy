@@ -69,8 +69,6 @@ jumbo_component("compositor") {
     "paint_recorder.cc",
     "paint_recorder.h",
     "property_change_reason.h",
-    "reflector.cc",
-    "reflector.h",
     "scoped_animation_duration_scale_mode.cc",
     "scoped_animation_duration_scale_mode.h",
     "scoped_layer_animation_settings.cc",
@@ -125,6 +123,8 @@ jumbo_component("compositor") {
 jumbo_static_library("test_support") {
   testonly = true
   sources = [
+    "test/direct_layer_tree_frame_sink.cc",
+    "test/direct_layer_tree_frame_sink.h",
     "test/draw_waiter_for_test.cc",
     "test/draw_waiter_for_test.h",
     "test/fake_context_factory.cc",

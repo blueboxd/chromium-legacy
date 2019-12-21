@@ -175,15 +175,11 @@ String DeferredImageDecoder::FilenameExtension() const {
                            : filename_extension_;
 }
 
-sk_sp<PaintImageGenerator> DeferredImageDecoder::CreateGenerator(size_t index) {
+sk_sp<PaintImageGenerator> DeferredImageDecoder::CreateGenerator() {
   if (frame_generator_ && frame_generator_->DecodeFailed())
     return nullptr;
 
-  PrepareLazyDecodedFrames();
-
-  // PrepareLazyDecodedFrames should populate the metadata for each frame in
-  // this image and create the |frame_generator_|, if enough data is available.
-  if (index >= frame_data_.size())
+  if (invalid_image_ || frame_data_.IsEmpty())
     return nullptr;
 
   DCHECK(frame_generator_);
@@ -196,10 +192,16 @@ sk_sp<PaintImageGenerator> DeferredImageDecoder::CreateGenerator(size_t index) {
       SegmentReader::CreateFromSkROBuffer(std::move(ro_buffer));
 
   // ImageFrameGenerator has the latest known alpha state. There will be a
-  // performance boost if this frame is opaque.
-  SkAlphaType alpha_type = frame_generator_->HasAlpha(index)
-                               ? kPremul_SkAlphaType
-                               : kOpaque_SkAlphaType;
+  // performance boost if the image is opaque since we can avoid painting
+  // the background in this case.
+  // For multi-frame images, these maybe animated on the compositor thread.
+  // So we can not mark them as opaque unless all frames are opaque.
+  // TODO(khushalsagar): Check whether all frames being added to the
+  // generator are opaque when populating FrameMetadata below.
+  SkAlphaType alpha_type = kPremul_SkAlphaType;
+  if (frame_data_.size() == 1u && !frame_generator_->HasAlpha(0u))
+    alpha_type = kOpaque_SkAlphaType;
+
   SkImageInfo info =
       SkImageInfo::MakeN32(decoded_size.width(), decoded_size.height(),
                            alpha_type, color_space_for_sk_images_);
@@ -396,14 +398,19 @@ void DeferredImageDecoder::PrepareLazyDecodedFrames() {
   if (!metadata_decoder_ || !metadata_decoder_->IsSizeAvailable())
     return;
 
+  if (invalid_image_)
+    return;
+
   if (!image_metadata_)
     image_metadata_ = metadata_decoder_->MakeMetadataForDecodeAcceleration();
 
   // If the image contains a coded size with zero in either or both size
   // dimensions, the image is invalid.
   if (image_metadata_->coded_size.has_value() &&
-      image_metadata_->coded_size.value().IsEmpty())
+      image_metadata_->coded_size.value().IsEmpty()) {
+    invalid_image_ = true;
     return;
+  }
 
   ActivateLazyDecoding();
 
@@ -411,12 +418,16 @@ void DeferredImageDecoder::PrepareLazyDecodedFrames() {
   frame_data_.resize(metadata_decoder_->FrameCount());
 
   // The decoder may be invalidated during a FrameCount(). Simply bail if so.
-  if (metadata_decoder_->Failed())
+  if (metadata_decoder_->Failed()) {
+    invalid_image_ = true;
     return;
+  }
 
   // We have encountered a broken image file. Simply bail.
-  if (frame_data_.size() < previous_size)
+  if (frame_data_.size() < previous_size) {
+    invalid_image_ = true;
     return;
+  }
 
   for (size_t i = previous_size; i < frame_data_.size(); ++i) {
     frame_data_[i].duration_ = metadata_decoder_->FrameDurationAtIndex(i);

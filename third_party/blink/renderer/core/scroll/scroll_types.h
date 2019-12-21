@@ -45,6 +45,10 @@ inline ScrollOffset ToScrollOffset(const FloatPoint& p) {
   return ScrollOffset(p.X(), p.Y());
 }
 
+inline ScrollOffset ToScrollOffset(const gfx::PointF& p) {
+  return ScrollOffset(p.x(), p.y());
+}
+
 using ScrollDirection = WebScrollDirection;
 using ui::input_types::ScrollGranularity;
 

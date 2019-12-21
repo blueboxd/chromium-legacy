@@ -19,8 +19,8 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.settings.download.DownloadDirectoryAdapter;
-import org.chromium.chrome.browser.ui.widget.text.AlertDialogEditText;
 import org.chromium.chrome.download.R;
+import org.chromium.components.browser_ui.widget.text.AlertDialogEditText;
 
 import java.io.File;
 

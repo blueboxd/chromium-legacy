@@ -56,7 +56,6 @@
 #include "third_party/blink/public/platform/web_cursor_info.h"
 #include "third_party/blink/public/platform/web_drag_data.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
-#include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/public_buildflags.h"
@@ -70,12 +69,12 @@
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_hit_test_result.h"
 #include "third_party/blink/public/web/web_input_method_controller.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_print_params.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_tree_scope_type.h"
-#include "third_party/blink/public/web/web_user_gesture_indicator.h"
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/public/web/web_widget.h"
 #include "third_party/blink/public/web/web_widget_client.h"
@@ -736,7 +735,7 @@ TEST_F(WebViewTest, HitTestResultAtWithPageScaleAndPan) {
   positive_result.Reset();
 
   // Pan around the zoomed in page so the image is not visible in viewport.
-  web_view->SetVisualViewportOffset(WebFloatPoint(100, 100));
+  web_view->SetVisualViewportOffset(gfx::PointF(100, 100));
   WebHitTestResult negative_result2 = web_view->HitTestResultAt(hit_point);
   EXPECT_FALSE(
       negative_result2.GetNode().To<WebElement>().HasHTMLTagName("img"));
@@ -794,7 +793,7 @@ TEST_F(WebViewTest, HitTestResultForTapWithTapAreaPageScaleAndPan) {
 
   // Zoom in and pan around the page so the image is not visible in viewport.
   web_view->SetPageScaleFactor(2.0f);
-  web_view->SetVisualViewportOffset(WebFloatPoint(100, 100));
+  web_view->SetVisualViewportOffset(gfx::PointF(100, 100));
   WebHitTestResult negative_result2 =
       web_view->HitTestResultForTap(hit_point, tap_area);
   EXPECT_FALSE(
@@ -2407,6 +2406,8 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
   main_frame_local->Loader().GetDocumentLoader()->CommitSameDocumentNavigation(
       item1->Url(), WebFrameLoadType::kBackForward, item1.Get(),
       ClientRedirectPolicy::kNotClientRedirect, nullptr, false, nullptr);
+  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases(
+      WebWidget::LifecycleUpdateReason::kTest);
 
   // Click a different anchor
   main_frame_local->Loader().StartNavigation(FrameLoadRequest(
@@ -2414,15 +2415,23 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
       ResourceRequest(main_frame_local->GetDocument()->CompleteURL("#b"))));
   Persistent<HistoryItem> item3 =
       main_frame_local->Loader().GetDocumentLoader()->GetHistoryItem();
+  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases(
+      WebWidget::LifecycleUpdateReason::kTest);
 
   // Go back, then forward. The scroll position should be properly set on the
   // forward navigation.
   main_frame_local->Loader().GetDocumentLoader()->CommitSameDocumentNavigation(
       item1->Url(), WebFrameLoadType::kBackForward, item1.Get(),
       ClientRedirectPolicy::kNotClientRedirect, nullptr, false, nullptr);
+
   main_frame_local->Loader().GetDocumentLoader()->CommitSameDocumentNavigation(
       item3->Url(), WebFrameLoadType::kBackForward, item3.Get(),
       ClientRedirectPolicy::kNotClientRedirect, nullptr, false, nullptr);
+  // The scroll offset is only applied via invoking the anchor via the main
+  // lifecycle, or a forced layout.
+  // TODO(chrishtr): At the moment, WebLocalFrameImpl::GetScrollOffset() does
+  // not force a layout. Script-exposed scroll offset-reading methods do,
+  // however. It seems wrong not to force a layout.
   EXPECT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().width);
   EXPECT_GT(web_view_impl->MainFrameImpl()->GetScrollOffset().height, 2000);
 }
@@ -2516,8 +2525,8 @@ static void DragAndDropURL(WebViewImpl* web_view, const std::string& url) {
   item.string_data = WebString::FromUTF8(url);
   drag_data.AddItem(item);
 
-  const WebFloatPoint client_point(0, 0);
-  const WebFloatPoint screen_point(0, 0);
+  const gfx::PointF client_point;
+  const gfx::PointF screen_point;
   WebFrameWidget* widget = web_view->MainFrameImpl()->FrameWidget();
   widget->DragTargetDragEnter(drag_data, client_point, screen_point,
                               kWebDragOperationCopy, 0);
@@ -4184,7 +4193,7 @@ TEST_F(WebViewTest, CompositionIsUserGesture) {
       frame->FrameWidget()->GetActiveWebInputMethodController()->SetComposition(
           WebString::FromUTF8(std::string("hello").c_str()),
           WebVector<WebImeTextSpan>(), WebRange(), 3, 3));
-  EXPECT_TRUE(WebUserGestureIndicator::IsProcessingUserGesture(frame));
+  EXPECT_TRUE(frame->HasTransientUserActivation());
   EXPECT_EQ(1, client.TextChanges());
   EXPECT_TRUE(frame->HasMarkedText());
 
@@ -4501,13 +4510,13 @@ TEST_F(ShowUnhandledTapTest, ShowUnhandledTapUIIfNeeded) {
   constexpr float visual_y = 10.f;
 
   web_view_->SetPageScaleFactor(scale);
-  web_view_->SetVisualViewportOffset(WebFloatPoint(visual_x, visual_y));
+  web_view_->SetVisualViewportOffset(gfx::PointF(visual_x, visual_y));
 
   Tap("target");
 
   // Ensure position didn't change as a result of scroll into view.
-  ASSERT_EQ(visual_x, web_view_->VisualViewportOffset().x);
-  ASSERT_EQ(visual_y, web_view_->VisualViewportOffset().y);
+  ASSERT_EQ(visual_x, web_view_->VisualViewportOffset().x());
+  ASSERT_EQ(visual_y, web_view_->VisualViewportOffset().y());
 
   EXPECT_TRUE(mock_notifier_.WasUnhandledTap());
 
@@ -4722,7 +4731,7 @@ TEST_F(WebViewTest, PasswordFieldEditingIsUserGesture) {
       frame->FrameWidget()->GetActiveWebInputMethodController()->CommitText(
           WebString::FromUTF8(std::string("hello").c_str()),
           empty_ime_text_spans, WebRange(), 0));
-  EXPECT_TRUE(WebUserGestureIndicator::IsProcessingUserGesture(frame));
+  EXPECT_TRUE(frame->HasTransientUserActivation());
   EXPECT_EQ(1, client.TextChanges());
   frame->SetAutofillClient(nullptr);
 }
@@ -4855,7 +4864,7 @@ TEST_F(WebViewTest, ForceAndResetViewport) {
   // Override applies transform, sets visible rect, and disables
   // visual viewport clipping.
   TransformationMatrix matrix =
-      dev_tools_emulator->ForceViewportForTesting(WebFloatPoint(50, 55), 2.f);
+      dev_tools_emulator->ForceViewportForTesting(gfx::PointF(50, 55), 2.f);
   expected_matrix.MakeIdentity().Scale(2.f).Translate(-50, -55);
   EXPECT_EQ(expected_matrix, matrix);
   {
@@ -4865,8 +4874,8 @@ TEST_F(WebViewTest, ForceAndResetViewport) {
   }
 
   // Setting new override discards previous one.
-  matrix = dev_tools_emulator->ForceViewportForTesting(
-      WebFloatPoint(5.4f, 10.5f), 1.5f);
+  matrix = dev_tools_emulator->ForceViewportForTesting(gfx::PointF(5.4f, 10.5f),
+                                                       1.5f);
   expected_matrix.MakeIdentity().Scale(1.5f).Translate(-5.4f, -10.5f);
   EXPECT_EQ(expected_matrix, matrix);
   {
@@ -4904,7 +4913,7 @@ TEST_F(WebViewTest, ViewportOverrideIntegratesDeviceMetricsOffsetAndScale) {
   EXPECT_EQ(expected_matrix, web_view_impl->GetDeviceEmulationTransform());
 
   // Device metrics offset and scale are applied before viewport override.
-  emulation_params.viewport_offset = WebFloatPoint(5, 10);
+  emulation_params.viewport_offset = gfx::PointF(5, 10);
   emulation_params.viewport_scale = 1.5f;
   web_view_impl->EnableDeviceEmulation(emulation_params);
   expected_matrix.MakeIdentity()
@@ -4935,7 +4944,7 @@ TEST_F(WebViewTest, ViewportOverrideAdaptsToScaleAndScroll) {
       ScrollOffset(100, 150), kProgrammaticScroll, kScrollBehaviorInstant);
 
   WebDeviceEmulationParams emulation_params;
-  emulation_params.viewport_offset = WebFloatPoint(50, 55);
+  emulation_params.viewport_offset = gfx::PointF(50, 55);
   emulation_params.viewport_scale = 2.f;
   web_view_impl->EnableDeviceEmulation(emulation_params);
   expected_matrix.MakeIdentity()

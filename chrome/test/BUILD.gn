@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/allocator.gni")
+import("//build/config/buildflags_paint_preview.gni")
 import("//build/config/chrome_build.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/crypto.gni")
@@ -22,7 +23,6 @@ import("//components/gwp_asan/buildflags/buildflags.gni")
 import("//components/nacl/features.gni")
 import("//components/offline_pages/buildflags/features.gni")
 import("//components/os_crypt/features.gni")
-import("//components/paint_preview/buildflags/buildflags.gni")
 import("//components/signin/features.gni")
 import("//components/spellcheck/spellcheck_build_features.gni")
 import("//extensions/buildflags/buildflags.gni")
@@ -2356,6 +2356,8 @@ if (!is_android) {
         "../browser/chromeos/printing/test_cups_print_job_manager.h",
         "../browser/chromeos/printing/test_cups_printers_manager.cc",
         "../browser/chromeos/printing/test_cups_printers_manager.h",
+        "../browser/chromeos/printing/test_printer_configurer.cc",
+        "../browser/chromeos/printing/test_printer_configurer.h",
         "../browser/chromeos/profiles/profile_helper_browsertest.cc",
         "../browser/chromeos/shutdown_policy_browsertest.cc",
         "../browser/chromeos/startup_settings_cache_browsertest.cc",
@@ -2450,6 +2452,7 @@ if (!is_android) {
       if (use_cups) {
         sources +=
             [ "../browser/chromeos/extensions/printing/printing_apitest.cc" ]
+        deps += [ "//printing:test_support" ]
       }
       if (enable_cros_libassistant) {
         sources += [
@@ -3067,6 +3070,7 @@ test("unit_tests") {
     "../browser/component_updater/games_component_installer_unittest.cc",
     "../browser/component_updater/optimization_hints_component_installer_unittest.cc",
     "../browser/component_updater/origin_trials_component_installer_unittest.cc",
+    "../browser/component_updater/soda_component_installer_unittest.cc",
     "../browser/component_updater/subresource_filter_component_installer_unittest.cc",
     "../browser/component_updater/sw_reporter_installer_win_unittest.cc",
     "../browser/content_index/content_index_provider_unittest.cc",
@@ -3410,6 +3414,7 @@ test("unit_tests") {
     "../browser/ui/autofill/popup_view_common_unittest.cc",
     "../browser/ui/autofill/popup_view_test_helpers.cc",
     "../browser/ui/autofill/popup_view_test_helpers.h",
+    "../browser/ui/autofill/sms_client_impl_unittest.cc",
     "../browser/ui/blocked_content/popup_opener_tab_helper_unittest.cc",
     "../browser/ui/blocked_content/safe_browsing_triggered_popup_blocker_unittest.cc",
     "../browser/ui/chrome_select_file_policy_unittest.cc",
@@ -5576,6 +5581,7 @@ if (!is_android) {
       "../browser/ui/search/instant_test_base.cc",
       "../browser/ui/search/instant_test_base.h",
       "../browser/ui/search/local_ntp_uitest.cc",
+      "../browser/ui/search/third_party_ntp_uitest.cc",
       "../browser/ui/send_mouse_move_uitest_win.cc",
       "../browser/ui/signin_view_controller_interactive_uitest.cc",
       "../browser/ui/startup/invalid_user_data_dir_interactive_uitest.cc",

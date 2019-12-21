@@ -326,7 +326,6 @@
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />att köra nätverksdiagnostik<ph name="END_LINK" /></translation>
 <translation id="2473195200299095979">Översätt den här sidan</translation>
 <translation id="2479410451996844060">Ogiltig sökadress.</translation>
-<translation id="2482370039860827034">Du angav just ditt lösenord på en bedräglig webbplats. Chrome rekommenderar att du besöker <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> och andra sidor där du använder lösenordet och ändrar det nu.</translation>
 <translation id="2482878487686419369">Aviseringar</translation>
 <translation id="248348093745724435">Datorprinciper</translation>
 <translation id="2491120439723279231">Servercertifikatet innehåller fel.</translation>
@@ -339,7 +338,6 @@
 <translation id="2505268675989099013">Skydda kontot</translation>
 <translation id="2515629240566999685">kontrollera mottagningen i området</translation>
 <translation id="2521385132275182522">Häfta nere till höger</translation>
-<translation id="2521483867890026383">Du angav just ditt lösenord på en bedräglig webbplats. Chromium rekommenderar att du besöker <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> och andra sidor där du använder lösenordet och ändrar det nu.</translation>
 <translation id="2523886232349826891">Endast sparat på den här enheten</translation>
 <translation id="2524461107774643265">Lägg till mer information</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{och 1 till}other{och # till}}</translation>

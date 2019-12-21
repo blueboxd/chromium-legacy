@@ -103,20 +103,9 @@ Polymer({
               '#spellCheckSubpageTrigger');
         }
         // </if>
-        // <if expr="chromeos">
-        if (settings.routes.INPUT_METHODS) {
-          map.set(settings.routes.INPUT_METHODS.path, '#manageInputMethods');
-        }
-        // </if>
         return map;
       },
     },
-
-    /**
-     * Dictionary defining page visibility.
-     * @type {!LanguagesPageVisibility}
-     */
-    pageVisibility: Object,
 
     // <if expr="chromeos">
     /** @private */
@@ -287,81 +276,6 @@ Polymer({
       menu.querySelector('#uiLanguageItem').hidden = true;
     }
   },
-
-  /**
-   * Opens the Manage Input Methods page.
-   * @private
-   */
-  onManageInputMethodsTap_: function() {
-    settings.navigateTo(settings.routes.INPUT_METHODS);
-  },
-
-  /**
-   * Handler for tap and <Enter> events on an input method on the main page,
-   * which sets it as the current input method.
-   * @param {!{model: !{item: !chrome.languageSettingsPrivate.InputMethod},
-   *           target: !{tagName: string},
-   *           type: string,
-   *           key: (string|undefined)}} e
-   */
-  onInputMethodTap_: function(e) {
-    // Taps on the button are handled in onInputMethodOptionsTap_.
-    // TODO(dschuyler): The row has two operations that are not clearly
-    // delineated. crbug.com/740691
-    if (e.target.tagName == 'CR-ICON-BUTTON') {
-      return;
-    }
-
-    // Ignore key presses other than <Enter>.
-    if (e.type == 'keypress' && e.key != 'Enter') {
-      return;
-    }
-
-    // Set the input method.
-    this.languageHelper.setCurrentInputMethod(e.model.item.id);
-  },
-
-  /**
-   * Opens the input method extension's options page in a new tab (or focuses
-   * an existing instance of the IME's options).
-   * @param {!{model: !{item: chrome.languageSettingsPrivate.InputMethod}}} e
-   * @private
-   */
-  onInputMethodOptionsTap_: function(e) {
-    this.languageHelper.openInputMethodOptions(e.model.item.id);
-  },
-
-  /**
-   * @param {string} id The input method ID.
-   * @param {string} currentId The ID of the currently enabled input method.
-   * @return {boolean} True if the IDs match.
-   * @private
-   */
-  isCurrentInputMethod_: function(id, currentId) {
-    assert(cr.isChromeOS);
-    return id == currentId;
-  },
-
-  /**
-   * @param {string} id The input method ID.
-   * @param {string} currentId The ID of the currently enabled input method.
-   * @return {string} The class for the input method item.
-   * @private
-   */
-  getInputMethodItemClass_: function(id, currentId) {
-    assert(cr.isChromeOS);
-    return this.isCurrentInputMethod_(id, currentId) ? 'selected' : '';
-  },
-
-  getInputMethodName_: function(id) {
-    assert(cr.isChromeOS);
-    const inputMethod =
-        this.languages.inputMethods.enabled.find(function(inputMethod) {
-          return inputMethod.id == id;
-        });
-    return inputMethod ? inputMethod.displayName : '';
-  },
-
   // </if>
 
   // <if expr="chromeos or is_win">

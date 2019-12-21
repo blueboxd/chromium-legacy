@@ -60,26 +60,6 @@
                  type="chrome_html"
                  preprocess="true"
                  allowexternalscript="true" />
-      <if expr="chromeos">
-        <structure name="IDR_SETTINGS_CHANNEL_SWITCHER_DIALOG_HTML"
-                   file="about_page/channel_switcher_dialog.html"
-                   type="chrome_html" />
-        <structure name="IDR_SETTINGS_CHANNEL_SWITCHER_DIALOG_JS"
-                   file="about_page/channel_switcher_dialog.js"
-                   type="chrome_html" />
-        <structure name="IDR_SETTINGS_DETAILED_BUILD_INFO_JS"
-                   file="about_page/detailed_build_info.js"
-                   type="chrome_html" />
-        <structure name="IDR_SETTINGS_DETAILED_BUILD_INFO_HTML"
-                   file="about_page/detailed_build_info.html"
-                   type="chrome_html" />
-        <structure name="IDR_SETTINGS_UPDATE_WARNING_DIALOG_HTML"
-                   file="about_page/update_warning_dialog.html"
-                   type="chrome_html" />
-        <structure name="IDR_SETTINGS_UPDATE_WARNING_DIALOG_JS"
-                   file="about_page/update_warning_dialog.js"
-                   type="chrome_html" />
-      </if>
       <structure name="IDR_SETTINGS_ADD_SITE_DIALOG_HTML"
                  file="site_settings/add_site_dialog.html"
                  type="chrome_html" />
@@ -568,12 +548,6 @@
                    flattenhtml="true"
                    type="chrome_html" />
       </if>
-      <structure name="IDR_SETTINGS_POWERWASH_DIALOG_HTML"
-                 file="reset_page/powerwash_dialog.html"
-                 type="chrome_html" />
-      <structure name="IDR_SETTINGS_POWERWASH_DIALOG_JS"
-                 file="reset_page/powerwash_dialog.js"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_RESET_PAGE_HTML"
                  file="reset_page/reset_page.html"
                  type="chrome_html"
@@ -632,14 +606,6 @@
                  type="chrome_html"
                  preprocess="true"
                  allowexternalscript="true" />
-      <if expr="chromeos">
-        <structure name="IDR_SETTINGS_LANGUAGES_MANAGE_INPUT_METHODS_PAGE_HTML"
-                   file="languages_page/manage_input_methods_page.html"
-                   type="chrome_html" />
-        <structure name="IDR_SETTINGS_LANGUAGES_MANAGE_INPUT_METHODS_PAGE_JS"
-                   file="languages_page/manage_input_methods_page.js"
-                   type="chrome_html" />
-      </if>
       <if expr="not is_macosx">
         <structure name="IDR_SETTINGS_LANGUAGES_EDIT_DICTIONARY_PAGE_HTML"
                    file="languages_page/edit_dictionary_page.html"

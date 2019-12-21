@@ -186,6 +186,7 @@ jumbo_source_set("config_sources") {
     ":process_json",
     "//base",
     "//build:branding_buildflags",
+    "//build:chromecast_buildflags",
     "//gpu/ipc/common:gpu_preferences_interface",
     "//gpu/vulkan:buildflags",
     "//media:media_buildflags",

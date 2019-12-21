@@ -115,9 +115,8 @@ void PolicyStatisticsCollector::CollectStatistics() {
 }
 
 void PolicyStatisticsCollector::ScheduleUpdate(base::TimeDelta delay) {
-  update_callback_.Reset(base::Bind(
-      &PolicyStatisticsCollector::CollectStatistics,
-      base::Unretained(this)));
+  update_callback_.Reset(base::BindOnce(
+      &PolicyStatisticsCollector::CollectStatistics, base::Unretained(this)));
   task_runner_->PostDelayedTask(FROM_HERE, update_callback_.callback(), delay);
 }
 

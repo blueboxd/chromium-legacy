@@ -565,7 +565,7 @@
 <translation id="1776712937009046120">Gebruiker toevoegen</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
 <translation id="1777310661937894236">Dit apparaat wordt beheerd door <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.
-    Klik op Volgende om door te gaan met inloggen op je <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />-account.</translation>
+    Klik op Volgende om door te gaan met inloggen op je <ph name="BEGIN_BOLD" /><ph name="DOMAIN" />-account<ph name="END_BOLD" />.</translation>
 <translation id="1779652936965200207">Geef deze toegangscode op '<ph name="DEVICE_NAME" />' op:</translation>
 <translation id="1780152987505130652">Groep sluiten</translation>
 <translation id="1781291988450150470">Huidige pincode</translation>
@@ -1046,7 +1046,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="2462724976360937186">Sleutel-ID van certificeringsinstantie</translation>
 <translation id="2462752602710430187"><ph name="PRINTER_NAME" /> toegevoegd</translation>
 <translation id="2464089476039395325">HTTP-proxy</translation>
-<translation id="2467267713099745100"><ph name="NETWORK_TYPE" />-netwerk, uitgeschakeld</translation>
+<translation id="2467267713099745100">Netwerk: <ph name="NETWORK_TYPE" />, uitgeschakeld</translation>
 <translation id="2468205691404969808">Maakt gebruik van cookies om je voorkeuren te onthouden, zelfs als je deze pagina's niet bezoekt</translation>
 <translation id="2468402215065996499">Tamagotchi</translation>
 <translation id="2469259292033957819">Je hebt geen opgeslagen printers.</translation>
@@ -1428,7 +1428,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="2972581237482394796">&amp;Opnieuw</translation>
 <translation id="2973324205039581528">Geluid van site dempen</translation>
 <translation id="2977480621796371840">Uit groep verwijderen</translation>
-<translation id="2979520980928493164">Zorg dat Chrome gezonder en beter functioneert</translation>
+<translation id="2979520980928493164">Zorg dat Chrome beter functioneert</translation>
 <translation id="2979639724566107830">Openen in nieuw venster</translation>
 <translation id="2981113813906970160">Grote muisaanwijzer weergeven</translation>
 <translation id="2982970937345031">Anoniem melden</translation>
@@ -1758,7 +1758,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="347670947055184738">Het systeem kan het beleid voor je apparaat niet ophalen.</translation>
 <translation id="347785443197175480"><ph name="HOST" /> toegang blijven geven tot je camera en microfoon</translation>
 <translation id="3478685642445675458">Ontgrendel je profiel voordat je een persoon verwijdert.</translation>
-<translation id="3479539252931486093">Wat dit onverwacht? <ph name="BEGIN_LINK" />Laat het ons weten<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Niet nu</translation>
 <translation id="3481268647794498892">Wordt geopend in <ph name="ALTERNATIVE_BROWSER_NAME" /> over <ph name="COUNTDOWN_SECONDS" /> seconden</translation>
 <translation id="3484273680291419129">Schadelijke software verwijderen...</translation>
@@ -2084,7 +2083,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="389589731200570180">Delen met gasten</translation>
 <translation id="389901847090970821">Toetsenbord selecteren</translation>
 <translation id="3899879303189199559">Langer dan een jaar offline</translation>
-<translation id="3900789207771372462">Sommige extensies kunnen je browse-activiteit bekijken, inclusief persoonlijke informatie.</translation>
+<translation id="3900789207771372462">Sommige extensies kunnen je browse-activiteit bekijken, waaronder persoonlijke informatie.</translation>
 <translation id="3900966090527141178">Wachtwoorden exporteren</translation>
 <translation id="3901991538546252627">Verbinding maken met <ph name="NAME" /></translation>
 <translation id="3905761538810670789">App repareren</translation>
@@ -2512,7 +2511,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="4549791035683739768">Je beveiligingssleutel heeft geen opgeslagen vingerafdrukken</translation>
 <translation id="4551763574344810652">Druk op <ph name="MODIFIER_KEY_DESCRIPTION" /> om dit ongedaan te maken</translation>
 <translation id="4552089082226364758">Flash</translation>
-<translation id="4552759165874948005"><ph name="NETWORK_TYPE" /> netwerk, signaalsterkte <ph name="SIGNAL_STRENGTH" />%</translation>
+<translation id="4552759165874948005">Netwerk: <ph name="NETWORK_TYPE" />, signaalsterkte: <ph name="SIGNAL_STRENGTH" />%</translation>
 <translation id="4554591392113183336">Externe uitbreiding heeft dezelfde of een lagere versie dan de bestaande.</translation>
 <translation id="4555769855065597957">Schaduw</translation>
 <translation id="4555863373929230635">Log in en schakel synchronisatie in om wachtwoorden op te slaan in je Google-account.</translation>
@@ -3539,7 +3538,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="6053401458108962351">&amp;Browsegegevens wissen</translation>
 <translation id="6055171183283175969">Het opgegeven wachtwoord is onjuist.</translation>
 <translation id="6055392876709372977">PKCS nr. 1 SHA-256 met RSA-encryptie</translation>
-<translation id="6055907707645252013"><ph name="NETWORK_TYPE" /> netwerk, niet verbonden</translation>
+<translation id="6055907707645252013">Netwerk: <ph name="NETWORK_TYPE" />, niet verbonden</translation>
 <translation id="6056710589053485679">Normaal opnieuw laden</translation>
 <translation id="6057381398996433816">Deze site mag je bewegings- en lichtsensoren niet gebruiken.</translation>
 <translation id="6058567592298841668">Plug-in voor virtuele machine: <ph name="PLUGIN_VM_NAME" /></translation>
@@ -4490,7 +4489,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="7442465037756169001">Je Hangouts Meet-hardware kan worden ingesteld.</translation>
 <translation id="744341768939279100">Een nieuw profiel maken</translation>
 <translation id="7443806024147773267">Toegang tot je wachtwoorden telkens wanneer je bent ingelogd op je Google-account</translation>
-<translation id="7444046173054089907">Deze site is geblokkeerd</translation>
 <translation id="7444983668544353857"><ph name="NETWORKDEVICE" /> uitschakelen</translation>
 <translation id="7448430327655618736">Apps automatisch installeren</translation>
 <translation id="7450761244949417357">Wordt nu geopend in <ph name="ALTERNATIVE_BROWSER_NAME" /></translation>
@@ -5184,7 +5182,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8400146488506985033">Mensen beheren</translation>
 <translation id="8401432541486058167">Geef de pincode op die hoort bij je smartkaart.</translation>
 <translation id="8405046151008197676">Ontvang de hoogtepunten van de nieuwste update</translation>
-<translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> netwerk, verbinden</translation>
+<translation id="8408068190360279472">Netwerk: <ph name="NETWORK_TYPE" />, verbinden</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Eerst vragen (aanbevolen)</translation>
 <translation id="8418445294933751433">Weergeven al&amp;s tabblad</translation>

@@ -222,6 +222,7 @@
 #include "net/base/filename_util.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "third_party/blink/public/common/frame/blocked_navigation_types.h"
+#include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/window_open_disposition.h"
@@ -1030,7 +1031,22 @@ void Browser::UpdateUIForNavigationInTab(WebContents* contents,
   // navigating away from the new tab page.
   ScheduleUIUpdate(contents, content::INVALIDATE_TYPE_URL);
 
-  if (contents_is_selected &&
+  // Figure out if the navigating contents can take focus (potentially taking it
+  // away from other, currently-focused UI element like the omnibox).
+  // Specifically, user-initiated navigations can give focus to the tab;
+  // renderer-initiated navigations usually don't, unless the NTP triggers them
+  // (in which case they're treated similarly to a user-initiated navigation).
+  //
+  // TODO(lukasza): https://crbug.com/1034999: Try to avoid special-casing
+  // kChromeUINewTabURL below and covering it via IsNTPOrRelatedURL instead.
+  const GURL& current_url = contents->GetLastCommittedURL();
+  bool contents_can_take_focus =
+      user_initiated || current_url == GURL(chrome::kChromeUINewTabURL) ||
+      search::IsNTPOrRelatedURL(
+          current_url,
+          Profile::FromBrowserContext(contents->GetBrowserContext()));
+
+  if (contents_can_take_focus && contents_is_selected &&
       (window()->IsActive() || action == NavigateParams::SHOW_WINDOW)) {
     contents->SetInitialFocus();
   }
@@ -1800,7 +1816,7 @@ void Browser::EnterFullscreenModeForTab(
     const GURL& origin,
     const blink::mojom::FullscreenOptions& options) {
   exclusive_access_manager_->fullscreen_controller()->EnterFullscreenModeForTab(
-      web_contents, origin);
+      web_contents, origin, options.display_id);
 }
 
 void Browser::ExitFullscreenModeForTab(WebContents* web_contents) {

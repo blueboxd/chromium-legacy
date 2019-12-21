@@ -22,21 +22,21 @@ void AppListPage::OnHidden() {}
 void AppListPage::OnWillBeHidden() {}
 
 void AppListPage::OnAnimationUpdated(double progress,
-                                     ash::AppListState from_state,
-                                     ash::AppListState to_state) {}
+                                     AppListState from_state,
+                                     AppListState to_state) {}
 
 gfx::Size AppListPage::GetPreferredSearchBoxSize() const {
   return gfx::Size();
 }
 
 base::Optional<int> AppListPage::GetSearchBoxTop(
-    ash::AppListViewState view_state) const {
+    AppListViewState view_state) const {
   return base::nullopt;
 }
 
-void AppListPage::UpdateOpacityForState(ash::AppListState state) {}
+void AppListPage::UpdateOpacityForState(AppListState state) {}
 
-void AppListPage::UpdatePageBoundsForState(ash::AppListState state,
+void AppListPage::UpdatePageBoundsForState(AppListState state,
                                            const gfx::Rect& contents_bounds,
                                            const gfx::Rect& search_box_bounds) {
   SetBoundsRect(

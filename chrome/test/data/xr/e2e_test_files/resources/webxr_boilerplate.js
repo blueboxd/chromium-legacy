@@ -19,6 +19,7 @@ var glAttribs = {
 var gl = null;
 var onMagicWindowXRFrameCallback = null;
 var onImmersiveXRFrameCallback = null;
+var onARFrameCallback = null;
 var onSessionStartedCallback = null;
 var onPoseCallback = null;
 var shouldSubmitFrame = true;
@@ -213,7 +214,9 @@ function onXRFrame(t, frame) {
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
       break;
     case sessionTypes.AR:
-      // Do nothing for now
+      if (onARFrameCallback) {
+        onARFrameCallback(session, frame);
+      }
       break;
     default:
       if (onMagicWindowXRFrameCallback) {

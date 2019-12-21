@@ -1006,6 +1006,68 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, Test) {
   ASSERT_TRUE(RunExtensionTest("content_scripts/messaging")) << message_;
 }
 
+// Tests that the URLs of content scripts are set to the extension URL
+// (chrome-extension://<id>/<path_to_script>) rather than the local file
+// path.
+// Regression test for https://crbug.com/714617.
+IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ContentScriptUrls) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(
+      R"({
+           "name": "Content Script",
+           "manifest_version": 2,
+           "version": "0.1",
+           "background": {"scripts": ["background.js"]},
+           "content_scripts": [{
+             "matches": ["*://content-script.example/*"],
+             "js": ["content_script.js"]
+           }],
+           "permissions": ["*://*/*"]
+         })");
+  constexpr char kContentScriptSrc[] =
+      R"(console.error('TestMessage');
+         chrome.test.notifyPass();)";
+  test_dir.WriteFile(FILE_PATH_LITERAL("content_script.js"), kContentScriptSrc);
+  constexpr char kBackgroundScriptSrc[] =
+      R"(chrome.tabs.onUpdated.addListener((id, change, tab) => {
+           if (change.status !== 'complete')
+             return;
+           const url = new URL(tab.url);
+           if (url.hostname !== 'inject-script.example')
+             return;
+           chrome.tabs.executeScript(id, {file: 'content_script.js'});
+         });)";
+  test_dir.WriteFile(FILE_PATH_LITERAL("background.js"), kBackgroundScriptSrc);
+
+  const Extension* const extension = LoadExtension(test_dir.UnpackedPath());
+
+  auto load_page_and_check_error = [this, extension](const char* host) {
+    SCOPED_TRACE(host);
+    ResultCatcher catcher;
+    content::WebContentsConsoleObserver observer(
+        browser()->tab_strip_model()->GetActiveWebContents());
+    auto filter =
+        [](const content::WebContentsConsoleObserver::Message& message) {
+          return message.message == base::ASCIIToUTF16("TestMessage");
+        };
+    observer.SetFilter(base::Bind(filter));
+    ui_test_utils::NavigateToURL(
+        browser(), embedded_test_server()->GetURL(host, "/simple.html"));
+    ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+    ASSERT_EQ(1u, observer.messages().size());
+    GURL source_url(observer.messages()[0].source_id);
+    ASSERT_TRUE(source_url.is_valid());
+    EXPECT_EQ(kExtensionScheme, source_url.scheme_piece());
+    EXPECT_EQ(extension->id(), source_url.host_piece());
+  };
+
+  // Test the script url from both a static content script specified in the
+  // manifest, and a script injected through chrome.tabs.executeScript().
+  load_page_and_check_error("content-script.example");
+  load_page_and_check_error("inject-script.example");
+}
+
 // A test suite designed for exercising the behavior of content script
 // injection into opaque URLs (like about:blank).
 class ContentScriptOpaqueOriginTest : public ContentScriptApiTest {

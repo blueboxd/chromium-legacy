@@ -44,7 +44,6 @@
 #include "third_party/blink/public/common/media/media_player_action.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/common/plugin/plugin_action.h"
-#include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
 #include "third_party/blink/public/platform/web_text_input_info.h"
@@ -2391,19 +2390,19 @@ float WebViewImpl::ClampPageScaleFactorToLimits(float scale_factor) const {
       scale_factor);
 }
 
-void WebViewImpl::SetVisualViewportOffset(const WebFloatPoint& offset) {
+void WebViewImpl::SetVisualViewportOffset(const gfx::PointF& offset) {
   DCHECK(GetPage());
-  GetPage()->GetVisualViewport().SetLocation(offset);
+  GetPage()->GetVisualViewport().SetLocation(FloatPoint(offset));
 }
 
-WebFloatPoint WebViewImpl::VisualViewportOffset() const {
+gfx::PointF WebViewImpl::VisualViewportOffset() const {
   DCHECK(GetPage());
   return GetPage()->GetVisualViewport().VisibleRect().Location();
 }
 
-WebFloatSize WebViewImpl::VisualViewportSize() const {
+gfx::SizeF WebViewImpl::VisualViewportSize() const {
   DCHECK(GetPage());
-  return GetPage()->GetVisualViewport().VisibleRect().Size();
+  return gfx::SizeF(GetPage()->GetVisualViewport().VisibleRect().Size());
 }
 
 void WebViewImpl::SetPageScaleFactorAndLocation(float scale_factor,

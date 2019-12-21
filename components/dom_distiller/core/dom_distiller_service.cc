@@ -103,9 +103,9 @@ TaskTracker* DomDistillerService::GetTaskTrackerForUrl(const GURL& url) const {
 
 TaskTracker* DomDistillerService::CreateTaskTracker(const ArticleEntry& entry) {
   TaskTracker::CancelCallback cancel_callback =
-      base::Bind(&DomDistillerService::CancelTask, base::Unretained(this));
-  tasks_.push_back(std::make_unique<TaskTracker>(entry, cancel_callback,
-                                                 content_store_.get()));
+      base::BindOnce(&DomDistillerService::CancelTask, base::Unretained(this));
+  tasks_.push_back(std::make_unique<TaskTracker>(
+      entry, std::move(cancel_callback), content_store_.get()));
   return tasks_.back().get();
 }
 

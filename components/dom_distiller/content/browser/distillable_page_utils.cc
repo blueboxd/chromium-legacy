@@ -26,20 +26,21 @@ namespace dom_distiller {
 namespace {
 
 void OnExtractFeaturesJsResult(const DistillablePageDetector* detector,
-                               base::Callback<void(bool)> callback,
+                               base::OnceCallback<void(bool)> callback,
                                base::Value result) {
-  callback.Run(detector->Classify(CalculateDerivedFeaturesFromJSON(&result)));
+  std::move(callback).Run(
+      detector->Classify(CalculateDerivedFeaturesFromJSON(&result)));
 }
 
 }  // namespace
 
 void IsDistillablePageForDetector(content::WebContents* web_contents,
                                   const DistillablePageDetector* detector,
-                                  base::Callback<void(bool)> callback) {
+                                  base::OnceCallback<void(bool)> callback) {
   content::RenderFrameHost* main_frame = web_contents->GetMainFrame();
   if (!main_frame) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, false));
+        FROM_HERE, base::BindOnce(std::move(callback), false));
     return;
   }
   std::string extract_features_js =
@@ -47,7 +48,7 @@ void IsDistillablePageForDetector(content::WebContents* web_contents,
           IDR_EXTRACT_PAGE_FEATURES_JS);
   RunIsolatedJavaScript(
       main_frame, extract_features_js,
-      base::BindOnce(OnExtractFeaturesJsResult, detector, callback));
+      base::BindOnce(OnExtractFeaturesJsResult, detector, std::move(callback)));
 }
 
 std::ostream& operator<<(std::ostream& os, const DistillabilityResult& result) {

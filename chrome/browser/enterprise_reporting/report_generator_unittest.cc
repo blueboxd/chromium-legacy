@@ -292,9 +292,18 @@ TEST_F(ReportGeneratorTest, GenerateBasicReport) {
 
   EXPECT_TRUE(basic_request->has_browser_report());
   auto& browser_report = basic_request->browser_report();
+#if defined(OS_CHROMEOS)
+  EXPECT_FALSE(browser_report.has_browser_version());
+  EXPECT_FALSE(browser_report.has_channel());
+#else
   EXPECT_NE(std::string(), browser_report.browser_version());
-  EXPECT_NE(std::string(), browser_report.executable_path());
   EXPECT_TRUE(browser_report.has_channel());
+#endif
+  EXPECT_NE(std::string(), browser_report.executable_path());
+
+#if defined(OS_CHROMEOS)
+  EXPECT_EQ(0, browser_report.plugins_size());
+#else
   // There might be other plugins like PDF plugin, however, our fake plugin
   // should be the first one in the report.
   EXPECT_LE(1, browser_report.plugins_size());
@@ -302,6 +311,7 @@ TEST_F(ReportGeneratorTest, GenerateBasicReport) {
   EXPECT_EQ(kPluginVersion, browser_report.plugins(0).version());
   EXPECT_EQ(kPluginDescription, browser_report.plugins(0).description());
   EXPECT_EQ(kPluginFileName, browser_report.plugins(0).filename());
+#endif
 
   VerifyProfileReport(/*active_profile_names*/ std::set<std::string>(),
                       profile_names, browser_report);

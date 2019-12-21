@@ -572,7 +572,7 @@ DiscreteSet<bool> RescaleSetFromConstraint(
       WebString::FromASCII(WebMediaStreamTrack::kResizeModeNone));
   bool contains_rescale = resize_mode_constraint.Matches(
       WebString::FromASCII(WebMediaStreamTrack::kResizeModeRescale));
-  if (resize_mode_constraint.Exact().empty() ||
+  if (resize_mode_constraint.Exact().IsEmpty() ||
       (contains_none && contains_rescale)) {
     return DiscreteSet<bool>::UniversalSet();
   }

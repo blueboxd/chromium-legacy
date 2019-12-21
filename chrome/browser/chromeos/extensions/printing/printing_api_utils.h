@@ -9,6 +9,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/optional.h"
+#include "chrome/browser/chromeos/printing/printer_error_codes.h"
 #include "chrome/common/extensions/api/printing.h"
 
 namespace chromeos {
@@ -33,6 +34,9 @@ api::printing::Printer PrinterToIdl(
     const chromeos::Printer& printer,
     const base::Optional<DefaultPrinterRules>& default_printer_rules,
     const base::flat_map<std::string, int>& recently_used_ranks);
+
+api::printing::PrinterStatus PrinterStatusToIdl(
+    chromeos::PrinterErrorCode status);
 
 }  // namespace extensions
 

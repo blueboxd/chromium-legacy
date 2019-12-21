@@ -8,7 +8,11 @@
 
 #include "chrome/browser/ui/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "components/tab_groups/tab_group_color.h"
+#include "components/tab_groups/tab_group_id.h"
+#include "components/tab_groups/tab_group_visual_data.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/color_utils.h"
 
 FakeBaseTabStripController::FakeBaseTabStripController() {}
 
@@ -87,11 +91,14 @@ void FakeBaseTabStripController::MoveTabIntoGroup(
     tab_strip_->OnGroupContentsChanged(new_group.value());
   }
 }
+base::string16 FakeBaseTabStripController::GetGroupTitle(
+    tab_groups::TabGroupId group_id) const {
+  return fake_group_data_.title();
+}
 
-const tab_groups::TabGroupVisualData*
-FakeBaseTabStripController::GetVisualDataForGroup(
-    tab_groups::TabGroupId group) const {
-  return &fake_group_data_;
+tab_groups::TabGroupColorId FakeBaseTabStripController::GetGroupColorId(
+    tab_groups::TabGroupId group_id) const {
+  return fake_group_data_.color();
 }
 
 void FakeBaseTabStripController::SetVisualDataForGroup(

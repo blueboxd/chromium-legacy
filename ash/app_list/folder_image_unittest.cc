@@ -60,14 +60,14 @@ class TestFolderImageObserver : public FolderImageObserver {
 
 class FolderImageTest
     : public testing::Test,
-      public ::testing::WithParamInterface<ash::AppListConfigType> {
+      public ::testing::WithParamInterface<AppListConfigType> {
  public:
   FolderImageTest() = default;
 
   ~FolderImageTest() override = default;
 
   void SetUp() override {
-    if (GetParam() == ash::AppListConfigType::kShared) {
+    if (GetParam() == AppListConfigType::kShared) {
       feature_list_.InitWithFeatures({}, {app_list_features::kScalableAppList});
     } else {
       feature_list_.InitWithFeatures({app_list_features::kScalableAppList}, {});
@@ -95,7 +95,7 @@ class FolderImageTest
  protected:
   void AddAppWithColoredIcon(const std::string& id, SkColor icon_color) {
     std::unique_ptr<AppListItem> item(new AppListItem(id));
-    item->SetIcon(ash::AppListConfigType::kShared,
+    item->SetIcon(AppListConfigType::kShared,
                   CreateSquareBitmapWithColor(
                       AppListConfig::instance().search_list_icon_dimension(),
                       icon_color));
@@ -114,10 +114,10 @@ class FolderImageTest
 };
 INSTANTIATE_TEST_SUITE_P(All,
                          FolderImageTest,
-                         ::testing::Values(ash::AppListConfigType::kShared,
-                                           ash::AppListConfigType::kLarge,
-                                           ash::AppListConfigType::kMedium,
-                                           ash::AppListConfigType::kSmall));
+                         ::testing::Values(AppListConfigType::kShared,
+                                           AppListConfigType::kLarge,
+                                           AppListConfigType::kMedium,
+                                           AppListConfigType::kSmall));
 
 TEST_P(FolderImageTest, UpdateListTest) {
   gfx::ImageSkia icon1 = folder_image_->icon();
@@ -169,7 +169,7 @@ TEST_P(FolderImageTest, UpdateItemTest) {
 
   // Change an item's icon. Ensure that the observer fired and the icon changed.
   app_list_model_.FindItem("app2")->SetIcon(
-      ash::AppListConfigType::kShared,
+      AppListConfigType::kShared,
       CreateSquareBitmapWithColor(
           AppListConfig::instance().search_list_icon_dimension(),
           SK_ColorMAGENTA));

@@ -96,7 +96,7 @@ PostMessageHelper::CreateUserActivationSnapshot(
   if (LocalDOMWindow* dom_window = execution_context->ExecutingWindow()) {
     if (LocalFrame* frame = dom_window->GetFrame()) {
       return mojom::blink::UserActivationSnapshot::New(
-          frame->HasBeenActivated(),
+          frame->HasStickyUserActivation(),
           LocalFrame::HasTransientUserActivation(frame));
     }
   }

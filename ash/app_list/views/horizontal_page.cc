@@ -20,7 +20,7 @@ views::View* HorizontalPage::GetLastFocusableView() {
       this, GetWidget(), true /* reverse */, false /* dont_loop */);
 }
 
-gfx::Rect HorizontalPage::GetPageBoundsForState(ash::AppListState state) const {
+gfx::Rect HorizontalPage::GetPageBoundsForState(AppListState state) const {
   return gfx::Rect(GetPreferredSize());
 }
 

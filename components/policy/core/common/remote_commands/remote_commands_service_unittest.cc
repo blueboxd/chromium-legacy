@@ -102,7 +102,7 @@ struct FetchCallExpectation {
     expected_signed_commands = n;
     return *this;
   }
-  FetchCallExpectation SetFetchedCallback(base::Closure callback) {
+  FetchCallExpectation SetFetchedCallback(base::RepeatingClosure callback) {
     commands_fetched_callback = callback;
     return *this;
   }
@@ -110,7 +110,7 @@ struct FetchCallExpectation {
   size_t expected_command_results = 0;
   size_t expected_fetched_commands = 0;
   size_t expected_signed_commands = 0;
-  base::Closure commands_fetched_callback = base::DoNothing();
+  base::RepeatingClosure commands_fetched_callback;
 };
 
 // A mocked CloudPolicyClient to interact with a TestingRemoteCommandsServer.
@@ -262,9 +262,9 @@ TEST_F(RemoteCommandsServiceTest, ExistingCommand) {
     base::RunLoop run_loop;
 
     // Issue a command before service started.
-    server_->IssueCommand(em::RemoteCommand_Type_COMMAND_ECHO_TEST,
-                          kTestPayload,
-                          base::Bind(&ExpectSucceededJob, kTestPayload), false);
+    server_->IssueCommand(
+        em::RemoteCommand_Type_COMMAND_ECHO_TEST, kTestPayload,
+        base::BindOnce(&ExpectSucceededJob, kTestPayload), false);
 
     // Start the service, run until the command is fetched.
     cloud_policy_client_->ExpectFetchCommands(
@@ -303,7 +303,8 @@ TEST_F(RemoteCommandsServiceTest, NewCommand) {
 
   // Issue a command and manually start a command fetch.
   server_->IssueCommand(em::RemoteCommand_Type_COMMAND_ECHO_TEST, kTestPayload,
-                        base::Bind(&ExpectSucceededJob, kTestPayload), false);
+                        base::BindOnce(&ExpectSucceededJob, kTestPayload),
+                        false);
   EXPECT_TRUE(remote_commands_service_->FetchRemoteCommands());
 
   FlushAllTasks();
@@ -324,9 +325,9 @@ TEST_F(RemoteCommandsServiceTest, NewCommandFollwingFetch) {
     base::RunLoop run_loop;
 
     // Add a command which will be issued after first fetch.
-    server_->IssueCommand(em::RemoteCommand_Type_COMMAND_ECHO_TEST,
-                          kTestPayload,
-                          base::Bind(&ExpectSucceededJob, kTestPayload), true);
+    server_->IssueCommand(
+        em::RemoteCommand_Type_COMMAND_ECHO_TEST, kTestPayload,
+        base::BindOnce(&ExpectSucceededJob, kTestPayload), true);
 
     cloud_policy_client_->ExpectFetchCommands(
         FetchCallExpectation().SetFetchedCallback(run_loop.QuitClosure()));
@@ -389,7 +390,8 @@ TEST_F(RemoteCommandsServiceTest, AckedCallback) {
 
   // Issue a command and manually start a command fetch.
   server_->IssueCommand(em::RemoteCommand_Type_COMMAND_ECHO_TEST, kTestPayload,
-                        base::Bind(&ExpectSucceededJob, kTestPayload), false);
+                        base::BindOnce(&ExpectSucceededJob, kTestPayload),
+                        false);
   EXPECT_TRUE(remote_commands_service_->FetchRemoteCommands());
 
   FlushAllTasks();

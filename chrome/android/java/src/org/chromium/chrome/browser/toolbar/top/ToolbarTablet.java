@@ -595,6 +595,11 @@ public class ToolbarTablet extends ToolbarLayout
         return mExperimentalButton;
     }
 
+    @Override
+    public HomeButton getHomeButtonForTesting() {
+        return mHomeButton;
+    }
+
     private void setToolbarButtonsVisible(boolean visible) {
         if (mToolbarButtonsVisible == visible) return;
 

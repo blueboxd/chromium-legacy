@@ -36,6 +36,7 @@
 <translation id="1041175011127912238">ഈ പേജ് പ്രതികരിക്കുന്നില്ല</translation>
 <translation id="1041263367839475438">ലഭ്യമായ ഉപകരണങ്ങൾ</translation>
 <translation id="1042174272890264476">നിങ്ങളുടെ കമ്പ്യൂട്ടറിൽ <ph name="SHORT_PRODUCT_NAME" /> എന്നതിന്റെ RLZ ലൈബ്രറി അന്തർനിർമ്മിതവുമാണ്. RLZ, ഒരു നിർദ്ദിഷ്‌ട പ്രമോഷണൽ കാമ്പെയ്‌നിലൂടെ ലഭിക്കുന്ന തിരയലുകളും <ph name="SHORT_PRODUCT_NAME" /> ഉപയോഗവും കണക്കാക്കുന്നതിന് അദ്വിതീയമല്ലാത്തതും വ്യക്തിപരമായി തിരിച്ചറിയാനാകാത്തതുമായ ഒരു ടാഗ് നിയുക്തമാക്കുന്നു. ഈ ലേബലുകൾ ചിലസമയത്ത് <ph name="PRODUCT_NAME" /> എന്നതിലെ Google തിരയലിൽ ദൃശ്യമാകുന്നു.</translation>
+<translation id="1043818413152647937">ഈ ആപ്പുകളിൽ നിന്നുള്ള ഡാറ്റയും മായ്ക്കണോ?</translation>
 <translation id="1045692658517323508">{0,plural, =1{ഒരു മിനിറ്റിനുള്ളിൽ അപ്‌ഡേറ്റ് ചെയ്യുക}other{# മിനിറ്റിനുള്ളിൽ അപ്‌ഡേറ്റ് ചെയ്യുക}}</translation>
 <translation id="1046635659603195359">മറ്റൊരു ഉപകരണത്തിൽ മുമ്പേ നിങ്ങൾ Google അസിസ്റ്റന്‍റിനൊപ്പം Voice Match സജ്ജമാക്കിയിട്ടുള്ളതായി തോന്നുന്നു. ഈ ഉപകരണത്തിൽ ഒരു ശബ്‌ദ മോഡൽ സൃഷ്ടിക്കുന്നതിന് പഴയ റെക്കോർഡിംഗുകൾ ഉപയോഗപ്പെടുത്താം. ഇതിന് ഒരു മിനിറ്റിൽ കുറവ് സമയമേ എടുക്കൂ.</translation>
 <translation id="1047431265488717055">ലിങ്ക് ടെ&amp;ക്‌സ്റ്റ് പകർത്തുക</translation>
@@ -109,6 +110,7 @@
 <translation id="114721135501989771">Chrome-ൽ Google സ്‌മാർട്‌സ് നേടുക</translation>
 <translation id="1147991416141538220">ആക്സസ് ആവശ്യപ്പെടാൻ, ഈ ഉപകരണത്തിന്റെ അഡ്‌മിനെ ബന്ധപ്പെടുക.</translation>
 <translation id="1149401351239820326">കാലാവധി കഴിയുന്ന മാസം</translation>
+<translation id="1150490752229770117">ഈ <ph name="DEVICE_TYPE" /> എന്നതിന് സ്വയമേവയുള്ള അവസാനത്തെ സോഫ്റ്റ്‌വെയർ, സുരക്ഷാ അപ്ഡേറ്റ് ആണിത്. ഭാവി അപ്ഡേറ്റുകൾ ലഭിക്കാൻ പുതിയ മോഡലിലേക്ക് അപ്ഗ്രേഡ് ചെയ്യൂ. <ph name="LINK_BEGIN" />കൂടുതലറിയുക<ph name="LINK_END" /></translation>
 <translation id="1150565364351027703">സൺഗ്ലാസുകൾ</translation>
 <translation id="1151917987301063366">സെൻസറുകൾ ആക്‌സസ് ചെയ്യാൻ എപ്പോഴും <ph name="HOST" />-നെ അനുവദിക്കുക</translation>
 <translation id="1153356358378277386">ജോടിയാക്കിയ ഉപകരണങ്ങൾ</translation>
@@ -508,7 +510,9 @@
 <translation id="1709217939274742847">പരിശോധിച്ചുറപ്പിക്കലിനായി ഒരു ടിക്കറ്റ് തിരഞ്ഞെടുക്കുക. <ph name="LINK_BEGIN" />കൂടുതലറിയുക<ph name="LINK_END" /></translation>
 <translation id="1712349894969001173">നിങ്ങളുടെ iPhone-ൽ ഈ പാസ്‌വേഡ് ലഭ്യമാക്കുക</translation>
 <translation id="1712552549805331520">നിങ്ങളുടെ ലോക്കൽ കമ്പ്യൂട്ടറില്‍ ശാശ്വതമായി ഡാറ്റ സംഭരിക്കാന്‍ <ph name="URL" /> ആഗ്രഹിക്കുന്നു</translation>
+<translation id="1714644264617423774">നിങ്ങളുടെ ഉപകരണം ഉപയോഗിക്കുന്നത് എളുപ്പമാക്കുന്നതിന് ഉപയോഗസഹായി സവിശേഷതകൾ പ്രവർത്തനക്ഷമമാക്കുക. <ph name="LINK_BEGIN" />കൂടുതലറിയുക<ph name="LINK_END" /></translation>
 <translation id="1717218214683051432">ചലന സെൻസറുകൾ</translation>
+<translation id="171824261579749339">ഓസ്ട്രേലിയൻ <ph name="LINK_BEGIN" />കൂടുതലറിയുക<ph name="LINK_END" /></translation>
 <translation id="1718835860248848330">കഴിഞ്ഞ മണിക്കൂര്‍‌</translation>
 <translation id="1719312230114180055">ശ്രദ്ധിക്കുക: ഒരു ശക്തമായ പാസ്‌വേഡിനേക്കാളോ പിൻ നമ്പറിനേക്കാളോ കുറവായിരിക്കാം നിങ്ങളുടെ വിരലടയാളം ഉപയോഗിച്ചുള്ള സുരക്ഷ.</translation>
 <translation id="1720318856472900922">TLS WWW സെര്‍‌വര്‍‌ പരിശോധിച്ചുറപ്പിക്കൽ</translation>
@@ -770,6 +774,7 @@
 <translation id="2096715839409389970">മൂന്നാം കക്ഷി കുക്കികൾ മായ്‌ക്കുക</translation>
 <translation id="2097372108957554726">പുതിയ ഉപകരണങ്ങൾ രജിസ്റ്റർ ചെയ്യാൻ നിങ്ങൾ Chrome-ൽ സൈൻ ഇൻ ചെയ്യണം</translation>
 <translation id="2099172618127234427">sshd daemon സജ്ജീകരിക്കുന്നതും USB ഡ്രൈവുകളിൽ നിന്ന് ബൂട്ട് ചെയ്യൽ പ്രവർത്തനക്ഷമമാക്കുന്നതുമായ Chrome OS ഡീബഗ് ചെയ്യൽ ഫീച്ചറുകൾ നിങ്ങൾ പ്രവർത്തനക്ഷമമാക്കുന്നു.</translation>
+<translation id="2099625543891475722">ഉയരം പോലുള്ള, നിങ്ങളുടെ ശാരീരിക സവിശേഷതകൾ</translation>
 <translation id="2099686503067610784">"<ph name="CERTIFICATE_NAME" />" എന്ന സെർവർ സർട്ടിഫിക്കറ്റ് ഇല്ലാതാക്കണോ?</translation>
 <translation id="2100273922101894616">സ്വയമേവയുള്ള സൈൻ ഇൻ</translation>
 <translation id="2101225219012730419">പതിപ്പ്:</translation>
@@ -1024,6 +1029,7 @@
 <translation id="2445484935443597917">പുതിയ പ്രൊഫൈൽ സൃഷ്‌ടിക്കുക</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" />-ന് നിങ്ങളുടെ ഐഡന്റിറ്റി പരിശോധിച്ച് ഉറപ്പിക്കേണ്ടതുണ്ട്</translation>
 <translation id="2448312741937722512">തരം</translation>
+<translation id="2448734521821581858">നിങ്ങൾ സന്ദർശിക്കുന്ന വെബ്‌സൈറ്റുകൾ സൃഷ്ടിക്കുന്ന ഫയലുകളാണ് കുക്കികൾ. രണ്ട് തരത്തിലുള്ള കുക്കികളുണ്ട്: ആദ്യ കക്ഷി കുക്കികളെ സൃഷ്ടിക്കുന്നത് നിങ്ങൾ സന്ദർശിക്കുന്ന സൈറ്റാണ്. വിലാസ ബാറിൽ സൈറ്റ് കാണാം. മൂന്നാം കക്ഷി.കുക്കികളെ സൃഷ്ടിക്കുന്നത് മറ്റ് സൈറ്റുകളാണ്. നിങ്ങൾ സന്ദർശിക്കുന്ന വെബ്സൈറ്റിൽ കാണുന്ന പരസ്യങ്ങളോ ചിത്രങ്ങളോ പോലുള്ള ചില ഉള്ളടക്കം ഈ സൈറ്റുകളുടെ ഉടമസ്ഥതയിലാണ്.</translation>
 <translation id="2450223707519584812">Google API കീകൾ നഷ്‌ടമായതിനാൽ നിങ്ങൾക്ക് ഉപയോക്താക്കളെ ചേർക്കാനാവില്ല. വിശദാംശങ്ങൾക്ക്, <ph name="DETAILS_URL" /> കാണുക.</translation>
 <translation id="2450849356604136918">വിവരങ്ങളുടെ പ്രദർശമൊന്നും ഇപ്പോൾ സജീവമല്ല</translation>
 <translation id="2451298179137331965">2x</translation>
@@ -1137,6 +1143,7 @@
 <translation id="2587922766792651800">ടൈംഔട്ട് ആയി</translation>
 <translation id="2588636910004461974"><ph name="VENDOR_NAME" />-ൽ നിന്നുള്ള ഉപകരണങ്ങൾ</translation>
 <translation id="2594999711683503743">Google-ൽ തിരയുക അല്ലെങ്കിൽ URL ടൈപ്പ് ചെയ്യുക</translation>
+<translation id="2600522410036850735"><ph name="MONTH_AND_YEAR" /> വരെ ഈ ഉപകരണത്തിന് സ്വയമേവയുള്ള സോഫ്റ്റ്‌വെയർ, സുരക്ഷാ അപ്ഡേറ്റുകൾ ലഭിക്കും. &lt;a target="_blank" href="<ph name="URL" />"&gt;കൂടുതലറിയുക&lt;/a&gt;</translation>
 <translation id="2603115962224169880">നിങ്ങളുടെ കമ്പ്യൂട്ടർ ക്ലീൻ ചെയ്യുക</translation>
 <translation id="2603463522847370204">&amp;അദൃശ്യ വിന്‍ഡോയില്‍ തുറക്കുക</translation>
 <translation id="2604255671529671813">നെറ്റ്‌വർക്ക് കണക്ഷൻ പിശക്</translation>
@@ -1557,6 +1564,7 @@
 <translation id="3181954750937456830">സുരക്ഷിത ബ്രൗസിംഗ് (അപകടകരമായ സൈറ്റുകളിൽ നിന്ന് നിങ്ങളെയും ഉപകരണത്തെയും പരിരക്ഷിക്കുന്നു)</translation>
 <translation id="3182749001423093222">അക്ഷരത്തെറ്റ് പരിശോധന</translation>
 <translation id="3183139917765991655">പ്രൊഫൈൽ ഇംപോർട്ടർ</translation>
+<translation id="3184536091884214176">CUPS പ്രിന്ററുകൾ സജ്ജമാക്കുക അല്ലെങ്കിൽ മാനേജ് ചെയ്യുക. <ph name="LINK_BEGIN" />കൂടുതലറിയുക<ph name="LINK_END" /></translation>
 <translation id="3188257591659621405">എൻ്റെ ഫയലുകൾ</translation>
 <translation id="3188465121994729530">ശരാശരി നീക്കുന്നു</translation>
 <translation id="3190558889382726167">പാസ്‌വേഡ് സംരക്ഷിച്ചു</translation>
@@ -1747,7 +1755,6 @@
 <translation id="347670947055184738">ക്ഷമിക്കണം! സിസ്‌റ്റത്തിന് നിങ്ങളുടെ ഉപകരണത്തിനുള്ള നയം ലഭ്യമാക്കാനായില്ല.</translation>
 <translation id="347785443197175480">നിങ്ങളുടെ ക്യാമറയും മൈക്രോഫോണും ആക്‌സസ് ചെയ്യുന്നതിന് <ph name="HOST" /> എന്നതിനെ അനുവദിക്കുന്നത് തുടരുക</translation>
 <translation id="3478685642445675458">ഒരാളെ നീക്കംചെയ്യുന്നതിന് മുമ്പ് നിങ്ങളുടെ പ്രൊഫൈൽ അൺലോക്ക് ചെയ്യുക.</translation>
-<translation id="3479539252931486093">ഇത് അപ്രതീക്ഷിതമായിരുന്നോ? <ph name="BEGIN_LINK" />ഞങ്ങളെ അറിയിക്കുക<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">ഇപ്പോഴല്ല</translation>
 <translation id="3481268647794498892"><ph name="COUNTDOWN_SECONDS" /> സെക്കൻഡിനുള്ളിൽ <ph name="ALTERNATIVE_BROWSER_NAME" />-ൽ തുറക്കുന്നു</translation>
 <translation id="3484273680291419129">ദോഷകരമായ സോഫ്‌റ്റ്‌വയർ നീക്കംചെയ്യുന്നു...</translation>
@@ -2253,6 +2260,7 @@
 <translation id="4138267921960073861">പ്രവേശന സ്ക്രീനില്‍ ഫോട്ടോകളും ഉപയോക്തൃനാമങ്ങളും കാണിക്കുക</translation>
 <translation id="413915106327509564"><ph name="WINDOW_TITLE" /> - HID ഉപകരണം കണക്‌റ്റ് ചെയ്‌തു</translation>
 <translation id="4142052906269098341">നിങ്ങളുടെ ഫോൺ ഉപയോഗിച്ച് <ph name="DEVICE_TYPE" /> അൺലോക്ക് ചെയ്യുക. <ph name="LINK_BEGIN" />കൂടുതലറിയുക<ph name="LINK_END" /></translation>
+<translation id="4142518881503042940">കണ്ടെത്തിയ പ്രിന്ററുകൾ നിങ്ങളുടെ പ്രൊഫൈലിൽ സംരക്ഷിക്കുക അല്ലെങ്കിൽ പുതിയ പ്രിന്റർ ചേർക്കുക. <ph name="LINK_BEGIN" />കൂടുതലറിയുക<ph name="LINK_END" /></translation>
 <translation id="4144218403971135344">മികച്ച ഗുണമേന്മയുള്ള വീഡിയോ നേടുകയും ബാറ്ററി ലൈഫ് കൂട്ടുകയും ചെയ്യുക. നിങ്ങളുടെ Cast ചെയ്യാൻ പ്രാപ്തിയുള്ള സ്ക്രീനിൽ മാത്രം വീഡിയോ പ്ലേ ചെയ്യും.</translation>
 <translation id="4146026355784316281">എപ്പോഴും സിസ്‌റ്റം വ്യൂവറിൽ തുറക്കുക</translation>
 <translation id="4146785383423576110">റീസെറ്റ് ചെയ്‌ത ശേഷം മായ്ക്കുക</translation>
@@ -2377,6 +2385,7 @@
 <translation id="4364327530094270451">മത്തങ്ങ</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" />, ഒരു വിൻഡോ പങ്കിടുന്നു.</translation>
 <translation id="4364830672918311045">അറിയിപ്പുകൾ പ്രദർശിപ്പിക്കുക</translation>
+<translation id="436499142539576997">ആപ്പ് ഡാറ്റ നേടാനായില്ല, ആപ്പ് റൺ ചെയ്യാൻ ഇപ്പോഴും ശ്രമിക്കുന്നു...</translation>
 <translation id="4370975561335139969">നിങ്ങൾ നൽകിയ ഇമെയിലും പാസ്‌വേഡും പൊരുത്തപ്പെടുന്നില്ല</translation>
 <translation id="437184764829821926">വിപുലീകരിച്ച ഫോണ്ട് ക്രമീകരണങ്ങൾ</translation>
 <translation id="4374831787438678295">Linux ഇൻസ്‌റ്റാളർ</translation>
@@ -2567,6 +2576,7 @@
 <translation id="465878909996028221">http, https എന്നിവയും ഫയൽ പ്രോട്ടോകോളുകളും മാത്രമേ ബ്രൗസർ റീഡയറക്റ്റുകളിൽ പിന്തുണയ്ക്കൂ.</translation>
 <translation id="4659077111144409915">പ്രാഥമിക അക്കൗണ്ട്</translation>
 <translation id="4660476621274971848">പ്രതീക്ഷിച്ച പതിപ്പ് "<ph name="EXPECTED_VERSION" />" ആണ്, എന്നാൽ ലഭിച്ച പതിപ്പ് "<ph name="NEW_ID" />" ആയിരുന്നു</translation>
+<translation id="4660838440047236328">നിങ്ങളുടെ റൂമിന്റെ ലേഔട്ട്</translation>
 <translation id="4662788913887017617">നിങ്ങളുടെ iPhone ഉപയോഗിച്ച് ഈ ബുക്ക്‌മാർക്ക് പങ്കിടുക</translation>
 <translation id="4663373278480897665">ക്യാമറ അനുവദനീയം</translation>
 <translation id="4664482161435122549">PKCS #12 കയറ്റുമതി പിശക്</translation>
@@ -2730,6 +2740,7 @@
 <translation id="4900392736118574277">നിങ്ങളുടെ ആരംഭ പേജിനെ <ph name="URL" /> എന്നതിലേക്ക് മാറ്റിയിരിക്കുന്നു.</translation>
 <translation id="4902546322522096650"><ph name="NETWORK_COUNT" />-ൽ <ph name="NETWORK_INDEX" /> നെറ്റ്‌വർക്ക്, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" />%, കണക്‌റ്റ് ചെയ്യുക</translation>
 <translation id="49027928311173603">സെർവറിൽ നിന്നും ഡൗൺലോഡ് ചെയ്‌ത നയം അസാധുവാണ്: <ph name="VALIDATION_ERROR" />.</translation>
+<translation id="4906490889887219338">നെറ്റ്‌വർക്ക് ഫയൽ പങ്കിടലുകൾ സജ്ജീകരിക്കുക അല്ലെങ്കിൽ മാനേജ് ചെയ്യുക. <ph name="LINK_BEGIN" />കൂടുതലറിയുക<ph name="LINK_END" /></translation>
 <translation id="4907161631261076876">അപകടകരമാകാൻ ഇടയുള്ളതിനാൽ ഈ ഫയൽ സാധാരണ ഡൗൺലോഡ് ചെയ്യാറില്ല.</translation>
 <translation id="4907306957610201395">അനുമതി വിഭാഗം</translation>
 <translation id="4908811072292128752">ഒരേസമയം രണ്ട് സൈറ്റുകൾ ബ്രൗസ് ചെയ്യാൻ ഒരു പുതിയ ടാബ് തുറക്കുക</translation>
@@ -2817,6 +2828,7 @@
 <translation id="5038863510258510803">പ്രാപ്‌തമാക്കുന്നു...</translation>
 <translation id="5039804452771397117">അനുവദിക്കൂ</translation>
 <translation id="5042282098504489593"><ph name="USB_DEVICE_NAME" /> Linux-ലേക്ക് കണക്റ്റ് ചെയ്യാൻ ക്രമീകരണം തുറക്കുക</translation>
+<translation id="5043913660911154449">അല്ലെങ്കിൽ നിങ്ങളുടെ പ്രിന്റർ PPD വ്യക്തമാക്കുക <ph name="LINK_BEGIN" />കൂടുതലറിയുക<ph name="LINK_END" /></translation>
 <translation id="5045550434625856497">പാസ്‍വേഡ് തെറ്റാണ്</translation>
 <translation id="504561833207953641">നിലവിലുള്ള ബ്രൗസര്‍ സെഷനില്‍ തുറക്കുന്നു.</translation>
 <translation id="5047421709274785093">ചലന സെൻസറുകളും വെളിച്ച സെൻസറുകളും ഉപയോഗിക്കുന്നതിൽ നിന്ന് സൈറ്റുകളെ ബ്ലോക്ക് ചെയ്യുക</translation>
@@ -3102,6 +3114,7 @@
 <translation id="5464660706533281090">ഈ ക്രമീകരണം ഒരു കുട്ടി ഉപയോക്താവിന് മാറ്റാനാവില്ല.</translation>
 <translation id="5466374726908360271">ഒട്ടിച്ച്, “<ph name="SEARCH_TERMS" />” എന്നതിനായി തിരയുക</translation>
 <translation id="5468173180030470402">ഫയൽ പങ്കിടലുകൾ തിരയുന്നു</translation>
+<translation id="5470735824776589490">പവർവാഷ് ഉപയോഗിച്ച് നിങ്ങളുടെ ഉപകരണം പുനസജ്ജമാക്കുന്നതിനുമുമ്പ് പുനരാരംഭിക്കേണ്ടതുണ്ട്. <ph name="LINK_BEGIN" />കൂടുതലറിയുക<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">അവിടെയുണ്ടോ! ഞാനാണ് നിങ്ങളുടെ ടെക്‌സ്റ്റ് ടു സ്‌പീച്ച് വോയ്‌സ്.</translation>
 <translation id="5472133193607270166">ഓണായിരിക്കുമ്പോൾ, പരസ്യങ്ങൾ വ്യക്തിപരമാക്കാൻ വ്യത്യസ്ത സൈറ്റുകളിലുടനീളമുള്ള നിങ്ങളുടെ ബ്രൗസിംഗ് ആക്റ്റിവിറ്റി ഉപയോഗിക്കാൻ സൈറ്റുകൾക്കാവില്ല. ചില സൈറ്റുകൾ ശരിയായി പ്രവർത്തിച്ചേക്കില്ല.</translation>
 <translation id="5473333559083690127">പുതിയ പിൻ വീണ്ടും നൽകുക</translation>
@@ -3125,6 +3138,7 @@
 <translation id="5496587651328244253">ഓര്‍ഗനൈസുചെയ്യുക</translation>
 <translation id="5499313591153584299">ഈ ഫയൽ നിങ്ങളുടെ കമ്പ്യൂട്ടറിന് ഹാനികരമായേക്കാം.</translation>
 <translation id="5502500733115278303">Firefoxല്‍ നിന്ന് ഇറക്കുമതി ചെയ്തവ</translation>
+<translation id="5505264765875738116">അറിയിപ്പുകൾ അയയ്ക്കാൻ സൈറ്റുകൾക്ക് അനുവാദം ചോദിക്കാനാവില്ല</translation>
 <translation id="5505307013568720083">മഷിയില്ല</translation>
 <translation id="5507756662695126555">നിരസിക്കാത്തത്</translation>
 <translation id="5509693895992845810">ഇതായി &amp;സംരക്ഷിക്കുക...</translation>
@@ -3340,6 +3354,7 @@
 <translation id="5801568494490449797">മുൻഗണനകൾ</translation>
 <translation id="5804175651771201311">റോമിംഗ് ഓഫാണ്</translation>
 <translation id="5804241973901381774">അനുമതികൾ</translation>
+<translation id="5804427196348435412">NFC ഉപകരണങ്ങൾ ഉപയോഗിക്കുക</translation>
 <translation id="5805697420284793859">വിൻഡോ മാനേജർ</translation>
 <translation id="5806773519584576205">0° (ഡിഫോൾട്ട്)</translation>
 <translation id="5811750797187914944">എല്ലാം സജ്ജീകരിച്ചു</translation>
@@ -3555,6 +3570,7 @@
 <translation id="6096047740730590436">വലുതാക്കി തുറക്കുക</translation>
 <translation id="6096326118418049043">X.500 നാമം</translation>
 <translation id="6097480669505687979">നിങ്ങൾ ഇടം സൃഷ്‌ടിച്ചില്ലെങ്കിൽ, ഉപയോക്താക്കളും വിവരങ്ങളും സ്വയം നീക്കംചെയ്യപ്പെടാം.</translation>
+<translation id="6097600385983390082">സംസാരത്തിലൂടെ തിരയൽ അടച്ചു</translation>
 <translation id="6098793583803863900">അപകടകരമായ ഉള്ളടക്കം തിരിച്ചറിയുന്നതിനായി അജ്ഞാത ഫയൽ സ്‌കാൻ ചെയ്യുന്നു.</translation>
 <translation id="6100736666660498114">ആരംഭമെനു</translation>
 <translation id="6101226222197207147">പുതിയ ആപ്പ് ചേർത്തു (<ph name="EXTENSION_NAME" />)</translation>
@@ -3651,6 +3667,7 @@
 <translation id="6233154960150021497">കീബോഡിന് പകരം ശബ്‌ദം ഉപയോഗിക്കുന്നത് ഡിഫോൾട്ടാക്കുക</translation>
 <translation id="6234474535228214774">ഇൻസ്‌റ്റാൾ ചെയ്യൽ പൂർത്തിയാക്കിയിട്ടില്ല</translation>
 <translation id="6237816943013845465">സ്‌ക്രീൻ റെസല്യൂഷൻ ക്രമീകരിക്കാൻ നിങ്ങളെ അനുവദിക്കുന്നു</translation>
+<translation id="6238624845858322552">Bluetooth ഉപകരണത്തിൽ കണക്റ്റ് ചെയ്യുക</translation>
 <translation id="6238767809035845642">മറ്റൊരു ഉപകരണത്തിൽ നിന്ന് പങ്കിട്ട ടെക്‌സ്‌റ്റ്</translation>
 <translation id="6238923052227198598">ലോക്ക് സ്‌ക്രീനിൽ ഏറ്റവും പുതിയ കുറിപ്പ് സൂക്ഷിക്കുക</translation>
 <translation id="6239558157302047471">റീലോഡും ഫ്രെയിമും</translation>
@@ -3677,6 +3694,7 @@
 <translation id="6267547857941397424"><ph name="NETWORK_COUNT" />-ൽ <ph name="NETWORK_INDEX" /> നെറ്റ്‌വർക്ക്, <ph name="PHONE_NAME" />, സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" />%, ഫോൺ ബാറ്ററി <ph name="BATTERY_STATUS" />%, കണക്‌റ്റ് ചെയ്യുക</translation>
 <translation id="6268252012308737255"><ph name="APP" /> ഉപയോഗിച്ച് തുറക്കുക</translation>
 <translation id="6268718011101775129">NFC</translation>
+<translation id="6270391203985052864">അറിയിപ്പുകൾ അയയ്ക്കാൻ സൈറ്റുകൾക്ക് അനുവാദം ചോദിക്കേണ്ടി വരും</translation>
 <translation id="6270770586500173387"><ph name="BEGIN_LINK1" />സിസ്‌റ്റവും ആപ്പ് വിവരവും<ph name="END_LINK1" /> <ph name="BEGIN_LINK2" />മെട്രിക്‌സും<ph name="END_LINK2" /> അയയ്‌ക്കുക</translation>
 <translation id="6272643420381259437">പ്ലഗിൻ ഡൗൺലോഡ് ചെയ്യുമ്പോൾ പിശക് (<ph name="ERROR" />) ഉണ്ടായി</translation>
 <translation id="6273677812470008672">നിലവാരം</translation>
@@ -3698,6 +3716,7 @@
 <translation id="629730747756840877">അക്കൗണ്ട്</translation>
 <translation id="6298962879096096191">Android ആപ്പുകൾ ഇൻസ്‌റ്റാൾ ചെയ്യാൻ Google Play ഉപയോഗിക്കുക</translation>
 <translation id="630065524203833229">&amp;പുറത്തുപോകുക</translation>
+<translation id="6300718114348072351"><ph name="PRINTER_NAME" /> സ്വയമേവ കോൺഫിഗർ ചെയ്യാനായില്ല. വിപുലമായ പ്രിൻ്റർ വിശദാംശങ്ങൾ വ്യക്തമാക്കുക. <ph name="LINK_BEGIN" />കൂടുതലറിയുക<ph name="LINK_END" /></translation>
 <translation id="6305607932814307878">ആഗോള നയം:</translation>
 <translation id="6307990684951724544">സിസ്റ്റം തിരക്കിലാണ്</translation>
 <translation id="6308493641021088955">സൈൻ ഇൻ ലഭ്യമാക്കിയത് <ph name="EXTENSION_NAME" /></translation>
@@ -3867,6 +3886,7 @@
 <translation id="6555810572223193255">ക്ലീനർ ഇപ്പോൾ ലഭ്യമല്ല</translation>
 <translation id="6556866813142980365">വീണ്ടും ചെയ്യുക</translation>
 <translation id="6557290421156335491">എൻ്റെ കുറുക്കുവഴികൾ</translation>
+<translation id="6561560012278703671">നിശബ്ദമായ സന്ദേശമയയ്ക്കൽ ഉപയോഗിക്കുക (നിങ്ങളെ തടസ്സപ്പെടുത്തുന്നതിൽ നിന്ന് അറിയിപ്പ് നിർദ്ദേശങ്ങളെ ബ്ലോക്ക് ചെയ്യുന്നു)</translation>
 <translation id="6561726789132298588">എന്റർ</translation>
 <translation id="656293578423618167">ഫയലിന്റെ പാതയോ പേരോ ദൈർഘ്യമേറിയതാണ്.  ഹ്രസ്വമായ പേര് ഉപയോഗിച്ചോ മറ്റൊരു ലൊക്കേഷനിലേക്കോ സംരക്ഷിക്കുക.</translation>
 <translation id="6563469144985748109">നിങ്ങളുടെ മാനേജർ ഇതുവരെ അംഗീകാരം നൽകിയിട്ടില്ല</translation>
@@ -4050,6 +4070,7 @@
 <translation id="6840155290835956714">അയയ്‌ക്കുന്നതിന് മുമ്പ് ചോദിക്കുക</translation>
 <translation id="6840184929775541289">ഒരു സര്‍ട്ടിഫിക്കേഷന്‍ അതോറിറ്റി അല്ല</translation>
 <translation id="6841186874966388268">പിശകുകൾ</translation>
+<translation id="6843267103192918276">നിങ്ങളുടെ എല്ലാ ഉപകരണങ്ങളിലും ബുക്ക്‌മാർക്കുകളും ചരിത്രവും പാസ്‌വേഡുകളും മറ്റ് ക്രമീകരണവും ലഭിക്കാൻ സൈൻ ഇൻ ചെയ്യുക. നിങ്ങളുടെ Google സേവനങ്ങളിലേക്ക് സ്വയമേവ നിങ്ങൾ സൈൻ ഇൻ ആകുന്നതുമാണ്. <ph name="LINK_BEGIN" />കൂടുതലറിയുക<ph name="LINK_END" /></translation>
 <translation id="6843423766595476978">Ok Google സജ്ജമാണ്‌</translation>
 <translation id="6845038076637626672">ചെറുതാക്കി തുറക്കുക</translation>
 <translation id="6845325883481699275">Chrome സുരക്ഷ മെച്ചപ്പെടുത്താൻ സഹായിക്കുക</translation>
@@ -4466,7 +4487,6 @@
 <translation id="7442465037756169001">നിങ്ങളുടെ Hangouts Meet hardware സജ്ജമാക്കാൻ തയ്യാറാണ്.</translation>
 <translation id="744341768939279100">ഒരു പുതിയ പ്രൊഫൈൽ സൃഷ്‌ടിക്കുക</translation>
 <translation id="7443806024147773267">Google അക്കൗണ്ടിലേക്ക് സൈൻ ഇൻ ചെയ്‌തിരിക്കുമ്പോഴെല്ലാം നിങ്ങളുടെ പാസ്‌വേഡുകൾ ആക്‌സസ് ചെയ്യുക</translation>
-<translation id="7444046173054089907">ഈ സൈറ്റ് ബ്ലോക്ക് ചെയ്‌തു</translation>
 <translation id="7444983668544353857"><ph name="NETWORKDEVICE" /> അപ്രാപ്‌തമാക്കുക</translation>
 <translation id="7448430327655618736">സ്വയമേവ ആപ്പുകൾ ഇൻസ്‌റ്റാൾ ചെയ്യുക</translation>
 <translation id="7450761244949417357">ഇപ്പോൾ <ph name="ALTERNATIVE_BROWSER_NAME" />-ൽ തുറക്കുന്നു</translation>
@@ -5031,6 +5051,7 @@
 <translation id="8214962590150211830">ഈ വ്യക്തിയെ നീക്കംചെയ്യുക</translation>
 <translation id="8215295261562449873">Linux അപ്‌ഗ്രേഡ് ചെയ്യുന്നതിന് മുമ്പ്, എന്റെ ആപ്പുകളും ഫയലുകളും 'ഡൗൺലോഡുകൾ' ഫോൾഡറിലേക്ക് ബാക്കപ്പ് ചെയ്യുക.</translation>
 <translation id="8217399928341212914">ഒന്നിലേറെ ഫയലുകളുടെ യാന്ത്രിക ഡൗൺലോഡുകൾ തടയുന്നത് തുടരുക</translation>
+<translation id="8218847192766059983">ഭാഷകൾ ചേർക്കുകയോ ലിസ്റ്റ് പുനഃക്രമീകരിക്കുകയോ ചെയ്യുക. <ph name="BEGIN_LINK" />കൂടുതലറിയുക<ph name="END_LINK" /></translation>
 <translation id="8221491193165283816">നിങ്ങൾ സാധാരണയായി അറിയിപ്പുകൾ ബ്ലോക്ക് ചെയ്യാറുണ്ട്. നിങ്ങൾക്ക് അറിയിപ്പ് അയയ്ക്കുന്നതിന് ഈ സൈറ്റിനെ അനുവദിക്കാൻ, ഇവിടെ ക്ലിക്ക് ചെയ്യുക.</translation>
 <translation id="8225265270453771718">ഒരു ആപ്പ് വിൻഡോ പങ്കിടുക</translation>
 <translation id="8225753906568652947">നിങ്ങളുടെ ഓഫറുകൾ റിഡീം ചെയ്യുക</translation>
@@ -5643,6 +5664,7 @@
 <translation id="9065203028668620118">എഡിറ്റ് ചെയ്യുക</translation>
 <translation id="9066773882585798925">ടെക്‌സ്‌റ്റ് ഉച്ചത്തിൽ വായിച്ച് കേൾപ്പിക്കുക</translation>
 <translation id="9066782832737749352">ടെക്‌സ്‌റ്റ് ടു സ്‌പീച്ച്</translation>
+<translation id="9067559831321817373">നിങ്ങളുടെ സൈൻ ഇൻ ചെയ്‌തിരിക്കുന്ന അക്കൗണ്ടുകൾ മാനേജ് ചെയ്യുക. നിങ്ങളുടെ അനുഭവം ഇഷ്‌ടാനുസൃതമാക്കാൻ Chrome, Google Play എന്നിവയിലെ വെബ്സൈറ്റുകളും ആപ്പുകളും വിപുലീകരണങ്ങളും അനുമതികൾക്കനുസരിച്ച് ഈ അക്കൗണ്ടുകൾ ഉപയോഗിച്ചേക്കാം. &lt;a&gt;കൂടുതലറിയുക&lt;/a&gt;</translation>
 <translation id="9068849894565669697">വർണ്ണം തിരഞ്ഞെടുക്കുക</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

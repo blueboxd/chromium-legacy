@@ -20,7 +20,6 @@
 #include "device/vr/windows/compositor_base.h"
 #include "device/vr/windows/d3d11_texture_helper.h"
 #include "device/vr/windows_mixed_reality/mixed_reality_input_helper.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/win/window_impl.h"

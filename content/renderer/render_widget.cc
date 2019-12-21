@@ -1879,11 +1879,11 @@ void RenderWidget::DidChangeCursor(const WebCursorInfo& cursor_info) {
     Send(new WidgetHostMsg_SetCursor(routing_id_, cursor));
 }
 
-void RenderWidget::AutoscrollStart(const blink::WebFloatPoint& point) {
+void RenderWidget::AutoscrollStart(const gfx::PointF& point) {
   Send(new WidgetHostMsg_AutoscrollStart(routing_id_, point));
 }
 
-void RenderWidget::AutoscrollFling(const blink::WebFloatSize& velocity) {
+void RenderWidget::AutoscrollFling(const gfx::Vector2dF& velocity) {
   Send(new WidgetHostMsg_AutoscrollFling(routing_id_, velocity));
 }
 
@@ -2898,11 +2898,10 @@ void RenderWidget::DidHandleGestureEvent(const WebGestureEvent& event,
 #endif
 }
 
-void RenderWidget::DidOverscroll(
-    const blink::WebFloatSize& overscroll_delta,
-    const blink::WebFloatSize& accumulated_overscroll,
-    const blink::WebFloatPoint& position,
-    const blink::WebFloatSize& velocity) {
+void RenderWidget::DidOverscroll(const gfx::Vector2dF& overscroll_delta,
+                                 const gfx::Vector2dF& accumulated_overscroll,
+                                 const gfx::PointF& position,
+                                 const gfx::Vector2dF& velocity) {
 #if defined(OS_MACOSX)
   // On OSX the user can disable the elastic overscroll effect. If that's the
   // case, don't forward the overscroll notification.
@@ -2917,7 +2916,7 @@ void RenderWidget::DidOverscroll(
 
 void RenderWidget::InjectGestureScrollEvent(
     blink::WebGestureDevice device,
-    const blink::WebFloatSize& delta,
+    const gfx::Vector2dF& delta,
     ui::input_types::ScrollGranularity granularity,
     cc::ElementId scrollable_area_element_id,
     blink::WebInputEvent::Type injected_type) {

@@ -16,7 +16,7 @@
 #include "components/arc/session/connection_holder.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_notifications_instance.h"
-#include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/fake_message_center.h"
@@ -140,10 +140,10 @@ class ArcNotificationManagerTest : public testing::Test {
     receiver_ =
         std::make_unique<mojo::Receiver<arc::mojom::NotificationsInstance>>(
             arc_notifications_instance_.get());
-    arc::mojom::NotificationsInstancePtr instance_ptr;
-    receiver_->Bind(mojo::MakeRequest(&instance_ptr));
+    mojo::PendingRemote<arc::mojom::NotificationsInstance> remote;
+    receiver_->Bind(remote.InitWithNewPipeAndPassReceiver());
 
-    arc_notification_manager_->SetInstance(std::move(instance_ptr));
+    arc_notification_manager_->SetInstance(std::move(remote));
     WaitForInstanceReady(
         arc_notification_manager_->GetConnectionHolderForTest());
   }

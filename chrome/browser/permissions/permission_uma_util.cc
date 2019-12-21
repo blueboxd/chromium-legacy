@@ -358,7 +358,7 @@ void PermissionUmaUtil::PermissionPromptResolved(
 #endif
   }
 
-  base::UmaHistogramEnumeration("Permissions.Prompt.Disposition." +
+  base::UmaHistogramEnumeration("Permissions.Action.WithDisposition." +
                                     GetPromptDispositionString(ui_disposition),
                                 permission_action, PermissionAction::NUM);
 }

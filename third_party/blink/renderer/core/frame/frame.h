@@ -159,11 +159,18 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   // This should never be called from outside Frame or WebFrame.
   void ClearUserActivationInLocalTree();
 
-  bool HasBeenActivated() const {
+  // Returns the transient user activation state of this frame.
+  bool HasTransientUserActivation() const {
+    return user_activation_state_.IsActive();
+  }
+
+  // Returns the sticky user activation state of this frame.
+  bool HasStickyUserActivation() const {
     return user_activation_state_.HasBeenActive();
   }
 
-  void ClearActivation() { user_activation_state_.Clear(); }
+  // Resets the user activation state of this frame.
+  void ClearUserActivation() { user_activation_state_.Clear(); }
 
   // Transfers user activation state from |other| frame into |this|.
   void TransferUserActivationFrom(Frame* other);
@@ -272,12 +279,6 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   Member<FrameOwner> owner_;
   Member<DOMWindow> dom_window_;
 
-  // The user activation state of the current frame.  See |UserActivationState|
-  // for details on how this state is maintained.
-  UserActivationState user_activation_state_;
-
-  bool had_sticky_user_activation_before_nav_ = false;
-
   // This is set to true if this is a subframe, and the frame element in the
   // parent frame's document becomes inert. This should always be false for
   // the main frame.
@@ -304,6 +305,14 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   bool is_loading_;
   base::UnguessableToken devtools_frame_token_;
   base::Optional<std::string> trace_value_;
+
+  // The user activation state of the current frame.  See |UserActivationState|
+  // for details on how this state is maintained.
+  UserActivationState user_activation_state_;
+
+  // The sticky user activation state of the current frame before eTLD+1
+  // navigation.  This is used in autoplay.
+  bool had_sticky_user_activation_before_nav_ = false;
 };
 
 inline FrameClient* Frame::Client() const {

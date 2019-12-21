@@ -816,6 +816,8 @@ struct CopySubTextureINTERNALImmediate {
             GLint _y,
             GLsizei _width,
             GLsizei _height,
+            GLboolean _unpack_flip_y,
+            GLboolean _unpack_premultiply_alpha,
             const GLbyte* _mailboxes) {
     SetHeader();
     xoffset = _xoffset;
@@ -824,6 +826,8 @@ struct CopySubTextureINTERNALImmediate {
     y = _y;
     width = _width;
     height = _height;
+    unpack_flip_y = _unpack_flip_y;
+    unpack_premultiply_alpha = _unpack_premultiply_alpha;
     memcpy(ImmediateDataAddress(this), _mailboxes, ComputeDataSize());
   }
 
@@ -834,9 +838,12 @@ struct CopySubTextureINTERNALImmediate {
             GLint _y,
             GLsizei _width,
             GLsizei _height,
+            GLboolean _unpack_flip_y,
+            GLboolean _unpack_premultiply_alpha,
             const GLbyte* _mailboxes) {
     static_cast<ValueType*>(cmd)->Init(_xoffset, _yoffset, _x, _y, _width,
-                                       _height, _mailboxes);
+                                       _height, _unpack_flip_y,
+                                       _unpack_premultiply_alpha, _mailboxes);
     const uint32_t size = ComputeSize();
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
@@ -848,10 +855,12 @@ struct CopySubTextureINTERNALImmediate {
   int32_t y;
   int32_t width;
   int32_t height;
+  uint32_t unpack_flip_y;
+  uint32_t unpack_premultiply_alpha;
 };
 
-static_assert(sizeof(CopySubTextureINTERNALImmediate) == 28,
-              "size of CopySubTextureINTERNALImmediate should be 28");
+static_assert(sizeof(CopySubTextureINTERNALImmediate) == 36,
+              "size of CopySubTextureINTERNALImmediate should be 36");
 static_assert(offsetof(CopySubTextureINTERNALImmediate, header) == 0,
               "offset of CopySubTextureINTERNALImmediate header should be 0");
 static_assert(offsetof(CopySubTextureINTERNALImmediate, xoffset) == 4,
@@ -866,6 +875,13 @@ static_assert(offsetof(CopySubTextureINTERNALImmediate, width) == 20,
               "offset of CopySubTextureINTERNALImmediate width should be 20");
 static_assert(offsetof(CopySubTextureINTERNALImmediate, height) == 24,
               "offset of CopySubTextureINTERNALImmediate height should be 24");
+static_assert(
+    offsetof(CopySubTextureINTERNALImmediate, unpack_flip_y) == 28,
+    "offset of CopySubTextureINTERNALImmediate unpack_flip_y should be 28");
+static_assert(offsetof(CopySubTextureINTERNALImmediate,
+                       unpack_premultiply_alpha) == 32,
+              "offset of CopySubTextureINTERNALImmediate "
+              "unpack_premultiply_alpha should be 32");
 
 struct TraceBeginCHROMIUM {
   typedef TraceBeginCHROMIUM ValueType;

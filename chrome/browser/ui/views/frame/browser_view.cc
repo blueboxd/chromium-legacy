@@ -1050,18 +1050,20 @@ void BrowserView::Restore() {
 }
 
 void BrowserView::EnterFullscreen(const GURL& url,
-                                  ExclusiveAccessBubbleType bubble_type) {
+                                  ExclusiveAccessBubbleType bubble_type,
+                                  const int64_t display_id) {
   if (IsFullscreen())
     return;  // Nothing to do.
 
-  ProcessFullscreen(true, url, bubble_type);
+  ProcessFullscreen(true, url, bubble_type, display_id);
 }
 
 void BrowserView::ExitFullscreen() {
   if (!IsFullscreen())
     return;  // Nothing to do.
 
-  ProcessFullscreen(false, GURL(), EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE);
+  ProcessFullscreen(false, GURL(), EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE,
+                    display::kInvalidDisplayId);
 }
 
 void BrowserView::UpdateExclusiveAccessExitBubbleContent(
@@ -1129,7 +1131,8 @@ void BrowserView::FullscreenStateChanged() {
       fullscreen, GURL(),
       fullscreen
           ? GetExclusiveAccessManager()->GetExclusiveAccessExitBubbleType()
-          : EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE);
+          : EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE,
+      display::kInvalidDisplayId);
   frame_->GetFrameView()->OnFullscreenStateChanged();
 }
 
@@ -2856,7 +2859,8 @@ void BrowserView::UpdateUIForContents(WebContents* contents) {
 
 void BrowserView::ProcessFullscreen(bool fullscreen,
                                     const GURL& url,
-                                    ExclusiveAccessBubbleType bubble_type) {
+                                    ExclusiveAccessBubbleType bubble_type,
+                                    const int64_t display_id) {
   if (in_process_fullscreen_)
     return;
   in_process_fullscreen_ = true;
@@ -2889,8 +2893,22 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
     }
   }
 
-  // Toggle fullscreen mode.
+  // Toggle fullscreen mode; move the window between displays as needed.
+  // TODO(crbug.com/1034783): Implement at lower layers to avoid transitions.
+  if (fullscreen && display_id != display::kInvalidDisplayId) {
+    display::Screen* screen = display::Screen::GetScreen();
+    display::Display display;
+    if (screen && screen->GetDisplayWithDisplayId(display_id, &display)) {
+      pre_fullscreen_bounds_ = frame_->GetWindowBoundsInScreen();
+      frame_->SetBounds(
+          {display.work_area().origin(), pre_fullscreen_bounds_->size()});
+    }
+  }
   frame_->SetFullscreen(fullscreen);
+  if (!fullscreen && pre_fullscreen_bounds_) {
+    frame_->SetBounds(*pre_fullscreen_bounds_);
+    pre_fullscreen_bounds_.reset();
+  }
 
   // Enable immersive before the browser refreshes its list of enabled commands.
   const bool should_stay_in_immersive =

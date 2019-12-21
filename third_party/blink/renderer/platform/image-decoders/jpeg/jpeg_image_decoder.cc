@@ -892,6 +892,8 @@ bool JPEGImageDecoder::SetSize(unsigned width, unsigned height) {
 }
 
 void JPEGImageDecoder::OnSetData(SegmentReader* data) {
+  if (reader_)
+    reader_->SetData(data);
   // TODO(crbug.com/943519): Incremental YUV decoding is not currently
   // supported.
   if (IsAllDataReceived()) {
@@ -903,8 +905,6 @@ void JPEGImageDecoder::OnSetData(SegmentReader* data) {
     allow_decode_to_yuv_ &=
         IsSizeAvailable() && reader_->Info()->out_color_space == JCS_YCbCr;
   }
-  if (reader_)
-    reader_->SetData(data);
 }
 
 void JPEGImageDecoder::SetDecodedSize(unsigned width, unsigned height) {

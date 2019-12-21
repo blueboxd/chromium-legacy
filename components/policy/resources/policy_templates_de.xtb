@@ -947,16 +947,6 @@ Diese Richtlinie gilt auch für Komponentenerweiterungen, zum Beispiel die Hango
       Wenn diese Richtlinie nicht konfiguriert oder auf "true" eingestellt ist, können Nutzer die Funktion "Netzwerkfreigaben" verwenden.
 
       Wenn diese Richtlinie auf "false" eingestellt, können Nutzer die Funktion "Netzwerkfreigaben" nicht verwenden.</translation>
-<translation id="2437706973218087361">Mit dieser Richtlinie wird eine Sicherheitsfunktion in TLS 1.3 konfiguriert, die Verbindungen gegen Downgrade-Angriffe schützt. Sie ist abwärtskompatibel und beeinträchtigt keine Verbindungen zu konformen TLS-1.2-Servern oder -Proxys. Ältere Versionen einiger Proxys, die TLS-Verbindungen abfangen, weisen jedoch einen Implementierungsfehler auf, der eine Inkompatibilität verursacht.
-
-      Wenn diese Richtlinie auf "true" gesetzt wird, aktiviert <ph name="PRODUCT_NAME" /> diese Schutzmaßnahmen für alle Verbindungen.
-
-      Wird sie auf "false" eingestellt oder nicht konfiguriert, deaktiviert <ph name="PRODUCT_NAME" /> die Maßnahmen für Verbindungen, die anhand von lokal installierten CA-Zertifikaten authentifiziert werden. Diese Sicherheitsmaßnahmen sind für Verbindungen, die mit öffentlich vertrauenswürdigen CA-Zertifikaten authentifiziert werden, immer aktiviert.
-
-      Die Richtlinie kann dazu genutzt werden, betroffene Proxys zu finden, um sie zu aktualisieren. Bei diesen Proxys sollte ein Verbindungsfehler mit dem Fehlercode ERR_TLS13_DOWNGRADE_DETECTED auftreten. In einer zukünftigen Version von <ph name="PRODUCT_NAME" /> wird diese Option standardmäßig aktiviert.
-
-      Nach der standardmäßigen Aktivierung können Administratoren, die mehr Zeit zur Aktualisierung betroffener Proxys benötigen, diese Richtlinie nutzen, um die Sicherheitsfunktion vorübergehend zu deaktivieren. Die Richtlinie wird nach Version 85 entfernt.
-      </translation>
 <translation id="2438609638493026652">Aktiviert die Meldung von wichtigen Ereignissen an Google während der Installation von Android-Apps. Ereignisse werden nur für Apps erfasst, deren Installation über die Richtlinie ausgelöst wurde.
 
       Wenn die Richtlinie auf "true" festgelegt ist, werden Ereignisse protokolliert.
@@ -2416,7 +2406,7 @@ Wenn die Richtlinie auf "FALSE" gesetzt oder nicht festgelegt wird, führt die T
 
       Diese Erkennung ist in einer Enterprise-Umgebung, in der die Netzwerkkonfiguration bekannt ist, möglicherweise nicht erforderlich, denn sie verursacht einen gewissen DNS- und HTTP-Datenverkehr beim Start und bei jeder Änderung der DNS-Konfiguration.
 
-      Wenn diese Richtlinie nicht konfiguriert oder aktiviert ist, werden die DNS-Abfangprüfungen durchgeführt. Nur, wenn sie ausdrücklich deaktiviert ist, finden sie nicht statt.</translation>
+      Wenn diese Richtlinie nicht konfiguriert oder aktiviert ist, werden die DNS-Abfangprüfungen durchgeführt. Nur wenn sie ausdrücklich deaktiviert ist, finden sie nicht statt.</translation>
 <translation id="4703402283970867140">Intelligentem Dimmmodell erlauben, den Zeitraum bis zum Dimmen des Bildschirms zu verlängern</translation>
 <translation id="4722122254122249791">Website-Isolierung für angegebene Ursprünge aktivieren</translation>
 <translation id="4722399051042571387">Wenn "false" eingestellt ist, können Nutzer keine schwache PIN festlegen, die leicht zu erraten ist.

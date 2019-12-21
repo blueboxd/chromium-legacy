@@ -30,7 +30,8 @@ class POLICY_EXPORT PolicyServiceStub : public PolicyService {
 
   bool IsInitializationComplete(PolicyDomain domain) const override;
 
-  void RefreshPolicies(const base::Closure& callback) override;
+  void RefreshPolicies(base::OnceClosure callback) override;
+
  private:
   const PolicyMap kEmpty_;
 

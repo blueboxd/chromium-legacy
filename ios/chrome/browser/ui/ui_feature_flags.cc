@@ -25,9 +25,6 @@ const base::Feature kNewOmniboxPopupLayout{"NewOmniboxPopupLayout",
 const base::Feature kOmniboxUseDefaultSearchEngineFavicon{
     "OmniboxUseDefaultSearchEngineFavicon", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kLanguageSettings{"LanguageSettings",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kEmbedderBlockRestoreUrl{"EmbedderBlockRestoreUrl",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 

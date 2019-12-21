@@ -24,7 +24,7 @@ DistillerJsRenderFrameObserver::DistillerJsRenderFrameObserver(
     : RenderFrameObserver(render_frame),
       distiller_isolated_world_id_(distiller_isolated_world_id),
       is_distiller_page_(false) {
-  registry->AddInterface(base::Bind(
+  registry->AddInterface(base::BindRepeating(
       &DistillerJsRenderFrameObserver::CreateDistillerPageNotifierService,
       weak_factory_.GetWeakPtr()));
 }

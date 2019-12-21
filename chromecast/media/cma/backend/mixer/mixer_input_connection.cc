@@ -178,8 +178,6 @@ MixerInputConnection::MixerInputConnection(
                  : ::media::AudioTimestampHelper::TimeToFrames(
                        kDefaultFadeTime,
                        input_samples_per_second_),
-             num_channels_,
-             input_samples_per_second_,
              1.0 /* playback_rate */),
       use_start_timestamp_(params.use_start_timestamp()),
       playback_start_timestamp_(use_start_timestamp_ ? INT64_MAX : INT64_MIN),
@@ -193,6 +191,7 @@ MixerInputConnection::MixerInputConnection(
             << ", fill size: " << fill_size_
             << ", algorithm fill size: " << algorithm_fill_size_
             << ", channel count: " << num_channels_
+            << ", input sample rate: " << input_samples_per_second_
             << ", start threshold: " << start_threshold_frames_
             << ", max queue size: " << max_queued_frames_
             << ", socket: " << socket_.get();
@@ -476,12 +475,14 @@ void MixerInputConnection::SetPaused(bool paused) {
   mixer_->UpdateStreamCounts();
 }
 
-int MixerInputConnection::num_channels() {
+size_t MixerInputConnection::num_channels() const {
   return num_channels_;
 }
-int MixerInputConnection::input_samples_per_second() {
+
+int MixerInputConnection::sample_rate() const {
   return input_samples_per_second_;
 }
+
 bool MixerInputConnection::primary() {
   return primary_;
 }
@@ -792,7 +793,8 @@ int MixerInputConnection::FillAudioPlaybackFrames(
     for (int c = 0; c < num_channels_; ++c) {
       channels[c] = buffer->channel(c) + write_offset;
     }
-    filled += fader_.FillFrames(num_frames, rendering_delay, channels);
+    filled +=
+        fader_.FillFrames(num_frames, playback_absolute_timestamp, channels);
     skip_next_fill_for_rate_change_ = false;
 
     mixer_rendering_delay_ = rendering_delay;
@@ -840,9 +842,9 @@ bool MixerInputConnection::PrepareDataForFill(int num_frames) {
   return FillRateShifted(needed_by_fader);
 }
 
-int MixerInputConnection::FillFaderFrames(int num_frames,
-                                          RenderingDelay rendering_delay,
-                                          float* const* channels) {
+int MixerInputConnection::FillFrames(int num_frames,
+                                     int64_t playout_timestamp,
+                                     float* const* channels) {
   if (zero_fader_frames_ || !started_ || paused_ || state_ == State::kRemoved ||
       skip_next_fill_for_rate_change_ || num_frames == 0) {
     return 0;

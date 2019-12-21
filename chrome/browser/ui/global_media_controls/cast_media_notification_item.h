@@ -11,7 +11,6 @@
 #include "chrome/common/media_router/media_route.h"
 #include "chrome/common/media_router/mojom/media_status.mojom.h"
 #include "components/media_message_center/media_notification_item.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "services/media_session/public/cpp/media_metadata.h"
 
 class Profile;

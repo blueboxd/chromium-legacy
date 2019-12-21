@@ -121,6 +121,7 @@ public class ManagedPreferencesUtils {
         if (delegate.isPreferenceClickDisabledByPolicy(preference)) {
             // Disable the views and prevent the Preference from mucking with the enabled state.
             preference.setShouldDisableView(false);
+            preference.setEnabled(false);
 
             // Prevent default click behavior.
             preference.setFragment(null);

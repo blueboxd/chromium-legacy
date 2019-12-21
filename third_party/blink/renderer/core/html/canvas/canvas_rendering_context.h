@@ -51,6 +51,7 @@ constexpr const char* kRec2020CanvasColorSpaceName = "rec2020";
 constexpr const char* kP3CanvasColorSpaceName = "p3";
 
 constexpr const char* kRGBA8CanvasPixelFormatName = "uint8";
+constexpr const char* kBGRA8CanvasPixelFormatName = "uint8";
 constexpr const char* kF16CanvasPixelFormatName = "float16";
 
 class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,

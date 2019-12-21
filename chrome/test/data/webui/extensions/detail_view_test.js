@@ -63,7 +63,7 @@ suite(extension_detail_view_tests.suiteName, function() {
     const testIsVisible = isVisible.bind(null, item);
     expectTrue(testIsVisible('#closeButton'));
     expectTrue(testIsVisible('#icon'));
-    expectTrue(testIsVisible('#enable-toggle'));
+    expectTrue(testIsVisible('#enableToggle'));
     expectFalse(testIsVisible('#extensions-options'));
     expectTrue(
         item.$.description.textContent.indexOf('This is an extension') !== -1);
@@ -168,11 +168,11 @@ suite(extension_detail_view_tests.suiteName, function() {
     flush();
     expectTrue(testIsVisible('.warning-icon'));
 
-    expectTrue(testIsVisible('#enable-toggle'));
+    expectTrue(testIsVisible('#enableToggle'));
     expectFalse(testIsVisible('#terminated-reload-button'));
     item.set('data.state', chrome.developerPrivate.ExtensionState.TERMINATED);
     flush();
-    expectFalse(testIsVisible('#enable-toggle'));
+    expectFalse(testIsVisible('#enableToggle'));
     expectTrue(testIsVisible('#terminated-reload-button'));
 
     // Ensure that the runtime warning reload button is not visible if there

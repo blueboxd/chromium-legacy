@@ -34,10 +34,9 @@ namespace attestation {
 
 namespace {
 
-void StatusCallbackSuccess(
-    const policy::CloudPolicyClient::StatusCallback& callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::BindOnce(callback, true));
+void StatusCallbackSuccess(policy::CloudPolicyClient::StatusCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
 }
 
 // A FakeCryptohomeClient that can hold call until told to flush them all.

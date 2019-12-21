@@ -187,7 +187,7 @@ TEST_P(RasterDecoderTest, CopyTexSubImage2DSizeMismatch) {
     // This will initialize the bottom right corner of destination.
     SetScopedTextureBinderExpectations(GL_TEXTURE_2D);
     auto& cmd = *GetImmediateAs<cmds::CopySubTextureINTERNALImmediate>();
-    cmd.Init(1, 1, 0, 0, 1, 1, mailboxes);
+    cmd.Init(1, 1, 0, 0, 1, 1, false, false, mailboxes);
     EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailboxes)));
     EXPECT_EQ(GL_NO_ERROR, GetGLError());
     EXPECT_EQ(dest_texture->GetLevelClearedRect(GL_TEXTURE_2D, 0),
@@ -197,7 +197,7 @@ TEST_P(RasterDecoderTest, CopyTexSubImage2DSizeMismatch) {
   {
     // Dest rect outside of dest bounds
     auto& cmd = *GetImmediateAs<cmds::CopySubTextureINTERNALImmediate>();
-    cmd.Init(2, 2, 0, 0, 1, 1, mailboxes);
+    cmd.Init(2, 2, 0, 0, 1, 1, false, false, mailboxes);
     EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailboxes)));
     EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
     EXPECT_EQ(dest_texture->GetLevelClearedRect(GL_TEXTURE_2D, 0),
@@ -207,7 +207,7 @@ TEST_P(RasterDecoderTest, CopyTexSubImage2DSizeMismatch) {
   {
     // Source rect outside of source bounds
     auto& cmd = *GetImmediateAs<cmds::CopySubTextureINTERNALImmediate>();
-    cmd.Init(0, 0, 0, 0, 2, 2, mailboxes);
+    cmd.Init(0, 0, 0, 0, 2, 2, false, false, mailboxes);
     EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailboxes)));
     EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
     EXPECT_EQ(dest_texture->GetLevelClearedRect(GL_TEXTURE_2D, 0),
@@ -234,7 +234,7 @@ TEST_P(RasterDecoderTest, CopyTexSubImage2DTwiceClearsUnclearedTexture) {
   {
     SetScopedTextureBinderExpectations(GL_TEXTURE_2D);
     auto& cmd = *GetImmediateAs<cmds::CopySubTextureINTERNALImmediate>();
-    cmd.Init(0, 0, 0, 0, 2, 1, mailboxes);
+    cmd.Init(0, 0, 0, 0, 2, 1, false, false, mailboxes);
     EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailboxes)));
   }
   EXPECT_EQ(gfx::Rect(0, 0, 2, 1), representation->ClearedRect());
@@ -244,7 +244,7 @@ TEST_P(RasterDecoderTest, CopyTexSubImage2DTwiceClearsUnclearedTexture) {
   {
     SetScopedTextureBinderExpectations(GL_TEXTURE_2D);
     auto& cmd = *GetImmediateAs<cmds::CopySubTextureINTERNALImmediate>();
-    cmd.Init(0, 1, 0, 0, 2, 1, mailboxes);
+    cmd.Init(0, 1, 0, 0, 2, 1, false, false, mailboxes);
     EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailboxes)));
   }
   EXPECT_TRUE(representation->IsCleared());
@@ -272,7 +272,7 @@ TEST_P(RasterDecoderTest, CopyTexSubImage2DPartialFailsWithUnalignedRect) {
   {
     SetScopedTextureBinderExpectations(GL_TEXTURE_2D);
     auto& cmd = *GetImmediateAs<cmds::CopySubTextureINTERNALImmediate>();
-    cmd.Init(0, 0, 0, 0, 2, 1, mailboxes);
+    cmd.Init(0, 0, 0, 0, 2, 1, false, false, mailboxes);
     EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailboxes)));
   }
   EXPECT_EQ(gfx::Rect(0, 0, 2, 1), representation->ClearedRect());
@@ -283,7 +283,7 @@ TEST_P(RasterDecoderTest, CopyTexSubImage2DPartialFailsWithUnalignedRect) {
   // this will fail.
   {
     auto& cmd = *GetImmediateAs<cmds::CopySubTextureINTERNALImmediate>();
-    cmd.Init(1, 1, 0, 0, 1, 1, mailboxes);
+    cmd.Init(1, 1, 0, 0, 1, 1, false, false, mailboxes);
     EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailboxes)));
     EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
   }
@@ -305,7 +305,7 @@ TEST_P(RasterDecoderManualInitTest, CopyTexSubImage2DValidateColorFormat) {
   auto& copy_cmd = *GetImmediateAs<cmds::CopySubTextureINTERNALImmediate>();
   GLbyte mailboxes[sizeof(gpu::Mailbox) * 2];
   CopyMailboxes(mailboxes, client_texture_mailbox_, dest_texture_mailbox);
-  copy_cmd.Init(0, 0, 0, 0, 2, 1, mailboxes);
+  copy_cmd.Init(0, 0, 0, 0, 2, 1, false, false, mailboxes);
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(copy_cmd, sizeof(mailboxes)));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }

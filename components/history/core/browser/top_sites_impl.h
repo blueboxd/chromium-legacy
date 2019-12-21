@@ -45,7 +45,7 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
  public:
   // Called to check whether an URL can be added to the history. Must be
   // callable multiple time and during the whole lifetime of TopSitesImpl.
-  using CanAddURLToHistoryFn = base::Callback<bool(const GURL&)>;
+  using CanAddURLToHistoryFn = base::RepeatingCallback<bool(const GURL&)>;
 
   // How many top sites to store in the cache.
   static constexpr size_t kTopSitesNumber = 10;
@@ -59,7 +59,7 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
   void Init(const base::FilePath& db_name);
 
   // TopSites implementation.
-  void GetMostVisitedURLs(const GetMostVisitedURLsCallback& callback) override;
+  void GetMostVisitedURLs(GetMostVisitedURLsCallback callback) override;
   void SyncWithHistory() override;
   bool HasBlacklistedItems() const override;
   void AddBlacklistedURL(const GURL& url) override;
@@ -99,9 +99,9 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
   FRIEND_TEST_ALL_PREFIXES(TopSitesImplTest, DiffMostVisited);
   FRIEND_TEST_ALL_PREFIXES(TopSitesImplTest, DiffMostVisitedWithForced);
 
-  typedef base::Callback<void(const MostVisitedURLList&)> PendingCallback;
+  using PendingCallback = base::OnceCallback<void(const MostVisitedURLList&)>;
 
-  typedef std::vector<PendingCallback> PendingCallbacks;
+  using PendingCallbacks = std::vector<PendingCallback>;
 
   // Starts to query most visited URLs from history database instantly. Also
   // cancels any pending queries requested in a delayed manner by canceling the

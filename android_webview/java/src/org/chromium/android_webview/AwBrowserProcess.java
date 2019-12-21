@@ -8,6 +8,9 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
@@ -15,7 +18,10 @@ import android.os.RemoteException;
 import android.os.StrictMode;
 
 import org.chromium.android_webview.common.CommandLineUtil;
+import org.chromium.android_webview.common.FlagOverrideConstants;
+import org.chromium.android_webview.common.FlagOverrideHelper;
 import org.chromium.android_webview.common.PlatformServiceBridge;
+import org.chromium.android_webview.common.ProductionSupportedFlagList;
 import org.chromium.android_webview.common.services.ICrashReceiverService;
 import org.chromium.android_webview.common.services.ServiceNames;
 import org.chromium.android_webview.metrics.AwMetricsServiceClient;
@@ -46,6 +52,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileLock;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -362,6 +369,47 @@ public final class AwBrowserProcess {
                 Log.w(TAG, "Could not bind to Minidump-copying Service " + intent);
             }
         });
+    }
+
+    // Quickly determine whether developer mode is enabled.
+    public static boolean isDeveloperModeEnabled() {
+        final Context context = ContextUtils.getApplicationContext();
+        ComponentName flagOverrideContentProvider = new ComponentName(
+                getWebViewPackageName(), ServiceNames.FLAG_OVERRIDE_CONTENT_PROVIDER);
+        int enabledState =
+                context.getPackageManager().getComponentEnabledSetting(flagOverrideContentProvider);
+        return enabledState == PackageManager.COMPONENT_ENABLED_STATE_ENABLED;
+    }
+
+    public static void getAndApplyFlagOverridesSync() {
+        FlagOverrideHelper helper = new FlagOverrideHelper(ProductionSupportedFlagList.sFlagList);
+        helper.applyFlagOverrides(getFlagOverrides());
+    }
+
+    private static Map<String, Boolean> getFlagOverrides() {
+        Map<String, Boolean> flagOverrides = new HashMap<>();
+
+        Uri uri = new Uri.Builder()
+                          .scheme("content")
+                          .authority(getWebViewPackageName()
+                                  + FlagOverrideConstants.URI_AUTHORITY_SUFFIX)
+                          .path(FlagOverrideConstants.URI_PATH)
+                          .build();
+        final Context appContext = ContextUtils.getApplicationContext();
+        try (Cursor cursor = appContext.getContentResolver().query(uri, /* projection */ null,
+                     /* selection */ null, /* selectionArgs */ null, /* sortOrder */ null)) {
+            assert cursor != null : "ContentProvider doesn't support querying '" + uri + "'";
+            int flagNameColumnIndex =
+                    cursor.getColumnIndexOrThrow(FlagOverrideConstants.FLAG_NAME_COLUMN);
+            int flagStateColumnIndex =
+                    cursor.getColumnIndexOrThrow(FlagOverrideConstants.FLAG_STATE_COLUMN);
+            while (cursor.moveToNext()) {
+                String flagName = cursor.getString(flagNameColumnIndex);
+                boolean flagState = cursor.getInt(flagStateColumnIndex) != 0;
+                flagOverrides.put(flagName, flagState);
+            }
+        }
+        return flagOverrides;
     }
 
     // Do not instantiate this class.

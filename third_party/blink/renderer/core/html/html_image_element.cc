@@ -737,6 +737,17 @@ void HTMLImageElement::SelectSourceURL(
     EnsureCollapsedOrFallbackContent();
 }
 
+void HTMLImageElement::StartLoadingImageDocument(
+    ImageResourceContent* image_content) {
+  // This element is being used to load an image in an ImageDocument. The
+  // provided ImageResource is owned/managed by the ImageDocumentParser. Set it
+  // on our ImageLoader and then update the 'src' attribute to reflect the URL
+  // of the image. This latter step will also initiate the load from the
+  // ImageLoader's PoV.
+  GetImageLoader().SetImageDocumentContent(image_content);
+  setAttribute(html_names::kSrcAttr, AtomicString(image_content->Url()));
+}
+
 void HTMLImageElement::DidAddUserAgentShadowRoot(ShadowRoot&) {
   HTMLImageFallbackHelper::CreateAltTextShadowTree(*this);
 }

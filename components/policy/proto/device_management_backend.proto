@@ -1160,15 +1160,17 @@ message AndroidAppPermission {
 // Provides Android application information.
 message AndroidAppInfo {
   enum AndroidAppStatus {
-    STATUS_ENABLED = 0;
-    STATUS_SUSPENDED = 1;
-    STATUS_DISABLED = 2;
+    STATUS_UNKNOWN = 0;
+    STATUS_ENABLED = 1;
+    STATUS_SUSPENDED = 2;
+    STATUS_DISABLED = 3;
   }
 
   enum InstalledSource {
-    SOURCE_BY_ADMIN = 0;
-    SOURCE_BY_USER = 1;
-    SOURCE_NOT_INSTALLED = 2;
+    SOURCE_UNKNOWN = 0;
+    SOURCE_BY_ADMIN = 1;
+    SOURCE_BY_USER = 2;
+    SOURCE_NOT_INSTALLED = 3;
   }
 
   // ID of the Android application.

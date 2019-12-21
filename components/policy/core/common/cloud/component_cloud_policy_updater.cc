@@ -102,9 +102,10 @@ void ComponentCloudPolicyUpdater::UpdateExternalPolicy(
         key,
         ExternalPolicyDataUpdater::Request(
             data.download_url(), data.secure_hash(), kPolicyDataMaxSize),
-        base::Bind(&ComponentCloudPolicyStore::Store, base::Unretained(store_),
-                   ns, serialized_response, base::Owned(policy_data.release()),
-                   data.secure_hash()));
+        base::BindRepeating(&ComponentCloudPolicyStore::Store,
+                            base::Unretained(store_), ns, serialized_response,
+                            base::Owned(policy_data.release()),
+                            data.secure_hash()));
   }
 }
 

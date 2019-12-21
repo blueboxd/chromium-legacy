@@ -911,7 +911,7 @@ TEST_F(FlagsStateTest, GetFlagFeatureEntries) {
   base::ListValue unsupported_entries;
   flags_state_->GetFlagFeatureEntries(&flags_storage_, kGeneralAccessFlagsOnly,
                                       &supported_entries, &unsupported_entries,
-                                      base::Bind(&SkipFeatureEntry));
+                                      base::BindRepeating(&SkipFeatureEntry));
   // All |kEntries| except for |kFlags3| should be supported.
   EXPECT_EQ(10u, supported_entries.GetSize());
   EXPECT_EQ(1u, unsupported_entries.GetSize());

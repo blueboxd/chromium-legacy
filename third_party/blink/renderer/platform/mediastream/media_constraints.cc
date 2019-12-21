@@ -82,50 +82,49 @@ class MediaConstraintsPrivate final
   static scoped_refptr<MediaConstraintsPrivate> Create();
   static scoped_refptr<MediaConstraintsPrivate> Create(
       const WebMediaTrackConstraintSet& basic,
-      const WebVector<WebMediaTrackConstraintSet>& advanced);
+      const Vector<WebMediaTrackConstraintSet>& advanced);
 
   bool IsEmpty() const;
   const WebMediaTrackConstraintSet& Basic() const;
-  const WebVector<WebMediaTrackConstraintSet>& Advanced() const;
+  const Vector<WebMediaTrackConstraintSet>& Advanced() const;
   const String ToString() const;
 
  private:
-  MediaConstraintsPrivate(
-      const WebMediaTrackConstraintSet& basic,
-      const WebVector<WebMediaTrackConstraintSet>& advanced);
+  MediaConstraintsPrivate(const WebMediaTrackConstraintSet& basic,
+                          const Vector<WebMediaTrackConstraintSet>& advanced);
 
   WebMediaTrackConstraintSet basic_;
-  WebVector<WebMediaTrackConstraintSet> advanced_;
+  Vector<WebMediaTrackConstraintSet> advanced_;
 };
 
 scoped_refptr<MediaConstraintsPrivate> MediaConstraintsPrivate::Create() {
   WebMediaTrackConstraintSet basic;
-  WebVector<WebMediaTrackConstraintSet> advanced;
+  Vector<WebMediaTrackConstraintSet> advanced;
   return base::AdoptRef(new MediaConstraintsPrivate(basic, advanced));
 }
 
 scoped_refptr<MediaConstraintsPrivate> MediaConstraintsPrivate::Create(
     const WebMediaTrackConstraintSet& basic,
-    const WebVector<WebMediaTrackConstraintSet>& advanced) {
+    const Vector<WebMediaTrackConstraintSet>& advanced) {
   return base::AdoptRef(new MediaConstraintsPrivate(basic, advanced));
 }
 
 MediaConstraintsPrivate::MediaConstraintsPrivate(
     const WebMediaTrackConstraintSet& basic,
-    const WebVector<WebMediaTrackConstraintSet>& advanced)
+    const Vector<WebMediaTrackConstraintSet>& advanced)
     : basic_(basic), advanced_(advanced) {}
 
 bool MediaConstraintsPrivate::IsEmpty() const {
   // TODO(hta): When generating advanced constraints, make sure no empty
   // elements can be added to the m_advanced vector.
-  return basic_.IsEmpty() && advanced_.empty();
+  return basic_.IsEmpty() && advanced_.IsEmpty();
 }
 
 const WebMediaTrackConstraintSet& MediaConstraintsPrivate::Basic() const {
   return basic_;
 }
 
-const WebVector<WebMediaTrackConstraintSet>& MediaConstraintsPrivate::Advanced()
+const Vector<WebMediaTrackConstraintSet>& MediaConstraintsPrivate::Advanced()
     const {
   return advanced_;
 }
@@ -135,7 +134,7 @@ const String MediaConstraintsPrivate::ToString() const {
   if (!IsEmpty()) {
     builder.Append('{');
     builder.Append(Basic().ToString());
-    if (!Advanced().empty()) {
+    if (!Advanced().IsEmpty()) {
       if (builder.length() > 1)
         builder.Append(", ");
       builder.Append("advanced: [");
@@ -193,7 +192,7 @@ bool LongConstraint::IsEmpty() const {
   return !has_min_ && !has_max_ && !has_exact_ && !has_ideal_;
 }
 
-WebString LongConstraint::ToString() const {
+String LongConstraint::ToString() const {
   StringBuilder builder;
   builder.Append('{');
   MaybeEmitNamedValue(builder, has_min_, "min", min_);
@@ -235,7 +234,7 @@ bool DoubleConstraint::IsEmpty() const {
   return !has_min_ && !has_max_ && !has_exact_ && !has_ideal_;
 }
 
-WebString DoubleConstraint::ToString() const {
+String DoubleConstraint::ToString() const {
   StringBuilder builder;
   builder.Append('{');
   MaybeEmitNamedValue(builder, has_min_, "min", min_);
@@ -249,8 +248,8 @@ WebString DoubleConstraint::ToString() const {
 StringConstraint::StringConstraint(const char* name)
     : BaseConstraint(name), exact_(), ideal_() {}
 
-bool StringConstraint::Matches(WebString value) const {
-  if (exact_.empty()) {
+bool StringConstraint::Matches(String value) const {
+  if (exact_.IsEmpty()) {
     return true;
   }
   for (const auto& choice : exact_) {
@@ -262,21 +261,21 @@ bool StringConstraint::Matches(WebString value) const {
 }
 
 bool StringConstraint::IsEmpty() const {
-  return exact_.empty() && ideal_.empty();
+  return exact_.IsEmpty() && ideal_.IsEmpty();
 }
 
-const WebVector<WebString>& StringConstraint::Exact() const {
+const Vector<String>& StringConstraint::Exact() const {
   return exact_;
 }
 
-const WebVector<WebString>& StringConstraint::Ideal() const {
+const Vector<String>& StringConstraint::Ideal() const {
   return ideal_;
 }
 
-WebString StringConstraint::ToString() const {
+String StringConstraint::ToString() const {
   StringBuilder builder;
   builder.Append('{');
-  if (!ideal_.empty()) {
+  if (!ideal_.IsEmpty()) {
     builder.Append("ideal: [");
     bool first = true;
     for (const auto& iter : ideal_) {
@@ -289,7 +288,7 @@ WebString StringConstraint::ToString() const {
     }
     builder.Append(']');
   }
-  if (!exact_.empty()) {
+  if (!exact_.IsEmpty()) {
     if (builder.length() > 1)
       builder.Append(", ");
     builder.Append("exact: [");
@@ -325,7 +324,7 @@ bool BooleanConstraint::IsEmpty() const {
   return !has_ideal_ && !has_exact_;
 }
 
-WebString BooleanConstraint::ToString() const {
+String BooleanConstraint::ToString() const {
   StringBuilder builder;
   builder.Append('{');
   MaybeEmitNamedBoolean(builder, has_exact_, "exact", Exact());
@@ -490,7 +489,7 @@ bool WebMediaTrackConstraintSet::HasExact() const {
   return false;
 }
 
-WebString WebMediaTrackConstraintSet::ToString() const {
+String WebMediaTrackConstraintSet::ToString() const {
   StringBuilder builder;
   bool first = true;
   for (auto* const constraint : AllConstraints()) {
@@ -527,7 +526,7 @@ void MediaConstraints::Initialize() {
 
 void MediaConstraints::Initialize(
     const WebMediaTrackConstraintSet& basic,
-    const WebVector<WebMediaTrackConstraintSet>& advanced) {
+    const Vector<WebMediaTrackConstraintSet>& advanced) {
   DCHECK(IsNull());
   private_ = MediaConstraintsPrivate::Create(basic, advanced);
 }
@@ -537,15 +536,14 @@ const WebMediaTrackConstraintSet& MediaConstraints::Basic() const {
   return private_->Basic();
 }
 
-const WebVector<WebMediaTrackConstraintSet>& MediaConstraints::Advanced()
-    const {
+const Vector<WebMediaTrackConstraintSet>& MediaConstraints::Advanced() const {
   DCHECK(!IsNull());
   return private_->Advanced();
 }
 
-const WebString MediaConstraints::ToString() const {
+const String MediaConstraints::ToString() const {
   if (IsNull())
-    return WebString("");
+    return String("");
   return private_->ToString();
 }
 

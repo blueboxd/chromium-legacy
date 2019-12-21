@@ -922,7 +922,7 @@ TEST_F(PolicyMapTest, EraseNonmatching) {
   a.Set(kTestPolicyName2, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE,
         POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true), nullptr);
 
-  a.EraseNonmatching(base::Bind(&IsMandatory));
+  a.EraseNonmatching(base::BindRepeating(&IsMandatory));
 
   PolicyMap b;
   b.Set(kTestPolicyName1, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,

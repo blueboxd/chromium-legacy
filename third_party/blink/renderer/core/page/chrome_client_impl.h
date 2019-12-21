@@ -85,15 +85,15 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
                              const FeaturePolicy::FeatureState&,
                              const SessionStorageNamespaceId&) override;
   void Show(NavigationPolicy) override;
-  void DidOverscroll(const FloatSize& overscroll_delta,
-                     const FloatSize& accumulated_overscroll,
-                     const FloatPoint& position_in_viewport,
-                     const FloatSize& velocity_in_viewport) override;
+  void DidOverscroll(const gfx::Vector2dF& overscroll_delta,
+                     const gfx::Vector2dF& accumulated_overscroll,
+                     const gfx::PointF& position_in_viewport,
+                     const gfx::Vector2dF& velocity_in_viewport) override;
   void SetOverscrollBehavior(LocalFrame& main_frame,
                              const cc::OverscrollBehavior&) override;
   void InjectGestureScrollEvent(LocalFrame& local_frame,
                                 WebGestureDevice device,
-                                const WebFloatSize& delta,
+                                const gfx::Vector2dF& delta,
                                 ScrollGranularity granularity,
                                 CompositorElementId scrollable_area_element_id,
                                 WebInputEvent::Type injected_type) override;
@@ -192,8 +192,8 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   // requests.
   void DidCompleteFileChooser(FileChooser& file_chooser);
 
-  void AutoscrollStart(WebFloatPoint viewport_point, LocalFrame*) override;
-  void AutoscrollFling(WebFloatSize velocity, LocalFrame*) override;
+  void AutoscrollStart(const gfx::PointF& viewport_point, LocalFrame*) override;
+  void AutoscrollFling(const gfx::Vector2dF& velocity, LocalFrame*) override;
   void AutoscrollEnd(LocalFrame*) override;
 
   bool HasOpenedPopup() const override;

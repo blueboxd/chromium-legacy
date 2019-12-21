@@ -415,6 +415,16 @@ void BlobDataHandle::ReadRange(
   blob_remote_ = blob.Unbind();
 }
 
+bool BlobDataHandle::CaptureSnapshot(
+    uint64_t* snapshot_size,
+    base::Optional<base::Time>* snapshot_modification_time) {
+  // This method operates on a cloned blob remote; this lets us avoid holding
+  // the |blob_remote_mutex_| locked during the duration of the (synchronous)
+  // CaptureSnapshot call.
+  mojo::Remote<mojom::blink::Blob> remote(CloneBlobRemote());
+  return remote->CaptureSnapshot(snapshot_size, snapshot_modification_time);
+}
+
 // static
 mojom::blink::BlobRegistry* BlobDataHandle::GetBlobRegistry() {
   return GetThreadSpecificRegistry();

@@ -5,9 +5,11 @@
 #include "chrome/browser/ui/views/tabs/color_picker_view.h"
 
 #include <memory>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/span.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -219,10 +221,10 @@ ColorPickerView::~ColorPickerView() {
   RemoveAllChildViews(true);
 }
 
-base::Optional<SkColor> ColorPickerView::GetSelectedColor() const {
-  for (const ColorPickerElementView* element : elements_) {
-    if (element->selected())
-      return element->color();
+base::Optional<int> ColorPickerView::GetSelectedElement() const {
+  for (size_t i = 0; i < elements_.size(); ++i) {
+    if (elements_[i]->selected())
+      return static_cast<int>(i);
   }
   return base::nullopt;
 }

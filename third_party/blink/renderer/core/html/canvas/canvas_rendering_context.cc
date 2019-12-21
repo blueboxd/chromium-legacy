@@ -40,9 +40,8 @@ CanvasRenderingContext::CanvasRenderingContext(
     const CanvasContextCreationAttributesCore& attrs)
     : host_(host),
       color_params_(CanvasColorSpace::kSRGB,
-                    CanvasPixelFormat::kRGBA8,
-                    kNonOpaque,
-                    CanvasForceRGBA::kNotForced),
+                    CanvasColorParams::GetNativeCanvasPixelFormat(),
+                    kNonOpaque),
       creation_attributes_(attrs) {
   // Supported color spaces and pixel formats: sRGB in uint8, e-sRGB in f16,
   // linear sRGB and p3 and rec2020 with linear gamma transfer function in f16.
@@ -89,6 +88,8 @@ WTF::String CanvasRenderingContext::PixelFormatAsString() const {
       return kRGBA8CanvasPixelFormatName;
     case CanvasPixelFormat::kF16:
       return kF16CanvasPixelFormatName;
+    case CanvasPixelFormat::kBGRA8:
+      return kBGRA8CanvasPixelFormatName;
   };
   CHECK(false);
   return "";

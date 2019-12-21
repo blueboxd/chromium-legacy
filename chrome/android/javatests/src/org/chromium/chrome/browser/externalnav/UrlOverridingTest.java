@@ -36,7 +36,6 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
-import org.chromium.chrome.browser.tabmodel.SingleTabModel;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -402,30 +401,24 @@ public class UrlOverridingTest {
     @SmallTest
     @RetryOnFailure
     public void testOpenWindowFromUserGesture() {
-        boolean opensNewTab =
-                !(mActivityTestRule.getActivity().getCurrentTabModel() instanceof SingleTabModel);
         loadUrlAndWaitForIntentUrl(mTestServer.getURL(OPEN_WINDOW_FROM_USER_GESTURE_PAGE), true,
-                opensNewTab, true, null, true);
+                true, true, null, true);
     }
 
     @Test
     @SmallTest
     @RetryOnFailure
     public void testOpenWindowFromLinkUserGesture() {
-        boolean opensNewTab =
-                !(mActivityTestRule.getActivity().getCurrentTabModel() instanceof SingleTabModel);
         loadUrlAndWaitForIntentUrl(mTestServer.getURL(OPEN_WINDOW_FROM_LINK_USER_GESTURE_PAGE),
-                true, opensNewTab, true, null, true, "link");
+                true, true, true, null, true, "link");
     }
 
     @Test
     @SmallTest
     @RetryOnFailure
     public void testOpenWindowFromSvgUserGesture() {
-        boolean opensNewTab =
-                !(mActivityTestRule.getActivity().getCurrentTabModel() instanceof SingleTabModel);
         loadUrlAndWaitForIntentUrl(mTestServer.getURL(OPEN_WINDOW_FROM_SVG_USER_GESTURE_PAGE), true,
-                opensNewTab, true, null, true, "link");
+                true, true, null, true, "link");
     }
 
     @Test

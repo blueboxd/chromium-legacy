@@ -21617,6 +21617,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="1425" label="PRINTING_GETPRINTERS"/>
   <int value="1426" label="WEBCAMPRIVATE_SET_HOME"/>
   <int value="1427" label="INPUTMETHODPRIVATE_RESET"/>
+  <int value="1428" label="PRINTING_GETPRINTERINFO"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -36070,6 +36071,7 @@ from previous Chrome versions.
   <int value="-2142665444" label="ScrollableTabStrip:disabled"/>
   <int value="-2141661938" label="AnimatedAppMenuIcon:enabled"/>
   <int value="-2141247271" label="AndroidOmniboxPreviewsBadge:enabled"/>
+  <int value="-2140007754" label="HomepageSettingsUIConversion:disabled"/>
   <int value="-2139379065" label="StoragePressureUI:enabled"/>
   <int value="-2138883960" label="AutofillRejectCompanyBirthyearName:disabled"/>
   <int value="-2136259447" label="PasswordManagerOnboardingAndroid:disabled"/>
@@ -36439,6 +36441,7 @@ from previous Chrome versions.
   <int value="-1722208902" label="CCTModuleCustomRequestHeader:disabled"/>
   <int value="-1720653947" label="WebRtcHybridAgc:disabled"/>
   <int value="-1719833926" label="disable-answers-in-suggest"/>
+  <int value="-1718074215" label="HomepageSettingsUIConversion:enabled"/>
   <int value="-1716654100" label="tab-capture-downscale-quality"/>
   <int value="-1716140224" label="EnableEmbeddedAssistantUI:disabled"/>
   <int value="-1715180530"

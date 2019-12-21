@@ -43,7 +43,7 @@ void DistillerNativeJavaScript::AddJavaScriptObjectToFrame(
   // does not transfer ownership of the interface.
   BindFunctionToObject(
       isolate, distiller_obj, "openSettings",
-      base::Bind(
+      base::BindRepeating(
           &mojom::DistillerJavaScriptService::HandleDistillerOpenSettingsCall,
           base::Unretained(distiller_js_service_.get())));
 }
@@ -53,7 +53,7 @@ void DistillerNativeJavaScript::BindFunctionToObject(
     v8::Isolate* isolate,
     v8::Local<v8::Object> javascript_object,
     const std::string& name,
-    const base::Callback<Sig> callback) {
+    const base::RepeatingCallback<Sig>& callback) {
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
   // Get the isolate associated with this object.
   javascript_object

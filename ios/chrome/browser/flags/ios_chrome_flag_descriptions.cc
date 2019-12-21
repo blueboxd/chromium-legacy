@@ -248,11 +248,6 @@ const char kInProductHelpDemoModeDescription[] =
     "an individual promotion causes that promotion but no other promotions to "
     "occur.";
 
-const char kLanguageSettingsName[] = "Language Settings";
-const char kLanguageSettingsDescription[] =
-    "Enables the Language Settings page allowing modifications to user "
-    "preferred languages and translate preferences.";
-
 const char kLockBottomToolbarName[] = "Lock bottom toolbar";
 const char kLockBottomToolbarDescription[] =
     "When enabled, the bottom toolbar will not get collapsed when scrolling "

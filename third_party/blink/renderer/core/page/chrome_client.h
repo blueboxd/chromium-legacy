@@ -73,7 +73,6 @@ class DateTimeChooser;
 class DateTimeChooserClient;
 class Element;
 class FileChooser;
-class FloatPoint;
 class Frame;
 class FullscreenOptions;
 class HTMLFormControlElement;
@@ -197,10 +196,10 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   // scrolls by 10 px, but due to a 2X page scale we apply a 5px scroll to the
   // root frame, all of which is handled as overscroll, we should return 10px
   // as the |overscroll_delta|.
-  virtual void DidOverscroll(const FloatSize& overscroll_delta,
-                             const FloatSize& accumulated_overscroll,
-                             const FloatPoint& position_in_viewport,
-                             const FloatSize& velocity_in_viewport) = 0;
+  virtual void DidOverscroll(const gfx::Vector2dF& overscroll_delta,
+                             const gfx::Vector2dF& accumulated_overscroll,
+                             const gfx::PointF& position_in_viewport,
+                             const gfx::Vector2dF& velocity_in_viewport) = 0;
 
   // Causes a gesture event of |injected_type| to be dispatched at a later
   // point in time. |injected_type| is required to be one of
@@ -214,7 +213,7 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   virtual void InjectGestureScrollEvent(
       LocalFrame& local_frame,
       WebGestureDevice device,
-      const WebFloatSize& delta,
+      const gfx::Vector2dF& delta,
       ScrollGranularity granularity,
       CompositorElementId scrollable_area_element_id,
       WebInputEvent::Type injected_type) {}
@@ -259,8 +258,8 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
 
   virtual void SetCursorOverridden(bool) = 0;
 
-  virtual void AutoscrollStart(WebFloatPoint position, LocalFrame*) {}
-  virtual void AutoscrollFling(WebFloatSize velocity, LocalFrame*) {}
+  virtual void AutoscrollStart(const gfx::PointF& position, LocalFrame*) {}
+  virtual void AutoscrollFling(const gfx::Vector2dF& velocity, LocalFrame*) {}
   virtual void AutoscrollEnd(LocalFrame*) {}
 
   virtual Cursor LastSetCursorForTesting() const = 0;

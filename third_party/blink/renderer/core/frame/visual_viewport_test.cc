@@ -960,12 +960,12 @@ TEST_P(VisualViewportTest, TestRestoredFromHistoryItem) {
   WebURL destination_url(
       url_test_helpers::ToKURL(base_url_ + "200-by-300.html"));
   item.SetURLString(destination_url.GetString());
-  item.SetVisualViewportScrollOffset(WebFloatPoint(100, 120));
+  item.SetVisualViewportScrollOffset(gfx::PointF(100, 120));
   item.SetPageScaleFactor(2);
 
   frame_test_helpers::LoadHistoryItem(WebView()->MainFrameImpl(), item,
                                       mojom::FetchCacheMode::kDefault);
-
+  UpdateAllLifecyclePhases();
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
   EXPECT_EQ(2, visual_viewport.Scale());
 
@@ -989,13 +989,13 @@ TEST_P(VisualViewportTest, TestRestoredFromLegacyHistoryItem) {
   item.SetURLString(destination_url.GetString());
   // (-1, -1) will be used if the HistoryItem is an older version prior to
   // having visual viewport scroll offset.
-  item.SetVisualViewportScrollOffset(WebFloatPoint(-1, -1));
+  item.SetVisualViewportScrollOffset(gfx::PointF(-1, -1));
   item.SetScrollOffset(WebPoint(120, 180));
   item.SetPageScaleFactor(2);
 
   frame_test_helpers::LoadHistoryItem(WebView()->MainFrameImpl(), item,
                                       mojom::FetchCacheMode::kDefault);
-
+  UpdateAllLifecyclePhases();
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
   EXPECT_EQ(2, visual_viewport.Scale());
   EXPECT_EQ(ScrollOffset(100, 150),
@@ -1230,7 +1230,7 @@ TEST_P(VisualViewportTest, ScrollIntoViewFractionalOffset) {
 
   // The element is already in the view so the scrollIntoView shouldn't move
   // the viewport at all.
-  WebView()->SetVisualViewportOffset(WebFloatPoint(250.25f, 100.25f));
+  WebView()->SetVisualViewportOffset(gfx::PointF(250.25f, 100.25f));
   layout_viewport_scrollable_area->SetScrollOffset(ScrollOffset(0, 900.75),
                                                    kProgrammaticScroll);
   inputBox->scrollIntoViewIfNeeded(false);
@@ -1259,7 +1259,7 @@ TEST_P(VisualViewportTest, ScrollIntoViewFractionalOffset) {
   EXPECT_EQ(FloatSize(250.25f, 100.25f), visual_viewport.GetScrollOffset());
 
   // Repeat both tests above with the visual viewport at a high fractional.
-  WebView()->SetVisualViewportOffset(WebFloatPoint(250.875f, 100.875f));
+  WebView()->SetVisualViewportOffset(gfx::PointF(250.875f, 100.875f));
   layout_viewport_scrollable_area->SetScrollOffset(ScrollOffset(0, 900.75),
                                                    kProgrammaticScroll);
   inputBox->scrollIntoViewIfNeeded(false);
@@ -1288,7 +1288,7 @@ TEST_P(VisualViewportTest, ScrollIntoViewFractionalOffset) {
   EXPECT_EQ(FloatSize(250.875f, 100.875f), visual_viewport.GetScrollOffset());
 
   // Both viewports with a 0.5 fraction.
-  WebView()->SetVisualViewportOffset(WebFloatPoint(250.5f, 100.5f));
+  WebView()->SetVisualViewportOffset(gfx::PointF(250.5f, 100.5f));
   layout_viewport_scrollable_area->SetScrollOffset(ScrollOffset(0, 900.5),
                                                    kProgrammaticScroll);
   inputBox->scrollIntoViewIfNeeded(false);
@@ -1919,7 +1919,7 @@ TEST_P(VisualViewportTest, AccessibilityHitTestWhileZoomedIn) {
   WebAXContext ax_context(web_doc);
 
   WebView()->SetPageScaleFactor(2);
-  WebView()->SetVisualViewportOffset(WebFloatPoint(200, 230));
+  WebView()->SetVisualViewportOffset(gfx::PointF(200, 230));
   frame_view.LayoutViewport()->SetScrollOffset(ScrollOffset(400, 1100),
                                                kProgrammaticScroll);
 
@@ -2571,7 +2571,7 @@ TEST_P(VisualViewportTest, DeviceEmulation) {
   EXPECT_FALSE(GetFrame()->View()->VisualViewportNeedsRepaint());
 
   WebDeviceEmulationParams params;
-  params.viewport_offset = WebFloatPoint();
+  params.viewport_offset = gfx::PointF();
   params.viewport_scale = 1.f;
   WebView()->EnableDeviceEmulation(params);
 
@@ -2582,19 +2582,19 @@ TEST_P(VisualViewportTest, DeviceEmulation) {
   EXPECT_FALSE(GetFrame()->View()->VisualViewportNeedsRepaint());
 
   // Set device mulation with viewport offset should repaint visual viewport.
-  params.viewport_offset = WebFloatPoint(314, 159);
+  params.viewport_offset = gfx::PointF(314, 159);
   WebView()->EnableDeviceEmulation(params);
 
   UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_TRUE(GetFrame()->View()->VisualViewportNeedsRepaint());
   ASSERT_TRUE(visual_viewport.GetDeviceEmulationTransformNode());
-  EXPECT_EQ(FloatSize(-params.viewport_offset.x, -params.viewport_offset.y),
+  EXPECT_EQ(FloatSize(-params.viewport_offset.x(), -params.viewport_offset.y()),
             visual_viewport.GetDeviceEmulationTransformNode()->Translation2D());
   UpdateAllLifecyclePhases();
   EXPECT_FALSE(GetFrame()->View()->VisualViewportNeedsRepaint());
 
   // Change device emulation with scale should not repaint visual viewport.
-  params.viewport_offset = WebFloatPoint();
+  params.viewport_offset = gfx::PointF();
   params.viewport_scale = 1.5f;
   WebView()->EnableDeviceEmulation(params);
 
@@ -2662,7 +2662,7 @@ TEST_P(VisualViewportTest, PaintScrollbar) {
 
   // Apply device emulation scale.
   WebDeviceEmulationParams params;
-  params.viewport_offset = WebFloatPoint();
+  params.viewport_offset = gfx::PointF();
   params.viewport_scale = 1.5f;
   WebView()->EnableDeviceEmulation(params);
   UpdateAllLifecyclePhases();

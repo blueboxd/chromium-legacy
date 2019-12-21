@@ -498,7 +498,7 @@ void AppServiceAppWindowLauncherController::OnItemDelegateDiscarded(
       continue;
 
     if (arc_tracker_)
-      arc_tracker_->OnItemDelegateDiscarded(app_window->shelf_id(), delegate);
+      arc_tracker_->OnItemDelegateDiscarded(app_window->shelf_id());
 
     if (!app_window || app_window->controller() != delegate)
       continue;

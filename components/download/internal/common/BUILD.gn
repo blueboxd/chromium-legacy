@@ -101,7 +101,9 @@ source_set("internal") {
 
 if (is_android) {
   android_library("internal_java") {
-    java_files = [ "android/java/src/org/chromium/components/download/DownloadCollectionBridge.java" ]
+    sources = [
+      "android/java/src/org/chromium/components/download/DownloadCollectionBridge.java",
+    ]
 
     deps = [
       "//base:base_java",

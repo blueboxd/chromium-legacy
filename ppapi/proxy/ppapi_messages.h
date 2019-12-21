@@ -243,6 +243,13 @@ IPC_STRUCT_TRAITS_BEGIN(PP_PdfAccessibilityActionData)
   IPC_STRUCT_TRAITS_MEMBER(page_index)
   IPC_STRUCT_TRAITS_MEMBER(horizontal_scroll_alignment)
   IPC_STRUCT_TRAITS_MEMBER(vertical_scroll_alignment)
+  IPC_STRUCT_TRAITS_MEMBER(selection_start_index)
+  IPC_STRUCT_TRAITS_MEMBER(selection_end_index)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(PP_PdfPageCharacterIndex)
+  IPC_STRUCT_TRAITS_MEMBER(page_index)
+  IPC_STRUCT_TRAITS_MEMBER(char_index)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(PP_PdfPrintPresetOptions_Dev)

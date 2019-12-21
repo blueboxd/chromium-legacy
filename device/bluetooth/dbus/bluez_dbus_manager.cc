@@ -212,8 +212,6 @@ void BluezDBusManager::InitializeClients() {
                                                    bluetooth_service_name);
   client_bundle_->bluetooth_agent_manager_client()->Init(
       GetSystemBus(), bluetooth_service_name);
-  client_bundle_->bluetooth_debug_manager_client()->Init(
-      GetSystemBus(), bluetooth_service_name);
   client_bundle_->bluetooth_device_client()->Init(GetSystemBus(),
                                                   bluetooth_service_name);
   client_bundle_->bluetooth_gatt_characteristic_client()->Init(
@@ -234,6 +232,11 @@ void BluezDBusManager::InitializeClients() {
       GetSystemBus(), bluetooth_service_name);
   client_bundle_->bluetooth_profile_manager_client()->Init(
       GetSystemBus(), bluetooth_service_name);
+
+  // TODO(b/145163508): update service name after migrating BT debug to bluez
+  client_bundle_->bluetooth_debug_manager_client()->Init(
+      GetSystemBus(),
+      bluetooth_object_manager::kBluetoothObjectManagerServiceName);
 
   if (!alternate_bus_)
     return;

@@ -472,7 +472,7 @@ void Shelf::WillChangeVisibilityState(ShelfVisibilityState new_state) {
     auto_hide_event_handler_ = std::make_unique<AutoHideEventHandler>(this);
   }
 
-  if (!auto_dim_event_handler_ && ash::switches::IsUsingShelfAutoDim()) {
+  if (!auto_dim_event_handler_ && switches::IsUsingShelfAutoDim()) {
     auto_dim_event_handler_ = std::make_unique<AutoDimEventHandler>(this);
   }
 }

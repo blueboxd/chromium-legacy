@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/use_counter_callback.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
@@ -20,6 +21,7 @@ void UseCounterCallback(v8::Isolate* isolate,
 
   WebFeature blink_feature;
   bool deprecated = false;
+  bool detached_window_call = false;
   switch (feature) {
     case v8::Isolate::kUseAsm:
       blink_feature = WebFeature::kUseAsm;
@@ -245,56 +247,69 @@ void UseCounterCallback(v8::Isolate* isolate,
       blink_feature = WebFeature::kV8SharedArrayBufferConstructed;
       break;
     // The following 9 counters differ from the rest, because they're reported
-    // via UKM using the instance counter mechanism. Using the typical use
-    // counter infrastructure won't work, because it doesn't work on detached
-    // windows.
+    // to UKM using alternative mechanisms. The use counter logic doesn't work
+    // on detached windows.
     // TODO(bartekn,chromium:1018156): Remove once not needed.
     case v8::Isolate::kCallInDetachedWindowByNavigation:
       InstanceCounters::IncrementCounter(
           InstanceCounters::kV8CallInDetachedWindowByNavigationCounter);
-      return;
+      detached_window_call = true;
+      break;
     case v8::Isolate::kCallInDetachedWindowByNavigationAfter10s:
       InstanceCounters::IncrementCounter(
           InstanceCounters::kV8CallInDetachedWindowByNavigationAfter10sCounter);
-      return;
+      detached_window_call = true;
+      break;
     case v8::Isolate::kCallInDetachedWindowByNavigationAfter1min:
       InstanceCounters::IncrementCounter(
           InstanceCounters::
               kV8CallInDetachedWindowByNavigationAfter1minCounter);
-      return;
+      detached_window_call = true;
+      break;
     case v8::Isolate::kCallInDetachedWindowByClosing:
       InstanceCounters::IncrementCounter(
           InstanceCounters::kV8CallInDetachedWindowByClosingCounter);
-      return;
+      detached_window_call = true;
+      break;
     case v8::Isolate::kCallInDetachedWindowByClosingAfter10s:
       InstanceCounters::IncrementCounter(
           InstanceCounters::kV8CallInDetachedWindowByClosingAfter10sCounter);
-      return;
+      detached_window_call = true;
+      break;
     case v8::Isolate::kCallInDetachedWindowByClosingAfter1min:
       InstanceCounters::IncrementCounter(
           InstanceCounters::kV8CallInDetachedWindowByClosingAfter1minCounter);
-      return;
+      detached_window_call = true;
+      break;
     case v8::Isolate::kCallInDetachedWindowByOtherReason:
       InstanceCounters::IncrementCounter(
           InstanceCounters::kV8CallInDetachedWindowByOtherReasonCounter);
-      return;
+      detached_window_call = true;
+      break;
     case v8::Isolate::kCallInDetachedWindowByOtherReasonAfter10s:
       InstanceCounters::IncrementCounter(
           InstanceCounters::
               kV8CallInDetachedWindowByOtherReasonAfter10sCounter);
-      return;
+      detached_window_call = true;
+      break;
     case v8::Isolate::kCallInDetachedWindowByOtherReasonAfter1min:
       InstanceCounters::IncrementCounter(
           InstanceCounters::
               kV8CallInDetachedWindowByOtherReasonAfter1minCounter);
-      return;
+      detached_window_call = true;
+      break;
     // End of special case.
     default:
       // This can happen if V8 has added counters that this version of Blink
       // does not know about. It's harmless.
       return;
   }
-  if (deprecated) {
+  if (detached_window_call) {
+    // Detached window call counters are interesting only in the Document case.
+    Document* document = DynamicTo<Document>(CurrentExecutionContext(isolate));
+    if (document)
+      document->RecordCallInDetachedWindow(feature);
+  } else if (deprecated) {
     Deprecation::CountDeprecation(CurrentExecutionContext(isolate),
                                   blink_feature);
   } else {

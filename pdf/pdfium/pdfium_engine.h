@@ -515,6 +515,8 @@ class PDFiumEngine : public PDFEngine,
                                      int form_type);
 
   bool PageIndexInBounds(int index) const;
+  bool IsPageCharacterIndexInBounds(
+      const PP_PdfPageCharacterIndex& index) const;
 
   // Gets the height of the top toolbar in screen coordinates. This is
   // independent of whether it is hidden or not at the moment.
@@ -552,6 +554,11 @@ class PDFiumEngine : public PDFEngine,
 
   // IFSDK_PAUSE callbacks
   static FPDF_BOOL Pause_NeedToPauseNow(IFSDK_PAUSE* param);
+
+  // Used for text selection. Given the start and end of selection, sets the
+  // text range in |selection_|.
+  void SetSelection(const PP_PdfPageCharacterIndex& selection_start_index,
+                    const PP_PdfPageCharacterIndex& selection_end_index);
 
   PDFEngine::Client* const client_;
 

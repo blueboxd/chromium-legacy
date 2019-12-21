@@ -205,7 +205,9 @@ android_library("ar_java") {
     "//third_party/arcore-android-sdk-client:com_google_ar_core_java",
   ]
 
-  java_files = [ "//chrome/android/java/src/org/chromium/chrome/browser/vr/ArCoreShimImpl.java" ]
+  sources = [
+    "//chrome/android/java/src/org/chromium/chrome/browser/vr/ArCoreShimImpl.java",
+  ]
 }
 
 if (enable_arcore) {

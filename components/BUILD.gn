@@ -485,7 +485,7 @@ if (is_android) {
       "//testing/android/native_test:native_test_java",
       "//ui/android:ui_full_java",
     ]
-    java_files = [
+    sources = [
       "test/android/browsertests_apk/src/org/chromium/components_browsertests_apk/ComponentsBrowserTestsActivity.java",
       "test/android/browsertests_apk/src/org/chromium/components_browsertests_apk/ComponentsBrowserTestsApplication.java",
     ]

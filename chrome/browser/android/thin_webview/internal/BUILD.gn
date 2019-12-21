@@ -28,7 +28,7 @@ static_library("internal") {
 }
 
 android_library("internal_java") {
-  java_files = [
+  sources = [
     "java/src/org/chromium/chrome/browser/thinwebview/internal/CompositorViewImpl.java",
     "java/src/org/chromium/chrome/browser/thinwebview/internal/ThinWebViewImpl.java",
   ]

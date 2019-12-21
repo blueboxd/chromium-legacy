@@ -37,7 +37,7 @@ android_library("autofill_java") {
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//ui/android:ui_java",
   ]
-  java_files = [
+  sources = [
     "java/src/org/chromium/components/autofill/AutofillDelegate.java",
     "java/src/org/chromium/components/autofill/AutofillDropdownAdapter.java",
     "java/src/org/chromium/components/autofill/AutofillDropdownFooter.java",
@@ -56,7 +56,7 @@ android_library("provider_java") {
     "//third_party/android_deps:androidx_annotation_annotation_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
-  java_files = [
+  sources = [
     "java/src/org/chromium/components/autofill/AutofillProvider.java",
     "java/src/org/chromium/components/autofill/FormData.java",
     "java/src/org/chromium/components/autofill/FormFieldData.java",

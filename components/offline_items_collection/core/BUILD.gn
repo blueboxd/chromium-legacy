@@ -76,10 +76,7 @@ source_set("unit_tests") {
 
 if (is_android) {
   android_library("core_java") {
-    java_files = [
-      "android/java/src/org/chromium/components/offline_items_collection/bridges/OfflineItemBridge.java",
-      "android/java/src/org/chromium/components/offline_items_collection/bridges/OfflineItemShareInfoBridge.java",
-      "android/java/src/org/chromium/components/offline_items_collection/bridges/OfflineItemVisualsBridge.java",
+    sources = [
       "android/java/src/org/chromium/components/offline_items_collection/ContentId.java",
       "android/java/src/org/chromium/components/offline_items_collection/LegacyHelpers.java",
       "android/java/src/org/chromium/components/offline_items_collection/OfflineContentAggregatorBridge.java",
@@ -90,6 +87,9 @@ if (is_android) {
       "android/java/src/org/chromium/components/offline_items_collection/ShareCallback.java",
       "android/java/src/org/chromium/components/offline_items_collection/UpdateDelta.java",
       "android/java/src/org/chromium/components/offline_items_collection/VisualsCallback.java",
+      "android/java/src/org/chromium/components/offline_items_collection/bridges/OfflineItemBridge.java",
+      "android/java/src/org/chromium/components/offline_items_collection/bridges/OfflineItemShareInfoBridge.java",
+      "android/java/src/org/chromium/components/offline_items_collection/bridges/OfflineItemVisualsBridge.java",
     ]
     annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 

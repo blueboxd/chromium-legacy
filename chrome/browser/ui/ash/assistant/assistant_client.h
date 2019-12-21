@@ -20,6 +20,7 @@
 
 class AssistantImageDownloader;
 class AssistantSetup;
+class AssistantWebViewFactoryImpl;
 class ProactiveSuggestionsClientImpl;
 class Profile;
 
@@ -103,6 +104,7 @@ class AssistantClient : chromeos::assistant::mojom::Client,
 
   std::unique_ptr<AssistantImageDownloader> assistant_image_downloader_;
   std::unique_ptr<AssistantSetup> assistant_setup_;
+  std::unique_ptr<AssistantWebViewFactoryImpl> assistant_web_view_factory_;
 
   std::unique_ptr<ProactiveSuggestionsClientImpl> proactive_suggestions_client_;
 

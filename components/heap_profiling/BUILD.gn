@@ -35,7 +35,9 @@ if (is_android) {
   # shim to function correctly.
   android_library("heap_profiling_java_test_support") {
     testonly = true
-    java_files = [ "javatests/src/org/chromium/components/heap_profiling/HeapProfilingTestShim.java" ]
+    sources = [
+      "javatests/src/org/chromium/components/heap_profiling/HeapProfilingTestShim.java",
+    ]
     deps = [
       "//base:base_java",
     ]

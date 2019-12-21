@@ -269,7 +269,7 @@ jumbo_static_library("browser") {
 
 if (is_android) {
   android_library("browser_java") {
-    java_files = [
+    sources = [
       "android/java/src/org/chromium/components/omnibox/SuggestionAnswer.java",
     ]
 

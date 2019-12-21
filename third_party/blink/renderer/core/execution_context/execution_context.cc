@@ -58,7 +58,8 @@ ExecutionContext::ExecutionContext(
     OriginTrialContext* origin_trial_context,
     scoped_refptr<SecurityOrigin> origin,
     WebSandboxFlags sandbox_flags,
-    std::unique_ptr<FeaturePolicy> feature_policy)
+    std::unique_ptr<FeaturePolicy> feature_policy,
+    SecureContextMode secure_context_mode)
     : isolate_(isolate),
       security_context_(origin,
                         sandbox_flags,
@@ -72,7 +73,8 @@ ExecutionContext::ExecutionContext(
       agent_(agent),
       origin_trial_context_(origin_trial_context),
       window_interaction_tokens_(0),
-      referrer_policy_(network::mojom::ReferrerPolicy::kDefault) {
+      referrer_policy_(network::mojom::ReferrerPolicy::kDefault),
+      secure_context_mode_(secure_context_mode) {
   if (origin_trial_context_)
     origin_trial_context_->BindExecutionContext(this);
 }
@@ -220,9 +222,12 @@ bool ExecutionContext::IsWindowInteractionAllowed() const {
   return window_interaction_tokens_ > 0;
 }
 
-bool ExecutionContext::IsSecureContext() const {
-  String unused_error_message;
-  return IsSecureContext(unused_error_message);
+bool ExecutionContext::IsSecureContext(String& error_message) const {
+  if (!IsSecureContext()) {
+    error_message = SecurityOrigin::IsPotentiallyTrustworthyErrorMessage();
+    return false;
+  }
+  return true;
 }
 
 // https://w3c.github.io/webappsec-referrer-policy/#determine-requests-referrer

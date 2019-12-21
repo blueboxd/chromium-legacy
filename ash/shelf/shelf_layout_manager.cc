@@ -2352,7 +2352,7 @@ bool ShelfLayoutManager::StartShelfDrag(
   if (hotseat_is_in_drag_) {
     DCHECK(!hotseat_presentation_time_recorder_);
     hotseat_presentation_time_recorder_ =
-        ash::CreatePresentationTimeHistogramRecorder(
+        CreatePresentationTimeHistogramRecorder(
             shelf_widget_->hotseat_widget()->GetCompositor(),
             "Ash.HotseatTransition.Drag.PresentationTime",
             "Ash.HotseatTransition.Drag.PresentationTime.MaxLatency");

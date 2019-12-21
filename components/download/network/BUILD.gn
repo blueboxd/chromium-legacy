@@ -40,7 +40,9 @@ static_library("network") {
 
 if (is_android) {
   android_library("network_java") {
-    java_files = [ "android/java/src/org/chromium/components/download/NetworkStatusListenerAndroid.java" ]
+    sources = [
+      "android/java/src/org/chromium/components/download/NetworkStatusListenerAndroid.java",
+    ]
 
     deps = [
       "//base:base_java",

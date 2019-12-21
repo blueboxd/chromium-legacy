@@ -219,7 +219,7 @@ class ScrollableShelfView::GradientLayerDelegate : public ui::LayerDelegate {
 // ScrollableShelfArrowView
 
 class ScrollableShelfView::ScrollableShelfArrowView
-    : public ash::ScrollArrowView,
+    : public ScrollArrowView,
       public views::ViewTargeterDelegate {
  public:
   explicit ScrollableShelfArrowView(ArrowType arrow_type,
@@ -1218,31 +1218,27 @@ bool ScrollableShelfView::ProcessGestureEvent(const ui::GestureEvent& event) {
     DCHECK(!presentation_time_recorder_);
     if (IsInTabletMode()) {
       if (Shell::Get()->app_list_controller()->IsVisible()) {
-        presentation_time_recorder_ =
-            ash::CreatePresentationTimeHistogramRecorder(
-                GetWidget()->GetCompositor(),
-                kScrollDraggingTabletLauncherVisibleHistogram,
-                kScrollDraggingTabletLauncherVisibleMaxLatencyHistogram);
+        presentation_time_recorder_ = CreatePresentationTimeHistogramRecorder(
+            GetWidget()->GetCompositor(),
+            kScrollDraggingTabletLauncherVisibleHistogram,
+            kScrollDraggingTabletLauncherVisibleMaxLatencyHistogram);
       } else {
-        presentation_time_recorder_ =
-            ash::CreatePresentationTimeHistogramRecorder(
-                GetWidget()->GetCompositor(),
-                kScrollDraggingTabletLauncherHiddenHistogram,
-                kScrollDraggingTabletLauncherHiddenMaxLatencyHistogram);
+        presentation_time_recorder_ = CreatePresentationTimeHistogramRecorder(
+            GetWidget()->GetCompositor(),
+            kScrollDraggingTabletLauncherHiddenHistogram,
+            kScrollDraggingTabletLauncherHiddenMaxLatencyHistogram);
       }
     } else {
       if (Shell::Get()->app_list_controller()->IsVisible()) {
-        presentation_time_recorder_ =
-            ash::CreatePresentationTimeHistogramRecorder(
-                GetWidget()->GetCompositor(),
-                kScrollDraggingClamshellLauncherVisibleHistogram,
-                kScrollDraggingClamshellLauncherVisibleMaxLatencyHistogram);
+        presentation_time_recorder_ = CreatePresentationTimeHistogramRecorder(
+            GetWidget()->GetCompositor(),
+            kScrollDraggingClamshellLauncherVisibleHistogram,
+            kScrollDraggingClamshellLauncherVisibleMaxLatencyHistogram);
       } else {
-        presentation_time_recorder_ =
-            ash::CreatePresentationTimeHistogramRecorder(
-                GetWidget()->GetCompositor(),
-                kScrollDraggingClamshellLauncherHiddenHistogram,
-                kScrollDraggingClamshellLauncherHiddenMaxLatencyHistogram);
+        presentation_time_recorder_ = CreatePresentationTimeHistogramRecorder(
+            GetWidget()->GetCompositor(),
+            kScrollDraggingClamshellLauncherHiddenHistogram,
+            kScrollDraggingClamshellLauncherHiddenMaxLatencyHistogram);
       }
     }
     return true;

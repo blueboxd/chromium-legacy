@@ -518,4 +518,65 @@ TEST_F(AccessibilityTest, GetAccessibilityHighlightInfo) {
   }
 }
 
+TEST_F(AccessibilityTest, TestSelectionActionHandling) {
+  struct Selection {
+    uint32_t start_page_index;
+    uint32_t start_char_index;
+    uint32_t end_page_index;
+    uint32_t end_char_index;
+  };
+
+  struct TestCase {
+    Selection action;
+    Selection expected_result;
+  };
+
+  static constexpr TestCase kTestCases[] = {
+      {{0, 0, 0, 0}, {0, 0, 0, 0}},
+      {{0, 0, 1, 5}, {0, 0, 1, 5}},
+      // Selection action data with invalid char index.
+      // GetSelection() should return the previous selection in this case.
+      {{0, 0, 0, 50}, {0, 0, 1, 5}},
+      // Selection action data for reverse selection where start selection
+      // index is greater than end selection index. GetSelection() should
+      // return the sanitized selection value where start selection index
+      // is less than end selection index.
+      {{1, 10, 0, 5}, {0, 5, 1, 10}},
+      {{0, 10, 0, 4}, {0, 4, 0, 10}},
+      // Selection action data with invalid page index.
+      // GetSelection() should return the previous selection in this case.
+      {{0, 10, 2, 4}, {0, 4, 0, 10}},
+  };
+
+  TestClient client;
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("hello_world2.pdf"));
+  ASSERT_TRUE(engine);
+
+  for (const auto& test_case : kTestCases) {
+    PP_PdfAccessibilityActionData action_data;
+    action_data.action = PP_PdfAccessibilityAction::PP_PDF_SET_SELECTION;
+    const Selection& sel_action = test_case.action;
+    action_data.selection_start_index.page_index = sel_action.start_page_index;
+    action_data.selection_start_index.char_index = sel_action.start_char_index;
+    action_data.selection_end_index.page_index = sel_action.end_page_index;
+    action_data.selection_end_index.char_index = sel_action.end_char_index;
+
+    engine->HandleAccessibilityAction(action_data);
+    Selection actual_selection;
+    engine->GetSelection(
+        &actual_selection.start_page_index, &actual_selection.start_char_index,
+        &actual_selection.end_page_index, &actual_selection.end_char_index);
+    const Selection& expected_selection = test_case.expected_result;
+    EXPECT_EQ(actual_selection.start_page_index,
+              expected_selection.start_page_index);
+    EXPECT_EQ(actual_selection.start_char_index,
+              expected_selection.start_char_index);
+    EXPECT_EQ(actual_selection.end_page_index,
+              expected_selection.end_page_index);
+    EXPECT_EQ(actual_selection.end_char_index,
+              expected_selection.end_char_index);
+  }
+}
+
 }  // namespace chrome_pdf

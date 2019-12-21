@@ -2028,6 +2028,14 @@ void PDFiumEngine::HandleAccessibilityAction(
       ScrollToGlobalPoint(action_data.target_rect, action_data.target_point);
       break;
     }
+    case PP_PdfAccessibilityAction::PP_PDF_SET_SELECTION: {
+      if (IsPageCharacterIndexInBounds(action_data.selection_start_index) &&
+          IsPageCharacterIndexInBounds(action_data.selection_end_index)) {
+        SetSelection(action_data.selection_start_index,
+                     action_data.selection_end_index);
+      }
+      break;
+    }
     default:
       NOTREACHED();
       break;
@@ -3544,6 +3552,12 @@ bool PDFiumEngine::PageIndexInBounds(int index) const {
   return index >= 0 && index < static_cast<int>(pages_.size());
 }
 
+bool PDFiumEngine::IsPageCharacterIndexInBounds(
+    const PP_PdfPageCharacterIndex& index) const {
+  return PageIndexInBounds(index.page_index) &&
+         pages_[index.page_index]->IsCharIndexInBounds(index.char_index);
+}
+
 float PDFiumEngine::GetToolbarHeightInScreenCoords() {
   return client_->GetToolbarHeightInScreenCoords();
 }
@@ -3552,6 +3566,40 @@ FPDF_BOOL PDFiumEngine::Pause_NeedToPauseNow(IFSDK_PAUSE* param) {
   PDFiumEngine* engine = static_cast<PDFiumEngine*>(param);
   return base::Time::Now() - engine->last_progressive_start_time_ >
          engine->progressive_paint_timeout_;
+}
+
+void PDFiumEngine::SetSelection(
+    const PP_PdfPageCharacterIndex& selection_start_index,
+    const PP_PdfPageCharacterIndex& selection_end_index) {
+  SelectionChangeInvalidator selection_invalidator(this);
+  selection_.clear();
+
+  PP_PdfPageCharacterIndex sel_start_index = selection_start_index;
+  PP_PdfPageCharacterIndex sel_end_index = selection_end_index;
+  if (sel_end_index.page_index < sel_start_index.page_index) {
+    std::swap(sel_end_index.page_index, sel_start_index.page_index);
+    std::swap(sel_end_index.char_index, sel_start_index.char_index);
+  }
+
+  if (sel_end_index.page_index == sel_start_index.page_index &&
+      sel_end_index.char_index < sel_start_index.char_index) {
+    std::swap(sel_end_index.char_index, sel_start_index.char_index);
+  }
+
+  for (uint32_t i = sel_start_index.page_index; i <= sel_end_index.page_index;
+       ++i) {
+    int32_t char_count = pages_[i]->GetCharCount();
+    if (char_count <= 0)
+      continue;
+    int32_t start_char_index = 0;
+    int32_t end_char_index = char_count;
+    if (i == sel_start_index.page_index)
+      start_char_index = sel_start_index.char_index;
+    if (i == sel_end_index.page_index)
+      end_char_index = sel_end_index.char_index;
+    selection_.push_back(PDFiumRange(pages_[i].get(), start_char_index,
+                                     end_char_index - start_char_index));
+  }
 }
 
 void PDFiumEngine::SetCaretPosition(const pp::Point& position) {

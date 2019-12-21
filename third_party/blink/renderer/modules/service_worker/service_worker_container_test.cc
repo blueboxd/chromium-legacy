@@ -193,8 +193,8 @@ class ServiceWorkerContainerTest : public PageTestBase {
     NavigateTo(KURL(NullURL(), url));
 
     if (url.StartsWith("https://") || url.StartsWith("http://localhost/")) {
-      GetDocument().SetSecureContextStateForTesting(
-          SecureContextState::kSecure);
+      GetDocument().SetSecureContextModeForTesting(
+          SecureContextMode::kSecureContext);
     }
   }
 

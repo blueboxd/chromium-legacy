@@ -27,7 +27,7 @@ android_library("java") {
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   srcjar_deps = [ ":java_enums_srcjar" ]
-  java_files = _jni_sources
+  sources = _jni_sources
 }
 
 source_set("crash_android") {
@@ -67,7 +67,7 @@ android_library("handler_java") {
     "//base:jni_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
-  java_files = _java_handler_jni_sources
+  sources = _java_handler_jni_sources
 }
 
 static_library("crashpad_main") {

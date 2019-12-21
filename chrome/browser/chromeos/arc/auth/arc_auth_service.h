@@ -65,8 +65,6 @@ class ArcAuthService : public KeyedService,
   // OS Account Manager.
   void GetGoogleAccountsInArc(GetGoogleAccountsInArcCallback callback);
 
-  void RequestPrimaryAccount(RequestPrimaryAccountCallback callback) override;
-
   // For supporting ArcServiceManager::GetService<T>().
   static const char kArcServiceName[];
 

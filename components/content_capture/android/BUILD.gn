@@ -26,7 +26,7 @@ android_library("java") {
     "//content/public/android:content_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
-  java_files = [
+  sources = [
     "java/src/org/chromium/components/content_capture/ContentCaptureConsumer.java",
     "java/src/org/chromium/components/content_capture/ContentCaptureConsumerImpl.java",
     "java/src/org/chromium/components/content_capture/ContentCaptureController.java",

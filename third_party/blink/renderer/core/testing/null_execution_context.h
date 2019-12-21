@@ -43,9 +43,6 @@ class NullExecutionContext : public GarbageCollected<NullExecutionContext>,
                              bool discard_duplicates) override {}
   void ExceptionThrown(ErrorEvent*) override {}
 
-  void SetIsSecureContext(bool);
-  bool IsSecureContext(String& error_message) const override;
-
   void SetUpSecurityContextForTesting();
 
   ResourceFetcher* Fetcher() const override { return nullptr; }
@@ -59,8 +56,6 @@ class NullExecutionContext : public GarbageCollected<NullExecutionContext>,
   BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() override;
 
  private:
-  bool is_secure_context_;
-
   KURL url_;
 
   // A dummy scheduler to ensure that the callers of

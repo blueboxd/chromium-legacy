@@ -252,7 +252,7 @@ if (is_android) {
       "//third_party/jsr-305:jsr_305_javalib",
     ]
     annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
-    java_files = [
+    sources = [
       "android/java/src/org/chromium/components/invalidation/InvalidationClientService.java",
       "android/java/src/org/chromium/components/invalidation/InvalidationService.java",
       "android/java/src/org/chromium/components/invalidation/PendingInvalidation.java",
@@ -285,13 +285,15 @@ if (is_android) {
       "//third_party/cacheinvalidation:cacheinvalidation_proto_java",
       "//third_party/junit",
     ]
-    java_files = [
+    sources = [
       "android/javatests/src/org/chromium/components/invalidation/InvalidationClientServiceTest.java",
       "android/javatests/src/org/chromium/components/invalidation/TestableInvalidationClientService.java",
     ]
   }
   junit_binary("components_invalidation_impl_junit_tests") {
-    java_files = [ "android/junit/src/org/chromium/components/invalidation/PendingInvalidationTest.java" ]
+    sources = [
+      "android/junit/src/org/chromium/components/invalidation/PendingInvalidationTest.java",
+    ]
     deps = [
       ":java",
       "//base:base_java",

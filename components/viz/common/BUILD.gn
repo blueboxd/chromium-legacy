@@ -440,9 +440,9 @@ if (is_android) {
     deps = [
       "//base:base_java",
     ]
-    java_files = [
-      "java/src/org/chromium/components/viz/common/display/DeJellyUtils.java",
+    sources = [
       "java/src/org/chromium/components/viz/common/VizSwitches.java",
+      "java/src/org/chromium/components/viz/common/display/DeJellyUtils.java",
     ]
   }
 

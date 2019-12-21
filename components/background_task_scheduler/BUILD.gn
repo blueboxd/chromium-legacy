@@ -24,11 +24,13 @@ if (is_android) {
   # related permissions for WebView while still wanting to avoid collision
   # between WebView and Chrome.
   android_library("background_task_scheduler_task_ids_java") {
-    java_files = [ "android/java/src/org/chromium/components/background_task_scheduler/TaskIds.java" ]
+    sources = [
+      "android/java/src/org/chromium/components/background_task_scheduler/TaskIds.java",
+    ]
   }
 
   android_library("background_task_scheduler_java") {
-    java_files = [
+    sources = [
       "android/java/src/org/chromium/components/background_task_scheduler/BackgroundTask.java",
       "android/java/src/org/chromium/components/background_task_scheduler/BackgroundTaskBroadcastReceiver.java",
       "android/java/src/org/chromium/components/background_task_scheduler/BackgroundTaskFactory.java",
@@ -67,12 +69,12 @@ if (is_android) {
   android_library("background_task_scheduler_javatests") {
     testonly = true
 
-    java_files = [
+    sources = [
       "android/javatests/src/org/chromium/components/background_task_scheduler/BackgroundTaskBroadcastReceiverTest.java",
       "android/javatests/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerImplWithMockTest.java",
-      "android/javatests/src/org/chromium/components/background_task_scheduler/MockBackgroundTaskSchedulerDelegate.java",
       "android/javatests/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerJobServiceTest.java",
       "android/javatests/src/org/chromium/components/background_task_scheduler/BundleToPersistableBundleConverterTest.java",
+      "android/javatests/src/org/chromium/components/background_task_scheduler/MockBackgroundTaskSchedulerDelegate.java",
     ]
 
     deps = [
@@ -91,11 +93,11 @@ if (is_android) {
   }
 
   junit_binary("components_background_task_scheduler_junit_tests") {
-    java_files = [
-      "android/junit/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerGcmNetworkManagerTest.java",
+    sources = [
       "android/junit/src/org/chromium/components/background_task_scheduler/BackgroundTaskGcmTaskServiceTest.java",
       "android/junit/src/org/chromium/components/background_task_scheduler/BackgroundTaskJobServiceTest.java",
       "android/junit/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerAlarmManagerTest.java",
+      "android/junit/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerGcmNetworkManagerTest.java",
       "android/junit/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerImplTest.java",
       "android/junit/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerPrefsTest.java",
       "android/junit/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerUmaTest.java",

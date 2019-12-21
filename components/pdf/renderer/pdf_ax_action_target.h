@@ -19,8 +19,13 @@ class PdfAccessibilityTree;
 // accessibility actions.
 class PdfAXActionTarget : public ui::AXActionTarget {
  public:
+  static const PdfAXActionTarget* FromAXActionTarget(
+      const ui::AXActionTarget* ax_action_target);
+
   PdfAXActionTarget(const ui::AXNode& plugin_node, PdfAccessibilityTree* tree);
   ~PdfAXActionTarget() override;
+
+  const ui::AXNode& AXNode() const { return target_plugin_node_; }
 
  protected:
   // AXActionTarget overrides.

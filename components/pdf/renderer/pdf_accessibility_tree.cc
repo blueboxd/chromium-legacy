@@ -521,8 +521,8 @@ void PdfAccessibilityTree::AddPageContent(
       uint32_t link_end_text_run_index =
           std::min(end_text_run_index, text_runs.size()) - 1;
       AddTextToAXNode(link.text_run_index, link_end_text_run_index, text_runs,
-                      chars, page_bounds, text_run_start_indices, link_node,
-                      &previous_on_line_node);
+                      chars, page_bounds, page_index, text_run_start_indices,
+                      link_node, &previous_on_line_node);
 
       para_node->relative_bounds.bounds.Union(
           link_node->relative_bounds.bounds);
@@ -557,8 +557,9 @@ void PdfAccessibilityTree::AddPageContent(
       uint32_t highlight_end_text_run_index =
           std::min(end_text_run_index, text_runs.size()) - 1;
       AddTextToAXNode(highlight.text_run_index, highlight_end_text_run_index,
-                      text_runs, chars, page_bounds, text_run_start_indices,
-                      highlight_node, &previous_on_line_node);
+                      text_runs, chars, page_bounds, page_index,
+                      text_run_start_indices, highlight_node,
+                      &previous_on_line_node);
 
       para_node->relative_bounds.bounds.Union(
           highlight_node->relative_bounds.bounds);
@@ -566,11 +567,13 @@ void PdfAccessibilityTree::AddPageContent(
       text_run_index =
           std::max<size_t>(highlight_end_text_run_index, text_run_index);
     } else {
+      PP_PdfPageCharacterIndex page_char_index = {
+          page_index, text_run_start_indices[text_run_index]};
+
       // This node is for the text inside the paragraph, it includes
       // the text of all of the text runs.
       if (!static_text_node) {
-        static_text_node =
-            CreateStaticTextNode(text_run_start_indices[text_run_index]);
+        static_text_node = CreateStaticTextNode(page_char_index);
         para_node->child_ids.push_back(static_text_node->id);
       }
 
@@ -578,7 +581,7 @@ void PdfAccessibilityTree::AddPageContent(
           text_runs[text_run_index];
       // Add this text run to the current static text node.
       ui::AXNodeData* inline_text_box_node = CreateInlineTextBoxNode(
-          text_run, chars, text_run_start_indices[text_run_index], page_bounds);
+          text_run, chars, page_char_index, page_bounds);
       static_text_node->child_ids.push_back(inline_text_box_node->id);
 
       static_text += inline_text_box_node->GetStringAttribute(
@@ -710,8 +713,8 @@ void PdfAccessibilityTree::FindNodeOffset(uint32_t page_index,
         continue;
       // Look up the page-relative character index for static nodes from a map
       // we built while the document was initially built.
-      DCHECK(base::Contains(node_id_to_char_index_in_page_, static_text->id()));
-      uint32_t char_index = node_id_to_char_index_in_page_[static_text->id()];
+      auto iter = node_id_to_page_char_index_.find(static_text->id());
+      uint32_t char_index = iter->second.char_index;
       uint32_t len = static_text->data()
                          .GetStringAttribute(ax::mojom::StringAttribute::kName)
                          .size();
@@ -725,6 +728,18 @@ void PdfAccessibilityTree::FindNodeOffset(uint32_t page_index,
       }
     }
   }
+}
+
+bool PdfAccessibilityTree::FindCharacterOffset(
+    const ui::AXNode& node,
+    uint32_t char_offset_in_node,
+    PP_PdfPageCharacterIndex* page_char_index) const {
+  auto iter = node_id_to_page_char_index_.find(GetId(&node));
+  if (iter == node_id_to_page_char_index_.end())
+    return false;
+  page_char_index->char_index = iter->second.char_index + char_offset_in_node;
+  page_char_index->page_index = iter->second.page_index;
+  return true;
 }
 
 std::string PdfAccessibilityTree::GetTextRunCharsAsUTF8(
@@ -799,21 +814,22 @@ ui::AXNodeData* PdfAccessibilityTree::CreateParagraphNode(
 }
 
 ui::AXNodeData* PdfAccessibilityTree::CreateStaticTextNode(
-    uint32_t char_index) {
+    const PP_PdfPageCharacterIndex& page_char_index) {
   ui::AXNodeData* static_text_node = CreateNode(ax::mojom::Role::kStaticText);
-  node_id_to_char_index_in_page_[static_text_node->id] = char_index;
+  node_id_to_page_char_index_.emplace(static_text_node->id, page_char_index);
   return static_text_node;
 }
 
 ui::AXNodeData* PdfAccessibilityTree::CreateInlineTextBoxNode(
     const ppapi::PdfAccessibilityTextRunInfo& text_run,
     const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
-    uint32_t char_index,
+    const PP_PdfPageCharacterIndex& page_char_index,
     const gfx::RectF& page_bounds) {
   ui::AXNodeData* inline_text_box_node =
       CreateNode(ax::mojom::Role::kInlineTextBox);
 
-  std::string chars_utf8 = GetTextRunCharsAsUTF8(text_run, chars, char_index);
+  std::string chars_utf8 =
+      GetTextRunCharsAsUTF8(text_run, chars, page_char_index.char_index);
   inline_text_box_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
                                            chars_utf8);
   inline_text_box_node->AddIntAttribute(ax::mojom::IntAttribute::kTextDirection,
@@ -839,10 +855,12 @@ ui::AXNodeData* PdfAccessibilityTree::CreateInlineTextBoxNode(
   inline_text_box_node->relative_bounds.bounds =
       ToGfxRectF(text_run.bounds) + page_bounds.OffsetFromOrigin();
   std::vector<int32_t> char_offsets =
-      GetTextRunCharOffsets(text_run, chars, char_index);
+      GetTextRunCharOffsets(text_run, chars, page_char_index.char_index);
   inline_text_box_node->AddIntListAttribute(
       ax::mojom::IntListAttribute::kCharacterOffsets, char_offsets);
   AddWordStartsAndEnds(inline_text_box_node);
+  node_id_to_page_char_index_.emplace(inline_text_box_node->id,
+                                      page_char_index);
   return inline_text_box_node;
 }
 
@@ -897,11 +915,13 @@ void PdfAccessibilityTree::AddTextToAXNode(
     const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
     const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
     const gfx::RectF& page_bounds,
+    uint32_t page_index,
     const std::vector<uint32_t>& text_run_start_indices,
     ui::AXNodeData* ax_node,
     ui::AXNodeData** previous_on_line_node) {
-  ui::AXNodeData* ax_static_text_node =
-      CreateStaticTextNode(text_run_start_indices[start_text_run_index]);
+  PP_PdfPageCharacterIndex page_char_index = {
+      page_index, text_run_start_indices[start_text_run_index]};
+  ui::AXNodeData* ax_static_text_node = CreateStaticTextNode(page_char_index);
   ax_node->child_ids.push_back(ax_static_text_node->id);
   // Accumulate the text of the node.
   std::string ax_name;
@@ -911,9 +931,10 @@ void PdfAccessibilityTree::AddTextToAXNode(
        text_run_index <= end_text_run_index; ++text_run_index) {
     const ppapi::PdfAccessibilityTextRunInfo& text_run =
         text_runs[text_run_index];
+    page_char_index.char_index = text_run_start_indices[text_run_index];
     // Add this text run to the current static text node.
-    ui::AXNodeData* inline_text_box_node = CreateInlineTextBoxNode(
-        text_run, chars, text_run_start_indices[text_run_index], page_bounds);
+    ui::AXNodeData* inline_text_box_node =
+        CreateInlineTextBoxNode(text_run, chars, page_char_index, page_bounds);
     ax_static_text_node->child_ids.push_back(inline_text_box_node->id);
 
     ax_static_text_node->relative_bounds.bounds.Union(

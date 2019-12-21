@@ -112,7 +112,9 @@ static_library("internal") {
 
 if (is_android) {
   android_library("internal_java") {
-    java_files = [ "android/java/src/org/chromium/components/download/internal/BatteryStatusListenerAndroid.java" ]
+    sources = [
+      "android/java/src/org/chromium/components/download/internal/BatteryStatusListenerAndroid.java",
+    ]
 
     deps = [
       "//base:base_java",

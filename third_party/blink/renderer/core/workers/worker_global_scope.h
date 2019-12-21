@@ -117,7 +117,6 @@ class CORE_EXPORT WorkerGlobalScope
   scheduler::WorkerScheduler* GetScheduler() final;
 
   void AddConsoleMessageImpl(ConsoleMessage*, bool discard_duplicates) final;
-  bool IsSecureContext(String& error_message) const override;
   BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() final;
 
   OffscreenFontSelector* GetFontSelector() { return font_selector_; }

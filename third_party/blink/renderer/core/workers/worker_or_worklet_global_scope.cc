@@ -181,9 +181,15 @@ WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
     : ExecutionContext(isolate,
                        agent,
                        MakeGarbageCollected<OriginTrialContext>(),
-                       std::move(origin),
+                       origin,
                        WebSandboxFlags::kNone,
-                       nullptr),
+                       nullptr,
+                       // Until there are APIs that are available in workers or
+                       // or worklets that require a privileged context test
+                       // that checks ancestors, just do a simple check here.
+                       origin->IsPotentiallyTrustworthy()
+                           ? SecureContextMode::kSecureContext
+                           : SecureContextMode::kInsecureContext),
       off_main_thread_fetch_option_(off_main_thread_fetch_option),
       name_(name),
       parent_devtools_token_(parent_devtools_token),

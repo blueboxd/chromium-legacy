@@ -6,7 +6,6 @@
 
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/multi_user_window_manager.h"
-#include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
@@ -359,13 +358,10 @@ void AppServiceAppWindowArcTracker::RemoveCandidateWindow(
 }
 
 void AppServiceAppWindowArcTracker::OnItemDelegateDiscarded(
-    const ash::ShelfID& shelf_id,
-    ash::ShelfItemDelegate* delegate) {
+    const ash::ShelfID& shelf_id) {
   arc::ArcAppShelfId app_shelf_id =
       arc::ArcAppShelfId::FromString(shelf_id.app_id);
-  auto it = app_shelf_group_to_controller_map_.find(app_shelf_id);
-  if (static_cast<ash::ShelfItemDelegate*>(it->second) == delegate)
-    app_shelf_group_to_controller_map_.erase(app_shelf_id);
+  app_shelf_group_to_controller_map_.erase(app_shelf_id);
 }
 
 ash::ShelfID AppServiceAppWindowArcTracker::GetShelfId(int task_id) const {

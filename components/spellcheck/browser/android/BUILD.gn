@@ -17,5 +17,7 @@ android_library("java") {
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 
-  java_files = [ "java/src/org/chromium/components/spellcheck/SpellCheckerSessionBridge.java" ]
+  sources = [
+    "java/src/org/chromium/components/spellcheck/SpellCheckerSessionBridge.java",
+  ]
 }

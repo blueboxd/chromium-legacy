@@ -730,45 +730,58 @@ video_encode_accelerator_unittest. Encoded with vp9 lossless:
 
 ### ImageProcessor Test Files
 
-#### bear\_320x192.i420.yuv
+#### bear\_320x192.i420.yuv.webm
 First frame of bear\_320x192\_40frames.yuv for image\_processor_test.
+To get the uncompressed yuv, execute the following command.
+`vpxdec bear_320x192.i420.yuv.webm --rawvideo -o bear_320x192.i420.yuv`
 
 #### bear\_320x192.i420.yuv.json
 Metadata describing bear\_320x192.i420.yuv.
 
 #### bear\_320x192.nv12.yuv
-First frame of bear\_320x192\_40frames.nv12.yuv for image\_processor_test.
+First frame of bear\_320x192\_40frames.yuv for image\_processor_test and
+formatted nv12.
+To get the uncompressed yuv, execute the following command.
+`ffmpeg -s:v 320x192 -pix_fmt yuv420p -i bear_320x192.i420.yuv  -c:v rawvideo -pix_fmt nv12 bear_320x192.nv12.yuv`
 
 #### bear\_320x192.nv12.yuv.json
 Metadata describing bear\_320x192.nv12.yuv.
 
 #### bear\_320x192.yv12.yuv
-First frame of bear\_320x192\_40frames.yv12.yuv for image\_processor_test.
+First frame of bear\_320x192\_40frames.yv12.yuv for image\_processor_test and
+formatted yv12.
+To get the uncompressed yuv, execute the following command.
+`ffmpeg -s:v 320x192 -pix_fmt yuv420p -i bear_320x192.i420.yuv  -c:v rawvideo -pix_fmt yuv420p -vf shuffleplanes=0:2:1 bear_320x192.yv12.2.yuv`
 
 #### bear\_320x192.rgba
-RAW RGBA format data. This data is created from bear\_320x192.i420.yuv by the
-following command. Alpha channel is always 0xFF because of that.
+RAW RGBA format data. This data is created from bear\_320x192.i420.yuv.
+Alpha channel is always 0xFF.
+To get the uncompressed yuv, execute the following command.
 `ffmpeg -s 320x192 -pix_fmt yuv420p -i bear_320x192.i420.yuv -vcodec rawvideo -f image2 -pix_fmt rgba bear_320x192.rgba`
 
 #### bear\_320x192.bgra
-RAW BGRA format data. This data is created from bear\_320x192.i420.yuv by the
-following command. Alpha channel is always 0xFF because of that.
+RAW BGRA format data. This data is created from bear\_320x192.i420.yuv.
+Alpha channel is always 0xFF.
+To get the uncompressed yuv, execute the following command.
 `ffmpeg -s 320x192 -pix_fmt yuv420p -i bear_320x192.i420.yuv -vcodec rawvideo -f image2 -pix_fmt rgba bear_320x192.bgra`
-
 
 #### puppets-1280x720.nv12.yuv
 RAW NV12 format data. The width and height are 1280 and 720, respectively.
 This data is created from peach\_pi-1280x720.jpg by the following command.
 `ffmpeg -i peach_pi-1280x720.jpg -s 1280x720 -pix_fmt nv12 puppets-1280x720.nv12.yuv`
 
+To get the uncompressed yuv, execute the following commands.
+`vpxdec puppets-1280x720.i420.yuv.webm --rawvideo -o puppets-1280x720.i420.yuv`
+`ffmpeg -s:v 1280x720 -pix_fmt yuv420p -i puppets-1280x720.i420.yuv -c:v rawvideo -pix_fmt nv12 puppets-1280x720.nv12.yuv`
+
 #### puppets-640x360.nv12.yuv
 RAW NV12 format data. The width and height are 640 and 360, respectively.
-This data is created from puppets-1280x720.nv12.yuv by the following command.
+To get the uncompressed yuv, execute the following command.
 `ffmpeg -s:v 1280x720 -pix_fmt nv12 -i puppets-1280x720.nv12.yuv -vf scale=640x360 -c:v rawvideo -pix_fmt nv12 puppets-640x360.nv12.yuv`
 
 #### puppets-320x180.nv12.yuv
 RAW NV12 format data. The width and height are 320 and 180, respectively.
-This data is created from puppets-1280x720.nv12.yuv by the following command.
+To get the uncompressed yuv, execute the following command.
 `ffmpeg -s:v 1280x720 -pix_fmt nv12 -i puppets-1280x720.nv12.yuv -vf scale=320x180 -c:v rawvideo -pix_fmt nv12 puppets-320x180.nv12.yuv`
 
 ###  VP9 parser test files:

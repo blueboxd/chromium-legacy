@@ -691,6 +691,10 @@ int PDFiumPage::GetCharCount() {
   return FPDFText_CountChars(GetTextPage());
 }
 
+bool PDFiumPage::IsCharIndexInBounds(int index) {
+  return index >= 0 && index < GetCharCount();
+}
+
 PDFiumPage::Area PDFiumPage::GetLinkTarget(FPDF_LINK link, LinkTarget* target) {
   FPDF_DEST dest_link = FPDFLink_GetDest(engine_->doc(), link);
   if (dest_link)

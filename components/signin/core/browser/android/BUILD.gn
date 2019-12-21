@@ -26,14 +26,14 @@ android_library("java") {
     "//ui/android:ui_java",
   ]
 
-  java_files = [
+  sources = [
     "java/src/org/chromium/components/signin/AccountIdProvider.java",
     "java/src/org/chromium/components/signin/AccountManagerDelegate.java",
     "java/src/org/chromium/components/signin/AccountManagerDelegateException.java",
     "java/src/org/chromium/components/signin/AccountManagerFacade.java",
     "java/src/org/chromium/components/signin/AccountManagerResult.java",
-    "java/src/org/chromium/components/signin/AccountsChangeObserver.java",
     "java/src/org/chromium/components/signin/AccountTrackerService.java",
+    "java/src/org/chromium/components/signin/AccountsChangeObserver.java",
     "java/src/org/chromium/components/signin/AuthException.java",
     "java/src/org/chromium/components/signin/ChildAccountInfoFetcher.java",
     "java/src/org/chromium/components/signin/ChildAccountStatus.java",
@@ -41,22 +41,22 @@ android_library("java") {
     "java/src/org/chromium/components/signin/ConsistencyCookieManager.java",
     "java/src/org/chromium/components/signin/GmsAvailabilityException.java",
     "java/src/org/chromium/components/signin/GmsJustUpdatedException.java",
-    "java/src/org/chromium/components/signin/util/PatternMatcher.java",
     "java/src/org/chromium/components/signin/MutableObservableValue.java",
     "java/src/org/chromium/components/signin/ObservableValue.java",
     "java/src/org/chromium/components/signin/ProfileDataSource.java",
     "java/src/org/chromium/components/signin/SigninActivityMonitor.java",
     "java/src/org/chromium/components/signin/SystemAccountManagerDelegate.java",
+    "java/src/org/chromium/components/signin/util/PatternMatcher.java",
   ]
 
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
 
 junit_binary("components_signin_junit_tests") {
-  java_files = [
+  sources = [
     "junit/src/org/chromium/components/signin/test/AccountManagerFacadeRobolectricTest.java",
-    "junit/src/org/chromium/components/signin/test/PatternMatcherTest.java",
     "junit/src/org/chromium/components/signin/test/ObservableValueTest.java",
+    "junit/src/org/chromium/components/signin/test/PatternMatcherTest.java",
   ]
   deps = [
     ":java",
@@ -83,7 +83,9 @@ android_library("signin_javatests") {
     "//third_party/junit",
   ]
 
-  java_files = [ "javatests/src/org/chromium/components/signin/test/AccountManagerFacadeTest.java" ]
+  sources = [
+    "javatests/src/org/chromium/components/signin/test/AccountManagerFacadeTest.java",
+  ]
 }
 
 android_library("signin_java_test_support") {
@@ -97,7 +99,7 @@ android_library("signin_java_test_support") {
     "//third_party/junit",
   ]
 
-  java_files = [
+  sources = [
     "javatests/src/org/chromium/components/signin/test/util/AccountHolder.java",
     "javatests/src/org/chromium/components/signin/test/util/AccountManagerTestRule.java",
     "javatests/src/org/chromium/components/signin/test/util/FakeAccountManagerDelegate.java",

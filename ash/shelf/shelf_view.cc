@@ -619,7 +619,7 @@ void ShelfView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 
 bool ShelfView::OnKeyPressed(const ui::KeyEvent& event) {
   if (event.IsControlDown() &&
-      ash::keyboard_util::IsArrowKeyCode(event.key_code())) {
+      keyboard_util::IsArrowKeyCode(event.key_code())) {
     bool swap_with_next = (event.key_code() == ui::VKEY_DOWN ||
                            event.key_code() == ui::VKEY_RIGHT);
     SwapButtons(GetFocusManager()->GetFocusedView(), swap_with_next);

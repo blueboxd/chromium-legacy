@@ -1466,8 +1466,8 @@ TEST_F(ShelfLayoutManagerTest, VisibleInOverview) {
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   // Tests that the shelf is visible when in overview mode
   overview_controller->StartOverview();
-  ash::ShellTestApi().WaitForOverviewAnimationState(
-      ash::OverviewAnimationState::kEnterAnimationComplete);
+  ShellTestApi().WaitForOverviewAnimationState(
+      OverviewAnimationState::kEnterAnimationComplete);
 
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
@@ -1476,8 +1476,8 @@ TEST_F(ShelfLayoutManagerTest, VisibleInOverview) {
 
   // Test that on exiting overview mode, the shelf returns to auto hide state.
   overview_controller->EndOverview();
-  ash::ShellTestApi().WaitForOverviewAnimationState(
-      ash::OverviewAnimationState::kExitAnimationComplete);
+  ShellTestApi().WaitForOverviewAnimationState(
+      OverviewAnimationState::kExitAnimationComplete);
 
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
@@ -1960,20 +1960,19 @@ TEST_P(ShelfLayoutManagerTest, MouseDrag) {
   gfx::Point target_point = gfx::Point(x, 0);
 
   auto test_procedure = [this, &start_point, &target_point]() {
-    GetAppListTestHelper()->CheckState(ash::AppListViewState::kClosed);
+    GetAppListTestHelper()->CheckState(AppListViewState::kClosed);
 
     // Drag AppListView from bottom to top. Check that the final state of
     // AppList is kFullscreenAllApps.
     MouseDragShelfTo(start_point, target_point);
     GetAppListTestHelper()->WaitUntilIdle();
-    GetAppListTestHelper()->CheckState(
-        ash::AppListViewState::kFullscreenAllApps);
+    GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
 
     // Drag AppListView from top to bottom. Check that the AppList is closed
     // after dragging.
     MouseDragShelfTo(target_point, start_point);
     GetAppListTestHelper()->WaitUntilIdle();
-    GetAppListTestHelper()->CheckState(ash::AppListViewState::kClosed);
+    GetAppListTestHelper()->CheckState(AppListViewState::kClosed);
   };
 
   {
@@ -2029,12 +2028,12 @@ TEST_P(ShelfLayoutManagerTest, FlingUpOnShelfForAppList) {
             -(AppListView::kDragVelocityFromShelfThreshold + 10));
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
-  GetAppListTestHelper()->CheckState(ash::AppListViewState::kFullscreenAllApps);
+  GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
 
   // Closing the app list.
   GetAppListTestHelper()->DismissAndRunLoop();
   GetAppListTestHelper()->CheckVisibility(false);
-  GetAppListTestHelper()->CheckState(ash::AppListViewState::kClosed);
+  GetAppListTestHelper()->CheckState(AppListViewState::kClosed);
 
   // Fling down that exceeds the velocity threshold should close the app list.
   StartScroll(start);
@@ -2043,7 +2042,7 @@ TEST_P(ShelfLayoutManagerTest, FlingUpOnShelfForAppList) {
             AppListView::kDragVelocityFromShelfThreshold + 10);
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(false);
-  GetAppListTestHelper()->CheckState(ash::AppListViewState::kClosed);
+  GetAppListTestHelper()->CheckState(AppListViewState::kClosed);
 
   // Fling the app list not exceed the velocity threshold, the state depends on
   // the drag amount.
@@ -2053,14 +2052,14 @@ TEST_P(ShelfLayoutManagerTest, FlingUpOnShelfForAppList) {
             -(AppListView::kDragVelocityFromShelfThreshold - 10));
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
-  GetAppListTestHelper()->CheckState(ash::AppListViewState::kPeeking);
+  GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
 }
 
 // Tests that duplicate swipe up from bottom bezel should not make app list
 // undraggable. (See https://crbug.com/896934)
 TEST_P(ShelfLayoutManagerTest, DuplicateDragUpFromBezel) {
   GetAppListTestHelper()->CheckVisibility(false);
-  GetAppListTestHelper()->CheckState(ash::AppListViewState::kClosed);
+  GetAppListTestHelper()->CheckState(AppListViewState::kClosed);
 
   // Start the drag from the bottom bezel to the area that snaps to fullscreen
   // state.
@@ -2077,13 +2076,13 @@ TEST_P(ShelfLayoutManagerTest, DuplicateDragUpFromBezel) {
   generator->GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
-  GetAppListTestHelper()->CheckState(ash::AppListViewState::kFullscreenAllApps);
+  GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
 
   // Start the same drag event from bezel.
   generator->GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
-  GetAppListTestHelper()->CheckState(ash::AppListViewState::kFullscreenAllApps);
+  GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
 
   // Start the drag from top screen to the area that snaps to closed state. (The
   // launcher is still draggable now.)
@@ -2094,7 +2093,7 @@ TEST_P(ShelfLayoutManagerTest, DuplicateDragUpFromBezel) {
   generator->GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(false);
-  GetAppListTestHelper()->CheckState(ash::AppListViewState::kClosed);
+  GetAppListTestHelper()->CheckState(AppListViewState::kClosed);
 }
 
 // Change the shelf alignment during dragging should dismiss the app list.
@@ -2138,7 +2137,7 @@ TEST_P(ShelfLayoutManagerTest, SwipingUpOnShelfInLaptopModeForAppList) {
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(false);
-  GetAppListTestHelper()->CheckState(ash::AppListViewState::kClosed);
+  GetAppListTestHelper()->CheckState(AppListViewState::kClosed);
 
   // Swiping up more than the close threshold but less than peeking threshold
   // should keep the app list at PEEKING state.
@@ -2148,12 +2147,12 @@ TEST_P(ShelfLayoutManagerTest, SwipingUpOnShelfInLaptopModeForAppList) {
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
-  GetAppListTestHelper()->CheckState(ash::AppListViewState::kPeeking);
+  GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
 
   // Closing the app list.
   GetAppListTestHelper()->DismissAndRunLoop();
   GetAppListTestHelper()->CheckVisibility(false);
-  GetAppListTestHelper()->CheckState(ash::AppListViewState::kClosed);
+  GetAppListTestHelper()->CheckState(AppListViewState::kClosed);
 
   // Swiping up more than the peeking threshold should keep the app list at
   // FULLSCREEN_ALL_APPS state.
@@ -2163,12 +2162,12 @@ TEST_P(ShelfLayoutManagerTest, SwipingUpOnShelfInLaptopModeForAppList) {
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
-  GetAppListTestHelper()->CheckState(ash::AppListViewState::kFullscreenAllApps);
+  GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
 
   // Closing the app list.
   GetAppListTestHelper()->DismissAndRunLoop();
   GetAppListTestHelper()->CheckVisibility(false);
-  GetAppListTestHelper()->CheckState(ash::AppListViewState::kClosed);
+  GetAppListTestHelper()->CheckState(AppListViewState::kClosed);
 
   shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
   // Create a normal unmaximized window, the auto-hide shelf should be hidden.
@@ -5764,7 +5763,7 @@ class DimShelfLayoutManagerTest : public DimShelfLayoutManagerTestBase,
   void SetUp() override {
     if (GetParam()) {
       base::CommandLine::ForCurrentProcess()->AppendSwitch(
-          ash::switches::kEnableDimShelf);
+          switches::kEnableDimShelf);
     }
     DimShelfLayoutManagerTestBase::SetUp();
   }
@@ -5877,7 +5876,7 @@ class HotseatDimShelfLayoutManagerTest
     }
 
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        ash::switches::kEnableDimShelf);
+        switches::kEnableDimShelf);
     DimShelfLayoutManagerTestBase::SetUp();
   }
 

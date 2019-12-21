@@ -325,19 +325,6 @@ CoreProbeSink* WorkerGlobalScope::GetProbeSink() {
   return nullptr;
 }
 
-bool WorkerGlobalScope::IsSecureContext(String& error_message) const {
-  // Until there are APIs that are available in workers and that
-  // require a privileged context test that checks ancestors, just do
-  // a simple check here. Once we have a need for a real
-  // |isSecureContext| check here, we can check the responsible
-  // document for a privileged context at worker creation time, pass
-  // it in via WorkerThreadStartupData, and check it here.
-  if (GetSecurityOrigin()->IsPotentiallyTrustworthy())
-    return true;
-  error_message = GetSecurityOrigin()->IsPotentiallyTrustworthyErrorMessage();
-  return false;
-}
-
 BrowserInterfaceBrokerProxy& WorkerGlobalScope::GetBrowserInterfaceBroker() {
   return browser_interface_broker_proxy_;
 }

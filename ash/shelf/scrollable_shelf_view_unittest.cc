@@ -50,7 +50,7 @@ class TestShelfItemDelegate : public ShelfItemDelegate {
   // ShelfItemDelegate:
   void ItemSelected(std::unique_ptr<ui::Event> event,
                     int64_t display_id,
-                    ash::ShelfLaunchSource source,
+                    ShelfLaunchSource source,
                     ItemSelectedCallback callback) override {
     std::move(callback).Run(SHELF_ACTION_WINDOW_ACTIVATED, {});
   }

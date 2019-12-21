@@ -25,21 +25,11 @@ NullExecutionContext::NullExecutionContext(
           origin_trial_context,
           nullptr,
           WebSandboxFlags::kNone,
-          nullptr),
-      is_secure_context_(true),
+          nullptr,
+          SecureContextMode::kSecureContext),
       scheduler_(scheduler::CreateDummyFrameScheduler()) {}
 
 NullExecutionContext::~NullExecutionContext() {}
-
-void NullExecutionContext::SetIsSecureContext(bool is_secure_context) {
-  is_secure_context_ = is_secure_context;
-}
-
-bool NullExecutionContext::IsSecureContext(String& error_message) const {
-  if (!is_secure_context_)
-    error_message = "A secure context is required";
-  return is_secure_context_;
-}
 
 void NullExecutionContext::SetUpSecurityContextForTesting() {
   auto* policy = MakeGarbageCollected<ContentSecurityPolicy>();

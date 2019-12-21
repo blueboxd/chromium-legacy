@@ -52,7 +52,7 @@ jumbo_source_set("unit_tests") {
 
 if (is_android) {
   android_library("public_java") {
-    java_files = [
+    sources = [
       "android/java/src/org/chromium/components/feature_engagement/EventConstants.java",
       "android/java/src/org/chromium/components/feature_engagement/FeatureConstants.java",
       "android/java/src/org/chromium/components/feature_engagement/Tracker.java",

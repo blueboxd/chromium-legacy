@@ -112,9 +112,6 @@ mojom::ChromeAccountType GetAccountType(const Profile* profile) {
   if (profile->IsChild())
     return mojom::ChromeAccountType::CHILD_ACCOUNT;
 
-  if (IsActiveDirectoryUserForProfile(profile))
-    return mojom::ChromeAccountType::ACTIVE_DIRECTORY_ACCOUNT;
-
   chromeos::DemoSession* demo_session = chromeos::DemoSession::Get();
   if (demo_session && demo_session->started()) {
     // Internally, demo mode is implemented as a public session, and should
@@ -224,10 +221,6 @@ void TriggerAccountManagerMigrationsIfRequired(Profile* profile) {
   migrator->Start();
 }
 
-std::string GetAuthenticatedUsernameUTF8(Profile* profile) {
-  return base::UTF16ToUTF8(signin_ui_util::GetAuthenticatedUsername(profile));
-}
-
 }  // namespace
 
 // static
@@ -278,12 +271,6 @@ void ArcAuthService::GetGoogleAccountsInArc(
   }
 
   DispatchAccountsInArc(std::move(callback));
-}
-
-void ArcAuthService::RequestPrimaryAccount(
-    RequestPrimaryAccountCallback callback) {
-  std::move(callback).Run(GetAuthenticatedUsernameUTF8(profile_),
-                          GetAccountType(profile_));
 }
 
 void ArcAuthService::OnConnectionReady() {
@@ -672,7 +659,8 @@ void ArcAuthService::OnPrimaryAccountAuthCodeFetched(
   DeletePendingTokenRequest(fetcher);
 
   if (success) {
-    const std::string& full_account_id = GetAuthenticatedUsernameUTF8(profile_);
+    const std::string& full_account_id =
+        base::UTF16ToUTF8(signin_ui_util::GetAuthenticatedUsername(profile_));
     std::move(callback).Run(
         mojom::ArcSignInStatus::SUCCESS,
         CreateAccountInfo(!IsArcOptInVerificationDisabled(), auth_code,

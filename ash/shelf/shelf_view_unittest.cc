@@ -2883,7 +2883,7 @@ INSTANTIATE_TEST_SUITE_P(All, ShelfViewMenuTest, testing::Bool());
 TEST_P(ShelfViewMenuTest, ShelfViewMenuAnchorPoint) {
   const ShelfAppButton* shelf_button = GetButtonByID(AddApp());
   const bool context_menu = GetParam();
-  EXPECT_EQ(ash::ShelfAlignment::kBottom, GetPrimaryShelf()->alignment());
+  EXPECT_EQ(ShelfAlignment::kBottom, GetPrimaryShelf()->alignment());
 
   // Test for bottom shelf.
   EXPECT_EQ(
@@ -2892,7 +2892,7 @@ TEST_P(ShelfViewMenuTest, ShelfViewMenuAnchorPoint) {
           .y());
 
   // Test for left shelf.
-  GetPrimaryShelf()->SetAlignment(ash::ShelfAlignment::kLeft);
+  GetPrimaryShelf()->SetAlignment(ShelfAlignment::kLeft);
 
   EXPECT_EQ(
       shelf_button->GetBoundsInScreen().x(),
@@ -2900,7 +2900,7 @@ TEST_P(ShelfViewMenuTest, ShelfViewMenuAnchorPoint) {
           .x());
 
   // Test for right shelf.
-  GetPrimaryShelf()->SetAlignment(ash::ShelfAlignment::kRight);
+  GetPrimaryShelf()->SetAlignment(ShelfAlignment::kRight);
 
   EXPECT_EQ(
       shelf_button->GetBoundsInScreen().x(),

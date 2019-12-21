@@ -122,6 +122,10 @@ class PDFiumPage {
   // Gets the number of characters in the page.
   int GetCharCount();
 
+  // Returns true if the given |char_index| lies within the character range
+  // of the page.
+  bool IsCharIndexInBounds(int char_index);
+
   // Given a rectangle in page coordinates, computes the range of continuous
   // characters which lie inside that rectangle. Returns false without
   // modifying the out parameters if no character lies inside the rectangle.

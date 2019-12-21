@@ -12,7 +12,9 @@ android_library("dom_distiller_content_java") {
     "//content/public/android:content_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
-  java_files = [ "java/src/org/chromium/components/dom_distiller/content/DistillablePageUtils.java" ]
+  sources = [
+    "java/src/org/chromium/components/dom_distiller/content/DistillablePageUtils.java",
+  ]
 }
 
 generate_jni("jni_headers") {

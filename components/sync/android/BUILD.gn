@@ -19,7 +19,7 @@ android_library("sync_java") {
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   srcjar_deps = [ ":java_enums" ]
-  java_files = [
+  sources = [
     "java/src/org/chromium/components/sync/AndroidSyncSettings.java",
     "java/src/org/chromium/components/sync/ModelTypeHelper.java",
     "java/src/org/chromium/components/sync/Passphrase.java",
@@ -49,7 +49,7 @@ android_library("sync_javatests") {
     "//third_party/jsr-305:jsr_305_javalib",
     "//third_party/junit",
   ]
-  java_files = [
+  sources = [
     "javatests/src/org/chromium/components/sync/AndroidSyncSettingsTest.java",
     "javatests/src/org/chromium/components/sync/notifier/InvalidationClientNameProviderTest.java",
     "javatests/src/org/chromium/components/sync/notifier/InvalidationPreferencesTest.java",

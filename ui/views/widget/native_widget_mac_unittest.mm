@@ -2081,46 +2081,6 @@ TEST_F(NativeWidgetMacTest, ChangeFocusOnChangeFirstResponder) {
   widget->CloseNow();
 }
 
-// Ensure reparented native view has correct bounds.
-TEST_F(NativeWidgetMacTest, ReparentNativeViewBounds) {
-  Widget* parent = CreateTopLevelFramelessPlatformWidget();
-  gfx::Rect parent_rect(100, 100, 300, 200);
-  parent->SetBounds(parent_rect);
-
-  Widget::InitParams params(Widget::InitParams::TYPE_CONTROL);
-  params.parent = parent->GetNativeView();
-  Widget* widget = new Widget;
-  widget->Init(std::move(params));
-  widget->SetContentsView(new View);
-
-  NSView* child_view = widget->GetNativeView().GetNativeNSView();
-  Widget::ReparentNativeView(child_view, parent->GetNativeView());
-
-  // Reparented content view has the size of the Widget that created it.
-  gfx::Rect widget_rect(0, 0, 200, 100);
-  widget->SetBounds(widget_rect);
-  EXPECT_EQ(200, NSWidth([child_view frame]));
-  EXPECT_EQ(100, NSHeight([child_view frame]));
-
-  // Reparented widget has bounds relative to the native parent
-  NSRect native_parent_rect = NSMakeRect(50, 100, 200, 70);
-  base::scoped_nsobject<NSView> native_parent(
-      [[NSView alloc] initWithFrame:native_parent_rect]);
-  [parent->GetNativeView().GetNativeNSView() addSubview:native_parent];
-
-  gfx::Rect screen_rect = widget->GetWindowBoundsInScreen();
-  EXPECT_EQ(100, screen_rect.x());
-  EXPECT_EQ(100, screen_rect.y());
-
-  Widget::ReparentNativeView(child_view, native_parent.get());
-  widget->SetBounds(widget_rect);
-  screen_rect = widget->GetWindowBoundsInScreen();
-  EXPECT_EQ(150, screen_rect.x());
-  EXPECT_EQ(130, screen_rect.y());
-
-  parent->CloseNow();
-}
-
 // Test two kinds of widgets to re-parent.
 TEST_F(NativeWidgetMacTest, ReparentNativeViewTypes) {
   std::unique_ptr<Widget> toplevel1(new Widget);
@@ -2141,16 +2101,13 @@ TEST_F(NativeWidgetMacTest, ReparentNativeViewTypes) {
 
   Widget::ReparentNativeView(child->GetNativeView(),
                              toplevel1->GetNativeView());
-  EXPECT_EQ([child->GetNativeView().GetNativeNSView() window],
+  EXPECT_EQ([child->GetNativeWindow().GetNativeNSWindow() parentWindow],
             [toplevel1->GetNativeView().GetNativeNSView() window]);
-  EXPECT_EQ(0, [child->GetNativeWindow().GetNativeNSWindow() alphaValue]);
 
   Widget::ReparentNativeView(child->GetNativeView(),
                              toplevel2->GetNativeView());
-  EXPECT_EQ([child->GetNativeView().GetNativeNSView() window],
+  EXPECT_EQ([child->GetNativeWindow().GetNativeNSWindow() parentWindow],
             [toplevel2->GetNativeView().GetNativeNSView() window]);
-  EXPECT_EQ(0, [child->GetNativeWindow().GetNativeNSWindow() alphaValue]);
-  EXPECT_NE(0, [toplevel1->GetNativeWindow().GetNativeNSWindow() alphaValue]);
 
   Widget::ReparentNativeView(toplevel2->GetNativeView(),
                              toplevel1->GetNativeView());

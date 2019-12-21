@@ -11,7 +11,7 @@ _version_constants_java_file = "$target_gen_dir/java/org/chromium/components/ver
 # Depend on this on the Java side to get org.components.version_info.Channel and
 # org.components.version_info.VersionConstants.
 android_library("version_constants_java") {
-  java_files = [
+  sources = [
     "java/src/org/chromium/components/version_info/VersionConstantsBridge.java",
     _version_constants_java_file,
   ]

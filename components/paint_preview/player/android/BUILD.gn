@@ -49,7 +49,7 @@ generate_jni("jni_headers") {
 android_library("java") {
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 
-  java_files = [
+  sources = [
     "java/src/org/chromium/components/paintpreview/player/PaintPreviewFrame.java",
     "java/src/org/chromium/components/paintpreview/player/PlayerCompositorDelegate.java",
     "java/src/org/chromium/components/paintpreview/player/PlayerCompositorDelegateImpl.java",
@@ -72,7 +72,7 @@ android_library("java") {
 }
 
 junit_binary("paint_preview_junit_tests") {
-  java_files = [
+  sources = [
     "junit/src/org/chromium/components/paintpreview/player/PlayerManagerTest.java",
     "junit/src/org/chromium/components/paintpreview/player/frame/PlayerFrameBitmapPainterTest.java",
     "junit/src/org/chromium/components/paintpreview/player/frame/PlayerFrameMediatorTest.java",

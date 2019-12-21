@@ -742,6 +742,8 @@ if (is_android) {
       "//base:base_java",
       "//third_party/junit",
     ]
-    java_files = [ "test/android/javatests/src/org/chromium/components/sync/test/util/MockSyncContentResolverDelegate.java" ]
+    sources = [
+      "test/android/javatests/src/org/chromium/components/sync/test/util/MockSyncContentResolverDelegate.java",
+    ]
   }
 }

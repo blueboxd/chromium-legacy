@@ -921,74 +921,49 @@ void NativeWidgetPrivate::GetAllOwnedWidgets(gfx::NativeView native_view,
 }
 
 // static
-void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
+void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView child,
                                              gfx::NativeView new_parent) {
-  DCHECK_NE(native_view, new_parent);
+  DCHECK_NE(child, new_parent);
   DCHECK([new_parent.GetNativeNSView() window]);
-  if (!new_parent || [native_view.GetNativeNSView() superview] ==
-                         new_parent.GetNativeNSView()) {
+  if (!new_parent ||
+      [child.GetNativeNSView() superview] == new_parent.GetNativeNSView()) {
     NOTREACHED();
     return;
   }
 
-  NativeWidgetMacNSWindowHost* window_host =
-      NativeWidgetMacNSWindowHost::GetFromNativeView(native_view);
-  DCHECK(window_host);
-  gfx::NativeView bridge_view =
-      window_host->native_widget_mac()->GetNativeView();
-  gfx::NativeWindow bridge_window =
-      window_host->native_widget_mac()->GetNativeWindow();
-  bool bridge_is_top_level =
-      window_host->native_widget_mac()->GetWidget()->is_top_level();
-  DCHECK([native_view.GetNativeNSView()
-      isDescendantOf:bridge_view.GetNativeNSView()]);
-  DCHECK(bridge_window && ![bridge_window.GetNativeNSWindow() isSheet]);
+  NativeWidgetMacNSWindowHost* child_window_host =
+      NativeWidgetMacNSWindowHost::GetFromNativeView(child);
+  DCHECK(child_window_host);
+  gfx::NativeView widget_view =
+      child_window_host->native_widget_mac()->GetNativeView();
+  DCHECK_EQ(child, widget_view);
+  gfx::NativeWindow widget_window =
+      child_window_host->native_widget_mac()->GetNativeWindow();
+  DCHECK(
+      [child.GetNativeNSView() isDescendantOf:widget_view.GetNativeNSView()]);
+  DCHECK(widget_window && ![widget_window.GetNativeNSWindow() isSheet]);
 
   NativeWidgetMacNSWindowHost* parent_window_host =
       NativeWidgetMacNSWindowHost::GetFromNativeView(new_parent);
 
   // Early out for no-op changes.
-  if (native_view == bridge_view && bridge_is_top_level &&
-      window_host->parent() == parent_window_host) {
+  if (child == widget_view &&
+      child_window_host->parent() == parent_window_host) {
     return;
   }
 
   // First notify all the widgets that they are being disassociated from their
   // previous parent.
   Widget::Widgets widgets;
-  GetAllChildWidgets(native_view, &widgets);
-  for (auto* child : widgets)
-    child->NotifyNativeViewHierarchyWillChange();
+  GetAllChildWidgets(child, &widgets);
+  for (auto* widget : widgets)
+    widget->NotifyNativeViewHierarchyWillChange();
 
-  // Update |bridge_host|'s parent only if
-  // NativeWidgetNSWindowBridge::ReparentNativeView will.
-  if (native_view == bridge_view) {
-    window_host->SetParent(parent_window_host);
-    if (!bridge_is_top_level) {
-      // Make |window_host|'s NSView be a child of |new_parent| by adding it as
-      // a subview. Note that this will have the effect of removing
-      // |window_host|'s NSView from its NSWindow. The |NSWindow| must remain
-      // visible because it controls the bounds and visibility of the ui::Layer,
-      // so just hide it by setting alpha value to zero.
-      // TODO(ccameron): This path likely violates assumptions. Verify that this
-      // path is unused and remove it.
-      LOG(ERROR) << "Reparenting a non-top-level BridgedNativeWidget. This is "
-                    "likely unsupported.";
-      [new_parent.GetNativeNSView() addSubview:native_view.GetNativeNSView()];
-      [bridge_window.GetNativeNSWindow() setAlphaValue:0];
-      [bridge_window.GetNativeNSWindow() setIgnoresMouseEvents:YES];
-    }
-  } else {
-    // TODO(ccameron): This path likely violates assumptions. Verify that this
-    // path is unused and remove it.
-    LOG(ERROR) << "Reparenting with a non-root BridgedNativeWidget NSView. "
-                  "This is likely unsupported.";
-    [new_parent.GetNativeNSView() addSubview:native_view.GetNativeNSView()];
-  }
+  child_window_host->SetParent(parent_window_host);
 
   // And now, notify them that they have a brand new parent.
-  for (auto* child : widgets)
-    child->NotifyNativeViewHierarchyChanged();
+  for (auto* widget : widgets)
+    widget->NotifyNativeViewHierarchyChanged();
 }
 
 // static

@@ -594,9 +594,9 @@ if (is_android) {
       "//ui/android:ui_full_java",
     ]
     annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
-    java_files = [
-      "java/src/org/chromium/components/viz/service/gl/ThrowUncaughtException.java",
+    sources = [
       "java/src/org/chromium/components/viz/service/frame_sinks/ExternalBeginFrameSourceAndroid.java",
+      "java/src/org/chromium/components/viz/service/gl/ThrowUncaughtException.java",
     ]
   }
 

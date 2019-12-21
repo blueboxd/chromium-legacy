@@ -248,12 +248,15 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
 
   // Decides whether this context is privileged, as described in
   // https://w3c.github.io/webappsec-secure-contexts/#is-settings-object-contextually-secure.
-  virtual bool IsSecureContext(String& error_message) const = 0;
-  virtual bool IsSecureContext() const;
-
   SecureContextMode GetSecureContextMode() const {
-    return IsSecureContext() ? SecureContextMode::kSecureContext
-                             : SecureContextMode::kInsecureContext;
+    return secure_context_mode_;
+  }
+  bool IsSecureContext() const {
+    return secure_context_mode_ == SecureContextMode::kSecureContext;
+  }
+  bool IsSecureContext(String& error_message) const;
+  void SetSecureContextModeForTesting(SecureContextMode mode) {
+    secure_context_mode_ = mode;
   }
 
   // Returns a referrer to be used in the "Determine request's Referrer"
@@ -338,7 +341,8 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
                    OriginTrialContext* origin_trial_context,
                    scoped_refptr<SecurityOrigin> origin,
                    WebSandboxFlags sandbox_flags,
-                   std::unique_ptr<FeaturePolicy> feature_policy);
+                   std::unique_ptr<FeaturePolicy> feature_policy,
+                   SecureContextMode secure_context_mode);
   ~ExecutionContext() override;
 
  private:
@@ -386,6 +390,8 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   // them multiple times.
   // The size of this vector is 0 until FeaturePolicyFeatureObserved is called.
   Vector<bool> parsed_feature_policies_;
+
+  SecureContextMode secure_context_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(ExecutionContext);
 };

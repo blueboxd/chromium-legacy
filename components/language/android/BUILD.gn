@@ -25,7 +25,7 @@ source_set("language_bridge") {
 }
 
 android_library("language_bridge_java") {
-  java_files = [
+  sources = [
     "java/src/org/chromium/components/language/AndroidLanguageMetricsBridge.java",
     "java/src/org/chromium/components/language/GeoLanguageProviderBridge.java",
   ]

@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/ash/assistant/assistant_image_downloader.h"
 #include "chrome/browser/ui/ash/assistant/assistant_service_connection.h"
 #include "chrome/browser/ui/ash/assistant/assistant_setup.h"
+#include "chrome/browser/ui/ash/assistant/assistant_web_view_factory_impl.h"
 #include "chrome/browser/ui/ash/assistant/proactive_suggestions_client_impl.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -85,8 +86,11 @@ void AssistantClient::MaybeInit(Profile* profile) {
       AssistantServiceConnection::GetForProfile(profile_)->service();
   service->Init(client_receiver_.BindNewPipeAndPassRemote(),
                 device_actions_.AddReceiver());
+
   assistant_image_downloader_ = std::make_unique<AssistantImageDownloader>();
   assistant_setup_ = std::make_unique<AssistantSetup>(service);
+  assistant_web_view_factory_ =
+      std::make_unique<AssistantWebViewFactoryImpl>(profile_);
 
   if (chromeos::assistant::features::IsProactiveSuggestionsEnabled()) {
     proactive_suggestions_client_ =

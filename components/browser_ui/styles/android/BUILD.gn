@@ -6,8 +6,9 @@ import("//build/config/android/rules.gni")
 import("//ui/android/features.gni")
 
 android_library("java") {
-  java_files =
-      [ "java/src/org/chromium/components/browser_ui/styles/ChromeColors.java" ]
+  sources = [
+    "java/src/org/chromium/components/browser_ui/styles/ChromeColors.java",
+  ]
   deps = [
     ":java_resources",
     "//base:base_java",

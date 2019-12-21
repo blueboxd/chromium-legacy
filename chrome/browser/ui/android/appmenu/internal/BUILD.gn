@@ -5,7 +5,7 @@
 import("//build/config/android/rules.gni")
 
 android_library("java") {
-  java_files = [
+  sources = [
     "java/src/org/chromium/chrome/browser/ui/appmenu/AppMenu.java",
     "java/src/org/chromium/chrome/browser/ui/appmenu/AppMenuAdapter.java",
     "java/src/org/chromium/chrome/browser/ui/appmenu/AppMenuButtonHelperImpl.java",
@@ -44,9 +44,9 @@ android_resources("java_resources") {
 android_library("javatests") {
   testonly = true
 
-  java_files = [
-    "java/src/org/chromium/chrome/browser/ui/appmenu/AppMenuAdapterTest.java",
+  sources = [
     "java/src/org/chromium/chrome/browser/ui/appmenu/AppMenuAdapterRenderTest.java",
+    "java/src/org/chromium/chrome/browser/ui/appmenu/AppMenuAdapterTest.java",
     "java/src/org/chromium/chrome/browser/ui/appmenu/AppMenuTest.java",
     "java/src/org/chromium/chrome/browser/ui/appmenu/TestAppMenuDelegate.java",
     "java/src/org/chromium/chrome/browser/ui/appmenu/TestAppMenuPropertiesDelegate.java",
@@ -85,7 +85,9 @@ java_library("junit") {
   # Skip platform checks since Robolectric depends on requires_android targets.
   bypass_platform_checks = true
   testonly = true
-  java_files = [ "java/src/org/chromium/chrome/browser/ui/appmenu/AppMenuPopupPositionTest.java" ]
+  sources = [
+    "java/src/org/chromium/chrome/browser/ui/appmenu/AppMenuPopupPositionTest.java",
+  ]
   deps = [
     ":java",
     "//base:base_junit_test_support",

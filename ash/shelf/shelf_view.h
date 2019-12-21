@@ -113,7 +113,7 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
                              public views::BoundsAnimatorObserver,
                              public ApplicationDragAndDropHost,
                              public ShelfTooltipDelegate,
-                             public ash::TabletModeObserver,
+                             public TabletModeObserver,
                              public ShelfConfig::Observer {
  public:
   ShelfView(ShelfModel* model,
@@ -656,7 +656,7 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
 
   // The image proxy for drag operations when a drag and drop host exists and
   // the item can be dragged outside the app grid.
-  std::unique_ptr<ash::DragImageView> drag_image_;
+  std::unique_ptr<DragImageView> drag_image_;
 
   // The cursor offset to the middle of the dragged item.
   gfx::Vector2d drag_image_offset_;
@@ -714,7 +714,7 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // The AppListViewState recorded before a button press, used to record app
   // launching metrics. This allows an accurate AppListViewState to be recorded
   // before AppListViewState changes.
-  ash::AppListViewState recorded_app_list_view_state_;
+  AppListViewState recorded_app_list_view_state_;
 
   // Whether the applist was shown before a button press, used to record app
   // launching metrics. This is recorded because AppList visibility can change

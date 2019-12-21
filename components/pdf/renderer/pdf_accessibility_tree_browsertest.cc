@@ -1024,7 +1024,6 @@ TEST_F(PdfAccessibilityTreeTest, TestEmptyPdfAxActions) {
   EXPECT_FALSE(pdf_action_target->SetAccessibilityFocus());
   EXPECT_FALSE(pdf_action_target->SetSelected(true));
   EXPECT_FALSE(pdf_action_target->SetSelected(false));
-  EXPECT_FALSE(pdf_action_target->SetSelection(nullptr, 0, nullptr, 0));
   EXPECT_FALSE(pdf_action_target->SetSequentialFocusNavigationStartingPoint());
   EXPECT_FALSE(pdf_action_target->SetValue("test"));
   EXPECT_FALSE(pdf_action_target->ShowContextMenu());
@@ -1092,6 +1091,99 @@ TEST_F(PdfAccessibilityTreeTest, TestZoomAndScaleChanges) {
   ASSERT_TRUE(transform);
   transform->TransformRect(&rect);
   CompareRect({{124.5f, 339.5f}, {126.0f, 19.5f}}, rect);
+}
+
+TEST_F(PdfAccessibilityTreeTest, TestSelectionActionDataConversion) {
+  text_runs_.emplace_back(kFirstTextRun);
+  text_runs_.emplace_back(kSecondTextRun);
+  chars_.insert(chars_.end(), std::begin(kDummyCharsData),
+                std::end(kDummyCharsData));
+  page_info_.text_run_count = text_runs_.size();
+  page_info_.char_count = chars_.size();
+  content::RenderFrame* render_frame = view_->GetMainRenderFrame();
+  render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
+  ASSERT_TRUE(render_frame->GetRenderAccessibility());
+  ActionHandlingFakePepperPluginInstance fake_pepper_instance;
+  FakeRendererPpapiHost host(view_->GetMainRenderFrame(),
+                             &fake_pepper_instance);
+  PP_Instance instance = 0;
+  PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+  pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
+  pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
+  pdf_accessibility_tree.SetAccessibilityPageInfo(page_info_, text_runs_,
+                                                  chars_, page_objects_);
+  ui::AXNode* root_node = pdf_accessibility_tree.GetRoot();
+  ASSERT_TRUE(root_node);
+  const std::vector<ui::AXNode*>& page_nodes = root_node->children();
+  ASSERT_EQ(1u, page_nodes.size());
+  ASSERT_TRUE(page_nodes[0]);
+  const std::vector<ui::AXNode*>& para_nodes = page_nodes[0]->children();
+  ASSERT_EQ(2u, para_nodes.size());
+  ASSERT_TRUE(para_nodes[0]);
+  const std::vector<ui::AXNode*>& static_text_nodes1 =
+      para_nodes[0]->children();
+  ASSERT_EQ(1u, static_text_nodes1.size());
+  ASSERT_TRUE(static_text_nodes1[0]);
+  const std::vector<ui::AXNode*>& inline_text_nodes1 =
+      static_text_nodes1[0]->children();
+  ASSERT_TRUE(inline_text_nodes1[0]);
+  ASSERT_EQ(1u, inline_text_nodes1.size());
+  ASSERT_TRUE(para_nodes[1]);
+  const std::vector<ui::AXNode*>& static_text_nodes2 =
+      para_nodes[1]->children();
+  ASSERT_EQ(1u, static_text_nodes2.size());
+  ASSERT_TRUE(static_text_nodes2[0]);
+  const std::vector<ui::AXNode*>& inline_text_nodes2 =
+      static_text_nodes2[0]->children();
+  ASSERT_TRUE(inline_text_nodes2[0]);
+  ASSERT_EQ(1u, inline_text_nodes2.size());
+
+  std::unique_ptr<ui::AXActionTarget> pdf_anchor_action_target =
+      pdf_accessibility_tree.CreateActionTarget(*inline_text_nodes1[0]);
+  ASSERT_EQ(ui::AXActionTarget::Type::kPdf,
+            pdf_anchor_action_target->GetType());
+  std::unique_ptr<ui::AXActionTarget> pdf_focus_action_target =
+      pdf_accessibility_tree.CreateActionTarget(*inline_text_nodes2[0]);
+  ASSERT_EQ(ui::AXActionTarget::Type::kPdf, pdf_focus_action_target->GetType());
+  EXPECT_TRUE(pdf_anchor_action_target->SetSelection(
+      pdf_anchor_action_target.get(), 1, pdf_focus_action_target.get(), 5));
+
+  PP_PdfAccessibilityActionData pdf_action_data =
+      fake_pepper_instance.GetReceivedActionData();
+  EXPECT_EQ(PP_PdfAccessibilityAction::PP_PDF_SET_SELECTION,
+            pdf_action_data.action);
+  EXPECT_EQ(0u, pdf_action_data.selection_start_index.page_index);
+  EXPECT_EQ(1u, pdf_action_data.selection_start_index.char_index);
+  EXPECT_EQ(0u, pdf_action_data.selection_end_index.page_index);
+  EXPECT_EQ(20u, pdf_action_data.selection_end_index.char_index);
+
+  pdf_anchor_action_target =
+      pdf_accessibility_tree.CreateActionTarget(*static_text_nodes1[0]);
+  ASSERT_EQ(ui::AXActionTarget::Type::kPdf,
+            pdf_anchor_action_target->GetType());
+  pdf_focus_action_target =
+      pdf_accessibility_tree.CreateActionTarget(*inline_text_nodes2[0]);
+  ASSERT_EQ(ui::AXActionTarget::Type::kPdf, pdf_focus_action_target->GetType());
+  EXPECT_TRUE(pdf_anchor_action_target->SetSelection(
+      pdf_anchor_action_target.get(), 1, pdf_focus_action_target.get(), 4));
+
+  pdf_action_data = fake_pepper_instance.GetReceivedActionData();
+  EXPECT_EQ(PP_PdfAccessibilityAction::PP_PDF_SET_SELECTION,
+            pdf_action_data.action);
+  EXPECT_EQ(0u, pdf_action_data.selection_start_index.page_index);
+  EXPECT_EQ(1u, pdf_action_data.selection_start_index.char_index);
+  EXPECT_EQ(0u, pdf_action_data.selection_end_index.page_index);
+  EXPECT_EQ(19u, pdf_action_data.selection_end_index.char_index);
+
+  pdf_anchor_action_target =
+      pdf_accessibility_tree.CreateActionTarget(*para_nodes[0]);
+  ASSERT_EQ(ui::AXActionTarget::Type::kPdf,
+            pdf_anchor_action_target->GetType());
+  pdf_focus_action_target =
+      pdf_accessibility_tree.CreateActionTarget(*para_nodes[1]);
+  ASSERT_EQ(ui::AXActionTarget::Type::kPdf, pdf_focus_action_target->GetType());
+  EXPECT_FALSE(pdf_anchor_action_target->SetSelection(
+      pdf_anchor_action_target.get(), 1, pdf_focus_action_target.get(), 5));
 }
 
 }  // namespace pdf

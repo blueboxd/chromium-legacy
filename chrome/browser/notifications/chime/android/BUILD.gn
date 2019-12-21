@@ -5,7 +5,9 @@
 import("//build/config/android/rules.gni")
 
 android_library("java") {
-  java_files = [ "java/src/org/chromium/chrome/browser/notifications/chime/ChimeSession.java" ]
+  sources = [
+    "java/src/org/chromium/chrome/browser/notifications/chime/ChimeSession.java",
+  ]
 
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 

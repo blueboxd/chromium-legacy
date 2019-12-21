@@ -245,10 +245,10 @@ sizes_test("cronet_sizes") {
 
 # cronet_api_java.jar defines Cronet API.
 android_library("cronet_api_java") {
-  java_files = [
+  sources = [
     "api/src/org/chromium/net/BidirectionalStream.java",
-    "api/src/org/chromium/net/CronetEngine.java",
     "api/src/org/chromium/net/CallbackException.java",
+    "api/src/org/chromium/net/CronetEngine.java",
     "api/src/org/chromium/net/CronetException.java",
     "api/src/org/chromium/net/CronetProvider.java",
     "api/src/org/chromium/net/ExperimentalBidirectionalStream.java",
@@ -289,11 +289,11 @@ cronet_impl_common_java_deps_to_package =
 # cronet_impl_common_base_java.jar - common Cronet code that is shared
 # by all Cronet engine implementations.
 android_library("cronet_impl_common_base_java") {
-  java_files = [
+  sources = [
     "java/src/org/chromium/net/impl/CallbackExceptionImpl.java",
-    "java/src/org/chromium/net/impl/CronetExceptionImpl.java",
     "java/src/org/chromium/net/impl/CronetEngineBase.java",
     "java/src/org/chromium/net/impl/CronetEngineBuilderImpl.java",
+    "java/src/org/chromium/net/impl/CronetExceptionImpl.java",
     "java/src/org/chromium/net/impl/NetworkExceptionImpl.java",
     "java/src/org/chromium/net/impl/Preconditions.java",
     "java/src/org/chromium/net/impl/QuicExceptionImpl.java",
@@ -320,9 +320,9 @@ android_library("cronet_impl_common_base_java") {
 
 # cronet_impl_java_util_java.jar - Classes shared between Java Cronet implementations.
 android_library("cronet_impl_java_util_java") {
-  java_files = [
-    "java/src/org/chromium/net/impl/JavaUrlRequestUtils.java",
+  sources = [
     "java/src/org/chromium/net/impl/JavaUploadDataSinkBase.java",
+    "java/src/org/chromium/net/impl/JavaUrlRequestUtils.java",
   ]
 
   deps = [
@@ -333,7 +333,7 @@ android_library("cronet_impl_java_util_java") {
 
 # cronet_impl_platform_base_java.jar - Java platform based implementation of the Cronet engine.
 android_library("cronet_impl_platform_base_java") {
-  java_files = [
+  sources = [
     "java/src/org/chromium/net/impl/InputStreamChannel.java",
     "java/src/org/chromium/net/impl/JavaCronetEngine.java",
     "java/src/org/chromium/net/impl/JavaCronetEngineBuilderImpl.java",
@@ -353,7 +353,7 @@ android_library("cronet_impl_platform_base_java") {
 
 # cronet_impl_fake_base_java.jar - Fake implementation of Cronet.
 android_library("cronet_impl_fake_base_java") {
-  java_files = [
+  sources = [
     "fake/java/org/chromium/net/test/FakeCronetController.java",
     "fake/java/org/chromium/net/test/FakeCronetEngine.java",
     "fake/java/org/chromium/net/test/FakeCronetProvider.java",
@@ -385,7 +385,7 @@ cronet_impl_native_java_deps_to_package = [
 ]
 
 android_library("cronet_urlconnection_impl_java") {
-  java_files = [
+  sources = [
     "java/src/org/chromium/net/urlconnection/CronetBufferedOutputStream.java",
     "java/src/org/chromium/net/urlconnection/CronetChunkedOutputStream.java",
     "java/src/org/chromium/net/urlconnection/CronetFixedModeOutputStream.java",
@@ -403,7 +403,7 @@ android_library("cronet_urlconnection_impl_java") {
 
 # cronet_impl_native_base_java.jar - native implementation of the Cronet engine.
 android_library("cronet_impl_native_base_java") {
-  java_files = [
+  sources = [
     "java/src/org/chromium/net/impl/BidirectionalStreamBuilderImpl.java",
     "java/src/org/chromium/net/impl/BidirectionalStreamNetworkException.java",
     "java/src/org/chromium/net/impl/CronetBidirectionalStream.java",
@@ -450,7 +450,7 @@ android_resources("cronet_sample_apk_resources") {
 }
 
 android_library("cronet_sample_apk_java") {
-  java_files = [
+  sources = [
     "sample/src/org/chromium/cronet_sample_apk/CronetSampleActivity.java",
     "sample/src/org/chromium/cronet_sample_apk/CronetSampleApplication.java",
   ]
@@ -795,7 +795,9 @@ if (!is_component_build) {
     apk_under_test = ":cronet_sample_apk"
     android_manifest = "sample/javatests/AndroidManifest.xml"
     min_sdk_version = _cronet_min_sdk_version
-    java_files = [ "sample/javatests/src/org/chromium/cronet_sample_apk/CronetSampleTest.java" ]
+    sources = [
+      "sample/javatests/src/org/chromium/cronet_sample_apk/CronetSampleTest.java",
+    ]
     deps = [
       "//third_party/android_support_test_runner:rules_java",
       "//third_party/android_support_test_runner:runner_java",
@@ -884,7 +886,7 @@ if (!is_component_build) {
   android_library("cronet_test_apk_java") {
     testonly = true
 
-    java_files = [
+    sources = [
       "test/src/org/chromium/net/CronetTestApplication.java",
       "test/src/org/chromium/net/CronetTestUtil.java",
       "test/src/org/chromium/net/Http2TestHandler.java",
@@ -926,10 +928,10 @@ if (!is_component_build) {
   # cronet_common_javatests.jar - Cronet Java test common files.
   android_library("cronet_common_javatests") {
     testonly = true
-    java_files = [
+    sources = [
+      "test/javatests/src/org/chromium/net/CronetTestRule.java",
       "test/javatests/src/org/chromium/net/TestUploadDataProvider.java",
       "test/javatests/src/org/chromium/net/TestUrlRequestCallback.java",
-      "test/javatests/src/org/chromium/net/CronetTestRule.java",
     ]
     deps = [
       ":cronet_api_java",
@@ -944,12 +946,12 @@ if (!is_component_build) {
   # cronet_fake_javatests.jar - Java tests for the fake implementation of Cronet.
   android_library("cronet_fake_javatests") {
     testonly = true
-    java_files = [
+    sources = [
+      "fake/javatests/org/chromium/net/test/FakeCronetControllerTest.java",
+      "fake/javatests/org/chromium/net/test/FakeCronetEngineTest.java",
+      "fake/javatests/org/chromium/net/test/FakeCronetProviderTest.java",
       "fake/javatests/org/chromium/net/test/FakeUrlRequestTest.java",
       "fake/javatests/org/chromium/net/test/FakeUrlResponseTest.java",
-      "fake/javatests/org/chromium/net/test/FakeCronetProviderTest.java",
-      "fake/javatests/org/chromium/net/test/FakeCronetEngineTest.java",
-      "fake/javatests/org/chromium/net/test/FakeCronetControllerTest.java",
       "fake/javatests/org/chromium/net/test/UrlResponseMatcherTest.java",
     ]
 
@@ -983,7 +985,7 @@ if (!is_component_build) {
   android_library("cronet_javatests") {
     testonly = true
 
-    java_files = [
+    sources = [
       "test/javatests/src/org/chromium/net/BidirectionalStreamQuicTest.java",
       "test/javatests/src/org/chromium/net/BidirectionalStreamTest.java",
       "test/javatests/src/org/chromium/net/BrotliTest.java",
@@ -998,9 +1000,9 @@ if (!is_component_build) {
       "test/javatests/src/org/chromium/net/ExperimentalOptionsTest.java",
       "test/javatests/src/org/chromium/net/GetStatusTest.java",
       "test/javatests/src/org/chromium/net/MetricsTestUtil.java",
+      "test/javatests/src/org/chromium/net/NQETest.java",
       "test/javatests/src/org/chromium/net/NetworkChangeNotifierTest.java",
       "test/javatests/src/org/chromium/net/NetworkErrorLoggingTest.java",
-      "test/javatests/src/org/chromium/net/NQETest.java",
       "test/javatests/src/org/chromium/net/PkpTest.java",
       "test/javatests/src/org/chromium/net/QuicTest.java",
       "test/javatests/src/org/chromium/net/RequestFinishedInfoTest.java",
@@ -1009,6 +1011,7 @@ if (!is_component_build) {
       "test/javatests/src/org/chromium/net/TestNetworkQualityRttListener.java",
       "test/javatests/src/org/chromium/net/TestNetworkQualityThroughputListener.java",
       "test/javatests/src/org/chromium/net/UploadDataProvidersTest.java",
+      "test/javatests/src/org/chromium/net/UrlResponseInfoTest.java",
       "test/javatests/src/org/chromium/net/urlconnection/CronetBufferedOutputStreamTest.java",
       "test/javatests/src/org/chromium/net/urlconnection/CronetChunkedOutputStreamTest.java",
       "test/javatests/src/org/chromium/net/urlconnection/CronetFixedModeOutputStreamTest.java",
@@ -1018,7 +1021,6 @@ if (!is_component_build) {
       "test/javatests/src/org/chromium/net/urlconnection/MessageLoopTest.java",
       "test/javatests/src/org/chromium/net/urlconnection/QuicUploadTest.java",
       "test/javatests/src/org/chromium/net/urlconnection/TestUtil.java",
-      "test/javatests/src/org/chromium/net/UrlResponseInfoTest.java",
     ]
 
     # Adding deps here won't include those deps in the cronet_tests_java.jar.
@@ -1048,10 +1050,10 @@ if (!is_component_build) {
     ]
     loadable_modules = [ "$root_out_dir/libnetty-tcnative.so" ]
 
-    java_files = cronet_smoketests_native_common_srcs + [
-                   "test/smoketests/src/org/chromium/net/smoke/Http2Test.java",
-                   "test/smoketests/src/org/chromium/net/smoke/QuicTest.java",
-                 ]
+    sources = cronet_smoketests_native_common_srcs + [
+                "test/smoketests/src/org/chromium/net/smoke/Http2Test.java",
+                "test/smoketests/src/org/chromium/net/smoke/QuicTest.java",
+              ]
 
     deps = [
       ":cronet_api_java",
@@ -1103,10 +1105,10 @@ if (!is_component_build) {
     android_manifest = "test/javatests/AndroidManifest.xml"
     min_sdk_version = _cronet_min_sdk_version
 
-    java_files = cronet_smoketests_platform_only_common_srcs + [
-                   "test/src/org/chromium/net/CronetTestApplication.java",
-                   "test/smoketests/src/org/chromium/net/smoke/PlatformOnlyEngineTest.java",
-                 ]
+    sources = cronet_smoketests_platform_only_common_srcs + [
+                "test/src/org/chromium/net/CronetTestApplication.java",
+                "test/smoketests/src/org/chromium/net/smoke/PlatformOnlyEngineTest.java",
+              ]
 
     deps = [
       ":cronet_api_java",
@@ -1138,7 +1140,7 @@ if (!is_component_build) {
     apk_name = "MissingNativeLibrarySmokeTestInstrumentation"
     android_manifest = "test/javatests/AndroidManifest.xml"
 
-    java_files = cronet_smoketests_native_common_srcs + [ "test/smoketests/src/org/chromium/net/smoke/MissingNativeLibraryTest.java" ]
+    sources = cronet_smoketests_native_common_srcs + [ "test/smoketests/src/org/chromium/net/smoke/MissingNativeLibraryTest.java" ]
     deps = [
       ":cronet_api_java",
       ":cronet_combine_proguard_flags",
@@ -1177,7 +1179,7 @@ if (!is_component_build) {
       ":cronet_tests",
     ]
 
-    java_files = [
+    sources = [
       "test/javaperftests/src/org/chromium/net/CronetPerfTestActivity.java",
     ]
 

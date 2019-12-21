@@ -41,8 +41,8 @@ class SyncEventListener final : public NativeEventListener {
 SensorTestContext::SensorTestContext() {
   // Sensor's constructor has a check for this that could be removed in the
   // future.
-  testing_scope_.GetDocument().SetSecureContextStateForTesting(
-      SecureContextState::kSecure);
+  testing_scope_.GetDocument().SetSecureContextModeForTesting(
+      SecureContextMode::kSecureContext);
   // Necessary for SensorProxy::ShouldSuspendUpdates() to work correctly.
   testing_scope_.GetPage().GetFocusController().SetFocused(true);
 

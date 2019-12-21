@@ -12,7 +12,7 @@ android_library("safe_browsing_java") {
     "//third_party/android_deps:androidx_annotation_annotation_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
-  java_files = [
+  sources = [
     "java/src/org/chromium/components/safe_browsing/SafeBrowsingApiBridge.java",
     "java/src/org/chromium/components/safe_browsing/SafeBrowsingApiHandler.java",
   ]

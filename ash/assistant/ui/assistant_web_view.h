@@ -24,10 +24,12 @@ namespace ash {
 enum class AssistantButtonId;
 class AssistantWebViewDelegate;
 
-// AssistantWebView is a child of AssistantBubbleView which allows Assistant UI
-// to render remotely hosted content within its bubble. It provides a CaptionBar
-// for window level controls and embeds web contents with help from the Content
-// Service.
+// TODO(b/146520500): Merge into AssistantWebContainerView after deprecating
+// standalone Assistant UI.
+// AssistantWebView is a child of AssistantContainerView which allows Assistant
+// UI to render remotely hosted content within its bubble. It provides a
+// CaptionBar for window level controls and embeds web contents with help from
+// the Content Service.
 class COMPONENT_EXPORT(ASSISTANT_UI) AssistantWebView
     : public views::View,
       public CaptionBarDelegate,

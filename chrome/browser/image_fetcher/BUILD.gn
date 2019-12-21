@@ -14,11 +14,11 @@ android_library("java") {
     "//third_party/gif_player:gif_player_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
-  java_files = [
+  sources = [
     "android/java/src/org/chromium/chrome/browser/image_fetcher/CachedImageFetcher.java",
+    "android/java/src/org/chromium/chrome/browser/image_fetcher/ImageFetcher.java",
     "android/java/src/org/chromium/chrome/browser/image_fetcher/ImageFetcherBridge.java",
     "android/java/src/org/chromium/chrome/browser/image_fetcher/ImageFetcherFactory.java",
-    "android/java/src/org/chromium/chrome/browser/image_fetcher/ImageFetcher.java",
     "android/java/src/org/chromium/chrome/browser/image_fetcher/InMemoryCachedImageFetcher.java",
     "android/java/src/org/chromium/chrome/browser/image_fetcher/NetworkImageFetcher.java",
   ]

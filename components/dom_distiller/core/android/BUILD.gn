@@ -10,10 +10,10 @@ android_library("dom_distiller_core_java") {
     "//base:jni_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
-  java_files = [
+  sources = [
+    "java/src/org/chromium/components/dom_distiller/core/DistilledPagePrefs.java",
     "java/src/org/chromium/components/dom_distiller/core/DomDistillerService.java",
     "java/src/org/chromium/components/dom_distiller/core/DomDistillerUrlUtils.java",
-    "java/src/org/chromium/components/dom_distiller/core/DistilledPagePrefs.java",
   ]
   srcjar_deps = [ ":jni_enums" ]
 }

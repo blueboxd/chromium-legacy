@@ -731,7 +731,7 @@ void ShelfAppButton::OnGestureEvent(ui::GestureEvent* event) {
 
 std::unique_ptr<views::InkDropRipple> ShelfAppButton::CreateInkDropRipple()
     const {
-  const int ink_drop_small_size = ash::ShelfConfig::Get()->hotseat_size();
+  const int ink_drop_small_size = ShelfConfig::Get()->hotseat_size();
   return std::make_unique<views::SquareInkDropRipple>(
       gfx::Size(GetInkDropLargeSize(), GetInkDropLargeSize()),
       ink_drop_large_corner_radius(),

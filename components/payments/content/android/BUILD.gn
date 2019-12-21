@@ -49,7 +49,7 @@ generate_jni("jni_headers") {
 
 android_library("java") {
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
-  java_files = [
+  sources = [
     "java/src/org/chromium/components/payments/CurrencyFormatter.java",
     "java/src/org/chromium/components/payments/OriginSecurityChecker.java",
     "java/src/org/chromium/components/payments/PaymentDetailsConverter.java",
@@ -57,8 +57,8 @@ android_library("java") {
     "java/src/org/chromium/components/payments/PaymentManifestDownloader.java",
     "java/src/org/chromium/components/payments/PaymentManifestParser.java",
     "java/src/org/chromium/components/payments/PaymentValidator.java",
-    "java/src/org/chromium/components/payments/WebAppManifestSection.java",
     "java/src/org/chromium/components/payments/UrlUtil.java",
+    "java/src/org/chromium/components/payments/WebAppManifestSection.java",
   ]
   deps = [
     "//base:base_java",

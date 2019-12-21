@@ -630,7 +630,7 @@ class Document::SecurityContextInit : public FeaturePolicyParserDelegate {
     InitializeOrigin(initializer);
 
     // The secure context state is based on the origin.
-    InitializeSecureContextState(initializer);
+    InitializeSecureContextMode(initializer);
 
     // Initialize origin trials, requires the post sandbox flags
     // security origin and secure context state.
@@ -665,8 +665,8 @@ class Document::SecurityContextInit : public FeaturePolicyParserDelegate {
 
   WindowAgentFactory* GetWindowAgentFactory() { return window_agent_factory_; }
   Agent* GetAgent() { return agent_; }
-  SecureContextState GetSecureContextState() {
-    return secure_context_state_.value();
+  SecureContextMode GetSecureContextMode() {
+    return secure_context_mode_.value();
   }
 
   void CountFeaturePolicyUsage(mojom::WebFeature feature) override {
@@ -933,30 +933,30 @@ class Document::SecurityContextInit : public FeaturePolicyParserDelegate {
     feature_policy_->SetHeaderPolicy(parsed_header_);
   }
 
-  void InitializeSecureContextState(const DocumentInit& initializer) {
+  void InitializeSecureContextMode(const DocumentInit& initializer) {
     auto* frame = initializer.GetFrame();
     if (!security_origin_->IsPotentiallyTrustworthy()) {
-      secure_context_state_ = SecureContextState::kNonSecure;
+      secure_context_mode_ = SecureContextMode::kInsecureContext;
     } else if (SchemeRegistry::SchemeShouldBypassSecureContextCheck(
                    security_origin_->Protocol())) {
-      secure_context_state_ = SecureContextState::kSecure;
+      secure_context_mode_ = SecureContextMode::kSecureContext;
     } else if (frame) {
       Frame* parent = frame->Tree().Parent();
       while (parent) {
         if (!parent->GetSecurityContext()
                  ->GetSecurityOrigin()
                  ->IsPotentiallyTrustworthy()) {
-          secure_context_state_ = SecureContextState::kNonSecure;
+          secure_context_mode_ = SecureContextMode::kInsecureContext;
           break;
         }
         parent = parent->Tree().Parent();
       }
-      if (!secure_context_state_.has_value())
-        secure_context_state_ = SecureContextState::kSecure;
+      if (!secure_context_mode_.has_value())
+        secure_context_mode_ = SecureContextMode::kSecureContext;
     } else {
-      secure_context_state_ = SecureContextState::kNonSecure;
+      secure_context_mode_ = SecureContextMode::kInsecureContext;
     }
-    bool is_secure = secure_context_state_ == SecureContextState::kSecure;
+    bool is_secure = secure_context_mode_ == SecureContextMode::kSecureContext;
     if (GetSandboxFlags() != WebSandboxFlags::kNone) {
       feature_count_.insert(
           is_secure ? WebFeature::kSecureContextCheckForSandboxedOriginPassed
@@ -967,7 +967,7 @@ class Document::SecurityContextInit : public FeaturePolicyParserDelegate {
   }
 
   void InitializeOriginTrials(const DocumentInit& initializer) {
-    DCHECK(secure_context_state_.has_value());
+    DCHECK(secure_context_mode_.has_value());
     origin_trials_ = MakeGarbageCollected<OriginTrialContext>();
 
     const String& header_value = initializer.OriginTrialsHeader();
@@ -980,8 +980,7 @@ class Document::SecurityContextInit : public FeaturePolicyParserDelegate {
       return;
     origin_trials_->AddTokens(
         security_origin_.get(),
-        secure_context_state_ == SecureContextState::kSecure /*is_secure*/,
-        *tokens);
+        secure_context_mode_ == SecureContextMode::kSecureContext, *tokens);
   }
 
   void InitializeAgent(const DocumentInit& initializer) {
@@ -1051,7 +1050,7 @@ class Document::SecurityContextInit : public FeaturePolicyParserDelegate {
   HashSet<mojom::FeaturePolicyFeature> parsed_feature_policies_;
   HashSet<mojom::WebFeature> feature_count_;
   bool bind_csp_immediately_ = false;
-  base::Optional<SecureContextState> secure_context_state_;
+  base::Optional<SecureContextMode> secure_context_mode_;
 };
 
 ExplicitlySetAttrElementsMap* Document::GetExplicitlySetAttrElementsMap(
@@ -1095,7 +1094,8 @@ Document::Document(const DocumentInit& initializer,
                        security_initializer.GetOriginTrialContext(),
                        security_initializer.GetSecurityOrigin(),
                        security_initializer.GetSandboxFlags(),
-                       security_initializer.TakeFeaturePolicy()),
+                       security_initializer.TakeFeaturePolicy(),
+                       security_initializer.GetSecureContextMode()),
       evaluate_media_queries_on_style_recalc_(false),
       pending_sheet_layout_(kNoLayoutWithPendingSheets),
       window_agent_factory_(security_initializer.GetWindowAgentFactory()),
@@ -1186,7 +1186,6 @@ Document::Document(const DocumentInit& initializer,
       parser_sync_policy_(kAllowAsynchronousParsing),
       node_count_(0),
       logged_field_edit_(false),
-      secure_context_state_(security_initializer.GetSecureContextState()),
       ukm_source_id_(ukm::UkmRecorder::GetNewSourceID()),
       needs_to_record_ukm_outlive_time_(false),
       viewport_data_(MakeGarbageCollected<ViewportData>(*this)),
@@ -4178,6 +4177,17 @@ bool Document::CheckCompletedInternal() {
       return false;
   }
 
+  if (frame_ && frame_->Client()->GetRemoteNavigationAssociatedInterfaces()) {
+    ukm_binding_ = std::make_unique<
+        mojo::AssociatedRemote<mojom::blink::UkmSourceIdFrameHost>>();
+    frame_->Client()->GetRemoteNavigationAssociatedInterfaces()->GetInterface(
+        ukm_binding_.get());
+    DCHECK(ukm_binding_->is_bound());
+    auto callback =
+        WTF::Bind(&Document::SetNavigationSourceId, WrapPersistent(this));
+    (*ukm_binding_.get())->GetNavigationSourceId(std::move(callback));
+  }
+
   // OK, completed. Fire load completion events as needed.
   SetReadyState(kComplete);
   if (LoadEventStillNeeded())
@@ -4204,11 +4214,8 @@ bool Document::CheckCompletedInternal() {
 
     // Send the source ID of the document to the browser.
     if (frame_->Client()->GetRemoteNavigationAssociatedInterfaces()) {
-      mojo::AssociatedRemote<mojom::blink::UkmSourceIdFrameHost> ukm_binding;
-      frame_->Client()->GetRemoteNavigationAssociatedInterfaces()->GetInterface(
-          &ukm_binding);
-      DCHECK(ukm_binding.is_bound());
-      ukm_binding->SetDocumentSourceId(ukm_source_id_);
+      DCHECK(ukm_binding_->is_bound());
+      (*ukm_binding_.get())->SetDocumentSourceId(ukm_source_id_);
     }
 
     frame_->GetFrameScheduler()->RegisterStickyFeature(
@@ -8078,18 +8085,6 @@ void Document::PlatformColorsChanged() {
   GetStyleEngine().PlatformColorsChanged();
 }
 
-bool Document::IsSecureContext(String& error_message) const {
-  if (!IsSecureContext()) {
-    error_message = SecurityOrigin::IsPotentiallyTrustworthyErrorMessage();
-    return false;
-  }
-  return true;
-}
-
-bool Document::IsSecureContext() const {
-  return secure_context_state_ == SecureContextState::kSecure;
-}
-
 void Document::DidEnforceInsecureRequestPolicy() {
   if (!GetFrame())
     return;
@@ -8696,6 +8691,104 @@ void Document::CountUse(mojom::WebFeature feature) {
   if (DocumentLoader* loader = Loader()) {
     loader->CountUse(feature);
   }
+}
+
+void Document::RecordCallInDetachedWindow(
+    v8::Isolate::UseCounterFeature reason) {
+  // Emit each reason only once (max twice, in the case explained below).
+  // We're mainly interested if this kind of call occurred in a page or not.
+  // It would be nice to count how many times, but that would flood the UKM
+  // infrastructure with too many events.
+  if (calls_in_detached_window_emitted_.Contains(reason))
+    return;
+
+  if (navigation_source_id_ == ukm::kInvalidSourceId) {
+    // It's possible that navigation_source_id_ isn't set yet. Emit the event
+    // with invalid ID (at most once) so that we could potentially make use of
+    // it in combination with DocumentCreated event, using document's source ID.
+    // However, save it to give it a chance to be emitted again with valid
+    // navigation_source_id_.
+    if (calls_in_detached_window_orphaned_.Contains(reason))
+      return;
+    calls_in_detached_window_orphaned_.insert(reason);
+  }
+
+  HashSet<v8::Isolate::UseCounterFeature> reasons;
+  reasons.insert(reason);
+  EmitDetachedWindowsUkmEvent(reasons);
+}
+
+void Document::SetNavigationSourceId(int64_t source_id) {
+  navigation_source_id_ = source_id;
+  if (navigation_source_id_ != ukm::kInvalidSourceId) {
+    // Now that a valid navigation_source_id_ is set, re-emit the DetacheWindows
+    // event for cases that were emitted with invalid ID.
+    EmitDetachedWindowsUkmEvent(calls_in_detached_window_orphaned_);
+    calls_in_detached_window_orphaned_.clear();
+  }
+}
+
+void Document::EmitDetachedWindowsUkmEvent(
+    const HashSet<v8::Isolate::UseCounterFeature>& reasons) {
+  if (reasons.IsEmpty())
+    return;
+
+  DCHECK_NE(ukm_source_id_, ukm::kInvalidSourceId);
+  ukm::builders::DetachedWindows_Experimental builder(ukm_source_id_);
+  // Invalid ID should be 0 to take advantage of the protobuf default.
+  DCHECK_EQ(ukm::kInvalidSourceId, 0);
+  if (navigation_source_id_ != ukm::kInvalidSourceId)
+    builder.SetNavigationSourceId(navigation_source_id_);
+  for (auto reason : reasons) {
+    if (navigation_source_id_ != ukm::kInvalidSourceId)
+      calls_in_detached_window_emitted_.insert(reason);
+
+    switch (reason) {
+      case v8::Isolate::kCallInDetachedWindowByNavigation:
+        builder.SetNumberOfCallsInDetachedWindowByNavigation(1);
+        break;
+      case v8::Isolate::kCallInDetachedWindowByNavigationAfter10s:
+        builder
+            .SetNumberOfCallsInDetachedWindowByNavigation_After10sSinceDetaching(
+                1);
+        break;
+      case v8::Isolate::kCallInDetachedWindowByNavigationAfter1min:
+        builder
+            .SetNumberOfCallsInDetachedWindowByNavigation_After1minSinceDetaching(
+                1);
+        break;
+      case v8::Isolate::kCallInDetachedWindowByClosing:
+        builder.SetNumberOfCallsInDetachedWindowByClosing(1);
+        break;
+      case v8::Isolate::kCallInDetachedWindowByClosingAfter10s:
+        builder
+            .SetNumberOfCallsInDetachedWindowByClosing_After10sSinceDetaching(
+                1);
+        break;
+      case v8::Isolate::kCallInDetachedWindowByClosingAfter1min:
+        builder
+            .SetNumberOfCallsInDetachedWindowByClosing_After1minSinceDetaching(
+                1);
+        break;
+      case v8::Isolate::kCallInDetachedWindowByOtherReason:
+        builder.SetNumberOfCallsInDetachedWindowByOtherReason(1);
+        break;
+      case v8::Isolate::kCallInDetachedWindowByOtherReasonAfter10s:
+        builder
+            .SetNumberOfCallsInDetachedWindowByOtherReason_After10sSinceDetaching(
+                1);
+        break;
+      case v8::Isolate::kCallInDetachedWindowByOtherReasonAfter1min:
+        builder
+            .SetNumberOfCallsInDetachedWindowByOtherReason_After1minSinceDetaching(
+                1);
+        break;
+      default:
+        LOG(DFATAL) << "Use counter not related to detached windows: "
+                    << reason;
+    }
+  }
+  builder.Record(UkmRecorder());
 }
 
 void Document::CountDeprecation(mojom::WebFeature feature) {

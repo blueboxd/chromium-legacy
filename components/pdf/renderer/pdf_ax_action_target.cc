@@ -35,6 +35,17 @@ PP_PdfAccessibilityScrollAlignment ConvertAXScrollToPdfScrollAlignment(
 
 }  // namespace
 
+// static
+const PdfAXActionTarget* PdfAXActionTarget::FromAXActionTarget(
+    const ui::AXActionTarget* ax_action_target) {
+  if (ax_action_target &&
+      ax_action_target->GetType() == ui::AXActionTarget::Type::kPdf) {
+    return static_cast<const PdfAXActionTarget*>(ax_action_target);
+  }
+
+  return nullptr;
+}
+
 PdfAXActionTarget::PdfAXActionTarget(const ui::AXNode& plugin_node,
                                      PdfAccessibilityTree* pdf_tree_source)
     : target_plugin_node_(plugin_node),
@@ -116,7 +127,25 @@ bool PdfAXActionTarget::SetSelection(const ui::AXActionTarget* anchor_object,
                                      int anchor_offset,
                                      const ui::AXActionTarget* focus_object,
                                      int focus_offset) const {
-  return false;
+  const PdfAXActionTarget* pdf_anchor_object =
+      FromAXActionTarget(anchor_object);
+  const PdfAXActionTarget* pdf_focus_object = FromAXActionTarget(focus_object);
+  if (!pdf_anchor_object || !pdf_focus_object || anchor_offset < 0 ||
+      focus_offset < 0) {
+    return false;
+  }
+  PP_PdfAccessibilityActionData pdf_action_data = {};
+  if (!pdf_accessibility_tree_source_->FindCharacterOffset(
+          pdf_anchor_object->AXNode(), anchor_offset,
+          &pdf_action_data.selection_start_index) ||
+      !pdf_accessibility_tree_source_->FindCharacterOffset(
+          pdf_focus_object->AXNode(), focus_offset,
+          &pdf_action_data.selection_end_index)) {
+    return false;
+  }
+  pdf_action_data.action = PP_PdfAccessibilityAction::PP_PDF_SET_SELECTION;
+  pdf_accessibility_tree_source_->HandleAction(pdf_action_data);
+  return true;
 }
 
 bool PdfAXActionTarget::SetSequentialFocusNavigationStartingPoint() const {

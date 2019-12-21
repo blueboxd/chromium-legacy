@@ -5,26 +5,11 @@
 from page_sets.login_helpers import login_utils
 
 
-def LoginDesktopAccount(action_runner, credential,
-                 credentials_path=login_utils.DEFAULT_CREDENTIAL_PATH):
-  """Logs in into a Dropbox account.
-
-  This function navigates the tab into Dropbox's login page and logs in a user
-  using credentials in |credential| part of the |credentials_path| file.
-
-  Args:
-    action_runner: Action runner responsible for running actions on the page.
-    credential: The credential to retrieve from the credentials file (string).
-    credentials_path: The path to credential file (string).
-
-  Raises:
-    exceptions.Error: See ExecuteJavaScript()
-    for a detailed list of possible exceptions.
-  """
+def _LoginAccount(action_runner, credential, credentials_path):
   account_name, password = login_utils.GetAccountNameAndPassword(
       credential, credentials_path=credentials_path)
 
-  action_runner.Navigate('https://www.pinterest.com/login/')
+  action_runner.Navigate('https://www.pinterest.co.uk/login/')
   action_runner.Wait(1) # Error page happens if this wait is not here.
   action_runner.WaitForElement(selector='button[type=submit]')
 
@@ -36,4 +21,41 @@ def LoginDesktopAccount(action_runner, credential,
 
   action_runner.ClickElement(selector='button[type=submit]')
 
+def LoginDesktopAccount(action_runner, credential,
+                        credentials_path=login_utils.DEFAULT_CREDENTIAL_PATH):
+  """Logs in into a Pinterest account on desktop.
+
+  This function navigates the tab into Pinterest's login page and logs in a user
+  using credentials in |credential| part of the |credentials_path| file.
+
+  Args:
+    action_runner: Action runner responsible for running actions on the page.
+    credential: The credential to retrieve from the credentials file (string).
+    credentials_path: The path to credential file (string).
+
+  Raises:
+    exceptions.Error: See ExecuteJavaScript()
+    for a detailed list of possible exceptions.
+  """
+  _LoginAccount(action_runner, credential, credentials_path)
   action_runner.WaitForElement(selector='input[name=searchBoxInput]')
+
+def LoginMobileAccount(action_runner, credential,
+                        credentials_path=login_utils.DEFAULT_CREDENTIAL_PATH):
+  """Logs in into a Pinterest account on mobile.
+
+  This function navigates the tab into Pinterest's login page and logs in a user
+  using credentials in |credential| part of the |credentials_path| file.
+
+  Args:
+    action_runner: Action runner responsible for running actions on the page.
+    credential: The credential to retrieve from the credentials file (string).
+    credentials_path: The path to credential file (string).
+
+  Raises:
+    exceptions.Error: See ExecuteJavaScript()
+    for a detailed list of possible exceptions.
+  """
+  _LoginAccount(action_runner, credential, credentials_path)
+  action_runner.WaitForElement(selector='svg[aria-label="Search"]')
+

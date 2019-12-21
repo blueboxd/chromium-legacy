@@ -1690,6 +1690,18 @@ class PinterestMobileStory(_InfiniteScrollStory):
   TAGS = [story_tags.INFINITE_SCROLL, story_tags.YEAR_2016]
 
 
+class PinterestMobileStory2019(_InfiniteScrollStory):
+  NAME = 'browse:social:pinterest_infinite_scroll:2019'
+  URL = 'https://www.pinterest.co.uk'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.INFINITE_SCROLL, story_tags.YEAR_2019]
+  # TODO(crbug.com/862077): Story breaks if login is skipped during replay.
+  SKIP_LOGIN = False
+
+  def _Login(self, action_runner):
+    pinterest_login.LoginMobileAccount(action_runner, 'googletest')
+
+
 class TumblrStory2018(_InfiniteScrollStory):
   NAME = 'browse:social:tumblr_infinite_scroll:2018'
   URL = 'https://techcrunch.tumblr.com/'

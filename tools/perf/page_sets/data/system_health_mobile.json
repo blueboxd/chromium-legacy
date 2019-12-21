@@ -153,6 +153,9 @@
         "browse:social:pinterest_infinite_scroll": {
             "DEFAULT": "system_health_mobile_063.wprgo"
         },
+        "browse:social:pinterest_infinite_scroll:2019": {
+            "DEFAULT": "system_health_mobile_d8fcf4e2bf.wprgo"
+        },
         "browse:social:tumblr_infinite_scroll": {
             "DEFAULT": "system_health_mobile_062.wprgo"
         },

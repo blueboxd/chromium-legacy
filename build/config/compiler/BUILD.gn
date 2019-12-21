@@ -631,6 +631,15 @@ config("compiler") {
             "-Wl,--thinlto-cache-policy,$cache_policy",
           ]
         }
+
+        if (llvm_force_head_revision) {
+          # Disable TypePromotion to see if that fixes the ToT bots.
+          # TODO(crbug.com/1033863): Get this fixed upstream.
+          ldflags += [
+            "-Wl,-mllvm",
+            "-Wl,-disable-type-promotion=true",
+          ]
+        }
       } else {
         ldflags += [ "-Wl,-plugin-opt,jobs=" + max_jobs_per_link ]
       }

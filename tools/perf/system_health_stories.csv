@@ -59,6 +59,7 @@ browse:social:facebook_infinite_scroll:2018,,"desktop,mobile","2018,infinite_scr
 browse:social:instagram,,mobile,"2016,emerging_market"
 browse:social:instagram:2019,,mobile,"2019,emerging_market"
 browse:social:pinterest_infinite_scroll,,mobile,"2016,infinite_scroll"
+browse:social:pinterest_infinite_scroll:2019,,mobile,"2019,infinite_scroll"
 browse:social:tumblr_infinite_scroll:2018,,"desktop,mobile","2018,infinite_scroll,javascript_heavy"
 browse:social:twitter,,mobile,2016
 browse:social:twitter:2018,,desktop,2018

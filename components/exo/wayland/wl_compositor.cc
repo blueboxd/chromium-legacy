@@ -96,10 +96,10 @@ void surface_frame(wl_client* client,
       wl_resource_create(client, &wl_callback_interface, 1, callback);
 
   // base::Unretained is safe as the resource owns the callback.
-  auto cancelable_callback =
-      std::make_unique<base::CancelableCallback<void(base::TimeTicks)>>(
-          base::Bind(&HandleSurfaceFrameCallback,
-                     base::Unretained(callback_resource)));
+  auto cancelable_callback = std::make_unique<
+      base::CancelableRepeatingCallback<void(base::TimeTicks)>>(
+      base::BindRepeating(&HandleSurfaceFrameCallback,
+                          base::Unretained(callback_resource)));
 
   GetUserDataAs<Surface>(resource)->RequestFrameCallback(
       cancelable_callback->callback());

@@ -227,6 +227,10 @@ class VIEWS_EXPORT AnimatingLayoutManager : public LayoutManagerBase {
   // current animation.
   void CalculateFadeInfos();
 
+  // Called when resetting the layout; resolves any in-progress fades so that a
+  // view that should be rendered invisible actually is.
+  void ResolveFades();
+
   // Calculates a kScaleFrom[Minimum|Zero] fade and returns the resulting child
   // layout info.
   ChildLayout CalculateScaleFade(const LayoutFadeInfo& fade_info,

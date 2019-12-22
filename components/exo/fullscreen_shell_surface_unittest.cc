@@ -76,7 +76,7 @@ TEST_F(FullscreenShellSurfaceTest, CloseCallback) {
 
   int close_call_count = 0;
   fullscreen_surface->set_close_callback(
-      base::Bind(&Close, base::Unretained(&close_call_count)));
+      base::BindRepeating(&Close, base::Unretained(&close_call_count)));
 
   surface->Attach(buffer.get());
   surface->Commit();

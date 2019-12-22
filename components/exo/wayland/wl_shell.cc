@@ -156,8 +156,8 @@ void shell_get_shell_surface(wl_client* client,
   shell_surface->SetEnabled(false);
 
   shell_surface->set_configure_callback(
-      base::Bind(&HandleShellSurfaceConfigureCallback,
-                 base::Unretained(shell_surface_resource)));
+      base::BindRepeating(&HandleShellSurfaceConfigureCallback,
+                          base::Unretained(shell_surface_resource)));
 
   shell_surface->set_surface_destroyed_callback(base::BindOnce(
       &wl_resource_destroy, base::Unretained(shell_surface_resource)));

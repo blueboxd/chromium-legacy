@@ -385,31 +385,6 @@ bool GetClusterAtImpl(size_t pos,
   return true;
 }
 
-// Returns the line segment index for the |line|, |text_x| pair. |text_x| is
-// relative to text in the given line. Returns -1 if |text_x| is to the left
-// of text in the line and |line|.segments.size() if it's to the right.
-// |offset_relative_segment| will contain the offset of |text_x| relative to
-// the start of the segment it is contained in.
-int GetLineSegmentContainingXCoord(const internal::Line& line,
-                                   float line_x,
-                                   float* offset_relative_segment) {
-  DCHECK(offset_relative_segment);
-
-  *offset_relative_segment = 0;
-  if (line_x < 0)
-    return -1;
-  for (size_t i = 0; i < line.segments.size(); i++) {
-    const internal::LineSegment& segment = line.segments[i];
-    // segment.x_range is not used because it is in text space.
-    if (line_x < segment.width()) {
-      *offset_relative_segment = line_x;
-      return i;
-    }
-    line_x -= segment.width();
-  }
-  return line.segments.size();
-}
-
 // Internal class to generate Line structures. If |multiline| is true, the text
 // is broken into lines at |words| boundaries such that each line is no longer
 // than |max_width|. If |multiline| is false, only outputs a single Line from
@@ -1395,11 +1370,6 @@ const base::string16& RenderTextHarfBuzz::GetDisplayText() {
   return text_elided() ? display_text() : GetLayoutText();
 }
 
-Size RenderTextHarfBuzz::GetStringSize() {
-  const SizeF size_f = GetStringSizeF();
-  return Size(std::ceil(size_f.width()), size_f.height());
-}
-
 SizeF RenderTextHarfBuzz::GetStringSizeF() {
   EnsureLayout();
   return total_size_;
@@ -1419,95 +1389,6 @@ Size RenderTextHarfBuzz::GetLineSize(const SelectionModel& caret) {
   }
 
   return to_size(lines().back());
-}
-
-float RenderTextHarfBuzz::TotalLineWidth() {
-  EnsureLayout();
-  float total_width = 0;
-  for (const auto& line : lines())
-    total_width += line.size.width();
-  return total_width;
-}
-
-SelectionModel RenderTextHarfBuzz::FindCursorPosition(
-    const Point& view_point,
-    const Point& drag_origin) {
-  EnsureLayout();
-  DCHECK(!lines().empty());
-
-  int line_index = GetLineContainingYCoord((view_point - GetLineOffset(0)).y());
-  // Handle kDragToEndIfOutsideVerticalBounds above or below the text in a
-  // single-line by extending towards the mouse cursor.
-  if (RenderText::kDragToEndIfOutsideVerticalBounds && !multiline() &&
-      (line_index < 0 || line_index >= static_cast<int>(lines().size()))) {
-    SelectionModel selection_start = GetSelectionModelForSelectionStart();
-    int edge = drag_origin.x() == 0 ? GetCursorBounds(selection_start, true).x()
-                                    : drag_origin.x();
-    bool left = view_point.x() < edge;
-    return EdgeSelectionModel(left ? CURSOR_LEFT : CURSOR_RIGHT);
-  }
-  // Otherwise, clamp |line_index| to a valid value or drag to logical ends.
-  if (line_index < 0) {
-    if (RenderText::kDragToEndIfOutsideVerticalBounds)
-      return EdgeSelectionModel(GetVisualDirectionOfLogicalBeginning());
-    line_index = 0;
-  }
-  if (line_index >= static_cast<int>(lines().size())) {
-    if (RenderText::kDragToEndIfOutsideVerticalBounds)
-      return EdgeSelectionModel(GetVisualDirectionOfLogicalEnd());
-    line_index = lines().size() - 1;
-  }
-  const internal::Line& line = lines()[line_index];
-  // Newline segment should be ignored in finding segment index with x
-  // coordinate because it's not drawn.
-  Vector2d newline_offset;
-  if (line.segments.size() > 1 && IsNewlineSegment(line.segments.front()))
-    newline_offset.set_x(line.segments.front().width());
-
-  float point_offset_relative_segment = 0;
-  const int segment_index = GetLineSegmentContainingXCoord(
-      line, (view_point - GetLineOffset(line_index) + newline_offset).x(),
-      &point_offset_relative_segment);
-  if (segment_index < 0)
-    return LineSelectionModel(line_index, CURSOR_LEFT);
-  if (segment_index >= static_cast<int>(line.segments.size()))
-    return LineSelectionModel(line_index, CURSOR_RIGHT);
-  const internal::LineSegment& segment = line.segments[segment_index];
-
-  const internal::TextRunHarfBuzz& run = *GetRunList()->runs()[segment.run];
-  const size_t segment_min_glyph_index =
-      run.CharRangeToGlyphRange(segment.char_range).GetMin();
-  const float segment_offset_relative_run =
-      segment_min_glyph_index != 0
-          ? SkScalarToFloat(run.shape.positions[segment_min_glyph_index].x())
-          : 0;
-  const float point_offset_relative_run =
-      point_offset_relative_segment + segment_offset_relative_run;
-
-  // TODO(crbug.com/676287): Use offset within the glyph to return the correct
-  // grapheme position within a multi-grapheme glyph.
-  for (size_t i = 0; i < run.shape.glyph_count; ++i) {
-    const float end = i + 1 == run.shape.glyph_count
-                          ? run.shape.width
-                          : SkScalarToFloat(run.shape.positions[i + 1].x());
-    const float middle =
-        (end + SkScalarToFloat(run.shape.positions[i].x())) / 2;
-    const size_t index = DisplayIndexToTextIndex(run.shape.glyph_to_char[i]);
-    if (point_offset_relative_run < middle) {
-      return run.font_params.is_rtl ? SelectionModel(IndexOfAdjacentGrapheme(
-                                                         index, CURSOR_FORWARD),
-                                                     CURSOR_BACKWARD)
-                                    : SelectionModel(index, CURSOR_FORWARD);
-    }
-    if (point_offset_relative_run < end) {
-      return run.font_params.is_rtl ? SelectionModel(index, CURSOR_FORWARD)
-                                    : SelectionModel(IndexOfAdjacentGrapheme(
-                                                         index, CURSOR_FORWARD),
-                                                     CURSOR_BACKWARD);
-    }
-  }
-
-  return LineSelectionModel(line_index, CURSOR_RIGHT);
 }
 
 std::vector<Rect> RenderTextHarfBuzz::GetSubstringBounds(const Range& range) {
@@ -1619,11 +1500,6 @@ size_t RenderTextHarfBuzz::GetLineContainingCaret(const SelectionModel& caret) {
   }
 
   return lines().size() - 1;
-}
-
-int RenderTextHarfBuzz::GetDisplayTextBaseline() {
-  EnsureLayout();
-  return lines()[0].baseline;
 }
 
 SelectionModel RenderTextHarfBuzz::AdjacentCharSelectionModel(

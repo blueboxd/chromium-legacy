@@ -19,12 +19,6 @@
 
 #include <hb.h>
 
-namespace base {
-namespace i18n {
-class BreakIterator;
-}
-}
-
 namespace gfx {
 
 class Range;
@@ -214,19 +208,14 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
 
   // RenderText:
   const base::string16& GetDisplayText() override;
-  Size GetStringSize() override;
   SizeF GetStringSizeF() override;
   Size GetLineSize(const SelectionModel& caret) override;
-  float TotalLineWidth() override;
-  SelectionModel FindCursorPosition(const Point& point,
-                                    const Point& drag_origin) override;
   std::vector<Rect> GetSubstringBounds(const Range& range) override;
   RangeF GetCursorSpan(const Range& text_range) override;
   size_t GetLineContainingCaret(const SelectionModel& caret) override;
 
  protected:
   // RenderText:
-  int GetDisplayTextBaseline() override;
   SelectionModel AdjacentCharSelectionModel(
       const SelectionModel& selection,
       VisualCursorDirection direction) override;
@@ -311,10 +300,6 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   bool update_layout_run_list_ : 1;
   bool update_display_run_list_ : 1;
   bool update_display_text_ : 1;
-
-  // ICU grapheme iterator for the layout text. Use GetGraphemeIterator()
-  // to access the iterator.
-  std::unique_ptr<base::i18n::BreakIterator> grapheme_iterator_;
 
   // The total size of the layouted text.
   SizeF total_size_;

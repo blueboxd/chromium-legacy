@@ -87,9 +87,9 @@ class ExoClientPerfTestSuite : public ash::AshTestSuite {
   }
 
  private:
-  void RunTestsOnClientThread(const base::Closure& finished_closure) {
+  void RunTestsOnClientThread(base::OnceClosure finished_closure) {
     result_ = RUN_ALL_TESTS();
-    finished_closure.Run();
+    std::move(finished_closure).Run();
   }
 
   // Do not run the wayland server within the test.

@@ -92,13 +92,14 @@ class Surface final : public ui::PropertyHandler {
 
   // Request notification when it's a good time to produce a new frame. Useful
   // for throttling redrawing operations, and driving animations.
-  using FrameCallback = base::Callback<void(base::TimeTicks frame_time)>;
+  using FrameCallback =
+      base::RepeatingCallback<void(base::TimeTicks frame_time)>;
   void RequestFrameCallback(const FrameCallback& callback);
 
   // Request notification when the next frame is displayed. Useful for
   // throttling redrawing operations, and driving animations.
   using PresentationCallback =
-      base::Callback<void(const gfx::PresentationFeedback&)>;
+      base::RepeatingCallback<void(const gfx::PresentationFeedback&)>;
   void RequestPresentationCallback(const PresentationCallback& callback);
 
   // This sets the region of the surface that contains opaque content.

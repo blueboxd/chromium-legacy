@@ -143,10 +143,10 @@ int XdgToplevelV6ResizeComponent(uint32_t edges) {
 }
 
 using XdgSurfaceConfigureCallback =
-    base::Callback<void(const gfx::Size& size,
-                        ash::WindowStateType state_type,
-                        bool resizing,
-                        bool activated)>;
+    base::RepeatingCallback<void(const gfx::Size& size,
+                                 ash::WindowStateType state_type,
+                                 bool resizing,
+                                 bool activated)>;
 
 uint32_t HandleXdgSurfaceV6ConfigureCallback(
     wl_resource* resource,
@@ -188,13 +188,14 @@ class WaylandToplevel : public aura::WindowObserver {
         shell_surface_data_(
             GetUserDataAs<WaylandXdgSurface>(surface_resource)) {
     shell_surface_data_->shell_surface->host_window()->AddObserver(this);
-    shell_surface_data_->shell_surface->set_close_callback(
-        base::Bind(&WaylandToplevel::OnClose, weak_ptr_factory_.GetWeakPtr()));
+    shell_surface_data_->shell_surface->set_close_callback(base::BindRepeating(
+        &WaylandToplevel::OnClose, weak_ptr_factory_.GetWeakPtr()));
     shell_surface_data_->shell_surface->set_configure_callback(
-        base::Bind(&HandleXdgSurfaceV6ConfigureCallback, surface_resource,
-                   shell_surface_data_->serial_tracker,
-                   base::Bind(&WaylandToplevel::OnConfigure,
-                              weak_ptr_factory_.GetWeakPtr())));
+        base::BindRepeating(
+            &HandleXdgSurfaceV6ConfigureCallback, surface_resource,
+            shell_surface_data_->serial_tracker,
+            base::BindRepeating(&WaylandToplevel::OnConfigure,
+                                weak_ptr_factory_.GetWeakPtr())));
   }
   ~WaylandToplevel() override {
     if (shell_surface_data_)
@@ -426,13 +427,14 @@ class WaylandPopup : aura::WindowObserver {
         shell_surface_data_(
             GetUserDataAs<WaylandXdgSurface>(surface_resource)) {
     shell_surface_data_->shell_surface->host_window()->AddObserver(this);
-    shell_surface_data_->shell_surface->set_close_callback(
-        base::Bind(&WaylandPopup::OnClose, weak_ptr_factory_.GetWeakPtr()));
+    shell_surface_data_->shell_surface->set_close_callback(base::BindRepeating(
+        &WaylandPopup::OnClose, weak_ptr_factory_.GetWeakPtr()));
     shell_surface_data_->shell_surface->set_configure_callback(
-        base::Bind(&HandleXdgSurfaceV6ConfigureCallback, surface_resource,
-                   shell_surface_data_->serial_tracker,
-                   base::Bind(&WaylandPopup::OnConfigure,
-                              weak_ptr_factory_.GetWeakPtr())));
+        base::BindRepeating(
+            &HandleXdgSurfaceV6ConfigureCallback, surface_resource,
+            shell_surface_data_->serial_tracker,
+            base::BindRepeating(&WaylandPopup::OnConfigure,
+                                weak_ptr_factory_.GetWeakPtr())));
   }
   ~WaylandPopup() override {
     if (shell_surface_data_)

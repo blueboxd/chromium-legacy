@@ -433,6 +433,8 @@ void AnimatingLayoutManager::ResetLayoutToSize(const gfx::Size& target_size) {
   if (animation_delegate_)
     animation_delegate_->Reset();
 
+  ResolveFades();
+
   target_layout_ = target_layout_manager()->GetProposedLayout(target_size);
   current_layout_ = target_layout_;
   starting_layout_ = current_layout_;
@@ -493,6 +495,7 @@ bool AnimatingLayoutManager::RecalculateTarget() {
   }
   CalculateFadeInfos();
   UpdateCurrentLayout(0.0);
+
   return true;
 }
 
@@ -527,7 +530,7 @@ void AnimatingLayoutManager::UpdateCurrentLayout(double percent) {
   current_layout_ =
       ProposedLayoutBetween(percent, starting_layout_, target_layout_);
 
-  if (default_fade_mode_ == FadeInOutMode::kHide || fade_infos_.empty())
+  if (fade_infos_.empty())
     return;
 
   std::map<const View*, size_t> view_indices;
@@ -550,7 +553,9 @@ void AnimatingLayoutManager::UpdateCurrentLayout(double percent) {
       } else {
         child_layout.visible = false;
       }
-
+    } else if (default_fade_mode_ == FadeInOutMode::kHide) {
+      child_layout.child_view = fade_info.child_view;
+      child_layout.visible = false;
     } else {
       const double scale_percent =
           fade_info.fading_in ? percent : 1.0 - percent;
@@ -715,6 +720,22 @@ void AnimatingLayoutManager::CalculateFadeInfos() {
                                       prev_info.target_bounds.max_main());
       }
       fade_infos_.push_back(fade_info);
+    }
+  }
+}
+
+void AnimatingLayoutManager::ResolveFades() {
+  // Views that need faded out are views which were were fading out previously
+  // because they were set to not be visible, either by calling SetVisible() or
+  // FadeOut(). Those views will not be included in the new layout but may not
+  // have been allowed to become invisible yet because of the fade-out
+  // animation. Even in the case of FadeInOutMode::kHide, if no frames of the
+  // animation have run, the relevant view may still be visible.
+  for (const LayoutFadeInfo& fade_info : fade_infos_) {
+    View* const child = fade_info.child_view;
+    if (!fade_info.fading_in && host_view()->GetIndexOf(child) >= 0 &&
+        !IsChildViewIgnoredByLayout(child) && !IsChildIncludedInLayout(child)) {
+      SetViewVisibility(child, false);
     }
   }
 }

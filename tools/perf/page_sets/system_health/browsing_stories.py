@@ -226,6 +226,18 @@ class QqMobileStory(_ArticleBrowsingStory):
           story_tags.YEAR_2016]
 
 
+class QqMobileStory2019(_ArticleBrowsingStory):
+  NAME = 'browse:news:qq:2019'
+  URL = 'https://xw.qq.com/#news'
+  ITEM_SELECTOR = '.title'
+  # The page seems to get stuck after three navigations.
+  ITEMS_TO_VISIT = 2
+
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.INTERNATIONAL, story_tags.HEALTH_CHECK,
+          story_tags.YEAR_2019]
+
+
 class RedditDesktopStory2018(_ArticleBrowsingStory):
   """The top website in http://www.alexa.com/topsites/category/News"""
   NAME = 'browse:news:reddit:2018'

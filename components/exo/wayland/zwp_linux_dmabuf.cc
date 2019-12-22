@@ -178,8 +178,8 @@ void linux_buffer_params_create(wl_client* client,
   wl_resource* buffer_resource =
       wl_resource_create(client, &wl_buffer_interface, 1, 0);
 
-  buffer->set_release_callback(base::Bind(&HandleBufferReleaseCallback,
-                                          base::Unretained(buffer_resource)));
+  buffer->set_release_callback(base::BindRepeating(
+      &HandleBufferReleaseCallback, base::Unretained(buffer_resource)));
 
   SetImplementation(buffer_resource, &buffer_implementation, std::move(buffer));
 
@@ -242,8 +242,8 @@ void linux_buffer_params_create_immed(wl_client* client,
   wl_resource* buffer_resource =
       wl_resource_create(client, &wl_buffer_interface, 1, buffer_id);
 
-  buffer->set_release_callback(base::Bind(&HandleBufferReleaseCallback,
-                                          base::Unretained(buffer_resource)));
+  buffer->set_release_callback(base::BindRepeating(
+      &HandleBufferReleaseCallback, base::Unretained(buffer_resource)));
 
   SetImplementation(buffer_resource, &buffer_implementation, std::move(buffer));
 }

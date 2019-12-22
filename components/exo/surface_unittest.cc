@@ -111,8 +111,8 @@ TEST_P(SurfaceTest, Attach) {
 
   // Set the release callback that will be run when buffer is no longer in use.
   int release_buffer_call_count = 0;
-  buffer->set_release_callback(
-      base::Bind(&ReleaseBuffer, base::Unretained(&release_buffer_call_count)));
+  buffer->set_release_callback(base::BindRepeating(
+      &ReleaseBuffer, base::Unretained(&release_buffer_call_count)));
 
   std::unique_ptr<Surface> surface(new Surface);
 
@@ -202,7 +202,7 @@ TEST_P(SurfaceTest, RequestFrameCallback) {
   std::unique_ptr<Surface> surface(new Surface);
 
   surface->RequestFrameCallback(
-      base::Bind(&SetFrameTime, base::Unretained(&frame_time)));
+      base::BindRepeating(&SetFrameTime, base::Unretained(&frame_time)));
   surface->Commit();
 
   // Callback should not run synchronously.

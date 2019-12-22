@@ -58,7 +58,7 @@ TEST_F(BufferTest, ReleaseCallback) {
   // Set the release callback.
   int release_call_count = 0;
   buffer->set_release_callback(
-      base::Bind(&Release, base::Unretained(&release_call_count)));
+      base::BindRepeating(&Release, base::Unretained(&release_call_count)));
 
   buffer->OnAttach();
   viz::TransferableResource resource;
@@ -178,7 +178,7 @@ TEST_F(BufferTest, SurfaceTreeHostDestruction) {
   // Set the release callback.
   int release_call_count = 0;
   buffer->set_release_callback(
-      base::Bind(&Release, base::Unretained(&release_call_count)));
+      base::BindRepeating(&Release, base::Unretained(&release_call_count)));
 
   buffer->OnAttach();
   viz::TransferableResource resource;
@@ -231,7 +231,7 @@ TEST_F(BufferTest, SurfaceTreeHostLastFrame) {
   // Set the release callback.
   int release_call_count = 0;
   buffer->set_release_callback(
-      base::Bind(&Release, base::Unretained(&release_call_count)));
+      base::BindRepeating(&Release, base::Unretained(&release_call_count)));
 
   buffer->OnAttach();
   viz::TransferableResource resource;

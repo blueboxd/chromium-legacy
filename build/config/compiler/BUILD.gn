@@ -632,14 +632,12 @@ config("compiler") {
           ]
         }
 
-        if (llvm_force_head_revision) {
-          # Disable TypePromotion to see if that fixes the ToT bots.
-          # TODO(crbug.com/1033863): Get this fixed upstream.
-          ldflags += [
-            "-Wl,-mllvm",
-            "-Wl,-disable-type-promotion=true",
-          ]
-        }
+        # Disable TypePromotion to see if that fixes the ToT bots.
+        # TODO(crbug.com/1033863): Get this fixed upstream.
+        ldflags += [
+          "-Wl,-mllvm",
+          "-Wl,-disable-type-promotion=true",
+        ]
       } else {
         ldflags += [ "-Wl,-plugin-opt,jobs=" + max_jobs_per_link ]
       }
@@ -1536,6 +1534,9 @@ config("default_warnings") {
 
           # TODO(https://crbug.com/1028110): Evaluate and possible enable.
           "-Wno-deprecated-copy",
+
+          # TODO(https://crbug.com/1031169): Clean up and enable.
+          "-Wno-misleading-indentation",
         ]
 
         if (is_win) {
@@ -1549,13 +1550,6 @@ config("default_warnings") {
           # TODO(https://crbug.com/995993): Clean up and enable.
           "-Wno-implicit-fallthrough",
         ]
-
-        if (llvm_force_head_revision) {
-          cflags += [
-            # TODO(https://crbug.com/1031169): Clean up and enable.
-            "-Wno-misleading-indentation",
-          ]
-        }
       }
     }
   }

@@ -432,20 +432,20 @@ class GFX_EXPORT RenderText {
   // Returns the size required to display the current string (which is the
   // wrapped size in multiline mode). The returned size does not include space
   // reserved for the cursor or the offset text shadows.
-  virtual Size GetStringSize() = 0;
+  Size GetStringSize();
 
   // This is same as GetStringSize except that fractional size is returned.
   // The default implementation is same as GetStringSize. Certain platforms that
   // compute the text size as floating-point values, like Mac, will override
   // this method.
   // See comment in Canvas::GetStringWidthF for its usage.
-  virtual SizeF GetStringSizeF();
+  virtual SizeF GetStringSizeF() = 0;
 
   // Returns the size of the line containing |caret|.
   virtual Size GetLineSize(const SelectionModel& caret) = 0;
 
   // Returns the sum of all the line widths.
-  virtual float TotalLineWidth() = 0;
+  float TotalLineWidth();
 
   // Returns the width of the content (which is the wrapped width in multiline
   // mode). Reserves room for the cursor if |cursor_enabled_| is true.
@@ -467,17 +467,16 @@ class GFX_EXPORT RenderText {
   // |drag_origin| is nonzero, it is used as the baseline for
   // out-of-vertical-bounds drags on platforms that have them, instead of the
   // default origin (the insertion cursor's position).
-  virtual SelectionModel FindCursorPosition(
-      const Point& point,
-      const Point& drag_origin = gfx::Point()) = 0;
-
-  // Returns true if the position is a valid logical index into text(), and is
-  // also a valid grapheme boundary, which may be used as a cursor position.
-  bool IsValidCursorIndex(size_t index);
+  SelectionModel FindCursorPosition(const Point& point,
+                                    const Point& drag_origin = gfx::Point());
 
   // Returns true if the position is a valid logical index into text(). Indices
   // amid multi-character graphemes are allowed here, unlike IsValidCursorIndex.
   bool IsValidLogicalIndex(size_t index) const;
+
+  // Returns true if the position is a valid logical index into text(), and is
+  // also a valid grapheme boundary, which may be used as a cursor position.
+  bool IsValidCursorIndex(size_t index);
 
   // Get the visual bounds of a cursor at |caret|. These bounds typically
   // represent a vertical line if |insert_mode| is true. Pass false for
@@ -644,11 +643,7 @@ class GFX_EXPORT RenderText {
   // GetDisplayTextBaseline() returns the baseline determined by the underlying
   // layout engine, and it changes depending on the text.  GetAlignmentOffset()
   // returns the difference between them.
-  virtual int GetDisplayTextBaseline() = 0;
-
-  void set_cached_bounds_and_offset_valid(bool valid) {
-    cached_bounds_and_offset_valid_ = valid;
-  }
+  int GetDisplayTextBaseline();
 
   // Get the selection model that visually neighbors |position| by |break_type|.
   // The returned value represents a cursor/caret position without a selection.

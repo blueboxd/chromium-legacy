@@ -325,7 +325,7 @@ TEST_F(PointerTest, SetCursorAndSetCursorType) {
       pointer->GetActivePresentationCallbacksForTesting().begin()->second;
   base::RunLoop runloop;
   list.push_back(base::BindRepeating(
-      [](base::Closure callback, const gfx::PresentationFeedback&) {
+      [](base::RepeatingClosure callback, const gfx::PresentationFeedback&) {
         callback.Run();
       },
       runloop.QuitClosure()));

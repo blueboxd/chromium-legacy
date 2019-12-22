@@ -1161,8 +1161,8 @@ void remote_shell_get_remote_surface(wl_client* client,
     shell_surface->set_server_reparent_window(true);
 
   shell_surface->set_close_callback(
-      base::Bind(&HandleRemoteSurfaceCloseCallback,
-                 base::Unretained(remote_surface_resource)));
+      base::BindRepeating(&HandleRemoteSurfaceCloseCallback,
+                          base::Unretained(remote_surface_resource)));
   shell_surface->set_state_changed_callback(
       shell->CreateStateChangedCallback(remote_surface_resource));
   shell_surface->set_geometry_changed_callback(

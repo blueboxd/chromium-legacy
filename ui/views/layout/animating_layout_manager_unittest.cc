@@ -827,6 +827,116 @@ TEST_F(AnimatingLayoutManagerTest,
   EnsureLayout(final_layout);
 }
 
+TEST_F(AnimatingLayoutManagerTest,
+       FadeInOutMode_Hide_HidesViewDuringAnimation) {
+  layout()->SetShouldAnimateBounds(false);
+  layout()->SetDefaultFadeMode(AnimatingLayoutManager::FadeInOutMode::kHide);
+  layout()->SetOrientation(LayoutOrientation::kVertical);
+  FlexLayout* const flex_layout =
+      layout()->SetTargetLayoutManager(std::make_unique<FlexLayout>());
+  flex_layout->SetDefault(kMarginsKey, gfx::Insets(5))
+      .SetCollapseMargins(true)
+      .SetOrientation(LayoutOrientation::kVertical)
+      .SetDefault(kFlexBehaviorKey, kDropOut);
+  view()->SetSize({20, 35});
+  layout()->ResetLayout();
+
+  // Sanity check...
+  const ProposedLayout initial_layout{{20, 50},
+                                      {{child(0), true, {5, 5, 10, 10}},
+                                       {child(1), true, {5, 20, 10, 10}},
+                                       {child(2), false}}};
+  EnsureLayout(initial_layout);
+
+  // Hide middle view.
+  layout()->FadeOut(child(1));
+  EXPECT_TRUE(layout()->is_animating());
+
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+
+  const ProposedLayout middle_layout{
+      {20, 35},
+      {{child(0), true, {5, 5, 10, 10}}, {child(1), false}, {child(2), false}}};
+  EnsureLayout(middle_layout);
+
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  const ProposedLayout final_layout{{20, 35},
+                                    {{child(0), true, {5, 5, 10, 10}},
+                                     {child(1), false},
+                                     {child(2), true, {5, 20, 10, 10}}}};
+  EnsureLayout(final_layout);
+}
+
+TEST_F(AnimatingLayoutManagerTest,
+       FadeInOutMode_Hide_HidesViewDuringAnimation_OneFrame) {
+  layout()->SetShouldAnimateBounds(false);
+  layout()->SetDefaultFadeMode(AnimatingLayoutManager::FadeInOutMode::kHide);
+  layout()->SetOrientation(LayoutOrientation::kVertical);
+  FlexLayout* const flex_layout =
+      layout()->SetTargetLayoutManager(std::make_unique<FlexLayout>());
+  flex_layout->SetDefault(kMarginsKey, gfx::Insets(5))
+      .SetCollapseMargins(true)
+      .SetOrientation(LayoutOrientation::kVertical)
+      .SetDefault(kFlexBehaviorKey, kDropOut);
+  view()->SetSize({20, 35});
+  layout()->ResetLayout();
+
+  // Sanity check...
+  const ProposedLayout initial_layout{{20, 50},
+                                      {{child(0), true, {5, 5, 10, 10}},
+                                       {child(1), true, {5, 20, 10, 10}},
+                                       {child(2), false}}};
+  EnsureLayout(initial_layout);
+
+  // Hide middle view.
+  layout()->FadeOut(child(1));
+  EXPECT_TRUE(layout()->is_animating());
+
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(1000));
+  view()->Layout();
+
+  const ProposedLayout final_layout{{20, 35},
+                                    {{child(0), true, {5, 5, 10, 10}},
+                                     {child(1), false},
+                                     {child(2), true, {5, 20, 10, 10}}}};
+  EnsureLayout(final_layout);
+}
+
+TEST_F(AnimatingLayoutManagerTest,
+       FadeInOutMode_Hide_AnimationResetDuringHide) {
+  layout()->SetShouldAnimateBounds(false);
+  layout()->SetDefaultFadeMode(AnimatingLayoutManager::FadeInOutMode::kHide);
+  layout()->SetOrientation(LayoutOrientation::kVertical);
+  FlexLayout* const flex_layout =
+      layout()->SetTargetLayoutManager(std::make_unique<FlexLayout>());
+  flex_layout->SetDefault(kMarginsKey, gfx::Insets(5))
+      .SetCollapseMargins(true)
+      .SetOrientation(LayoutOrientation::kVertical)
+      .SetDefault(kFlexBehaviorKey, kDropOut);
+  view()->SetSize({20, 35});
+  layout()->ResetLayout();
+
+  // Sanity check...
+  const ProposedLayout initial_layout{{20, 50},
+                                      {{child(0), true, {5, 5, 10, 10}},
+                                       {child(1), true, {5, 20, 10, 10}},
+                                       {child(2), false}}};
+  EnsureLayout(initial_layout);
+
+  // Hide middle view.
+  layout()->FadeOut(child(1));
+  layout()->ResetLayout();
+  view()->Layout();
+
+  const ProposedLayout final_layout{{20, 35},
+                                    {{child(0), true, {5, 5, 10, 10}},
+                                     {child(1), false},
+                                     {child(2), true, {5, 20, 10, 10}}}};
+  EnsureLayout(final_layout);
+}
+
 TEST_F(AnimatingLayoutManagerTest, FadeInOutMode_SlideFromLeading_LastView) {
   const ProposedLayout initial_layout{{35, 20},
                                       {{child(0), true, {5, 5, 10, 10}},

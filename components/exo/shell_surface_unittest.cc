@@ -90,7 +90,7 @@ TEST_F(ShellSurfaceTest, AcknowledgeConfigure) {
 
   const uint32_t kSerial = 1;
   shell_surface->set_configure_callback(
-      base::Bind(&ConfigureFullscreen, kSerial));
+      base::BindRepeating(&ConfigureFullscreen, kSerial));
   shell_surface->SetFullscreen(true);
 
   // Surface origin should not change until configure request is acknowledged.
@@ -522,11 +522,11 @@ TEST_F(ShellSurfaceTest, CloseCallback) {
   int pre_close_call_count = 0;
   int close_call_count = 0;
   shell_surface->set_pre_close_callback(
-      base::Bind(&PreClose, base::Unretained(&pre_close_call_count),
-                 base::Unretained(&close_call_count)));
+      base::BindRepeating(&PreClose, base::Unretained(&pre_close_call_count),
+                          base::Unretained(&close_call_count)));
   shell_surface->set_close_callback(
-      base::Bind(&Close, base::Unretained(&pre_close_call_count),
-                 base::Unretained(&close_call_count)));
+      base::BindRepeating(&Close, base::Unretained(&pre_close_call_count),
+                          base::Unretained(&close_call_count)));
 
   surface->Attach(buffer.get());
   surface->Commit();
@@ -613,10 +613,10 @@ TEST_F(ShellSurfaceTest, ConfigureCallback) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
-  shell_surface->set_configure_callback(
-      base::Bind(&Configure, base::Unretained(&suggested_size),
-                 base::Unretained(&has_state_type),
-                 base::Unretained(&is_resizing), base::Unretained(&is_active)));
+  shell_surface->set_configure_callback(base::BindRepeating(
+      &Configure, base::Unretained(&suggested_size),
+      base::Unretained(&has_state_type), base::Unretained(&is_resizing),
+      base::Unretained(&is_active)));
 
   gfx::Rect geometry(16, 16, 32, 32);
   shell_surface->SetGeometry(geometry);

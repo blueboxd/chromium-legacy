@@ -455,6 +455,9 @@ void FrameSequenceTracker::ReportBeginMainFrame(
   if (ShouldIgnoreBeginFrameSource(args.frame_id.source_id))
     return;
 
+  TRACKER_TRACE_STREAM << "B(" << begin_main_frame_data_.previous_sequence
+                       << "," << args.frame_id.sequence_number << ")";
+
   if (ShouldIgnoreSequence(args.frame_id.sequence_number))
     return;
 
@@ -464,9 +467,6 @@ void FrameSequenceTracker::ReportBeginMainFrame(
   }
 #endif
 
-  TRACKER_TRACE_STREAM << 'B';
-  TRACKER_TRACE_STREAM << "(" << begin_main_frame_data_.previous_sequence << ","
-                       << args.frame_id.sequence_number << ")";
   UpdateTrackedFrameData(&begin_main_frame_data_, args.frame_id.source_id,
                          args.frame_id.sequence_number);
   if (!first_received_main_sequence_ ||
@@ -492,11 +492,12 @@ void FrameSequenceTracker::ReportSubmitFrame(
   DCHECK(is_inside_frame_) << TRACKER_DCHECK_MSG;
   last_processed_impl_sequence_ = ack.frame_id.sequence_number;
 #endif
+
   if (first_submitted_frame_ == 0)
     first_submitted_frame_ = frame_token;
   last_submitted_frame_ = frame_token;
 
-  TRACKER_TRACE_STREAM << 's';
+  TRACKER_TRACE_STREAM << "s(" << frame_token << ")";
   const bool main_changes_after_sequence_started =
       first_received_main_sequence_ &&
       origin_args.frame_id.sequence_number >= first_received_main_sequence_;
@@ -569,7 +570,7 @@ void FrameSequenceTracker::ReportFramePresented(
   if (ignored_frame_tokens_.contains(frame_token))
     return;
 
-  TRACKER_TRACE_STREAM << 'P';
+  TRACKER_TRACE_STREAM << "P(" << frame_token << ")";
 
   TRACE_EVENT_ASYNC_STEP_INTO_WITH_TIMESTAMP0(
       "cc,benchmark", "FrameSequenceTracker", metrics_.get(), "FramePresented",
@@ -639,15 +640,16 @@ void FrameSequenceTracker::ReportImplFrameCausedNoDamage(
   if (ShouldIgnoreBeginFrameSource(ack.frame_id.source_id))
     return;
 
+  TRACKER_TRACE_STREAM << "n(" << ack.frame_id.sequence_number << ")";
+
   // It is possible that this is called before a begin-impl-frame has been
   // dispatched for this frame-sequence. In such cases, ignore this call.
   if (ShouldIgnoreSequence(ack.frame_id.sequence_number))
     return;
+
 #if DCHECK_IS_ON()
   last_processed_impl_sequence_ = ack.frame_id.sequence_number;
 #endif
-
-  TRACKER_TRACE_STREAM << 'n';
   DCHECK_GT(impl_throughput().frames_expected, 0u) << TRACKER_DCHECK_MSG;
   DCHECK_GT(impl_throughput().frames_expected,
             impl_throughput().frames_produced)
@@ -669,9 +671,9 @@ void FrameSequenceTracker::ReportMainFrameCausedNoDamage(
   if (ShouldIgnoreSequence(args.frame_id.sequence_number))
     return;
 
-  TRACKER_TRACE_STREAM << 'N';
-  TRACKER_TRACE_STREAM << "(" << begin_main_frame_data_.previous_sequence << ","
-                       << args.frame_id.sequence_number << ")";
+  TRACKER_TRACE_STREAM << "N(" << begin_main_frame_data_.previous_sequence
+                       << "," << args.frame_id.sequence_number << ")";
+
   DCHECK_GT(main_throughput().frames_expected, 0u) << TRACKER_DCHECK_MSG;
   DCHECK_GT(main_throughput().frames_expected,
             main_throughput().frames_produced)

@@ -18,6 +18,8 @@
 
 namespace blink {
 
+class ExceptionState;
+
 // Implements the PresentationRequest interface from the Presentation API from
 // which websites can start or join presentation connections.
 class MODULES_EXPORT PresentationRequest final
@@ -45,9 +47,9 @@ class MODULES_EXPORT PresentationRequest final
   // ScriptWrappable implementation.
   bool HasPendingActivity() const final;
 
-  ScriptPromise start(ScriptState*);
-  ScriptPromise reconnect(ScriptState*, const String& id);
-  ScriptPromise getAvailability(ScriptState*);
+  ScriptPromise start(ScriptState*, ExceptionState&);
+  ScriptPromise reconnect(ScriptState*, const String& id, ExceptionState&);
+  ScriptPromise getAvailability(ScriptState*, ExceptionState&);
 
   const Vector<KURL>& Urls() const;
 

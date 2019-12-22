@@ -478,16 +478,17 @@ Value FunConcat::Evaluate(EvaluationContext& context) const {
 
   unsigned count = ArgCount();
   for (unsigned i = 0; i < count; ++i) {
-    String str(Arg(i)->Evaluate(context).ToString());
-    result.Append(str);
+    EvaluationContext cloned_context(context);
+    result.Append(Arg(i)->Evaluate(cloned_context).ToString());
   }
 
   return result.ToString();
 }
 
 Value FunStartsWith::Evaluate(EvaluationContext& context) const {
+  EvaluationContext cloned_context(context);
   String s1 = Arg(0)->Evaluate(context).ToString();
-  String s2 = Arg(1)->Evaluate(context).ToString();
+  String s2 = Arg(1)->Evaluate(cloned_context).ToString();
 
   if (s2.IsEmpty())
     return true;
@@ -496,8 +497,9 @@ Value FunStartsWith::Evaluate(EvaluationContext& context) const {
 }
 
 Value FunContains::Evaluate(EvaluationContext& context) const {
+  EvaluationContext cloned_context(context);
   String s1 = Arg(0)->Evaluate(context).ToString();
-  String s2 = Arg(1)->Evaluate(context).ToString();
+  String s2 = Arg(1)->Evaluate(cloned_context).ToString();
 
   if (s2.IsEmpty())
     return true;
@@ -506,8 +508,9 @@ Value FunContains::Evaluate(EvaluationContext& context) const {
 }
 
 Value FunSubstringBefore::Evaluate(EvaluationContext& context) const {
+  EvaluationContext cloned_context(context);
   String s1 = Arg(0)->Evaluate(context).ToString();
-  String s2 = Arg(1)->Evaluate(context).ToString();
+  String s2 = Arg(1)->Evaluate(cloned_context).ToString();
 
   if (s2.IsEmpty())
     return "";
@@ -521,8 +524,9 @@ Value FunSubstringBefore::Evaluate(EvaluationContext& context) const {
 }
 
 Value FunSubstringAfter::Evaluate(EvaluationContext& context) const {
+  EvaluationContext cloned_context(context);
   String s1 = Arg(0)->Evaluate(context).ToString();
-  String s2 = Arg(1)->Evaluate(context).ToString();
+  String s2 = Arg(1)->Evaluate(cloned_context).ToString();
 
   wtf_size_t i = s1.Find(s2);
   if (i == kNotFound)
@@ -563,11 +567,15 @@ static std::pair<unsigned, unsigned> ComputeSubstringStartEnd(double start,
 //
 // <https://www.w3.org/TR/xpath/#function-substring>
 Value FunSubstring::Evaluate(EvaluationContext& context) const {
+  EvaluationContext cloned_context1(context);
+  EvaluationContext cloned_context2(context);
   String source_string = Arg(0)->Evaluate(context).ToString();
-  const double pos = FunRound::Round(Arg(1)->Evaluate(context).ToNumber());
-  const double len = ArgCount() == 3
-                         ? FunRound::Round(Arg(2)->Evaluate(context).ToNumber())
-                         : std::numeric_limits<double>::infinity();
+  const double pos =
+      FunRound::Round(Arg(1)->Evaluate(cloned_context1).ToNumber());
+  const double len =
+      ArgCount() == 3
+          ? FunRound::Round(Arg(2)->Evaluate(cloned_context2).ToNumber())
+          : std::numeric_limits<double>::infinity();
   const auto bounds =
       ComputeSubstringStartEnd(pos, len, source_string.length());
   if (bounds.second <= bounds.first)
@@ -591,9 +599,11 @@ Value FunNormalizeSpace::Evaluate(EvaluationContext& context) const {
 }
 
 Value FunTranslate::Evaluate(EvaluationContext& context) const {
+  EvaluationContext cloned_context1(context);
+  EvaluationContext cloned_context2(context);
   String s1 = Arg(0)->Evaluate(context).ToString();
-  String s2 = Arg(1)->Evaluate(context).ToString();
-  String s3 = Arg(2)->Evaluate(context).ToString();
+  String s2 = Arg(1)->Evaluate(cloned_context1).ToString();
+  String s3 = Arg(2)->Evaluate(cloned_context2).ToString();
   StringBuilder result;
 
   for (unsigned i1 = 0; i1 < s1.length(); ++i1) {

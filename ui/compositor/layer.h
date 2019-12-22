@@ -204,7 +204,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // relative to |this| layer. Prefer SetMasksToBounds() to set the clip to the
   // bounds of |this| layer. This clips the subtree rooted at |this| layer.
   void SetClipRect(const gfx::Rect& clip_rect);
-  const gfx::Rect& clip_rect() const { return cc_layer_->clip_rect(); }
+  gfx::Rect clip_rect() const { return cc_layer_->clip_rect(); }
 
   // The opacity of the layer. The opacity is applied to each pixel of the
   // texture (resulting alpha = opacity * alpha).

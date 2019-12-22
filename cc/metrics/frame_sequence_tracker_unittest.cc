@@ -16,6 +16,20 @@
 
 namespace cc {
 
+namespace {
+
+const char* ParseNumber(const char* str, uint64_t* retvalue) {
+  uint64_t number = 0;
+  for (; *str >= '0' && *str <= '9'; ++str) {
+    number *= 10;
+    number += *str - '0';
+  }
+  *retvalue = number;
+  return str;
+}
+
+}  // namespace
+
 class FrameSequenceTrackerTest : public testing::Test {
  public:
   const uint32_t kImplDamage = 0x1;
@@ -168,6 +182,101 @@ class FrameSequenceTrackerTest : public testing::Test {
         "Graphics.Smoothness.Throughput.MainThread.TouchScroll", 2u);
     histogram_tester.ExpectTotalCount(
         "Graphics.Smoothness.Throughput.SlowerThread.TouchScroll", 3u);
+  }
+
+  void GenerateSequence(const char* str) {
+    const uint64_t source_id = 1;
+    uint64_t current_frame = 0;
+    while (*str) {
+      const char command = *str++;
+      uint64_t sequence = 0, dummy = 0;
+      switch (command) {
+        case 'b':
+        case 'P':
+        case 'n':
+        case 's':
+        case 'e':
+          ASSERT_EQ(*str, '(') << command;
+          str = ParseNumber(++str, &sequence);
+          ASSERT_EQ(*str, ')');
+          ++str;
+          break;
+
+        case 'B':
+        case 'N':
+          ASSERT_EQ(*str, '(');
+          str = ParseNumber(++str, &dummy);
+          ASSERT_EQ(*str, ',');
+          str = ParseNumber(++str, &sequence);
+          ASSERT_EQ(*str, ')');
+          ++str;
+          break;
+
+        case 'R':
+          break;
+
+        default:
+          NOTREACHED() << command << str;
+      }
+
+      switch (command) {
+        case 'b':
+          current_frame = sequence;
+          collection_.NotifyBeginImplFrame(
+              CreateBeginFrameArgs(source_id, sequence));
+          break;
+
+        case 'P':
+          collection_.NotifyFramePresented(
+              sequence, {base::TimeTicks::Now(),
+                         viz::BeginFrameArgs::DefaultInterval(), 0});
+          break;
+
+        case 'R':
+          collection_.NotifyPauseFrameProduction();
+          break;
+
+        case 'n':
+          collection_.NotifyImplFrameCausedNoDamage(
+              viz::BeginFrameAck(source_id, sequence, false, 0));
+          break;
+
+        case 's': {
+          auto frame_token = sequence;
+          auto args = CreateBeginFrameArgs(source_id, current_frame);
+          auto main_args = args;
+          if (*str == 'S') {
+            ++str;
+            ASSERT_EQ(*str, '(');
+            str = ParseNumber(++str, &sequence);
+            ASSERT_EQ(*str, ')');
+            ++str;
+            main_args = CreateBeginFrameArgs(source_id, sequence);
+          }
+          collection_.NotifySubmitFrame(
+              frame_token, /*has_missing_content=*/false,
+              viz::BeginFrameAck(args, true), main_args);
+          break;
+        }
+
+        case 'e':
+          collection_.NotifyFrameEnd(CreateBeginFrameArgs(source_id, sequence));
+          break;
+
+        case 'B':
+          collection_.NotifyBeginMainFrame(
+              CreateBeginFrameArgs(source_id, sequence));
+          break;
+
+        case 'N':
+          collection_.NotifyMainFrameCausedNoDamage(
+              CreateBeginFrameArgs(source_id, sequence));
+          break;
+
+        default:
+          NOTREACHED();
+      }
+    }
   }
 
   void ReportMetrics() { tracker_->ReportMetricsForTesting(); }
@@ -509,6 +618,24 @@ TEST_F(FrameSequenceTrackerTest, BeginMainFrameSubmit) {
   histogram_tester.ExpectTotalCount(metric, 1u);
   EXPECT_THAT(histogram_tester.GetAllSamples(metric),
               testing::ElementsAre(base::Bucket(99, 1)));
+}
+
+TEST_F(FrameSequenceTrackerTest, SimpleSequenceOneFrame) {
+  const char sequence[] = "b(1)B(0,1)s(1)S(1)e(1)P(1)";
+  GenerateSequence(sequence);
+  EXPECT_EQ(ImplThroughput().frames_expected, 1u);
+  EXPECT_EQ(MainThroughput().frames_expected, 1u);
+  EXPECT_EQ(ImplThroughput().frames_produced, 1u);
+  EXPECT_EQ(MainThroughput().frames_produced, 1u);
+}
+
+TEST_F(FrameSequenceTrackerTest, SimpleSequenceOneFrameNoDamage) {
+  const char sequence[] = "b(1)B(0,1)N(1,1)n(1)e(1)";
+  GenerateSequence(sequence);
+  EXPECT_EQ(ImplThroughput().frames_expected, 0u);
+  EXPECT_EQ(MainThroughput().frames_expected, 0u);
+  EXPECT_EQ(ImplThroughput().frames_produced, 0u);
+  EXPECT_EQ(MainThroughput().frames_produced, 0u);
 }
 
 }  // namespace cc

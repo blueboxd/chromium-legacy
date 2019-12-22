@@ -2282,6 +2282,9 @@ void ShelfView::ShelfItemRemoved(int model_index, const ShelfItem& old_item) {
     shelf_->tooltip()->Close();
 
   if (view->GetVisible()) {
+    if (chromeos::switches::ShouldShowScrollableShelf())
+      UpdateVisibleIndices();
+
     // The first animation fades out the view. When done we'll animate the rest
     // of the views to their target location.
     bounds_animator_->AnimateViewTo(view.get(), view->bounds());
@@ -2636,16 +2639,13 @@ base::string16 ShelfView::GetTitleForChildView(const views::View* view) const {
   return item ? item->title : base::string16();
 }
 
-bool ShelfView::UpdateVisibleIndices() {
+void ShelfView::UpdateVisibleIndices() {
   DCHECK_EQ(true, chromeos::switches::ShouldShowScrollableShelf());
-  const int previous_first_visible_index = first_visible_index_;
-  const int previous_last_visible_index = last_visible_index_;
 
+  // When the scrollable shelf is enabled, ShelfView's |last_visible_index_| is
+  // always the index to the last shelf item.
   first_visible_index_ = view_model()->view_size() == 0 ? -1 : 0;
   last_visible_index_ = model_->item_count() - 1;
-
-  return (first_visible_index_ != previous_first_visible_index) ||
-         (last_visible_index_ != previous_last_visible_index);
 }
 
 }  // namespace ash

@@ -350,13 +350,13 @@ class XRSession final
   void OnEnvironmentProviderError();
 
   void ProcessAnchorsData(
-      const device::mojom::blink::XRAnchorsDataPtr& tracked_anchors_data,
+      const device::mojom::blink::XRAnchorsData* tracked_anchors_data,
       double timestamp);
 
   void CleanUpUnusedHitTestSources();
 
   void ProcessHitTestData(
-      const device::mojom::blink::XRHitTestSubscriptionResultsDataPtr&
+      const device::mojom::blink::XRHitTestSubscriptionResultsData*
           hit_test_data);
 
   void HandleShutdown();

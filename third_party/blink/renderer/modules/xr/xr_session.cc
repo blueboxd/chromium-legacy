@@ -949,7 +949,7 @@ void XRSession::OnEnvironmentProviderError() {
 }
 
 void XRSession::ProcessAnchorsData(
-    const device::mojom::blink::XRAnchorsDataPtr& tracked_anchors_data,
+    const device::mojom::blink::XRAnchorsData* tracked_anchors_data,
     double timestamp) {
   TRACE_EVENT0("xr", __func__);
 
@@ -1015,7 +1015,7 @@ void XRSession::CleanUpUnusedHitTestSources() {
 }
 
 void XRSession::ProcessHitTestData(
-    const device::mojom::blink::XRHitTestSubscriptionResultsDataPtr&
+    const device::mojom::blink::XRHitTestSubscriptionResultsData*
         hit_test_subscriptions_data) {
   DVLOG(2) << __func__;
 
@@ -1413,9 +1413,9 @@ void XRSession::UpdateWorldUnderstandingStateForFrame(
   // Update objects that might change on per-frame basis.
   if (frame_data) {
     world_information_->ProcessPlaneInformation(
-        frame_data->detected_planes_data, timestamp);
-    ProcessAnchorsData(frame_data->anchors_data, timestamp);
-    ProcessHitTestData(frame_data->hit_test_subscription_results);
+        frame_data->detected_planes_data.get(), timestamp);
+    ProcessAnchorsData(frame_data->anchors_data.get(), timestamp);
+    ProcessHitTestData(frame_data->hit_test_subscription_results.get());
   } else {
     world_information_->ProcessPlaneInformation(nullptr, timestamp);
     ProcessAnchorsData(nullptr, timestamp);

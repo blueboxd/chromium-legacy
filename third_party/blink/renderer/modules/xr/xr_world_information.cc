@@ -34,7 +34,7 @@ XRPlaneSet* XRWorldInformation::detectedPlanes() const {
 }
 
 void XRWorldInformation::ProcessPlaneInformation(
-    const device::mojom::blink::XRPlaneDetectionDataPtr& detected_planes_data,
+    const device::mojom::blink::XRPlaneDetectionData* detected_planes_data,
     double timestamp) {
   TRACE_EVENT0("xr", __FUNCTION__);
 

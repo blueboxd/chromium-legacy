@@ -808,11 +808,7 @@ void ScrollableShelfView::ViewHierarchyChanged(
   if (details.parent != shelf_view_)
     return;
 
-  // When the scrollable shelf is enabled, ShelfView's |last_visible_index_| is
-  // always the index to the last shelf item. If indices are not updated,
-  // returns early.
-  if (!shelf_view_->UpdateVisibleIndices())
-    return;
+  shelf_view_->UpdateVisibleIndices();
 
   const gfx::Vector2dF old_scroll_offset = scroll_offset_;
 

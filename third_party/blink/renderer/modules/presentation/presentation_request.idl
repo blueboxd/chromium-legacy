@@ -13,9 +13,9 @@
 ] interface PresentationRequest : EventTarget {
     [CallWith=ExecutionContext, RaisesException] constructor(USVString url);
     [CallWith=ExecutionContext, RaisesException] constructor(sequence<USVString> urls);
-    [CallWith=ScriptState, MeasureAs=PresentationRequestStart] Promise<PresentationConnection> start();
-    [CallWith=ScriptState, MeasureAs=PresentationRequestReconnect] Promise<PresentationConnection> reconnect(DOMString id);
-    [CallWith=ScriptState, MeasureAs=PresentationRequestGetAvailability] Promise<PresentationAvailability> getAvailability();
+    [CallWith=ScriptState, RaisesException, MeasureAs=PresentationRequestStart] Promise<PresentationConnection> start();
+    [CallWith=ScriptState, RaisesException, MeasureAs=PresentationRequestReconnect] Promise<PresentationConnection> reconnect(DOMString id);
+    [CallWith=ScriptState, RaisesException, MeasureAs=PresentationRequestGetAvailability] Promise<PresentationAvailability> getAvailability();
 
     attribute EventHandler onconnectionavailable;
 };

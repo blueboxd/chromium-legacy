@@ -70,8 +70,9 @@ NumericOp::NumericOp(Opcode opcode, Expression* lhs, Expression* rhs)
 }
 
 Value NumericOp::Evaluate(EvaluationContext& context) const {
+  EvaluationContext cloned_context(context);
   Value lhs(SubExpr(0)->Evaluate(context));
-  Value rhs(SubExpr(1)->Evaluate(context));
+  Value rhs(SubExpr(1)->Evaluate(cloned_context));
 
   double left_val = lhs.ToNumber();
   double right_val = rhs.ToNumber();
@@ -203,8 +204,9 @@ bool EqTestOp::Compare(EvaluationContext& context,
 }
 
 Value EqTestOp::Evaluate(EvaluationContext& context) const {
+  EvaluationContext cloned_context(context);
   Value lhs(SubExpr(0)->Evaluate(context));
-  Value rhs(SubExpr(1)->Evaluate(context));
+  Value rhs(SubExpr(1)->Evaluate(cloned_context));
 
   return Compare(context, lhs, rhs);
 }
@@ -220,6 +222,7 @@ bool LogicalOp::ShortCircuitOn() const {
 }
 
 Value LogicalOp::Evaluate(EvaluationContext& context) const {
+  EvaluationContext cloned_context(context);
   Value lhs(SubExpr(0)->Evaluate(context));
 
   // This is not only an optimization, http://www.w3.org/TR/xpath
@@ -228,7 +231,7 @@ Value LogicalOp::Evaluate(EvaluationContext& context) const {
   if (lhs_bool == ShortCircuitOn())
     return lhs_bool;
 
-  return SubExpr(1)->Evaluate(context).ToBoolean();
+  return SubExpr(1)->Evaluate(cloned_context).ToBoolean();
 }
 
 Value Union::Evaluate(EvaluationContext& context) const {

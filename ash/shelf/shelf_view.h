@@ -293,8 +293,8 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   ShelfAppButton* GetShelfAppButton(const ShelfID& id);
 
   // Updates |first_visible_index_| and |last_visible_index_| when the
-  // scrollable shelf is enabled. Returns whether those two indices are changed.
-  bool UpdateVisibleIndices();
+  // scrollable shelf is enabled.
+  void UpdateVisibleIndices();
 
   // If there is animation associated with |view| in |bounds_animator_|,
   // stops the animation.

@@ -33,7 +33,7 @@
 #include "media/base/video_types.h"
 #include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/macros.h"
-#include "media/gpu/v4l2/v4l2_image_processor.h"
+#include "media/gpu/v4l2/v4l2_image_processor_backend.h"
 #include "media/gpu/v4l2/v4l2_stateful_workaround.h"
 #include "media/gpu/v4l2/v4l2_vda_helpers.h"
 #include "media/video/h264_parser.h"
@@ -2193,7 +2193,7 @@ bool V4L2VideoDecodeAccelerator::CreateBuffersForFormat(
   if (image_processor_device_) {
     egl_image_size_ = visible_size_;
     egl_image_planes_count_ = 0;
-    if (!V4L2ImageProcessor::TryOutputFormat(
+    if (!V4L2ImageProcessorBackend::TryOutputFormat(
             output_format_fourcc_->ToV4L2PixFmt(),
             egl_image_format_fourcc_->ToV4L2PixFmt(), coded_size_,
             &egl_image_size_, &egl_image_planes_count_)) {
@@ -2335,7 +2335,7 @@ bool V4L2VideoDecodeAccelerator::SetupFormats() {
   DCHECK(!image_processor_device_);
   if (!output_format_fourcc_) {
     VLOGF(2) << "Could not find a usable output format. Try image processor";
-    if (!V4L2ImageProcessor::IsSupported()) {
+    if (!V4L2ImageProcessorBackend::IsSupported()) {
       VLOGF(1) << "Image processor not available";
       return false;
     }

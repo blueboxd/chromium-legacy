@@ -32,6 +32,41 @@ namespace media {
 
 namespace {
 
+std::pair<int32_t, int32_t> GetTargetFrameRateRange(
+    const cros::mojom::CameraMetadataPtr& static_metadata,
+    int target_frame_rate,
+    bool prefer_constant_frame_rate) {
+  int32_t result_min = 0;
+  int32_t result_max = 0;
+  auto available_frame_rates = GetMetadataEntryAsSpan<int32_t>(
+      static_metadata, cros::mojom::CameraMetadataTag::
+                           ANDROID_CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES);
+  for (size_t idx = 0; idx < available_frame_rates.size(); idx += 2) {
+    int32_t min = available_frame_rates[idx];
+    int32_t max = available_frame_rates[idx + 1];
+    if (max != target_frame_rate) {
+      continue;
+    }
+
+    if (result_min != 0) {
+      if (prefer_constant_frame_rate && min <= result_min) {
+        // If we prefer constant frame rate, we prefer a smaller range.
+        continue;
+      } else if (!prefer_constant_frame_rate && min >= result_min) {
+        // Othwewise, we prefer a larger range.
+        continue;
+      }
+    }
+    result_min = min;
+    result_max = max;
+
+    if (prefer_constant_frame_rate && min == max) {
+      break;
+    }
+  }
+  return std::make_pair(result_min, result_max);
+}
+
 // The result of max_width and max_height could be zero if the stream
 // is not in the pre-defined configuration.
 void GetStreamResolutions(const cros::mojom::CameraMetadataPtr& static_metadata,
@@ -873,21 +908,23 @@ void CameraDeviceDelegate::OnGotFpsRange(
     SetFpsRangeInMetadata(&settings, specified_fps_range->GetMin(),
                           specified_fps_range->GetMax());
   } else {
-    auto default_range = GetMetadataEntryAsSpan<int32_t>(
-        settings,
-        cros::mojom::CameraMetadataTag::ANDROID_CONTROL_AE_TARGET_FPS_RANGE);
     int32_t requested_frame_rate =
         std::round(chrome_capture_params_.requested_format.frame_rate);
-    // We should respect the requested fps from standard API if the requested
-    // fps is out of the range of the default one or there is no default fps
-    // range. Otherwise, we could just use the default range which is given by
-    // camera HAL.
-    if (default_range.size() != 2 ||
-        (requested_frame_rate < default_range[0] ||
-         requested_frame_rate > default_range[1])) {
-      SetFpsRangeInMetadata(&settings, requested_frame_rate,
-                            requested_frame_rate);
+    bool prefer_constant_frame_rate =
+        camera_app_device_ && camera_app_device_->GetCaptureIntent() ==
+                                  cros::mojom::CaptureIntent::VIDEO_RECORD;
+    int32_t target_min, target_max;
+    std::tie(target_min, target_max) = GetTargetFrameRateRange(
+        static_metadata_, requested_frame_rate, prefer_constant_frame_rate);
+    if (target_min == 0 || target_max == 0) {
+      device_context_->SetErrorState(
+          media::VideoCaptureError::
+              kCrosHalV3DeviceDelegateFailedToGetDefaultRequestSettings,
+          FROM_HERE, "Failed to get valid frame rate range");
+      return;
     }
+
+    SetFpsRangeInMetadata(&settings, target_min, target_max);
   }
   request_manager_->StartPreview(std::move(settings));
 

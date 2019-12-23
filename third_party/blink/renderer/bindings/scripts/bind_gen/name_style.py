@@ -132,17 +132,27 @@ def namespace_f(format_string, *args, **kwargs):
 def _concat(style_func, args):
     assert callable(style_func)
 
-    return style_func(" ".join(map(str, args)))
+    return style_func(" ".join(map(_tokenize, args)))
 
 
 def _format(style_func, format_string, *args, **kwargs):
     assert callable(style_func)
     assert isinstance(format_string, str)
 
-    args = map(style_func, map(str, args))
+    args = map(style_func, map(_tokenize, args))
     for key, value in kwargs.iteritems():
-        kwargs[key] = style_func(str(value))
+        kwargs[key] = style_func(_tokenize(value))
     return format_string.format(*args, **kwargs)
+
+
+def _tokenize(s):
+    s = str(s)
+    if "_" in s and s.isupper():
+        # NameStyleConverter doesn't treat "ABC_DEF" as two tokens of "abc" and
+        # "def" while treating "abc_def" as "abc" and "def".  Help
+        # NameStyleConverter by lowering the string.
+        return s.lower()
+    return s
 
 
 class raw(object):

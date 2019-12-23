@@ -147,10 +147,7 @@ async function transferBetweenVolumes(transferInfo) {
     const myDriveContent = TestEntryInfo.getExpectedRows(
         driveFiles.filter(e => e.teamDriveName === '' && e.computerName === ''));
     // Select + expand + wait for its content.
-    chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-        'selectFolderInTree', appId, ['Google Drive']));
-    chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-        'expandSelectedFolderInTree', appId, []));
+    await navigateWithDirectoryTree(appId, '/My Drive');
     await remoteCall.waitForFiles(appId, myDriveContent);
   }
 
@@ -657,7 +654,6 @@ testcase.transferInfoIsRemembered = async () => {
  * Tests that destination text line shows name for USB targets.
  */
 testcase.transferToUsbHasDestinationText = async () => {
-  const USB_VOLUME_QUERY = '#directory-tree [volume-type-icon="removable"]';
   const entry = ENTRIES.hello;
 
   // Open files app.
@@ -667,6 +663,7 @@ testcase.transferToUsbHasDestinationText = async () => {
   await sendTestMessage({name: 'mountFakeUsbEmpty'});
 
   // Wait for the USB volume to mount.
+  const USB_VOLUME_QUERY = '#directory-tree [volume-type-icon="removable"]';
   await remoteCall.waitForElement(appId, USB_VOLUME_QUERY);
 
   // Select the file.
@@ -678,8 +675,7 @@ testcase.transferToUsbHasDestinationText = async () => {
       await remoteCall.callRemoteTestUtil('execCommand', appId, ['copy']));
 
   // Select USB volume.
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'selectInDirectoryTree', appId, [USB_VOLUME_QUERY]));
+  await navigateWithDirectoryTree(appId, '/fake-usb');
 
   // Tell the background page to never finish the file copy.
   await remoteCall.callRemoteTestUtil(

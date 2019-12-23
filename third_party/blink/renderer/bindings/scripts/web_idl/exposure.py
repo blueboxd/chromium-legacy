@@ -94,6 +94,16 @@ class Exposure(object):
             return False
         return self._only_in_secure_contexts
 
+    @property
+    def is_context_dependent(self):
+        """
+        Returns True if the exposure of this construct depends on a context.
+        """
+        return bool(self.global_names_and_features
+                    or self.context_dependent_runtime_enabled_features
+                    or self.context_enabled_features
+                    or self.only_in_secure_contexts)
+
 
 class ExposureMutable(Exposure):
     def __init__(self):

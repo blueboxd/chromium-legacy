@@ -33,6 +33,7 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_installed_scripts_sender.h"
+#include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -1687,6 +1688,7 @@ void ServiceWorkerVersion::StartWorkerInternal() {
 
   auto provider_info =
       blink::mojom::ServiceWorkerProviderInfoForStartWorker::New();
+  DCHECK(!provider_host_);
   provider_host_ = ServiceWorkerProviderHost::CreateForServiceWorker(
       context(), base::WrapRefCounted(this), &provider_info);
 
@@ -2090,6 +2092,7 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
   receiver_.reset();
   pending_external_requests_.clear();
   worker_is_idle_on_renderer_ = true;
+  provider_host_.reset();
 
   for (auto& observer : observers_)
     observer.OnRunningStateChanged(this);
@@ -2260,6 +2263,7 @@ void ServiceWorkerVersion::InitializeGlobalScope() {
   // service worker startup.
   DCHECK(registration);
 
+  DCHECK(provider_host_);
   service_worker_remote_->InitializeGlobalScope(
       std::move(service_worker_host_),
       provider_host_->container_host()

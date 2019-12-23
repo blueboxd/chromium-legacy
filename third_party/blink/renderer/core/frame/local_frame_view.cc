@@ -458,13 +458,6 @@ void LocalFrameView::FrameRectsChanged(const IntRect& old_rect) {
     if (frame_->IsMainFrame())
       frame_->GetPage()->GetVisualViewport().MainFrameDidChangeSize();
     GetFrame().Loader().RestoreScrollPositionAndViewState();
-    if (GetScrollableArea()) {
-      if (GetScrollableArea()->ApplyPendingHistoryRestoreScrollOffset()) {
-        if (ScrollingCoordinator* scrolling_coordinator =
-                GetFrame().GetPage()->GetScrollingCoordinator())
-          scrolling_coordinator->FrameViewRootLayerDidChange(this);
-      }
-    }
   }
 }
 
@@ -1383,11 +1376,11 @@ void LocalFrameView::ProcessUrlFragment(const KURL& url,
   if (anchor) {
     fragment_anchor_ = anchor;
     fragment_anchor_->Installed();
-    // Post-load, same-document navigations need to schedule a frame in which
-    // the fragment anchor will be invoked. It will be done after layout as
-    // part of the lifecycle.
-    if (same_document_navigation)
-      ScheduleAnimation();
+
+    // Layout needs to be clean for scrolling but if layout is needed, we'll
+    // invoke after layout is completed so no need to do it here.
+    if (!NeedsLayout())
+      InvokeFragmentAnchor();
   }
 }
 
@@ -1473,6 +1466,9 @@ void LocalFrameView::HandleLoadCompleted() {
   // reduce the size of the frame.
   if (auto_size_info_)
     auto_size_info_->AutoSizeIfNeeded();
+
+  if (fragment_anchor_)
+    fragment_anchor_->DidCompleteLoad();
 }
 
 void LocalFrameView::ClearLayoutSubtreeRoot(const LayoutObject& root) {
@@ -2971,10 +2967,6 @@ void LocalFrameView::UpdateStyleAndLayoutIfNeededRecursive() {
 
   if (Lifecycle().GetState() < DocumentLifecycle::kLayoutClean)
     Lifecycle().AdvanceTo(DocumentLifecycle::kLayoutClean);
-
-  // If we're restoring a scroll position from history, that takes precedence
-  // over scrolling to the anchor in the URL.
-  frame_->GetDocument()->ApplyScrollRestorationLogic();
 
   if (AXObjectCache* cache = GetFrame().GetDocument()->ExistingAXObjectCache())
     cache->ProcessUpdatesAfterLayout(*GetFrame().GetDocument());

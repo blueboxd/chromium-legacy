@@ -165,10 +165,7 @@ public class LayerTitleCache implements TitleCache {
         if (mFaviconHelper == null) mFaviconHelper = new FaviconHelper();
 
         // Since tab#getProfile() is not available by this time, we will use whatever last used
-        // profile. This should be normal profile since fetching favicons should normally happen on
-        // a cold start. Return otherwise.
-        if (Profile.getLastUsedProfile().hasOffTheRecordProfile()) return;
-
+        // profile.
         mFaviconHelper.getLocalFaviconImageForURL(
                 Profile.getLastUsedProfile(),
                 tab.getUrl(),

@@ -53,6 +53,8 @@ class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
 
   void PerformPreRafActions() override;
 
+  void DidCompleteLoad() override;
+
   // Removes text match highlights if any highlight is in view.
   bool Dismiss() override;
 

@@ -706,12 +706,6 @@ void VisualViewport::SetScrollOffset(const ScrollOffset& offset,
                                   scroll_behavior, std::move(on_finish));
 }
 
-void VisualViewport::SetScrollOffset(const ScrollOffset& offset,
-                                     ScrollType scroll_type,
-                                     ScrollBehavior scroll_behavior) {
-  SetScrollOffset(offset, scroll_type, scroll_behavior, ScrollCallback());
-}
-
 PhysicalRect VisualViewport::ScrollIntoView(
     const PhysicalRect& rect_in_absolute,
     const WebScrollIntoViewParams& params) {

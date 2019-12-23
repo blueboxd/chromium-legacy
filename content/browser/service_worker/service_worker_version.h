@@ -932,7 +932,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Keeps track of the provider hosting this running service worker for this
   // version. |provider_host_| is always valid as long as this version is
   // running.
-  base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
+  std::unique_ptr<ServiceWorkerProviderHost> provider_host_;
 
   // |controllee_map_| and |bfcached_controllee_map_| should not share the same
   // controllee.

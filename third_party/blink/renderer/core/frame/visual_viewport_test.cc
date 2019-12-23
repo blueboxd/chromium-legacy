@@ -965,7 +965,7 @@ TEST_P(VisualViewportTest, TestRestoredFromHistoryItem) {
 
   frame_test_helpers::LoadHistoryItem(WebView()->MainFrameImpl(), item,
                                       mojom::FetchCacheMode::kDefault);
-  UpdateAllLifecyclePhases();
+
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
   EXPECT_EQ(2, visual_viewport.Scale());
 
@@ -995,7 +995,7 @@ TEST_P(VisualViewportTest, TestRestoredFromLegacyHistoryItem) {
 
   frame_test_helpers::LoadHistoryItem(WebView()->MainFrameImpl(), item,
                                       mojom::FetchCacheMode::kDefault);
-  UpdateAllLifecyclePhases();
+
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
   EXPECT_EQ(2, visual_viewport.Scale());
   EXPECT_EQ(ScrollOffset(100, 150),

@@ -37,7 +37,7 @@ class Reference
   }
 
  private:
-  ~Reference() = default;
+  ~Reference() override = default;
   AbiT value_;
 
   DISALLOW_COPY_AND_ASSIGN(Reference);

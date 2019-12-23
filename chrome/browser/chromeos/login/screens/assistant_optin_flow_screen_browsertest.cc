@@ -481,15 +481,7 @@ class AssistantOptInFlowTest : public MixinBasedInProcessBrowserTest {
   LoginManagerMixin login_manager_{&mixin_host_, {test_user_}};
 };
 
-// Test times out in debug builds. crbug.com/1022021
-#if !defined(NDEBUG)
-#define MAYBE_AssistantOptInFlowTest DISABLED_AssistantOptInFlowTest
-class DISABLED_AssistantOptInFlowTest : public AssistantOptInFlowTest {};
-#else
-#define MAYBE_AssistantOptInFlowTest AssistantOptInFlowTest
-#endif
-
-IN_PROC_BROWSER_TEST_F(MAYBE_AssistantOptInFlowTest, Basic) {
+IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, Basic) {
   ash::AssistantState::Get()->NotifyStatusChanged(
       ash::mojom::AssistantState::READY);
 
@@ -525,7 +517,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_AssistantOptInFlowTest, Basic) {
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_AssistantOptInFlowTest, DisableScreenContext) {
+IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, DisableScreenContext) {
   ash::AssistantState::Get()->NotifyStatusChanged(
       ash::mojom::AssistantState::READY);
 
@@ -565,8 +557,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_AssistantOptInFlowTest, DisableScreenContext) {
   EXPECT_FALSE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_AssistantOptInFlowTest,
-                       AssistantStateUpdateAfterShow) {
+IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, AssistantStateUpdateAfterShow) {
   SetUpAssistantScreensForTest();
   assistant_optin_flow_screen_->Show();
 
@@ -604,7 +595,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_AssistantOptInFlowTest,
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_AssistantOptInFlowTest, RetryOnWebviewLoadFail) {
+IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, RetryOnWebviewLoadFail) {
   SetUpAssistantScreensForTest();
   fail_next_value_prop_url_request_ = true;
 
@@ -644,7 +635,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_AssistantOptInFlowTest, RetryOnWebviewLoadFail) {
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_AssistantOptInFlowTest, RejectValueProp) {
+IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, RejectValueProp) {
   SetUpAssistantScreensForTest();
   ash::AssistantState::Get()->NotifyStatusChanged(
       ash::mojom::AssistantState::READY);
@@ -668,7 +659,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_AssistantOptInFlowTest, RejectValueProp) {
   EXPECT_FALSE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_AssistantOptInFlowTest, AskEmailOptIn_NotChecked) {
+IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, AskEmailOptIn_NotChecked) {
   assistant_settings_->set_consent_ui_flags(
       FakeAssistantSettings::CONSENT_UI_FLAG_ASK_EMAIL_OPT_IN);
   ash::AssistantState::Get()->NotifyStatusChanged(
@@ -709,7 +700,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_AssistantOptInFlowTest, AskEmailOptIn_NotChecked) {
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_AssistantOptInFlowTest, AskEmailOptIn_Accepted) {
+IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, AskEmailOptIn_Accepted) {
   assistant_settings_->set_consent_ui_flags(
       FakeAssistantSettings::CONSENT_UI_FLAG_ASK_EMAIL_OPT_IN);
   ash::AssistantState::Get()->NotifyStatusChanged(
@@ -753,7 +744,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_AssistantOptInFlowTest, AskEmailOptIn_Accepted) {
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_AssistantOptInFlowTest, SkipShowingValueProp) {
+IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, SkipShowingValueProp) {
   assistant_settings_->set_consent_ui_flags(
       FakeAssistantSettings::CONSENT_UI_FLAG_SKIP_ACTIVITY_CONTROL);
 
@@ -786,7 +777,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_AssistantOptInFlowTest, SkipShowingValueProp) {
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_AssistantOptInFlowTest,
+IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
                        SkipShowingValuePropAndThirdPartyDisclosure) {
   assistant_settings_->set_consent_ui_flags(
       FakeAssistantSettings::CONSENT_UI_FLAG_SKIP_ACTIVITY_CONTROL |
@@ -818,7 +809,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_AssistantOptInFlowTest,
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_AssistantOptInFlowTest, SpeakerIdEnrollment) {
+IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, SpeakerIdEnrollment) {
   assistant_settings_->set_consent_ui_flags(
       FakeAssistantSettings::CONSENT_UI_FLAG_SKIP_ACTIVITY_CONTROL |
       FakeAssistantSettings::CONSENT_UI_FLAG_SKIP_THIRD_PARTY_DISCLOSURE);
@@ -907,7 +898,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_AssistantOptInFlowTest, SpeakerIdEnrollment) {
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_AssistantOptInFlowTest,
+IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
                        BailOutDuringSpeakerIdEnrollment) {
   assistant_settings_->set_consent_ui_flags(
       FakeAssistantSettings::CONSENT_UI_FLAG_SKIP_ACTIVITY_CONTROL |
@@ -959,7 +950,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_AssistantOptInFlowTest,
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_AssistantOptInFlowTest,
+IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
                        SpeakerIdEnrollmentFailureAndRetry) {
   assistant_settings_->set_consent_ui_flags(
       FakeAssistantSettings::CONSENT_UI_FLAG_SKIP_ACTIVITY_CONTROL |
@@ -1015,7 +1006,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_AssistantOptInFlowTest,
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_AssistantOptInFlowTest, WAADisabledByPolicy) {
+IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, WAADisabledByPolicy) {
   assistant_settings_->set_consent_ui_flags(
       FakeAssistantSettings::CONSENT_UI_FLAG_WAA_DISABLED_BY_POLICY);
 
@@ -1033,8 +1024,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_AssistantOptInFlowTest, WAADisabledByPolicy) {
   EXPECT_FALSE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_AssistantOptInFlowTest,
-                       AssistantDisabledByPolicy) {
+IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, AssistantDisabledByPolicy) {
   assistant_settings_->set_consent_ui_flags(
       FakeAssistantSettings::CONSENT_UI_FLAG_ASSISTANT_DISABLED_BY_POLICY);
 

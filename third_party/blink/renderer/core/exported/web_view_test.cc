@@ -2406,8 +2406,6 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
   main_frame_local->Loader().GetDocumentLoader()->CommitSameDocumentNavigation(
       item1->Url(), WebFrameLoadType::kBackForward, item1.Get(),
       ClientRedirectPolicy::kNotClientRedirect, nullptr, false, nullptr);
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases(
-      WebWidget::LifecycleUpdateReason::kTest);
 
   // Click a different anchor
   main_frame_local->Loader().StartNavigation(FrameLoadRequest(
@@ -2415,23 +2413,15 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
       ResourceRequest(main_frame_local->GetDocument()->CompleteURL("#b"))));
   Persistent<HistoryItem> item3 =
       main_frame_local->Loader().GetDocumentLoader()->GetHistoryItem();
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases(
-      WebWidget::LifecycleUpdateReason::kTest);
 
   // Go back, then forward. The scroll position should be properly set on the
   // forward navigation.
   main_frame_local->Loader().GetDocumentLoader()->CommitSameDocumentNavigation(
       item1->Url(), WebFrameLoadType::kBackForward, item1.Get(),
       ClientRedirectPolicy::kNotClientRedirect, nullptr, false, nullptr);
-
   main_frame_local->Loader().GetDocumentLoader()->CommitSameDocumentNavigation(
       item3->Url(), WebFrameLoadType::kBackForward, item3.Get(),
       ClientRedirectPolicy::kNotClientRedirect, nullptr, false, nullptr);
-  // The scroll offset is only applied via invoking the anchor via the main
-  // lifecycle, or a forced layout.
-  // TODO(chrishtr): At the moment, WebLocalFrameImpl::GetScrollOffset() does
-  // not force a layout. Script-exposed scroll offset-reading methods do,
-  // however. It seems wrong not to force a layout.
   EXPECT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().width);
   EXPECT_GT(web_view_impl->MainFrameImpl()->GetScrollOffset().height, 2000);
 }

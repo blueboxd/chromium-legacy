@@ -142,7 +142,7 @@ class VectorView
     vector_->add_VectorChanged(this, &vector_changed_token_);
   }
 
-  ~VectorView() {
+  ~VectorView() override {
     if (vector_)
       vector_->remove_VectorChanged(vector_changed_token_);
   }

@@ -246,7 +246,7 @@ class Map
       map_->add_MapChanged(this, &map_changed_token_);
     }
 
-    ~MapView() {
+    ~MapView() override {
       if (map_)
         map_->remove_MapChanged(map_changed_token_);
     }

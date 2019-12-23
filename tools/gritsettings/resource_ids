@@ -181,15 +181,15 @@
     "structures": [11170],
   },
   "chrome/browser/resources/tab_strip/tab_strip_resources.grd": {
-    "structures": [11630],
-    "includes": [11650],
+    "structures": [11610],
+    "includes": [11630],
   },
   "chrome/browser/resources/welcome/welcome_resources.grd": {
-    "includes": [11670],
-    "structures": [11700],
+    "includes": [11650],
+    "structures": [11680],
   },
   "chrome/browser/vr/testapp/vr_testapp_resources.grd": {
-    "includes": [11720],
+    "includes": [11700],
   },
   # END chrome/browser section.
 
@@ -287,19 +287,19 @@
   # start with the same id because only one of them is built depending on if
   # src_internal is available. Lower bound for number of resource ids is number
   # of languages (74).
+  "chromeos/components/media_app_ui/resources/mock/media_app_bundle_mock_resources.grd": {
+    "includes": [12390],
+  },
   "chromeos/components/media_app_ui/resources/app/app/media_app_bundle_resources.grd": {
     "META": {"sizes": {"includes": [100],}},  # Relies on src-internal.
     "includes": [12390],
   },
-  "chromeos/components/media_app_ui/resources/mock/media_app_bundle_mock_resources.grd": {
-    "includes": [12390],
-  },
   "chromeos/components/sample_system_web_app_ui/resources/sample_system_web_app_resources.grd": {
-    "includes": [12400],
+    "includes": [12510],
   },
   "chromeos/resources/chromeos_resources.grd": {
     "META": {"join": 2},
-    "includes": [12510],
+    "includes": [12520],
   },
   # END chromeos/ section.
 
@@ -325,22 +325,22 @@
     "messages": [12640],
   },
   "components/omnibox/resources/omnibox_resources.grd": {
-    "includes": [14570],
-  },
-  "components/policy/resources/policy_templates.grd": {
-    "structures": [14580],
-  },
-  "components/resources/components_resources.grd": {
     "includes": [14590],
   },
+  "components/policy/resources/policy_templates.grd": {
+    "structures": [14600],
+  },
+  "components/resources/components_resources.grd": {
+    "includes": [14610],
+  },
   "components/resources/components_scaled_resources.grd": {
-    "structures": [14670],
+    "structures": [14690],
   },
   "components/embedder_support/android/java/strings/web_contents_delegate_android_strings.grd": {
-    "messages": [14710],
+    "messages": [14730],
   },
   "components/autofill/core/browser/autofill_address_rewriter_resources.grd":{
-    "includes": [14730]
+    "includes": [14750]
   },
   # END components/ section.
 

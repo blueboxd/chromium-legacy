@@ -43,7 +43,8 @@ base::Optional<Fourcc> FindImageProcessorOutputFormat(V4L2Device* ip_device);
 // |image_processor_output_mode| specifies whether the IP must allocate its
 // own buffers or rely on imported ones.
 // |client_task_runner| is the task runner for interacting with image processor.
-// |error_cb| is the error callback passed to V4L2ImageProcessor::Create().
+// |error_cb| is the error callback passed to
+// V4L2ImageProcessorBackend::Create().
 std::unique_ptr<ImageProcessor> CreateImageProcessor(
     const Fourcc vda_output_format,
     const Fourcc ip_output_format,

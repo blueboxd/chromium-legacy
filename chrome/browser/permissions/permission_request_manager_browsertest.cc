@@ -464,8 +464,9 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
   EXPECT_EQ(2, bubble_factory_1->show_count());
 }
 
-// Regularly timing out in Linux Debug Builds. https://crbug.com/931657
-#if defined(OS_LINUX)
+// Regularly timing out in Linux and macOS Debug Builds.
+// https://crbug.com/931657
+#if defined(OS_LINUX) || defined(OS_MACOSX)
 #define MAYBE_BackgroundTabNavigation DISABLED_BackgroundTabNavigation
 #else
 #define MAYBE_BackgroundTabNavigation BackgroundTabNavigation

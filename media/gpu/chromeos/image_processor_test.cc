@@ -168,8 +168,8 @@ TEST_P(ImageProcessorParamTest, ConvertOneTime_MemToMem) {
   ASSERT_TRUE(output_image.LoadMetadata());
   if (input_image.PixelFormat() == output_image.PixelFormat()) {
     // If the input format is the same as the output format, then the conversion
-    // is scaling. LibyuvImageProcessor doesn't support scaling yet. So skip
-    // this test case.
+    // is scaling. LibyuvImageProcessorBackend doesn't support scaling yet. So
+    // skip this test case.
     // TODO(hiroh): Remove this skip once LibyuvIP supports scaling.
     GTEST_SKIP();
   }
@@ -199,8 +199,8 @@ TEST_P(ImageProcessorParamTest, ConvertOneTime_DmabufToMem) {
   ASSERT_TRUE(output_image.LoadMetadata());
   if (input_image.PixelFormat() == output_image.PixelFormat()) {
     // If the input format is the same as the output format, then the conversion
-    // is scaling. LibyuvImageProcessor doesn't support scaling yet. So skip
-    // this test case.
+    // is scaling. LibyuvImageProcessorBackend doesn't support scaling yet. So
+    // skip this test case.
     // TODO(hiroh): Remove this skip once LibyuvIP supports scaling.
     GTEST_SKIP();
   }

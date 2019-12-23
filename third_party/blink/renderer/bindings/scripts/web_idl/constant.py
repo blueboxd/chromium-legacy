@@ -67,6 +67,14 @@ class Constant(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo,
         return self._idl_type
 
     @property
+    def is_static(self):
+        return True
+
+    @property
+    def is_readonly(self):
+        return True
+
+    @property
     def value(self):
         """Returns the value."""
         return self._value

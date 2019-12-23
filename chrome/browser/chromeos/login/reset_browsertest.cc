@@ -329,15 +329,23 @@ IN_PROC_BROWSER_TEST_F(ResetOobeTest, RequestAndCancleResetOnWelcomeScreen) {
   EXPECT_EQ(0, update_engine_client_->rollback_call_count());
 }
 
-// See http://crbug.com/990362 for details.
-IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, DISABLED_PRE_ViewsLogic) {
+// TODO(http://crbug.com/990362): Times out on MSAN buildbots.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_PRE_ViewsLogic DISABLED_PRE_ViewsLogic
+#define MAYBE_ViewsLogic DISABLED_ViewsLogic
+#else
+#define MAYBE_PRE_ViewsLogic PRE_ViewsLogic
+#define MAYBE_ViewsLogic ViewsLogic
+#endif
+
+IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, MAYBE_PRE_ViewsLogic) {
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetBoolean(prefs::kFactoryResetRequested, true);
   update_engine_client_->set_can_rollback_check_result(false);
 }
 
 // See http://crbug.com/990362 for details.
-IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, DISABLED_ViewsLogic) {
+IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, MAYBE_ViewsLogic) {
   PrefService* prefs = g_browser_process->local_state();
 
   // Rollback unavailable. Show and cancel.
@@ -440,9 +448,13 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback,
   prefs->SetBoolean(prefs::kFactoryResetRequested, true);
 }
 
-// See http://crbug.com/990362 for details.
-IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback,
-                       DISABLED_RollbackAvailable) {
+// TODO(http://crbug.com/990362): Times out on MSAN buildbots.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_RollbackAvailable DISABLED_RollbackAvailable
+#else
+#define MAYBE_RollbackAvailable RollbackAvailable
+#endif
+IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback, RollbackAvailable) {
   PrefService* prefs = g_browser_process->local_state();
 
   // PRE test triggers start with Reset screen.
@@ -540,10 +552,14 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback,
   prefs->SetBoolean(prefs::kFactoryResetRequested, true);
 }
 
-// This test frequently times out on sanitizer and debug build bots. See
-// https://crbug.com/1025926.
+// TODO(http://crbug.com/1025926): Times out on MSAN buildbots.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_RevertAfterCancel DISABLED_RevertAfterCancel
+#else
+#define MAYBE_RevertAfterCancel RevertAfterCancel
+#endif
 IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback,
-                       DISABLED_RevertAfterCancel) {
+                       MAYBE_RevertAfterCancel) {
   OobeScreenWaiter(ResetView::kScreenId).Wait();
   EXPECT_TRUE(login_prompt_visible_observer_->signal_emitted());
 

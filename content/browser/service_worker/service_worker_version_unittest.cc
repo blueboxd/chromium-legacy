@@ -174,17 +174,18 @@ class ServiceWorkerVersionTest : public testing::Test {
     version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
     registration_->SetActiveVersion(version_);
     ServiceWorkerRemoteProviderEndpoint remote_endpoint;
-    base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
-        controllee_process_id, true /* is_parent_frame_secure */,
-        helper_->context()->AsWeakPtr(), &remote_endpoint);
-    host->container_host()->UpdateUrls(
+    base::WeakPtr<ServiceWorkerContainerHost> container_host =
+        CreateContainerHostForWindow(
+            controllee_process_id, true /* is_parent_frame_secure */,
+            helper_->context()->AsWeakPtr(), &remote_endpoint);
+    container_host->UpdateUrls(
         registration_->scope(),
         net::SiteForCookies::FromUrl(registration_->scope()),
         url::Origin::Create(registration_->scope()));
-    host->container_host()->SetControllerRegistration(
+    container_host->SetControllerRegistration(
         registration_, false /* notify_controllerchange */);
     EXPECT_TRUE(version_->HasControllee());
-    EXPECT_TRUE(host->container_host()->controller());
+    EXPECT_TRUE(container_host->controller());
     return remote_endpoint;
   }
 
@@ -426,16 +427,17 @@ TEST_F(ServiceWorkerVersionTest, Doom) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration_->SetActiveVersion(version_);
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
-  base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
-      33 /* dummy render process id */, true /* is_parent_frame_secure */,
-      helper_->context()->AsWeakPtr(), &remote_endpoint);
-  host->container_host()->UpdateUrls(
+  base::WeakPtr<ServiceWorkerContainerHost> container_host =
+      CreateContainerHostForWindow(
+          33 /* dummy render process id */, true /* is_parent_frame_secure */,
+          helper_->context()->AsWeakPtr(), &remote_endpoint);
+  container_host->UpdateUrls(
       registration_->scope(),
       net::SiteForCookies::FromUrl(registration_->scope()),
       url::Origin::Create(registration_->scope()));
-  host->container_host()->SetControllerRegistration(registration_, false);
+  container_host->SetControllerRegistration(registration_, false);
   EXPECT_TRUE(version_->HasControllee());
-  EXPECT_TRUE(host->container_host()->controller());
+  EXPECT_TRUE(container_host->controller());
 
   // Doom the version.
   version_->Doom();
@@ -443,7 +445,7 @@ TEST_F(ServiceWorkerVersionTest, Doom) {
   // The controllee should have been removed.
   EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, version_->status());
   EXPECT_FALSE(version_->HasControllee());
-  EXPECT_FALSE(host->container_host()->controller());
+  EXPECT_FALSE(container_host->controller());
 }
 
 TEST_F(ServiceWorkerVersionTest, SetDevToolsAttached) {
@@ -1192,20 +1194,20 @@ TEST_F(ServiceWorkerVersionTest,
   // cause the client to have an invalid process id like we see in real
   // navigations.
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
-  std::unique_ptr<ServiceWorkerProviderHostAndInfo> host_and_info =
-      CreateProviderHostAndInfoForWindow(helper_->context()->AsWeakPtr(),
-                                         /*are_ancestors_secure=*/true);
-  base::WeakPtr<ServiceWorkerProviderHost> host =
+  std::unique_ptr<ServiceWorkerContainerHostAndInfo> host_and_info =
+      CreateContainerHostAndInfoForWindow(helper_->context()->AsWeakPtr(),
+                                          /*are_ancestors_secure=*/true);
+  base::WeakPtr<ServiceWorkerContainerHost> container_host =
       std::move(host_and_info->host);
   remote_endpoint.BindForWindow(std::move(host_and_info->info));
-  host->container_host()->UpdateUrls(
+  container_host->UpdateUrls(
       registration_->scope(),
       net::SiteForCookies::FromUrl(registration_->scope()),
       url::Origin::Create(registration_->scope()));
-  host->container_host()->SetControllerRegistration(
+  container_host->SetControllerRegistration(
       registration_, false /* notify_controllerchange */);
   EXPECT_TRUE(version_->HasControllee());
-  EXPECT_TRUE(host->container_host()->controller());
+  EXPECT_TRUE(container_host->controller());
 
   // RenderProcessHost should be notified of foreground worker.
   base::RunLoop().RunUntilIdle();
@@ -1214,13 +1216,12 @@ TEST_F(ServiceWorkerVersionTest,
       helper_->mock_render_process_host()->foreground_service_worker_count());
 
   // This is necessary to make OnBeginNavigationCommit() work.
-  auto remote_controller =
-      host->container_host()->GetRemoteControllerServiceWorker();
+  auto remote_controller = container_host->GetRemoteControllerServiceWorker();
 
   // Now begin the navigation commit with the same process id used by the
   // worker. This should cause the worker to stop being considered foreground
   // priority.
-  host->container_host()->OnBeginNavigationCommit(
+  container_host->OnBeginNavigationCommit(
       version_->embedded_worker()->process_id(),
       /* render_frame_id = */ 1,
       network::mojom::CrossOriginEmbedderPolicy::kNone);

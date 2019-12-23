@@ -193,6 +193,15 @@ void TextFragmentAnchor::PerformPreRafActions() {
   }
 }
 
+void TextFragmentAnchor::DidCompleteLoad() {
+  if (search_finished_)
+    return;
+
+  // If there is a pending layout we'll finish the search from Invoke.
+  if (!frame_->View()->NeedsLayout())
+    DidFinishSearch();
+}
+
 void TextFragmentAnchor::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(element_fragment_anchor_);

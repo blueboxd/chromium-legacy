@@ -681,4 +681,19 @@ TEST_F(FrameSequenceTrackerTest, NoCompositorDamageSubmitFrame) {
   EXPECT_EQ(MainThroughput().frames_produced, 1u);
 }
 
+TEST_F(FrameSequenceTrackerTest, SequenceStateResetsDuringFrame) {
+  const char sequence[] = "b(1)Rn(1)e(1)";
+  GenerateSequence(sequence);
+  EXPECT_EQ(ImplThroughput().frames_expected, 0u);
+  EXPECT_EQ(MainThroughput().frames_expected, 0u);
+  EXPECT_EQ(ImplThroughput().frames_produced, 0u);
+  EXPECT_EQ(MainThroughput().frames_produced, 0u);
+
+  GenerateSequence("b(2)s(1)e(2)P(1)b(4)");
+  EXPECT_EQ(ImplThroughput().frames_expected, 3u);
+  EXPECT_EQ(MainThroughput().frames_expected, 0u);
+  EXPECT_EQ(ImplThroughput().frames_produced, 1u);
+  EXPECT_EQ(MainThroughput().frames_produced, 0u);
+}
+
 }  // namespace cc

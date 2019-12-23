@@ -397,9 +397,7 @@ IN_PROC_BROWSER_TEST_F(ArcTermsOfServiceScreenTest, LearnMoreDialogs) {
 
 // Test that checking the "review after signing" checkbox updates pref
 // kShowArcSettingsOnSessionStart.
-// Flaky: https://crbug.com/1035485.
-IN_PROC_BROWSER_TEST_F(ArcTermsOfServiceScreenTest,
-                       DISABLED_ReviewPlayOptions) {
+IN_PROC_BROWSER_TEST_F(ArcTermsOfServiceScreenTest, ReviewPlayOptions) {
   WaitForTermsOfServiceWebViewToLoad();
 
   Profile* profile = ProfileManager::GetActiveUserProfile();

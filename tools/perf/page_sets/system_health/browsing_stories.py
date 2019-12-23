@@ -599,6 +599,47 @@ class ImgurMobileStory(_MediaBrowsingStory):
   IS_SINGLE_PAGE_APP = True
   TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2016]
 
+class ImgurMobileStory2019(_MediaBrowsingStory):
+  NAME = 'browse:media:imgur:2019'
+  URL = 'http://imgur.com/gallery/46DfUFT'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  IS_SINGLE_PAGE_APP = True
+  TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2019]
+  USER_READ_TIME = 1
+
+  def _DidLoadDocument(self, action_runner):
+    # Accept the cookies
+    accept_button = ".qc-cmp-button"
+    item_selector = js_template.Render(
+       'document.querySelectorAll({{ selector }})[{{ index }}]',
+       selector=accept_button, index=1)
+    action_runner.WaitForElement(element_function=item_selector)
+    action_runner.ClickElement(element_function=item_selector)
+    # To simulate user looking at image
+    action_runner.Wait(self.USER_READ_TIME)
+
+    # Keep scrolling for the specified amount. If we see "continue browse"
+    # button click it to enable further scroll. This button would only be added
+    # after we scrolled a bit. So can't wait for this button at the start.
+    accepted_continue = False
+    for _ in xrange(25):
+      result = action_runner.EvaluateJavaScript(
+          'document.querySelectorAll(".Button-tertiary").length')
+      if result and not accepted_continue:
+        accept_button = ".Button-tertiary"
+        item_selector = js_template.Render(
+           'document.querySelectorAll({{ selector }})[{{ index }}]',
+           selector=accept_button, index=0)
+        action_runner.ScrollPageToElement(element_function=item_selector,
+                                          speed_in_pixels_per_second=400,
+                                          container_selector=None)
+        action_runner.ClickElement(element_function=item_selector)
+        accepted_continue = True
+
+      action_runner.ScrollPage(distance=800)
+      # To simulate user looking at image
+      action_runner.Wait(self.USER_READ_TIME)
+
 
 class ImgurDesktopStory(_MediaBrowsingStory):
   NAME = 'browse:media:imgur'
@@ -995,6 +1036,16 @@ class BrowseTOIMobileStory(_ArticleBrowsingStory):
   TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2016]
 
   ITEMS_TO_VISIT = 4
+  ITEM_SELECTOR = '.dummy-img'
+
+
+class BrowseTOIMobileStory2019(_ArticleBrowsingStory):
+  NAME = 'browse:news:toi:2019'
+  URL = 'http://m.timesofindia.com'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2019]
+
+  ITEMS_TO_VISIT = 2
   ITEM_SELECTOR = '.dummy-img'
 
 

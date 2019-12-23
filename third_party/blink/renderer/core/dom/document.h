@@ -1631,8 +1631,6 @@ class CORE_EXPORT Document : public ContainerNode,
   }
 #endif
 
-  void ApplyScrollRestorationLogic();
-
  protected:
   void ClearXMLVersion() { xml_version_ = String(); }
 

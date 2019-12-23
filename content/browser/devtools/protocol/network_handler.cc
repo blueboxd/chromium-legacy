@@ -751,27 +751,28 @@ class BackgroundSyncRestorer {
         static_cast<StoragePartitionImpl*>(storage_partition_)
             ->GetBackgroundSyncContext();
     if (offline) {
-      base::PostTask(
-          FROM_HERE, {BrowserThread::IO},
+      RunOrPostTaskOnThread(
+          FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
           base::BindOnce(
-              &SetServiceWorkerOfflineOnIO, sync_context,
-              base::RetainedRef(static_cast<ServiceWorkerContextWrapper*>(
+              &SetServiceWorkerOfflineOnServiceWorkerCoreThread, sync_context,
+              base::WrapRefCounted(static_cast<ServiceWorkerContextWrapper*>(
                   storage_partition_->GetServiceWorkerContext())),
               service_worker_host->version_id(),
               offline_sw_registration_id_.get()));
     } else {
-      base::PostTask(FROM_HERE, {BrowserThread::IO},
-                     base::BindOnce(&SetServiceWorkerOnlineOnIO, sync_context,
-                                    offline_sw_registration_id_.get()));
+      RunOrPostTaskOnThread(
+          FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
+          base::BindOnce(&SetServiceWorkerOnlineOnServiceWorkerCoreThread,
+                         sync_context, offline_sw_registration_id_.get()));
     }
   }
 
-  static void SetServiceWorkerOfflineOnIO(
+  static void SetServiceWorkerOfflineOnServiceWorkerCoreThread(
       scoped_refptr<BackgroundSyncContextImpl> sync_context,
       scoped_refptr<ServiceWorkerContextWrapper> swcontext,
       int64_t version_id,
       int64_t* offline_sw_registration_id) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
     ServiceWorkerVersion* version = swcontext.get()->GetLiveVersion(version_id);
     if (!version)
       return;
@@ -783,10 +784,10 @@ class BackgroundSyncRestorer {
         registration_id, true);
   }
 
-  static void SetServiceWorkerOnlineOnIO(
+  static void SetServiceWorkerOnlineOnServiceWorkerCoreThread(
       scoped_refptr<BackgroundSyncContextImpl> sync_context,
       int64_t* offline_sw_registration_id) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
     if (*offline_sw_registration_id ==
         blink::mojom::kInvalidServiceWorkerRegistrationId) {
       return;

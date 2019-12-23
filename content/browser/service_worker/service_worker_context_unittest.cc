@@ -234,6 +234,12 @@ class RecordableEmbeddedWorkerInstanceClient
       EmbeddedWorkerTestHelper* helper)
       : FakeEmbeddedWorkerInstanceClient(helper) {}
 
+  void OnConnectionError() override {
+    // Do nothing. This allows the object to stay until the test is over, so
+    // |events_| can be accessed even after the worker is stopped in the case of
+    // rejected install.
+  }
+
   const std::vector<Message>& events() const { return events_; }
 
  protected:
@@ -419,16 +425,16 @@ TEST_F(ServiceWorkerContextTest, NoControlleesObserver) {
   version->SetStatus(ServiceWorkerVersion::ACTIVATED);
 
   ServiceWorkerRemoteProviderEndpoint endpoint;
-  base::WeakPtr<ServiceWorkerProviderHost> host =
-      CreateProviderHostForWindow(helper_->mock_render_process_id(), true,
-                                  context()->AsWeakPtr(), &endpoint);
+  base::WeakPtr<ServiceWorkerContainerHost> container_host =
+      CreateContainerHostForWindow(helper_->mock_render_process_id(), true,
+                                   context()->AsWeakPtr(), &endpoint);
 
-  version->AddControllee(host->container_host());
+  version->AddControllee(container_host.get());
   base::RunLoop().RunUntilIdle();
 
   TestServiceWorkerContextObserver observer(context_wrapper());
 
-  version->RemoveControllee(host->container_host()->client_uuid());
+  version->RemoveControllee(container_host->client_uuid());
   base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(1u, observer.events().size());
@@ -978,30 +984,30 @@ TEST_F(ServiceWorkerContextTest, ContainerHostIterator) {
 
   // Host1 : process_id=1, origin1.
   remote_endpoints.emplace_back();
-  base::WeakPtr<ServiceWorkerProviderHost> host1 = CreateProviderHostForWindow(
-      kRenderProcessId1, true /* is_parent_frame_secure */,
-      context()->AsWeakPtr(), &remote_endpoints.back());
-  host1->container_host()->UpdateUrls(kOrigin1,
-                                      net::SiteForCookies::FromUrl(kOrigin1),
-                                      url::Origin::Create(kOrigin1));
+  base::WeakPtr<ServiceWorkerContainerHost> container_host1 =
+      CreateContainerHostForWindow(
+          kRenderProcessId1, true /* is_parent_frame_secure */,
+          context()->AsWeakPtr(), &remote_endpoints.back());
+  container_host1->UpdateUrls(kOrigin1, net::SiteForCookies::FromUrl(kOrigin1),
+                              url::Origin::Create(kOrigin1));
 
   // Host2 : process_id=2, origin2.
   remote_endpoints.emplace_back();
-  base::WeakPtr<ServiceWorkerProviderHost> host2 = CreateProviderHostForWindow(
-      kRenderProcessId2, true /* is_parent_frame_secure */,
-      context()->AsWeakPtr(), &remote_endpoints.back());
-  host2->container_host()->UpdateUrls(kOrigin2,
-                                      net::SiteForCookies::FromUrl(kOrigin2),
-                                      url::Origin::Create(kOrigin2));
+  base::WeakPtr<ServiceWorkerContainerHost> container_host2 =
+      CreateContainerHostForWindow(
+          kRenderProcessId2, true /* is_parent_frame_secure */,
+          context()->AsWeakPtr(), &remote_endpoints.back());
+  container_host2->UpdateUrls(kOrigin2, net::SiteForCookies::FromUrl(kOrigin2),
+                              url::Origin::Create(kOrigin2));
 
   // Host3 : process_id=2, origin1.
   remote_endpoints.emplace_back();
-  base::WeakPtr<ServiceWorkerProviderHost> host3 = CreateProviderHostForWindow(
-      kRenderProcessId2, true /* is_parent_frame_secure */,
-      context()->AsWeakPtr(), &remote_endpoints.back());
-  host3->container_host()->UpdateUrls(kOrigin1,
-                                      net::SiteForCookies::FromUrl(kOrigin1),
-                                      url::Origin::Create(kOrigin1));
+  base::WeakPtr<ServiceWorkerContainerHost> container_host3 =
+      CreateContainerHostForWindow(
+          kRenderProcessId2, true /* is_parent_frame_secure */,
+          context()->AsWeakPtr(), &remote_endpoints.back());
+  container_host3->UpdateUrls(kOrigin1, net::SiteForCookies::FromUrl(kOrigin1),
+                              url::Origin::Create(kOrigin1));
 
   // Host4 : process_id=2, origin2, for ServiceWorker.
   blink::mojom::ServiceWorkerRegistrationOptions registration_opt;
@@ -1017,16 +1023,19 @@ TEST_F(ServiceWorkerContextTest, ContainerHostIterator) {
           blink::mojom::ScriptType::kClassic, 1L /* version_id */,
           helper_->context()->AsWeakPtr());
   remote_endpoints.emplace_back();
-  base::WeakPtr<ServiceWorkerProviderHost> host4 =
+  // ServiceWorkrProviderHost creates ServiceWorkerContainerHost for a service
+  // worker execution context.
+  std::unique_ptr<ServiceWorkerProviderHost> provider_host4 =
       CreateProviderHostForServiceWorkerContext(
           kRenderProcessId2, true /* is_parent_frame_secure */, version.get(),
           context()->AsWeakPtr(), &remote_endpoints.back());
-  EXPECT_NE(host4->provider_id(), blink::kInvalidServiceWorkerProviderId);
+  EXPECT_NE(provider_host4->provider_id(),
+            blink::kInvalidServiceWorkerProviderId);
 
-  ASSERT_TRUE(host1);
-  ASSERT_TRUE(host2);
-  ASSERT_TRUE(host3);
-  ASSERT_TRUE(host4);
+  ASSERT_TRUE(container_host1);
+  ASSERT_TRUE(container_host2);
+  ASSERT_TRUE(container_host3);
+  ASSERT_TRUE(provider_host4->container_host());
 
   // Iterate over the client container hosts that belong to kOrigin1.
   std::set<ServiceWorkerContainerHost*> results;
@@ -1036,11 +1045,11 @@ TEST_F(ServiceWorkerContextTest, ContainerHostIterator) {
     results.insert(it->GetContainerHost());
   }
   EXPECT_EQ(2u, results.size());
-  EXPECT_TRUE(base::Contains(results, host1->container_host()));
-  EXPECT_TRUE(base::Contains(results, host3->container_host()));
+  EXPECT_TRUE(base::Contains(results, container_host1.get()));
+  EXPECT_TRUE(base::Contains(results, container_host3.get()));
 
-  // Iterate over the container hosts that belong to kOrigin2.
-  // (This should not include host4 as it's not for controllee.)
+  // Iterate over the container hosts that belong to kOrigin2. This should not
+  // include provider_host4->container_host() as it's not for controllee.
   results.clear();
   for (auto it = context()->GetClientContainerHostIterator(
            kOrigin2, true /* include_reserved_clients */);
@@ -1048,12 +1057,11 @@ TEST_F(ServiceWorkerContextTest, ContainerHostIterator) {
     results.insert(it->GetContainerHost());
   }
   EXPECT_EQ(1u, results.size());
-  EXPECT_TRUE(base::Contains(results, host2->container_host()));
+  EXPECT_TRUE(base::Contains(results, container_host2.get()));
 
-  context()->RemoveProviderHost(host1->provider_id());
-  context()->RemoveProviderHost(host2->provider_id());
-  context()->RemoveProviderHost(host3->provider_id());
-  context()->RemoveProviderHost(host4->provider_id());
+  context()->UnregisterContainerHostByClientID(container_host1->client_uuid());
+  context()->UnregisterContainerHostByClientID(container_host2->client_uuid());
+  context()->UnregisterContainerHostByClientID(container_host3->client_uuid());
 }
 
 class ServiceWorkerContextRecoveryTest

@@ -645,7 +645,7 @@ class SymbolScopeNode(SequenceNode):
             assert did_insert
         elif counts[DIRECT_CHILD_SCOPES] == 1:
             pass  # Let the child SymbolScopeNode do the work.
-        elif counts[Likeliness.LIKELY] >= 2:
+        elif counts[Likeliness.ALWAYS] + counts[Likeliness.LIKELY] >= 2:
             did_insert = insert_before_threshold(self, Likeliness.LIKELY)
             assert did_insert
         else:

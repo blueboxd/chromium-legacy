@@ -214,7 +214,7 @@ class FakeMapChangedEventHandler
     EXPECT_HRESULT_SUCCEEDED(map_->add_MapChanged(this, &token_));
   }
 
-  ~FakeMapChangedEventHandler() {
+  ~FakeMapChangedEventHandler() override {
     EXPECT_HRESULT_SUCCEEDED(map_->remove_MapChanged(token_));
   }
 

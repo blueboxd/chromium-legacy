@@ -47,6 +47,7 @@ _DISABLED_TESTS = frozenset({
   'system_health.memory_mobile/background:search:google',
   'system_health.memory_mobile/browse:chrome:omnibox',
   'system_health.memory_mobile/browse:media:flickr_infinite_scroll'
+  'system_health.memory_mobile/browse:media:imgur'
   'system_health.memory_mobile/browse:tech:discourse_infinite_scroll',
   'system_health.memory_mobile/browse:shopping:amazon',
   'system_health.memory_mobile/browse:social:facebook_infinite_scroll',
@@ -60,6 +61,7 @@ _DISABLED_TESTS = frozenset({
   'system_health.memory_mobile/browse:social:twitter',
   'system_health.memory_mobile/browse:tools:maps',
   'system_health.memory_mobile/browse:news:cnn',
+  'system_health.memory_mobile/browse:news:toi',
   'system_health.memory_mobile/browse:news:washingtonpost',
   'system_health.memory_mobile/browse:media:youtube',
   'system_health.memory_mobile/browse:shopping:lazada',

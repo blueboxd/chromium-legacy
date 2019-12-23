@@ -382,6 +382,9 @@ class CC_EXPORT FrameSequenceTracker {
   // Keeps track of whether a CompositorFrame is submitted during the frame.
   bool compositor_frame_submitted_ = false;
 
+  // Keeps track of whether the frame-states should be reset.
+  bool reset_all_state_ = false;
+
   // A frame that is ignored at ReportSubmitFrame should never be presented.
   // TODO(xidachen): this should not be necessary. Some webview tests seem to
   // present a frame even if it is ignored by ReportSubmitFrame.

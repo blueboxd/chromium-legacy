@@ -21,6 +21,7 @@ class CodeGenContext(object):
 
     # "for_world" attribute values
     MAIN_WORLD = "main"
+    NON_MAIN_WORLDS = "other"
     ALL_WORLDS = "all"
 
     @classmethod

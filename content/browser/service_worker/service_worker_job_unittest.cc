@@ -244,10 +244,11 @@ ServiceWorkerJobTest::FindRegistrationForScope(
 
 ServiceWorkerContainerHost* ServiceWorkerJobTest::CreateControllee() {
   remote_endpoints_.emplace_back();
-  base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
-      33 /* dummy render process id */, true /* is_parent_frame_secure */,
-      helper_->context()->AsWeakPtr(), &remote_endpoints_.back());
-  return host->container_host();
+  base::WeakPtr<ServiceWorkerContainerHost> container_host =
+      CreateContainerHostForWindow(
+          33 /* dummy render process id */, true /* is_parent_frame_secure */,
+          helper_->context()->AsWeakPtr(), &remote_endpoints_.back());
+  return container_host.get();
 }
 
 TEST_F(ServiceWorkerJobTest, SameDocumentSameRegistration) {
@@ -1065,11 +1066,11 @@ TEST_F(ServiceWorkerJobTest, AddRegistrationToMatchingProviderHosts) {
                      url::Origin::Create(in_scope));
 
   // Make an in-scope reserved client.
-  std::unique_ptr<ServiceWorkerProviderHostAndInfo> host_and_info =
-      CreateProviderHostAndInfoForWindow(helper_->context()->AsWeakPtr(),
-                                         /*are_ancestors_secure=*/true);
-  ServiceWorkerContainerHost* reserved_client =
-      host_and_info->host->container_host();
+  std::unique_ptr<ServiceWorkerContainerHostAndInfo> host_and_info =
+      CreateContainerHostAndInfoForWindow(helper_->context()->AsWeakPtr(),
+                                          /*are_ancestors_secure=*/true);
+  base::WeakPtr<ServiceWorkerContainerHost> reserved_client =
+      host_and_info->host;
   reserved_client->UpdateUrls(in_scope, net::SiteForCookies::FromUrl(in_scope),
                               url::Origin::Create(in_scope));
 

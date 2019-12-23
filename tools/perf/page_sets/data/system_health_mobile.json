@@ -54,6 +54,9 @@
         "browse:media:imgur": {
             "DEFAULT": "system_health_mobile_035.wprgo"
         },
+        "browse:media:imgur:2019": {
+            "DEFAULT": "system_health_mobile_96a8c80910.wprgo"
+        },
         "browse:media:youtube": {
             "DEFAULT": "system_health_mobile_037.wprgo"
         },
@@ -104,6 +107,9 @@
         },
         "browse:news:toi": {
             "DEFAULT": "system_health_mobile_064.wprgo"
+        },
+        "browse:news:toi:2019": {
+            "DEFAULT": "system_health_mobile_1a97b96d14.wprgo"
         },
         "browse:news:washingtonpost": {
             "DEFAULT": "system_health_mobile_021.wprgo"

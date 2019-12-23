@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "build/build_config.h"
 #include "chrome/renderer/autofill/fake_mojo_password_manager_driver.h"
 #include "chrome/renderer/autofill/fake_password_generation_driver.h"
 #include "chrome/renderer/autofill/password_generation_test_utils.h"
@@ -605,7 +606,14 @@ TEST_F(PasswordGenerationAgentTest, AccountCreationFormsDetectedTest) {
   ExpectAutomaticGenerationAvailable("first_password", kAvailable);
 }
 
-TEST_F(PasswordGenerationAgentTest, MaximumCharsForGenerationOffer) {
+// https://crbug.com/1036807.
+#if defined(OS_WIN) || defined(OS_LINUX)
+#define MAYBE_MaximumCharsForGenerationOffer \
+  DISABLED_MaximumCharsForGenerationOffer
+#else
+#define MAYBE_MaximumCharsForGenerationOffer MaximumCharsForGenerationOffer
+#endif
+TEST_F(PasswordGenerationAgentTest, MAYBE_MaximumCharsForGenerationOffer) {
   base::HistogramTester histogram_tester;
 
   LoadHTMLWithUserGesture(kAccountCreationFormHTML);

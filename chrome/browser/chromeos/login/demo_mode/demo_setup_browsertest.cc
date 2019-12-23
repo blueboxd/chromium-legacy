@@ -580,16 +580,8 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowSuccess) {
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
 }
 
-// Disabled on debug builds for flakiness. See crbug.com/1030782.
-#if !defined(NDEBUG)
-#define MAYBE_OnlineSetupFlowSuccessWithCountryCustomization \
-  DISABLED_OnlineSetupFlowSuccessWithCountryCustomization
-#else
-#define MAYBE_OnlineSetupFlowSuccessWithCountryCustomization \
-  OnlineSetupFlowSuccessWithCountryCustomization
-#endif
 IN_PROC_BROWSER_TEST_F(DemoSetupTest,
-                       MAYBE_OnlineSetupFlowSuccessWithCountryCustomization) {
+                       OnlineSetupFlowSuccessWithCountryCustomization) {
   // Simulate successful online setup.
   enrollment_helper_.ExpectEnrollmentMode(
       policy::EnrollmentConfig::MODE_ATTESTATION);
@@ -676,13 +668,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest,
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
 }
 
-// Consistently times out on debug builds. See crbug.com/1031341.
-#if !defined(NDEBUG)
-#define MAYBE_OnlineSetupFlowErrorDefault DISABLED_OnlineSetupFlowErrorDefault
-#else
-#define MAYBE_OnlineSetupFlowErrorDefault OnlineSetupFlowErrorDefault
-#endif
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, MAYBE_OnlineSetupFlowErrorDefault) {
+IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowErrorDefault) {
   // Simulate online setup failure.
   enrollment_helper_.ExpectEnrollmentMode(
       policy::EnrollmentConfig::MODE_ATTESTATION);
@@ -746,16 +732,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, MAYBE_OnlineSetupFlowErrorDefault) {
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
 }
 
-// Consistently timing out on xxx. http://crbug/com/1025213
-#if defined(OS_LINUX)
-#define MAYBE_OnlineSetupFlowErrorPowerwashRequired \
-  DISABLED_OnlineSetupFlowErrorPowerwashRequired
-#else
-#define MAYBE_OnlineSetupFlowErrorPowerwashRequired \
-  OnlineSetupFlowErrorPowerwashRequired
-#endif
-IN_PROC_BROWSER_TEST_F(DemoSetupTest,
-                       MAYBE_OnlineSetupFlowErrorPowerwashRequired) {
+IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowErrorPowerwashRequired) {
   // Simulate online setup failure that requires powerwash.
   enrollment_helper_.ExpectEnrollmentMode(
       policy::EnrollmentConfig::MODE_ATTESTATION);

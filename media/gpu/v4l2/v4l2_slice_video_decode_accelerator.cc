@@ -41,7 +41,7 @@
 #include "media/gpu/v4l2/v4l2_decode_surface.h"
 #include "media/gpu/v4l2/v4l2_h264_accelerator.h"
 #include "media/gpu/v4l2/v4l2_h264_accelerator_legacy.h"
-#include "media/gpu/v4l2/v4l2_image_processor.h"
+#include "media/gpu/v4l2/v4l2_image_processor_backend.h"
 #include "media/gpu/v4l2/v4l2_vda_helpers.h"
 #include "media/gpu/v4l2/v4l2_vp8_accelerator.h"
 #include "media/gpu/v4l2/v4l2_vp8_accelerator_legacy.h"
@@ -505,7 +505,7 @@ bool V4L2SliceVideoDecodeAccelerator::SetupFormats() {
   DCHECK(!image_processor_device_);
   if (!output_format_fourcc_) {
     VLOGF(2) << "Could not find a usable output format. Trying image processor";
-    if (!V4L2ImageProcessor::IsSupported()) {
+    if (!V4L2ImageProcessorBackend::IsSupported()) {
       VLOGF(1) << "Image processor not available";
       return false;
     }
@@ -681,7 +681,7 @@ bool V4L2SliceVideoDecodeAccelerator::CreateOutputBuffers() {
     // coded_size_ may include padding required by the decoder).
     gl_image_size_ = pic_size;
     size_t planes_count;
-    if (!V4L2ImageProcessor::TryOutputFormat(
+    if (!V4L2ImageProcessorBackend::TryOutputFormat(
             output_format_fourcc_->ToV4L2PixFmt(),
             gl_image_format_fourcc_->ToV4L2PixFmt(), coded_size_,
             &gl_image_size_, &planes_count)) {

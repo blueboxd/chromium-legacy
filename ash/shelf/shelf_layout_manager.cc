@@ -321,37 +321,6 @@ class HotseatEventHandler : public ui::EventHandler,
 
 }  // namespace
 
-// ShelfLayoutManager::UpdateShelfObserver -------------------------------------
-
-// UpdateShelfObserver is used to delay updating the background until the
-// animation completes.
-class ShelfLayoutManager::UpdateShelfObserver
-    : public ui::ImplicitAnimationObserver {
- public:
-  explicit UpdateShelfObserver(ShelfLayoutManager* shelf) : shelf_(shelf) {
-    shelf_->update_shelf_observer_ = this;
-  }
-
-  void Detach() { shelf_ = nullptr; }
-
-  void OnImplicitAnimationsCompleted() override {
-    if (shelf_)
-      shelf_->MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
-    delete this;
-  }
-
- private:
-  ~UpdateShelfObserver() override {
-    if (shelf_)
-      shelf_->update_shelf_observer_ = nullptr;
-  }
-
-  // Shelf we're in. nullptr if deleted before we're deleted.
-  ShelfLayoutManager* shelf_;
-
-  DISALLOW_COPY_AND_ASSIGN(UpdateShelfObserver);
-};
-
 ShelfLayoutManager::State::State()
     : visibility_state(SHELF_VISIBLE),
       auto_hide_state(SHELF_AUTO_HIDE_HIDDEN),
@@ -416,9 +385,6 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget, Shelf* shelf)
 }
 
 ShelfLayoutManager::~ShelfLayoutManager() {
-  if (update_shelf_observer_)
-    update_shelf_observer_->Detach();
-
   // |hotseat_event_handler_| needs to be released before ShelfLayoutManager.
   hotseat_event_handler_.reset();
 
@@ -1028,7 +994,7 @@ void ShelfLayoutManager::OnSessionStateChanged(
     UpdateShelfVisibilityAfterLoginUIChange();
 
   CalculateTargetBoundsAndUpdateWorkArea(hotseat_state());
-  UpdateBoundsAndOpacity(true /* animate */, nullptr);
+  UpdateBoundsAndOpacity(true /* animate */);
   UpdateVisibilityState();
 }
 
@@ -1145,7 +1111,7 @@ void ShelfLayoutManager::ResumeWorkAreaUpdate() {
   UpdateVisibilityState();
 
   CalculateTargetBoundsAndUpdateWorkArea(hotseat_state());
-  UpdateBoundsAndOpacity(/*animate=*/true, nullptr);
+  UpdateBoundsAndOpacity(/*animate=*/true);
   MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
 }
 
@@ -1208,19 +1174,11 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
     }
   }
 
-  if (delay_background_change) {
-    if (update_shelf_observer_)
-      update_shelf_observer_->Detach();
-    // |update_shelf_observer_| deletes itself when the animation is done.
-    update_shelf_observer_ = new UpdateShelfObserver(this);
-  } else {
+  if (!delay_background_change)
     MaybeUpdateShelfBackground(change_type);
-  }
 
   CalculateTargetBoundsAndUpdateWorkArea(new_hotseat_state);
-  UpdateBoundsAndOpacity(true /* animate */, delay_background_change
-                                                 ? update_shelf_observer_
-                                                 : nullptr);
+  UpdateBoundsAndOpacity(true /* animate */);
 
   // OnAutoHideStateChanged Should be emitted when:
   //  - firstly state changed to auto-hide from other state
@@ -1416,7 +1374,7 @@ ShelfVisibilityState ShelfLayoutManager::CalculateShelfVisibility() {
 
 void ShelfLayoutManager::LayoutShelfAndUpdateBounds() {
   CalculateTargetBoundsAndUpdateWorkArea(hotseat_state());
-  UpdateBoundsAndOpacity(false, nullptr);
+  UpdateBoundsAndOpacity(false);
 
   // Update insets in ShelfWindowTargeter when shelf bounds change.
   for (auto& observer : observers_)
@@ -1450,9 +1408,7 @@ void ShelfLayoutManager::SetDimmed(bool dimmed) {
                  kDimAnimationDuration, gfx::Tween::LINEAR);
 }
 
-void ShelfLayoutManager::UpdateBoundsAndOpacity(
-    bool animate,
-    ui::ImplicitAnimationObserver* observer) {
+void ShelfLayoutManager::UpdateBoundsAndOpacity(bool animate) {
   hide_animation_observer_.reset();
   if (GetLayer(shelf_widget_)->opacity() != target_bounds_.opacity) {
     if (target_bounds_.opacity == 0) {

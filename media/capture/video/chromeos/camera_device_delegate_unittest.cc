@@ -108,11 +108,12 @@ class MockCameraDevice : public cros::mojom::Camera3DeviceOps {
 
 constexpr int32_t kJpegMaxBufferSize = 1024;
 constexpr size_t kDefaultWidth = 1280, kDefaultHeight = 720;
+constexpr int32_t kDefaultMinFrameRate = 1, kDefaultMaxFrameRate = 30;
 
 VideoCaptureParams GetDefaultCaptureParams() {
   VideoCaptureParams params;
-  params.requested_format = {gfx::Size(kDefaultWidth, kDefaultHeight), 30.0,
-                             PIXEL_FORMAT_I420};
+  params.requested_format = {gfx::Size(kDefaultWidth, kDefaultHeight),
+                             float{kDefaultMaxFrameRate}, PIXEL_FORMAT_I420};
   return params;
 }
 
@@ -172,8 +173,8 @@ class CameraDeviceDelegateTest : public ::testing::Test {
     cros::mojom::CameraMetadataPtr static_metadata =
         cros::mojom::CameraMetadata::New();
 
-    static_metadata->entry_count = 4;
-    static_metadata->entry_capacity = 4;
+    static_metadata->entry_count = 5;
+    static_metadata->entry_capacity = 5;
     static_metadata->entries =
         std::vector<cros::mojom::CameraMetadataEntryPtr>();
 
@@ -234,6 +235,18 @@ class CameraDeviceDelegateTest : public ::testing::Test {
     uint8_t pipeline_max_depth = 1;
     entry->data.assign(&pipeline_max_depth,
                        &pipeline_max_depth + entry->count * sizeof(uint8_t));
+    static_metadata->entries->push_back(std::move(entry));
+
+    entry = cros::mojom::CameraMetadataEntry::New();
+    entry->index = 4;
+    entry->tag = cros::mojom::CameraMetadataTag::
+        ANDROID_CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES;
+    entry->type = cros::mojom::EntryType::TYPE_INT32;
+    entry->count = 2;
+    std::vector<int32_t> available_fps_ranges = {kDefaultMinFrameRate,
+                                                 kDefaultMaxFrameRate};
+    as_int8 = reinterpret_cast<uint8_t*>(available_fps_ranges.data());
+    entry->data.assign(as_int8, as_int8 + entry->count * sizeof(int32_t));
     static_metadata->entries->push_back(std::move(entry));
 
     switch (camera_id) {

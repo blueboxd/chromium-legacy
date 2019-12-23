@@ -411,10 +411,7 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   void UpdateShelfIconOpacity();
 
   // Updates the bounds and opacity of the shelf and status widgets.
-  // If |observer| is specified, it will be called back when the animations, if
-  // any, are complete.
-  void UpdateBoundsAndOpacity(bool animate,
-                              ui::ImplicitAnimationObserver* observer);
+  void UpdateBoundsAndOpacity(bool animate);
 
   // Returns true if a maximized or fullscreen window is being dragged from the
   // top of the display or from the caption area. Note currently for this case
@@ -626,9 +623,6 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
 
   // Manage the auto-hide state during drag.
   ShelfAutoHideState drag_auto_hide_state_ = SHELF_AUTO_HIDE_SHOWN;
-
-  // Used to delay updating shelf background.
-  UpdateShelfObserver* update_shelf_observer_ = nullptr;
 
   // Whether background blur is enabled.
   const bool is_background_blur_enabled_;

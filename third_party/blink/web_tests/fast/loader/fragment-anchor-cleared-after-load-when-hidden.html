@@ -28,15 +28,13 @@ onhashchange = function() {
     if (location.hash != '#foo')
         return;
 
+    anchor.style.display = 'block';
     runAfterLayoutAndPaint(function() {
-        anchor.style.display = 'block';
-        runAfterLayoutAndPaint(function() {
-            shouldBe("scrollY", "0");
+        shouldBe("scrollY", "0");
 
-            location.hash = "#";
-            anchor.style.display = 'none';
-            finishJSTest();
-        });
+        location.hash = "#";
+        anchor.style.display = 'none';
+        finishJSTest();
     });
 };
 

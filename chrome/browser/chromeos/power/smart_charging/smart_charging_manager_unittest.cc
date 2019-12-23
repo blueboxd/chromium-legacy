@@ -84,6 +84,16 @@ class SmartChargingManagerTest : public ChromeRenderViewHostTestHarness {
         power_manager::SuspendImminent::LID_CLOSED);
   }
 
+  void ReportLidEvent(const PowerManagerClient::LidState state) {
+    FakePowerManagerClient::Get()->SetLidState(state,
+                                               base::TimeTicks::UnixEpoch());
+  }
+
+  void ReportTabletModeEvent(const PowerManagerClient::TabletMode mode) {
+    FakePowerManagerClient::Get()->SetTabletMode(mode,
+                                                 base::TimeTicks::UnixEpoch());
+  }
+
   void ReportVideoStart() { smart_charging_manager_->OnVideoActivityStarted(); }
 
   void ReportVideoEnd() { smart_charging_manager_->OnVideoActivityEnded(); }
@@ -263,5 +273,13 @@ TEST_F(SmartChargingManagerTest, VideoDuration) {
   EXPECT_EQ(GetDurationRecentVideoPlaying().InSeconds(), 200);
 }
 
+TEST_F(SmartChargingManagerTest, DeviceMode) {
+  ReportLidEvent(PowerManagerClient::LidState::OPEN);
+  ReportTabletModeEvent(PowerManagerClient::TabletMode::UNSUPPORTED);
+
+  ReportPowerChangeEvent(power_manager::PowerSupplyProperties::AC, 15.0f);
+  EXPECT_EQ(GetUserChargingEvent().features().device_mode(),
+            UserChargingEvent::Features::LAPTOP_MODE);
+}
 }  // namespace power
 }  // namespace chromeos

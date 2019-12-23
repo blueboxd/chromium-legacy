@@ -158,6 +158,9 @@ void SmartChargingManager::PowerManagerBecameAvailable(bool available) {
   chromeos::PowerManagerClient::Get()->GetScreenBrightnessPercent(
       base::BindOnce(&SmartChargingManager::OnReceiveScreenBrightnessPercent,
                      weak_ptr_factory_.GetWeakPtr()));
+  chromeos::PowerManagerClient::Get()->GetSwitchStates(
+      base::BindOnce(&SmartChargingManager::OnReceiveSwitchStates,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SmartChargingManager::ShutdownRequested(
@@ -170,6 +173,18 @@ void SmartChargingManager::SuspendImminent(
     power_manager::SuspendImminent::Reason reason) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   LogEvent(UserChargingEvent::Event::SUSPEND);
+}
+
+void SmartChargingManager::LidEventReceived(
+    const chromeos::PowerManagerClient::LidState state,
+    const base::TimeTicks& /* timestamp */) {
+  lid_state_ = state;
+}
+
+void SmartChargingManager::TabletModeEventReceived(
+    const chromeos::PowerManagerClient::TabletMode mode,
+    const base::TimeTicks& /* timestamp */) {
+  tablet_mode_ = mode;
 }
 
 void SmartChargingManager::OnVideoActivityStarted() {
@@ -207,6 +222,30 @@ void SmartChargingManager::PopulateUserChargingEventProto(
   features.set_duration_recent_video_playing(
       ukm::GetExponentialBucketMinForUserTiming(
           DurationRecentVideoPlaying().InMinutes()));
+
+  // Set time related features.
+  const base::Time now = base::Time::Now();
+  base::Time::Exploded now_exploded;
+  now.LocalExplode(&now_exploded);
+
+  features.set_time_of_the_day(ukm::GetExponentialBucketMinForCounts1000(
+      now_exploded.hour * 60 + now_exploded.minute));
+  features.set_day_of_week(static_cast<UserChargingEvent::Features::DayOfWeek>(
+      now_exploded.day_of_week));
+  features.set_day_of_month(now_exploded.day_of_month);
+  features.set_month(
+      static_cast<UserChargingEvent::Features::Month>(now_exploded.month));
+
+  // Set device mode.
+  if (lid_state_ == chromeos::PowerManagerClient::LidState::CLOSED) {
+    features.set_device_mode(UserChargingEvent::Features::CLOSED_LID_MODE);
+  } else if (tablet_mode_ == chromeos::PowerManagerClient::TabletMode::ON) {
+    features.set_device_mode(UserChargingEvent::Features::TABLET_MODE);
+  } else if (lid_state_ == chromeos::PowerManagerClient::LidState::OPEN) {
+    features.set_device_mode(UserChargingEvent::Features::LAPTOP_MODE);
+  } else {
+    features.set_device_mode(UserChargingEvent::Features::UNKNOWN_MODE);
+  }
 }
 
 void SmartChargingManager::LogEvent(
@@ -231,6 +270,15 @@ void SmartChargingManager::OnReceiveScreenBrightnessPercent(
     base::Optional<double> screen_brightness_percent) {
   if (screen_brightness_percent.has_value()) {
     screen_brightness_percent_ = *screen_brightness_percent;
+  }
+}
+
+void SmartChargingManager::OnReceiveSwitchStates(
+    const base::Optional<chromeos::PowerManagerClient::SwitchStates>
+        switch_states) {
+  if (switch_states.has_value()) {
+    lid_state_ = switch_states->lid_state;
+    tablet_mode_ = switch_states->tablet_mode;
   }
 }
 

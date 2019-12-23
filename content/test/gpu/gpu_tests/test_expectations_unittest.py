@@ -245,12 +245,16 @@ class GpuTestExpectationsValidation(unittest.TestCase):
       with open(webgl_test_class.ExpectationsFiles()[0], 'r') as f:
         expectations = expectations_parser.TestExpectations()
         expectations.parse_tagged_list(f.read())
-        patterns_to_exps = expectations.individual_exps.copy()
-        patterns_to_exps.update(expectations.glob_exps)
-        patterns_to_exps = {k: v for k, v in patterns_to_exps.items()
-                            if k.lower().startswith('webglextension')}
-        broken_expectations = expectations.get_broken_expectations(
-            patterns_to_exps, tests)
+
+        # remove non webgl extension expectations
+        for test in expectations.individual_exps.keys():
+          if not test.lower().startswith('webglextension'):
+            expectations.individual_exps.pop(test)
+        for test in expectations.glob_exps.keys():
+          if not test.lower().startswith('webglextension'):
+            expectations.glob_exps.pop(test)
+
+        broken_expectations = expectations.check_for_broken_expectations(tests)
         msg = ''
         for ununsed_pattern in set([e.test for e in  broken_expectations]):
           msg += ("Expectations with pattern '{0}' in {1} do not apply to any "

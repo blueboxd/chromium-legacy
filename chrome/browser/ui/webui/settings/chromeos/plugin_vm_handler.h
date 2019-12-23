@@ -32,6 +32,8 @@ class PluginVmHandler : public ::settings::SettingsPageUIHandler {
   void HandleGetPluginVmSharedPathsDisplayText(const base::ListValue* args);
   // Remove a specified path from being shared.
   void HandleRemovePluginVmSharedPath(const base::ListValue* args);
+  // Remove Plugin VM.
+  void HandleRemovePluginVm(const base::ListValue* args);
 
   Profile* profile_;
   // weak_ptr_factory_ should always be last member.

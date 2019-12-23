@@ -636,6 +636,49 @@ TEST_F(FrameSequenceTrackerTest, SimpleSequenceOneFrameNoDamage) {
   EXPECT_EQ(MainThroughput().frames_expected, 0u);
   EXPECT_EQ(ImplThroughput().frames_produced, 0u);
   EXPECT_EQ(MainThroughput().frames_produced, 0u);
+
+  const char second_sequence[] = "b(2)B(1,2)n(2)N(2,2)e(2)";
+  GenerateSequence(second_sequence);
+  EXPECT_EQ(ImplThroughput().frames_expected, 0u);
+  EXPECT_EQ(MainThroughput().frames_expected, 0u);
+  EXPECT_EQ(ImplThroughput().frames_produced, 0u);
+  EXPECT_EQ(MainThroughput().frames_produced, 0u);
+}
+
+TEST_F(FrameSequenceTrackerTest, MultipleNoDamageNotifications) {
+  const char sequence[] = "b(1)n(1)n(1)e(1)";
+  GenerateSequence(sequence);
+  EXPECT_EQ(ImplThroughput().frames_expected, 0u);
+  EXPECT_EQ(MainThroughput().frames_expected, 0u);
+  EXPECT_EQ(ImplThroughput().frames_produced, 0u);
+  EXPECT_EQ(MainThroughput().frames_produced, 0u);
+}
+
+TEST_F(FrameSequenceTrackerTest, MultipleNoDamageNotificationsFromMain) {
+  const char sequence[] = "b(1)B(0,1)N(1,1)n(1)N(0,1)e(1)";
+  GenerateSequence(sequence);
+  EXPECT_EQ(ImplThroughput().frames_expected, 0u);
+  EXPECT_EQ(MainThroughput().frames_expected, 0u);
+  EXPECT_EQ(ImplThroughput().frames_produced, 0u);
+  EXPECT_EQ(MainThroughput().frames_produced, 0u);
+}
+
+TEST_F(FrameSequenceTrackerTest, StateResetDuringSequence) {
+  const char sequence[] = "b(1)B(0,1)n(1)N(1,1)Re(1)b(2)n(2)e(2)";
+  GenerateSequence(sequence);
+  EXPECT_EQ(ImplThroughput().frames_expected, 0u);
+  EXPECT_EQ(MainThroughput().frames_expected, 0u);
+  EXPECT_EQ(ImplThroughput().frames_produced, 0u);
+  EXPECT_EQ(MainThroughput().frames_produced, 0u);
+}
+
+TEST_F(FrameSequenceTrackerTest, NoCompositorDamageSubmitFrame) {
+  const char sequence[] = "b(1)n(1)B(0,1)s(1)S(1)e(1)P(1)b(2)";
+  GenerateSequence(sequence);
+  EXPECT_EQ(ImplThroughput().frames_expected, 2u);
+  EXPECT_EQ(MainThroughput().frames_expected, 1u);
+  EXPECT_EQ(ImplThroughput().frames_produced, 1u);
+  EXPECT_EQ(MainThroughput().frames_produced, 1u);
 }
 
 }  // namespace cc

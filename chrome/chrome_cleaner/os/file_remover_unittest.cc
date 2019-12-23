@@ -495,7 +495,8 @@ MULTIPROCESS_TEST_MAIN(FileRemoverQuarantineTargetMain) {
 
 TEST_P(FileRemoverQuarantineTest, QuarantineFile) {
   const base::FilePath path = temp_dir_.GetPath().Append(kTestFileName);
-  CreateFileWithContent(path, kTestContent, strlen(kTestContent));
+  ASSERT_NO_FATAL_FAILURE(
+      CreateFileWithContent(path, kTestContent, strlen(kTestContent)));
 
   DoAndExpectCorrespondingRemoval(path);
   EXPECT_EQ(QUARANTINE_STATUS_QUARANTINED,
@@ -508,7 +509,8 @@ TEST_P(FileRemoverQuarantineTest, QuarantineFile) {
 
 TEST_P(FileRemoverQuarantineTest, QuarantinesNotActiveFiles) {
   base::FilePath path = temp_dir_.GetPath().Append(L"temp_file.txt");
-  CreateFileWithContent(path, kTestContent, strlen(kTestContent));
+  ASSERT_NO_FATAL_FAILURE(
+      CreateFileWithContent(path, kTestContent, strlen(kTestContent)));
 
   EXPECT_EQ(ValidationStatus::ALLOWED, file_remover_->CanRemove(path));
 
@@ -540,7 +542,8 @@ TEST_P(FileRemoverQuarantineTest, DuplicatedFile) {
   const base::FilePath expected_archive_path =
       temp_dir_.GetPath().Append(kTestExpectArchiveName);
 
-  CreateFileWithContent(path, kTestContent, strlen(kTestContent));
+  ASSERT_NO_FATAL_FAILURE(
+      CreateFileWithContent(path, kTestContent, strlen(kTestContent)));
   DoAndExpectCorrespondingRemoval(path);
   EXPECT_EQ(QUARANTINE_STATUS_QUARANTINED,
             FileRemovalStatusUpdater::GetInstance()->GetQuarantineStatus(path));
@@ -553,7 +556,8 @@ TEST_P(FileRemoverQuarantineTest, DuplicatedFile) {
   ASSERT_TRUE(base::GetFileInfo(expected_archive_path, &old_info));
 
   // Recreate the source file and remove it again.
-  CreateFileWithContent(path, kTestContent, strlen(kTestContent));
+  ASSERT_NO_FATAL_FAILURE(
+      CreateFileWithContent(path, kTestContent, strlen(kTestContent)));
   DoAndExpectCorrespondingRemoval(path);
   // Although the file won't be archived again, it still has a backup in the
   // quarantine. So the status should be |QUARANTINE_STATUS_QUARANTINED|.
@@ -568,7 +572,8 @@ TEST_P(FileRemoverQuarantineTest, DuplicatedFile) {
 
 TEST_P(FileRemoverQuarantineTest, DoNotQuarantineSymbolicLink) {
   const base::FilePath path = temp_dir_.GetPath().Append(L"source_temp_file");
-  CreateFileWithContent(path, kTestContent, strlen(kTestContent));
+  ASSERT_NO_FATAL_FAILURE(
+      CreateFileWithContent(path, kTestContent, strlen(kTestContent)));
 
   const base::FilePath sym_path = temp_dir_.GetPath().Append(kTestFileName);
   ASSERT_NE(0, ::CreateSymbolicLink(sym_path.AsUTF16Unsafe().c_str(),
@@ -588,10 +593,12 @@ TEST_P(FileRemoverQuarantineTest, DoNotQuarantineSymbolicLink) {
 
 TEST_P(FileRemoverQuarantineTest, QuarantineDefaultFileStream) {
   const base::FilePath path = temp_dir_.GetPath().Append(kTestFileName);
-  CreateFileWithContent(path, kTestContent, strlen(kTestContent));
+  ASSERT_NO_FATAL_FAILURE(
+      CreateFileWithContent(path, kTestContent, strlen(kTestContent)));
 
   base::FilePath stream_path(base::StrCat({path.AsUTF16Unsafe(), L"::$data"}));
-  CreateFileWithContent(stream_path, kTestContent, strlen(kTestContent));
+  ASSERT_NO_FATAL_FAILURE(
+      CreateFileWithContent(stream_path, kTestContent, strlen(kTestContent)));
 
   DoAndExpectCorrespondingRemoval(stream_path);
   EXPECT_EQ(QUARANTINE_STATUS_QUARANTINED,
@@ -605,11 +612,13 @@ TEST_P(FileRemoverQuarantineTest, QuarantineDefaultFileStream) {
 
 TEST_P(FileRemoverQuarantineTest, DoNotQuarantineNonDefaultFileStream) {
   const base::FilePath path = temp_dir_.GetPath().Append(kTestFileName);
-  CreateFileWithContent(path, kTestContent, strlen(kTestContent));
+  ASSERT_NO_FATAL_FAILURE(
+      CreateFileWithContent(path, kTestContent, strlen(kTestContent)));
 
   base::FilePath stream_path(
       base::StrCat({path.AsUTF16Unsafe(), L":stream:$data"}));
-  CreateFileWithContent(stream_path, kTestContent, strlen(kTestContent));
+  ASSERT_NO_FATAL_FAILURE(
+      CreateFileWithContent(stream_path, kTestContent, strlen(kTestContent)));
 
   DoAndExpectCorrespondingRemoval(stream_path);
   EXPECT_EQ(QUARANTINE_STATUS_SKIPPED,
@@ -618,13 +627,17 @@ TEST_P(FileRemoverQuarantineTest, DoNotQuarantineNonDefaultFileStream) {
 }
 
 TEST_P(FileRemoverQuarantineTest, LongFileName) {
-  base::string16 long_filename;
-  for (int i = 0; i < 20; ++i)
-    long_filename += L"0123456789";
-  long_filename += L".exe";
+  // Craft a filename that is precisely MAX_PATH.
+  static constexpr base::FilePath::StringPieceType kExtension(
+      FILE_PATH_LITERAL(".exe"));
+  size_t long_filename_length =
+      MAX_PATH - temp_dir_.GetPath().value().size() - 1 - kExtension.size() - 1;
+  base::FilePath::StringType long_filename(long_filename_length, 'a');
+  kExtension.AppendToString(&long_filename);
 
   const base::FilePath path = temp_dir_.GetPath().Append(long_filename);
-  CreateFileWithContent(path, kTestContent, strlen(kTestContent));
+  ASSERT_NO_FATAL_FAILURE(
+      CreateFileWithContent(path, kTestContent, strlen(kTestContent)));
 
   DoAndExpectCorrespondingRemoval(path);
   EXPECT_EQ(QUARANTINE_STATUS_QUARANTINED,

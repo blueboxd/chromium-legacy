@@ -123,8 +123,27 @@ def lint(host, options):
                           "The mutually exclusive specifiers are %s") %
                          (host.filesystem.basename(path), lineno, line, ', '.join(intersection)))
                 _log.error(error)
-                _log.error('')
                 failures.append(error)
+                _log.error('')
+
+        # check for expectations with test names which have glob's in the middle and not end
+        # of the test name
+        for lineno, line in enumerate(exp_lines, 1):
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+            exp_line = TestExpectationLine.tokenize_line(
+                host.filesystem.basename(path), line, lineno, ports_to_lint[0])
+            for i in range(len(exp_line.name)-1):
+                if exp_line.name[i] == '*' and ((i > 0 and exp_line.name[i-1] != '\\') or i == 0):
+                    error = (("%s:%d In Expectation '%s' a glob can only be at the end of a "
+                              "test name. You can use '\*' to represent an asterisk "
+                              "in a test name") %
+                             (host.filesystem.basename(path), lineno, line))
+                    _log.error(error)
+                    failures.append(error)
+                    _log.error('')
+
 
         # check for directories in test expectations which do not have a glob at the end
         for lineno, line in enumerate(exp_lines, 1):

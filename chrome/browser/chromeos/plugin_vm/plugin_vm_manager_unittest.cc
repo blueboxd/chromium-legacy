@@ -9,6 +9,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_metrics_util.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_test_helper.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -20,6 +21,7 @@
 #include "chromeos/dbus/fake_concierge_client.h"
 #include "chromeos/dbus/fake_seneschal_client.h"
 #include "chromeos/dbus/fake_vm_plugin_dispatcher_client.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -265,6 +267,125 @@ TEST_F(PluginVmManagerTest, LaunchPluginVmInvalidLicense) {
 
   histogram_tester_->ExpectUniqueSample(
       kPluginVmLaunchResultHistogram, PluginVmLaunchResult::kInvalidLicense, 1);
+}
+
+TEST_F(PluginVmManagerTest, UninstallRunningPluginVm) {
+  test_helper_->AllowPluginVm();
+  EXPECT_TRUE(IsPluginVmAllowedForProfile(testing_profile_.get()));
+
+  SetListVmsResponse(vm_tools::plugin_dispatcher::VmState::VM_STATE_RUNNING);
+  testing_profile_->GetPrefs()->SetBoolean(
+      plugin_vm::prefs::kPluginVmImageExists, true);
+
+  EXPECT_EQ(plugin_vm_manager_->uninstaller_notification_for_testing(),
+            nullptr);
+  plugin_vm_manager_->UninstallPluginVm();
+  EXPECT_NE(plugin_vm_manager_->uninstaller_notification_for_testing(),
+            nullptr);
+  EXPECT_TRUE(testing_profile_->GetPrefs()->GetBoolean(
+      plugin_vm::prefs::kPluginVmImageExists));
+
+  task_environment_.RunUntilIdle();
+  EXPECT_TRUE(VmPluginDispatcherClient().list_vms_called());
+  EXPECT_TRUE(VmPluginDispatcherClient().stop_vm_called());
+  EXPECT_TRUE(ConciergeClient().destroy_disk_image_called());
+  EXPECT_EQ(plugin_vm_manager_->uninstaller_notification_for_testing(),
+            nullptr);
+  EXPECT_FALSE(testing_profile_->GetPrefs()->GetBoolean(
+      plugin_vm::prefs::kPluginVmImageExists));
+}
+
+TEST_F(PluginVmManagerTest, UninstallStoppedPluginVm) {
+  test_helper_->AllowPluginVm();
+  EXPECT_TRUE(IsPluginVmAllowedForProfile(testing_profile_.get()));
+
+  SetListVmsResponse(vm_tools::plugin_dispatcher::VmState::VM_STATE_STOPPED);
+  testing_profile_->GetPrefs()->SetBoolean(
+      plugin_vm::prefs::kPluginVmImageExists, true);
+
+  EXPECT_EQ(plugin_vm_manager_->uninstaller_notification_for_testing(),
+            nullptr);
+  plugin_vm_manager_->UninstallPluginVm();
+  EXPECT_NE(plugin_vm_manager_->uninstaller_notification_for_testing(),
+            nullptr);
+  EXPECT_TRUE(testing_profile_->GetPrefs()->GetBoolean(
+      plugin_vm::prefs::kPluginVmImageExists));
+
+  task_environment_.RunUntilIdle();
+  EXPECT_TRUE(VmPluginDispatcherClient().list_vms_called());
+  EXPECT_FALSE(VmPluginDispatcherClient().stop_vm_called());
+  EXPECT_TRUE(ConciergeClient().destroy_disk_image_called());
+  EXPECT_EQ(plugin_vm_manager_->uninstaller_notification_for_testing(),
+            nullptr);
+  EXPECT_FALSE(testing_profile_->GetPrefs()->GetBoolean(
+      plugin_vm::prefs::kPluginVmImageExists));
+}
+
+TEST_F(PluginVmManagerTest, UninstallSuspendingPluginVm) {
+  test_helper_->AllowPluginVm();
+  EXPECT_TRUE(IsPluginVmAllowedForProfile(testing_profile_.get()));
+
+  SetListVmsResponse(vm_tools::plugin_dispatcher::VmState::VM_STATE_SUSPENDING);
+  testing_profile_->GetPrefs()->SetBoolean(
+      plugin_vm::prefs::kPluginVmImageExists, true);
+
+  EXPECT_EQ(plugin_vm_manager_->uninstaller_notification_for_testing(),
+            nullptr);
+  plugin_vm_manager_->UninstallPluginVm();
+  EXPECT_NE(plugin_vm_manager_->uninstaller_notification_for_testing(),
+            nullptr);
+  EXPECT_TRUE(testing_profile_->GetPrefs()->GetBoolean(
+      plugin_vm::prefs::kPluginVmImageExists));
+
+  task_environment_.RunUntilIdle();
+  EXPECT_TRUE(VmPluginDispatcherClient().list_vms_called());
+  EXPECT_FALSE(VmPluginDispatcherClient().stop_vm_called());
+  EXPECT_FALSE(ConciergeClient().destroy_disk_image_called());
+  EXPECT_NE(plugin_vm_manager_->uninstaller_notification_for_testing(),
+            nullptr);
+  EXPECT_TRUE(testing_profile_->GetPrefs()->GetBoolean(
+      plugin_vm::prefs::kPluginVmImageExists));
+
+  NotifyVmStateChanged(
+      vm_tools::plugin_dispatcher::VmState::VM_STATE_SUSPENDED);
+  EXPECT_FALSE(VmPluginDispatcherClient().stop_vm_called());
+  EXPECT_TRUE(ConciergeClient().destroy_disk_image_called());
+  EXPECT_NE(plugin_vm_manager_->uninstaller_notification_for_testing(),
+            nullptr);
+  EXPECT_TRUE(testing_profile_->GetPrefs()->GetBoolean(
+      plugin_vm::prefs::kPluginVmImageExists));
+
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(plugin_vm_manager_->uninstaller_notification_for_testing(),
+            nullptr);
+  EXPECT_FALSE(testing_profile_->GetPrefs()->GetBoolean(
+      plugin_vm::prefs::kPluginVmImageExists));
+}
+
+TEST_F(PluginVmManagerTest, UninstallMissingPluginVm) {
+  test_helper_->AllowPluginVm();
+  EXPECT_TRUE(IsPluginVmAllowedForProfile(testing_profile_.get()));
+
+  VmPluginDispatcherClient().set_list_vms_response({});  // An empty list.
+  testing_profile_->GetPrefs()->SetBoolean(
+      plugin_vm::prefs::kPluginVmImageExists, true);
+
+  EXPECT_EQ(plugin_vm_manager_->uninstaller_notification_for_testing(),
+            nullptr);
+  plugin_vm_manager_->UninstallPluginVm();
+  EXPECT_NE(plugin_vm_manager_->uninstaller_notification_for_testing(),
+            nullptr);
+  EXPECT_TRUE(testing_profile_->GetPrefs()->GetBoolean(
+      plugin_vm::prefs::kPluginVmImageExists));
+
+  task_environment_.RunUntilIdle();
+  EXPECT_TRUE(VmPluginDispatcherClient().list_vms_called());
+  EXPECT_FALSE(VmPluginDispatcherClient().stop_vm_called());
+  EXPECT_FALSE(ConciergeClient().destroy_disk_image_called());
+  EXPECT_EQ(plugin_vm_manager_->uninstaller_notification_for_testing(),
+            nullptr);
+  EXPECT_FALSE(testing_profile_->GetPrefs()->GetBoolean(
+      plugin_vm::prefs::kPluginVmImageExists));
 }
 
 }  // namespace plugin_vm

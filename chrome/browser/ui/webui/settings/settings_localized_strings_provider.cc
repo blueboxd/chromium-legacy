@@ -651,6 +651,8 @@ void AddPluginVmStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_PLUGIN_VM_SHARED_PATHS_INSTRUCTIONS_REMOVE},
       {"pluginVmSharedPathsRemoveSharing",
        IDS_SETTINGS_PLUGIN_VM_SHARED_PATHS_REMOVE_SHARING},
+      {"pluginVmRemove", IDS_SETTINGS_PLUGIN_VM_REMOVE_LABEL},
+      {"pluginVmRemoveButton", IDS_SETTINGS_PLUGIN_VM_REMOVE_BUTTON},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 }

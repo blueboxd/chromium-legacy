@@ -51,6 +51,8 @@ void CreateFileWithRepeatedContent(const base::FilePath& path,
   DCHECK(content);
   base::File file(path,
                   base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+  ASSERT_TRUE(file.IsValid())
+      << base::File::ErrorToString(file.error_details());
   for (size_t i = 0; i < count; ++i)
     ASSERT_EQ(content_length, static_cast<size_t>(file.WriteAtCurrentPos(
                                   content, content_length)));

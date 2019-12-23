@@ -9,6 +9,8 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "components/infobars/core/infobar.h"
 #import "ios/chrome/browser/infobars/infobar_controller_delegate.h"
 
@@ -24,6 +26,26 @@ class InfoBarIOS : public infobars::InfoBar, public InfoBarControllerDelegate {
              std::unique_ptr<infobars::InfoBarDelegate> delegate);
   ~InfoBarIOS() override;
 
+  // Observer interface for objects interested in changes to InfoBarIOS.
+  class Observer : public base::CheckedObserver {
+   public:
+    // Called when |infobar|'s accepted() is set to a new value.
+    virtual void DidUpdateAcceptedState(InfoBarIOS* infobar) {}
+
+    // Called when |infobar| is destroyed.
+    virtual void InfobarDestroyed(InfoBarIOS* infobar) {}
+  };
+
+  // Adds and removes observers.
+  void AddObserver(Observer* obs) { observers_.AddObserver(obs); }
+  void RemoveObserver(Observer* obs) { observers_.RemoveObserver(obs); }
+
+  // Whether or not the infobar has been accepted.  Set to true when the
+  // associated action has been executed (e.g. page translation finished), and
+  // false if the action has not been executed or has been reverted.
+  bool accepted() const { return accepted_; }
+  void set_accepted(bool accepted);
+
   // Returns the InfobarUIDelegate associated to this Infobar.
   id<InfobarUIDelegate> InfobarUIDelegate();
 
@@ -35,7 +57,9 @@ class InfoBarIOS : public infobars::InfoBar, public InfoBarControllerDelegate {
   bool IsOwned() override;
   void RemoveInfoBar() override;
 
-  id<InfobarUIDelegate> controller_;
+  base::ObserverList<Observer, /*check_empty=*/true> observers_;
+  id<InfobarUIDelegate> controller_ = nil;
+  bool accepted_ = false;
   DISALLOW_COPY_AND_ASSIGN(InfoBarIOS);
 };
 

@@ -29,6 +29,9 @@ WebUIController* NewWebUI(WebUI* web_ui, const GURL& url) {
 }
 
 WebUIFactoryFunctionPointer GetWebUIFactoryFunctionPointer(const GURL& url) {
+  // WebUI pages here must remain in the base module instead of being moved to
+  // the Developer UI Dynamic Feature Module (DevUI DFM). Therefore the hosts
+  // here must not appear in IsWebUiHostInDevUiDfm().
   if (url.host() == safe_browsing::kChromeUISafeBrowsingHost) {
     return &NewWebUI<safe_browsing::SafeBrowsingUI>;
   }

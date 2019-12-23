@@ -15,6 +15,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class ExecutionContext;
 class MediaDecodingConfiguration;
 class MediaEncodingConfiguration;
@@ -29,7 +30,9 @@ class MODULES_EXPORT MediaCapabilities final : public ScriptWrappable {
  public:
   MediaCapabilities();
 
-  ScriptPromise decodingInfo(ScriptState*, const MediaDecodingConfiguration*);
+  ScriptPromise decodingInfo(ScriptState*,
+                             const MediaDecodingConfiguration*,
+                             ExceptionState&);
   ScriptPromise encodingInfo(ScriptState*, const MediaEncodingConfiguration*);
 
  private:
@@ -39,7 +42,8 @@ class MODULES_EXPORT MediaCapabilities final : public ScriptWrappable {
 
   ScriptPromise GetEmeSupport(ScriptState*,
                               media::VideoCodecProfile,
-                              const MediaDecodingConfiguration*);
+                              const MediaDecodingConfiguration*,
+                              ExceptionState&);
   void GetPerfInfo(media::VideoCodecProfile,
                    const VideoConfiguration*,
                    ScriptPromiseResolver*,

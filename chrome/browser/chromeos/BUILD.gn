@@ -1687,6 +1687,8 @@ source_set("chromeos") {
     "plugin_vm/plugin_vm_metrics_util.h",
     "plugin_vm/plugin_vm_pref_names.cc",
     "plugin_vm/plugin_vm_pref_names.h",
+    "plugin_vm/plugin_vm_uninstaller_notification.cc",
+    "plugin_vm/plugin_vm_uninstaller_notification.h",
     "plugin_vm/plugin_vm_util.cc",
     "plugin_vm/plugin_vm_util.h",
     "policy/active_directory_join_delegate.h",

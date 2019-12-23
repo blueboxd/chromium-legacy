@@ -63,6 +63,10 @@ class SmartChargingManager : public ui::UserActivityObserver,
   void PowerManagerBecameAvailable(bool available) override;
   void ShutdownRequested(power_manager::RequestShutdownReason reason) override;
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
+  void LidEventReceived(chromeos::PowerManagerClient::LidState state,
+                        const base::TimeTicks& timestamp) override;
+  void TabletModeEventReceived(chromeos::PowerManagerClient::TabletMode mode,
+                               const base::TimeTicks& timestamp) override;
 
   // viz::mojom::VideoDetectorObserver overrides:
   void OnVideoActivityStarted() override;
@@ -83,6 +87,10 @@ class SmartChargingManager : public ui::UserActivityObserver,
   // Updates screen brightness percent from received value.
   void OnReceiveScreenBrightnessPercent(
       base::Optional<double> screen_brightness_percent);
+
+  // Updates lid state and tablet mode from received switch states.
+  void OnReceiveSwitchStates(
+      base::Optional<chromeos::PowerManagerClient::SwitchStates> switch_states);
 
   // Gets amount of time of video playing recently (e.g. in the last 30
   // minutes).
@@ -109,6 +117,12 @@ class SmartChargingManager : public ui::UserActivityObserver,
   const std::unique_ptr<ml::RecentEventsCounter> key_counter_;
   const std::unique_ptr<ml::RecentEventsCounter> stylus_counter_;
   const std::unique_ptr<ml::RecentEventsCounter> touch_counter_;
+
+  chromeos::PowerManagerClient::LidState lid_state_ =
+      chromeos::PowerManagerClient::LidState::NOT_PRESENT;
+
+  chromeos::PowerManagerClient::TabletMode tablet_mode_ =
+      chromeos::PowerManagerClient::TabletMode::UNSUPPORTED;
 
   // A queue that stores recent video usage of the user.
   base::circular_deque<TimePeriod> recent_video_usage_;

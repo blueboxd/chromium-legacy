@@ -20,6 +20,9 @@ cr.define('settings', function() {
      * @param {string} path Path to stop sharing.
      */
     removePluginVmSharedPath(vmName, path) {}
+
+    /* Removes the default vm if it is installed. */
+    removePluginVm() {}
   }
 
   /** @implements {settings.PluginVmBrowserProxy} */
@@ -32,6 +35,11 @@ cr.define('settings', function() {
     /** @override */
     removePluginVmSharedPath(vmName, path) {
       chrome.send('removePluginVmSharedPath', [vmName, path]);
+    }
+
+    /** @override */
+    removePluginVm() {
+      chrome.send('removePluginVm');
     }
   }
 

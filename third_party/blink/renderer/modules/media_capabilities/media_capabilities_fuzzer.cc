@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/modules/media_capabilities/media_capabilities.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_capabilities_key_system_configuration.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_decoding_configuration.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -139,9 +140,10 @@ DEFINE_TEXT_PROTO_FUZZER(const mc_fuzzer::MediaDecodingConfigProto& proto) {
   ScriptState* script_state =
       ToScriptStateForMainWorld(&page_holder->GetFrame());
   ScriptState::Scope scope(script_state);
+  NonThrowableExceptionState exception_state;
 
   auto* media_capabilities = MakeGarbageCollected<MediaCapabilities>();
-  media_capabilities->decodingInfo(script_state, config);
+  media_capabilities->decodingInfo(script_state, config, exception_state);
 
   // Request a V8 GC. Oilpan will be invoked by the GC epilogue.
   //

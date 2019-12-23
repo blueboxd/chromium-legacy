@@ -632,9 +632,9 @@ config("compiler") {
           ]
         }
 
-        if (llvm_force_head_revision) {
-          # Disable TypePromotion to see if that fixes the ToT bots.
-          # TODO(crbug.com/1033863): Get this fixed upstream.
+        # Disable TypePromotion to work around compiler crash in Android LTO builds.
+        # TODO(crbug.com/1033863): Get this fixed upstream.
+        if (target_os != "chromeos") {
           ldflags += [
             "-Wl,-mllvm",
             "-Wl,-disable-type-promotion=true",
@@ -1536,6 +1536,9 @@ config("default_warnings") {
 
           # TODO(https://crbug.com/1028110): Evaluate and possible enable.
           "-Wno-deprecated-copy",
+
+          # TODO(https://crbug.com/1031169): Clean up and enable.
+          "-Wno-misleading-indentation",
         ]
 
         if (is_win) {
@@ -1549,13 +1552,6 @@ config("default_warnings") {
           # TODO(https://crbug.com/995993): Clean up and enable.
           "-Wno-implicit-fallthrough",
         ]
-
-        if (llvm_force_head_revision) {
-          cflags += [
-            # TODO(https://crbug.com/1031169): Clean up and enable.
-            "-Wno-misleading-indentation",
-          ]
-        }
       }
     }
   }

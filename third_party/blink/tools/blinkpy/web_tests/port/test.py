@@ -116,14 +116,14 @@ class TestList(object):
 #
 # These numbers may need to be updated whenever we add or delete tests. This includes virtual tests.
 #
-TOTAL_TESTS = 152
+TOTAL_TESTS = 154
 TOTAL_WONTFIX = 3
 TOTAL_SKIPS = 20 + TOTAL_WONTFIX
 TOTAL_CRASHES = 78
 
 UNEXPECTED_PASSES = 1
-UNEXPECTED_NON_VIRTUAL_FAILURES = 33
-UNEXPECTED_FAILURES = 65
+UNEXPECTED_NON_VIRTUAL_FAILURES = 34
+UNEXPECTED_FAILURES = 67
 
 
 def unit_test_list():
@@ -186,6 +186,7 @@ def unit_test_list():
     tests.add('failures/expected/crash_then_text.html')
     tests.add('failures/expected/skip_text.html', actual_text='text diff')
     tests.add('failures/flaky/text.html')
+    tests.add('failures/unexpected/*/text.html', actual_text='text_fail-png')
     tests.add('failures/unexpected/missing_text.html', expected_text=None)
     tests.add('failures/unexpected/missing_check.html', expected_image='missing-check-png')
     tests.add('failures/unexpected/missing_image.html', expected_image=None)

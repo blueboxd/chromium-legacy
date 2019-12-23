@@ -437,7 +437,11 @@ void FrameSequenceTracker::ReportBeginImplFrame(
   if (args.type == viz::BeginFrameArgs::NORMAL)
     impl_frames_.insert(args.frame_id);
 #endif
+
   TRACKER_TRACE_STREAM << "b(" << args.frame_id.sequence_number << ")";
+  DCHECK(!frame_had_no_compositor_damage_) << TRACKER_DCHECK_MSG;
+  DCHECK(!compositor_frame_submitted_) << TRACKER_DCHECK_MSG;
+
   UpdateTrackedFrameData(&begin_impl_frame_data_, args.frame_id.source_id,
                          args.frame_id.sequence_number);
   impl_throughput().frames_expected +=
@@ -496,6 +500,7 @@ void FrameSequenceTracker::ReportSubmitFrame(
   if (first_submitted_frame_ == 0)
     first_submitted_frame_ = frame_token;
   last_submitted_frame_ = frame_token;
+  compositor_frame_submitted_ = true;
 
   TRACKER_TRACE_STREAM << "s(" << frame_token << ")";
   const bool main_changes_after_sequence_started =
@@ -525,7 +530,6 @@ void FrameSequenceTracker::ReportSubmitFrame(
 }
 
 void FrameSequenceTracker::ReportFrameEnd(const viz::BeginFrameArgs& args) {
-#if DCHECK_IS_ON()
   if (termination_status_ != TerminationStatus::kActive)
     return;
 
@@ -533,11 +537,31 @@ void FrameSequenceTracker::ReportFrameEnd(const viz::BeginFrameArgs& args) {
     return;
 
   TRACKER_TRACE_STREAM << "e(" << args.frame_id.sequence_number << ")";
+
+  // It is possible that the compositor claims there was no damage from the
+  // compositor, but before the frame ends, it submits a compositor frame (e.g.
+  // with some damage from main). In such cases, the compositor is still
+  // responsible for processing the update, and therefore the 'no damage' claim
+  // is ignored.
+  if (frame_had_no_compositor_damage_ && !compositor_frame_submitted_) {
+    DCHECK_GT(impl_throughput().frames_expected, 0u) << TRACKER_DCHECK_MSG;
+    DCHECK_GT(impl_throughput().frames_expected,
+              impl_throughput().frames_produced)
+        << TRACKER_DCHECK_MSG;
+    --impl_throughput().frames_expected;
+    begin_impl_frame_data_.previous_sequence = 0;
+  }
+  frame_had_no_compositor_damage_ = false;
+  compositor_frame_submitted_ = false;
+
   if (ShouldIgnoreSequence(args.frame_id.sequence_number)) {
+#if DCHECK_IS_ON()
     is_inside_frame_ = false;
+#endif
     return;
   }
 
+#if DCHECK_IS_ON()
   DCHECK(is_inside_frame_) << TRACKER_DCHECK_MSG;
   DCHECK_EQ(last_started_impl_sequence_, last_processed_impl_sequence_)
       << TRACKER_DCHECK_MSG;
@@ -650,14 +674,14 @@ void FrameSequenceTracker::ReportImplFrameCausedNoDamage(
 #if DCHECK_IS_ON()
   last_processed_impl_sequence_ = ack.frame_id.sequence_number;
 #endif
-  DCHECK_GT(impl_throughput().frames_expected, 0u) << TRACKER_DCHECK_MSG;
-  DCHECK_GT(impl_throughput().frames_expected,
-            impl_throughput().frames_produced)
-      << TRACKER_DCHECK_MSG;
-  --impl_throughput().frames_expected;
 
-  if (begin_impl_frame_data_.previous_sequence == ack.frame_id.sequence_number)
-    begin_impl_frame_data_.previous_sequence = 0;
+  // If there is no damage for this frame (and no frame is submitted), then the
+  // impl-sequence needs to be reset. However, this should be done after the
+  // processing the frame is complete (i.e. in ReportFrameEnd()), so that other
+  // notifications (e.g. 'no main damage' etc.) can be handled correctly.
+  DCHECK_EQ(begin_impl_frame_data_.previous_sequence,
+            ack.frame_id.sequence_number);
+  frame_had_no_compositor_damage_ = true;
 }
 
 void FrameSequenceTracker::ReportMainFrameCausedNoDamage(
@@ -673,6 +697,8 @@ void FrameSequenceTracker::ReportMainFrameCausedNoDamage(
 
   TRACKER_TRACE_STREAM << "N(" << begin_main_frame_data_.previous_sequence
                        << "," << args.frame_id.sequence_number << ")";
+  if (last_no_main_damage_sequence_ == args.frame_id.sequence_number)
+    return;
 
   DCHECK_GT(main_throughput().frames_expected, 0u) << TRACKER_DCHECK_MSG;
   DCHECK_GT(main_throughput().frames_expected,

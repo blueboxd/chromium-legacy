@@ -26,6 +26,18 @@ InfoBarIOS::~InfoBarIOS() {
   DCHECK(controller_);
   [controller_ detachView];
   controller_ = nil;
+  for (auto& observer : observers_) {
+    observer.InfobarDestroyed(this);
+  }
+}
+
+void InfoBarIOS::set_accepted(bool accepted) {
+  if (accepted_ == accepted)
+    return;
+  accepted_ = accepted;
+  for (auto& observer : observers_) {
+    observer.DidUpdateAcceptedState(this);
+  }
 }
 
 id<InfobarUIDelegate> InfoBarIOS::InfobarUIDelegate() {

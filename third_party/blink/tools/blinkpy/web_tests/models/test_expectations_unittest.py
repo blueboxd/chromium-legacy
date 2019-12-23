@@ -54,6 +54,7 @@ class Base(unittest.TestCase):
                 'failures/expected/crash.html',
                 'failures/expected/image.html',
                 'failures/expected/timeout.html',
+                'failures/unexpected/*/text.html',
                 'passes/text.html',
                 'reftests/failures/expected/has_unused_expectation.html']
 
@@ -112,6 +113,10 @@ class MiscTests(Base):
         port.expectations_dict = lambda: expectations_dict
         expectations = TestExpectations(port, self.get_basic_tests())
         self.assertEqual(expectations.get_expectations('failures/expected/text.html'), set([PASS]))
+
+    def test_can_escape_asterisk_in_test_expectations(self):
+        self.parse_exp('Bug(x) failures/unexpected/\*/text.html [ Crash Failure ]')
+        self.assertEqual(self._exp.get_expectations('failures/unexpected/*/text.html'), set([FAIL, CRASH]))
 
     def test_multiple_results(self):
         self.parse_exp('Bug(x) failures/expected/text.html [ Crash Failure ]')

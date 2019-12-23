@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/modules/media_capabilities/media_decoding_configuration.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_encoding_configuration.h"
 #include "third_party/blink/renderer/modules/mediarecorder/media_recorder_handler.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
@@ -472,7 +473,8 @@ MediaCapabilities::MediaCapabilities() = default;
 
 ScriptPromise MediaCapabilities::decodingInfo(
     ScriptState* script_state,
-    const MediaDecodingConfiguration* config) {
+    const MediaDecodingConfiguration* config,
+    ExceptionState& exception_state) {
   if (config->hasKeySystemConfiguration()) {
     UseCounter::Count(
         ExecutionContext::From(script_state),
@@ -481,23 +483,20 @@ ScriptPromise MediaCapabilities::decodingInfo(
 
   String message;
   if (!IsValidMediaDecodingConfiguration(config, &message)) {
-    return ScriptPromise::Reject(
-        script_state,
-        V8ThrowException::CreateTypeError(script_state->GetIsolate(), message));
+    exception_state.ThrowTypeError(message);
+    return ScriptPromise();
   }
 
   if (config->hasVideo() && !IsValidVideoConfiguration(config->video())) {
-    return ScriptPromise::Reject(
-        script_state, V8ThrowException::CreateTypeError(
-                          script_state->GetIsolate(),
-                          "The video configuration dictionary is not valid."));
+    exception_state.ThrowTypeError(
+        "The video configuration dictionary is not valid.");
+    return ScriptPromise();
   }
 
   if (config->hasAudio() && !IsValidAudioConfiguration(config->audio())) {
-    return ScriptPromise::Reject(
-        script_state, V8ThrowException::CreateTypeError(
-                          script_state->GetIsolate(),
-                          "The audio configuration dictionary is not valid."));
+    exception_state.ThrowTypeError(
+        "The audio configuration dictionary is not valid.");
+    return ScriptPromise();
   }
 
   // Validation errors should return above.
@@ -559,7 +558,7 @@ ScriptPromise MediaCapabilities::decodingInfo(
   if (config->hasKeySystemConfiguration()) {
     // GetEmeSupport() will call the VideoDecodePerfHistory service after
     // receiving info about support for the configuration for encrypted content.
-    return GetEmeSupport(script_state, video_profile, config);
+    return GetEmeSupport(script_state, video_profile, config, exception_state);
   }
 
   bool audio_supported = true;
@@ -686,7 +685,8 @@ bool MediaCapabilities::EnsureService(ExecutionContext* execution_context) {
 ScriptPromise MediaCapabilities::GetEmeSupport(
     ScriptState* script_state,
     media::VideoCodecProfile video_profile,
-    const MediaDecodingConfiguration* configuration) {
+    const MediaDecodingConfiguration* configuration,
+    ExceptionState& exception_state) {
   DVLOG(3) << __func__;
   DCHECK(configuration->hasKeySystemConfiguration());
 
@@ -704,47 +704,41 @@ ScriptPromise MediaCapabilities::GetEmeSupport(
         ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
                                mojom::ConsoleMessageLevel::kWarning,
                                kEncryptedMediaFeaturePolicyConsoleWarning));
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kSecurityError,
-                          "decodingInfo(): Creating MediaKeySystemAccess is "
-                          "disabled by feature policy."));
+    exception_state.ThrowSecurityError(
+        "decodingInfo(): Creating MediaKeySystemAccess is disabled by feature "
+        "policy.");
+    return ScriptPromise();
   }
 
   // Calling context must have a real Document bound to a Page. This check is
   // ported from rMKSA (see http://crbug.com/456720).
   if (!document->GetPage()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(
-            DOMExceptionCode::kInvalidStateError,
-            "The context provided is not associated with a page."));
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The context provided is not associated with a page.");
+    return ScriptPromise();
   }
 
   if (execution_context->IsWorkerGlobalScope()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(
-            DOMExceptionCode::kInvalidStateError,
-            "Encrypted Media decoding info not available in Worker context."));
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "Encrypted Media decoding info not available in Worker context.");
+    return ScriptPromise();
   }
 
   if (!execution_context->IsSecureContext()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kSecurityError,
-                          "Encrypted Media decoding info can only be "
-                          "queried in a secure context."));
+    exception_state.ThrowSecurityError(
+        "Encrypted Media decoding info can only be queried in a secure"
+        " context.");
+    return ScriptPromise();
   }
 
   MediaCapabilitiesKeySystemConfiguration* key_system_config =
       configuration->keySystemConfiguration();
   if (!key_system_config->hasKeySystem() ||
       key_system_config->keySystem().IsEmpty()) {
-    return ScriptPromise::Reject(
-        script_state,
-        V8ThrowException::CreateTypeError(
-            script_state->GetIsolate(), "The key system String is not valid."));
+    exception_state.ThrowTypeError("The key system String is not valid.");
+    return ScriptPromise();
   }
 
   MediaKeySystemConfiguration* eme_config =

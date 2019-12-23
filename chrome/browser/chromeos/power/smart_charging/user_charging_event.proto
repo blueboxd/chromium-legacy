@@ -45,7 +45,8 @@ message UserChargingEvent {
     }
 
     enum DeviceMode {
-      CLOSE_LID_MODE = 1;
+      UNKNOWN_MODE = 0;
+      CLOSED_LID_MODE = 1;
       LAPTOP_MODE = 2;
       TABLET_MODE = 3;
     }

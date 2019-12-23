@@ -721,6 +721,12 @@
     <message name="IDS_SETTINGS_PLUGIN_VM_SHARED_PATHS_REMOVE_SHARING" desc="Tooltip to show when hovering on the remove icon for a Plugin VM shared folder.">
       Remove sharing
     </message>
+    <message name="IDS_SETTINGS_PLUGIN_VM_REMOVE_LABEL" desc="Label for the row to open a dialog confirming removal of Plugin VM.">
+      Remove Plugin VM
+    </message>
+    <message name="IDS_SETTINGS_PLUGIN_VM_REMOVE_BUTTON" desc="Label for the button to open a dialog confirming removal of Plugin VM.">
+      Remove
+    </message>
 
     <!-- Android Apps Page -->
     <message name="IDS_SETTINGS_ANDROID_APPS_TITLE" desc="The title of Google Play Store (Arc++ / Android Apps) section.">

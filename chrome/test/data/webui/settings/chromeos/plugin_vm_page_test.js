@@ -8,6 +8,7 @@ class TestPluginVmBrowserProxy extends TestBrowserProxy {
     super([
       'getPluginVmSharedPathsDisplayText',
       'removePluginVmSharedPath',
+      'removePluginVm',
     ]);
   }
 
@@ -20,6 +21,11 @@ class TestPluginVmBrowserProxy extends TestBrowserProxy {
   /** override */
   removePluginVmSharedPath(vmName, path) {
     this.methodCalled('removePluginVmSharedPath', [vmName, path]);
+  }
+
+  /** override */
+  removePluginVm() {
+    this.methodCalled('removePluginVm');
   }
 }
 
@@ -116,5 +122,24 @@ suite('SharedPaths', function() {
           // Verify remove instructions are hidden.
           assertTrue(page.$.pluginVmInstructionsRemove.hidden);
         });
+  });
+});
+
+suite('Remove', function() {
+  setup(function() {
+    pluginVmBrowserProxy = new TestPluginVmBrowserProxy();
+    settings.PluginVmBrowserProxyImpl.instance_ = pluginVmBrowserProxy;
+    PolymerTest.clearBody();
+    this.page = document.createElement('settings-plugin-vm-subpage');
+    document.body.appendChild(this.page);
+  });
+
+  teardown(function() {
+    this.page.remove();
+  });
+
+  test('Remove', function() {
+    this.page.$$('#plugin-vm-remove cr-button').click();
+    assertEquals(1, pluginVmBrowserProxy.getCallCount('removePluginVm'));
   });
 });

@@ -18,6 +18,13 @@
     <!-- TODO(timloh): Wire this up to a pref. -->
     <settings-toggle-button label="$i18n{pluginVmPrinterAccess}">
     </settings-toggle-button>
+    <div id="plugin-vm-remove" class="settings-box">
+      <div id="plugin-vm-remove-label" class="start">$i18n{pluginVmRemove}</div>
+      <cr-button on-click="onRemoveClick_"
+        aria-labelledby="plugin-vm-remove-label">
+          $i18n{pluginVmRemoveButton}
+      </cr-button>
+    </div>
   </template>
   <script src="plugin_vm_subpage.js"></script>
 </dom-module>

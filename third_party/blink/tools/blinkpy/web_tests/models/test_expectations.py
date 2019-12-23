@@ -182,8 +182,10 @@ class TestExpectationParser(object):
         for line in expectations_string.split('\n'):
             line_number += 1
             test_expectation = TestExpectationLine.tokenize_line(filename, line, line_number, self._port)
-            if test_expectation.name and test_expectation.name.endswith('*'):
-                test_expectation.name = test_expectation.name[:-1]
+            if test_expectation.name:
+                test_expectation.name = test_expectation.name.replace('\\*', '*')
+                if test_expectation.name.endswith('*'):
+                    test_expectation.name = test_expectation.name[:-1]
             self._parse_line(test_expectation)
             expectation_lines.append(test_expectation)
 

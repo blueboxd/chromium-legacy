@@ -133,19 +133,18 @@ class VIEWS_EXPORT NativeWidgetMacNSWindowHost
       remote_cocoa::ApplicationHost* application_host,
       remote_cocoa::mojom::CreateWindowParamsPtr window_create_params);
 
-  void InitWindow(const Widget::InitParams& params);
+  void InitWindow(const Widget::InitParams& params,
+                  const gfx::Rect& initial_bounds_in_screen);
 
   // Close the window immediately. This function may result in |this| being
   // deleted.
   void CloseWindowNow();
 
   // Changes the bounds of the window and the hosted layer if present. The
-  // origin is a location in screen coordinates except for "child" windows,
-  // which are positioned relative to their parent. SetBounds() considers a
-  // "child" window to be one initialized with InitParams specifying all of:
-  // a |parent| NSWindow, the |child| attribute, and a |type| that
-  // views::GetAuraWindowTypeForWidgetType does not consider a "popup" type.
-  void SetBounds(const gfx::Rect& bounds);
+  // argument is always a location in screen coordinates (in contrast to the
+  // views::Widget::SetBounds method, when the argument is only sometimes in
+  // screen coordinates).
+  void SetBoundsInScreen(const gfx::Rect& bounds);
 
   // Tell the window to transition to being fullscreen or not-fullscreen.
   void SetFullscreen(bool fullscreen);

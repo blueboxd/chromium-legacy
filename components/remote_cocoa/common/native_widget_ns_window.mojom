@@ -65,11 +65,6 @@ struct NativeWidgetNSWindowInitParams {
   ui.mojom.ModalType modal_type;
   // If true, the underlying window potentially be seen through.
   bool is_translucent;
-  // True if the widget is considered top level widget.
-  bool widget_is_top_level;
-  // True if the bounds specified to SetBounds should be treated as though they
-  // are in screen coordinates.
-  bool position_window_in_screen_coords;
   // If true, then the NSWindow is set to have a shadow using
   // -[NSWindow setHasShadow:YES].
   bool has_window_server_shadow;

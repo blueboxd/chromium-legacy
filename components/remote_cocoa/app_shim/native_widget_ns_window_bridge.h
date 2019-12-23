@@ -255,9 +255,6 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowBridge
   // update widget and compositor size.
   void UpdateWindowGeometry();
 
-  // The offset in screen pixels for positioning child windows owned by |this|.
-  gfx::Vector2d GetChildWindowOffset() const;
-
  private:
   friend class views::test::BridgedNativeWidgetTestApi;
 
@@ -312,8 +309,6 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowBridge
   std::unique_ptr<CocoaWindowMoveLoop> window_move_loop_;
   ui::ModalType modal_type_ = ui::MODAL_TYPE_NONE;
   bool is_translucent_window_ = false;
-  bool widget_is_top_level_ = false;
-  bool position_window_in_screen_coords_ = false;
 
   NativeWidgetNSWindowBridge* parent_ =
       nullptr;  // Weak. If non-null, owns this.

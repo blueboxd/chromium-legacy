@@ -318,7 +318,8 @@ class MockNativeWidgetMac : public NativeWidgetMac {
             NativeWidgetMacNSWindowHost::GetFromNativeView(params.parent)) {
       GetNSWindowHost()->SetParent(parent);
     }
-    GetNSWindowHost()->InitWindow(params);
+    GetNSWindowHost()->InitWindow(params,
+                                  ConvertBoundsToScreenIfNeeded(params.bounds));
 
     // Usually the bridge gets initialized here. It is skipped to run extra
     // checks in tests, and so that a second window isn't created.

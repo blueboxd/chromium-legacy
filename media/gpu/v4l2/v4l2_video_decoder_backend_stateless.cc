@@ -230,9 +230,9 @@ V4L2StatelessVideoDecoderBackend::CreateSurface() {
   DVLOGF(4);
 
   // Request V4L2 input and output buffers.
-  V4L2WritableBufferRef input_buf = input_queue_->GetFreeBuffer();
-  V4L2WritableBufferRef output_buf = output_queue_->GetFreeBuffer();
-  if (!input_buf.IsValid() || !output_buf.IsValid()) {
+  auto input_buf = input_queue_->GetFreeBuffer();
+  auto output_buf = output_queue_->GetFreeBuffer();
+  if (!input_buf || !output_buf) {
     DVLOGF(3) << "There is no free V4L2 buffer.";
     return nullptr;
   }
@@ -244,7 +244,7 @@ V4L2StatelessVideoDecoderBackend::CreateSurface() {
     // driver via MMAP. The VideoFrame received from V4L2 buffer will remain
     // until deallocating V4L2Queue. But we need to know when the buffer is not
     // used by the client. So we wrap the frame here.
-    scoped_refptr<VideoFrame> origin_frame = output_buf.GetVideoFrame();
+    scoped_refptr<VideoFrame> origin_frame = output_buf->GetVideoFrame();
     frame = VideoFrame::WrapVideoFrame(origin_frame, origin_frame->format(),
                                        origin_frame->visible_rect(),
                                        origin_frame->natural_size());
@@ -274,13 +274,12 @@ V4L2StatelessVideoDecoderBackend::CreateSurface() {
       return nullptr;
     }
 
-    dec_surface = new V4L2RequestDecodeSurface(std::move(input_buf),
-                                      std::move(output_buf),
-                                      std::move(frame),
-                                      std::move(request_ref));
+    dec_surface = new V4L2RequestDecodeSurface(
+        std::move(*input_buf), std::move(*output_buf), std::move(frame),
+        std::move(request_ref));
   } else {
     dec_surface = new V4L2ConfigStoreDecodeSurface(
-        std::move(input_buf), std::move(output_buf), std::move(frame));
+        std::move(*input_buf), std::move(*output_buf), std::move(frame));
   }
 
   return dec_surface;

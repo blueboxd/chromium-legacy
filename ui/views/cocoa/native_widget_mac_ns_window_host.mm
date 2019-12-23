@@ -35,7 +35,6 @@
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/native_widget_mac.h"
-#include "ui/views/widget/widget_aura_utils.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "ui/views/word_lookup_client.h"
@@ -193,17 +192,6 @@ class BridgedNativeWidgetHostDummy
     std::move(callback).Run(was_handled);
   }
 };
-
-// Returns true if bounds passed to window in SetBounds should be treated as
-// though they are in screen coordinates.
-bool PositionWindowInScreenCoordinates(Widget* widget,
-                                       Widget::InitParams::Type type) {
-  // Replicate the logic in desktop_aura/desktop_screen_position_client.cc.
-  if (GetAuraWindowTypeForWidgetType(type) == aura::client::WINDOW_TYPE_POPUP)
-    return true;
-
-  return widget && widget->is_top_level();
-}
 
 std::map<uint64_t, NativeWidgetMacNSWindowHost*>& GetIdToWidgetHostImplMap() {
   static base::NoDestructor<std::map<uint64_t, NativeWidgetMacNSWindowHost*>>
@@ -363,7 +351,9 @@ void NativeWidgetMacNSWindowHost::CreateRemoteNSWindow(
   GetNSWindowMojo()->CreateWindow(std::move(window_create_params));
 }
 
-void NativeWidgetMacNSWindowHost::InitWindow(const Widget::InitParams& params) {
+void NativeWidgetMacNSWindowHost::InitWindow(
+    const Widget::InitParams& params,
+    const gfx::Rect& initial_bounds_in_screen) {
   native_window_mapping_ =
       std::make_unique<remote_cocoa::ScopedNativeWindowMapping>(
           gfx::NativeWindow(in_process_ns_window_.get()), application_host_,
@@ -392,9 +382,6 @@ void NativeWidgetMacNSWindowHost::InitWindow(const Widget::InitParams& params) {
     window_params->modal_type = widget->widget_delegate()->GetModalType();
     window_params->is_translucent =
         params.opacity == Widget::InitParams::WindowOpacity::kTranslucent;
-    window_params->widget_is_top_level = widget->is_top_level();
-    window_params->position_window_in_screen_coords =
-        PositionWindowInScreenCoordinates(widget, widget_type_);
 
     // OSX likes to put shadows on most things. However, frameless windows (with
     // styleMask = NSBorderlessWindowMask) default to no shadow. So change that.
@@ -430,12 +417,13 @@ void NativeWidgetMacNSWindowHost::InitWindow(const Widget::InitParams& params) {
   // set at all, the creator of the Widget is expected to call SetBounds()
   // before calling Widget::Show() to avoid a kWindowSizeDeterminedLater-sized
   // (i.e. 1x1) window appearing.
-  UpdateLocalWindowFrame(params.bounds);
-  GetNSWindowMojo()->SetInitialBounds(params.bounds, widget->GetMinimumSize());
+  UpdateLocalWindowFrame(initial_bounds_in_screen);
+  GetNSWindowMojo()->SetInitialBounds(initial_bounds_in_screen,
+                                      widget->GetMinimumSize());
 
   // TODO(ccameron): Correctly set these based |in_process_ns_window_|.
-  window_bounds_in_screen_ = params.bounds;
-  content_bounds_in_screen_ = params.bounds;
+  window_bounds_in_screen_ = initial_bounds_in_screen;
+  content_bounds_in_screen_ = initial_bounds_in_screen;
 
   // Widgets for UI controls (usually layered above web contents) start visible.
   if (widget_type_ == Widget::InitParams::TYPE_CONTROL)
@@ -458,7 +446,7 @@ void NativeWidgetMacNSWindowHost::CloseWindowNow() {
   }
 }
 
-void NativeWidgetMacNSWindowHost::SetBounds(const gfx::Rect& bounds) {
+void NativeWidgetMacNSWindowHost::SetBoundsInScreen(const gfx::Rect& bounds) {
   UpdateLocalWindowFrame(bounds);
   GetNSWindowMojo()->SetBounds(
       bounds, native_widget_mac_->GetWidget()->GetMinimumSize());

@@ -161,20 +161,6 @@ using NSViewComparatorValue = id;
 using NSViewComparatorValue = __kindof NSView*;
 #endif
 
-// Returns true if the content_view is reparented.
-bool PositionWindowInNativeViewParent(NSView* content_view) {
-  return [[content_view window] contentView] != content_view;
-}
-
-// Return the offset of the parent native view from the window.
-gfx::Vector2d GetNativeViewParentOffset(NSView* content_view) {
-  NSWindow* window = [content_view window];
-  NSView* parent_view = [content_view superview];
-  NSPoint p = NSMakePoint(0, NSHeight([parent_view frame]));
-  p = [parent_view convertPoint:p toView:nil];
-  return gfx::Vector2d(p.x, NSHeight([window frame]) - p.y);
-}
-
 // Return the content size for a minimum or maximum widget size.
 gfx::Size GetClientSizeForWindowSize(NSWindow* window,
                                      const gfx::Size& window_size) {
@@ -422,8 +408,6 @@ void NativeWidgetNSWindowBridge::InitWindow(
     mojom::NativeWidgetNSWindowInitParamsPtr params) {
   modal_type_ = params->modal_type;
   is_translucent_window_ = params->is_translucent;
-  widget_is_top_level_ = params->widget_is_top_level;
-  position_window_in_screen_coords_ = params->position_window_in_screen_coords;
   pending_restoration_data_ = params->state_restoration_data;
 
   // Register for application hide notifications so that visibility can be
@@ -510,12 +494,6 @@ void NativeWidgetNSWindowBridge::SetBounds(
   gfx::Rect actual_new_bounds(
       new_bounds.origin(),
       GetWindowSizeForClientSize(window_, clamped_content_size));
-
-  if (parent_ && !position_window_in_screen_coords_)
-    actual_new_bounds.Offset(parent_->GetChildWindowOffset());
-
-  if (PositionWindowInNativeViewParent(bridged_view_))
-    actual_new_bounds.Offset(GetNativeViewParentOffset(bridged_view_));
 
   [window_ setFrame:gfx::ScreenRectToNSRect(actual_new_bounds)
             display:YES
@@ -1299,10 +1277,6 @@ void NativeWidgetNSWindowBridge::RedispatchKeyEvent(
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetNSWindowBridge, former BridgedNativeWidgetOwner:
-
-gfx::Vector2d NativeWidgetNSWindowBridge::GetChildWindowOffset() const {
-  return gfx::ScreenRectFromNSRect([window_ frame]).OffsetFromOrigin();
-}
 
 void NativeWidgetNSWindowBridge::RemoveChildWindow(
     NativeWidgetNSWindowBridge* child) {

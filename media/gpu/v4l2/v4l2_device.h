@@ -69,13 +69,9 @@ class V4L2DecodeSurface;
 // type of the buffer, or drop the reference to make the buffer available again.
 class MEDIA_GPU_EXPORT V4L2WritableBufferRef {
  public:
-  // Default constructor, creates invalid buffer reference.
-  V4L2WritableBufferRef();
   V4L2WritableBufferRef(V4L2WritableBufferRef&& other);
+  V4L2WritableBufferRef() = delete;
   V4L2WritableBufferRef& operator=(V4L2WritableBufferRef&& other);
-
-  // Returns true if the reference points to a valid buffer.
-  bool IsValid() const;
 
   // Return the memory type of the buffer. Useful to e.g. decide which Queue()
   // method to use.
@@ -163,7 +159,7 @@ class MEDIA_GPU_EXPORT V4L2WritableBufferRef {
   // filled.
   bool DoQueue() &&;
 
-  V4L2WritableBufferRef(const struct v4l2_buffer* v4l2_buffer,
+  V4L2WritableBufferRef(const struct v4l2_buffer& v4l2_buffer,
                         base::WeakPtr<V4L2Queue> queue);
   friend class V4L2BufferRefFactory;
 
@@ -225,7 +221,7 @@ class MEDIA_GPU_EXPORT V4L2ReadableBuffer
 
   ~V4L2ReadableBuffer();
 
-  V4L2ReadableBuffer(const struct v4l2_buffer* v4l2_buffer,
+  V4L2ReadableBuffer(const struct v4l2_buffer& v4l2_buffer,
                      base::WeakPtr<V4L2Queue> queue);
 
   std::unique_ptr<V4L2BufferRefBase> buffer_data_;
@@ -298,12 +294,12 @@ class MEDIA_GPU_EXPORT V4L2Queue
   // Returns |memory_|, memory type of last buffers allocated by this V4L2Queue.
   v4l2_memory GetMemoryType() const;
 
-  // Return a unique pointer to a free buffer for the caller to prepare and
-  // submit, or an empty pointer if no buffer is currently free.
+  // Return a reference to a free buffer for the caller to prepare and submit,
+  // or nullopt if no buffer is currently free.
   //
   // If the caller discards the returned reference, the underlying buffer is
   // made available to clients again.
-  V4L2WritableBufferRef GetFreeBuffer();
+  base::Optional<V4L2WritableBufferRef> GetFreeBuffer();
 
   // Attempt to dequeue a buffer, and return a reference to it if one was
   // available.

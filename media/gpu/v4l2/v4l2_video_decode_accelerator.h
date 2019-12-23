@@ -290,8 +290,8 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   bool DequeueResolutionChangeEvent();
 
   // Enqueue a buffer on the corresponding queue.
-  bool EnqueueInputRecord();
-  bool EnqueueOutputRecord();
+  bool EnqueueInputRecord(V4L2WritableBufferRef buffer);
+  bool EnqueueOutputRecord(V4L2WritableBufferRef buffer);
 
   // Task to flag the specified picture buffer for reuse, executed on the
   // decoder_thread_. The picture buffer can only be reused after the specified
@@ -523,7 +523,7 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // them.
   //
 
-  V4L2WritableBufferRef current_input_buffer_;
+  base::Optional<V4L2WritableBufferRef> current_input_buffer_;
 
   scoped_refptr<V4L2Queue> input_queue_;
   scoped_refptr<V4L2Queue> output_queue_;

@@ -15,7 +15,8 @@ Checks: '-*,
          modernize-use-equals-default,
          modernize-use-noexcept,
          modernize-use-nullptr,
-         modernize-use-transparent-functors'
+         modernize-use-transparent-functors,
+         readability-redundant-member-init'
 HeaderFilterRegex: 'base/win/*'
 CheckOptions:
   - key: modernize-use-default-member-init.UseAssignment

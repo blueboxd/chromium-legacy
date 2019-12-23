@@ -60,7 +60,7 @@ class V4L2Buffer {
 
   void* GetPlaneMapping(const size_t plane);
   size_t GetMemoryUsage() const;
-  const struct v4l2_buffer* v4l2_buffer() const { return &v4l2_buffer_; }
+  const struct v4l2_buffer& v4l2_buffer() const { return v4l2_buffer_; }
   scoped_refptr<VideoFrame> GetVideoFrame();
 
  private:
@@ -290,7 +290,7 @@ size_t V4L2BuffersList::size() const {
 // It also makes some private V4L2Queue methods available to this module only.
 class V4L2BufferRefBase {
  public:
-  V4L2BufferRefBase(const struct v4l2_buffer* v4l2_buffer,
+  V4L2BufferRefBase(const struct v4l2_buffer& v4l2_buffer,
                     base::WeakPtr<V4L2Queue> queue);
   ~V4L2BufferRefBase();
 
@@ -325,17 +325,17 @@ class V4L2BufferRefBase {
   DISALLOW_COPY_AND_ASSIGN(V4L2BufferRefBase);
 };
 
-V4L2BufferRefBase::V4L2BufferRefBase(const struct v4l2_buffer* v4l2_buffer,
+V4L2BufferRefBase::V4L2BufferRefBase(const struct v4l2_buffer& v4l2_buffer,
                                      base::WeakPtr<V4L2Queue> queue)
     : queue_(std::move(queue)), return_to_(queue_->free_buffers_) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(V4L2_TYPE_IS_MULTIPLANAR(v4l2_buffer->type));
-  DCHECK_LE(v4l2_buffer->length, base::size(v4l2_planes_));
+  DCHECK(V4L2_TYPE_IS_MULTIPLANAR(v4l2_buffer.type));
+  DCHECK_LE(v4l2_buffer.length, base::size(v4l2_planes_));
   DCHECK(return_to_);
 
-  memcpy(&v4l2_buffer_, v4l2_buffer, sizeof(v4l2_buffer_));
-  memcpy(v4l2_planes_, v4l2_buffer->m.planes,
-         sizeof(struct v4l2_plane) * v4l2_buffer->length);
+  memcpy(&v4l2_buffer_, &v4l2_buffer, sizeof(v4l2_buffer_));
+  memcpy(v4l2_planes_, v4l2_buffer.m.planes,
+         sizeof(struct v4l2_plane) * v4l2_buffer.length);
   v4l2_buffer_.m.planes = v4l2_planes_;
 }
 
@@ -416,13 +416,8 @@ bool V4L2BufferRefBase::CheckNumFDsForFormat(const size_t num_fds) const {
   return true;
 }
 
-V4L2WritableBufferRef::V4L2WritableBufferRef() {
-  // Invalid buffers can be created from any thread.
-  DETACH_FROM_SEQUENCE(sequence_checker_);
-}
-
 V4L2WritableBufferRef::V4L2WritableBufferRef(
-    const struct v4l2_buffer* v4l2_buffer,
+    const struct v4l2_buffer& v4l2_buffer,
     base::WeakPtr<V4L2Queue> queue)
     : buffer_data_(
           std::make_unique<V4L2BufferRefBase>(v4l2_buffer, std::move(queue))) {
@@ -457,26 +452,21 @@ V4L2WritableBufferRef& V4L2WritableBufferRef::operator=(
 
 scoped_refptr<VideoFrame> V4L2WritableBufferRef::GetVideoFrame() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(buffer_data_);
 
   return buffer_data_->GetVideoFrame();
 }
 
-bool V4L2WritableBufferRef::IsValid() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  return buffer_data_ != nullptr;
-}
-
 enum v4l2_memory V4L2WritableBufferRef::Memory() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(IsValid());
+  DCHECK(buffer_data_);
 
   return static_cast<enum v4l2_memory>(buffer_data_->v4l2_buffer_.memory);
 }
 
 bool V4L2WritableBufferRef::DoQueue() && {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(IsValid());
+  DCHECK(buffer_data_);
 
   bool queued = buffer_data_->QueueBuffer();
 
@@ -488,7 +478,7 @@ bool V4L2WritableBufferRef::DoQueue() && {
 
 bool V4L2WritableBufferRef::QueueMMap() && {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(IsValid());
+  DCHECK(buffer_data_);
 
   // Move ourselves so our data gets freed no matter when we return
   V4L2WritableBufferRef self(std::move(*this));
@@ -503,7 +493,7 @@ bool V4L2WritableBufferRef::QueueMMap() && {
 
 bool V4L2WritableBufferRef::QueueUserPtr(const std::vector<void*>& ptrs) && {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(IsValid());
+  DCHECK(buffer_data_);
 
   // Move ourselves so our data gets freed no matter when we return
   V4L2WritableBufferRef self(std::move(*this));
@@ -529,7 +519,7 @@ bool V4L2WritableBufferRef::QueueUserPtr(const std::vector<void*>& ptrs) && {
 bool V4L2WritableBufferRef::QueueDMABuf(
     const std::vector<base::ScopedFD>& fds) && {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(IsValid());
+  DCHECK(buffer_data_);
 
   // Move ourselves so our data gets freed no matter when we return
   V4L2WritableBufferRef self(std::move(*this));
@@ -552,7 +542,7 @@ bool V4L2WritableBufferRef::QueueDMABuf(
 bool V4L2WritableBufferRef::QueueDMABuf(
     const std::vector<gfx::NativePixmapPlane>& planes) && {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(IsValid());
+  DCHECK(buffer_data_);
 
   // Move ourselves so our data gets freed no matter when we return
   V4L2WritableBufferRef self(std::move(*this));
@@ -574,14 +564,14 @@ bool V4L2WritableBufferRef::QueueDMABuf(
 
 size_t V4L2WritableBufferRef::PlanesCount() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(IsValid());
+  DCHECK(buffer_data_);
 
   return buffer_data_->v4l2_buffer_.length;
 }
 
 size_t V4L2WritableBufferRef::GetPlaneSize(const size_t plane) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(IsValid());
+  DCHECK(buffer_data_);
 
   if (plane >= PlanesCount()) {
     VLOGF(1) << "Invalid plane " << plane << " requested.";
@@ -594,7 +584,7 @@ size_t V4L2WritableBufferRef::GetPlaneSize(const size_t plane) const {
 void V4L2WritableBufferRef::SetPlaneSize(const size_t plane,
                                          const size_t size) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(IsValid());
+  DCHECK(buffer_data_);
 
   enum v4l2_memory memory = Memory();
   if (memory == V4L2_MEMORY_MMAP) {
@@ -613,21 +603,21 @@ void V4L2WritableBufferRef::SetPlaneSize(const size_t plane,
 
 void* V4L2WritableBufferRef::GetPlaneMapping(const size_t plane) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(IsValid());
+  DCHECK(buffer_data_);
 
   return buffer_data_->GetPlaneMapping(plane);
 }
 
 void V4L2WritableBufferRef::SetTimeStamp(const struct timeval& timestamp) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(IsValid());
+  DCHECK(buffer_data_);
 
   buffer_data_->v4l2_buffer_.timestamp = timestamp;
 }
 
 const struct timeval& V4L2WritableBufferRef::GetTimeStamp() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(IsValid());
+  DCHECK(buffer_data_);
 
   return buffer_data_->v4l2_buffer_.timestamp;
 }
@@ -635,7 +625,7 @@ const struct timeval& V4L2WritableBufferRef::GetTimeStamp() const {
 void V4L2WritableBufferRef::SetPlaneBytesUsed(const size_t plane,
                                               const size_t bytes_used) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(IsValid());
+  DCHECK(buffer_data_);
 
   if (plane >= PlanesCount()) {
     VLOGF(1) << "Invalid plane " << plane << " requested.";
@@ -653,7 +643,7 @@ void V4L2WritableBufferRef::SetPlaneBytesUsed(const size_t plane,
 
 size_t V4L2WritableBufferRef::GetPlaneBytesUsed(const size_t plane) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(IsValid());
+  DCHECK(buffer_data_);
 
   if (plane >= PlanesCount()) {
     VLOGF(1) << "Invalid plane " << plane << " requested.";
@@ -666,7 +656,7 @@ size_t V4L2WritableBufferRef::GetPlaneBytesUsed(const size_t plane) const {
 void V4L2WritableBufferRef::SetPlaneDataOffset(const size_t plane,
                                                const size_t data_offset) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(IsValid());
+  DCHECK(buffer_data_);
 
   if (plane >= PlanesCount()) {
     VLOGF(1) << "Invalid plane " << plane << " requested.";
@@ -683,12 +673,12 @@ void V4L2WritableBufferRef::PrepareQueueBuffer(
 
 size_t V4L2WritableBufferRef::BufferId() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(IsValid());
+  DCHECK(buffer_data_);
 
   return buffer_data_->v4l2_buffer_.index;
 }
 
-V4L2ReadableBuffer::V4L2ReadableBuffer(const struct v4l2_buffer* v4l2_buffer,
+V4L2ReadableBuffer::V4L2ReadableBuffer(const struct v4l2_buffer& v4l2_buffer,
                                        base::WeakPtr<V4L2Queue> queue)
     : buffer_data_(
           std::make_unique<V4L2BufferRefBase>(v4l2_buffer, std::move(queue))) {
@@ -779,13 +769,13 @@ size_t V4L2ReadableBuffer::BufferId() const {
 class V4L2BufferRefFactory {
  public:
   static V4L2WritableBufferRef CreateWritableRef(
-      const struct v4l2_buffer* v4l2_buffer,
+      const struct v4l2_buffer& v4l2_buffer,
       base::WeakPtr<V4L2Queue> queue) {
     return V4L2WritableBufferRef(v4l2_buffer, std::move(queue));
   }
 
   static V4L2ReadableBufferRef CreateReadableRef(
-      const struct v4l2_buffer* v4l2_buffer,
+      const struct v4l2_buffer& v4l2_buffer,
       base::WeakPtr<V4L2Queue> queue) {
     return new V4L2ReadableBuffer(v4l2_buffer, std::move(queue));
   }
@@ -967,17 +957,16 @@ v4l2_memory V4L2Queue::GetMemoryType() const {
   return memory_;
 }
 
-V4L2WritableBufferRef V4L2Queue::GetFreeBuffer() {
+base::Optional<V4L2WritableBufferRef> V4L2Queue::GetFreeBuffer() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // No buffers allocated at the moment?
   if (!free_buffers_)
-    return V4L2WritableBufferRef();
+    return base::nullopt;
 
   auto buffer_id = free_buffers_->GetFreeBuffer();
-
   if (!buffer_id.has_value())
-    return V4L2WritableBufferRef();
+    return base::nullopt;
 
   return V4L2BufferRefFactory::CreateWritableRef(
       buffers_[buffer_id.value()]->v4l2_buffer(),
@@ -1047,7 +1036,7 @@ std::pair<bool, V4L2ReadableBufferRef> V4L2Queue::DequeueBuffer() {
   DCHECK(free_buffers_);
   return std::make_pair(true,
                         V4L2BufferRefFactory::CreateReadableRef(
-                            &v4l2_buffer, weak_this_factory_.GetWeakPtr()));
+                            v4l2_buffer, weak_this_factory_.GetWeakPtr()));
 }
 
 bool V4L2Queue::IsStreaming() const {

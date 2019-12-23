@@ -153,8 +153,8 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   void Enqueue();
   void Dequeue();
   // Enqueue a buffer on the corresponding queue.  Returns false on fatal error.
-  bool EnqueueInputRecord();
-  bool EnqueueOutputRecord();
+  bool EnqueueInputRecord(V4L2WritableBufferRef input_buf);
+  bool EnqueueOutputRecord(V4L2WritableBufferRef output_buf);
 
   // Attempt to start/stop device_poll_thread_.
   bool StartDevicePoll();

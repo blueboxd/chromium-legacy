@@ -68,12 +68,10 @@ class V4L2DecodeSurface : public base::RefCounted<V4L2DecodeSurface> {
   bool decoded() const { return decoded_; }
   int input_record() const { return input_record_; }
   V4L2WritableBufferRef& input_buffer() {
-    DCHECK(input_buffer_.IsValid());
     return input_buffer_;
   }
   int output_record() const { return output_record_; }
   V4L2WritableBufferRef& output_buffer() {
-    DCHECK(output_buffer_.IsValid());
     return output_buffer_;
   }
   scoped_refptr<VideoFrame> video_frame() const { return video_frame_; }
@@ -88,13 +86,13 @@ class V4L2DecodeSurface : public base::RefCounted<V4L2DecodeSurface> {
   SEQUENCE_CHECKER(sequence_checker_);
 
  private:
-  // The index of the corresponding input record.
-  const int input_record_;
   V4L2WritableBufferRef input_buffer_;
-  // The index of the corresponding output record.
-  const int output_record_;
   V4L2WritableBufferRef output_buffer_;
   scoped_refptr<VideoFrame> video_frame_;
+  // The index of the corresponding input record.
+  const int input_record_;
+  // The index of the corresponding output record.
+  const int output_record_;
   // The visible size of the buffer.
   gfx::Rect visible_rect_;
 

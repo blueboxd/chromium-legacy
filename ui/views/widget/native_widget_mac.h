@@ -182,6 +182,11 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
       base::RepeatingCallback<void(NativeWidgetMac*)> callback);
 
  protected:
+  // The argument to SetBounds is sometimes in screen coordinates and sometimes
+  // in parent window coordinates. This function will take that bounds argument
+  // and convert it to screen coordinates if needed.
+  gfx::Rect ConvertBoundsToScreenIfNeeded(const gfx::Rect& bounds) const;
+
   virtual void PopulateCreateWindowParams(
       const Widget::InitParams& widget_params,
       remote_cocoa::mojom::CreateWindowParams* params) {}

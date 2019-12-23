@@ -541,14 +541,15 @@ void V4L2ImageProcessor::ProcessJobsTask() {
 
   while (!input_job_queue_.empty()) {
     // We need one input and one output buffer to schedule the job
-    if (input_queue_->FreeBuffersCount() == 0 ||
-        output_queue_->FreeBuffersCount() == 0)
+    auto input_buffer = input_queue_->GetFreeBuffer();
+    auto output_buffer = output_queue_->GetFreeBuffer();
+    if (!input_buffer || !output_buffer)
       break;
 
     auto job_record = std::move(input_job_queue_.front());
     input_job_queue_.pop();
-    EnqueueInput(job_record.get());
-    EnqueueOutput(job_record.get());
+    EnqueueInput(job_record.get(), std::move(*input_buffer));
+    EnqueueOutput(job_record.get(), std::move(*output_buffer));
     running_jobs_.emplace(std::move(job_record));
   }
 }
@@ -718,14 +719,17 @@ void V4L2ImageProcessor::ServiceDeviceTask() {
             << output_queue_->AllocatedBuffersCount() << "]";
 }
 
-void V4L2ImageProcessor::EnqueueInput(const JobRecord* job_record) {
+void V4L2ImageProcessor::EnqueueInput(const JobRecord* job_record,
+                                      V4L2WritableBufferRef buffer) {
   DVLOGF(4);
   DCHECK_CALLED_ON_VALID_SEQUENCE(backend_sequence_checker_);
   DCHECK(input_queue_);
 
   const size_t old_inputs_queued = input_queue_->QueuedBuffersCount();
-  if (!EnqueueInputRecord(job_record))
+  if (!EnqueueInputRecord(job_record, std::move(buffer))) {
+    NotifyError();
     return;
+  }
 
   if (old_inputs_queued == 0 && input_queue_->QueuedBuffersCount() != 0) {
     // We started up a previously empty queue.
@@ -740,14 +744,17 @@ void V4L2ImageProcessor::EnqueueInput(const JobRecord* job_record) {
   }
 }
 
-void V4L2ImageProcessor::EnqueueOutput(JobRecord* job_record) {
+void V4L2ImageProcessor::EnqueueOutput(JobRecord* job_record,
+                                       V4L2WritableBufferRef buffer) {
   DVLOGF(4);
   DCHECK_CALLED_ON_VALID_SEQUENCE(backend_sequence_checker_);
   DCHECK(output_queue_);
 
   const int old_outputs_queued = output_queue_->QueuedBuffersCount();
-  if (!EnqueueOutputRecord(job_record))
+  if (!EnqueueOutputRecord(job_record, std::move(buffer))) {
+    NotifyError();
     return;
+  }
 
   if (old_outputs_queued == 0 && output_queue_->QueuedBuffersCount() != 0) {
     // We just started up a previously empty queue.
@@ -879,14 +886,11 @@ void V4L2ImageProcessor::Dequeue() {
   }
 }
 
-bool V4L2ImageProcessor::EnqueueInputRecord(const JobRecord* job_record) {
+bool V4L2ImageProcessor::EnqueueInputRecord(const JobRecord* job_record,
+                                            V4L2WritableBufferRef buffer) {
   DVLOGF(4);
   DCHECK_CALLED_ON_VALID_SEQUENCE(backend_sequence_checker_);
   DCHECK(input_queue_);
-  DCHECK_GT(input_queue_->FreeBuffersCount(), 0u);
-
-  V4L2WritableBufferRef buffer(input_queue_->GetFreeBuffer());
-  DCHECK(buffer.IsValid());
 
   switch (input_memory_type_) {
     case V4L2_MEMORY_USERPTR: {
@@ -927,13 +931,10 @@ bool V4L2ImageProcessor::EnqueueInputRecord(const JobRecord* job_record) {
   return true;
 }
 
-bool V4L2ImageProcessor::EnqueueOutputRecord(JobRecord* job_record) {
+bool V4L2ImageProcessor::EnqueueOutputRecord(JobRecord* job_record,
+                                             V4L2WritableBufferRef buffer) {
   DVLOGF(4);
   DCHECK_CALLED_ON_VALID_SEQUENCE(backend_sequence_checker_);
-  DCHECK_GT(output_queue_->FreeBuffersCount(), 0u);
-
-  V4L2WritableBufferRef buffer(output_queue_->GetFreeBuffer());
-  DCHECK(buffer.IsValid());
 
   job_record->output_buffer_id = buffer.BufferId();
 

@@ -13,7 +13,7 @@
 namespace base {
 namespace win {
 
-EnumVariant::EnumVariant(ULONG count) : items_(), current_index_(0) {
+EnumVariant::EnumVariant(ULONG count) : current_index_(0) {
   for (ULONG i = 0; i < count; ++i)
     items_.emplace_back(ScopedVariant::kEmptyVariant);
 }

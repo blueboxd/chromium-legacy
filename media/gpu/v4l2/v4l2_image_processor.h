@@ -124,11 +124,12 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessorBackend {
   // Initialize on |backend_task_runner_|. After finished, call |init_cb|
   // with the result whether initialization is successful or not
   void Initialize(InitCB init_cb);
-  void EnqueueInput(const JobRecord* job_record);
-  void EnqueueOutput(JobRecord* job_record);
+  void EnqueueInput(const JobRecord* job_record, V4L2WritableBufferRef buffer);
+  void EnqueueOutput(JobRecord* job_record, V4L2WritableBufferRef buffer);
   void Dequeue();
-  bool EnqueueInputRecord(const JobRecord* job_record);
-  bool EnqueueOutputRecord(JobRecord* job_record);
+  bool EnqueueInputRecord(const JobRecord* job_record,
+                          V4L2WritableBufferRef buffer);
+  bool EnqueueOutputRecord(JobRecord* job_record, V4L2WritableBufferRef buffer);
   bool CreateInputBuffers();
   bool CreateOutputBuffers();
 

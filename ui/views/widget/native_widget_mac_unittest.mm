@@ -2145,6 +2145,61 @@ class NativeWidgetMacFullKeyboardAccessTest : public NativeWidgetMacTest {
   ui::test::ScopedFakeFullKeyboardAccess* fake_full_keyboard_access_ = nullptr;
 };
 
+// Ensure that calling SetSize doesn't change the origin.
+TEST_F(NativeWidgetMacTest, SetSizeDoesntChangeOrigin) {
+  Widget* parent = CreateTopLevelFramelessPlatformWidget();
+  gfx::Rect parent_rect(100, 100, 400, 200);
+  parent->SetBounds(parent_rect);
+
+  // Popup children specify their bounds relative to their parent window.
+  Widget* child_control = new Widget;
+  gfx::Rect child_control_rect(50, 70, 300, 100);
+  {
+    Widget::InitParams params(Widget::InitParams::TYPE_CONTROL);
+    params.parent = parent->GetNativeView();
+    params.bounds = child_control_rect;
+    child_control->Init(std::move(params));
+    child_control->SetContentsView(new View);
+  }
+
+  // Window children specify their bounds in screen coords.
+  Widget* child_window = new Widget;
+  gfx::Rect child_window_rect(110, 90, 200, 50);
+  {
+    Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
+    params.parent = parent->GetNativeView();
+    params.bounds = child_window_rect;
+    child_window->Init(std::move(params));
+  }
+
+  // Sanity-check the initial bounds. Note that the CONTROL should be offset by
+  // the parent's origin.
+  EXPECT_EQ(parent->GetWindowBoundsInScreen(), parent_rect);
+  EXPECT_EQ(
+      child_control->GetWindowBoundsInScreen(),
+      gfx::Rect(child_control_rect.origin() + parent_rect.OffsetFromOrigin(),
+                child_control_rect.size()));
+  EXPECT_EQ(child_window->GetWindowBoundsInScreen(), child_window_rect);
+
+  // Update the size, but not the origin.
+  parent_rect.set_size(gfx::Size(505, 310));
+  parent->SetSize(parent_rect.size());
+  child_control_rect.set_size(gfx::Size(256, 102));
+  child_control->SetSize(child_control_rect.size());
+  child_window_rect.set_size(gfx::Size(172, 96));
+  child_window->SetSize(child_window_rect.size());
+
+  // Ensure that the origin didn't change.
+  EXPECT_EQ(parent->GetWindowBoundsInScreen(), parent_rect);
+  EXPECT_EQ(
+      child_control->GetWindowBoundsInScreen(),
+      gfx::Rect(child_control_rect.origin() + parent_rect.OffsetFromOrigin(),
+                child_control_rect.size()));
+  EXPECT_EQ(child_window->GetWindowBoundsInScreen(), child_window_rect);
+
+  parent->CloseNow();
+}
+
 // Test that updateFullKeyboardAccess method on BridgedContentView correctly
 // sets the keyboard accessibility mode on the associated focus manager.
 TEST_F(NativeWidgetMacFullKeyboardAccessTest, FullKeyboardToggle) {

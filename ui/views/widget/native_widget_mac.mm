@@ -33,6 +33,7 @@
 #import "ui/views/cocoa/drag_drop_client_mac.h"
 #import "ui/views/cocoa/native_widget_mac_ns_window_host.h"
 #include "ui/views/widget/drop_helper.h"
+#include "ui/views/widget/widget_aura_utils.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/native_frame_view.h"
 
@@ -194,7 +195,8 @@ void NativeWidgetMac::InitNativeWidget(Widget::InitParams params) {
     ns_window_host_->CreateInProcessNSWindowBridge(std::move(window));
   }
   ns_window_host_->SetParent(parent_host);
-  ns_window_host_->InitWindow(params);
+  ns_window_host_->InitWindow(params,
+                              ConvertBoundsToScreenIfNeeded(params.bounds));
   OnWindowInitialized();
 
   // Only set the z-order here if it is non-default since setting it may affect
@@ -395,9 +397,35 @@ std::string NativeWidgetMac::GetWorkspace() const {
                          : std::string();
 }
 
+gfx::Rect NativeWidgetMac::ConvertBoundsToScreenIfNeeded(
+    const gfx::Rect& bounds) const {
+  // If there isn't a parent widget, then bounds cannot be relative to the
+  // parent.
+  if (!ns_window_host_ || !ns_window_host_->parent() || !GetWidget())
+    return bounds;
+
+  // Replicate the logic in desktop_aura/desktop_screen_position_client.cc.
+  if (GetAuraWindowTypeForWidgetType(type_) ==
+          aura::client::WINDOW_TYPE_POPUP ||
+      GetWidget()->is_top_level()) {
+    return bounds;
+  }
+
+  // Empty bounds are only allowed to be specified at initialization and are
+  // expected not to be translated.
+  if (bounds.IsEmpty())
+    return bounds;
+
+  gfx::Rect bounds_in_screen = bounds;
+  bounds_in_screen.Offset(
+      ns_window_host_->parent()->GetWindowBoundsInScreen().OffsetFromOrigin());
+  return bounds_in_screen;
+}
+
 void NativeWidgetMac::SetBounds(const gfx::Rect& bounds) {
-  if (ns_window_host_)
-    ns_window_host_->SetBounds(bounds);
+  if (!ns_window_host_)
+    return;
+  ns_window_host_->SetBoundsInScreen(ConvertBoundsToScreenIfNeeded(bounds));
 }
 
 void NativeWidgetMac::SetBoundsConstrained(const gfx::Rect& bounds) {
@@ -414,9 +442,12 @@ void NativeWidgetMac::SetBoundsConstrained(const gfx::Rect& bounds) {
 }
 
 void NativeWidgetMac::SetSize(const gfx::Size& size) {
+  if (!ns_window_host_)
+    return;
   // Ensure the top-left corner stays in-place (rather than the bottom-left,
   // which -[NSWindow setContentSize:] would do).
-  SetBounds(gfx::Rect(GetWindowBoundsInScreen().origin(), size));
+  ns_window_host_->SetBoundsInScreen(
+      gfx::Rect(GetWindowBoundsInScreen().origin(), size));
 }
 
 void NativeWidgetMac::StackAbove(gfx::NativeView native_view) {

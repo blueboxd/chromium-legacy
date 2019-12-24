@@ -554,6 +554,7 @@ interface FileSystemDirectoryHandle : FileSystemHandle
 interface FileSystemFileHandle : FileSystemHandle
     attribute @@toStringTag
     method constructor
+    method createWritable
     method createWriter
     method getFile
 interface FileSystemHandle
@@ -564,6 +565,13 @@ interface FileSystemHandle
     method constructor
     method queryPermission
     method requestPermission
+interface FileSystemWritableFileStream : WritableStream
+    attribute @@toStringTag
+    method close
+    method constructor
+    method seek
+    method truncate
+    method write
 interface FileSystemWriter
     attribute @@toStringTag
     method close

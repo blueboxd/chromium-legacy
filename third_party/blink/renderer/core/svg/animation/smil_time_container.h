@@ -106,6 +106,7 @@ class SMILTimeContainer final : public GarbageCollected<SMILTimeContainer> {
   void AnimationPolicyTimerFired(TimerBase*);
   ImageAnimationPolicy AnimationPolicy() const;
   bool HandleAnimationPolicy(AnimationPolicyOnceAction);
+  bool CanScheduleFrame(SMILTime earliest_fire_time) const;
   void UpdateAnimationsAndScheduleFrameIfNeeded(SMILTime elapsed);
   void ResetIntervals();
   void UpdateIntervals(SMILTime presentation_time);

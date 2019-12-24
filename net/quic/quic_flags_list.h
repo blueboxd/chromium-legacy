@@ -406,3 +406,11 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_sanitize_ack_delay, false)
 QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_quic_allow_very_long_connection_ids,
           false)
+
+// If true, frames will be hold in an optimized wrapper data structure.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_interval_deque, false)
+
+// If true, QUIC BBRv2 will cut inflight_hi gradually upon loss from PROBE_UP.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_bbr2_cut_inflight_hi_gradually,
+          false)

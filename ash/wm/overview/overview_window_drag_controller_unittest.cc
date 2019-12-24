@@ -338,11 +338,9 @@ class OverviewWindowDragControllerDesksPortraitTabletTest
     return overview_grid()->desks_bar_view()->GetWidget();
   }
 
-  bool IsHotseatEnabled() { return GetParam(); }
-
   // OverviewWindowDragControllerWithDesksTest:
   void SetUp() override {
-    if (IsHotseatEnabled()) {
+    if (GetParam()) {
       scoped_feature_list_.InitWithFeatures(
           /* enabled */ {features::kVirtualDesks,
                          chromeos::features::kShelfScrollable,
@@ -419,10 +417,6 @@ class OverviewWindowDragControllerDesksPortraitTabletTest
 
 TEST_P(OverviewWindowDragControllerDesksPortraitTabletTest,
        DragAndDropInEmptyArea) {
-  // TODO(https://crbug.com/1011128): Fix this test when the hotseat is enabled.
-  if (IsHotseatEnabled())
-    return;
-
   auto window = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   StartDraggingAndValidateDesksBarShifted(window.get());
 
@@ -437,10 +431,6 @@ TEST_P(OverviewWindowDragControllerDesksPortraitTabletTest,
 
 TEST_P(OverviewWindowDragControllerDesksPortraitTabletTest,
        DragAndDropInSnapAreas) {
-  // TODO(https://crbug.com/1011128): Fix this test when the hotseat is enabled.
-  if (IsHotseatEnabled())
-    return;
-
   auto window = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   StartDraggingAndValidateDesksBarShifted(window.get());
 
@@ -483,10 +473,6 @@ TEST_P(OverviewWindowDragControllerDesksPortraitTabletTest,
 }
 
 TEST_P(OverviewWindowDragControllerDesksPortraitTabletTest, DragAndDropInDesk) {
-  // TODO(https://crbug.com/1011128): Fix this test when the hotseat is enabled.
-  if (IsHotseatEnabled())
-    return;
-
   auto window = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   StartDraggingAndValidateDesksBarShifted(window.get());
 

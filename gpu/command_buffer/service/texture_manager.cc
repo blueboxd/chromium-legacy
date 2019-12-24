@@ -15,7 +15,6 @@
 #include "base/bits.h"
 #include "base/format_macros.h"
 #include "base/lazy_instance.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -3696,13 +3695,6 @@ void TextureManager::DoTexImage(DecoderTextureState* texture_state,
     }
   }
   GLenum error = ERRORSTATE_PEEK_GL_ERROR(error_state, function_name);
-  if (args.command_type == DoTexImageArguments::CommandType::kTexImage3D) {
-    UMA_HISTOGRAM_CUSTOM_ENUMERATION("GPU.Error_TexImage3D", error,
-        GetAllGLErrors());
-  } else {
-    UMA_HISTOGRAM_CUSTOM_ENUMERATION("GPU.Error_TexImage2D", error,
-        GetAllGLErrors());
-  }
   if (error == GL_NO_ERROR) {
     bool set_as_cleared = (args.pixels != nullptr || unpack_buffer_bound);
     SetLevelInfo(

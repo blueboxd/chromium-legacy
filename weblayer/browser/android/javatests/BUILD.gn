@@ -7,7 +7,7 @@ import("//build/config/android/rules.gni")
 
 android_library("weblayer_java_tests") {
   testonly = true
-  java_files = [
+  sources = [
     "src/org/chromium/weblayer/test/BrowserFragmentLifecycleTest.java",
     "src/org/chromium/weblayer/test/CrashReporterTest.java",
     "src/org/chromium/weblayer/test/DataClearingTest.java",
@@ -17,7 +17,6 @@ android_library("weblayer_java_tests") {
     "src/org/chromium/weblayer/test/ExecuteScriptTest.java",
     "src/org/chromium/weblayer/test/FullscreenCallbackTest.java",
     "src/org/chromium/weblayer/test/InputTypesTest.java",
-    "src/org/chromium/weblayer/test/WebLayerJUnit4ClassRunner.java",
     "src/org/chromium/weblayer/test/InstrumentationActivityTestRule.java",
     "src/org/chromium/weblayer/test/NavigationTest.java",
     "src/org/chromium/weblayer/test/NavigationWaiter.java",
@@ -29,6 +28,7 @@ android_library("weblayer_java_tests") {
     "src/org/chromium/weblayer/test/TabCallbackTest.java",
     "src/org/chromium/weblayer/test/TabListCallbackTest.java",
     "src/org/chromium/weblayer/test/TopControlsTest.java",
+    "src/org/chromium/weblayer/test/WebLayerJUnit4ClassRunner.java",
     "src/org/chromium/weblayer/test/WebLayerLoadingTest.java",
   ]
   deps = [

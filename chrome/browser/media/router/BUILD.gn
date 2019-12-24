@@ -161,33 +161,48 @@ static_library("router") {
         "providers/openscreen/network_service_async_packet_sender.h",
         "providers/openscreen/network_service_quic_packet_writer.cc",
         "providers/openscreen/network_service_quic_packet_writer.h",
-        "providers/openscreen/platform/chrome_task_runner.cc",
-        "providers/openscreen/platform/chrome_task_runner.h",
-        "providers/openscreen/platform/chrome_tls_client_connection.cc",
-        "providers/openscreen/platform/chrome_tls_client_connection.h",
-        "providers/openscreen/platform/chrome_tls_connection_factory.cc",
-        "providers/openscreen/platform/chrome_tls_connection_factory.h",
-        "providers/openscreen/platform/chrome_udp_socket.cc",
-        "providers/openscreen/platform/chrome_udp_socket.h",
-        "providers/openscreen/platform/logging.cc",
-        "providers/openscreen/platform/mojo_data_pump.cc",
-        "providers/openscreen/platform/mojo_data_pump.h",
-        "providers/openscreen/platform/network_data_pump.h",
-        "providers/openscreen/platform/network_util.cc",
-        "providers/openscreen/platform/network_util.h",
-        "providers/openscreen/platform/time.cc",
-        "providers/openscreen/platform/trace_logging_platform.cc",
       ]
 
-      configs +=
-          [ "//third_party/openscreen/src/build:openscreen_include_dirs" ]
-
       deps += [
+        ":openscreen_platform_impl",
         "//third_party/openscreen/src/osp/public",
         "//third_party/openscreen/src/platform",
         "//third_party/openscreen/src/util",
       ]
     }
+  }
+}
+
+if (enable_openscreen) {
+  source_set("openscreen_platform_impl") {
+    sources = [
+      "providers/openscreen/platform/chrome_task_runner.cc",
+      "providers/openscreen/platform/chrome_task_runner.h",
+      "providers/openscreen/platform/chrome_tls_client_connection.cc",
+      "providers/openscreen/platform/chrome_tls_client_connection.h",
+      "providers/openscreen/platform/chrome_tls_connection_factory.cc",
+      "providers/openscreen/platform/chrome_tls_connection_factory.h",
+      "providers/openscreen/platform/chrome_udp_socket.cc",
+      "providers/openscreen/platform/chrome_udp_socket.h",
+      "providers/openscreen/platform/logging.cc",
+      "providers/openscreen/platform/mojo_data_pump.cc",
+      "providers/openscreen/platform/mojo_data_pump.h",
+      "providers/openscreen/platform/network_data_pump.h",
+      "providers/openscreen/platform/network_util.cc",
+      "providers/openscreen/platform/network_util.h",
+      "providers/openscreen/platform/time.cc",
+      "providers/openscreen/platform/trace_logging_platform.cc",
+    ]
+
+    public_configs =
+        [ "//third_party/openscreen/src/build:openscreen_include_dirs" ]
+
+    deps = [
+      "//base",
+      "//net/traffic_annotation",
+      "//services/network:network_service",
+      "//services/network/public/mojom",
+    ]
   }
 }
 
@@ -319,6 +334,21 @@ source_set("unittests") {
   ]
 }
 
+if (enable_openscreen) {
+  test("openscreen_unittests") {
+    include_dirs = [ "//third_party/openscreen/src" ]
+
+    deps = [
+      ":openscreen_platform_impl",
+      "//base/test:test_support",
+      "//chrome/browser",
+      "//chrome/test:test_support",
+      "//testing/gmock",
+      "//third_party/openscreen/src:openscreen_unittests_all",
+    ]
+  }
+}
+
 fuzzer_test("dial_internal_message_fuzzer") {
   sources = [
     "providers/dial/dial_internal_message_fuzzer.cc",
@@ -326,6 +356,9 @@ fuzzer_test("dial_internal_message_fuzzer") {
   deps = [
     ":router",
     "//base",
+    "//base/test:test_support",
+    "//chrome/browser",
+    "//chrome/test:test_support",
     "//components/mirroring/mojom:service",
     "//components/translate/content/common",
   ]

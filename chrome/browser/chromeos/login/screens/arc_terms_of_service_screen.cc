@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/arc_terms_of_service_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/pref_service.h"
 
 namespace {
@@ -31,13 +30,8 @@ void ArcTermsOfServiceScreen::MaybeLaunchArcSettings(Profile* profile) {
     // TODO(jhorwich) Handle the case where the user chooses to review both ARC
     // settings and sync settings - currently the Settings window will only
     // show one settings page. See crbug.com/901184#c4 for details.
-    if (base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)) {
-      chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-          profile, chrome::kAndroidAppsDetailsSubPage);
-    } else {
-      chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-          profile, chrome::kAndroidAppsDetailsSubPageInBrowserSettings);
-    }
+    chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+        profile, chrome::kAndroidAppsDetailsSubPage);
   }
 }
 

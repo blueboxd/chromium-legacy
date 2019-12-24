@@ -72,9 +72,9 @@ import './strings.js';
 
         // Fallback if Event.path is not available.
         let el = e.target;
-        if (!anchor && el.nodeType == Node.ELEMENT_NODE &&
+        if (!anchor && el.nodeType === Node.ELEMENT_NODE &&
             el.webkitMatchesSelector('A, A *')) {
-          while (el.tagName != 'A') {
+          while (el.tagName !== 'A') {
             el = el.parentElement;
           }
           anchor = el;
@@ -85,8 +85,8 @@ import './strings.js';
         }
 
         anchor = /** @type {!HTMLAnchorElement} */ (anchor);
-        if ((anchor.protocol == 'file:' || anchor.protocol == 'about:') &&
-            (e.button == 0 || e.button == 1)) {
+        if ((anchor.protocol === 'file:' || anchor.protocol === 'about:') &&
+            (e.button === 0 || e.button === 1)) {
           BrowserService.getInstance().navigateToUrl(
               anchor.href, anchor.target, /** @type {!MouseEvent} */ (e));
           e.preventDefault();
@@ -242,7 +242,7 @@ Polymer({
   /** Overridden from IronScrollTargetBehavior */
   _scrollHandler: function() {
     if (this.scrollTarget) {
-      this.toolbarShadow_ = this.scrollTarget.scrollTop != 0;
+      this.toolbarShadow_ = this.scrollTarget.scrollTop !== 0;
     }
   },
 
@@ -331,7 +331,7 @@ Polymer({
 
   /** @private */
   onDeleteCommand_: function() {
-    if (this.$.toolbar.count == 0 || this.pendingDelete_) {
+    if (this.$.toolbar.count === 0 || this.pendingDelete_) {
       return;
     }
     this.deleteSelected();
@@ -383,7 +383,7 @@ Polymer({
    * @private
    */
   syncedTabsSelected_: function(selectedPage) {
-    return selectedPage == 'syncedTabs';
+    return selectedPage === 'syncedTabs';
   },
 
   /**
@@ -395,7 +395,7 @@ Polymer({
    * @private
    */
   shouldShowSpinner_: function(querying, incremental, searchTerm) {
-    return querying && !incremental && searchTerm != '';
+    return querying && !incremental && searchTerm !== '';
   },
 
   /** @private */

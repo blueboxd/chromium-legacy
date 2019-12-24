@@ -72,7 +72,7 @@ import {ForeignSession, HistoryEntry, HistoryQuery} from './externs.js';
      * @param {string} action The name of the action to be logged.
      */
     recordAction(action) {
-      if (action.indexOf('_') == -1) {
+      if (action.indexOf('_') === -1) {
         action = `HistoryPage_${action}`;
       }
       chrome.send('metricsHandler:recordAction', [action]);

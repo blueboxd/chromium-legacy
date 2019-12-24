@@ -169,7 +169,15 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
 // Tests that requesting mobile site of a page works and the user agent
 // propagates to the next navigations in the same tab.
-- (void)testRequestMobileSitePropagatesToNextNavigations {
+// TODO(crbug.com/1037663): Enable for EG2.
+#if defined(CHROME_EARL_GREY_2)
+#define MAYBE_testRequestMobileSitePropagatesToNextNavigations \
+  FLAKY_testRequestMobileSitePropagatesToNextNavigations
+#else
+#define MAYBE_testRequestMobileSitePropagatesToNextNavigations \
+  testRequestMobileSitePropagatesToNextNavigations
+#endif
+- (void)MAYBE_testRequestMobileSitePropagatesToNextNavigations {
   std::unique_ptr<web::DataResponseProvider> provider(
       new UserAgentResponseProvider());
   web::test::SetUpHttpServer(std::move(provider));

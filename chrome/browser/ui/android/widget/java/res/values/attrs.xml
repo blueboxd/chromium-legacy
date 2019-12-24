@@ -35,13 +35,6 @@
         <attr name="roundedfillColor" format="reference|color" />
     </declare-styleable>
 
-    <declare-styleable name="TextViewWithCompoundDrawables">
-        <attr name="drawableWidth" format="dimension"/>
-        <attr name="drawableHeight" format="dimension"/>
-        <!-- drawableTint wasn't added in Android until API level 23. -->
-        <attr name="chromeDrawableTint" format="color"/>
-    </declare-styleable>
-
     <declare-styleable name="WrappingLayout">
         <attr name="horizontalSpacing" format="dimension" />
         <attr name="verticalSpacing" format="dimension" />

@@ -36,7 +36,7 @@ If you've already checked out a copy of the browser's codebase, you can skip
 this section, although you'll still need to run `gclient runhooks` to ensure you
 build using the API keys you just generated.
 
-1.  [Install the build dependencies](linux_build_instructions_prerequisites.md).
+1.  [Install the build dependencies](linux/build_instructions_prerequisites.md).
 1.  Install the depot\_tools utilities, a process that is documented at
     https://dev.chromium.org/developers/how-tos/install-depot-tools.
 1.  Download the Chromium source code by running:

@@ -55,9 +55,6 @@ class IDBObjectStore;
 
 class MODULES_EXPORT IDBAny final : public GarbageCollected<IDBAny> {
  public:
-  static IDBAny* CreateUndefined();
-  static IDBAny* CreateNull();
-
   enum Type {
     kUndefinedType = 0,
     kNullType,

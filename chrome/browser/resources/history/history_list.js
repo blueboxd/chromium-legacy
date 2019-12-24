@@ -181,7 +181,7 @@ Polymer({
   },
 
   selectOrUnselectAll: function() {
-    if (this.historyData_.length == this.getSelectedItemCount()) {
+    if (this.historyData_.length === this.getSelectedItemCount()) {
       this.unselectAllItems();
     } else {
       this.selectAllItems();
@@ -192,7 +192,7 @@ Polymer({
    * Select each item in |historyData|.
    */
   selectAllItems: function() {
-    if (this.historyData_.length == this.getSelectedItemCount()) {
+    if (this.historyData_.length === this.getSelectedItemCount()) {
       return;
     }
 
@@ -209,7 +209,7 @@ Polymer({
       this.changeSelection_(index, false);
     });
 
-    assert(this.selectedItems.size == 0);
+    assert(this.selectedItems.size === 0);
   },
 
   /** @return {number} */
@@ -228,7 +228,7 @@ Polymer({
 
     const browserService = BrowserService.getInstance();
     browserService.recordAction('RemoveSelected');
-    if (this.queryState.searchTerm != '') {
+    if (this.queryState.searchTerm !== '') {
       browserService.recordAction('SearchResultRemove');
     }
     this.$.dialog.get().showModal();
@@ -272,7 +272,7 @@ Polymer({
       this.pendingDelete = false;
       this.removeItemsByIndex_(Array.from(this.selectedItems));
       this.fire('unselect-all');
-      if (this.historyData_.length == 0) {
+      if (this.historyData_.length === 0) {
         // Try reloading if nothing is rendered.
         this.fire('query-history', false);
       }
@@ -350,7 +350,7 @@ Polymer({
     }
 
     for (let i = 0; i < this.historyData_.length; i++) {
-      if (this.historyData_[i].url == url) {
+      if (this.historyData_[i].url === url) {
         this.set(`historyData_.${i}.starred`, false);
       }
     }
@@ -436,7 +436,7 @@ Polymer({
       this.removeItemsByIndex_([itemData.index]);
 
       const index = itemData.index;
-      if (index == undefined) {
+      if (index === undefined) {
         return;
       }
       setTimeout(() => {
@@ -470,14 +470,14 @@ Polymer({
 
     // Handle shift selection. Change the selection state of all items between
     // |path| and |lastSelected| to the selection state of |item|.
-    if (e.detail.shiftKey && this.lastSelectedIndex != undefined) {
+    if (e.detail.shiftKey && this.lastSelectedIndex !== undefined) {
       for (let i = Math.min(index, this.lastSelectedIndex);
            i <= Math.max(index, this.lastSelectedIndex); i++) {
         indices.push(i);
       }
     }
 
-    if (indices.length == 0) {
+    if (indices.length === 0) {
       indices.push(index);
     }
 
@@ -503,7 +503,7 @@ Polymer({
    */
   needsTimeGap_: function(item, index) {
     const length = this.historyData_.length;
-    if (index === undefined || index >= length - 1 || length == 0) {
+    if (index === undefined || index >= length - 1 || length === 0) {
       return false;
     }
 
@@ -511,11 +511,11 @@ Polymer({
     const nextItem = this.historyData_[index + 1];
 
     if (this.searchedTerm) {
-      return currentItem.dateShort != nextItem.dateShort;
+      return currentItem.dateShort !== nextItem.dateShort;
     }
 
     return currentItem.time - nextItem.time > BROWSING_GAP_TIME &&
-        currentItem.dateRelativeDay == nextItem.dateRelativeDay;
+        currentItem.dateRelativeDay === nextItem.dateRelativeDay;
   },
 
   /**
@@ -527,11 +527,11 @@ Polymer({
    */
   isCardStart_: function(item, i) {
     const length = this.historyData_.length;
-    if (i === undefined || length == 0 || i > length - 1) {
+    if (i === undefined || length === 0 || i > length - 1) {
       return false;
     }
-    return i == 0 ||
-        this.historyData_[i].dateRelativeDay !=
+    return i === 0 ||
+        this.historyData_[i].dateRelativeDay !==
         this.historyData_[i - 1].dateRelativeDay;
   },
 
@@ -544,11 +544,11 @@ Polymer({
    */
   isCardEnd_: function(item, i) {
     const length = this.historyData_.length;
-    if (i === undefined || length == 0 || i > length - 1) {
+    if (i === undefined || length === 0 || i > length - 1) {
       return false;
     }
-    return i == length - 1 ||
-        this.historyData_[i].dateRelativeDay !=
+    return i === length - 1 ||
+        this.historyData_[i].dateRelativeDay !==
         this.historyData_[i + 1].dateRelativeDay;
   },
 
@@ -586,7 +586,7 @@ Polymer({
    * @private
    */
   initializeResults_: function(info, results) {
-    if (results.length == 0) {
+    if (results.length === 0) {
       return;
     }
 
@@ -596,9 +596,9 @@ Polymer({
       // Sets the default values for these fields to prevent undefined types.
       results[i].selected = false;
       results[i].readableTimestamp =
-          info.term == '' ? results[i].dateTimeOfDay : results[i].dateShort;
+          info.term === '' ? results[i].dateTimeOfDay : results[i].dateShort;
 
-      if (results[i].dateRelativeDay != currentDate) {
+      if (results[i].dateRelativeDay !== currentDate) {
         currentDate = results[i].dateRelativeDay;
       }
     }

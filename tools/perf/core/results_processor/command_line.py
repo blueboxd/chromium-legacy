@@ -85,7 +85,9 @@ def ArgumentParser(standalone=False):
           'Supported values are: %s; or a valid cloud storage bucket name.'
           % ', '.join(sorted(cloud_storage.BUCKET_ALIASES)),
           'Defaults to: %(default)s.'))
-  group.set_defaults(legacy_output_formats=[])
+  group.add_argument(
+      '--experimental-tbmv3-metrics', action='store_true',
+      help='Enable running experimental TBMv3 metrics.')
   return parser
 
 

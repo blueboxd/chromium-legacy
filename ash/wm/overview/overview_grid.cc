@@ -758,11 +758,6 @@ void OverviewGrid::UpdateDropTargetBackgroundVisibility(
       target_window && IsDropTargetWindow(target_window));
 }
 
-void OverviewGrid::UpdateCannotSnapWarningVisibility() {
-  for (auto& overview_mode_item : window_list_)
-    overview_mode_item->UpdateCannotSnapWarningVisibility();
-}
-
 void OverviewGrid::OnSelectorItemDragStarted(OverviewItem* item) {
   for (auto& overview_mode_item : window_list_)
     overview_mode_item->OnSelectorItemDragStarted(item);
@@ -1328,7 +1323,7 @@ void OverviewGrid::SlideWindowsIn() {
 
 std::unique_ptr<ui::ScopedLayerAnimationSettings>
 OverviewGrid::UpdateYPositionAndOpacity(
-    int new_y,
+    float new_y,
     float opacity,
     OverviewSession::UpdateAnimationSettingsCallback callback) {
   std::unique_ptr<ui::ScopedLayerAnimationSettings> settings_to_observe;
@@ -1544,12 +1539,10 @@ int OverviewGrid::CalculateWidthAndMaybeSetUnclippedBounds(OverviewItem* item,
       1, gfx::ToFlooredInt(target_bounds.width() * scale) + 2 * kWindowMargin);
   switch (grid_fill_mode) {
     case ScopedOverviewTransformWindow::GridWindowFillMode::kLetterBoxed:
-      width =
-          ScopedOverviewTransformWindow::kExtremeWindowRatioThreshold * height;
+      width = kExtremeWindowRatioThreshold * height;
       break;
     case ScopedOverviewTransformWindow::GridWindowFillMode::kPillarBoxed:
-      width =
-          height / ScopedOverviewTransformWindow::kExtremeWindowRatioThreshold;
+      width = height / kExtremeWindowRatioThreshold;
       break;
     default:
       break;
@@ -1942,6 +1935,11 @@ gfx::Rect OverviewGrid::GetDesksWidgetBounds() const {
 
   return screen_util::SnapBoundsToDisplayEdge(desks_widget_root_bounds,
                                               root_window_);
+}
+
+void OverviewGrid::UpdateCannotSnapWarningVisibility() {
+  for (auto& overview_mode_item : window_list_)
+    overview_mode_item->UpdateCannotSnapWarningVisibility();
 }
 
 }  // namespace ash

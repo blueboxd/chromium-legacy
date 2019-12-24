@@ -65,7 +65,7 @@ class WebAppIconDownloader : public content::WebContentsObserver {
   // This is overridden in testing.
   virtual int DownloadImage(const GURL& url);
 
-  // Queries FaviconDriver for the page's current favicon URLs.
+  // Queries WebContents for the page's current favicon URLs.
   // This is overridden in testing.
   virtual std::vector<content::FaviconURL> GetFaviconURLsFromWebContents();
 

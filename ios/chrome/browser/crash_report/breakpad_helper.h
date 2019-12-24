@@ -124,6 +124,9 @@ void SetGridToVisibleTabAnimation(NSString* to_view_controller,
 // tab.
 void RemoveGridToVisibleTabAnimation();
 
+// Sets a key with the given |breadcrumbs|.
+void SetBreadcrumbEvents(NSString* breadcrumbs);
+
 // Sets a key in browser to store the playback state of media player (audio or
 // video). This function records a new start. This function is called for each
 // stream in the media (once or twice for audio, two or three times for video).

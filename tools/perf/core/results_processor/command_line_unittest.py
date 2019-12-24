@@ -125,7 +125,6 @@ class TestProcessOptions(ProcessOptionsTestCase):
   def testDefaultOutputFormat(self):
     options = self.ParseArgs([])
     self.assertEqual(options.output_formats, ['html'])
-    self.assertEqual(options.legacy_output_formats, [])
 
   def testUnkownOutputFormatRaises(self):
     with self.assertRaises(SystemExit):

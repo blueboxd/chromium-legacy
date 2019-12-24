@@ -86,6 +86,10 @@ class CrashAnalyzerTest : public testing::Test {
   crashpad::test::TestProcessSnapshot process_snapshot_;
 };
 
+// Stack trace collection on Android builds with frame pointers enabled does
+// not use base::debug::StackTrace, so the stack traces may vary slightly and
+// break this test.
+#if !defined(OS_ANDROID) || !BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS)
 TEST_F(CrashAnalyzerTest, StackTraceCollection) {
   void* ptr = gpa_.Allocate(10);
   ASSERT_NE(ptr, nullptr);
@@ -138,6 +142,7 @@ TEST_F(CrashAnalyzerTest, StackTraceCollection) {
               reinterpret_cast<uintptr_t>(trace[trace_len - i]));
   }
 }
+#endif
 
 TEST_F(CrashAnalyzerTest, InternalError) {
   // Lets pretend an invalid free() occurred in the allocator region.

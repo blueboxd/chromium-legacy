@@ -61,6 +61,7 @@ class FileHandlerManager : public AppRegistrarObserver {
 
  protected:
   Profile* profile() const { return profile_; }
+  AppRegistrar* registrar() { return registrar_; }
 
   // Indicates whether file handlers have been registered for an app.
   bool AreFileHandlersEnabled(const AppId& app_id) const;

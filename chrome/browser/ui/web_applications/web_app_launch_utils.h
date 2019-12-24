@@ -11,6 +11,7 @@
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 
 class Browser;
+class GURL;
 
 namespace content {
 class WebContents;
@@ -19,6 +20,10 @@ class WebContents;
 namespace web_app {
 
 base::Optional<AppId> GetPwaForSecureActiveTab(Browser* browser);
+
+// Clears navigation history prior to user entering app scope.
+void PrunePreScopeNavigationHistory(const GURL& scope,
+                                    content::WebContents* contents);
 
 // Reparents the active tab into a new app browser for the web app that has the
 // tab's URL in its scope. Does nothing if the tab is not secure or there is no

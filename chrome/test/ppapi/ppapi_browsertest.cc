@@ -2054,7 +2054,8 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest, MAYBE_PNACL_NONSFI(View)) {
       LIST_TEST(FlashMessageLoop_SuspendScriptCallbackWhileRunning) \
   )
 
-#if defined(OS_LINUX)  // Disabled due to flakiness http://crbug.com/316925
+// Disabled due to flakiness http://crbug.com/1036287
+#if defined(OS_LINUX) || defined(OS_MACOSX)
 #define MAYBE_FlashMessageLoop DISABLED_FlashMessageLoop
 #else
 #define MAYBE_FlashMessageLoop FlashMessageLoop

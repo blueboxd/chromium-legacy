@@ -22,6 +22,7 @@
 #include "components/user_manager/user_type.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
+#include "services/network/public/mojom/cookie_manager.mojom.h"
 
 class AccountId;
 
@@ -76,6 +77,7 @@ class GaiaView {
 class GaiaScreenHandler : public BaseScreenHandler,
                           public GaiaView,
                           public NetworkPortalDetector::Observer,
+                          public network::mojom::CookieChangeListener,
                           public SecurityTokenPinDialogHost {
  public:
   using TView = GaiaView;
@@ -189,6 +191,9 @@ class GaiaScreenHandler : public BaseScreenHandler,
       const NetworkState* network,
       const NetworkPortalDetector::CaptivePortalState& state) override;
 
+  // network::mojom::CookieChangeListener:
+  void OnCookieChange(const net::CookieChangeInfo& change) override;
+
   // WebUI message handlers.
   void HandleWebviewLoadAborted(int error_code);
   void HandleCompleteAuthentication(
@@ -198,15 +203,6 @@ class GaiaScreenHandler : public BaseScreenHandler,
       bool using_saml,
       const ::login::StringList& services,
       const base::DictionaryValue* password_attributes);
-  void OnGetCookiesForCompleteAuthentication(
-      const std::string& gaia_id,
-      const std::string& email,
-      const std::string& password,
-      bool using_saml,
-      const ::login::StringList& services,
-      const SamlPasswordAttributes& password_attributes,
-      const net::CookieStatusList& cookies,
-      const net::CookieStatusList& excluded_cookies);
   void HandleCompleteLogin(const std::string& gaia_id,
                            const std::string& typed_email,
                            const std::string& password,
@@ -329,11 +325,14 @@ class GaiaScreenHandler : public BaseScreenHandler,
       const AccountId& account_id,
       bool using_saml,
       const std::string& password,
-      const std::string& auth_code,
-      const std::string& gaps_cookie,
       const SamlPasswordAttributes& password_attributes,
       UserContext* user_context,
       std::string* error_message);
+
+  void ContinueAuthenticationWhenCookiesAvailable();
+  void OnGetCookiesForCompleteAuthentication(
+      const net::CookieStatusList& cookies,
+      const net::CookieStatusList& excluded_cookies);
 
   bool is_security_token_pin_dialog_running() const {
     return !security_token_pin_dialog_closed_callback_.is_null();
@@ -449,6 +448,11 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // Handler for |samlChallengeMachineKey| request.
   std::unique_ptr<SamlChallengeKeyHandler> saml_challenge_key_handler_;
   std::unique_ptr<SamlChallengeKeyHandler> saml_challenge_key_handler_for_test_;
+
+  // Connection to the CookieManager that signals when the GAIA cookies change.
+  mojo::Receiver<network::mojom::CookieChangeListener> oauth_code_listener_{
+      this};
+  std::unique_ptr<UserContext> pending_user_context_;
 
   base::WeakPtrFactory<GaiaScreenHandler> weak_factory_{this};
 

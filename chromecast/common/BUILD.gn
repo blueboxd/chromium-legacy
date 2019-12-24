@@ -16,12 +16,22 @@ cast_source_set("queryable_data") {
   ]
 }
 
+cast_source_set("resource_delegate") {
+  sources = [
+    "cast_resource_delegate.cc",
+    "cast_resource_delegate.h",
+  ]
+  deps = [
+    "//base",
+    "//ui/base",
+    "//ui/gfx",
+  ]
+}
+
 cast_source_set("common") {
   sources = [
     "cast_content_client.cc",
     "cast_content_client.h",
-    "cast_resource_delegate.cc",
-    "cast_resource_delegate.h",
     "cast_url_loader_throttle.cc",
     "cast_url_loader_throttle.h",
     "global_descriptors.h",
@@ -37,7 +47,6 @@ cast_source_set("common") {
     "//net",
     "//services/network/public/cpp:cpp",
     "//ui/base",
-    "//ui/gfx",
     "//url:url",
   ]
 

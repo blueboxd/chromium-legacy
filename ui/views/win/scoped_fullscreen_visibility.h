@@ -27,7 +27,7 @@ class VIEWS_EXPORT ScopedFullscreenVisibility {
   static bool IsHiddenForFullscreen(HWND hwnd);
 
  private:
-  typedef std::map<HWND, int> FullscreenHWNDs;
+  using FullscreenHWNDs = std::map<HWND, int>;
 
   HWND hwnd_;
 

@@ -17,7 +17,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_handler.h"
 #include "components/arc/arc_prefs.h"
@@ -241,12 +240,9 @@ TEST_F(ArcSettingsServiceTest, InitialSettingsNotAppliedNextSession) {
       profile()->GetPrefs()->GetBoolean(prefs::kArcInitialSettingsPending));
 }
 
-TEST_F(ArcSettingsServiceTest, SplitSettingsDisablesFontSize) {
+TEST_F(ArcSettingsServiceTest, DisablesFontSize) {
   constexpr char kSetFontScale[] =
       "org.chromium.arc.intent_helper.SET_FONT_SCALE";
-
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(chromeos::features::kSplitSettings);
 
   // Initial broadcast resets to 100%.
   arc_session_manager()->RequestEnable();
@@ -262,12 +258,9 @@ TEST_F(ArcSettingsServiceTest, SplitSettingsDisablesFontSize) {
   EXPECT_EQ(0U, intent_helper->GetBroadcastsForAction(kSetFontScale).size());
 }
 
-TEST_F(ArcSettingsServiceTest, SplitSettingsDisablesPageZoom) {
+TEST_F(ArcSettingsServiceTest, DisablesPageZoom) {
   constexpr char kSetPageZoom[] =
       "org.chromium.arc.intent_helper.SET_PAGE_ZOOM";
-
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(chromeos::features::kSplitSettings);
 
   // Initial broadcast resets to 100%.
   arc_session_manager()->RequestEnable();

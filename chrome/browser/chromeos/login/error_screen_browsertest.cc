@@ -335,7 +335,7 @@ IN_PROC_BROWSER_TEST_F(KioskErrorScreenTest, OpenCertificateConfig) {
   DialogWindowWaiter waiter(
       l10n_util::GetStringUTF16(IDS_CERTIFICATE_MANAGER_TITLE));
 
-  test::OobeJS().ClickOnPath({"error-message-md-configure-certs-button"});
+  test::OobeJS().TapOnPath({"error-message-md-configure-certs-button"});
   waiter.Wait();
 }
 

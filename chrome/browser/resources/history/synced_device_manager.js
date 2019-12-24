@@ -128,7 +128,7 @@ Polymer({
     for (let i = 0; i < session.windows.length; i++) {
       const windowId = session.windows[i].sessionId;
       const newTabs = session.windows[i].tabs;
-      if (newTabs.length == 0) {
+      if (newTabs.length === 0) {
         continue;
       }
 
@@ -145,13 +145,13 @@ Polymer({
         const searchText = this.searchTerm.toLowerCase();
         for (let j = 0; j < newTabs.length; j++) {
           const tab = newTabs[j];
-          if (tab.title.toLowerCase().indexOf(searchText) != -1) {
+          if (tab.title.toLowerCase().indexOf(searchText) !== -1) {
             tabs.push(tab);
             windowAdded = true;
           }
         }
       }
-      if (windowAdded && i != session.windows.length - 1) {
+      if (windowAdded && i !== session.windows.length - 1) {
         separatorIndexes.push(tabs.length - 1);
       }
     }
@@ -241,7 +241,7 @@ Polymer({
       return true;
     }
 
-    return signInState && syncedDevicesLength == 0;
+    return signInState && syncedDevicesLength === 0;
   },
 
   /**
@@ -299,7 +299,7 @@ Polymer({
     const devices = [];
     sessionList.forEach((session) => {
       const device = this.createInternalDevice_(session);
-      if (device.tabs.length != 0) {
+      if (device.tabs.length !== 0) {
         devices.push(device);
       }
     });

@@ -61,11 +61,6 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/point.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/settings_window_manager_chromeos.h"
-#include "chromeos/constants/chromeos_features.h"
-#endif
-
 using base::ASCIIToUTF16;
 using base::UTF16ToUTF8;
 using bookmarks::BookmarkModel;
@@ -1628,45 +1623,6 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, Paste) {
       SendKey(ui::VKEY_V, kCtrlOrCmdMask | ui::EF_ALT_DOWN));
   EXPECT_EQ(ASCIIToUTF16("ab123cd"), omnibox_view->GetText());
   // TODO(msw): Test that AltGr+V does not paste.
-}
-
-class OmniboxViewTestWithoutSplitSettings : public OmniboxViewTest {
- public:
-  OmniboxViewTestWithoutSplitSettings() {
-#if defined(OS_CHROMEOS)
-    feature_list_.InitAndDisableFeature(chromeos::features::kSplitSettings);
-#endif
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(OmniboxViewTestWithoutSplitSettings, EditSearchEngines) {
-  OmniboxView* omnibox_view = nullptr;
-  ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
-#if defined(OS_CHROMEOS)
-  // Install the Settings App.
-  web_app::WebAppProvider::Get(browser()->profile())
-      ->system_web_app_manager()
-      .InstallSystemAppsForTesting();
-
-  EXPECT_FALSE(
-      chrome::SettingsWindowManager::GetInstance()->FindBrowserForProfile(
-          browser()->profile()));
-#endif
-  EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_EDIT_SEARCH_ENGINES));
-  ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
-#if defined(OS_CHROMEOS)
-  EXPECT_TRUE(
-      chrome::SettingsWindowManager::GetInstance()->FindBrowserForProfile(
-          browser()->profile()));
-#else
-  const std::string target_url =
-      std::string(chrome::kChromeUISettingsURL) + chrome::kSearchEnginesSubPage;
-  EXPECT_EQ(ASCIIToUTF16(target_url), omnibox_view->GetText());
-#endif
-  EXPECT_FALSE(omnibox_view->model()->popup_model()->IsOpen());
 }
 
 // Flaky test. The below suggestions are in a random order, and the injected

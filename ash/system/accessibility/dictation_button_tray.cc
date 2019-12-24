@@ -9,10 +9,12 @@
 #include "ash/public/cpp/accessibility_controller_enums.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
+#include "ash/system/tray/tray_utils.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -21,15 +23,20 @@
 
 namespace ash {
 
+// Helper function that creates an image for the dictation icon.
+gfx::ImageSkia GetIconImage(bool enabled, session_manager::SessionState state) {
+  const SkColor color = TrayIconColor(state);
+  return enabled ? gfx::CreateVectorIcon(kDictationOnNewuiIcon, color)
+                 : gfx::CreateVectorIcon(kDictationOffNewuiIcon, color);
+}
+
 DictationButtonTray::DictationButtonTray(Shelf* shelf)
     : TrayBackgroundView(shelf), icon_(new views::ImageView()) {
-  off_image_ = gfx::CreateVectorIcon(kDictationOffNewuiIcon,
-                                     ShelfConfig::Get()->shelf_icon_color());
-  on_image_ = gfx::CreateVectorIcon(kDictationOnNewuiIcon,
-                                    ShelfConfig::Get()->shelf_icon_color());
-  icon_->SetImage(off_image_);
-  const int vertical_padding = (kTrayItemSize - off_image_.height()) / 2;
-  const int horizontal_padding = (kTrayItemSize - off_image_.width()) / 2;
+  gfx::ImageSkia icon_image = GetIconImage(
+      false /*enabled*/, Shell::Get()->session_controller()->GetSessionState());
+  icon_->SetImage(icon_image);
+  const int vertical_padding = (kTrayItemSize - icon_image.height()) / 2;
+  const int horizontal_padding = (kTrayItemSize - icon_image.width()) / 2;
   icon_->SetBorder(views::CreateEmptyBorder(
       gfx::Insets(vertical_padding, horizontal_padding)));
   icon_->set_tooltip_text(
@@ -37,11 +44,13 @@ DictationButtonTray::DictationButtonTray(Shelf* shelf)
   tray_container()->AddChildView(icon_);
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->accessibility_controller()->AddObserver(this);
+  Shell::Get()->session_controller()->AddObserver(this);
 }
 
 DictationButtonTray::~DictationButtonTray() {
   Shell::Get()->RemoveShellObserver(this);
   Shell::Get()->accessibility_controller()->RemoveObserver(this);
+  Shell::Get()->session_controller()->RemoveObserver(this);
 }
 
 bool DictationButtonTray::PerformAction(const ui::Event& event) {
@@ -85,14 +94,15 @@ const char* DictationButtonTray::GetClassName() const {
   return "DictationButtonTray";
 }
 
+void DictationButtonTray::OnSessionStateChanged(
+    session_manager::SessionState state) {
+  CheckDictationStatusAndUpdateIcon();
+}
+
 void DictationButtonTray::UpdateIcon(bool dictation_active) {
-  if (dictation_active) {
-    icon_->SetImage(on_image_);
-    SetIsActive(true);
-  } else {
-    icon_->SetImage(off_image_);
-    SetIsActive(false);
-  }
+  icon_->SetImage(GetIconImage(
+      dictation_active, Shell::Get()->session_controller()->GetSessionState()));
+  SetIsActive(dictation_active);
 }
 
 void DictationButtonTray::UpdateVisibility() {

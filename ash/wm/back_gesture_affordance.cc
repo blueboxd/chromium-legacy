@@ -178,6 +178,16 @@ class AffordanceView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(AffordanceView);
 };
 
+gfx::Rect GetSplitViewDividerBoundsInScreen(const gfx::Point& location) {
+  auto* split_view_controller =
+      SplitViewController::Get(window_util::GetRootWindowAt(location));
+  if (!split_view_controller->InTabletSplitViewMode())
+    return gfx::Rect();
+
+  return split_view_controller->split_view_divider()->GetDividerBoundsInScreen(
+      /*is_dragging=*/false);
+}
+
 // Return true if |origin_y| is above the bottom of the splitview divider while
 // in portrait screen orientation.
 bool AboveBottomOfSplitViewDivider(const gfx::Point& location, int origin_y) {
@@ -194,68 +204,33 @@ bool AboveBottomOfSplitViewDivider(const gfx::Point& location, int origin_y) {
                                               : SplitViewController::LEFT,
           /*window_for_minimum_size=*/nullptr);
   return bounds_of_bottom_snapped_window.Contains(location) &&
-         origin_y < split_view_controller->split_view_divider()
-                        ->GetDividerBoundsInScreen(/*is_dragging=*/false)
-                        .bottom();
+         origin_y < GetSplitViewDividerBoundsInScreen(location).bottom();
 }
 
-// Get the bounds of the affordance. It could be beyond the left of the display
-// or the splitview divider.
 gfx::Rect GetAffordanceBounds(const gfx::Point& location,
-                              bool inside_clipping_window) {
+                              bool dragged_from_splitview_divider) {
   gfx::Rect bounds(
       gfx::Rect(2 * kMaxBurstRippleRadius, 2 * kMaxBurstRippleRadius));
 
   gfx::Point origin;
-  origin.set_x(-kDistanceBeyondLeftOrSplitvieDivider);
-  // Affordance will be put inside a clipping window while dragged from
-  // splitview divider. Keep it have the same origin as clipping window.
-  if (inside_clipping_window) {
-    origin.set_y(0);
-  } else {
-    int origin_y =
-        location.y() - kDistanceFromArrowToTouchPoint - kMaxBurstRippleRadius;
-    // Put the affordance below the start |location| if |origin_y| exceeds the
-    // top of the display or bottom of the splitview divider.
-    if (origin_y < 0 || AboveBottomOfSplitViewDivider(location, origin_y)) {
-      origin_y =
-          location.y() + kDistanceFromArrowToTouchPoint - kMaxBurstRippleRadius;
-    }
-    origin.set_y(origin_y);
+  // X origin of the affordance is beyond the left of this location. It could be
+  // the left of the display or the splitview divider.
+  int left_location = 0;
+  if (dragged_from_splitview_divider)
+    left_location = GetSplitViewDividerBoundsInScreen(location).x();
+  origin.set_x(left_location - kDistanceBeyondLeftOrSplitvieDivider);
+
+  int origin_y =
+      location.y() - kDistanceFromArrowToTouchPoint - kMaxBurstRippleRadius;
+  // Put the affordance below the start |location| if |origin_y| exceeds the
+  // top of the display or bottom of the splitview divider.
+  if (origin_y < 0 || AboveBottomOfSplitViewDivider(location, origin_y)) {
+    origin_y =
+        location.y() + kDistanceFromArrowToTouchPoint - kMaxBurstRippleRadius;
   }
+  origin.set_y(origin_y);
   bounds.set_origin(origin);
   return bounds;
-}
-
-aura::Window* GetAffordanceWidgetParentWindow(
-    const gfx::Point& location,
-    bool dragged_from_splitview_divider) {
-  aura::Window* container =
-      window_util::GetRootWindowAt(location)->GetChildById(
-          kShellWindowId_AlwaysOnTopContainer);
-  // Create a clipping window if drag from the splitview divider to make sure
-  // the affordance will only be shown above the snapped window.
-  if (dragged_from_splitview_divider) {
-    aura::Window* clipping_window = window_factory::NewWindow().release();
-    clipping_window->Init(ui::LAYER_NOT_DRAWN);
-    clipping_window->layer()->SetMasksToBounds(true);
-    container->AddChild(clipping_window);
-    container->StackChildAtBottom(clipping_window);
-    clipping_window->Show();
-    // Bounds of the clipping window is the area that content will not be
-    // clipped.
-    gfx::Rect bounds =
-        GetAffordanceBounds(location, /*inside_clipping_window=*/false);
-    bounds.set_x(
-        SplitViewController::Get(window_util::GetRootWindowAt(location))
-            ->split_view_divider()
-            ->GetDividerBoundsInScreen(/*is_dragging=*/false)
-            .x());
-    bounds.set_width(kDistanceForMaxRadius + kMaxBurstRippleRadius);
-    clipping_window->SetBounds(bounds);
-    return clipping_window;
-  }
-  return container;
 }
 
 }  // namespace
@@ -323,12 +298,23 @@ void BackGestureAffordance::CreateAffordanceWidget(const gfx::Point& location) {
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.name = "BackGestureAffordance";
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
-  params.parent = GetAffordanceWidgetParentWindow(
-      location, dragged_from_splitview_divider_);
+  params.parent = window_util::GetRootWindowAt(location)->GetChildById(
+      kShellWindowId_AlwaysOnTopContainer);
   affordance_widget_->Init(std::move(params));
   affordance_widget_->SetContentsView(new AffordanceView());
-  affordance_widget_->SetBounds(
-      GetAffordanceBounds(location, dragged_from_splitview_divider_));
+  const gfx::Rect widget_bounds =
+      GetAffordanceBounds(location, dragged_from_splitview_divider_);
+  affordance_widget_->SetBounds(widget_bounds);
+  if (dragged_from_splitview_divider_) {
+    // Clip the affordance to make sure it will only be visible inside the
+    // snapped window's bounds. Note, |clip_bounds| is the area that the
+    // affordance will be visible, and it is based on the layer's coordinate.
+    gfx::Rect clip_bounds(
+        GetSplitViewDividerBoundsInScreen(location).right() - widget_bounds.x(),
+        0, kDistanceForMaxRadius + kMaxBurstRippleRadius,
+        widget_bounds.height());
+    affordance_widget_->GetLayer()->SetClipRect(clip_bounds);
+  }
   affordance_widget_->Show();
   affordance_widget_->SetOpacity(1.f);
 }

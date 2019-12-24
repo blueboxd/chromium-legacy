@@ -5,6 +5,8 @@
 Polymer({
   is: 'oobe-text-button',
 
+  behaviors: [OobeI18nBehavior],
+
   properties: {
     disabled: {type: Boolean, value: false, reflectToAttribute: true},
 
@@ -13,13 +15,22 @@ Polymer({
       observer: 'onInverseChanged_',
     },
 
+    /* The ID of the localized string to be used as button text.
+     */
+    textKey: {
+      type: String,
+    },
+
     border: Boolean,
 
-    /* Note that we are not using "aria-label" property here, because
-     * we want to pass the label value but not actually declare it as an
-     * ARIA property anywhere but the actual target element.
-     */
-    labelForAria: String,
+    labelForAria: {
+      type: String,
+    },
+
+    labelForAriaText_: {
+      type: String,
+      computed: 'ariaLabel_(labelForAria, locale, textKey)',
+    },
   },
 
   focus: function() {
@@ -34,10 +45,19 @@ Polymer({
   onInverseChanged_: function() {
     this.$.textButton.classList.toggle('action-button', this.inverse);
   },
+
+  ariaLabel_: function(labelForAria, locale, textKey) {
+    if ((typeof labelForAria !== 'undefined') && (labelForAria !== '')) {
+      return labelForAria;
+    }
+    return this.i18n(textKey);
+  },
 });
 
 Polymer({
   is: 'oobe-back-button',
+
+  behaviors: [OobeI18nBehavior],
 
   properties: {
     disabled: {
@@ -46,11 +66,17 @@ Polymer({
       reflectToAttribute: true,
     },
 
-    /* Note that we are not using "aria-label" property here, because
-     * we want to pass the label value but not actually declare it as an
-     * ARIA property anywhere but the actual target element.
+    /* The ID of the localized string to be used as button text.
      */
-    labelForAria: String,
+    textKey: {
+      type: String,
+      value: 'back',
+    },
+
+    labelForAria_: {
+      type: String,
+      computed: 'i18nDynamic(locale, textKey)',
+    },
   },
 
   focus: function() {
@@ -71,8 +97,22 @@ Polymer({
 Polymer({
   is: 'oobe-next-button',
 
+  behaviors: [OobeI18nBehavior],
+
   properties: {
     disabled: {type: Boolean, value: false, reflectToAttribute: true},
+
+    /* The ID of the localized string to be used as button text.
+     */
+    textKey: {
+      type: String,
+      value: 'next',
+    },
+
+    labelForAria_: {
+      type: String,
+      computed: 'i18nDynamic(locale, textKey)',
+    },
   },
 
   focus: function() {
@@ -88,15 +128,27 @@ Polymer({
 Polymer({
   is: 'oobe-welcome-secondary-button',
 
+  behaviors: [OobeI18nBehavior],
+
   properties: {
     icon1x: {type: String, observer: 'updateIconVisibility_'},
     icon2x: String,
 
-    /* Note that we are not using "aria-label" property here, because
-     * we want to pass the label value but not actually declare it as an
-     * ARIA property anywhere but the actual target element.
+
+    /* The ID of the localized string to be used as button text.
      */
-    labelForAria: String
+    textKey: {
+      type: String,
+    },
+
+    labelForAria: {
+      type: String,
+    },
+
+    labelForAriaText_: {
+      type: String,
+      computed: 'ariaLabel_(labelForAria, locale, textKey)',
+    },
   },
 
   focus: function() {
@@ -109,5 +161,12 @@ Polymer({
 
   click: function() {
     this.$.button.click();
+  },
+
+  ariaLabel_: function(labelForAria, locale, textKey) {
+    if ((typeof labelForAria !== 'undefined') && (labelForAria !== '')) {
+      return labelForAria;
+    }
+    return this.i18n(textKey);
   },
 });

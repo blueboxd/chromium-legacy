@@ -3787,12 +3787,6 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="This is an abbreviated HTML description list detail element shown on a braille display. When translating, try to find a contracted form of the translation for 'description list detail' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_DESCRIPTION_LIST_DETAIL_BRL">
         dscrplst dtl
       </message>
-      <message desc="Spoken if the user attempts to jump to the next paragraph when none exists." name="IDS_CHROMEVOX_NO_NEXT_PARAGRAPH">
-        No next paragraph.
-      </message>
-      <message desc="Spoken if the user attempts to jump to the previous paragraph when none exists." name="IDS_CHROMEVOX_NO_PREVIOUS_PARAGRAPH">
-        No previous paragraph.
-      </message>
       <message desc="Spoken when the user resets text to speech settings back to their default values" name="IDS_CHROMEVOX_ANNOUNCE_TTS_DEFAULT_SETTINGS">
         Reset text to speech settings to default values.
       </message>

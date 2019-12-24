@@ -70,13 +70,9 @@
     </oobe-dialog>
 
     <oobe-dialog hidden="[[showOn_(ui_state, 'update-need-permission')]]"
-        has-buttons>
-      <h1 slot="title">
-        [[i18nDynamic(locale,'updateOverCellularPromptTitle')]]
-      </h1>
-      <div slot="subtitle" class="update-subtitle">
-        [[i18nDynamic(locale,'updateOverCellularPromptMessage')]]
-      </div>
+        has-buttons
+        title-key="updateOverCellularPromptTitle"
+        subtitle-key="updateOverCellularPromptMessage">
       <div slot="bottom-buttons" class="layout horizontal end-justified">
         <cr-button on-click="onCellularPermissionRejected_">
           [[i18nDynamic(locale,'RejectUpdateOverCellularButton')]]

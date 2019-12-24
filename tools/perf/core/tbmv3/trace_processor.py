@@ -94,10 +94,10 @@ def RunMetric(trace_processor_path, trace_file, metric_name):
   metric_files = _CreateMetricFiles(metric_name)
   output = _RunTraceProcessor(
       trace_processor_path,
-      trace_file,
       '--run-metrics', metric_files.sql,
-      '--metrics-output=json',
-      '--extra-metrics', METRICS_PATH
+      '--metrics-output', 'json',
+      '--extra-metrics', METRICS_PATH,
+      trace_file,
   )
   measurements = json.loads(output)
 
@@ -133,8 +133,8 @@ def ConvertProtoTraceToJson(trace_processor_path, proto_file, json_path):
     query_file.close()
     _RunTraceProcessor(
         trace_processor_path,
-        proto_file,
         '-q', query_file.name,
+        proto_file,
     )
 
   return json_path

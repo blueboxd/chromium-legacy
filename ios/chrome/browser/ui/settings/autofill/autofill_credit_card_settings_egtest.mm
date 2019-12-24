@@ -124,7 +124,13 @@ id<GREYMatcher> BottomToolbar() {
 }
 
 // Test that the page for viewing Autofill credit card details is as expected.
-- (void)testCreditCardViewPage {
+// TODO(crbug.com/1037681): Enable for EG2.
+#if defined(CHROME_EARL_GREY_2)
+#define MAYBE_testCreditCardViewPage DISABLED_testCreditCardViewPage
+#else
+#define MAYBE_testCreditCardViewPage testCreditCardViewPage
+#endif
+- (void)MAYBE_testCreditCardViewPage {
   NSString* lastDigits = [AutofillAppInterface saveLocalCreditCard];
   [self openEditCreditCard:[self creditCardLabel:lastDigits]];
 
@@ -147,7 +153,15 @@ id<GREYMatcher> BottomToolbar() {
 }
 
 // Test that the page for viewing Autofill credit card details is accessible.
-- (void)testAccessibilityOnCreditCardViewPage {
+// TODO(crbug.com/1037681): Enable for EG2.
+#if defined(CHROME_EARL_GREY_2)
+#define MAYBE_testAccessibilityOnCreditCardViewPage \
+  DISABLED_testAccessibilityOnCreditCardViewPage
+#else
+#define MAYBE_testAccessibilityOnCreditCardViewPage \
+  testAccessibilityOnCreditCardViewPage
+#endif
+- (void)MAYBE_testAccessibilityOnCreditCardViewPage {
   NSString* lastDigits = [AutofillAppInterface saveLocalCreditCard];
   [self openEditCreditCard:[self creditCardLabel:lastDigits]];
 
@@ -161,7 +175,15 @@ id<GREYMatcher> BottomToolbar() {
 }
 
 // Test that the page for editing Autofill credit card details is accessible.
-- (void)testAccessibilityOnCreditCardEditPage {
+// TODO(crbug.com/1037681): Enable for EG2.
+#if defined(CHROME_EARL_GREY_2)
+#define MAYBE_testAccessibilityOnCreditCardEditPage \
+  DISABLED_testAccessibilityOnCreditCardEditPage
+#else
+#define MAYBE_testAccessibilityOnCreditCardEditPage \
+  testAccessibilityOnCreditCardEditPage
+#endif
+- (void)MAYBE_testAccessibilityOnCreditCardEditPage {
   NSString* lastDigits = [AutofillAppInterface saveLocalCreditCard];
   [self openEditCreditCard:[self creditCardLabel:lastDigits]];
 
@@ -179,7 +201,13 @@ id<GREYMatcher> BottomToolbar() {
 
 // Checks that the Autofill credit cards list view is in edit mode and the
 // Autofill credit cards switch is disabled.
-- (void)testListViewEditMode {
+// TODO(crbug.com/1037681): Enable for EG2.
+#if defined(CHROME_EARL_GREY_2)
+#define MAYBE_testListViewEditMode DISABLED_testListViewEditMode
+#else
+#define MAYBE_testListViewEditMode testListViewEditMode
+#endif
+- (void)MAYBE_testListViewEditMode {
   [AutofillAppInterface saveLocalCreditCard];
   [self openCreditCardsSettings];
 
@@ -197,7 +225,13 @@ id<GREYMatcher> BottomToolbar() {
 
 // Checks that the Autofill credit card switch can be toggled on/off and the
 // list of Autofill credit cards is not affected by it.
-- (void)testToggleCreditCardSwitch {
+// TODO(crbug.com/1037681): Enable for EG2.
+#if defined(CHROME_EARL_GREY_2)
+#define MAYBE_testToggleCreditCardSwitch DISABLED_testToggleCreditCardSwitch
+#else
+#define MAYBE_testToggleCreditCardSwitch testToggleCreditCardSwitch
+#endif
+- (void)MAYBE_testToggleCreditCardSwitch {
   NSString* lastDigits = [AutofillAppInterface saveLocalCreditCard];
   [self openCreditCardsSettings];
 

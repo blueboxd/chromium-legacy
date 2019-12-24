@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/debug/alias.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/metrics/field_trial_params.h"
@@ -2445,7 +2444,6 @@ void NavigationRequest::CommitNavigation() {
         std::move(subresource_loader_params_->prefetched_signed_exchanges);
   }
 
-  AddNetworkServiceDebugEvent("COM");
   render_frame_host_->CommitNavigation(
       this, std::move(common_params), std::move(commit_params),
       std::move(response_head), std::move(response_body_),
@@ -2505,14 +2503,9 @@ void NavigationRequest::RenderProcessHostDestroyed(RenderProcessHost* host) {
   ResetExpectedProcess();
 }
 
-void NavigationRequest::RenderProcessReady(RenderProcessHost* host) {
-  AddNetworkServiceDebugEvent("RPR");
-}
-
 void NavigationRequest::RenderProcessExited(
     RenderProcessHost* host,
     const ChildProcessTerminationInfo& info) {
-  AddNetworkServiceDebugEvent("RPE");
 }
 
 void NavigationRequest::UpdateSiteURL(
@@ -3189,7 +3182,6 @@ void NavigationRequest::DidCommitNavigation(
     bool did_replace_entry,
     const GURL& previous_url,
     NavigationType navigation_type) {
-  AddNetworkServiceDebugEvent("DCN");
   common_params_->url = params.url;
   did_replace_entry_ = did_replace_entry;
   should_update_history_ = params.should_update_history;
@@ -3303,9 +3295,6 @@ void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
                                "ReadyToCommitNavigation");
 
-  AddNetworkServiceDebugEvent(
-      std::string("RTCN") +
-      (render_frame_host_->GetProcess()->IsReady() ? "1" : "0"));
   state_ = READY_TO_COMMIT;
   ready_to_commit_time_ = base::TimeTicks::Now();
   RestartCommitTimeout();
@@ -3349,7 +3338,6 @@ bool NavigationRequest::IsWaitingToCommit() {
 }
 
 void NavigationRequest::RenderProcessBlockedStateChanged(bool blocked) {
-  AddNetworkServiceDebugEvent(std::string("B") + (blocked ? "1" : "0"));
   if (blocked)
     StopCommitTimeout();
   else
@@ -3385,46 +3373,6 @@ void NavigationRequest::RestartCommitTimeout() {
 
 void NavigationRequest::OnCommitTimeout() {
   DCHECK_EQ(READY_TO_COMMIT, state_);
-  AddNetworkServiceDebugEvent("T");
-#if defined(OS_ANDROID)
-  // Rate limit the number of stack dumps so we don't overwhelm our crash
-  // reports.
-  // TODO(http://crbug.com/934317): Remove this once done debugging renderer
-  // hangs.
-  if (base::RandDouble() < 0.001) {
-    static base::debug::CrashKeyString* url_key =
-        base::debug::AllocateCrashKeyString("commit_timeout_url",
-                                            base::debug::CrashKeySize::Size256);
-    base::debug::ScopedCrashKeyString scoped_url(
-        url_key, common_params_->url.possibly_invalid_spec());
-
-    static base::debug::CrashKeyString* last_crash_key =
-        base::debug::AllocateCrashKeyString("ns_last_crash_ms",
-                                            base::debug::CrashKeySize::Size32);
-    base::debug::ScopedCrashKeyString scoped_last_crash(
-        last_crash_key,
-        base::NumberToString(
-            GetTimeSinceLastNetworkServiceCrash().InMilliseconds()));
-
-    static base::debug::CrashKeyString* memory_key =
-        base::debug::AllocateCrashKeyString("physical_memory_mb",
-                                            base::debug::CrashKeySize::Size32);
-    base::debug::ScopedCrashKeyString scoped_memory(
-        memory_key,
-        base::NumberToString(base::SysInfo::AmountOfPhysicalMemoryMB()));
-
-    static base::debug::CrashKeyString* debug_string_key =
-        base::debug::AllocateCrashKeyString("ns_debug_events",
-                                            base::debug::CrashKeySize::Size256);
-    base::debug::ScopedCrashKeyString scoped_debug_string(
-        debug_string_key, GetNetworkServiceDebugEventsString());
-    base::debug::DumpWithoutCrashing();
-
-    if (IsOutOfProcessNetworkService())
-      GetNetworkService()->DumpWithoutCrashing(base::Time::Now());
-  }
-#endif
-
   PingNetworkService(base::BindOnce(
       [](base::Time start_time) {
         UMA_HISTOGRAM_MEDIUM_TIMES(

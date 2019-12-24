@@ -19,7 +19,6 @@
 #include "media/mojo/services/mojo_cdm_proxy.h"
 #include "media/mojo/services/mojo_cdm_proxy_service.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"

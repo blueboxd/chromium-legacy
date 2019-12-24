@@ -19,18 +19,15 @@
     <template is="dom-if" if="[[isMigratingMinimal_(uiState)]]">
       <oobe-dialog id="minimal-migration-dialog" tabindex="0" has-buttons>
         <div slot="footer" class="layout vertical">
-          <throbber-notice
-              text="[[i18nDynamic(locale,'gaiaLoading')]]"></throbber-notice>
+          <throbber-notice text-key="gaiaLoading"></throbber-notice>
         </div>
       </oobe-dialog>
     </template>
     <template is="dom-if" if="[[isReady_(uiState)]]">
-      <oobe-dialog tabindex="0" id="ready-dialog" has-buttons>
+      <oobe-dialog tabindex="0" id="ready-dialog" has-buttons
+          title-key="migrationReadyTitle"
+          subtitle-key="migrationReadyDescription">
         <iron-icon slot="oobe-icon" class="warning-icon"></iron-icon>
-        <h1 slot="title">[[i18nDynamic(locale,'migrationReadyTitle')]]</h1>
-        <div slot="subtitle">
-          [[i18nDynamic(locale,'migrationReadyDescription')]]
-        </div>
         <template is="dom-if" if="[[isEnoughBattery]]">
           <div slot="footer" class="layout vertical center center-justified">
             <img srcset="images/security_update_1x.png 1x,
@@ -60,24 +57,20 @@
           <div slot="bottom-buttons" class="flex layout horizontal">
             <div class="flex"></div>
             <oobe-text-button border id="skip-button" on-tap="onSkip_"
-                hidden="[[isSkipHidden_()]]">
-              <div>[[i18nDynamic(locale,'migrationButtonSkip')]]</div>
+                hidden="[[isSkipHidden_()]]" text-key="migrationButtonSkip">
             </oobe-text-button>
             <oobe-text-button inverse id="upgrade-button" on-tap="onUpgrade_"
-                disabled="[[isUpdateDisabled_(isEnoughBattery, isSkipped)]]">
-              <div>[[i18nDynamic(locale,'migrationButtonUpdate')]]</div>
-            </oobe-text-button>
+                disabled="[[isUpdateDisabled_(isEnoughBattery, isSkipped)]]"
+                text-key="migrationButtonUpdate"></oobe-text-button>
           </div>
         </template>
       </oobe-dialog>
     </template>
     <template is="dom-if" if="[[isMigrating_(uiState)]]">
-      <oobe-dialog id="migrating-dialog" tabindex="0">
+      <oobe-dialog id="migrating-dialog" tabindex="0"
+          title-key="migrationMigratingTitle"
+          subtitle-key="migrationMigratingDescription">
         <iron-icon slot="oobe-icon" class="chrome-logo"></iron-icon>
-        <h1 slot="title">[[i18nDynamic(locale,'migrationMigratingTitle')]]</h1>
-        <div slot="subtitle">
-          [[i18nDynamic(locale,'migrationMigratingDescription')]]
-        </div>
         <div slot="footer" class="flex layout vertical">
           <paper-progress id="migration-progress"
               value="[[progress]]" max="1" step="0.001"
@@ -92,37 +85,31 @@
       </oobe-dialog>
     </template>
     <template is="dom-if" if="[[isMigrationFailed_(uiState)]]">
-      <oobe-dialog id="error-dialog" tabindex="0" has-buttons>
+      <oobe-dialog id="error-dialog" tabindex="0" has-buttons
+          title-key="migrationFailedTitle"
+          subtitle-key="migrationFailedSubtitle">
         <iron-icon icon="cr:warning" slot="oobe-icon" class="warning">
         </iron-icon>
-        <h1 slot="title">[[i18nDynamic(locale,'migrationFailedTitle')]]</h1>
-        <div slot="subtitle">
-          [[i18nDynamic(locale,'migrationFailedSubtitle')]]
-        </div>
         <div slot="footer">
           <div>[[i18nDynamic(locale,'migrationFailedMessage')]]</div>
         </div>
         <div slot="bottom-buttons" class="flex layout horizontal">
           <div class="flex"></div>
 <if expr="_google_chrome">
-          <oobe-text-button border on-tap="onReportAnIssue_">
-            <div>[[i18nDynamic(locale,'migrationButtonReportAnIssue')]]</div>
-          </oobe-text-button>
+          <oobe-text-button border on-tap="onReportAnIssue_"
+              text-key="migrationButtonReportAnIssue"></oobe-text-button>
 </if>
           <oobe-text-button inverse id="restart-button"
-              on-tap="onRestartOnFailure_">
-            <div>[[i18nDynamic(locale,'migrationButtonRestart')]]</div>
+              on-tap="onRestartOnFailure_" text-key="migrationButtonRestart">
           </oobe-text-button>
         </div>
       </oobe-dialog>
     </template>
     <template is="dom-if" if="[[isNotEnoughSpace_(uiState)]]">
-      <oobe-dialog id="insufficient-space-dialog" tabindex="0" has-buttons>
+      <oobe-dialog id="insufficient-space-dialog" tabindex="0" has-buttons
+          title-key="migrationReadyTitle"
+          subtitle-key="migrationReadyDescription">
         <iron-icon slot="oobe-icon" class="chrome-logo"></iron-icon>
-        <h1 slot="title">[[i18nDynamic(locale,'migrationReadyTitle')]]</h1>
-        <div slot="subtitle">
-          [[i18nDynamic(locale,'migrationReadyDescription')]]
-        </div>
         <div slot="footer" class="layout vertical" aria-live="polite">
           <div class="warning">
             [[i18nDynamic(locale,'migrationNospaceWarningLabel')]]
@@ -139,15 +126,13 @@
           <div class="flex"></div>
           <template is="dom-if" if="[[!isResuming]]">
             <oobe-text-button inverse id="insufficient-space-skip-button"
-                on-tap="onSkip_">
-              <div>[[i18nDynamic(locale,'migrationButtonContinue')]]</div>
+                on-tap="onSkip_" text-key="migrationButtonContinue">
             </oobe-text-button>
           </template>
           <template is="dom-if" if="[[isResuming]]">
             <oobe-text-button inverse id="insufficient-space-restart-button"
-                on-tap="onRestartOnLowStorage_">
-              <div>[[i18nDynamic(locale,'migrationButtonRestart')]]</div>
-            </oobe-text-button>
+                on-tap="onRestartOnLowStorage_"
+                text-key="migrationButtonRestart"></oobe-text-button>
           </template>
         </div>
       </oobe-dialog>

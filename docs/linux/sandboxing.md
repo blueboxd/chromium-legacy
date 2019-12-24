@@ -58,7 +58,7 @@ A SUID binary that will create a new network and PID namespace, as well as
 To disable it, use `--disable-setuid-sandbox`. (Do not remove the binary or
 unset `CHROME_DEVEL_SANDBOX`, it is not supported).
 
-Main page: [LinuxSUIDSandbox](linux_suid_sandbox.md)
+Main page: [LinuxSUIDSandbox](suid_sandbox.md)
 
 ## User namespaces sandbox
 
@@ -140,12 +140,12 @@ for 'dynamic' since dynamic transitions are a little obscure in SELinux)
 
 Sandboxing can make developing harder, see:
 
-*   [this page](linux_suid_sandbox_development.md) for the `setuid` sandbox
+*   [this page](suid_sandbox_development.md) for the `setuid` sandbox
 *   [this page](https://www.chromium.org/for-testers/bug-reporting-guidelines/hanging-tabs)
     for triggering crashes
-*   [this page for debugging tricks](linux_debugging.md)
+*   [this page for debugging tricks](debugging.md)
 
 ## See also
 
-*   [LinuxSandboxIPC](linux_sandbox_ipc.md)
-*   [How Chromium's Linux sandbox affects Native Client](https://chromium.googlesource.com/native_client/src/native_client.git/+/master/docs/linux_outer_sandbox.md)
+*   [LinuxSandboxIPC](sandbox_ipc.md)
+*   [How Chromium's Linux sandbox affects Native Client](https://chromium.googlesource.com/native_client/src/native_client.git/+/master/docs/outer_sandbox.md)

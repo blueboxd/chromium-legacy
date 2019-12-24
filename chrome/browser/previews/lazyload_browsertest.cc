@@ -219,8 +219,9 @@ IN_PROC_BROWSER_TEST_F(LazyLoadBrowserTest,
                                           "loading=lazy img ON_LOAD FOR TEST"));
 }
 
+// Disabled due to flakiness (crbug.com/1035057)
 IN_PROC_BROWSER_TEST_F(LazyLoadBrowserTest,
-                       LazyLoadFrame_DeferredAndLoadedOnScroll) {
+                       DISABLED_LazyLoadFrame_DeferredAndLoadedOnScroll) {
   EnableDataSaver(true);
   SetUpLazyLoadFrameTestPage();
   GURL test_url(embedded_test_server()->GetURL("/mainpage.html"));

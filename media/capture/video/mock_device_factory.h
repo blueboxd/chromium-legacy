@@ -8,7 +8,6 @@
 #include <map>
 
 #include "media/capture/video/video_capture_device_factory.h"
-#include "mojo/public/cpp/bindings/binding.h"
 
 namespace media {
 

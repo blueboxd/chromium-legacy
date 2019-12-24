@@ -21,10 +21,8 @@
 #include "ui/gfx/transform.h"
 
 namespace aura {
-
-class Window;
 class ScopedWindowEventTargetingBlocker;
-
+class Window;
 }  // namespace aura
 
 namespace ui {
@@ -55,11 +53,6 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   using ScopedAnimationSettings =
       std::vector<std::unique_ptr<ScopedOverviewAnimationSettings>>;
 
-  // Windows whose aspect ratio surpass this (width twice as large as height or
-  // vice versa) will be classified as too wide or too tall and will be handled
-  // slightly differently in overview mode.
-  static constexpr float kExtremeWindowRatioThreshold = 2.f;
-
   // Calculates and returns an optimal scale ratio. This is only taking into
   // account |size.height()| as the width can vary.
   static float GetItemScale(const gfx::SizeF& source,
@@ -83,11 +76,10 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   //  ScopedOverviewTransformWindow overview_window(window);
   //  ScopedOverviewTransformWindow::ScopedAnimationSettings animation_settings;
   //  overview_window.BeginScopedAnimation(
-  //      OVERVIEW_ANIMATION_SELECTOR_ITEM_SCROLL_CANCEL,
-  //      &animation_settings);
+  //      OVERVIEW_ANIMATION_RESTORE_WINDOW, &animation_settings);
   //  // Calls to SetTransform & SetOpacity will use the same animation settings
   //  // until animation_settings is destroyed.
-  //  overview_window.SetTransform(root_window, new_transform);
+  //  OverviewUtil::SetTransform(root_window, new_transform);
   //  overview_window.SetOpacity(1);
   void BeginScopedAnimation(OverviewAnimationType animation_type,
                             ScopedAnimationSettings* animation_settings);
@@ -164,8 +156,6 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   friend class OverviewHighlightControllerTest;
   friend class OverviewSessionTest;
   class LayerCachingAndFilteringObserver;
-  FRIEND_TEST_ALL_PREFIXES(ScopedOverviewTransformWindowWithMaskTest,
-                           WindowBoundsChangeTest);
 
   // Closes the window managed by |this|.
   void CloseWidget();
@@ -179,9 +169,6 @@ class ASH_EXPORT ScopedOverviewTransformWindow
 
   // A weak pointer to the real window in the overview.
   aura::Window* window_;
-
-  // True if the window has been transformed for overview mode.
-  bool overview_started_ = false;
 
   // The original opacity of the window before entering overview mode.
   float original_opacity_;

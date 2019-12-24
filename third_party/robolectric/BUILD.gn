@@ -81,7 +81,7 @@ java_library("robolectric_java") {
     ":android-all-8.1.0-robolectric-4611349_java",
     ":android-all-9-robolectric-4913185-2_java",
   ]
-  java_files = [
+  sources = [
     "local/robolectric/src/main/java/org/robolectric/internal/dependency/MavenDependencyResolver.java",
     "robolectric/robolectric/src/main/java/org/robolectric/ApkLoader.java",
     "robolectric/robolectric/src/main/java/org/robolectric/ConfigMerger.java",
@@ -139,7 +139,7 @@ java_library("robolectric_annotations_java") {
     ":android-all-9-robolectric-4913185-2_java",
     ":robolectric_shadowapi_java",
   ]
-  java_files = [
+  sources = [
     "robolectric/annotations/src/main/java/org/robolectric/annotation/AccessibilityChecks.java",
     "robolectric/annotations/src/main/java/org/robolectric/annotation/Config.java",
     "robolectric/annotations/src/main/java/org/robolectric/annotation/DefaultApplication.java",
@@ -167,7 +167,7 @@ java_annotation_processor("robolectric_processor") {
   ]
   provider_configurations = [ "local/processor/src/main/resources/META-INF/services/javax.annotation.processing.Processor" ]
   main_class = "org.robolectric.annotation.processing.RobolectricProcessor"
-  java_files = [
+  sources = [
     "robolectric/processor/src/main/java/org/robolectric/annotation/processing/DocumentedElement.java",
     "robolectric/processor/src/main/java/org/robolectric/annotation/processing/DocumentedMethod.java",
     "robolectric/processor/src/main/java/org/robolectric/annotation/processing/DocumentedPackage.java",
@@ -226,7 +226,7 @@ java_library("robolectric_resources_java") {
     ":robolectric_utils_java",
     "//third_party/android_deps:com_google_guava_guava_java",
   ]
-  java_files = [
+  sources = [
     "robolectric/resources/src/main/java/org/robolectric/RoboSettings.java",
     "robolectric/resources/src/main/java/org/robolectric/UsesSdk.java",
     "robolectric/resources/src/main/java/org/robolectric/manifest/ActivityData.java",
@@ -339,7 +339,7 @@ java_library("robolectric_utils_java") {
   deps = [
     ":robolectric_annotations_java",
   ]
-  java_files = [
+  sources = [
     "robolectric/utils/src/main/java/org/robolectric/AndroidMetadata.java",
     "robolectric/utils/src/main/java/org/robolectric/util/Clock.java",
     "robolectric/utils/src/main/java/org/robolectric/util/Consumer.java",
@@ -373,7 +373,7 @@ java_library("robolectric_sandbox_java") {
     "//third_party/ow2_asm:asm_tree_java",
   ]
 
-  java_files = [
+  sources = [
     "robolectric/sandbox/src/main/java/org/robolectric/JarInstrumentor.java",
     "robolectric/sandbox/src/main/java/org/robolectric/internal/bytecode/ClassHandler.java",
     "robolectric/sandbox/src/main/java/org/robolectric/internal/bytecode/ClassInstrumentor.java",
@@ -425,7 +425,9 @@ java_library("robolectric_junit_java") {
     "//third_party/junit:junit",
   ]
 
-  java_files = [ "robolectric/junit/src/main/java/org/robolectric/internal/SandboxTestRunner.java" ]
+  sources = [
+    "robolectric/junit/src/main/java/org/robolectric/internal/SandboxTestRunner.java",
+  ]
 }
 
 java_library("robolectric_shadowapi_java") {
@@ -434,7 +436,7 @@ java_library("robolectric_shadowapi_java") {
     "//third_party/jsr-305:jsr_305_javalib",
   ]
 
-  java_files = [
+  sources = [
     "robolectric/shadowapi/src/main/java/org/robolectric/annotation/internal/DoNotInstrument.java",
     "robolectric/shadowapi/src/main/java/org/robolectric/annotation/internal/Instrument.java",
     "robolectric/shadowapi/src/main/java/org/robolectric/internal/IShadow.java",
@@ -489,7 +491,7 @@ java_library("shadows_core_java") {
       ],
     ]
   }
-  java_files = [
+  sources = [
     "robolectric/shadows/framework/src/main/java/android/webkit/RoboCookieManager.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/RuntimeEnvironment.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/android/AccessibilityUtil.java",
@@ -882,7 +884,7 @@ java_library("shadows_multidex_java") {
   testonly = true
   processor_args_javac = [ "org.robolectric.annotation.processing.shadowPackage=org.robolectric.shadows.multidex" ]
   provider_configurations = [ "local/shadows/multidex/src/main/resources/META-INF/services/org.robolectric.internal.ShadowProvider" ]
-  java_files = [
+  sources = [
     "robolectric/shadows/multidex/src/main/java/org/robolectric/shadows/multidex/ShadowAndroidXMultiDex.java",
     "robolectric/shadows/multidex/src/main/java/org/robolectric/shadows/multidex/ShadowMultiDex.java",
     "robolectric/shadows/multidex/src/main/java/org/robolectric/shadows/multidex/package-info.java",
@@ -913,7 +915,7 @@ java_library("shadows_play_services_java") {
   testonly = true
   processor_args_javac = [ "org.robolectric.annotation.processing.shadowPackage=org.robolectric.shadows.gms" ]
   provider_configurations = [ "local/shadows/playservices/src/main/resources/META-INF/services/org.robolectric.internal.ShadowProvider" ]
-  java_files = [
+  sources = [
     "robolectric/shadows/playservices/src/main/java/org/robolectric/shadows/gms/ShadowGoogleAuthUtil.java",
     "robolectric/shadows/playservices/src/main/java/org/robolectric/shadows/gms/ShadowGooglePlayServicesUtil.java",
     "robolectric/shadows/playservices/src/main/java/org/robolectric/shadows/gms/common/ShadowGoogleApiAvailability.java",

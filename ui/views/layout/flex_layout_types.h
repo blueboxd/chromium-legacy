@@ -148,7 +148,7 @@ class VIEWS_EXPORT FlexSpecification {
 // Represents insets in a single dimension.
 class VIEWS_EXPORT Inset1D {
  public:
-  constexpr Inset1D() {}
+  constexpr Inset1D() = default;
   constexpr explicit Inset1D(int all) : leading_(all), trailing_(all) {}
   constexpr Inset1D(int leading, int trailing)
       : leading_(leading), trailing_(trailing) {}
@@ -179,7 +179,7 @@ class VIEWS_EXPORT Inset1D {
 // Represents a line segment in one dimension with a starting point and length.
 class VIEWS_EXPORT Span {
  public:
-  constexpr Span() {}
+  constexpr Span() = default;
   constexpr Span(int start, int length) : start_(start), length_(length) {}
 
   constexpr int start() const { return start_; }

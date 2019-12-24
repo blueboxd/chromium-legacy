@@ -9,7 +9,7 @@
 Polymer({
   is: 'oobe-network-md',
 
-  behaviors: [I18nBehavior, OobeDialogHostBehavior],
+  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
 
   observers:
       ['onDemoModeSetupChanged_(isDemoModeSetup, offlineDemoModeEnabled)'],

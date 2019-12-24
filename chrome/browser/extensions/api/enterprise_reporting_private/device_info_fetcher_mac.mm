@@ -47,16 +47,14 @@ std::string GetSerialNumber() {
 enterprise_reporting_private::SettingValue GetScreenlockSecured() {
   CFStringRef screen_saver_application = CFSTR("com.apple.screensaver");
   CFStringRef ask_for_password_key = CFSTR("askForPassword");
-  base::ScopedCFTypeRef<CFNumberRef> ask_for_password(
-      base::mac::CFCastStrict<CFNumberRef>(CFPreferencesCopyAppValue(
-          ask_for_password_key, screen_saver_application)));
+  base::ScopedCFTypeRef<CFTypeRef> ask_for_password(CFPreferencesCopyAppValue(
+      ask_for_password_key, screen_saver_application));
 
-  int screen_lock_enabled = 0;
-  if (!ask_for_password || !CFNumberGetValue(ask_for_password, kCFNumberIntType,
-                                             &screen_lock_enabled)) {
+  if (!ask_for_password || !base::mac::CFCast<CFBooleanRef>(ask_for_password))
     return enterprise_reporting_private::SETTING_VALUE_UNKNOWN;
-  }
 
+  bool screen_lock_enabled =
+      base::mac::CFCastStrict<CFBooleanRef>(ask_for_password) == kCFBooleanTrue;
   return screen_lock_enabled
              ? enterprise_reporting_private::SETTING_VALUE_ENABLED
              : enterprise_reporting_private::SETTING_VALUE_DISABLED;

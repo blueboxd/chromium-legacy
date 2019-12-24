@@ -413,7 +413,7 @@ void IDBRequest::EnqueueResponse(DOMException* error) {
   }
 
   error_ = error;
-  SetResult(IDBAny::CreateUndefined());
+  SetResult(MakeGarbageCollected<IDBAny>(IDBAny::kUndefinedType));
   pending_cursor_.Clear();
   EnqueueEvent(Event::CreateCancelableBubble(event_type_names::kError));
 }
@@ -482,7 +482,7 @@ void IDBRequest::EnqueueResponse(std::unique_ptr<IDBKey> idb_key) {
   if (idb_key && idb_key->IsValid())
     EnqueueResultInternal(MakeGarbageCollected<IDBAny>(std::move(idb_key)));
   else
-    EnqueueResultInternal(IDBAny::CreateUndefined());
+    EnqueueResultInternal(MakeGarbageCollected<IDBAny>(IDBAny::kUndefinedType));
 }
 
 namespace {
@@ -556,7 +556,7 @@ void IDBRequest::EnqueueResponse() {
     metrics_.RecordAndReset();
     return;
   }
-  EnqueueResultInternal(IDBAny::CreateUndefined());
+  EnqueueResultInternal(MakeGarbageCollected<IDBAny>(IDBAny::kUndefinedType));
 }
 
 void IDBRequest::EnqueueResultInternal(IDBAny* result) {

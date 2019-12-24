@@ -772,7 +772,7 @@
     'chromeos_bluetooth': {
       'filepath': 'ash/system/bluetooth/'\
                   '|chrome/browser/ui/webui/chromeos/bluetooth*'\
-                  '|chrome/browser/resources/settings/bluetooth_page/'\
+                  '|chrome/browser/resources/settings/chromeos/bluetooth_page/'\
                   '|chrome/browser/resources/chromeos/bluetooth_pairing_dialog/'\
                   '|device/bluetooth/bluez/'\
                   '|device/bluetooth/chromeos/'\
@@ -810,7 +810,7 @@
                   'chromeos/services/network_config/|'\
                   'chrome/browser/chromeos/net/|'\
                   'chrome/browser/extensions/api/networking_private/|'\
-                  'chrome/browser/resources/settings/internet_page/|'\
+                  'chrome/browser/resources/settings/chromeos/internet_page/|'\
                   'extensions/browser/api/networking_private/|'\
                   'ui/chromeos/network/|'\
                   'ui/webui/resources/cr_components/chromeos/network/'
@@ -1288,6 +1288,7 @@
                   '|chrome/browser/chromeos/secure_channel/'\
                   '|chrome/browser/resources/chromeos/multidevice_setup/'\
                   '|chrome/browser/resources/settings/multidevice_page/'\
+                  '|chrome/browser/resources/settings/chromeos/multidevice_page/'\
                   '|chrome/browser/ui/webui/chromeos/multidevice_setup/'\
                   '|chrome/browser/ui/webui/settings/chromeos/multidevice'\
                   '|chrome/test/data/webui/multidevice_setup/'\

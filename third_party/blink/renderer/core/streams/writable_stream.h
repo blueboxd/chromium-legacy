@@ -206,17 +206,18 @@ class CORE_EXPORT WritableStream : public ScriptWrappable {
 
   void Trace(Visitor*) override;
 
- private:
-  using PromiseQueue = HeapDeque<Member<StreamPromiseResolver>>;
-
-  class PendingAbortRequest;
-
+ protected:
   // Used when creating a stream from JavaScript. Called from Create().
   // https://streams.spec.whatwg.org/#ws-constructor
   void InitInternal(ScriptState*,
                     ScriptValue raw_underlying_sink,
                     ScriptValue raw_strategy,
                     ExceptionState&);
+
+ private:
+  using PromiseQueue = HeapDeque<Member<StreamPromiseResolver>>;
+
+  class PendingAbortRequest;
 
   // https://streams.spec.whatwg.org/#writable-stream-has-operation-marked-in-flight
   static bool HasOperationMarkedInFlight(const WritableStream*);

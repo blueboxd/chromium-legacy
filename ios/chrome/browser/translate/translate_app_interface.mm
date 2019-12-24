@@ -4,12 +4,15 @@
 
 #import "ios/chrome/browser/translate/translate_app_interface.h"
 
+#include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/language_detection_details.h"
+#include "components/translate/core/common/translate_switches.h"
 #import "components/translate/ios/browser/js_translate_manager.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/translate/chrome_ios_translate_client.h"
@@ -161,7 +164,7 @@ class TranslateAppInterfaceHelper {
 
 #pragma mark public methods
 
-+ (void)setUp {
++ (void)setUpWithScriptServer:(NSString*)translateScriptServerURL {
   // Allows the offering of translate in builds without an API key.
   translate::TranslateManager::SetIgnoreMissingKeyForTesting(true);
   [self setUpLanguageDetectionTabHelperObserver];
@@ -169,6 +172,13 @@ class TranslateAppInterfaceHelper {
   // Sets up a fake JsTranslateManager that does not use the translate script.
   [self setUpFakeJSTranslateManagerInCurrentTab];
   TranslateAppInterfaceHelper::GetInstance()->SetUpFakeWiFiConnection();
+
+  // Sets URL for the translate script to hit a HTTP server selected by
+  // the test app
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->AppendSwitchASCII(
+      translate::switches::kTranslateScriptURL,
+      base::SysNSStringToUTF8(translateScriptServerURL));
 }
 
 + (void)tearDown {
@@ -258,6 +268,22 @@ class TranslateAppInterfaceHelper {
       ChromeIOSTranslateClient::CreateTranslatePrefs(
           chrome_test_util::GetOriginalBrowserState()->GetPrefs()));
   return prefs->IsSiteBlacklisted(base::SysNSStringToUTF8(hostName));
+}
+
++ (int)infobarAutoAlwaysThreshold {
+  return translate::TranslateInfoBarDelegate::GetAutoAlwaysThreshold();
+}
+
++ (int)infobarAutoNeverThreshold {
+  return translate::TranslateInfoBarDelegate::GetAutoNeverThreshold();
+}
+
++ (int)infobarMaximumNumberOfAutoAlways {
+  return translate::TranslateInfoBarDelegate::GetMaximumNumberOfAutoAlways();
+}
+
++ (int)infobarMaximumNumberOfAutoNever {
+  return translate::TranslateInfoBarDelegate::GetMaximumNumberOfAutoNever();
 }
 
 #pragma mark private methods

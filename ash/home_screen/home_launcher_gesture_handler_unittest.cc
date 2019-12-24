@@ -82,7 +82,7 @@ class HomeLauncherGestureHandlerTest : public AshTestBase {
 // Records ShelfBackgroundType changes.
 class ShelfBackgroundTypeWatcher : public ShelfObserver {
  public:
-  ShelfBackgroundTypeWatcher(Shelf* shelf) : shelf_(shelf) {
+  explicit ShelfBackgroundTypeWatcher(Shelf* shelf) : shelf_(shelf) {
     shelf_->AddObserver(this);
   }
   ~ShelfBackgroundTypeWatcher() override { shelf_->RemoveObserver(this); }
@@ -242,9 +242,9 @@ TEST_F(HomeLauncherGestureHandlerTest, OverviewMode) {
 
   OverviewController* controller = Shell::Get()->overview_controller();
   controller->StartOverview();
-  const int window1_initial_translation =
+  const float window1_initial_translation =
       window1->transform().To2dTranslation().y();
-  const int window2_initial_translation =
+  const float window2_initial_translation =
       window2->transform().To2dTranslation().y();
   DoPress(Mode::kSlideUpToShow);
   EXPECT_FALSE(GetGestureHandler()->GetActiveWindow());

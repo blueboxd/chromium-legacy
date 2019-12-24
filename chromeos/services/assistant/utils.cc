@@ -85,7 +85,7 @@ std::string CreateLibAssistantConfig(
 
   // Set DeviceProperties.visibility to Visibility::PRIVATE.
   // See //libassistant/shared/proto/device_properties.proto.
-  internal.SetKey("visibility", Value(1));
+  internal.SetKey("visibility", Value("PRIVATE"));
 
   if (base::SysInfo::IsRunningOnChromeOS()) {
     Value logging(Type::DICTIONARY);

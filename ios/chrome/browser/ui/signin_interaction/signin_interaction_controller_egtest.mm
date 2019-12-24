@@ -129,6 +129,13 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
 
 @implementation SigninInteractionControllerTestCase
 
+#if defined(CHROME_EARL_GREY_2)
++ (NSArray*)testInvocations {
+  // TODO(crbug.com/1037676): Fix and enable the tests for EG2.
+  return @[];
+}
+#endif
+
 - (void)setUp {
   [super setUp];
   // Remove closed tab history to make sure the sign-in promo is always visible

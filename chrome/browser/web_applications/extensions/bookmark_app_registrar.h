@@ -53,6 +53,7 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
   void OnShutdown(ExtensionRegistry* registry) override;
 
  private:
+  const Extension* GetBookmarkApp(const web_app::AppId& app_id) const;
   const Extension* GetExtension(const web_app::AppId& app_id) const;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>

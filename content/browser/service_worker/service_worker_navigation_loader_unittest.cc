@@ -384,13 +384,16 @@ class ServiceWorkerNavigationLoaderTest : public testing::Test {
   // caller can use functions like client_.RunUntilComplete() to wait for
   // completion.
   void StartRequest(std::unique_ptr<network::ResourceRequest> request) {
-    // Create a ServiceWorkerContainerHost and simulate what
+    // Create a ServiceWorkerProviderHost and simulate what
     // ServiceWorkerControlleeRequestHandler does to assign it a controller.
     if (!container_host_) {
-      container_host_ = CreateContainerHostForWindow(
-          helper_->mock_render_process_id(),
-          /*is_parent_frame_secure=*/true, helper_->context()->AsWeakPtr(),
-          &provider_endpoints_);
+      container_host_ =
+          CreateProviderHostForWindow(helper_->mock_render_process_id(),
+                                      /*is_parent_frame_secure=*/true,
+                                      helper_->context()->AsWeakPtr(),
+                                      &provider_endpoints_)
+              ->container_host()
+              ->GetWeakPtr();
       container_host_->UpdateUrls(request->url,
                                   net::SiteForCookies::FromUrl(request->url),
                                   url::Origin::Create(request->url));
@@ -513,10 +516,13 @@ TEST_F(ServiceWorkerNavigationLoaderTest, Basic) {
 TEST_F(ServiceWorkerNavigationLoaderTest, NoActiveWorker) {
   base::HistogramTester histogram_tester;
 
-  // Make a container host without a controller.
-  container_host_ = CreateContainerHostForWindow(
-      helper_->mock_render_process_id(), /*is_parent_frame_secure=*/true,
-      helper_->context()->AsWeakPtr(), &provider_endpoints_);
+  // Make a provider host without a controller.
+  container_host_ =
+      CreateProviderHostForWindow(
+          helper_->mock_render_process_id(), /*is_parent_frame_secure=*/true,
+          helper_->context()->AsWeakPtr(), &provider_endpoints_)
+          ->container_host()
+          ->GetWeakPtr();
   container_host_->UpdateUrls(
       GURL("https://example.com/"),
       net::SiteForCookies::FromUrl(GURL("https://example.com/")),
@@ -949,7 +955,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, ConnectionErrorDuringFetchEvent) {
 TEST_F(ServiceWorkerNavigationLoaderTest, CancelNavigationDuringFetchEvent) {
   StartRequest(CreateRequest());
 
-  // Delete the container host during the request. The load should abort without
+  // Delete the provider host during the request. The load should abort without
   // crashing.
   provider_endpoints_.host_remote()->reset();
   base::RunLoop().RunUntilIdle();

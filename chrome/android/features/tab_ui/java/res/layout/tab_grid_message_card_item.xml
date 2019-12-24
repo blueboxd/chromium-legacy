@@ -19,7 +19,7 @@
         android:adjustViewBounds="true"
         android:importantForAccessibility="no"
         app:srcCompat="@drawable/ic_globe_24dp"/>
-    <org.chromium.chrome.browser.ui.widget.text.TemplatePreservingTextView
+    <org.chromium.components.browser_ui.widget.text.TemplatePreservingTextView
         android:id="@+id/description"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

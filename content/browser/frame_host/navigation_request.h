@@ -739,7 +739,6 @@ class CONTENT_EXPORT NavigationRequest
   bool IsSelfReferentialURL();
 
   // RenderProcessHostObserver implementation.
-  void RenderProcessReady(RenderProcessHost* host) override;
   void RenderProcessExited(RenderProcessHost* host,
                            const ChildProcessTerminationInfo& info) override;
   void RenderProcessHostDestroyed(RenderProcessHost* host) override;

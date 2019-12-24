@@ -12,7 +12,7 @@
 namespace views {
 namespace metadata {
 
-ClassMetaData::ClassMetaData() {}
+ClassMetaData::ClassMetaData() = default;
 
 ClassMetaData::ClassMetaData(std::string file, int line) : line_(line) {
   base::TrimString(file, "./\\", &file_);

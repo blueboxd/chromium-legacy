@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
@@ -13,7 +12,6 @@
 #import "ios/chrome/browser/ui/history/history_ui_constants.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_constants.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/table_view/feature_flags.h"
 #include "ios/chrome/common/string_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -21,6 +19,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #import "ios/web/public/test/http_server/http_server_util.h"
 #import "net/base/mac/url_conversions.h"
@@ -31,6 +30,7 @@
 
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::ContextMenuCopyButton;
+using chrome_test_util::HistoryEntry;
 using chrome_test_util::NavigationBarDoneButton;
 using chrome_test_util::OpenLinkInNewTabButton;
 
@@ -44,30 +44,6 @@ char kResponse1[] = "Test Page 1 content";
 char kResponse2[] = "Test Page 2 content";
 char kResponse3[] = "Test Page 3 content";
 
-// Matcher for entry in history for URL and title.
-id<GREYMatcher> HistoryEntry(const GURL& url, const std::string& title) {
-  NSString* url_spec_text = nil;
-  NSString* title_text = base::SysUTF8ToNSString(title);
-
-    url_spec_text = base::SysUTF8ToNSString(url.GetOrigin().spec());
-
-    MatchesBlock matches = ^BOOL(TableViewURLCell* cell) {
-      return [cell.titleLabel.text isEqual:title_text] &&
-             [cell.URLLabel.text isEqual:url_spec_text];
-    };
-
-    DescribeToBlock describe = ^(id<GREYDescription> description) {
-      [description appendText:@"view containing URL text: "];
-      [description appendText:url_spec_text];
-      [description appendText:@" title text: "];
-      [description appendText:title_text];
-    };
-    return grey_allOf(
-        grey_kindOfClass([TableViewURLCell class]),
-        [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
-                                             descriptionBlock:describe],
-        grey_sufficientlyVisible(), nil);
-}
 // Matcher for the history button in the tools menu.
 id<GREYMatcher> HistoryButton() {
   return grey_accessibilityID(kToolsMenuHistoryId);
@@ -112,9 +88,22 @@ id<GREYMatcher> OpenInNewIncognitoTabButton() {
 
 @implementation HistoryUITestCase
 
+#if defined(CHROME_EARL_GREY_2)
++ (void)setUpForTestCase {
+  [super setUpForTestCase];
+  [self setUpHelper];
+}
+#elif defined(CHROME_EARL_GREY_1)
 // Set up called once for the class.
 + (void)setUp {
   [super setUp];
+  [self setUpHelper];
+}
+#else
+#error Not an EarlGrey Test
+#endif
+
++ (void)setUpHelper {
   std::map<GURL, std::string> responses;
   const char kPageFormat[] = "<head><title>%s</title></head><body>%s</body>";
   responses[web::test::HttpServer::MakeUrl(kURL1)] =
@@ -169,15 +158,19 @@ id<GREYMatcher> OpenInNewIncognitoTabButton() {
   [self openHistoryPanel];
 
   // Assert that history displays three entries.
-  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL1, kTitle1)]
+  [[EarlGrey
+      selectElementWithMatcher:HistoryEntry(_URL1.GetOrigin().spec(), kTitle1)]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL2, kTitle2)]
+  [[EarlGrey
+      selectElementWithMatcher:HistoryEntry(_URL2.GetOrigin().spec(), kTitle2)]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL3, _URL3.GetContent())]
+  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL3.GetOrigin().spec(),
+                                                   _URL3.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Tap a history entry and assert that navigation to that entry's URL occurs.
-  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL1, kTitle1)]
+  [[EarlGrey
+      selectElementWithMatcher:HistoryEntry(_URL1.GetOrigin().spec(), kTitle1)]
       performAction:grey_tap()];
   [ChromeEarlGrey waitForWebStateContainingText:kResponse1];
 }
@@ -193,9 +186,11 @@ id<GREYMatcher> OpenInNewIncognitoTabButton() {
 
   [self openHistoryPanel];
 
-  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL1, kTitle1)]
+  [[EarlGrey
+      selectElementWithMatcher:HistoryEntry(_URL1.GetOrigin().spec(), kTitle1)]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL2, kTitle2)]
+  [[EarlGrey
+      selectElementWithMatcher:HistoryEntry(_URL2.GetOrigin().spec(), kTitle2)]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -228,11 +223,14 @@ id<GREYMatcher> OpenInNewIncognitoTabButton() {
                                           kHistorySearchScrimIdentifier)]
       assertWithMatcher:grey_nil()];
 
-  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL1, kTitle1)]
+  [[EarlGrey
+      selectElementWithMatcher:HistoryEntry(_URL1.GetOrigin().spec(), kTitle1)]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL2, kTitle2)]
+  [[EarlGrey
+      selectElementWithMatcher:HistoryEntry(_URL2.GetOrigin().spec(), kTitle2)]
       assertWithMatcher:grey_nil()];
-  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL3, _URL3.GetContent())]
+  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL3.GetOrigin().spec(),
+                                                   _URL3.GetContent())]
       assertWithMatcher:grey_nil()];
 }
 
@@ -245,7 +243,8 @@ id<GREYMatcher> OpenInNewIncognitoTabButton() {
       performAction:grey_tap()];
 
   // Try long press.
-  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL1, kTitle1)]
+  [[EarlGrey
+      selectElementWithMatcher:HistoryEntry(_URL1.GetOrigin().spec(), kTitle1)]
       performAction:grey_longPress()];
 
   // Verify context menu is not visible.
@@ -260,11 +259,14 @@ id<GREYMatcher> OpenInNewIncognitoTabButton() {
       assertWithMatcher:grey_nil()];
 
   // Verifiy we went back to original folder content.
-  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL1, kTitle1)]
+  [[EarlGrey
+      selectElementWithMatcher:HistoryEntry(_URL1.GetOrigin().spec(), kTitle1)]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL2, kTitle2)]
+  [[EarlGrey
+      selectElementWithMatcher:HistoryEntry(_URL2.GetOrigin().spec(), kTitle2)]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL3, _URL3.GetContent())]
+  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL3.GetOrigin().spec(),
+                                                   _URL3.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -274,35 +276,44 @@ id<GREYMatcher> OpenInNewIncognitoTabButton() {
   [self openHistoryPanel];
 
   // Assert that three history elements are present.
-  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL1, kTitle1)]
+  [[EarlGrey
+      selectElementWithMatcher:HistoryEntry(_URL1.GetOrigin().spec(), kTitle1)]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL2, kTitle2)]
+  [[EarlGrey
+      selectElementWithMatcher:HistoryEntry(_URL2.GetOrigin().spec(), kTitle2)]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL3, _URL3.GetContent())]
+  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL3.GetOrigin().spec(),
+                                                   _URL3.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Enter edit mode, select a history element, and press delete.
   [[EarlGrey selectElementWithMatcher:NavigationEditButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL1, kTitle1)]
+  [[EarlGrey
+      selectElementWithMatcher:HistoryEntry(_URL1.GetOrigin().spec(), kTitle1)]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:DeleteHistoryEntriesButton()]
       performAction:grey_tap()];
 
   // Assert that the deleted entry is gone and the other two remain.
-  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL1, kTitle1)]
+  [[EarlGrey
+      selectElementWithMatcher:HistoryEntry(_URL1.GetOrigin().spec(), kTitle1)]
       assertWithMatcher:grey_nil()];
-  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL2, kTitle2)]
+  [[EarlGrey
+      selectElementWithMatcher:HistoryEntry(_URL2.GetOrigin().spec(), kTitle2)]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL3, _URL3.GetContent())]
+  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL3.GetOrigin().spec(),
+                                                   _URL3.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Enter edit mode, select both remaining entries, and press delete.
   [[EarlGrey selectElementWithMatcher:NavigationEditButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL2, kTitle2)]
+  [[EarlGrey
+      selectElementWithMatcher:HistoryEntry(_URL2.GetOrigin().spec(), kTitle2)]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL3, _URL3.GetContent())]
+  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL3.GetOrigin().spec(),
+                                                   _URL3.GetContent())]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:DeleteHistoryEntriesButton()]
       performAction:grey_tap()];
@@ -362,7 +373,8 @@ id<GREYMatcher> OpenInNewIncognitoTabButton() {
   [self openHistoryPanel];
 
   // Long press on the history element.
-  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL1, kTitle1)]
+  [[EarlGrey
+      selectElementWithMatcher:HistoryEntry(_URL1.GetOrigin().spec(), kTitle1)]
       performAction:grey_longPress()];
 
   // Select "Open in New Tab" and confirm that new tab is opened with selected
@@ -382,7 +394,8 @@ id<GREYMatcher> OpenInNewIncognitoTabButton() {
   [self openHistoryPanel];
 
   // Long press on the history element.
-  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL1, kTitle1)]
+  [[EarlGrey
+      selectElementWithMatcher:HistoryEntry(_URL1.GetOrigin().spec(), kTitle1)]
       performAction:grey_longPress()];
 
   // Select "Open in New Incognito Tab" and confirm that new tab is opened in
@@ -409,7 +422,8 @@ id<GREYMatcher> OpenInNewIncognitoTabButton() {
   [self openHistoryPanel];
 
   // Long press on the history element.
-  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL1, kTitle1)]
+  [[EarlGrey
+      selectElementWithMatcher:HistoryEntry(_URL1.GetOrigin().spec(), kTitle1)]
       performAction:grey_longPress()];
 
   // Tap "Copy URL" and wait for the URL to be copied to the pasteboard.

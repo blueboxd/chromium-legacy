@@ -203,21 +203,9 @@ void TestOpenSettingFromArc(Browser* browser,
   settings->RemoveObserver(&observer);
 }
 
-class ChromeNewWindowClientBrowserTestWithSplitSettings
-    : public ChromeNewWindowClientBrowserTest {
- public:
-  ChromeNewWindowClientBrowserTestWithSplitSettings() {
-    feature_list_.InitAndEnableFeature(chromeos::features::kSplitSettings);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientBrowserTestWithSplitSettings,
+IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientBrowserTest,
                        OpenOSSettingsAppFromArc) {
-  // When flag is on, opening a browser setting should not open the OS setting
-  // window.
+  // Opening a browser setting should not open the OS setting window.
   TestOpenSettingFromArc(
       browser(), ChromePage::AUTOFILL,
       GURL("chrome://settings/").Resolve(chrome::kAutofillSubPage),
@@ -227,33 +215,6 @@ IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientBrowserTestWithSplitSettings,
   TestOpenSettingFromArc(
       browser(), ChromePage::POWER,
       GURL("chrome://os-settings/").Resolve(chrome::kPowerSubPage),
-      /*expected_setting_window_count=*/1);
-}
-
-class ChromeNewWindowClientBrowserTestWithoutSplitSettings
-    : public ChromeNewWindowClientBrowserTest {
- public:
-  ChromeNewWindowClientBrowserTestWithoutSplitSettings() {
-    feature_list_.InitAndDisableFeature(chromeos::features::kSplitSettings);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-// TODO(crbug/950007): This should be removed when the split is complete.
-IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientBrowserTestWithoutSplitSettings,
-                       OpenSettingsAppFromArc) {
-  // When flag is off, opening a browser setting should open the setting window.
-  TestOpenSettingFromArc(
-      browser(), ChromePage::AUTOFILL,
-      GURL(chrome::kChromeUISettingsURL).Resolve(chrome::kAutofillSubPage),
-      /*expected_setting_window_count=*/1);
-
-  // And opening an OS setting should reuse that window.
-  TestOpenSettingFromArc(
-      browser(), ChromePage::POWER,
-      GURL(chrome::kChromeUISettingsURL).Resolve(chrome::kPowerSubPage),
       /*expected_setting_window_count=*/1);
 }
 
@@ -352,27 +313,13 @@ void TestAllAboutPages() {
   TestOpenChromePage(ChromePage::ABOUTBLANK, GURL(url::kAboutBlankURL));
 }
 
-IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientBrowserTestWithSplitSettings,
-                       TestOpenChromePageWithSplitFlagOn) {
+IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientBrowserTest, TestOpenChromePage) {
   // Install the Settings App.
   web_app::WebAppProvider::Get(browser()->profile())
       ->system_web_app_manager()
       .InstallSystemAppsForTesting();
 
   TestAllOSSettingPages(GURL(chrome::kChromeUIOSSettingsURL));
-  TestAllBrowserSettingPages(GURL(chrome::kChromeUISettingsURL));
-  TestAllAboutPages();
-}
-
-// TODO(crbug/950007): This should be removed when the split is complete.
-IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientBrowserTestWithoutSplitSettings,
-                       TestOpenChromePageWithSplitFlagOff) {
-  // Install the Settings App.
-  web_app::WebAppProvider::Get(browser()->profile())
-      ->system_web_app_manager()
-      .InstallSystemAppsForTesting();
-
-  TestAllOSSettingPages(GURL(chrome::kChromeUISettingsURL));
   TestAllBrowserSettingPages(GURL(chrome::kChromeUISettingsURL));
   TestAllAboutPages();
 }

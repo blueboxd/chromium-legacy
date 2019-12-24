@@ -20,6 +20,7 @@
 #include "base/observer_list_threadsafe.h"
 #include "content/browser/service_worker/service_worker_info.h"
 #include "content/browser/service_worker/service_worker_process_manager.h"
+#include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_registration_status.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/common/content_export.h"
@@ -42,6 +43,7 @@ namespace content {
 class ServiceWorkerContextCoreObserver;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerJobCoordinator;
+class ServiceWorkerProviderHost;
 class ServiceWorkerRegistration;
 class URLLoaderFactoryGetter;
 
@@ -66,8 +68,10 @@ class CONTENT_EXPORT ServiceWorkerContextCore
                               int64_t registration_id)>;
   using UnregistrationCallback =
       base::OnceCallback<void(blink::ServiceWorkerStatusCode status)>;
+  using ProviderByIdMap =
+      std::map<int, std::unique_ptr<ServiceWorkerProviderHost>>;
   using ContainerHostByClientUUIDMap =
-      std::map<std::string, std::unique_ptr<ServiceWorkerContainerHost>>;
+      std::map<std::string, ServiceWorkerContainerHost*>;
 
   // Directory for ServiceWorkerStorage and ServiceWorkerCacheManager.
   static const base::FilePath::CharType kServiceWorkerDirectory[];
@@ -154,6 +158,11 @@ class CONTENT_EXPORT ServiceWorkerContextCore
     return job_coordinator_.get();
   }
 
+  // The context class owns the set of ProviderHosts.
+  void AddProviderHost(
+      std::unique_ptr<ServiceWorkerProviderHost> provider_host);
+  void RemoveProviderHost(int provider_id);
+
   // Returns a ContainerHost iterator for all service worker clients for the
   // |origin|. If |include_reserved_clients| is false, this only returns clients
   // that are execution ready (i.e., for windows, the document has been
@@ -180,12 +189,13 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // Maintains a map from Client UUID to ServiceWorkerContainerHost for service
   // worker clients. |container_host| should not be for a service worker
   // execution context.
+  // (Note: instead of maintaining 2 maps we might be able to uniformly use
+  // UUID instead of process_id+provider_id elsewhere. For now I'm leaving
+  // these as provider_id is deeply wired everywhere)
   void RegisterContainerHostByClientID(
       const std::string& client_uuid,
-      std::unique_ptr<ServiceWorkerContainerHost> container_host);
+      ServiceWorkerContainerHost* container_host);
   void UnregisterContainerHostByClientID(const std::string& client_uuid);
-  void UpdateContainerHostClientID(const std::string& current_client_uuid,
-                                   const std::string& new_client_uuid);
   ServiceWorkerContainerHost* GetContainerHostByClientID(
       const std::string& client_uuid);
 
@@ -346,9 +356,12 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // Bind() to hold a reference to |wrapper_| until |this| is fully destroyed.
   ServiceWorkerContextWrapper* wrapper_;
 
-  // |container_host_by_uuid_| owns container hosts for service worker clients.
-  // Container hosts for service worker execution contexts are owned by
-  // ServiceWorkerProviderHost.
+  // |providers_| owns the provider hosts.
+  std::unique_ptr<ProviderByIdMap> providers_;
+
+  // |container_host_by_uuid_| contains raw pointers to container hosts for
+  // service worker clients. This doesn't contain container hosts for service
+  // worker execution contexts.
   std::unique_ptr<ContainerHostByClientUUIDMap> container_host_by_uuid_;
 
   std::unique_ptr<ServiceWorkerStorage> storage_;

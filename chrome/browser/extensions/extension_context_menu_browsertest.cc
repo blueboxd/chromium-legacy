@@ -739,14 +739,14 @@ IN_PROC_BROWSER_TEST_P(ExtensionContextMenuLazyTest, TargetURLs) {
                                     std::string("item1")));
 }
 
-// Tests adding of context menus in incognito mode.
-#if defined(OS_LINUX)
-// Flakily hangs on Linux/CrOS - http://crbug.com/88317
+#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MACOSX)
+// Flakily hangs on Linux/CrOS/Windows/Mac - http://crbug.com/1035062
 #define MAYBE_IncognitoSplit DISABLED_IncognitoSplit
 #else
 #define MAYBE_IncognitoSplit IncognitoSplit
 #endif
 
+// Tests adding of context menus in incognito mode.
 IN_PROC_BROWSER_TEST_P(ExtensionContextMenuLazyTest, MAYBE_IncognitoSplit) {
   ExtensionTestMessageListener created("created item regular", false);
   ExtensionTestMessageListener created_incognito("created item incognito",

@@ -570,6 +570,7 @@
     },
     {
       name: "DecodeJpeg420ImagesToYUV",
+      status: "test",
     },
     {
       name: "DecodeLossyWebPImagesToYUV",
@@ -1884,11 +1885,6 @@
       status: "experimental",
     },
     {
-      name: "WebXrGamepadModule",
-      // depends_on: ["WebXR"],  // TODO(https://crbug.com/954679): uncomment once bug is fixed
-      status: "stable",
-    },
-    {
       name: "WebXRHitTest",
       // depends_on: ["WebXRARModule"],  // TODO(https://crbug.com/954679): uncomment once bug is fixed
       status: "experimental"
@@ -1901,6 +1897,13 @@
     {
       name: "WindowPlacement",
       status: "experimental",
+    },
+    {
+      name: "WritableFileStream",
+      status: "experimental",
+      // NativeFileSystem is in Origin Trial, which doesn't support having
+      // non-origin-trial-enabled features depend on it. https://crbug.com/1000486
+      // depends_on: ["NativeFileSystem"]
     },
     {
       name: "XSLT",

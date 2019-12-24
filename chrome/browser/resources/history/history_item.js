@@ -126,8 +126,8 @@ Polymer({
     onItemClick_: function(e) {
       for (let i = 0; i < e.path.length; i++) {
         const elem = e.path[i];
-        if (elem.id != 'checkbox' &&
-            (elem.nodeName == 'A' || elem.nodeName == 'CR-ICON-BUTTON')) {
+        if (elem.id !== 'checkbox' &&
+            (elem.nodeName === 'A' || elem.nodeName === 'CR-ICON-BUTTON')) {
           return;
         }
       }
@@ -211,7 +211,7 @@ Polymer({
         return;
       }
 
-      if (this.$$('#bookmark-star') == this.root.activeElement) {
+      if (this.$$('#bookmark-star') === this.root.activeElement) {
         focusWithoutInk(this.$['menu-button']);
       }
 
@@ -249,7 +249,7 @@ Polymer({
         browserService.recordAction('SearchResultClick');
       }
 
-      if (this.index == undefined) {
+      if (this.index === undefined) {
         return;
       }
 
@@ -336,7 +336,7 @@ Polymer({
    * @return {string} The title for a page of search results.
    */
   export function searchResultsTitle(numberOfResults, searchTerm) {
-    const resultId = numberOfResults == 1 ? 'searchResult' : 'searchResults';
+    const resultId = numberOfResults === 1 ? 'searchResult' : 'searchResults';
     return loadTimeData.getStringF(
         'foundSearchResults', numberOfResults, loadTimeData.getString(resultId),
         searchTerm);

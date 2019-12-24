@@ -23,9 +23,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPrivateApiTest, SendSyntheticKeyEvent) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityPrivateApiTest, GetDisplayLanguageTest) {
+IN_PROC_BROWSER_TEST_F(AccessibilityPrivateApiTest,
+                       GetDisplayNameForLocaleTest) {
   ASSERT_TRUE(
-      RunExtensionSubtest("accessibility_private/", "display_language.html"))
+      RunExtensionSubtest("accessibility_private/", "display_locale.html"))
       << message_;
 }
 

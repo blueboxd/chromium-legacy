@@ -5,6 +5,7 @@
 #include "third_party/blink/public/common/feature_policy/document_policy.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom.h"
 
 namespace blink {
 namespace {

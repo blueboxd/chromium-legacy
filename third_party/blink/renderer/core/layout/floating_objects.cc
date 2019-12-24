@@ -47,7 +47,7 @@ struct SameSizeAsFloatingObject {
 static_assert(sizeof(FloatingObject) == sizeof(SameSizeAsFloatingObject),
               "FloatingObject should stay small");
 
-FloatingObject::FloatingObject(LayoutBox* layout_object, Type type)
+FloatingObject::FloatingObject(PassKey key, LayoutBox* layout_object, Type type)
     : layout_object_(layout_object),
       originating_line_(nullptr),
       type_(type),
@@ -63,7 +63,8 @@ FloatingObject::FloatingObject(LayoutBox* layout_object, Type type)
 {
 }
 
-FloatingObject::FloatingObject(LayoutBox* layout_object,
+FloatingObject::FloatingObject(PassKey key,
+                               LayoutBox* layout_object,
                                Type type,
                                const LayoutRect& frame_rect,
                                bool should_paint,
@@ -89,7 +90,7 @@ FloatingObject::FloatingObject(LayoutBox* layout_object,
 std::unique_ptr<FloatingObject> FloatingObject::Create(LayoutBox* layout_object,
                                                        Type type) {
   std::unique_ptr<FloatingObject> new_obj =
-      base::WrapUnique(new FloatingObject(layout_object, type));
+      base::WrapUnique(new FloatingObject(PassKey(), layout_object, type));
 
   // If a layer exists, the float will paint itself. Otherwise someone else
   // will.
@@ -114,14 +115,14 @@ std::unique_ptr<FloatingObject> FloatingObject::CopyToNewContainer(
     bool should_paint,
     bool is_descendant) const {
   return base::WrapUnique(new FloatingObject(
-      GetLayoutObject(), GetType(),
+      PassKey(), GetLayoutObject(), GetType(),
       LayoutRect(FrameRect().Location() - offset, FrameRect().Size()),
       should_paint, is_descendant, IsLowestNonOverhangingFloatInChild()));
 }
 
 std::unique_ptr<FloatingObject> FloatingObject::UnsafeClone() const {
   std::unique_ptr<FloatingObject> clone_object = base::WrapUnique(
-      new FloatingObject(GetLayoutObject(), GetType(), frame_rect_,
+      new FloatingObject(PassKey(), GetLayoutObject(), GetType(), frame_rect_,
                          should_paint_, is_descendant_, false));
   clone_object->is_placed_ = is_placed_;
 #if DCHECK_IS_ON()

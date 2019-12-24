@@ -600,7 +600,7 @@ void OverviewSession::SetWindowListNotAnimatedWhenExiting(
 std::unique_ptr<ui::ScopedLayerAnimationSettings>
 OverviewSession::UpdateGridAtLocationYPositionAndOpacity(
     int64_t display_id,
-    int new_y,
+    float new_y,
     float opacity,
     UpdateAnimationSettingsCallback callback) {
   OverviewGrid* grid = GetGridWithRootWindow(
@@ -909,11 +909,15 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
     return;
   }
 
-  const bool process_released_key_event =
-      (event->key_code() == ui::VKEY_LEFT ||
-       event->key_code() == ui::VKEY_RIGHT) &&
-      ShouldUseTabletModeGridLayout();
-  if (event->type() != ui::ET_KEY_PRESSED && !process_released_key_event)
+  // Check if we can scroll with the event first as it can use release events as
+  // well.
+  if (ProcessForScrolling(*event)) {
+    event->SetHandled();
+    event->StopPropagation();
+    return;
+  }
+
+  if (event->type() != ui::ET_KEY_PRESSED)
     return;
 
   switch (event->key_code()) {
@@ -930,10 +934,8 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
       Move(/*reverse=*/false);
       break;
     case ui::VKEY_RIGHT:
-      if (!ProcessForScrolling(*event)) {
-        ++num_key_presses_;
-        Move(/*reverse=*/false);
-      }
+      ++num_key_presses_;
+      Move(/*reverse=*/false);
       break;
     case ui::VKEY_TAB: {
       const bool reverse = event->flags() & ui::EF_SHIFT_DOWN;
@@ -942,10 +944,8 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
       break;
     }
     case ui::VKEY_LEFT:
-      if (!ProcessForScrolling(*event)) {
-        ++num_key_presses_;
-        Move(/*reverse=*/true);
-      }
+      ++num_key_presses_;
+      Move(/*reverse=*/true);
       break;
     case ui::VKEY_W: {
       if (!(event->flags() & ui::EF_CONTROL_DOWN))
@@ -1004,33 +1004,41 @@ void OverviewSession::Move(bool reverse) {
 }
 
 bool OverviewSession::ProcessForScrolling(const ui::KeyEvent& event) {
-  if (!ShouldUseTabletModeGridLayout() ||
-      !(event.flags() & ui::EF_CONTROL_DOWN)) {
+  if (!ShouldUseTabletModeGridLayout())
     return false;
-  }
-
-  const bool press = (event.type() == ui::ET_KEY_PRESSED);
-  const bool repeat = event.is_repeat();
-  DCHECK(event.key_code() == ui::VKEY_LEFT ||
-         event.key_code() == ui::VKEY_RIGHT);
-  const bool reverse = event.key_code() == ui::VKEY_LEFT;
 
   // TODO(sammiequon): This only works for tablet mode at the moment, so using
   // the primary display works. If this feature is adapted for multi display
   // then this needs to be revisited.
   auto* grid = GetGridWithRootWindow(Shell::GetPrimaryRootWindow());
-  if (press && !repeat) {
+  const bool press = (event.type() == ui::ET_KEY_PRESSED);
+
+  if (!press) {
+    if (is_keyboard_scrolling_grid_) {
+      is_keyboard_scrolling_grid_ = false;
+      grid->EndScroll();
+      return true;
+    }
+    return false;
+  }
+
+  // Presses only at this point.
+  if (event.key_code() != ui::VKEY_LEFT && event.key_code() != ui::VKEY_RIGHT)
+    return false;
+
+  if (!event.IsControlDown())
+    return false;
+
+  const bool repeat = event.is_repeat();
+  const bool reverse = event.key_code() == ui::VKEY_LEFT;
+  if (!repeat) {
+    is_keyboard_scrolling_grid_ = true;
     grid->StartScroll();
     grid->UpdateScrollOffset(kKeyboardPressScrollingDp * (reverse ? 1 : -1));
     return true;
   }
 
-  if (press && repeat) {
-    grid->UpdateScrollOffset(kKeyboardHoldScrollingDp * (reverse ? 1 : -1));
-    return true;
-  }
-
-  grid->EndScroll();
+  grid->UpdateScrollOffset(kKeyboardHoldScrollingDp * (reverse ? 1 : -1));
   return true;
 }
 

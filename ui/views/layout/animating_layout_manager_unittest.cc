@@ -105,7 +105,7 @@ class SmartFillLayout : public FillLayout {
 
 class AnimationEventLogger : public AnimatingLayoutManager::Observer {
  public:
-  ~AnimationEventLogger() override {}
+  ~AnimationEventLogger() override = default;
 
   explicit AnimationEventLogger(AnimatingLayoutManager* layout) {
     scoped_observer_.Add(layout);
@@ -2329,8 +2329,8 @@ constexpr base::TimeDelta kMinimumAnimationTime =
 // invalidated.
 class ImmediateLayoutManager : public LayoutManagerBase {
  public:
-  ImmediateLayoutManager(bool use_preferred_size,
-                         const SizeBounds& size_bounds = SizeBounds())
+  explicit ImmediateLayoutManager(bool use_preferred_size,
+                                  const SizeBounds& size_bounds = SizeBounds())
       : use_preferred_size_(use_preferred_size), size_bounds_(size_bounds) {
     DCHECK(use_preferred_size_ || size_bounds == SizeBounds());
   }

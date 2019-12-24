@@ -12,19 +12,12 @@ GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 // https://crbug.com/1003483
 GEN('#if defined(NDEBUG)');
 
-GEN('#include "chromeos/constants/chromeos_features.h"');
-
 // Test fixture for the top-level OS settings UI.
 // eslint-disable-next-line no-var
 var OSSettingsUIBrowserTest = class extends PolymerTest {
   /** @override */
   get browsePreload() {
     return 'chrome://os-settings/';
-  }
-
-  /** @override */
-  get featureList() {
-    return {enabled: ['chromeos::features::kSplitSettings']};
   }
 
   /** @override */

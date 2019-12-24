@@ -317,7 +317,7 @@ core-dump by sending SIGABRT to the relevant process:
 
 ## Breakpad minidump files
 
-See [linux_minidump_to_core.md](linux_minidump_to_core.md)
+See [minidump_to_core.md](linux/minidump_to_core.md)
 
 ## Running Tests
 
@@ -444,7 +444,7 @@ of macros like `IPC_MESSAGE_LOG_ENABLED` or `IPC_MESSAGE_MACROS_LOG_ENABLED`.
 
 See
 https://sites.google.com/a/chromium.org/dev/developers/profiling-chromium-and-webkit
-and [Linux Profiling](linux_profiling.md).
+and [Linux Profiling](profiling.md).
 
 ## i18n
 
@@ -475,7 +475,7 @@ with the appropriate instructions if you know what they are.)
 
 ## Breakpad
 
-See the last section of [Linux Crash Dumping](linux_crash_dumping.md).
+See the last section of [Linux Crash Dumping](crash_dumping.md).
 
 ## Drag and Drop
 

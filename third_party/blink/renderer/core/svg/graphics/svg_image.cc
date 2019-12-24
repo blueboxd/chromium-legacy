@@ -99,7 +99,8 @@ class SVGImage::SVGImageLocalFrameClient : public EmptyLocalFrameClient {
 
 SVGImage::SVGImage(ImageObserver* observer, bool is_multipart)
     : Image(observer, is_multipart),
-      paint_controller_(std::make_unique<PaintController>()) {}
+      paint_controller_(std::make_unique<PaintController>()),
+      has_pending_timeline_rewind_(false) {}
 
 SVGImage::~SVGImage() {
   if (frame_client_)
@@ -515,6 +516,13 @@ sk_sp<PaintRecord> SVGImage::PaintRecordForCurrentFrame(const KURL& url) {
   // there may have been a previous url/fragment that needs to be reset.
   view->ProcessUrlFragment(url, /*same_document_navigation=*/false);
 
+  // If the image was reset, we need to rewind the timeline back to 0. This
+  // needs to be done before painting, or else we wouldn't get the correct
+  // reset semantics (we'd paint the "last" frame rather than the one at
+  // time=0.) The reason we do this here and not in resetAnimation() is to
+  // avoid setting timers from the latter.
+  FlushPendingTimelineRewind();
+
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     view->UpdateAllLifecyclePhases(
         DocumentLifecycle::LifecycleUpdateReason::kOther);
@@ -557,6 +565,18 @@ void SVGImage::DrawInternal(cc::PaintCanvas* canvas,
   StartAnimation();
 }
 
+void SVGImage::ScheduleTimelineRewind() {
+  has_pending_timeline_rewind_ = true;
+}
+
+void SVGImage::FlushPendingTimelineRewind() {
+  if (!has_pending_timeline_rewind_)
+    return;
+  if (SVGSVGElement* root_element = SvgRootElement(page_.Get()))
+    root_element->setCurrentTime(0);
+  has_pending_timeline_rewind_ = false;
+}
+
 void SVGImage::StartAnimation() {
   SVGSVGElement* root_element = SvgRootElement(page_.Get());
   if (!root_element)
@@ -580,7 +600,7 @@ void SVGImage::ResetAnimation() {
     return;
   chrome_client_->SuspendAnimation();
   root_element->pauseAnimations();
-  root_element->setCurrentTime(0);
+  ScheduleTimelineRewind();
 }
 
 void SVGImage::RestoreAnimation() {

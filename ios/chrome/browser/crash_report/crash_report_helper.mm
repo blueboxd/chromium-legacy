@@ -19,6 +19,7 @@
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/crash_report/breakpad_helper.h"
 #import "ios/chrome/browser/crash_report/crash_report_user_application_state.h"
+#import "ios/chrome/browser/crash_report/crash_reporter_breadcrumb_observer.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/all_web_state_observation_forwarder.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -436,6 +437,17 @@ void ClearStateForWebStateList(WebStateList* web_state_list) {
     web::WebState* web_state = web_state_list->GetWebStateAt(index);
     [observer removeTabId:TabIdTabHelper::FromWebState(web_state)->tab_id()];
   }
+}
+
+void MonitorBreadcrumbsForBrowserState(ios::ChromeBrowserState* browser_state) {
+  [[CrashReporterBreadcrumbObserver uniqueInstance]
+      observeBrowserState:browser_state];
+}
+
+void StopMonitoringBreadcrumbsForBrowserState(
+    ios::ChromeBrowserState* browser_state) {
+  [[CrashReporterBreadcrumbObserver uniqueInstance]
+      stopObservingBrowserState:browser_state];
 }
 
 }  // namespace breakpad

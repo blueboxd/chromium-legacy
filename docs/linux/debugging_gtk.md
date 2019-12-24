@@ -30,7 +30,7 @@ NOTE: I tried debugging pango in a similar manner, but for some reason gdb
 didn't pick up the symbols from the symbols from the `-dbg` package. I ended up
 building from source and setting my `LD_LIBRARY_PATH`.
 
-See [linux_building_debug_gtk.md](linux_building_debug_gtk.md) for more on how
+See [building_debug_gtk.md](linux/building_debug_gtk.md) for more on how
 to build your own debug version of GTK.
 
 ## Parasite

@@ -165,7 +165,7 @@ void IDBOpenDBRequest::EnqueueResponse(int64_t old_version) {
     // This database hasn't had an integer version before.
     old_version = IDBDatabaseMetadata::kDefaultVersion;
   }
-  SetResult(IDBAny::CreateUndefined());
+  SetResult(MakeGarbageCollected<IDBAny>(IDBAny::kUndefinedType));
   EnqueueEvent(MakeGarbageCollected<IDBVersionChangeEvent>(
       event_type_names::kSuccess, old_version, base::nullopt));
 }

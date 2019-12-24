@@ -240,11 +240,6 @@ const base::Feature kShowPlayInDemoMode{"ShowPlayInDemoMode",
 const base::Feature kSmartDimModelV3{"SmartDimModelV3",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Splits OS settings (display, mouse, keyboard, etc.) out from browser settings
-// into a separate window.
-const base::Feature kSplitSettings{"SplitSettings",
-                                   base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables separate sync controls for OS settings (display, keyboard, etc.).
 // For example, the user could choose to sync OS settings but not browser
 // settings.
@@ -317,7 +312,8 @@ bool IsQuickAnswersEnabled() {
 }
 
 bool IsSplitSettingsEnabled() {
-  return base::FeatureList::IsEnabled(kSplitSettings);
+  // TODO(dpapad): Remove all calls to this function.
+  return true;
 }
 
 bool IsSplitSettingsSyncEnabled() {

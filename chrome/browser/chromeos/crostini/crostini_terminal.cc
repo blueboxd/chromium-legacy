@@ -102,4 +102,12 @@ void LaunchContainerTerminal(Profile* profile,
   ShowContainerTerminal(profile, launch_params, vsh_in_crosh_url, browser);
 }
 
+void LaunchTerminalSettings(Profile* profile) {
+  DCHECK(base::FeatureList::IsEnabled(features::kTerminalSystemApp));
+  web_app::LaunchSystemWebApp(profile, web_app::SystemAppType::TERMINAL,
+                              GURL(std::string(chrome::kChromeUITerminalURL) +
+                                   "html/terminal_settings.html"),
+                              /*is_popup=*/true);
+}
+
 }  // namespace crostini

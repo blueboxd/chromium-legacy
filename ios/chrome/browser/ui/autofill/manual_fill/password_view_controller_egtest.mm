@@ -558,11 +558,8 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
       assertWithMatcher:grey_not(grey_nil())];
 }
 
-// Tests that the password icon is hidden when no passwords are available.
+// Tests that the password icon is not present when no passwords are available.
 - (void)testPasswordIconIsNotVisibleWhenPasswordStoreEmpty {
-  // Test failing on iOS13.2 (crbug.com/1019535)
-  if (@available(iOS 13.2, *))
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS13.2");
   [AutofillAppInterface clearPasswordStore];
 
   // Bring up the keyboard.
@@ -573,20 +570,9 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
   GREYAssertTrue([ChromeEarlGrey isKeyboardShownWithError:nil],
                  @"Keyboard Should be Shown");
 
-  // Assert the password icon is not visible.
+  // Assert the password icon is not enabled and not visible.
   [[EarlGrey selectElementWithMatcher:ManualFallbackPasswordIconMatcher()]
       assertWithMatcher:grey_notVisible()];
-
-  // Store one password.
-  [AutofillAppInterface saveExamplePasswordForm];
-
-  // Tap another field to trigger form activity.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:TapWebElementWithId(kFormElementPassword)];
-
-  // Assert the password icon is visible now.
-  [[EarlGrey selectElementWithMatcher:ManualFallbackPasswordIconMatcher()]
-      assertWithMatcher:grey_sufficientlyVisible()];
 }
 
 @end

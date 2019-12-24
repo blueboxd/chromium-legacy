@@ -312,13 +312,11 @@ id<GREYMatcher> ClearBrowsingDataCell() {
 
     // Set the network to use a cellular network, which should disable uploading
     // when the wifi-only flag is set.
-    chrome_test_util::SetWWANStateTo(YES);
-    chrome_test_util::WaitForBreakpadQueue();
+    [SettingsAppInterface setCellularNetworkEnabled:YES];
     [self assertMetricsServiceEnabledButNotUploading:serviceType];
 
     // Turn off cellular network usage, which should enable uploading.
-    chrome_test_util::SetWWANStateTo(NO);
-    chrome_test_util::WaitForBreakpadQueue();
+    [SettingsAppInterface setCellularNetworkEnabled:NO];
     [self assertMetricsServiceEnabled:serviceType];
 
     // kMetricsReportingEnabled ON and kMetricsReportingWifiOnly OFF

@@ -5,7 +5,7 @@
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service.h"
 
 #include "base/strings/stringprintf.h"
-#include "base/time/time_to_iso8601.h"
+#include "base/time/time.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_observer.h"
 #include "ios/web/public/browser_state.h"
 
@@ -59,7 +59,10 @@ void BreadcrumbManagerKeyedService::AddEvent(const std::string& event) {
     event_buckets_.push_back(bucket);
   }
 
-  std::string timestamp = base::TimeToISO8601(time);
+  base::Time::Exploded exploded;
+  time.UTCExplode(&exploded);
+  std::string timestamp = base::StringPrintf(
+      "%02d:%02d.%03d", exploded.minute, exploded.second, exploded.millisecond);
   std::string event_log = base::StringPrintf(
       "%s %s %s", timestamp.c_str(), browsing_mode_.c_str(), event.c_str());
   event_buckets_.back().second.push_back(event_log);

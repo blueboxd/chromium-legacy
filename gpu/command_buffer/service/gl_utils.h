@@ -9,7 +9,6 @@
 #define GPU_COMMAND_BUFFER_SERVICE_GL_UTILS_H_
 
 #include <string>
-#include <vector>
 
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/constants.h"
@@ -63,8 +62,6 @@ struct CALayerSharedState {
   int sorting_context_id;
   gfx::Transform transform;
 };
-
-std::vector<int> GetAllGLErrors();
 
 bool PrecisionMeetsSpecForHighpFloat(GLint rangeMin,
                                      GLint rangeMax,

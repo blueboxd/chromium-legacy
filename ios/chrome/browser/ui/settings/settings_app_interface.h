@@ -32,6 +32,9 @@
 + (void)setMetricsReportingEnabled:(BOOL)reportingEnabled
                           wifiOnly:(BOOL)wifiOnly;
 
+// Allows simulating turning the cellular network on/off.
++ (void)setCellularNetworkEnabled:(BOOL)cellularNetworkEnabled;
+
 // YES if breakpad crash collection is enabled.
 + (BOOL)isBreakpadEnabled;
 

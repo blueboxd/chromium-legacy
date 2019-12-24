@@ -1299,6 +1299,10 @@
     "label": "//ios/testing:ios_testing_unittests",
     "type": "raw",
   },
+  "openscreen_unittests": {
+    "label": "//chrome/browser/media/router:openscreen_unittests",
+    "type": "console_test_launcher",
+  },
   "ozone_gl_unittests": {
     "label": "//ui/ozone/gl:ozone_gl_unittests",
     "type": "console_test_launcher",

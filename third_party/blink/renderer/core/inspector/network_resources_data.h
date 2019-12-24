@@ -202,12 +202,6 @@ class NetworkResourcesData final
     scoped_refptr<EncodedFormData> post_data_;
   };
 
-  static NetworkResourcesData* Create(size_t total_buffer_size,
-                                      size_t resource_buffer_size) {
-    return MakeGarbageCollected<NetworkResourcesData>(total_buffer_size,
-                                                      resource_buffer_size);
-  }
-
   NetworkResourcesData(size_t total_buffer_size, size_t resource_buffer_size);
   ~NetworkResourcesData();
 

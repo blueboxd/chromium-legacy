@@ -255,8 +255,14 @@ class HeadlessWebContentsScreenshotWindowPositionTest
   }
 };
 
+#if defined(OS_LINUX) || defined(OS_WIN)
+// Flaky on Win/Linux: crbug.com/1036627
+DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_P(
+    HeadlessWebContentsScreenshotWindowPositionTest);
+#else
 HEADLESS_ASYNC_DEVTOOLED_TEST_P(
     HeadlessWebContentsScreenshotWindowPositionTest);
+#endif
 
 // Instantiate test case for both software and gpu compositing modes.
 INSTANTIATE_TEST_SUITE_P(HeadlessWebContentsScreenshotWindowPositionTests,
@@ -466,8 +472,15 @@ class HeadlessWebContentsPDFPageSizeRoundingTest
   }
 };
 
+#if defined(OS_WIN) || defined(OS_LINUX)
+// Flaky on Win/Linux: crbug.com/1036627
+DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_F(
+    HeadlessWebContentsPDFPageSizeRoundingTest);
+#else
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessWebContentsPDFPageSizeRoundingTest);
 #endif
+
+#endif  // BUILDFLAG(ENABLE_PRINTING)
 
 class HeadlessWebContentsSecurityTest
     : public HeadlessAsyncDevTooledBrowserTest,
@@ -963,7 +976,12 @@ class DontBlockWebContentsOpenTest : public WebContentsOpenTest {
   }
 };
 
+#if defined(OS_WIN) || defined(OS_LINUX)
+// Flaky on Win/Linux: crbug.com/1036627
+DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_F(DontBlockWebContentsOpenTest);
+#else
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(DontBlockWebContentsOpenTest);
+#endif
 
 class BlockWebContentsOpenTest : public WebContentsOpenTest {
  public:

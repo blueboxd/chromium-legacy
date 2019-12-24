@@ -6,7 +6,7 @@ This page is mostly out-of-date.*
 
 With [r20110](https://crrev.com/20110), Chromium on Linux can now sandbox its
 renderers using a `SUID` helper binary. This is one of
-[our layer-1 sandboxing solutions](linux_sandboxing.md).
+[our layer-1 sandboxing solutions](sandboxing.md).
 
 ## `SUID` helper executable
 
@@ -39,7 +39,7 @@ The `SUID` helper is responsible for the first two:
 
 In addition:
 
-*   The [Linux Zygote](linux_zygote.md) startup code sets the process to be
+*   The [Linux Zygote](zygote.md) startup code sets the process to be
     _undumpable_ using
     [prctl()](http://www.kernel.org/doc/man-pages/online/pages/man2/prctl.2.html).
     This stops sandboxed processes from being able to `ptrace()` each other.
@@ -123,7 +123,7 @@ Chromium binary somewhere else you need to modify this string.
 
 ## See also
 
-*   [LinuxSUIDSandboxDevelopment](linux_suid_sandbox_development.md)
-*   [LinuxSandboxing](linux_sandboxing.md)
+*   [LinuxSUIDSandboxDevelopment](suid_sandbox_development.md)
+*   [LinuxSandboxing](sandboxing.md)
 *   General information on Chromium sandboxing:
     https://dev.chromium.org/developers/design-documents/sandbox

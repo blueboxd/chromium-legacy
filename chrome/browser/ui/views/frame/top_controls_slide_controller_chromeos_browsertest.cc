@@ -1214,8 +1214,9 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
   }
 }
 
+// Flaky. https://crbug.com/1036570
 IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
-                       DisplayMetricsChangeWhileInProgress) {
+                       DISABLED_DisplayMetricsChangeWhileInProgress) {
   ToggleTabletMode();
   ASSERT_TRUE(GetTabletModeEnabled());
   EXPECT_TRUE(top_controls_slide_controller()->IsEnabled());

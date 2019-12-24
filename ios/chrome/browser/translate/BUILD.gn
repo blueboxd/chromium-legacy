@@ -125,11 +125,11 @@ source_set("eg_tests") {
     "//components/translate/core/common",
     "//components/translate/ios/browser",
     "//ios/chrome/app/strings:ios_strings_grit",
-    "//ios/chrome/browser",
+    "//ios/chrome/browser:chrome_url_constants",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/ui/popup_menu:constants",
-    "//ios/chrome/browser/ui/translate:legacy_translate",
-    "//ios/chrome/browser/ui/translate:translate_ui",
+    "//ios/chrome/browser/ui/translate:legacy_translate_constants",
+    "//ios/chrome/browser/ui/translate:translate_ui_constants",
     "//ios/chrome/browser/ui/util:util",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
@@ -152,8 +152,28 @@ source_set("eg2_tests") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = []
-  deps = []
+  sources = [
+    "translate_egtest.mm",
+  ]
+  deps = [
+    ":eg_test_support+eg2",
+    "//base/test:test_support",
+    "//components/strings:components_strings_grit",
+    "//components/translate/core/browser:browser",
+    "//components/translate/core/common:common",
+    "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/browser:chrome_url_constants",
+    "//ios/chrome/browser/ui/popup_menu:constants",
+    "//ios/chrome/browser/ui/translate:legacy_translate_constants",
+    "//ios/chrome/browser/ui/translate:translate_ui_constants",
+    "//ios/chrome/test/earl_grey:eg_test_support+eg2",
+    "//ios/testing/earl_grey:eg_test_support+eg2",
+    "//ios/third_party/earl_grey2:test_lib",
+    "//ios/web/public:public",
+    "//ios/web/public/test/http_server:http_server",
+    "//ui/base:base",
+    "//url:url",
+  ]
   libs = [ "UIKit.framework" ]
 }
 
@@ -183,7 +203,21 @@ source_set("eg_app_support+eg2") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = []
+  sources = [
+    "translate_app_interface.h",
+    "translate_app_interface.mm",
+  ]
+  deps = [
+    "//base:base",
+    "//components/translate/core/browser:browser",
+    "//components/translate/core/common:common",
+    "//components/translate/ios/browser:browser",
+    "//ios/chrome/browser/browser_state:browser_state",
+    "//ios/chrome/browser/translate:translate",
+    "//ios/chrome/test/app:test_support",
+    "//ios/chrome/test/fakes:fakes",
+    "//net:net",
+  ]
 }
 
 source_set("eg_test_support+eg2") {
@@ -193,8 +227,13 @@ source_set("eg_test_support+eg2") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = []
+  sources = [
+    "translate_app_interface.h",
+    "translate_app_interface_stub.mm",
+  ]
   deps = [
+    "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/testing/earl_grey:eg_test_support+eg2",
+    "//ios/third_party/earl_grey2:test_lib",
   ]
 }

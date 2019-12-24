@@ -142,7 +142,7 @@ Polymer({
 
   /** @private */
   isWindowSeparatorIndex_: function(index, separatorIndexes) {
-    return this.separatorIndexes.indexOf(index) != -1;
+    return this.separatorIndexes.indexOf(index) !== -1;
   },
 
   /**

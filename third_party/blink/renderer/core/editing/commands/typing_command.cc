@@ -663,7 +663,7 @@ void TypingCommand::InsertTextRunWithoutNewlines(const String& text,
                                                  EditingState* editing_state) {
   CompositeEditCommand* command;
   if (IsIncrementalInsertion()) {
-    command = InsertIncrementalTextCommand::Create(
+    command = MakeGarbageCollected<InsertIncrementalTextCommand>(
         GetDocument(), text,
         composition_type_ == kTextCompositionNone
             ? InsertIncrementalTextCommand::

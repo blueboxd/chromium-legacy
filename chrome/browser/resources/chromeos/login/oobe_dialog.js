@@ -5,7 +5,7 @@
 Polymer({
   is: 'oobe-dialog',
 
-  behaviors: [CrScrollableBehavior],
+  behaviors: [OobeI18nBehavior, CrScrollableBehavior],
 
   properties: {
     /**
@@ -73,6 +73,21 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /* The ID of the localized string to be used as title text when no "title"
+     * slot elements are specified.
+     */
+    titleKey: {
+      type: String,
+    },
+
+    /* The ID of the localized string to be used as subtitle text when no
+     * "subtitle" slot elements are specified.
+     */
+    subtitleKey: {
+      type: String,
+    },
+
   },
 
   focus: function() {

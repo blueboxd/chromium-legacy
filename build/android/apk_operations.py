@@ -104,6 +104,7 @@ def _GenerateBundleApks(info,
     minimal_sdk_version: When minimal=True, use this sdkVersion.
     mode: Build mode, either None, or one of app_bundle_utils.BUILD_APKS_MODES.
   """
+  logging.info('Generating .apks file')
   app_bundle_utils.GenerateBundleApks(
       info.bundle_path,
       # Store .apks file beside the .aab file by default so that it gets cached.
@@ -556,6 +557,56 @@ class _LogcatProcessor(object):
       'ParsedLine',
       ['date', 'invokation_time', 'pid', 'tid', 'priority', 'tag', 'message'])
 
+  class NativeStackSymbolizer(object):
+    """Buffers lines from native stacks and symbolizes them when done."""
+    # E.g.: #06 pc 0x0000d519 /apex/com.android.runtime/lib/libart.so
+    # E.g.: #01 pc 00180c8d  /data/data/.../lib/libbase.cr.so
+    _STACK_PATTERN = re.compile(r'\s*#\d+\s+(?:pc )?(0x)?[0-9a-f]{8,16}\s')
+
+    def __init__(self, stack_script_context, print_func):
+      # To symbolize native stacks, we need to pass all lines at once.
+      self._stack_script_context = stack_script_context
+      self._print_func = print_func
+      self._crash_lines_buffer = None
+
+    def _FlushLines(self):
+      """Prints queued lines after sending them through stack.py."""
+      crash_lines = self._crash_lines_buffer
+      self._crash_lines_buffer = None
+      with tempfile.NamedTemporaryFile() as f:
+        f.writelines(x[0].message + '\n' for x in crash_lines)
+        f.flush()
+        proc = self._stack_script_context.Popen(
+            input_file=f.name, stdout=subprocess.PIPE)
+        lines = proc.communicate()[0].splitlines()
+
+      for i, line in enumerate(lines):
+        parsed_line, dim = crash_lines[min(i, len(crash_lines) - 1)]
+        d = parsed_line._asdict()
+        d['message'] = line
+        parsed_line = _LogcatProcessor.ParsedLine(**d)
+        self._print_func(parsed_line, dim)
+
+    def AddLine(self, parsed_line, dim):
+      # Assume all lines from DEBUG are stacks.
+      # Also look for "stack-looking" lines to catch manual stack prints.
+      # It's important to not buffer non-stack lines because stack.py does not
+      # pass them through.
+      is_crash_line = parsed_line.tag == 'DEBUG' or (self._STACK_PATTERN.match(
+          parsed_line.message))
+
+      if is_crash_line:
+        if self._crash_lines_buffer is None:
+          self._crash_lines_buffer = []
+        self._crash_lines_buffer.append((parsed_line, dim))
+        return
+
+      if self._crash_lines_buffer is not None:
+        self._FlushLines()
+
+      self._print_func(parsed_line, dim)
+
+
   # Logcat tags for messages that are generally relevant but are not from PIDs
   # associated with the apk.
   _WHITELISTED_TAGS = {
@@ -580,11 +631,18 @@ class _LogcatProcessor(object):
       r'^WAIT_',
   ]))
 
-  def __init__(self, device, package_name, deobfuscate=None, verbose=False):
+  def __init__(self,
+               device,
+               package_name,
+               stack_script_context,
+               deobfuscate=None,
+               verbose=False):
     self._device = device
     self._package_name = package_name
     self._verbose = verbose
     self._deobfuscator = deobfuscate
+    self._native_stack_symbolizer = _LogcatProcessor.NativeStackSymbolizer(
+        stack_script_context, self._PrintParsedLine)
     # Process ID for the app's main process (with no :name suffix).
     self._primary_pid = None
     # Set of all Process IDs that belong to the app.
@@ -697,7 +755,7 @@ class _LogcatProcessor(object):
     # belong to the current run of the app. Process all of the buffered lines.
     if self._primary_pid:
       for args in self._initial_buffered_lines:
-        self._PrintParsedLine(*args)
+        self._native_stack_symbolizer.AddLine(*args)
     self._initial_buffered_lines = None
     self.nonce = None
 
@@ -744,40 +802,26 @@ class _LogcatProcessor(object):
     if owned_pid or self._verbose or (log.priority == 'F' or  # Java crash dump
                                       log.tag in self._WHITELISTED_TAGS):
       if nonce_found:
-        self._PrintParsedLine(log, not owned_pid)
+        self._native_stack_symbolizer.AddLine(log, not owned_pid)
       else:
         self._initial_buffered_lines.append((log, not owned_pid))
 
 
-def _RunLogcat(device, package_name, mapping_path, verbose):
-  deobfuscate = None
-  if mapping_path:
+def _RunLogcat(device, package_name, stack_script_context, deobfuscate,
+               verbose):
+  logcat_processor = _LogcatProcessor(
+      device, package_name, stack_script_context, deobfuscate, verbose)
+  device.RunShellCommand(['log', logcat_processor.nonce])
+  for line in device.adb.Logcat(logcat_format='threadtime'):
     try:
-      deobfuscate = deobfuscator.Deobfuscator(mapping_path)
-    except OSError:
-      sys.stderr.write('Error executing "bin/java_deobfuscate". '
-                       'Did you forget to build it?\n')
-      sys.exit(1)
-
-  try:
-    logcat_processor = _LogcatProcessor(
-        device, package_name, deobfuscate, verbose)
-    device.RunShellCommand(['log', logcat_processor.nonce])
-    for line in device.adb.Logcat(logcat_format='threadtime'):
-      try:
-        logcat_processor.ProcessLine(line)
-      except:
-        sys.stderr.write('Failed to process line: ' + line + '\n')
-        # Skip stack trace for the common case of the adb server being
-        # restarted.
-        if 'unexpected EOF' in line:
-          sys.exit(1)
-        raise
-  except KeyboardInterrupt:
-    pass  # Don't show stack trace upon Ctrl-C
-  finally:
-    if mapping_path:
-      deobfuscate.Close()
+      logcat_processor.ProcessLine(line)
+    except:
+      sys.stderr.write('Failed to process line: ' + line + '\n')
+      # Skip stack trace for the common case of the adb server being
+      # restarted.
+      if 'unexpected EOF' in line:
+        sys.exit(1)
+      raise
 
 
 def _GetPackageProcesses(device, package_name):
@@ -860,6 +904,68 @@ def _RunProfile(device, package_name, host_build_directory, pprof_out_path,
 
         pprof has many useful customization options; `pprof --help` for details.
         """ % {'s': pprof_out_path}))
+
+
+class _StackScriptContext(object):
+  """Maintains temporary files needed by stack.py."""
+
+  def __init__(self,
+               output_directory,
+               apk_path,
+               bundle_generation_info,
+               quiet=False):
+    self._output_directory = output_directory
+    self._apk_path = apk_path
+    self._bundle_generation_info = bundle_generation_info
+    self._staging_dir = None
+    self._quiet = quiet
+
+  def _CreateStaging(self):
+    # In many cases, stack decoding requires APKs to map trace lines to native
+    # libraries. Create a temporary directory, and either unpack a bundle's
+    # APKS into it, or simply symlink the standalone APK into it. This
+    # provides an unambiguous set of APK files for the stack decoding process
+    # to inspect.
+    logging.debug('Creating stack staging directory')
+    self._staging_dir = tempfile.mkdtemp()
+    bundle_generation_info = self._bundle_generation_info
+
+    if bundle_generation_info:
+      # TODO(wnwen): Use apk_helper instead.
+      _GenerateBundleApks(bundle_generation_info)
+      logging.debug('Extracting .apks file')
+      with zipfile.ZipFile(bundle_generation_info.bundle_apks_path, 'r') as z:
+        files_to_extract = [
+            f for f in z.namelist() if f.endswith('-master.apk')
+        ]
+        z.extractall(self._staging_dir, files_to_extract)
+    elif self._apk_path:
+      # Otherwise an incremental APK and an empty apks directory is correct.
+      output = os.path.join(self._staging_dir, os.path.basename(self._apk_path))
+      os.symlink(self._apk_path, output)
+
+  def Close(self):
+    if self._staging_dir:
+      logging.debug('Clearing stack staging directory')
+      shutil.rmtree(self._staging_dir)
+      self._staging_dir = None
+
+  def Popen(self, input_file=None, **kwargs):
+    if self._staging_dir is None:
+      self._CreateStaging()
+    stack_script = os.path.join(
+        constants.host_paths.ANDROID_PLATFORM_DEVELOPMENT_SCRIPTS_PATH,
+        'stack.py')
+    cmd = [
+        stack_script, '--output-directory', self._output_directory,
+        '--apks-directory', self._staging_dir
+    ]
+    if self._quiet:
+      cmd.append('--quiet')
+    if input_file:
+      cmd.append(input_file)
+    logging.info('Running stack.py')
+    return subprocess.Popen(cmd, **kwargs)
 
 
 def _GenerateAvailableDevicesMessage(devices):
@@ -1351,11 +1457,29 @@ To disable filtering, (but keep coloring), use --verbose.
   supports_multiple_devices = False
 
   def Run(self):
-    mapping = self.args.proguard_mapping_path
-    if self.args.no_deobfuscate:
-      mapping = None
-    _RunLogcat(self.devices[0], self.args.package_name, mapping,
-               bool(self.args.verbose_count))
+    deobfuscate = None
+    if self.args.proguard_mapping_path and not self.args.no_deobfuscate:
+      try:
+        deobfuscate = deobfuscator.Deobfuscator(self.args.proguard_mapping_path)
+      except OSError:
+        sys.stderr.write('Error executing "bin/java_deobfuscate". '
+                         'Did you forget to build it?\n')
+        sys.exit(1)
+
+    stack_script_context = _StackScriptContext(
+        self.args.output_directory,
+        self.args.apk_path,
+        self.bundle_generation_info,
+        quiet=True)
+    try:
+      _RunLogcat(self.devices[0], self.args.package_name, stack_script_context,
+                 deobfuscate, bool(self.args.verbose_count))
+    except KeyboardInterrupt:
+      pass  # Don't show stack trace upon Ctrl-C
+    finally:
+      stack_script_context.Close()
+      if deobfuscate:
+        deobfuscate.Close()
 
   def _RegisterExtraArgs(self, group):
     if self._from_wrapper_script:
@@ -1566,41 +1690,15 @@ class _StackCommand(_Command):
         help='File to decode. If not specified, stdin is processed.')
 
   def Run(self):
+    context = _StackScriptContext(self.args.output_directory,
+                                  self.args.apk_path,
+                                  self.bundle_generation_info)
     try:
-      # In many cases, stack decoding requires APKs to map trace lines to native
-      # libraries. Create a temporary directory, and either unpack a bundle's
-      # APKS into it, or simply symlink the standalone APK into it. This
-      # provides an unambiguous set of APK files for the stack decoding process
-      # to inspect.
-      apks_directory = tempfile.mkdtemp()
-
-      if self.is_bundle:
-        # TODO(wnwen): Use apk_helper instead.
-        _GenerateBundleApks(self.bundle_generation_info)
-        with zipfile.ZipFile(self.bundle_generation_info.bundle_apks_path,
-                             'r') as archive:
-          files_to_extract = [
-              f for f in archive.namelist() if f.endswith('-master.apk')
-          ]
-          archive.extractall(apks_directory, files_to_extract)
-      else:
-        output = os.path.join(apks_directory,
-                              os.path.basename(self.args.apk_path))
-        os.symlink(self.args.apk_path, output)
-
-      stack_script = os.path.join(
-          constants.host_paths.ANDROID_PLATFORM_DEVELOPMENT_SCRIPTS_PATH,
-          'stack.py')
-      stack_command = [
-          stack_script, '--output-directory', self.args.output_directory,
-          '--apks-directory', apks_directory
-      ]
-      if self.args.file:
-        stack_command.append(self.args.file)
-      subprocess.call(stack_command)
-
+      proc = context.Popen(input_file=self.args.file)
+      if proc.wait():
+        raise Exception('stack script returned {}'.format(proc.returncode))
     finally:
-      shutil.rmtree(apks_directory)
+      context.Close()
 
 
 # Shared commands for regular APKs and app bundles.

@@ -10,7 +10,7 @@
 Polymer({
   is: 'security-token-pin',
 
-  behaviors: [OobeDialogHostBehavior, I18nBehavior],
+  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
 
   properties: {
     /**

@@ -393,7 +393,7 @@ if (is_android) {
       "//base:jni_java",
       "//ui/android:ui_java",
     ]
-    java_files = [
+    sources = [
       "android/java/src/org/chromium/printing/PrintDocumentAdapterWrapper.java",
       "android/java/src/org/chromium/printing/PrintManagerDelegate.java",
       "android/java/src/org/chromium/printing/PrintManagerDelegateImpl.java",

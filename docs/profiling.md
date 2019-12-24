@@ -10,7 +10,7 @@ These are instructions for collecting a CPU profile of chromium. All of the prof
 
 This doc is intended to be an authoritative one-stop resource for profiling chromium. At the time of writing, there are a number of existing docs with profiling instructions, in varying states of obsolescence:
 
-* [./linux_profiling.md](./linux_profiling.md)
+* [./linux/profiling.md](./linux/profiling.md)
 * [./profiling_content_shell_on_android.md](./profiling_content_shell_on_android.md)
 * https://www.chromium.org/developers/profiling-chromium-and-webkit
 * https://www.chromium.org/developers/telemetry/profiling

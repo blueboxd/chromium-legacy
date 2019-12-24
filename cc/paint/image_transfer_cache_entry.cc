@@ -297,6 +297,9 @@ bool ClientImageTransferCacheEntry::Serialize(base::span<uint8_t> data) const {
   writer.Write(pixmap_->width());
   writer.Write(pixmap_->height());
   writer.Write(static_cast<uint32_t>(needs_mips_ ? 1 : 0));
+
+  DCHECK_EQ(pixmap_->rowBytes(), pixmap_->info().minRowBytes());
+
   size_t pixmap_size = pixmap_->computeByteSize();
   if (pixmap_size == SIZE_MAX)
     return false;
@@ -414,7 +417,8 @@ bool ServiceImageTransferCacheEntry::Deserialize(
       uint32_t max_size = static_cast<uint32_t>(context_->maxTextureSize());
       // We compute this for each plane in case a malicious renderer tries to
       // send very large U or V planes.
-      fits_on_gpu_ = plane_width <= max_size && plane_height <= max_size;
+      fits_on_gpu_ = plane_stride <= max_size && plane_width <= max_size &&
+                     plane_height <= max_size;
       if (!fits_on_gpu_ || plane_width == 0 || plane_height == 0 ||
           plane_stride == 0)
         return false;

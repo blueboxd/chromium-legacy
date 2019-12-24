@@ -30,6 +30,9 @@
         "browse:chrome:newtab": {
             "DEFAULT": "system_health_mobile_056.wprgo"
         },
+        "browse:chrome:newtab:2019": {
+            "DEFAULT": "system_health_mobile_1bc8137e59.wprgo"
+        },
         "browse:chrome:omnibox": {
             "DEFAULT": "system_health_mobile_056.wprgo"
         },

@@ -69,7 +69,7 @@
   return NO;
 }
 
-+ (BOOL)usesChildViewController {
++ (BOOL)showsOverlayUsingChildViewController {
   return YES;
 }
 

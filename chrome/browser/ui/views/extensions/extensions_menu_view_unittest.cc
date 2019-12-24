@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/extension.h"
@@ -267,6 +268,28 @@ TEST_F(ExtensionsMenuViewUnitTest, PinnedExtensionAppearsInAnotherWindow) {
   // Brand-new window also gets the pinned extension.
   browser3.extensions_container()->IsActionVisibleOnToolbar(
       menu_item->view_controller_for_testing());
+}
+
+TEST_F(ExtensionsMenuViewUnitTest, PinnedExtensionRemovedWhenDisabled) {
+  constexpr char kName[] = "Test Name";
+  const extensions::ExtensionId id = AddSimpleExtension(kName)->id();
+
+  {
+    ExtensionsMenuItemView* menu_item = GetOnlyMenuItem();
+    ASSERT_TRUE(menu_item);
+    ClickPinButton(menu_item);
+  }
+
+  extension_service()->DisableExtension(
+      id, extensions::disable_reason::DISABLE_USER_ACTION);
+
+  ASSERT_EQ(0u, extensions_menu()->extensions_menu_items_for_testing().size());
+  EXPECT_THAT(GetPinnedExtensionNames(), testing::IsEmpty());
+
+  extension_service()->EnableExtension(id);
+
+  ASSERT_EQ(1u, extensions_menu()->extensions_menu_items_for_testing().size());
+  EXPECT_THAT(GetPinnedExtensionNames(), testing::ElementsAre(kName));
 }
 
 TEST_F(ExtensionsMenuViewUnitTest, ReorderPinnedExtensions) {

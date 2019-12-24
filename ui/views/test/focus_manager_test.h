@@ -55,7 +55,7 @@ class FocusManagerTest : public ViewsTestBase, public WidgetDelegate {
   DISALLOW_COPY_AND_ASSIGN(FocusManagerTest);
 };
 
-typedef std::pair<View*, View*> ViewPair;
+using ViewPair = std::pair<View*, View*>;
 
 // Use to record focus change notifications.
 class TestFocusChangeListener : public FocusChangeListener {

@@ -13,6 +13,10 @@ const SyncPrefsIndividualDataTypes = [
   'osAppsSynced',
   'osPreferencesSynced',
   'wifiConfigurationsSynced',
+
+  // Note: Wallpaper uses a different naming scheme because it's stored as its
+  // own separate pref instead of through the sync service.
+  'wallpaperEnabled',
 ];
 
 /**
@@ -111,6 +115,11 @@ Polymer({
         this.set(['osSyncPrefs', dataType], false);
       }
     }
+
+    // If apps are not registered or synced, force wallpaper off.
+    if (!this.osSyncPrefs.osAppsRegistered || !this.osSyncPrefs.osAppsSynced) {
+      this.set('osSyncPrefs.wallpaperEnabled', false);
+    }
   },
 
   /** @private */
@@ -159,6 +168,18 @@ Polymer({
   },
 
   /**
+   * Handler for changes to the apps sync state; apps have a special handler
+   * instead of relying on onSingleSyncDataTypeChanged_() because wallpaper has
+   * a dependency on apps.
+   * @private
+   */
+  onAppsSyncedChanged_: function() {
+    this.set('osSyncPrefs.wallpaperEnabled', this.osSyncPrefs.osAppsSynced);
+
+    this.onSingleSyncDataTypeChanged_();
+  },
+
+  /**
    * Sends the osSyncPrefs dictionary back to the C++ handler.
    * @private
    */
@@ -184,6 +205,16 @@ Polymer({
     // Hide everything until the initial prefs are received from C++,
     // otherwise there is a visible layout reshuffle on first load.
     return !this.osSyncPrefs;
+  },
+
+  /**
+   * @return {boolean} Whether the wallpaper checkbox and label should be
+   *     disabled.
+   * @private
+   */
+  shouldWallpaperSyncSectionBeDisabled_: function() {
+    return this.areDataTypeTogglesDisabled_ || !this.osSyncPrefs ||
+        !this.osSyncPrefs.osAppsSynced;
   },
 });
 })();

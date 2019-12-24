@@ -10,7 +10,7 @@
 Polymer({
   is: 'arc-tos-root',
 
-  behaviors: [OobeDialogHostBehavior],
+  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
 
   properties: {
     /**

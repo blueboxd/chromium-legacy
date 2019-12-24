@@ -23,6 +23,9 @@
   <message name="IDS_OS_SETTINGS_SYNC_OS_SETTINGS_CHECKBOX_LABEL" desc="Label for the checkbox which enables syncing of OS settings across devices.">
     Settings
   </message>
+  <message name="IDS_OS_SETTINGS_WALLPAPER_CHECKBOX_LABEL" desc="Label for the checkbox which enables syncing of wallpaper across devices.">
+    Wallpaper
+  </message>
 
   <!-- Languages and Inputs (OS settings) -->
   <message name="IDS_OS_SETTINGS_LANGUAGES_AND_INPUT_PAGE_TITLE" desc="Name of the OS settings page which displays language method preferences.">

@@ -40,7 +40,7 @@ ObservableWebView::ObservableWebView(content::BrowserContext* browser_context,
                                      WebDialogDelegate* delegate)
     : WebView(browser_context), delegate_(delegate) {}
 
-ObservableWebView::~ObservableWebView() {}
+ObservableWebView::~ObservableWebView() = default;
 
 void ObservableWebView::DidFinishLoad(
     content::RenderFrameHost* render_frame_host,

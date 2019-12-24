@@ -1281,11 +1281,24 @@ gfx::ICCProfile GetICCProfileForMonitor(int monitor) {
 }
 
 bool IsSyncExtensionAvailable() {
+// Chrome for ChromeOS can be run with X11 on a Linux desktop. In this case,
+// NotifySwapAfterResize is never called as the compositor does not notify about
+// swaps after resize. Thus, simply disable usage of XSyncCounter on ChromeOS
+// builds.
+//
+// TODO(https://crbug.com/1036285): Also, disable sync extension for all ozone
+// builds as long as our EGL impl for Ozone/X11 is not mature enough and we do
+// not receive swap completions on time, which results in weird resize behaviour
+// as X Server waits for the XSyncCounter changes.
+#if defined(OS_CHROMEOS) || defined(USE_OZONE)
+  return false;
+#else
   auto* display = gfx::GetXDisplay();
   int unused;
   static bool result = XSyncQueryExtension(display, &unused, &unused) &&
                        XSyncInitialize(display, &unused, &unused);
   return result;
+#endif
 }
 
 SkColorType ColorTypeForVisual(void* visual) {

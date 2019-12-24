@@ -141,8 +141,7 @@ void ArcAppContextMenu::ShowPackageInfo() {
             << app_id() << ".";
     return;
   }
-  if (base::FeatureList::IsEnabled(chromeos::features::kSplitSettings) &&
-      base::FeatureList::IsEnabled(features::kAppManagement)) {
+  if (base::FeatureList::IsEnabled(features::kAppManagement)) {
     chrome::ShowAppManagementPage(profile(), app_id());
     base::UmaHistogramEnumeration(
         kAppManagementEntryPointsHistogramName,

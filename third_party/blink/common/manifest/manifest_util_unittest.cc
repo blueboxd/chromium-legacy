@@ -4,6 +4,7 @@
 
 #include "third_party/blink/public/common/manifest/manifest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "url/gurl.h"
 
 namespace blink {

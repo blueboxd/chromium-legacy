@@ -329,8 +329,8 @@ bool LayoutManagerBase::PropagateViewVisibilitySet(View* host,
 
 void LayoutManagerBase::PropagateInstalled(View* host) {
   host_view_ = host;
-  for (auto it = host->children().begin(); it != host->children().end(); ++it) {
-    child_infos_.emplace(*it, ChildInfo{(*it)->GetVisible(), false});
+  for (auto* it : host->children()) {
+    child_infos_.emplace(it, ChildInfo{it->GetVisible(), false});
   }
 
   for (auto& owned_layout : owned_layouts_)

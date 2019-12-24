@@ -25,7 +25,7 @@ var FingerprintResultType = {
 Polymer({
   is: 'fingerprint-setup',
 
-  behaviors: [I18nBehavior, OobeDialogHostBehavior],
+  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
 
   properties: {
     /**

@@ -242,7 +242,7 @@ import("//chrome/android/features/foo/public/foo_public_java_sources.gni")
 ...
 android_library("chrome_java") {
   ...
-  java_files += foo_public_java_sources
+  sources += foo_public_java_sources
 }
 ...
 ```
@@ -256,7 +256,7 @@ import("//build/config/android/rules.gni")
 
 android_library("java") {
   # Define like ordinary Java Android library.
-  java_files = [
+  sources = [
     "java/src/org/chromium/chrome/features/foo/FooImpl.java",
     # Add other Java classes that should go into the Foo DFM here.
   ]

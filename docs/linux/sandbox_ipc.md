@@ -15,7 +15,7 @@ file-descriptor based system. See `sandbox/linux/services/libc_interceptor.cc`.
 Thus we define a small IPC system which doesn't depend on anything but `base`
 and which can make synchronous requests to the browser process.
 
-The [zygote](linux_zygote.md) starts with a `UNIX DGRAM` socket installed in a
+The [zygote](zygote.md) starts with a `UNIX DGRAM` socket installed in a
 well known file descriptor slot (currently 4). Requests can be written to this
 socket which are then processed on a special "sandbox IPC" process. Requests
 have a magic `int` at the beginning giving the type of the request.

@@ -25,13 +25,6 @@ class PeriodicSyncManager final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static PeriodicSyncManager* Create(
-      ServiceWorkerRegistration* registration,
-      scoped_refptr<base::SequencedTaskRunner> task_runner) {
-    return MakeGarbageCollected<PeriodicSyncManager>(registration,
-                                                     std::move(task_runner));
-  }
-
   PeriodicSyncManager(ServiceWorkerRegistration* registration,
                       scoped_refptr<base::SequencedTaskRunner> task_runner);
 

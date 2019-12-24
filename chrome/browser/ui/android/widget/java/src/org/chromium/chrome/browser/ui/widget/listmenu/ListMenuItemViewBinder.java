@@ -10,7 +10,7 @@ import android.support.v7.content.res.AppCompatResources;
 import android.view.View;
 
 import org.chromium.chrome.browser.ui.widget.R;
-import org.chromium.chrome.browser.ui.widget.text.TextViewWithCompoundDrawables;
+import org.chromium.components.browser_ui.widget.text.TextViewWithCompoundDrawables;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 

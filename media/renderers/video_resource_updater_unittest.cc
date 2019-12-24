@@ -15,6 +15,7 @@
 #include "components/viz/test/fake_output_surface.h"
 #include "components/viz/test/test_gles2_interface.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -177,8 +178,7 @@ class VideoResourceUpdaterTest : public testing::Test {
     const int kDimension = 10;
     gfx::Size size(kDimension, kDimension);
 
-    gpu::Mailbox mailbox;
-    mailbox.name[0] = 51;
+    auto mailbox = gpu::Mailbox::GenerateForSharedImage();
 
     gpu::MailboxHolder mailbox_holders[media::VideoFrame::kMaxPlanes] = {
         gpu::MailboxHolder(mailbox, kMailboxSyncToken, target)};

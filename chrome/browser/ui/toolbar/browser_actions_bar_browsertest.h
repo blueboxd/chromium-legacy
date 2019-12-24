@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 
 namespace extensions {
@@ -49,6 +50,8 @@ class BrowserActionsBarBrowserTest : public extensions::ExtensionBrowserTest {
   }
 
  private:
+  base::test::ScopedFeatureList feature_list_;
+
   std::unique_ptr<BrowserActionTestUtil> browser_actions_bar_;
 
   // The associated toolbar model, weak.

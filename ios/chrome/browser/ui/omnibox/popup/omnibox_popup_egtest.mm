@@ -233,7 +233,13 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       assertWithMatcher:grey_nil()];
 }
 
-- (void)testCloseNTPWhenSwitching {
+// TODO(crbug.com/1037651): Enable for EG2.
+#if defined(CHROME_EARL_GREY_2)
+#define MAYBE_testCloseNTPWhenSwitching DISABLED_testCloseNTPWhenSwitching
+#else
+#define MAYBE_testCloseNTPWhenSwitching testCloseNTPWhenSwitching
+#endif
+- (void)MAYBE_testCloseNTPWhenSwitching {
   // Open the first page.
   GURL URL1 = self.testServer->GetURL(kPage1URL);
   [ChromeEarlGrey loadURL:URL1];

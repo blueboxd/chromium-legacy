@@ -547,7 +547,8 @@ bool IsLocaleNameTranslated(const char* locale,
 
 base::string16 GetDisplayNameForLocale(const std::string& locale,
                                        const std::string& display_locale,
-                                       bool is_for_ui) {
+                                       bool is_for_ui,
+                                       bool disallow_default) {
   std::string locale_code = locale;
   // Internally, we use the language code of zh-CN and zh-TW, but we want the
   // display names to be Chinese (Simplified) and Chinese (Traditional) instead
@@ -594,6 +595,8 @@ base::string16 GetDisplayNameForLocale(const std::string& locale,
           locale_code.c_str(), display_locale.c_str(),
           base::WriteInto(&display_name, kBufferSize), kBufferSize - 1, &error);
     }
+    if (disallow_default && U_USING_DEFAULT_WARNING == error)
+      return base::string16();
     DCHECK(U_SUCCESS(error));
     display_name.resize(actual_size);
   }

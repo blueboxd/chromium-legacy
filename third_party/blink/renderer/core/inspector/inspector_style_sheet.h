@@ -241,8 +241,6 @@ class InspectorStyleSheet : public InspectorStyleSheetBase {
 
 class InspectorStyleSheetForInlineStyle final : public InspectorStyleSheetBase {
  public:
-  static InspectorStyleSheetForInlineStyle* Create(Element*, Listener*);
-
   InspectorStyleSheetForInlineStyle(Element*, Listener*);
   void DidModifyElementAttribute();
   bool SetText(const String&, ExceptionState&) override;

@@ -67,7 +67,7 @@ KeyMap.KEYMAP_PATH = 'background/keymaps/';
  * @const
  */
 KeyMap.AVAILABLE_MAP_INFO = {
-  'keymap_next': {'file': 'next_keymap.json'}
+  'keymap_next': {'file': 'default_keymap.json'}
 };
 
 

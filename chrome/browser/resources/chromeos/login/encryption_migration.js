@@ -24,7 +24,7 @@ var EncryptionMigrationUIState = {
 Polymer({
   is: 'encryption-migration',
 
-  behaviors: [I18nBehavior, OobeDialogHostBehavior],
+  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
 
   properties: {
     /**

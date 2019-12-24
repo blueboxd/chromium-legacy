@@ -31,7 +31,7 @@ Checkout, Build, & Run
 Chromium](https://www.chromium.org/developers/how-tos/get-the-code).
 Googlers should checkout chromium source code as described here:
 [Building Chromium on a corporate Linux
-workstation](https://companydoc.corp.google.com/company/teams/chrome/linux_build_instructions.md?cl=head)
+workstation](https://companydoc.corp.google.com/company/teams/chrome/build_instructions.md?cl=head)
 
 We want to build on linux on top of Ozone with gbm platform. The
 following instructions builds chromium targets along with minigbm

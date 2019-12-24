@@ -178,10 +178,7 @@ class HelpMenuModel : public ui::SimpleMenuModel {
     int help_string_id = IDS_HELP_PAGE;
 #endif
 #if defined(OS_CHROMEOS)
-    if (base::FeatureList::IsEnabled(chromeos::features::kSplitSettings))
-      AddItem(IDC_ABOUT, l10n_util::GetStringUTF16(IDS_ABOUT));
-    else
-      AddItem(IDC_ABOUT, l10n_util::GetStringUTF16(IDS_ABOUT_OS));
+    AddItem(IDC_ABOUT, l10n_util::GetStringUTF16(IDS_ABOUT));
 #else
     AddItem(IDC_ABOUT, l10n_util::GetStringUTF16(IDS_ABOUT));
 #endif
@@ -822,10 +819,7 @@ void AppMenuModel::Build() {
   AddSubMenuWithStringId(IDC_HELP_MENU, IDS_HELP_MENU, sub_menus_.back().get());
 #else
 #if defined(OS_CHROMEOS)
-  if (base::FeatureList::IsEnabled(chromeos::features::kSplitSettings))
-    AddItem(IDC_ABOUT, l10n_util::GetStringUTF16(IDS_ABOUT));
-  else
-    AddItem(IDC_ABOUT, l10n_util::GetStringUTF16(IDS_ABOUT_OS));
+  AddItem(IDC_ABOUT, l10n_util::GetStringUTF16(IDS_ABOUT));
 #else
   AddItem(IDC_ABOUT, l10n_util::GetStringUTF16(IDS_ABOUT));
 #endif

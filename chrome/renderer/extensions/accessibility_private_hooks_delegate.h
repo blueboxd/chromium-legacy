@@ -32,7 +32,7 @@ class AccessibilityPrivateHooksDelegate : public APIBindingHooksDelegate {
 
  private:
   // Method handlers:
-  APIBindingHooks::RequestResult HandleGetDisplayLanguage(
+  APIBindingHooks::RequestResult HandleGetDisplayNameForLocale(
       ScriptContext* script_context,
       const std::vector<v8::Local<v8::Value>>& parsed_arguments);
   DISALLOW_COPY_AND_ASSIGN(AccessibilityPrivateHooksDelegate);

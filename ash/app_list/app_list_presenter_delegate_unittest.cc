@@ -137,7 +137,15 @@ class AppListPresenterDelegateZeroStateTest
   bool TestMouseEventParam() { return GetParam(); }
 
   gfx::Point GetPointOutsideSearchbox() {
-    return GetAppListView()->GetBoundsInScreen().origin();
+    // Ensures that the point satisfies the following conditions:
+    // (1) The point is within AppListView.
+    // (2) The point is outside of the search box.
+    // (3) The touch event on the point should not be consumed by the handler
+    // for back gesture.
+    return GetAppListView()
+        ->search_box_view()
+        ->GetBoundsInScreen()
+        .bottom_right();
   }
 
   gfx::Point GetPointInsideSearchbox() {

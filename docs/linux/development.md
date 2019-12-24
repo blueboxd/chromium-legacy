@@ -7,7 +7,7 @@ Please join us on IRC for the most up-to-date development discussion:
 
 ## Checkout and Build
 
-See the [Linux build instructions](linux_build_instructions.md).
+See the [Linux build instructions](build_instructions.md).
 
 ## What Needs Work
 
@@ -37,8 +37,8 @@ See [Contributing code](contributing.md).
 
 ## Debugging
 
-See [Linux debugging](linux_debugging.md).
+See [Linux debugging](debugging.md).
 
 ## Documents
 
-[Linux Graphics Pipeline](linux_graphics_pipeline.md)
+[Linux Graphics Pipeline](graphics_pipeline.md)

@@ -92,7 +92,7 @@ Polymer({
    * @private
    */
   searchTermChanged_: function() {
-    if (this.searchField.getValue() != this.searchTerm) {
+    if (this.searchField.getValue() !== this.searchTerm) {
       this.searchField.showAndFocus();
       this.searchField.setValue(this.searchTerm);
     }

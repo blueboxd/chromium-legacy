@@ -18,6 +18,22 @@ message WebAppIconInfoProto {
   optional string url = 2;
 }
 
+// A mapping between a MIME type and a set of file extensions for a file handler
+// "accept" entry. See chrome/browser/web_applications/web_app.h for details.
+message WebAppFileHandlerAcceptProto {
+  required string mimetype = 1;
+  repeated string file_extensions = 2;
+}
+
+// A file handler "action" associated with a set of "accept" entries, each of
+// which specifies a MIME type and corresponding set of file extensions that the
+// handler can handle. See chrome/browser/web_applications/web_app.h for
+// details.
+message WebAppFileHandlerProto {
+  required string action = 1;
+  repeated WebAppFileHandlerAcceptProto accept = 2;
+}
+
 // A set to track simultaneous installs and uninstalls from multiple install
 // sources.
 message SourcesProto {
@@ -64,4 +80,6 @@ message WebAppProto {
   repeated WebAppIconInfoProto icon_infos = 10;
   // A list of icon sizes we successfully downloaded to store on disk.
   repeated int32 downloaded_icon_sizes = 11;
+  // A list of file handlers.
+  repeated WebAppFileHandlerProto file_handlers = 12;
 }

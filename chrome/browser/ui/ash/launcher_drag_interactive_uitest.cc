@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/test/base/perf/drag_event_generator.h"
 #include "chrome/test/base/perf/performance_test.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/display/display.h"
@@ -89,8 +90,9 @@ class LauncherDragTest : public LauncherDragClamshellModeTest,
     // Drag from top to close app list in tablet mode is disabled if
     // kDragFromShelfToHomeOrOverview feature is enabled.
     if (tablet_mode_) {
-      scoped_features_.InitAndDisableFeature(
-          ash::features::kDragFromShelfToHomeOrOverview);
+      scoped_features_.InitWithFeatures(
+          {}, {ash::features::kDragFromShelfToHomeOrOverview,
+               chromeos::features::kShelfHotseat});
     }
   }
   ~LauncherDragTest() override = default;

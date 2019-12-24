@@ -145,7 +145,7 @@ if (is_android) {
       "//third_party/android_sdk:android_gcm_java",
     ]
 
-    java_files = [
+    sources = [
       "src/java/com/google/ipc/invalidation/common/BaseCommonInvalidationConstants.java",
       "src/java/com/google/ipc/invalidation/common/BuildConstants.java",
       "src/java/com/google/ipc/invalidation/common/DigestFunction.java",

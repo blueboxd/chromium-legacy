@@ -9,11 +9,6 @@
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
-// The a11y identifier for the translate infobar's language selection menu.
-extern NSString* const kLanguageSelectorPopupMenuId;
-// The a11y identifier for the translate infobar's translate options menu.
-extern NSString* const kTranslateOptionsPopupMenuId;
-
 @protocol SnackbarCommands;
 class WebStateList;
 

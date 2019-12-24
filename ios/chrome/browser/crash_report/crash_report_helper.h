@@ -7,6 +7,10 @@
 
 @class NSString;
 
+namespace ios {
+class ChromeBrowserState;
+}  // namespace ios
+
 namespace web {
 class WebState;
 }  // namespace web
@@ -41,6 +45,17 @@ void StopMonitoringTabStateForWebStateList(WebStateList* web_state_list);
 // Clear any state about the urls loaded in the given WebStateList; this should
 // be called when the WebStateList is deactivated.
 void ClearStateForWebStateList(WebStateList* web_state_list);
+
+// Starts listening for breadcrumbs logged to |browser_state|'s
+// BreadcrumbManagerKeyedService. Collected breadcrumbs will be attached to
+// crash reports.
+void MonitorBreadcrumbsForBrowserState(ios::ChromeBrowserState* browser_state);
+
+// Stops listening for breadcrumbs logged to |browser_state|'s
+// BreadcrumbManagerKeyedService.
+void StopMonitoringBreadcrumbsForBrowserState(
+    ios::ChromeBrowserState* browser_state);
+
 }  // namespace breakpad
 
 #endif  // IOS_CHROME_BROWSER_CRASH_REPORT_CRASH_REPORT_HELPER_H_

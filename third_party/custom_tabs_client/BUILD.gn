@@ -20,7 +20,7 @@ android_resources("custom_tabs_support_resources") {
 }
 
 android_apk("custom_tabs_client_example_apk") {
-  java_files = [
+  sources = [
     "src/Application/src/main/java/org/chromium/customtabsclient/BottomBarManager.java",
     "src/Application/src/main/java/org/chromium/customtabsclient/BrowserActionsReceiver.java",
     "src/Application/src/main/java/org/chromium/customtabsclient/MainActivity.java",
@@ -42,11 +42,11 @@ android_apk("custom_tabs_client_example_apk") {
 }
 
 android_library("custom_tabs_client_shared_java") {
-  java_files = [
+  sources = [
     "src/shared/src/main/java/org/chromium/customtabsclient/shared/CustomTabsHelper.java",
     "src/shared/src/main/java/org/chromium/customtabsclient/shared/KeepAliveService.java",
-    "src/shared/src/main/java/org/chromium/customtabsclient/shared/ServiceConnectionCallback.java",
     "src/shared/src/main/java/org/chromium/customtabsclient/shared/ServiceConnection.java",
+    "src/shared/src/main/java/org/chromium/customtabsclient/shared/ServiceConnectionCallback.java",
   ]
 
   deps = [
@@ -56,7 +56,19 @@ android_library("custom_tabs_client_shared_java") {
 }
 
 android_library("custom_tabs_support_java") {
-  java_files = [
+  sources = [
+    "src/customtabs/src/android/support/customtabs/CustomTabColorSchemeParams.java",
+    "src/customtabs/src/android/support/customtabs/CustomTabsCallback.java",
+    "src/customtabs/src/android/support/customtabs/CustomTabsClient.java",
+    "src/customtabs/src/android/support/customtabs/CustomTabsIntent.java",
+    "src/customtabs/src/android/support/customtabs/CustomTabsService.java",
+    "src/customtabs/src/android/support/customtabs/CustomTabsServiceConnection.java",
+    "src/customtabs/src/android/support/customtabs/CustomTabsSession.java",
+    "src/customtabs/src/android/support/customtabs/CustomTabsSessionToken.java",
+    "src/customtabs/src/android/support/customtabs/PostMessageBackend.java",
+    "src/customtabs/src/android/support/customtabs/PostMessageService.java",
+    "src/customtabs/src/android/support/customtabs/PostMessageServiceConnection.java",
+    "src/customtabs/src/android/support/customtabs/TrustedWebUtils.java",
     "src/customtabs/src/android/support/customtabs/browseractions/BrowserActionItem.java",
     "src/customtabs/src/android/support/customtabs/browseractions/BrowserActionsFallbackMenuAdapter.java",
     "src/customtabs/src/android/support/customtabs/browseractions/BrowserActionsFallbackMenuDialog.java",
@@ -67,20 +79,8 @@ android_library("custom_tabs_support_java") {
     "src/customtabs/src/android/support/customtabs/browseractions/BrowserServiceImageReadTask.java",
     "src/customtabs/src/android/support/customtabs/trusted/TrustedWebActivityBuilder.java",
     "src/customtabs/src/android/support/customtabs/trusted/TrustedWebActivityService.java",
-    "src/customtabs/src/android/support/customtabs/trusted/TrustedWebActivityServiceWrapper.java",
     "src/customtabs/src/android/support/customtabs/trusted/TrustedWebActivityServiceConnectionManager.java",
-    "src/customtabs/src/android/support/customtabs/CustomTabsCallback.java",
-    "src/customtabs/src/android/support/customtabs/CustomTabsClient.java",
-    "src/customtabs/src/android/support/customtabs/CustomTabsIntent.java",
-    "src/customtabs/src/android/support/customtabs/CustomTabsService.java",
-    "src/customtabs/src/android/support/customtabs/CustomTabsServiceConnection.java",
-    "src/customtabs/src/android/support/customtabs/CustomTabsSession.java",
-    "src/customtabs/src/android/support/customtabs/CustomTabsSessionToken.java",
-    "src/customtabs/src/android/support/customtabs/CustomTabColorSchemeParams.java",
-    "src/customtabs/src/android/support/customtabs/PostMessageBackend.java",
-    "src/customtabs/src/android/support/customtabs/PostMessageService.java",
-    "src/customtabs/src/android/support/customtabs/PostMessageServiceConnection.java",
-    "src/customtabs/src/android/support/customtabs/TrustedWebUtils.java",
+    "src/customtabs/src/android/support/customtabs/trusted/TrustedWebActivityServiceWrapper.java",
   ]
   deps = [
     ":custom_tabs_support_resources",

@@ -118,14 +118,6 @@ SelectionInDOMTree ComputeSelectionForInsertion(
 
 }  // anonymous namespace
 
-InsertIncrementalTextCommand* InsertIncrementalTextCommand::Create(
-    Document& document,
-    const String& text,
-    RebalanceType rebalance_type) {
-  return MakeGarbageCollected<InsertIncrementalTextCommand>(document, text,
-                                                            rebalance_type);
-}
-
 InsertIncrementalTextCommand::InsertIncrementalTextCommand(
     Document& document,
     const String& text,

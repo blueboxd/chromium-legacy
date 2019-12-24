@@ -2314,57 +2314,6 @@ TEST_F('ChromeVoxBackgroundTest', 'NoRepeatTitle', function() {
       });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'NavigationByParagraphTest', function() {
-  var mockFeedback = this.createMockFeedback();
-  this.runWithLoadedTree(
-      `
-    <button>Start at top</button>
-    <p>Visit text inside paragraph tags.</p>
-    Skip text not enclosed by paragraph tags.
-    <p>A multiline paragraph<br>with boring text<br></p>
-    <a href="#">We should skip links</a>
-    <p>Visit me too.<p>
-    <div>Skip elements not explicitly labeled as paragraphs.</div>
-  `,
-      function(root) {
-        mockFeedback.call(doCmd('jumpToTop'))
-            .call(doCmd('nextParagraph'))
-            .expectSpeech('Visit text inside paragraph tags.')
-            .call(doCmd('nextParagraph'))
-            .expectSpeech('A multiline paragraph')
-            .call(doCmd('nextParagraph'))
-            .expectSpeech('Visit me too.')
-            .call(doCmd('nextParagraph'))
-            .expectSpeech('Visit text inside paragraph tags.')
-            .call(doCmd('previousParagraph'))
-            .expectSpeech('Visit me too.')
-            .call(doCmd('previousParagraph'))
-            .expectSpeech('A multiline paragraph')
-            .call(doCmd('nextObject'))
-            .expectSpeech('with boring text')
-            // Ensure we go to the previous paragraph, not the top of the
-            // current one.
-            .call(doCmd('previousParagraph'))
-            .expectSpeech('Visit text inside paragraph tags.')
-            .replay();
-      });
-});
-
-TEST_F('ChromeVoxBackgroundTest', 'NoParagraphTest', function() {
-  var mockFeedback = this.createMockFeedback();
-  this.runWithLoadedTree(
-      `
-  <button>Click me</button>
-  `,
-      function(root) {
-        mockFeedback.call(doCmd('nextParagraph'))
-            .expectSpeech('No next paragraph.')
-            .call(doCmd('previousParagraph'))
-            .expectSpeech('No previous paragraph.');
-        mockFeedback.replay();
-      });
-});
-
 TEST_F('ChromeVoxBackgroundTest', 'PhoneticsAndCommands', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(

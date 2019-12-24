@@ -388,7 +388,8 @@ TEST_F(
                 // with high enough probability. We fall back on node-level
                 // detected language, which is 'en-us'.
                 .expectSpeechWithLanguage(
-                    'en-us', 'English: It\'s a pleasure to meet you. ')
+                    'en-us',
+                    'English (United States): It\'s a pleasure to meet you. ')
                 .expectSpeechWithLanguage(
                     'ja', '日本語: どうぞよろしくお願いします.');
             mockFeedback.replay();
@@ -705,7 +706,7 @@ TEST_F('ChromeVoxLanguageSwitchingTest', 'DefaultToUILanguageTest', function() {
             .expectSpeechWithLanguage(
                 'ja', '日本語: どうぞよろしくお願いします')
             .call(doCmd('nextObject'))
-            .expectSpeechWithLanguage('en-us', 'English: Test')
+            .expectSpeechWithLanguage('en-us', 'English (United States): Test')
             .call(doCmd('nextObject'))
             .expectSpeechWithLanguage('en-us', 'Yikes');
         mockFeedback.replay();

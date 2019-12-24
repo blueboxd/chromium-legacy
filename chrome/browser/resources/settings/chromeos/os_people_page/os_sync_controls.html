@@ -71,7 +71,7 @@
         </div>
         <cr-toggle id="osAppsControl"
             checked="{{osSyncPrefs.osAppsSynced}}"
-            on-change="onSingleSyncDataTypeChanged_"
+            on-change="onAppsSyncedChanged_"
             disabled="[[areDataTypeTogglesDisabled_]]"
             aria-labelledby="osAppsCheckboxLabel">
         </cr-toggle>
@@ -103,7 +103,24 @@
         </cr-toggle>
       </div>
 
-      <!-- TODO(jamescook): Wallpaper. -->
+      <div class="list-item" hidden="[[!osSyncPrefs.osAppsRegistered]]">
+        <!-- Wallpaper sync is a special case; its implementation relies upon
+             the chrome.storage.sync API, which is controlled by the apps
+             toggle. Thus, the wallpaper label and toggle are only shown when
+             apps are registered and are disabled if apps syncing is off.
+             TODO(https://crbug.com/967987): Break this dependency. -->
+        <div id="wallpaperCheckboxLabel"
+            label-disabled$="[[shouldWallpaperSyncSectionBeDisabled_(
+                areDataTypeTogglesDisabled_, osSyncPrefs.osAppsSynced)]]">
+          $i18n{wallpaperCheckboxLabel}
+        </div>
+        <cr-toggle checked="{{osSyncPrefs.wallpaperEnabled}}"
+            on-change="onSingleSyncDataTypeChanged_"
+            disabled="[[shouldWallpaperSyncSectionBeDisabled_(
+                areDataTypeTogglesDisabled_, osSyncPrefs.osAppsSynced)]]"
+            aria-labelledby="wallpaperCheckboxLabel">
+        </cr-toggle>
+      </div>
 
     </div>
   </template>

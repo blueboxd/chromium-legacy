@@ -271,8 +271,6 @@ base::Optional<gfx::RectF> GetSplitviewBoundsMaintainingAspectRatio(
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
   DCHECK(overview_session->GetGridWithRootWindow(root_window)
              ->split_view_drag_indicators());
-  // TODO(sammiequon): This does not work for drag from top as they have
-  // different drag indicators object as regular overview.
   auto window_dragging_state =
       overview_session->GetGridWithRootWindow(root_window)
           ->split_view_drag_indicators()

@@ -20,6 +20,8 @@ extern const char kTimeHintsFetcherTopHostBlacklistLastInitialized[];
 extern const char kHintsFetcherTopHostBlacklistMinimumEngagementScore[];
 extern const char kHintsFetcherHostsSuccessfullyFetched[];
 extern const char kPendingHintsProcessingVersion[];
+extern const char kSessionStatisticFCPMean[];
+extern const char kSessionStatisticFCPStdDev[];
 
 // State of |HintsFetcherTopHostsBlacklist|. The blacklist begins in
 // kNotInitialized and transitions to kInitialized after

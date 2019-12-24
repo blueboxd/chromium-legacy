@@ -8,7 +8,7 @@ assert(is_android)
 
 android_library("android_swipe_refresh_java") {
   chromium_code = false  # Don't lint.
-  java_files = [
+  sources = [
     "java/src/org/chromium/third_party/android/swiperefresh/CircleImageView.java",
     "java/src/org/chromium/third_party/android/swiperefresh/MaterialProgressDrawable.java",
     "java/src/org/chromium/third_party/android/swiperefresh/SwipeRefreshLayout.java",

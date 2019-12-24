@@ -65,24 +65,26 @@ def ProcessResults(options):
     # and make this an error.
     logging.warning('No test results to process.')
 
-  upload_bucket = options.upload_bucket
-  results_label = options.results_label
-  max_num_values = options.max_values_per_test_case
-  test_path_format = options.test_path_format
-  trace_processor_path = options.trace_processor_path
   test_suite_start = (test_results[0]['startTime']
       if test_results and 'startTime' in test_results[0]
       else datetime.datetime.utcnow().isoformat() + 'Z')
-  run_identifier = RunIdentifier(results_label, test_suite_start)
+  run_identifier = RunIdentifier(options.results_label, test_suite_start)
   should_compute_metrics = any(
       fmt in FORMATS_WITH_METRICS for fmt in options.output_formats)
 
   begin_time = time.time()
   util.ApplyInParallel(
       lambda result: ProcessTestResult(
-          result, upload_bucket, results_label, run_identifier,
-          test_suite_start, should_compute_metrics, max_num_values,
-          test_path_format, trace_processor_path),
+          test_result=result,
+          upload_bucket=options.upload_bucket,
+          results_label=options.results_label,
+          run_identifier=run_identifier,
+          test_suite_start=test_suite_start,
+          should_compute_metrics=should_compute_metrics,
+          max_num_values=options.max_values_per_test_case,
+          test_path_format=options.test_path_format,
+          trace_processor_path=options.trace_processor_path,
+          enable_tbmv3=options.experimental_tbmv3_metrics),
       test_results,
       on_failure=util.SetUnexpectedFailure,
   )
@@ -120,17 +122,20 @@ def _AmortizeProcessingDuration(processing_duration, test_results):
 
 def ProcessTestResult(test_result, upload_bucket, results_label,
                       run_identifier, test_suite_start, should_compute_metrics,
-                      max_num_values, test_path_format, trace_processor_path):
+                      max_num_values, test_path_format, trace_processor_path,
+                      enable_tbmv3):
   ConvertProtoTraces(test_result, trace_processor_path)
   AggregateTBMv2Traces(test_result)
-  AggregateTBMv3Traces(test_result)
+  if enable_tbmv3:
+    AggregateTBMv3Traces(test_result)
   if upload_bucket is not None:
     UploadArtifacts(test_result, upload_bucket, run_identifier)
 
   if should_compute_metrics:
     test_result['_histograms'] = histogram_set.HistogramSet()
     compute_metrics.ComputeTBMv2Metrics(test_result)
-    compute_metrics.ComputeTBMv3Metrics(test_result, trace_processor_path)
+    if enable_tbmv3:
+      compute_metrics.ComputeTBMv3Metrics(test_result, trace_processor_path)
     ExtractMeasurements(test_result)
     num_values = len(test_result['_histograms'])
     if max_num_values is not None and num_values > max_num_values:

@@ -66,7 +66,7 @@
      `mremap` onto shared memory to dedupe after-the-fact.
 
 [almost no memory overhead]: https://devblogs.microsoft.com/oldnewthing/20160413-00/?p=93301
-[zygote]: linux_zygote.md
+[zygote]: linux/zygote.md
 [relro_sharing]: android_native_libraries.md#relro-sharing
 
 ### Start-up Time

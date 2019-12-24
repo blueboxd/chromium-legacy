@@ -13,23 +13,20 @@
     <link rel="stylesheet" href="oobe_eula.css">
     <link rel="stylesheet" href="oobe_flex_layout.css">
     <oobe-dialog id="eulaLoadingDialog" hidden="[[!eulaLoadingScreenShown]]"
-        role="dialog" aria-labelledby="loadingTitle" has-buttons
-        full-screen-dialog>
-      <iron-icon icon="oobe-eula:googleg" slot="oobe-icon"></iron-icon>
-      <h1 slot="title" id="loadingTitle">
-        [[i18nDynamic(locale, 'termsOfServiceLoading')]]
-      </h1>
-    </oobe-dialog>
-    <oobe-dialog id="eulaDialog" hidden="[[eulaLoadingScreenShown]]"
-        role="dialog" aria-labelledby="eulaTitle"
-        aria-describedby="crosEulaFrame"
-        has-buttons>
+        title-key="termsOfServiceLoading" role="dialog"
+        aria-label$="[[i18nDynamic(locale, 'termsOfServiceLoading')]]"
+        has-buttons full-screen-dialog>
       <hd-iron-icon slot="oobe-icon"
           icon1x="oobe-32:googleg" icon2x="oobe-64:googleg">
       </hd-iron-icon>
-      <h1 slot="title" id="eulaTitle">
-        [[i18nDynamic(locale, 'oobeEulaSectionTitle')]]
-      </h1>
+    </oobe-dialog>
+    <oobe-dialog id="eulaDialog" hidden="[[eulaLoadingScreenShown]]"
+        role="dialog" title-key="oobeEulaSectionTitle"
+        aria-label$="[[i18nDynamic(locale, 'oobeEulaSectionTitle')]]"
+        aria-describedby="crosEulaFrame" has-buttons>
+      <hd-iron-icon slot="oobe-icon"
+          icon1x="oobe-32:googleg" icon2x="oobe-64:googleg">
+      </hd-iron-icon>
       <div slot="footer" class="flex layout vertical">
         <webview id="crosEulaFrame" allowTransparency
             role="document" class="flex oobe-tos-webview"
@@ -61,21 +58,17 @@
         </div>
         <oobe-text-button id="acceptButton" inverse on-tap="eulaAccepted_"
             class="focus-on-show"
-            disabled="[[acceptButtonDisabled]]">
-          <div>
-            [[i18nDynamic(locale, 'oobeEulaAcceptAndContinueButtonText')]]
-          </div>
+            disabled="[[acceptButtonDisabled]]"
+            text-key="oobeEulaAcceptAndContinueButtonText">
         </oobe-text-button>
       </div>
     </oobe-dialog>
-    <oobe-dialog id="installationSettingsDialog" role="dialog"
-        aria-labelledby="settingsTitle" has-buttons hidden>
+    <oobe-dialog id="installationSettingsDialog" role="dialog" has-buttons
+      title-key="eulaSystemInstallationSettings" hidden
+      aria-label$="[[i18nDynamic(locale, 'eulaSystemInstallationSettings')]]">
       <hd-iron-icon slot="oobe-icon"
           icon1x="oobe-32:googleg" icon2x="oobe-64:googleg">
       </hd-iron-icon>
-      <h1 slot="title" id="settingsTitle">
-        [[i18nDynamic(locale, 'eulaSystemInstallationSettings')]]
-      </h1>
       <!-- TODO(antrim): find out why do we have everything in subtitle -->
       <div slot="subtitle" id="settingsSubtitle">
         <div>
@@ -106,11 +99,8 @@
         <div class="flex"></div>
         <oobe-text-button id="settings-close-button" inverse
             class="focus-on-show"
-            on-tap="onInstallationSettingsCloseClicked_">
-          <div>
-            [[i18nDynamic(locale, 'eulaSystemInstallationSettingsOkButton')]]
-          </div>
-        </oobe-text-button>
+            text-key="eulaSystemInstallationSettingsOkButton"
+            on-tap="onInstallationSettingsCloseClicked_"></oobe-text-button>
       </div>
     </oobe-dialog>
   </template>

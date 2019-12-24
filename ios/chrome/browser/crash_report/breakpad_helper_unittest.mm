@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/crash_report/breakpad_helper.h"
-#import "base/test/ios/wait_util.h"
 #include "ios/chrome/browser/crash_report/main_thread_freeze_detector.h"
 #import "ios/chrome/test/ocmock/OCMockObject+BreakpadControllerTesting.h"
 #import "ios/testing/scoped_block_swizzler.h"
@@ -58,15 +57,32 @@ TEST_F(BreakpadHelperTest, CrashReportUserApplicationStateAllKeys) {
   // single breakpad record. This test should include all keys for
   // CrashReportUserApplicationState, since the whole dictionary is considered a
   // single breakpad record.
+  breakpad_helper::SetCurrentlyInBackground(true);
+  breakpad_helper::SetCurrentlySignedIn(true);
+  breakpad_helper::SetMemoryWarningCount(2);
+  breakpad_helper::SetMemoryWarningInProgress(true);
+  breakpad_helper::SetHangReport(true);
+  breakpad_helper::SetCurrentFreeMemoryInKB(1234);
+  breakpad_helper::SetCurrentFreeDiskInKB(12345);
+  breakpad_helper::SetCurrentTabIsPDF(true);
   breakpad_helper::SetCurrentOrientation(3, 7);
   breakpad_helper::SetCurrentHorizontalSizeClass(2);
   breakpad_helper::SetCurrentUserInterfaceStyle(2);
   breakpad_helper::SetRegularTabCount(999);
   breakpad_helper::SetIncognitoTabCount(999);
   breakpad_helper::SetDestroyingAndRebuildingIncognitoBrowserState(true);
+  breakpad_helper::SetGridToVisibleTabAnimation(
+      @"to_view_controller", @"presenting_view_controller",
+      @"presented_view_controller", @"parent_view_controller");
   breakpad_helper::MediaStreamPlaybackDidStart();
-  breakpad_helper::SetCurrentTabIsPDF(true);
-  breakpad_helper::SetCurrentlySignedIn(true);
+
+  // Build a sample breadcrumbs string greater than the maximum value size as
+  // defined in Breakpad.h at the BreakpadSetKeyValue function comment.
+  NSMutableString* breadcrumbs = [[NSMutableString alloc] init];
+  while (breadcrumbs.length < 255) {
+    [breadcrumbs appendString:@"12:01 Fake Breadcrumb Event/n"];
+  }
+  breakpad_helper::SetBreadcrumbEvents(breadcrumbs);
 }
 
 TEST_F(BreakpadHelperTest, GetCrashReportCount) {

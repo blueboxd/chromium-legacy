@@ -3029,6 +3029,9 @@
   <message name="IDS_SETTINGS_SAFEBROWSING_ENABLE_REPORTING" desc="The section title of the extended safe browsing checkbox to help improve safe browsing">
     Help improve Chrome security
   </message>
+  <message name="IDS_SETTINGS_SAFEBROWSING_SECTION_LABEL" desc="The section label of the safe browsing section grouping safe browsing settings">
+    Safe Browsing
+  </message>
   <message name="IDS_SETTINGS_SAFEBROWSING_ENABLE_REPORTING_DESC" desc="Description for extended safe browsing">
     To detect dangerous apps and sites, Chrome sends URLs of some pages you visit, limited system information, and some page content to Google
   </message>
@@ -3061,6 +3064,22 @@
   </message>
   <message name="IDS_SETTINGS_WAKE_ON_WIFI_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for enabling quickly reconnecting to known Wi-Fi SSIDs.">
     Keep Wi-Fi on during sleep
+  </message>
+  <message name="IDS_SETTINGS_SECURITY" desc="Name of the settings page which allows
+  users to manage security settings">
+    Security
+  </message>
+  <message name="IDS_SETTINGS_SECURITY_ADVANCED_SECTION_LABEL" desc="Name of the section in the
+    security settings page which groups advanced security settings">
+    Advanced security
+  </message>
+  <message name="IDS_SETTINGS_ADVANCED_PROTECTION_PROGRAM" desc="Name of the link which takes users
+    to the Google Advanced Protection Program external webpage">
+    Google Advanced Protection Program
+  </message>
+  <message name="IDS_SETTINGS_ADVANCED_PROTECTION_PROGRAM_DESC" desc="Description of the Google
+    Advanced Protection Program">
+    Safeguards the personal Google Accounts of anyone at risk of targeted attacks
   </message>
   <message name="IDS_SETTINGS_MANAGE_CERTIFICATES" desc="Text for manage certificates button in Privacy options">
     Manage certificates

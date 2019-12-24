@@ -412,6 +412,9 @@
 // Returns a matcher for the infobar asking to upload a credit card.
 + (id<GREYMatcher>)autofillUploadCardInfobar;
 
+// Returns a matcher for a history entry with |url| and |title|.
++ (id<GREYMatcher>)historyEntryForURL:(NSString*)URL title:(NSString*)title;
+
 #pragma mark - Manual Fallback
 
 // Returns a matcher for the scroll view in keyboard accessory bar.

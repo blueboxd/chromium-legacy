@@ -377,9 +377,6 @@ bool ScopedOverviewTransformWindow::IsMinimized() const {
 void ScopedOverviewTransformWindow::PrepareForOverview() {
   Shell::Get()->shadow_controller()->UpdateShadowForWindow(window_);
 
-  DCHECK(!overview_started_);
-  overview_started_ = true;
-
   // Add requests to cache render surface and perform trilinear filtering. The
   // requests will be removed in dtor. So the requests will be valid during the
   // enter animation and the whole time during overview mode. For the exit

@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/modules/native_file_system/file_system_create_writer_options.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_error.h"
+#include "third_party/blink/renderer/modules/native_file_system/native_file_system_writable_file_stream.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_writer.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -59,6 +60,43 @@ ScriptPromise NativeFileSystemFileHandle::createWriter(
             }
             resolver->Resolve(MakeGarbageCollected<NativeFileSystemWriter>(
                 context, std::move(writer)));
+          },
+          WrapPersistent(resolver)));
+
+  return result;
+}
+
+ScriptPromise NativeFileSystemFileHandle::createWritable(
+    ScriptState* script_state,
+    const FileSystemCreateWriterOptions* options) {
+  DCHECK(RuntimeEnabledFeatures::WritableFileStreamEnabled());
+
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise result = resolver->Promise();
+
+  if (!mojo_ptr_) {
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError));
+    return result;
+  }
+
+  mojo_ptr_->CreateFileWriter(
+      options->keepExistingData(),
+      WTF::Bind(
+          [](ScriptPromiseResolver* resolver,
+             mojom::blink::NativeFileSystemErrorPtr result,
+             mojo::PendingRemote<mojom::blink::NativeFileSystemFileWriter>
+                 writer) {
+            ScriptState* script_state = resolver->GetScriptState();
+            if (!script_state)
+              return;
+            if (result->status != mojom::blink::NativeFileSystemStatus::kOk) {
+              native_file_system_error::Reject(resolver, *result);
+              return;
+            }
+
+            resolver->Resolve(NativeFileSystemWritableFileStream::Create(
+                script_state, std::move(writer)));
           },
           WrapPersistent(resolver)));
 

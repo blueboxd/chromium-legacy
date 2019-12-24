@@ -31,7 +31,7 @@ namespace {
 // GetShadowValues and GetBorderAndShadowFlags cache their results. The shadow
 // values depend on both the shadow elevation and color, so we create a tuple to
 // key the cache.
-typedef std::tuple<int, SkColor> ShadowCacheKey;
+using ShadowCacheKey = std::tuple<int, SkColor>;
 
 // Utility functions for getting alignment points on the edge of a rectangle.
 gfx::Point CenterTop(const gfx::Rect& rect) {

@@ -10,7 +10,7 @@
 Polymer({
   is: 'app-downloading',
 
-  behaviors: [I18nBehavior, OobeDialogHostBehavior],
+  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
 
   properties: {
     numOfApps: Number,

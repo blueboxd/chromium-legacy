@@ -212,7 +212,7 @@ base::Optional<size_t> FlexLayout::ChildViewSpacing::GetNextViewIndex(
 
 // Represents a specific stored layout given a set of size bounds.
 struct FlexLayout::FlexLayoutData {
-  FlexLayoutData() {}
+  FlexLayoutData() = default;
   ~FlexLayoutData() = default;
 
   size_t num_children() const { return child_data.size(); }
@@ -242,7 +242,7 @@ void FlexLayout::PropertyHandler::AfterPropertyChange(const void* key,
 // FlexLayout
 // -------------------------------------------------------------------
 
-FlexLayout::FlexLayout() {}
+FlexLayout::FlexLayout() = default;
 FlexLayout::~FlexLayout() = default;
 
 FlexLayout& FlexLayout::SetOrientation(LayoutOrientation orientation) {

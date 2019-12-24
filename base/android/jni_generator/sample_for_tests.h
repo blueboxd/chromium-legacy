@@ -50,7 +50,7 @@ namespace android {
 //      ]
 //    }
 //    android_library("java") {
-//      java_files = [
+//      sources = [
 //        "java/src/org/chromium/example/jni_generator/SampleForTests.java",
 //        "java/src/org/chromium/example/jni_generator/NonJniFile.java",
 //      ]

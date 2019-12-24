@@ -3614,4 +3614,36 @@ TEST_F(WebContentsImplTest, Bluetooth) {
   EXPECT_FALSE(contents()->IsConnectedToBluetoothDevice());
 }
 
+TEST_F(WebContentsImplTest, FaviconURLsSet) {
+  const FaviconURL kFavicon(GURL("https://example.com/favicon.ico"),
+                            FaviconURL::IconType::kFavicon, {});
+
+  contents()->NavigateAndCommit(GURL("https://example.com"));
+  EXPECT_EQ(0u, contents()->GetFaviconURLs().size());
+
+  contents()->OnUpdateFaviconURL(contents()->GetMainFrame(), {kFavicon});
+  EXPECT_EQ(1u, contents()->GetFaviconURLs().size());
+
+  contents()->OnUpdateFaviconURL(contents()->GetMainFrame(),
+                                 {kFavicon, kFavicon});
+  EXPECT_EQ(2u, contents()->GetFaviconURLs().size());
+
+  contents()->OnUpdateFaviconURL(contents()->GetMainFrame(), {kFavicon});
+  EXPECT_EQ(1u, contents()->GetFaviconURLs().size());
+}
+
+TEST_F(WebContentsImplTest, FaviconURLsResetWithNavigation) {
+  const FaviconURL kFavicon(GURL("https://example.com/favicon.ico"),
+                            FaviconURL::IconType::kFavicon, {});
+
+  contents()->NavigateAndCommit(GURL("https://example.com"));
+  EXPECT_EQ(0u, contents()->GetFaviconURLs().size());
+
+  contents()->OnUpdateFaviconURL(contents()->GetMainFrame(), {kFavicon});
+  EXPECT_EQ(1u, contents()->GetFaviconURLs().size());
+
+  contents()->NavigateAndCommit(GURL("https://example.com/navigation.html"));
+  EXPECT_EQ(0u, contents()->GetFaviconURLs().size());
+}
+
 }  // namespace content

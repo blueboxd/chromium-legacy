@@ -495,6 +495,8 @@ class PredictionManagerTest
 
   base::FilePath temp_dir() const { return temp_dir_.GetPath(); }
 
+  TestingPrefServiceSimple* pref_service() const { return pref_service_.get(); }
+
   void RunUntilIdle() {
     task_environment_.RunUntilIdle();
     base::RunLoop().RunUntilIdle();
@@ -1465,6 +1467,69 @@ INSTANTIATE_TEST_SUITE_P(ClientFeature,
                          PredictionManagerTest,
                          testing::Range(proto::ClientModelFeature_MIN,
                                         proto::ClientModelFeature_MAX));
+
+TEST_F(PredictionManagerTest, PreviousSessionStatisticsUsed) {
+  base::HistogramTester histogram_tester;
+  GURL previous_url = GURL("https://foo.com");
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          previous_url);
+  navigation_handle->set_url(previous_url);
+  navigation_handle->set_page_transition(
+      ui::PageTransition::PAGE_TRANSITION_RELOAD);
+  ON_CALL(*navigation_handle, GetPreviousURL())
+      .WillByDefault(testing::ReturnRef(previous_url));
+
+  pref_service()->SetDouble(optimization_guide::prefs::kSessionStatisticFCPMean,
+                            200.0);
+  pref_service()->SetDouble(
+      optimization_guide::prefs::kSessionStatisticFCPStdDev, 50.0);
+
+  CreatePredictionManager({});
+  prediction_manager()->SetPredictionModelFetcherForTesting(
+      BuildTestPredictionModelFetcher(
+          PredictionModelFetcherEndState::kFetchFailed));
+
+  prediction_manager()->RegisterOptimizationTargets(
+      {proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
+
+  SetStoreInitialized();
+
+  std::unique_ptr<proto::GetModelsResponse> get_models_response =
+      BuildGetModelsResponse(
+          {},
+          {proto::CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_SESSION_MEAN,
+           proto::
+               CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_SESSION_STANDARD_DEVIATION});
+  prediction_manager()->UpdateHostModelFeaturesForTesting(
+      get_models_response.get());
+  prediction_manager()->UpdatePredictionModelsForTesting(
+      get_models_response.get());
+
+  EXPECT_EQ(OptimizationTargetDecision::kPageLoadMatches,
+            prediction_manager()->ShouldTargetNavigation(
+                navigation_handle.get(),
+                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+
+  TestPredictionModel* test_prediction_model =
+      static_cast<TestPredictionModel*>(
+          prediction_manager()->GetPredictionModelForTesting(
+              proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+
+  EXPECT_TRUE(test_prediction_model);
+  EXPECT_TRUE(test_prediction_model->WasModelEvaluated());
+
+  base::flat_map<std::string, float> evaluated_features =
+      test_prediction_model->last_evaluated_features();
+  EXPECT_FLOAT_EQ(
+      evaluated_features
+          ["CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_SESSION_MEAN"],
+      200.0);
+  EXPECT_FLOAT_EQ(
+      evaluated_features["CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_"
+                         "SESSION_STANDARD_DEVIATION"],
+      50.0);
+}
 
 TEST_F(PredictionManagerTest,
        StoreInitializedAfterOptimizationTargetRegistered) {

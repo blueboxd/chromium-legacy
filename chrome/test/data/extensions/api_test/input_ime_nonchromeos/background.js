@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var failToSendKeyEvents = `Could not send key events. ENTER et al. keys are allowed only on http:, https: etc.
-Thrown by input.ime.sendKeyEvents`;
+var failToSendKeyEvents = "[input.ime.sendKeyEvents]: Could not send key events. ENTER et al. keys are allowed only on http:, https: etc.";
 
 chrome.test.runTests([
   // Tests input.ime.activate and input.ime.onFocus APIs.

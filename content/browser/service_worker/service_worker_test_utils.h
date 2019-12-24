@@ -112,34 +112,34 @@ class ServiceWorkerRemoteProviderEndpoint {
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRemoteProviderEndpoint);
 };
 
-struct ServiceWorkerContainerHostAndInfo {
-  ServiceWorkerContainerHostAndInfo(
-      base::WeakPtr<ServiceWorkerContainerHost> host,
+struct ServiceWorkerProviderHostAndInfo {
+  ServiceWorkerProviderHostAndInfo(
+      base::WeakPtr<ServiceWorkerProviderHost> host,
       blink::mojom::ServiceWorkerProviderInfoForClientPtr);
-  ~ServiceWorkerContainerHostAndInfo();
+  ~ServiceWorkerProviderHostAndInfo();
 
-  base::WeakPtr<ServiceWorkerContainerHost> host;
+  base::WeakPtr<ServiceWorkerProviderHost> host;
   blink::mojom::ServiceWorkerProviderInfoForClientPtr info;
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContainerHostAndInfo);
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderHostAndInfo);
 };
 
-// Creates a container host that finished navigation. Test code can typically
-// use this function, but if more control is required
-// CreateContainerHostAndInfoForWindow() can be used instead.
-base::WeakPtr<ServiceWorkerContainerHost> CreateContainerHostForWindow(
+// Creates a provider host that finished navigation. Test code can typically use
+// this function, but if more control is required
+// CreateProviderHostAndInfoForWindow() can be used instead.
+base::WeakPtr<ServiceWorkerProviderHost> CreateProviderHostForWindow(
     int process_id,
     bool is_parent_frame_secure,
     base::WeakPtr<ServiceWorkerContextCore> context,
     ServiceWorkerRemoteProviderEndpoint* output_endpoint);
 
-// Creates a container host that can be used for a navigation.
-std::unique_ptr<ServiceWorkerContainerHostAndInfo>
-CreateContainerHostAndInfoForWindow(
+// Creates a provider host that can be used for a navigation.
+std::unique_ptr<ServiceWorkerProviderHostAndInfo>
+CreateProviderHostAndInfoForWindow(
     base::WeakPtr<ServiceWorkerContextCore> context,
     bool are_ancestors_secure);
 
-std::unique_ptr<ServiceWorkerProviderHost>
+base::WeakPtr<ServiceWorkerProviderHost>
 CreateProviderHostForServiceWorkerContext(
     int process_id,
     bool is_parent_frame_secure,

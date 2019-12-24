@@ -250,8 +250,11 @@ void X11Window::ToggleFullscreen() {
   // files can never be set to fullscreen. Wayland does the same.
   if (fullscreen)
     state_ = PlatformWindowState::kFullScreen;
+  else if (IsMaximized())
+    state_ = PlatformWindowState::kMaximized;
   else
-    state_ = PlatformWindowState::kUnknown;
+    state_ = PlatformWindowState::kNormal;
+
   SetFullscreen(fullscreen);
 
   if (unmaximize_and_remaximize)
@@ -282,7 +285,7 @@ void X11Window::ToggleFullscreen() {
 void X11Window::Maximize() {
   if (IsFullscreen()) {
     // Unfullscreen the window if it is fullscreen.
-    ToggleFullscreen();
+    SetFullscreen(false);
 
     // Resize the window so that it does not have the same size as a monitor.
     // (Otherwise, some window managers immediately put the window back in
@@ -308,10 +311,7 @@ void X11Window::Minimize() {
 }
 
 void X11Window::Restore() {
-  if (XWindow::IsFullscreen())
-    ToggleFullscreen();
-  if (XWindow::IsMaximized())
-    XWindow::Unmaximize();
+  XWindow::Unmaximize();
   XWindow::Unhide();
 }
 
@@ -537,6 +537,21 @@ void X11Window::OnXWindowStateChanged() {
     state_ = PlatformWindowState::kMaximized;
   } else {
     state_ = PlatformWindowState::kNormal;
+  }
+
+  if (restored_bounds_in_pixels_.IsEmpty()) {
+    if (IsMaximized()) {
+      // The request that we become maximized originated from a different
+      // process. |bounds_in_pixels_| already contains our maximized bounds. Do
+      // a best effort attempt to get restored bounds by setting it to our
+      // previously set bounds (and if we get this wrong, we aren't any worse
+      // off since we'd otherwise be returning our maximized bounds).
+      SetRestoredBoundsInPixels(previous_bounds());
+    }
+  } else if (!IsMaximized() && !IsFullscreen()) {
+    // If we have restored bounds, but WM_STATE no longer claims to be
+    // maximized or fullscreen, we should clear our restored bounds.
+    SetRestoredBoundsInPixels(gfx::Rect());
   }
 
   if (old_state != state_)

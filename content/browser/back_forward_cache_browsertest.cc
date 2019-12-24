@@ -2834,11 +2834,10 @@ IN_PROC_BROWSER_TEST_P(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
           "a.com", "/back_forward_cache/service_worker_registration.html")));
 
   // 4) Register a service worker for |tab_to_execute_service_worker|.
-  //    Here, rfh_a also becomes controlled by ServiceWorker by clients.claim().
-  //    TODO(yuzus): Instead of waiting for ready, this should wait for claim()
-  //    to resolve.
   EXPECT_EQ("DONE", EvalJs(tab_to_execute_service_worker,
                            "register('service_worker_registration.js')"));
+  // 5) |rfh_a| becomes controlled by ServiceWorker by clients.claim().
+  EXPECT_EQ("DONE", EvalJs(tab_to_execute_service_worker, "claim()"));
 
   // 5) Navigate to A in |tab_to_be_bfcached|.
   tab_to_be_bfcached->web_contents()->GetController().GoBack();

@@ -7,7 +7,7 @@ import("//build/config/locales.gni")
 import("//ui/android/features.gni")
 
 android_library("java") {
-  java_files = [
+  sources = [
     "java/src/org/chromium/components/app_modal/JavascriptAppModalDialog.java",
     "java/src/org/chromium/components/app_modal/JavascriptDialogCustomView.java",
     "java/src/org/chromium/components/app_modal/JavascriptModalDialog.java",

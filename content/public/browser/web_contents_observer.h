@@ -443,7 +443,9 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   virtual void UserAgentOverrideSet(const std::string& user_agent) {}
 
   // Invoked when new FaviconURL candidates are received from the renderer
-  // process.
+  // process. If the instance is created after the page is loaded, it is
+  // recommended to call WebContents::GetFaviconURLs() to get the current list
+  // as this callback will not be executed unless there is an update.
   virtual void DidUpdateFaviconURL(const std::vector<FaviconURL>& candidates) {}
 
   // Called when an audio change occurs.

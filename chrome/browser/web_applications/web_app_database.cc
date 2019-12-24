@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/stl_util.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_database_factory.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
@@ -133,6 +134,21 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
   for (SquareSizePx size : web_app.downloaded_icon_sizes())
     local_data->add_downloaded_icon_sizes(size);
 
+  for (const auto& file_handler : web_app.file_handlers()) {
+    WebAppFileHandlerProto* file_handler_proto =
+        local_data->add_file_handlers();
+    file_handler_proto->set_action(file_handler.action.spec());
+
+    for (const auto& accept_entry : file_handler.accept) {
+      WebAppFileHandlerAcceptProto* accept_entry_proto =
+          file_handler_proto->add_accept();
+      accept_entry_proto->set_mimetype(accept_entry.mimetype);
+
+      for (const auto& file_extension : accept_entry.file_extensions)
+        accept_entry_proto->add_file_extensions(file_extension);
+    }
+  }
+
   return local_data;
 }
 
@@ -251,6 +267,35 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   for (int32_t size : local_data.downloaded_icon_sizes())
     icon_sizes_on_disk.push_back(size);
   web_app->SetDownloadedIconSizes(std::move(icon_sizes_on_disk));
+
+  WebApp::FileHandlers file_handlers;
+  for (const auto& file_handler_proto : local_data.file_handlers()) {
+    WebApp::FileHandler file_handler;
+    file_handler.action = GURL(file_handler_proto.action());
+
+    if (file_handler.action.is_empty() || !file_handler.action.is_valid()) {
+      DLOG(ERROR) << "WebApp FileHandler proto action parse error";
+      return nullptr;
+    }
+
+    for (const auto& accept_entry_proto : file_handler_proto.accept()) {
+      WebApp::FileHandlerAccept accept_entry;
+      accept_entry.mimetype = accept_entry_proto.mimetype();
+      for (const auto& file_extension : accept_entry_proto.file_extensions()) {
+        if (base::Contains(accept_entry.file_extensions, file_extension)) {
+          // We intentionally don't return a nullptr here; instead, duplicate
+          // entries are absorbed.
+          DLOG(ERROR) << "WebApp::FileHandlerAccept parsing encountered "
+                      << "duplicate file extension";
+        }
+        accept_entry.file_extensions.insert(file_extension);
+      }
+      file_handler.accept.push_back(std::move(accept_entry));
+    }
+
+    file_handlers.push_back(std::move(file_handler));
+  }
+  web_app->SetFileHandlers(std::move(file_handlers));
 
   return web_app;
 }

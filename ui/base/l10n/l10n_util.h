@@ -71,7 +71,8 @@ bool IsLocaleSupportedByOS(const std::string& locale);
 UI_BASE_EXPORT base::string16 GetDisplayNameForLocale(
     const std::string& locale,
     const std::string& display_locale,
-    bool is_for_ui);
+    bool is_for_ui,
+    bool disallow_default = false);
 
 // Returns the display name of the |country_code| in |display_locale|.
 UI_BASE_EXPORT base::string16 GetDisplayNameForCountry(

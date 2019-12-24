@@ -13,6 +13,7 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/interface_provider_filtering.h"
 #include "content/browser/service_worker/service_worker_consts.h"
+#include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/webtransport/quic_transport_connector_impl.h"
@@ -22,6 +23,7 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/origin_util.h"
 #include "mojo/public/cpp/bindings/message.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom.h"
@@ -54,20 +56,82 @@ void CreateQuicTransportConnectorImpl(
 }  // anonymous namespace
 
 // static
-std::unique_ptr<ServiceWorkerProviderHost>
+base::WeakPtr<ServiceWorkerProviderHost>
+ServiceWorkerProviderHost::CreateForWindow(
+    base::WeakPtr<ServiceWorkerContextCore> context,
+    bool are_ancestors_secure,
+    int frame_tree_node_id,
+    mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
+        host_receiver,
+    mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
+        container_remote) {
+  DCHECK(context);
+  auto host = base::WrapUnique(new ServiceWorkerProviderHost(
+      blink::mojom::ServiceWorkerProviderType::kForWindow, are_ancestors_secure,
+      frame_tree_node_id, std::move(host_receiver), std::move(container_remote),
+      /*running_hosted_version=*/nullptr, context));
+  auto weak_ptr = host->GetWeakPtr();
+  RegisterToContextCore(context, std::move(host));
+  return weak_ptr;
+}
+
+// static
+base::WeakPtr<ServiceWorkerProviderHost>
 ServiceWorkerProviderHost::CreateForServiceWorker(
     base::WeakPtr<ServiceWorkerContextCore> context,
     scoped_refptr<ServiceWorkerVersion> version,
     blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr*
         out_provider_info) {
-  return base::WrapUnique(new ServiceWorkerProviderHost(
+  auto host = base::WrapUnique(new ServiceWorkerProviderHost(
+      blink::mojom::ServiceWorkerProviderType::kForServiceWorker,
       /*is_parent_frame_secure=*/true, FrameTreeNode::kFrameTreeNodeInvalidId,
       (*out_provider_info)->host_remote.InitWithNewEndpointAndPassReceiver(),
       /*container_remote=*/mojo::NullAssociatedRemote(), std::move(version),
       context));
+  auto weak_ptr = host->GetWeakPtr();
+  RegisterToContextCore(context, std::move(host));
+  return weak_ptr;
+}
+
+// static
+base::WeakPtr<ServiceWorkerProviderHost>
+ServiceWorkerProviderHost::CreateForWebWorker(
+    base::WeakPtr<ServiceWorkerContextCore> context,
+    int process_id,
+    blink::mojom::ServiceWorkerProviderType provider_type,
+    mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
+        host_receiver,
+    mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
+        container_remote) {
+  using ServiceWorkerProviderType = blink::mojom::ServiceWorkerProviderType;
+  DCHECK((base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker) &&
+          provider_type == ServiceWorkerProviderType::kForDedicatedWorker) ||
+         provider_type == ServiceWorkerProviderType::kForSharedWorker);
+  auto host = base::WrapUnique(new ServiceWorkerProviderHost(
+      provider_type, /*is_parent_frame_secure=*/true,
+      FrameTreeNode::kFrameTreeNodeInvalidId, std::move(host_receiver),
+      std::move(container_remote), /*running_hosted_version=*/nullptr,
+      context));
+  host->container_host()->SetContainerProcessId(process_id);
+
+  auto weak_ptr = host->GetWeakPtr();
+  RegisterToContextCore(context, std::move(host));
+  return weak_ptr;
+}
+
+// static
+void ServiceWorkerProviderHost::RegisterToContextCore(
+    base::WeakPtr<ServiceWorkerContextCore> context,
+    std::unique_ptr<ServiceWorkerProviderHost> host) {
+  DCHECK(host->container_host()->receiver().is_bound());
+  host->container_host()->receiver().set_disconnect_handler(
+      base::BindOnce(&ServiceWorkerContextCore::RemoveProviderHost, context,
+                     host->provider_id()));
+  context->AddProviderHost(std::move(host));
 }
 
 ServiceWorkerProviderHost::ServiceWorkerProviderHost(
+    blink::mojom::ServiceWorkerProviderType type,
     bool is_parent_frame_secure,
     int frame_tree_node_id,
     mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
@@ -79,18 +143,23 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
     : provider_id_(NextProviderId()),
       running_hosted_version_(std::move(running_hosted_version)),
       container_host_(std::make_unique<content::ServiceWorkerContainerHost>(
-          blink::mojom::ServiceWorkerProviderType::kForServiceWorker,
+          type,
           is_parent_frame_secure,
           frame_tree_node_id,
           std::move(host_receiver),
           std::move(container_remote),
+          type == blink::mojom::ServiceWorkerProviderType::kForServiceWorker
+              ? this
+              : nullptr,
           context)) {
-  DCHECK(running_hosted_version_);
-  container_host_->set_service_worker_host(this);
-  container_host_->UpdateUrls(
-      running_hosted_version_->script_url(),
-      net::SiteForCookies::FromUrl(running_hosted_version_->script_url()),
-      running_hosted_version_->script_origin());
+  DCHECK_NE(blink::mojom::ServiceWorkerProviderType::kUnknown, type);
+  if (type == blink::mojom::ServiceWorkerProviderType::kForServiceWorker) {
+    DCHECK(running_hosted_version_);
+    container_host_->UpdateUrls(
+        running_hosted_version_->script_url(),
+        net::SiteForCookies::FromUrl(running_hosted_version_->script_url()),
+        running_hosted_version_->script_origin());
+  }
 }
 
 ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {

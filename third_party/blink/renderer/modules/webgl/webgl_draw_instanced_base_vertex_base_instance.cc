@@ -42,13 +42,6 @@ WebGLExtensionName WebGLDrawInstancedBaseVertexBaseInstance::GetName() const {
   return kWebGLDrawInstancedBaseVertexBaseInstanceName;
 }
 
-WebGLDrawInstancedBaseVertexBaseInstance*
-WebGLDrawInstancedBaseVertexBaseInstance::Create(
-    WebGLRenderingContextBase* context) {
-  return MakeGarbageCollected<WebGLDrawInstancedBaseVertexBaseInstance>(
-      context);
-}
-
 // static
 bool WebGLDrawInstancedBaseVertexBaseInstance::Supported(
     WebGLRenderingContextBase* context) {

@@ -169,8 +169,6 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
       OverviewItem* dragged_item,
       const gfx::PointF& location_in_screen);
 
-  void UpdateCannotSnapWarningVisibility();
-
   // Called when any OverviewItem on any OverviewGrid has started/ended being
   // dragged.
   void OnSelectorItemDragStarted(OverviewItem* item);
@@ -267,7 +265,7 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // the first window we are animating; the caller will observe this animation.
   // The returned object may be nullptr.
   std::unique_ptr<ui::ScopedLayerAnimationSettings> UpdateYPositionAndOpacity(
-      int new_y,
+      float new_y,
       float opacity,
       OverviewSession::UpdateAnimationSettingsCallback callback);
 
@@ -428,6 +426,8 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
 
   // Returns the the bounds of the desks widget in root window.
   gfx::Rect GetDesksWidgetBounds() const;
+
+  void UpdateCannotSnapWarningVisibility();
 
   // Root window the grid is in.
   aura::Window* root_window_;

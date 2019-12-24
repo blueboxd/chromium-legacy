@@ -16,7 +16,7 @@ paper-spinner-lite {
   width: 38px;
 }
 
-#spinner-comment {
+#comment {
+  @apply --oobe-default-font;
   color: #747474;
-  font-size: 13px;
 }

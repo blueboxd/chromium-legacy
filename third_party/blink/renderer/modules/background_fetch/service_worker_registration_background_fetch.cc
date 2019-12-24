@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/background_fetch/service_worker_registration_background_fetch.h"
 
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_manager.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -44,8 +45,10 @@ ServiceWorkerRegistrationBackgroundFetch::backgroundFetch(
 
 BackgroundFetchManager*
 ServiceWorkerRegistrationBackgroundFetch::backgroundFetch() {
-  if (!background_fetch_manager_)
-    background_fetch_manager_ = BackgroundFetchManager::Create(registration_);
+  if (!background_fetch_manager_) {
+    background_fetch_manager_ =
+        MakeGarbageCollected<BackgroundFetchManager>(registration_);
+  }
 
   return background_fetch_manager_.Get();
 }

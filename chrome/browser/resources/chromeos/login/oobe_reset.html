@@ -13,14 +13,12 @@
     <link rel="stylesheet" href="oobe_flex_layout.css">
     <link rel="stylesheet" href="oobe_reset.css">
     <oobe-dialog id="resetDialog" role="dialog"
+        title-key="resetWarningTitle"
         i18n-values="aria-label:resetScreenAccessibleTitle" has-buttons
         footer-shrinkable>
       <hd-iron-icon slot="oobe-icon"
           icon1x="oobe-32:alert" icon2x="oobe-64:alert">
       </hd-iron-icon>
-      <h1 slot="title">
-        [[i18nDynamic(locale, 'resetWarningTitle')]]
-      </h1>
       <div slot="subtitle" class="powerwash-warning">
         <div hidden="[[!isState_(uiState_, 'powerwash-proposal-view')]]">
           [[i18nDynamic(locale, 'resetPowerwashWarningDetails')]]
@@ -79,22 +77,20 @@
       </div>
       <div slot="bottom-buttons" class="flex layout horizontal">
         <div class="flex"></div>
-        <oobe-text-button border on-tap="onCancelTap_"
-            hidden="[[isCancelHidden_(uiState_)]]">
-          <div>[[i18nDynamic(locale, 'cancelButton')]]</div>
-        </oobe-text-button>
+        <oobe-text-button border on-tap="onCancelTap_" text-key="cancelButton"
+            hidden="[[isCancelHidden_(uiState_)]]"></oobe-text-button>
         <oobe-text-button inverse on-tap="onRestartTap_" class="focus-on-show"
+            text-key="resetButtonRestart"
             hidden="[[!isState_(uiState_, 'restart-required-view')]]">
-          <div>[[i18nDynamic(locale, 'resetButtonRestart')]]</div>
         </oobe-text-button>
         <oobe-text-button inverse on-tap="onPowerwashTap_" class="focus-on-show"
+            text-key="resetButtonPowerwashAndRollback"
             hidden="[[!isState_(uiState_, 'rollback-proposal-view')]]"
             disabled="[[tpmFirmwareUpdateChecked_]]">
-          <div>[[i18nDynamic(locale, 'resetButtonPowerwashAndRollback')]]</div>
         </oobe-text-button>
         <oobe-text-button inverse on-tap="onPowerwashTap_" class="focus-on-show"
+            text-key="resetButtonPowerwash"
             hidden="[[!isState_(uiState_, 'powerwash-proposal-view')]]">
-          <div>[[i18nDynamic(locale, 'resetButtonPowerwash')]]</div>
         </oobe-text-button>
       </div>
     </oobe-dialog>

@@ -8,7 +8,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "components/favicon/content/content_favicon_driver.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/favicon_url.h"
@@ -44,11 +43,13 @@ void WebAppIconDownloader::Start() {
   FetchIcons(extra_favicon_urls_);
 
   if (need_favicon_urls_) {
-    std::vector<content::FaviconURL> favicon_tab_helper_urls =
+    // The call to `GetFaviconURLsFromWebContents()` is to allow this method to
+    // be mocked by unit tests.
+    const std::vector<content::FaviconURL> favicon_urls =
         GetFaviconURLsFromWebContents();
-    if (!favicon_tab_helper_urls.empty()) {
+    if (!favicon_urls.empty()) {
       need_favicon_urls_ = false;
-      FetchIcons(favicon_tab_helper_urls);
+      FetchIcons(favicon_urls);
     }
   }
 }
@@ -66,14 +67,7 @@ int WebAppIconDownloader::DownloadImage(const GURL& url) {
 
 std::vector<content::FaviconURL>
 WebAppIconDownloader::GetFaviconURLsFromWebContents() {
-  favicon::ContentFaviconDriver* content_favicon_driver =
-      web_contents()
-          ? favicon::ContentFaviconDriver::FromWebContents(web_contents())
-          : nullptr;
-  // If favicon_urls() is empty, we are guaranteed that DidUpdateFaviconURLs has
-  // not yet been called for the current page's navigation.
-  return content_favicon_driver ? content_favicon_driver->favicon_urls()
-                                : std::vector<content::FaviconURL>();
+  return web_contents()->GetFaviconURLs();
 }
 
 void WebAppIconDownloader::FetchIcons(

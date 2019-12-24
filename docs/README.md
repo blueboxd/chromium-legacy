@@ -39,12 +39,12 @@ used when committed.
 ## Document Index
 
 ### Checking Out and Building
-*   [Linux Build Instructions](linux_build_instructions.md) - Linux
+*   [Linux Build Instructions](linux/build_instructions.md) - Linux
 *   [Mac Build Instructions](mac_build_instructions.md) - MacOS
 *   [Windows Build Instructions](windows_build_instructions.md) - Windows
 *   [Android Build Instructions](android_build_instructions.md) - Android target
     (on a Linux host)
-*   [Cast Build Instructions](linux_cast_build_instructions.md) - Cast target
+*   [Cast Build Instructions](linux/cast_build_instructions.md) - Cast target
     (on a Linux host)
 *   [Cast for Android Build Instructions](android_cast_build_instructions.md) -
     Cast for Android (on a Linux host)
@@ -53,7 +53,7 @@ used when committed.
 *   [iOS Build Instructions](ios/build_instructions.md) - iOS target (on a MacOS
     host)
 *   [Chrome OS Build Instructions](chromeos_build_instructions.md) - Chrome OS
-*   [Linux Chromium ARM Recipes](linux_chromium_arm.md) - Recipes for building
+*   [Linux Chromium ARM Recipes](linux/chromium_arm.md) - Recipes for building
     Chromium for ARM on Linux.
 *   [Chrome Component Build](component_build.md) - Faster builds using more
     libraries
@@ -193,47 +193,47 @@ used when committed.
     how the bots are maintained.
 
 ### Misc Linux-Specific Docs
-*   [Linux Proxy Config](linux_proxy_config.md) - Network proxy sources on Linux
-*   [Debugging SSL on Linux](linux_debugging_ssl.md) - Tips on debugging SSL
+*   [Linux Proxy Config](linux/proxy_config.md) - Network proxy sources on Linux
+*   [Debugging SSL on Linux](linux/debugging_ssl.md) - Tips on debugging SSL
     code in Linux
-*   [Linux Cert Managment](linux_cert_management.md) - Managing X.509
+*   [Linux Cert Managment](linux/cert_management.md) - Managing X.509
     Certificates in Linux
-*   [Tips for Debugging on Linux](linux_debugging.md)
-*   [Linux GTK Theme Integration](linux_gtk_theme_integration.md) - Having
+*   [Tips for Debugging on Linux](linux/debugging.md)
+*   [Linux GTK Theme Integration](linux/gtk_theme_integration.md) - Having
     Chrome match the GTK+ theme.
-*   [Browser Plugins on Linux](linux_plugins.md) - A collection of links to
+*   [Browser Plugins on Linux](linux/plugins.md) - A collection of links to
     information on how browser plugins work on Linux
-*   [Linux Crash Dumping](linux_crash_dumping.md) - How Breakpad uploads crash
+*   [Linux Crash Dumping](linux/crash_dumping.md) - How Breakpad uploads crash
     reports to Google crash servers.
-*   [Linux Minidump to Core](linux_minidump_to_core.md) - How to convert a
+*   [Linux Minidump to Core](linux/minidump_to_core.md) - How to convert a
     Breakpad-generated minidump files to a core file readable by most debuggersx
-*   [Linux Sandbox IPC](linux_sandbox_ipc.md) - The lower level UPC system used
+*   [Linux Sandbox IPC](linux/sandbox_ipc.md) - The lower level UPC system used
     to route requests from the bottom of the call stack up into the browser.
-*   [Linux Dev Build as Default Browser](linux_dev_build_as_default_browser.md) -
+*   [Linux Dev Build as Default Browser](linux/dev_build_as_default_browser.md) -
     How to configure a Dev build of Chrome as the default browser in Linux.
-*   [Linux Chromium Packages](linux_chromium_packages.md) - Packages of Chromium
+*   [Linux Chromium Packages](linux/chromium_packages.md) - Packages of Chromium
     browser (not Chrome) provided by some Linux distributions.
 *   [`seccomp` Sandbox Crash Dumping](seccomp_sandbox_crash_dumping.md) - Notes
     on crash dumping a process running in a seccomp sandbox.
-*   [Linux Password Storage](linux_password_storage.md) - Keychain integrations
+*   [Linux Password Storage](linux/password_storage.md) - Keychain integrations
     between Chromium and Linux.
 *   [Linux Sublime Development](sublime_ide.md) - Using Sublime as an IDE
     for Chromium development on Linux.
-*   [Building and Debugging GTK](linux_building_debug_gtk.md) - Building
+*   [Building and Debugging GTK](linux/building_debug_gtk.md) - Building
     Chromium against GTK using lower optimization levels and/or more debugging
     symbols.
-*   [Debugging GTK](linux_debugging_gtk.md) - Using the GTK Debug packages and
+*   [Debugging GTK](linux/debugging_gtk.md) - Using the GTK Debug packages and
     related tools.
-*   [Chroot Notes](using_a_linux_chroot.md) - Setting up a chroot to work around
+*   [Chroot Notes](linux/using_a_chroot.md) - Setting up a chroot to work around
     libfreetype differences in some versions of Linux.
-*   [Linux Sandboxing](linux_sandboxing.md) - The Linux multi-process model to
+*   [Linux Sandboxing](linux/sandboxing.md) - The Linux multi-process model to
     isolate browser components with different privileges.
-*   [Zygote Process](linux_zygote.md) - How the Linux Zygote process, used to
+*   [Zygote Process](linux/zygote.md) - How the Linux Zygote process, used to
     spawn new processes, works.
 *   [Running Web Tests on Linux](testing/web_tests_linux.md) - Linux-specific
     instructions for running web tests.
-*   [Linux Sysroot Images](linux_sysroot.md) - How builds use libraries on Linux
-*   [Linux Hardware Video Decoding](linux_hw_video_decode.md) - Enabling
+*   [Linux Sysroot Images](linux/sysroot.md) - How builds use libraries on Linux
+*   [Linux Hardware Video Decoding](linux/hw_video_decode.md) - Enabling
     hardware video decode codepaths on Linux
 
 ### Misc MacOS-Specific Docs
@@ -387,13 +387,13 @@ used when committed.
 *   [System Hardening Features](system_hardening_features.md) - A list of
     current and planned Chrome OS security features.
 *   [WebView Policies](webview_policies.md)
-*   [Linux Profiling](linux_profiling.md) - How to profile Chromium on Linux
-*   [Linux Graphics Pipeline](linux_graphics_pipeline.md)
-*   [Linux `SUID` Sandbox](linux_suid_sandbox.md) - Sandboxing renderers using a
+*   [Linux Profiling](linux/profiling.md) - How to profile Chromium on Linux
+*   [Linux Graphics Pipeline](linux/graphics_pipeline.md)
+*   [Linux `SUID` Sandbox](linux/suid_sandbox.md) - Sandboxing renderers using a
     SUID binary on Linux
-*   [Linux `SUID` Sandbox Development](linux_suid_sandbox_development.md) -
+*   [Linux `SUID` Sandbox Development](linux/suid_sandbox_development.md) -
     Development on the above system.
-*   [Linux PID Namespace Support](linux_pid_namespace_support.md)
+*   [Linux PID Namespace Support](linux/pid_namespace_support.md)
 *   [Vanilla msysgit workflow](vanilla_msysgit_workflow.md) - A workflow for
     using mostly vanilla git on Windows.
 *   [Old Chromoting Build Instructions](old_chromoting_build_instructions.md)

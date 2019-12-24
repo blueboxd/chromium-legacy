@@ -23,6 +23,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/test/scoped_feature_list.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/test/event_generator.h"
@@ -353,8 +354,9 @@ class OverviewControllerTestWithDragFromShelfToHomeOrOverview
       scoped_feature_list_.InitAndEnableFeature(
           features::kDragFromShelfToHomeOrOverview);
     } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          features::kDragFromShelfToHomeOrOverview);
+      scoped_feature_list_.InitWithFeatures(
+          {}, {features::kDragFromShelfToHomeOrOverview,
+               chromeos::features::kShelfHotseat});
     }
   }
 

@@ -6,8 +6,6 @@
 
 #include <utility>
 
-#include "mojo/public/cpp/bindings/binding.h"
-
 namespace media {
 namespace learning {
 

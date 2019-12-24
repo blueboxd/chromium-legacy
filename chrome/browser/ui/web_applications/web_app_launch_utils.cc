@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 
 #include "base/feature_list.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -12,12 +13,21 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "components/omnibox/browser/location_bar_model.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "url/gurl.h"
 
 namespace {
+
+bool IsInScope(content::NavigationEntry* entry, const std::string& scope_spec) {
+  return base::StartsWith(entry->GetURL().spec(), scope_spec,
+                          base::CompareCase::SENSITIVE);
+}
 
 Browser* ReparentWebContentsWithBrowserCreateParams(
     content::WebContents* contents,
@@ -67,6 +77,26 @@ base::Optional<AppId> GetPwaForSecureActiveTab(Browser* browser) {
       web_contents->GetMainFrame()->GetLastCommittedURL());
 }
 
+void PrunePreScopeNavigationHistory(const GURL& scope,
+                                    content::WebContents* contents) {
+  content::NavigationController& navigation_controller =
+      contents->GetController();
+  if (!navigation_controller.CanPruneAllButLastCommitted())
+    return;
+
+  const std::string scope_spec = scope.spec();
+  int index = navigation_controller.GetEntryCount() - 1;
+  while (index >= 0 &&
+         IsInScope(navigation_controller.GetEntryAtIndex(index), scope_spec)) {
+    --index;
+  }
+
+  while (index >= 0) {
+    navigation_controller.RemoveEntryAtIndex(index);
+    --index;
+  }
+}
+
 Browser* ReparentWebAppForSecureActiveTab(Browser* browser) {
   base::Optional<AppId> app_id = GetPwaForSecureActiveTab(browser);
   if (!app_id)
@@ -81,6 +111,21 @@ Browser* ReparentWebContentsIntoAppBrowser(content::WebContents* contents,
   // Incognito tabs reparent correctly, but remain incognito without any
   // indication to the user, so disallow it.
   DCHECK(!profile->IsOffTheRecord());
+
+  // Clear navigation history that occurred before the user most recently
+  // entered the app's scope. The minimal-ui Back button will be initially
+  // disabled if the previous page was outside scope. Packaged apps are not
+  // affected.
+  AppRegistrar& registrar =
+      WebAppProviderBase::GetProviderBase(profile)->registrar();
+  if (registrar.IsInstalled(app_id)) {
+    base::Optional<GURL> app_scope = registrar.GetAppScope(app_id);
+    if (!app_scope)
+      app_scope = registrar.GetAppLaunchURL(app_id).GetWithoutFilename();
+
+    PrunePreScopeNavigationHistory(*app_scope, contents);
+  }
+
   Browser::CreateParams browser_params(Browser::CreateParams::CreateForApp(
       GenerateApplicationNameFromAppId(app_id), true /* trusted_source */,
       gfx::Rect(), profile, true /* user_gesture */));

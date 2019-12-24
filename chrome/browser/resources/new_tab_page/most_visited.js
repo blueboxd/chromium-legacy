@@ -363,9 +363,9 @@ class MostVisitedElement extends PolymerElement {
     const dropIndex = getHitIndex(this.tileRects_, x, y);
     this.tileElements_.forEach((element, i) => {
       let positionIndex;
-      if (i == dragIndex) {
+      if (i === dragIndex) {
         return;
-      } else if (dropIndex == -1) {
+      } else if (dropIndex === -1) {
         positionIndex = i;
       } else if (dragIndex < dropIndex && dragIndex <= i && i <= dropIndex) {
         positionIndex = i - 1;
@@ -486,7 +486,7 @@ class MostVisitedElement extends PolymerElement {
       return;
     }
     const backKey = this.isRtl_ ? 'ArrowRight' : 'ArrowLeft';
-    if (e.key === backKey || e.key == 'ArrowUp') {
+    if (e.key === backKey || e.key === 'ArrowUp') {
       this.tileFocus_(this.tiles_.length - 1);
     }
   }
@@ -515,7 +515,7 @@ class MostVisitedElement extends PolymerElement {
     }
 
     const modifier = isMac ? e.metaKey && !e.ctrlKey : e.ctrlKey && !e.metaKey;
-    if (modifier && e.key == 'z') {
+    if (modifier && e.key === 'z') {
       e.preventDefault();
       this.pageHandler_.undoMostVisitedTileAction();
     }
@@ -642,19 +642,19 @@ class MostVisitedElement extends PolymerElement {
       return;
     }
 
-    if (e.key != 'ArrowLeft' && e.key != 'ArrowRight' && e.key != 'ArrowUp' &&
-        e.key != 'ArrowDown' && e.key != 'Delete') {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' &&
+        e.key !== 'ArrowUp' && e.key !== 'ArrowDown' && e.key !== 'Delete') {
       return;
     }
 
     const {index} = this.$.tiles.modelForElement(e.target);
-    if (e.key == 'Delete') {
+    if (e.key === 'Delete') {
       this.tileRemove_(index);
       return;
     }
 
     const advanceKey = this.isRtl_ ? 'ArrowLeft' : 'ArrowRight';
-    const delta = (e.key == advanceKey || e.key == 'ArrowDown') ? 1 : -1;
+    const delta = (e.key === advanceKey || e.key === 'ArrowDown') ? 1 : -1;
     this.tileFocus_(Math.max(0, index + delta));
   }
 

@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -23,7 +24,8 @@ TEST_F(InsertIncrementalTextCommandTest, SurrogatePairsReplace) {
                                .Build(),
                            SetSelectionOptions());
   CompositeEditCommand* const command =
-      InsertIncrementalTextCommand::Create(GetDocument(), new_text);
+      MakeGarbageCollected<InsertIncrementalTextCommand>(GetDocument(),
+                                                         new_text);
   command->Apply();
 
   EXPECT_EQ(String(Vector<UChar>{'b', 0xD83D, 0xDE38}),
@@ -41,7 +43,8 @@ TEST_F(InsertIncrementalTextCommandTest, SurrogatePairsNoReplace) {
                                .Build(),
                            SetSelectionOptions());
   CompositeEditCommand* const command =
-      InsertIncrementalTextCommand::Create(GetDocument(), new_text);
+      MakeGarbageCollected<InsertIncrementalTextCommand>(GetDocument(),
+                                                         new_text);
   command->Apply();
 
   EXPECT_EQ(String(Vector<UChar>{'b', 0xD83D, 0xDE3A}),
@@ -61,7 +64,8 @@ TEST_F(InsertIncrementalTextCommandTest, SurrogatePairsTwo) {
                                .Build(),
                            SetSelectionOptions());
   CompositeEditCommand* const command =
-      InsertIncrementalTextCommand::Create(GetDocument(), new_text);
+      MakeGarbageCollected<InsertIncrementalTextCommand>(GetDocument(),
+                                                         new_text);
   command->Apply();
 
   EXPECT_EQ(String(Vector<UChar>{'b', 0xD83D, 0xDE38}),

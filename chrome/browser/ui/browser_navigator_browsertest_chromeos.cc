@@ -23,7 +23,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/account_id/account_id.h"
 #include "content/public/browser/notification_service.h"
@@ -47,21 +46,9 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTestChromeOS,
                                ui::PageTransition::PAGE_TRANSITION_TYPED);
 }
 
-class BrowserNavigatorTestChromeOSWithSplitSettings
-    : public BrowserNavigatorTestChromeOS {
- public:
-  BrowserNavigatorTestChromeOSWithSplitSettings() {
-    feature_list_.InitAndEnableFeature(chromeos::features::kSplitSettings);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
 // Verifies that the OS settings page opens in a standalone surface when
 // accessed via link or url.
-IN_PROC_BROWSER_TEST_F(BrowserNavigatorTestChromeOSWithSplitSettings,
-                       NavigateToOSSettings) {
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTestChromeOS, NavigateToOSSettings) {
   // Install the Settings App.
   web_app::WebAppProvider::Get(browser()->profile())
       ->system_web_app_manager()

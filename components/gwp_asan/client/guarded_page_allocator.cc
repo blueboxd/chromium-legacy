@@ -34,6 +34,22 @@ namespace internal {
 
 namespace {
 
+size_t GetStackTrace(void** trace, size_t count) {
+  // TODO(vtsyrklevich): Investigate using trace_event::CFIBacktraceAndroid
+  // on 32-bit Android for canary/dev (where we can dynamically load unwind
+  // data.)
+#if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS)
+  // Android release builds ship without unwind tables so the normal method of
+  // stack trace collection for base::debug::StackTrace doesn't work; however,
+  // AArch64 builds ship with frame pointers so we can still collect stack
+  // traces in that case.
+  return base::debug::TraceStackFramePointers(const_cast<const void**>(trace),
+                                              count, 0);
+#else
+  return base::debug::CollectStackTrace(trace, count);
+#endif
+}
+
 // Report a tid that matches what crashpad collects which may differ from what
 // base::PlatformThread::CurrentId() returns.
 uint64_t ReportTid() {
@@ -376,8 +392,7 @@ void GuardedPageAllocator::RecordAllocationMetadata(
   metadata_[metadata_idx].alloc_ptr = reinterpret_cast<uintptr_t>(ptr);
 
   void* trace[AllocatorState::kMaxStackFrames];
-  size_t len =
-      base::debug::CollectStackTrace(trace, AllocatorState::kMaxStackFrames);
+  size_t len = GetStackTrace(trace, AllocatorState::kMaxStackFrames);
   metadata_[metadata_idx].alloc.trace_len =
       Pack(reinterpret_cast<uintptr_t*>(trace), len,
            metadata_[metadata_idx].stack_trace_pool,
@@ -394,8 +409,7 @@ void GuardedPageAllocator::RecordAllocationMetadata(
 void GuardedPageAllocator::RecordDeallocationMetadata(
     AllocatorState::MetadataIdx metadata_idx) {
   void* trace[AllocatorState::kMaxStackFrames];
-  size_t len =
-      base::debug::CollectStackTrace(trace, AllocatorState::kMaxStackFrames);
+  size_t len = GetStackTrace(trace, AllocatorState::kMaxStackFrames);
   metadata_[metadata_idx].dealloc.trace_len =
       Pack(reinterpret_cast<uintptr_t*>(trace), len,
            metadata_[metadata_idx].stack_trace_pool +

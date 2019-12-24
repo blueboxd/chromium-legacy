@@ -100,8 +100,7 @@ void AppListControllerDelegate::DoShowAppInfoFlow(
   const extensions::Extension* extension = GetExtension(profile, extension_id);
   DCHECK(extension);
 
-  if (base::FeatureList::IsEnabled(chromeos::features::kSplitSettings) &&
-      base::FeatureList::IsEnabled(features::kAppManagement)) {
+  if (base::FeatureList::IsEnabled(features::kAppManagement)) {
     chrome::ShowAppManagementPage(profile, extension_id);
 
     if (extension->is_hosted_app() && extension->from_bookmark()) {

@@ -49,10 +49,13 @@ static const size_t kLargeEnoughSize = 1000 * 1000;
 
 namespace {
 
-std::unique_ptr<JPEGImageDecoder> CreateJPEGDecoder(size_t max_decoded_bytes) {
+std::unique_ptr<JPEGImageDecoder> CreateJPEGDecoder(
+    size_t max_decoded_bytes,
+    ImageDecoder::OverrideAllowDecodeToYuv decodeToYUV =
+        ImageDecoder::OverrideAllowDecodeToYuv::kDeny) {
   return std::make_unique<JPEGImageDecoder>(
       ImageDecoder::kAlphaNotPremultiplied, ColorBehavior::TransformToSRGB(),
-      max_decoded_bytes, ImageDecoder::OverrideAllowDecodeToYuv::kDefault);
+      max_decoded_bytes, decodeToYUV);
 }
 
 std::unique_ptr<ImageDecoder> CreateJPEGDecoder() {
@@ -87,8 +90,8 @@ void ReadYUV(size_t max_decoded_bytes,
   scoped_refptr<SharedBuffer> data = ReadFile(image_file_path);
   ASSERT_TRUE(data);
 
-  std::unique_ptr<JPEGImageDecoder> decoder =
-      CreateJPEGDecoder(max_decoded_bytes);
+  std::unique_ptr<JPEGImageDecoder> decoder = CreateJPEGDecoder(
+      max_decoded_bytes, ImageDecoder::OverrideAllowDecodeToYuv::kDefault);
   decoder->SetDecodeToYuvForTesting(true);
   decoder->SetData(data.get(), true);
 
@@ -274,7 +277,8 @@ TEST(JPEGImageDecoderTest, yuv) {
   scoped_refptr<SharedBuffer> data = ReadFile(jpeg_file);
   ASSERT_TRUE(data);
 
-  std::unique_ptr<JPEGImageDecoder> decoder = CreateJPEGDecoder(230 * 230 * 4);
+  std::unique_ptr<JPEGImageDecoder> decoder = CreateJPEGDecoder(
+      230 * 230 * 4, ImageDecoder::OverrideAllowDecodeToYuv::kDefault);
   decoder->SetDecodeToYuvForTesting(true);
   decoder->SetData(data.get(), true);
 

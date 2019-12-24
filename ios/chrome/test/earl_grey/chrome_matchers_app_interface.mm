@@ -52,6 +52,7 @@
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_constants.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_constants.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/toolbar/keyboard_assist/toolbar_assistive_keyboard_views_utils.h"
 #import "ios/chrome/browser/ui/toolbar/primary_toolbar_view.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
@@ -815,6 +816,25 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
 
 + (id<GREYMatcher>)autofillUploadCardInfobar {
   return grey_accessibilityID(kSaveCardInfobarViewUploadAccessibilityID);
+}
+
++ (id<GREYMatcher>)historyEntryForURL:(NSString*)URL title:(NSString*)title {
+  GREYMatchesBlock matches = ^BOOL(TableViewURLCell* cell) {
+    return [cell.titleLabel.text isEqual:title] &&
+           [cell.URLLabel.text isEqual:URL];
+  };
+
+  GREYDescribeToBlock describe = ^(id<GREYDescription> description) {
+    [description appendText:@"view containing URL text: "];
+    [description appendText:URL];
+    [description appendText:@" title text: "];
+    [description appendText:title];
+  };
+  return grey_allOf(
+      grey_kindOfClass([TableViewURLCell class]),
+      [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
+                                           descriptionBlock:describe],
+      grey_sufficientlyVisible(), nil);
 }
 
 #pragma mark - Manual Fallback

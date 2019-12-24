@@ -89,9 +89,9 @@ class InfobarContainerCoordinatorTest : public PlatformTest {
     web_state_list_->ActivateWebStateAt(0);
 
     // Setup InfobarBadgeTabHelper and InfoBarManager
+    InfoBarManagerImpl::CreateForWebState(web_state_list_->GetActiveWebState());
     InfobarBadgeTabHelper::CreateForWebState(
         web_state_list_->GetActiveWebState());
-    InfoBarManagerImpl::CreateForWebState(web_state_list_->GetActiveWebState());
 
     // Setup the InfobarContainerCoordinator.
     infobar_container_coordinator_ = [[InfobarContainerCoordinator alloc]
@@ -188,10 +188,11 @@ class InfobarContainerCoordinatorTest : public PlatformTest {
   void AddSecondWebstate() {
     std::unique_ptr<web::TestWebState> second_web_state =
         std::make_unique<web::TestWebState>();
+    InfoBarManagerImpl::CreateForWebState(second_web_state.get());
+    InfobarBadgeTabHelper::CreateForWebState(second_web_state.get());
     web_state_list_->InsertWebState(1, std::move(second_web_state),
                                     WebStateList::INSERT_NO_FLAGS,
                                     WebStateOpener());
-    InfobarBadgeTabHelper::CreateForWebState(web_state_list_->GetWebStateAt(1));
   }
 
   // Adds a Legacy Infobar to the InfobarManager, triggering an InfobarBanner

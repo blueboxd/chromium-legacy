@@ -12,20 +12,13 @@
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "components/translate/core/browser/translate_pref_names.h"
-#include "components/translate/core/browser/translate_prefs.h"
-#include "components/translate/core/common/language_detection_details.h"
 #include "components/translate/core/common/translate_constants.h"
-#include "components/translate/core/common/translate_switches.h"
-#import "components/translate/ios/browser/js_translate_manager.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/chrome_url_util.h"
-#include "ios/chrome/browser/translate/chrome_ios_translate_client.h"
+#include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/translate/translate_app_interface.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
-#import "ios/chrome/browser/ui/translate/legacy_translate_infobar_coordinator.h"
-#import "ios/chrome/browser/ui/translate/translate_infobar_view.h"
+#import "ios/chrome/browser/ui/translate/legacy_translate_infobar_constants.h"
+#import "ios/chrome/browser/ui/translate/translate_infobar_view_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
@@ -36,7 +29,6 @@
 #include "ios/web/public/test/http_server/data_response_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
-#import "ios/web/public/web_state.h"
 #include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
@@ -243,7 +235,7 @@ bool TestResponseProvider::CanHandleRequest(const Request& request) {
            url.path() == kFrenchPageNoTranslateContent ||
            url.path() == kFrenchPageNoTranslateValue ||
            url.path() == kTranslateScriptPath)) ||
-         UrlHasChromeScheme(url);
+         url.SchemeIs(kChromeUIScheme);
 }
 
 void TestResponseProvider::GetResponseHeadersAndBody(
@@ -252,7 +244,7 @@ void TestResponseProvider::GetResponseHeadersAndBody(
     std::string* response_body) {
   const GURL& url = request.url;
   *headers = web::ResponseProvider::GetDefaultResponseHeaders();
-  if (UrlHasChromeScheme(url)) {
+  if (url.SchemeIs(kChromeUIScheme)) {
     *response_body = url.spec();
     return;
   } else if (url.path() == kLanguagePath) {
@@ -338,14 +330,13 @@ void TestResponseProvider::GetLanguageResponse(
 
 - (void)setUp {
   [super setUp];
-  [TranslateAppInterface setUp];
 
-  // Set up a fake URL for the translate script to hit the mock HTTP server.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  // Set up the fake URL for the translate script to hit the mock HTTP server.
   GURL translateScriptURL = web::test::HttpServer::MakeUrl(
       base::StringPrintf("http://%s", kTranslateScriptPath));
-  command_line->AppendSwitchASCII(translate::switches::kTranslateScriptURL,
-                                  translateScriptURL.spec().c_str());
+  NSString* translateScriptSwitchValue =
+      base::SysUTF8ToNSString(translateScriptURL.spec());
+  [TranslateAppInterface setUpWithScriptServer:translateScriptSwitchValue];
 }
 
 - (void)tearDown {
@@ -366,13 +357,11 @@ void TestResponseProvider::GetLanguageResponse(
       GetFrenchPageHtml(kHtmlAttributeWithDeLang, kMetaItContentLanguage);
   web::test::SetUpSimpleHttpServer(responses);
 
-  translate::LanguageDetectionDetails expectedLanguageDetails;
-  expectedLanguageDetails.content_language = "it";
-  expectedLanguageDetails.html_root_language = "de";
-  expectedLanguageDetails.adopted_language = translate::kUnknownLanguageCode;
-
   [ChromeEarlGrey loadURL:URL];
-  [self assertLanguageDetails:expectedLanguageDetails];
+  [self assertContentLanguage:@"it"
+             htmlRootLanguage:@"de"
+              adoptedLanguage:base::SysUTF8ToNSString(
+                                  translate::kUnknownLanguageCode)];
 }
 
 // Tests that hidden text is not considered during detection.
@@ -387,9 +376,10 @@ void TestResponseProvider::GetLanguageResponse(
 
   [ChromeEarlGrey loadURL:URL];
   // Check for no language detected.
-  translate::LanguageDetectionDetails expectedLanguageDetails;
-  expectedLanguageDetails.adopted_language = translate::kUnknownLanguageCode;
-  [self assertLanguageDetails:expectedLanguageDetails];
+  [self assertContentLanguage:@""
+             htmlRootLanguage:@""
+              adoptedLanguage:base::SysUTF8ToNSString(
+                                  translate::kUnknownLanguageCode)];
 }
 
 // Tests that language detection is not performed when the page specifies that
@@ -430,21 +420,26 @@ void TestResponseProvider::GetLanguageResponse(
 
   [ChromeEarlGrey loadURL:URL];
   // Check for no language detected.
-  translate::LanguageDetectionDetails expectedLanguageDetails;
-  expectedLanguageDetails.adopted_language = "und";
-  [self assertLanguageDetails:expectedLanguageDetails];
+  [self assertContentLanguage:@""
+             htmlRootLanguage:@""
+              adoptedLanguage:base::SysUTF8ToNSString(
+                                  translate::kUnknownLanguageCode)];
 
   // Resets state before triggering a new round of language detection.
   [TranslateAppInterface resetLanguageDetectionTabHelperObserver];
   // Change the text of the page.
-  chrome_test_util::ExecuteJavaScript(
-      [NSString stringWithFormat:@"document.write('%s');", kEnglishText], nil);
+  NSError* error = nil;
+  [ChromeEarlGreyAppInterface
+      executeJavaScript:[NSString stringWithFormat:@"document.write('%s');",
+                                                   kEnglishText]
+                  error:&error];
   // Trigger a new detection with pushState.
-  chrome_test_util::ExecuteJavaScript(@"history.pushState(null, null, null);",
-                                      nil);
+  error = nil;
+  [ChromeEarlGreyAppInterface
+      executeJavaScript:@"history.pushState(null, null, null);"
+                  error:&error];
   // Check that the new language has been detected.
-  expectedLanguageDetails.adopted_language = "en";
-  [self assertLanguageDetails:expectedLanguageDetails];
+  [self assertContentLanguage:@"" htmlRootLanguage:@"" adoptedLanguage:@"en"];
 }
 
 // Tests that language detection is performed on hash changes.
@@ -472,17 +467,14 @@ void TestResponseProvider::GetLanguageResponse(
 
   [ChromeEarlGrey loadURL:URL];
   // Check that language has been detected.
-  translate::LanguageDetectionDetails expectedLanguageDetails;
-  expectedLanguageDetails.adopted_language = "fr";
-  [self assertLanguageDetails:expectedLanguageDetails];
+  [self assertContentLanguage:@"" htmlRootLanguage:@"" adoptedLanguage:@"fr"];
 
   // Resets state before triggering a new round of language detection.
   [TranslateAppInterface resetLanguageDetectionTabHelperObserver];
   // Trigger the hash change.
   [ChromeEarlGrey tapWebStateElementWithID:@"Hash"];
   // Check that language detection has been re-run.
-  expectedLanguageDetails.adopted_language = "en";
-  [self assertLanguageDetails:expectedLanguageDetails];
+  [self assertContentLanguage:@"" htmlRootLanguage:@"" adoptedLanguage:@"en"];
 }
 
 // Tests that language in http content is detected.
@@ -495,10 +487,7 @@ void TestResponseProvider::GetLanguageResponse(
   GURL URL = web::test::HttpServer::MakeUrl(std::string("http://") +
                                             kLanguagePath + "?http=fr");
   [ChromeEarlGrey loadURL:URL];
-  translate::LanguageDetectionDetails expectedLanguageDetails;
-  expectedLanguageDetails.content_language = "fr";
-  expectedLanguageDetails.adopted_language = "fr";
-  [self assertLanguageDetails:expectedLanguageDetails];
+  [self assertContentLanguage:@"fr" htmlRootLanguage:@"" adoptedLanguage:@"fr"];
 
   // Resets state before triggering a new round of language detection.
   [TranslateAppInterface resetLanguageDetectionTabHelperObserver];
@@ -506,9 +495,7 @@ void TestResponseProvider::GetLanguageResponse(
   URL = web::test::HttpServer::MakeUrl(std::string("http://") + kLanguagePath +
                                        "?http=fr,ornot");
   [ChromeEarlGrey loadURL:URL];
-  expectedLanguageDetails.content_language = "fr";
-  expectedLanguageDetails.adopted_language = "fr";
-  [self assertLanguageDetails:expectedLanguageDetails];
+  [self assertContentLanguage:@"fr" htmlRootLanguage:@"" adoptedLanguage:@"fr"];
 
   // Resets state before triggering a new round of language detection.
   [TranslateAppInterface resetLanguageDetectionTabHelperObserver];
@@ -516,9 +503,7 @@ void TestResponseProvider::GetLanguageResponse(
   URL = web::test::HttpServer::MakeUrl(std::string("http://") + kLanguagePath +
                                        "?http=fr&meta=it");
   [ChromeEarlGrey loadURL:URL];
-  expectedLanguageDetails.content_language = "it";
-  expectedLanguageDetails.adopted_language = "it";
-  [self assertLanguageDetails:expectedLanguageDetails];
+  [self assertContentLanguage:@"it" htmlRootLanguage:@"" adoptedLanguage:@"it"];
 
   // Resets state before triggering a new round of language detection.
   [TranslateAppInterface resetLanguageDetectionTabHelperObserver];
@@ -526,9 +511,7 @@ void TestResponseProvider::GetLanguageResponse(
   URL =
       web::test::HttpServer::MakeUrl(std::string("http://") + kSubresourcePath);
   [ChromeEarlGrey loadURL:URL];
-  expectedLanguageDetails.content_language = "fr";
-  expectedLanguageDetails.adopted_language = "fr";
-  [self assertLanguageDetails:expectedLanguageDetails];
+  [self assertContentLanguage:@"fr" htmlRootLanguage:@"" adoptedLanguage:@"fr"];
 }
 
 // Tests that language in http content is detected when navigating to a link.
@@ -546,10 +529,7 @@ void TestResponseProvider::GetLanguageResponse(
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           someLanguageURL.GetContent())]
       assertWithMatcher:grey_notNil()];
-  translate::LanguageDetectionDetails expectedLanguageDetails;
-  expectedLanguageDetails.content_language = "es";
-  expectedLanguageDetails.adopted_language = "es";
-  [self assertLanguageDetails:expectedLanguageDetails];
+  [self assertContentLanguage:@"es" htmlRootLanguage:@"" adoptedLanguage:@"es"];
 }
 
 // Tests that language detection still happens when a very large quantity of
@@ -574,10 +554,7 @@ void TestResponseProvider::GetLanguageResponse(
   [ChromeEarlGrey loadURL:URL];
 
   // Check that language has been detected.
-  translate::LanguageDetectionDetails expectedLanguageDetails;
-  expectedLanguageDetails.html_root_language = "fr";
-  expectedLanguageDetails.adopted_language = "fr";
-  [self assertLanguageDetails:expectedLanguageDetails];
+  [self assertContentLanguage:@"" htmlRootLanguage:@"fr" adoptedLanguage:@"fr"];
 }
 
 // Tests that language detection is not performed when translate is disabled.
@@ -1018,8 +995,7 @@ void TestResponseProvider::GetLanguageResponse(
 
   // Translate the page by tapping the target language tab until
   // "Always Translate" is automatically triggered.
-  for (int i = 0;
-       i <= translate::TranslateInfoBarDelegate::GetAutoAlwaysThreshold();
+  for (int i = 0; i <= [TranslateAppInterface infobarAutoAlwaysThreshold];
        i++) {
     [[EarlGrey
         selectElementWithMatcher:ButtonWithAccessibilityLabel(@"English")]
@@ -1068,13 +1044,11 @@ void TestResponseProvider::GetLanguageResponse(
              @"French to English translation is automatic");
 
   // Trigger and refuse the auto "Always Translate".
-  for (int i = 0;
-       i < translate::TranslateInfoBarDelegate::GetMaximumNumberOfAutoAlways();
+  for (int i = 0; i < [TranslateAppInterface infobarMaximumNumberOfAutoAlways];
        i++) {
     // Translate the page by tapping the target language tab until
     // "Always Translate" is automatically triggered.
-    for (int j = 0;
-         j <= translate::TranslateInfoBarDelegate::GetAutoAlwaysThreshold();
+    for (int j = 0; j <= [TranslateAppInterface infobarAutoAlwaysThreshold];
          j++) {
       [[EarlGrey
           selectElementWithMatcher:ButtonWithAccessibilityLabel(@"English")]
@@ -1089,8 +1063,7 @@ void TestResponseProvider::GetLanguageResponse(
 
   // Translate the page by tapping the target language tab in order to
   // automatically trigger "Always Translate".
-  for (int i = 0;
-       i <= translate::TranslateInfoBarDelegate::GetAutoAlwaysThreshold();
+  for (int i = 0; i <= [TranslateAppInterface infobarAutoAlwaysThreshold];
        i++) {
     [[EarlGrey
         selectElementWithMatcher:ButtonWithAccessibilityLabel(@"English")]
@@ -1200,8 +1173,7 @@ void TestResponseProvider::GetLanguageResponse(
 
   // Dismiss the translate infobar until "Never Translate ..." is automatically
   // triggered.
-  for (int i = 0;
-       i < translate::TranslateInfoBarDelegate::GetAutoNeverThreshold(); i++) {
+  for (int i = 0; i < [TranslateAppInterface infobarAutoNeverThreshold]; i++) {
     // Reload the page.
     [ChromeEarlGrey reload];
 
@@ -1255,13 +1227,11 @@ void TestResponseProvider::GetLanguageResponse(
              @"Translation from French is blocked");
 
   // Trigger and refuse the auto "Never Translate ...".
-  for (int i = 0;
-       i < translate::TranslateInfoBarDelegate::GetMaximumNumberOfAutoNever();
+  for (int i = 0; i < [TranslateAppInterface infobarMaximumNumberOfAutoNever];
        i++) {
     // Dismiss the translate infobar until "Never Translate ..." is
     // automatically triggered.
-    for (int j = 0;
-         j < translate::TranslateInfoBarDelegate::GetAutoNeverThreshold();
+    for (int j = 0; j < [TranslateAppInterface infobarAutoNeverThreshold];
          j++) {
       // Reload the page.
       [ChromeEarlGrey reload];
@@ -1282,8 +1252,7 @@ void TestResponseProvider::GetLanguageResponse(
 
   // Dismiss the translate infobar in order to automatically trigger
   // "Never Translate ...".
-  for (int i = 0;
-       i < translate::TranslateInfoBarDelegate::GetAutoNeverThreshold(); i++) {
+  for (int i = 0; i < [TranslateAppInterface infobarAutoNeverThreshold]; i++) {
     // Reload the page.
     [ChromeEarlGrey reload];
 
@@ -1666,39 +1635,35 @@ void TestResponseProvider::GetLanguageResponse(
   return detected;
 }
 
-// Waits until language details have been detected then verifies them. Resets
-// language details in order to wait for new detection in the next call.
-- (void)assertLanguageDetails:
-    (const translate::LanguageDetectionDetails&)expectedDetails {
-  GREYAssert([self waitForLanguageDetection],
-             @"Language not detected");
+// Waits until language details have been detected then verifies them.
+// Checks expectation for Content-Language, HTML root element language, and
+// detected language on page. Use @"" for expected values that are expected
+// to be not set.
+- (void)assertContentLanguage:(NSString*)expectedContentLanguage
+             htmlRootLanguage:(NSString*)expectedHtmlRootLanguage
+              adoptedLanguage:(NSString*)expectedAdoptedLanguage {
+  GREYAssert([self waitForLanguageDetection], @"Language not detected");
 
-  std::string contentLanguage =
-      base::SysNSStringToUTF8([TranslateAppInterface contentLanguage]);
+  NSString* contentLanguage = [TranslateAppInterface contentLanguage];
   NSString* contentLanguageError =
-      [NSString stringWithFormat:@"Wrong content-language: %s (expected %s)",
-                                 contentLanguage.c_str(),
-                                 expectedDetails.content_language.c_str()];
-  GREYAssertEqual(expectedDetails.content_language, contentLanguage,
-                  contentLanguageError);
+      [NSString stringWithFormat:@"Wrong content-language: %@ (expected %@)",
+                                 contentLanguage, expectedContentLanguage];
+  GREYAssertEqualObjects(expectedContentLanguage, contentLanguage,
+                         contentLanguageError);
 
-  std::string htmlRootLanguage =
-      base::SysNSStringToUTF8([TranslateAppInterface htmlRootLanguage]);
+  NSString* htmlRootLanguage = [TranslateAppInterface htmlRootLanguage];
   NSString* htmlRootLanguageError =
-      [NSString stringWithFormat:@"Wrong html root language: %s (expected %s)",
-                                 htmlRootLanguage.c_str(),
-                                 expectedDetails.html_root_language.c_str()];
-  GREYAssertEqual(expectedDetails.html_root_language, htmlRootLanguage,
-                  htmlRootLanguageError);
+      [NSString stringWithFormat:@"Wrong html root language: %@ (expected %@)",
+                                 htmlRootLanguage, expectedHtmlRootLanguage];
+  GREYAssertEqualObjects(expectedHtmlRootLanguage, htmlRootLanguage,
+                         htmlRootLanguageError);
 
-  std::string adoptedLanguage =
-      base::SysNSStringToUTF8([TranslateAppInterface adoptedLanguage]);
+  NSString* adoptedLanguage = [TranslateAppInterface adoptedLanguage];
   NSString* adoptedLanguageError =
-      [NSString stringWithFormat:@"Wrong adopted language: %s (expected %s)",
-                                 adoptedLanguage.c_str(),
-                                 expectedDetails.adopted_language.c_str()];
-  GREYAssertEqual(expectedDetails.adopted_language, adoptedLanguage,
-                  adoptedLanguageError);
+      [NSString stringWithFormat:@"Wrong adopted language: %@ (expected %@)",
+                                 adoptedLanguage, expectedAdoptedLanguage];
+  GREYAssertEqualObjects(expectedAdoptedLanguage, adoptedLanguage,
+                         adoptedLanguageError);
 }
 
 @end

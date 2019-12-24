@@ -67,11 +67,10 @@ class MockLayoutManagerBase : public LayoutManagerBase {
       const SizeBounds& size_bounds) const override {
     ProposedLayout layout;
     layout.host_size = {kChildViewPadding, kChildViewPadding};
-    for (auto it = host_view()->children().begin();
-         it != host_view()->children().end(); ++it) {
-      if (!IsChildIncludedInLayout(*it))
+    for (auto* it : host_view()->children()) {
+      if (!IsChildIncludedInLayout(it))
         continue;
-      const gfx::Size preferred_size = (*it)->GetPreferredSize();
+      const gfx::Size preferred_size = it->GetPreferredSize();
       bool visible = false;
       gfx::Rect bounds;
       const int required_width = preferred_size.width() + 2 * kChildViewPadding;
@@ -87,7 +86,7 @@ class MockLayoutManagerBase : public LayoutManagerBase {
         layout.host_size.set_height(std::max(
             layout.host_size.height(), bounds.bottom() + kChildViewPadding));
       }
-      layout.child_layouts.push_back({*it, visible, bounds});
+      layout.child_layouts.push_back({it, visible, bounds});
     }
     ++num_layouts_generated_;
     return layout;

@@ -30,7 +30,8 @@ ScopedEnableUnadjustedMouseEventsWin::ScopedEnableUnadjustedMouseEventsWin(
 
 ScopedEnableUnadjustedMouseEventsWin::~ScopedEnableUnadjustedMouseEventsWin() {
   // Stop receiving raw input.
-  std::unique_ptr<RAWINPUTDEVICE> device(GetRawInputDevices(0, RIDEV_REMOVE));
+  std::unique_ptr<RAWINPUTDEVICE> device(
+      GetRawInputDevices(nullptr, RIDEV_REMOVE));
   if (!RegisterRawInputDevices(device.get(), 1, sizeof(*device)))
     PLOG(INFO) << "RegisterRawInputDevices() failed for RIDEV_REMOVE ";
 

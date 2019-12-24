@@ -26,7 +26,8 @@ namespace ash {
 // provide any bubble view windows.
 class ASH_EXPORT DictationButtonTray : public TrayBackgroundView,
                                        public ShellObserver,
-                                       public AccessibilityObserver {
+                                       public AccessibilityObserver,
+                                       public SessionObserver {
  public:
   explicit DictationButtonTray(Shelf* shelf);
   ~DictationButtonTray() override;
@@ -40,6 +41,9 @@ class ASH_EXPORT DictationButtonTray : public TrayBackgroundView,
 
   // AccessibilityObserver:
   void OnAccessibilityStatusChanged() override;
+
+  // SessionObserver:
+  void OnSessionStateChanged(session_manager::SessionState state) override;
 
   // TrayBackgroundView:
   void Initialize() override;
@@ -64,9 +68,6 @@ class ASH_EXPORT DictationButtonTray : public TrayBackgroundView,
 
   // Actively looks up dictation status and calls UpdateIcon.
   void CheckDictationStatusAndUpdateIcon();
-
-  gfx::ImageSkia on_image_;
-  gfx::ImageSkia off_image_;
 
   // Weak pointer, will be parented by TrayContainer for its lifetime.
   views::ImageView* icon_;

@@ -31,4 +31,6 @@ enum InstallerError {
   kErrorSettingUpContainer,
   kErrorInsufficientDiskSpace,
   kErrorConfiguringContainer,
+  kErrorCreateContainer,
+  kErrorUnknown,
 };

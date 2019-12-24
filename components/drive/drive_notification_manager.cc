@@ -33,29 +33,21 @@ const int kSlowPollingIntervalInSecs = 3600;
 constexpr int kInvalidationBatchIntervalSecs = 15;
 
 // The sync invalidation object ID for Google Drive.
-const char kDriveInvalidationObjectId[] = "CHANGELOG";
-
-// The sync invalidation object ID for Google Drive.
-const char kFcmDriveInvalidationObjectId[] = "Drive";
-
-// Team drive invalidation ID's are "TD:<team_drive_id>".
-constexpr char kTeamDriveChangePrefix[] = "TD:";
+const char kDriveInvalidationObjectId[] = "Drive";
 
 // Team drive invalidation ID's from FCM are "team-drive-<team_drive_id>".
-constexpr char kFcmTeamDriveChangePrefix[] = "team-drive-";
+constexpr char kTeamDriveChangePrefix[] = "team-drive-";
 
 }  // namespace
 
 DriveNotificationManager::DriveNotificationManager(
     invalidation::InvalidationService* invalidation_service,
-    bool use_fcm_object_ids,
     const base::TickClock* clock)
     : invalidation_service_(invalidation_service),
       push_notification_registered_(false),
       push_notification_enabled_(false),
       observers_notified_(false),
-      batch_timer_(clock),
-      use_fcm_object_ids_(use_fcm_object_ids) {
+      batch_timer_(clock) {
   DCHECK(invalidation_service_);
   RegisterDriveNotifications();
   RestartPollingTimer();
@@ -131,7 +123,7 @@ void DriveNotificationManager::OnIncomingInvalidation(
 
 std::string DriveNotificationManager::GetOwnerName() const { return "Drive"; }
 bool DriveNotificationManager::IsPublicTopic(const syncer::Topic& topic) const {
-  return base::StringPiece(topic).starts_with(kFcmTeamDriveChangePrefix);
+  return base::StringPiece(topic).starts_with(kTeamDriveChangePrefix);
 }
 
 void DriveNotificationManager::AddObserver(
@@ -293,21 +285,17 @@ std::string DriveNotificationManager::NotificationSourceToString(
 }
 
 std::string DriveNotificationManager::GetDriveInvalidationObjectId() const {
-  return use_fcm_object_ids_ ? kFcmDriveInvalidationObjectId
-                             : kDriveInvalidationObjectId;
+  return kDriveInvalidationObjectId;
 }
 
 std::string DriveNotificationManager::GetTeamDriveInvalidationObjectId(
     const std::string& team_drive_id) const {
-  return base::StrCat(
-      {use_fcm_object_ids_ ? kFcmTeamDriveChangePrefix : kTeamDriveChangePrefix,
-       team_drive_id});
+  return base::StrCat({kTeamDriveChangePrefix, team_drive_id});
 }
 
 std::string DriveNotificationManager::ExtractTeamDriveId(
     base::StringPiece object_id) const {
-  base::StringPiece prefix =
-      use_fcm_object_ids_ ? kFcmTeamDriveChangePrefix : kTeamDriveChangePrefix;
+  base::StringPiece prefix = kTeamDriveChangePrefix;
   if (!object_id.starts_with(prefix)) {
     return {};
   }

@@ -1871,11 +1871,10 @@ crbug.com/766135 fast/dom/Window/redirect-with-timer.html [ Timeout Pass ]
 
 # Ref tests that needs investigation.
 crbug.com/404597 fast/forms/long-text-in-input.html [ Skip ]
-
 crbug.com/552494 virtual/prefer_compositing_to_lcd_text/scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]
 
 # These are copied from elsewhere in this file, for the virtual/form-controls-refresh-disabled suite:
-crbug.com/954349 virtual/form-controls-refresh-disabled/fast/forms/autofocus-in-sandbox-with-allow-scripts.html [ Timeout ]
+crbug.com/954349 virtual/form-controls-refresh-disabled/fast/forms/autofocus-in-sandbox-with-allow-scripts.html [ Timeout Failure ]
 crbug.com/404597 virtual/form-controls-refresh-disabled/fast/forms/long-text-in-input.html [ Skip ]
 crbug.com/654999 [ Win ] virtual/form-controls-refresh-disabled/fast/forms/color/color-suggestion-picker-appearance-zoom200.html [ Pass Failure ]
 crbug.com/654999 [ Linux ] virtual/form-controls-refresh-disabled/fast/forms/color/color-suggestion-picker-appearance-zoom200.html [ Pass Failure ]
@@ -1888,6 +1887,7 @@ crbug.com/660185 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/datal
 crbug.com/953591 [ Win ] virtual/form-controls-refresh-disabled/fast/forms/datalist/input-appearance-range-with-transform.html [ Pass Failure ]
 crbug.com/591099 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/text/text-lineheight-centering.html [ Failure ]
 crbug.com/770971 [ Win7 ] virtual/form-controls-refresh-disabled/fast/forms/suggested-value.html [ Pass Failure ]
+crbug.com/1035582 virtual/form-controls-refresh-disabled/fast/forms/number/number-input-event-composed.html [ Pass Failure ]
 # From never fix tests:
 crbug.com/123456 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/select-popup/* [ Skip ]
 crbug.com/123456 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/calendar-picker/date-open-picker-with-f4-key.html [ Skip ]
@@ -5847,6 +5847,9 @@ crbug.com/998917 external/wpt/native-file-system/native_FileSystemDirectoryHandl
 crbug.com/998917 external/wpt/native-file-system/native_FileSystemDirectoryHandle-getFile.tentative.https.manual.window.html [ Skip ]
 crbug.com/998917 external/wpt/native-file-system/native_FileSystemDirectoryHandle-removeEntry.tentative.https.manual.window.html [ Skip ]
 crbug.com/998917 external/wpt/native-file-system/native_FileSystemFileHandle-getFile.tentative.https.manual.window.html [ Skip ]
+crbug.com/998917 external/wpt/native-file-system/native_FileSystemWritableFileStream.tentative.https.manual.window.html [ Skip ]
+crbug.com/998917 external/wpt/native-file-system/native_FileSystemWritableFileStream-piped.tentative.https.manual.window.html [ Skip ]
+crbug.com/998917 external/wpt/native-file-system/native_FileSystemWritableFileStream-write.tentative.https.manual.window.html [ Skip ]
 crbug.com/998917 external/wpt/native-file-system/native_FileSystemWriter.tentative.https.manual.window.html [ Skip ]
 
 crbug.com/1000051 media/controls/volume-slider.html [ Failure Timeout Pass ]
@@ -6109,7 +6112,7 @@ crbug.com/1006759 inspector-protocol/heap-profiler/heap-snapshot-with-multiple-r
 crbug.com/1006759 inspector-protocol/heap-profiler/heap-snapshot-with-no-detached-iframe.js [ Pass Failure ]
 
 # Sheriff 2019-12-13
-crbug.com/1032451 [ Win7 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/idlharness.https.window.html [ Failure ]
+crbug.com/1032451 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/idlharness.https.window.html [ Failure Timeout Pass ]
 crbug.com/1033852 [ Win7 ] virtual/omt-worker-fetch/external/wpt/fetch/api/idlharness.any.sharedworker.html [ Failure ]
 crbug.com/1033387 [ Mac ] http/tests/portals/crbug-1031677.html [ Pass Timeout ]
 
@@ -6136,3 +6139,10 @@ crbug.com/1034839 css3/filters/effect-reference-image.html [ Pass Failure ]
 
 # Sheriff 2019-12-18
 crbug.com/859169 http/tests/devtools/layers/layer-compositing-reasons.js [ Pass Failure ]
+
+# Sheriff 2019-12-23
+crbug.com/1036626 http/tests/devtools/tracing/tracing-record-input-events.js [ Pass Failure ]
+crbug.com/1036626 virtual/threaded/http/tests/devtools/tracing/tracing-record-input-events.js [ Pass Failure ]
+crbug.com/1036054 [ Mac10.13 ] virtual/threaded/fast/scroll-snap/snap-to-area-with-fractional-offset.html [ Pass Failure ]
+crbug.com/960944 animations/web-animations/animation-state-changes-positive-playback-rate.html [ Pass Failure ]
+crbug.com/1033381 synthetic_gestures/smooth-scroll-tiny-delta.html [ Pass Crash ]

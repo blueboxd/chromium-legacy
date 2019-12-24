@@ -1163,6 +1163,9 @@
         },
         'test': 'browser_tests',
       },
+      # TODO(crbug.com/1025244): Move Open Screen unit tests from fieldtrial
+      # to linux, mac bots once we have ensured the tests are stable.
+      'openscreen_unittests': {}
     },
 
     'fuchsia_gtests': {

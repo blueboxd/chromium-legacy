@@ -19,23 +19,12 @@ cr.define('settings_reset_page', function() {
     /** @type {!settings.ResetPageBrowserProxy} */
     let resetPageBrowserProxy = null;
 
-    /** @type {!settings.LifetimeBrowserProxy} */
-    let lifetimeBrowserProxy = null;
-
     setup(function() {
-      if (cr.isChromeOS) {
-        lifetimeBrowserProxy = new settings.TestLifetimeBrowserProxy();
-        settings.LifetimeBrowserProxyImpl.instance_ = lifetimeBrowserProxy;
-      }
-
       resetPageBrowserProxy = new reset_page.TestResetBrowserProxy();
       settings.ResetBrowserProxyImpl.instance_ = resetPageBrowserProxy;
 
       PolymerTest.clearBody();
       resetPage = document.createElement('settings-reset-page');
-      if (cr.isChromeOS) {
-        resetPage.pageVisibility = {powerwash: true};
-      }
       document.body.appendChild(resetPage);
     });
 

@@ -2662,10 +2662,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kCookieDeprecationMessages);
 
-  WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(shell()->web_contents());
-  ConsoleObserverDelegate console_observer(web_contents, "*");
-  web_contents->SetDelegate(&console_observer);
+  WebContentsConsoleObserver console_observer(shell()->web_contents());
 
   // Test deprecation messages for SameSiteByDefault.
   // Set a cookie without SameSite on b.com, then access it in a cross-site
@@ -2691,7 +2688,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   // Another copy of the message appears because we have navigated.
   EXPECT_TRUE(NavigateToURL(shell(), url));
   EXPECT_EQ(3u, console_observer.messages().size());
-  EXPECT_EQ(console_observer.messages()[1], console_observer.messages()[2]);
+  EXPECT_EQ(console_observer.messages()[1].message,
+            console_observer.messages()[2].message);
 }
 
 // Enable SameSiteByDefaultCookies to test deprecation messages for
@@ -2712,10 +2710,7 @@ class RenderFrameHostImplSameSiteByDefaultCookiesBrowserTest
 
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplSameSiteByDefaultCookiesBrowserTest,
                        DisplaySameSiteCookieDeprecationMessages) {
-  WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(shell()->web_contents());
-  ConsoleObserverDelegate console_observer(web_contents, "*");
-  web_contents->SetDelegate(&console_observer);
+  WebContentsConsoleObserver console_observer(shell()->web_contents());
 
   // Test deprecation messages for SameSiteByDefault.
   // Set a cookie without SameSite on b.com, then access it in a cross-site
@@ -2755,9 +2750,12 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplSameSiteByDefaultCookiesBrowserTest,
   EXPECT_EQ(3u, console_observer.messages().size());
 
   // Check that the messages were all distinct.
-  EXPECT_NE(console_observer.messages()[0], console_observer.messages()[1]);
-  EXPECT_NE(console_observer.messages()[0], console_observer.messages()[2]);
-  EXPECT_NE(console_observer.messages()[1], console_observer.messages()[2]);
+  EXPECT_NE(console_observer.messages()[0].message,
+            console_observer.messages()[1].message);
+  EXPECT_NE(console_observer.messages()[0].message,
+            console_observer.messages()[2].message);
+  EXPECT_NE(console_observer.messages()[1].message,
+            console_observer.messages()[2].message);
 }
 
 // Test that the SameSite-by-default console warnings are not emitted
@@ -2765,10 +2763,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplSameSiteByDefaultCookiesBrowserTest,
 // Regression test for https://crbug.com/1027318.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplSameSiteByDefaultCookiesBrowserTest,
                        NoMessagesIfCookieWouldBeRejectedForOtherReasons) {
-  WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(shell()->web_contents());
-  ConsoleObserverDelegate console_observer(web_contents, "*");
-  web_contents->SetDelegate(&console_observer);
+  WebContentsConsoleObserver console_observer(shell()->web_contents());
 
   GURL url = embedded_test_server()->GetURL(
       "x.com", "/set-cookie?cookiewithpath=1;path=/set-cookie");

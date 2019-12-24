@@ -148,13 +148,13 @@ chrome.accessibilityPrivate.FocusType = {
 chrome.accessibilityPrivate.FocusRingInfo;
 
 /**
- * Called to translate languageCodeToTranslate into human-readable string in the
- * language specified by targetLanguageCode
- * @param {string} languageCodeToTranslate
- * @param {string} targetLanguageCode
- * @return {string} The human-readable language string in the provided language.
+ * Called to translate localeCodeToTranslate into human-readable string in the
+ * locale specified by displayLocaleCode
+ * @param {string} localeCodeToTranslate
+ * @param {string} displayLocaleCode
+ * @return {string} The human-readable locale string in the provided locale.
  */
-chrome.accessibilityPrivate.getDisplayLanguage = function(languageCodeToTranslate, targetLanguageCode) {};
+chrome.accessibilityPrivate.getDisplayNameForLocale = function(localeCodeToTranslate, displayLocaleCode) {};
 
 /**
  * Called to request battery status from Chrome OS system.

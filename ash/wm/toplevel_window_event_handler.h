@@ -182,8 +182,7 @@ class ASH_EXPORT ToplevelWindowEventHandler
 
   // True if we can start swiping from left edge of the display or splitview
   // divider to go back.
-  bool CanStartGoingBack(ui::GestureEvent* event,
-                         aura::Window* window,
+  bool CanStartGoingBack(aura::Window* window,
                          const gfx::Point& screen_location);
 
   // The hittest result for the first finger at the time that it initially

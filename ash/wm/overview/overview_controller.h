@@ -113,8 +113,6 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
 
  private:
   friend class OverviewSessionTest;
-  FRIEND_TEST_ALL_PREFIXES(TabletModeControllerTest,
-                           DisplayDisconnectionDuringOverview);
 
   // Toggle overview mode. Depending on |type| the enter/exit animation will
   // look different.

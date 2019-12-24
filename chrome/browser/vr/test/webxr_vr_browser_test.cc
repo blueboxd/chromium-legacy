@@ -16,7 +16,6 @@ namespace vr {
 
 WebXrVrBrowserTestBase::WebXrVrBrowserTestBase() {
   enable_features_.push_back(features::kWebXr);
-  enable_features_.push_back(features::kWebXrGamepadModule);
 }
 
 WebXrVrBrowserTestBase::~WebXrVrBrowserTestBase() = default;

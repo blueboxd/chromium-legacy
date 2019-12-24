@@ -7,7 +7,9 @@ import("//build/config/android/rules.gni")
 
 java_library("build_hooks_java") {
   jacoco_never_instrument = true
-  java_files = [ "java/org/chromium/build/BuildHooks.java" ]
+  sources = [
+    "java/org/chromium/build/BuildHooks.java",
+  ]
 
   # Make all targets pull in the try-with-resources support files.
   # If an apk ends up not using any such statements, ProGuard will remove
@@ -36,7 +38,7 @@ build_hooks_android_impl = "java/org/chromium/build/BuildHooksAndroidImpl.java"
 
 android_library("build_hooks_android_java") {
   jacoco_never_instrument = true
-  java_files = [
+  sources = [
     "java/org/chromium/build/BuildHooksAndroid.java",
     build_hooks_android_impl,
   ]
@@ -50,7 +52,9 @@ android_library("build_hooks_android_java") {
 # specify a different implementation via build_hooks_android_impl_deps.
 android_library("build_hooks_android_impl_java") {
   jacoco_never_instrument = true
-  java_files = [ build_hooks_android_impl ]
+  sources = [
+    build_hooks_android_impl,
+  ]
   deps = [
     ":build_hooks_android_java",
   ]

@@ -177,7 +177,6 @@ dev_list="\
   libglib2.0-dev
   libglu1-mesa-dev
   libgtk-3-dev
-  libinput-dev
   libkrb5-dev
   libnspr4-dev
   libnss3-dev
@@ -249,7 +248,6 @@ common_lib_list="\
   libgbm1
   libglib2.0-0
   libgtk-3-0
-  libinput10
   libpam0g
   libpango1.0-0
   libpci3
@@ -513,10 +511,16 @@ if package_exists libgnome-keyring-dev; then
   lib_list="${lib_list} libgnome-keyring-dev"
 fi
 if package_exists libvulkan-dev; then
-    dev_list="${dev_list} libvulkan-dev"
+  dev_list="${dev_list} libvulkan-dev"
 fi
 if package_exists libvulkan1; then
-    lib_list="${lib_list} libvulkan1"
+  lib_list="${lib_list} libvulkan1"
+fi
+if package_exists libinput10; then
+  lib_list="${lib_list} libinput10"
+fi
+if package_exists libinput-dev; then
+  dev_list="${dev_list} libinput-dev"
 fi
 
 # Cross-toolchain strip is needed for building the sysroots.

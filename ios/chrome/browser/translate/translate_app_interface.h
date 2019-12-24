@@ -9,8 +9,9 @@
 
 @interface TranslateAppInterface : NSObject
 
-// Sets up the app for testing.
-+ (void)setUp;
+// Sets up the app for testing. |translateScriptServer| is the URL
+// for the server that can serve up translate scripts to app.
++ (void)setUpWithScriptServer:(NSString*)translateScriptServerURL;
 
 // Tears down the testing set up for the app.
 + (void)tearDown;
@@ -55,6 +56,13 @@
 
 // Whether user has set a preference to translate any pages on |hostName|.
 + (BOOL)isBlockedSite:(NSString*)hostName;
+
+// The following are Translate Infobar UI constants. Test client needs to know
+// to verify that Translate Infobar is behaving correctly.
++ (int)infobarAutoAlwaysThreshold;
++ (int)infobarAutoNeverThreshold;
++ (int)infobarMaximumNumberOfAutoAlways;
++ (int)infobarMaximumNumberOfAutoNever;
 
 @end
 

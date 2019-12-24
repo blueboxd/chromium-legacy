@@ -51,6 +51,7 @@
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_configuration_waiter.h"
+#include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
@@ -61,6 +62,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/chrome_switches.h"
@@ -1992,16 +1994,16 @@ IN_PROC_BROWSER_TEST_F(WizardControllerBrokenLocalStateTest,
             GetErrorScreen()->GetUIState());
 
   WaitUntilJSIsReady();
+  OobeScreenWaiter(ErrorScreenView::kScreenId).Wait();
 
   // Checks visibility of the error message and powerwash button.
-  ASSERT_FALSE(JSExecuteBooleanExpression("$('error-message').hidden"));
-  ASSERT_TRUE(JSExecuteBooleanExpression(
-      "$('error-message').classList.contains('ui-state-local-state-error')"));
+  test::OobeJS().ExpectVisible({"error-message"});
+  test::OobeJS().ExpectHasClass("ui-state-local-state-error",
+                                {"error-message"});
 
   // Emulates user click on the "Restart and Powerwash" button.
   ASSERT_EQ(0, FakeSessionManagerClient::Get()->start_device_wipe_call_count());
-  ASSERT_TRUE(content::ExecuteScript(
-      GetWebContents(), "$('error-message-md-powerwash-button').click();"));
+  test::OobeJS().TapOn("error-message-md-powerwash-button");
   ASSERT_EQ(1, FakeSessionManagerClient::Get()->start_device_wipe_call_count());
 }
 

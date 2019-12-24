@@ -293,6 +293,12 @@ Polymer({
       case InstallerError.kErrorInsufficientDiskSpace:
         messageId = 'insufficientDiskError';
         break;
+      case InstallerError.kErrorCreateContainer:
+        messageId = 'setupContainerError';
+        break;
+      case InstallerError.kErrorUnknown:
+        messageId = 'unknownError';
+        break;
       default:
         assertNotReached();
     }

@@ -118,7 +118,7 @@ class TooltipControllerTest : public ViewsTestBase {
     aura::Window* root_window = GetContext();
     if (root_window) {
       root_window->RemovePreTargetHandler(controller_.get());
-      wm::SetTooltipClient(root_window, NULL);
+      wm::SetTooltipClient(root_window, nullptr);
       controller_.reset();
     }
 #endif

@@ -55,6 +55,14 @@ const char kHintsFetcherTopHostBlacklistMinimumEngagementScore[] =
 const char kHintsFetcherHostsSuccessfullyFetched[] =
     "optimization_guide.hintsfetcher.hosts_successfully_fetched";
 
+// A double pref that stores the running mean FCP.
+const char kSessionStatisticFCPMean[] =
+    "optimization_guide.session_statistic.fcp_mean";
+
+// A double pref that stores the running FCP standard deviation.
+const char kSessionStatisticFCPStdDev[] =
+    "optimization_guide.session_statistic.fcp_std_dev";
+
 // A string pref that stores the version of the Optimization Hints component
 // that is currently being processed. This pref is cleared once processing
 // completes. It is used for detecting a potential crash loop on processing a
@@ -82,6 +90,10 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterDoublePref(kTimeHintsFetcherTopHostBlacklistLastInitialized,
                                0, PrefRegistry::LOSSY_PREF);
 
+  registry->RegisterDoublePref(kSessionStatisticFCPMean, 0,
+                               PrefRegistry::LOSSY_PREF);
+  registry->RegisterDoublePref(kSessionStatisticFCPStdDev, 0,
+                               PrefRegistry::LOSSY_PREF);
   // Use a default value of MinTopHostEngagementScoreThreshold() for the
   // threshold. This ensures that the users for which this pref can't be
   // computed (possibly because they had the blacklist initialized before this

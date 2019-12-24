@@ -308,10 +308,6 @@ const base::Feature kDownloadsLocationChange{"DownloadsLocationChange",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-// If enabled, Drive will use FCM for its invalidations.
-const base::Feature kDriveFcmInvalidations{"DriveFCMInvalidations",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
 // If enabled, policies will use FCM (Firebase Cloud Messaging) for its
 // invalidations.
 const base::Feature kPolicyFcmInvalidations{"PolicyFCMInvalidations",

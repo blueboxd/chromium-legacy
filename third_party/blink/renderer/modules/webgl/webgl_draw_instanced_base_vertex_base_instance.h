@@ -35,8 +35,6 @@ class WebGLDrawInstancedBaseVertexBaseInstance final : public WebGLExtension {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static WebGLDrawInstancedBaseVertexBaseInstance* Create(
-      WebGLRenderingContextBase*);
   static bool Supported(WebGLRenderingContextBase*);
   static const char* ExtensionName();
 

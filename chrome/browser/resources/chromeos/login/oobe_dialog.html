@@ -55,6 +55,9 @@
     has-buttons - shows bottom buttons menu
     footer-shrinkable - whether footer should be shrunk to fit the container.
                         Most likely should be set for oobe-illustration's.
+    title-key - ID of localized string to be used as default title element.
+    subtitle-key - ID of localized string to be used as default subtitle
+                   element.
 
   I.e. [no-header no-footer-padding] will make the footer occupy all the dialog
   space.
@@ -73,10 +76,14 @@
         </div>
         <div id="oobe-title" class="slot-container layout vertical
             end-justified">
-          <slot name="title"></slot>
+          <slot name="title">
+            <h1>[[i18nDynamic(locale, titleKey)]]</h1>
+          </slot>
         </div>
         <div id="oobe-subtitle" class="slot-container layout vertical">
-          <slot name="subtitle"></slot>
+          <slot name="subtitle">
+            <div>[[i18nDynamic(locale, subtitleKey)]]</div>
+          </slot>
         </div>
         <div id="oobe-progress" class="slot-container layout vertical">
           <slot name="progress"></slot>

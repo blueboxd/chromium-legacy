@@ -57,11 +57,9 @@ class FakeEmbeddedWorkerInstanceClient
     return start_params_;
   }
 
-  virtual void OnConnectionError();
+  void OnConnectionError();
 
  private:
-  void CallOnConnectionError();
-
   // |helper_| owns |this|.
   EmbeddedWorkerTestHelper* const helper_;
 

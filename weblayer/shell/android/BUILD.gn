@@ -34,7 +34,7 @@ android_library("weblayer_shell_java") {
     "//third_party/android_deps:android_support_v4_java",
     "//weblayer/public/java",
   ]
-  java_files = [
+  sources = [
     "shell_apk/src/org/chromium/weblayer/shell/InstrumentationActivity.java",
     "shell_apk/src/org/chromium/weblayer/shell/WebLayerShellActivity.java",
   ]

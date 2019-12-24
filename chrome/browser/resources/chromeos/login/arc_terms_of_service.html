@@ -11,12 +11,11 @@
     <link rel="stylesheet" href="oobe_dialog_host.css">
     <link rel="stylesheet" href="arc_terms_of_service.css">
     <link rel="stylesheet" href="oobe_flex_layout.css">
-    <oobe-dialog id="arc-tos-dialog" has-buttons class="arc-tos-loading">
+    <oobe-dialog id="arc-tos-dialog" has-buttons class="arc-tos-loading"
+        title-key="arcTermsOfServiceScreenHeading"
+        subtitle-key="arcTermsOfServiceScreenDescription">
       <iron-icon src="chrome://oobe/playstore.svg" slot="oobe-icon">
       </iron-icon>
-      <h1 slot="title" i18n-content="arcTermsOfServiceScreenHeading"></h1>
-      <div slot="subtitle" i18n-content="arcTermsOfServiceScreenDescription">
-      </div>
       <div id="arc-tos-container" slot="footer" class="flex layout vertical">
         <div id="arc-tos-view-container" class="arc-tos-content flex">
           <webview id="arc-tos-view" allowTransparency
@@ -30,7 +29,7 @@
         </div>
         <div id="arc-tos-metrics-demo-apps"
             class="parameter-section arc-tos-content">
-          <p i18n-content="arcTextMetricsDemoApps"></p>
+          <p>[[i18nDynamic(locale, 'arcTextMetricsDemoApps')]]</p>
         </div>
         <div id="arc-backup-service" class="parameter-section arc-tos-content">
           <cr-checkbox id="arc-enable-backup-restore">
@@ -57,10 +56,10 @@
           </cr-checkbox>
         </div>
         <div class="arc-tos-loading">
-          <p i18n-content="arcTermsOfServiceLoading"></p>
+          <p>[[i18nDynamic(locale, 'arcTermsOfServiceLoading')]]</p>
         </div>
         <div class="arc-tos-error">
-          <p i18n-content="arcTermsOfServiceError"></p>
+          <p>[[i18nDynamic(locale, 'arcTermsOfServiceError')]]</p>
         </div>
       </div>
       <div slot="bottom-buttons" class="flex layout horizontal">
@@ -69,25 +68,20 @@
         <div class="flex">
         </div>
         <oobe-text-button id="arc-tos-skip-button" border on-tap="onSkip_"
-            disabled="[[arcTosButtonsDisabled]]">
-          <div i18n-content="arcTermsOfServiceSkipButton"></div>
-        </oobe-text-button>
+            disabled="[[arcTosButtonsDisabled]]"
+            text-key="arcTermsOfServiceSkipButton"></oobe-text-button>
         <oobe-text-button id="arc-tos-retry-button"
             inverse on-tap="onRetry_"
-            disabled="[[arcTosButtonsDisabled]]">
-          <div i18n-content="arcTermsOfServiceRetryButton"></div>
-        </oobe-text-button>
+            disabled="[[arcTosButtonsDisabled]]"
+            text-key="arcTermsOfServiceRetryButton"></oobe-text-button>
         <oobe-text-button id="arc-tos-next-button"
             inverse on-tap="onNext_"
-            disabled="[[arcTosButtonsDisabled]]">
-          <div i18n-content="arcTermsOfServiceNextButton"></div>
-        </oobe-text-button>
+            disabled="[[arcTosButtonsDisabled]]"
+            text-key="arcTermsOfServiceNextButton"></oobe-text-button>
         <oobe-text-button id="arc-tos-accept-button"
             inverse on-tap="onAccept_"
-            disabled="[[arcTosButtonsDisabled]]">
-          <div id="arc-tos-accept-button-content"
-              i18n-content="arcTermsOfServiceAcceptButton"></div>
-        </oobe-text-button>
+            disabled="[[arcTosButtonsDisabled]]"
+            text-key="arcTermsOfServiceAcceptButton"></oobe-text-button>
       </div>
     </oobe-dialog>
   </template>

@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/crostini/ansible/ansible_management_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
+#include "chrome/browser/chromeos/crostini/crostini_installer_types.mojom.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_terminal.h"
@@ -130,6 +131,10 @@ SetupResult ErrorToSetupResult(InstallerError error) {
       return SetupResult::kErrorSettingUpContainer;
     case InstallerError::kErrorInsufficientDiskSpace:
       return SetupResult::kErrorInsufficientDiskSpace;
+    case InstallerError::kErrorCreateContainer:
+      return SetupResult::kErrorCreateContainer;
+    case InstallerError::kErrorUnknown:
+      return SetupResult::kErrorUnknown;
   }
 
   NOTREACHED();
@@ -363,6 +368,15 @@ void CrostiniInstaller::OnContainerDownloading(int32_t download_percent) {
 
 void CrostiniInstaller::OnContainerCreated(CrostiniResult result) {
   DCHECK_EQ(installing_state_, InstallerState::kCreateContainer);
+  if (result != CrostiniResult::SUCCESS) {
+    if (content::GetNetworkConnectionTracker()->IsOffline()) {
+      LOG(ERROR) << "Network connection dropped while creating container";
+      HandleError(InstallerError::kErrorOffline);
+    } else {
+      HandleError(InstallerError::kErrorCreateContainer);
+    }
+    return;
+  }
   UpdateInstallingState(InstallerState::kSetupContainer);
 }
 
@@ -618,13 +632,7 @@ void CrostiniInstaller::OnCrostiniRestartFinished(CrostiniResult result) {
       DCHECK_EQ(state_, State::INSTALLING);
       LOG(ERROR) << "Failed to restart Crostini with error code: "
                  << static_cast<int>(result);
-      // TODO(lxj): The error code here is probably incorrect. If
-      // |CrostiniManager::CrostiniRestarter| failed to mount the container, it
-      // still calls this function with |SUCCESS| (see
-      // |CrostiniRestarter::OnMountEvent()|), so if we reach here (i.e.
-      // |state_| has not been set to |ERROR| but this function receives a
-      // failure result), something else is probably wrong.
-      HandleError(InstallerError::kErrorMountingContainer);
+      HandleError(InstallerError::kErrorUnknown);
     }
     return;
   }

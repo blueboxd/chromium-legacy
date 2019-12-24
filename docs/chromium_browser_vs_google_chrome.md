@@ -2,7 +2,7 @@
 
 Chromium on Linux has two general flavors: You can either get
 [Google Chrome](http://www.google.com/chrome?platform=linux) or chromium-browser
-(see [Linux Chromium Packages](linux_chromium_packages.md)).
+(see [Linux Chromium Packages](linux/chromium_packages.md)).
 This page tries to describe the differences between the two.
 
 In short, Google Chrome is the Chromium open source project built, packaged, and
@@ -12,7 +12,7 @@ builds **on Linux**.
 ## Google Chrome
 
 *   Colorful logo
-*   [Reports crashes](linux_crash_dumping.md) only if turned on.
+*   [Reports crashes](linux/crash_dumping.md) only if turned on.
     Please include symbolized backtraces in bug reports if you don't have crash
     reporting turned on.
 *   User metrics only if turned on
@@ -30,7 +30,7 @@ builds **on Linux**.
 ## Chromium
 
 *   Blue logo
-*   Does not ever [report crashes](linux_crash_dumping.md). Please include
+*   Does not ever [report crashes](linux/crash_dumping.md). Please include
     symbolized backtraces in bug reports.
 *   User metrics are never reported.
 *   Video and Audio codecs (may vary by distro)

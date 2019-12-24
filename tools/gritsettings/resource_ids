@@ -181,15 +181,15 @@
     "structures": [11170],
   },
   "chrome/browser/resources/tab_strip/tab_strip_resources.grd": {
-    "structures": [11610],
-    "includes": [11630],
+    "structures": [11620],
+    "includes": [11640],
   },
   "chrome/browser/resources/welcome/welcome_resources.grd": {
-    "includes": [11650],
-    "structures": [11680],
+    "includes": [11660],
+    "structures": [11690],
   },
   "chrome/browser/vr/testapp/vr_testapp_resources.grd": {
-    "includes": [11700],
+    "includes": [11710],
   },
   # END chrome/browser section.
 
@@ -287,19 +287,19 @@
   # start with the same id because only one of them is built depending on if
   # src_internal is available. Lower bound for number of resource ids is number
   # of languages (74).
+  "chromeos/components/media_app_ui/resources/app/app/media_app_bundle_resources.grd": {
+    "META": {"sizes": {"includes": [120],}},  # Relies on src-internal.
+    "includes": [12390],
+  },
   "chromeos/components/media_app_ui/resources/mock/media_app_bundle_mock_resources.grd": {
     "includes": [12390],
   },
-  "chromeos/components/media_app_ui/resources/app/app/media_app_bundle_resources.grd": {
-    "META": {"sizes": {"includes": [100],}},  # Relies on src-internal.
-    "includes": [12390],
-  },
   "chromeos/components/sample_system_web_app_ui/resources/sample_system_web_app_resources.grd": {
-    "includes": [12510],
+    "META": {"join": 2},
+    "includes": [12530],
   },
   "chromeos/resources/chromeos_resources.grd": {
-    "META": {"join": 2},
-    "includes": [12520],
+    "includes": [12540],
   },
   # END chromeos/ section.
 

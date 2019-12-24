@@ -419,6 +419,8 @@ def DoZip(inputs, output, base_dir=None, compress_fn=None,
   for tup in inputs:
     if isinstance(tup, string_types):
       tup = (os.path.relpath(tup, base_dir), tup)
+      if tup[0].startswith('..'):
+        raise Exception('Invalid zip_path: ' + tup[0])
     input_tuples.append(tup)
 
   # Sort by zip path to ensure stable zip ordering.

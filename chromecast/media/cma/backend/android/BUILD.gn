@@ -55,14 +55,14 @@ generate_jni("audio_track_jni_headers") {
 }
 
 android_library("audio_track_java") {
-  java_files = [
+  sources = [
     "java/src/org/chromium/chromecast/cma/backend/android/AudioSinkAudioTrackImpl.java",
     "java/src/org/chromium/chromecast/cma/backend/android/ThrottledLog.java",
     "java/src/org/chromium/chromecast/cma/backend/android/VolumeControl.java",
   ]
 
   if (enable_volume_tables_access) {
-    java_files += [
+    sources += [
       "java/src/org/chromium/chromecast/cma/backend/android/VolumeMap.java",
     ]
   }

@@ -67,7 +67,7 @@
     { "scenario_dir":"sign_in_pass", "site_name":"vodafone" },
     { "scenario_dir":"sign_in_pass", "site_name":"walmart" },
     { "scenario_dir":"sign_in_pass", "site_name":"wp_pl" },
-    { "scenario_dir":"sign_in_pass", "site_name":"yahoo" },
+    { "scenario_dir":"sign_in_pass", "site_name":"yahoo", "disabled":true, "bug_number":1036593 },
     { "scenario_dir":"sign_in_pass", "site_name":"zoho" },
     { "scenario_dir":"sign_up_fill", "site_name":"4shared" },
     { "scenario_dir":"sign_up_fill", "site_name":"aliexpress" },

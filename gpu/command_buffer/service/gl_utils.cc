@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <unordered_set>
 
-#include "base/metrics/histogram.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/service/error_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
@@ -106,18 +105,6 @@ const char* GetDebugSeverityString(GLenum severity) {
   }
 }
 }  // namespace
-
-std::vector<int> GetAllGLErrors() {
-  int gl_errors[] = {
-      GL_NO_ERROR,
-      GL_INVALID_ENUM,
-      GL_INVALID_VALUE,
-      GL_INVALID_OPERATION,
-      GL_INVALID_FRAMEBUFFER_OPERATION,
-      GL_OUT_OF_MEMORY,
-  };
-  return base::CustomHistogram::ArrayToCustomEnumRanges(gl_errors);
-}
 
 bool PrecisionMeetsSpecForHighpFloat(GLint rangeMin,
                                      GLint rangeMax,

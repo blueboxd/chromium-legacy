@@ -86,8 +86,19 @@ void AssistantWebView::OnFocus() {
 }
 
 void AssistantWebView::AboutToRequestFocusFromTabTraversal(bool reverse) {
-  if (contents_)
+  if (contents_) {
+    // TODO(b/146351046): Temporary workaround for b/145213680. Should be
+    // removed once we have moved off of the Content Service (tracked in
+    // b/146351046).
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(
+                       [](base::WeakPtr<AssistantWebView> view) {
+                         if (view)
+                           view->GetFocusManager()->ClearFocus();
+                       },
+                       weak_factory_.GetWeakPtr()));
     contents_->FocusThroughTabTraversal(reverse);
+  }
 }
 
 void AssistantWebView::InitLayout() {

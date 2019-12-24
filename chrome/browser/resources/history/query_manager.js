@@ -88,8 +88,8 @@ Polymer({
     const changes = /** @type {{search: ?string}} */ (e.detail);
     let needsUpdate = false;
 
-    if (changes.search != null &&
-        changes.search != this.queryState.searchTerm) {
+    if (changes.search !== null &&
+        changes.search !== this.queryState.searchTerm) {
       this.set('queryState.searchTerm', changes.search);
       needsUpdate = true;
     }

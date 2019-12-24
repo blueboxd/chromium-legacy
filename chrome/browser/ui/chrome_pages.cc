@@ -209,10 +209,7 @@ void ShowHelpImpl(Browser* browser, Profile* profile, HelpSource source) {
       break;
 #if defined(OS_CHROMEOS)
     case HELP_SOURCE_WEBUI:
-      if (base::FeatureList::IsEnabled(chromeos::features::kSplitSettings))
-        url = GURL(kChromeHelpViaWebUIURL);
-      else
-        url = GURL(kChromeOsHelpViaWebUIURL);
+      url = GURL(kChromeHelpViaWebUIURL);
       break;
     case HELP_SOURCE_WEBUI_CHROME_OS:
       url = GURL(kChromeOsHelpViaWebUIURL);
@@ -390,11 +387,6 @@ void ShowSettingsSubPageForProfile(Profile* profile,
                                    const std::string& sub_page) {
 #if defined(OS_CHROMEOS)
   SettingsWindowManager* settings = SettingsWindowManager::GetInstance();
-  if (!base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)) {
-    base::RecordAction(base::UserMetricsAction("ShowOptions"));
-    settings->ShowChromePageForProfile(profile, GetSettingsUrl(sub_page));
-    return;
-  }
   // TODO(jamescook): When SplitSettings is close to shipping, change this to
   // a DCHECK that the |sub_page| is not an OS-specific setting.
   if (chrome::IsOSSettingsSubPage(sub_page)) {
@@ -467,13 +459,6 @@ void ShowImportDialog(Browser* browser) {
 
 void ShowAboutChrome(Browser* browser) {
   base::RecordAction(UserMetricsAction("AboutChrome"));
-#if defined(OS_CHROMEOS)
-  if (!base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)) {
-    SettingsWindowManager::GetInstance()->ShowChromePageForProfile(
-        browser->profile(), GURL(kChromeUIHelpURL));
-    return;
-  }
-#endif
   ShowSingletonTabIgnorePathOverwriteNTP(browser, GURL(kChromeUIHelpURL));
 }
 
@@ -499,10 +484,7 @@ void ShowAppManagementPage(Profile* profile, const std::string& app_id) {
 
 GURL GetOSSettingsUrl(const std::string& sub_page) {
   DCHECK(sub_page.empty() || chrome::IsOSSettingsSubPage(sub_page)) << sub_page;
-  std::string url =
-      base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)
-          ? kChromeUIOSSettingsURL
-          : kChromeUISettingsURL;
+  std::string url = kChromeUIOSSettingsURL;
   return GURL(url + sub_page);
 }
 #endif

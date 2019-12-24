@@ -4,6 +4,9 @@
 
 #include "ash/wm/overview/overview_item_view.h"
 
+#include <algorithm>
+#include <memory>
+
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/overview/overview_constants.h"

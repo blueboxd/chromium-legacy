@@ -256,7 +256,7 @@ public class ChromeMenu extends PageController {
 ```
 android_library("chrome_java_test_pagecontroller") {
   testonly = true
-  java_files = [
+  sources = [
 ...
     "javatests/src/org/chromium/chrome/test/pagecontroller/controllers/android/PermissionDialog.java",
 +    "javatests/src/org/chromium/chrome/test/pagecontroller/controllers/codelab/SettingsControllerForCodelab.java",

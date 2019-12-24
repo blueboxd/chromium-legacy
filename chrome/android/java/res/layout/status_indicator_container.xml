@@ -10,7 +10,7 @@
     android:layout_height="wrap_content"
     android:background="@android:color/black">
 
-    <org.chromium.chrome.browser.ui.widget.text.TextViewWithCompoundDrawables
+    <org.chromium.components.browser_ui.widget.text.TextViewWithCompoundDrawables
         android:id="@+id/status_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

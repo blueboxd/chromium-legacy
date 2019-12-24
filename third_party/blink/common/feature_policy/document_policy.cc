@@ -8,6 +8,7 @@
 
 #include "base/no_destructor.h"
 #include "third_party/blink/public/common/http/structured_header.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom.h"
 
 namespace blink {
 

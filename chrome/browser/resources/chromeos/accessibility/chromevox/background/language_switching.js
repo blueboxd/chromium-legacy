@@ -142,7 +142,7 @@ LanguageSwitching.assignLanguagesForStringAttribute = function(
     if (LanguageSwitching.didLanguageSwitch(newLanguage)) {
       LanguageSwitching.currentLanguage_ = newLanguage;
       // Get human-readable language in |newLanguage|.
-      displayLanguage = chrome.accessibilityPrivate.getDisplayLanguage(
+      displayLanguage = chrome.accessibilityPrivate.getDisplayNameForLocale(
           newLanguage /* Language code to translate */,
           newLanguage /* Target language code */);
       // Prepend the human-readable language to outputString.
@@ -154,7 +154,7 @@ LanguageSwitching.assignLanguagesForStringAttribute = function(
       appendStringWithLanguage(newLanguage, outputString);
     } else {
       // Translate |newLanguage| into human-readable string in the UI language.
-      displayLanguage = chrome.accessibilityPrivate.getDisplayLanguage(
+      displayLanguage = chrome.accessibilityPrivate.getDisplayNameForLocale(
           newLanguage /* Language code to translate */,
           LanguageSwitching.browserUILanguage_ /* Target language code */);
       outputString =
@@ -270,10 +270,10 @@ LanguageSwitching.isValidLanguageCode = function(languageCode) {
     return false;
   }
 
-  // Use the accessibilityPrivate.getDisplayLanguage() API to validate language
-  // code. If the language code is invalid, then this API returns an empty
-  // string.
-  if (chrome.accessibilityPrivate.getDisplayLanguage(
+  // Use the accessibilityPrivate.getDisplayNameForLocale() API to validate
+  // language code. If the language code is invalid, then this API returns an
+  // empty string.
+  if (chrome.accessibilityPrivate.getDisplayNameForLocale(
           languageCode, languageCode) === '') {
     return false;
   }

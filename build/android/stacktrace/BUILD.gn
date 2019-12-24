@@ -6,7 +6,9 @@ import("//build/config/android/rules.gni")
 
 java_binary("java_deobfuscate") {
   main_class = "org.chromium.build.FlushingReTrace"
-  java_files = [ "java/org/chromium/build/FlushingReTrace.java" ]
+  sources = [
+    "java/org/chromium/build/FlushingReTrace.java",
+  ]
   deps = [
     "//third_party/proguard:retrace_java",
   ]

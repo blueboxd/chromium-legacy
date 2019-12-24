@@ -95,6 +95,29 @@ std::vector<SquareSizePx> GetSquareSizePxs(
   return sizes;
 }
 
+void SetWebAppFileHandlers(
+    const std::vector<blink::Manifest::FileHandler>& file_handlers,
+    WebApp* web_app) {
+  WebApp::FileHandlers web_app_file_handlers;
+  for (const auto& file_handler : file_handlers) {
+    WebApp::FileHandler web_app_file_handler;
+    web_app_file_handler.action = file_handler.action;
+
+    // Convert from string16 to string in the accept map.
+    for (const auto& pair : file_handler.accept) {
+      WebApp::FileHandlerAccept accept_entry;
+      accept_entry.mimetype = base::UTF16ToUTF8(pair.first);
+      for (const auto& file_extension : pair.second)
+        accept_entry.file_extensions.insert(base::UTF16ToUTF8(file_extension));
+      web_app_file_handler.accept.push_back(std::move(accept_entry));
+    }
+
+    web_app_file_handlers.push_back(std::move(web_app_file_handler));
+  }
+
+  web_app->SetFileHandlers(std::move(web_app_file_handlers));
+}
+
 }  // namespace
 
 WebAppInstallFinalizer::WebAppInstallFinalizer(Profile* profile,
@@ -170,6 +193,8 @@ void WebAppInstallFinalizer::FinalizeInstall(
 
   web_app->SetIconInfos(web_app_info.icon_infos);
   web_app->SetDownloadedIconSizes(GetSquareSizePxs(web_app_info.icon_bitmaps));
+
+  SetWebAppFileHandlers(web_app_info.file_handlers, web_app.get());
 
   icon_manager_->WriteData(
       std::move(app_id), web_app_info.icon_bitmaps,

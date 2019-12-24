@@ -56,8 +56,6 @@ enum class SSLKeyLogFileAction {
 CONTENT_EXPORT NetworkServiceAvailability GetNetworkServiceAvailability();
 CONTENT_EXPORT base::TimeDelta GetTimeSinceLastNetworkServiceCrash();
 CONTENT_EXPORT void PingNetworkService(base::OnceClosure closure);
-CONTENT_EXPORT void AddNetworkServiceDebugEvent(const std::string& event);
-CONTENT_EXPORT std::string GetNetworkServiceDebugEventsString();
 
 // Shuts down the in-process network service or disconnects from the out-of-
 // process one, allowing it to shut down.

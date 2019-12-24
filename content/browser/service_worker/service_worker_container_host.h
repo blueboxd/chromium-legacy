@@ -39,46 +39,22 @@ class ServiceWorkerVersion;
 class WebContents;
 struct ServiceWorkerRegistrationInfo;
 
-// ServiceWorkerContainerHost is the host of a service worker client (a window,
-// dedicated worker, or shared worker) or service worker execution context in
-// the renderer process.
+// ServiceWorkerContainerHost has a 1:1 correspondence to
+// blink::ServiceWorkerContainer (i.e., navigator.serviceWorker) in the renderer
+// process.
 //
-// Most of its functionality helps implement the web-exposed
-// ServiceWorkerContainer interface (navigator.serviceWorker). The long-term
-// goal is for it to be the host of ServiceWorkerContainer in the renderer,
-// although currently only windows support ServiceWorkerContainers (see
-// https://crbug.com/371690).
+// ServiceWorkerContainerHost manages service worker JavaScript objects and
+// service worker registration JavaScript objects, which are represented as
+// ServiceWorkerObjectHost and ServiceWorkerRegistrationObjectHost respectively
+// in the browser process, associated with the execution context where the
+// container lives.
 //
-// ServiceWorkerContainerHost is also responsible for handling service worker
-// related things in the execution context where the container lives. For
-// example, the container host manages service worker (registration) JavaScript
-// object hosts, delivers messages to/from the service worker, and dispatches
-// events on the container.
+// ServiceWorkerContainerHost is tentatively owned by ServiceWorkerProviderHost,
+// and has the same lifetime with that.
+// TODO(https://crbug.com/931087): Make an execution context host (i.e.,
+// RenderFrameHostImpl, DedicatedWorkerHost etc) own this.
 //
-// Ownership model and responsibilities of ServiceWorkerContainerHost are
-// slightly different based on the type of the execution context that the
-// container host serves:
-//
-// For service worker clients, ServiceWorkerContainerHost is owned by
-// ServiceWorkerContextCore. The container host has a Mojo connection to the
-// container in the renderer, and destruction of the container host happens upon
-// disconnection of the Mojo pipe.
-//
-// For service worker clients, the container host works as a source of truth of
-// a service worker client.
-//
-// Example:
-// When a new service worker registration is created, the browser process
-// iterates over all ServiceWorkerContainerHosts to find clients (frames,
-// dedicated workers if PlzDedicatedWorker is enabled, and shared workers) with
-// a URL inside the registration's scope, and has the container host watch the
-// registration in order to resolve navigator.serviceWorker.ready once the
-// registration settles, if need.
-//
-// For service worker execution contexts, ServiceWorkerContainerHost is owned
-// by ServiceWorkerProviderHost, which in turn is owned by ServiceWorkerVersion.
-// The container host and provider host are destructed when the service worker
-// is stopped.
+// ServiceWorkerContainerHost lives on the service worker core thread.
 class CONTENT_EXPORT ServiceWorkerContainerHost final
     : public blink::mojom::ServiceWorkerContainerHost,
       public ServiceWorkerRegistration::Listener {
@@ -86,31 +62,8 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   using ExecutionReadyCallback = base::OnceClosure;
   using WebContentsGetter = base::RepeatingCallback<WebContents*()>;
 
-  // Used to create a ServiceWorkerContainerHost for a window during a
-  // navigation. |are_ancestors_secure| should be true for main frames.
-  // Otherwise it is true iff all ancestor frames of this frame have a secure
-  // origin. |frame_tree_node_id| is FrameTreeNode id. |web_contents_getter|
-  // indicates the tab where the navigation is occurring.
-  static base::WeakPtr<ServiceWorkerContainerHost> CreateForWindow(
-      base::WeakPtr<ServiceWorkerContextCore> context,
-      bool are_ancestors_secure,
-      int frame_tree_node_id,
-      mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
-          host_receiver,
-      mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
-          container_remote);
-
-  // Used for starting a web worker (dedicated worker or shared worker). Returns
-  // a container host for the worker.
-  static base::WeakPtr<ServiceWorkerContainerHost> CreateForWebWorker(
-      base::WeakPtr<ServiceWorkerContextCore> context,
-      int process_id,
-      blink::mojom::ServiceWorkerProviderType provider_type,
-      mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
-          host_receiver,
-      mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
-          container_remote);
-
+  // |service_worker_host| must be non-null for service worker execution
+  // contexts, and null for service worker clients.
   // TODO(https://crbug.com/931087): Rename ServiceWorkerProviderType to
   // ServiceWorkerContainerType.
   ServiceWorkerContainerHost(
@@ -121,6 +74,7 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
           host_receiver,
       mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
           container_remote,
+      ServiceWorkerProviderHost* service_worker_host,
       base::WeakPtr<ServiceWorkerContextCore> context);
   ~ServiceWorkerContainerHost() override;
 
@@ -231,7 +185,7 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   // |registration_id|.
   void RemoveServiceWorkerRegistrationObjectHost(int64_t registration_id);
 
-  // For service worker execution contexts.
+  // For the container hosted on ServiceWorkerGlobalScope.
   // Returns an object info representing |self.serviceWorker|. The object
   // info holds a Mojo connection to the ServiceWorkerObjectHost for the
   // |serviceWorker| to ensure the host stays alive while the object info is
@@ -423,7 +377,6 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   ServiceWorkerRegistration* controller_registration() const;
 
   // For service worker execution contexts.
-  void set_service_worker_host(ServiceWorkerProviderHost* service_worker_host);
   ServiceWorkerProviderHost* service_worker_host();
 
   // BackForwardCache:
@@ -440,6 +393,14 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
 
   void EnterBackForwardCacheForTesting() { is_in_back_forward_cache_ = true; }
   void LeaveBackForwardCacheForTesting() { is_in_back_forward_cache_ = false; }
+
+  // TODO(https://crbug.com/931087): This getter is exposed to
+  // ServiceWorkerProviderHost::RegisterToContextCore() as a workaround during
+  // ServiceWorkerProviderHost separation. We should remove this.
+  mojo::AssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>&
+  receiver() {
+    return receiver_;
+  }
 
   base::WeakPtr<ServiceWorkerContainerHost> GetWeakPtr();
 

@@ -19,6 +19,7 @@
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_table_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_ui_constants.h"
 #import "ios/chrome/browser/ui/translate/cells/select_language_popup_menu_item.h"
+#import "ios/chrome/browser/ui/translate/legacy_translate_infobar_constants.h"
 #import "ios/chrome/browser/ui/translate/legacy_translate_infobar_mediator.h"
 #import "ios/chrome/browser/ui/translate/translate_notification_presenter.h"
 #import "ios/chrome/browser/ui/util/layout_guide_names.h"
@@ -26,9 +27,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-NSString* const kLanguageSelectorPopupMenuId = @"kLanguageSelectorPopupMenuId";
-NSString* const kTranslateOptionsPopupMenuId = @"kTranslateOptionsPopupMenuId";
 
 @interface LegacyTranslateInfobarCoordinator () <
     LanguageSelectionHandler,

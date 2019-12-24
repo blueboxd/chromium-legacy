@@ -23,7 +23,6 @@ import os
 import sys
 
 import stack_core
-import stack_libs
 import subprocess
 import symbol
 import sys
@@ -64,12 +63,6 @@ def PrintUsage():
   print "       Overrides the default apks directory. Useful if a bundle APKS"
   print "       file has been unzipped into a temporary directory."
   print
-  print "  --packed-relocation-adjustments"
-  print "  --no-packed-relocation-adjustments"
-  print "       turn packed relocation adjustment on and off (default is off)"
-  print "       If running on pre-M Android and the stack trace appears to"
-  print "       make no sense, try turning this feature on."
-  print
   print "  --symbols-zip=path"
   print "       the path to a symbols zip file, such as"
   print "       =dream-symbols-12345.zip"
@@ -89,6 +82,9 @@ def PrintUsage():
   print "       fallback to monochrome instead of chrome if fail to detect"
   print "       shared lib which is loaded from APK, this doesn't work for"
   print "       component build."
+  print
+  print "  --quiet"
+  print "       Show less logging"
   print
   print "  --verbose"
   print "       enable extra logging, particularly for debugging failed"
@@ -122,7 +118,7 @@ def UnzipSymbols(symbolfile, symdir=None):
   if not os.path.exists(symdir):
     os.makedirs(symdir)
 
-  print "extracting %s..." % symbolfile
+  logging.info('extracting %s...', symbolfile)
   saveddir = os.getcwd()
   os.chdir(symdir)
   try:
@@ -147,10 +143,9 @@ def UnzipSymbols(symbolfile, symdir=None):
 def main(argv, test_symbolizer=None):
   try:
     options, arguments = getopt.getopt(argv, "", [
-        "packed-relocation-adjustments", "no-packed-relocation-adjustments",
         "more-info", "less-info", "chrome-symbols-dir=", "output-directory=",
-        "apks-directory=", "symbols-dir=", "symbols-zip=", "packed-lib=",
-        "arch=", "fallback-monochrome", "verbose", "help"
+        "apks-directory=", "symbols-dir=", "symbols-zip=", "arch=",
+        "fallback-monochrome", "verbose", "quiet", "help",
     ])
   except getopt.GetoptError, _:
     PrintUsage()
@@ -159,8 +154,8 @@ def main(argv, test_symbolizer=None):
   more_info = False
   fallback_monochrome = False
   arch_defined = False
-  packed_libs = []
   apks_directory = None
+  log_level = logging.INFO
   for option, value in options:
     if option == "--help":
       PrintUsage()
@@ -178,8 +173,6 @@ def main(argv, test_symbolizer=None):
       constants.SetOutputDirectory(os.path.abspath(value))
     elif option == "--apks-directory":
       apks_directory = os.path.abspath(value)
-    elif option == "--packed-lib":
-      packed_libs.append(os.path.abspath(os.path.expanduser(value)))
     elif option == "--more-info":
       more_info = True
     elif option == "--less-info":
@@ -187,59 +180,50 @@ def main(argv, test_symbolizer=None):
     elif option == "--fallback-monochrome":
       fallback_monochrome = True
     elif option == "--verbose":
-      logging.basicConfig(level=logging.DEBUG)
-    elif option in (
-        '--packed-relocation-adjustments',
-        '--no-packed-relocation-adjustments'):
-      print ('--[no-]packed-relocation-adjustments options are deprecated. '
-             'Specify packed libs directory instead.')
+      log_level = logging.DEBUG
+    elif option == "--quiet":
+      log_level = logging.WARNING
 
   if len(arguments) > 1:
     PrintUsage()
 
+  logging.basicConfig(level=log_level)
   # Do an up-front test that the output directory is known.
   if not symbol.CHROME_SYMBOLS_DIR:
     constants.CheckOutputDirectory()
 
-  print ("Reading Android symbols from: "
-         + os.path.normpath(symbol.SYMBOLS_DIR))
+  logging.info('Reading Android symbols from: %s',
+               os.path.normpath(symbol.SYMBOLS_DIR))
   chrome_search_path = symbol.GetLibrarySearchPaths()
-  print ("Searching for Chrome symbols from within: "
-         + ':'.join((os.path.normpath(d) for d in chrome_search_path)))
+  logging.info('Searching for Chrome symbols from within: %s',
+               ':'.join((os.path.normpath(d) for d in chrome_search_path)))
 
   rootdir = None
   if zip_arg:
     rootdir, symbol.SYMBOLS_DIR = UnzipSymbols(zip_arg)
 
   if not arguments or arguments[0] == "-":
-    print "Reading native crash info from stdin"
+    logging.info('Reading native crash info from stdin')
     with llvm_symbolizer.LLVMSymbolizer() as symbolizer:
       stack_core.StreamingConvertTrace(sys.stdin, {}, more_info,
                                        fallback_monochrome, arch_defined,
                                        symbolizer, apks_directory)
   else:
-    print "Searching for native crashes in: " + os.path.realpath(arguments[0])
+    logging.info('Searching for native crashes in: %s',
+                 os.path.realpath(arguments[0]))
     f = open(arguments[0], "r")
 
     lines = f.readlines()
     f.close()
 
-    version = stack_libs.GetTargetAndroidVersionNumber(lines)
-    if version is None:
-      print ("Unknown Android release, "
-             "consider passing --packed-lib.")
-    elif version < _ANDROID_M_MAJOR_VERSION and not packed_libs:
-      print ("Pre-M Android release detected, "
-             "but --packed-lib not specified. Stack symbolization may fail.")
-
-    if (version is None or version < _ANDROID_M_MAJOR_VERSION) and packed_libs:
-      load_vaddrs = stack_libs.GetLoadVaddrs(stripped_libs=packed_libs)
-    else:
-      load_vaddrs = {}
+    # This used to be required when ELF logical addresses did not align with
+    # physical addresses, which happened when relocations were converted to APS2
+    # format post-link via relocation_packer tool.
+    load_vaddrs = {}
 
     with llvm_symbolizer.LLVMSymbolizer() as symbolizer:
-      print ("Searching for Chrome symbols from within: "
-             + ':'.join((os.path.normpath(d) for d in chrome_search_path)))
+      logging.info('Searching for Chrome symbols from within: %s',
+                   ':'.join((os.path.normpath(d) for d in chrome_search_path)))
       stack_core.ConvertTrace(lines, load_vaddrs, more_info,
                               fallback_monochrome, arch_defined,
                               test_symbolizer or symbolizer, apks_directory)
@@ -247,7 +231,7 @@ def main(argv, test_symbolizer=None):
   if rootdir:
     # be a good citizen and clean up...os.rmdir and os.removedirs() don't work
     cmd = "rm -rf \"%s\"" % rootdir
-    print "\ncleaning up (%s)" % cmd
+    logging.info('cleaning up (%s)', cmd)
     os.system(cmd)
 
 if __name__ == "__main__":

@@ -49,7 +49,7 @@ constexpr int kDragStartTopEdgeInset = 8;
 
 // Distance from the divider's center point that reserved for splitview
 // resizing in landscape orientation.
-constexpr int kDistanceForSplitViewResize = 32;
+constexpr int kDistanceForSplitViewResize = 49;
 
 // Returns whether |window| can be moved via a two finger drag given
 // the hittest results of the two fingers.
@@ -980,7 +980,7 @@ bool ToplevelWindowEventHandler::MaybeHandleBackGesture(ui::GestureEvent* event,
   ::wm::ConvertPointToScreen(target, &screen_location);
   switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN:
-      going_back_started_ = CanStartGoingBack(event, target, screen_location);
+      going_back_started_ = CanStartGoingBack(target, screen_location);
       if (!going_back_started_)
         break;
       back_gesture_affordance_ = std::make_unique<BackGestureAffordance>(
@@ -1026,11 +1026,11 @@ bool ToplevelWindowEventHandler::MaybeHandleBackGesture(ui::GestureEvent* event,
       } else {
         back_gesture_affordance_->Abort();
       }
-      going_back_started_ = false;
       return true;
     }
     case ui::ET_GESTURE_END:
       going_back_started_ = false;
+      dragged_from_splitview_divider_ = false;
       break;
     default:
       break;
@@ -1040,7 +1040,6 @@ bool ToplevelWindowEventHandler::MaybeHandleBackGesture(ui::GestureEvent* event,
 }
 
 bool ToplevelWindowEventHandler::CanStartGoingBack(
-    ui::GestureEvent* event,
     aura::Window* target,
     const gfx::Point& screen_location) {
   DCHECK(features::IsSwipingFromLeftEdgeToGoBackEnabled());
@@ -1064,7 +1063,6 @@ bool ToplevelWindowEventHandler::CanStartGoingBack(
     return false;
   }
 
-  dragged_from_splitview_divider_ = false;
   gfx::Rect hit_bounds_in_screen(display::Screen::GetScreen()
                                      ->GetDisplayNearestWindow(target)
                                      .work_area());

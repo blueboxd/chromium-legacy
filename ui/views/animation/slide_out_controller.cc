@@ -30,7 +30,7 @@ SlideOutController::SlideOutController(ui::EventTarget* target,
                                        SlideOutControllerDelegate* delegate)
     : target_handling_(target, this), delegate_(delegate) {}
 
-SlideOutController::~SlideOutController() {}
+SlideOutController::~SlideOutController() = default;
 
 void SlideOutController::CaptureControlOpenState() {
   if (!has_swipe_control_)

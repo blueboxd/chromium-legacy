@@ -210,7 +210,7 @@ java_group("ui_java") {
 # This is created explicitly for remoting_apk to avoid including
 # unused JNI functions.
 android_library("ui_utils_java") {
-  java_files = [
+  sources = [
     "java/src/org/chromium/ui/ContactsPickerListener.java",
     "java/src/org/chromium/ui/KeyboardVisibilityDelegate.java",
     "java/src/org/chromium/ui/PhotoPickerListener.java",
@@ -225,27 +225,26 @@ android_library("ui_utils_java") {
 }
 
 android_library("ui_full_java") {
-  java_files = [
-    "java/src/org/chromium/ui/AsyncViewStub.java",
+  sources = [
     "java/src/org/chromium/ui/AsyncViewProvider.java",
+    "java/src/org/chromium/ui/AsyncViewStub.java",
     "java/src/org/chromium/ui/DeferredViewStubInflationProvider.java",
     "java/src/org/chromium/ui/DropdownAdapter.java",
     "java/src/org/chromium/ui/DropdownDividerDrawable.java",
     "java/src/org/chromium/ui/DropdownItem.java",
     "java/src/org/chromium/ui/DropdownItemBase.java",
-    "java/src/org/chromium/ui/DropdownPopupWindowImpl.java",
     "java/src/org/chromium/ui/DropdownPopupWindow.java",
-    "java/src/org/chromium/ui/DropdownPopupWindowJellyBean.java",
+    "java/src/org/chromium/ui/DropdownPopupWindowImpl.java",
     "java/src/org/chromium/ui/DropdownPopupWindowInterface.java",
+    "java/src/org/chromium/ui/DropdownPopupWindowJellyBean.java",
     "java/src/org/chromium/ui/HorizontalListDividerDrawable.java",
     "java/src/org/chromium/ui/OverscrollRefreshHandler.java",
     "java/src/org/chromium/ui/UiSwitches.java",
-    "java/src/org/chromium/ui/ViewProvider.java",
     "java/src/org/chromium/ui/VSyncMonitor.java",
+    "java/src/org/chromium/ui/ViewProvider.java",
     "java/src/org/chromium/ui/base/ActivityAndroidPermissionDelegate.java",
     "java/src/org/chromium/ui/base/ActivityKeyboardVisibilityDelegate.java",
     "java/src/org/chromium/ui/base/ActivityWindowAndroid.java",
-    "java/src/org/chromium/ui/base/IntentWindowAndroid.java",
     "java/src/org/chromium/ui/base/AndroidPermissionDelegate.java",
     "java/src/org/chromium/ui/base/AndroidPermissionDelegateWithRequester.java",
     "java/src/org/chromium/ui/base/Clipboard.java",
@@ -253,11 +252,12 @@ android_library("ui_full_java") {
     "java/src/org/chromium/ui/base/EventForwarder.java",
     "java/src/org/chromium/ui/base/EventOffsetHandler.java",
     "java/src/org/chromium/ui/base/IdleDetector.java",
+    "java/src/org/chromium/ui/base/IntentWindowAndroid.java",
     "java/src/org/chromium/ui/base/LocalizationUtils.java",
     "java/src/org/chromium/ui/base/PermissionCallback.java",
     "java/src/org/chromium/ui/base/ResourceBundle.java",
-    "java/src/org/chromium/ui/base/SelectFileDialog.java",
     "java/src/org/chromium/ui/base/SPenSupport.java",
+    "java/src/org/chromium/ui/base/SelectFileDialog.java",
     "java/src/org/chromium/ui/base/TouchDevice.java",
     "java/src/org/chromium/ui/base/ViewAndroidDelegate.java",
     "java/src/org/chromium/ui/base/ViewUtils.java",
@@ -327,8 +327,8 @@ android_library("ui_full_java") {
     "java/src/org/chromium/ui/widget/CheckableImageView.java",
     "java/src/org/chromium/ui/widget/ChipView.java",
     "java/src/org/chromium/ui/widget/ChromeBulletSpan.java",
-    "java/src/org/chromium/ui/widget/ChromeImageView.java",
     "java/src/org/chromium/ui/widget/ChromeImageButton.java",
+    "java/src/org/chromium/ui/widget/ChromeImageView.java",
     "java/src/org/chromium/ui/widget/OptimizedFrameLayout.java",
     "java/src/org/chromium/ui/widget/RectProvider.java",
     "java/src/org/chromium/ui/widget/RippleBackgroundHelper.java",
@@ -358,7 +358,7 @@ android_library("ui_full_java") {
 
 android_library("ui_java_test_support") {
   testonly = true
-  java_files = [
+  sources = [
     "javatests/src/org/chromium/ui/test/util/DisableAnimationsTestRule.java",
     "javatests/src/org/chromium/ui/test/util/DummyUiActivity.java",
     "javatests/src/org/chromium/ui/test/util/DummyUiActivityTestCase.java",
@@ -387,9 +387,9 @@ android_resources("ui_javatest_resources") {
 
 junit_binary("ui_junit_tests") {
   package_name = "org.chromium.test.ui"
-  java_files = [
-    "junit/src/org/chromium/ui/AsyncViewStubTest.java",
+  sources = [
     "junit/src/org/chromium/ui/AsyncViewProviderTest.java",
+    "junit/src/org/chromium/ui/AsyncViewStubTest.java",
     "junit/src/org/chromium/ui/base/ClipboardTest.java",
     "junit/src/org/chromium/ui/base/EventOffsetHandlerTest.java",
     "junit/src/org/chromium/ui/base/LocalizationUtilsTest.java",
@@ -405,10 +405,10 @@ junit_binary("ui_junit_tests") {
     "junit/src/org/chromium/ui/modelutil/SimpleListObservableTest.java",
     "junit/src/org/chromium/ui/resources/dynamics/BitmapDynamicResourceTest.java",
     "junit/src/org/chromium/ui/resources/dynamics/ViewResourceAdapterTest.java",
-    "junit/src/org/chromium/ui/shadows/ShadowAsyncLayoutInflater.java",
+    "junit/src/org/chromium/ui/shadows/ShadowAnimatedStateListDrawable.java",
     "junit/src/org/chromium/ui/shadows/ShadowAppCompatResources.java",
     "junit/src/org/chromium/ui/shadows/ShadowAppCompatResourcesTest.java",
-    "junit/src/org/chromium/ui/shadows/ShadowAnimatedStateListDrawable.java",
+    "junit/src/org/chromium/ui/shadows/ShadowAsyncLayoutInflater.java",
     "junit/src/org/chromium/ui/text/SpanApplierTest.java",
     "junit/src/org/chromium/ui/util/TokenHolderTest.java",
     "junit/src/org/chromium/ui/widget/AnchoredPopupWindowTest.java",

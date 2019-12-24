@@ -19,7 +19,7 @@ Are you a Google employee? See
 * You must have Git and Python installed already.
 
 Most development is done on Ubuntu. Other distros may or may not work;
-see the [Linux instructions](linux_build_instructions.md) for some suggestions.
+see the [Linux instructions](linux/build_instructions.md) for some suggestions.
 
 Building the Android client on Windows or Mac is not supported and doesn't work.
 

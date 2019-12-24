@@ -538,6 +538,7 @@ textarea::-internal-input-suggested {
        from the scrollable area instead of from the overrides in
        LayoutTextControl{Single,Multi}Line::Scroll{Height,Width}(). */
     overflow: hidden !important;
+    overflow-anchor: none;
 }
 
 input[type="password" i] {

@@ -12,6 +12,8 @@ source_set("crash_report") {
     "crash_report_multi_parameter.mm",
     "crash_report_user_application_state.h",
     "crash_report_user_application_state.mm",
+    "crash_reporter_breadcrumb_observer.h",
+    "crash_reporter_breadcrumb_observer.mm",
     "crash_upload_list.cc",
     "crash_upload_list.h",
     "main_thread_freeze_detector.h",
@@ -26,6 +28,8 @@ source_set("crash_report") {
     "//components/crash/core/common",
     "//components/upload_list",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/crash_report/breadcrumbs",
     "//ios/web",
     "//third_party/breakpad:client",
   ]
@@ -79,6 +83,7 @@ source_set("unit_tests") {
   sources = [
     "breakpad_helper_unittest.mm",
     "crash_loop_detection_util_unittest.mm",
+    "crash_reporter_breadcrumb_observer_unittest.mm",
     "crash_restore_helper_unittest.mm",
   ]
   deps = [
@@ -88,6 +93,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/crash_report/breadcrumbs",
     "//ios/chrome/browser/sessions:serialisation",
     "//ios/chrome/browser/sessions:session_service",
     "//ios/chrome/test/ocmock",

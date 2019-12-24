@@ -5,7 +5,7 @@
 import("//build/config/android/rules.gni")
 
 android_library("androidx_browser_java") {
-  java_files = [
+  sources = [
     "./src/browser/src/main/java/androidx/browser/customtabs/CustomTabColorSchemeParams.java",
     "./src/browser/src/main/java/androidx/browser/customtabs/CustomTabsCallback.java",
     "./src/browser/src/main/java/androidx/browser/customtabs/CustomTabsClient.java",

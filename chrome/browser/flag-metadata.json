@@ -596,27 +596,27 @@
   },
   {
     "name": "crostini-gpu-support",
-    "owners": [ "nverne", "benwells" ],
+    "owners": [ "nverne", "benwells", "clumptini" ],
     "expiry_milestone": 85
   },
   {
     "name": "crostini-usb-allow-unsupported",
-    "owners": [ "nverne", "benwells" ],
+    "owners": [ "nverne", "benwells", "clumptini" ],
     "expiry_milestone": 85
   },
   {
     "name": "crostini-usb-support",
-    "owners": [ "jopra", "nverne", "benwells" ],
+    "owners": [ "jopra", "nverne", "benwells", "clumptini" ],
     "expiry_milestone": 76
   },
   {
     "name": "crostini-use-buster-image",
-    "owners": [ "davidmunro", "benwells" ],
+    "owners": [ "davidmunro", "benwells", "clumptini" ],
     "expiry_milestone": 82
   },
   {
     "name": "crostini-webui-upgrader",
-    "owners": [ "nverne", "davidmunro", "benwells" ],
+    "owners": [ "nverne", "davidmunro", "benwells", "clumptini" ],
     "expiry_milestone": 84
   },
   {

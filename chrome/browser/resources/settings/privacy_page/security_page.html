@@ -1,0 +1,66 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
+<link rel="import" href="passwords_leak_detection_toggle.html">
+<link rel="import" href="privacy_page_browser_proxy.html">
+<link rel="import" href="../controls/settings_toggle_button.html">
+<link rel="import" href="../prefs/prefs.html">
+<link rel="import" href="../prefs/prefs_behavior.html">
+<link rel="import" href="../route.html">
+<link rel="import" href="../settings_shared_css.html">
+
+<dom-module id="settings-security-page">
+  <template>
+    <style include="settings-shared"></style>
+    <div class="settings-box first">
+      <h2 class="cr-title-text">
+        $i18n{safeBrowsingSectionLabel}
+      </h2>
+    </div>
+    <settings-toggle-button id="safeBrowsingToggle"
+        pref="{{prefs.safebrowsing.enabled}}"
+        label="$i18n{safeBrowsingEnableProtection}"
+        sub-label="$i18n{safeBrowsingEnableProtectionDesc}">
+    </settings-toggle-button>
+    <template is="dom-if" if="[[passwordsLeakDetectionEnabled_]]">
+      <settings-passwords-leak-detection-toggle prefs="{{prefs}}"
+          sync-status="[[syncStatus]]">
+      </settings-passwords-leak-detection-toggle>
+    </template>
+    <settings-toggle-button id="safeBrowsingReportingToggle"
+        pref="[[safeBrowsingReportingPref_]]" no-set-pref
+        label="$i18n{safeBrowsingEnableExtendedReporting}"
+        sub-label="$i18n{safeBrowsingEnableExtendedReportingDesc}"
+        disabled="[[getDisabledExtendedSafeBrowsing_(prefs.safebrowsing.*)]]"
+        on-settings-boolean-control-change=
+            "onSafeBrowsingReportingToggleChange_">
+    </settings-toggle-button>
+    <div class="settings-box first">
+      <h2 class="cr-title-text">$i18n{securityPageAdvancedSectionLabel}</h2>
+    </div>
+    <template is="dom-if" if="[[enableSecurityKeysSubpage_]]">
+        <cr-link-row id="security-keys-subpage-trigger"
+          class="hr"
+          label="$i18n{securityKeysTitle}"
+          sub-label="$i18n{securityKeysDesc}"
+          on-click="onSecurityKeysClick_"></cr-link-row>
+    </template>
+<if expr="use_nss_certs or is_win or is_macosx">
+    <cr-link-row id="manageCertificates"
+        class="hr"
+<if expr="not use_nss_certs">
+        external
+</if>
+        label="$i18n{manageCertificates}"
+        sub-label="$i18n{manageCertificatesDescription}"
+        on-click="onManageCertificatesClick_"></cr-link-row>
+</if>
+        <cr-link-row id="advanced-protection-program-link"
+            class="hr"
+            label="$i18n{advancedProtectionProgramTitle}"
+            sub-label="$i18n{advancedProtectionProgramDesc}"
+            on-click="onAdvancedProtectionProgramLinkClick_"
+            external></cr-link-row>
+  </template>
+  <script src="security_page.js"></script>
+</dom-module>

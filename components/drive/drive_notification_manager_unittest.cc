@@ -19,7 +19,7 @@ namespace {
 
 const invalidation::ObjectId kDefaultCorpusObjectId(
     ipc::invalidation::ObjectSource::COSMO_CHANGELOG,
-    "CHANGELOG");
+    "Drive");
 
 struct ShutdownHelper {
   template <typename T>
@@ -57,7 +57,7 @@ invalidation::ObjectId CreateTeamDriveInvalidationObjectId(
     const std::string& team_drive_id) {
   return invalidation::ObjectId(
       ipc::invalidation::ObjectSource::COSMO_CHANGELOG,
-      base::StrCat({"TD:", team_drive_id}));
+      base::StrCat({"team-drive-", team_drive_id}));
 }
 
 }  // namespace

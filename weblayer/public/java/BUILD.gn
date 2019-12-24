@@ -24,7 +24,7 @@ android_resources("client_resources") {
 }
 
 android_library("java") {
-  java_files = [
+  sources = [
     "org/chromium/weblayer/Browser.java",
     "org/chromium/weblayer/BrowserFragment.java",
     "org/chromium/weblayer/BrowsingDataType.java",

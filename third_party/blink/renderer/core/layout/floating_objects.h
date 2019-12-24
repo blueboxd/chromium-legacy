@@ -27,6 +27,7 @@
 
 #include <memory>
 #include "base/macros.h"
+#include "base/util/type_safety/pass_key.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/list_hash_set.h"
@@ -147,15 +148,17 @@ class FloatingObject {
   RootInlineBox* OriginatingLine() const { return originating_line_; }
   void SetOriginatingLine(RootInlineBox* line) { originating_line_ = line; }
 
- private:
-  FloatingObject(LayoutBox*, Type);
-  FloatingObject(LayoutBox*,
+  using PassKey = util::PassKey<FloatingObject>;
+  FloatingObject(PassKey, LayoutBox*, Type);
+  FloatingObject(PassKey,
+                 LayoutBox*,
                  Type,
                  const LayoutRect&,
                  bool should_paint,
                  bool is_descendant,
                  bool is_lowest_non_overhanging_float_in_child);
 
+ private:
   LayoutBox* layout_object_;
   RootInlineBox* originating_line_;
   LayoutRect frame_rect_;

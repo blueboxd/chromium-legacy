@@ -181,9 +181,8 @@ OverviewItem::OverviewItem(aura::Window* window,
     : root_window_(window->GetRootWindow()),
       transform_window_(this, window),
       overview_session_(overview_session),
-      overview_grid_(overview_grid),
-      weak_ptr_factory_(this) {
-  CreateWindowLabel();
+      overview_grid_(overview_grid) {
+  CreateItemWidget();
   for (auto* window_iter : WindowTransientDescendantIteratorRange(
            WindowTransientDescendantIterator(window))) {
     window_iter->AddObserver(this);
@@ -274,7 +273,7 @@ void OverviewItem::SlideWindowIn() {
 
 std::unique_ptr<ui::ScopedLayerAnimationSettings>
 OverviewItem::UpdateYPositionAndOpacity(
-    int new_grid_y,
+    float new_grid_y,
     float opacity,
     OverviewSession::UpdateAnimationSettingsCallback callback) {
   aura::Window::Windows windows = GetWindowsForHomeGesture();
@@ -289,7 +288,7 @@ OverviewItem::UpdateYPositionAndOpacity(
     }
     layer->SetOpacity(opacity);
 
-    int initial_y = 0;
+    float initial_y = 0.f;
     if (translation_y_map_.contains(window))
       initial_y = translation_y_map_[window];
 
@@ -1088,18 +1087,6 @@ void OverviewItem::OnPostWindowStateTypeChange(WindowState* window_state,
   }
 }
 
-views::ImageButton* OverviewItem::GetCloseButtonForTesting() {
-  return overview_item_view_->close_button();
-}
-
-float OverviewItem::GetCloseButtonOpacityForTesting() const {
-  return overview_item_view_->close_button()->layer()->opacity();
-}
-
-float OverviewItem::GetTitlebarOpacityForTesting() const {
-  return overview_item_view_->header_view()->layer()->opacity();
-}
-
 gfx::Rect OverviewItem::GetShadowBoundsForTesting() {
   if (!shadow_ || !shadow_->layer()->visible())
     return gfx::Rect();
@@ -1245,7 +1232,7 @@ void OverviewItem::SetItemBounds(const gfx::RectF& target_bounds,
                                     : gfx::SizeF());
 }
 
-void OverviewItem::CreateWindowLabel() {
+void OverviewItem::CreateItemWidget() {
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_POPUP;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;

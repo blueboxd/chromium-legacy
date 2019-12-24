@@ -17,7 +17,7 @@ android_apk("spnego_authenticator_apk") {
     "//net/android:net_java",
   ]
 
-  java_files = [
+  sources = [
     "src/org/chromium/tools/spnegoauthenticator/AccountData.java",
     "src/org/chromium/tools/spnegoauthenticator/Constants.java",
     "src/org/chromium/tools/spnegoauthenticator/SpnegoAuthenticator.java",

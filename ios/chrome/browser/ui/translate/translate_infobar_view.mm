@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/translate/translate_infobar_language_tab_strip_view.h"
 #import "ios/chrome/browser/ui/translate/translate_infobar_language_tab_strip_view_delegate.h"
+#import "ios/chrome/browser/ui/translate/translate_infobar_view_constants.h"
 #import "ios/chrome/browser/ui/translate/translate_infobar_view_delegate.h"
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
 #import "ios/chrome/browser/ui/util/layout_guide_names.h"
@@ -29,10 +30,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-const CGFloat kInfobarHeight = 54;
-
-NSString* const kTranslateInfobarViewId = @"kTranslateInfobarViewId";
 
 namespace {
 

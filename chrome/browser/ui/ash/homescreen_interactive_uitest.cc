@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/test/base/perf/drag_event_generator.h"
 #include "chrome/test/base/perf/performance_test.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/aura/window.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/display/display.h"
@@ -79,8 +80,9 @@ class HomescreenDragTest : public HomescreenTest {
   HomescreenDragTest() {
     // Gesture tested by this test is only enabled if
     // kDragFromShelfToHomeOrOverview is disabled.
-    scoped_features_.InitAndDisableFeature(
-        ash::features::kDragFromShelfToHomeOrOverview);
+    scoped_features_.InitWithFeatures(
+        {}, {ash::features::kDragFromShelfToHomeOrOverview,
+             chromeos::features::kShelfHotseat});
   }
   ~HomescreenDragTest() override = default;
 

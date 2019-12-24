@@ -25,11 +25,7 @@ GEN('#include "components/prefs/pref_service.h"');
 var CrostiniAccessibilityTest = class extends PolymerTest {
   /** @override */
   get featureList() {
-    // Always test with SplitSettings on because the pages are the same in the
-    // legacy combined settings and we don't want to test everything twice.
-    return {
-      enabled: ['features::kCrostini', 'chromeos::features::kSplitSettings']
-    };
+    return {enabled: ['features::kCrostini']};
   }
 
   /** @override */

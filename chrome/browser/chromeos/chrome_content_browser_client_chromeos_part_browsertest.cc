@@ -10,20 +10,11 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/web_preferences.h"
 
-class ChromeContentBrowserClientChromeOsPartTest : public InProcessBrowserTest {
- public:
-  ChromeContentBrowserClientChromeOsPartTest() {
-    feature_list_.InitAndEnableFeature(chromeos::features::kSplitSettings);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
+using ChromeContentBrowserClientChromeOsPartTest = InProcessBrowserTest;
 
 IN_PROC_BROWSER_TEST_F(ChromeContentBrowserClientChromeOsPartTest,
                        SettingsWindowFontSize) {

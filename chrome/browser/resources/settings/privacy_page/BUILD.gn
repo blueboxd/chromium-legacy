@@ -15,6 +15,7 @@ js_type_check("closure_compile") {
     ":security_keys_reset_dialog",
     ":security_keys_set_pin_dialog",
     ":security_keys_subpage",
+    ":security_page",
   ]
 }
 
@@ -127,4 +128,14 @@ js_library("security_keys_bio_enroll_dialog") {
     "//ui/webui/resources/js:i18n_behavior",
   ]
   externs_list = [ "$externs_path/settings_private.js" ]
+}
+
+js_library("security_page") {
+  deps = [
+    ":privacy_page_browser_proxy",
+    "..:route",
+    "../people_page:sync_browser_proxy",
+    "../prefs:prefs_behavior",
+    "//ui/webui/resources/js:load_time_data",
+  ]
 }

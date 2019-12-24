@@ -4,6 +4,7 @@
 
 #include "ash/home_screen/window_scale_animation.h"
 
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/scoped_animation_disabler.h"
 #include "ash/screen_util.h"
@@ -108,8 +109,12 @@ gfx::Transform WindowScaleAnimation::GetWindowTransformToShelf() {
 
   gfx::Transform transform;
   Shelf* shelf = Shelf::ForWindow(window_);
-  const gfx::Rect shelf_item_bounds =
+  gfx::Rect shelf_item_bounds =
       shelf->GetScreenBoundsOfItemIconForWindow(window_);
+  // |shelf_item_bounds| is the item bounds in a extended hotseat (i.e., the
+  // hotseat state during dragging). Adjust it to the bounds in a shown
+  // hotseat (i.e., the hotseat state after dragging).
+  shelf_item_bounds.Offset(0, ShelfConfig::Get()->shelf_size());
 
   if (!shelf_item_bounds.IsEmpty()) {
     transform.Translate(shelf_item_bounds.x() - origin_without_transform.x(),

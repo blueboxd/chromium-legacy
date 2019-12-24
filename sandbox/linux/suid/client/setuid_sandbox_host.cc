@@ -146,10 +146,11 @@ void SetuidSandboxHost::PrependWrapper(base::CommandLine* cmd_line) {
   struct stat st;
   if (sandbox_binary.empty() || stat(sandbox_binary.c_str(), &st) != 0) {
     LOG(FATAL) << "The SUID sandbox helper binary is missing: "
-               << sandbox_binary << " Aborting now. See "
-                                    "https://chromium.googlesource.com/"
-                                    "chromium/src/+/master/docs/"
-                                    "linux_suid_sandbox_development.md.";
+               << sandbox_binary
+               << " Aborting now. See "
+                  "https://chromium.googlesource.com/"
+                  "chromium/src/+/master/docs/"
+                  "linux/suid_sandbox_development.md.";
   }
 
   if (access(sandbox_binary.c_str(), X_OK) != 0 || (st.st_uid != 0) ||

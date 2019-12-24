@@ -57,7 +57,8 @@ void DispatchFocusChange(arc::mojom::AccessibilityNodeInfoData* node_data,
                          Profile* profile) {
   chromeos::AccessibilityManager* accessibility_manager =
       chromeos::AccessibilityManager::Get();
-  if (!accessibility_manager || accessibility_manager->profile() != profile)
+  if (!node_data || !accessibility_manager ||
+      accessibility_manager->profile() != profile)
     return;
 
   exo::WMHelper* wm_helper = exo::WMHelper::GetInstance();
@@ -341,7 +342,7 @@ void ArcAccessibilityHelperBridge::Shutdown() {
 }
 
 void ArcAccessibilityHelperBridge::OnConnectionReady() {
-  UpdateFilterType();
+  UpdateEnabledFeature();
   UpdateCaptionSettings();
 
   chromeos::AccessibilityManager* accessibility_manager =
@@ -468,6 +469,13 @@ void ArcAccessibilityHelperBridge::HandleFilterTypeAllEvent(
     }
   } else if (!is_notification_event) {
     UpdateWindowProperties(GetActiveWindow());
+  }
+
+  if (is_focus_highlight_enabled_ &&
+      event_data->event_type ==
+          arc::mojom::AccessibilityEventType::VIEW_FOCUSED) {
+    DispatchFocusChange(
+        tree_source->GetFromId(event_data->source_id)->GetNode(), profile_);
   }
 }
 
@@ -718,7 +726,7 @@ void ArcAccessibilityHelperBridge::OnAccessibilityStatusChanged(
     return;
   }
 
-  UpdateFilterType();
+  UpdateEnabledFeature();
   UpdateWindowProperties(GetActiveWindow());
 
   if (event_details.notification_type ==
@@ -753,7 +761,7 @@ ArcAccessibilityHelperBridge::GetFilterTypeForProfile(Profile* profile) {
   return arc::mojom::AccessibilityFilterType::OFF;
 }
 
-void ArcAccessibilityHelperBridge::UpdateFilterType() {
+void ArcAccessibilityHelperBridge::UpdateEnabledFeature() {
   arc::mojom::AccessibilityFilterType filter_type =
       GetFilterTypeForProfile(profile_);
 
@@ -761,6 +769,10 @@ void ArcAccessibilityHelperBridge::UpdateFilterType() {
       arc_bridge_service_->accessibility_helper(), SetFilter);
   if (instance)
     instance->SetFilter(filter_type);
+
+  is_focus_highlight_enabled_ =
+      filter_type != arc::mojom::AccessibilityFilterType::OFF &&
+      chromeos::AccessibilityManager::Get()->IsFocusHighlightEnabled();
 
   bool add_activation_observer =
       filter_type == arc::mojom::AccessibilityFilterType::ALL;

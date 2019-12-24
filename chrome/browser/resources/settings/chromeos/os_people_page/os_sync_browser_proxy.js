@@ -22,6 +22,7 @@ cr.exportPath('settings');
  *   osPreferencesRegistered: boolean,
  *   osPreferencesSynced: boolean,
  *   syncAllOsDataTypes: boolean,
+ *   wallpaperEnabled: boolean,
  *   wifiConfigurationsRegistered: boolean,
  *   wifiConfigurationsSynced: boolean,
  * }}

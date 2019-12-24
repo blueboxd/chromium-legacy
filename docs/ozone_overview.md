@@ -211,7 +211,7 @@ Caveats:
 * For the GBM platform, you may need to terminate your X server (or any other
   display server) prior to testing.
 * During development, you may need to configure
-  [sandboxing](linux_sandboxing.md) or to disable it.
+  [sandboxing](linux/sandboxing.md) or to disable it.
 
 ## Ozone Platforms
 

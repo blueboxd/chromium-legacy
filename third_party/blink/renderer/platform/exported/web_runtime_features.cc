@@ -484,10 +484,6 @@ void WebRuntimeFeatures::EnableWebXRAnchors(bool enable) {
   RuntimeEnabledFeatures::SetWebXRAnchorsEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableWebXrGamepadModule(bool enable) {
-  RuntimeEnabledFeatures::SetWebXrGamepadModuleEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableWebXRHitTest(bool enable) {
   RuntimeEnabledFeatures::SetWebXRHitTestEnabled(enable);
 }

@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/crx_file/id_util.h"
@@ -89,6 +90,9 @@ class BlockedActionWaiter
 
 BrowserActionsBarBrowserTest::BrowserActionsBarBrowserTest()
     : toolbar_model_(nullptr) {
+  // This suite relies on behavior specific to ToolbarActionsBar. See
+  // ExtensionsMenuViewBrowserTest and ExtensionsMenuViewUnitTest for new tests.
+  feature_list_.InitAndDisableFeature(features::kExtensionsToolbarMenu);
 }
 
 BrowserActionsBarBrowserTest::~BrowserActionsBarBrowserTest() {

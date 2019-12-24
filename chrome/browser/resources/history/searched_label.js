@@ -30,7 +30,8 @@ Polymer({
 
     const titleText = this.title;
 
-    if (this.searchTerm == '' || this.searchTerm == null) {
+    if (this.searchTerm === '' || this.searchTerm === null ||
+        this.searchTerm === undefined) {
       this.textContent = titleText;
       return;
     }

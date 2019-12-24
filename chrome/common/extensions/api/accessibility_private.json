@@ -148,23 +148,23 @@
     ],
     "functions": [
       {
-        "name": "getDisplayLanguage",
+        "name": "getDisplayNameForLocale",
         "type": "function",
         "nocompile": true,
-        "description": "Called to translate languageCodeToTranslate into human-readable string in the language specified by targetLanguageCode",
+        "description": "Called to translate localeCodeToTranslate into human-readable string in the locale specified by displayLocaleCode",
         "parameters": [
           {
-            "name": "languageCodeToTranslate",
+            "name": "localeCodeToTranslate",
             "type": "string"
           },
           {
-            "name": "targetLanguageCode",
+            "name": "displayLocaleCode",
             "type": "string"
           }
         ],
         "returns": {
           "type": "string",
-          "description": "The human-readable language string in the provided language."
+          "description": "The human-readable locale string in the provided locale."
         },
         "platforms": ["chromeos"]
       },

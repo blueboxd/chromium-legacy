@@ -397,6 +397,16 @@ void SMILTimeContainer::ServiceAnimations() {
   UpdateAnimationsAndScheduleFrameIfNeeded(Elapsed());
 }
 
+bool SMILTimeContainer::CanScheduleFrame(SMILTime earliest_fire_time) const {
+  // If there's synchronization pending (most likely due to syncbases), then
+  // let that complete first before attempting to schedule a frame.
+  if (HasPendingSynchronization())
+    return false;
+  if (!IsTimelineRunning())
+    return false;
+  return earliest_fire_time.IsFinite();
+}
+
 void SMILTimeContainer::UpdateAnimationsAndScheduleFrameIfNeeded(
     SMILTime elapsed) {
   DCHECK(GetDocument().IsActive());
@@ -404,13 +414,11 @@ void SMILTimeContainer::UpdateAnimationsAndScheduleFrameIfNeeded(
 
   UpdateAnimationTimings(elapsed);
   ApplyTimedEffects(elapsed);
-  DCHECK(!wakeup_timer_.IsActive());
-  DCHECK(!HasPendingSynchronization());
 
-  if (!IsTimelineRunning())
-    return;
   SMILTime next_progress_time = NextProgressTime(elapsed);
-  if (!next_progress_time.IsFinite())
+  DCHECK(!wakeup_timer_.IsActive());
+
+  if (!CanScheduleFrame(next_progress_time))
     return;
   SMILTime delay_time = next_progress_time - elapsed;
   DCHECK(delay_time.IsFinite());

@@ -140,6 +140,7 @@ source_set("unit_tests") {
 }
 
 source_set("eg_tests") {
+  defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
@@ -150,14 +151,12 @@ source_set("eg_tests") {
     "//base",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/popup_menu:constants",
-    "//ios/chrome/browser/ui/settings/cells",
+    "//ios/chrome/browser/ui/settings/cells:clear_browsing_data_constants",
     "//ios/chrome/browser/ui/table_view:feature_flags",
-    "//ios/chrome/browser/ui/table_view/cells",
     "//ios/chrome/common",
-    "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
+    "//ios/testing/earl_grey:earl_grey_support",
     "//ios/third_party/earl_grey:earl_grey+link",
-    "//ios/web/public/test",
     "//ios/web/public/test/http_server",
     "//net:test_support",
   ]
@@ -165,4 +164,31 @@ source_set("eg_tests") {
     "UIKit.framework",
     "XCTest.framework",
   ]
+}
+
+source_set("eg2_tests") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+  sources = [
+    "history_ui_egtest.mm",
+  ]
+  deps = [
+    ":constants",
+    "//base",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/browser/ui/popup_menu:constants",
+    "//ios/chrome/browser/ui/settings/cells:clear_browsing_data_constants",
+    "//ios/chrome/browser/ui/table_view:feature_flags",
+    "//ios/chrome/common",
+    "//ios/chrome/test/earl_grey:eg_test_support+eg2",
+    "//ios/testing/earl_grey:eg_test_support+eg2",
+    "//ios/third_party/earl_grey2:test_lib",
+    "//ios/web/public/test/http_server",
+    "//net:test_support",
+  ]
+  libs = [ "UIKit.framework" ]
 }

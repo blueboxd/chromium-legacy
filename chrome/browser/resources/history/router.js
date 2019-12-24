@@ -77,7 +77,7 @@ Polymer({
   serializeUrl: function() {
     let path = this.selectedPage;
 
-    if (path == 'history') {
+    if (path === 'history') {
       path = '';
     }
 

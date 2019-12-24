@@ -36,6 +36,34 @@ class WebAppDatabaseTest : public WebAppTest {
     test_registry_controller_->SetUp(profile());
   }
 
+  static WebApp::FileHandlers CreateFileHandlers(int suffix) {
+    WebApp::FileHandlers file_handlers;
+
+    for (unsigned int i = 0; i < 5; ++i) {
+      std::string suffix_str =
+          base::NumberToString(suffix) + base::NumberToString(i);
+
+      WebApp::FileHandlerAccept file_handler_accept1;
+      file_handler_accept1.mimetype = "application/" + suffix_str + "+foo";
+      file_handler_accept1.file_extensions.insert("." + suffix_str + "a");
+      file_handler_accept1.file_extensions.insert("." + suffix_str + "b");
+
+      WebApp::FileHandlerAccept file_handler_accept2;
+      file_handler_accept2.mimetype = "application/" + suffix_str + "+bar";
+      file_handler_accept2.file_extensions.insert("." + suffix_str + "a");
+      file_handler_accept2.file_extensions.insert("." + suffix_str + "b");
+
+      WebApp::FileHandler file_handler;
+      file_handler.action = GURL("https://example.com/open-" + suffix_str);
+      file_handler.accept.push_back(std::move(file_handler_accept1));
+      file_handler.accept.push_back(std::move(file_handler_accept2));
+
+      file_handlers.push_back(std::move(file_handler));
+    }
+
+    return file_handlers;
+  }
+
   static std::unique_ptr<WebApp> CreateWebApp(const std::string& base_url,
                                               int suffix) {
     const auto launch_url = base_url + base::NumberToString(suffix);
@@ -85,6 +113,8 @@ class WebAppDatabaseTest : public WebAppTest {
     icon.square_size_px = size;
     app->SetIconInfos({std::move(icon)});
     app->SetDownloadedIconSizes({size});
+
+    app->SetFileHandlers(CreateFileHandlers(suffix));
 
     WebApp::SyncData sync_data;
     sync_data.name = "Sync" + name;
@@ -278,6 +308,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_FALSE(app->is_in_sync_install());
   EXPECT_TRUE(app->sync_data().name.empty());
   EXPECT_FALSE(app->sync_data().theme_color.has_value());
+  EXPECT_TRUE(app->file_handlers().empty());
   controller().RegisterApp(std::move(app));
 
   Registry registry = database_factory().ReadRegistry();
@@ -308,6 +339,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_FALSE(app_copy->is_in_sync_install());
   EXPECT_TRUE(app_copy->sync_data().name.empty());
   EXPECT_FALSE(app_copy->sync_data().theme_color.has_value());
+  EXPECT_TRUE(app_copy->file_handlers().empty());
 }
 
 TEST_F(WebAppDatabaseTest, WebAppWithManyIcons) {
@@ -343,6 +375,44 @@ TEST_F(WebAppDatabaseTest, WebAppWithManyIcons) {
     const int icon_size_in_px = i * i;
     EXPECT_EQ(icon_size_in_px, app_copy->icon_infos()[i - 1].square_size_px);
   }
+}
+
+TEST_F(WebAppDatabaseTest, WebAppWithFileHandlersRoundTrip) {
+  controller().Init();
+
+  const std::string base_url = "https://example.com/path";
+  auto app = CreateWebApp(base_url, 0);
+  auto app_id = app->app_id();
+
+  WebApp::FileHandlers file_handlers;
+
+  WebApp::FileHandler file_handler1;
+  file_handler1.action = GURL("https://example.com/path/csv");
+  WebApp::FileHandlerAccept accept_csv;
+  accept_csv.mimetype = "text/csv";
+  accept_csv.file_extensions.insert(".csv");
+  accept_csv.file_extensions.insert(".txt");
+  file_handler1.accept.push_back(std::move(accept_csv));
+  file_handlers.push_back(std::move(file_handler1));
+
+  WebApp::FileHandler file_handler2;
+  file_handler2.action = GURL("https://example.com/path/svg");
+  WebApp::FileHandlerAccept accept_xml;
+  accept_xml.mimetype = "text/xml";
+  accept_xml.file_extensions.insert(".xml");
+  file_handler2.accept.push_back(std::move(accept_xml));
+  WebApp::FileHandlerAccept accept_svg;
+  accept_svg.mimetype = "text/xml+svg";
+  accept_svg.file_extensions.insert(".svg");
+  file_handler2.accept.push_back(std::move(accept_svg));
+  file_handlers.push_back(std::move(file_handler2));
+
+  app->SetFileHandlers(std::move(file_handlers));
+
+  controller().RegisterApp(std::move(app));
+
+  Registry registry = database_factory().ReadRegistry();
+  EXPECT_TRUE(IsRegistryEqual(mutable_registrar().registry(), registry));
 }
 
 }  // namespace web_app

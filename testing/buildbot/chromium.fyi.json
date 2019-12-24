@@ -22387,6 +22387,22 @@
         },
         "test": "browser_tests",
         "test_target": "//chrome/test:browser_tests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ]
+        },
+        "test": "openscreen_unittests",
+        "test_target": "//chrome/browser/media/router:openscreen_unittests"
       }
     ]
   },

@@ -23,12 +23,10 @@
       </div>
       <div slot="bottom-buttons" class="flex layout horizontal">
         <div class="flex"></div>
-        <oobe-text-button id="cancelButton" border on-tap="onCancelTap_">
-          <div>[[i18nDynamic(locale, 'cancel')]]</div>
-        </oobe-text-button>
-        <oobe-text-button inverse on-tap="onContinueTap_">
-          <div>[[i18nDynamic(locale, 'confirmResetButton')]]</div>
-        </oobe-text-button>
+        <oobe-text-button id="cancelButton" border on-tap="onCancelTap_"
+            text-key="cancel"></oobe-text-button>
+        <oobe-text-button inverse on-tap="onContinueTap_"
+            text-key="confirmResetButton"></oobe-text-button>
       </div>
     </dialog>
   </template>

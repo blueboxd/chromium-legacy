@@ -169,9 +169,9 @@ parameterized class. The general things you will need to are:
 ### Add The New File
 
 Add the new test class to [`//chrome/android/BUILD.gn`][build_gn]. If it is a VR
-test class, it should be added to the `java_files` list of the
+test class, it should be added to the `sources` list of the
 `chrome_test_vr_java` `android_library` target. If it is an AR test class, it
-should be added to the `java_files` list of the `chrome_test_ar_java`
+should be added to the `sources` list of the `chrome_test_ar_java`
 `android_library` target.
 
 ## AR Playback Datasets

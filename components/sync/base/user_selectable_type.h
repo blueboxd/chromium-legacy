@@ -45,7 +45,10 @@ constexpr int UserSelectableTypeHistogramNumEntries() {
 }
 
 #if defined(OS_CHROMEOS)
-// Chrome OS provides a separate UI with sync controls for OS data types.
+// Chrome OS provides a separate UI with sync controls for OS data types. Note
+// that wallpaper is a special case due to its reliance on apps, so while it
+// appears in the UI, it is not included in this enum.
+// TODO(https://crbug.com/967987): Break this dependency.
 enum class UserSelectableOsType {
   kOsApps,
   kFirstType = kOsApps,

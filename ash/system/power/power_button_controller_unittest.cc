@@ -131,8 +131,10 @@ class PowerButtonControllerTest : public PowerButtonTestBase {
   // Tap outside of the menu view to dismiss the menu.
   void TapToDismissPowerButtonMenu() {
     gfx::Rect menu_bounds = power_button_test_api_->GetMenuBoundsInScreen();
-    GetEventGenerator()->GestureTapAt(
-        gfx::Point(menu_bounds.x() - 5, menu_bounds.y() - 5));
+    gfx::Point point = menu_bounds.bottom_right();
+    point.Offset(5, 5);
+    GetEventGenerator()->GestureTapAt(point);
+
     EXPECT_FALSE(power_button_test_api_->IsMenuOpened());
   }
 

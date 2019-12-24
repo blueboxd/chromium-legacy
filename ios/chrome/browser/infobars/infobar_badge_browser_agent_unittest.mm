@@ -13,6 +13,7 @@
 #include "ios/chrome/browser/infobars/infobar_badge_tab_helper_delegate.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/infobars/overlays/fake_infobar_overlay_request_factory.h"
+#import "ios/chrome/browser/infobars/test/fake_infobar_badge_tab_helper_delegate.h"
 #import "ios/chrome/browser/infobars/test/fake_infobar_ios.h"
 #import "ios/chrome/browser/main/test_browser.h"
 #include "ios/chrome/browser/overlays/public/overlay_callback_manager.h"
@@ -41,40 +42,9 @@ using infobars::InfoBar;
 namespace {
 // The InfobarType to use for the test.
 const InfobarType kInfobarType = InfobarType::kInfobarTypePasswordSave;
-// The BadgeType used for the test.
+// The corresponding BadgeType for kInfobarType.
 const BadgeType kBadgeType = BadgeType::kBadgeTypePasswordSave;
 }  // namespace
-
-#pragma mark - FakeInfobarTabHelperDelegate
-
-// Fake version of InfobarTabHelperDelegate to use in tests.
-@interface FakeInfobarTabHelperDelegate
-    : NSObject <InfobarBadgeTabHelperDelegate> {
-  std::map<BadgeType, id<BadgeItem>> _badgeItems;
-}
-- (id<BadgeItem>)itemForBadgeType:(BadgeType)type;
-@end
-
-@implementation FakeInfobarTabHelperDelegate
-
-- (void)addInfobarBadge:(id<BadgeItem>)badgeItem {
-  _badgeItems[badgeItem.badgeType] = badgeItem;
-}
-
-- (void)removeInfobarBadge:(id<BadgeItem>)badgeItem {
-  _badgeItems[badgeItem.badgeType] = nil;
-}
-
-- (void)updateInfobarBadge:(id<BadgeItem>)badgeItem {
-}
-
-- (id<BadgeItem>)itemForBadgeType:(BadgeType)type {
-  return _badgeItems[type];
-}
-
-@end
-
-#pragma mark - InfobarBadgeBrowserAgentTest
 
 // Test fixture for InfobarBadgeBrowserAgent.
 class InfobarBadgeBrowserAgentTest : public PlatformTest {

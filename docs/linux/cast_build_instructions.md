@@ -121,7 +121,7 @@ $ gn gen out/Default --args='is_chromecast=true'
 ### <a name="faster-builds"></a>Faster builds
 
 You might try some of the suggestions on the
-[Linux build setup](linux_build_instructions.md#faster-builds).
+[Linux build setup](build_instructions.md#faster-builds).
 
 ## Build cast\_shell
 
@@ -164,4 +164,4 @@ hooks as needed.
 ### More links
 
 *   Want to use Eclipse as your IDE? See
-    [LinuxEclipseDev](linux_eclipse_dev.md).
+    [LinuxEclipseDev](eclipse_dev.md).

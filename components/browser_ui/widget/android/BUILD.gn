@@ -10,7 +10,11 @@ android_library("java") {
     "java/src/org/chromium/components/browser_ui/widget/BoundedLinearLayout.java",
     "java/src/org/chromium/components/browser_ui/widget/DualControlLayout.java",
     "java/src/org/chromium/components/browser_ui/widget/FadingEdgeScrollView.java",
+    "java/src/org/chromium/components/browser_ui/widget/text/AccessibleTextView.java",
     "java/src/org/chromium/components/browser_ui/widget/text/AlertDialogEditText.java",
+    "java/src/org/chromium/components/browser_ui/widget/text/TemplatePreservingTextView.java",
+    "java/src/org/chromium/components/browser_ui/widget/text/TextViewWithCompoundDrawables.java",
+    "java/src/org/chromium/components/browser_ui/widget/text/VerticallyFixedEditText.java",
   ]
 
   deps = [

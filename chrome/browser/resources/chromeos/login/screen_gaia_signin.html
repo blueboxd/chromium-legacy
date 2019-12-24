@@ -26,16 +26,20 @@
           <div class="flex">
           </div>
           <oobe-text-button id="secondary-action-button"
+              label-for-aria="[[secondaryActionButtonLabel_]]"
               on-tap="onSecondaryActionButtonClicked_"
               hidden="[[!secondaryActionButtonLabel_]]"
-              disabled="[[!secondaryActionButtonEnabled_]]"
-              >[[secondaryActionButtonLabel_]]</oobe-text-button>
+              disabled="[[!secondaryActionButtonEnabled_]]">
+            <div slot="text">[[secondaryActionButtonLabel_]]</div>
+          </oobe-text-button>
           <oobe-text-button id="primary-action-button"
+              label-for-aria="[[primaryActionButtonLabel_]]"
               on-tap="onPrimaryActionButtonClicked_"
               hidden="[[!primaryActionButtonLabel_]]"
               disabled="[[!primaryActionButtonEnabled_]]"
-              inverse
-              >[[primaryActionButtonLabel_]]</oobe-text-button>
+              inverse>
+              <div slot="text">[[primaryActionButtonLabel_]]</div>
+          </oobe-text-button>
         </div>
       </div>
     </oobe-dialog>
@@ -44,20 +48,18 @@
     </offline-gaia>
     <offline-ad-login id="offline-ad-auth" class="gaia-dialog"
         hidden="[[!isStep_(step_, 'ad')]]"
-        i18n-values="ad-welcome-message:loginWelcomeMessage">
+        ad-welcome-message-key="loginWelcomeMessage">
     </offline-ad-login>
     <security-token-pin id="pinDialog" parameters="[[pinDialogParameters_]]"
         hidden="[[!isStep_(step_, 'pin')]]"
         on-cancel="onPinDialogCanceled_" on-completed="onPinDialogCompleted_">
     </security-token-pin>
     <oobe-dialog id="saml-interstitial" role="dialog" has-buttons
+        title-key="loginWelcomeMessage"
         hidden="[[!isStep_(step_, 'saml-interstitial')]]">
       <hd-iron-icon slot="oobe-icon" icon1x="oobe-32:googleg"
           icon2x="oobe-64:googleg">
       </hd-iron-icon>
-      <h1 slot="title">
-        [[i18nDynamic(locale, 'loginWelcomeMessage')]]
-      </h1>
       <div slot="subtitle" hidden="[[isEmpty_(samlInterstitialDomain_)]]">
         [[i18nDynamic(locale, 'enterpriseInfoMessage',
                       samlInterstitialDomain_)]]
@@ -79,7 +81,7 @@
     </oobe-dialog>
     <div id="gaia-loading" class="step-loading gaia-dialog"
         hidden="[[!isStep_(step_, 'loading', 'gaia-loading')]]">
-      <throbber-notice i18n-values="text:gaiaLoading"></throbber-notice>
+      <throbber-notice text-key="gaiaLoading"></throbber-notice>
     </div>
     <notification-card id="gaia-whitelist-error" type="fail" class="gaia-dialog"
         hidden="[[!isStep_(step_, 'whitelist-error')]]"

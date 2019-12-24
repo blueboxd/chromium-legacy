@@ -22,6 +22,7 @@ extern const char kOsSyncFeatureEnabled[];
 extern const char kSyncAllOsTypes[];
 extern const char kSyncOsApps[];
 extern const char kSyncOsPreferences[];
+extern const char kSyncOsWallpaper[];
 #endif
 
 extern const char kSyncApps[];

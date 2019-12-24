@@ -507,6 +507,12 @@ id<GREYMatcher> AutofillUploadCardInfobar() {
   return [ChromeMatchersAppInterface autofillUploadCardInfobar];
 }
 
+id<GREYMatcher> HistoryEntry(const std::string& url, const std::string& title) {
+  return [ChromeMatchersAppInterface
+      historyEntryForURL:base::SysUTF8ToNSString(url)
+                   title:base::SysUTF8ToNSString(title)];
+}
+
 #pragma mark - Manual Fallback
 
 id<GREYMatcher> ManualFallbackFormSuggestionViewMatcher() {

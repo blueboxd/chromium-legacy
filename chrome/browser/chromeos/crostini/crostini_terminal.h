@@ -44,6 +44,9 @@ void LaunchContainerTerminal(Profile* profile,
                              const std::string& container_name,
                              const std::vector<std::string>& terminal_args);
 
+// Launches the terminal settings popup window.
+void LaunchTerminalSettings(Profile* profile);
+
 }  // namespace crostini
 
 #endif  // CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_TERMINAL_H_

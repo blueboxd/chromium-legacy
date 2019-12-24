@@ -463,7 +463,7 @@ InputImeEventRouter* GetInputImeEventRouter(Profile* profile) {
 
 std::string InformativeError(const std::string& error,
                              const char* function_name) {
-  return base::StringPrintf("%s\nThrown by %s", error.c_str(), function_name);
+  return base::StringPrintf("[%s]: %s", function_name, error.c_str());
 }
 
 }  // namespace extensions

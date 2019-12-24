@@ -2239,9 +2239,6 @@ extern const char kSmartDimModelV3Description[];
 extern const char kSmartTextSelectionName[];
 extern const char kSmartTextSelectionDescription[];
 
-extern const char kSplitSettingsName[];
-extern const char kSplitSettingsDescription[];
-
 extern const char kSplitSettingsSyncName[];
 extern const char kSplitSettingsSyncDescription[];
 

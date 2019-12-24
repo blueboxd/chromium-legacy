@@ -128,9 +128,9 @@ class VIEWS_EXPORT BoundsAnimator : public AnimationDelegateViews {
   // Used by AnimationEndedOrCanceled.
   enum class AnimationEndType { kEnded, kCanceled };
 
-  typedef std::map<const View*, Data> ViewToDataMap;
+  using ViewToDataMap = std::map<const View*, Data>;
 
-  typedef std::map<const gfx::Animation*, View*> AnimationToViewMap;
+  using AnimationToViewMap = std::map<const gfx::Animation*, View*>;
 
   // Removes references to |view| and its animation. Returns the data for the
   // caller to handle cleanup.

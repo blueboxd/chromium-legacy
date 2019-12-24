@@ -12,7 +12,7 @@ android_resources("android_data_chart_java_resources") {
 }
 
 android_library("android_data_chart_java") {
-  java_files = [
+  sources = [
     "java/src/org/chromium/third_party/android/datausagechart/ChartAxis.java",
     "java/src/org/chromium/third_party/android/datausagechart/ChartDataUsageView.java",
     "java/src/org/chromium/third_party/android/datausagechart/ChartNetworkSeriesView.java",

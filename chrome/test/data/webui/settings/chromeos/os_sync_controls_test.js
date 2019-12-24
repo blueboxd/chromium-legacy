@@ -46,6 +46,7 @@ function getOsSyncPrefs(syncAll) {
     osPreferencesRegistered: true,
     osPreferencesSynced: syncAll,
     syncAllOsTypes: syncAll,
+    wallpaperEnabled: syncAll,
     wifiConfigurationsRegistered: true,
     wifiConfigurationsSynced: syncAll,
   };

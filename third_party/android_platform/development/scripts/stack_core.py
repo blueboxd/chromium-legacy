@@ -52,6 +52,8 @@ _THREAD_LINE = re.compile('(.*)(\-\-\- ){15}\-\-\-')
 _DALVIK_JNI_THREAD_LINE = re.compile("(\".*\" prio=[0-9]+ tid=[0-9]+ NATIVE.*)")
 _DALVIK_NATIVE_THREAD_LINE = re.compile("(\".*\" sysTid=[0-9]+ nice=[0-9]+.*)")
 _JAVA_STDERR_LINE = re.compile("([0-9]+)\s+[0-9]+\s+.\s+System.err:\s*(.+)")
+_MISC_HEADER = re.compile(
+    '(?:Tombstone written to:|Abort message:|Revision:|Build fingerprint:).*')
 
 # Matches LOG(FATAL) lines, like the following example:
 #   [FATAL:source_file.cc(33)] Check failed: !instances_.empty()
@@ -172,14 +174,14 @@ def StreamingConvertTrace(_, load_vaddrs, more_info, fallback_monochrome,
   so_dirs = []
   in_stack = False
   def ConvertStreamingChunk():
-    print "Stack found. Symbolizing..."
+    logging.info("Stack found. Symbolizing...")
     if so_dirs:
       UpdateLibrarySearchPath(so_dirs)
     # if arch isn't defined in command line, find it from log
     if not arch_defined:
       arch = _FindAbi(useful_lines)
       if arch:
-        print ('Find ABI:' + arch)
+        print 'Symbolizing stack using ABI=' + arch
         symbol.ARCH = arch
     ResolveCrashSymbol(list(useful_lines), more_info, llvm_symbolizer)
 
@@ -214,7 +216,8 @@ def ConvertTrace(lines, load_vaddrs, more_info, fallback_monochrome,
 
   chunks = [lines[i: i+_CHUNK_SIZE] for i in xrange(0, len(lines), _CHUNK_SIZE)]
 
-  use_multiprocessing = os.environ.get('STACK_DISABLE_ASYNC') != '1'
+  use_multiprocessing = len(chunks) > 1 and (
+      os.environ.get('STACK_DISABLE_ASYNC') != '1')
   if use_multiprocessing:
     pool = multiprocessing.Pool(processes=_DEFAULT_JOBS)
     results = pool.map(PreProcessLog(load_vaddrs, apks_directory), chunks)
@@ -240,7 +243,7 @@ def ConvertTrace(lines, load_vaddrs, more_info, fallback_monochrome,
   if not arch_defined:
     arch = _FindAbi(useful_log)
     if arch:
-      print ('Find ABI:' + arch)
+      print 'Symbolizing stack using ABI:', arch
       symbol.ARCH = arch
 
   ResolveCrashSymbol(list(useful_log), more_info, llvm_symbolizer)
@@ -286,8 +289,8 @@ class PreProcessLog:
         # we can update library search path in main process.
         if not os.path.samefile(constants.GetOutDirectory(), so_dir):
           self._so_dirs.append(so_dir)
-        print ("Detected: %s is %s which is loaded directly from APK."
-                % (host_so, soname))
+        logging.info('Detected: %s is %s which is loaded directly from APK.',
+                     host_so, soname)
     return soname
 
   def _AdjustAddress(self, address, lib):
@@ -327,7 +330,8 @@ class PreProcessLog:
           or _LOG_FATAL_LINE.search(line)
           or _DEBUG_TRACE_LINE.search(line)
           or _ABI_LINE.search(line)
-          or _JAVA_STDERR_LINE.search(line)):
+          or _JAVA_STDERR_LINE.search(line)
+          or _MISC_HEADER.search(line)):
         useful_log.append(line)
         continue
 
@@ -396,9 +400,10 @@ def ResolveCrashSymbol(lines, more_info, llvm_symbolizer):
     dalvik_jni_thread_header = _DALVIK_JNI_THREAD_LINE.search(line)
     dalvik_native_thread_header = _DALVIK_NATIVE_THREAD_LINE.search(line)
     log_fatal_header = _LOG_FATAL_LINE.search(line)
+    misc_header = _MISC_HEADER.search(line)
     if (process_header or signal_header or register_header or thread_header or
         dalvik_jni_thread_header or dalvik_native_thread_header or
-        log_fatal_header) :
+        log_fatal_header or misc_header):
       if trace_lines or value_lines:
         java_lines = []
         if pid != -1 and pid in java_stderr_by_pid:
@@ -425,6 +430,8 @@ def ResolveCrashSymbol(lines, more_info, llvm_symbolizer):
         print dalvik_native_thread_header.group(1)
       if log_fatal_header:
         print log_fatal_header.group(1)
+      if misc_header:
+        print misc_header.group(0)
       continue
 
     match = _TRACE_LINE.match(line) or _DEBUG_TRACE_LINE.match(line)
@@ -499,7 +506,7 @@ def UpdateLibrarySearchPath(so_dirs):
       raise Exception("Found different so dirs, they are %s", repr(so_dir))
     else:
       search_path = so_dir.pop()
-      print "Search libraries in " + search_path
+      logging.info("Search libraries in %s", search_path)
       symbol.SetSecondaryAbiOutputPath(search_path)
 
 
@@ -614,7 +621,7 @@ def _FindSharedLibraryFromAPKs(output_directory, apks_directory, offset):
   if number_of_library == 1:
     return shared_libraries[0]
   elif number_of_library > 1:
-    print "More than one libraries could be loaded from APK."
+    logging.warning("More than one libraries could be loaded from APK.")
   return (None, None)
 
 

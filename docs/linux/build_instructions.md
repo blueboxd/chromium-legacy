@@ -332,18 +332,18 @@ other settings):
 ### More links
 
 *   Information about [building with Clang](clang.md).
-*   You may want to [use a chroot](using_a_linux_chroot.md) to
+*   You may want to [use a chroot](linux/using_a_chroot.md) to
     isolate yourself from versioning or packaging conflicts.
-*   Cross-compiling for ARM? See [LinuxChromiumArm](linux_chromium_arm.md).
+*   Cross-compiling for ARM? See [LinuxChromiumArm](chromium_arm.md).
 *   Want to use Eclipse as your IDE? See
-    [LinuxEclipseDev](linux_eclipse_dev.md).
+    [LinuxEclipseDev](eclipse_dev.md).
 *   Want to use your built version as your default browser? See
-    [LinuxDevBuildAsDefaultBrowser](linux_dev_build_as_default_browser.md).
+    [LinuxDevBuildAsDefaultBrowser](dev_build_as_default_browser.md).
 
 ## Next Steps
 
 If you want to contribute to the effort toward a Chromium-based browser for
-Linux, please check out the [Linux Development page](linux_development.md) for
+Linux, please check out the [Linux Development page](development.md) for
 more information.
 
 ## Notes for other distros <a name="notes"></a>

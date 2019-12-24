@@ -765,10 +765,16 @@ void VideoResourceUpdater::CopyHardwarePlane(
                                       : context_provider_->ContextGL();
 
   gl->WaitSyncTokenCHROMIUM(mailbox_holder.sync_token.GetConstData());
-  // TODO(piman): convert to CreateAndTexStorage2DSharedImageCHROMIUM once
-  // VideoFrame is all converted to SharedImage.
+
+  // This is only used on Android where all video mailboxes already use shared
+  // images.
+  DCHECK(mailbox_holder.mailbox.IsSharedImage());
+
+  // TODO(vikassoni): Use raster interface instead of gl interface eventually.
   GLuint src_texture_id =
-      gl->CreateAndConsumeTextureCHROMIUM(mailbox_holder.mailbox.name);
+      gl->CreateAndTexStorage2DSharedImageCHROMIUM(mailbox_holder.mailbox.name);
+  gl->BeginSharedImageAccessDirectCHROMIUM(
+      src_texture_id, GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
   {
     HardwarePlaneResource::ScopedTexture scope(gl, hardware_resource);
     gl->CopySubTextureCHROMIUM(
@@ -776,6 +782,7 @@ void VideoResourceUpdater::CopyHardwarePlane(
         output_plane_resource_size.width(), output_plane_resource_size.height(),
         false, false, false);
   }
+  gl->EndSharedImageAccessDirectCHROMIUM(src_texture_id);
   gl->DeleteTextures(1, &src_texture_id);
 
   // Pass an empty sync token to force generation of a new sync token.

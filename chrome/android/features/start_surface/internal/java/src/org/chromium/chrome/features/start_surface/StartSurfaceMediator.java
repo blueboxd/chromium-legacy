@@ -510,18 +510,21 @@ class StartSurfaceMediator
         return false;
     }
 
-    private boolean shouldShowTabSwitcherToolbar() {
-        // Do not show Tab switcher toolbar on explore pane.
+    @VisibleForTesting
+    public boolean shouldShowTabSwitcherToolbar() {
+        // Always show in TABSWITCHER
+        if (mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER) return true;
+
+        // Never show on explore pane.
         if (mOverviewModeState == OverviewModeState.SHOWN_TWO_PANES
                 && mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE)) {
             return false;
         }
 
-        // Do not show Tab switcher toolbar when focusing the Omnibox.
-        if (mPropertyModel.get(IS_SECONDARY_SURFACE_VISIBLE)) {
-            return mSecondaryTasksSurfacePropertyModel.get(IS_FAKE_SEARCH_BOX_VISIBLE);
-        }
-        return mPropertyModel.get(IS_FAKE_SEARCH_BOX_VISIBLE);
+        // Hide when focusing the Omnibox.
+        return (mPropertyModel.get(IS_SECONDARY_SURFACE_VISIBLE)
+                        ? mSecondaryTasksSurfacePropertyModel.get(IS_FAKE_SEARCH_BOX_VISIBLE)
+                        : mPropertyModel.get(IS_FAKE_SEARCH_BOX_VISIBLE));
     }
 
     private void setTabCarouselVisibility(boolean isVisible) {

@@ -214,6 +214,10 @@ void PredictionManager::Initialize(const std::vector<proto::OptimizationTarget>&
 void PredictionManager::UpdateFCPSessionStatistics(base::TimeDelta fcp) {
   previous_load_fcp_ms_ = static_cast<float>(fcp.InMilliseconds());
   session_fcp_.AddSample(*previous_load_fcp_ms_);
+  pref_service_->SetDouble(prefs::kSessionStatisticFCPMean,
+                           session_fcp_.GetMean());
+  pref_service_->SetDouble(prefs::kSessionStatisticFCPStdDev,
+                           session_fcp_.GetStdDev());
 }
 
 void PredictionManager::RegisterOptimizationTargets(
@@ -288,10 +292,18 @@ base::Optional<float> PredictionManager::GetValueForClientFeature(
           navigation_handle->GetURL(), navigation_handle->GetPreviousURL()));
     }
     case proto::CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_SESSION_MEAN: {
+      if (session_fcp_.GetNumberOfSamples() == 0) {
+        return static_cast<float>(
+            pref_service_->GetDouble(prefs::kSessionStatisticFCPMean));
+      }
       return session_fcp_.GetMean();
     }
     case proto::
         CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_SESSION_STANDARD_DEVIATION: {
+      if (session_fcp_.GetNumberOfSamples() == 0) {
+        return static_cast<float>(
+            pref_service_->GetDouble(prefs::kSessionStatisticFCPStdDev));
+      }
       return session_fcp_.GetStdDev();
     }
     case proto::

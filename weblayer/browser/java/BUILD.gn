@@ -24,7 +24,7 @@ java_cpp_enum("generated_enums") {
 }
 
 android_library("java") {
-  java_files = [
+  sources = [
     "org/chromium/weblayer_private/ActionModeCallback.java",
     "org/chromium/weblayer_private/BrowserFragmentImpl.java",
     "org/chromium/weblayer_private/BrowserImpl.java",
@@ -108,7 +108,7 @@ generate_jni("jni") {
 }
 
 android_library("interfaces_java") {
-  java_files = [
+  sources = [
     "org/chromium/weblayer_private/interfaces/APICallException.java",
     "org/chromium/weblayer_private/interfaces/BrowserFragmentArgs.java",
     "org/chromium/weblayer_private/interfaces/BrowsingDataType.java",
@@ -130,7 +130,7 @@ android_library("interfaces_java") {
 # java classes. It compiles the abstract class; implementations are compiled
 # separately.
 android_library("gms_bridge_java") {
-  java_files = [
+  sources = [
     "org/chromium/weblayer_private/GmsBridge.java",
     "org/chromium/weblayer_private/GmsBridgeImpl.java",
   ]
@@ -146,7 +146,9 @@ android_library("gms_bridge_java") {
 
 # This target compiles the implementation of GmsBridge for public targets.
 android_library("gms_bridge_upstream_impl_java") {
-  java_files = [ "org/chromium/weblayer_private/GmsBridgeImpl.java" ]
+  sources = [
+    "org/chromium/weblayer_private/GmsBridgeImpl.java",
+  ]
   deps = [
     ":gms_bridge_java",
   ]

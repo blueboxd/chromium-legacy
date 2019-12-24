@@ -41,7 +41,7 @@ PaymentManager* PaymentAppServiceWorkerRegistration::paymentManager(
 PaymentManager* PaymentAppServiceWorkerRegistration::paymentManager(
     ScriptState* script_state) {
   if (!payment_manager_) {
-    payment_manager_ = PaymentManager::Create(registration_);
+    payment_manager_ = MakeGarbageCollected<PaymentManager>(registration_);
   }
   return payment_manager_.Get();
 }

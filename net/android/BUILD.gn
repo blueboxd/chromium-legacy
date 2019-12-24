@@ -6,7 +6,7 @@ import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 
 android_library("net_java") {
-  java_files = [
+  sources = [
     "java/src/org/chromium/net/AndroidCellularSignalStrength.java",
     "java/src/org/chromium/net/AndroidCertVerifyResult.java",
     "java/src/org/chromium/net/AndroidKeyStore.java",
@@ -43,7 +43,9 @@ android_library("net_java") {
 }
 
 android_library("net_thread_stats_uid_java") {
-  java_files = [ "java/src/org/chromium/net/ThreadStatsUid.java" ]
+  sources = [
+    "java/src/org/chromium/net/ThreadStatsUid.java",
+  ]
 }
 
 android_aidl("embedded_test_server_aidl") {
@@ -64,7 +66,7 @@ android_library("embedded_test_server_aidl_java") {
 
 android_library("net_java_test_support") {
   testonly = true
-  java_files = [
+  sources = [
     "../test/android/javatests/src/org/chromium/net/test/EmbeddedTestServer.java",
     "../test/android/javatests/src/org/chromium/net/test/EmbeddedTestServerRule.java",
     "../test/android/javatests/src/org/chromium/net/test/util/CertTestUtil.java",
@@ -87,7 +89,7 @@ android_library("net_java_test_support") {
 
 android_library("net_java_test_support_provider") {
   testonly = true
-  java_files = [
+  sources = [
     "../test/android/javatests/src/org/chromium/net/test/DummySpnegoAuthenticator.java",
     "../test/android/javatests/src/org/chromium/net/test/DummySpnegoAuthenticatorService.java",
     "../test/android/javatests/src/org/chromium/net/test/EmbeddedTestServerImpl.java",
@@ -162,7 +164,7 @@ android_resources("net_unittests_apk_resources") {
 
 android_library("net_javatests") {
   testonly = true
-  java_files = [
+  sources = [
     "javatests/src/org/chromium/net/AndroidKeyStoreTestUtil.java",
     "javatests/src/org/chromium/net/AndroidNetworkLibraryTestUtil.java",
     "javatests/src/org/chromium/net/AndroidProxyConfigServiceTestUtil.java",
@@ -218,8 +220,9 @@ java_cpp_enum("net_android_java_enums_srcjar") {
 }
 
 junit_binary("net_junit_tests") {
-  java_files =
-      [ "junit/src/org/chromium/net/HttpNegotiateAuthenticatorTest.java" ]
+  sources = [
+    "junit/src/org/chromium/net/HttpNegotiateAuthenticatorTest.java",
+  ]
   deps = [
     ":net_java",
     "//base:base_java",

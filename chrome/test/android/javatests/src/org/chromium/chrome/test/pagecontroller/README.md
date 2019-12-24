@@ -36,7 +36,7 @@ git checkout -b pagecontroller_codelab
 ...
 android_library("chrome_java_test_pagecontroller") {
   testonly = true
-  java_files = [
+  sources = [
   ...
     "javatests/src/org/chromium/chrome/test/pagecontroller/controllers/android/PermissionDialog.java",
 +   "javatests/src/org/chromium/chrome/test/pagecontroller/controllers/codelab/SearchEngineSelectionControllerForCodelab.java",

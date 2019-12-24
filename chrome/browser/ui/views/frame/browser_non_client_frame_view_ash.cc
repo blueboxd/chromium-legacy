@@ -236,10 +236,7 @@ void BrowserNonClientFrameViewAsh::UpdateFrameColor() {
   } else if (!browser_view()->browser()->deprecated_is_app()) {
     // TODO(crbug.com/836128): Remove when System Web Apps flag is removed, as
     // the above web-app branch will render the theme color.
-    active_color =
-        base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)
-            ? SK_ColorWHITE
-            : SkColorSetARGB(0xff, 0x25, 0x4f, 0xae);
+    active_color = SK_ColorWHITE;
   }
 
   if (active_color) {

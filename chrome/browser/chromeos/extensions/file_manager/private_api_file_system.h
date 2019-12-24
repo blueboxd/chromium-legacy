@@ -22,7 +22,7 @@
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "components/drive/file_errors.h"
 #include "extensions/browser/extension_function.h"
-#include "services/device/public/mojom/mtp_storage_info.mojom.h"
+#include "services/device/public/mojom/mtp_storage_info.mojom-forward.h"
 #include "storage/browser/file_system/file_system_url.h"
 
 namespace storage {

@@ -98,6 +98,7 @@ FYI_BUILDERS = {
         'isolate': 'performance_test_suite',
         'extra_args': [
           '--output-format=histograms',
+          '--experimental-proto-trace-format',
         ],
       }
     ],
@@ -132,8 +133,7 @@ FYI_BUILDERS = {
         'isolate': 'performance_test_suite',
       }
     ],
-    'platform': 'android-chrome',
-    'browser': 'bin/monochrome_bundle',
+    'platform': 'android-chrome-bundle',
     'dimension': {
       'pool': 'chrome.tests.perf-fyi',
       'os': 'Android',
@@ -149,6 +149,7 @@ FYI_BUILDERS = {
         'extra_args': [
             '--output-format=histograms',
             '--experimental-proto-trace-format',
+            '--experimental-tbmv3-metrics',
         ],
       }
     ],

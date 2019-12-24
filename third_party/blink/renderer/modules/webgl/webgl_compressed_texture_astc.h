@@ -19,7 +19,6 @@ class WebGLCompressedTextureASTC final : public WebGLExtension {
     int block_height;
   } BlockSizeCompressASTC;
 
-  static WebGLCompressedTextureASTC* Create(WebGLRenderingContextBase*);
   static bool Supported(WebGLRenderingContextBase*);
   static const char* ExtensionName();
 

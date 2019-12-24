@@ -1832,7 +1832,7 @@ InspectorStyleSheetForInlineStyle* InspectorCSSAgent::AsInspectorStyleSheet(
     return nullptr;
 
   InspectorStyleSheetForInlineStyle* inspector_style_sheet =
-      InspectorStyleSheetForInlineStyle::Create(element, this);
+      MakeGarbageCollected<InspectorStyleSheetForInlineStyle>(element, this);
   id_to_inspector_style_sheet_for_inline_style_.Set(inspector_style_sheet->Id(),
                                                     inspector_style_sheet);
   node_to_inspector_style_sheet_.Set(element, inspector_style_sheet);

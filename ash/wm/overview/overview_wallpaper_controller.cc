@@ -4,22 +4,13 @@
 
 #include "ash/wm/overview/overview_wallpaper_controller.h"
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
-#include "ash/wallpaper/wallpaper_controller_impl.h"
-#include "ash/wallpaper/wallpaper_view.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
-#include "ui/aura/window_tree_host.h"
-#include "ui/compositor/layer.h"
-#include "ui/compositor/layer_tree_owner.h"
-#include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/views/widget/widget.h"
-#include "ui/wm/core/window_util.h"
 
 namespace ash {
 

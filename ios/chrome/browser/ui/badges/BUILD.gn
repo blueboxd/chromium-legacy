@@ -12,6 +12,18 @@ source_set("public") {
   ]
 }
 
+source_set("util") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "badge_type_util.cc",
+    "badge_type_util.h",
+  ]
+  deps = [
+    ":public",
+    "//ios/chrome/browser/infobars:public",
+  ]
+}
+
 source_set("badges") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [

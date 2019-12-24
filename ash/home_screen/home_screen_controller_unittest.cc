@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/test/test_utils.h"
@@ -42,8 +43,11 @@ class HomeScreenControllerTest : public AshTestBase,
       scoped_feature_list_.InitWithFeatures(
           {features::kDragFromShelfToHomeOrOverview}, {});
     } else {
+      // The feature verified by this test is only enabled if drag from shelf to
+      // home or overview is disabled.
       scoped_feature_list_.InitWithFeatures(
-          {}, {features::kDragFromShelfToHomeOrOverview});
+          {}, {features::kDragFromShelfToHomeOrOverview,
+               chromeos::features::kShelfHotseat});
     }
   }
   ~HomeScreenControllerTest() override = default;
@@ -61,9 +65,10 @@ class HomeScreenControllerTest : public AshTestBase,
     return Shell::Get()->home_screen_controller();
   }
 
- private:
+ protected:
   base::test::ScopedFeatureList scoped_feature_list_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(HomeScreenControllerTest);
 };
 

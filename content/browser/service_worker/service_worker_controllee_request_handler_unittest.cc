@@ -118,9 +118,10 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
 
     // An empty host.
     remote_endpoints_.emplace_back();
-    container_host_ = CreateContainerHostForWindow(
+    provider_host_ = CreateProviderHostForWindow(
         helper_->mock_render_process_id(), is_parent_frame_secure,
         helper_->context()->AsWeakPtr(), &remote_endpoints_.back());
+    container_host_ = provider_host_->container_host()->GetWeakPtr();
   }
 
   void TearDown() override {
@@ -136,6 +137,7 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
+  base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
   base::WeakPtr<ServiceWorkerContainerHost> container_host_;
   net::URLRequestContext url_request_context_;
   net::TestDelegate url_request_delegate_;
@@ -357,7 +359,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, InstallingRegistration) {
 }
 
 // Test to not regress crbug/414118.
-TEST_F(ServiceWorkerControlleeRequestHandlerTest, DeletedContainerHost) {
+TEST_F(ServiceWorkerControlleeRequestHandlerTest, DeletedProviderHost) {
   // Store a registration so the call to FindRegistrationForDocument will read
   // from the database.
   version_->set_fetch_handler_existence(
@@ -378,8 +380,8 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DeletedContainerHost) {
 
   // Shouldn't crash if the ProviderHost is deleted prior to completion of
   // the database lookup.
-  context()->UnregisterContainerHostByClientID(container_host_->client_uuid());
-  EXPECT_FALSE(container_host_);
+  context()->RemoveProviderHost(provider_host_->provider_id());
+  EXPECT_FALSE(container_host_.get());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(test_resources.loader());
 }

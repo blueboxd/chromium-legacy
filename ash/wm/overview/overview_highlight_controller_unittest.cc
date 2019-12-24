@@ -19,6 +19,7 @@
 #include "ash/wm/overview/overview_item_view.h"
 #include "ash/wm/overview/overview_test_util.h"
 #include "ash/wm/overview/scoped_overview_transform_window.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "ui/aura/window.h"
@@ -71,6 +72,30 @@ TEST_F(OverviewHighlightControllerTest, BasicTabKeyNavigation) {
   EXPECT_EQ(overview_windows[1]->GetWindow(), GetOverviewHighlightedWindow());
   SendKeyUntilOverviewItemIsHighlighted(ui::VKEY_TAB);
   EXPECT_EQ(overview_windows[0]->GetWindow(), GetOverviewHighlightedWindow());
+  SendKeyUntilOverviewItemIsHighlighted(ui::VKEY_RIGHT);
+  EXPECT_EQ(overview_windows[1]->GetWindow(), GetOverviewHighlightedWindow());
+  SendKeyUntilOverviewItemIsHighlighted(ui::VKEY_LEFT);
+  EXPECT_EQ(overview_windows[0]->GetWindow(), GetOverviewHighlightedWindow());
+}
+
+// Same as above but for tablet mode. Regression test for crbug.com/1036140.
+TEST_F(OverviewHighlightControllerTest, BasicTabKeyNavigationTablet) {
+  std::unique_ptr<aura::Window> window1(CreateTestWindow());
+  std::unique_ptr<aura::Window> window2(CreateTestWindow());
+  std::unique_ptr<aura::Window> window3(CreateTestWindow());
+
+  TabletModeControllerTestApi().EnterTabletMode();
+  ToggleOverview();
+  const std::vector<std::unique_ptr<OverviewItem>>& overview_windows =
+      GetOverviewItemsForRoot(0);
+  SendKeyUntilOverviewItemIsHighlighted(ui::VKEY_TAB);
+  EXPECT_EQ(overview_windows[0]->GetWindow(), GetOverviewHighlightedWindow());
+  SendKeyUntilOverviewItemIsHighlighted(ui::VKEY_TAB);
+  EXPECT_EQ(overview_windows[1]->GetWindow(), GetOverviewHighlightedWindow());
+  SendKeyUntilOverviewItemIsHighlighted(ui::VKEY_RIGHT);
+  EXPECT_EQ(overview_windows[2]->GetWindow(), GetOverviewHighlightedWindow());
+  SendKeyUntilOverviewItemIsHighlighted(ui::VKEY_LEFT);
+  EXPECT_EQ(overview_windows[1]->GetWindow(), GetOverviewHighlightedWindow());
 }
 
 // Tests that pressing Ctrl+W while a window is selected in overview closes it.

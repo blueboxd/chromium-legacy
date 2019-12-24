@@ -129,27 +129,24 @@
             icon1x="oobe-welcome-dialog-20:language"
             icon2x="oobe-welcome-dialog-40:language"
             on-tap="onLanguageClicked_"
-            label-for-aria$="[[formatMessage_('languageButtonLabel',
+            label-for-aria="[[i18nDynamic(locale, 'languageButtonLabel',
                 currentLanguage)]]">
-          <div>[[currentLanguage]]</div>
+          <div slot="text">[[currentLanguage]]</div>
         </oobe-welcome-secondary-button>
         <oobe-welcome-secondary-button id="accessibilitySettingsButton"
+            text-key="accessibilityLink"
             icon1x="oobe-welcome-dialog-20:accessibility"
             icon2x="oobe-welcome-dialog-40:accessibility"
-            on-tap="onAccessibilityClicked_">
-          <div>[[i18nDynamic(locale, 'accessibilityLink')]]</div>
-        </oobe-welcome-secondary-button>
+            on-tap="onAccessibilityClicked_"></oobe-welcome-secondary-button>
         <oobe-welcome-secondary-button id="timezoneSettingsButton"
+            text-key="timezoneButtonText"
             icon1x="oobe-welcome-32:timezone"
             icon2x="oobe-welcome-64:timezone"
             on-tap="onTimezoneClicked_"
-            hidden="[[!timezoneButtonVisible]]">
-          <div>[[i18nDynamic(locale, 'timezoneButtonText')]]</div>
-        </oobe-welcome-secondary-button>
+            hidden="[[!timezoneButtonVisible]]"></oobe-welcome-secondary-button>
         <div class="flex"></div>
         <oobe-next-button id="welcomeNextButton"
-            inverse on-tap="onNextClicked_">
-          <div>[[i18nDynamic(locale, 'welcomeNextButtonText')]]</div>
+            inverse on-tap="onNextClicked_" text-key="welcomeNextButtonText">
         </oobe-text-button>
       </div>
     </oobe-dialog>

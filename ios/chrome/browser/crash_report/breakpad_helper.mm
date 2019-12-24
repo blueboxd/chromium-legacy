@@ -51,6 +51,7 @@ NSString* const kMemoryWarningCount = @"memory_warning_count";
 NSString* const kUptimeAtRestoreInMs = @"uptime_at_restore_in_ms";
 NSString* const kUploadedInRecoveryMode = @"uploaded_in_recovery_mode";
 NSString* const kGridToVisibleTabAnimation = @"grid_to_visible_tab_animation";
+NSString* const kBrowserStateBreadcrumbs = @"browser_state_breadcrumbs";
 
 // Multiple state information are combined into one CrachReportMultiParameter
 // to save limited and finite number of ReportParameters.
@@ -370,6 +371,10 @@ void SetGridToVisibleTabAnimation(NSString* to_view_controller,
 
 void RemoveGridToVisibleTabAnimation() {
   RemoveReportParameter(kGridToVisibleTabAnimation);
+}
+
+void SetBreadcrumbEvents(NSString* breadcrumbs) {
+  AddReportParameter(kBrowserStateBreadcrumbs, breadcrumbs, true);
 }
 
 void MediaStreamPlaybackDidStart() {

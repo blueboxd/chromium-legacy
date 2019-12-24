@@ -4,7 +4,7 @@
 
 ## Debugging
 
-[Linux Debugging](linux_debugging.md) has some Emacs-specific debugging tips.
+[Linux Debugging](linux/debugging.md) has some Emacs-specific debugging tips.
 
 ## Syntax-error Highlighting
 

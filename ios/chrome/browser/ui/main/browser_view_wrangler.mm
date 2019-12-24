@@ -4,10 +4,13 @@
 
 #import "ios/chrome/browser/ui/main/browser_view_wrangler.h"
 
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_browser_agent.h"
+#include "ios/chrome/browser/crash_report/breadcrumbs/features.h"
 #include "ios/chrome/browser/crash_report/crash_report_helper.h"
 #import "ios/chrome/browser/device_sharing/device_sharing_manager.h"
 #import "ios/chrome/browser/main/browser.h"
@@ -160,6 +163,9 @@
                          (id<BrowserStateStorageSwitching>)storageSwitcher {
   if ((self = [super init])) {
     _browserState = browserState;
+    if (base::FeatureList::IsEnabled(kLogBreadcrumbs)) {
+      breakpad::MonitorBreadcrumbsForBrowserState(_browserState);
+    }
     _applicationCommandEndpoint = applicationCommandEndpoint;
     _browsingDataCommandEndpoint = browsingDataCommandEndpoint;
     _appURLLoadingService = appURLLoadingService;
@@ -258,6 +264,10 @@
   if (_mainBrowser.get()) {
     TabModel* tabModel = self.mainBrowser->GetTabModel();
     WebStateList* webStateList = self.mainBrowser->GetWebStateList();
+    if (base::FeatureList::IsEnabled(kLogBreadcrumbs)) {
+      BreadcrumbManagerBrowserAgent::FromBrowser(self.mainBrowser)
+          ->SetLoggingEnabled(false);
+    }
     breakpad::StopMonitoringTabStateForWebStateList(webStateList);
     breakpad::StopMonitoringURLsForWebStateList(webStateList);
     [tabModel disconnect];
@@ -273,6 +283,10 @@
   if (_otrBrowser.get()) {
     TabModel* tabModel = self.otrBrowser->GetTabModel();
     WebStateList* webStateList = self.otrBrowser->GetWebStateList();
+    if (base::FeatureList::IsEnabled(kLogBreadcrumbs)) {
+      BreadcrumbManagerBrowserAgent::FromBrowser(self.otrBrowser)
+          ->SetLoggingEnabled(false);
+    }
     breakpad::StopMonitoringTabStateForWebStateList(webStateList);
     [tabModel disconnect];
     _activeWebStateObservationForwarders[webStateList] = nullptr;
@@ -340,6 +354,10 @@
   // Stop watching the OTR webStateList's state for crashes.
   breakpad::StopMonitoringTabStateForWebStateList(
       self.otrBrowser->GetWebStateList());
+  if (base::FeatureList::IsEnabled(kLogBreadcrumbs)) {
+    breakpad::StopMonitoringBreadcrumbsForBrowserState(
+        self.otrBrowser->GetBrowserState());
+  }
 
   // At this stage, a new incognitoBrowserCoordinator shouldn't be lazily
   // constructed by calling the property getter.
@@ -393,6 +411,13 @@
   [self setMainBrowser:nullptr];
   [self setOtrBrowser:nullptr];
 
+  if (base::FeatureList::IsEnabled(kLogBreadcrumbs)) {
+    if (_browserState->HasOffTheRecordChromeBrowserState()) {
+      breakpad::StopMonitoringBreadcrumbsForBrowserState(
+          _browserState->GetOffTheRecordChromeBrowserState());
+    }
+    breakpad::StopMonitoringBreadcrumbsForBrowserState(_browserState);
+  }
   _browserState = nullptr;
 }
 
@@ -404,6 +429,9 @@
   ios::ChromeBrowserState* otrBrowserState =
       _browserState->GetOffTheRecordChromeBrowserState();
   DCHECK(otrBrowserState);
+  if (base::FeatureList::IsEnabled(kLogBreadcrumbs)) {
+    breakpad::MonitorBreadcrumbsForBrowserState(otrBrowserState);
+  }
 
   std::unique_ptr<Browser> browser = Browser::Create(otrBrowserState);
   [self setUpTabModel:browser->GetTabModel()

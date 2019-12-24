@@ -161,47 +161,13 @@ IN_PROC_BROWSER_TEST_F(SettingsWindowManagerTest, OpenChromePages) {
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
 }
 
-// TODO(crbug/950007): Remove when kSplitSettings flag is on by default.
-class SettingsWindowManagerTestWithSplitSettings
-    : public SettingsWindowManagerTest {
- public:
-  SettingsWindowManagerTestWithSplitSettings() {
-    feature_list_.InitAndEnableFeature(chromeos::features::kSplitSettings);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-// TODO(crbug/950007): Remove when kSplitSettings flag is on by default.
-class SettingsWindowManagerTestWithoutSplitSettings
-    : public SettingsWindowManagerTest {
- public:
-  SettingsWindowManagerTestWithoutSplitSettings() {
-    feature_list_.InitAndDisableFeature(chromeos::features::kSplitSettings);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(SettingsWindowManagerTestWithSplitSettings,
-                       OpenAboutPageSplitSettings) {
-  // About should open settings window when split settings feature flag is on.
+IN_PROC_BROWSER_TEST_F(SettingsWindowManagerTest, OpenAboutPage) {
+  // About should open settings window.
   chrome::ShowAboutChrome(browser());
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
 }
 
-IN_PROC_BROWSER_TEST_F(SettingsWindowManagerTestWithoutSplitSettings,
-                       OpenAboutPage) {
-  // About should open a new browser window when split settings feature flag is
-  // off.
-  chrome::ShowAboutChrome(browser());
-  EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
-}
-
-IN_PROC_BROWSER_TEST_F(SettingsWindowManagerTestWithSplitSettings,
-                       SplitSettings) {
+IN_PROC_BROWSER_TEST_F(SettingsWindowManagerTest, OpenSettings) {
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
 
   // Browser settings opens in the existing browser window.

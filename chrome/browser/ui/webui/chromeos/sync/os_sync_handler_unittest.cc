@@ -15,6 +15,7 @@
 #include "chrome/test/base/test_chrome_web_ui_controller_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
+#include "components/sync/base/pref_names.h"
 #include "components/sync/base/user_selectable_type.h"
 #include "components/sync/driver/test_sync_service.h"
 #include "content/public/browser/web_ui_controller.h"
@@ -39,7 +40,8 @@ enum SyncAllConfig { SYNC_ALL_OS_TYPES, CHOOSE_WHAT_TO_SYNC };
 // Creates a dictionary with the key/value pairs appropriate for a call to
 // HandleSetOsSyncDatatypes().
 DictionaryValue CreateOsSyncPrefs(SyncAllConfig sync_all,
-                                  UserSelectableOsTypeSet types) {
+                                  UserSelectableOsTypeSet types,
+                                  bool wallpaper_enabled) {
   DictionaryValue result;
   result.SetBoolean("syncAllOsTypes", sync_all == SYNC_ALL_OS_TYPES);
   // Add all of our data types.
@@ -48,6 +50,8 @@ DictionaryValue CreateOsSyncPrefs(SyncAllConfig sync_all,
                     types.Has(UserSelectableOsType::kOsPreferences));
   result.SetBoolean("wifiConfigurationsSynced",
                     types.Has(UserSelectableOsType::kWifiConfigurations));
+  result.SetBoolean("wallpaperEnabled",
+                    sync_all == SYNC_ALL_OS_TYPES || wallpaper_enabled);
   return result;
 }
 
@@ -66,7 +70,8 @@ void CheckBool(const DictionaryValue* dictionary,
 // expected by the JS layer.
 void CheckConfigDataTypeArguments(const DictionaryValue* dictionary,
                                   SyncAllConfig config,
-                                  UserSelectableOsTypeSet types) {
+                                  UserSelectableOsTypeSet types,
+                                  bool wallpaper_enabled) {
   CheckBool(dictionary, "syncAllOsTypes", config == SYNC_ALL_OS_TYPES);
   CheckBool(dictionary, "osAppsSynced",
             types.Has(UserSelectableOsType::kOsApps));
@@ -74,6 +79,8 @@ void CheckConfigDataTypeArguments(const DictionaryValue* dictionary,
             types.Has(UserSelectableOsType::kOsPreferences));
   CheckBool(dictionary, "wifiConfigurationsSynced",
             types.Has(UserSelectableOsType::kWifiConfigurations));
+  CheckBool(dictionary, "wallpaperEnabled",
+            config == SYNC_ALL_OS_TYPES || wallpaper_enabled);
 }
 
 std::unique_ptr<KeyedService> BuildTestSyncService(
@@ -91,7 +98,7 @@ class TestWebUIProvider
 };
 
 class OsSyncHandlerTest : public ChromeRenderViewHostTestHarness {
- public:
+ protected:
   OsSyncHandlerTest() = default;
   ~OsSyncHandlerTest() override = default;
 
@@ -141,6 +148,15 @@ class OsSyncHandlerTest : public ChromeRenderViewHostTestHarness {
   }
 
   void NotifySyncStateChanged() { handler_->OnStateChanged(sync_service_); }
+
+  bool GetWallperEnabledPref() {
+    return profile()->GetPrefs()->GetBoolean(syncer::prefs::kSyncOsWallpaper);
+  }
+
+  void SetWallperEnabledPref(bool enabled) {
+    return profile()->GetPrefs()->SetBoolean(syncer::prefs::kSyncOsWallpaper,
+                                             enabled);
+  }
 
   syncer::TestSyncService* sync_service_ = nullptr;
   syncer::SyncUserSettings* user_settings_ = nullptr;
@@ -241,8 +257,9 @@ TEST_F(OsSyncHandlerTest, UserEnablesFeatureThenClosesSettings) {
 
 TEST_F(OsSyncHandlerTest, TestSyncEverything) {
   base::ListValue list_args;
-  list_args.Append(
-      CreateOsSyncPrefs(SYNC_ALL_OS_TYPES, UserSelectableOsTypeSet::All()));
+  list_args.Append(CreateOsSyncPrefs(SYNC_ALL_OS_TYPES,
+                                     UserSelectableOsTypeSet::All(),
+                                     /*wallpaper_enabled=*/true));
   handler_->HandleSetOsSyncDatatypes(&list_args);
   EXPECT_TRUE(user_settings_->IsSyncAllOsTypesEnabled());
 }
@@ -253,27 +270,39 @@ TEST_F(OsSyncHandlerTest, TestSyncIndividualTypes) {
   for (UserSelectableOsType type : UserSelectableOsTypeSet::All()) {
     UserSelectableOsTypeSet types = {type};
     base::ListValue list_args;
-    list_args.Append(CreateOsSyncPrefs(CHOOSE_WHAT_TO_SYNC, types));
+    list_args.Append(CreateOsSyncPrefs(CHOOSE_WHAT_TO_SYNC, types,
+                                       /*wallpaper_enabled=*/false));
 
     handler_->HandleSetOsSyncDatatypes(&list_args);
     EXPECT_FALSE(user_settings_->IsSyncAllOsTypesEnabled());
     EXPECT_EQ(types, user_settings_->GetSelectedOsTypes());
   }
+
+  // Special case for wallpaper.
+  base::ListValue list_args;
+  list_args.Append(CreateOsSyncPrefs(CHOOSE_WHAT_TO_SYNC, /*types=*/{},
+                                     /*wallpaper_enabled=*/true));
+  handler_->HandleSetOsSyncDatatypes(&list_args);
+  EXPECT_FALSE(user_settings_->IsSyncAllOsTypesEnabled());
+  EXPECT_TRUE(GetWallperEnabledPref());
 }
 
 TEST_F(OsSyncHandlerTest, TestSyncAllManually) {
   base::ListValue list_args;
-  list_args.Append(
-      CreateOsSyncPrefs(CHOOSE_WHAT_TO_SYNC, UserSelectableOsTypeSet::All()));
+  list_args.Append(CreateOsSyncPrefs(CHOOSE_WHAT_TO_SYNC,
+                                     UserSelectableOsTypeSet::All(),
+                                     /*wallpaper_enabled=*/true));
   handler_->HandleSetOsSyncDatatypes(&list_args);
   EXPECT_FALSE(user_settings_->IsSyncAllOsTypesEnabled());
   EXPECT_EQ(UserSelectableOsTypeSet::All(),
             user_settings_->GetSelectedOsTypes());
+  EXPECT_TRUE(GetWallperEnabledPref());
 }
 
 TEST_F(OsSyncHandlerTest, ShowSetupSyncEverything) {
   user_settings_->SetSelectedOsTypes(/*sync_all_os_types=*/true,
                                      UserSelectableOsTypeSet::All());
+  SetWallperEnabledPref(true);
   handler_->HandleDidNavigateToOsSyncPage(nullptr);
 
   bool feature_enabled;
@@ -285,12 +314,14 @@ TEST_F(OsSyncHandlerTest, ShowSetupSyncEverything) {
   CheckBool(dictionary, "osPreferencesRegistered", true);
   CheckBool(dictionary, "wifiConfigurationsRegistered", true);
   CheckConfigDataTypeArguments(dictionary, SYNC_ALL_OS_TYPES,
-                               UserSelectableOsTypeSet::All());
+                               UserSelectableOsTypeSet::All(),
+                               /*wallpaper_enabled=*/true);
 }
 
 TEST_F(OsSyncHandlerTest, ShowSetupManuallySyncAll) {
   user_settings_->SetSelectedOsTypes(/*sync_all_os_types=*/false,
                                      UserSelectableOsTypeSet::All());
+  SetWallperEnabledPref(true);
   handler_->HandleDidNavigateToOsSyncPage(nullptr);
 
   bool feature_enabled;
@@ -298,7 +329,8 @@ TEST_F(OsSyncHandlerTest, ShowSetupManuallySyncAll) {
   ExpectOsSyncPrefsSent(&feature_enabled, &dictionary);
   EXPECT_TRUE(feature_enabled);
   CheckConfigDataTypeArguments(dictionary, CHOOSE_WHAT_TO_SYNC,
-                               UserSelectableOsTypeSet::All());
+                               UserSelectableOsTypeSet::All(),
+                               /*wallpaper_enabled=*/true);
 }
 
 TEST_F(OsSyncHandlerTest, ShowSetupSyncForAllTypesIndividually) {
@@ -311,8 +343,20 @@ TEST_F(OsSyncHandlerTest, ShowSetupSyncForAllTypesIndividually) {
     const DictionaryValue* dictionary;
     ExpectOsSyncPrefsSent(&feature_enabled, &dictionary);
     EXPECT_TRUE(feature_enabled);
-    CheckConfigDataTypeArguments(dictionary, CHOOSE_WHAT_TO_SYNC, types);
+    CheckConfigDataTypeArguments(dictionary, CHOOSE_WHAT_TO_SYNC, types,
+                                 /*wallpaper_enabled=*/false);
   }
+
+  // Special case for wallpaper.
+  user_settings_->SetSelectedOsTypes(/*sync_all_os_types=*/false, /*types=*/{});
+  SetWallperEnabledPref(true);
+  handler_->HandleDidNavigateToOsSyncPage(nullptr);
+  bool feature_enabled;
+  const DictionaryValue* dictionary;
+  ExpectOsSyncPrefsSent(&feature_enabled, &dictionary);
+  EXPECT_TRUE(feature_enabled);
+  CheckConfigDataTypeArguments(dictionary, CHOOSE_WHAT_TO_SYNC, /*types=*/{},
+                               /*wallpaper_enabled=*/true);
 }
 
 }  // namespace

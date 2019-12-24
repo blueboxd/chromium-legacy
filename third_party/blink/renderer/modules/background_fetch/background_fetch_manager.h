@@ -41,11 +41,6 @@ class MODULES_EXPORT BackgroundFetchManager final
   explicit BackgroundFetchManager(ServiceWorkerRegistration* registration);
   ~BackgroundFetchManager() override = default;
 
-  static BackgroundFetchManager* Create(
-      ServiceWorkerRegistration* registration) {
-    return MakeGarbageCollected<BackgroundFetchManager>(registration);
-  }
-
   // Web Exposed methods defined in the IDL file.
   ScriptPromise fetch(
       ScriptState* script_state,

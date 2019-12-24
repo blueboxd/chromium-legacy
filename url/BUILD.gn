@@ -111,14 +111,18 @@ if (is_android) {
   }
 
   android_library("url_java") {
-    java_files = [ "android/java/src/org/chromium/url/IDNStringUtil.java" ]
+    sources = [
+      "android/java/src/org/chromium/url/IDNStringUtil.java",
+    ]
     deps = [
       "//base:base_java",
     ]
   }
 
   android_library("origin_java") {
-    java_files = [ "android/java/src/org/chromium/url/Origin.java" ]
+    sources = [
+      "android/java/src/org/chromium/url/Origin.java",
+    ]
     deps = [
       "//base:base_java",
       "//url/mojom:url_mojom_origin_java",

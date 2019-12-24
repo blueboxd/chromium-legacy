@@ -32,8 +32,11 @@
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync/base/pref_names.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/user_manager/user.h"
@@ -76,6 +79,8 @@ namespace {
 constexpr base::TimeDelta kRetryDelay = base::TimeDelta::FromSeconds(10);
 constexpr int kRetryLimit = 3;
 
+// TODO(https://crbug.com/1037624): Update "themes" terminology after sync-split
+// ships.
 constexpr char kSyncThemes[] = "syncThemes";
 
 constexpr char kPngFilePattern[] = "*.[pP][nN][gG]";
@@ -290,15 +295,34 @@ void WallpaperPrivateGetSyncSettingFunction::CheckSyncServiceStatus() {
   Profile* profile =  Profile::FromBrowserContext(browser_context());
   syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
-  if (!sync_service || !sync_service->CanSyncFeatureStart()) {
-    // Sync as a whole is disabled.
+  if (!sync_service) {
+    // Sync flag is disabled (perhaps prohibited by policy).
+    dict->SetBoolean(kSyncThemes, false);
+    Respond(OneArgument(std::move(dict)));
+    return;
+  }
+
+  if (chromeos::features::IsSplitSettingsSyncEnabled()) {
+    // When the split settings sync flag is on, the user must have opted into
+    // OS-level sync as a whole and wallpaper sync must be enabled.
+    bool os_wallpaper_sync_enabled =
+        sync_service->GetUserSettings()->IsOsSyncFeatureEnabled() &&
+        profile->GetPrefs()->GetBoolean(syncer::prefs::kSyncOsWallpaper);
+    dict->SetBoolean(kSyncThemes, os_wallpaper_sync_enabled);
+    Respond(OneArgument(std::move(dict)));
+    return;
+  }
+
+  if (!sync_service->CanSyncFeatureStart()) {
+    // Sync-the-feature is disabled.
     dict->SetBoolean(kSyncThemes, false);
     Respond(OneArgument(std::move(dict)));
     return;
   }
 
   if (sync_service->GetUserSettings()->IsFirstSetupComplete()) {
-    // Sync is set up. Report whether the user has selected to sync themes.
+    // When sync split is disabled, wallpaper is synced as a group with
+    // browser themes.
     dict->SetBoolean(kSyncThemes,
                      sync_service->GetUserSettings()->GetSelectedTypes().Has(
                          syncer::UserSelectableType::kThemes));
@@ -308,8 +332,8 @@ void WallpaperPrivateGetSyncSettingFunction::CheckSyncServiceStatus() {
 
   // The user hasn't finished setting up sync, so we don't know whether they'll
   // want to sync themes. Try again in a bit.
-  // TODO(xdai): It would be cleaner to implement a SyncServiceObserver and wait
-  // for OnStateChanged() instead of polling.
+  // TODO(https://crbug.com/1036448): It would be cleaner to implement a
+  // SyncServiceObserver and wait for OnStateChanged() instead of polling.
   retry_number_++;
   base::PostDelayedTask(
       FROM_HERE, {BrowserThread::UI},

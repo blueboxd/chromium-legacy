@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/chromeos/crostini/crostini_terminal.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -46,9 +47,12 @@ bool TerminalSystemAppMenuModel::IsCommandIdEnabled(int command_id) const {
 
 void TerminalSystemAppMenuModel::ExecuteCommand(int command_id,
                                                 int event_flags) {
+  if (command_id == IDC_OPTIONS) {
+    crostini::LaunchTerminalSettings(browser()->profile());
+    return;
+  }
+
   static const base::NoDestructor<base::flat_map<int, std::string>> kCommands({
-      // Opens settings page.
-      {IDC_OPTIONS, "options"},
       // Split the currently selected pane vertically.
       {IDC_TERMINAL_SPLIT_VERTICAL, "splitv"},
       // Split the currently selected pane horizontally.

@@ -9,7 +9,7 @@
 
 #include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_lock_type.h"
-#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom-forward.h"
 
 namespace blink {
 

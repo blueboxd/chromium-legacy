@@ -917,6 +917,7 @@
 <translation id="5386426401304769735">В цепочке сертификатов этого сайта есть сертификат, подписанный с помощью алгоритма SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Скобы по правому краю</translation>
+<translation id="5400836586163650660">Серый</translation>
 <translation id="540969355065856584">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Его сертификат безопасности может быть недействителен в настоящее время. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
 <translation id="5421136146218899937">Очистить историю...</translation>
 <translation id="5430298929874300616">Удалить закладку</translation>
@@ -1698,6 +1699,7 @@
 <translation id="988159990683914416">Сборка для разработчиков</translation>
 <translation id="989988560359834682">Изменение адреса</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992256792861109788">Розовый</translation>
 <translation id="992432478773561401">Программа "<ph name="SOFTWARE_NAME" />" была установлена неправильно.
     &lt;ul&gt;
     &lt;li&gt;Попробуйте удалить или отключить программу "<ph name="SOFTWARE_NAME" />".&lt;/li&gt;

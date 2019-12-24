@@ -933,6 +933,7 @@
 <translation id="5386426401304769735">ຕ່ອງໂສ້ໃບຮັບຮອງສຳລັບເວັບໄຊນີ້ປະກອບມີໃບຮັບຮອງທີ່ເຊັນຊື່ໂດຍໃຊ້ SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">ຫຍິບຂອບເບື້ອງຂວາ</translation>
+<translation id="5400836586163650660">ສີເທົາ</translation>
 <translation id="540969355065856584">ເຊີບເວີນີ້ບໍ່ສາມາດພິສູດໄດ້ວ່າ ມັນແມ່ນ <ph name="DOMAIN" />; ໃບຢັ້ງຢືນຄວາມປອດໄພຂອງມັນໃຊ້​ບໍ່​ໄດ້​ໃນ​ເວ​ລາ​ນີ້. ອັນນີ້ອາດຈະເຮັດໃຫ້ເກີດມີການປັບຕັ້ງຄ່າຜິດ ຫຼືຜູ້ໂຈມຕີອາດຈະດັກເອົາການເຊື່ອມຕໍ່ຂອງທ່ານ.</translation>
 <translation id="5421136146218899937">ລຶບຂໍ້ມູນການທ່ອງເນັດ...</translation>
 <translation id="5430298929874300616">ເອົາບຸກມາກຄ໌ອອກໄປ</translation>
@@ -1714,6 +1715,7 @@
 <translation id="988159990683914416">ສ້າງ​ນັກພັດ​ທະ​ນາ</translation>
 <translation id="989988560359834682">ແກ້ໄຂທີ່ຢູ່</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992256792861109788">ສີບົວ</translation>
 <translation id="992432478773561401">"<ph name="SOFTWARE_NAME" />" ບໍ່ໄດ້ຖືກຕິດຕັ້ງຢ່າງຖືກຕ້ອງໃນຄອມພິວເຕີຂອງທ່ານ ຫຼື ເຄືອຂ່າຍ:
     &lt;ul&gt;
     &lt;li&gt;ລອງຖອນຕິດຕັ້ງ ຫຼື ປິດນຳໃຊ້ "<ph name="SOFTWARE_NAME" />"&lt;/li&gt;

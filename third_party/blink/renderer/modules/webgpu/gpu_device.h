@@ -72,9 +72,6 @@ class GPUDevice final : public EventTargetWithInlineData,
       ScriptState* script_state,
       const GPUBufferDescriptor* descriptor,
       ExceptionState& exception_state);
-  ScriptPromise createBufferMappedAsync(ScriptState* script_state,
-                                        const GPUBufferDescriptor* descriptor,
-                                        ExceptionState& exception_state);
   GPUTexture* createTexture(const GPUTextureDescriptor* descriptor,
                             ExceptionState& exception_state);
   GPUSampler* createSampler(const GPUSamplerDescriptor* descriptor);

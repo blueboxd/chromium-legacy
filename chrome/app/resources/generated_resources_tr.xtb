@@ -110,7 +110,6 @@
 <translation id="114721135501989771">Google zekası Chrome'da</translation>
 <translation id="1147991416141538220">Erişim izni istemek için bu cihazın yöneticisiyle iletişime geçin.</translation>
 <translation id="1149401351239820326">Son kullanım tarihinin ayı</translation>
-<translation id="1150490752229770117">Bu, <ph name="DEVICE_TYPE" /> için son otomatik yazılım ve güvenlik güncellemesidir. Gelecekteki güncellemeleri almak için daha yeni bir sürüme geçin. <ph name="LINK_BEGIN" />Daha fazla bilgi<ph name="LINK_END" /></translation>
 <translation id="1150565364351027703">Güneş Gözlüğü</translation>
 <translation id="1151917987301063366"><ph name="HOST" /> sitesinin sensörlere erişmesine her zaman izin ver</translation>
 <translation id="1153356358378277386">Eşlenen cihazlar</translation>
@@ -461,6 +460,7 @@
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> uygun bir Chrome OS cihazı kullanıp kullanmadığınızı kontrol etmek istiyor.</translation>
 <translation id="1640235262200048077"><ph name="IME_NAME" /> henüz Linux uygulamalarında çalışmıyor</translation>
 <translation id="1640283014264083726">PKCS #1 RSA Şifrelemeli MD4</translation>
+<translation id="1641113438599504367">Güvenli Tarama</translation>
 <translation id="1642494467033190216">Diğer hata ayıklama özelliklerinin etkinleştirilebilmesi için rootfs korumasının kaldırılması ve cihazın yeniden başlatılması gerekir.</translation>
 <translation id="1643072738649235303">SHA-1 ile X9.62 ECDSA İmzası</translation>
 <translation id="1644574205037202324">Geçmiş</translation>
@@ -1956,7 +1956,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3732530910372558017">PIN en fazla 63 karakter olmalı</translation>
 <translation id="3733127536501031542">İlerlemeli SSL Sunucusu</translation>
 <translation id="3735740477244556633">Sıralama ölçütü</translation>
-<translation id="3736016243818847857">Devam etmek istiyor musunuz?</translation>
 <translation id="3737274407993947948">Linux yüklenirken hata oluştu...</translation>
 <translation id="3737536731758327622">İndirdikleriniz burada görünür</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -2665,7 +2664,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4798236378408895261"><ph name="BEGIN_LINK" />Bluetooth Günlükleri<ph name="END_LINK" /> ekle (Google dahili)</translation>
 <translation id="4801448226354548035">Hesapları gizle</translation>
 <translation id="4801512016965057443">Mobil veri dolaşımına izin ver</translation>
-<translation id="4804756772600045300">Devam edilirse ADB hata ayıklama işlevi, Android uygulaması oluşturmak ve test etmek için etkinleştirilir. ADB hata ayıklama işlevinin Google tarafından doğrulanmamış test uygulamalarının yüklenmesine izin verdiğini unutmayın.</translation>
 <translation id="4804818685124855865">Bağlantıyı kes</translation>
 <translation id="4804827417948292437">Avokado</translation>
 <translation id="4805077164141082536">Yeni sürüme geçmeden önce mevcut Linux kapsayıcınızı yedeklemenizi öneririz.</translation>
@@ -4607,6 +4605,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7631205654593498032">Cihazlarınızı bağladığınızda, <ph name="DEVICE_TYPE" /> cihazınızın şu işlemleri yapabileceğini kabul etmiş olursunuz:</translation>
 <translation id="7631887513477658702">Bu Tür Dosyaları &amp;Her Zaman Aç</translation>
 <translation id="7632948528260659758">Aşağıdaki kiosk uygulamaları güncellenemedi:</translation>
+<translation id="7634566076839829401">Bir şeyler ters gitti. Lütfen tekrar deneyin.</translation>
 <translation id="763632859238619983">Hiçbir sitenin ödeme işleyici yüklemesine izin verme</translation>
 <translation id="7636919061354591437">Bu cihaza yükle</translation>
 <translation id="7638605456503525968">Seri bağlantı noktaları</translation>

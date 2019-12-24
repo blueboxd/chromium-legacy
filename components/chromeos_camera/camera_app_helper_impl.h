@@ -28,6 +28,8 @@ class CameraAppHelperImpl : public chromeos_camera::mojom::CameraAppHelper {
                           const std::vector<uint8_t>& data,
                           HandleCameraResultCallback callback) override;
   void IsTabletMode(IsTabletModeCallback callback) override;
+  void StartPerfEventTrace(const std::string& event) override;
+  void StopPerfEventTrace(const std::string& event) override;
 
  private:
   CameraResultCallback camera_result_callback_;

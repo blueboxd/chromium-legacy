@@ -934,6 +934,7 @@ brukere av denne nettleseren.</translation>
 <translation id="5386426401304769735">Sertifikatkjeden for dette nettstedet inneholder et sertifikat som er signert med SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Kantstifting høyre</translation>
+<translation id="5400836586163650660">Grå</translation>
 <translation id="540969355065856584">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Sikkerhetssertifikatet til tjeneren er ikke gyldig for øyeblikket. Dette kan være forårsaket av en feilkonfigurasjon eller en angriper som lytter på tilkoblingen din.</translation>
 <translation id="5421136146218899937">Slett nettleserdata</translation>
 <translation id="5430298929874300616">Fjern bokmerke</translation>
@@ -1714,6 +1715,7 @@ Mer informasjon:
 <translation id="988159990683914416">Utviklerversjon</translation>
 <translation id="989988560359834682">Rediger adresse</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992256792861109788">Rosa</translation>
 <translation id="992432478773561401">«<ph name="SOFTWARE_NAME" />» er ikke riktig installert på datamaskinen eller på nettverket:
     &lt;ul&gt;
     &lt;li&gt;Prøv å avinstallere eller slå av «<ph name="SOFTWARE_NAME" />»&lt;/li&gt;

@@ -2371,7 +2371,7 @@ Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utent
 
       Questo rilevamento potrebbe non essere necessario in un ambiente aziendale in cui la configurazione di rete è nota, perché causa del traffico DNS e HTTP all'avvio e a ogni modifica della configurazione DNS.
 
-      Se questo criterio non viene impostato o viene attivato, i controlli dell'intercettazione DNS vengono eseguiti. Se viene disattivato i controlli non vengono eseguiti.</translation>
+      Se questo criterio non viene impostato o viene attivato, i controlli dell'intercettazione DNS vengono eseguiti. Se viene disattivato, i controlli non vengono eseguiti.</translation>
 <translation id="4703402283970867140">Attiva il modello di oscuramento smart per ritardare l'oscuramento dello schermo</translation>
 <translation id="4722122254122249791">Attiva isolamento sito per origini specificate</translation>
 <translation id="4722399051042571387">Se questa norma viene impostata su false, gli utenti non potranno impostare PIN non sicuri e facili da intuire.
@@ -3394,11 +3394,11 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="6473623140202114570">Configura l'elenco di domini sui quali Navigazione sicura non attiverà avvisi.</translation>
 <translation id="6487780893361255867">Consente di usare l'implementazione <ph name="CORS" /> legacy anziché la nuova implementazione <ph name="CORS" />.
 
-      Se questo criterio viene impostato su True, viene usata l'implementazione legacy, che dovrebbe essere compatibile con le versioni precedenti.
+      Se questo criterio viene impostato su true, viene usata l'implementazione legacy, che dovrebbe essere compatibile con le versioni precedenti.
 
-      Se questo criterio viene impostato su False o non viene impostato, viene usata la nuova implementazione, che potrebbe causare problemi di compatibilità per le aziende.
+      Se questo criterio viene impostato su false o non viene impostato, viene usata la nuova implementazione, che potrebbe causare problemi di compatibilità per le aziende.
 
-      Questo criterio verrà rimosso dopo un paio di aggiornamenti.
+      Questo criterio verrà rimosso dopo il lancio di un paio di nuove versioni.
 
       Per informazioni dettagliate su <ph name="CORS" />, visita la pagina <ph name="CORS_HELP_URL" />.
 

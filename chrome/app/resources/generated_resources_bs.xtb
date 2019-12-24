@@ -110,7 +110,6 @@
 <translation id="114721135501989771">Preuzmite pametne Google funkcije za Chrome</translation>
 <translation id="1147991416141538220">Da zatražite pristup, kontaktirajte administratora ovog uređaja.</translation>
 <translation id="1149401351239820326">Mjesec isteka</translation>
-<translation id="1150490752229770117">To je posljednje automatsko ažuriranje softvera i sigurnosno ažuriranje za uređaj <ph name="DEVICE_TYPE" />. Nadogradite na noviji model za buduća ažuriranja. <ph name="LINK_BEGIN" />Saznajte više<ph name="LINK_END" /></translation>
 <translation id="1150565364351027703">Sunčane naočale</translation>
 <translation id="1151917987301063366">Uvijek dozvoli da host računar <ph name="HOST" /> pristupa senzorima</translation>
 <translation id="1153356358378277386">Upareni uređaji</translation>
@@ -461,6 +460,7 @@ da li    proksi server funkcionira. Ako smatrate da ne trebate koristiti
 <translation id="163993578339087550">Usluga <ph name="SERVICE_NAME" /> želi provjeriti koristite li Chrome OS uređaj koji ispunjava uslove.</translation>
 <translation id="1640235262200048077"><ph name="IME_NAME" /> još uvijek ne radi u aplikacijama za Linux</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 With RSA šifriranje</translation>
+<translation id="1641113438599504367">Sigurno pretraživanje</translation>
 <translation id="1642494467033190216">Prije nego omogućite ostale funkcije otklanjanja grešaka trebate ukloniti rootfs zaštitu i ponovo pokrenuti uređaj.</translation>
 <translation id="1643072738649235303">X9.62 ECDSA potpis uz SHA-1</translation>
 <translation id="1644574205037202324">Historija</translation>
@@ -1956,7 +1956,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="3732530910372558017">PIN mora sadržavati najviše 63 znakova.</translation>
 <translation id="3733127536501031542">SSL server s nadogradnjom</translation>
 <translation id="3735740477244556633">Poredaj po</translation>
-<translation id="3736016243818847857">Želite li nastaviti?</translation>
 <translation id="3737274407993947948">Greška prilikom instaliranja Linuxa...</translation>
 <translation id="3737536731758327622">Ovdje se prikazuju vaša preuzimanja</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -2665,7 +2664,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="4798236378408895261">Priloži <ph name="BEGIN_LINK" />Bluetooth zapisnike<ph name="END_LINK" /> (Google interno)</translation>
 <translation id="4801448226354548035">Sakrij račune</translation>
 <translation id="4801512016965057443">Omogući roming mobilnih podataka</translation>
-<translation id="4804756772600045300">Ako nastavite, omogućit ćete otklanjanje grešaka putem ADB-a za kreiranje i testiranje Android aplikacija. Imajte na umu da otklanjanje grešaka putem ADB-a omogućava instaliranje probnih aplikacija koje Google nije potvrdio.</translation>
 <translation id="4804818685124855865">Prekini vezu</translation>
 <translation id="4804827417948292437">Avokado</translation>
 <translation id="4805077164141082536">Preporučujemo da prije nadogradnje kreirate sigurnosnu kopiju Linux spremnika.</translation>
@@ -4606,6 +4604,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="7631205654593498032">Kada povežete uređaje, saglasni ste da vaš uređaj <ph name="DEVICE_TYPE" /> može:</translation>
 <translation id="7631887513477658702">&amp;Uvijek otvori fajlove ove vrste</translation>
 <translation id="7632948528260659758">Ažuriranje sljedećih aplikacija za kiosk nije uspjelo:</translation>
+<translation id="7634566076839829401">Nešto je pošlo po zlu. Pokušajte ponovo.</translation>
 <translation id="763632859238619983">Ne dopusti nijednoj web-lokaciji instalaciju rukovatelja plaćanjem</translation>
 <translation id="7636919061354591437">Instaliraj na ovom uređaju</translation>
 <translation id="7638605456503525968">Serijski priključci</translation>

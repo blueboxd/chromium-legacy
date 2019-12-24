@@ -14,17 +14,12 @@ var cca = cca || {};
  */
 cca.views = cca.views || {};
 
-/**
- * import {Resolution} from '../type.js';
- */
-var Resolution = Resolution || {};
-
 /* eslint-disable no-unused-vars */
 
 /**
  * Object of device id, preferred capture resolution and all
  * available resolutions for a particular video device.
- * @typedef {{prefResol: !Resolution, resols: !ResolutionList}}
+ * @typedef {{prefResol: !cca.Resolution, resols: !cca.ResolutionList}}
  */
 cca.views.ResolutionConfig;
 
@@ -281,7 +276,7 @@ cca.views.ResolutionSettings = class extends cca.views.BaseSettings {
         const /** !cca.views.DeviceSetting */ deviceSetting = {
           deviceId,
           photo: {
-            prefResol: /** @type {!Resolution} */ (
+            prefResol: /** @type {!cca.Resolution} */ (
                 photoPreferrer.getPrefResolution(deviceId)),
             resols:
                 /* Filter out resolutions of megapixels < 0.1 i.e. megapixels
@@ -289,7 +284,7 @@ cca.views.ResolutionSettings = class extends cca.views.BaseSettings {
                 photoResols.filter((r) => r.area >= 100000),
           },
           video: {
-            prefResol: /** @type {!Resolution} */ (
+            prefResol: /** @type {!cca.Resolution} */ (
                 videoPreferrer.getPrefResolution(deviceId)),
             resols: videoResols,
           },
@@ -319,8 +314,8 @@ cca.views.ResolutionSettings = class extends cca.views.BaseSettings {
 
   /**
    * Template for generating option text from photo resolution width and height.
-   * @param {!Resolution} r Resolution of text to be generated.
-   * @param {!ResolutionList} resolutions All available resolutions.
+   * @param {!cca.Resolution} r Resolution of text to be generated.
+   * @param {!cca.ResolutionList} resolutions All available resolutions.
    * @return {string} Text shown on resolution option item.
    * @private
    */
@@ -332,7 +327,7 @@ cca.views.ResolutionSettings = class extends cca.views.BaseSettings {
      */
     const gcd = (a, b) => (a === 0 ? b : gcd(b % a, a));
     /**
-     * @param {!Resolution} r
+     * @param {!cca.Resolution} r
      * @return {number}
      */
     const toMegapixel = (r) => Math.round(r.area / 100000) / 10;
@@ -352,7 +347,7 @@ cca.views.ResolutionSettings = class extends cca.views.BaseSettings {
 
   /**
    * Template for generating option text from video resolution width and height.
-   * @param {!Resolution} r Resolution of text to be generated.
+   * @param {!cca.Resolution} r Resolution of text to be generated.
    * @return {string} Text shown on resolution option item.
    * @private
    */
@@ -386,7 +381,8 @@ cca.views.ResolutionSettings = class extends cca.views.BaseSettings {
      * @param {!HTMLElement} item
      * @param {string} id
      * @param {!cca.views.ResolutionConfig} config
-     * @param {!function(!Resolution, !ResolutionList): string} optTextTempl
+     * @param {!function(!cca.Resolution, !cca.ResolutionList): string}
+     *     optTextTempl
      */
     const prepItem = (item, id, {prefResol, resols}, optTextTempl) => {
       item.dataset.deviceId = id;
@@ -489,7 +485,7 @@ cca.views.ResolutionSettings = class extends cca.views.BaseSettings {
   /**
    * Updates current selected photo resolution.
    * @param {string} deviceId Device id of the selected resolution.
-   * @param {!Resolution} resolution Selected resolution.
+   * @param {!cca.Resolution} resolution Selected resolution.
    * @private
    */
   updateSelectedPhotoResolution_(deviceId, resolution) {
@@ -522,7 +518,7 @@ cca.views.ResolutionSettings = class extends cca.views.BaseSettings {
   /**
    * Updates current selected video resolution.
    * @param {string} deviceId Device id of the selected resolution.
-   * @param {!Resolution} resolution Selected resolution.
+   * @param {!cca.Resolution} resolution Selected resolution.
    * @private
    */
   updateSelectedVideoResolution_(deviceId, resolution) {
@@ -588,14 +584,14 @@ cca.views.ResolutionSettings = class extends cca.views.BaseSettings {
    * Updates resolution menu with specified resolutions.
    * @param {!HTMLElement} resolItem DOM element holding selected resolution.
    * @param {!HTMLElement} menu Menu holding all resolution option elements.
-   * @param {!function(!Resolution, !ResolutionList): string} optTextTempl
-   *     Template generating text content for each resolution option from its
-   *     width and height.
-   * @param {!function(!Resolution)} onChange Called when selected option
+   * @param {!function(!cca.Resolution, !cca.ResolutionList): string}
+   *     optTextTempl Template generating text content for each resolution
+   *     option from its width and height.
+   * @param {!function(!cca.Resolution)} onChange Called when selected option
    *     changed with resolution of newly selected option.
-   * @param {!ResolutionList} resolutions Resolutions of its width and height to
-   *     be updated with.
-   * @param {!Resolution} selectedR Selected resolution.
+   * @param {!cca.ResolutionList} resolutions Resolutions of its width and
+   *     height to be updated with.
+   * @param {!cca.Resolution} selectedR Selected resolution.
    * @private
    */
   updateMenu_(resolItem, menu, optTextTempl, onChange, resolutions, selectedR) {

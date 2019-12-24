@@ -20,4 +20,10 @@ interface CameraAppHelper {
 
   // Checks if device is under tablet mode currently.
   IsTabletMode() => (bool is_tablet_mode);
+
+  // Triggers the begin of event tracing for given |event|.
+  StartPerfEventTrace(string event);
+
+  // Triggers the end of event tracing for given |event|.
+  StopPerfEventTrace(string event);
 };

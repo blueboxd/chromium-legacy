@@ -110,7 +110,6 @@
 <translation id="114721135501989771">Eines intel·ligents a Chrome</translation>
 <translation id="1147991416141538220">Per demanar accés, contacta amb l'administrador d'aquest dispositiu.</translation>
 <translation id="1149401351239820326">Mes de caducitat</translation>
-<translation id="1150490752229770117">Aquesta actualització de programari i seguretat és l'última que rebràs per a aquest <ph name="DEVICE_TYPE" />. Per obtenir actualitzacions en el futur, canvia el dispositiu per un model més nou. <ph name="LINK_BEGIN" />Més informació<ph name="LINK_END" /></translation>
 <translation id="1150565364351027703">Ulleres de sol</translation>
 <translation id="1151917987301063366">Permet sempre que <ph name="HOST" /> accedeixi als sensors</translation>
 <translation id="1153356358378277386">Dispositius vinculats</translation>
@@ -461,6 +460,7 @@
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> vol comprovar si fas servir un dispositiu Chrome OS apte.</translation>
 <translation id="1640235262200048077"><ph name="IME_NAME" /> encara no funciona en aplicacions per a Linux</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 amb encriptació RSA</translation>
+<translation id="1641113438599504367">Navegació segura</translation>
 <translation id="1642494467033190216">Abans d'activar altres funcions de depuració, heu d'eliminar la protecció del sistema de fitxers rootfs i reiniciar el sistema.</translation>
 <translation id="1643072738649235303">Signatura d'ECDSA X9.62 amb SHA-1</translation>
 <translation id="1644574205037202324">Historial</translation>
@@ -1954,7 +1954,6 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="3732530910372558017">El PIN pot tenir com a màxim 63 caràcters</translation>
 <translation id="3733127536501031542">Servidor SSL amb entrada progressiva</translation>
 <translation id="3735740477244556633">Ordena per</translation>
-<translation id="3736016243818847857">Confirmes que vols continuar?</translation>
 <translation id="3737274407993947948">S'ha produït un error en instal·lar Linux...</translation>
 <translation id="3737536731758327622">Les baixades es mostren aquí</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -2662,7 +2661,6 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="4798236378408895261">Adjunta <ph name="BEGIN_LINK" />registres de Bluetooth<ph name="END_LINK" /> (ús intern de Google)</translation>
 <translation id="4801448226354548035">Amaga els comptes</translation>
 <translation id="4801512016965057443">Permet la itinerància de dades mòbils</translation>
-<translation id="4804756772600045300">Si continues, s'activarà la depuració d'ADB per crear i provar les aplicacions d'Android. Tingues en compte que la depuració d'ADB permet instal·lar aplicacions de prova que Google no ha verificat.</translation>
 <translation id="4804818685124855865">Desconnecta</translation>
 <translation id="4804827417948292437">Alvocat</translation>
 <translation id="4805077164141082536">Et recomanem que facis una còpia de seguretat del contenidor de Linux actual abans de dur a terme l'actualització.</translation>
@@ -4605,6 +4603,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7631205654593498032">En connectar els dispositius, acceptes que <ph name="DEVICE_TYPE" /> pugui fer el següent:</translation>
 <translation id="7631887513477658702">Obre &amp;sempre els fitxers d'aquest tipus</translation>
 <translation id="7632948528260659758">No s'han pogut actualitzar les aplicacions següents del quiosc:</translation>
+<translation id="7634566076839829401">S'ha produït un error; torna-ho a provar.</translation>
 <translation id="763632859238619983">No permetis que cap lloc web instal·li gestors de pagament</translation>
 <translation id="7636919061354591437">Instal·la en aquest dispositiu</translation>
 <translation id="7638605456503525968">Ports en sèrie</translation>

@@ -4,10 +4,14 @@
 
 module network.mojom;
 
+import "mojo/public/mojom/base/read_only_buffer.mojom";
 import "url/mojom/url.mojom";
 
 // A mojo interface for https://wicg.github.io/web-transport/#quic-transport.
 interface QuicTransport {
+  // A datagram message is sent from the client. The response message represents
+  // whether the peer has sent or discarded the datagram.
+  SendDatagram(mojo_base.mojom.ReadOnlyBuffer data) => (bool result);
 };
 
 // A mojo interface for the client of QuicTransport.

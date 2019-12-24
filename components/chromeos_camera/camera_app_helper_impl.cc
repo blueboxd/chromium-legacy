@@ -5,6 +5,7 @@
 #include "components/chromeos_camera/camera_app_helper_impl.h"
 
 #include "ash/public/cpp/tablet_mode.h"
+#include "base/trace_event/trace_event.h"
 
 namespace chromeos_camera {
 
@@ -24,6 +25,14 @@ void CameraAppHelperImpl::HandleCameraResult(
 
 void CameraAppHelperImpl::IsTabletMode(IsTabletModeCallback callback) {
   std::move(callback).Run(ash::TabletMode::Get()->InTabletMode());
+}
+
+void CameraAppHelperImpl::StartPerfEventTrace(const std::string& event) {
+  TRACE_EVENT_BEGIN0("camera", event.c_str());
+}
+
+void CameraAppHelperImpl::StopPerfEventTrace(const std::string& event) {
+  TRACE_EVENT_END0("camera", event.c_str());
 }
 
 }  // namespace chromeos_camera

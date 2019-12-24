@@ -110,7 +110,6 @@
 <translation id="114721135501989771">Google ዘመናዊ ነገሮችን በChrome ላይ ያግኙ</translation>
 <translation id="1147991416141538220">መዳረሻን ለመጠየቅ የዚህ መሣሪያ አስተዳዳሪውን ያነጋግሩ።</translation>
 <translation id="1149401351239820326">ጊዜው የሚያልፍበት ወር</translation>
-<translation id="1150490752229770117">ይህ ለዚህ <ph name="DEVICE_TYPE" /> የመጨረሻው ራስሰር ሶፍትዌር እና የደህንነት ዝማኔ ነው። የወደፊት ዝማኔዎችን ለማግኘት፣ ወደ በጣም አዲሱ ሞዴል ደረጃ ያሻሽሉ። <ph name="LINK_BEGIN" />የበለጠ ለመረዳት<ph name="LINK_END" /></translation>
 <translation id="1150565364351027703">የጸሐይ መነጽሮች</translation>
 <translation id="1151917987301063366"><ph name="HOST" /> ሁልጊዜ ዳሳሾችን እንዲደርስ ፍቀድ</translation>
 <translation id="1153356358378277386">የተጣመሩ መሣሪያዎች</translation>
@@ -461,6 +460,7 @@
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> ብቁ የሆነ የChrome OS መሣሪያ እየተጠቀሙ መሆንዎን ማረጋገጥ ይፈልጋል።</translation>
 <translation id="1640235262200048077"><ph name="IME_NAME" /> በ Linux መተግበሪያዎች ላይ እስካሁን አይሠራም</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 ከRSA ምስጠራ ጋር</translation>
+<translation id="1641113438599504367">የጥንቃቄ አሰሳ</translation>
 <translation id="1642494467033190216">ሌሎች የማረሚያ ባህሪያት ከመንቃታቸው በፊት የrootfs ጥበቃ መወገድ እና ዳግም መጀመር ያስፈልጋል።</translation>
 <translation id="1643072738649235303">የX9.62 ECDSA ፊርማ በSHA-1</translation>
 <translation id="1644574205037202324">ታሪክ</translation>
@@ -1955,7 +1955,6 @@
 <translation id="3732530910372558017">ፒን ቢበዛ 63 ቁምፊዎች መሆን አለበት</translation>
 <translation id="3733127536501031542">SSL አገልጋይ ከነ ማሳደጊያው</translation>
 <translation id="3735740477244556633">ደርድር በ</translation>
-<translation id="3736016243818847857">መቀጠል ይፈልጋሉ?</translation>
 <translation id="3737274407993947948">Linuxን በመጫን ላይ ስህተት...</translation>
 <translation id="3737536731758327622">የእርስዎ ውርዶች እዚህ ይታያሉ</translation>
 <translation id="3738924763801731196"><ph name="OID" />፦</translation>
@@ -2662,7 +2661,6 @@
 <translation id="4798236378408895261"><ph name="BEGIN_LINK" />የብሉቱዝ ምዝግብ ማስታወሻ<ph name="END_LINK" />ን ያያይዙ (Google ውስጣዊ)</translation>
 <translation id="4801448226354548035">መለያዎችን ደብቅ</translation>
 <translation id="4801512016965057443">የተንቀሳቃሽ ስልክ ውሂብ ዝውውር ይፍቀዱ</translation>
-<translation id="4804756772600045300">መቀጠል ADB ስሕተት ማረሚያ የAndroid መተግበሪያዎችን ለመፍጠር እና ለመሞከር ያነቃዋል። ADB ስሕተት ማረሚያ በGoogle ያልተረጋገጡ የሙከራ መተግበሪያዎችን ጭነት ይፈቅዳል።</translation>
 <translation id="4804818685124855865">ግንኙነት አቋርጥ</translation>
 <translation id="4804827417948292437">አቮካዶ</translation>
 <translation id="4805077164141082536">አሁን ያለውን የእርስዎን Linux መያዣ ደረጃ ከማሻሻልዎ በፊት በምትኬ እንዲያስቀምጡ እንመክርዎታለን።</translation>
@@ -4603,6 +4601,7 @@
 <translation id="7631205654593498032">መሣሪያዎችዎን ሲያገናኙ የእርስዎ <ph name="DEVICE_TYPE" /> እነዚህን ማድረግ እንደሚችል ይስማማሉ፦</translation>
 <translation id="7631887513477658702">&amp;ሁልጊዜ እንዲህ አይነት ፋይሎችን ክፈት</translation>
 <translation id="7632948528260659758">የሚከተሉትን የኪዮስክ መተግበሪያዎች ማዘመን አልተሳካም፦</translation>
+<translation id="7634566076839829401">የሆነ ችግር ተፈጥሯል። እባክዎ እንደገና ይሞክሩ።</translation>
 <translation id="763632859238619983">ማንኛውም ጣቢያ የክፍያ ተቆጣጣሪዎችን እንዲጭን አትፍቀድ</translation>
 <translation id="7636919061354591437">በዚህ መሣሪያ ላይ ጫን</translation>
 <translation id="7638605456503525968">ተከታታይ ወደቦች</translation>

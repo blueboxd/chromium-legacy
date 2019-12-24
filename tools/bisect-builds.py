@@ -738,12 +738,16 @@ def VerifyEndpoint(fetch, context, rev, profile, num_runs, command, try_args,
                    evaluate, expected_answer):
   fetch.WaitFor()
   try:
-    (exit_status, stdout, stderr) = RunRevision(
-        context, rev, fetch.zip_file, profile, num_runs, command, try_args)
+    answer = 'r'
+    # This is intended to allow evaluate() to return 'r' to retry RunRevision.
+    while answer == 'r':
+      (exit_status, stdout, stderr) = RunRevision(
+          context, rev, fetch.zip_file, profile, num_runs, command, try_args)
+      answer = evaluate(rev, exit_status, stdout, stderr);
   except Exception, e:
     print(e, file=sys.stderr)
     raise SystemExit
-  if (evaluate(rev, exit_status, stdout, stderr) != expected_answer):
+  if (answer != expected_answer):
     print('Unexpected result at a range boundary! Your range is not correct.')
     raise SystemExit
 

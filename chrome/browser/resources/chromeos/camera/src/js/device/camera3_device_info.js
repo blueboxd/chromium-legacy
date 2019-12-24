@@ -15,11 +15,6 @@ var cca = cca || {};
 cca.device = cca.device || {};
 
 /**
- * import {Resolution} from '../type.js';
- */
-var Resolution = Resolution || {};
-
-/**
  * Video device information queried from HALv3 mojo private API.
  */
 cca.device.Camera3DeviceInfo = class {
@@ -27,11 +22,12 @@ cca.device.Camera3DeviceInfo = class {
    * @public
    * @param {!MediaDeviceInfo} deviceInfo Information of the video device.
    * @param {!cros.mojom.CameraFacing} facing Camera facing of the video device.
-   * @param {!ResolutionList} photoResols Supported available photo resolutions
-   *     of the video device.
-   * @param {!Array<!VideoConfig>} videoResolFpses Supported available video
+   * @param {!cca.ResolutionList} photoResols Supported available photo
+   *     resolutions of the video device.
+   * @param {!Array<!cca.VideoConfig>} videoResolFpses Supported available video
    *     resolutions and maximal capture fps of the video device.
-   * @param {!FpsRangeList} fpsRanges Supported fps ranges of the video device.
+   * @param {!cca.FpsRangeList} fpsRanges Supported fps ranges of the video
+   *     device.
    */
   constructor(deviceInfo, facing, photoResols, videoResolFpses, fpsRanges) {
     /**
@@ -47,32 +43,32 @@ cca.device.Camera3DeviceInfo = class {
     this.facing = facing;
 
     /**
-     * @type {!ResolutionList}
+     * @type {!cca.ResolutionList}
      * @public
      */
     this.photoResols = photoResols;
 
     /**
-     * @type {!ResolutionList}
+     * @type {!cca.ResolutionList}
      * @public
      */
     this.videoResols = [];
 
     /**
-     * @type {!MaxFpsInfo}
+     * @type {!cca.MaxFpsInfo}
      * @public
      */
     this.videoMaxFps = {};
 
     /**
-     * @type {!FpsRangeList}
+     * @type {!cca.FpsRangeList}
      * @public
      */
     this.fpsRanges = fpsRanges;
 
     videoResolFpses.filter(({maxFps}) => maxFps >= 24)
         .forEach(({width, height, maxFps}) => {
-          const r = new Resolution(width, height);
+          const r = new cca.Resolution(width, height);
           this.videoResols.push(r);
           this.videoMaxFps[r] = maxFps;
         });

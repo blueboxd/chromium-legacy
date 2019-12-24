@@ -414,6 +414,9 @@ Line::Line(const Line& other) = default;
 
 Line::~Line() {}
 
+ShapedText::ShapedText(std::vector<Line> lines) : lines_(std::move(lines)) {}
+ShapedText::~ShapedText() = default;
+
 void ApplyRenderParams(const FontRenderParams& params,
                        bool subpixel_rendering_suppressed,
                        SkFont* font) {
@@ -562,7 +565,6 @@ void RenderText::SetMultiline(bool multiline) {
   if (multiline != multiline_) {
     multiline_ = multiline;
     cached_bounds_and_offset_valid_ = false;
-    lines_.clear();
     OnTextAttributeChanged();
   }
 }
@@ -573,8 +575,7 @@ void RenderText::SetMaxLines(size_t max_lines) {
 }
 
 size_t RenderText::GetNumLines() {
-  EnsureLayout();
-  return lines_.size();
+  return GetShapedText()->lines().size();
 }
 
 void RenderText::SetWordWrapBehavior(WordWrapBehavior behavior) {
@@ -582,7 +583,6 @@ void RenderText::SetWordWrapBehavior(WordWrapBehavior behavior) {
     word_wrap_behavior_ = behavior;
     if (multiline_) {
       cached_bounds_and_offset_valid_ = false;
-      lines_.clear();
       OnTextAttributeChanged();
     }
   }
@@ -592,7 +592,6 @@ void RenderText::SetMinLineHeight(int line_height) {
   if (min_line_height_ != line_height) {
     min_line_height_ = line_height;
     cached_bounds_and_offset_valid_ = false;
-    lines_.clear();
     OnDisplayTextAttributeChanged();
   }
 }
@@ -617,11 +616,7 @@ void RenderText::SetDisplayRect(const Rect& r) {
     display_rect_ = r;
     baseline_ = kInvalidBaseline;
     cached_bounds_and_offset_valid_ = false;
-    lines_.clear();
-    if (elide_behavior_ != NO_ELIDE &&
-        elide_behavior_ != FADE_TAIL) {
-      OnDisplayTextAttributeChanged();
-    }
+    OnDisplayTextAttributeChanged();
   }
 }
 
@@ -891,9 +886,9 @@ Size RenderText::GetStringSize() {
 }
 
 float RenderText::TotalLineWidth() {
-  EnsureLayout();
   float total_width = 0;
-  for (const auto& line : lines())
+  const internal::ShapedText* shaped_text = GetShapedText();
+  for (const auto& line : shaped_text->lines())
     total_width += line.size.width();
   return total_width;
 }
@@ -946,14 +941,15 @@ void RenderText::Draw(Canvas* canvas, bool select_all) {
 
 SelectionModel RenderText::FindCursorPosition(const Point& view_point,
                                               const Point& drag_origin) {
-  EnsureLayout();
-  DCHECK(!lines().empty());
+  const internal::ShapedText* shaped_text = GetShapedText();
+  DCHECK(!shaped_text->lines().empty());
 
   int line_index = GetLineContainingYCoord((view_point - GetLineOffset(0)).y());
   // Handle kDragToEndIfOutsideVerticalBounds above or below the text in a
   // single-line by extending towards the mouse cursor.
   if (RenderText::kDragToEndIfOutsideVerticalBounds && !multiline() &&
-      (line_index < 0 || line_index >= static_cast<int>(lines().size()))) {
+      (line_index < 0 ||
+       line_index >= static_cast<int>(shaped_text->lines().size()))) {
     SelectionModel selection_start = GetSelectionModelForSelectionStart();
     int edge = drag_origin.x() == 0 ? GetCursorBounds(selection_start, true).x()
                                     : drag_origin.x();
@@ -966,12 +962,12 @@ SelectionModel RenderText::FindCursorPosition(const Point& view_point,
       return EdgeSelectionModel(GetVisualDirectionOfLogicalBeginning());
     line_index = 0;
   }
-  if (line_index >= static_cast<int>(lines().size())) {
+  if (line_index >= static_cast<int>(shaped_text->lines().size())) {
     if (RenderText::kDragToEndIfOutsideVerticalBounds)
       return EdgeSelectionModel(GetVisualDirectionOfLogicalEnd());
-    line_index = lines().size() - 1;
+    line_index = shaped_text->lines().size() - 1;
   }
-  const internal::Line& line = lines()[line_index];
+  const internal::Line& line = shaped_text->lines()[line_index];
   // Newline segment should be ignored in finding segment index with x
   // coordinate because it's not drawn.
   Vector2d newline_offset;
@@ -1206,14 +1202,15 @@ void RenderText::SetDisplayOffset(int horizontal_offset) {
 }
 
 Vector2d RenderText::GetLineOffset(size_t line_number) {
-  EnsureLayout();
+  const internal::ShapedText* shaped_text = GetShapedText();
   Vector2d offset = display_rect().OffsetFromOrigin();
   // TODO(ckocagil): Apply the display offset for multiline scrolling.
   if (!multiline()) {
     offset.Add(GetUpdatedDisplayOffset());
   } else {
-    DCHECK_LT(line_number, lines().size());
-    offset.Add(Vector2d(0, lines_[line_number].preceding_heights));
+    DCHECK_LT(line_number, shaped_text->lines().size());
+    offset.Add(
+        Vector2d(0, shaped_text->lines()[line_number].preceding_heights));
   }
   offset.Add(GetAlignmentOffset(line_number));
   return offset;
@@ -1242,7 +1239,7 @@ bool RenderText::GetWordLookupDataAtPoint(const Point& point,
 bool RenderText::GetLookupDataForRange(const Range& range,
                                        DecoratedText* decorated_text,
                                        Point* baseline_point) {
-  EnsureLayout();
+  const internal::ShapedText* shaped_text = GetShapedText();
 
   const std::vector<Rect> word_bounds = GetSubstringBounds(range);
   if (word_bounds.empty() || !GetDecoratedTextForRange(range, decorated_text)) {
@@ -1255,10 +1252,11 @@ bool RenderText::GetLookupDataForRange(const Range& range,
       [](const Rect& lhs, const Rect& rhs) { return lhs.x() < rhs.x(); });
   const int line_index = GetLineContainingYCoord(left_rect->CenterPoint().y() -
                                                  GetLineOffset(0).y());
-  if (line_index < 0 || line_index >= static_cast<int>(lines().size()))
+  if (line_index < 0 ||
+      line_index >= static_cast<int>(shaped_text->lines().size()))
     return false;
-  *baseline_point =
-      left_rect->origin() + Vector2d(0, lines()[line_index].baseline);
+  *baseline_point = left_rect->origin() +
+                    Vector2d(0, shaped_text->lines()[line_index].baseline);
   return true;
 }
 
@@ -1357,9 +1355,15 @@ bool RenderText::IsHomogeneous() const {
   return true;
 }
 
-int RenderText::GetDisplayTextBaseline() {
+internal::ShapedText* RenderText::GetShapedText() {
   EnsureLayout();
-  return lines()[0].baseline;
+  DCHECK(shaped_text_);
+  return shaped_text_.get();
+}
+
+int RenderText::GetDisplayTextBaseline() {
+  DCHECK(!GetShapedText()->lines().empty());
+  return GetShapedText()->lines()[0].baseline;
 }
 
 SelectionModel RenderText::GetAdjacentSelectionModel(
@@ -1390,10 +1394,10 @@ SelectionModel RenderText::EdgeSelectionModel(
 SelectionModel RenderText::LineSelectionModel(size_t line_index,
                                               VisualCursorDirection direction) {
   DCHECK(direction == CURSOR_LEFT || direction == CURSOR_RIGHT);
-  const internal::Line& line = lines()[line_index];
+  const internal::Line& line = GetShapedText()->lines()[line_index];
   if (line.segments.empty()) {
     // Only the last line can be empty.
-    DCHECK_EQ(lines().size() - 1, line_index);
+    DCHECK_EQ(GetShapedText()->lines().size() - 1, line_index);
     return EdgeSelectionModel(GetVisualDirectionOfLogicalEnd());
   }
   if (line_index ==
@@ -1602,10 +1606,10 @@ void RenderText::UpdateDisplayText(float text_width) {
     // Have it arrange words on |lines_|.
     render_text->EnsureLayout();
 
-    if (render_text->lines_.size() > max_lines_) {
+    if (render_text->GetShapedText()->lines().size() > max_lines_) {
       // Find the start and end index of the line to be elided.
-      Range line_range =
-          GetLineRange(layout_text_, render_text->lines_[max_lines_ - 1]);
+      Range line_range = GetLineRange(
+          layout_text_, render_text->GetShapedText()->lines()[max_lines_ - 1]);
       // Add an ellipsis character in case the last line is short enough to fit
       // on a single line. Otherwise that character will be elided anyway.
       base::string16 text_to_elide =
@@ -1668,6 +1672,7 @@ Point RenderText::ToViewPoint(const PointF& point,
            GetLineOffset(0);
   }
 
+  const internal::ShapedText* shaped_text = GetShapedText();
   float x = point.x();
   size_t line;
 
@@ -1676,8 +1681,9 @@ Point RenderText::ToViewPoint(const PointF& point,
     // from the last character in RTL. On the other hand, the last character is
     // positioned in the last line in RTL. So, traverse from the last line.
     for (line = num_lines - 1;
-         line > 0 && float_ge(x, lines_[line].size.width()); --line) {
-      x -= lines_[line].size.width();
+         line > 0 && float_ge(x, shaped_text->lines()[line].size.width());
+         --line) {
+      x -= shaped_text->lines()[line].size.width();
     }
 
     // Increment the |line| when |x| is at the newline character. The line is
@@ -1685,30 +1691,32 @@ Point RenderText::ToViewPoint(const PointF& point,
     // character. In that case, the same caret position where the line is broken
     // can be on both lines depending on the caret affinity.
     if (line < num_lines - 1 &&
-        (IsNewlineSegment(lines_[line].segments.front()) ||
+        (IsNewlineSegment(shaped_text->lines()[line].segments.front()) ||
          caret_affinity == CURSOR_FORWARD)) {
       if (float_eq(x, 0))
-        x = lines_[++line].size.width();
+        x = shaped_text->lines()[++line].size.width();
 
       // In RTL, the newline character is at the front of the line. Because the
       // newline character is not drawn at the front of the line, |x| should be
       // decreased by the width of the newline character. Check for a newline
       // again because the line may have changed.
-      if (!lines_[line].segments.empty() &&
-          IsNewlineSegment(lines_[line].segments.front())) {
-        x -= lines_[line].segments.front().width();
+      if (!shaped_text->lines()[line].segments.empty() &&
+          IsNewlineSegment(shaped_text->lines()[line].segments.front())) {
+        x -= shaped_text->lines()[line].segments.front().width();
       }
     }
   } else {
-    for (line = 0; line < num_lines && float_gt(x, lines_[line].size.width());
+    for (line = 0; line < num_lines &&
+                   float_gt(x, shaped_text->lines()[line].size.width());
          ++line) {
-      x -= lines_[line].size.width();
+      x -= shaped_text->lines()[line].size.width();
     }
 
     if (line == num_lines) {
-      x = lines_[--line].size.width();
-    } else if (line < num_lines - 1 && float_eq(lines_[line].size.width(), x) &&
-               (IsNewlineSegment(lines_[line].segments.back()) ||
+      x = shaped_text->lines()[--line].size.width();
+    } else if (line < num_lines - 1 &&
+               float_eq(shaped_text->lines()[line].size.width(), x) &&
+               (IsNewlineSegment(shaped_text->lines()[line].segments.back()) ||
                 caret_affinity == CURSOR_FORWARD)) {
       // If |x| is at the edge of the line end, move the cursor to the start of
       // the next line.
@@ -1729,15 +1737,16 @@ HorizontalAlignment RenderText::GetCurrentHorizontalAlignment() {
 }
 
 Vector2d RenderText::GetAlignmentOffset(size_t line_number) {
-  if (multiline_)
-    DCHECK_LT(line_number, lines_.size());
+  DCHECK(!multiline_ || (line_number < GetShapedText()->lines().size()));
+
   Vector2d offset;
   HorizontalAlignment horizontal_alignment = GetCurrentHorizontalAlignment();
   if (horizontal_alignment != ALIGN_LEFT) {
-    const int width = multiline_ ?
-        std::ceil(lines_[line_number].size.width()) +
-        (cursor_enabled_ ? 1 : 0) :
-        GetContentWidth();
+    const int width =
+        multiline_
+            ? std::ceil(GetShapedText()->lines()[line_number].size.width()) +
+                  (cursor_enabled_ ? 1 : 0)
+            : GetContentWidth();
     offset.set_x(display_rect().width() - width);
     // Put any extra margin pixel on the left to match legacy behavior.
     if (horizontal_alignment == ALIGN_CENTER)
@@ -1876,15 +1885,16 @@ int RenderText::GetLineContainingYCoord(float text_y) {
   if (text_y < 0)
     return -1;
 
-  for (size_t i = 0; i < lines().size(); i++) {
-    const internal::Line& line = lines()[i];
+  internal::ShapedText* shaper_text = GetShapedText();
+  for (size_t i = 0; i < shaper_text->lines().size(); i++) {
+    const internal::Line& line = shaper_text->lines()[i];
 
     if (text_y <= line.size.height())
       return i;
     text_y -= line.size.height();
   }
 
-  return lines().size();
+  return shaper_text->lines().size();
 }
 
 // static

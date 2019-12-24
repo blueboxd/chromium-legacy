@@ -932,6 +932,7 @@
 <translation id="5386426401304769735">Веригата от сертификати за този сайт съдържа сертификат, подписан с SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Зашиване на десния ръб</translation>
+<translation id="5400836586163650660">сиво</translation>
 <translation id="540969355065856584">Сървърът не можа да докаже, че е <ph name="DOMAIN" />. Понастоящем сертификатът му за сигурност не е валиден. Това може да се дължи на неправилно конфигуриране или на прихващане на връзката ви от извършител на атака.</translation>
 <translation id="5421136146218899937">Изчистване на данните за сърфирането...</translation>
 <translation id="5430298929874300616">Премахване на отметката</translation>
@@ -1713,6 +1714,7 @@
 <translation id="988159990683914416">Компилирана програма за програмисти</translation>
 <translation id="989988560359834682">Редактиране на адреса</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992256792861109788">розово</translation>
 <translation id="992432478773561401"><ph name="SOFTWARE_NAME" /> не се инсталира правилно на компютъра ви или в мрежата:
     &lt;ul&gt;
     &lt;li&gt;Опитайте да деинсталирате или деактивирате <ph name="SOFTWARE_NAME" />.&lt;/li&gt;

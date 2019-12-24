@@ -110,7 +110,6 @@
 <translation id="114721135501989771">Obtén las mejores funciones de Google en Chrome</translation>
 <translation id="1147991416141538220">Para solicitar el acceso, comunícate con el administrador de este dispositivo.</translation>
 <translation id="1149401351239820326">Mes de vencimiento</translation>
-<translation id="1150490752229770117">Esta es la última actualización automática de software y seguridad para el dispositivo <ph name="DEVICE_TYPE" />. Si quieres recibir futuras actualizaciones, obtén un modelo más nuevo. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
 <translation id="1150565364351027703">Gafas de sol</translation>
 <translation id="1151917987301063366">Siempre permitir que <ph name="HOST" /> acceda a los sensores</translation>
 <translation id="1153356358378277386">Dispositivos sincronizados</translation>
@@ -458,6 +457,7 @@
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> quiere comprobar si estás usando un dispositivo apto para el Sistema operativo Chrome.</translation>
 <translation id="1640235262200048077"><ph name="IME_NAME" /> todavía no es compatible con apps de Linux</translation>
 <translation id="1640283014264083726">PKCS N. º 1 MD4 con encriptación RSA</translation>
+<translation id="1641113438599504367">Navegación segura</translation>
 <translation id="1642494467033190216">Se requiere una eliminación de la protección de rootfs y el reinicio antes de habilitar otras funciones de depuración.</translation>
 <translation id="1643072738649235303">Firma X9.62 ECDSA con SHA-1</translation>
 <translation id="1644574205037202324">Historial</translation>
@@ -1953,7 +1953,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3732530910372558017">El PIN debe contener 63 caracteres como máximo</translation>
 <translation id="3733127536501031542">Servidor SLL con suplemento especial</translation>
 <translation id="3735740477244556633">Ordenar por</translation>
-<translation id="3736016243818847857">¿Quieres continuar?</translation>
 <translation id="3737274407993947948">Se produjo un error al instalar Linux…</translation>
 <translation id="3737536731758327622">Tus descargas aparecen aquí</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -2337,7 +2336,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4275830172053184480">Reiniciar tu dispositivo</translation>
 <translation id="4278101229438943600">Tu Asistente está listo</translation>
 <translation id="4278390842282768270">Permitido</translation>
-<translation id="4281844954008187215">Condiciones del servicio</translation>
+<translation id="4281844954008187215">Condiciones del Servicio</translation>
 <translation id="4282196459431406533">Smart Lock está activado</translation>
 <translation id="4285418559658561636">Actualizar contraseña</translation>
 <translation id="4285498937028063278">No fijar</translation>
@@ -2662,7 +2661,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4798236378408895261">Adjuntar <ph name="BEGIN_LINK" />registros de Bluetooth<ph name="END_LINK" /> (para uso interno de Google)</translation>
 <translation id="4801448226354548035">Ocultar cuentas</translation>
 <translation id="4801512016965057443">Permitir itinerancia de datos móviles</translation>
-<translation id="4804756772600045300">Si continúas, se habilitará la depuración de adb a fin de crear y probar apps para Android. Ten en cuenta que la depuración de adb permite la instalación de apps de prueba que Google no verificó.</translation>
 <translation id="4804818685124855865">Desconectar</translation>
 <translation id="4804827417948292437">Aguacate</translation>
 <translation id="4805077164141082536">Te recomendamos crear una copia de seguridad de tu contenedor actual de Linux antes de actualizarlo.</translation>
@@ -3659,7 +3657,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6226777517901268232">Archivo de clave privada (opcional)</translation>
 <translation id="6228691855869374890">El sitio tiene el control total de los dispositivos MIDI</translation>
 <translation id="6228720835160974792">Generar código QR para esta imagen</translation>
-<translation id="6229890768313448549">No se pueden cargar las Condiciones del servicio de Google Play. Vuelve a intentarlo.</translation>
+<translation id="6229890768313448549">No se pueden cargar las Condiciones del Servicio de Google Play. Vuelve a intentarlo.</translation>
 <translation id="6231881193380278751">Agregar un parámetro de consulta en la URL para actualizar automáticamente la página: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">Batería</translation>
 <translation id="6232116551750539448">Se perdió la conexión a <ph name="NAME" />.</translation>
@@ -3682,7 +3680,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="624789221780392884">Actualización lista</translation>
 <translation id="6248988683584659830">Buscar en configuración</translation>
 <translation id="6251870443722440887">A cargo de GDI</translation>
-<translation id="6251889282623539337">Condiciones del servicio de <ph name="DOMAIN" /></translation>
+<translation id="6251889282623539337">Condiciones del Servicio de <ph name="DOMAIN" /></translation>
 <translation id="6254503684448816922">Compromiso de la clave</translation>
 <translation id="6257602895346497974">Activar la sincronización…</translation>
 <translation id="6259104249628300056">Mostrar los dispositivos de la red local</translation>
@@ -4603,6 +4601,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7631205654593498032">Cuando conectas tus dispositivos, aceptas que tu <ph name="DEVICE_TYPE" /> puede hacer lo siguiente:</translation>
 <translation id="7631887513477658702">&amp;Abrir siempre archivos de este tipo</translation>
 <translation id="7632948528260659758">No se pudieron actualizar las siguientes aplicaciones de kiosco:</translation>
+<translation id="7634566076839829401">Se produjo un error. Vuelve a intentarlo.</translation>
 <translation id="763632859238619983">No permitir que ningún sitio instale controladores de pago</translation>
 <translation id="7636919061354591437">Instalar en este dispositivo</translation>
 <translation id="7638605456503525968">Puertos en serie</translation>

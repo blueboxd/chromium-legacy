@@ -918,6 +918,7 @@
 <translation id="5386426401304769735">このサイトの証明書チェーンには SHA-1 を使って署名された証明書が含まれています。</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">端綴じ（右）</translation>
+<translation id="5400836586163650660">グレー</translation>
 <translation id="540969355065856584">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は現在有効ではありません。設定が不適切か、悪意のあるユーザーによって接続が妨害されている可能性があります。</translation>
 <translation id="5421136146218899937">閲覧履歴データを削除...</translation>
 <translation id="5430298929874300616">ブックマークを削除</translation>
@@ -1700,6 +1701,7 @@
 <translation id="988159990683914416">Developer Build</translation>
 <translation id="989988560359834682">住所の編集</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992256792861109788">ピンク</translation>
 <translation id="992432478773561401">「<ph name="SOFTWARE_NAME" />」がパソコンまたはネットワークに正しくインストールされていません。 
     &lt;ul&gt;
     &lt;li&gt;「<ph name="SOFTWARE_NAME" />」をアンインストールまたは無効化してみてください&lt;/li&gt;

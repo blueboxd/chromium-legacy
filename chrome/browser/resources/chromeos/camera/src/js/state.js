@@ -14,8 +14,17 @@ var cca = cca || {};
  */
 cca.state = cca.state || {};
 
+/* eslint-disable no-unused-vars */
+
 /**
- * @type {!Map<string, Set<!function(boolean)>>}
+ * @typedef {function(boolean, cca.PerfInformation=)}
+ */
+var StateObserver;
+
+/* eslint-enable no-unused-vars */
+
+/**
+ * @type {!Map<string, Set<!StateObserver>>}
  * @private
  */
 cca.state.observers_ = new Map();
@@ -23,8 +32,8 @@ cca.state.observers_ = new Map();
 /**
  * Adds observer function to be called on any state change.
  * @param {string} state State to be observed.
- * @param {!function(boolean)} observer Observer function called with newly
- *     changed value.
+ * @param {!StateObserver} observer Observer function called with
+ *     newly changed value.
  */
 cca.state.addObserver = function(state, observer) {
   let observers = cca.state.observers_.get(state);
@@ -38,7 +47,7 @@ cca.state.addObserver = function(state, observer) {
 /**
  * Removes observer function to be called on state change.
  * @param {string} state State to remove observer from.
- * @param {!function(boolean)} observer Observer function to be removed.
+ * @param {!StateObserver} observer Observer function to be removed.
  * @return {boolean} Whether the observer is in the set and is removed
  *     successfully or not.
  */
@@ -60,16 +69,20 @@ cca.state.get = function(state) {
 };
 
 /**
- * Sets the specified state on or off.
+ * Sets the specified state on or off. Optionally, pass the information for
+ * performance measurement.
  * @param {string} state State to be set.
  * @param {boolean} val True to set the state on, false otherwise.
+ * @param {cca.PerfInformation=} perfInfo Optional information of this state for
+ *     performance measurement.
  */
-cca.state.set = function(state, val) {
+cca.state.set = function(state, val, perfInfo = {}) {
   const oldVal = cca.state.get(state);
   if (oldVal === val) {
     return;
   }
+
   document.body.classList.toggle(state, val);
   const observers = cca.state.observers_.get(state) || [];
-  observers.forEach((f) => f(val));
+  observers.forEach((f) => f(val, perfInfo));
 };

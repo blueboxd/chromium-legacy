@@ -20,7 +20,6 @@
 #include "content/shell/test_runner/web_widget_test_proxy.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_rect.h"
-#include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_dom_message_event.h"
@@ -96,8 +95,6 @@ class TEST_RUNNER_EXPORT WebViewTestProxy : public content::RenderViewImpl {
 
   void Reset();
   void BindTo(blink::WebLocalFrame* frame);
-
-  void GetScreenOrientationForTesting(blink::WebScreenInfo&);
 
  private:
   // RenderViewImpl has no public destructor.

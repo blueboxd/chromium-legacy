@@ -918,6 +918,7 @@
 <translation id="5386426401304769735">La chaîne de certificat pour ce site contient un certificat qui a été signé avec SHA-1.</translation>
 <translation id="538659543871111977">A4 à onglet</translation>
 <translation id="5396631636586785122">Agrafage par le bord droit</translation>
+<translation id="5400836586163650660">Gris</translation>
 <translation id="540969355065856584">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité n'est pas valide présentement. Cela peut être dû à une mauvaise configuration ou à l'interception de votre connexion par une personne malveillante.</translation>
 <translation id="5421136146218899937">Effacer les données de navigation...</translation>
 <translation id="5430298929874300616">Supprimer le favori</translation>
@@ -1699,6 +1700,7 @@ Détails supplémentaires :
 <translation id="988159990683914416">Version de développeur</translation>
 <translation id="989988560359834682">Modifier l'adresse</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992256792861109788">Rose</translation>
 <translation id="992432478773561401">« <ph name="SOFTWARE_NAME" /> » n'a pas été correctement installé sur votre ordinateur ou votre réseau :
     &lt;ul&gt;
     &lt;li&gt;Essayez de désinstaller ou de désactiver « <ph name="SOFTWARE_NAME" /> »&lt;/li&gt;

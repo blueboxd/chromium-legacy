@@ -8,4 +8,7 @@
  */
 
 // eslint-disable-next-line no-unused-vars
-var cca = {mojo: {}};
+var cca = {
+  mojo: {},
+  tooltip: {},
+};

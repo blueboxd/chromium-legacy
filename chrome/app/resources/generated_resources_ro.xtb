@@ -110,7 +110,6 @@
 <translation id="114721135501989771">Profită de ingeniozitatea Google în Chrome</translation>
 <translation id="1147991416141538220">Pentru a solicita acces, contactează administratorul dispozitivului.</translation>
 <translation id="1149401351239820326">Luna expirării</translation>
-<translation id="1150490752229770117">Aceasta este cea mai recentă actualizare automată de software și securitate pentru acest dispozitiv <ph name="DEVICE_TYPE" />. Pentru a primi actualizări viitoare, fă upgrade la un model mai nou. <ph name="LINK_BEGIN" />Află mai multe<ph name="LINK_END" /></translation>
 <translation id="1150565364351027703">Ochelari de soare</translation>
 <translation id="1151917987301063366">Permite întotdeauna accesul <ph name="HOST" /> la senzori</translation>
 <translation id="1153356358378277386">Dispozitive asociate</translation>
@@ -461,6 +460,7 @@
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> dorește să verifice dacă folosești un dispozitiv cu sistem de operare Chrome eligibil.</translation>
 <translation id="1640235262200048077"><ph name="IME_NAME" /> nu funcționează încă în aplicațiile Linux</translation>
 <translation id="1640283014264083726">PKCS # 1 MD4 cu criptare RSA</translation>
+<translation id="1641113438599504367">Navigare sigură</translation>
 <translation id="1642494467033190216">Înainte de activarea altor funcții de remediere a erorilor, trebuie să elimini protecția sistemului rootfs și să repornești.</translation>
 <translation id="1643072738649235303">Semnătură X9.62 ECDSA cu SHA-1</translation>
 <translation id="1644574205037202324">Istoric</translation>
@@ -1956,7 +1956,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3732530910372558017">Codul PIN trebuie să aibă maximum 63 de caractere</translation>
 <translation id="3733127536501031542">Server SSL cu Step-Up</translation>
 <translation id="3735740477244556633">Sortează după</translation>
-<translation id="3736016243818847857">Vrei să continui?</translation>
 <translation id="3737274407993947948">A apărut o eroare la instalarea Linux...</translation>
 <translation id="3737536731758327622">Descărcările sunt afișate aici</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -2665,7 +2664,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4798236378408895261">Atașează <ph name="BEGIN_LINK" />Jurnalele Bluetooth<ph name="END_LINK" /> (Utilizare internă Google)</translation>
 <translation id="4801448226354548035">Ascundeți conturile</translation>
 <translation id="4801512016965057443">Permite roaming de date mobile</translation>
-<translation id="4804756772600045300">Dacă alegi să continui, remedierea erorilor prin ADB se va activa pentru crearea și testarea aplicațiilor Android. Reține că remedierea erorilor prin ADB permite instalarea aplicațiilor de test care nu au fost verificate de Google.</translation>
 <translation id="4804818685124855865">Deconectează-te</translation>
 <translation id="4804827417948292437">Avocado</translation>
 <translation id="4805077164141082536">Îți recomandăm să faci backup containerului Linux actual înainte să faci upgrade.</translation>
@@ -4606,6 +4604,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7631205654593498032">Când îți conectezi dispozitivele, ești de acord că dispozitivul <ph name="DEVICE_TYPE" /> poate:</translation>
 <translation id="7631887513477658702">&amp;Deschide întotdeauna fișierele de acest tip</translation>
 <translation id="7632948528260659758">Următoarele aplicații de tip chioșc nu au fost actualizate:</translation>
+<translation id="7634566076839829401">A apărut o eroare. Încearcă din nou.</translation>
 <translation id="763632859238619983">Nu permite site-urilor să instaleze handlere pentru plăți</translation>
 <translation id="7636919061354591437">Instalează pe acest dispozitiv</translation>
 <translation id="7638605456503525968">Porturi seriale</translation>

@@ -932,6 +932,7 @@
 <translation id="5386426401304769735">A cadea de certificados deste sitio contén un certificado que se asinou con SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Grampa no bordo dereito</translation>
+<translation id="5400836586163650660">Gris</translation>
 <translation id="540969355065856584">Este servidor non puido demostrar que é <ph name="DOMAIN" /> porque o seu certificado de seguranza non é válido neste momento. É posible que isto se deba a un erro de configuración ou a que un atacante interceptase a túa conexión.</translation>
 <translation id="5421136146218899937">Borrar datos de navegación...</translation>
 <translation id="5430298929874300616">Eliminar marcador</translation>
@@ -1713,6 +1714,7 @@ Detalles adicionais:
 <translation id="988159990683914416">Compilación para programadores</translation>
 <translation id="989988560359834682">Editar enderezo</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992256792861109788">Rosa</translation>
 <translation id="992432478773561401"><ph name="SOFTWARE_NAME" /> non se instalou correctamente no teu ordenador ou na rede:
     &lt;ul&gt;
     &lt;li&gt;Proba a desinstalar ou desactivar <ph name="SOFTWARE_NAME" />&lt;/li&gt;

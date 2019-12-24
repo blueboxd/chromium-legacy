@@ -110,7 +110,6 @@
 <translation id="114721135501989771">Få Googles smarte funksjoner i Chrome</translation>
 <translation id="1147991416141538220">For å be om tilgang, kontakt administratoren for denne enheten.</translation>
 <translation id="1149401351239820326">Utløpsmåned</translation>
-<translation id="1150490752229770117">Dette er den siste automatiske programvare- og sikkerhetsoppdateringen for denne <ph name="DEVICE_TYPE" />-enheten. For å få fremtidige oppdateringer, oppgrader til en nyere modell. <ph name="LINK_BEGIN" />Finn ut mer<ph name="LINK_END" /></translation>
 <translation id="1150565364351027703">Solbriller</translation>
 <translation id="1151917987301063366">Tillat alltid <ph name="HOST" /> å bruke sensorene</translation>
 <translation id="1153356358378277386">Tilkoblede enheter</translation>
@@ -458,6 +457,7 @@
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> ønsker å bekrefte at du bruker en kvalifisert Chrome OS-enhet.</translation>
 <translation id="1640235262200048077"><ph name="IME_NAME" /> virker ikke i Linux-apper ennå</translation>
 <translation id="1640283014264083726"> PKCS #1 MD4 med RSA-kryptering</translation>
+<translation id="1641113438599504367">Safe Browsing</translation>
 <translation id="1642494467033190216">Fjerning av rootfs-beskyttelse og omstart er nødvendig før du slår på andre feilsøkingsfunksjoner.</translation>
 <translation id="1643072738649235303">X9.62 ECDSA-signatur med SHA-1</translation>
 <translation id="1644574205037202324">Logg</translation>
@@ -1953,7 +1953,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="3732530910372558017">PIN-koden kan ikke ha mer enn 63 tegn</translation>
 <translation id="3733127536501031542">SSL-tjener med oppgradering </translation>
 <translation id="3735740477244556633">Sortér etter</translation>
-<translation id="3736016243818847857">Vil du fortsette?</translation>
 <translation id="3737274407993947948">Feil ved installering av Linux …</translation>
 <translation id="3737536731758327622">Nedlastingene dine vises her</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -2660,7 +2659,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4798236378408895261">Legg ved <ph name="BEGIN_LINK" />Bluetooth-logger<ph name="END_LINK" /> (Google-internt)</translation>
 <translation id="4801448226354548035">Skjul kontoer</translation>
 <translation id="4801512016965057443">Tillat mobildatabruk på andre nettverk</translation>
-<translation id="4804756772600045300">Hvis du fortsetter, blir ADB-feilsøking slått på for utvikling og testing av Android-apper. Merk at ADB-feilsøking gjør det mulig å installere test-apper som ikke er verifisert av Google.</translation>
 <translation id="4804818685124855865">Koble fra</translation>
 <translation id="4804827417948292437">Avokado</translation>
 <translation id="4805077164141082536">Vi anbefaler at du sikkerhetskopierer den nåværende Linux-beholderen før du oppgraderer.</translation>
@@ -4601,6 +4599,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="7631205654593498032">Når du kobler sammen enhetene, godtar du at <ph name="DEVICE_TYPE" /> kan:</translation>
 <translation id="7631887513477658702">Åpne &amp;alltid filer av denne typen</translation>
 <translation id="7632948528260659758">Kunne ikke oppdatere de følgende kioskappene:</translation>
+<translation id="7634566076839829401">Noe gikk galt. Prøv på nytt.</translation>
 <translation id="763632859238619983">Ikke tillat at nettsteder installerer betalingsbehandlere</translation>
 <translation id="7636919061354591437">Installer på denne enheten</translation>
 <translation id="7638605456503525968">Serielle porter</translation>

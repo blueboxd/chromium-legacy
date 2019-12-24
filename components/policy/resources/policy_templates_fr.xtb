@@ -358,7 +358,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="1514888685242892912">Activer <ph name="PRODUCT_NAME" /></translation>
 <translation id="1515824657887788963">Autoriser une page à exécuter des requêtes XHR synchrones pendant sa fermeture.</translation>
 <translation id="1522425503138261032">Autoriser les sites à suivre la position géographique des utilisateurs</translation>
-<translation id="1523774894176285446">Autre navigateur à lancer pour les sites Web configurés.</translation>
+<translation id="1523774894176285446">Navigateur secondaire à lancer pour les sites Web configurés.</translation>
 <translation id="152657506688053119">Liste d'URL alternatives pour le moteur de recherche par défaut</translation>
 <translation id="1530812829012954197">Toujours rendre les formats d'URL suivants dans le navigateur hôte</translation>
 <translation id="1541170838458414064">Limiter le format de la page d'impression</translation>
@@ -1405,7 +1405,7 @@ Si cette règle est définie sur "False", les utilisateurs ne pourront pas jouer
 <translation id="3016255526521614822">Les applications de prise de note ajoutées à la liste blanche sont autorisées sur l'écran de verrouillage de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3020064401262077616">Contrôle les règles de supervision parentale s'appliquant uniquement aux comptes d'utilisateurs mineurs.</translation>
 <translation id="3021562480854470924">Nombre de versions intermédiaires autorisées pour le rollback</translation>
-<translation id="3023572080620427845">URL d'un fichier XML qui contient des URL à charger dans un autre navigateur.</translation>
+<translation id="3023572080620427845">URL d'un fichier XML qui contient des URL à charger dans un navigateur secondaire.</translation>
 <translation id="3026740867910702435">Permet d'activer la fonctionnalité d'accessibilité de grand curseur sur l'écran de connexion.
 
           Si cette règle est définie sur "True", le grand curseur est toujours activé sur l'écran de connexion.
@@ -1720,7 +1720,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       Si cette règle est définie sur "DeveloperToolsDisallowed" (valeur 2), les outils pour les développeurs sont inaccessibles et les éléments de sites Web ne peuvent plus être examinés. En outre, les raccourcis clavier, ainsi que les entrées de menu ou de menu contextuel permettant d'ouvrir les outils pour les développeurs ou la console JavaScript sont désactivés.</translation>
 <translation id="3547954654003013442">Paramètres de proxy</translation>
 <translation id="3550875587920006460">Permet de planifier de manière personnalisée la recherche de mises à jour. Cette règle s'applique à l'ensemble des utilisateurs et des interfaces de l'appareil. Une fois la règle définie, l'appareil recherche les mises à jour en fonction du calendrier établi. Pour annuler toute autre recherche planifiée de mises à jour, cette règle doit être supprimée.</translation>
-<translation id="355118380775352753">Sites Web à ouvrir dans l'autre navigateur</translation>
+<translation id="355118380775352753">Sites Web à ouvrir dans le navigateur secondaire</translation>
 <translation id="3554984410014457319">Autoriser l'Assistant Google à écouter l'expression d'activation des commandes vocales</translation>
 <translation id="3557208865710006939">Force l'activation de la vérification orthographique pour certaines langues. Les langues non reconnues dans la liste seront ignorées.
 
@@ -2020,9 +2020,9 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="3984028218719007910">Détermine si <ph name="PRODUCT_OS_NAME" /> doit conserver les données locales des comptes après la déconnexion. Si cette règle est définie sur "true", aucun compte persistant n'est conservé par <ph name="PRODUCT_OS_NAME" />. Par ailleurs, toutes les données de la session utilisateur sont supprimées après la déconnexion. Si cette règle est définie sur "false" ou si elle n'est pas configurée, l'appareil peut conserver des données utilisateur locales (chiffrées).</translation>
 <translation id="398475542699441679">Cette règle contrôle l'activation de Legacy Browser Support.
 
-      Si elle n'est pas définie, ou si elle est définie sur "false", Chrome n'essaiera pas de lancer les URL indiquées dans un autre navigateur.
+      Si elle n'est pas définie, ou si elle est définie sur "false", Chrome n'essaiera pas de lancer les URL indiquées dans un navigateur secondaire.
 
-      Si elle est définie sur "true", Chrome essaiera de lancer certaines URL dans un autre navigateur (par exemple Internet Explorer). Cette fonctionnalité est configurée à l'aide des règles du groupe <ph name="LEGACY_BROWSER_SUPPORT_POLICY_GROUP" />.
+      Si elle est définie sur "true", Chrome essaiera de lancer certaines URL dans un navigateur secondaire (par exemple Internet Explorer). Cette fonctionnalité est configurée à l'aide des règles du groupe <ph name="LEGACY_BROWSER_SUPPORT_POLICY_GROUP" />.
 
       Cette fonctionnalité remplace l'extension <ph name="LEGACY_BROWSER_SUPPORT_EXTENSION_NAME" />. La configuration définie dans l'extension sera appliquée à cette fonctionnalité, mais il est vivement conseillé de lui préférer les règles Chrome. Une meilleure compatibilité sera ainsi assurée à l'avenir.</translation>
 <translation id="3993187551086357615">Retarder les importations et les téléchargements jusqu'à ce que les résultats d'analyse soient connus</translation>
@@ -2596,7 +2596,7 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
        Si cette règle est définie sur "False", le contenu audio et vidéo n'est pas mis à niveau automatiquement, et aucun avertissement ne s'affiche pour les images.
        Cette règle n'influe pas sur les types de contenus mixtes autres que les images et les contenus audio/vidéo.</translation>
 <translation id="4983201894483989687">Autoriser l'exécution de plug-ins obsolètes</translation>
-<translation id="4986560318567565414">Chemin d'accès pour basculer vers Chrome à partir de l'autre navigateur.</translation>
+<translation id="4986560318567565414">Chemin d'accès pour basculer vers Chrome à partir du navigateur secondaire.</translation>
 <translation id="4988291787868618635">Action à effectuer au terme du délai d'inactivité</translation>
 <translation id="5032164758660626397">Empêcher l'utilisateur de transférer des fichiers volumineux</translation>
 <translation id="5047604665028708335">Autoriser l'accès aux sites en dehors des packs de contenu</translation>
@@ -2666,9 +2666,9 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       Si cette règle indique 0, la modification du mot de passe machine est désactivée.
 
       Notez que la validité des mots de passe peut dépasser le délai spécifié en cas de mise hors connexion du client pendant une période plus longue.</translation>
-<translation id="510196893779239086">Cette règle détermine si Chrome doit être complètement fermé lorsque le dernier onglet bascule vers un autre navigateur.
+<translation id="510196893779239086">Cette règle détermine si Chrome doit être complètement fermé lorsque le dernier onglet bascule vers un navigateur secondaire.
 
-      Si elle n'est pas configurée, ou si elle est définie sur "True", Chrome laissera au moins un onglet ouvert après le passage à un autre navigateur.
+      Si elle n'est pas configurée, ou si elle est définie sur "True", Chrome laissera au moins un onglet ouvert après le passage à un navigateur secondaire.
 
       Si elle est définie sur "False", Chrome fermera l'onglet lorsque vous changez de navigateur, même s'il s'agissait du dernier onglet. Chrome sera alors fermé complètement.</translation>
 <translation id="5102203758995933166">Permet de transférer l'application de la configuration réseau par utilisateur vers un appareil utilisant <ph name="PRODUCT_OS_NAME" />. La configuration réseau correspond à une chaîne formatée par JSON conformément au format de configuration de réseau ouvert.</translation>
@@ -2980,13 +2980,13 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 <translation id="546726650689747237">Délai d'assombrissement de l'écran (secteur)</translation>
 <translation id="5469143988693423708">L'utilisateur est autorisé à exécuter Crostini</translation>
 <translation id="5469825884154817306">Bloquer les images sur ces sites</translation>
-<translation id="5472668698895343595">Cette règle contrôle la liste des sites Web à ouvrir dans un autre navigateur.
+<translation id="5472668698895343595">Cette règle contrôle la liste des sites Web à ouvrir dans un navigateur secondaire.
 
       Notez que vous pouvez également ajouter des éléments à cette liste avec les règles <ph name="USE_IE_SITELIST_POLICY_NAME" /> et <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
 
       Si cette règle n'est pas définie, aucun site Web n'est ajouté à la liste.
 
-      Si cette règle est définie, chaque élément est traité comme une instruction pour un élément à ouvrir dans un autre navigateur. <ph name="PRODUCT_NAME" /> utilise ces instructions pour décider si une URL doit être ouverte dans un autre navigateur ou non.
+      Si cette règle est définie, chaque élément est traité comme une instruction pour un élément à ouvrir dans un navigateur secondaire. <ph name="PRODUCT_NAME" /> utilise ces instructions pour décider si une URL doit être ouverte dans un navigateur secondaire ou non.
 
       Si le module complémentaire d'Internet Explorer est présent et activé, Internet Explorer bascule de nouveau vers <ph name="PRODUCT_NAME" /> lorsque les instructions ne concordent pas.
 
@@ -3907,7 +3907,7 @@ En cas de non-configuration de cette règle, aucune restriction ne s'applique qu
       Si vous définissez cette règle, les utilisateurs ne peuvent pas modifier la configuration. Si cette règle n'est pas définie, les utilisateurs peuvent continuer à utiliser la configuration actuelle à condition que les règles autorisent le conteneur Crostini.</translation>
 <translation id="713121532817834879">Cette règle se rapporte à une URL, qui renvoie vers un fichier XML au même format que celui de la règle <ph name="IEEM_SITELIST_POLICY" /> d'Internet Explorer. Les instructions sont ainsi chargées à partir d'un fichier XML, sans être partagées avec Internet Explorer.
 
-      Les règles de ce fichier XML s'appliquent de la même manière que pour la règle <ph name="GREYLIST_POLICY_NAME" />. C'est-à-dire que ces règles empêchent <ph name="PRODUCT_NAME" /> d'ouvrir l'autre navigateur et empêchent ce dernier d'ouvrir <ph name="PRODUCT_NAME" />.
+      Les règles de ce fichier XML s'appliquent de la même manière que pour la règle <ph name="GREYLIST_POLICY_NAME" />. C'est-à-dire que ces règles empêchent <ph name="PRODUCT_NAME" /> d'ouvrir le navigateur secondaire et empêchent ce dernier d'ouvrir <ph name="PRODUCT_NAME" />.
 
       Si cette règle n'est pas définie, ou si elle est définie sur une URL qui n'est pas valide, <ph name="PRODUCT_NAME" /> ne l'utilise pas comme source des règles qui ne déclenchent pas un changement de navigateur.
 

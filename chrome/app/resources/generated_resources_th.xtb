@@ -110,7 +110,6 @@
 <translation id="114721135501989771">ใช้ฟีเจอร์เจ๋งๆ จาก Google ใน Chrome</translation>
 <translation id="1147991416141538220">หากต้องการสิทธิ์เข้าถึง ให้ติดต่อผู้ดูแลระบบของอุปกรณ์นี้</translation>
 <translation id="1149401351239820326">เดือนที่หมดอายุ</translation>
-<translation id="1150490752229770117">นี่เป็นการอัปเดตซอฟต์แวร์และความปลอดภัยอัตโนมัติครั้งสุดท้ายสำหรับ <ph name="DEVICE_TYPE" /> เครื่องนี้ โปรดอัปเกรดเป็นรุ่นที่ใหม่กว่าเพื่อรับการอัปเดตในอนาคต <ph name="LINK_BEGIN" />ดูข้อมูลเพิ่มเติม<ph name="LINK_END" /></translation>
 <translation id="1150565364351027703">แว่นกันแดด</translation>
 <translation id="1151917987301063366">อนุญาตให้ <ph name="HOST" /> เข้าถึงเซ็นเซอร์เสมอ</translation>
 <translation id="1153356358378277386">อุปกรณ์ที่จับคู่</translation>
@@ -461,6 +460,7 @@
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> ต้องการตรวจสอบว่าคุณกำลังใช้อุปกรณ์ Chrome OS ที่มีสิทธิ์</translation>
 <translation id="1640235262200048077"><ph name="IME_NAME" /> ยังใช้ไม่ได้ในแอป Linux</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 พร้อมการเข้ารหัส RSA</translation>
+<translation id="1641113438599504367">Safe Browsing</translation>
 <translation id="1642494467033190216">ต้องนำการป้องกัน rootfs ออกและรีสตาร์ทก่อนที่จะเปิดใช้ฟีเจอร์การแก้ไขข้อบกพร่องอื่นๆ</translation>
 <translation id="1643072738649235303">ลายเซ็น X9.62 ECDSA ที่มี SHA-1</translation>
 <translation id="1644574205037202324">ประวัติการเข้าชม</translation>
@@ -1956,7 +1956,6 @@
 <translation id="3732530910372558017">PIN ต้องมีอักขระไม่เกิน 63 ตัว</translation>
 <translation id="3733127536501031542">เซิร์ฟเวอร์ SSL ที่มีการยกระดับความปลอดภัย</translation>
 <translation id="3735740477244556633">จัดเรียงตาม</translation>
-<translation id="3736016243818847857">ต้องการดำเนินการต่อไหม</translation>
 <translation id="3737274407993947948">เกิดข้อผิดพลาดขณะติดตั้ง Linux...</translation>
 <translation id="3737536731758327622">การดาวน์โหลดของคุณจะปรากฏที่นี่</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -2665,7 +2664,6 @@
 <translation id="4798236378408895261">แนบ<ph name="BEGIN_LINK" />บันทึกบลูทูธ<ph name="END_LINK" /> (ใช้ภายใน Google)</translation>
 <translation id="4801448226354548035">ซ่อนบัญชี</translation>
 <translation id="4801512016965057443">อนุญาตการโรมมิ่งข้อมูลมือถือ</translation>
-<translation id="4804756772600045300">การดำเนินการต่อจะเป็นการเปิดใช้การแก้ไขข้อบกพร่อง ADB สำหรับการสร้างและทดสอบแอป Android โปรดทราบว่าการแก้ไขข้อบกพร่อง ADB จะอนุญาตให้ติดตั้งแอปทดสอบที่ไม่ได้รับการยืนยันจาก Google</translation>
 <translation id="4804818685124855865">ตัดการเชื่อมต่อ</translation>
 <translation id="4804827417948292437">อะโวคาโด</translation>
 <translation id="4805077164141082536">เราขอแนะนำให้สำรองข้อมูลในคอนเทนเนอร์ Linux ปัจจุบันก่อนที่จะอัปเกรด</translation>
@@ -4606,6 +4604,7 @@
 <translation id="7631205654593498032">เมื่อเชื่อมต่ออุปกรณ์ คุณยินยอมให้ <ph name="DEVICE_TYPE" /> ดำเนินการดังนี้</translation>
 <translation id="7631887513477658702">&amp;เปิดไฟล์ประเภทนี้เสมอ</translation>
 <translation id="7632948528260659758">แอปคีออสก์ต่อไปนี้ไม่สามารถอัปเดตได้:</translation>
+<translation id="7634566076839829401">เกิดข้อผิดพลาดบางอย่าง โปรดลองอีกครั้ง</translation>
 <translation id="763632859238619983">ไม่อนุญาตให้เว็บไซต์ใดก็ตามติดตั้งเครื่องจัดการการชำระเงิน</translation>
 <translation id="7636919061354591437">ติดตั้งในอุปกรณ์นี้</translation>
 <translation id="7638605456503525968">พอร์ตอนุกรม</translation>

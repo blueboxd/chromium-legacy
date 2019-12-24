@@ -19,7 +19,7 @@
 <translation id="1929939181775079593">‏Chromium אינו מגיב. להפעיל מחדש עכשיו?</translation>
 <translation id="1966382378801805537">‏ב-Chromium לא ניתן לקבוע או להגדיר את דפדפן ברירת המחדל</translation>
 <translation id="2008474315282236005">‏הפעולה הזו תמחק פריט אחד מהמכשיר. כדי לשחזר את הנתונים מאוחר יותר, היכנס אל Chromium עם <ph name="USER_EMAIL" />.</translation>
-<translation id="2119636228670142020">‏מידע על &amp;מערכת ההפעלה של Chromium‏</translation>
+<translation id="2147976119693222405">‏מערכת Chromium OS לא הצליחה לסנכרן את הנתונים שלך. לפתרון הבעיה עכשיו.</translation>
 <translation id="2241627712206172106">‏אם אתה משתף מחשב, חברים ובני משפחה יכולים לגלוש בנפרד ולהגדיר את Chromium בדיוק כפי שהם רוצים.</translation>
 <translation id="2347108572062610441">‏התוסף שינה את הדף שמוצג כשאתה מפעיל את Chromium.</translation>
 <translation id="2396765026452590966">‏התוסף "<ph name="EXTENSION_NAME" />" שינה את הדף שמוצג כשאתה מפעיל את Chromium.</translation>
@@ -35,6 +35,7 @@
 <translation id="2718390899429598676">‏לשיפור האבטחה, Chromium יצפין את הנתונים.</translation>
 <translation id="2770231113462710648">שנה את דפדפן ברירת המחדל ל:</translation>
 <translation id="2799223571221894425">הפעל מחדש</translation>
+<translation id="2805036593126168338">‏מערכת Chromium OS לא הצליחה לסנכרן את הסיסמאות שלך. לפתרון הבעיה עכשיו.</translation>
 <translation id="2838154144102149890">‏כדי לעדכן יש לסגור את Chromium במחשב הזה. הסגירה עשויה לגרום למשתמשים אחרים המחוברים למחשב לאבד שינויים שלא נשמרו.</translation>
 <translation id="2847479871509788944">‏הסר מ-Chromium...</translation>
 <translation id="2886012850691518054">‏אופציונלי: עזור לנו לשפר את Chromium באמצעות שליחת נתוני שימוש ודוחות קריסה אל Google באופן אוטומטי.</translation>

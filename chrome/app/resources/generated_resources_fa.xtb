@@ -110,7 +110,6 @@
 <translation id="114721135501989771">‏هوشمندی‌های Google را در Chrome دریافت کنید</translation>
 <translation id="1147991416141538220">برای درخواست دسترسی، با سرپرست این دستگاه تماس بگیرید.</translation>
 <translation id="1149401351239820326">ماه انقضا</translation>
-<translation id="1150490752229770117">این آخرین به‌روزرسانی خودکار نرم‌افزار و امنیتی برای این <ph name="DEVICE_TYPE" /> است. برای دریافت به‌روزرسانی‌های بعدی، به مدل جدیدتری ارتقا دهید. <ph name="LINK_BEGIN" />بیشتر بدانید<ph name="LINK_END" /></translation>
 <translation id="1150565364351027703">عینک آفتابی</translation>
 <translation id="1151917987301063366">همیشه اجازه دسترسی به حسگرها به <ph name="HOST" /> داده شود</translation>
 <translation id="1153356358378277386">دستگاه‌های مرتبط‌شده</translation>
@@ -458,6 +457,7 @@
 <translation id="163993578339087550">‏<ph name="SERVICE_NAME" /> می‌خواهد مطمئن شود از دستگاه واجد شرایطی با سیستم‌عامل Chrome استفاده می‌کنید.</translation>
 <translation id="1640235262200048077">‏<ph name="IME_NAME" /> هنوز در برنامه‌های Linux کار نمی‌کند</translation>
 <translation id="1640283014264083726">‏PKCS #1 MD4 با رمزگذاری RSA</translation>
+<translation id="1641113438599504367">مرور ایمن</translation>
 <translation id="1642494467033190216">راه‌اندازی مجدد و برداشتن محافظت ویژگی‌های ریشه قبل از فعال کردن ویژگی‌های رفع‌اشکال دیگر لازم است.</translation>
 <translation id="1643072738649235303">‏امضای X9.62 ECDSA با SHA-1</translation>
 <translation id="1644574205037202324">سابقه</translation>
@@ -1953,7 +1953,6 @@
 <translation id="3732530910372558017">پین باید حداکثر ۶۳ نویسه داشته باشد</translation>
 <translation id="3733127536501031542">‏سرور SSL با ارتقا</translation>
 <translation id="3735740477244556633">مرتب کردن براساس</translation>
-<translation id="3736016243818847857">آیا می‌خواهید ادامه دهید؟</translation>
 <translation id="3737274407993947948">‏بروز خطا هنگام نصب Linux…</translation>
 <translation id="3737536731758327622">بارگیری‌هایتان در اینجا نشان داده می‌شود</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -2662,7 +2661,6 @@
 <translation id="4798236378408895261">‏پیوست <ph name="BEGIN_LINK" />گزارش‌های بلوتوث<ph name="END_LINK" /> (داخلی Google)</translation>
 <translation id="4801448226354548035">پنهان‌سازی حساب‌ها</translation>
 <translation id="4801512016965057443">اجازه دادن فراگردی داده تلفن همراه</translation>
-<translation id="4804756772600045300">‏با ادامه دادن، اشکال‌زدایی ADB (پل اشکال‌زدایی Android) برای ایجاد و آزمایش برنامه‌های Android فعال می‌شود. توجه داشته باشید که اشکال‌زدایی ADB، نصب برنامه‌های آزمایشی را که Google تأیید نکرده است مجاز می‌کند.</translation>
 <translation id="4804818685124855865">قطع اتصال</translation>
 <translation id="4804827417948292437">آووکادو</translation>
 <translation id="4805077164141082536">‏توصیه می‌کنیم قبل از ارتقا دادن، از محتوی کنونی Linux خود پشتیبان‌گیری کنید.</translation>
@@ -4603,6 +4601,7 @@
 <translation id="7631205654593498032">وقتی دستگاه‌هایتان را متصل می‌کنید، موافقت می‌کنید که <ph name="DEVICE_TYPE" /> بتواند:</translation>
 <translation id="7631887513477658702">&amp;همیشه این نوع فایل‌ها باز شوند</translation>
 <translation id="7632948528260659758">به‌روزرسانی برنامه‌های کیوسک زیر انجام نشد:</translation>
+<translation id="7634566076839829401">مشکلی پیش آمد. لطفاً دوباره امتحان کنید.</translation>
 <translation id="763632859238619983">هیچ سایتی برای نصب کنترل‌کننده‌های پرداخت مجاز نباشد</translation>
 <translation id="7636919061354591437">نصب در این دستگاه</translation>
 <translation id="7638605456503525968">درگاه‌های سریال</translation>

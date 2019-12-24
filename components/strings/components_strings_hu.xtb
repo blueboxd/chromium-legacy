@@ -930,6 +930,7 @@
 <translation id="5386426401304769735">A webhely tanúsítványlánca SHA-1 titkosítással aláírt tanúsítványt tartalmaz.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Éltűzés a jobb oldalon</translation>
+<translation id="5400836586163650660">Szürke</translation>
 <translation id="540969355065856584">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa jelenleg nem érvényes. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolatát.</translation>
 <translation id="5421136146218899937">Böngészési adatok törlése...</translation>
 <translation id="5430298929874300616">Könyvjelző törlése</translation>
@@ -1712,6 +1713,7 @@ További részletek:
 <translation id="988159990683914416">Fejlesztői változat</translation>
 <translation id="989988560359834682">Cím szerkesztése</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992256792861109788">Rózsaszín</translation>
 <translation id="992432478773561401">A(z) „<ph name="SOFTWARE_NAME" />” nem megfelelően lett telepítve a számítógépre vagy a hálózatra:
     &lt;ul&gt;
     &lt;li&gt;Próbálkozzon a(z) „<ph name="SOFTWARE_NAME" />” eltávolításával vagy letiltásával.&lt;/li&gt;

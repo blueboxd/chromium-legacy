@@ -140,24 +140,15 @@ function setExpectationsForObservablePreflight(extraInfoSpec) {
         type,
       },
     },
-    { label: 'onCompleted-P',
-      event: 'onCompleted',
-      details: {
-        url,
-        method: 'OPTIONS',
-        ip: '127.0.0.1',
-        fromCache: false,
-        statusCode: 200,
-        statusLine: 'HTTP/1.1 200 OK',
-        initiator,
-        type,
-      },
-    },
   ];
   const eventOrderForPreflight = [
     'onBeforeRequest-P', 'onBeforeSendHeaders-P', 'onSendHeaders-P',
-    'onHeadersReceived-P', 'onResponseStarted-P', 'onCompleted-P',
+    'onHeadersReceived-P', 'onResponseStarted-P',
   ];
+  // The completion event of the preflight request coming from the network OR
+  // The cancellation event of the preflight request coming from the CORS module
+  // should arrive, but we are not sure which comes first - that is essentially
+  // racy, so we cannot have an expecation here.
 
   let events;
   let eventsOrder;
@@ -178,21 +169,12 @@ function setExpectationsForObservablePreflight(extraInfoSpec) {
           frameUrl: 'unknown frame URL',
         },
       },
-    ].concat(eventsForPreflight, [
-      { label: 'onErrorOccurred',
-        event: 'onErrorOccurred',
-        details: {
-          url: url,
-          method: 'GET',
-          error: 'net::ERR_FAILED',
-          initiator: initiator,
-          type: 'xmlhttprequest',
-          fromCache: false,
-        }
-      },
-    ]);
-    eventOrder = ['onBeforeRequest'].concat(
-        eventOrderForPreflight, ['onErrorOccurred']);
+    ].concat(eventsForPreflight);
+    eventOrder = ['onBeforeRequest'].concat(eventOrderForPreflight);
+
+    // We should see the cancellation of the actual request, but we cannot
+    // have that expecation here because we don't have an expecation on
+    // the completion of the preflight request. See above.
   } else {
     // In this case, the preflight request is made first, and blink will not
     // make the actual request because of the lack of an

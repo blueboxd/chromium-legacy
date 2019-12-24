@@ -913,6 +913,7 @@
 <translation id="5386426401304769735">De certificaatketen voor deze site bevat een certificaat dat is ondertekend met SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Inbinden met nietjes rechts</translation>
+<translation id="5400836586163650660">Grijs</translation>
 <translation id="540969355065856584">Deze server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat is momenteel niet geldig. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="5421136146218899937">Browsegegevens wissen</translation>
 <translation id="5430298929874300616">Bladwijzer verwijderen</translation>
@@ -1449,7 +1450,7 @@ Aanvullende informatie:
 <translation id="8037117624646282037">Wie het apparaat recent heeft gebruikt</translation>
 <translation id="8037357227543935929">Vragen (standaard)</translation>
 <translation id="803771048473350947">Archief</translation>
-<translation id="8041089156583427627">Feedback verzenden</translation>
+<translation id="8041089156583427627">Feedback sturen</translation>
 <translation id="8041940743680923270">Algemene standaardinstelling gebruiken (Vragen)</translation>
 <translation id="8042918947222776840">Ophaalmethode kiezen</translation>
 <translation id="8057711352706143257">'<ph name="SOFTWARE_NAME" />' is niet correct geconfigureerd. Als je '<ph name="SOFTWARE_NAME" />' verwijdert, wordt het probleem meestal opgelost. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -1693,6 +1694,7 @@ Aanvullende informatie:
 <translation id="988159990683914416">Ontwikkelaarsbuild</translation>
 <translation id="989988560359834682">Adres bewerken</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992256792861109788">Roze</translation>
 <translation id="992432478773561401">'<ph name="SOFTWARE_NAME" />' is niet correct geïnstalleerd op je computer of het netwerk:
     &lt;ul&gt;
     &lt;li&gt;Probeer '<ph name="SOFTWARE_NAME" />' te verwijderen of uit te schakelen&lt;/li&gt;

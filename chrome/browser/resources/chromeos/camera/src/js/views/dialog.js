@@ -15,21 +15,6 @@ var cca = cca || {};
 cca.views = cca.views || {};
 
 /**
- * import {assertString} from '../chrome_util.js';
- */
-var assertString = assertString || {};
-
-/**
- * import {assertInstanceof, assertString, assertBoolean}
- * from '../chrome_util.js';
- */
-var {assertInstanceof, assertString, assertBoolean} = {
-  assertInstanceof,
-  assertString,
-  assertBoolean,
-};
-
-/**
  * Creates the Dialog view controller.
  */
 cca.views.Dialog = class extends cca.views.View {
@@ -43,7 +28,7 @@ cca.views.Dialog = class extends cca.views.View {
      * @type {!HTMLButtonElement}
      * @private
      */
-    this.positiveButton_ = assertInstanceof(
+    this.positiveButton_ = cca.assertInstanceof(
         document.querySelector(`${viewId} .dialog-positive-button`),
         HTMLButtonElement);
 
@@ -51,7 +36,7 @@ cca.views.Dialog = class extends cca.views.View {
      * @type {!HTMLButtonElement}
      * @private
      */
-    this.negativeButton_ = assertInstanceof(
+    this.negativeButton_ = cca.assertInstanceof(
         document.querySelector(`${viewId} .dialog-negative-button`),
         HTMLButtonElement);
 
@@ -59,7 +44,7 @@ cca.views.Dialog = class extends cca.views.View {
      * @type {!HTMLElement}
      * @private
      */
-    this.messageHolder_ = assertInstanceof(
+    this.messageHolder_ = cca.assertInstanceof(
         document.querySelector(`${viewId} .dialog-msg-holder`), HTMLElement);
 
     this.positiveButton_.addEventListener('click', () => this.leave(true));
@@ -72,7 +57,7 @@ cca.views.Dialog = class extends cca.views.View {
    * @override
    */
   entering({message, cancellable = false} = {}) {
-    message = assertString(message);
+    message = cca.assertString(message);
     this.messageHolder_.textContent = message;
     if (this.negativeButton_) {
       this.negativeButton_.hidden = !cancellable;

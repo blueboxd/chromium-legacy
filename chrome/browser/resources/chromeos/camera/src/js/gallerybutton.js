@@ -10,11 +10,6 @@
 var cca = cca || {};
 
 /**
- * import {assert, assertInstanceof} from './chrome_util.js';
- */
-var {assert, assertInstanceof} = {assert, assertInstanceof};
-
-/**
  * Cover photo of gallery button.
  */
 cca.CoverPhoto = class {
@@ -94,7 +89,7 @@ cca.GalleryButton = class {
      * @type {!HTMLButtonElement}
      * @private
      */
-    this.button_ = assertInstanceof(
+    this.button_ = cca.assertInstanceof(
         document.querySelector('#gallery-enter'), HTMLButtonElement);
 
     /**
@@ -213,7 +208,7 @@ cca.GalleryButton = class {
       cca.util.orientPhoto(blob, resolve, () => resolve(blob));
     });
     const file = await cca.models.FileSystem.saveBlob(orientedPhoto, name);
-    assert(file !== null);
+    cca.assert(file !== null);
     await this.updateCover_(file);
   }
 
@@ -231,7 +226,7 @@ cca.GalleryButton = class {
   async finishSaveVideo(video, name) {
     const tempFile = await video.endWrite();
     const file = await cca.models.FileSystem.saveVideo(tempFile, name);
-    assert(file !== null);
+    cca.assert(file !== null);
     await this.updateCover_(file);
   }
 };

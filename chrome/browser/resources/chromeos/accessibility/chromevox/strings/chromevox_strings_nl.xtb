@@ -791,7 +791,6 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="6459511626086141404">Platte toetsenbordindeling</translation>
 <translation id="6468049171101508116">Volgende knop</translation>
 <translation id="646954774886932461">Index</translation>
-<translation id="6479792383819319132">Er is geen volgende paragraaf.</translation>
 <translation id="6493991254603208962">helderheid omlaag</translation>
 <translation id="6501595918865591267">Turkoois</translation>
 <translation id="6508059270146105198">Brailleweergave naar onderkant pagina verplaatsen</translation>
@@ -814,7 +813,6 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="6637586476836377253">logboek</translation>
 <translation id="6657128831881431364">Voortgangsbalk</translation>
 <translation id="6659594942844771486">Tabblad</translation>
-<translation id="6675661017770918201">Er is geen vorige paragraaf.</translation>
 <translation id="667999046851023355">Document</translation>
 <translation id="6688209025607531203">Een melding die niet in een modaal dialoogvenster wordt weergegeven</translation>
 <translation id="6689672606256159458">Donker zalmroze</translation>
@@ -863,7 +861,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="7039555289296502784">Olijfgroen</translation>
 <translation id="7041173719775863268">Selectie eindigen</translation>
 <translation id="7043850226734279132">Donkerkaki</translation>
-<translation id="7048792632163898198">De volgende snelkoppelingen zijn geen ChromeVox-opdrachten, maar wel handig om optimaal gebruik te maken van Chrome. Als je vooruit wilt navigeren door actie-items (zoals knoppen en links), druk je op de Tab-toets. Als je terug wilt navigeren, druk je op Shift + Tab.
+<translation id="7048792632163898198">De volgende snelkoppelingen zijn geen ChromeVox-opdrachten, maar wel handig om optimaal gebruik te maken van Chrome. Als je vooruit wilt navigeren door actiepunten (zoals knoppen en links), druk je op de Tab-toets. Als je terug wilt navigeren, druk je op Shift + Tab.
 Als je de cursor naar het adresvak van de Chrome-browser (ook wel omnibox genoemd) wilt verplaatsen, druk je op Ctrl + L.
 Als je automatisch naar een nieuw tabblad wilt gaan, druk je op Ctrl + T. Je cursor wordt in de omnibox geplaatst.
 Als je een tabblad wilt sluiten, druk je op Ctrl + W.

@@ -1,0 +1,69 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef SERVICES_NETWORK_QUIC_TRANSPORT_H_
+#define SERVICES_NETWORK_QUIC_TRANSPORT_H_
+
+#include <memory>
+#include "base/macros.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "net/quic/quic_transport_client.h"
+#include "services/network/public/mojom/quic_transport.mojom.h"
+
+class GURL;
+
+namespace url {
+class Origin;
+}  // namespace url
+
+namespace net {
+class NetworkIsolationKey;
+}  // namespace net
+
+namespace network {
+
+class NetworkContext;
+
+// The implementation for QuicTransport
+// (https://wicg.github.io/web-transport/#quic-transport) in the NetworkService.
+// Implements mojom::QuicTransport with the net/ implementation.
+class COMPONENT_EXPORT(NETWORK_SERVICE) QuicTransport final
+    : public mojom::QuicTransport,
+      public net::QuicTransportClient::Visitor {
+ public:
+  QuicTransport(const GURL& url,
+                const url::Origin& origin,
+                const net::NetworkIsolationKey& key,
+                NetworkContext* context,
+                mojo::PendingRemote<mojom::QuicTransportHandshakeClient>
+                    handshake_client);
+  ~QuicTransport() override;
+
+  // mojom::QuicTransport implementation:
+  void SendDatagram(base::span<const uint8_t> data,
+                    base::OnceCallback<void(bool)> callback) override;
+
+  // net::QuicTransportClient::Visitor implementation:
+  void OnConnected() override;
+  void OnConnectionFailed() override;
+  void OnClosed() override;
+  void OnError() override;
+  void OnIncomingBidirectionalStreamAvailable() override;
+  void OnIncomingUnidirectionalStreamAvailable() override;
+
+  void Dispose();
+
+ private:
+  const std::unique_ptr<net::QuicTransportClient> transport_;
+  NetworkContext* const context_;  // outlives |this|.
+
+  mojo::Receiver<mojom::QuicTransport> receiver_;
+  mojo::Remote<mojom::QuicTransportHandshakeClient> handshake_client_;
+  mojo::Remote<mojom::QuicTransportClient> client_;
+};
+
+}  // namespace network
+
+#endif  // SERVICES_NETWORK_QUIC_TRANSPORT_H_

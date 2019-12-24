@@ -110,7 +110,6 @@
 <translation id="114721135501989771">Tutta l'intelligenza Google in Chrome</translation>
 <translation id="1147991416141538220">Per richiedere l'accesso, contatta l'amministratore del dispositivo.</translation>
 <translation id="1149401351239820326">Mese di scadenza</translation>
-<translation id="1150490752229770117">Questo è l'ultimo aggiornamento software e di sicurezza automatico per il dispositivo <ph name="DEVICE_TYPE" />. Per ricevere gli aggiornamenti futuri, esegui l'upgrade a un modello più recente. <ph name="LINK_BEGIN" />Ulteriori informazioni<ph name="LINK_END" /></translation>
 <translation id="1150565364351027703">Occhiali da sole</translation>
 <translation id="1151917987301063366">Consenti sempre a <ph name="HOST" /> di accedere ai sensori</translation>
 <translation id="1153356358378277386">Dispositivi accoppiati</translation>
@@ -461,6 +460,7 @@
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> chiede di controllare che tu stia utilizzando un dispositivo Chrome OS idoneo.</translation>
 <translation id="1640235262200048077"><ph name="IME_NAME" /> non funziona ancora nelle app Linux</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 con crittografia RSA</translation>
+<translation id="1641113438599504367">Navigazione sicura</translation>
 <translation id="1642494467033190216">Per poter attivare altre funzioni di debug è necessario rimuovere la protezione rootfs e riavviare.</translation>
 <translation id="1643072738649235303">Firma X9.62 ECDSA con SHA-1</translation>
 <translation id="1644574205037202324">Cronologia</translation>
@@ -1955,7 +1955,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="3732530910372558017">Il PIN deve contenere massimo 63 caratteri</translation>
 <translation id="3733127536501031542">Server SSL con step-up</translation>
 <translation id="3735740477244556633">Ordina per</translation>
-<translation id="3736016243818847857">Vuoi continuare?</translation>
 <translation id="3737274407993947948">Errore durante l'installazione di Linux...</translation>
 <translation id="3737536731758327622">I tuoi download vengono visualizzati qui</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -2664,7 +2663,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4798236378408895261">Allega <ph name="BEGIN_LINK" />log Bluetooth<ph name="END_LINK" /> (interno di Google)</translation>
 <translation id="4801448226354548035">Nascondi account</translation>
 <translation id="4801512016965057443">Consenti roaming dati mobile</translation>
-<translation id="4804756772600045300">Se continui, verrà attivato il debug ADB per creare e testare app Android. Tieni presente che il debug ADB consente l'installazione di app di prova che non sono state verificate da Google.</translation>
 <translation id="4804818685124855865">Disconnetti</translation>
 <translation id="4804827417948292437">Avocado</translation>
 <translation id="4805077164141082536">Ti consigliamo di effettuare il backup del tuo attuale container Linux prima di eseguire l'upgrade.</translation>
@@ -4605,6 +4603,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="7631205654593498032">Quando connetti i tuoi dispositivi, accetti che il dispositivo <ph name="DEVICE_TYPE" /> possa:</translation>
 <translation id="7631887513477658702">&amp;Apri sempre file di questo tipo</translation>
 <translation id="7632948528260659758">Le seguenti app kiosk non sono state aggiornate:</translation>
+<translation id="7634566076839829401">Si è verificato un errore. Riprova.</translation>
 <translation id="763632859238619983">Non consentire ai siti di installare gestori dei pagamenti</translation>
 <translation id="7636919061354591437">Installa su questo dispositivo</translation>
 <translation id="7638605456503525968">Porte seriali</translation>

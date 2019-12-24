@@ -82,6 +82,7 @@
 #include "services/network/public/cpp/cert_verifier/cert_net_fetcher_url_loader.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "services/network/quic_transport.h"
 #include "services/network/resolve_host_request.h"
 #include "services/network/resource_scheduler/resource_scheduler_client.h"
 #include "services/network/restricted_cookie_manager.h"
@@ -587,6 +588,13 @@ void NetworkContext::DestroyURLLoaderFactory(
     network_service()
         ->network_usage_accumulator()
         ->ClearBytesTransferredForProcess(process_id);
+  }
+}
+
+void NetworkContext::Remove(QuicTransport* transport) {
+  auto it = quic_transports_.find(transport);
+  if (it != quic_transports_.end()) {
+    quic_transports_.erase(it);
   }
 }
 

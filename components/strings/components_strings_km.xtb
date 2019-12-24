@@ -508,7 +508,7 @@
 <translation id="3369192424181595722">កំហុសម៉ោង</translation>
 <translation id="337363190475750230">បានផ្តាច់ការផ្តល់ជូន</translation>
 <translation id="3377188786107721145">កំហុសឆ្គងការវិភាគគោលការណ៍</translation>
-<translation id="3377736046129930310">ប្រើ​ការចាក់​សោ​អេក្រង់ ដើម្បី​បញ្ជាក់​បណ្ណ​ឥណទាន​រហ័ស​ជាងមុន</translation>
+<translation id="3377736046129930310">ប្រើ​ការចាក់​សោ​អេក្រង់ ដើម្បី​បញ្ជាក់​បណ្ណ​ឱ្យ​បានរហ័ស​ជាងមុន</translation>
 <translation id="3380365263193509176">កំហុសឆ្គងមិនស្គាល់</translation>
 <translation id="3380864720620200369">លេខសម្គាល់អតិថិជន៖</translation>
 <translation id="3387261909427947069">វិធី​បង់ប្រាក់</translation>
@@ -761,7 +761,7 @@
 <translation id="4515275063822566619">បណ្ណ និងអាសយដ្ឋានគឺបានមកពី Chrome និងគណនី Google របស់អ្នក (<ph name="ACCOUNT_EMAIL" />)។ អ្នកអាចគ្រប់គ្រងពួកវាបាននៅក្នុង <ph name="BEGIN_LINK" />ការកំណត់<ph name="END_LINK" />។</translation>
 <translation id="4517607026994743406">Comm-10 (ស្រោម​សំបុត្រ)</translation>
 <translation id="4522570452068850558">ព័ត៌មានលំអិត</translation>
-<translation id="4524138615196389145">បញ្ជាក់​បណ្ណឥណទាន​របស់អ្នក​រហ័ស​ជាងមុន​ដោយប្រើ WebAuthn ចាប់ពី​ពេលនេះ​តទៅ</translation>
+<translation id="4524138615196389145">បញ្ជាក់​បណ្ណរបស់អ្នក​រហ័ស​ជាងមុន​ដោយប្រើ WebAuthn ចាប់ពី​ពេលនេះ​តទៅ</translation>
 <translation id="4524805452350978254">គ្រប់គ្រង​កាត</translation>
 <translation id="455113658016510503">A9</translation>
 <translation id="4552089082226364758">Flash</translation>
@@ -938,6 +938,7 @@
 <translation id="5386426401304769735">ខ្សែ​វិញ្ញាបនបត្រ​សម្រាប់​ទំព័រ​នេះ​ផ្ទុក​វិញ្ញាបនបត្រ​មួយ​ដែល​ចុះហត្ថលេខា​ដោយប្រើ SHA-1 ។</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">ដេរគែម​ខាងស្ដាំ</translation>
+<translation id="5400836586163650660">ប្រផេះ</translation>
 <translation id="540969355065856584">ម៉ាស៊ីនមេនេះមិនអាចបង្ហាញថាវាជា <ph name="DOMAIN" /> នោះទេ វិញ្ញាបនបត្រសុវត្ថិភាពរបស់វាមិនមានសុពលភាពទេនៅពេលនេះ។ វាអាចបណ្តាលមកពីការកំណត់រចនាសម្ព័ន្ធមិនត្រឹមត្រូវ ឬមានអ្នកវាយប្រហារកំពុងរារាំងការតភ្ជាប់របស់អ្នក។</translation>
 <translation id="5421136146218899937">ជម្រះទិន្នន័យរុករក...</translation>
 <translation id="5430298929874300616">ដកចំណាំចេញ</translation>
@@ -1151,7 +1152,7 @@
 <translation id="6409754798200046165">អ្នកទើបតែ​បានបញ្ចូល​ពាក្យសម្ងាត់​របស់អ្នក​ទៅក្នុង​គេហទំព័របញ្ឆោត។ Chrome សូមណែនាំ​ឱ្យប្ដូរ​ពាក្យសម្ងាត់​របស់អ្នក​ឥឡូវនេះ។</translation>
 <translation id="6410264514553301377">បញ្ចូល​កាលបរិច្ឆេទ​ផុត​កំណត់​ និង​ CVC សម្រាប់ <ph name="CREDIT_CARD" /></translation>
 <translation id="6415778972515849510">Chromium អាច​ជួយ​អ្នក​ក្នុងការការពារ​គណនី Google និង​ផ្លាស់ប្ដូរ​ពាក្យសម្ងាត់​របស់អ្នក​។</translation>
-<translation id="6423385022588644828">បញ្ជាក់​បណ្ណឥណទាន​របស់អ្នក​រហ័ស​ជាងមុន​ដោយប្រើ Touch ID ចាប់ពី​ពេលនេះ​តទៅ</translation>
+<translation id="6423385022588644828">បញ្ជាក់​បណ្ណ​របស់អ្នក​រហ័ស​ជាងមុន​ដោយប្រើ Touch ID ចាប់ពី​ពេលនេះ​តទៅ</translation>
 <translation id="6427730057873428458">បត់ជា​ផ្ទាំងៗមានសណ្ឋានជាទ្វារ</translation>
 <translation id="6433490469411711332">កែសម្រួលព័ត៌មានទំនាក់ទំនង</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> បានបដិសេធក្នុងការតភ្ជាប់</translation>
@@ -1222,14 +1223,14 @@
 <translation id="6786747875388722282">កម្មវិធីបន្ថែម</translation>
 <translation id="6790428901817661496">លេង</translation>
 <translation id="679355240208270552">មិនត្រូវ​បាន​អើពើ​ព្រោះ​ការស្វែង​រក​លំនាំដើម​មិន​បានបើក​ដោយ​គោលការណ៍​ទេ។</translation>
-<translation id="6794951432696553238">បញ្ជាក់​បណ្ណ​ឥណទាន​របស់អ្នក​រហ័ស​ជាងមុន​ដោយប្រើ Windows Hello ចាប់ពី​ពេលនេះ​តទៅ</translation>
+<translation id="6794951432696553238">បញ្ជាក់​បណ្ណ​​របស់អ្នក​រហ័ស​ជាងមុន​ដោយប្រើ Windows Hello ចាប់ពី​ពេលនេះ​តទៅ</translation>
 <translation id="681021252041861472">កន្លែងត្រូវតែបំពេញ</translation>
 <translation id="6810899417690483278">លេខសម្គាល់​ការកែ​សម្រួល</translation>
 <translation id="6825578344716086703">អ្នកបានព្យាយាមទៅកាន់ <ph name="DOMAIN" /> ប៉ុន្តែម៉ាស៊ីនមេបានបង្ហាញវិញ្ញាបនបត្រដែលបានស៊ីញ៉េដោយប្រើនីតិវិធីដោះស្រាយការស៊ីញ៉េខ្សោយ (ដូចជា SHA-1)។ វាមានន័យថាព័ត៌មានផ្ទៀងផ្ទាត់សុវត្ថិភាពដែលម៉ាស៊ីនមេបានបង្ហាញអាចត្រូវបានក្លែងបន្លំ ហើយម៉ាស៊ីនមេនោះអាចជាម៉ាស៊ីនមេដែលអ្នកមិនបានរំពឹងទុកទេ (អ្នកប្រហែលជាកំពុងទាក់ទងជាមួយអ្នកវាយប្រហារ)។</translation>
 <translation id="6826370046007623921">ការការពារ​ការបាត់បង់​ទិន្នន័យ</translation>
 <translation id="6831043979455480757">បកប្រែ</translation>
 <translation id="6839929833149231406">តំបន់</translation>
-<translation id="6846340164947227603">ប្រើ​លេខ​បណ្ណ​ឥណទាន​និម្មិត...</translation>
+<translation id="6846340164947227603">ប្រើ​លេខ​បណ្ណ​​និម្មិត...</translation>
 <translation id="6852204201400771460">ផ្ទុក​កម្មវិធី​ឡើងវិញ?</translation>
 <translation id="6865412394715372076">មិនអាច​ផ្ទៀងផ្ទាត់កាតនេះ​​​ឥឡូវនេះ​បានទេ</translation>
 <translation id="6868206169573555318">ចាប់ផ្ដើម​ឡើងវិញ ដើម្បី​ដំឡើងជំនាន់</translation>
@@ -1258,7 +1259,7 @@
 <translation id="6989763994942163495">បង្ហាញការកំណត់កម្រិតខ្ពស់...</translation>
 <translation id="6993898126790112050">6x9 (ស្រោម​សំបុត្រ)</translation>
 <translation id="6996312675313362352">បកប្រែ <ph name="ORIGINAL_LANGUAGE" /> ជានិច្ច</translation>
-<translation id="7004583254764674281">ប្រើ Windows Hello ដើម្បី​បញ្ជាក់​បណ្ណ​ឥណទាន​រហ័ស​ជាងមុន</translation>
+<translation id="7004583254764674281">ប្រើ Windows Hello ដើម្បី​បញ្ជាក់​បណ្ណ​ឱ្យ​បាន​រហ័ស​ជាងមុន</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">ការគិតប្រាក់ទាំងនេះអាចធ្វើឡើងម្ដង ឬច្រើន​ដង ហើយអាចនឹងមិនមាន​ការបញ្ជាក់ច្បាស់លាស់នោះទេ។</translation>
 <translation id="7029809446516969842">ពាក្យសម្ងាត់</translation>
@@ -1582,7 +1583,7 @@
 <translation id="8559762987265718583">ការភ្ជាប់ឯកជនទៅ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> មិនអាចធ្វើឡើងទេ ពីព្រោះកាលបរិច្ឆេទ និងម៉ោងឧបករណ៍របស់អ្នក (<ph name="DATE_AND_TIME" />)មិនត្រឹមត្រូវ។</translation>
 <translation id="8564985650692024650">Chromium ណែនាំឱ្យ​កំណត់​ពាក្យសម្ងាត់ <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> របស់អ្នក​ឡើងវិញ ប្រសិនបើ​អ្នកបាន​ប្រើ​វាម្តងទៀត​នៅលើ​ទំព័រផ្សេង។</translation>
 <translation id="8571890674111243710">កំពុងបកប្រែទំព័រទៅ <ph name="LANGUAGE" />...</translation>
-<translation id="8574899947864779331">ប្រើ Touch ID ដើម្បី​បញ្ជាក់​បណ្ណឥណទាន​រហ័ស​ជាងមុន</translation>
+<translation id="8574899947864779331">ប្រើ Touch ID ដើម្បី​បញ្ជាក់​បណ្ណឱ្យ​បាន​រហ័ស​ជាងមុន</translation>
 <translation id="858637041960032120">បន្ថែមលេខទូរស័ព្ទ</translation>
 <translation id="860043288473659153">ឈ្មោះ​ម្ចាស់​កាត</translation>
 <translation id="8616822740383114808">ការកំណត់​នេះ​ត្រូវបាន​អនុវត្ត​ដោយ "<ph name="ENFORCING_SETTING" />" នៅក្នុង "<ph name="SETTINGS_PAGE" />"</translation>
@@ -1720,6 +1721,7 @@
 <translation id="988159990683914416">លេខកំណែអ្នកអភិវឌ្ឍន៍</translation>
 <translation id="989988560359834682">កែប្រែអាសយដ្ឋាន</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992256792861109788">ផ្កា​ឈូក</translation>
 <translation id="992432478773561401">"<ph name="SOFTWARE_NAME" />" មិនបានដំឡើងត្រឹមត្រូវនៅលើកុំព្យូទ័រ ឬបណ្តាញរបស់អ្នកទេ៖
     &lt;ul&gt;
     &lt;li&gt;សាកល្បងលុប ឬបិទ "<ph name="SOFTWARE_NAME" />"&lt;/li&gt;

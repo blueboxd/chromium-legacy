@@ -64,7 +64,7 @@ class RenderTextTestApi {
   }
 
   const std::vector<internal::Line>& lines() const {
-    return render_text_->lines();
+    return render_text_->GetShapedText()->lines();
   }
 
   SelectionModel EdgeSelectionModel(VisualCursorDirection direction) {

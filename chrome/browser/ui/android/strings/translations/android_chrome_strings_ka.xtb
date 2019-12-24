@@ -15,7 +15,6 @@
 <translation id="1111673857033749125">თქვენს სხვა მოწყობილობებზე შენახული ჩანართები აქ გამოჩნდება.</translation>
 <translation id="1113597929977215864">გამარტივებული ხედის ჩვენება</translation>
 <translation id="1122278879166832009">შეეხეთ აქ მთავარ გვერდზე ნებისმიერი ადგილიდან წვდომისთვის</translation>
-<translation id="1124772482545689468">მომხმარებელი</translation>
 <translation id="1129510026454351943">დეტალები: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 ჩამოტვირთვა მოლოდინის რეჟიმშია.}other{# ჩამოტვირთვა მოლოდინის რეჟიმშია.}}</translation>
 <translation id="1145536944570833626">არსებული მონაცემების წაშლა.</translation>
@@ -24,7 +23,6 @@
 <translation id="1171770572613082465">იხილეთ პოპულარული ვებსაიტები „ტოპ-საიტების“ ღილაკზე შეხებით</translation>
 <translation id="1173894706177603556">სახელის შეცვლა</translation>
 <translation id="1178581264944972037">პაუზა</translation>
-<translation id="1181037720776840403">ამოშლა</translation>
 <translation id="1188239144602654184">AR-ში შესვლა</translation>
 <translation id="1197267115302279827">სანიშნეების გადატანა</translation>
 <translation id="119944043368869598">ყველაფრის გასუფთავება</translation>
@@ -85,7 +83,6 @@
 <translation id="1571304935088121812">მომხმარებლის სახელის კოპირება</translation>
 <translation id="1612196535745283361">მოწყობილობების სკანირებისთვის, Chrome მდებარეობაზე წვდომას საჭიროებს. მდებარეობაზე წვდომა <ph name="BEGIN_LINK" />ამ მოწყობილობისთვის გამორთულია<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">კამერა</translation>
-<translation id="1623104350909869708">ამ გვერდისთვის დამატებითი დიალოგების შექმნის აკრძალვა</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{1 არჩეული ერთეულის ამოშლა}other{# არჩეული ერთეულის ამოშლა}}</translation>
 <translation id="164269334534774161">თქვენ ამ გვერდის ხაზგარეშე ასლს ნახულობთ, რომლის შექმნის თარიღია: <ph name="CREATION_TIME" /></translation>
 <translation id="1644574205037202324">ისტორია</translation>
@@ -149,7 +146,6 @@
 <translation id="2056878612599315956">საიტი დაპაუზებულია</translation>
 <translation id="2063713494490388661">შეეხეთ, რათა მოძებნოთ</translation>
 <translation id="2067805253194386918">ტექსტი</translation>
-<translation id="2079545284768500474">მოქმედების გაუქმება</translation>
 <translation id="2082238445998314030">შედეგი <ph name="RESULT_NUMBER" /> / <ph name="TOTAL_RESULTS" />-დან</translation>
 <translation id="2091887806945687916">ხმა</translation>
 <translation id="2096012225669085171">სინქრონიზაცია და პერსონალიზება სხვადასხვა მოწყობილობას შორის</translation>
@@ -164,7 +160,6 @@
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> დაიხურა</translation>
 <translation id="2139186145475833000">მთავარ ეკრანზე დამატება</translation>
 <translation id="2146738493024040262">მყისიერი აპის გახსნა</translation>
-<translation id="2148716181193084225">დღეს</translation>
 <translation id="2154484045852737596">ბარათის რედაქტირება</translation>
 <translation id="2154710561487035718">დააკოპიე URL</translation>
 <translation id="2156074688469523661">დანარჩენი საიტები (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -186,7 +181,6 @@
 <translation id="2328985652426384049">სისტემაში შესვლა ვერ მოხერხდა</translation>
 <translation id="2349710944427398404">Chrome-ის მიერ გამოყენებული მეხსიერების საერთო მოცულობა, რომელშიც ინახება ანგარიშები, სანიშნეები და შენახული პარამეტრები</translation>
 <translation id="2353636109065292463">თქვენი ინტერნეტ-კავშირის შემოწმება</translation>
-<translation id="2359808026110333948">გაგრძელება</translation>
 <translation id="2369533728426058518">გახსნილი ჩანართები</translation>
 <translation id="2387895666653383613">ტექსტის მასშტაბირება</translation>
 <translation id="2394602618534698961">აქ გამოჩნდება თქვენ მიერ ჩამოტვირთული ფაილები</translation>
@@ -233,9 +227,6 @@
 <translation id="2647434099613338025">დაამატე ენა</translation>
 <translation id="2650751991977523696">გსურთ ფაილის ხელახლა ჩამოტვირთვა?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# აუდიოფაილი}other{# აუდიოფაილი}}</translation>
-<translation id="2653659639078652383">გაგზავნა</translation>
-<translation id="2677748264148917807">დატოვება</translation>
-<translation id="2704606927547763573">დაკოპირდა</translation>
 <translation id="2707726405694321444">გვერდის განახლება</translation>
 <translation id="2709516037105925701">ავტომატური შევსება</translation>
 <translation id="2717722538473713889">ელფოსტის მისამართები</translation>
@@ -289,7 +280,6 @@
 <translation id="3058498974290601450">სინქრონიზაციის ჩართვა ნებისმიერ დროს შეგიძლიათ პარამეტრებიდან</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> სანიშნე}other{<ph name="BOOKMARKS_COUNT_MANY" /> სანიშნე}}</translation>
 <translation id="3089395242580810162">ინკოგნიტო ჩანართში გახსნა</translation>
-<translation id="3115898365077584848">ინფორმაციის ჩვენება</translation>
 <translation id="3123473560110926937">დაბლოკილია ზოგიერთ საიტზე</translation>
 <translation id="3137521801621304719">ინკოგნიტო რეჟიმის დატოვება</translation>
 <translation id="3143515551205905069">სინქრონიზაციის გაუქმება</translation>
@@ -315,7 +305,6 @@
 <translation id="3288003805934695103">გვერდის გადატვირთვა</translation>
 <translation id="32895400574683172">შეტყობინებები დაშვებულია</translation>
 <translation id="3295530008794733555">დაათვალიერეთ ვები უფრო სწრაფად. დახარჯეთ ნაკლები ტრაფიკი.</translation>
-<translation id="3295602654194328831">ინფორმაციის დამალვა</translation>
 <translation id="3298243779924642547">Lite</translation>
 <translation id="3303414029551471755">გაგრძელდეს შინაარსის ჩამოტვირთვა?</translation>
 <translation id="3306398118552023113">ეს აპი გაშვებულია Chrome-ში</translation>
@@ -337,7 +326,6 @@
 <translation id="3443221991560634068">მიმდინარე გვერდის გადატვირთვა</translation>
 <translation id="3445014427084483498">ახლახან</translation>
 <translation id="3478363558367712427">შეგიძლიათ აირჩიოთ საძიებო სისტემა</translation>
-<translation id="3479552764303398839">ახლა არა</translation>
 <translation id="3492207499832628349">ახალი ინკოგნიტო ჩანართი</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />შეიტყვეთ მეტი<ph name="END_LINK" /> შემოთავაზებული კონტენტის შესახებ</translation>
 <translation id="3513704683820682405">აუგმენტური რეალობა</translation>
@@ -379,7 +367,6 @@
 <translation id="381841723434055211">ტელეფონის ნომრები</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> ჩამოტვირთული ფაილი წაიშალა</translation>
 <translation id="3822502789641063741">გასუფთავდეს საიტების მეხსიერება?</translation>
-<translation id="385051799172605136">უკან</translation>
 <translation id="3859306556332390985">წინ ძიება</translation>
 <translation id="388596076286380598">მიიღეთ სტატიები, ვიდეოები და სხვა კონტენტი საიტებიდან, რომლებიც მოგწონთ, მაშინაც კი თუ ხაზგარეშე რეჟიმში ხართ ან ცუდი კავშირი გაქვთ.</translation>
 <translation id="3894427358181296146">საქაღალდის დამატება</translation>
@@ -402,7 +389,6 @@
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="3997476611815694295">უმნიშვნელო მეხსიერება</translation>
 <translation id="4000212216660919741">ხაზგარეშე მთავარი გვერდი</translation>
-<translation id="4002066346123236978">სათაური</translation>
 <translation id="4008040567710660924">ქუქი-ჩანაწერების დაშვება კონკრეტული საიტისთვის.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# სთ}other{# სთ}}</translation>
 <translation id="4046123991198612571">შემდეგი ჩანაწერი</translation>
@@ -473,7 +459,6 @@
 <translation id="4558311620361989323">ვებგვერდის მალსახმობები</translation>
 <translation id="4561979708150884304">კავშირი არ არის</translation>
 <translation id="4565377596337484307">პაროლის დამალვა</translation>
-<translation id="4570913071927164677">დეტალები</translation>
 <translation id="4572422548854449519">მართულ ანგარიშში შესვლა</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# წუთის წინ}other{# წუთის წინ}}</translation>
@@ -574,13 +559,10 @@
 <translation id="5271967389191913893">მოწყობილობა ვერ ხსნის შინაარსს ჩამოსატვირთად.</translation>
 <translation id="528192093759286357">სრულეკრანიანი რეჟიმიდან გამოსასვლელად, გაუსვით ეკრანს თითი ზემოდან ქვემოთ და შეეხეთ ღილაკს „უკან“.</translation>
 <translation id="5292796745632149097">გაგზავნა აქ:</translation>
-<translation id="5300589172476337783">ჩვენება</translation>
-<translation id="5301954838959518834">კარგი, გასაგებია</translation>
 <translation id="5304593522240415983">ეს ველი არ შეიძლება იყოს ცარიელი</translation>
 <translation id="5307446750509046227">საიტის მეხსიერ. გასუფთ.</translation>
 <translation id="5308380583665731573">დაკავშირება</translation>
 <translation id="5313967007315987356">საიტის დამატება</translation>
-<translation id="5317780077021120954">შენახვა</translation>
 <translation id="5324858694974489420">მშობელის პარამეტრები</translation>
 <translation id="5327248766486351172">სახელი</translation>
 <translation id="5335288049665977812">საიტებისთვის JavaScript-ის გაშვების დაშვება (რეკომენდებული)</translation>
@@ -620,7 +602,6 @@
 <translation id="5527111080432883924">შეკითხვა საიტებისთვის გაცვლის ბუფერში არსებულ ტექსტსა და სურათებზე წვდომის დაშვებამდე (რეკომენდებული)</translation>
 <translation id="5530766185686772672">ინკოგნ. ჩანართების დახურვა</translation>
 <translation id="5534640966246046842">საიტი დაკოპირდა</translation>
-<translation id="5556459405103347317">ხელახლა ჩატვირთვა</translation>
 <translation id="5561549206367097665">ქსელის კავშირის მოლოდინში…</translation>
 <translation id="557283862590186398">Chrome საჭიროებს თქვენს მიკროფონზე წვდომის ნებართვას ამ საიტისთვის.</translation>
 <translation id="55737423895878184">მდებარეობა და შეტყობინებები დაშვებულია</translation>
@@ -664,7 +645,6 @@
 <translation id="5853623416121554550">დაპაუზებულია</translation>
 <translation id="5854790677617711513">30 დღეზე ძველი</translation>
 <translation id="5858741533101922242">Chrome-ის მიერ Bluetooth ადაპტერი ვერ ჩაირთო</translation>
-<translation id="5860033963881614850">გამორთვა</translation>
 <translation id="5860491529813859533">ჩართვა</translation>
 <translation id="5862731021271217234">თქვენს სხვა მოწყობილობებზე არსებულ ჩანართებზე წვდომისთვის ჩართეთ სინქრონიზაცია</translation>
 <translation id="5864174910718532887">დეტალები: დალაგებულია საიტის სახელის მიხედვით</translation>
@@ -672,7 +652,6 @@
 <translation id="5865733239029070421">ავტომატური აგზავნის Google-ში გამოყენების სტატისტიკასა და შეცდომების ანგარიშებს</translation>
 <translation id="5869522115854928033">შენახული პაროლები</translation>
 <translation id="5902828464777634901">წაიშლება ყველა ადგილობრივი მონაცემი, შენახული ამ ვებგვერდის მიერ, მათ შორის ქუქი ფაილები.</translation>
-<translation id="5916664084637901428">ჩართვა</translation>
 <translation id="5919204609460789179">სინქრონიზაციის დასაწყებად, განაახლეთ <ph name="PRODUCT_NAME" /></translation>
 <translation id="5937580074298050696">დაზოგილია <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">გადატვირთვა</translation>
@@ -700,7 +679,6 @@
 <translation id="614940544461990577">ცადეთ:</translation>
 <translation id="6154478581116148741">ამ მოწყობილობიდან პაროლების ექსპორტირებისთვის პარამეტრებიდან გაააქტიურეთ ეკრანის დაბლოკვის მეთოდი</translation>
 <translation id="6159335304067198720">მონაცემების დაზოგვა <ph name="PERCENT" />-ით</translation>
-<translation id="6165508094623778733">შეიტყვეთ მეტი</translation>
 <translation id="6177111841848151710">დაბლოკილია ამჟამინდელი საძიებო სისტემისთვის</translation>
 <translation id="6181444274883918285">გამონაკლისი საიტის დამატება</translation>
 <translation id="6192333916571137726">ფაილის ჩამოტვირთვა</translation>
@@ -752,7 +730,6 @@
 <translation id="6482749332252372425"><ph name="FILE_NAME" /> ვერ ჩამოიტვირთა არასაკმარისი მეხსიერების გამო.</translation>
 <translation id="6496823230996795692"><ph name="APP_NAME" />-ის პირველად გამოსაყენებლად დაუკავშირდით ინტერნეტს.</translation>
 <translation id="6508722015517270189">Chrome-ის გადატვირთვა</translation>
-<translation id="6527303717912515753">გაზიარება</translation>
 <translation id="6532866250404780454">Chrome-იდან მონახულებული ვებსაიტები არ გამოჩნდება. ვებსაიტების ყველა ტაიმერი წაიშლება.</translation>
 <translation id="6534565668554028783">Google-ს რეაგირებისთვის მეტისმეტად ბევრი დრო დასჭირდა</translation>
 <translation id="6538442820324228105">ჩამოტვირთულია <ph name="GBS" /> გბაიტი</translation>
@@ -791,7 +768,6 @@
 <translation id="6710213216561001401">წინა</translation>
 <translation id="671481426037969117">თქვენი <ph name="FQDN" />-ის ტაიმერი ამოიწურა. ხვალ ის ხელახლა დაიწყება.</translation>
 <translation id="6738867403308150051">ჩამოტვირთვა…</translation>
-<translation id="6746124502594467657">გადაადგილება ქვემოთ</translation>
 <translation id="6766622839693428701">დასახურად გადაფურცლეთ ქვემოთ.</translation>
 <translation id="6766758767654711248">შეეხეთ საიტზე გასასვლელად</translation>
 <translation id="6767294960381293877">მოწყობილობების სია, რომლებთანაც უნდა გაზიარდეს ჩანართი, გახსნილია ნახევარ სიმაღლეზე.</translation>
@@ -811,14 +787,12 @@
 <translation id="688738109438487280">არსებული მონაცემების <ph name="TO_ACCOUNT" />-ში დამატება.</translation>
 <translation id="6891726759199484455">განბლოკეთ თქვენი პაროლის კოპირებისთვის</translation>
 <translation id="6896758677409633944">კოპირება</translation>
-<translation id="6910211073230771657">წაშლილი</translation>
 <translation id="6912998170423641340">საიტებისთვის გაცვლის ბუფერში არსებულ ტექსტსა და სურათებზე წვდომის დაბლოკვა</translation>
 <translation id="6914783257214138813">თქვენს პაროლებს დაინახავს ნებისმიერი, ვისაც ექნება წვდომა ექსპორტირებულ ფაილზე.</translation>
 <translation id="6942665639005891494">ჩამოტვირთვის ნაგულისხმევი მდებარეობის შეცვლა ნებისმიერ დროს შეგიძლიათ მენიუს პარამეტრების ვარიანტის მეშვეობით</translation>
 <translation id="6945221475159498467">არჩევა</translation>
 <translation id="6963642900430330478">ეს გვერდი სახიფათოა. საიტის ინფორმაცია.</translation>
 <translation id="6963766334940102469">სანიშნეების წაშლა</translation>
-<translation id="6965382102122355670">კარგი</translation>
 <translation id="6979737339423435258">ყველა დროის</translation>
 <translation id="6981982820502123353">სპეციალური შესაძლებლობები</translation>
 <translation id="6989267951144302301">ჩამოტვირთვა ვერ მოხერხდა</translation>
@@ -916,7 +890,6 @@
 <translation id="7638584964844754484">საიდუმლო ფრაზა არასწორია</translation>
 <translation id="7641339528570811325">დათვალიერების მონაცემების გასუფთავება…</translation>
 <translation id="7648422057306047504">პაროლების დაშიფვრა Google ავტორიზაციის მონაცემებით</translation>
-<translation id="7649070708921625228">დახმარება</translation>
 <translation id="7658239707568436148">გაუქმება</translation>
 <translation id="7665369617277396874">ანგარიშის დამატება</translation>
 <translation id="766587987807204883">აქ გამოჩნდება სტატიები, რომელთა წაკითხვაც ხაზგარეშე რეჟიმშიც შეგიძლიათ</translation>
@@ -932,7 +905,6 @@
 <translation id="7772032839648071052">დაადასტურეთ პაროლი</translation>
 <translation id="7772375229873196092"><ph name="APP_NAME" />-ის დახურვა</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 და <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> სხვა}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 და <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> სხვა}}</translation>
-<translation id="7781829728241885113">გუშინ</translation>
 <translation id="7791543448312431591">დამატება</translation>
 <translation id="780301667611848630">არა, მადლობთ</translation>
 <translation id="7810647596859435254">გახსნა აპით…</translation>
@@ -984,7 +956,6 @@
 <translation id="8110087112193408731">გსურთ, ციფრულ კომფორტში გამოჩნდეს თქვენი აქტივობა Chrome-იდან?</translation>
 <translation id="8116925261070264013">დადუმებული</translation>
 <translation id="813082847718468539">საიტის ინფორმაციის ნახვა</translation>
-<translation id="8131740175452115882">დაადასტურება</translation>
 <translation id="8156139159503939589">რომელ ენებზე შეგიძლიათ კითხვა?</translation>
 <translation id="8168435359814927499">შიგთავსი</translation>
 <translation id="8186512483418048923">დარჩენილია <ph name="FILES" /> ფაილი</translation>
@@ -994,7 +965,6 @@
 <translation id="8218622182176210845">თქვენი ანგარიშის სამართავად</translation>
 <translation id="8224471946457685718">სტატიების ჩამოტვირთვა Wi-Fi კავშირის მეშვეობით</translation>
 <translation id="8232956427053453090">მონაცემების შენარჩუნება</translation>
-<translation id="8249310407154411074">თავში გადატანა</translation>
 <translation id="8250920743982581267">დოკუმენტები</translation>
 <translation id="825412236959742607">ეს გვერდი იყენებს მეხსიერების მეტისმეტად დიდ მოცულობას, რის გამოც Chrome-მა ამოშალა გარკვეული კონტენტი.</translation>
 <translation id="8260126382462817229">ცადეთ სისტემაში ხელახლა შესვლა</translation>
@@ -1045,7 +1015,6 @@
 <translation id="857943718398505171">დაშვებული (რეკომენდებულია)</translation>
 <translation id="8583805026567836021">ანგარიშის მონაცემების გასუფთავება</translation>
 <translation id="860043288473659153">ბარათის მფლობელის სახელი</translation>
-<translation id="8609465669617005112">გადაადგილება ზემოთ</translation>
 <translation id="8616006591992756292">თქვენს Google ანგარიშში შეიძლება ინახებოდეს სხვა ტიპის დათვალიერების ისტორიაც, რომელიც ხელმისაწვდომია მისამართზე: <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">გაიხსნას ჩამოტვირთულ შემცველობაში რეკომენდირებული URL?</translation>
 <translation id="8636825310635137004">თქვენს სხვა მოწყობილობებზე არსებულ ჩანართებზე წვდომის მისაღებად, ჩართეთ სინქრონიზაცია.</translation>
@@ -1059,9 +1028,7 @@
 <translation id="868929229000858085">თქვენს კონტაქტებში ძიება</translation>
 <translation id="869891660844655955">ვადის გასვლის თარიღი</translation>
 <translation id="8719023831149562936">ტაბულაციის გააქტიურება არ განხორციელდა</translation>
-<translation id="8725066075913043281">ხელახლა სცადეთ</translation>
 <translation id="8728487861892616501">ამ აპლიკაციის გამოყენებით თქვენ ეთანხმებით Chrome-ის <ph name="BEGIN_LINK1" />მომსახურების პირობებსა<ph name="END_LINK1" /> და <ph name="BEGIN_LINK2" />შეტყობინებას კონფიდენციალურობის შესახებ<ph name="END_LINK2" />, ასევე <ph name="BEGIN_LINK3" />შეტყობინებას მონაცემთა კონფიდენციალურობის წესების თაობაზე Family Link-ში მართული Google ანგარიშებისთვის<ph name="END_LINK3" />.</translation>
-<translation id="8730621377337864115">მზადაა</translation>
 <translation id="8748850008226585750">შიგთავსი დამალულია</translation>
 <translation id="8751914237388039244">აირჩიეთ სურათი</translation>
 <translation id="8758557275681689734">ყველა გახსნილი ჩანართის ნახვა</translation>

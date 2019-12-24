@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/debug/dump_without_crashing.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "services/viz/public/cpp/compositing/compositor_frame_metadata_mojom_traits.h"
 #include "services/viz/public/cpp/compositing/render_pass_mojom_traits.h"
@@ -30,6 +31,13 @@ struct StructTraits<viz::mojom::CompositorFrameDataView, viz::CompositorFrame> {
   static const viz::RenderPassList& passes(const viz::CompositorFrame& input) {
     DCHECK(!input.render_pass_list.empty());
     DCHECK(!input.render_pass_list.back()->output_rect.size().IsEmpty());
+    // We seem to continuously have issues with clients not setting up the root
+    // render pass correctly. This DumpWithoutCrashing should help us catch
+    // regressions.
+    if (input.render_pass_list.empty() ||
+        input.render_pass_list.back()->output_rect.size().IsEmpty()) {
+      base::debug::DumpWithoutCrashing();
+    }
     return input.render_pass_list;
   }
 

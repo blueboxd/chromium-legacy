@@ -932,6 +932,7 @@
 <translation id="5386426401304769735">Lanțul de certificate pentru acest site conține un certificat semnat folosind SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Broșare pe marginea din dreapta</translation>
+<translation id="5400836586163650660">Gri</translation>
 <translation id="540969355065856584">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; momentan, certificatul de securitate nu este valid. Cauza poate fi o configurare greșită sau interceptarea conexiunii de un atacator.</translation>
 <translation id="5421136146218899937">Șterge datele de navigare...</translation>
 <translation id="5430298929874300616">Elimină marcajul</translation>
@@ -1714,6 +1715,7 @@ Detalii suplimentare:
 <translation id="988159990683914416">Versiune de programare</translation>
 <translation id="989988560359834682">Editați adresa</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992256792861109788">Roz</translation>
 <translation id="992432478773561401">„<ph name="SOFTWARE_NAME" />” nu a fost instalat corect pe computer sau în rețea:
     &lt;ul&gt;
     &lt;li&gt;încearcă să dezinstalezi sau să dezactivezi „<ph name="SOFTWARE_NAME" />”&lt;/li&gt;;

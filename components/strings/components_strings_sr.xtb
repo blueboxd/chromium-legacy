@@ -934,6 +934,7 @@
 <translation id="5386426401304769735">Ланац сертификата за овај сајт садржи сертификат потписан помоћу алгоритма SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Спајање ивица шавом на десној страни</translation>
+<translation id="5400836586163650660">Сива</translation>
 <translation id="540969355065856584">Овај сервер не може да докаже да је <ph name="DOMAIN" />; његов безбедносни сертификат тренутно није важећи. Узрок томе је можда погрешна конфигурација или нападач који је прекинуо везу.</translation>
 <translation id="5421136146218899937">Обриши податке прегледања...</translation>
 <translation id="5430298929874300616">Уклоните обележивач</translation>
@@ -1715,6 +1716,7 @@
 <translation id="988159990683914416">Верзија за програмере</translation>
 <translation id="989988560359834682">Измена адресе</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992256792861109788">Ружичаста</translation>
 <translation id="992432478773561401">Софтвер „<ph name="SOFTWARE_NAME" />“ није правилно инсталиран на рачунару или мрежи:
     &lt;ul&gt;
     &lt;li&gt;Пробајте да деинсталирате или онемогућите „<ph name="SOFTWARE_NAME" />“&lt;/li&gt;

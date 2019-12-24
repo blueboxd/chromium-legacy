@@ -6,6 +6,7 @@
 
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "services/network/public/cpp/features.h"
 
 namespace content {
 
@@ -23,6 +24,9 @@ GetSwitchDependentFeatureOverrides(const base::CommandLine& command_line) {
   } override_info[] = {
       {switches::kEnableExperimentalWebPlatformFeatures,
        std::cref(features::kCookieDeprecationMessages),
+       base::FeatureList::OVERRIDE_ENABLE_FEATURE},
+      {switches::kEnableExperimentalWebPlatformFeatures,
+       std::cref(network::features::kCrossOriginIsolation),
        base::FeatureList::OVERRIDE_ENABLE_FEATURE},
   };
 

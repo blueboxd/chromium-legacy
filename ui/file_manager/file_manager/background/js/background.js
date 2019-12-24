@@ -42,7 +42,7 @@ class FileBrowserBackgroundImpl extends BackgroundBase {
      * Event handler for C++ sides notifications.
      * @private {!DeviceHandler}
      */
-    this.deviceHandler_ = new DeviceHandler();
+    this.deviceHandler_ = new DeviceHandler(this.progressCenter);
 
     // Handle device navigation requests.
     this.deviceHandler_.addEventListener(
@@ -169,7 +169,7 @@ class FileBrowserBackgroundImpl extends BackgroundBase {
          */
         volumeManager => {
           if (event.devicePath) {
-            let volume = volumeManager.findByDevicePath(event.devicePath);
+            const volume = volumeManager.findByDevicePath(event.devicePath);
             if (volume) {
               this.navigateToVolumeRoot_(volume, event.filePath);
             } else {
@@ -330,7 +330,7 @@ class FileBrowserBackgroundImpl extends BackgroundBase {
           }
         });
       }
-      let appState = {};
+      const appState = {};
       let launchType = LaunchType.FOCUS_ANY_OR_CREATE;
       if (urls) {
         appState.selectionURL = urls[0];
@@ -456,9 +456,9 @@ class FileBrowserBackgroundImpl extends BackgroundBase {
     // mounted volume.
     this.findFocusedWindow_()
         .then(key => {
-          let statusOK = event.status === 'success' ||
+          const statusOK = event.status === 'success' ||
               event.status === 'error_path_already_mounted';
-          let volumeTypeOK = event.volumeMetadata.volumeType ===
+          const volumeTypeOK = event.volumeMetadata.volumeType ===
                   VolumeManagerCommon.VolumeType.PROVIDED &&
               event.volumeMetadata.source === VolumeManagerCommon.Source.FILE;
           if (key === null && event.eventType === 'mount' && statusOK &&

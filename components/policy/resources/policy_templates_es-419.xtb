@@ -482,13 +482,13 @@
 
       Esta política está disponible en instancias de Windows vinculadas a un dominio de <ph name="MS_AD_NAME" /> o instancias de Windows 10 Pro o Enterprise habilitadas para la administración de dispositivos.</translation>
 <translation id="1745973235372964482">No permitir archivos protegidos con contraseña</translation>
-<translation id="1749815929501097806">Establece las Condiciones del servicio que el usuario debe aceptar antes de comenzar una sesión en la cuenta local del dispositivo.
+<translation id="1749815929501097806">Establece las Condiciones del Servicio que el usuario debe aceptar antes de comenzar una sesión en la cuenta local del dispositivo.
 
-      Si se establece esta política, <ph name="PRODUCT_OS_NAME" /> descargará las Condiciones del servicio y las presentará al usuario cuando comience una sesión en la cuenta local del dispositivo. Solo se permitirá al usuario acceder a la sesión luego de aceptar las Condiciones del servicio.
+      Si se establece esta política, <ph name="PRODUCT_OS_NAME" /> descargará las Condiciones del Servicio y las presentará al usuario cuando comience una sesión en la cuenta local del dispositivo. Solo se permitirá al usuario acceder a la sesión luego de aceptar las Condiciones del Servicio.
 
-      Si no se establece esta política, no se mostrarán las Condiciones del servicio.
+      Si no se establece esta política, no se mostrarán las Condiciones del Servicio.
 
-      La política debe establecerse en una URL de la cual <ph name="PRODUCT_OS_NAME" /> pueda descargar las Condiciones del servicio. Estas deberán estar en texto sin formato y ofrecerse como texto sin formato tipo MIME. No se permiten marcas.</translation>
+      La política debe establecerse en una URL de la cual <ph name="PRODUCT_OS_NAME" /> pueda descargar las Condiciones del Servicio. Estas deberán estar en texto sin formato y ofrecerse como texto sin formato tipo MIME. No se permiten marcas.</translation>
 <translation id="1750315445671978749">Bloquear todas las descargas</translation>
 <translation id="1767673020408652620">Habilitar las recomendaciones de apps cuando el cuadro de búsqueda se encuentra sin estado</translation>
 <translation id="1781356041596378058">Esta política también controla el acceso a las Opciones para programador de Android. Si habilitas esta política, los usuarios no podrán acceder a las Opciones para programador. Si estableces esta política como falsa o no la estableces, los usuarios podrán acceder a las Opciones para programador al presionar siete veces el número de compilación en la app de Configuración de Android.</translation>
@@ -1402,7 +1402,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Independientemente de si se establece esta política o de cómo se configura, los usuarios no pueden cambiar la configuración de optimización de WPAD.</translation>
 <translation id="3072045631333522102">Protector de pantalla que se utilizará en la pantalla de inicio de sesión del modo de venta</translation>
-<translation id="3072847235228302527">Establecer las Condiciones del servicio para la cuenta local del dispositivo</translation>
+<translation id="3072847235228302527">Establecer las Condiciones del Servicio para la cuenta local del dispositivo</translation>
 <translation id="3079417254871857650">Especifica la acción que debe realizarse cuando se creó el directorio principal del usuario con la encriptación ecryptfs.
 
       Si configuras esta política como "DisallowArc", se inhabilitarán las apps de Android para el usuario, y no se realizará la migración de la encriptación ecryptfs a ext4. Si el directorio principal ya cuenta con la encriptación ext4, no se inhabilitarán las apps de Android.

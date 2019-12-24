@@ -110,7 +110,6 @@
 <translation id="114721135501989771">Chrome с интелекта на Google</translation>
 <translation id="1147991416141538220">За да поискате достъп, обърнете се към администратора на това устройство.</translation>
 <translation id="1149401351239820326">Месец на валидност</translation>
-<translation id="1150490752229770117">Това е последната автоматична актуализация на софтуера и сигурността за устройството <ph name="DEVICE_TYPE" />. За да получавате бъдещи актуализации, надстройте до по-нов модел. <ph name="LINK_BEGIN" />Научете повече<ph name="LINK_END" /></translation>
 <translation id="1150565364351027703">Слънчеви очила</translation>
 <translation id="1151917987301063366">Достъпът на <ph name="HOST" /> до сензорите винаги да е разрешен</translation>
 <translation id="1153356358378277386">Сдвоени устройства</translation>
@@ -458,6 +457,7 @@
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> иска да провери дали използвате отговарящо на условията устройство с Chrome OS.</translation>
 <translation id="1640235262200048077"><ph name="IME_NAME" /> още не работи в приложения за Linux</translation>
 <translation id="1640283014264083726">PKCS 1 MD4 с RSA шифроване</translation>
+<translation id="1641113438599504367">Безопасно сърфиране</translation>
 <translation id="1642494467033190216">Преди активирането на останалите функции за отстраняване на грешки трябва да се премахне защитата на rootfs и да се рестартира.</translation>
 <translation id="1643072738649235303">Подпис по X9.62 ECDSA с SHA-1</translation>
 <translation id="1644574205037202324">История</translation>
@@ -1954,7 +1954,6 @@
 <translation id="3732530910372558017">ПИН кодът трябва да е с дължина най-много 63 знака</translation>
 <translation id="3733127536501031542">SSL сървър с повишаване на сигурността</translation>
 <translation id="3735740477244556633">Сортиране по</translation>
-<translation id="3736016243818847857">Искате ли да продължите?</translation>
 <translation id="3737274407993947948">Грешка при инсталирането на Linux...</translation>
 <translation id="3737536731758327622">Изтеглените от вас неща ще се показват тук</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -2664,7 +2663,6 @@
 <translation id="4798236378408895261">Прикачване на <ph name="BEGIN_LINK" />регистрационните файлове за Bluetooth<ph name="END_LINK" /> (вътрешно за Google)</translation>
 <translation id="4801448226354548035">Скриване на профилите</translation>
 <translation id="4801512016965057443">Разрешаване на роуминг за данни</translation>
-<translation id="4804756772600045300">Ако продължите, отстраняването на грешки през ADB ще бъде активирано, за да създавате и тествате приложения за Android. Имайте предвид, че отстраняването на грешки през ADB позволява инсталирането на тестови приложения, които не са проверени от Google.</translation>
 <translation id="4804818685124855865">Изключване</translation>
 <translation id="4804827417948292437">Авокадо</translation>
 <translation id="4805077164141082536">Препоръчваме да създадете резервно копие на текущия си контейнер с Linux, преди да надстроите.</translation>
@@ -4606,6 +4604,7 @@
 <translation id="7631205654593498032">Когато свържете устройствата си, приемате, че вашият <ph name="DEVICE_TYPE" /> може да:</translation>
 <translation id="7631887513477658702">&amp;Файловете от този тип да се отварят винаги</translation>
 <translation id="7632948528260659758">Актуализирането на следните павилионни приложения не бе успешно:</translation>
+<translation id="7634566076839829401">Нещо се обърка. Моля, опитайте отново.</translation>
 <translation id="763632859238619983">Забраняване на сайтовете да инсталират приложения за обработване на плащания</translation>
 <translation id="7636919061354591437">Инсталиране на това устройство</translation>
 <translation id="7638605456503525968">Серийни портове</translation>

@@ -110,7 +110,6 @@
 <translation id="114721135501989771">Få Googles smarte funktioner i Chrome</translation>
 <translation id="1147991416141538220">Hvis du vil anmode om adgang, skal du kontakte administratoren af denne enhed.</translation>
 <translation id="1149401351239820326">Udløbsmåned</translation>
-<translation id="1150490752229770117">Dette er den sidste automatiske software- og sikkerhedsopdatering for denne <ph name="DEVICE_TYPE" />. Opgrader til en nyere model for at få fremtidige opdateringer. <ph name="LINK_BEGIN" />Få flere oplysninger<ph name="LINK_END" /></translation>
 <translation id="1150565364351027703">Solbriller</translation>
 <translation id="1151917987301063366">Tillad altid, at <ph name="HOST" /> kan få adgang til sensorer</translation>
 <translation id="1153356358378277386">Parrede enheder</translation>
@@ -461,6 +460,7 @@
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> vil gerne tjekke, om du bruger en kvalificeret Chrome OS-enhed.</translation>
 <translation id="1640235262200048077"><ph name="IME_NAME" /> fungerer endnu ikke i Linux-apps</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 med RSA-kryptering</translation>
+<translation id="1641113438599504367">Beskyttet browsing</translation>
 <translation id="1642494467033190216">Fjernelse af rootfs-beskyttelse og efterfølgende genstart er påkrævet, før du aktiverer andre fejlretningsfunktioner.</translation>
 <translation id="1643072738649235303">X9.62 ECDSA-signatur med SHA-1</translation>
 <translation id="1644574205037202324">Historik</translation>
@@ -1956,7 +1956,6 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="3732530910372558017">Pinkoden må ikke fylde mere end 63 tegn</translation>
 <translation id="3733127536501031542">SSL-server med optrapning</translation>
 <translation id="3735740477244556633">Sortér efter</translation>
-<translation id="3736016243818847857">Vil du fortsætte?</translation>
 <translation id="3737274407993947948">Der opstod en fejl under installationen af Linux...</translation>
 <translation id="3737536731758327622">Dine downloads vises her</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -2665,7 +2664,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4798236378408895261">Vedhæft <ph name="BEGIN_LINK" />Bluetooth-logfiler<ph name="END_LINK" /> (internt hos Google)</translation>
 <translation id="4801448226354548035">Skjul konti</translation>
 <translation id="4801512016965057443">Tillad dataroaming for mobil</translation>
-<translation id="4804756772600045300">Hvis du fortsætter, aktiveres ADB-fejlretning til oprettelse og test af Android-apps. Bemærk! ADB-fejlretning giver mulighed for at installere testapps, der ikke er blevet bekræftet af Google.</translation>
 <translation id="4804818685124855865">Afbryd</translation>
 <translation id="4804827417948292437">Avocado</translation>
 <translation id="4805077164141082536">Vi anbefaler, at du sikkerhedskopierer din aktuelle Linux-container, før du opgraderer.</translation>
@@ -4607,6 +4605,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7631205654593498032">Når du opretter forbindelse mellem dine enheder, accepterer du, at din <ph name="DEVICE_TYPE" /> kan gøre følgende:</translation>
 <translation id="7631887513477658702">&amp;Åbn altid filer af denne type</translation>
 <translation id="7632948528260659758">Følgende kioskapps kan ikke opdateres:</translation>
+<translation id="7634566076839829401">Der opstod en fejl. Prøv igen.</translation>
 <translation id="763632859238619983">Tillad ikke, at websites installerer betalingshandlere</translation>
 <translation id="7636919061354591437">Installer på denne enhed</translation>
 <translation id="7638605456503525968">Serieporte</translation>

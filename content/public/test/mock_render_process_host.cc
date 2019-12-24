@@ -35,7 +35,7 @@
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/test/not_implemented_network_url_loader_factory.h"
+#include "content/test/fake_network_url_loader_factory.h"
 #include "media/media_buildflags.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -67,7 +67,7 @@ MockRenderProcessHost::MockRenderProcessHost(BrowserContext* browser_context)
       is_unused_(true),
       keep_alive_ref_count_(0),
       foreground_service_worker_count_(0),
-      url_loader_factory_(nullptr) {
+      url_loader_factory_(std::make_unique<FakeNetworkURLLoaderFactory>()) {
   // Child process security operations can't be unit tested unless we add
   // ourselves as an existing child process.
   ChildProcessSecurityPolicyImpl::GetInstance()->Add(GetID(), browser_context);
@@ -500,14 +500,7 @@ void MockRenderProcessHost::OverrideRendererInterfaceForTesting(
   renderer_interface_ = std::move(renderer_interface);
 }
 
-void MockRenderProcessHost::OverrideURLLoaderFactory(
-    network::mojom::URLLoaderFactory* factory) {
-  url_loader_factory_ = factory;
-}
-
-MockRenderProcessHostFactory::MockRenderProcessHostFactory()
-    : default_mock_url_loader_factory_(
-          std::make_unique<NotImplementedNetworkURLLoaderFactory>()) {}
+MockRenderProcessHostFactory::MockRenderProcessHostFactory() = default;
 
 MockRenderProcessHostFactory::~MockRenderProcessHostFactory() {
   // Detach this object from MockRenderProcesses to prevent them from calling
@@ -521,7 +514,6 @@ RenderProcessHost* MockRenderProcessHostFactory::CreateRenderProcessHost(
     SiteInstance* site_instance) {
   std::unique_ptr<MockRenderProcessHost> host =
       std::make_unique<MockRenderProcessHost>(browser_context);
-  host->OverrideURLLoaderFactory(default_mock_url_loader_factory_.get());
   processes_.push_back(std::move(host));
   processes_.back()->SetFactory(this);
   return processes_.back().get();

@@ -110,7 +110,6 @@
 <translation id="114721135501989771">Chrome ਵਿੱਚ Google ਸਮਾਰਟ ਲਓ</translation>
 <translation id="1147991416141538220">ਪਹੁੰਚ ਦੀ ਬੇਨਤੀ ਕਰਨ ਲਈ, ਇਸ ਡੀਵਾਈਸ ਦੇ ਪ੍ਰਸ਼ਾਸਕ ਨੂੰ ਸੰਪਰਕ ਕਰੋ।</translation>
 <translation id="1149401351239820326">ਮਿਆਦ ਸਮਾਪਤੀ ਦਾ ਮਹੀਨਾ</translation>
-<translation id="1150490752229770117">ਇਹ ਇਸ <ph name="DEVICE_TYPE" /> ਲਈ ਆਖਰੀ ਸਵੈਚਲਿਤ ਸਾਫ਼ਟਵੇਅਰ ਅਤੇ ਸੁਰੱਖਿਆ ਅੱਪਡੇਟ ਹੈ। ਭਵਿੱਖ ਵਿੱਚ ਅੱਪਡੇਟਾਂ ਪ੍ਰਾਪਤ ਕਰਨ ਲਈ, ਨਵੇਂ ਮਾਡਲ 'ਤੇ ਅੱਪਗ੍ਰੇਡ ਕਰੋ। <ph name="LINK_BEGIN" />ਹੋਰ ਜਾਣੋ<ph name="LINK_END" /></translation>
 <translation id="1150565364351027703">ਧੁੱਪ ਦੀਆਂ ਐਨਕਾਂ</translation>
 <translation id="1151917987301063366"><ph name="HOST" /> ਨੂੰ ਸੈਂਸਰਾਂ ਤੱਕ ਹਮੇਸ਼ਾਂ ਪਹੁੰਚ ਕਰਨ ਦਿਓ</translation>
 <translation id="1153356358378277386">ਜੋੜਾਬੱਧ ਕੀਤੀਆਂ ਡੀਵਾਈਸਾਂ</translation>
@@ -461,6 +460,7 @@
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> ਸੇਵਾ ਇਹ ਜਾਂਚ ਕਰਨਾ ਚਾਹੁੰਦੀ ਹੈ ਕਿ ਕੀ ਤੁਸੀਂ ਕਿਸੇ ਯੋਗ Chrome OS ਡੀਵਾਈਸ ਦੀ ਵਰਤੋਂ ਕਰ ਰਹੇ ਹੋ।</translation>
 <translation id="1640235262200048077"><ph name="IME_NAME" /> ਅਜੇ Linux ਐਪਾਂ ਵਿੱਚ ਕੰਮ ਨਹੀਂ ਕਰਦਾ</translation>
 <translation id="1640283014264083726">RSA ਐਨਕ੍ਰਿਪਸ਼ਨ ਨਾਲ PKCS #1 MD4</translation>
+<translation id="1641113438599504367">ਸੁਰੱਖਿਅਤ ਬ੍ਰਾਊਜ਼ਿੰਗ</translation>
 <translation id="1642494467033190216">ਦੂਜੀਆਂ ਡੀਬੱਗਿੰਗ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਨੂੰ ਸਮਰੱਥ ਬਣਾਉਣ ਤੋਂ ਪਹਿਲਾਂ rootfs ਸੁਰੱਖਿਆ ਨੂੰ ਹਟਾਉਣਾ ਅਤੇ ਮੁੜ-ਸ਼ੁਰੂ ਕਰਨਾ ਲੋੜੀਂਦਾ ਹੈ।</translation>
 <translation id="1643072738649235303">SHA-1 ਨਾਲ X9.62 ECDSA ਹਸਤਾਖਰ</translation>
 <translation id="1644574205037202324">ਇਤਿਹਾਸ</translation>
@@ -1954,7 +1954,6 @@
 <translation id="3732530910372558017">ਪਿੰਨ ਵੱਧ ਤੋਂ ਵੱਧ 63 ਅੱਖਰ-ਚਿੰਨ੍ਹਾਂ ਦਾ ਹੋਣਾ ਲਾਜ਼ਮੀ ਹੈ</translation>
 <translation id="3733127536501031542">ਸਟੈਪ-ਅਪ ਨਾਲ SSL ਸਰਵਰ</translation>
 <translation id="3735740477244556633">ਇਸ ਮੁਤਾਬਕ ਕ੍ਰਮ-ਬੱਧ ਕਰੋ</translation>
-<translation id="3736016243818847857">ਕੀ ਤੁਸੀਂ ਜਾਰੀ ਰੱਖਣਾ ਚਾਹੁੰਦੇ ਹੋ?</translation>
 <translation id="3737274407993947948">Linux ਸਥਾਪਤ ਕਰਨ ਵਿੱਚ ਗੜਬੜ...</translation>
 <translation id="3737536731758327622">ਤੁਹਾਡੇ ਡਾਊਨਲੋਡ ਇੱਥੇ ਵਿਖਾਈ ਦੇਣਗੇ</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -2663,7 +2662,6 @@
 <translation id="4798236378408895261"><ph name="BEGIN_LINK" />ਬਲੂਟੁੱਥ ਲੌਗ<ph name="END_LINK" /> ਅਟੈਚ ਕਰੋ (Google ਅੰਦਰੂਨੀ)</translation>
 <translation id="4801448226354548035">ਖਾਤੇ ਲੁਕਾਓ</translation>
 <translation id="4801512016965057443">ਮੋਬਾਈਲ ਡਾਟਾ ਰੋਮਿੰਗ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ</translation>
-<translation id="4804756772600045300">ਜਾਰੀ ਰੱਖਣ ਨਾਲ ADB ਡੀਬੱਗਿੰਗ ਨੂੰ Android ਐਪਾਂ ਬਣਾਉਣ ਅਤੇ ਉਹਨਾਂ ਦੀ ਜਾਂਚ ਕਰਨ ਲਈ ਚਾਲੂ ਕੀਤਾ ਜਾਵੇਗਾ। ਨੋਟ ਕਰੋ ਕਿ ADB ਡੀਬੱਗਿੰਗ ਨਾਲ ਉਹ ਜਾਂਚ ਐਪਾਂ ਸਥਾਪਤ ਹੋ ਸਕਦੀਆਂ ਹਨ, ਜਿਨ੍ਹਾਂ ਦੀ ਪੁਸ਼ਟੀ Google ਨੇ ਨਹੀਂ ਕੀਤੀ ਹੈ।</translation>
 <translation id="4804818685124855865">ਡਿਸਕਨੈਕਟ ਕਰੋ</translation>
 <translation id="4804827417948292437">ਐਵੋਕਾਡੋ</translation>
 <translation id="4805077164141082536">ਅਸੀਂ ਸਿਫ਼ਾਰਸ਼ ਕਰਦੇ ਹਾਂ ਕਿ ਤੁਸੀਂ ਆਪਣੇ ਮੌਜੂਦਾ Linux ਕੰਟੇਨਰ ਨੂੰ ਅੱਪਗ੍ਰੇਡ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ ਉਸਦਾ ਬੈਕਅੱਪ ਲੈ ਲਓ।</translation>
@@ -3116,7 +3114,7 @@
 <translation id="5464660706533281090">ਇਸ ਸੈਟਿੰਗ ਨੂੰ ਬੱਚਾ ਬਦਲ ਨਹੀਂ ਸਕਦਾ।</translation>
 <translation id="5466374726908360271">“<ph name="SEARCH_TERMS" />” ਪੇਸਟ ਕਰਕੇ ਖੋਜੋ</translation>
 <translation id="5468173180030470402">ਫ਼ਾਈਲ ਸਾਂਝਾਕਰਨਾਂ ਨੂੰ ਲੱਭਿਆ ਜਾ ਰਿਹਾ ਹੈ</translation>
-<translation id="5470735824776589490">ਤੁਹਾਡੀ ਡੀਵਾਈਸ ਨੂੰ ਪਾਵਰਵਾਸ਼ ਨਾਲ ਰੀਸੈਟ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ ਮੁੜ-ਸ਼ੁਰੂ ਕਰਨ ਦੀ ਲੋੜ ਹੈ। <ph name="LINK_BEGIN" />ਹੋਰ ਜਾਣੋ<ph name="LINK_END" /></translation>
+<translation id="5470735824776589490">ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਨੂੰ ਪਾਵਰਵਾਸ਼ ਨਾਲ ਰੀਸੈੱਟ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ ਮੁੜ-ਸ਼ੁਰੂ ਕਰਨ ਦੀ ਲੋੜ ਹੈ। <ph name="LINK_BEGIN" />ਹੋਰ ਜਾਣੋ<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ! ਮੈਂ ਤੁਹਾਡੀ ਲਿਖਤ ਤੋਂ ਬੋਲੀ ਵਿੱਚ ਬਦਲੀ ਹੋਈ ਅਵਾਜ਼ ਹਾਂ।</translation>
 <translation id="5472133193607270166">ਚਾਲੂ ਹੋਣ 'ਤੇ, ਸਾਈਟਾਂ ਵੱਖ-ਵੱਖ ਸਾਈਟਾਂ ਵਿਚਲੀ ਤੁਹਾਡੀ ਬ੍ਰਾਊਜ਼ਿੰਗ ਸਰਗਰਮੀ ਦੀ ਵਰਤੋਂ ਵਿਗਿਆਪਨਾਂ ਨੂੰ ਵਿਅਕਤੀਗਤ ਬਣਾਉਣ ਲਈ ਨਹੀਂ ਕਰ ਸਕਦੀਆਂ। ਸ਼ਾਇਦ ਕੁਝ ਸਾਈਟਾਂ ਸਹੀ ਢੰਗ ਨਾਲ ਕੰਮ ਨਾ ਕਰਨ।</translation>
 <translation id="5473333559083690127">ਨਵਾਂ PIN ਮੁੜ-ਦਾਖਲ ਕਰੋ</translation>
@@ -3886,7 +3884,7 @@
 <translation id="6555810572223193255">ਕਲੀਨਅੱਪ ਇਸ ਸਮੇਂ ਉਪਲਬਧ ਨਹੀਂ ਹੈ</translation>
 <translation id="6556866813142980365">ਮੁੜ-ਓਹੀ ਕਰੋ</translation>
 <translation id="6557290421156335491">ਮੇਰੇ ਸ਼ਾਰਟਕੱਟ</translation>
-<translation id="6561560012278703671">ਵਧੇਰੇ ਸ਼ਾਂਤ ਸੁਨੇਹਾ ਵਰਤੋ (ਤੁਹਾਡਾ ਧਿਆਨ ਭਟਕਾਉਣ ਵਾਲੇ ਸੂਚਨਾ ਉਤਪ੍ਰੇਰਕਾਂ ਨੂੰ ਬਲਾਕ ਕੀਤਾ ਜਾਂਦਾ ਹੈ)</translation>
+<translation id="6561560012278703671">ਵਧੇਰੇ ਸ਼ਾਂਤ ਸੁਨੇਹਾ ਸੇਵਾ ਵਰਤੋ (ਤੁਹਾਡਾ ਧਿਆਨ ਭਟਕਾਉਣ ਵਾਲੇ ਸੂਚਨਾ ਉਤਪ੍ਰੇਰਕਾਂ ਨੂੰ ਬਲਾਕ ਕੀਤਾ ਜਾਂਦਾ ਹੈ)</translation>
 <translation id="6561726789132298588">ਦਰਜ ਕਰੋ</translation>
 <translation id="656293578423618167">ਫਾਈਲ ਪਾਥ ਜਾਂ ਨਾਮ ਬਹੁਤ ਜ਼ਿਆਦਾ ਵੱਡਾ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਇੱਕ ਛੋਟੇ ਨਾਮ ਨਾਲ ਜਾਂ ਦੂਜੇ ਨਿਰਧਾਰਿਤ ਟਿਕਾਣੇ ਵਿੱਚ ਰੱਖਿਅਤ ਕਰੋ।</translation>
 <translation id="6563469144985748109">ਤੁਹਾਡੇ ਪ੍ਰਬੰਧਕ ਨੇ ਹਾਲੇ ਇਸ ਦੀ ਮਨਜ਼ੂਰੀ ਨਹੀਂ ਦਿੱਤੀ ਹੈ</translation>
@@ -4604,6 +4602,7 @@
 <translation id="7631205654593498032">ਆਪਣੇ ਡੀਵਾਈਸ ਕਨੈਕਟ ਕਰਕੇ, ਤੁਸੀਂ ਇਹ ਸਹਿਮਤੀ ਦਿੰਦੇ ਹੋ ਕਿ ਤੁਹਾਡੀ <ph name="DEVICE_TYPE" /> ਇਹ ਕਰ ਸਕਦੀ ਹੈ:</translation>
 <translation id="7631887513477658702">&amp;ਹਮੇਸ਼ਾਂ ਇਸ ਪ੍ਰਕਾਰ ਦੀਆਂ ਫਾਈਲਾਂ ਖੋਲ੍ਹੋ</translation>
 <translation id="7632948528260659758">ਹੇਠਾਂ ਦਿੱਤੇ kiosk ਐਪਸ ਅੱਪਡੇਟ ਕਰਨ ਵਿੱਚ ਅਸਫਲ ਹੋ ਗਏ ਹਨ:</translation>
+<translation id="7634566076839829401">ਕੁਝ ਗ਼ਲਤ ਹੋਇਆ ਸੀ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।</translation>
 <translation id="763632859238619983">ਕਿਸੇ ਵੀ ਸਾਈਟ ਨੂੰ ਭੁਗਤਾਨ ਹੈਂਡਲਰ ਸਥਾਪਤ ਨਾ ਕਰਨ ਦਿਓ</translation>
 <translation id="7636919061354591437">ਇਸ ਡੀਵਾਈਸ 'ਤੇ ਸਥਾਪਤ ਕਰੋ</translation>
 <translation id="7638605456503525968">ਸੀਰੀਅਲ ਪੋਰਟ</translation>
@@ -5662,7 +5661,7 @@
 <translation id="9065203028668620118">ਸੰਪਾਦਿਤ ਕਰੋ</translation>
 <translation id="9066773882585798925">ਸੁਣਨ ਲਈ ਲਿਖਤ ਨੂੰ ਉੱਚੀ ਅਵਾਜ਼ ਵਿੱਚ ਪੜ੍ਹੋ</translation>
 <translation id="9066782832737749352">ਲਿਖਤ ਤੋਂ ਬੋਲੀ</translation>
-<translation id="9067559831321817373">ਆਪਣੇ ਸਾਈਨ-ਇਨ ਕੀਤੇ ਖਾਤਿਆਂ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰੋ। Chrome ਅਤੇ Google Play ਵਿੱਚ ਵੈਬਸਾਈਟਾਂ, ਐਪਾਂ ਅਤੇ ਐਕਸਟੈਂਸ਼ਨਾਂ ਇਜਾਜ਼ਤਾਂ ਦੇ ਆਧਾਰ 'ਤੇ ਤੁਹਾਡੇ ਅਨੁਭਵ ਨੂੰ ਵਿਉਂਤਬੱਧ ਕਰਨ ਲਈ ਇਹਨਾਂ ਖਾਤਿਆਂ ਨੂੰ ਵਰਤ ਸਕਦੀਆਂ ਹਨ। &lt;a&gt;ਹੋਰ ਜਾਣੋ&lt;/a&gt;</translation>
+<translation id="9067559831321817373">ਆਪਣੇ ਸਾਈਨ-ਇਨ ਕੀਤੇ ਖਾਤਿਆਂ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰੋ। Chrome ਅਤੇ Google Play ਵਿੱਚ ਵੈੱਬਸਾਈਟਾਂ, ਐਪਾਂ ਅਤੇ ਐਕਸਟੈਂਸ਼ਨਾਂ ਇਜਾਜ਼ਤਾਂ ਦੇ ਆਧਾਰ 'ਤੇ ਤੁਹਾਡੇ ਅਨੁਭਵ ਨੂੰ ਵਿਉਂਤਬੱਧ ਕਰਨ ਲਈ ਇਹਨਾਂ ਖਾਤਿਆਂ ਨੂੰ ਵਰਤ ਸਕਦੀਆਂ ਹਨ। &lt;a&gt;ਹੋਰ ਜਾਣੋ&lt;/a&gt;</translation>
 <translation id="9068849894565669697">ਰੰਗ ਚੁਣੋ</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">ਬਲੂਟੁੱਥ</translation>

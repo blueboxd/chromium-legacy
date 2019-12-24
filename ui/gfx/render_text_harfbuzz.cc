@@ -1379,16 +1379,17 @@ Size RenderTextHarfBuzz::GetLineSize(const SelectionModel& caret) {
   const auto to_size = [](const internal::Line& line) {
     return Size(std::ceil(line.size.width()), line.size.height());
   };
-  EnsureLayout();
+
+  const internal::ShapedText* shaped_text = GetShapedText();
   const auto& caret_run = GetRunContainingCaret(caret);
-  for (const auto& line : lines()) {
+  for (const auto& line : shaped_text->lines()) {
     for (const internal::LineSegment& segment : line.segments) {
       if (segment.run == caret_run)
         return to_size(line);
     }
   }
 
-  return to_size(lines().back());
+  return to_size(shaped_text->lines().back());
 }
 
 std::vector<Rect> RenderTextHarfBuzz::GetSubstringBounds(const Range& range) {
@@ -1412,10 +1413,13 @@ std::vector<Rect> RenderTextHarfBuzz::GetSubstringBounds(const Range& range) {
     return rects;
 
   internal::TextRunList* run_list = GetRunList();
-  for (size_t line_index = 0; line_index < lines().size(); ++line_index) {
-    const internal::Line& line = lines()[line_index];
+  const internal::ShapedText* shaped_text = GetShapedText();
+  for (size_t line_index = 0; line_index < shaped_text->lines().size();
+       ++line_index) {
+    const internal::Line& line = shaped_text->lines()[line_index];
     // Only the last line can be empty.
-    DCHECK(!line.segments.empty() || (line_index == lines().size() - 1));
+    DCHECK(!line.segments.empty() ||
+           (line_index == shaped_text->lines().size() - 1));
     float line_start_x =
         line.segments.empty()
             ? 0
@@ -1491,15 +1495,17 @@ size_t RenderTextHarfBuzz::GetLineContainingCaret(const SelectionModel& caret) {
 
   size_t layout_position = TextIndexToDisplayIndex(caret.caret_pos());
   LogicalCursorDirection affinity = caret.caret_affinity();
-  for (size_t line_index = 0; line_index < lines().size(); ++line_index) {
-    const internal::Line& line = lines()[line_index];
+  const internal::ShapedText* shaped_text = GetShapedText();
+  for (size_t line_index = 0; line_index < shaped_text->lines().size();
+       ++line_index) {
+    const internal::Line& line = shaped_text->lines()[line_index];
     for (const internal::LineSegment& segment : line.segments) {
       if (RangeContainsCaret(segment.char_range, layout_position, affinity))
         return LineIndexForNewline(line_index, text(), segment, caret);
     }
   }
 
-  return lines().size() - 1;
+  return shaped_text->lines().size() - 1;
 }
 
 SelectionModel RenderTextHarfBuzz::AdjacentCharSelectionModel(
@@ -1593,7 +1599,7 @@ SelectionModel RenderTextHarfBuzz::AdjacentLineSelectionModel(
     reset_cached_cursor_x();
     return SelectionModel(0, CURSOR_BACKWARD);
   }
-  if (line == lines().size() - 1 && direction == CURSOR_DOWN) {
+  if (line == GetShapedText()->lines().size() - 1 && direction == CURSOR_DOWN) {
     reset_cached_cursor_x();
     return SelectionModel(text().length(), CURSOR_FORWARD);
   }
@@ -1631,6 +1637,7 @@ void RenderTextHarfBuzz::OnLayoutTextAttributeChanged(bool text_changed) {
 
 void RenderTextHarfBuzz::OnDisplayTextAttributeChanged() {
   update_display_text_ = true;
+  set_shaped_text(nullptr);
 }
 
 void RenderTextHarfBuzz::EnsureLayout() {
@@ -1644,11 +1651,10 @@ void RenderTextHarfBuzz::EnsureLayout() {
     if (!display_text.empty())
       ItemizeAndShapeText(display_text, display_run_list_.get());
     update_display_run_list_ = false;
-    std::vector<internal::Line> empty_lines;
-    set_lines(&empty_lines);
+    set_shaped_text(nullptr);
   }
 
-  if (lines().empty()) {
+  if (!has_shaped_text()) {
     internal::TextRunList* run_list = GetRunList();
     const int height = std::max(font_list().GetHeight(), min_line_height());
     HarfBuzzLineBreaker line_breaker(
@@ -1671,7 +1677,8 @@ void RenderTextHarfBuzz::EnsureLayout() {
         DCHECK_LE(lines.size(), max_lines());
       }
     }
-    set_lines(&lines);
+
+    set_shaped_text(std::make_unique<internal::ShapedText>(lines));
   }
 }
 
@@ -1680,7 +1687,9 @@ void RenderTextHarfBuzz::DrawVisualText(internal::SkiaTextRenderer* renderer,
   DCHECK(!update_layout_run_list_);
   DCHECK(!update_display_run_list_);
   DCHECK(!update_display_text_);
-  if (lines().empty())
+
+  const internal::ShapedText* shaped_text = GetShapedText();
+  if (shaped_text->lines().empty())
     return;
 
   ApplyFadeEffects(renderer);
@@ -1704,8 +1713,8 @@ void RenderTextHarfBuzz::DrawVisualText(internal::SkiaTextRenderer* renderer,
 
   internal::TextRunList* run_list = GetRunList();
   const base::string16& display_text = GetDisplayText();
-  for (size_t i = 0; i < lines().size(); ++i) {
-    const internal::Line& line = lines()[i];
+  for (size_t i = 0; i < shaped_text->lines().size(); ++i) {
+    const internal::Line& line = shaped_text->lines()[i];
     const Vector2d origin = GetLineOffset(i) + Vector2d(0, line.baseline);
     SkScalar preceding_segment_widths = 0;
     for (const internal::LineSegment& segment : line.segments) {
@@ -2170,8 +2179,7 @@ void RenderTextHarfBuzz::EnsureLayoutRunList() {
     update_layout_run_list_ = false;
   }
   if (update_display_text_) {
-    std::vector<internal::Line> empty_lines;
-    set_lines(&empty_lines);
+    set_shaped_text(nullptr);
     UpdateDisplayText(multiline() ? 0 : layout_run_list_.width());
     update_display_text_ = false;
     update_display_run_list_ = text_elided();

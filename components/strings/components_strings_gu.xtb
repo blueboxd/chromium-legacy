@@ -930,6 +930,7 @@
 <translation id="5386426401304769735">આ સાઇટ માટેની પ્રમાણપત્ર શ્રૃંખલા SHA-1 નો ઉપયોગ કરીને સહી કરેલ પ્રમાણપત્ર ધરાવે છે.</translation>
 <translation id="538659543871111977">A4-ટૅબ</translation>
 <translation id="5396631636586785122">જમણી બાજુએ કિનારી જોડો</translation>
+<translation id="5400836586163650660">ગ્રે</translation>
 <translation id="540969355065856584">આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેનું સુરક્ષા પ્રમાણપત્ર આ સમયે માન્ય નથી. આ કોઇ ખોટી ગોઠવણીને કારણે થયું હોય અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો હોઇ શકે છે.</translation>
 <translation id="5421136146218899937">બ્રાઉઝિંગ ડેટા સાફ કરો...</translation>
 <translation id="5430298929874300616">બુકમાર્ક દૂર કરો</translation>
@@ -1711,6 +1712,7 @@
 <translation id="988159990683914416">વિકાસકર્તા બિલ્ડ</translation>
 <translation id="989988560359834682">ઍડ્રેસમાં ફેરફાર કરો</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992256792861109788">ગુલાબી</translation>
 <translation id="992432478773561401">તમારા કમ્પ્યુટરમાં અથવા નેટવર્ક પર "<ph name="SOFTWARE_NAME" />" યોગ્ય રીતે ઇન્સ્ટૉલ થયું નથી:
     &lt;ul&gt;
     &lt;li&gt;"<ph name="SOFTWARE_NAME" />"ને અનઇન્સ્ટૉલ કે બંધ કરવાનો પ્રયાસ કરો&lt;/li&gt;

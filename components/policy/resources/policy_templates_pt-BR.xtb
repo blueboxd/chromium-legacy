@@ -2392,7 +2392,7 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
 
       Essa detecção pode não ser necessária em um ambiente empresarial em que a configuração de rede é conhecida, já que isso causa certo tráfego HTTP e DNS na inicialização e a cada mudança de configuração do DNS.
 
-      Quando essa política não é definida nem ativada, as verificações de interceptação de DNS são executadas. Quando a política é desativada explicitamente, elas não são executadas.</translation>
+      Quando essa política não for definida ou estiver ativada, as verificações de interceptação de DNS são executadas. Quando a política é desativada explicitamente, elas não são executadas.</translation>
 <translation id="4703402283970867140">Ativar modelo de escurecimento inteligente para aumentar o tempo que a tela permanece ativa</translation>
 <translation id="4722122254122249791">Ativar o isolamento de sites para origens específicas</translation>
 <translation id="4722399051042571387">Se definida como false, os usuários não conseguirão configurar PINs que sejam fracos e fáceis de adivinhar.

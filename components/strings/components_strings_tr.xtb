@@ -929,6 +929,7 @@
 <translation id="5386426401304769735">Bu sitenin sertifika zinciri, SHA-1 kullanılarak imzalanmış bir sertifika içeriyor.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Sağda kenar dikişi</translation>
+<translation id="5400836586163650660">Gri</translation>
 <translation id="540969355065856584">Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı. Güvenlik sertifikası şu anda geçerli değil. Bu durum, bir yanlış yapılandırmadan veya bağlantıya müdahale eden bir saldırgandan kaynaklanıyor olabilir.</translation>
 <translation id="5421136146218899937">Tarama verilerini temizle...</translation>
 <translation id="5430298929874300616">Yer işaretini kaldır</translation>
@@ -1711,6 +1712,7 @@ Ek ayrıntılar:
 <translation id="988159990683914416">Geliştirici Derlemesi</translation>
 <translation id="989988560359834682">Adresi Düzenle</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992256792861109788">Pembe</translation>
 <translation id="992432478773561401">"<ph name="SOFTWARE_NAME" />" yazılımı bilgisayarınıza veya ağa düzgün şekilde yüklenmemiş:
     &lt;ul&gt;
     &lt;li&gt;"<ph name="SOFTWARE_NAME" />" yazılımının yüklemesini kaldırmayı veya devre dışı bırakmayı deneyin&lt;/li&gt;

@@ -178,9 +178,11 @@ js_unittest("crostini_unittest") {
 
 js_library("device_handler") {
   deps = [
+    ":progress_center",
     ":volume_manager_factory",
     "//ui/file_manager/file_manager/common/js:async_util",
     "//ui/file_manager/file_manager/common/js:importer_common",
+    "//ui/file_manager/file_manager/common/js:progress_center_common",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js/cr:event_target",
   ]
@@ -189,6 +191,7 @@ js_library("device_handler") {
 js_unittest("device_handler_unittest") {
   deps = [
     ":device_handler",
+    ":mock_progress_center",
     ":mock_volume_manager",
     "//ui/file_manager/base/js:mock_chrome",
     "//ui/file_manager/base/js:test_error_reporting",

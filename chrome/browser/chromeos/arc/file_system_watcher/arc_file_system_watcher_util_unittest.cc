@@ -118,7 +118,7 @@ TEST(ArcFileSystemWatcherUtilTest, GetAndroidPath) {
                 .value());
 }
 
-TEST(ArcFileSystemWatcherServiceTest, AndroidSupportedMediaExtensionsSorted) {
+TEST(ArcFileSystemWatcherUtilTest, AndroidSupportedMediaExtensionsSorted) {
   const auto less_comparator = [](const char* a, const char* b) {
     return strcmp(a, b) < 0;
   };
@@ -128,7 +128,7 @@ TEST(ArcFileSystemWatcherServiceTest, AndroidSupportedMediaExtensionsSorted) {
       less_comparator));
 }
 
-TEST(ArcFileSystemWatcherServiceTest, HasAndroidSupportedMediaExtension) {
+TEST(ArcFileSystemWatcherUtilTest, HasAndroidSupportedMediaExtension) {
   EXPECT_TRUE(HasAndroidSupportedMediaExtension(
       base::FilePath(FILE_PATH_LITERAL("/tmp/kitten.3g2"))));
   EXPECT_TRUE(HasAndroidSupportedMediaExtension(

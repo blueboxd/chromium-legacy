@@ -931,6 +931,7 @@
 <translation id="5386426401304769735">इस साइट की प्रमाणपत्र शृंखला में, SHA-1 का उपयोग करके हस्ताक्षर किया गया प्रमाणपत्र शामिल है.</translation>
 <translation id="538659543871111977">ए4-टैब</translation>
 <translation id="5396631636586785122">दाईं ओर एज़ स्टिच</translation>
+<translation id="5400836586163650660">स्लेटी</translation>
 <translation id="540969355065856584">यह सर्वर यह प्रमाणित नहीं कर सका कि यह <ph name="DOMAIN" /> है; इसका सुरक्षा प्रमाण पत्र इस समय मान्य नहीं है. ऐसा गलत कॉन्फ़िगरेशन या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन में अवरोध डालने के कारण हो सकता है.</translation>
 <translation id="5421136146218899937">ब्राउज़िंग डेटा साफ़ करें...</translation>
 <translation id="5430298929874300616">बुकमार्क निकालें</translation>
@@ -1713,6 +1714,7 @@
 <translation id="988159990683914416">डेवलपर बिल्ड</translation>
 <translation id="989988560359834682">पते में बदलाव करें</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992256792861109788">गुलाबी</translation>
 <translation id="992432478773561401">"<ph name="SOFTWARE_NAME" />" आपके कंप्यूटर या नेटवर्क पर ठीक से इंस्टॉल नहीं हुआ था:
     &lt;ul&gt;
     &lt;li&gt;"<ph name="SOFTWARE_NAME" />" को अनइंस्टॉल करके या बंद करके देखें&lt;/li&gt;

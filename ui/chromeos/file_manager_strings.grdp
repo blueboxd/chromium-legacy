@@ -913,6 +913,16 @@
     Erase and Format
   </message>
 
+  <message name="IDS_FILE_BROWSER_FORMAT_PROGRESS_MESSAGE" desc="Notification message displayed while formatting an external drive">
+    Formatting <ph name="DRIVE_NAME">$1<ex>My USB</ex></ph>...
+  </message>
+  <message name="IDS_FILE_BROWSER_FORMAT_SUCCESS_MESSAGE" desc="Notification message displayed when formatting of an external drive has succeeded">
+    Formatted <ph name="DRIVE_NAME">$1<ex>My USB</ex></ph>
+  </message>
+  <message name="IDS_FILE_BROWSER_FORMAT_FAILURE_MESSAGE" desc="Notification message displayed if formatting of an external drive has failed">
+    Could not format <ph name="DRIVE_NAME">$1<ex>My USB</ex></ph>
+  </message>
+
   <message name="IDS_FILE_BROWSER_SUGGEST_DIALOG_TITLE" desc="Title of the suggest app dialog, which shows the list of the apps which supports the selected file.">
     Select an app to open this file
   </message>

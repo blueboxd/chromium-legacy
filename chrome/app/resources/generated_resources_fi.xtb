@@ -110,7 +110,6 @@
 <translation id="114721135501989771">Googlen älykkäitä ratkaisuja Chromeen</translation>
 <translation id="1147991416141538220">Jos haluat pyytää käyttöoikeutta, ota yhteyttä laitteen järjestelmänvalvojaan.</translation>
 <translation id="1149401351239820326">Viimeinen voimassaolokuukausi</translation>
-<translation id="1150490752229770117">Tämä on viimeinen automaattinen ohjelmisto- ja tietoturvapäivitys, jonka <ph name="DEVICE_TYPE" /> saa. Vaihda uudempaan malliin, jos haluat jatkossa saada päivityksiä. <ph name="LINK_BEGIN" />Lue lisää<ph name="LINK_END" /></translation>
 <translation id="1150565364351027703">Aurinkolasit</translation>
 <translation id="1151917987301063366"><ph name="HOST" /> saa aina luvan käyttää tunnistimia</translation>
 <translation id="1153356358378277386">Laiteparit</translation>
@@ -461,6 +460,7 @@
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> haluaa tarkistaa, että käytät yhteensopivaa Chrome-laitetta.</translation>
 <translation id="1640235262200048077"><ph name="IME_NAME" /> ei vielä toimi Linux-sovelluksissa</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 ja RSA-salaus</translation>
+<translation id="1641113438599504367">Selaussuoja</translation>
 <translation id="1642494467033190216">Rootfs-suojauksen poisto ja uudelleenkäynnistys vaaditaan, ennen kuin muut virheenkorjausominaisuudet voidaan ottaa käyttöön.</translation>
 <translation id="1643072738649235303">X9.62 ECDSA ‑allekirjoitus, jossa on SHA-1</translation>
 <translation id="1644574205037202324">Historia</translation>
@@ -1956,7 +1956,6 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="3732530910372558017">PIN-koodin vähimmäispituus on 63 merkkiä</translation>
 <translation id="3733127536501031542">SSL-palvelin ja Step-up</translation>
 <translation id="3735740477244556633">Lajitteluperuste</translation>
-<translation id="3736016243818847857">Haluatko jatkaa?</translation>
 <translation id="3737274407993947948">Virhe asennettaessa Linuxia…</translation>
 <translation id="3737536731758327622">Latauksesi näkyvät täällä.</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -2662,7 +2661,6 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="4798236378408895261">Liitä <ph name="BEGIN_LINK" />Bluetooth-lokit<ph name="END_LINK" /> (Googlen sisäinen)</translation>
 <translation id="4801448226354548035">Piilota tilit</translation>
 <translation id="4801512016965057443">Salli mobiilitiedonsiirto roaming-tilassa</translation>
-<translation id="4804756772600045300">Jatkamalla otat ADB-virheenkorjauksen käyttöön Android-sovellusten luomista ja testausta varten. Huomaa, että ADB-virheenkorjaus sallii testisovellusten asentamisen, vaikka Google ei ole vahvistanut niitä.</translation>
 <translation id="4804818685124855865">Katkaise yhteys</translation>
 <translation id="4804827417948292437">Avokado</translation>
 <translation id="4805077164141082536">Suosittelemme, että varmuuskopioit nykyisen Linux-säilösi ennen päivitystä.</translation>
@@ -4605,6 +4603,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7631205654593498032">Yhdistämällä laitteet hyväksyt, että <ph name="DEVICE_TYPE" /> saa seuraavat oikeudet:</translation>
 <translation id="7631887513477658702">&amp;Avaa aina tämäntyyppiset tiedostot</translation>
 <translation id="7632948528260659758">Seuraavien kioskisovellusten päivitys epäonnistui:</translation>
+<translation id="7634566076839829401">Jotain meni pieleen. Yritä uudelleen.</translation>
 <translation id="763632859238619983">Älä anna sivustojen asentaa maksujen käsittelijöitä</translation>
 <translation id="7636919061354591437">Asenna tälle laitteelle</translation>
 <translation id="7638605456503525968">Sarjaportit</translation>

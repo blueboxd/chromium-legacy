@@ -15,7 +15,6 @@
 <translation id="1111673857033749125">Aquí aparecerán os marcadores que gardases noutros dispositivos.</translation>
 <translation id="1113597929977215864">Mostrar vista simplificada</translation>
 <translation id="1122278879166832009">Toca aquí para acceder rapidamente á túa páxina de inicio desde calquera lugar</translation>
-<translation id="1124772482545689468">Usuario</translation>
 <translation id="1129510026454351943">Detalles: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 descarga pendente.}other{# descargas pendentes.}}</translation>
 <translation id="1145536944570833626">Elimina os datos existentes.</translation>
@@ -24,7 +23,6 @@
 <translation id="1171770572613082465">Para descubrir sitios web populares, toca o botón Populares</translation>
 <translation id="1173894706177603556">Cambiar o nome</translation>
 <translation id="1178581264944972037">Pausar</translation>
-<translation id="1181037720776840403">Eliminar</translation>
 <translation id="1188239144602654184">Iniciar realidade aumentada</translation>
 <translation id="1197267115302279827">Mover marcadores</translation>
 <translation id="119944043368869598">Borrar todo</translation>
@@ -85,7 +83,6 @@
 <translation id="1571304935088121812">Copia o nome de usuario</translation>
 <translation id="1612196535745283361">Chrome necesita acceder á localización para buscar dispositivos. O acceso á localización deste dispositivo está <ph name="BEGIN_LINK" />desactivado<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Cámara</translation>
-<translation id="1623104350909869708">Evitar que esta páxina cree caixas de diálogo adicionais</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Quitar 1 elemento seleccionado}other{Quitar # elementos seleccionados}}</translation>
 <translation id="164269334534774161">Estás vendo unha copia sen conexión desta páxina creada o <ph name="CREATION_TIME" /></translation>
 <translation id="1644574205037202324">Historial</translation>
@@ -149,7 +146,6 @@
 <translation id="2056878612599315956">O sitio está en pausa</translation>
 <translation id="2063713494490388661">Tocar para buscar</translation>
 <translation id="2067805253194386918">texto</translation>
-<translation id="2079545284768500474">Desfacer</translation>
 <translation id="2082238445998314030">Resultado <ph name="RESULT_NUMBER" /> de <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Son</translation>
 <translation id="2096012225669085171">Sincroniza e personaliza o contido en todos os dispositivos</translation>
@@ -164,7 +160,6 @@
 <translation id="213279576345780926">Pechouse <ph name="TAB_TITLE" /></translation>
 <translation id="2139186145475833000">Engadir á pantalla inicio</translation>
 <translation id="2146738493024040262">Abrir aplicacións instantáneas</translation>
-<translation id="2148716181193084225">Hoxe</translation>
 <translation id="2154484045852737596">Editar tarxeta</translation>
 <translation id="2154710561487035718">Copiar o URL</translation>
 <translation id="2156074688469523661">Sitios restantes (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -186,7 +181,6 @@
 <translation id="2328985652426384049">Non se puido iniciar sesión</translation>
 <translation id="2349710944427398404">Datos totais usados por Chrome, incluídas as contas, os marcadores e a configuración gardada</translation>
 <translation id="2353636109065292463">Comprobando a túa conexión a Internet</translation>
-<translation id="2359808026110333948">Continuar</translation>
 <translation id="2369533728426058518">pestanas abertas</translation>
 <translation id="2387895666653383613">Axuste de texto</translation>
 <translation id="2394602618534698961">Os ficheiros descargados aparecen aquí</translation>
@@ -233,9 +227,6 @@
 <translation id="2647434099613338025">Engadir idioma</translation>
 <translation id="2650751991977523696">Queres volver descargar o ficheiro?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# ficheiro de audio}other{# ficheiros de audio}}</translation>
-<translation id="2653659639078652383">Enviar</translation>
-<translation id="2677748264148917807">Saír</translation>
-<translation id="2704606927547763573">Copiada</translation>
 <translation id="2707726405694321444">Actualiza páxina</translation>
 <translation id="2709516037105925701">Autocompletar</translation>
 <translation id="2717722538473713889">Enderezos de correo electrónico</translation>
@@ -289,7 +280,6 @@
 <translation id="3058498974290601450">Podes activar a sincronización en calquera momento na configuración</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> marcador}other{<ph name="BOOKMARKS_COUNT_MANY" /> marcadores}}</translation>
 <translation id="3089395242580810162">Abrir en pestana de incógnito</translation>
-<translation id="3115898365077584848">Mostrar información</translation>
 <translation id="3123473560110926937">Anuncios bloqueados nalgúns sitios</translation>
 <translation id="3137521801621304719">Sae do modo de incógnito</translation>
 <translation id="3143515551205905069">Cancelar sincronización</translation>
@@ -315,7 +305,6 @@
 <translation id="3288003805934695103">Volver cargar a páxina</translation>
 <translation id="32895400574683172">Permítese mostrar notificacións</translation>
 <translation id="3295530008794733555">Navega máis rápido. Usa menos datos.</translation>
-<translation id="3295602654194328831">Ocultar información</translation>
 <translation id="3298243779924642547">Básico</translation>
 <translation id="3303414029551471755">Queres continuar coa descarga do contido?</translation>
 <translation id="3306398118552023113">Esta aplicación execútase en Chrome</translation>
@@ -337,7 +326,6 @@
 <translation id="3443221991560634068">Volver cargar a páxina actual</translation>
 <translation id="3445014427084483498">Agora mesmo</translation>
 <translation id="3478363558367712427">Podes escoller o motor de busca</translation>
-<translation id="3479552764303398839">Agora non</translation>
 <translation id="3492207499832628349">Pestana nova de incógnito</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Máis información<ph name="END_LINK" /> acerca do contido suxerido</translation>
 <translation id="3513704683820682405">Realidade aumentada</translation>
@@ -379,7 +367,6 @@
 <translation id="381841723434055211">Números de teléfono</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> descargas eliminadas</translation>
 <translation id="3822502789641063741">Borrar datos do sitio?</translation>
-<translation id="385051799172605136">Atrás</translation>
 <translation id="3859306556332390985">Buscar cara adiante</translation>
 <translation id="388596076286380598">Accede a artigos, vídeos e outros contidos dos sitios que che gustan, aínda que esteas sen conexión ou esta sexa de mala calidade.</translation>
 <translation id="3894427358181296146">Engadir cartafol</translation>
@@ -402,7 +389,6 @@
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="3997476611815694295">Datos non importantes</translation>
 <translation id="4000212216660919741">Inicio sen conexión</translation>
-<translation id="4002066346123236978">Título</translation>
 <translation id="4008040567710660924">Permite cookies para un sitio específico.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# h}other{# h}}</translation>
 <translation id="4046123991198612571">Pista seguinte</translation>
@@ -473,7 +459,6 @@ Se queres axustar o termo de busca, manteno premido para seleccionalo. Se queres
 <translation id="4558311620361989323">Atallos da páxina web</translation>
 <translation id="4561979708150884304">Sen conexión</translation>
 <translation id="4565377596337484307">Ocultar contrasinal</translation>
-<translation id="4570913071927164677">Detalles</translation>
 <translation id="4572422548854449519">Inicia sesión nunha conta xestionada</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{Hai # minuto}other{Hai # minutos}}</translation>
@@ -574,13 +559,10 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5271967389191913893">O dispositivo non pode abrir o contido que se debe descargar.</translation>
 <translation id="528192093759286357">Arrastra desde a parte superior e toca o botón Volver para saír da pantalla completa.</translation>
 <translation id="5292796745632149097">Enviar a</translation>
-<translation id="5300589172476337783">Mostrar</translation>
-<translation id="5301954838959518834">Entendido</translation>
 <translation id="5304593522240415983">Este campo non pode quedar baleiro</translation>
 <translation id="5307446750509046227">Borrar datos do sitio</translation>
 <translation id="5308380583665731573">Conectar</translation>
 <translation id="5313967007315987356">Engadir sitio</translation>
-<translation id="5317780077021120954">Gardar</translation>
 <translation id="5324858694974489420">Configuración parental</translation>
 <translation id="5327248766486351172">Nome</translation>
 <translation id="5335288049665977812">Permite que os sitios executen JavaScript (recomendado)</translation>
@@ -620,7 +602,6 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5527111080432883924">Preguntar antes de permitir que os sitios lean texto e imaxes do portapapeis (recomendado)</translation>
 <translation id="5530766185686772672">Pechar pestanas incógnito</translation>
 <translation id="5534640966246046842">Copiouse o sitio</translation>
-<translation id="5556459405103347317">Volver cargar</translation>
 <translation id="5561549206367097665">Esperando unha rede…</translation>
 <translation id="557283862590186398">Chrome precisa permiso para que este sitio poida acceder ao teu micrófono.</translation>
 <translation id="55737423895878184">Permítese consultar a localización e mostrar notificacións</translation>
@@ -664,7 +645,6 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5853623416121554550">en pausa</translation>
 <translation id="5854790677617711513">Con máis de 30 días</translation>
 <translation id="5858741533101922242">Chrome non é capaz de activar o adaptador de Bluetooth</translation>
-<translation id="5860033963881614850">Non</translation>
 <translation id="5860491529813859533">Activar</translation>
 <translation id="5862731021271217234">Activa a sincronización para sincronizar as pestanas dos demais dispositivos</translation>
 <translation id="5864174910718532887">Detalles: filas ordenadas por nome de sitio</translation>
@@ -672,7 +652,6 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5865733239029070421">Envía estatísticas de uso e informes de erros automaticamente a Google</translation>
 <translation id="5869522115854928033">Contrasinais gardados</translation>
 <translation id="5902828464777634901">Eliminaranse todos os datos locais almacenados por este sitio web, incluídas as cookies.</translation>
-<translation id="5916664084637901428">Si</translation>
 <translation id="5919204609460789179">Actualiza <ph name="PRODUCT_NAME" /> para iniciar a sincronización</translation>
 <translation id="5937580074298050696">Datos aforrados: <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Restablecer</translation>
@@ -700,7 +679,6 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="614940544461990577">Proba a facer o seguinte:</translation>
 <translation id="6154478581116148741">Activa o bloqueo de pantalla en Configuración para exportar os teus contrasinais deste dispositivo</translation>
 <translation id="6159335304067198720">Redución de datos do <ph name="PERCENT" /></translation>
-<translation id="6165508094623778733">Máis información</translation>
 <translation id="6177111841848151710">Bloqueado para o motor de busca actual</translation>
 <translation id="6181444274883918285">Engadir excepción do sitio</translation>
 <translation id="6192333916571137726">Queres descargar o ficheiro?</translation>
@@ -752,7 +730,6 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="6482749332252372425">Produciuse un erro ao descargar <ph name="FILE_NAME" /> por falta de espazo de almacenamento.</translation>
 <translation id="6496823230996795692">Para usar <ph name="APP_NAME" /> por primeira vez, conéctate a Internet.</translation>
 <translation id="6508722015517270189">Reinicia Chrome</translation>
-<translation id="6527303717912515753">Compartir</translation>
 <translation id="6532866250404780454">Non se mostrarán os sitios que visites en Chrome. Eliminaranse todos os temporizadores dos sitios.</translation>
 <translation id="6534565668554028783">Google tardou demasiado en responder</translation>
 <translation id="6538442820324228105">Cantidade descargada: <ph name="GBS" /> GB</translation>
@@ -791,7 +768,6 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="671481426037969117">O temporizador de <ph name="FQDN" /> chegou ao final. Volverá comezar mañá.</translation>
 <translation id="6738867403308150051">Descargando...</translation>
-<translation id="6746124502594467657">Mover cara abaixo</translation>
 <translation id="6766622839693428701">Pasa o dedo cara abaixo para pechar o panel inferior.</translation>
 <translation id="6766758767654711248">Toca para acceder ao sitio</translation>
 <translation id="6767294960381293877">A lista de dispositivos cos que compartir unha pestana está aberta a media pantalla.</translation>
@@ -811,14 +787,12 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="688738109438487280">Engade os datos existentes a <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Desbloquea a pantalla para copiar o teu contrasinal</translation>
 <translation id="6896758677409633944">Copiar</translation>
-<translation id="6910211073230771657">Eliminado</translation>
 <translation id="6912998170423641340">Impedir que os sitios lean texto e imaxes do portapapeis</translation>
 <translation id="6914783257214138813">Todas as persoas que poidan ver o ficheiro exportado tamén poderán ver os teus contrasinais.</translation>
 <translation id="6942665639005891494">Cambia a localización de descarga predeterminada en calquera momento usando a opción do menú Configuración</translation>
 <translation id="6945221475159498467">Seleccionar</translation>
 <translation id="6963642900430330478">Esta páxina é perigosa. Información do sitio</translation>
 <translation id="6963766334940102469">Eliminar marcadores</translation>
-<translation id="6965382102122355670">Aceptar</translation>
 <translation id="6979737339423435258">Desde sempre</translation>
 <translation id="6981982820502123353">Accesibilidade</translation>
 <translation id="6989267951144302301">Non se puido descargar</translation>
@@ -916,7 +890,6 @@ O sitio NON terá acceso á cámara. As imaxes da cámara só poderás velas ti.
 <translation id="7638584964844754484">Contrasinal incorrecto</translation>
 <translation id="7641339528570811325">Borrar datos de navegación…</translation>
 <translation id="7648422057306047504">Encriptar contrasinais con credenciais de Google</translation>
-<translation id="7649070708921625228">Axuda</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7665369617277396874">Engadir conta</translation>
 <translation id="766587987807204883">Aquí aparecen os artigos e podes lelos mesmo cando esteas sen conexión</translation>
@@ -932,7 +905,6 @@ O sitio NON terá acceso á cámara. As imaxes da cámara só poderás velas ti.
 <translation id="7772032839648071052">Confirmar frase de acceso</translation>
 <translation id="7772375229873196092">Pechar <ph name="APP_NAME" /></translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 e <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> máis}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 e <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> máis}}</translation>
-<translation id="7781829728241885113">Onte</translation>
 <translation id="7791543448312431591">Engadir</translation>
 <translation id="780301667611848630">Non, grazas</translation>
 <translation id="7810647596859435254">Abrir con…</translation>
@@ -984,7 +956,6 @@ O sitio NON terá acceso á cámara. As imaxes da cámara só poderás velas ti.
 <translation id="8110087112193408731">Queres mostrar a túa actividade de Chrome en Benestar dixital?</translation>
 <translation id="8116925261070264013">Silenciados</translation>
 <translation id="813082847718468539">Consulta a información do sitio</translation>
-<translation id="8131740175452115882">Confirmar</translation>
 <translation id="8156139159503939589">Que idiomas sabes ler?</translation>
 <translation id="8168435359814927499">Contido</translation>
 <translation id="8186512483418048923">Quedan <ph name="FILES" /> ficheiros</translation>
@@ -994,7 +965,6 @@ O sitio NON terá acceso á cámara. As imaxes da cámara só poderás velas ti.
 <translation id="8218622182176210845">Xestiona a túa conta</translation>
 <translation id="8224471946457685718">Descargar artigos personalizados a través da wifi</translation>
 <translation id="8232956427053453090">Conservar datos</translation>
-<translation id="8249310407154411074">Mover á parte superior</translation>
 <translation id="8250920743982581267">Documentos</translation>
 <translation id="825412236959742607">Esta páxina utiliza demasiada memoria, polo que Chrome quitou parte do seu contido.</translation>
 <translation id="8260126382462817229">Proba a volver iniciar sesión</translation>
@@ -1045,7 +1015,6 @@ O sitio NON terá acceso á cámara. As imaxes da cámara só poderás velas ti.
 <translation id="857943718398505171">Permitido (recomendado)</translation>
 <translation id="8583805026567836021">Borrando datos da conta</translation>
 <translation id="860043288473659153">Nome do titular da tarxeta</translation>
-<translation id="8609465669617005112">Mover cara arriba</translation>
 <translation id="8616006591992756292">É posible que a túa conta de Google teña outras formas do historial de navegación en <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">Queres abrir o URL específico suxerido no contido descargado?</translation>
 <translation id="8636825310635137004">Activa a sincronización para sincronizar as pestanas dos demais dispositivos.</translation>
@@ -1059,9 +1028,7 @@ O sitio NON terá acceso á cámara. As imaxes da cámara só poderás velas ti.
 <translation id="868929229000858085">Busca nos teus contactos</translation>
 <translation id="869891660844655955">Data de vencemento</translation>
 <translation id="8719023831149562936">Non se pode transferir a pestana actual</translation>
-<translation id="8725066075913043281">Tentar de novo</translation>
 <translation id="8728487861892616501">Ao usar esta aplicación, aceptas as <ph name="BEGIN_LINK1" />Condicións de servizo<ph name="END_LINK1" /> e o <ph name="BEGIN_LINK2" />Aviso de privacidade<ph name="END_LINK2" /> de Chrome, así como o <ph name="BEGIN_LINK3" />Aviso de privacidade para contas de Google xestionadas a través de Family Link<ph name="END_LINK3" />.</translation>
-<translation id="8730621377337864115">Feito</translation>
 <translation id="8748850008226585750">Contido oculto</translation>
 <translation id="8751914237388039244">Selecciona unha imaxe</translation>
 <translation id="8758557275681689734">Ver todas as pestanas abertas</translation>

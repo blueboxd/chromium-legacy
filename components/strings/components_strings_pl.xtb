@@ -607,7 +607,7 @@
 <translation id="3828924085048779000">Puste hasło jest niedozwolone.</translation>
 <translation id="3831915413245941253">Administrator <ph name="ENROLLMENT_DOMAIN" /> zainstalował rozszerzenia obsługujące dodatkowe funkcje. Rozszerzenia mają dostęp do niektórych Twoich danych.</translation>
 <translation id="3832522519263485449">Wiele otworów po lewej</translation>
-<translation id="3838154488026099170">Przed chwilą wpisano hasło na stronie wprowadzającej w błąd. Chromium zaleca, by natychmiast zmienić je na <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> oraz na innych stronach, na których używasz tego hasła.</translation>
+<translation id="3838154488026099170">Przed chwilą wpisano hasło na stronie wprowadzającej w błąd. Chromium zaleca, by natychmiast zmienić je na <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> i <ph name="WEBSITE_3" /> oraz na innych stronach, na których go używasz.</translation>
 <translation id="385051799172605136">Wstecz</translation>
 <translation id="3858027520442213535">Zaktualizuj datę i godzinę</translation>
 <translation id="3884278016824448484">Konflikt identyfikatorów urządzeń</translation>
@@ -645,7 +645,7 @@
 <translation id="4072486802667267160">Podczas przetwarzania zamówienia wystąpił błąd. Spróbuj ponownie.</translation>
 <translation id="4075732493274867456">Klient i serwer nie obsługują wspólnej wersji protokołu SSL lub mechanizmu szyfrowania.</translation>
 <translation id="4075941231477579656">Touch ID</translation>
-<translation id="4077092919748553596">Przed chwilą wpisano hasło na stronie wprowadzającej w błąd. Chrome zaleca, by natychmiast zmienić je na <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> i <ph name="WEBSITE_3" /> oraz na innych stronach, na których używasz tego hasła.</translation>
+<translation id="4077092919748553596">Przed chwilą wpisano hasło na stronie wprowadzającej w błąd. Chrome zaleca, by natychmiast zmienić je na <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> i <ph name="WEBSITE_3" /> oraz na innych stronach, na których go używasz.</translation>
 <translation id="4079302484614802869">Proxy skonfigurowano do używania URL-a skryptu PAC, a nie ustalonych serwerów proxy.</translation>
 <translation id="4082393374666368382">Ustawienia – Zarządzanie</translation>
 <translation id="4098354747657067197">Wchodzisz na stronę wprowadzającą w błąd</translation>
@@ -934,6 +934,7 @@
 <translation id="5386426401304769735">Łańcuch certyfikatów tej witryny zawiera certyfikat podpisany za pomocą SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Zszywanie przy prawej krawędzi</translation>
+<translation id="5400836586163650660">Szary</translation>
 <translation id="540969355065856584">Ten serwer nie może udowodnić, że należy do domeny <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa nie jest obecnie ważny. Może to być spowodowane nieprawidłową konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="5421136146218899937">Wyczyść dane przeglądania...</translation>
 <translation id="5430298929874300616">Usuń zakładkę</translation>
@@ -1018,7 +1019,7 @@
 <translation id="5804241973901381774">Uprawnienia</translation>
 <translation id="5810442152076338065">Połączenie z <ph name="DOMAIN" /> jest szyfrowane przy użyciu przestarzałego zestawu szyfrów.</translation>
 <translation id="5813119285467412249">&amp;Ponów dodanie</translation>
-<translation id="5824687817967109979">{NUM_CARDS,plural, =1{Gdy zapłacisz, na karcie pojawi się obciążenie, ale dana strona nie pozna jej rzeczywistego numeru. Jako dodatkowe zabezpieczenie zostanie wygenerowany tymczasowy kod CVC.}few{Gdy zapłacisz, na wybranej karcie pojawi się obciążenie, ale dana strona nie pozna jej rzeczywistego numeru. Jako dodatkowe zabezpieczenie zostanie wygenerowany tymczasowy kod CVC.}many{Gdy zapłacisz, na wybranej karcie pojawi się obciążenie, ale dana strona nie pozna jej rzeczywistego numeru. Jako dodatkowe zabezpieczenie zostanie wygenerowany tymczasowy kod CVC.}other{Gdy zapłacisz, na wybranej karcie pojawi się obciążenie, ale dana strona nie pozna jej rzeczywistego numeru. Jako dodatkowe zabezpieczenie zostanie wygenerowany tymczasowy kod CVC.}}</translation>
+<translation id="5824687817967109979">{NUM_CARDS,plural, =1{Gdy zapłacisz, karta zostanie obciążona, ale dana strona nie pozna jej rzeczywistego numeru. Jako dodatkowe zabezpieczenie zostanie wygenerowany tymczasowy kod CVC.}few{Gdy zapłacisz, wybrana karta zostanie obciążona, ale dana strona nie pozna jej rzeczywistego numeru. Jako dodatkowe zabezpieczenie zostanie wygenerowany tymczasowy kod CVC.}many{Gdy zapłacisz, wybrana karta zostanie obciążona, ale dana strona nie pozna jej rzeczywistego numeru. Jako dodatkowe zabezpieczenie zostanie wygenerowany tymczasowy kod CVC.}other{Gdy zapłacisz, wybrana karta zostanie obciążona, ale dana strona nie pozna jej rzeczywistego numeru. Jako dodatkowe zabezpieczenie zostanie wygenerowany tymczasowy kod CVC.}}</translation>
 <translation id="583281660410589416">Nieznany</translation>
 <translation id="5838278095973806738">Nie podawaj żadnych informacji poufnych (takich jak hasła czy dane kart kredytowych) w tej witrynie, bo osoby atakujące będą mogły je wykraść.</translation>
 <translation id="5851548754964597211">Lista kart</translation>
@@ -1493,7 +1494,7 @@ Dodatkowe informacje:
 <translation id="8105368624971345109">Wyłącz</translation>
 <translation id="8118489163946903409">Forma płatności</translation>
 <translation id="8127301229239896662">Oprogramowanie „<ph name="SOFTWARE_NAME" />” nie zostało prawidłowo zainstalowane na komputerze lub w sieci. Poproś administratora o rozwiązanie tego problemu.</translation>
-<translation id="8128526133099929547">Przed chwilą wpisano hasło na stronie wprowadzającej w błąd. Chrome zaleca, by natychmiast zmienić je na <ph name="WEBSITE_1" /> oraz na innych stronach, na których używasz tego hasła.</translation>
+<translation id="8128526133099929547">Przed chwilą wpisano hasło na stronie wprowadzającej w błąd. Chrome zaleca, by natychmiast zmienić je na <ph name="WEBSITE_1" /> oraz na innych stronach, na których go używasz.</translation>
 <translation id="8131740175452115882">Potwierdź</translation>
 <translation id="8149426793427495338">Twój komputer przeszedł w tryb uśpienia.</translation>
 <translation id="8150722005171944719">Nie można odczytać pliku <ph name="URL" />. Być może został usunięty lub uprawnienia dostępu uniemożliwiają jego odczyt.</translation>
@@ -1511,7 +1512,7 @@ Dodatkowe informacje:
 <translation id="8218327578424803826">Przypisana lokalizacja:</translation>
 <translation id="8220146938470311105">C7/C6 (koperta)</translation>
 <translation id="8220639454292072926">Raportowanie w firmie</translation>
-<translation id="8221250263817408492">Przed chwilą wpisano hasło na stronie wprowadzającej w błąd. Chromium zaleca, by natychmiast zmienić je na <ph name="WEBSITE_1" /> oraz na innych stronach, na których używasz tego hasła.</translation>
+<translation id="8221250263817408492">Przed chwilą wpisano hasło na stronie wprowadzającej w błąd. Chromium zaleca, by natychmiast zmienić je na <ph name="WEBSITE_1" /> oraz na innych stronach, na których go używasz.</translation>
 <translation id="8225771182978767009">Administrator tego komputera zablokował tę witrynę.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">Otwórz stronę w nowej karcie incognito</translation>
@@ -1715,6 +1716,7 @@ Dodatkowe informacje:
 <translation id="988159990683914416">Build</translation>
 <translation id="989988560359834682">Edytuj adres</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992256792861109788">Różowy</translation>
 <translation id="992432478773561401">Oprogramowanie „<ph name="SOFTWARE_NAME" />” nie zostało prawidłowo zainstalowane na komputerze lub w sieci:
     &lt;ul&gt;
     &lt;li&gt;Odinstaluj lub wyłącz oprogramowanie „<ph name="SOFTWARE_NAME" />”.&lt;/li&gt;

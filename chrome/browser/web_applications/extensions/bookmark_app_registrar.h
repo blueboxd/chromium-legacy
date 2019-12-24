@@ -42,6 +42,7 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
   std::vector<WebApplicationIconInfo> GetAppIconInfos(
       const web_app::AppId& app_id) const override;
   std::vector<web_app::AppId> GetAppIds() const override;
+  web_app::WebAppRegistrar* AsWebAppRegistrar() override;
 
   // ExtensionRegistryObserver:
   void OnExtensionUninstalled(content::BrowserContext* browser_context,

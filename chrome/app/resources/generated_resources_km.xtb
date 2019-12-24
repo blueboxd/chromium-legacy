@@ -110,7 +110,6 @@
 <translation id="114721135501989771">ទទួលបាន​មុខងារ​ឆ្លាតវៃ​របស់ Google នៅក្នុង Chrome</translation>
 <translation id="1147991416141538220">ដើម្បី​ស្នើសុំ​សិទ្ធិចូល​ប្រើប្រាស់ សូម​ទាក់ទង​អ្នកគ្រប់គ្រង​ឧបករណ៍​នេះ​។</translation>
 <translation id="1149401351239820326">ខែផុតកំណត់</translation>
-<translation id="1150490752229770117">នេះគឺជាការដំឡើង​កំណែកម្មវិធី និងសុវត្ថិភាពថ្មី​ដោយស្វ័យប្រវត្តិចុងក្រោយ​សម្រាប់ <ph name="DEVICE_TYPE" /> នេះ។ ដើម្បី​ទទួលបាន​កំណែថ្មីក្នុងពេលអនាគត សូមប្ដូរទៅប្រើម៉ូដែលថ្មីជាងនេះ។ <ph name="LINK_BEGIN" />ស្វែងយល់បន្ថែម<ph name="LINK_END" /></translation>
 <translation id="1150565364351027703">វ៉ែនតា​ការពារពន្លឺព្រះអាទិត្យ</translation>
 <translation id="1151917987301063366">អនុញ្ញាត <ph name="HOST" /> ឱ្យ​ចូលប្រើ​ឧបករណ៍​ចាប់សញ្ញា​ជានិច្ច</translation>
 <translation id="1153356358378277386">ឧបករណ៍​ដែល​បាន​ផ្គូផ្គង</translation>
@@ -461,6 +460,7 @@
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> ចង់​ពិនិត្យ​មើលថាអ្នកកំពុង​ប្រើឧបករណ៍ Chrome OS ដែលមាន​សិទ្ធិឬអត់។</translation>
 <translation id="1640235262200048077"><ph name="IME_NAME" /> មិនទាន់ដំណើរការ​នៅក្នុង​កម្មវិធី Linux នៅឡើយទេ</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 ជាមួយនឹងការអ៊ីនគ្រីប RSA</translation>
+<translation id="1641113438599504367">ការរុករកសុវត្ថិភាព</translation>
 <translation id="1642494467033190216">តម្រូវឲ្យមានការយកចេញការការពារ rootfs និងការចាប់ផ្តើមឡើងវិញ មុនពេលបើកដំណើរការលក្ខណៈពិសេសកម្ចាត់កំហុសផ្សេងទៀត។</translation>
 <translation id="1643072738649235303">ហត្ថលេខា X9.62 ECDSA ជាមួយ SHA-1</translation>
 <translation id="1644574205037202324">ប្រវត្តិ</translation>
@@ -1956,7 +1956,6 @@
 <translation id="3732530910372558017">កូដ PIN ត្រូវតែមានយ៉ាងច្រើន​បំផុត 63 តួ</translation>
 <translation id="3733127536501031542">ម៉ាស៊ីនមេ SSL ជាមួយនឹង Step-up</translation>
 <translation id="3735740477244556633">តម្រៀបតាម</translation>
-<translation id="3736016243818847857">តើអ្នក​ចង់បន្តដែរទេ?</translation>
 <translation id="3737274407993947948">មានបញ្ហា​ក្នុងការ​ដំឡើង Linux...</translation>
 <translation id="3737536731758327622">ការទាញយករបស់អ្នកបង្ហាញនៅទីនេះ</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -2665,7 +2664,6 @@
 <translation id="4798236378408895261">ភ្ជាប់<ph name="BEGIN_LINK" />កំណត់ហេតុ​ប៊្លូធូស<ph name="END_LINK" /> (ផ្ទៃក្នុង Google)</translation>
 <translation id="4801448226354548035">លាក់គណនី</translation>
 <translation id="4801512016965057443">អនុញ្ញាតការរ៉ូមីងទិន្នន័យទូរស័ព្ទ</translation>
-<translation id="4804756772600045300">ការបន្តនឹង​បើក​ការជួសជុល ADB សម្រាប់​បង្កើត និងធ្វើតេស្ត​កម្មវិធី Android។ សូមចំណាំថា ការជួសជុល ADB អនុញ្ញាត​ការដំឡើងកម្មវិធី​ធ្វើតេស្ត ដែលមិនមាន​ការផ្ទៀងផ្ទាត់ពី Google។</translation>
 <translation id="4804818685124855865">ផ្តាច់</translation>
 <translation id="4804827417948292437">ផ្លែបឺរ</translation>
 <translation id="4805077164141082536">យើង​សូមណែនាំឱ្យ​អ្នក​បម្រុងទុក​ទម្រង់ផ្ទុក Linux បច្ចុប្បន្ន​របស់អ្នក​មុននឹង​ដំឡើងកំណែ​។</translation>
@@ -3280,7 +3278,7 @@
 <translation id="5687326903064479980">ល្វែងម៉ោង</translation>
 <translation id="5689516760719285838">ទីតាំង</translation>
 <translation id="56907980372820799">ភ្ជាប់ទិន្នន័យ</translation>
-<translation id="5691180005790455277">ទិន្នន័យ និង​ខូគី​ទាំងអស់​ដែល <ph name="SITE_GROUP_NAME" /> រក្សាទុក និង​គេហទំព័រ​ទាំងឡាយ​ដែល​ស្ថិតក្រោម​ការគ្រប់គ្រង​របស់វា​នឹង​ត្រូវ​សម្អាត​។</translation>
+<translation id="5691180005790455277">ទិន្នន័យ និង​ខូគី​ទាំងអស់​ដែលបានរក្សាទុកដោយ <ph name="SITE_GROUP_NAME" /> និង​គេហទំព័រ​ទាំងឡាយ​ដែល​ស្ថិតក្រោម​ការគ្រប់គ្រង​របស់វា​នឹង​ត្រូវ​សម្អាត​។</translation>
 <translation id="5691511426247308406">គ្រួសារ</translation>
 <translation id="5692183275898619210">បាន​បញ្ចប់​ការ​បោះពុម្ព​​</translation>
 <translation id="5696143504434933566">រាយការណ៍​ពី​ការបំពាន​ពី "<ph name="EXTENSION_NAME" />"</translation>
@@ -4607,6 +4605,7 @@
 <translation id="7631205654593498032">នៅពេលភ្ជាប់​ឧបករណ៍​របស់អ្នក មានន័យ​ថាអ្នក​យល់ព្រមឱ្យ <ph name="DEVICE_TYPE" /> របស់អ្នក​អាច៖</translation>
 <translation id="7631887513477658702">បើកឯកសារប្រភេទនេះជានិច្ច</translation>
 <translation id="7632948528260659758">កម្មវិធីបញ្ជរខាងក្រោមបានបរាជ័យក្នុងការធ្វើបច្ចុប្បន្នភាព៖</translation>
+<translation id="7634566076839829401">មានបញ្ហាអ្វីមួយកើតឡើង។ សូមព្យាយាមម្តងទៀត។</translation>
 <translation id="763632859238619983">កុំ​អនុញ្ញាត​ឱ្យ​ទំព័រ​ដំឡើង​ឧបករណ៍​ដោះស្រាយ​ការ​បង់​ប្រាក់</translation>
 <translation id="7636919061354591437">ដំឡើង​នៅលើ​ឧបករណ៍​នេះ</translation>
 <translation id="7638605456503525968">រន្ធ​ស៊េរី</translation>

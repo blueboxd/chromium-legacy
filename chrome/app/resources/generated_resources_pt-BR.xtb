@@ -110,7 +110,6 @@
 <translation id="114721135501989771">A tecnologia Google no Chrome</translation>
 <translation id="1147991416141538220">Para solicitar acesso, entre em contato com o administrador deste dispositivo.</translation>
 <translation id="1149401351239820326">Mês de expiração</translation>
-<translation id="1150490752229770117">Esta é a última atualização automática de software e segurança deste <ph name="DEVICE_TYPE" />. Para receber atualizações futuras, faça upgrade para um modelo mais novo. <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" /></translation>
 <translation id="1150565364351027703">Óculos de sol</translation>
 <translation id="1151917987301063366">Sempre permitir que <ph name="HOST" /> acesse os sensores</translation>
 <translation id="1153356358378277386">Dispositivos pareados</translation>
@@ -461,6 +460,7 @@
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> quer verificar se você está usando um dispositivo Chrome OS qualificado.</translation>
 <translation id="1640235262200048077">O <ph name="IME_NAME" /> ainda não funciona com aplicativos do Linux</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 com criptografia RSA</translation>
+<translation id="1641113438599504367">Navegação segura</translation>
 <translation id="1642494467033190216">É necessário remover a proteção roofts e reiniciar antes de ativar outros recursos de depuração.</translation>
 <translation id="1643072738649235303">Assinatura X9.62 ECDSA com SHA-1</translation>
 <translation id="1644574205037202324">Histórico</translation>
@@ -1956,7 +1956,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3732530910372558017">O PIN precisa ter no máximo 63 caracteres</translation>
 <translation id="3733127536501031542">Servidor SSL com Step-up</translation>
 <translation id="3735740477244556633">Classificar por</translation>
-<translation id="3736016243818847857">Quer continuar?</translation>
 <translation id="3737274407993947948">Erro ao instalar o Linux…</translation>
 <translation id="3737536731758327622">Seus downloads são exibidos aqui</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -2665,7 +2664,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4798236378408895261">Anexar <ph name="BEGIN_LINK" />registros de Bluetooth<ph name="END_LINK" /> (interno do Google)</translation>
 <translation id="4801448226354548035">Ocultar contas</translation>
 <translation id="4801512016965057443">Permitir roaming de dados móveis</translation>
-<translation id="4804756772600045300">Se você continuar, a depuração do adb será ativada para a criação e o teste de apps para Android. A depuração do adb permite a instalação de apps de teste que não foram verificados pelo Google.</translation>
 <translation id="4804818685124855865">Desconectar</translation>
 <translation id="4804827417948292437">Abacate</translation>
 <translation id="4805077164141082536">Recomendamos que você faça um backup do seu contêiner atual do Linux antes de fazer upgrade.</translation>
@@ -2744,7 +2742,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4900392736118574277">Sua página de inicialização foi alterada para <ph name="URL" />.</translation>
 <translation id="4902546322522096650">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, intensidade do sinal em <ph name="SIGNAL_STRENGTH" />%, conectada</translation>
 <translation id="49027928311173603">A política baixada do servidor é inválida: <ph name="VALIDATION_ERROR" />.</translation>
-<translation id="4906490889887219338">Configurar ou gerenciar compartilhamentos de arquivos de rede. <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" /></translation>
+<translation id="4906490889887219338">Configurar ou gerenciar compartilhamentos de arquivos em rede. <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" /></translation>
 <translation id="4907161631261076876">Esse arquivo não é transferido com frequência e pode ser perigoso.</translation>
 <translation id="4907306957610201395">Categoria de permissão</translation>
 <translation id="4908811072292128752">Abra uma nova guia para navegar em dois sites de uma vez</translation>
@@ -4608,6 +4606,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7631205654593498032">Ao conectar os dispositivos, você concorda que seu <ph name="DEVICE_TYPE" /> pode:</translation>
 <translation id="7631887513477658702">&amp;Sempre abrir arquivos deste tipo</translation>
 <translation id="7632948528260659758">Os seguintes aplicativos de quiosque tiveram falha na atualização:</translation>
+<translation id="7634566076839829401">Ocorreu um erro. Tente novamente.</translation>
 <translation id="763632859238619983">Não permitir que nenhum site instale gerenciadores de pagamento</translation>
 <translation id="7636919061354591437">Instalar neste dispositivo</translation>
 <translation id="7638605456503525968">Portas seriais</translation>

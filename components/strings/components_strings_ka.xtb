@@ -918,6 +918,7 @@
 <translation id="5386426401304769735">ამ საიტის სერტიფიკატთა ჯაჭვი SHA-1-ის მეშვეობით ხელმოწერილ სერტიფიკატს შეიცავს.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">კიდეების მიკერება მარჯვნივ</translation>
+<translation id="5400836586163650660">ნაცრისფერი</translation>
 <translation id="540969355065856584">ეს სერვერი ვერ ამტკიცებს, რომ ის არის <ph name="DOMAIN" />; მისი უსაფრთხოების სერთიფიკატი ამჟამად არასწორია. ეს შეიძლება იყოს გამოწვეული არასწორი კონფიგურაციით ან თავდამსხმელის მიერ თქვენი კავშირის ხელში ჩაგდებით.</translation>
 <translation id="5421136146218899937">დათვალიერების მონაცემების გასუფთავება…</translation>
 <translation id="5430298929874300616">სანიშნის ამოშლა</translation>
@@ -1699,6 +1700,7 @@
 <translation id="988159990683914416">დეველოპერის კონსტრუქცია</translation>
 <translation id="989988560359834682">მისამართის რედაქტირება</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992256792861109788">ვარდისფერი</translation>
 <translation id="992432478773561401">„<ph name="SOFTWARE_NAME" />“ არასათანადოდ დაინსტალირდა თქვენს კომპიუტერზე ან ქსელში:
     &lt;ul&gt;
     &lt;li&gt;ცადეთ „<ph name="SOFTWARE_NAME" />“-ის დეინსტალაცია ან გათიშვა&lt;/li&gt;

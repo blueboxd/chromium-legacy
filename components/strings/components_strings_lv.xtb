@@ -931,6 +931,7 @@
 <translation id="5386426401304769735">Šīs vietnes sertifikātu ķēdē ir iekļauts sertifikāts, kas ir parakstīts, izmantojot SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Malu sašuvums labajā pusē</translation>
+<translation id="5400836586163650660">Pelēka</translation>
 <translation id="540969355065856584">Šis serveris nevarēja pierādīt, ka šī ir vietne <ph name="DOMAIN" />; tā drošības sertifikāts šobrīd nav derīgs. Iespējams, tas ir nepareizas konfigurācijas dēļ vai arī kāds ļaunprātīgi izmanto jūsu savienojumu.</translation>
 <translation id="5421136146218899937">Notīrīt pārlūkošanas datus</translation>
 <translation id="5430298929874300616">Noņemt grāmatzīmi</translation>
@@ -1015,7 +1016,7 @@
 <translation id="5804241973901381774">Atļaujas</translation>
 <translation id="5810442152076338065">Savienojums ar domēnu <ph name="DOMAIN" /> ir šifrēts, izmantojot novecojušu šifra komplektu.</translation>
 <translation id="5813119285467412249">&amp;Pievienošanas atsaukuma atcelšana</translation>
-<translation id="5824687817967109979">{NUM_CARDS,plural, =1{Kad veiksiet maksājumus, no šīs kartes tiks iekasēta maksa, taču kartes patiesais numurs netiks kopīgots ar šo vietni. Papildu drošībai tiks ģenerēts pagaidu CVC.}zero{Kad veiksiet maksājumus, no atlasītās kartes tiks iekasēta maksa, taču kartes patiesais numurs netiks kopīgots ar šo vietni. Papildu drošībai tiks ģenerēts pagaidu CVC.}one{Kad veiksiet maksājumus, no atlasītās kartes tiks iekasēta maksa, taču kartes patiesais numurs netiks kopīgots ar šo vietni. Papildu drošībai tiks ģenerēts pagaidu CVC.}other{Kad veiksiet maksājumus, no atlasītās kartes tiks iekasēta maksa, taču kartes patiesais numurs netiks kopīgots ar šo vietni. Papildu drošībai tiks ģenerēts pagaidu CVC.}}</translation>
+<translation id="5824687817967109979">{NUM_CARDS,plural, =1{Kad veiksiet maksājumus, no šīs kartes tiks iekasēta maksa, taču kartes īstais numurs netiks kopīgots ar šo vietni. Papildu drošībai tiks ģenerēts pagaidu CVC.}zero{Kad veiksiet maksājumus, no atlasītās kartes tiks iekasēta maksa, taču kartes īstais numurs netiks kopīgots ar šo vietni. Papildu drošībai tiks ģenerēts pagaidu CVC.}one{Kad veiksiet maksājumus, no atlasītās kartes tiks iekasēta maksa, taču kartes īstais numurs netiks kopīgots ar šo vietni. Papildu drošībai tiks ģenerēts pagaidu CVC.}other{Kad veiksiet maksājumus, no atlasītās kartes tiks iekasēta maksa, taču kartes īstais numurs netiks kopīgots ar šo vietni. Papildu drošībai tiks ģenerēts pagaidu CVC.}}</translation>
 <translation id="583281660410589416">Nezināms</translation>
 <translation id="5838278095973806738">Neievadiet šajā vietnē sensitīvu informāciju (piemēram, paroles vai kredītkartes), jo to var nozagt uzbrucēji.</translation>
 <translation id="5851548754964597211">Ciļņu saraksts</translation>
@@ -1713,6 +1714,7 @@ Papildu informācija:
 <translation id="988159990683914416">Attīstītāja konstrukcija</translation>
 <translation id="989988560359834682">Rediģēt adresi</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992256792861109788">Rozā</translation>
 <translation id="992432478773561401">Programmatūra <ph name="SOFTWARE_NAME" /> netika pareizi instalēta datorā vai tīklā.
     &lt;ul&gt;
     &lt;li&gt;Mēģiniet atinstalēt vai atspējot programmatūru <ph name="SOFTWARE_NAME" />.&lt;/li&gt;

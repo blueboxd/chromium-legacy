@@ -15,11 +15,6 @@ var cca = cca || {};
 cca.util = cca.util || {};
 
 /**
- * import {Resolution} from '../type.js';
- */
-var Resolution = Resolution || {};
-
-/**
  * Gets the clockwise rotation and flip that can orient a photo to its upright
  * position.
  * @param {!Blob} blob JPEG blob that might contain EXIF orientation field.
@@ -411,7 +406,7 @@ cca.util.fitWindow = function() {
 
   /**
    * Get a preferred window size which can fit in current screen.
-   * @return {Resolution} Preferred window size.
+   * @return {cca.Resolution} Preferred window size.
    */
   const getPreferredWindowSize = () => {
     const inner = appWindow.innerBounds;
@@ -429,7 +424,7 @@ cca.util.fitWindow = function() {
     preferredWidth -= preferredWidth % 16;
     const preferredHeight = preferredWidth * 9 / 16;
 
-    return new Resolution(preferredWidth, preferredHeight);
+    return new cca.Resolution(preferredWidth, preferredHeight);
   };
 
   const {width, height} = getPreferredWindowSize();

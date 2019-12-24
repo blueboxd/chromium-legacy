@@ -6,6 +6,9 @@
 /** @type {!MockVolumeManager} */
 let volumeManager;
 
+/** @type {!MockProgressCenter} */
+let progressCenter;
+
 /** @type {!DeviceHandler} */
 let deviceHandler;
 
@@ -27,6 +30,9 @@ function setUp() {
     DEVICE_UNSUPPORTED_MESSAGE: 'DEVICE_UNSUPPORTED: $1',
     DEVICE_UNKNOWN_MESSAGE: 'DEVICE_UNKNOWN: $1',
     MULTIPART_DEVICE_UNSUPPORTED_MESSAGE: 'MULTIPART_DEVICE_UNSUPPORTED: $1',
+    FORMAT_PROGRESS_MESSAGE: 'FORMAT_PROGRESS_MESSAGE: $1',
+    FORMAT_SUCCESS_MESSAGE: 'FORMAT_SUCCESS_MESSAGE: $1',
+    FORMAT_FAILURE_MESSAGE: 'FORMAT_FAILURE_MESSAGE: $1',
   };
   window.loadTimeData.getString = id => {
     return window.loadTimeData.data_[id] || id;
@@ -42,7 +48,9 @@ function setUp() {
   volumeManager = new MockVolumeManager();
   MockVolumeManager.installMockSingleton(volumeManager);
 
-  deviceHandler = new DeviceHandler();
+  progressCenter = new MockProgressCenter();
+
+  deviceHandler = new DeviceHandler(progressCenter);
 }
 
 function setUpInIncognitoContext() {
@@ -566,34 +574,37 @@ function testDisabledDevice() {
 
 function testFormatSucceeded() {
   mockChrome.fileManagerPrivate.onDeviceChanged.dispatch(
-      {type: 'format_start', devicePath: '/device/path'});
-  assertEquals(1, Object.keys(mockChrome.notifications.items).length);
+      {type: 'format_start', devicePath: '/device/path', deviceLabel: 'label'});
+  assertEquals(1, progressCenter.getItemCount());
   assertEquals(
-      'FORMATTING_OF_DEVICE_PENDING_MESSAGE',
-      mockChrome.notifications.items['formatStart:/device/path'].message);
+      'FORMAT_PROGRESS_MESSAGE: label',
+      progressCenter.getItemById('format:/device/path').message);
 
-  mockChrome.fileManagerPrivate.onDeviceChanged.dispatch(
-      {type: 'format_success', devicePath: '/device/path'});
-  assertEquals(1, Object.keys(mockChrome.notifications.items).length);
+  mockChrome.fileManagerPrivate.onDeviceChanged.dispatch({
+    type: 'format_success',
+    devicePath: '/device/path',
+    deviceLabel: 'label'
+  });
+  assertEquals(1, progressCenter.getItemCount());
   assertEquals(
-      'FORMATTING_FINISHED_SUCCESS_MESSAGE',
-      mockChrome.notifications.items['formatSuccess:/device/path'].message);
+      'FORMAT_SUCCESS_MESSAGE: label',
+      progressCenter.getItemById('format:/device/path').message);
 }
 
 function testFormatFailed() {
   mockChrome.fileManagerPrivate.onDeviceChanged.dispatch(
-      {type: 'format_start', devicePath: '/device/path'});
-  assertEquals(1, Object.keys(mockChrome.notifications.items).length);
+      {type: 'format_start', devicePath: '/device/path', deviceLabel: 'label'});
+  assertEquals(1, progressCenter.getItemCount());
   assertEquals(
-      'FORMATTING_OF_DEVICE_PENDING_MESSAGE',
-      mockChrome.notifications.items['formatStart:/device/path'].message);
+      'FORMAT_PROGRESS_MESSAGE: label',
+      progressCenter.getItemById('format:/device/path').message);
 
   mockChrome.fileManagerPrivate.onDeviceChanged.dispatch(
-      {type: 'format_fail', devicePath: '/device/path'});
-  assertEquals(1, Object.keys(mockChrome.notifications.items).length);
+      {type: 'format_fail', devicePath: '/device/path', deviceLabel: 'label'});
+  assertEquals(1, progressCenter.getItemCount());
   assertEquals(
-      'FORMATTING_FINISHED_FAILURE_MESSAGE',
-      mockChrome.notifications.items['formatFail:/device/path'].message);
+      'FORMAT_FAILURE_MESSAGE: label',
+      progressCenter.getItemById('format:/device/path').message);
 }
 
 function testRenameSucceeded() {
@@ -654,10 +665,9 @@ function testNotificationClicked(callback) {
 function testMiscMessagesInIncognito() {
   setUpInIncognitoContext();
   mockChrome.fileManagerPrivate.onDeviceChanged.dispatch(
-      {type: 'format_start', devicePath: '/device/path'});
+      {type: 'format_start', devicePath: '/device/path', deviceLabel: 'label'});
   // No notification sent by this instance in incognito context.
-  assertEquals(0, Object.keys(mockChrome.notifications.items).length);
-  assertFalse(mockChrome.notifications.resolver.settled);
+  assertEquals(0, progressCenter.getItemCount());
 }
 
 function testMountCompleteInIncognito() {

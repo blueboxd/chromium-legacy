@@ -379,7 +379,7 @@
 
       Khi bạn không đặt chính sách này hoặc đặt chính sách thành tắt, các trang sẽ không được phép hiển thị cửa sổ bật lên khi đang hủy tải trang, theo thông số kỹ thuật (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
 
-      Chính sách này sẽ bị xóa trong Chrome 88.
+      Chính sách này sẽ bị loại bỏ trong Chrome 88.
 
       Vui lòng xem tại https://www.chromestatus.com/feature/5989473649164288.</translation>
 <translation id="1559980755219453326">Chính sách này kiểm soát việc có nên báo cáo thông tin về tiện ích và plugin hay không.
@@ -854,7 +854,7 @@
 
       Để biết thông tin chi tiết về <ph name="CORS" />, hãy truy cập vào: <ph name="CORS_HELP_URL" />.
 
-      Xin lưu ý rằng chính sách này sẽ bị xóa trong <ph name="PRODUCT_NAME" /> phiên bản 82.</translation>
+      Xin lưu ý rằng chính sách này sẽ bị loại bỏ trong <ph name="PRODUCT_NAME" /> phiên bản 82.</translation>
 <translation id="2236488539271255289">Không cho phép bất kỳ trang web nào lưu dữ liệu trên máy</translation>
 <translation id="2240879329269430151">Cho phép bạn đặt liệu các trang web có được phép hiển thị cửa sổ bật lên hay không. Bạn có thể cho phép hoặc từ chối hiển thị cửa sổ bật lên đối với tất cả các trang web.
 
@@ -1540,7 +1540,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Khi bạn không đặt chính sách này hoặc đặt chính sách thành tắt, các trang sẽ không được phép gửi các yêu cầu XHR đồng bộ trong khi đóng trang.
 
-      Chính sách này sẽ bị xóa trong Chrome 88.
+      Chính sách này sẽ bị loại bỏ trong Chrome 88.
 
       Vui lòng xem tại https://www.chromestatus.com/feature/4664843055398912.</translation>
 <translation id="3303653927512453822">Cho phép bạn đưa tất cả các cookie quay lại về hành vi <ph name="ATTRIBUTE_SAMESITE_NAME" /> cũ. Việc quay lại về hành vi cũ sẽ khiến những cookie không chỉ định thuộc tính <ph name="ATTRIBUTE_SAMESITE_NAME" /> sẽ được xử lý như thể là "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />" và loại bỏ yêu cầu cookie "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />" phải mang thuộc tính "<ph name="ATTRIBUTE_SECURE_NAME" />". Để xem thông tin chi tiết, vui lòng truy cập https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies.
@@ -2456,9 +2456,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu bạn đã tắt hoặc chưa đặt chính sách này, các trang web sẽ không được phép chuyển tới và mở cửa sổ/tab mới cùng một lúc.</translation>
 <translation id="4680961954980851756">Bật Tự động điền</translation>
 <translation id="4693779768620889402">Đích dựa trên tiện ích</translation>
-<translation id="4699592681017489215">Chính sách này định cấu hình một nút chuyển cục bộ có thể dùng để tắt các tùy chọn kiểm tra chặn hệ thống tên miền (DNS). Các tùy chọn kiểm tra dùng để khám phá xem trình duyệt có ở sau một proxy chuyển hướng các tên máy chủ không xác định không.
+<translation id="4699592681017489215">Chính sách này định cấu hình một công tắc cục bộ có thể dùng để tắt các tùy chọn kiểm tra chặn hệ thống tên miền (DNS). Các tùy chọn kiểm tra dùng để khám phá xem trình duyệt có ở sau một proxy chuyển hướng các tên máy chủ không xác định không.
 
-      Tính năng phát hiện này có thể không cần thiết trong môi trường doanh nghiệp có cấu hình mạng xác định, do tạo ra một số lưu lượng truy cập HTTP và DNS khi khởi động cũng như mỗi khi thay đổi cấu hình DNS.
+      Tính năng phát hiện này có thể không cần thiết trong môi trường doanh nghiệp có cấu hình mạng xác định, do môi trường này tạo ra một số lưu lượng truy cập HTTP và DNS khi khởi động cũng như mỗi khi thay đổi cấu hình DNS.
 
       Khi bạn không đặt chính sách này hoặc đặt chính sách thành bật, các tùy chọn kiểm tra chặn DNS sẽ được áp dụng. Khi bạn tắt hoàn toàn chính sách này, các tùy chọn kiểm tra nói trên sẽ không được áp dụng.</translation>
 <translation id="4703402283970867140">Bật mô hình giảm độ sáng thông minh để kéo dài thời gian cho đến khi màn hình tối đi</translation>
@@ -3525,11 +3525,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu bạn đặt tùy chọn cài đặt này thành False hoặc không đặt, thì quy trình triển khai mới sẽ được sử dụng và có thể gây ra các sự cố tương thích cụ thể đối với doanh nghiệp.
 
-      Chính sách này sẽ bị xóa sau một số mốc thời gian.
+      Chính sách này sẽ bị loại bỏ sau một số mốc thời gian.
 
       Để biết thông tin chi tiết về <ph name="CORS" />, hãy truy cập vào: <ph name="CORS_HELP_URL" />.
 
-      Xin lưu ý rằng chính sách này sẽ bị xóa trong <ph name="PRODUCT_NAME" /> phiên bản 82.</translation>
+      Xin lưu ý rằng chính sách này sẽ bị loại bỏ trong <ph name="PRODUCT_NAME" /> phiên bản 82.</translation>
 <translation id="6488627892044759800">Định cấu hình loại trang chủ mặc định trong <ph name="PRODUCT_NAME" /> và ngăn không cho người dùng thay đổi các tùy chọn trang chủ. Bạn có thể đặt trang chủ thành một URL mà bạn chỉ định hoặc đặt thành trang tab mới.
 
           Nếu bạn bật tùy chọn cài đặt này, thì Trang tab mới luôn được dùng cho trang chủ và vị trí URL trang chủ sẽ bị bỏ qua.
@@ -3925,7 +3925,7 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 
           Nếu bạn đặt chính sách này thành tắt, thì nút chuột trái sẽ luôn là nút chuột chính.
 
-          Nếu bạn đặt chính sách này, người dùng sẽ không thể thay đổi hay ghi đè chính sách.
+          Nếu bạn đặt chính sách này, thì người dùng sẽ không thể thay đổi hay ghi đè chính sách.
 
           Nếu bạn không đặt chính sách này, thì ban đầu, nút chuột trái sẽ là nút chuột chính. Tuy nhiên, người dùng có thể chuyển đổi bất kỳ lúc nào.</translation>
 <translation id="713712866686796666">Đặt cấu hình ngày cho chế độ chuyển đổi điện năng cao điểm.

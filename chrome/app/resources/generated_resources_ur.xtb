@@ -110,7 +110,6 @@
 <translation id="114721135501989771">‏Chrome میں Google کی اسمارٹ سروسز حاصل کریں</translation>
 <translation id="1147991416141538220">رسائی طلب کرنے کے لیے، اس آلہ کے منتظم سے رابطہ کریں۔</translation>
 <translation id="1149401351239820326">میعاد کے اختتام کا مہینہ</translation>
-<translation id="1150490752229770117">یہ اس <ph name="DEVICE_TYPE" /> کے لیے آخری خودکار سافٹ ویئر اور سیکیورٹی اپ ڈیٹ ہے۔ آئندہ کے اپ ڈیٹس حاصل کرنے کے لیے، نئے ماڈل پر اپ گریڈ کریں۔ <ph name="LINK_BEGIN" />مزید جانیں<ph name="LINK_END" /></translation>
 <translation id="1150565364351027703">دھوپ کا چشمہ</translation>
 <translation id="1151917987301063366"><ph name="HOST" /> کو ہمیشہ سینسرز تک رسائی حاصل کرنے کی اجازت دیں</translation>
 <translation id="1153356358378277386">جوڑا بنائے ہوئے آلات</translation>
@@ -462,6 +461,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="163993578339087550">‏<ph name="SERVICE_NAME" /> چیک کرنا چاہتا ہے کہ آیا آپ اہل Chrome OS آلہ استعمال کررہے ہیں۔</translation>
 <translation id="1640235262200048077">‏<ph name="IME_NAME" /> Linux ایپس پر ابھی کام نہیں کرتا ہے</translation>
 <translation id="1640283014264083726">‏PKCS #1 MD4 مع RSA مرموز کاری</translation>
+<translation id="1641113438599504367">محفوظ براؤزنگ</translation>
 <translation id="1642494467033190216">‏ڈیبگ کی دیگر خصوصیات فعال کرنے سے پہلے rootfs کا تحفظ ہٹائے جانے اور دوبارہ شروع کرنے کی ضرورت ہے۔</translation>
 <translation id="1643072738649235303">‏X9.62 ECDSA SHA-1 والا دستخط</translation>
 <translation id="1644574205037202324">سرگزشت</translation>
@@ -1957,7 +1957,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="3732530910372558017">‏PIN زیادہ سے زیادہ 63 حروف پر مشتمل ہونا چاہیے</translation>
 <translation id="3733127536501031542">‏Step-up والا SSL سرور</translation>
 <translation id="3735740477244556633">ترتیب دیں بلحاظ</translation>
-<translation id="3736016243818847857">کیا آپ آگے بڑھنا چاہتے ہیں؟</translation>
 <translation id="3737274407993947948">‏Linux انسٹال کرنے میں خرابی...</translation>
 <translation id="3737536731758327622">آپ کے ڈاؤن لوڈز یہاں ظاہر ہوتے ہیں</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -2666,7 +2665,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="4798236378408895261">‏<ph name="BEGIN_LINK" />بلوٹوتھ لاگز<ph name="END_LINK" /> منسلک کریں (Google داخلی)</translation>
 <translation id="4801448226354548035">اکاؤنٹس چھپائیں</translation>
 <translation id="4801512016965057443">موبائل ڈیٹا رومنگ کی اجازت دیں</translation>
-<translation id="4804756772600045300">‏جاری رکھنے سے Android ایپس تخلیق کرنے اور ٹیسٹ کرنے کے لیے ADB ڈیبگنگ فعال ہو جائے گی۔ نوٹ کریں کہ ADB ڈیبگنگ ان ٹیسٹ ایپس کی انسٹالیشن کی اجازت دیتا ہے جو Google سے تصدیق شدہ نہیں ہیں۔</translation>
 <translation id="4804818685124855865">منقطع کریں</translation>
 <translation id="4804827417948292437">مَگَر ناشپاتی</translation>
 <translation id="4805077164141082536">‏ہم آپ کو اپ گریڈ کرنے سے پہلے اپنے موجودہ Linux کنٹینر کا بیک اپ لینے کی تجویز کرتے ہیں۔</translation>
@@ -4607,6 +4605,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="7631205654593498032">جب آپ اپنے آلات کو منسلک کرتے ہیں تو آپ اس بات سے اتفاق کرتے ہیں کہ آپ کا <ph name="DEVICE_TYPE" /> درج ذيل چیزیں کر سکتا ہے:</translation>
 <translation id="7631887513477658702">اس قسم کی فائلیں &amp;ہمیشہ کھولیں</translation>
 <translation id="7632948528260659758">درج ذیل کیوسک ایپس اپ ڈیٹنگ کیلئے ناکام ہو گئی ہیں:</translation>
+<translation id="7634566076839829401">کچھ غلط ہو گیا۔ براہ کرم دوبارہ کوشش کریں۔</translation>
 <translation id="763632859238619983">کسی سائٹ کو ادائیگی کے ہینڈلرز انسٹال کرنے کی اجازت نہ دیں</translation>
 <translation id="7636919061354591437">اس آلہ پر انسٹال کریں</translation>
 <translation id="7638605456503525968">سیریل پورٹس</translation>

@@ -8,7 +8,6 @@
 Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifications apportées à vos préférences ne seront pas enregistrées.</translation>
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> utilisait Chrome précédemment</translation>
 <translation id="1097330777386562916">Effacer les cookies et les données de site en quittant Chrome</translation>
-<translation id="1104959162601287462">À propos de &amp;Chrome OS</translation>
 <translation id="110877069173485804">Voici votre Chrome</translation>
 <translation id="1142745911746664600">Impossible de mettre Chrome à jour</translation>
 <translation id="1154147086299354128">&amp;Ouvrir dans Chrome</translation>
@@ -87,7 +86,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="345171907106878721">Ajouter un utilisateur à Chrome</translation>
 <translation id="34857402635545079">Effacer également les données issues de Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome a besoin d'accéder à votre position pour la partager avec ce site</translation>
-<translation id="3576528680708590453">Votre administrateur système a configuré Google Chrome de sorte qu'un autre navigateur s'ouvre pour accéder à <ph name="TARGET_URL_HOSTNAME" />.</translation>
+<translation id="3576528680708590453">Votre administrateur système a configuré Google Chrome pour que <ph name="TARGET_URL_HOSTNAME" /> s'ouvre dans un autre navigateur.</translation>
 <translation id="3582972582564653026">Synchroniser et personnaliser Chrome sur vos appareils</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{À la demande de votre administrateur, vous devez relancer Chrome pour installer une mise à jour}=1{À la demande de votre administrateur, vous devez relancer Chrome pour installer une mise à jour. Sachez que la fenêtre de navigation privée ne sera pas rouverte.}one{À la demande de votre administrateur, vous devez relancer Chrome pour installer une mise à jour. Sachez que la fenêtre de navigation privée (#) ne sera pas rouverte.}other{À la demande de votre administrateur, vous devez relancer Chrome pour installer une mise à jour. Sachez que les # fenêtres de navigation privée ne seront pas rouvertes.}}</translation>
 <translation id="3622797965165704966">Il est désormais plus facile d'utiliser Chrome avec votre compte Google et sur des ordinateurs partagés.</translation>

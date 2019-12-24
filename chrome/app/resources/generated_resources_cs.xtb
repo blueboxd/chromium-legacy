@@ -110,7 +110,6 @@
 <translation id="114721135501989771">Získejte do Chromu chytré funkce Google</translation>
 <translation id="1147991416141538220">Chcete-li požádat o přístup, kontaktujte administrátora tohoto zařízení.</translation>
 <translation id="1149401351239820326">Měsíc vypršení platnosti</translation>
-<translation id="1150490752229770117">Toto je poslední automatická aktualizace softwaru a zabezpečení pro toto zařízení typu <ph name="DEVICE_TYPE" />. Chcete-li dostávat budoucí aktualizace, upgradujte na novější model. <ph name="LINK_BEGIN" />Další informace<ph name="LINK_END" /></translation>
 <translation id="1150565364351027703">Sluneční brýle</translation>
 <translation id="1151917987301063366">Vždy povolit webu <ph name="HOST" /> přístup k senzorům</translation>
 <translation id="1153356358378277386">Spárovaná zařízení</translation>
@@ -461,6 +460,7 @@
 <translation id="163993578339087550">Služba <ph name="SERVICE_NAME" /> chce ověřit, zda používáte vhodné zařízení se systémem Chrome OS.</translation>
 <translation id="1640235262200048077">V aplikacích pro Linux <ph name="IME_NAME" /> zatím nefunguje</translation>
 <translation id="1640283014264083726">Šifrování PKCS #1 MD4 s RSA</translation>
+<translation id="1641113438599504367">Bezpečné prohlížení</translation>
 <translation id="1642494467033190216">Před aktivací dalších funkcí ladění je potřeba odebrat ochranu rootfs a restartovat zařízení.</translation>
 <translation id="1643072738649235303">Podpis X9.62 ECDSA s SHA-1</translation>
 <translation id="1644574205037202324">Historie</translation>
@@ -1955,7 +1955,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3732530910372558017">PIN smí mít maximálně 63 znaků</translation>
 <translation id="3733127536501031542">Server SSL s technologií Step-up</translation>
 <translation id="3735740477244556633">Seřadit podle</translation>
-<translation id="3736016243818847857">Chcete pokračovat?</translation>
 <translation id="3737274407993947948">Při instalaci systému Linux došlo k chybě...</translation>
 <translation id="3737536731758327622">Zde se zobrazují vaše stažené soubory</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -2663,7 +2662,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4798236378408895261">Připojit <ph name="BEGIN_LINK" />Protokoly rozhraní Bluetooth<ph name="END_LINK" /> (interní funkce Google)</translation>
 <translation id="4801448226354548035">Skrýt účty</translation>
 <translation id="4801512016965057443">Povolit roaming pro mobilní data</translation>
-<translation id="4804756772600045300">Pokračováním aktivujete ladění ADB k vytváření a testování aplikací pro Android. Upozorňujeme, že ladění ADB povoluje instalaci testovacích aplikací, které nebyly ověřeny Googlem.</translation>
 <translation id="4804818685124855865">Odpojit</translation>
 <translation id="4804827417948292437">Avokádo</translation>
 <translation id="4805077164141082536">Před upgradováním doporučujeme zálohovat aktuální kontejner systému Linux.</translation>
@@ -4604,6 +4602,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="7631205654593498032">Propojením zařízení vyjadřujete souhlas s tím, že zařízení <ph name="DEVICE_TYPE" /> může:</translation>
 <translation id="7631887513477658702">Vždy otevír&amp;at soubory tohoto typu</translation>
 <translation id="7632948528260659758">Následující aplikace veřejného terminálu se nepodařilo aktualizovat:</translation>
+<translation id="7634566076839829401">Něco se pokazilo. Zkuste to znovu.</translation>
 <translation id="763632859238619983">Nepovolovat žádnému webu instalovat obslužné nástroje pro platby</translation>
 <translation id="7636919061354591437">Nainstalovat na toto zařízení</translation>
 <translation id="7638605456503525968">Sériové porty</translation>
@@ -5655,7 +5654,7 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="9053893665344928494">Zapamatovat si výběr</translation>
 <translation id="9055636786322918818">Vynutit šifrování RC4. Použití této možnosti zvyšuje riziko, protože šifry RC4 nejsou bezpečné.</translation>
 <translation id="9056810968620647706">Nebyly nalezeny žádné shody.</translation>
-<translation id="9057354806206861646">Aktualizovat plán</translation>
+<translation id="9057354806206861646">Plán aktualizací</translation>
 <translation id="9062065967472365419">Překvapte mě</translation>
 <translation id="9062468308252555888">14×</translation>
 <translation id="9063208415146866933">Chyba na řádku <ph name="ERROR_LINE_START" /> až <ph name="ERROR_LINE_END" /></translation>

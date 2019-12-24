@@ -55,6 +55,7 @@ class TestAppRegistrar : public AppRegistrar {
   std::vector<WebApplicationIconInfo> GetAppIconInfos(
       const AppId& app_id) const override;
   std::vector<AppId> GetAppIds() const override;
+  WebAppRegistrar* AsWebAppRegistrar() override;
 
  private:
   std::map<AppId, AppInfo> installed_apps_;

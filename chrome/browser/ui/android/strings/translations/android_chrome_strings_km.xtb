@@ -15,7 +15,6 @@
 <translation id="1111673857033749125">ចំណាំដែលបានរក្សាទុកនៅលើឧបករណ៍ផ្សេងទៀតរបស់អ្នកនឹងបង្ហាញនៅទីនេះ</translation>
 <translation id="1113597929977215864">បង្ហាញ​ទិដ្ឋភាព​សាមញ្ញ</translation>
 <translation id="1122278879166832009">ចុចត្រង់នេះ ដើម្បី​ចូលប្រើ​ទំព័រដើម​របស់អ្នក​បានយ៉ាងរហ័ស​ពីគ្រប់កម្មវិធី</translation>
-<translation id="1124772482545689468">អ្នកប្រើ</translation>
 <translation id="1129510026454351943">ព័ត៌មានលម្អិត៖ <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{ការទាញយក 1 មិនទាន់​សម្រេច។}other{ការទាញយក # មិនទាន់​សម្រេច។}}</translation>
 <translation id="1145536944570833626">លុបទិន្នន័យដែលមានស្រាប់។</translation>
@@ -24,7 +23,6 @@
 <translation id="1171770572613082465">មើល​គេហទំព័រ​ពេញនិយម ដោយ​ចុច​ប៊ូតុង "គេហទំព័រ​ពេញនិយម"</translation>
 <translation id="1173894706177603556">ប្តូរឈ្មោះ</translation>
 <translation id="1178581264944972037">ផ្អាក</translation>
-<translation id="1181037720776840403">ដកចេញ</translation>
 <translation id="1188239144602654184">ចូល AR</translation>
 <translation id="1197267115302279827">ផ្លាស់ទីចំណាំ</translation>
 <translation id="119944043368869598">ជម្រះទាំងអស់</translation>
@@ -85,7 +83,6 @@
 <translation id="1571304935088121812">ចម្លងឈ្មោះអ្នកប្រើ</translation>
 <translation id="1612196535745283361">Chrome ត្រូវការចូលប្រើទីតាំងដើម្បីស្កេនរកឧបករណ៍។ ការចូលប្រើទីតាំងត្រូវ<ph name="BEGIN_LINK" />បិទសម្រាប់ឧបករណ៍នេះ<ph name="END_LINK" />។</translation>
 <translation id="1620510694547887537">កាមេរ៉ា</translation>
-<translation id="1623104350909869708">បង្ការទំព័រនេះពីការបង្កើតប្រអប់បន្ថែម។</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{លុបធាតុដែលបានជ្រើសរើស 1}other{លុបធាតុដែលបានជ្រើសរើស #}}</translation>
 <translation id="164269334534774161">អ្នកកំពុងមើលច្បាប់ចម្លងក្រៅបណ្តាញនៃទំព័រនេះដែលបានបង្កើតឡើងនៅថ្ងៃ <ph name="CREATION_TIME" /></translation>
 <translation id="1644574205037202324">ប្រវត្តិ</translation>
@@ -149,7 +146,6 @@
 <translation id="2056878612599315956">បាន​ផ្អាកគេហទំព័រ</translation>
 <translation id="2063713494490388661">ប៉ះដើម្បីស្វែងរក</translation>
 <translation id="2067805253194386918">អត្ថបទ</translation>
-<translation id="2079545284768500474">បកក្រោយ</translation>
 <translation id="2082238445998314030">លទ្ធផល <ph name="RESULT_NUMBER" /> នៃ <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">សំឡេង</translation>
 <translation id="2096012225669085171">ធ្វើសមកាលកម្ម និង​កំណត់​ផ្ទាល់​ខ្លួន​នៅលើ​ឧបករណ៍​ផ្សេងៗ</translation>
@@ -164,7 +160,6 @@
 <translation id="213279576345780926">បានបិទ <ph name="TAB_TITLE" /></translation>
 <translation id="2139186145475833000">បន្ថែមទៅអេក្រង់ដើម</translation>
 <translation id="2146738493024040262">បើកកម្មវិធីប្រើភ្លាមៗ</translation>
-<translation id="2148716181193084225">ថ្ងៃនេះ</translation>
 <translation id="2154484045852737596">កែសម្រួលកាត</translation>
 <translation id="2154710561487035718">ចម្លង URL</translation>
 <translation id="2156074688469523661">ទំព័រនៅសល់ (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -186,7 +181,6 @@
 <translation id="2328985652426384049">មិនអាចចូលបានទេ</translation>
 <translation id="2349710944427398404">ទិន្នន័យសរុបដែលបានប្រើដោយ Chrome ដោយរាប់បញ្ចូលទាំងគណនី ចំណាំ និងការកំណត់ដែលបានរក្សាទុក</translation>
 <translation id="2353636109065292463">កំពុងពិនិត្យមើល​ការតភ្ជាប់អ៊ីនធឺណិត​របស់អ្នក</translation>
-<translation id="2359808026110333948">បន្ត</translation>
 <translation id="2369533728426058518">បើកផ្ទាំង</translation>
 <translation id="2387895666653383613">ការសម្រួលមាត្រដ្ឋានអត្ថបទ</translation>
 <translation id="2394602618534698961">ឯកសារ​ដែលអ្នកទាញយក​បង្ហាញ​នៅទីនេះ</translation>
@@ -233,9 +227,6 @@
 <translation id="2647434099613338025">បន្ថែមភាសា</translation>
 <translation id="2650751991977523696">ទាញយក​ឯកសារ​ម្ដងទៀត​មែនទេ?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{ឯកសារសំឡេង #}other{ឯកសារ​សំឡេង #}}</translation>
-<translation id="2653659639078652383">ដាក់ស្នើ</translation>
-<translation id="2677748264148917807">ចាកចេញ</translation>
-<translation id="2704606927547763573">បានថតចម្លង</translation>
 <translation id="2707726405694321444">ធ្វើឲ្យទំព័រថ្មីឡើងវិញ</translation>
 <translation id="2709516037105925701">បំពេញស្វ័យប្រវត្តិ</translation>
 <translation id="2717722538473713889">អាសយដ្ឋានអ៊ីមែល</translation>
@@ -289,7 +280,6 @@
 <translation id="3058498974290601450">អ្នកអាចបើក​សមកាលកម្ម​បានគ្រប់ពេល​នៅក្នុងការកំណត់</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{ចំណាំ <ph name="BOOKMARKS_COUNT_ONE" />}other{ចំណាំ <ph name="BOOKMARKS_COUNT_MANY" />}}</translation>
 <translation id="3089395242580810162">បើកនៅក្នុងផ្ទាំងអនាមិក</translation>
-<translation id="3115898365077584848">បង្ហាញព័ត៌មាន</translation>
 <translation id="3123473560110926937">បាន​ទប់ស្កាត់នៅលើគេហទំព័រ​មួយចំនួន</translation>
 <translation id="3137521801621304719">ចាកចេញពីរបៀបអនាមិក</translation>
 <translation id="3143515551205905069">បោះបង់​ការ​ធ្វើ​សម​កាល​កម្ម</translation>
@@ -315,7 +305,6 @@
 <translation id="3288003805934695103">ដំណើរការទំព័រឡើងវិញ</translation>
 <translation id="32895400574683172">ការជូន​ដំណឹង​ត្រូវ​បាន​អនុញ្ញាត</translation>
 <translation id="3295530008794733555">រុករករហ័ស​ជាងមុន។ ប្រើទិន្នន័យតិច​ជាងមុន។</translation>
-<translation id="3295602654194328831">លាក់ព័ត៌មាន</translation>
 <translation id="3298243779924642547">មុខងារ​ស្រាល</translation>
 <translation id="3303414029551471755">បន្តដើម្បីទាញយកមាតិកានេះ?</translation>
 <translation id="3306398118552023113">កម្មវិធីនេះ​កំពុងដំណើរការនៅក្នុង Chrome</translation>
@@ -337,7 +326,6 @@
 <translation id="3443221991560634068">ផ្ទុកទំព័របច្ចុប្បន្នឡើងវិញ</translation>
 <translation id="3445014427084483498">អម្បាញ់មិញ</translation>
 <translation id="3478363558367712427">អ្នកអាច​ជ្រើសរើស​ម៉ាស៊ីន​ស្វែងរក​របស់អ្នក​បាន</translation>
-<translation id="3479552764303398839">មិនមែនឥឡូវនេះទេ</translation>
 <translation id="3492207499832628349">ផ្ទាំងអនាមិកថ្មី</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />ស្វែងយល់បន្ថែម<ph name="END_LINK" />អំពីមាតិកាដែលបានណែនាំ</translation>
 <translation id="3513704683820682405">AR</translation>
@@ -379,7 +367,6 @@
 <translation id="381841723434055211">លេខទូរសព្ទ</translation>
 <translation id="3819178904835489326">បានលុបការទាញយក <ph name="NUMBER_OF_DOWNLOADS" /></translation>
 <translation id="3822502789641063741">ជម្រះទំហំផ្ទុកគេហទំព័រឬ?</translation>
-<translation id="385051799172605136">ថយក្រោយ</translation>
 <translation id="3859306556332390985">ស្វែងរក​ទៅ​មុខ</translation>
 <translation id="388596076286380598">ទទួលបាន​អត្ថបទ វីដេអូ និង​ខ្លឹមសារ​ផ្សេងទៀតពី​គេហទំព័រ​ដែលអ្នក​ចូលចិត្ត ទោះបីជា​អ្នកគ្មានអ៊ីនធឺណិត ឬការតភ្ជាប់​របស់អ្នក​ខ្សោយក៏ដោយ។</translation>
 <translation id="3894427358181296146">បន្ថែមថតឯកសារ</translation>
@@ -402,7 +389,6 @@
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="3997476611815694295">ទំហំផ្ទុកមិនសំខាន់</translation>
 <translation id="4000212216660919741">Home គ្មាន​អ៊ីនធឺណិតទេ</translation>
-<translation id="4002066346123236978">ចំណងជើង</translation>
 <translation id="4008040567710660924">អនុញ្ញាតខូគី​សម្រាប់គេហទំព័រ​ជាក់លាក់។</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# ម៉ោង​}other{# ម៉ោង}}</translation>
 <translation id="4046123991198612571">បទ​បន្ទាប់</translation>
@@ -473,7 +459,6 @@
 <translation id="4558311620361989323">ផ្លូវកាត់គេហទំព័រ</translation>
 <translation id="4561979708150884304">មិន​មាន​ការ​តភ្ជាប់</translation>
 <translation id="4565377596337484307">លាក់​ពាក្យ​សម្ងាត់</translation>
-<translation id="4570913071927164677">ព័ត៌មាន​លម្អិត</translation>
 <translation id="4572422548854449519">ចូលទៅគណនីដែលបានគ្រប់គ្រង</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# នាទីមុន}other{# នាទីមុន}}</translation>
@@ -574,13 +559,10 @@
 <translation id="5271967389191913893">ឧបករណ៍មិនអាចបើកមាតិកានេះដើម្បីទាញយកបានទេ។</translation>
 <translation id="528192093759286357">អូសពីលើ ហើយប៉ះប៊ូតុងថយក្រោយដើម្បីចេញពីរបៀបពេញអេក្រង់។</translation>
 <translation id="5292796745632149097">ផ្ញើ​ទៅ</translation>
-<translation id="5300589172476337783">បង្ហាញ</translation>
-<translation id="5301954838959518834">យល់ព្រម ខ្ញុំយល់ហើយ</translation>
 <translation id="5304593522240415983">ប្រអប់នេះមិនអាចចន្លោះទេ</translation>
 <translation id="5307446750509046227">សម្អាតទំហំផ្ទុកគេហទំព័រ</translation>
 <translation id="5308380583665731573">ភ្ជាប់</translation>
 <translation id="5313967007315987356">បន្ថែមគេហទំព័រ</translation>
-<translation id="5317780077021120954">រក្សាទុក</translation>
 <translation id="5324858694974489420">ការកំណត់មាតាបិតា</translation>
 <translation id="5327248766486351172">ឈ្មោះ</translation>
 <translation id="5335288049665977812">អនុញ្ញាតឲ្យគេហទំព័រដំណើរការ JavaScript (បានណែនាំ)</translation>
@@ -620,7 +602,6 @@
 <translation id="5527111080432883924">សួរ​មុន​ពេល​អនុញ្ញាត​ឱ្យ​ទំព័រ​អាន​អក្សរ និង​រូប​ភាព​ពី​អង្គ​ចងចាំ (បានណែនាំ)</translation>
 <translation id="5530766185686772672">បិទផ្ទាំងអនាមិក</translation>
 <translation id="5534640966246046842">បានចម្លង​ទំព័រ</translation>
-<translation id="5556459405103347317">ដំណើរការឡើងវិញ</translation>
 <translation id="5561549206367097665">កំពុង​រង់​ចាំ​បណ្ដាញ​…</translation>
 <translation id="557283862590186398">Chrome ត្រូវការការអនុញ្ញាត ដើម្បីចូលប្រើប្រាស់មីក្រូហ្វូនរបស់អ្នកសម្រាប់ទំព័រនេះ។</translation>
 <translation id="55737423895878184">ទីតាំង និង​ការជូន​ដំណឹង​ត្រូវ​បាន​អនុញ្ញាត</translation>
@@ -664,7 +645,6 @@
 <translation id="5853623416121554550">បាន​ផ្អាក</translation>
 <translation id="5854790677617711513">ចាស់ជាង 30 ថ្ងៃ</translation>
 <translation id="5858741533101922242">Chrome មិនអាចបើក​អាដាប់ទ័រ​ប៊្លូធូស​បានទេ</translation>
-<translation id="5860033963881614850">បិទ</translation>
 <translation id="5860491529813859533">បើក</translation>
 <translation id="5862731021271217234">ដើម្បីទទួលបានផ្ទាំងរបស់អ្នកពីឧបករណ៍ផ្សេងទៀតរបស់អ្នក សូមបើកសមកាលកម្ម</translation>
 <translation id="5864174910718532887">ព័ត៌មាន​លម្អិត៖ ​តម្រៀបតាមឈ្មោះ​គេហទំព័រ</translation>
@@ -672,7 +652,6 @@
 <translation id="5865733239029070421">ផ្ញើស្ថិតិប្រើប្រាស់ និងរបាយការណ៍អំពីការគាំងទៅ Google ដោយស្វ័យប្រវត្តិ</translation>
 <translation id="5869522115854928033">ពាក្យសម្ងាត់ដែលបានរក្សាទុក</translation>
 <translation id="5902828464777634901">ទិន្នន័យមូលដ្ឋានទាំងអស់ដែលបានរក្សាទុកដោយគេហទំព័រនេះរាប់ទាំងខុកឃីនឹងត្រូវបានលុប។</translation>
-<translation id="5916664084637901428">បើក</translation>
 <translation id="5919204609460789179">អាប់ដេត <ph name="PRODUCT_NAME" /> ដើម្បីចាប់ផ្តើមធ្វើសមកាលកម្ម</translation>
 <translation id="5937580074298050696">បាន​សន្សំ <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">កំណត់ឡើងវិញ</translation>
@@ -700,7 +679,6 @@
 <translation id="614940544461990577">សាកល្បង៖</translation>
 <translation id="6154478581116148741">បើកការ​ចាក់សោ​អេក្រង់​នៅក្នុង​ការកំណត់ ដើម្បី​នាំពាក្យ​សម្ងាត់​របស់អ្នកចេញ​ពី​ឧបករណ៍​នេះ</translation>
 <translation id="6159335304067198720">សន្សំសំចៃទិន្នន័យបាន <ph name="PERCENT" /></translation>
-<translation id="6165508094623778733">ស្វែងយល់​បន្ថែម</translation>
 <translation id="6177111841848151710">បាន​រារាំង​សម្រាប់​ម៉ាស៊ីន​ស្វែងរក​​បច្ចុប្បន្ន</translation>
 <translation id="6181444274883918285">បន្ថែមការលើកលែងចំពោះគេហទំព័រ</translation>
 <translation id="6192333916571137726">ទាញ​យក​ឯកសារ</translation>
@@ -752,7 +730,6 @@
 <translation id="6482749332252372425">ការដោនឡូត <ph name="FILE_NAME" /> បានបរាជ័យដោយសារខ្វះទំហំផ្ទុក។</translation>
 <translation id="6496823230996795692">ដើម្បីប្រើ <ph name="APP_NAME" /> ជាលើកដំបូង សូមភ្ជាប់​អ៊ីនធឺណិត។</translation>
 <translation id="6508722015517270189">ចាប់ផ្តើម Chrome ឡើងវិញ</translation>
-<translation id="6527303717912515753">ចែករំលែក</translation>
 <translation id="6532866250404780454">គេហ​ទំព័រដែល​អ្នកចូលមើល​នៅក្នុង Chrome នឹងមិនបង្ហាញទេ។ កម្មវិធី​កំណត់ពេលរបស់​គេហទំព័រទាំង​អស់នឹងត្រូវ​បានលុប។</translation>
 <translation id="6534565668554028783">Google បាន​ចំណាយពេល​យូរពេក​ក្នុងការ​ឆ្លើយតប</translation>
 <translation id="6538442820324228105">បាន​ទាញយក <ph name="GBS" /> GB</translation>
@@ -791,7 +768,6 @@
 <translation id="6710213216561001401">មុន</translation>
 <translation id="671481426037969117">កម្មវិធី​កំណត់​ម៉ោង <ph name="FQDN" /> របស់អ្នកបានបញ្ចប់​​ហើយ។ វានឹង​ចាប់ផ្ដើម​ឡើងវិញនៅថ្ងៃស្អែក។</translation>
 <translation id="6738867403308150051">កំពុងទាញយក…</translation>
-<translation id="6746124502594467657">រំកិលចុះ</translation>
 <translation id="6766622839693428701">អូស​ចុះ​ក្រោម​ដើម្បី​បិទ។</translation>
 <translation id="6766758767654711248">ចុច​ដើម្បីចូលទៅកាន់គេហទំព័រ</translation>
 <translation id="6767294960381293877">បានបើកពាក់​កណ្ដាល​អេក្រង់នូវបញ្ជីឧបករណ៍​ដែលត្រូវ​ចែករំលែក​ផ្ទាំងជាមួយ​។</translation>
@@ -811,14 +787,12 @@
 <translation id="688738109438487280">បន្ថែមទិន្នន័យដែលមានស្រាប់ទៅ <ph name="TO_ACCOUNT" /> ។</translation>
 <translation id="6891726759199484455">ដោះសោ​ដើម្បី​ចម្លង​ពាក្យសម្ងាត់​របស់អ្នក</translation>
 <translation id="6896758677409633944">ចម្លង</translation>
-<translation id="6910211073230771657">បានលុប</translation>
 <translation id="6912998170423641340">ទប់ស្កាត់​ទំព័រ​មិន​ឱ្យ​អាន​អក្សរ និង​រូបភាព​ពី​អង្គ​ចង​ចាំ</translation>
 <translation id="6914783257214138813">ពាក្យ​សម្ងាត់​របស់អ្នក​នឹងអាច​មើលឃើញ​ដោយ​អ្នក​ដែល​អាចមើល​ឃើញ​ឯកសារ​នាំចេញនេះ។</translation>
 <translation id="6942665639005891494">ប្ដូរ​ទីតាំង​ទាញយក​លំនាំដើម​បាន​គ្រប់ពេល​ដោយ​ប្រើ​ជម្រើ​សម៉ឺនុយ​​ការកំណត់</translation>
 <translation id="6945221475159498467">ជ្រើសរើស</translation>
 <translation id="6963642900430330478">គេហទំព័រនេះ​មានគ្រោះថ្នាក់។ ព័ត៌មានអំពី​គេហទំព័រ</translation>
 <translation id="6963766334940102469">លុបចំណាំ</translation>
-<translation id="6965382102122355670">យល់ព្រម</translation>
 <translation id="6979737339423435258">គ្រប់​ពេល</translation>
 <translation id="6981982820502123353">លទ្ធភាពប្រើប្រាស់</translation>
 <translation id="6989267951144302301">មិន​អាច​ទាញ​យកបាន​ទេ</translation>
@@ -916,7 +890,6 @@
 <translation id="7638584964844754484">ឃ្លាសម្ងាត់មិនត្រឹមត្រូវ</translation>
 <translation id="7641339528570811325">សម្អាត​ទិន្នន័យ​រុករក​…</translation>
 <translation id="7648422057306047504">អ៊ីនគ្រីបពាក្យសម្ងាត់ជាមួយ ព័ត៌មានសម្គាល់អត្តសញ្ញាណ Google</translation>
-<translation id="7649070708921625228">ជំនួយ</translation>
 <translation id="7658239707568436148">បដិសេធ</translation>
 <translation id="7665369617277396874">បន្ថែមគណនី</translation>
 <translation id="766587987807204883">អត្ថបទបង្ហាញ​នៅទីនេះ ដែលអ្នកអាច​អានបាន ទោះបីជាគ្មាន​អ៊ីនធឺណិត​ក៏ដោយ</translation>
@@ -932,7 +905,6 @@
 <translation id="7772032839648071052">អះអាងឃ្លាសម្ងាត់</translation>
 <translation id="7772375229873196092">បិទ <ph name="APP_NAME" /></translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 និង <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ទៀត}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 និង <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ទៀត}}</translation>
-<translation id="7781829728241885113">ម្សិលមិញ</translation>
 <translation id="7791543448312431591">បន្ថែម</translation>
 <translation id="780301667611848630">ទេ អរគុណ</translation>
 <translation id="7810647596859435254">បើក​ដោយ​ប្រើ…</translation>
@@ -984,7 +956,6 @@
 <translation id="8110087112193408731">បង្ហាញសកម្មភាព Chrome របស់អ្នក​នៅក្នុងសុខុមាលភាព​ឌីជីថល?</translation>
 <translation id="8116925261070264013">បានបិទសំឡេង</translation>
 <translation id="813082847718468539">មើលព័ត៌មានគេហទំព័រ</translation>
-<translation id="8131740175452115882">អះអាង</translation>
 <translation id="8156139159503939589">តើអ្នក​អានជាភាសាអ្វី?</translation>
 <translation id="8168435359814927499">មាតិកា</translation>
 <translation id="8186512483418048923">នៅសល់ឯកសារចំនួន <ph name="FILES" /></translation>
@@ -994,7 +965,6 @@
 <translation id="8218622182176210845">គ្រប់គ្រង​គណនី​របស់អ្នក</translation>
 <translation id="8224471946457685718">ទាញយក​អត្ថបទ​សម្រាប់​អ្នក​តាមរយៈ Wi-Fi</translation>
 <translation id="8232956427053453090">រក្សាទុក​ទិន្នន័យ</translation>
-<translation id="8249310407154411074">ផ្លាស់ទីទៅខាង​លើបំផុត</translation>
 <translation id="8250920743982581267">ឯកសារ</translation>
 <translation id="825412236959742607">ទំព័រនេះ​ប្រើអង្គ​ចងចាំ​ច្រើនពេក ដូច្នេះ Chrome បាន​លុប​ខ្លឹមសារមួយចំនួន។</translation>
 <translation id="8260126382462817229">សាកល្បងចូលគណនីម្តងទៀត</translation>
@@ -1045,7 +1015,6 @@
 <translation id="857943718398505171">បានអនុញ្ញាត (បានណែនាំ)</translation>
 <translation id="8583805026567836021">កំពុងជម្រះទិន្នន័យគណនី</translation>
 <translation id="860043288473659153">ឈ្មោះ​ម្ចាស់​កាត</translation>
-<translation id="8609465669617005112">រំកិលទៅលើ</translation>
 <translation id="8616006591992756292">គណនី Google របស់អ្នកអាចនឹងមានទម្រង់ប្រវត្តិរុករកផ្សេងទៀតនៅ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> ។</translation>
 <translation id="8617240290563765734">បើក URL ដែលបានស្នើដែលបានបញ្ជាក់នៅក្នុងមាតិកាដែលបានទាញយកដែរឬទេ?</translation>
 <translation id="8636825310635137004">ដើម្បីទទួលបានផ្ទាំងរបស់អ្នកពីឧបករណ៍ផ្សេងទៀតរបស់អ្នក សូមបើកការធ្វើសមកាលកម្ម</translation>
@@ -1059,9 +1028,7 @@
 <translation id="868929229000858085">ស្វែងរក​ទំនាក់ទំនង​របស់អ្នក</translation>
 <translation id="869891660844655955">កាលបរិច្ឆេទការផុតកំណត់</translation>
 <translation id="8719023831149562936">មិនអាចប៊ីមផ្ទាំងបច្ចុប្បន្នទេ</translation>
-<translation id="8725066075913043281">ព្យាយាមម្តងទៀត</translation>
 <translation id="8728487861892616501">ប្រសិនបើ​ប្រើកម្មវិធីនេះ មានន័យថាអ្នកយល់ស្របតាម<ph name="BEGIN_LINK1" />លក្ខខណ្ឌប្រើប្រាស់<ph name="END_LINK1" /> និង<ph name="BEGIN_LINK2" />ការជូនដំណឹងអំពីឯកជនភាព<ph name="END_LINK2" />របស់ Chrome និង<ph name="BEGIN_LINK3" />ការជូនដំណឹងអំពីឯកជនភាពសម្រាប់គណនី Google ដែលត្រូវបានគ្រប់គ្រងដោយប្រើ Family Link<ph name="END_LINK3" /> ។</translation>
-<translation id="8730621377337864115">រួចរាល់</translation>
 <translation id="8748850008226585750">បានលាក់មាតិកា</translation>
 <translation id="8751914237388039244">ជ្រើសរើស​រូបភាព</translation>
 <translation id="8758557275681689734">មើលផ្ទាំង​ដែលបើក​ទាំងអស់​របស់អ្នក</translation>

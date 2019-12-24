@@ -110,7 +110,6 @@
 <translation id="114721135501989771">Разумныя функцыі ў Chrome</translation>
 <translation id="1147991416141538220">Каб запытаць доступ, звярніцеся да адміністратара гэтай прылады.</translation>
 <translation id="1149401351239820326">Месяц заканчэння тэрміну дзеяння</translation>
-<translation id="1150490752229770117">Гэта апошняе аўтаматычнае абнаўленне праграмнага забеспячэння і сістэмы бяспекі для гэтай прылады <ph name="DEVICE_TYPE" />. Каб атрымліваць наступныя абнаўленні, перайдзіце на новую мадэль. <ph name="LINK_BEGIN" />Даведацца больш<ph name="LINK_END" /></translation>
 <translation id="1150565364351027703">Сонечныя акуляры</translation>
 <translation id="1151917987301063366">Заўсёды даваць хосту <ph name="HOST" /> доступ да датчыкаў</translation>
 <translation id="1153356358378277386">Спалучаныя прылады</translation>
@@ -461,6 +460,7 @@
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> запытвае дазвол праверыць, ці выкарыстоўваеце вы прыдатную прыладу Chrome OS.</translation>
 <translation id="1640235262200048077"><ph name="IME_NAME" /> пакуль што не працуе ў праграмах Linux</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 з шыфраваннем RSA</translation>
+<translation id="1641113438599504367">Бяспечны прагляд</translation>
 <translation id="1642494467033190216">Перад уключэннем іншых функцый адладкі неабходна выдаліць ахову rootfs і выканаць перазапуск.</translation>
 <translation id="1643072738649235303">Подпіс X9.62 ECDSA з SHA-1</translation>
 <translation id="1644574205037202324">Гісторыя</translation>
@@ -1956,7 +1956,6 @@
 <translation id="3732530910372558017">PIN-код павінен мець максімум 63 сімвалы</translation>
 <translation id="3733127536501031542">SSL-сервер з шыфраваннем Step-up</translation>
 <translation id="3735740477244556633">Парадак сартавання</translation>
-<translation id="3736016243818847857">Сапраўды працягнуць?</translation>
 <translation id="3737274407993947948">Памылка ўсталявання Linux...</translation>
 <translation id="3737536731758327622">Вашы спампоўкі з'явяцца тут</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -2665,7 +2664,6 @@
 <translation id="4798236378408895261">Далучыць <ph name="BEGIN_LINK" />журналы Bluetooth<ph name="END_LINK" /> (для ўнутранага выкарыстання ў Google)</translation>
 <translation id="4801448226354548035">Схаваць уліковыя запісы</translation>
 <translation id="4801512016965057443">Дазволіць мабільную перадачу даных у роўмінгу</translation>
-<translation id="4804756772600045300">Калі працягнуць, будзе ўключана адладка ADB для стварэння і тэсціравання праграм для Android. Звярніце ўвагу, што адладка ADB дазваляе ўсталёўваць тэставыя праграмы, якія не былі спраўджаны Google.</translation>
 <translation id="4804818685124855865">Адключыцца</translation>
 <translation id="4804827417948292437">Авакада</translation>
 <translation id="4805077164141082536">Мы рэкамендуем зрабіць рэзервовую копію бягучага кантэйнера Linux перад абнаўленнем.</translation>

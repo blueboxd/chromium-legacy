@@ -174,6 +174,18 @@ struct Line {
   int baseline;
 };
 
+// Internal class that contains the results of the text layout and shaping.
+class ShapedText {
+ public:
+  explicit ShapedText(std::vector<Line> lines);
+  ~ShapedText();
+
+  const std::vector<Line>& lines() const { return lines_; }
+
+ private:
+  std::vector<Line> lines_;
+};
+
 // Creates an SkTypeface from a font, |italic| and a desired |weight|.
 // May return null.
 sk_sp<SkTypeface> CreateSkiaTypeface(const Font& font,
@@ -618,8 +630,13 @@ class GFX_EXPORT RenderText {
   // Whether all the BreakLists have only one break.
   bool IsHomogeneous() const;
 
-  const std::vector<internal::Line>& lines() const { return lines_; }
-  void set_lines(std::vector<internal::Line>* lines) { lines_.swap(*lines); }
+  // Returns the shaped text structure. The shaped text contains the visual
+  // positions of glyphs required to render the text.
+  bool has_shaped_text() const { return shaped_text_ != nullptr; }
+  internal::ShapedText* GetShapedText();
+  void set_shaped_text(std::unique_ptr<internal::ShapedText> shaped_text) {
+    shaped_text_ = std::move(shaped_text);
+  }
 
   // Returns the baseline of the current text.  The return value depends on
   // the text and its layout while the return value of GetBaseline() doesn't.
@@ -969,9 +986,9 @@ class GFX_EXPORT RenderText {
   // A list of valid display text line break positions.
   BreakList<size_t> line_breaks_;
 
-  // Lines computed by EnsureLayout. These should be invalidated upon
+  // Text shaping computed by EnsureLayout. This should be invalidated upon
   // OnLayoutTextAttributeChanged and OnDisplayTextAttributeChanged calls.
-  std::vector<internal::Line> lines_;
+  std::unique_ptr<internal::ShapedText> shaped_text_;
 
   // The ratio of strike-through line thickness to text height.
   SkScalar strike_thickness_factor_;

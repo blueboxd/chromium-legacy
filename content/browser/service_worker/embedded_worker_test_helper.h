@@ -23,7 +23,6 @@
 
 namespace content {
 
-class FakeNetworkURLLoaderFactory;
 class FakeServiceWorker;
 class MockRenderProcessHost;
 class ServiceWorkerContextCore;
@@ -182,7 +181,6 @@ class EmbeddedWorkerTestHelper {
   int new_mock_render_process_id_;
 
   scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter_;
-  std::unique_ptr<FakeNetworkURLLoaderFactory> default_network_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerTestHelper);
 };

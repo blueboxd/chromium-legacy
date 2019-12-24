@@ -9,7 +9,6 @@
 Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išsaugoti.</translation>
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> anksčiau naudojo „Chrome“</translation>
 <translation id="1097330777386562916">Išeinant iš „Chrome“ išvalyti slapukus ir svetainės duomenis</translation>
-<translation id="1104959162601287462">Apie „&amp;Chrome“ OS</translation>
 <translation id="110877069173485804">Tai jūsų „Chrome“</translation>
 <translation id="1142745911746664600">Nepavyko atnaujinti „Chrome“</translation>
 <translation id="1154147086299354128">&amp;Atidaryti naudojant „Chrome“</translation>
@@ -53,6 +52,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="2290014774651636340">Trūksta „Google“ API raktų. Bus išjungtos kai kurios „Google Chrome“ funkcijos.</translation>
 <translation id="2290095356545025170">Ar tikrai norite pašalinti „Google Chrome“?</translation>
 <translation id="2309047409763057870">Tai yra antrinis „Google Chrome“ diegimas, todėl ji negali būti nustatyta kaip numatytoji naršyklė.</translation>
+<translation id="2341767445688917208">„Chrome“ OS nepavyko sinchronizuoti jūsų slaptažodžių. Ištaisykite dabar.</translation>
 <translation id="2348335408836342058">„Chrome“ reikia leidimo, kad galėtų naudoti fotoaparatą ir mikrofoną šioje svetainėje</translation>
 <translation id="2429317896000329049">„Google Chrome“ negali sinchronizuoti duomenų, nes jūsų domene sinchronizavimas nepasiekiamas.</translation>
 <translation id="2467438592969358367">„Google Chrome“ nori eksportuoti jūsų slaptažodžius. Įveskite „Windows“ slaptažodį, kad tai leistumėte.</translation>
@@ -214,6 +214,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="7855730255114109580">„Google Chrome“ yra naujausios versijos</translation>
 <translation id="7890208801193284374">Jei bendrinate kompiuterį, šeimos nariai ir draugai gali naršyti atskirai ir nustatyti „Chrome“ pagal savo poreikius.</translation>
 <translation id="7896673875602241923">Kažkas anksčiau prisijungė prie „Chrome“ šiame kompiuteryje kaip <ph name="ACCOUNT_EMAIL_LAST" />. Sukurkite naują „Chrome“ naudotoją, kad apsaugotumėte savo informaciją.</translation>
+<translation id="7916016681687251387">„Chrome“ OS nepavyko sinchronizuoti jūsų duomenų. Ištaisykite dabar.</translation>
 <translation id="7962410387636238736">Šiame kompiuteryje nebebus gaunami „Google Chrome“ naujiniai, nes „Windows XP“ ir „Windows Vista“ nebepalaikomos.</translation>
 <translation id="8008534537613507642">Iš naujo įdiegti „Chrome“</translation>
 <translation id="8013993649590906847">Jei nebus naudingo vaizdo aprašo, „Chrome“ bandys jums jį pateikti. Kad būtų galima kurti aprašus, vaizdai siunčiami į sistemą „Google“.</translation>

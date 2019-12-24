@@ -29,6 +29,7 @@
 <translation id="7792771145871471484">Peržiūrėkite pasiūlymus.</translation>
 <translation id="7885132941432959125">Perkelti skirtuką į dešinę</translation>
 <translation id="7966321538264951561">Atsisakyti pasiūlymo.</translation>
+<translation id="8205266828577616993">Perkelti skirtuką į viršų</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Uždaryti <ph name="TABS_COUNT_ONE" /> pasirinktą skirtuką}one{Uždaryti <ph name="TABS_COUNT_MANY" /> pasirinktą skirtuką}few{Uždaryti <ph name="TABS_COUNT_MANY" /> pasirinktus skirtukus}many{Uždaryti <ph name="TABS_COUNT_MANY" /> pasirinkto skirtuko}other{Uždaryti <ph name="TABS_COUNT_MANY" /> pasirinktų skirtukų}}</translation>
 <translation id="9150694013019234766">Skirtukus perjunkite skirtukų grupėje netoli ekrano apačios</translation>
 <translation id="9169594135889675189">Pridėti naują skirtuką prie grupės</translation>

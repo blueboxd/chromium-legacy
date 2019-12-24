@@ -16,32 +16,6 @@ constexpr int kMaxCountOfMoreGpuThreadTimeAllowed = 4;
 #endif
 constexpr base::TimeDelta kMaxWaitTime = base::TimeDelta::FromSeconds(60);
 
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class GpuWatchdogTimeoutEvent {
-  // Recorded each time OnWatchdogTimeout() is called.
-  kTimeout,
-  // Recorded when a GPU main thread is killed for a detected hang.
-  kKill,
-  // Window only: Recorded when a hang is detected but we allow the GPU main
-  // thread to continue until it spent the full
-  // thread time doing the work.
-  kMoreThreadTime,
-  // Windows only: The GPU makes progress after givenmore thread time. The GPU
-  // main thread is not killed.
-  kProgressAfterMoreThreadTime,
-  // A gpu hang is detected but watchdog waits for 60 seconds before taking
-  // action.
-  kTimeoutWait,
-  // The GPU makes progress within 60 sec in OnWatchdogTimeout(). The GPU main
-  // thread is not killed.
-  kProgressAfterWait,
-  // Just continue if it's not on the TTY of our host X11 server.
-  kContinueOnNonHostServerTty,
-
-  kMaxValue = kContinueOnNonHostServerTty,
-};
-
 class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
     : public GpuWatchdogThread,
       public base::TaskObserver {

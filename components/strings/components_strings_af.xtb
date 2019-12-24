@@ -934,6 +934,7 @@
 <translation id="5386426401304769735">Die sertifikaatketting vir hierdie werf bevat 'n sertifikaat wat met gebruik van SHA-1 onderteken is.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Randhegting regs</translation>
+<translation id="5400836586163650660">Grys</translation>
 <translation id="540969355065856584">Hierdie bediener kon nie bewys dat dit <ph name="DOMAIN" /> is nie; sy sekuriteitsertifikaat is nie op die oomblik geldig nie. Dit kan veroorsaak word deur 'n wanopstelling of 'n aanvaller wat jou verbinding onderskep.</translation>
 <translation id="5421136146218899937">Vee blaaidata uit …</translation>
 <translation id="5430298929874300616">Verwyder boekmerk</translation>
@@ -1715,6 +1716,7 @@ Bykomende besonderhede:
 <translation id="988159990683914416">Ontwikkelaarbou</translation>
 <translation id="989988560359834682">Wysig adres</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992256792861109788">Pienk</translation>
 <translation id="992432478773561401">"<ph name="SOFTWARE_NAME" />" is nie behoorlik op jou rekenaar of netwerk geïnstalleer nie:
     &lt;ul&gt;
     &lt;li&gt;Probeer om "<ph name="SOFTWARE_NAME" />"&lt;/li&gt; te deïnstalleer of deaktiveer

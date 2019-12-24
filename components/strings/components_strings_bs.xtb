@@ -934,6 +934,7 @@
 <translation id="5386426401304769735">Lanac potvrda za ovu web lokaciju sadrži potvrdu koja je izdata koristeći SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Uvez desnog ruba</translation>
+<translation id="5400836586163650660">Siva</translation>
 <translation id="540969355065856584">Ovaj server nije uspio dokazati da je <ph name="DOMAIN" />; njegova potvrda sigurnosti trenutno nije važeća. Uzrok tome može biti pogrešna konfiguracija ili napadač koji je prekinuo vašu vezu.</translation>
 <translation id="5421136146218899937">Obriši podatke pregledanja…</translation>
 <translation id="5430298929874300616">Ukloni oznaku</translation>
@@ -1715,6 +1716,7 @@ Dodatni detalji:
 <translation id="988159990683914416">Verzija za programere</translation>
 <translation id="989988560359834682">Uređivanje adrese</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992256792861109788">Ružičasta</translation>
 <translation id="992432478773561401">Softver "<ph name="SOFTWARE_NAME" />" nije ispravno instaliran na vašem računaru ili mreži:
     &lt;ul&gt;
     &lt;li&gt;Pokušajte deinstalirati ili onemogućiti softver "<ph name="SOFTWARE_NAME" />"&lt;/li&gt;

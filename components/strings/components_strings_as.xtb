@@ -927,6 +927,7 @@
 <translation id="5386426401304769735">এই ছাইটটোৰ প্ৰমাণপত্ৰৰ চ্চেইনত SHA-1 ব্যৱহাৰ কৰি ছাইন কৰা এখন প্ৰমাণপত্ৰ আছে।</translation>
 <translation id="538659543871111977">A4-টেব</translation>
 <translation id="5396631636586785122">সোঁফালে কাষত চিলাওক</translation>
+<translation id="5400836586163650660">ধোঁৱাবৰণীয়া</translation>
 <translation id="540969355065856584">এই ছার্ভাৰটোৱে নিজকে <ph name="DOMAIN" />; বুলি প্ৰমাণ কৰিব নোৱাৰিলে; বৰ্তমান ইয়াৰ সুৰক্ষা প্ৰমাণপত্ৰ মান্য নহয়৷ এয়া কোনো ভুল কনফিগাৰেশ্বনৰ বাবে বা কোনো আক্ৰমণকাৰীয়ে আপোনাৰ সংযোগ অৱৰোধ কৰাৰ বাবে হ’ব পাৰে।</translation>
 <translation id="5421136146218899937">ব্ৰাউজিং ডেটা মচক...</translation>
 <translation id="5430298929874300616">বুকমার্ক আঁতৰাওক</translation>
@@ -1698,6 +1699,7 @@
 <translation id="985956168329721395">Prc-32K</translation>
 <translation id="988159990683914416">বিকাশকৰ্তাৰ বিল্ড</translation>
 <translation id="989988560359834682">ঠিকনা সম্পাদনা কৰক</translation>
+<translation id="992256792861109788">গুলপীয়া</translation>
 <translation id="992432478773561401">"<ph name="SOFTWARE_NAME" />" আপোনাৰ কম্পিউটাৰ বা নেটৱৰ্কত ভালকৈ ইনষ্টল কৰা হোৱা নাছিল:
     &lt;ul&gt;
     &lt;li&gt;"<ph name="SOFTWARE_NAME" />" আনইনষ্টল বা অক্ষম কৰি চাওক&lt;/li&gt;

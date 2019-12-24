@@ -908,8 +908,8 @@ void CreateFileURLLoader(
       FROM_HERE,
       base::BindOnce(
           &FileURLLoader::CreateAndStart, base::FilePath(), request,
-          CalculateResponseType(request.mode, /*is_allowed_access=*/false),
-          std::move(loader), std::move(client),
+          network::mojom::FetchResponseType::kBasic, std::move(loader),
+          std::move(client),
           allow_directory_listing ? DirectoryLoadingPolicy::kRespondWithListing
                                   : DirectoryLoadingPolicy::kFail,
           FileAccessPolicy::kUnrestricted, LinkFollowingPolicy::kDoNotFollow,

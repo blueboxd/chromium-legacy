@@ -231,8 +231,8 @@ cca.device.DeviceInfoUpdater = class {
   /**
    * Gets supported photo and video resolutions for specified video device.
    * @param {string} deviceId Device id of the video device.
-   * @return {!Promise<!{photo: !ResolutionList, video: !ResolutionList}>}
-   *     Supported photo and video resolutions.
+   * @return {!Promise<!{photo: !cca.ResolutionList, video:
+   *     !cca.ResolutionList}>} Supported photo and video resolutions.
    * @throws {Error} May fail on HALv1 device without capability of querying
    *     supported resolutions.
    */

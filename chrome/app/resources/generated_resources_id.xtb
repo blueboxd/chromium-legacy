@@ -110,7 +110,6 @@
 <translation id="114721135501989771">Dapatkan kecanggihan Google di Chrome</translation>
 <translation id="1147991416141538220">Untuk meminta akses, hubungi administrator perangkat ini.</translation>
 <translation id="1149401351239820326">Bulan akhir masa berlaku</translation>
-<translation id="1150490752229770117">Ini adalah update keamanan dan software otomatis yang terakhir untuk <ph name="DEVICE_TYPE" /> ini. Untuk mendapatkan update mendatang, upgrade ke model yang lebih baru. <ph name="LINK_BEGIN" />Pelajari lebih lanjut<ph name="LINK_END" /></translation>
 <translation id="1150565364351027703">Kacamata Hitam</translation>
 <translation id="1151917987301063366">Selalu izinkan <ph name="HOST" /> mengakses sensor</translation>
 <translation id="1153356358378277386">Perangkat dihubungkan</translation>
@@ -461,6 +460,7 @@
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> ingin memeriksa apakah Anda menggunakan perangkat Chrome OS yang memenuhi syarat.</translation>
 <translation id="1640235262200048077"><ph name="IME_NAME" /> belum berfungsi di aplikasi Linux</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 Dengan Enkripsi RSA</translation>
+<translation id="1641113438599504367">Safe Browsing</translation>
 <translation id="1642494467033190216">Anda perlu menghapus perlindungan rootfs dan memulai ulang perangkat sebelum mengaktifkan fitur debug lainnya.</translation>
 <translation id="1643072738649235303">Tanda tangan X9.62 ECDSA dengan SHA-1</translation>
 <translation id="1644574205037202324">Histori</translation>
@@ -1954,7 +1954,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="3732530910372558017">PIN harus berisi maksimal 63 karakter</translation>
 <translation id="3733127536501031542">Server SSL dengan Step-up</translation>
 <translation id="3735740477244556633">Urutkan menurut</translation>
-<translation id="3736016243818847857">Apakah Anda ingin melanjutkan?</translation>
 <translation id="3737274407993947948">Error saat menginstal Linux...</translation>
 <translation id="3737536731758327622">Download Anda muncul di sini</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -2663,7 +2662,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="4798236378408895261">Lampirkan <ph name="BEGIN_LINK" />Log Bluetooth<ph name="END_LINK" /> (internal Google)</translation>
 <translation id="4801448226354548035">Sembunyikan akun</translation>
 <translation id="4801512016965057443">Izinkan roaming data seluler</translation>
-<translation id="4804756772600045300">Dengan melanjutkan, proses debug ADB akan diaktifkan untuk membuat dan menguji aplikasi Android. Perlu diperhatikan bahwa proses debug ADB memungkinkan penginstalan aplikasi pengujian yang belum diverifikasi oleh Google.</translation>
 <translation id="4804818685124855865">Putuskan</translation>
 <translation id="4804827417948292437">Avokad</translation>
 <translation id="4805077164141082536">Sebaiknya Anda mencadangkan container Linux yang ada sebelum melakukan upgrade.</translation>
@@ -4604,6 +4602,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="7631205654593498032">Dengan menghubungkan perangkat, Anda setuju bahwa <ph name="DEVICE_TYPE" /> Anda dapat:</translation>
 <translation id="7631887513477658702">Sel&amp;alu Buka File Jenis Ini</translation>
 <translation id="7632948528260659758">Aplikasi kios berikut gagal memperbarui:</translation>
+<translation id="7634566076839829401">Terjadi kesalahan. Coba lagi.</translation>
 <translation id="763632859238619983">Jangan izinkan situs menginstal penangan pembayaran</translation>
 <translation id="7636919061354591437">Instal di Perangkat ini</translation>
 <translation id="7638605456503525968">Port serial</translation>

@@ -933,6 +933,7 @@
 <translation id="5386426401304769735">Бул сайттын тастыктамалар чынжырында SHA-1 алгоритми менен кол коюлган тастыктама камтылган.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Оң четин жамоо</translation>
+<translation id="5400836586163650660">Боз</translation>
 <translation id="540969355065856584">Бул сервер <ph name="DOMAIN" /> экендигин далилдей алган жок; азыркы учурда анын коопсуздук тастыктамасы жарактуу эмес. Бул туура эмес конфигурациялоодон болушу мүмкүн же чабуулчу туташууңузга тоскоол болууда.</translation>
 <translation id="5421136146218899937">Серептөө дайындарын тазалап салуу…</translation>
 <translation id="5430298929874300616">Кыстарманы алып салуу</translation>
@@ -1714,6 +1715,7 @@
 <translation id="988159990683914416">Иштеп чыгуучунун курамасы</translation>
 <translation id="989988560359834682">Даректи түзөтүү</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992256792861109788">Кызгылтым</translation>
 <translation id="992432478773561401">"<ph name="SOFTWARE_NAME" />" программасы компьютериңизде же тармагыңызда туура орнотулган эмес:
     &lt;ul&gt;
     &lt;li&gt;"<ph name="SOFTWARE_NAME" />" программасын чыгарып салып же өчүрүп көрүңүз&lt;/li&gt;

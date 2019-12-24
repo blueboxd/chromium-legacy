@@ -1,0 +1,20 @@
+main frame - DidStartNavigation
+main frame - ReadyToCommitNavigation
+main frame - didCommitLoadForFrame
+main frame - didReceiveTitle: Images with loading='lazy' load being moved to another document and then scrolled to
+frame "<!--framePath //<!--frame0-->-->" - didReceiveTitle: 
+frame "<!--framePath //<!--frame0-->-->" - BeginNavigation request to 'about:srcdoc', http method GET
+frame "<!--framePath //<!--frame0-->-->" - DidStartNavigation
+main frame - didFinishDocumentLoadForFrame
+frame "<!--framePath //<!--frame0-->-->" - ReadyToCommitNavigation
+frame "<!--framePath //<!--frame0-->-->" - didCommitLoadForFrame
+frame "<!--framePath //<!--frame0-->-->" - didReceiveTitle: 
+frame "<!--framePath //<!--frame0-->-->" - didFinishDocumentLoadForFrame
+frame "<!--framePath //<!--frame0-->-->" - didHandleOnloadEventsForFrame
+frame "<!--framePath //<!--frame0-->-->" - didFinishLoadForFrame
+main frame - didHandleOnloadEventsForFrame
+main frame - didFinishLoadForFrame
+This is a testharness.js-based test.
+FAIL Test that <img> below viewport is not loaded when moved to another document and then scrolled to assert_unreached: The below viewport image should not load Reached unreachable code
+Harness: the test ran to completion.
+

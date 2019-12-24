@@ -934,6 +934,7 @@
 <translation id="5386426401304769735">Chuỗi chứng chỉ cho trang web này có chứa một chứng chỉ đã ký bằng SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">May viền ở bên phải</translation>
+<translation id="5400836586163650660">Màu xám</translation>
 <translation id="540969355065856584">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này không hợp lệ tại thời điểm này. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
 <translation id="5421136146218899937">Xóa dữ liệu duyệt web...</translation>
 <translation id="5430298929874300616">Xóa dấu trang</translation>
@@ -1716,6 +1717,7 @@ Thông tin chi tiết bổ sung:
 <translation id="988159990683914416">Phiên bản dành cho Nhà phát triển</translation>
 <translation id="989988560359834682">Chỉnh sửa địa chỉ</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992256792861109788">Màu hồng</translation>
 <translation id="992432478773561401">"<ph name="SOFTWARE_NAME" />" đã được cài đặt không đúng trên máy tính hoặc mạng của bạn:
     &lt;ul&gt;
     &lt;li&gt;Hãy thử gỡ cài đặt hoặc vô hiệu hóa "<ph name="SOFTWARE_NAME" />"&lt;/li&gt;

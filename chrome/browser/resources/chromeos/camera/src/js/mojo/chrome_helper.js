@@ -35,6 +35,22 @@ export class ChromeHelper {
   }
 
   /**
+   * Triggers the begin of event tracing in Chrome.
+   * @param {string} event Name of the event.
+   */
+  startTracing(event) {
+    this.remote_.startPerfEventTrace(event);
+  }
+
+  /**
+   * Triggers the end of event tracing in Chrome.
+   * @param {string} event Name of the event.
+   */
+  stopTracing(event) {
+    this.remote_.stopPerfEventTrace(event);
+  }
+
+  /**
    * Checks return value from |handleCameraResult|.
    * @param {string} caller Caller identifier.
    * @param {Promise<{isSuccess: boolean}>|null} value
@@ -121,9 +137,5 @@ export class ChromeHelper {
   }
 }
 
-/* eslint-disable no-undef */
-
 /** @const */
 cca.mojo.ChromeHelper = ChromeHelper;
-
-/* eslint-enable no-undef */

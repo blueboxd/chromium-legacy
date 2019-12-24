@@ -2,14 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable no-undef */
-
-/**
- * import {Resolution} from '../type.js';
- */
-const CCAResolution = Resolution;
-
-/* eslint-enable no-undef */
+import {Resolution,
+        ResolutionList,  // eslint-disable-line no-unused-vars
+} from '../type.js';
 
 /**
  * Parse the entry data according to its type.
@@ -156,7 +151,7 @@ export class DeviceOperator {
       const [format, width, height, type] =
           streamConfigs.slice(i, i + numElementPerEntry);
       if (format === formatBlob && type === typeOutputStream) {
-        supportedResolutions.push(new CCAResolution(width, height));
+        supportedResolutions.push(new Resolution(width, height));
       }
     }
     return supportedResolutions;
@@ -166,7 +161,7 @@ export class DeviceOperator {
    * Gets supported video configurations for specific camera.
    * @param {string} deviceId The renderer-facing device id of the target camera
    *     which could be retrieved from MediaDeviceInfo.deviceId.
-   * @return {!Promise<!Array<VideoConfig>>} Promise of supported video
+   * @return {!Promise<!Array<cca.VideoConfig>>} Promise of supported video
    *     configurations.
    * @throws {Error} Thrown when fail to parse the metadata or the device
    *     operation is not supported.
@@ -222,7 +217,7 @@ export class DeviceOperator {
    * Gets supported fps ranges for specific camera.
    * @param {string} deviceId The renderer-facing device id of the target camera
    *     which could be retrieved from MediaDeviceInfo.deviceId.
-   * @return {!Promise<!FpsRangeList>} Promise of supported fps ranges.
+   * @return {!Promise<!cca.FpsRangeList>} Promise of supported fps ranges.
    *     Each range is represented as [min, max].
    * @throws {Error} Thrown when fail to parse the metadata or the device
    *     operation is not supported.
@@ -244,7 +239,7 @@ export class DeviceOperator {
       throw new Error('Unexpected length of available fps range configs');
     }
 
-    const /** !FpsRangeList */ supportedFpsRanges = [];
+    const /** !cca.FpsRangeList */ supportedFpsRanges = [];
     for (let i = 0; i < availableFpsRanges.length; i += numElementPerEntry) {
       const [minFps, maxFps] =
           availableFpsRanges.slice(i, i + numElementPerEntry);
@@ -468,11 +463,7 @@ export class DeviceOperator {
   }
 }
 
-/* eslint-disable no-undef */
-
 /** @const */
 cca.mojo.DeviceOperator = DeviceOperator;
 /** @const */
 cca.mojo.parseMetadataData = parseMetadataData;
-
-/* eslint-enable no-undef */

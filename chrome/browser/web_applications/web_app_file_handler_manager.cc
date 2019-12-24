@@ -23,10 +23,9 @@ WebAppFileHandlerManager::GetAllFileHandlers(const AppId& app_id) {
   if (it != file_handler_infos_.end())
     return &it->second;
 
-  // TODO(crbug.com/938103): Implement explicit safe downcast from AppRegistrar
-  // to WebAppRegistrar rather than using static_cast.
-  WebAppRegistrar* web_registrar = static_cast<WebAppRegistrar*>(registrar());
-  const WebApp* web_app = web_registrar->GetAppById(app_id);
+  WebAppRegistrar* web_app_registrar = registrar()->AsWebAppRegistrar();
+  DCHECK(web_app_registrar);
+  const WebApp* web_app = web_app_registrar->GetAppById(app_id);
 
   const std::vector<WebApp::FileHandler>& file_handlers =
       web_app->file_handlers();

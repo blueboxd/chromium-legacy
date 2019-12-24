@@ -20,11 +20,6 @@ cca.views = cca.views || {};
 cca.views.camera = cca.views.camera || {};
 
 /**
- * import {assert, assertInstanceof} from '../chrome_util.js';
- */
-var {assert, assertInstanceof} = {assert, assertInstanceof};
-
-/**
  * Creates a controller for the video preview of Camera view.
  */
 cca.views.camera.Preview = class {
@@ -43,7 +38,7 @@ cca.views.camera.Preview = class {
      * @type {!HTMLVideoElement}
      * @private
      */
-    this.video_ = assertInstanceof(
+    this.video_ = cca.assertInstanceof(
         document.querySelector('#preview-video'), HTMLVideoElement);
 
     /**
@@ -51,7 +46,7 @@ cca.views.camera.Preview = class {
      * @type {!HTMLElement}
      * @private
      */
-    this.metadata_ = assertInstanceof(
+    this.metadata_ = cca.assertInstanceof(
         document.querySelector('#preview-metadata'), HTMLElement);
 
     /**
@@ -129,7 +124,7 @@ cca.views.camera.Preview = class {
    */
   setSource_(stream) {
     const video =
-        assertInstanceof(document.createElement('video'), HTMLVideoElement);
+        cca.assertInstanceof(document.createElement('video'), HTMLVideoElement);
     video.id = 'preview-video';
     video.classList = this.video_.classList;
     video.muted = true;  // Mute to avoid echo from the captured audio.

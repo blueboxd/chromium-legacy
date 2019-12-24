@@ -7,7 +7,6 @@
 <translation id="1065672644894730302">No se pueden leer tus preferencias. Es posible que algunas funciones no estén disponibles y que no se guarden los cambios realizados a las preferencias.</translation>
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> usaba Chrome anteriormente</translation>
 <translation id="1097330777386562916">Borrar las cookies y los datos de los sitios cuando sales de Chrome</translation>
-<translation id="1104959162601287462">Acerca del &amp;sistema operativo de Chrome</translation>
 <translation id="110877069173485804">Este es tu navegador Chrome</translation>
 <translation id="1142745911746664600">No se puede actualizar Chrome</translation>
 <translation id="1154147086299354128">&amp;Abrir en Chrome</translation>
@@ -89,7 +88,7 @@
 <translation id="3582972582564653026">Sincroniza y personaliza Chrome en todos tus dispositivos</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{El administrador necesita que reinicies Chrome para aplicar una actualización}=1{El administrador necesita que reinicies Chrome para aplicar una actualización. No se volverá a abrir la ventana de incógnito.}other{El administrador necesita que reinicies Chrome para aplicar una actualización. No se volverán a abrir las # ventanas de incógnito.}}</translation>
 <translation id="3622797965165704966">Ahora es más sencillo utilizar Chrome con la cuenta de Google y en computadoras compartidas.</translation>
-<translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Condiciones del servicio<ph name="END_TERMS_OF_SERVICE_LINK" /> del Sistema operativo Google Chrome</translation>
+<translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Condiciones del Servicio<ph name="END_TERMS_OF_SERVICE_LINK" /> del Sistema operativo Google Chrome</translation>
 <translation id="3718181793972440140">Esta acción borrará 1 elemento de este dispositivo. Si más adelante deseas recuperar los datos, accede a tu cuenta en Chrome como <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">La extensión "<ph name="EXTENSION_NAME" />" cambió la página que se muestra al iniciar Chrome.</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
@@ -174,7 +173,7 @@
 <translation id="6885412569789873916">Apps de Chrome Beta</translation>
 <translation id="6943584222992551122">Los datos de navegación de esta persona se borrarán de este dispositivo. Para recuperarlos, accede a Chrome como <ph name="USER_EMAIL" />.</translation>
 <translation id="6967962315388095737">Regla de entrada para que Google Chrome Beta permita el tráfico mDNS.</translation>
-<translation id="6982337800632491844"><ph name="DOMAIN" /> requiere que leas y aceptes las siguientes Condiciones del servicio antes de usar este dispositivo. Estas condiciones no amplían, modifican ni limitan las Condiciones del Sistema operativo de Google Chrome.</translation>
+<translation id="6982337800632491844"><ph name="DOMAIN" /> requiere que leas y aceptes las siguientes Condiciones del Servicio antes de usar este dispositivo. Estas condiciones no amplían, modifican ni limitan las Condiciones del Sistema operativo de Google Chrome.</translation>
 <translation id="6989339256997917931">Google Chrome fue actualizado, pero no lo has utilizado en los últimos 30 días.</translation>
 <translation id="7098166902387133879">Google Chrome está usando tu micrófono.</translation>
 <translation id="7106741999175697885">Administrador de tareas - Google Chrome</translation>

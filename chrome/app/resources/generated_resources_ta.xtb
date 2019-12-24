@@ -456,6 +456,7 @@
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> நீங்கள் தகுதியான Chrome OS சாதனத்தைப் பயன்படுத்துகிறீர்களா என்பதைச் சரிபார்க்க விரும்புகிறது.</translation>
 <translation id="1640235262200048077">Linux ஆப்ஸிற்கு <ph name="IME_NAME" /> இதுவரை இல்லை</translation>
 <translation id="1640283014264083726">RSA என்க்ரிப்ஷனுடன் PKCS #1 MD4</translation>
+<translation id="1641113438599504367">பாதுகாப்பாக உலாவுதல்</translation>
 <translation id="1642494467033190216">வேறு பிழைத் திருத்த அம்சங்களை இயக்கும் முன், rootfs பாதுகாப்பை அகற்றி, மீண்டும் தொடங்க வேண்டும்.</translation>
 <translation id="1643072738649235303">SHA-1 உடனான X9.62 ECDSA கையொப்பம்</translation>
 <translation id="1644574205037202324">வரலாறு</translation>
@@ -1933,7 +1934,6 @@
 <translation id="3732530910372558017">பின்னில் அதிகப்பட்சம் 63 எழுத்துகள் வரை இருக்க வேண்டும்</translation>
 <translation id="3733127536501031542">அதிகமாக்குதலுடனான SSL சேவையகம்</translation>
 <translation id="3735740477244556633">இதன்படி வரிசைப்படுத்து</translation>
-<translation id="3736016243818847857">தொடர வேண்டுமா?</translation>
 <translation id="3737274407993947948">Linuxஸை நிறுவும்போது பிழை ஏற்பட்டது...</translation>
 <translation id="3737536731758327622">உங்கள் பதிவிறக்கங்கள் இங்கே தோன்றும்</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -2634,7 +2634,6 @@
 <translation id="4798236378408895261"><ph name="BEGIN_LINK" />புளூடூத் பதிவுகளை<ph name="END_LINK" /> இணை (Google அகப் பயன்பாட்டிற்காக)</translation>
 <translation id="4801448226354548035">கணக்குகளை மறை</translation>
 <translation id="4801512016965057443">மொபைல் டேட்டா ரோமிங்கை அனுமதி</translation>
-<translation id="4804756772600045300">தொடர்வதால் Android ஆப்ஸை உருவாக்குவதற்கும் சோதனை செய்வதற்கும் ADB பிழைதிருத்தம் அனுமதிக்கப்படும். கவனத்திற்கு: Googleளால் சரிபார்க்கப்படாத சோதனை ஆப்ஸ் நிறுவப்படுவதை ADB பிழைதிருத்தம் அனுமதிக்கும்.</translation>
 <translation id="4804818685124855865">தொடர்பைத் துண்டி</translation>
 <translation id="4804827417948292437">அவகாடோ</translation>
 <translation id="4805077164141082536">மேம்படுத்துவதற்கு முன்பாக உங்களின் தற்போதைய Linux கண்டெய்னரைக் காப்புப் பிரதி எடுத்துக்கொள்ளுமாறு பரிந்துரைக்கிறோம்.</translation>
@@ -4555,6 +4554,7 @@
 <translation id="7631205654593498032">உங்கள் சாதனங்களை இணைக்கும்போது <ph name="DEVICE_TYPE" /> இவற்றைச் செய்யலாம் என்று ஏற்கிறீர்கள்:</translation>
 <translation id="7631887513477658702">&amp;எப்போதும் இந்த வகை கோப்புகளைத் திற</translation>
 <translation id="7632948528260659758">பின்வரும் கியோஸ்க் பயன்பாடுகளைப் புதுப்பிப்பதில் தோல்வி:</translation>
+<translation id="7634566076839829401">ஏதோ தவறாகிவிட்டது. மீண்டும் முயற்சிக்கவும்.</translation>
 <translation id="763632859238619983">கட்டண ஹேண்ட்லர்களை நிறுவுவதற்கு எந்தத் தளத்தையும் அனுமதிக்காதே</translation>
 <translation id="7636919061354591437">இந்தச் சாதனத்தில் நிறுவு</translation>
 <translation id="7638605456503525968">சீரியல் போர்ட்டுகள்</translation>

@@ -920,6 +920,7 @@
 <translation id="5386426401304769735">Naglalaman ang chain ng certificate para sa site na ito ng certificate na naka-sign gamit ang SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Edge stitch right</translation>
+<translation id="5400836586163650660">Grey</translation>
 <translation id="540969355065856584">Hindi mapatunayan ng server na ito ay ang <ph name="DOMAIN" />; walang bisa ang certificate sa seguridad nito sa pagkakataong ito. Maaaring dahil ito sa isang maling pag-configure o may isang attacker na humahadlang sa iyong koneksyon.</translation>
 <translation id="5421136146218899937">I-clear ang data sa pag-browse...</translation>
 <translation id="5430298929874300616">Alisin ang bookmark</translation>
@@ -1701,6 +1702,7 @@ Mga karagdagang detalye:
 <translation id="988159990683914416">Bumuo ang Developer</translation>
 <translation id="989988560359834682">I-edit ang Address</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992256792861109788">Pink</translation>
 <translation id="992432478773561401">Hindi na-install nang maayos ang "<ph name="SOFTWARE_NAME" />" sa iyong computer o sa network:
     &lt;ul&gt;
     &lt;li&gt;Subukang i-uninstall o i-disable ang "<ph name="SOFTWARE_NAME" />"&lt;/li&gt;

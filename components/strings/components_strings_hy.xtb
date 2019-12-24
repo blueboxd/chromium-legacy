@@ -933,6 +933,7 @@
 <translation id="5386426401304769735">Այս կայքի վկայագրերի շարքում առկա է մեկ վկայագիր` SHA-1 ստորագրությամբ:</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Աջ եզրակար</translation>
+<translation id="5400836586163650660">Մոխրագույն</translation>
 <translation id="540969355065856584">Այս սերվերը չի կարող ապացուցել, որ <ph name="DOMAIN" /> է: Դրա անվտանգության վկայականն այս անգամ վավեր չէ: Պատճառը կարող է լինել սխալ կազմաձևումը կամ կապակցման խափանումը հարձակվողի կողմից:</translation>
 <translation id="5421136146218899937">Մաքրել դիտարկումների տվյալները…</translation>
 <translation id="5430298929874300616">Հեռացնել էջանիշը</translation>
@@ -1714,6 +1715,7 @@
 <translation id="988159990683914416">Մշակողների տարբերակ</translation>
 <translation id="989988560359834682">Փոխել հասցեն</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992256792861109788">Վարդագույն</translation>
 <translation id="992432478773561401">«<ph name="SOFTWARE_NAME" />» ծրագիրը ձեր համակարգչում կամ ցանցում ճիշտ չէ տեղադրվել․ 
     &lt;ul&gt;
     &lt;li&gt;ապատեղադրեք կամ անջատեք «<ph name="SOFTWARE_NAME" />» ծրագիրը,&lt;/li&gt;

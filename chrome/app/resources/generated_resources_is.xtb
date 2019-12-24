@@ -110,7 +110,6 @@
 <translation id="114721135501989771">Fá Google snjalltæki í Chrome</translation>
 <translation id="1147991416141538220">Hafðu samband við stjórnanda þessa tækis til að óska eftir aðgangi.</translation>
 <translation id="1149401351239820326">Fyrningarmánuður</translation>
-<translation id="1150490752229770117">Þetta er síðasta sjálfvirka hugbúnaðar- og öryggisuppfærslan fyrir þetta <ph name="DEVICE_TYPE" /> tæki. Uppfærðu í nýrri útgáfu til að fá frekari uppfærslur. <ph name="LINK_BEGIN" />Frekari upplýsingar<ph name="LINK_END" /></translation>
 <translation id="1150565364351027703">Sólgleraugu</translation>
 <translation id="1151917987301063366">Veita <ph name="HOST" /> alltaf aðgang að skynjurum</translation>
 <translation id="1153356358378277386">Pöruð tæki</translation>
@@ -461,6 +460,7 @@
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> vill kanna hvort þú sért að nota gjaldgengt Chrome OS tæki.</translation>
 <translation id="1640235262200048077"><ph name="IME_NAME" /> virkar ekki í Linux-forritum enn sem komið er</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 með RSA-dulkóðun</translation>
+<translation id="1641113438599504367">Örugg vefnotkun</translation>
 <translation id="1642494467033190216">Þú þarft að fjarlægja vörn rootfs og endurræsa áður en kveikt er á öðrum villuleitareiginleikum.</translation>
 <translation id="1643072738649235303">X9.62 ECDSA undirskrift með SHA-1</translation>
 <translation id="1644574205037202324">Ferill</translation>
@@ -1956,7 +1956,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="3732530910372558017">PIN-númer getur að hámarki verið 63 stafir</translation>
 <translation id="3733127536501031542">SSL-þjónn með uppreiknun</translation>
 <translation id="3735740477244556633">Raða eftir</translation>
-<translation id="3736016243818847857">Viltu halda áfram?</translation>
 <translation id="3737274407993947948">Villa við að setja upp Linux...</translation>
 <translation id="3737536731758327622">Niðurhalið þitt birtist hér</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -2665,7 +2664,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="4798236378408895261">Hengja við <ph name="BEGIN_LINK" />Bluetooth-skrár<ph name="END_LINK" /> (innanhúss hjá Google)</translation>
 <translation id="4801448226354548035">Fela reikninga</translation>
 <translation id="4801512016965057443">Leyfa reiki farsímagagna</translation>
-<translation id="4804756772600045300">Ef þú heldur áfram kveikir þú á ADB-villuleit til að búa til og prófa Android forrit. Hafðu í huga að ADB-villuleit leyfir uppsetningu á prófunarforritum sem hafa ekki verið staðfest af Google.</translation>
 <translation id="4804818685124855865">Aftengja</translation>
 <translation id="4804827417948292437">Avókadó</translation>
 <translation id="4805077164141082536">Við mælum með að þú takir afrit af núverandi Linux-ramma áður en þú uppfærir.</translation>
@@ -4606,6 +4604,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="7631205654593498032">Þegar þú tengir tækin þín samþykkirðu að <ph name="DEVICE_TYPE" /> geti:</translation>
 <translation id="7631887513477658702">Opna &amp;alltaf skrár af þessari gerð</translation>
 <translation id="7632948528260659758">Mistókst að uppfæra eftirfarandi sjálfsalaforrit:</translation>
+<translation id="7634566076839829401">Eitthvað fór úrskeiðis. Reyndu aftur.</translation>
 <translation id="763632859238619983">Ekki leyfa neinum vefsvæðum að setja upp greiðslumiðlara</translation>
 <translation id="7636919061354591437">Setja upp í þessu tæki</translation>
 <translation id="7638605456503525968">Raðtengi</translation>

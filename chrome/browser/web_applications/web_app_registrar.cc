@@ -110,6 +110,10 @@ std::vector<AppId> WebAppRegistrar::GetAppIds() const {
   return app_ids;
 }
 
+WebAppRegistrar* WebAppRegistrar::AsWebAppRegistrar() {
+  return this;
+}
+
 WebAppRegistrar::AppSet::AppSet(const WebAppRegistrar* registrar)
     : registrar_(registrar)
 #if DCHECK_IS_ON()

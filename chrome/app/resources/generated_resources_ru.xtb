@@ -110,7 +110,6 @@
 <translation id="114721135501989771">Интеллектуальные функции Google в Chrome</translation>
 <translation id="1147991416141538220">Чтобы запросить доступ, обратитесь к администратору устройства.</translation>
 <translation id="1149401351239820326">Месяц окончания срока действия</translation>
-<translation id="1150490752229770117">Это последнее автоматическое обновление ПО и безопасности для устройства <ph name="DEVICE_TYPE" />. Если вы хотите получать обновления в дальнейшем, перейдите на более новую модель. <ph name="LINK_BEGIN" />Подробнее…<ph name="LINK_END" /></translation>
 <translation id="1150565364351027703">Солнцезащитные очки</translation>
 <translation id="1151917987301063366">Всегда разрешать сайту <ph name="HOST" /> использовать датчики</translation>
 <translation id="1153356358378277386">Сопряженные устройства</translation>
@@ -460,6 +459,7 @@
 <translation id="163993578339087550">Сервис "<ph name="SERVICE_NAME" />" запрашивает информацию об устройстве Chrome OS.</translation>
 <translation id="1640235262200048077"><ph name="IME_NAME" /> пока не работает в приложениях для Linux.</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 с шифрованием RSA</translation>
+<translation id="1641113438599504367">Безопасный просмотр</translation>
 <translation id="1642494467033190216">Перед включением других функций отладки отключите защиту корневой файловой системы и перезагрузите устройство.</translation>
 <translation id="1643072738649235303">Подпись ECDSA X9.62 с SHA-1</translation>
 <translation id="1644574205037202324">История</translation>
@@ -1954,7 +1954,6 @@
 <translation id="3732530910372558017">PIN-код должен содержать не более 63 символов.</translation>
 <translation id="3733127536501031542">SSL-сервер с повышением</translation>
 <translation id="3735740477244556633">Сортировать по:</translation>
-<translation id="3736016243818847857">Продолжить?</translation>
 <translation id="3737274407993947948">Ошибка при установке Linux</translation>
 <translation id="3737536731758327622">Здесь появятся скачанные файлы.</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -2663,7 +2662,6 @@
 <translation id="4798236378408895261">Прикрепить <ph name="BEGIN_LINK" />журналы Bluetooth<ph name="END_LINK" /> (доступно только сотрудникам Google)</translation>
 <translation id="4801448226354548035">Скрыть аккаунты</translation>
 <translation id="4801512016965057443">Разрешить мобильный интернет-роуминг</translation>
-<translation id="4804756772600045300">Продолжив, вы включите отладку с ADB для создания и тестирования приложений для Android. Обратите внимание, что это позволит устанавливать приложения, которые находятся в стадии тестирования и не были проверены компанией Google.</translation>
 <translation id="4804818685124855865">Отключиться</translation>
 <translation id="4804827417948292437">Авокадо</translation>
 <translation id="4805077164141082536">Перед установкой обновления рекомендуем сохранить резервную копию контейнера Linux.</translation>
@@ -4604,6 +4602,7 @@
 <translation id="7631205654593498032">После подключения устройство <ph name="DEVICE_TYPE" /> сможет:</translation>
 <translation id="7631887513477658702">Всегда открывать файлы этого типа</translation>
 <translation id="7632948528260659758">Не удалось обновить следующие киоск-приложения:</translation>
+<translation id="7634566076839829401">Произошла ошибка. Повторите попытку.</translation>
 <translation id="763632859238619983">Запретить сайтам устанавливать обработчики платежей</translation>
 <translation id="7636919061354591437">Установить на этом устройстве</translation>
 <translation id="7638605456503525968">Последовательные порты</translation>

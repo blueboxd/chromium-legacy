@@ -110,7 +110,6 @@
 <translation id="114721135501989771">Merr funksionet inteligjente të Google në Chrome</translation>
 <translation id="1147991416141538220">Për të kërkuar qasjen, kontakto me administratorin e kësaj pajisjeje.</translation>
 <translation id="1149401351239820326">Muaji i skadimit</translation>
-<translation id="1150490752229770117">Ky është përditësimi i fundit automatik i softuerit dhe i sigurisë për këtë pajisje <ph name="DEVICE_TYPE" />. Për të marrë përditësime të ardhshme, përmirësoje në një model më të ri. <ph name="LINK_BEGIN" />Mëso më shumë<ph name="LINK_END" /></translation>
 <translation id="1150565364351027703">Syze dielli</translation>
 <translation id="1151917987301063366">Lejo gjithmonë që <ph name="HOST" /> të qaset te sensorët</translation>
 <translation id="1153356358378277386">Pajisjet e çiftuara</translation>
@@ -458,6 +457,7 @@
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> dëshiron të kontrollojë nëse po përdor një pajisje të përshtatshme me sistem operativ Chrome.</translation>
 <translation id="1640235262200048077"><ph name="IME_NAME" /> nuk funksionon ende në aplikacionet e Linux</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 me enkriptim RSA</translation>
+<translation id="1641113438599504367">Shfletimi i sigurt</translation>
 <translation id="1642494467033190216">Kërkohet heqja e mbrojtjes së rrënjës dhe rifillimi para aktivizimit të funksioneve të tjera të korrigjimit të gabimeve.</translation>
 <translation id="1643072738649235303">Nënshkrimi X9.62 ECDSA me SHA-1</translation>
 <translation id="1644574205037202324">Historiku</translation>
@@ -1029,7 +1029,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="2445484935443597917">Krijo një profil të ri</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> dëshiron të verifikojë identitetin tënd</translation>
 <translation id="2448312741937722512">Shkruaj</translation>
-<translation id="2448734521821581858">Kukit janë skedarë të krijuar nga sajtet e uebit që viziton ti. Ka dy lloje kukish: Kukit e palëve të para krijohen nga sajti që viziton ti. Sajti shfaqet në shiritin e kërkimit. Kukit e palëve të treta krijohen nga sajte të tjera. Këto sajte zotërojnë disa nga përmbajtjet, si p.sh. reklamat ose imazhet, që ti shikon në sajtin e uebit që viziton.</translation>
+<translation id="2448734521821581858">Kukit janë skedarë të krijuar nga sajtet e uebit që viziton ti. Ka dy lloje kukish: Kukit e palëve të para krijohen nga sajti që viziton ti. Sajti shfaqet në shiritin e kërkimit. Kukit e palëve të treta krijohen nga sajte të tjera. Këto sajte zotërojnë disa nga përmbajtjet, si p.sh. reklamat ose imazhet që ti shikon në sajtin e uebit që viziton.</translation>
 <translation id="2450223707519584812">Nuk do të jesh në gjendje të shtosh përdorues sepse mungojnë çelësat e API Google. Shiko <ph name="DETAILS_URL" /> për detaje.</translation>
 <translation id="2450849356604136918">Nuk ka shikime aktive</translation>
 <translation id="2451298179137331965">2x</translation>
@@ -1953,7 +1953,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="3732530910372558017">Kodi PIN duhet të ketë maksimumi 63 karaktere</translation>
 <translation id="3733127536501031542">Server SSL me rritje</translation>
 <translation id="3735740477244556633">Rendit sipas</translation>
-<translation id="3736016243818847857">Dëshiron që të vazhdosh?</translation>
 <translation id="3737274407993947948">Gabim në instalimin e Linux...</translation>
 <translation id="3737536731758327622">Shkarkimet e tua shfaqen këtu</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -2386,7 +2385,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="4364327530094270451">Pjepër</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> po ndan një dritare.</translation>
 <translation id="4364830672918311045">Shfaq njoftimet</translation>
-<translation id="436499142539576997">Marrja e të dhënave të aplikacionit dështoi, por po përpiqemi përsëri të ekzekutojmë aplikacionin...</translation>
+<translation id="436499142539576997">Marrja e të dhënave të aplikacionit dështoi, por po përpiqemi përsëri ta ekzekutojmë aplikacionin...</translation>
 <translation id="4370975561335139969">Mail-i dhe fjalëkalimi që ke futur nuk përputhen</translation>
 <translation id="437184764829821926">Cilësimet e përparuara të shkrimeve</translation>
 <translation id="4374831787438678295">Instaluesi për Linux</translation>
@@ -2662,7 +2661,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="4798236378408895261">Bashkëngjit <ph name="BEGIN_LINK" />Evidencat e Bluetooth-it<ph name="END_LINK" /> (e brendshme për Google)</translation>
 <translation id="4801448226354548035">Fshih llogaritë</translation>
 <translation id="4801512016965057443">Lejo roaming-un për të dhënat celulare</translation>
-<translation id="4804756772600045300">Vazhdimi do të aktivizojë korrigjimin e ADB-së për krijimin dhe testimin e aplikacioneve të Android. Ki parasysh se korrigjimi i ADB-së lejon instalimin e aplikacioneve të testimit që nuk janë verifikuar nga Google.</translation>
 <translation id="4804818685124855865">Shkëputu</translation>
 <translation id="4804827417948292437">Avokado</translation>
 <translation id="4805077164141082536">Rekomandojmë që të rezervosh kontejnerin aktual të Linux përpara përmirësimit.</translation>
@@ -4603,6 +4601,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="7631205654593498032">Kur lidh pajisjet e tua, ti bie dakord që pajisja <ph name="DEVICE_TYPE" /> mundet që:</translation>
 <translation id="7631887513477658702">&amp;Hapi gjithmonë skedarët e këtij lloji</translation>
 <translation id="7632948528260659758">Aplikacionet e mëposhtme të kioskës kanë dështuar me përditësimin:</translation>
+<translation id="7634566076839829401">Ndodhi një gabim. Provo përsëri.</translation>
 <translation id="763632859238619983">Mos lejo asnjë sajt të instalojë përpunues të pagesave</translation>
 <translation id="7636919061354591437">Instaloje në këtë pajisje</translation>
 <translation id="7638605456503525968">Portat seriale</translation>

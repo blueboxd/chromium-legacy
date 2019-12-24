@@ -605,6 +605,7 @@
 <translation id="3828924085048779000">אין אפשרות להשתמש במשפט-סיסמה ריק.</translation>
 <translation id="3831915413245941253">הותקנו תוספים מהדומיין <ph name="ENROLLMENT_DOMAIN" /> כדי להשתמש בפונקציות נוספות. לתוספים יש גישה לחלק מהנתונים שלך.</translation>
 <translation id="3832522519263485449">ניקובים מרובים בצד שמאל</translation>
+<translation id="3838154488026099170">‏הזנת כרגע את הסיסמה שלך באתר מטעה. ההמלצה של Chromium היא לעבור אל <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> ואל אתרים אחרים שבהם הסיסמה הזו בשימוש ולשנות אותה עכשיו.</translation>
 <translation id="385051799172605136">חזרה</translation>
 <translation id="3858027520442213535">עדכן את התאריך והשעה</translation>
 <translation id="3884278016824448484">מזהה מכשיר מתנגש</translation>
@@ -642,6 +643,7 @@
 <translation id="4072486802667267160">התרחשה שגיאה במהלך עיבוד התשלום שלך. נסה שוב.</translation>
 <translation id="4075732493274867456">‏הלקוח והשרת אינם תומכים בגרסה נפוצה של פרוטוקול SSL או בחבילת צפנים.</translation>
 <translation id="4075941231477579656">Touch ID</translation>
+<translation id="4077092919748553596">‏הזנת כרגע את הסיסמה שלך באתר מטעה. ההמלצה של Chrome היא לעבור אל <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> ואל אתרים אחרים שבהם הסיסמה הזו בשימוש ולשנות אותה עכשיו.</translation>
 <translation id="4079302484614802869">‏תצורת ה-Proxy מוגדרת להשתמש בכתובת אתר של סקריפט מסוג ‎.Pac ולא בשרתי Proxy קבועים.</translation>
 <translation id="4082393374666368382">הגדרות - ניהול</translation>
 <translation id="4098354747657067197">זהירות, אתר מטעה</translation>
@@ -721,6 +723,7 @@
 <translation id="4356973930735388585">תוקפים באתר הזה עשויים לנסות להתקין במחשב שלך תוכניות מסוכנות שגונבות או מוחקות מידע שלך (לדוגמה: תמונות, סיסמאות, הודעות ופרטי כרטיסי אשראי).</translation>
 <translation id="4358059973562876591">‏לא ניתן להחיל את התבניות שבחרת עקב שגיאה במדיניות DnsOverHttpsMode.</translation>
 <translation id="4358461427845829800">ניהול אמצעי תשלום...</translation>
+<translation id="4359160567981085931">‏הזנת כרגע את הסיסמה שלך באתר מטעה. אפשר לפתור את הבעיה בעזרת Chrome. כדי לשנות את הסיסמה ולהודיע ל-Google שייתכן כי החשבון בסיכון, יש ללחוץ על 'הגנה על החשבון'.</translation>
 <translation id="4367563149485757821">Number-12 (Envelope)‎</translation>
 <translation id="437058704415269440">יתרה בחשבון</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
@@ -933,6 +936,7 @@ Del</translation>
 <translation id="5386426401304769735">‏שרשרת האישורים של האתר הזה כוללת אישור שנחתם באמצעות SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">הידוק קצוות בצד ימין</translation>
+<translation id="5400836586163650660">אפור</translation>
 <translation id="540969355065856584">שרת זה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; אישור האבטחה שלו אינו תקף כעת. הסיבה לכך עשויה להיות תצורה שגויה או שתוקף מיירט את החיבור שלך.</translation>
 <translation id="5421136146218899937">ניקוי נתוני גלישה...</translation>
 <translation id="5430298929874300616">הסר סימניה</translation>
@@ -1001,6 +1005,7 @@ Del</translation>
 <translation id="5728056243719941842">C5 (Envelope)‎</translation>
 <translation id="5730040223043577876">‏אם הזנת את הסיסמה שלך באתרים אחרים, ההמלצה של Chrome היא לאפס אותה.</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{‏שמירת הכרטיס בחשבון Google}two{‏שמירת הכרטיסים בחשבון Google}many{‏שמירת הכרטיסים בחשבון Google}other{‏שמירת הכרטיסים בחשבון Google}}</translation>
+<translation id="5745980000221562234">{NUM_CARDS,plural, =1{שימוש במספר וירטואלי בשביל הכרטיס הזה}two{בחירת כרטיס}many{בחירת כרטיס}other{בחירת כרטיס}}</translation>
 <translation id="5763042198335101085">עליך להזין כתובת אימייל חוקית</translation>
 <translation id="5763703224595565476">‏מנהל המערכת הפעיל את Chrome Enterprise User Protect בדפדפן. ל-Chrome Enterprise User Protect יש גישה לחלק מהנתונים שלך.</translation>
 <translation id="5765072501007116331">עליך לבחור כתובת כדי לראות שיטות מסירה ודרישות</translation>
@@ -1017,6 +1022,7 @@ Del</translation>
 <translation id="5804241973901381774">הרשאות</translation>
 <translation id="5810442152076338065">החיבור שלך אל <ph name="DOMAIN" /> מוצפן באמצעות חבילת צופן מיושנת.</translation>
 <translation id="5813119285467412249">&amp;ביצוע מחדש של הוספה</translation>
+<translation id="5824687817967109979">{NUM_CARDS,plural, =1{‏הכרטיס הזה יחויב בעת התשלום, אבל המספר האמיתי שלו לא ישותף עם האתר הזה. כשכבת הגנה נוספת, המערכת תיצור קוד אימות (CVC) חדש.}two{‏הכרטיס שייבחר יחויב בעת התשלום, אבל המספר האמיתי שלו לא ישותף עם האתר הזה. כשכבת הגנה נוספת, המערכת תיצור קוד אימות (CVC) חדש.}many{‏הכרטיס שייבחר יחויב בעת התשלום, אבל המספר האמיתי שלו לא ישותף עם האתר הזה. כשכבת הגנה נוספת, המערכת תיצור קוד אימות (CVC) חדש.}other{‏הכרטיס שייבחר יחויב בעת התשלום, אבל המספר האמיתי שלו לא ישותף עם האתר הזה. כשכבת הגנה נוספת, המערכת תיצור קוד אימות (CVC) חדש.}}</translation>
 <translation id="583281660410589416">לא ידוע</translation>
 <translation id="5838278095973806738">אין להזין מידע רגיש באתר הזה (כמו סיסמאות או מספרי כרטיסי אשראי), מאחר שתוקפים עלולים לקבל אליו גישה.</translation>
 <translation id="5851548754964597211">רשימת כרטיסיות</translation>
@@ -1474,6 +1480,7 @@ Del</translation>
 <translation id="8042918947222776840">בחירת שיטת איסוף</translation>
 <translation id="8057711352706143257">יש בעיה בהגדרה של "<ph name="SOFTWARE_NAME" />". בדרך כלל, הסרת ההתקנה של "<ph name="SOFTWARE_NAME" />" פותרת את הבעיה. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8066955247577885446">מצטערים, משהו השתבש.</translation>
+<translation id="8067872629359326442">‏הזנת כרגע את הסיסמה שלך באתר מטעה. אפשר לפתור את הבעיה בעזרת Chromium. כדי לשנות את הסיסמה ולהודיע ל-Google שייתכן כי החשבון בסיכון, יש ללחוץ על 'הגנה על החשבון'.</translation>
 <translation id="8074253406171541171">10x13 (Envelope)‎</translation>
 <translation id="8078141288243656252">לא ניתן להוסיף הערה במצב מסובב</translation>
 <translation id="8079031581361219619">לטעון את האתר מחדש?</translation>
@@ -1490,6 +1497,7 @@ Del</translation>
 <translation id="8105368624971345109">כבה</translation>
 <translation id="8118489163946903409">אמצעי תשלום</translation>
 <translation id="8127301229239896662">‏הייתה בעיה בהתקנה של "<ph name="SOFTWARE_NAME" />" במחשב שלך או ברשת. יש לבקש ממנהל ה-IT לפתור את הבעיה.</translation>
+<translation id="8128526133099929547">‏הזנת כרגע את הסיסמה שלך באתר מטעה. ההמלצה של Chrome היא לעבור אל <ph name="WEBSITE_1" /> ואל אתרים אחרים שבהם הסיסמה הזו בשימוש ולשנות אותה עכשיו.</translation>
 <translation id="8131740175452115882">אישור</translation>
 <translation id="8149426793427495338">המחשב עבר למצב שינה.</translation>
 <translation id="8150722005171944719">הקובץ הנמצא ב-<ph name="URL" /> לא ניתן לקריאה. ייתכן שהקובץ הוסר או הועבר, או שהרשאות הקובץ מונעות גישה אליו.</translation>
@@ -1507,6 +1515,7 @@ Del</translation>
 <translation id="8218327578424803826">מיקום מוקצה:</translation>
 <translation id="8220146938470311105">C7/C6 (Envelope)‎</translation>
 <translation id="8220639454292072926">דיווח ארגוני</translation>
+<translation id="8221250263817408492">‏הזנת כרגע את הסיסמה שלך באתר מטעה. ההמלצה של Chromium היא לעבור אל <ph name="WEBSITE_1" /> ואל אתרים אחרים שבהם הסיסמה הזו בשימוש ולשנות אותה עכשיו.</translation>
 <translation id="8225771182978767009">המשתמש שהגדיר את המחשב הזה בחר לחסום את האתר הזה.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">פתיחת הדף בכרטיסייה חדשה של גלישה בסתר</translation>
@@ -1711,6 +1720,7 @@ Del</translation>
 <translation id="988159990683914416">גירסת מפתחים</translation>
 <translation id="989988560359834682">ערוך כתובת</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992256792861109788">ורוד</translation>
 <translation id="992432478773561401">‏הייתה בעיה בהתקנה של "<ph name="SOFTWARE_NAME" />" במחשב שלך או ברשת. אפשר לנסות אחת מהפעולות הבאות:
     &lt;ul&gt;
     &lt;li&gt;להסיר את ההתקנה של "<ph name="SOFTWARE_NAME" />"&lt;/li&gt;

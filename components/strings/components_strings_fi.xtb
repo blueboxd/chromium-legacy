@@ -935,6 +935,7 @@
 <translation id="5386426401304769735">Tämän sivuston varmenneketju sisältää varmenteen, joka on allekirjoitettu SHA-1:llä.</translation>
 <translation id="538659543871111977">A4-välilehti</translation>
 <translation id="5396631636586785122">Reunasidonta oikealla</translation>
+<translation id="5400836586163650660">Harmaa</translation>
 <translation id="540969355065856584">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />, sillä sen suojausvarmenne ei tällä hetkellä ole kelvollinen. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>
 <translation id="5421136146218899937">Poista selaustiedot...</translation>
 <translation id="5430298929874300616">Poista kirjanmerkki</translation>
@@ -1717,6 +1718,7 @@ Lisätietoja:
 <translation id="988159990683914416">Kehittäjän koontiversio</translation>
 <translation id="989988560359834682">Osoitteen muokkaus</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992256792861109788">Vaaleanpunainen</translation>
 <translation id="992432478773561401"><ph name="SOFTWARE_NAME" /> on asennettu virheellisesti tietokoneellesi tai verkkoon:
 
     &lt;ul&gt;

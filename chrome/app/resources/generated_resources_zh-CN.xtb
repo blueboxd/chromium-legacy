@@ -36,7 +36,7 @@
 <translation id="1041175011127912238">该页面未响应</translation>
 <translation id="1041263367839475438">可用的设备</translation>
 <translation id="1042174272890264476">您的计算机还内置了 <ph name="SHORT_PRODUCT_NAME" /> 的 RLZ 库。RLZ 会指定非唯一、非个人身份识别代码来衡量某推广活动所带来的搜索量和 <ph name="SHORT_PRODUCT_NAME" /> 使用量。这些标签有时会显示在 <ph name="PRODUCT_NAME" /> 的 Google 搜索查询中。</translation>
-<translation id="1043818413152647937">也清除以下应用内的数据？</translation>
+<translation id="1043818413152647937">要一并清除以下应用内的数据吗？</translation>
 <translation id="1045692658517323508">{0,plural, =1{请在 1 分钟内更新}other{请在 # 分钟内更新}}</translation>
 <translation id="1046635659603195359">您似乎已在另一部设备上为 Google 助理设置了 Voice Match 功能。这些先前的录音可用于在此设备上创建语音模型，创建过程通常会在 1 分钟内完成。</translation>
 <translation id="1047431265488717055">复制链接文字(&amp;X)</translation>
@@ -110,7 +110,6 @@
 <translation id="114721135501989771">在 Chrome 中畅享 Google 的智能技术</translation>
 <translation id="1147991416141538220">要申请访问权限，请与此设备的管理员联系。</translation>
 <translation id="1149401351239820326">过期月份</translation>
-<translation id="1150490752229770117">这是最后一次自动为此 <ph name="DEVICE_TYPE" /> 提供软件更新和安全更新。要想接收未来的更新，请升级至较新的型号。<ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" /></translation>
 <translation id="1150565364351027703">太阳镜</translation>
 <translation id="1151917987301063366">始终允许 <ph name="HOST" /> 使用传感器</translation>
 <translation id="1153356358378277386">已配对的设备</translation>
@@ -458,6 +457,7 @@
 <translation id="163993578339087550"><ph name="SERVICE_NAME" />想检查您使用的是否为符合条件的 Chrome 操作系统设备。</translation>
 <translation id="1640235262200048077">Linux 应用目前不支持<ph name="IME_NAME" /></translation>
 <translation id="1640283014264083726">PKCS #1，带有 RSA 加密的 MD4</translation>
+<translation id="1641113438599504367">安全浏览</translation>
 <translation id="1642494467033190216">要启用其他调试功能，必须先取消根文件系统保护并重启设备。</translation>
 <translation id="1643072738649235303">采用 SHA-1 算法的 X9.62 ECDSA 签名</translation>
 <translation id="1644574205037202324">历史记录</translation>
@@ -510,7 +510,7 @@
 <translation id="1709217939274742847">选择用于进行身份验证的票据。<ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" /></translation>
 <translation id="1712349894969001173">通过您的 iPhone 获取此密码</translation>
 <translation id="1712552549805331520"><ph name="URL" /> 想在您的本地计算机上永久存储数据</translation>
-<translation id="1714644264617423774">启用无障碍功能，以使您的设备更易于使用。<ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" /></translation>
+<translation id="1714644264617423774">启用无障碍功能，让设备更易于使用。<ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" /></translation>
 <translation id="1717218214683051432">动态传感器</translation>
 <translation id="171824261579749339">自然滚动<ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" /></translation>
 <translation id="1718835860248848330">过去一小时</translation>
@@ -1028,7 +1028,7 @@
 <translation id="2445484935443597917">创建新的个人资料</translation>
 <translation id="2446585455334014596">“<ph name="APP_NAME" />”想验证您的身份</translation>
 <translation id="2448312741937722512">类型</translation>
-<translation id="2448734521821581858">Cookie 是您访问过的网站所创建的文件。Cookie 分为两类：第一方 Cookie 是由您访问过的网站创建而成。相应网站会显示在地址栏中。第三方 Cookie 是由其他网站创建而成。这些网站拥有您在所访问网站上看到的部分内容（比如广告或图片）。</translation>
+<translation id="2448734521821581858">Cookie 是您访问过的网站所创建的文件。它分为两类：第一方 Cookie 是由您访问过的网站创建而成，其网站会显示在地址栏中；第三方 Cookie 是由其他网站创建而成，这些网站拥有您在所访问网站上看到的部分内容（比如广告或图片）。</translation>
 <translation id="2450223707519584812">您将无法添加用户，因为缺少 Google API 密钥。详情请见 <ph name="DETAILS_URL" />。</translation>
 <translation id="2450849356604136918">没有正在运行的视图</translation>
 <translation id="2451298179137331965">2 倍</translation>
@@ -1952,7 +1952,6 @@
 <translation id="3732530910372558017">PIN 码不得超过 63 个字符</translation>
 <translation id="3733127536501031542">带有递升式验证机制的 SSL 服务器</translation>
 <translation id="3735740477244556633">排序依据</translation>
-<translation id="3736016243818847857">要继续操作吗？</translation>
 <translation id="3737274407993947948">安装 Linux 时出错…</translation>
 <translation id="3737536731758327622">您的下载内容会显示在此处</translation>
 <translation id="3738924763801731196"><ph name="OID" />：</translation>
@@ -2660,7 +2659,6 @@
 <translation id="4798236378408895261">附加<ph name="BEGIN_LINK" />蓝牙日志<ph name="END_LINK" />（Google 内部使用）</translation>
 <translation id="4801448226354548035">隐藏帐号</translation>
 <translation id="4801512016965057443">允许移动数据漫游</translation>
-<translation id="4804756772600045300">继续操作会启用 ADB 调试，以创建和测试 Android 应用。请注意，ADB 调试允许安装未经 Google 验证的测试应用。</translation>
 <translation id="4804818685124855865">断开连接</translation>
 <translation id="4804827417948292437">牛油果</translation>
 <translation id="4805077164141082536">我们建议您在升级前先备份您当前的 Linux 容器。</translation>
@@ -3113,7 +3111,7 @@
 <translation id="5464660706533281090">未成年用户无法更改此设置。</translation>
 <translation id="5466374726908360271">粘贴并搜索“<ph name="SEARCH_TERMS" />”</translation>
 <translation id="5468173180030470402">正在查找文件共享</translation>
-<translation id="5470735824776589490">必须先重启设备，然后才能通过 Powerwash 重置它。<ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" /></translation>
+<translation id="5470735824776589490">必须先重启设备，然后才能通过 Powerwash 重置。<ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">您好！这是文字转语音的语音。</translation>
 <translation id="5472133193607270166">当此设置处于开启状态时，网站无法根据您在各个不同网站上的浏览活动为您展示个性化广告。某些网站可能会无法正常运行。</translation>
 <translation id="5473333559083690127">请重新输入新的 PIN 码</translation>
@@ -3883,7 +3881,7 @@
 <translation id="6555810572223193255">目前无法进行清理</translation>
 <translation id="6556866813142980365">重做</translation>
 <translation id="6557290421156335491">我的快捷方式</translation>
-<translation id="6561560012278703671">改用更静默的提示方式（不直接弹出提示来询问能否向您发送通知，以免造成打扰）</translation>
+<translation id="6561560012278703671">改用静态指示方式（禁止网站发送通知，以免干扰）</translation>
 <translation id="6561726789132298588">Enter</translation>
 <translation id="656293578423618167">该文件的路径或名称过长。请以较短的名称保存或保存到其他位置。</translation>
 <translation id="6563469144985748109">您的管理员尚未批准此网站</translation>
@@ -4601,6 +4599,7 @@
 <translation id="7631205654593498032">连接您的设备即表示您同意 <ph name="DEVICE_TYPE" /> 执行以下操作：</translation>
 <translation id="7631887513477658702">总是打开此类文件(&amp;A)</translation>
 <translation id="7632948528260659758">以下自助服务终端应用未能成功更新：</translation>
+<translation id="7634566076839829401">出了点问题，请重试。</translation>
 <translation id="763632859238619983">不允许任何网站安装付款处理程序</translation>
 <translation id="7636919061354591437">在此设备上安装</translation>
 <translation id="7638605456503525968">串行端口</translation>

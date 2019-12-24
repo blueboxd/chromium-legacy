@@ -110,7 +110,6 @@
 <translation id="114721135501989771">Паметне Google функције</translation>
 <translation id="1147991416141538220">Да бисте затражили приступ, обратите се администратору овог уређаја.</translation>
 <translation id="1149401351239820326">Месец истека</translation>
-<translation id="1150490752229770117">Ово је последње аутоматско ажурирање софтвера и безбедносно ажурирање за овај <ph name="DEVICE_TYPE" />. Надоградите на новији модел да бисте добијали будућа ажурирања. <ph name="LINK_BEGIN" />Сазнајте више<ph name="LINK_END" /></translation>
 <translation id="1150565364351027703">Наочари за сунце</translation>
 <translation id="1151917987301063366">Увек дозволи да <ph name="HOST" /> приступа сензорима</translation>
 <translation id="1153356358378277386">Упарени уређаји</translation>
@@ -458,6 +457,7 @@
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> жели да провери да ли користите Chrome ОС уређај који испуњава услове.</translation>
 <translation id="1640235262200048077"><ph name="IME_NAME" /> још увек не ради у Linux апликацијама</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 са RSA шифровањем</translation>
+<translation id="1641113438599504367">Безбедно прегледање</translation>
 <translation id="1642494467033190216">Да бисте омогућили друге функције за отклањање грешака, морате да уклоните rootfs заштиту и да рестартујете уређај.</translation>
 <translation id="1643072738649235303">Потпис X9.62 ECDSA путем SHA-1</translation>
 <translation id="1644574205037202324">Историја</translation>
@@ -1953,7 +1953,6 @@
 <translation id="3732530910372558017">PIN сме да садржи највише 63 знака</translation>
 <translation id="3733127536501031542">SSL сервер са могућношћу преласка на новију верзију</translation>
 <translation id="3735740477244556633">Сортирај према</translation>
-<translation id="3736016243818847857">Желите ли да наставите?</translation>
 <translation id="3737274407993947948">Грешка при инсталирању Linux-а...</translation>
 <translation id="3737536731758327622">Преузимања ће се приказивати овде</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -2662,7 +2661,6 @@
 <translation id="4798236378408895261">Приложите <ph name="BEGIN_LINK" />Евиденције Bluetooth-а<ph name="END_LINK" /> (Google интерно)</translation>
 <translation id="4801448226354548035">Сакриј налоге</translation>
 <translation id="4801512016965057443">Дозволи роминг за податке са мобилног уређаја</translation>
-<translation id="4804756772600045300">Ако наставите, омогућићете ADB отклањање грешака за прављење и тестирање Android апликација. Имајте у виду да ADB отклањање грешака омогућава инсталирање апликација за тестирање које Google није верификовао.</translation>
 <translation id="4804818685124855865">Прекини везу</translation>
 <translation id="4804827417948292437">Авокадо</translation>
 <translation id="4805077164141082536">Препоручујемо да направите резервну копију актуелног Linux контејнера пре надоградње.</translation>
@@ -4605,6 +4603,7 @@
 <translation id="7631205654593498032">Када повежете уређаје, прихватате да <ph name="DEVICE_TYPE" /> може:</translation>
 <translation id="7631887513477658702">&amp;Увек отвори датотеке овог типа</translation>
 <translation id="7632948528260659758">Ажурирање следећих киоск апликација није успело:</translation>
+<translation id="7634566076839829401">Нешто није у реду. Пробајте поново.</translation>
 <translation id="763632859238619983">Не дозволи ниједном сајту да инсталира обрађиваче плаћања</translation>
 <translation id="7636919061354591437">Инсталирај на овом уређају</translation>
 <translation id="7638605456503525968">Серијски портови</translation>

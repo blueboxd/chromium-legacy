@@ -110,7 +110,6 @@
 <translation id="114721135501989771">ისარგებლეთ Google-ის გონიერი ფუნქციებით Chrome-ში</translation>
 <translation id="1147991416141538220">წვდომის მოთხოვნით მიმართეთ ამ მოწყობილობის ადმინისტრატორს.</translation>
 <translation id="1149401351239820326">ვადის გასვლის თვე</translation>
-<translation id="1150490752229770117">ეს არის პროგრამული უზრუნველყოფისა და უსაფრთხოების ბოლო განახლება, რომელსაც თქვენი <ph name="DEVICE_TYPE" /> იღებს. მომავალი განახლებების მისაღებად გადადით ახალ მოდელზე. <ph name="LINK_BEGIN" />შეიტყვეთ მეტი<ph name="LINK_END" /></translation>
 <translation id="1150565364351027703">მზის სათვალე</translation>
 <translation id="1151917987301063366"><ph name="HOST" />-ისთვის სენსორებზე წვდომის ყოველთვის დაშვება</translation>
 <translation id="1153356358378277386">დაწყვილებული მოწყობილობები</translation>
@@ -461,6 +460,7 @@
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> ითხოვს იმის შემოწმებას, აკმაყოფილებს თუ არა თქვენი Chrome OS მოწყობილობა შემოთავაზების მოთხოვნებს.</translation>
 <translation id="1640235262200048077"><ph name="IME_NAME" /> ჯერ არ მუშაობს Linux აპებში</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 RSA დაშიფვრით</translation>
+<translation id="1641113438599504367">Safe Browsing</translation>
 <translation id="1642494467033190216">ძირეული დაცვის მოხსნა და გადატვირთვა საჭირო მანამ, სანამ ჩართავთ სხვა გამართვის ფუნქციებს.</translation>
 <translation id="1643072738649235303">X9.62 ECDSA ხელმოწერა SHA-1-ით</translation>
 <translation id="1644574205037202324">ისტორია</translation>
@@ -1955,7 +1955,6 @@
 <translation id="3732530910372558017">PIN-კოდის სიგრძე უნდა იყოს მაქსიმუმ 63 სიმბოლო</translation>
 <translation id="3733127536501031542">SSL სერვერი დაყენებით</translation>
 <translation id="3735740477244556633">დალაგება</translation>
-<translation id="3736016243818847857">გსურთ გაგრძელება?</translation>
 <translation id="3737274407993947948">Linux-ის ინსტალაციისას მოხდა შეცდომა...</translation>
 <translation id="3737536731758327622">აქ გამოჩნდება თქვენი ჩამოტვირთვები</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -2664,7 +2663,6 @@
 <translation id="4798236378408895261"><ph name="BEGIN_LINK" />Bluetooth ჟურნალების<ph name="END_LINK" /> დართვა (Google-ის შიდა გამოყენებისთვის)</translation>
 <translation id="4801448226354548035">ანგარიშების დამალვა</translation>
 <translation id="4801512016965057443">მობილური მონაცემების როუმინგის ჩართვა</translation>
-<translation id="4804756772600045300">გაგრძელების შემთხვევაში Android აპების შექმნისა და ტესტირებისთვის ჩაირთვება ADB გამართვა. გაითვალისწინეთ, რომ ADB გამართვა დაუშვებს Google-ის მიერ შეუმოწმებელი სატესტო აპების ინსტალაციას.</translation>
 <translation id="4804818685124855865">გათიშვა</translation>
 <translation id="4804827417948292437">ავოკადო</translation>
 <translation id="4805077164141082536">ახალ ვერსიაზე გადასვლამდე გირჩევთ Linux-ის ამჟამინდელი კონტეინერის სარეზერვო ასლის შექმნას.</translation>
@@ -4605,6 +4603,7 @@
 <translation id="7631205654593498032">მოწყობილობების ერთმანეთთან დაკავშირებით თანახმა ხართ, რომ <ph name="DEVICE_TYPE" />-ს შეეძლება:</translation>
 <translation id="7631887513477658702">&amp;ყოველთვის გახსენით ამ ტიპის ფაილები</translation>
 <translation id="7632948528260659758">ქვემოთ მოცემული კიოსკის პროგრამები ვერ განახლდა:</translation>
+<translation id="7634566076839829401">რაღაც არასწორად წარიმართა. გთხოვთ სცადეთ განმეორებით.</translation>
 <translation id="763632859238619983">საიტებისთვის გადახდის დამმუშავებლების ინსტალაციის აკრძალვა</translation>
 <translation id="7636919061354591437">ინსტალაცია ამ მოწყობილობაზე</translation>
 <translation id="7638605456503525968">თანმიმდევრული პორტები</translation>

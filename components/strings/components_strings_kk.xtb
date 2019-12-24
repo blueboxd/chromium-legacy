@@ -933,6 +933,7 @@
 <translation id="5386426401304769735">Осы сайтқа арналған сертификат тізбегінде SHA-1 көмегімен қолтаңба қойылған сертификат бар.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Оң жақ жиегін тігу</translation>
+<translation id="5400836586163650660">Сұр</translation>
 <translation id="540969355065856584">Бұл сервер өзінің <ph name="DOMAIN" /> екенін дәлелдей алмады; оның қауіпсіздік сертификаты әзірше жарамайды. Бұл дұрыс конфигурацияланбағаннан немесе зиянды бағдарламаның байланысқа кедергі келтіргенінен болуы мүмкін.</translation>
 <translation id="5421136146218899937">Шолу деректерін өшіру…</translation>
 <translation id="5430298929874300616">Бетбелгіні жою</translation>
@@ -1714,6 +1715,7 @@
 <translation id="988159990683914416">Әзірлеуші жасақтамасы</translation>
 <translation id="989988560359834682">Мекенжайды өзгерту</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992256792861109788">Қызғылт</translation>
 <translation id="992432478773561401">"<ph name="SOFTWARE_NAME" />" компьютерде не желіде дұрыс орнатылмаған:
     &lt;ul&gt;
     &lt;li&gt;"<ph name="SOFTWARE_NAME" />" бағдарламалық құралын жойып не өшіріп көріңіз&lt;/li&gt;

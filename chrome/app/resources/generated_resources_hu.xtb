@@ -110,7 +110,6 @@
 <translation id="114721135501989771">Google-funkciók a Chrome-ban</translation>
 <translation id="1147991416141538220">Hozzáférés kéréséhez forduljon az eszköz adminisztrátorához.</translation>
 <translation id="1149401351239820326">Lejárat hónapja</translation>
-<translation id="1150490752229770117">Ez az utolsó automatikus szoftver- és biztonsági frissítés ehhez a <ph name="DEVICE_TYPE" /> eszközhöz. Ha a jövőben is szeretne frissítéseket kapni, váltson újabb modellre. <ph name="LINK_BEGIN" />További információ<ph name="LINK_END" />.</translation>
 <translation id="1150565364351027703">Napszemüveg</translation>
 <translation id="1151917987301063366">A(z) <ph name="HOST" /> mindig hozzáférhet az érzékelőkhöz</translation>
 <translation id="1153356358378277386">Párosított eszközök</translation>
@@ -461,6 +460,7 @@
 <translation id="163993578339087550">A(z) <ph name="SERVICE_NAME" /> ellenőrizni szeretné, hogy Ön megfelelő Chrome OS-eszközt használ-e.</translation>
 <translation id="1640235262200048077">A(z) <ph name="IME_NAME" /> még nem használható Linux-alkalmazásokban</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 RSA titkosítással</translation>
+<translation id="1641113438599504367">Biztonságos Böngészés</translation>
 <translation id="1642494467033190216">A rootfs védelem eltávolítása és újraindítás szükséges a további hibakeresési funkciók engedélyezése előtt.</translation>
 <translation id="1643072738649235303">X9.62 ECDSA aláírás a következővel: SHA-1</translation>
 <translation id="1644574205037202324">Előzmények</translation>
@@ -1956,7 +1956,6 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="3732530910372558017">A PIN-kód legfeljebb 63 karakterből állhat</translation>
 <translation id="3733127536501031542">SSL-szerver Step-up használatával</translation>
 <translation id="3735740477244556633">Rendezés</translation>
-<translation id="3736016243818847857">Folytatja?</translation>
 <translation id="3737274407993947948">Hiba történt a Linux telepítése során…</translation>
 <translation id="3737536731758327622">Itt jelennek meg a letöltései</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -2664,7 +2663,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4798236378408895261"><ph name="BEGIN_LINK" />Bluetooth-naplók<ph name="END_LINK" /> csatolása (a Google általi belső felhasználásra)</translation>
 <translation id="4801448226354548035">Fiókok elrejtése</translation>
 <translation id="4801512016965057443">Mobil adatbarangolás engedélyezése</translation>
-<translation id="4804756772600045300">A folytatással engedélyezi az ADB-hibakeresés számára az Android-alkalmazások létrehozását és tesztelését. Felhívjuk figyelmét, hogy az ADB-hibakeresés lehetővé teszi olyan tesztalkalmazások telepítését, amelyeket nem hagyott jóvá a Google.</translation>
 <translation id="4804818685124855865">Kapcsolat bontása</translation>
 <translation id="4804827417948292437">Avokádó</translation>
 <translation id="4805077164141082536">Javasoljuk, hogy a frissítés előtt készítsen biztonsági másolatot az aktuális Linux-tárolóról.</translation>
@@ -4607,6 +4605,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7631205654593498032">Ha egymáshoz csatlakoztatja az eszközöket, engedélyezi <ph name="DEVICE_TYPE" /> eszközének a következőket:</translation>
 <translation id="7631887513477658702">&amp;Az ilyen típusú fájlokat mindig nyissa meg</translation>
 <translation id="7632948528260659758">A következő kioszkalkalmazások frissítése nem sikerült:</translation>
+<translation id="7634566076839829401">Hiba történt. Próbálkozzon újra.</translation>
 <translation id="763632859238619983">Egyetlen webhely sem telepíthet fizetéskezelőt</translation>
 <translation id="7636919061354591437">Telepítés ezen az eszközön</translation>
 <translation id="7638605456503525968">Soros portok</translation>

@@ -24,6 +24,7 @@ js_type_check("compile_resources") {
 
 js_library("camera") {
   deps = [
+    "..:background_ops",
     "..:chrome_util",
     "..:metrics",
     "..:type",

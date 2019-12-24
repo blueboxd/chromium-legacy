@@ -52,6 +52,20 @@ enum class AXBoundaryBehavior {
   StopAtLastAnchorBoundary
 };
 
+// Describes in further detail what type of boundary a current position is on.
+// For complex boundaries such as format boundaries, it can be useful to know
+// why a particular boundary was chosen.
+enum class AXBoundaryType {
+  // Not at a unit boundary.
+  kNone,
+  // At a unit boundary (e.g. a format boundary).
+  kUnitBoundary,
+  // At the start of a document.
+  kDocumentStart,
+  // At the end of a document.
+  kDocumentEnd
+};
+
 // When converting to an unignored position, determines how to adjust the new
 // position in order to make it valid, either moving backwards or forwards in
 // the accessibility tree.
@@ -706,38 +720,54 @@ class AXPosition {
     }
   }
 
-  bool AtStartOfFormat() const {
+  AXBoundaryType GetFormatStartBoundaryType() const {
     // Since formats are stored on text anchors, the start of a format boundary
     // must be at the start of an anchor.
     if (IsNullPosition() || !AtStartOfAnchor())
-      return false;
+      return AXBoundaryType::kNone;
 
     // Treat the first iterable node as a format boundary.
     if (CreatePreviousLeafTreePosition()->IsNullPosition())
-      return true;
+      return AXBoundaryType::kDocumentStart;
 
     // Iterate over anchors until a format boundary is found. This will return a
     // null position upon crossing a boundary.
     AXPositionInstance previous_position = CreatePreviousLeafTreePosition(
         base::BindRepeating(&AbortMoveAtFormatBoundary));
-    return previous_position->IsNullPosition();
+
+    if (previous_position->IsNullPosition())
+      return AXBoundaryType::kUnitBoundary;
+
+    return AXBoundaryType::kNone;
   }
 
-  bool AtEndOfFormat() const {
+  bool AtStartOfFormat() const {
+    return GetFormatStartBoundaryType() != AXBoundaryType::kNone;
+  }
+
+  AXBoundaryType GetFormatEndBoundaryType() const {
     // Since formats are stored on text anchors, the end of a format break must
     // be at the end of an anchor.
     if (IsNullPosition() || !AtEndOfAnchor())
-      return false;
+      return AXBoundaryType::kNone;
 
     // Treat the last iterable node as a format boundary
     if (CreateNextLeafTreePosition()->IsNullPosition())
-      return true;
+      return AXBoundaryType::kDocumentEnd;
 
     // Iterate over anchors until a format boundary is found. This will return a
     // null position upon crossing a boundary.
     AXPositionInstance next_position = CreateNextLeafTreePosition(
         base::BindRepeating(&AbortMoveAtFormatBoundary));
-    return next_position->IsNullPosition();
+
+    if (next_position->IsNullPosition())
+      return AXBoundaryType::kUnitBoundary;
+
+    return AXBoundaryType::kNone;
+  }
+
+  bool AtEndOfFormat() const {
+    return GetFormatEndBoundaryType() != AXBoundaryType::kNone;
   }
 
   bool AtStartOfInlineBlock() const {
@@ -1968,12 +1998,11 @@ class AXPosition {
     if (IsNullPosition())
       return Clone();
 
-    // AtStartOfFormat() always returns true if we are at the first iterable
-    // position, i.e. CreatePreviousLeafTreePosition()->IsNullPosition().
-    if (AtStartOfFormat()) {
+    AXBoundaryType boundary_type = GetFormatStartBoundaryType();
+    if (boundary_type != AXBoundaryType::kNone) {
       if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary ||
           (boundary_behavior == AXBoundaryBehavior::StopAtLastAnchorBoundary &&
-           CreatePreviousLeafTreePosition()->IsNullPosition())) {
+           boundary_type == AXBoundaryType::kDocumentStart)) {
         AXPositionInstance clone = Clone();
         // In order to make equality checks simpler, affinity should be reset so
         // that we would get consistent output from this function regardless of
@@ -1981,7 +2010,7 @@ class AXPosition {
         clone->affinity_ = ax::mojom::TextAffinity::kDownstream;
         return clone;
       } else if (boundary_behavior == AXBoundaryBehavior::CrossBoundary &&
-                 CreatePreviousLeafTreePosition()->IsNullPosition()) {
+                 boundary_type == AXBoundaryType::kDocumentStart) {
         // If we're at a format boundary and there are no more text positions
         // to traverse, return a null position for cross-boundary moves.
         return CreateNullPosition();
@@ -2004,7 +2033,8 @@ class AXPosition {
 
     // The first position in the document is also a format start boundary, so we
     // should not return NullPosition unless we started from that location.
-    while (!previous_tree_position->IsNullPosition() &&
+    while (boundary_type != AXBoundaryType::kDocumentStart &&
+           !previous_tree_position->IsNullPosition() &&
            !tree_position->AtStartOfFormat()) {
       tree_position = std::move(previous_tree_position);
       previous_tree_position = tree_position->CreatePreviousLeafTreePosition();
@@ -2031,12 +2061,11 @@ class AXPosition {
     if (IsNullPosition())
       return Clone();
 
-    // AtEndOfFormat() always returns true if we are at the last iterable
-    // position, i.e. CreateNextLeafTreePosition()->IsNullPosition().
-    if (AtEndOfFormat()) {
+    AXBoundaryType boundary_type = GetFormatEndBoundaryType();
+    if (boundary_type != AXBoundaryType::kNone) {
       if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary ||
           (boundary_behavior == AXBoundaryBehavior::StopAtLastAnchorBoundary &&
-           CreateNextLeafTreePosition()->IsNullPosition())) {
+           boundary_type == AXBoundaryType::kDocumentEnd)) {
         AXPositionInstance clone = Clone();
         // In order to make equality checks simpler, affinity should be reset so
         // that we would get consistent output from this function regardless of
@@ -2044,7 +2073,7 @@ class AXPosition {
         clone->affinity_ = ax::mojom::TextAffinity::kDownstream;
         return clone;
       } else if (boundary_behavior == AXBoundaryBehavior::CrossBoundary &&
-                 CreateNextLeafTreePosition()->IsNullPosition()) {
+                 boundary_type == AXBoundaryType::kDocumentEnd) {
         // If we're at a format boundary and there are no more text positions
         // to traverse, return a null position for cross-boundary moves.
         return CreateNullPosition();
@@ -2068,7 +2097,8 @@ class AXPosition {
 
     // The last position in the document is also a format end boundary, so we
     // should not return NullPosition unless we started from that location.
-    while (!next_tree_position->IsNullPosition() &&
+    while (boundary_type != AXBoundaryType::kDocumentEnd &&
+           !next_tree_position->IsNullPosition() &&
            !tree_position->AtEndOfFormat()) {
       tree_position = std::move(next_tree_position);
       next_tree_position = tree_position->CreateNextLeafTreePosition()
@@ -3012,8 +3042,8 @@ class AXPosition {
     }
 
     // Stop moving when text styles differ.
-    return move_from.AsLeafTextPosition()->GetTextStyles() !=
-           move_to.AsLeafTextPosition()->GetTextStyles();
+    return move_from.AsLeafTreePosition()->GetTextStyles() !=
+           move_to.AsLeafTreePosition()->GetTextStyles();
   }
 
   // AbortMovePredicate function used to detect paragraph boundaries.

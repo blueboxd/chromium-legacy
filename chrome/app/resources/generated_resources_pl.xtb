@@ -110,7 +110,6 @@
 <translation id="114721135501989771">Inteligentne rozwiązania Google w Chrome</translation>
 <translation id="1147991416141538220">Aby uzyskać dostęp, skontaktuj się z administratorem tego urządzenia.</translation>
 <translation id="1149401351239820326">Miesiąc utraty ważności</translation>
-<translation id="1150490752229770117">To jest ostatnia automatyczna aktualizacja oprogramowania i zabezpieczeń, którą otrzymuje to urządzenie (<ph name="DEVICE_TYPE" />). Aby otrzymywać aktualizacje w przyszłości, przejdź na nowszy model. <ph name="LINK_BEGIN" />Więcej informacji<ph name="LINK_END" /></translation>
 <translation id="1150565364351027703">Okulary przeciwsłoneczne</translation>
 <translation id="1151917987301063366">Zawsze zezwalaj witrynie <ph name="HOST" /> na dostęp do czujników</translation>
 <translation id="1153356358378277386">Sparowane urządzenia</translation>
@@ -461,6 +460,7 @@
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> chce sprawdzić, czy używasz odpowiedniego urządzenia z Chrome OS.</translation>
 <translation id="1640235262200048077">W aplikacjach na Linuksa <ph name="IME_NAME" /> jeszcze nie działa</translation>
 <translation id="1640283014264083726">PKCS #1, MD4 z szyfrowaniem RSA</translation>
+<translation id="1641113438599504367">Bezpieczne przeglądanie</translation>
 <translation id="1642494467033190216">Zanim włączysz inne funkcje debugowania, musisz wyłączyć zabezpieczenie rootfs i ponownie uruchomić urządzenie.</translation>
 <translation id="1643072738649235303">Podpis X9.62 ECDSA z SHA-1</translation>
 <translation id="1644574205037202324">Historia</translation>
@@ -1032,7 +1032,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="2445484935443597917">Utwórz nowy profil</translation>
 <translation id="2446585455334014596">Aplikacja <ph name="APP_NAME" /> chce zweryfikować Twoją tożsamość</translation>
 <translation id="2448312741937722512">Typ</translation>
-<translation id="2448734521821581858">Pliki cookie są tworzone przez odwiedzane strony. Są dwa typy plików cookie: własne są zapisywane przez odwiedzoną stronę. Jej adres znajdziesz w pasku adresu. Pliki cookie innych firm są tworzone przez inne strony. Na stronach tych znajdują się niektóre treści, np. reklamy i obrazy, które wyświetlają się na odwiedzanej stronie.</translation>
+<translation id="2448734521821581858">Pliki cookie są tworzone przez odwiedzane strony. Dzielą się na dwa typy: własne pliki cookie są zapisywane przez odwiedzaną stronę. Jej adres znajdziesz w pasku adresu. Pliki cookie innych firm są tworzone przez inne strony. Na tych stronach znajdują się niektóre treści, np. reklamy i obrazy, które wyświetlają się na odwiedzanej stronie.</translation>
 <translation id="2450223707519584812">Nie będzie można dodawać użytkowników, ponieważ brakuje kluczy Google API. Więcej szczegółów znajdziesz na <ph name="DETAILS_URL" />.</translation>
 <translation id="2450849356604136918">Brak aktywnych widoków</translation>
 <translation id="2451298179137331965">2x</translation>
@@ -1956,7 +1956,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="3732530910372558017">Kod PIN może mieć maksymalnie 63 znaki</translation>
 <translation id="3733127536501031542">Serwer SSL z dostępem</translation>
 <translation id="3735740477244556633">Sortuj według</translation>
-<translation id="3736016243818847857">Czy chcesz kontynuować?</translation>
 <translation id="3737274407993947948">Błąd podczas instalowania Linuksa…</translation>
 <translation id="3737536731758327622">Tutaj wyświetlają się pobrane pliki</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -2665,7 +2664,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="4798236378408895261">Dołącz <ph name="BEGIN_LINK" />dzienniki Bluetooth<ph name="END_LINK" /> (na użytek wewnętrzny Google)</translation>
 <translation id="4801448226354548035">Ukryj konta</translation>
 <translation id="4801512016965057443">Zezwól na przesył danych w roamingu</translation>
-<translation id="4804756772600045300">Jeśli będziesz kontynuować, włączone zostanie debugowanie ADB do tworzenia i testowania aplikacji na Androida. Pamiętaj, że debugowanie ADB umożliwia instalowanie aplikacji testowych, które nie zostały zweryfikowane przez Google.</translation>
 <translation id="4804818685124855865">Rozłącz</translation>
 <translation id="4804827417948292437">Awokado</translation>
 <translation id="4805077164141082536">Zalecamy, by przed uaktualnieniem utworzyć kopię zapasową bieżącego kontenera Linuksa.</translation>
@@ -4606,6 +4604,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="7631205654593498032">Łącząc swoje urządzenia, zgadzasz się na to, by Twój <ph name="DEVICE_TYPE" /> mógł:</translation>
 <translation id="7631887513477658702">&amp;Zawsze otwieraj pliki tego typu</translation>
 <translation id="7632948528260659758">Nie udało się zaktualizować tych aplikacji kiosku:</translation>
+<translation id="7634566076839829401">Coś poszło nie tak. Spróbuj ponownie.</translation>
 <translation id="763632859238619983">Nie zezwalaj żadnym stronom na instalowanie modułów do obsługi płatności</translation>
 <translation id="7636919061354591437">Zainstaluj na tym urządzeniu</translation>
 <translation id="7638605456503525968">Porty szeregowe</translation>

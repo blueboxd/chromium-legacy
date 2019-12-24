@@ -10,16 +10,6 @@
 var cca = cca || {};
 
 /**
- * import {assert, assertInstanceof} from './chrome_util.js';
- */
-var {assert, assertInstanceof} = {assert, assertInstanceof};
-
-/**
- * import {Mode} from './type.js';
- */
-var Mode = Mode || {};
-
-/**
  * Creates the Camera App main object.
  * @implements {cca.bg.ForegroundOps}
  */
@@ -39,14 +29,14 @@ cca.App = class {
      * @private
      */
     this.photoPreferrer_ = new cca.device.PhotoConstraintsPreferrer(
-        () => this.cameraView_.restart());
+        () => this.cameraView_.start());
 
     /**
      * @type {!cca.device.VideoConstraintsPreferrer}
      * @private
      */
     this.videoPreferrer_ = new cca.device.VideoConstraintsPreferrer(
-        () => this.cameraView_.restart());
+        () => this.cameraView_.start());
 
     /**
      * @type {!cca.device.DeviceInfoUpdater}
@@ -75,7 +65,8 @@ cca.App = class {
       } else {
         return new cca.views.Camera(
             this.galleryButton_, this.infoUpdater_, this.photoPreferrer_,
-            this.videoPreferrer_, intent !== null ? intent.mode : Mode.PHOTO);
+            this.videoPreferrer_,
+            intent !== null ? intent.mode : cca.Mode.PHOTO);
       }
     })();
 
@@ -143,7 +134,7 @@ cca.App = class {
         cca.proxy.browserProxy.localStorageGet(
             payload(element),
             (values) => cca.util.toggleChecked(
-                assertInstanceof(element, HTMLInputElement),
+                cca.assertInstanceof(element, HTMLInputElement),
                 values[element.dataset.key]));
       }
     });
@@ -169,7 +160,7 @@ cca.App = class {
         })
         .then((external) => {
           cca.state.set('ext-fs', external);
-          assert(cca.models.FileSystem.externalDir !== null);
+          cca.assert(cca.models.FileSystem.externalDir !== null);
           this.galleryButton_.initialize(cca.models.FileSystem.externalDir);
           cca.nav.open('camera');
         })
@@ -184,9 +175,16 @@ cca.App = class {
         .finally(() => {
           cca.metrics.log(cca.metrics.Type.LAUNCH, ackMigrate);
         });
-    await cca.util.fitWindow();
-    chrome.app.window.current().show();
-    this.backgroundOps_.notifyActivation();
+    const showWindow = (async () => {
+      await cca.util.fitWindow();
+      chrome.app.window.current().show();
+      this.backgroundOps_.notifyActivation();
+    })();
+    const startCamera = (async () => {
+      const isSuccess = await this.cameraView_.start();
+      this.backgroundOps_.getPerfLogger().stopLaunch({hasError: !isSuccess});
+    })();
+    return Promise.all([showWindow, startCamera]);
   }
 
   /**
@@ -205,7 +203,7 @@ cca.App = class {
    */
   async suspend() {
     cca.state.set('suspend', true);
-    await this.cameraView_.restart();
+    await this.cameraView_.start();
     chrome.app.window.current().hide();
     this.backgroundOps_.notifySuspension();
   }
@@ -234,8 +232,37 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (cca.App.instance_ !== null) {
     return;
   }
-  assert(window['backgroundOps'] !== undefined);
+  cca.assert(window['backgroundOps'] !== undefined);
+  const /** !cca.bg.BackgroundOps */ bgOps = window['backgroundOps'];
+  const perfLogger = bgOps.getPerfLogger();
+
+  // Setup listener for performance events.
+  perfLogger.addListener((event, duration, extras) => {
+    cca.metrics.log(cca.metrics.Type.PERF, event, duration, extras);
+  });
+  const states = Object.values(cca.perf.PerfEvent);
+  states.push('taking');
+  states.forEach((state) => {
+    cca.state.addObserver(state, (val, extras) => {
+      let event = state;
+      if (state === 'taking') {
+        // 'taking' state indicates either taking photo or video. Skips for
+        // video-taking case since we only want to collect the metrics of
+        // photo-taking.
+        if (cca.state.get('video')) {
+          return;
+        }
+        event = cca.perf.PerfEvent.PHOTO_TAKING;
+      }
+
+      if (val) {
+        perfLogger.start(event);
+      } else {
+        perfLogger.stop(event, extras);
+      }
+    });
+  });
   cca.App.instance_ = new cca.App(
-      /** @type {!cca.bg.BackgroundOps} */ (window['backgroundOps']));
+      /** @type {!cca.bg.BackgroundOps} */ (bgOps));
   await cca.App.instance_.start();
 });

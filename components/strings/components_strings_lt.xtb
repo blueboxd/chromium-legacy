@@ -608,6 +608,7 @@
 <translation id="3828924085048779000">Neleidžiama naudoti tuščios slaptafrazės.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> įdiegta papildomų funkcijų plėtinių. Naudojant plėtinius galima pasiekti kai kuriuos jūsų duomenis.</translation>
 <translation id="3832522519263485449">Kelios skylės kairėje</translation>
+<translation id="3838154488026099170">Ką tik savo slaptažodį įvedėte apgaulingoje svetainėje. „Chromium“ rekomenduoja dabar apsilankyti <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> ir kitose svetainėse, kuriose naudojate šį slaptažodį, ir jį pakeisti.</translation>
 <translation id="385051799172605136">Atgal</translation>
 <translation id="3858027520442213535">Atnaujinti datą ir laiką</translation>
 <translation id="3884278016824448484">Nesuderinamas įrenginio identifikatorius</translation>
@@ -645,6 +646,7 @@
 <translation id="4072486802667267160">Apdorojant jūsų užsakymą įvyko klaida. Bandykite dar kartą.</translation>
 <translation id="4075732493274867456">Kliento programa ir serveris nepalaiko įprasto SSL protokolo versijos ar šifruotojo programų komplekto.</translation>
 <translation id="4075941231477579656">Touch ID</translation>
+<translation id="4077092919748553596">Ką tik savo slaptažodį įvedėte apgaulingoje svetainėje. „Chrome“ rekomenduoja dabar apsilankyti <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> ir kitose svetainėse, kuriose naudojate šį slaptažodį, ir jį pakeisti.</translation>
 <translation id="4079302484614802869">Įgaliotojo serverio konfigūracijoje nustatyta naudoti .pac scenarijaus URL, o ne fiksuotus įgaliotuosius serverius.</translation>
 <translation id="4082393374666368382">Nustatymai – valdymas</translation>
 <translation id="4098354747657067197">Ketinate apsilankyti apgaulingoje svetainėje</translation>
@@ -724,6 +726,7 @@
 <translation id="4356973930735388585">Šios svetainės užpuolėjai gali jūsų kompiuteryje bandyti įdiegti pavojingas programas, kurios vagia arba ištrina informaciją (pvz., nuotraukas, slaptažodžius, pranešimus ir kredito kortelių numerius).</translation>
 <translation id="4358059973562876591">Jūsų nurodyti šablonai gali būti netaikomi dėl klaidos, susijusios su „DnsOverHttpsMode“ politika.</translation>
 <translation id="4358461427845829800">Tvarkyti mokėjimo metodus...</translation>
+<translation id="4359160567981085931">Ką tik savo slaptažodį įvedėte apgaulingoje svetainėje. „Chrome“ gali padėti. Norėdami pakeisti slaptažodį ir pranešti „Google“, kad jūsų paskyrai gali grėsti pavojus, spustelėkite „Apsaugoti paskyrą“.</translation>
 <translation id="4367563149485757821">„Number-12“ (vokas)</translation>
 <translation id="437058704415269440">Sąskaitos balansas</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
@@ -932,6 +935,7 @@
 <translation id="5386426401304769735">Šios svetainės sertifikatų grandinėje yra sertifikatas, pasirašytas naudojant SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Kraštų sukabinimas dešinėje</translation>
+<translation id="5400836586163650660">Pilka spalva</translation>
 <translation id="540969355065856584">Šiam serveriui nepavyko patvirtinti, kad jis yra <ph name="DOMAIN" />; šiuo metu jo saugos sertifikatas negalioja. Tai gali būti dėl netinkamos konfigūracijos arba dėl ryšį pertraukusio užgrobėjo.</translation>
 <translation id="5421136146218899937">Išvalyti naršymo duomenis...</translation>
 <translation id="5430298929874300616">Pašalinti žymę</translation>
@@ -999,6 +1003,7 @@
 <translation id="5728056243719941842">C5 (vokas)</translation>
 <translation id="5730040223043577876">„Chrome“ rekomenduoja iš naujo nustatyti slaptažodį, jei naudojate jį kitose svetainėse.</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Išsaugokite kortelę „Google“ paskyroje}one{Išsaugokite korteles „Google“ paskyroje}few{Išsaugokite korteles „Google“ paskyroje}many{Išsaugokite korteles „Google“ paskyroje}other{Išsaugokite korteles „Google“ paskyroje}}</translation>
+<translation id="5745980000221562234">{NUM_CARDS,plural, =1{Šiai kortelei naudokite virtualų numerį}one{Pasirinkite kortelę}few{Pasirinkite kortelę}many{Pasirinkite kortelę}other{Pasirinkite kortelę}}</translation>
 <translation id="5763042198335101085">Įveskite galiojantį el. pašto adresą</translation>
 <translation id="5763703224595565476">Administratorius įgalino „Chrome“ įmonei skirtos versijos naudotojų apsaugą jūsų naršyklėje. „Chrome“ įmonei skirtos versijos naudotojų apsauga gali pasiekti kai kuriuos jūsų duomenis.</translation>
 <translation id="5765072501007116331">Jei norite peržiūrėti pristatymo metodus ir reikalavimus, pasirinkite adresą.</translation>
@@ -1015,6 +1020,7 @@
 <translation id="5804241973901381774">Leidimai</translation>
 <translation id="5810442152076338065">Ryšys su <ph name="DOMAIN" /> užšifruotas naudojant pasenusį šifravimo paketą.</translation>
 <translation id="5813119285467412249">&amp;Pridėti dar kartą</translation>
+<translation id="5824687817967109979">{NUM_CARDS,plural, =1{Ši kortelė bus apmokestinama mokant, bet jos tikrasis numeris nebus bendrinamas su šia svetaine. Siekiant užtikrinti papildomą apsaugą, bus sugeneruotas laikinas kortelės saugos kodas (CVC).}one{Jūsų pasirinktos kortelės bus apmokestinamos mokant, bet jų tikrieji numeriai nebus bendrinami su šia svetaine. Siekiant užtikrinti papildomą apsaugą, bus sugeneruotas laikinas kortelės saugos kodas (CVC).}few{Jūsų pasirinktos kortelės bus apmokestinamos mokant, bet jų tikrieji numeriai nebus bendrinami su šia svetaine. Siekiant užtikrinti papildomą apsaugą, bus sugeneruotas laikinas kortelės saugos kodas (CVC).}many{Jūsų pasirinktos kortelės bus apmokestinamos mokant, bet jų tikrieji numeriai nebus bendrinami su šia svetaine. Siekiant užtikrinti papildomą apsaugą, bus sugeneruotas laikinas kortelės saugos kodas (CVC).}other{Jūsų pasirinktos kortelės bus apmokestinamos mokant, bet jų tikrieji numeriai nebus bendrinami su šia svetaine. Siekiant užtikrinti papildomą apsaugą, bus sugeneruotas laikinas kortelės saugos kodas (CVC).}}</translation>
 <translation id="583281660410589416">Nežinoma</translation>
 <translation id="5838278095973806738">Šioje svetainėje neturėtumėte pateikti neskelbtinos informacijos (pvz., slaptažodžių ar kredito kortelių numerių), nes ją gali pavogti užpuolikai.</translation>
 <translation id="5851548754964597211">Skirtukų sąrašas</translation>
@@ -1472,6 +1478,7 @@ Papildoma išsami informacija:
 <translation id="8042918947222776840">Pasirinkti paėmimo metodą</translation>
 <translation id="8057711352706143257">„<ph name="SOFTWARE_NAME" />“ netinkamai sukonfigūruota. Pašalinus „<ph name="SOFTWARE_NAME" />“ paprastai pavyksta išspręsti šią problemą. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8066955247577885446">Deja, kažkas nepavyko.</translation>
+<translation id="8067872629359326442">Ką tik savo slaptažodį įvedėte apgaulingoje svetainėje. „Chromium“ gali padėti. Norėdami pakeisti slaptažodį ir pranešti „Google“, kad jūsų paskyrai gali grėsti pavojus, spustelėkite „Apsaugoti paskyrą“.</translation>
 <translation id="8074253406171541171">10 x 13 (vokas)</translation>
 <translation id="8078141288243656252">Negalima rašyti komentarų, kai pasukta</translation>
 <translation id="8079031581361219619">Iš naujo įkelti svetainę?</translation>
@@ -1488,6 +1495,7 @@ Papildoma išsami informacija:
 <translation id="8105368624971345109">Išjungti</translation>
 <translation id="8118489163946903409">Mokėjimo metodas</translation>
 <translation id="8127301229239896662">„<ph name="SOFTWARE_NAME" />“ nebuvo tinkamai įdiegta kompiuteryje ar tinkle. Kreipkitės į IT administratorių, kad ši problema būtų išspręsta.</translation>
+<translation id="8128526133099929547">Ką tik savo slaptažodį įvedėte apgaulingoje svetainėje. „Chrome“ rekomenduoja dabar apsilankyti <ph name="WEBSITE_1" /> ir kitose svetainėse, kuriose naudojate šį slaptažodį, ir jį pakeisti.</translation>
 <translation id="8131740175452115882">Patvirtinti</translation>
 <translation id="8149426793427495338">Įjungta kompiuterio miego būsena.</translation>
 <translation id="8150722005171944719"><ph name="URL" /> nurodyto failo negalima skaityti. Gali būti, kad jis pašalintas, perkeltas arba neleidžiama prieiga prie jo dėl failo leidimų.</translation>
@@ -1505,6 +1513,7 @@ Papildoma išsami informacija:
 <translation id="8218327578424803826">Priskirta vieta:</translation>
 <translation id="8220146938470311105">C7 / C6 (vokas)</translation>
 <translation id="8220639454292072926">Įmonės ataskaitų teikimas</translation>
+<translation id="8221250263817408492">Ką tik savo slaptažodį įvedėte apgaulingoje svetainėje. „Chromium“ rekomenduoja dabar apsilankyti <ph name="WEBSITE_1" /> ir kitose svetainėse, kuriose naudojate šį slaptažodį, ir jį pakeisti.</translation>
 <translation id="8225771182978767009">Šį kompiuterį nustatęs asmuo pasirinko blokuoti šią svetainę.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">Atidarykite puslapį naujame inkognito skirtuke</translation>
@@ -1709,6 +1718,7 @@ Papildoma išsami informacija:
 <translation id="988159990683914416">Vykdymo programa sukurta</translation>
 <translation id="989988560359834682">Adreso redagavimas</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992256792861109788">Rožinė</translation>
 <translation id="992432478773561401">„<ph name="SOFTWARE_NAME" />“ nebuvo tinkamai įdiegta kompiuteryje ar tinkle.
     &lt;ul&gt;
     &lt;li&gt;Pabandykite pašalinti arba išjungti „<ph name="SOFTWARE_NAME" />“.&lt;/li&gt;

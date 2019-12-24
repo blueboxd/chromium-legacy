@@ -52,6 +52,13 @@ cca.bg.BackgroundOps = class {
   getIntent() {}
 
   /**
+   * Gets the perf logger associate with cca.bg.Window object.
+   * @return {!cca.perf.PerfLogger}
+   * @abstract
+   */
+  getPerfLogger() {}
+
+  /**
    * Called by foreground window when it's active.
    * @abstract
    */

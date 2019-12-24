@@ -5,7 +5,7 @@
 <translation id="1010200102790553230">稍後再載入頁面</translation>
 <translation id="1015730422737071372">提供其他詳細資訊</translation>
 <translation id="1021110881106174305">接受的信用卡</translation>
-<translation id="1021753677514347426">發生這個問題是因為你或其他人在裝置上安裝了具有風險的憑證。已知這個憑證是用於監控及攔截網路資訊，且不受 Chromium 信任。雖然有部分監控屬於正當行為 (例如學校或公司網路)，Chromium 仍想確保你知曉此情況，即使你無法阻止這類監控。任何存取網路的瀏覽器或應用程式都可能受到監控。</translation>
+<translation id="1021753677514347426">發生這個問題是因為你或其他人在裝置上安裝了具有風險的憑證。已知這個憑證是用於監控及攔截網路資訊，且不受 Chromium 信任。雖然有部分監控活動屬於正當行為 (例如學校或公司網路上的監控機制)，Chromium 仍想確保你知曉此一情況，即使你無法阻止這類監控活動。任何存取網路的瀏覽器或應用程式都可能受到監控。</translation>
 <translation id="1032854598605920125">順時針旋轉</translation>
 <translation id="1036348656032585052">關閉</translation>
 <translation id="1038842779957582377">不明名稱</translation>
@@ -495,7 +495,7 @@
 <translation id="3369192424181595722">時鐘錯誤</translation>
 <translation id="337363190475750230">已取消佈建</translation>
 <translation id="3377188786107721145">政策解析錯誤</translation>
-<translation id="3377736046129930310">使用螢幕鎖定功能更快速地確認卡片資訊</translation>
+<translation id="3377736046129930310">使用螢幕鎖定功能加快卡片驗證速度</translation>
 <translation id="3380365263193509176">未知的錯誤</translation>
 <translation id="3380864720620200369">用戶端 ID：</translation>
 <translation id="3387261909427947069">付款方式</translation>
@@ -742,7 +742,7 @@
 <translation id="4515275063822566619">信用卡和地址資訊皆來自 Chrome 和你的 Google 帳戶 (<ph name="ACCOUNT_EMAIL" />)。你可以在<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />頁面管理這些資訊。</translation>
 <translation id="4517607026994743406">Comm-10 (信封)</translation>
 <translation id="4522570452068850558">詳細資訊</translation>
-<translation id="4524138615196389145">現在就開始使用 WebAuthn，加快確認卡片的速度</translation>
+<translation id="4524138615196389145">現在就開始使用 WebAuthn，加快卡片驗證速度</translation>
 <translation id="4524805452350978254">管理卡片</translation>
 <translation id="455113658016510503">A9</translation>
 <translation id="4552089082226364758">Flash</translation>
@@ -918,6 +918,7 @@
 <translation id="5386426401304769735">這個網站的憑證鏈結包含使用 SHA-1 進行簽署的憑證。</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">邊緣裝訂 (右側)</translation>
+<translation id="5400836586163650660">灰</translation>
 <translation id="540969355065856584">這個伺服器無法證明所屬網域為 <ph name="DOMAIN" />；其安全性憑證目前無效。這可能是因為設定錯誤，或是有攻擊者攔截您的連線所致。</translation>
 <translation id="5421136146218899937">清除瀏覽資料...</translation>
 <translation id="5430298929874300616">移除書籤</translation>
@@ -1131,7 +1132,7 @@
 <translation id="6409754798200046165">你剛才在詐騙網站上輸入了密碼。Chrome 建議你立即變更密碼。</translation>
 <translation id="6410264514553301377">輸入 <ph name="CREDIT_CARD" /> 的到期日和信用卡安全碼</translation>
 <translation id="6415778972515849510">Chromium 可協助你保護 Google 帳戶並變更密碼。</translation>
-<translation id="6423385022588644828">現在就開始使用 Touch ID，加快確認卡片的速度</translation>
+<translation id="6423385022588644828">現在就開始使用 Touch ID，加快卡片驗證速度</translation>
 <translation id="6427730057873428458">開門摺</translation>
 <translation id="6433490469411711332">編輯聯絡資訊</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> 拒絕連線。</translation>
@@ -1202,7 +1203,7 @@
 <translation id="6786747875388722282">擴充功能</translation>
 <translation id="6790428901817661496">播放</translation>
 <translation id="679355240208270552">由於政策未啟用預設搜尋設定，因此遭到忽略。</translation>
-<translation id="6794951432696553238">現在就開始使用 Windows Hello，加快確認卡片的速度</translation>
+<translation id="6794951432696553238">現在就開始使用 Windows Hello，加快卡片驗證速度</translation>
 <translation id="681021252041861472">必填欄位</translation>
 <translation id="6810899417690483278">自訂 ID</translation>
 <translation id="6825578344716086703">你嘗試連上 <ph name="DOMAIN" />，但伺服器的憑證是以防護力薄弱的簽章演算法 (例如 SHA-1) 進行簽署。這代表伺服器提供的安全性憑證可能遭到偽造，而且這個伺服器可能並不是你的目標伺服器 (你的連線對象可能是攻擊者的電腦)。</translation>
@@ -1238,7 +1239,7 @@
 <translation id="6989763994942163495">顯示進階設定...</translation>
 <translation id="6993898126790112050">6x9 (信封)</translation>
 <translation id="6996312675313362352">一律翻譯<ph name="ORIGINAL_LANGUAGE" /></translation>
-<translation id="7004583254764674281">使用 Windows Hello 更快速地確認卡片資訊</translation>
+<translation id="7004583254764674281">使用 Windows Hello 加快卡片驗證速度</translation>
 <translation id="7012363358306927923">中國銀聯</translation>
 <translation id="7016992613359344582">這些費用可能只收取一次，也可能屬於週期性費用，而且你不一定會注意到自己需要付費。</translation>
 <translation id="7029809446516969842">密碼</translation>
@@ -1307,7 +1308,7 @@
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">命令列</translation>
 <translation id="7372973238305370288">搜尋結果</translation>
-<translation id="7374733840632556089">發生這個問題是因為你或其他人在裝置上安裝了具有風險的憑證。已知這個憑證是用於監控及攔截網路資訊，且不受 Chrome 信任。雖然有部分監控屬於正當行為 (例如學校或公司網路)，Chrome 仍想確保你知曉此情況，即使你無法阻止這類監控。任何存取網路的瀏覽器或應用程式都可能受到監控。</translation>
+<translation id="7374733840632556089">發生這個問題是因為你或其他人在裝置上安裝了具有風險的憑證。已知這個憑證是用於監控及攔截網路資訊，且不受 Chrome 信任。雖然有部分監控活動屬於正當行為 (例如學校或公司網路上的監控機制)，Chrome 仍想確保你知曉此一情況，即使你無法阻止這類監控活動。任何存取網路的瀏覽器或應用程式都可能受到監控。</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">媒體控制項</translation>
 <translation id="7378627244592794276">不需要</translation>
@@ -1561,7 +1562,7 @@
 <translation id="8559762987265718583">你裝置的日期和時間 (<ph name="DATE_AND_TIME" />) 不正確，因此無法與 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 建立私人連線。</translation>
 <translation id="8564985650692024650">如果你在其他網站上重複使用過你的 <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> 密碼，Chromium 會建議你重設密碼。</translation>
 <translation id="8571890674111243710">正在將網頁翻譯成<ph name="LANGUAGE" />...</translation>
-<translation id="8574899947864779331">使用 Touch ID 更快速地確認卡片資訊</translation>
+<translation id="8574899947864779331">使用 Touch ID 加快卡片驗證速度</translation>
 <translation id="858637041960032120">新增電話號碼</translation>
 <translation id="860043288473659153">持卡人姓名</translation>
 <translation id="8616822740383114808">這項設定由「<ph name="ENFORCING_SETTING" />」在「<ph name="SETTINGS_PAGE" />」強制執行</translation>
@@ -1699,6 +1700,7 @@
 <translation id="988159990683914416">開發人員版本</translation>
 <translation id="989988560359834682">編輯地址</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992256792861109788">粉紅色</translation>
 <translation id="992432478773561401">「<ph name="SOFTWARE_NAME" />」未正確安裝在電腦或網路上：
     &lt;ul&gt;
     &lt;li&gt;嘗試解除安裝或停用「<ph name="SOFTWARE_NAME" />」&lt;/li&gt;

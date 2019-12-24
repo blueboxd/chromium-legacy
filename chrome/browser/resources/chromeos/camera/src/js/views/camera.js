@@ -15,16 +15,6 @@ var cca = cca || {};
 cca.views = cca.views || {};
 
 /**
- * import {Mode} from '../type.js';
- */
-var Mode = Mode || {};
-
-/**
- * import {assert} from '../chrome_util.js';
- */
-var assert = assert || {};
-
-/**
  * Thrown when app window suspended during stream reconfiguration.
  */
 cca.views.CameraSuspendedError = class extends Error {
@@ -47,7 +37,7 @@ cca.views.Camera = class extends cca.views.View {
    * @param {!cca.device.DeviceInfoUpdater} infoUpdater
    * @param {!cca.device.PhotoConstraintsPreferrer} photoPreferrer
    * @param {!cca.device.VideoConstraintsPreferrer} videoPreferrer
-   * @param {Mode} defaultMode
+   * @param {cca.Mode} defaultMode
    */
   constructor(
       resultSaver, infoUpdater, photoPreferrer, videoPreferrer, defaultMode) {
@@ -60,7 +50,7 @@ cca.views.Camera = class extends cca.views.View {
     this.infoUpdater_ = infoUpdater;
 
     /**
-     * @type {!Mode}
+     * @type {!cca.Mode}
      * @protected
      */
     this.defaultMode_ = defaultMode;
@@ -77,7 +67,7 @@ cca.views.Camera = class extends cca.views.View {
      * @type {!cca.views.camera.Preview}
      * @private
      */
-    this.preview_ = new cca.views.camera.Preview(this.restart.bind(this));
+    this.preview_ = new cca.views.camera.Preview(this.start.bind(this));
 
     /**
      * Options for the camera.
@@ -85,7 +75,7 @@ cca.views.Camera = class extends cca.views.View {
      * @private
      */
     this.options_ =
-        new cca.views.camera.Options(infoUpdater, this.restart.bind(this));
+        new cca.views.camera.Options(infoUpdater, this.start.bind(this));
 
     /**
      * @type {!cca.models.ResultSaver}
@@ -115,7 +105,7 @@ cca.views.Camera = class extends cca.views.View {
      */
     this.modes_ = new cca.views.camera.Modes(
         this.defaultMode_, photoPreferrer, videoPreferrer,
-        this.restart.bind(this), this.doSavePhoto_.bind(this), createVideoSaver,
+        this.start.bind(this), this.doSavePhoto_.bind(this), createVideoSaver,
         this.doSaveVideo_.bind(this), playShutterEffect);
 
     /**
@@ -164,12 +154,12 @@ cca.views.Camera = class extends cca.views.View {
     chrome.idle.onStateChanged.addListener((newState) => {
       this.locked_ = (newState === 'locked');
       if (this.locked_) {
-        this.restart();
+        this.start();
       }
     });
-    chrome.app.window.current().onMinimized.addListener(() => this.restart());
+    chrome.app.window.current().onMinimized.addListener(() => this.start());
 
-    this.configuring_ = this.start_();
+    this.configuring_ = null;
   }
 
   /**
@@ -204,17 +194,19 @@ cca.views.Camera = class extends cca.views.View {
     cca.state.set('taking', true);
     this.focus();  // Refocus the visible shutter button for ChromeVox.
     this.take_ = (async () => {
+      let hasError = false;
       try {
         await cca.views.camera.timertick.start();
         await this.modes_.current.startCapture();
       } catch (e) {
+        hasError = true;
         if (e && e.message === 'cancel') {
           return;
         }
         console.error(e);
       } finally {
         this.take_ = null;
-        cca.state.set('taking', false);
+        cca.state.set('taking', false, {hasError});
         this.focus();  // Refocus the visible shutter button for ChromeVox.
       }
     })();
@@ -290,10 +282,10 @@ cca.views.Camera = class extends cca.views.View {
 
   /**
    * Stops camera and tries to start camera stream again if possible.
-   * @return {!Promise<boolean>} Promise resolved to whether restart camera
+   * @return {!Promise<boolean>} Promise resolved to whether start camera
    *     successfully.
    */
-  async restart() {
+  async start() {
     // To prevent multiple callers enter this function at the same time, wait
     // until previous caller resets configuring to null.
     while (this.configuring_ !== null) {
@@ -318,7 +310,7 @@ cca.views.Camera = class extends cca.views.View {
   /**
    * Try start stream reconfiguration with specified mode and device id.
    * @param {?string} deviceId
-   * @param {!Mode} mode
+   * @param {!cca.Mode} mode
    * @return {!Promise<boolean>} If found suitable stream and reconfigure
    *     successfully.
    */
@@ -347,7 +339,7 @@ cca.views.Camera = class extends cca.views.View {
         }
         try {
           if (deviceOperator !== null) {
-            assert(deviceId !== null);
+            cca.assert(deviceId !== null);
             await deviceOperator.setFpsRange(deviceId, constraints);
             await deviceOperator.setCaptureIntent(
                 deviceId, this.modes_.getCaptureIntent(mode));
@@ -401,7 +393,7 @@ cca.views.Camera = class extends cca.views.View {
             if (await this.startWithDevice_(id)) {
               // Make the different active camera announced by screen reader.
               const currentId = this.options_.currentDeviceId;
-              assert(currentId !== null);
+              cca.assert(currentId !== null);
               if (currentId === this.activeDeviceId_) {
                 return;
               }
@@ -418,6 +410,7 @@ cca.views.Camera = class extends cca.views.View {
         throw new cca.views.CameraSuspendedError();
       });
       this.configuring_ = null;
+
       return true;
     } catch (error) {
       this.activeDeviceId_ = null;
@@ -433,6 +426,10 @@ cca.views.Camera = class extends cca.views.View {
       this.retryStartTimeout_ = setTimeout(() => {
         this.configuring_ = this.start_();
       }, 100);
+
+      cca.assert(window['backgroundOps'] !== undefined);
+      const /** !cca.bg.BackgroundOps */ bgOps = window['backgroundOps'];
+      bgOps.getPerfLogger().interrupt();
       return false;
     }
   }

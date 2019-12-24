@@ -15,11 +15,6 @@ var cca = cca || {};
 cca.views = cca.views || {};
 
 /**
- * import {assertString} from '../chrome_util.js';
- */
-var assertString = assertString || {};
-
-/**
  * Creates the warning-view controller.
  */
 cca.views.Warning = class extends cca.views.View {
@@ -58,7 +53,7 @@ cca.views.Warning = class extends cca.views.View {
    * @override
    */
   entering(name) {
-    name = assertString(name);
+    name = cca.assertString(name);
 
     // Remove the error-name from the stack to avoid duplication. Then make the
     // error-name the latest one to show its message.
@@ -78,7 +73,7 @@ cca.views.Warning = class extends cca.views.View {
      * Recovered error-name for leaving the view.
      * @type {string}
      */
-    const name = assertString(args[0]);
+    const name = cca.assertString(args[0]);
 
     // Remove the recovered error from the stack but don't leave the view until
     // there is no error left in the stack.

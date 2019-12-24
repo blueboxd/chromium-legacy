@@ -136,6 +136,7 @@ cca.views.camera.Options = class {
     if (!cca.state.get('streaming') || cca.state.get('taking')) {
       return;
     }
+    cca.state.set('camera-switching', true);
     const devices = await this.infoUpdater_.getDevicesInfo();
     cca.util.animateOnce(
         /** @type {!HTMLElement} */ (document.querySelector('#switch-device')));
@@ -148,7 +149,8 @@ cca.views.camera.Options = class {
       index = (index + 1) % devices.length;
       this.videoDeviceId_ = devices[index].deviceId;
     }
-    await this.doSwitchDevice_();
+    const isSuccess = await this.doSwitchDevice_();
+    cca.state.set('camera-switching', false, {hasError: !isSuccess});
   }
 
   /**

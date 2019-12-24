@@ -185,6 +185,10 @@ std::vector<web_app::AppId> BookmarkAppRegistrar::GetAppIds() const {
   return app_ids;
 }
 
+web_app::WebAppRegistrar* BookmarkAppRegistrar::AsWebAppRegistrar() {
+  return nullptr;
+}
+
 const Extension* BookmarkAppRegistrar::GetBookmarkApp(
     const web_app::AppId& app_id) const {
   const Extension* extension = GetExtension(app_id);

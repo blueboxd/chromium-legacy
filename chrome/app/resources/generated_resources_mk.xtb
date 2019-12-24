@@ -110,7 +110,6 @@
 <translation id="114721135501989771">Добијте ги паметните опции на Google во Chrome</translation>
 <translation id="1147991416141538220">За да побарате пристап, контактирајте со администраторот на уредов.</translation>
 <translation id="1149401351239820326">Месец на истекување</translation>
-<translation id="1150490752229770117">Ова е последното автоматско софтверско и безбедносно ажурирање за овој <ph name="DEVICE_TYPE" />. За да добивате идни ажурирања, надградете на понов модел. <ph name="LINK_BEGIN" />Дознајте повеќе<ph name="LINK_END" /></translation>
 <translation id="1150565364351027703">Очила за сонце</translation>
 <translation id="1151917987301063366">Секогаш дозволувај <ph name="HOST" /> да пристапува до сензорите</translation>
 <translation id="1153356358378277386">Спарени уреди</translation>
@@ -461,6 +460,7 @@
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> сака да провери дали користите уред со Chrome OS што ги исполнува условите.</translation>
 <translation id="1640235262200048077"><ph name="IME_NAME" /> сѐ уште не функционира во апликациите на Linux</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 Со шифрирање РСА</translation>
+<translation id="1641113438599504367">Безбедно прелистување</translation>
 <translation id="1642494467033190216">Потребно е отстранување на заштитата на rootfs и престартување пред да се овозможат другите функции за отстранување грешки.</translation>
 <translation id="1643072738649235303">X9.62 ECDSA потпис со SHA-1</translation>
 <translation id="1644574205037202324">Историја</translation>
@@ -1956,7 +1956,6 @@
 <translation id="3732530910372558017">PIN-кодот мора да има најмногу 63 знаци</translation>
 <translation id="3733127536501031542">ССЛ-сервер со покачување</translation>
 <translation id="3735740477244556633">Подреди по</translation>
-<translation id="3736016243818847857">Дали сакате да продолжите?</translation>
 <translation id="3737274407993947948">Грешка при инсталирањето на Linux…</translation>
 <translation id="3737536731758327622">Вашите преземања се појавуваат тука</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -2665,7 +2664,6 @@
 <translation id="4798236378408895261">Прикачи <ph name="BEGIN_LINK" />евиденција за Bluetooth<ph name="END_LINK" /> (интерно во Google)</translation>
 <translation id="4801448226354548035">Сокриј сметки</translation>
 <translation id="4801512016965057443">Дозволи роаминг на мобилни податоци</translation>
-<translation id="4804756772600045300">Ако продолжите, ќе се овозможи отстранување грешки на ADB за создавање и тестирање апликации на Android. Имајте предвид дека отстранувањето грешки на ADB овозможува инсталирање апликации за тестирање што не се потврдени од Google.</translation>
 <translation id="4804818685124855865">Исклучи</translation>
 <translation id="4804827417948292437">Авокадо</translation>
 <translation id="4805077164141082536">Ви препорачуваме да направите бекап на вашиот тековен контејнер на Linux пред да го надградите.</translation>
@@ -4606,6 +4604,7 @@
 <translation id="7631205654593498032">Кога ќе ги поврзете уредите, се согласувате дека вашиот <ph name="DEVICE_TYPE" /> може:</translation>
 <translation id="7631887513477658702">&amp;Секогаш отворај датотеки од овој тип</translation>
 <translation id="7632948528260659758">Следниве апликации на киоск не успеаа да се ажурираат:</translation>
+<translation id="7634566076839829401">Нешто не е во ред. Обидете се повторно.</translation>
 <translation id="763632859238619983">Не дозволувајте сајтовите да инсталираат ракувачи за плаќања</translation>
 <translation id="7636919061354591437">Инсталирај на уредов</translation>
 <translation id="7638605456503525968">Сериски порти</translation>

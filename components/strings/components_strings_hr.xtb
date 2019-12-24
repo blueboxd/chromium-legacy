@@ -933,6 +933,7 @@
 <translation id="5386426401304769735">Lanac certifikata za ovu web-lokaciju sadrži certifikat s SHA-1 potpisom.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Rubni šav s desne strane</translation>
+<translation id="5400836586163650660">Siva</translation>
 <translation id="540969355065856584">Poslužitelj nije uspio dokazati da je <ph name="DOMAIN" />; njegov sigurnosni certifikat trenutačno nije važeći. Uzrok tomu može biti pogrešna konfiguracija ili napadač koji je prekinuo vašu vezu.</translation>
 <translation id="5421136146218899937">Izbriši podatke o pregledavanju...</translation>
 <translation id="5430298929874300616">Ukloni oznaku</translation>
@@ -1716,6 +1717,7 @@ i netočne vjerodajnice. To može značiti da se neki napadač pokušava predsta
 <translation id="988159990683914416">Sastavak razvojnog programera</translation>
 <translation id="989988560359834682">Uređivanje adrese</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992256792861109788">Ružičasta</translation>
 <translation id="992432478773561401">Softver "<ph name="SOFTWARE_NAME" />" nije ispravno instaliran na vašem računalu ili mreži:
     &lt;ul&gt;
     &lt;li&gt;Pokušajte deinstalirati ili onemogućiti softver "<ph name="SOFTWARE_NAME" />"&lt;/li&gt;

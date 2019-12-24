@@ -247,10 +247,6 @@ class MockRenderProcessHost : public RenderProcessHost {
       std::unique_ptr<mojo::AssociatedRemote<mojom::Renderer>>
           renderer_interface);
 
-  // SetNetworkFactory() wins over this.
-  // TODO(falken): Remove this method or call it SetURLLoaderFactory().
-  void OverrideURLLoaderFactory(network::mojom::URLLoaderFactory* factory);
-
   bool is_renderer_locked_to_site() const {
     return is_renderer_locked_to_site_;
   }
@@ -283,7 +279,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   std::unique_ptr<mojo::AssociatedRemote<mojom::Renderer>> renderer_interface_;
   std::map<std::string, InterfaceBinder> binder_overrides_;
   bool is_renderer_locked_to_site_ = false;
-  network::mojom::URLLoaderFactory* url_loader_factory_;
+  std::unique_ptr<network::mojom::URLLoaderFactory> url_loader_factory_;
   mojo::PendingReceiver<blink::mojom::CacheStorage> cache_storage_receiver_;
   mojo::PendingReceiver<blink::mojom::IDBFactory> idb_factory_receiver_;
   base::WeakPtrFactory<MockRenderProcessHost> weak_ptr_factory_{this};

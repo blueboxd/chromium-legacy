@@ -29,6 +29,7 @@
 <translation id="7792771145871471484">مراجعة الاقتراحات</translation>
 <translation id="7885132941432959125">نقل علامة التبويب إلى اليسار</translation>
 <translation id="7966321538264951561">رفض الاقتراحات</translation>
+<translation id="8205266828577616993">نقل علامة التبويب إلى الأعلى</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{إغلاق علامة تبويب واحدة محدّدة (<ph name="TABS_COUNT_ONE" />)}zero{إغلاق <ph name="TABS_COUNT_MANY" /> علامة تبويب محدّدة}two{إغلاق علامتَي تبويب محدّدتَين (<ph name="TABS_COUNT_MANY" />)}few{إغلاق <ph name="TABS_COUNT_MANY" /> علامات تبويب محدّدة}many{إغلاق <ph name="TABS_COUNT_MANY" /> علامة تبويب محدّدة}other{إغلاق <ph name="TABS_COUNT_MANY" /> علامة تبويب محدّدة}}</translation>
 <translation id="9150694013019234766">يمكنك التبديل بين علامات التبويب ضمن المجموعة بالقرب من أسفل الشاشة.</translation>
 <translation id="9169594135889675189">إضافة علامة تبويب جديدة للمجموعة</translation>

@@ -68,7 +68,8 @@ class MockQuicTransport final : public network::mojom::blink::QuicTransport {
                         pending_receiver)
       : receiver_(this, std::move(pending_receiver)) {}
 
-  // TODO(ricea): Add methods when there are some.
+  void SendDatagram(base::span<const uint8_t> data,
+                    base::OnceCallback<void(bool)> callback) override {}
 
  private:
   mojo::Receiver<network::mojom::blink::QuicTransport> receiver_;

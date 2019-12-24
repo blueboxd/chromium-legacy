@@ -134,4 +134,8 @@ std::vector<AppId> TestAppRegistrar::GetAppIds() const {
   return result;
 }
 
+WebAppRegistrar* TestAppRegistrar::AsWebAppRegistrar() {
+  return nullptr;
+}
+
 }  // namespace web_app

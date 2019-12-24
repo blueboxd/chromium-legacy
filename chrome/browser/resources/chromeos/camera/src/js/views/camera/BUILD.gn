@@ -36,7 +36,6 @@ js_library("modes") {
     "../..:sound",
     "../..:toast",
     "../..:type",
-    "../..:type",
     "../..:util",
     "../../device:constraints_preferrer",
     "../../models:filenamer",

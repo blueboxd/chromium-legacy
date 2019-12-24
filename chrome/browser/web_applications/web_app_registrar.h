@@ -47,6 +47,7 @@ class WebAppRegistrar : public AppRegistrar {
   std::vector<WebApplicationIconInfo> GetAppIconInfos(
       const AppId& app_id) const override;
   std::vector<AppId> GetAppIds() const override;
+  WebAppRegistrar* AsWebAppRegistrar() override;
 
   // Only range-based |for| loop supported. Don't use AppSet directly.
   // Doesn't support registration and unregistration of WebApp while iterating.

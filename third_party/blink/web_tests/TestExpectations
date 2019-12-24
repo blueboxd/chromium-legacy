@@ -3799,8 +3799,8 @@ crbug.com/964181 external/wpt/css/css-text/word-break/word-break-break-all-inlin
 
 # Sheriff 2019-08-19:
 crbug.com/626703 external/wpt/html/cross-origin-opener-policy/coop-sandbox.https.html [ Failure ]
-crbug.com/626703 [ Debug ] external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure ]
-crbug.com/626703 [ Debug ] virtual/cross-origin-isolation/external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Pass Failure ]
+crbug.com/626703 [ Debug ] virtual/stable/external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure ]
+crbug.com/626703 [ Debug ] external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Pass Failure ]
 
 # Failure due to on-going off-thread paint worklet project.
 crbug.com/957457 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/invalid-image-pending-script.https.html [ Crash ]
@@ -5932,9 +5932,9 @@ crbug.com/1010483 [ Win ] fast/selectors/specificity-overflow.html [ Crash Pass 
 # Sheriff 2019-10-11
 crbug.com/1012599 external/wpt/fetch/cross-origin-resource-policy/fetch.https.any.sharedworker.html [ Pass Timeout ]
 crbug.com/1013391 http/tests/devtools/a11y-axe-core/settings/shortcuts-a11y-test.js [ Pass Timeout ]
-crbug.com/1013523 [ Release ] virtual/cross-origin-isolation/external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure Pass ]
-crbug.com/1013523 [ Release Linux ] external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure Pass ]
-crbug.com/1013523 [ Release Mac ] external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure Pass ]
+crbug.com/1013523 [ Release ] external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure Pass ]
+crbug.com/1013523 [ Release Linux ] virtual/stable/external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure Pass ]
+crbug.com/1013523 [ Release Mac ] virtual/stable/external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure Pass ]
 crbug.com/1013779 virtual/scalefactor200/fast/hidpi/static/calendar-picker-appearance.html [ Failure Pass ]
 crbug.com/1013779 [ Mac ] virtual/scalefactor200/fast/hidpi/static/data-suggestion-picker-appearance.html [ Failure Pass ]
 crbug.com/1013779 virtual/scalefactor200/fast/hidpi/static/pointerevents/pointerevent_touch-adjustment_click_target.html [ Failure Pass ]
@@ -6034,9 +6034,9 @@ crbug.com/1027287 css3/filters/effect-reference-image-lazy-attach.html [ Pass Fa
 # Sheriff 2019-11-26
 crbug.com/1028482 http/tests/devtools/sources/debugger/navigator-view.js [ Pass Crash ]
 crbug.com/1028684 inspector-protocol/animation/animation-release.js [ Pass Failure ]
-crbug.com/1015187 virtual/cross-origin-isolation/external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Failure ]
-crbug.com/1015187 [ Linux ] external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Failure Timeout ]
-crbug.com/1015187 [ Mac ] external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Failure Timeout ]
+crbug.com/1015187 external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Failure ]
+crbug.com/1015187 [ Linux ] virtual/stable/external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Failure Timeout ]
+crbug.com/1015187 [ Mac ] virtual/stable/external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Failure Timeout ]
 
 # Sheriff 2019-11-29
 crbug.com/1019079 virtual/gpu/fast/canvas/OffscreenCanvas-placeholder-createImageBitmap.html [ Pass Failure ]

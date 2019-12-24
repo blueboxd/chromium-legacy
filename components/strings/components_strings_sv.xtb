@@ -934,6 +934,7 @@
 <translation id="5386426401304769735">Certifikatkedjan för den här webbplatsen innehåller ett certifikat som signerades med SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Kanthäftning till höger</translation>
+<translation id="5400836586163650660">Grå</translation>
 <translation id="540969355065856584">Servern kunde inte bevisa att det är <ph name="DOMAIN" />. Dess säkerhetscertifikat är inte giltigt för närvarande. Detta kan bero på en felaktig konfiguration eller att någon kapat din anslutning.</translation>
 <translation id="5421136146218899937">Ta bort webbinformation...</translation>
 <translation id="5430298929874300616">Ta bort bokmärke</translation>
@@ -1716,6 +1717,7 @@ Mer information:
 <translation id="988159990683914416">Utvecklarversion</translation>
 <translation id="989988560359834682">Redigera adress</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992256792861109788">Rosa</translation>
 <translation id="992432478773561401"><ph name="SOFTWARE_NAME" /> har inte installerats korrekt på datorn eller nätverket:
     &lt;ul&gt;
     &lt;li&gt;Testa att avinstallera eller inaktivera <ph name="SOFTWARE_NAME" />&lt;/li&gt;

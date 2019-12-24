@@ -26,6 +26,7 @@ js_type_check("compile_resources") {
     ":metrics",
     ":namespace",
     ":nav",
+    ":perf",
     ":sound",
     ":state",
     ":toast",
@@ -36,6 +37,9 @@ js_type_check("compile_resources") {
 }
 
 js_library("chrome_util") {
+  deps = [
+    ":namespace",
+  ]
 }
 
 js_library("intent") {
@@ -66,6 +70,9 @@ js_library("sound") {
 }
 
 js_library("type") {
+  deps = [
+    ":namespace",
+  ]
 }
 
 js_library("main") {
@@ -93,6 +100,9 @@ js_library("nav") {
   ]
 }
 
+js_library("perf") {
+}
+
 js_library("state") {
 }
 
@@ -107,6 +117,7 @@ js_library("background_ops") {
   deps = [
     ":chrome_util",
     ":intent",
+    ":perf",
   ]
 }
 
@@ -120,6 +131,10 @@ js_library("toast") {
 }
 
 js_library("tooltip") {
+  deps = [
+    ":chrome_util",
+    ":namespace",
+  ]
 }
 
 js_library("util") {

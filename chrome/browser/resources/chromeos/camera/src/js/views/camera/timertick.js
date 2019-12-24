@@ -24,11 +24,6 @@ cca.views.camera = cca.views.camera || {};
 cca.views.camera.timertick = cca.views.camera.timertick || {};
 
 /**
- * import {assertInstanceof} from '../chrome_util.js';
- */
-var assertInstanceof = assertInstanceof || {};
-
-/**
  * Handler to cancel the active running timer-ticks.
  * @type {?function()}
  * @private
@@ -46,7 +41,7 @@ cca.views.camera.timertick.start = function() {
   }
   return new Promise((resolve, reject) => {
     let tickTimeout = null;
-    const tickMsg = assertInstanceof(
+    const tickMsg = cca.assertInstanceof(
         document.querySelector('#timer-tick-msg'), HTMLElement);
     cca.views.camera.timertick.cancel_ = () => {
       if (tickTimeout) {

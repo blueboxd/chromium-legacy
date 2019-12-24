@@ -110,7 +110,6 @@
 <translation id="114721135501989771">Chrome cleverer nutzen – dank Google</translation>
 <translation id="1147991416141538220">Wenn Sie Zugriff benötigen, wenden Sie sich an den Administrator dieses Geräts.</translation>
 <translation id="1149401351239820326">Ablaufmonat</translation>
-<translation id="1150490752229770117">Das ist das letzte automatische Software- und Sicherheitsupdate für dieses <ph name="DEVICE_TYPE" />. Wenn Sie weiter Updates erhalten möchten, ist ein neueres Modell erforderlich. <ph name="LINK_BEGIN" />Weitere Informationen<ph name="LINK_END" /></translation>
 <translation id="1150565364351027703">Sonnenbrille</translation>
 <translation id="1151917987301063366"><ph name="HOST" /> immer den Zugriff auf Sensoren erlauben</translation>
 <translation id="1153356358378277386">Gekoppelte Geräte</translation>
@@ -458,6 +457,7 @@
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> möchte überprüfen, ob Sie ein unterstütztes Chrome OS-Gerät verwenden.</translation>
 <translation id="1640235262200048077">"<ph name="IME_NAME" />" funktioniert noch nicht in Linux-Apps</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 mit RSA-Verschlüsselung</translation>
+<translation id="1641113438599504367">Safe Browsing</translation>
 <translation id="1642494467033190216">Vor dem Aktivieren weiterer Debugging-Funktionen muss der rootfs-Schutz entfernt und ein Neustart ausgeführt werden.</translation>
 <translation id="1643072738649235303">X9.62-ECDSA-Signatur mit SHA-1</translation>
 <translation id="1644574205037202324">Verlauf</translation>
@@ -1952,7 +1952,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3732530910372558017">PIN darf maximal 63 Zeichen lang sein</translation>
 <translation id="3733127536501031542">SSL-Server mit Step-up</translation>
 <translation id="3735740477244556633">Sortieren nach</translation>
-<translation id="3736016243818847857">Möchten Sie fortfahren?</translation>
 <translation id="3737274407993947948">Fehler beim Installieren von Linux…</translation>
 <translation id="3737536731758327622">Hier werden Ihre Downloads angezeigt</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -2661,7 +2660,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4798236378408895261"><ph name="BEGIN_LINK" />Bluetooth-Protokolle<ph name="END_LINK" /> anhängen (Google-intern)</translation>
 <translation id="4801448226354548035">Konten ausblenden</translation>
 <translation id="4801512016965057443">Mobilfunk-Roaming zulassen</translation>
-<translation id="4804756772600045300">Wenn Sie fortfahren, erlauben Sie der ADB-Fehlerbehebung, Android-Apps zu erstellen und zu testen. Bitte beachten Sie, dass die ADB-Fehlerbehebung die Installation von Test-Apps zulässt, die nicht von Google geprüft wurden.</translation>
 <translation id="4804818685124855865">Verbindung trennen</translation>
 <translation id="4804827417948292437">Avocado</translation>
 <translation id="4805077164141082536">Wir empfehlen Ihnen, den aktuellen Linux-Container vor dem Upgrade zu sichern.</translation>
@@ -4602,6 +4600,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7631205654593498032">Durch das Verbinden Ihrer Geräte erlauben Sie "<ph name="DEVICE_TYPE" />" Folgendes:</translation>
 <translation id="7631887513477658702">Dateien dieses Typs &amp;immer öffnen</translation>
 <translation id="7632948528260659758">Die folgenden Kiosk-Apps konnten nicht aktualisiert werden:</translation>
+<translation id="7634566076839829401">Ein Problem ist aufgetreten. Bitte versuchen Sie es erneut.</translation>
 <translation id="763632859238619983">Installation von Zahlungs-Handlern auf keiner Website zulassen</translation>
 <translation id="7636919061354591437">Auf diesem Gerät installieren</translation>
 <translation id="7638605456503525968">Serielle Schnittstellen</translation>

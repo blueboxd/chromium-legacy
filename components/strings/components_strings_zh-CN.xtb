@@ -706,7 +706,7 @@
 <translation id="4356973930735388585">此网站上的攻击者可能会试图在您的计算机上安装危险程序，以窃取或删除您的信息（例如：照片、密码、通讯内容和信用卡信息）。</translation>
 <translation id="4358059973562876591">您指定的模板未必会被应用，因为 DnsOverHttpsMode 政策出错了。</translation>
 <translation id="4358461427845829800">管理付款方式…</translation>
-<translation id="4359160567981085931">您刚刚在一个诈骗网站中输入了密码。Chrome 可以帮助您消除潜在威胁。若要更改密码并让 Google 知晓您的帐号可能处于危险状态，请点击“保护帐号”。</translation>
+<translation id="4359160567981085931">您刚刚在一个诈骗网站中输入了密码。Chrome 可以为您提供帮助。若要更改密码并让 Google 知晓您的帐号可能处于危险状态，请点击“保护帐号”。</translation>
 <translation id="4367563149485757821">Number-12 (Envelope)</translation>
 <translation id="437058704415269440">帐号余额</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
@@ -914,6 +914,7 @@
 <translation id="5386426401304769735">此网站的证书链包含使用 SHA-1 签署的证书。</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">边缘装订（右侧）</translation>
+<translation id="5400836586163650660">灰色</translation>
 <translation id="540969355065856584">此服务器无法证明它是 <ph name="DOMAIN" />；其安全证书目前无效。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="5421136146218899937">清除浏览数据...</translation>
 <translation id="5430298929874300616">移除书签</translation>
@@ -1455,7 +1456,7 @@
 <translation id="8042918947222776840">选择取货方式</translation>
 <translation id="8057711352706143257">“<ph name="SOFTWARE_NAME" />”的配置有误。卸载“<ph name="SOFTWARE_NAME" />”通常可解决此问题。<ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8066955247577885446">抱歉，出了点问题。</translation>
-<translation id="8067872629359326442">您刚刚在一个诈骗网站中输入了密码。Chromium 可以帮助您消除潜在威胁。若要更改密码并让 Google 知晓您的帐号可能处于危险状态，请点击“保护帐号”。</translation>
+<translation id="8067872629359326442">您刚刚在一个诈骗网站中输入了密码。Chromium 可以为您提供帮助。若要更改密码并让 Google 知晓您的帐号可能处于危险状态，请点击“保护帐号”。</translation>
 <translation id="8074253406171541171">10x13 (Envelope)</translation>
 <translation id="8078141288243656252">无法在旋转后添加注释</translation>
 <translation id="8079031581361219619">重新加载此网站？</translation>
@@ -1695,6 +1696,7 @@
 <translation id="988159990683914416">开发者内部版本</translation>
 <translation id="989988560359834682">修改地址</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992256792861109788">粉色</translation>
 <translation id="992432478773561401">“<ph name="SOFTWARE_NAME" />”没有正确地安装到您的计算机或网络上：
     &lt;ul&gt;
     &lt;li&gt;请尝试卸载或停用“<ph name="SOFTWARE_NAME" />”&lt;/li&gt;

@@ -933,6 +933,7 @@
 <translation id="5386426401304769735">‏زنجیره گواهی این سایت حاوی یک گواهی با امضای SHA-1 است.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">دوختن لبه راست</translation>
+<translation id="5400836586163650660">خاکستری</translation>
 <translation id="540969355065856584">این سرور نتوانست ثابت کند که <ph name="DOMAIN" /> است؛ در حال حاضر، گواهی امنیتی آن معتبر نیست. ممکن است این مشکل به دلیل پیکربندی نادرست یا قطع اتصال شما توسط حمله‌کننده ایجاد شده باشد.</translation>
 <translation id="5421136146218899937">پاک کردن داده‌های مرور...</translation>
 <translation id="5430298929874300616">حذف نشانک</translation>
@@ -1714,6 +1715,7 @@
 <translation id="988159990683914416">ساخت برنامه‌نویس</translation>
 <translation id="989988560359834682">ویرایش آدرس</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992256792861109788">صورتی</translation>
 <translation id="992432478773561401">‏«<ph name="SOFTWARE_NAME" />» به‌درستی در رایانه یا شبکه‌تان پیکربندی نشد:
     &lt;ul&gt;
     &lt;li&gt;«<ph name="SOFTWARE_NAME" />» را حذف‌نصب یا غیرفعال کنید&lt;/li&gt;

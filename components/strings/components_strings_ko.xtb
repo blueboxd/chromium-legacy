@@ -932,6 +932,7 @@
 <translation id="5386426401304769735">이 사이트의 인증서 체인은 SHA-1을 사용하여 서명된 인증서를 포함합니다.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">오른쪽 에지 스티치</translation>
+<translation id="5400836586163650660">그레이</translation>
 <translation id="540969355065856584">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없습니다. 서버의 보안 인증서가 현재 유효하지 않습니다. 서버를 잘못 설정했거나 공격자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="5421136146218899937">인터넷 사용 기록 삭제...</translation>
 <translation id="5430298929874300616">북마크 삭제</translation>
@@ -1712,6 +1713,7 @@
 <translation id="988159990683914416">개발자 빌드</translation>
 <translation id="989988560359834682">주소 수정</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992256792861109788">분홍색</translation>
 <translation id="992432478773561401">'<ph name="SOFTWARE_NAME" />'이(가) 컴퓨터 또는 네트워크에 제대로 설치되지 않았습니다.
     &lt;ul&gt;
     &lt;li&gt;'<ph name="SOFTWARE_NAME" />'을(를) 제거하거나 사용 중지해 보세요.&lt;/li&gt;

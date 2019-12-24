@@ -15,7 +15,6 @@
 <translation id="1111673857033749125">Ձեր մյուս սարքերում պահված էջանիշները կտեսնեք այստեղ:</translation>
 <translation id="1113597929977215864">Ցուցադրել պարզեցված դիտակերպը</translation>
 <translation id="1122278879166832009">Հպեք այստեղ՝ գլխավոր էջը բացելու համար։</translation>
-<translation id="1124772482545689468">Օգտատեր</translation>
 <translation id="1129510026454351943">Մանրամասներ՝ <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{Կնեռբեռնվի 1 ֆայլ:}one{Կներբեռնվի # ֆայլ:}other{Կներբեռնվի # ֆայլ:}}</translation>
 <translation id="1145536944570833626">Առկա տվյալների ջնջում։</translation>
@@ -24,7 +23,6 @@
 <translation id="1171770572613082465">Սեղմեք «Կայքերի ընտրանի» կոճակը և դիտեք թոփ կայքերը</translation>
 <translation id="1173894706177603556">Վերանվանել</translation>
 <translation id="1178581264944972037">Դադար</translation>
-<translation id="1181037720776840403">Ջնջել</translation>
 <translation id="1188239144602654184">Սկսել AR աշխատաշրջանը</translation>
 <translation id="1197267115302279827">Տեղափոխել էջանիշները</translation>
 <translation id="119944043368869598">Մաքրել բոլորը</translation>
@@ -85,7 +83,6 @@
 <translation id="1571304935088121812">Պատճենել օգտանունը</translation>
 <translation id="1612196535745283361">Սարքեր գտնելու համար Chrome-ին անհրաժեշտ է տեղադրության հասանելիություն: Տեղադրության հասանելիությունն <ph name="BEGIN_LINK" />այս սարքում անջատված է<ph name="END_LINK" />։</translation>
 <translation id="1620510694547887537">Տեսախցիկ</translation>
-<translation id="1623104350909869708">Թույլ չտալ այս էջին ստեղծել լրացուցիչ երկխոսություններ</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Հեռացնել ընտրված 1 տարրը}one{Remove # selected items}other{Հեռացնել ընտրված # տարրերը}}</translation>
 <translation id="164269334534774161">Դուք դիտում եք տվյալ էջի <ph name="CREATION_TIME" />-ի անցանց պատճենը</translation>
 <translation id="1644574205037202324">Պատմություն</translation>
@@ -149,7 +146,6 @@
 <translation id="2056878612599315956">Կայքը դադարեցված է</translation>
 <translation id="2063713494490388661">Հպեք որոնելու համար</translation>
 <translation id="2067805253194386918">տեքստ</translation>
-<translation id="2079545284768500474">Հետարկել</translation>
 <translation id="2082238445998314030"><ph name="RESULT_NUMBER" />-ից <ph name="TOTAL_RESULTS" /> արդյունք</translation>
 <translation id="2091887806945687916">Ձայն</translation>
 <translation id="2096012225669085171">Համաժամացում և անհատականացում բոլոր սարքերում</translation>
@@ -164,7 +160,6 @@
 <translation id="213279576345780926">Փակված <ph name="TAB_TITLE" /></translation>
 <translation id="2139186145475833000">Ավելացնել գլխավոր էկրանին</translation>
 <translation id="2146738493024040262">Բացել ակնթարթային հավելվածը</translation>
-<translation id="2148716181193084225">Այսօր</translation>
 <translation id="2154484045852737596">Քարտի փոփոխություն</translation>
 <translation id="2154710561487035718">Պատճենել URL-ը</translation>
 <translation id="2156074688469523661">Այլ կայքեր (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -186,7 +181,6 @@
 <translation id="2328985652426384049">Չհաջողվեց մուտք գործել</translation>
 <translation id="2349710944427398404">Chrome-ի օգտագործած ընդհանուր տարածքը, ներառյալ` հաշիվները, էջանիշները և պահված կարգավորումները</translation>
 <translation id="2353636109065292463">Ինտերնետ կապի ստուգում</translation>
-<translation id="2359808026110333948">Շարունակել</translation>
 <translation id="2369533728426058518">բաց ներդիրներ</translation>
 <translation id="2387895666653383613">Տեքստի չափափոխում</translation>
 <translation id="2394602618534698961">Ձեր ներբեռնած ֆայլերը ցուցադրվում են այստեղ</translation>
@@ -233,9 +227,6 @@
 <translation id="2647434099613338025">Ավելացնել լեզու</translation>
 <translation id="2650751991977523696">Նորի՞ց ներբեռնել ֆայլը</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# աուդիո ֆայլ}one{# աուդիո ֆայլ}other{# աուդիո ֆայլ}}</translation>
-<translation id="2653659639078652383">Ուղարկել</translation>
-<translation id="2677748264148917807">Դուրս գալ էջից</translation>
-<translation id="2704606927547763573">Պատճենվեց</translation>
 <translation id="2707726405694321444">Թարմացնել էջը</translation>
 <translation id="2709516037105925701">Ինքնալցում</translation>
 <translation id="2717722538473713889">Էլ․ հասցեներ</translation>
@@ -289,7 +280,6 @@
 <translation id="3058498974290601450">Համաժամացումը կարող եք ցանկացած ժամանակ միացնել կարգավորումներում:</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> էջանիշ}one{<ph name="BOOKMARKS_COUNT_MANY" /> էջանիշ}other{<ph name="BOOKMARKS_COUNT_MANY" /> էջանիշ}}</translation>
 <translation id="3089395242580810162">Բացել ինկոգնիտո ներդիրում</translation>
-<translation id="3115898365077584848">Ցուցադրել տեղեկությունները</translation>
 <translation id="3123473560110926937">Արգելափակված է որոշ կայքերում</translation>
 <translation id="3137521801621304719">Դուրս գալ ինկոգնիտո ռեժիմից</translation>
 <translation id="3143515551205905069">Չեղարկել համաժամացումը</translation>
@@ -315,7 +305,6 @@
 <translation id="3288003805934695103">Վերաբեռնել էջը</translation>
 <translation id="32895400574683172">Ծանուցումները թույլատրված են</translation>
 <translation id="3295530008794733555">Որոնեք ավելի արագ: Օգտագործեք ավելի քիչ թրաֆիկ:</translation>
-<translation id="3295602654194328831">Թաքցնել տեղեկությունները</translation>
 <translation id="3298243779924642547">Lite</translation>
 <translation id="3303414029551471755">Ներբեռնե՞լ բովանդակությունը:</translation>
 <translation id="3306398118552023113">Այս հավելվածն աշխատում է Chrome-ում</translation>
@@ -337,7 +326,6 @@
 <translation id="3443221991560634068">Վերաբեռնել ընթացիկ էջը</translation>
 <translation id="3445014427084483498">Հենց նոր</translation>
 <translation id="3478363558367712427">Ընտրեք այլ որոնման համակարգ</translation>
-<translation id="3479552764303398839">Հիմա չէ</translation>
 <translation id="3492207499832628349">Նոր ինկոգնիտո ներդիր</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Իմացեք ավելին<ph name="END_LINK" /> առաջարկվող բովանդակության վերաբերյալ</translation>
 <translation id="3513704683820682405">Լրացված իրականություն</translation>
@@ -379,7 +367,6 @@
 <translation id="381841723434055211">Հեռախոսահամարներ</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> ներբեռնում ջնջվեց</translation>
 <translation id="3822502789641063741">Մաքրե՞լ կայքերի տվյալները:</translation>
-<translation id="385051799172605136">Հետ</translation>
 <translation id="3859306556332390985">Որոնել դեպի առաջ</translation>
 <translation id="388596076286380598">Դուք կարող եք կարդալ հոդվածներ, դիտել տեսանյութեր և այլ բովանդակություն ձեր սիրած կայքերից նույնիսկ, երբ կապը թույլ է կամ բացակայում է։</translation>
 <translation id="3894427358181296146">Պանակի ավելացում</translation>
@@ -402,7 +389,6 @@
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="3997476611815694295">Անկարևոր տվյալներ</translation>
 <translation id="4000212216660919741">Home անցանց ռեժիմում</translation>
-<translation id="4002066346123236978">Վերնագիր</translation>
 <translation id="4008040567710660924">Թույլատրել քուքիները կոնկրետ կայքի համար:</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# ժամ}one{# ժամ}other{# ժամ}}</translation>
 <translation id="4046123991198612571">Հաջորդը</translation>
@@ -473,7 +459,6 @@
 <translation id="4558311620361989323">Վեբէջերի դյուրանցումներ</translation>
 <translation id="4561979708150884304">Կապ չկա</translation>
 <translation id="4565377596337484307">Թաքցնել գաղտնաբառը</translation>
-<translation id="4570913071927164677">Մանրամասներ</translation>
 <translation id="4572422548854449519">Մուտք գործեք կառավարվող հաշիվ</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# րոպե առաջ}one{# minutes ago}other{# րոպե առաջ}}</translation>
@@ -574,13 +559,10 @@
 <translation id="5271967389191913893">Սարքը չի կարող բացել ներբեռնվող բովանդակությունը:</translation>
 <translation id="528192093759286357">Լիաէկրան ռեժիմից դուրս գալու համար քաշեք վերևից և հպեք «Հետ» կոճակին:</translation>
 <translation id="5292796745632149097">Ուղարկել</translation>
-<translation id="5300589172476337783">Ցույց տալ</translation>
-<translation id="5301954838959518834">Պարզ է</translation>
 <translation id="5304593522240415983">Այս դաշտը չի կարող դատարկ լինել</translation>
 <translation id="5307446750509046227">Մաքրել կայքերի տվյալները</translation>
 <translation id="5308380583665731573">Կապակցվել</translation>
 <translation id="5313967007315987356">Ավելացնել կայք</translation>
-<translation id="5317780077021120954">Պահել</translation>
 <translation id="5324858694974489420">Ծնողական կայանքներ</translation>
 <translation id="5327248766486351172">Անուն</translation>
 <translation id="5335288049665977812">Թույլ տալ կայքերին գործարկել JavaScript-ը (խորհուրդ է տրվում)</translation>
@@ -620,7 +602,6 @@
 <translation id="5527111080432883924">Հարցնել, նախքան կայքերին սեղմատախտակի տեքստերն ու պատկերները հասանելի դարձնելը (խորհուրդ է տրվում)</translation>
 <translation id="5530766185686772672">Փակել ինկոգնիտո ներդիրները</translation>
 <translation id="5534640966246046842">Կայքը պատճենվեց</translation>
-<translation id="5556459405103347317">Վերաբեռնել</translation>
 <translation id="5561549206367097665">Ցանցի որոնում…</translation>
 <translation id="557283862590186398">Chrome-ին այս կայքի համար անհրաժեշտ է ձեր խոսափողն օգտագործելու թույլտվություն։</translation>
 <translation id="55737423895878184">Տեղորոշումն ու ծանուցումները թույլատրված են</translation>
@@ -664,7 +645,6 @@
 <translation id="5853623416121554550">դադարեցված է</translation>
 <translation id="5854790677617711513">30 օր և ավելի</translation>
 <translation id="5858741533101922242">Չհաջողվեց միացնել Bluetooth ադապտերը</translation>
-<translation id="5860033963881614850">Անջատ.</translation>
 <translation id="5860491529813859533">Միացնել</translation>
 <translation id="5862731021271217234">Ձեր մյուս սարքերում եղած ներդիրներն օգտագործելու համար միացրեք համաժամացումը</translation>
 <translation id="5864174910718532887">Տեղեկություններ․ տեսակավորված է ըստ կայքի անվան</translation>
@@ -672,7 +652,6 @@
 <translation id="5865733239029070421">Ավտոմատ Google-ին է ուղարկում օգտագործման վիճակագրությունը և խափանումների մասին հաշվետվությունները</translation>
 <translation id="5869522115854928033">Պահված գաղտնաբառեր</translation>
 <translation id="5902828464777634901">Այս կայքի պահած բոլոր տեղային տվյալները կջնջվեն, այդ թվում նաև քուքիները:</translation>
-<translation id="5916664084637901428">Միացնել</translation>
 <translation id="5919204609460789179">Թարմացրեք <ph name="PRODUCT_NAME" />-ը՝ համաժամացումը սկսելու համար</translation>
 <translation id="5937580074298050696">Խնայվել է <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Վերակայել</translation>
@@ -700,7 +679,6 @@
 <translation id="614940544461990577">Փորձեք՝</translation>
 <translation id="6154478581116148741">Այս սարքից ձեր գաղտնաբառերն արտահանելու համար կարգավորումներում միացրեք էկրանի կողպումը։</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> տվյալների խնայում</translation>
-<translation id="6165508094623778733">Իմանալ ավելին</translation>
 <translation id="6177111841848151710">Արգելված է ընթացիկ որոնիչին</translation>
 <translation id="6181444274883918285">Ավելացնել բացառություն</translation>
 <translation id="6192333916571137726">Ներբեռնել ֆայլը</translation>
@@ -752,7 +730,6 @@
 <translation id="6482749332252372425"><ph name="FILE_NAME" /> ֆայլի ներբեռնումը ձախողվեց՝ հիշողությունում բավարար տեղ չկա:</translation>
 <translation id="6496823230996795692">«<ph name="APP_NAME" />» հավելվածն առաջին անգամ օգտագործելիս միացեք համացանցին:</translation>
 <translation id="6508722015517270189">Վերագործարկեք Chrome-ը</translation>
-<translation id="6527303717912515753">Կիսվել</translation>
 <translation id="6532866250404780454">Chrome-ում ձեր այցելած կայքերը չեն ցուցադրվի։ Բոլոր կայքերի ժամաչափերը կջնջվեն։</translation>
 <translation id="6534565668554028783">Google-ը չափազանց երկար է պատասխանում</translation>
 <translation id="6538442820324228105">Ներբեռնվել է <ph name="GBS" /> ԳԲ</translation>
@@ -791,7 +768,6 @@
 <translation id="6710213216561001401">Նախորդը</translation>
 <translation id="671481426037969117"><ph name="FQDN" /> հավելվածի ժամաչափի ժամանակը լրացել է։ Վաղը այն նորից կաշխատի:</translation>
 <translation id="6738867403308150051">Ներբեռնում…</translation>
-<translation id="6746124502594467657">Տեղափոխել վար</translation>
 <translation id="6766622839693428701">Փակելու համար մատը սահեցրեք ներքև։</translation>
 <translation id="6766758767654711248">Հպեք՝ կայք անցնելու համար</translation>
 <translation id="6767294960381293877">Սարքերը, որոնց հետ կիսվելու եք ներդիրով, ցուցադրված են էկրանի կեսով:</translation>
@@ -811,14 +787,12 @@
 <translation id="688738109438487280">Ավելացնել առկա տվյալները <ph name="TO_ACCOUNT" /> հաշվում:</translation>
 <translation id="6891726759199484455">Գաղտնաբառը պատճենելու համար ապակողպեք էկրանը</translation>
 <translation id="6896758677409633944">Պատճենել</translation>
-<translation id="6910211073230771657">Ջնջված</translation>
 <translation id="6912998170423641340">Արգելափակել սեղմատախտակի տեքստերի ու պատկերների հասանելիությունը կայքերին</translation>
 <translation id="6914783257214138813">Ձեր գաղտնաբառերը տեսանելի կլինեն արտահանված ֆայլին մուտք ունեցող բոլոր օգտատերերին:</translation>
 <translation id="6942665639005891494">Դուք ցանկացած ժամանակ կարող եք փոխել ներբեռնումների կանխադրված պանակը կարգավորումներում</translation>
 <translation id="6945221475159498467">Ընտրել</translation>
 <translation id="6963642900430330478">Այս կայքը վտանգավոր է: Տեղեկություններ կայքի մասին:</translation>
 <translation id="6963766334940102469">Ջնջել էջանիշները</translation>
-<translation id="6965382102122355670">Եղավ</translation>
 <translation id="6979737339423435258">Ամբողջ ժամանակաշրջանի</translation>
 <translation id="6981982820502123353">Մատչելիությունը</translation>
 <translation id="6989267951144302301">Չհաջողվեց ներբեռնել</translation>
@@ -916,7 +890,6 @@
 <translation id="7638584964844754484">Սխալ անցաբառ</translation>
 <translation id="7641339528570811325">Մաքրել այցելությունների պատմությունը…</translation>
 <translation id="7648422057306047504">Գաղտնագրել գաղտնաբառերը Google հավատարմագրերի միջոցով</translation>
-<translation id="7649070708921625228">Օգնություն</translation>
 <translation id="7658239707568436148">Չեղարկել</translation>
 <translation id="7665369617277396874">Ավելացնել հաշիվ</translation>
 <translation id="766587987807204883">Հոդվածները ցուցադրվում են այստեղ։ Դրանք կարող եք կարդալ նույնիսկ անցանց ռեժիմում։</translation>
@@ -932,7 +905,6 @@
 <translation id="7772032839648071052">Հաստատեք անցաբառը</translation>
 <translation id="7772375229873196092">Փակել <ph name="APP_NAME" />-ը</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ու վճարման ևս <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> եղանակ}one{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 and <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> more}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ու վճարման ևս <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> եղանակ}}</translation>
-<translation id="7781829728241885113">Երեկ</translation>
 <translation id="7791543448312431591">Ավելացնել</translation>
 <translation id="780301667611848630">Ոչ</translation>
 <translation id="7810647596859435254">Բացել հավելվածով…</translation>
@@ -984,7 +956,6 @@
 <translation id="8110087112193408731">Ցուցադրե՞լ Chrome-ի պատմությունը Թվային բարեկեցության մեջ</translation>
 <translation id="8116925261070264013">Անջատած ձայնով կայքեր</translation>
 <translation id="813082847718468539">Դիտել կայքի տեղեկությունները</translation>
-<translation id="8131740175452115882">Հաստատել</translation>
 <translation id="8156139159503939589">Ի՞նչ լեզուներով եք կարդում</translation>
 <translation id="8168435359814927499">Բովանդակություն</translation>
 <translation id="8186512483418048923">Մնաց <ph name="FILES" /> ֆայլ</translation>
@@ -994,7 +965,6 @@
 <translation id="8218622182176210845">Կառավարեք ձեր հաշիվը</translation>
 <translation id="8224471946457685718">Ներբեռնել հոդվածներ Wi-Fi-ի միջոցով</translation>
 <translation id="8232956427053453090">Պահպանել տվյալները</translation>
-<translation id="8249310407154411074">Տեղափոխել ցանկի սկիզբ</translation>
 <translation id="8250920743982581267">Փաստաթղթեր</translation>
 <translation id="825412236959742607">Այս էջը չափազանց շատ հիշողություն է օգտագործում, այդ պատճառով Chrome-ը որոշակի բովանդակություն հեռացրել է:</translation>
 <translation id="8260126382462817229">Փորձեք նորից մուտք գործել</translation>
@@ -1045,7 +1015,6 @@
 <translation id="857943718398505171">Թույլատրված է (հանձնարարելի)</translation>
 <translation id="8583805026567836021">Հաշվի տվյալների մաքրում</translation>
 <translation id="860043288473659153">Քարտապանի անունը</translation>
-<translation id="8609465669617005112">Տեղափոխել վեր</translation>
 <translation id="8616006591992756292">Ձեր Google հաշվում կարող են լինել այցելությունների պատմության այլ ձևեր ևս: Դրանք կարող եք գտնել <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> էջում:</translation>
 <translation id="8617240290563765734">Բացե՞լ ներբեռնված բովանդակությունում հատկորոշված URL-ը:</translation>
 <translation id="8636825310635137004">Ձեր մյուս սարքերում եղած ներդիրներն օգտագործելու համար միացրեք համաժամացումը:</translation>
@@ -1059,9 +1028,7 @@
 <translation id="868929229000858085">Որոնեք կոնտակտներ</translation>
 <translation id="869891660844655955">Սպառման ժամկետ</translation>
 <translation id="8719023831149562936">Ընթացիկ ներդիրը հնարավոր չէ փոխանցել</translation>
-<translation id="8725066075913043281">Փորձել կրկին</translation>
 <translation id="8728487861892616501">Օգտագործելով այս հավելվածը՝ դուք ընդունում եք Chrome-ի <ph name="BEGIN_LINK1" />օգտագործման պայմաններն<ph name="END_LINK1" /> ու <ph name="BEGIN_LINK2" />գաղտնիության ծանուցումը<ph name="END_LINK2" />, ինչպես նաև <ph name="BEGIN_LINK3" />գաղտնիության ծանուցումը Family Link-ում ստեղծված Google հաշիվների համար<ph name="END_LINK3" />։</translation>
-<translation id="8730621377337864115">Պատրաստ է</translation>
 <translation id="8748850008226585750">Բովանդակությունը թաքցված է</translation>
 <translation id="8751914237388039244">Ընտրեք պատկեր</translation>
 <translation id="8758557275681689734">Բոլոր բաց ներդիրների դիտում</translation>

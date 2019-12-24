@@ -765,7 +765,7 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
       Jika kebijakan ini tidak ditetapkan, browser hanya akan mulai mencoba menghemat memori setelah mendeteksi bahwa perangkatnya memiliki jumlah memori fisik yang rendah.</translation>
 <translation id="2166472654199325139">Jangan filter konten khusus dewasa dari situs</translation>
 <translation id="2168397434410358693">Menunda waktu menganggur saat menggunakan daya AC</translation>
-<translation id="217013996107840632">Parameter baris perintah untuk beralih dari browser alternatif.</translation>
+<translation id="217013996107840632">Parameter command line untuk beralih dari browser alternatif.</translation>
 <translation id="2170233653554726857">Aktifkan pengoptimalan WPAD</translation>
 <translation id="2176565653304920879">Saat kebijakan ini disetel, alur deteksi zona waktu otomatis akan menggunakan salah satu cara berikut, tergantung nilai setelan:
 
@@ -2786,7 +2786,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="5330684698007383292">Izinkan <ph name="PRODUCT_FRAME_NAME" /> menangani jenis konten berikut</translation>
 <translation id="5331746669335642668">Kebijakan cloud <ph name="PRODUCT_NAME" /> menggantikan kebijakan Platform.</translation>
 <translation id="5362531528507578966">Mengganti mode pencetakan grafis latar belakang default.</translation>
-<translation id="5365476955714838841">Parameter baris perintah untuk browser alternatif.</translation>
+<translation id="5365476955714838841">Parameter command line untuk browser alternatif.</translation>
 <translation id="5365946944967967336">Tampilkan tombol Layar Utama di toolbar</translation>
 <translation id="5366977351895725771">Jika disetel ke false, pembuatan pengguna yang dilindungi oleh pengguna ini akan dinonaktifkan. Pengguna diawasi mana pun yang sudah ada akan tetap tersedia.
 

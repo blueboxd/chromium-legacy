@@ -4,8 +4,17 @@
 
 /** Handler of device event. */
 class DeviceHandler extends cr.EventTarget {
-  constructor() {
+  /** @param {!ProgressCenter} progressCenter */
+  constructor(progressCenter) {
     super();
+
+    /**
+     * Progress center to notify for format events.
+     * @type {!ProgressCenter}
+     * @const
+     * @private
+     */
+    this.progressCenter_ = progressCenter;
 
     /**
      * Map of device path and mount status of devices.
@@ -54,15 +63,9 @@ class DeviceHandler extends cr.EventTarget {
         DeviceHandler.Notification.DEVICE_HARD_UNPLUGGED.show(event.devicePath);
         break;
       case 'format_start':
-        DeviceHandler.Notification.FORMAT_START.show(event.devicePath);
-        break;
       case 'format_success':
-        DeviceHandler.Notification.FORMAT_START.hide(event.devicePath);
-        DeviceHandler.Notification.FORMAT_SUCCESS.show(event.devicePath);
-        break;
       case 'format_fail':
-        DeviceHandler.Notification.FORMAT_START.hide(event.devicePath);
-        DeviceHandler.Notification.FORMAT_FAIL.show(event.devicePath);
+        this.handleFormatEvent_(event);
         break;
       case 'rename_fail':
         DeviceHandler.Notification.RENAME_FAIL.show(event.devicePath);
@@ -71,6 +74,51 @@ class DeviceHandler extends cr.EventTarget {
         console.error('Unknown event type: ' + event.type);
         break;
     }
+  }
+
+  /**
+   * Handles format events and displays a notification in the progress center.
+   * @param {chrome.fileManagerPrivate.DeviceEvent} event Device event.
+   * @private
+   */
+  handleFormatEvent_(event) {
+    const item = new ProgressCenterItem();
+    item.id = 'format:' + event.devicePath;
+    item.type = ProgressItemType.FORMAT;
+    item.itemCount = 1;
+    item.progressMax = 1;
+
+    let notificationType;
+    switch (event.type) {
+      case 'format_start':
+        item.state = ProgressItemState.PROGRESSING;
+        item.message = strf('FORMAT_PROGRESS_MESSAGE', event.deviceLabel);
+        item.progressValue = 0;
+        notificationType = DeviceHandler.Notification.Type.FORMAT_START;
+        break;
+      case 'format_success':
+        item.state = ProgressItemState.COMPLETED;
+        item.message = strf('FORMAT_SUCCESS_MESSAGE', event.deviceLabel);
+        item.progressValue = 1;
+        notificationType = DeviceHandler.Notification.Type.FORMAT_SUCCESS;
+        break;
+      case 'format_fail':
+        item.state = ProgressItemState.ERROR;
+        item.message = strf('FORMAT_FAILURE_MESSAGE', event.deviceLabel);
+        item.progressValue = 0;
+        notificationType = DeviceHandler.Notification.Type.FORMAT_FAIL;
+        break;
+      default:
+        console.error('Unknown format event type: ' + event.type);
+        break;
+    }
+
+    this.progressCenter_.updateItem(item);
+
+    requestIdleCallback(
+        () => metrics.recordEnum(
+            'Notification.Show', notificationType,
+            DeviceHandler.Notification.TypesForUMA));
   }
 
   /**
@@ -746,32 +794,6 @@ DeviceHandler.Notification.DEVICE_HARD_UNPLUGGED =
     new DeviceHandler.Notification(
         DeviceHandler.Notification.Type.DEVICE_HARD_UNPLUGGED, 'hardUnplugged',
         'DEVICE_HARD_UNPLUGGED_TITLE', 'DEVICE_HARD_UNPLUGGED_MESSAGE');
-
-/**
- * @type {DeviceHandler.Notification}
- * @const
- */
-DeviceHandler.Notification.FORMAT_START = new DeviceHandler.Notification(
-    DeviceHandler.Notification.Type.FORMAT_START, 'formatStart',
-    'FORMATTING_OF_DEVICE_PENDING_TITLE',
-    'FORMATTING_OF_DEVICE_PENDING_MESSAGE');
-
-/**
- * @type {DeviceHandler.Notification}
- * @const
- */
-DeviceHandler.Notification.FORMAT_SUCCESS = new DeviceHandler.Notification(
-    DeviceHandler.Notification.Type.FORMAT_SUCCESS, 'formatSuccess',
-    'FORMATTING_OF_DEVICE_FINISHED_TITLE',
-    'FORMATTING_FINISHED_SUCCESS_MESSAGE');
-
-/**
- * @type {DeviceHandler.Notification}
- * @const
- */
-DeviceHandler.Notification.FORMAT_FAIL = new DeviceHandler.Notification(
-    DeviceHandler.Notification.Type.FORMAT_FAIL, 'formatFail',
-    'FORMATTING_OF_DEVICE_FAILED_TITLE', 'FORMATTING_FINISHED_FAILURE_MESSAGE');
 
 /**
  * @type {DeviceHandler.Notification}

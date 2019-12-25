@@ -654,8 +654,10 @@ ax::mojom::Action AXNodeData::AddAction(ax::mojom::Action action_enum) {
       ax::mojom::Action excluded_action =
           (action_enum == ax::mojom::Action::kBlur) ? ax::mojom::Action::kFocus
                                                     : ax::mojom::Action::kBlur;
-      DCHECK(HasAction(excluded_action));
-    } break;
+      DCHECK(!HasAction(excluded_action)) << excluded_action;
+      break;
+    }
+
     case ax::mojom::Action::kClearAccessibilityFocus:
     case ax::mojom::Action::kCustomAction:
     case ax::mojom::Action::kDecrement:

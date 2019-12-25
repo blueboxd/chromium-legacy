@@ -123,7 +123,7 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
   // via a callback. This should be used for attributes that change often and
   // would be queried every time a client accesses this view's AXNodeData.
   void SetPopulateDataCallback(
-      base::RepeatingCallback<void(const View&, ui::AXNodeData*)> callback);
+      base::RepeatingCallback<void(ui::AXNodeData*)> callback);
   void UnsetPopulateDataCallback();
 
   // ui::AXPlatformNodeDelegate. Note that some of these functions have
@@ -189,8 +189,7 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
 
   ui::AXUniqueId unique_id_;
   ui::AXNodeData custom_data_;
-  base::RepeatingCallback<void(const View&, ui::AXNodeData*)>
-      populate_data_callback_;
+  base::RepeatingCallback<void(ui::AXNodeData*)> populate_data_callback_;
 
   std::unique_ptr<AXVirtualViewWrapper> wrapper_;
 

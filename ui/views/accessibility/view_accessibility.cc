@@ -85,7 +85,7 @@ std::unique_ptr<AXVirtualView> ViewAccessibility::RemoveVirtualChildView(
   child->set_parent_view(nullptr);
   child->UnsetPopulateDataCallback();
   if (focused_virtual_child_ && child->Contains(focused_virtual_child_))
-    focused_virtual_child_ = nullptr;
+    OverrideFocus(nullptr);
   return child;
 }
 
@@ -298,6 +298,13 @@ Widget* ViewAccessibility::GetPreviousFocus() {
 
 gfx::NativeViewAccessible ViewAccessibility::GetNativeObject() {
   return nullptr;
+}
+
+void ViewAccessibility::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
+  // On certain platforms, e.g. Chrome OS, we don't create any
+  // AXPlatformDelegates, so the base method in this file would be called.
+  if (accessibility_events_callback_)
+    accessibility_events_callback_.Run(nullptr, event_type);
 }
 
 void ViewAccessibility::AnnounceText(const base::string16& text) {

@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_STORAGE_NOTIFICATION_SERVICE_H_
 
 #include "base/bind.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -23,7 +24,8 @@ class StorageNotificationService {
   // is passed to QuotaManager in StoragePartitionImpl, where it is called
   // when QuotaManager determines appropriate to alert the user that the device
   // is in a state of storage pressure.
-  virtual base::RepeatingClosure GetStoragePressureNotificationClosure() = 0;
+  virtual base::RepeatingCallback<void(const url::Origin)>
+  GetStoragePressureNotificationClosure() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StorageNotificationService);

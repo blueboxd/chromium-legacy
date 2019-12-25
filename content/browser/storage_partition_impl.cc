@@ -63,6 +63,7 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/session_storage_usage_info.h"
+#include "content/public/browser/storage_notification_service.h"
 #include "content/public/browser/storage_usage_info.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -1201,6 +1202,24 @@ void StoragePartitionImpl::Initialize() {
                           weak_factory_.GetWeakPtr()));
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy =
       quota_manager_->proxy();
+
+  StorageNotificationService* storage_notification_service =
+      browser_context_->GetStorageNotificationService();
+  if (storage_notification_service) {
+    base::RepeatingCallback<void(const url::Origin)>
+        send_notification_function = base::BindRepeating(
+            [](scoped_refptr<base::SequencedTaskRunner> runner,
+               const base::RepeatingCallback<void(url::Origin)>& callback,
+               const url::Origin origin) {
+              base::PostTask(FROM_HERE, {BrowserThread::UI},
+                             base::BindRepeating(callback, std::move(origin)));
+            },
+            base::CreateSingleThreadTaskRunner({BrowserThread::UI}),
+            storage_notification_service
+                ->GetStoragePressureNotificationClosure());
+
+    quota_manager_->SetStoragePressureCallback(send_notification_function);
+  }
 
   // Each consumer is responsible for registering its QuotaClient during
   // its construction.

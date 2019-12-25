@@ -15,10 +15,8 @@ class StorageNotificationServiceImpl
  public:
   StorageNotificationServiceImpl();
   ~StorageNotificationServiceImpl() override;
-  base::RepeatingClosure GetStoragePressureNotificationClosure() override;
-
- private:
-  Profile* profile_;
+  base::RepeatingCallback<void(const url::Origin)>
+  GetStoragePressureNotificationClosure() override;
 };
 
 #endif  // CHROME_BROWSER_STORAGE_STORAGE_NOTIFICATION_SERVICE_IMPL_H_

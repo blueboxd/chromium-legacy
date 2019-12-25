@@ -7165,12 +7165,10 @@ TEST_F(RenderTextTest, TeluguGraphemeBoundaries) {
   render_text->SetCursorPosition(4);
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, SELECTION_RETAIN);
   EXPECT_EQ(Range(4, 0), render_text->selection());
-  test_api()->EnsureLayout();
 
   // The cursor is already at the boundary, so there should be no change.
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, SELECTION_RETAIN);
   EXPECT_EQ(Range(4, 0), render_text->selection());
-  test_api()->EnsureLayout();
 
   // The selection should cover the entire width.
   Rect selection_bounds = GetSelectionBoundsUnion();

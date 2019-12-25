@@ -12,14 +12,14 @@
 #include "content/public/common/origin_util.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
 ManifestWebAppBrowserController::ManifestWebAppBrowserController(
     Browser* browser)
-    : AppBrowserController(browser, /*app_id=*/base::nullopt),
-      app_launch_url_(GURL()) {}
+    : AppBrowserController(browser, /*app_id=*/base::nullopt) {}
 
 ManifestWebAppBrowserController::~ManifestWebAppBrowserController() = default;
 
@@ -83,14 +83,49 @@ GURL ManifestWebAppBrowserController::GetAppLaunchURL() const {
 }
 
 bool ManifestWebAppBrowserController::IsUrlInAppScope(const GURL& url) const {
-  // TODO(981703): Use the scope in the manifest instead of same origin check.
-  return url::IsSameOriginWith(GetAppLaunchURL(), url);
+  // Prefer to use manifest scope URL if available; fall back to app launch URL
+  // if not available. Manifest fallback is always launch URL minus filename,
+  // query, and fragment.
+  const GURL scope_url = !manifest_scope_.is_empty()
+                             ? manifest_scope_
+                             : GetAppLaunchURL().GetWithoutFilename();
+
+  return IsInScope(url, scope_url);
 }
 
 void ManifestWebAppBrowserController::OnTabInserted(
     content::WebContents* contents) {
-  if (app_launch_url_.is_empty())
+  // Since we are experimenting with multi-tab PWAs, we only try to load the
+  // manifest if this is the first web contents being loaded in this window.
+  DCHECK(!browser()->tab_strip_model()->empty());
+  if (browser()->tab_strip_model()->count() == 1) {
     app_launch_url_ = contents->GetURL();
+    contents->GetManifest(
+        base::BindOnce(&ManifestWebAppBrowserController::OnManifestLoaded,
+                       weak_factory_.GetWeakPtr()));
+  }
   AppBrowserController::OnTabInserted(contents);
   UpdateCustomTabBarVisibility(false);
+}
+
+void ManifestWebAppBrowserController::OnManifestLoaded(
+    const GURL& manifest_url,
+    const blink::Manifest& manifest) {
+  manifest_scope_ = manifest.scope;
+}
+
+// static
+bool ManifestWebAppBrowserController::IsInScope(const GURL& url,
+                                                const GURL& scope) {
+  if (!url::IsSameOriginWith(scope, url))
+    return false;
+
+  std::string scope_path = scope.path();
+  if (base::EndsWith(scope_path, "/", base::CompareCase::SENSITIVE))
+    scope_path = scope_path.substr(0, scope_path.length() - 1);
+
+  const std::string url_path = url.path();
+  return url_path == scope_path ||
+         base::StartsWith(url_path, scope_path + "/",
+                          base::CompareCase::SENSITIVE);
 }

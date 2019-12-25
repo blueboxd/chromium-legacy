@@ -2,17 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
-/**
- * Namespace for the Camera app.
- */
-var cca = cca || {};
-
-/**
- * Namespace for utilities.
- */
-cca.util = cca.util || {};
+import {ChromeHelper} from './mojo/chrome_helper.js';
+import * as tooltip from './tooltip.js';
+import {Resolution} from './type.js';
 
 /**
  * Gets the clockwise rotation and flip that can orient a photo to its upright
@@ -20,7 +12,7 @@ cca.util = cca.util || {};
  * @param {!Blob} blob JPEG blob that might contain EXIF orientation field.
  * @return {Promise<Object<number, boolean>>}
  */
-cca.util.getPhotoOrientation = function(blob) {
+function getPhotoOrientation(blob) {
   let getOrientation = new Promise((resolve, reject) => {
     let reader = new FileReader();
     reader.onload = function(event) {
@@ -85,7 +77,7 @@ cca.util.getPhotoOrientation = function(blob) {
         return {rotation: 0, flip: false};
     }
   });
-};
+}
 
 /**
  * Orients a photo to the upright orientation.
@@ -94,7 +86,7 @@ cca.util.getPhotoOrientation = function(blob) {
  *     a blob.
  * @param {function()} onFailure Failure callback.
  */
-cca.util.orientPhoto = function(blob, onSuccess, onFailure) {
+export function orientPhoto(blob, onSuccess, onFailure) {
   // TODO(shenghao): Revise or remove this function if it's no longer
   // applicable.
   let drawPhoto = function(original, orientation, onSuccess, onFailure) {
@@ -110,8 +102,9 @@ cca.util.orientPhoto = function(blob, onSuccess, onFailure) {
     if (orientation.flip) {
       context.scale(-1, 1);
     }
-    context.drawImage(original, -original.width / 2, -original.height / 2,
-        original.width, original.height);
+    context.drawImage(
+        original, -original.width / 2, -original.height / 2, original.width,
+        original.height);
     if (orientation.flip) {
       context.scale(-1, 1);
     }
@@ -128,8 +121,8 @@ cca.util.orientPhoto = function(blob, onSuccess, onFailure) {
     }
     let imageData = context.getImageData(
         (canvasSquareLength - outputCanvas.width) / 2,
-        (canvasSquareLength - outputCanvas.height) / 2,
-        outputCanvas.width, outputCanvas.height);
+        (canvasSquareLength - outputCanvas.height) / 2, outputCanvas.width,
+        outputCanvas.height);
     let outputContext = outputCanvas.getContext('2d');
     outputContext.putImageData(imageData, 0, 0);
 
@@ -142,7 +135,7 @@ cca.util.orientPhoto = function(blob, onSuccess, onFailure) {
     }, 'image/jpeg');
   };
 
-  cca.util.getPhotoOrientation(blob).then((orientation) => {
+  getPhotoOrientation(blob).then((orientation) => {
     if (orientation.rotation === 0 && !orientation.flip) {
       onSuccess(blob);
     } else {
@@ -154,24 +147,7 @@ cca.util.orientPhoto = function(blob, onSuccess, onFailure) {
       original.src = URL.createObjectURL(blob);
     }
   });
-};
-
-/**
- * Animates the element once by applying 'animate' class.
- * @param {HTMLElement} element Element to be animated.
- * @param {function()=} callback Callback called on completion.
- */
-cca.util.animateOnce = function(element, callback) {
-  cca.util.animateCancel(element).then(() => {
-    element.classList.add('animate');
-    cca.util.waitAnimationCompleted(element).finally(() => {
-      element.classList.remove('animate');
-      if (callback) {
-        callback();
-      }
-    });
-  });
-};
+}
 
 /**
  * Cancels animating the element by removing 'animate' class.
@@ -179,7 +155,7 @@ cca.util.animateOnce = function(element, callback) {
  * @return {!Promise} Promise resolved when ongoing animation is canceled and
  *     next animation can be safely applied.
  */
-cca.util.animateCancel = function(element) {
+export function animateCancel(element) {
   element.classList.remove('animate');
   element.classList.add('cancel-animate');
   /** @suppress {suspiciousCode} */
@@ -188,7 +164,7 @@ cca.util.animateCancel = function(element) {
   // Assumes transitioncancel, transitionend, animationend events from previous
   // animation are all cleared after requestAnimationFrame().
   return new Promise((r) => requestAnimationFrame(r));
-};
+}
 
 /**
  * Waits for animation completed.
@@ -196,7 +172,7 @@ cca.util.animateCancel = function(element) {
  * @return {!Promise} Promise is resolved/rejected when animation is
  *     completed/cancelled.
  */
-cca.util.waitAnimationCompleted = function(element) {
+function waitAnimationCompleted(element) {
   return new Promise((resolve, reject) => {
     let animationCount = 0;
     const onStart = (event) =>
@@ -210,8 +186,7 @@ cca.util.waitAnimationCompleted = function(element) {
     };
     const rejectWithError = () => reject(new Error('Animation is cancelled.'));
     const events = [
-      ['transitionrun', onStart],
-      ['animationstart', onStart],
+      ['transitionrun', onStart], ['animationstart', onStart],
       ['transitionend', (event) => onFinished(event, resolve)],
       ['animationend', (event) => onFinished(event, resolve)],
       ['transitioncancel', (event) => onFinished(event, rejectWithError)],
@@ -219,18 +194,34 @@ cca.util.waitAnimationCompleted = function(element) {
     ];
     events.forEach(([e, fn]) => element.addEventListener(e, fn));
   });
-};
+}
+
+/**
+ * Animates the element once by applying 'animate' class.
+ * @param {HTMLElement} element Element to be animated.
+ * @param {function()=} callback Callback called on completion.
+ */
+export function animateOnce(element, callback) {
+  animateCancel(element).then(() => {
+    element.classList.add('animate');
+    waitAnimationCompleted(element).finally(() => {
+      element.classList.remove('animate');
+      if (callback) {
+        callback();
+      }
+    });
+  });
+}
 
 /**
  * Returns a shortcut string, such as Ctrl-Alt-A.
  * @param {Event} event Keyboard event.
  * @return {string} Shortcut identifier.
  */
-cca.util.getShortcutIdentifier = function(event) {
+export function getShortcutIdentifier(event) {
   var identifier = (event.ctrlKey ? 'Ctrl-' : '') +
-                   (event.altKey ? 'Alt-' : '') +
-                   (event.shiftKey ? 'Shift-' : '') +
-                   (event.metaKey ? 'Meta-' : '');
+      (event.altKey ? 'Alt-' : '') + (event.shiftKey ? 'Shift-' : '') +
+      (event.metaKey ? 'Meta-' : '');
   if (event.key) {
     switch (event.key) {
       case 'ArrowLeft':
@@ -257,41 +248,41 @@ cca.util.getShortcutIdentifier = function(event) {
     }
   }
   return identifier;
-};
+}
 
 /**
  * Makes the element unfocusable by mouse.
  * @param {HTMLElement} element Element to be unfocusable.
  */
-cca.util.makeUnfocusableByMouse = function(element) {
+export function makeUnfocusableByMouse(element) {
   element.addEventListener('mousedown', (event) => event.preventDefault());
-};
+}
 
 /**
  * Checks if the window is maximized or fullscreen.
  * @return {boolean} True if maximized or fullscreen, false otherwise.
  */
-cca.util.isWindowFullSize = function() {
+export function isWindowFullSize() {
   // App-window's isFullscreen, isMaximized state and window's outer-size may
   // not be updated immediately during resizing. Use if app-window's outerBounds
   // width matches screen width here as workarounds.
   return chrome.app.window.current().outerBounds.width >= screen.width ||
       chrome.app.window.current().outerBounds.height >= screen.height;
-};
+}
 
 /**
  * Opens help.
  */
-cca.util.openHelp = function() {
+export function openHelp() {
   window.open(
       'https://support.google.com/chromebook/?p=camera_usage_on_chromebook');
-};
+}
 
 /**
  * Sets up i18n messages on DOM subtree by i18n attributes.
  * @param {!HTMLElement} rootElement Root of DOM subtree to be set up with.
  */
-cca.util.setupI18nElements = function(rootElement) {
+export function setupI18nElements(rootElement) {
   var getElements = (attr) => rootElement.querySelectorAll('[' + attr + ']');
   var getMessage = (element, attr) =>
       chrome.i18n.getMessage(element.getAttribute(attr));
@@ -312,9 +303,9 @@ cca.util.setupI18nElements = function(rootElement) {
               'tooltip-false', getMessage(element, 'i18n-tooltip-false')));
   getElements('i18n-aria')
       .forEach((element) => setAriaLabel(element, 'i18n-aria'));
-  cca.tooltip.setup(getElements('i18n-label'))
+  tooltip.setup(getElements('i18n-label'))
       .forEach((element) => setAriaLabel(element, 'i18n-label'));
-};
+}
 
 /**
  * Reads blob into Image.
@@ -322,24 +313,23 @@ cca.util.setupI18nElements = function(rootElement) {
  * @return {!Promise<!HTMLImageElement>}
  * @throws {Error}
  */
-cca.util.blobToImage = function(blob) {
+export function blobToImage(blob) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => resolve(img);
     img.onerror = () => reject(new Error('Failed to load unprocessed image'));
     img.src = URL.createObjectURL(blob);
   });
-};
+}
 
 /**
  * Gets default facing according to device mode.
  * @return {!Promise<string>}
  */
-cca.util.getDefaultFacing = async function() {
-  return await cca.mojo.ChromeHelper.getInstance().isTabletMode() ?
-      'environment' :
-      'user';
-};
+export async function getDefaultFacing() {
+  return await ChromeHelper.getInstance().isTabletMode() ? 'environment' :
+                                                           'user';
+}
 
 /**
  * Scales the input picture to target width and height with respect to original
@@ -351,9 +341,8 @@ cca.util.getDefaultFacing = async function() {
  *     corresponding rounded height with respect to target width and aspect
  *     ratio of input picture.
  * @return {!Promise<!Blob>} Promise for the result.
- * @private
  */
-cca.util.scalePicture = function(url, isVideo, width, height = undefined) {
+export function scalePicture(url, isVideo, width, height = undefined) {
   const element = document.createElement(isVideo ? 'video' : 'img');
   if (isVideo) {
     element.preload = 'auto';
@@ -384,29 +373,29 @@ cca.util.scalePicture = function(url, isVideo, width, height = undefined) {
           }, 'image/jpeg');
         });
       });
-};
+}
 
 /**
  * Toggle checked value of element.
  * @param {!HTMLInputElement} element
  * @param {boolean} checked
  */
-cca.util.toggleChecked = function(element, checked) {
+export function toggleChecked(element, checked) {
   element.checked = checked;
   element.dispatchEvent(new Event('change'));
-};
+}
 
 /**
  * Sets CCA window inner bound to size which can fit in current screen.
  * @return {!Promise} Promise which is resolved when size change actually
  *     happen or is resolved immediately when there is no need to change.
  */
-cca.util.fitWindow = function() {
+export function fitWindow() {
   const appWindow = chrome.app.window.current();
 
   /**
    * Get a preferred window size which can fit in current screen.
-   * @return {cca.Resolution} Preferred window size.
+   * @return {Resolution} Preferred window size.
    */
   const getPreferredWindowSize = () => {
     const inner = appWindow.innerBounds;
@@ -424,7 +413,7 @@ cca.util.fitWindow = function() {
     preferredWidth -= preferredWidth % 16;
     const preferredHeight = preferredWidth * 9 / 16;
 
-    return new cca.Resolution(preferredWidth, preferredHeight);
+    return new Resolution(preferredWidth, preferredHeight);
   };
 
   const {width, height} = getPreferredWindowSize();
@@ -444,4 +433,31 @@ cca.util.fitWindow = function() {
 
     Object.assign(inner, {width, height, minWidth: width, minHeight: height});
   });
-};
+}
+
+/** @const */
+cca.util.orientPhoto = orientPhoto;
+/** @const */
+cca.util.animateCancel = animateCancel;
+/** @const */
+cca.util.animateOnce = animateOnce;
+/** @const */
+cca.util.getShortcutIdentifier = getShortcutIdentifier;
+/** @const */
+cca.util.makeUnfocusableByMouse = makeUnfocusableByMouse;
+/** @const */
+cca.util.isWindowFullSize = isWindowFullSize;
+/** @const */
+cca.util.openHelp = openHelp;
+/** @const */
+cca.util.setupI18nElements = setupI18nElements;
+/** @const */
+cca.util.blobToImage = blobToImage;
+/** @const */
+cca.util.getDefaultFacing = getDefaultFacing;
+/** @const */
+cca.util.scalePicture = scalePicture;
+/** @const */
+cca.util.toggleChecked = toggleChecked;
+/** @const */
+cca.util.fitWindow = fitWindow;

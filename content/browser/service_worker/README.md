@@ -21,10 +21,83 @@
 [ServiceWorkerDatabase]: https://codesearch.chromium.org/chromium/src/content/browser/service_worker/service_worker_database.h
 [ServiceWorkerStorage]: https://codesearch.chromium.org/chromium/src/content/browser/service_worker/service_worker_storage.h
 [Service Worker specification]: https://w3c.github.io/ServiceWorker/
+[MDN documentation]: https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API
 
-This is Chromium's implementation of [service
+This document describes Chromium's implementation of [service
 workers](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API).
-See the [Service Worker specification].
+
+## Introduction to service workers
+
+This section briefly introduces what service workers are. For a more detailed
+treatment, see the [MDN documentation] or the [Service Worker specification].
+
+Service workers are a web platform feature that form the basis of app-like
+capabilities such as offline support, push notifications, and background sync.
+A service worker is a event-driven JavaScript program that runs in a worker
+thread separate from a document.
+
+Once registered, a service worker is installed on the browser and persists
+indefinitely until evicted or deleted manually (see [Eviction](#Eviction)
+below). The browser dispatches events to the worker thread, starting the
+thread whenever needed and stopping it when there are no more events to
+dispatch.
+
+Service workers are bound to an origin. More specifically they have a *scope*
+URL, specified when the service worker is registered. The service worker
+*controls* pages or web workers that match its scope. There can be only one
+service worker registration for a given scope.
+
+A website registers a service worker using the `register()` API:
+```javascript
+navigator.serviceWorker.register('sw.js', {scope: './foo'});
+```
+
+If this page is on `https://example.com`, the service worker is registered for
+scope `https://example.com/foo`.
+
+The service worker may look like this:
+
+```javascript
+// sw.js:
+self.addEventListener('install', event => {
+  // Install static assets.
+  event.waitUntil((async () => {
+    const cache = await caches.open('my-cache');
+    await cache.addAll(['all.css', 'page.js', 'page.html']);
+  })());
+});
+
+self.addEventListener('fetch', event => {
+  // Respond with a cached resource, or else fetch from network.
+  event.respondWith((async () => {
+    const response = await caches.match(event.request);
+    return response || fetch(event.request);
+  })());
+});
+```
+
+Note the `fetch` event handler. A core functionality of service workers is the
+ability to intercept and respond to URL requests, similar to a network proxy.
+Whenever the browser makes a URL request that a service worker can intercept, it
+dispatches a `fetch` event to the worker. The service worker can then provide a
+response to the request, for example, by using the Fetch API, the Cache Storage
+API, or by generating a response using `new Response()`.
+
+To understand which service worker intercepts a URL request, there are two
+rules.
+
+1. *Main resource requests* are requests for a window or a web worker. When the
+   browser makes a main resource request, it finds the service worker
+   registration whose scope contains the URL, if any (example:
+   `https://example.com/foo/hi` matches the service worker above). If so, that
+   service worker intercepts the request, and the service worker subsequently
+   controls the resulting window or web worker.
+2. *Subresource requests* are requests from a window or a web worker, such as
+   for stylesheets, scripts, or images. The service worker that controls the
+   window or web worker intercepts these requests.
+
+The rest of this document explains how service workers are implemented in
+Chromium.
 
 ## Directory structure
 

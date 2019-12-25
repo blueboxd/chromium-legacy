@@ -1173,7 +1173,11 @@ content::PushMessagingService* ProfileImpl::GetPushMessagingService() {
 
 content::StorageNotificationService*
 ProfileImpl::GetStorageNotificationService() {
+#if defined(OS_ANDROID)
+  return nullptr;
+#else
   return StorageNotificationServiceFactory::GetForBrowserContext(this);
+#endif
 }
 
 content::SSLHostStateDelegate* ProfileImpl::GetSSLHostStateDelegate() {

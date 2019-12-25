@@ -42,7 +42,7 @@ class Widget;
 class VIEWS_EXPORT ViewAccessibility {
  public:
   using AccessibilityEventsCallback =
-      base::RepeatingCallback<void(const ui::AXPlatformNodeDelegate& view,
+      base::RepeatingCallback<void(const ui::AXPlatformNodeDelegate*,
                                    const ax::mojom::Event)>;
   using AXVirtualViews = AXVirtualView::AXVirtualViews;
 
@@ -98,7 +98,7 @@ class VIEWS_EXPORT ViewAccessibility {
   Widget* GetPreviousFocus();
 
   virtual gfx::NativeViewAccessible GetNativeObject();
-  virtual void NotifyAccessibilityEvent(ax::mojom::Event event_type) {}
+  virtual void NotifyAccessibilityEvent(ax::mojom::Event event_type);
 
   // Causes the screen reader to announce |text|. If the current user is not
   // using a screen reader, has no effect.

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
@@ -17,6 +18,10 @@
 #include "third_party/skia/include/core/SkColor.h"
 
 class Browser;
+
+namespace blink {
+struct Manifest;
+}
 
 namespace gfx {
 class ImageSkia;
@@ -44,7 +49,15 @@ class ManifestWebAppBrowserController : public web_app::AppBrowserController {
   void OnTabInserted(content::WebContents* contents) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ManifestWebAppBrowserControllerTest, IsInScope);
+  void OnManifestLoaded(const GURL& manifest_url,
+                        const blink::Manifest& manifest);
+
+  static bool IsInScope(const GURL& url, const GURL& scope);
+
   GURL app_launch_url_;
+  GURL manifest_scope_;
+  base::WeakPtrFactory<ManifestWebAppBrowserController> weak_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_UI_MANIFEST_WEB_APP_BROWSER_CONTROLLER_H_

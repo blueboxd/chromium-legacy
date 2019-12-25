@@ -16,6 +16,7 @@
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/view.h"
@@ -193,10 +194,10 @@ gfx::NativeViewAccessible AXVirtualView::GetNativeObject() const {
 void AXVirtualView::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
   DCHECK(ax_platform_node_);
   if (GetOwnerView()) {
-    const auto& events_callback =
+    const ViewAccessibility::AccessibilityEventsCallback& events_callback =
         GetOwnerView()->GetViewAccessibility().accessibility_events_callback();
     if (events_callback)
-      events_callback.Run(*this, event_type);
+      events_callback.Run(this, event_type);
   }
   ax_platform_node_->NotifyAccessibilityEvent(event_type);
 }
@@ -206,7 +207,7 @@ ui::AXNodeData& AXVirtualView::GetCustomData() {
 }
 
 void AXVirtualView::SetPopulateDataCallback(
-    base::RepeatingCallback<void(const View&, ui::AXNodeData*)> callback) {
+    base::RepeatingCallback<void(ui::AXNodeData*)> callback) {
   populate_data_callback_ = std::move(callback);
 }
 
@@ -234,7 +235,7 @@ const ui::AXNodeData& AXVirtualView::GetData() const {
     node_data.AddAction(ax::mojom::Action::kShowContextMenu);
 
   if (populate_data_callback_ && GetOwnerView())
-    populate_data_callback_.Run(*GetOwnerView(), &node_data);
+    populate_data_callback_.Run(&node_data);
   return node_data;
 }
 
@@ -345,7 +346,27 @@ gfx::AcceleratedWidget AXVirtualView::GetTargetForNativeAccessibilityEvent() {
 
 bool AXVirtualView::HandleAccessibleAction(
     const ui::AXActionData& action_data) {
-  return false;
+  if (!GetOwnerView())
+    return false;
+
+  switch (action_data.action) {
+    case ax::mojom::Action::kShowContextMenu: {
+      const gfx::Rect screen_bounds = GetBoundsRect(
+          ui::AXCoordinateSystem::kScreen, ui::AXClippingBehavior::kClipped,
+          nullptr /* offscreen_result */);
+      if (!screen_bounds.IsEmpty()) {
+        GetOwnerView()->ShowContextMenu(screen_bounds.CenterPoint(),
+                                        ui::MENU_SOURCE_KEYBOARD);
+        return true;
+      }
+      break;
+    }
+
+    default:
+      break;
+  }
+
+  return GetOwnerView()->HandleAccessibleAction(action_data);
 }
 
 View* AXVirtualView::GetOwnerView() const {

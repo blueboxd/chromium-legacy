@@ -1422,8 +1422,6 @@ void RenderText::SetSelectionModel(const SelectionModel& model) {
   selection_model_ = model;
   cached_bounds_and_offset_valid_ = false;
   has_directed_selection_ = kSelectionIsAlwaysDirected;
-
-  OnLayoutTextAttributeChanged(false);
 }
 
 size_t RenderText::TextIndexToDisplayIndex(size_t index) const {

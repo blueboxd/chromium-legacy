@@ -19,12 +19,22 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
 
+namespace ui {
+
+struct AXActionData;
+struct AXNodeData;
+
+}  // namespace ui
+
 namespace gfx {
+
 class Rect;
+
 }  // namespace gfx
 
 namespace views {
 
+class AXVirtualView;
 class PrefixSelector;
 class ScrollView;
 class Textfield;
@@ -86,8 +96,12 @@ class VIEWS_EXPORT TreeView : public View,
   // Selects the specified node. This expands all the parents of node.
   void SetSelectedNode(ui::TreeModelNode* model_node);
 
-  // Returns the selected node, or NULL if nothing is selected.
-  ui::TreeModelNode* GetSelectedNode();
+  // Returns the selected node, or nullptr if nothing is selected.
+  ui::TreeModelNode* GetSelectedNode() {
+    return const_cast<ui::TreeModelNode*>(
+        const_cast<const TreeView*>(this)->GetSelectedNode());
+  }
+  const ui::TreeModelNode* GetSelectedNode() const;
 
   // Marks |model_node| as collapsed. This only effects the UI if node and all
   // its parents are expanded (IsExpanded(model_node) returns true).
@@ -138,6 +152,7 @@ class VIEWS_EXPORT TreeView : public View,
   void ShowContextMenu(const gfx::Point& p,
                        ui::MenuSourceType source_type) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  bool HandleAccessibleAction(const ui::AXActionData& action_data) override;
 
   // TreeModelObserver overrides:
   void TreeNodesAdded(ui::TreeModel* model,
@@ -195,6 +210,16 @@ class VIEWS_EXPORT TreeView : public View,
     // The model node this InternalNode represents.
     ui::TreeModelNode* model_node() { return model_node_; }
 
+    // Gets or sets a virtual accessibility view that is used to expose
+    // information about this node to assistive software.
+    //
+    // This is a weak pointer. This class doesn't own its virtual accessibility
+    // view but the Views system does.
+    void set_accessibility_view(AXVirtualView* accessibility_view) {
+      accessibility_view_ = accessibility_view;
+    }
+    AXVirtualView* accessibility_view() const { return accessibility_view_; }
+
     // Whether the node is expanded.
     void set_is_expanded(bool expanded) { is_expanded_ = expanded; }
     bool is_expanded() const { return is_expanded_; }
@@ -219,6 +244,13 @@ class VIEWS_EXPORT TreeView : public View,
    private:
     // The node from the model.
     ui::TreeModelNode* model_node_ = nullptr;
+
+    // A virtual accessibility view that is used to expose information about
+    // this node to assistive software.
+    //
+    // This is a weak pointer. This class doesn't own its virtual accessibility
+    // view but the Views system does.
+    AXVirtualView* accessibility_view_ = nullptr;
 
     // Whether the children have been loaded.
     bool loaded_children_ = false;
@@ -262,8 +294,24 @@ class VIEWS_EXPORT TreeView : public View,
   // when a node changes as well as when loading.
   void ConfigureInternalNode(ui::TreeModelNode* model_node, InternalNode* node);
 
+  // Returns whether the given node is the root.
+  bool IsRoot(const InternalNode* node) const;
+
   // Sets |node|s text_width.
   void UpdateNodeTextWidth(InternalNode* node);
+
+  // Creates a virtual accessibility view that is used to expose information
+  // about this node to assistive software.
+  //
+  // Also attaches the newly created virtual accessibility view to the internal
+  // node.
+  std::unique_ptr<AXVirtualView> CreateAndSetAccessibilityView(
+      InternalNode* node);
+
+  // Populates the accessibility data for a tree item. This is data that can
+  // dynamically change, such as whether a tree item is expanded, and if it's
+  // visible.
+  void PopulateAccessibilityData(InternalNode* node, ui::AXNodeData* data);
 
   // Invoked when the set of drawn nodes changes.
   void DrawnNodesChanged();
@@ -303,7 +351,7 @@ class VIEWS_EXPORT TreeView : public View,
                      InternalNode* node,
                      const gfx::Rect& bounds);
 
-  // Returns the InternalNode for a model node. |create_type| indicates wheter
+  // Returns the InternalNode for a model node. |create_type| indicates whether
   // this should load InternalNode or not.
   InternalNode* GetInternalNodeForModelNode(
       ui::TreeModelNode* model_node,
@@ -343,7 +391,7 @@ class VIEWS_EXPORT TreeView : public View,
   // Returns the row and depth of the specified node.
   InternalNode* GetNodeByRow(int row, int* depth);
 
-  // Implementation of GetNodeByRow. |curent_row| is updated as we iterate.
+  // Implementation of GetNodeByRow. |current_row| is updated as we iterate.
   InternalNode* GetNodeByRowImpl(InternalNode* node,
                                  int target_row,
                                  int current_depth,
@@ -393,7 +441,7 @@ class VIEWS_EXPORT TreeView : public View,
   bool editing_ = false;
 
   // The editor; lazily created and never destroyed (well, until TreeView is
-  // destroyed). Hidden when no longer editing. We do this avoid destruction
+  // destroyed). Hidden when no longer editing. We do this to avoid destruction
   // problems.
   Textfield* editor_ = nullptr;
 

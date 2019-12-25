@@ -13,6 +13,7 @@
 #include "base/numerics/ranges.h"
 #include "build/build_config.h"
 #include "components/vector_icons/vector_icons.h"
+#include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ime/input_method.h"
@@ -24,6 +25,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -31,6 +33,8 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/views/accessibility/ax_virtual_view.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/prefix_selector.h"
@@ -75,6 +79,7 @@ bool EventIsDoubleTapOrClick(const ui::LocatedEvent& event) {
 }
 
 }  // namespace
+
 TreeView::TreeView()
     : row_height_(font_list_.GetHeight() + kTextVerticalPadding * 2),
       drawing_provider_(std::make_unique<TreeViewDrawingProvider>()) {
@@ -140,15 +145,30 @@ void TreeView::SetModel(TreeModel* model) {
     model_->AddObserver(this);
     model_->GetIcons(&icons_);
 
+    GetViewAccessibility().RemoveAllVirtualChildViews();
     root_.DeleteAll();
     ConfigureInternalNode(model_->GetRoot(), &root_);
+    std::unique_ptr<AXVirtualView> ax_root_view =
+        CreateAndSetAccessibilityView(&root_);
+    GetViewAccessibility().AddVirtualChildView(std::move(ax_root_view));
     LoadChildren(&root_);
     root_.set_is_expanded(true);
+
     if (root_shown_)
       selected_node_ = &root_;
     else if (!root_.children().empty())
       selected_node_ = root_.children().front().get();
+
+    if (selected_node_) {
+      AXVirtualView* ax_selected_view = selected_node_->accessibility_view();
+      if (ax_selected_view) {
+        GetViewAccessibility().OverrideFocus(ax_selected_view);
+        ax_selected_view->NotifyAccessibilityEvent(
+            ax::mojom::Event::kSelection);
+      }
+    }
   }
+
   DrawnNodesChanged();
 }
 
@@ -275,12 +295,19 @@ void TreeView::SetSelectedNode(TreeModelNode* model_node) {
     controller_->OnTreeViewSelectionChanged(this);
 
   if (changed) {
-    NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
-    NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
+    AXVirtualView* ax_selected_view =
+        selected_node_ ? selected_node_->accessibility_view() : nullptr;
+    if (ax_selected_view) {
+      GetViewAccessibility().OverrideFocus(ax_selected_view);
+      ax_selected_view->NotifyAccessibilityEvent(ax::mojom::Event::kSelection);
+    } else {
+      GetViewAccessibility().OverrideFocus(nullptr);
+      NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
+    }
   }
 }
 
-TreeModelNode* TreeView::GetSelectedNode() {
+const TreeModelNode* TreeView::GetSelectedNode() const {
   return selected_node_ ? selected_node_->model_node() : nullptr;
 }
 
@@ -299,13 +326,30 @@ void TreeView::Collapse(ui::TreeModelNode* model_node) {
       SetSelectedNode(model_node);
     node->set_is_expanded(false);
   }
-  if (was_expanded)
+  if (was_expanded) {
     DrawnNodesChanged();
+    AXVirtualView* ax_view = node->accessibility_view();
+    if (ax_view) {
+      ax_view->NotifyAccessibilityEvent(ax::mojom::Event::kStateChanged);
+      ax_view->NotifyAccessibilityEvent(ax::mojom::Event::kRowCollapsed);
+    }
+    NotifyAccessibilityEvent(ax::mojom::Event::kRowCountChanged, true);
+  }
 }
 
 void TreeView::Expand(TreeModelNode* node) {
-  if (ExpandImpl(node))
+  if (ExpandImpl(node)) {
     DrawnNodesChanged();
+    InternalNode* internal_node =
+        GetInternalNodeForModelNode(node, DONT_CREATE_IF_NOT_LOADED);
+    AXVirtualView* ax_view =
+        internal_node ? internal_node->accessibility_view() : nullptr;
+    if (ax_view) {
+      ax_view->NotifyAccessibilityEvent(ax::mojom::Event::kStateChanged);
+      ax_view->NotifyAccessibilityEvent(ax::mojom::Event::kRowExpanded);
+    }
+    NotifyAccessibilityEvent(ax::mojom::Event::kRowCountChanged, true);
+  }
   // TODO: need to support auto_expand_children_.
 }
 
@@ -319,8 +363,18 @@ void TreeView::ExpandAll(TreeModelNode* node) {
     if (ExpandImpl(child))
       expanded_at_least_one = true;
   }
-  if (expanded_at_least_one)
+  if (expanded_at_least_one) {
     DrawnNodesChanged();
+    InternalNode* internal_node =
+        GetInternalNodeForModelNode(node, DONT_CREATE_IF_NOT_LOADED);
+    AXVirtualView* ax_view =
+        internal_node ? internal_node->accessibility_view() : nullptr;
+    if (ax_view) {
+      ax_view->NotifyAccessibilityEvent(ax::mojom::Event::kStateChanged);
+      ax_view->NotifyAccessibilityEvent(ax::mojom::Event::kRowExpanded);
+    }
+    NotifyAccessibilityEvent(ax::mojom::Event::kRowCountChanged, true);
+  }
 }
 
 bool TreeView::IsExpanded(TreeModelNode* model_node) {
@@ -350,6 +404,12 @@ void TreeView::SetRootShown(bool root_shown) {
     const auto& children = model_->GetChildren(root_.model_node());
     SetSelectedNode(children.empty() ? nullptr : children.front());
   }
+
+  AXVirtualView* ax_view = root_.accessibility_view();
+  // There should always be a virtual accessibility view for the root, unless
+  // someone calls this method before setting a model.
+  if (ax_view)
+    ax_view->NotifyAccessibilityEvent(ax::mojom::Event::kStateChanged);
   DrawnNodesChanged();
 }
 
@@ -426,22 +486,58 @@ void TreeView::ShowContextMenu(const gfx::Point& p,
 }
 
 void TreeView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  // ID, class name and relative bounds are added by ViewAccessibility for all
+  // non-virtual views, so we don't need to add them here.
   node_data->role = ax::mojom::Role::kTree;
+  node_data->AddState(ax::mojom::State::kVertical);
   node_data->SetRestriction(ax::mojom::Restriction::kReadOnly);
-  // TODO(aleventhal): The tree view accessibility implementation is misusing
-  // the name field. It should really be using selection events for the
-  // currently selected item. The name field should be for for the label
-  // if there is one, otherwise something that would work in place of a label.
-  // See http://crbug.com/811277.
+  node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kActivate);
+  node_data->SetNameExplicitlyEmpty();
+}
 
-  if (!selected_node_) {
-    node_data->SetNameExplicitlyEmpty();
-    return;
+bool TreeView::HandleAccessibleAction(const ui::AXActionData& action_data) {
+  if (!model_)
+    return false;
+
+  switch (action_data.action) {
+    case ax::mojom::Action::kDoDefault: {
+      CommitEdit();
+      RequestFocus();
+      TreeModelNode* selected_model_node = GetSelectedNode();
+      if (!selected_model_node)
+        return true;
+
+      if (IsExpanded(selected_model_node))
+        Collapse(selected_model_node);
+      else
+        Expand(selected_model_node);
+      break;
+    }
+
+    case ax::mojom::Action::kFocus:
+      RequestFocus();
+      break;
+
+    case ax::mojom::Action::kScrollToMakeVisible:
+      if (selected_node_) {
+        // GetForegroundBoundsForNode() returns RTL-flipped coordinates for
+        // paint. Un-flip before passing to ScrollRectToVisible(), which uses
+        // layout coordinates.
+        ScrollRectToVisible(
+            GetMirroredRect(GetForegroundBoundsForNode(selected_node_)));
+      }
+      break;
+
+    case ax::mojom::Action::kShowContextMenu:
+      ShowContextMenu(GetBoundsInScreen().CenterPoint(),
+                      ui::MENU_SOURCE_KEYBOARD);
+      break;
+
+    default:
+      return false;
   }
 
-  // Get selected item info.
-  node_data->role = ax::mojom::Role::kTreeItem;
-  node_data->SetName(selected_node_->model_node()->GetTitle());
+  return true;
 }
 
 void TreeView::TreeNodesAdded(TreeModel* model,
@@ -456,10 +552,17 @@ void TreeView::TreeNodesAdded(TreeModel* model,
   for (size_t i = start; i < start + count; ++i) {
     auto child = std::make_unique<InternalNode>();
     ConfigureInternalNode(children[i], child.get());
+    std::unique_ptr<AXVirtualView> ax_view =
+        CreateAndSetAccessibilityView(child.get());
     parent_node->Add(std::move(child), i);
+    DCHECK_LE(int{i}, parent_node->accessibility_view()->GetChildCount());
+    parent_node->accessibility_view()->AddChildViewAt(std::move(ax_view),
+                                                      int{i});
   }
-  if (IsExpanded(parent))
+  if (IsExpanded(parent)) {
+    NotifyAccessibilityEvent(ax::mojom::Event::kRowCountChanged, true);
     DrawnNodesChanged();
+  }
 }
 
 void TreeView::TreeNodesRemoved(TreeModel* model,
@@ -475,6 +578,12 @@ void TreeView::TreeNodesRemoved(TreeModel* model,
     InternalNode* child_removing = parent_node->children()[start].get();
     if (selected_node_ && selected_node_->HasAncestor(child_removing))
       reset_selection = true;
+
+    DCHECK(parent_node->accessibility_view()->Contains(
+        child_removing->accessibility_view()));
+    parent_node->accessibility_view()->RemoveChildView(
+        child_removing->accessibility_view());
+    child_removing->set_accessibility_view(nullptr);
     parent_node->Remove(start);
   }
   if (reset_selection) {
@@ -492,8 +601,10 @@ void TreeView::TreeNodesRemoved(TreeModel* model,
     }
     SetSelectedNode(to_select);
   }
-  if (IsExpanded(parent))
+  if (IsExpanded(parent)) {
+    NotifyAccessibilityEvent(ax::mojom::Event::kRowCountChanged, true);
     DrawnNodesChanged();
+  }
 }
 
 void TreeView::TreeNodeChanged(TreeModel* model, TreeModelNode* model_node) {
@@ -506,6 +617,8 @@ void TreeView::TreeNodeChanged(TreeModel* model, TreeModelNode* model_node) {
   if (old_width != node->text_width() &&
       ((node == &root_ && root_shown_) ||
        (node != &root_ && IsExpanded(node->parent()->model_node())))) {
+    node->accessibility_view()->NotifyAccessibilityEvent(
+        ax::mojom::Event::kLocationChanged);
     DrawnNodesChanged();
   }
 }
@@ -659,6 +772,13 @@ void TreeView::OnFocus() {
     GetInputMethod()->OnCaretBoundsChanged(GetPrefixSelector());
 
   SetHasFocusIndicator(true);
+  AXVirtualView* ax_selected_view =
+      selected_node_ ? selected_node_->accessibility_view() : nullptr;
+  if (ax_selected_view) {
+    GetViewAccessibility().OverrideFocus(ax_selected_view);
+  } else {
+    GetViewAccessibility().OverrideFocus(nullptr);
+  }
 }
 
 void TreeView::OnBlur() {
@@ -698,7 +818,10 @@ void TreeView::LoadChildren(InternalNode* node) {
   for (auto* model_child : model_->GetChildren(node->model_node())) {
     std::unique_ptr<InternalNode> child = std::make_unique<InternalNode>();
     ConfigureInternalNode(model_child, child.get());
+    std::unique_ptr<AXVirtualView> ax_view =
+        CreateAndSetAccessibilityView(child.get());
     node->Add(std::move(child));
+    node->accessibility_view()->AddChildView(std::move(ax_view));
   }
 }
 
@@ -708,11 +831,104 @@ void TreeView::ConfigureInternalNode(TreeModelNode* model_node,
   UpdateNodeTextWidth(node);
 }
 
+bool TreeView::IsRoot(const InternalNode* node) const {
+  return node == &root_;
+}
+
 void TreeView::UpdateNodeTextWidth(InternalNode* node) {
   int width = 0, height = 0;
   gfx::Canvas::SizeStringInt(node->model_node()->GetTitle(), font_list_,
                              &width, &height, 0, gfx::Canvas::NO_ELLIPSIS);
   node->set_text_width(width);
+}
+
+std::unique_ptr<AXVirtualView> TreeView::CreateAndSetAccessibilityView(
+    InternalNode* node) {
+  DCHECK(node);
+  auto ax_view = std::make_unique<AXVirtualView>();
+  ui::AXNodeData& node_data = ax_view->GetCustomData();
+  node_data.role = ax::mojom::Role::kTreeItem;
+  if (base::i18n::IsRTL())
+    node_data.SetTextDirection(ax::mojom::TextDirection::kRtl);
+
+  base::RepeatingCallback<void(ui::AXNodeData*)> selected_callback =
+      base::BindRepeating(&TreeView::PopulateAccessibilityData,
+                          base::Unretained(this), node);
+  ax_view->SetPopulateDataCallback(std::move(selected_callback));
+  node->set_accessibility_view(ax_view.get());
+  return ax_view;
+}
+
+void TreeView::PopulateAccessibilityData(InternalNode* node,
+                                         ui::AXNodeData* data) {
+  DCHECK(node);
+  TreeModelNode* selected_model_node = GetSelectedNode();
+  InternalNode* selected_node =
+      selected_model_node ? GetInternalNodeForModelNode(
+                                selected_model_node, DONT_CREATE_IF_NOT_LOADED)
+                          : nullptr;
+  const bool selected = (node == selected_node);
+  data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, selected);
+
+  if (node->is_expanded())
+    data->AddState(ax::mojom::State::kExpanded);
+  else
+    data->AddState(ax::mojom::State::kCollapsed);
+
+  DCHECK(node->model_node()) << "InternalNode must be initialized. Did you "
+                                "forget to call ConfigureInternalNode(node)?";
+  data->SetName(node->model_node()->GetTitle());
+
+  // "AXVirtualView" will by default add the "invisible" state to any
+  // virtual views that are not attached to a parent view.
+  if (!IsRoot(node) && !node->parent())
+    return;  // The node hasn't been added to the tree yet.
+
+  int row = -1;
+  if (IsRoot(node)) {
+    const int depth = root_depth();
+    if (depth >= 0) {
+      row = 1;
+      data->AddIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel,
+                            int32_t{depth + 1});
+      data->AddIntAttribute(ax::mojom::IntAttribute::kPosInSet, 1);
+      data->AddIntAttribute(ax::mojom::IntAttribute::kSetSize, 1);
+    }
+
+  } else {
+    // !IsRoot(node)) && node->parent() != nullptr.
+    if (node->parent()->is_expanded()) {
+      int depth = 0;
+      row = GetRowForInternalNode(node, &depth);
+      if (depth >= 0) {
+        data->AddIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel,
+                              int32_t{depth + 1});
+      }
+    }
+
+    // Per the ARIA Spec, aria-posinset and aria-setsize are 1-based
+    // not 0-based.
+    int pos_in_parent = node->parent()->GetIndexOf(node) + 1;
+    int sibling_size = int{node->parent()->children().size()};
+    data->AddIntAttribute(ax::mojom::IntAttribute::kPosInSet,
+                          int32_t{pos_in_parent});
+    data->AddIntAttribute(ax::mojom::IntAttribute::kSetSize,
+                          int32_t{sibling_size});
+  }
+
+  int ignored_depth;
+  const bool is_visible_or_offscreen =
+      row >= 0 && GetNodeByRow(row, &ignored_depth) == node;
+  if (is_visible_or_offscreen) {
+    data->AddState(ax::mojom::State::kFocusable);
+    data->AddAction(ax::mojom::Action::kFocus);
+    data->AddAction(ax::mojom::Action::kScrollToMakeVisible);
+    gfx::Rect node_bounds = GetBackgroundBoundsForNode(node);
+    View::ConvertRectToScreen(this, &node_bounds);
+    data->relative_bounds.bounds = gfx::RectF(node_bounds);
+  } else {
+    data->AddState(ax::mojom::State::kInvisible);
+  }
 }
 
 void TreeView::DrawnNodesChanged() {
@@ -979,7 +1195,7 @@ int TreeView::GetRowForInternalNode(InternalNode* node, int* depth) {
   DCHECK(!node->parent() || IsExpanded(node->parent()->model_node()));
   *depth = -1;
   int row = -1;
-  InternalNode* tmp_node = node;
+  const InternalNode* tmp_node = node;
   while (tmp_node->parent()) {
     size_t index_in_parent = tmp_node->parent()->GetIndexOf(tmp_node);
     (*depth)++;
@@ -1153,6 +1369,7 @@ void TreeView::InternalNode::Reset(ui::TreeModelNode* node) {
   loaded_children_ = false;
   is_expanded_ = false;
   text_width_ = 0;
+  accessibility_view_ = nullptr;
 }
 
 int TreeView::InternalNode::NumExpandedNodes() const {

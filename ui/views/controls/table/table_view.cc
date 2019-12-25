@@ -1246,6 +1246,10 @@ void TableView::UpdateVirtualAccessibilityChildren() {
 
     if (!PlatformStyle::kTableViewSupportsKeyboardNavigationByCell) {
       row_data.AddState(ax::mojom::State::kFocusable);
+      row_data.AddAction(ax::mojom::Action::kFocus);
+      row_data.AddAction(ax::mojom::Action::kScrollToMakeVisible);
+      row_data.AddAction(ax::mojom::Action::kSetSelection);
+
       // When navigating using up / down cursor keys on the Mac, we read the
       // contents of the first cell. If the user needs to explore additional
       // cells, they can use VoiceOver shortcuts.
@@ -1261,19 +1265,19 @@ void TableView::UpdateVirtualAccessibilityChildren() {
     if (!single_selection_)
       row_data.AddState(ax::mojom::State::kMultiselectable);
 
-    base::RepeatingCallback<void(const View&, ui::AXNodeData*)> row_callback =
+    base::RepeatingCallback<void(ui::AXNodeData*)> row_callback =
         base::BindRepeating(
-            [](const int model_index, const gfx::Rect& row_bounds,
-               const View& view, ui::AXNodeData* data) {
-              auto& table = static_cast<const TableView&>(view);
-              if (!table.GetVisibleBounds().Intersects(row_bounds))
+            [](TableView* table, const int model_index,
+               const gfx::Rect& row_bounds, ui::AXNodeData* data) {
+              DCHECK(table);
+              if (!table->GetVisibleBounds().Intersects(row_bounds))
                 data->AddState(ax::mojom::State::kInvisible);
-              if (table.selection_model().IsSelected(model_index)) {
+              if (table->selection_model().IsSelected(model_index)) {
                 data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected,
                                        true);
               }
             },
-            model_index, row_bounds);
+            base::Unretained(this), model_index, row_bounds);
     ax_row->SetPopulateDataCallback(std::move(row_callback));
 
     for (size_t visible_column_index = 0;
@@ -1285,8 +1289,14 @@ void TableView::UpdateVirtualAccessibilityChildren() {
       auto ax_cell = std::make_unique<AXVirtualView>();
       ui::AXNodeData& cell_data = ax_cell->GetCustomData();
       cell_data.role = ax::mojom::Role::kCell;
-      if (PlatformStyle::kTableViewSupportsKeyboardNavigationByCell)
+      if (PlatformStyle::kTableViewSupportsKeyboardNavigationByCell) {
         cell_data.AddState(ax::mojom::State::kFocusable);
+        cell_data.AddAction(ax::mojom::Action::kFocus);
+        cell_data.AddAction(ax::mojom::Action::kScrollLeft);
+        cell_data.AddAction(ax::mojom::Action::kScrollRight);
+        cell_data.AddAction(ax::mojom::Action::kScrollToMakeVisible);
+        cell_data.AddAction(ax::mojom::Action::kSetSelection);
+      }
       gfx::Rect cell_bounds = GetCellBounds(view_index, visible_column_index);
       cell_data.relative_bounds.bounds =
           AdjustRectForAXRelativeBounds(cell_bounds);
@@ -1315,24 +1325,25 @@ void TableView::UpdateVirtualAccessibilityChildren() {
       cell_data.AddIntAttribute(ax::mojom::IntAttribute::kSortDirection,
                                 static_cast<int32_t>(sort_direction));
 
-      base::RepeatingCallback<void(const View&, ui::AXNodeData*)>
-          cell_callback = base::BindRepeating(
-              [](const int model_index, const size_t visible_column_index,
-                 const gfx::Rect& cell_bounds, const View& view,
-                 ui::AXNodeData* data) {
-                auto& table = static_cast<const TableView&>(view);
-                if (!table.GetVisibleBounds().Intersects(cell_bounds))
+      base::RepeatingCallback<void(ui::AXNodeData*)> cell_callback =
+          base::BindRepeating(
+              [](TableView* table, const int model_index,
+                 const size_t visible_column_index,
+                 const gfx::Rect& cell_bounds, ui::AXNodeData* data) {
+                DCHECK(table);
+                if (!table->GetVisibleBounds().Intersects(cell_bounds))
                   data->AddState(ax::mojom::State::kInvisible);
                 if (PlatformStyle::kTableViewSupportsKeyboardNavigationByCell &&
                     static_cast<const int>(visible_column_index) ==
-                        table.GetActiveVisibleColumnIndex()) {
-                  if (table.selection_model().IsSelected(model_index)) {
+                        table->GetActiveVisibleColumnIndex()) {
+                  if (table->selection_model().IsSelected(model_index)) {
                     data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected,
                                            true);
                   }
                 }
               },
-              model_index, visible_column_index, cell_bounds);
+              base::Unretained(this), model_index, visible_column_index,
+              cell_bounds);
       ax_cell->SetPopulateDataCallback(std::move(cell_callback));
 
       ax_row->AddChildView(std::move(ax_cell));

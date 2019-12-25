@@ -249,6 +249,11 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
 
   bool ResetUsageTracker(blink::mojom::StorageType type);
 
+  // Called when StoragePartition is initialized if embedder has an
+  // implementation of StorageNotificationService.
+  void SetStoragePressureCallback(
+      base::RepeatingCallback<void(url::Origin)> send_notification_function);
+
   static const int64_t kPerHostPersistentQuotaLimit;
   static const char kDatabaseName[];
   static const int kThresholdOfErrorsToBeBlacklisted;
@@ -411,6 +416,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
 
   void DeleteOnCorrectThread() const;
 
+  void SendStoragePressureNotification(const url::Origin origin);
+
   void PostTaskAndReplyWithResultForDBThread(
       const base::Location& from_here,
       base::OnceCallback<bool(QuotaDatabase*)> task,
@@ -428,6 +435,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
   const scoped_refptr<QuotaManagerProxy> proxy_;
   bool db_disabled_;
   bool eviction_disabled_;
+  base::Optional<url::Origin> origin_with_pending_notification_;
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_;
   scoped_refptr<base::SequencedTaskRunner> db_runner_;
   mutable std::unique_ptr<QuotaDatabase> database_;
@@ -435,8 +443,10 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
 
   GetQuotaSettingsFunc get_settings_function_;
   scoped_refptr<base::TaskRunner> get_settings_task_runner_;
+  base::RepeatingCallback<void(url::Origin)> send_notification_function_;
   QuotaSettings settings_;
   base::TimeTicks settings_timestamp_;
+  base::TimeTicks disk_pressure_notification_timestamp_;
   CallbackQueue<QuotaSettingsCallback, const QuotaSettings&>
       settings_callbacks_;
   CallbackQueue<StorageCapacityCallback, int64_t, int64_t>

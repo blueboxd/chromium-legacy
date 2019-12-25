@@ -139,6 +139,7 @@ js_library("tooltip") {
 
 js_library("util") {
   deps = [
+    ":namespace",
     ":tooltip",
     ":type",
     "browser_proxy:browser_proxy",

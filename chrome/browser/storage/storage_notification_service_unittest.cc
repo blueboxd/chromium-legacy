@@ -44,7 +44,7 @@ TEST_F(StorageNotificationServiceTest, Default) {
           profile()->GetStorageNotificationService());
   ASSERT_TRUE(storage_notification_service);
 
-  base::RepeatingClosure callback =
+  base::RepeatingCallback<void(const url::Origin)> callback =
       storage_notification_service->GetStoragePressureNotificationClosure();
   ASSERT_TRUE(callback);
 }

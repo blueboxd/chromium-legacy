@@ -418,6 +418,7 @@ source_set("eg_app_support+eg2") {
     "//ios/chrome/browser/ui/settings/clear_browsing_data",
     "//ios/chrome/browser/ui/settings/credit_card_scanner",
     "//ios/chrome/browser/ui/settings/google_services",
+    "//ios/chrome/browser/ui/settings/google_services:eg_app_support+eg2",
     "//ios/chrome/browser/ui/settings/password:eg_app_support+eg2",
     "//ios/chrome/browser/ui/settings/password:password_constants",
     "//ios/chrome/browser/ui/settings/sync",

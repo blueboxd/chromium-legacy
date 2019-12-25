@@ -67,9 +67,9 @@ enum Event {
   kMouseMoved,
   kMousePressed,
   kMouseReleased,
-  kRowCollapsed,             // Web / Mac
-  kRowCountChanged,          // Web / Mac
-  kRowExpanded,              // Web / Mac
+  kRowCollapsed,
+  kRowCountChanged,
+  kRowExpanded,
   kScrollPositionChanged,    // Web
   kScrolledToAnchor,         // Web
   kSelectedChildrenChanged,  // Web

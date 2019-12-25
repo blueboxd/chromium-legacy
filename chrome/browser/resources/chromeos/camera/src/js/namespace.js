@@ -11,4 +11,5 @@
 var cca = {
   mojo: {},
   tooltip: {},
+  util: {},
 };

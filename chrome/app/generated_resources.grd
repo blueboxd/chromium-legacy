@@ -4941,6 +4941,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
         usage statistics
       </message>
 
+      <!-- Storage Pressure Notification Infobar/Bubble -->
+      <message name="IDS_SETTINGS_STORAGE_PRESSURE_BUBBLE_VIEW_TITLE" desc="The title for the notification warning users that they are low on disk space.">
+        Free up space to continue
+      </message>
+      <message name="IDS_SETTINGS_STORAGE_PRESSURE_BUBBLE_VIEW_MESSAGE" desc="The message for the notification warning users that they are low on disk space, asking the user if they would like to go to the settings page and clear some data.">
+        Some features on <ph name="ORIGIN">$1<ex>site.com</ex></ph> might not work until you clear data that other sites have stored on your device
+      </message>
+      <message name="IDS_SETTINGS_STORAGE_PRESSURE_BUBBLE_VIEW_BUTTON_LABEL" desc="Label for default button on storage pressure buble view which will take users to a page to manage site storage.">
+        Choose sites to clear
+      </message>
+
       <!-- Bad Flags Infobar-->
       <message name="IDS_BAD_FLAGS_WARNING_MESSAGE" desc="Message shown when an unsupported command-line flag is used. [Keep it short so it fits in the infobar.]">
         You are using an unsupported command-line flag: <ph name="BAD_FLAG">$1<ex>--no-sandbox</ex></ph>. Stability and security will suffer.

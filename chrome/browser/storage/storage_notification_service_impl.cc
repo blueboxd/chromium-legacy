@@ -8,29 +8,14 @@
 #include "chrome/browser/profiles/profile.h"
 
 #if !defined(OS_ANDROID)
-#include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/notifications/notification_display_service.h"
-#include "chrome/browser/notifications/system_notification_helper.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/browser_navigator.h"
-#include "chrome/browser/ui/browser_navigator_params.h"
-#include "chrome/grit/generated_resources.h"
-#include "components/user_manager/user_manager.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/storage_partition.h"
-#include "content/public/browser/web_ui.h"
-#include "content/public/common/content_features.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/vector_icon_types.h"
-#include "ui/message_center/public/cpp/notification.h"
+#include "chrome/browser/ui/storage_pressure_bubble.h"
 #endif
 
-base::RepeatingClosure
+base::RepeatingCallback<void(const url::Origin)>
 StorageNotificationServiceImpl::GetStoragePressureNotificationClosure() {
-  return base::BindRepeating([](Profile* profile) {}, profile_);
+  return base::BindRepeating(&chrome::ShowStoragePressureBubble);
 }
 
-StorageNotificationServiceImpl::StorageNotificationServiceImpl() {}
+StorageNotificationServiceImpl::StorageNotificationServiceImpl() = default;
 
 StorageNotificationServiceImpl::~StorageNotificationServiceImpl() = default;

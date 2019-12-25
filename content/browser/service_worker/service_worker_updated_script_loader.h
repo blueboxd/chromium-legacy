@@ -208,7 +208,10 @@ class CONTENT_EXPORT ServiceWorkerUpdatedScriptLoader final
 
   // Called when ServiceWorkerCacheWriter::Resume() completes its work.
   // If not all data are received, it continues to download from network.
-  void OnCacheWriterResumed(net::Error error);
+  void OnCacheWriterResumed(
+      scoped_refptr<network::MojoToNetPendingBuffer> pending_network_buffer,
+      uint32_t consumed_bytes,
+      net::Error error);
 
 #if DCHECK_IS_ON()
   void CheckVersionStatusBeforeLoad();

@@ -10,7 +10,7 @@
 #include "base/optional.h"
 #include "content/common/content_export.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
-#include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_loader.mojom-forward.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/mojom/blob/serialized_blob.mojom.h"
 #include "url/gurl.h"

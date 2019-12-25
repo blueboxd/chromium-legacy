@@ -145,7 +145,8 @@ static NDEFRecord* CreateTextRecord(const ExecutionContext* execution_context,
   // Bits 0 to 5 define the length of the language tag
   // https://w3c.github.io/web-nfc/#text-record
   if (language.length() > 63) {
-    exception_state.ThrowTypeError("Lang length cannot be stored in 6 bit.");
+    exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
+                                      "Lang length cannot be stored in 6 bit.");
     return nullptr;
   }
 

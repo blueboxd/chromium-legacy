@@ -2,23 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
-/**
- * Namespace for the Camera app.
- */
-var cca = cca || {};
-
-/**
- * Namespace for proxy.
- */
-cca.proxy = cca.proxy || {};
-
 /**
  * The abstract interface for the CCA's interaction with the browser.
  * @interface
  */
-cca.proxy.BrowserProxy = class {
+export class BrowserProxy {
   /** @param {function(!Array<!chrome.fileSystem.Volume>=)} callback */
   getVolumeList(callback) {}
 
@@ -45,4 +33,4 @@ cca.proxy.BrowserProxy = class {
    * @param {function()=} callback
    */
   localStorageRemove(items, callback) {}
-};
+}

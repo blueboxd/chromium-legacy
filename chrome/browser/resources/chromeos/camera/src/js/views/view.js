@@ -2,17 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
-/**
- * Namespace for the Camera app.
- */
-var cca = cca || {};
-
-/**
- * Namespace for views.
- */
-cca.views = cca.views || {};
+import {assertInstanceof} from '../chrome_util.js';
+import * as toast from '../toast.js';
 
 /* eslint-disable no-unused-vars */
 
@@ -24,25 +15,25 @@ cca.views = cca.views || {};
  *   cancellable: (boolean|undefined),
  * }}
  */
-cca.views.DialogEnterOptions;
+let DialogEnterOptions;
 
 /**
  * Warning message name.
  * @typedef {string}
  */
-cca.views.WarningEnterOptions;
+let WarningEnterOptions;
 
 /**
- * @typedef {!cca.views.DialogEnterOptions|!cca.views.WarningEnterOptions}
+ * @typedef {!DialogEnterOptions|!WarningEnterOptions}
  */
-cca.views.EnterOptions;
+let EnterOptions;
 
 /* eslint-enable no-unused-vars */
 
 /**
- * Base controller of a view for views' navigation sessions (cca.nav).
+ * Base controller of a view for views' navigation sessions (nav.js).
  */
-cca.views.View = class {
+export class View {
   /**
    * @param {string} selector Selector text of the view's root element.
    * @param {boolean=} dismissByEsc Enable dismissible by Esc-key.
@@ -55,7 +46,7 @@ cca.views.View = class {
      * @protected
      */
     this.rootElement_ =
-        /** @type {!HTMLElement} */ (document.querySelector(selector));
+        assertInstanceof(document.querySelector(selector), HTMLElement);
 
     /**
      * @type {Promise<*>}
@@ -104,7 +95,7 @@ cca.views.View = class {
       return true;
     } else if (key === 'Ctrl-V') {
       const {version, version_name: versionName} = chrome.runtime.getManifest();
-      cca.toast.show(versionName || version);
+      toast.show(versionName || version);
       return true;
     } else if (this.dismissByEsc_ && key === 'Escape') {
       this.leave();
@@ -125,14 +116,14 @@ cca.views.View = class {
 
   /**
    * Hook of the subclass for entering the view.
-   * @param {cca.views.EnterOptions=} options Optional rest parameters for
+   * @param {EnterOptions=} options Optional rest parameters for
    *     entering the view.
    */
   entering(options) {}
 
   /**
    * Enters the view.
-   * @param {cca.views.EnterOptions=} options Optional rest parameters for
+   * @param {EnterOptions=} options Optional rest parameters for
    *     entering the view.
    * @return {!Promise<*>} Promise for the navigation session.
    */
@@ -175,4 +166,7 @@ cca.views.View = class {
     }
     return false;
   }
-};
+}
+
+/** @const */
+cca.views.View = View;

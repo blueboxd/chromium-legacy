@@ -193,22 +193,15 @@ TEST_F(ServiceWorkerScriptLoaderFactoryCopyResumeTest,
       "HTTP/1.0 200 OK\0Content-Type: text/javascript\0Content-Length: 0\0\0";
   const std::string kNewData = "";
 
-  mojo::ScopedDataPipeProducerHandle network_producer;
-  mojo::ScopedDataPipeConsumerHandle network_consumer;
-
-  ASSERT_EQ(MOJO_RESULT_OK, mojo::CreateDataPipe(nullptr, &network_producer,
-                                                 &network_consumer));
   ServiceWorkerUpdateCheckTestUtils::CreateAndSetComparedScriptInfoForVersion(
       script_url_, 0, kNewHeaders, kNewData, kOldResourceId, kNewResourceId,
       helper_.get(), ServiceWorkerUpdatedScriptLoader::LoaderState::kCompleted,
       ServiceWorkerUpdatedScriptLoader::WriterState::kCompleted,
-      std::move(network_consumer),
       ServiceWorkerSingleScriptUpdateChecker::Result::kDifferent,
-      version_.get());
+      version_.get(), nullptr);
 
   mojo::PendingRemote<network::mojom::URLLoader> loader =
       CreateTestLoaderAndStart(&client_);
-  network_producer.reset();
   client_.RunUntilComplete();
 
   EXPECT_EQ(net::OK, client_.completion_status().error_code);

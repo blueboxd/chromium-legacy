@@ -213,7 +213,6 @@ ServiceWorkerUpdatedScriptLoader::ServiceWorkerUpdatedScriptLoader(
   network_loader_ = std::move(info.paused_state->network_loader);
   pending_network_client_receiver_ =
       std::move(info.paused_state->network_client_receiver);
-  network_consumer_ = std::move(info.paused_state->network_consumer);
 
   network_loader_state_ = info.paused_state->network_loader_state;
   DCHECK(network_loader_state_ == LoaderState::kLoadingBody ||
@@ -229,12 +228,14 @@ ServiceWorkerUpdatedScriptLoader::ServiceWorkerUpdatedScriptLoader(
   // Resume the cache writer and observe its writes, so all data written
   // is sent to |client_|.
   cache_writer_->set_write_observer(this);
-  net::Error error = cache_writer_->Resume(
-      base::BindOnce(&ServiceWorkerUpdatedScriptLoader::OnCacheWriterResumed,
-                     weak_factory_.GetWeakPtr()));
+  net::Error error = cache_writer_->Resume(base::BindOnce(
+      &ServiceWorkerUpdatedScriptLoader::OnCacheWriterResumed,
+      weak_factory_.GetWeakPtr(), info.paused_state->pending_network_buffer,
+      info.paused_state->consumed_bytes));
 
   if (error != net::ERR_IO_PENDING) {
-    OnCacheWriterResumed(error);
+    OnCacheWriterResumed(info.paused_state->pending_network_buffer,
+                         info.paused_state->consumed_bytes, error);
   }
 }
 
@@ -425,7 +426,10 @@ int ServiceWorkerUpdatedScriptLoader::WillWriteData(
   return net::ERR_IO_PENDING;
 }
 
-void ServiceWorkerUpdatedScriptLoader::OnCacheWriterResumed(net::Error error) {
+void ServiceWorkerUpdatedScriptLoader::OnCacheWriterResumed(
+    scoped_refptr<network::MojoToNetPendingBuffer> pending_network_buffer,
+    uint32_t consumed_bytes,
+    net::Error error) {
   DCHECK_NE(error, net::ERR_IO_PENDING);
   // Stop observing write operations in cache writer as further data are
   // from network which would be processed by OnNetworkDataAvailable().
@@ -442,6 +446,13 @@ void ServiceWorkerUpdatedScriptLoader::OnCacheWriterResumed(net::Error error) {
     CommitCompleted(network::URLLoaderCompletionStatus(net::OK), std::string());
     return;
   }
+
+  // The data in the pending buffer has been processed during resuming. At this
+  // point, this completes the pending read and releases the Mojo handle to
+  // continue with reading the rest of the body.
+  DCHECK(pending_network_buffer);
+  pending_network_buffer->CompleteRead(consumed_bytes);
+  network_consumer_ = pending_network_buffer->ReleaseHandle();
 
   // Continue to load the rest of the body from the network.
   DCHECK_EQ(body_writer_state_, WriterState::kWriting);

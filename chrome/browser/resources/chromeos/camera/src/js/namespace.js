@@ -10,6 +10,11 @@
 // eslint-disable-next-line no-unused-vars
 var cca = {
   mojo: {},
+  perf: {},
+  proxy: {},
+  state: {},
+  toast: {},
   tooltip: {},
   util: {},
+  views: {},
 };

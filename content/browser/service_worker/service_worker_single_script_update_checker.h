@@ -64,7 +64,8 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
             network_loader,
         mojo::PendingReceiver<network::mojom::URLLoaderClient>
             network_client_receiver,
-        mojo::ScopedDataPipeConsumerHandle network_consumer,
+        scoped_refptr<network::MojoToNetPendingBuffer> pending_network_buffer,
+        uint32_t consumed_bytes,
         ServiceWorkerUpdatedScriptLoader::LoaderState network_loader_state,
         ServiceWorkerUpdatedScriptLoader::WriterState body_writer_state);
     PausedState(const PausedState& other) = delete;
@@ -77,7 +78,15 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
         network_loader;
     mojo::PendingReceiver<network::mojom::URLLoaderClient>
         network_client_receiver;
-    mojo::ScopedDataPipeConsumerHandle network_consumer;
+
+    // The buffer which has a part of the body from the network which had a
+    // diff. This could be nullptr when the data from the network is smaller
+    // than the data in the disk.
+    scoped_refptr<network::MojoToNetPendingBuffer> pending_network_buffer;
+    // The number of bytes in |pending_network_buffer| that have already been
+    // processed by the cache writer.
+    uint32_t consumed_bytes;
+
     ServiceWorkerUpdatedScriptLoader::LoaderState network_loader_state;
     ServiceWorkerUpdatedScriptLoader::WriterState body_writer_state;
   };
@@ -161,8 +170,11 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
             network::URLLoaderCompletionStatus network_status);
 
   // Called when the update check for this script succeeded. It calls Finish().
-  void Succeed(Result result);
-  void Finish(Result result, std::unique_ptr<FailureInfo> failure_info);
+  // |paused_state| should be set when result is kDifferent.
+  void Succeed(Result result, std::unique_ptr<PausedState> paused_state);
+  void Finish(Result result,
+              std::unique_ptr<PausedState> paused_state,
+              std::unique_ptr<FailureInfo> failure_info);
 
   const GURL script_url_;
   const bool is_main_script_;

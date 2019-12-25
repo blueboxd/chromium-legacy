@@ -2,23 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
-/**
- * Namespace for the Camera app.
- */
-var cca = cca || {};
-
-/**
- * Namespace for perf.
- */
-cca.perf = cca.perf || {};
+import {ChromeHelper} from './mojo/chrome_helper.js';
+import {PerfInformation} from './type.js'; // eslint-disable-line no-unused-vars
 
 /**
  * Type for performance event.
  * @enum {string}
  */
-cca.perf.PerfEvent = {
+export const PerfEvent = {
   PHOTO_TAKING: 'photo-taking',
   PHOTO_CAPTURE_POST_PROCESSING: 'photo-capture-post-processing',
   VIDEO_CAPTURE_POST_PROCESSING: 'video-capture-post-processing',
@@ -31,26 +22,22 @@ cca.perf.PerfEvent = {
   LAUNCHING_FROM_LAUNCH_APP_WARM: 'launching-from-launch-app-warm',
 };
 
-/* eslint-disable no-unused-vars */
-
 /**
- * @typedef {function(cca.perf.PerfEvent, number, Object=)}
+ * @typedef {function(PerfEvent, number, Object=)}
  */
-var PerfEventListener;
-
-/* eslint-enable no-unused-vars */
+let PerfEventListener;  // eslint-disable-line no-unused-vars
 
 /**
  * Logger for performance events.
  */
-cca.perf.PerfLogger = class {
+export class PerfLogger {
   /**
    * @public
    */
   constructor() {
     /**
      * Map to store events starting timestamp.
-     * @type {!Map<cca.perf.PerfEvent, number>}
+     * @type {!Map<PerfEvent, number>}
      * @private
      */
     this.startTimeMap_ = new Map();
@@ -87,7 +74,7 @@ cca.perf.PerfLogger = class {
 
   /**
    * Starts the measurement for given event.
-   * @param {cca.perf.PerfEvent} event Target event.
+   * @param {PerfEvent} event Target event.
    */
   start(event) {
     if (this.startTimeMap_.has(event)) {
@@ -96,13 +83,13 @@ cca.perf.PerfLogger = class {
       return;
     }
     this.startTimeMap_.set(event, performance.now());
-    cca.mojo.ChromeHelper.getInstance().startTracing(event);
+    ChromeHelper.getInstance().startTracing(event);
   }
 
   /**
    * Stops the measurement for given event and returns the measurement result.
-   * @param {cca.perf.PerfEvent} event Target event.
-   * @param {cca.PerfInformation=} perfInfo Optional information of this event
+   * @param {PerfEvent} event Target event.
+   * @param {PerfInformation=} perfInfo Optional information of this event
    *     for performance measurement.
    */
   stop(event, perfInfo = {}) {
@@ -127,20 +114,20 @@ cca.perf.PerfLogger = class {
     }
 
     const duration = performance.now() - startTime;
-    cca.mojo.ChromeHelper.getInstance().stopTracing(event);
+    ChromeHelper.getInstance().stopTracing(event);
     this.listeners_.forEach((listener) => listener(event, duration, perfInfo));
   }
 
   /**
    * Stops the measurement of launch-related events.
-   * @param {cca.PerfInformation=} perfInfo Optional information of this event
+   * @param {PerfInformation=} perfInfo Optional information of this event
    *     for performance measurement.
    */
   stopLaunch(perfInfo) {
     const launchEvents = [
-      cca.perf.PerfEvent.LAUNCHING_FROM_WINDOW_CREATION,
-      cca.perf.PerfEvent.LAUNCHING_FROM_LAUNCH_APP_COLD,
-      cca.perf.PerfEvent.LAUNCHING_FROM_LAUNCH_APP_WARM,
+      PerfEvent.LAUNCHING_FROM_WINDOW_CREATION,
+      PerfEvent.LAUNCHING_FROM_LAUNCH_APP_COLD,
+      PerfEvent.LAUNCHING_FROM_LAUNCH_APP_WARM,
     ];
 
     launchEvents.forEach((event) => {
@@ -156,4 +143,9 @@ cca.perf.PerfLogger = class {
   interrupt() {
     this.interruptedTime_ = performance.now();
   }
-};
+}
+
+/** @const */
+cca.perf.PerfEvent = PerfEvent;
+/** @const */
+cca.perf.PerfLogger = PerfLogger;

@@ -18,7 +18,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/image_annotation/public/cpp/image_processor.h"
-#include "services/image_annotation/public/mojom/image_annotation.mojom.h"
+#include "services/image_annotation/public/mojom/image_annotation.mojom-forward.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 

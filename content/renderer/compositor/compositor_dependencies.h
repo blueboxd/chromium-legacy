@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "content/common/content_export.h"
-#include "content/common/render_frame_metadata.mojom.h"
+#include "content/common/render_frame_metadata.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 

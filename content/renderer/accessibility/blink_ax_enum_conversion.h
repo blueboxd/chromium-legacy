@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "third_party/blink/public/web/web_ax_object.h"
-#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/accessibility/ax_node_data.h"
 
 namespace content {

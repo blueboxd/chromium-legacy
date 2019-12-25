@@ -624,19 +624,24 @@ void ServiceWorkerSingleScriptUpdateChecker::OnCompareDataComplete(
       "bytes_written", bytes_written);
 
   DCHECK(pending_buffer || bytes_written == 0);
-  if (pending_buffer) {
-    // We consumed |bytes_written| bytes of data from the network so call
-    // CompleteRead(), regardless of what |error| is.
-    pending_buffer->CompleteRead(bytes_written);
-    network_consumer_ = pending_buffer->ReleaseHandle();
-  }
 
   if (cache_writer_->is_pausing()) {
     // |cache_writer_| can be pausing only when it finds difference between
     // stored body and network body.
     DCHECK_EQ(error, net::ERR_IO_PENDING);
-    Succeed(Result::kDifferent);
+    auto paused_state = std::make_unique<PausedState>(
+        std::move(cache_writer_), std::move(network_loader_),
+        network_client_receiver_.Unbind(), std::move(pending_buffer),
+        bytes_written, network_loader_state_, body_writer_state_);
+    Succeed(Result::kDifferent, std::move(paused_state));
     return;
+  }
+
+  if (pending_buffer) {
+    // We consumed |bytes_written| bytes of data from the network so call
+    // CompleteRead(), regardless of what |error| is.
+    pending_buffer->CompleteRead(bytes_written);
+    network_consumer_ = pending_buffer->ReleaseHandle();
   }
 
   if (error != net::OK) {
@@ -650,7 +655,7 @@ void ServiceWorkerSingleScriptUpdateChecker::OnCompareDataComplete(
   if (bytes_written == 0) {
     // All data has been read. If we reach here without any error, the script
     // from the network was identical to the one in the disk cache.
-    Succeed(Result::kIdentical);
+    Succeed(Result::kIdentical, /*paused_state=*/nullptr);
     return;
   }
 
@@ -668,28 +673,29 @@ void ServiceWorkerSingleScriptUpdateChecker::Fail(
                          "error_message", error_message);
 
   Finish(Result::kFailed,
+         /*paused_state=*/nullptr,
          std::make_unique<FailureInfo>(status, error_message,
                                        std::move(network_status)));
 }
 
-void ServiceWorkerSingleScriptUpdateChecker::Succeed(Result result) {
+void ServiceWorkerSingleScriptUpdateChecker::Succeed(
+    Result result,
+    std::unique_ptr<PausedState> paused_state) {
   TRACE_EVENT_WITH_FLOW1(
       "ServiceWorker", "ServiceWorkerSingleScriptUpdateChecker::Succeed", this,
       TRACE_EVENT_FLAG_FLOW_IN, "result", ResultToString(result));
 
   DCHECK_NE(result, Result::kFailed);
-  Finish(result, nullptr);
+  Finish(result, std::move(paused_state), /*failure_info=*/nullptr);
 }
 
 void ServiceWorkerSingleScriptUpdateChecker::Finish(
     Result result,
+    std::unique_ptr<PausedState> paused_state,
     std::unique_ptr<FailureInfo> failure_info) {
   network_watcher_.Cancel();
   if (Result::kDifferent == result) {
-    auto paused_state = std::make_unique<PausedState>(
-        std::move(cache_writer_), std::move(network_loader_),
-        network_client_receiver_.Unbind(), std::move(network_consumer_),
-        network_loader_state_, body_writer_state_);
+    DCHECK(paused_state);
     std::move(callback_).Run(script_url_, result, nullptr,
                              std::move(paused_state));
     return;
@@ -709,13 +715,15 @@ ServiceWorkerSingleScriptUpdateChecker::PausedState::PausedState(
         network_loader,
     mojo::PendingReceiver<network::mojom::URLLoaderClient>
         network_client_receiver,
-    mojo::ScopedDataPipeConsumerHandle network_consumer,
+    scoped_refptr<network::MojoToNetPendingBuffer> pending_network_buffer,
+    uint32_t consumed_bytes,
     ServiceWorkerUpdatedScriptLoader::LoaderState network_loader_state,
     ServiceWorkerUpdatedScriptLoader::WriterState body_writer_state)
     : cache_writer(std::move(cache_writer)),
       network_loader(std::move(network_loader)),
       network_client_receiver(std::move(network_client_receiver)),
-      network_consumer(std::move(network_consumer)),
+      pending_network_buffer(std::move(pending_network_buffer)),
+      consumed_bytes(consumed_bytes),
       network_loader_state(network_loader_state),
       body_writer_state(body_writer_state) {}
 

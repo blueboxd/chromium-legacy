@@ -625,7 +625,8 @@ ServiceWorkerUpdateCheckTestUtils::CreatePausedCacheWriter(
     EmbeddedWorkerTestHelper* worker_test_helper,
     size_t bytes_compared,
     const std::string& new_headers,
-    const std::string& diff_data_block,
+    scoped_refptr<network::MojoToNetPendingBuffer> pending_network_buffer,
+    uint32_t consumed_size,
     int64_t old_resource_id,
     int64_t new_resource_id) {
   auto cache_writer = ServiceWorkerCacheWriter::CreateForComparison(
@@ -644,9 +645,9 @@ ServiceWorkerUpdateCheckTestUtils::CreatePausedCacheWriter(
   cache_writer->headers_to_write_ =
       base::MakeRefCounted<HttpResponseInfoIOBuffer>(std::move(info));
   cache_writer->bytes_compared_ = bytes_compared;
-  cache_writer->data_to_write_ =
-      base::MakeRefCounted<net::WrappedIOBuffer>(diff_data_block.data());
-  cache_writer->len_to_write_ = diff_data_block.length();
+  cache_writer->data_to_write_ = base::MakeRefCounted<net::WrappedIOBuffer>(
+      pending_network_buffer ? pending_network_buffer->buffer() : nullptr);
+  cache_writer->len_to_write_ = consumed_size;
   cache_writer->bytes_written_ = 0;
   cache_writer->io_pending_ = true;
   cache_writer->state_ = ServiceWorkerCacheWriter::State::STATE_PAUSING;
@@ -658,15 +659,17 @@ ServiceWorkerUpdateCheckTestUtils::CreateUpdateCheckerPausedState(
     std::unique_ptr<ServiceWorkerCacheWriter> cache_writer,
     ServiceWorkerUpdatedScriptLoader::LoaderState network_loader_state,
     ServiceWorkerUpdatedScriptLoader::WriterState body_writer_state,
-    mojo::ScopedDataPipeConsumerHandle network_consumer) {
+    scoped_refptr<network::MojoToNetPendingBuffer> pending_network_buffer,
+    uint32_t consumed_size) {
   mojo::PendingRemote<network::mojom::URLLoaderClient> network_loader_client;
   mojo::PendingReceiver<network::mojom::URLLoaderClient>
       network_loader_client_receiver =
           network_loader_client.InitWithNewPipeAndPassReceiver();
   return std::make_unique<ServiceWorkerSingleScriptUpdateChecker::PausedState>(
       std::move(cache_writer), /*network_loader=*/nullptr,
-      std::move(network_loader_client_receiver), std::move(network_consumer),
-      network_loader_state, body_writer_state);
+      std::move(network_loader_client_receiver),
+      std::move(pending_network_buffer), consumed_size, network_loader_state,
+      body_writer_state);
 }
 
 void ServiceWorkerUpdateCheckTestUtils::SetComparedScriptInfoForVersion(
@@ -700,15 +703,37 @@ void ServiceWorkerUpdateCheckTestUtils::
         EmbeddedWorkerTestHelper* worker_test_helper,
         ServiceWorkerUpdatedScriptLoader::LoaderState network_loader_state,
         ServiceWorkerUpdatedScriptLoader::WriterState body_writer_state,
-        mojo::ScopedDataPipeConsumerHandle network_consumer,
         ServiceWorkerSingleScriptUpdateChecker::Result compare_result,
-        ServiceWorkerVersion* version) {
+        ServiceWorkerVersion* version,
+        mojo::ScopedDataPipeProducerHandle* out_body_handle) {
+  scoped_refptr<network::MojoToNetPendingBuffer> pending_buffer;
+  uint32_t bytes_available = 0;
+  if (!diff_data_block.empty()) {
+    mojo::ScopedDataPipeConsumerHandle network_consumer;
+    // Create a data pipe which has the new block sent from the network.
+    ASSERT_EQ(MOJO_RESULT_OK, mojo::CreateDataPipe(nullptr, out_body_handle,
+                                                   &network_consumer));
+    uint32_t written_size = diff_data_block.size();
+    ASSERT_EQ(MOJO_RESULT_OK,
+              (*out_body_handle)
+                  ->WriteData(diff_data_block.c_str(), &written_size,
+                              MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
+    ASSERT_EQ(diff_data_block.size(), written_size);
+    base::RunLoop().RunUntilIdle();
+
+    // Read the data to make a pending buffer.
+    ASSERT_EQ(MOJO_RESULT_OK,
+              network::MojoToNetPendingBuffer::BeginRead(
+                  &network_consumer, &pending_buffer, &bytes_available));
+    ASSERT_EQ(diff_data_block.size(), bytes_available);
+  }
+
   auto cache_writer = CreatePausedCacheWriter(
-      worker_test_helper, bytes_compared, new_headers, diff_data_block,
-      old_resource_id, new_resource_id);
+      worker_test_helper, bytes_compared, new_headers, pending_buffer,
+      bytes_available, old_resource_id, new_resource_id);
   auto paused_state = CreateUpdateCheckerPausedState(
       std::move(cache_writer), network_loader_state, body_writer_state,
-      std::move(network_consumer));
+      pending_buffer, bytes_available);
   SetComparedScriptInfoForVersion(script_url, old_resource_id, compare_result,
                                   std::move(paused_state), version);
 }

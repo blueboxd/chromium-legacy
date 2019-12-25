@@ -16,5 +16,8 @@ js_library("browser_proxy") {
     "browser_proxy_interface.js",
     "webui_browser_proxy.js",
   ]
+  deps = [
+    "..:namespace",
+  ]
   externs_list = [ "$externs_path/chrome_extensions.js" ]
 }

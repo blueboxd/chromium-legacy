@@ -149,15 +149,12 @@ class ServiceWorkerUpdatedScriptLoaderTest : public testing::Test {
       const std::string& diff_data_block,
       ServiceWorkerUpdatedScriptLoader::LoaderState network_loader_state,
       ServiceWorkerUpdatedScriptLoader::WriterState body_writer_state) {
-    // Create a data pipe which has the new block sent from the network.
-    ASSERT_EQ(MOJO_RESULT_OK, mojo::CreateDataPipe(nullptr, &network_producer_,
-                                                   &network_consumer_));
     ServiceWorkerUpdateCheckTestUtils::CreateAndSetComparedScriptInfoForVersion(
         kScriptURL, bytes_compared, new_headers, diff_data_block,
         kOldResourceId, kNewResourceId, helper_.get(), network_loader_state,
-        body_writer_state, std::move(network_consumer_),
+        body_writer_state,
         ServiceWorkerSingleScriptUpdateChecker::Result::kDifferent,
-        version_.get());
+        version_.get(), &network_producer_);
   }
 
   void NotifyLoaderCompletion(net::Error error) {
@@ -200,7 +197,6 @@ class ServiceWorkerUpdatedScriptLoaderTest : public testing::Test {
   const int64_t kOldResourceId = 1;
   const int64_t kNewResourceId = 2;
   mojo::ScopedDataPipeProducerHandle network_producer_;
-  mojo::ScopedDataPipeConsumerHandle network_consumer_;
 };
 
 // Tests the loader when the first script data block is different.

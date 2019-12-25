@@ -362,13 +362,16 @@ class ServiceWorkerUpdateCheckTestUtils {
   // Creates a cache writer in the paused state (a difference was found between
   // the old and new script data). |bytes_compared| is the length compared
   // until the difference was found. |new_headers| is the new script's headers.
-  // |diff_data_block| is the first block of new script data that differs from
-  // the old data.
+  // |pending_network_buffer| is a buffer that has the first block of new script
+  // data that differs from the old data. |concumsed_size| is the number of
+  // bytes of the data consumed from the Mojo data pipe kept in
+  // |pending_network_buffer|.
   static std::unique_ptr<ServiceWorkerCacheWriter> CreatePausedCacheWriter(
       EmbeddedWorkerTestHelper* worker_test_helper,
       size_t bytes_compared,
       const std::string& new_headers,
-      const std::string& diff_data_block,
+      scoped_refptr<network::MojoToNetPendingBuffer> pending_network_buffer,
+      uint32_t consumed_size,
       int64_t old_resource_id,
       int64_t new_resource_id);
 
@@ -377,7 +380,8 @@ class ServiceWorkerUpdateCheckTestUtils {
       std::unique_ptr<ServiceWorkerCacheWriter> cache_writer,
       ServiceWorkerUpdatedScriptLoader::LoaderState network_loader_state,
       ServiceWorkerUpdatedScriptLoader::WriterState body_writer_state,
-      mojo::ScopedDataPipeConsumerHandle network_consumer);
+      scoped_refptr<network::MojoToNetPendingBuffer> pending_network_buffer,
+      uint32_t consumed_size);
 
   static void SetComparedScriptInfoForVersion(
       const GURL& script_url,
@@ -399,9 +403,9 @@ class ServiceWorkerUpdateCheckTestUtils {
       EmbeddedWorkerTestHelper* worker_test_helper,
       ServiceWorkerUpdatedScriptLoader::LoaderState network_loader_state,
       ServiceWorkerUpdatedScriptLoader::WriterState body_writer_state,
-      mojo::ScopedDataPipeConsumerHandle network_consumer,
       ServiceWorkerSingleScriptUpdateChecker::Result compare_result,
-      ServiceWorkerVersion* version);
+      ServiceWorkerVersion* version,
+      mojo::ScopedDataPipeProducerHandle* out_body_handle);
 
   // Returns false if the entry for |resource_id| doesn't exist in the storage.
   // Returns true when response status is "OK" and response body is same as

@@ -2,73 +2,67 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
-/**
- * Namespace for the Camera app.
- */
-var cca = cca || {};
-
-/**
- * Namespace for device.
- */
-cca.device = cca.device || {};
+import {DeviceOperator} from '../mojo/device_operator.js';
+import {FpsRangeList,  // eslint-disable-line no-unused-vars
+        MaxFpsInfo,    // eslint-disable-line no-unused-vars
+        Resolution,
+        ResolutionList,  // eslint-disable-line no-unused-vars
+        VideoConfig,     // eslint-disable-line no-unused-vars
+} from '../type.js';
 
 /**
  * Video device information queried from HALv3 mojo private API.
  */
-cca.device.Camera3DeviceInfo = class {
+export class Camera3DeviceInfo {
   /**
-   * @public
    * @param {!MediaDeviceInfo} deviceInfo Information of the video device.
    * @param {!cros.mojom.CameraFacing} facing Camera facing of the video device.
-   * @param {!cca.ResolutionList} photoResols Supported available photo
-   *     resolutions of the video device.
-   * @param {!Array<!cca.VideoConfig>} videoResolFpses Supported available video
+   * @param {!ResolutionList} photoResols Supported available photo resolutions
+   *     of the video device.
+   * @param {!Array<!VideoConfig>} videoResolFpses Supported available video
    *     resolutions and maximal capture fps of the video device.
-   * @param {!cca.FpsRangeList} fpsRanges Supported fps ranges of the video
-   *     device.
+   * @param {!FpsRangeList} fpsRanges Supported fps ranges of the video device.
    */
   constructor(deviceInfo, facing, photoResols, videoResolFpses, fpsRanges) {
     /**
-     * @type {string}
+     * @const {string}
      * @public
      */
     this.deviceId = deviceInfo.deviceId;
 
     /**
-     * @type {cros.mojom.CameraFacing}
+     * @const {cros.mojom.CameraFacing}
      * @public
      */
     this.facing = facing;
 
     /**
-     * @type {!cca.ResolutionList}
+     * @const {!ResolutionList}
      * @public
      */
     this.photoResols = photoResols;
 
     /**
-     * @type {!cca.ResolutionList}
+     * @const {!ResolutionList}
      * @public
      */
     this.videoResols = [];
 
     /**
-     * @type {!cca.MaxFpsInfo}
+     * @const {!MaxFpsInfo}
      * @public
      */
     this.videoMaxFps = {};
 
     /**
-     * @type {!cca.FpsRangeList}
+     * @const {!FpsRangeList}
      * @public
      */
     this.fpsRanges = fpsRanges;
 
     videoResolFpses.filter(({maxFps}) => maxFps >= 24)
         .forEach(({width, height, maxFps}) => {
-          const r = new cca.Resolution(width, height);
+          const r = new Resolution(width, height);
           this.videoResols.push(r);
           this.videoMaxFps[r] = maxFps;
         });
@@ -78,13 +72,13 @@ cca.device.Camera3DeviceInfo = class {
    * Create a Camera3DeviceInfo by given device info and the mojo device
    *     operator.
    * @param {!MediaDeviceInfo} deviceInfo
-   * @return {!Promise<!cca.device.Camera3DeviceInfo>}
+   * @return {!Promise<!Camera3DeviceInfo>}
    * @throws {Error} Thrown when the device operation is not supported.
    */
   static async create(deviceInfo) {
     const deviceId = deviceInfo.deviceId;
 
-    const deviceOperator = await cca.mojo.DeviceOperator.getInstance();
+    const deviceOperator = await DeviceOperator.getInstance();
     if (!deviceOperator) {
       throw new Error('Device operation is not supported');
     }
@@ -94,7 +88,10 @@ cca.device.Camera3DeviceInfo = class {
     const supportedFpsRanges =
         await deviceOperator.getSupportedFpsRanges(deviceId);
 
-    return new cca.device.Camera3DeviceInfo(
+    return new Camera3DeviceInfo(
         deviceInfo, facing, photoResolution, videoConfigs, supportedFpsRanges);
   }
-};
+}
+
+/** @const */
+cca.device.Camera3DeviceInfo = Camera3DeviceInfo;

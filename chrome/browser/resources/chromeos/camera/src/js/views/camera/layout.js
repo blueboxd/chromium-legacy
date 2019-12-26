@@ -92,7 +92,8 @@ cca.views.camera.Layout = class {
     }
     let viewportW = contentWidth;
     let viewportH = contentHeight;
-    cca.state.set('square-preview', cca.state.get(cca.Mode.SQUARE));
+    cca.state.set(
+        cca.state.State.SQUARE_PREVIEW, cca.state.get(cca.Mode.SQUARE));
     if (cca.state.get(cca.Mode.SQUARE)) {
       viewportW = viewportH = Math.min(contentWidth, contentHeight);
       this.squareVideo_.setProperty(
@@ -113,22 +114,22 @@ cca.views.camera.Layout = class {
     const fullWindow = cca.util.isWindowFullSize();
     const tall = window.innerHeight > window.innerWidth;
     const tabletLandscape = fullWindow && !tall;
-    cca.state.set('tablet-landscape', tabletLandscape);
-    cca.state.set('max-wnd', fullWindow);
-    cca.state.set('tall', tall);
+    cca.state.set(cca.state.State.TABLET_LANDSCAPE, tabletLandscape);
+    cca.state.set(cca.state.State.MAX_WND, fullWindow);
+    cca.state.set(cca.state.State.TALL, tall);
 
     const {width: letterboxW, height: letterboxH} = this.updatePreviewSize_();
     const isLetterboxW = letterboxH < letterboxW;
 
-    cca.state.set('w-letterbox', isLetterboxW);
+    cca.state.set(cca.state.State.W_LETTERBOX, isLetterboxW);
     if (isLetterboxW) {
       const modeWidth =
           document.querySelector('#modes-group').getBoundingClientRect().width;
       let layoutToggled = false;
-      [[modeWidth + 30, 'w-letterbox-s'],
-       [modeWidth + 30 + 72, 'w-letterbox-m'],
-       [(modeWidth + 30) * 2, 'w-letterbox-l'],
-       [Infinity, 'w-letterbox-xl'],
+      [[modeWidth + 30, cca.state.State.W_LETTERBOX_S],
+       [modeWidth + 30 + 72, cca.state.State.W_LETTERBOX_M],
+       [(modeWidth + 30) * 2, cca.state.State.W_LETTERBOX_L],
+       [Infinity, cca.state.State.W_LETTERBOX_XL],
       ]
           .forEach(
               ([wSize, classname]) => cca.state.set(
@@ -141,7 +142,8 @@ cca.views.camera.Layout = class {
       // preview-vertical-dock: Dock bottom line of preview between gallery and
       //                        mode selector.
       // otherwise: Vertically center the preview.
-      cca.state.set('preview-vertical-dock', letterboxH / 2 >= 112);
+      cca.state.set(
+          cca.state.State.PREVIEW_VERTICAL_DOCK, letterboxH / 2 >= 112);
     }
   }
 };

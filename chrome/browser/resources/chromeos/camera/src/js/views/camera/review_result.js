@@ -75,7 +75,7 @@ cca.views.camera.ReviewResult = class {
 
     this.reviewVideoResult_.onended = () => {
       this.reviewVideoResult_.currentTime = 0;
-      cca.state.set('playing-result-video', false);
+      cca.state.set(cca.state.State.PLAYING_RESULT_VIDEO, false);
     };
 
     this.confirmResultButton_.addEventListener(
@@ -91,10 +91,10 @@ cca.views.camera.ReviewResult = class {
    * @private
    */
   playResultVideo_() {
-    if (cca.state.get('playing-result-video')) {
+    if (cca.state.get(cca.state.State.PLAYING_RESULT_VIDEO)) {
       return;
     }
-    cca.state.set('playing-result-video', true);
+    cca.state.set(cca.state.State.PLAYING_RESULT_VIDEO, true);
     if (document.activeElement === this.playResultVideoButton_) {
       this.confirmResultButton_.focus();
     }
@@ -114,10 +114,10 @@ cca.views.camera.ReviewResult = class {
     }
     const resolve = this.resolveOpen_;
     this.resolveOpen_ = null;
-    cca.state.set('review-result', false);
-    cca.state.set('review-photo-result', false);
-    cca.state.set('review-video-result', false);
-    cca.state.set('playing-result-video', false);
+    cca.state.set(cca.state.State.REVIEW_RESULT, false);
+    cca.state.set(cca.state.State.REVIEW_PHOTO_RESULT, false);
+    cca.state.set(cca.state.State.REVIEW_VIDEO_RESULT, false);
+    cca.state.set(cca.state.State.PLAYING_RESULT_VIDEO, false);
     this.reviewPhotoResult_.src = '';
     this.reviewVideoResult_.src = '';
     resolve(confirmed);
@@ -132,8 +132,8 @@ cca.views.camera.ReviewResult = class {
   async openPhoto(blob) {
     const img = await cca.util.blobToImage(blob);
     this.reviewPhotoResult_.src = img.src;
-    cca.state.set('review-photo-result', true);
-    cca.state.set('review-result', true);
+    cca.state.set(cca.state.State.REVIEW_PHOTO_RESULT, true);
+    cca.state.set(cca.state.State.REVIEW_RESULT, true);
     this.confirmResultButton_.focus();
 
     return new Promise((resolve) => {
@@ -149,8 +149,8 @@ cca.views.camera.ReviewResult = class {
    */
   async openVideo(fileEntry) {
     this.reviewVideoResult_.src = fileEntry.toURL();
-    cca.state.set('review-video-result', true);
-    cca.state.set('review-result', true);
+    cca.state.set(cca.state.State.REVIEW_VIDEO_RESULT, true);
+    cca.state.set(cca.state.State.REVIEW_RESULT, true);
     this.confirmResultButton_.focus();
 
     return new Promise((resolve) => {

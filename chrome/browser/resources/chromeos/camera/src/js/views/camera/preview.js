@@ -86,7 +86,7 @@ cca.views.camera.Preview = class {
 
     window.addEventListener('resize', () => this.onWindowResize_());
 
-    ['expert', 'show-metadata'].forEach((state) => {
+    [cca.state.State.EXPERT, cca.state.State.SHOW_METADATA].forEach((state) => {
       cca.state.addObserver(state, this.updateShowMetadata_.bind(this));
     });
 
@@ -173,7 +173,7 @@ cca.views.camera.Preview = class {
       }, 100);
       this.stream_ = stream;
       this.updateShowMetadata_();
-      cca.state.set('streaming', true);
+      cca.state.set(cca.state.State.STREAMING, true);
     });
   }
 
@@ -191,7 +191,7 @@ cca.views.camera.Preview = class {
       this.stream_.getVideoTracks()[0].stop();
       this.stream_ = null;
     }
-    cca.state.set('streaming', false);
+    cca.state.set(cca.state.State.STREAMING, false);
   }
 
   /**
@@ -199,7 +199,8 @@ cca.views.camera.Preview = class {
    * @private
    */
   updateShowMetadata_() {
-    if (cca.state.get('expert') && cca.state.get('show-metadata')) {
+    if (cca.state.get(cca.state.State.EXPERT) &&
+        cca.state.get(cca.state.State.SHOW_METADATA)) {
       this.enableShowMetadata_();
     } else {
       this.disableShowMetadata_();

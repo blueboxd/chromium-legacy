@@ -102,7 +102,7 @@ namespace {
 // Convert VideoFrameLayout to ImageProcessor::PortConfig.
 base::Optional<ImageProcessor::PortConfig> VideoFrameLayoutToPortConfig(
     const VideoFrameLayout& layout,
-    const gfx::Size& visible_size,
+    const gfx::Rect& visible_rect,
     const std::vector<VideoFrame::StorageType>& preferred_storage_types) {
   auto fourcc =
       Fourcc::FromVideoPixelFormat(layout.format(), !layout.is_multi_planar());
@@ -112,7 +112,7 @@ base::Optional<ImageProcessor::PortConfig> VideoFrameLayoutToPortConfig(
     return base::nullopt;
   }
   return ImageProcessor::PortConfig(*fourcc, layout.coded_size(),
-                                    layout.planes(), visible_size,
+                                    layout.planes(), visible_rect,
                                     preferred_storage_types);
 }
 }  // namespace
@@ -321,12 +321,13 @@ bool V4L2VideoEncodeAccelerator::CreateImageProcessor(
   // However, it doesn't matter VideoFrame::STORAGE_OWNED_MEMORY is specified
   // for |input_storage_type| here, as long as VideoFrame on Process()'s data
   // can be accessed by VideoFrame::data().
-  auto input_config = VideoFrameLayoutToPortConfig(
-      input_layout, visible_size, {VideoFrame::STORAGE_OWNED_MEMORY});
+  auto input_config =
+      VideoFrameLayoutToPortConfig(input_layout, gfx::Rect(visible_size),
+                                   {VideoFrame::STORAGE_OWNED_MEMORY});
   if (!input_config)
     return false;
   auto output_config = VideoFrameLayoutToPortConfig(
-      output_layout, visible_size,
+      output_layout, gfx::Rect(visible_size),
       {VideoFrame::STORAGE_DMABUFS, VideoFrame::STORAGE_OWNED_MEMORY});
   if (!output_config)
     return false;

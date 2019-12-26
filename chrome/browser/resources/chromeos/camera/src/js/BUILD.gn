@@ -62,6 +62,7 @@ js_library("gallerybutton") {
 
 js_library("metrics") {
   deps = [
+    ":state",
     "externs:chrome_platform_analytics",
   ]
 }
@@ -106,6 +107,9 @@ js_library("perf") {
 js_library("state") {
   deps = [
     ":namespace",
+    ":perf",
+    ":type",
+    "views:view",
   ]
 }
 

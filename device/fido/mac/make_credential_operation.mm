@@ -49,12 +49,7 @@ const std::string& MakeCredentialOperation::RpId() const {
 }
 
 void MakeCredentialOperation::Run() {
-  if (!Init()) {
-    std::move(callback())
-        .Run(CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
-    return;
-  }
-
+  Init();
   // Verify pubKeyCredParams contains ES-256, which is the only algorithm we
   // support.
   auto is_es256 =
@@ -113,17 +108,12 @@ void MakeCredentialOperation::PromptTouchIdDone(bool success) {
   //
   // Note that because the rk bit is not encoded here, a resident credential
   // may overwrite a non-resident credential and vice versa.
-  base::Optional<std::string> encoded_rp_id_user_id =
+  const std::string encoded_rp_id_user_id =
       EncodeRpIdAndUserId(metadata_secret(), RpId(), request().user.id);
-  if (!encoded_rp_id_user_id) {
-    std::move(callback())
-        .Run(CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
-    return;
-  }
   {
     ScopedCFTypeRef<CFMutableDictionaryRef> query = DefaultKeychainQuery();
     CFDictionarySetValue(query, kSecAttrApplicationTag,
-                         base::SysUTF8ToNSString(*encoded_rp_id_user_id));
+                         base::SysUTF8ToNSString(encoded_rp_id_user_id));
     OSStatus status = Keychain::GetInstance().ItemDelete(query);
     if (status != errSecSuccess && status != errSecItemNotFound) {
       OSSTATUS_DLOG(ERROR, status) << "SecItemDelete failed";
@@ -134,14 +124,10 @@ void MakeCredentialOperation::PromptTouchIdDone(bool success) {
   }
 
   // Generate the new key pair.
-  base::Optional<std::vector<uint8_t>> credential_id =
-      GenerateCredentialIdForRequest();
-  if (!credential_id) {
-    FIDO_LOG(ERROR) << "GenerateCredentialIdForRequest failed";
-    std::move(callback())
-        .Run(CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
-    return;
-  }
+  const std::vector<uint8_t> credential_id =
+      SealCredentialId(metadata_secret(), RpId(),
+                       CredentialMetadata::FromPublicKeyCredentialUserEntity(
+                           request().user, request().resident_key_required));
 
   ScopedCFTypeRef<CFMutableDictionaryRef> params(
       CFDictionaryCreateMutable(kCFAllocatorDefault, 0, nullptr, nullptr));
@@ -160,10 +146,10 @@ void MakeCredentialOperation::PromptTouchIdDone(bool success) {
   CFDictionarySetValue(private_key_params, kSecUseAuthenticationContext,
                        authentication_context());
   CFDictionarySetValue(private_key_params, kSecAttrApplicationTag,
-                       base::SysUTF8ToNSString(*encoded_rp_id_user_id));
+                       base::SysUTF8ToNSString(encoded_rp_id_user_id));
   CFDictionarySetValue(private_key_params, kSecAttrApplicationLabel,
-                       [NSData dataWithBytes:credential_id->data()
-                                      length:credential_id->size()]);
+                       [NSData dataWithBytes:credential_id.data()
+                                      length:credential_id.size()]);
 
   ScopedCFTypeRef<CFErrorRef> cferr;
   ScopedCFTypeRef<SecKeyRef> private_key(
@@ -187,7 +173,7 @@ void MakeCredentialOperation::PromptTouchIdDone(bool success) {
   // Create attestation object. There is no separate attestation key pair, so
   // we perform self-attestation.
   base::Optional<AttestedCredentialData> attested_credential_data =
-      MakeAttestedCredentialData(*credential_id,
+      MakeAttestedCredentialData(credential_id,
                                  SecKeyRefToECPublicKey(public_key));
   if (!attested_credential_data) {
     FIDO_LOG(ERROR) << "MakeAttestedCredentialData failed";
@@ -214,13 +200,6 @@ void MakeCredentialOperation::PromptTouchIdDone(bool success) {
               /*x509_certificates=*/std::vector<std::vector<uint8_t>>())));
   std::move(callback())
       .Run(CtapDeviceResponseCode::kSuccess, std::move(response));
-}
-
-base::Optional<std::vector<uint8_t>>
-MakeCredentialOperation::GenerateCredentialIdForRequest() const {
-  return SealCredentialId(metadata_secret(), RpId(),
-                          CredentialMetadata::FromPublicKeyCredentialUserEntity(
-                              request().user, request().resident_key_required));
 }
 
 }  // namespace mac

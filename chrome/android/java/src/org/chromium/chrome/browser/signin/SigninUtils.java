@@ -18,11 +18,13 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.ProfileAccountManagementMetrics;
+import org.chromium.chrome.browser.settings.ManagedPreferencesUtils;
 import org.chromium.chrome.browser.settings.sync.AccountManagementFragment;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.GAIAServiceType;
 import org.chromium.components.signin.SigninActivityMonitor;
+import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -144,6 +146,24 @@ public class SigninUtils {
         if (windowAndroid.showIntent(intent, intentCallback, null)) {
             signinActivityMonitor.activityStarted();
             return true;
+        }
+        return false;
+    }
+
+    /**
+     * Launches the {@link SigninActivity} if signin is allowed.
+     * @param accessPoint {@link SigninAccessPoint} for starting sign-in flow.
+     * @return a boolean indicating if the SigninActivity is launched.
+     */
+    public static boolean startSigninActivityIfAllowed(
+            Context context, @SigninAccessPoint int accessPoint) {
+        SigninManager signinManager = IdentityServicesProvider.get().getSigninManager();
+        if (signinManager.isSignInAllowed()) {
+            SigninActivityLauncher.get().launchActivity(context, accessPoint);
+            return true;
+        }
+        if (signinManager.isSigninDisabledByPolicy()) {
+            ManagedPreferencesUtils.showManagedByAdministratorToast(context);
         }
         return false;
     }

@@ -59,10 +59,6 @@ class API_AVAILABLE(macosx(10.12.2))
   // OperationBase:
   const std::string& RpId() const override;
   void PromptTouchIdDone(bool success) override;
-
-  // Generates a credential ID by invoking SealCredentialId() with parameters
-  // for the request. Note that results are non-deterministic.
-  base::Optional<std::vector<uint8_t>> GenerateCredentialIdForRequest() const;
 };
 
 }  // namespace mac

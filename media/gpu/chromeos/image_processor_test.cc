@@ -107,10 +107,10 @@ class ImageProcessorParamTest
     LOG_ASSERT(input_layout && output_layout);
     ImageProcessor::PortConfig input_config(
         input_fourcc, input_image.Size(), input_layout->planes(),
-        input_image.Size(), input_storage_types);
+        gfx::Rect(input_image.Size()), input_storage_types);
     ImageProcessor::PortConfig output_config(
         output_fourcc, output_image->Size(), output_layout->planes(),
-        output_image->Size(), output_storage_types);
+        gfx::Rect(output_image->Size()), output_storage_types);
     // TODO(crbug.com/917951): Select more appropriate number of buffers.
     constexpr size_t kNumBuffers = 1;
     LOG_ASSERT(output_image->IsMetadataLoaded());

@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.signin;
 
 import android.accounts.Account;
 import android.app.Activity;
-import android.content.Context;
 import android.support.v4.util.ArraySet;
 import android.text.TextUtils;
 
@@ -18,7 +17,6 @@ import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.settings.ManagedPreferencesUtils;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
@@ -52,7 +50,7 @@ public class SigninPromoUtil {
             return false;
         }
 
-        startSigninActivityIfAllowed(activity, SigninAccessPoint.SIGNIN_PROMO);
+        SigninUtils.startSigninActivityIfAllowed(activity, SigninAccessPoint.SIGNIN_PROMO);
         preferenceManager.setSigninPromoLastShownVersion(currentMajorVersion);
         preferenceManager.setSigninPromoLastAccountNames(
                 new ArraySet<>(AccountManagerFacade.get().tryGetGoogleAccountNames()));
@@ -120,24 +118,6 @@ public class SigninPromoUtil {
     }
 
     /**
-     * Launches the {@link SigninActivity} if signin is allowed.
-     * @param accessPoint {@link SigninAccessPoint} for starting sign-in flow.
-     * @return a boolean indicating if the SigninActivity is launched.
-     */
-    public static boolean startSigninActivityIfAllowed(
-            Context context, @SigninAccessPoint int accessPoint) {
-        SigninManager signinManager = IdentityServicesProvider.get().getSigninManager();
-        if (signinManager.isSignInAllowed()) {
-            SigninActivityLauncher.get().launchActivity(context, accessPoint);
-            return true;
-        }
-        if (signinManager.isSigninDisabledByPolicy()) {
-            ManagedPreferencesUtils.showManagedByAdministratorToast(context);
-        }
-        return false;
-    }
-
-    /**
      * A convenience method to create an SigninActivity, passing the access point as an
      * intent extra.
      * @param window WindowAndroid from which to get the Activity/Context.
@@ -147,7 +127,7 @@ public class SigninPromoUtil {
     private static void openSigninActivityForPromo(WindowAndroid window, int accessPoint) {
         Activity activity = window.getActivity().get();
         if (activity != null) {
-            startSigninActivityIfAllowed(activity, accessPoint);
+            SigninUtils.startSigninActivityIfAllowed(activity, accessPoint);
         }
     }
 }

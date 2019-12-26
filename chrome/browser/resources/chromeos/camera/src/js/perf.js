@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 import {ChromeHelper} from './mojo/chrome_helper.js';
-import {PerfInformation} from './type.js'; // eslint-disable-line no-unused-vars
+// eslint-disable-next-line no-unused-vars
+import {PerfInformation} from './type.js';
 
 /**
  * Type for performance event.

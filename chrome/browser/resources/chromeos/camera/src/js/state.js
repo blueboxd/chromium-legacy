@@ -2,19 +2,88 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {assert} from './chrome_util.js';
+import {PerfEvent} from './perf.js';
+import {Mode} from './type.js';
+import {ViewName} from './views/view.js';
+
+/**
+ * @enum {string}
+ */
+export const State = {
+  CAMERA_SWITCHING: 'camera-switching',
+  EXPERT: 'expert',
+  FPS_30: '_30fps',
+  FPS_60: '_60fps',
+  GRID_3x3: '_3x3',
+  GRID_4x4: '_4x4',
+  GRID_GOLDEN: 'golden',
+  GRID: 'grid',
+  HAS_BACK_CAMERA: 'has-back-camera',
+  HAS_FRONT_CAMERA: 'has-front-camera',
+  MAX_WND: 'max-wnd',
+  MIC: 'mic',
+  MIRROR: 'mirror',
+  MODE_SWITCHING: 'mode-switching',
+  MULTI_CAMERA: 'multi-camera',
+  MULTI_FPS: 'multi-fps',
+  NO_RESOLUTION_SETTINGS: 'no-resolution-settings',
+  PLAYING_RESULT_VIDEO: 'playing-result-video',
+  PREVIEW_VERTICAL_DOCK: 'preview-vertical-dock',
+  REVIEW_PHOTO_RESULT: 'review-photo-result',
+  REVIEW_RESULT: 'review-result',
+  REVIEW_VIDEO_RESULT: 'review-video-result',
+  SAVE_METADATA: 'save-metadata',
+  SHOULD_HANDLE_INTENT_RESULT: 'should_handle_intent_result',
+  SHOW_METADATA: 'show-metadata',
+  SQUARE_PREVIEW: 'square-preview',
+  STREAMING: 'streaming',
+  SUSPEND: 'suspend',
+  TABLET_LANDSCAPE: 'tablet-landscape',
+  TAB_NAVIGATION: 'tab-navigation',
+  TAKING: 'taking',
+  TALL: 'tall',
+  TIMER_10SEC: '_10sec',
+  TIMER_3SEC: '_3sec',
+  TIMER: 'timer',
+  W_LETTERBOX_L: 'w-letterbox-l',
+  W_LETTERBOX_M: 'w-letterbox-m',
+  W_LETTERBOX_S: 'w-letterbox-s',
+  W_LETTERBOX: 'w-letterbox',
+  W_LETTERBOX_XL: 'w-letterbox-xl',
+};
+
+/**
+ * @typedef {(State|Mode|ViewName|PerfEvent)}
+ */
+export let StateUnion;
+
+const stateValues =
+    new Set([State, Mode, ViewName, PerfEvent].flatMap(Object.values));
+
+/**
+ * Asserts input string is valid state.
+ * @param {string} s
+ * @return {State}
+ */
+export function assertState(s) {
+  assert(stateValues.has(s), `No such state: ${s}`);
+  return /** @type {State} */ (s);
+}
+
 /**
  * @typedef {function(boolean, cca.PerfInformation=)}
  */
 let StateObserver;  // eslint-disable-line no-unused-vars
 
 /**
- * @type {!Map<string, Set<!StateObserver>>}
+ * @type {!Map<StateUnion, Set<!StateObserver>>}
  */
 const allObservers = new Map();
 
 /**
  * Adds observer function to be called on any state change.
- * @param {string} state State to be observed.
+ * @param {StateUnion} state State to be observed.
  * @param {!StateObserver} observer Observer function called with
  *     newly changed value.
  */
@@ -29,7 +98,7 @@ export function addObserver(state, observer) {
 
 /**
  * Removes observer function to be called on state change.
- * @param {string} state State to remove observer from.
+ * @param {StateUnion} state State to remove observer from.
  * @param {!StateObserver} observer Observer function to be removed.
  * @return {boolean} Whether the observer is in the set and is removed
  *     successfully or not.
@@ -44,7 +113,7 @@ export function removeObserver(state, observer) {
 
 /**
  * Checks if the specified state exists.
- * @param {string} state State to be checked.
+ * @param {StateUnion} state State to be checked.
  * @return {boolean} Whether the state exists.
  */
 export function get(state) {
@@ -54,10 +123,10 @@ export function get(state) {
 /**
  * Sets the specified state on or off. Optionally, pass the information for
  * performance measurement.
- * @param {string} state State to be set.
+ * @param {StateUnion} state State to be set.
  * @param {boolean} val True to set the state on, false otherwise.
- * @param {cca.PerfInformation=} perfInfo Optional information of this state for
- *     performance measurement.
+ * @param {cca.PerfInformation=} perfInfo Optional information of this state
+ *     for performance measurement.
  */
 export function set(state, val, perfInfo = {}) {
   const oldVal = get(state);
@@ -71,6 +140,10 @@ export function set(state, val, perfInfo = {}) {
 }
 
 /** @const */
+cca.state.State = State;
+/** @const */
+cca.state.StateUnion = StateUnion;
+/** @const */
 cca.state.addObserver = addObserver;
 /** @const */
 cca.state.removeObserver = removeObserver;
@@ -78,3 +151,5 @@ cca.state.removeObserver = removeObserver;
 cca.state.get = get;
 /** @const */
 cca.state.set = set;
+/** @const */
+cca.state.assertState = assertState;

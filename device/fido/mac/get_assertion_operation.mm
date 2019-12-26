@@ -46,12 +46,7 @@ const std::string& GetAssertionOperation::RpId() const {
 }
 
 void GetAssertionOperation::Run() {
-  if (!Init()) {
-    std::move(callback())
-        .Run(CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
-    return;
-  }
-
+  Init();
   // Display the macOS Touch ID prompt.
   PromptTouchId(l10n_util::GetStringFUTF16(IDS_WEBAUTHN_TOUCH_ID_PROMPT_REASON,
                                            base::UTF8ToUTF16(RpId())));

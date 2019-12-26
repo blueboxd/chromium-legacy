@@ -427,19 +427,25 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 }
 
 - (void)waitForMainTabCount:(NSUInteger)count {
-  NSString* errorString = [NSString
-      stringWithFormat:@"Failed waiting for main tab count to become %" PRIuNS,
-                       count];
+  __block NSUInteger actualCount = [ChromeEarlGreyAppInterface mainTabCount];
+  NSString* conditionName = [NSString
+      stringWithFormat:@"Waiting for main tab count to become %" PRIuNS, count];
 
   // Allow the UI to become idle, in case any tabs are being opened or closed.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
   GREYCondition* tabCountCheck = [GREYCondition
-      conditionWithName:errorString
+      conditionWithName:conditionName
                   block:^{
-                    return [ChromeEarlGreyAppInterface mainTabCount] == count;
+                    actualCount = [ChromeEarlGreyAppInterface mainTabCount];
+                    return actualCount == count;
                   }];
   bool tabCountEqual = [tabCountCheck waitWithTimeout:kWaitForUIElementTimeout];
+
+  NSString* errorString = [NSString
+      stringWithFormat:@"Failed waiting for main tab count to become %" PRIuNS
+                        "; actual count: %" PRIuNS,
+                       count, actualCount];
   EG_TEST_HELPER_ASSERT_TRUE(tabCountEqual, errorString);
 }
 

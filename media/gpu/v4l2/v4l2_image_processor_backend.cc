@@ -87,6 +87,15 @@ void FillV4L2BufferByGpuMemoryBufferHandle(
   }
 }
 
+struct v4l2_rect ToV4L2Rect(const gfx::Rect& visible_rect) {
+  struct v4l2_rect rect;
+  rect.left = base::checked_cast<__u32>(visible_rect.x());
+  rect.top = base::checked_cast<__u32>(visible_rect.y());
+  rect.width = base::checked_cast<__u32>(visible_rect.width());
+  rect.height = base::checked_cast<__u32>(visible_rect.height());
+  return rect;
+}
+
 }  // namespace
 
 V4L2ImageProcessorBackend::JobRecord::JobRecord()
@@ -305,12 +314,11 @@ V4L2ImageProcessorBackend::CreateWithOutputMode(
 
   const v4l2_pix_format_mplane& pix_mp = format.fmt.pix_mp;
   const gfx::Size negotiated_input_size(pix_mp.width, pix_mp.height);
-  if (!gfx::Rect(negotiated_input_size)
-           .Contains(gfx::Rect(input_config.visible_size))) {
+  if (!gfx::Rect(negotiated_input_size).Contains(input_config.visible_rect)) {
     VLOGF(1) << "Negotiated input allocated size: "
              << negotiated_input_size.ToString()
              << " should contain visible size: "
-             << input_config.visible_size.ToString();
+             << input_config.visible_rect.size().ToString();
     return nullptr;
   }
   std::vector<ColorPlaneLayout> input_planes(pix_mp.num_planes);
@@ -362,9 +370,9 @@ V4L2ImageProcessorBackend::CreateWithOutputMode(
       new V4L2ImageProcessorBackend(
           backend_task_runner, std::move(device),
           PortConfig(input_config.fourcc, negotiated_input_size, input_planes,
-                     input_config.visible_size, {input_storage_type}),
+                     input_config.visible_rect, {input_storage_type}),
           PortConfig(output_config.fourcc, negotiated_output_size,
-                     output_planes, output_config.visible_size,
+                     output_planes, output_config.visible_rect,
                      {output_storage_type}),
           input_memory_type, output_memory_type, output_mode, num_buffers,
           std::move(error_cb)));
@@ -592,13 +600,7 @@ bool V4L2ImageProcessorBackend::CreateInputBuffers() {
   if (device_->Ioctl(VIDIOC_S_CTRL, &control) != 0)
     DVLOGF(4) << "V4L2_CID_ALPHA_COMPONENT is not supported";
 
-  struct v4l2_rect visible_rect;
-  visible_rect.left = 0;
-  visible_rect.top = 0;
-  visible_rect.width =
-      base::checked_cast<__u32>(input_config_.visible_size.width());
-  visible_rect.height =
-      base::checked_cast<__u32>(input_config_.visible_size.height());
+  struct v4l2_rect visible_rect = ToV4L2Rect(input_config_.visible_rect);
 
   struct v4l2_selection selection_arg;
   memset(&selection_arg, 0, sizeof(selection_arg));
@@ -636,13 +638,7 @@ bool V4L2ImageProcessorBackend::CreateOutputBuffers() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(backend_sequence_checker_);
   DCHECK_EQ(output_queue_, nullptr);
 
-  struct v4l2_rect visible_rect;
-  visible_rect.left = 0;
-  visible_rect.top = 0;
-  visible_rect.width =
-      base::checked_cast<__u32>(output_config_.visible_size.width());
-  visible_rect.height =
-      base::checked_cast<__u32>(output_config_.visible_size.height());
+  struct v4l2_rect visible_rect = ToV4L2Rect(output_config_.visible_rect);
 
   output_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
   if (!output_queue_)

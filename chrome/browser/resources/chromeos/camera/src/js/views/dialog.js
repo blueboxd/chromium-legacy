@@ -19,33 +19,31 @@ cca.views = cca.views || {};
  */
 cca.views.Dialog = class extends cca.views.View {
   /**
-   * @param {string} viewId Root element id of dialog view.
+   * @param {cca.views.ViewName} name View name of the dialog.
    */
-  constructor(viewId) {
-    super(viewId, true);
+  constructor(name) {
+    super(name, true);
 
     /**
      * @type {!HTMLButtonElement}
      * @private
      */
     this.positiveButton_ = cca.assertInstanceof(
-        document.querySelector(`${viewId} .dialog-positive-button`),
-        HTMLButtonElement);
+        this.root.querySelector('.dialog-positive-button'), HTMLButtonElement);
 
     /**
      * @type {!HTMLButtonElement}
      * @private
      */
     this.negativeButton_ = cca.assertInstanceof(
-        document.querySelector(`${viewId} .dialog-negative-button`),
-        HTMLButtonElement);
+        this.root.querySelector('.dialog-negative-button'), HTMLButtonElement);
 
     /**
      * @type {!HTMLElement}
      * @private
      */
     this.messageHolder_ = cca.assertInstanceof(
-        document.querySelector(`${viewId} .dialog-msg-holder`), HTMLElement);
+        this.root.querySelector('.dialog-msg-holder'), HTMLElement);
 
     this.positiveButton_.addEventListener('click', () => this.leave(true));
     if (this.negativeButton_) {

@@ -40,12 +40,12 @@ cca.views.DeviceSetting;
  */
 cca.views.BaseSettings = class extends cca.views.View {
   /**
-   * @param {string} selector Selector text of the view's root element.
+   * @param {cca.views.ViewName} name Name of the view.
    * @param {!Object<string, !function(Event=)>=} itemHandlers Click-handlers
    *     mapped by element ids.
    */
-  constructor(selector, itemHandlers = {}) {
-    super(selector, true, true);
+  constructor(name, itemHandlers = {}) {
+    super(name, true, true);
 
     this.root.querySelector('.menu-header button')
         .addEventListener('click', () => this.leave());
@@ -66,13 +66,13 @@ cca.views.BaseSettings = class extends cca.views.View {
   }
   /**
    * Opens sub-settings.
-   * @param {string} id Settings identifier.
+   * @param {cca.views.ViewName} name Name of settings view.
    * @private
    */
-  openSubSettings(id) {
+  openSubSettings(name) {
     // Dismiss master-settings if sub-settings was dismissed by background
     // click.
-    cca.nav.open(id).then((cond) => cond && cond.bkgnd && this.leave(cond));
+    cca.nav.open(name).then((cond) => cond && cond.bkgnd && this.leave(cond));
   }
 };
 
@@ -85,11 +85,15 @@ cca.views.MasterSettings = class extends cca.views.BaseSettings {
    * @public
    */
   constructor() {
-    super('#settings', {
-      'settings-gridtype': () => this.openSubSettings('gridsettings'),
-      'settings-timerdur': () => this.openSubSettings('timersettings'),
-      'settings-resolution': () => this.openSubSettings('resolutionsettings'),
-      'settings-expert': () => this.openSubSettings('expertsettings'),
+    super(cca.views.ViewName.SETTINGS, {
+      'settings-gridtype': () =>
+          this.openSubSettings(cca.views.ViewName.GRID_SETTINGS),
+      'settings-timerdur': () =>
+          this.openSubSettings(cca.views.ViewName.TIMER_SETTINGS),
+      'settings-resolution': () =>
+          this.openSubSettings(cca.views.ViewName.RESOLUTION_SETTINGS),
+      'settings-expert': () =>
+          this.openSubSettings(cca.views.ViewName.EXPERT_SETTINGS),
       'settings-feedback': () => this.openFeedback(),
       'settings-help': () => cca.util.openHelp(),
     });
@@ -147,7 +151,7 @@ cca.views.ResolutionSettings = class extends cca.views.BaseSettings {
         }
       }
     };
-    super('#resolutionsettings', {
+    super(cca.views.ViewName.RESOLUTION_SETTINGS, {
       'settings-front-photores': createOpenMenuHandler(
           () => this.frontSetting_, () => this.frontPhotoItem_, true),
       'settings-front-videores': createOpenMenuHandler(
@@ -265,7 +269,7 @@ cca.views.ResolutionSettings = class extends cca.views.BaseSettings {
       /** @type {?Array<!cca.device.Camera3DeviceInfo>} */
       const devices = await updater.getCamera3DevicesInfo();
       if (devices === null) {
-        cca.state.set('no-resolution-settings', true);
+        cca.state.set(cca.state.State.NO_RESOLUTION_SETTINGS, true);
         return;
       }
 
@@ -392,7 +396,8 @@ cca.views.ResolutionSettings = class extends cca.views.BaseSettings {
     };
 
     // Update front camera setting
-    cca.state.set('has-front-camera', this.frontSetting_ !== null);
+    cca.state.set(
+        cca.state.State.HAS_FRONT_CAMERA, this.frontSetting_ !== null);
     if (this.frontSetting_) {
       const {deviceId, photo, video} = this.frontSetting_;
       prepItem(this.frontPhotoItem_, deviceId, photo, this.photoOptTextTempl_);
@@ -400,7 +405,7 @@ cca.views.ResolutionSettings = class extends cca.views.BaseSettings {
     }
 
     // Update back camera setting
-    cca.state.set('has-back-camera', this.backSetting_ !== null);
+    cca.state.set(cca.state.State.HAS_BACK_CAMERA, this.backSetting_ !== null);
     if (this.backSetting_) {
       const {deviceId, photo, video} = this.backSetting_;
       prepItem(this.backPhotoItem_, deviceId, photo, this.photoOptTextTempl_);
@@ -472,13 +477,14 @@ cca.views.ResolutionSettings = class extends cca.views.BaseSettings {
       prepItem(videoItem, deviceId, config.video, this.videoOptTextTempl_);
     });
     // Force closing opened setting of unplugged device.
-    if ((cca.state.get('photoresolutionsettings') ||
-         cca.state.get('videoresolutionsettings')) &&
+    if ((cca.state.get(cca.views.ViewName.PHOTO_RESOLUTION_SETTINGS) ||
+         cca.state.get(cca.views.ViewName.VIDEO_RESOLUTION_SETTINGS)) &&
         this.openedSettingDeviceId_ !== null &&
         this.getDeviceSetting_(this.openedSettingDeviceId_) === null) {
       cca.nav.close(
-          cca.state.get('photoresolutionsettings') ? 'photoresolutionsettings' :
-                                                     'videoresolutionsettings');
+          cca.state.get(cca.views.ViewName.PHOTO_RESOLUTION_SETTINGS) ?
+              cca.views.ViewName.PHOTO_RESOLUTION_SETTINGS :
+              cca.views.ViewName.VIDEO_RESOLUTION_SETTINGS);
     }
   }
 
@@ -504,7 +510,7 @@ cca.views.ResolutionSettings = class extends cca.views.BaseSettings {
         this.photoOptTextTempl_(photo.prefResol, photo.resols);
 
     // Update setting option if it's opened.
-    if (cca.state.get('photoresolutionsettings') &&
+    if (cca.state.get(cca.views.ViewName.PHOTO_RESOLUTION_SETTINGS) &&
         this.openedSettingDeviceId_ === deviceId) {
       this.photoResMenu_
           .querySelector(
@@ -537,7 +543,7 @@ cca.views.ResolutionSettings = class extends cca.views.BaseSettings {
         this.videoOptTextTempl_(video.prefResol);
 
     // Update setting option if it's opened.
-    if (cca.state.get('videoresolutionsettings') &&
+    if (cca.state.get(cca.views.ViewName.VIDEO_RESOLUTION_SETTINGS) &&
         this.openedSettingDeviceId_ === deviceId) {
       this.videoResMenu_
           .querySelector(
@@ -561,7 +567,7 @@ cca.views.ResolutionSettings = class extends cca.views.BaseSettings {
         resolItem, this.photoResMenu_, this.photoOptTextTempl_,
         (r) => this.photoPreferrer_.changePreferredResolution(deviceId, r),
         photo.resols, photo.prefResol);
-    this.openSubSettings('photoresolutionsettings');
+    this.openSubSettings(cca.views.ViewName.PHOTO_RESOLUTION_SETTINGS);
   }
 
   /**
@@ -577,7 +583,7 @@ cca.views.ResolutionSettings = class extends cca.views.BaseSettings {
         resolItem, this.videoResMenu_, this.videoOptTextTempl_,
         (r) => this.videoPreferrer_.changePreferredResolution(deviceId, r),
         video.resols, video.prefResol);
-    this.openSubSettings('videoresolutionsettings');
+    this.openSubSettings(cca.views.ViewName.VIDEO_RESOLUTION_SETTINGS);
   }
 
   /**
@@ -614,7 +620,8 @@ cca.views.ResolutionSettings = class extends cca.views.BaseSettings {
         inputElement.checked = true;
       }
       inputElement.addEventListener('click', (event) => {
-        if (!cca.state.get('streaming') || cca.state.get('taking')) {
+        if (!cca.state.get(cca.state.State.STREAMING) ||
+            cca.state.get(cca.state.State.TAKING)) {
           event.preventDefault();
         }
       });

@@ -80,7 +80,6 @@ class SourceUrlRecorderWebContentsObserver
 
   // blink::mojom::UkmSourceIdFrameHost
   void SetDocumentSourceId(int64_t source_id) override;
-  void GetNavigationSourceId(GetNavigationSourceIdCallback callback) override;
 
  private:
   explicit SourceUrlRecorderWebContentsObserver(
@@ -316,11 +315,6 @@ ukm::SourceId SourceUrlRecorderWebContentsObserver::GetLastCommittedSourceId()
 ukm::SourceId SourceUrlRecorderWebContentsObserver::
     GetLastCommittedFullNavigationOrSameDocumentSourceId() const {
   return last_committed_full_navigation_or_same_document_source_id_;
-}
-
-void SourceUrlRecorderWebContentsObserver::GetNavigationSourceId(
-    GetNavigationSourceIdCallback callback) {
-  std::move(callback).Run(last_committed_full_navigation_source_id_);
 }
 
 void SourceUrlRecorderWebContentsObserver::SetDocumentSourceId(

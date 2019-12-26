@@ -22,7 +22,7 @@ cca.views.Warning = class extends cca.views.View {
    * @public
    */
   constructor() {
-    super('#warning');
+    super(cca.views.ViewName.WARNING);
 
     /**
      * @type {!Array<string>}

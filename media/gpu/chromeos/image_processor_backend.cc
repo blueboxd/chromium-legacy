@@ -40,22 +40,22 @@ ImageProcessorBackend::PortConfig::PortConfig(
     Fourcc fourcc,
     const gfx::Size& size,
     const std::vector<ColorPlaneLayout>& planes,
-    const gfx::Size& visible_size,
+    const gfx::Rect& visible_rect,
     const std::vector<VideoFrame::StorageType>& preferred_storage_types)
     : fourcc(fourcc),
       size(size),
       planes(planes),
-      visible_size(visible_size),
+      visible_rect(visible_rect),
       preferred_storage_types(preferred_storage_types) {}
 
 ImageProcessorBackend::PortConfig::~PortConfig() = default;
 
 std::string ImageProcessorBackend::PortConfig::ToString() const {
   return base::StringPrintf(
-      "PortConfig(format:%s, size:%s, planes: %s, visible_size:%s, "
+      "PortConfig(format:%s, size:%s, planes: %s, visible_rect:%s, "
       "storage_types:%s)",
       fourcc.ToString().c_str(), size.ToString().c_str(),
-      VectorToString(planes).c_str(), visible_size.ToString().c_str(),
+      VectorToString(planes).c_str(), visible_rect.ToString().c_str(),
       VectorToString(preferred_storage_types).c_str());
 }
 

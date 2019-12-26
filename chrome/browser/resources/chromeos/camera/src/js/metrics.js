@@ -112,7 +112,13 @@ cca.metrics.IntentResultType = {
  */
 cca.metrics.captureType_ = function(
     facingMode, length, resolution, intentResult) {
-  var condState = (states, cond = undefined, strict = undefined) => {
+  /**
+   * @param {!Array<cca.state.StateUnion>} states
+   * @param {cca.state.StateUnion=} cond
+   * @param {boolean=} strict
+   * @return {string}
+   */
+  const condState = (states, cond = undefined, strict = undefined) => {
     // Return the first existing state among the given states only if there is
     // no gate condition or the condition is met.
     const prerequisite = !cond || cca.state.get(cond);
@@ -123,18 +129,22 @@ cca.metrics.captureType_ = function(
         'n/a';
   };
 
+  const State = cca.state.State;
   return cca.metrics.base_.category('capture')
       .action(condState(Object.values(cca.Mode)))
       .label(facingMode || '(not set)')
-      .dimen(3, condState(['sound']))
-      .dimen(4, condState(['mirror']))
-      .dimen(5, condState(['_3x3', '_4x4', 'golden'], 'grid'))
-      .dimen(6, condState(['_3sec', '_10sec'], 'timer'))
-      .dimen(7, condState(['mic'], cca.Mode.VIDEO, true))
-      .dimen(8, condState(['max-wnd']))
-      .dimen(9, condState(['tall']))
+      // Skips 3rd dimension for obsolete 'sound' state.
+      .dimen(4, condState([State.MIRROR]))
+      .dimen(
+          5,
+          condState(
+              [State.GRID_3x3, State.GRID_4x4, State.GRID_GOLDEN], State.GRID))
+      .dimen(6, condState([State.TIMER_3SEC, State.TIMER_10SEC], State.TIMER))
+      .dimen(7, condState([State.MIC], cca.Mode.VIDEO, true))
+      .dimen(8, condState([State.MAX_WND]))
+      .dimen(9, condState([State.TALL]))
       .dimen(10, resolution.toString())
-      .dimen(11, condState(['_30fps', '_60fps'], cca.Mode.VIDEO, true))
+      .dimen(11, condState([State.FPS_30, State.FPS_60], cca.Mode.VIDEO, true))
       .dimen(12, intentResult)
       .value(length || 0);
 };

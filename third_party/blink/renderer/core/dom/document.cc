@@ -4133,19 +4133,6 @@ bool Document::CheckCompletedInternal() {
       return false;
   }
 
-  // !ukm_binding_ is checked to avoid repeating work.
-  if (frame_ && frame_->Client()->GetRemoteNavigationAssociatedInterfaces() &&
-      !ukm_binding_) {
-    ukm_binding_ = std::make_unique<
-        mojo::AssociatedRemote<mojom::blink::UkmSourceIdFrameHost>>();
-    frame_->Client()->GetRemoteNavigationAssociatedInterfaces()->GetInterface(
-        ukm_binding_.get());
-    DCHECK(ukm_binding_->is_bound());
-    auto callback =
-        WTF::Bind(&Document::SetNavigationSourceId, WrapPersistent(this));
-    (*ukm_binding_.get())->GetNavigationSourceId(std::move(callback));
-  }
-
   // OK, completed. Fire load completion events as needed.
   SetReadyState(kComplete);
   if (LoadEventStillNeeded())
@@ -4172,8 +4159,11 @@ bool Document::CheckCompletedInternal() {
 
     // Send the source ID of the document to the browser.
     if (frame_->Client()->GetRemoteNavigationAssociatedInterfaces()) {
-      DCHECK(ukm_binding_->is_bound());
-      (*ukm_binding_.get())->SetDocumentSourceId(ukm_source_id_);
+      mojo::AssociatedRemote<mojom::blink::UkmSourceIdFrameHost> ukm_binding;
+      frame_->Client()->GetRemoteNavigationAssociatedInterfaces()->GetInterface(
+          &ukm_binding);
+      DCHECK(ukm_binding.is_bound());
+      ukm_binding->SetDocumentSourceId(ukm_source_id_);
     }
 
     frame_->GetFrameScheduler()->RegisterStickyFeature(
@@ -8639,104 +8629,6 @@ void Document::CountUse(mojom::WebFeature feature) {
   if (DocumentLoader* loader = Loader()) {
     loader->CountUse(feature);
   }
-}
-
-void Document::RecordCallInDetachedWindow(
-    v8::Isolate::UseCounterFeature reason) {
-  // Emit each reason only once (max twice, in the case explained below).
-  // We're mainly interested if this kind of call occurred in a page or not.
-  // It would be nice to count how many times, but that would flood the UKM
-  // infrastructure with too many events.
-  if (calls_in_detached_window_emitted_.Contains(reason))
-    return;
-
-  if (navigation_source_id_ == ukm::kInvalidSourceId) {
-    // It's possible that navigation_source_id_ isn't set yet. Emit the event
-    // with invalid ID (at most once) so that we could potentially make use of
-    // it in combination with DocumentCreated event, using document's source ID.
-    // However, save it to give it a chance to be emitted again with valid
-    // navigation_source_id_.
-    if (calls_in_detached_window_orphaned_.Contains(reason))
-      return;
-    calls_in_detached_window_orphaned_.insert(reason);
-  }
-
-  HashSet<v8::Isolate::UseCounterFeature> reasons;
-  reasons.insert(reason);
-  EmitDetachedWindowsUkmEvent(reasons);
-}
-
-void Document::SetNavigationSourceId(int64_t source_id) {
-  navigation_source_id_ = source_id;
-  if (navigation_source_id_ != ukm::kInvalidSourceId) {
-    // Now that a valid navigation_source_id_ is set, re-emit the DetacheWindows
-    // event for cases that were emitted with invalid ID.
-    EmitDetachedWindowsUkmEvent(calls_in_detached_window_orphaned_);
-    calls_in_detached_window_orphaned_.clear();
-  }
-}
-
-void Document::EmitDetachedWindowsUkmEvent(
-    const HashSet<v8::Isolate::UseCounterFeature>& reasons) {
-  if (reasons.IsEmpty())
-    return;
-
-  DCHECK_NE(ukm_source_id_, ukm::kInvalidSourceId);
-  ukm::builders::DetachedWindows_Experimental builder(ukm_source_id_);
-  // Invalid ID should be 0 to take advantage of the protobuf default.
-  DCHECK_EQ(ukm::kInvalidSourceId, 0);
-  if (navigation_source_id_ != ukm::kInvalidSourceId)
-    builder.SetNavigationSourceId(navigation_source_id_);
-  for (auto reason : reasons) {
-    if (navigation_source_id_ != ukm::kInvalidSourceId)
-      calls_in_detached_window_emitted_.insert(reason);
-
-    switch (reason) {
-      case v8::Isolate::kCallInDetachedWindowByNavigation:
-        builder.SetNumberOfCallsInDetachedWindowByNavigation(1);
-        break;
-      case v8::Isolate::kCallInDetachedWindowByNavigationAfter10s:
-        builder
-            .SetNumberOfCallsInDetachedWindowByNavigation_After10sSinceDetaching(
-                1);
-        break;
-      case v8::Isolate::kCallInDetachedWindowByNavigationAfter1min:
-        builder
-            .SetNumberOfCallsInDetachedWindowByNavigation_After1minSinceDetaching(
-                1);
-        break;
-      case v8::Isolate::kCallInDetachedWindowByClosing:
-        builder.SetNumberOfCallsInDetachedWindowByClosing(1);
-        break;
-      case v8::Isolate::kCallInDetachedWindowByClosingAfter10s:
-        builder
-            .SetNumberOfCallsInDetachedWindowByClosing_After10sSinceDetaching(
-                1);
-        break;
-      case v8::Isolate::kCallInDetachedWindowByClosingAfter1min:
-        builder
-            .SetNumberOfCallsInDetachedWindowByClosing_After1minSinceDetaching(
-                1);
-        break;
-      case v8::Isolate::kCallInDetachedWindowByOtherReason:
-        builder.SetNumberOfCallsInDetachedWindowByOtherReason(1);
-        break;
-      case v8::Isolate::kCallInDetachedWindowByOtherReasonAfter10s:
-        builder
-            .SetNumberOfCallsInDetachedWindowByOtherReason_After10sSinceDetaching(
-                1);
-        break;
-      case v8::Isolate::kCallInDetachedWindowByOtherReasonAfter1min:
-        builder
-            .SetNumberOfCallsInDetachedWindowByOtherReason_After1minSinceDetaching(
-                1);
-        break;
-      default:
-        LOG(DFATAL) << "Use counter not related to detached windows: "
-                    << reason;
-    }
-  }
-  builder.Record(UkmRecorder());
 }
 
 void Document::CountDeprecation(mojom::WebFeature feature) {

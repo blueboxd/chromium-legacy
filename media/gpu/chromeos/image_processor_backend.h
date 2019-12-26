@@ -17,6 +17,7 @@
 #include "media/base/video_frame.h"
 #include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/media_gpu_export.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media {
@@ -49,7 +50,7 @@ class MEDIA_GPU_EXPORT ImageProcessorBackend {
         Fourcc fourcc,
         const gfx::Size& size,
         const std::vector<ColorPlaneLayout>& planes,
-        const gfx::Size& visible_size,
+        const gfx::Rect& visible_rect,
         const std::vector<VideoFrame::StorageType>& preferred_storage_types);
     ~PortConfig();
 
@@ -63,7 +64,7 @@ class MEDIA_GPU_EXPORT ImageProcessorBackend {
     // Output human readable string of PortConfig.
     // Example:
     // PortConfig(format::NV12, size:640x480, planes:[(640, 0, 307200),
-    // (640,0,153600)], visible_size:640x480, storage_types:[DMABUFS])
+    // (640,0,153600)], visible_rect:0, 0, 640x480, storage_types:[DMABUFS])
     std::string ToString() const;
 
     // Video frame format represented as fourcc type.
@@ -77,7 +78,7 @@ class MEDIA_GPU_EXPORT ImageProcessorBackend {
 
     // Layout property (stride, offset, size of bytes) for each color plane.
     const std::vector<ColorPlaneLayout> planes;
-    const gfx::Size visible_size;
+    const gfx::Rect visible_rect;
     // List of preferred storage types.
     const std::vector<VideoFrame::StorageType> preferred_storage_types;
   };

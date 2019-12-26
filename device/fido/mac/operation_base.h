@@ -43,15 +43,7 @@ class API_AVAILABLE(macosx(10.12.2)) OperationBase : public Operation {
 
  protected:
   // Subclasses must call Init() at the beginning of Run().
-  bool Init() {
-    base::Optional<std::string> encoded_rp_id =
-        EncodeRpId(metadata_secret(), RpId());
-    if (!encoded_rp_id)
-      return false;
-
-    encoded_rp_id_ = std::move(*encoded_rp_id);
-    return true;
-  }
+  void Init() { encoded_rp_id_ = EncodeRpId(metadata_secret(), RpId()); }
 
   // PromptTouchId triggers a Touch ID consent dialog with the given reason
   // string. Subclasses implement the PromptTouchIdDone callback to receive the

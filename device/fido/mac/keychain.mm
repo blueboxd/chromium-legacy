@@ -87,19 +87,14 @@ static std::list<Credential> FindCredentialsImpl(
     const std::string& rp_id,
     const std::set<std::vector<uint8_t>>& allowed_credential_ids,
     LAContext* authentication_context) API_AVAILABLE(macosx(10.12.2)) {
-  base::Optional<std::string> encoded_rp_id =
-      EncodeRpId(metadata_secret, rp_id);
-  if (!encoded_rp_id) {
-    return {};
-  }
-
   base::ScopedCFTypeRef<CFMutableDictionaryRef> query(
       CFDictionaryCreateMutable(kCFAllocatorDefault, 0, nullptr, nullptr));
   CFDictionarySetValue(query, kSecClass, kSecClassKey);
   CFDictionarySetValue(query, kSecAttrAccessGroup,
                        base::SysUTF8ToNSString(keychain_access_group));
-  CFDictionarySetValue(query, kSecAttrLabel,
-                       base::SysUTF8ToNSString(*encoded_rp_id));
+  CFDictionarySetValue(
+      query, kSecAttrLabel,
+      base::SysUTF8ToNSString(EncodeRpId(metadata_secret, rp_id)));
   if (authentication_context) {
     CFDictionarySetValue(query, kSecUseAuthenticationContext,
                          authentication_context);

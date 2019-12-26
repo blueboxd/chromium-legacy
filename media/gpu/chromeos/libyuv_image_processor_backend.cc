@@ -116,10 +116,10 @@ std::unique_ptr<ImageProcessorBackend> LibYUVImageProcessorBackend::Create(
   scoped_refptr<VideoFrame> intermediate_frame;
 
   if (res == SupportResult::SupportedWithPivot) {
-    intermediate_frame =
-        VideoFrame::CreateFrame(PIXEL_FORMAT_I420, input_config.visible_size,
-                                gfx::Rect(input_config.visible_size),
-                                input_config.visible_size, base::TimeDelta());
+    intermediate_frame = VideoFrame::CreateFrame(
+        PIXEL_FORMAT_I420, input_config.visible_rect.size(),
+        input_config.visible_rect, input_config.visible_rect.size(),
+        base::TimeDelta());
     if (!intermediate_frame) {
       VLOGF(1) << "Failed to create intermediate frame";
       return nullptr;
@@ -130,10 +130,10 @@ std::unique_ptr<ImageProcessorBackend> LibYUVImageProcessorBackend::Create(
       base::WrapUnique<ImageProcessorBackend>(new LibYUVImageProcessorBackend(
           std::move(video_frame_mapper), std::move(intermediate_frame),
           PortConfig(input_config.fourcc, input_config.size,
-                     input_config.planes, input_config.visible_size,
+                     input_config.planes, input_config.visible_rect,
                      {input_storage_type}),
           PortConfig(output_config.fourcc, output_config.size,
-                     output_config.planes, output_config.visible_size,
+                     output_config.planes, output_config.visible_rect,
                      {output_storage_type}),
           OutputMode::IMPORT, std::move(error_cb),
           std::move(backend_task_runner)));

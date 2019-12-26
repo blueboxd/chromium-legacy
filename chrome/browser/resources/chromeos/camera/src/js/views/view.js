@@ -5,6 +5,22 @@
 import {assertInstanceof} from '../chrome_util.js';
 import * as toast from '../toast.js';
 
+/**
+ * @enum {string}
+ */
+export const ViewName = {
+  CAMERA: 'camera',
+  EXPERT_SETTINGS: 'expertsettings',
+  GRID_SETTINGS: 'gridsettings',
+  MESSAGE_DIALOG: 'message-dialog',
+  PHOTO_RESOLUTION_SETTINGS: 'photoresolutionsettings',
+  RESOLUTION_SETTINGS: 'resolutionsettings',
+  SETTINGS: 'settings',
+  TIMER_SETTINGS: 'timersettings',
+  VIDEO_RESOLUTION_SETTINGS: 'videoresolutionsettings',
+  WARNING: 'warning',
+};
+
 /* eslint-disable no-unused-vars */
 
 /**
@@ -35,18 +51,24 @@ let EnterOptions;
  */
 export class View {
   /**
-   * @param {string} selector Selector text of the view's root element.
+   * @param {ViewName} name Unique name of view which should be same as its DOM
+   *     element id.
    * @param {boolean=} dismissByEsc Enable dismissible by Esc-key.
    * @param {boolean=} dismissByBkgndClick Enable dismissible by
    *     background-click.
    */
-  constructor(selector, dismissByEsc = false, dismissByBkgndClick = false) {
+  constructor(name, dismissByEsc = false, dismissByBkgndClick = false) {
+    /**
+     * @const {ViewName}
+     */
+    this.name = name;
+
     /**
      * @type {!HTMLElement}
      * @protected
      */
     this.rootElement_ =
-        assertInstanceof(document.querySelector(selector), HTMLElement);
+        assertInstanceof(document.querySelector(`#${name}`), HTMLElement);
 
     /**
      * @type {Promise<*>}
@@ -168,5 +190,7 @@ export class View {
   }
 }
 
+/** @const */
+cca.views.ViewName = ViewName;
 /** @const */
 cca.views.View = View;

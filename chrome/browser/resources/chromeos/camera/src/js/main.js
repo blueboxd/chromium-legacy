@@ -58,7 +58,7 @@ cca.App = class {
     this.cameraView_ = (() => {
       const intent = this.backgroundOps_.getIntent();
       if (intent !== null && intent.shouldHandleResult) {
-        cca.state.set('should-handle-intent-result', true);
+        cca.state.set(cca.state.State.SHOULD_HANDLE_INTENT_RESULT, true);
         return new cca.views.CameraIntent(
             intent, this.infoUpdater_, this.photoPreferrer_,
             this.videoPreferrer_);
@@ -80,15 +80,15 @@ cca.App = class {
     cca.nav.setup([
       this.cameraView_,
       new cca.views.MasterSettings(),
-      new cca.views.BaseSettings('#gridsettings'),
-      new cca.views.BaseSettings('#timersettings'),
+      new cca.views.BaseSettings(cca.views.ViewName.GRID_SETTINGS),
+      new cca.views.BaseSettings(cca.views.ViewName.TIMER_SETTINGS),
       new cca.views.ResolutionSettings(
           this.infoUpdater_, this.photoPreferrer_, this.videoPreferrer_),
-      new cca.views.BaseSettings('#photoresolutionsettings'),
-      new cca.views.BaseSettings('#videoresolutionsettings'),
-      new cca.views.BaseSettings('#expertsettings'),
+      new cca.views.BaseSettings(cca.views.ViewName.PHOTO_RESOLUTION_SETTINGS),
+      new cca.views.BaseSettings(cca.views.ViewName.VIDEO_RESOLUTION_SETTINGS),
+      new cca.views.BaseSettings(cca.views.ViewName.EXPERT_SETTINGS),
       new cca.views.Warning(),
-      new cca.views.Dialog('#message-dialog'),
+      new cca.views.Dialog(cca.views.ViewName.MESSAGE_DIALOG),
     ]);
 
     this.backgroundOps_.bindForegroundOps(this);
@@ -100,7 +100,8 @@ cca.App = class {
    */
   setupToggles_() {
     cca.proxy.browserProxy.localStorageGet(
-        {expert: false}, ({expert}) => cca.state.set('expert', expert));
+        {expert: false},
+        ({expert}) => cca.state.set(cca.state.State.EXPERT, expert));
     document.querySelectorAll('input').forEach((element) => {
       element.addEventListener(
           'keypress',
@@ -115,7 +116,8 @@ cca.App = class {
       };
       element.addEventListener('change', (event) => {
         if (element.dataset.state !== undefined) {
-          cca.state.set(element.dataset.state, element.checked);
+          cca.state.set(
+              cca.state.assertState(element.dataset.state), element.checked);
         }
         if (event.isTrusted) {
           save(element);
@@ -159,10 +161,9 @@ cca.App = class {
               });
         })
         .then((external) => {
-          cca.state.set('ext-fs', external);
           cca.assert(cca.models.FileSystem.externalDir !== null);
           this.galleryButton_.initialize(cca.models.FileSystem.externalDir);
-          cca.nav.open('camera');
+          cca.nav.open(cca.views.ViewName.CAMERA);
         })
         .catch((error) => {
           console.error(error);
@@ -202,7 +203,7 @@ cca.App = class {
    * @return {!Promise}
    */
   async suspend() {
-    cca.state.set('suspend', true);
+    cca.state.set(cca.state.State.SUSPEND, true);
     await this.cameraView_.start();
     chrome.app.window.current().hide();
     this.backgroundOps_.notifySuspension();
@@ -212,7 +213,7 @@ cca.App = class {
    * Resumes app from suspension and shows app window.
    */
   resume() {
-    cca.state.set('suspend', false);
+    cca.state.set(cca.state.State.SUSPEND, false);
     chrome.app.window.current().show();
     this.backgroundOps_.notifyActivation();
   }
@@ -241,15 +242,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     cca.metrics.log(cca.metrics.Type.PERF, event, duration, extras);
   });
   const states = Object.values(cca.perf.PerfEvent);
-  states.push('taking');
+  states.push(cca.state.State.TAKING);
   states.forEach((state) => {
     cca.state.addObserver(state, (val, extras) => {
       let event = state;
-      if (state === 'taking') {
+      if (state === cca.state.State.TAKING) {
         // 'taking' state indicates either taking photo or video. Skips for
         // video-taking case since we only want to collect the metrics of
         // photo-taking.
-        if (cca.state.get('video')) {
+        if (cca.state.get(cca.Mode.VIDEO)) {
           return;
         }
         event = cca.perf.PerfEvent.PHOTO_TAKING;

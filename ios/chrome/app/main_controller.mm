@@ -1542,14 +1542,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // Update the snapshot before switching another application mode.  This
   // ensures that the snapshot is correct when links are opened in a different
   // application mode.
-  WebStateList* webStateList = self.currentBVC.tabModel.webStateList;
-  if (webStateList) {
-    web::WebState* webState = webStateList->GetActiveWebState();
-    if (webState) {
-      SnapshotTabHelper::FromWebState(webState)->UpdateSnapshotWithCallback(
-          nil);
-    }
-  }
+  [self updateActiveWebStateSnapshot];
 
   self.interfaceProvider.currentInterface = newInterface;
 
@@ -1919,6 +1912,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 - (void)openSelectedTabInMode:(ApplicationModeForTabOpening)tabOpeningTargetMode
             withUrlLoadParams:(const UrlLoadParams&)urlLoadParams
                    completion:(ProceduralBlock)completion {
+  // Update the snapshot before opening a new tab. This ensures that the
+  // snapshot is correct when tabs are openned via the dispatcher.
+  [self updateActiveWebStateSnapshot];
+
   ApplicationMode targetMode;
 
   if (tabOpeningTargetMode == ApplicationModeForTabOpening::CURRENT) {
@@ -2085,6 +2082,19 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     [result addObject:TabIdTabHelper::FromWebState(webState)->tab_id()];
   }
   return result;
+}
+
+// Asks the respective Snapshot helper to update the snapshot for the active
+// WebState.
+- (void)updateActiveWebStateSnapshot {
+  WebStateList* webStateList = self.currentBVC.tabModel.webStateList;
+  if (webStateList) {
+    web::WebState* webState = webStateList->GetActiveWebState();
+    if (webState) {
+      SnapshotTabHelper::FromWebState(webState)->UpdateSnapshotWithCallback(
+          nil);
+    }
+  }
 }
 
 - (void)purgeSnapshots {

@@ -41,7 +41,7 @@ cca.views.Camera = class extends cca.views.View {
    */
   constructor(
       resultSaver, infoUpdater, photoPreferrer, videoPreferrer, defaultMode) {
-    super('#camera');
+    super(cca.views.ViewName.CAMERA);
 
     /**
      * @type {!cca.device.DeviceInfoUpdater}
@@ -168,7 +168,7 @@ cca.views.Camera = class extends cca.views.View {
    */
   get suspended() {
     return this.locked_ || chrome.app.window.current().isMinimized() ||
-        cca.state.get('suspend');
+        cca.state.get(cca.state.State.SUSPEND);
   }
 
   /**
@@ -187,11 +187,12 @@ cca.views.Camera = class extends cca.views.View {
    * @protected
    */
   beginTake_() {
-    if (!cca.state.get('streaming') || cca.state.get('taking')) {
+    if (!cca.state.get(cca.state.State.STREAMING) ||
+        cca.state.get(cca.state.State.TAKING)) {
       return null;
     }
 
-    cca.state.set('taking', true);
+    cca.state.set(cca.state.State.TAKING, true);
     this.focus();  // Refocus the visible shutter button for ChromeVox.
     this.take_ = (async () => {
       let hasError = false;
@@ -206,7 +207,7 @@ cca.views.Camera = class extends cca.views.View {
         console.error(e);
       } finally {
         this.take_ = null;
-        cca.state.set('taking', false, {hasError});
+        cca.state.set(cca.state.State.TAKING, false, {hasError});
         this.focus();  // Refocus the visible shutter button for ChromeVox.
       }
     })();
@@ -296,7 +297,7 @@ cca.views.Camera = class extends cca.views.View {
     }
     this.configuring_ = (async () => {
       try {
-        if (cca.state.get('taking')) {
+        if (cca.state.get(cca.state.State.TAKING)) {
           await this.endTake_();
         }
       } finally {

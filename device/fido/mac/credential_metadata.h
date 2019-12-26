@@ -76,7 +76,7 @@ std::string GenerateCredentialMetadataSecret();
 //
 // Credential IDs have following format:
 //
-//    | version  |    nonce   | AEAD(pt=CBOR(metadata), |
+//    | version  |    nonce   | AEAD(pt=CBOR(metadata),    |
 //    | (1 byte) | (12 bytes) |      nonce=nonce,          |
 //    |          |            |      ad=(version, rpID))   |
 //
@@ -86,10 +86,9 @@ std::string GenerateCredentialMetadataSecret();
 // The |user_name| and |user_display_name| fields may be truncated before
 // encryption. The truncated values are guaranteed to be valid UTF-8.
 COMPONENT_EXPORT(DEVICE_FIDO)
-base::Optional<std::vector<uint8_t>> SealCredentialId(
-    const std::string& secret,
-    const std::string& rp_id,
-    const CredentialMetadata& metadata);
+std::vector<uint8_t> SealCredentialId(const std::string& secret,
+                                      const std::string& rp_id,
+                                      const CredentialMetadata& metadata);
 
 // UnsealCredentialId attempts to decrypt a CredentialMetadata from a credential
 // id.
@@ -105,15 +104,13 @@ base::Optional<CredentialMetadata> UnsealCredentialId(
 // This encoding allows lookup of credentials for a given RP and user but
 // without the credential ID.
 COMPONENT_EXPORT(DEVICE_FIDO)
-base::Optional<std::string> EncodeRpIdAndUserId(
-    const std::string& secret,
-    const std::string& rp_id,
-    base::span<const uint8_t> user_id);
+std::string EncodeRpIdAndUserId(const std::string& secret,
+                                const std::string& rp_id,
+                                base::span<const uint8_t> user_id);
 
 // EncodeRpId encodes the given RP ID for storage in the macOS keychain.
 COMPONENT_EXPORT(DEVICE_FIDO)
-base::Optional<std::string> EncodeRpId(const std::string& secret,
-                                       const std::string& rp_id);
+std::string EncodeRpId(const std::string& secret, const std::string& rp_id);
 
 // DecodeRpId attempts to decode a given RP ID from the keychain.
 //
@@ -126,7 +123,7 @@ base::Optional<std::string> DecodeRpId(const std::string& secret,
 
 // Seals a legacy V0 credential ID.
 COMPONENT_EXPORT(DEVICE_FIDO)
-base::Optional<std::vector<uint8_t>> SealLegacyV0CredentialIdForTestingOnly(
+std::vector<uint8_t> SealLegacyV0CredentialIdForTestingOnly(
     const std::string& secret,
     const std::string& rp_id,
     const std::vector<uint8_t>& user_id,

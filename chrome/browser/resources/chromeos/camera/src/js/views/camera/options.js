@@ -116,7 +116,8 @@ cca.views.camera.Options = class {
 
     this.infoUpdater_.addDeviceChangeListener(async (updater) => {
       cca.state.set(
-          'multi-camera', (await updater.getDevicesInfo()).length >= 2);
+          cca.state.State.MULTI_CAMERA,
+          (await updater.getDevicesInfo()).length >= 2);
     });
   }
 
@@ -133,10 +134,11 @@ cca.views.camera.Options = class {
    * @private
    */
   async switchDevice_() {
-    if (!cca.state.get('streaming') || cca.state.get('taking')) {
+    if (!cca.state.get(cca.state.State.STREAMING) ||
+        cca.state.get(cca.state.State.TAKING)) {
       return;
     }
-    cca.state.set('camera-switching', true);
+    cca.state.set(cca.perf.PerfEvent.CAMERA_SWITCHING, true);
     const devices = await this.infoUpdater_.getDevicesInfo();
     cca.util.animateOnce(
         /** @type {!HTMLElement} */ (document.querySelector('#switch-device')));
@@ -150,7 +152,8 @@ cca.views.camera.Options = class {
       this.videoDeviceId_ = devices[index].deviceId;
     }
     const isSuccess = await this.doSwitchDevice_();
-    cca.state.set('camera-switching', false, {hasError: !isSuccess});
+    cca.state.set(
+        cca.perf.PerfEvent.CAMERA_SWITCHING, false, {hasError: !isSuccess});
   }
 
   /**

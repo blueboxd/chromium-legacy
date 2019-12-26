@@ -276,7 +276,8 @@ cca.views.camera.Modes = class {
 
     document.querySelectorAll('.mode-item>input').forEach((element) => {
       element.addEventListener('click', (event) => {
-        if (!cca.state.get('streaming') || cca.state.get('taking')) {
+        if (!cca.state.get(cca.state.State.STREAMING) ||
+            cca.state.get(cca.state.State.TAKING)) {
           event.preventDefault();
         }
       });
@@ -284,14 +285,15 @@ cca.views.camera.Modes = class {
         if (element.checked) {
           var mode = element.dataset.mode;
           this.updateModeUI_(mode);
-          cca.state.set('mode-switching', true);
+          cca.state.set(cca.state.State.MODE_SWITCHING, true);
           const isSuccess = await this.doSwitchMode_();
-          cca.state.set('mode-switching', false, {hasError: !isSuccess});
+          cca.state.set(
+              cca.state.State.MODE_SWITCHING, false, {hasError: !isSuccess});
         }
       });
     });
 
-    ['expert', 'save-metadata'].forEach((state) => {
+    [cca.state.State.EXPERT, cca.state.State.SAVE_METADATA].forEach((state) => {
       cca.state.addObserver(state, this.updateSaveMetadata_.bind(this));
     });
 
@@ -300,12 +302,20 @@ cca.views.camera.Modes = class {
   }
 
   /**
+   * @return {!Array<cca.Mode>}
+   * @private
+   */
+  get allModeNames_() {
+    return Object.keys(this.allModes_);
+  }
+
+  /**
    * Updates state of mode related UI to the target mode.
    * @param {!cca.Mode} mode Mode to be toggled.
    * @private
    */
   updateModeUI_(mode) {
-    Object.keys(this.allModes_).forEach((m) => cca.state.set(m, m === mode));
+    this.allModeNames_.forEach((m) => cca.state.set(m, m === mode));
     const element =
         document.querySelector(`.mode-item>input[data-mode=${mode}]`);
     element.checked = true;
@@ -332,9 +342,8 @@ cca.views.camera.Modes = class {
   getModeCandidates() {
     const tried = {};
     const results = [];
-    let mode =
-        /** @type {!cca.Mode} */ (
-            Object.keys(this.allModes_).find(cca.state.get));
+    let mode = this.allModeNames_.find(cca.state.get);
+    cca.assert(mode !== undefined);
     while (!tried[mode]) {
       tried[mode] = true;
       results.push(mode);
@@ -349,7 +358,7 @@ cca.views.camera.Modes = class {
    * @param {!cca.Mode} mode
    * @param {string} deviceId
    * @param {!cca.ResolutionList} previewResolutions
-   * @return {!Array<!CaptureCandidate>}
+   * @return {!Array<!cca.CaptureCandidate>}
    */
   getResolutionCandidates(mode, deviceId, previewResolutions) {
     return this.allModes_[mode].constraintsPreferrer.getSortedCandidates(
@@ -361,7 +370,7 @@ cca.views.camera.Modes = class {
    * given mode on camera HALv1 device.
    * @param {!cca.Mode} mode
    * @param {?string} deviceId
-   * @return {!Promise<!Array<!CaptureCandidate>>}
+   * @return {!Promise<!Array<!cca.CaptureCandidate>>}
    */
   async getResolutionCandidatesV1(mode, deviceId) {
     const previewCandidates =
@@ -440,7 +449,8 @@ cca.views.camera.Modes = class {
    * @private
    */
   async updateSaveMetadata_() {
-    if (cca.state.get('expert') && cca.state.get('save-metadata')) {
+    if (cca.state.get(cca.state.State.EXPERT) &&
+        cca.state.get(cca.state.State.SAVE_METADATA)) {
       await this.enableSaveMetadata_();
     } else {
       await this.disableSaveMetadata_();
@@ -637,14 +647,18 @@ cca.views.camera.Video = class extends cca.views.camera.ModeBase {
 
     const settings = this.stream_.getVideoTracks()[0].getSettings();
     const resolution = new cca.Resolution(settings.width, settings.height);
-    cca.state.set('video-capture-post-processing', true);
+    cca.state.set(cca.perf.PerfEvent.VIDEO_CAPTURE_POST_PROCESSING, true);
     try {
       await this.doSaveVideo_(
           {resolution, duration, videoSaver},
           (new cca.models.Filenamer()).newVideoName());
-      cca.state.set('video-capture-post-processing', false, {resolution});
+      cca.state.set(
+          cca.perf.PerfEvent.VIDEO_CAPTURE_POST_PROCESSING, false,
+          {resolution});
     } catch (e) {
-      cca.state.set('video-capture-post-processing', false, {hasError: true});
+      cca.state.set(
+          cca.perf.PerfEvent.VIDEO_CAPTURE_POST_PROCESSING, false,
+          {hasError: true});
       throw e;
     }
   }
@@ -796,14 +810,18 @@ cca.views.camera.Photo = class extends cca.views.camera.ModeBase {
       const results = await this.crosImageCapture_.takePhoto(photoSettings);
       this.playShutterEffect_();
 
-      cca.state.set('photo-capture-post-processing', true);
+      cca.state.set(cca.perf.PerfEvent.PHOTO_CAPTURE_POST_PROCESSING, true);
       const blob = await results[0];
       const image = await cca.util.blobToImage(blob);
       const resolution = new cca.Resolution(image.width, image.height);
       await this.doSavePhoto_({resolution, blob}, imageName);
-      cca.state.set('photo-capture-post-processing', false, {resolution});
+      cca.state.set(
+          cca.perf.PerfEvent.PHOTO_CAPTURE_POST_PROCESSING, false,
+          {resolution});
     } catch (e) {
-      cca.state.set('photo-capture-post-processing', false, {hasError: true});
+      cca.state.set(
+          cca.perf.PerfEvent.PHOTO_CAPTURE_POST_PROCESSING, false,
+          {hasError: true});
       cca.toast.show('error_msg_take_photo_failed');
       throw e;
     }
@@ -986,7 +1004,8 @@ cca.views.camera.Portrait = class extends cca.views.camera.Photo {
       throw e;
     }
 
-    cca.state.set('portrait-mode-capture-post-processing', true);
+    cca.state.set(
+        cca.perf.PerfEvent.PORTRAIT_MODE_CAPTURE_POST_PROCESSING, true);
     let hasError = false;
     const [refSave, portraitSave] = [
       [reference, refImageName],
@@ -1013,6 +1032,8 @@ cca.views.camera.Portrait = class extends cca.views.camera.Photo {
       // TODO(inker): Log non-intended error.
     }
     await refSave;
-    cca.state.set('portrait-mode-capture-post-processing', false, {hasError});
+    cca.state.set(
+        cca.perf.PerfEvent.PORTRAIT_MODE_CAPTURE_POST_PROCESSING, false,
+        {hasError});
   }
 };

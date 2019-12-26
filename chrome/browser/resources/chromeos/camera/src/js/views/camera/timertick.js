@@ -36,7 +36,7 @@ cca.views.camera.timertick.cancel_ = null;
  */
 cca.views.camera.timertick.start = function() {
   cca.views.camera.timertick.cancel_ = null;
-  if (!cca.state.get('timer')) {
+  if (!cca.state.get(cca.state.State.TIMER)) {
     return Promise.resolve();
   }
   return new Promise((resolve, reject) => {
@@ -52,7 +52,7 @@ cca.views.camera.timertick.start = function() {
       reject(new Error('cancel'));
     };
 
-    let tickCounter = cca.state.get('_10sec') ? 10 : 3;
+    let tickCounter = cca.state.get(cca.state.State.TIMER_10SEC) ? 10 : 3;
     const sounds = {
       1: '#sound-tick-final',
       2: '#sound-tick-inc',

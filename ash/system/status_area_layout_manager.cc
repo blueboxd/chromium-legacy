@@ -62,6 +62,8 @@ void StatusAreaLayoutManager::LayoutStatusArea() {
     return;
 
   base::AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
+  // TODO(manucornet): This should be animated, but that breaks
+  // |LoginCursorTest|.
   shelf_widget_->shelf_layout_manager()->LayoutShelf();
 }
 

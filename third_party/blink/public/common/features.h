@@ -57,8 +57,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kWebRtcH264WithOpenH264FFmpeg;
 #endif  // BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
 
 BLINK_COMMON_EXPORT extern const base::Feature kResourceLoadViaDataPipe;
-BLINK_COMMON_EXPORT extern const base::Feature
-    kServiceWorkerImportedScriptUpdateCheck;
 BLINK_COMMON_EXPORT extern const base::Feature kServiceWorkerUpdateDelay;
 BLINK_COMMON_EXPORT extern const base::Feature kStopInBackground;
 BLINK_COMMON_EXPORT extern const base::Feature

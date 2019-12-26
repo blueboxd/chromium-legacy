@@ -1,0 +1,11 @@
+main frame - DidStartNavigation
+main frame - ReadyToCommitNavigation
+main frame - didCommitLoadForFrame
+main frame - didReceiveTitle: Below viewport images with loading='lazy' and changed to loading='eager' load and do not block the window load event
+main frame - didFinishDocumentLoadForFrame
+main frame - didHandleOnloadEventsForFrame
+main frame - didFinishLoadForFrame
+This is a testharness.js-based test.
+FAIL Test that below viewport images with loading='lazy' and changed to loading='eager' load and do not block the window load event. assert_true: The window.load() event should have fired before below_viewport loaded. expected true got false
+Harness: the test ran to completion.
+

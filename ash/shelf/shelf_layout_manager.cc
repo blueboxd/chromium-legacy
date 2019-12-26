@@ -472,6 +472,20 @@ gfx::Rect ShelfLayoutManager::GetIdealBoundsForWorkAreaCalculation() const {
   return rect;
 }
 
+void ShelfLayoutManager::LayoutShelf(bool animate) {
+  // The ShelfWidget may be partially closed (no native widget) during shutdown
+  // so skip layout.
+  if (in_shutdown_)
+    return;
+
+  CalculateTargetBoundsAndUpdateWorkArea(hotseat_state());
+  UpdateBoundsAndOpacity(animate);
+
+  // Update insets in ShelfWindowTargeter when shelf bounds change.
+  for (auto& observer : observers_)
+    observer.WillChangeVisibilityState(visibility_state());
+}
+
 void ShelfLayoutManager::UpdateVisibilityState() {
   // Bail out early after shelf is destroyed or visibility update is suspended.
   aura::Window* shelf_window = shelf_widget_->GetNativeWindow();
@@ -1019,7 +1033,7 @@ void ShelfLayoutManager::OnDisplayMetricsChanged(
 
 void ShelfLayoutManager::OnLocaleChanged() {
   // Layout update is needed when language changes between LTR and RTL.
-  LayoutShelfAndUpdateBounds();
+  LayoutShelf();
 }
 
 void ShelfLayoutManager::OnDeskSwitchAnimationLaunching() {
@@ -1370,24 +1384,6 @@ ShelfVisibilityState ShelfLayoutManager::CalculateShelfVisibility() {
       return SHELF_HIDDEN;
   }
   return SHELF_VISIBLE;
-}
-
-void ShelfLayoutManager::LayoutShelfAndUpdateBounds() {
-  CalculateTargetBoundsAndUpdateWorkArea(hotseat_state());
-  UpdateBoundsAndOpacity(false);
-
-  // Update insets in ShelfWindowTargeter when shelf bounds change.
-  for (auto& observer : observers_)
-    observer.WillChangeVisibilityState(visibility_state());
-}
-
-void ShelfLayoutManager::LayoutShelf() {
-  // The ShelfWidget may be partially closed (no native widget) during shutdown
-  // so skip layout.
-  if (in_shutdown_)
-    return;
-
-  LayoutShelfAndUpdateBounds();
 }
 
 void ShelfLayoutManager::SetDimmed(bool dimmed) {

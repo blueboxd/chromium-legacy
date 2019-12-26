@@ -73,10 +73,7 @@ class ServiceWorkerUpdatedScriptLoaderTest : public testing::Test {
  public:
   ServiceWorkerUpdatedScriptLoaderTest()
       : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP),
-        kScriptURL(kNormalScriptURL) {
-    feature_list_.InitAndEnableFeature(
-        blink::features::kServiceWorkerImportedScriptUpdateCheck);
-  }
+        kScriptURL(kNormalScriptURL) {}
   ~ServiceWorkerUpdatedScriptLoaderTest() override = default;
 
   ServiceWorkerContextCore* context() { return helper_->context(); }
@@ -180,8 +177,6 @@ class ServiceWorkerUpdatedScriptLoaderTest : public testing::Test {
 
  protected:
   BrowserTaskEnvironment task_environment_;
-  base::test::ScopedFeatureList feature_list_;
-
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
 
   scoped_refptr<ServiceWorkerRegistration> registration_;

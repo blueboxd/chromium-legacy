@@ -17,11 +17,7 @@ constexpr int kIDRPeriod = 2048;
 constexpr int kIPeriod = 0;
 constexpr int kIPPeriod = 1;
 
-// The qp range is 0-51 in H264. Select 26 because of the center value.
 constexpr int kDefaultQP = 26;
-// Webrtc default values, see h264_encoder_impl.cc.
-constexpr int kMinQP = 24;
-constexpr int kMaxQP = 37;
 
 // Subjectively chosen bitrate window size for rate control, in ms.
 constexpr int kCPBWindowSizeMs = 1500;
@@ -47,9 +43,7 @@ H264Encoder::EncodeParams::EncodeParams()
       framerate(0),
       cpb_window_size_ms(kCPBWindowSizeMs),
       cpb_size_bits(0),
-      initial_qp(kDefaultQP),
-      min_qp(kMinQP),
-      max_qp(kMaxQP),
+      qp(kDefaultQP),
       max_num_ref_frames(kMaxNumReferenceFrames),
       max_ref_pic_list0_size(kMaxRefIdxL0Size),
       max_ref_pic_list1_size(kMaxRefIdxL1Size) {}
@@ -382,8 +376,8 @@ void H264Encoder::UpdatePPS() {
       curr_params_.max_ref_pic_list1_size > 0
           ? curr_params_.max_ref_pic_list1_size - 1
           : curr_params_.max_ref_pic_list1_size;
-  DCHECK_LE(curr_params_.initial_qp, 51);
-  current_pps_.pic_init_qp_minus26 = curr_params_.initial_qp - 26;
+  DCHECK_LE(curr_params_.qp, 51);
+  current_pps_.pic_init_qp_minus26 = curr_params_.qp - 26;
   current_pps_.deblocking_filter_control_present_flag = true;
   current_pps_.transform_8x8_mode_flag =
       (current_sps_.profile_idc == H264SPS::kProfileIDCHigh);

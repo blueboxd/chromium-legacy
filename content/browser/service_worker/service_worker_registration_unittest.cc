@@ -982,25 +982,9 @@ class ServiceWorkerRegistrationObjectHostUpdateTest
   ServiceWorkerRegistrationObjectHostUpdateTest()
       : interceptor_(base::BindRepeating(&FakeNetwork::HandleRequest,
                                          base::Unretained(&fake_network_))) {}
-
- protected:
-  void SetUp() override {
-    if (IsImportedScriptUpdateCheckEnabled()) {
-      feature_list_.InitAndEnableFeature(
-          blink::features::kServiceWorkerImportedScriptUpdateCheck);
-    } else {
-      feature_list_.InitAndDisableFeature(
-          blink::features::kServiceWorkerImportedScriptUpdateCheck);
-    }
-    ServiceWorkerRegistrationObjectHostTest::SetUp();
-  }
-
-  static bool IsImportedScriptUpdateCheckEnabled() { return GetParam(); }
-
  private:
   FakeNetwork fake_network_;
   URLLoaderInterceptor interceptor_;
-  base::test::ScopedFeatureList feature_list_;
 };
 
 INSTANTIATE_TEST_SUITE_P(ServiceWorkerRegistrationObjectHostUpdateTestP,

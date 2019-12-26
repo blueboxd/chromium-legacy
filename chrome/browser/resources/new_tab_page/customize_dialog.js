@@ -163,6 +163,15 @@ class CustomizeDialogElement extends PolymerElement {
   }
 
   /**
+   * @param {!Event} e
+   * @private
+   */
+  onUninstallThirdPartyThemeClick_(e) {
+    this.pageHandler_.applyDefaultTheme();
+    this.pageHandler_.confirmThemeChanges();
+  }
+
+  /**
    * @param {string|number} id
    * @return {boolean}
    * @private
@@ -179,6 +188,14 @@ class CustomizeDialogElement extends PolymerElement {
       return this.theme_.type === newTabPage.mojom.ThemeType.CHROME &&
           id === this.theme_.info.chromeThemeId;
     }
+  }
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  isThirdPartyTheme_() {
+    return this.theme_.type === newTabPage.mojom.ThemeType.THIRD_PARTY;
   }
 }
 

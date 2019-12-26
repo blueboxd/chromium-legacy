@@ -74,8 +74,6 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
   ServiceWorkerStorage* storage() { return helper_->context()->storage(); }
 
   void SetUp() override {
-    feature_list_.InitAndEnableFeature(
-        blink::features::kServiceWorkerImportedScriptUpdateCheck);
     helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
     storage()->LazyInitializeForTest();
   }
@@ -170,7 +168,6 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
  protected:
   BrowserTaskEnvironment task_environment_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
-  base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<TestBrowserContext> browser_context_;
 
  private:

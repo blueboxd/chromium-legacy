@@ -10,8 +10,7 @@
 namespace blink {
 
 bool ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled() {
-  return base::FeatureList::IsEnabled(
-      blink::features::kServiceWorkerImportedScriptUpdateCheck);
+  return true;
 }
 
 }  // namespace blink

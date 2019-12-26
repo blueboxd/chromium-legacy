@@ -99,6 +99,124 @@ rules.
 The rest of this document explains how service workers are implemented in
 Chromium.
 
+## Class overview
+
+As a web platform feature, service worker is implemented in the [content
+module](/content/README.md) and its dependency
+[Blink](/third_party/blink/README.md).  Chrome-specific hooks and additions, for
+example, for Chrome extensions support, are in higher-level directories like
+[//chrome](/chrome/README.md).
+
+The service worker implementation has parts in both the browser process and
+renderer process:
+- The browser process manages service worker registrations, initiates starting
+  and stopping service worker threads in the renderer, requests the renderer
+  to dispatch events to the workers, and implements most of the service worker
+  APIs that the renderer process exposes to the web.
+- The renderer process runs service worker threads, dispatches events to them,
+  and provides the web-exposed API surface.
+
+> TODO: A simple diagram of the browser/renderer architecture and the Mojo
+> message pipes and interfaces would be helpful.
+
+### Browser process
+
+> Note: The classes in this section are in the namespace `content`.
+
+In the browser process, `ServiceWorkerContextCore` is root class which all other
+service worker classes are attached to. There is one context per [storage
+partition](/content/browser/public/storage_partition.h).
+
+`ServiceWorkerContextCore` is owned by a thread-safe refcounted wrapper called
+`ServiceWorkerContextWrapper`. `StoragePartition` is the primary owner of this
+object on the UI thread. But `ServiceWorkerContextCore` itself, and the classes
+that hang off of it, are primarily single-threaded and run on the IO thread.
+There is ongoing work to move this "service worker core" thread to the UI
+thread. After that time, it may be possible to remove the refcounted wrapper and
+have StoragePartition uniquely own the context core on the UI thread. See
+the [Service Worker on UI design
+doc](https://docs.google.com/document/d/1APPz704Ebcrwp0QEaPNLVtBjPuV6MXlolby7AtZB4MA/edit?usp=sharing).
+
+The context owns `ServiceWorkerStorage`, which manages service worker
+registrations and auxiliary data attached to them. The `ServiceWorkerStorage`
+owns a `ServiceWorkerDatabase`, which provides access to the LevelDB instance
+containing the registration data. See [Storage](#Storage) below.
+
+`ServiceWorkerStorage` is used to register, update, and unregister service
+workers. Typically these operations are driven by `ServiceWorkerRegisterJob` and
+`ServiceWorkerUnregisterJob`, which implement the
+[*jobs*](https://w3c.github.io/ServiceWorker/#dfn-job) defined in the
+specification. As per the specification, the jobs are run sequentially using a a
+[*job queue*](https://w3c.github.io/ServiceWorker/#dfn-job-queue).  The class
+`ServiceWorkerJobCoordinator`, owned by the context, implements this queue.
+
+`ServiceWorkerStorage` represents service worker entities as
+`ServiceWorkerRegistration` and `ServiceWorkerVersion`. These correspond to the
+specification's model of [*service worker
+registration*](https://w3c.github.io/ServiceWorker/#dfn-service-worker-registration)
+and [*service worker*](https://w3c.github.io/ServiceWorker/#dfn-service-worker),
+respectively.
+
+`ServiceWorkerVersion` provides functions for starting and stopping a service
+worker thread in the renderer, and for dispatching events to the thread.
+It uses a lower-level class, `EmbeddedWorkerInstance`,
+to request the renderer to start and stop the service worker thread.
+
+> Note: The "embedded worker" terminology and abstraction is a bit of a historical
+> accident. At one point the plan was for service workers and shared workers to
+> use the same "embedded worker" classes. But it turned out only service workers
+> use it.
+
+A running service worker has a corresponding host in the browser process
+called `ServiceWorkerProviderHost` ([to be renamed
+`ServiceWorkerHost`](https://crbug.com/931087)).
+
+In addition, service worker clients (windows and web workers) are represented by
+a `ServiceWorkerContainerHost` in the browser process. This host holds
+information pertinent to service workers, such as which
+`ServiceWorkerRegistration` is controlling the client, and it implements the
+Mojo interface the renderer uses for the [client-side service worker
+API](https://w3c.github.io/ServiceWorker/#document-context).
+
+### Renderer process
+
+> Note: Historically much service worker code in the renderer process was
+> implemented in `//content/renderer`. There is ongoing work to move it to
+> `//third_party/blink` per [Onion Soup], which will remove some layers of
+> indirection.
+
+The renderer process naturally has classes that implement the web-exposed
+interfaces: `blink::ServiceWorker`, `blink::ServiceWorkerRegistration`,
+`blink::ServiceWorkerContainer`, etc.
+
+Other classes in the renderer process can be divided into those that deal with
+a) service worker execution contexts, and b) service worker clients (windows and
+web workers).
+
+#### Service worker execution contexts
+
+For starting and stopping a service worker,
+`content::EmbeddedWorkerInstanceClientImpl` is used. One is created per service
+worker startup on a background thread. It creates a
+`content::ServiceWorkerContextClient`, which owns a
+`blink::WebEmbeddedWorkerImpl`, which creates a `blink::ServiceWorkerThread`
+which starts the physical service worker thread and JavaScript execution context
+with a `blink::ServiceWorkerGlobalScope` global.
+
+`ServiceWorkerGlobalScope` implements two Mojo interfaces:
+- `mojom.blink.ServiceWorker`, which the browser process uses to dispatch events
+  to the service worker.
+- `mojom.blink.ServiceWorkerController`, which renderer processes use to
+  dispatch fetch events to a service worker that controls a client in that
+  process.
+
+#### Service worker clients
+
+Service worker clients have an associated
+`content::ServiceWorkerProviderContext` which contains information such as which
+service worker controls the client and manages request interception to that
+service worker.
+
 ## Directory structure
 
 - [content/browser/service_worker]: Browser process code, including stored
@@ -214,8 +332,8 @@ Fetch event handling:
 - ServiceWorker.LoadTiming.MainFrame.MainResource.\*
 - ServiceWorker.LoadTiming.Subresource.\*
 
-TODO(falken, bashi): Add a list of the milestones of startup and fetch event
-handling.
+> TODO(falken, bashi): Add a list of the milestones of startup and fetch event
+> handling.
 
 ### Tests
 
@@ -238,7 +356,7 @@ $ tools/perf/run_benchmark --browser=android-chromium loading.mobile --story-fil
 $ tools/perf/run_benchmark --browser=android-chromium loading.mobile --story-filter='FlipKart_cold'
 ```
 
-TODO(falken): Merge this with loading.md and cache_temperature.py documentation.
+> TODO(falken): Merge this with loading.md and cache_temperature.py documentation.
 
 The PWA tests load a page multiple times. Each time has a different "cache
 temperature". These temperatures have special significance for service worker

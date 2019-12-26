@@ -188,4 +188,70 @@ suite('NewTabPageCustomizeDialogTest', () => {
     assertEquals(selectedIcons.length, 1);
     assertEquals(selectedIcons[0].getAttribute('title'), 'foo');
   });
+
+  test('setting third-party theme shows uninstall UI', async () => {
+    // Arrange.
+    const customizeDialog = createCustomizeDialog();
+
+    // Act.
+    testProxy.callbackRouterRemote.setTheme({
+      type: newTabPage.mojom.ThemeType.THIRD_PARTY,
+      info: {
+        thirdPartyThemeInfo: {
+          id: 'foo',
+          name: 'bar',
+        },
+      }
+    });
+    await testProxy.callbackRouterRemote.$.flushForTesting();
+
+    // Assert.
+    assertStyle(customizeDialog.$.thirdPartyThemeContainer, 'display', 'block');
+    assertEquals(
+        customizeDialog.$.thirdPartyThemeName.textContent.trim(), 'bar');
+    assertEquals(
+        customizeDialog.$.thirdPartyLink.getAttribute('href'),
+        'https://chrome.google.com/webstore/detail/foo');
+  });
+
+  test('setting non-third-party theme hides uninstall UI', async () => {
+    // Arrange.
+    const customizeDialog = createCustomizeDialog();
+
+    // Act.
+    testProxy.callbackRouterRemote.setTheme({
+      type: newTabPage.mojom.ThemeType.DEFAULT,
+      info: {chromeThemeId: 0},
+    });
+    await testProxy.callbackRouterRemote.$.flushForTesting();
+
+    // Assert.
+    assertStyle(customizeDialog.$.thirdPartyThemeContainer, 'display', 'none');
+  });
+
+  test('uninstalling third-party theme sets default theme', async () => {
+    // Arrange.
+    const customizeDialog = createCustomizeDialog();
+    testProxy.callbackRouterRemote.setTheme({
+      type: newTabPage.mojom.ThemeType.THIRD_PARTY,
+      info: {
+        thirdPartyThemeInfo: {
+          id: 'foo',
+          name: 'bar',
+        },
+      }
+    });
+    await testProxy.callbackRouterRemote.$.flushForTesting();
+    const applyDefaultThemeCalled =
+        testProxy.handler.whenCalled('applyDefaultTheme');
+    const confirmThemeChangesCalled =
+        testProxy.handler.whenCalled('confirmThemeChanges');
+
+    // Act.
+    customizeDialog.$.uninstallThirdPartyButton.click();
+
+    // Assert.
+    await applyDefaultThemeCalled;
+    await confirmThemeChangesCalled;
+  });
 });

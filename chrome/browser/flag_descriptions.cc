@@ -1835,12 +1835,6 @@ const char kSendTabToSelfWhenSignedInDescription[] =
     "but not necessarily syncing. The tab-share data is thus ephemeral, "
     "rather than persistent sync data.";
 
-const char kServiceWorkerImportedScriptUpdateCheckName[] =
-    "Enable update check for service worker importScripts() resources";
-const char kServiceWorkerImportedScriptUpdateCheckDescription[] =
-    "Extend byte-for-byte update check for scripts that are imported by the "
-    "service worker script via importScripts().";
-
 const char kServiceWorkerLongRunningMessageName[] =
     "Service worker long running message dispatch.";
 const char kServiceWorkerLongRunningMessageDescription[] =

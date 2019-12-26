@@ -3706,13 +3706,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kHappinessTrackingSurveysForDesktopDemo)},
 #endif  // !defined(OS_ANDROID)
 
-    {"enable-service-worker-imported-script-update-check",
-     flag_descriptions::kServiceWorkerImportedScriptUpdateCheckName,
-     flag_descriptions::kServiceWorkerImportedScriptUpdateCheckDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(
-         blink::features::kServiceWorkerImportedScriptUpdateCheck)},
-
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
     {"use-multilogin-endpoint", flag_descriptions::kUseMultiloginEndpointName,
      flag_descriptions::kUseMultiloginEndpointDescription,

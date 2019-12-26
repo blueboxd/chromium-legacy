@@ -129,10 +129,6 @@ TEST_F(ServiceWorkerScriptLoaderFactoryTest, ContextDestroyed) {
 class ServiceWorkerScriptLoaderFactoryCopyResumeTest
     : public ServiceWorkerScriptLoaderFactoryTest {
  public:
-  ServiceWorkerScriptLoaderFactoryCopyResumeTest() {
-    feature_list_.InitAndEnableFeature(
-        blink::features::kServiceWorkerImportedScriptUpdateCheck);
-  }
   ~ServiceWorkerScriptLoaderFactoryCopyResumeTest() override = default;
 
   void SetUp() override {
@@ -157,7 +153,6 @@ class ServiceWorkerScriptLoaderFactoryCopyResumeTest
   }
 
  protected:
-  base::test::ScopedFeatureList feature_list_;
   network::TestURLLoaderClient client_;
   const std::vector<std::pair<std::string, std::string>> kOldHeaders = {
       {"Content-Type", "text/javascript"},

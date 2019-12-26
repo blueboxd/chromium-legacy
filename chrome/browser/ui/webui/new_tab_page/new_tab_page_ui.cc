@@ -62,8 +62,10 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource() {
       {"cancelButton", IDS_CANCEL},
       {"colorPickerLabel", IDS_NTP_CUSTOMIZE_COLOR_PICKER_LABEL},
       {"customizeButton", IDS_NTP_CUSTOMIZE_BUTTON_LABEL},
-      {"defaultColorLabel", IDS_NTP_CUSTOMIZE_DEFAULT_LABEL},
+      {"defaultThemeLabel", IDS_NTP_CUSTOMIZE_DEFAULT_LABEL},
       {"doneButton", IDS_DONE},
+      {"thirdPartyThemeDescription", IDS_NTP_CUSTOMIZE_3PT_THEME_DESC},
+      {"uninstallThirdPartyThemeButton", IDS_NTP_CUSTOMIZE_3PT_THEME_UNINSTALL},
   };
   AddLocalizedStringsBulk(source, kStrings);
 

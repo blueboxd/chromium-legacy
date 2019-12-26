@@ -109,9 +109,8 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   // bounds in tablet mode.
   gfx::Rect GetIdealBoundsForWorkAreaCalculation() const;
 
-  // Stops any animations, sets the bounds of the shelf and status widgets, and
-  // changes the work area
-  void LayoutShelf();
+  // Sets the bounds of the shelf and status widgets.
+  void LayoutShelf(bool animate = false);
 
   // Updates the visibility state.
   void UpdateVisibilityState();
@@ -403,9 +402,6 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   // Returns shelf visibility state based on current value of auto hide
   // behavior setting.
   ShelfVisibilityState CalculateShelfVisibility();
-
-  // Stops any animations and sets the bounds of the shelf and status widgets.
-  void LayoutShelfAndUpdateBounds();
 
   // Updates the shelf dim state.
   void UpdateShelfIconOpacity();

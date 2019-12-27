@@ -11,7 +11,9 @@
 var cca = {
   device: {},
   intent: {},
-  models: {},
+  models: {
+    FileSystem: {},
+  },
   mojo: {},
   nav: {},
   perf: {},

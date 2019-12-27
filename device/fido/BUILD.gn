@@ -202,7 +202,6 @@ component("fido") {
       "mac/make_credential_operation.h",
       "mac/make_credential_operation.mm",
       "mac/operation.h",
-      "mac/operation_base.h",
       "mac/touch_id_context.h",
       "mac/touch_id_context.mm",
       "mac/util.h",

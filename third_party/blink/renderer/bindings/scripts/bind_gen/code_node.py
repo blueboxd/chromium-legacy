@@ -432,25 +432,40 @@ class ListNode(CodeNode):
     except that addition and removal of None have no effect.
     """
 
-    def __init__(self, code_nodes=None, separator="\n", separator_last=""):
+    def __init__(self, code_nodes=None, separator="\n", head="", tail=""):
+        """
+        Args:
+            code_nodes: A list of CodeNode to be rendered.
+            separator: A str inserted between code nodes.
+            head:
+            tail: The head and tail sections that will be rendered iff the
+                content list is not empty.
+        """
         assert isinstance(separator, str)
-        assert isinstance(separator_last, str)
+        assert isinstance(head, str)
+        assert isinstance(tail, str)
 
         element_nodes_gensym = CodeNode.gensym()
         element_nodes = []
         template_text = format_template(
             """\
+% if {element_nodes}:
+{head}\\
+% endif
 % for node in {element_nodes}:
 ${node}\\
 % if not loop.last:
 {separator}\\
 % endif
 % endfor
-{separator_last}\
+% if {element_nodes}:
+{tail}\\
+% endif\
 """,
             element_nodes=element_nodes_gensym,
             separator=separator,
-            separator_last=separator_last)
+            head=head,
+            tail=tail)
         template_vars = {element_nodes_gensym: element_nodes}
 
         CodeNode.__init__(
@@ -530,12 +545,13 @@ class SequenceNode(ListNode):
     and provides the points where SymbolDefinitionNodes can be inserted.
     """
 
-    def __init__(self, code_nodes=None, separator="\n", separator_last=""):
+    def __init__(self, code_nodes=None, separator="\n", head="", tail=""):
         ListNode.__init__(
             self,
             code_nodes=code_nodes,
             separator=separator,
-            separator_last=separator_last)
+            head=head,
+            tail=tail)
 
     def _render(self, renderer, last_render_state):
         duplicates = []
@@ -558,12 +574,13 @@ class SymbolScopeNode(SequenceNode):
     insert corresponding SymbolDefinitionNodes appropriately.
     """
 
-    def __init__(self, code_nodes=None, separator="\n", separator_last=""):
+    def __init__(self, code_nodes=None, separator="\n", head="", tail=""):
         SequenceNode.__init__(
             self,
             code_nodes=code_nodes,
             separator=separator,
-            separator_last=separator_last)
+            head=head,
+            tail=tail)
 
         self._likeliness = Likeliness.ALWAYS
         self._registered_code_symbols = set()

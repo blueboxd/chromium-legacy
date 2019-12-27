@@ -2,44 +2,41 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
-/**
- * Namespace for the Camera app.
- */
-var cca = cca || {};
-
-/**
- * Namespace for device.
- */
-cca.device = cca.device || {};
+import {DeviceOperator} from '../mojo/device_operator.js';
+// eslint-disable-next-line no-unused-vars
+import {ResolutionList} from '../type.js';
+import {Camera3DeviceInfo} from './camera3_device_info.js';
+import {PhotoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
+        VideoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
+} from './constraints_preferrer.js';
+import {LegacyVCDError} from './error.js';
 
 /**
  * Contains information of all cameras on the device and will updates its value
  * when any plugin/unplug external camera changes.
  */
-cca.device.DeviceInfoUpdater = class {
+export class DeviceInfoUpdater {
   /**
-   * @param {!cca.device.PhotoConstraintsPreferrer} photoPreferrer
-   * @param {!cca.device.VideoConstraintsPreferrer} videoPreferrer
+   * @param {!PhotoConstraintsPreferrer} photoPreferrer
+   * @param {!VideoConstraintsPreferrer} videoPreferrer
    * @public
    * */
   constructor(photoPreferrer, videoPreferrer) {
     /**
-     * @type {!cca.device.PhotoConstraintsPreferrer}
+     * @type {!PhotoConstraintsPreferrer}
      * @private
      */
     this.photoPreferrer_ = photoPreferrer;
 
     /**
-     * @type {!cca.device.VideoConstraintsPreferrer}
+     * @type {!VideoConstraintsPreferrer}
      * @private
      */
     this.videoPreferrer_ = videoPreferrer;
 
     /**
      * Listeners to be called after new camera information is available.
-     * @type {!Array<!function(!cca.device.DeviceInfoUpdater): Promise>}
+     * @type {!Array<!function(!DeviceInfoUpdater): Promise>}
      * @private
      */
     this.deviceChangeListeners_ = [];
@@ -68,7 +65,7 @@ cca.device.DeviceInfoUpdater = class {
     /**
      * Camera3DeviceInfo of all available video devices. Is null on HALv1 device
      * without mojo api support.
-     * @type {!Promise<?Array<cca.device.Camera3DeviceInfo>>}
+     * @type {!Promise<?Array<Camera3DeviceInfo>>}
      * @private
      */
     this.camera3DevicesInfo_ = this.queryMojoDevicesInfo_();
@@ -150,7 +147,7 @@ cca.device.DeviceInfoUpdater = class {
 
   /**
    * Queries Camera3DeviceInfo of available devices through private mojo API.
-   * @return {!Promise<?Array<!cca.device.Camera3DeviceInfo>>} Camera3DeviceInfo
+   * @return {!Promise<?Array<!Camera3DeviceInfo>>} Camera3DeviceInfo
    *     of available devices. Maybe null on HALv1 devices without supporting
    *     private mojo api.
    * @throws {Error} Thrown when camera unplugging happens between enumerating
@@ -158,17 +155,16 @@ cca.device.DeviceInfoUpdater = class {
    * @private
    */
   async queryMojoDevicesInfo_() {
-    if (!await cca.mojo.DeviceOperator.isSupported()) {
+    if (!await DeviceOperator.isSupported()) {
       return null;
     }
     const deviceInfos = await this.devicesInfo_;
-    return Promise.all(
-        deviceInfos.map((d) => cca.device.Camera3DeviceInfo.create(d)));
+    return Promise.all(deviceInfos.map((d) => Camera3DeviceInfo.create(d)));
   }
 
   /**
    * Registers listener to be called when state of available devices changes.
-   * @param {!function(!cca.device.DeviceInfoUpdater)} listener
+   * @param {!function(!DeviceInfoUpdater)} listener
    */
   addDeviceChangeListener(listener) {
     this.deviceChangeListeners_.push(listener);
@@ -178,9 +174,9 @@ cca.device.DeviceInfoUpdater = class {
    * Requests to lock update of device information. This function is preserved
    * for device information reader to lock the update capability so as to ensure
    * getting consistent data between all information providers.
-   * @param {!function(!cca.device.DeviceInfoUpdater): Promise} callback Called
-   *     after update capability is locked. Getting information from all
-   *     providers in callback are guaranteed to be consistent.
+   * @param {!function(!DeviceInfoUpdater): Promise} callback Called after
+   *     update capability is locked. Getting information from all providers in
+   *     callback are guaranteed to be consistent.
    */
   async lockDeviceInfo(callback) {
     await this.firstUpdate_;
@@ -222,7 +218,7 @@ cca.device.DeviceInfoUpdater = class {
 
   /**
    * Gets Camera3DeviceInfo for all available video devices.
-   * @return {!Promise<?Array<!cca.device.Camera3DeviceInfo>>}
+   * @return {!Promise<?Array<!Camera3DeviceInfo>>}
    */
   async getCamera3DevicesInfo() {
     return this.camera3DevicesInfo_;
@@ -231,17 +227,20 @@ cca.device.DeviceInfoUpdater = class {
   /**
    * Gets supported photo and video resolutions for specified video device.
    * @param {string} deviceId Device id of the video device.
-   * @return {!Promise<!{photo: !cca.ResolutionList, video:
-   *     !cca.ResolutionList}>} Supported photo and video resolutions.
+   * @return {!Promise<!{photo: !ResolutionList, video: !ResolutionList}>}
+   *     Supported photo and video resolutions.
    * @throws {Error} May fail on HALv1 device without capability of querying
    *     supported resolutions.
    */
   async getDeviceResolutions(deviceId) {
     const devices = await this.getCamera3DevicesInfo();
     if (!devices) {
-      throw new cca.device.LegacyVCDError();
+      throw new LegacyVCDError();
     }
     const info = devices.find((info) => info.deviceId === deviceId);
     return {photo: info.photoResols, video: info.videoResols};
   }
-};
+}
+
+/** @const */
+cca.device.DeviceInfoUpdater = DeviceInfoUpdater;

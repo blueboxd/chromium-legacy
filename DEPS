@@ -175,11 +175,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '89bf1547f3aa3ff3c142d197c14bbce1e199db2b',
+  'skia_revision': '840ee5a432444a504020e1ec3b25e2e3f4763e7b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '8c170824164c4917fb99a9c38b34609b152e949c',
+  'v8_revision': '26d06749412ca55dd07e5004c45b77b643764fe0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -187,11 +187,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '01dd6f6ca430a5c5bfd9d237b5569abd835694fc',
+  'angle_revision': 'fca5a005aa880a51672c091fcb82f084b620670a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '6e3a387c01598240a7a8722ab8cbd1015ec1cd0a',
+  'swiftshader_revision': '59465799210b3f4962af1a9dc44a4ffecb422c10',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -246,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '451736382565ecf11f295b8220f4ef5d033e0e0e',
+  'devtools_frontend_revision': 'b015b7d12040e53bb0c987a4db6c9cbb774bde41',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1483,7 +1483,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + '53655df4cde60b121fc530842ba9a6d5dfec1ae1',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '26762d0425ffd15af9ddc3ae669373668827ea00',
+    Var('webrtc_git') + '/src.git' + '@' + 'f2dc05978f1dda877d811b81d1ee9cedb6d38be1',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1553,7 +1553,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@198da190b2a329168f2b86d8413cd0308f828d88',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@05626c706990456cbf16fcdb3ece8a4cd72a2df7',
     'condition': 'checkout_src_internal',
   },
 

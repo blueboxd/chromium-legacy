@@ -59,6 +59,7 @@ js_library("event_tracker") {
 
 js_library("search_highlight_utils") {
   deps = [
+    ":assert",
     ":cr",
   ]
 }

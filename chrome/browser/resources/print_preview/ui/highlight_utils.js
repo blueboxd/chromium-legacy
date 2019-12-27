@@ -40,20 +40,19 @@ export function updateHighlights(element, query) {
       if (query.test(textContent)) {
         // Don't highlight <select> nodes, yellow rectangles can't be
         // displayed within an <option>.
-        if (node.parentNode.nodeName !== 'OPTION') {
-          result.highlights.push(highlight(node, textContent.split(query)));
-        } else {
-          const selectNode = node.parentNode.parentNode;
+        if (node.parentNode.nodeName === 'OPTION') {
           // The bubble should be parented by the select node's parent.
           // Note: The bubble's ::after element, a yellow arrow, will not
           // appear correctly in print preview without SPv175 enabled. See
           // https://crbug.com/817058.
           const bubble = highlightControlWithBubble(
-              /** @type {!HTMLElement} */ (assert(selectNode.parentNode)),
-              textContent.match(query)[0]);
+              /** @type {!HTMLElement} */ (assert(node.parentNode.parentNode)),
+              textContent.match(query)[0], /*horizontallyCenter=*/ true);
           if (bubble) {
             result.bubbles.push(bubble);
           }
+        } else {
+          result.highlights.push(highlight(node, textContent.split(query)));
         }
       }
     });

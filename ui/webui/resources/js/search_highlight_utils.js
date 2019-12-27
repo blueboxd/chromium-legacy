@@ -95,11 +95,26 @@ cr.define('cr.search_highlight_utils', function() {
    * should already be visible or the bubble will render incorrectly.
    * @param {!HTMLElement} element The element to be highlighted.
    * @param {string} rawQuery The search query.
+   * @param {boolean=} horizontallyCenter Whether or not to horizontally center
+   *     the shown search bubble (if any) based on |element|'s left and width.
    * @return {?Node} The search bubble that was added, or null if no new bubble
    *     was added.
    */
-  /* #export */ function highlightControlWithBubble(element, rawQuery) {
-    let searchBubble = element.querySelector(`.${SEARCH_BUBBLE_CSS_CLASS}`);
+  /* #export */ function highlightControlWithBubble(
+      element, rawQuery, horizontallyCenter) {
+    let anchor = element;
+    if (element.tagName === 'SELECT') {
+      anchor = element.parentNode;
+    }
+    // NOTE(dbeam): this is theoretically only possible in the select case, but
+    // callers are often fast and loose with regard to casting |element| from a
+    // parentNode (which can easily be a shadow root). So we leave this if for
+    // all branches (rather than solely inside the select branch).
+    if (anchor instanceof ShadowRoot) {
+      anchor = anchor.host.parentNode;
+    }
+
+    let searchBubble = anchor.querySelector(`.${SEARCH_BUBBLE_CSS_CLASS}`);
     // If the element has already been highlighted, there is no need to do
     // anything.
     if (searchBubble) {
@@ -112,13 +127,18 @@ cr.define('cr.search_highlight_utils', function() {
     innards.classList.add('search-bubble-innards');
     innards.textContent = rawQuery;
     searchBubble.appendChild(innards);
-    element.appendChild(searchBubble);
+    anchor.appendChild(searchBubble);
 
     const updatePosition = function() {
+      assert(typeof element.offsetTop === 'number');
       searchBubble.style.top = element.offsetTop +
           (innards.classList.contains('above') ? -searchBubble.offsetHeight :
                                                  element.offsetHeight) +
           'px';
+      if (horizontallyCenter) {
+        const width = element.offsetWidth - searchBubble.offsetWidth;
+        searchBubble.style.left = element.offsetLeft + width / 2 + 'px';
+      }
     };
     updatePosition();
 
@@ -126,6 +146,9 @@ cr.define('cr.search_highlight_utils', function() {
       innards.classList.toggle('above');
       updatePosition();
     });
+    // TODO(crbug.com/355446): create a way to programmatically update these
+    // bubbles (i.e. call updatePosition()) when outer scope knows they need to
+    // be repositioned.
     return searchBubble;
   }
 

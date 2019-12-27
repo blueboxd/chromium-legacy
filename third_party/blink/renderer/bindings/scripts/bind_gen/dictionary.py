@@ -637,7 +637,7 @@ def generate_dictionary_cc_file(dictionary):
             make_dict_member_set_def(cg_context.make_copy(dict_member=member)),
         ])
 
-    root_node = SymbolScopeNode(separator_last="\n")
+    root_node = ListNode(tail="\n")
     root_node.set_accumulator(CodeGenAccumulator())
     root_node.set_renderer(MakoRenderer())
 
@@ -681,7 +681,7 @@ def generate_dictionary_h_file(dictionary):
         make_dict_class_def(cg_context),
     ])
 
-    root_node = SymbolScopeNode(separator_last="\n")
+    root_node = ListNode(tail="\n")
     root_node.set_accumulator(CodeGenAccumulator())
     root_node.set_renderer(MakoRenderer())
 

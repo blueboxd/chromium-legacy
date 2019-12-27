@@ -117,19 +117,6 @@
               numeric-unchecked-value="[[networkPredictionUncheckedValue_]]"
               on-settings-boolean-control-change="onNetworkPredictionChange_">
           </settings-toggle-button>
-<if expr="chromeos">
-          <settings-toggle-button
-              hidden="[[!pageVisibility.contentProtectionAttestation]]"
-              pref=
-              "{{prefs.cros.device.attestation_for_content_protection_enabled}}"
-              label="$i18n{enableContentProtectionAttestation}">
-          </settings-toggle-button>
-          <settings-toggle-button
-              hidden="[[!pageVisibility.wakeOnWifi]]"
-              pref="{{prefs.settings.internet.wake_on_wifi_darkconnect}}"
-              label="$i18n{wakeOnWifi}">
-          </settings-toggle-button>
-</if>
 <if expr="use_nss_certs or is_win or is_macosx">
           <cr-link-row id="manageCertificates"
               class="hr"

@@ -179,8 +179,10 @@ js_library("page_visibility") {
 
 js_library("search_settings") {
   deps = [
+    "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:search_highlight_utils",
+    "//ui/webui/resources/js:util",
   ]
   externs_list = [ "$externs_path/pending_polymer.js" ]
 }

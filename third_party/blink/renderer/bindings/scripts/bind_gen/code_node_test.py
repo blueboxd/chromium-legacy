@@ -72,6 +72,14 @@ class CodeNodeTest(unittest.TestCase):
         root.remove(root[-1])
         self.assertRenderResult(root, "2,3,5")
 
+    def test_list_node_head_and_tail(self):
+        self.assertRenderResult(ListNode(), "")
+        self.assertRenderResult(ListNode(head="head"), "")
+        self.assertRenderResult(ListNode(tail="tail"), "")
+        self.assertRenderResult(
+            ListNode([TextNode("-content-")], head="head", tail="tail"),
+            "head-content-tail")
+
     def test_nested_sequence(self):
         """Tests nested ListNodes."""
         root = ListNode(separator=",")
@@ -93,7 +101,7 @@ class CodeNodeTest(unittest.TestCase):
         Tests that use of SymbolNode inserts necessary SymbolDefinitionNode
         appropriately.
         """
-        root = SymbolScopeNode(separator_last="\n")
+        root = SymbolScopeNode(tail="\n")
 
         root.register_code_symbols([
             SymbolNode("var1", "int ${var1} = ${var2} + ${var3};"),

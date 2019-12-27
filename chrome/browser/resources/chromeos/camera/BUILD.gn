@@ -134,6 +134,8 @@ copy("chrome_camera_app_js") {
 
 copy("chrome_camera_app_js_browser_proxy") {
   sources = [
+    # TODO(b/129956426): Remove dependency used only in closure compiler check.
+    "src/js/browser_proxy/browser_proxy_interface.js",
     "src/js/browser_proxy/browser_proxy.js",
   ]
 

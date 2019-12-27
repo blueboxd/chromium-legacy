@@ -161,8 +161,9 @@ cca.App = class {
               });
         })
         .then((external) => {
-          cca.assert(cca.models.FileSystem.externalDir !== null);
-          this.galleryButton_.initialize(cca.models.FileSystem.externalDir);
+          const externalDir = cca.models.FileSystem.getExternalDirectory();
+          cca.assert(externalDir !== null);
+          this.galleryButton_.initialize(externalDir);
           cca.nav.open(cca.views.ViewName.CAMERA);
         })
         .catch((error) => {

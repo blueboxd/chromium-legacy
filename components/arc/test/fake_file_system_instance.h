@@ -54,6 +54,15 @@ namespace arc {
 class FakeFileSystemInstance : public mojom::FileSystemInstance {
  public:
   // Specification of a fake file available to content URL based methods.
+  using GetLastChangeTimeCallback =
+      base::RepeatingCallback<base::Time(const base::FilePath& path)>;
+
+  // TODO(risan): Consider if this is really needed, and whether we should just
+  // use the simpler option by using the original directory as is.
+  // The path for the top level directory considered in MediaStore.
+  static constexpr base::FilePath::CharType kFakeAndroidPath[] =
+      FILE_PATH_LITERAL("/android/path");
+
   struct File {
     enum class Seekable {
       NO,
@@ -181,6 +190,20 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
   // Adds a root accessible by document provider based methods.
   void AddRoot(const Root& root);
 
+  // Fake the GetLastChangedTime implementation.
+  void SetGetLastChangeTimeCallback(GetLastChangeTimeCallback ctime_callback);
+
+  // Sets the path for the top level cros directory considered in MediaStore.
+  // TODO(risan): Consider to not use this (if we go without different android
+  // path approach). Another possibility to consider is probably to bind mount
+  // the directory in the caller test and do android_path conversion for the
+  // caller? In any case, this we don't want cros to be exposed to this instance
+  // that lives under Android.
+  void SetCrosDir(const base::FilePath& cros_dir);
+
+  // Sets the initial media store content.
+  void SetMediaStore(const std::map<base::FilePath, base::Time>& media_store);
+
   // Triggers watchers installed to a document.
   void TriggerWatchers(const std::string& authority,
                        const std::string& document_id,
@@ -223,6 +246,11 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
   // For validating the url requests in testing.
   const std::vector<mojom::OpenUrlsRequestPtr>& handledUrlRequests() const {
     return handled_url_requests_;
+  }
+
+  // Returns the content of the fake media store index.
+  const std::map<base::FilePath, base::Time>& GetMediaStore() const {
+    return media_store_;
   }
 
   // mojom::FileSystemInstance:
@@ -273,6 +301,9 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
   void RemoveWatcher(int64_t watcher_id,
                      RemoveWatcherCallback callback) override;
   void RequestMediaScan(const std::vector<std::string>& paths) override;
+  void RequestFileRemovalScan(
+      const std::vector<std::string>& directory_paths) override;
+  void ReindexDirectory(const std::string& directory_path) override;
   void OpenUrlsWithPermission(mojom::OpenUrlsRequestPtr request,
                               OpenUrlsWithPermissionCallback callback) override;
 
@@ -301,6 +332,9 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
   // Returns a FD to non-seekable file to write. Bytes written to the FD can be
   // read by calling GetFileContent() with the passed |url|.
   base::ScopedFD CreateStreamFileDescriptorToWrite(const std::string& url);
+
+  // Returns the cros file path for |android_path|.
+  base::FilePath GetCrosPath(const base::FilePath& android_path) const;
 
   THREAD_CHECKER(thread_checker_);
 
@@ -339,6 +373,15 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
 
   // List of roots added by AddRoot().
   std::vector<Root> roots_;
+
+  // Fake MediaStore database index.
+  std::map<base::FilePath, base::Time> media_store_;
+
+  // Fake GetLastChangedTime function callback.
+  GetLastChangeTimeCallback ctime_callback_;
+
+  // The path for the top level cros directory considered in MediaStore.
+  base::FilePath cros_dir_;
 
   int64_t next_watcher_id_ = 1;
   int get_child_documents_count_ = 0;

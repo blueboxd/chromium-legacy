@@ -103,11 +103,26 @@ cr.define('settings', function() {
             bubbles.push(bubble);
           }
 
-          // Don't highlight <select> nodes, yellow rectangles can't be
-          // displayed within an <option>.
-          // TODO(dpapad): highlight <select> controls with a search bubble
-          // instead.
-          if (node.parentNode.nodeName != 'OPTION') {
+          if (node.parentNode.nodeName === 'OPTION') {
+            const select = node.parentNode.parentNode;
+            assert(select.nodeName === 'SELECT');
+
+            // TODO(crbug.com/355446): support showing bubbles inside subpages.
+            // Currently, they're incorrectly positioned and there's no great
+            // signal at which to know when to reposition them (because every
+            // page asynchronously loads/renders things differently).
+            const isSubpage = n => n.nodeName === 'SETTINGS-SUBPAGE';
+            if (findAncestor(select, isSubpage, true)) {
+              return;
+            }
+
+            const bubble = cr.search_highlight_utils.highlightControlWithBubble(
+                select, textContent.match(request.regExp)[0],
+                /*horizontallyCenter=*/ true);
+            if (bubble) {
+              bubbles.push(bubble);
+            }
+          } else {
             request.addTextObserver(node);
             highlights.push(cr.search_highlight_utils.highlight(
                 node, textContent.split(request.regExp)));

@@ -152,7 +152,7 @@ class CxxFuncDeclNode(CompositeNode):
                  delete=False):
         """
         Args:
-            name: Function name node, which may include nested-name-specifier
+            name: Function name, which may include nested-name-specifier
                 (i.e. 'namespace_name::' and/or 'class_name::').
             arg_decls: List of argument declarations.
             return_type: Return type.
@@ -185,10 +185,10 @@ class CxxFuncDeclNode(CompositeNode):
         CompositeNode.__init__(
             self,
             template_format,
-            name=name,
+            name=_to_maybe_text_node(name),
             arg_decls=ListNode(
-                _to_node_list(arg_decls, TextNode), separator=", "),
-            return_type=return_type,
+                map(_to_maybe_text_node, arg_decls), separator=", "),
+            return_type=_to_maybe_text_node(return_type),
             const=const,
             override=override,
             default_or_delete=default_or_delete)
@@ -204,7 +204,7 @@ class CxxFuncDefNode(CompositeNode):
                  member_initializer_list=None):
         """
         Args:
-            name: Function name node, which may include nested-name-specifier
+            name: Function name, which may include nested-name-specifier
                 (i.e. 'namespace_name::' and/or 'class_name::').
             arg_decls: List of argument declarations.
             return_type: Return type.
@@ -228,21 +228,20 @@ class CxxFuncDefNode(CompositeNode):
         if member_initializer_list is None:
             member_initializer_list = ""
         else:
-            initializers = ListNode(
-                _to_node_list(member_initializer_list, TextNode),
-                separator=", ")
-            member_initializer_list = ListNode([TextNode(" : "), initializers],
-                                               separator="")
+            member_initializer_list = ListNode(
+                map(_to_maybe_text_node, member_initializer_list),
+                separator=", ",
+                head=" : ")
 
         self._body_node = SymbolScopeNode()
 
         CompositeNode.__init__(
             self,
             template_format,
-            name=name,
+            name=_to_maybe_text_node(name),
             arg_decls=ListNode(
-                _to_node_list(arg_decls, TextNode), separator=", "),
-            return_type=return_type,
+                map(_to_maybe_text_node, arg_decls), separator=", "),
+            return_type=_to_maybe_text_node(return_type),
             const=const,
             override=override,
             member_initializer_list=member_initializer_list,
@@ -253,20 +252,117 @@ class CxxFuncDefNode(CompositeNode):
         return self._body_node
 
 
+class CxxClassDefNode(CompositeNode):
+    def __init__(self, name, base_class_names=None, final=False):
+        """
+        Args:
+            name: The class name to be defined.
+            base_class_names: The list of base class names.
+            final: True makes this a final class.
+        """
+        assert isinstance(final, bool)
+
+        template_format = ("class {name}{final}{base_clause} {{\n"
+                           "  {top_section}\n"
+                           "  {public_section}\n"
+                           "  {protected_section}\n"
+                           "  {private_section}\n"
+                           "}};")
+
+        final = " final" if final else ""
+
+        if base_class_names is None:
+            base_clause = ""
+        else:
+            base_specifier_list = [
+                CompositeNode(
+                    "public {base_class_name}",
+                    base_class_name=_to_maybe_text_node(base_class_name))
+                for base_class_name in base_class_names
+            ]
+            base_clause = ListNode(
+                base_specifier_list, separator=", ", head=" : ")
+
+        self._top_section = ListNode(tail="\n")
+        self._public_section = ListNode(head="public:\n", tail="\n")
+        self._protected_section = ListNode(head="protected:\n", tail="\n")
+        self._private_section = ListNode(head="private:\n", tail="\n")
+
+        CompositeNode.__init__(
+            self,
+            template_format,
+            name=_to_maybe_text_node(name),
+            final=final,
+            base_clause=base_clause,
+            top_section=self._top_section,
+            public_section=self._public_section,
+            protected_section=self._protected_section,
+            private_section=self._private_section)
+
+    @property
+    def top_section(self):
+        return self._top_section
+
+    @property
+    def public_section(self):
+        return self._public_section
+
+    @property
+    def protected_section(self):
+        return self._protected_section
+
+    @property
+    def private_section(self):
+        return self._private_section
+
+
+class CxxNamespaceNode(CompositeNode):
+    def __init__(self, name="", body=None):
+        template_format = ("namespace {name} {{\n"
+                           "\n"
+                           "{body}\n"
+                           "\n"
+                           "}}  // namespace {name}")
+
+        if body is None:
+            self._body = ListNode()
+        else:
+            self._body = _to_list_node(body)
+
+        CompositeNode.__init__(
+            self, template_format, name=name, body=self._body)
+
+    @property
+    def body(self):
+        return self._body
+
+
 def _to_conditional_node(cond):
     if isinstance(cond, CodeNode):
         return cond
-    elif isinstance(cond, CodeGenExpr):
+    if isinstance(cond, CodeGenExpr):
         return TextNode(cond.to_text())
-    elif isinstance(cond, str):
+    if isinstance(cond, str):
         return TextNode(cond)
-    else:
-        assert False
+    assert False
 
 
-def _to_node_list(iterable, constructor):
-    return map(lambda x: x if isinstance(x, CodeNode) else constructor(x),
-               iterable)
+def _to_list_node(node):
+    if isinstance(node, ListNode):
+        return node
+    if isinstance(node, CodeNode):
+        return ListNode([node])
+    if isinstance(node, (list, tuple)):
+        return ListNode(node)
+    assert False
+
+
+def _to_maybe_text_node(node):
+    if isinstance(node, CodeNode):
+        return node
+    if isinstance(node, str):
+        return TextNode(node)
+    assert False
 
 
 def _to_symbol_scope_node(node, likeliness):

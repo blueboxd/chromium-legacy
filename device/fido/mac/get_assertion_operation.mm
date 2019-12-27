@@ -9,6 +9,7 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/bind.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -17,6 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/fido/fido_constants.h"
+#include "device/fido/mac/credential_metadata.h"
 #include "device/fido/mac/keychain.h"
 #include "device/fido/mac/util.h"
 #include "device/fido/public_key_credential_descriptor.h"
@@ -34,65 +36,64 @@ GetAssertionOperation::GetAssertionOperation(CtapGetAssertionRequest request,
                                              std::string metadata_secret,
                                              std::string keychain_access_group,
                                              Callback callback)
-    : OperationBase<CtapGetAssertionRequest, AuthenticatorGetAssertionResponse>(
-          std::move(request),
-          std::move(metadata_secret),
-          std::move(keychain_access_group),
-          std::move(callback)) {}
+    : metadata_secret_(std::move(metadata_secret)),
+      keychain_access_group_(std::move(keychain_access_group)),
+      request_(std::move(request)),
+      callback_(std::move(callback)) {}
 GetAssertionOperation::~GetAssertionOperation() = default;
 
-const std::string& GetAssertionOperation::RpId() const {
-  return request().rp_id;
-}
-
 void GetAssertionOperation::Run() {
-  Init();
   // Display the macOS Touch ID prompt.
-  PromptTouchId(l10n_util::GetStringFUTF16(IDS_WEBAUTHN_TOUCH_ID_PROMPT_REASON,
-                                           base::UTF8ToUTF16(RpId())));
+  touch_id_context_->PromptTouchId(
+      l10n_util::GetStringFUTF16(IDS_WEBAUTHN_TOUCH_ID_PROMPT_REASON,
+                                 base::UTF8ToUTF16(request_.rp_id)),
+      base::BindOnce(&GetAssertionOperation::PromptTouchIdDone,
+                     base::Unretained(this)));
 }
 
 void GetAssertionOperation::PromptTouchIdDone(bool success) {
   if (!success) {
-    std::move(callback())
-        .Run(CtapDeviceResponseCode::kCtap2ErrOperationDenied, base::nullopt);
+    std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrOperationDenied,
+                             base::nullopt);
     return;
   }
   std::set<std::vector<uint8_t>> allowed_credential_ids =
-      FilterInapplicableEntriesFromAllowList(request());
-  if (allowed_credential_ids.empty() && !request().allow_list.empty()) {
+      FilterInapplicableEntriesFromAllowList(request_);
+  if (allowed_credential_ids.empty() && !request_.allow_list.empty()) {
     // The caller checking
     // TouchIdAuthenticator::HasCredentialForGetAssertionRequest() should have
     // caught this.
     NOTREACHED();
-    std::move(callback())
-        .Run(CtapDeviceResponseCode::kCtap2ErrNoCredentials, base::nullopt);
+    std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrNoCredentials,
+                             base::nullopt);
     return;
   }
-  const bool empty_allow_list = request().allow_list.empty();
+  const bool empty_allow_list = request_.allow_list.empty();
 
   std::list<Credential> credentials =
-      empty_allow_list ? FindResidentCredentialsInKeychain(
-                             keychain_access_group(), metadata_secret(), RpId(),
-                             authentication_context())
-                       : FindCredentialsInKeychain(
-                             keychain_access_group(), metadata_secret(), RpId(),
-                             allowed_credential_ids, authentication_context());
+      empty_allow_list
+          ? FindResidentCredentialsInKeychain(
+                keychain_access_group_, metadata_secret_, request_.rp_id,
+                touch_id_context_->authentication_context())
+          : FindCredentialsInKeychain(
+                keychain_access_group_, metadata_secret_, request_.rp_id,
+                allowed_credential_ids,
+                touch_id_context_->authentication_context());
 
   if (credentials.empty()) {
-    // TouchIdAuthenticator::HasCredentialForGetAssertionRequest() is invoked
-    // first to ensure this doesn't occur.
+    // TouchIdAuthenticator::HasCredentialForGetAssertionRequest() is
+    // invoked first to ensure this doesn't occur.
     NOTREACHED();
-    std::move(callback())
-        .Run(CtapDeviceResponseCode::kCtap2ErrNoCredentials, base::nullopt);
+    std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrNoCredentials,
+                             base::nullopt);
     return;
   }
 
   base::Optional<AuthenticatorGetAssertionResponse> response =
       ResponseForCredential(credentials.front());
   if (!response) {
-    std::move(callback())
-        .Run(CtapDeviceResponseCode::kCtap2ErrNoCredentials, base::nullopt);
+    std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrNoCredentials,
+                             base::nullopt);
     return;
   }
 
@@ -102,8 +103,8 @@ void GetAssertionOperation::PromptTouchIdDone(bool success) {
     matching_credentials_ = std::move(credentials);
   }
 
-  std::move(callback())
-      .Run(CtapDeviceResponseCode::kSuccess, std::move(*response));
+  std::move(callback_).Run(CtapDeviceResponseCode::kSuccess,
+                           std::move(*response));
 }
 
 void GetAssertionOperation::GetNextAssertion(Callback callback) {
@@ -123,8 +124,8 @@ void GetAssertionOperation::GetNextAssertion(Callback callback) {
 
 base::Optional<AuthenticatorGetAssertionResponse>
 GetAssertionOperation::ResponseForCredential(const Credential& credential) {
-  base::Optional<CredentialMetadata> metadata =
-      UnsealCredentialId(metadata_secret(), RpId(), credential.credential_id);
+  base::Optional<CredentialMetadata> metadata = UnsealCredentialId(
+      metadata_secret_, request_.rp_id, credential.credential_id);
   if (!metadata) {
     // The keychain query already filtered for the RP ID encoded under this
     // operation's metadata secret, so the credential id really should have
@@ -133,10 +134,10 @@ GetAssertionOperation::ResponseForCredential(const Credential& credential) {
     return base::nullopt;
   }
 
-  AuthenticatorData authenticator_data =
-      MakeAuthenticatorData(RpId(), /*attested_credential_data=*/base::nullopt);
+  AuthenticatorData authenticator_data = MakeAuthenticatorData(
+      request_.rp_id, /*attested_credential_data=*/base::nullopt);
   base::Optional<std::vector<uint8_t>> signature = GenerateSignature(
-      authenticator_data, request().client_data_hash, credential.private_key);
+      authenticator_data, request_.client_data_hash, credential.private_key);
   if (!signature) {
     FIDO_LOG(ERROR) << "GenerateSignature failed";
     return base::nullopt;

@@ -32,9 +32,12 @@
 #include "services/network/network_service.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
+#include "services/service_manager/public/cpp/binder_map.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
+#include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
+#include "third_party/blink/public/mojom/installedapp/related_application.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 #include "weblayer/browser/browser_main_parts_impl.h"
@@ -104,6 +107,29 @@ class SSLCertReporterImpl : public SSLCertReporter {
   void ReportInvalidCertificateChain(
       const std::string& serialized_report) override {}
 };
+
+#if defined(OS_ANDROID)
+// TODO(https://crbug.com/1037884): Remove this.
+class StubInstalledAppProvider : public blink::mojom::InstalledAppProvider {
+ public:
+  StubInstalledAppProvider() {}
+  ~StubInstalledAppProvider() override = default;
+
+  // InstalledAppProvider overrides:
+  void FilterInstalledApps(
+      std::vector<blink::mojom::RelatedApplicationPtr> related_apps,
+      FilterInstalledAppsCallback callback) override {
+    std::move(callback).Run(std::vector<blink::mojom::RelatedApplicationPtr>());
+  }
+
+  static void Create(
+      content::RenderFrameHost* rfh,
+      mojo::PendingReceiver<blink::mojom::InstalledAppProvider> receiver) {
+    mojo::MakeSelfOwnedReceiver(std::make_unique<StubInstalledAppProvider>(),
+                                std::move(receiver));
+  }
+};
+#endif
 
 }  // namespace
 
@@ -352,6 +378,16 @@ void ContentBrowserClientImpl::ExposeInterfacesToRenderer(
     GetSafeBrowsingService()->AddInterface(registry, render_process_host);
   }
 #endif  // defined(OS_ANDROID)
+}
+
+void ContentBrowserClientImpl::RegisterBrowserInterfaceBindersForFrame(
+    content::RenderFrameHost* render_frame_host,
+    service_manager::BinderMapWithContext<content::RenderFrameHost*>* map) {
+#if defined(OS_ANDROID)
+  // TODO(https://crbug.com/1037884): Remove this.
+  map->Add<blink::mojom::InstalledAppProvider>(
+      base::BindRepeating(&StubInstalledAppProvider::Create));
+#endif
 }
 
 void ContentBrowserClientImpl::GetQuotaSettings(

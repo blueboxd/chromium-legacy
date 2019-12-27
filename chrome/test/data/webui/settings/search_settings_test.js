@@ -66,8 +66,8 @@ cr.define('settings_test', function() {
 
     /**
      * Tests that a search hit within a <select> node causes the parent
-     * settings-section to be shown, but the DOM of the <select> is not
-     * modified.
+     * settings-section to be shown and the <select> to be highlighted by a
+     * bubble.
      */
     test('<select> highlighting', function() {
       document.body.innerHTML = `<settings-section hidden-by-search>
@@ -87,8 +87,8 @@ cr.define('settings_test', function() {
             assertFalse(section.hiddenBySearch);
 
             const highlightWrapper =
-                select.querySelector('.search-highlight-wrapper');
-            assertFalse(!!highlightWrapper);
+                section.querySelector('.search-highlight-wrapper');
+            assertTrue(!!highlightWrapper);
 
             // Check that original DOM structure is present even after search
             // highlights are cleared.

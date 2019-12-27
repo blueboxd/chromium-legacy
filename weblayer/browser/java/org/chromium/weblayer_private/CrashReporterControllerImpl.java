@@ -48,15 +48,7 @@ public final class CrashReporterControllerImpl extends ICrashReporterController.
         static CrashReporterControllerImpl sInstance = new CrashReporterControllerImpl();
     }
 
-    private CrashReporterControllerImpl() {
-        ChildProcessCrashObserver.registerCrashCallback(
-                new ChildProcessCrashObserver.ChildCrashedCallback() {
-                    @Override
-                    public void childCrashed(int pid) {
-                        processNewMinidumps();
-                    }
-                });
-    }
+    private CrashReporterControllerImpl() {}
 
     public static CrashReporterControllerImpl getInstance() {
         return Holder.sInstance;
@@ -144,6 +136,15 @@ public final class CrashReporterControllerImpl extends ICrashReporterController.
         if (mIsNativeInitialized) {
             processNewMinidumps();
         }
+
+        // Now that there is a client, register to observe child process crashes.
+        ChildProcessCrashObserver.registerCrashCallback(
+                new ChildProcessCrashObserver.ChildCrashedCallback() {
+                    @Override
+                    public void childCrashed(int pid) {
+                        processNewMinidumps();
+                    }
+                });
     }
 
     /** Start an async task to import crashes, and notify if any are found. */

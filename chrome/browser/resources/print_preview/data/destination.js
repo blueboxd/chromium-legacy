@@ -416,7 +416,7 @@ export class Destination {
     // </if>
 
     assert(
-        this.provisionalType_ !=
+        this.provisionalType_ !==
                 DestinationProvisionalType.NEEDS_USB_PERMISSION ||
             this.isExtension,
         'Provisional USB destination only supprted with extension origin.');
@@ -474,16 +474,16 @@ export class Destination {
 
   /** @return {boolean} Whether the destination is local or cloud-based. */
   get isLocal() {
-    return this.origin_ == DestinationOrigin.LOCAL ||
-        this.origin_ == DestinationOrigin.EXTENSION ||
-        this.origin_ == DestinationOrigin.CROS ||
-        (this.origin_ == DestinationOrigin.PRIVET &&
-         this.connectionStatus_ != DestinationConnectionStatus.UNREGISTERED);
+    return this.origin_ === DestinationOrigin.LOCAL ||
+        this.origin_ === DestinationOrigin.EXTENSION ||
+        this.origin_ === DestinationOrigin.CROS ||
+        (this.origin_ === DestinationOrigin.PRIVET &&
+         this.connectionStatus_ !== DestinationConnectionStatus.UNREGISTERED);
   }
 
   /** @return {boolean} Whether the destination is a Privet local printer */
   get isPrivet() {
-    return this.origin_ == DestinationOrigin.PRIVET;
+    return this.origin_ === DestinationOrigin.PRIVET;
   }
 
   /**
@@ -491,7 +491,7 @@ export class Destination {
    *     printer.
    */
   get isExtension() {
-    return this.origin_ == DestinationOrigin.EXTENSION;
+    return this.origin_ === DestinationOrigin.EXTENSION;
   }
 
   /**
@@ -499,7 +499,7 @@ export class Destination {
    *     the location is unknown.
    */
   get location() {
-    if (this.location_ == null) {
+    if (this.location_ === null) {
       this.location_ = '';
       this.tags_.some(tag => {
         return Destination.LOCATION_TAG_PREFIXES.some(prefix => {
@@ -526,7 +526,7 @@ export class Destination {
    *     destination.
    */
   get hint() {
-    if (this.id_ == Destination.GooglePromotedId.DOCS) {
+    if (this.id_ === Destination.GooglePromotedId.DOCS) {
       return this.account_;
     }
     return this.location || this.extensionName || this.description;
@@ -621,7 +621,7 @@ export class Destination {
    *     certificate.
    */
   get hasInvalidCertificate() {
-    return this.certificateStatus_ == DestinationCertificateStatus.NO;
+    return this.certificateStatus_ === DestinationCertificateStatus.NO;
   }
 
   /**
@@ -630,7 +630,7 @@ export class Destination {
    *     warning to appear in the preview area when selected.
    */
   get shouldShowInvalidCertificateError() {
-    return this.certificateStatus_ == DestinationCertificateStatus.NO &&
+    return this.certificateStatus_ === DestinationCertificateStatus.NO &&
         !loadTimeData.getBoolean('isEnterpriseManaged');
   }
 
@@ -651,8 +651,8 @@ export class Destination {
 
   /** @return {boolean} Whether the destination is ready to be selected. */
   get readyForSelection() {
-    return (!isChromeOS || this.origin_ != DestinationOrigin.CROS ||
-            this.capabilities_ != null) &&
+    return (!isChromeOS || this.origin_ !== DestinationOrigin.CROS ||
+            this.capabilities_ !== null) &&
         !this.isProvisional;
   }
 
@@ -690,10 +690,10 @@ export class Destination {
 
   /** @return {string} Path to the SVG for the destination's icon. */
   get icon() {
-    if (this.id_ == Destination.GooglePromotedId.DOCS) {
+    if (this.id_ === Destination.GooglePromotedId.DOCS) {
       return 'print-preview:save-to-drive';
     }
-    if (this.id_ == Destination.GooglePromotedId.SAVE_AS_PDF) {
+    if (this.id_ === Destination.GooglePromotedId.SAVE_AS_PDF) {
       return 'cr:insert-drive-file';
     }
     if (this.isEnterprisePrinter) {
@@ -702,10 +702,10 @@ export class Destination {
     if (this.isLocal) {
       return 'print-preview:print';
     }
-    if (this.type_ == DestinationType.MOBILE && this.isOwned_) {
+    if (this.type_ === DestinationType.MOBILE && this.isOwned_) {
       return 'print-preview:smartphone';
     }
-    if (this.type_ == DestinationType.MOBILE) {
+    if (this.type_ === DestinationType.MOBILE) {
       return 'print-preview:smartphone';
     }
     if (this.isOwned_) {
@@ -755,7 +755,7 @@ export class Destination {
    * @return {boolean}
    */
   get isProvisional() {
-    return this.provisionalType_ != DestinationProvisionalType.NONE;
+    return this.provisionalType_ !== DestinationProvisionalType.NONE;
   }
 
   /**
@@ -866,7 +866,7 @@ export class Destination {
     }
     for (let i = 0; i < typesToLookFor.length; i++) {
       const matchingOptions = capability.option.filter(option => {
-        return option.type == typesToLookFor[i];
+        return option.type === typesToLookFor[i];
       });
       if (matchingOptions.length > 0) {
         return matchingOptions[0];
@@ -905,7 +905,7 @@ export class Destination {
     const defaultOptions = capability.option.filter(option => {
       return option.is_default;
     });
-    return defaultOptions.length != 0 ? defaultOptions[0] : null;
+    return defaultOptions.length !== 0 ? defaultOptions[0] : null;
   }
 
   /** @return {string} A unique identifier for this destination. */

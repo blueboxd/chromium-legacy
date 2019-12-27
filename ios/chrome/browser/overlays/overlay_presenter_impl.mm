@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/overlays/public/overlay_presentation_context.h"
 #import "ios/chrome/browser/overlays/public/overlay_presenter_observer.h"
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
+#include "ios/chrome/browser/overlays/public/overlay_request_support.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -203,6 +204,8 @@ void OverlayPresenterImpl::PresentOverlayForActiveRequest() {
 
   // Notify the observers that the overlay UI is about to be shown.
   for (auto& observer : observers_) {
+    if (!observer.GetRequestSupport(this)->IsRequestSupported(request))
+      return;
     observer.WillShowOverlay(this, request);
   }
 
@@ -224,6 +227,8 @@ void OverlayPresenterImpl::OverlayWasPresented(
   DCHECK_EQ(presentation_context_, presentation_context);
   DCHECK_EQ(presented_request_, request);
   for (auto& observer : observers_) {
+    if (!observer.GetRequestSupport(this)->IsRequestSupported(request))
+      return;
     observer.DidShowOverlay(this, request);
   }
 }
@@ -262,6 +267,8 @@ void OverlayPresenterImpl::OverlayWasDismissed(
 
   // Notify the observers that the overlay UI was hidden.
   for (auto& observer : observers_) {
+    if (!observer.GetRequestSupport(this)->IsRequestSupported(request))
+      return;
     observer.DidHideOverlay(this, request);
   }
 

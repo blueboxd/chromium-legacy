@@ -37,6 +37,9 @@ class NavigationHandleObserver : public WebContentsObserver {
   base::Optional<net::AuthChallengeInfo> auth_challenge_info() {
     return auth_challenge_info_;
   }
+  const net::ResolveErrorInfo& resolve_error_info() {
+    return resolve_error_info_;
+  }
   base::TimeTicks navigation_start() { return navigation_start_; }
 
  private:
@@ -59,6 +62,7 @@ class NavigationHandleObserver : public WebContentsObserver {
   int64_t navigation_id_ = -1;
   bool is_download_ = false;
   base::Optional<net::AuthChallengeInfo> auth_challenge_info_;
+  net::ResolveErrorInfo resolve_error_info_;
   base::TimeTicks navigation_start_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationHandleObserver);

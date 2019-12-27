@@ -28,19 +28,19 @@ export function updateHighlights(element, query) {
 
   element.shadowRoot.querySelectorAll('.searchable').forEach(childElement => {
     childElement.childNodes.forEach(node => {
-      if (node.nodeType != Node.TEXT_NODE) {
+      if (node.nodeType !== Node.TEXT_NODE) {
         return;
       }
 
       const textContent = node.nodeValue.trim();
-      if (textContent.length == 0) {
+      if (textContent.length === 0) {
         return;
       }
 
       if (query.test(textContent)) {
         // Don't highlight <select> nodes, yellow rectangles can't be
         // displayed within an <option>.
-        if (node.parentNode.nodeName != 'OPTION') {
+        if (node.parentNode.nodeName !== 'OPTION') {
           result.highlights.push(highlight(node, textContent.split(query)));
         } else {
           const selectNode = node.parentNode.parentNode;

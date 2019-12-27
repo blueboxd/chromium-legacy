@@ -63,8 +63,8 @@ Polymer({
    */
   isPdfOrDrive_: function() {
     return this.destination &&
-        (this.destination.id == Destination.GooglePromotedId.SAVE_AS_PDF ||
-         this.destination.id == Destination.GooglePromotedId.DOCS);
+        (this.destination.id === Destination.GooglePromotedId.SAVE_AS_PDF ||
+         this.destination.id === Destination.GooglePromotedId.DOCS);
   },
 
   /**

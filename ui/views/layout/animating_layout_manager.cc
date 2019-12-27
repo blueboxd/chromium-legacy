@@ -332,6 +332,17 @@ std::vector<View*> AnimatingLayoutManager::GetChildViewsInPaintOrder(
   return result;
 }
 
+bool AnimatingLayoutManager::OnViewRemoved(View* host, View* view) {
+  // Remove any fade infos corresponding to the removed view.
+  fade_infos_.erase(std::remove_if(fade_infos_.begin(), fade_infos_.end(),
+                                   [view](const LayoutFadeInfo& fade_info) {
+                                     return fade_info.child_view == view;
+                                   }),
+                    fade_infos_.end());
+
+  return LayoutManagerBase::OnViewRemoved(host, view);
+}
+
 void AnimatingLayoutManager::PostOrQueueAction(base::OnceClosure action) {
   if (!is_animating()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(action));
@@ -480,9 +491,9 @@ bool AnimatingLayoutManager::RecalculateTarget() {
   if (target_layout_ == proposed_layout)
     return false;
 
-  starting_layout_ = current_layout_;
   target_layout_ = proposed_layout;
   if (current_offset_ > kResetAnimationThreshold) {
+    starting_layout_ = current_layout_;
     starting_offset_ = 0.0;
     current_offset_ = 0.0;
     animation_delegate_->Animate();
@@ -490,7 +501,12 @@ bool AnimatingLayoutManager::RecalculateTarget() {
       is_animating_ = true;
       NotifyIsAnimatingChanged();
     }
-  } else {
+  } else if (current_offset_ > starting_offset_) {
+    // Only update the starting layout if the animation has progressed. This has
+    // the effect of "batching up" changes that all happen on the same frame,
+    // keeping the same starting point. (A common example of this is multiple
+    // child views' visibility changing.)
+    starting_layout_ = current_layout_;
     starting_offset_ = current_offset_;
   }
   CalculateFadeInfos();

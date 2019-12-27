@@ -871,7 +871,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     // Lazily create the main coordinator.
     TabGridCoordinator* tabGridCoordinator =
         [[TabGridCoordinator alloc] initWithWindow:self.window
-                        applicationCommandEndpoint:self.sceneController];
+                        applicationCommandEndpoint:self.sceneController
+                       browsingDataCommandEndpoint:self];
     tabGridCoordinator.regularTabModel = self.mainTabModel;
     tabGridCoordinator.incognitoTabModel = self.otrTabModel;
     _mainCoordinator = tabGridCoordinator;

@@ -111,7 +111,7 @@ IN_PROC_BROWSER_TEST_F(ShellDesktopControllerAuraBrowserTest, TwoAppWindows) {
             browser_context(), app_->id(),
             "chrome.app.window.create('/hello.html');"));
         ResultCatcher catcher;
-        catcher.GetNextResult();
+        ASSERT_TRUE(catcher.GetNextResult());
 
         // Close the first app window.
         GetAppWindow()->OnNativeClose();

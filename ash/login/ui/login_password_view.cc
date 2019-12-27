@@ -24,7 +24,9 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/text_constants.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -90,16 +92,29 @@ class NonAccessibleSeparator : public views::Separator {
 // A textfield that selects all text on focus.
 class LoginTextfield : public views::Textfield {
  public:
-  LoginTextfield() {}
-  ~LoginTextfield() override {}
+  LoginTextfield(base::RepeatingClosure on_focus_closure,
+                 base::RepeatingClosure on_blur_closure)
+      : on_focus_closure_(std::move(on_focus_closure)),
+        on_blur_closure_(std::move(on_blur_closure)) {}
+  ~LoginTextfield() override = default;
 
-  // views::Textfield:
-  void OnFocus() override {
-    views::Textfield::OnFocus();
-    SelectAll(false /*reverse*/);
+  void OnBlur() override {
+    if (on_blur_closure_)
+      on_blur_closure_.Run();
+    views::Textfield::OnBlur();
   }
 
+  void OnFocus() override {
+    if (on_focus_closure_)
+      on_focus_closure_.Run();
+    views::Textfield::OnFocus();
+    SelectAll(/*reversed=*/false);
+  }
  private:
+  // Closures that will be called when the element receives and loses focus.
+  base::RepeatingClosure on_focus_closure_;
+  base::RepeatingClosure on_blur_closure_;
+
   DISALLOW_COPY_AND_ASSIGN(LoginTextfield);
 };
 
@@ -152,7 +167,7 @@ IconBundle GetEasyUnlockResources(EasyUnlockIconId id) {
                         IDR_EASY_UNLOCK_UNLOCKED_PRESSED);
     case EasyUnlockIconId::SPINNER:
       return IconBundle(IDR_EASY_UNLOCK_SPINNER,
-                        base::TimeDelta::FromSeconds(2), 45 /*num_frames*/);
+                        base::TimeDelta::FromSeconds(2), /*num_frames=*/45);
   }
 
   NOTREACHED();
@@ -169,8 +184,8 @@ class LoginPasswordView::EasyUnlockIcon : public views::Button,
       : views::Button(this) {
     SetPreferredSize(size);
     SetLayoutManager(std::make_unique<views::FillLayout>());
-    icon_ = new AnimatedRoundedImageView(size, corner_radius);
-    AddChildView(icon_);
+    icon_ = AddChildView(
+        std::make_unique<AnimatedRoundedImageView>(size, corner_radius));
   }
   ~EasyUnlockIcon() override = default;
 
@@ -338,8 +353,7 @@ LoginPasswordView::LoginPasswordView() {
   root_layout->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kCenter);
 
-  password_row_ = new NonAccessibleView();
-
+  password_row_ = AddChildView(std::make_unique<NonAccessibleView>());
   auto layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal,
       gfx::Insets(kMarginAboveBelowPasswordIconsDp, 0));
@@ -347,18 +361,17 @@ LoginPasswordView::LoginPasswordView() {
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
   auto* layout_ptr = password_row_->SetLayoutManager(std::move(layout));
-  AddChildView(password_row_);
 
   // Add easy unlock icon.
-  easy_unlock_icon_ = new EasyUnlockIcon(
-      gfx::Size(kEasyUnlockIconSizeDp, kEasyUnlockIconSizeDp),
-      0 /*corner_radius*/);
-  password_row_->AddChildView(easy_unlock_icon_);
+  easy_unlock_icon_ =
+      password_row_->AddChildView(std::make_unique<EasyUnlockIcon>(
+          gfx::Size(kEasyUnlockIconSizeDp, kEasyUnlockIconSizeDp),
+          /*corner_radius=*/0));
 
-  easy_unlock_right_margin_ = new NonAccessibleView();
+  easy_unlock_right_margin_ =
+      password_row_->AddChildView(std::make_unique<NonAccessibleView>());
   easy_unlock_right_margin_->SetPreferredSize(gfx::Size(
       kHorizontalDistanceBetweenEasyUnlockAndPasswordDp, kNonEmptyHeight));
-  password_row_->AddChildView(easy_unlock_right_margin_);
 
   // Easy unlock starts invisible. There will be an event later to show it if
   // needed.
@@ -367,7 +380,15 @@ LoginPasswordView::LoginPasswordView() {
 
   // Password textfield. We control the textfield size by sizing the parent
   // view, as the textfield will expand to fill it.
-  textfield_ = new LoginTextfield();
+  auto textfield = std::make_unique<LoginTextfield>(
+      // Highlight on focus. Remove highlight on blur.
+      base::BindRepeating(
+          &LoginPasswordView::SetSeparatorAndCapsLockHighlighted,
+          base::Unretained(this), /*highlight=*/true),
+      base::BindRepeating(
+          &LoginPasswordView::SetSeparatorAndCapsLockHighlighted,
+          base::Unretained(this), /*highlight=*/false));
+  textfield_ = password_row_->AddChildView(std::move(textfield));
   textfield_->set_controller(this);
   textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
   textfield_->SetTextColor(login_constants::kAuthMethodsTextColor);
@@ -380,22 +401,18 @@ LoginPasswordView::LoginPasswordView() {
   textfield_->SetBorder(nullptr);
   textfield_->SetBackgroundColor(SK_ColorTRANSPARENT);
 
-  password_row_->AddChildView(textfield_);
   layout_ptr->SetFlexForView(textfield_, 1);
 
   // Caps lock hint icon.
-  capslock_icon_ = new views::ImageView();
-  capslock_icon_->SetImage(gfx::CreateVectorIcon(
-      kLockScreenCapsLockIcon, kCapsLockIconSizeDp,
-      SkColorSetA(login_constants::kButtonEnabledColor,
-                  login_constants::kButtonDisabledAlpha)));
-  password_row_->AddChildView(capslock_icon_);
+  capslock_icon_ =
+      password_row_->AddChildView(std::make_unique<views::ImageView>());
   // Caps lock hint starts invisible. This constructor will call
   // OnCapsLockChanged with the actual caps lock state.
   capslock_icon_->SetVisible(false);
 
   // Submit button.
-  submit_button_ = new LoginButton(this);
+  submit_button_ =
+      password_row_->AddChildView(std::make_unique<LoginButton>(this));
   submit_button_->SetImage(
       views::Button::STATE_NORMAL,
       gfx::CreateVectorIcon(kLockScreenArrowIcon, kSubmitButtonSizeDp,
@@ -408,11 +425,12 @@ LoginPasswordView::LoginPasswordView() {
                       login_constants::kButtonDisabledAlpha)));
   submit_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ASH_LOGIN_SUBMIT_BUTTON_ACCESSIBLE_NAME));
-  password_row_->AddChildView(submit_button_);
 
   // Separator on bottom.
-  separator_ = new NonAccessibleSeparator();
-  AddChildView(separator_);
+  separator_ = AddChildView(std::make_unique<NonAccessibleSeparator>());
+
+  // Initialize the capslock icon and the separator without a highlight.
+  SetSeparatorAndCapsLockHighlighted(/*highlight=*/false);
 
   // Make sure the textfield always starts with focus.
   textfield_->RequestFocus();
@@ -572,13 +590,6 @@ void LoginPasswordView::UpdateUiState() {
       !textfield_->GetReadOnly() &&
       (enabled_on_empty_password_ || !textfield_->GetText().empty());
   submit_button_->SetEnabled(is_enabled);
-  SkColor color = is_enabled
-                      ? login_constants::kButtonEnabledColor
-                      : SkColorSetA(login_constants::kButtonEnabledColor,
-                                    login_constants::kButtonDisabledAlpha);
-  separator_->SetColor(color);
-  capslock_icon_->SetImage(gfx::CreateVectorIcon(kLockScreenCapsLockIcon,
-                                                 kCapsLockIconSizeDp, color));
 }
 
 void LoginPasswordView::OnCapsLockChanged(bool enabled) {
@@ -591,6 +602,15 @@ void LoginPasswordView::SubmitPassword() {
   if (textfield_->GetReadOnly())
     return;
   on_submit_.Run(textfield_->GetText());
+}
+
+void LoginPasswordView::SetSeparatorAndCapsLockHighlighted(bool highlight) {
+  SkColor color = login_constants::kButtonEnabledColor;
+  if (!highlight)
+    color = SkColorSetA(color, login_constants::kButtonDisabledAlpha);
+  separator_->SetColor(color);
+  capslock_icon_->SetImage(gfx::CreateVectorIcon(kLockScreenCapsLockIcon,
+                                                 kCapsLockIconSizeDp, color));
 }
 
 }  // namespace ash

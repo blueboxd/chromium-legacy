@@ -46,8 +46,7 @@
 @property(nonatomic, weak) MetricsMediator* metricsMediator;
 
 // For temporary plumbing only.
-@property(nonatomic, weak) id<ApplicationCommands, BrowsingDataCommands>
-    sceneController;
+@property(nonatomic, weak) id<ApplicationCommands> sceneController;
 
 @end
 

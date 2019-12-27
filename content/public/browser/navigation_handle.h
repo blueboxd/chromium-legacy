@@ -18,6 +18,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_isolation_key.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "net/http/http_response_info.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "ui/base/page_transition_types.h"
@@ -284,6 +285,9 @@ class CONTENT_EXPORT NavigationHandle {
   // authentication challenge.
   virtual const base::Optional<net::AuthChallengeInfo>&
   GetAuthChallengeInfo() = 0;
+
+  // Returns host resolution error info associated with the request.
+  virtual net::ResolveErrorInfo GetResolveErrorInfo() = 0;
 
   // Gets the NetworkIsolationKey associated with the navigation. Updated as
   // redirects are followed. When one of the origins used to construct the

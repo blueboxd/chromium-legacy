@@ -228,9 +228,8 @@ class PasswordsPrivateApiTest : public ExtensionApiTest {
 
  protected:
   bool RunPasswordsSubtest(const std::string& subtest) {
-    return RunExtensionSubtest("passwords_private",
-                               "main.html?" + subtest,
-                               kFlagLoadAsComponent);
+    return RunExtensionSubtest("passwords_private", "main.html?" + subtest,
+                               kFlagNone, kFlagLoadAsComponent);
   }
 
   bool importPasswordsWasTriggered() {

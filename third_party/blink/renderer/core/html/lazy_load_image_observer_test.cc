@@ -1444,6 +1444,7 @@ TEST_F(LazyLoadAutomaticImagesTest, LazyLoadDisabledOnReload) {
                                      "image/png");
     Compositor().BeginFrame();
     test::RunPendingTasks();
+    Compositor().BeginFrame();
     lazy_image.Complete(ReadTestImage());
     test::RunPendingTasks();
     histogram_tester.ExpectTotalCount(

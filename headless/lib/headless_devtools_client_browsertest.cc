@@ -668,8 +668,7 @@ class DevToolsNetworkOfflineEmulationTest
   }
 };
 
-// Flaky. https://crbug.com/1037652
-DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_F(DevToolsNetworkOfflineEmulationTest);
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(DevToolsNetworkOfflineEmulationTest);
 
 class RawDevtoolsProtocolTest
     : public HeadlessAsyncDevTooledBrowserTest,

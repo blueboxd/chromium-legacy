@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "net/base/proxy_server.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "net/ssl/ssl_info.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
 #include "services/network/public/mojom/cors.mojom-shared.h"
@@ -70,6 +71,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) URLLoaderCompletionStatus {
 
   // The proxy server used for this request, if any.
   net::ProxyServer proxy_server;
+
+  // Host resolution error info for this request.
+  net::ResolveErrorInfo resolve_error_info;
 };
 
 }  // namespace network

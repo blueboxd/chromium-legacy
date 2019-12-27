@@ -335,8 +335,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionContentSettingsApiTest, IncognitoIsolation) {
 
   // Run extension, set all permissions to allow, and check if they are changed.
   EXPECT_TRUE(RunExtensionSubtest("content_settings/incognitoisolation",
-                                  "test.html?allow",
-                                  kFlagUseIncognito | kFlagEnableIncognito))
+                                  "test.html?allow", kFlagEnableIncognito,
+                                  kFlagUseIncognito))
       << message_;
 
   // Get content settings after running extension to ensure nothing is changed.
@@ -345,8 +345,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionContentSettingsApiTest, IncognitoIsolation) {
 
   // Run extension, set all permissions to block, and check if they are changed.
   EXPECT_TRUE(RunExtensionSubtest("content_settings/incognitoisolation",
-                                  "test.html?block",
-                                  kFlagUseIncognito | kFlagEnableIncognito))
+                                  "test.html?block", kFlagEnableIncognito,
+                                  kFlagUseIncognito))
       << message_;
 
   // Get content settings after running extension to ensure nothing is changed.

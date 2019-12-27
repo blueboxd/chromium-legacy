@@ -243,7 +243,7 @@ class PaletteTrayTestWithAssistant : public PaletteTrayTest {
 
   // PaletteTrayTest:
   void SetUp() override {
-    assistant::util::OverrideIsGoogleDeviceForTesting();
+    assistant::util::OverrideIsGoogleDeviceForTesting(true);
 
     PaletteTrayTest::SetUp();
 
@@ -260,6 +260,7 @@ class PaletteTrayTestWithAssistant : public PaletteTrayTest {
   }
 
   void TearDown() override {
+    assistant::util::OverrideIsGoogleDeviceForTesting(false);
     ui::SetEventTickClockForTesting(nullptr);
     // This needs to be called first to reset the controller state before the
     // shell instance gets torn down.

@@ -102,6 +102,7 @@ source_set("chromeos") {
     "//chromeos/components/power",
     "//chromeos/components/proximity_auth",
     "//chromeos/components/tether",
+    "//chromeos/constants",
     "//chromeos/cryptohome",
     "//chromeos/dbus",
     "//chromeos/dbus:metrics_event_proto",

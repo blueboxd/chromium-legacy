@@ -17,8 +17,8 @@
 
 #pragma mark - OverlayRequestCoordinator
 
-+ (BOOL)supportsRequest:(OverlayRequest*)request {
-  return !!request->GetConfig<JavaScriptConfirmationOverlayRequestConfig>();
++ (const OverlayRequestSupport*)requestSupport {
+  return JavaScriptConfirmationOverlayRequestConfig::RequestSupport();
 }
 
 @end

@@ -696,6 +696,9 @@ STDMETHODIMP TSFTextStore::RequestLock(DWORD lock_flags, HRESULT* result) {
     StartCompositionOnNewText(new_composition_start, composition_string);
   }
 
+  // reset the flag since we've already inserted/replaced the text.
+  new_text_inserted_ = false;
+
   // reset string_buffer_ if composition is no longer active.
   if (!text_input_client_->HasCompositionText()) {
     string_pending_insertion_.clear();
@@ -1387,7 +1390,6 @@ void TSFTextStore::StartCompositionOnNewText(
   }
 
   if (text_input_client_) {
-    new_text_inserted_ = false;
     text_input_client_->SetCompositionText(composition_text);
     // Notify accessibility about this ongoing composition if the string is not
     // empty

@@ -1247,6 +1247,50 @@ TEST_F(NetworkContextTest, CertReporting) {
   }
 }
 
+// Test that host resolution error information is available.
+TEST_F(NetworkContextTest, HostResolutionFailure) {
+  std::unique_ptr<net::MockHostResolver> resolver =
+      std::make_unique<net::MockHostResolver>();
+  std::unique_ptr<net::TestURLRequestContext> url_request_context =
+      std::make_unique<net::TestURLRequestContext>(
+          true /* delay_initialization */);
+  url_request_context->set_host_resolver(resolver.get());
+  resolver->rules()->AddSimulatedTimeoutFailure("*");
+  url_request_context->Init();
+
+  network_context_remote_.reset();
+  std::unique_ptr<NetworkContext> network_context =
+      std::make_unique<NetworkContext>(
+          network_service_.get(),
+          network_context_remote_.BindNewPipeAndPassReceiver(),
+          url_request_context.get(),
+          /*cors_exempt_header_list=*/std::vector<std::string>());
+
+  mojo::Remote<mojom::URLLoaderFactory> loader_factory;
+  mojom::URLLoaderFactoryParamsPtr params =
+      mojom::URLLoaderFactoryParams::New();
+  params->process_id = mojom::kBrowserProcessId;
+  params->is_corb_enabled = false;
+  network_context->CreateURLLoaderFactory(
+      loader_factory.BindNewPipeAndPassReceiver(), std::move(params));
+
+  ResourceRequest request;
+  request.url = GURL("http://example.test");
+
+  mojo::PendingRemote<mojom::URLLoader> loader;
+  TestURLLoaderClient client;
+  loader_factory->CreateLoaderAndStart(
+      loader.InitWithNewPipeAndPassReceiver(), 0 /* routing_id */,
+      0 /* request_id */, 0 /* options */, request, client.CreateRemote(),
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
+
+  client.RunUntilComplete();
+  EXPECT_TRUE(client.has_received_completion());
+  EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, client.completion_status().error_code);
+  EXPECT_EQ(net::ERR_DNS_TIMED_OUT,
+            client.completion_status().resolve_error_info.error);
+}
+
 // Test that valid referrers are allowed, while invalid ones result in errors.
 TEST_F(NetworkContextTest, Referrers) {
   const GURL kReferrer = GURL("http://referrer/");

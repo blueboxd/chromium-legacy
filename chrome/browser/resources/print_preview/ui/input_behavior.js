@@ -60,7 +60,7 @@ export const InputBehavior = {
    * @private
    */
   onKeyDown_: function(event) {
-    if (event.code != 'Enter' && event.code != 'Tab') {
+    if (event.code !== 'Enter' && event.code !== 'Tab') {
       return;
     }
 
@@ -87,7 +87,7 @@ export const InputBehavior = {
   onTimeout_: function() {
     this.timeout_ = null;
     const value = this.getInput().value;
-    if (this.lastValue_ != value) {
+    if (this.lastValue_ !== value) {
       this.lastValue_ = value;
       this.fire('input-change', value);
     }

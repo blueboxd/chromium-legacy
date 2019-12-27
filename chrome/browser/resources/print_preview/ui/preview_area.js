@@ -179,8 +179,8 @@ Polymer({
   onPointerOver_: function(event) {
     const marginControlContainer = this.$.marginControlContainer;
     let fromElement = event.fromElement;
-    while (fromElement != null) {
-      if (fromElement == marginControlContainer) {
+    while (fromElement !== null) {
+      if (fromElement === marginControlContainer) {
         return;
       }
 
@@ -198,8 +198,8 @@ Polymer({
   onPointerOut_: function(event) {
     const marginControlContainer = this.$.marginControlContainer;
     let toElement = event.toElement;
-    while (toElement != null) {
-      if (toElement == marginControlContainer) {
+    while (toElement !== null) {
+      if (toElement === marginControlContainer) {
         return;
       }
 
@@ -216,7 +216,7 @@ Polymer({
     }
 
     this.previewState =
-        this.previewState == PreviewAreaState.OPEN_IN_PREVIEW_LOADING ?
+        this.previewState === PreviewAreaState.OPEN_IN_PREVIEW_LOADING ?
         PreviewAreaState.OPEN_IN_PREVIEW_LOADED :
         PreviewAreaState.DISPLAY_PREVIEW;
   },
@@ -242,7 +242,7 @@ Polymer({
    * @private
    */
   isInDisplayPreviewState_: function() {
-    return this.previewState == PreviewAreaState.DISPLAY_PREVIEW;
+    return this.previewState === PreviewAreaState.DISPLAY_PREVIEW;
   },
 
   /**
@@ -250,7 +250,7 @@ Polymer({
    * @private
    */
   isPreviewLoading_: function() {
-    return this.previewState == PreviewAreaState.LOADING;
+    return this.previewState === PreviewAreaState.LOADING;
   },
 
   /**
@@ -313,10 +313,10 @@ Polymer({
           this.documentReady_ = true;
         },
         type => {
-          if (/** @type{string} */ (type) == 'SETTINGS_INVALID') {
+          if (/** @type{string} */ (type) === 'SETTINGS_INVALID') {
             this.error = Error.INVALID_PRINTER;
             this.previewState = PreviewAreaState.ERROR;
-          } else if (/** @type{string} */ (type) != 'CANCELLED') {
+          } else if (/** @type{string} */ (type) !== 'CANCELLED') {
             this.error = Error.PREVIEW_FAILED;
             this.previewState = PreviewAreaState.ERROR;
           }
@@ -327,7 +327,7 @@ Polymer({
   /** Set the preview state to display the "opening in preview" message. */
   setOpeningPdfInPreview: function() {
     assert(isMac);
-    this.previewState = this.previewState == PreviewAreaState.LOADING ?
+    this.previewState = this.previewState === PreviewAreaState.LOADING ?
         PreviewAreaState.OPEN_IN_PREVIEW_LOADING :
         PreviewAreaState.OPEN_IN_PREVIEW_LOADED;
   },
@@ -410,7 +410,7 @@ Polymer({
    * @private
    */
   onPagePreviewReady_: function(pageIndex, previewUid, previewResponseId) {
-    if (this.inFlightRequestId_ != previewResponseId) {
+    if (this.inFlightRequestId_ !== previewResponseId) {
       return;
     }
     const pageNumber = pageIndex + 1;
@@ -422,10 +422,10 @@ Polymer({
     if (pagesPerSheet > 1) {
       index = pageIndex;
     }
-    if (index == 0) {
+    if (index === 0) {
       this.onPreviewStart_(previewUid, pageIndex);
     }
-    if (index != -1) {
+    if (index !== -1) {
       this.pluginProxy_.loadPreviewPage(previewUid, pageIndex, index);
     }
   },
@@ -597,10 +597,10 @@ Polymer({
 
       // Change in custom margins values.
       if (!!lastTicket.marginsCustom &&
-          (lastTicket.marginsCustom.marginTop != customMargins.marginTop ||
-           lastTicket.marginsCustom.marginLeft != customMargins.marginLeft ||
-           lastTicket.marginsCustom.marginRight != customMargins.marginRight ||
-           lastTicket.marginsCustom.marginBottom !=
+          (lastTicket.marginsCustom.marginTop !== customMargins.marginTop ||
+           lastTicket.marginsCustom.marginLeft !== customMargins.marginLeft ||
+           lastTicket.marginsCustom.marginRight !== customMargins.marginRight ||
+           lastTicket.marginsCustom.marginBottom !==
                customMargins.marginBottom)) {
         return true;
       }
@@ -651,8 +651,8 @@ Polymer({
     // Media size
     const newValue =
         /** @type {!MediaSizeValue} */ (this.getSettingValue('mediaSize'));
-    if (newValue.height_microns != lastTicket.mediaSize.height_microns ||
-        newValue.width_microns != lastTicket.mediaSize.width_microns ||
+    if (newValue.height_microns !== lastTicket.mediaSize.height_microns ||
+        newValue.width_microns !== lastTicket.mediaSize.width_microns ||
         (this.destination.id !== lastTicket.deviceName &&
          this.getSettingValue('margins') === MarginsType.MINIMUM)) {
       return true;
@@ -746,7 +746,7 @@ Polymer({
       headerFooterEnabled: this.getSettingValue('headerFooter'),
       marginsType: this.getSettingValue('margins'),
       pagesPerSheet: this.getSettingValue('pagesPerSheet'),
-      isFirstRequest: this.inFlightRequestId_ == 0,
+      isFirstRequest: this.inFlightRequestId_ === 0,
       requestID: this.inFlightRequestId_,
       previewModifiable: this.documentModifiable,
       scaleFactor: this.getScaleFactorForTicket_(),
@@ -772,7 +772,7 @@ Polymer({
       ticket.cloudPrintID = this.destination.id;
     }
 
-    if (this.getSettingValue('margins') == MarginsType.CUSTOM) {
+    if (this.getSettingValue('margins') === MarginsType.CUSTOM) {
       ticket.marginsCustom = this.getSettingValue('customMargins');
     }
     this.lastTicket_ = ticket;

@@ -27,8 +27,8 @@ IN_PROC_BROWSER_TEST_F(DeveloperPrivateApiTest, Basics) {
       base_dir.AppendASCII("packaged_app"), 1, Manifest::INTERNAL));
   LoadExtension(base_dir.AppendASCII("simple_extension"));
 
-  ASSERT_TRUE(RunPlatformAppTestWithFlags(
-      "developer/test", kFlagLoadAsComponent));
+  ASSERT_TRUE(RunPlatformAppTestWithFlags("developer/test", kFlagNone,
+                                          kFlagLoadAsComponent));
 }
 
 // Tests opening the developer tools for an app window.

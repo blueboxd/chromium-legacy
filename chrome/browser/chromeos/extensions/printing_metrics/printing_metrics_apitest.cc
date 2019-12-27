@@ -123,7 +123,7 @@ IN_PROC_BROWSER_TEST_F(PrintingMetricsApiTest, GetPrintJobs) {
 // that such extensions don't see the chrome.printingMetrics namespace.
 IN_PROC_BROWSER_TEST_F(PrintingMetricsApiTest, IsRestrictedToPolicyExtension) {
   ASSERT_TRUE(RunExtensionSubtest("printing_metrics", "api_not_available.html",
-                                  kFlagIgnoreManifestWarnings));
+                                  kFlagIgnoreManifestWarnings, kFlagNone));
 
   base::FilePath extension_path =
       test_data_dir_.AppendASCII("printing_metrics");

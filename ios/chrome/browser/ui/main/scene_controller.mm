@@ -557,21 +557,6 @@ enum class EnterTabSwitcherSnapshotResult {
   return self.mainController.currentBrowserState->IsOffTheRecord();
 }
 
-#pragma mark - BrowsingDataCommands
-
-- (void)removeBrowsingDataForBrowserState:(ios::ChromeBrowserState*)browserState
-                               timePeriod:(browsing_data::TimePeriod)timePeriod
-                               removeMask:(BrowsingDataRemoveMask)removeMask
-                          completionBlock:(ProceduralBlock)completionBlock {
-  // Forward the call. This is only here to maintain the downstream compilation
-  // intact. Once the call site in the test downstream is updated, this will be
-  // removed.
-  [self.mainController removeBrowsingDataForBrowserState:browserState
-                                              timePeriod:timePeriod
-                                              removeMask:removeMask
-                                         completionBlock:completionBlock];
-}
-
 #pragma mark - SettingsNavigationControllerDelegate
 
 - (void)closeSettings {

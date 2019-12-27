@@ -10,6 +10,9 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -25,10 +28,12 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import org.chromium.android_webview.common.Flag;
+import org.chromium.android_webview.common.FlagOverrideConstants;
 import org.chromium.android_webview.common.ProductionSupportedFlagList;
 import org.chromium.android_webview.common.services.IDeveloperUiService;
 import org.chromium.android_webview.common.services.ServiceNames;
 import org.chromium.android_webview.devui.util.NavigationMenuHelper;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 
 import java.util.HashMap;
@@ -51,7 +56,7 @@ public class FlagsActivity extends Activity {
     };
 
     private WebViewPackageError mDifferentPackageError;
-    private final Map<String, Boolean> mOverriddenFlags = new HashMap<>();
+    private Map<String, Boolean> mOverriddenFlags = new HashMap<>();
     private FlagsListAdapter mListAdapter;
 
     @Override
@@ -66,6 +71,12 @@ public class FlagsActivity extends Activity {
                 + "lose app data or compromise your security or privacy. Enabled features apply to "
                 + "WebViews across all apps on the device.");
 
+        // Restore flag overrides from the service process to repopulate the UI, if developer mode
+        // is enabled.
+        if (isDeveloperModeEnabled(getPackageName())) {
+            mOverriddenFlags = getFlagOverrides(getPackageName());
+        }
+
         mListAdapter = new FlagsListAdapter();
         flagsListView.setAdapter(mListAdapter);
 
@@ -76,10 +87,6 @@ public class FlagsActivity extends Activity {
                 new WebViewPackageError(this, findViewById(R.id.flags_activity_layout));
         // show the dialog once when the activity is created.
         mDifferentPackageError.showDialogIfDifferent();
-
-        // TODO(ntfschr): once there's a way to get the flag overrides out of the service, we should
-        // repopulate the UI based on that data (otherwise, we send an empty map to the service,
-        // which causes the service to stop itself).
     }
 
     @Override
@@ -229,5 +236,63 @@ public class FlagsActivity extends Activity {
         mOverriddenFlags.clear();
         mListAdapter.notifyDataSetChanged();
         sendFlagsToService();
+    }
+
+    /**
+     * Quickly determine whether developer mode is enabled. Developer mode is off-by-default.
+     *
+     * <p>This makes no guarantees about which processes are alive, it only indicates whether the
+     * user has stepped in or out of "developer mode." Developer mode may be enabled and the
+     * ContentProvider process may be dead if the user has taken a WebView update since enabling
+     * developer mode.
+     *
+     * <p>TODO(ntfschr): move this to DeveloperModeUtils in common Java packaage.
+     *
+     * @param webViewPackageName the package name of the WebView implementation to fetch the flags
+     *     from (generally this is the current WebView provider).
+     */
+    public static boolean isDeveloperModeEnabled(String webViewPackageName) {
+        final Context context = ContextUtils.getApplicationContext();
+        ComponentName flagOverrideContentProvider =
+                new ComponentName(webViewPackageName, ServiceNames.FLAG_OVERRIDE_CONTENT_PROVIDER);
+        int enabledState =
+                context.getPackageManager().getComponentEnabledSetting(flagOverrideContentProvider);
+        return enabledState == PackageManager.COMPONENT_ENABLED_STATE_ENABLED;
+    }
+
+    /**
+     * Fetch the flag overrides from the developer mode ContentProvider. This should only be called
+     * if {@link #isDeveloperModeEnabled(String}} returns {@code true}, otherwise this may incur
+     * unnecessary IPC or start up processes unnecessarily.
+     *
+     * <p>TODO(ntfschr): move this to DeveloperModeUtils in common Java packaage.
+     *
+     * @param webViewPackageName the package name of the WebView implementation to fetch the flags
+     *     from (generally this is the current WebView provider).
+     */
+    public static Map<String, Boolean> getFlagOverrides(String webViewPackageName) {
+        Map<String, Boolean> flagOverrides = new HashMap<>();
+
+        Uri uri =
+                new Uri.Builder()
+                        .scheme("content")
+                        .authority(webViewPackageName + FlagOverrideConstants.URI_AUTHORITY_SUFFIX)
+                        .path(FlagOverrideConstants.URI_PATH)
+                        .build();
+        final Context appContext = ContextUtils.getApplicationContext();
+        try (Cursor cursor = appContext.getContentResolver().query(uri, /* projection */ null,
+                     /* selection */ null, /* selectionArgs */ null, /* sortOrder */ null)) {
+            assert cursor != null : "ContentProvider doesn't support querying '" + uri + "'";
+            int flagNameColumnIndex =
+                    cursor.getColumnIndexOrThrow(FlagOverrideConstants.FLAG_NAME_COLUMN);
+            int flagStateColumnIndex =
+                    cursor.getColumnIndexOrThrow(FlagOverrideConstants.FLAG_STATE_COLUMN);
+            while (cursor.moveToNext()) {
+                String flagName = cursor.getString(flagNameColumnIndex);
+                boolean flagState = cursor.getInt(flagStateColumnIndex) != 0;
+                flagOverrides.put(flagName, flagState);
+            }
+        }
+        return flagOverrides;
     }
 }

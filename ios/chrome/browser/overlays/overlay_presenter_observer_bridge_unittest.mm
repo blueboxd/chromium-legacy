@@ -6,6 +6,8 @@
 
 #import <Foundation/Foundation.h>
 
+#include "ios/chrome/browser/overlays/public/overlay_request_support.h"
+#include "ios/chrome/browser/overlays/test/fake_overlay_user_data.h"
 #include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -15,6 +17,7 @@
 // Fake implementation of OverlayPresenterObserving that records whether the
 // callbacks are executed.
 @interface FakeOverlayPresenterObserver : NSObject <OverlayPresenterObserving>
+@property(nonatomic) const OverlayRequestSupport* support;
 // Whether each of the OverlayPresenterObserving callbacks have been called.
 @property(nonatomic, readonly) BOOL willShowCalled;
 @property(nonatomic, readonly) BOOL didShowCalled;
@@ -23,6 +26,11 @@
 @end
 
 @implementation FakeOverlayPresenterObserver
+
+- (const OverlayRequestSupport*)overlayRequestSupportForPresenter:
+    (OverlayPresenter*)presenter {
+  return self.support;
+}
 
 - (void)overlayPresenter:(OverlayPresenter*)presenter
     willShowOverlayForRequest:(OverlayRequest*)request {
@@ -56,6 +64,15 @@ class OverlayPresenterObserverBridgeTest : public PlatformTest {
   FakeOverlayPresenterObserver* observer_;
   OverlayPresenterObserverBridge bridge_;
 };
+
+// Tests that OverlayPresenterObserver::GetRequestSupport() is correctly
+// forwarded.
+TEST_F(OverlayPresenterObserverBridgeTest, GetRequestSupport) {
+  std::unique_ptr<OverlayRequestSupport> support =
+      std::make_unique<SupportsOverlayRequest<FakeOverlayUserData>>();
+  observer_.support = support.get();
+  EXPECT_EQ(support.get(), bridge_.GetRequestSupport(nullptr));
+}
 
 // Tests that OverlayPresenterObserver::WillShowOverlay() is correctly
 // forwarded.

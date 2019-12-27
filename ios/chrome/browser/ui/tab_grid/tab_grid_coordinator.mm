@@ -68,8 +68,10 @@
 @synthesize incognitoTabModel = _incognitoTabModel;
 
 - (instancetype)initWithWindow:(nullable UIWindow*)window
-    applicationCommandEndpoint:
-        (id<ApplicationCommands>)applicationCommandEndpoint {
+     applicationCommandEndpoint:
+         (id<ApplicationCommands>)applicationCommandEndpoint
+    browsingDataCommandEndpoint:
+        (id<BrowsingDataCommands>)browsingDataCommandEndpoint {
   if ((self = [super initWithWindow:window])) {
     _dispatcher = [[CommandDispatcher alloc] init];
     [_dispatcher startDispatchingToTarget:applicationCommandEndpoint
@@ -80,7 +82,7 @@
     [_dispatcher
         startDispatchingToTarget:applicationCommandEndpoint
                      forProtocol:@protocol(ApplicationSettingsCommands)];
-    [_dispatcher startDispatchingToTarget:applicationCommandEndpoint
+    [_dispatcher startDispatchingToTarget:browsingDataCommandEndpoint
                               forProtocol:@protocol(BrowsingDataCommands)];
   }
   return self;

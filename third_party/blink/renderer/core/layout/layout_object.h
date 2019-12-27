@@ -96,6 +96,9 @@ enum VisualRectFlags {
   kEdgeInclusive = 1 << 0,
   // Use the GeometryMapper fast-path, if possible.
   kUseGeometryMapper = 1 << 1,
+  // When mapping to absolute coordinates and the main frame is remote, don't
+  // apply the main frame root scroller's overflow clip.
+  kDontApplyMainFrameOverflowClip = 1 << 2,
 };
 
 enum CursorDirective { kSetCursorBasedOnStyle, kSetCursor, kDoNotSetCursor };

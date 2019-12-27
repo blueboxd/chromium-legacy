@@ -298,8 +298,7 @@ public class SigninManager
      *         Google Play Services installed.
      */
     public boolean isSigninSupported() {
-        return !ApiCompatibilityUtils.isDemoUser() && isGooglePlayServicesPresent()
-                && !SigninManagerJni.get().isMobileIdentityConsistencyEnabled();
+        return !ApiCompatibilityUtils.isDemoUser() && isGooglePlayServicesPresent();
     }
 
     /**
@@ -714,8 +713,6 @@ public class SigninManager
         boolean isForceSigninEnabled(long nativeSigninManagerAndroid);
 
         String extractDomainName(String email);
-
-        boolean isMobileIdentityConsistencyEnabled();
 
         void fetchAndApplyCloudPolicy(
                 long nativeSigninManagerAndroid, CoreAccountInfo account, Runnable callback);

@@ -46,6 +46,12 @@
              : nullptr;
 }
 
+#pragma mark - OverlayRequestMediator
+
++ (const OverlayRequestSupport*)requestSupport {
+  return AppLauncherAlertOverlayRequestConfig::RequestSupport();
+}
+
 #pragma mark - Response helpers
 
 - (void)updateResponseAllowingAppLaunch:(BOOL)allowAppLaunch {

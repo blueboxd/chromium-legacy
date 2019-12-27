@@ -24,6 +24,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/media/router/media_router_dialog_controller.h"  // nogncheck
 #include "chrome/browser/media/router/media_router_feature.h"
+#include "chrome/browser/media/router/media_router_metrics.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -1127,7 +1128,7 @@ bool CanRouteMedia(Browser* browser) {
          !IsShowingWebContentsModalDialog(browser);
 }
 
-void RouteMedia(Browser* browser) {
+void RouteMediaInvokedFromAppMenu(Browser* browser) {
   DCHECK(CanRouteMedia(browser));
 
   media_router::MediaRouterDialogController* dialog_controller =
@@ -1136,7 +1137,8 @@ void RouteMedia(Browser* browser) {
   if (!dialog_controller)
     return;
 
-  dialog_controller->ShowMediaRouterDialog();
+  dialog_controller->ShowMediaRouterDialog(
+      media_router::MediaRouterDialogOpenOrigin::APP_MENU);
 }
 
 void EmailPageLocation(Browser* browser) {

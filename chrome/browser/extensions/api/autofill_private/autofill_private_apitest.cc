@@ -31,9 +31,8 @@ class AutofillPrivateApiTest : public ExtensionApiTest {
 
  protected:
   bool RunAutofillSubtest(const std::string& subtest) {
-    return RunExtensionSubtest("autofill_private",
-                               "main.html?" + subtest,
-                               kFlagLoadAsComponent);
+    return RunExtensionSubtest("autofill_private", "main.html?" + subtest,
+                               kFlagNone, kFlagLoadAsComponent);
   }
 
  private:

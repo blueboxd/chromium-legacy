@@ -124,7 +124,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCloudPrintPrivateApiTest,
                        CloudPrintHostedIncognito) {
   GURL page_url = GetTestServerURL(
       "enable_chrome_connector/cloud_print_incognito_failure_tests.html");
-  ASSERT_TRUE(RunPageTest(page_url.spec(), kFlagUseIncognito));
+  ASSERT_TRUE(RunPageTest(page_url.spec(), kFlagNone, kFlagUseIncognito));
 }
 
 #endif  // !defined(OS_CHROMEOS)

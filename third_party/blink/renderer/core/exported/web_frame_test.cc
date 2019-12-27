@@ -12948,7 +12948,7 @@ TEST_F(WebFrameTest, MediaQueriesInLocalFrameInsideRemote) {
   helper.Reset();
 }
 
-TEST_F(WebFrameTest, RemoteViewportIntersection) {
+TEST_F(WebFrameTest, RemoteViewportAndMainframeIntersections) {
   frame_test_helpers::WebViewHelper helper;
   helper.InitializeRemote();
   WebLocalFrameImpl* local_frame = frame_test_helpers::CreateLocalChild(
@@ -12975,32 +12975,46 @@ TEST_F(WebFrameTest, RemoteViewportIntersection) {
 
   // Simulate the local child frame being positioned at (7, -11) in the parent's
   // viewport, indicating that the top 11px of the child's content is clipped
-  // by the parent.
+  // by the parent. Let the local child frame be at (7, 40) in the parent
+  // element.
   WebFrameWidget* widget = local_frame->FrameWidget();
   ASSERT_TRUE(widget);
   WebPoint viewport_offset(7, -11);
   WebRect viewport_intersection(0, 11, 200, 89);
+  WebRect mainframe_intersection(0, 0, 200, 140);
   FrameOcclusionState occlusion_state = FrameOcclusionState::kUnknown;
-  widget->SetRemoteViewportIntersection({viewport_offset, viewport_intersection,
-                                         viewport_intersection,
-                                         occlusion_state});
+  widget->SetRemoteViewportIntersection(
+      {viewport_offset, viewport_intersection, mainframe_intersection,
+       viewport_intersection, occlusion_state});
 
   // The viewport intersection should be applied by the layout geometry mapping
   // code when these flags are used.
-  int flags = kTraverseDocumentBoundaries | kApplyRemoteRootFrameOffset;
+  int viewport_intersection_flags =
+      kTraverseDocumentBoundaries | kApplyRemoteRootFrameOffset;
 
   // Expectation is: (target location) + (viewport offset) = (20, 10) + (7, -11)
-  PhysicalOffset offset =
-      target->GetLayoutObject()->LocalToAbsolutePoint(PhysicalOffset(), flags);
+  PhysicalOffset offset = target->GetLayoutObject()->LocalToAbsolutePoint(
+      PhysicalOffset(), viewport_intersection_flags);
   EXPECT_EQ(PhysicalOffset(27, -1), offset);
 
   PhysicalRect rect(0, 0, 25, 35);
   local_frame->GetFrame()
       ->GetDocument()
       ->GetLayoutView()
-      ->MapToVisualRectInAncestorSpace(nullptr, rect, flags,
-                                       kDefaultVisualRectFlags);
+      ->MapToVisualRectInAncestorSpace(
+          nullptr, rect, viewport_intersection_flags, kDefaultVisualRectFlags);
   EXPECT_EQ(PhysicalRect(7, 0, 25, 24), rect);
+
+  // Without the main frame overflow clip the rect should not be clipped and the
+  // coordinates returned are the rects coordinates in the viewport space.
+  PhysicalRect mainframe_rect(0, 0, 25, 35);
+  local_frame->GetFrame()
+      ->GetDocument()
+      ->GetLayoutView()
+      ->MapToVisualRectInAncestorSpace(nullptr, mainframe_rect,
+                                       viewport_intersection_flags,
+                                       kDontApplyMainFrameOverflowClip);
+  EXPECT_EQ(PhysicalRect(7, -11, 25, 35), mainframe_rect);
 }
 
 }  // namespace blink

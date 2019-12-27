@@ -26,6 +26,7 @@ component("util") {
     "//ash/assistant/model",
     "//base",
     "//base:i18n",
+    "//chromeos/constants",
     "//chromeos/services/assistant/public/mojom",
     "//net",
     "//ui/base",

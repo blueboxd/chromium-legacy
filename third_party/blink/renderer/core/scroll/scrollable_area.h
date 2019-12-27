@@ -31,6 +31,7 @@
 #include "third_party/blink/public/platform/web_color_scheme.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
+#include "third_party/blink/renderer/core/loader/history_item.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
@@ -103,9 +104,9 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
                                ScrollType,
                                ScrollBehavior,
                                ScrollCallback on_finish);
-  void SetScrollOffset(const ScrollOffset&,
-                       ScrollType,
-                       ScrollBehavior = kScrollBehaviorInstant);
+  virtual void SetScrollOffset(const ScrollOffset&,
+                               ScrollType,
+                               ScrollBehavior = kScrollBehaviorInstant);
   void ScrollBy(const ScrollOffset&,
                 ScrollType,
                 ScrollBehavior = kScrollBehaviorInstant);
@@ -113,6 +114,12 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
                                  float,
                                  ScrollType,
                                  ScrollBehavior = kScrollBehaviorInstant);
+
+  virtual void SetPendingHistoryRestoreScrollOffset(
+      const HistoryItem::ViewState& view_state,
+      bool should_restore_scroll) {}
+  // Returns true if it applied anything.
+  virtual bool ApplyPendingHistoryRestoreScrollOffset() { return false; }
 
   // Scrolls the area so that the given rect, given in absolute coordinates,
   // such that it's visible in the area. Returns the new location of the input

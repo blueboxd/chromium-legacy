@@ -69,8 +69,6 @@ class HeadlessBrowserTest : public content::BrowserTestBase {
   // Run an asynchronous test in a nested run loop. The caller should call
   // FinishAsynchronousTest() to notify that the test should finish.
   void RunAsynchronousTest();
-  virtual void PreRunAsynchronousTest() {}
-  virtual void PostRunAsynchronousTest() {}
 
   // Synchronously waits for a tab to finish loading.
   bool WaitForLoad(HeadlessWebContents* web_contents);

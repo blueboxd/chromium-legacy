@@ -17,6 +17,10 @@
 @protocol OverlayPresenterObserving <NSObject>
 @optional
 
+// Invoked by OverlayPresenterObserver::GetRequestSupport().
+- (const OverlayRequestSupport*)overlayRequestSupportForPresenter:
+    (OverlayPresenter*)presenter;
+
 // Invoked by OverlayPresenterObserver::WillShowOverlay().
 - (void)overlayPresenter:(OverlayPresenter*)presenter
     willShowOverlayForRequest:(OverlayRequest*)request;
@@ -44,6 +48,8 @@ class OverlayPresenterObserverBridge : public OverlayPresenterObserver {
   ~OverlayPresenterObserverBridge() override;
 
   // OverlayPresenterObserver:
+  const OverlayRequestSupport* GetRequestSupport(
+      OverlayPresenter* presenter) const override;
   void WillShowOverlay(OverlayPresenter* presenter,
                        OverlayRequest* request) override;
   void DidShowOverlay(OverlayPresenter* presenter,

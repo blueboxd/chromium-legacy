@@ -48,6 +48,12 @@
              : nullptr;
 }
 
+#pragma mark - OverlayRequestMediator
+
++ (const OverlayRequestSupport*)requestSupport {
+  return JavaScriptConfirmationOverlayRequestConfig::RequestSupport();
+}
+
 #pragma mark - Response helpers
 
 // Sets the OverlayResponse using the user's selection from the confirmation UI.

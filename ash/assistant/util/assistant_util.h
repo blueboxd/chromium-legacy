@@ -39,7 +39,7 @@ COMPONENT_EXPORT(ASSISTANT_UTIL)
 bool IsGoogleDevice();
 
 COMPONENT_EXPORT(ASSISTANT_UTIL)
-void OverrideIsGoogleDeviceForTesting();
+void OverrideIsGoogleDeviceForTesting(bool is_google_device);
 
 }  // namespace util
 }  // namespace assistant

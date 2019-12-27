@@ -4645,14 +4645,6 @@ def _CheckTranslationScreenshots(input_api, output_api):
   import sys
   from io import StringIO
 
-  try:
-    old_sys_path = sys.path
-    sys.path = sys.path + [input_api.os_path.join(
-          input_api.PresubmitLocalPath(), 'tools', 'translation')]
-    from helper import grd_helper
-  finally:
-    sys.path = old_sys_path
-
   new_or_added_paths = set(f.LocalPath()
       for f in input_api.AffectedFiles()
       if (f.Action() == 'A' or f.Action() == 'M'))
@@ -4663,6 +4655,9 @@ def _CheckTranslationScreenshots(input_api, output_api):
   affected_grds = [f for f in input_api.AffectedFiles()
       if (f.LocalPath().endswith('.grd') or
           f.LocalPath().endswith('.grdp'))]
+  if not affected_grds:
+    return []
+
   affected_png_paths = [f.AbsoluteLocalPath()
       for f in input_api.AffectedFiles()
       if (f.LocalPath().endswith('.png'))]
@@ -4706,6 +4701,13 @@ def _CheckTranslationScreenshots(input_api, output_api):
     if input_api.os_path.exists(sha1_path) and sha1_path not in removed_paths:
       unnecessary_sha1_files.append(sha1_path)
 
+  try:
+    old_sys_path = sys.path
+    sys.path = sys.path + [input_api.os_path.join(
+          input_api.PresubmitLocalPath(), 'tools', 'translation')]
+    from helper import grd_helper
+  finally:
+    sys.path = old_sys_path
 
   for f in affected_grds:
     file_path = f.LocalPath()

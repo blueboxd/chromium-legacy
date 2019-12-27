@@ -81,7 +81,7 @@ Polymer({
    * @private
    */
   isCapabilityTypeSelect_: function() {
-    return this.capability.type == 'SELECT';
+    return this.capability.type === 'SELECT';
   },
 
   /**
@@ -90,8 +90,8 @@ Polymer({
    * @private
    */
   isCapabilityTypeCheckbox_: function() {
-    return this.capability.type == 'TYPED_VALUE' &&
-        this.capability.typed_value_cap.value_type == 'BOOLEAN';
+    return this.capability.type === 'TYPED_VALUE' &&
+        this.capability.typed_value_cap.value_type === 'BOOLEAN';
   },
 
   /**
@@ -108,7 +108,7 @@ Polymer({
    * @private
    */
   isChecked_: function() {
-    return this.currentValue_ == 'true';
+    return this.currentValue_ === 'true';
   },
 
   /**
@@ -128,13 +128,13 @@ Polymer({
    * @private
    */
   getCapabilityPlaceholder_: function() {
-    if (this.capability.type == 'TYPED_VALUE' &&
+    if (this.capability.type === 'TYPED_VALUE' &&
         this.capability.typed_value_cap &&
-        this.capability.typed_value_cap.default != undefined) {
+        this.capability.typed_value_cap.default !== undefined) {
       return this.capability.typed_value_cap.default.toString() || '';
     }
-    if (this.capability.type == 'RANGE' && this.capability.range_cap &&
-        this.capability.range_cap.default != undefined) {
+    if (this.capability.type === 'RANGE' && this.capability.range_cap &&
+        this.capability.range_cap.default !== undefined) {
       return this.capability.range_cap.default.toString() || '';
     }
     return '';
@@ -147,7 +147,8 @@ Polymer({
   hasOptionWithValue_: function(value) {
     return !!this.capability.select_cap &&
         !!this.capability.select_cap.option &&
-        this.capability.select_cap.option.some(option => option.value == value);
+        this.capability.select_cap.option.some(
+            option => option.value === value);
   },
 
   /**

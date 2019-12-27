@@ -50,6 +50,6 @@ Polymer({
 
   /** @param {string} value The new select value. */
   onProcessSelectChange: function(value) {
-    this.setSetting('color', value == 'color');
+    this.setSetting('color', value === 'color');
   },
 });

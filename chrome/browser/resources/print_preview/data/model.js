@@ -68,7 +68,7 @@ export let Settings;
 
 /**
  * @typedef {{
- *    version: string,
+ *    version: number,
  *    recentDestinations: (!Array<!RecentDestination> |
  *                         undefined),
  *    dpi: ({horizontal_dpi: number,
@@ -623,7 +623,7 @@ Polymer({
     if (!valid) {
       assert(setting.available, 'Setting is not available: ' + settingName);
     }
-    const shouldFireEvent = valid != setting.valid;
+    const shouldFireEvent = valid !== setting.valid;
     this.set(`settings.${settingName}.valid`, valid);
     if (shouldFireEvent) {
       this.fire('setting-valid-changed', valid);
@@ -640,7 +640,7 @@ Polymer({
       return;
     }
 
-    if (this.destination.capabilities == this.lastDestinationCapabilities_) {
+    if (this.destination.capabilities === this.lastDestinationCapabilities_) {
       return;
     }
 
@@ -670,15 +670,15 @@ Polymer({
 
     const capsHasDuplex = !!caps && !!caps.duplex && !!caps.duplex.option;
     const capsHasLongEdge = capsHasDuplex &&
-        caps.duplex.option.some(o => o.type == DuplexType.LONG_EDGE);
+        caps.duplex.option.some(o => o.type === DuplexType.LONG_EDGE);
     const capsHasShortEdge = capsHasDuplex &&
-        caps.duplex.option.some(o => o.type == DuplexType.SHORT_EDGE);
+        caps.duplex.option.some(o => o.type === DuplexType.SHORT_EDGE);
     this.setSettingPath_(
         'duplexShortEdge.available', capsHasLongEdge && capsHasShortEdge);
     this.setSettingPath_(
         'duplex.available',
         (capsHasLongEdge || capsHasShortEdge) &&
-            caps.duplex.option.some(o => o.type == DuplexType.NO_DUPLEX));
+            caps.duplex.option.some(o => o.type === DuplexType.NO_DUPLEX));
 
     this.setSettingPath_(
         'vendorItems.available', !!caps && !!caps.vendor_capability);
@@ -698,7 +698,7 @@ Polymer({
   /** @private */
   updateSettingsAvailabilityFromDestinationAndDocumentSettings_: function() {
     const isSaveAsPDF =
-        this.destination.id == Destination.GooglePromotedId.SAVE_AS_PDF;
+        this.destination.id === Destination.GooglePromotedId.SAVE_AS_PDF;
     const knownSizeToSaveAsPdf = isSaveAsPDF &&
         (!this.documentSettings.isModifiable ||
          this.documentSettings.hasCssMediaStyles);
@@ -837,8 +837,8 @@ Polymer({
     let hasLandscapeOption = false;
     caps.page_orientation.option.forEach(option => {
       hasAutoOrPortraitOption = hasAutoOrPortraitOption ||
-          option.type == 'AUTO' || option.type == 'PORTRAIT';
-      hasLandscapeOption = hasLandscapeOption || option.type == 'LANDSCAPE';
+          option.type === 'AUTO' || option.type === 'PORTRAIT';
+      hasLandscapeOption = hasLandscapeOption || option.type === 'LANDSCAPE';
     });
     return hasLandscapeOption && hasAutoOrPortraitOption;
   },
@@ -912,13 +912,13 @@ Polymer({
       const defaultOption = caps.duplex.option.find(o => !!o.is_default);
       this.setSetting(
           'duplex',
-          defaultOption ? (defaultOption.type == DuplexType.LONG_EDGE ||
-                           defaultOption.type == DuplexType.SHORT_EDGE) :
+          defaultOption ? (defaultOption.type === DuplexType.LONG_EDGE ||
+                           defaultOption.type === DuplexType.SHORT_EDGE) :
                           false,
           true);
       this.setSetting(
           'duplexShortEdge',
-          defaultOption ? defaultOption.type == DuplexType.SHORT_EDGE : false,
+          defaultOption ? defaultOption.type === DuplexType.SHORT_EDGE : false,
           true);
 
       if (!this.settings.duplexShortEdge.available) {
@@ -926,16 +926,16 @@ Polymer({
         // Set duplexShortEdge's unavailable value based on the printer.
         this.setSettingPath_(
             'duplexShortEdge.unavailableValue',
-            caps.duplex.option.some(o => o.type == DuplexType.SHORT_EDGE));
+            caps.duplex.option.some(o => o.type === DuplexType.SHORT_EDGE));
       }
     } else if (
         !this.settings.duplex.available && caps && caps.duplex &&
         caps.duplex.option) {
       // In this case, there must only be one option.
       const hasLongEdge =
-          caps.duplex.option.some(o => o.type == DuplexType.LONG_EDGE);
+          caps.duplex.option.some(o => o.type === DuplexType.LONG_EDGE);
       const hasShortEdge =
-          caps.duplex.option.some(o => o.type == DuplexType.SHORT_EDGE);
+          caps.duplex.option.some(o => o.type === DuplexType.SHORT_EDGE);
       // If the only option available is long edge, the value should always be
       // true.
       this.setSettingPath_(
@@ -951,21 +951,21 @@ Polymer({
       const vendorSettings = {};
       for (const item of caps.vendor_capability) {
         let defaultValue = null;
-        if (item.type == 'SELECT' && item.select_cap &&
+        if (item.type === 'SELECT' && item.select_cap &&
             item.select_cap.option) {
           const defaultOption =
               item.select_cap.option.find(o => !!o.is_default);
           defaultValue = defaultOption ? defaultOption.value : null;
-        } else if (item.type == 'RANGE') {
+        } else if (item.type === 'RANGE') {
           if (item.range_cap) {
             defaultValue = item.range_cap.default || null;
           }
-        } else if (item.type == 'TYPED_VALUE') {
+        } else if (item.type === 'TYPED_VALUE') {
           if (item.typed_value_cap) {
             defaultValue = item.typed_value_cap.default || null;
           }
         }
-        if (defaultValue != null) {
+        if (defaultValue !== null) {
           vendorSettings[item.id] = defaultValue;
         }
       }
@@ -993,7 +993,7 @@ Polymer({
       console.error('Unable to parse state ' + e);
       return;  // use default values rather than updating.
     }
-    if (savedSettings.version != 2) {
+    if (savedSettings.version !== 2) {
       return;
     }
 
@@ -1081,7 +1081,7 @@ Polymer({
       STICKY_SETTING_NAMES.forEach(settingName => {
         const setting = this.get(settingName, this.settings);
         const value = this.stickySettings_[setting.key];
-        if (value != undefined) {
+        if (value !== undefined) {
           this.setSetting(settingName, value);
         } else {
           this.applyScalingStickySettings_(settingName);
@@ -1164,7 +1164,7 @@ Polymer({
     if (duplexValue) {
       this.set(
           'settings.duplex.value',
-          duplexValue != DuplexModeRestriction.SIMPLEX);
+          duplexValue !== DuplexModeRestriction.SIMPLEX);
       if (duplexValue === DuplexModeRestriction.SHORT_EDGE) {
         this.set('settings.duplexShortEdge.value', true);
         setDuplexTypeByPolicy = true;
@@ -1290,7 +1290,7 @@ Polymer({
       shouldPrintBackgrounds: this.getSettingValue('cssBackground'),
       shouldPrintSelectionOnly: false,  // only used in print preview
       previewModifiable: this.documentSettings.isModifiable,
-      printToGoogleDrive: destination.id == Destination.GooglePromotedId.DOCS,
+      printToGoogleDrive: destination.id === Destination.GooglePromotedId.DOCS,
       printerType: getPrinterTypeForDestination(destination),
       rasterizePDF: this.getSettingValue('rasterize'),
       scaleFactor:
@@ -1313,7 +1313,7 @@ Polymer({
       ticket.cloudPrintID = destination.id;
     }
 
-    if (this.getSettingValue('margins') == MarginsType.CUSTOM) {
+    if (this.getSettingValue('margins') === MarginsType.CUSTOM) {
       ticket.marginsCustom = this.getSettingValue('customMargins');
     }
 
@@ -1332,7 +1332,7 @@ Polymer({
     if (this.getSettingValue('pin')) {
       ticket.pinValue = this.getSettingValue('pinValue');
     }
-    if (destination.origin == DestinationOrigin.CROS) {
+    if (destination.origin === DestinationOrigin.CROS) {
       ticket.advancedSettings = this.getSettingValue('vendorItems');
     }
     // </if>
@@ -1409,7 +1409,7 @@ Polymer({
           destination.capabilities.printer.page_orientation :
           null;
       if (capability && capability.option &&
-          capability.option.some(option => option.type == 'AUTO')) {
+          capability.option.some(option => option.type === 'AUTO')) {
         cjt.print.page_orientation = {type: 'AUTO'};
       }
     } else {

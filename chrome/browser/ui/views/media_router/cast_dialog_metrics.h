@@ -23,7 +23,9 @@ class CastDialogMetrics {
   // |initialization_time| is when the dialog UI started initializing. We use
   // this value as the baseline for how long the dialog took to paint, load
   // sinks, etc.
-  CastDialogMetrics(const base::Time& initialization_time, Profile* profile);
+  CastDialogMetrics(const base::Time& initialization_time,
+                    MediaRouterDialogOpenOrigin activation_location,
+                    Profile* profile);
   virtual ~CastDialogMetrics();
 
   // Records the time it took to load sinks when called for the first time. This
@@ -36,7 +38,9 @@ class CastDialogMetrics {
   // Records the index of the selected sink in the sink list. Also records how
   // long it took to start casting if no other action (aside from selecting a
   // sink) was taken prior to that.
-  void OnStartCasting(const base::Time& start_time, int selected_sink_index);
+  void OnStartCasting(const base::Time& start_time,
+                      int selected_sink_index,
+                      MediaCastMode cast_mode);
 
   void OnStopCasting(bool is_local_route);
 
@@ -53,6 +57,8 @@ class CastDialogMetrics {
   // Records the first user action if it hasn't already been recorded.
   void MaybeRecordFirstAction(MediaRouterUserAction action);
 
+  void MaybeRecordActivationLocationAndCastMode(MediaCastMode cast_mode);
+
   // The time when the dialog UI started initializing.
   base::Time initialization_time_;
 
@@ -62,9 +68,15 @@ class CastDialogMetrics {
   // The time when a non-empty list of sinks was loaded.
   base::Time sinks_load_time_;
 
+  MediaRouterDialogOpenOrigin const activation_location_;
+
+  bool const is_icon_pinned_;
+
   // Whether we have already recorded the first user action taken in this dialog
   // instance.
   bool first_action_recorded_ = false;
+
+  bool activation_location_and_cast_mode_recorded_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(CastDialogMetrics);
 };

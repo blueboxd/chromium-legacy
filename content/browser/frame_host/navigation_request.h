@@ -39,6 +39,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/proxy_server.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "services/network/public/cpp/origin_policy.h"
 
 #if defined(OS_ANDROID)
@@ -233,6 +234,7 @@ class CONTENT_EXPORT NavigationRequest
   net::HttpResponseInfo::ConnectionInfo GetConnectionInfo() override;
   const base::Optional<net::SSLInfo>& GetSSLInfo() override;
   const base::Optional<net::AuthChallengeInfo>& GetAuthChallengeInfo() override;
+  net::ResolveErrorInfo GetResolveErrorInfo() override;
   net::NetworkIsolationKey GetNetworkIsolationKey() override;
   void RegisterThrottleForTesting(
       std::unique_ptr<NavigationThrottle> navigation_throttle) override;
@@ -915,6 +917,13 @@ class CONTENT_EXPORT NavigationRequest
   // checks are performed by the NavigationHandle.
   bool has_stale_copy_in_cache_;
   net::Error net_error_ = net::OK;
+  // Detailed host resolution error information. The error code in
+  // |resolve_error_info_.error| should be consistent with (but not necessarily
+  // the same as) |net_error_|. In the case of a host resolution error, for
+  // example, |net_error_| should be ERR_NAME_NOT_RESOLVED while
+  // |resolve_error_info_.error| may give a more detailed error such as
+  // ERR_DNS_TIMED_OUT.
+  net::ResolveErrorInfo resolve_error_info_;
 
   // Identifies in which RenderProcessHost this navigation is expected to
   // commit.

@@ -15,8 +15,10 @@
 
 @implementation AppLauncherAlertOverlayCoordinator
 
-+ (BOOL)supportsRequest:(OverlayRequest*)request {
-  return !!request->GetConfig<AppLauncherAlertOverlayRequestConfig>();
+#pragma mark - OverlayRequestCoordinator
+
++ (const OverlayRequestSupport*)requestSupport {
+  return AppLauncherAlertOverlayRequestConfig::RequestSupport();
 }
 
 @end

@@ -53,7 +53,7 @@ class SettingsPrivateApiTest : public ExtensionApiTest {
  protected:
   bool RunSettingsSubtest(const std::string& subtest) {
     return RunExtensionSubtest("settings_private", "main.html?" + subtest,
-                               kFlagLoadAsComponent);
+                               kFlagNone, kFlagLoadAsComponent);
   }
 
   void SetPrefPolicy(const std::string& key, policy::PolicyLevel level) {

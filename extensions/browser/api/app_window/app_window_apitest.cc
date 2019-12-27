@@ -167,7 +167,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowApiTest, AlphaEnabledInStable) {
       "platform_apps/windows_api_alpha_enabled/in_stable",
       // Ignore manifest warnings because the extension will not load at all
       // in stable.
-      kFlagIgnoreManifestWarnings))
+      kFlagIgnoreManifestWarnings, kFlagNone))
       << message_;
 }
 
@@ -192,7 +192,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowApiTest, ImeWindowHasPermissions) {
 
   EXPECT_TRUE(RunPlatformAppTestWithFlags(
       "platform_apps/windows_api_ime/has_permissions_platform_app",
-      kFlagIgnoreManifestWarnings))
+      kFlagIgnoreManifestWarnings, kFlagNone))
       << message_;
 }
 

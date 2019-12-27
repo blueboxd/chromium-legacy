@@ -2007,7 +2007,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, PRE_StoragePersistence) {
   // Since this test is PRE_ step, we need file access.
   ASSERT_TRUE(RunPlatformAppTestWithFlags(
       "platform_apps/web_view/storage_persistence", "PRE_StoragePersistence",
-      kFlagEnableFileAccess))
+      kFlagEnableFileAccess, kFlagNone))
       << message_;
   content::EnsureCookiesFlushed(profile());
 }
@@ -2023,7 +2023,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, StoragePersistence) {
   // need to access previous profile).
   ASSERT_TRUE(RunPlatformAppTestWithFlags(
       "platform_apps/web_view/storage_persistence", "StoragePersistence",
-      kFlagEnableFileAccess))
+      kFlagEnableFileAccess, kFlagNone))
       << message_;
 }
 

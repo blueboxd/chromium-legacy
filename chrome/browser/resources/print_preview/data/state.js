@@ -56,32 +56,32 @@ Polymer({
     switch (newState) {
       case (State.NOT_READY):
         assert(
-            this.state == State.NOT_READY || this.state == State.READY ||
-            this.state == State.ERROR);
+            this.state === State.NOT_READY || this.state === State.READY ||
+            this.state === State.ERROR);
         break;
       case (State.READY):
         assert(
-            this.state == State.ERROR || this.state == State.NOT_READY ||
-            this.state == State.PRINTING);
+            this.state === State.ERROR || this.state === State.NOT_READY ||
+            this.state === State.PRINTING);
         break;
       case (State.HIDDEN):
-        assert(this.state == State.READY);
+        assert(this.state === State.READY);
         break;
       case (State.PRINTING):
-        assert(this.state == State.READY || this.state == State.HIDDEN);
+        assert(this.state === State.READY || this.state === State.HIDDEN);
         break;
       case (State.SYSTEM_DIALOG):
         assert(
-            this.state != State.HIDDEN && this.state != State.PRINTING &&
-            this.state != State.CLOSING);
+            this.state !== State.HIDDEN && this.state !== State.PRINTING &&
+            this.state !== State.CLOSING);
         break;
       case (State.ERROR):
         assert(
-            this.state == State.ERROR || this.state == State.NOT_READY ||
-            this.state == State.READY);
+            this.state === State.ERROR || this.state === State.NOT_READY ||
+            this.state === State.READY);
         break;
       case (State.CLOSING):
-        assert(this.state != State.HIDDEN);
+        assert(this.state !== State.HIDDEN);
         break;
     }
     this.state = newState;

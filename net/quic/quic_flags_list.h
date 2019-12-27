@@ -129,12 +129,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_slower_startup4, true)
 // bandwidth samples app-limited if they're not filling the pipe.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_flexible_app_limited, false)
 
-// If true, calling StopReading() on a level-triggered QUIC stream sequencer
-// will cause the sequencer to discard future data.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_stop_reading_when_level_triggered,
-          true)
-
 // When the STMP connection option is sent by the client, timestamps in the QUIC
 // ACK frame are sent and processed.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_send_timestamps, false)
@@ -414,3 +408,28 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_interval_deque, false)
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bbr2_cut_inflight_hi_gradually,
           false)
+
+// If true, the QUIC dispatcher will drop INITIAL packets that are too small.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_drop_small_initial_packets,
+          false)
+
+// If true, QUIC will call bandwidth sampler once per ack event, instead of once
+// per acked packet.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_one_bw_sample_per_ack_event,
+          false)
+
+// If true, QUIC will call bandwidth sampler once per ack event, instead of once
+// per acked packet.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_bw_sampler_remove_packets_once_per_congestion_event2,
+    false)
+
+// If true, QuicCryptoServerStream creates its HandshakerDelegate in its
+// constructor instead of in OnSuccessfulVersionNegotiation.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_create_server_handshaker_in_constructor,
+    false)

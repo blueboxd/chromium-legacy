@@ -50,7 +50,7 @@ export class PrintableArea {
    * @return {boolean} Whether another printable area is equal to this one.
    */
   equals(other) {
-    return other != null && this.origin_.equals(other.origin_) &&
+    return other !== null && this.origin_.equals(other.origin_) &&
         this.size_.equals(other.size_);
   }
 }

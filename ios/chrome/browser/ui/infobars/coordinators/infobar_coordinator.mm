@@ -190,15 +190,10 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   if (self.baseViewController.presentedViewController &&
       self.baseViewController.presentedViewController ==
           self.bannerViewController) {
-    [self dismissInfobarBanner:self animated:NO completion:modalPresentation];
+    [self dismissInfobarBannerAnimated:NO completion:modalPresentation];
   } else {
     modalPresentation();
   }
-}
-
-- (void)dismissInfobarBannerAnimated:(BOOL)animated
-                          completion:(void (^)())completion {
-  [self dismissInfobarBanner:self animated:animated completion:completion];
 }
 
 #pragma mark - Protocols
@@ -208,14 +203,14 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
 - (void)removeView {
   // Do not animate the dismissal since the Coordinator might have been stopped
   // and the animation can cause undefined behavior.
-  [self dismissInfobarBanner:self animated:NO completion:nil];
+  [self dismissInfobarBannerAnimated:NO completion:nil];
 }
 
 - (void)detachView {
   // Do not animate the dismissals since the Coordinator might have been stopped
   // and the animation can cause undefined behavior.
   if (self.bannerViewController)
-    [self dismissInfobarBanner:self animated:NO completion:nil];
+    [self dismissInfobarBannerAnimated:NO completion:nil];
   if (self.modalViewController)
     [self dismissInfobarModal:self animated:NO completion:nil];
   [self stop];
@@ -234,7 +229,7 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   // If the Banner Button will present the Modal then the banner shouldn't be
   // dismissed.
   if (![self infobarBannerActionWillPresentModal]) {
-    [self dismissInfobarBanner:sender animated:YES completion:nil];
+    [self dismissInfobarBannerAnimated:YES completion:nil];
   }
 }
 
@@ -251,28 +246,10 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
                      }];
 }
 
-- (void)dismissInfobarBanner:(id)sender
-                    animated:(BOOL)animated
-                  completion:(void (^)())completion
-               userInitiated:(BOOL)userInitiated {
-  DCHECK(self.baseViewController);
-  // Make sure the banner is completely presented before trying to dismiss it.
-  [self.bannerTransitionDriver completePresentationTransitionIfRunning];
-
-  if (self.baseViewController.presentedViewController &&
-      self.baseViewController.presentedViewController ==
-          self.bannerViewController) {
-    [self infobarBannerWillBeDismissed:userInitiated];
-    [self.baseViewController
-        dismissViewControllerAnimated:animated
-                           completion:^{
-                             if (completion)
-                               completion();
-                           }];
-  } else {
-    if (completion)
-      completion();
-  }
+- (void)dismissInfobarBannerForUserInteraction:(BOOL)userInitiated {
+  [self dismissInfobarBannerAnimated:YES
+                       userInitiated:userInitiated
+                          completion:nil];
 }
 
 - (void)infobarBannerWasDismissed {
@@ -485,13 +462,30 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
 }
 
 // Helper method for non-user initiated InfobarBanner dismissals.
-- (void)dismissInfobarBanner:(id)sender
-                    animated:(BOOL)animated
-                  completion:(void (^)())completion {
-  [self dismissInfobarBanner:sender
-                    animated:animated
-                  completion:completion
-               userInitiated:NO];
+- (void)dismissInfobarBannerAnimated:(BOOL)animated
+                          completion:(void (^)())completion {
+  [self dismissInfobarBannerAnimated:animated
+                       userInitiated:NO
+                          completion:completion];
+}
+
+// Helper for banner dismissals.
+- (void)dismissInfobarBannerAnimated:(BOOL)animated
+                       userInitiated:(BOOL)userInitiated
+                          completion:(void (^)())completion {
+  DCHECK(self.baseViewController);
+  // Make sure the banner is completely presented before trying to dismiss it.
+  [self.bannerTransitionDriver completePresentationTransitionIfRunning];
+
+  if (self.baseViewController.presentedViewController &&
+      self.baseViewController.presentedViewController ==
+          self.bannerViewController) {
+    [self infobarBannerWillBeDismissed:userInitiated];
+    [self.baseViewController dismissViewControllerAnimated:YES
+                                                completion:completion];
+  } else if (completion) {
+    completion();
+  }
 }
 
 @end

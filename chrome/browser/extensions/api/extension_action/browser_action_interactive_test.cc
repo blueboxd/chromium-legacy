@@ -264,7 +264,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, TestOpenPopupIncognito) {
       content::NotificationService::AllSources());
   ASSERT_TRUE(RunExtensionSubtest("browser_action/open_popup",
                                   "open_popup_succeeds.html",
-                                  kFlagEnableIncognito | kFlagUseIncognito))
+                                  kFlagEnableIncognito, kFlagUseIncognito))
       << message_;
   frame_observer.Wait();
   // Non-Aura Linux uses a singleton for the popup, so it looks like all windows

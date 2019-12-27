@@ -136,7 +136,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContextMenus) {
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ServiceWorkerContextMenus) {
   ScopedWorkerBasedExtensionsChannel worker_channel_override;
   ASSERT_TRUE(RunExtensionTestWithFlags("context_menus/event_page",
-                                        kFlagRunAsServiceWorkerBasedExtension))
+                                        kFlagRunAsServiceWorkerBasedExtension,
+                                        kFlagNone))
       << message_;
 }
 

@@ -1854,6 +1854,7 @@ void NavigationRequest::OnRequestFailedInternal(
   pending_entry_ref_.reset();
 
   net_error_ = static_cast<net::Error>(status.error_code);
+  resolve_error_info_ = status.resolve_error_info;
 
   // If the request was canceled by the user do not show an error page.
   if (status.error_code == net::ERR_ABORTED) {
@@ -3633,6 +3634,10 @@ const base::Optional<net::SSLInfo>& NavigationRequest::GetSSLInfo() {
 const base::Optional<net::AuthChallengeInfo>&
 NavigationRequest::GetAuthChallengeInfo() {
   return auth_challenge_info_;
+}
+
+net::ResolveErrorInfo NavigationRequest::GetResolveErrorInfo() {
+  return resolve_error_info_;
 }
 
 net::NetworkIsolationKey NavigationRequest::GetNetworkIsolationKey() {

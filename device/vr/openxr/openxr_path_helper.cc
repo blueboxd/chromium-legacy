@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 
 #include "device/vr/openxr/openxr_path_helper.h"
 #include "device/vr/openxr/openxr_util.h"
@@ -17,39 +18,48 @@ XrResult OpenXRPathHelper::Initialize(XrInstance instance) {
   DCHECK(!initialized_);
 
   // Create path declarations
-  RETURN_IF_XR_FAILED(xrStringToPath(
-      instance, "/interaction_profiles/microsoft/motion_controller",
-      &declared_paths_.microsoft_motion_controller_interaction_profile));
-  RETURN_IF_XR_FAILED(xrStringToPath(
-      instance, "/interaction_profiles/khr/simple_controller",
-      &declared_paths_.khronos_simple_controller_interaction_profile));
-
+  for (const auto& profile : kOpenXrControllerInteractionProfiles) {
+    RETURN_IF_XR_FAILED(
+        xrStringToPath(instance, profile.path,
+                       &(declared_interaction_profile_paths_[profile.type])));
+  }
   initialized_ = true;
 
   return XR_SUCCESS;
 }
 
-std::vector<std::string> OpenXRPathHelper::GetInputProfiles(
+OpenXrInteractionProfileType OpenXRPathHelper::GetInputProfileType(
     XrPath interaction_profile) const {
   DCHECK(initialized_);
-
-  if (interaction_profile ==
-      declared_paths_.microsoft_motion_controller_interaction_profile) {
-    return {"windows-mixed-reality",
-            "generic-trigger-squeeze-touchpad-thumbstick"};
+  for (auto it : declared_interaction_profile_paths_) {
+    if (it.second == interaction_profile) {
+      return it.first;
+    }
   }
-  if (interaction_profile ==
-      declared_paths_.khronos_simple_controller_interaction_profile) {
-    return {"generic-button"};
+  return OpenXrInteractionProfileType::kCount;
+}
+
+std::vector<std::string> OpenXRPathHelper::GetInputProfiles(
+    OpenXrInteractionProfileType interaction_profile) const {
+  DCHECK(initialized_);
+
+  for (auto& it : kOpenXrControllerInteractionProfiles) {
+    if (it.type == interaction_profile) {
+      const char* const* const input_profiles = it.input_profiles;
+      return std::vector<std::string>(input_profiles,
+                                      input_profiles + it.profile_size);
+    }
   }
 
   return {};
 }
 
-const OpenXRPathHelper::DeclaredPaths& OpenXRPathHelper::GetDeclaredPaths()
-    const {
-  DCHECK(initialized_);
-  return declared_paths_;
+XrPath OpenXRPathHelper::GetInteractionProfileXrPath(
+    OpenXrInteractionProfileType type) const {
+  if (type == OpenXrInteractionProfileType::kCount) {
+    return XR_NULL_PATH;
+  }
+  return declared_interaction_profile_paths_.at(type);
 }
 
 }  // namespace device

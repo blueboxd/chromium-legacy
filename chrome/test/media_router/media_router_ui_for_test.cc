@@ -108,7 +108,8 @@ void MediaRouterUiForTest::TearDown() {
 }
 
 void MediaRouterUiForTest::ShowDialog() {
-  dialog_controller_->ShowMediaRouterDialog();
+  dialog_controller_->ShowMediaRouterDialog(
+      MediaRouterDialogOpenOrigin::TOOLBAR);
   base::RunLoop().RunUntilIdle();
 }
 

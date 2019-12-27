@@ -101,8 +101,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, OverrideStartupPagesSettings) {
   SessionStartupPref::SetStartupPref(prefs, startup_pref);
 
   const extensions::Extension* extension = LoadExtensionWithInstallParam(
-      test_data_dir_.AppendASCII("settings_override"),
-      kFlagEnableFileAccess,
+      test_data_dir_.AppendASCII("settings_override"), kFlagEnableFileAccess,
       "10");
   ASSERT_TRUE(extension);
   startup_pref = SessionStartupPref::GetStartupPref(prefs);

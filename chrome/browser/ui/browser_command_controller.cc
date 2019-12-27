@@ -744,7 +744,7 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       ToggleDistilledView(browser_);
       break;
     case IDC_ROUTE_MEDIA:
-      RouteMedia(browser_);
+      RouteMediaInvokedFromAppMenu(browser_);
       break;
     case IDC_WINDOW_MUTE_SITE:
       MuteSite(browser_);

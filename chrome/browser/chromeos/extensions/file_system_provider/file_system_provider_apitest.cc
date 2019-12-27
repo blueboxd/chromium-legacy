@@ -151,97 +151,97 @@ class FileSystemProviderApiTest : public ExtensionApiTest {
 
 IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, Mount) {
   ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/mount",
-                                          kFlagLoadAsComponent))
+                                          kFlagNone, kFlagLoadAsComponent))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, Unmount) {
   ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/unmount",
-                                          kFlagLoadAsComponent))
+                                          kFlagNone, kFlagLoadAsComponent))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, GetAll) {
   ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/get_all",
-                                          kFlagLoadAsComponent))
+                                          kFlagNone, kFlagLoadAsComponent))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, GetMetadata) {
   ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/get_metadata",
-                                          kFlagLoadAsComponent))
+                                          kFlagNone, kFlagLoadAsComponent))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, ReadDirectory) {
   ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/read_directory",
-                                          kFlagLoadAsComponent))
+                                          kFlagNone, kFlagLoadAsComponent))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, ReadFile) {
   ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/read_file",
-                                          kFlagLoadAsComponent))
+                                          kFlagNone, kFlagLoadAsComponent))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, BigFile) {
   ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/big_file",
-                                          kFlagLoadAsComponent))
+                                          kFlagNone, kFlagLoadAsComponent))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, Evil) {
   ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/evil",
-                                          kFlagLoadAsComponent))
+                                          kFlagNone, kFlagLoadAsComponent))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, MimeType) {
   ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/mime_type",
-                                          kFlagLoadAsComponent))
+                                          kFlagNone, kFlagLoadAsComponent))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, CreateDirectory) {
   ASSERT_TRUE(RunPlatformAppTestWithFlags(
-      "file_system_provider/create_directory", kFlagLoadAsComponent))
+      "file_system_provider/create_directory", kFlagNone, kFlagLoadAsComponent))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, DeleteEntry) {
   ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/delete_entry",
-                                          kFlagLoadAsComponent))
+                                          kFlagNone, kFlagLoadAsComponent))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, CreateFile) {
   ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/create_file",
-                                          kFlagLoadAsComponent))
+                                          kFlagNone, kFlagLoadAsComponent))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, CopyEntry) {
   ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/copy_entry",
-                                          kFlagLoadAsComponent))
+                                          kFlagNone, kFlagLoadAsComponent))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, MoveEntry) {
   ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/move_entry",
-                                          kFlagLoadAsComponent))
+                                          kFlagNone, kFlagLoadAsComponent))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, Truncate) {
   ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/truncate",
-                                          kFlagLoadAsComponent))
+                                          kFlagNone, kFlagLoadAsComponent))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, WriteFile) {
   ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/write_file",
-                                          kFlagLoadAsComponent))
+                                          kFlagNone, kFlagLoadAsComponent))
       << message_;
 }
 
@@ -252,43 +252,43 @@ IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, Extension) {
 
 IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, Thumbnail) {
   ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/thumbnail",
-                                          kFlagLoadAsComponent))
+                                          kFlagNone, kFlagLoadAsComponent))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, AddWatcher) {
   ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/add_watcher",
-                                          kFlagLoadAsComponent))
+                                          kFlagNone, kFlagLoadAsComponent))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, RemoveWatcher) {
   ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/remove_watcher",
-                                          kFlagLoadAsComponent))
+                                          kFlagNone, kFlagLoadAsComponent))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, Notify) {
   ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/notify",
-                                          kFlagLoadAsComponent))
+                                          kFlagNone, kFlagLoadAsComponent))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, Configure) {
   ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/configure",
-                                          kFlagLoadAsComponent))
+                                          kFlagNone, kFlagLoadAsComponent))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, GetActions) {
   ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/get_actions",
-                                          kFlagLoadAsComponent))
+                                          kFlagNone, kFlagLoadAsComponent))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, ExecuteAction) {
   ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/execute_action",
-                                          kFlagLoadAsComponent))
+                                          kFlagNone, kFlagLoadAsComponent))
       << message_;
 }
 
@@ -302,7 +302,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, Unresponsive_Extension) {
 IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, Unresponsive_App) {
   AbortOnUnresponsivePerformer performer(browser()->profile());
   ASSERT_TRUE(RunPlatformAppTestWithFlags(
-      "file_system_provider/unresponsive_app", kFlagLoadAsComponent))
+      "file_system_provider/unresponsive_app", kFlagNone, kFlagLoadAsComponent))
       << message_;
 }
 

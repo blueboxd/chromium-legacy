@@ -46,8 +46,8 @@ Polymer({
    * @private
    */
   isSelected_: function(option) {
-    return this.getValue_(option) == this.selectedValue ||
-        (!!option.is_default && this.selectedValue == '');
+    return this.getValue_(option) === this.selectedValue ||
+        (!!option.is_default && this.selectedValue === '');
   },
 
   /** @param {string} value The value to select. */

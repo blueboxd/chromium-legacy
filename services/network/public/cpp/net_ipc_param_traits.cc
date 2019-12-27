@@ -314,6 +314,20 @@ void ParamTraits<net::OCSPVerifyResult>::Log(const param_type& p,
   l->append("<OCSPVerifyResult>");
 }
 
+void ParamTraits<net::ResolveErrorInfo>::Write(base::Pickle* m,
+                                               const param_type& p) {
+  WriteParam(m, p.error);
+}
+bool ParamTraits<net::ResolveErrorInfo>::Read(const base::Pickle* m,
+                                              base::PickleIterator* iter,
+                                              param_type* r) {
+  return ReadParam(m, iter, &r->error);
+}
+void ParamTraits<net::ResolveErrorInfo>::Log(const param_type& p,
+                                             std::string* l) {
+  l->append("<ResolveErrorInfo>");
+}
+
 void ParamTraits<scoped_refptr<net::SSLCertRequestInfo>>::Write(
     base::Pickle* m,
     const param_type& p) {

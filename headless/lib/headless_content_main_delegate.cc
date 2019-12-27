@@ -27,6 +27,7 @@
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/profiling.h"
+#include "gpu/config/gpu_switches.h"
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_content_browser_client.h"
 #include "headless/lib/headless_crash_reporter_client.h"
@@ -227,6 +228,11 @@ bool HeadlessContentMainDelegate::BasicStartupComplete(int* exit_code) {
   // When running headless there is no need to suppress input until content
   // is ready for display (because it isn't displayed to users).
   command_line->AppendSwitch(::switches::kAllowPreCommitInput);
+
+#if defined(OS_WIN)
+  command_line->AppendSwitch(
+      ::switches::kDisableGpuProcessForDX12VulkanInfoCollection);
+#endif
 
   content::Profiling::ProcessStarted();
   return false;

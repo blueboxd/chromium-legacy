@@ -12606,6 +12606,58 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_FALSE(filter->GetIntersectionState().viewport_intersection.IsEmpty());
 }
 
+// Test to verify that the main frame document intersection
+// is propagated to out of process iframes by scrolling a nested iframe
+// in and out of intersecting with the main frame document.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       NestedFrameMainFrameDocumentIntersectionUpdated) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "foo.com", "/frame_tree/scrollable_page_with_positioned_frame.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* child_node = root->child_at(0);
+  GURL site_url(embedded_test_server()->GetURL(
+      "bar.com", "/frame_tree/scrollable_page_with_positioned_frame.html"));
+  NavigateFrameToURL(child_node, site_url);
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B C\n"
+      "   +--Site B ------- proxies for A C\n"
+      "        +--Site C -- proxies for A B\n"
+      "Where A = http://foo.com/\n"
+      "      B = http://bar.com/\n"
+      "      C = http://baz.com/",
+      DepictFrameTree(root));
+
+  scoped_refptr<UpdateViewportIntersectionMessageFilter> filter =
+      new UpdateViewportIntersectionMessageFilter();
+  child_node->current_frame_host()->GetProcess()->AddFilter(filter.get());
+
+  // Run requestAnimationFrame in A and B to make sure initial layout has
+  // completed and initial IPC's sent.
+  ASSERT_TRUE(EvalJsAfterLifecycleUpdate(root->current_frame_host(), "", "")
+                  .error.empty());
+  ASSERT_TRUE(
+      EvalJsAfterLifecycleUpdate(child_node->current_frame_host(), "", "")
+          .error.empty());
+  filter->Clear();
+
+  // Scroll the child frame out of view, causing it to become throttled.
+  ASSERT_TRUE(
+      ExecJs(child_node->current_frame_host(), "window.scrollTo(0, 5000)"));
+  filter->Wait();
+  EXPECT_TRUE(filter->GetIntersectionState()
+                  .main_frame_document_intersection.IsEmpty());
+
+  // Scroll the frame back into view.
+  ASSERT_TRUE(
+      ExecJs(child_node->current_frame_host(), "window.scrollTo(0, 0)"));
+  filter->Wait();
+  EXPECT_FALSE(filter->GetIntersectionState()
+                   .main_frame_document_intersection.IsEmpty());
+}
+
 namespace {
 
 // Helper class to intercept DidCommitProvisionalLoad messages and inject a

@@ -245,7 +245,7 @@ IN_PROC_BROWSER_TEST_F(
     EnterpriseDeviceAttributesIsRestrictedToPolicyExtension) {
   ASSERT_TRUE(RunExtensionSubtest("enterprise_device_attributes",
                                   "api_not_available.html",
-                                  kFlagIgnoreManifestWarnings));
+                                  kFlagIgnoreManifestWarnings, kFlagNone));
 
   base::FilePath extension_path =
       test_data_dir_.AppendASCII("enterprise_device_attributes");

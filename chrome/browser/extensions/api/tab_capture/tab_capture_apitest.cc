@@ -389,9 +389,8 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, DISABLED_GrantForChromePages) {
 // Tests that a tab in incognito mode can be captured.
 IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_CaptureInSplitIncognitoMode) {
   AddExtensionToCommandLineWhitelist();
-  ASSERT_TRUE(RunExtensionSubtest("tab_capture",
-                                  "start_tab_capture.html",
-                                  kFlagEnableIncognito | kFlagUseIncognito))
+  ASSERT_TRUE(RunExtensionSubtest("tab_capture", "start_tab_capture.html",
+                                  kFlagEnableIncognito, kFlagUseIncognito))
       << message_;
 }
 

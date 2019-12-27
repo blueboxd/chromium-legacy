@@ -14,6 +14,9 @@ js_type_check("closure_compile") {
 }
 
 js_library("filenamer") {
+  deps = [
+    "..:namespace",
+  ]
 }
 
 js_library("filesystem") {

@@ -5,6 +5,7 @@ specific_include_rules = {
   "headless_content_main_delegate.cc": [
     "+cc/base/switches.h",
     "+components/viz/common/switches.h",
+    "+gpu/config/gpu_switches.h",
   ],
   "headless_web_contents_browsertest.cc": [
     "+cc/base/switches.h",

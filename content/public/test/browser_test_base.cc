@@ -748,13 +748,18 @@ void BrowserTestBase::InitializeNetworkProcess() {
     // TODO(jam: expand this when we try to make browser_tests and
     // components_browsertests work.
     if (rule.resolver_type ==
-        net::RuleBasedHostResolverProc::Rule::kResolverTypeFail) {
+            net::RuleBasedHostResolverProc::Rule::kResolverTypeFail ||
+        rule.resolver_type ==
+            net::RuleBasedHostResolverProc::Rule::kResolverTypeFailTimeout) {
       // The host "wpad" is added automatically in TestHostResolver, so we don't
       // need to send it to NetworkServiceTest.
       if (rule.host_pattern != "wpad") {
         network::mojom::RulePtr mojo_rule = network::mojom::Rule::New();
         mojo_rule->resolver_type =
-            network::mojom::ResolverType::kResolverTypeFail;
+            (rule.resolver_type ==
+             net::RuleBasedHostResolverProc::Rule::kResolverTypeFail)
+                ? network::mojom::ResolverType::kResolverTypeFail
+                : network::mojom::ResolverType::kResolverTypeFailTimeout;
         mojo_rule->host_pattern = rule.host_pattern;
         mojo_rules.push_back(std::move(mojo_rule));
       }

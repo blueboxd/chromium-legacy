@@ -90,6 +90,9 @@ class MockNavigationHandle : public NavigationHandle {
       override {
     return auth_challenge_info_;
   }
+  net::ResolveErrorInfo GetResolveErrorInfo() override {
+    return resolve_error_info_;
+  }
   MOCK_METHOD0(GetNetworkIsolationKey, net::NetworkIsolationKey());
   MOCK_METHOD0(GetGlobalRequestID, const GlobalRequestID&());
   MOCK_METHOD0(IsDownload, bool());
@@ -173,6 +176,7 @@ class MockNavigationHandle : public NavigationHandle {
   scoped_refptr<net::HttpResponseHeaders> response_headers_;
   base::Optional<net::SSLInfo> ssl_info_;
   base::Optional<net::AuthChallengeInfo> auth_challenge_info_;
+  net::ResolveErrorInfo resolve_error_info_;
   bool is_form_submission_ = false;
   bool was_response_cached_ = false;
   net::ProxyServer proxy_server_;

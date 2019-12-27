@@ -65,31 +65,35 @@ std::unique_ptr<views::Button> CreateSourcesButton(
 void CastDialogView::ShowDialogWithToolbarAction(
     CastDialogController* controller,
     Browser* browser,
-    const base::Time& start_time) {
+    const base::Time& start_time,
+    MediaRouterDialogOpenOrigin activation_location) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   views::View* action_view = browser_view->toolbar()->cast_button();
   DCHECK(action_view);
   ShowDialog(action_view, views::BubbleBorder::TOP_RIGHT, controller,
-             browser->profile(), start_time);
+             browser->profile(), start_time, activation_location);
 }
 
 // static
 void CastDialogView::ShowDialogCenteredForBrowserWindow(
     CastDialogController* controller,
     Browser* browser,
-    const base::Time& start_time) {
+    const base::Time& start_time,
+    MediaRouterDialogOpenOrigin activation_location) {
   ShowDialog(BrowserView::GetBrowserViewForBrowser(browser)->top_container(),
              views::BubbleBorder::TOP_CENTER, controller, browser->profile(),
-             start_time);
+             start_time, activation_location);
 }
 
 // static
-void CastDialogView::ShowDialogCentered(const gfx::Rect& bounds,
-                                        CastDialogController* controller,
-                                        Profile* profile,
-                                        const base::Time& start_time) {
+void CastDialogView::ShowDialogCentered(
+    const gfx::Rect& bounds,
+    CastDialogController* controller,
+    Profile* profile,
+    const base::Time& start_time,
+    MediaRouterDialogOpenOrigin activation_location) {
   ShowDialog(/* anchor_view */ nullptr, views::BubbleBorder::TOP_CENTER,
-             controller, profile, start_time);
+             controller, profile, start_time, activation_location);
   instance_->SetAnchorRect(bounds);
 }
 
@@ -238,15 +242,17 @@ void CastDialogView::KeepShownForTesting() {
 }
 
 // static
-void CastDialogView::ShowDialog(views::View* anchor_view,
-                                views::BubbleBorder::Arrow anchor_position,
-                                CastDialogController* controller,
-                                Profile* profile,
-                                const base::Time& start_time) {
+void CastDialogView::ShowDialog(
+    views::View* anchor_view,
+    views::BubbleBorder::Arrow anchor_position,
+    CastDialogController* controller,
+    Profile* profile,
+    const base::Time& start_time,
+    MediaRouterDialogOpenOrigin activation_location) {
   DCHECK(!instance_);
   DCHECK(!start_time.is_null());
   instance_ = new CastDialogView(anchor_view, anchor_position, controller,
-                                 profile, start_time);
+                                 profile, start_time, activation_location);
   views::Widget* widget =
       views::BubbleDialogDelegateView::CreateBubble(instance_);
   widget->Show();
@@ -256,12 +262,13 @@ CastDialogView::CastDialogView(views::View* anchor_view,
                                views::BubbleBorder::Arrow anchor_position,
                                CastDialogController* controller,
                                Profile* profile,
-                               const base::Time& start_time)
+                               const base::Time& start_time,
+                               MediaRouterDialogOpenOrigin activation_location)
     : BubbleDialogDelegateView(anchor_view, anchor_position),
       selected_source_(SourceType::kTab),
       controller_(controller),
       profile_(profile),
-      metrics_(start_time, profile) {
+      metrics_(start_time, activation_location, profile) {
   DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
   sources_button_ = DialogDelegate::SetExtraView(CreateSourcesButton(this));
   ShowNoSinksView();
@@ -416,7 +423,7 @@ void CastDialogView::SinkPressed(size_t index) {
       // the dialog.
       if (cast_mode.value() == LOCAL_FILE)
         set_close_on_deactivate(!keep_shown_for_testing_);
-      metrics_.OnStartCasting(base::Time::Now(), index);
+      metrics_.OnStartCasting(base::Time::Now(), index, cast_mode.value());
     }
   }
 }

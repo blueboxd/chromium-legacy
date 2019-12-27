@@ -135,7 +135,7 @@ Polymer({
    * @private
    */
   checkCloudPrintStatus_: function(event) {
-    if (event.detail.status != 403 ||
+    if (event.detail.status !== 403 ||
         this.cloudPrintInterface.areCookieDestinationsDisabled()) {
       return;
     }

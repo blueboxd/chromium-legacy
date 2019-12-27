@@ -308,7 +308,3 @@ base::android::ScopedJavaLocalRef<jstring> JNI_SigninManager_ExtractDomainName(
   std::string domain = gaia::ExtractDomainName(email);
   return base::android::ConvertUTF8ToJavaString(env, domain);
 }
-
-jboolean JNI_SigninManager_IsMobileIdentityConsistencyEnabled(JNIEnv* env) {
-  return base::FeatureList::IsEnabled(signin::kMiceFeature);
-}

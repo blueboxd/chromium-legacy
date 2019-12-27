@@ -5,11 +5,12 @@
 #ifndef IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_WEB_CONTENT_AREA_HTTP_AUTH_OVERLAY_H_
 #define IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_WEB_CONTENT_AREA_HTTP_AUTH_OVERLAY_H_
 
+#include "ios/chrome/browser/overlays/public/overlay_request_config.h"
 #include "ios/chrome/browser/overlays/public/overlay_user_data.h"
 
 // Configuration object for OverlayRequests for HTTP authentication challenges.
 class HTTPAuthOverlayRequestConfig
-    : public OverlayUserData<HTTPAuthOverlayRequestConfig> {
+    : public OverlayRequestConfig<HTTPAuthOverlayRequestConfig> {
  public:
   ~HTTPAuthOverlayRequestConfig() override;
 
@@ -46,4 +47,5 @@ class HTTPAuthOverlayResponseInfo
   const std::string username_;
   const std::string password_;
 };
+
 #endif  // IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_WEB_CONTENT_AREA_HTTP_AUTH_OVERLAY_H_

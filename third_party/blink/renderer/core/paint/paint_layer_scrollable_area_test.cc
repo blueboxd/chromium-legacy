@@ -1332,6 +1332,36 @@ TEST_P(PaintLayerScrollableAreaTest, ShowCustomResizerInTextarea) {
   EXPECT_NE(paint_layer->GetScrollableArea()->Resizer(), nullptr);
 }
 
+TEST_P(PaintLayerScrollableAreaTest,
+       ApplyPendingHistoryRestoreScrollOffsetTwice) {
+  GetPage().GetSettings().SetTextAreasAreResizable(true);
+  SetBodyInnerHTML(R"HTML(
+    <!doctype HTML>
+    <div id="target" style="overflow: scroll; width: 50px; height: 50px">
+      <div style="width: 50px; height: 500px">
+      </div>
+    </div>
+  )HTML");
+
+  const auto* paint_layer =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"))->Layer();
+
+  auto* scrollable_area = paint_layer->GetScrollableArea();
+
+  HistoryItem::ViewState view_state;
+  view_state.scroll_offset_ = ScrollOffset(0, 100);
+  scrollable_area->SetPendingHistoryRestoreScrollOffset(view_state, true);
+  scrollable_area->ApplyPendingHistoryRestoreScrollOffset();
+  EXPECT_EQ(ScrollOffset(0, 100), scrollable_area->GetScrollOffset());
+
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 50), kUserScroll);
+
+  // The second call to ApplyPendingHistoryRestoreScrollOffset should
+  // do nothing, since the history was already restored.
+  scrollable_area->ApplyPendingHistoryRestoreScrollOffset();
+  EXPECT_EQ(ScrollOffset(0, 50), scrollable_area->GetScrollOffset());
+}
+
 class PaintLayerScrollableAreaCompositingTest
     : public PaintLayerScrollableAreaTest {
  public:

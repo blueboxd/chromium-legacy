@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/chrome_app_icon_service.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -213,6 +215,10 @@ void ExtensionUninstallDialog::OnDialogClosed(CloseAction action) {
   switch (action) {
     case CLOSE_ACTION_UNINSTALL_AND_CHECKBOX_CHECKED:
       success = Uninstall(&error);
+      base::RecordAction(base::UserMetricsAction(
+          "Extensions.UninstallDialogReportAbuseChecked"));
+      base::RecordAction(
+          base::UserMetricsAction("Extensions.UninstallDialogRemoveClick"));
       if (ShouldShowRemoveDataCheckbox()) {
         content::ClearSiteData(
             base::BindRepeating(
@@ -233,9 +239,13 @@ void ExtensionUninstallDialog::OnDialogClosed(CloseAction action) {
       }
       break;
     case CLOSE_ACTION_UNINSTALL:
+      base::RecordAction(
+          base::UserMetricsAction("Extensions.UninstallDialogRemoveClick"));
       success = Uninstall(&error);
       break;
     case CLOSE_ACTION_CANCELED:
+      base::RecordAction(
+          base::UserMetricsAction("Extensions.UninstallDialogCancelClick"));
       error = base::ASCIIToUTF16("User canceled uninstall dialog");
       break;
     case CLOSE_ACTION_LAST:
@@ -249,6 +259,11 @@ bool ExtensionUninstallDialog::Uninstall(base::string16* error) {
       ExtensionRegistry::Get(profile_)->GetExtensionById(
           extension_->id(), ExtensionRegistry::EVERYTHING);
   if (current_extension) {
+    if (current_extension->was_installed_by_default()) {
+      base::RecordAction(base::UserMetricsAction(
+          "Extensions.RemovedDefaultInstalledExtension"));
+    }
+
     // Prevent notifications triggered by our request.
     observer_.RemoveAll();
     return ExtensionSystem::Get(profile_)

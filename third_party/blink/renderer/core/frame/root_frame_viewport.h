@@ -128,6 +128,15 @@ class CORE_EXPORT RootFrameViewport final
   base::Optional<FloatPoint> GetSnapPositionAndSetTarget(
       const cc::SnapSelectionStrategy& strategy) override;
 
+  void SetPendingHistoryRestoreScrollOffset(
+      const HistoryItem::ViewState& view_state,
+      bool should_restore_scroll) override {
+    pending_view_state_ = view_state;
+    should_restore_scroll_ = should_restore_scroll;
+  }
+
+  bool ApplyPendingHistoryRestoreScrollOffset() override;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(RootFrameViewportTest, DistributeScrollOrder);
 
@@ -147,7 +156,7 @@ class CORE_EXPORT RootFrameViewport final
   // class' animator so use this method to pull updated values when necessary.
   void UpdateScrollAnimator();
 
-  ScrollableArea& VisualViewport() const {
+  ScrollableArea& GetVisualViewport() const {
     DCHECK(visual_viewport_);
     return *visual_viewport_;
   }
@@ -156,6 +165,8 @@ class CORE_EXPORT RootFrameViewport final
 
   Member<ScrollableArea> visual_viewport_;
   Member<ScrollableArea> layout_viewport_;
+  base::Optional<HistoryItem::ViewState> pending_view_state_;
+  bool should_restore_scroll_;
 };
 
 template <>

@@ -363,9 +363,9 @@ Polymer({
 
   /** @private */
   onErrorChanged_: function() {
-    if (this.error == Error.INVALID_PRINTER ||
-        this.error == Error.UNSUPPORTED_PRINTER ||
-        this.error == Error.NO_DESTINATIONS) {
+    if (this.error === Error.INVALID_PRINTER ||
+        this.error === Error.UNSUPPORTED_PRINTER ||
+        this.error === Error.NO_DESTINATIONS) {
       this.destinationState = DestinationState.ERROR;
     }
   },
@@ -394,23 +394,23 @@ Polymer({
             this.getSettingValue('recentDestinations'));
     let indexFound = recentDestinations.findIndex(function(recent) {
       return (
-          newDestination.id == recent.id &&
-          newDestination.origin == recent.origin);
+          newDestination.id === recent.id &&
+          newDestination.origin === recent.origin);
     });
 
     // No change
-    if (indexFound == 0 &&
-        recentDestinations[0].capabilities == newDestination.capabilities) {
+    if (indexFound === 0 &&
+        recentDestinations[0].capabilities === newDestination.capabilities) {
       return;
     }
-    const isNew = indexFound == -1;
+    const isNew = indexFound === -1;
 
     // Shift the array so that the nth most recent destination is located at
     // index n.
-    if (isNew && recentDestinations.length == NUM_PERSISTED_DESTINATIONS) {
+    if (isNew && recentDestinations.length === NUM_PERSISTED_DESTINATIONS) {
       indexFound = NUM_PERSISTED_DESTINATIONS - 1;
     }
-    if (indexFound != -1) {
+    if (indexFound !== -1) {
       this.setSettingSplice('recentDestinations', indexFound, 1, null);
     }
 
@@ -516,7 +516,7 @@ Polymer({
 
   /** @private */
   onDialogClose_: function() {
-    if (this.lastUser_ != this.activeUser_) {
+    if (this.lastUser_ !== this.activeUser_) {
       this.updateDropdownDestinations_();
     }
 

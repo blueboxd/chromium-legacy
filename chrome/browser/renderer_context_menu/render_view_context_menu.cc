@@ -2991,7 +2991,8 @@ void RenderViewContextMenu::ExecRouteMedia() {
   if (!dialog_controller)
     return;
 
-  dialog_controller->ShowMediaRouterDialog();
+  dialog_controller->ShowMediaRouterDialog(
+      media_router::MediaRouterDialogOpenOrigin::CONTEXTUAL_MENU);
   media_router::MediaRouterMetrics::RecordMediaRouterDialogOrigin(
       media_router::MediaRouterDialogOpenOrigin::CONTEXTUAL_MENU);
 }

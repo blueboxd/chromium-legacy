@@ -230,7 +230,7 @@ class PlatformAppWithFileBrowserTest : public PlatformAppBrowserTest {
 
     base::FilePath extension_path = test_data_dir_.AppendASCII(extension_name);
     const extensions::Extension* extension =
-        LoadExtensionWithFlags(extension_path, ExtensionBrowserTest::kFlagNone);
+        LoadExtensionWithFlags(extension_path, kFlagNone);
     if (!extension) {
       message_ = "Failed to load extension.";
       return false;

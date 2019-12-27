@@ -4,6 +4,7 @@
 
 #import "ios/showcase/infobars/sc_infobar_banner_coordinator.h"
 
+#import "base/ios/block_types.h"
 #import "ios/chrome/browser/infobars/infobar_type.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_delegate.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_view_controller.h"
@@ -49,13 +50,17 @@
 }
 
 - (void)dealloc {
-  [self dismissInfobarBanner:nil animated:YES completion:nil userInitiated:NO];
+  [self dismissInfobarBannerForUserInteraction:NO];
 }
 
 #pragma mark InfobarBannerDelegate
 
-- (void)bannerInfobarButtonWasPressed:(id)sender {
-  [self dismissInfobarBanner:nil animated:YES completion:nil userInitiated:NO];
+- (void)bannerInfobarButtonWasPressed:(UIButton*)sender {
+  [self dismissInfobarBannerForUserInteraction:NO];
+}
+
+- (void)dismissInfobarBannerForUserInteraction:(BOOL)userInitiated {
+  [self.baseViewController dismissViewControllerAnimated:YES completion:nil];
 }
 
 - (void)presentInfobarModalFromBanner {
@@ -74,14 +79,6 @@
   [self.bannerViewController presentViewController:navController
                                           animated:YES
                                         completion:nil];
-}
-
-- (void)dismissInfobarBanner:(id)sender
-                    animated:(BOOL)animated
-                  completion:(ProceduralBlock)completion
-               userInitiated:(BOOL)userInitiated {
-  [self.baseViewController dismissViewControllerAnimated:animated
-                                              completion:nil];
 }
 
 - (void)infobarBannerWasDismissed {

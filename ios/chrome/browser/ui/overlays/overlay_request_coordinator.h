@@ -7,14 +7,16 @@
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
+class OverlayRequestSupport;
 class OverlayRequestCoordinatorDelegate;
 class OverlayRequest;
 
 // Coordinator superclass used to present UI for an OverlayRequest.
 @interface OverlayRequestCoordinator : ChromeCoordinator
 
-// Returns whether this overlay coordinator type supports |request|.
-+ (BOOL)supportsRequest:(OverlayRequest*)request;
+// Returns the request support for this coordinator.
+@property(class, nonatomic, readonly)
+    const OverlayRequestSupport* requestSupport;
 
 // Returns whether this overlay coordinator type uses child view controllers
 // instead of presentating over the container context.  Default value is NO.

@@ -48,6 +48,9 @@ struct BLINK_PLATFORM_EXPORT ViewportIntersectionState {
   // Portion of the child frame which is within the root frame's scrolling
   // viewport, in the coordinate system of the child frame.
   WebRect viewport_intersection;
+  // Same as viewport_intersection, but without applying the main frame's
+  // document-level overflow clip.
+  WebRect main_frame_document_intersection;
   // Area of the child frame that needs to be rastered, in physical pixels.
   WebRect compositor_visible_rect;
   // Occlusion state, as described above.

@@ -39,7 +39,7 @@ export class Size {
    * @return {boolean} Whether this size object is equal to another.
    */
   equals(other) {
-    return other != null && this.width_ == other.width_ &&
-        this.height_ == other.height_;
+    return other !== null && this.width_ === other.width_ &&
+        this.height_ === other.height_;
   }
 }

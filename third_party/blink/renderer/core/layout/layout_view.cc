@@ -528,7 +528,8 @@ bool LayoutView::MapToVisualRectInAncestorSpaceInternal(
   if (!owner) {
     PhysicalRect rect = PhysicalRect::EnclosingRect(
         transform_state.LastPlanarQuad().BoundingBox());
-    bool retval = GetFrameView()->MapToVisualRectInRemoteRootFrame(rect);
+    bool retval = GetFrameView()->MapToVisualRectInRemoteRootFrame(
+        rect, !(visual_rect_flags & kDontApplyMainFrameOverflowClip));
     transform_state.SetQuad(FloatQuad(FloatRect(rect)));
     return retval;
   }

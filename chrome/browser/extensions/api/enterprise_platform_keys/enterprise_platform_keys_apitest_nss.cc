@@ -253,7 +253,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
                        EnterprisePlatformKeysIsRestrictedToPolicyExtension) {
   ASSERT_TRUE(RunExtensionSubtest("enterprise_platform_keys",
                                   "api_not_available.html",
-                                  kFlagIgnoreManifestWarnings));
+                                  kFlagIgnoreManifestWarnings, kFlagNone));
 
   base::FilePath extension_path =
       test_data_dir_.AppendASCII("enterprise_platform_keys");

@@ -48,6 +48,12 @@
                       : nullptr;
 }
 
+#pragma mark - OverlayRequestMediator
+
++ (const OverlayRequestSupport*)requestSupport {
+  return HTTPAuthOverlayRequestConfig::RequestSupport();
+}
+
 #pragma mark - Response helpers
 
 - (void)updateResponseCancelled:(BOOL)cancelled {

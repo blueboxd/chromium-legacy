@@ -35,6 +35,6 @@ Polymer({
 
   /** @param {string} value The new select value. */
   onProcessSelectChange: function(value) {
-    this.setSetting('layout', value == 'landscape');
+    this.setSetting('layout', value === 'landscape');
   },
 });

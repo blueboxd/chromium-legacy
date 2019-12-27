@@ -65,6 +65,7 @@ CHROMIUM_SRC_DIR = os.path.abspath(
 PERF_DIR = os.path.join(CHROMIUM_SRC_DIR, 'tools', 'perf')
 sys.path.append(PERF_DIR)
 import generate_legacy_perf_dashboard_json
+from core import path_util
 
 PERF_CORE_DIR = os.path.join(PERF_DIR, 'core')
 sys.path.append(PERF_CORE_DIR)
@@ -83,6 +84,32 @@ CHROME_SANDBOX_PATH = '/opt/chromium/chrome_sandbox'
 SHARD_MAPS_DIRECTORY = os.path.join(
     os.path.dirname(__file__), '..', '..', 'tools', 'perf', 'core',
     'shard_maps')
+
+# See https://crbug.com/923564.
+# We want to switch over to using histograms for everything, but converting from
+# the format output by gtest perf tests to histograms has introduced several
+# problems. So, only perform the conversion on tests that are whitelisted and
+# are okay with potentially encountering issues.
+GTEST_CONVERSION_WHITELIST = [
+  'angle_perftests',
+  'base_perftests',
+  'cc_perftests',
+  'components_perftests',
+  'dawn_perf_tests',
+  'gpu_perftests',
+  'latency_perftests',
+  'load_library_perf_tests',
+  'media_perftests',
+  'net_perftests',
+  'passthrough_command_buffer_perftests',
+  'performance_browser_tests',
+  'services_perftests',
+  'tracing_perftests',
+  'validating_command_buffer_perftests',
+  'views_perftests',
+  'viz_perftests',
+  'xr.vr.common_perftests',
+]
 
 
 class OutputFilePaths(object):
@@ -157,6 +184,11 @@ class GtestCommandGenerator(object):
       return r'.\%s.exe' % executable
     else:
       return './%s' % executable
+
+  @property
+  def executable_name(self):
+    """Gets the platform-independent name of the executable."""
+    return self._options.executable
 
   def _get_passthrough_args(self):
     return self._options.passthrough_args
@@ -237,6 +269,12 @@ def execute_gtest_perf_test(command_generator, output_paths, use_xvfb=False):
     traceback.print_exc()
     return_code = 1
   write_legacy_test_results(return_code, output_paths.test_results)
+  if command_generator.executable_name in GTEST_CONVERSION_WHITELIST:
+    with path_util.SysPath(path_util.GetTracingDir()):
+      # pylint: disable=no-name-in-module
+      from tracing.value import gtest_json_converter
+      # pylint: enable=no-name-in-module
+    gtest_json_converter.ConvertGtestJsonFile(output_paths.perf_results)
   return return_code
 
 

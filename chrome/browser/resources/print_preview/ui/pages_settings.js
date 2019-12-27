@@ -198,7 +198,7 @@ Polymer({
     const ranges = this.inputString_.split(/,|\u3001/);
     const maxPage = this.pageCount;
     for (const range of ranges) {
-      if (range == '') {
+      if (range === '') {
         this.errorState_ = PagesInputErrorState.INVALID_SYNTAX;
         this.onRangeChange_();
         return;
@@ -217,7 +217,7 @@ Polymer({
         this.onRangeChange_();
         return;
       }
-      if (limits.length == 1) {
+      if (limits.length === 1) {
         if (min > maxPage) {
           this.errorState_ = PagesInputErrorState.OUT_OF_BOUNDS;
           this.onRangeChange_();
@@ -274,9 +274,9 @@ Polymer({
    * @private
    */
   computeRangesToPrint_: function() {
-    if (!this.pagesToPrint_ || this.pagesToPrint_.length == 0 ||
-        this.pagesToPrint_[0] == -1 ||
-        this.pagesToPrint_.length == this.pageCount) {
+    if (!this.pagesToPrint_ || this.pagesToPrint_.length === 0 ||
+        this.pagesToPrint_[0] === -1 ||
+        this.pagesToPrint_.length === this.pageCount) {
       return [];
     }
 
@@ -284,7 +284,7 @@ Polymer({
     let to = this.pagesToPrint_[0];
     const ranges = [];
     for (const page of this.pagesToPrint_.slice(1)) {
-      if (page == to + 1) {
+      if (page === to + 1) {
         to = page;
         continue;
       }
@@ -305,7 +305,7 @@ Polymer({
   getNupPages_: function() {
     const pagesPerSheet =
         /** @type {number} */ (this.getSettingValue('pagesPerSheet'));
-    if (pagesPerSheet <= 1 || this.pagesToPrint_.length == 0) {
+    if (pagesPerSheet <= 1 || this.pagesToPrint_.length === 0) {
       return this.pagesToPrint_;
     }
 
@@ -344,7 +344,7 @@ Polymer({
         this.rangesToPrint_,
         /** @type {!Array} */ (this.getSettingValue('ranges')));
     if (rangesChanged ||
-        nupPages.length != this.getSettingValue('pages').length) {
+        nupPages.length !== this.getSettingValue('pages').length) {
       this.setSetting('pages', nupPages);
     }
     if (rangesChanged) {
@@ -381,13 +381,13 @@ Polymer({
    * @private
    */
   getHintMessage_: function() {
-    if (this.errorState_ == PagesInputErrorState.NO_ERROR ||
-        this.errorState_ == PagesInputErrorState.EMPTY) {
+    if (this.errorState_ === PagesInputErrorState.NO_ERROR ||
+        this.errorState_ === PagesInputErrorState.EMPTY) {
       return '';
     }
 
     let formattedMessage = '';
-    if (this.errorState_ == PagesInputErrorState.INVALID_SYNTAX) {
+    if (this.errorState_ === PagesInputErrorState.INVALID_SYNTAX) {
       formattedMessage = loadTimeData.getStringF(
           'pageRangeSyntaxInstruction',
           loadTimeData.getString('examplePageRangeText'));
@@ -403,8 +403,8 @@ Polymer({
    * @private
    */
   hintHidden_: function() {
-    return this.errorState_ == PagesInputErrorState.NO_ERROR ||
-        this.errorState_ == PagesInputErrorState.EMPTY;
+    return this.errorState_ === PagesInputErrorState.NO_ERROR ||
+        this.errorState_ === PagesInputErrorState.EMPTY;
   },
 
   /**

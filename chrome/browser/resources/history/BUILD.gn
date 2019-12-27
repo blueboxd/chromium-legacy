@@ -77,6 +77,7 @@ js_type_check("closure_compile") {
     ":history_toolbar",
     ":query_manager",
     ":router",
+    ":searched_label",
     ":side_bar",
     ":synced_device_card",
     ":synced_device_manager",
@@ -88,15 +89,13 @@ js_library("constants") {
 
 js_library("browser_service") {
   deps = [
+    ":constants",
     ":externs",
     "//ui/webui/resources/js:cr.m",
   ]
 }
 
 js_library("externs") {
-  deps = [
-    ":constants",
-  ]
 }
 
 js_library("history_item") {
@@ -104,9 +103,9 @@ js_library("history_item") {
     ":browser_service",
     ":constants",
     ":externs",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:icon.m",
     "//ui/webui/resources/js:load_time_data.m",
-    "//ui/webui/resources/js:util.m",
     "//ui/webui/resources/js/cr/ui:focus_row_behavior.m",
   ]
 }
@@ -120,6 +119,7 @@ js_library("history_list") {
     "//third_party/polymer/v3_0/components-chromium/iron-a11y-announcer:iron-a11y-announcer",
     "//third_party/polymer/v3_0/components-chromium/iron-list:iron-list",
     "//third_party/polymer/v3_0/components-chromium/iron-scroll-threshold:iron-scroll-threshold",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu.m",
     "//ui/webui/resources/cr_elements/cr_lazy_render:cr_lazy_render.m",
     "//ui/webui/resources/js:assert.m",
@@ -134,6 +134,7 @@ js_library("history_toolbar") {
   deps = [
     ":constants",
     ":externs",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_toolbar:cr_toolbar.m",
     "//ui/webui/resources/cr_elements/cr_toolbar:cr_toolbar_selection_overlay.m",
     "//ui/webui/resources/js:load_time_data.m",
@@ -150,6 +151,7 @@ js_library("app") {
     ":side_bar",
     ":synced_device_card",
     ":synced_device_manager",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_drawer:cr_drawer.m",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:find_shortcut_behavior.m",
@@ -162,6 +164,7 @@ js_library("query_manager") {
     ":browser_service",
     ":externs",
     ":router",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 }
 
@@ -169,6 +172,14 @@ js_library("router") {
   deps = [
     ":constants",
     ":externs",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+}
+
+js_library("searched_label") {
+  deps = [
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:util.m",
   ]
 }
 
@@ -178,6 +189,7 @@ js_library("side_bar") {
     "//third_party/polymer/v3_0/components-chromium/iron-a11y-keys-behavior:iron-a11y-keys-behavior",
     "//third_party/polymer/v3_0/components-chromium/iron-selector:iron-selector",
     "//third_party/polymer/v3_0/components-chromium/paper-ripple:paper-ripple",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:load_time_data.m",
   ]
 }
@@ -187,6 +199,7 @@ js_library("synced_device_card") {
     ":browser_service",
     ":constants",
     ":externs",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:icon.m",
     "//ui/webui/resources/js:load_time_data.m",
     "//ui/webui/resources/js/cr/ui:focus_row.m",
@@ -197,6 +210,7 @@ js_library("synced_device_manager") {
   deps = [
     ":browser_service",
     ":synced_device_card",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu.m",
     "//ui/webui/resources/cr_elements/cr_lazy_render:cr_lazy_render.m",
     "//ui/webui/resources/js:assert.m",

@@ -347,11 +347,12 @@ XrResult OpenXrTestHelper::CreateActionSpace(
 XrPath OpenXrTestHelper::GetPath(std::string path_string) {
   for (auto it = paths_.begin(); it != paths_.end(); it++) {
     if (it->compare(path_string) == 0) {
-      return it - paths_.begin();
+      return it - paths_.begin() + 1;
     }
   }
   paths_.emplace_back(path_string);
-  return paths_.size() - 1;
+  // path can't be 0 since 0 is reserved for XR_NULL_HANDLE
+  return paths_.size();
 }
 
 XrPath OpenXrTestHelper::GetCurrentInteractionProfile() {
@@ -763,7 +764,7 @@ void OpenXrTestHelper::LocateSpace(XrSpace space, XrPosef* pose) {
 }
 
 std::string OpenXrTestHelper::PathToString(XrPath path) const {
-  return paths_[path];
+  return paths_[path - 1];
 }
 
 bool OpenXrTestHelper::UpdateData() {
@@ -927,7 +928,7 @@ XrResult OpenXrTestHelper::ValidateSpace(XrSpace space) const {
 }
 
 XrResult OpenXrTestHelper::ValidatePath(XrPath path) const {
-  RETURN_IF(path >= paths_.size(), XR_ERROR_PATH_INVALID, "XrPath invalid");
+  RETURN_IF(path > paths_.size(), XR_ERROR_PATH_INVALID, "XrPath invalid");
   return XR_SUCCESS;
 }
 

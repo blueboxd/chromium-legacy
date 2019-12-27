@@ -40,6 +40,6 @@ export class Coordinate2d {
    * @return {boolean} Whether another point is equal to this one.
    */
   equals(other) {
-    return other != null && this.x_ == other.x_ && this.y_ == other.y_;
+    return other !== null && this.x_ === other.x_ && this.y_ === other.y_;
   }
 }

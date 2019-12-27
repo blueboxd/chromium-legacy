@@ -5,6 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_INFOBAR_BANNER_SAVE_PASSWORD_INFOBAR_BANNER_OVERLAY_H_
 #define IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_INFOBAR_BANNER_SAVE_PASSWORD_INFOBAR_BANNER_OVERLAY_H_
 
+#include "ios/chrome/browser/overlays/public/overlay_request_config.h"
 #include "ios/chrome/browser/overlays/public/overlay_user_data.h"
 
 namespace infobars {
@@ -15,7 +16,8 @@ class IOSChromeSavePasswordInfoBarDelegate;
 // Configuration object for OverlayRequests for the banner UI for an InfoBar
 // with a IOSChromeSavePasswordInfoBarDelegate.
 class SavePasswordInfobarBannerOverlayRequestConfig
-    : public OverlayUserData<SavePasswordInfobarBannerOverlayRequestConfig> {
+    : public OverlayRequestConfig<
+          SavePasswordInfobarBannerOverlayRequestConfig> {
  public:
   ~SavePasswordInfobarBannerOverlayRequestConfig() override;
 

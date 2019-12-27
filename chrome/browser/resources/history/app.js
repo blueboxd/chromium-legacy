@@ -205,7 +205,9 @@ Polymer({
         'foreign-sessions-changed',
         sessionList => this.setForeignSessions_(sessionList));
     this.browserService_ = BrowserService.getInstance();
-    this.$$('history-query-manager').initialize();
+    /** @type {!HistoryQueryManagerElement} */ (
+        this.$$('history-query-manager'))
+        .initialize();
     this.browserService_.getForeignSessions().then(
         sessionList => this.setForeignSessions_(sessionList));
   },

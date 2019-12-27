@@ -7,6 +7,7 @@
 #import <UIKit/UIKit.h>
 
 #import "base/test/ios/wait_util.h"
+#import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_switcher.h"
 #import "ios/chrome/test/block_cleanup_test.h"
 #include "testing/gtest_mac.h"
@@ -40,9 +41,11 @@ class TabGridCoordinatorTest : public BlockCleanupTest {
   TabGridCoordinatorTest() {
     UIWindow* window = [UIApplication sharedApplication].keyWindow;
     coordinator_ = [[TabGridCoordinator alloc]
-                    initWithWindow:window
-        applicationCommandEndpoint:OCMProtocolMock(
-                                       @protocol(ApplicationCommands))];
+                     initWithWindow:window
+         applicationCommandEndpoint:OCMProtocolMock(
+                                        @protocol(ApplicationCommands))
+        browsingDataCommandEndpoint:OCMProtocolMock(
+                                        @protocol(BrowsingDataCommands))];
     coordinator_.animationsDisabledForTesting = YES;
     // TabGirdCoordinator will make its view controller the root, so stash the
     // original root view controller before starting |coordinator_|.

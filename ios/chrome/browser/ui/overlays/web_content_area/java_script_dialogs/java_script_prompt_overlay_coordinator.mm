@@ -15,10 +15,10 @@
 
 @implementation JavaScriptPromptOverlayCoordinator
 
-#pragma mark - OverlayCoordinator
+#pragma mark - OverlayRequestCoordinator
 
-+ (BOOL)supportsRequest:(OverlayRequest*)request {
-  return !!request->GetConfig<JavaScriptPromptOverlayRequestConfig>();
++ (const OverlayRequestSupport*)requestSupport {
+  return JavaScriptPromptOverlayRequestConfig::RequestSupport();
 }
 
 @end

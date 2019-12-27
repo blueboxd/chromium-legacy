@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_alert_overlay_coordinator.h"
 
 #import "ios/chrome/browser/overlays/public/overlay_request.h"
+#include "ios/chrome/browser/overlays/public/overlay_request_support.h"
 #import "ios/chrome/browser/overlays/public/web_content_area/java_script_alert_overlay.h"
 #import "ios/chrome/browser/ui/overlays/common/alerts/alert_overlay_coordinator+alert_mediator_creation.h"
 #import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_alert_overlay_mediator.h"
@@ -17,8 +18,8 @@
 
 #pragma mark - OverlayRequestCoordinator
 
-+ (BOOL)supportsRequest:(OverlayRequest*)request {
-  return !!request->GetConfig<JavaScriptAlertOverlayRequestConfig>();
++ (const OverlayRequestSupport*)requestSupport {
+  return JavaScriptAlertOverlayRequestConfig::RequestSupport();
 }
 
 @end

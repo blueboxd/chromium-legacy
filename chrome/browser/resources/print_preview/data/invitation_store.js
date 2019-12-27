@@ -81,7 +81,7 @@ export class InvitationStore extends EventTarget {
    *     to set.
    */
   setCloudPrintInterface(cloudPrintInterface) {
-    assert(this.cloudPrintInterface_ == null);
+    assert(this.cloudPrintInterface_ === null);
     this.cloudPrintInterface_ = cloudPrintInterface;
     this.tracker_.add(
         this.cloudPrintInterface_.getEventTarget(),
@@ -112,7 +112,7 @@ export class InvitationStore extends EventTarget {
       return;
     }
     if (this.loadStatus_.hasOwnProperty(user)) {
-      if (this.loadStatus_[user] == InvitationStoreLoadStatus.DONE) {
+      if (this.loadStatus_[user] === InvitationStoreLoadStatus.DONE) {
         this.dispatchEvent(
             new CustomEvent(InvitationStore.EventType.INVITATION_SEARCH_DONE));
       }
@@ -145,10 +145,10 @@ export class InvitationStore extends EventTarget {
     if (this.invitations_.hasOwnProperty(invitation.account)) {
       this.invitations_[invitation.account] =
           this.invitations_[invitation.account].filter(function(i) {
-            return i != invitation;
+            return i !== invitation;
           });
     }
-    if (this.invitationInProgress_ == invitation) {
+    if (this.invitationInProgress_ === invitation) {
       this.invitationInProgress_ = null;
     }
   }

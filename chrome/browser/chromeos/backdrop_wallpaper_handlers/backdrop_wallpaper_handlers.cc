@@ -12,6 +12,7 @@
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/common/extensions/api/wallpaper_private.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/devicetype.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "url/gurl.h"
@@ -38,6 +39,9 @@ constexpr char kBackdropSurpriseMeImageUrl[] =
 
 // The label used to return exclusive content or filter unwanted images.
 constexpr char kFilteringLabel[] = "chromebook";
+
+// The label used to return exclusive content for Google branded chromebooks.
+constexpr char kGoogleDeviceFilteringLabel[] = "google_branded_chromebook";
 
 // Returns the corresponding test url if |kTestWallpaperServer| is present,
 // otherwise returns |url| as is. See https://crbug.com/914144.
@@ -146,6 +150,8 @@ void CollectionInfoFetcher::Start(OnCollectionsInfoFetched callback) {
   // The language field may include the country code (e.g. "en-US").
   request.set_language(g_browser_process->GetApplicationLocale());
   request.add_filtering_label(kFilteringLabel);
+  if (chromeos::IsGoogleBrandedDevice())
+    request.add_filtering_label(kGoogleDeviceFilteringLabel);
   std::string serialized_proto;
   request.SerializeToString(&serialized_proto);
 
@@ -217,6 +223,8 @@ void ImageInfoFetcher::Start(OnImagesInfoFetched callback) {
   request.set_language(g_browser_process->GetApplicationLocale());
   request.set_collection_id(collection_id_);
   request.add_filtering_label(kFilteringLabel);
+  if (chromeos::IsGoogleBrandedDevice())
+    request.add_filtering_label(kGoogleDeviceFilteringLabel);
   std::string serialized_proto;
   request.SerializeToString(&serialized_proto);
 
@@ -288,6 +296,8 @@ void SurpriseMeImageFetcher::Start(OnSurpriseMeImageFetched callback) {
   request.set_language(g_browser_process->GetApplicationLocale());
   request.add_collection_ids(collection_id_);
   request.add_filtering_label(kFilteringLabel);
+  if (chromeos::IsGoogleBrandedDevice())
+    request.add_filtering_label(kGoogleDeviceFilteringLabel);
   if (!resume_token_.empty())
     request.set_resume_token(resume_token_);
   std::string serialized_proto;

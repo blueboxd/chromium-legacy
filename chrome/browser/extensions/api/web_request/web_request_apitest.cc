@@ -521,12 +521,21 @@ class ExtensionWebRequestApiAuthRequiredTest
     : public ExtensionWebRequestApiTest,
       public testing::WithParamInterface<ProfileMode> {
  public:
-  int GetFlags() {
+  int GetBrowserTestFlags() {
     switch (GetParam()) {
       case ProfileMode::kUserProfile:
         return kFlagEnableFileAccess;
       case ProfileMode::kIncognito:
-        return kFlagEnableIncognito | kFlagUseIncognito | kFlagEnableFileAccess;
+        return kFlagEnableIncognito | kFlagEnableFileAccess;
+    }
+  }
+
+  int GetApiTestFlags() {
+    switch (GetParam()) {
+      case ProfileMode::kUserProfile:
+        return kFlagNone;
+      case ProfileMode::kIncognito:
+        return kFlagUseIncognito;
     }
   }
 };
@@ -540,7 +549,8 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiAuthRequiredTest,
 
   // Pass "debug" as a custom arg to debug test flakiness.
   ASSERT_TRUE(RunExtensionSubtestWithArgAndFlags(
-      "webrequest", "test_auth_required.html", "debug", GetFlags()))
+      "webrequest", "test_auth_required.html", "debug", GetBrowserTestFlags(),
+      GetApiTestFlags()))
       << message_;
 }
 
@@ -554,7 +564,8 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiAuthRequiredTest,
 
   // Pass "debug" as a custom arg to debug test flakiness.
   ASSERT_TRUE(RunExtensionSubtestWithArgAndFlags(
-      "webrequest", "test_auth_required_async.html", "debug", GetFlags()))
+      "webrequest", "test_auth_required_async.html", "debug",
+      GetBrowserTestFlags(), GetApiTestFlags()))
       << message_;
 }
 
@@ -566,7 +577,8 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiAuthRequiredTest,
 
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionSubtestWithArgAndFlags(
-      "webrequest", "test_auth_required_parallel.html", nullptr, GetFlags()))
+      "webrequest", "test_auth_required_parallel.html", nullptr,
+      GetBrowserTestFlags(), GetApiTestFlags()))
       << message_;
 }
 
@@ -2913,7 +2925,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, Initiator_SplitIncognito) {
                                                         will_reply);
   const Extension* extension = LoadExtensionWithFlags(
       test_data_dir_.AppendASCII("webrequest").AppendASCII("initiator_split"),
-      ExtensionBrowserTest::kFlagEnableIncognito);
+      kFlagEnableIncognito);
   ASSERT_TRUE(extension);
   EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
 

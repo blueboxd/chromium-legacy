@@ -130,10 +130,10 @@ Polymer({
         this.i18nAdvanced('cloudPrintPromotion', {
           substitutions: ['<a is="action-link" class="sign-in">', '</a>'],
           attrs: {
-            'is': (node, v) => v == 'action-link',
-            'class': (node, v) => v == 'sign-in',
-            'tabindex': (node, v) => v == '0',
-            'role': (node, v) => v == 'link',
+            'is': (node, v) => v === 'action-link',
+            'class': (node, v) => v === 'sign-in',
+            'tabindex': (node, v) => v === '0',
+            'role': (node, v) => v === 'link',
           },
         });
   },
@@ -156,7 +156,7 @@ Polymer({
   onKeydown_: function(e) {
     e.stopPropagation();
     const searchInput = this.$.searchBox.getSearchInput();
-    if (e.key == 'Escape' &&
+    if (e.key === 'Escape' &&
         (e.composedPath()[0] !== searchInput || !searchInput.value.trim())) {
       this.$.dialog.cancel();
       e.preventDefault();
@@ -165,7 +165,7 @@ Polymer({
 
   /** @private */
   onDestinationStoreSet_: function() {
-    assert(this.destinations_.length == 0);
+    assert(this.destinations_.length === 0);
     const destinationStore = assert(this.destinationStore);
     this.tracker_.add(
         destinationStore, DestinationStore.EventType.DESTINATIONS_INSERTED,
@@ -357,7 +357,7 @@ Polymer({
     const invitations = this.activeUser ?
         this.invitationStore.invitations(this.activeUser) :
         [];
-    if (this.invitation_ != invitations[0]) {
+    if (this.invitation_ !== invitations[0]) {
       this.metrics_.record(
           Metrics.DestinationSearchBucket.INVITATION_AVAILABLE);
     }

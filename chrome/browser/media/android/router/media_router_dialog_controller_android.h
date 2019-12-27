@@ -53,7 +53,8 @@ class MediaRouterDialogControllerAndroid
       content::WebContents* web_contents);
 
   // MediaRouterDialogController:
-  void CreateMediaRouterDialog() override;
+  void CreateMediaRouterDialog(
+      MediaRouterDialogOpenOrigin activation_location) override;
   void CloseMediaRouterDialog() override;
   bool IsShowingMediaRouterDialog() const override;
 

@@ -111,8 +111,7 @@ void ExtensionProtocolTestResourcesHandler(const base::FilePath& test_dir_root,
 }  // namespace
 
 ExtensionBrowserTest::ExtensionBrowserTest()
-    : loaded_(false),
-      installed_(false),
+    :
 #if defined(OS_CHROMEOS)
       set_chromeos_user_(true),
 #endif
@@ -257,13 +256,15 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithInstallParam(
     const base::FilePath& path,
     int flags,
     const std::string& install_param) {
+  // Make sure there aren't any stray bits in "flags." This could happen
+  // if someone inadvertently used any of the ExtensionApiTest flag values.
+  CHECK_LT(flags, kFlagNextValue);
   ChromeTestExtensionLoader loader(profile());
   loader.set_require_modern_manifest_version(
       (flags & kFlagAllowOldManifestVersions) == 0);
-  loader.set_ignore_manifest_warnings(
-      (flags & kFlagIgnoreManifestWarnings) != 0);
-  loader.set_allow_incognito_access((flags & kFlagEnableIncognito) != 0);
-  loader.set_allow_file_access((flags & kFlagEnableFileAccess) != 0);
+  loader.set_ignore_manifest_warnings(flags & kFlagIgnoreManifestWarnings);
+  loader.set_allow_incognito_access(flags & kFlagEnableIncognito);
+  loader.set_allow_file_access(flags & kFlagEnableFileAccess);
   loader.set_install_param(install_param);
   if ((flags & kFlagLoadForLoginScreen) != 0) {
     loader.add_creation_flag(Extension::FOR_LOGIN_SCREEN);
@@ -437,11 +438,6 @@ const Extension* ExtensionBrowserTest::LoadAndLaunchApp(
 
 Browser* ExtensionBrowserTest::LaunchAppBrowser(const Extension* extension) {
   return browsertest_util::LaunchAppBrowser(profile(), extension);
-}
-
-Browser* ExtensionBrowserTest::LaunchBrowserForAppInTab(
-    const Extension* extension) {
-  return browsertest_util::LaunchBrowserForAppInTab(profile(), extension);
 }
 
 base::FilePath ExtensionBrowserTest::PackExtension(

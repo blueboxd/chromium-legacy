@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "ios/chrome/browser/overlays/public/overlay_callback_manager.h"
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
+#include "ios/chrome/browser/overlays/public/overlay_request_support.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -27,6 +28,13 @@
         [self requestCompletionCallback]);
   }
   return self;
+}
+
+#pragma mark - Public
+
++ (const OverlayRequestSupport*)requestSupport {
+  NOTREACHED() << "Subclasses implement.";
+  return OverlayRequestSupport::None();
 }
 
 #pragma mark - Private

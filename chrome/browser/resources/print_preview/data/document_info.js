@@ -190,7 +190,7 @@ Polymer({
    * @private
    */
   onPageCountReady_: function(pageCount, previewResponseId, fitToPageScaling) {
-    if (this.inFlightRequestId != previewResponseId || !this.isInitialized_) {
+    if (this.inFlightRequestId !== previewResponseId || !this.isInitialized_) {
       return;
     }
     this.set('documentSettings.pageCount', pageCount);

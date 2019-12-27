@@ -253,23 +253,35 @@ void IntersectionGeometry::ComputeGeometry(const RootGeometry& root_geometry,
   //   intersection_rect_ is in target's coordinate system
   //   root_rect_ is in root's coordinate system
   target_rect_ = InitializeTargetRect(target, flags_);
-  intersection_rect_ = target_rect_;
+  intersection_rect_ = unclipped_intersection_rect_ = target_rect_;
   root_rect_ = root_geometry.local_root_rect;
 
   // This maps intersection_rect_ up to root's coordinate system
   bool does_intersect =
-      ClipToRoot(root, target, root_rect_, intersection_rect_);
+      ClipToRoot(root, target, root_rect_, unclipped_intersection_rect_,
+                 intersection_rect_);
 
   // Map target_rect_ to absolute coordinates for target's document
   target_rect_ = target->LocalToAncestorRect(target_rect_, nullptr);
   if (does_intersect) {
     if (RootIsImplicit()) {
+      // Generate matrix to transform from the space of the implicit root to
+      // the absolute coordinates of the target document.
+      TransformState implicit_root_to_target_document_transform(
+          TransformState::kUnapplyInverseTransformDirection);
+      target->GetDocument().GetLayoutView()->MapAncestorToLocal(
+          nullptr, implicit_root_to_target_document_transform,
+          kTraverseDocumentBoundaries | kApplyRemoteRootFrameOffset);
+      TransformationMatrix matrix =
+          implicit_root_to_target_document_transform.AccumulatedTransform()
+              .Inverse();
+      intersection_rect_ = PhysicalRect::EnclosingRect(
+          matrix.ProjectQuad(FloatRect(intersection_rect_)).BoundingBox());
+      unclipped_intersection_rect_ = PhysicalRect::EnclosingRect(
+          matrix.ProjectQuad(FloatRect(unclipped_intersection_rect_))
+              .BoundingBox());
       // intersection_rect_ is in the coordinate system of the implicit root;
       // map it down the to absolute coordinates for the target's document.
-      intersection_rect_ =
-          target->GetDocument().GetLayoutView()->AbsoluteToLocalRect(
-              intersection_rect_,
-              kTraverseDocumentBoundaries | kApplyRemoteRootFrameOffset);
     } else {
       // intersection_rect_ is in root's coordinate system; map it up to
       // absolute coordinates for target's containing document (which is the
@@ -277,6 +289,10 @@ void IntersectionGeometry::ComputeGeometry(const RootGeometry& root_geometry,
       intersection_rect_ = PhysicalRect::EnclosingRect(
           root_geometry.root_to_document_transform
               .MapQuad(FloatQuad(FloatRect(intersection_rect_)))
+              .BoundingBox());
+      unclipped_intersection_rect_ = PhysicalRect::EnclosingRect(
+          root_geometry.root_to_document_transform
+              .MapQuad(FloatQuad(FloatRect(unclipped_intersection_rect_)))
               .BoundingBox());
     }
   } else {
@@ -343,6 +359,7 @@ void IntersectionGeometry::ComputeGeometry(const RootGeometry& root_geometry,
 bool IntersectionGeometry::ClipToRoot(const LayoutObject* root,
                                       const LayoutObject* target,
                                       const PhysicalRect& root_rect,
+                                      PhysicalRect& unclipped_intersection_rect,
                                       PhysicalRect& intersection_rect) {
   // Map and clip rect into root element coordinates.
   // TODO(szager): the writing mode flipping needs a test.
@@ -352,35 +369,56 @@ bool IntersectionGeometry::ClipToRoot(const LayoutObject* root,
 
   const LayoutView* layout_view = target->GetDocument().GetLayoutView();
 
-  unsigned flags = kDefaultVisualRectFlags | kEdgeInclusive;
+  unsigned flags = kDefaultVisualRectFlags | kEdgeInclusive |
+                   kDontApplyMainFrameOverflowClip;
   if (!layout_view->NeedsPaintPropertyUpdate() &&
       !layout_view->DescendantNeedsPaintPropertyUpdate()) {
     flags |= kUseGeometryMapper;
   }
   bool does_intersect = target->MapToVisualRectInAncestorSpace(
-      local_ancestor, intersection_rect, static_cast<VisualRectFlags>(flags));
+      local_ancestor, unclipped_intersection_rect,
+      static_cast<VisualRectFlags>(flags));
 
-  // Note that this early-return for (!local_ancestor) skips clipping to the
-  // root_rect. That's ok because the only scenario where local_ancestor is
-  // null is an implicit root and running inside an OOPIF, in which case there
-  // can't be any root margin applied to root_rect (root margin is disallowed
-  // for implicit-root cross-origin observation). So the default behavior of
-  // MapToVisualRectInAncestorSpace will have already done the right thing WRT
-  // clipping to the implicit root.
-  if (!does_intersect || !local_ancestor)
-    return does_intersect;
+  intersection_rect = PhysicalRect();
 
-  if (local_ancestor->HasOverflowClip()) {
-    intersection_rect.Move(
-        -PhysicalOffset(LayoutPoint(local_ancestor->ScrollOrigin()) +
-                        local_ancestor->PixelSnappedScrolledContentOffset()));
+  // If the target intersects with the unclipped root, calculate the clipped
+  // intersection.
+  if (does_intersect) {
+    intersection_rect = unclipped_intersection_rect;
+    if (local_ancestor) {
+      if (local_ancestor->HasOverflowClip()) {
+        PhysicalOffset scroll_offset = -PhysicalOffset(
+            LayoutPoint(local_ancestor->ScrollOrigin()) +
+            local_ancestor->PixelSnappedScrolledContentOffset());
+        intersection_rect.Move(scroll_offset);
+        unclipped_intersection_rect.Move(scroll_offset);
+      }
+      LayoutRect root_clip_rect = root_rect.ToLayoutRect();
+      // TODO(szager): This flipping seems incorrect because root_rect is
+      // already physical.
+      local_ancestor->DeprecatedFlipForWritingMode(root_clip_rect);
+      does_intersect &=
+          intersection_rect.InclusiveIntersect(PhysicalRect(root_clip_rect));
+    } else {
+      // Note that we don't clip to root_rect here. That's ok because
+      // (!local_ancestor) implies that the root is implicit and the
+      // main frame is remote, in which case there can't be any root margin
+      // applied to root_rect (root margin is disallowed for implicit-root
+      // cross-origin observation). We still need to apply the remote main
+      // frame's overflow clip here, because the
+      // kDontApplyMainFrameOverflowClip flag above, means it hasn't been
+      // done yet.
+      LocalFrame* local_root_frame = root->GetDocument().GetFrame();
+      IntRect clip_rect(local_root_frame->RemoteViewportIntersection());
+      // Map clip_rect from the coordinate system of the local root frame to
+      // the coordinate system of the remote main frame.
+      clip_rect.MoveBy(local_root_frame->RemoteViewportOffset());
+      does_intersect &=
+          intersection_rect.InclusiveIntersect(PhysicalRect(clip_rect));
+    }
   }
-  LayoutRect root_clip_rect = root_rect.ToLayoutRect();
-  // TODO(szager): This flipping seems incorrect because root_rect is already
-  // physical.
-  local_ancestor->DeprecatedFlipForWritingMode(root_clip_rect);
-  return does_intersect &
-         intersection_rect.InclusiveIntersect(PhysicalRect(root_clip_rect));
+
+  return does_intersect;
 }
 
 unsigned IntersectionGeometry::FirstThresholdGreaterThan(

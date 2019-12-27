@@ -253,11 +253,13 @@ body:not(.reordering) .md-menu:focus:not(.mouse-navigation) {
 
 /* We use ::after without content to provide the masked X element. */
 .md-menu::after {
-  --mask-width: calc(var(--md-menu-size) - 2);
+  --mask-gap: 1px;
+  --mask-width: calc(var(--md-menu-size) - 2 * var(--mask-gap));
   /* TODO(crbug.com/1012065): Use SVG for the "X" icon. */
   -webkit-mask-image: -webkit-image-set(
       url(chrome-search://most-visited/dont_show.png) 1x,
       url(chrome-search://most-visited/dont_show_2x.png) 2x);
+  -webkit-mask-position: var(--mask-gap);
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: var(--mask-width);
   background-color: rgb(var(--GG600-rgb));

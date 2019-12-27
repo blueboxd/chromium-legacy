@@ -2,22 +2,47 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
+/**
+ * The prefix of image files.
+ * @type {string}
+ */
+export const IMAGE_PREFIX = 'IMG_';
 
 /**
- * Namespace for the Camera app.
+ * The prefix of video files.
+ * @type {string}
  */
-var cca = cca || {};
+export const VIDEO_PREFIX = 'VID_';
 
 /**
- * Namespace for models.
+ * The suffix of burst image files.
+ * @type {string}
  */
-cca.models = cca.models || {};
+const BURST_SUFFIX = '_BURST';
+
+/**
+ * The suffix of cover image for a series of burst image files.
+ * @type {string}
+ */
+const BURST_COVER_SUFFIX = '_COVER';
+
+/**
+ * Transforms from capture timestamp to datetime name.
+ * @param {number} timestamp Timestamp to be transformed.
+ * @return {string} Transformed datetime name.
+ */
+function timestampToDatetimeName(timestamp) {
+  const pad = (n) => (n < 10 ? '0' : '') + n;
+  var date = new Date(timestamp);
+  return date.getFullYear() + pad(date.getMonth() + 1) + pad(date.getDate()) +
+      '_' + pad(date.getHours()) + pad(date.getMinutes()) +
+      pad(date.getSeconds());
+}
 
 /**
  * Filenamer for single camera session.
  */
-cca.models.Filenamer = class {
+export class Filenamer {
   /**
    * @param {number=} timestamp Timestamp of camera session.
    */
@@ -47,11 +72,9 @@ cca.models.Filenamer = class {
       n = n + '';
       return new Array(Math.max(0, width - n.length) + 1).join('0') + n;
     };
-    return cca.models.Filenamer.IMAGE_PREFIX +
-        this.constructor.timestampToDatetimeName_(this.timestamp_) +
-        cca.models.Filenamer.BURST_SUFFIX +
-        prependZeros(++this.burstCount_, 5) +
-        (isCover ? cca.models.Filenamer.BURST_COVER_SUFFIX : '') + '.jpg';
+    return IMAGE_PREFIX + timestampToDatetimeName(this.timestamp_) +
+        BURST_SUFFIX + prependZeros(++this.burstCount_, 5) +
+        (isCover ? BURST_COVER_SUFFIX : '') + '.jpg';
   }
 
   /**
@@ -59,8 +82,7 @@ cca.models.Filenamer = class {
    * @return {string} New filename.
    */
   newVideoName() {
-    return cca.models.Filenamer.VIDEO_PREFIX +
-        this.constructor.timestampToDatetimeName_(this.timestamp_) + '.mkv';
+    return VIDEO_PREFIX + timestampToDatetimeName(this.timestamp_) + '.mkv';
   }
 
   /**
@@ -68,22 +90,7 @@ cca.models.Filenamer = class {
    * @return {string} New filename.
    */
   newImageName() {
-    return cca.models.Filenamer.IMAGE_PREFIX +
-        this.constructor.timestampToDatetimeName_(this.timestamp_) + '.jpg';
-  }
-
-  /**
-   * Transforms from capture timestamp to datetime name.
-   * @param {number} timestamp Timestamp to be transformed.
-   * @return {string} Transformed datetime name.
-   * @private
-   */
-  static timestampToDatetimeName_(timestamp) {
-    const pad = (n) => (n < 10 ? '0' : '') + n;
-    var date = new Date(timestamp);
-    return date.getFullYear() + pad(date.getMonth() + 1) + pad(date.getDate()) +
-        '_' + pad(date.getHours()) + pad(date.getMinutes()) +
-        pad(date.getSeconds());
+    return IMAGE_PREFIX + timestampToDatetimeName(this.timestamp_) + '.jpg';
   }
 
   /**
@@ -94,32 +101,11 @@ cca.models.Filenamer = class {
   static getMetadataName(imageName) {
     return imageName.replace(/\.[^/.]+$/, '.json');
   }
-};
+}
 
-/**
- * The prefix of image files.
- * @type {string}
- * @const
- */
-cca.models.Filenamer.IMAGE_PREFIX = 'IMG_';
-
-/**
- * The prefix of video files.
- * @type {string}
- * @const
- */
-cca.models.Filenamer.VIDEO_PREFIX = 'VID_';
-
-/**
- * The suffix of burst image files.
- * @type {string}
- * @const
- */
-cca.models.Filenamer.BURST_SUFFIX = '_BURST';
-
-/**
- * The suffix of cover image for a series of burst image files.
- * @type {string}
- * @const
- */
-cca.models.Filenamer.BURST_COVER_SUFFIX = '_COVER';
+/** @const */
+cca.models.Filenamer = Filenamer;
+/** @const */
+cca.models.Filenamer.IMAGE_PREFIX = IMAGE_PREFIX;
+/** @const */
+cca.models.Filenamer.VIDEO_PREFIX = VIDEO_PREFIX;

@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/strings/string_split.h"
 #include "base/system/sys_info.h"
 
 namespace chromeos {
@@ -31,6 +32,21 @@ DeviceType GetDeviceType() {
   }
 
   return DeviceType::kUnknown;
+}
+
+bool IsGoogleBrandedDevice() {
+  // Refer to comment describing base::SysInfo::GetLsbReleaseBoard for why
+  // splitting the Lsb Release Board string is needed.
+  std::vector<std::string> board =
+      base::SplitString(base::SysInfo::GetLsbReleaseBoard(), "-",
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  if (board.empty())
+    return false;
+
+  // TODO(crbug/966108): This method of determining board names will leak
+  // hardware codenames.  Unreleased boards should NOT be included in this list.
+  return board[0] == "nocturne" || board[0] == "eve" || board[0] == "atlas" ||
+         board[0] == "samus";
 }
 
 }  // namespace chromeos

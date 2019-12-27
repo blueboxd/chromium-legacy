@@ -159,7 +159,7 @@ Polymer({
    * @private
    */
   computeControlsDisabled_: function() {
-    return this.state != State.READY;
+    return this.state !== State.READY;
   },
 
   /**

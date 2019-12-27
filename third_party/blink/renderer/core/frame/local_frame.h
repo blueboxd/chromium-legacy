@@ -347,6 +347,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
   IntRect RemoteViewportIntersection() const {
     return intersection_state_.viewport_intersection;
   }
+  IntRect RemoteMainFrameDocumentIntersection() const {
+    return intersection_state_.main_frame_document_intersection;
+  }
   FrameOcclusionState GetOcclusionState() const;
   bool NeedsOcclusionTracking() const;
 

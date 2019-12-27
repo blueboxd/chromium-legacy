@@ -12,6 +12,7 @@
 #include "base/optional.h"
 
 #include "device/vr/openxr/openxr_controller.h"
+#include "device/vr/openxr/openxr_interaction_profiles.h"
 
 namespace device {
 

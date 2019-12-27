@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/overlays/overlay_request_coordinator.h"
 
 #include "base/logging.h"
+#include "ios/chrome/browser/overlays/public/overlay_request_support.h"
 #import "ios/chrome/browser/ui/overlays/overlay_request_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/overlays/overlay_request_mediator.h"
 
@@ -29,8 +30,9 @@
   [self stopAnimated:NO];
 }
 
-+ (BOOL)supportsRequest:(OverlayRequest*)request {
-  return NO;
++ (const OverlayRequestSupport*)requestSupport {
+  NOTREACHED() << "Subclasses implement.";
+  return OverlayRequestSupport::None();
 }
 
 + (BOOL)showsOverlayUsingChildViewController {
@@ -42,7 +44,7 @@
                                    request:(OverlayRequest*)request
                                   delegate:(OverlayRequestCoordinatorDelegate*)
                                                delegate {
-  DCHECK([[self class] supportsRequest:request]);
+  DCHECK([self class].requestSupport->IsRequestSupported(request));
   self = [super initWithBaseViewController:viewController browser:browser];
   if (self) {
     _request = request;

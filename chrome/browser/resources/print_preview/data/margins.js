@@ -105,11 +105,11 @@ export class Margins {
    * @return {boolean} Whether this margins object is equal to another.
    */
   equals(other) {
-    if (other == null) {
+    if (other === null) {
       return false;
     }
     for (const orientation in this.value_) {
-      if (this.value_[orientation] != other.value_[orientation]) {
+      if (this.value_[orientation] !== other.value_[orientation]) {
         return false;
       }
     }

@@ -505,7 +505,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTestForRequestFileSystem,
   ScopedSkipRequestFileSystemDialog dialog_skipper(ui::DIALOG_BUTTON_CANCEL);
   ASSERT_TRUE(RunPlatformAppTestWithFlags(
       "api_test/file_system/request_file_system_whitelisted_component",
-      kFlagLoadAsComponent))
+      kFlagNone, kFlagLoadAsComponent))
       << message_;
 }
 
@@ -514,7 +514,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTestForRequestFileSystem,
   ScopedSkipRequestFileSystemDialog dialog_skipper(ui::DIALOG_BUTTON_OK);
   ASSERT_TRUE(RunPlatformAppTestWithFlags(
       "api_test/file_system/request_file_system_not_whitelisted_component",
-      kFlagLoadAsComponent))
+      kFlagNone, kFlagLoadAsComponent))
       << message_;
 }
 
@@ -549,7 +549,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTestForRequestFileSystem,
                        WhitelistedExtensionForDownloads) {
   ScopedSkipRequestFileSystemDialog dialog_skipper(ui::DIALOG_BUTTON_CANCEL);
   ASSERT_TRUE(RunPlatformAppTestWithFlags(
-      "api_test/file_system/request_downloads_whitelisted_extension",
+      "api_test/file_system/request_downloads_whitelisted_extension", kFlagNone,
       kFlagLaunchPlatformApp))
       << message_;
 }

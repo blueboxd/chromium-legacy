@@ -53,6 +53,7 @@ void NavigationHandleObserver::DidFinishNavigation(
   net_error_code_ = navigation_handle->GetNetErrorCode();
   is_download_ = navigation_handle->IsDownload();
   auth_challenge_info_ = navigation_handle->GetAuthChallengeInfo();
+  resolve_error_info_ = navigation_handle->GetResolveErrorInfo();
 
   if (navigation_handle->HasCommitted()) {
     has_committed_ = true;

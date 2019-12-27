@@ -46,7 +46,7 @@ OpenXrController::OpenXrController()
       grip_pose_space_(XR_NULL_HANDLE),
       pointer_pose_action_(XR_NULL_HANDLE),
       pointer_pose_space_(XR_NULL_HANDLE),
-      interaction_profile_(XR_NULL_PATH) {}
+      interaction_profile_(OpenXrInteractionProfileType::kCount) {}
 
 OpenXrController::~OpenXrController() {
   // We don't need to destroy all of the actions because destroying an
@@ -94,46 +94,31 @@ XrResult OpenXrController::Initialize(
 
   RETURN_IF_XR_FAILED(InitializeControllerActions());
 
-  // TODO(crbug.com/1017513)
-  // Right now only Microsoft motion controller along with the underlying
-  // Khronos interaction profile can be used. Implement OpenXR input for other
-  // runtimes when they become available.
-  RETURN_IF_XR_FAILED(SuggestMicrosoftMotionControllerBindings(bindings));
-  RETURN_IF_XR_FAILED(SuggestKHRSimpleControllerBindings(bindings));
-
+  SuggestBindings(bindings);
   RETURN_IF_XR_FAILED(InitializeControllerSpaces());
 
   return XR_SUCCESS;
 }
 
 XrResult OpenXrController::InitializeControllerActions() {
+  RETURN_IF_XR_FAILED(CreateActionsForButton(OpenXrButtonType::kTrigger));
+  RETURN_IF_XR_FAILED(CreateActionsForButton(OpenXrButtonType::kSqueeze));
+  RETURN_IF_XR_FAILED(CreateActionsForButton(OpenXrButtonType::kTrackpad));
+  RETURN_IF_XR_FAILED(CreateActionsForButton(OpenXrButtonType::kThumbstick));
+  RETURN_IF_XR_FAILED(CreateActionsForButton(OpenXrButtonType::kThumbrest));
+  RETURN_IF_XR_FAILED(CreateActionsForButton(OpenXrButtonType::kButton1));
+  RETURN_IF_XR_FAILED(CreateActionsForButton(OpenXrButtonType::kButton2));
+
   const std::string type_string = GetStringFromType(type_);
   const std::string name_prefix = type_string + "_controller_";
-
-  RETURN_IF_XR_FAILED(CreateAction(
-      XR_ACTION_TYPE_BOOLEAN_INPUT, name_prefix + "trigger_button_press",
-      &(button_action_map_[OpenXrButtonType::kTrigger].press_action)));
-  RETURN_IF_XR_FAILED(CreateAction(
-      XR_ACTION_TYPE_FLOAT_INPUT, name_prefix + "trigger_button_value",
-      &(button_action_map_[OpenXrButtonType::kTrigger].value_action)));
-  RETURN_IF_XR_FAILED(CreateAction(
-      XR_ACTION_TYPE_BOOLEAN_INPUT, name_prefix + "thumbstick_button_press",
-      &(button_action_map_[OpenXrButtonType::kThumbstick].press_action)));
-  RETURN_IF_XR_FAILED(CreateAction(
-      XR_ACTION_TYPE_BOOLEAN_INPUT, name_prefix + "squeeze_button_press",
-      &(button_action_map_[OpenXrButtonType::kSqueeze].press_action)));
-  RETURN_IF_XR_FAILED(CreateAction(
-      XR_ACTION_TYPE_BOOLEAN_INPUT, name_prefix + "trackpad_button_press",
-      &(button_action_map_[OpenXrButtonType::kTrackpad].press_action)));
-  RETURN_IF_XR_FAILED(CreateAction(
-      XR_ACTION_TYPE_BOOLEAN_INPUT, name_prefix + "trackpad_button_touch",
-      &(button_action_map_[OpenXrButtonType::kTrackpad].touch_action)));
+  // Axis Actions
   RETURN_IF_XR_FAILED(
       CreateAction(XR_ACTION_TYPE_VECTOR2F_INPUT, name_prefix + "trackpad_axis",
                    &(axis_action_map_[OpenXrAxisType::kTrackpad])));
   RETURN_IF_XR_FAILED(CreateAction(
       XR_ACTION_TYPE_VECTOR2F_INPUT, name_prefix + "thumbstick_axis",
       &(axis_action_map_[OpenXrAxisType::kThumbstick])));
+
   // Generic Pose Actions
   RETURN_IF_XR_FAILED(CreateAction(XR_ACTION_TYPE_POSE_INPUT,
                                    name_prefix + "grip_pose",
@@ -145,44 +130,64 @@ XrResult OpenXrController::InitializeControllerActions() {
   return XR_SUCCESS;
 }
 
-XrResult OpenXrController::SuggestMicrosoftMotionControllerBindings(
-    std::map<XrPath, std::vector<XrActionSuggestedBinding>>* bindings) {
-  const std::string binding_prefix = GetTopLevelUserPath(type_) + "/input/";
-  return SuggestInteractionProfileBindings(
-      bindings,
-      path_helper_->GetDeclaredPaths()
-          .microsoft_motion_controller_interaction_profile,
-      {{button_action_map_[OpenXrButtonType::kTrigger].press_action,
-        binding_prefix + "trigger/value"},
-       {button_action_map_[OpenXrButtonType::kTrigger].value_action,
-        binding_prefix + "trigger/value"},
-       {button_action_map_[OpenXrButtonType::kThumbstick].press_action,
-        binding_prefix + "thumbstick/click"},
-       {button_action_map_[OpenXrButtonType::kSqueeze].press_action,
-        binding_prefix + "squeeze/click"},
-       {button_action_map_[OpenXrButtonType::kTrackpad].press_action,
-        binding_prefix + "trackpad/click"},
-       {button_action_map_[OpenXrButtonType::kTrackpad].touch_action,
-        binding_prefix + "trackpad/touch"},
-       {axis_action_map_[OpenXrAxisType::kTrackpad],
-        binding_prefix + "trackpad"},
-       {axis_action_map_[OpenXrAxisType::kThumbstick],
-        binding_prefix + "thumbstick"},
-       {grip_pose_action_, binding_prefix + "grip"},
-       {pointer_pose_action_, binding_prefix + "aim"}});
-}
+XrResult OpenXrController::SuggestBindings(
+    std::map<XrPath, std::vector<XrActionSuggestedBinding>>* bindings) const {
+  const std::string binding_prefix = GetTopLevelUserPath(type_);
 
-XrResult OpenXrController::SuggestKHRSimpleControllerBindings(
-    std::map<XrPath, std::vector<XrActionSuggestedBinding>>* bindings) {
-  const std::string binding_prefix = GetTopLevelUserPath(type_) + "/input/";
-  return SuggestInteractionProfileBindings(
-      bindings,
-      path_helper_->GetDeclaredPaths()
-          .khronos_simple_controller_interaction_profile,
-      {{button_action_map_[OpenXrButtonType::kTrigger].press_action,
-        binding_prefix + "select/click"},
-       {grip_pose_action_, binding_prefix + "grip"},
-       {pointer_pose_action_, binding_prefix + "aim"}});
+  for (auto interaction_profile : kOpenXrControllerInteractionProfiles) {
+    XrPath interaction_profile_path =
+        path_helper_->GetInteractionProfileXrPath(interaction_profile.type);
+    RETURN_IF_XR_FAILED(SuggestActionBinding(bindings, interaction_profile_path,
+                                             grip_pose_action_,
+                                             binding_prefix + "/input/grip"));
+    RETURN_IF_XR_FAILED(SuggestActionBinding(bindings, interaction_profile_path,
+                                             pointer_pose_action_,
+                                             binding_prefix + "/input/aim"));
+
+    const OpenXrButtonPathMap* button_maps;
+    size_t button_map_size;
+    switch (type_) {
+      case OpenXrHandednessType::kLeft:
+        button_maps = interaction_profile.left_button_maps;
+        button_map_size = interaction_profile.left_button_map_size;
+        break;
+      case OpenXrHandednessType::kRight:
+        button_maps = interaction_profile.right_button_maps;
+        button_map_size = interaction_profile.right_button_map_size;
+        break;
+      case OpenXrHandednessType::kCount:
+        NOTREACHED() << "Controller can only be left or right";
+        return XR_ERROR_VALIDATION_FAILURE;
+    }
+
+    for (size_t button_map_index = 0; button_map_index < button_map_size;
+         button_map_index++) {
+      const OpenXrButtonPathMap& cur_button_map = button_maps[button_map_index];
+      OpenXrButtonType button_type = cur_button_map.type;
+      for (size_t action_map_index = 0;
+           action_map_index < cur_button_map.action_map_size;
+           action_map_index++) {
+        const OpenXrButtonActionPathMap& cur_action_map =
+            cur_button_map.action_maps[action_map_index];
+        RETURN_IF_XR_FAILED(SuggestActionBinding(
+            bindings, interaction_profile_path,
+            button_action_map_.at(button_type).at(cur_action_map.type),
+            binding_prefix + cur_action_map.path));
+      }
+    }
+
+    for (size_t axis_map_index = 0;
+         axis_map_index < interaction_profile.axis_map_size; axis_map_index++) {
+      const OpenXrAxisPathMap& cur_axis_map =
+          interaction_profile.axis_maps[axis_map_index];
+      RETURN_IF_XR_FAILED(
+          SuggestActionBinding(bindings, interaction_profile_path,
+                               axis_action_map_.at(cur_axis_map.type),
+                               binding_prefix + cur_axis_map.path));
+    }
+  }
+
+  return XR_SUCCESS;
 }
 
 XrResult OpenXrController::InitializeControllerSpaces() {
@@ -241,35 +246,43 @@ mojom::XRInputSourceDescriptionPtr OpenXrController::GetDescription(
 base::Optional<GamepadButton> OpenXrController::GetButton(
     OpenXrButtonType type) const {
   GamepadButton ret;
+  // Button should at least have one of the three actions;
+  bool has_value = false;
 
   DCHECK(button_action_map_.count(type) == 1);
-
+  auto button = button_action_map_.at(type);
   XrActionStateBoolean press_state_bool = {XR_TYPE_ACTION_STATE_BOOLEAN};
-  if (XR_FAILED(QueryState(button_action_map_.at(type).press_action,
-                           &press_state_bool)) ||
-      !press_state_bool.isActive) {
-    return base::nullopt;
+  if (XR_SUCCEEDED(QueryState(button[OpenXrButtonActionType::kPress],
+                              &press_state_bool)) &&
+      press_state_bool.isActive) {
+    ret.pressed = press_state_bool.currentState;
+    has_value = true;
+  } else {
+    ret.pressed = false;
   }
-  ret.pressed = press_state_bool.currentState;
 
   XrActionStateBoolean touch_state_bool = {XR_TYPE_ACTION_STATE_BOOLEAN};
-  if (button_action_map_.at(type).touch_action != XR_NULL_HANDLE &&
-      XR_SUCCEEDED(QueryState(button_action_map_.at(type).touch_action,
+  if (XR_SUCCEEDED(QueryState(button[OpenXrButtonActionType::kTouch],
                               &touch_state_bool)) &&
       touch_state_bool.isActive) {
     ret.touched = touch_state_bool.currentState;
+    has_value = true;
   } else {
     ret.touched = ret.pressed;
   }
 
   XrActionStateFloat value_state_float = {XR_TYPE_ACTION_STATE_FLOAT};
-  if (button_action_map_.at(type).value_action != XR_NULL_HANDLE &&
-      XR_SUCCEEDED(QueryState(button_action_map_.at(type).value_action,
+  if (XR_SUCCEEDED(QueryState(button[OpenXrButtonActionType::kValue],
                               &value_state_float)) &&
       value_state_float.isActive) {
     ret.value = value_state_float.currentState;
+    has_value = true;
   } else {
     ret.value = ret.pressed ? 1.0 : 0.0;
+  }
+
+  if (!has_value) {
+    return base::nullopt;
   }
 
   return ret;
@@ -296,8 +309,8 @@ XrResult OpenXrController::UpdateInteractionProfile() {
       XR_TYPE_INTERACTION_PROFILE_STATE};
   RETURN_IF_XR_FAILED(xrGetCurrentInteractionProfile(
       session_, top_level_user_path, &interaction_profile_state));
-
-  interaction_profile_ = interaction_profile_state.interactionProfile;
+  interaction_profile_ = path_helper_->GetInputProfileType(
+      interaction_profile_state.interactionProfile);
 
   if (description_) {
     // TODO(crbug.com/1006072):
@@ -361,6 +374,50 @@ base::Optional<gfx::Transform> OpenXrController::GetTransformFromSpaces(
   return gfx::ComposeTransform(decomp);
 }
 
+XrResult OpenXrController::CreateActionsForButton(
+    OpenXrButtonType button_type) {
+  const std::string type_string = GetStringFromType(type_);
+  std::string name_prefix = type_string + "_controller_";
+
+  switch (button_type) {
+    case OpenXrButtonType::kTrigger:
+      name_prefix += "trigger_";
+      break;
+    case OpenXrButtonType::kSqueeze:
+      name_prefix += "squeeze_";
+      break;
+    case OpenXrButtonType::kTrackpad:
+      name_prefix += "trackpad_";
+      break;
+    case OpenXrButtonType::kThumbstick:
+      name_prefix += "thumbstick_";
+      break;
+    case OpenXrButtonType::kThumbrest:
+      name_prefix += "thumbrest_";
+      break;
+    case OpenXrButtonType::kButton1:
+      name_prefix += "upper_button_";
+      break;
+    case OpenXrButtonType::kButton2:
+      name_prefix += "lower_button_";
+      break;
+  }
+
+  std::unordered_map<OpenXrButtonActionType, XrAction>& cur_button =
+      button_action_map_[button_type];
+  XrAction new_action;
+  RETURN_IF_XR_FAILED(CreateAction(XR_ACTION_TYPE_BOOLEAN_INPUT,
+                                   name_prefix + "button_press", &new_action));
+  cur_button[OpenXrButtonActionType::kPress] = new_action;
+  RETURN_IF_XR_FAILED(CreateAction(XR_ACTION_TYPE_FLOAT_INPUT,
+                                   name_prefix + "button_value", &new_action));
+  cur_button[OpenXrButtonActionType::kValue] = new_action;
+  RETURN_IF_XR_FAILED(CreateAction(XR_ACTION_TYPE_BOOLEAN_INPUT,
+                                   name_prefix + "button_touch", &new_action));
+  cur_button[OpenXrButtonActionType::kTouch] = new_action;
+  return XR_SUCCESS;
+}
+
 XrResult OpenXrController::CreateAction(XrActionType type,
                                         const std::string& action_name,
                                         XrAction* action) {
@@ -379,21 +436,17 @@ XrResult OpenXrController::CreateAction(XrActionType type,
   return xrCreateAction(action_set_, &action_create_info, action);
 }
 
-XrResult OpenXrController::SuggestInteractionProfileBindings(
+XrResult OpenXrController::SuggestActionBinding(
     std::map<XrPath, std::vector<XrActionSuggestedBinding>>* bindings,
     XrPath interaction_profile_path,
-    std::unordered_map<XrAction, std::string> action_binding_map) {
+    XrAction action,
+    std::string binding_string) const {
   XrPath binding_path;
-
-  for (std::unordered_map<XrAction, std::string>::iterator it =
-           action_binding_map.begin();
-       it != action_binding_map.end(); it++) {
-    // make sure all actions we try to suggest binding are initialized.
-    DCHECK(it->first != XR_NULL_HANDLE);
-    RETURN_IF_XR_FAILED(
-        xrStringToPath(instance_, it->second.c_str(), &binding_path));
-    (*bindings)[interaction_profile_path].push_back({it->first, binding_path});
-  }
+  // make sure all actions we try to suggest binding are initialized.
+  DCHECK(action != XR_NULL_HANDLE);
+  RETURN_IF_XR_FAILED(
+      xrStringToPath(instance_, binding_string.c_str(), &binding_path));
+  (*bindings)[interaction_profile_path].push_back({action, binding_path});
 
   return XR_SUCCESS;
 }

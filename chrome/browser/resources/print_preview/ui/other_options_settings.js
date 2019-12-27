@@ -71,14 +71,14 @@ Polymer({
    */
   updateSettingWithTimeout_: function(settingName, newValue) {
     const timeout = this.timeouts_.get(settingName);
-    if (timeout != null) {
+    if (timeout !== null) {
       clearTimeout(timeout);
     }
 
     this.timeouts_.set(
         settingName, setTimeout(() => {
           this.timeouts_.delete(settingName);
-          if (this.previousValues_.get(settingName) == newValue) {
+          if (this.previousValues_.get(settingName) === newValue) {
             return;
           }
           this.previousValues_.set(settingName, newValue);

@@ -511,7 +511,7 @@ IN_PROC_BROWSER_TEST_F(WindowOpenApiTest,
                        OpenLockedFullscreenWindowNonChromeOS) {
   const extensions::Extension* extension = LoadExtensionWithFlags(
       test_data_dir_.AppendASCII("locked_fullscreen/with_permission"),
-      ExtensionBrowserTest::kFlagIgnoreManifestWarnings);
+      kFlagIgnoreManifestWarnings);
   ASSERT_TRUE(extension);
   EXPECT_EQ(1u, extension->install_warnings().size());
   EXPECT_EQ(std::string("'lockWindowFullscreenPrivate' "

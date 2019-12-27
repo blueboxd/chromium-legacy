@@ -14,11 +14,11 @@ import {DarkModeBehavior} from './dark_mode_behavior.js';
  * @return {boolean} true if the arrays are equal.
  */
 export function areRangesEqual(array1, array2) {
-  if (array1.length != array2.length) {
+  if (array1.length !== array2.length) {
     return false;
   }
   for (let i = 0; i < array1.length; i++) {
-    if (array1[i].from != array2[i].from || array1[i].to != array2[i].to) {
+    if (array1[i].from !== array2[i].from || array1[i].to !== array2[i].to) {
       return false;
     }
   }
@@ -35,7 +35,7 @@ export function areRangesEqual(array1, array2) {
 export function getStringForLocale(localizedStrings, locale) {
   locale = locale.toLowerCase();
   for (let i = 0; i < localizedStrings.length; i++) {
-    if (localizedStrings[i].locale.toLowerCase() == locale) {
+    if (localizedStrings[i].locale.toLowerCase() === locale) {
       return localizedStrings[i].value;
     }
   }

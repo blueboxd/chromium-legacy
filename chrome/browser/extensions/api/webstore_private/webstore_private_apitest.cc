@@ -302,8 +302,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, IsInIncognitoMode) {
   GURL page_url = GetTestServerURL("incognito.html");
-  ASSERT_TRUE(
-      RunPageTest(page_url.spec(), ExtensionApiTest::kFlagUseIncognito));
+  ASSERT_TRUE(RunPageTest(page_url.spec(), kFlagNone, kFlagUseIncognito));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, IsNotInIncognitoMode) {

@@ -53,7 +53,7 @@ void FrameView::UpdateViewportIntersection(unsigned flags,
     return;
   Document& owner_document = owner_element->GetDocument();
   IntPoint viewport_offset;
-  IntRect viewport_intersection;
+  IntRect viewport_intersection, mainframe_document_intersection;
   DocumentLifecycle::LifecycleState parent_lifecycle_state =
       owner_document.Lifecycle().GetState();
   FrameOcclusionState occlusion_state =
@@ -109,22 +109,46 @@ void FrameView::UpdateViewportIntersection(unsigned flags,
               content_box_offset,
               kTraverseDocumentBoundaries | kApplyRemoteRootFrameOffset));
     }
-
+    // Generate matrix to transform from the space of the containing document
+    // to the space of the iframe's contents.
+    TransformState parent_frame_to_iframe_content_transform(
+        TransformState::kUnapplyInverseTransformDirection);
+    // First transform to box coordinates of the iframe element...
+    owner_layout_object->MapAncestorToLocal(
+        nullptr, parent_frame_to_iframe_content_transform, 0);
+    // ... then apply content_box_offset to translate to the coordinate of the
+    // child frame.
+    parent_frame_to_iframe_content_transform.Move(
+        owner_layout_object->PhysicalContentBoxOffset());
+    TransformationMatrix matrix =
+        parent_frame_to_iframe_content_transform.AccumulatedTransform()
+            .Inverse();
     if (geometry.IsIntersecting()) {
-      // geometry.IntersectionRect() is in the coordinate system of the document
-      // containing the iframe. First map it down to border-box coordinates for
-      // the iframe, then apply content_box_offset to translate to the
-      // coordinates of the child frame.
-      PhysicalRect intersection_rect = owner_layout_object->AncestorToLocalRect(
-          nullptr, geometry.IntersectionRect());
-      intersection_rect.Move(-content_box_offset);
+      PhysicalRect intersection_rect = PhysicalRect::EnclosingRect(
+          matrix.ProjectQuad(FloatRect(geometry.IntersectionRect()))
+              .BoundingBox());
 
-      // Don't let EnclosingIntRect turn an empty rect into a non-empty one.
+      // Don't let EnclosingRect turn an empty rect into a non-empty one.
       if (intersection_rect.IsEmpty()) {
         viewport_intersection =
             IntRect(FlooredIntPoint(intersection_rect.offset), IntSize());
       } else {
         viewport_intersection = EnclosingIntRect(intersection_rect);
+      }
+    }
+
+    if (!geometry.UnclippedIntersectionRect().IsEmpty()) {
+      PhysicalRect mainframe_intersection_rect;
+      mainframe_intersection_rect = PhysicalRect::EnclosingRect(
+          matrix.ProjectQuad(FloatRect(geometry.UnclippedIntersectionRect()))
+              .BoundingBox());
+
+      if (mainframe_intersection_rect.IsEmpty()) {
+        mainframe_document_intersection = IntRect(
+            FlooredIntPoint(mainframe_intersection_rect.offset), IntSize());
+      } else {
+        mainframe_document_intersection =
+            EnclosingIntRect(mainframe_intersection_rect);
       }
     }
   } else if (occlusion_state == FrameOcclusionState::kGuaranteedNotOccluded) {
@@ -133,8 +157,9 @@ void FrameView::UpdateViewportIntersection(unsigned flags,
     occlusion_state = FrameOcclusionState::kUnknown;
   }
 
-  SetViewportIntersection(
-      {viewport_offset, viewport_intersection, WebRect(), occlusion_state});
+  SetViewportIntersection({viewport_offset, viewport_intersection,
+                           mainframe_document_intersection, WebRect(),
+                           occlusion_state});
 
   UpdateFrameVisibility(!viewport_intersection.IsEmpty());
 

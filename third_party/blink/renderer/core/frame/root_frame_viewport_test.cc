@@ -9,6 +9,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
@@ -590,6 +591,30 @@ TEST_F(RootFrameViewportTest, DistributeScrollOrder) {
   root_frame_viewport->ServiceScrollAnimations(1000000);
   EXPECT_EQ(ScrollOffset(50, 50), visual_viewport->GetScrollOffset());
   EXPECT_EQ(ScrollOffset(10, 10), layout_viewport->GetScrollOffset());
+}
+
+class RootFrameViewportRenderTest : public RenderingTest {
+ public:
+  RootFrameViewportRenderTest()
+      : RenderingTest(MakeGarbageCollected<EmptyLocalFrameClient>()) {}
+};
+
+TEST_F(RootFrameViewportRenderTest,
+       ApplyPendingHistoryRestoreScrollOffsetTwice) {
+  HistoryItem::ViewState view_state;
+  view_state.page_scale_factor_ = 1.5;
+  RootFrameViewport* root_frame_viewport = static_cast<RootFrameViewport*>(
+      GetDocument().View()->GetScrollableArea());
+  root_frame_viewport->SetPendingHistoryRestoreScrollOffset(view_state, false);
+  root_frame_viewport->ApplyPendingHistoryRestoreScrollOffset();
+
+  // Override the 1.5 scale with 1.0.
+  GetDocument().GetPage()->GetVisualViewport().SetScale(1.0f);
+
+  // The second call to ApplyPendingHistoryRestoreScrollOffset should
+  // do nothing, since the history was already restored.
+  root_frame_viewport->ApplyPendingHistoryRestoreScrollOffset();
+  EXPECT_EQ(1.0f, GetDocument().GetPage()->GetVisualViewport().Scale());
 }
 
 }  // namespace blink

@@ -1,7 +1,9 @@
+# Overall OWNERS
 crouleau@chromium.org
+#wenbinzhang@google.com  Uncomment when wenbinzhang@ becomes a committer.
+johnchen@chromium.org  # Backup reviewer for when overall OWNERS are OOO.
 
 # Sharding, triggering, and builder configurations.
-jbudorick@chromium.org
 #hypan@google.com  Uncomment when hypan@ becomes a committer.
 
 # For changes related to ChromeOS.
@@ -23,3 +25,5 @@ kouhei@chromium.org
 
 # emeritus:
 # perezju@chromium.org
+
+# COMPONENT: Speed>Benchmarks

@@ -2913,6 +2913,10 @@ RenderAccessibility* RenderFrameImpl::GetRenderAccessibility() {
   return render_accessibility_;
 }
 
+std::unique_ptr<AXTreeSnapshotter> RenderFrameImpl::CreateAXTreeSnapshotter() {
+  return std::make_unique<AXTreeSnapshotterImpl>(this);
+}
+
 int RenderFrameImpl::GetRoutingID() {
   return routing_id_;
 }

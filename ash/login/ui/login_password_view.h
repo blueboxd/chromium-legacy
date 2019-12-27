@@ -131,6 +131,9 @@ class ASH_EXPORT LoginPasswordView : public views::View,
   class EasyUnlockIcon;
   friend class TestApi;
 
+  // Increases/decreases the contrast of the separator and capslock icon.
+  void SetSeparatorAndCapsLockHighlighted(bool highlight);
+
   // Enables/disables the submit button and changes the color of the separator
   // based on if the view is enabled.
   void UpdateUiState();

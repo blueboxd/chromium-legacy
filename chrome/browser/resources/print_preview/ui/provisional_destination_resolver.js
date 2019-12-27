@@ -102,7 +102,7 @@ Polymer({
    */
   startResolveDestination_: function() {
     assert(
-        this.state_ == ResolverState.ACTIVE,
+        this.state_ === ResolverState.ACTIVE,
         'Invalid state in request grant permission');
 
     this.state_ = ResolverState.GRANTING_PERMISSION;
@@ -112,11 +112,11 @@ Polymer({
         .then(
             /** @param {?Destination} resolvedDestination */
             (resolvedDestination) => {
-              if (this.state_ != ResolverState.GRANTING_PERMISSION) {
+              if (this.state_ !== ResolverState.GRANTING_PERMISSION) {
                 return;
               }
 
-              if (destination.id != this.destination_.id) {
+              if (destination.id !== this.destination_.id) {
                 return;
               }
 
@@ -137,7 +137,7 @@ Polymer({
    */
   onKeydown_: function(e) {
     e.stopPropagation();
-    if (e.key == 'Escape') {
+    if (e.key === 'Escape') {
       this.$.dialog.cancel();
       e.preventDefault();
     }
@@ -159,7 +159,7 @@ Polymer({
    * @private
    */
   getPermissionMessage_: function() {
-    return this.state_ == ResolverState.ERROR ?
+    return this.state_ === ResolverState.ERROR ?
         this.i18n(
             'resolveExtensionUSBErrorMessage',
             this.destination_.extensionName) :
@@ -171,7 +171,7 @@ Polymer({
    * @private
    */
   isInErrorState_: function() {
-    return this.state_ == ResolverState.ERROR;
+    return this.state_ === ResolverState.ERROR;
   },
 
   /**
@@ -179,7 +179,7 @@ Polymer({
    * @private
    */
   isInActiveState_: function() {
-    return this.state_ == ResolverState.ACTIVE;
+    return this.state_ === ResolverState.ACTIVE;
   },
 
   /**
@@ -187,6 +187,6 @@ Polymer({
    *     state, empty otherwise.
    */
   getThrobberClass_: function() {
-    return this.state_ == ResolverState.GRANTING_PERMISSION ? 'throbber' : '';
+    return this.state_ === ResolverState.GRANTING_PERMISSION ? 'throbber' : '';
   },
 });

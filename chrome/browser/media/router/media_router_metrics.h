@@ -27,7 +27,41 @@ enum class SinkIconType;
 // NOTE: For metrics specific to the Media Router component extension, see
 // mojo/media_router_mojo_metrics.h.
 
+// This enum is a cartesian product of dialog activation locations and Cast
+// modes. Per tools/metrics/histograms/README.md, a multidimensional histogram
+// must be flattened into one dimension.
+enum class DialogActivationLocationAndCastMode {
+  kPinnedIconAndPresentation,
+  kPinnedIconAndTabMirror,
+  kPinnedIconAndDesktopMirror,
+  kPinnedIconAndLocalFile,
+  // One can start casting from an ephemeral icon by stopping a session, then
+  // starting another from the same dialog.
+  kEphemeralIconAndPresentation,
+  kEphemeralIconAndTabMirror,
+  kEphemeralIconAndDesktopMirror,
+  kEphemeralIconAndLocalFile,
+  kContextMenuAndPresentation,
+  kContextMenuAndTabMirror,
+  kContextMenuAndDesktopMirror,
+  kContextMenuAndLocalFile,
+  kPageAndPresentation,
+  kPageAndTabMirror,
+  kPageAndDesktopMirror,
+  kPageAndLocalFile,
+  kAppMenuAndPresentation,
+  kAppMenuAndTabMirror,
+  kAppMenuAndDesktopMirror,
+  kAppMenuAndLocalFile,
+
+  // NOTE: Do not reorder existing entries, and add entries only immediately
+  // above this line.
+  kMaxValue = kAppMenuAndLocalFile
+};
+
 // Where the user clicked to open the Media Router dialog.
+// TODO(takumif): Rename this to DialogActivationLocation to avoid confusing
+// "origin" with URL origins.
 enum class MediaRouterDialogOpenOrigin {
   TOOLBAR = 0,
   OVERFLOW_MENU = 1,
@@ -109,6 +143,7 @@ class MediaRouterMetrics {
   static const char kHistogramStartLocalSessionSuccessful[];
   static const char kHistogramStopRoute[];
   static const char kHistogramUiDeviceCount[];
+  static const char kHistogramUiDialogActivationLocationAndCastMode[];
   static const char kHistogramUiDialogIconStateAtOpen[];
   static const char kHistogramUiDialogLoadedWithData[];
   static const char kHistogramUiDialogPaint[];
@@ -193,6 +228,13 @@ class MediaRouterMetrics {
   // Records whether the toolbar icon is pinned by the user pref / admin policy.
   // Recorded whenever the browser is initialized.
   static void RecordIconStateAtInit(bool is_pinned);
+
+  // Recorded whenever a Cast session is started from the Cast dialog. Records
+  // how the dialog was opened, and the Cast mode of the started session.
+  static void RecordDialogActivationLocationAndCastMode(
+      MediaRouterDialogOpenOrigin activation_location,
+      MediaCastMode cast_mode,
+      bool is_icon_pinned);
 };
 
 }  // namespace media_router

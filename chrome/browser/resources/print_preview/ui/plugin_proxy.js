@@ -45,7 +45,7 @@ export class PluginProxy {
    * @return {!PluginProxy} The singleton instance.
    */
   static getInstance() {
-    if (instance == null) {
+    if (instance === null) {
       instance = new PluginProxy();
     }
     return assert(instance);

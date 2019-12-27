@@ -308,8 +308,7 @@ IN_PROC_BROWSER_TEST_P(IncognitoExtensionApiTabTest, Tabs) {
 
   EXPECT_TRUE(RunExtensionSubtestWithArgAndFlags(
       "tabs/basics", "incognito.html", args.data(),
-      is_incognito_enabled ? extensions::ExtensionApiTest::kFlagEnableIncognito
-                           : extensions::ExtensionApiTest::kFlagNone))
+      is_incognito_enabled ? kFlagEnableIncognito : kFlagNone, kFlagNone))
       << message_;
 }
 

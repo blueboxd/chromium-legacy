@@ -107,6 +107,8 @@ IPC_STRUCT_TRAITS_BEGIN(network::URLLoaderCompletionStatus)
   IPC_STRUCT_TRAITS_MEMBER(ssl_info)
   IPC_STRUCT_TRAITS_MEMBER(should_report_corb_blocking)
   IPC_STRUCT_TRAITS_MEMBER(proxy_server)
+  IPC_STRUCT_TRAITS_MEMBER(resolve_error_info)
+
 IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::FetchResponseType,

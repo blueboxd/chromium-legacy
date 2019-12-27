@@ -186,16 +186,17 @@ class AnimatingLayoutManagerTest : public testing::Test {
         view_->AddChildViewAt(std::make_unique<TestView>(), index);
   }
 
-  void EnsureLayout(const ProposedLayout& expected) {
+  void EnsureLayout(const ProposedLayout& expected, const char* message = "") {
     for (size_t i = 0; i < expected.child_layouts.size(); ++i) {
       const auto& expected_child = expected.child_layouts[i];
       const View* const child = expected_child.child_view;
-      EXPECT_EQ(view_, child->parent()) << " view " << i << " parent differs.";
+      EXPECT_EQ(view_, child->parent())
+          << " view " << i << " parent differs " << message;
       EXPECT_EQ(expected_child.visible, child->GetVisible())
-          << " view " << i << " visibility.";
+          << " view " << i << " visibility " << message;
       if (expected_child.visible) {
         EXPECT_EQ(expected_child.bounds, child->bounds())
-            << " view " << i << " bounds";
+            << " view " << i << " bounds " << message;
       }
     }
   }
@@ -1415,6 +1416,152 @@ TEST_F(AnimatingLayoutManagerTest,
   view()->Layout();
   EXPECT_FALSE(layout()->is_animating());
   EnsureLayout(expected_end);
+}
+
+// Regression test for crbug.com/1037625: crash in SetViewVisibility() (1/2)
+TEST_F(AnimatingLayoutManagerTest, FlexLayout_RemoveFadingViewDoesNotCrash) {
+  constexpr gfx::Insets kChildMargins(5);
+  layout()->SetShouldAnimateBounds(false);
+  layout()->SetOrientation(LayoutOrientation::kHorizontal);
+  auto* const flex_layout =
+      layout()->SetTargetLayoutManager(std::make_unique<FlexLayout>());
+  flex_layout->SetOrientation(LayoutOrientation::kHorizontal);
+  flex_layout->SetCollapseMargins(true);
+  flex_layout->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  flex_layout->SetDefault(kMarginsKey, kChildMargins);
+  flex_layout->SetDefault(kFlexBehaviorKey, kDropOut);
+
+  const ProposedLayout expected_start{
+      {50, 20},
+      {{child(0), true, {{5, 5}, kChildViewSize}},
+       {child(1), true, {{20, 5}, kChildViewSize}},
+       {child(2), true, {{35, 5}, kChildViewSize}}}};
+
+  // Set up the initial state of the host view and children.
+  SizeAndLayout();
+  EXPECT_FALSE(layout()->is_animating());
+  EnsureLayout(expected_start);
+
+  layout()->FadeOut(child(1));
+
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  EXPECT_TRUE(layout()->is_animating());
+
+  View* const child1 = child(1);
+  view()->RemoveChildView(child1);
+  delete child1;
+
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
+  view()->Layout();
+  EXPECT_TRUE(layout()->is_animating());
+
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
+  view()->Layout();
+  EXPECT_FALSE(layout()->is_animating());
+}
+
+// Regression test for crbug.com/1037625: crash in SetViewVisibility() (2/2)
+TEST_F(AnimatingLayoutManagerTest, FlexLayout_RemoveShowingViewDoesNotCrash) {
+  constexpr gfx::Insets kChildMargins(5);
+  layout()->SetShouldAnimateBounds(false);
+  layout()->SetOrientation(LayoutOrientation::kHorizontal);
+  child(1)->SetVisible(false);
+  auto* const flex_layout =
+      layout()->SetTargetLayoutManager(std::make_unique<FlexLayout>());
+  flex_layout->SetOrientation(LayoutOrientation::kHorizontal);
+  flex_layout->SetCollapseMargins(true);
+  flex_layout->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  flex_layout->SetDefault(kMarginsKey, kChildMargins);
+  flex_layout->SetDefault(kFlexBehaviorKey, kDropOut);
+
+  // Set up the initial state of the host view and children.
+  SizeAndLayout();
+  EXPECT_FALSE(layout()->is_animating());
+
+  layout()->FadeIn(child(1));
+
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  EXPECT_TRUE(layout()->is_animating());
+
+  View* const child1 = child(1);
+  view()->RemoveChildView(child1);
+  delete child1;
+
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
+  view()->Layout();
+  EXPECT_TRUE(layout()->is_animating());
+
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
+  view()->Layout();
+  EXPECT_FALSE(layout()->is_animating());
+}
+
+// Regression test for crbug.com/1037947
+TEST_F(AnimatingLayoutManagerTest, FlexLayout_DoubleSlide) {
+  layout()->SetShouldAnimateBounds(true);
+  layout()->SetOrientation(LayoutOrientation::kHorizontal);
+  layout()->SetDefaultFadeMode(
+      AnimatingLayoutManager::FadeInOutMode::kSlideFromTrailingEdge);
+  child(1)->SetVisible(false);
+  auto* const flex_layout =
+      layout()->SetTargetLayoutManager(std::make_unique<FlexLayout>());
+  flex_layout->SetOrientation(LayoutOrientation::kHorizontal);
+  flex_layout->SetCrossAxisAlignment(LayoutAlignment::kCenter);
+
+  layout()->ResetLayout();
+  SizeAndLayout();
+
+  const ProposedLayout expected_start{
+      {20, 10},
+      {{child(0), true, {{0, 0}, kChildViewSize}},
+       {child(1), false},
+       {child(2), true, {{10, 0}, kChildViewSize}}}};
+  EnsureLayout(expected_start, "before visibility changes");
+
+  child(0)->SetVisible(false);
+  child(1)->SetVisible(true);
+
+  EXPECT_TRUE(layout()->is_animating());
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  EXPECT_TRUE(layout()->is_animating());
+
+  const ProposedLayout expected_middle{
+      {20, 10},
+      {{child(0), true, {{5, 0}, kChildViewSize}},
+       {child(1), true, {{5, 0}, kChildViewSize}},
+       {child(2), true, {{10, 0}, kChildViewSize}}}};
+  EnsureLayout(expected_middle, "during first slide");
+
+  // Complete the layout.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+
+  EXPECT_FALSE(layout()->is_animating());
+  const ProposedLayout expected_end{
+      {20, 10},
+      {{child(0), false},
+       {child(1), true, {{0, 0}, kChildViewSize}},
+       {child(2), true, {{10, 0}, kChildViewSize}}}};
+  EnsureLayout(expected_end, "after first slide");
+
+  // Reverse the layout.
+  child(0)->SetVisible(true);
+  child(1)->SetVisible(false);
+
+  EXPECT_TRUE(layout()->is_animating());
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  EXPECT_TRUE(layout()->is_animating());
+  EnsureLayout(expected_middle, "during second slide");
+
+  // Complete the layout.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  EXPECT_FALSE(layout()->is_animating());
+  EnsureLayout(expected_start, "after second slide");
 }
 
 TEST_F(AnimatingLayoutManagerTest, FlexLayout_FadeInOnAdded) {

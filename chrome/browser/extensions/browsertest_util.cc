@@ -104,26 +104,6 @@ Browser* LaunchAppBrowser(Profile* profile, const Extension* extension_app) {
   return is_correct_app_browser ? browser : nullptr;
 }
 
-Browser* LaunchBrowserForAppInTab(Profile* profile,
-                                  const Extension* extension_app) {
-  content::WebContents* web_contents =
-      apps::LaunchService::Get(profile)->OpenApplication(apps::AppLaunchParams(
-          extension_app->id(), LaunchContainer::kLaunchContainerTab,
-          WindowOpenDisposition::NEW_FOREGROUND_TAB,
-          AppLaunchSource::kSourceTest));
-  DCHECK(web_contents);
-
-  web_app::WebAppTabHelper* tab_helper =
-      web_app::WebAppTabHelper::FromWebContents(web_contents);
-  DCHECK(tab_helper);
-  DCHECK_EQ(extension_app->id(), tab_helper->app_id());
-
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  DCHECK_EQ(browser, chrome::FindLastActive());
-  DCHECK_EQ(web_contents, browser->tab_strip_model()->GetActiveWebContents());
-  return browser;
-}
-
 content::WebContents* AddTab(Browser* browser, const GURL& url) {
   int starting_tab_count = browser->tab_strip_model()->count();
   ui_test_utils::NavigateToURLWithDisposition(

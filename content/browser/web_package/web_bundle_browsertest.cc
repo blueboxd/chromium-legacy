@@ -387,6 +387,32 @@ class FinishNavigationObserver : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(FinishNavigationObserver);
 };
 
+std::string ExpectNavigationFailureAndReturnConsoleMessage(
+    content::WebContents* web_contents,
+    const GURL& url) {
+  WebContentsConsoleObserver console_observer(web_contents);
+  base::RunLoop run_loop;
+  FinishNavigationObserver finish_navigation_observer(web_contents,
+                                                      run_loop.QuitClosure());
+  EXPECT_FALSE(NavigateToURL(web_contents, url));
+  run_loop.Run();
+  if (!finish_navigation_observer.error_code()) {
+    ADD_FAILURE() << "Unexpected navigation success: " << url;
+    return std::string();
+  }
+
+  EXPECT_EQ(net::ERR_INVALID_WEB_BUNDLE,
+            *finish_navigation_observer.error_code());
+  if (console_observer.messages().empty())
+    console_observer.Wait();
+
+  if (console_observer.messages().empty()) {
+    ADD_FAILURE() << "Could not find a console message.";
+    return std::string();
+  }
+  return base::UTF16ToUTF8(console_observer.messages()[0].message);
+}
+
 }  // namespace
 
 class InvalidTrustableWebBundleFileUrlBrowserTest : public ContentBrowserTest {
@@ -592,23 +618,11 @@ IN_PROC_BROWSER_TEST_F(WebBundleTrustableFileNotFoundBrowserTest, NotFound) {
   if (!original_client_)
     return;
 
-  WebContents* web_contents = shell()->web_contents();
-  ConsoleObserverDelegate console_delegate(web_contents, "*");
-  web_contents->SetDelegate(&console_delegate);
-  base::RunLoop run_loop;
-  FinishNavigationObserver finish_navigation_observer(web_contents,
-                                                      run_loop.QuitClosure());
-  EXPECT_FALSE(NavigateToURL(web_contents, test_data_url()));
-  run_loop.Run();
-  ASSERT_TRUE(finish_navigation_observer.error_code());
-  EXPECT_EQ(net::ERR_INVALID_WEB_BUNDLE,
-            *finish_navigation_observer.error_code());
-  if (console_delegate.messages().empty())
-    console_delegate.Wait();
+  std::string console_message = ExpectNavigationFailureAndReturnConsoleMessage(
+      shell()->web_contents(), test_data_url());
 
-  EXPECT_FALSE(console_delegate.messages().empty());
   EXPECT_EQ("Failed to read metadata of Web Bundle file: FILE_ERROR_FAILED",
-            console_delegate.message());
+            console_message);
 }
 
 class WebBundleFileBrowserTest
@@ -724,25 +738,11 @@ IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, InvalidWebBundleFile) {
   const GURL test_data_url =
       GetTestUrlForFile(GetTestDataPath("invalid_web_bundle.wbn"));
 
-  WebContents* web_contents = shell()->web_contents();
-  ConsoleObserverDelegate console_delegate(web_contents, "*");
-  web_contents->SetDelegate(&console_delegate);
+  std::string console_message = ExpectNavigationFailureAndReturnConsoleMessage(
+      shell()->web_contents(), test_data_url);
 
-  base::RunLoop run_loop;
-  FinishNavigationObserver finish_navigation_observer(web_contents,
-                                                      run_loop.QuitClosure());
-  EXPECT_FALSE(NavigateToURL(web_contents, test_data_url));
-  run_loop.Run();
-  ASSERT_TRUE(finish_navigation_observer.error_code());
-  EXPECT_EQ(net::ERR_INVALID_WEB_BUNDLE,
-            *finish_navigation_observer.error_code());
-
-  if (console_delegate.messages().empty())
-    console_delegate.Wait();
-
-  EXPECT_FALSE(console_delegate.messages().empty());
   EXPECT_EQ("Failed to read metadata of Web Bundle file: Wrong magic bytes.",
-            console_delegate.message());
+            console_message);
 }
 
 IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest,
@@ -750,27 +750,13 @@ IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest,
   const GURL test_data_url = GetTestUrlForFile(
       GetTestDataPath("broken_bundle_broken_first_entry.wbn"));
 
-  WebContents* web_contents = shell()->web_contents();
-  ConsoleObserverDelegate console_delegate(web_contents, "*");
-  web_contents->SetDelegate(&console_delegate);
+  std::string console_message = ExpectNavigationFailureAndReturnConsoleMessage(
+      shell()->web_contents(), test_data_url);
 
-  base::RunLoop run_loop;
-  FinishNavigationObserver finish_navigation_observer(web_contents,
-                                                      run_loop.QuitClosure());
-  EXPECT_FALSE(NavigateToURL(web_contents, test_data_url));
-  run_loop.Run();
-  ASSERT_TRUE(finish_navigation_observer.error_code());
-  EXPECT_EQ(net::ERR_INVALID_WEB_BUNDLE,
-            *finish_navigation_observer.error_code());
-
-  if (console_delegate.messages().empty())
-    console_delegate.Wait();
-
-  EXPECT_FALSE(console_delegate.messages().empty());
   EXPECT_EQ(
       "Failed to read response header of Web Bundle file: Response headers map "
       "must have exactly one pseudo-header, :status.",
-      console_delegate.message());
+      console_message);
 }
 
 IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest,
@@ -782,8 +768,7 @@ IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest,
                          test_data_url, GURL(kTestPageUrl)));
 
   WebContents* web_contents = shell()->web_contents();
-  ConsoleObserverDelegate console_delegate(web_contents, "*");
-  web_contents->SetDelegate(&console_delegate);
+  WebContentsConsoleObserver console_observer(web_contents);
 
   ExecuteScriptAndWaitForTitle(R"(
     const script = document.createElement("script");
@@ -792,14 +777,14 @@ IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest,
     document.body.appendChild(script);)",
                                "load failed");
 
-  if (console_delegate.messages().empty())
-    console_delegate.Wait();
+  if (console_observer.messages().empty())
+    console_observer.Wait();
 
-  EXPECT_FALSE(console_delegate.messages().empty());
+  ASSERT_FALSE(console_observer.messages().empty());
   EXPECT_EQ(
       "Failed to read response header of Web Bundle file: Response headers map "
       "must have exactly one pseudo-header, :status.",
-      console_delegate.message());
+      base::UTF16ToUTF8(console_observer.messages()[0].message));
 }
 
 IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, NoLocalFileScheme) {
@@ -862,27 +847,13 @@ IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, ParseMetadataCrash) {
   MockParserFactory mock_factory({GURL(kTestPageUrl)}, test_file_path);
   mock_factory.SimulateParseMetadataCrash();
 
-  WebContents* web_contents = shell()->web_contents();
-  ConsoleObserverDelegate console_delegate(web_contents, "*");
-  web_contents->SetDelegate(&console_delegate);
+  std::string console_message = ExpectNavigationFailureAndReturnConsoleMessage(
+      shell()->web_contents(), GetTestUrlForFile(test_file_path));
 
-  base::RunLoop run_loop;
-  FinishNavigationObserver finish_navigation_observer(web_contents,
-                                                      run_loop.QuitClosure());
-  EXPECT_FALSE(NavigateToURL(web_contents, GetTestUrlForFile(test_file_path)));
-  run_loop.Run();
-  ASSERT_TRUE(finish_navigation_observer.error_code());
-  EXPECT_EQ(net::ERR_INVALID_WEB_BUNDLE,
-            *finish_navigation_observer.error_code());
-
-  if (console_delegate.messages().empty())
-    console_delegate.Wait();
-
-  EXPECT_FALSE(console_delegate.messages().empty());
   EXPECT_EQ(
       "Failed to read metadata of Web Bundle file: Cannot connect to the "
       "remote parser service",
-      console_delegate.message());
+      console_message);
 }
 
 IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, ParseResponseCrash) {
@@ -890,27 +861,13 @@ IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, ParseResponseCrash) {
   MockParserFactory mock_factory({GURL(kTestPageUrl)}, test_file_path);
   mock_factory.SimulateParseResponseCrash();
 
-  WebContents* web_contents = shell()->web_contents();
-  ConsoleObserverDelegate console_delegate(web_contents, "*");
-  web_contents->SetDelegate(&console_delegate);
+  std::string console_message = ExpectNavigationFailureAndReturnConsoleMessage(
+      shell()->web_contents(), GetTestUrlForFile(test_file_path));
 
-  base::RunLoop run_loop;
-  FinishNavigationObserver finish_navigation_observer(web_contents,
-                                                      run_loop.QuitClosure());
-  EXPECT_FALSE(NavigateToURL(web_contents, GetTestUrlForFile(test_file_path)));
-  run_loop.Run();
-  ASSERT_TRUE(finish_navigation_observer.error_code());
-  EXPECT_EQ(net::ERR_INVALID_WEB_BUNDLE,
-            *finish_navigation_observer.error_code());
-
-  if (console_delegate.messages().empty())
-    console_delegate.Wait();
-
-  EXPECT_FALSE(console_delegate.messages().empty());
   EXPECT_EQ(
       "Failed to read response header of Web Bundle file: Cannot connect to "
       "the remote parser service",
-      console_delegate.message());
+      console_message);
 }
 
 IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, Variants) {
@@ -1027,21 +984,10 @@ class WebBundleNetworkBrowserTest : public WebBundleBrowserTestBase {
 
   void TestNavigationFailure(const GURL& url,
                              const std::string& expected_console_error) {
-    WebContents* web_contents = shell()->web_contents();
-    ConsoleObserverDelegate console_delegate(web_contents, "*");
-    web_contents->SetDelegate(&console_delegate);
-    base::RunLoop run_loop;
-    FinishNavigationObserver finish_navigation_observer(web_contents,
-                                                        run_loop.QuitClosure());
-    EXPECT_FALSE(NavigateToURL(web_contents, url));
-    run_loop.Run();
-    ASSERT_TRUE(finish_navigation_observer.error_code());
-    EXPECT_EQ(net::ERR_INVALID_WEB_BUNDLE,
-              *finish_navigation_observer.error_code());
-    if (console_delegate.messages().empty())
-      console_delegate.Wait();
-    EXPECT_FALSE(console_delegate.messages().empty());
-    EXPECT_EQ(expected_console_error, console_delegate.message());
+    std::string console_message =
+        ExpectNavigationFailureAndReturnConsoleMessage(shell()->web_contents(),
+                                                       url);
+    EXPECT_EQ(expected_console_error, console_message);
   }
 
   void RunHistoryNavigationErrorTest(
@@ -1089,8 +1035,7 @@ class WebBundleNetworkBrowserTest : public WebBundleBrowserTestBase {
         "Out scope page from server / out scope script from server");
 
     WebContents* web_contents = shell()->web_contents();
-    ConsoleObserverDelegate console_delegate(web_contents, "*");
-    web_contents->SetDelegate(&console_delegate);
+    WebContentsConsoleObserver console_observer(web_contents);
 
     base::RunLoop run_loop;
     FinishNavigationObserver finish_navigation_observer(web_contents,
@@ -1102,11 +1047,12 @@ class WebBundleNetworkBrowserTest : public WebBundleBrowserTestBase {
     EXPECT_EQ(net::ERR_INVALID_WEB_BUNDLE,
               *finish_navigation_observer.error_code());
 
-    if (console_delegate.messages().empty())
-      console_delegate.Wait();
+    if (console_observer.messages().empty())
+      console_observer.Wait();
 
-    EXPECT_FALSE(console_delegate.messages().empty());
-    EXPECT_EQ(expected_error_message, console_delegate.message());
+    ASSERT_FALSE(console_observer.messages().empty());
+    EXPECT_EQ(expected_error_message,
+              base::UTF16ToUTF8(console_observer.messages()[0].message));
   }
 
   static GURL GetTestUrl(const std::string& host) {

@@ -90,17 +90,17 @@ Polymer({
       return;
     }
 
-    if (e.key == 'Enter') {
+    if (e.key === 'Enter') {
       this.onBlur_();
     }
   },
 
   /** @private */
   onBlur_: function() {
-    if (this.inputString_ == '') {
+    if (this.inputString_ === '') {
       this.set('inputString_', this.defaultValue);
     }
-    if (this.$.userValue.value == '') {
+    if (this.$.userValue.value === '') {
       this.$.userValue.value = this.defaultValue;
     }
   },

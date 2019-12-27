@@ -43,7 +43,7 @@ export const originToType = function(origin) {
  * @return {!PrinterType} Map the destination to a PrinterType.
  */
 export function getPrinterTypeForDestination(destination) {
-  if (destination.id == Destination.GooglePromotedId.SAVE_AS_PDF) {
+  if (destination.id === Destination.GooglePromotedId.SAVE_AS_PDF) {
     return PrinterType.PDF_PRINTER;
   }
   return originToType(destination.origin);

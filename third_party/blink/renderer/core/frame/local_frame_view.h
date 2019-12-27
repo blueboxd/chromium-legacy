@@ -615,7 +615,8 @@ class CORE_EXPORT LocalFrameView final
 
   bool HasVisibleSlowRepaintViewportConstrainedObjects() const;
 
-  bool MapToVisualRectInRemoteRootFrame(PhysicalRect&);
+  bool MapToVisualRectInRemoteRootFrame(PhysicalRect& rect,
+                                        bool apply_overflow_clip = true);
 
   void MapLocalToRemoteRootFrame(TransformState&);
 

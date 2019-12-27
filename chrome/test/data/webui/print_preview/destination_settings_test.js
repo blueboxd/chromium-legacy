@@ -104,7 +104,7 @@ suite(destination_settings_test.suiteName, function() {
         // Set up the destination store, but no destination yet. Dropdown is
         // still hidden.
         destinationSettings.init(
-            false /* pdfPrinterDisabled */, 'FooDevice' /* printerName */,
+            'FooDevice' /* printerName */, false /* pdfPrinterDisabled */,
             '' /* serializedDefaultDestinationSelectionRulesStr */,
             [] /* userAccounts */, true /* syncAvailable */);
         assertTrue(dropdown.hidden);

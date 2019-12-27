@@ -64,8 +64,8 @@ Polymer({
       return true;
     }
     return !!this.destination &&
-        this.destination.origin == DestinationOrigin.LOCAL &&
-        this.destination.id != Destination.GooglePromotedId.SAVE_AS_PDF;
+        this.destination.origin === DestinationOrigin.LOCAL &&
+        this.destination.id !== Destination.GooglePromotedId.SAVE_AS_PDF;
   },
 
   /**

@@ -65,9 +65,9 @@ TEST_F(TextFragmentAnchorMetricsTest, UMAMetricsCollected) {
     <p>This is a test page</p>
     <p>With ambiguous test content</p>
   )HTML");
-  Compositor().BeginFrame();
-
   RunAsyncMatchingTasks();
+
+  Compositor().BeginFrame();
 
   histogram_tester_.ExpectTotalCount("TextFragmentAnchor.SelectorCount", 1);
   histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.SelectorCount", 2,
@@ -109,9 +109,9 @@ TEST_F(TextFragmentAnchorMetricsTest, NoMatchFound) {
     </style>
     <p>This is a test page</p>
   )HTML");
-  Compositor().BeginFrame();
-
   RunAsyncMatchingTasks();
+
+  Compositor().BeginFrame();
 
   histogram_tester_.ExpectTotalCount("TextFragmentAnchor.SelectorCount", 1);
   histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.SelectorCount", 1,
@@ -169,9 +169,9 @@ TEST_F(TextFragmentAnchorMetricsTest, MatchFoundNoScroll) {
     <!DOCTYPE html>
     <p>This is a test page</p>
   )HTML");
-  Compositor().BeginFrame();
-
   RunAsyncMatchingTasks();
+
+  Compositor().BeginFrame();
 
   histogram_tester_.ExpectTotalCount("TextFragmentAnchor.SelectorCount", 1);
   histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.SelectorCount", 1,
@@ -225,9 +225,9 @@ TEST_F(TextFragmentAnchorMetricsTest, ScrollCancelled) {
   // Set the target text to visible and change its position to cause a layout
   // and invoke the fragment anchor.
   css_request.Complete("p { visibility: visible; top: 1001px; }");
+  RunAsyncMatchingTasks();
 
   Compositor().BeginFrame();
-  RunAsyncMatchingTasks();
 
   histogram_tester_.ExpectTotalCount("TextFragmentAnchor.SelectorCount", 1);
   histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.SelectorCount", 1,
@@ -269,8 +269,9 @@ TEST_F(TextFragmentAnchorMetricsTest, TapToDismiss) {
     </style>
     <p>This is a test page</p>
   )HTML");
-  Compositor().BeginFrame();
   RunAsyncMatchingTasks();
+
+  Compositor().BeginFrame();
 
   EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kTextFragmentAnchor));
   EXPECT_TRUE(

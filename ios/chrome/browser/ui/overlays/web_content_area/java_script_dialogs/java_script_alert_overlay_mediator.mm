@@ -44,6 +44,12 @@
              : nullptr;
 }
 
+#pragma mark - OverlayRequestMediator
+
++ (const OverlayRequestSupport*)requestSupport {
+  return JavaScriptAlertOverlayRequestConfig::RequestSupport();
+}
+
 @end
 
 @implementation JavaScriptAlertOverlayMediator (AlertConsumerSupport)

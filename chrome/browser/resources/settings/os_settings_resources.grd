@@ -612,8 +612,7 @@
                  type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_PEOPLE_PAGE_HTML"
                  file="chromeos/os_people_page/os_people_page.html"
-                 type="chrome_html"
-                 flattenhtml="true" />
+                 type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_PEOPLE_PAGE_JS"
                  file="chromeos/os_people_page/os_people_page.js"
                  type="chrome_html" />

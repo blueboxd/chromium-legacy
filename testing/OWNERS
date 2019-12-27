@@ -1,9 +1,11 @@
+crouleau@chromium.org
 dpranke@chromium.org
 jbudorick@chromium.org
+johnchen@chromium.org
 
 # These aren't actually great contact points for this directory, but
 # changes in this directory are rare and most changes happen in better-owned
 # subdirectories.
 #
 # TEAM: infra-dev@chromium.org
-# COMPONENT: Build
+# COMPONENT: Test

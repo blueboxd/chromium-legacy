@@ -57,11 +57,11 @@ const DestinationCloudType = {
  * @private
  */
 function parseType(typeStr) {
-  if (typeStr == DestinationCloudType.ANDROID ||
-      typeStr == DestinationCloudType.IOS) {
+  if (typeStr === DestinationCloudType.ANDROID ||
+      typeStr === DestinationCloudType.IOS) {
     return DestinationType.MOBILE;
   }
-  if (typeStr == DestinationCloudType.DOCS) {
+  if (typeStr === DestinationCloudType.DOCS) {
     return DestinationType.GOOGLE_PROMOTED;
   }
   return DestinationType.GOOGLE;
@@ -82,9 +82,9 @@ function extractCertificateStatus(tags) {
       certTag.substring(CERT_TAG.length));
   // Only 2 valid values sent by GCP server.
   assert(
-      value == DestinationCertificateStatus.UNKNOWN ||
-      value == DestinationCertificateStatus.YES ||
-      value == DestinationCertificateStatus.NO);
+      value === DestinationCertificateStatus.UNKNOWN ||
+      value === DestinationCertificateStatus.YES ||
+      value === DestinationCertificateStatus.NO);
   return value;
 }
 
@@ -96,7 +96,7 @@ function extractCertificateStatus(tags) {
  * @param {!DestinationOrigin} origin The origin of the
  *     response.
  * @param {string} account The account this destination is registered for or
- *     empty string, if origin != COOKIES.
+ *     empty string, if origin !== COOKIES.
  * @return {!Destination} Parsed destination.
  */
 export function parseCloudDestination(json, origin, account) {
@@ -174,11 +174,11 @@ export function parseInvitation(json, account) {
   const receiver = json[InvitationField.RECEIVER];
   let receiverName = '';
   const receiverType = receiver['type'];
-  if (receiverType == InvitationAclType.USER) {
+  if (receiverType === InvitationAclType.USER) {
     // It's a personal invitation, empty name indicates just that.
   } else if (
-      receiverType == InvitationAclType.GROUP ||
-      receiverType == InvitationAclType.DOMAIN) {
+      receiverType === InvitationAclType.GROUP ||
+      receiverType === InvitationAclType.DOMAIN) {
     receiverName = nameFormatter(receiver['name'], receiver['scope']);
   } else {
     throw Error('Invitation of unsupported receiver type');

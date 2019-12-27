@@ -8,30 +8,31 @@
 #include <string>
 #include <vector>
 
+#include "device/vr/openxr/openxr_interaction_profiles.h"
 #include "third_party/openxr/src/include/openxr/openxr.h"
 
 namespace device {
 
 class OpenXRPathHelper {
  public:
-  struct DeclaredPaths {
-    XrPath microsoft_motion_controller_interaction_profile;
-    XrPath khronos_simple_controller_interaction_profile;
-  };
-
   OpenXRPathHelper();
   ~OpenXRPathHelper();
 
   XrResult Initialize(XrInstance instance);
 
-  std::vector<std::string> GetInputProfiles(XrPath interaction_profile) const;
+  std::vector<std::string> GetInputProfiles(
+      OpenXrInteractionProfileType interaction_profile) const;
 
-  const DeclaredPaths& GetDeclaredPaths() const;
+  OpenXrInteractionProfileType GetInputProfileType(
+      XrPath interaction_profile) const;
+
+  XrPath GetInteractionProfileXrPath(OpenXrInteractionProfileType type) const;
 
  private:
   bool initialized_{false};
 
-  DeclaredPaths declared_paths_;
+  std::unordered_map<OpenXrInteractionProfileType, XrPath>
+      declared_interaction_profile_paths_;
 };
 
 }  // namespace device

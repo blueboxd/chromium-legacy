@@ -148,7 +148,7 @@ Polymer({
    */
   computeAvailable_: function() {
     return this.previewLoaded && !!this.clipSize_ &&
-        this.getSettingValue('margins') == MarginsType.CUSTOM &&
+        this.getSettingValue('margins') === MarginsType.CUSTOM &&
         !!this.pageSize;
   },
 
@@ -195,7 +195,7 @@ Polymer({
 
     this.resetMargins_ = true;
     const marginsSetting = this.getSetting('margins');
-    if (marginsSetting.value == MarginsType.CUSTOM) {
+    if (marginsSetting.value === MarginsType.CUSTOM) {
       // Set the margins value to default first.
       this.setSetting('margins', MarginsType.DEFAULT);
     }
@@ -206,7 +206,7 @@ Polymer({
 
   /** @private */
   onStateChanged_: function() {
-    if (this.state == State.READY && this.resetMargins_ === null) {
+    if (this.state === State.READY && this.resetMargins_ === null) {
       // Don't reset margins if there are sticky values. Otherwise, set them
       // to the document margins when the user selects custom margins.
       this.resetMargins_ =
@@ -229,8 +229,8 @@ Polymer({
    * @private
    */
   isTopOrBottom_: function(orientation) {
-    return orientation == CustomMarginsOrientation.TOP ||
-        orientation == CustomMarginsOrientation.BOTTOM;
+    return orientation === CustomMarginsOrientation.TOP ||
+        orientation === CustomMarginsOrientation.BOTTOM;
   },
 
   /**
@@ -331,7 +331,7 @@ Polymer({
 
     // Do not set the controls invisible if the user is dragging or focusing
     // the textbox for one of them.
-    if (invisible && (this.dragging_ != '' || this.textboxFocused_)) {
+    if (invisible && (this.dragging_ !== '' || this.textboxFocused_)) {
       return;
     }
 
@@ -400,7 +400,7 @@ Polymer({
     const oldMargins =
         /** @type {MarginsSetting} */ (this.getSettingValue('customMargins'));
     const key = MARGIN_KEY_MAP.get(marginSide);
-    if (oldMargins[key] == marginValue) {
+    if (oldMargins[key] === marginValue) {
       return;
     }
     const newMargins = Object.assign({}, oldMargins);
@@ -423,14 +423,14 @@ Polymer({
     const Orientation = CustomMarginsOrientation;
     let limit = 0;
     const margins = this.getSettingValue('customMargins');
-    if (marginSide == Orientation.TOP) {
+    if (marginSide === Orientation.TOP) {
       limit = this.pageSize.height - margins.marginBottom - MINIMUM_DISTANCE;
-    } else if (marginSide == Orientation.RIGHT) {
+    } else if (marginSide === Orientation.RIGHT) {
       limit = this.pageSize.width - margins.marginLeft - MINIMUM_DISTANCE;
-    } else if (marginSide == Orientation.BOTTOM) {
+    } else if (marginSide === Orientation.BOTTOM) {
       limit = this.pageSize.height - margins.marginTop - MINIMUM_DISTANCE;
     } else {
-      assert(marginSide == Orientation.LEFT);
+      assert(marginSide === Orientation.LEFT);
       limit = this.pageSize.width - margins.marginRight - MINIMUM_DISTANCE;
     }
     return Math.round(Math.min(value, limit));
@@ -520,7 +520,7 @@ Polymer({
    * @param {number} scaleTransform Updated value of the scale transform.
    */
   updateScaleTransform: function(scaleTransform) {
-    if (scaleTransform != this.scaleTransform_) {
+    if (scaleTransform !== this.scaleTransform_) {
       this.scaleTransform_ = scaleTransform;
     }
   },

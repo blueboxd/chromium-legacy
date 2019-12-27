@@ -14,6 +14,7 @@
 #include "content/common/content_export.h"
 #include "content/public/renderer/plugin_ax_tree_source.h"
 #include "content/public/renderer/render_accessibility.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/renderer/accessibility/blink_ax_tree_source.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
@@ -38,6 +39,33 @@ namespace content {
 
 class AXImageAnnotator;
 class RenderFrameImpl;
+
+using BlinkAXTreeSerializer = ui::
+    AXTreeSerializer<blink::WebAXObject, AXContentNodeData, AXContentTreeData>;
+
+class AXTreeSnapshotterImpl : public AXTreeSnapshotter {
+ public:
+  explicit AXTreeSnapshotterImpl(RenderFrameImpl* render_frame);
+  ~AXTreeSnapshotterImpl() override;
+
+  // AXTreeSnapshotter implementation.
+  void Snapshot(ui::AXMode ax_mode,
+                size_t max_node_count,
+                ui::AXTreeUpdate* accessibility_tree) override;
+
+  // Same as above, but returns in |accessibility_tree| a AXContentTreeUpdate
+  // with content-specific metadata, instead of an AXTreeUpdate.
+  void SnapshotContentTree(ui::AXMode ax_mode,
+                           size_t max_node_count,
+                           AXContentTreeUpdate* accessibility_tree);
+
+ private:
+  RenderFrameImpl* render_frame_;
+  std::unique_ptr<blink::WebAXContext> context_;
+
+  AXTreeSnapshotterImpl(const AXTreeSnapshotterImpl&) = delete;
+  AXTreeSnapshotterImpl& operator=(const AXTreeSnapshotterImpl&) = delete;
+};
 
 // The browser process implements native accessibility APIs, allowing
 // assistive technology (e.g., screen readers, magnifiers) to access and
@@ -201,10 +229,6 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   BlinkAXTreeSource tree_source_;
 
   // The serializer that sends accessibility messages to the browser process.
-  using BlinkAXTreeSerializer =
-      ui::AXTreeSerializer<blink::WebAXObject,
-                           AXContentNodeData,
-                           AXContentTreeData>;
   BlinkAXTreeSerializer serializer_;
 
   using PluginAXTreeSerializer = ui::AXTreeSerializer<const ui::AXNode*,

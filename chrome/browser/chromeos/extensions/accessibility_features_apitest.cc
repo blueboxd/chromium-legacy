@@ -196,7 +196,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityFeaturesApiTest, Get) {
 
 IN_PROC_BROWSER_TEST_P(AccessibilityFeaturesApiTest, PRE_Get_ComponentApp) {
   EXPECT_FALSE(RunPlatformAppTestWithFlags(GetTestExtensionPath(), "{}",
-                                           kFlagLoadAsComponent))
+                                           kFlagNone, kFlagLoadAsComponent))
       << message_;
 }
 
@@ -219,8 +219,9 @@ IN_PROC_BROWSER_TEST_P(AccessibilityFeaturesApiTest, Get_ComponentApp) {
   std::string test_arg;
   ASSERT_TRUE(GenerateTestArg("getterTest", enabled_features, disabled_features,
                               &test_arg));
-  EXPECT_TRUE(RunPlatformAppTestWithFlags(
-      GetTestExtensionPath(), test_arg.c_str(), kFlagLoadAsComponent))
+  EXPECT_TRUE(RunPlatformAppTestWithFlags(GetTestExtensionPath(),
+                                          test_arg.c_str(), kFlagNone,
+                                          kFlagLoadAsComponent))
       << message_;
 }
 

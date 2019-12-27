@@ -1625,6 +1625,28 @@ IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
   }
 }
 
+class NavigationRequestHostResolutionFailureTest : public ContentBrowserTest {
+ protected:
+  void SetUpOnMainThread() override {
+    host_resolver()->AddSimulatedTimeoutFailure("*");
+    ASSERT_TRUE(embedded_test_server()->Start());
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(NavigationRequestHostResolutionFailureTest,
+                       HostResolutionFailure) {
+  GURL url(embedded_test_server()->GetURL("example.com", "/title1.html"));
+
+  NavigationHandleObserver observer(shell()->web_contents(), url);
+
+  EXPECT_FALSE(NavigateToURL(shell(), url));
+
+  EXPECT_TRUE(observer.has_committed());
+  EXPECT_TRUE(observer.is_error());
+  EXPECT_EQ(net::ERR_DNS_TIMED_OUT, observer.net_error_code());
+  EXPECT_EQ(net::ERR_DNS_TIMED_OUT, observer.resolve_error_info().error);
+}
+
 // Record and list the navigations that are started and finished.
 class NavigationLogger : public WebContentsObserver {
  public:

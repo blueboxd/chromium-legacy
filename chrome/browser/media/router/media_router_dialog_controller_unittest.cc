@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "chrome/browser/media/router/media_router_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/media_router/media_route.h"
 #include "chrome/common/media_router/media_source.h"
@@ -31,7 +32,10 @@ class TestMediaRouterDialogController : public MediaRouterDialogController {
   ~TestMediaRouterDialogController() override {}
 
   bool IsShowingMediaRouterDialog() const override { return has_dialog_; }
-  void CreateMediaRouterDialog() override { has_dialog_ = true; }
+  void CreateMediaRouterDialog(
+      MediaRouterDialogOpenOrigin activation_location) override {
+    has_dialog_ = true;
+  }
   void CloseMediaRouterDialog() override { has_dialog_ = false; }
 
  private:
@@ -103,12 +107,14 @@ TEST_F(MediaRouterDialogControllerTest, CreateForWebContents) {
 
 TEST_F(MediaRouterDialogControllerTest, ShowAndHideDialog) {
   EXPECT_CALL(*web_contents_delegate_, ActivateContents(web_contents()));
-  EXPECT_TRUE(dialog_controller_->ShowMediaRouterDialog());
+  EXPECT_TRUE(dialog_controller_->ShowMediaRouterDialog(
+      MediaRouterDialogOpenOrigin::TOOLBAR));
   EXPECT_TRUE(dialog_controller_->IsShowingMediaRouterDialog());
 
   // If a dialog is already shown, ShowMediaRouterDialog() should return false.
   EXPECT_CALL(*web_contents_delegate_, ActivateContents(web_contents()));
-  EXPECT_FALSE(dialog_controller_->ShowMediaRouterDialog());
+  EXPECT_FALSE(dialog_controller_->ShowMediaRouterDialog(
+      MediaRouterDialogOpenOrigin::TOOLBAR));
 
   dialog_controller_->HideMediaRouterDialog();
   EXPECT_FALSE(dialog_controller_->IsShowingMediaRouterDialog());
@@ -116,7 +122,8 @@ TEST_F(MediaRouterDialogControllerTest, ShowAndHideDialog) {
   // Once the dialog is hidden, ShowMediaRouterDialog() should return true
   // again.
   EXPECT_CALL(*web_contents_delegate_, ActivateContents(web_contents()));
-  EXPECT_TRUE(dialog_controller_->ShowMediaRouterDialog());
+  EXPECT_TRUE(dialog_controller_->ShowMediaRouterDialog(
+      MediaRouterDialogOpenOrigin::TOOLBAR));
 }
 
 TEST_F(MediaRouterDialogControllerTest, ShowDialogForPresentation) {

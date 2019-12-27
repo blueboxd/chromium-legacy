@@ -51,6 +51,12 @@
              : nullptr;
 }
 
+#pragma mark - OverlayRequestMediator
+
++ (const OverlayRequestSupport*)requestSupport {
+  return JavaScriptPromptOverlayRequestConfig::RequestSupport();
+}
+
 #pragma mark - Response helpers
 
 - (void)setPromptResponse:(NSString*)textInput {

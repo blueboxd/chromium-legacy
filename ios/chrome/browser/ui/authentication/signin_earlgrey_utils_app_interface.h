@@ -15,6 +15,12 @@
 // compiled into the app binary and can be called from either app or test code.
 @interface SigninEarlGreyUtilsAppInterface : NSObject
 
+// Returns a fake identity.
++ (FakeChromeIdentity*)fakeIdentity1;
+
+// Returns a second fake identity.
++ (FakeChromeIdentity*)fakeIdentity2;
+
 // Adds |fakeIdentity| to the fake identity service.
 + (void)addFakeIdentity:(FakeChromeIdentity*)fakeIdentity;
 
@@ -33,6 +39,18 @@
 
 // Removes |fakeIdentity| from the fake identity service.
 + (void)removeFakeIdentity:(FakeChromeIdentity*)fakeIdentity;
+
+// Returns the current number of bookmarks from BookmarkModel.
++ (NSUInteger)bookmarkCount:(NSString*)title;
+
+// Checks if any identity is currently authenticated.
++ (BOOL)isAuthenticated;
+
+// Signs out the current user.
++ (void)signOut;
+
+// Adds the new bookmark with URL and title to the |BookmarkModel|.
++ (void)addBookmark:(NSString*)urlString withTitle:(NSString*)title;
 
 @end
 

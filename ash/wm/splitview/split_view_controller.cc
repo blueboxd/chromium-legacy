@@ -792,7 +792,7 @@ void SplitViewController::OnWindowDragStarted(aura::Window* dragged_window) {
 
   // OnSnappedWindowDetached() may end split view mode.
   if (split_view_divider_)
-    split_view_divider_->OnWindowDragStarted(dragged_window);
+    split_view_divider_->OnWindowDragStarted();
 }
 
 void SplitViewController::OnWindowDragEnded(

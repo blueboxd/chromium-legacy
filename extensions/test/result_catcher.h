@@ -31,7 +31,7 @@ class ResultCatcher : public content::NotificationObserver {
 
   // Pumps the UI loop until a notification is received that an API test
   // succeeded or failed. Returns true if the test succeeded, false otherwise.
-  bool GetNextResult();
+  bool GetNextResult() WARN_UNUSED_RESULT;
 
   void RestrictToBrowserContext(content::BrowserContext* context) {
     browser_context_restriction_ = context;

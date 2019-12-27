@@ -151,7 +151,7 @@ Polymer({
     // It's done because we don't permit multiple simultaneous validation errors
     // in Print Preview and we also don't want to set the value when sticky
     // settings may not yet have been set.
-    if (this.state != State.READY && this.settings.pinValue.valid) {
+    if (this.state !== State.READY && this.settings.pinValue.valid) {
       return;
     }
     this.inputValid_ = this.computeValid_();
@@ -159,7 +159,7 @@ Polymer({
 
     // We allow to save the empty string as sticky setting value to give users
     // the opportunity to unset their PIN in sticky settings.
-    if ((this.inputValid_ || this.inputString_ == '') &&
+    if ((this.inputValid_ || this.inputString_ === '') &&
         this.inputString_ !== this.getSettingValue('pinValue')) {
       this.setSetting('pinValue', this.inputString_);
     }

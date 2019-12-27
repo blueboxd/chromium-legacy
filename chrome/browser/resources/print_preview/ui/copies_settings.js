@@ -66,7 +66,7 @@ Polymer({
    */
   collateHidden_: function() {
     return !this.inputValid_ || this.currentValue_ === '' ||
-        parseInt(this.currentValue_, 10) == 1;
+        parseInt(this.currentValue_, 10) === 1;
   },
 
   /** @private */

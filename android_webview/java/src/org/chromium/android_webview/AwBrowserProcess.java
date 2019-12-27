@@ -371,6 +371,7 @@ public final class AwBrowserProcess {
         });
     }
 
+    // TODO(ntfschr): move this to DeveloperModeUtils in common Java packaage.
     // Quickly determine whether developer mode is enabled.
     public static boolean isDeveloperModeEnabled() {
         final Context context = ContextUtils.getApplicationContext();
@@ -386,6 +387,7 @@ public final class AwBrowserProcess {
         helper.applyFlagOverrides(getFlagOverrides());
     }
 
+    // TODO(ntfschr): move this to DeveloperModeUtils in common Java packaage.
     private static Map<String, Boolean> getFlagOverrides() {
         Map<String, Boolean> flagOverrides = new HashMap<>();
 

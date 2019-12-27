@@ -303,7 +303,7 @@ void MenuScrollViewContainer::CreateDefaultBorder() {
 
 void MenuScrollViewContainer::CreateBubbleBorder() {
   const SkColor color = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_MenuBorderColor);
+      ui::NativeTheme::kColorId_MenuBackgroundColor);
   bubble_border_ = new BubbleBorder(arrow_, BubbleBorder::SMALL_SHADOW, color);
   if (content_view_->GetMenuItem()
           ->GetMenuController()

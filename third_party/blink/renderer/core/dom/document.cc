@@ -3029,6 +3029,53 @@ void Document::UpdateStyleAndLayoutForNode(const Node* node) {
   UpdateStyleAndLayout();
 }
 
+void Document::ApplyScrollRestorationLogic() {
+  // If we're restoring a scroll position from history, that takes precedence
+  // over scrolling to the anchor in the URL.
+  View()->InvokeFragmentAnchor();
+
+  auto& frame_loader = GetFrame()->Loader();
+  auto& document_loader = *frame_loader.GetDocumentLoader();
+  if (frame_->IsLoading() &&
+      !FrameLoader::NeedsHistoryItemRestore(document_loader.LoadType()))
+    return;
+
+  auto* history_item = frame_loader.GetDocumentLoader()->GetHistoryItem();
+
+  if (!history_item || !history_item->GetViewState())
+    return;
+
+  bool should_restore_scroll =
+      history_item->ScrollRestorationType() != kScrollRestorationManual;
+  auto& scroll_offset = history_item->GetViewState()->scroll_offset_;
+
+  // This tries to balance:
+  // 1. restoring as soon as possible.
+  // 2. not overriding user scroll (TODO(majidvp): also respect user scale).
+  // 3. detecting clamping to avoid repeatedly popping the scroll position down
+  //    as the page height increases.
+  // 4. ignoring clamp detection if scroll state is not being restored, if load
+  //    is complete, or if the navigation is same-document (as the new page may
+  //    be smaller than the previous page).
+  bool can_restore_without_clamping =
+      View()->LayoutViewport()->ClampScrollOffset(scroll_offset) ==
+      scroll_offset;
+
+  bool can_restore_without_annoying_user =
+      !document_loader.GetInitialScrollState().was_scrolled_by_user &&
+      (can_restore_without_clamping || !frame_->IsLoading() ||
+       !should_restore_scroll);
+  if (!can_restore_without_annoying_user)
+    return;
+
+  frame_loader.RestoreScrollPositionAndViewState();
+  if (View()->GetScrollableArea()->ApplyPendingHistoryRestoreScrollOffset()) {
+    if (ScrollingCoordinator* scrolling_coordinator =
+            View()->GetFrame().GetPage()->GetScrollingCoordinator())
+      scrolling_coordinator->FrameViewRootLayerDidChange(View());
+  }
+}
+
 void Document::UpdateStyleAndLayout(ForcedLayoutStatus status) {
   DCHECK(IsMainThread());
   LocalFrameView* frame_view = View();
@@ -3056,6 +3103,8 @@ void Document::UpdateStyleAndLayout(ForcedLayoutStatus status) {
   if (Lifecycle().GetState() < DocumentLifecycle::kLayoutClean)
     Lifecycle().AdvanceTo(DocumentLifecycle::kLayoutClean);
 
+  ApplyScrollRestorationLogic();
+
   if (LocalFrameView* frame_view_anchored = View())
     frame_view_anchored->PerformScrollAnchoringAdjustments();
 
@@ -3069,11 +3118,6 @@ void Document::UpdateStyleAndLayout(ForcedLayoutStatus status) {
 void Document::LayoutUpdated() {
   DCHECK(GetFrame());
   DCHECK(View());
-
-  // If we're restoring a scroll position from history, that takes precedence
-  // over scrolling to the anchor in the URL.
-  View()->InvokeFragmentAnchor();
-  GetFrame()->Loader().RestoreScrollPositionAndViewState();
 
   // Plugins can run script inside layout which can detach the page.
   // TODO(dcheng): Does it make sense to do any of this work if detached?
@@ -4179,6 +4223,16 @@ bool Document::CheckCompletedInternal() {
         Loader()->GetPreviewsResourceLoadingHints();
     if (hints) {
       hints->RecordUKM(UkmRecorder());
+    }
+  }
+
+  if (auto* view = View()) {
+    if (view->GetFragmentAnchor()) {
+      // Schedule an animation frame to process fragment anchors. The frame
+      // can't be scheduled when the fragment anchor is set because, per spec,
+      // we must wait for the document to be loaded before invoking fragment
+      // anchors.
+      View()->ScheduleAnimation();
     }
   }
 

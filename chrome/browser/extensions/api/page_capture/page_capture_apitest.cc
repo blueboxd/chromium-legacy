@@ -87,8 +87,8 @@ class PageCaptureSaveAsMHTMLDelegate
 IN_PROC_BROWSER_TEST_F(ExtensionPageCaptureApiTest, MAYBE_SaveAsMHTML) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   PageCaptureSaveAsMHTMLDelegate delegate;
-  ASSERT_TRUE(RunExtensionTestWithFlagsAndArg(
-      "page_capture", "ONLY_PAGE_CAPTURE_PERMISSION", kFlagNone))
+  ASSERT_TRUE(
+      RunExtensionTestWithArg("page_capture", "ONLY_PAGE_CAPTURE_PERMISSION"))
       << message_;
   // Make sure the MHTML data gets written to the temporary file.
   ASSERT_FALSE(delegate.temp_file_.empty());

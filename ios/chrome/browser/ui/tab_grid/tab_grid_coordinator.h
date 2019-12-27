@@ -12,14 +12,17 @@
 #import "ios/chrome/browser/ui/tab_grid/view_controller_swapping.h"
 
 @protocol ApplicationCommands;
+@protocol BrowsingDataCommands;
 @class TabModel;
 @protocol TabSwitcher;
 
 @interface TabGridCoordinator : ChromeRootCoordinator<ViewControllerSwapping>
 
 - (instancetype)initWithWindow:(UIWindow*)window
-    applicationCommandEndpoint:
-        (id<ApplicationCommands>)applicationCommandEndpoint
+     applicationCommandEndpoint:
+         (id<ApplicationCommands>)applicationCommandEndpoint
+    browsingDataCommandEndpoint:
+        (id<BrowsingDataCommands>)browsingDataCommandEndpoint
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithWindow:(UIWindow*)window NS_UNAVAILABLE;

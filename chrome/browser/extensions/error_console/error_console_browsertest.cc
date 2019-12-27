@@ -297,11 +297,8 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, ReportManifestErrors) {
   const Extension* extension = NULL;
   // We expect two errors - one for an invalid permission, and a second for
   // an unknown key.
-  LoadExtensionAndCheckErrors("manifest_warnings",
-                              ExtensionBrowserTest::kFlagIgnoreManifestWarnings,
-                              2,
-                              ACTION_NONE,
-                              &extension);
+  LoadExtensionAndCheckErrors("manifest_warnings", kFlagIgnoreManifestWarnings,
+                              2, ACTION_NONE, &extension);
 
   const ErrorList& errors =
       error_console()->GetErrorsForExtension(extension->id());
@@ -352,11 +349,8 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest,
   const Extension* extension = NULL;
   // Same test as ReportManifestErrors, except we don't expect any errors since
   // we disable Developer Mode.
-  LoadExtensionAndCheckErrors("manifest_warnings",
-                              ExtensionBrowserTest::kFlagIgnoreManifestWarnings,
-                              0,
-                              ACTION_NONE,
-                              &extension);
+  LoadExtensionAndCheckErrors("manifest_warnings", kFlagIgnoreManifestWarnings,
+                              0, ACTION_NONE, &extension);
 
   // Now if we enable developer mode, the errors should be reported...
   profile()->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);

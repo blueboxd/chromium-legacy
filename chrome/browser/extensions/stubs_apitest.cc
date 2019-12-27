@@ -39,7 +39,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Stubs) {
 // an API feature without providing a schema. http://crbug.com/369318
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, StubsApp) {
   ASSERT_TRUE(RunPlatformAppTestWithFlags(
-      "stubs_app", static_cast<int>(kFlagIgnoreManifestWarnings)))
+      "stubs_app", kFlagIgnoreManifestWarnings, kFlagNone))
       << message_;
 }
 

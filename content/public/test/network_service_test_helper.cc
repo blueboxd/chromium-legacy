@@ -108,6 +108,9 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
         case network::mojom::ResolverType::kResolverTypeFail:
           host_resolver->AddSimulatedFailure(rule->host_pattern);
           break;
+        case network::mojom::ResolverType::kResolverTypeFailTimeout:
+          host_resolver->AddSimulatedTimeoutFailure(rule->host_pattern);
+          break;
         case network::mojom::ResolverType::kResolverTypeIPLiteral:
           host_resolver->AddIPLiteralRule(rule->host_pattern, rule->replacement,
                                           std::string());

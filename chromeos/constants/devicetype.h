@@ -20,6 +20,9 @@ enum class DeviceType {
 // Returns the current device type, eg, Chromebook, Chromebox.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) DeviceType GetDeviceType();
 
+// Returns true if the device is Google branded.
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsGoogleBrandedDevice();
+
 }  // namespace chromeos
 
 #endif  // CHROMEOS_CONSTANTS_DEVICETYPE_H_

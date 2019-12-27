@@ -10,6 +10,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/media/router/media_router_dialog_controller.h"
 #include "chrome/browser/media/router/media_router_feature.h"
+#include "chrome/browser/media/router/media_router_metrics.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -141,31 +142,32 @@ IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest, OpenDialogFromAppMenu) {
 #if defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_EphemeralToolbarIconForDialog EphemeralToolbarIconForDialog
 #else
-#define MAYBE_EphemeralToolbarIconForDialog DISABLED_EphemeralToolbarIconForDialog
+#define MAYBE_EphemeralToolbarIconForDialog \
+  DISABLED_EphemeralToolbarIconForDialog
 #endif
 IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest,
                        MAYBE_EphemeralToolbarIconForDialog) {
   MediaRouterDialogController* dialog_controller = GetDialogController();
 
   EXPECT_FALSE(ToolbarIconExists());
-  dialog_controller->ShowMediaRouterDialog();
+  dialog_controller->ShowMediaRouterDialog(MediaRouterDialogOpenOrigin::PAGE);
   EXPECT_TRUE(ToolbarIconExists());
   dialog_controller->HideMediaRouterDialog();
   EXPECT_FALSE(ToolbarIconExists());
 
-  dialog_controller->ShowMediaRouterDialog();
+  dialog_controller->ShowMediaRouterDialog(MediaRouterDialogOpenOrigin::PAGE);
   EXPECT_TRUE(ToolbarIconExists());
   // Clicking on the toolbar icon should hide both the dialog and the icon.
   PressToolbarIcon();
   EXPECT_FALSE(dialog_controller->IsShowingMediaRouterDialog());
   EXPECT_FALSE(ToolbarIconExists());
 
-  dialog_controller->ShowMediaRouterDialog();
+  dialog_controller->ShowMediaRouterDialog(MediaRouterDialogOpenOrigin::PAGE);
   SetAlwaysShowActionPref(true);
   // When the pref is set to true, hiding the dialog shouldn't hide the icon.
   dialog_controller->HideMediaRouterDialog();
   EXPECT_TRUE(ToolbarIconExists());
-  dialog_controller->ShowMediaRouterDialog();
+  dialog_controller->ShowMediaRouterDialog(MediaRouterDialogOpenOrigin::PAGE);
   // While the dialog is showing, setting the pref to false shouldn't hide the
   // icon.
   SetAlwaysShowActionPref(false);
@@ -175,7 +177,8 @@ IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest, PinAndUnpinToolbarIcon) {
-  GetDialogController()->ShowMediaRouterDialog();
+  GetDialogController()->ShowMediaRouterDialog(
+      MediaRouterDialogOpenOrigin::PAGE);
   EXPECT_TRUE(ToolbarIconExists());
   // Pin the icon via its context menu.
   ui::SimpleMenuModel* context_menu = GetIconContextMenu();

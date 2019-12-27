@@ -154,19 +154,19 @@ Polymer({
   convertPixelsToPts: function(pixels) {
     let pts;
     const Orientation = CustomMarginsOrientation;
-    if (this.side == Orientation.TOP) {
+    if (this.side === Orientation.TOP) {
       pts = pixels - this.translateTransform.y + RADIUS_PX;
       pts /= this.scaleTransform;
-    } else if (this.side == Orientation.RIGHT) {
+    } else if (this.side === Orientation.RIGHT) {
       pts = pixels - this.translateTransform.x + RADIUS_PX;
       pts /= this.scaleTransform;
       pts = this.pageSize.width - pts;
-    } else if (this.side == Orientation.BOTTOM) {
+    } else if (this.side === Orientation.BOTTOM) {
       pts = pixels - this.translateTransform.y + RADIUS_PX;
       pts /= this.scaleTransform;
       pts = this.pageSize.height - pts;
     } else {
-      assert(this.side == Orientation.LEFT);
+      assert(this.side === Orientation.LEFT);
       pts = pixels - this.translateTransform.x + RADIUS_PX;
       pts /= this.scaleTransform;
     }
@@ -178,8 +178,9 @@ Polymer({
    * @return {boolean} Whether the margin should start being dragged.
    */
   shouldDrag: function(event) {
-    return !this.disabled && event.button == 0 &&
-        (event.path[0] == this.$.lineContainer || event.path[0] == this.$.line);
+    return !this.disabled && event.button === 0 &&
+        (event.path[0] === this.$.lineContainer ||
+         event.path[0] === this.$.line);
   },
 
   /** @private */
@@ -196,7 +197,7 @@ Polymer({
    */
   parseValueToPts_: function(value) {
     value = value.trim();
-    if (value.length == 0) {
+    if (value.length === 0) {
       return null;
     }
     assert(this.measurementSystem);
@@ -273,15 +274,15 @@ Polymer({
     let y = this.translateTransform.y;
     let width = null;
     let height = null;
-    if (this.side == Orientation.TOP) {
+    if (this.side === Orientation.TOP) {
       y = this.scaleTransform * this.positionInPts_ +
           this.translateTransform.y - RADIUS_PX;
       width = this.scaleTransform * this.pageSize.width;
-    } else if (this.side == Orientation.RIGHT) {
+    } else if (this.side === Orientation.RIGHT) {
       x = this.scaleTransform * (this.pageSize.width - this.positionInPts_) +
           this.translateTransform.x - RADIUS_PX;
       height = this.scaleTransform * this.pageSize.height;
-    } else if (this.side == Orientation.BOTTOM) {
+    } else if (this.side === Orientation.BOTTOM) {
       y = this.scaleTransform * (this.pageSize.height - this.positionInPts_) +
           this.translateTransform.y - RADIUS_PX;
       width = this.scaleTransform * this.pageSize.width;
@@ -293,10 +294,10 @@ Polymer({
     window.requestAnimationFrame(() => {
       this.style.left = Math.round(x) + 'px';
       this.style.top = Math.round(y) + 'px';
-      if (width != null) {
+      if (width !== null) {
         this.style.width = Math.round(width) + 'px';
       }
-      if (height != null) {
+      if (height !== null) {
         this.style.height = Math.round(height) + 'px';
       }
     });

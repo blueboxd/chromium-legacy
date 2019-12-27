@@ -2009,7 +2009,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, EventsAfterRestart) {
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, TabsOnCreated) {
   ASSERT_TRUE(RunExtensionTestWithFlags("tabs/lazy_background_on_created",
-                                        kFlagRunAsServiceWorkerBasedExtension))
+                                        kFlagRunAsServiceWorkerBasedExtension,
+                                        kFlagNone))
       << message_;
 }
 

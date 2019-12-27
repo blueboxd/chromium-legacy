@@ -134,7 +134,7 @@ bool IsReloadLoadType(WebFrameLoadType type) {
          type == WebFrameLoadType::kReloadBypassingCache;
 }
 
-static bool NeedsHistoryItemRestore(WebFrameLoadType type) {
+bool FrameLoader::NeedsHistoryItemRestore(WebFrameLoadType type) {
   return type == WebFrameLoadType::kBackForward || IsReloadLoadType(type);
 }
 
@@ -1200,79 +1200,9 @@ void FrameLoader::RestoreScrollPositionAndViewState(
   if (!NeedsHistoryItemRestore(load_type))
     return;
 
-  bool should_restore_scroll =
-      scroll_restoration_type != kScrollRestorationManual;
-  bool should_restore_scale = view_state.page_scale_factor_;
-
-  // This tries to balance:
-  // 1. restoring as soon as possible.
-  // 2. not overriding user scroll (TODO(majidvp): also respect user scale).
-  // 3. detecting clamping to avoid repeatedly popping the scroll position down
-  //    as the page height increases.
-  // 4. forcing a layout if necessary to avoid clamping.
-  // 5. ignoring clamp detection if scroll state is not being restored, if load
-  //    is complete, or if the navigation is same-document (as the new page may
-  //    be smaller than the previous page).
-  bool can_restore_without_clamping =
-      view->LayoutViewport()->ClampScrollOffset(view_state.scroll_offset_) ==
-      view_state.scroll_offset_;
-
-  bool should_force_clamping = !frame_->IsLoading() || is_same_document;
-  // Here |can_restore_without_clamping| is false, but layout might be necessary
-  // to ensure correct content size.
-  if (!can_restore_without_clamping && should_force_clamping)
-    frame_->GetDocument()->UpdateStyleAndLayout();
-
-  bool can_restore_without_annoying_user =
-      !GetDocumentLoader()->GetInitialScrollState().was_scrolled_by_user &&
-      (can_restore_without_clamping || should_force_clamping ||
-       !should_restore_scroll);
-  if (!can_restore_without_annoying_user)
-    return;
-
-  if (should_restore_scroll) {
-    // TODO(pnoland): attempt to restore the anchor in more places than this.
-    // Anchor-based restore should allow for earlier restoration.
-    bool did_restore = view->LayoutViewport()->RestoreScrollAnchor(
-        {view_state.scroll_anchor_data_.selector_,
-         LayoutPoint(view_state.scroll_anchor_data_.offset_.x(),
-                     view_state.scroll_anchor_data_.offset_.y()),
-         view_state.scroll_anchor_data_.simhash_});
-    if (!did_restore) {
-      view->LayoutViewport()->SetScrollOffset(view_state.scroll_offset_,
-                                              kProgrammaticScroll);
-    }
-  }
-
-  // For main frame restore scale and visual viewport position
-  if (frame_->IsMainFrame()) {
-    ScrollOffset visual_viewport_offset(
-        view_state.visual_viewport_scroll_offset_);
-
-    // If the visual viewport's offset is (-1, -1) it means the history item
-    // is an old version of HistoryItem so distribute the scroll between
-    // the main frame and the visual viewport as best as we can.
-    if (visual_viewport_offset.Width() == -1 &&
-        visual_viewport_offset.Height() == -1) {
-      visual_viewport_offset =
-          view_state.scroll_offset_ - view->LayoutViewport()->GetScrollOffset();
-    }
-
-    VisualViewport& visual_viewport = frame_->GetPage()->GetVisualViewport();
-    if (should_restore_scale && should_restore_scroll) {
-      visual_viewport.SetScaleAndLocation(
-          view_state.page_scale_factor_, visual_viewport.IsPinchGestureActive(),
-          FloatPoint(visual_viewport_offset));
-    } else if (should_restore_scale) {
-      visual_viewport.SetScale(view_state.page_scale_factor_);
-    } else if (should_restore_scroll) {
-      visual_viewport.SetLocation(FloatPoint(visual_viewport_offset));
-    }
-
-    if (ScrollingCoordinator* scrolling_coordinator =
-            frame_->GetPage()->GetScrollingCoordinator())
-      scrolling_coordinator->FrameViewRootLayerDidChange(view);
-  }
+  view->GetScrollableArea()->SetPendingHistoryRestoreScrollOffset(
+      view_state, scroll_restoration_type != kScrollRestorationManual);
+  view->ScheduleAnimation();
 
   GetDocumentLoader()->GetInitialScrollState().did_restore_from_history = true;
 }

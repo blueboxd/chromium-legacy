@@ -100,7 +100,7 @@ Polymer({
   onConfigureRequestAccepted: function() {
     // It must be a Chrome OS CUPS printer which hasn't been set up before.
     assert(
-        this.destination.origin == DestinationOrigin.CROS &&
+        this.destination.origin === DestinationOrigin.CROS &&
         !this.destination.capabilities);
     this.configurationStatus_ = DestinationConfigStatus.IN_PROGRESS;
   },
@@ -120,7 +120,7 @@ Polymer({
    * @private
    */
   checkConfigurationStatus_: function(status) {
-    return this.configurationStatus_ == status;
+    return this.configurationStatus_ === status;
   },
   // </if>
 

@@ -28,7 +28,8 @@ class MediaRouterDialogControllerViews
   ~MediaRouterDialogControllerViews() override;
 
   // MediaRouterDialogController:
-  void CreateMediaRouterDialog() override;
+  void CreateMediaRouterDialog(
+      MediaRouterDialogOpenOrigin activation_location) override;
   void CloseMediaRouterDialog() override;
   bool IsShowingMediaRouterDialog() const override;
   void Reset() override;

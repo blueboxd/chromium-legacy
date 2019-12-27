@@ -107,7 +107,7 @@ export class CloudPrintInterfaceJS {
     let origins = opt_origin ? [opt_origin] : CloudOrigins;
     if (this.isInAppKioskMode_) {
       origins = origins.filter(function(origin) {
-        return origin != DestinationOrigin.COOKIES;
+        return origin !== DestinationOrigin.COOKIES;
       });
     }
     this.abortSearchRequests_(origins);
@@ -171,7 +171,7 @@ export class CloudPrintInterfaceJS {
   submit(destination, printTicket, documentTitle, data) {
     const result = VERSION_REGEXP_.exec(navigator.userAgent);
     let chromeVersion = 'unknown';
-    if (result && result.length == 2) {
+    if (result && result.length === 2) {
       chromeVersion = result[1];
     }
     const params = [
@@ -218,7 +218,7 @@ export class CloudPrintInterfaceJS {
   buildRequest_(method, action, params, origin, account, callback) {
     const url = new URL(this.baseUrl_ + '/' + action);
     const searchParams = url.searchParams;
-    if (origin == DestinationOrigin.COOKIES) {
+    if (origin === DestinationOrigin.COOKIES) {
       const xsrfToken = this.xsrfTokens_[account];
       if (!xsrfToken) {
         searchParams.append('xsrf', '');
@@ -241,11 +241,11 @@ export class CloudPrintInterfaceJS {
     searchParams.append('hl', this.uiLocale_);
     let body = null;
     if (params) {
-      if (method == 'GET') {
+      if (method === 'GET') {
         params.forEach(param => {
           searchParams.append(param.name, encodeURIComponent(param.value));
         });
-      } else if (method == 'POST') {
+      } else if (method === 'POST') {
         body = params.reduce(function(partialBody, param) {
           return partialBody + 'Content-Disposition: form-data; name=\"' +
               param.name + '\"\r\n\r\n' + param.value + '\r\n--' +
@@ -256,15 +256,15 @@ export class CloudPrintInterfaceJS {
 
     const headers = {};
     headers['X-CloudPrint-Proxy'] = 'ChromePrintPreview';
-    if (method == 'GET') {
+    if (method === 'GET') {
       headers['Content-Type'] = URL_ENCODED_CONTENT_TYPE_;
-    } else if (method == 'POST') {
+    } else if (method === 'POST') {
       headers['Content-Type'] = MULTIPART_CONTENT_TYPE_;
     }
 
     const xhr = new XMLHttpRequest();
     xhr.open(method, url.toString(), true);
-    xhr.withCredentials = (origin == DestinationOrigin.COOKIES);
+    xhr.withCredentials = (origin === DestinationOrigin.COOKIES);
     for (const header in headers) {
       xhr.setRequestHeader(header, headers[header]);
     }
@@ -279,14 +279,14 @@ export class CloudPrintInterfaceJS {
    * @private
    */
   sendOrQueueRequest_(request) {
-    if (request.origin == DestinationOrigin.COOKIES) {
+    if (request.origin === DestinationOrigin.COOKIES) {
       this.sendRequest_(request);
       return;
     }
 
     // <if expr="chromeos">
-    assert(request.origin == DestinationOrigin.DEVICE);
-    if (this.accessTokenRequestPromise_ == null) {
+    assert(request.origin === DestinationOrigin.DEVICE);
+    if (this.accessTokenRequestPromise_ === null) {
       this.accessTokenRequestPromise_ = this.nativeLayer_.getAccessToken();
     }
 
@@ -347,7 +347,7 @@ export class CloudPrintInterfaceJS {
    * @private
    */
   setUsers_(request) {
-    if (request.origin == DestinationOrigin.COOKIES) {
+    if (request.origin === DestinationOrigin.COOKIES) {
       const users = request.result['request']['users'] || [];
       this.setUsers(users);
     }
@@ -388,7 +388,7 @@ export class CloudPrintInterfaceJS {
    * @private
    */
   onAccessTokenReady_(request, accessToken) {
-    assert(request.origin == DestinationOrigin.DEVICE);
+    assert(request.origin === DestinationOrigin.DEVICE);
     if (accessToken) {
       request.xhr.setRequestHeader('Authorization', 'Bearer ' + accessToken);
       this.sendRequest_(request);
@@ -408,11 +408,11 @@ export class CloudPrintInterfaceJS {
    * @private
    */
   onReadyStateChange_(request) {
-    if (request.xhr.readyState == 4) {
-      if (request.xhr.status == 200) {
+    if (request.xhr.readyState === 4) {
+      if (request.xhr.status === 200) {
         request.result =
             /** @type {Object} */ (JSON.parse(request.xhr.responseText));
-        if (request.origin == DestinationOrigin.COOKIES &&
+        if (request.origin === DestinationOrigin.COOKIES &&
             request.result['success']) {
           this.xsrfTokens_[request.result['request']['user']] =
               request.result['xsrf_token'];
@@ -434,17 +434,17 @@ export class CloudPrintInterfaceJS {
     let lastRequestForThisOrigin = true;
     this.outstandingCloudSearchRequests_ =
         this.outstandingCloudSearchRequests_.filter(function(item) {
-          if (item != request && item.origin == request.origin) {
+          if (item !== request && item.origin === request.origin) {
             lastRequestForThisOrigin = false;
           }
-          return item != request;
+          return item !== request;
         });
     let activeUser = '';
-    if (request.origin == DestinationOrigin.COOKIES) {
+    if (request.origin === DestinationOrigin.COOKIES) {
       activeUser = request.result && request.result['request'] &&
           request.result['request']['user'];
     }
-    if (request.xhr.status == 200 && request.result['success']) {
+    if (request.xhr.status === 200 && request.result['success']) {
       // Extract printers.
       const printerListJson = request.result['printers'] || [];
       const printerList = [];
@@ -491,7 +491,7 @@ export class CloudPrintInterfaceJS {
     const activeUser = (request.result && request.result['request'] &&
                         request.result['request']['user']) ||
         '';
-    if (request.xhr.status == 200 && request.result['success']) {
+    if (request.xhr.status === 200 && request.result['success']) {
       // Extract invitations.
       const invitationListJson = request.result['invites'] || [];
       const invitationList = [];
@@ -529,7 +529,7 @@ export class CloudPrintInterfaceJS {
                         request.result['request']['user']) ||
         '';
     let printer = null;
-    if (request.xhr.status == 200 && request.result['success'] && accept) {
+    if (request.xhr.status === 200 && request.result['success'] && accept) {
       try {
         printer = parseCloudDestination(
             request.result['printer'], request.origin, activeUser);
@@ -555,7 +555,7 @@ export class CloudPrintInterfaceJS {
    * @private
    */
   onSubmitDone_(request) {
-    if (request.xhr.status == 200 && request.result['success']) {
+    if (request.xhr.status === 200 && request.result['success']) {
       this.eventTarget_.dispatchEvent(new CustomEvent(
           CloudPrintInterfaceEventType.SUBMIT_DONE,
           {detail: request.result['job']['id']}));
@@ -577,14 +577,14 @@ export class CloudPrintInterfaceJS {
   onPrinterDone_(destinationId, request) {
     // Special handling of the first printer request. It does not matter at
     // this point, whether printer was found or not.
-    if (request.origin == DestinationOrigin.COOKIES && request.result &&
+    if (request.origin === DestinationOrigin.COOKIES && request.result &&
         request.result['request']['user'] &&
         request.result['request']['users']) {
       const users = request.result['request']['users'];
       this.setUsers_(request);
       // In case the user account is known, but not the primary one,
       // activate it.
-      if (request.account != request.result['request']['user'] &&
+      if (request.account !== request.result['request']['user'] &&
           this.userSessionIndex_[request.account] > 0 && request.account) {
         this.dispatchUserUpdateEvent_(request.account, users);
         // Repeat the request for the newly activated account.
@@ -597,9 +597,9 @@ export class CloudPrintInterfaceJS {
       this.dispatchUserUpdateEvent_(request.result['request']['user'], users);
     }
     // Process response.
-    if (request.xhr.status == 200 && request.result['success']) {
+    if (request.xhr.status === 200 && request.result['success']) {
       let activeUser = '';
-      if (request.origin == DestinationOrigin.COOKIES) {
+      if (request.origin === DestinationOrigin.COOKIES) {
         activeUser = request.result['request']['user'];
       }
       const printerJson = request.result['printers'][0];

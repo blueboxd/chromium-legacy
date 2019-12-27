@@ -19,10 +19,10 @@
 
 @implementation HTTPAuthDialogOverlayCoordinator
 
-#pragma mark - OverlayCoordinator
+#pragma mark - OverlayRequestCoordinator
 
-+ (BOOL)supportsRequest:(OverlayRequest*)request {
-  return !!request->GetConfig<HTTPAuthOverlayRequestConfig>();
++ (const OverlayRequestSupport*)requestSupport {
+  return HTTPAuthOverlayRequestConfig::RequestSupport();
 }
 
 @end

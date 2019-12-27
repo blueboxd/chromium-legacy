@@ -4,6 +4,8 @@
 
 #include "device/vr/openxr/openxr_input_helper.h"
 
+#include "base/stl_util.h"
+#include "device/gamepad/public/cpp/gamepad.h"
 #include "device/vr/openxr/openxr_util.h"
 #include "device/vr/util/xr_standard_gamepad_builder.h"
 
@@ -45,7 +47,6 @@ base::Optional<Gamepad> GetXrStandardGamepad(
       controller.GetButton(OpenXrButtonType::kTrigger);
   if (!trigger_button)
     return base::nullopt;
-
   builder.SetPrimaryButton(trigger_button.value());
 
   base::Optional<GamepadButton> squeeze_button =
@@ -60,7 +61,6 @@ base::Optional<Gamepad> GetXrStandardGamepad(
   base::Optional<GamepadBuilder::ButtonData> trackpad_button_data =
       GetAxisButtonData(OpenXrAxisType::kTrackpad, trackpad_button,
                         trackpad_axis);
-
   if (trackpad_button_data)
     builder.SetTouchpadData(trackpad_button_data.value());
 
@@ -71,9 +71,23 @@ base::Optional<Gamepad> GetXrStandardGamepad(
   base::Optional<GamepadBuilder::ButtonData> thumbstick_button_data =
       GetAxisButtonData(OpenXrAxisType::kThumbstick, thumbstick_button,
                         thumbstick_axis);
-
   if (thumbstick_button_data)
     builder.SetThumbstickData(thumbstick_button_data.value());
+
+  base::Optional<GamepadButton> x_button =
+      controller.GetButton(OpenXrButtonType::kButton1);
+  if (x_button)
+    builder.AddOptionalButtonData(x_button.value());
+
+  base::Optional<GamepadButton> y_button =
+      controller.GetButton(OpenXrButtonType::kButton2);
+  if (y_button)
+    builder.AddOptionalButtonData(y_button.value());
+
+  base::Optional<GamepadButton> thumbrest_button =
+      controller.GetButton(OpenXrButtonType::kThumbrest);
+  if (thumbrest_button)
+    builder.AddOptionalButtonData(thumbrest_button.value());
 
   return builder.GetGamepad();
 }
@@ -203,11 +217,18 @@ base::WeakPtr<OpenXRInputHelper> OpenXRInputHelper::GetWeakPtr() {
 
 base::Optional<Gamepad> OpenXRInputHelper ::GetWebXRGamepad(
     const OpenXrController& controller) {
-  if (controller.interaction_profile() ==
-      path_helper_->GetDeclaredPaths()
-          .microsoft_motion_controller_interaction_profile) {
-    return GetXrStandardGamepad(controller);
+  OpenXrInteractionProfileType cur_type = controller.interaction_profile();
+  for (auto& it : kOpenXrControllerInteractionProfiles) {
+    if (it.type == cur_type) {
+      if (it.mapping == GamepadMapping::kXrStandard) {
+        return GetXrStandardGamepad(controller);
+      } else {
+        // if mapping is kNone
+        return base::nullopt;
+      }
+    }
   }
+
   return base::nullopt;
 }
 

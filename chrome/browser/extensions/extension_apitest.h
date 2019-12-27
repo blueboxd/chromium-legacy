@@ -30,46 +30,25 @@ class Extension;
 // TODO(erikkay): There should also be a way to drive events in these tests.
 class ExtensionApiTest : public ExtensionBrowserTest {
  public:
-  // Flags used to configure how the tests are run.
-  // TODO(aa): Many of these are dupes of ExtensionBrowserTest::Flags. Combine
-  // somehow?
+  // Flags used to configure how the tests are run. These values are based on
+  // the last flag value defined by ExtensionBrowserTest. This ensures that
+  // the values won't overlap so we can check for accidentally mixing those
+  // flags and these.
   enum Flags {
     kFlagNone = 0,
 
-    // Allow the extension to run in incognito mode.
-    kFlagEnableIncognito = 1 << 0,
-
     // Launch the test page in an incognito window.
-    kFlagUseIncognito = 1 << 1,
-
-    // Allow file access for the extension.
-    kFlagEnableFileAccess = 1 << 2,
+    kFlagUseIncognito = ExtensionBrowserTest::kFlagNextValue << 0,
 
     // Loads the extension with location COMPONENT.
-    kFlagLoadAsComponent = 1 << 3,
+    kFlagLoadAsComponent = ExtensionBrowserTest::kFlagNextValue << 1,
 
     // Launch the extension as a platform app.
-    kFlagLaunchPlatformApp = 1 << 4,
-
-    // Don't fail when the loaded manifest has warnings.
-    kFlagIgnoreManifestWarnings = 1 << 5,
-
-    // Allow manifest versions older that Extension::kModernManifestVersion.
-    // Used to test old manifest features.
-    kFlagAllowOldManifestVersions = 1 << 6,
+    kFlagLaunchPlatformApp = ExtensionBrowserTest::kFlagNextValue << 2,
 
     // Load the extension using //extensions/test/data/ as the root path instead
     // of loading from //chrome/test/data/extensions/api_test/.
-    kFlagUseRootExtensionsDir = 1 << 7,
-
-    // Pass the FOR_LOGIN_SCREEN flag when loading the extension. This flag is
-    // usually provided for force-installed extension on the login screen. This
-    // also sets the location to EXTERNAL_POLICY.
-    kFlagLoadForLoginScreen = 1 << 8,
-
-    // Load the event page extension as a Service Worker based background
-    // extension.
-    kFlagRunAsServiceWorkerBasedExtension = 1 << 9,
+    kFlagUseRootExtensionsDir = ExtensionBrowserTest::kFlagNextValue << 3,
   };
 
   ExtensionApiTest();
@@ -86,7 +65,9 @@ class ExtensionApiTest : public ExtensionBrowserTest {
 
   // Same as RunExtensionTest, except run with the specific |flags| (as defined
   // in the Flags enum).
-  bool RunExtensionTestWithFlags(const std::string& extension_name, int flags);
+  bool RunExtensionTestWithFlags(const std::string& extension_name,
+                                 int browser_test_flags,
+                                 int api_test_flags);
 
   // Similar to RunExtensionTest, except sets an additional string argument
   // |customArg| to the test config object.
@@ -98,7 +79,8 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   // enum).
   bool RunExtensionTestWithFlagsAndArg(const std::string& extension_name,
                                        const char* custom_arg,
-                                       int flags);
+                                       int browser_test_flags,
+                                       int api_test_flags);
 
   // Same as RunExtensionTest, but enables the extension for incognito mode.
   bool RunExtensionTestIncognito(const std::string& extension_name);
@@ -136,7 +118,8 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   // (as defined in the Flags enum).
   bool RunExtensionSubtest(const std::string& extension_name,
                            const std::string& page_url,
-                           int flags);
+                           int browser_test_flags,
+                           int api_test_flags);
 
   // As above but with support for injecting a custom argument into the test
   // config.
@@ -148,12 +131,15 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   bool RunExtensionSubtestWithArgAndFlags(const std::string& extension_name,
                                           const std::string& page_url,
                                           const char* custom_arg,
-                                          int flags);
+                                          int browser_test_flags,
+                                          int api_test_flags);
 
   // Load |page_url| and wait for pass / fail notification from the extension
   // API on the page.
   bool RunPageTest(const std::string& page_url);
-  bool RunPageTest(const std::string& page_url, int flags);
+  bool RunPageTest(const std::string& page_url,
+                   int browser_test_flags,
+                   int api_test_flags);
 
   // Similar to RunExtensionTest, except used for running tests in platform app
   // shell windows.
@@ -167,13 +153,15 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   // Similar to RunPlatformAppTest, with custom |flags| (as defined in the Flags
   // enum). The kFlagLaunchPlatformApp flag is automatically added.
   bool RunPlatformAppTestWithFlags(const std::string& extension_name,
-                                   int flags);
+                                   int browser_test_flags,
+                                   int api_test_flags);
 
   // Similar to RunPlatformAppTestWithFlags above, except it has an additional
   // string argument |customArg| to the test config object.
   bool RunPlatformAppTestWithFlags(const std::string& extension_name,
                                    const char* custom_arg,
-                                   int flags);
+                                   int browser_test_flags,
+                                   int api_test_flags);
 
   // Start the test server, and store details of its state. Those details
   // will be available to JavaScript tests using chrome.test.getConfig().
@@ -232,7 +220,8 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   bool RunExtensionTestImpl(const std::string& extension_name,
                             const std::string& test_page,
                             const char* custom_arg,
-                            int flags);
+                            int browser_test_flags,
+                            int api_test_flags);
 
   // Hold details of the test, set in C++, which can be accessed by
   // javascript using chrome.test.getConfig().

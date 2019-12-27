@@ -137,7 +137,8 @@ MediaRouterDialogControllerAndroid::MediaRouterDialogControllerAndroid(
 
 MediaRouterDialogControllerAndroid::~MediaRouterDialogControllerAndroid() {}
 
-void MediaRouterDialogControllerAndroid::CreateMediaRouterDialog() {
+void MediaRouterDialogControllerAndroid::CreateMediaRouterDialog(
+    MediaRouterDialogOpenOrigin activation_location) {
   // TODO(crbug.com/736568): Re-enable dialog in VR.
   if (vr::VrTabHelper::IsUiSuppressedInVr(
           initiator(),

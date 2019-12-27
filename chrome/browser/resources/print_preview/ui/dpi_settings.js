@@ -71,7 +71,7 @@ Polymer({
       const dpiOption = /** @type {DpiOption} */ (option);
       const hDpi = dpiOption.horizontal_dpi || 0;
       const vDpi = dpiOption.vertical_dpi || 0;
-      if (hDpi > 0 && vDpi > 0 && hDpi != vDpi) {
+      if (hDpi > 0 && vDpi > 0 && hDpi !== vDpi) {
         result.option[index].name = loadTimeData.getStringF(
             'nonIsotropicDpiItemLabel', hDpi.toLocaleString(),
             vDpi.toLocaleString());
@@ -95,9 +95,9 @@ Polymer({
     for (const option of assert(this.capabilityWithLabels_.option)) {
       const dpiOption =
           /** @type {LabelledDpiOption} */ (option);
-      if (dpiValue.horizontal_dpi == dpiOption.horizontal_dpi &&
-          dpiValue.vertical_dpi == dpiOption.vertical_dpi &&
-          dpiValue.vendor_id == dpiOption.vendor_id) {
+      if (dpiValue.horizontal_dpi === dpiOption.horizontal_dpi &&
+          dpiValue.vertical_dpi === dpiOption.vertical_dpi &&
+          dpiValue.vendor_id === dpiOption.vendor_id) {
         this.$$('print-preview-settings-select')
             .selectValue(JSON.stringify(option));
         return;

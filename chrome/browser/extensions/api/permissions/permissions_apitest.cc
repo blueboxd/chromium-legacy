@@ -201,7 +201,7 @@ IN_PROC_BROWSER_TEST_F(PermissionsApiTest, FileLoad) {
   }
   EXPECT_TRUE(RunExtensionTestWithFlagsAndArg(
       "permissions/file_load", temp_dir.GetPath().MaybeAsASCII().c_str(),
-      kFlagEnableFileAccess))
+      kFlagEnableFileAccess, kFlagNone))
       << message_;
   {
     base::ScopedAllowBlockingForTesting allow_blocking;

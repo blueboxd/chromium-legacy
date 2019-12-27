@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_view_controller.h"
 
+#import "base/ios/block_types.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
@@ -338,10 +339,7 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   if (!self.touchInProgress) {
     [self.metricsRecorder
         recordBannerDismissType:MobileMessagesBannerDismissType::TimedOut];
-    [self.delegate dismissInfobarBanner:self
-                               animated:YES
-                             completion:nil
-                          userInitiated:NO];
+    [self.delegate dismissInfobarBannerForUserInteraction:NO];
   }
   self.shouldDismissAfterTouchesEnded = YES;
 }
@@ -413,17 +411,11 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
       if (dragUpExceededThreshold) {
         [self.metricsRecorder
             recordBannerDismissType:MobileMessagesBannerDismissType::SwipedUp];
-        [self.delegate dismissInfobarBanner:self
-                                   animated:YES
-                                 completion:nil
-                              userInitiated:YES];
+        [self.delegate dismissInfobarBannerForUserInteraction:YES];
       } else {
         [self.metricsRecorder
             recordBannerDismissType:MobileMessagesBannerDismissType::TimedOut];
-        [self.delegate dismissInfobarBanner:self
-                                   animated:YES
-                                 completion:nil
-                              userInitiated:NO];
+        [self.delegate dismissInfobarBannerForUserInteraction:NO];
       }
     } else {
       [self.metricsRecorder
@@ -567,10 +559,7 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
 }
 
 - (BOOL)dismiss {
-  [self.delegate dismissInfobarBanner:self
-                             animated:YES
-                           completion:nil
-                        userInitiated:YES];
+  [self.delegate dismissInfobarBannerForUserInteraction:YES];
   return NO;
 }
 

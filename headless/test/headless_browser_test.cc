@@ -217,9 +217,7 @@ void HeadlessBrowserTest::RunAsynchronousTest() {
   EXPECT_FALSE(run_loop_);
   run_loop_ = std::make_unique<base::RunLoop>(
       base::RunLoop::Type::kNestableTasksAllowed);
-  PreRunAsynchronousTest();
   run_loop_->Run();
-  PostRunAsynchronousTest();
   run_loop_ = nullptr;
 }
 

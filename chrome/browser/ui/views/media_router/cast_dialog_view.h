@@ -29,6 +29,7 @@ class Canvas;
 namespace media_router {
 
 class CastDialogSinkButton;
+enum class MediaRouterDialogOpenOrigin;
 struct UIMediaSink;
 
 // View component of the Cast dialog that allows users to start and stop Casting
@@ -49,23 +50,28 @@ class CastDialogView : public views::BubbleDialogDelegateView,
 
   // Shows the singleton dialog anchored to the Cast toolbar icon. Requires that
   // BrowserActionsContainer exists for |browser|.
-  static void ShowDialogWithToolbarAction(CastDialogController* controller,
-                                          Browser* browser,
-                                          const base::Time& start_time);
+  static void ShowDialogWithToolbarAction(
+      CastDialogController* controller,
+      Browser* browser,
+      const base::Time& start_time,
+      MediaRouterDialogOpenOrigin activation_location);
 
   // Shows the singleton dialog anchored to the top-center of the browser
   // window.
   static void ShowDialogCenteredForBrowserWindow(
       CastDialogController* controller,
       Browser* browser,
-      const base::Time& start_time);
+      const base::Time& start_time,
+      MediaRouterDialogOpenOrigin activation_location);
 
   // Shows the singleton dialog anchored to the bottom of |bounds|, horizontally
   // centered.
-  static void ShowDialogCentered(const gfx::Rect& bounds,
-                                 CastDialogController* controller,
-                                 Profile* profile,
-                                 const base::Time& start_time);
+  static void ShowDialogCentered(
+      const gfx::Rect& bounds,
+      CastDialogController* controller,
+      Profile* profile,
+      const base::Time& start_time,
+      MediaRouterDialogOpenOrigin activation_location);
 
   // No-op if the dialog is currently not shown.
   static void HideDialog();
@@ -139,13 +145,15 @@ class CastDialogView : public views::BubbleDialogDelegateView,
                          views::BubbleBorder::Arrow anchor_position,
                          CastDialogController* controller,
                          Profile* profile,
-                         const base::Time& start_time);
+                         const base::Time& start_time,
+                         MediaRouterDialogOpenOrigin activation_location);
 
   CastDialogView(views::View* anchor_view,
                  views::BubbleBorder::Arrow anchor_position,
                  CastDialogController* controller,
                  Profile* profile,
-                 const base::Time& start_time);
+                 const base::Time& start_time,
+                 MediaRouterDialogOpenOrigin activation_location);
   ~CastDialogView() override;
 
   // views::BubbleDialogDelegateView:

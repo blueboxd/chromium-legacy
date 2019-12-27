@@ -5,12 +5,13 @@
 #ifndef IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_WEB_CONTENT_AREA_JAVA_SCRIPT_CONFIRMATION_OVERLAY_H_
 #define IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_WEB_CONTENT_AREA_JAVA_SCRIPT_CONFIRMATION_OVERLAY_H_
 
+#include "ios/chrome/browser/overlays/public/overlay_request_config.h"
 #include "ios/chrome/browser/overlays/public/overlay_user_data.h"
 #include "ios/chrome/browser/overlays/public/web_content_area/java_script_dialog_source.h"
 
 // Configuration object for OverlayRequests for JavaScript confirm() calls.
 class JavaScriptConfirmationOverlayRequestConfig
-    : public OverlayUserData<JavaScriptConfirmationOverlayRequestConfig> {
+    : public OverlayRequestConfig<JavaScriptConfirmationOverlayRequestConfig> {
  public:
   ~JavaScriptConfirmationOverlayRequestConfig() override;
 

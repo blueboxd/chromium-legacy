@@ -144,7 +144,7 @@ export class NativeLayer {
    * @return {!NativeLayer} The singleton instance.
    */
   static getInstance() {
-    if (currentInstance == null) {
+    if (currentInstance === null) {
       currentInstance = new NativeLayer();
     }
     return assert(currentInstance);
@@ -198,7 +198,7 @@ export class NativeLayer {
   getPrinterCapabilities(destinationId, type) {
     return sendWithPromise(
         'getPrinterCapabilities', destinationId,
-        destinationId == Destination.GooglePromotedId.SAVE_AS_PDF ?
+        destinationId === Destination.GooglePromotedId.SAVE_AS_PDF ?
             PrinterType.PDF_PRINTER :
             type);
   }

@@ -71,6 +71,8 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithScale) {
   loader.GetDocumentLoader()->GetInitialScrollState().was_scrolled_by_user =
       false;
   loader.RestoreScrollPositionAndViewState();
+  web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
+      WebWidget::LifecycleUpdateReason::kTest);
 
   // Expect that both scroll and scale were restored.
   EXPECT_EQ(2.0f, web_view->PageScaleFactor());
@@ -101,6 +103,8 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithoutScale) {
   // FrameLoader::restoreScrollPositionAndViewState flows differently if scale
   // is zero.
   loader.RestoreScrollPositionAndViewState();
+  web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
+      WebWidget::LifecycleUpdateReason::kTest);
 
   // Expect that only the scroll position was restored.
   EXPECT_EQ(3.0f, web_view->PageScaleFactor());

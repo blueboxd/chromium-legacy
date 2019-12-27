@@ -32,9 +32,9 @@
             }
           ],
           "expiration": 7200,
-          "hard_timeout": 43200,
+          "hard_timeout": 19800,
           "ignore_task_failure": false,
-          "io_timeout": 21600,
+          "io_timeout": 19800,
           "shards": 3
         },
         "trigger_script": {
@@ -77,9 +77,9 @@
             }
           ],
           "expiration": 7200,
-          "hard_timeout": 43200,
+          "hard_timeout": 19800,
           "ignore_task_failure": false,
-          "io_timeout": 21600,
+          "io_timeout": 19800,
           "shards": 1
         },
         "trigger_script": {
@@ -124,9 +124,9 @@
             }
           ],
           "expiration": 7200,
-          "hard_timeout": 43200,
+          "hard_timeout": 19800,
           "ignore_task_failure": false,
-          "io_timeout": 21600,
+          "io_timeout": 19800,
           "shards": 4
         },
         "trigger_script": {
@@ -169,9 +169,9 @@
             }
           ],
           "expiration": 7200,
-          "hard_timeout": 43200,
+          "hard_timeout": 19800,
           "ignore_task_failure": false,
-          "io_timeout": 21600,
+          "io_timeout": 19800,
           "shards": 4
         },
         "trigger_script": {
@@ -216,9 +216,9 @@
             }
           ],
           "expiration": 7200,
-          "hard_timeout": 43200,
+          "hard_timeout": 19800,
           "ignore_task_failure": false,
-          "io_timeout": 21600,
+          "io_timeout": 19800,
           "shards": 1
         },
         "trigger_script": {
@@ -261,9 +261,9 @@
             }
           ],
           "expiration": 7200,
-          "hard_timeout": 43200,
+          "hard_timeout": 19800,
           "ignore_task_failure": false,
-          "io_timeout": 21600,
+          "io_timeout": 19800,
           "shards": 1
         },
         "trigger_script": {

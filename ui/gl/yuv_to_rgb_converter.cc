@@ -98,7 +98,6 @@ YUVToRGBConverter::YUVToRGBConverter(const GLVersionInfo& gl_version_info,
       gfx::ColorTransform::NewColorTransform(
           color_space, color_space.GetAsFullRangeRGB(),
           gfx::ColorTransform::Intent::INTENT_PERCEPTUAL);
-  DCHECK(color_transform->CanGetShaderSource());
   std::string do_color_conversion = color_transform->GetShaderSource();
 
   const char* fragment_header = nullptr;

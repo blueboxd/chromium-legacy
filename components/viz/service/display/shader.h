@@ -130,10 +130,6 @@ enum YUVAlphaTextureMode {
 enum ColorConversionMode {
   // No color conversion is performed.
   COLOR_CONVERSION_MODE_NONE,
-  // Conversion is done directly from input RGB space (or YUV space if
-  // applicable) to output RGB space, via a 3D texture represented as a 2D
-  // texture.
-  COLOR_CONVERSION_MODE_LUT,
   // Conversion is done analytically in the shader.
   COLOR_CONVERSION_MODE_SHADER,
 };
@@ -311,10 +307,6 @@ class VIZ_SERVICE_EXPORT FragmentShader {
   // The resource offset and multiplier to adjust for bit depth.
   int resource_multiplier_location_ = -1;
   int resource_offset_location_ = -1;
-
-  // LUT YUV to color-converted RGB.
-  int lut_texture_location_ = -1;
-  int lut_size_location_ = -1;
 
  private:
   friend class Program;

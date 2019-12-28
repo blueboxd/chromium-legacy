@@ -85,7 +85,7 @@ const gfx::ColorSpace::TransferID kTransferMap[] = {
     // ZCR_COLOR_SPACE_V1_TRANSFER_FUNCTION_ARIB_STD_B67
     gfx::ColorSpace::TransferID::ARIB_STD_B67,
     // ZCR_COLOR_SPACE_V1_TRANSFER_FUNCTION_SMPTEST2084_NON_HDR
-    gfx::ColorSpace::TransferID::SMPTEST2084_NON_HDR,
+    gfx::ColorSpace::TransferID::SMPTEST2084,
     // ZCR_COLOR_SPACE_V1_TRANSFER_FUNCTION_IEC61966_2_1_HDR
     gfx::ColorSpace::TransferID::IEC61966_2_1_HDR,
     // ZCR_COLOR_SPACE_V1_TRANSFER_FUNCTION_LINEAR_HDR

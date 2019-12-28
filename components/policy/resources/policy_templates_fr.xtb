@@ -1084,6 +1084,14 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
           Cette valeur doit être un tableau de dictionnaires convertis en chaînes JSON. Chaque dictionnaire doit être au format <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, où <ph name="URL_PATTERN_PLACEHOLDER" /> correspond à un schéma de paramètres de contenu. Le filtre <ph name="FILTER_PLACEHOLDER" /> limite les certificats client parmi lesquels le navigateur effectue une sélection automatique. Indépendamment du filtre, seuls les certificats correspondant à la demande de certificats du serveur sont sélectionnés. Par exemple, si le filtre <ph name="FILTER_PLACEHOLDER" /> est au format <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />, seuls les certificats client émis par un certificat dont la valeur CommonName est <ph name="ISSUER_CN_PLACEHOLDER" /> sont sélectionnés. Si le filtre <ph name="FILTER_PLACEHOLDER" /> contient une section <ph name="ISSUER_STRING_VALUE" /> et une section<ph name="SUBJECT_STRING_VALUE" />, le certificat client doit satisfaire les deux conditions pour être sélectionné. Si le filtre <ph name="FILTER_PLACEHOLDER" /> spécifie une organisation ("O"), le certificat doit contenir au moins une organisation correspondant à la valeur spécifiée pour être sélectionné. Si le filtre <ph name="FILTER_PLACEHOLDER" /> spécifie une unité organisationnelle ("UO"), le certificat doit contenir au moins une unité organisationnelle correspondant à la valeur spécifiée pour être sélectionné. Si le filtre <ph name="FILTER_PLACEHOLDER" /> correspond à la valeur de dictionnaire vide <ph name="EMPTY_DICTIONARY" />, la sélection de certificats client ne fait pas l'objet de restrictions supplémentaires.
 
           Si cette règle n'est pas définie, la sélection automatique n'est effectuée pour aucun site.</translation>
+<translation id="2528659559494311776">Cette règle contrôle une fonctionnalité de sécurité TLS 1.3 qui protège les connexions contre les attaques par déclassement. Elle est rétrocompatible et n'affecte pas les connexions à des serveurs ou proxys conformes aux normes TLS 1.2. Toutefois, les versions plus anciennes de certains proxys interceptant les paramètres TLS sont incompatibles en raison de défauts d'intégration.
+
+      Si cette règle est définie sur "True" ou n'est pas configurée, <ph name="PRODUCT_NAME" /> active ces protections de sécurité pour toutes les connexions.
+
+      Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> désactive ces protections de sécurité pour les connexions authentifiées par des certificats CA installés localement. Ces protections sont toujours activées pour les connexions authentifiées par des certificats CA reconnus publiquement.
+
+      La valeur par défaut de cette règle a été modifiée de "False" à "True" dans la version 81 de <ph name="PRODUCT_NAME" />. En principe, les proxys affectés provoqueront un échec de connexion avec le code d'erreur "ERR_TLS13_DOWNGRADE_DETECTED". Les administrateurs ayant besoin de plus de temps pour mettre à niveau les proxys affectés pourront utiliser cette règle pour désactiver provisoirement cette fonctionnalité de sécurité. Cette règle sera supprimée après la version 85.
+      </translation>
 <translation id="2529659024053332711">Permet de spécifier le comportement du navigateur au démarrage.
 
           Si vous sélectionnez l'option "Ouvrir la page Nouvel onglet", celle-ci s'affiche chaque fois que vous lancez <ph name="PRODUCT_NAME" />.
@@ -1634,6 +1642,15 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       Si ce paramètre est défini sur "Désactivé" ou si aucune valeur n'est définie, <ph name="PRODUCT_NAME" /> n'applique pas le mode restreint sur YouTube. Toutefois, des règles externes comme les règles de YouTube peuvent toujours appliquer le mode restreint.</translation>
 <translation id="3428247105888806363">Activer la prédiction réseau</translation>
 <translation id="3432863169147125747">Contrôle les paramètres d'impression.</translation>
+<translation id="3434053014926283175">Permet de définir le bouton droit de la souris comme bouton principal sur l'écran de connexion.
+
+          Si cette règle est activée, le bouton droit de la souris devient le bouton principal sur l'écran de connexion.
+
+          Si elle est désactivée, le bouton gauche de la souris devient le bouton principal sur l'écran de connexion.
+
+          Si vous configurez cette règle, les utilisateurs ne peuvent ni la modifier, ni l'ignorer.
+
+          Si elle n'est pas configurée, le bouton gauche de la souris est le bouton principal par défaut sur l'écran de connexion, mais l'utilisateur peut le modifier à tout moment.</translation>
 <translation id="3434932177006334880">Ce paramètre était nommé EnableWebBasedSignin avant Chrome 42 et ne sera plus disponible à partir de Chrome 43.
 
       Il est utile pour les utilisateurs d'entreprise qui utilisent des solutions SSO qui ne sont pas compatibles avec la nouvelle procédure de connexion intégrée.
@@ -4575,6 +4592,7 @@ Ces favoris sont placés dans un dossier qui ne peut pas être modifié par l'ut
           Si vous configurez cette règle, les utilisateurs ne peuvent pas la modifier ni l'ignorer.
 
           Si cette règle n'est pas définie, la mise en surbrillance du curseur est désactivée au départ, mais les utilisateurs peuvent l'activer à tout moment.</translation>
+<translation id="8171924760436219650">Définir le bouton droit de la souris comme bouton principal sur l'écran de connexion</translation>
 <translation id="8172676363520748127">En cas d'activation de cette règle, il n'est pas possible d'utiliser des raccourcis clavier ou des API d'extension pour effectuer des captures d'écran.
 
       Si cette règle est désactivée ou si elle n'est pas configurée, les captures d'écran sont autorisées.</translation>

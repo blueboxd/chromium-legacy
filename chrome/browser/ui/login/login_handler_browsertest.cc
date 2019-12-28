@@ -9,11 +9,13 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/net/proxy_test_utils.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_origin.h"
@@ -39,10 +41,12 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/slow_http_response.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/base/auth.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "services/network/public/cpp/features.h"
 #include "url/gurl.h"
 
@@ -55,6 +59,50 @@ using content::OpenURLParams;
 using content::Referrer;
 
 namespace {
+
+// A slow HTTP response that serves a WWW-Authenticate header and 401 status
+// code.
+class SlowAuthResponse : public content::SlowHttpResponse {
+ public:
+  explicit SlowAuthResponse(const std::string& relative_url)
+      : content::SlowHttpResponse(relative_url) {}
+  ~SlowAuthResponse() override = default;
+
+  SlowAuthResponse(const SlowAuthResponse& other) = delete;
+  SlowAuthResponse operator=(const SlowAuthResponse& other) = delete;
+
+  // content::SlowHttpResponse:
+  void AddResponseHeaders(std::string* response) override {
+    response->append("WWW-Authenticate: Basic realm=\"test\"\r\n");
+    response->append("Cache-Control: max-age=0\r\n");
+    // Content-length and Content-type are both necessary to trigger the bug
+    // that this class is used to test. Specifically, there must be a delay
+    // between the OnAuthRequired notification from the net stack and when the
+    // response body is ready, and the OnAuthRequired notification requires
+    // headers to be complete (which requires a known content type and length).
+    response->append("Content-type: text/html");
+    response->append(
+        base::StringPrintf("Content-Length: %d\r\n",
+                           kFirstResponsePartSize + kSecondResponsePartSize));
+  }
+
+  void SetStatusLine(std::string* response) override {
+    response->append("HTTP/1.1 401 Unauthorized\r\n");
+  }
+};
+
+// This request handler returns a WWW-Authenticate header along with a slow
+// response body. It is used to exercise a race in how auth requests are
+// dispatched to extensions (https://crbug.com/1034468).
+std::unique_ptr<net::test_server::HttpResponse> HandleBasicAuthSlowResponse(
+    const net::test_server::HttpRequest& request) {
+  std::unique_ptr<SlowAuthResponse> response =
+      std::make_unique<SlowAuthResponse>(request.relative_url);
+  if (!response->IsHandledUrl()) {
+    return nullptr;
+  }
+  return response;
+}
 
 // This helper function sets |notification_fired| to true if called. It's used
 // as an observer callback for notifications that are not expected to fire.
@@ -2136,6 +2184,114 @@ IN_PROC_BROWSER_TEST_F(ProxyBrowserTestWithHttpAuthCommittedInterstitials,
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_NO_FATAL_FAILURE(
       TestProxyAuth(browser(), embedded_test_server()->GetURL("/simple.html")));
+}
+
+class LoginPromptExtensionBrowserTest
+    : public extensions::ExtensionBrowserTest,
+      public testing::WithParamInterface<SplitAuthCacheByNetworkIsolationKey> {
+ public:
+  LoginPromptExtensionBrowserTest() {
+    if (GetParam() == SplitAuthCacheByNetworkIsolationKey::kFalse) {
+      scoped_feature_list_.InitWithFeatures(
+          // enabled_features
+          {features::kHTTPAuthCommittedInterstitials},
+          // disabled_features
+          {network::features::kSplitAuthCacheByNetworkIsolationKey});
+    } else {
+      scoped_feature_list_.InitWithFeatures(
+          // enabled_features
+          {features::kHTTPAuthCommittedInterstitials,
+           network::features::kSplitAuthCacheByNetworkIsolationKey},
+          // disabled_features
+          {});
+    }
+  }
+
+  ~LoginPromptExtensionBrowserTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    LoginPromptExtensionBrowserTest,
+    ::testing::Values(SplitAuthCacheByNetworkIsolationKey::kFalse,
+                      SplitAuthCacheByNetworkIsolationKey::kTrue));
+
+// Tests that with committed interstitials, extensions are notified once per
+// request when auth is required. Regression test for https://crbug.com/1034468.
+IN_PROC_BROWSER_TEST_P(LoginPromptExtensionBrowserTest,
+                       OnAuthRequiredNotifiedOnce) {
+  embedded_test_server()->RegisterRequestHandler(
+      base::BindRepeating(&HandleBasicAuthSlowResponse));
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Load an extension that logs to the console each time onAuthRequired is
+  // called. We attach a console observer so that we can verify that the
+  // extension only logs once per request.
+  const extensions::Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("log_auth_required"));
+  ASSERT_TRUE(extension);
+  content::WebContentsConsoleObserver console_observer(
+      extensions::ProcessManager::Get(profile())
+          ->GetBackgroundHostForExtension(extension->id())
+          ->host_contents());
+
+  // Navigate to a page that prompts for basic auth and then hangs.
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  NavigationController* controller = &contents->GetController();
+  WindowedAuthNeededObserver auth_needed_waiter(controller);
+  GURL test_page =
+      embedded_test_server()->GetURL(SlowAuthResponse::kSlowResponseUrl);
+  ui_test_utils::NavigateToURL(browser(), test_page);
+
+  console_observer.Wait();
+  ASSERT_EQ(1u, console_observer.messages().size());
+  EXPECT_EQ(base::ASCIIToUTF16("onAuthRequired " + test_page.spec()),
+            console_observer.messages()[0].message);
+
+  // Trigger a background request to end the response that prompted for basic
+  // auth.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      embedded_test_server()->GetURL(SlowAuthResponse::kSlowResponseHostName,
+                                     SlowAuthResponse::kFinishSlowResponseUrl),
+      WindowOpenDisposition::NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  // If https://crbug.com/1034468 regresses, the test may hang here. In that
+  // bug, extensions were getting notified of each auth request twice, and the
+  // extension must handle the auth request both times before LoginHandler
+  // proceeds to show the login prompt. Usually, the request is fully destroyed
+  // before the second extension dispatch, so the second extension dispatch is a
+  // no-op. But when there is a delay between the OnAuthRequired notification
+  // and the response body being read (as provided by SlowAuthResponse), the
+  // WebRequestAPI is notified that the request is destroyed between the second
+  // dispatch to an extension and when the extension replies. When this happens,
+  // the LoginHandler is never notified that it can continue to show the login
+  // prompt, so the auth needed notification that we are waiting for <will never
+  // come. The fix to this bug is to ensure that extensions are notified of each
+  // auth request only once; this test verifies that condition by checking that
+  // the auth needed notification comes as expected and that the test extension
+  // only logs once for onAuthRequired.
+  auth_needed_waiter.Wait();
+  // No second console message should have been logged, because extensions
+  // should only be notified of the auth request once.
+  EXPECT_EQ(1u, console_observer.messages().size());
+
+  // It's possible that a second message was in fact logged, but the observer
+  // hasn't heard about it yet. Navigate to a different URL and wait for the
+  // corresponding console message, to "flush" any possible second message from
+  // the current page load.
+  WindowedAuthNeededObserver second_auth_needed_waiter(controller);
+  GURL second_test_page = embedded_test_server()->GetURL("/auth-basic");
+  ui_test_utils::NavigateToURL(browser(), second_test_page);
+  second_auth_needed_waiter.Wait();
+  ASSERT_EQ(2u, console_observer.messages().size());
+  EXPECT_EQ(base::ASCIIToUTF16("onAuthRequired " + second_test_page.spec()),
+            console_observer.messages()[1].message);
 }
 
 }  // namespace

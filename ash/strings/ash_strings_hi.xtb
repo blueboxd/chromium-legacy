@@ -116,7 +116,7 @@
 <translation id="2412593942846481727">अपडेट मौजूद है</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> ऐसा प्रबंधित सत्र है जिसका प्रबंधन <ph name="DOMAIN" /> करते हैं</translation>
 <translation id="2427507373259914951">बायां क्लिक</translation>
-<translation id="2429753432712299108">ब्लूटूथ डिवाइस "<ph name="DEVICE_NAME" />" युग्मित करने की अनुमति चाहता है. स्वीकार करने से पहले, कृपया दुबारा पूछें कि यह पासकुंजी उस डिवाइस पर दिखाई जा रही है: <ph name="PASSKEY" /></translation>
+<translation id="2429753432712299108">ब्लूटूथ डिवाइस "<ph name="DEVICE_NAME" />" जोड़ने की अनुमति चाहता है. स्वीकार करने से पहले, कृपया पुष्टि करें कि यह पासकी उस डिवाइस पर दिखाई जा रही है: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">सूचनाएं</translation>
 <translation id="2484513351006226581">कीबोर्ड लेआउट स्विच करने के लिए <ph name="KEYBOARD_SHORTCUT" /> दबाएं.</translation>
 <translation id="2501920221385095727">रोचक कुंजियां</translation>

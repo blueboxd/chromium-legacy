@@ -1010,6 +1010,14 @@
           此值必须是一个字符串化的 JSON 字典数组。每个字典都必须采用 <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> 格式，其中 <ph name="URL_PATTERN_PLACEHOLDER" /> 是内容设置格式，<ph name="FILTER_PLACEHOLDER" /> 会限制浏览器可自动从哪些客户端证书中进行选择。无论是否设置了过滤器，系统都只会选择与服务器的证书请求相匹配的证书。例如，如果 <ph name="FILTER_PLACEHOLDER" /> 采用 <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" /> 格式，系统便只会选择由 CommonName 为 <ph name="ISSUER_CN_PLACEHOLDER" /> 的证书颁发机构颁发的客户端证书。如果 <ph name="FILTER_PLACEHOLDER" /> 既包含 <ph name="ISSUER_STRING_VALUE" /> 部分也包含 <ph name="SUBJECT_STRING_VALUE" /> 部分，则只有同时满足了这两项条件的客户端证书才会被选中。如果 <ph name="FILTER_PLACEHOLDER" /> 指定了组织（“O”），则只有包含至少 1 个与指定值匹配的组织的证书才会被选中。如果 <ph name="FILTER_PLACEHOLDER" /> 指定了组织单元（“OU”），则只有包含至少 1 个与指定值匹配的组织单元的证书才会被选中。如果 <ph name="FILTER_PLACEHOLDER" /> 是空字典 <ph name="EMPTY_DICTIONARY" />，那么系统在选择客户端证书时便不会受到额外限制。
 
           如果未设置此政策，系统将不会为任何网站自动选择证书。</translation>
+<translation id="2528659559494311776">此政策旨在控制 TLS 1.3 中的一项可保护连接免受降级攻击的安全功能。它可向后兼容，因此不会影响与合规的 TLS 1.2 服务器或代理之间的连接。但是，某些旧版 TLS 拦截代理存在一项实施漏洞，此漏洞会导致这些代理不兼容。
+
+      如果此政策设为 True 或未设置，<ph name="PRODUCT_NAME" /> 会为所有连接启用此类安全保护措施。
+
+      如果此政策设为 False，那么对于使用本地安装的 CA 证书进行身份验证的连接，<ph name="PRODUCT_NAME" /> 会停用此类安全保护措施。对于使用公认可信的 CA 证书进行身份验证的连接，系统会始终启用此类保护措施。
+
+      在 <ph name="PRODUCT_NAME" /> 81 中，此政策的默认值从 false 改成了 true。受影响的代理预计会无法成功连接，并会返回错误代码 ERR_TLS13_DOWNGRADE_DETECTED。如果管理员需要更多时间来升级受影响的代理，则可以使用此政策暂时停用这项安全功能。在版本 85 后，此政策将被移除。
+      </translation>
 <translation id="2529659024053332711">让您能够指定启动时的行为。
 如果您选择“打开新的标签页”，当您启动 <ph name="PRODUCT_NAME" /> 时，系统将会始终打开“新标签页”页面。
 
@@ -1545,6 +1553,15 @@
       如果此设置设为“关闭”或未设置值，则 <ph name="PRODUCT_NAME" /> 不会强制启用 YouTube 受限模式。但是，外部政策（例如 YouTube 政策）仍有可能会强制启用受限模式。</translation>
 <translation id="3428247105888806363">启用网络预测功能</translation>
 <translation id="3432863169147125747">控制打印设置。</translation>
+<translation id="3434053014926283175">当用户在登录屏幕上操作时，系统会将鼠标主按钮切换成右键。
+
+          如果启用了此政策，那么在登录屏幕上鼠标右键将始终是主按钮。
+
+          如果停用了此政策，那么在登录屏幕上鼠标左键将始终是主按钮。
+
+          如果您设置了此政策，用户便无法更改或覆盖它。
+
+          如果您未设置此政策，那么在登录屏幕上，最初鼠标左键会是主按钮，但用户随时可将主按钮切换成右键。</translation>
 <translation id="3434932177006334880">在 Chrome 42 之前，此设置名为 EnableWebBasedSignin；Chrome 43 中将完全停止支持此设置。
 
       对于所用 SSO 解决方案与新的内嵌登录流程尚不兼容的企业客户来说，此设置非常有用。
@@ -1904,7 +1921,7 @@
       如果此政策设为 false 或未设置，系统将不会发送任何网络数据包。</translation>
 <translation id="3950110092991281616">仅为常规会话启用静默身份验证。</translation>
 <translation id="3950239119790560549">更新时间限制</translation>
-<translation id="3956686688560604829">使用 Internet Explorer 的 SiteList 政策为旧版浏览器提供支持。</translation>
+<translation id="3956686688560604829">为旧版浏览器支持使用 Internet Explorer 的 SiteList 政策。</translation>
 <translation id="3958586912393694012">允许使用 Smart Lock</translation>
 <translation id="3963602271515417124">如果此政策的值为 True，则系统将允许此设备进行远程认证，然后自动生成证书并将其上传到设备管理服务器。
 
@@ -2626,11 +2643,11 @@
 
           此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 Pro 或 Enterprise 实例。</translation>
 <translation id="5208240613060747912">可让您设置网址格式的列表，这些网址格式用于指定不允许显示通知的网站。在未设置此政策的情况下，如果设置了“DefaultNotificationsSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
-<translation id="5212118847531454979">让您能够设置一个时间段（以毫秒为单位），在该时间段内，如果必须重新启动 <ph name="PRODUCT_NAME" /> 或必须重启 <ph name="PRODUCT_OS_NAME" />设备以应用待应用的更新，用户将会收到通知。
+<translation id="5212118847531454979">您可以设置一个时间段（以毫秒为单位），在该时间段内，系统会通知用户必须重新启动 <ph name="PRODUCT_NAME" /> 或重启 <ph name="PRODUCT_OS_NAME" />设备以安装更新。
 
-      在该时间段内，如果需要更新，系统会反复通知用户。对于 <ph name="PRODUCT_OS_NAME" />设备，系统会根据 <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> 政策在系统任务栏中显示重启通知。对于 <ph name="PRODUCT_NAME" /> 浏览器，应用菜单会在通知时间段过去三分之一后立即发生变化，以指示需要重新启动浏览器。此通知会在通知时间段过去三分之二后立即改变颜色，并会在整个通知时间段过后再次立即改变颜色。由 <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> 政策启用的其他通知也会遵循这一时间表。
+      在该时间段内，系统会反复通知用户需要更新。对于 <ph name="PRODUCT_OS_NAME" />设备，系统会根据 <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> 政策在系统任务栏中显示重启通知。对于 <ph name="PRODUCT_NAME" /> 浏览器，在通知时间段过去三分之一后，应用菜单会发生变化，示意需要重启浏览器。此通知会在通知时间段过去三分之二后改变颜色，并会在时间段结束后再次改变颜色。由 <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> 政策引发的其他通知也会遵循这一规律。
 
-      如果此政策未设置，系统会使用 604800000 毫秒（1 周）的默认通知时间段。</translation>
+      如果未做设置，系统会使用默认通知时间段，即 604800000 毫秒（1 周）。</translation>
 <translation id="5212810195096589189">指定虚拟机 CLI 权限</translation>
 <translation id="5213038356678567351">始终不应触发浏览器切换的网站。</translation>
 <translation id="5219844027738217407">对于 Android 应用，此政策仅会影响麦克风。当此政策设为 true 时，系统会针对所有 Android 应用（无一例外）将麦克风设为静音。</translation>
@@ -4382,6 +4399,7 @@
           如果您设置了此政策，用户将无法更改或覆盖它。
 
           如果未设置此政策，则“光标突出显示”最初会处于停用状态，但用户可以随时启用该功能。</translation>
+<translation id="8171924760436219650">将在登录屏幕上使用的鼠标主按钮切换成右键</translation>
 <translation id="8172676363520748127">若启用，用户将无法使用键盘快捷键或扩展程序 API 截取屏幕截图。
 
       若停用或未指定，用户将可以截取屏幕截图。</translation>
@@ -4447,9 +4465,9 @@
           如果停用了该设置，将扫描网页的元标记。
 
           如果未设置该政策，将扫描网页的元标记。</translation>
-<translation id="829641334878002866">此政策让您能够设置一个时间段（以毫秒为单位），从而指定第一条通知（提示用户必须重启 <ph name="PRODUCT_OS_NAME" />设备以应用待应用的更新）的发出时间应与 <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> 政策所设时间段的结束时间相隔多久。
+<translation id="829641334878002866">您可以设置一个时间段（以毫秒为单位），从而指定第一条通知（提示用户必须重启 <ph name="PRODUCT_OS_NAME" />设备以安装更新）的发出时间应与 <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> 政策所设时间段的结束时间相隔多久。
 
-      如果此政策未设置，系统将会在 <ph name="PRODUCT_OS_NAME" />设备上使用 259200000 毫秒（3 天）的默认时间段。</translation>
+      如果未做设置，系统将会在 <ph name="PRODUCT_OS_NAME" />设备上使用默认时间段，即 259200000 毫秒（3 天）。</translation>
 <translation id="8300455783946254851">此政策设为 True 时，在使用移动网络连接的情况下，系统会在 <ph name="PRODUCT_OS_NAME" /> 的“文件”应用中停用 Google 云端硬盘同步功能。在这种情况下，只有当通过 WiFi 网络或以太网连接时，才能将数据同步到 Google 云端硬盘。
 
           如果此政策未设置或设为 False，那么用户将能够通过移动网络连接将文件传输到 Google 云端硬盘。</translation>

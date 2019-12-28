@@ -75,12 +75,16 @@ var CrElementsDrawerV3Test = class extends CrElementsV3BrowserTest {
   }
 };
 
-// https://crbug.com/1008122
-TEST_F(
-    'CrElementsDrawerV3Test', 'DISABLED_CrElementsDrawerV3Test_All',
-    function() {
-      mocha.run();
-    });
+// https://crbug.com/1008122 - Flaky on Linux CFI and Mac 10.10.
+GEN('#if (defined(OS_LINUX) && defined(IS_CFI)) || defined(OS_MACOSX)');
+GEN('#define MAYBE_Drawer DISABLED_Drawer');
+GEN('#else');
+GEN('#define MAYBE_Drawer Drawer');
+GEN('#endif');
+
+TEST_F('CrElementsDrawerV3Test', 'MAYBE_Drawer', function() {
+  mocha.run();
+});
 
 // eslint-disable-next-line no-var
 var CrElementsExpandButtonV3Test = class extends CrElementsV3BrowserTest {

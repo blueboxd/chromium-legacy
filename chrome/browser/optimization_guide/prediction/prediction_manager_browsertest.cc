@@ -49,22 +49,20 @@ int GetTotalHistogramSamples(const base::HistogramTester* histogram_tester,
 }
 
 // Retries fetching |histogram_name| until it contains at least |count| samples.
-int RetryForHistogramUntilCountReached(
+void RetryForHistogramUntilCountReached(
     const base::HistogramTester* histogram_tester,
     const std::string& histogram_name,
     int count) {
-  int total = 0;
   while (true) {
     base::ThreadPoolInstance::Get()->FlushForTesting();
     base::RunLoop().RunUntilIdle();
 
-    total = GetTotalHistogramSamples(histogram_tester, histogram_name);
-    if (total >= count)
-      return total;
-
     content::FetchHistogramsFromChildProcesses();
     SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-    base::RunLoop().RunUntilIdle();
+
+    int total = GetTotalHistogramSamples(histogram_tester, histogram_name);
+    if (total >= count)
+      return;
   }
 }
 
@@ -292,6 +290,12 @@ class PredictionManagerBrowserTest : public InProcessBrowserTest {
   GURL https_url_with_content() { return https_url_with_content_; }
   GURL https_url_without_content() { return https_url_without_content_; }
 
+ protected:
+  // Feature that the model server should return in response to
+  // GetModelsRequest.
+  proto::ClientModelFeature client_model_feature_ =
+      optimization_guide::proto::CLIENT_MODEL_FEATURE_SITE_ENGAGEMENT_SCORE;
+
  private:
   std::unique_ptr<net::test_server::HttpResponse> HandleGetModelsRequest(
       const net::test_server::HttpRequest& request) {
@@ -305,8 +309,7 @@ class PredictionManagerBrowserTest : public InProcessBrowserTest {
     std::unique_ptr<optimization_guide::proto::GetModelsResponse>
         get_models_response = BuildGetModelsResponse(
             {"example1.com", https_server_->GetURL("/").host()},
-            {optimization_guide::proto::
-                 CLIENT_MODEL_FEATURE_SITE_ENGAGEMENT_SCORE});
+            {client_model_feature_});
     if (response_type_ == PredictionModelsFetcherRemoteResponseType::
                               kSuccessfulWithFeaturesAndNoModels) {
       get_models_response->clear_models();
@@ -469,12 +472,9 @@ IN_PROC_BROWSER_TEST_F(
 
   // Wait until histograms have been updated before performing checks for
   // correct behavior based on the response.
-  EXPECT_GE(
-      RetryForHistogramUntilCountReached(
-          &histogram_tester,
-          "OptimizationGuide.PredictionModelFetcher.GetModelsResponse.Status",
-          1),
-      1);
+  RetryForHistogramUntilCountReached(
+      &histogram_tester,
+      "OptimizationGuide.PredictionModelFetcher.GetModelsResponse.Status", 1);
 
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.PredictionModelFetcher.GetModelsResponse.Status",
@@ -499,23 +499,17 @@ IN_PROC_BROWSER_TEST_F(
 
   // Wait until histograms have been updated before performing checks for
   // correct behavior based on the response.
-  EXPECT_GE(
-      RetryForHistogramUntilCountReached(
-          &histogram_tester,
-          "OptimizationGuide.PredictionModelFetcher.GetModelsResponse.Status",
-          1),
-      1);
+  RetryForHistogramUntilCountReached(
+      &histogram_tester,
+      "OptimizationGuide.PredictionModelFetcher.GetModelsResponse.Status", 1);
 
-  EXPECT_GE(
-      RetryForHistogramUntilCountReached(
-          &histogram_tester,
-          "OptimizationGuide.PredictionManager.HostModelFeaturesStored", 1),
-      1);
-  EXPECT_GE(
-      RetryForHistogramUntilCountReached(
-          &histogram_tester,
-          "OptimizationGuide.PredictionManager.PredictionModelsStored", 1),
-      1);
+  RetryForHistogramUntilCountReached(
+      &histogram_tester,
+      "OptimizationGuide.PredictionManager.HostModelFeaturesStored", 1);
+
+  RetryForHistogramUntilCountReached(
+      &histogram_tester,
+      "OptimizationGuide.PredictionManager.PredictionModelsStored", 1);
 
   ui_test_utils::NavigateToURL(browser(), https_url_with_content());
 
@@ -532,6 +526,72 @@ IN_PROC_BROWSER_TEST_F(
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.PredictionManager.HasHostModelFeaturesForHost", false,
       1);
+}
+
+class PredictionManagerBrowserSameOriginTest
+    : public PredictionManagerBrowserTest {
+ public:
+  PredictionManagerBrowserSameOriginTest() = default;
+  ~PredictionManagerBrowserSameOriginTest() override = default;
+
+  void SetUp() override {
+    client_model_feature_ =
+        optimization_guide::proto::CLIENT_MODEL_FEATURE_SAME_ORIGIN_NAVIGATION;
+    PredictionManagerBrowserTest::SetUp();
+  }
+};
+
+// Regression test for https://crbug.com/1037945. Tests that the origin of the
+// previous navigation is computed correctly.
+IN_PROC_BROWSER_TEST_F(PredictionManagerBrowserSameOriginTest,
+                       DISABLE_ON_WIN_MAC_CHROMEOS(IsSameOriginNavigation)) {
+  base::HistogramTester histogram_tester;
+  OptimizationGuideKeyedService* keyed_service =
+      OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile());
+
+  PredictionManager* prediction_manager = keyed_service->GetPredictionManager();
+  EXPECT_TRUE(prediction_manager);
+  RegisterWithKeyedService();
+
+  // Wait until histograms have been updated before performing checks for
+  // correct behavior based on the response.
+  RetryForHistogramUntilCountReached(
+      &histogram_tester,
+      "OptimizationGuide.PredictionModelFetcher.GetModelsResponse.Status", 1);
+
+  RetryForHistogramUntilCountReached(
+      &histogram_tester,
+      "OptimizationGuide.PredictionManager.HostModelFeaturesStored", 1);
+
+  RetryForHistogramUntilCountReached(
+      &histogram_tester,
+      "OptimizationGuide.PredictionManager.PredictionModelsStored", 1);
+
+  ui_test_utils::NavigateToURL(browser(), https_url_with_content());
+  RetryForHistogramUntilCountReached(
+      &histogram_tester, "OptimizationGuide.PredictionManager.IsSameOrigin", 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.PredictionManager.IsSameOrigin", false, 1);
+
+  // Navigate to the same URL in the same tab. This should count as a
+  // same-origin navigation.
+  ui_test_utils::NavigateToURL(browser(), https_url_with_content());
+  RetryForHistogramUntilCountReached(
+      &histogram_tester, "OptimizationGuide.PredictionManager.IsSameOrigin", 2);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.PredictionManager.IsSameOrigin", false, 1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.PredictionManager.IsSameOrigin", true, 1);
+
+  // Navigate to a cross-origin URL. This should count as a cross-origin
+  // navigation.
+  ui_test_utils::NavigateToURL(browser(), GURL("https://www.google.com/"));
+  RetryForHistogramUntilCountReached(
+      &histogram_tester, "OptimizationGuide.PredictionManager.IsSameOrigin", 3);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.PredictionManager.IsSameOrigin", false, 2);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.PredictionManager.IsSameOrigin", true, 1);
 }
 
 }  // namespace optimization_guide

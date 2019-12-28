@@ -18,7 +18,7 @@ using OverlayRequestMediatorTest = PlatformTest;
 // Tests that the mediator's request is reset after destruction.
 TEST_F(OverlayRequestMediatorTest, ResetRequestAfterDestruction) {
   std::unique_ptr<OverlayRequest> request =
-      OverlayRequest::CreateWithConfig<FakeOverlayUserData>(nullptr);
+      OverlayRequest::CreateWithConfig<FakeOverlayUserData>();
   OverlayRequestMediator* mediator =
       [[OverlayRequestMediator alloc] initWithRequest:request.get()];
   EXPECT_EQ(request.get(), mediator.request);

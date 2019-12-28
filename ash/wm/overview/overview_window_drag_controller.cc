@@ -568,30 +568,23 @@ OverviewWindowDragController::CompleteNormalDrag(
       // removed from the grid. It may never be accessed after this.
       item_ = nullptr;
       overview_session_->PositionWindows(/*animate=*/true);
-      return DragResult::kSuccessfulDragToDesk;
+      return DragResult::kDragToDesk;
     }
   }
 
-  // Attempt to snap a window if SplitView is enabled.
-  DCHECK(item_);
-  if (should_allow_split_view_) {
-    // If the window was dragged around but should not be snapped, move it
-    // back to overview window grid.
-    if (!ShouldUpdateDragIndicatorsOrSnap(location_in_screen) ||
-        snap_position_ == SplitViewController::NONE) {
-      item_->set_should_restack_on_animation_end(true);
-      overview_session_->PositionWindows(/*animate=*/true);
-      return DragResult::kCanceledDragToSnap;
-    }
-
+  // Snap a window if appropriate.
+  if (should_allow_split_view_ && snap_position_ != SplitViewController::NONE &&
+      ShouldUpdateDragIndicatorsOrSnap(location_in_screen)) {
     SnapWindow(snap_position_);
     overview_session_->PositionWindows(/*animate=*/true);
-    return DragResult::kSuccessfulDragToSnap;
+    return DragResult::kSnap;
   }
 
+  // Drop a window into overview because we have not done anything else with it.
+  DCHECK(item_);
   item_->set_should_restack_on_animation_end(true);
   overview_session_->PositionWindows(/*animate=*/true);
-  return DragResult::kNeverDisambiguated;
+  return DragResult::kDropIntoOverview;
 }
 
 void OverviewWindowDragController::UpdateDragIndicatorsAndOverviewGrid(

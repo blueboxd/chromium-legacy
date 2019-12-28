@@ -3260,7 +3260,7 @@ void Document::SetIsImmersiveArOverlay(bool val) {
     return;
 
   if (val != is_immersive_ar_overlay_) {
-    DCHECK(RuntimeEnabledFeatures::WebXRARDOMOverlayEnabled(this));
+    DCHECK(RuntimeEnabledFeatures::WebXRIncubationsEnabled(this));
     is_immersive_ar_overlay_ = val;
 
     // If the property has changed, apply the pseudo-style change to the root

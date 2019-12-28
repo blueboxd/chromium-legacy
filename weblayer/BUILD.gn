@@ -102,6 +102,8 @@ jumbo_static_library("weblayer_lib") {
     "app/content_main_delegate_impl.cc",
     "app/content_main_delegate_impl.h",
     "app/main.cc",
+    "browser/browser_context_impl.cc",
+    "browser/browser_context_impl.h",
     "browser/browser_main_parts_impl.cc",
     "browser/browser_main_parts_impl.h",
     "browser/content_browser_client_impl.cc",

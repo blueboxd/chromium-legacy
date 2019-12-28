@@ -134,15 +134,6 @@ class PrerenderContents::WebContentsDelegateImpl
     return false;
   }
 
-  bool ShouldSuppressDialogs(WebContents* source) override {
-    // We still want to show the user the message when they navigate to this
-    // page, so cancel this prerender.
-    prerender_contents_->Destroy(FINAL_STATUS_JAVASCRIPT_ALERT);
-    // Always suppress JavaScript messages if they're triggered by a page being
-    // prerendered.
-    return true;
-  }
-
   void RegisterProtocolHandler(WebContents* web_contents,
                                const std::string& protocol,
                                const GURL& url,

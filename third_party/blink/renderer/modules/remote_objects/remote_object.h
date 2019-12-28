@@ -39,6 +39,7 @@ class RemoteObject : public gin::Wrappable<RemoteObject>,
 
  private:
   WeakPersistent<RemoteObjectGatewayImpl> gateway_{nullptr};
+  mojo::Remote<mojom::blink::RemoteObject> object_;
   int32_t object_id_;
 };
 

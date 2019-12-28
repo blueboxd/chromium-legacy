@@ -1070,6 +1070,14 @@
           De waarde moet een matrix van json-woordenboeken met tekenreeksen zijn. Elk woordenboek moet de indeling <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> hebben, waarbij <ph name="URL_PATTERN_PLACEHOLDER" /> een patroon voor het instellen van content is. <ph name="FILTER_PLACEHOLDER" /> beperkt de clientcertificaten die de browser automatisch kan selecteren. Onafhankelijk van het filter worden alleen certificaten geselecteerd die overeenkomen met het certificaatverzoek van de server. Als <ph name="FILTER_PLACEHOLDER" /> bijvoorbeeld de indeling <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" /> heeft, worden daarnaast alleen clientcertificaten geselecteerd die zijn uitgegeven door een certificaat met de CommonName <ph name="ISSUER_CN_PLACEHOLDER" />. Als <ph name="FILTER_PLACEHOLDER" /> een <ph name="ISSUER_STRING_VALUE" /> en een gedeelte <ph name="SUBJECT_STRING_VALUE" /> bevat, moet een clientcertificaat aan beide voorwaarden voldoen om te worden geselecteerd. Als <ph name="FILTER_PLACEHOLDER" /> een organisatie ('O') specificeert, moet een certificaat ten minste één organisatie bevatten die overeenkomt met de gespecificeerde waarde die moet worden geselecteerd. Als <ph name="FILTER_PLACEHOLDER" /> een organisatie-eenheid ('OU') specificeert, moet een certificaat ten minste één organisatie-eenheid bevatten die overeenkomt met de gespecificeerde waarde die moet worden geselecteerd. Als <ph name="FILTER_PLACEHOLDER" /> het lege woordenboek <ph name="EMPTY_DICTIONARY" /> is, wordt de selectie van clientcertificaten niet verder beperkt.
 
           Als dit beleid niet wordt ingesteld, wordt voor geen enkele site automatische selectie uitgevoerd.</translation>
+<translation id="2528659559494311776">Met dit beleid wordt een beveiligingsfunctie in TLS 1.3 beheerd waarmee verbindingen worden beschermd tegen downgrade-aanvallen. De functie is compatibel met eerdere versies en heeft geen invloed op verbindingen met servers of proxy's die voldoen aan TLS 1.2. Oudere versies van bepaalde proxy's die TLS onderscheppen, bevatten een implementatiefout waardoor ze incompatibel zijn.
+
+      Als dit beleid is ingesteld op True of niet is ingesteld, schakelt <ph name="PRODUCT_NAME" /> deze beveiligingsmaatregelen in voor alle verbindingen.
+
+      Als dit beleid is ingesteld op False, schakelt <ph name="PRODUCT_NAME" /> deze beveiligingsmaatregelen uit voor verbindingen die zijn geverifieerd met lokaal geïnstalleerde CA-certificaten. Deze beveiligingsmaatregelen zijn altijd ingeschakeld voor verbindingen die zijn geverifieerd met openbaar vertrouwde CA-certificaten.
+
+      De standaardwaarde voor dit beleid is in <ph name="PRODUCT_NAME" /> 81 gewijzigd van False in True. Van getroffen proxy's wordt verwacht dat ze verbindingen met de foutcode ERR_TLS13_DOWNGRADE_DETECTED niet tot stand kunnen brengen. Beheerders die meer tijd nodig hebben om getroffen proxy's te upgraden, kunnen dit beleid gebruiken om deze beveiligingsfunctie tijdelijk uit te schakelen. Dit beleid wordt verwijderd na versie 85.
+      </translation>
 <translation id="2529659024053332711">Hiermee kun je het gedrag bij opstarten opgeven.
 
           Als je 'De pagina 'Nieuw tabblad' openen' kiest, wordt altijd de pagina 'Nieuw tabblad' geopend wanneer je <ph name="PRODUCT_NAME" /> start.
@@ -1619,6 +1627,15 @@
       Als deze instelling is ingesteld op 'Uit' of er is geen waarde ingesteld, wordt de 'Beperkte modus' op YouTube niet afgedwongen door <ph name="PRODUCT_NAME" />. De 'Beperkte modus' kan echter nog steeds worden afgedwongen door externe beleidsregels zoals het YouTube-beleid.</translation>
 <translation id="3428247105888806363">Netwerkvoorspelling inschakelen</translation>
 <translation id="3432863169147125747">Beheert afdrukinstellingen.</translation>
+<translation id="3434053014926283175">Stel de rechtermuisknop in als de primaire muisknop op het inlogscherm.
+
+          Als dit beleid is ingeschakeld, is de rechtermuisknop altijd de primaire muisknop op het inlogscherm.
+
+          Als dit beleid is uitgeschakeld, is de linkermuisknop altijd de primaire muisknop op het inlogscherm.
+
+          Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of overschrijven.
+
+          Als dit beleid niet is ingesteld, is de linkermuisknop in eerste instantie de primaire muisknop op het inlogscherm. De gebruiker kan dit op elk gewenst moment veranderen.</translation>
 <translation id="3434932177006334880">Deze instelling heette vóór Chrome 42 EnableWebBasedSignin en de ondersteuning hiervoor wordt volledig verwijderd in Chrome 43.
 
       Deze instelling is nuttig voor zakelijke klanten die SSO-oplossingen gebruiken die nog niet geschikt zijn voor het nieuwe inline inlogproces.
@@ -4543,6 +4560,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
           Als je dit beleid instelt, kunnen gebruikers het niet wijzigen of overschrijven.
 
           Als dit beleid niet is ingesteld, is de functie voor cursormarkering in eerste instantie uitgeschakeld, maar kan de gebruiker deze op elk gewenst moment inschakelen.</translation>
+<translation id="8171924760436219650">De rechtermuisknop instellen als de primaire muisknop op het inlogscherm</translation>
 <translation id="8172676363520748127">Als dit beleid is ingeschakeld, kunnen er geen screenshots worden gemaakt met de sneltoetsen op het toetsenbord of de extensie-API's.
 
       Als deze instelling is uitgeschakeld of niet is gespecificeerd, kunnen er screenshots worden gemaakt.</translation>

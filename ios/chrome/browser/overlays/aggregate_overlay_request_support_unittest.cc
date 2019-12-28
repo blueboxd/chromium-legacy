@@ -6,27 +6,14 @@
 
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
 #include "ios/chrome/browser/overlays/public/overlay_request_config.h"
+#include "ios/chrome/browser/overlays/test/overlay_test_macros.h"
 #include "testing/platform_test.h"
 
 namespace {
 // Fake request config types.
-class FirstConfig : public OverlayRequestConfig<FirstConfig> {
- private:
-  OVERLAY_USER_DATA_SETUP(FirstConfig);
-};
-OVERLAY_USER_DATA_SETUP_IMPL(FirstConfig);
-
-class SecondConfig : public OverlayRequestConfig<SecondConfig> {
- private:
-  OVERLAY_USER_DATA_SETUP(SecondConfig);
-};
-OVERLAY_USER_DATA_SETUP_IMPL(SecondConfig);
-
-class ThirdConfig : public OverlayRequestConfig<ThirdConfig> {
- private:
-  OVERLAY_USER_DATA_SETUP(ThirdConfig);
-};
-OVERLAY_USER_DATA_SETUP_IMPL(ThirdConfig);
+DEFINE_TEST_OVERLAY_REQUEST_CONFIG(FirstConfig);
+DEFINE_TEST_OVERLAY_REQUEST_CONFIG(SecondConfig);
+DEFINE_TEST_OVERLAY_REQUEST_CONFIG(ThirdConfig);
 }  // namespace
 
 using AggregateOverlayRequestSupportTest = PlatformTest;

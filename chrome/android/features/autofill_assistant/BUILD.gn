@@ -39,6 +39,7 @@ android_library("java") {
     "//chrome/android/public/profiles:java",
     "//chrome/browser/image_fetcher:java",
     "//chrome/browser/ui/android/widget:java",
+    "//chrome/browser/ui/messages/android:java",
     "//chrome/browser/util:java",
     "//components/browser_ui/modaldialog/android:java",
     "//components/policy/android:policy_java",

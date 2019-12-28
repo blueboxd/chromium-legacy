@@ -9,22 +9,18 @@
 
 namespace net {
 
-namespace {
-
 // TODO(eroman): IOBuffer is being converted to require buffer sizes and offsets
 // be specified as "size_t" rather than "int" (crbug.com/488553). To facilitate
 // this move (since LOTS of code needs to be updated), both "size_t" and "int
 // are being accepted. When using "size_t" this function ensures that it can be
 // safely converted to an "int" without truncation.
-void AssertValidBufferSize(size_t size) {
+void IOBuffer::AssertValidBufferSize(size_t size) {
   base::CheckedNumeric<int>(size).ValueOrDie();
 }
 
-void AssertValidBufferSize(int size) {
+void IOBuffer::AssertValidBufferSize(int size) {
   CHECK_GE(size, 0);
 }
-
-}  // namespace
 
 IOBuffer::IOBuffer() : data_(nullptr) {}
 

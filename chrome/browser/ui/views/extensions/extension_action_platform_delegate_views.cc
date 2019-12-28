@@ -117,11 +117,7 @@ void ExtensionActionPlatformDelegateViews::Observe(
 
 bool ExtensionActionPlatformDelegateViews::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
-  // We shouldn't be handling any accelerators if the view is hidden, unless
-  // this is a browser action.
-  DCHECK(controller_->extension_action()->action_type() ==
-             ActionInfo::TYPE_BROWSER ||
-         GetDelegateViews()->GetAsView()->GetVisible());
+  DCHECK(controller_->CanHandleAccelerators());
 
   // Normal priority shortcuts must be handled via standard browser commands to
   // be processed at the proper time.
@@ -137,12 +133,7 @@ bool ExtensionActionPlatformDelegateViews::AcceleratorPressed(
 }
 
 bool ExtensionActionPlatformDelegateViews::CanHandleAccelerators() const {
-  // Page actions can only handle accelerators when they are visible.
-  // Browser actions can handle accelerators even when not visible, since they
-  // might be hidden in an overflow menu.
-  return controller_->extension_action()->action_type() == ActionInfo::TYPE_PAGE
-             ? GetDelegateViews()->GetAsView()->GetVisible()
-             : true;
+  return controller_->CanHandleAccelerators();
 }
 
 void ExtensionActionPlatformDelegateViews::UnregisterCommand(

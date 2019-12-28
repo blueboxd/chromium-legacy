@@ -86,7 +86,8 @@ ui::EventSink* WidgetTest::GetEventSink(Widget* widget) {
 ui::internal::InputMethodDelegate* WidgetTest::GetInputMethodDelegateForWidget(
     Widget* widget) {
   return NativeWidgetMacNSWindowHost::GetFromNativeWindow(
-      widget->GetNativeWindow());
+             widget->GetNativeWindow())
+      ->native_widget_mac();
 }
 
 // static

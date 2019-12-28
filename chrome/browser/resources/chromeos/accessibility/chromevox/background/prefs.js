@@ -73,6 +73,7 @@ ChromeVoxPrefs.DEFAULT_PREFS = {
   // TODO(dtseng): Leaking state about multiple key maps here until we have a
   // class to manage multiple key maps. Also, this doesn't belong as a pref;
   // should just store in local storage.
+  'capitalStrategy': 'increasePitch',
   'currentKeyMap': KeyMap.DEFAULT_KEYMAP,
   'cvoxKey': '',
   'enableBrailleLogging': false,

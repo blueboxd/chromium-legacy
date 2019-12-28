@@ -198,7 +198,7 @@ Chromium 無法復原你的設定。</translation>
 <translation id="8417404458978023919">{0,plural, =1{請在 1 天內重新啟動 Chromium}other{請在 # 天內重新啟動 Chromium}}</translation>
 <translation id="8453117565092476964">安裝程式封存檔案已毀損或無效，請重新下載 Chromium。</translation>
 <translation id="8493179195440786826">Chromium 版本過舊</translation>
-<translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. 版權所有。</translation>
+<translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. 保留所有權利。</translation>
 <translation id="8619360774459241877">正在啟動 Chromium…</translation>
 <translation id="8621669128220841554">不明錯誤導致安裝失敗，請重新下載 Chromium。</translation>
 <translation id="8682540261359803721">如果這個頁面上並未顯示你的設定，請檢查 <ph name="LINK_BEGIN" />

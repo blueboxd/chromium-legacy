@@ -717,6 +717,7 @@
 <translation id="4340982228985273705">Bu bilgisayarın kurumsal olarak yönetilmediği algılandığı için politika yalnızca Chrome Web Mağazası'nda barındırılan uzantıları otomatik olarak yükleyebilir. Chrome Web Mağazası'nın güncelleme URL'si "<ph name="CWS_UPDATE_URL" />" şeklindedir.</translation>
 <translation id="4346197816712207223">Kabul Edilen Kredi Kartları</translation>
 <translation id="4346833872170306413">Roc-16K</translation>
+<translation id="4349531505348777662">Az önce şifrenizi yanıltıcı bir sitede girdiniz. Chrome, bu şifreyi kullandığınız <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> ve diğer sitelere giderek şifrenizi hemen değiştirmenizi öneriyor.</translation>
 <translation id="4356973930735388585">Bu sitedeki saldırganlar, bilgilerinizi (örneğin fotoğraflar, şifreler, mesajlar ve kredi kartları) çalacak veya silecek tehlikeli programları bilgisayarınıza yüklemeyi deneyebilir.</translation>
 <translation id="4358059973562876591">Belirttiğiniz şablonlar, DnsOverHttpsMode politikasındaki bir hata nedeniyle uygulanamayabilir.</translation>
 <translation id="4358461427845829800">Ödeme yöntemlerini yönet...</translation>
@@ -1245,6 +1246,7 @@
 <translation id="6970216967273061347">Bölge</translation>
 <translation id="6973656660372572881">Hem sabit proxy sunucular hem de bir .pac komut dosyası URL'si belirtildi.</translation>
 <translation id="6973932557599545801">Maalesef daha fazla yardımcı olamıyorum, lütfen kendiniz devam edin.</translation>
+<translation id="6975012522936652259">Az önce şifrenizi yanıltıcı bir sitede girdiniz. Chromium, <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> ve bu şifreyi kullandığınız diğer sitelere giderek şifrenizi hemen değiştirmenizi öneriyor.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Sesi kapat (varsayılan)</translation>
 <translation id="6989763994942163495">Gelişmiş ayarları göster...</translation>
@@ -1376,6 +1378,7 @@ Ek ayrıntılar:
 <translation id="7567204685887185387">Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı. Güvenlik sertifikası hileli bir şekilde yayınlanmış olabilir. Bu durum, bir yanlış yapılandırmadan veya bağlantıya müdahale eden bir saldırgandan kaynaklanıyor olabilir.</translation>
 <translation id="7569952961197462199">Kredi kartı Chrome'dan kaldırılsın mı?</translation>
 <translation id="7569983096843329377">Siyah</translation>
+<translation id="7575207903026901870">Öneriyi Kaldır düğmesi, bu öneriyi kaldrımak için Enter tuşuna basın</translation>
 <translation id="7578104083680115302">Google'a kaydettiğiniz kartları kullanarak farklı cihazlardan sitelerde ve uygulamalarda ödemelerinizi hızla yapabilirsiniz.</translation>
 <translation id="7592362899630581445">Sunucunun sertifikası ad sınırlamasını ihlal ediyor.</translation>
 <translation id="7598391785903975535"><ph name="UPPER_ESTIMATE" />'tan az</translation>
@@ -1622,6 +1625,7 @@ Ek ayrıntılar:
 <translation id="8891727572606052622">Geçersiz proxy modu.</translation>
 <translation id="8903921497873541725">Yakınlaştır</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="890493561996401738">Öneriyi Kaldır düğmesi, kaldırmak için Enter tuşuna basın, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Gizli sekme açtınız</translation>
 <translation id="8912362522468806198">Google Hesabı</translation>
 <translation id="8918231688545606538">Bu sayfa şüpheli</translation>

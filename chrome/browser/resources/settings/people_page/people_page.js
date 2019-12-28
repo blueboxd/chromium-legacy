@@ -12,7 +12,7 @@ Polymer({
   behaviors: [
     settings.RouteObserverBehavior, I18nBehavior, WebUIListenerBehavior,
     // <if expr="chromeos">
-    CrPngBehavior, LockStateBehavior,
+    CrPngBehavior,
     // </if>
   ],
 
@@ -86,10 +86,6 @@ Polymer({
           // Opens profile manager.
           return true;
         }
-        if (loadTimeData.getBoolean('showOSSettings')) {
-          // Pre-SplitSettings opens change picture.
-          return true;
-        }
         // Post-SplitSettings links out to account manager if it is available.
         return loadTimeData.getBoolean('isAccountManagerEnabled');
       },
@@ -101,40 +97,6 @@ Polymer({
      * @private
      */
     profileName_: String,
-
-    // <if expr="chromeos">
-    /** @private {string} */
-    profileRowIconClass_: {
-      type: String,
-      value: function() {
-        if (loadTimeData.getBoolean('showOSSettings')) {
-          // Pre-SplitSettings links internally to the change picture subpage.
-          return 'subpage-arrow';
-        } else {
-          // Post-SplitSettings links externally to account manager. If account
-          // manager isn't available the icon will be hidden.
-          return 'icon-external';
-        }
-      },
-      readOnly: true,
-    },
-
-    /** @private {string} */
-    profileRowIconAriaLabel_: {
-      type: String,
-      value: function() {
-        if (loadTimeData.getBoolean('showOSSettings')) {
-          // Pre-SplitSettings.
-          return this.i18n('changePictureTitle');
-        } else {
-          // Post-SplitSettings. If account manager isn't available the icon
-          // will be hidden so the label doesn't matter.
-          return this.i18n('accountManagerSubMenuLabel');
-        }
-      },
-      readOnly: true,
-    },
-    // </if>
 
     // <if expr="not chromeos">
     /** @private {boolean} */
@@ -156,18 +118,6 @@ Polymer({
     showSignoutDialog_: Boolean,
 
     // <if expr="chromeos">
-    /**
-     * True if fingerprint settings should be displayed on this machine.
-     * @private
-     */
-    fingerprintUnlockEnabled_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('fingerprintUnlockEnabled');
-      },
-      readOnly: true,
-    },
-
     /** @private */
     showParentalControls_: {
       type: Boolean,
@@ -201,25 +151,6 @@ Polymer({
               settings.routes.CHANGE_PICTURE.path,
               '#picture-subpage-trigger .subpage-arrow');
         }
-        if (settings.routes.LOCK_SCREEN) {
-          map.set(
-              settings.routes.LOCK_SCREEN.path, '#lock-screen-subpage-trigger');
-        }
-        if (settings.routes.ACCOUNTS) {
-          map.set(
-              settings.routes.ACCOUNTS.path,
-              '#manage-other-people-subpage-trigger');
-        }
-        if (settings.routes.ACCOUNT_MANAGER) {
-          map.set(
-              settings.routes.ACCOUNT_MANAGER.path,
-              '#account-manager-subpage-trigger');
-        }
-        if (settings.routes.KERBEROS_ACCOUNTS) {
-          map.set(
-              settings.routes.KERBEROS_ACCOUNTS.path,
-              '#kerberos-accounts-subpage-trigger');
-        }
         // </if>
         return map;
       },
@@ -233,8 +164,7 @@ Polymer({
   attached: function() {
     let useProfileNameAndIcon = true;
     // <if expr="chromeos">
-    if (!loadTimeData.getBoolean('showOSSettings') &&
-        loadTimeData.getBoolean('isAccountManagerEnabled')) {
+    if (loadTimeData.getBoolean('isAccountManagerEnabled')) {
       // If this is SplitSettings and we have the Google Account manager,
       // prefer the GAIA name and icon.
       useProfileNameAndIcon = false;
@@ -294,19 +224,6 @@ Polymer({
     return this.diceEnabled_ ? assert(this.$$('#edit-profile')) :
                                assert(this.$$('#picture-subpage-trigger'));
   },
-
-  // <if expr="chromeos">
-  /** @private */
-  getPasswordState_: function(hasPin, enableScreenLock) {
-    if (!enableScreenLock) {
-      return this.i18n('lockScreenNone');
-    }
-    if (hasPin) {
-      return this.i18n('lockScreenPinOrPassword');
-    }
-    return this.i18n('lockScreenPasswordOnly');
-  },
-  // </if>
 
   /**
    * @return {string}
@@ -407,10 +324,7 @@ Polymer({
   /** @private */
   onProfileTap_: function() {
     // <if expr="chromeos">
-    if (loadTimeData.getBoolean('showOSSettings')) {
-      // Pre-SplitSettings.
-      settings.navigateTo(settings.routes.CHANGE_PICTURE);
-    } else if (loadTimeData.getBoolean('isAccountManagerEnabled')) {
+    if (loadTimeData.getBoolean('isAccountManagerEnabled')) {
       // Post-SplitSettings. The browser C++ code loads OS settings in a window.
       // Don't use window.open() because that creates an extra empty tab.
       window.location.href = 'chrome://os-settings/accountManager';
@@ -455,41 +369,6 @@ Polymer({
     // Users can go to sync subpage regardless of sync status.
     settings.navigateTo(settings.routes.SYNC);
   },
-
-  // <if expr="chromeos">
-  /**
-   * @param {!Event} e
-   * @private
-   */
-  onConfigureLockTap_: function(e) {
-    // Navigating to the lock screen will always open the password prompt
-    // dialog, so prevent the end of the tap event to focus what is underneath
-    // it, which takes focus from the dialog.
-    e.preventDefault();
-    settings.navigateTo(settings.routes.LOCK_SCREEN);
-  },
-
-  /**
-   * @param {!Event} e
-   * @private
-   */
-  onAccountManagerTap_: function(e) {
-    settings.navigateTo(settings.routes.ACCOUNT_MANAGER);
-  },
-
-  /**
-   * @param {!Event} e
-   * @private
-   */
-  onKerberosAccountsTap_: function(e) {
-    settings.navigateTo(settings.routes.KERBEROS_ACCOUNTS);
-  },
-
-  /** @private */
-  onManageOtherPeople_: function() {
-    settings.navigateTo(settings.routes.ACCOUNTS);
-  },
-  // </if>
 
   // <if expr="not chromeos">
   /** @private */
@@ -543,17 +422,5 @@ Polymer({
    */
   showSignin_: function(syncStatus) {
     return !!syncStatus.signinAllowed && !syncStatus.signedIn;
-  },
-
-  /**
-   * Looks up the translation id, which depends on PIN login support.
-   * @param {boolean} hasPinLogin
-   * @private
-   */
-  selectLockScreenTitleString(hasPinLogin) {
-    if (hasPinLogin) {
-      return this.i18n('lockScreenTitleLoginLock');
-    }
-    return this.i18n('lockScreenTitleLock');
   },
 });

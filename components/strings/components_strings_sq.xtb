@@ -707,6 +707,7 @@
 <translation id="4340982228985273705">Ky kompjuter nuk është zbuluar si i menaxhuar nga ndërmarrja, prandaj politika mund të instalojë automatikisht vetëm shtesat e strehuara në "Dyqanin e uebit të Chrome". URL-ja e përditësimit të "Dyqanit të uebit të Chrome" është "<ph name="CWS_UPDATE_URL" />".</translation>
 <translation id="4346197816712207223">Kartat e pranuara të kreditit</translation>
 <translation id="4346833872170306413">Roc-16K</translation>
+<translation id="4349531505348777662">Sapo fute fjalëkalimin tënd në një sajt mashtrues. Chrome rekomandon që të shkosh te <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> dhe sajte të tjera ku e përdor këtë fjalëkalim dhe ta ndryshosh atë tani.</translation>
 <translation id="4356973930735388585">Sulmuesit në këtë sajt mund të përpiqen të instalojnë programe të rrezikshme në kompjuterin tënd që vjedhin ose fshijnë informacionet e tua (për shembull, fotografi, fjalëkalime, mesazhe dhe karta krediti).</translation>
 <translation id="4358059973562876591">Shabllonet që ke specifikuar mund të mos zbatohen për shkak të një gabimi me politikën DnsOverHttpsMode.</translation>
 <translation id="4358461427845829800">Menaxho mënyrat e pagesës...</translation>
@@ -1233,6 +1234,7 @@
 <translation id="6970216967273061347">Distrikti</translation>
 <translation id="6973656660372572881">Janë specifikuar serverë përfaqësues fiksë dhe një URL e skriptit .pac.</translation>
 <translation id="6973932557599545801">Më vjen keq që nuk mund të të ndihmoj. Vazhdo vetë.</translation>
+<translation id="6975012522936652259">Sapo fute fjalëkalimin tënd në një sajt mashtrues. Chromium rekomandon që të shkosh te <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> dhe sajte të tjera ku e përdor këtë fjalëkalim dhe ta ndryshosh atë tani.</translation>
 <translation id="6979158407327259162">Disku i Google</translation>
 <translation id="6979440798594660689">Heshtje (e parazgjedhur)</translation>
 <translation id="6989763994942163495">Trego cilësimet e përparuara...</translation>
@@ -1364,6 +1366,7 @@ Detaje shtesë:
 <translation id="7567204685887185387">Ky server nuk mund të dëshmonte se është <ph name="DOMAIN" />; certifikata e tij e sigurisë mund të jetë lëshuar në mënyrë mashtruese. Kjo mund të shkaktohet nga një konfigurim i pasaktë ose ndërhyrja e një sulmuesi në lidhjen tënde.</translation>
 <translation id="7569952961197462199">Të hiqet karta e kreditit nga Chrome?</translation>
 <translation id="7569983096843329377">E zezë</translation>
+<translation id="7575207903026901870">Butoni "Hiq sugjerimin", shtyp Enter për ta hequr këtë sugjerim</translation>
 <translation id="7578104083680115302">Paguaj me shpejtësi në sajte dhe aplikacione mes pajisjeve të ndryshme duke përdorur kartat që ke ruajtur me Google.</translation>
 <translation id="7592362899630581445">Certifikata e serverit shkel kufizimet për serverin.</translation>
 <translation id="7598391785903975535">Më pak se <ph name="UPPER_ESTIMATE" /></translation>
@@ -1609,6 +1612,7 @@ Detaje shtesë:
 <translation id="8891727572606052622">Modalitet i pavlefshëm përfaqësuesi.</translation>
 <translation id="8903921497873541725">Zmadho</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="890493561996401738">Butoni "Hiq sugjerimin", shtyp Enter për ta hequr, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Ke kaluar në modalitetin "e fshehtë"</translation>
 <translation id="8912362522468806198">Llogaria e Google</translation>
 <translation id="8918231688545606538">Kjo faqe është e dyshimtë</translation>

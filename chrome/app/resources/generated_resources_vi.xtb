@@ -113,6 +113,7 @@
 <translation id="1150565364351027703">Kính mát</translation>
 <translation id="1151917987301063366">Luôn cho phép <ph name="HOST" /> sử dụng các cảm biến của thiết bị</translation>
 <translation id="1153356358378277386">Thiết bị được ghép nối</translation>
+<translation id="1153636665119721804">Chương trình Bảo vệ nâng cao của Google</translation>
 <translation id="1161575384898972166">Vui lòng đăng nhập vào <ph name="TOKEN_NAME" /> để xuất chứng chỉ ứng dụng khách.</translation>
 <translation id="1163931534039071049">&amp;Xem nguồn khung</translation>
 <translation id="1164674268730883318">Tắt Smart Lock cho <ph name="DEVICE_TYPE" />?</translation>
@@ -223,6 +224,7 @@
 <translation id="1306606229401759371">Thay đổi cài đặt</translation>
 <translation id="1307165550267142340">Mã PIN của bạn đã được tạo</translation>
 <translation id="1307559529304613120">Rất tiếc! Hệ thống không lưu trữ được mã thông báo truy cập API dài hạn cho thiết bị này.</translation>
+<translation id="1309199320876169714">Đang xóa Plugin VM...</translation>
 <translation id="1313405956111467313">Cấu hình proxy tự động</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313705515580255288">Dấu trang, lịch sử và các cài đặt khác sẽ được đồng bộ hóa với tài khoản Google của bạn.</translation>
@@ -233,6 +235,7 @@
 <translation id="1316495628809031177">Quá trình đồng bộ hóa hiện tạm dừng</translation>
 <translation id="1317637799698924700">Đế sạc sẽ hoạt động ở chế độ tương thích với USB Type-C.</translation>
 <translation id="1322046419516468189">Xem và quản lý mật khẩu đã lưu trong <ph name="SAVED_PASSWORDS_STORE" /> của bạn</translation>
+<translation id="1324106254079708331">Bảo vệ Tài khoản Google cá nhân của bất kỳ ai có nguy cơ bị tấn công có chủ đích</translation>
 <translation id="1326317727527857210">Để có các tab từ các thiết bị khác của bạn, hãy đăng nhập vào Chrome.</translation>
 <translation id="1327074568633507428">Máy in trên Google Cloud Print</translation>
 <translation id="1327272175893960498">Phiếu Kerberos</translation>
@@ -723,6 +726,7 @@
 <translation id="2003130567827682533">Để kích hoạt dữ liệu '<ph name="NAME" />', trước tiên hãy kết nối mạng Wi-Fi</translation>
 <translation id="2006638907958895361">Mở liên kết trong <ph name="APP" /></translation>
 <translation id="2007404777272201486">Báo cáo sự cố...</translation>
+<translation id="2010501376126504057">Thiết bị tương thích</translation>
 <translation id="2016430552235416146">Truyền thống</translation>
 <translation id="2017334798163366053">Tắt tính năng thu thập dữ liệu hoạt động</translation>
 <translation id="2017836877785168846">Xóa lịch sử duyệt web và nội dung tự động hoàn thành trong thanh địa chỉ.</translation>
@@ -1358,6 +1362,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="2871813825302180988">Tài khoản này đã đang được sử dụng trên thiết bị này.</translation>
 <translation id="287286579981869940">Thêm <ph name="PROVIDER_NAME" />...</translation>
 <translation id="2872961005593481000">Tắt</translation>
+<translation id="2874478552394649323">Xóa Plugin VM</translation>
 <translation id="2874939134665556319">Bản nhạc trước</translation>
 <translation id="2875698561019555027">(Các trang lỗi của Chrome)</translation>
 <translation id="2876336351874743617">Ngón tay số 2</translation>
@@ -1373,6 +1378,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="2889064240420137087">Mở liên kết bằng...</translation>
 <translation id="2889925978073739256">Tiếp tục chặn plugin không có hộp cát</translation>
 <translation id="2893168226686371498">Trình duyệt mặc định</translation>
+<translation id="2893208266590504003">Không xóa được Plugin VM</translation>
 <translation id="2894757982205307093">Tab mới trong nhóm</translation>
 <translation id="289644616180464099">Thẻ SIM bị khóa</translation>
 <translation id="2896909745808647285"><ph name="FILE_NAME" /> đã được mã hóa và bị chặn không cho mở.</translation>
@@ -2260,6 +2266,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="413121957363593859">Thành phần</translation>
 <translation id="4131410914670010031">Đen và trắng</translation>
 <translation id="4136203100490971508">Chế độ Ánh sáng đêm sẽ tự động tắt khi trời sáng</translation>
+<translation id="41365691917097717">Nếu bạn tiếp tục, tùy chọn gỡ lỗi ADB sẽ bật để tạo và thử nghiệm các ứng dụng Android. Xin lưu ý rằng thao tác này sẽ cho phép cài đặt các ứng dụng Android mà Google chưa xác minh. Để tắt ADB, bạn cần phải đặt lại thiết bị về trạng thái ban đầu.</translation>
 <translation id="4138267921960073861">Hiển thị tên người dùng và ảnh trên màn hình đăng nhập</translation>
 <translation id="413915106327509564"><ph name="WINDOW_TITLE" /> – Đã kết nối thiết bị giao diện tương tác với con người (HID)</translation>
 <translation id="4142052906269098341">Mở khóa <ph name="DEVICE_TYPE" /> bằng điện thoại của bạn. <ph name="LINK_BEGIN" />Tìm hiểu thêm<ph name="LINK_END" /></translation>
@@ -3181,6 +3188,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="5554720593229208774">Tổ chức phát hành chứng chỉ email</translation>
 <translation id="5556459405103347317">Tải lại</translation>
 <translation id="5557991081552967863">Bật Wi-Fi khi ở chế độ ngủ</translation>
+<translation id="5558125320634132440">Trang web này bị chặn vì có thể chứa nội dung dành cho người trưởng thành</translation>
 <translation id="5558129378926964177">Phóng &amp;to</translation>
 <translation id="55601339223879446">Điều chỉnh các ranh giới của màn hình trong vòng hiển thị</translation>
 <translation id="5562781907504170924">Tab này được kết nối với thiết bị Bluetooth.</translation>
@@ -3282,7 +3290,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="5692183275898619210">Đã in xong</translation>
 <translation id="5696143504434933566">Báo cáo vi phạm từ "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="5696679855467848181">Tệp PPD hiện được sử dụng: <ph name="PPD_NAME" /></translation>
-<translation id="5699533844376998780">Đã thêm tiện ích "<ph name="EXTENSION_NAME" />".</translation>
 <translation id="570043786759263127">Các ứng dụng và dịch vụ trên Google Play</translation>
 <translation id="5700836101007545240">Quản trị viên của bạn đã tắt tính năng Thêm kết nối</translation>
 <translation id="5701080607174488915">Lỗi khi tìm nạp chính sách từ máy chủ.</translation>
@@ -3770,6 +3777,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="6386099547750337629">Nếu đây là tình huống không mong muốn, vui lòng liên hệ với bộ phận hỗ trợ.</translation>
 <translation id="6387674443318562538">Chia dọc</translation>
 <translation id="6388429472088318283">Ngôn ngữ tìm kiếm</translation>
+<translation id="6390020764191254941">Di chuyển tab sang cửa sổ mới</translation>
 <translation id="6390799748543157332">Những trang bạn xem trong cửa sổ này sẽ không xuất hiện trong lịch sử trình duyệt và sẽ không để lại các dấu vết khác như cookie trên máy tính sau khi bạn đóng tất cả cửa sổ Khách đang mở. Tuy nhiên, bất kỳ tệp nào bạn tải xuống cũng sẽ được giữ nguyên.</translation>
 <translation id="6393156038355142111">Đề xuất mật khẩu mạnh</translation>
 <translation id="6395423953133416962">Gửi <ph name="BEGIN_LINK1" />thông tin hệ thống<ph name="END_LINK1" /> và <ph name="BEGIN_LINK2" />số liệu<ph name="END_LINK2" /></translation>
@@ -3808,7 +3816,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="6444070574980481588">Đặt ngày giờ</translation>
 <translation id="6445450263907939268">Nếu không thích những thay đổi này, bạn có thể khôi phục cài đặt trước của mình.</translation>
 <translation id="6447842834002726250">Cookie</translation>
-<translation id="6449285849137521213">Ứng dụng "<ph name="EXTENSION_NAME" />" đã được thêm.</translation>
 <translation id="6450876761651513209">Thay đổi các cài đặt liên quan đến bảo mật của bạn</translation>
 <translation id="6451180435462401570">Quản lý thiết bị Cloud Print</translation>
 <translation id="6451689256222386810">Nếu bạn quên cụm mật khẩu hoặc muốn thay đổi cài đặt này, hãy <ph name="BEGIN_LINK" />đặt lại đồng bộ hóa<ph name="END_LINK" />.</translation>
@@ -4543,6 +4550,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="7530016656428373557">Tốc độ phóng điện tính bằng Watt</translation>
 <translation id="7531779363494549572">Chuyển đến Cài đặt &gt; Ứng dụng và thông báo &gt; Thông báo.</translation>
 <translation id="7532009420053991888"><ph name="LINUX_APP_NAME" /> hiện không phản hồi. Hãy chọn "Buộc đóng" để đóng ứng dụng.</translation>
+<translation id="7536333565791380193">Bảo mật nâng cao</translation>
 <translation id="7539856059004947393">Khóa bảo mật Bluetooth</translation>
 <translation id="7540972813190816353">Đã xảy ra lỗi khi kiểm tra cập nhật: <ph name="ERROR" /></translation>
 <translation id="7541773865713908457"><ph name="ACTION_NAME" /> bằng ứng dụng <ph name="APP_NAME" /></translation>
@@ -4789,6 +4797,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="7851720427268294554">Trình phân tích cú pháp IPP</translation>
 <translation id="78526636422538552">Tính năng thêm Tài khoản Google khác đã bị tắt</translation>
 <translation id="7853747251428735">Côn&amp;g cụ khác</translation>
+<translation id="7855678561139483478">Di chuyển tab sang cửa sổ mới</translation>
 <translation id="7857117644404132472">Thêm ngoại lệ</translation>
 <translation id="7857949311770343000">Đây có phải là trang tab mới bạn muốn không?</translation>
 <translation id="7859938049767853383"><ph name="FILE_NAME" /> quá lớn nên không thể quét trên đám mây và đã chặn không cho mở.</translation>
@@ -5251,6 +5260,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="850875081535031620">Không tìm thấy phần mềm độc hại nào</translation>
 <translation id="8509177919508253835">Đặt lại khóa bảo mật và tạo mã PIN</translation>
 <translation id="8509646642152301857">Tải xuống từ điển kiểm tra lỗi chính tả không thành công.</translation>
+<translation id="8510617356402557055">Bạn không mong muốn điều này? Hãy <ph name="BEGIN_LINK" />gửi phản hồi<ph name="END_LINK" /></translation>
 <translation id="8512476990829870887">Kết thúc quá trình</translation>
 <translation id="851263357009351303">Luôn cho phép <ph name="HOST" /> hiển thị hình ảnh</translation>
 <translation id="8513108775083588393">Tự động xoay</translation>
@@ -5641,6 +5651,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="9030785788945687215">Gmail</translation>
 <translation id="9033857511263905942">&amp;Dán</translation>
 <translation id="9037965129289936994">Hiển thị văn bản gốc</translation>
+<translation id="903797871439633902">Đây là bản tự động cập nhật bảo mật và phần mềm cuối cùng cho <ph name="DEVICE_TYPE" /> này. Để nhận các bản cập nhật trong tương lai, hãy nâng cấp lên mẫu thiết bị mới hơn. &lt;a target="_blank" href="<ph name="URL" />"&gt;Tìm hiểu thêm&lt;/a&gt;</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">Bạn có muốn cập nhật mật khẩu cho <ph name="ORIGIN" /> không?</translation>
 <translation id="9041692268811217999">Quản trị viên đã vô hiệu hóa quyền truy cập vào tệp cục bộ trên máy của bạn</translation>
@@ -5728,6 +5739,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="9169496697824289689">Xem phím tắt</translation>
 <translation id="916964310188958970">Tại sao bạn thấy đề xuất này?</translation>
 <translation id="9169931577761441333">Thêm <ph name="APP_NAME" /> vào Màn hình chính</translation>
+<translation id="9170305483456271385">Đã xóa Plugin VM</translation>
 <translation id="9170848237812810038">H&amp;oàn tác</translation>
 <translation id="9170884462774788842">Một chương trình khác trên máy tính của bạn đã thêm một chủ đề có thể thay đổi cách Chrome hoạt động.</translation>
 <translation id="9173995187295789444">Đang quét tìm thiết bị Bluetooth...</translation>

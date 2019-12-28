@@ -769,9 +769,11 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoSplit) {
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, CloseBackgroundPage) {
+  ExtensionTestMessageListener listener("ready", /*will_reply=*/false);
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("browser_action/close_background")));
   const Extension* extension = GetSingleLoadedExtension();
+  ASSERT_TRUE(listener.WaitUntilSatisfied());
 
   // There is a background page and a browser action with no badge text.
   extensions::ProcessManager* manager =

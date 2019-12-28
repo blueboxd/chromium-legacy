@@ -888,6 +888,8 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
   UMA_HISTOGRAM_TIMES("BlinkGC.TimeForAtomicPhaseMarking",
                       event.atomic_marking_time());
   UMA_HISTOGRAM_TIMES("BlinkGC.TimeForGCCycle", event.gc_cycle_time());
+  UMA_HISTOGRAM_TIMES("BlinkGC.TimeForMarkingRoots",
+                      event.roots_marking_time());
   UMA_HISTOGRAM_TIMES("BlinkGC.TimeForIncrementalMarking",
                       event.incremental_marking_time());
   UMA_HISTOGRAM_TIMES("BlinkGC.TimeForMarking.Foreground",
@@ -1618,6 +1620,9 @@ void ThreadState::MarkPhasePrologue(BlinkGC::StackState stack_state,
 }
 
 void ThreadState::MarkPhaseVisitRoots() {
+  ThreadHeapStatsCollector::Scope stats_scope(
+      Heap().stats_collector(), ThreadHeapStatsCollector::kVisitRoots);
+
   Visitor* visitor = current_gc_data_.visitor.get();
 
   VisitPersistents(visitor);
@@ -1639,7 +1644,7 @@ void ThreadState::MarkPhaseVisitRoots() {
   }
 
   if (current_gc_data_.stack_state == BlinkGC::kHeapPointersOnStack) {
-    ThreadHeapStatsCollector::Scope stats_scope(
+    ThreadHeapStatsCollector::Scope stack_stats_scope(
         Heap().stats_collector(), ThreadHeapStatsCollector::kVisitStackRoots);
     PushRegistersAndVisitStack();
   }

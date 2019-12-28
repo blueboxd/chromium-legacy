@@ -9,6 +9,8 @@
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 
+#undef GetObject
+
 namespace blink {
 
 // static
@@ -92,6 +94,12 @@ void RemoteObjectGatewayImpl::RemoveNamedObject(const WTF::String& name) {
   auto iter = named_objects_.find(name);
   DCHECK(iter != named_objects_.end());
   named_objects_.erase(iter);
+}
+
+void RemoteObjectGatewayImpl::BindRemoteObjectReceiver(
+    int32_t object_id,
+    mojo::PendingReceiver<mojom::blink::RemoteObject> receiver) {
+  object_host_->GetObject(object_id, std::move(receiver));
 }
 
 // static

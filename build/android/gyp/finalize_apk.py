@@ -8,6 +8,8 @@ import shutil
 import subprocess
 import tempfile
 
+from util import build_utils
+
 
 def FinalizeApk(apksigner_path, zipalign_path, unsigned_apk_path,
                 final_apk_path, key_path, key_passwd, key_name):
@@ -19,14 +21,23 @@ def FinalizeApk(apksigner_path, zipalign_path, unsigned_apk_path,
         zipalign_path, '-p', '-f', '4',
         unsigned_apk_path, staging_file.name])
     subprocess.check_output([
-        apksigner_path, 'sign',
-        '--in', staging_file.name,
-        '--out', staging_file.name,
-        '--ks', key_path,
-        '--ks-key-alias', key_name,
-        '--ks-pass', 'pass:' + key_passwd,
+        build_utils.JAVA_PATH,
+        '-jar',
+        apksigner_path,
+        'sign',
+        '--in',
+        staging_file.name,
+        '--out',
+        staging_file.name,
+        '--ks',
+        key_path,
+        '--ks-key-alias',
+        key_name,
+        '--ks-pass',
+        'pass:' + key_passwd,
         # Force SHA-1 (makes signing faster; insecure is fine for local builds).
-        '--min-sdk-version', '1',
+        '--min-sdk-version',
+        '1',
     ])
     shutil.move(staging_file.name, final_apk_path)
     staging_file.delete = False

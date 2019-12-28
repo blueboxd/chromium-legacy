@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
+import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.MenuButton;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
@@ -94,11 +95,15 @@ class BottomToolbarCoordinator {
         mTabSwitcherModeCoordinator = new TabSwitcherBottomToolbarCoordinator(mTabSwitcherModeStub,
                 topToolbarRoot, incognitoStateProvider, mThemeColorProvider, newTabClickListener,
                 closeTabsClickListener, menuButtonHelper, tabCountProvider);
-        mOverviewModeBehavior = overviewModeBehavior;
-        mOverviewModeObserver = new BottomToolbarAnimationCoordinator(
-                mBrowsingModeCoordinator, mTabSwitcherModeCoordinator);
-        if (mOverviewModeBehavior != null) {
-            mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
+        // Do not change bottom bar if StartSurface Single Pane is enabled and HomePage is not
+        // customized.
+        if (!ReturnToChromeExperimentsUtil.shouldShowStartSurfaceAsTheHomePage()) {
+            mOverviewModeBehavior = overviewModeBehavior;
+            mOverviewModeObserver = new BottomToolbarAnimationCoordinator(
+                    mBrowsingModeCoordinator, mTabSwitcherModeCoordinator);
+            if (mOverviewModeBehavior != null) {
+                mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
+            }
         }
     }
 

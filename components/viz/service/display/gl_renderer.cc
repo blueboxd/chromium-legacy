@@ -350,10 +350,6 @@ GLRenderer::GLRenderer(
       copier_(output_surface->context_provider(), &texture_deleter_),
       sync_queries_(gl_),
       bound_geometry_(NO_BINDING),
-      color_lut_cache_(gl_,
-                       output_surface_->context_provider()
-                           ->ContextCapabilities()
-                           .texture_half_float_linear),
       current_task_runner_(std::move(current_task_runner)) {
   DCHECK(gl_);
   DCHECK(context_support_);
@@ -3128,7 +3124,6 @@ void GLRenderer::DidReceiveTextureInUseResponses(
       awaiting_release_overlay_textures_.erase(it);
     }
   }
-  color_lut_cache_.Swap();
 }
 
 void GLRenderer::BindFramebufferToOutputSurface() {
@@ -3293,14 +3288,6 @@ void GLRenderer::SetUseProgram(const ProgramKey& program_key_no_color,
         static_cast<float>(current_window_space_viewport_.height()),
     };
     gl_->Uniform4fv(current_program_->viewport_location(), 1, viewport);
-  }
-  if (current_program_->lut_texture_location() != -1) {
-    ColorLUTCache::LUT lut = color_lut_cache_.GetLUT(color_transform);
-    gl_->ActiveTexture(GL_TEXTURE5);
-    gl_->BindTexture(GL_TEXTURE_2D, lut.texture);
-    gl_->Uniform1i(current_program_->lut_texture_location(), 5);
-    gl_->Uniform1f(current_program_->lut_size_location(), lut.size);
-    gl_->ActiveTexture(GL_TEXTURE0);
   }
 
   if (has_output_color_matrix) {

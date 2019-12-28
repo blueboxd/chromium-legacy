@@ -7,11 +7,10 @@
 
 #include "base/memory/ref_counted.h"
 #include "net/base/io_buffer.h"
+#include "net/third_party/quiche/src/quic/core/quic_buffer_allocator.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
 
 namespace quic {
-
-class QuicBufferAllocator;
 
 // QuicMemSliceImpl TODO(fayang)
 class QUIC_EXPORT_PRIVATE QuicMemSliceImpl {
@@ -20,7 +19,7 @@ class QUIC_EXPORT_PRIVATE QuicMemSliceImpl {
   QuicMemSliceImpl();
   // Constructs a QuicMemSliceImp by let |allocator| allocate a data buffer of
   // |length|.
-  QuicMemSliceImpl(QuicBufferAllocator* allocator, size_t length);
+  QuicMemSliceImpl(QuicUniqueBufferPtr buffer, size_t length);
 
   QuicMemSliceImpl(scoped_refptr<net::IOBuffer> io_buffer, size_t length);
 

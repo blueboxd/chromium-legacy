@@ -723,6 +723,7 @@
 <translation id="4340982228985273705">Havaintojen mukaan tämä tietokone ei ole yrityksen hallinnoima, joten käytäntö voi asentaa automaattisesti vain Chrome Web Storessa hostattuja laajennuksia. Chrome Web Storen päivitys-URL-osoite on <ph name="CWS_UPDATE_URL" />.</translation>
 <translation id="4346197816712207223">Hyväksytyt luottokortit</translation>
 <translation id="4346833872170306413">Roc-16K</translation>
+<translation id="4349531505348777662">Lisäsit juuri salasanasi petolliselle sivustolle. Chrome suosittelee vaihtamaan salasanan heti kaikilla sivustoilla, joilla käytät sitä (esim. <ph name="WEBSITE_1" /> ja <ph name="WEBSITE_2" />).</translation>
 <translation id="4356973930735388585">Tälle sivustolle hyökännyt taho voi yrittää asentaa tietokoneellesi vaarallisia ohjelmia, jotka varastavat tai poistavat tietojasi, kuten kuviasi, salasanojasi, viestejäsi ja luottokorttiesi tietoja.</translation>
 <translation id="4358059973562876591">Määrittämiäsi malleja ei välttämättä käytetä DnsOverHttpsMode-käytännön virheen vuoksi.</translation>
 <translation id="4358461427845829800">Hallinnoi maksutapoja…</translation>
@@ -1251,6 +1252,7 @@
 <translation id="6970216967273061347">Alue</translation>
 <translation id="6973656660372572881">Sekä kiinteät välityspalvelimet että .pac-URL-osoite on määritetty.</translation>
 <translation id="6973932557599545801">En valitettavasti voi auttaa. Voit jatkaa omatoimisesti.</translation>
+<translation id="6975012522936652259">Lisäsit juuri salasanasi petolliselle sivustolle. Chromium suosittelee vaihtamaan salasanan heti kaikilla sivustoilla, joilla käytät sitä (esim. <ph name="WEBSITE_1" /> ja <ph name="WEBSITE_2" />).</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Mykistä (oletus)</translation>
 <translation id="6989763994942163495">Näytä lisäasetukset...</translation>
@@ -1382,6 +1384,7 @@ Lisätietoja:
 <translation id="7567204685887185387">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; sen suojausvarmenne on ehkä luotu vilpillisesti. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>
 <translation id="7569952961197462199">Poistetaanko luottokortti Chromen tiedoista?</translation>
 <translation id="7569983096843329377">Musta</translation>
+<translation id="7575207903026901870">Ehdotuksen poistopainike, poista ehdotus painamalla Enter</translation>
 <translation id="7578104083680115302">Voit maksaa sivustoilla ja sovelluksissa nopeasti eri laitteillasi käyttämällä Googleen tallennettuja kortteja.</translation>
 <translation id="7592362899630581445">Palvelimen varmenne rikkoo nimirajoituksia.</translation>
 <translation id="7598391785903975535">Alle <ph name="UPPER_ESTIMATE" /></translation>
@@ -1628,6 +1631,7 @@ Lisätietoja:
 <translation id="8891727572606052622">Virheellinen välityspalvelimen tila.</translation>
 <translation id="8903921497873541725">Lähennä</translation>
 <translation id="890485472659500557">Insinööri-C</translation>
+<translation id="890493561996401738">Ehdotuksen poistopainike, poista painamalla Enter, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Olet siirtynyt incognito-tilaan</translation>
 <translation id="8912362522468806198">Google-tilisi avulla</translation>
 <translation id="8918231688545606538">Tämä sivu on epäilyttävä</translation>

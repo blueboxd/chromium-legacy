@@ -246,7 +246,7 @@ bool BrowserXRRuntime::SupportsFeature(
       // Only support DOM overlay if the feature flag is enabled.
       if (feature ==
           device::mojom::XRSessionFeature::DOM_OVERLAY_FOR_HANDHELD_AR) {
-        return base::FeatureList::IsEnabled(features::kWebXrArDOMOverlay);
+        return base::FeatureList::IsEnabled(features::kWebXrIncubations);
       }
       return ContainsFeature(kARCoreDeviceFeatures, feature);
     case device::mojom::XRDeviceId::ORIENTATION_DEVICE_ID:

@@ -113,6 +113,7 @@
 <translation id="1150565364351027703">Արևային ակնոց</translation>
 <translation id="1151917987301063366">Միշտ թույլ տալ <ph name="HOST" />-ին օգտագործել տվիչները</translation>
 <translation id="1153356358378277386">Զուգակցված սարքեր</translation>
+<translation id="1153636665119721804">Google-ի անվտանգության լրացուցիչ կարգավորումների ծրագիր</translation>
 <translation id="1161575384898972166">Սպասառուի վկայագիրը արտահանելու համար մուտք գործեք <ph name="TOKEN_NAME" />:</translation>
 <translation id="1163931534039071049">&amp;Դիտել շրջանակի սկզբնաղբյուրը</translation>
 <translation id="1164674268730883318">Անջատե՞լ Smart Lock գործառույթը <ph name="DEVICE_TYPE" />-ի համար</translation>
@@ -223,6 +224,7 @@
 <translation id="1306606229401759371">Փոխել կարգավորումները</translation>
 <translation id="1307165550267142340">PIN կոդն ավելացվեց</translation>
 <translation id="1307559529304613120">Համակարգին չհաջողվեց պահել այս սարքի երկարաժամկետ API մուտքի հետքանշիչը:</translation>
+<translation id="1309199320876169714">Plugin VM-ը հեռացվում է…</translation>
 <translation id="1313405956111467313">Պրոքսի-սերվերի ինքնակազմաձևում</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313705515580255288">Ձեր էջանիշները, պատմությունը և այլ կարգավորումները կհամաժամացվեն ձեր Google հաշվի հետ:</translation>
@@ -233,6 +235,7 @@
 <translation id="1316495628809031177">Համաժամացումն ընդհատված է</translation>
 <translation id="1317637799698924700">Ձեր դոկ-կայանը կաշխատի USB Type-C-ի հետ համատեղելի ռեժիմում:</translation>
 <translation id="1322046419516468189">Դիտեք և կառավարեք պահված գաղտնաբառերը ձեր Google հաշվում: Անցեք <ph name="SAVED_PASSWORDS_STORE" />:</translation>
+<translation id="1324106254079708331">Անձնական Google հաշիվների պաշտպանություն նրանց համար, ովքեր թիրախավորված հարձակման վտանգի տակ են</translation>
 <translation id="1326317727527857210">Ձեր մյուս սարքերում եղած ներդիրներն օգտագործելու համար մուտք գործեք Chrome:</translation>
 <translation id="1327074568633507428">Տպիչ Google Cloud Print-ում</translation>
 <translation id="1327272175893960498">Kerberos տոմսեր</translation>
@@ -724,6 +727,7 @@
 <translation id="2003130567827682533">Միացեք Wi-Fi ցանցի՝ տվյալների փոխանցման «<ph name="NAME" />» ծառայությունն ակտիվացնելու համար</translation>
 <translation id="2006638907958895361">Բացել հղումը <ph name="APP" /> հավելվածում</translation>
 <translation id="2007404777272201486">Report an Issue...</translation>
+<translation id="2010501376126504057">Համատեղելի սարքեր</translation>
 <translation id="2016430552235416146">Սովորական</translation>
 <translation id="2017334798163366053">Անջատել կատարողականության տվյալների հավաքումը</translation>
 <translation id="2017836877785168846">Մաքրում է պատմությունն ու հասցեագոտու ինքնալրացումները:</translation>
@@ -1359,6 +1363,7 @@
 <translation id="2871813825302180988">Այս հաշիվն արդեն օգտագործվում է այս սարքի վրա:</translation>
 <translation id="287286579981869940">Ավելացնել <ph name="PROVIDER_NAME" />...</translation>
 <translation id="2872961005593481000">Անջատել</translation>
+<translation id="2874478552394649323">Հեռացնել Plugin VM-ը</translation>
 <translation id="2874939134665556319">Նախորդը</translation>
 <translation id="2875698561019555027">(Chrome սխալների էջեր)</translation>
 <translation id="2876336351874743617">Մատ 2</translation>
@@ -1374,6 +1379,7 @@
 <translation id="2889064240420137087">Բացել հղումը` օգտագործելով…</translation>
 <translation id="2889925978073739256">Շարունակել արգելափակել պաշտպանված միջավայրից դուրս փլագինները</translation>
 <translation id="2893168226686371498">Կանխադրված դիտարկիչ</translation>
+<translation id="2893208266590504003">Չհաջողվեց հեռացնել Plugin VM-ը</translation>
 <translation id="2894757982205307093">Նոր ներդիր խմբում</translation>
 <translation id="289644616180464099">SIM քարտը կողպված է</translation>
 <translation id="2896909745808647285"><ph name="FILE_NAME" /> ֆայլը գաղտնագրված է և այն արգելափակվել է։</translation>
@@ -2261,6 +2267,7 @@
 <translation id="413121957363593859">Բաղադրիչներ</translation>
 <translation id="4131410914670010031">Սև ու սպիտակ</translation>
 <translation id="4136203100490971508">Լույսը բացվելուն պես գիշերային ռեժիմը ավտոմատ կանջատվի</translation>
+<translation id="41365691917097717">Եթե շարունակեք, ADB վրիպազերծումը կմիանա և Android-ի համար հավելվածներ կստեղծվեն ու կփորձարկվեն: Նկատի ունեցեք, որ այս գործողությունը թույլ է տալիս այն Android հավելվածների տեղադրումը, որոնք չեն ստուգվել Google-ի կողմից։ Դրա համար անհրաժեշտ է վերականգնել սարքի գործարանային կարգավորումները։</translation>
 <translation id="4138267921960073861">Մուտքի էկրանին ցույց տալ օգտանունները և լուսանկարները</translation>
 <translation id="413915106327509564"><ph name="WINDOW_TITLE" /> – միացված է HID սարք</translation>
 <translation id="4142052906269098341">Ապակողպեք <ph name="DEVICE_TYPE" /> սարքը ձեր հեռախոսով։ <ph name="LINK_BEGIN" />Իմանալ ավելին<ph name="LINK_END" /></translation>
@@ -3185,6 +3192,7 @@
 <translation id="5554720593229208774">Էլփոստի հավաստագրման կենտրոն</translation>
 <translation id="5556459405103347317">Վերաբեռնել</translation>
 <translation id="5557991081552967863">Միացված պահել Wi-Fi-ը քնի ռեժիմում</translation>
+<translation id="5558125320634132440">Կայքն արգելափակվել է, քանի որ այն կարող է պարունակել մեծահասակների համար բովանդակություն</translation>
 <translation id="5558129378926964177">Խոշո&amp;րացնել</translation>
 <translation id="55601339223879446">Կարգավորեք աշխատասեղանի սահմանագծերը տվյալ էկրանում</translation>
 <translation id="5562781907504170924">Այս ներդիրը միացած է Bluetooth սարքի:</translation>
@@ -3286,7 +3294,6 @@
 <translation id="5692183275898619210">Տպումն ավարտվեց</translation>
 <translation id="5696143504434933566">Հաղորդել չարաշահման մասին («<ph name="EXTENSION_NAME" />»)</translation>
 <translation id="5696679855467848181">Ընթացիկ օգտագործվող PPD ֆայլը՝ <ph name="PPD_NAME" /></translation>
-<translation id="5699533844376998780">«<ph name="EXTENSION_NAME" />» ընդլայնումն ավելացվել է:</translation>
 <translation id="570043786759263127">Google Play հավելվածներ և ծառայություններ</translation>
 <translation id="5700836101007545240">Ձեր ադմինիստրատորն անջատել է կապ ավելացնելու գործառույթը</translation>
 <translation id="5701080607174488915">Քաղաքականությունը չհաջողվեց բեռնել սերվերից։</translation>
@@ -3774,6 +3781,7 @@
 <translation id="6386099547750337629">Եթե չեք ճանաչում այս գործողությունը, կապվեք աջակցման կենտրոնի հետ:</translation>
 <translation id="6387674443318562538">Ուղղահայաց տրոհում</translation>
 <translation id="6388429472088318283">Որոնեք լեզուներ</translation>
+<translation id="6390020764191254941">Բացել ներդիրը նոր պատուհանում</translation>
 <translation id="6390799748543157332">Այս պատուհանով բացվող էջերը չեն հայտնվի դիտարկիչի պատմության մեջ և այլ հետքեր (ինչպես օրինակ` քուքիները) չեն մնա համակարգչի վրա` բոլոր բաց Հյուրի պատուհանները փակելուց հետո: Ամեն դեպքում, ձեր ներբեռնած ֆայլերը կպահպանվեն:</translation>
 <translation id="6393156038355142111">Ստեղծել հուսալի գաղտնաբառ…</translation>
 <translation id="6395423953133416962">Ուղարկել <ph name="BEGIN_LINK1" />համակարգի մասին տեղեկությունները<ph name="END_LINK1" /> և <ph name="BEGIN_LINK2" />ցուցանիշների արժեքները<ph name="END_LINK2" /></translation>
@@ -3812,7 +3820,6 @@
 <translation id="6444070574980481588">Ընտրեք ամսաթիվն ու ժամը</translation>
 <translation id="6445450263907939268">Կարող եք վերականգնել ձեր նախկին կարգավորումները:</translation>
 <translation id="6447842834002726250">Cookie ֆայլեր</translation>
-<translation id="6449285849137521213">«<ph name="EXTENSION_NAME" />» հավելվածն ավելացվել է:</translation>
 <translation id="6450876761651513209">Փոխել գաղտնիության հետ առնչվող կարգավորումները</translation>
 <translation id="6451180435462401570">Կառավարել Cloud Print սարքերը</translation>
 <translation id="6451689256222386810">Եթե մոռացել եք ձեր անցաբառը կամ ուզում եք փոխել այս կարգավորումը, <ph name="BEGIN_LINK" />վերակայեք համաժամացումը<ph name="END_LINK" />:</translation>
@@ -4547,6 +4554,7 @@
 <translation id="7530016656428373557">Լիցքաթափման արագությունը վատտերով</translation>
 <translation id="7531779363494549572">Անցեք Կարգավորումներ &gt; Հավելվածներ և ծանուցումներ &gt; Ծանուցումներ։</translation>
 <translation id="7532009420053991888"><ph name="LINUX_APP_NAME" /> հավելվածը չի արձագանքում: Ընտրեք «Ստիպողաբար փակել» տարբերակը:</translation>
+<translation id="7536333565791380193">Լրացուցիչ անվտանգություն</translation>
 <translation id="7539856059004947393">Bluetooth անվտանգության բանալի</translation>
 <translation id="7540972813190816353">Թարմացումներն ստուգելիս սխալ տեղի ունեցավ` <ph name="ERROR" /></translation>
 <translation id="7541773865713908457"><ph name="ACTION_NAME" /> <ph name="APP_NAME" /> հավելվածում</translation>
@@ -4792,6 +4800,7 @@
 <translation id="7851720427268294554">IPP վերլուծիչ</translation>
 <translation id="78526636422538552">Այլ Google հաշիվներ ավելացնելու հնարավորությունն անջատված է</translation>
 <translation id="7853747251428735">Լրացուցիչ գործիքներ</translation>
+<translation id="7855678561139483478">Բացել ներդիրը նոր պատուհանում</translation>
 <translation id="7857117644404132472">Ավելացնել բացառություն</translation>
 <translation id="7857949311770343000">Սա՞ է ձեր ուզած նոր ներդիրի էջը:</translation>
 <translation id="7859938049767853383"><ph name="FILE_NAME" /> ֆայլը չափազանց մեծ է ամպային ստուգման համար և այն արգելափակվել է։</translation>
@@ -5253,6 +5262,7 @@
 <translation id="850875081535031620">Վնասաբեր ծրագրեր չեն գտնվել</translation>
 <translation id="8509177919508253835">Վերակայեք անվտանգության բանալիները և ստեղծեք PIN կոդեր</translation>
 <translation id="8509646642152301857">Ուղղագրության ստուգման բառացանկը չհաջողվեց ներբեռնել:</translation>
+<translation id="8510617356402557055">Անսպասելի՞ էր։ <ph name="BEGIN_LINK" />Կարծիք հայտնել<ph name="END_LINK" /></translation>
 <translation id="8512476990829870887">Ավարտել գործընթացը</translation>
 <translation id="851263357009351303">Միշտ թույլատրել <ph name="HOST" />-ին ցուցադրել պատկերները</translation>
 <translation id="8513108775083588393">Ինքնապտտում</translation>
@@ -5643,6 +5653,7 @@
 <translation id="9030785788945687215">Gmail</translation>
 <translation id="9033857511263905942">&amp;Տեղադրել</translation>
 <translation id="9037965129289936994">Ցույց տալ բնօրինակը</translation>
+<translation id="903797871439633902">Սա ծրագրային և անվտանգության կարգավորումների վերջին ավտոմատ թարմացումն է այս <ph name="DEVICE_TYPE" /> սարքի համար։ Հետագա թարմացումները ստանալու համար անցեք ավելի նոր մոդելի։ &lt;a target="_blank" href="<ph name="URL" />"&gt;Իմանալ ավելին&lt;/a&gt;</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">Թարմացնե՞լ <ph name="ORIGIN" /> կայքի գաղտնաբառը</translation>
 <translation id="9041692268811217999">Ադմինիստրատորն արգելափակել է ձեր համակարգչի տեղային ֆայլերի օգտագործումը</translation>
@@ -5730,6 +5741,7 @@
 <translation id="9169496697824289689">Դիտել ստեղնաշարի դյուրանցումները</translation>
 <translation id="916964310188958970">Ինչո՞ւ եմ տեսնում այս հուշումը</translation>
 <translation id="9169931577761441333">Ավելացնել «<ph name="APP_NAME" />» հավելվածը հիմնական էկրանին</translation>
+<translation id="9170305483456271385">Plugin VM-ը հեռացվեց</translation>
 <translation id="9170848237812810038">&amp;Հետարկել</translation>
 <translation id="9170884462774788842">Ձեր համակարգչի ծրագրերից մեկն ավելացրել է թեմա, որը կարող է ազդել Chrome-ի աշխատանքի վրա:</translation>
 <translation id="9173995187295789444">Bluetooth սարքերի որոնում...</translation>

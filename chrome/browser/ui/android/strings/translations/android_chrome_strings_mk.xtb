@@ -35,7 +35,7 @@
 <translation id="1231733316453485619">Да се вклучи синхронизација?</translation>
 <translation id="123724288017357924">Вчитај тековна страница, без кеширана содржина</translation>
 <translation id="124116460088058876">Повеќе јазици</translation>
-<translation id="1242008676835033345">Вградено на <ph name="WEBSITE_URL" /></translation>
+<translation id="1242008676835033345">Вметнато во <ph name="WEBSITE_URL" /></translation>
 <translation id="124678866338384709">Затвори ја тековната картичка</translation>
 <translation id="1258753120186372309">Google Doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Пребарувајте и истражувајте</translation>
@@ -739,7 +739,7 @@
 <translation id="6545864417968258051">Скенирање за Bluetooth</translation>
 <translation id="6560414384669816528">Пребарување со Sogou</translation>
 <translation id="656065428026159829">Прикажи повеќе</translation>
-<translation id="6561560012278703671">Користете потивко испраќање пораки (не дозволува известувањата да ве попречуваат)</translation>
+<translation id="6561560012278703671">Користете потивки пораки (не дозволува известувањата да ве попречуваат)</translation>
 <translation id="6566259936974865419">Chrome ви заштеди <ph name="GIGABYTES" /> гб</translation>
 <translation id="6573096386450695060">Секогаш дозволувај</translation>
 <translation id="6573431926118603307">Картичките што сте ги отвориле во Chrome на другите уреди ќе се појават тука.</translation>

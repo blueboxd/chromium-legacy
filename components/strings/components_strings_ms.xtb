@@ -608,7 +608,7 @@
 <translation id="3828924085048779000">Kosongkan frasa laluan adalah tidak dibenarkan.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> telah memasang sambungan bagi fungsi tambahan. Sambungan mempunyai akses kepada sesetengah data anda.</translation>
 <translation id="3832522519263485449">Berbilang tebukan kiri</translation>
-<translation id="3838154488026099170">Anda baru sahaja memasukkan kata laluan anda pada tapak yang menipu. Chromium mengesyorkan supaya anda pergi ke <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> dan <ph name="WEBSITE_3" /> serta tapak lain yang anda gunakan kata laluan ini dan menukarnya sekarang.</translation>
+<translation id="3838154488026099170">Anda baru sahaja memasukkan kata laluan anda pada tapak yang menipu. Chromium mengesyorkan supaya anda pergi ke <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> dan <ph name="WEBSITE_3" /> serta tapak lain yang anda gunakan kata laluan ini dan menukar kata laluan tersebut sekarang.</translation>
 <translation id="385051799172605136">Kembali</translation>
 <translation id="3858027520442213535">Kemas kini tarikh dan masa</translation>
 <translation id="3884278016824448484">Pengecam peranti bercanggah</translation>
@@ -646,7 +646,7 @@
 <translation id="4072486802667267160">Ralat berlaku semasa memproses pesanan anda. Sila cuba lagi.</translation>
 <translation id="4075732493274867456">Pelanggan dan pelayan tidak menyokong versi protokol SSL atau set sifer biasa.</translation>
 <translation id="4075941231477579656">Touch ID</translation>
-<translation id="4077092919748553596">Anda baru sahaja memasukkan kata laluan anda pada tapak yang menipu. Chrome mengesyorkan supaya anda pergi ke <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> dan <ph name="WEBSITE_3" /> serta tapak lain yang anda gunakan kata laluan ini dan menukarnya sekarang.</translation>
+<translation id="4077092919748553596">Anda baru sahaja memasukkan kata laluan anda pada tapak yang menipu. Chrome mengesyorkan supaya anda pergi ke <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> dan <ph name="WEBSITE_3" /> serta tapak lain yang anda gunakan kata laluan ini dan menukar kata laluan tersebut sekarang.</translation>
 <translation id="4079302484614802869">Konfigurasi proksi ditetapkan kepada penggunaaan URL skrip .pac, bukannya pelayan proksi tetap.</translation>
 <translation id="4082393374666368382">Tetapan - Pengurusan</translation>
 <translation id="4098354747657067197">Tapak menipu di hadapan</translation>
@@ -723,6 +723,7 @@
 <translation id="4340982228985273705">Komputer ini tidak dikesan sebagai diurus perusahaan, jadi dasar hanya boleh memasang secara automatik sambungan yang dihoskan di Gedung Web Chrome. URL kemas kini Gedung Web Chrome ialah "<ph name="CWS_UPDATE_URL" />".</translation>
 <translation id="4346197816712207223">Kad Kredit yang Diterima</translation>
 <translation id="4346833872170306413">Roc-16K</translation>
+<translation id="4349531505348777662">Anda baru sahaja memasukkan kata laluan anda pada tapak yang menipu. Chrome mengesyorkan supaya anda pergi ke <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, dan tapak lain yang anda gunakan kata laluan ini dan menukar kata laluan tersebut sekarang.</translation>
 <translation id="4356973930735388585">Penyerang pada tapak ini mungkin cuba memasang atur cara berbahaya pada komputer anda yang mencuri atau memadamkan maklumat anda (sebagai contoh, foto, kata laluan, mesej dan kad kredit).</translation>
 <translation id="4358059973562876591">Templat yang anda nyatakan tidak dapat digunakan kerana terdapat ralat pada dasar DnsOverHttpsMode.</translation>
 <translation id="4358461427845829800">Urus kaedah pembayaran...</translation>
@@ -1020,7 +1021,7 @@
 <translation id="5804241973901381774">Kebenaran</translation>
 <translation id="5810442152076338065">Sambungan anda ke <ph name="DOMAIN" /> disulitkan menggunakan suit sifer yang sudah usang.</translation>
 <translation id="5813119285467412249">&amp;Buat Semula Tambahkan</translation>
-<translation id="5824687817967109979">{NUM_CARDS,plural, =1{Kad ini akan dikenakan bayaran apabila anda membayar, tetapi nombor sebenar kad tidak akan dikongsi dengan tapak ini. Untuk keselamatan tambahan, CVC sementara akan dijana.}other{Kad yang anda pilih akan dikenakan bayaran apabila anda membayar, tetapi nombor sebenar kad tidak akan dikongsi dengan tapak ini. Untuk keselamatan tambahan, CVC sementara akan dijana.}}</translation>
+<translation id="5824687817967109979">{NUM_CARDS,plural, =1{Kad ini akan dikenakan bayaran apabila anda membuat pembayaran, tetapi nombor sebenar kad tidak akan dikongsi dengan tapak ini. Untuk mendapatkan keselamatan tambahan, CVC sementara akan dijana.}other{Kad yang anda pilih akan dikenakan bayaran apabila anda membuat pembayaran, tetapi nombor sebenar kad tidak akan dikongsi dengan tapak ini. Untuk mendapatkan keselamatan tambahan, CVC sementara akan dijana.}}</translation>
 <translation id="583281660410589416">Tidak diketahui</translation>
 <translation id="5838278095973806738">Anda tidak seharusnya memasukkan sebarang maklumat sensitif pada tapak ini (contohnya, kata laluan atau maklumat kad kredit) kerana maklumat ini boleh dicuri oleh penyerang.</translation>
 <translation id="5851548754964597211">Senarai tab</translation>
@@ -1251,6 +1252,7 @@
 <translation id="6970216967273061347">Daerah</translation>
 <translation id="6973656660372572881">Pelayan proksi tetap dan juga URL skrip .pac tidak ditetapkan.</translation>
 <translation id="6973932557599545801">Maaf, saya tidak dapat membantu. Sila teruskan sendiri.</translation>
+<translation id="6975012522936652259">Anda baru sahaja memasukkan kata laluan anda pada tapak yang menipu. Chromium mengesyorkan supaya anda pergi ke<ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, dan tapak lain yang anda gunakan kata laluan ini dan menukar kata laluan tersebut sekarang.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Redam (lalai)</translation>
 <translation id="6989763994942163495">Paparkan tetapan lanjutan...</translation>
@@ -1382,6 +1384,7 @@ Butiran tambahan:
 <translation id="7567204685887185387">Pelayan ini tidak dapat membuktikan bahawa domainnya ialah <ph name="DOMAIN" />; sijil keselamatannya mungkin telah dikeluarkan melalui penipuan. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang yang memintasi sambungan anda.</translation>
 <translation id="7569952961197462199">Alih keluar kad kredit daripada Chrome?</translation>
 <translation id="7569983096843329377">Hitam</translation>
+<translation id="7575207903026901870">Alih keluar butang Cadangan, tekan Enter untuk mengalih keluar cadangan ini</translation>
 <translation id="7578104083680115302">Bayar dengan cepat di tapak dan apl merentas peranti menggunakan kad yang telah disimpan dengan Google.</translation>
 <translation id="7592362899630581445">Sijil pelayan melanggar kekangan nama.</translation>
 <translation id="7598391785903975535">Kurang daripada <ph name="UPPER_ESTIMATE" /></translation>
@@ -1495,7 +1498,7 @@ Butiran tambahan:
 <translation id="8105368624971345109">Matikan</translation>
 <translation id="8118489163946903409">Kaedah pembayaran</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" tidak dipasang dengan betul pada komputer atau rangkaian anda. Minta pentadbir IT anda menyelesaikan isu ini.</translation>
-<translation id="8128526133099929547">Anda baru sahaja memasukkan kata laluan anda pada tapak yang menipu. Chrome mengesyorkan supaya anda pergi ke <ph name="WEBSITE_1" /> dan tapak lain yang anda gunakan kata laluan ini dan menukarnya sekarang.</translation>
+<translation id="8128526133099929547">Anda baru sahaja memasukkan kata laluan anda pada tapak yang menipu. Chrome mengesyorkan supaya anda pergi ke <ph name="WEBSITE_1" /> dan tapak lain yang anda gunakan kata laluan ini dan menukar kata laluan tersebut sekarang.</translation>
 <translation id="8131740175452115882">Sahkan</translation>
 <translation id="8149426793427495338">Komputer anda dalam mod tidur.</translation>
 <translation id="8150722005171944719">Fail di <ph name="URL" /> tidak boleh dibaca.  Fail mungkin telah dialih keluar, dipindahkan atau kebenaran fail mungkin menghalang akses.</translation>
@@ -1513,7 +1516,7 @@ Butiran tambahan:
 <translation id="8218327578424803826">Lokasi yang Ditentukan:</translation>
 <translation id="8220146938470311105">C7/C6 (Sampul Surat)</translation>
 <translation id="8220639454292072926">Pelaporan Perusahaan</translation>
-<translation id="8221250263817408492">Anda baru sahaja memasukkan kata laluan anda pada tapak yang menipu. Chromium mengesyorkan supaya anda pergi ke <ph name="WEBSITE_1" /> dan tapak lain yang anda gunakan kata laluan ini dan menukarnya sekarang.</translation>
+<translation id="8221250263817408492">Anda baru sahaja memasukkan kata laluan anda pada tapak yang menipu. Chromium mengesyorkan supaya anda pergi ke <ph name="WEBSITE_1" /> dan tapak lain yang anda gunakan kata laluan ini dan menukar kata laluan tersebut sekarang.</translation>
 <translation id="8225771182978767009">Orang yang menyediakan komputer ini telah memilih untuk menyekat tapak ini.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">Buka halaman dalam tab Inkognito baharu</translation>
@@ -1628,6 +1631,7 @@ Butiran tambahan:
 <translation id="8891727572606052622">Mod proksi tidak sah.</translation>
 <translation id="8903921497873541725">Zum masuk</translation>
 <translation id="890485472659500557">Kejuruteraan-C</translation>
+<translation id="890493561996401738">Alih keluar butang Cadangan, tekan Enter untuk mengalih keluar, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Anda menggunakan mod inkognito</translation>
 <translation id="8912362522468806198">Akaun Google</translation>
 <translation id="8918231688545606538">Halaman ini mencurigakan</translation>

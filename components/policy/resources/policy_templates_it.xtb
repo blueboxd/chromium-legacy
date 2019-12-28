@@ -1029,6 +1029,14 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
           Il valore deve essere un array di dizionari JSON sotto forma di stringa. Ogni dizionario deve avere il formato <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, dove <ph name="URL_PATTERN_PLACEHOLDER" /> rappresenta un pattern di impostazioni contenuti. <ph name="FILTER_PLACEHOLDER" /> limita la gamma di certificati client che il browser può selezionare automaticamente. Indipendentemente dal filtro, saranno selezionati solo i certificati che soddisfano la richiesta di certificato del server. Ad esempio, se <ph name="FILTER_PLACEHOLDER" /> ha il formato <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />, vengono inoltre selezionati solo i certificati client emessi da un certificato con valore CommonName uguale a <ph name="ISSUER_CN_PLACEHOLDER" />. Se <ph name="FILTER_PLACEHOLDER" /> contiene una sezione <ph name="ISSUER_STRING_VALUE" /> e una sezione <ph name="SUBJECT_STRING_VALUE" />, per poter essere selezionati, i certificati client devono soddisfare entrambe le condizioni. Se <ph name="FILTER_PLACEHOLDER" /> specifica un'organizzazione ("O"), per poter essere selezionati, i certificati devono avere almeno un'organizzazione corrispondente al valore specificato. Se <ph name="FILTER_PLACEHOLDER" /> specifica un'unità organizzativa ("UO"), per poter essere selezionati, i certificati devono avere almeno un'unità organizzativa corrispondente al valore specificato. Se <ph name="FILTER_PLACEHOLDER" /> è il dizionario vuoto <ph name="EMPTY_DICTIONARY" />, la selezione dei certificati client non viene limitata ulteriormente.
 
           Se questo criterio non è impostato, la selezione automatica non avviene per nessun sito.</translation>
+<translation id="2528659559494311776">Questo criterio controlla una funzionalità di sicurezza nel protocollo TLS 1.3 che protegge le connessioni da attacchi di downgrade. È compatibile con le versioni precedenti e non interesserà le connessioni a server o proxy TLS 1.2 conformi. Tuttavia, un difetto di implementazione nelle versioni precedenti di alcuni proxy che intercettano connessioni TLS li rende incompatibili.
+
+      Se questo criterio è impostato su True o non è impostato, <ph name="PRODUCT_NAME" /> attiverà queste protezioni di sicurezza per tutte le connessioni.
+
+      Se questo criterio è impostato su False, <ph name="PRODUCT_NAME" /> disattiverà queste protezioni di sicurezza per le connessioni autenticate con certificati CA installati a livello locale. Queste protezioni sono sempre attive per le connessioni autenticate con certificati CA considerati pubblicamente attendibili.
+
+      Il valore predefinito di questo criterio è stato modificato in <ph name="PRODUCT_NAME" /> 81 da False a True. Il codice di errore previsto per il problema di connessione dei proxy interessati è ERR_TLS13_DOWNGRADE_DETECTED. Gli amministratori a cui occorre più tempo per eseguire l'upgrade dei proxy interessati potrebbero usare questo criterio per disattivare temporaneamente questa funzionalità di sicurezza. Dopo la versione 85, questo criterio verrà rimosso.
+      </translation>
 <translation id="2529659024053332711">Consente di specificare il comportamento all'avvio.
 
           Se viene selezionata l'opzione "Apri la pagina Nuova scheda", all'avvio di <ph name="PRODUCT_NAME" /> verrà sempre aperta la pagina Nuova scheda.
@@ -1565,6 +1573,15 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
       Se questa impostazione viene disattivata o non viene impostato alcun valore, la Modalità con restrizioni di YouTube non viene imposta da <ph name="PRODUCT_NAME" />. La Modalità con restrizioni potrebbe essere comunque imposta da norme esterne, ad esempio dalle norme di YouTube.</translation>
 <translation id="3428247105888806363">Attiva previsione di rete</translation>
 <translation id="3432863169147125747">Consente di gestire le impostazioni di stampa.</translation>
+<translation id="3434053014926283175">Imposta il pulsante destro come pulsante principale del mouse.
+
+          Se questo criterio viene attivato, il pulsante destro del mouse sarà sempre il pulsante principale nella schermata di accesso.
+
+          Se questo criterio viene disattivato, il pulsante sinistro del mouse sarà sempre il pulsante principale nella schermata di accesso.
+
+          Se imposti questo criterio, gli utenti non potranno modificarlo o ignorarlo.
+
+          Se questo criterio non viene impostato, inizialmente il pulsante principale sulla pagina di accesso sarà il pulsante sinistro del mouse, ma l'utente può cambiarlo in qualsiasi momento.</translation>
 <translation id="3434932177006334880">Il nome di questa impostazione era EnableWebBasedSignin nelle versioni di Chrome precedenti alla versione 42 e a partire dalla versione 43 di Chrome tale impostazione non verrà più supportata.
 
       Questa impostazione è utile per i clienti aziendali che utilizzano soluzioni SSO non ancora compatibili con il nuovo flusso di accesso incorporato.
@@ -4427,6 +4444,7 @@ Se la norma non viene configurata, la modalità ad alto contrasto viene inizialm
           Se imposti questo criterio, gli utenti non potranno modificarlo o ignorarlo.
 
           Se questo criterio non viene impostato, inizialmente l'evidenziazione del cursore è disattivata, ma l'utente può attivarla in qualsiasi momento.</translation>
+<translation id="8171924760436219650">Imposta il pulsante destro come pulsante principale del mouse nella schermata di accesso</translation>
 <translation id="8172676363520748127">Se la norma è attivata, non è possibile acquisire screenshot utilizzando scorciatoie da tastiera o API di estensioni.
 
       Se la norma è disattivata o non è specificata, è possibile acquisire screenshot.</translation>

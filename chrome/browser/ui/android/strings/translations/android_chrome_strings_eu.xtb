@@ -93,7 +93,7 @@
 <translation id="1672586136351118594">Ez erakutsi berriro</translation>
 <translation id="1692118695553449118">Sinkronizazioa aktibatuta dago</translation>
 <translation id="169515064810179024">Ez utzi webguneei mugimendu-sentsoreak atzitzen</translation>
-<translation id="1711267867945983636">Aurrera egiteko, aktibatu NFC telefonoan</translation>
+<translation id="1711267867945983636">Aurrera egiteko, aktibatu NFC aukera telefonoan</translation>
 <translation id="1717218214683051432">Mugimendu-sentsoreak</translation>
 <translation id="1718835860248848330">Azken ordukoak</translation>
 <translation id="1736419249208073774">Arakatu</translation>
@@ -834,7 +834,7 @@ Esaterako, bisitatu dituzun webguneetan oinarritzen ez diren iragarkiak bidalita
 <translation id="729975465115245577">Gailuak ez du pasahitzen fitxategia gordetzeko aplikaziorik.</translation>
 <translation id="7302081693174882195">Xehetasunak: gordetako datu kopuruaren arabera ordenatuta</translation>
 <translation id="7302486331832100261">Jakinarazpenak blokeatu ohi dituzu. Baimena emateko, sakatu "Xehetasunak".</translation>
-<translation id="7311441321349344333">NFC desaktibatuta dago gailu honetan. Aktiba ezazu <ph name="BEGIN_LINK" />Android-eko ezarpenetan<ph name="END_LINK" />.</translation>
+<translation id="7311441321349344333">NFC aukera desaktibatuta dago gailu honetan. Aktiba ezazu <ph name="BEGIN_LINK" />Android-eko ezarpenetan<ph name="END_LINK" />.</translation>
 <translation id="7328017930301109123">Oinarrizko moduari esker, Chrome-k bizkorrago kargatzen ditu orriak, datuen ehuneko 60raino aurreztuta.</translation>
 <translation id="7333031090786104871">Oraindik gehitzen ari da aurreko webgunea</translation>
 <translation id="7352939065658542140">BIDEOA</translation>

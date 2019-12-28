@@ -879,7 +879,7 @@ class DownloadContentTest : public ContentBrowserTest {
     host_resolver()->AddRule(kOriginOne, real_host);
     host_resolver()->AddRule(kOriginTwo, real_host);
     host_resolver()->AddRule(kOriginThree, real_host);
-    host_resolver()->AddRule(SlowDownloadHttpResponse::kSlowDownloadHostName,
+    host_resolver()->AddRule(SlowDownloadHttpResponse::kSlowResponseHostName,
                              real_host);
     host_resolver()->AddRule(TestDownloadHttpResponse::kTestDownloadHostName,
                              real_host);
@@ -1344,7 +1344,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadCancelled) {
   // we're in the expected state.
   download::DownloadItem* download = StartDownloadAndReturnItem(
       shell(), embedded_test_server()->GetURL(
-                   SlowDownloadHttpResponse::kSlowDownloadHostName,
+                   SlowDownloadHttpResponse::kSlowResponseHostName,
                    SlowDownloadHttpResponse::kUnknownSizeUrl));
   ASSERT_EQ(download::DownloadItem::IN_PROGRESS, download->GetState());
 
@@ -1366,7 +1366,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, MultiDownload) {
   // we're in the expected state.
   download::DownloadItem* download1 = StartDownloadAndReturnItem(
       shell(), embedded_test_server()->GetURL(
-                   SlowDownloadHttpResponse::kSlowDownloadHostName,
+                   SlowDownloadHttpResponse::kSlowResponseHostName,
                    SlowDownloadHttpResponse::kUnknownSizeUrl));
   ASSERT_EQ(download::DownloadItem::IN_PROGRESS, download1->GetState());
 
@@ -1380,10 +1380,10 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, MultiDownload) {
 
   // Allow the first request to finish.
   std::unique_ptr<DownloadTestObserver> observer2(CreateWaiter(shell(), 1));
-  EXPECT_TRUE(NavigateToURL(shell(),
-                            embedded_test_server()->GetURL(
-                                SlowDownloadHttpResponse::kSlowDownloadHostName,
-                                SlowDownloadHttpResponse::kFinishDownloadUrl)));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL(
+                   SlowDownloadHttpResponse::kSlowResponseHostName,
+                   SlowDownloadHttpResponse::kFinishSlowResponseUrl)));
 
   observer2->WaitForFinished();  // Wait for the third request.
 
@@ -1398,8 +1398,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, MultiDownload) {
   // |file1| should be full of '*'s, and |file2| should be the same as the
   // source file.
   base::FilePath file1(download1->GetTargetFilePath());
-  size_t file_size1 = SlowDownloadHttpResponse::kFirstDownloadSize +
-                      SlowDownloadHttpResponse::kSecondDownloadSize;
+  size_t file_size1 = SlowDownloadHttpResponse::kFirstResponsePartSize +
+                      SlowDownloadHttpResponse::kSecondResponsePartSize;
   std::string expected_contents(file_size1, '*');
   ASSERT_TRUE(VerifyFile(file1, expected_contents, file_size1));
 
@@ -1619,7 +1619,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ShutdownInProgress) {
   // Create a download that won't complete.
   download::DownloadItem* download = StartDownloadAndReturnItem(
       shell(), embedded_test_server()->GetURL(
-                   SlowDownloadHttpResponse::kSlowDownloadHostName,
+                   SlowDownloadHttpResponse::kSlowResponseHostName,
                    SlowDownloadHttpResponse::kUnknownSizeUrl));
 
   EXPECT_EQ(download::DownloadItem::IN_PROGRESS, download->GetState());

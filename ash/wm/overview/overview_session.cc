@@ -481,9 +481,8 @@ void OverviewSession::CompleteDrag(OverviewItem* item,
                                    const gfx::PointF& location_in_screen) {
   DCHECK(window_drag_controller_);
   DCHECK_EQ(item, window_drag_controller_->item());
-  const bool snap =
-      window_drag_controller_->CompleteDrag(location_in_screen) ==
-      OverviewWindowDragController::DragResult::kSuccessfulDragToSnap;
+  const bool snap = window_drag_controller_->CompleteDrag(location_in_screen) ==
+                    OverviewWindowDragController::DragResult::kSnap;
   for (std::unique_ptr<OverviewGrid>& grid : grid_list_)
     grid->OnSelectorItemDragEnded(snap);
 
@@ -504,10 +503,9 @@ void OverviewSession::Fling(OverviewItem* item,
   if (!window_drag_controller_ || item != window_drag_controller_->item())
     return;
 
-  const bool snap =
-      window_drag_controller_->Fling(location_in_screen, velocity_x,
-                                     velocity_y) ==
-      OverviewWindowDragController::DragResult::kSuccessfulDragToSnap;
+  const bool snap = window_drag_controller_->Fling(location_in_screen,
+                                                   velocity_x, velocity_y) ==
+                    OverviewWindowDragController::DragResult::kSnap;
   for (std::unique_ptr<OverviewGrid>& grid : grid_list_)
     grid->OnSelectorItemDragEnded(snap);
 }

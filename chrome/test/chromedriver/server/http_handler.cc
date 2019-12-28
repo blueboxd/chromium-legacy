@@ -1188,7 +1188,7 @@ HttpHandler::PrepareStandardResponse(
       break;
     case kTimeout:
       response.reset(
-          new net::HttpServerResponseInfo(net::HTTP_REQUEST_TIMEOUT));
+          new net::HttpServerResponseInfo(net::HTTP_INTERNAL_SERVER_ERROR));
       break;
     case kUnableToSetCookie:
       response.reset(

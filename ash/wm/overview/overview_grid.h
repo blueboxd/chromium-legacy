@@ -413,10 +413,6 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
       int* out_min_right,
       int* out_max_right);
 
-  // Returns the overview item iterator that contains |window|.
-  std::vector<std::unique_ptr<OverviewItem>>::iterator
-  GetOverviewItemIterContainingWindow(aura::Window* window);
-
   // Returns the index of |item| in |window_list_|.
   size_t GetOverviewItemIndex(OverviewItem* item) const;
 

@@ -17,19 +17,12 @@ class TestErrorUIDelegate : public extensions::ExtensionErrorUI::Delegate {
  public:
   // extensions::ExtensionErrorUI::Delegate:
   content::BrowserContext* GetContext() override { return &profile_; }
-  const extensions::ExtensionSet& GetExternalExtensions() override {
-    return external_;
-  }
   const extensions::ExtensionSet& GetBlacklistedExtensions() override {
     return forbidden_;
   }
   void OnAlertDetails() override {}
   void OnAlertAccept() override {}
   void OnAlertClosed() override {}
-
-  void InsertExternal(scoped_refptr<const extensions::Extension> ext) {
-    external_.Insert(ext);
-  }
 
   void InsertForbidden(scoped_refptr<const extensions::Extension> ext) {
     forbidden_.Insert(ext);
@@ -38,7 +31,6 @@ class TestErrorUIDelegate : public extensions::ExtensionErrorUI::Delegate {
  private:
   content::BrowserTaskEnvironment environment_;
   TestingProfile profile_;
-  extensions::ExtensionSet external_;
   extensions::ExtensionSet forbidden_;
 };
 
@@ -52,7 +44,6 @@ bool ContainsString(const base::string16& haystack, const std::string& needle) {
 TEST(ExtensionErrorUIDefaultTest, BubbleMessageMentionsExtension) {
   TestErrorUIDelegate delegate;
 
-  delegate.InsertExternal(extensions::ExtensionBuilder("Foo").Build());
   delegate.InsertForbidden(extensions::ExtensionBuilder("Bar").Build());
   delegate.InsertForbidden(extensions::ExtensionBuilder("Baz").Build());
 
@@ -61,8 +52,7 @@ TEST(ExtensionErrorUIDefaultTest, BubbleMessageMentionsExtension) {
 
   std::vector<base::string16> messages = bubble->GetBubbleViewMessages();
 
-  ASSERT_EQ(3U, messages.size());
-  EXPECT_TRUE(ContainsString(messages[0], "\"Foo\""));
-  EXPECT_TRUE(ContainsString(messages[1], "\"Bar\""));
-  EXPECT_TRUE(ContainsString(messages[2], "\"Baz\""));
+  ASSERT_EQ(2u, messages.size());
+  EXPECT_TRUE(ContainsString(messages[0], "\"Bar\""));
+  EXPECT_TRUE(ContainsString(messages[1], "\"Baz\""));
 }

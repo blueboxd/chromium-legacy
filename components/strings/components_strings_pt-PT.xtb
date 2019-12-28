@@ -722,6 +722,7 @@
 <translation id="4340982228985273705">Este computador não é detetado como sendo gerido pela empresa, por isso, a política apenas pode instalar automaticamente extensões alojadas na Web Store do Chrome. O URL de atualização da Web Store do Chrome é "<ph name="CWS_UPDATE_URL" />".</translation>
 <translation id="4346197816712207223">Cartões de crédito aceites</translation>
 <translation id="4346833872170306413">Roc-16K</translation>
+<translation id="4349531505348777662">Acabou de introduzir a sua palavra-passe num site fraudulento. O Chrome recomenda que aceda a <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> e outros sites em que utilize esta palavra-passe e a altere agora.</translation>
 <translation id="4356973930735388585">Os utilizadores mal intencionados neste site podem tentar instalar programas perigosos no seu computador que roubam ou eliminam as suas informações (por exemplo, fotos, palavras-passe, mensagens e cartões de crédito).</translation>
 <translation id="4358059973562876591">Os modelos que especificou podem não ser aplicados devido a um erro com a política DnsOverHttpsMode.</translation>
 <translation id="4358461427845829800">Gerir métodos de pagamento…</translation>
@@ -1250,6 +1251,7 @@
 <translation id="6970216967273061347">Distrito</translation>
 <translation id="6973656660372572881">Foram especificados servidores proxy fixos e um URL de script .pac.</translation>
 <translation id="6973932557599545801">Lamento, mas não posso ajudar. Continue por sua conta.</translation>
+<translation id="6975012522936652259">Acabou de introduzir a sua palavra-passe num site fraudulento. O Chromium recomenda que aceda a <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> e outros sites em que utilize esta palavra-passe e a altere agora.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Desativar som (predefinição)</translation>
 <translation id="6989763994942163495">Mostrar definições avançadas...</translation>
@@ -1380,6 +1382,7 @@ Detalhes adicionais:
 <translation id="7567204685887185387">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN" />; o respetivo certificado de segurança poderá ter sido emitido de forma fraudulenta. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
 <translation id="7569952961197462199">Pretende remover o cartão de crédito do Chrome?</translation>
 <translation id="7569983096843329377">Preto</translation>
+<translation id="7575207903026901870">Botão Remover sugestão, prima Enter para remover esta sugestão.</translation>
 <translation id="7578104083680115302">Pague rapidamente em sites e aplicações em todos os dispositivos com cartões que tenha guardado com o Google.</translation>
 <translation id="7592362899630581445">O certificado do servidor viola as restrições de nome.</translation>
 <translation id="7598391785903975535">Menos de <ph name="UPPER_ESTIMATE" /></translation>
@@ -1626,6 +1629,7 @@ Detalhes adicionais:
 <translation id="8891727572606052622">Modo de proxy inválido.</translation>
 <translation id="8903921497873541725">Ampliar</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="890493561996401738">Botão Remover sugestão, prima Enter para remover, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" />.</translation>
 <translation id="8910670906166981838">Está no Modo de navegação anónima</translation>
 <translation id="8912362522468806198">Conta Google</translation>
 <translation id="8918231688545606538">Esta página é suspeita</translation>

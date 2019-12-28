@@ -172,7 +172,8 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest, SaveFile) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest, OpenFile) {
+// TODO(crbug.com/1038128): Test is flaky.
+IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest, DISABLED_OpenFile) {
   const base::FilePath test_file = CreateTestFile("");
   const std::string file_contents = "file contents to write";
 
@@ -270,7 +271,8 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest, FullscreenOpenFile) {
   EXPECT_FALSE(IsFullscreen());
 }
 
-IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest, SafeBrowsing) {
+// TODO(crbug.com/1038128): Test is flaky.
+IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest, DISABLED_SafeBrowsing) {
   const base::FilePath test_file = temp_dir_.GetPath().AppendASCII("test.exe");
 
   std::string expected_hash;

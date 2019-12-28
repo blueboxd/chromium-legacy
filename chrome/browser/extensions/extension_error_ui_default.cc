@@ -6,38 +6,29 @@
 
 #include "base/logging.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/global_error/global_error_bubble_view_base.h"
 #include "chrome/grit/generated_resources.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace extensions {
 
 namespace {
 
-std::vector<base::string16> GenerateMessage(const ExtensionSet& external,
-                                            const ExtensionSet& forbidden) {
-  std::vector<base::string16> message(external.size() + forbidden.size());
-  auto it = std::transform(
-      external.begin(), external.end(), message.begin(),
-      [](const auto& extension) {
-        int id = extension->is_app() ? IDS_APP_ALERT_ITEM_EXTERNAL
-                                     : IDS_EXTENSION_ALERT_ITEM_EXTERNAL;
-        base::string16 name = base::UTF8ToUTF16(extension->name());
-        return l10n_util::GetStringFUTF16(id, name);
-      });
-  std::transform(forbidden.begin(), forbidden.end(), it,
-                 [](const auto& extension) {
-                   int id = extension->is_app()
-                                ? IDS_APP_ALERT_ITEM_BLACKLISTED
-                                : IDS_EXTENSION_ALERT_ITEM_BLACKLISTED;
-                   base::string16 name = base::UTF8ToUTF16(extension->name());
-                   return l10n_util::GetStringFUTF16(id, name);
-                 });
+std::vector<base::string16> GenerateMessage(const ExtensionSet& forbidden) {
+  std::vector<base::string16> message;
+  message.reserve(forbidden.size());
+  for (const auto& extension : forbidden) {
+    int id = extension->is_app() ? IDS_APP_ALERT_ITEM_BLACKLISTED
+                                 : IDS_EXTENSION_ALERT_ITEM_BLACKLISTED;
+    message.push_back(
+        l10n_util::GetStringFUTF16(id, base::UTF8ToUTF16(extension->name())));
+  }
   return message;
 }
 
@@ -69,8 +60,7 @@ class ExtensionGlobalError : public GlobalErrorWithStandardBubble {
   }
 
   std::vector<base::string16> GetBubbleViewMessages() override {
-    return GenerateMessage(delegate_->GetExternalExtensions(),
-                           delegate_->GetBlacklistedExtensions());
+    return GenerateMessage(delegate_->GetBlacklistedExtensions());
   }
 
   base::string16 GetBubbleViewAcceptButtonLabel() override {

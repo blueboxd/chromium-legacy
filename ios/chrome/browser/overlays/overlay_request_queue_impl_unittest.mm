@@ -60,7 +60,7 @@ class OverlayRequestQueueImplTest : public PlatformTest {
 
   OverlayRequest* AddRequest() {
     std::unique_ptr<OverlayRequest> passed_request =
-        OverlayRequest::CreateWithConfig<FakeOverlayUserData>(nullptr);
+        OverlayRequest::CreateWithConfig<FakeOverlayUserData>();
     OverlayRequest* request = passed_request.get();
     EXPECT_CALL(observer(),
                 RequestAddedToQueue(queue(), request, queue()->size()));
@@ -165,7 +165,7 @@ TEST_F(OverlayRequestQueueImplTest, CancelAllRequests) {
 // when cancelling a request with a custom cancel handler.
 TEST_F(OverlayRequestQueueImplTest, CustomCancelHandler) {
   std::unique_ptr<OverlayRequest> passed_request =
-      OverlayRequest::CreateWithConfig<FakeOverlayUserData>(nullptr);
+      OverlayRequest::CreateWithConfig<FakeOverlayUserData>();
   OverlayRequest* request = passed_request.get();
   std::unique_ptr<FakeCancelHandler> passed_cancel_handler =
       std::make_unique<FakeCancelHandler>(request, queue());

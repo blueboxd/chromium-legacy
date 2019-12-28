@@ -449,12 +449,9 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback,
 }
 
 // TODO(http://crbug.com/990362): Times out on MSAN buildbots.
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_RollbackAvailable DISABLED_RollbackAvailable
-#else
-#define MAYBE_RollbackAvailable RollbackAvailable
-#endif
-IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback, RollbackAvailable) {
+// TODO(http://crbug.com/990362): Flaky failures.
+IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback,
+                       DISABLED_RollbackAvailable) {
   PrefService* prefs = g_browser_process->local_state();
 
   // PRE test triggers start with Reset screen.
@@ -553,13 +550,9 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback,
 }
 
 // TODO(http://crbug.com/1025926): Times out on MSAN buildbots.
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_RevertAfterCancel DISABLED_RevertAfterCancel
-#else
-#define MAYBE_RevertAfterCancel RevertAfterCancel
-#endif
+// TODO(http://crbug.com/990362): Flaky failures.
 IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback,
-                       MAYBE_RevertAfterCancel) {
+                       DISABLED_RevertAfterCancel) {
   OobeScreenWaiter(ResetView::kScreenId).Wait();
   EXPECT_TRUE(login_prompt_visible_observer_->signal_emitted());
 

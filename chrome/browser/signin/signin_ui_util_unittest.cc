@@ -471,8 +471,8 @@ TEST_F(DiceSigninUiUtilTest, MAYBE_EnableSyncForNewAccountWithOneTab) {
       active_contents->GetVisibleURL());
 }
 
-// TODO(https://crbug.com/1014790): Timeout on Mac10.12.
-#if defined(OS_MACOSX)
+// TODO(https://crbug.com/1014790): Timeout on Mac10.12 and Win7 x64.
+#if defined(OS_MACOSX) || defined(OS_WIN)
 #define MAYBE_GetAccountsForDicePromos DISABLED_GetAccountsForDicePromos
 #else
 #define MAYBE_GetAccountsForDicePromos GetAccountsForDicePromos
@@ -568,8 +568,8 @@ TEST_F(
       *profile_manager()->profile_attributes_storage(), profile()));
 }
 
-// TODO(https://crbug.com/1014790): Timeout on Mac10.12.
-#if defined(OS_MACOSX)
+// TODO(https://crbug.com/1014790): Timeout on Mac10.12 and Win7 x64.
+#if defined(OS_MACOSX) || defined(OS_WIN)
 #define MAYBE_ShouldShowAnimatedIdentityOnOpeningWindow_ReturnsFalseForSingleProfileSingleSignin \
   DISABLED_ShouldShowAnimatedIdentityOnOpeningWindow_ReturnsFalseForSingleProfileSingleSignin
 #else

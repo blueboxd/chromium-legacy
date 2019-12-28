@@ -86,6 +86,9 @@ class NET_EXPORT IOBuffer : public base::RefCountedThreadSafe<IOBuffer> {
  protected:
   friend class base::RefCountedThreadSafe<IOBuffer>;
 
+  static void AssertValidBufferSize(size_t size);
+  static void AssertValidBufferSize(int size);
+
   // Only allow derived classes to specify data_.
   // In all other cases, we own data_, and must delete it at destruction time.
   explicit IOBuffer(char* data);

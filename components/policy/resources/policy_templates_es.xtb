@@ -1074,6 +1074,14 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
           El valor debe ser una matriz de diccionarios JSON de tipo string. Todos los diccionarios deben tener el formato <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> (<ph name="URL_PATTERN_PLACEHOLDER" /> es un patrón de configuración de contenido). <ph name="FILTER_PLACEHOLDER" /> restringe los certificados de cliente que puede seleccionar automáticamente el navegador. Independientemente del filtro, solo se seleccionarán los certificados que coincidan con la solicitud de certificado del servidor. Por ejemplo, si <ph name="FILTER_PLACEHOLDER" /> tiene el formato <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />, solo se seleccionarán certificados de cliente emitidos por un certificado en el que CommonName tenga el valor <ph name="ISSUER_CN_PLACEHOLDER" />. Si <ph name="FILTER_PLACEHOLDER" /> contiene las secciones <ph name="ISSUER_STRING_VALUE" /> y <ph name="SUBJECT_STRING_VALUE" />, el certificado de cliente debe cumplir las dos condiciones para poder seleccionarlo. Si <ph name="FILTER_PLACEHOLDER" /> define una organización ("O"), para poder seleccionar el certificado, este debe tener al menos una organización que coincida con el valor especificado. SI <ph name="FILTER_PLACEHOLDER" /> define una unidad organizativa ("OU"), para poder seleccionar el certificado, este debe tener al menos una unidad organizativa que coincida con el valor especificado. Si <ph name="FILTER_PLACEHOLDER" /> es el diccionario vacío <ph name="EMPTY_DICTIONARY" />, no se aplicarán más restricciones a la selección de certificados de cliente.
 
           Si no se asigna ningún valor a esta política, la selección automática no se realizará en ningún sitio web.</translation>
+<translation id="2528659559494311776">Esta política controla una función de seguridad de TLS 1.3 que protege las conexiones frente a ataques de cambio a versión inferior. Es retrocompatible y no afectará a las conexiones de servidores y proxies que cumplan con el protocolo TLS 1.2. Sin embargo, las versiones anteriores de algunos proxies que interceptan TLS tienen un error de implementación que provoca que los proxies sean incompatibles.
+
+      Si se asigna el valor "True" a esta política o no se le asigna ninguno, <ph name="PRODUCT_NAME" /> habilitará estas protecciones de seguridad en todas las conexiones.
+
+      Si se le asigna el valor "False", <ph name="PRODUCT_NAME" /> inhabilitará estas protecciones de seguridad en las conexiones autenticadas con certificados de CA instalados de forma local. Estas protecciones siempre están habilitadas en las conexiones autenticadas con certificados de CA en los que se confíe públicamente.
+
+      El valor predeterminado de esta política ha cambiado de "False" a "True" en <ph name="PRODUCT_NAME" /> 81. La conexión de los proxies afectados debería fallar y debería aparecer el código de error ERR_TLS13_DOWNGRADE_DETECTED. Los administradores que necesiten más tiempo para actualizar los proxies afectados podrán usar esta política para inhabilitar temporalmente esta función de seguridad. Esta política se eliminará después de la versión 85.
+      </translation>
 <translation id="2529659024053332711">Permite especificar el comportamiento del navegador al iniciarlo.
 
           Si seleccionas Abrir página Nueva pestaña, la página Nueva pestaña se abrirá cada vez que inicies <ph name="PRODUCT_NAME" />.
@@ -1629,6 +1637,15 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Si se asigna el valor No o si no se establece ninguno, <ph name="PRODUCT_NAME" /> no aplicará el modo restringido en YouTube. Sin embargo, las políticas externas, como las políticas de YouTube, pueden seguir aplicando este modo.</translation>
 <translation id="3428247105888806363">Habilitar predicción de red</translation>
 <translation id="3432863169147125747">Controla los ajustes de impresión.</translation>
+<translation id="3434053014926283175">Cambia el botón principal del ratón al botón derecho en la pantalla de inicio de sesión.
+
+          Si se habilita esta política, el botón derecho del ratón siempre será el botón principal en la pantalla de inicio de sesión.
+
+          Si no se habilita, el botón izquierdo del ratón siempre será el botón principal en la pantalla de inicio de sesión.
+
+          Si se asigna un valor a esta política, los usuarios no podrán cambiarlo ni anularlo.
+
+          Si no se le asigna ningún valor, el botón izquierdo del ratón será inicialmente el botón principal en la pantalla de inicio de sesión, pero el usuario podrá cambiar este ajuste en cualquier momento.</translation>
 <translation id="3434932177006334880">Esta opción recibía el nombre de EnableWebBasedSignin con anterioridad a Chrome 42 y dejará de admitirse por completo en Chrome 43.
 
       Esta opción es útil para clientes de empresas que utilicen soluciones de inicio de SSO que no sean compatibles con el nuevo flujo de inicio de sesión insertado.
@@ -4581,6 +4598,7 @@ Si la política está establecida en False, no se informará sobre la lista de i
           Si se asigna un valor a esta política, los usuarios no podrán cambiarlo ni anularlo.
 
           Si no se le asigna ningún valor, el resaltado del cursor se inhabilitará al inicio, pero el usuario podrá habilitarlo en cualquier momento.</translation>
+<translation id="8171924760436219650">Cambiar el botón principal del ratón al botón derecho en la pantalla de inicio de sesión</translation>
 <translation id="8172676363520748127">Si se habilita esta opción, no se podrán hacer capturas de pantalla utilizando combinaciones de teclas ni API de extensiones.
 
       Si se inhabilita o no se especifica esta opción, se podrán hacer capturas de pantalla.</translation>

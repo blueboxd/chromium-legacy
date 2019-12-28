@@ -22,6 +22,7 @@ class BrowserContext;
 }
 
 namespace weblayer {
+class BrowserContextImpl;
 
 class ProfileImpl : public Profile {
  public:
@@ -55,7 +56,6 @@ class ProfileImpl : public Profile {
 #endif
 
  private:
-  class BrowserContextImpl;
   class DataClearer;
 
   void ClearRendererCache();

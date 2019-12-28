@@ -62,10 +62,6 @@ content::BrowserContext* ExtensionErrorController::GetContext() {
   return browser_context_;
 }
 
-const ExtensionSet& ExtensionErrorController::GetExternalExtensions() {
-  return external_extensions_;
-}
-
 const ExtensionSet& ExtensionErrorController::GetBlacklistedExtensions() {
   return blacklisted_extensions_;
 }

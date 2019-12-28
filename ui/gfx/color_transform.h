@@ -33,7 +33,6 @@ class GFX_EXPORT ColorTransform {
 
   // Return GLSL shader source that defines a function DoColorConversion that
   // converts a vec3 according to this transform.
-  virtual bool CanGetShaderSource() const = 0;
   virtual std::string GetShaderSource() const = 0;
 
   // Return SKSL shader sources that modifies an "inout half4 color" according

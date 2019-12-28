@@ -715,21 +715,13 @@ const base::Feature kWebXr{"WebXR", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kWebXrArModule{"WebXRARModule",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables access to anchors via WebXR API.
-const base::Feature kWebXrAnchors{"WebXRAnchors",
-                                  base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables access to raycasting against estimated XR scene geometry.
 const base::Feature kWebXrHitTest{"WebXRHitTest",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables access to planes detected in the user's environment.
-const base::Feature kWebXrPlaneDetection{"WebXRPlaneDetection",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables access to planes detected in the user's environment.
-const base::Feature kWebXrArDOMOverlay{"WebXRARDOMOverlay",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables access to experimental WebXR features.
+const base::Feature kWebXrIncubations{"WebXRIncubations",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Start streaming scripts on script preload.
 const base::Feature kScriptStreamingOnPreload{"ScriptStreamingOnPreload",

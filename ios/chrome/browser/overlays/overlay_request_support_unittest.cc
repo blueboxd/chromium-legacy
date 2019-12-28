@@ -5,15 +5,12 @@
 #include "ios/chrome/browser/overlays/public/overlay_request_support.h"
 
 #include "ios/chrome/browser/overlays/test/fake_overlay_user_data.h"
+#include "ios/chrome/browser/overlays/test/overlay_test_macros.h"
 #include "testing/platform_test.h"
 
 namespace {
 // Fake request config type for use in tests.
-class FakeConfig : public OverlayUserData<FakeConfig> {
- private:
-  OVERLAY_USER_DATA_SETUP(FakeConfig);
-};
-OVERLAY_USER_DATA_SETUP_IMPL(FakeConfig);
+DEFINE_TEST_OVERLAY_REQUEST_CONFIG(FakeConfig);
 }  // namespace
 
 using SupportsOverlayRequestTest = PlatformTest;
@@ -21,7 +18,7 @@ using SupportsOverlayRequestTest = PlatformTest;
 // Tests that OverlayRequestSupport::All() supports arbitrary config types.
 TEST_F(SupportsOverlayRequestTest, SupportAll) {
   std::unique_ptr<OverlayRequest> first_request =
-      OverlayRequest::CreateWithConfig<FakeOverlayUserData>(nullptr);
+      OverlayRequest::CreateWithConfig<FakeOverlayUserData>();
   std::unique_ptr<OverlayRequest> second_request =
       OverlayRequest::CreateWithConfig<FakeConfig>();
 
@@ -33,7 +30,7 @@ TEST_F(SupportsOverlayRequestTest, SupportAll) {
 // Tests that OverlayRequestSupport::None() does not support config types.
 TEST_F(SupportsOverlayRequestTest, SupportNone) {
   std::unique_ptr<OverlayRequest> first_request =
-      OverlayRequest::CreateWithConfig<FakeOverlayUserData>(nullptr);
+      OverlayRequest::CreateWithConfig<FakeOverlayUserData>();
   std::unique_ptr<OverlayRequest> second_request =
       OverlayRequest::CreateWithConfig<FakeConfig>();
 
@@ -51,7 +48,7 @@ TEST_F(SupportsOverlayRequestTest, SupportsRequestTemplate) {
 
   // Verify that FakeOverlayUserData requests aren't supported.
   std::unique_ptr<OverlayRequest> unsupported_request =
-      OverlayRequest::CreateWithConfig<FakeOverlayUserData>(nullptr);
+      OverlayRequest::CreateWithConfig<FakeOverlayUserData>();
   EXPECT_FALSE(support->IsRequestSupported(unsupported_request.get()));
 
   // Verify that FakeConfig requests are supported.

@@ -52,7 +52,6 @@ ColorSpace::TransferID simple_transfers[] = {
 // This one is weird as the non-linear numbers are not between 0 and 1.
 ColorSpace::TransferID noninvertible_transfers[] = {
     ColorSpace::TransferID::SMPTEST428_1,
-    ColorSpace::TransferID::SMPTEST2084_NON_HDR,
 };
 
 ColorSpace::TransferID extended_transfers[] = {
@@ -61,15 +60,18 @@ ColorSpace::TransferID extended_transfers[] = {
 };
 
 ColorSpace::MatrixID all_matrices[] = {
-    ColorSpace::MatrixID::RGB, ColorSpace::MatrixID::BT709,
-    ColorSpace::MatrixID::FCC, ColorSpace::MatrixID::BT470BG,
-    ColorSpace::MatrixID::SMPTE170M, ColorSpace::MatrixID::SMPTE240M,
+    ColorSpace::MatrixID::RGB,
+    ColorSpace::MatrixID::BT709,
+    ColorSpace::MatrixID::FCC,
+    ColorSpace::MatrixID::BT470BG,
+    ColorSpace::MatrixID::SMPTE170M,
+    ColorSpace::MatrixID::SMPTE240M,
 
     // YCOCG produces lots of negative values which isn't compatible with many
     // transfer functions.
     // TODO(hubbe): Test this separately.
     // ColorSpace::MatrixID::YCOCG,
-    ColorSpace::MatrixID::BT2020_NCL, ColorSpace::MatrixID::BT2020_CL,
+    ColorSpace::MatrixID::BT2020_NCL,
     ColorSpace::MatrixID::YDZDX,
 };
 
@@ -513,9 +515,6 @@ TEST(SimpleColorSpace, CanParseSkShaderSource) {
     for (const auto& dst : common_color_spaces) {
       auto transform = ColorTransform::NewColorTransform(
           src, dst, ColorTransform::Intent::INTENT_PERCEPTUAL);
-      if (!transform->CanGetShaderSource())
-        continue;
-
       std::string source = "void main(inout half4 color) {" +
                            transform->GetSkShaderSource() + "}";
       SkRuntimeColorFilterFactory factory(

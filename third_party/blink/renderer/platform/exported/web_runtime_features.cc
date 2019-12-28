@@ -476,20 +476,12 @@ void WebRuntimeFeatures::EnableWebXRARModule(bool enable) {
   RuntimeEnabledFeatures::SetWebXRARModuleEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableWebXRARDOMOverlay(bool enable) {
-  RuntimeEnabledFeatures::SetWebXRARDOMOverlayEnabled(enable);
-}
-
-void WebRuntimeFeatures::EnableWebXRAnchors(bool enable) {
-  RuntimeEnabledFeatures::SetWebXRAnchorsEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableWebXRHitTest(bool enable) {
   RuntimeEnabledFeatures::SetWebXRHitTestEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableWebXRPlaneDetection(bool enable) {
-  RuntimeEnabledFeatures::SetWebXRPlaneDetectionEnabled(enable);
+void WebRuntimeFeatures::EnableWebXRIncubations(bool enable) {
+  RuntimeEnabledFeatures::SetWebXRIncubationsEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnablePresentationAPI(bool enable) {

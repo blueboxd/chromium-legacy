@@ -44,22 +44,21 @@ IN_PROC_BROWSER_TEST_F(ExtensionLoadingTest,
   ASSERT_TRUE(embedded_test_server()->Start());
 
   TestExtensionDir extension_dir;
-  const char kManifestTemplate[] =
-      "{"
-      "  'name': 'Overrides New Tab',"
-      "  'version': '%d',"
-      "  'description': 'Overrides New Tab',"
-      "  'manifest_version': 2,"
-      "  'background': {"
-      "    'persistent': false,"
-      "    'scripts': ['event.js']"
-      "  },"
-      "  'chrome_url_overrides': {"
-      "    'newtab': 'newtab.html'"
-      "  }"
-      "}";
-  extension_dir.WriteManifestWithSingleQuotes(
-      base::StringPrintf(kManifestTemplate, 1));
+  constexpr char kManifestTemplate[] =
+      R"({
+           "name": "Overrides New Tab",
+           "version": "%d",
+           "description": "Overrides New Tab",
+           "manifest_version": 2,
+           "background": {
+             "persistent": false,
+             "scripts": ["event.js"]
+           },
+           "chrome_url_overrides": {
+             "newtab": "newtab.html"
+           }
+         })";
+  extension_dir.WriteManifest(base::StringPrintf(kManifestTemplate, 1));
   extension_dir.WriteFile(FILE_PATH_LITERAL("event.js"), "");
   extension_dir.WriteFile(FILE_PATH_LITERAL("newtab.html"),
                           "<h1>Overridden New Tab Page</h1>");
@@ -81,8 +80,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionLoadingTest,
                      test_link_from_NTP);
 
   // Increase the extension's version.
-  extension_dir.WriteManifestWithSingleQuotes(
-      base::StringPrintf(kManifestTemplate, 2));
+  extension_dir.WriteManifest(base::StringPrintf(kManifestTemplate, 2));
 
   // Upgrade the extension.
   new_tab_extension = UpdateExtension(
@@ -107,16 +105,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionLoadingTest,
   ASSERT_TRUE(embedded_test_server()->Start());
 
   TestExtensionDir extension_dir;
-  const char kManifestTemplate[] =
-      "{"
-      "  'name': 'Overrides New Tab',"
-      "  'version': '%d',"
-      "  'description': 'Will override New Tab soon',"
-      "  %s"  // Placeholder for future NTP url override block.
-      "  'manifest_version': 2"
-      "}";
-  extension_dir.WriteManifestWithSingleQuotes(
-      base::StringPrintf(kManifestTemplate, 1, ""));
+  constexpr char kManifestTemplate[] =
+      R"({
+           "name": "Overrides New Tab",
+           "version": "%d",
+           "description": "Will override New Tab soon",
+           %s  // Placeholder for future NTP url override block.
+           "manifest_version": 2
+         })";
+  extension_dir.WriteManifest(base::StringPrintf(kManifestTemplate, 1, ""));
   extension_dir.WriteFile(FILE_PATH_LITERAL("event.js"), "");
   extension_dir.WriteFile(FILE_PATH_LITERAL("newtab.html"),
                           "<h1>Overridden New Tab Page</h1>");
@@ -139,12 +136,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionLoadingTest,
 
   // Increase the extension's version and add the NTP url override which will
   // add the kNewTabPageOverride permission.
-  const char ntp_override_string[] =
-      "  'chrome_url_overrides': {"
-      "    'newtab': 'newtab.html'"
-      "  },";
-  extension_dir.WriteManifestWithSingleQuotes(
-      base::StringPrintf(kManifestTemplate, 2, ntp_override_string));
+  constexpr char kNtpOverrideString[] =
+      R"("chrome_url_overrides": {
+            "newtab": "newtab.html"
+         },)";
+  extension_dir.WriteManifest(
+      base::StringPrintf(kManifestTemplate, 2, kNtpOverrideString));
 
   // Upgrade the extension, ensure that the upgrade 'worked' in the sense that
   // the extension is still present and not disabled and that it now has the
@@ -168,17 +165,17 @@ IN_PROC_BROWSER_TEST_F(ExtensionLoadingTest,
 
   TestExtensionDir extension_dir;
   const char manifest_contents[] =
-      "{"
-      "  'name': 'Test With Lazy Background Page',"
-      "  'version': '0',"
-      "  'manifest_version': 2,"
-      "  'app': {"
-      "    'background': {"
-      "       'scripts': ['event.js']"
-      "    }"
-      "  }"
-      "}";
-  extension_dir.WriteManifestWithSingleQuotes(manifest_contents);
+      R"({
+           "name": "Test With Lazy Background Page",
+           "version": "0",
+           "manifest_version": 2,
+           "app": {
+             "background": {
+                "scripts": ["event.js"]
+             }
+           }
+         })";
+  extension_dir.WriteManifest(manifest_contents);
   extension_dir.WriteFile(FILE_PATH_LITERAL("event.js"), "");
 
   const Extension* extension =
@@ -235,41 +232,41 @@ IN_PROC_BROWSER_TEST_F(ExtensionLoadingTest, RuntimeValidWhileDevToolsOpen) {
   TestExtensionDir devtools_dir;
   TestExtensionDir inspect_dir;
 
-  const char kDevtoolsManifest[] =
-      "{"
-      "  'name': 'Devtools',"
-      "  'version': '1',"
-      "  'manifest_version': 2,"
-      "  'devtools_page': 'devtools.html'"
-      "}";
+  constexpr char kDevtoolsManifest[] =
+      R"({
+           "name": "Devtools",
+           "version": "1",
+           "manifest_version": 2,
+           "devtools_page": "devtools.html"
+         })";
 
-  const char kDevtoolsJs[] =
-      "setInterval(function() {"
-      "  chrome.devtools.inspectedWindow.eval('1', function() {"
-      "  });"
-      "}, 4);"
-      "chrome.test.sendMessage('devtools_page_ready');";
+  constexpr char kDevtoolsJs[] =
+      R"(setInterval(function() {
+           chrome.devtools.inspectedWindow.eval('1', function() {
+           });
+         }, 4);
+         chrome.test.sendMessage('devtools_page_ready');)";
 
-  const char kTargetManifest[] =
-      "{"
-      "  'name': 'Inspect target',"
-      "  'version': '1',"
-      "  'manifest_version': 2,"
-      "  'background': {"
-      "    'scripts': ['background.js']"
-      "  }"
-      "}";
+  constexpr char kTargetManifest[] =
+      R"({
+           "name": "Inspect target",
+           "version": "1",
+           "manifest_version": 2,
+           "background": {
+             "scripts": ["background.js"]
+           }
+         })";
 
   // A script to duck-type whether it runs in a background page.
   const char kTargetJs[] =
       "var is_valid = !!(chrome.tabs && chrome.tabs.create);";
 
-  devtools_dir.WriteManifestWithSingleQuotes(kDevtoolsManifest);
+  devtools_dir.WriteManifest(kDevtoolsManifest);
   devtools_dir.WriteFile(FILE_PATH_LITERAL("devtools.js"), kDevtoolsJs);
   devtools_dir.WriteFile(FILE_PATH_LITERAL("devtools.html"),
                          "<script src='devtools.js'></script>");
 
-  inspect_dir.WriteManifestWithSingleQuotes(kTargetManifest);
+  inspect_dir.WriteManifest(kTargetManifest);
   inspect_dir.WriteFile(FILE_PATH_LITERAL("background.js"), kTargetJs);
   const Extension* devtools_ext = LoadExtension(devtools_dir.UnpackedPath());
   ASSERT_TRUE(devtools_ext);

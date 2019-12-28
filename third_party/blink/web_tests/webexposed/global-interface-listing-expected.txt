@@ -11086,6 +11086,22 @@ interface XR : EventTarget
     method requestSession
     method supportsSession
     setter ondevicechange
+interface XRAnchor
+    attribute @@toStringTag
+    getter anchorSpace
+    getter lastChangedTime
+    method constructor
+    method detach
+interface XRAnchorSet
+    attribute @@toStringTag
+    getter size
+    method @@iterator
+    method constructor
+    method entries
+    method forEach
+    method has
+    method keys
+    method values
 interface XRBoundedReferenceSpace : XRReferenceSpace
     attribute @@toStringTag
     getter boundsGeometry
@@ -11093,6 +11109,8 @@ interface XRBoundedReferenceSpace : XRReferenceSpace
 interface XRFrame
     attribute @@toStringTag
     getter session
+    getter trackedAnchors
+    getter worldInformation
     method constructor
     method getHitTestResults
     method getHitTestResultsForTransientInput
@@ -11139,6 +11157,28 @@ interface XRInputSourcesChangeEvent : Event
     getter removed
     getter session
     method constructor
+interface XRPlane
+    attribute @@toStringTag
+    getter lastChangedTime
+    getter orientation
+    getter planeSpace
+    getter polygon
+    method constructor
+    method createAnchor
+interface XRPlaneDetectionState
+    attribute @@toStringTag
+    getter enabled
+    method constructor
+interface XRPlaneSet
+    attribute @@toStringTag
+    getter size
+    method @@iterator
+    method constructor
+    method entries
+    method forEach
+    method has
+    method keys
+    method values
 interface XRPose
     attribute @@toStringTag
     getter emulatedPosition
@@ -11186,9 +11226,12 @@ interface XRSession : EventTarget
     getter onselectstart
     getter onvisibilitychange
     getter renderState
+    getter trackedAnchors
     getter visibilityState
+    getter worldTrackingState
     method cancelAnimationFrame
     method constructor
+    method createAnchor
     method end
     method requestAnimationFrame
     method requestHitTest
@@ -11196,6 +11239,7 @@ interface XRSession : EventTarget
     method requestHitTestSourceForTransientInput
     method requestReferenceSpace
     method updateRenderState
+    method updateWorldTrackingState
     setter onend
     setter oninputsourceschange
     setter onselect
@@ -11245,6 +11289,14 @@ interface XRWebGLLayer
     getter ignoreDepthValues
     method constructor
     method getViewport
+interface XRWorldInformation
+    attribute @@toStringTag
+    getter detectedPlanes
+    method constructor
+interface XRWorldTrackingState
+    attribute @@toStringTag
+    getter planeDetectionState
+    method constructor
 interface XSLTProcessor
     attribute @@toStringTag
     method clearParameters

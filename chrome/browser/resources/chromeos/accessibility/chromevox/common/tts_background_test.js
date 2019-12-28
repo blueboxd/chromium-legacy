@@ -146,3 +146,19 @@ SYNC_TEST_F(
           'Please do the shopping at 3 a thing came up at work',
           preprocess('Please do the shopping at 3 a thing came up at work'));
     });
+
+SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'AnnounceCapitalLetters', function() {
+  var tts = new TtsBackground(false);
+  var preprocess = tts.preprocess.bind(tts);
+
+  assertEquals('A', preprocess('A'));
+
+  // Only announce capital for solo capital letters.
+  localStorage['capitalStrategy'] = 'announceCapitals';
+  assertEquals('Cap A', preprocess('A'));
+  assertEquals('Cap Z', preprocess('Z'));
+
+  // Do not announce capital for the following inputs.
+  assertEquals('BB', preprocess('BB'));
+  assertEquals('A.', preprocess('A.'));
+});

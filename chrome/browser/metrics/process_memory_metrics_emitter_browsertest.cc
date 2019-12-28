@@ -467,14 +467,14 @@ class ProcessMemoryMetricsEmitterTest
   // Create an barebones extension with a background page for the given name.
   const Extension* CreateExtension(const std::string& name) {
     auto dir = std::make_unique<TestExtensionDir>();
-    dir->WriteManifestWithSingleQuotes(
-        base::StringPrintf("{"
-                           "'name': '%s',"
-                           "'version': '1',"
-                           "'manifest_version': 2,"
-                           "'background': {'page': 'bg.html'}"
-                           "}",
-                           name.c_str()));
+    constexpr char kManifestTemplate[] =
+        R"({
+             "name": "%s",
+             "version": "1",
+             "manifest_version": 2,
+             "background": {"page": "bg.html"}
+           })";
+    dir->WriteManifest(base::StringPrintf(kManifestTemplate, name.c_str()));
     dir->WriteFile(FILE_PATH_LITERAL("bg.html"), "");
 
     const Extension* extension = LoadExtension(dir->UnpackedPath());
@@ -485,15 +485,17 @@ class ProcessMemoryMetricsEmitterTest
 
   const Extension* CreateHostedApp(const std::string& name,
                                    const GURL& app_url) {
-    std::unique_ptr<TestExtensionDir> dir(new TestExtensionDir);
-    dir->WriteManifestWithSingleQuotes(base::StringPrintf(
-        "{"
-        "'name': '%s',"
-        "'version': '1',"
-        "'manifest_version': 2,"
-        "'app': {'urls': ['%s'], 'launch': {'web_url': '%s'}}"
-        "}",
-        name.c_str(), app_url.spec().c_str(), app_url.spec().c_str()));
+    auto dir = std::make_unique<TestExtensionDir>();
+    constexpr char kManifestTemplate[] =
+        R"({
+             "name": "%s",
+             "version": "1",
+             "manifest_version": 2,
+             "app": {"urls": ["%s"], "launch": {"web_url": "%s"}}
+           })";
+    dir->WriteManifest(base::StringPrintf(kManifestTemplate, name.c_str(),
+                                          app_url.spec().c_str(),
+                                          app_url.spec().c_str()));
 
     const Extension* extension = LoadExtension(dir->UnpackedPath());
     EXPECT_TRUE(extension);

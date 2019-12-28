@@ -591,7 +591,7 @@
 <translation id="5487521232677179737">清除資料</translation>
 <translation id="5494752089476963479">封鎖干擾性或誤導性的網站廣告</translation>
 <translation id="5500777121964041360">你所在的地區可能不支援這項功能</translation>
-<translation id="5505264765875738116">不允許網站要求傳送通知給你</translation>
+<translation id="5505264765875738116">網站無法要求傳送通知給你</translation>
 <translation id="5512137114520586844">這個帳戶受 <ph name="PARENT_NAME" /> 管理。</translation>
 <translation id="5514904542973294328">裝置管理員已停用</translation>
 <translation id="5515439363601853141">解鎖即可查看你的密碼</translation>
@@ -739,7 +739,7 @@
 <translation id="6545864417968258051">藍牙掃描</translation>
 <translation id="6560414384669816528">使用 Sogou 搜尋</translation>
 <translation id="656065428026159829">顯示更多</translation>
-<translation id="6561560012278703671">使用低擾模式 (禁止網站顯示通知，以免干擾)</translation>
+<translation id="6561560012278703671">使用低擾式通知 (禁止網站顯示通知，以免干擾)</translation>
 <translation id="6566259936974865419">Chrome 為你節省了 <ph name="GIGABYTES" /> GB</translation>
 <translation id="6573096386450695060">一律允許</translation>
 <translation id="6573431926118603307">您在其他裝置上透過 Chrome 開啟的分頁會顯示在這裡。</translation>

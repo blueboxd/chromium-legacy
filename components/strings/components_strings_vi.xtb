@@ -722,6 +722,7 @@
 <translation id="4340982228985273705">Máy tính này không được coi là máy tính do doanh nghiệp quản lý, vì vậy, chính sách này chỉ có thể tự động cài đặt các tiện ích được lưu trữ trên Cửa hàng Chrome trực tuyến. URL cập nhật Cửa hàng Chrome trực tuyến là "<ph name="CWS_UPDATE_URL" />".</translation>
 <translation id="4346197816712207223">Thẻ tín dụng được chấp nhận</translation>
 <translation id="4346833872170306413">Roc-16K</translation>
+<translation id="4349531505348777662">Bạn vừa nhập mật khẩu vào một trang web lừa đảo. Chrome khuyên bạn nên truy cập vào <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> và các trang web khác mà bạn dùng mật khẩu này rồi đổi mật khẩu ngay bây giờ.</translation>
 <translation id="4356973930735388585">Những kẻ tấn công trên trang web này có thể tìm cách cài đặt các chương trình nguy hiểm vào máy tính của bạn. Các chương trình này sẽ đánh cắp hoặc xóa thông tin của bạn (ví dụ: ảnh, mật khẩu, thư và thẻ tín dụng).</translation>
 <translation id="4358059973562876591">Các mẫu bạn đã chỉ định có thể không được áp dụng do lỗi liên quan đến chính sách DnsOverHttpsMode.</translation>
 <translation id="4358461427845829800">Quản lý phương thức thanh toán...</translation>
@@ -1250,6 +1251,7 @@
 <translation id="6970216967273061347">Quận</translation>
 <translation id="6973656660372572881">Cả hai máy chủ proxy cố định và URL tập lệnh .pac đều được chỉ định.</translation>
 <translation id="6973932557599545801">Rất tiếc, tôi không thể trợ giúp được nữa. Bạn vui lòng tự thực hiện việc này.</translation>
+<translation id="6975012522936652259">Bạn vừa nhập mật khẩu vào một trang web lừa đảo. Chromium khuyên bạn nên truy cập vào <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> và các trang web khác mà bạn dùng mật khẩu này rồi đổi mật khẩu ngay bây giờ.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Tắt tiếng (mặc định)</translation>
 <translation id="6989763994942163495">Hiển thị cài đặt nâng cao...</translation>
@@ -1381,6 +1383,7 @@ Thông tin chi tiết bổ sung:
 <translation id="7567204685887185387">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này có thể đã bị gian lận khi phát hành. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
 <translation id="7569952961197462199">Xóa thẻ tín dụng khỏi Chrome?</translation>
 <translation id="7569983096843329377">Đen</translation>
+<translation id="7575207903026901870">Nút Xóa đề xuất, nhấn Enter để xóa nội dung đề xuất này</translation>
 <translation id="7578104083680115302">Thanh toán nhanh trên các trang web và ứng dụng trong mọi thiết bị nhờ sử dụng thẻ bạn đã lưu với Google.</translation>
 <translation id="7592362899630581445">Chứng chỉ của máy chủ vi phạm hạn chế tên.</translation>
 <translation id="7598391785903975535">Dưới <ph name="UPPER_ESTIMATE" /></translation>
@@ -1627,6 +1630,7 @@ Thông tin chi tiết bổ sung:
 <translation id="8891727572606052622">Chế độ proxy không hợp lệ.</translation>
 <translation id="8903921497873541725">Phóng to</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="890493561996401738">Nút Xóa đề xuất, nhấn Enter để xóa, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Bạn đã chuyển sang chế độ ẩn danh</translation>
 <translation id="8912362522468806198">Tài khoản Google</translation>
 <translation id="8918231688545606538">Đây là trang đáng ngờ</translation>

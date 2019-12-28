@@ -648,14 +648,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, AltEnter) {
   ASSERT_NO_FATAL_FAILURE(WaitForTabOpenOrClose(tab_count + 1));
 }
 
-// TODO(https://crbug.com/1030551): This test flakily times out on ASAN and
-// TSAN.
-#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
-#define MAYBE_EnterToSearch DISABLED_EnterToSearch
-#else
-#define MAYBE_EnterToSearch EnterToSearch
-#endif
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_EnterToSearch) {
+// TODO(https://crbug.com/1030551): This test flakily times out.
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DISABLED_EnterToSearch) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
   OmniboxPopupModel* popup_model = omnibox_view->model()->popup_model();

@@ -720,6 +720,7 @@
 <translation id="4340982228985273705">Acest computer nu este detectat ca fiind gestionat de companie, deci politica poate instala automat doar extensiile găzduite în Magazinul web Chrome. Adresa URL pentru actualizare din Magazinul web Chrome este „<ph name="CWS_UPDATE_URL" />”.</translation>
 <translation id="4346197816712207223">Carduri de credit acceptate</translation>
 <translation id="4346833872170306413">Roc-16K</translation>
+<translation id="4349531505348777662">Ai introdus parola pe un site înșelător. Chrome recomandă să accesezi <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> și alte site-uri pe care folosești această parolă și să o schimbi acum.</translation>
 <translation id="4356973930735388585">Atacatorii de pe acest site pot încerca să instaleze programe periculoase pe computerul tău, care să îți fure sau să îți șteargă informațiile (de exemplu, fotografiile, parolele, mesajele sau informațiile despre cardurile de credit).</translation>
 <translation id="4358059973562876591">Șabloanele specificate nu pot fi aplicate din cauza unei erori legate de politica DnsOverHttpsMode.</translation>
 <translation id="4358461427845829800">Gestionează metodele de plată...</translation>
@@ -1248,6 +1249,7 @@
 <translation id="6970216967273061347">Județ</translation>
 <translation id="6973656660372572881">Sunt specificate atât servere proxy fixe, cât și o adresă URL pentru scripturi .pac.</translation>
 <translation id="6973932557599545801">Nu te mai pot ajuta. Continuă personal.</translation>
+<translation id="6975012522936652259">Ai introdus parola pe un site înșelător. Chromium recomandă să accesezi <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> și alte site-uri pe care folosești această parolă și să o schimbi acum.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Dezactivează sunetul (prestabilit)</translation>
 <translation id="6989763994942163495">Afișează setările avansate...</translation>
@@ -1379,6 +1381,7 @@ Detalii suplimentare:
 <translation id="7567204685887185387">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; este posibil ca certificatul său de securitate să fi fost emis fraudulos. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="7569952961197462199">Elimini cardul de credit din Chrome?</translation>
 <translation id="7569983096843329377">Negru</translation>
+<translation id="7575207903026901870">Butonul Elimină sugestia, apasă pe Enter pentru a elimina această sugestie</translation>
 <translation id="7578104083680115302">Plătește rapid pe site-uri și în aplicații pe diferite dispozitive folosind cardurile pe care le-ai salvat pe Google.</translation>
 <translation id="7592362899630581445">Certificatul serverului încalcă limitările privind numele.</translation>
 <translation id="7598391785903975535">Mai puțin de <ph name="UPPER_ESTIMATE" /></translation>
@@ -1625,6 +1628,7 @@ Detalii suplimentare:
 <translation id="8891727572606052622">Mod proxy nevalid.</translation>
 <translation id="8903921497873541725">Mărește</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="890493561996401738">Butonul Elimină sugestia, apasă pe Enter pentru a elimina, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Ai trecut în modul incognito</translation>
 <translation id="8912362522468806198">Contul Google</translation>
 <translation id="8918231688545606538">Această pagină este suspectă</translation>

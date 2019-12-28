@@ -27,20 +27,15 @@
 <link rel="import" href="sync_controls.html">
 
 <if expr="chromeos">
-<link rel="import" href="account_manager.html">
 <link rel="import" href="account_manager_browser_proxy.html">
 <link rel="import" href="change_picture.html">
 <link rel="import" href="chrome://resources/cr_elements/chromeos/cr_picture/cr_png_behavior.html">
-<link rel="import" href="fingerprint_list.html">
-<link rel="import" href="kerberos_accounts.html">
-<link rel="import" href="lock_screen.html">
-<link rel="import" href="lock_state_behavior.html">
-<link rel="import" href="users_page.html">
 <link rel="import" href="../parental_controls_page/parental_controls_page.html">
 </if>
 <if expr="not chromeos">
 <link rel="import" href="chrome://resources/cr_elements/cr_toast/cr_toast.html">
 <link rel="import" href="import_data_dialog.html">
+<link rel="import" href="manage_profile.html">
 </if>
 
 <dom-module id="settings-people-page">
@@ -150,10 +145,10 @@
                 </cr-icon-button>
 </if>
 <if expr="chromeos">
-                <cr-icon-button class$="[[profileRowIconClass_]]"
+                <cr-icon-button class="icon-external"
                     id="profile-subpage-arrow"
                     hidden="[[!isProfileActionable_]]"
-                    aria-label$="[[profileRowIconAriaLabel_]]"
+                    aria-label="$i18n{accountManagerSubMenuLabel}"
                     aria-describedby="profile-name"></cr-icon-button>
 </if>
               </div>
@@ -224,39 +219,9 @@
 </if>
 
 <if expr="chromeos">
-        <cr-link-row id="lock-screen-subpage-trigger" class="hr"
-            on-click="onConfigureLockTap_"
-            label="[[selectLockScreenTitleString(hasPinLogin)]]"
-            sub-label="[[getPasswordState_(hasPin,
-                prefs.settings.enable_screen_lock.value)]]"
-            role-description="$i18n{subpageArrowRoleDescription}"
-            hidden="[[!pageVisibility.people.lockScreen]]"></cr-link-row>
-
-        <template is="dom-if" if="[[pageVisibility.people.googleAccounts]]">
-          <cr-link-row id="account-manager-subpage-trigger" class="hr"
-              on-click="onAccountManagerTap_"
-              label="$i18n{accountManagerSubMenuLabel}"
-              role-description="$i18n{subpageArrowRoleDescription}">
-          </cr-link-row>
-        </template>
         <template is="dom-if" if="[[showParentalControls_]]">
           <settings-parental-controls-page>
           </settings-parental-controls-page>
-        </template>
-        <cr-link-row id="manage-other-people-subpage-trigger"
-            label="$i18n{manageOtherPeople}" on-click="onManageOtherPeople_"
-            role-description="$i18n{subpageArrowRoleDescription}"
-            hidden="[[!pageVisibility.people.manageUsers]]">
-        </cr-link-row>
-
-        <template is="dom-if" if="[[pageVisibility.people.kerberosAccounts]]">
-          <cr-link-row id="kerberos-accounts-subpage-trigger" class="hr"
-              on-click="onKerberosAccountsTap_"
-              label="$i18n{kerberosAccountsSubMenuLabel}"
-              role-description="$i18n{subpageArrowRoleDescription}">
-            <cr-policy-indicator indicator-type="userPolicy">
-            </cr-policy-indicator>
-          </cr-link-row>
         </template>
 </if>
 
@@ -292,60 +257,12 @@
       </template>
 
 <if expr="chromeos">
-      <template is="dom-if" if="[[pageVisibility.people.lockScreen]]">
-        <template is="dom-if" route-path="/lockScreen">
-          <settings-subpage
-              page-title="[[selectLockScreenTitleString(hasPinLogin)]]"
-              associated-control="[[$$('#lock-screen-subpage-trigger')]]">
-            <settings-lock-screen
-                prefs="{{prefs}}" auth-token="{{authToken_}}">
-            </settings-lock-screen>
-          </settings-subpage>
-        </template>
-        <template is="dom-if" if="[[fingerprintUnlockEnabled_]]">
-          <template is="dom-if" route-path="/lockScreen/fingerprint" no-search>
-            <settings-subpage page-title="$i18n{lockScreenFingerprintTitle}">
-              <settings-fingerprint-list auth-token="[[authToken_]]">
-              </settings-fingerprint-list>
-            </settings-subpage>
-          </template>
-        </template>
-      </template>
-      <template is="dom-if" if="[[pageVisibility.people.manageUsers]]">
-        <template is="dom-if" route-path="/accounts">
-          <settings-subpage
-              associated-control=
-                  "[[$$('#manage-other-people-subpage-trigger')]]"
-              page-title="$i18n{manageOtherPeople}">
-            <settings-users-page prefs="{{prefs}}">
-            </settings-users-page>
-          </settings-subpage>
-        </template>
-      </template>
       <template is="dom-if" route-path="/changePicture">
         <settings-subpage
           associated-control="[[$$('#picture-subpage-trigger')]]"
           page-title="$i18n{changePictureTitle}">
           <settings-change-picture></settings-change-picture>
         </settings-subpage>
-      </template>
-      <template is="dom-if" if="[[pageVisibility.people.googleAccounts]]">
-        <template is="dom-if" route-path="/accountManager">
-          <settings-subpage
-              associated-control="[[$$('#account-manager-subpage-trigger')]]"
-              page-title="$i18n{accountManagerPageTitle}">
-            <settings-account-manager></settings-account-manager>
-          </settings-subpage>
-        </template>
-      </template>
-      <template is="dom-if" if="[[pageVisibility.people.kerberosAccounts]]">
-        <template is="dom-if" route-path="/kerberosAccounts">
-          <settings-subpage
-              associated-control="[[$$('#kerberos-accounts-subpage-trigger')]]"
-              page-title="$i18n{kerberosAccountsPageTitle}">
-            <settings-kerberos-accounts></settings-kerberos-accounts>
-          </settings-subpage>
-        </template>
       </template>
 </if>
 <if expr="not chromeos">

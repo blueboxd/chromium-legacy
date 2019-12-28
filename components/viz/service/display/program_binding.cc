@@ -164,11 +164,9 @@ void ProgramKey::SetColorTransform(const gfx::ColorTransform* transform) {
   color_transform_ = nullptr;
   if (transform->IsIdentity()) {
     color_conversion_mode_ = COLOR_CONVERSION_MODE_NONE;
-  } else if (transform->CanGetShaderSource()) {
+  } else {
     color_conversion_mode_ = COLOR_CONVERSION_MODE_SHADER;
     color_transform_ = transform;
-  } else {
-    color_conversion_mode_ = COLOR_CONVERSION_MODE_LUT;
   }
 }
 

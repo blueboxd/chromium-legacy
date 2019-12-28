@@ -702,6 +702,7 @@
 <translation id="4340982228985273705">Deze computer is niet gedetecteerd als een zakelijk beheerde computer. Overeenkomstig het beleid kunnen alleen automatisch extensies worden geïnstalleerd die worden gehost in de Chrome Web Store. De update-URL van de Chrome Web Store is <ph name="CWS_UPDATE_URL" />.</translation>
 <translation id="4346197816712207223">Geaccepteerde creditcards</translation>
 <translation id="4346833872170306413">Roc-16K</translation>
+<translation id="4349531505348777662">Je hebt zojuist je wachtwoord opgegeven op een misleidende site. Chrome raadt je aan naar <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> en andere sites te gaan waarop je dit wachtwoord hebt gebruikt en je wachtwoord nu te wijzigen.</translation>
 <translation id="4356973930735388585">Cybercriminelen op deze site proberen mogelijk gevaarlijke programma's op je computer te installeren waarmee je gegevens worden gestolen of verwijderd (bijvoorbeeld foto's, wachtwoorden, berichten en creditcards).</translation>
 <translation id="4358059973562876591">De gespecificeerde templates worden misschien niet toegepast door een fout met het beleid DnsOverHttpsMode.</translation>
 <translation id="4358461427845829800">Betaalmethoden beheren...</translation>
@@ -1228,6 +1229,7 @@
 <translation id="6970216967273061347">District</translation>
 <translation id="6973656660372572881">Zowel vaste proxyservers als een pac-script-URL worden gespecificeerd.</translation>
 <translation id="6973932557599545801">Ik kan je helaas niet helpen. Ga zelf verder.</translation>
+<translation id="6975012522936652259">Je hebt zojuist je wachtwoord opgegeven op een misleidende site. Chromium raadt je aan naar <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> en andere sites te gaan waarop je dit wachtwoord hebt gebruikt en je wachtwoord nu te wijzigen.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Dempen (standaard)</translation>
 <translation id="6989763994942163495">Geavanceerde instellingen weergeven...</translation>
@@ -1359,6 +1361,7 @@ Aanvullende informatie:
 <translation id="7567204685887185387">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server is mogelijk frauduleus verstrekt. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="7569952961197462199">Creditcard verwijderen uit Chrome?</translation>
 <translation id="7569983096843329377">Zwart</translation>
+<translation id="7575207903026901870">Suggestieknop verwijderen, druk op Enter om deze suggestie te verwijderen</translation>
 <translation id="7578104083680115302">Betaal op verschillende apparaten snel op sites en in apps met passen die je hebt opgeslagen via Google.</translation>
 <translation id="7592362899630581445">Het certificaat van de server is in strijd met naambeperkingen.</translation>
 <translation id="7598391785903975535">Minder dan <ph name="UPPER_ESTIMATE" /></translation>
@@ -1604,6 +1607,7 @@ Aanvullende informatie:
 <translation id="8891727572606052622">Ongeldige proxymodus.</translation>
 <translation id="8903921497873541725">Inzoomen</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="890493561996401738">Suggestieknop verwijderen, druk op Enter om te verwijderen, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Je bent incognito</translation>
 <translation id="8912362522468806198">Google-account</translation>
 <translation id="8918231688545606538">Deze pagina is verdacht</translation>

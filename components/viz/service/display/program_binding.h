@@ -305,10 +305,6 @@ class VIZ_SERVICE_EXPORT Program : public ProgramBindingBase {
   int a_texture_location() const {
     return fragment_shader_.a_texture_location_;
   }
-  int lut_texture_location() const {
-    return fragment_shader_.lut_texture_location_;
-  }
-  int lut_size_location() const { return fragment_shader_.lut_size_location_; }
   int resource_multiplier_location() const {
     return fragment_shader_.resource_multiplier_location_;
   }

@@ -94,6 +94,13 @@ OptionsPage.init = function() {
       }
     }
   }
+  if (localStorage['capitalStrategy']) {
+    for (var i = 0, opt; opt = $('capitalStrategy').options[i]; ++i) {
+      if (opt.id == localStorage['capitalStrategy']) {
+        opt.setAttribute('selected', '');
+      }
+    }
+  }
 
   chrome.commandLinePrivate.hasSwitch(
       'enable-experimental-accessibility-chromevox-language-switching',

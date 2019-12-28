@@ -170,6 +170,10 @@ base::TimeDelta ThreadHeapStatsCollector::estimated_marking_time() const {
   return base::TimeDelta::FromSecondsD(estimated_marking_time_in_seconds());
 }
 
+base::TimeDelta ThreadHeapStatsCollector::Event::roots_marking_time() const {
+  return scope_data[kVisitRoots];
+}
+
 base::TimeDelta ThreadHeapStatsCollector::Event::incremental_marking_time()
     const {
   return scope_data[kIncrementalMarkingStartMarking] +

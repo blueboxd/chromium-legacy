@@ -12,7 +12,7 @@ enum XRPlaneOrientation {
 [
     SecureContext,
     Exposed=Window,
-    RuntimeEnabled=WebXRPlaneDetection
+    RuntimeEnabled=WebXRIncubations
 ]
 interface XRPlane {
     readonly attribute XRSpace planeSpace;
@@ -20,5 +20,5 @@ interface XRPlane {
     readonly attribute XRPlaneOrientation? orientation;
     readonly attribute DOMHighResTimeStamp lastChangedTime;
 
-    [RuntimeEnabled=WebXRAnchors, CallWith=ScriptState, RaisesException] Promise<XRAnchor> createAnchor(XRRigidTransform initial_pose, XRSpace space);
+    [CallWith=ScriptState, RaisesException] Promise<XRAnchor> createAnchor(XRRigidTransform initial_pose, XRSpace space);
 };

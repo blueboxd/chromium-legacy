@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/ui/browser.h"
@@ -12,6 +14,7 @@
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -28,6 +31,7 @@ class ExtensionBlockedActionsBubbleTest
   void ShowUi(const std::string& name) override;
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   base::AutoReset<bool> disable_toolbar_animations_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionBlockedActionsBubbleTest);
@@ -36,7 +40,11 @@ class ExtensionBlockedActionsBubbleTest
 ExtensionBlockedActionsBubbleTest::ExtensionBlockedActionsBubbleTest()
     : disable_toolbar_animations_(
           &ToolbarActionsBar::disable_animations_for_testing_,
-          true) {}
+          true) {
+  // This code path only works for the old toolbar. The new toolbar is
+  // exercised in extensions_menu_view_browsertest.cc.
+  scoped_feature_list_.InitAndDisableFeature(features::kExtensionsToolbarMenu);
+}
 ExtensionBlockedActionsBubbleTest::~ExtensionBlockedActionsBubbleTest() =
     default;
 

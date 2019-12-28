@@ -207,6 +207,10 @@ TtsBackground.ALLOWED_PROPERTIES_ = [
 TtsBackground.prototype.speak = function(textString, queueMode, properties) {
   goog.base(this, 'speak', textString, queueMode, properties);
 
+  // |textString| gets manipulated throughout this function. Save the original
+  // value for functions that may need it.
+  var originalTextString = textString;
+
   if (this.ttsProperties[AbstractTts.VOLUME] === 0) {
     return this;
   }
@@ -258,7 +262,7 @@ TtsBackground.prototype.speak = function(textString, queueMode, properties) {
   this.speakUsingQueue_(utterance, queueMode);
   // Attempt to queue phonetic speech with property['delay']. This ensures that
   // phonetic hints are delayed when we process them.
-  this.pronouncePhonetically_(textString, properties);
+  this.pronouncePhonetically_(originalTextString, properties);
   return this;
 };
 

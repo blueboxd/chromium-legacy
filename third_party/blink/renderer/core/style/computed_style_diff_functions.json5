@@ -388,7 +388,7 @@
         fields_to_diff: ["Mask", "MaskBoxImage"],
     },
     {
-        name: "UpdatePropertySpecificDifferencesNeedsRecomputeOverflow",
+        name: "UpdatePropertySpecificDifferencesNeedsRecomputeVisualOverflow",
         predicates_to_test: [
           {
             predicate: "a.BoxShadowDataEquivalent(b)",

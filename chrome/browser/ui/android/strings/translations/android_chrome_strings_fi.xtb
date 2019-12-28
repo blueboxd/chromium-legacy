@@ -591,7 +591,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5487521232677179737">Poista tiedot</translation>
 <translation id="5494752089476963479">Estä häiritseviä tai harhaanjohtavia mainoksia näyttävien sivustojen mainokset</translation>
 <translation id="5500777121964041360">Ei ole välttämättä käytettävissä asuinpaikassasi</translation>
-<translation id="5505264765875738116">Sivustot eivät saa pyytää lupaa lähettää ilmoituksia</translation>
+<translation id="5505264765875738116">Sivustot eivät saa pyytää lupaa ilmoitusten lähettämiseen</translation>
 <translation id="5512137114520586844">Tätä tiliä hallinnoi <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Laitteen järjestelmänvalvojan estämä</translation>
 <translation id="5515439363601853141">Avaa lukitus nähdäksesi salasanan</translation>

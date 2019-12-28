@@ -62,7 +62,7 @@
 <translation id="292495055542441795">फ़ुलस्‍क्रीन टॉगल करें</translation>
 <translation id="3020183492814296499">शॉर्टकट</translation>
 <translation id="3084301071537457911">अपनी शेल्फ़ पर अगला आइटम हाइलाइट करें</translation>
-<translation id="309173601632226815">अपनी अलमारी पर लॉन्चर बटन हाइलाइट करें</translation>
+<translation id="309173601632226815">अपनी शेल्फ़ पर लॉन्चर बटन हाइलाइट करें</translation>
 <translation id="3105917916468784889">स्क्रीनशॉट लें</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">पता बार को फ़ोकस करें</translation>
@@ -142,14 +142,14 @@
 <translation id="6359811074279051077"><ph name="MODIFIER" /><ph name="SEPARATOR" /><ph name="KEY" /></translation>
 <translation id="6395172954772765143">पंक्‍ति के आखिर तक का लेख चुनें</translation>
 <translation id="6419237577786823024"><ph name="CTRL1" /><ph name="SEPARATOR1" /><ph name="LEFT" /> या <ph name="CTRL2" /><ph name="SEPARATOR2" /><ph name="RIGHT" /></translation>
-<translation id="6425378783626925378">अपनी अलमारी पर 1-8 आइकॉन पर क्लिक करें</translation>
+<translation id="6425378783626925378">अपनी शेल्फ़ पर 1 से 8 तक आइकॉन पर क्लिक करें</translation>
 <translation id="6435207348963613811">अपनी शेल्‍फ़ पर पिछला आइटम हाइलाइट करें</translation>
 <translation id="6445033640292336367">टैब को उसकी मूल जगह पर वापस ले जाएं</translation>
 <translation id="6474744297082284761">ज़ूम घटाएं (डॉक किए जाने या फ़ुलस्क्रीन पर सामग्री को बड़ा दिखाने की सुविधा चालू किए जाने पर)</translation>
 <translation id="649811797655257835">फ़ाइल चुनें, फिर <ph name="SPACE" /> दबाएं</translation>
 <translation id="6556040137485212400">उस विंडो को खोलें जिसका सबसे लंबे समय से इस्तेमाल नहीं किया गया है</translation>
 <translation id="666343722268997814">हाइलाइट किए गए आइटम के लिए राइट-क्लिक मेन्यू खोलें</translation>
-<translation id="6671538777808758331">अपनी खोज के लिए अगले मिलान पर जाएं</translation>
+<translation id="6671538777808758331">अपनी खोज के अगले मिलान पर जाएं</translation>
 <translation id="6681606577947445973"><ph name="REFRESH" /> या <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="R" /></translation>
 <translation id="6690765639083431875">विंडो बाईं ओर डॉक करें</translation>
 <translation id="6692847073476874842">Files ऐप्लिकेशन में किसी फ़ाइल की झलक देखें</translation>

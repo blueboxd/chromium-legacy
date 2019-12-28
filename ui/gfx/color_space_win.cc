@@ -122,7 +122,6 @@ DXVA2_ExtendedFormat ColorSpaceWin::GetExtendedFormat(
     case gfx::ColorSpace::TransferID::BT709_APPLE:
     case gfx::ColorSpace::TransferID::GAMMA18:
     case gfx::ColorSpace::TransferID::GAMMA24:
-    case gfx::ColorSpace::TransferID::SMPTEST2084_NON_HDR:
     case gfx::ColorSpace::TransferID::CUSTOM:
     case gfx::ColorSpace::TransferID::INVALID:
       // Not handled

@@ -7,7 +7,7 @@
 [
     SecureContext,
     Exposed=Window,
-    RuntimeEnabled=WebXRPlaneDetection
+    RuntimeEnabled=WebXRIncubations
 ]
 interface XRPlaneSet {
   readonly setlike<XRPlane>;

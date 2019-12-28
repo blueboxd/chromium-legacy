@@ -3702,16 +3702,6 @@
     "expiry_milestone": 82
   },
   {
-    "name": "webxr-anchors",
-    "owners": [ "//third_party/blink/renderer/modules/xr/OWNERS", "xr-dev@chromium.org" ],
-    "expiry_milestone": 82
-  },
-  {
-    "name": "webxr-ar-dom-overlay",
-    "owners": [ "//third_party/blink/renderer/modules/xr/OWNERS", "xr-dev@chromium.org" ],
-    "expiry_milestone": 81
-  },
-  {
     "name": "webxr-ar-module",
     "owners": [ "//third_party/blink/renderer/modules/xr/OWNERS", "xr-dev@chromium.org" ],
     "expiry_milestone": 82
@@ -3722,13 +3712,13 @@
     "expiry_milestone": 82
   },
   {
-    "name": "webxr-orientation-sensor-device",
-    "owners": [ "//device/vr/OWNERS", "xr-dev@chromium.org" ],
+    "name": "webxr-incubations",
+    "owners": [ "//third_party/blink/renderer/modules/xr/OWNERS", "xr-dev@chromium.org" ],
     "expiry_milestone": 82
   },
   {
-    "name": "webxr-plane-detection",
-    "owners": [ "//third_party/blink/renderer/modules/xr/OWNERS", "xr-dev@chromium.org" ],
+    "name": "webxr-orientation-sensor-device",
+    "owners": [ "//device/vr/OWNERS", "xr-dev@chromium.org" ],
     "expiry_milestone": 82
   },
   {

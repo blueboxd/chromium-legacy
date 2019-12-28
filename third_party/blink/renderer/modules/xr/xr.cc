@@ -117,7 +117,7 @@ base::Optional<device::mojom::XRSessionFeature> StringToXRSessionFeature(
     return device::mojom::XRSessionFeature::REF_SPACE_BOUNDED_FLOOR;
   } else if (feature_string == "unbounded") {
     return device::mojom::XRSessionFeature::REF_SPACE_UNBOUNDED;
-  } else if (RuntimeEnabledFeatures::WebXRARDOMOverlayEnabled(doc) &&
+  } else if (RuntimeEnabledFeatures::WebXRIncubationsEnabled(doc) &&
              feature_string == "dom-overlay-for-handheld-ar") {
     return device::mojom::XRSessionFeature::DOM_OVERLAY_FOR_HANDHELD_AR;
   }

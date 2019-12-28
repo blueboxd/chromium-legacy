@@ -1470,7 +1470,7 @@ crbug.com/6606 external/wpt/mathml/relations/css-styling/displaystyle-014.html [
 crbug.com/6606 external/wpt/mathml/relations/css-styling/displaystyle-015.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/displaystyle-1.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/displaystyle-2.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/relations/css-styling/ignored-properties-001.html [ Failure ]
+crbug.com/6606 external/wpt/mathml/relations/css-styling/ignored-properties-001.html [ Failure Timeout ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/lengths-1.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/lengths-2.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-auto.html [ Failure ]
@@ -6146,3 +6146,10 @@ crbug.com/1036626 virtual/threaded/http/tests/devtools/tracing/tracing-record-in
 crbug.com/1036054 [ Mac10.13 ] virtual/threaded/fast/scroll-snap/snap-to-area-with-fractional-offset.html [ Pass Failure ]
 crbug.com/960944 animations/web-animations/animation-state-changes-positive-playback-rate.html [ Pass Failure ]
 crbug.com/1033381 synthetic_gestures/smooth-scroll-tiny-delta.html [ Pass Crash ]
+
+# Sheriff 2019-12-27
+crbug.com/1038037 [ Win ] virtual/gpu-rasterization/images/exif-orientation-css.html [ Pass Failure ]
+crbug.com/1038037 [ Win ] virtual/gpu-rasterization/images/exif-orientation-none-css.html [ Pass Failure ]
+crbug.com/1037798 [ Win ] virtual/gpu-rasterization/images/exif-orientation-image-document.html [ Pass Failure ]
+crbug.com/1038091 [ Win ] virtual/gpu-rasterization/images/jpeg-yuv-image-decoding.html [ Pass Failure ]
+crbug.com/1038139 [ Win ] virtual/gpu-rasterization/images/2-comp.html [ Pass Failure ]

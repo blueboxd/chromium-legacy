@@ -721,6 +721,7 @@
 <translation id="4340982228985273705">Esta computadora no se detectó como una empresa administrada, por lo que la política solo puede instalar automáticamente las extensiones alojadas en Chrome Web Store. La URL de actualización de Chrome Web Store es "<ph name="CWS_UPDATE_URL" />".</translation>
 <translation id="4346197816712207223">Tarjetas de crédito aceptadas</translation>
 <translation id="4346833872170306413">Roc-16K</translation>
+<translation id="4349531505348777662">Ingresaste tu contraseña en un sitio engañoso. Chrome te recomienda cambiar esta contraseña ahora en <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> y otros sitios donde la uses.</translation>
 <translation id="4356973930735388585">Es posible que los atacantes que se encuentren en este sitio intenten instalar programas peligrosos en tu computadora con el fin de robarte información o borrarla (p. ej., fotos, contraseñas, mensajes y tarjetas de crédito).</translation>
 <translation id="4358059973562876591">Debido a un error relacionado con la política DnsOverHttpsMode, es posible que no se apliquen las plantillas que especificaste.</translation>
 <translation id="4358461427845829800">Administrar formas de pago…</translation>
@@ -1249,6 +1250,7 @@
 <translation id="6970216967273061347">Distrito</translation>
 <translation id="6973656660372572881">Se especifican servidores proxy fijos y URL de secuencias de comandos .pac.</translation>
 <translation id="6973932557599545801">No puedo ayudarte. Continúa por tu cuenta.</translation>
+<translation id="6975012522936652259">Ingresaste tu contraseña en un sitio engañoso. Chromium te recomienda cambiar esta contraseña ahora en <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> y otros sitios donde la uses.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Silenciar (predeterminado)</translation>
 <translation id="6989763994942163495">Mostrar configuración avanzada...</translation>
@@ -1380,6 +1382,7 @@ Detalles adicionales:
 <translation id="7567204685887185387">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; el certificado de seguridad podría haberse emitido de forma fraudulenta. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>
 <translation id="7569952961197462199">¿Confirmas que quieres quitar la tarjeta de crédito de Chrome?</translation>
 <translation id="7569983096843329377">Negro</translation>
+<translation id="7575207903026901870">Botón Quitar sugerencia; presiona Intro para quitar esta sugerencia</translation>
 <translation id="7578104083680115302">Paga con rapidez en sitios y apps a través de varios dispositivos con tarjetas que guardaste en Google.</translation>
 <translation id="7592362899630581445">El certificado del servidor no cumple con las restricciones de nombre.</translation>
 <translation id="7598391785903975535">Menos de <ph name="UPPER_ESTIMATE" /></translation>
@@ -1626,6 +1629,7 @@ Detalles adicionales:
 <translation id="8891727572606052622">Modo proxy no válido</translation>
 <translation id="8903921497873541725">Acercar</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="890493561996401738">Botón Quitar sugerencia; presiona Intro para quitarla, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Estás en modo Incógnito</translation>
 <translation id="8912362522468806198">Cuenta de Google</translation>
 <translation id="8918231688545606538">Esta página es sospechosa</translation>

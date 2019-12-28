@@ -722,6 +722,7 @@
 <translation id="4340982228985273705">Denne computer registreres ikke som virksomhedsadministreret, så politikken kan kun automatisk installere udvidelser, der hostes i Chrome Webshop. Opdateringswebadressen til Chrome Webshop er "<ph name="CWS_UPDATE_URL" />".</translation>
 <translation id="4346197816712207223">Accepterede kreditkort</translation>
 <translation id="4346833872170306413">Roc-16K</translation>
+<translation id="4349531505348777662">Du har lige angivet din adgangskode på et vildledende website. Chrome anbefaler, at du straks går til <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> og eventuelle andre websites, hvor du har brugt denne adgangskode, og ændrer den.</translation>
 <translation id="4356973930735388585">Hackere på dette website vil muligvis forsøge at installere skadelige programmer på din computer, som stjæler eller sletter dine oplysninger (f.eks. billeder, adgangskoder, beskeder og kreditkortoplysninger).</translation>
 <translation id="4358059973562876591">De skabeloner, du har angivet, anvendes muligvis ikke på grund af en fejl med politikken DnsOverHttpsMode.</translation>
 <translation id="4358461427845829800">Administrer betalingsmetoder...</translation>
@@ -1250,6 +1251,7 @@
 <translation id="6970216967273061347">Distrikt</translation>
 <translation id="6973656660372572881">Både faste proxyservere og en webadresse for .pac-script angives.</translation>
 <translation id="6973932557599545801">Jeg kan desværre ikke hjælpe. Fortsæt på egen hånd.</translation>
+<translation id="6975012522936652259">Du har lige angivet din adgangskode på et vildledende website. Chromium anbefaler, at du straks går til <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> og eventuelle andre websites, hvor du har brugt denne adgangskode, og ændrer den.</translation>
 <translation id="6979158407327259162">Google Drev</translation>
 <translation id="6979440798594660689">Slå lyden fra (standard)</translation>
 <translation id="6989763994942163495">Vis avancerede indstillinger...</translation>
@@ -1381,6 +1383,7 @@ Yderligere oplysninger:
 <translation id="7567204685887185387">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da sikkerhedscertifikatet er udstedt på ulovlig vis. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="7569952961197462199">Vil du fjerne kreditkortet fra Chrome?</translation>
 <translation id="7569983096843329377">Sort</translation>
+<translation id="7575207903026901870">Knappen Fjern forslag. Tryk på Enter for at fjerne dette forslag.</translation>
 <translation id="7578104083680115302">Betal hurtigt på websites og i apps på alle enheder ved hjælp af kort, du har gemt med Google.</translation>
 <translation id="7592362899630581445">Begrænsningerne for serverens certifikatnavn er overtrådt.</translation>
 <translation id="7598391785903975535">Mindre end <ph name="UPPER_ESTIMATE" /></translation>
@@ -1627,6 +1630,7 @@ Yderligere oplysninger:
 <translation id="8891727572606052622">Ugyldig proxytilstand.</translation>
 <translation id="8903921497873541725">Zoom ind</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="890493561996401738">Knappen Fjern forslag. Tryk på Enter for at fjerne, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Du er i inkognitotilstand</translation>
 <translation id="8912362522468806198">Google-konto</translation>
 <translation id="8918231688545606538">Denne side er mistænkelig</translation>

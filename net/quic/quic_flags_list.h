@@ -433,3 +433,9 @@ QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_create_server_handshaker_in_constructor,
     false)
+
+// If true, the frequency of stream frame coalescing will be logged as
+// QuicSession.CoalesceStreamFrameStatus.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_log_coalesce_stream_frame_frequency,
+          false)

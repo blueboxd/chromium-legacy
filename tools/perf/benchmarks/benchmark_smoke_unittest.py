@@ -71,6 +71,8 @@ def SmokeTestGenerator(benchmark_class, num_pages=1):
       options.pageset_repeat = 1  # For smoke testing only run the page once.
       options.output_formats = ['histograms']
       options.max_values_per_test_case = MAX_VALUES_PER_TEST_CASE
+      results_processor.ProcessOptions(options)
+
       return_code = benchmark_class().Run(options)
       # TODO(crbug.com/1019139): Make 111 be the exit code that means
       # "no stories were run.".

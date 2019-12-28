@@ -520,8 +520,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, ClearOnSignOut) {
 
 // Wallet is not using incremental updates. Make sure existing data gets
 // replaced when synced down.
+// TODO(crbug.com/997786): Test is flaky.
 IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
-                       NewSyncDataShouldReplaceExistingData) {
+                       DISABLED_NewSyncDataShouldReplaceExistingData) {
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
                             kDefaultBillingAddressID),

@@ -707,6 +707,7 @@
 <translation id="4340982228985273705">No ens consta que aquest ordinador estigui gestionat per una empresa. Per tant, la política només pot instal·lar automàticament extensions allotjades a Chrome Web Store. L'URL d'actualització de Chrome Web Store és <ph name="CWS_UPDATE_URL" />.</translation>
 <translation id="4346197816712207223">Targetes de crèdit acceptades</translation>
 <translation id="4346833872170306413">Roc-16K</translation>
+<translation id="4349531505348777662">Acabes d'introduir la contrasenya en un lloc web enganyós. Chrome et recomana que vagis a <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> i a altres llocs web en què utilitzis aquesta contrasenya i que la canviïs ara.</translation>
 <translation id="4356973930735388585">Els atacants d'aquest lloc poden provar d'instal·lar programes perillosos a l'ordinador per robar o suprimir la teva informació (per exemple, les fotos, les contrasenyes, els missatges i les targetes de crèdit).</translation>
 <translation id="4358059973562876591">Pot ser que les plantilles que has especificat no s'apliquin a causa d'un error amb la política DnsOverHttpsMode.</translation>
 <translation id="4358461427845829800">Gestiona les formes de pagament...</translation>
@@ -1234,6 +1235,7 @@
 <translation id="6970216967273061347">Districte</translation>
 <translation id="6973656660372572881">S'especifiquen tant els servidors intermediaris fixos com un URL d'script .pac.</translation>
 <translation id="6973932557599545801">Em sap greu, però no et puc ajudar. Continua pel teu compte.</translation>
+<translation id="6975012522936652259">Acabes d'introduir la contrasenya en un lloc web enganyós. Chromium et recomana que vagis a <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> i a altres llocs web en què utilitzis aquesta contrasenya i que la canviïs ara.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Silencia (opció predeterminada)</translation>
 <translation id="6989763994942163495">Mostra la configuració avançada...</translation>
@@ -1365,6 +1367,7 @@ Detalls addicionals:
 <translation id="7567204685887185387">Aquest servidor no ha pogut comprovar que sigui <ph name="DOMAIN" /> perquè és possible que el seu certificat de seguretat s'hagi emès de manera fraudulenta. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió.</translation>
 <translation id="7569952961197462199">Voleu suprimir la targeta de crèdit de Chrome?</translation>
 <translation id="7569983096843329377">Negre</translation>
+<translation id="7575207903026901870">Botó Suprimeix el suggeriment, prem Retorn per suprimir aquest suggeriment</translation>
 <translation id="7578104083680115302">Agilitzeu els pagaments en llocs i en aplicacions des de qualsevol dispositiu mitjançant les targetes que hàgiu desat a Google.</translation>
 <translation id="7592362899630581445">El certificat del servidor incompleix les restriccions de nom.</translation>
 <translation id="7598391785903975535">Menys de: <ph name="UPPER_ESTIMATE" /></translation>
@@ -1610,6 +1613,7 @@ Detalls addicionals:
 <translation id="8891727572606052622">El mode de servidor intermediari no és vàlid.</translation>
 <translation id="8903921497873541725">Amplia</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="890493561996401738">Botó Suprimeix el suggeriment, prem Retorn per suprimir, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Has passat al mode d'incògnit</translation>
 <translation id="8912362522468806198">Compte de Google</translation>
 <translation id="8918231688545606538">Aquesta pàgina és sospitosa</translation>

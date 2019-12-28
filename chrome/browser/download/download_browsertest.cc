@@ -827,7 +827,7 @@ class DownloadTest : public InProcessBrowserTest {
                  : embedded_test_server()->GetURL(
                        content::SlowDownloadHttpResponse::kUnknownSizeUrl));
     GURL finish_url = embedded_test_server()->GetURL(
-        content::SlowDownloadHttpResponse::kFinishDownloadUrl);
+        content::SlowDownloadHttpResponse::kFinishSlowResponseUrl);
 
     // TODO(ahendrickson) -- |expected_title_in_progress| and
     // |expected_title_finished| need to be checked.
@@ -876,8 +876,9 @@ class DownloadTest : public InProcessBrowserTest {
       return false;
 
     // Check the file contents.
-    size_t file_size = content::SlowDownloadHttpResponse::kFirstDownloadSize +
-                       content::SlowDownloadHttpResponse::kSecondDownloadSize;
+    size_t file_size =
+        content::SlowDownloadHttpResponse::kFirstResponsePartSize +
+        content::SlowDownloadHttpResponse::kSecondResponsePartSize;
     std::string expected_contents(file_size, '*');
     EXPECT_TRUE(VerifyFile(download_path, expected_contents, file_size));
 
@@ -2077,7 +2078,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadHistoryCheck) {
 
   // Finsih the download.
   GURL finish_url = embedded_test_server()->GetURL(
-      content::SlowDownloadHttpResponse::kFinishDownloadUrl);
+      content::SlowDownloadHttpResponse::kFinishSlowResponseUrl);
   ui_test_utils::NavigateToURL(browser(), finish_url);
 
   download_observer->WaitForFinished();
@@ -2107,8 +2108,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadHistoryCheck) {
   EXPECT_GE(end, row1.end_time);
   EXPECT_EQ(0, row1.received_bytes);  // There's no ETag. So the intermediate
                                       // state is discarded.
-  EXPECT_EQ(content::SlowDownloadHttpResponse::kFirstDownloadSize +
-                content::SlowDownloadHttpResponse::kSecondDownloadSize,
+  EXPECT_EQ(content::SlowDownloadHttpResponse::kFirstResponsePartSize +
+                content::SlowDownloadHttpResponse::kSecondResponsePartSize,
             row1.total_bytes);
   EXPECT_EQ(history::DownloadState::INTERRUPTED, row1.state);
   EXPECT_EQ(history::ToHistoryDownloadInterruptReason(

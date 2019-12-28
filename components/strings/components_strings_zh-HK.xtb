@@ -706,6 +706,7 @@
 <translation id="4340982228985273705">系統偵測到此電腦並非由企業管理，因此政策只容許自動安裝來自「Chrome 網上應用程式商店」的擴充程式。「Chrome 網上應用程式商店」的更新網址為「<ph name="CWS_UPDATE_URL" />」。</translation>
 <translation id="4346197816712207223">接受的信用卡</translation>
 <translation id="4346833872170306413">Roc-16K</translation>
+<translation id="4349531505348777662">您剛才在欺詐網站上輸入了密碼。Chrome 建議前往 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 以及其他您使用此密碼的網站，並立即變更密碼。</translation>
 <translation id="4356973930735388585">攻擊者可能會透過此網站試圖在您的電腦上安裝危險程式，藉此竊取或刪除您的資料 (例如相片、密碼、訊息或信用卡資料)。</translation>
 <translation id="4358059973562876591">DnsOverHttpsMode 政策發生錯誤，因此系統無法套用您指定的範本。</translation>
 <translation id="4358461427845829800">管理付款方法…</translation>
@@ -1233,6 +1234,7 @@
 <translation id="6970216967273061347">區</translation>
 <translation id="6973656660372572881">已指定固定的 Proxy 伺服器和 .pac 指令碼網址。</translation>
 <translation id="6973932557599545801">很抱歉，我無法提供協助，請自行繼續。</translation>
+<translation id="6975012522936652259">您剛才在欺詐網站上輸入了密碼。Chromium 建議前往 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 以及其他您使用此密碼的網站，並立即變更密碼。</translation>
 <translation id="6979158407327259162">Google 雲端硬碟</translation>
 <translation id="6979440798594660689">靜音 (預設)</translation>
 <translation id="6989763994942163495">顯示進階設定…</translation>
@@ -1364,6 +1366,7 @@
 <translation id="7567204685887185387">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證或許曾以欺詐方式發行。這可能是因為設定錯誤，或有攻擊者攔截您的連線。</translation>
 <translation id="7569952961197462199">要從 Chrome 中移除信用卡資料嗎？</translation>
 <translation id="7569983096843329377">黑色</translation>
+<translation id="7575207903026901870">移除建議按鈕，㩒一下 Enter 鍵就可以移除呢個建議</translation>
 <translation id="7578104083680115302">在不同的裝置上透過網站和應用程式消費時，使用您儲存在 Google 的信用卡即可快速付款。</translation>
 <translation id="7592362899630581445">伺服器憑證的名稱不符合限制。</translation>
 <translation id="7598391785903975535">小於 <ph name="UPPER_ESTIMATE" /></translation>
@@ -1609,6 +1612,7 @@
 <translation id="8891727572606052622">Proxy 模式無效。</translation>
 <translation id="8903921497873541725">放大</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="890493561996401738">移除建議按鈕，㩒一下 Enter 鍵就可以移除「<ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" />」</translation>
 <translation id="8910670906166981838">您已啟用無痕模式</translation>
 <translation id="8912362522468806198">Google 帳戶</translation>
 <translation id="8918231688545606538">此網頁包含可疑的內容</translation>

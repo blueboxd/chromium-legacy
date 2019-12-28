@@ -903,8 +903,9 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
     diff.SetFilterChanged();
 
   if (ComputedStyleBase::
-          UpdatePropertySpecificDifferencesNeedsRecomputeOverflow(*this, other))
-    diff.SetNeedsRecomputeOverflow();
+          UpdatePropertySpecificDifferencesNeedsRecomputeVisualOverflow(*this,
+                                                                        other))
+    diff.SetNeedsRecomputeVisualOverflow();
 
   if (ComputedStyleBase::UpdatePropertySpecificDifferencesBackdropFilter(*this,
                                                                          other))

@@ -774,7 +774,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="2096715839409389970">Slett informasjonskapsler fra tredjeparter</translation>
 <translation id="2097372108957554726">Du må logge på Chrome for å registrere nye enheter</translation>
 <translation id="2099172618127234427">Du er i ferd med å slå på Chrome OS-feilsøkingsfunksjoner som kommer til å konfigurere sshd daemon og muliggjøre oppstart fra USB-stasjoner.</translation>
-<translation id="2099625543891475722">fysiske kjennetegn, som hvor høy du er</translation>
+<translation id="2099625543891475722">fysiske kjennetegn, for eksempel hvor høy du er</translation>
 <translation id="2099686503067610784">Slette tjenersertifikatet «<ph name="CERTIFICATE_NAME" />»?</translation>
 <translation id="2100273922101894616">Automatisk pålogging</translation>
 <translation id="2101225219012730419">Versjon:</translation>
@@ -2825,7 +2825,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5038863510258510803">Aktiverer …</translation>
 <translation id="5039804452771397117">Tillat</translation>
 <translation id="5042282098504489593">Åpne Innstillinger for å koble <ph name="USB_DEVICE_NAME" /> til Linux</translation>
-<translation id="5043913660911154449">Eller angi PPD for skriveren <ph name="LINK_BEGIN" />Finn ut mer<ph name="LINK_END" /></translation>
+<translation id="5043913660911154449">Eller angi PPD-fil for skriveren <ph name="LINK_BEGIN" />Finn ut mer<ph name="LINK_END" /></translation>
 <translation id="5045550434625856497">Feil passord</translation>
 <translation id="504561833207953641">Åpner i den eksisterende nettleserøkten.</translation>
 <translation id="5047421709274785093">Blokkér nettsteder fra å bruke bevegelses- og lyssensorer</translation>
@@ -3135,7 +3135,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5496587651328244253">Organiser</translation>
 <translation id="5499313591153584299">Denne filen kan være skadelig for datamaskinen din.</translation>
 <translation id="5502500733115278303">Importert fra Firefox</translation>
-<translation id="5505264765875738116">Nettsteder kan ikke be om å få sende varsler</translation>
+<translation id="5505264765875738116">Nettsteder kan ikke be om å få sende deg varsler</translation>
 <translation id="5505307013568720083">Tom for blekk</translation>
 <translation id="5507756662695126555">Ikke-avvisning</translation>
 <translation id="5509693895992845810">L&amp;agre som</translation>
@@ -3277,7 +3277,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5692183275898619210">Utskriften er fullført</translation>
 <translation id="5696143504434933566">Rapportér misbruk fra «<ph name="EXTENSION_NAME" />»</translation>
 <translation id="5696679855467848181">Gjeldende PPD-fil i bruk: <ph name="PPD_NAME" /></translation>
-<translation id="5699533844376998780">Utvidelsen «<ph name="EXTENSION_NAME" />» har blitt lagt til.</translation>
 <translation id="570043786759263127">Google Play-apper og -tjenester</translation>
 <translation id="5700836101007545240">Administratoren din har slått av Legg til tilkobling</translation>
 <translation id="5701080607174488915">Feil under henting av regelen fra tjeneren.</translation>
@@ -3803,7 +3802,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="6444070574980481588">Angi dato og klokkeslett</translation>
 <translation id="6445450263907939268">Hvis du ikke ønsker disse endringene, kan du gjenopprette de tidligere innstillingene dine.</translation>
 <translation id="6447842834002726250">Informasjonskapsler</translation>
-<translation id="6449285849137521213">Programmet «<ph name="EXTENSION_NAME" />» er lagt til.</translation>
 <translation id="6450876761651513209">Endre innstillingene dine for personvern</translation>
 <translation id="6451180435462401570">Administrer Cloud Print-enheter</translation>
 <translation id="6451689256222386810">Hvis du har glemt passordfrasen din eller vil endre denne innstillingen, må du <ph name="BEGIN_LINK" />tilbakestille synkroniseringen<ph name="END_LINK" />.</translation>

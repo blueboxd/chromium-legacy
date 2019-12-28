@@ -460,11 +460,12 @@ void Widget::ViewHierarchyChanged(const ViewHierarchyChangedDetails& details) {
 }
 
 void Widget::NotifyNativeViewHierarchyWillChange() {
-  FocusManager* focus_manager = GetFocusManager();
-  // We are being removed from a window hierarchy.  Treat this as
-  // the root_view_ being removed.
-  if (focus_manager)
-    focus_manager->ViewRemoved(root_view_.get());
+  // During tear-down the top-level focus manager becomes unavailable to
+  // GTK tabbed panes and their children, so normal deregistration via
+  // |FocusManager::ViewRemoved()| calls are fouled.  We clear focus here
+  // to avoid these redundant steps and to avoid accessing deleted views
+  // that may have been in focus.
+  ClearFocusFromWidget();
 }
 
 void Widget::NotifyNativeViewHierarchyChanged() {
@@ -613,14 +614,7 @@ void Widget::CloseWithReason(ClosedReason closed_reason) {
   widget_closed_ = true;
   closed_reason_ = closed_reason;
   SaveWindowPlacement();
-
-  // During tear-down the top-level focus manager becomes unavailable to
-  // GTK tabbed panes and their children, so normal deregistration via
-  // |FocusManager::ViewRemoved()| calls are fouled.  We clear focus here
-  // to avoid these redundant steps and to avoid accessing deleted views
-  // that may have been in focus.
-  if (is_top_level() && focus_manager_)
-    focus_manager_->SetFocusedView(nullptr);
+  ClearFocusFromWidget();
 
   for (WidgetObserver& observer : observers_)
     observer.OnWidgetClosing(this);
@@ -1525,8 +1519,7 @@ internal::RootView* Widget::CreateRootView() {
 }
 
 void Widget::DestroyRootView() {
-  if (is_top_level() && focus_manager_)
-    focus_manager_->SetFocusedView(nullptr);
+  ClearFocusFromWidget();
   NotifyWillRemoveView(root_view_.get());
   non_client_view_ = nullptr;
   // Remove all children before the unique_ptr reset so that
@@ -1660,6 +1653,14 @@ void Widget::UpdatePaintAsActiveState(bool paint_as_active) {
     non_client_view_->frame_view()->PaintAsActiveChanged(paint_as_active);
   if (widget_delegate())
     widget_delegate()->OnPaintAsActiveChanged(paint_as_active);
+}
+
+void Widget::ClearFocusFromWidget() {
+  FocusManager* focus_manager = GetFocusManager();
+  // We are being removed from a window hierarchy.  Treat this as
+  // the root_view_ being removed.
+  if (focus_manager)
+    focus_manager->ViewRemoved(root_view_.get());
 }
 
 namespace internal {

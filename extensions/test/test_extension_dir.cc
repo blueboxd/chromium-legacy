@@ -28,13 +28,6 @@ void TestExtensionDir::WriteManifest(base::StringPiece manifest) {
   WriteFile(FILE_PATH_LITERAL("manifest.json"), manifest);
 }
 
-void TestExtensionDir::WriteManifestWithSingleQuotes(
-    base::StringPiece manifest) {
-  std::string double_quotes;
-  base::ReplaceChars(manifest.data(), "'", "\"", &double_quotes);
-  WriteManifest(double_quotes);
-}
-
 void TestExtensionDir::WriteFile(const base::FilePath::StringType& filename,
                                  base::StringPiece contents) {
   base::ScopedAllowBlockingForTesting allow_blocking;

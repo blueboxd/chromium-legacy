@@ -58,7 +58,8 @@ OptimizationGuideNavigationData::OptimizationGuideNavigationData(
       was_host_covered_by_fetch_at_commit_(
           other.was_host_covered_by_fetch_at_commit_),
       was_hint_for_host_attempted_to_be_fetched_(
-          other.was_hint_for_host_attempted_to_be_fetched_) {
+          other.was_hint_for_host_attempted_to_be_fetched_),
+      is_same_origin_navigation_(other.is_same_origin_navigation_) {
   if (other.has_page_hint_value()) {
     page_hint_ = std::make_unique<optimization_guide::proto::PageHint>(
         *other.page_hint());

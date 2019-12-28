@@ -3720,14 +3720,8 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_EXTENSION_ALERT_TITLE" desc="Titlebar of the extension notification alert">
         Confirm Changes
       </message>
-      <message name="IDS_EXTENSION_ALERT_ITEM_EXTERNAL" desc="A statement that an external extension has been newly installed. End users have no idea what an 'external' extension is, so we simply call them extensions.">
-        The extension "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" has been added.
-      </message>
       <message name="IDS_EXTENSION_ALERT_ITEM_BLACKLISTED" desc="A statement that an extension has been newly blacklisted. https://support.google.com/chrome/answer/1210215 contains the language on which we're basing the phrasing.">
         The extension "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" was automatically disabled.
-      </message>
-      <message name="IDS_APP_ALERT_ITEM_EXTERNAL" desc="A statement that an external packaged app has been newly installed. End users have no idea what an 'external' app is, so we simply call them apps.">
-        The app "<ph name="EXTENSION_NAME">$1<ex>Gmail</ex></ph>" has been added.
       </message>
       <message name="IDS_APP_ALERT_ITEM_BLACKLISTED" desc="A statement that a packaged app has been newly blacklisted. https://support.google.com/chrome/answer/1210215 contains the language on which we're basing the phrasing.">
         The app "<ph name="EXTENSION_NAME">$1<ex>Gmail</ex></ph>" was automatically removed.

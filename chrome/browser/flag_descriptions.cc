@@ -2345,21 +2345,13 @@ const char kWebXrArModuleDescription[] =
     "Enables access to Augmented Reality features defined in the WebXR AR "
     "Module";
 
-const char kWebXrArDOMOverlayName[] = "WebXR AR DOM Overlay";
-const char kWebXrArDOMOverlayDescription[] =
-    "Enables experimental use of a DOM overlay in WebXR AR sessions";
-
-const char kWebXrAnchorsName[] = "WebXR Anchors";
-const char kWebXrAnchorsDescription[] =
-    "Enables access to anchors via WebXR API.";
-
 const char kWebXrHitTestName[] = "WebXR Hit Test";
 const char kWebXrHitTestDescription[] =
     "Enables access to raycasting against estimated XR scene geometry.";
 
-const char kWebXrPlaneDetectionName[] = "WebXR Plane Detection";
-const char kWebXrPlaneDetectionDescription[] =
-    "Enables access to planes detected in the user's environment.";
+const char kWebXrIncubationsName[] = "WebXR Incubations";
+const char kWebXrIncubationsDescription[] =
+    "Enables experimental features for WebXR.";
 
 const char kZeroCopyName[] = "Zero-copy rasterizer";
 const char kZeroCopyDescription[] =

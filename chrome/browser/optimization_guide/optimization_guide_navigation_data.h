@@ -139,6 +139,12 @@ class OptimizationGuideNavigationData {
         was_hint_for_host_attempted_to_be_fetched;
   }
 
+  // Whether the initiation of the navigation was from a same origin URL or not.
+  bool is_same_origin_navigation() const { return is_same_origin_navigation_; }
+  void set_is_same_origin_navigation(bool is_same_origin_navigation) {
+    is_same_origin_navigation_ = is_same_origin_navigation;
+  }
+
  private:
   // Records the hint cache and fetch coverage based on data currently held in
   // |this|.
@@ -209,6 +215,9 @@ class OptimizationGuideNavigationData {
   // Whether a hint for the host was attempted to be fetched at some point
   // during the navigation.
   base::Optional<bool> was_hint_for_host_attempted_to_be_fetched_;
+
+  // Whether the initiation of the navigation was from a same origin URL or not.
+  bool is_same_origin_navigation_ = false;
 
   DISALLOW_ASSIGN(OptimizationGuideNavigationData);
 };

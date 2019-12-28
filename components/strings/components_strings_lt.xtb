@@ -723,6 +723,7 @@
 <translation id="4340982228985273705">Šis kompiuteris neaptinkamas kaip valdomas įmonės, todėl taikant politiką galima automatiškai įdiegti tik „Chrome“ internetinėje parduotuvėje priglobiamus plėtinius. „Chrome“ internetinės parduotuvės atnaujinimo URL yra „<ph name="CWS_UPDATE_URL" />“.</translation>
 <translation id="4346197816712207223">Tinkamos kredito kortelės</translation>
 <translation id="4346833872170306413">Roc-16K</translation>
+<translation id="4349531505348777662">Ką tik savo slaptažodį įvedėte apgaulingoje svetainėje. „Chrome“ rekomenduoja dabar apsilankyti <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> ir kitose svetainėse, kuriose naudojate šį slaptažodį, ir jį pakeisti.</translation>
 <translation id="4356973930735388585">Šios svetainės užpuolėjai gali jūsų kompiuteryje bandyti įdiegti pavojingas programas, kurios vagia arba ištrina informaciją (pvz., nuotraukas, slaptažodžius, pranešimus ir kredito kortelių numerius).</translation>
 <translation id="4358059973562876591">Jūsų nurodyti šablonai gali būti netaikomi dėl klaidos, susijusios su „DnsOverHttpsMode“ politika.</translation>
 <translation id="4358461427845829800">Tvarkyti mokėjimo metodus...</translation>
@@ -1251,6 +1252,7 @@
 <translation id="6970216967273061347">Rajonas</translation>
 <translation id="6973656660372572881">Nurodyti fiksuoti įgaliotieji serveriai ir .pac scenarijaus URL.</translation>
 <translation id="6973932557599545801">Deja, negaliu padėti, tolesnius veiksmus atlikite patys.</translation>
+<translation id="6975012522936652259">Ką tik savo slaptažodį įvedėte apgaulingoje svetainėje. „Chromium“ rekomenduoja dabar apsilankyti <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> ir kitose svetainėse, kuriose naudojate šį slaptažodį, ir jį pakeisti.</translation>
 <translation id="6979158407327259162">„Google“ diskas</translation>
 <translation id="6979440798594660689">Nutildyti (numatytasis)</translation>
 <translation id="6989763994942163495">Rodyti išplėstinius nustatymus...</translation>
@@ -1382,6 +1384,7 @@ Papildoma išsami informacija:
 <translation id="7567204685887185387">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikatas gali būti neteisėtai išduotas. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo.</translation>
 <translation id="7569952961197462199">Pašalinti kredito kortelės informaciją iš „Chrome“?</translation>
 <translation id="7569983096843329377">Juoda</translation>
+<translation id="7575207903026901870">Pašalinkite pasiūlymo mygtuką, paspauskite „Enter“, kad pašalintumėte šį pasiūlymą</translation>
 <translation id="7578104083680115302">Greitai mokėkite svetainėse ir programose įvairiuose įrenginiuose naudodami korteles, kurias išsaugojote „Google“.</translation>
 <translation id="7592362899630581445">Serverio sertifikatas pažeidžia pavadinimų apribojimus.</translation>
 <translation id="7598391785903975535">Mažiau nei <ph name="UPPER_ESTIMATE" /></translation>
@@ -1628,6 +1631,7 @@ Papildoma išsami informacija:
 <translation id="8891727572606052622">Netinkamas įgaliotojo serverio režimas.</translation>
 <translation id="8903921497873541725">Artinti</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="890493561996401738">Pašalinkite pasiūlymo mygtuką, paspauskite „Enter“, kad pašalintumėte, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Veikia inkognito režimas</translation>
 <translation id="8912362522468806198">„Google“ paskyra</translation>
 <translation id="8918231688545606538">Šis puslapis įtartinas</translation>

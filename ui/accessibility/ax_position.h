@@ -267,18 +267,19 @@ class AXPosition {
     if (!IsTextPosition() || text_offset_ > MaxTextOffset())
       return str;
 
-    std::string text = base::UTF16ToUTF8(GetText());
+    base::string16 text = GetText();
     DCHECK_GE(text_offset_, 0);
     DCHECK_LE(text_offset_, int{text.length()});
-    std::string annotated_text;
+    base::string16 annotated_text;
     if (text_offset_ == MaxTextOffset()) {
-      annotated_text = text + "<>";
+      annotated_text = text + base::WideToUTF16(L"<>");
     } else {
-      annotated_text = text.substr(0, text_offset_) + "<" + text[text_offset_] +
-                       ">" + text.substr(text_offset_ + 1);
+      annotated_text = text.substr(0, text_offset_) + base::WideToUTF16(L"<") +
+                       text[text_offset_] + base::WideToUTF16(L">") +
+                       text.substr(text_offset_ + 1);
     }
 
-    return str + " annotated_text=" + annotated_text;
+    return str + " annotated_text=" + base::UTF16ToUTF8(annotated_text);
   }
 
   AXTreeID tree_id() const { return tree_id_; }

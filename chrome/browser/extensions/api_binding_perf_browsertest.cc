@@ -47,19 +47,19 @@ class APIBindingPerfBrowserTest : public ExtensionBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(APIBindingPerfBrowserTest);
 };
 
-const char kSimpleContentScriptManifest[] =
-    "{"
-    "  'name': 'Perf test extension',"
-    "  'version': '0',"
-    "  'manifest_version': 2,"
-    "  'content_scripts': [ {"
-    "    'all_frames': true,"
-    "    'matches': [ '<all_urls>' ],"
-    "    'run_at': 'document_end',"
-    "    'js': [ 'content_script.js' ]"
-    "  } ],"
-    "  'permissions': [ 'storage' ]"
-    "}";
+constexpr char kSimpleContentScriptManifest[] =
+    R"({
+         "name": "Perf test extension",
+         "version": "0",
+         "manifest_version": 2,
+         "content_scripts": [ {
+           "all_frames": true,
+           "matches": [ "<all_urls>" ],
+           "run_at": "document_end",
+           "js": [ "content_script.js" ]
+         } ],
+         "permissions": [ "storage" ]
+       })";
 
 IN_PROC_BROWSER_TEST_F(APIBindingPerfBrowserTest,
                        LOCAL_TEST(ManyFramesWithNoContentScript)) {
@@ -74,7 +74,7 @@ IN_PROC_BROWSER_TEST_F(APIBindingPerfBrowserTest,
 IN_PROC_BROWSER_TEST_F(APIBindingPerfBrowserTest,
                        LOCAL_TEST(ManyFramesWithEmptyContentScript)) {
   TestExtensionDir extension_dir;
-  extension_dir.WriteManifestWithSingleQuotes(kSimpleContentScriptManifest);
+  extension_dir.WriteManifest(kSimpleContentScriptManifest);
   extension_dir.WriteFile(FILE_PATH_LITERAL("content_script.js"),
                           "// This space intentionally left blank.");
   ASSERT_TRUE(LoadExtension(extension_dir.UnpackedPath()));
@@ -90,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(APIBindingPerfBrowserTest,
 IN_PROC_BROWSER_TEST_F(APIBindingPerfBrowserTest,
                        LOCAL_TEST(ManyFramesWithStorageAndRuntime)) {
   TestExtensionDir extension_dir;
-  extension_dir.WriteManifestWithSingleQuotes(kSimpleContentScriptManifest);
+  extension_dir.WriteManifest(kSimpleContentScriptManifest);
   extension_dir.WriteFile(FILE_PATH_LITERAL("content_script.js"),
                           "chrome.storage.onChanged.addListener;"
                           "chrome.runtime.onMessage.addListener;");

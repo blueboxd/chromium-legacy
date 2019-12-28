@@ -142,16 +142,17 @@ void LogHTMLForm(SavePasswordProgressLogger* logger,
 // |current_username| as a prefix.
 bool CanShowSuggestion(const PasswordFormFillData& fill_data,
                        const base::string16& current_username,
-                       bool show_all) {
+                       bool show_all,
+                       bool is_password_field) {
   base::string16 current_username_lower = base::i18n::ToLower(current_username);
-  if (show_all ||
+  if (show_all || is_password_field ||
       base::StartsWith(base::i18n::ToLower(fill_data.username_field.value),
                        current_username_lower, base::CompareCase::SENSITIVE)) {
     return true;
   }
 
   for (const auto& login : fill_data.additional_logins) {
-    if (show_all ||
+    if (show_all || is_password_field ||
         base::StartsWith(base::i18n::ToLower(login.first),
                          current_username_lower,
                          base::CompareCase::SENSITIVE)) {
@@ -602,6 +603,7 @@ bool PasswordAutofillAgent::FillSuggestion(
 
   if (IsUsernameAmendable(username_element,
                           element->IsPasswordFieldForAutofill()) &&
+      !(username.empty() && element->IsPasswordFieldForAutofill()) &&
       username_element.Value().Utf16() != username) {
     FillField(&username_element, username);
   }
@@ -880,12 +882,7 @@ bool PasswordAutofillAgent::ShowSuggestions(const WebInputElement& element,
   if (touch_to_fill_state_ == TouchToFillState::kIsShowing)
     return true;
 
-  // Chrome should never show more than one account for a password element since
-  // this implies that the username element cannot be modified. Thus even if
-  // |show_all| is true, check if the element in question is a password element
-  // for the call to ShowSuggestionPopup.
-  return ShowSuggestionPopup(*password_info, element,
-                             show_all && !element.IsPasswordFieldForAutofill(),
+  return ShowSuggestionPopup(*password_info, element, show_all,
                              element.IsPasswordFieldForAutofill());
 }
 
@@ -1443,11 +1440,15 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
                                      ? base::string16()
                                      : user_input.Value().Utf16());
 
+  username_query_prefix_ = username_string;
+  if (!CanShowSuggestion(password_info.fill_data, username_string, show_all,
+                         show_on_password_field)) {
+    return false;
+  }
   GetPasswordManagerDriver()->ShowPasswordSuggestions(
       field.text_direction, username_string, options,
       render_frame()->ElementBoundsInWindow(user_input));
-  username_query_prefix_ = username_string;
-  return CanShowSuggestion(password_info.fill_data, username_string, show_all);
+  return true;
 }
 
 void PasswordAutofillAgent::CleanupOnDocumentShutdown() {

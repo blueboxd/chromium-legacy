@@ -424,7 +424,8 @@ void SharedContextState::PurgeMemory(
       break;
   }
 
-  transfer_cache_->PurgeMemory(memory_pressure_level);
+  if (transfer_cache_)
+    transfer_cache_->PurgeMemory(memory_pressure_level);
 }
 
 uint64_t SharedContextState::GetMemoryUsage() {

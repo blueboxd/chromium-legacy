@@ -201,10 +201,15 @@ AbstractTts.prototype.mergeProperties = function(properties) {
  */
 AbstractTts.prototype.preprocess = function(text, properties) {
   if (text.length == 1 && text >= 'A' && text <= 'Z') {
-    for (var prop in AbstractTts.PERSONALITY_CAPITAL) {
-      if (properties[prop] === undefined) {
-        properties[prop] = AbstractTts.PERSONALITY_CAPITAL[prop];
+    // Describe capital letters according to user's setting.
+    if (localStorage['capitalStrategy'] == 'increasePitch') {
+      for (var prop in AbstractTts.PERSONALITY_CAPITAL) {
+        if (properties[prop] === undefined) {
+          properties[prop] = AbstractTts.PERSONALITY_CAPITAL[prop];
+        }
       }
+    } else if (localStorage['capitalStrategy'] == 'announceCapitals') {
+      text = Msgs.getMsg('announce_capital_letter', [text]);
     }
   }
 

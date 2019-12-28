@@ -703,6 +703,7 @@
 <translation id="4340982228985273705">系统检测到，此计算机不是由企业管理，因此政策只能自动安装 Chrome 网上应用店中托管的扩展程序。对应的 Chrome 网上应用店更新网址为“<ph name="CWS_UPDATE_URL" />”。</translation>
 <translation id="4346197816712207223">接受的信用卡</translation>
 <translation id="4346833872170306413">Roc-16K</translation>
+<translation id="4349531505348777662">您刚刚在一个诈骗网站中输入了密码。Chrome 建议您立即前往 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 以及使用此密码的其他网站更改密码。</translation>
 <translation id="4356973930735388585">此网站上的攻击者可能会试图在您的计算机上安装危险程序，以窃取或删除您的信息（例如：照片、密码、通讯内容和信用卡信息）。</translation>
 <translation id="4358059973562876591">您指定的模板未必会被应用，因为 DnsOverHttpsMode 政策出错了。</translation>
 <translation id="4358461427845829800">管理付款方式…</translation>
@@ -1229,6 +1230,7 @@
 <translation id="6970216967273061347">区</translation>
 <translation id="6973656660372572881">固定代理服务器和 .pac 脚本网址均已指定。</translation>
 <translation id="6973932557599545801">抱歉，我已是爱莫能助，请您自行继续操作。</translation>
+<translation id="6975012522936652259">您刚刚在一个诈骗网站中输入了密码。Chromium 建议您立即前往 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 以及使用此密码的其他网站更改密码。</translation>
 <translation id="6979158407327259162">Google 云端硬盘</translation>
 <translation id="6979440798594660689">静音（默认）</translation>
 <translation id="6989763994942163495">显示高级设置...</translation>
@@ -1360,6 +1362,7 @@
 <translation id="7567204685887185387">此服务器无法证明它是<ph name="DOMAIN" />；其安全证书可能是由骗子发出的。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="7569952961197462199">从 Chrome 中移除信用卡信息？</translation>
 <translation id="7569983096843329377">黑色</translation>
+<translation id="7575207903026901870">“移除推荐内容”按钮，按 Enter 键即可移除这项推荐内容</translation>
 <translation id="7578104083680115302">通过各种设备在网站和应用中购物时，您都可以使用 Google 为您保存的银行卡信息快速付款。</translation>
 <translation id="7592362899630581445">服务器的证书违反了域名限制。</translation>
 <translation id="7598391785903975535">少于 <ph name="UPPER_ESTIMATE" /></translation>
@@ -1606,6 +1609,7 @@
 <translation id="8891727572606052622">代理模式无效。</translation>
 <translation id="8903921497873541725">放大</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="890493561996401738">“移除推荐内容”按钮，按 Enter 键即可移除“<ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" />”</translation>
 <translation id="8910670906166981838">您已进入无痕模式</translation>
 <translation id="8912362522468806198">Google 帐号</translation>
 <translation id="8918231688545606538">此网页可疑</translation>

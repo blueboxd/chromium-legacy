@@ -1657,7 +1657,8 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         if (mHomeButton == null) return;
 
         boolean hideHomeButton = !mIsHomeButtonEnabled || mIsBottomToolbarVisible
-                || FeatureUtilities.isStartSurfaceEnabled();
+                || (FeatureUtilities.isStartSurfaceEnabled()
+                        && !FeatureUtilities.isStartSurfaceSinglePaneEnabled());
         if (hideHomeButton) {
             removeHomeButton();
         } else {

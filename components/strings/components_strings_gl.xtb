@@ -720,6 +720,7 @@
 <translation id="4340982228985273705">Non se detectou que unha empresa xestione este ordenador, polo que a política só pode instalar automaticamente extensións aloxadas en Chrome Webstore. O URL de actualización de Chrome Webstore é <ph name="CWS_UPDATE_URL" />.</translation>
 <translation id="4346197816712207223">Acéptanse tarxetas de crédito</translation>
 <translation id="4346833872170306413">Roc-16K</translation>
+<translation id="4349531505348777662">Acabas de escribir o teu contrasinal nun sitio enganoso. Chrome recoméndache que vaias a <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> e outros sitios nos que utilices este contrasinal para cambialo agora.</translation>
 <translation id="4356973930735388585">Os atacantes deste sitio poden tentar instalar programas perigosos no teu ordenador e roubar ou eliminar os teus datos (por exemplo, fotos, contrasinais, mensaxes e información das túas tarxetas de crédito).</translation>
 <translation id="4358059973562876591">Os modelos que especificaches poden non aplicarse debido a un erro coa política DnsOverHttpsMode.</translation>
 <translation id="4358461427845829800">Xestiona os métodos de pago…</translation>
@@ -1248,6 +1249,7 @@
 <translation id="6970216967273061347">Distrito</translation>
 <translation id="6973656660372572881">Especifícanse tanto servidores proxy fixos como un URL de script .pac.</translation>
 <translation id="6973932557599545801">Síntoo, non podo axudar. Continúa sen asistencia.</translation>
+<translation id="6975012522936652259">Acabas de escribir o teu contrasinal nun sitio enganoso. Chromium recoméndache que vaias a <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> e outros sitios nos que utilices este contrasinal para cambialo agora.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Silenciar (opción predeterminada)</translation>
 <translation id="6989763994942163495">Mostrar configuración avanzada...</translation>
@@ -1379,6 +1381,7 @@ Detalles adicionais:
 <translation id="7567204685887185387">Este servidor non puido demostrar que é <ph name="DOMAIN" /> porque é probable que o seu certificado de seguranza se emitise fraudulentamente. É posible que isto se deba a un erro de configuración ou a que un atacante interceptase a túa conexión.</translation>
 <translation id="7569952961197462199">Queres eliminar a tarxeta de crédito de Chrome?</translation>
 <translation id="7569983096843329377">Negro</translation>
+<translation id="7575207903026901870">Botón Quitar suxestión, preme Intro para quitala</translation>
 <translation id="7578104083680115302">Paga rapidamente en sitios e aplicacións en diferentes dispositivos usando as tarxetas que gardaches con Google.</translation>
 <translation id="7592362899630581445">O certificado do servidor inclúe un nome que está fóra do teu alcance.</translation>
 <translation id="7598391785903975535">Menos de <ph name="UPPER_ESTIMATE" /></translation>
@@ -1624,6 +1627,7 @@ Detalles adicionais:
 <translation id="8891727572606052622">Modo de proxy non válido.</translation>
 <translation id="8903921497873541725">Achegar</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="890493561996401738">Botón Quitar suxestión, preme Intro para quitala, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Iniciaches o modo de incógnito</translation>
 <translation id="8912362522468806198">Conta de Google</translation>
 <translation id="8918231688545606538">Esta páxina é sospeitosa</translation>

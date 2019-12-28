@@ -152,6 +152,7 @@ source_set("application_delegate_internal") {
     "CoreSpotlight.framework",
     "UIKit.framework",
   ]
+  allow_circular_includes_from = [ "//ios/chrome/browser/url_loading" ]
 }
 
 source_set("test_support") {

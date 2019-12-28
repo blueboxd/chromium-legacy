@@ -36,7 +36,7 @@
 // applied to the consumer.
 TEST_F(AlertOverlayMediatorTest, SetUpConsumer) {
   std::unique_ptr<OverlayRequest> request =
-      OverlayRequest::CreateWithConfig<FakeOverlayUserData>(nullptr);
+      OverlayRequest::CreateWithConfig<FakeOverlayUserData>();
   FakeAlertOverlayMediator* mediator =
       [[FakeAlertOverlayMediator alloc] initWithRequest:request.get()];
   mediator.alertTitle = @"Title";

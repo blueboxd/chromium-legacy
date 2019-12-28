@@ -565,7 +565,9 @@ suite('CupsAddPrinterDialogTests', function() {
     Polymer.dom.flush();
 
     const eulaLink = 'google';
-    const expectedEulaLink = 'chrome://os-settings/' + eulaLink;
+    const path = window.location.pathname;
+    const expectedEulaLink = window.location.origin +
+        path.slice(0, path.lastIndexOf('/') + 1) + eulaLink;
     const expectedManufacturer = 'Google';
     const expectedModel = 'printer';
     const expectedModel2 = 'newPrinter';

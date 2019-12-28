@@ -43,7 +43,7 @@ std::ostream& operator<<(std::ostream& out, const StyleDifference& diff) {
       break;
   }
 
-  out << ", recomputeOverflow=" << diff.recompute_overflow_;
+  out << ", recomputeVisualOverflow=" << diff.recompute_visual_overflow_;
   out << ", visualRectUpdate=" << diff.visual_rect_update_;
 
   out << ", propertySpecificDifferences=";

@@ -2157,10 +2157,6 @@ sk_sp<SkColorFilter> SkiaRenderer::GetColorFilter(const gfx::ColorSpace& src,
     std::unique_ptr<gfx::ColorTransform> transform =
         gfx::ColorTransform::NewColorTransform(
             adjusted_src, dst, gfx::ColorTransform::Intent::INTENT_PERCEPTUAL);
-    // TODO(backer): Support lookup table transforms (e.g.
-    // COLOR_CONVERSION_MODE_LUT).
-    if (!transform->CanGetShaderSource())
-      return nullptr;
 
     const char* hdr = R"(
 uniform half offset;

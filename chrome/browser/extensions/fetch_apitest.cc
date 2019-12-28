@@ -116,13 +116,14 @@ class ExtensionFetchTest : public ExtensionApiTest {
 
 IN_PROC_BROWSER_TEST_F(ExtensionFetchTest, ExtensionCanFetchExtensionResource) {
   TestExtensionDir dir;
-  dir.WriteManifestWithSingleQuotes(
-      "{"
-      "'background': {'scripts': ['bg.js']},"
-      "'manifest_version': 2,"
-      "'name': 'ExtensionCanFetchExtensionResource',"
-      "'version': '1'"
-      "}");
+  constexpr char kManifest[] =
+      R"({
+           "background": {"scripts": ["bg.js"]},
+           "manifest_version": 2,
+           "name": "ExtensionCanFetchExtensionResource",
+           "version": "1"
+         })";
+  dir.WriteManifest(kManifest);
   const Extension* extension = WriteFilesAndLoadTestExtension(&dir);
   ASSERT_TRUE(extension);
 
@@ -135,14 +136,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionFetchTest, ExtensionCanFetchExtensionResource) {
 IN_PROC_BROWSER_TEST_F(ExtensionFetchTest,
                        ExtensionCanFetchHostedResourceWithHostPermissions) {
   TestExtensionDir dir;
-  dir.WriteManifestWithSingleQuotes(
-      "{"
-      "'background': {'scripts': ['bg.js']},"
-      "'manifest_version': 2,"
-      "'name': 'ExtensionCanFetchHostedResourceWithHostPermissions',"
-      "'permissions': ['http://example.com/*'],"
-      "'version': '1'"
-      "}");
+  constexpr char kManifest[] =
+      R"({
+           "background": {"scripts": ["bg.js"]},
+           "manifest_version": 2,
+           "name": "ExtensionCanFetchHostedResourceWithHostPermissions",
+           "permissions": ["http://example.com/*"],
+           "version": "1"
+         })";
+  dir.WriteManifest(kManifest);
   const Extension* extension = WriteFilesAndLoadTestExtension(&dir);
   ASSERT_TRUE(extension);
 
@@ -152,17 +154,19 @@ IN_PROC_BROWSER_TEST_F(ExtensionFetchTest,
                               "example.com", "/extensions/test_file.txt"))));
 }
 
+// TODO(crbug.com/1038156): Test is flaky.
 IN_PROC_BROWSER_TEST_F(
     ExtensionFetchTest,
-    ExtensionCannotFetchHostedResourceWithoutHostPermissions) {
+    DISABLED_ExtensionCannotFetchHostedResourceWithoutHostPermissions) {
   TestExtensionDir dir;
-  dir.WriteManifestWithSingleQuotes(
-      "{"
-      "'background': {'scripts': ['bg.js']},"
-      "'manifest_version': 2,"
-      "'name': 'ExtensionCannotFetchHostedResourceWithoutHostPermissions',"
-      "'version': '1'"
-      "}");
+  constexpr char kManifest[] =
+      R"({
+           "background": {"scripts": ["bg.js"]},
+           "manifest_version": 2,
+           "name": "ExtensionCannotFetchHostedResourceWithoutHostPermissions",
+           "version": "1"
+         })";
+  dir.WriteManifest(kManifest);
   const Extension* extension = WriteFilesAndLoadTestExtension(&dir);
   ASSERT_TRUE(extension);
 
@@ -178,14 +182,15 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(ExtensionFetchTest,
                        HostCanFetchWebAccessibleExtensionResource) {
   TestExtensionDir dir;
-  dir.WriteManifestWithSingleQuotes(
-      "{"
-      "'background': {'scripts': ['bg.js']},"
-      "'manifest_version': 2,"
-      "'name': 'HostCanFetchWebAccessibleExtensionResource',"
-      "'version': '1',"
-      "'web_accessible_resources': ['text']"
-      "}");
+  constexpr char kManifest[] =
+      R"({
+           "background": {"scripts": ["bg.js"]},
+           "manifest_version": 2,
+           "name": "HostCanFetchWebAccessibleExtensionResource",
+           "version": "1",
+           "web_accessible_resources": ["text"]
+         })";
+  dir.WriteManifest(kManifest);
   const Extension* extension = WriteFilesAndLoadTestExtension(&dir);
   ASSERT_TRUE(extension);
 
@@ -209,15 +214,15 @@ IN_PROC_BROWSER_TEST_F(
     ExtensionFetchTest,
     HostCanFetchWebAccessibleExtensionResource_FetchFromServiceWorker) {
   TestExtensionDir dir;
-  dir.WriteManifestWithSingleQuotes(
-      "{"
-      "'background': {'scripts': ['bg.js']},"
-      "'manifest_version': 2,"
-      "'name': 'HostCanFetchWebAccessibleExtensionResource_"
-      "FetchFromServiceWorker',"
-      "'version': '1',"
-      "'web_accessible_resources': ['text']"
-      "}");
+  constexpr char kManifest[] =
+      R"({
+           "background": {"scripts": ["bg.js"]},
+           "manifest_version": 2,
+           "name": "FetchFromServiceWorker",
+           "version": "1",
+           "web_accessible_resources": ["text"]
+         })";
+  dir.WriteManifest(kManifest);
   const Extension* extension = WriteFilesAndLoadTestExtension(&dir);
   ASSERT_TRUE(extension);
 
@@ -235,13 +240,14 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(ExtensionFetchTest,
                        HostCannotFetchNonWebAccessibleExtensionResource) {
   TestExtensionDir dir;
-  dir.WriteManifestWithSingleQuotes(
-      "{"
-      "'background': {'scripts': ['bg.js']},"
-      "'manifest_version': 2,"
-      "'name': 'HostCannotFetchNonWebAccessibleExtensionResource',"
-      "'version': '1'"
-      "}");
+  constexpr char kManifest[] =
+      R"({
+           "background": {"scripts": ["bg.js"]},
+           "manifest_version": 2,
+           "name": "HostCannotFetchNonWebAccessibleExtensionResource",
+           "version": "1"
+         })";
+  dir.WriteManifest(kManifest);
   const Extension* extension = WriteFilesAndLoadTestExtension(&dir);
   ASSERT_TRUE(extension);
 
@@ -267,14 +273,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionFetchTest, FetchResponseType) {
       GetQuotedTestServerURL("example.com", "/extensions/test_file.txt")
           .data());
   TestExtensionDir dir;
-  dir.WriteManifestWithSingleQuotes(
-      "{"
-      "'background': {'scripts': ['bg.js']},"
-      "'manifest_version': 2,"
-      "'name': 'FetchResponseType',"
-      "'permissions': ['http://example.com/*'],"
-      "'version': '1'"
-      "}");
+  constexpr char kManifest[] =
+      R"({
+           "background": {"scripts": ["bg.js"]},
+           "manifest_version": 2,
+           "name": "FetchResponseType",
+           "permissions": ["http://example.com/*"],
+           "version": "1"
+         })";
+  dir.WriteManifest(kManifest);
   const Extension* extension = WriteFilesAndLoadTestExtension(&dir);
   ASSERT_TRUE(extension);
 

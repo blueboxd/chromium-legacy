@@ -703,6 +703,7 @@
 <translation id="4340982228985273705">Tento počítač nebyl rozpoznán jako spravovaný organizací, proto lze pomocí zásad automaticky instalovat pouze rozšíření hostovaná v Internetovém obchodě Chrome. Adresa URL Internetového obchodu Chrome pro aktualizace je <ph name="CWS_UPDATE_URL" />.</translation>
 <translation id="4346197816712207223">Přijímané kreditní karty</translation>
 <translation id="4346833872170306413">Roc-16K</translation>
+<translation id="4349531505348777662">Právě jste své heslo zadali na klamavém webu. Chrome doporučuje navštívit weby <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> a další weby, na nichž toto heslo používáte, a okamžitě ho změnit.</translation>
 <translation id="4356973930735388585">Útočníci, kteří se aktuálně nacházejí na tomto webu, se mohou pokusit nainstalovat vám do počítače nebezpečné programy, které mohou ukrást nebo smazat vaše informace (například fotky, hesla, zprávy nebo platební karty).</translation>
 <translation id="4358059973562876591">Zadané šablony kvůli chybě v zásadě DnsOverHttpsMode nelze použít.</translation>
 <translation id="4358461427845829800">Spravovat platební metody...</translation>
@@ -1229,6 +1230,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6970216967273061347">Okres</translation>
 <translation id="6973656660372572881">Určeny jsou pevně dané servery proxy i adresa URL skriptu PAC.</translation>
 <translation id="6973932557599545801">Pardon, nedokážu vám pomoct. Je to na vás.</translation>
+<translation id="6975012522936652259">Právě jste své heslo zadali na klamavém webu. Chromium doporučuje navštívit weby <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> a další weby, na nichž toto heslo používáte, a okamžitě ho změnit.</translation>
 <translation id="6979158407327259162">Disk Google</translation>
 <translation id="6979440798594660689">Ztlumit (výchozí)</translation>
 <translation id="6989763994942163495">Zobrazit rozšířená nastavení...</translation>
@@ -1359,6 +1361,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7567204685887185387">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Jeho bezpečnostní certifikát byl zřejmě vydán podvodně. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.</translation>
 <translation id="7569952961197462199">Odstranit platební kartu z Chromu?</translation>
 <translation id="7569983096843329377">Černá</translation>
+<translation id="7575207903026901870">Tlačítko Odstranit návrh, stisknutím klávesy Enter tento návrh odstraníte</translation>
 <translation id="7578104083680115302">Plaťte na webech a v aplikacích v různých zařízeních rychle pomocí karet uložených na Googlu.</translation>
 <translation id="7592362899630581445">Certifikát serveru porušuje omezení názvů domén.</translation>
 <translation id="7598391785903975535">Méně než <ph name="UPPER_ESTIMATE" /></translation>
@@ -1605,6 +1608,7 @@ Další podrobnosti:
 <translation id="8891727572606052622">Neplatný režim proxy serveru.</translation>
 <translation id="8903921497873541725">Přiblížit</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="890493561996401738">Tlačítko Odstranit návrh, odstranění provedete stisknutím klávesy Enter, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Jste v anonymním režimu</translation>
 <translation id="8912362522468806198">Účet Google</translation>
 <translation id="8918231688545606538">Tato stránka je podezřelá</translation>

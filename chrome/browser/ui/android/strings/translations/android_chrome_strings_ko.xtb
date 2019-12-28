@@ -458,7 +458,7 @@
 <translation id="4550003330909367850">여기에서 비밀번호를 보거나 복사하려면 이 기기에 화면 잠금을 설정하세요.</translation>
 <translation id="4558311620361989323">웹페이지 단축키</translation>
 <translation id="4561979708150884304">연결되지 않음</translation>
-<translation id="4565377596337484307">비밀번호 감추기</translation>
+<translation id="4565377596337484307">비밀번호 숨김</translation>
 <translation id="4572422548854449519">관리 계정에 로그인</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{#분 전}other{#분 전}}</translation>

@@ -210,12 +210,6 @@ bool GLScaler::Configure(const Parameters& new_params) {
     transform = gfx::ColorTransform::NewColorTransform(
         scaling_color_space_, params_.output_color_space,
         gfx::ColorTransform::Intent::INTENT_PERCEPTUAL);
-    if (!transform->CanGetShaderSource()) {
-      NOTIMPLEMENTED() << "color transform from "
-                       << scaling_color_space_.ToString() << " to "
-                       << params_.output_color_space.ToString();
-      return false;
-    }
   }
   ScalerStage* const final_stage = chain.get();
   final_stage->set_shader_program(
@@ -247,12 +241,6 @@ bool GLScaler::Configure(const Parameters& new_params) {
     transform = gfx::ColorTransform::NewColorTransform(
         params_.source_color_space, scaling_color_space_,
         gfx::ColorTransform::Intent::INTENT_PERCEPTUAL);
-    if (!transform->CanGetShaderSource()) {
-      NOTIMPLEMENTED() << "color transform from "
-                       << params_.source_color_space.ToString() << " to "
-                       << scaling_color_space_.ToString();
-      return false;
-    }
     input_stage->set_shader_program(
         GetShaderProgram(input_stage->shader(), intermediate_texture_type,
                          transform.get(), kNoSwizzle));

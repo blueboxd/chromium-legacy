@@ -591,7 +591,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5487521232677179737">Kosongkan data</translation>
 <translation id="5494752089476963479">Sekat iklan di tapak yang menyiarkan iklan yang mengganggu atau mengelirukan</translation>
 <translation id="5500777121964041360">Mungkin tidak tersedia di lokasi anda</translation>
-<translation id="5505264765875738116">Tapak tidak boleh meminta untuk menghantar pemberitahuan</translation>
+<translation id="5505264765875738116">Tapak tidak boleh membuat permintaan untuk menghantar pemberitahuan</translation>
 <translation id="5512137114520586844">Akaun ini diurus oleh <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Dilumpuhkan oleh pentadbir peranti ini</translation>
 <translation id="5515439363601853141">Buka kunci untuk melihat kata laluan anda</translation>
@@ -695,7 +695,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan ini dengan memaparkan iklan yang tidak berdasarkan tapak web lain yang anda lawati. Pelbagai tapak web masih akan mengumpul dan menggunakan data penyemakan imbas anda — contohnya, untuk meningkatkan keselamatan, untuk menyediakan kandungan, iklan dan cadangan serta untuk menjana statistik pelaporan.</translation>
 <translation id="624789221780392884">Kemaskini bersedia</translation>
 <translation id="6255999984061454636">Cadangan kandungan</translation>
-<translation id="6270391203985052864">Tapak boleh meminta untuk menghantar pemberitahuan</translation>
+<translation id="6270391203985052864">Tapak boleh membuat permintaan untuk menghantar pemberitahuan</translation>
 <translation id="6277522088822131679">Terdapat masalah semasa mencetak halaman. Sila cuba sekali lagi.</translation>
 <translation id="6295158916970320988">Semua tapak</translation>
 <translation id="629730747756840877">Akaun</translation>

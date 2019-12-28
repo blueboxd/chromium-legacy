@@ -11,21 +11,12 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
-#include "components/prefs/in_memory_pref_store.h"
-#include "components/prefs/pref_registry_simple.h"
-#include "components/prefs/pref_service.h"
-#include "components/prefs/pref_service_factory.h"
-#include "components/safe_browsing/common/safe_browsing_prefs.h"
-#include "components/user_prefs/user_prefs.h"
 #include "components/web_cache/browser/web_cache_manager.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
-#include "content/public/browser/resource_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "services/network/public/mojom/network_context.mojom.h"
-#include "weblayer/browser/download_manager_delegate_impl.h"
-#include "weblayer/browser/ssl_host_state_delegate_impl.h"
+#include "weblayer/browser/browser_context_impl.h"
 #include "weblayer/browser/tab_impl.h"
 #include "weblayer/common/weblayer_paths.h"
 
@@ -49,15 +40,6 @@ namespace weblayer {
 
 namespace {
 
-class ResourceContextImpl : public content::ResourceContext {
- public:
-  ResourceContextImpl() = default;
-  ~ResourceContextImpl() override = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ResourceContextImpl);
-};
-
 bool IsNameValid(const std::string& name) {
   for (size_t i = 0; i < name.size(); ++i) {
     char c = name[i];
@@ -69,129 +51,6 @@ bool IsNameValid(const std::string& name) {
 }
 
 }  // namespace
-
-class ProfileImpl::BrowserContextImpl : public content::BrowserContext {
- public:
-  BrowserContextImpl(ProfileImpl* profile_impl, const base::FilePath& path)
-      : profile_impl_(profile_impl),
-        path_(path),
-        resource_context_(new ResourceContextImpl()) {
-    content::BrowserContext::Initialize(this, path_);
-
-    CreateUserPrefService();
-  }
-
-  ~BrowserContextImpl() override { NotifyWillBeDestroyed(this); }
-
-  // BrowserContext implementation:
-#if !defined(OS_ANDROID)
-  std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
-      const base::FilePath&) override {
-    return nullptr;
-  }
-#endif  // !defined(OS_ANDROID)
-
-  base::FilePath GetPath() override { return path_; }
-
-  bool IsOffTheRecord() override { return path_.empty(); }
-
-  content::DownloadManagerDelegate* GetDownloadManagerDelegate() override {
-    return &download_delegate_;
-  }
-
-  content::ResourceContext* GetResourceContext() override {
-    return resource_context_.get();
-  }
-
-  content::BrowserPluginGuestManager* GetGuestManager() override {
-    return nullptr;
-  }
-
-  storage::SpecialStoragePolicy* GetSpecialStoragePolicy() override {
-    return nullptr;
-  }
-
-  content::PushMessagingService* GetPushMessagingService() override {
-    return nullptr;
-  }
-
-  content::StorageNotificationService* GetStorageNotificationService()
-      override {
-    return nullptr;
-  }
-
-  content::SSLHostStateDelegate* GetSSLHostStateDelegate() override {
-    return &ssl_host_state_delegate_;
-  }
-
-  content::PermissionControllerDelegate* GetPermissionControllerDelegate()
-      override {
-    return nullptr;
-  }
-
-  content::ClientHintsControllerDelegate* GetClientHintsControllerDelegate()
-      override {
-    return nullptr;
-  }
-
-  content::BackgroundFetchDelegate* GetBackgroundFetchDelegate() override {
-    return nullptr;
-  }
-
-  content::BackgroundSyncController* GetBackgroundSyncController() override {
-    return nullptr;
-  }
-
-  content::BrowsingDataRemoverDelegate* GetBrowsingDataRemoverDelegate()
-      override {
-    return nullptr;
-  }
-
-  content::ContentIndexProvider* GetContentIndexProvider() override {
-    return nullptr;
-  }
-
-  ProfileImpl* profile_impl() const { return profile_impl_; }
-
- private:
-  // Creates a simple in-memory pref service.
-  // TODO(timvolodine): Investigate whether WebLayer needs persistent pref
-  // service.
-  void CreateUserPrefService() {
-    auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
-    RegisterPrefs(pref_registry.get());
-
-    PrefServiceFactory pref_service_factory;
-    pref_service_factory.set_user_prefs(
-        base::MakeRefCounted<InMemoryPrefStore>());
-    user_pref_service_ = pref_service_factory.Create(pref_registry);
-    // Note: UserPrefs::Set also ensures that the user_pref_service_ has not
-    // been set previously.
-    user_prefs::UserPrefs::Set(this, user_pref_service_.get());
-  }
-
-  // Registers the preferences that WebLayer accesses.
-  void RegisterPrefs(PrefRegistrySimple* pref_registry) {
-    safe_browsing::RegisterProfilePrefs(pref_registry);
-  }
-
-  ProfileImpl* const profile_impl_;
-  base::FilePath path_;
-  // ResourceContext needs to be deleted on the IO thread in general (and in
-  // particular due to the destruction of the safebrowsing mojo interface
-  // that has been added in ContentBrowserClient::ExposeInterfacesToRenderer
-  // on IO thread, see crbug.com/1029317). Also this is similar to how Chrome
-  // handles ProfileIOData.
-  // TODO(timvolodine): consider a more general Profile shutdown/destruction
-  // sequence for the IO/UI bits (crbug.com/1029879).
-  std::unique_ptr<ResourceContextImpl, content::BrowserThread::DeleteOnIOThread>
-      resource_context_;
-  DownloadManagerDelegateImpl download_delegate_;
-  SSLHostStateDelegateImpl ssl_host_state_delegate_;
-  std::unique_ptr<PrefService> user_pref_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserContextImpl);
-};
 
 class ProfileImpl::DataClearer : public content::BrowsingDataRemover::Observer {
  public:

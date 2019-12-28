@@ -2060,14 +2060,9 @@ void LayoutObject::SetStyle(scoped_refptr<const ComputedStyle> style,
       container->SetNeedsOverflowRecalc();
   }
 
-  if (diff.NeedsRecomputeOverflow() && !NeedsLayout()) {
-    // TODO(rhogan): Make inlines capable of recomputing overflow too.
-    if (IsLayoutBlock()) {
-      SetNeedsOverflowRecalc();
-    } else {
-      SetNeedsLayoutAndPrefWidthsRecalc(
-          layout_invalidation_reason::kStyleChange);
-    }
+  if (diff.NeedsRecomputeVisualOverflow()) {
+    PaintingLayer()->SetNeedsVisualOverflowRecalc();
+    SetShouldCheckForPaintInvalidation();
   }
 
   if (diff.NeedsPaintInvalidationSubtree() ||

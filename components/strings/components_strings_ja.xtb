@@ -707,6 +707,7 @@
 <translation id="4340982228985273705">このパソコンは企業の管理対象として検出されていないため、ポリシーで自動的にインストールできるのは Chrome ウェブストアでホストされている拡張機能のみとなります。Chrome ウェブストアの更新 URL は「<ph name="CWS_UPDATE_URL" />」です。</translation>
 <translation id="4346197816712207223">利用可能なクレジット カード</translation>
 <translation id="4346833872170306413">Roc-16K</translation>
+<translation id="4349531505348777662">偽のサイトでパスワードを入力しました。<ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> のほか、このパスワードを使用しているサイトで、パスワードを今すぐ変更することをおすすめします。</translation>
 <translation id="4356973930735388585">このサイトを利用すると、悪意のあるユーザーによって、危険なプログラム（写真、パスワード、メッセージ、クレジット カード番号などの情報を盗み取るか削除するプログラム）がお使いのパソコンにインストールされる可能性があります。</translation>
 <translation id="4358059973562876591">DnsOverHttpsMode ポリシーに問題があるため、指定したテンプレートを適用できない可能性があります。</translation>
 <translation id="4358461427845829800">お支払い方法を管理...</translation>
@@ -1234,6 +1235,7 @@
 <translation id="6970216967273061347">地区</translation>
 <translation id="6973656660372572881">固定プロキシ サーバーと .pac スクリプト URL の両方が指定されています。</translation>
 <translation id="6973932557599545801">自動入力できません。残りの入力はご自身で行ってください。</translation>
+<translation id="6975012522936652259">偽のサイトでパスワードを入力しました。<ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> のほか、このパスワードを使用しているサイトで、パスワードを今すぐ変更することをおすすめします。</translation>
 <translation id="6979158407327259162">Google ドライブ</translation>
 <translation id="6979440798594660689">ミュート（デフォルト）</translation>
 <translation id="6989763994942163495">詳細設定を表示...</translation>
@@ -1365,6 +1367,7 @@
 <translation id="7567204685887185387">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は不正に発行されたものである可能性があります。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
 <translation id="7569952961197462199">Chrome からクレジット カードを削除してもよろしいですか？</translation>
 <translation id="7569983096843329377">黒</translation>
+<translation id="7575207903026901870">候補を削除するボタンです。Enter キーを押すと、この候補を削除します</translation>
 <translation id="7578104083680115302">どのデバイスでも、Google に保存したカードを使ってサイトやアプリの支払いをすばやく行うことができます。</translation>
 <translation id="7592362899630581445">サーバーの証明書が名前の制約に違反しています。</translation>
 <translation id="7598391785903975535"><ph name="UPPER_ESTIMATE" /> 未満</translation>
@@ -1611,6 +1614,7 @@
 <translation id="8891727572606052622">プロキシ モードが無効です。</translation>
 <translation id="8903921497873541725">拡大する</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="890493561996401738">候補を削除するボタンです。Enter キーを押すと <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /> を削除します</translation>
 <translation id="8910670906166981838">シークレット モードです</translation>
 <translation id="8912362522468806198">Google アカウントを使用</translation>
 <translation id="8918231688545606538">不審なページです</translation>

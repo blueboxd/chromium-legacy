@@ -25,6 +25,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
 #include "ash/wm/wm_event.h"
+#include "ash/wm/work_area_insets.h"
 #include "base/no_destructor.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -222,12 +223,17 @@ void MaximizeIfSnapped(aura::Window* window) {
   }
 }
 
-// Get the grid bounds if a window is snapped in splitview, or what they will be
-// when snapped based on |target_root| and |indicator_state|.
-gfx::Rect GetGridBoundsInScreenForSplitview(
+gfx::Rect GetGridBoundsInScreen(aura::Window* target_root) {
+  return GetGridBoundsInScreen(target_root,
+                               /*window_dragging_state=*/base::nullopt,
+                               /*divider_changed=*/false);
+}
+
+gfx::Rect GetGridBoundsInScreen(
     aura::Window* target_root,
     base::Optional<SplitViewDragIndicators::WindowDraggingState>
-        window_dragging_state) {
+        window_dragging_state,
+    bool divider_changed) {
   auto* split_view_controller = SplitViewController::Get(target_root);
   auto state = split_view_controller->state();
 
@@ -246,17 +252,58 @@ gfx::Rect GetGridBoundsInScreenForSplitview(
     }
   }
 
+  gfx::Rect bounds;
+  gfx::Rect work_area =
+      WorkAreaInsets::ForWindow(target_root)->ComputeStableWorkArea();
+  base::Optional<SplitViewController::SnapPosition> opposite_position =
+      base::nullopt;
   switch (state) {
     case SplitViewController::State::kLeftSnapped:
-      return split_view_controller->GetSnappedWindowBoundsInScreen(
+      bounds = split_view_controller->GetSnappedWindowBoundsInScreen(
           SplitViewController::RIGHT, /*window_for_minimum_size=*/nullptr);
+      opposite_position = base::make_optional(SplitViewController::RIGHT);
+      break;
     case SplitViewController::State::kRightSnapped:
-      return split_view_controller->GetSnappedWindowBoundsInScreen(
+      bounds = split_view_controller->GetSnappedWindowBoundsInScreen(
           SplitViewController::LEFT, /*window_for_minimum_size=*/nullptr);
-    default:
-      return screen_util::
-          GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(target_root);
+      opposite_position = base::make_optional(SplitViewController::LEFT);
+      break;
+    case SplitViewController::State::kNoSnap:
+      bounds = work_area;
+      break;
+    case SplitViewController::State::kBothSnapped:
+      // When this function is called, SplitViewController should have already
+      // handled the state change.
+      NOTREACHED();
   }
+
+  if (!divider_changed)
+    return bounds;
+
+  DCHECK(opposite_position);
+  const bool horizontal = SplitViewController::IsLayoutHorizontal();
+  const int min_length =
+      (horizontal ? work_area.width() : work_area.height()) / 3;
+  const int current_length = horizontal ? bounds.width() : bounds.height();
+
+  if (current_length > min_length)
+    return bounds;
+
+  // Clamp bounds' length to the minimum length.
+  if (horizontal)
+    bounds.set_width(min_length);
+  else
+    bounds.set_height(min_length);
+
+  if (SplitViewController::IsPhysicalLeftOrTop(*opposite_position)) {
+    // If we are shifting to the left or top we need to update the origin as
+    // well.
+    const int offset = min_length - current_length;
+    bounds.Offset(horizontal ? gfx::Vector2d(-offset, 0)
+                             : gfx::Vector2d(0, -offset));
+  }
+
+  return bounds;
 }
 
 base::Optional<gfx::RectF> GetSplitviewBoundsMaintainingAspectRatio(
@@ -281,8 +328,9 @@ base::Optional<gfx::RectF> GetSplitviewBoundsMaintainingAspectRatio(
     return base::nullopt;
   }
 
-  return base::make_optional(gfx::RectF(GetGridBoundsInScreenForSplitview(
-      root_window, base::make_optional(window_dragging_state))));
+  return base::make_optional(gfx::RectF(GetGridBoundsInScreen(
+      root_window, base::make_optional(window_dragging_state),
+      /*divider_changed=*/false)));
 }
 
 bool ShouldUseTabletModeGridLayout() {

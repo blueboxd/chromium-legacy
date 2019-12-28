@@ -43,6 +43,10 @@ class LoginHandler : public content::LoginDelegate,
   // optionally handled by extensions and then cancelled so that an error page
   // can commit. Post-commit, LoginHandler shows a login prompt on top of the
   // committed error page.
+  //
+  // TODO(https://crbug.com/1036468): once committed interstitials has fully
+  // launched, we can remove the concept of modes and just have two separate
+  // entrypoints to LoginHandler.
   enum HandlerMode {
     PRE_COMMIT,
     POST_COMMIT,

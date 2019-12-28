@@ -4,7 +4,7 @@
 <translation id="1002439864875515590">이 정책이 빈 문자열로 설정되거나 구성되지 않으면 <ph name="PRODUCT_OS_NAME" />이(가) 사용자 로그인 절차에서 자동 완성 옵션을 표시하지 않습니다.
       이 정책이 도메인 이름을 나타내는 문자열로 설정된 경우 <ph name="PRODUCT_OS_NAME" />이(가) 사용자 로그인 절차에서 자동 완성 옵션을 표시하여 사용자가 도메인 이름 확장자 없이 사용자 이름만 입력할 수 있게 합니다.  사용자는 이 도메인 이름 확장자를 덮어쓸 수 있습니다.
       정책 값이 유효한 도메인이 아닌 경우 정책이 적용되지 않습니다.</translation>
-<translation id="1010151305531217567">기본 마우스 버튼을 오른쪽 버튼으로 전환합니다.</translation>
+<translation id="1010151305531217567">기본 마우스 버튼을 오른쪽 버튼으로 전환</translation>
 <translation id="101438888985615157">180도 화면 회전</translation>
 <translation id="1016912092715201525"><ph name="PRODUCT_NAME" />에서 기본 브라우저 확인을 구성하고 사용자가 구성을 변경하지 못하게 합니다.
 
@@ -372,15 +372,15 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 설정을 사용 중지하거나 설정하지 않으면 기업 사용자는
       ARC를 사용할 수 없습니다.</translation>
 <translation id="1553956579506604198">외부 확장 프로그램이 설치되지 못하도록 차단합니다.</translation>
-<translation id="1556072857949466438">이 정책은 관리자가 로드 해제 중 페이지에서 팝업을 표시할 수 있음을 지정하게 합니다.
+<translation id="1556072857949466438">이 정책은 로드 해제 중 페이지에 팝업 표시를 허용할 것인지를 관리자가 지정할 수 있게 합니다.
 
-      정책이 사용 설정되어 있으면 페이지가 로드 해제 중 팝업을 표시할 수 있도록 허용됩니다.
+      정책이 사용 설정되어 있으면 로드 해제 중 페이지에 팝업 표시가 허용됩니다.
 
-      정책이 사용 중지되거나 설정되어 있지 않으면 사양에 따라 페이지가 언로딩 중에 팝업을 표시할 수 없습니다(https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+      정책이 사용 중지되거나 설정되어 있지 않으면 사양에 따라 로드 해제 중 페이지에 팝업 표시가 허용되지 않습니다(https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
 
       이 정책은 Chrome 88에서 삭제됩니다.
 
-      https://www.chromestatus.com/feature/5989473649164288을 참조하세요.</translation>
+      https://www.chromestatus.com/feature/5989473649164288 페이지를 참조하세요.</translation>
 <translation id="1559980755219453326">확장 프로그램 및 플러그인 정보 보고 여부를 제어하는 정책입니다.
 
       이 정책이 설정되어 있지 않거나 True로 설정되어 있으면 확장 프로그램 및 플러그인 데이터가 수집됩니다.
@@ -843,7 +843,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="2231817271680715693">처음 실행 시 기본 브라우저에서 인터넷 사용기록 가져오기</translation>
 <translation id="2234855698900783408">새로운 <ph name="CORS" /> 구현에서 <ph name="CORS" /> 확인 완화를 사용 설정하여 확장 프로그램이 호환되는 동작을 유지하도록 허용하고 <ph name="PRODUCT_NAME" />에서 <ph name="CORS" /> 확인 없이 지정된 헤더를 전송하도록 허용합니다.
 
-      목록이 Empty로 설정되어 있으면 <ph name="PRODUCT_NAME" />은(는) 호환되는 방식으로 확장 프로그램을 실행하도록 시도하고 <ph name="WEB_REQUEST_API_MANUAL" />에 설명된 것처럼 <ph name="PRODUCT_NAME" /> 79의 <ph name="API" /> 변경사항을 적용하지 않습니다.
+      목록이 빈 상태로 설정되어 있으면 <ph name="PRODUCT_NAME" />은(는) 호환되는 방식으로 확장 프로그램을 실행하도록 시도하고 <ph name="WEB_REQUEST_API_MANUAL" />에 설명된 것처럼 <ph name="PRODUCT_NAME" /> 79의 <ph name="API" /> 변경사항을 적용하지 않습니다.
 
       목록이 <ph name="HTTP" /> 요청 헤더 이름을 가지도록 설정되어 있으면 <ph name="CORS" /> 검사에서 등록된 헤더를 무시하고 확장 프로그램의 완화를 사용 설정합니다.
 
@@ -1074,6 +1074,14 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           이 값은 stringified JSON 사전의 배열이어야 합니다. 각 사전은 <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> 형태여야 하며, 여기에서 <ph name="URL_PATTERN_PLACEHOLDER" />은(는) 콘텐츠 설정 패턴입니다. <ph name="FILTER_PLACEHOLDER" />에서는 브라우저에서 자동으로 선택할 클라이언트 인증서를 제한합니다. 필터와 관계없이 서버의 인증서 요청과 일치하는 인증서만이 선택됩니다. 예를 들어 <ph name="FILTER_PLACEHOLDER" />이(가) <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" /> 형태인 경우 CommonName <ph name="ISSUER_CN_PLACEHOLDER" />으로 된 인증서에 의해 발급된 클라이언트 인증서만이 추가로 선택됩니다. <ph name="FILTER_PLACEHOLDER" />이(가) <ph name="ISSUER_STRING_VALUE" /> 및 <ph name="SUBJECT_STRING_VALUE" /> 섹션을 포함하는 경우 클라이언트 인증서가 선택되려면 모든 조건을 충족해야 합니다. <ph name="FILTER_PLACEHOLDER" />이(가) 조직('O')을 지정하는 경우 인증서가 선택되려면 지정된 값과 일치하는 조직이 인증서에 하나 이상 있어야 합니다. <ph name="FILTER_PLACEHOLDER" />이(가) 조직 단위('OU')를 지정하는 경우 인증서가 선택되려면 지정된 값과 일치하는 조직 단위가 인증서에 하나 이상 있어야 합니다. <ph name="FILTER_PLACEHOLDER" />이(가) 빈 사전(<ph name="EMPTY_DICTIONARY" />)인 경우 클라이언트 인증서 선택에 추가로 적용되는 제한은 없습니다.
 
           이 정책이 설정되지 않으면 어떠한 사이트에서도 인증서가 자동으로 선택되지 않습니다.</translation>
+<translation id="2528659559494311776">이 정책은 다운그레이드 공격으로부터 연결을 보호하는 TLS 1.3의 보안 기능을 제어합니다. 이전 버전과 호환되며, 규정 준수 TLS 1.2 서버 또는 프록시 연결에 영향을 미치지 않습니다. 그러나 이전 버전의 일부 TLS 가로채기 프록시는 구현 오류가 있어 호환되지 않습니다.
+
+      정책이 True로 설정되거나 설정되지 않으면 <ph name="PRODUCT_NAME" />에서 모든 연결에 이러한 보안 기능을 사용합니다.
+
+      정책을 False로 설정하면 <ph name="PRODUCT_NAME" />에서는 로컬에 설치된 CA 인증서로 인증된 연결에 이러한 보안 기능을 사용하지 않습니다. 이러한 보안 기능은 공개적으로 신뢰할 수 있는 CA 인증서로 인증된 연결에 항상 사용됩니다.
+
+      <ph name="PRODUCT_NAME" /> 81부터 이 정책의 기본값이 False에서 True로 변경되었습니다. 영향을 받은 프록시는 연결에 실패하며 오류 코드 ERR_TLS13_DOWNGRADE_DETECTED를 표시합니다. 영향을 받은 프록시를 업그레이드하는 데 시간이 더 필요한 관리자는 이 정책을 사용하여 보안 기능을 일시적으로 사용 중지할 수 있습니다. 이 정책은 버전 85 이후부터 삭제됩니다.
+      </translation>
 <translation id="2529659024053332711">시작 시 행동을 지정할 수 있습니다.
 
           '새 탭 페이지 열기'를 선택하면 <ph name="PRODUCT_NAME" />을(를) 시작할 때 항상 새 탭 페이지가 열립니다.
@@ -1540,7 +1548,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
       이 정책은 Chrome 88에서 삭제됩니다.
 
-      https://www.chromestatus.com/feature/4664843055398912을 참조하세요.</translation>
+      https://www.chromestatus.com/feature/4664843055398912 페이지를 참조하세요.</translation>
 <translation id="3303653927512453822">모든 쿠키를 레거시 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 동작으로 되돌릴 수 있습니다. 레거시 동작으로 되돌리면 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 속성을 지정하지 않는 쿠키가 '<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />'인 것처럼 처리되고 '<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />' 쿠키가 '<ph name="ATTRIBUTE_SECURE_NAME" />' 속성을 수반하지 않아도 됩니다. https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies에서 전체 설명을 확인하세요.
 
           이 정책을 설정하지 않으면 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 속성을 지정하지 않은 쿠키의 기본 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 동작이 <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> 기능에 관한 사용자의 개인 설정에 따라 달라지며, 이러한 설정은 필드 평가판에서 설정하거나 플래그 <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> 플래그를 사용 또는 사용 중지하여 설정할 수 있습니다.</translation>
@@ -1624,6 +1632,15 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 설정이 사용 안함으로 설정되어 있거나 아무런 값도 설정되지 않은 경우 <ph name="PRODUCT_NAME" />에서 YouTube의 제한 모드가 실행되지 않습니다. 하지만 YouTube 정책과 같은 외부 정책에서 계속하여 제한 모드를 실행할 수 있습니다.</translation>
 <translation id="3428247105888806363">네트워크 예측 사용</translation>
 <translation id="3432863169147125747">인쇄 설정을 제어합니다.</translation>
+<translation id="3434053014926283175">로그인 화면의 기본 마우스 버튼을 오른쪽 버튼으로 변경합니다.
+
+          이 정책을 사용으로 설정하면 로그인 화면에서 마우스 오른쪽 버튼이 항상 기본 키로 사용됩니다.
+
+          사용 안함으로 설정하면 로그인 화면에서 마우스 왼쪽 버튼이 항상 기본 키로 사용됩니다.
+
+          정책이 설정되면 사용자가 변경하거나 재정의할 수 없습니다.
+
+          설정하지 않으면 처음에는 로그인 화면에서 마우스 왼쪽 버튼이 기본 키로 사용되지만, 사용자가 언제든지 설정을 변경할 수 있습니다.</translation>
 <translation id="3434932177006334880">이 설정은 Chrome 42 이전에 EnableWebBasedSignin으로 이름이 지정되었으며 Chrome 43에서 지원이 완전히 중단됩니다.
 
       이 설정은 아직 새로운 로그인 방식과 호환되지 않는 SSO 솔루션을 사용 중인 기업 고객에게 유용합니다.
@@ -2455,11 +2472,11 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 정책을 사용 중지하거나 설정하지 않으면 사이트에서 동시에 새로운 창/탭을 탐색하고 열 수 없습니다.</translation>
 <translation id="4680961954980851756">자동 완성 사용</translation>
 <translation id="4693779768620889402">확장 기반 목적지</translation>
-<translation id="4699592681017489215">이 정책은 DNS 가로채기 검사를 사용 중지하는 데 이용할 수 있는 로컬 스위치를 구성합니다. DNS 가로채기 검사는 브라우저에서 알 수 없는 호스트 이름으로 리디렉션하는 프록시를 사용 중인지 확인합니다.
+<translation id="4699592681017489215">이 정책은 DNS 가로채기 검사를 사용 중지하는 데 이용할 수 있는 로컬 스위치를 구성합니다. DNS 가로채기 검사는 브라우저에서 알 수 없는 호스트 이름을 리디렉션하는 프록시를 사용 중인지 확인합니다.
 
-      네트워크 구성이 알려진 엔터프라이즈 환경에서는 검사로 인해 시작 또는 DNS 구성을 변경할 때마다 DNS 및 HTTP 트래픽이 발생할 수 있으므로 이 검사가 필요하지 않을 수 있습니다.
+      네트워크 구성이 알려진 엔터프라이즈 환경에서는 검사를 시작하거나 DNS 구성을 변경할 때마다 검사로 인해 DNS 및 HTTP 트래픽이 발생하므로 이 검사가 필요하지 않을 수 있습니다.
 
-      정책이 설정되어 있지 않거나 설정되어 있으면 DNS 가로채기 검사가 실행됩니다. 명시적으로 사용 중지되면 검사가 실행되지 않습니다.</translation>
+      정책이 설정되어 있지 않거나 사용 설정되어 있으면 DNS 가로채기 검사가 실행됩니다. 명시적으로 사용 중지되면 검사가 실행되지 않습니다.</translation>
 <translation id="4703402283970867140">스마트 밝기 낮추기 모델을 사용하여 화면이 어두워질 때까지의 시간 연장</translation>
 <translation id="4722122254122249791">지정된 출처의 사이트 격리 사용 설정</translation>
 <translation id="4722399051042571387">false인 경우 사용자는 보안 강도가 약하고 추측하기 쉬운 PIN을 설정할 수 없습니다.
@@ -3524,9 +3541,9 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
       설정이 True로 설정되어 있으면 이전 버전과 호환되어야 하는 기존 구현이 사용됩니다.
 
-      설정이 False로 설정되어 있거나 설정되어 있지 않으면 기업별 호환성 문제를 일으킬 수 있는 새 구현이 사용됩니다.
+      설정이 False로 설정되어 있거나 설정되어 있지 않으면 엔터프라이즈별 호환성 문제를 일으킬 수 있는 새 구현이 사용됩니다.
 
-      이 정책은 얼마간의 주요 시점이 지난 후 삭제됩니다.
+      이 정책은 몇 번의 기능 출시를 거치고 나면 삭제됩니다.
 
       <ph name="CORS" />의 세부사항을 확인하려면 <ph name="CORS_HELP_URL" /> 페이지를 참조하세요.
 
@@ -4583,6 +4600,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           정책이 설정되면 사용자가 변경하거나 재정의할 수 없습니다.
 
           정책이 설정되지 않은 경우 처음에는 커서 강조표시가 사용 중지되어 있으나 사용자가 언제든지 사용하도록 설정할 수 있습니다.</translation>
+<translation id="8171924760436219650">로그인 화면의 기본 마우스 버튼을 오른쪽 버튼으로 변경</translation>
 <translation id="8172676363520748127">이 설정을 사용하면 키보드 단축키나 확장 프로그램 API를 사용하여 스크린샷을 캡처할 수 없습니다.
 
       이 설정을 사용 중지하거나 지정하지 않으면 스크린샷을 캡처할 수 있습니다.</translation>

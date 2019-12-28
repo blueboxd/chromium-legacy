@@ -890,7 +890,7 @@
                   '|plugin_vm',
     },
     'cups_printing' : {
-      'filepath': 'chrome/browser/resources/settings/printing_page/'\
+      'filepath': 'chrome/browser/resources/settings/chromeos/os_printing_page/'\
                   '|chrome/test/data/webui/settings/cups_printer_page_tests.js'\
                   '|chrome/browser/ui/webui/settings/chromeos/cups_printers_handler'\
                   '|chrome/browser/chromeos/printing/'\

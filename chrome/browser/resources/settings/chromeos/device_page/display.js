@@ -1027,6 +1027,9 @@ Polymer({
    * @private
    */
   shouldShowArrangementSection_: function() {
+    if (!this.displays) {
+      return false;
+    }
     return this.hasMultipleDisplays_() || this.isMirrored_(this.displays);
   },
 

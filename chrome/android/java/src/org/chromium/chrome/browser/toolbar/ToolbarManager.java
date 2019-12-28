@@ -30,6 +30,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.MathUtils;
 import org.chromium.base.ObservableSupplier;
 import org.chromium.base.ObservableSupplierImpl;
+import org.chromium.base.Supplier;
 import org.chromium.base.metrics.CachedMetrics.ActionEvent;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -248,6 +249,9 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     private AppMenuHandler mAppMenuHandler;
 
     private int mCurrentOrientation;
+
+    /** Runnable for the home button when Start Surface home page is enabled. */
+    private Supplier<Boolean> mShowStartSurfaceSupplier;
 
     /**
      * Creates a ToolbarManager object.
@@ -980,10 +984,13 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             BrowserStateBrowserControlsVisibilityDelegate controlsVisibilityDelegate,
             OverviewModeBehavior overviewModeBehavior, LayoutManager layoutManager,
             OnClickListener tabSwitcherClickHandler, OnClickListener newTabClickHandler,
-            OnClickListener bookmarkClickHandler, OnClickListener customTabsBackClickHandler) {
+            OnClickListener bookmarkClickHandler, OnClickListener customTabsBackClickHandler,
+            Supplier<Boolean> showStartSurfaceSupplier) {
         assert !mInitializedWithNative;
 
         mTabModelSelector = tabModelSelector;
+
+        mShowStartSurfaceSupplier = showStartSurfaceSupplier;
 
         OnLongClickListener tabSwitcherLongClickHandler = null;
 
@@ -1562,6 +1569,9 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             RecordUserAction.record("MobileTopToolbarHomeButton");
         }
 
+        if (mShowStartSurfaceSupplier.get()) {
+            return;
+        }
         Tab currentTab = mLocationBarModel.getTab();
         if (currentTab == null) return;
         String homePageUrl = HomepageManager.getHomepageUri();

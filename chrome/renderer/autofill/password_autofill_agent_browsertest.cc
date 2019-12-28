@@ -88,6 +88,8 @@ const char kBobPassword[] = "secret";
 const char kCarolUsername[] = "Carol";
 const char kCarolPassword[] = "test";
 const char kCarolAlternateUsername[] = "RealCarolUsername";
+const char kEmptyUsername[] = "";
+const char kEmptyUsernamePassword[] = "empty";
 
 const char kFormHTML[] =
     "<FORM id='LoginTestForm' action='http://www.bidule.com'>"
@@ -348,6 +350,8 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     username3_ = ASCIIToUTF16(kCarolUsername);
     password3_ = ASCIIToUTF16(kCarolPassword);
     alternate_username3_ = ASCIIToUTF16(kCarolAlternateUsername);
+    username4_ = ASCIIToUTF16(kEmptyUsername);
+    password4_ = ASCIIToUTF16(kEmptyUsernamePassword);
 
     FormFieldData username_field;
     username_field.name = ASCIIToUTF16(kUsernameName);
@@ -366,6 +370,9 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     PasswordAndMetadata password3;
     password3.password = password3_;
     fill_data_.additional_logins[username3_] = password3;
+    PasswordAndMetadata password4;
+    password3.password = password4_;
+    fill_data_.additional_logins[username4_] = password4;
 
     // We need to set the origin so it matches the frame URL and the action so
     // it matches the form action, otherwise we won't autocomplete.
@@ -615,7 +622,8 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   // suggestions, or only those starting with |username|.
   void CheckSuggestions(const std::string& username, bool show_all) {
     auto show_all_matches = [show_all](int options) {
-      return show_all == !!(options & autofill::SHOW_ALL);
+      return (show_all == ((options & autofill::SHOW_ALL) != 0)) ||
+             (show_all == ((options & autofill::IS_PASSWORD_FIELD) != 0));
     };
 
     EXPECT_CALL(fake_driver_,
@@ -775,10 +783,12 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   base::string16 username1_;
   base::string16 username2_;
   base::string16 username3_;
+  base::string16 username4_;
   base::string16 password1_;
   base::string16 password2_;
   base::string16 password3_;
   base::string16 alternate_username3_;
+  base::string16 password4_;
   PasswordFormFillData fill_data_;
 
   WebInputElement username_element_;
@@ -2364,7 +2374,7 @@ TEST_F(PasswordAutofillAgentTest, ShowPopupOnEmptyPasswordField) {
 
   SimulateSuggestionChoiceOfUsernameAndPassword(
       password_element_, base::string16(), ASCIIToUTF16(kAlicePassword));
-  CheckSuggestions(std::string(), false);
+  CheckSuggestions(std::string(), true);
   EXPECT_EQ(ASCIIToUTF16(kAlicePassword), password_element_.Value().Utf16());
   EXPECT_TRUE(password_element_.IsAutofilled());
 }
@@ -2389,7 +2399,7 @@ TEST_F(PasswordAutofillAgentTest, ShowPopupOnAutofilledPasswordField) {
 
   SimulateSuggestionChoiceOfUsernameAndPassword(
       password_element_, base::string16(), ASCIIToUTF16(kAlicePassword));
-  CheckSuggestions(std::string(), false);
+  CheckSuggestions(std::string(), true);
   EXPECT_EQ(ASCIIToUTF16(kAlicePassword), password_element_.Value().Utf16());
   EXPECT_TRUE(password_element_.IsAutofilled());
 }
@@ -2647,7 +2657,7 @@ TEST_F(PasswordAutofillAgentTest,
   // Simulate a user clicking on the password element. This should produce a
   // message.
   autofill_agent_->FormControlElementClicked(password_element_, true);
-  CheckSuggestions("", false);
+  CheckSuggestions("", true);
 }
 
 // Tests that only the password field is autocompleted when the browser sends
@@ -3152,9 +3162,9 @@ TEST_F(PasswordAutofillAgentTest, ShowSuggestionForNonUsernameFieldForms) {
   SimulateOnFillPasswordForm(fill_data_);
 
   SimulateElementClick("password1");
-  CheckSuggestions(std::string(), false);
+  CheckSuggestions(std::string(), true);
   SimulateElementClick("password2");
-  CheckSuggestions(std::string(), false);
+  CheckSuggestions(std::string(), true);
 }
 
 // Tests that password manager sees both autofill assisted and user entered
@@ -3255,7 +3265,7 @@ TEST_F(PasswordAutofillAgentTest, SuggestPasswordFieldSignInForm) {
   // Simulate a user clicking on the password element. This should produce a
   // dropdown with suggestion of all available usernames.
   autofill_agent_->FormControlElementClicked(password_element_, false);
-  CheckSuggestions("", false);
+  CheckSuggestions("", true);
 }
 
 // Tests that a suggestion dropdown is shown on each password field. But when a
@@ -3278,13 +3288,13 @@ TEST_F(PasswordAutofillAgentTest, SuggestMultiplePasswordFields) {
   // Simulate a user clicking on the password elements. This should produce
   // dropdowns with suggestion of all available usernames.
   SimulateElementClick("password");
-  CheckSuggestions("", false);
+  CheckSuggestions("", true);
 
   SimulateElementClick("newpassword");
-  CheckSuggestions("", false);
+  CheckSuggestions("", true);
 
   SimulateElementClick("confirmpassword");
-  CheckSuggestions("", false);
+  CheckSuggestions("", true);
 
   // The user chooses to autofill the current password field.
   EXPECT_TRUE(password_autofill_agent_->FillSuggestion(
@@ -3301,7 +3311,7 @@ TEST_F(PasswordAutofillAgentTest, SuggestMultiplePasswordFields) {
   // But when the user clicks on the autofilled password field again it should
   // still produce a suggestion dropdown.
   SimulateElementClick("password");
-  CheckSuggestions("", false);
+  CheckSuggestions("", true);
 }
 
 TEST_F(PasswordAutofillAgentTest, ShowAutofillSignaturesFlag) {
@@ -3345,7 +3355,7 @@ TEST_F(PasswordAutofillAgentTest, SuggestWhenJavaScriptUpdatesFieldNames) {
   // Simulate a user clicking on the password element. This should produce a
   // dropdown with suggestion of all available usernames.
   autofill_agent_->FormControlElementClicked(password_element_, false);
-  CheckSuggestions("", false);
+  CheckSuggestions("", true);
 }
 
 // Checks that a same-document navigation form submission could have an empty
@@ -3577,7 +3587,7 @@ TEST_F(PasswordAutofillAgentTest, SuggestLatestCredentials) {
   password_autofill_agent_->FillPasswordForm(fill_data_);
   SimulateElementClick(kPasswordName);
   // Empty value because nothing was typed into the field.
-  CheckSuggestions("", false);
+  CheckSuggestions("", true);
 }
 
 // Tests that PSL matched password is not autofilled even when there is
@@ -3821,6 +3831,26 @@ TEST_F(PasswordAutofillAgentTest, SingleUsernameClearPreview) {
   EXPECT_TRUE(username_element_.SuggestedValue().IsEmpty());
   CheckTextFieldsDOMState("ali", true, std::string(), false);
   CheckUsernameSelection(3, 3);
+}
+
+// Fill on account select for credentials with empty usernames:
+// Do not refill usernames if non-empty username is already selected.
+TEST_F(PasswordAutofillAgentTest, NoUsernameCredential) {
+  SimulateOnFillPasswordForm(fill_data_);
+  ClearUsernameAndPasswordFields();
+  EXPECT_CALL(fake_driver_, ShowPasswordSuggestions);
+  SimulateSuggestionChoiceOfUsernameAndPassword(password_element_,
+                                                ASCIIToUTF16(kAliceUsername),
+                                                ASCIIToUTF16(kAlicePassword));
+  CheckTextFieldsDOMState(kAliceUsername, true, kAlicePassword, true);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_CALL(fake_driver_, ShowPasswordSuggestions);
+  SimulateSuggestionChoiceOfUsernameAndPassword(
+      password_element_, ASCIIToUTF16(kEmptyUsername),
+      ASCIIToUTF16(kEmptyUsernamePassword));
+
+  CheckTextFieldsDOMState(kAliceUsername, true, kEmptyUsernamePassword, true);
 }
 
 // Tests that any fields that have user input are not refilled on the next

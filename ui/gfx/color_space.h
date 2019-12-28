@@ -84,10 +84,6 @@ class COLOR_SPACE_EXPORT ColorSpace {
     SMPTEST2084,
     SMPTEST428_1,
     ARIB_STD_B67,  // AKA hybrid-log gamma, HLG.
-    // This is an ad-hoc transfer function that decodes SMPTE 2084 content
-    // into a [0, 1] range more or less suitable for viewing on a non-hdr
-    // display.
-    SMPTEST2084_NON_HDR,
     // The same as IEC61966_2_1 on the interval [0, 1], with the nonlinear
     // segment continuing beyond 1 and point symmetry defining values below 0.
     IEC61966_2_1_HDR,

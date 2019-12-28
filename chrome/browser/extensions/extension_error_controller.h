@@ -35,7 +35,6 @@ class ExtensionErrorController : public ExtensionErrorUI::Delegate {
  private:
   // ExtensionErrorUI::Delegate implementation:
   content::BrowserContext* GetContext() override;
-  const ExtensionSet& GetExternalExtensions() override;
   const ExtensionSet& GetBlacklistedExtensions() override;
   void OnAlertDetails() override;
   void OnAlertAccept() override;
@@ -44,10 +43,6 @@ class ExtensionErrorController : public ExtensionErrorUI::Delegate {
   // Find any extensions that the user should be alerted about (like blacklisted
   // extensions).
   void IdentifyAlertableExtensions();
-
-  // TODO(rdevlin.cronin): We never seem to use |external_extensions_| here,
-  // but we do warn about them. Investigate more.
-  ExtensionSet external_extensions_;
 
   // The extensions that are blacklisted and need user approval.
   ExtensionSet blacklisted_extensions_;

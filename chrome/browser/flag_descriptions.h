@@ -1379,17 +1379,11 @@ extern const char kWebXrDescription[];
 extern const char kWebXrArModuleName[];
 extern const char kWebXrArModuleDescription[];
 
-extern const char kWebXrArDOMOverlayName[];
-extern const char kWebXrArDOMOverlayDescription[];
-
 extern const char kWebXrHitTestName[];
 extern const char kWebXrHitTestDescription[];
 
-extern const char kWebXrAnchorsName[];
-extern const char kWebXrAnchorsDescription[];
-
-extern const char kWebXrPlaneDetectionName[];
-extern const char kWebXrPlaneDetectionDescription[];
+extern const char kWebXrIncubationsName[];
+extern const char kWebXrIncubationsDescription[];
 
 extern const char kZeroCopyName[];
 extern const char kZeroCopyDescription[];

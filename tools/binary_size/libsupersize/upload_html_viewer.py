@@ -18,7 +18,8 @@ def _SyncStatic():
   """Upload static files from the static directory."""
   static_files = os.path.join(os.path.dirname(__file__), 'static')
   subprocess.check_call([
-    'gsutil.py', '-m', 'rsync', '-r', static_files, GS_BUCKET
+      'gsutil.py', '--', '-m', '-h'
+      'Cache-Control:no-cache', 'rsync', '-r', static_files, GS_BUCKET
   ])
 
 
@@ -28,8 +29,10 @@ def _SyncTemplates():
   cache_hash = uuid.uuid4().hex
 
   p = subprocess.Popen([
-    'gsutil.py', 'cp', '-p', '-', '%s/sw.js' % GS_BUCKET
-  ], stdin=subprocess.PIPE)
+      'gsutil.py', '--', '-h'
+      'Cache-Control:no-cache', 'cp', '-p', '-', GS_BUCKET + '/sw.js'
+  ],
+                       stdin=subprocess.PIPE)
   with open(template_file, 'r') as in_file:
     p.communicate(in_file.read().replace('{{cache_hash}}', cache_hash))
 
@@ -42,9 +45,8 @@ def _SetMetaAndPermissions():
   ])
 
   # All files in the root of the bucket are user readable
-  subprocess.check_call([
-    'gsutil.py', '-m', 'acl', 'ch', '-u', 'AllUsers:R', '%s/*' % GS_BUCKET
-  ])
+  subprocess.check_call(
+      ['gsutil.py', '-m', 'acl', 'ch', '-u', 'AllUsers:R', GS_BUCKET + '/*'])
 
 
 def main():

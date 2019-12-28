@@ -56,10 +56,6 @@ Transform Invert(const Transform& t) {
 
 float FromLinear(ColorSpace::TransferID id, float v) {
   switch (id) {
-    case ColorSpace::TransferID::SMPTEST2084_NON_HDR:
-      // Should already be handled.
-      break;
-
     case ColorSpace::TransferID::LOG:
       if (v < 0.01f)
         return 0.0f;
@@ -178,10 +174,6 @@ float ToLinear(ColorSpace::TransferID id, float v) {
       return v;
     }
 
-    case ColorSpace::TransferID::SMPTEST2084_NON_HDR:
-      v = max(0.0f, v);
-      return min(2.3f * pow(v, 2.8f), v / 5.0f + 0.8f);
-
     // Spec: http://www.arib.or.jp/english/html/overview/doc/2-STD-B67v1_0.pdf
     case ColorSpace::TransferID::ARIB_STD_B67: {
       v = max(0.0f, v);
@@ -224,7 +216,6 @@ Transform GetPrimaryTransform(const gfx::ColorSpace& color_space) {
 class ColorTransformMatrix;
 class ColorTransformSkTransferFn;
 class ColorTransformFromLinear;
-class ColorTransformToBT2020CL;
 class ColorTransformFromBT2020CL;
 class ColorTransformNull;
 
@@ -233,7 +224,6 @@ class ColorTransformStep {
   ColorTransformStep() {}
   virtual ~ColorTransformStep() {}
   virtual ColorTransformFromLinear* GetFromLinear() { return nullptr; }
-  virtual ColorTransformToBT2020CL* GetToBT2020CL() { return nullptr; }
   virtual ColorTransformFromBT2020CL* GetFromBT2020CL() { return nullptr; }
   virtual ColorTransformSkTransferFn* GetSkTransferFn() { return nullptr; }
   virtual ColorTransformMatrix* GetMatrix() { return nullptr; }
@@ -247,19 +237,14 @@ class ColorTransformStep {
   // Return true if this is a null transform.
   virtual bool IsNull() { return false; }
   virtual void Transform(ColorTransform::TriStim* color, size_t num) const = 0;
-  virtual bool CanAppendShaderSource() { return false; }
   // In the shader, |hdr| will appear before |src|, so any helper functions that
   // are created should be put in |hdr|. Any helper functions should have
   // |step_index| included in the function name, to ensure that there are no
   // naming conflicts.
   virtual void AppendShaderSource(std::stringstream* hdr,
                                   std::stringstream* src,
-                                  size_t step_index) const {
-    NOTREACHED();
-  }
-  virtual void AppendSkShaderSource(std::stringstream* src) const {
-    NOTREACHED();
-  }
+                                  size_t step_index) const = 0;
+  virtual void AppendSkShaderSource(std::stringstream* src) const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ColorTransformStep);
@@ -280,16 +265,14 @@ class ColorTransformInternal : public ColorTransform {
       step->Transform(colors, num);
     }
   }
-  bool CanGetShaderSource() const override;
   std::string GetShaderSource() const override;
   std::string GetSkShaderSource() const override;
   bool IsIdentity() const override { return steps_.empty(); }
   size_t NumberOfStepsForTesting() const override { return steps_.size(); }
 
  private:
-  void AppendColorSpaceToColorSpaceTransform(ColorSpace src,
-                                             const ColorSpace& dst,
-                                             ColorTransform::Intent intent);
+  void AppendColorSpaceToColorSpaceTransform(const ColorSpace& src,
+                                             const ColorSpace& dst);
   void Simplify();
 
   std::list<std::unique_ptr<ColorTransformStep>> steps_;
@@ -302,7 +285,6 @@ class ColorTransformNull : public ColorTransformStep {
   ColorTransformNull* GetNull() override { return this; }
   bool IsNull() override { return true; }
   void Transform(ColorTransform::TriStim* color, size_t num) const override {}
-  bool CanAppendShaderSource() override { return true; }
   void AppendShaderSource(std::stringstream* hdr,
                           std::stringstream* src,
                           size_t step_index) const override {}
@@ -333,7 +315,6 @@ class ColorTransformMatrix : public ColorTransformStep {
       matrix_.TransformPoint(colors + i);
   }
 
-  bool CanAppendShaderSource() override { return true; }
 
   void AppendShaderSource(std::stringstream* hdr,
                           std::stringstream* src,
@@ -483,7 +464,6 @@ class ColorTransformSkTransferFn : public ColorTransformPerChannelTransferFn {
     }
     return false;
   }
-  bool CanAppendShaderSource() override { return true; }
   bool IsNull() override { return SkTransferFnIsApproximatelyIdentity(fn_); }
 
   // ColorTransformPerChannelTransferFn implementation:
@@ -534,7 +514,6 @@ class ColorTransformFromLinear : public ColorTransformPerChannelTransferFn {
   explicit ColorTransformFromLinear(ColorSpace::TransferID transfer)
       : ColorTransformPerChannelTransferFn(false), transfer_(transfer) {}
   ColorTransformFromLinear* GetFromLinear() override { return this; }
-  bool CanAppendShaderSource() override { return true; }
   bool IsNull() override { return transfer_ == ColorSpace::TransferID::LINEAR; }
 
   // ColorTransformPerChannelTransferFn implementation:
@@ -625,7 +604,6 @@ class ColorTransformToLinear : public ColorTransformPerChannelTransferFn {
     }
     return false;
   }
-  bool CanAppendShaderSource() override { return true; }
   bool IsNull() override { return transfer_ == ColorSpace::TransferID::LINEAR; }
 
   // ColorTransformPerChannelTransferFn implementation:
@@ -690,10 +668,6 @@ class ColorTransformToLinear : public ColorTransformPerChannelTransferFn {
                 "              (c2 - c3 * pow(v2, 1.0 / m2)), 1.0 / m1);\n"
                 "  v = v2 * 10000.0 / 80.0;\n";
         return;
-      case ColorSpace::TransferID::SMPTEST2084_NON_HDR:
-        *src << "  v = max(0.0, v);\n"
-                "  v = min(2.3 * pow(v, 2.8), v / 5.0 + 0.8);\n";
-        return;
       case ColorSpace::TransferID::ARIB_STD_B67:
         *src << "  v = max(0.0, v);\n"
              << "  " << scalar_type << " a = 0.17883277;\n"
@@ -714,43 +688,6 @@ class ColorTransformToLinear : public ColorTransformPerChannelTransferFn {
   ColorSpace::TransferID transfer_;
 };
 
-class ColorTransformSMPTEST2048NonHdrToLinear : public ColorTransformStep {
- public:
-  // Assumes BT2020 primaries.
-  static float Luma(const ColorTransform::TriStim& c) {
-    return c.x() * 0.2627f + c.y() * 0.6780f + c.z() * 0.0593f;
-  }
-  static ColorTransform::TriStim ClipToWhite(ColorTransform::TriStim* c) {
-    float maximum = max(max(c->x(), c->y()), c->z());
-    if (maximum > 1.0f) {
-      float l = Luma(*c);
-      c->Scale(1.0f / maximum);
-      ColorTransform::TriStim white(1.0f, 1.0f, 1.0f);
-      white.Scale((1.0f - 1.0f / maximum) * l / Luma(white));
-      ColorTransform::TriStim black(0.0f, 0.0f, 0.0f);
-      *c += white - black;
-    }
-    return *c;
-  }
-  void Transform(ColorTransform::TriStim* colors, size_t num) const override {
-    for (size_t i = 0; i < num; i++) {
-      ColorTransform::TriStim ret(
-          ToLinear(ColorSpace::TransferID::SMPTEST2084_NON_HDR, colors[i].x()),
-          ToLinear(ColorSpace::TransferID::SMPTEST2084_NON_HDR, colors[i].y()),
-          ToLinear(ColorSpace::TransferID::SMPTEST2084_NON_HDR, colors[i].z()));
-      if (Luma(ret) > 0.0) {
-        ColorTransform::TriStim smpte2084(
-            ToLinear(ColorSpace::TransferID::SMPTEST2084, colors[i].x()),
-            ToLinear(ColorSpace::TransferID::SMPTEST2084, colors[i].y()),
-            ToLinear(ColorSpace::TransferID::SMPTEST2084, colors[i].z()));
-        smpte2084.Scale(Luma(ret) / Luma(smpte2084));
-        ret = ClipToWhite(&smpte2084);
-      }
-      colors[i] = ret;
-    }
-  }
-};
-
 // BT2020 Constant Luminance is different than most other
 // ways to encode RGB values as YUV. The basic idea is that
 // transfer functions are applied on the Y value instead of
@@ -764,61 +701,9 @@ class ColorTransformSMPTEST2048NonHdrToLinear : public ColorTransformStep {
 // Then we run the transfer function like normal, and finally
 // this class is inserted as an extra step which takes calculates
 // the U and V values.
-class ColorTransformToBT2020CL : public ColorTransformStep {
- public:
-  bool Join(ColorTransformStep* next_untyped) override {
-    ColorTransformFromBT2020CL* next = next_untyped->GetFromBT2020CL();
-    if (!next)
-      return false;
-    if (null_)
-      return false;
-    null_ = true;
-    return true;
-  }
-
-  bool IsNull() override { return null_; }
-
-  void Transform(ColorTransform::TriStim* RYB, size_t num) const override {
-    for (size_t i = 0; i < num; i++) {
-      float U, V;
-      float B_Y = RYB[i].z() - RYB[i].y();
-      if (B_Y <= 0) {
-        U = B_Y / (-2.0 * -0.9702);
-      } else {
-        U = B_Y / (2.0 * 0.7910);
-      }
-      float R_Y = RYB[i].x() - RYB[i].y();
-      if (R_Y <= 0) {
-        V = R_Y / (-2.0 * -0.8591);
-      } else {
-        V = R_Y / (2.0 * 0.4969);
-      }
-      RYB[i] = ColorTransform::TriStim(RYB[i].y(), U + 0.5, V + 0.5);
-    }
-  }
-
- private:
-  bool null_ = false;
-};
-
-// Inverse of ColorTransformToBT2020CL, see comment above for more info.
 class ColorTransformFromBT2020CL : public ColorTransformStep {
  public:
-  bool Join(ColorTransformStep* next_untyped) override {
-    ColorTransformToBT2020CL* next = next_untyped->GetToBT2020CL();
-    if (!next)
-      return false;
-    if (null_)
-      return false;
-    null_ = true;
-    return true;
-  }
-
-  bool IsNull() override { return null_; }
-
   void Transform(ColorTransform::TriStim* YUV, size_t num) const override {
-    if (null_)
-      return;
     for (size_t i = 0; i < num; i++) {
       float Y = YUV[i].x();
       float U = YUV[i].y() - 0.5;
@@ -838,7 +723,6 @@ class ColorTransformFromBT2020CL : public ColorTransformStep {
       YUV[i] = ColorTransform::TriStim(R_Y + Y, Y, B_Y + Y);
     }
   }
-  bool CanAppendShaderSource() override { return true; }
   void AppendShaderSource(std::stringstream* hdr,
                           std::stringstream* src,
                           size_t step_index) const override {
@@ -866,14 +750,14 @@ class ColorTransformFromBT2020CL : public ColorTransformStep {
          << "(color.rgb);" << endl;
   }
 
- private:
-  bool null_ = false;
+  void AppendSkShaderSource(std::stringstream* src) const override {
+    NOTREACHED();
+  }
 };
 
 void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
-    ColorSpace src,
-    const ColorSpace& dst,
-    ColorTransform::Intent intent) {
+    const ColorSpace& src,
+    const ColorSpace& dst) {
   steps_.push_back(
       std::make_unique<ColorTransformMatrix>(GetRangeAdjustMatrix(src)));
 
@@ -895,10 +779,6 @@ void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
   if (src.GetTransferFunction(&src_to_linear_fn)) {
     steps_.push_back(std::make_unique<ColorTransformSkTransferFn>(
         src_to_linear_fn, src.HasExtendedSkTransferFn()));
-  } else if (src.GetTransferID() ==
-             ColorSpace::TransferID::SMPTEST2084_NON_HDR) {
-    steps_.push_back(
-        std::make_unique<ColorTransformSMPTEST2048NonHdrToLinear>());
   } else {
     steps_.push_back(
         std::make_unique<ColorTransformToLinear>(src.GetTransferID()));
@@ -930,7 +810,7 @@ void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
   }
 
   if (dst.GetMatrixID() == ColorSpace::MatrixID::BT2020_CL) {
-    steps_.push_back(std::make_unique<ColorTransformToBT2020CL>());
+    NOTREACHED();
   } else {
     steps_.push_back(
         std::make_unique<ColorTransformMatrix>(GetTransferMatrix(dst)));
@@ -948,13 +828,7 @@ ColorTransformInternal::ColorTransformInternal(const ColorSpace& src,
   // TODO(ccameron): We may want dst assume sRGB at some point in the future.
   if (!src_.IsValid())
     return;
-
-  // SMPTEST2084_NON_HDR is not a valid destination.
-  if (dst.GetTransferID() == ColorSpace::TransferID::SMPTEST2084_NON_HDR) {
-    DLOG(ERROR) << "Invalid dst transfer function, returning identity.";
-    return;
-  }
-  AppendColorSpaceToColorSpaceTransform(src_, dst_, intent);
+  AppendColorSpaceToColorSpaceTransform(src_, dst_);
   if (intent != Intent::TEST_NO_OPT)
     Simplify();
 }
@@ -979,14 +853,6 @@ std::string ColorTransformInternal::GetSkShaderSource() const {
   for (const auto& step : steps_)
     step->AppendSkShaderSource(&src);
   return src.str();
-}
-
-bool ColorTransformInternal::CanGetShaderSource() const {
-  for (const auto& step : steps_) {
-    if (!step->CanAppendShaderSource())
-      return false;
-  }
-  return true;
 }
 
 ColorTransformInternal::~ColorTransformInternal() {}

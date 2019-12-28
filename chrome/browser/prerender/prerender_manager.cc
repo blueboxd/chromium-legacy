@@ -51,7 +51,6 @@
 #include "chrome/common/prerender_types.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -129,19 +128,9 @@ class PrerenderManager::OnCloseWebContentsDeleter
     ScheduleWebContentsForDeletion(/*timeout=*/false);
   }
 
-  bool ShouldSuppressDialogs(WebContents* source) override {
-    // Use this as a proxy for getting statistics on how often we fail to honor
-    // the beforeunload event.
-    DCHECK_EQ(tab_.get(), source);
-    suppressed_dialog_ = true;
-    return true;
-  }
-
  private:
   void ScheduleWebContentsForDeletion(bool timeout) {
     UMA_HISTOGRAM_BOOLEAN("Prerender.TabContentsDeleterTimeout", timeout);
-    UMA_HISTOGRAM_BOOLEAN("Prerender.TabContentsDeleterSuppressedDialog",
-                          suppressed_dialog_);
     tab_->SetDelegate(nullptr);
     manager_->ScheduleDeleteOldWebContents(std::move(tab_), this);
     // |this| is deleted at this point.
@@ -149,7 +138,6 @@ class PrerenderManager::OnCloseWebContentsDeleter
 
   PrerenderManager* const manager_;
   std::unique_ptr<WebContents> tab_;
-  bool suppressed_dialog_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(OnCloseWebContentsDeleter);
 };
@@ -448,15 +436,6 @@ WebContents* PrerenderManager::SwapInternal(const GURL& url,
   }
 
   DCHECK(prerender_data->contents()->prerendering_has_started());
-
-  // Don't use prerendered pages if debugger is attached to the tab.
-  // See http://crbug.com/98541
-  if (content::DevToolsAgentHost::IsDebuggerAttached(web_contents)) {
-    histograms_->RecordFinalStatus(prerender_data->contents()->origin(),
-                                   FINAL_STATUS_DEVTOOLS_ATTACHED);
-    prerender_data->contents()->Destroy(FINAL_STATUS_DEVTOOLS_ATTACHED);
-    return nullptr;
-  }
 
   // At this point, we've determined that we will use the prerender.
   content::RenderProcessHost* process_host =

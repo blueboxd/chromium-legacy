@@ -428,7 +428,8 @@ TEST_F('OSSettingsDevicePageTest', 'StylusTest', () => {
 var OSSettingsFingerprintListTest = class extends OSSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return super.browsePreload + 'people_page/fingerprint_list.html';
+    return super.browsePreload +
+        'chromeos/os_people_page/fingerprint_list.html';
   }
 
   /** @override */
@@ -709,7 +710,7 @@ var OSSettingsPeoplePageAccountManagerTest =
     class extends OSSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return super.browsePreload + 'people_page/account_manager.html';
+    return super.browsePreload + 'chromeos/os_people_page/account_manager.html';
   }
 
   /** @override */
@@ -751,7 +752,8 @@ var OSSettingsPeoplePageKerberosAccountsTest =
     class extends OSSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return super.browsePreload + 'people_page/kerberos_accounts.html';
+    return super.browsePreload +
+        'chromeos/os_people_page/kerberos_accounts.html';
   }
 
   /** @override */
@@ -772,7 +774,7 @@ TEST_F('OSSettingsPeoplePageKerberosAccountsTest', 'AllJsTests', () => {
 var OSSettingsPeoplePageLockScreenTest = class extends OSSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return super.browsePreload + 'people_page/lock_screen.html';
+    return super.browsePreload + 'chromeos/os_people_page/lock_screen.html';
   }
 
   /** @override */
@@ -799,7 +801,7 @@ var OSSettingsPeoplePageQuickUnlockAuthenticateTest =
   /** @override */
   get browsePreload() {
     return super.browsePreload +
-        'people_page/lock_screen_password_prompt_dialog.html';
+        'chromeos/os_people_page/lock_screen_password_prompt_dialog.html';
   }
 
   /** @override */
@@ -822,7 +824,8 @@ var OSSettingsPeoplePageSetupPinDialogTest =
     class extends OSSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return super.browsePreload + 'people_page/setup_pin_dialog.html';
+    return super.browsePreload +
+        'chromeos/os_people_page/setup_pin_dialog.html';
   }
 
   /** @override */
@@ -925,7 +928,8 @@ TEST_F('OSSettingsPluginVmPageTest', 'AllJsTests', () => {
 var OSSettingsPrinterEntryTest = class extends OSSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return super.browsePreload + 'printing_page/cups_printers_entry.html';
+    return super.browsePreload +
+        'chromeos/os_printing_page/cups_printers_entry.html';
   }
 
   /** @override */
@@ -948,7 +952,7 @@ TEST_F('OSSettingsPrinterEntryTest', 'AllJsTests', () => {
 var OSSettingsPrinterLandingPageTest = class extends OSSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return super.browsePreload + 'printing_page/cups_printers.html';
+    return super.browsePreload + 'chromeos/os_printing_page/cups_printers.html';
   }
 
   /** @override */
@@ -975,7 +979,7 @@ TEST_F('OSSettingsPrinterLandingPageTest', 'AllJsTests', () => {
 var OSSettingsPrintingPageTest = class extends OSSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return super.browsePreload + 'printing_page/cups_printers.html';
+    return super.browsePreload + 'chromeos/os_printing_page/cups_printers.html';
   }
 
   /** @override */

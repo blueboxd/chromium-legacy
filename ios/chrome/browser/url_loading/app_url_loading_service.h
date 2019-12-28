@@ -9,6 +9,7 @@
 #import <UIKit/UIKit.h>
 
 #include "base/ios/block_types.h"
+#import "ios/chrome/app/application_delegate/tab_opening.h"
 #include "ios/chrome/app/application_mode.h"
 #include "ui/base/page_transition_types.h"
 
@@ -37,7 +38,7 @@ class ChromeBrowserState;
 // If the current tab in |targetMode| is a NTP, it can be reused to open URL.
 // |completion| is executed after the tab is opened. After Tab is open the
 // virtual URL is set to the pending navigation item.
-- (void)openSelectedTabInMode:(ApplicationMode)targetMode
+- (void)openSelectedTabInMode:(ApplicationModeForTabOpening)targetMode
             withUrlLoadParams:(const UrlLoadParams&)urlLoadParams
                    completion:(ProceduralBlock)completion;
 

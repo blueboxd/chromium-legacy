@@ -709,6 +709,7 @@
 <translation id="4340982228985273705">This computer is not detected as enterprise managed, so policy can only automatically install extensions hosted on the Chrome Web Store. The Chrome Web Store update URL is '<ph name="CWS_UPDATE_URL" />'.</translation>
 <translation id="4346197816712207223">Accepted Credit Cards</translation>
 <translation id="4346833872170306413">Roc-16K</translation>
+<translation id="4349531505348777662">You just entered your password on a deceptive site. Chrome recommends going to <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> and other sites where you use this password, and changing it now.</translation>
 <translation id="4356973930735388585">Attackers on this site might attempt to install dangerous programs on your computer that steal or delete your information (for example, photos, passwords, messages and credit cards).</translation>
 <translation id="4358059973562876591">The templates that you've specified may not be applied due to an error with the DnsOverHttpsMode policy.</translation>
 <translation id="4358461427845829800">Manage payment methods...</translation>
@@ -1236,6 +1237,7 @@
 <translation id="6970216967273061347">District</translation>
 <translation id="6973656660372572881">Both fixed proxy servers and a .pac script URL are specified.</translation>
 <translation id="6973932557599545801">Sorry I'm not able to help. Please continue on your own.</translation>
+<translation id="6975012522936652259">You just entered your password on a deceptive site. Chromium recommends going to <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> and other sites where you use this password, and changing it now.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Mute (default)</translation>
 <translation id="6989763994942163495">+ Show advanced settings</translation>
@@ -1367,6 +1369,7 @@ Additional details:
 <translation id="7567204685887185387">This server could not prove that it is <ph name="DOMAIN" />; its security certificate might have been issued fraudulently. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="7569952961197462199">Remove credit card from Chrome?</translation>
 <translation id="7569983096843329377">Black</translation>
+<translation id="7575207903026901870">Remove Suggestion button, press Enter to remove this suggestion</translation>
 <translation id="7578104083680115302">Pay quickly on sites and apps across devices using cards that you have saved with Google.</translation>
 <translation id="7592362899630581445">Server's certificate violates name constraints.</translation>
 <translation id="7598391785903975535">Less than <ph name="UPPER_ESTIMATE" /></translation>
@@ -1612,6 +1615,7 @@ Additional details:
 <translation id="8891727572606052622">Invalid proxy mode.</translation>
 <translation id="8903921497873541725">Zoom in</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="890493561996401738">Remove Suggestion button, press Enter to remove, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">You've gone incognito</translation>
 <translation id="8912362522468806198">Google Account</translation>
 <translation id="8918231688545606538">This page is suspicious</translation>

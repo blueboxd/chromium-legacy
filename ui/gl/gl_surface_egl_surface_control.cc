@@ -414,16 +414,6 @@ void GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread(
 
   transaction_ack_pending_ = false;
 
-  // The presentation feedback callback must run after swap completion.
-  std::move(completion_callback).Run(gfx::SwapResult::SWAP_ACK, nullptr);
-
-  PendingPresentationCallback pending_cb;
-  pending_cb.latch_time = transaction_stats.latch_time;
-  pending_cb.present_fence = std::move(transaction_stats.present_fence);
-  pending_cb.callback = std::move(presentation_callback);
-  pending_presentation_callback_queue_.push(std::move(pending_cb));
-  CheckPendingPresentationCallbacks();
-
   const bool has_context = context_->MakeCurrent(this);
   for (auto& surface_stat : transaction_stats.surface_stats) {
     auto it = released_resources.find(surface_stat.surface);
@@ -450,6 +440,17 @@ void GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread(
   // which were updated in that transaction, the surfaces with no buffer updates
   // won't be present in the ack.
   released_resources.clear();
+
+  // The presentation feedback callback must run after swap completion.
+  std::move(completion_callback).Run(gfx::SwapResult::SWAP_ACK, nullptr);
+
+  PendingPresentationCallback pending_cb;
+  pending_cb.latch_time = transaction_stats.latch_time;
+  pending_cb.present_fence = std::move(transaction_stats.present_fence);
+  pending_cb.callback = std::move(presentation_callback);
+  pending_presentation_callback_queue_.push(std::move(pending_cb));
+
+  CheckPendingPresentationCallbacks();
 
   if (!pending_transaction_queue_.empty()) {
     transaction_ack_pending_ = true;

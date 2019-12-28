@@ -82,6 +82,26 @@ ACTION_P2(ReturnFreshLogo, reason, logo) {
   }
 }
 
+// A simple class to add a test failure if any console message comes in for
+// the given WebContents.
+class FailOnConsoleMessage : public content::WebContentsObserver {
+ public:
+  explicit FailOnConsoleMessage(content::WebContents* web_contents)
+      : WebContentsObserver(web_contents) {}
+  FailOnConsoleMessage(const FailOnConsoleMessage& other) = delete;
+  FailOnConsoleMessage& operator=(const FailOnConsoleMessage& other) = delete;
+  ~FailOnConsoleMessage() override = default;
+
+ private:
+  // content::WebContentsObserver:
+  void OnDidAddMessageToConsole(blink::mojom::ConsoleMessageLevel log_level,
+                                const base::string16& message,
+                                int32_t line_no,
+                                const base::string16& source_id) override {
+    ADD_FAILURE() << "Unexpected console message: " << message;
+  }
+};
+
 }  // namespace
 
 class LocalNTPDoodleTest : public InProcessBrowserTest {
@@ -218,8 +238,8 @@ class LocalNTPDoodleTest : public InProcessBrowserTest {
   }
 
   void WaitForFadeIn(content::WebContents* tab, const std::string& id) {
-    content::ConsoleObserverDelegate console_observer(tab, "WaitForFadeIn");
-    tab->SetDelegate(&console_observer);
+    content::WebContentsConsoleObserver console_observer(tab);
+    console_observer.SetPattern("WaitForFadeIn");
 
     bool result = false;
     if (!instant_test_utils::GetBoolFromJS(
@@ -251,8 +271,8 @@ class LocalNTPDoodleTest : public InProcessBrowserTest {
   }
 
   void WaitForLogoSwap(content::WebContents* tab, const std::string& id) {
-    content::ConsoleObserverDelegate console_observer(tab, "WaitForFadeIn");
-    tab->SetDelegate(&console_observer);
+    content::WebContentsConsoleObserver console_observer(tab);
+    console_observer.SetPattern("WaitForFadeIn");
 
     bool result = false;
     if (!instant_test_utils::GetBoolFromJS(
@@ -327,15 +347,14 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest,
   // Open a new blank tab, then go to NTP and listen for console messages.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  content::ConsoleObserverDelegate console_observer(active_tab, "*");
-  active_tab->SetDelegate(&console_observer);
+
+  FailOnConsoleMessage console_observer(active_tab);
   base::HistogramTester histograms;
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
 
   EXPECT_THAT(GetDimension(active_tab, "fakebox", "top"), Eq(kFakeboxTopPx));
   EXPECT_THAT(GetComputedOpacity(active_tab, "logo-default"), Eq(1.0));
   EXPECT_THAT(GetComputedOpacity(active_tab, "logo-doodle"), Eq(0.0));
-  EXPECT_THAT(console_observer.message(), IsEmpty());
 
   histograms.ExpectTotalCount("NewTabPage.LogoShown", 0);
   histograms.ExpectTotalCount("NewTabPage.LogoShown.FromCache", 0);
@@ -353,15 +372,13 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest,
   // Open a new blank tab, then go to NTP and listen for console messages.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  content::ConsoleObserverDelegate console_observer(active_tab, "*");
-  active_tab->SetDelegate(&console_observer);
+  FailOnConsoleMessage console_observer(active_tab);
   base::HistogramTester histograms;
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
 
   EXPECT_THAT(GetDimension(active_tab, "fakebox", "top"), Eq(kFakeboxTopPx));
   EXPECT_THAT(GetComputedOpacity(active_tab, "logo-default"), Eq(1.0));
   EXPECT_THAT(GetComputedOpacity(active_tab, "logo-doodle"), Eq(0.0));
-  EXPECT_THAT(console_observer.message(), IsEmpty());
 
   histograms.ExpectTotalCount("NewTabPage.LogoShown", 0);
   histograms.ExpectTotalCount("NewTabPage.LogoShown.FromCache", 0);
@@ -384,8 +401,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldShowDoodleWhenCached) {
   // Open a new blank tab, then go to NTP and listen for console messages.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  content::ConsoleObserverDelegate console_observer(active_tab, "*");
-  active_tab->SetDelegate(&console_observer);
+  FailOnConsoleMessage console_observer(active_tab);
   base::HistogramTester histograms;
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
 
@@ -399,7 +415,6 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldShowDoodleWhenCached) {
   EXPECT_THAT(GetElementProperty(active_tab, "logo-doodle-image", "title"),
               Eq<std::string>("Chromium"));
   // TODO(sfiera): check href by clicking on button.
-  EXPECT_THAT(console_observer.message(), IsEmpty());
 
   histograms.ExpectTotalCount("NewTabPage.LogoShown", 1);
   histograms.ExpectBucketCount("NewTabPage.LogoShown", kLogoImpressionStatic,
@@ -763,8 +778,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldAppendShareButtonWhenCached) {
   // Open a new blank tab, then go to NTP and listen for console messages.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  content::ConsoleObserverDelegate console_observer(active_tab, "*");
-  active_tab->SetDelegate(&console_observer);
+  FailOnConsoleMessage console_observer(active_tab);
   base::HistogramTester histograms;
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
 
@@ -802,8 +816,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest,
   // Open a new blank tab, then go to NTP and listen for console messages.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  content::ConsoleObserverDelegate console_observer(active_tab, "*");
-  active_tab->SetDelegate(&console_observer);
+  FailOnConsoleMessage console_observer(active_tab);
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
 
   EXPECT_FALSE(ElementExists(active_tab, "ddlsb"));
@@ -832,8 +845,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest,
   // Open a new blank tab, then go to NTP and listen for console messages.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  content::ConsoleObserverDelegate console_observer(active_tab, "*");
-  active_tab->SetDelegate(&console_observer);
+  FailOnConsoleMessage console_observer(active_tab);
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
 
   EXPECT_FALSE(ElementExists(active_tab, "ddlsb"));
@@ -862,8 +874,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest,
   // Open a new blank tab, then go to NTP and listen for console messages.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  content::ConsoleObserverDelegate console_observer(active_tab, "*");
-  active_tab->SetDelegate(&console_observer);
+  FailOnConsoleMessage console_observer(active_tab);
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
 
   EXPECT_FALSE(DialogIsOpen(active_tab, "ddlsd"));
@@ -1249,9 +1260,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldLogForSimpleDoodle) {
   // Open a new blank tab, then go to NTP and listen for console messages.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  content::WebContentsDelegate* original_delegate = active_tab->GetDelegate();
-  content::ConsoleObserverDelegate console_observer(active_tab, "*");
-  active_tab->SetDelegate(&console_observer);
+  FailOnConsoleMessage console_observer(active_tab);
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
 
   ASSERT_THAT(GetComputedOpacity(active_tab, "logo-doodle"), Eq(1.0));
@@ -1260,9 +1269,6 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldLogForSimpleDoodle) {
   std::string response = WaitForDdllogResponse(active_tab, 1);
   EXPECT_EQ("target_url_params a=b&c=d", response);
 
-  // Before clicking on the Doodle, re-attach the original WebContentsDelegate,
-  // otherwise setting 'window.location' doesn't have any effect.
-  active_tab->SetDelegate(original_delegate);
   content::TestNavigationObserver nav_observer(active_tab);
   ASSERT_TRUE(content::ExecuteScript(
       active_tab, "document.getElementById('logo-doodle-button').click();"));
@@ -1273,8 +1279,6 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldLogForSimpleDoodle) {
   ASSERT_TRUE(instant_test_utils::GetStringFromJS(
       active_tab, "document.location.href", &target_url));
   EXPECT_EQ(on_click_url.spec() + "?a=b&c=d", target_url);
-
-  EXPECT_THAT(console_observer.message(), IsEmpty());
 }
 
 IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldLogForAnimatedDoodle) {
@@ -1305,9 +1309,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldLogForAnimatedDoodle) {
   // Open a new blank tab, then go to NTP and listen for console messages.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  content::WebContentsDelegate* original_delegate = active_tab->GetDelegate();
-  content::ConsoleObserverDelegate console_observer(active_tab, "*");
-  active_tab->SetDelegate(&console_observer);
+  FailOnConsoleMessage console_observer(active_tab);
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
 
   ASSERT_THAT(GetComputedOpacity(active_tab, "logo-doodle"), Eq(1.0));
@@ -1328,10 +1330,6 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldLogForAnimatedDoodle) {
   std::string anim_response = WaitForDdllogResponse(active_tab, 2);
   EXPECT_EQ("target_url_params a=b&c=d", anim_response);
 
-  // Before clicking on the Doodle, re-attach the original WebContentsDelegate,
-  // otherwise setting 'window.location' doesn't seem to have any effect for
-  // some reason.
-  active_tab->SetDelegate(original_delegate);
   content::TestNavigationObserver nav_observer(active_tab);
   ASSERT_TRUE(content::ExecuteScript(
       active_tab, "document.getElementById('logo-doodle-button').click();"));
@@ -1342,8 +1340,6 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldLogForAnimatedDoodle) {
   ASSERT_TRUE(instant_test_utils::GetStringFromJS(
       active_tab, "document.location.href", &target_url));
   EXPECT_EQ(on_click_url.spec() + "?a=b&c=d", target_url);
-
-  EXPECT_THAT(console_observer.message(), IsEmpty());
 }
 
 IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldNotMoveFakeboxForIframeSizes) {

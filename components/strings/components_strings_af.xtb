@@ -722,6 +722,7 @@
 <translation id="4340982228985273705">Hierdie rekenaar word nie bespeur as een wat deur 'n onderneming bestuur word nie en beleid kan dus net uitbreidings wat in die Chrome Webwinkel gehuisves word, outomaties installeer. Die Chrome Webwinkel se opdatering-URL is "<ph name="CWS_UPDATE_URL" />".</translation>
 <translation id="4346197816712207223">Aanvaarde kredietkaarte</translation>
 <translation id="4346833872170306413">Roc-16K</translation>
+<translation id="4349531505348777662">Jy het sopas jou wagwoord op 'n misleidende werf ingevoer. Chrome beveel aan dat jy gaan na <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> en ander werwe waarop jy hierdie wagwoord gebruik en dit nou verander.</translation>
 <translation id="4356973930735388585">Aanvallers op hierdie werf kan probeer om gevaarlike programme op jou rekenaar te installeer wat jou inligting (byvoorbeeld foto's, wagwoorde, boodskappe en kredietkaarte) steel of uitvee.</translation>
 <translation id="4358059973562876591">Die template wat jy gespesifiseer het, kan weens 'n fout met die DnsOverHttpsMode-beleid dalk nie toegepas word nie.</translation>
 <translation id="4358461427845829800">Bestuur betaalmetodes …</translation>
@@ -1250,6 +1251,7 @@
 <translation id="6970216967273061347">Distrik</translation>
 <translation id="6973656660372572881">Sowel vaste instaanbedieners as 'n .pac-skrip is gespesifiseer.</translation>
 <translation id="6973932557599545801">Jammer dat ek nie kan help nie; gaan asseblief op jou eie voort.</translation>
+<translation id="6975012522936652259">Jy het sopas jou wagwoord op 'n misleidende werf ingevoer. Chromium beveel aan dat jy gaan na <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> en ander werwe waarop jy hierdie wagwoord gebruik en dit nou verander.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Demp (verstek)</translation>
 <translation id="6989763994942163495">Wys gevorderde instellings …</translation>
@@ -1381,6 +1383,7 @@ om uit te vind hoe om die sagteware permanent van jou rekenaar te verwyder&lt;/o
 <translation id="7567204685887185387">Hierdie bediener kon nie bewys dat dit <ph name="DOMAIN" /> is nie; sy sekuriteitsertifikaat is dalk valslik uitgereik. Dit kan veroorsaak word deur 'n wanopstelling of 'n aanvaller wat jou verbinding onderskep.</translation>
 <translation id="7569952961197462199">Verwyder kredietkaart uit Chrome?</translation>
 <translation id="7569983096843329377">Swart</translation>
+<translation id="7575207903026901870">Verwyder Voorstel-knoppie; druk Enter om hierdie voorstel te verwyder</translation>
 <translation id="7578104083680115302">Betaal vinnig op werwe en in programme op verskillende toestelle met kaarte wat jy by Google gestoor het.</translation>
 <translation id="7592362899630581445">Bedienersertifikaat oortree naambeperkings.</translation>
 <translation id="7598391785903975535">Minder as <ph name="UPPER_ESTIMATE" /></translation>
@@ -1626,6 +1629,7 @@ Bykomende besonderhede:
 <translation id="8891727572606052622">Ongeldige instaanbedienermodus.</translation>
 <translation id="8903921497873541725">Zoem in</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="890493561996401738">Verwyder Voorstel-knoppie; druk Enter om te verwyder; <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Jy is nou incognito</translation>
 <translation id="8912362522468806198">Google-rekening</translation>
 <translation id="8918231688545606538">Hierdie bladsy is verdag</translation>

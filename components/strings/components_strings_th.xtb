@@ -706,6 +706,7 @@
 <translation id="4340982228985273705">ไม่มีการตรวจพบว่าคอมพิวเตอร์เครื่องนี้ได้รับการจัดการโดยองค์กร ดังนั้นนโยบายจะติดตั้งเฉพาะส่วนขยายที่โฮสต์ใน Chrome เว็บสโตร์โดยอัตโนมัติ URL การอัปเดตของ Chrome เว็บสโตร์คือ "<ph name="CWS_UPDATE_URL" />"</translation>
 <translation id="4346197816712207223">บัตรเครดิตที่ยอมรับ</translation>
 <translation id="4346833872170306413">Roc-16K</translation>
+<translation id="4349531505348777662">คุณเพิ่งใส่รหัสผ่านในเว็บไซต์ที่มีการหลอกลวง Chrome แนะนำให้ไปที่ <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> และเว็บไซต์อื่นๆ ที่คุณใช้รหัสผ่านนี้ และเปลี่ยนรหัสผ่านทันที</translation>
 <translation id="4356973930735388585">ผู้โจมตีในเว็บไซต์นี้อาจพยายามติดตั้งโปรแกรมอันตรายซึ่งจะขโมยหรือลบข้อมูล (ตัวอย่างเช่น รูปภาพ รหัสผ่าน ข้อความ และบัตรเครดิต) ลงในคอมพิวเตอร์ของคุณ</translation>
 <translation id="4358059973562876591">เทมเพลตที่คุณระบุอาจใช้ไม่ได้เนื่องจากมีข้อผิดพลาดกับนโยบาย DnsOverHttpsMode</translation>
 <translation id="4358461427845829800">จัดการวิธีการชำระเงิน...</translation>
@@ -1233,6 +1234,7 @@
 <translation id="6970216967273061347">อำเภอ</translation>
 <translation id="6973656660372572881">มีการระบุทั้งพร็อกซีเซิร์ฟเวอร์แบบคงที่และ URL สคริปต์ .pac ไว้</translation>
 <translation id="6973932557599545801">ขออภัย ฉันช่วยคุณไม่ได้ โปรดดำเนินการต่อด้วยตนเอง</translation>
+<translation id="6975012522936652259">คุณเพิ่งใส่รหัสผ่านในเว็บไซต์ที่มีการหลอกลวง Chromium แนะนำให้ไปที่ <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> และเว็บไซต์อื่นๆ ที่คุณใช้รหัสผ่านนี้ และเปลี่ยนรหัสผ่านทันที</translation>
 <translation id="6979158407327259162">Google ไดรฟ์</translation>
 <translation id="6979440798594660689">ปิดเสียง (ค่าเริ่มต้น)</translation>
 <translation id="6989763994942163495">แสดงการตั้งค่าขั้นสูง...</translation>
@@ -1364,6 +1366,7 @@
 <translation id="7567204685887185387">เซิร์ฟเวอร์นี้ไม่สามารถพิสูจน์ได้ว่าเป็น <ph name="DOMAIN" /> เพราะอาจมีการออกใบรับรองความปลอดภัยปลอม โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ</translation>
 <translation id="7569952961197462199">นำบัตรเครดิตออกจาก Chrome ไหม</translation>
 <translation id="7569983096843329377">สีดำ</translation>
+<translation id="7575207903026901870">ปุ่ม "นำคำแนะนำออก" กด Enter เพื่อนำคำแนะนำนี้ออก</translation>
 <translation id="7578104083680115302">ชำระเงินบนเว็บไซต์และแอปในอุปกรณ์ต่างๆ ได้อย่างรวดเร็วด้วยบัตรที่คุณได้บันทึกไว้กับ Google</translation>
 <translation id="7592362899630581445">ใบรับรองของเซิร์ฟเวอร์ละเมิดข้อกำหนดชื่อ</translation>
 <translation id="7598391785903975535">ไม่ถึง <ph name="UPPER_ESTIMATE" /></translation>
@@ -1610,6 +1613,7 @@
 <translation id="8891727572606052622">โหมดพร็อกซีไม่ถูกต้อง</translation>
 <translation id="8903921497873541725">ขยาย</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="890493561996401738">ปุ่ม "นำคำแนะนำออก" กด Enter เพื่อนำออก <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">คุณเข้าสู่โหมดไม่ระบุตัวตนแล้ว</translation>
 <translation id="8912362522468806198">บัญชี Google</translation>
 <translation id="8918231688545606538">หน้านี้ดูน่าสงสัย</translation>

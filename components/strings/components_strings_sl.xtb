@@ -607,7 +607,7 @@
 <translation id="3828924085048779000">Prazno geslo ni dovoljeno.</translation>
 <translation id="3831915413245941253">Domena <ph name="ENROLLMENT_DOMAIN" /> je namestila razširitve zaradi dodatnih funkcij. Razširitve imajo dostop do nekaterih vaših podatkov.</translation>
 <translation id="3832522519263485449">Večkratno luknjanje na levi</translation>
-<translation id="3838154488026099170">Pravkar ste vnesli geslo na zavajajočem spletnem mestu. Chromium priporoča, da obiščete <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, in <ph name="WEBSITE_3" /> ter druga spletna mesta, na katerih uporabljate to geslo, in ga takoj spremenite.</translation>
+<translation id="3838154488026099170">Pravkar ste vnesli geslo na zavajajočem spletnem mestu. Chromium priporoča, da obiščete <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> in <ph name="WEBSITE_3" /> ter druga spletna mesta, na katerih uporabljate to geslo, in ga takoj spremenite.</translation>
 <translation id="385051799172605136">Nazaj</translation>
 <translation id="3858027520442213535">Posodobi datum in uro</translation>
 <translation id="3884278016824448484">Identifikator naprave je v sporu</translation>
@@ -645,7 +645,7 @@
 <translation id="4072486802667267160">Pri obdelavi naročila je prišlo do napake. Poskusite znova.</translation>
 <translation id="4075732493274867456">Odjemalec in strežnik ne podpirata skupne različice protokola SSL ali šifrirne zbirke.</translation>
 <translation id="4075941231477579656">Touch ID</translation>
-<translation id="4077092919748553596">Pravkar ste vnesli geslo na zavajajočem spletnem mestu. Chrome priporoča, da obiščete <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, in <ph name="WEBSITE_3" /> ter druga spletna mesta, na katerih uporabljate to geslo, in ga takoj spremenite.</translation>
+<translation id="4077092919748553596">Pravkar ste vnesli geslo na zavajajočem spletnem mestu. Chrome priporoča, da obiščete <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> in <ph name="WEBSITE_3" /> ter druga spletna mesta, na katerih uporabljate to geslo, in ga takoj spremenite.</translation>
 <translation id="4079302484614802869">Konfiguracija strežnika proxy je nastavljena na uporabo URL-ja skripta .pac, ne na stalne strežnike proxy.</translation>
 <translation id="4082393374666368382">Nastavitve – upravljanje</translation>
 <translation id="4098354747657067197">Zavajajoče spletno mesto</translation>
@@ -722,6 +722,7 @@
 <translation id="4340982228985273705">Ta računalnik ni zaznan kot računalnik, ki ga upravlja podjetje, zato lahko pravilnik samodejno namesti samo razširitve, ki gostujejo v Spletni trgovini Chrome. URL za posodobitve v Spletni trgovini Chrome je »<ph name="CWS_UPDATE_URL" />«.</translation>
 <translation id="4346197816712207223">Sprejete kreditne kartice</translation>
 <translation id="4346833872170306413">ROC 16K</translation>
+<translation id="4349531505348777662">Pravkar ste vnesli geslo na zavajajočem spletnem mestu. Chrome priporoča, da obiščete <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> ter druga spletna mesta, na katerih uporabljate to geslo, in ga takoj spremenite.</translation>
 <translation id="4356973930735388585">Napadalci na tem spletnem mestu lahko poskusijo v vašem računalniku namestiti nevarne programe, ki kradejo ali brišejo podatke (na primer fotografije, gesla, sporočila in podatke kreditnih kartic).</translation>
 <translation id="4358059973562876591">Navedenih predlog morda ne bo mogoče uporabiti zaradi napake pravilnika DnsOverHttpsMode.</translation>
 <translation id="4358461427845829800">Upravljanje plačilnih sredstev ...</translation>
@@ -1250,6 +1251,7 @@
 <translation id="6970216967273061347">Okrožje</translation>
 <translation id="6973656660372572881">Določeni so stalni strežniki proxy in URL skripta .pac.</translation>
 <translation id="6973932557599545801">Ne morem vam pomagati. Nadaljujte sami.</translation>
+<translation id="6975012522936652259">Pravkar ste vnesli geslo na zavajajočem spletnem mestu. Chromium priporoča, da obiščete <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> ter druga spletna mesta, na katerih uporabljate to geslo, in ga takoj spremenite.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Izklop zvoka (privzeto)</translation>
 <translation id="6989763994942163495">Prikaži dodatne nastavitve ...</translation>
@@ -1381,6 +1383,7 @@ Dodatne podrobnosti:
 <translation id="7567204685887185387">Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; njegovo varnostno potrdilo je bilo morda izdano z goljufijo. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.</translation>
 <translation id="7569952961197462199">Želite odstraniti kreditno kartico iz Chroma?</translation>
 <translation id="7569983096843329377">Črna</translation>
+<translation id="7575207903026901870">Gumb za odstranitev predloga, pritisnite Enter za odstranitev tega predloga</translation>
 <translation id="7578104083680115302">Hitro plačevanje na spletnih mestih in v aplikacijah v vseh napravah s karticami, ki ste jih shranili v Googlu.</translation>
 <translation id="7592362899630581445">Strežnikovo potrdilo krši omejitve imen.</translation>
 <translation id="7598391785903975535">Manj kot <ph name="UPPER_ESTIMATE" /></translation>
@@ -1626,6 +1629,7 @@ Dodatne podrobnosti:
 <translation id="8891727572606052622">Neveljaven način strežnika proxy.</translation>
 <translation id="8903921497873541725">Povečaj</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="890493561996401738">Gumb za odstranitev predloga, pritisnite Enter za odstranitev <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Uporabljate način brez beleženja dejavnosti</translation>
 <translation id="8912362522468806198">Google Račun</translation>
 <translation id="8918231688545606538">Ta stran je sumljiva</translation>

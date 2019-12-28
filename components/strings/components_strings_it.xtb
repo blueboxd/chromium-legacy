@@ -719,6 +719,7 @@
 <translation id="4340982228985273705">Questo computer sembra non essere gestito dall'azienda, pertanto la norma consente di installare automaticamente soltanto le estensioni ospitate sul Chrome Web Store. L'URL di aggiornamento del Chrome Web Store è "<ph name="CWS_UPDATE_URL" />".</translation>
 <translation id="4346197816712207223">Carte di credito accettate</translation>
 <translation id="4346833872170306413">Roc-16K</translation>
+<translation id="4349531505348777662">Hai appena inserito la tua password su un sito ingannevole. Chrome ti consiglia di visitare i siti <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> e altri siti in cui utilizzi questa password e di cambiarla subito.</translation>
 <translation id="4356973930735388585">I malintenzionati su questo sito potrebbero tentare di installare sul tuo computer programmi pericolosi che scoprono o eliminano i tuoi dati (ad esempio foto, password, messaggi e carte di credito).</translation>
 <translation id="4358059973562876591">I modelli che hai specificato potrebbero non essere applicati a causa di un errore con il criterio DnsOverHttpsMode.</translation>
 <translation id="4358461427845829800">Gestisci metodi di pagamento…</translation>
@@ -1246,6 +1247,7 @@
 <translation id="6970216967273061347">District</translation>
 <translation id="6973656660372572881">Sono stati specificati sia i server proxy fissi che un URL script .pac.</translation>
 <translation id="6973932557599545801">Mi spiace, non posso aiutarti. Continua autonomamente.</translation>
+<translation id="6975012522936652259">Hai appena inserito la tua password su un sito ingannevole. Chromium ti consiglia di visitare i siti <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> e altri siti in cui utilizzi questa password e di cambiarla subito.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Disattivazione audio (impostazione predefinita)</translation>
 <translation id="6989763994942163495">Mostra impostazioni avanzate...</translation>
@@ -1377,6 +1379,7 @@ Ulteriori dettagli:
 <translation id="7567204685887185387">Questo server non è riuscito a dimostrare che si tratta di <ph name="DOMAIN" />; il relativo certificato di sicurezza potrebbe essere stato emesso in modo fraudolento. Il problema potrebbe essere dovuto a un'errata configurazione o a un malintenzionato che intercetta la connessione.</translation>
 <translation id="7569952961197462199">Rimuovere la carta di credito da Chrome?</translation>
 <translation id="7569983096843329377">Nero</translation>
+<translation id="7575207903026901870">Rimuovi il pulsante Suggerimento, premi INVIO per rimuovere questo suggerimento</translation>
 <translation id="7578104083680115302">Paga velocemente su siti e app su più dispositivi utilizzando le carte salvate su Google.</translation>
 <translation id="7592362899630581445">Il certificato del server vìola i vincoli relativi ai nomi.</translation>
 <translation id="7598391785903975535">Meno di <ph name="UPPER_ESTIMATE" /></translation>
@@ -1622,6 +1625,7 @@ Ulteriori dettagli:
 <translation id="8891727572606052622">Modalità proxy non valida.</translation>
 <translation id="8903921497873541725">Aumenta lo zoom</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="890493561996401738">Rimuovi il pulsante Suggerimento, premi INVIO per rimuovere, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Hai attivato la navigazione in incognito</translation>
 <translation id="8912362522468806198">Google Account</translation>
 <translation id="8918231688545606538">Questa pagina è sospetta</translation>

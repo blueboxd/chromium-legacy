@@ -54,6 +54,10 @@ class MODULES_EXPORT RemoteObjectGatewayImpl
     Supplement<LocalFrame>::Trace(visitor);
   }
 
+  void BindRemoteObjectReceiver(
+      int32_t object_id,
+      mojo::PendingReceiver<mojom::blink::RemoteObject>);
+
  private:
   // mojom::blink::RemoteObjectGateway
   void AddNamedObject(const WTF::String& name, int32_t id) override;

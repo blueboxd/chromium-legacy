@@ -1044,6 +1044,14 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
           Nilai harus berupa array kamus dengan string JSON. Setiap kamus harus memiliki bentuk <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, dengan <ph name="URL_PATTERN_PLACEHOLDER" /> merupakan pola setelan konten. <ph name="FILTER_PLACEHOLDER" /> akan membatasi asal sertifikat klien yang akan dipilih secara otomatis oleh browser. Terlepas dari filter, hanya sertifikat yang cocok dengan permintaan sertifikat server yang akan dipilih. Contohnya, jika <ph name="FILTER_PLACEHOLDER" /> memiliki bentuk <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />, hanya sertifikat klien yang akan diterbitkan oleh sertifikat dengan CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> yang akan dipilih. Jika <ph name="FILTER_PLACEHOLDER" /> berisi bagian <ph name="ISSUER_STRING_VALUE" /> dan <ph name="SUBJECT_STRING_VALUE" />, sertifikat klien harus memenuhi kedua ketentuan yang dipilih. Jika <ph name="FILTER_PLACEHOLDER" /> menentukan organisasi ("O"), sertifikat harus memiliki minimal satu organisasi yang cocok dengan nilai yang ditentukan untuk dipilih. Jika <ph name="FILTER_PLACEHOLDER" /> menentukan unit organisasi ("OU"), sertifikat harus memiliki minimal satu unit organisasi yang cocok dengan nilai yang ditentukan untuk dipilih. Jika <ph name="FILTER_PLACEHOLDER" /> berupa kamus kosong <ph name="EMPTY_DICTIONARY" />, pemilihan sertifikat klien tidak dibatasi lagi.
 
           Jika kebijakan ini tidak ditetapkan, pemilihan otomatis tidak akan dilakukan untuk semua situs.</translation>
+<translation id="2528659559494311776">Kebijakan ini mengontrol fitur keamanan di TLS 1.3 yang melindungi koneksi terhadap serangan downgrade. Kebijakan ini kompatibel dengan versi sebelumnya dan tidak akan memengaruhi koneksi ke server atau proxy TLS 1.2 yang sudah patuh. Namun, versi lama dari beberapa proxy yang menginterupsi TLS memiliki cacat dalam proses implementasi, sehingga versi tersebut menjadi tidak kompatibel.
+
+      Jika kebijakan ini ditetapkan ke True atau tidak ditetapkan, <ph name="PRODUCT_NAME" /> akan mengaktifkan perlindungan keamanan ini untuk semua koneksi.
+
+      Jika kebijakan ini ditetapkan ke False, <ph name="PRODUCT_NAME" /> akan menonaktifkan perlindungan keamanan ini untuk koneksi yang diautentikasi dengan sertifikat CA yang diinstal secara lokal. Perlindungan ini akan selalu diaktifkan untuk koneksi yang diautentikasi dengan sertifikat CA yang dipercaya publik.
+
+      Nilai default untuk kebijakan ini diubah dalam <ph name="PRODUCT_NAME" /> 81 dari false menjadi true. Proxy yang terpengaruh akan menyebabkan kegagalan koneksi dengan kode error ERR_TLS13_DOWNGRADE_DETECTED. Administrator yang memerlukan waktu tambahan untuk mengupgrade proxy yang terpengaruh dapat menggunakan kebijakan ini untuk menonaktifkan fitur keamanan ini sementara. Kebijakan ini akan dihapus setelah versi 85.
+      </translation>
 <translation id="2529659024053332711">Memungkinkan Anda menentukan perilaku saat memulai.
 
           Jika Anda memilih 'Buka Halaman Tab Baru', Halaman Tab Baru akan selalu dibuka saat Anda memulai <ph name="PRODUCT_NAME" />.
@@ -1584,6 +1592,15 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
       Jika setelan ini disetel Nonaktif atau tidak ada pilihan yang disetel, Mode Terbatas di YouTube tidak dapat diterapkan oleh <ph name="PRODUCT_NAME" />. Namun, kebijakan eksternal seperti kebijakan YouTube masih dapat menerapkan Mode Terbatas.</translation>
 <translation id="3428247105888806363">Aktifkan prediksi jaringan</translation>
 <translation id="3432863169147125747">Mengontrol setelan pencetakan.</translation>
+<translation id="3434053014926283175">Mengalihkan tombol mouse utama ke kanan pada layar login.
+
+          Jika kebijakan ini ditetapkan ke aktif, tombol kanan mouse akan selalu menjadi tombol utama pada layar login.
+
+          Jika kebijakan ini ditetapkan ke nonaktif, tombol kiri mouse akan selalu menjadi tombol utama pada layar login.
+
+          Jika kebijakan ini ditetapkan, pengguna tidak dapat mengubah atau menggantinya.
+
+          Jika kebijakan ini tidak ditetapkan, tombol kiri mouse mula-mula akan menjadi tombol utama pada layar login, tetapi dapat dialihkan oleh pengguna kapan saja.</translation>
 <translation id="3434932177006334880">Setelan ini dinamai EnableWebBasedSignin sebelum Chrome 42, dan dukungan untuk setelan ini akan dihapus sepenuhnya pada Chrome 43.
 
       Setelan ini berguna bagi pelanggan perusahaan yang menggunakan solusi SSO yang belum kompatibel dengan alur login inline baru.
@@ -4442,6 +4459,7 @@ Cara yang diharapkan terkait penggunaan kebijakan ini adalah merotasi konfiguras
           Jika Anda menetapkan kebijakan ini, pengguna tidak dapat mengubah atau menggantinya.
 
           Jika kebijakan ini tidak ditetapkan, sorotan kursor mula-mula akan dinonaktifkan, tetapi dapat diaktifkan oleh pengguna kapan saja.</translation>
+<translation id="8171924760436219650">Mengalihkan tombol mouse utama ke tombol kanan pada layar login</translation>
 <translation id="8172676363520748127">Jika diaktifkan, screenshot tidak dapat diambil menggunakan pintasan keyboard atau API ekstensi.
 
       Jika dinonaktifkan atau tidak ditentukan, pengambilan screenshot diizinkan.</translation>

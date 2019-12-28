@@ -16,7 +16,7 @@ TEST(StyleDifferenceTest, StreamOutputDefault) {
   EXPECT_EQ(
       "StyleDifference{layoutType=NoLayout, "
       "collectInlines=0, reshape=0, "
-      "paintInvalidationType=NoPaintInvalidation, recomputeOverflow=0, "
+      "paintInvalidationType=NoPaintInvalidation, recomputeVisualOverflow=0, "
       "visualRectUpdate=0, propertySpecificDifferences=, "
       "scrollAnchorDisablingPropertyChanged=0}",
       string_stream.str());
@@ -29,7 +29,7 @@ TEST(StyleDifferenceTest, StreamOutputAllFieldsMutated) {
   diff.SetNeedsPositionedMovementLayout();
   diff.SetNeedsReshape();
   diff.SetNeedsCollectInlines();
-  diff.SetNeedsRecomputeOverflow();
+  diff.SetNeedsRecomputeVisualOverflow();
   diff.SetNeedsVisualRectUpdate();
   diff.SetTransformChanged();
   diff.SetScrollAnchorDisablingPropertyChanged();
@@ -37,8 +37,9 @@ TEST(StyleDifferenceTest, StreamOutputAllFieldsMutated) {
   EXPECT_EQ(
       "StyleDifference{layoutType=PositionedMovement, "
       "collectInlines=1, reshape=1, "
-      "paintInvalidationType=PaintInvalidationObject, recomputeOverflow=1, "
-      "visualRectUpdate=1, propertySpecificDifferences=TransformChanged, "
+      "paintInvalidationType=PaintInvalidationObject, "
+      "recomputeVisualOverflow=1, visualRectUpdate=1, "
+      "propertySpecificDifferences=TransformChanged, "
       "scrollAnchorDisablingPropertyChanged=1}",
       string_stream.str());
 }
@@ -58,7 +59,7 @@ TEST(StyleDifferenceTest, StreamOutputSetAllProperties) {
   EXPECT_EQ(
       "StyleDifference{layoutType=NoLayout, "
       "collectInlines=0, reshape=0, "
-      "paintInvalidationType=NoPaintInvalidation, recomputeOverflow=0, "
+      "paintInvalidationType=NoPaintInvalidation, recomputeVisualOverflow=0, "
       "visualRectUpdate=0, "
       "propertySpecificDifferences=TransformChanged|OpacityChanged|"
       "ZIndexChanged|FilterChanged|BackdropFilterChanged|CSSClipChanged|"

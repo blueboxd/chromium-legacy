@@ -1059,6 +1059,14 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
           Der Wert muss ein Array von String-JSON-Wörterbüchern sein. Jedes Wörterbuch muss das Format <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> haben, wobei <ph name="URL_PATTERN_PLACEHOLDER" /> ein Muster zur Festlegung der Inhalte ist. <ph name="FILTER_PLACEHOLDER" /> schränkt ein, aus welchen Clientzertifikaten der Browser automatisch auswählt. Unabhängig vom Filter werden nur Zertifikate ausgewählt, die mit der Zertifikatanforderung des Servers übereinstimmen. Wenn <ph name="FILTER_PLACEHOLDER" /> beispielsweise das Format <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" /> hat, werden außerdem nur Clientzertifikate ausgewählt, die über ein Zertifikat mit dem CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> ausgestellt werden. Enthält <ph name="FILTER_PLACEHOLDER" /> einen <ph name="ISSUER_STRING_VALUE" />- und einen <ph name="SUBJECT_STRING_VALUE" />-Abschnitt, müssen beide Bedingungen erfüllt sein, damit das Zertifikat ausgewählt wird. Wenn durch <ph name="FILTER_PLACEHOLDER" /> eine Organisation ("O") festgelegt wird, muss ein Zertifikat mindestens eine Organisation haben, die mit dem angegebenen Wert übereinstimmt, um ausgewählt zu werden. Wird durch <ph name="FILTER_PLACEHOLDER" /> eine Organisationseinheit ("OU") angegeben, muss ein Zertifikat mindestens eine Organisationseinheit haben, die mit dem angegebenen Wert übereinstimmt, um ausgewählt zu werden. Wenn <ph name="FILTER_PLACEHOLDER" /> das leere Wörterbuch <ph name="EMPTY_DICTIONARY" /> ist, wird die Auswahl der Clientzertifikate nicht zusätzlich eingeschränkt.
 
           Ist diese Richtlinie nicht konfiguriert, erfolgt keine automatische Auswahl für Websites.</translation>
+<translation id="2528659559494311776">Mit dieser Richtlinie wird eine Sicherheitsfunktion in TLS 1.3 konfiguriert, die Verbindungen gegen Downgrade-Angriffe schützt. Sie ist abwärtskompatibel und beeinträchtigt keine Verbindungen zu konformen TLS-1.2-Servern oder -Proxys. Ältere Versionen einiger Proxys, die TLS-Verbindungen abfangen, weisen jedoch einen Implementierungsfehler auf, der eine Inkompatibilität verursacht.
+
+      Wenn diese Richtlinie auf "true" gesetzt oder nicht konfiguriert ist, wird <ph name="PRODUCT_NAME" /> diese Sicherheitsmaßnahmen für alle Verbindungen aktivieren.
+
+      Wenn diese Richtlinie auf "false" gesetzt ist, wird <ph name="PRODUCT_NAME" /> diese Sicherheitsmaßnahmen für Verbindungen, die anhand von lokal installierten CA-Zertifikaten authentifiziert wurden, deaktivieren. Diese Sicherheitsmaßnahmen sind für Verbindungen, die mit öffentlich vertrauenswürdigen CA-Zertifikaten authentifiziert werden, immer aktiviert.
+
+      Der Standardwert für diese Richtlinie wurde in <ph name="PRODUCT_NAME" /> 81 von "false" auf "true" geändert. Bei diesen Proxys sollte ein Verbindungsfehler mit dem Fehlercode ERR_TLS13_DOWNGRADE_DETECTED auftreten. Administratoren, die mehr Zeit zur Aktualisierung betroffener Proxys benötigen, können diese Richtlinie nutzen, um die Sicherheitsfunktion vorübergehend zu deaktivieren. Diese Richtlinie wird nach Version 85 entfernt.
+      </translation>
 <translation id="2529659024053332711">Ermöglicht die Konfiguration des Verhaltens beim Start.
 
           Wenn Sie "'Neuer Tab'-Seite öffnen" wählen, wird die "Neuer Tab"-Seite bei jedem Start von <ph name="PRODUCT_NAME" /> geöffnet.
@@ -1595,6 +1603,15 @@ Wird diese Einstellung auf "Moderat" festgelegt, kann der Nutzer auf YouTube nur
 Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der eingeschränkte Modus auf YouTube nicht durch <ph name="PRODUCT_NAME" /> erzwungen. Der eingeschränkte Modus wird jedoch möglicherweise trotzdem durch externe Richtlinien wie YouTube-Richtlinien erzwungen.</translation>
 <translation id="3428247105888806363">Netzwerkvorhersage aktivieren</translation>
 <translation id="3432863169147125747">Legt die Druckeinstellungen fest.</translation>
+<translation id="3434053014926283175">Mit dieser Richtlinie kann die rechte Maustaste auf dem Anmeldebildschirm als primäre Maustaste festgelegt werden.
+
+          Wenn diese Richtlinie aktiviert ist, ist auf dem Anmeldebildschirm immer die rechte Taste der Maus die primäre Taste.
+
+          Wenn diese Richtlinie deaktiviert ist, ist auf dem Anmeldebildschirm immer die linke Taste der Maus die primäre Taste.
+
+          Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
+
+          Wird sie nicht konfiguriert, ist auf dem Anmeldebildschirm standardmäßig die linke Taste der Maus als primäre Taste festgelegt, diese kann vom Nutzer jedoch jederzeit getauscht werden.</translation>
 <translation id="3434932177006334880">Die Einstellung hieß vor der Chrome-Version 42 "EnableWebBasedSignin" und wird in Version 43 nicht mehr unterstützt.
 
       Die Einstellung eignet sich für Unternehmenskunden, die SSO-Lösungen verwenden, die noch nicht mit der neuen Inline-Anmeldung kompatibel sind.
@@ -4452,6 +4469,7 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
           Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
 
           Ist die Richtlinie nicht konfiguriert, ist "Mauszeiger hervorheben" anfangs deaktiviert, kann jedoch vom Nutzer jederzeit aktiviert werden.</translation>
+<translation id="8171924760436219650">Mit dieser Richtlinie kann die rechte Maustaste auf dem Anmeldebildschirm als primäre Maustaste festgelegt werden</translation>
 <translation id="8172676363520748127">Wenn die Richtlinie aktiviert ist, können keine Screenshots über Tastenkombinationen oder Erweiterungs-APIs aufgenommen werden.
 
       Ist die Richtlinie deaktiviert oder nicht konfiguriert, ist die Aufnahme von Screenshots möglich.</translation>

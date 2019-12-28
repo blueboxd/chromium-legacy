@@ -1425,12 +1425,6 @@ TEST_P(PredictionManagerTest, ClientFeature) {
   navigation_handle->set_url(previous_url);
   navigation_handle->set_page_transition(
       ui::PageTransition::PAGE_TRANSITION_RELOAD);
-  ON_CALL(*navigation_handle, GetPreviousURL())
-      .WillByDefault(testing::ReturnRef(previous_url));
-
-  if (IsSameOriginNavigationFeature()) {
-    EXPECT_CALL(*navigation_handle, GetPreviousURL()).Times(1);
-  }
 
   CreatePredictionManager({});
   prediction_manager()->SetPredictionModelFetcherForTesting(
@@ -1477,8 +1471,6 @@ TEST_F(PredictionManagerTest, PreviousSessionStatisticsUsed) {
   navigation_handle->set_url(previous_url);
   navigation_handle->set_page_transition(
       ui::PageTransition::PAGE_TRANSITION_RELOAD);
-  ON_CALL(*navigation_handle, GetPreviousURL())
-      .WillByDefault(testing::ReturnRef(previous_url));
 
   pref_service()->SetDouble(optimization_guide::prefs::kSessionStatisticFCPMean,
                             200.0);

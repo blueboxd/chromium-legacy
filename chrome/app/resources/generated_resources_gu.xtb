@@ -113,6 +113,7 @@
 <translation id="1150565364351027703">ગોગલ્સ</translation>
 <translation id="1151917987301063366"><ph name="HOST" />ને હંમેશાં સેન્સર ઍક્સેસ કરવાની મંજૂરી આપો</translation>
 <translation id="1153356358378277386">જોડી કરેલા ઉપકરણો</translation>
+<translation id="1153636665119721804">Google વિગતવાર સુરક્ષા પ્રોગ્રામ</translation>
 <translation id="1161575384898972166">ક્લાયંટ પ્રમાણપત્ર નિકાસ કરવા માટે કૃપા કરીને <ph name="TOKEN_NAME" /> પર સાઇન ઇન કરો.</translation>
 <translation id="1163931534039071049">ફ્રેમ સ્રોત &amp;જુઓ</translation>
 <translation id="1164674268730883318"><ph name="DEVICE_TYPE" /> માટે Smart Lock બંધ કરીએ?</translation>
@@ -223,6 +224,7 @@
 <translation id="1306606229401759371">સેટિંગ્સ બદલો</translation>
 <translation id="1307165550267142340">તમારો પિન બનાવ્યો હતો</translation>
 <translation id="1307559529304613120">અરેરે! સિસ્ટમ આ ડિવાઇસ માટે એક લાંબા ગાળાનું API ઍક્સેસ ટોકન સ્ટોર કરવામાં નિષ્ફળ થઈ.</translation>
+<translation id="1309199320876169714">Plugin VM કાઢી નાખી રહ્યાં છીએ...</translation>
 <translation id="1313405956111467313">ઑટોમૅટિક પ્રૉક્સી ગોઠવણ</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313705515580255288">તમારા બુકમાર્ક, ઇતિહાસ અને બીજા સેટિંગ તમારા Google એકાઉન્ટ સાથે સિંક કરવામાં આવશે.</translation>
@@ -233,6 +235,7 @@
 <translation id="1316495628809031177">સિંક થોભાવ્યું છે</translation>
 <translation id="1317637799698924700">તમારું ડૉકિંગ સ્ટેશન USB Type-C સુસંગત મોડમાં ઑપરેટ થશે.</translation>
 <translation id="1322046419516468189">સાચવેલા પાસવર્ડ તમારા <ph name="SAVED_PASSWORDS_STORE" />માં જુઓ અને મેનેજ કરો</translation>
+<translation id="1324106254079708331">લક્ષિત હુમલાના જોખમમાં હોય એવી કોઈપણ વ્યક્તિના વ્યક્તિગત Google એકાઉન્ટનું સંરક્ષણ કરે છે</translation>
 <translation id="1326317727527857210">તમારા અન્ય ઉપકરણો પરથી તમારા ટૅબ્સ મેળવવા માટે, Chrome માં સાઇન ઇન કરો.</translation>
 <translation id="1327074568633507428">Google ક્લાઉડ પ્રિન્ટ પર પ્રિન્ટર</translation>
 <translation id="1327272175893960498">Kerberosની ટિકિટ</translation>
@@ -719,6 +722,7 @@
 <translation id="2003130567827682533">'<ph name="NAME" />' ડેટાને સક્રિય કરવા માટે, પહેલા વાઇ-ફાઇ નેટવર્કથી કનેક્ટ કરો</translation>
 <translation id="2006638907958895361"><ph name="APP" />માં લિંક ખોલો</translation>
 <translation id="2007404777272201486">સમસ્યાની જાણ કરો...</translation>
+<translation id="2010501376126504057">સુસંગત ડિવાઇસ</translation>
 <translation id="2016430552235416146">પરંપરાગત</translation>
 <translation id="2017334798163366053">પ્રદર્શન ડેટા સંગ્રહ બંધ કરો</translation>
 <translation id="2017836877785168846">ઍડ્રેસ બારમાં ઇતિહાસ અને સ્વતઃપૂર્ણ કરવું સાફ કરો.</translation>
@@ -1354,6 +1358,7 @@
 <translation id="2871813825302180988">આ એકાઉન્ટ પહેલાથી જ આ ડિવાઇસ પર ઉપયોગમાં લેવાઈ રહ્યું છે.</translation>
 <translation id="287286579981869940"><ph name="PROVIDER_NAME" /> ઉમેરો...</translation>
 <translation id="2872961005593481000">શટ ડાઉન કરો</translation>
+<translation id="2874478552394649323">Plugin VM કાઢી નાખો</translation>
 <translation id="2874939134665556319">પાછલું ટ્રૅક</translation>
 <translation id="2875698561019555027">(Chrome ભૂલ પૃષ્ઠો)</translation>
 <translation id="2876336351874743617">આંગળી 2</translation>
@@ -1369,6 +1374,7 @@
 <translation id="2889064240420137087">આની સાથે લિંક ખોલો...</translation>
 <translation id="2889925978073739256">અનસેન્ડબૉક્સ્ડ પ્લગિન્સ અવરોધિત કરવાનું ચાલુ રાખો</translation>
 <translation id="2893168226686371498">ડિફૉલ્ટ બ્રાઉઝર</translation>
+<translation id="2893208266590504003">Plugin VM કાઢી નાખવામાં નિષ્ફળ રહ્યાં</translation>
 <translation id="2894757982205307093">ગ્રૂપમાં નવું ટૅબ</translation>
 <translation id="289644616180464099">SIM કાર્ડ લૉક કરેલ છે</translation>
 <translation id="2896909745808647285"><ph name="FILE_NAME" />ને એન્ક્રિપ્ટ કરવામાં આવી છે અને તે ખોલી ન શકાય માટે બ્લૉક કરવામાં આવી છે.</translation>
@@ -2256,6 +2262,7 @@
 <translation id="413121957363593859">ઘટકો</translation>
 <translation id="4131410914670010031">કાળો અને સફેદ</translation>
 <translation id="4136203100490971508">રાત્રિ પ્રકાશ સૂર્યોદય સમયે આપમેળે બંધ થઈ જશે</translation>
+<translation id="41365691917097717">ચાલુ રાખવાથી Android ઍપ બનાવવા અને તેનું પરીક્ષણ કરવા માટે ADB ડિબગીંગ ચાલુ થશે. ધ્યાનમાં રાખો કે આ ક્રિયા દ્વારા ચકાસણી થઈ ન હોય એવી Android ઍપના ઇન્સ્ટૉલેશનની મંજૂરી આપે છે અને ફેક્ટરી રીસેટ બંધ કરવું જરૂરી છે.</translation>
 <translation id="4138267921960073861">સાઇન-ઇન સ્ક્રીન પર વપરાશકર્તા નામ અને ફોટો બતાવો</translation>
 <translation id="413915106327509564"><ph name="WINDOW_TITLE" /> - HID ડિવાઇસ કનેક્ટ કરેલું છે</translation>
 <translation id="4142052906269098341">તમારા ફોન વડે તમારું <ph name="DEVICE_TYPE" /> અનલૉક કરો. <ph name="LINK_BEGIN" />વધુ જાણો<ph name="LINK_END" /></translation>
@@ -3177,6 +3184,7 @@
 <translation id="5554720593229208774">ઇમેઇલ પ્રમાણન અધિકારી</translation>
 <translation id="5556459405103347317">ફરિથી લોડ કરો</translation>
 <translation id="5557991081552967863">નિષ્ક્રિયતા દરમિયાન વાઇ-ફાઇ ચાલુ રાખો</translation>
+<translation id="5558125320634132440">આ સાઇટમાં પુખ્ય વયના લોકો માટેનું કન્ટેન્ટ હોવાને કારણે તેને બ્લૉક કરવામાં આવી છે.</translation>
 <translation id="5558129378926964177">Zoom &amp;In</translation>
 <translation id="55601339223879446">ડિસ્પ્લેની અંદર તમારા ડેસ્કટૉપની સીમાઓ ગોઠવો</translation>
 <translation id="5562781907504170924">આ ટૅબ Bluetooth ડિવાઇસ સાથે કનેક્ટ થયેલ છે.</translation>
@@ -3279,7 +3287,6 @@
 <translation id="5692183275898619210">પ્રિન્ટ કરવાનું કાર્ય પૂર્ણ</translation>
 <translation id="5696143504434933566">"<ph name="EXTENSION_NAME" />" તરફથી દુરુપયોગની જાણ કરો</translation>
 <translation id="5696679855467848181">ઉપયોગમાં છે તે વર્તમાન PPD ફાઇલ: <ph name="PPD_NAME" /></translation>
-<translation id="5699533844376998780">એક્સ્ટેંશન "<ph name="EXTENSION_NAME" />" ઉમેરવામાં આવ્યું.</translation>
 <translation id="570043786759263127">Google Play ઍપ અને સેવાઓ</translation>
 <translation id="5700836101007545240">કનેક્શન ઉમેરો, તમારા વ્યવસ્થાપક દ્વારા અક્ષમ કરવામાં આવ્યું છે</translation>
 <translation id="5701080607174488915">સર્વરમાંથી નીતિ લાવતી વખતે ભૂલ.</translation>
@@ -3768,6 +3775,7 @@ USB ડિવાઇસ</translation>
 <translation id="6386099547750337629">આ અનપેક્ષિત હોય, તો કૃપા કરીને સહાયનો સંપર્ક કરો.</translation>
 <translation id="6387674443318562538">સ્ક્રીનને ઊભી વિભાજિત કરો</translation>
 <translation id="6388429472088318283">ભાષાઓ શોધો</translation>
+<translation id="6390020764191254941">ટૅબને નવી વિંડોમાં ખસેડો</translation>
 <translation id="6390799748543157332">આ વિંડોમાં તમે જે પેજ જોઈ રહ્યાં છો એ બ્રાઉઝર ઇતિહાસમાં દેખાશે નહિ અને એ તમે બધી ખૂલેલી અતિથિ વિંડો બંધ કરી દો એ પછી તમારા કમ્પ્યુટર પર કૂકી જેવા કોઈ બીજા નિશાન છોડશે નહિ. જો કે, તમે ડાઉનલોડ કરેલી કોઈ પણ ફાઇલો જાળવવામાં આવશે.</translation>
 <translation id="6393156038355142111">સશક્ત પાસવર્ડ સૂચવો</translation>
 <translation id="6395423953133416962"><ph name="BEGIN_LINK1" />સિસ્ટમ માહિતી<ph name="END_LINK1" /> અને <ph name="BEGIN_LINK2" />મેટ્રિક્સ<ph name="END_LINK2" /> મોકલો</translation>
@@ -3806,7 +3814,6 @@ USB ડિવાઇસ</translation>
 <translation id="6444070574980481588">તારીખ અને સમય સેટ કરો</translation>
 <translation id="6445450263907939268">જો તમે આ ફેરફારો ઇચ્છતા ન હોય, તો તમે તમારા પાછલાં સેટિંગને પહેલાંના જેવું કરો.</translation>
 <translation id="6447842834002726250">કૂકીઝ</translation>
-<translation id="6449285849137521213">ઍપ્લિકેશન "<ph name="EXTENSION_NAME" />" ઉમેરવામાં આવી.</translation>
 <translation id="6450876761651513209">તમારી ગોપનીયતા સંબંધિત સેટિંગ્સ બદલો</translation>
 <translation id="6451180435462401570">ક્લાઉડ પ્રિન્ટ ડિવાઇસને મેનેજ કરો</translation>
 <translation id="6451689256222386810">જો તમે તમારો પાસફ્રેઝ ભૂલી ગયાં હોવ અથવા આ સેટિંગ બદલવા માગતા હોવ, તો <ph name="BEGIN_LINK" />સમન્વયનને ફરીથી સેટ કરો<ph name="END_LINK" />.</translation>
@@ -4541,6 +4548,7 @@ USB ડિવાઇસ</translation>
 <translation id="7530016656428373557">ડિસ્ચાર્જ દર વોટ્સમાં</translation>
 <translation id="7531779363494549572">સેટિંગ &gt; ઍપ અને નોટિફિકેશન &gt; નોટિફિકેશન પર જાઓ.</translation>
 <translation id="7532009420053991888"><ph name="LINUX_APP_NAME" /> ચાલી રહી નથી. ઍપ બંધ કરવા માટે "ફરજિયાત બંધ" પસંદ કરો.</translation>
+<translation id="7536333565791380193">વિગતવાર સુરક્ષા</translation>
 <translation id="7539856059004947393">બ્લૂટૂથ સુરક્ષા કોડ</translation>
 <translation id="7540972813190816353">અપડેટ્સ માટે તપાસ કરતી વખતે એક ભૂલ આવી: <ph name="ERROR" /></translation>
 <translation id="7541773865713908457"><ph name="APP_NAME" /> ઍપ વડે <ph name="ACTION_NAME" /></translation>
@@ -4786,6 +4794,7 @@ USB ડિવાઇસ</translation>
 <translation id="7851720427268294554">IPP વિશ્લેષક</translation>
 <translation id="78526636422538552">Googleના વધુ એકાઉન્ટ ઉમેરી શકાશે નહીં</translation>
 <translation id="7853747251428735">વધુ સા&amp;ધનો</translation>
+<translation id="7855678561139483478">ટૅબને નવી વિંડોમાં ખસેડો</translation>
 <translation id="7857117644404132472">અપવાદ ઉમેરો</translation>
 <translation id="7857949311770343000">શું આ તમારી અપેક્ષા મુજબનું નવું ટેબ પૃષ્ઠ છે?</translation>
 <translation id="7859938049767853383">ક્લાઉડ સ્કૅનિંગની ક્ષમતા કરતાં આ <ph name="FILE_NAME" /> ઘણી મોટી છે અને તે ખોલી ન શકાય માટે બ્લૉક કરવામાં આવી છે.</translation>
@@ -5243,6 +5252,7 @@ USB ડિવાઇસ</translation>
 <translation id="850875081535031620">કોઈ નુકસાનકારક સૉફ્ટવેર મળ્યું નથી</translation>
 <translation id="8509177919508253835">સુરક્ષા કોડ રીસેટ કરો અને પિન બનાવો</translation>
 <translation id="8509646642152301857">જોડણીની તપાસ ડાઉનલોડ કરવામાં નિષ્ફળ.</translation>
+<translation id="8510617356402557055">શું આ અનપેક્ષિત હતું? <ph name="BEGIN_LINK" />પ્રતિસાદ મોકલો<ph name="END_LINK" /></translation>
 <translation id="8512476990829870887">પ્રક્રિયાનો અંત કરો</translation>
 <translation id="851263357009351303"><ph name="HOST" /> ને હંમેશા છબી બતાવવાની મંજૂરી આપો</translation>
 <translation id="8513108775083588393">ઑટો રોટેટ</translation>
@@ -5633,6 +5643,7 @@ USB ડિવાઇસ</translation>
 <translation id="9030785788945687215">Gmail</translation>
 <translation id="9033857511263905942">&amp;પેસ્ટ કરો</translation>
 <translation id="9037965129289936994">મૂળ બતાવો</translation>
+<translation id="903797871439633902">આ <ph name="DEVICE_TYPE" /> માટે આ છેલ્લું ઑટોમૅટિક સૉફ્ટવેર અને સુરક્ષા અપડેટ છે. ભાવિ અપડેટ મેળવવા માટે, નવા મૉડલ પર અપગ્રેડ કરો. &lt;a target="_blank" href="<ph name="URL" />"&gt;વધુ જાણો&lt;/a&gt;</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571"><ph name="ORIGIN" /> માટેનો પાસવર્ડ અપડેટ કરીએ?</translation>
 <translation id="9041692268811217999">તમારા વ્યવસ્થાપકે તમારા મશીન પરની સ્થાનિક ફાઇલોનો ઍક્સેસ બંધ કરેલ છે</translation>
@@ -5720,6 +5731,7 @@ USB ડિવાઇસ</translation>
 <translation id="9169496697824289689">કીબોર્ડ શૉર્ટકટ જુઓ</translation>
 <translation id="916964310188958970">આ સૂચન શા માટે?</translation>
 <translation id="9169931577761441333"><ph name="APP_NAME" />ને હોમ સ્ક્રીનમાં ઉમેરો</translation>
+<translation id="9170305483456271385">Plugin VM કાઢી નાખવામાં આવ્યું છે</translation>
 <translation id="9170848237812810038">&amp;પૂર્વવત્ કરો</translation>
 <translation id="9170884462774788842">તમારા કમ્પ્યુટર પરના બીજા પ્રોગ્રામે એક થીમ ઉમેરી જે Chrome કાર્ય કરે છે તે રીતને બદલી શકે છે.</translation>
 <translation id="9173995187295789444">બ્લૂટૂથ ડિવાઇસ માટે સ્કૅન કરી રહ્યા છીએ...</translation>

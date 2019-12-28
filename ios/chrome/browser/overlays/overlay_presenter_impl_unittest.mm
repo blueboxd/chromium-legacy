@@ -92,7 +92,7 @@ class OverlayPresenterImplTest : public PlatformTest {
     if (!queue)
       return nullptr;
     std::unique_ptr<OverlayRequest> inserted_request =
-        OverlayRequest::CreateWithConfig<FakeOverlayUserData>(nullptr);
+        OverlayRequest::CreateWithConfig<FakeOverlayUserData>();
     OverlayRequest* request = inserted_request.get();
     if (expect_presentation)
       EXPECT_CALL(observer(), WillShowOverlay(&presenter(), request));

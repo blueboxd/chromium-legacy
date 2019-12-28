@@ -560,8 +560,7 @@ void MapperSwitchComposite(const Gamepad& input, Gamepad* mapped) {
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
-void MapperXboxAdaptiveControllerBluetooth(const Gamepad& input,
-                                           Gamepad* mapped) {
+void MapperXboxOneBluetooth(const Gamepad& input, Gamepad* mapped) {
   *mapped = input;
 
   mapped->buttons[BUTTON_INDEX_PRIMARY] = input.buttons[0];
@@ -600,7 +599,7 @@ constexpr struct MappingData {
     {GamepadId::kMicrosoftProduct02dd, MapperXbox360Gamepad},
     // Xbox One S (Bluetooth)
     {GamepadId::kMicrosoftProduct02e0, MapperXboxOneS},
-    // Xbox One Elite Wired
+    // Xbox One Elite (USB)
     {GamepadId::kMicrosoftProduct02e3, MapperXbox360Gamepad},
     // Xbox One S (USB)
     {GamepadId::kMicrosoftProduct02ea, MapperXbox360Gamepad},
@@ -608,10 +607,14 @@ constexpr struct MappingData {
     {GamepadId::kMicrosoftProduct02fd, MapperXboxOneS2016Firmware},
     // Xbox 360 Wireless
     {GamepadId::kMicrosoftProduct0719, MapperXbox360Gamepad},
+    // Xbox One Elite 2 (USB)
+    {GamepadId::kMicrosoftProduct0b00, MapperXbox360Gamepad},
+    // Xbox One Elite 2 (Bluetooth)
+    {GamepadId::kMicrosoftProduct0b05, MapperXboxOneBluetooth},
     // Xbox Adaptive Controller (USB)
     {GamepadId::kMicrosoftProduct0b0a, MapperXbox360Gamepad},
     // Xbox Adaptive Controller (Bluetooth)
-    {GamepadId::kMicrosoftProduct0b0c, MapperXboxAdaptiveControllerBluetooth},
+    {GamepadId::kMicrosoftProduct0b0c, MapperXboxOneBluetooth},
     // Logitech F310, D mode
     {GamepadId::kLogitechProductc216, MapperDirectInputStyle},
     // Logitech F510, D mode

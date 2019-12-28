@@ -97,6 +97,7 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
   std::unique_ptr<ResourceRequest> request =
       std::make_unique<ResourceRequest>(new_url);
   request->SetRequestorOrigin(RequestorOrigin());
+  request->SetIsolatedWorldOrigin(IsolatedWorldOrigin());
   request->SetHttpMethod(new_method);
   request->SetSiteForCookies(new_site_for_cookies);
   String referrer =

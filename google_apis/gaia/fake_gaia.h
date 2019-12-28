@@ -270,7 +270,6 @@ class FakeGaia {
   EmailToGaiaIdMap email_to_gaia_id_map_;
   AccessTokenInfoMap access_token_info_map_;
   RequestHandlerMap request_handlers_;
-  std::string service_login_response_;
   std::string embedded_setup_chromeos_response_;
   SamlAccountIdpMap saml_account_idp_map_;
   SamlDomainRedirectUrlMap saml_domain_url_map_;

@@ -37061,6 +37061,7 @@ from previous Chrome versions.
   <int value="-977770313" label="AndroidSurfaceControl:enabled"/>
   <int value="-977476498" label="disable-eol-notification"/>
   <int value="-975787829" label="AutofillProfileServerValidation:enabled"/>
+  <int value="-974882918" label="WebXRIncubations:disabled"/>
   <int value="-974378602" label="WebAuthenticationCable:disabled"/>
   <int value="-973509424" label="NewTabPageIcons:disabled"/>
   <int value="-972945109" label="NtpRealbox:disabled"/>
@@ -37693,6 +37694,7 @@ from previous Chrome versions.
   <int value="-143819280" label="google-password-manager:disabled"/>
   <int value="-143394485" label="SplitSettingsSync:enabled"/>
   <int value="-143382681" label="InstantTethering:enabled"/>
+  <int value="-143121333" label="WebXRIncubations:enabled"/>
   <int value="-141516902" label="UseModernMediaControls:enabled"/>
   <int value="-140168253" label="ProfileMenuRevamp:enabled"/>
   <int value="-138983372" label="DesktopPWAWindowing:disabled"/>
@@ -50988,54 +50990,54 @@ Called by update_net_trust_anchors.py.-->
 <enum name="PrerenderFinalStatus">
   <int value="0" label="USED"/>
   <int value="1" label="TIMED_OUT"/>
-  <int value="2" label="EVICTED"/>
-  <int value="3" label="MANAGER_SHUTDOWN"/>
+  <int value="2" label="EVICTED (Obsolete)"/>
+  <int value="3" label="MANAGER_SHUTDOWN (Obsolete)"/>
   <int value="4" label="CLOSED"/>
   <int value="5" label="CREATE_NEW_WINDOW"/>
   <int value="6" label="PROFILE_DESTROYED"/>
   <int value="7" label="APP_TERMINATING"/>
-  <int value="8" label="JAVASCRIPT_ALERT"/>
+  <int value="8" label="JAVASCRIPT_ALERT (Obsolete)"/>
   <int value="9" label="AUTH_NEEDED"/>
-  <int value="10" label="HTTPS"/>
+  <int value="10" label="HTTPS (Obsolete)"/>
   <int value="11" label="DOWNLOAD"/>
   <int value="12" label="MEMORY_LIMIT_EXCEEDED"/>
-  <int value="13" label="JS_OUT_OF_MEMORY"/>
-  <int value="14" label="RENDERER_UNRESPONSIVE"/>
+  <int value="13" label="JS_OUT_OF_MEMORY (Obsolete)"/>
+  <int value="14" label="RENDERER_UNRESPONSIVE (Obsolete)"/>
   <int value="15" label="TOO_MANY_PROCESSES"/>
   <int value="16" label="RATE_LIMIT_EXCEEDED"/>
-  <int value="17" label="PENDING_SKIPPED"/>
-  <int value="18" label="CONTROL_GROUP"/>
-  <int value="19" label="HTML5_MEDIA"/>
-  <int value="20" label="SOURCE_RENDER_VIEW_CLOSED"/>
+  <int value="17" label="PENDING_SKIPPED (Obsolete)"/>
+  <int value="18" label="CONTROL_GROUP (Obsolete)"/>
+  <int value="19" label="HTML5_MEDIA (Obsolete)"/>
+  <int value="20" label="SOURCE_RENDER_VIEW_CLOSED (Obsolete)"/>
   <int value="21" label="RENDERER_CRASHED"/>
   <int value="22" label="UNSUPPORTED_SCHEME"/>
   <int value="23" label="INVALID_HTTP_METHOD"/>
   <int value="24" label="WINDOW_PRINT (Obsolete)"/>
   <int value="25" label="RECENTLY_VISITED"/>
   <int value="26" label="WINDOW_OPENER"/>
-  <int value="27" label="PAGE_ID_CONFLICT"/>
+  <int value="27" label="PAGE_ID_CONFLICT (Obsolete)"/>
   <int value="28" label="SAFE_BROWSING"/>
-  <int value="29" label="FRAGMENT_MISMATCH"/>
+  <int value="29" label="FRAGMENT_MISMATCH (Obsolete)"/>
   <int value="30" label="SSL_CLIENT_CERTIFICATE_REQUESTED"/>
   <int value="31" label="CACHE_OR_HISTORY_CLEARED"/>
   <int value="32" label="CANCELLED"/>
   <int value="33" label="SSL_ERROR"/>
-  <int value="34" label="CROSS_SITE_NAVIGATION_PENDING"/>
-  <int value="35" label="DEVTOOLS_ATTACHED"/>
-  <int value="36" label="SESSION_STORAGE_NAMESPACE_MISMATCH"/>
-  <int value="37" label="NO_USE_GROUP"/>
-  <int value="38" label="MATCH_COMPLETE_DUMMY"/>
+  <int value="34" label="CROSS_SITE_NAVIGATION_PENDING (Obsolete)"/>
+  <int value="35" label="DEVTOOLS_ATTACHED (Obsolete)"/>
+  <int value="36" label="SESSION_STORAGE_NAMESPACE_MISMATCH (Obsolete)"/>
+  <int value="37" label="NO_USE_GROUP (Obsolete)"/>
+  <int value="38" label="MATCH_COMPLETE_DUMMY (Obsolete)"/>
   <int value="39" label="DUPLICATE"/>
   <int value="40" label="OPEN_URL"/>
-  <int value="41" label="WOULD_HAVE_BEEN_USED"/>
+  <int value="41" label="WOULD_HAVE_BEEN_USED (Obsolete)"/>
   <int value="42" label="REGISTER_PROTOCOL_HANDLER"/>
   <int value="43" label="CREATING_AUDIO_STREAM"/>
   <int value="44" label="PAGE_BEING_CAPTURED"/>
   <int value="45" label="BAD_DEFERRED_REDIRECT"/>
   <int value="46" label="NAVIGATION_UNCOMMITTED"/>
   <int value="47" label="NEW_NAVIGATION_ENTRY"/>
-  <int value="48" label="COOKIE_STORE_NOT_LOADED"/>
-  <int value="49" label="COOKIE_CONFLICT"/>
+  <int value="48" label="COOKIE_STORE_NOT_LOADED (Obsolete)"/>
+  <int value="49" label="COOKIE_CONFLICT (Obsolete)"/>
   <int value="50" label="NON_EMPTY_BROWSING_INSTANCE"/>
   <int value="51" label="NAVIGATION_INTERCEPTED"/>
   <int value="52" label="PRERENDERING_DISABLED"/>

@@ -34,9 +34,10 @@ void AppUrlLoadingService::LoadUrlInNewTab(const UrlLoadParams& params) {
     if (params.from_chrome) {
       [delegate_
           dismissModalDialogsWithCompletion:^{
-            [delegate_ openSelectedTabInMode:ApplicationMode::NORMAL
-                           withUrlLoadParams:saved_params
-                                  completion:nil];
+            [delegate_
+                openSelectedTabInMode:ApplicationModeForTabOpening::NORMAL
+                    withUrlLoadParams:saved_params
+                           completion:nil];
           }
                              dismissOmnibox:YES];
     } else {

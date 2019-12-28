@@ -2383,7 +2383,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, MAYBE_MultiDownload) {
   std::unique_ptr<DownloadTestObserver> observer2(CreateWaiter(shell(), 1));
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL(
-                   content::SlowDownloadHttpResponse::kFinishDownloadUrl)));
+                   content::SlowDownloadHttpResponse::kFinishSlowResponseUrl)));
   observer2->WaitForFinished();  // Wait for the third request.
   EXPECT_EQ(
       1u, observer2->NumDownloadsSeenInState(download::DownloadItem::COMPLETE));
@@ -2397,8 +2397,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, MAYBE_MultiDownload) {
   // source file.
   base::FilePath file1(download1->GetTargetFilePath());
   ASSERT_EQ(file1.DirName().MaybeAsASCII(), download1_path);
-  size_t file_size1 = content::SlowDownloadHttpResponse::kFirstDownloadSize +
-                      content::SlowDownloadHttpResponse::kSecondDownloadSize;
+  size_t file_size1 =
+      content::SlowDownloadHttpResponse::kFirstResponsePartSize +
+      content::SlowDownloadHttpResponse::kSecondResponsePartSize;
   std::string expected_contents(file_size1, '*');
   ASSERT_TRUE(VerifyFile(file1, expected_contents, file_size1));
 

@@ -718,6 +718,7 @@
 <translation id="4340982228985273705">A rendszer nem vállalat által kezeltként érzékeli ezt a számítógépet, ezért a házirend csak a Chrome Internetes áruházban tárolt bővítményeket tudja automatikusan telepíteni. A Chrome Internetes áruház frissítési URL-je: <ph name="CWS_UPDATE_URL" />.</translation>
 <translation id="4346197816712207223">Elfogadott hitelkártyák</translation>
 <translation id="4346833872170306413">Roc-16K</translation>
+<translation id="4349531505348777662">Megtévesztő webhelyen adta meg jelszavát. A Chrome azt javasolja, hogy keresse fel azokat a webhelyeket (pl. <ph name="WEBSITE_1" /> és <ph name="WEBSITE_2" />), amelyeken ezt a jelszót használja, és módosítsa most a jelszót.</translation>
 <translation id="4356973930735388585">Előfordulhat, hogy a támadók ezen a webhelyen olyan veszélyes programokat próbálnak telepíteni számítógépére, amelyek ellopják vagy törlik adatait (például fotóit, jelszavait, üzeneteit vagy bankkártyájának adatait).</translation>
 <translation id="4358059973562876591">A DnsOverHttpsMode házirenddel kapcsolatos hiba miatt előfordulhat, hogy a megadott sablonok nem alkalmazhatók.</translation>
 <translation id="4358461427845829800">Fizetési módok kezelése…</translation>
@@ -1246,6 +1247,7 @@
 <translation id="6970216967273061347">Körzet</translation>
 <translation id="6973656660372572881">Mindkét fix proxyszerver és egy .Pac típusú szkript URL-címe meg van adva.</translation>
 <translation id="6973932557599545801">Sajnos nem tudok többet segíteni. Kérjük, folytassa egyedül.</translation>
+<translation id="6975012522936652259">Megtévesztő webhelyen adta meg jelszavát. A Chromium azt javasolja, hogy keresse fel azokat a webhelyeket (pl. <ph name="WEBSITE_1" /> és <ph name="WEBSITE_2" />), amelyeken ezt a jelszót használja, és módosítsa most a jelszót.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Némítás (alapértelmezett)</translation>
 <translation id="6989763994942163495">Speciális beállítások megjelenítése...</translation>
@@ -1377,6 +1379,7 @@ További részletek:
 <translation id="7567204685887185387">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványát csalással állíthatták ki. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását.</translation>
 <translation id="7569952961197462199">Eltávolítja a hitelkártyát a Chrome-ból?</translation>
 <translation id="7569983096843329377">Fekete</translation>
+<translation id="7575207903026901870">Javaslat eltávolítása gomb. Nyomja meg az Entert a javaslat eltávolításához</translation>
 <translation id="7578104083680115302">A Google rendszerében mentett kártyákkal gyorsan fizethet webhelyeken és alkalmazásokban bármelyik eszközén.</translation>
 <translation id="7592362899630581445">A szervertanúsítvány sérti a névre vonatkozó megkötéseket.</translation>
 <translation id="7598391785903975535">Kevesebb, mint <ph name="UPPER_ESTIMATE" /></translation>
@@ -1623,6 +1626,7 @@ További részletek:
 <translation id="8891727572606052622">Érvénytelen proxymód.</translation>
 <translation id="8903921497873541725">Nagyítás</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="890493561996401738">Javaslat eltávolítása gomb. Nyomja meg az Entert a következő eltávolításához: <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Ön inkognitómódra váltott</translation>
 <translation id="8912362522468806198">Google Fiókjába</translation>
 <translation id="8918231688545606538">Ez az oldal gyanús</translation>

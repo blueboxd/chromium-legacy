@@ -20,7 +20,6 @@
 #include "ui/base/cocoa/remote_accessibility_api.h"
 #include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/base/hit_test.h"
-#include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/compositor/recyclable_compositor_mac.h"
 #include "ui/display/screen.h"
@@ -271,7 +270,6 @@ NativeWidgetMacNSWindowHost::~NativeWidgetMacNSWindowHost() {
   // TODO(ccameron): When all communication from |bridge_| to this goes through
   // the BridgedNativeWidgetHost, this can be replaced with closing that pipe.
   in_process_ns_window_bridge_.reset();
-  SetFocusManager(nullptr);
   DestroyCompositor();
 }
 
@@ -551,26 +549,6 @@ void NativeWidgetMacNSWindowHost::DestroyCompositor() {
       std::move(compositor_));
 }
 
-void NativeWidgetMacNSWindowHost::SetFocusManager(FocusManager* focus_manager) {
-  if (focus_manager_ == focus_manager)
-    return;
-
-  if (focus_manager_) {
-    // Only the destructor can replace the focus manager (and it passes null).
-    DCHECK(!focus_manager);
-    if (View* old_focus = focus_manager_->GetFocusedView())
-      OnDidChangeFocus(old_focus, nullptr);
-    focus_manager_->RemoveFocusChangeListener(this);
-    focus_manager_ = nullptr;
-    return;
-  }
-
-  focus_manager_ = focus_manager;
-  focus_manager_->AddFocusChangeListener(this);
-  if (View* new_focus = focus_manager_->GetFocusedView())
-    OnDidChangeFocus(nullptr, new_focus);
-}
-
 bool NativeWidgetMacNSWindowHost::SetWindowTitle(const base::string16& title) {
   if (window_title_ == title)
     return false;
@@ -595,16 +573,6 @@ bool NativeWidgetMacNSWindowHost::RedispatchKeyEvent(NSEvent* event) {
   // handled (because it should never be handled in this process).
   GetNSWindowMojo()->RedispatchKeyEvent(ui::EventToData(event));
   return true;
-}
-
-ui::InputMethod* NativeWidgetMacNSWindowHost::GetInputMethod() {
-  if (!input_method_) {
-    input_method_ = ui::CreateInputMethod(this, gfx::kNullAcceleratedWidget);
-    // For now, use always-focused mode on Mac for the input method.
-    // TODO(tapted): Move this to OnWindowKeyStatusChangedTo() and balance.
-    input_method_->OnFocus();
-  }
-  return input_method_.get();
 }
 
 gfx::Rect NativeWidgetMacNSWindowHost::GetRestoredBounds() const {
@@ -1377,40 +1345,6 @@ void NativeWidgetMacNSWindowHost::OnDialogChanged() {
   // Note it's only necessary to clear the TouchBar. If the OS needs it again,
   // a new one will be created.
   GetNSWindowMojo()->ClearTouchBar();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// NativeWidgetMacNSWindowHost, FocusChangeListener:
-
-void NativeWidgetMacNSWindowHost::OnWillChangeFocus(View* focused_before,
-                                                    View* focused_now) {}
-
-void NativeWidgetMacNSWindowHost::OnDidChangeFocus(View* focused_before,
-                                                   View* focused_now) {
-  ui::InputMethod* input_method =
-      native_widget_mac_->GetWidget()->GetInputMethod();
-  if (!input_method)
-    return;
-
-  ui::TextInputClient* new_text_input_client =
-      input_method->GetTextInputClient();
-  // Sanity check: When focus moves away from the widget (i.e. |focused_now|
-  // is nil), then the textInputClient will be cleared.
-  DCHECK(!!focused_now || !new_text_input_client);
-  text_input_host_->SetTextInputClient(new_text_input_client);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// NativeWidgetMacNSWindowHost, internal::InputMethodDelegate:
-
-ui::EventDispatchDetails NativeWidgetMacNSWindowHost::DispatchKeyEventPostIME(
-    ui::KeyEvent* key) {
-  DCHECK(focus_manager_);
-  if (!focus_manager_->OnKeyEvent(*key))
-    key->StopPropagation();
-  else
-    native_widget_mac_->GetWidget()->OnKeyEvent(key);
-  return ui::EventDispatchDetails();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -252,9 +252,9 @@ def main():
   try:
     MergeApk(args, tmp_apk, tmp_dir_32, tmp_dir_64)
 
-    apksigner_path = os.path.join(
-        os.path.dirname(args.zipalign_path), 'apksigner')
-    finalize_apk.FinalizeApk(apksigner_path, args.zipalign_path,
+    apksigner_jar = os.path.join(
+        os.path.dirname(args.zipalign_path), 'lib', 'apksigner.jar')
+    finalize_apk.FinalizeApk(apksigner_jar, args.zipalign_path,
                              tmp_apk, new_apk, args.keystore_path,
                              args.key_password, args.key_name)
   finally:

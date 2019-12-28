@@ -994,6 +994,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Notifies the window frame that the active rendering state has changed.
   void UpdatePaintAsActiveState(bool paint_as_active);
 
+  // If a descendent of |root_view_| is focused, then clear the focus.
+  void ClearFocusFromWidget();
+
   static bool g_disable_activation_change_handling_;
 
   internal::NativeWidgetPrivate* native_widget_ = nullptr;

@@ -350,7 +350,6 @@ std::string ColorSpace::ToString() const {
     PRINT_ENUM_CASE(TransferID, SMPTEST2084)
     PRINT_ENUM_CASE(TransferID, SMPTEST428_1)
     PRINT_ENUM_CASE(TransferID, ARIB_STD_B67)
-    PRINT_ENUM_CASE(TransferID, SMPTEST2084_NON_HDR)
     PRINT_ENUM_CASE(TransferID, IEC61966_2_1_HDR)
     PRINT_ENUM_CASE(TransferID, LINEAR_HDR)
     case TransferID::CUSTOM: {
@@ -786,7 +785,6 @@ bool ColorSpace::GetTransferFunction(TransferID transfer,
     case ColorSpace::TransferID::LOG:
     case ColorSpace::TransferID::LOG_SQRT:
     case ColorSpace::TransferID::SMPTEST2084:
-    case ColorSpace::TransferID::SMPTEST2084_NON_HDR:
     case ColorSpace::TransferID::CUSTOM:
     case ColorSpace::TransferID::INVALID:
       break;

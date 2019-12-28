@@ -5,9 +5,6 @@
 <link rel="import" href="../settings_page/settings_animated_pages.html">
 <link rel="import" href="../settings_page/settings_subpage.html">
 <link rel="import" href="../settings_shared_css.html">
-<if expr="chromeos">
-<link rel="import" href="cups_printers.html">
-</if>
 <if expr="not chromeos">
 <link rel="import" href="printing_browser_proxy.html">
 </if>
@@ -18,12 +15,6 @@
     <settings-animated-pages id="pages" section="printing"
         focus-config="[[focusConfig_]]">
       <div route-path="default">
-<if expr="chromeos">
-        <cr-link-row hidden$="[[!showCupsPrinters_]]"
-            id="cupsPrinters" label="$i18n{cupsPrintersTitle}"
-            on-click="onTapCupsPrinters_"
-            role-description="$i18n{subpageArrowRoleDescription}"></cr-link-row>
-</if>
 <if expr="not chromeos">
         <cr-link-row label="$i18n{localPrintersTitle}"
             on-click="onTapLocalPrinters_" external></cr-link-row>
@@ -33,19 +24,6 @@
             role-description="$i18n{subpageArrowRoleDescription}">
         </cr-link-row>
       </div>
-<if expr="chromeos">
-      <template is="dom-if" route-path="/cupsPrinters">
-        <settings-subpage
-            associated-control="[[$$('#cupsPrinters')]]"
-            page-title="$i18n{cupsPrintersTitle}"
-            search-label="$i18n{searchLabel}"
-            search-term="{{searchTerm}}">
-          <settings-cups-printers search-term="{{searchTerm}}"
-              prefs="[[prefs]]">
-          </settings-cups-printers>
-        </settings-subpage>
-      </template>
-</if>
       <template is="dom-if" route-path="/cloudPrinters">
         <settings-subpage
             associated-control="[[$$('#cloudPrinters')]]"

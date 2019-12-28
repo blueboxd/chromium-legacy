@@ -1045,6 +1045,14 @@
           這個值必須是字串化的 JSON 字典陣列。每個字典都必須採用 <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />格式，其中 <ph name="URL_PATTERN_PLACEHOLDER" /> 是內容設定模式，<ph name="FILTER_PLACEHOLDER" /> 會限制瀏覽器自動選取的用戶端憑證。無論是否設定篩選器，瀏覽器只會選取符合伺服器憑證要求的憑證。例如，如果 <ph name="FILTER_PLACEHOLDER" /> 的格式為 <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />，則瀏覽器只會選取由 CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> 憑證所核發的用戶端憑證。如果 <ph name="FILTER_PLACEHOLDER" /> 包含 <ph name="ISSUER_STRING_VALUE" /> 和 <ph name="SUBJECT_STRING_VALUE" /> 區段，則瀏覽器只會選取同時符合兩個條件的用戶端憑證。如果 <ph name="FILTER_PLACEHOLDER" /> 指定了機構 (也就是「O」)，憑證必須有至少一個機構與指定值相符，才會納入選取範圍。如果 <ph name="FILTER_PLACEHOLDER" /> 指定了機構單位 (也就是「OU」)，憑證必須有至少一個機構單位與指定值相符，才會納入選取範圍。如果 <ph name="FILTER_PLACEHOLDER" /> 是空白的字典 <ph name="EMPTY_DICTIONARY" />，則瀏覽器在選取用戶端憑證時不會受到額外限制。
 
           如果不設定這項政策，系統不會為任何網站自動選取憑證。</translation>
+<translation id="2528659559494311776">這項政策可控管傳輸層安全標準 (TLS) 1.3 中保護連線免受降級攻擊的安全性功能。這項政策與舊版相容，且不會影響與傳輸層安全標準 (TLS) 1.2 伺服器或 Proxy 相容的連線。但是，部分舊版的傳輸層安全標準 (TLS) 攔截 Proxy 具有實作瑕疵，因此會造成無法相容的情形。
+
+      如果將這項政策設為 True 或不予設定，<ph name="PRODUCT_NAME" /> 會針對所有連線啟用這些安全保護措施。
+
+      如果將這項政策設為 False，當連線使用本機安裝的 CA 憑證進行驗證時，<ph name="PRODUCT_NAME" /> 會停用這些安全保護措施。當連線使用公開信任的 CA 憑證進行驗證時，系統一律會啟用這些保護措施。
+
+      這項政策的預設值在 <ph name="PRODUCT_NAME" /> 81 版中已從 False 變更為 True。受影響的 Proxy 將無法連線，錯誤代碼為 ERR_TLS13_DOWNGRADE_DETECTED。如果系統管理員需要更多時間升級受影響的 Proxy，可以使用此政策暫時停用這項安全性功能。這項政策將在第 85 版後移除。
+      </translation>
 <translation id="2529659024053332711">讓你指定啟動時的運作行為。
 
           如果你選擇 [開啟新分頁]，那麼每當你啟動 <ph name="PRODUCT_NAME" />，系統就會開啟新分頁。
@@ -1578,6 +1586,15 @@
       如果關閉這項設定或未指定設定值，<ph name="PRODUCT_NAME" /> 就不會強制執行 YouTube 嚴格篩選模式。不過，外部政策 (例如 YouTube 政策) 可能仍會強制執行嚴格篩選模式。</translation>
 <translation id="3428247105888806363">啟用網路預測功能</translation>
 <translation id="3432863169147125747">控管列印設定。</translation>
+<translation id="3434053014926283175">在登入畫面上將滑鼠的主要按鈕切換為右鍵。
+
+          如果將這項政策設為啟用，系統一律會在登入畫面上將滑鼠右鍵設為主要按鈕。
+
+          如果將這項政策設為停用，系統一律會在登入畫面上將滑鼠左鍵設為主要按鈕。
+
+          設好這項政策後，使用者即無法變更或覆寫設定。
+
+          如果不設定這項政策，系統會在登入畫面上將滑鼠左鍵預設為主要按鈕，但使用者隨時可以切換。</translation>
 <translation id="3434932177006334880">這項設定在 Chrome 42 版之前稱為 EnableWebBasedSignin，Chrome 43 版已不再支援這項設定。
 
       如果企業客戶使用的 SSO 解決方案與新版內嵌登入流程不相容，就很適合使用這項設定。
@@ -4410,6 +4427,7 @@
           設定這項政策後，使用者即無法變更或覆寫。
 
           如果不設定這項政策，系統預設會停用游標醒目顯示功能，但使用者隨時可以啟用這項功能。</translation>
+<translation id="8171924760436219650">在登入畫面上將滑鼠的主要按鈕切換為右鍵</translation>
 <translation id="8172676363520748127">如果啟用這項設定，使用者將無法透過鍵盤快速鍵或擴充功能 API 擷取螢幕畫面。
 
       如果停用或不指定這項設定，使用者將可以擷取螢幕畫面。</translation>

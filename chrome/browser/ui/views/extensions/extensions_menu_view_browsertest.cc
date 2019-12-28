@@ -25,14 +25,18 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "extensions/common/extension.h"
+#include "extensions/test/test_extension_dir.h"
 #include "net/dns/mock_host_resolver.h"
 #include "ui/views/layout/animating_layout_manager.h"
 #include "ui/views/test/widget_test.h"
 
 class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
  protected:
+  Profile* profile() { return browser()->profile(); }
+
   void LoadTestExtension(const std::string& extension) {
-    extensions::ChromeTestExtensionLoader loader(browser()->profile());
+    extensions::ChromeTestExtensionLoader loader(profile());
     base::FilePath test_data_dir;
     base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
     extensions_.push_back(
@@ -50,6 +54,34 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
   }
 
   void ShowUi(const std::string& name) override {
+    ui_test_name_ = name;
+
+    ClickExtensionsMenuButton();
+
+    if (name == "ReloadPageBubble") {
+      TriggerSingleExtensionButton();
+    }
+  }
+
+  bool VerifyUi() override {
+    DialogBrowserTest::VerifyUi();
+
+    if (ui_test_name_ == "ReloadPageBubble") {
+      // Clicking the extension should close the extensions menu, pop out the
+      // extension, and display the "reload this page" bubble.
+      ExtensionsToolbarContainer* const container =
+          BrowserView::GetBrowserViewForBrowser(browser())
+              ->toolbar()
+              ->extensions_container();
+      EXPECT_TRUE(container->action_bubble_public_for_testing());
+      EXPECT_FALSE(container->GetPoppedOutAction());
+      EXPECT_FALSE(ExtensionsMenuView::IsShowing());
+    }
+
+    return true;
+  }
+
+  void ClickExtensionsMenuButton() {
     ui::MouseEvent click_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                                base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, 0);
     BrowserView::GetBrowserViewForBrowser(browser())
@@ -103,6 +135,7 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
     loop.Run();
   }
 
+  std::string ui_test_name_;
   base::test::ScopedFeatureList scoped_feature_list_;
   std::vector<scoped_refptr<const extensions::Extension>> extensions_;
 };
@@ -115,6 +148,50 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest, InvokeUi_default) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest, InvokeUi_NoExtensions) {
+  ShowAndVerifyUi();
+}
+
+// Invokes the UI shown when a user has to reload a page in order to run an
+// extension.
+IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
+                       InvokeUi_ReloadPageBubble) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  extensions::TestExtensionDir test_dir;
+  // Load an extension that injects scripts at "document_start", which requires
+  // reloading the page to inject if permissions are withheld.
+  test_dir.WriteManifest(
+      R"({
+           "name": "Runs Script Everywhere",
+           "description": "An extension that runs script everywhere",
+           "manifest_version": 2,
+           "version": "0.1",
+           "content_scripts": [{
+             "matches": ["*://*/*"],
+             "js": ["script.js"],
+             "run_at": "document_start"
+           }]
+         })");
+  test_dir.WriteFile(FILE_PATH_LITERAL("script.js"),
+                     "console.log('injected!');");
+
+  scoped_refptr<const extensions::Extension> extension =
+      extensions::ChromeTestExtensionLoader(profile()).LoadExtension(
+          test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+
+  extensions::ScriptingPermissionsModifier(profile(), extension)
+      .SetWithholdHostPermissions(true);
+
+  // Navigate to a page the extension wants to run on.
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  {
+    content::TestNavigationObserver observer(tab);
+    GURL url = embedded_test_server()->GetURL("example.com", "/title1.html");
+    ui_test_utils::NavigateToURL(browser(), url);
+    EXPECT_TRUE(observer.last_navigation_succeeded());
+  }
+
   ShowAndVerifyUi();
 }
 
@@ -150,7 +227,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest, TriggerPopup) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
-                       ActivationWithReloadNeeded_Accept) {
+                       TriggeringExtensionClosesMenu) {
   LoadTestExtension("extensions/trigger_actions/browser_action");
   ShowUi("");
   VerifyUi();
@@ -215,8 +292,7 @@ IN_PROC_BROWSER_TEST_P(ActivateWithReloadExtensionsMenuBrowserTest,
   ASSERT_TRUE(embedded_test_server()->Start());
   LoadTestExtension("extensions/blocked_actions/content_scripts");
   auto extension = extensions_.back();
-  extensions::ScriptingPermissionsModifier modifier(browser()->profile(),
-                                                    extension);
+  extensions::ScriptingPermissionsModifier modifier(profile(), extension);
   modifier.SetWithholdHostPermissions(true);
 
   ui_test_utils::NavigateToURL(

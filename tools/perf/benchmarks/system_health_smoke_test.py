@@ -305,6 +305,7 @@ def GenerateBenchmarkOptions(output_dir, benchmark_cls):
   options.browser_options.logging_verbosity = 'non-verbose'
   options.target_platforms = benchmark_cls.GetSupportedPlatformNames(
       benchmark_cls.SUPPORTED_PLATFORMS)
+  results_processor.ProcessOptions(options)
   return options
 
 

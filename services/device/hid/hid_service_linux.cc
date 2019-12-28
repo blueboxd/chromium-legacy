@@ -222,19 +222,20 @@ void HidServiceLinux::Connect(const std::string& device_guid,
   }
   scoped_refptr<HidDeviceInfo> device_info = map_entry->second;
 
-  auto params =
-      std::make_unique<ConnectParams>(device_info, std::move(callback));
-
 #if defined(OS_CHROMEOS)
-  chromeos::PermissionBrokerClient::ErrorCallback error_callback =
-      base::BindOnce(&HidServiceLinux::OnPathOpenError,
-                     params->device_info->device_node(),
-                     std::move(params->callback));
+  // Adapt |callback| to a repeating callback because the implementation below
+  // requires separate callbacks for success and error. Only one will be called.
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   chromeos::PermissionBrokerClient::Get()->OpenPath(
       device_info->device_node(),
-      base::BindOnce(&HidServiceLinux::OnPathOpenComplete, std::move(params)),
-      std::move(error_callback));
+      base::BindOnce(
+          &HidServiceLinux::OnPathOpenComplete,
+          std::make_unique<ConnectParams>(device_info, copyable_callback)),
+      base::BindOnce(&HidServiceLinux::OnPathOpenError,
+                     device_info->device_node(), copyable_callback));
 #else
+  auto params =
+      std::make_unique<ConnectParams>(device_info, std::move(callback));
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner =
       params->blocking_task_runner;
   blocking_task_runner->PostTask(

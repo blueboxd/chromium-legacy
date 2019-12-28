@@ -23,6 +23,8 @@
 #import "components/remote_cocoa/app_shim/views_nswindow_delegate.h"
 #import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
 #import "ui/base/cocoa/window_size_constants.h"
+#include "ui/base/ime/init/input_method_factory.h"
+#include "ui/base/ime/input_method.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/gestures/gesture_recognizer_impl_mac.h"
@@ -32,6 +34,7 @@
 #include "ui/native_theme/native_theme_mac.h"
 #import "ui/views/cocoa/drag_drop_client_mac.h"
 #import "ui/views/cocoa/native_widget_mac_ns_window_host.h"
+#include "ui/views/cocoa/text_input_host.h"
 #include "ui/views/widget/drop_helper.h"
 #include "ui/views/widget/widget_aura_utils.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -111,8 +114,7 @@ class NativeWidgetMac::ZoomFocusMonitor : public FocusChangeListener {
 // NativeWidgetMac, public:
 
 NativeWidgetMac::NativeWidgetMac(internal::NativeWidgetDelegate* delegate)
-    : zoom_focus_monitor_(std::make_unique<ZoomFocusMonitor>()),
-      delegate_(delegate),
+    : delegate_(delegate),
       ns_window_host_(new NativeWidgetMacNSWindowHost(this)),
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET) {}
 
@@ -124,14 +126,13 @@ NativeWidgetMac::~NativeWidgetMac() {
 }
 
 void NativeWidgetMac::WindowDestroying() {
-  if (auto* focus_manager = GetWidget()->GetFocusManager())
-    focus_manager->RemoveFocusChangeListener(zoom_focus_monitor_.get());
   OnWindowDestroying(GetNativeWindow());
   delegate_->OnNativeWidgetDestroying();
 }
 
 void NativeWidgetMac::WindowDestroyed() {
   DCHECK(GetNSWindowMojo());
+  SetFocusManager(nullptr);
   ns_window_host_.reset();
   // |OnNativeWidgetDestroyed| may delete |this| if the object does not own
   // itself.
@@ -214,12 +215,12 @@ void NativeWidgetMac::InitNativeWidget(Widget::InitParams params) {
                                        GetWidget()->GetRootView()->bounds());
   if (auto* focus_manager = GetWidget()->GetFocusManager()) {
     GetNSWindowMojo()->MakeFirstResponder();
-    ns_window_host_->SetFocusManager(focus_manager);
-    // Non-top-level widgets use the the top level widget's focus manager.
-    if (GetWidget() == GetTopLevelWidget())
-      focus_manager->AddFocusChangeListener(zoom_focus_monitor_.get());
+    // Only one ZoomFocusMonitor is needed per FocusManager, so create one only
+    // for top-level widgets.
+    if (GetWidget()->is_top_level())
+      zoom_focus_monitor_ = std::make_unique<ZoomFocusMonitor>();
+    SetFocusManager(focus_manager);
   }
-
   ns_window_host_->CreateCompositor(params);
 
   if (g_init_native_widget_callback)
@@ -330,7 +331,13 @@ bool NativeWidgetMac::HasCapture() const {
 }
 
 ui::InputMethod* NativeWidgetMac::GetInputMethod() {
-  return ns_window_host_ ? ns_window_host_->GetInputMethod() : nullptr;
+  if (!input_method_) {
+    input_method_ = ui::CreateInputMethod(this, gfx::kNullAcceleratedWidget);
+    // For now, use always-focused mode on Mac for the input method.
+    // TODO(tapted): Move this to OnWindowKeyStatusChangedTo() and balance.
+    input_method_->OnFocus();
+  }
+  return input_method_.get();
 }
 
 void NativeWidgetMac::CenterWindow(const gfx::Size& size) {
@@ -815,6 +822,60 @@ NativeWidgetMac::GetInProcessNSWindowBridge() const {
                          : nullptr;
 }
 
+void NativeWidgetMac::SetFocusManager(FocusManager* new_focus_manager) {
+  if (focus_manager_) {
+    if (View* old_focus = focus_manager_->GetFocusedView())
+      OnDidChangeFocus(old_focus, nullptr);
+    focus_manager_->RemoveFocusChangeListener(this);
+    if (zoom_focus_monitor_)
+      focus_manager_->RemoveFocusChangeListener(zoom_focus_monitor_.get());
+  }
+  focus_manager_ = new_focus_manager;
+  if (focus_manager_) {
+    if (View* new_focus = focus_manager_->GetFocusedView())
+      OnDidChangeFocus(nullptr, new_focus);
+    focus_manager_->AddFocusChangeListener(this);
+    if (zoom_focus_monitor_)
+      focus_manager_->AddFocusChangeListener(zoom_focus_monitor_.get());
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NativeWidgetMac, FocusChangeListener:
+
+void NativeWidgetMac::OnWillChangeFocus(View* focused_before,
+                                        View* focused_now) {}
+
+void NativeWidgetMac::OnDidChangeFocus(View* focused_before,
+                                       View* focused_now) {
+  ui::InputMethod* input_method = GetWidget()->GetInputMethod();
+  if (!input_method)
+    return;
+
+  ui::TextInputClient* new_text_input_client =
+      input_method->GetTextInputClient();
+  // Sanity check: When focus moves away from the widget (i.e. |focused_now|
+  // is nil), then the textInputClient will be cleared.
+  DCHECK(!!focused_now || !new_text_input_client);
+  if (ns_window_host_) {
+    ns_window_host_->text_input_host()->SetTextInputClient(
+        new_text_input_client);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NativeWidgetMac, internal::InputMethodDelegate:
+
+ui::EventDispatchDetails NativeWidgetMac::DispatchKeyEventPostIME(
+    ui::KeyEvent* key) {
+  DCHECK(focus_manager_);
+  if (!focus_manager_->OnKeyEvent(*key))
+    key->StopPropagation();
+  else
+    GetWidget()->OnKeyEvent(key);
+  return ui::EventDispatchDetails();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, public:
 
@@ -883,8 +944,11 @@ NativeWidgetPrivate* NativeWidgetPrivate::GetTopLevelNativeWidget(
       NativeWidgetMacNSWindowHost::GetFromNativeView(native_view);
   if (!window_host)
     return nullptr;
-  while (window_host->parent())
+  while (window_host->parent()) {
+    if (window_host->native_widget_mac()->GetWidget()->is_top_level())
+      break;
     window_host = window_host->parent();
+  }
   return window_host->native_widget_mac();
 }
 

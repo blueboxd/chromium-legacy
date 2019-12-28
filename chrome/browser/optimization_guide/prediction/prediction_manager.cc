@@ -10,6 +10,7 @@
 #include "base/containers/flat_set.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_macros_local.h"
 #include "base/rand_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -288,8 +289,16 @@ base::Optional<float> PredictionManager::GetValueForClientFeature(
           engagement_service->GetScore(navigation_handle->GetURL()));
     }
     case proto::CLIENT_MODEL_FEATURE_SAME_ORIGIN_NAVIGATION: {
-      return static_cast<float>(url::IsSameOriginWith(
-          navigation_handle->GetURL(), navigation_handle->GetPreviousURL()));
+      OptimizationGuideNavigationData* nav_data =
+          OptimizationGuideNavigationData::GetFromNavigationHandle(
+              navigation_handle);
+
+      bool is_same_origin = nav_data && nav_data->is_same_origin_navigation();
+
+      LOCAL_HISTOGRAM_BOOLEAN(
+          "OptimizationGuide.PredictionManager.IsSameOrigin", is_same_origin);
+
+      return static_cast<float>(is_same_origin);
     }
     case proto::CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_SESSION_MEAN: {
       if (session_fcp_.GetNumberOfSamples() == 0) {

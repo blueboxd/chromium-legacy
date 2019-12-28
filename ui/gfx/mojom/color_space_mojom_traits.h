@@ -156,8 +156,6 @@ struct EnumTraits<gfx::mojom::ColorSpaceTransferID,
         return gfx::mojom::ColorSpaceTransferID::SMPTEST428_1;
       case gfx::ColorSpace::TransferID::ARIB_STD_B67:
         return gfx::mojom::ColorSpaceTransferID::ARIB_STD_B67;
-      case gfx::ColorSpace::TransferID::SMPTEST2084_NON_HDR:
-        return gfx::mojom::ColorSpaceTransferID::SMPTEST2084_NON_HDR;
       case gfx::ColorSpace::TransferID::IEC61966_2_1_HDR:
         return gfx::mojom::ColorSpaceTransferID::IEC61966_2_1_HDR;
       case gfx::ColorSpace::TransferID::LINEAR_HDR:
@@ -231,9 +229,6 @@ struct EnumTraits<gfx::mojom::ColorSpaceTransferID,
         return true;
       case gfx::mojom::ColorSpaceTransferID::ARIB_STD_B67:
         *out = gfx::ColorSpace::TransferID::ARIB_STD_B67;
-        return true;
-      case gfx::mojom::ColorSpaceTransferID::SMPTEST2084_NON_HDR:
-        *out = gfx::ColorSpace::TransferID::SMPTEST2084_NON_HDR;
         return true;
       case gfx::mojom::ColorSpaceTransferID::IEC61966_2_1_HDR:
         *out = gfx::ColorSpace::TransferID::IEC61966_2_1_HDR;

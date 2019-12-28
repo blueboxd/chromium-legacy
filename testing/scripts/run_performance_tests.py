@@ -123,6 +123,7 @@ class OutputFilePaths(object):
   """
 
   def __init__(self, isolated_out_dir, perf_test_name):
+    self.name = perf_test_name
     self.benchmark_path = os.path.join(isolated_out_dir, perf_test_name)
 
   def SetUp(self):
@@ -161,8 +162,10 @@ def IsWindows():
 
 
 class GtestCommandGenerator(object):
-  def __init__(self, options):
+  def __init__(self, options, override_executable=None, additional_flags=None):
     self._options = options
+    self._override_executable = override_executable
+    self._additional_flags = additional_flags or []
 
   def generate(self, output_dir):
     """Generate the command to run to start the gtest perf test.
@@ -178,20 +181,20 @@ class GtestCommandGenerator(object):
             self._get_passthrough_args()
            )
 
+  @property
+  def executable_name(self):
+    """Gets the platform-independent name of the executable."""
+    return self._override_executable or self._options.executable
+
   def _get_executable(self):
-    executable = self._options.executable
+    executable = self.executable_name
     if IsWindows():
       return r'.\%s.exe' % executable
     else:
       return './%s' % executable
 
-  @property
-  def executable_name(self):
-    """Gets the platform-independent name of the executable."""
-    return self._options.executable
-
   def _get_passthrough_args(self):
-    return self._options.passthrough_args
+    return self._options.passthrough_args + self._additional_flags
 
   def _generate_filter_args(self):
     if self._options.isolated_script_test_filter:
@@ -214,22 +217,33 @@ class GtestCommandGenerator(object):
     if self._options.use_gtest_benchmark_script:
       output_args.append('--output-dir=' + output_dir)
     # These flags are to make sure that test output perf metrics in the log.
-    if not '--verbose' in self._options.passthrough_args:
+    if not '--verbose' in self._get_passthrough_args():
       output_args.append('--verbose')
     if (not '--test-launcher-print-test-stdio=always'
-        in self._options.passthrough_args):
+        in self._get_passthrough_args()):
       output_args.append('--test-launcher-print-test-stdio=always')
     return output_args
 
 
-def write_legacy_test_results(return_code, output_filepath):
+def write_simple_test_results(return_code, output_filepath, benchmark_name):
   # TODO(crbug.com/920002): Fix to output
   # https://chromium.googlesource.com/chromium/src/+/master/docs/testing/json_test_results_format.md
-  valid = (return_code == 0)
-  failures = [] if valid else ['(entire test suite)']
+  # for each test rather than this summary.
   output_json = {
-      'valid': valid,
-      'failures': failures,
+      'tests': {
+          benchmark_name: {
+              'expected': 'PASS',
+              'actual': 'FAIL' if return_code else 'PASS',
+          },
+      },
+      'interrupted': False,
+      'path_delimiter': '/',
+      'version': 3,
+      'seconds_since_epoch': time.time(),
+      'num_failures_by_type': {
+          'FAIL': 1 if return_code else 0,
+          'PASS': 0 if return_code else 1,
+      },
   }
   with open(output_filepath, 'w') as fh:
     json.dump(output_json, fh)
@@ -268,13 +282,14 @@ def execute_gtest_perf_test(command_generator, output_paths, use_xvfb=False):
   except Exception:
     traceback.print_exc()
     return_code = 1
-  write_legacy_test_results(return_code, output_paths.test_results)
   if command_generator.executable_name in GTEST_CONVERSION_WHITELIST:
     with path_util.SysPath(path_util.GetTracingDir()):
       # pylint: disable=no-name-in-module
       from tracing.value import gtest_json_converter
       # pylint: enable=no-name-in-module
     gtest_json_converter.ConvertGtestJsonFile(output_paths.perf_results)
+  write_simple_test_results(return_code, output_paths.test_results,
+                            output_paths.name)
   return return_code
 
 
@@ -559,33 +574,54 @@ def main(sys_args):
         raise Exception(
             'Sharded Telemetry perf tests must either specify --benchmarks '
             'list or have GTEST_SHARD_INDEX environment variable present.')
-      benchmarks_and_configs = shard_map[shard_index]['benchmarks']
-
-      for (benchmark, story_selection_config
-           ) in benchmarks_and_configs.iteritems():
-        # Need to run the benchmark on both latest browser and reference build.
-        output_paths = OutputFilePaths(isolated_out_dir, benchmark).SetUp()
-        command_generator = TelemetryCommandGenerator(
-            benchmark, options, story_selection_config=story_selection_config)
-        print('\n### {folder} ###'.format(folder=benchmark))
-        return_code = execute_telemetry_benchmark(
-            command_generator, output_paths, options.xvfb)
-        overall_return_code = return_code or overall_return_code
-        test_results_files.append(output_paths.test_results)
-        if options.run_ref_build:
-          reference_benchmark_foldername = benchmark + '.reference'
-          reference_output_paths = OutputFilePaths(
-              isolated_out_dir, reference_benchmark_foldername).SetUp()
-          reference_command_generator = TelemetryCommandGenerator(
+      shard_configuration = shard_map[shard_index]
+      assert ('benchmarks' in shard_configuration or
+              'executables' in shard_configuration), (
+                  'Every shard must have benchmarks or executables associated '
+                  'with it.')
+      if 'benchmarks' in shard_configuration:
+        benchmarks_and_configs = shard_configuration['benchmarks']
+        for (benchmark, story_selection_config
+             ) in benchmarks_and_configs.iteritems():
+          # Need to run the benchmark on both latest browser and reference
+          # build.
+          output_paths = OutputFilePaths(isolated_out_dir, benchmark).SetUp()
+          command_generator = TelemetryCommandGenerator(
               benchmark, options,
-              story_selection_config=story_selection_config, is_reference=True)
-          print('\n### {folder} ###'.format(
-              folder=reference_benchmark_foldername))
-          # We intentionally ignore the return code and test results of the
-          # reference build.
-          execute_telemetry_benchmark(
-              reference_command_generator, reference_output_paths,
-              options.xvfb)
+              story_selection_config=story_selection_config)
+          print('\n### {folder} ###'.format(folder=benchmark))
+          return_code = execute_telemetry_benchmark(
+              command_generator, output_paths, options.xvfb)
+          overall_return_code = return_code or overall_return_code
+          test_results_files.append(output_paths.test_results)
+          if options.run_ref_build:
+            reference_benchmark_foldername = benchmark + '.reference'
+            reference_output_paths = OutputFilePaths(
+                isolated_out_dir, reference_benchmark_foldername).SetUp()
+            reference_command_generator = TelemetryCommandGenerator(
+                benchmark, options,
+                story_selection_config=story_selection_config,
+                is_reference=True)
+            print('\n### {folder} ###'.format(
+                folder=reference_benchmark_foldername))
+            # We intentionally ignore the return code and test results of the
+            # reference build.
+            execute_telemetry_benchmark(
+                reference_command_generator, reference_output_paths,
+                options.xvfb)
+      if 'executables' in shard_configuration:
+        names_and_configs = shard_configuration['executables']
+        for (name, configuration
+             ) in names_and_configs.iteritems():
+          command_generator = GtestCommandGenerator(
+              options, override_executable=configuration['path'],
+              additional_flags=configuration['arguments'])
+          output_paths = OutputFilePaths(isolated_out_dir, name).SetUp()
+          print('\n### {folder} ###'.format(folder=name))
+          return_code = execute_gtest_perf_test(
+              command_generator, output_paths, options.xvfb)
+          overall_return_code = return_code or overall_return_code
+          test_results_files.append(output_paths.test_results)
     else:
       raise Exception('Telemetry tests must provide either a shard map or a '
                       '--benchmarks list so that we know which stories to run.')

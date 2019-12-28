@@ -4899,8 +4899,6 @@ class ColorTransformPixelTest
     // Allow a difference of 2 bytes in comparison for shader-based transforms,
     // and 4 bytes for LUT-based transforms (determined empirically).
     cc::FuzzyPixelComparator comparator(false, 100.f, 0.f, 2.f, 2, 0);
-    if (!transform->CanGetShaderSource())
-      comparator = cc::FuzzyPixelComparator(false, 100.f, 0.f, 6.f, 6, 0);
     EXPECT_TRUE(
         this->RunPixelTest(&pass_list, &expected_output_colors, comparator));
   }

@@ -162,8 +162,8 @@ class ScriptsSmokeTest(unittest.TestCase):
 
   # Android: crbug.com/932301
   # ChromeOS: crbug.com/754913
-  # Linux: crbug.com/1024767
-  @decorators.Disabled('chromeos', 'android', 'linux')
+  # Windows: crbug.com/1024767
+  @decorators.Disabled('chromeos', 'android', 'win')
   def testRunPerformanceTestsTelemetrySharded_end2end(self):
     tempdir = tempfile.mkdtemp()
     env = os.environ.copy()
@@ -188,22 +188,26 @@ class ScriptsSmokeTest(unittest.TestCase):
       self.assertEquals(return_code, 0)
       expected_benchmark_folders = (
           'dummy_benchmark.stable_benchmark_1',
-          'dummy_benchmark.stable_benchmark_1.reference')
+          'dummy_benchmark.stable_benchmark_1.reference',
+          'dummy_gtest')
       with open(os.path.join(tempdir, 'output.json')) as f:
         test_results = json.load(f)
       self.assertIsNotNone(
           test_results, 'json_test_results should be populated.')
-      test_repeats = test_results['num_failures_by_type']['PASS']
+      test_runs = test_results['num_failures_by_type']['PASS']
+      # 1 gtest runs (since --isolated-script-test-repeat doesn't work for gtest
+      # yet) plus 2 dummy_benchmark runs = 3 runs.
       self.assertEqual(
-          test_repeats, 2, '--isolated-script-test-repeat=2 should work.')
+          test_runs, 3, '--isolated-script-test-repeat=2 should work.')
       for folder in expected_benchmark_folders:
         with open(os.path.join(tempdir, folder, 'test_results.json')) as f:
           test_results = json.load(f)
         self.assertIsNotNone(
             test_results, 'json test results should be populated.')
         test_repeats = test_results['num_failures_by_type']['PASS']
-        self.assertEqual(
-            test_repeats, 2, '--isolated-script-test-repeat=2 should work.')
+        if 'dummy_gtest' not in folder:  # Repeats don't work for gtest yet.
+          self.assertEqual(
+              test_repeats, 2, '--isolated-script-test-repeat=2 should work.')
         with open(os.path.join(tempdir, folder, 'perf_results.json')) as f:
           perf_results = json.load(f)
         self.assertIsNotNone(
@@ -231,11 +235,22 @@ class ScriptsSmokeTest(unittest.TestCase):
              if generate_trace else '') +
         ' --non-telemetry=true '
         '--this-arg=passthrough '
+        '--argument-to-check-that-arguments-work '
         '--gtest-benchmark-name dummy_gtest '
         '--isolated-script-test-output=%s' % (
             os.path.join(tempdir, 'output.json')
         ))
-    self.assertEquals(return_code, 0, stdout)
+    try:
+      self.assertEquals(return_code, 0, stdout)
+    except AssertionError:
+      try:
+        with open(os.path.join(tempdir, benchmark, 'benchmark_log.txt')) as fh:
+          print fh.read()
+      # pylint: disable=bare-except
+      except:
+      # pylint: enable=bare-except
+        pass
+      raise
     try:
       with open(os.path.join(tempdir, 'output.json')) as f:
         test_results = json.load(f)
@@ -266,7 +281,7 @@ class ScriptsSmokeTest(unittest.TestCase):
   def testRunPerformanceTestsGtestTrace_end2end(self):
     self.RunGtest(generate_trace=True)
 
-  def testRunPerformanceTestsTelemetryArgsParser(self):
+  def testRunPerformanceTestsShardedArgsParser(self):
     options = run_performance_tests.parse_arguments([
         '../../tools/perf/run_benchmark', '-v', '--browser=release_x64',
         '--upload-results', '--run-ref-build',

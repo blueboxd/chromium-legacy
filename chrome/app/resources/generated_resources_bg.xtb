@@ -113,6 +113,7 @@
 <translation id="1150565364351027703">Слънчеви очила</translation>
 <translation id="1151917987301063366">Достъпът на <ph name="HOST" /> до сензорите винаги да е разрешен</translation>
 <translation id="1153356358378277386">Сдвоени устройства</translation>
+<translation id="1153636665119721804">Програма на Google за разширена защита</translation>
 <translation id="1161575384898972166">Моля, влезте в/ъв <ph name="TOKEN_NAME" />, за да експортирате сертификата за клиентската програма.</translation>
 <translation id="1163931534039071049">&amp;Преглед на изходния код на рамката</translation>
 <translation id="1164674268730883318">Да се изключи ли Smart Lock за <ph name="DEVICE_TYPE" />?</translation>
@@ -223,6 +224,7 @@
 <translation id="1306606229401759371">Промяна на настройките</translation>
 <translation id="1307165550267142340">ПИН кодът ви бе създаден</translation>
 <translation id="1307559529304613120">Ами сега!  Системата не успя да съхрани дългосрочното означение за достъп на това устройство до приложния програмен интерфейс (API).</translation>
+<translation id="1309199320876169714">Plugin VM се премахва...</translation>
 <translation id="1313405956111467313">Автоматична конфигурация на прокси сървър</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313705515580255288">Вашите отметки, история и други настройки ще се синхронизират с профила ви в Google.</translation>
@@ -233,6 +235,7 @@
 <translation id="1316495628809031177">Синхронизирането е на пауза</translation>
 <translation id="1317637799698924700">Докинг станцията ви ще функционира в режим за съвместимост с USB Type-C.</translation>
 <translation id="1322046419516468189">Преглеждайте и управлявайте запазените пароли в <ph name="SAVED_PASSWORDS_STORE" /></translation>
+<translation id="1324106254079708331">Предпазва личните профили в Google на всички хора, които са изложени на риск от насочени атаки</translation>
 <translation id="1326317727527857210">Влезте в Chrome, за да получите разделите си от другите си устройства.</translation>
 <translation id="1327074568633507428">Принтер в Google Отпечатване в облак</translation>
 <translation id="1327272175893960498">Пропуски за Kerberos</translation>
@@ -720,6 +723,7 @@
 <translation id="2003130567827682533">За да активирате данните от „<ph name="NAME" />“, първо се свържете с Wi-Fi мрежа</translation>
 <translation id="2006638907958895361">Отваряне на връзката чрез <ph name="APP" /></translation>
 <translation id="2007404777272201486">Подаване на сигнал за проблем...</translation>
+<translation id="2010501376126504057">Съвместими устройства</translation>
 <translation id="2016430552235416146">Традиционно</translation>
 <translation id="2017334798163366053">Деактивиране на събирането на данни за ефективността</translation>
 <translation id="2017836877785168846">Изчиства историята и автоматичните довършвания в адресната лента.</translation>
@@ -1355,6 +1359,7 @@
 <translation id="2871813825302180988">Профилът вече се използва на това устройство.</translation>
 <translation id="287286579981869940">Добавяне на <ph name="PROVIDER_NAME" />...</translation>
 <translation id="2872961005593481000">Изключване</translation>
+<translation id="2874478552394649323">Премахване на Plugin VM</translation>
 <translation id="2874939134665556319">Предишен запис</translation>
 <translation id="2875698561019555027">(Страници с грешки в Chrome)</translation>
 <translation id="2876336351874743617">Пръст 2</translation>
@@ -1370,6 +1375,7 @@
 <translation id="2889064240420137087">Отваряне на връзката със...</translation>
 <translation id="2889925978073739256">Блокирането на приставки извън тестова среда да продължи</translation>
 <translation id="2893168226686371498">Браузър по подразбиране</translation>
+<translation id="2893208266590504003">Премахването на Plugin VM не бе успешно</translation>
 <translation id="2894757982205307093">Нов раздел в групата</translation>
 <translation id="289644616180464099">SIM картата е заключена</translation>
 <translation id="2896909745808647285">Файлът „<ph name="FILE_NAME" />“ е шифрован и отварянето му бе блокирано.</translation>
@@ -2259,6 +2265,7 @@
 <translation id="413121957363593859">Компоненти</translation>
 <translation id="4131410914670010031">Черно-бяло</translation>
 <translation id="4136203100490971508">Нощното осветление ще се изключи автоматично по изгрев</translation>
+<translation id="41365691917097717">Ако продължите, отстраняването на грешки през ADB ще бъде активирано, за да създавате и тествате приложения за Android. Обърнете внимание, че това действие позволява инсталирането на приложения за Android, които не са удостоверени от Google. За деактивирането на ADB е необходимо да бъдат възстановени фабричните настройки.</translation>
 <translation id="4138267921960073861">Потребителските имена и снимките да се показват на екрана за вход</translation>
 <translation id="413915106327509564"><ph name="WINDOW_TITLE" /> – свързано е HID устройство</translation>
 <translation id="4142052906269098341">Отключвайте своя <ph name="DEVICE_TYPE" /> с телефона си. <ph name="LINK_BEGIN" />Научете повече<ph name="LINK_END" /></translation>
@@ -3180,6 +3187,7 @@
 <translation id="5554720593229208774">Сертифициращ орган за имейл</translation>
 <translation id="5556459405103347317">Повторно зареждане</translation>
 <translation id="5557991081552967863">Поддържане на включена Wi-Fi в спящ режим</translation>
+<translation id="5558125320634132440">Този сайт е блокиран, защото в него може да има съдържание за възрастни</translation>
 <translation id="5558129378926964177">&amp;Увеличаване</translation>
 <translation id="55601339223879446">Коригиране на границите на работния плот в рамките на екрана</translation>
 <translation id="5562781907504170924">Този раздел е свързан с устройство с Bluetooth.</translation>
@@ -3282,7 +3290,6 @@
 <translation id="5692183275898619210">Отпечатването завърши</translation>
 <translation id="5696143504434933566">Подаване на сигнал за злоупотреба за <ph name="EXTENSION_NAME" /></translation>
 <translation id="5696679855467848181">Понастоящем използван PPD файл: <ph name="PPD_NAME" /></translation>
-<translation id="5699533844376998780">Разширението „<ph name="EXTENSION_NAME" />“ е добавено.</translation>
 <translation id="570043786759263127">Приложения и услуги в Google Play</translation>
 <translation id="5700836101007545240">Опцията за добавяне на връзка е деактивирана от администратора ви</translation>
 <translation id="5701080607174488915">Грешка при извличането на правилото от сървъра.</translation>
@@ -3770,6 +3777,7 @@
 <translation id="6386099547750337629">Ако това е неочаквано, моля, свържете се с екипа за поддръжка.</translation>
 <translation id="6387674443318562538">Вертикално разделяне</translation>
 <translation id="6388429472088318283">Търсене в езиците</translation>
+<translation id="6390020764191254941">Преместване на раздела в нов прозорец</translation>
 <translation id="6390799748543157332">Преглежданите от вас страници в този прозорец няма да се показват в историята на браузъра и няма да оставят на компютъра други следи, като „бисквитки“, след като затворите всички прозорци в режим като гост. Изтеглените от вас файлове обаче ще бъдат запазени.</translation>
 <translation id="6393156038355142111">Предложение за надеждна парола</translation>
 <translation id="6395423953133416962">Изпращане на <ph name="BEGIN_LINK1" />системна информация<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />показатели<ph name="END_LINK2" /></translation>
@@ -3808,7 +3816,6 @@
 <translation id="6444070574980481588">Задаване на датата и часа</translation>
 <translation id="6445450263907939268">Ако не сте искали тези промени, можете да възстановите предишните си настройки.</translation>
 <translation id="6447842834002726250">„Бисквитки“</translation>
-<translation id="6449285849137521213">Приложението <ph name="EXTENSION_NAME" /> е добавено.</translation>
 <translation id="6450876761651513209">Промяна на свързаните с поверителността ви настройки</translation>
 <translation id="6451180435462401570">Управление на устройствата в Отпечатване в облак</translation>
 <translation id="6451689256222386810">Ако забравите пропуска си или искате да промените тази настройка, <ph name="BEGIN_LINK" />нулирайте синхронизирането<ph name="END_LINK" />.</translation>
@@ -4543,6 +4550,7 @@
 <translation id="7530016656428373557">Скорост на разреждане във ватове</translation>
 <translation id="7531779363494549572">Отворете Настройки &gt; „Приложения и известия“ &gt; „Известия“.</translation>
 <translation id="7532009420053991888"><ph name="LINUX_APP_NAME" /> не реагира. Изберете „Принудително затваряне“, за да затворите приложението.</translation>
+<translation id="7536333565791380193">Разширени настройки за сигурност</translation>
 <translation id="7539856059004947393">Ключ за сигурност с Bluetooth</translation>
 <translation id="7540972813190816353">При проверката за актуализации възникна грешка: <ph name="ERROR" /></translation>
 <translation id="7541773865713908457"><ph name="ACTION_NAME" /> чрез приложението <ph name="APP_NAME" /></translation>
@@ -4789,6 +4797,7 @@
 <translation id="7851720427268294554">Инструмент за синтактичен анализ на IPP заявки</translation>
 <translation id="78526636422538552">Функцията за добавяне на профили в Google е деактивирана</translation>
 <translation id="7853747251428735">Още инструмен&amp;ти</translation>
+<translation id="7855678561139483478">Преместване на раздела в нов прозорец</translation>
 <translation id="7857117644404132472">Добавяне на изключение</translation>
 <translation id="7857949311770343000">Това очакваният от вас нов раздел ли е?</translation>
 <translation id="7859938049767853383">Файлът „<ph name="FILE_NAME" />“ е твърде голям, за да бъде сканиран в облака, и отварянето му бе блокирано.</translation>
@@ -5251,6 +5260,7 @@
 <translation id="850875081535031620">Няма намерен опасен софтуер</translation>
 <translation id="8509177919508253835">Нулиране на ключове за сигурност и създаване на ПИН кодове</translation>
 <translation id="8509646642152301857">Изтеглянето на речника за проверка на правописа не бе успешно.</translation>
+<translation id="8510617356402557055">Беше ли това неочаквано? <ph name="BEGIN_LINK" />Изпращане на отзиви<ph name="END_LINK" /></translation>
 <translation id="8512476990829870887">Прекратяване на процеса</translation>
 <translation id="851263357009351303">Да се разреши на <ph name="HOST" /> винаги да показва изображения</translation>
 <translation id="8513108775083588393">Автоматична ориентация</translation>
@@ -5641,6 +5651,7 @@
 <translation id="9030785788945687215">Gmail</translation>
 <translation id="9033857511263905942">&amp;Поставяне</translation>
 <translation id="9037965129289936994">Показване на оригинала</translation>
+<translation id="903797871439633902">Това е последната автоматична актуализация на софтуера и сигурността за устройството <ph name="DEVICE_TYPE" />. За да получавате бъдещи актуализации, надстройте до по-нов модел. &lt;a target="_blank" href="<ph name="URL" />"&gt;Научете повече&lt;/a&gt;</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">Да се актуализира ли паролата за <ph name="ORIGIN" />?</translation>
 <translation id="9041692268811217999">Достъпът до локални файлове на компютъра ви е деактивиран от администратора ви</translation>
@@ -5728,6 +5739,7 @@
 <translation id="9169496697824289689">Преглед на клавишните комбинации</translation>
 <translation id="916964310188958970">Защо виждате това предложение?</translation>
 <translation id="9169931577761441333">Добавяне на <ph name="APP_NAME" /> към началния екран</translation>
+<translation id="9170305483456271385">Приставката Plugin VM е премахната</translation>
 <translation id="9170848237812810038">&amp;Отмяна</translation>
 <translation id="9170884462774788842">Друга програма на компютъра ви добави тема, която може да промени начина на работа на Chrome.</translation>
 <translation id="9173995187295789444">Сканира се за устройства с Bluetooth...</translation>

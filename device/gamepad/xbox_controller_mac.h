@@ -33,6 +33,7 @@ class XboxControllerMac final : public AbstractHapticGamepad {
   static const uint16_t kProductXboxOneController2015 = 0x02dd;
   static const uint16_t kProductXboxOneEliteController = 0x02e3;
   static const uint16_t kProductXboxOneSController = 0x02ea;
+  static const uint16_t kProductXboxOneEliteController2 = 0x0b00;
   static const uint16_t kProductXboxAdaptiveController = 0x0b0a;
 
   enum ControllerType {
@@ -41,6 +42,7 @@ class XboxControllerMac final : public AbstractHapticGamepad {
     XBOX_ONE_CONTROLLER_2013,
     XBOX_ONE_CONTROLLER_2015,
     XBOX_ONE_ELITE_CONTROLLER,
+    XBOX_ONE_ELITE_CONTROLLER_2,
     XBOX_ONE_S_CONTROLLER,
     XBOX_ADAPTIVE_CONTROLLER,
   };

@@ -2577,7 +2577,7 @@ if (enable_java_templates) {
 
       script = "//build/android/gyp/apkbuilder.py"
       depfile = "$target_gen_dir/$target_name.d"
-      _apksigner = "$android_sdk_build_tools/apksigner"
+      _apksigner = "$android_sdk_build_tools/lib/apksigner.jar"
       _zipalign = "$android_sdk_build_tools/zipalign"
       data_deps = [
         "//tools/android/md5sum",
@@ -2606,7 +2606,7 @@ if (enable_java_templates) {
         rebase_path(depfile, root_build_dir),
         "--resource-apk=$_rebased_compiled_resources_path",
         "--output-apk=$_rebased_packaged_apk_path",
-        "--apksigner-path",
+        "--apksigner-jar",
         rebase_path(_apksigner, root_build_dir),
         "--zipalign-path",
         rebase_path(_zipalign, root_build_dir),

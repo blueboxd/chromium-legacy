@@ -35,7 +35,7 @@
 <translation id="1231733316453485619">Synchronisierung aktivieren?</translation>
 <translation id="123724288017357924">Aktuelle Seite neu laden, Cache-Inhalte ignorieren</translation>
 <translation id="124116460088058876">Weitere Sprachen</translation>
-<translation id="1242008676835033345">auf <ph name="WEBSITE_URL" /> eingebettet</translation>
+<translation id="1242008676835033345">Auf <ph name="WEBSITE_URL" /> eingebettet</translation>
 <translation id="124678866338384709">Aktuellen Tab schließen</translation>
 <translation id="1258753120186372309">Google-Doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Suchen und entdecken</translation>
@@ -739,7 +739,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6545864417968258051">Bluetooth-Suche</translation>
 <translation id="6560414384669816528">Suche mit Sogou</translation>
 <translation id="656065428026159829">Mehr anzeigen</translation>
-<translation id="6561560012278703671">Ein Symbol in der Adressleiste einblenden (störende Aufforderungen zum Anzeigen von Benachrichtigungen werden blockiert)</translation>
+<translation id="6561560012278703671">Ein Symbol in der Adressleiste einblenden (störende Aufforderungen zum Annehmen von Benachrichtigungen werden blockiert)</translation>
 <translation id="6566259936974865419">Dank Chrome haben Sie <ph name="GIGABYTES" /> GB eingespart</translation>
 <translation id="6573096386450695060">Immer zulassen</translation>
 <translation id="6573431926118603307">Hier werden Tabs angezeigt, die Sie auf Ihren anderen Geräten in Chrome geöffnet haben.</translation>

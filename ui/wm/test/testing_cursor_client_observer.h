@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef UI_WM_TEST_TESTING_CURSOR_CLIENT_OBSERVER_H_
+#define UI_WM_TEST_TESTING_CURSOR_CLIENT_OBSERVER_H_
+
 #include "ui/aura/client/cursor_client_observer.h"
 #include "ui/wm/core/cursor_manager.h"
 
@@ -32,3 +35,5 @@ class TestingCursorClientObserver : public aura::client::CursorClientObserver {
 };
 
 }  // namespace wm
+
+#endif  // UI_WM_TEST_TESTING_CURSOR_CLIENT_OBSERVER_H_

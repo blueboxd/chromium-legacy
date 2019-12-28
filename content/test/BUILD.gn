@@ -173,6 +173,8 @@ jumbo_static_library("test_support") {
     "../public/test/simple_url_loader_test_helper.h",
     "../public/test/slow_download_http_response.cc",
     "../public/test/slow_download_http_response.h",
+    "../public/test/slow_http_response.cc",
+    "../public/test/slow_http_response.h",
     "../public/test/test_browser_context.cc",
     "../public/test/test_browser_context.h",
     "../public/test/test_content_client_initializer.cc",

@@ -375,7 +375,7 @@ class GLRendererShaderPixelTest : public cc::GLRendererPixelTest {
                                 NON_PREMULTIPLIED_ALPHA, true, true, false,
                                 false));
 
-    // Iterate over alpha plane, nv12, and color_lut parameters.
+    // Iterate over alpha plane and nv12 parameters.
     UVTextureMode uv_modes[2] = {UV_TEXTURE_MODE_UV, UV_TEXTURE_MODE_U_V};
     YUVAlphaTextureMode a_modes[2] = {YUV_NO_ALPHA_TEXTURE,
                                       YUV_HAS_ALPHA_TEXTURE};

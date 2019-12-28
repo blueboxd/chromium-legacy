@@ -605,6 +605,124 @@ TEST_F(AXPositionTest, Serialize) {
   EXPECT_EQ(AXNodePosition::INVALID_INDEX, copy_position->child_index());
 }
 
+TEST_F(AXPositionTest, ToString) {
+  AXNodeData root_data;
+  root_data.id = 1;
+  root_data.role = ax::mojom::Role::kRootWebArea;
+
+  AXNodeData static_text_data_1;
+  static_text_data_1.id = 2;
+  static_text_data_1.role = ax::mojom::Role::kStaticText;
+  static_text_data_1.SetName("some text");
+
+  AXNodeData static_text_data_2;
+  static_text_data_2.id = 3;
+  static_text_data_2.role = ax::mojom::Role::kStaticText;
+  static_text_data_2.SetName(base::WideToUTF16(L"\xfffc"));
+
+  AXNodeData static_text_data_3;
+  static_text_data_3.id = 4;
+  static_text_data_3.role = ax::mojom::Role::kStaticText;
+  static_text_data_3.SetName("more text");
+
+  root_data.child_ids = {static_text_data_1.id, static_text_data_2.id,
+                         static_text_data_3.id};
+
+  std::unique_ptr<AXTree> new_tree = CreateAXTree(
+      {root_data, static_text_data_1, static_text_data_2, static_text_data_3});
+  AXNodePosition::SetTree(new_tree.get());
+
+  TestPositionType text_position_1 = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, root_data.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_TRUE(text_position_1->IsTextPosition());
+  EXPECT_EQ(
+      "TextPosition anchor_id=1 text_offset=0 affinity=downstream "
+      "annotated_text=<s>ome text\xEF\xBF\xBCmore text",
+      text_position_1->ToString());
+
+  TestPositionType text_position_2 = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, root_data.id, 5 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_TRUE(text_position_2->IsTextPosition());
+  EXPECT_EQ(
+      "TextPosition anchor_id=1 text_offset=5 affinity=downstream "
+      "annotated_text=some <t>ext\xEF\xBF\xBCmore text",
+      text_position_2->ToString());
+
+  TestPositionType text_position_3 = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, root_data.id, 9 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_TRUE(text_position_3->IsTextPosition());
+  EXPECT_EQ(
+      "TextPosition anchor_id=1 text_offset=9 affinity=downstream "
+      "annotated_text=some text<\xEF\xBF\xBC>more text",
+      text_position_3->ToString());
+
+  TestPositionType text_position_4 = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, root_data.id, 10 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_TRUE(text_position_4->IsTextPosition());
+  EXPECT_EQ(
+      "TextPosition anchor_id=1 text_offset=10 affinity=downstream "
+      "annotated_text=some text\xEF\xBF\xBC<m>ore text",
+      text_position_4->ToString());
+
+  TestPositionType text_position_5 = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, root_data.id, 19 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_TRUE(text_position_5->IsTextPosition());
+  EXPECT_EQ(
+      "TextPosition anchor_id=1 text_offset=19 affinity=downstream "
+      "annotated_text=some text\xEF\xBF\xBCmore text<>",
+      text_position_5->ToString());
+
+  TestPositionType text_position_6 = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, static_text_data_2.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_TRUE(text_position_6->IsTextPosition());
+  EXPECT_EQ(
+      "TextPosition anchor_id=3 text_offset=0 affinity=downstream "
+      "annotated_text=<\xEF\xBF\xBC>",
+      text_position_6->ToString());
+
+  TestPositionType text_position_7 = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, static_text_data_2.id, 1 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_TRUE(text_position_7->IsTextPosition());
+  EXPECT_EQ(
+      "TextPosition anchor_id=3 text_offset=1 affinity=downstream "
+      "annotated_text=\xEF\xBF\xBC<>",
+      text_position_7->ToString());
+
+  TestPositionType text_position_8 = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, static_text_data_3.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_TRUE(text_position_8->IsTextPosition());
+  EXPECT_EQ(
+      "TextPosition anchor_id=4 text_offset=0 affinity=downstream "
+      "annotated_text=<m>ore text",
+      text_position_8->ToString());
+
+  TestPositionType text_position_9 = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, static_text_data_3.id, 5 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_TRUE(text_position_9->IsTextPosition());
+  EXPECT_EQ(
+      "TextPosition anchor_id=4 text_offset=5 affinity=downstream "
+      "annotated_text=more <t>ext",
+      text_position_9->ToString());
+
+  TestPositionType text_position_10 = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, static_text_data_3.id, 9 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_TRUE(text_position_10->IsTextPosition());
+  EXPECT_EQ(
+      "TextPosition anchor_id=4 text_offset=9 affinity=downstream "
+      "annotated_text=more text<>",
+      text_position_10->ToString());
+}
+
 TEST_F(AXPositionTest, IsIgnored) {
   EXPECT_FALSE(AXNodePosition::CreateNullPosition()->IsIgnored());
 

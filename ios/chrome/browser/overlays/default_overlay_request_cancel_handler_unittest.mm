@@ -21,7 +21,7 @@ class DefaultOverlayRequestCancelHandlerTest : public PlatformTest {
  public:
   DefaultOverlayRequestCancelHandlerTest() : PlatformTest() {
     std::unique_ptr<OverlayRequest> request =
-        OverlayRequest::CreateWithConfig<FakeOverlayUserData>(nullptr);
+        OverlayRequest::CreateWithConfig<FakeOverlayUserData>();
     queue()->AddRequest(std::move(request));
   }
 

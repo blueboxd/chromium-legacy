@@ -709,6 +709,7 @@
 <translation id="4340982228985273705">Hindi na-detect ang computer na ito bilang pinamamahalaan ng enterprise kaya awtomatiko lang na mai-install ng patakaran ang mga extension na hino-host sa Chrome Webstore. Ang URL ng pag-update ng Chrome Webstore ay "<ph name="CWS_UPDATE_URL" />."</translation>
 <translation id="4346197816712207223">Mga Tinatanggap na Credit Card</translation>
 <translation id="4346833872170306413">Roc-16K</translation>
+<translation id="4349531505348777662">Kakalagay mo lang ng iyong password sa isang mapanlinang na site. Inirerekomenda ng Chrome na pumunta sa <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, at iba pang site kung saan mo ginagamit ang password na ito at baguhin ito ngayon.</translation>
 <translation id="4356973930735388585">Maaaring subukan ng mga attacker sa site na ito na mag-install ng mga mapanganib na program sa iyong computer na magnanakaw o magde-delete ng impormasyon mo (halimbawa, mga larawan, password, mensahe at credit card).</translation>
 <translation id="4358059973562876591">Posibleng hindi mailapat ang mga template na tinukoy mo dahil sa error sa patakarang DnsOverHttpsMode.</translation>
 <translation id="4358461427845829800">Pamahalaan ang mga paraan ng pagbabayad...</translation>
@@ -1236,6 +1237,7 @@
 <translation id="6970216967273061347">Distrito</translation>
 <translation id="6973656660372572881">Tinukoy ang parehong mga hindi nababagong proxy server at isang .pac script URL.</translation>
 <translation id="6973932557599545801">Paumanhin, hindi ako makatulong. Magpatuloy nang mag-isa.</translation>
+<translation id="6975012522936652259">Kakalagay mo lang ng iyong password sa isang mapanlinang na site. Inirerekomenda ng Chromium na pumunta sa <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, at iba pang site kung saan mo ginagamit ang password na ito at baguhin ito ngayon.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">I-mute (default)</translation>
 <translation id="6989763994942163495">Ipakita ang mga advanced na setting...</translation>
@@ -1367,6 +1369,7 @@ Mga karagdagang detalye:
 <translation id="7567204685887185387">Hindi mapatunayan ng server na ito na ito ay <ph name="DOMAIN" />; maaaring mapanlokong ibinigay ang certificate ng seguridad nito. Maaaring dulot ito ng maling configuration o isang umaatake na hinahadlangan ang iyong koneksyon.</translation>
 <translation id="7569952961197462199">Alisin ang credit card sa Chrome?</translation>
 <translation id="7569983096843329377">Itim</translation>
+<translation id="7575207903026901870">Button na Alisin ang Suhestyon, pindutin ang Enter para alisin ang suhestyong ito</translation>
 <translation id="7578104083680115302">Magbayad nang mabilis sa mga site at app sa iba't ibang device gamit ang mga card na na-save mo sa Google.</translation>
 <translation id="7592362899630581445">Lumabag ang certificate ng server sa limitasyon sa pangalan.</translation>
 <translation id="7598391785903975535">Wala pang <ph name="UPPER_ESTIMATE" /></translation>
@@ -1612,6 +1615,7 @@ Mga karagdagang detalye:
 <translation id="8891727572606052622">Di-wastong mode ng proxy.</translation>
 <translation id="8903921497873541725">Mag-zoom in</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="890493561996401738">Button na Alisin ang Suhestyon, pindutin ang Enter para alisin, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Napunta ka sa incognito.</translation>
 <translation id="8912362522468806198">Google Account</translation>
 <translation id="8918231688545606538">Kahina-hinala ang page na ito</translation>

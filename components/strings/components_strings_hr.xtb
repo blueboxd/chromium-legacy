@@ -721,6 +721,7 @@
 <translation id="4340982228985273705">Za ovo računalo nije otkriveno da njime upravlja tvrtka, pa pravilo može samo automatski instalirati proširenja hostirana u Chrome web-trgovini. URL za ažuriranje Chrome web-trgovine je "<ph name="CWS_UPDATE_URL" />".</translation>
 <translation id="4346197816712207223">Prihvaćene kreditne kartice</translation>
 <translation id="4346833872170306413">Roc-16K</translation>
+<translation id="4349531505348777662">Upravo ste unijeli zaporku na obmanjujućoj web-lokaciji. Chrome preporučuje da otvorite <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> i druge web-lokacije na kojima koristite tu zaporku i odmah je promijenite.</translation>
 <translation id="4356973930735388585">Napadači na ovoj web-lokaciji mogu pokušati instalirati opasne programe na vaše računalo radi krađe ili brisanja vaših podataka (na primjer fotografija, zaporki, poruka i brojeva kreditnih kartica).</translation>
 <translation id="4358059973562876591">Predlošci koje ste naveli ne mogu se primijeniti zbog pogreške s pravilom DnsOverHttpsMode.</translation>
 <translation id="4358461427845829800">Upravljajte načinima plaćanja...</translation>
@@ -1249,6 +1250,7 @@
 <translation id="6970216967273061347">Distrikt</translation>
 <translation id="6973656660372572881">Određeni su fiksni proxy poslužitelji i URL .pac skripte.</translation>
 <translation id="6973932557599545801">Nažalost, ne mogu vam pomoći, nastavite sami.</translation>
+<translation id="6975012522936652259">Upravo ste unijeli zaporku na obmanjujućoj web-lokaciji. Chromium preporučuje da otvorite <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> i druge web-lokacije na kojima koristite tu zaporku i odmah je promijenite.</translation>
 <translation id="6979158407327259162">Google disk</translation>
 <translation id="6979440798594660689">Bez zvuka (zadano)</translation>
 <translation id="6989763994942163495">Pokaži napredne postavke...</translation>
@@ -1380,6 +1382,7 @@ Dodatne pojedinosti:
 <translation id="7567204685887185387">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; njegov sigurnosni certifikat možda je lažan. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
 <translation id="7569952961197462199">Želite li s Chromea ukloniti kreditnu karticu?</translation>
 <translation id="7569983096843329377">Crna</translation>
+<translation id="7575207903026901870">Gumb za uklanjanje prijedloga, pritisnite Enter da biste uklonili prijedlog</translation>
 <translation id="7578104083680115302">Plaćajte brzo na web-lokacijama i u aplikacijama na više uređaja karticama koje ste spremili na Google.</translation>
 <translation id="7592362899630581445">Certifikat poslužitelja krši ograničenja naziva.</translation>
 <translation id="7598391785903975535">Manje od <ph name="UPPER_ESTIMATE" /></translation>
@@ -1626,6 +1629,7 @@ Dodatne pojedinosti:
 <translation id="8891727572606052622">Nevažeći način proxy poslužitelja.</translation>
 <translation id="8903921497873541725">Povećaj</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="890493561996401738">Gumb za uklanjanje prijedloga, pritisnite Enter za uklanjanje <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Sada ste u anonimnom načinu</translation>
 <translation id="8912362522468806198">Google Račun</translation>
 <translation id="8918231688545606538">Stranica je sumnjiva</translation>

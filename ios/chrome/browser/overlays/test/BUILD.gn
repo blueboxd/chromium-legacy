@@ -9,6 +9,7 @@ source_set("test") {
     "fake_overlay_presentation_context.h",
     "fake_overlay_user_data.cc",
     "fake_overlay_user_data.h",
+    "overlay_test_macros.h",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

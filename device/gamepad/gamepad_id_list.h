@@ -27,6 +27,9 @@ enum XInputType {
   kXInputTypeXboxOne,
 };
 
+// Enumeration of gamepads recognized by data fetchers. GamepadId values are
+// composed of the USB or Bluetooth vendor ID in the high 16 bits and product ID
+// in the low 16 bits.
 enum class GamepadId : uint32_t {
   // ID value representing an unknown gamepad or non-gamepad.
   kUnknownGamepad = 0,
@@ -59,6 +62,8 @@ enum class GamepadId : uint32_t {
   kMicrosoftProduct02ea = 0x045e02ea,
   kMicrosoftProduct02fd = 0x045e02fd,
   kMicrosoftProduct0719 = 0x045e0719,
+  kMicrosoftProduct0b00 = 0x045e0b00,
+  kMicrosoftProduct0b05 = 0x045e0b05,
   kMicrosoftProduct0b0a = 0x045e0b0a,
   kMicrosoftProduct0b0c = 0x045e0b0c,
   kNintendoProduct2006 = 0x057e2006,

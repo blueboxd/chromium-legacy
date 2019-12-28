@@ -31,6 +31,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeState;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -68,6 +69,12 @@ public class StartSurfaceTest {
     @CommandLineFlags.Add({BASE_PARAMS + "/tasksonly"})
     public void testShowAndHideTasksOnlySurface() {
         TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> mActivityTestRule.getActivity()
+                                   .getStartSurface()
+                                   .getController()
+                                   .setOverviewState(OverviewModeState.SHOWING_TABSWITCHER));
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> mActivityTestRule.getActivity().getLayoutManager().showOverview(false));
         assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
 
@@ -88,6 +95,12 @@ public class StartSurfaceTest {
     @Feature({"StartSurface"})
     @CommandLineFlags.Add({BASE_PARAMS + "/single"})
     public void testShowAndHideSingleSurface() {
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> mActivityTestRule.getActivity()
+                                   .getStartSurface()
+                                   .getController()
+                                   .setOverviewState(OverviewModeState.SHOWING_HOMEPAGE));
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mActivityTestRule.getActivity().getLayoutManager().showOverview(false));
         assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
@@ -135,6 +148,12 @@ public class StartSurfaceTest {
     @Feature({"StartSurface"})
     @CommandLineFlags.Add({BASE_PARAMS + "/twopanes"})
     public void testShowAndHideTwoPanesSurface() {
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> mActivityTestRule.getActivity()
+                                   .getStartSurface()
+                                   .getController()
+                                   .setOverviewState(OverviewModeState.SHOWING_TABSWITCHER));
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mActivityTestRule.getActivity().getLayoutManager().showOverview(false));
         assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());

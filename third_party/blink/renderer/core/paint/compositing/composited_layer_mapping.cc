@@ -28,7 +28,6 @@
 #include <memory>
 
 #include "cc/layers/picture_layer.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/accessibility/apply_dark_mode.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
@@ -1575,9 +1574,6 @@ bool CompositedLayerMapping::ContainsPaintedContent() const {
 // compositing saves a backing store.
 bool CompositedLayerMapping::IsDirectlyCompositedImage() const {
   DCHECK(GetLayoutObject().IsImage());
-
-  if (base::FeatureList::IsEnabled(features::kDisableDirectlyCompositedImages))
-    return false;
 
   LayoutImage& image_layout_object = ToLayoutImage(GetLayoutObject());
 

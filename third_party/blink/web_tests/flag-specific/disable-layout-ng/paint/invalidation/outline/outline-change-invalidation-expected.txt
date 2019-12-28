@@ -10,11 +10,6 @@
           "object": "LayoutBlockFlow A id='link'",
           "rect": [43, 83, 754, 30],
           "reason": "appeared"
-        },
-        {
-          "object": "LayoutListMarker (anonymous)",
-          "rect": [30, 88, 7, 19],
-          "reason": "style change"
         }
       ]
     }

@@ -3796,6 +3796,18 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="The description of the openKeyboardShortcutsMenu key. Displayed in the ChromeVox menu" name="IDS_CHROMEVOX_OPEN_KEYBOARD_SHORTCUTS_MENU">
         Open keyboard shortcuts menu
       </message>
+      <message desc="Describes the multi select option for how to describe capital letters." name="IDS_CHROMEVOX_OPTIONS_CAPITAL_STRATEGY_SELECT_LABEL">
+        When reading capitals:
+      </message>
+      <message desc="Sets capital description strategy to announce presence of capital letters" name="IDS_CHROMEVOX_OPTIONS_ANNOUNCE_CAPITALS">
+        Speak "cap" before letter
+      </message>
+      <message desc="Sets capital description strategy to increase pitch" name="IDS_CHROMEVOX_OPTIONS_INCREASE_PITCH">
+        Increase pitch
+      </message>
+      <message desc="Used to describe capital letters" name="IDS_CHROMEVOX_ANNOUNCE_CAPITAL_LETTER">
+        Cap <ph name="letter">$1<ex>A</ex></ph>
+      </message>
     </messages>
   </release>
 </grit>

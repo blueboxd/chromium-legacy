@@ -718,6 +718,7 @@
 <translation id="4340982228985273705">Bu kompüter korporativ idarə edilmir, ona görə də siyasət yalnız Chrome Veb Mağazasında saxlanılan artırmaları quraşdıra bilər. Chrome Veb Mağaza güncəlləmə linki: "<ph name="CWS_UPDATE_URL" />".</translation>
 <translation id="4346197816712207223">Qəbul edilən Kredit Kartları</translation>
 <translation id="4346833872170306413">Roc-16K</translation>
+<translation id="4349531505348777662">İndicə parolunuzu aldadıcı saytda daxil etdiniz. Chrome indi <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> və bu parolu istifadə etdiyiniz digər saytlara keçərək parolunuzu dəyişmənizi tövsiyə edir.</translation>
 <translation id="4356973930735388585">Saytdakı hücumçular kompüterinizə təhlükəli proqramlar yükləyərək məlumatlarınızı (məsələn, foto, parol, mesaj və kredit kart) oğurlamağa və ya silməyə cəhd edə bilər.</translation>
 <translation id="4358059973562876591">DnsOverHttpsMode siyasətində xəta olduğuna görə qeyd etdiyiniz şablonlar tətbiq edilməyə bilər.</translation>
 <translation id="4358461427845829800">Ödəniş üsullarını idarə edin...</translation>
@@ -1246,6 +1247,7 @@
 <translation id="6970216967273061347">Rayon</translation>
 <translation id="6973656660372572881">Fiskə edilmiş proksi serverlər və .pac skript URL-lər göstərilib.</translation>
 <translation id="6973932557599545801">Artıq kömək edə bilmirəm, özünüz davam edin.</translation>
+<translation id="6975012522936652259">İndicə parolunuzu aldadıcı saytda daxil etdiniz. Chromium indi <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> və bu parolu istifadə etdiyiniz digər saytlara keçərək parolunuzu dəyişmənizi tövsiyə edir.</translation>
 <translation id="6979158407327259162">Google Disk</translation>
 <translation id="6979440798594660689">Səssiz edin (defolt)</translation>
 <translation id="6989763994942163495">Qabaqcıl ayarları göstərin...</translation>
@@ -1377,6 +1379,7 @@
 <translation id="7567204685887185387">Bu server <ph name="DOMAIN" /> olduğunu sübut edə bilmədi; güvənlik sertifikatı saxta ola bilər. Buna yalnış quraşdırma və ya hücumçu bağlantısı səbəb ola bilər.</translation>
 <translation id="7569952961197462199">Kredit kart Chrome'dan silinsin?</translation>
 <translation id="7569983096843329377">Qara</translation>
+<translation id="7575207903026901870">Təklifi Silmə düyməsi, bu təklifi silmək üçün Enter düyməsinə basın</translation>
 <translation id="7578104083680115302">Google ilə yadda saxladığınız kartları istifadə edərək cihazlardan sayt və tətbiqlərdə cəld ödəniş edin.</translation>
 <translation id="7592362899630581445">Serverin sertifikatı ad limitlərini pozur.</translation>
 <translation id="7598391785903975535"><ph name="UPPER_ESTIMATE" /> həcmindən az</translation>
@@ -1622,6 +1625,7 @@
 <translation id="8891727572606052622">Yanlış proksi rejimi.</translation>
 <translation id="8903921497873541725">Zoom</translation>
 <translation id="890485472659500557">Texniki-C</translation>
+<translation id="890493561996401738">Təklifi Silmə düyməsi, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /> təklifini silmək üçün Enter düyməsinə basın</translation>
 <translation id="8910670906166981838">Gizli rejimə keçdiniz</translation>
 <translation id="8912362522468806198">Google Hesabı</translation>
 <translation id="8918231688545606538">Bu səhifə şübhəlidir</translation>

@@ -113,6 +113,7 @@
 <translation id="1150565364351027703">Lunettes de soleil</translation>
 <translation id="1151917987301063366">Toujours autoriser <ph name="HOST" /> à accéder aux capteurs</translation>
 <translation id="1153356358378277386">Appareils associés</translation>
+<translation id="1153636665119721804">Programme Protection Avancée de Google</translation>
 <translation id="1161575384898972166">Connectez-vous à <ph name="TOKEN_NAME" /> pour exporter le certificat client.</translation>
 <translation id="1163931534039071049">&amp;Afficher le code source du cadre</translation>
 <translation id="1164674268730883318">Désactiver Smart Lock pour l'appareil <ph name="DEVICE_TYPE" /> ?</translation>
@@ -223,6 +224,7 @@
 <translation id="1306606229401759371">Modifier les paramètres</translation>
 <translation id="1307165550267142340">Votre code a été créé</translation>
 <translation id="1307559529304613120">Échec de l'enregistrement du jeton d'accès aux API à long terme pour cet appareil.</translation>
+<translation id="1309199320876169714">Suppression de Plugin VM...</translation>
 <translation id="1313405956111467313">Configuration automatique du proxy</translation>
 <translation id="131364520783682672">Verr. maj.</translation>
 <translation id="1313705515580255288">Vos favoris, votre historique et d'autres paramètres seront synchronisés avec votre compte Google.</translation>
@@ -233,6 +235,7 @@
 <translation id="1316495628809031177">La synchronisation est mise en veille</translation>
 <translation id="1317637799698924700">Votre station d'accueil fonctionnera dans le mode compatible USB Type-C.</translation>
 <translation id="1322046419516468189">Afficher et gérer les mots de passe enregistrés de votre <ph name="SAVED_PASSWORDS_STORE" /></translation>
+<translation id="1324106254079708331">Sauvegarde les comptes Google personnels des utilisateurs susceptibles d'être victimes d'attaques ciblées</translation>
 <translation id="1326317727527857210">Connectez-vous à Chrome pour accéder à vos onglets sur vos autres appareils.</translation>
 <translation id="1327074568633507428">Imprimante connectée à Google Cloud Print</translation>
 <translation id="1327272175893960498">Tickets Kerberos</translation>
@@ -723,6 +726,7 @@
 <translation id="2003130567827682533">Pour activer les données "<ph name="NAME" />", connectez-vous tout d'abord à un réseau Wi-Fi</translation>
 <translation id="2006638907958895361">Ouvrir le lien dans <ph name="APP" /></translation>
 <translation id="2007404777272201486">Signaler un problème...</translation>
+<translation id="2010501376126504057">Appareils compatibles</translation>
 <translation id="2016430552235416146">Traditionnel</translation>
 <translation id="2017334798163366053">Désactiver la collecte de données relatives aux performances</translation>
 <translation id="2017836877785168846">Efface l'historique et les saisies semi-automatiques dans la barre d'adresse.</translation>
@@ -1358,6 +1362,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2871813825302180988">Ce compte est déjà utilisé sur cet appareil.</translation>
 <translation id="287286579981869940">Ajouter <ph name="PROVIDER_NAME" />…</translation>
 <translation id="2872961005593481000">Éteindre</translation>
+<translation id="2874478552394649323">Supprimer Plugin VM</translation>
 <translation id="2874939134665556319">Piste précédente</translation>
 <translation id="2875698561019555027">(pages d'erreur Chrome)</translation>
 <translation id="2876336351874743617">Doigt 2</translation>
@@ -1373,6 +1378,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2889064240420137087">Ouvrir le lien avec...</translation>
 <translation id="2889925978073739256">Continuer à bloquer l'exécution hors bac à sable des plug-ins</translation>
 <translation id="2893168226686371498">Navigateur par défaut</translation>
+<translation id="2893208266590504003">Échec de la suppression de Plugin VM</translation>
 <translation id="2894757982205307093">Nouvel onglet dans le groupe</translation>
 <translation id="289644616180464099">La carte SIM est verrouillée</translation>
 <translation id="2896909745808647285">Le fichier "<ph name="FILE_NAME" />" étant chiffré, son ouverture a été bloquée.</translation>
@@ -2260,6 +2266,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="413121957363593859">Composants</translation>
 <translation id="4131410914670010031">Noir et blanc</translation>
 <translation id="4136203100490971508">L'éclairage nocturne sera désactivé automatiquement au lever du soleil</translation>
+<translation id="41365691917097717">Si vous continuez, le débogage ADB pourra créer et tester des applications Android. Notez que cette action autorise l'installation d'applications Android non validées par Google et ne pourra être désactivée qu'en rétablissant la configuration d'usine.</translation>
 <translation id="4138267921960073861">Afficher les noms d'utilisateurs et leur photo sur la page de connexion</translation>
 <translation id="413915106327509564"><ph name="WINDOW_TITLE" /> - Appareil HID associé</translation>
 <translation id="4142052906269098341">Déverrouillez votre <ph name="DEVICE_TYPE" /> à l'aide de votre téléphone. <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" /></translation>
@@ -3181,6 +3188,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5554720593229208774">Autorité de certification de messagerie</translation>
 <translation id="5556459405103347317">Actualiser</translation>
 <translation id="5557991081552967863">Wi-Fi actif en veille</translation>
+<translation id="5558125320634132440">Ce site a été bloqué, car il est possible qu'il comporte du contenu réservé aux adultes</translation>
 <translation id="5558129378926964177">Zoom &amp;avant</translation>
 <translation id="55601339223879446">Adaptez les dimensions de votre Bureau à l'écran</translation>
 <translation id="5562781907504170924">Cet onglet est associé à un appareil Bluetooth.</translation>
@@ -3283,7 +3291,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="5692183275898619210">Impression terminée</translation>
 <translation id="5696143504434933566">Signaler un abus lié à l'extension <ph name="EXTENSION_NAME" /></translation>
 <translation id="5696679855467848181">Fichier PPD en cours d'utilisation : <ph name="PPD_NAME" /></translation>
-<translation id="5699533844376998780">L'extension "<ph name="EXTENSION_NAME" />" a été ajoutée.</translation>
 <translation id="570043786759263127">Applications et services Google Play</translation>
 <translation id="5700836101007545240">Votre administrateur a désactivé l'ajout d'une connexion</translation>
 <translation id="5701080607174488915">Erreur lors de la récupération de la règle sur le serveur.</translation>
@@ -3771,6 +3778,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6386099547750337629">S'il s'agit d'une erreur, veuillez contacter le service d'assistance.</translation>
 <translation id="6387674443318562538">Séparation verticale</translation>
 <translation id="6388429472088318283">Rechercher des langues</translation>
+<translation id="6390020764191254941">Déplacer l'onglet dans une nouvelle fenêtre</translation>
 <translation id="6390799748543157332">Les pages que vous consultez dans cette fenêtre ne sont pas consignées dans l'historique du navigateur et ne laissent aucune autre trace sur votre ordinateur (des cookies, par exemple), une fois que vous avez fermé toutes les fenêtres Invité ouvertes. Tous les fichiers téléchargés sont toutefois conservés.</translation>
 <translation id="6393156038355142111">Suggérer un mot de passe sécurisé</translation>
 <translation id="6395423953133416962">Envoyer les <ph name="BEGIN_LINK1" />informations système<ph name="END_LINK1" /> et les <ph name="BEGIN_LINK2" />statistiques<ph name="END_LINK2" /></translation>
@@ -3809,7 +3817,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6444070574980481588">Définir la date et l'heure</translation>
 <translation id="6445450263907939268">Si vous ne souhaitiez pas effectuer ces modifications, vous pouvez restaurer les paramètres précédents.</translation>
 <translation id="6447842834002726250">Cookies</translation>
-<translation id="6449285849137521213">L'application "<ph name="EXTENSION_NAME" />" a été ajoutée.</translation>
 <translation id="6450876761651513209">Modifier vos paramètres de confidentialité</translation>
 <translation id="6451180435462401570">Gérer les appareils Google Cloud Print</translation>
 <translation id="6451689256222386810">Si vous avez oublié votre phrase secrète, ou si vous souhaitez modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchronisation<ph name="END_LINK" />.</translation>
@@ -4544,6 +4551,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7530016656428373557">Taux de décharge en watts</translation>
 <translation id="7531779363494549572">Accédez à Paramètres &gt; Applications et notifications &gt; Notifications.</translation>
 <translation id="7532009420053991888">L'application <ph name="LINUX_APP_NAME" /> ne répond pas. Sélectionnez "Forcer la fermeture" pour la fermer.</translation>
+<translation id="7536333565791380193">Sécurité avancée</translation>
 <translation id="7539856059004947393">Clé de sécurité Bluetooth</translation>
 <translation id="7540972813190816353">Une erreur s'est produite pendant la vérification des mises à jour : <ph name="ERROR" />.</translation>
 <translation id="7541773865713908457"><ph name="ACTION_NAME" /> avec l'application <ph name="APP_NAME" /></translation>
@@ -4790,6 +4798,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7851720427268294554">Analyseur IPP</translation>
 <translation id="78526636422538552">La fonctionnalité d'ajout d'autres comptes Google est désactivée</translation>
 <translation id="7853747251428735">Plus d'outi&amp;ls</translation>
+<translation id="7855678561139483478">Déplacer l'onglet dans une nouvelle fenêtre</translation>
 <translation id="7857117644404132472">Ajouter une exception</translation>
 <translation id="7857949311770343000">Est-ce la page Nouvel onglet que vous attendiez ?</translation>
 <translation id="7859938049767853383">Le fichier "<ph name="FILE_NAME" />" étant trop volumineux pour être analysé dans le cloud, son ouverture a été bloquée.</translation>
@@ -5252,6 +5261,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="850875081535031620">Aucun logiciel malveillant détecté</translation>
 <translation id="8509177919508253835">Réinitialiser les clés de sécurité et créer des codes</translation>
 <translation id="8509646642152301857">Échec du téléchargement du dictionnaire du correcteur orthographique.</translation>
+<translation id="8510617356402557055">S'agit-il d'une erreur ? <ph name="BEGIN_LINK" />Envoyer des commentaires<ph name="END_LINK" /></translation>
 <translation id="8512476990829870887">Arrêter le processus</translation>
 <translation id="851263357009351303">Toujours autoriser <ph name="HOST" /> à afficher les images</translation>
 <translation id="8513108775083588393">Rotation automatique</translation>
@@ -5642,6 +5652,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="9030785788945687215">Gmail</translation>
 <translation id="9033857511263905942">&amp;Coller</translation>
 <translation id="9037965129289936994">Afficher l'original</translation>
+<translation id="903797871439633902">C'est la dernière mise à jour logicielle de sécurité automatique pour votre <ph name="DEVICE_TYPE" />. Pour bénéficier des futures mises à jour, passez à un modèle plus récent. &lt;a target="_blank" href="<ph name="URL" />"&gt;En savoir plus&lt;/a&gt;</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">Mettre à jour le mot de passe pour <ph name="ORIGIN" /> ?</translation>
 <translation id="9041692268811217999">Votre administrateur a désactivé l'accès aux fichiers locaux sur votre ordinateur</translation>
@@ -5729,6 +5740,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="9169496697824289689">Afficher les raccourcis clavier</translation>
 <translation id="916964310188958970">Pourquoi cette suggestion ?</translation>
 <translation id="9169931577761441333">Ajouter <ph name="APP_NAME" /> à l'écran d'accueil</translation>
+<translation id="9170305483456271385">Plugin VM a bien été supprimé</translation>
 <translation id="9170848237812810038">Ann&amp;uler</translation>
 <translation id="9170884462774788842">Un autre programme sur votre ordinateur a ajouté un thème qui risque de modifier le fonctionnement de Google Chrome.</translation>
 <translation id="9173995187295789444">Recherche d'appareils Bluetooth…</translation>

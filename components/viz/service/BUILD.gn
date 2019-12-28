@@ -18,8 +18,6 @@ viz_component("service") {
     "display/bsp_tree.h",
     "display/bsp_walk_action.cc",
     "display/bsp_walk_action.h",
-    "display/color_lut_cache.cc",
-    "display/color_lut_cache.h",
     "display/damage_frame_annotator.cc",
     "display/damage_frame_annotator.h",
     "display/direct_renderer.cc",

@@ -722,6 +722,7 @@
 <translation id="4340982228985273705">Den här datorn har inte identifierats som företagshanterad, så bara tillägg på Chrome Web Store kan installeras automatiskt med principen. Uppdateringsadressen på Chrome Web Store är <ph name="CWS_UPDATE_URL" />.</translation>
 <translation id="4346197816712207223">Godkända kreditkort</translation>
 <translation id="4346833872170306413">Roc-16K</translation>
+<translation id="4349531505348777662">Du angav just ditt lösenord på en bedräglig webbplats. Vi rekommenderar att du besöker <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> och andra webbplatser där du använder lösenordet och ändrar det nu.</translation>
 <translation id="4356973930735388585">Det kan hända att angripare på den här webbplatsen försöker installera skadliga program på datorn som stjäl eller raderar dina uppgifter (t.ex. foton, lösenord, meddelanden och kreditkort).</translation>
 <translation id="4358059973562876591">Det gick inte att tillämpa de angivna mallarna på grund av ett fel i principen DnsOverHttpsMode.</translation>
 <translation id="4358461427845829800">Hantera betalningsmetoder …</translation>
@@ -1019,7 +1020,7 @@
 <translation id="5804241973901381774">Behörigheter</translation>
 <translation id="5810442152076338065">Anslutningen till <ph name="DOMAIN" /> är krypterad med en gammal krypteringssvit.</translation>
 <translation id="5813119285467412249">&amp;Gör om Lägg till</translation>
-<translation id="5824687817967109979">{NUM_CARDS,plural, =1{Det här kortet debiteras när du betalar, men kortnumret delas inte med webbplatsen. En tillfälligt CVC-kod skapas som en extra säkerhetsåtgärd.}other{Det valda kortet debiteras när du betalar, men kortnumret delas inte med webbplatsen. En tillfälligt CVC-kod skapas som en extra säkerhetsåtgärd.}}</translation>
+<translation id="5824687817967109979">{NUM_CARDS,plural, =1{Det här kortet debiteras när du betalar, men kortnumret delas inte med webbplatsen. En tillfällig CVC-kod skapas som en extra säkerhetsåtgärd.}other{Det valda kortet debiteras när du betalar, men kortnumret delas inte med webbplatsen. En tillfällig CVC-kod skapas som en extra säkerhetsåtgärd.}}</translation>
 <translation id="583281660410589416">Okänd</translation>
 <translation id="5838278095973806738">Du bör inte ange några känsliga uppgifter på den här webbplatsen (till exempel lösenord eller kreditkortsuppgifter) eftersom hackare kan stjäla dem.</translation>
 <translation id="5851548754964597211">Fliklista</translation>
@@ -1250,6 +1251,7 @@
 <translation id="6970216967273061347">Distrikt</translation>
 <translation id="6973656660372572881">Både fasta proxyservrar och en webbadress för PAC-skript anges.</translation>
 <translation id="6973932557599545801">Jag kan tyvärr inte hjälpa till. Fortsätt på egen hand.</translation>
+<translation id="6975012522936652259">Du angav just ditt lösenord på en bedräglig webbplats. Vi rekommenderar att du besöker <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> och andra webbplatser där du använder lösenordet och ändrar det nu.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Ljud av (standard)</translation>
 <translation id="6989763994942163495">Visa avancerade inställningar ...</translation>
@@ -1381,6 +1383,7 @@ Mer information.
 <translation id="7567204685887185387">Servern kunde inte bevisa att den är <ph name="DOMAIN" /> eftersom dess säkerhetscertifikat kan ha utfärdats utan behörighet. Detta kan orsakas av en felaktig konfigurering eller att någon spärrar anslutningen.</translation>
 <translation id="7569952961197462199">Vill du ta bort kreditkortet från Chrome?</translation>
 <translation id="7569983096843329377">Svart</translation>
+<translation id="7575207903026901870">Knappen Ta bort förslag, tryck på retur om du vill ta bort förslaget</translation>
 <translation id="7578104083680115302">Betala snabbt på webbplatser och i appar på olika enheter med kort som du har sparat hos Google.</translation>
 <translation id="7592362899630581445">Serverns certifikat strider mot namnrestriktionerna.</translation>
 <translation id="7598391785903975535">Mindre än <ph name="UPPER_ESTIMATE" /></translation>
@@ -1627,6 +1630,7 @@ Mer information:
 <translation id="8891727572606052622">Ogiltigt proxyläge.</translation>
 <translation id="8903921497873541725">Zooma in</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="890493561996401738">Knappen Ta bort förslag, tryck på retur om du vill ta bort förslaget, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Du surfar inkognito</translation>
 <translation id="8912362522468806198">Google-konto</translation>
 <translation id="8918231688545606538">Sidan är misstänkt</translation>

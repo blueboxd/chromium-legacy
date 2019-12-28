@@ -7,6 +7,27 @@ android_resources("java_resources") {
   custom_package = "org.chromium.chrome.ui.messages"
   resource_dirs = [ "java/res" ]
   deps = [
+    "//chrome/browser/ui/android/strings:ui_strings_grd",
+    "//components/browser_ui/strings/android:browser_ui_strings_grd",
     "//ui/android:ui_java_resources",
+  ]
+}
+
+android_library("java") {
+  java_files = [
+    "java/src/org/chromium/chrome/browser/snackbar/SnackbarView.java",
+    "java/src/org/chromium/chrome/browser/snackbar/Snackbar.java",
+    "java/src/org/chromium/chrome/browser/snackbar/SnackbarCollection.java",
+    "java/src/org/chromium/chrome/browser/snackbar/SnackbarManager.java",
+  ]
+  deps = [
+    ":java_resources",
+    "//base:base_java",
+    "//chrome/browser/ui/android/widget:java",
+    "//chrome/browser/util:java",
+    "//components/browser_ui/styles/android:java_resources",
+    "//components/browser_ui/widget/android:java",
+    "//third_party/android_deps:com_android_support_support_compat_java",
+    "//ui/android:ui_full_java",
   ]
 }

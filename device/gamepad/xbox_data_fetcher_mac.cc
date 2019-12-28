@@ -185,6 +185,13 @@ bool XboxDataFetcher::RegisterForNotifications() {
 
   if (!RegisterForDeviceNotifications(
           XboxControllerMac::kVendorMicrosoft,
+          XboxControllerMac::kProductXboxOneEliteController2,
+          &xbox_one_elite_2_device_added_iter_,
+          &xbox_one_elite_2_device_removed_iter_))
+    return false;
+
+  if (!RegisterForDeviceNotifications(
+          XboxControllerMac::kVendorMicrosoft,
           XboxControllerMac::kProductXboxOneController2013,
           &xbox_one_2013_device_added_iter_,
           &xbox_one_2013_device_removed_iter_))

@@ -721,6 +721,7 @@
 <translation id="4340982228985273705">Komputer ini tidak terdeteksi sebagai dikelola perusahaan sehingga kebijakan hanya dapat secara otomatis menginstal ekstensi yang dihosting di Chrome Webstore. URL update Chrome Webstore-nya adalah "<ph name="CWS_UPDATE_URL" />".</translation>
 <translation id="4346197816712207223">Kartu Kredit yang Diterima</translation>
 <translation id="4346833872170306413">Roc-16K</translation>
+<translation id="4349531505348777662">Anda baru saja memasukkan sandi ke situs penipuan. Chrome merekomendasikan Anda untuk membuka <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, serta situs lain tempat Anda menggunakan sandi ini dan mengubahnya sekarang.</translation>
 <translation id="4356973930735388585">Penyerang di situs ini mungkin berusaha memasang program berbahaya di komputer Anda yang dapat mencuri atau menghapus informasi (misalnya, foto, sandi, pesan, dan kartu kredit).</translation>
 <translation id="4358059973562876591">Template yang telah Anda tentukan mungkin tidak diterapkan karena terjadi error dengan kebijakan DnsOverHttpsMode.</translation>
 <translation id="4358461427845829800">Kelola metode pembayaran...</translation>
@@ -1249,6 +1250,7 @@
 <translation id="6970216967273061347">Distrik</translation>
 <translation id="6973656660372572881">Server proxy tetap dan URL skrip .pac telah ditentukan.</translation>
 <translation id="6973932557599545801">Maaf, saya tidak bisa membantu lagi. Silakan lanjutkan sendiri.</translation>
+<translation id="6975012522936652259">Anda baru saja memasukkan sandi ke situs penipuan. Chromium merekomendasikan Anda untuk membuka <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, serta situs lain tempat Anda menggunakan sandi ini dan mengubahnya sekarang.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Matikan (default)</translation>
 <translation id="6989763994942163495">Tampilkan setelan lanjutan...</translation>
@@ -1378,6 +1380,7 @@
 <translation id="7567204685887185387">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya mungkin telah dikeluarkan dengan curang. Hal ini disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
 <translation id="7569952961197462199">Hapus kartu kredit dari Chrome?</translation>
 <translation id="7569983096843329377">Hitam</translation>
+<translation id="7575207903026901870">Hapus tombol Saran, tekan Enter untuk menghapus saran ini</translation>
 <translation id="7578104083680115302">Bayar di situs dan aplikasi di semua perangkat dengan cepat menggunakan kartu yang disimpan dengan Google.</translation>
 <translation id="7592362899630581445">Sertifikat server melanggar batasan nama.</translation>
 <translation id="7598391785903975535">Kurang dari <ph name="UPPER_ESTIMATE" /></translation>
@@ -1621,6 +1624,7 @@
 <translation id="8891727572606052622">Mode proxy tidak valid.</translation>
 <translation id="8903921497873541725">Perbesar</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="890493561996401738">Hapus tombol Saran, tekan Enter untuk menghapus, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Anda dalam mode samaran</translation>
 <translation id="8912362522468806198">Akun Google</translation>
 <translation id="8918231688545606538">Halaman ini mencurigakan</translation>

@@ -258,6 +258,9 @@ TEST_F(OverviewGridTest, FullyOffscreenWindow) {
 
 // Tests that only one window animates when entering overview from splitview
 // double snapped.
+// TODO(sammiequon): The way this test is setup causes an unnatural state by
+// calling |GetGridBoundsInScreen| with split view state both snapped. Find a
+// way to re-enable this.
 TEST_F(OverviewGridTest, DISABLED_SnappedWindow) {
   auto window1 = CreateTestWindow(gfx::Rect(100, 100));
   auto window2 = CreateTestWindow(gfx::Rect(100, 100));

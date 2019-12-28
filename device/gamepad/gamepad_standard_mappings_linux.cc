@@ -120,6 +120,36 @@ void MapperXboxOneS2016Firmware(const Gamepad& input, Gamepad* mapped) {
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
+void MapperXboxElite2Bluetooth(const Gamepad& input, Gamepad* mapped) {
+  *mapped = input;
+
+  mapped->buttons[BUTTON_INDEX_PRIMARY] = input.buttons[0];
+  mapped->buttons[BUTTON_INDEX_SECONDARY] = input.buttons[1];
+  mapped->buttons[BUTTON_INDEX_TERTIARY] = input.buttons[3];
+  mapped->buttons[BUTTON_INDEX_QUATERNARY] = input.buttons[4];
+  mapped->buttons[BUTTON_INDEX_LEFT_SHOULDER] = input.buttons[6];
+  mapped->buttons[BUTTON_INDEX_RIGHT_SHOULDER] = input.buttons[7];
+  mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] = AxisToButton(input.axes[6]);
+  mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] = AxisToButton(input.axes[5]);
+  // On some systems, the View (back/select) button is interpreted as a media
+  // key instead of a gamepad button. When it behaves as a media key, pressing
+  // the button causes a back-navigation in the browser. The below mapping is
+  // correct when this behavior is not present.
+  mapped->buttons[BUTTON_INDEX_BACK_SELECT] = input.buttons[16];
+  mapped->buttons[BUTTON_INDEX_START] = input.buttons[11];
+  mapped->buttons[BUTTON_INDEX_LEFT_THUMBSTICK] = input.buttons[13];
+  mapped->buttons[BUTTON_INDEX_RIGHT_THUMBSTICK] = input.buttons[14];
+  mapped->buttons[BUTTON_INDEX_DPAD_UP] = AxisNegativeAsButton(input.axes[8]);
+  mapped->buttons[BUTTON_INDEX_DPAD_DOWN] = AxisPositiveAsButton(input.axes[8]);
+  mapped->buttons[BUTTON_INDEX_DPAD_LEFT] = AxisNegativeAsButton(input.axes[7]);
+  mapped->buttons[BUTTON_INDEX_DPAD_RIGHT] =
+      AxisPositiveAsButton(input.axes[7]);
+
+  // The Xbox (meta) button does not generate an input event for this device.
+  mapped->buttons_length = BUTTON_INDEX_COUNT - 1;
+  mapped->axes_length = AXIS_INDEX_COUNT;
+}
+
 void MapperLakeviewResearch(const Gamepad& input, Gamepad* mapped) {
   *mapped = input;
   mapped->buttons[BUTTON_INDEX_PRIMARY] = input.buttons[2];
@@ -724,6 +754,8 @@ constexpr struct MappingData {
     {GamepadId::kMicrosoftProduct02e0, MapperXboxOneS},
     // Xbox One S (Bluetooth)
     {GamepadId::kMicrosoftProduct02fd, MapperXboxOneS2016Firmware},
+    // Xbox One Elite 2 (Bluetooth)
+    {GamepadId::kMicrosoftProduct0b05, MapperXboxElite2Bluetooth},
     // Logitech F310 D-mode
     {GamepadId::kLogitechProductc216, MapperLogitechDInput},
     // Logitech F510 D-mode

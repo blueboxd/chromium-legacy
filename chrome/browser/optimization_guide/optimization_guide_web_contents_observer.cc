@@ -85,6 +85,12 @@ void OptimizationGuideWebContentsObserver::DidStartNavigation(
   if (!navigation_handle->IsInMainFrame())
     return;
 
+  content::WebContents* web_contents = navigation_handle->GetWebContents();
+  bool is_same_origin =
+      web_contents &&
+      web_contents->GetLastCommittedURL().SchemeIsHTTPOrHTTPS() &&
+      url::IsSameOriginWith(navigation_handle->GetURL(),
+                            web_contents->GetLastCommittedURL());
   OptimizationGuideTopHostProvider::MaybeUpdateTopHostBlacklist(
       navigation_handle);
 
@@ -100,6 +106,7 @@ void OptimizationGuideWebContentsObserver::DidStartNavigation(
       GetOrCreateOptimizationGuideNavigationData(navigation_handle);
   nav_data->set_was_host_covered_by_fetch_at_navigation_start(
       was_host_covered_by_fetch);
+  nav_data->set_is_same_origin_navigation(is_same_origin);
 }
 
 void OptimizationGuideWebContentsObserver::DidRedirectNavigation(

@@ -39,7 +39,6 @@ class NET_EXPORT_PRIVATE QuicChromiumConnectionHelper
  private:
   const quic::QuicClock* clock_;
   quic::QuicRandom* random_generator_;
-  quic::SimpleBufferAllocator buffer_allocator_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicChromiumConnectionHelper);
 };

@@ -741,7 +741,7 @@
 <translation id="6545864417968258051">ব্লুটুথ স্ক্যানিং</translation>
 <translation id="6560414384669816528">Sogou দিয়ে খুঁজুন</translation>
 <translation id="656065428026159829">আরও দেখুন</translation>
-<translation id="6561560012278703671">বিরক্তিকর মেসেজ এড়িয়ে যান (বিজ্ঞপ্তির আওয়াজ ব্লক করা হয়, যাতে কাজের সময় ব্যাঘাত না ঘটে)</translation>
+<translation id="6561560012278703671">আওয়াজ ছাড়া বিজ্ঞপ্তি (বিজ্ঞপ্তির ক্ষেত্রে আওয়াজ সহ প্রম্পট ব্লক করা হয়, যাতে কাজের সময় ব্যাঘাত না ঘটে)</translation>
 <translation id="6566259936974865419">Chrome আপনার জন্য <ph name="GIGABYTES" /> জিবি বাঁচিয়ে দিয়েছে</translation>
 <translation id="6573096386450695060">সর্বদা অনুমতি দিন</translation>
 <translation id="6573431926118603307">আপনার অন্য ডিভাইসগুলিতে Chrome এ আপনি যে ট্যাবগুলি খুলেছেন সেগুলি এখানে দেখা যাবে।</translation>
@@ -836,7 +836,7 @@
 <translation id="729975465115245577">পাসওয়ার্ড ফাইল সেভ করার জন্য আপনার ডিভাইসে কোনও অ্যাপ নেই।</translation>
 <translation id="7302081693174882195">বিবরণ: সেভ করা ডেটার পরিমাণ অনুযায়ী সাজানো হয়েছে</translation>
 <translation id="7302486331832100261">আপনি সাধারণত বিজ্ঞপ্তি ব্লক করেন। অনুমতি দিতে, 'বিবরণ' বিকল্পে ক্লিক করুন।</translation>
-<translation id="7311441321349344333">এই ডিভাইসে NFC বন্ধ আছে। <ph name="BEGIN_LINK" />Android সেটিংস<ph name="END_LINK" /> NFC চালু করুন।</translation>
+<translation id="7311441321349344333">এই ডিভাইসে NFC বন্ধ আছে। <ph name="BEGIN_LINK" />Android সেটিংস<ph name="END_LINK" /> থেকে NFC চালু করুন।</translation>
 <translation id="7328017930301109123">লাইট মোডে, Chrome আরও দ্রুত পৃষ্ঠা লোড করে এবং ৬০ শতাংশ পর্যন্ত কম ডেটা ব্যবহার করে।</translation>
 <translation id="7333031090786104871">এখনও পূর্বের সাইট যোগ করছে</translation>
 <translation id="7352939065658542140">ভিডিও</translation>

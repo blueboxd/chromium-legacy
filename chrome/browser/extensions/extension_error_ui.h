@@ -27,9 +27,6 @@ class ExtensionErrorUI {
     // Get the BrowserContext associated with this UI.
     virtual content::BrowserContext* GetContext() = 0;
 
-    // Get the set of external extensions to warn the user about.
-    virtual const ExtensionSet& GetExternalExtensions() = 0;
-
     // Get the set of blacklisted extensions to warn the user about.
     virtual const ExtensionSet& GetBlacklistedExtensions() = 0;
 

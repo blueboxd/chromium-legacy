@@ -294,11 +294,11 @@ bool ThroughputAnalyzer::IsHangingWindow(int64_t bits_received,
 
   // Record kbps as function of |is_hanging|.
   if (is_hanging) {
-    UMA_HISTOGRAM_COUNTS_1M("NQE.ThroughputObservation.Hanging",
-                            downstream_kbps_double);
+    LOCAL_HISTOGRAM_COUNTS_1000000("NQE.ThroughputObservation.Hanging",
+                                   downstream_kbps_double);
   } else {
-    UMA_HISTOGRAM_COUNTS_1M("NQE.ThroughputObservation.NotHanging",
-                            downstream_kbps_double);
+    LOCAL_HISTOGRAM_COUNTS_1000000("NQE.ThroughputObservation.NotHanging",
+                                   downstream_kbps_double);
   }
   return is_hanging;
 }

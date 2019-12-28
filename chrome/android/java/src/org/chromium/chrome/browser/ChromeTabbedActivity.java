@@ -692,7 +692,11 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
                     }
                 }
 
-                toggleOverview();
+                if (isInOverviewMode() && !FeatureUtilities.isGridTabSwitcherEnabled()) {
+                    hideOverview();
+                } else {
+                    showOverview(OverviewModeState.SHOWING_TABSWITCHER);
+                }
             };
             OnClickListener newTabClickHandler = v -> {
                 getTabModelSelector().getModel(false).commitAllTabClosures();
@@ -711,10 +715,20 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
             };
             OnClickListener bookmarkClickHandler = v -> addOrEditBookmark(getActivityTab());
 
+            Supplier<Boolean> showStartSurfaceSupplier = () -> {
+                if (ReturnToChromeExperimentsUtil.shouldShowStartSurfaceAsTheHomePage()
+                        && !isTablet()) {
+                    assert ReturnToChromeExperimentsUtil.shouldShowStartSurfaceAsTheHomePage();
+                    showOverview(OverviewModeState.SHOWING_HOMEPAGE);
+                    return true;
+                }
+                return false;
+            };
+
             getToolbarManager().initializeWithNative(mTabModelSelectorImpl,
                     getFullscreenManager().getBrowserVisibilityDelegate(), mOverviewModeController,
                     mLayoutManager, tabSwitcherClickHandler, newTabClickHandler,
-                    bookmarkClickHandler, null);
+                    bookmarkClickHandler, null, showStartSurfaceSupplier);
 
             mLayoutManager.setToolbarManager(getToolbarManager());
 
@@ -999,12 +1013,12 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
                 mStartSurface.getController().enableRecordingFirstMeaningfulPaint(
                         getOnCreateTimestampMs());
             }
-            toggleOverview();
+            showOverview(OverviewModeState.SHOWING_START);
             return;
         }
 
         if (getActivityTab() == null && !isOverviewVisible) {
-            toggleOverview();
+            showOverview(OverviewModeState.SHOWING_START);
         }
     }
 
@@ -1853,7 +1867,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
         // the tab and go back to the start surface.
         if (type == TabLaunchType.FROM_START_SURFACE) {
             getCurrentTabModel().closeTab(currentTab);
-            toggleOverview();
+            showOverview(OverviewModeState.SHOWING_PREVIOUS);
             return true;
         }
 
@@ -2024,29 +2038,37 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
         }
     }
 
-    private void toggleOverview() {
+    private void showOverview(@OverviewModeState int state) {
+        assert (state == OverviewModeState.SHOWING_TABSWITCHER
+                || state == OverviewModeState.SHOWING_HOMEPAGE
+                || state == OverviewModeState.SHOWING_PREVIOUS
+                || state == OverviewModeState.SHOWING_START);
+        if (mStartSurface != null) mStartSurface.getController().setOverviewState(state);
+
+        if (mOverviewModeController.overviewVisible()) return;
+
         Tab currentTab = getActivityTab();
         // If we don't have a current tab, show the overview mode.
         if (currentTab == null) {
             mOverviewModeController.showOverview(false);
-            return;
-        }
-
-        if (!mOverviewModeController.overviewVisible()) {
+        } else {
             getCompositorViewHolder().hideKeyboard(
                     () -> mOverviewModeController.showOverview(true));
             updateAccessibilityState(false);
             TasksUma.recordTabLaunchType(getCurrentTabModel());
-        } else {
-            Layout activeLayout = mLayoutManager.getActiveLayout();
-            if (activeLayout instanceof StackLayout) {
-                ((StackLayout) activeLayout).commitOutstandingModelState(LayoutManager.time());
-            }
-            if (getCurrentTabModel().getCount() != 0) {
-                // Don't hide overview if current tab stack is empty()
-                mOverviewModeController.hideOverview(true);
-                updateAccessibilityState(true);
-            }
+        }
+    }
+
+    private void hideOverview() {
+        assert (mOverviewModeController.overviewVisible());
+        Layout activeLayout = mLayoutManager.getActiveLayout();
+        if (activeLayout instanceof StackLayout) {
+            ((StackLayout) activeLayout).commitOutstandingModelState(LayoutManager.time());
+        }
+        if (getCurrentTabModel().getCount() != 0) {
+            // Don't hide overview if current tab stack is empty()
+            mOverviewModeController.hideOverview(true);
+            updateAccessibilityState(true);
         }
     }
 
@@ -2214,6 +2236,11 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
     @VisibleForTesting
     public Layout getOverviewListLayout() {
         return getLayoutManager().getOverviewListLayout();
+    }
+
+    @VisibleForTesting
+    public StartSurface getStartSurface() {
+        return mStartSurface;
     }
 
     private ComposedBrowserControlsVisibilityDelegate getAppBrowserControlsVisibilityDelegate() {

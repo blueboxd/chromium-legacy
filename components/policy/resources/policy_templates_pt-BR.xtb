@@ -1046,6 +1046,14 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
           O valor precisa ser uma matriz de dicionários JSON convertidos em strings. Cada dicionário precisa ter a forma <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, em que <ph name="URL_PATTERN_PLACEHOLDER" /> é um padrão de configuração de conteúdo. <ph name="FILTER_PLACEHOLDER" /> restringe quais certificados do cliente o navegador selecionará automaticamente. Seja qual for o filtro utilizado, apenas os certificados correspondentes à solicitação do servidor são selecionados. Por exemplo, se <ph name="FILTER_PLACEHOLDER" /> tiver a forma <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />, apenas os certificados do cliente emitidos por um certificado com CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> serão selecionados. Se <ph name="FILTER_PLACEHOLDER" /> tiver as seções <ph name="ISSUER_STRING_VALUE" /> e <ph name="SUBJECT_STRING_VALUE" />, o certificado do cliente precisará satisfazer as duas condições para ser selecionado. Se <ph name="FILTER_PLACEHOLDER" /> especificar uma organização ("O"), o certificado precisará ter pelo menos uma organização correspondente ao valor especificado para ser selecionado. Se <ph name="FILTER_PLACEHOLDER" /> especificar uma unidade organizacional ("UO"), o certificado precisará ter pelo menos uma unidade organizacional correspondente ao valor especificado para ser selecionado. Se <ph name="FILTER_PLACEHOLDER" /> for o dicionário vazio <ph name="EMPTY_DICTIONARY" />, a seleção de certificados do cliente não será restringida de nenhuma outra forma.
 
           Se esta política não for definida, não haverá seleção automática para nenhum site.</translation>
+<translation id="2528659559494311776">Esta política controla um recurso de segurança no TLS 1.3 que protege conexões contra ataques de downgrade. Ela é compatível com versões anteriores e não afetará conexões com servidores e proxies em conformidade com o TLS 1.2. No entanto, versões mais antigas de alguns proxies com interceptação de TLS apresentam uma falha de implementação que causa incompatibilidade.
+
+      Se esta política for definida como "verdadeira" ou não for definida, o <ph name="PRODUCT_NAME" /> ativará essas proteções de segurança para todas as conexões.
+
+      Se esta política for definida como "falsa", o <ph name="PRODUCT_NAME" /> desativará essas proteções de segurança para conexões autenticadas com certificados de CA (Autoridade de certificação) instalados localmente. Essas proteções estão sempre ativas para conexões autenticadas com certificados de CA de confiança pública.
+
+      O valor padrão dessa política foi mudado no <ph name="PRODUCT_NAME" /> 81 de "falso" a "verdadeiro". Os proxies afetados causarão uma falha nas conexões, apresentando o código do erro ERR_TLS13_DOWNGRADE_DETECTED. Os administradores que precisarem de mais tempo para fazer upgrade dos proxies afetados poderão usar esta política para desativar temporariamente esse recurso de segurança. Esta política será removida em versões posteriores à 85.
+      </translation>
 <translation id="2529659024053332711">Permite que você especifique o comportamento na inicialização.
 
           Se você escolher "Abrir nova guia", a página nova guia sempre será aberta quando você iniciar o <ph name="PRODUCT_NAME" />.
@@ -1580,6 +1588,15 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
       Se esta configuração for definida como "Desativado" ou se nenhum valor for definido, o Modo restrito no YouTube não será aplicado pelo <ph name="PRODUCT_NAME" />. No entanto, políticas externas, como políticas do YouTube, ainda poderão aplicar o modo restrito.</translation>
 <translation id="3428247105888806363">Ativar previsão de rede</translation>
 <translation id="3432863169147125747">Controla configurações de impressão.</translation>
+<translation id="3434053014926283175">Usar o botão direito do mouse como o principal na tela de login.
+
+          Se esta política estiver ativada, o botão direito do mouse sempre será o principal na tela de login.
+
+          Se esta política estiver desativada, o botão esquerdo do mouse sempre será o principal na tela de login.
+
+          Se você definir esta política, o usuário não poderá mudá-la ou substituí-la.
+
+          Se esta política não for definida, o botão esquerdo do mouse será o principal na tela de login inicialmente, mas o usuário poderá mudar isso a qualquer momento.</translation>
 <translation id="3434932177006334880">Antes do Chrome 42, esta configuração era chamada de EnableWebBasedSignin. No Chrome 43, a compatibilidade será completamente removida.
 
       Esta configuração é útil para clientes corporativos que estão usando soluções de SSO incompatíveis com o novo fluxo de login in-line.
@@ -4440,6 +4457,7 @@ Esses favoritos são colocados em uma pasta que não pode ser modificada pelo us
           Se você definir esta política, o usuário não poderá alterá-la ou modificá-la.
 
           Se esta política não for definida, o destaque do cursor ficará desativado inicialmente, mas poderá ser ativado pelo usuário a qualquer momento.</translation>
+<translation id="8171924760436219650">Usar o botão direito do mouse como o principal na tela de login</translation>
 <translation id="8172676363520748127">Se esta política for ativada, não será possível fazer capturas de tela usando atalhos do teclado ou APIs de extensão.
 
       Se for desativada ou não for especificada, a captura de tela será permitida.</translation>

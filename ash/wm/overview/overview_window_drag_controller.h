@@ -44,21 +44,21 @@ class ASH_EXPORT OverviewWindowDragController {
   };
 
   enum class DragResult {
-    // The drag ended without ever being disambiguated between drag-to-snap and
+    // The drag ended without ever being disambiguated between a normal drag and
     // drag-to-close.
     kNeverDisambiguated,
+    // The drag was considered as a normal drag, and then the window was dropped
+    // back into overview, in the same grid or another one.
+    kDropIntoOverview,
     // The drag resulted in snapping the window.
-    kSuccessfulDragToSnap,
-    // The drag was considered as drag-to-snap, but did not result in snapping
-    // the window.
-    kCanceledDragToSnap,
+    kSnap,
+    // The drag resulted in moving the window to another desk.
+    kDragToDesk,
     // The drag resulted in closing the window.
     kSuccessfulDragToClose,
     // The drag was considered as drag-to-close, but did not result in closing
     // the window.
     kCanceledDragToClose,
-    // The drag resulted in moving the window to another desk.
-    kSuccessfulDragToDesk,
   };
 
   OverviewWindowDragController(OverviewSession* overview_session,

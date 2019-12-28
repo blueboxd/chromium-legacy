@@ -720,6 +720,7 @@
 <translation id="4340982228985273705">이 컴퓨터는 기업에서 관리하는 기기가 아닌 것으로 파악되므로, Chrome 웹 스토어에 호스팅된 확장 프로그램만 정책을 통해 자동으로 설치할 수 있습니다. Chrome 웹 스토어의 업데이트 URL은 '<ph name="CWS_UPDATE_URL" />'입니다.</translation>
 <translation id="4346197816712207223">사용 가능한 신용카드</translation>
 <translation id="4346833872170306413">Roc-16K</translation>
+<translation id="4349531505348777662">사기성 사이트에 비밀번호를 입력했습니다. 지금 바로 <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> 등 동일한 비밀번호를 사용한 사이트로 이동하여 비밀번호를 변경하시기 바랍니다.</translation>
 <translation id="4356973930735388585">이 사이트의 공격자가 사용자 정보(예: 사진, 비밀번호, 메시지, 신용카드)를 도용하거나 삭제하는 위험한 프로그램을 컴퓨터에 설치하려고 시도할 수 있습니다.</translation>
 <translation id="4358059973562876591">지정한 템플릿이 DnsOverHttpsMode 정책 오류로 인해 적용되지 않을 수 있습니다.</translation>
 <translation id="4358461427845829800">결제 수단 관리...</translation>
@@ -1248,6 +1249,7 @@
 <translation id="6970216967273061347">주소</translation>
 <translation id="6973656660372572881">고정 프록시 서버와 .pac 스크립트 URL이 모두 지정되어 있습니다.</translation>
 <translation id="6973932557599545801">죄송합니다. 더 이상 도와드릴 수 없습니다. 직접 계속해 주세요.</translation>
+<translation id="6975012522936652259">사기성 사이트에 비밀번호를 입력했습니다. 지금 바로 <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> 등 동일한 비밀번호를 사용한 사이트로 이동하여 비밀번호를 변경하시기 바랍니다.</translation>
 <translation id="6979158407327259162">Google 드라이브</translation>
 <translation id="6979440798594660689">음소거(기본값)</translation>
 <translation id="6989763994942163495">고급 설정 표시</translation>
@@ -1378,6 +1380,7 @@
 <translation id="7567204685887185387">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 서버의 보안 인증서가 부정한 방식으로 발행되었을 수 있습니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="7569952961197462199">Chrome에서 신용카드를 삭제하시겠습니까?</translation>
 <translation id="7569983096843329377">검정색</translation>
+<translation id="7575207903026901870">추천 삭제 버튼, Enter 키를 눌러 이 추천 삭제</translation>
 <translation id="7578104083680115302">Google에 저장한 카드를 사용하여 어떤 기기에서든지 사이트 및 앱에서 빠르게 지불할 수 있습니다.</translation>
 <translation id="7592362899630581445">서버의 인증서가 이름 제약 조건을 위반합니다.</translation>
 <translation id="7598391785903975535"><ph name="UPPER_ESTIMATE" /> 미만</translation>
@@ -1623,6 +1626,7 @@
 <translation id="8891727572606052622">프록시 모드가 잘못되었습니다.</translation>
 <translation id="8903921497873541725">확대</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="890493561996401738">추천 삭제 버튼, Enter 키를 눌러 삭제, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">시크릿 모드로 전환됨</translation>
 <translation id="8912362522468806198">Google 계정</translation>
 <translation id="8918231688545606538">의심스러운 페이지</translation>

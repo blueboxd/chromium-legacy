@@ -113,6 +113,7 @@
 <translation id="1150565364351027703">მზის სათვალე</translation>
 <translation id="1151917987301063366"><ph name="HOST" />-ისთვის სენსორებზე წვდომის ყოველთვის დაშვება</translation>
 <translation id="1153356358378277386">დაწყვილებული მოწყობილობები</translation>
+<translation id="1153636665119721804">Google-ის დამატებითი დაცვის პროგრამა</translation>
 <translation id="1161575384898972166">შედით <ph name="TOKEN_NAME" />-ში, კლიენტის სერტიფიკატის ექსპორტისთვის.</translation>
 <translation id="1163931534039071049">ჩარჩოს წყაროს &amp;ნახვა</translation>
 <translation id="1164674268730883318">გსურთ, ჩართოთ Smart Lock <ph name="DEVICE_TYPE" />-ისთვის?</translation>
@@ -223,6 +224,7 @@
 <translation id="1306606229401759371">პარამეტრების შეცვლა</translation>
 <translation id="1307165550267142340">PIN-კოდი შექმნილია</translation>
 <translation id="1307559529304613120">სისტემამ ვერ შეინახა გრძელვადიანი API წვდომის ჟეტონი ამ მოწყობილობისთვის.</translation>
+<translation id="1309199320876169714">მიმდინარეობს Plugin VM-ის ამოშლა...</translation>
 <translation id="1313405956111467313">პროქსის ავტომატური კონფიგურაცია</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313705515580255288">თქვენი სანიშნეები, ისტორია და სხვა პარამეტრები დასინქრონდება Google ანგარიშთან.</translation>
@@ -233,6 +235,7 @@
 <translation id="1316495628809031177">სინქრონიზაცია შეჩერებულია</translation>
 <translation id="1317637799698924700">თქვენი სამაგრი იმუშავებს USB Type-C-თან თავსებად რეჟიმში.</translation>
 <translation id="1322046419516468189">შენახული პაროლების ნახვა და მართვა შეგიძლიათ სექციაში „<ph name="SAVED_PASSWORDS_STORE" />“</translation>
+<translation id="1324106254079708331">დაიცავს პერსონალურ Google ანგარიშებს, რომლებსაც გამიზნული თავდასხმების საფრთხე ემუქრება</translation>
 <translation id="1326317727527857210">თქვენს სხვა მოწყობილობებზე არსებულ ჩანართებზე წვდომის მისაღებად, შედით Chrome-ში.</translation>
 <translation id="1327074568633507428">პრინტერი Google Cloud Print-ზე</translation>
 <translation id="1327272175893960498">Kerberos ბილეთები</translation>
@@ -723,6 +726,7 @@
 <translation id="2003130567827682533">„<ph name="NAME" />“-ის მონაცემთა გადაცემის გასააქტიურებლად, პირველ რიგში, დაუკავშირდით Wi-Fi ქსელს</translation>
 <translation id="2006638907958895361">ბმულის <ph name="APP" />-ში გახსნა</translation>
 <translation id="2007404777272201486">მოხსენება პრობლემის შესახებ…</translation>
+<translation id="2010501376126504057">თავსებადი მოწყობილობები</translation>
 <translation id="2016430552235416146">ტრადიციული</translation>
 <translation id="2017334798163366053">გამორთეთ შესრულების მონაცემების შეგროვება</translation>
 <translation id="2017836877785168846">გაასუფთავებს ისტორიას და მისამართთა ზოლის ავტომატური დასრულების მონაცემებს.</translation>
@@ -1357,6 +1361,7 @@
 <translation id="2871813825302180988">ეს ანგარიში უკვე გამოიყენება ამ მოწყობილობაში.</translation>
 <translation id="287286579981869940"><ph name="PROVIDER_NAME" />-ის დამატება…</translation>
 <translation id="2872961005593481000">გამორთვა</translation>
+<translation id="2874478552394649323">Plugin VM-ის ამოშლა</translation>
 <translation id="2874939134665556319">წინა ჩანაწერი</translation>
 <translation id="2875698561019555027">(Chrome-ის შეცდომების გვერდები)</translation>
 <translation id="2876336351874743617">თითის ანაბეჭდი 2</translation>
@@ -1372,6 +1377,7 @@
 <translation id="2889064240420137087">ბმულის გახსნა…</translation>
 <translation id="2889925978073739256">დაცულ გარემოში არმყოფი დანამატების დაბლოკვის გაგრძელება</translation>
 <translation id="2893168226686371498">ნაგულისხმევი ბრაუზერი</translation>
+<translation id="2893208266590504003">Plugin VM-ის ამოშლა ვერ მოხერხდა</translation>
 <translation id="2894757982205307093">ახალი ჩანართი ჯგუფში</translation>
 <translation id="289644616180464099">SIM ბარათი დაბლოკილია</translation>
 <translation id="2896909745808647285"><ph name="FILE_NAME" /> დაშიფრულია და მისი გახსნა დაბლოკილია.</translation>
@@ -2259,6 +2265,7 @@
 <translation id="413121957363593859">კომპონენტები</translation>
 <translation id="4131410914670010031">შავი და თეთრი</translation>
 <translation id="4136203100490971508">ღამის განათება ავტომატურად გამოირთვება მზის ამოსვლისას</translation>
+<translation id="41365691917097717">გაგრძელების შემთხვევაში Android აპების შექმნისა და ტესტირებისთვის ჩაირთვება ADB გამართვა. გაითვალისწინეთ, რომ აღნიშნულის შემდეგ შესაძლებელი იქნება Google-ის მიერ შეუმოწმებელი Android აპების ინსტალაცია, ხოლო მის გამოსართავად საჭირო იქნება ქარხნული პარამეტრების დაბრუნება.</translation>
 <translation id="4138267921960073861">მომხმარებლების სახელების და ფოტოების ჩვენება შესვლის ეკრანზე</translation>
 <translation id="413915106327509564"><ph name="WINDOW_TITLE" /> — დაკავშირებულია HID მოწყობილობა</translation>
 <translation id="4142052906269098341">განბლოკეთ <ph name="DEVICE_TYPE" /> თქვენი ტელეფონით. <ph name="LINK_BEGIN" />შეიტყვეთ მეტი<ph name="LINK_END" /></translation>
@@ -3180,6 +3187,7 @@
 <translation id="5554720593229208774">ელფოსტის სერთიფიცირების ცენტრი</translation>
 <translation id="5556459405103347317">ხელახლა ჩატვირთვა</translation>
 <translation id="5557991081552967863">შეინარჩუნოს Wi-Fi ძილის რეჟიმის დროს</translation>
+<translation id="5558125320634132440">ეს საიტი დაბლოკილია, ვინაიდან ის შეიძლება შეიცავდეს ზრდასრულებისთვის განკუთვნილ კონტენტს</translation>
 <translation id="5558129378926964177">მასშტაბის &amp;გადიდება</translation>
 <translation id="55601339223879446">ეკრანის ფარგლებში თქვენი დესკტოპის საზღვრების დარეგულირება</translation>
 <translation id="5562781907504170924">ეს ჩანართი დაკავშირებულია Bluetooth მოწყობილობასთან.</translation>
@@ -3281,7 +3289,6 @@
 <translation id="5692183275898619210">ბეჭდვა დასრულდა</translation>
 <translation id="5696143504434933566">„<ph name="EXTENSION_NAME" />“-ის მხრიდან დარღვევის შესახებ შეტყობინება</translation>
 <translation id="5696679855467848181">ამჟამად გამოყენებული PPD ფაილი: <ph name="PPD_NAME" /></translation>
-<translation id="5699533844376998780">„<ph name="EXTENSION_NAME" />“ გაფართოება დამატებულია.</translation>
 <translation id="570043786759263127">Google Play აპები და სერვისები</translation>
 <translation id="5700836101007545240">კავშირის დამატება გათიშულია თქვენი ადმინისტრატორის მიერ</translation>
 <translation id="5701080607174488915">სერვერიდან წესების მიღებისას წარმოიშვა შეცდომა.</translation>
@@ -3769,6 +3776,7 @@
 <translation id="6386099547750337629">თუ ამას არ ელოდით, გთხოვთ, დაუკავშირდეთ მხარდაჭერის გუნდს.</translation>
 <translation id="6387674443318562538">ვერტიკალური გაყოფა</translation>
 <translation id="6388429472088318283">ენებში ძიება</translation>
+<translation id="6390020764191254941">ჩანართის ახალ ფანჯარაში გადატანა</translation>
 <translation id="6390799748543157332">გვერდები, რომლებსაც ათვალიერებთ ამ ფანჯარაში, არ გამოჩნდება ბრაუზერის ისტორიაში და არ დატოვებს სხვა კვალს, როგორიცაა ქუქი-ფაილები, კომპიუტერში, სტუმრის სესიის ყველა ფანჯრის დახურვის შემდეგ. თუმცა, ჩამოტვირთული ფაილები შენახული იქნება.</translation>
 <translation id="6393156038355142111">ძლიერი პაროლის შემოთავაზება</translation>
 <translation id="6395423953133416962"><ph name="BEGIN_LINK1" />სისტემის ინფორმაციის<ph name="END_LINK1" /> და <ph name="BEGIN_LINK2" />მეტრიკის<ph name="END_LINK2" /> გაგზავნა</translation>
@@ -3807,7 +3815,6 @@
 <translation id="6444070574980481588">თარიღისა და დროის დაყენება</translation>
 <translation id="6445450263907939268">თუ არ გსურთ ეს ცვლილებები, შეგიძლიათ აღადგინოთ წინა პარამეტრები.</translation>
 <translation id="6447842834002726250">ქუქი ფაილები</translation>
-<translation id="6449285849137521213">პროგრამა „<ph name="EXTENSION_NAME" />“ დამატებულია.</translation>
 <translation id="6450876761651513209">შეცვალეთ თქვენი პირადი პარამეტრები შესაბამისი აწყობით</translation>
 <translation id="6451180435462401570">Cloud Print მოწყობილობების მართვა</translation>
 <translation id="6451689256222386810">თუ დაგავიწყდათ თქვენი საიდუმლო ფრაზა, ან ამ პარამეტრის შეცვლა გსურთ, <ph name="BEGIN_LINK" />გადააყენეთ სინქრონიზაცია<ph name="END_LINK" />.</translation>
@@ -4542,6 +4549,7 @@
 <translation id="7530016656428373557">განტვირთვის მაჩვენებელი (ვატი)</translation>
 <translation id="7531779363494549572">გადადით აქ: პარამეტრები &gt; აპები და შეტყობინებები &gt; შეტყობინებები.</translation>
 <translation id="7532009420053991888"><ph name="LINUX_APP_NAME" /> არ რეაგირებს. მის დასახურად აირჩიეთ „იძულებით დახურვა“.</translation>
+<translation id="7536333565791380193">დაცვის გაფართოებული ვარიანტები</translation>
 <translation id="7539856059004947393">Bluetooth უსაფრთხოების გასაღები</translation>
 <translation id="7540972813190816353">განახლებების შემოწმებისას შეცდომა მოხდა: <ph name="ERROR" /></translation>
 <translation id="7541773865713908457"><ph name="ACTION_NAME" /> <ph name="APP_NAME" /> აპით</translation>
@@ -4788,6 +4796,7 @@
 <translation id="7851720427268294554">IPP სინტაქსური ანალიზის პროგრამა</translation>
 <translation id="78526636422538552">სხვა Google ანგარიშების დამატება გათიშულია</translation>
 <translation id="7853747251428735">დამატებითი ხე&amp;ლსაწყოები</translation>
+<translation id="7855678561139483478">ჩანართის ახალ ფანჯარაში გადატანა</translation>
 <translation id="7857117644404132472">გამონაკლისის დამატება</translation>
 <translation id="7857949311770343000">ეს ის ჩანართია, რომელსაც მოელოდით?</translation>
 <translation id="7859938049767853383"><ph name="FILE_NAME" /> მეტისმეტად დიდია ღრუბლოვანი სკანირებისთვის და მისი გახსნა დაბლოკილია.</translation>
@@ -5248,6 +5257,7 @@
 <translation id="850875081535031620">საზიანო პროგრამული უზრუნველყოფა არ მოიძებნა</translation>
 <translation id="8509177919508253835">უსაფრთხოების გასაღებების გადაყენება და PIN-კოდების შექმნა</translation>
 <translation id="8509646642152301857">მართლწერის შემოწმების ლექსიკონი ვერ ჩამოიტვირთა.</translation>
+<translation id="8510617356402557055">მოულოდნელი იყო? <ph name="BEGIN_LINK" />გამოგვეხმაურეთ<ph name="END_LINK" /></translation>
 <translation id="8512476990829870887">პროცესის დასრულება</translation>
 <translation id="851263357009351303">ყოველთვის მიეცი ნება <ph name="HOST" />-ს, აჩვენოს გამოსახულებები</translation>
 <translation id="8513108775083588393">ავტომატური შეტრიალება</translation>
@@ -5638,6 +5648,7 @@
 <translation id="9030785788945687215">Gmail</translation>
 <translation id="9033857511263905942">ჩ&amp;ასმა</translation>
 <translation id="9037965129289936994">ორიგინალის ჩვენება</translation>
+<translation id="903797871439633902">ეს არის პროგრამული უზრუნველყოფისა და უსაფრთხოების ბოლო განახლება, რომელსაც თქვენი <ph name="DEVICE_TYPE" /> იღებს. მომავალი განახლებების მისაღებად გადადით ახალ მოდელზე. &lt;a target="_blank" href="<ph name="URL" />"&gt;შეიტყვეთ მეტი&lt;/a&gt;</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">გსურთ <ph name="ORIGIN" />-ის პაროლის განახლება?</translation>
 <translation id="9041692268811217999">თქვენს მოწყობილობაზე არსებულ ადგილობრივ ფაილებზე წვდომა გათიშულია თქვენი ადმინისტრატორის მიერ</translation>
@@ -5725,6 +5736,7 @@
 <translation id="9169496697824289689">კლავიატურის მალსახმობების ნახვა</translation>
 <translation id="916964310188958970">რატომ მთავაზობთ ამას?</translation>
 <translation id="9169931577761441333"><ph name="APP_NAME" />-ის დამატება მთავარ ეკრანზე</translation>
+<translation id="9170305483456271385">Plugin VM ამოიშალა</translation>
 <translation id="9170848237812810038">მოქმედების დაბრ&amp;უნება</translation>
 <translation id="9170884462774788842">სხვა პროგრამამ თქვენს კომპიუტერში დაამატა თემა, რომელმაც შეიძლება შეცვალოს Chrome-ის მუშაობის ფორმა.</translation>
 <translation id="9173995187295789444">მიმდინარეობს Bluetooth მოწყობილობების სკანირება...</translation>

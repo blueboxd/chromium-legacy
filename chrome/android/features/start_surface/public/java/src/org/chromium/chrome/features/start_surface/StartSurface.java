@@ -100,6 +100,12 @@ public interface StartSurface {
         void showOverview(boolean animate);
 
         /**
+         * Sets the state {@link OverviewModeState}.
+         * @param state the {@link OverviewModeState} to show.
+         */
+        void setOverviewState(@OverviewModeState int state);
+
+        /**
          * Called by the TabSwitcherLayout when the system back button is pressed.
          * @return Whether or not the TabSwitcher consumed the event.
          */

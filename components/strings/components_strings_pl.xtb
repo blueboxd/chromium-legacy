@@ -722,6 +722,7 @@
 <translation id="4340982228985273705">Ten komputer nie został wykryty jako zarządzany przez firmę, przez co zasada może instalować automatycznie tylko rozszerzenia hostowane w Chrome Web Store. URL sklepu Chrome Web Store służący do aktualizacji to „<ph name="CWS_UPDATE_URL" />”.</translation>
 <translation id="4346197816712207223">Akceptowane karty kredytowe</translation>
 <translation id="4346833872170306413">Roc-16K</translation>
+<translation id="4349531505348777662">Przed chwilą wpisano hasło na stronie wprowadzającej w błąd. Chrome zaleca, by natychmiast zmienić je na <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> i innych stronach, na których go używasz.</translation>
 <translation id="4356973930735388585">Osoby atakujące tę stronę mogą próbować zainstalować na Twoim komputerze niebezpieczne programy przeznaczone do kradzieży lub usuwania Twoich danych (na przykład zdjęć, haseł, wiadomości czy numerów kart kredytowych).</translation>
 <translation id="4358059973562876591">Nie można zastosować wybranych szablonów z powodu błędu związanego z zasadą DnsOverHttpsMode.</translation>
 <translation id="4358461427845829800">Zarządzaj formami płatności…</translation>
@@ -1250,6 +1251,7 @@
 <translation id="6970216967273061347">Okręg</translation>
 <translation id="6973656660372572881">Określono zarówno stałe serwery proxy, jak i URL skryptu PAC.</translation>
 <translation id="6973932557599545801">Nie jestem w stanie Ci pomóc. Kontynuuj samodzielnie.</translation>
+<translation id="6975012522936652259">Przed chwilą wpisano hasło na stronie wprowadzającej w błąd. Chromium zaleca, by natychmiast zmienić je na <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> i innych stronach, na których go używasz.</translation>
 <translation id="6979158407327259162">Dysk Google</translation>
 <translation id="6979440798594660689">Wycisz (domyślnie)</translation>
 <translation id="6989763994942163495">Pokaż ustawienia zaawansowane...</translation>
@@ -1381,6 +1383,7 @@ Dodatkowe informacje:
 <translation id="7567204685887185387">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa mógł zostać wydany w celu oszustwa. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="7569952961197462199">Usunąć tę kartę kredytową z Chrome?</translation>
 <translation id="7569983096843329377">Czarny</translation>
+<translation id="7575207903026901870">Usuń przycisk sugestii. Naciśnij Enter, by usunąć tę sugestię</translation>
 <translation id="7578104083680115302">Używaj swoich kart zapisanych w Google, by łatwiej dokonywać płatności na stronach i w aplikacjach na różnych urządzeniach.</translation>
 <translation id="7592362899630581445">Certyfikat serwera narusza ograniczenia dotyczące nazw.</translation>
 <translation id="7598391785903975535">Mniej niż <ph name="UPPER_ESTIMATE" /></translation>
@@ -1626,6 +1629,7 @@ Dodatkowe informacje:
 <translation id="8891727572606052622">Nieprawidłowy tryb proxy</translation>
 <translation id="8903921497873541725">Powiększ</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="890493561996401738">Usuń przycisk sugestii. Naciśnij Enter, by usunąć, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Jesteś w trybie incognito</translation>
 <translation id="8912362522468806198">Konta Google</translation>
 <translation id="8918231688545606538">Ta strona jest podejrzana</translation>

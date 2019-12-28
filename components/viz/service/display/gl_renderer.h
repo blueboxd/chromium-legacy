@@ -20,7 +20,6 @@
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
-#include "components/viz/service/display/color_lut_cache.h"
 #include "components/viz/service/display/direct_renderer.h"
 #include "components/viz/service/display/gl_renderer_copier.h"
 #include "components/viz/service/display/gl_renderer_draw_cache.h"
@@ -442,7 +441,6 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   bool force_drawing_frame_framebuffer_unflipped_ = false;
 
   BoundGeometry bound_geometry_;
-  ColorLUTCache color_lut_cache_;
 
   unsigned offscreen_stencil_renderbuffer_id_ = 0;
   gfx::Size offscreen_stencil_renderbuffer_size_;

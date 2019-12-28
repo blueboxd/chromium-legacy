@@ -56,6 +56,7 @@ class BenchmarkRunnerIntegrationTest(unittest.TestCase):
     self.options = testing.GetRunOptions(
         output_dir=tempfile.mkdtemp())
     self.options.output_formats = ['histograms']
+    results_processor.ProcessOptions(self.options)
 
   def tearDown(self):
     shutil.rmtree(self.options.output_dir)

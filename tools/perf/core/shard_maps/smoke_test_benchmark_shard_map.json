@@ -4,6 +4,14 @@
             "dummy_benchmark.stable_benchmark_1": {
                 "abridged": false
             }
+        },
+        "executables": {
+            "dummy_gtest": {
+                "path": "../../tools/perf/testdata/dummy_gtest",
+                "arguments": [
+                    "--argument-to-check-that-arguments-work"
+                ]
+            }
         }
     },
     "1": {

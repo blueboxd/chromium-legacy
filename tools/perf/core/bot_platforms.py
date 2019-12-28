@@ -20,6 +20,8 @@ OFFICIAL_BENCHMARKS = frozenset(
     if not b.Name().startswith('UNSCHEDULED_'))
 CONTRIB_BENCHMARKS = frozenset(benchmark_finders.GetContribBenchmarks())
 ALL_SCHEDULEABLE_BENCHMARKS = OFFICIAL_BENCHMARKS | CONTRIB_BENCHMARKS
+GTEST_STORY_NAME = '_gtest_'
+
 
 def _IsPlatformSupported(benchmark, platform):
     supported = benchmark.GetSupportedPlatformNames(
@@ -30,7 +32,7 @@ def _IsPlatformSupported(benchmark, platform):
 class PerfPlatform(object):
   def __init__(self, name, description, benchmark_configs,
                num_shards, platform_os, is_fyi=False,
-               run_reference_build=True):
+               run_reference_build=True, executables=None):
     self._name = name
     self._description = description
     self._platform_os = platform_os
@@ -38,6 +40,7 @@ class PerfPlatform(object):
     self._sort_key = name.lower().replace('-', ' ')
     self._is_fyi = is_fyi
     self.run_reference_build = run_reference_build
+    self.executables = executables or frozenset()
     assert num_shards
     self._num_shards = num_shards
     # pylint: disable=redefined-outer-name
@@ -119,6 +122,7 @@ class BenchmarkConfig(object):
     self.benchmark = benchmark
     self.abridged = abridged
     self._stories = None
+    self.is_telemetry = True
 
   @property
   def name(self):
@@ -141,6 +145,18 @@ class BenchmarkConfig(object):
       stories = story_filter_obj.FilterStories(story_set)
       self._stories = [story.name for story in stories]
       return self._stories
+
+
+class ExecutableConfig(object):
+  def __init__(self, name, path=None, flags=None, estimated_runtime=60):
+    self.name = name
+    self.path = path or name
+    self.flags = flags or []
+    self.estimated_runtime = estimated_runtime
+    self.abridged = False
+    self.stories = [GTEST_STORY_NAME]
+    self.is_telemetry = False
+    self.repeat = 1
 
 
 # Global |benchmarks| is convenient way to keep BenchmarkConfig objects
@@ -169,6 +185,11 @@ _OFFICIAL_EXCEPT_JETSTREAM2 = (
 _OFFICIAL_EXCEPT_DISPLAY_LOCKING_JETSTREAM2 = (
     OFFICIAL_BENCHMARK_CONFIGS - _DL_BENCHMARK_CONFIGS - _JETSTREAM2)
 
+_TRACING_PERFTESTS = ExecutableConfig('tracing_perftests', estimated_runtime=50)
+_COMPONENTS_PERFTESTS = ExecutableConfig('components_perftests',
+                                         estimated_runtime=110)
+_GPU_PERFTESTS = ExecutableConfig('gpu_perftests', estimated_runtime=60)
+
 _LINUX_BENCHMARK_CONFIGS = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
 _MAC_HIGH_END_BENCHMARK_CONFIGS = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
 _MAC_LOW_END_BENCHMARK_CONFIGS = _OFFICIAL_EXCEPT_JETSTREAM2
@@ -189,6 +210,8 @@ _ANDROID_GO_BENCHMARK_CONFIGS = frozenset([
     _GetBenchmarkConfig('speedometer2')])
 _ANDROID_GO_WEBVIEW_BENCHMARK_CONFIGS = _ANDROID_GO_BENCHMARK_CONFIGS
 _ANDROID_NEXUS_5_BENCHMARK_CONFIGS = _OFFICIAL_EXCEPT_DISPLAY_LOCKING_JETSTREAM2
+_ANDROID_NEXUS_5_EXECUTABLE_CONFIGS = frozenset([
+    _TRACING_PERFTESTS, _COMPONENTS_PERFTESTS, _GPU_PERFTESTS])
 _ANDROID_NEXUS_5X_BENCHMARK_CONFIGS = (
     (((_OFFICIAL_EXCEPT_JETSTREAM2
     # Remove unabridged rendering benchmark and replace with abridged benchmark.
@@ -275,7 +298,7 @@ ANDROID_GO_WEBVIEW = PerfPlatform(
     run_reference_build=False)
 ANDROID_NEXUS_5 = PerfPlatform(
     'Android Nexus5 Perf', 'Android KOT49H', _ANDROID_NEXUS_5_BENCHMARK_CONFIGS,
-    16, 'android')
+    16, 'android', executables=_ANDROID_NEXUS_5_EXECUTABLE_CONFIGS)
 ANDROID_NEXUS_5X = PerfPlatform(
     'android-nexus5x-perf', 'Android MMB29Q',
     _ANDROID_NEXUS_5X_BENCHMARK_CONFIGS,

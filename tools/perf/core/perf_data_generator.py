@@ -419,21 +419,6 @@ BUILDERS = {
             '--assert-gpu-compositing',
         ],
       },
-      {
-        'isolate': 'tracing_perftests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
-      },
-      {
-        'isolate': 'components_perftests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
-      },
-      {
-        'isolate': 'gpu_perftests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
-      },
     ],
     'platform': 'android',
     'dimension': {

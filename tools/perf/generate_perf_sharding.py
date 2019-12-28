@@ -118,11 +118,16 @@ def _DumpJson(data, output_path):
 
 
 def _LoadTimingData(args):
-  builder_name, timing_file_path = args
+  builder, timing_file_path = args
   data = retrieve_story_timing.FetchAverageStoryTimingData(
-      configurations=[builder_name], num_last_days=5)
+      configurations=[builder.name], num_last_days=5)
+  for executable in builder.executables:
+    data.append({unicode('duration'): unicode(
+                    float(executable.estimated_runtime)),
+                 unicode('name'): unicode(
+                     executable.name + '/' + bot_platforms.GTEST_STORY_NAME)})
   _DumpJson(data, timing_file_path)
-  print('Finished retrieving story timing data for %s' % repr(builder_name))
+  print('Finished retrieving story timing data for %s' % repr(builder.name))
 
 
 def _source_filepath(posix_path):
@@ -149,6 +154,9 @@ class _BenchmarkUsageRow(object):
     for benchmark_config in platform.benchmark_configs:
       if benchmark_config.name == self.name:
         return benchmark_config
+    for executable in platform.executables:
+      if executable.name == self.name:
+        return executable
 
   def ToRow(self):
     unabridged_platforms = sorted([
@@ -257,9 +265,11 @@ def _GenerateShardMap(
   if builder:
     with open(builder.timing_file_path) as f:
       timing_data = json.load(f)
-  benchmarks_to_shard = list(builder.benchmark_configs)
+  benchmarks_to_shard = (
+      list(builder.benchmark_configs) + list(builder.executables))
   sharding_map = sharding_map_generator.generate_sharding_map(
-      benchmarks_to_shard, timing_data, num_shards=num_of_shards,
+      benchmarks_to_shard, timing_data,
+      num_shards=num_of_shards,
       debug=debug)
   _DumpJson(sharding_map, output_path)
 
@@ -303,8 +313,11 @@ def _FilterTimingData(builder, output_path=None):
       story_full_names.add('/'.join([benchmark_config.name, story]))
   # When benchmarks are abridged or stories are removed, we want that
   # to be reflected in the timing data right away.
+  executable_story_names = [e.name + '/' + bot_platforms.GTEST_STORY_NAME
+                            for e in builder.executables]
   timing_dataset = [point for point in timing_dataset
-                    if str(point['name']) in story_full_names]
+                    if (str(point['name']) in story_full_names or
+                        str(point['name']) in executable_story_names)]
   _DumpJson(timing_dataset, output_path)
 
 
@@ -312,7 +325,7 @@ def _UpdateTimingData(builders):
   print('Updating shards timing data. May take a while...')
   load_timing_args = []
   for b in builders:
-    load_timing_args.append((b.name, b.timing_file_path))
+    load_timing_args.append((b, b.timing_file_path))
   p = multiprocessing.Pool(len(load_timing_args))
   # Use map_async to work around python bug. See crbug.com/1026004.
   p.map_async(_LoadTimingData, load_timing_args).get(12*60*60)

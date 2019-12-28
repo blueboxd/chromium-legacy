@@ -1396,16 +1396,9 @@ std::vector<Rect> RenderTextHarfBuzz::GetSubstringBounds(const Range& range) {
   EnsureLayout();
   DCHECK(!update_display_run_list_);
   DCHECK(Range(0, text().length()).Contains(range));
-  const size_t start =
-      IsValidCursorIndex(range.GetMin())
-          ? range.GetMin()
-          : IndexOfAdjacentGrapheme(range.GetMin(), CURSOR_BACKWARD);
-  const size_t end =
-      IsValidCursorIndex(range.GetMax())
-          ? range.GetMax()
-          : IndexOfAdjacentGrapheme(range.GetMax(), CURSOR_FORWARD);
-  const Range display_range(TextIndexToDisplayIndex(start),
-                            TextIndexToDisplayIndex(end));
+  const Range grapheme_range = ExpandRangeToGraphemeBoundary(range);
+  const Range display_range(TextIndexToDisplayIndex(grapheme_range.start()),
+                            TextIndexToDisplayIndex(grapheme_range.end()));
   DCHECK(Range(0, GetDisplayText().length()).Contains(display_range));
 
   std::vector<Rect> rects;
@@ -1698,17 +1691,10 @@ void RenderTextHarfBuzz::DrawVisualText(internal::SkiaTextRenderer* renderer,
   // Apply the selected text color to the [un-reversed] selection range.
   BreakList<SkColor> colors = layout_colors();
   if (!selection.is_empty()) {
-    const size_t grapheme_start =
-        IsGraphemeBoundary(selection.GetMin())
-            ? selection.GetMin()
-            : IndexOfAdjacentGrapheme(selection.GetMin(), CURSOR_BACKWARD);
-    const size_t grapheme_end =
-        IsGraphemeBoundary(selection.GetMax())
-            ? selection.GetMax()
-            : IndexOfAdjacentGrapheme(selection.GetMax(), CURSOR_FORWARD);
+    const Range grapheme_range = ExpandRangeToGraphemeBoundary(selection);
     colors.ApplyValue(selection_color(),
-                      Range(TextIndexToDisplayIndex(grapheme_start),
-                            TextIndexToDisplayIndex(grapheme_end)));
+                      Range(TextIndexToDisplayIndex(grapheme_range.GetMin()),
+                            TextIndexToDisplayIndex(grapheme_range.GetMax())));
   }
 
   internal::TextRunList* run_list = GetRunList();

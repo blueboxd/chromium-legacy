@@ -1035,7 +1035,7 @@ bool RenderText::IsValidLogicalIndex(size_t index) const {
        IsValidCodePointIndex(text(), index));
 }
 
-bool RenderText::IsValidCursorIndex(size_t index) {
+bool RenderText::IsValidCursorIndex(size_t index) const {
   return index == 0 || index == text().length() ||
          (IsValidLogicalIndex(index) && IsGraphemeBoundary(index));
 }
@@ -1264,6 +1264,19 @@ base::string16 RenderText::GetTextFromRange(const Range& range) const {
   if (range.IsValid() && range.GetMin() < text().length())
     return text().substr(range.GetMin(), range.length());
   return base::string16();
+}
+
+Range RenderText::ExpandRangeToGraphemeBoundary(const Range& range) const {
+  const auto snap_to_grapheme = [this](auto index, auto direction) {
+    return IsValidCursorIndex(index)
+               ? index
+               : IndexOfAdjacentGrapheme(index, direction);
+  };
+
+  const size_t min_index = snap_to_grapheme(range.GetMin(), CURSOR_BACKWARD);
+  const size_t max_index = snap_to_grapheme(range.GetMax(), CURSOR_FORWARD);
+  return range.is_reversed() ? Range(max_index, min_index)
+                             : Range(min_index, max_index);
 }
 
 bool RenderText::IsNewlineSegment(const internal::LineSegment& segment) const {

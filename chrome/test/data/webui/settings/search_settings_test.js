@@ -10,9 +10,11 @@ cr.define('settings_test', function() {
     // Don't import script if already imported (happens in Vulcanized mode).
     suiteSetup(function() {
       if (!window.settings || !settings.getSearchManager) {
-        return PolymerTest.loadScript(
-                   'chrome://resources/js/search_highlight_utils.js') &&
-            PolymerTest.loadScript('chrome://settings/search_settings.js');
+        return Promise.all([
+          PolymerTest.loadScript(
+              'chrome://resources/js/search_highlight_utils.js'),
+          PolymerTest.loadScript('chrome://settings/search_settings.js'),
+        ]);
       }
     });
 
@@ -86,9 +88,7 @@ cr.define('settings_test', function() {
           .then(function() {
             assertFalse(section.hiddenBySearch);
 
-            const highlightWrapper =
-                section.querySelector('.search-highlight-wrapper');
-            assertTrue(!!highlightWrapper);
+            assertEquals(1, document.querySelectorAll('.search-bubble').length);
 
             // Check that original DOM structure is present even after search
             // highlights are cleared.

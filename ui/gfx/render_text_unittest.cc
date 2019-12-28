@@ -4239,9 +4239,9 @@ TEST_F(RenderTextTest, GetBaselineSanity) {
   EXPECT_GT(baseline, 0);
 }
 
-TEST_F(RenderTextTest, CursorBoundsInReplacementMode) {
+TEST_F(RenderTextTest, GetCursorBoundsInReplacementMode) {
   RenderText* render_text = GetRenderText();
-  render_text->SetText(UTF8ToUTF16("abcdefg"));
+  render_text->SetText(ASCIIToUTF16("abcdefg"));
   render_text->SetDisplayRect(Rect(100, 17));
   SelectionModel sel_b(1, CURSOR_FORWARD);
   SelectionModel sel_c(2, CURSOR_FORWARD);
@@ -4250,6 +4250,39 @@ TEST_F(RenderTextTest, CursorBoundsInReplacementMode) {
   Rect cursor_before_c = render_text->GetCursorBounds(sel_c, true);
   EXPECT_EQ(cursor_around_b.x(), cursor_before_b.x());
   EXPECT_EQ(cursor_around_b.right(), cursor_before_c.x());
+}
+
+TEST_F(RenderTextTest, GetCursorBoundsWithGraphemes) {
+  constexpr int kGlyphWidth = 10;
+  SetGlyphWidth(kGlyphWidth);
+
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(
+      WideToUTF16(L"a\u0300e\u0301\U0001F601x\U0001F573\uFE0F"));
+  render_text->SetDisplayRect(Rect(100, 20));
+  render_text->SetVerticalAlignment(ALIGN_TOP);
+
+  const int line_height =
+      render_text->GetLineSize(SelectionModel(0, CURSOR_FORWARD)).height();
+
+  static const size_t kGraphemeBoundaries[] = {0, 2, 4, 6, 7};
+  for (size_t i = 0; i < base::size(kGraphemeBoundaries); ++i) {
+    const size_t text_offset = kGraphemeBoundaries[i];
+    EXPECT_EQ(render_text->GetCursorBounds(
+                  SelectionModel(text_offset, CURSOR_FORWARD), true),
+              Rect(i * kGlyphWidth, 0, 1, line_height));
+    EXPECT_EQ(render_text->GetCursorBounds(
+                  SelectionModel(text_offset, CURSOR_FORWARD), false),
+              Rect(i * kGlyphWidth, 0, kGlyphWidth, line_height));
+  }
+
+  // Check cursor bounds at end of text.
+  EXPECT_EQ(
+      render_text->GetCursorBounds(SelectionModel(10, CURSOR_FORWARD), true),
+      Rect(50, 0, 1, line_height));
+  EXPECT_EQ(
+      render_text->GetCursorBounds(SelectionModel(10, CURSOR_FORWARD), false),
+      Rect(50, 0, 1, line_height));
 }
 
 TEST_F(RenderTextTest, GetTextOffset) {

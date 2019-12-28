@@ -9,13 +9,12 @@ import core.path_util
 core.path_util.AddTelemetryToPath()
 
 
-
-def generate_sharding_map(
-    benchmarks_to_shard, timing_data, num_shards, debug):
+def generate_sharding_map(benchmarks_to_shard, timing_data, num_shards, debug):
   """Generate sharding map.
 
     Args:
-      benchmarks_to_shard is a list of bot_platforms.BenchmarkConfig objects.
+      benchmarks_to_shard is a list of bot_platforms.BenchmarkConfig and
+      ExecutableConfig objects.
 
       The "stories" field contains a list of ordered story names. Notes that
       this should match the actual order of how the benchmark stories are
@@ -126,16 +125,28 @@ def _add_benchmarks_to_shard(sharding_map, shard_index, stories_in_shard,
 
   # Format the benchmark's stories by indices
   benchmarks_in_shard = collections.OrderedDict()
+  executables_in_shard = collections.OrderedDict()
   for b in benchmarks:
-    benchmarks_in_shard[b] = {}
-    first_story = all_stories[b].index(benchmarks[b][0])
-    last_story = all_stories[b].index(benchmarks[b][-1]) + 1
-    if first_story != 0:
-      benchmarks_in_shard[b]['begin'] = first_story
-    if last_story != len(all_stories[b]):
-      benchmarks_in_shard[b]['end'] = last_story
-    benchmarks_in_shard[b]['abridged'] = benchmark_name_to_config[b].abridged
-  sharding_map[str(shard_index)] = {'benchmarks': benchmarks_in_shard}
+    if benchmark_name_to_config[b].is_telemetry:
+      benchmarks_in_shard[b] = {}
+      first_story = all_stories[b].index(benchmarks[b][0])
+      last_story = all_stories[b].index(benchmarks[b][-1]) + 1
+      if first_story != 0:
+        benchmarks_in_shard[b]['begin'] = first_story
+      if last_story != len(all_stories[b]):
+        benchmarks_in_shard[b]['end'] = last_story
+      benchmarks_in_shard[b]['abridged'] = benchmark_name_to_config[b].abridged
+    else:
+      config = benchmark_name_to_config[b]
+      executables_in_shard[b] = {}
+      if config.flags:
+        executables_in_shard[b]['arguments'] = config.flags
+      executables_in_shard[b]['path'] = config.path
+  sharding_map[str(shard_index)] = collections.OrderedDict()
+  if benchmarks_in_shard:
+    sharding_map[str(shard_index)]['benchmarks'] = benchmarks_in_shard
+  if executables_in_shard:
+    sharding_map[str(shard_index)]['executables'] = executables_in_shard
 
 
 def _gather_timing_data(benchmarks_to_shard, timing_data, repeat):

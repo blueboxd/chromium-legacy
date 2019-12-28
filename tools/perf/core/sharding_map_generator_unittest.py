@@ -17,6 +17,7 @@ class FakeBenchmarkConfig(object):
     self.stories = stories
     self.repeat = repeat
     self.abridged = False
+    self.is_telemetry = True
 
 
 class TestShardingMapGenerator(unittest.TestCase):

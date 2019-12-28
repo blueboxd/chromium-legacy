@@ -488,7 +488,7 @@ class GFX_EXPORT RenderText {
 
   // Returns true if the position is a valid logical index into text(), and is
   // also a valid grapheme boundary, which may be used as a cursor position.
-  bool IsValidCursorIndex(size_t index);
+  bool IsValidCursorIndex(size_t index) const;
 
   // Get the visual bounds of a cursor at |caret|. These bounds typically
   // represent a vertical line if |insert_mode| is true. Pass false for
@@ -585,6 +585,10 @@ class GFX_EXPORT RenderText {
   // Return the line index that contains the argument; or the index of the last
   // line if the |caret| exceeds the text length.
   virtual size_t GetLineContainingCaret(const SelectionModel& caret) = 0;
+
+  // Expands |range| to its nearest grapheme boundaries and returns the
+  // resulting range. Maintains directionality of |range|.
+  Range ExpandRangeToGraphemeBoundary(const Range& range) const;
 
  protected:
   RenderText();

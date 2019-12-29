@@ -613,9 +613,12 @@ def main(sys_args):
         names_and_configs = shard_configuration['executables']
         for (name, configuration
              ) in names_and_configs.iteritems():
+          additional_flags = []
+          if 'arguments' in configuration:
+            additional_flags = configuration['arguments']
           command_generator = GtestCommandGenerator(
               options, override_executable=configuration['path'],
-              additional_flags=configuration['arguments'])
+              additional_flags=additional_flags)
           output_paths = OutputFilePaths(isolated_out_dir, name).SetUp()
           print('\n### {folder} ###'.format(folder=name))
           return_code = execute_gtest_perf_test(

@@ -5014,8 +5014,8 @@ crbug.com/849978 http/tests/devtools/elements/styles-4/stylesheet-source-url-com
 crbug.com/851090 [ Win ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-click-hyperlink.html [ Pass Failure ]
 crbug.com/851090 [ Linux ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-click-hyperlink.html [ Pass Failure ]
 
-# Sheriff 2018-06-11
-crbug.com/853360 [ Mac ] http/tests/misc/slow-loading-image-in-pattern.html [ Pass Timeout Failure ]
+# Flaky timeout only on Mac 10.13.
+crbug.com/853360 [ Mac10.13 ] http/tests/misc/slow-loading-image-in-pattern.html [ Timeout Pass ]
 
 # Origin Policy: Skip tests that rely on --feature-enabled=OriginPolicy, so
 #   they can be run via virtual/origin-policy instead.

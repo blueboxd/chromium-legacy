@@ -21,9 +21,11 @@ from .code_node import SymbolScopeNode
 from .code_node import TextNode
 from .code_node_cxx import CxxBlockNode
 from .code_node_cxx import CxxBreakableBlockNode
+from .code_node_cxx import CxxClassDefNode
 from .code_node_cxx import CxxFuncDefNode
 from .code_node_cxx import CxxLikelyIfNode
 from .code_node_cxx import CxxMultiBranchesNode
+from .code_node_cxx import CxxNamespaceNode
 from .code_node_cxx import CxxUnlikelyIfNode
 from .codegen_accumulator import CodeGenAccumulator
 from .codegen_context import CodeGenContext
@@ -34,6 +36,7 @@ from .codegen_format import format_template as _format
 from .codegen_utils import collect_include_headers
 from .codegen_utils import enclose_with_namespace
 from .codegen_utils import make_copyright_header
+from .codegen_utils import make_forward_declarations
 from .codegen_utils import make_header_include_directives
 from .codegen_utils import write_code_node_to_file
 from .mako_renderer import MakoRenderer
@@ -1444,6 +1447,9 @@ def bind_installer_local_vars(code_node, cg_context):
         S("interface_template",
           ("v8::Local<v8::FunctionTemplate> ${interface_template} = "
            "${wrapper_type_info}->DomTemplate(${isolate}, ${world});")),
+        S("is_in_secure_context",
+          ("const bool ${is_in_secure_context} = "
+           "${execution_context}->IsSecureContext();")),
         S("isolate", "v8::Isolate* ${isolate} = ${v8_context}.GetIsolate();"),
         S("prototype_template",
           ("v8::Local<v8::ObjectTemplate> ${prototype_template} = "
@@ -2149,63 +2155,108 @@ def make_install_properties_def(cg_context, function_name,
     return func_def
 
 
-def generate_interfaces(web_idl_database):
-    interface = web_idl_database.find("Node")
+def generate_interface(interface):
+    path_manager = PathManager(interface)
+    is_cross_components = path_manager.is_cross_components
 
-    cg_context = CodeGenContext(
-        interface=interface, class_name=v8_bridge_class_name(interface))
+    # Filepaths and root nodes
+    filename = "v8_example_interface"
+    api_header_path = path_manager.api_path(filename, ext="h")
+    api_header_node = ListNode(tail="\n")
+    api_header_node.set_accumulator(CodeGenAccumulator())
+    api_header_node.set_renderer(MakoRenderer())
+    api_source_path = path_manager.api_path(filename, ext="cc")
+    api_source_node = ListNode(tail="\n")
+    api_source_node.set_accumulator(CodeGenAccumulator())
+    api_source_node.set_renderer(MakoRenderer())
+    if is_cross_components:
+        impl_header_path = path_manager.impl_path(filename, ext="h")
+        impl_header_node = ListNode(tail="\n")
+        impl_header_node.set_accumulator(CodeGenAccumulator())
+        impl_header_node.set_renderer(MakoRenderer())
+        impl_source_path = path_manager.impl_path(filename, ext="cc")
+        impl_source_node = ListNode(tail="\n")
+        impl_source_node.set_accumulator(CodeGenAccumulator())
+        impl_source_node.set_renderer(MakoRenderer())
+    else:
+        impl_header_node = api_header_node
+        impl_source_node = api_source_node
 
-    root_node = ListNode()
-    root_node.set_accumulator(CodeGenAccumulator())
-    root_node.set_renderer(MakoRenderer())
+    # Class names
+    api_class_name = name_style.class_("v8", interface.identifier)
+    if is_cross_components:
+        impl_class_name = name_style.class_(api_class_name, "impl")
+    else:
+        impl_class_name = api_class_name
+    impl_header_node.add_template_var("impl_class_name", impl_class_name)
+    impl_source_node.add_template_var("impl_class_name", impl_class_name)
 
-    root_node.accumulator.add_include_headers(
-        collect_include_headers(interface))
+    cg_context = CodeGenContext(interface=interface, class_name=api_class_name)
 
+    # Class definitions
+    api_class_def = CxxClassDefNode(cg_context.class_name)
+    api_class_def.add_template_vars(cg_context.template_bindings())
+    api_class_def.top_section.append(TextNode("STATIC_ONLY(${class_name});"))
+    if is_cross_components:
+        impl_class_def = CxxClassDefNode(impl_class_name)
+        impl_class_def.add_template_vars(cg_context.template_bindings())
+        impl_class_def.top_section.append(
+            TextNode("STATIC_ONLY(${impl_class_name});"))
+    else:
+        impl_class_def = api_class_def
+
+    # Constants
+    constant_defs = ListNode()
+    for constant in interface.constants:
+        cgc = cg_context.make_copy(constant=constant)
+        constant_defs.append(
+            make_constant_constant_def(cgc, constant_name(cgc)))
+
+    # Callback functions
     attribute_entries = []
     constant_entries = []
     constructor_entries = []
     operation_entries = []
-    callback_def_nodes = _make_property_entries_and_callback_defs(
+    callback_defs = _make_property_entries_and_callback_defs(
         cg_context,
         attribute_entries=attribute_entries,
         constant_entries=constant_entries,
         constructor_entries=constructor_entries,
         operation_entries=operation_entries)
 
-    installer_function_nodes = ListNode()
+    # Installer functions
     is_unconditional = lambda entry: entry.exposure_conditional.is_always_true
     is_context_dependent = lambda entry: entry.is_context_dependent
     is_context_independent = (
         lambda e: not is_context_dependent(e) and not is_unconditional(e))
     install_unconditional_props_node = make_install_properties_def(
         cg_context,
-        TextNode("${class_name}::InstallUnconditionalProperties"),
+        "${impl_class_name}::InstallUnconditionalProperties",
         is_context_dependent=False,
         attribute_entries=filter(is_unconditional, attribute_entries),
         constant_entries=filter(is_unconditional, constant_entries),
         operation_entries=filter(is_unconditional, operation_entries))
     install_context_independent_props_node = make_install_properties_def(
         cg_context,
-        TextNode("${class_name}::InstallContextIndependentProperties"),
+        "${impl_class_name}::InstallContextIndependentProperties",
         is_context_dependent=False,
         attribute_entries=filter(is_context_independent, attribute_entries),
         constant_entries=filter(is_context_independent, constant_entries),
         operation_entries=filter(is_context_independent, operation_entries))
     install_context_dependent_props_node = make_install_properties_def(
         cg_context,
-        TextNode("${class_name}::InstallContextDependentProperties"),
+        "${impl_class_name}::InstallContextDependentProperties",
         is_context_dependent=True,
         attribute_entries=filter(is_context_dependent, attribute_entries),
         constant_entries=filter(is_context_dependent, constant_entries),
         operation_entries=filter(is_context_dependent, operation_entries))
     install_interface_template_node = make_install_interface_template_def(
-        cg_context, TextNode("${class_name}::InstallInterfaceTemplate"),
+        cg_context, "${impl_class_name}::InstallInterfaceTemplate",
         constructor_entries, (install_unconditional_props_node
                               and "InstallUnconditionalProperties"),
         (install_context_independent_props_node
          and "InstallContextIndependentProperties"))
-    installer_function_nodes.extend([
+    installer_function_defs = ListNode([
         install_unconditional_props_node,
         TextNode(""),
         install_context_independent_props_node,
@@ -2215,29 +2266,75 @@ def generate_interfaces(web_idl_database):
         install_interface_template_node,
     ])
 
-    constant_def_nodes = ListNode()
-    for constant in interface.constants:
-        cgc = cg_context.make_copy(constant=constant)
-        constant_def_nodes.append(
-            make_constant_constant_def(cgc, constant_name(cgc)))
-
-    nodes = ListNode([
-        callback_def_nodes,
-        TextNode(""),
-        installer_function_nodes,
-        TextNode(""),
-        constant_def_nodes,
-    ])
-
-    root_node.extend([
+    # Header part (copyright, include directives, and forward declarations)
+    api_header_node.extend([
         make_copyright_header(),
         TextNode(""),
-        make_header_include_directives(root_node.accumulator),
+        make_header_include_directives(api_header_node.accumulator),
         TextNode(""),
-        enclose_with_namespace(nodes, name_style.namespace("blink")),
+        make_forward_declarations(api_header_node.accumulator),
+        TextNode(""),
     ])
-    root_node.append(TextNode(""))
+    api_source_node.extend([
+        make_copyright_header(),
+        TextNode(""),
+        TextNode("#include \"{}\"".format(api_header_path)),
+        TextNode(""),
+        make_header_include_directives(api_source_node.accumulator),
+        TextNode(""),
+        make_forward_declarations(api_source_node.accumulator),
+        TextNode(""),
+    ])
+    if is_cross_components:
+        impl_header_node.extend([
+            make_copyright_header(),
+            TextNode(""),
+            make_header_include_directives(impl_header_node.accumulator),
+            TextNode(""),
+            make_forward_declarations(impl_header_node.accumulator),
+            TextNode(""),
+        ])
+        impl_source_node.extend([
+            make_copyright_header(),
+            TextNode(""),
+            TextNode("#include \"{}\"".format(impl_header_path)),
+            TextNode(""),
+            make_header_include_directives(impl_source_node.accumulator),
+            TextNode(""),
+            make_forward_declarations(impl_source_node.accumulator),
+            TextNode(""),
+        ])
 
-    path_manager = PathManager(interface)
-    filepath = path_manager.impl_path("v8_example_interface.cc")
-    write_code_node_to_file(root_node, path_manager.gen_path_to(filepath))
+    # Assemble the parts.
+    api_header_node.append(CxxNamespaceNode(name="blink", body=api_class_def))
+    if is_cross_components:
+        impl_header_node.append(
+            CxxNamespaceNode(name="blink", body=impl_class_def))
+
+    if constant_defs:
+        api_class_def.public_section.append(constant_defs)
+
+    impl_source_node.append(
+        CxxNamespaceNode(
+            name="blink",
+            body=[
+                CxxNamespaceNode(name="", body=callback_defs),
+                TextNode(""),
+                installer_function_defs,
+            ]))
+
+    # Write down to the files.
+    write_code_node_to_file(api_header_node,
+                            path_manager.gen_path_to(api_header_path))
+    write_code_node_to_file(api_source_node,
+                            path_manager.gen_path_to(api_source_path))
+    if path_manager.is_cross_components:
+        write_code_node_to_file(impl_header_node,
+                                path_manager.gen_path_to(impl_header_path))
+        write_code_node_to_file(impl_source_node,
+                                path_manager.gen_path_to(impl_source_path))
+
+
+def generate_interfaces(web_idl_database):
+    interface = web_idl_database.find("Navigator")
+    generate_interface(interface)

@@ -198,13 +198,14 @@ def expr_from_exposure(exposure, in_global=None):
 
     # [SecureContext]
     if exposure.only_in_secure_contexts is True:
-        top_terms.append(_Expr("${in_secure_context}"))
+        top_terms.append(_Expr("${is_in_secure_context}"))
     elif exposure.only_in_secure_contexts is False:
         top_terms.append(_Expr(True))
     else:
         terms = map(ref_enabled, exposure.only_in_secure_contexts)
         top_terms.append(
-            expr_or([_Expr("${in_secure_context}"),
-                     expr_not(expr_and(terms))]))
+            expr_or(
+                [_Expr("${is_in_secure_context}"),
+                 expr_not(expr_and(terms))]))
 
     return expr_and(top_terms)

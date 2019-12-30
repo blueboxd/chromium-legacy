@@ -161,6 +161,7 @@ test("cast_runner_integration_tests") {
     "//net:test_support",
     "//testing/gtest",
     "//third_party/fuchsia-sdk/sdk:fuchsia-modular",
+    "//third_party/fuchsia-sdk/sdk:scenic_cpp",
     "//third_party/fuchsia-sdk/sdk:sys_cpp",
   ]
   package_deps = [ [
@@ -198,6 +199,7 @@ executable("web_runner_exe") {
     "web/main.cc",
   ]
   deps = [
+    ":buildflags",
     ":common",
     "//base",
     "//fuchsia/base",

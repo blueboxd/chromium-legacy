@@ -53,25 +53,19 @@ fuchsia::web::CreateContextParams BuildCreateContextParamsForIsolatedRunners(
 
 }  // namespace
 
-CastRunner::CastRunner(sys::OutgoingDirectory* outgoing_directory,
-                       fuchsia::web::CreateContextParams create_context_params)
-    : WebContentRunner(outgoing_directory,
-                       base::BindOnce(&CastRunner::CreateCastRunnerWebContext,
-                                      base::Unretained(this))),
-      create_context_params_(std::move(create_context_params)),
+CastRunner::CastRunner(fuchsia::web::CreateContextParams create_context_params,
+                       sys::OutgoingDirectory* outgoing_directory)
+    : WebContentRunner(std::move(create_context_params), outgoing_directory),
       common_create_context_params_(
-          BuildCreateContextParamsForIsolatedRunners(create_context_params_)) {}
+          BuildCreateContextParamsForIsolatedRunners(create_params_)) {}
 
 CastRunner::CastRunner(OnDestructionCallback on_destruction_callback,
-                       fuchsia::web::ContextPtr context)
-    : WebContentRunner(std::move(context)),
+                       fuchsia::web::ContextPtr context,
+                       bool is_headless)
+    : WebContentRunner(std::move(context), is_headless),
       on_destruction_callback_(std::move(on_destruction_callback)) {}
 
 CastRunner::~CastRunner() = default;
-
-fuchsia::web::ContextPtr CastRunner::CreateCastRunnerWebContext() {
-  return WebContentRunner::CreateWebContext(std::move(create_context_params_));
-}
 
 void CastRunner::StartComponent(
     fuchsia::sys::Package package,
@@ -232,6 +226,9 @@ void CastRunner::MaybeStartComponent(
     // CastComponent.
     component_owner =
         CreateChildRunnerForIsolatedComponent(pending_component_params);
+
+    if (!component_owner)
+      return;
   }
 
   component_owner->CreateAndRegisterCastComponent(
@@ -264,17 +261,22 @@ CastRunner* CastRunner::CreateChildRunnerForIsolatedComponent(
   fuchsia::web::CreateContextParams isolated_context_params;
   zx_status_t status =
       common_create_context_params_.Clone(&isolated_context_params);
-  ZX_CHECK(status == ZX_OK, status) << "clone";
   isolated_context_params.set_service_directory(base::fuchsia::OpenDirectory(
       base::FilePath(base::fuchsia::kServiceDirectoryPath)));
+  CHECK(isolated_context_params.service_directory());
+  if (status != ZX_OK) {
+    ZX_LOG(ERROR, status) << "clone";
+    return nullptr;
+  }
+
   isolated_context_params.set_content_directories(
       std::move(*params->app_config
                      .mutable_content_directories_for_isolated_application()));
 
-  std::unique_ptr<CastRunner> cast_runner(
-      new CastRunner(base::BindOnce(&CastRunner::OnChildRunnerDestroyed,
-                                    base::Unretained(this)),
-                     CreateWebContext(std::move(isolated_context_params))));
+  std::unique_ptr<CastRunner> cast_runner(new CastRunner(
+      base::BindOnce(&CastRunner::OnChildRunnerDestroyed,
+                     base::Unretained(this)),
+      CreateWebContext(std::move(isolated_context_params)), is_headless()));
 
   // If test code is listening for Component creation events, then wire up the
   // isolated CastRunner to signal component creation events.

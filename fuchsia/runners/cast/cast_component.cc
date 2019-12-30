@@ -11,6 +11,7 @@
 #include "base/auto_reset.h"
 #include "base/files/file_util.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/path_service.h"
 #include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/fidl/chromium/cast/cpp/fidl.h"
@@ -40,6 +41,7 @@ CastComponent::CastComponent(CastRunner* runner,
       initial_rewrite_rules_(std::move(params.rewrite_rules.value())),
       api_bindings_client_(std::move(params.api_bindings_client)),
       media_session_id_(params.media_session_id.value()),
+      headless_disconnect_watch_(FROM_HERE),
       navigation_listener_binding_(this) {
   base::AutoReset<bool> constructor_active_reset(&constructor_active_, true);
 }
@@ -101,4 +103,36 @@ void CastComponent::OnNavigationStateChanged(
   if (change.has_is_main_document_loaded() && change.is_main_document_loaded())
     connector_->OnPageLoad();
   callback();
+}
+
+void CastComponent::CreateView(
+    zx::eventpair view_token,
+    fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> incoming_services,
+    fidl::InterfaceHandle<fuchsia::sys::ServiceProvider> outgoing_services) {
+  if (runner()->is_headless()) {
+    // For headless CastComponents, |view_token| does not actually connect to a
+    // Scenic View. It is merely used as a conduit for propagating termination
+    // signals.
+    headless_view_token_ = std::move(view_token);
+    base::MessageLoopCurrentForIO::Get()->WatchZxHandle(
+        headless_view_token_.get(), false /* persistent */,
+        ZX_SOCKET_PEER_CLOSED, &headless_disconnect_watch_, this);
+
+    frame()->EnableHeadlessRendering();
+    return;
+  }
+
+  WebComponent::CreateView(std::move(view_token), std::move(incoming_services),
+                           std::move(outgoing_services));
+}
+
+void CastComponent::OnZxHandleSignalled(zx_handle_t handle,
+                                        zx_signals_t signals) {
+  DCHECK_EQ(signals, ZX_SOCKET_PEER_CLOSED);
+  DCHECK(runner()->is_headless());
+
+  frame()->DisableHeadlessRendering();
+
+  if (on_headless_disconnect_cb_)
+    std::move(on_headless_disconnect_cb_).Run();
 }

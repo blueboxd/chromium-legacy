@@ -180,7 +180,9 @@ bool ChromeKeyboardControllerClient::IsEnableFlagSet(
 }
 
 void ChromeKeyboardControllerClient::ReloadKeyboardIfNeeded() {
-  keyboard_controller_->ReloadKeyboardIfNeeded();
+  // |keyboard_controller_| may be null if the keyboard reloads during shutdown.
+  if (keyboard_controller_)
+    keyboard_controller_->ReloadKeyboardIfNeeded();
 }
 
 void ChromeKeyboardControllerClient::RebuildKeyboardIfEnabled() {

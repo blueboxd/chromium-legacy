@@ -59,6 +59,8 @@ class WebComponent : public fuchsia::sys::ComponentController,
 
   fuchsia::web::Frame* frame() const { return frame_.get(); }
 
+  WebContentRunner* runner() const { return runner_; }
+
  protected:
   // fuchsia::sys::ComponentController implementation.
   void Kill() override;

@@ -30,8 +30,8 @@ class CastRunner : public WebContentRunner {
   //     itself to.
   // |context_feature_flags|: The feature flags to use when creating the
   //     runner's Context.
-  CastRunner(sys::OutgoingDirectory* outgoing_directory,
-             fuchsia::web::CreateContextParams create_context_params);
+  CastRunner(fuchsia::web::CreateContextParams create_context_params,
+             sys::OutgoingDirectory* outgoing_directory);
 
   ~CastRunner() override;
   CastRunner(const CastRunner&) = delete;
@@ -58,7 +58,8 @@ class CastRunner : public WebContentRunner {
   // destroyed by their parents when their singleton Components are destroyed.
   // |on_destruction_callback| is invoked when the child component is destroyed.
   CastRunner(OnDestructionCallback on_destruction_callback,
-             fuchsia::web::ContextPtr context);
+             fuchsia::web::ContextPtr context,
+             bool is_headless);
 
   // Starts a component once all configuration data is available.
   void MaybeStartComponent(
@@ -75,10 +76,9 @@ class CastRunner : public WebContentRunner {
       CastComponent::CastComponentParams* pending_component,
       std::vector<chromium::cast::ApiBinding> bindings);
   void OnChildRunnerDestroyed(CastRunner* cast_runner);
-  fuchsia::web::ContextPtr CreateCastRunnerWebContext();
 
   // Creates a CastRunner configured to serve data from content directories in
-  // |params|.
+  // |params|. Returns nullptr if an error occurred during CastRunner creation.
   CastRunner* CreateChildRunnerForIsolatedComponent(
       CastComponent::CastComponentParams* params);
 
@@ -87,9 +87,6 @@ class CastRunner : public WebContentRunner {
   base::flat_set<std::unique_ptr<CastComponent::CastComponentParams>,
                  base::UniquePtrComparator>
       pending_components_;
-
-  // Used for creating the CastRunner's ContextPtr.
-  fuchsia::web::CreateContextParams create_context_params_;
 
   // Used as a template for creating the ContextPtrs of isolated Runners.
   fuchsia::web::CreateContextParams common_create_context_params_;

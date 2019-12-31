@@ -271,6 +271,9 @@ class OverloadGroup(WithIdentifier):
             return True
 
         # step 4. Consider the two "innermost" types ...
+        def is_string_type(idl_type):
+            return idl_type.is_string or idl_type.is_enumeration
+
         def is_interface_like(idl_type):
             return idl_type.is_interface or idl_type.is_buffer_source_type
 
@@ -291,11 +294,11 @@ class OverloadGroup(WithIdentifier):
             return not type2.is_boolean
         if type1.is_numeric:
             return not type2.is_numeric
-        if type1.is_string:
-            return not type2.is_string
+        if is_string_type(type1):
+            return not is_string_type(type2)
         if type1.is_object:
-            return (type2.is_boolean or type2.is_numeric or type2.is_string
-                    or type2.is_symbol)
+            return (type2.is_boolean or type2.is_numeric
+                    or is_string_type(type2) or type2.is_symbol)
         if type1.is_symbol:
             return not type2.is_symbol
         if is_interface_like(type1):

@@ -2322,8 +2322,8 @@ void WebViewImpl::PropagateZoomFactorToLocalFrameRoots(Frame* frame,
   auto* local_frame = DynamicTo<LocalFrame>(frame);
   if (local_frame && local_frame->IsLocalRoot()) {
     if (Document* document = local_frame->GetDocument()) {
-      if (!document->IsPluginDocument() ||
-          !ToPluginDocument(document)->GetPluginView()) {
+      auto* plugin_document = DynamicTo<PluginDocument>(document);
+      if (!plugin_document || !plugin_document->GetPluginView()) {
         local_frame->SetPageZoomFactor(zoom_factor);
       }
     }

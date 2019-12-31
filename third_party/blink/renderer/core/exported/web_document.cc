@@ -56,6 +56,7 @@
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html/html_head_element.h"
 #include "third_party/blink/renderer/core/html/html_link_element.h"
+#include "third_party/blink/renderer/core/html/plugin_document.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
@@ -126,7 +127,7 @@ bool WebDocument::IsXHTMLDocument() const {
 }
 
 bool WebDocument::IsPluginDocument() const {
-  return ConstUnwrap<Document>()->IsPluginDocument();
+  return IsA<PluginDocument>(ConstUnwrap<Document>());
 }
 
 WebURL WebDocument::BaseURL() const {

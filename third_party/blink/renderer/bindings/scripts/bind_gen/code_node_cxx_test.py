@@ -203,5 +203,6 @@ class X final : public A, public B {
   int m1_;
   int m2_;
 
+
 };\
 """)

@@ -13,6 +13,8 @@ _MAKO_TEMPLATE_PASS_KEY = object()
 class MakoTemplate(object):
     """Represents a compiled template object."""
 
+    _mako_template_cache = {}
+
     def __init__(self, template_text):
         assert isinstance(template_text, str)
 
@@ -20,8 +22,12 @@ class MakoTemplate(object):
             "strict_undefined": True,
         }
 
-        self._template = mako.template.Template(
-            text=template_text, **template_params)
+        template = self._mako_template_cache.get(template_text)
+        if template is None:
+            template = mako.template.Template(
+                text=template_text, **template_params)
+            self._mako_template_cache[template_text] = template
+        self._template = template
 
     def mako_template(self, pass_key=None):
         assert pass_key is _MAKO_TEMPLATE_PASS_KEY

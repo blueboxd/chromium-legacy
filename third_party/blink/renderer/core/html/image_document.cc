@@ -95,7 +95,7 @@ class ImageDocumentParser : public RawDataDocumentParser {
       : RawDataDocumentParser(document) {}
 
   ImageDocument* GetDocument() const {
-    return ToImageDocument(RawDataDocumentParser::GetDocument());
+    return To<ImageDocument>(RawDataDocumentParser::GetDocument());
   }
 
   void Trace(Visitor* visitor) override {

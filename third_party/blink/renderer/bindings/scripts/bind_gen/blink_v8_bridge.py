@@ -203,7 +203,7 @@ def make_default_value_expr(idl_type, default_value):
             if default_value.is_type_compatible_with(member_type):
                 idl_type = member_type
                 break
-        assert False
+        assert default_value.is_type_compatible_with(idl_type)
     type_info = blink_type_info(idl_type)
 
     is_initializer_lightweight = False

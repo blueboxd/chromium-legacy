@@ -1286,8 +1286,8 @@ WebURLLoaderFactory* LocalFrame::GetURLLoaderFactory() {
 }
 
 WebPluginContainerImpl* LocalFrame::GetWebPluginContainer(Node* node) const {
-  if (GetDocument() && GetDocument()->IsPluginDocument()) {
-    return ToPluginDocument(GetDocument())->GetPluginView();
+  if (auto* plugin_document = DynamicTo<PluginDocument>(GetDocument())) {
+    return plugin_document->GetPluginView();
   }
   if (!node) {
     DCHECK(GetDocument());

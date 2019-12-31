@@ -19,10 +19,10 @@ class Tab;
 // A helper that waits for a navigation to finish.
 class TestNavigationObserver : public NavigationObserver {
  public:
-  enum class NavigationEvent { Completion, Failure };
+  enum class NavigationEvent { Start, Completion, Failure };
 
   // Creates an instance that begins waiting for a Navigation within |shell| and
-  // to |url| to either complete or fail as per |target_event|.
+  // to |url| to reach the specified |target_event|.
   TestNavigationObserver(const GURL& url,
                          NavigationEvent target_event,
                          Shell* shell);
@@ -33,6 +33,7 @@ class TestNavigationObserver : public NavigationObserver {
 
  private:
   // NavigationObserver implementation:
+  void NavigationStarted(Navigation* navigation) override;
   void NavigationCompleted(Navigation* navigation) override;
   void NavigationFailed(Navigation* navigation) override;
   void LoadStateChanged(bool is_loading, bool to_different_document) override;

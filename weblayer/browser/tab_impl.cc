@@ -7,6 +7,9 @@
 #include "base/auto_reset.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "components/autofill/content/browser/content_autofill_driver_factory.h"
+#include "components/autofill/core/browser/autofill_manager.h"
+#include "components/autofill/core/browser/autofill_provider.h"
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
@@ -16,7 +19,9 @@
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "ui/base/window_open_disposition.h"
+#include "weblayer/browser/autofill_client_impl.h"
 #include "weblayer/browser/file_select_helper.h"
+#include "weblayer/browser/i18n_util.h"
 #include "weblayer/browser/isolated_world_ids.h"
 #include "weblayer/browser/navigation_controller_impl.h"
 #include "weblayer/browser/profile_impl.h"
@@ -211,6 +216,12 @@ void TabImpl::ExecuteScript(const base::string16& script,
     web_contents_->GetMainFrame()->ExecuteJavaScript(script,
                                                      std::move(callback));
   }
+}
+
+void TabImpl::ExecuteScriptWithUserGestureForTests(
+    const base::string16& script) {
+  web_contents_->GetMainFrame()->ExecuteJavaScriptWithUserGestureForTests(
+      script);
 }
 
 #if !defined(OS_ANDROID)
@@ -456,5 +467,26 @@ Tab* Tab::GetLastTabForTesting() {
   return g_last_tab;
 }
 #endif
+
+void TabImpl::InitializeAutofillForTests(
+    std::unique_ptr<autofill::AutofillProvider> provider) {
+  autofill_provider_ = std::move(provider);
+  InitializeAutofill();
+}
+
+void TabImpl::InitializeAutofill() {
+  DCHECK(autofill_provider_);
+
+  content::WebContents* web_contents = web_contents_.get();
+  DCHECK(
+      !autofill::ContentAutofillDriverFactory::FromWebContents(web_contents));
+
+  AutofillClientImpl::CreateForWebContents(web_contents);
+  autofill::ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
+      web_contents, AutofillClientImpl::FromWebContents(web_contents),
+      i18n::GetApplicationLocale(),
+      autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER,
+      autofill_provider_.get());
+}
 
 }  // namespace weblayer

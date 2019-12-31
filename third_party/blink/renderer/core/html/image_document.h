@@ -94,7 +94,12 @@ class CORE_EXPORT ImageDocument final : public HTMLDocument {
   FRIEND_TEST_ALL_PREFIXES(ImageDocumentViewportTest, DivWidthWithZoomForDSF);
 };
 
-DEFINE_DOCUMENT_TYPE_CASTS(ImageDocument);
+template <>
+struct DowncastTraits<ImageDocument> {
+  static bool AllowFrom(const Document& document) {
+    return document.IsImageDocument();
+  }
+};
 
 }  // namespace blink
 

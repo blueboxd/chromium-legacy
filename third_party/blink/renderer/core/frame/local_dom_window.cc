@@ -80,6 +80,7 @@
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_registry.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/core/html/plugin_document.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
@@ -255,7 +256,7 @@ Document* LocalDOMWindow::CreateDocument(const String& mime_type,
     document = DOMImplementation::createDocument(
         mime_type, init,
         init.GetFrame() ? init.GetFrame()->InViewSourceMode() : false);
-    if (document->IsPluginDocument() &&
+    if (IsA<PluginDocument>(document) &&
         document->IsSandboxed(WebSandboxFlags::kPlugins)) {
       // document->Shutdown();
       document = MakeGarbageCollected<SinkDocument>(init);

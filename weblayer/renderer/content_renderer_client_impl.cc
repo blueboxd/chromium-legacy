@@ -8,6 +8,8 @@
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "components/autofill/content/renderer/autofill_agent.h"
+#include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "content/public/renderer/render_thread.h"
 #include "net/base/escape.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -15,6 +17,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "weblayer/common/features.h"
 #include "weblayer/renderer/ssl_error_helper.h"
+#include "weblayer/renderer/weblayer_render_frame_observer.h"
 
 #if defined(OS_ANDROID)
 #include "android_webview/grit/aw_resources.h"
@@ -125,7 +128,15 @@ void ContentRendererClientImpl::RenderThreadStarted() {
 
 void ContentRendererClientImpl::RenderFrameCreated(
     content::RenderFrame* render_frame) {
+  auto* render_frame_observer = new WebLayerRenderFrameObserver(render_frame);
+
   SSLErrorHelper::Create(render_frame);
+
+  autofill::PasswordAutofillAgent* password_autofill_agent =
+      new autofill::PasswordAutofillAgent(
+          render_frame, render_frame_observer->associated_interfaces());
+  new autofill::AutofillAgent(render_frame, password_autofill_agent, nullptr,
+                              render_frame_observer->associated_interfaces());
 
 #if defined(OS_ANDROID)
   // |SpellCheckProvider| manages its own lifetime (and destroys itself when the

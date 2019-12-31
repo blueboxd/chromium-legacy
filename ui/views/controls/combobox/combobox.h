@@ -6,8 +6,10 @@
 #define UI_VIEWS_CONTROLS_COMBOBOX_COMBOBOX_H_
 
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "ui/base/models/combobox_model.h"
 #include "ui/base/models/combobox_model_observer.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/prefix_delegate.h"
@@ -18,7 +20,6 @@ class FontList;
 }
 
 namespace ui {
-class ComboboxModel;
 class MenuModel;
 }
 
@@ -205,6 +206,8 @@ class VIEWS_EXPORT Combobox : public View,
 
   // The focus ring for this Combobox.
   std::unique_ptr<FocusRing> focus_ring_;
+
+  ScopedObserver<ui::ComboboxModel, ui::ComboboxModelObserver> observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Combobox);
 };

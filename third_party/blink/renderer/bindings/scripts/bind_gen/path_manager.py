@@ -81,7 +81,7 @@ class PathManager(object):
         idl_basepath, _ = posixpath.splitext(idl_path)
         self._idl_dir, self._idl_basename = posixpath.split(idl_basepath)
 
-        components = sorted(idl_definition.components)
+        components = sorted(idl_definition.components)  # "core" < "modules"
 
         if len(components) == 1:
             component = components[0]
@@ -92,8 +92,8 @@ class PathManager(object):
             assert components[0] == "core"
             assert components[1] == "modules"
             self._is_cross_components = True
-            self._api_component = "core"
-            self._impl_component = "modules"
+            self._api_component = components[0]
+            self._impl_component = components[1]
         else:
             assert False
 

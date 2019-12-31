@@ -642,7 +642,7 @@ bool HTMLPlugInElement::LoadPlugin(const KURL& url,
     layout_object->GetFrameView()->AddPlugin(plugin);
   } else {
     bool load_manually =
-        GetDocument().IsPluginDocument() && !GetDocument().ContainsPlugins();
+        IsA<PluginDocument>(GetDocument()) && !GetDocument().ContainsPlugins();
     WebPluginContainerImpl* plugin = frame->Client()->CreatePlugin(
         *this, url, plugin_params.Names(), plugin_params.Values(), mime_type,
         load_manually);
@@ -676,7 +676,7 @@ bool HTMLPlugInElement::LoadPlugin(const KURL& url,
 }
 
 void HTMLPlugInElement::DispatchErrorEvent() {
-  if (GetDocument().IsPluginDocument() && GetDocument().LocalOwner()) {
+  if (IsA<PluginDocument>(GetDocument()) && GetDocument().LocalOwner()) {
     GetDocument().LocalOwner()->DispatchEvent(
         *Event::Create(event_type_names::kError));
   } else {

@@ -170,7 +170,9 @@ public class AppBannerManagerTest {
         }
 
         @Override
-        public void notifyAllAnimationsFinished(Item frontInfoBar) {}
+        public void notifyAllAnimationsFinished(Item frontInfoBar) {
+            mDoneAnimating = true;
+        }
     }
 
     private MockAppDetailsDelegate mDetailsDelegate;
@@ -594,13 +596,13 @@ public class AppBannerManagerTest {
         String webBannerUrl = WebappTestPage.getServiceWorkerUrl(mTestServer);
         resetEngagementForUrl(webBannerUrl, 10);
 
-        Tab tab = mTabbedActivityTestRule.getActivity().getActivityTab();
-        new TabLoadObserver(tab).fullyLoadUrl(webBannerUrl);
-        waitUntilAmbientBadgeInfoBarAppears(mTabbedActivityTestRule);
-
         InfoBarContainer container = mTabbedActivityTestRule.getInfoBarContainer();
         final InfobarListener listener = new InfobarListener();
         container.addAnimationListener(listener);
+
+        Tab tab = mTabbedActivityTestRule.getActivity().getActivityTab();
+        new TabLoadObserver(tab).fullyLoadUrl(webBannerUrl);
+        waitUntilAmbientBadgeInfoBarAppears(mTabbedActivityTestRule);
 
         // Explicitly dismiss the ambient badge.
         CriteriaHelper.pollUiThread(() -> listener.mDoneAnimating);

@@ -59,7 +59,12 @@ class CORE_EXPORT PluginDocument final : public HTMLDocument {
   const Color background_color_;
 };
 
-DEFINE_DOCUMENT_TYPE_CASTS(PluginDocument);
+template <>
+struct DowncastTraits<PluginDocument> {
+  static bool AllowFrom(const Document& document) {
+    return document.IsPluginDocument();
+  }
+};
 
 }  // namespace blink
 

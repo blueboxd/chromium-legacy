@@ -4,6 +4,7 @@
 
 import web_idl
 
+from . import name_style
 from .clang_format import clang_format
 from .code_node import CodeNode
 from .code_node import LiteralNode
@@ -53,6 +54,12 @@ def make_header_include_directives(accumulator):
             ])
 
     return LiteralNode(HeaderIncludeDirectives(accumulator))
+
+
+def component_export(component):
+    assert isinstance(component, web_idl.Component)
+
+    return name_style.macro(component, "EXPORT")
 
 
 def enclose_with_header_guard(code_node, header_guard):

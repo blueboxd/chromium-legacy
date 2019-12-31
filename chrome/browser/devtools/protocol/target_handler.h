@@ -10,7 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/devtools/protocol/forward.h"
 #include "chrome/browser/devtools/protocol/target.h"
-#include "chrome/browser/media/router/presentation/independent_otr_profile_manager.h"
+#include "chrome/browser/profiles/independent_otr_profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "net/base/host_port_pair.h"

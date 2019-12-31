@@ -78,6 +78,9 @@ test("weblayer_browsertests") {
     "//base",
     "//base",
     "//base/test:test_support",
+    "//components/autofill/core/browser",
+    "//components/autofill/core/browser:test_support",
+    "//components/autofill/core/common",
     "//components/security_interstitials/content:security_interstitial_page",
     "//content/public/browser",
     "//content/test:test_support",
@@ -88,6 +91,7 @@ test("weblayer_browsertests") {
   ]
 
   sources = [
+    "../browser/autofill_browsertest.cc",
     "../browser/errorpage_browsertest.cc",
     "../browser/navigation_browsertest.cc",
     "../browser/ssl_browsertest.cc",
@@ -97,6 +101,8 @@ test("weblayer_browsertests") {
     "interstitial_utils.h",
     "load_completion_observer.cc",
     "load_completion_observer.h",
+    "stub_autofill_provider.cc",
+    "stub_autofill_provider.h",
     "test_launcher_delegate_impl.cc",
     "test_launcher_delegate_impl.h",
     "test_navigation_observer.cc",

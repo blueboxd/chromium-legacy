@@ -137,12 +137,10 @@ class EditableCombobox::EditableComboboxMenuModel
         filter_on_edit_(filter_on_edit),
         show_on_empty_(show_on_empty) {
     UpdateItemsShown();
-    combobox_model_->AddObserver(this);
+    observer_.Add(combobox_model_);
   }
 
-  ~EditableComboboxMenuModel() override {
-    combobox_model_->RemoveObserver(this);
-  }
+  ~EditableComboboxMenuModel() override = default;
 
   void UpdateItemsShown() {
     if (!update_items_shown_enabled_)
@@ -258,6 +256,8 @@ class EditableCombobox::EditableComboboxMenuModel
   // When false, UpdateItemsShown doesn't do anything.
   bool update_items_shown_enabled_ = true;
 
+  ScopedObserver<ui::ComboboxModel, ui::ComboboxModelObserver> observer_{this};
+
   DISALLOW_COPY_AND_ASSIGN(EditableComboboxMenuModel);
 };
 
@@ -328,7 +328,7 @@ EditableCombobox::EditableCombobox(
       text_style_(text_style),
       type_(type),
       showing_password_text_(type != Type::kPassword) {
-  textfield_->AddObserver(this);
+  observer_.Add(textfield_);
   textfield_->set_controller(this);
   textfield_->SetFontList(GetFontList());
   textfield_->SetTextInputType((type == Type::kPassword)
@@ -348,7 +348,6 @@ EditableCombobox::EditableCombobox(
 EditableCombobox::~EditableCombobox() {
   CloseMenu();
   textfield_->set_controller(nullptr);
-  textfield_->RemoveObserver(this);
 }
 
 const base::string16& EditableCombobox::GetText() const {

@@ -7,7 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
-#include "chrome/browser/media/router/presentation/independent_otr_profile_manager.h"
+#include "chrome/browser/profiles/independent_otr_profile_manager.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 
 class DevToolsBrowserContextManager : public BrowserListObserver {

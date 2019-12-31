@@ -5,10 +5,16 @@
 #ifndef WEBLAYER_TEST_WEBLAYER_BROWSER_TEST_UTILS_H_
 #define WEBLAYER_TEST_WEBLAYER_BROWSER_TEST_UTILS_H_
 
+#include "base/callback_forward.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
 
 class GURL;
+
+namespace autofill {
+struct FormData;
+}
 
 namespace weblayer {
 class Shell;
@@ -24,8 +30,26 @@ base::Value ExecuteScript(Shell* shell,
                           const std::string& script,
                           bool use_separate_isolate);
 
-// Gets the title of the current webpage in |shell|.
+// Executes |script| in |shell| with a user gesture. Useful for tests of
+// functionality that gates action on a user gesture having occurred.
+// Differs from ExecuteScript() as follows:
+// - Does not notify the caller of the result as the underlying implementation
+//   does not. Thus, unlike the above, the caller of this function will need to
+//   explicitly listen *after* making this call for any expected event to
+//   occur.
+// - Does not allow running in a separate isolate as the  machinery for
+//   setting a user gesture works only in the main isolate.
+void ExecuteScriptWithUserGesture(Shell* shell, const std::string& script);
+
+/// Gets the title of the current webpage in |shell|.
 const base::string16& GetTitle(Shell* shell);
+
+// Sets up the autofill system to be one that simply forwards detected forms to
+// the passed-in callback.
+void InitializeAutofillWithEventForwarding(
+    Shell* shell,
+    const base::RepeatingCallback<void(const autofill::FormData&)>&
+        on_received_form_data);
 
 }  // namespace weblayer
 

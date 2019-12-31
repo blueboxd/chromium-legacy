@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -21,6 +22,10 @@
 #if defined(OS_ANDROID)
 #include "base/android/scoped_java_ref.h"
 #endif
+
+namespace autofill {
+class AutofillProvider;
+}  // namespace autofill
 
 namespace content {
 class WebContents;
@@ -92,6 +97,13 @@ class TabImpl : public Tab,
   void AttachToView(views::WebView* web_view) override;
 #endif
 
+  // Executes |script| with a user gesture.
+  void ExecuteScriptWithUserGestureForTests(const base::string16& script);
+
+  // Initializes the autofill system with |provider| for tests.
+  void InitializeAutofillForTests(
+      std::unique_ptr<autofill::AutofillProvider> provider);
+
  private:
   // content::WebContentsDelegate:
   content::WebContents* OpenURLFromTab(
@@ -138,6 +150,8 @@ class TabImpl : public Tab,
 
   void UpdateRendererPrefs(bool should_sync_prefs);
 
+  void InitializeAutofill();
+
 #if defined(OS_ANDROID)
   void UpdateBrowserControlsState(content::BrowserControlsState constraints,
                                   content::BrowserControlsState current,
@@ -162,6 +176,8 @@ class TabImpl : public Tab,
   bool is_fullscreen_ = false;
   // Set to true doing EnterFullscreenModeForTab().
   bool processing_enter_fullscreen_ = false;
+
+  std::unique_ptr<autofill::AutofillProvider> autofill_provider_;
 
   base::WeakPtrFactory<TabImpl> weak_ptr_factory_{this};
 

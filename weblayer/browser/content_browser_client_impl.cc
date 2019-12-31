@@ -12,6 +12,7 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
+#include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/embedder_support/switches.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
 #include "components/security_interstitials/content/ssl_error_navigation_throttle.h"
@@ -357,6 +358,21 @@ ContentBrowserClientImpl::GetGeneratedCodeCacheSettings(
   // disk_cache::PreferredCacheSize in net/disk_cache/cache_util.cc.
   return content::GeneratedCodeCacheSettings(
       true, 0, ProfileImpl::GetCachePath(context));
+}
+
+bool ContentBrowserClientImpl::BindAssociatedReceiverFromFrame(
+    content::RenderFrameHost* render_frame_host,
+    const std::string& interface_name,
+    mojo::ScopedInterfaceEndpointHandle* handle) {
+  if (interface_name == autofill::mojom::AutofillDriver::Name_) {
+    autofill::ContentAutofillDriverFactory::BindAutofillDriver(
+        mojo::PendingAssociatedReceiver<autofill::mojom::AutofillDriver>(
+            std::move(*handle)),
+        render_frame_host);
+    return true;
+  }
+
+  return false;
 }
 
 void ContentBrowserClientImpl::ExposeInterfacesToRenderer(

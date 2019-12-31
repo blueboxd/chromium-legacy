@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/media/router/presentation/independent_otr_profile_manager.h"
+#include "chrome/browser/profiles/independent_otr_profile_manager.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
 class Browser;

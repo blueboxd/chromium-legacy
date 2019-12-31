@@ -10497,9 +10497,9 @@ TEST_F(WebFrameTest, ImageDocumentLoadResponseEnd) {
   Document* document = web_view->MainFrameImpl()->GetFrame()->GetDocument();
 
   EXPECT_TRUE(document);
-  EXPECT_TRUE(document->IsImageDocument());
+  EXPECT_TRUE(IsA<ImageDocument>(document));
 
-  ImageDocument* img_document = ToImageDocument(document);
+  auto* img_document = To<ImageDocument>(document);
   ImageResourceContent* image_content = img_document->CachedImage();
 
   EXPECT_TRUE(image_content);
@@ -10523,7 +10523,7 @@ TEST_F(WebFrameTest, CopyImageDocument) {
   Document* document = web_frame->GetFrame()->GetDocument();
 
   ASSERT_TRUE(document);
-  EXPECT_TRUE(document->IsImageDocument());
+  EXPECT_TRUE(IsA<ImageDocument>(document));
   EXPECT_TRUE(SystemClipboard::GetInstance().ReadAvailableTypes().IsEmpty());
 
   bool result = web_frame->ExecuteCommand("Copy");
@@ -11148,9 +11148,9 @@ TEST_F(WebFrameTest, ImageDocumentDecodeError) {
   Document* document =
       To<LocalFrame>(helper.GetWebView()->GetPage()->MainFrame())
           ->GetDocument();
-  EXPECT_TRUE(document->IsImageDocument());
+  EXPECT_TRUE(IsA<ImageDocument>(document));
   EXPECT_EQ(ResourceStatus::kDecodeError,
-            ToImageDocument(document)->CachedImage()->GetContentStatus());
+            To<ImageDocument>(document)->CachedImage()->GetContentStatus());
 }
 
 // Ensure that the root layer -- whose size is ordinarily derived from the

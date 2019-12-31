@@ -5,6 +5,9 @@ include_rules = [
   # that implementation and remove the need for this dependency.
   "+android_webview/grit",
   "+cc",
+  "+components/autofill/content/browser",
+  "+components/autofill/core/browser",
+  "+components/autofill/core/common",
   "+components/crash/content/browser",
   "+components/embedder_support",
   "+components/prefs",

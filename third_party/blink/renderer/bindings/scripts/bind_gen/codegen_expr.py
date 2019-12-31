@@ -144,7 +144,7 @@ def expr_uniq(terms):
     return uniq_terms
 
 
-def expr_from_exposure(exposure, in_global=None):
+def expr_from_exposure(exposure, global_names=None):
     """
     Args:
         exposure: web_idl.Exposure
@@ -152,7 +152,9 @@ def expr_from_exposure(exposure, in_global=None):
             supposed to be / represent.
     """
     assert isinstance(exposure, web_idl.Exposure)
-    assert in_global is None or isinstance(in_global, str)
+    assert (global_names is None
+            or (isinstance(global_names, (list, tuple))
+                and all(isinstance(name, str) for name in global_names)))
 
     def ref_enabled(feature):
         return _Expr("RuntimeEnabledFeatures::{}Enabled()".format(feature))
@@ -172,16 +174,10 @@ def expr_from_exposure(exposure, in_global=None):
         "Worker": "IsWorkerGlobalScope",
         "Worklet": "IsWorkletGlobalScope",
     }
-    in_globals = set()
-    if in_global:
-        in_globals.add(in_global)
-        for category_name in ("Worker", "Worklet"):
-            if in_global.endswith(category_name):
-                in_globals.add(category_name)
     exposed_terms = []
     for entry in exposure.global_names_and_features:
         terms = []
-        if entry.global_name not in in_globals:
+        if entry.global_name not in (global_names or []):
             pred = GLOBAL_NAME_TO_EXECUTION_CONTEXT_TEST[entry.global_name]
             terms.append(_Expr("${{execution_context}}->{}()".format(pred)))
         if entry.feature:

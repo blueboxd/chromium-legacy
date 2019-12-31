@@ -64,6 +64,7 @@
 #include "third_party/blink/renderer/core/html/html_span_element.h"
 #include "third_party/blink/renderer/core/html/html_table_cell_element.h"
 #include "third_party/blink/renderer/core/html/html_ulist_element.h"
+#include "third_party/blink/renderer/core/html/image_document.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html_element_factory.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -1749,7 +1750,7 @@ Element* FindEventTargetFrom(LocalFrame& frame,
 HTMLImageElement* ImageElementFromImageDocument(const Document* document) {
   if (!document)
     return nullptr;
-  if (!document->IsImageDocument())
+  if (!IsA<ImageDocument>(document))
     return nullptr;
 
   const HTMLElement* const body = document->body();

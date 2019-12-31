@@ -175,7 +175,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '460b6c1dd8067769bf0613e41053e7097d8ba383',
+  'skia_revision': '7c095dc67ce6145ca1e5a6503f56fc126d700a67',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -187,7 +187,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'fca5a005aa880a51672c091fcb82f084b620670a',
+  'angle_revision': '9fac1817ede6b2f1dc61468e2625cbc30d35077c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -238,7 +238,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'f77838c9ed9f7e141a4e54baae36157eb19a2838',
+  'catapult_revision': '6043069708e1e7a33d4eda61115ee12d1a808972',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -948,7 +948,7 @@ deps = {
   },
 
   'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '5de15a256eb092ad4de283491777464bf3a86e5c',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '6334d594f68c2ba36e3e9bf91aac185ac3875717',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
@@ -1483,7 +1483,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + '53655df4cde60b121fc530842ba9a6d5dfec1ae1',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '8ac79125c05256f4b6ad29533b99c7733e5ac219',
+    Var('webrtc_git') + '/src.git' + '@' + '9d2c2dba28656b3c913797daaf99b8bf56ca6103',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1553,7 +1553,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@87bccec780d7603678e7e2cdf0768e4661208f87',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@10380c17f672537e8b59b2ce10b62c369cf64a59',
     'condition': 'checkout_src_internal',
   },
 

@@ -46,7 +46,7 @@
 
 namespace {
 
-static CGFloat toYosemiteFontWeight(blink::FontSelectionValue font_weight) {
+static CGFloat toFontWeight(blink::FontSelectionValue font_weight) {
   static uint64_t ns_font_weights[] = {
       0xbfe99999a0000000,  // NSFontWeightUltraLight
       0xbfe3333340000000,  // NSFontWeightThin

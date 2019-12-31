@@ -63,6 +63,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
+#include "third_party/blink/renderer/core/html/plugin_document.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/hit_test_request.h"
@@ -467,8 +468,8 @@ DragOperation DragController::OperationForLoad(DragData* drag_data,
   Document* doc = local_root.DocumentAtPoint(
       PhysicalOffset::FromFloatPointRound(drag_data->ClientPosition()));
 
-  if (doc &&
-      (did_initiate_drag_ || doc->IsPluginDocument() || HasEditableStyle(*doc)))
+  if (doc && (did_initiate_drag_ || IsA<PluginDocument>(doc) ||
+              HasEditableStyle(*doc)))
     return kDragOperationNone;
   return GetDragOperation(drag_data);
 }

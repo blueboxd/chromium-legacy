@@ -24,6 +24,15 @@ TestNavigationObserver::~TestNavigationObserver() {
   tab_->GetNavigationController()->RemoveObserver(this);
 }
 
+void TestNavigationObserver::NavigationStarted(Navigation* navigation) {
+  // Note: We don't go through CheckNavigationCompleted() here as that waits
+  // for the load to be complete, which isn't appropriate when just waiting for
+  // the navigation to be started.
+  if (navigation->GetURL() == url_ && target_event_ == NavigationEvent::Start) {
+    run_loop_.Quit();
+  }
+}
+
 void TestNavigationObserver::NavigationCompleted(Navigation* navigation) {
   if (navigation->GetURL() == url_)
     observed_event_ = NavigationEvent::Completion;

@@ -7,7 +7,9 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "build/build_config.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "weblayer/browser/ssl_error_handler.h"
 #include "weblayer/shell/browser/shell.h"
 #include "weblayer/test/interstitial_utils.h"
 #include "weblayer/test/load_completion_observer.h"
@@ -53,7 +55,7 @@ class SSLBrowserTest : public WebLayerBrowserTest {
     EXPECT_FALSE(IsShowingSecurityInterstitial(shell()->tab()));
   }
 
-  void NavigateToPageWithSslErrorExpectBlocked() {
+  void NavigateToPageWithSslErrorExpectSSLInterstitial() {
     // Do a navigation that should result in an SSL error.
     NavigateAndWaitForFailure(bad_ssl_url(), shell());
     // First check that there *is* an interstitial.
@@ -61,6 +63,21 @@ class SSLBrowserTest : public WebLayerBrowserTest {
 
     // Now verify that the interstitial is in fact an SSL interstitial.
     EXPECT_TRUE(IsShowingSSLInterstitial(shell()->tab()));
+
+    // TODO(blundell): Check the security state once security state is available
+    // via the public WebLayer API, following the example of //chrome's
+    // ssl_browsertest.cc's CheckAuthenticationBrokenState() function.
+  }
+
+  void NavigateToPageWithSslErrorExpectCaptivePortalInterstitial() {
+    // Do a navigation that should result in an SSL error.
+    NavigateAndWaitForFailure(bad_ssl_url(), shell());
+    // First check that there *is* an interstitial.
+    ASSERT_TRUE(IsShowingSecurityInterstitial(shell()->tab()));
+
+    // Now verify that the interstitial is in fact a captive portal
+    // interstitial.
+    EXPECT_TRUE(IsShowingCaptivePortalInterstitial(shell()->tab()));
 
     // TODO(blundell): Check the security state once security state is available
     // via the public WebLayer API, following the example of //chrome's
@@ -107,6 +124,21 @@ class SSLBrowserTest : public WebLayerBrowserTest {
     EXPECT_TRUE(IsShowingSSLInterstitial(shell()->tab()));
   }
 
+#if defined(OS_ANDROID)
+  void SendInterstitialOpenLoginCommandAndWait() {
+    ASSERT_TRUE(IsShowingCaptivePortalInterstitial(shell()->tab()));
+
+    // Note: The embedded test server cannot actually load the captive portal
+    // login URL, so simply detect the start of the navigation to the page.
+    TestNavigationObserver navigation_observer(
+        GetCaptivePortalLoginPageUrlForTesting(),
+        TestNavigationObserver::NavigationEvent::Start, shell());
+    ExecuteScript(shell(), "window.certificateErrorPageController.openLogin();",
+                  false /*use_separate_isolate*/);
+    navigation_observer.Wait();
+  }
+#endif
+
   void NavigateToOtherOkPage() {
     NavigateAndWaitForCompletion(https_server_->GetURL("/simple_page2.html"),
                                  shell());
@@ -129,7 +161,7 @@ class SSLBrowserTest : public WebLayerBrowserTest {
 // Tests clicking "take me back" on the interstitial page.
 IN_PROC_BROWSER_TEST_F(SSLBrowserTest, TakeMeBack) {
   NavigateToOkPage();
-  NavigateToPageWithSslErrorExpectBlocked();
+  NavigateToPageWithSslErrorExpectSSLInterstitial();
 
   // Click "Take me back".
   SendInterstitialNavigationCommandAndWait(false /*proceed*/);
@@ -139,13 +171,13 @@ IN_PROC_BROWSER_TEST_F(SSLBrowserTest, TakeMeBack) {
 
   // Navigate to the bad SSL page again, an interstitial shows again (in
   // contrast to what would happen had the user chosen to proceed).
-  NavigateToPageWithSslErrorExpectBlocked();
+  NavigateToPageWithSslErrorExpectSSLInterstitial();
 }
 
 // Tests clicking "take me back" on the interstitial page when there's no
 // navigation history. The user should be taken to a safe page (about:blank).
 IN_PROC_BROWSER_TEST_F(SSLBrowserTest, TakeMeBackEmptyNavigationHistory) {
-  NavigateToPageWithSslErrorExpectBlocked();
+  NavigateToPageWithSslErrorExpectSSLInterstitial();
 
   // Click "Take me back".
   SendInterstitialNavigationCommandAndWait(false /*proceed*/,
@@ -154,7 +186,7 @@ IN_PROC_BROWSER_TEST_F(SSLBrowserTest, TakeMeBackEmptyNavigationHistory) {
 
 IN_PROC_BROWSER_TEST_F(SSLBrowserTest, Reload) {
   NavigateToOkPage();
-  NavigateToPageWithSslErrorExpectBlocked();
+  NavigateToPageWithSslErrorExpectSSLInterstitial();
 
   SendInterstitialReloadCommandAndWait();
 
@@ -174,7 +206,7 @@ IN_PROC_BROWSER_TEST_F(SSLBrowserTest, Reload) {
 // across restarts.
 IN_PROC_BROWSER_TEST_F(SSLBrowserTest, PRE_Proceed) {
   NavigateToOkPage();
-  NavigateToPageWithSslErrorExpectBlocked();
+  NavigateToPageWithSslErrorExpectSSLInterstitial();
   SendInterstitialNavigationCommandAndWait(true /*proceed*/);
 
   // Go back to an OK page, then try to navigate again. The "Proceed" decision
@@ -187,14 +219,40 @@ IN_PROC_BROWSER_TEST_F(SSLBrowserTest, PRE_Proceed) {
 // WebLayer will block again when navigating to the same bad page that was
 // previously proceeded through.
 IN_PROC_BROWSER_TEST_F(SSLBrowserTest, Proceed) {
-  NavigateToPageWithSslErrorExpectBlocked();
+  NavigateToPageWithSslErrorExpectSSLInterstitial();
 }
 
 // Tests navigating away from the interstitial page.
 IN_PROC_BROWSER_TEST_F(SSLBrowserTest, NavigateAway) {
   NavigateToOkPage();
-  NavigateToPageWithSslErrorExpectBlocked();
+  NavigateToPageWithSslErrorExpectSSLInterstitial();
   NavigateToOtherOkPage();
 }
+
+// Tests the scenario where the OS reports that an SSL error is due to a
+// captive portal. A captive portal interstitial should be displayed. The test
+// then switches OS captive portal status to false and reloads the page. This
+// time, a normal SSL interstitial should be displayed.
+IN_PROC_BROWSER_TEST_F(SSLBrowserTest, OSReportsCaptivePortal) {
+  SetDiagnoseSSLErrorsAsCaptivePortalForTesting(true);
+
+  NavigateToPageWithSslErrorExpectCaptivePortalInterstitial();
+
+  // Check that clearing the test setting causes behavior to revert to normal.
+  SetDiagnoseSSLErrorsAsCaptivePortalForTesting(false);
+  NavigateToPageWithSslErrorExpectSSLInterstitial();
+}
+
+#if defined(OS_ANDROID)
+// Tests that after reaching a captive portal interstitial, clicking on the
+// connect link will cause a navigation to the login page.
+IN_PROC_BROWSER_TEST_F(SSLBrowserTest, CaptivePortalConnectToLoginPage) {
+  SetDiagnoseSSLErrorsAsCaptivePortalForTesting(true);
+
+  NavigateToPageWithSslErrorExpectCaptivePortalInterstitial();
+
+  SendInterstitialOpenLoginCommandAndWait();
+}
+#endif
 
 }  // namespace weblayer

@@ -319,9 +319,8 @@ void FrameSerializer::SerializeFrame(const LocalFrame& frame) {
   KURL url = document.Url();
 
   // If frame is an image document, add the image and don't continue
-  if (document.IsImageDocument()) {
-    ImageDocument& image_document = ToImageDocument(document);
-    AddImageToResources(image_document.CachedImage(), url);
+  if (auto* image_document = DynamicTo<ImageDocument>(document)) {
+    AddImageToResources(image_document->CachedImage(), url);
     return;
   }
 

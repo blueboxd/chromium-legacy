@@ -146,33 +146,36 @@ class CxxFuncDeclNode(CompositeNode):
                  name,
                  arg_decls,
                  return_type,
+                 static=False,
                  const=False,
                  override=False,
                  default=False,
                  delete=False):
         """
         Args:
-            name: Function name, which may include nested-name-specifier
-                (i.e. 'namespace_name::' and/or 'class_name::').
+            name: Function name.
             arg_decls: List of argument declarations.
             return_type: Return type.
+            static: True makes this a static function.
             const: True makes this a const function.
             override: True makes this an overriding function.
             default: True makes this have the default implementation.
             delete: True makes this function be deleted.
         """
+        assert isinstance(static, bool)
         assert isinstance(const, bool)
         assert isinstance(override, bool)
         assert isinstance(default, bool)
         assert isinstance(delete, bool)
         assert not (default and delete)
 
-        template_format = ("{return_type} {name}({arg_decls})"
+        template_format = ("{static}{return_type} {name}({arg_decls})"
                            "{const}"
                            "{override}"
                            "{default_or_delete}"
                            ";")
 
+        static = "static " if static else ""
         const = " const" if const else ""
         override = " override" if override else ""
         if default:
@@ -189,6 +192,7 @@ class CxxFuncDeclNode(CompositeNode):
             arg_decls=ListNode(
                 map(_to_maybe_text_node, arg_decls), separator=", "),
             return_type=_to_maybe_text_node(return_type),
+            static=static,
             const=const,
             override=override,
             default_or_delete=default_or_delete)
@@ -199,29 +203,40 @@ class CxxFuncDefNode(CompositeNode):
                  name,
                  arg_decls,
                  return_type,
+                 class_name=None,
+                 static=False,
                  const=False,
                  override=False,
                  member_initializer_list=None):
         """
         Args:
-            name: Function name, which may include nested-name-specifier
-                (i.e. 'namespace_name::' and/or 'class_name::').
+            name: Function name.
             arg_decls: List of argument declarations.
             return_type: Return type.
+            class_name: Class name to be used as nested-name-specifier.
+            static: True makes this a static function.
             const: True makes this a const function.
             override: True makes this an overriding function.
             member_initializer_list: List of member initializers.
         """
+        assert isinstance(static, bool)
         assert isinstance(const, bool)
         assert isinstance(override, bool)
 
-        template_format = ("{return_type} {name}({arg_decls})"
+        template_format = ("{static}{return_type} "
+                           "{class_name}{name}({arg_decls})"
                            "{const}"
                            "{override}"
                            "{member_initializer_list} {{\n"
                            "  {body}\n"
                            "}}")
 
+        if class_name is None:
+            class_name = ""
+        else:
+            class_name = ListNode([_to_maybe_text_node(class_name)], tail="::")
+
+        static = "static " if static else ""
         const = " const" if const else ""
         override = " override" if override else ""
 
@@ -242,6 +257,8 @@ class CxxFuncDefNode(CompositeNode):
             arg_decls=ListNode(
                 map(_to_maybe_text_node, arg_decls), separator=", "),
             return_type=_to_maybe_text_node(return_type),
+            class_name=class_name,
+            static=static,
             const=const,
             override=override,
             member_initializer_list=member_initializer_list,
@@ -253,21 +270,28 @@ class CxxFuncDefNode(CompositeNode):
 
 
 class CxxClassDefNode(CompositeNode):
-    def __init__(self, name, base_class_names=None, final=False):
+    def __init__(self, name, base_class_names=None, final=False, export=None):
         """
         Args:
             name: The class name to be defined.
             base_class_names: The list of base class names.
             final: True makes this a final class.
+            export: Class export annotation.
         """
         assert isinstance(final, bool)
 
-        template_format = ("class {name}{final}{base_clause} {{\n"
+        template_format = ("{export}class {name}{final}{base_clause} {{\n"
                            "  {top_section}\n"
                            "  {public_section}\n"
                            "  {protected_section}\n"
                            "  {private_section}\n"
+                           "  {bottom_section}\n"
                            "}};")
+
+        if export is None:
+            export = ""
+        else:
+            export = ListNode([_to_maybe_text_node(export)], tail=" ")
 
         final = " final" if final else ""
 
@@ -287,17 +311,20 @@ class CxxClassDefNode(CompositeNode):
         self._public_section = ListNode(head="public:\n", tail="\n")
         self._protected_section = ListNode(head="protected:\n", tail="\n")
         self._private_section = ListNode(head="private:\n", tail="\n")
+        self._bottom_section = ListNode()
 
         CompositeNode.__init__(
             self,
             template_format,
             name=_to_maybe_text_node(name),
-            final=final,
             base_clause=base_clause,
+            final=final,
+            export=export,
             top_section=self._top_section,
             public_section=self._public_section,
             protected_section=self._protected_section,
-            private_section=self._private_section)
+            private_section=self._private_section,
+            bottom_section=self._bottom_section)
 
     @property
     def top_section(self):
@@ -314,6 +341,10 @@ class CxxClassDefNode(CompositeNode):
     @property
     def private_section(self):
         return self._private_section
+
+    @property
+    def bottom_section(self):
+        return self._bottom_section
 
 
 class CxxNamespaceNode(CompositeNode):

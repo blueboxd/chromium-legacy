@@ -22,6 +22,7 @@ from .code_node import TextNode
 from .code_node_cxx import CxxBlockNode
 from .code_node_cxx import CxxBreakableBlockNode
 from .code_node_cxx import CxxClassDefNode
+from .code_node_cxx import CxxFuncDeclNode
 from .code_node_cxx import CxxFuncDefNode
 from .code_node_cxx import CxxLikelyIfNode
 from .code_node_cxx import CxxMultiBranchesNode
@@ -34,13 +35,18 @@ from .codegen_expr import expr_from_exposure
 from .codegen_expr import expr_or
 from .codegen_format import format_template as _format
 from .codegen_utils import collect_include_headers
-from .codegen_utils import enclose_with_namespace
+from .codegen_utils import component_export
+from .codegen_utils import enclose_with_header_guard
 from .codegen_utils import make_copyright_header
 from .codegen_utils import make_forward_declarations
 from .codegen_utils import make_header_include_directives
 from .codegen_utils import write_code_node_to_file
 from .mako_renderer import MakoRenderer
 from .path_manager import PathManager
+
+
+def _is_none_or_str(arg):
+    return arg is None or isinstance(arg, str)
 
 
 def callback_function_name(cg_context, overload_index=None):
@@ -106,6 +112,11 @@ def constant_name(cg_context):
     kind = "Constant"
 
     return name_style.constant(kind, property_name)
+
+
+# ----------------------------------------------------------------------------
+# Callback functions
+# ----------------------------------------------------------------------------
 
 
 def bind_blink_api_arguments(code_node, cg_context):
@@ -1430,6 +1441,30 @@ def make_operation_callback_def(cg_context, function_name):
     return node
 
 
+# ----------------------------------------------------------------------------
+# Installer functions
+# ----------------------------------------------------------------------------
+
+# FN = function name
+FN_INSTALL_INTERFACE_TEMPLATE = name_style.func("InstallInterfaceTemplate")
+FN_INSTALL_UNCONDITIONAL_PROPS = name_style.func(
+    "InstallUnconditionalProperties")
+FN_INSTALL_CONTEXT_INDEPENDENT_PROPS = name_style.func(
+    "InstallContextIndependentProperties")
+FN_INSTALL_CONTEXT_DEPENDENT_PROPS = name_style.func(
+    "InstallContextDependentProperties")
+
+# TP = trampoline name
+TP_INSTALL_INTERFACE_TEMPLATE = name_style.member_var(
+    "install_interface_template_func")
+TP_INSTALL_UNCONDITIONAL_PROPS = name_style.member_var(
+    "install_unconditional_props_func")
+TP_INSTALL_CONTEXT_INDEPENDENT_PROPS = name_style.member_var(
+    "install_context_independent_props_func")
+TP_INSTALL_CONTEXT_DEPENDENT_PROPS = name_style.member_var(
+    "install_context_dependent_props_func")
+
+
 def bind_installer_local_vars(code_node, cg_context):
     assert isinstance(code_node, SymbolScopeNode)
     assert isinstance(cg_context, CodeGenContext)
@@ -1715,8 +1750,7 @@ class _PropEntryAttribute(_PropEntryMember):
                  attribute, attr_get_callback_name, attr_set_callback_name):
         assert isinstance(attribute, web_idl.Attribute)
         assert isinstance(attr_get_callback_name, str)
-        assert (attr_set_callback_name is None
-                or isinstance(attr_set_callback_name, str))
+        assert _is_none_or_str(attr_set_callback_name)
 
         _PropEntryMember.__init__(self, is_context_dependent,
                                   exposure_conditional, world, attribute)
@@ -1728,8 +1762,7 @@ class _PropEntryConstant(_PropEntryMember):
     def __init__(self, is_context_dependent, exposure_conditional, world,
                  constant, const_callback_name, const_constant_name):
         assert isinstance(constant, web_idl.Constant)
-        assert (const_callback_name is None
-                or isinstance(const_callback_name, str))
+        assert _is_none_or_str(const_callback_name)
         assert isinstance(const_constant_name, str)
 
         _PropEntryMember.__init__(self, is_context_dependent,
@@ -1785,7 +1818,7 @@ def _make_property_entries_and_callback_defs(
     assert isinstance(operation_entries, list)
 
     interface = cg_context.interface
-    global_name = interface.extended_attributes.value_of("Global")
+    global_names = interface.extended_attributes.values_of("Global")
 
     callback_def_nodes = ListNode()
 
@@ -1793,7 +1826,7 @@ def _make_property_entries_and_callback_defs(
         for member in members:
             is_context_dependent = member.exposure.is_context_dependent
             exposure_conditional = expr_from_exposure(member.exposure,
-                                                      global_name)
+                                                      global_names)
 
             if "PerWorldBindings" in member.extended_attributes:
                 worlds = (CodeGenContext.MAIN_WORLD,
@@ -1912,26 +1945,62 @@ def _make_property_entries_and_callback_defs(
     return callback_def_nodes
 
 
-def make_install_interface_template_def(cg_context, function_name,
-                                        constructor_entries,
-                                        install_unconditional_func_name,
-                                        install_context_independent_func_name):
+def make_install_interface_template(cg_context, function_name, class_name,
+                                    trampoline_var_name, constructor_entries,
+                                    install_unconditional_func_name,
+                                    install_context_independent_func_name):
+    """
+    Returns:
+        A triplet of CodeNode of:
+        - function declaration
+        - function definition
+        - trampoline function definition (from the API class to the
+          implementation class), which is supposed to be defined inline
+    """
     assert isinstance(cg_context, CodeGenContext)
+    assert isinstance(function_name, str)
+    assert _is_none_or_str(class_name)
+    assert _is_none_or_str(trampoline_var_name)
     assert isinstance(constructor_entries, (list, tuple))
     assert all(
         isinstance(entry, _PropEntryConstructorGroup)
         for entry in constructor_entries)
+    assert _is_none_or_str(install_unconditional_func_name)
+    assert _is_none_or_str(install_context_independent_func_name)
 
     T = TextNode
 
+    arg_decls = [
+        "v8::Isolate* isolate",
+        "const DOMWrapperWorld& world",
+        "v8::Local<v8::FunctionTemplate> interface_template",
+    ]
+    return_type = "void"
+
+    if trampoline_var_name is None:
+        trampoline_def = None
+    else:
+        trampoline_def = CxxFuncDefNode(
+            name=function_name,
+            arg_decls=arg_decls,
+            return_type=return_type,
+            static=True)
+        trampoline_def.body.append(
+            TextNode(
+                _format("return {}(isolate, world, interface_template);",
+                        trampoline_var_name)))
+
+    func_decl = CxxFuncDeclNode(
+        name=function_name,
+        arg_decls=arg_decls,
+        return_type=return_type,
+        static=True)
+
     func_def = CxxFuncDefNode(
         name=function_name,
-        arg_decls=[
-            "v8::Isolate* isolate",
-            "const DOMWrapperWorld& world",
-            "v8::Local<v8::FunctionTemplate> interface_template",
-        ],
-        return_type="void")
+        class_name=class_name,
+        arg_decls=arg_decls,
+        return_type=return_type)
     func_def.add_template_vars(cg_context.template_bindings())
 
     body = func_def.body
@@ -1993,13 +2062,25 @@ def make_install_interface_template_def(cg_context, function_name,
                             install_context_independent_func_name)
         body.append(T(func_call))
 
-    return func_def
+    return func_decl, func_def, trampoline_def
 
 
-def make_install_properties_def(cg_context, function_name,
-                                is_context_dependent, attribute_entries,
-                                constant_entries, operation_entries):
+def make_install_properties(cg_context, function_name, class_name,
+                            trampoline_var_name, is_context_dependent,
+                            attribute_entries, constant_entries,
+                            operation_entries):
+    """
+    Returns:
+        A triplet of CodeNode of:
+        - function declaration
+        - function definition
+        - trampoline function definition (from the API class to the
+          implementation class), which is supposed to be defined inline
+    """
     assert isinstance(cg_context, CodeGenContext)
+    assert isinstance(function_name, str)
+    assert _is_none_or_str(class_name)
+    assert _is_none_or_str(trampoline_var_name)
     assert isinstance(is_context_dependent, bool)
     assert isinstance(attribute_entries, (list, tuple))
     assert all(
@@ -2013,7 +2094,7 @@ def make_install_properties_def(cg_context, function_name,
         for entry in operation_entries)
 
     if not (attribute_entries or constant_entries or operation_entries):
-        return None
+        return None, None, None
 
     if is_context_dependent:
         arg_decls = [
@@ -2031,9 +2112,49 @@ def make_install_properties_def(cg_context, function_name,
             "v8::Local<v8::ObjectTemplate> prototype_template",
             "v8::Local<v8::FunctionTemplate> interface_template",
         ]
+    return_type = "void"
+
+    if trampoline_var_name is None:
+        trampoline_def = None
+    else:
+        trampoline_def = CxxFuncDefNode(
+            name=function_name,
+            arg_decls=arg_decls,
+            return_type=return_type,
+            static=True)
+        if is_context_dependent:
+            args = [
+                "context",
+                "world",
+                "instance_object",
+                "prototype_object",
+                "interface_object",
+            ]
+        else:
+            args = [
+                "isolate",
+                "world",
+                "instance_template",
+                "prototype_template",
+                "interface_template",
+            ]
+        text = _format(
+            "return {func}({args});",
+            func=trampoline_var_name,
+            args=", ".join(args))
+        trampoline_def.body.append(TextNode(text))
+
+    func_decl = CxxFuncDeclNode(
+        name=function_name,
+        arg_decls=arg_decls,
+        return_type=return_type,
+        static=True)
 
     func_def = CxxFuncDefNode(
-        name=function_name, arg_decls=arg_decls, return_type="void")
+        name=function_name,
+        class_name=class_name,
+        arg_decls=arg_decls,
+        return_type=return_type)
     func_def.add_template_vars(cg_context.template_bindings())
 
     body = func_def.body
@@ -2043,7 +2164,7 @@ def make_install_properties_def(cg_context, function_name,
             "world": "world",
             "instance_object": "instance_object",
             "prototype_object": "prototype_object",
-            "interface_object": "interface_object"
+            "interface_object": "interface_object",
         })
     else:
         body.add_template_vars({
@@ -2051,7 +2172,7 @@ def make_install_properties_def(cg_context, function_name,
             "world": "world",
             "instance_template": "instance_template",
             "prototype_template": "prototype_template",
-            "interface_template": "interface_template"
+            "interface_template": "interface_template",
         })
     bind_installer_local_vars(body, cg_context)
 
@@ -2152,35 +2273,71 @@ def make_install_properties_def(cg_context, function_name,
     install_properties(table_name, operation_entries,
                        _make_operation_registration_table, installer_call_text)
 
-    return func_def
+    return func_decl, func_def, trampoline_def
+
+
+def make_cross_component_init(cg_context, function_name, class_name):
+    """
+    Returns:
+        A triplet of CodeNode of:
+        - function declaration
+        - function definition
+        - trampoline member variable definitions
+    """
+    assert isinstance(cg_context, CodeGenContext)
+    assert isinstance(function_name, str)
+    assert isinstance(class_name, str)
+
+    T = TextNode
+    F = lambda *args, **kwargs: T(_format(*args, **kwargs))
+
+    trampoline_var_defs = ListNode([
+        T("// Cross-component trampolines"),
+        F("static InstallInterfaceTemplateFuncType {};",
+          TP_INSTALL_INTERFACE_TEMPLATE),
+        F("static InstallUnconditionalPropertiesFuncType {};",
+          TP_INSTALL_UNCONDITIONAL_PROPS),
+        F("static InstallContextIndependentPropertiesFuncType {};",
+          TP_INSTALL_CONTEXT_INDEPENDENT_PROPS),
+        F("static InstallContextDependentPropertiesFuncType {};",
+          TP_INSTALL_CONTEXT_DEPENDENT_PROPS),
+    ])
+
+    func_decl = CxxFuncDeclNode(
+        name=function_name, arg_decls=[], return_type="void", static=True)
+
+    func_def = CxxFuncDefNode(
+        name=function_name,
+        class_name=class_name,
+        arg_decls=[],
+        return_type="void")
+    func_def.add_template_vars(cg_context.template_bindings())
+
+    body = func_def.body
+    body.extend([
+        F("${class_name}::{} = {};", TP_INSTALL_INTERFACE_TEMPLATE,
+          FN_INSTALL_INTERFACE_TEMPLATE),
+        F("${class_name}::{} = {};", TP_INSTALL_UNCONDITIONAL_PROPS,
+          FN_INSTALL_UNCONDITIONAL_PROPS),
+        F("${class_name}::{} = {};", TP_INSTALL_CONTEXT_INDEPENDENT_PROPS,
+          FN_INSTALL_CONTEXT_INDEPENDENT_PROPS),
+        F("${class_name}::{} = {};", TP_INSTALL_CONTEXT_DEPENDENT_PROPS,
+          FN_INSTALL_CONTEXT_DEPENDENT_PROPS),
+    ])
+
+    return func_decl, func_def, trampoline_var_defs
+
+
+# ----------------------------------------------------------------------------
+# Main functions
+# ----------------------------------------------------------------------------
 
 
 def generate_interface(interface):
     path_manager = PathManager(interface)
+    api_component = path_manager.api_component
+    impl_component = path_manager.impl_component
     is_cross_components = path_manager.is_cross_components
-
-    # Filepaths and root nodes
-    filename = "v8_example_interface"
-    api_header_path = path_manager.api_path(filename, ext="h")
-    api_header_node = ListNode(tail="\n")
-    api_header_node.set_accumulator(CodeGenAccumulator())
-    api_header_node.set_renderer(MakoRenderer())
-    api_source_path = path_manager.api_path(filename, ext="cc")
-    api_source_node = ListNode(tail="\n")
-    api_source_node.set_accumulator(CodeGenAccumulator())
-    api_source_node.set_renderer(MakoRenderer())
-    if is_cross_components:
-        impl_header_path = path_manager.impl_path(filename, ext="h")
-        impl_header_node = ListNode(tail="\n")
-        impl_header_node.set_accumulator(CodeGenAccumulator())
-        impl_header_node.set_renderer(MakoRenderer())
-        impl_source_path = path_manager.impl_path(filename, ext="cc")
-        impl_source_node = ListNode(tail="\n")
-        impl_source_node.set_accumulator(CodeGenAccumulator())
-        impl_source_node.set_renderer(MakoRenderer())
-    else:
-        impl_header_node = api_header_node
-        impl_source_node = api_source_node
 
     # Class names
     api_class_name = name_style.class_("v8", interface.identifier)
@@ -2188,17 +2345,64 @@ def generate_interface(interface):
         impl_class_name = name_style.class_(api_class_name, "impl")
     else:
         impl_class_name = api_class_name
-    impl_header_node.add_template_var("impl_class_name", impl_class_name)
-    impl_source_node.add_template_var("impl_class_name", impl_class_name)
 
     cg_context = CodeGenContext(interface=interface, class_name=api_class_name)
 
+    # Filepaths
+    filename = "v8_example_interface"
+    api_header_path = path_manager.api_path(filename, ext="h")
+    api_source_path = path_manager.api_path(filename, ext="cc")
+    if is_cross_components:
+        impl_header_path = path_manager.impl_path(filename, ext="h")
+        impl_source_path = path_manager.impl_path(filename, ext="cc")
+
+    # Root nodes
+    api_header_node = ListNode(tail="\n")
+    api_header_node.set_accumulator(CodeGenAccumulator())
+    api_header_node.set_renderer(MakoRenderer())
+    api_source_node = ListNode(tail="\n")
+    api_source_node.set_accumulator(CodeGenAccumulator())
+    api_source_node.set_renderer(MakoRenderer())
+    if is_cross_components:
+        impl_header_node = ListNode(tail="\n")
+        impl_header_node.set_accumulator(CodeGenAccumulator())
+        impl_header_node.set_renderer(MakoRenderer())
+        impl_source_node = ListNode(tail="\n")
+        impl_source_node.set_accumulator(CodeGenAccumulator())
+        impl_source_node.set_renderer(MakoRenderer())
+    else:
+        impl_header_node = api_header_node
+        impl_source_node = api_source_node
+    api_header_node.add_template_var("impl_class_name", impl_class_name)
+    api_source_node.add_template_var("impl_class_name", impl_class_name)
+    if is_cross_components:
+        impl_header_node.add_template_var("impl_class_name", impl_class_name)
+        impl_source_node.add_template_var("impl_class_name", impl_class_name)
+
+    # Namespaces
+    api_header_blink_ns = CxxNamespaceNode(name_style.namespace("blink"))
+    api_source_blink_ns = CxxNamespaceNode(name_style.namespace("blink"))
+    if is_cross_components:
+        impl_header_blink_ns = CxxNamespaceNode(name_style.namespace("blink"))
+        impl_source_blink_ns = CxxNamespaceNode(name_style.namespace("blink"))
+    else:
+        impl_header_blink_ns = api_header_blink_ns
+        impl_source_blink_ns = api_source_blink_ns
+
     # Class definitions
-    api_class_def = CxxClassDefNode(cg_context.class_name)
+    api_class_def = CxxClassDefNode(
+        cg_context.class_name,
+        final=True,
+        export=component_export(api_component))
     api_class_def.add_template_vars(cg_context.template_bindings())
     api_class_def.top_section.append(TextNode("STATIC_ONLY(${class_name});"))
     if is_cross_components:
-        impl_class_def = CxxClassDefNode(impl_class_name)
+        api_class_def.bottom_section.append(
+            TextNode("friend class ${impl_class_name};"))
+        impl_class_def = CxxClassDefNode(
+            impl_class_name,
+            final=True,
+            export=component_export(impl_component))
         impl_class_def.add_template_vars(cg_context.template_bindings())
         impl_class_def.top_section.append(
             TextNode("STATIC_ONLY(${impl_class_name});"))
@@ -2211,6 +2415,23 @@ def generate_interface(interface):
         cgc = cg_context.make_copy(constant=constant)
         constant_defs.append(
             make_constant_constant_def(cgc, constant_name(cgc)))
+
+    # Cross-component trampolines
+    if is_cross_components:
+        # tp_ = trampoline name
+        tp_install_interface_template = TP_INSTALL_INTERFACE_TEMPLATE
+        tp_install_unconditional_props = TP_INSTALL_UNCONDITIONAL_PROPS
+        tp_install_context_independent_props = (
+            TP_INSTALL_CONTEXT_INDEPENDENT_PROPS)
+        tp_install_context_dependent_props = TP_INSTALL_CONTEXT_DEPENDENT_PROPS
+        (cross_component_init_decl, cross_component_init_def,
+         trampoline_var_defs) = make_cross_component_init(
+             cg_context, "Init", class_name=impl_class_name)
+    else:
+        tp_install_interface_template = None
+        tp_install_unconditional_props = None
+        tp_install_context_independent_props = None
+        tp_install_context_dependent_props = None
 
     # Callback functions
     attribute_entries = []
@@ -2229,49 +2450,83 @@ def generate_interface(interface):
     is_context_dependent = lambda entry: entry.is_context_dependent
     is_context_independent = (
         lambda e: not is_context_dependent(e) and not is_unconditional(e))
-    install_unconditional_props_node = make_install_properties_def(
-        cg_context,
-        "${impl_class_name}::InstallUnconditionalProperties",
-        is_context_dependent=False,
-        attribute_entries=filter(is_unconditional, attribute_entries),
-        constant_entries=filter(is_unconditional, constant_entries),
-        operation_entries=filter(is_unconditional, operation_entries))
-    install_context_independent_props_node = make_install_properties_def(
-        cg_context,
-        "${impl_class_name}::InstallContextIndependentProperties",
-        is_context_dependent=False,
-        attribute_entries=filter(is_context_independent, attribute_entries),
-        constant_entries=filter(is_context_independent, constant_entries),
-        operation_entries=filter(is_context_independent, operation_entries))
-    install_context_dependent_props_node = make_install_properties_def(
-        cg_context,
-        "${impl_class_name}::InstallContextDependentProperties",
-        is_context_dependent=True,
-        attribute_entries=filter(is_context_dependent, attribute_entries),
-        constant_entries=filter(is_context_dependent, constant_entries),
-        operation_entries=filter(is_context_dependent, operation_entries))
-    install_interface_template_node = make_install_interface_template_def(
-        cg_context, "${impl_class_name}::InstallInterfaceTemplate",
-        constructor_entries, (install_unconditional_props_node
-                              and "InstallUnconditionalProperties"),
-        (install_context_independent_props_node
-         and "InstallContextIndependentProperties"))
+    (install_unconditional_props_decl, install_unconditional_props_def,
+     install_unconditional_props_trampoline) = make_install_properties(
+         cg_context,
+         FN_INSTALL_UNCONDITIONAL_PROPS,
+         class_name=impl_class_name,
+         trampoline_var_name=tp_install_unconditional_props,
+         is_context_dependent=False,
+         attribute_entries=filter(is_unconditional, attribute_entries),
+         constant_entries=filter(is_unconditional, constant_entries),
+         operation_entries=filter(is_unconditional, operation_entries))
+    (install_context_independent_props_decl,
+     install_context_independent_props_def,
+     install_context_independent_props_trampoline) = make_install_properties(
+         cg_context,
+         FN_INSTALL_CONTEXT_INDEPENDENT_PROPS,
+         class_name=impl_class_name,
+         trampoline_var_name=tp_install_context_independent_props,
+         is_context_dependent=False,
+         attribute_entries=filter(is_context_independent, attribute_entries),
+         constant_entries=filter(is_context_independent, constant_entries),
+         operation_entries=filter(is_context_independent, operation_entries))
+    (install_context_dependent_props_decl, install_context_dependent_props_def,
+     install_context_dependent_props_trampoline) = make_install_properties(
+         cg_context,
+         FN_INSTALL_CONTEXT_DEPENDENT_PROPS,
+         class_name=impl_class_name,
+         trampoline_var_name=tp_install_context_dependent_props,
+         is_context_dependent=True,
+         attribute_entries=filter(is_context_dependent, attribute_entries),
+         constant_entries=filter(is_context_dependent, constant_entries),
+         operation_entries=filter(is_context_dependent, operation_entries))
+    (install_interface_template_decl, install_interface_template_def,
+     install_interface_template_trampoline) = make_install_interface_template(
+         cg_context,
+         FN_INSTALL_INTERFACE_TEMPLATE,
+         class_name=impl_class_name,
+         trampoline_var_name=tp_install_interface_template,
+         constructor_entries=constructor_entries,
+         install_unconditional_func_name=(install_unconditional_props_def
+                                          and FN_INSTALL_UNCONDITIONAL_PROPS),
+         install_context_independent_func_name=(
+             install_context_independent_props_def
+             and FN_INSTALL_CONTEXT_INDEPENDENT_PROPS))
+    installer_function_decls = ListNode([
+        install_interface_template_decl,
+        install_unconditional_props_decl,
+        install_context_independent_props_decl,
+        install_context_dependent_props_decl,
+    ])
     installer_function_defs = ListNode([
-        install_unconditional_props_node,
+        install_interface_template_def,
         TextNode(""),
-        install_context_independent_props_node,
+        install_unconditional_props_def,
         TextNode(""),
-        install_context_dependent_props_node,
+        install_context_independent_props_def,
         TextNode(""),
-        install_interface_template_node,
+        install_context_dependent_props_def,
+    ])
+    installer_function_trampolines = ListNode([
+        install_interface_template_trampoline,
+        install_unconditional_props_trampoline,
+        install_context_independent_props_trampoline,
+        install_context_dependent_props_trampoline,
     ])
 
     # Header part (copyright, include directives, and forward declarations)
     api_header_node.extend([
         make_copyright_header(),
         TextNode(""),
-        make_header_include_directives(api_header_node.accumulator),
-        TextNode(""),
+        enclose_with_header_guard(
+            ListNode([
+                make_header_include_directives(api_header_node.accumulator),
+                TextNode(""),
+                api_header_blink_ns,
+            ]), name_style.header_guard(api_header_path)),
+    ])
+    api_header_blink_ns.body.extend([
         make_forward_declarations(api_header_node.accumulator),
         TextNode(""),
     ])
@@ -2282,6 +2537,9 @@ def generate_interface(interface):
         TextNode(""),
         make_header_include_directives(api_source_node.accumulator),
         TextNode(""),
+        api_source_blink_ns,
+    ])
+    api_source_blink_ns.body.extend([
         make_forward_declarations(api_source_node.accumulator),
         TextNode(""),
     ])
@@ -2289,8 +2547,15 @@ def generate_interface(interface):
         impl_header_node.extend([
             make_copyright_header(),
             TextNode(""),
-            make_header_include_directives(impl_header_node.accumulator),
-            TextNode(""),
+            enclose_with_header_guard(
+                ListNode([
+                    make_header_include_directives(
+                        impl_header_node.accumulator),
+                    TextNode(""),
+                    impl_header_blink_ns,
+                ]), name_style.header_guard(impl_header_path)),
+        ])
+        impl_header_blink_ns.body.extend([
             make_forward_declarations(impl_header_node.accumulator),
             TextNode(""),
         ])
@@ -2301,27 +2566,46 @@ def generate_interface(interface):
             TextNode(""),
             make_header_include_directives(impl_source_node.accumulator),
             TextNode(""),
+            impl_source_blink_ns,
+        ])
+        impl_source_blink_ns.body.extend([
             make_forward_declarations(impl_source_node.accumulator),
             TextNode(""),
         ])
+    impl_source_node.accumulator.add_include_headers(
+        collect_include_headers(interface))
+    if is_cross_components:
+        impl_source_node.accumulator.add_include_header(api_header_path)
 
     # Assemble the parts.
-    api_header_node.append(CxxNamespaceNode(name="blink", body=api_class_def))
+    api_header_blink_ns.body.append(api_class_def)
     if is_cross_components:
-        impl_header_node.append(
-            CxxNamespaceNode(name="blink", body=impl_class_def))
+        impl_header_blink_ns.body.append(impl_class_def)
+
+    if is_cross_components:
+        api_class_def.public_section.append(installer_function_trampolines)
+        api_class_def.private_section.append(trampoline_var_defs)
+        impl_class_def.public_section.extend([
+            cross_component_init_decl,
+            TextNode(""),
+            installer_function_decls,
+        ])
+        impl_source_blink_ns.body.extend([
+            cross_component_init_def,
+            TextNode(""),
+        ])
+    else:
+        api_class_def.public_section.append(installer_function_decls)
 
     if constant_defs:
+        api_class_def.public_section.append(TextNode(""))
         api_class_def.public_section.append(constant_defs)
 
-    impl_source_node.append(
-        CxxNamespaceNode(
-            name="blink",
-            body=[
-                CxxNamespaceNode(name="", body=callback_defs),
-                TextNode(""),
-                installer_function_defs,
-            ]))
+    impl_source_blink_ns.body.extend([
+        CxxNamespaceNode(name="", body=callback_defs),
+        TextNode(""),
+        installer_function_defs,
+    ])
 
     # Write down to the files.
     write_code_node_to_file(api_header_node,
@@ -2336,5 +2620,5 @@ def generate_interface(interface):
 
 
 def generate_interfaces(web_idl_database):
-    interface = web_idl_database.find("Navigator")
+    interface = web_idl_database.find("Node")
     generate_interface(interface)

@@ -395,8 +395,7 @@ module.exports = {
     'indent': 'off',
 
     // TODO(shik): temporarily disable the rules we violate (b/117810572).
-    'no-redeclare': 'off',  // 3 errors
-    'no-var': 'off',        // 181 errors
+    'no-var': 'off',        // 64 errors
     'prefer-const': 'off',  // 27 errors
   }),
 };

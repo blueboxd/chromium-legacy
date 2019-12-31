@@ -71,7 +71,7 @@ class TextureManagerTest : public GpuServiceTest {
   static const GLint kMax3dLevels = 10;
   static const bool kUseDefaultTextures = false;
 
-  TextureManagerTest() {
+  TextureManagerTest() : discardable_manager_(GpuPreferences()) {
     GpuDriverBugWorkarounds gpu_driver_bug_workaround;
     feature_info_ =
         new FeatureInfo(gpu_driver_bug_workaround, GpuFeatureInfo());
@@ -638,8 +638,8 @@ class TextureTestBase : public GpuServiceTest {
   static const bool kUseDefaultTextures = false;
 
   TextureTestBase()
-      : feature_info_(new FeatureInfo()) {
-  }
+      : feature_info_(new FeatureInfo()),
+        discardable_manager_(GpuPreferences()) {}
   ~TextureTestBase() override { texture_ref_ = nullptr; }
 
  protected:
@@ -2208,7 +2208,9 @@ class SharedTextureTest : public GpuServiceTest {
  public:
   static const bool kUseDefaultTextures = false;
 
-  SharedTextureTest() : feature_info_(new FeatureInfo()) {}
+  SharedTextureTest()
+      : feature_info_(new FeatureInfo()),
+        discardable_manager_(GpuPreferences()) {}
 
   ~SharedTextureTest() override = default;
 

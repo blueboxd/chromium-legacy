@@ -22,7 +22,7 @@ namespace content {
 namespace {
 
 void HandleFileUploadRequest(
-    uint32_t process_id,
+    int32_t process_id,
     bool async,
     const std::vector<base::FilePath>& file_paths,
     network::mojom::NetworkContextClient::OnFileUploadRequestedCallback
@@ -65,7 +65,7 @@ void HandleFileUploadRequest(
 }  // namespace
 
 void NetworkContextOnFileUploadRequested(
-    uint32_t process_id,
+    int32_t process_id,
     bool async,
     const std::vector<base::FilePath>& file_paths,
     network::mojom::NetworkContextClient::OnFileUploadRequestedCallback
@@ -83,8 +83,8 @@ NetworkContextClientBase::~NetworkContextClientBase() = default;
 
 void NetworkContextClientBase::OnAuthRequired(
     const base::Optional<base::UnguessableToken>& window_id,
-    uint32_t process_id,
-    uint32_t routing_id,
+    int32_t process_id,
+    int32_t routing_id,
     uint32_t request_id,
     const GURL& url,
     bool first_auth_attempt,
@@ -99,8 +99,8 @@ void NetworkContextClientBase::OnAuthRequired(
 
 void NetworkContextClientBase::OnCertificateRequested(
     const base::Optional<base::UnguessableToken>& window_id,
-    uint32_t process_id,
-    uint32_t routing_id,
+    int32_t process_id,
+    int32_t routing_id,
     uint32_t request_id,
     const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
     mojo::PendingRemote<network::mojom::ClientCertificateResponder>
@@ -111,8 +111,8 @@ void NetworkContextClientBase::OnCertificateRequested(
 }
 
 void NetworkContextClientBase::OnSSLCertificateError(
-    uint32_t process_id,
-    uint32_t routing_id,
+    int32_t process_id,
+    int32_t routing_id,
     const GURL& url,
     int net_error,
     const net::SSLInfo& ssl_info,
@@ -122,7 +122,7 @@ void NetworkContextClientBase::OnSSLCertificateError(
 }
 
 void NetworkContextClientBase::OnFileUploadRequested(
-    uint32_t process_id,
+    int32_t process_id,
     bool async,
     const std::vector<base::FilePath>& file_paths,
     OnFileUploadRequestedCallback callback) {
@@ -143,7 +143,7 @@ void NetworkContextClientBase::OnCanSendDomainReliabilityUpload(
 }
 
 void NetworkContextClientBase::OnClearSiteData(
-    uint32_t process_id,
+    int32_t process_id,
     int32_t routing_id,
     const GURL& url,
     const std::string& header_value,

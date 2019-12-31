@@ -16,4 +16,8 @@
 std::string GetStringNameForOptimizationTarget(
     optimization_guide::proto::OptimizationTarget optimization_target);
 
+// Returns false if the host is an IP address, localhosts, or an invalid
+// host that is not supported by the remote optimization guide.
+bool IsHostValidToFetchFromRemoteOptimizationGuide(const std::string& host);
+
 #endif  // CHROME_BROWSER_OPTIMIZATION_GUIDE_OPTIMIZATION_GUIDE_UTIL_H_

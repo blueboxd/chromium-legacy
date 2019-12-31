@@ -61,6 +61,7 @@
 #include "third_party/blink/renderer/core/html/forms/labels_node_list.h"
 #include "third_party/blink/renderer/core/html/html_br_element.h"
 #include "third_party/blink/renderer/core/html/html_dimension.h"
+#include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/html_template_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
@@ -135,7 +136,7 @@ const WebFeature kNoWebFeature = static_cast<WebFeature>(0);
 }  // anonymous namespace
 
 String HTMLElement::DebugNodeName() const {
-  if (GetDocument().IsHTMLDocument()) {
+  if (IsA<HTMLDocument>(GetDocument())) {
     return TagQName().HasPrefix() ? Element::nodeName().UpperASCII()
                                   : TagQName().LocalName().UpperASCII();
   }
@@ -150,7 +151,7 @@ String HTMLElement::nodeName() const {
   // chars that does not have to copy the string on a hit in the hash.
   // FIXME: We should have a way to detect XHTML elements and replace the
   // hasPrefix() check with it.
-  if (GetDocument().IsHTMLDocument()) {
+  if (IsA<HTMLDocument>(GetDocument())) {
     if (!TagQName().HasPrefix())
       return TagQName().LocalNameUpper();
     return Element::nodeName().UpperASCII();

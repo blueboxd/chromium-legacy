@@ -14,6 +14,7 @@
 #include "gpu/gpu_gles2_export.h"
 
 namespace gpu {
+struct GpuPreferences;
 namespace gles2 {
 class TextureManager;
 class TextureRef;
@@ -27,7 +28,7 @@ GPU_GLES2_EXPORT size_t DiscardableCacheSizeLimitForPressure(
 class GPU_GLES2_EXPORT ServiceDiscardableManager
     : public base::trace_event::MemoryDumpProvider {
  public:
-  ServiceDiscardableManager();
+  explicit ServiceDiscardableManager(const GpuPreferences& preferences);
   ~ServiceDiscardableManager() override;
 
   // base::trace_event::MemoryDumpProvider implementation.

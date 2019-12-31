@@ -19,10 +19,12 @@
 #define STRINGIZE_COLOR_IDS
 #include "ui/color/color_id_macros.inc"
 
+// clang-format off
 const char* enum_names[] = {
-  COLOR_IDS,
-  CHROME_COLOR_IDS,
+  COLOR_IDS
+  CHROME_COLOR_IDS
 };
+// clang-format on
 
 #include "ui/color/color_id_macros.inc"
 

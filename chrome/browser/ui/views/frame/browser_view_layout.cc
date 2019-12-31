@@ -396,9 +396,18 @@ int BrowserViewLayout::LayoutBookmarkAndInfoBars(int top, int browser_view_y) {
     contents_separator_->SetBounds(vertical_layout_rect_.x(), top,
                                    vertical_layout_rect_.width(),
                                    separator_height);
+    if (loading_bar_) {
+      SetViewVisibility(loading_bar_, true);
+      loading_bar_->SetBounds(vertical_layout_rect_.x(), top - 2,
+                              vertical_layout_rect_.width(),
+                              separator_height + 2);
+      top_container_->ReorderChildView(loading_bar_, -1);
+    }
     top += separator_height;
   } else {
     SetViewVisibility(contents_separator_, false);
+    if (loading_bar_)
+      SetViewVisibility(loading_bar_, false);
   }
 
   return LayoutInfoBar(top);

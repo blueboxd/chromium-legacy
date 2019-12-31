@@ -960,8 +960,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
                                    const gfx::Vector2dF& scroll_delta,
                                    base::TimeDelta delayed_by);
 
-  void ScrollEndImpl();
-
   // Creates an animation curve and returns true if we need to update the
   // scroll position to a snap point. Otherwise returns false.
   bool SnapAtScrollEnd();
@@ -1273,7 +1271,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // ended.
   bool scroll_gesture_did_end_;
 
-  // Set in ScrollEnd before clearing the currently scrolling node. This is
+  // Set in ScrollBegin and outlives the currently scrolling node so it can be
   // used to send the scrollend DOM event when scrolling has happened on CC.
   ElementId last_scroller_element_id_;
 

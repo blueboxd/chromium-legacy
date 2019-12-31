@@ -17,6 +17,7 @@ class PageActionIconController;
 // A container view for user-account-related PageActionIconViews and the profile
 // avatar icon.
 class ToolbarAccountIconContainerView : public ToolbarIconContainerView,
+                                        public IconLabelBubbleView::Delegate,
                                         public PageActionIconView::Delegate {
  public:
   explicit ToolbarAccountIconContainerView(Browser* browser);
@@ -29,8 +30,11 @@ class ToolbarAccountIconContainerView : public ToolbarIconContainerView,
   // ToolbarIconContainerView:
   void UpdateAllIcons() override;
 
+  // IconLabelBubbleView::Delegate:
+  SkColor GetIconLabelBubbleSurroundingForegroundColor() const override;
+  SkColor GetIconLabelBubbleInkDropColor() const override;
+
   // PageActionIconView::Delegate:
-  SkColor GetPageActionInkDropColor() const override;
   float GetPageActionInkDropVisibleOpacity() const override;
   content::WebContents* GetWebContentsForPageActionIconView() override;
   std::unique_ptr<views::Border> CreatePageActionIconBorder() const override;

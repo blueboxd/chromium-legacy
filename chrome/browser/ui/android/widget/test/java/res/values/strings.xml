@@ -9,4 +9,7 @@
     <string name="promo_dialog_test_primary_button">OK</string>
     <string name="promo_dialog_test_secondary_button">Cancel</string>
     <string name="promo_dialog_test_footer">Learn more</string>
+
+    <string name="test_string">A String used for tests</string>
+    <string name="test_uri">https://www.example.com</string>
 </resources>

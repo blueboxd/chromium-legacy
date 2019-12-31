@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
+#include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_frame_element_base.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
@@ -153,7 +154,7 @@ static int ComputeEditFlags(Document& selected_document, Editor& editor) {
     edit_flags |= ContextMenuDataEditFlags::kCanDelete;
   if (editor.CanEditRichly())
     edit_flags |= ContextMenuDataEditFlags::kCanEditRichly;
-  if (selected_document.IsHTMLDocument() ||
+  if (IsA<HTMLDocument>(selected_document) ||
       selected_document.IsXHTMLDocument()) {
     edit_flags |= ContextMenuDataEditFlags::kCanTranslate;
     if (selected_document.queryCommandEnabled("selectAll", ASSERT_NO_EXCEPTION))

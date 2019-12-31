@@ -7,11 +7,14 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/translate/language_selection_context.h"
 #import "ios/chrome/browser/translate/language_selection_delegate.h"
 #import "ios/chrome/browser/translate/language_selection_handler.h"
 #import "ios/chrome/browser/translate/translate_option_selection_delegate.h"
 #import "ios/chrome/browser/translate/translate_option_selection_handler.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_presenter.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_presenter_delegate.h"
@@ -34,8 +37,6 @@
     PopupMenuTableViewControllerDelegate,
     TranslateOptionSelectionHandler>
 
-// The WebStateList this coordinator observes.
-@property(nonatomic, assign) WebStateList* webStateList;
 // Presenter for the popup menu, managing the animations.
 @property(nonatomic, strong) PopupMenuPresenter* popupMenuPresenter;
 // Mediator for the popup menu.
@@ -53,27 +54,10 @@
     translateOptionSelectionDelegate;
 // YES if the coordinator has been started.
 @property(nonatomic) BOOL started;
-// The dispatcher used by this Coordinator.
-@property(nonatomic, weak) id<SnackbarCommands> dispatcher;
 
 @end
 
 @implementation LegacyTranslateInfobarCoordinator
-
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:
-                                  (ios::ChromeBrowserState*)browserState
-                              webStateList:(WebStateList*)webStateList
-                                dispatcher:(id<SnackbarCommands>)dispatcher {
-  DCHECK(webStateList);
-  self = [super initWithBaseViewController:viewController
-                              browserState:browserState];
-  if (self) {
-    _webStateList = webStateList;
-    _dispatcher = dispatcher;
-  }
-  return self;
-}
 
 #pragma mark - ChromeCoordinator
 
@@ -81,13 +65,16 @@
   if (self.started)
     return;
 
-  self.notificationPresenter = [[TranslateNotificationPresenter alloc]
-      initWithDispatcher:self.dispatcher];
+  CommandDispatcher* dispatcher = self.browser->GetCommandDispatcher();
+  id<SnackbarCommands> handler =
+      HandlerForProtocol(dispatcher, SnackbarCommands);
+  self.notificationPresenter =
+      [[TranslateNotificationPresenter alloc] initWithDispatcher:handler];
 
   self.mediator = [[LegacyTranslateInfobarMediator alloc]
       initWithSelectionHandler:self
            notificationHandler:self.notificationPresenter];
-  self.mediator.webStateList = self.webStateList;
+  self.mediator.webStateList = self.browser->GetWebStateList();
 
   self.started = YES;
 }
@@ -100,7 +87,6 @@
   [self.mediator disconnect];
   self.mediator = nil;
   self.notificationPresenter = nil;
-  self.webStateList = nullptr;
   self.popupMenuPresenter = nil;
   self.viewController = nil;
   self.languageSelectionDelegate = nil;

@@ -58,7 +58,7 @@ class SharedImageBackingFactoryAHBTest : public testing::Test {
     context_state_ = base::MakeRefCounted<SharedContextState>(
         std::move(share_group), surface_, context_,
         false /* use_virtualized_gl_contexts */, base::DoNothing());
-    context_state_->InitializeGrContext(workarounds, nullptr);
+    context_state_->InitializeGrContext(GpuPreferences(), workarounds, nullptr);
     auto feature_info =
         base::MakeRefCounted<gles2::FeatureInfo>(workarounds, GpuFeatureInfo());
     context_state_->InitializeGL(GpuPreferences(), std::move(feature_info));
@@ -127,7 +127,8 @@ TEST_F(SharedImageBackingFactoryAHBTest, Basic) {
   std::unique_ptr<SharedImageRepresentationSkia::ScopedWriteAccess>
       scoped_write_access;
   scoped_write_access = skia_representation->BeginScopedWriteAccess(
-      &begin_semaphores, &end_semaphores);
+      &begin_semaphores, &end_semaphores,
+      SharedImageRepresentation::AllowUnclearedAccess::kYes);
   EXPECT_TRUE(scoped_write_access);
   auto* surface = scoped_write_access->surface();
   EXPECT_TRUE(surface);
@@ -325,7 +326,8 @@ TEST_F(SharedImageBackingFactoryAHBTest, DISABLED_OnlyOneWriter) {
   std::unique_ptr<SharedImageRepresentationSkia::ScopedWriteAccess>
       scoped_write_access;
   scoped_write_access = skia_representation->BeginScopedWriteAccess(
-      &begin_semaphores, &end_semaphores);
+      &begin_semaphores, &end_semaphores,
+      SharedImageRepresentation::AllowUnclearedAccess::kYes);
   EXPECT_TRUE(scoped_write_access);
   EXPECT_EQ(0u, begin_semaphores.size());
   EXPECT_EQ(0u, end_semaphores.size());
@@ -337,7 +339,8 @@ TEST_F(SharedImageBackingFactoryAHBTest, DISABLED_OnlyOneWriter) {
   std::unique_ptr<SharedImageRepresentationSkia::ScopedWriteAccess>
       scoped_write_access2;
   scoped_write_access2 = skia_representation2->BeginScopedWriteAccess(
-      &begin_semaphores2, &end_semaphores2);
+      &begin_semaphores2, &end_semaphores2,
+      SharedImageRepresentation::AllowUnclearedAccess::kYes);
   EXPECT_FALSE(scoped_write_access);
   EXPECT_EQ(0u, begin_semaphores2.size());
   EXPECT_EQ(0u, end_semaphores2.size());
@@ -419,7 +422,8 @@ TEST_F(SharedImageBackingFactoryAHBTest, CannotWriteWhileReading) {
   std::unique_ptr<SharedImageRepresentationSkia::ScopedWriteAccess>
       scoped_write_access;
   scoped_write_access = skia_representation2->BeginScopedWriteAccess(
-      &begin_semaphores2, &end_semaphores2);
+      &begin_semaphores2, &end_semaphores2,
+      SharedImageRepresentation::AllowUnclearedAccess::kYes);
   EXPECT_FALSE(scoped_write_access);
   EXPECT_EQ(0u, begin_semaphores2.size());
   EXPECT_EQ(0u, end_semaphores2.size());
@@ -446,7 +450,8 @@ TEST_F(SharedImageBackingFactoryAHBTest, CannotReadWhileWriting) {
   std::unique_ptr<SharedImageRepresentationSkia::ScopedWriteAccess>
       scoped_write_access;
   scoped_write_access = skia_representation->BeginScopedWriteAccess(
-      &begin_semaphores, &end_semaphores);
+      &begin_semaphores, &end_semaphores,
+      SharedImageRepresentation::AllowUnclearedAccess::kYes);
   EXPECT_TRUE(scoped_write_access);
   EXPECT_EQ(0u, begin_semaphores.size());
   EXPECT_EQ(0u, end_semaphores.size());

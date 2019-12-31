@@ -115,29 +115,9 @@ void CredentialManagementHandler::OnHavePIN(std::string pin) {
     return;
   }
 
-  state_ = State::kGettingEphemeralKey;
-  authenticator_->GetEphemeralKey(
-      base::BindOnce(&CredentialManagementHandler::OnHaveEphemeralKey,
-                     weak_factory_.GetWeakPtr(), std::move(pin)));
-}
-
-void CredentialManagementHandler::OnHaveEphemeralKey(
-    std::string pin,
-    CtapDeviceResponseCode status,
-    base::Optional<pin::KeyAgreementResponse> response) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(State::kGettingEphemeralKey, state_);
-
-  if (status != CtapDeviceResponseCode::kSuccess) {
-    state_ = State::kFinished;
-    std::move(finished_callback_)
-        .Run(CredentialManagementStatus::kAuthenticatorResponseInvalid);
-    return;
-  }
-
   state_ = State::kGettingPINToken;
   authenticator_->GetPINToken(
-      std::move(pin), *response,
+      std::move(pin),
       base::BindOnce(&CredentialManagementHandler::OnHavePINToken,
                      weak_factory_.GetWeakPtr()));
 }

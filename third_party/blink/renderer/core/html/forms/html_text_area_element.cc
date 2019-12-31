@@ -94,7 +94,11 @@ FormControlState HTMLTextAreaElement::SaveFormControlState() const {
 
 void HTMLTextAreaElement::RestoreFormControlState(
     const FormControlState& state) {
+  // We don't add kDispatchInputAndChangeEvent to setValue(), and we
+  // post tasks to dispatch events instead. This function can be called
+  // while we should not dispatch any events.
   setValue(state[0]);
+  QueueInputAndChangeEvents();
 }
 
 void HTMLTextAreaElement::ChildrenChanged(const ChildrenChange& change) {

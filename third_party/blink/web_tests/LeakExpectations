@@ -115,6 +115,9 @@ crbug.com/769885 [ Linux ] virtual/android/fullscreen/video-scrolled-iframe.html
 # Sheriff 2019-11-29
 crbug.com/1029417 [ Linux ] external/wpt/web-nfc/NDEFReader_scan_filter.https.html [ Failure ]
 
+# Sheriff 2019-12-30
+crbug.com/1038388 [ Linux ] http/tests/devtools/tracing/timeline-time/timeline-time.js [ Pass Failure ]
+
 ###########################################################################
 # WARNING: Memory leaks must be fixed asap. Sheriff is expected to revert #
 # culprit CLs instead of suppressing the leaks. If you have any question, #

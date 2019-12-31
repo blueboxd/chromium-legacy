@@ -31,7 +31,9 @@ class PLATFORM_EXPORT MemoryPressureListenerRegistry final
  public:
   static MemoryPressureListenerRegistry& Instance();
 
-  // Whether the device Blink runs on is a low-end device.
+  // See: SysUtils::IsLowEndDevice for the full details of what "low-end" means.
+  // This returns true for devices that can use more extreme tradeoffs for
+  // performance. Many low memory devices (<=1GB) are not considered low-end.
   // Can be overridden in web tests via internals.
   static bool IsLowEndDevice();
 

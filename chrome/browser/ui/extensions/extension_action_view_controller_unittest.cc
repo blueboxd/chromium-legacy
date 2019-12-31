@@ -44,7 +44,7 @@ namespace {
 class LegacyToolbarTestHelper {
  public:
   explicit LegacyToolbarTestHelper(Browser* browser)
-      : test_util_(BrowserActionTestUtil::Create(browser, false)),
+      : test_util_(ExtensionActionTestHelper::Create(browser, false)),
         overflow_test_util_(test_util_->CreateOverflowBar(browser)),
         main_bar_(test_util_->GetToolbarActionsBar()),
         overflow_bar_(overflow_test_util_->GetToolbarActionsBar()) {
@@ -61,8 +61,8 @@ class LegacyToolbarTestHelper {
   ToolbarActionsBar* overflow_bar() { return overflow_bar_; }
 
  private:
-  std::unique_ptr<BrowserActionTestUtil> test_util_;
-  std::unique_ptr<BrowserActionTestUtil> overflow_test_util_;
+  std::unique_ptr<ExtensionActionTestHelper> test_util_;
+  std::unique_ptr<ExtensionActionTestHelper> overflow_test_util_;
   ToolbarActionsBar* main_bar_ = nullptr;
   ToolbarActionsBar* overflow_bar_ = nullptr;
 };
@@ -112,7 +112,7 @@ class ExtensionActionViewControllerUnitTest
     extension_service_ =
         extensions::ExtensionSystem::Get(profile())->extension_service();
 
-    test_util_ = BrowserActionTestUtil::Create(browser(), false);
+    test_util_ = ExtensionActionTestHelper::Create(browser(), false);
 
     view_size_ = test_util_->GetToolbarActionSize();
   }
@@ -172,7 +172,7 @@ class ExtensionActionViewControllerUnitTest
   // ToolbarActionsModel associated with the main profile.
   ToolbarActionsModel* toolbar_model_ = nullptr;
 
-  std::unique_ptr<BrowserActionTestUtil> test_util_;
+  std::unique_ptr<ExtensionActionTestHelper> test_util_;
 
   // The standard size associated with a toolbar action view.
   gfx::Size view_size_;

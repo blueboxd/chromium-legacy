@@ -18,14 +18,16 @@ class SendTabToSelfBubbleController;
 // choose to share the url to a target device.
 class SendTabToSelfIconView : public PageActionIconView {
  public:
-  SendTabToSelfIconView(CommandUpdater* command_updater,
-                        PageActionIconView::Delegate* delegate);
+  SendTabToSelfIconView(
+      CommandUpdater* command_updater,
+      IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
+      PageActionIconView::Delegate* page_action_icon_delegate);
   ~SendTabToSelfIconView() override;
 
   // PageActionIconView:
   views::BubbleDialogDelegateView* GetBubble() const override;
   void UpdateImpl() override;
-  SkColor GetTextColor() const override;
+  SkColor GetForegroundColor() const override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;
 
   // gfx::AnimationDelegate:

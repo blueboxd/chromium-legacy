@@ -12,6 +12,7 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
+#include "ui/views/examples/examples_window.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/resources/grit/views_resources.h"
 #include "ui/views/view.h"

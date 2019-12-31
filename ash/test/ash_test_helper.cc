@@ -16,7 +16,6 @@
 #include "ash/display/screen_ash.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/keyboard/test_keyboard_ui.h"
-#include "ash/public/cpp/ash_prefs.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/test/test_keyboard_controller_observer.h"
 #include "ash/public/cpp/test/test_new_window_delegate.h"
@@ -43,7 +42,6 @@
 #include "chromeos/dbus/power/power_policy_controller.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "components/discardable_memory/public/mojom/discardable_shared_memory_manager.mojom.h"
-#include "components/prefs/testing_pref_service.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "ui/aura/env.h"
@@ -150,7 +148,7 @@ void AshTestHelper::SetUp(const InitParams& init_params,
 
   ui::MaterialDesignController::Initialize();
 
-  CreateShell(init_params.provide_local_state, std::move(shell_init_params));
+  CreateShell(std::move(shell_init_params), init_params.local_state);
 
   // Reset aura::Env to eliminate test dependency (https://crbug.com/586514).
   aura::test::EnvTestHelper env_helper(aura::Env::GetInstance());
@@ -304,8 +302,8 @@ display::Display AshTestHelper::GetSecondaryDisplay() const {
   return Shell::Get()->display_manager()->GetSecondaryDisplay();
 }
 
-void AshTestHelper::CreateShell(bool provide_local_state,
-                                base::Optional<ShellInitParams> init_params) {
+void AshTestHelper::CreateShell(base::Optional<ShellInitParams> init_params,
+                                PrefService* local_state) {
   if (init_params == base::nullopt) {
     context_factories_ = std::make_unique<ui::TestContextFactories>(
         /*enable_pixel_output=*/false);
@@ -317,13 +315,8 @@ void AshTestHelper::CreateShell(bool provide_local_state,
     init_params->keyboard_ui_factory =
         std::make_unique<TestKeyboardUIFactory>();
   }
-  if (provide_local_state) {
-    auto pref_service = std::make_unique<TestingPrefServiceSimple>();
-    RegisterLocalStatePrefs(pref_service->registry(), true);
-
-    local_state_ = std::move(pref_service);
-    init_params->local_state = local_state_.get();
-  }
+  if (local_state)
+    init_params->local_state = local_state;
 
   Shell::CreateInstance(std::move(*init_params));
 }

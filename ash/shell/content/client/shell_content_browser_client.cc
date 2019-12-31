@@ -33,13 +33,5 @@ ShellContentBrowserClient::CreateBrowserMainParts(
   return std::make_unique<ShellBrowserMainParts>(parameters);
 }
 
-void ShellContentBrowserClient::GetQuotaSettings(
-    content::BrowserContext* context,
-    content::StoragePartition* partition,
-    storage::OptionalQuotaSettingsCallback callback) {
-  // This should not be called in ash content environment.
-  CHECK(false);
-}
-
 }  // namespace shell
 }  // namespace ash

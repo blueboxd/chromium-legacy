@@ -18,10 +18,14 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-TranslateIconView::TranslateIconView(CommandUpdater* command_updater,
-                                     PageActionIconView::Delegate* delegate)
-    : PageActionIconView(command_updater, IDC_TRANSLATE_PAGE, delegate) {
-  DCHECK(delegate);
+TranslateIconView::TranslateIconView(
+    CommandUpdater* command_updater,
+    IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
+    PageActionIconView::Delegate* page_action_icon_delegate)
+    : PageActionIconView(command_updater,
+                         IDC_TRANSLATE_PAGE,
+                         icon_label_bubble_delegate,
+                         page_action_icon_delegate) {
   SetID(VIEW_ID_TRANSLATE_BUTTON);
 }
 

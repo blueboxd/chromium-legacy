@@ -233,8 +233,8 @@ class ImageDecodeAcceleratorStubTest
         channel_manager()->GetSharedContextState(&context_result);
     ASSERT_EQ(ContextResult::kSuccess, context_result);
     ASSERT_TRUE(shared_context_state);
-    shared_context_state->InitializeGrContext(GpuDriverBugWorkarounds(),
-                                              nullptr);
+    shared_context_state->InitializeGrContext(
+        GpuPreferences(), GpuDriverBugWorkarounds(), nullptr);
 
     GpuChannel* channel = CreateChannel(kChannelId, false /* is_gpu_host */);
     ASSERT_TRUE(channel);

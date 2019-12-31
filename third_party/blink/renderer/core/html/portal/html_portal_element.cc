@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/core/frame/window_post_message_options.h"
+#include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_unknown_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html/portal/document_portals.h"
@@ -101,7 +102,7 @@ void HTMLPortalElement::PortalContentsWillBeDestroyed(PortalContents* portal) {
 HTMLPortalElement::GuestContentsEligibility
 HTMLPortalElement::GetGuestContentsEligibility() const {
   // Non-HTML documents aren't eligible at all.
-  if (!GetDocument().IsHTMLDocument())
+  if (!IsA<HTMLDocument>(GetDocument()))
     return GuestContentsEligibility::kIneligible;
 
   LocalFrame* frame = GetDocument().GetFrame();

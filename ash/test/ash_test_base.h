@@ -23,6 +23,7 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "base/traits_bag.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/user_manager/user_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -211,7 +212,7 @@ class AshTestBase : public testing::Test {
   static display::Display::Rotation GetCurrentInternalDisplayRotation();
 
   void set_start_session(bool start_session) { start_session_ = start_session; }
-  void disable_provide_local_state() { provide_local_state_ = false; }
+  void DisableProvideLocalState();
 
   AshTestHelper* ash_test_helper() { return &ash_test_helper_; }
 
@@ -282,9 +283,6 @@ class AshTestBase : public testing::Test {
   bool teardown_called_ = false;
   // |SetUp()| doesn't activate session if this is set to false.
   bool start_session_ = true;
-  // |SetUp()| doesn't inject local-state PrefService into Shell if this is
-  // set to false.
-  bool provide_local_state_ = true;
 
   // Must be initialized at construction because some tests rely on AshTestBase
   // methods before AshTestBase::SetUp().
@@ -300,6 +298,16 @@ class AshTestBase : public testing::Test {
   // initialization/destruction semantics are identical in the
   // SubclassManagesTaskEnvironment mode.
   base::Optional<base::test::TaskEnvironment> task_environment_;
+
+  // A pref service used for local state. Reset it by
+  // DisableProvideLocalState() if a test provides its own local state.
+  std::unique_ptr<TestingPrefServiceSimple> local_state_ =
+      std::make_unique<TestingPrefServiceSimple>();
+
+  // True to register pref service with ash during SetUp(). Set to false if
+  // a test wants to register and provide the local state data before
+  // creating the ash shell.
+  bool register_local_state_ = true;
 
   // Private again for DISALLOW_COPY_AND_ASSIGN; additional members should be
   // added in the first private section to be before |task_environment_|.

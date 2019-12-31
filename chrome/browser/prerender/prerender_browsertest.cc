@@ -242,7 +242,6 @@ bool ShouldAbortPrerenderBeforeSwap(FinalStatus status) {
     // We'll crash the renderer after it's loaded.
     case FINAL_STATUS_RENDERER_CRASHED:
     case FINAL_STATUS_CANCELLED:
-    case FINAL_STATUS_PAGE_BEING_CAPTURED:
     case FINAL_STATUS_NAVIGATION_UNCOMMITTED:
     case FINAL_STATUS_NON_EMPTY_BROWSING_INSTANCE:
       return false;
@@ -267,11 +266,9 @@ void WaitForASCIITitle(WebContents* web_contents,
 // been called, before checking its state.
 class ChannelDestructionWatcher {
  public:
-  ChannelDestructionWatcher() : channel_destroyed_(false) {
-  }
+  ChannelDestructionWatcher() : channel_destroyed_(false) {}
 
-  ~ChannelDestructionWatcher() {
-  }
+  ~ChannelDestructionWatcher() = default;
 
   void WatchChannel(content::RenderProcessHost* host) {
     host->AddFilter(new DestructionMessageFilter(this));
@@ -287,10 +284,8 @@ class ChannelDestructionWatcher {
   // Ignores all messages.
   class DestructionMessageFilter : public content::BrowserMessageFilter {
    public:
-     explicit DestructionMessageFilter(ChannelDestructionWatcher* watcher)
-         : BrowserMessageFilter(0),
-           watcher_(watcher) {
-    }
+    explicit DestructionMessageFilter(ChannelDestructionWatcher* watcher)
+        : BrowserMessageFilter(0), watcher_(watcher) {}
 
    private:
     ~DestructionMessageFilter() override {
@@ -361,13 +356,9 @@ class NavigationOrSwapObserver : public WebContentsObserver,
     tab_strip_model_->RemoveObserver(this);
   }
 
-  void set_did_start_loading() {
-    did_start_loading_ = true;
-  }
+  void set_did_start_loading() { did_start_loading_ = true; }
 
-  void Wait() {
-    loop_.Run();
-  }
+  void Wait() { loop_.Run(); }
 
   // WebContentsObserver implementation:
   void DidStartLoading() override { did_start_loading_ = true; }
@@ -533,9 +524,8 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
   }
 
   // Opens the url in a new tab, with no opener.
-  void NavigateToDestURLWithDisposition(
-      WindowOpenDisposition disposition,
-      bool expect_swap_to_succeed) const {
+  void NavigateToDestURLWithDisposition(WindowOpenDisposition disposition,
+                                        bool expect_swap_to_succeed) const {
     NavigateToURLWithParams(
         content::OpenURLParams(dest_url_, Referrer(), disposition,
                                ui::PAGE_TRANSITION_TYPED, false),
@@ -568,9 +558,7 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
     NavigateToURLImpl(params, expect_swap_to_succeed);
   }
 
-  void OpenDestURLViaClick() const {
-    OpenURLViaClick(dest_url_);
-  }
+  void OpenDestURLViaClick() const { OpenURLViaClick(dest_url_); }
 
   void OpenURLViaClick(const GURL& url) const {
     OpenURLWithJSImpl("Click", url, GURL(), false);
@@ -596,9 +584,7 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
 #endif
   }
 
-  void OpenDestURLViaWindowOpen() const {
-    OpenURLViaWindowOpen(dest_url_);
-  }
+  void OpenDestURLViaWindowOpen() const { OpenURLViaWindowOpen(dest_url_); }
 
   void OpenURLViaWindowOpen(const GURL& url) const {
     OpenURLWithJSImpl("WindowOpen", url, GURL(), true);
@@ -638,15 +624,11 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
     EXPECT_TRUE(original_prerender_page);
   }
 
-  void DisableJavascriptCalls() {
-    call_javascript_ = false;
-  }
+  void DisableJavascriptCalls() { call_javascript_ = false; }
 
   void EnableJavascriptCalls() { call_javascript_ = true; }
 
-  void DisableLoadEventCheck() {
-    check_load_events_ = false;
-  }
+  void DisableLoadEventCheck() { check_load_events_ = false; }
 
   const PrerenderLinkManager* GetPrerenderLinkManager() const {
     PrerenderLinkManager* prerender_link_manager =
@@ -659,10 +641,11 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
     int event_count;
     std::string expression = base::StringPrintf(
         "window.domAutomationController.send("
-        "    GetPrerenderEventCount(%d, '%s'))", index, type.c_str());
+        "    GetPrerenderEventCount(%d, '%s'))",
+        index, type.c_str());
 
-    CHECK(content::ExecuteScriptAndExtractInt(
-        GetActiveWebContents(), expression, &event_count));
+    CHECK(content::ExecuteScriptAndExtractInt(GetActiveWebContents(),
+                                              expression, &event_count));
     return event_count;
   }
 
@@ -692,8 +675,8 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
         "        window.domAutomationController, 0))",
         index, type.c_str(), count);
 
-    CHECK(content::ExecuteScriptAndExtractInt(
-        GetActiveWebContents(), expression, &dummy));
+    CHECK(content::ExecuteScriptAndExtractInt(GetActiveWebContents(),
+                                              expression, &dummy));
     CHECK_EQ(0, dummy);
   }
 
@@ -742,13 +725,9 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
     loader_host_override_ = host;
   }
 
-  void set_loader_path(const std::string& path) {
-    loader_path_ = path;
-  }
+  void set_loader_path(const std::string& path) { loader_path_ = path; }
 
-  void set_loader_query(const std::string& query) {
-    loader_query_ = query;
-  }
+  void set_loader_query(const std::string& query) { loader_query_ = query; }
 
   GURL GetCrossDomainTestUrl(const std::string& path) {
     static const std::string secondary_domain = "www.foo.com";
@@ -758,9 +737,7 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
     return GURL(url_str);
   }
 
-  const GURL& dest_url() const {
-    return dest_url_;
-  }
+  const GURL& dest_url() const { return dest_url_; }
 
   bool DidPrerenderPass(WebContents* web_contents) const {
     bool prerender_test_result = false;
@@ -789,8 +766,8 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
   }
 
   void AddPrerender(const GURL& url, int index) {
-    std::string javascript = base::StringPrintf(
-        "AddPrerender('%s', %d)", url.spec().c_str(), index);
+    std::string javascript =
+        base::StringPrintf("AddPrerender('%s', %d)", url.spec().c_str(), index);
     RenderFrameHost* render_frame_host = GetActiveWebContents()->GetMainFrame();
     render_frame_host->ExecuteJavaScriptForTests(base::ASCIIToUTF16(javascript),
                                                  base::NullCallback());
@@ -935,9 +912,9 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
     WebContents* web_contents = GetActiveWebContents();
     RenderFrameHost* render_frame_host = web_contents->GetMainFrame();
     // Extra arguments in JS are ignored.
-    std::string javascript = base::StringPrintf(
-        "%s('%s', '%s')", javascript_function_name.c_str(),
-        url.spec().c_str(), ping_url.spec().c_str());
+    std::string javascript =
+        base::StringPrintf("%s('%s', '%s')", javascript_function_name.c_str(),
+                           url.spec().c_str(), ping_url.spec().c_str());
 
     if (new_web_contents) {
       NewTabNavigationOrSwapObserver observer;
@@ -967,8 +944,6 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
   base::SimpleTestTickClock* mid_load_clock_;
   std::unique_ptr<content::URLLoaderInterceptor> interceptor_;
 };
-
-
 
 // Checks that the correct page load metrics observers are produced without a
 // prerender.
@@ -1032,8 +1007,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageRemovingLink) {
   EXPECT_TRUE(IsEmptyPrerenderLinkManager());
 }
 
-IN_PROC_BROWSER_TEST_F(
-    PrerenderBrowserTest, PrerenderPageRemovingLinkWithTwoLinks) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderPageRemovingLinkWithTwoLinks) {
   GetPrerenderManager()->mutable_config().max_link_concurrency = 2;
   GetPrerenderManager()->mutable_config().max_link_concurrency_per_launcher = 2;
 
@@ -1060,8 +1035,8 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(IsEmptyPrerenderLinkManager());
 }
 
-IN_PROC_BROWSER_TEST_F(
-    PrerenderBrowserTest, PrerenderPageRemovingLinkWithTwoLinksOneLate) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderPageRemovingLinkWithTwoLinksOneLate) {
   GetPrerenderManager()->mutable_config().max_link_concurrency = 2;
   GetPrerenderManager()->mutable_config().max_link_concurrency_per_launcher = 2;
 
@@ -1092,9 +1067,8 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(IsEmptyPrerenderLinkManager());
 }
 
-IN_PROC_BROWSER_TEST_F(
-    PrerenderBrowserTest,
-    PrerenderPageRemovingLinkWithTwoLinksRemovingOne) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderPageRemovingLinkWithTwoLinksRemovingOne) {
   GetPrerenderManager()->mutable_config().max_link_concurrency = 2;
   GetPrerenderManager()->mutable_config().max_link_concurrency_per_launcher = 2;
   set_loader_query("links_to_insert=2");
@@ -1196,16 +1170,16 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPluginPowerSaver) {
 #if defined(USE_AURA) && !defined(OS_WIN)
 // http://crbug.com/103496
 #define MAYBE_PrerenderIframeDelayLoadPlugin \
-        DISABLED_PrerenderIframeDelayLoadPlugin
+  DISABLED_PrerenderIframeDelayLoadPlugin
 #elif defined(OS_MACOSX)
 // http://crbug.com/100514
 #define MAYBE_PrerenderIframeDelayLoadPlugin \
-        DISABLED_PrerenderIframeDelayLoadPlugin
+  DISABLED_PrerenderIframeDelayLoadPlugin
 #elif defined(OS_WIN)
 // TODO(jschuh): Failing plugin tests. https://crbug.com/244653,
 // https://crbug.com/876872
 #define MAYBE_PrerenderIframeDelayLoadPlugin \
-        DISABLED_PrerenderIframeDelayLoadPlugin
+  DISABLED_PrerenderIframeDelayLoadPlugin
 #else
 #define MAYBE_PrerenderIframeDelayLoadPlugin PrerenderIframeDelayLoadPlugin
 #endif
@@ -1435,18 +1409,14 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderRendererCrash) {
       prerender->contents()->web_contents());
   ASSERT_TRUE(prerender->contents());
   ASSERT_TRUE(prerender->contents()->prerender_contents());
-  prerender->contents()->prerender_contents()->GetController().
-      LoadURL(
-          GURL(content::kChromeUICrashURL),
-          content::Referrer(),
-          ui::PAGE_TRANSITION_TYPED,
-          std::string());
+  prerender->contents()->prerender_contents()->GetController().LoadURL(
+      GURL(content::kChromeUICrashURL), content::Referrer(),
+      ui::PAGE_TRANSITION_TYPED, std::string());
   prerender->WaitForStop();
 }
 #endif
 
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderPageWithFragment) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageWithFragment) {
   PrerenderTestURL("/prerender/prerender_page.html#fragment", FINAL_STATUS_USED,
                    1);
 
@@ -1577,8 +1547,7 @@ std::unique_ptr<net::ClientCertStore> CreateCertStore(
 
 // Checks that a top-level page which would normally request an SSL client
 // certificate will never be seen since it's an https top-level resource.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderSSLClientCertTopLevel) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLClientCertTopLevel) {
   ProfileNetworkContextServiceFactory::GetForContext(
       current_browser()->profile())
       ->set_client_cert_store_factory_for_testing(base::BindRepeating(
@@ -1618,8 +1587,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   std::string replacement_path = net::test_server::GetFilePathWithReplacements(
       "/prerender/prerender_with_image.html", replacement_text);
   PrerenderTestURL(replacement_path,
-                   FINAL_STATUS_SSL_CLIENT_CERTIFICATE_REQUESTED,
-                   0);
+                   FINAL_STATUS_SSL_CLIENT_CERTIFICATE_REQUESTED, 0);
 }
 
 // Checks that an SSL Client Certificate request that originates from an
@@ -1645,8 +1613,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLClientCertIframe) {
   std::string replacement_path = net::test_server::GetFilePathWithReplacements(
       "/prerender/prerender_with_iframe.html", replacement_text);
   PrerenderTestURL(replacement_path,
-                   FINAL_STATUS_SSL_CLIENT_CERTIFICATE_REQUESTED,
-                   0);
+                   FINAL_STATUS_SSL_CLIENT_CERTIFICATE_REQUESTED, 0);
 }
 
 // Ensures that we do not prerender pages with a safe browsing
@@ -1689,9 +1656,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSafeBrowsingSubresource) {
       std::make_pair("REPLACE_WITH_IMAGE_URL", image_url.spec()));
   std::string replacement_path = net::test_server::GetFilePathWithReplacements(
       "/prerender/prerender_with_image.html", replacement_text);
-  PrerenderTestURL(replacement_path,
-                   FINAL_STATUS_SAFE_BROWSING,
-                   0);
+  PrerenderTestURL(replacement_path, FINAL_STATUS_SAFE_BROWSING, 0);
 }
 
 // Ensures that we do not prerender pages which have a malware iframe.
@@ -1705,9 +1670,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSafeBrowsingIframe) {
       std::make_pair("REPLACE_WITH_URL", iframe_url.spec()));
   std::string replacement_path = net::test_server::GetFilePathWithReplacements(
       "/prerender/prerender_with_iframe.html", replacement_text);
-  PrerenderTestURL(replacement_path,
-                   FINAL_STATUS_SAFE_BROWSING,
-                   0);
+  PrerenderTestURL(replacement_path, FINAL_STATUS_SAFE_BROWSING, 0);
 }
 
 // Checks that the favicon is properly loaded on prerender.
@@ -1813,8 +1776,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderReferrerPolicy) {
 }
 
 // Checks that the referrer policy is used when prerendering on HTTPS.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderSSLReferrerPolicy) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLReferrerPolicy) {
   UseHttpsSrcServer();
   set_loader_path("/prerender/prerender_loader_with_referrer_policy.html");
   PrerenderTestURL("/prerender/prerender_referrer_policy.html",
@@ -1977,13 +1939,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   NavigateToURLWithParams(params, false);
 }
 
-// Checks that the prerendering of a page is canceled correctly when the
-// prerendered page tries to make a second navigation entry.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNewNavigationEntry) {
-  PrerenderTestURL("/prerender/prerender_new_entry.html",
-                   FINAL_STATUS_NEW_NAVIGATION_ENTRY, 1);
-}
-
 // Attempt a swap-in in a new tab. The session storage doesn't match, so it
 // should not swap.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageNewTab) {
@@ -2066,8 +2021,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, AutosigninInPrerenderer) {
   scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(
           PasswordStoreFactory::GetForProfile(
-              current_browser()->profile(),
-              ServiceAccessType::IMPLICIT_ACCESS).get());
+              current_browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
+              .get());
   autofill::PasswordForm signin_form;
   signin_form.signon_realm = embedded_test_server()->base_url().spec();
   signin_form.password_value = base::ASCIIToUTF16("password");
@@ -2127,9 +2082,7 @@ class PrerenderOmniboxBrowserTest : public PrerenderBrowserTest {
     return current_browser()->window()->GetLocationBar();
   }
 
-  OmniboxView* GetOmniboxView() {
-    return GetLocationBar()->GetOmniboxView();
-  }
+  OmniboxView* GetOmniboxView() { return GetLocationBar()->GetOmniboxView(); }
 
   predictors::AutocompleteActionPredictor* GetAutocompleteActionPredictor() {
     Profile* profile = current_browser()->profile();
@@ -2144,8 +2097,7 @@ class PrerenderOmniboxBrowserTest : public PrerenderBrowserTest {
         ExpectPrerender(expected_final_status);
     WebContents* web_contents = GetActiveWebContents();
     GetAutocompleteActionPredictor()->StartPrerendering(
-        url,
-        web_contents->GetController().GetDefaultSessionStorageNamespace(),
+        url, web_contents->GetController().GetDefaultSessionStorageNamespace(),
         gfx::Size(50, 50));
     prerender->WaitForStart();
     return prerender;
@@ -2232,9 +2184,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithNaCl,
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   bool display_test_result = false;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(web_contents,
-                                                   "DidDisplayReallyPass()",
-                                                   &display_test_result));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      web_contents, "DidDisplayReallyPass()", &display_test_result));
   ASSERT_TRUE(display_test_result);
 }
 #endif  // BUILDFLAG(ENABLE_NACL)

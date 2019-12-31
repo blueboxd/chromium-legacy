@@ -9,7 +9,7 @@
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/extensions/browser_action_test_util.h"
+#include "chrome/browser/ui/extensions/extension_action_test_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
@@ -93,7 +93,7 @@ void ExtensionBlockedActionsBubbleTest::ShowUi(const std::string& name) {
   ASSERT_EQ(1u, toolbar_actions_bar->GetActions().size());
   EXPECT_TRUE(toolbar_actions_bar->GetActions()[0]->WantsToRun(tab));
 
-  BrowserActionTestUtil::Create(browser())->Press(0);
+  ExtensionActionTestHelper::Create(browser())->Press(0);
 
   EXPECT_TRUE(toolbar_actions_bar->is_showing_bubble());
 }

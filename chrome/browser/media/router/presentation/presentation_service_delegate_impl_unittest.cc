@@ -10,6 +10,7 @@
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/presentation/local_presentation_manager.h"
 #include "chrome/browser/media/router/presentation/local_presentation_manager_factory.h"
+#include "chrome/browser/media/router/presentation/web_contents_presentation_manager.h"
 #include "chrome/browser/media/router/test/mock_media_router.h"
 #include "chrome/browser/media/router/test/mock_screen_availability_listener.h"
 #include "chrome/browser/media/router/test/test_helper.h"
@@ -67,13 +68,27 @@ class MockDelegateObserver
   MOCK_METHOD1(OnDefaultPresentationStarted, void(const PresentationInfo&));
 };
 
-class MockDefaultPresentationRequestObserver
-    : public PresentationServiceDelegateImpl::
-          DefaultPresentationRequestObserver {
+class MockWebContentsPresentationObserver
+    : public WebContentsPresentationManager::Observer {
  public:
+  explicit MockWebContentsPresentationObserver(
+      content::WebContents* web_contents) {
+    presentation_manager_ = WebContentsPresentationManager::Get(web_contents);
+    presentation_manager_->AddObserver(this);
+  }
+
+  ~MockWebContentsPresentationObserver() override {
+    if (presentation_manager_)
+      presentation_manager_->RemoveObserver(this);
+  }
+
+  MOCK_METHOD1(OnMediaRoutesChanged,
+               void(const std::vector<MediaRoute>& routes));
   MOCK_METHOD1(OnDefaultPresentationChanged,
-               void(const content::PresentationRequest&));
-  MOCK_METHOD0(OnDefaultPresentationRemoved, void());
+               void(const content::PresentationRequest* presentation_request));
+
+ private:
+  base::WeakPtr<WebContentsPresentationManager> presentation_manager_;
 };
 
 class MockCreatePresentationConnnectionCallbacks {
@@ -178,8 +193,8 @@ class PresentationServiceDelegateImplTest
     // Should not trigger callback since route response is error.
     std::unique_ptr<RouteRequestResult> result = RouteRequestResult::FromError(
         "Error", RouteRequestResult::UNKNOWN_ERROR);
-    delegate_impl_->OnRouteResponse(request, /** connection */ nullptr,
-                                    *result);
+    delegate_impl_->OnPresentationResponse(request, /** connection */ nullptr,
+                                           *result);
     EXPECT_TRUE(Mock::VerifyAndClearExpectations(this));
 
     // Should not trigger callback since request doesn't match.
@@ -191,8 +206,8 @@ class PresentationServiceDelegateImplTest
     media_route.set_incognito(incognito);
     result =
         RouteRequestResult::FromSuccess(media_route, "differentPresentationId");
-    delegate_impl_->OnRouteResponse(different_request,
-                                    /** connection */ nullptr, *result);
+    delegate_impl_->OnPresentationResponse(different_request,
+                                           /** connection */ nullptr, *result);
     EXPECT_TRUE(Mock::VerifyAndClearExpectations(this));
 
     // Should trigger callback since request matches.
@@ -200,8 +215,8 @@ class PresentationServiceDelegateImplTest
     MediaRoute media_route2("routeId", source1_, "mediaSinkId", "", true, true);
     media_route2.set_incognito(incognito);
     result = RouteRequestResult::FromSuccess(media_route2, "presentationId");
-    delegate_impl_->OnRouteResponse(request, /** connection */ nullptr,
-                                    *result);
+    delegate_impl_->OnPresentationResponse(request, /** connection */ nullptr,
+                                           *result);
   }
 
   void SetMainFrame() {
@@ -379,13 +394,12 @@ TEST_F(PresentationServiceDelegateImplIncognitoTest,
 }
 
 TEST_F(PresentationServiceDelegateImplTest,
-       DefaultPresentationRequestObserver) {
+       NotifyWebContentsPresentationObservers) {
   auto callback = base::BindRepeating(
       &PresentationServiceDelegateImplTest::OnDefaultPresentationStarted,
       base::Unretained(this));
 
-  StrictMock<MockDefaultPresentationRequestObserver> observer;
-  delegate_impl_->AddDefaultPresentationRequestObserver(&observer);
+  StrictMock<MockWebContentsPresentationObserver> observer(GetWebContents());
 
   content::WebContentsTester::For(GetWebContents())
       ->NavigateAndCommit(frame_url_);
@@ -409,7 +423,7 @@ TEST_F(PresentationServiceDelegateImplTest,
   EXPECT_TRUE(Mock::VerifyAndClearExpectations(&observer));
 
   // Remove default presentation URL.
-  EXPECT_CALL(observer, OnDefaultPresentationRemoved()).Times(1);
+  EXPECT_CALL(observer, OnDefaultPresentationChanged(nullptr)).Times(1);
   content::PresentationRequest empty_request(
       {main_frame_process_id_, main_frame_routing_id_}, std::vector<GURL>(),
       frame_origin_);

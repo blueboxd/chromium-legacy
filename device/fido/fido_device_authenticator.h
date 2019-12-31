@@ -50,16 +50,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
   void GetNextAssertion(GetAssertionCallback callback) override;
   void GetTouch(base::OnceCallback<void()> callback) override;
   void GetRetries(GetRetriesCallback callback) override;
-  void GetEphemeralKey(GetEphemeralKeyCallback callback) override;
   void GetPINToken(std::string pin,
-                   const pin::KeyAgreementResponse& peer_key,
                    GetPINTokenCallback callback) override;
   void SetPIN(const std::string& pin,
-              const pin::KeyAgreementResponse& peer_key,
               SetPINCallback callback) override;
   void ChangePIN(const std::string& old_pin,
                  const std::string& new_pin,
-                 pin::KeyAgreementResponse& peer_key,
                  SetPINCallback callback) override;
   MakeCredentialPINDisposition WillNeedPINToMakeCredential(
       const CtapMakeCredentialRequest& request,
@@ -125,7 +121,27 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
       base::Optional<std::vector<uint8_t>> response_data);
 
  private:
+  using GetEphemeralKeyCallback =
+      base::OnceCallback<void(CtapDeviceResponseCode,
+                              base::Optional<pin::KeyAgreementResponse>)>;
   void InitializeAuthenticatorDone(base::OnceClosure callback);
+  void GetEphemeralKey(GetEphemeralKeyCallback callback);
+  void OnHaveEphemeralKeyForGetPINToken(
+      std::string pin,
+      GetPINTokenCallback callback,
+      CtapDeviceResponseCode status,
+      base::Optional<pin::KeyAgreementResponse> key);
+  void OnHaveEphemeralKeyForSetPIN(
+      std::string pin,
+      SetPINCallback callback,
+      CtapDeviceResponseCode status,
+      base::Optional<pin::KeyAgreementResponse> key);
+  void OnHaveEphemeralKeyForChangePIN(
+      std::string old_pin,
+      std::string new_pin,
+      SetPINCallback callback,
+      CtapDeviceResponseCode status,
+      base::Optional<pin::KeyAgreementResponse> key);
 
   template <typename... Args>
   void TaskClearProxy(base::OnceCallback<void(Args...)> callback, Args... args);

@@ -150,7 +150,7 @@ bool PreviewModeClient::IsPrintPreview() {
   return false;
 }
 
-float PreviewModeClient::GetToolbarHeightInScreenCoords() {
+float PreviewModeClient::GetToolbarHeightInScreenCoords() const {
   return 0.0f;
 }
 

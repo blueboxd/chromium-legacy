@@ -127,6 +127,9 @@ class CORE_EXPORT HTMLInputElement
   bool ShouldAppearChecked() const;
   bool ShouldAppearIndeterminate() const override;
 
+  // Returns null if this isn't associated with any radio button group.
+  RadioButtonGroupScope* GetRadioButtonGroupScope() const;
+
   unsigned size() const;
   bool SizeShouldIncludeDecoration(int& preferred_size) const;
 
@@ -244,9 +247,6 @@ class CORE_EXPORT HTMLInputElement
   void ListAttributeTargetChanged();
   // Associated <datalist> options which match to the current INPUT value.
   HeapVector<Member<HTMLOptionElement>> FilteredDataListOptions() const;
-
-  HTMLInputElement* CheckedRadioButtonForGroup();
-  bool IsInRequiredRadioButtonGroup();
 
   // Functions for InputType classes.
   void SetNonAttributeValue(const String&);
@@ -409,8 +409,6 @@ class CORE_EXPORT HTMLInputElement
   void SetListAttributeTargetObserver(ListAttributeTargetObserver*);
   void ResetListAttributeTargetObserver();
 
-  // Returns null if this isn't associated with any radio button group.
-  RadioButtonGroupScope* GetRadioButtonGroupScope() const;
   void AddToRadioButtonGroup();
   void RemoveFromRadioButtonGroup();
   scoped_refptr<ComputedStyle> CustomStyleForLayoutObject() override;

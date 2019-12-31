@@ -62,7 +62,7 @@ DOMPatchSupport::DOMPatchSupport(DOMEditor* dom_editor, Document& document)
 void DOMPatchSupport::PatchDocument(const String& markup) {
   Document* new_document = nullptr;
   DocumentInit init = DocumentInit::Create();
-  if (GetDocument().IsHTMLDocument())
+  if (IsA<HTMLDocument>(GetDocument()))
     new_document = MakeGarbageCollected<HTMLDocument>(init);
   else if (GetDocument().IsSVGDocument())
     new_document = XMLDocument::CreateSVG(init);
@@ -73,7 +73,7 @@ void DOMPatchSupport::PatchDocument(const String& markup) {
 
   DCHECK(new_document);
   new_document->SetContextFeatures(GetDocument().GetContextFeatures());
-  if (!GetDocument().IsHTMLDocument()) {
+  if (!IsA<HTMLDocument>(GetDocument())) {
     DocumentParser* parser =
         MakeGarbageCollected<XMLDocumentParser>(*new_document, nullptr);
     parser->Append(markup);
@@ -119,7 +119,7 @@ Node* DOMPatchSupport::PatchNode(Node* node,
   auto* target_element = To<Element>(target_node);
 
   // FIXME: This code should use one of createFragment* in Serialization.h
-  if (GetDocument().IsHTMLDocument())
+  if (IsA<HTMLDocument>(GetDocument()))
     fragment->ParseHTML(markup, target_element);
   else
     fragment->ParseXML(markup, target_element);

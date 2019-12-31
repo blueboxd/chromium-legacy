@@ -49,9 +49,7 @@ function selectValue() {
 }
 
 t.step(() => {
-  openPicker(document.getElementById('time'), t.step_func(selectValue),  t.step_func_done(() => {
-    assert_false(internals.runtimeFlags.formControlsRefreshEnabled, "Popup did not open.");
-  }));
+  openPicker(document.getElementById('time'), t.step_func(selectValue));
 });
 </script>
 </body>

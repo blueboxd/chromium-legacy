@@ -20,8 +20,12 @@ namespace send_tab_to_self {
 
 SendTabToSelfIconView::SendTabToSelfIconView(
     CommandUpdater* command_updater,
-    PageActionIconView::Delegate* delegate)
-    : PageActionIconView(command_updater, IDC_SEND_TAB_TO_SELF, delegate) {
+    IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
+    PageActionIconView::Delegate* page_action_icon_delegate)
+    : PageActionIconView(command_updater,
+                         IDC_SEND_TAB_TO_SELF,
+                         icon_label_bubble_delegate,
+                         page_action_icon_delegate) {
   SetVisible(false);
   SetLabel(l10n_util::GetStringUTF16(IDS_OMNIBOX_ICON_SEND_TAB_TO_SELF));
   SetUpForInOutAnimation();
@@ -81,7 +85,7 @@ const gfx::VectorIcon& SendTabToSelfIconView::GetVectorIcon() const {
   return kSendTabToSelfIcon;
 }
 
-SkColor SendTabToSelfIconView::GetTextColor() const {
+SkColor SendTabToSelfIconView::GetForegroundColor() const {
   return GetOmniboxColor(GetThemeProvider(),
                          OmniboxPart::LOCATION_BAR_TEXT_DEFAULT);
 }

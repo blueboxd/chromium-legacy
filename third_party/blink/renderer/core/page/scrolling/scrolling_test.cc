@@ -1390,11 +1390,8 @@ TEST_P(ScrollingTest, UpdateVisualViewportScrollLayer) {
 
   page->GetVisualViewport().SetLocation(FloatPoint(10, 20));
   ForceFullCompositingUpdate();
-  // TODO(crbug.com/953322): Make this work for CAP.
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    EXPECT_EQ(gfx::ScrollOffset(10, 20),
-              CurrentScrollOffset(inner_viewport_scroll_node));
-  }
+  EXPECT_EQ(gfx::ScrollOffset(10, 20),
+            CurrentScrollOffset(inner_viewport_scroll_node));
 }
 
 TEST_P(ScrollingTest, UpdateUMAMetricUpdated) {

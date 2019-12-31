@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
+#include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/xml/xpath_parser.h"
 #include "third_party/blink/renderer/core/xml/xpath_util.h"
 #include "third_party/blink/renderer/core/xmlns_names.h"
@@ -218,7 +219,7 @@ static inline bool NodeMatchesBasicTest(Node* node,
                namespace_uri == element->namespaceURI();
       }
 
-      if (element->GetDocument().IsHTMLDocument()) {
+      if (IsA<HTMLDocument>(element->GetDocument())) {
         if (element->IsHTMLElement()) {
           // Paths without namespaces should match HTML elements in HTML
           // documents despite those having an XHTML namespace. Names are

@@ -44,6 +44,7 @@
 #include "gpu/config/gpu_switches.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/cpp/binder_map.h"
+#include "storage/browser/quota/quota_settings.h"
 #include "url/origin.h"
 
 namespace content {
@@ -97,6 +98,12 @@ WebTestContentBrowserClient::WebTestContentBrowserClient() {
   DCHECK(!g_web_test_browser_client);
 
   g_web_test_browser_client = this;
+
+  // The 1GB limit is intended to give a large headroom to tests that need to
+  // build up a large data set and issue many concurrent reads or writes.
+  static storage::QuotaSettings quota_settings(
+      storage::GetHardCodedSettings(1024 * 1024 * 1024));
+  StoragePartition::SetDefaultQuotaSettingsForTesting(&quota_settings);
 }
 
 WebTestContentBrowserClient::~WebTestContentBrowserClient() {
@@ -238,15 +245,6 @@ WebTestContentBrowserClient::CreateBrowserMainParts(
   set_browser_main_parts(browser_main_parts.get());
 
   return browser_main_parts;
-}
-
-void WebTestContentBrowserClient::GetQuotaSettings(
-    BrowserContext* context,
-    StoragePartition* partition,
-    storage::OptionalQuotaSettingsCallback callback) {
-  // The 1GB limit is intended to give a large headroom to tests that need to
-  // build up a large data set and issue many concurrent reads or writes.
-  std::move(callback).Run(storage::GetHardCodedSettings(1024 * 1024 * 1024));
 }
 
 std::unique_ptr<OverlayWindow>

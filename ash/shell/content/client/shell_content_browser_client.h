@@ -11,7 +11,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "content/public/browser/content_browser_client.h"
-#include "storage/browser/quota/quota_settings.h"
 
 namespace ash {
 namespace shell {
@@ -24,10 +23,6 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
   // Overridden from content::ContentBrowserClient:
   std::unique_ptr<content::BrowserMainParts> CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;
-  void GetQuotaSettings(
-      content::BrowserContext* context,
-      content::StoragePartition* partition,
-      storage::OptionalQuotaSettingsCallback callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellContentBrowserClient);

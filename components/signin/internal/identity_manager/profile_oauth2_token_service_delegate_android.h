@@ -130,10 +130,13 @@ class ProfileOAuth2TokenServiceDelegateAndroid
   std::vector<CoreAccountId> GetSystemAccounts();
   // As |GetAccounts| but with only validated account IDs.
   std::vector<CoreAccountId> GetValidAccounts();
-  // Set accounts using Java's Oauth2TokenService.setAccounts.
+  // Set accounts that have been advertised by OnRefreshTokenAvailable.
   virtual void SetAccounts(const std::vector<CoreAccountId>& accounts);
 
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
+
+  // Accounts that have been advertised by OnRefreshTokenAvailable.
+  std::vector<CoreAccountId> accounts_;
 
   // Maps account_id to the last error for that account.
   std::map<CoreAccountId, GoogleServiceAuthError> errors_;

@@ -94,6 +94,8 @@ class IdlCompiler(object):
         self._propagate_extattrs_to_overload_group()
         self._calculate_group_exposure()
 
+        self._fill_exposed_constructs()
+
         self._sort_dictionary_members()
 
         # Updates on IRs are finished.  Create API objects.
@@ -419,6 +421,32 @@ class IdlCompiler(object):
                             if exposure.only_in_secure_contexts is not True
                         ]))
                     group.exposure.set_only_in_secure_contexts(flag_names)
+
+    def _fill_exposed_constructs(self):
+        old_interfaces = self._ir_map.irs_of_kind(IRMap.IR.Kind.INTERFACE)
+        old_namespaces = self._ir_map.irs_of_kind(IRMap.IR.Kind.NAMESPACE)
+
+        exposed_map = {}  # global name: [construct's identifier...]
+        for ir in itertools.chain(old_interfaces, old_namespaces):
+            for pair in ir.exposure.global_names_and_features:
+                exposed_map.setdefault(pair.global_name,
+                                       []).append(ir.identifier)
+
+        self._ir_map.move_to_new_phase()
+
+        for old_ir in old_interfaces:
+            new_ir = make_copy(old_ir)
+            self._ir_map.add(new_ir)
+
+            assert not new_ir.exposed_constructs
+            global_names = new_ir.extended_attributes.values_of("Global")
+            if not global_names:
+                continue
+            constructs = set()
+            for global_name in global_names:
+                constructs.update(exposed_map.get(global_name, []))
+            new_ir.exposed_constructs = map(
+                self._ref_to_idl_def_factory.create, sorted(constructs))
 
     def _sort_dictionary_members(self):
         """Sorts dictionary members in alphabetical order."""

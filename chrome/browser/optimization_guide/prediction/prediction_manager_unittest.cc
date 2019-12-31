@@ -185,6 +185,7 @@ class TestPredictionModelFetcher : public PredictionModelFetcher {
       return false;
     }
 
+    count_hosts_fetched_ = hosts.size();
     switch (fetch_state_) {
       case PredictionModelFetcherEndState::kFetchFailed:
         std::move(models_fetched_callback).Run(base::nullopt);
@@ -222,9 +223,11 @@ class TestPredictionModelFetcher : public PredictionModelFetcher {
   }
 
   bool models_fetched() { return models_fetched_; }
+  size_t hosts_fetched() { return count_hosts_fetched_; }
 
  private:
   bool models_fetched_ = false;
+  size_t count_hosts_fetched_ = 0;
   // The desired behavior of the TestPredictionModelFetcher.
   PredictionModelFetcherEndState fetch_state_;
 };
@@ -362,6 +365,7 @@ class TestPredictionManager : public PredictionManager {
     create_valid_prediction_model_ = create_valid_prediction_model;
   }
 
+  using PredictionManager::GetHostModelFeaturesForHost;
   using PredictionManager::GetHostModelFeaturesForTesting;
   using PredictionManager::GetPredictionModelForTesting;
 
@@ -1163,19 +1167,17 @@ TEST_F(PredictionManagerTest, HasHostModelFeaturesForHost) {
   prediction_manager()->UpdateHostModelFeaturesForTesting(
       get_models_response.get());
 
-  EXPECT_TRUE(prediction_manager()->GetHostModelFeaturesForTesting().contains(
-      "example2.com"));
-  base::flat_map<std::string, base::flat_map<std::string, float>>
-      host_model_features_map =
-          prediction_manager()->GetHostModelFeaturesForTesting();
-  EXPECT_TRUE(host_model_features_map.contains("example1.com"));
-  EXPECT_TRUE(host_model_features_map.contains("example2.com"));
-  auto it = host_model_features_map.find("example1.com");
-  EXPECT_TRUE(it->second.contains("host_feat1"));
-  EXPECT_EQ(2.0, it->second["host_feat1"]);
-  it = host_model_features_map.find("example2.com");
-  EXPECT_TRUE(it->second.contains("host_feat1"));
-  EXPECT_EQ(2.0, it->second["host_feat1"]);
+  base::Optional<base::flat_map<std::string, float>> host_model_features_map =
+      prediction_manager()->GetHostModelFeaturesForHost("example1.com");
+  EXPECT_TRUE(host_model_features_map);
+  EXPECT_TRUE(host_model_features_map->contains("host_feat1"));
+  EXPECT_EQ(2.0, (*host_model_features_map)["host_feat1"]);
+
+  host_model_features_map =
+      prediction_manager()->GetHostModelFeaturesForHost("example2.com");
+  EXPECT_TRUE(host_model_features_map);
+  EXPECT_TRUE(host_model_features_map->contains("host_feat1"));
+  EXPECT_EQ(2.0, (*host_model_features_map)["host_feat1"]);
 }
 
 TEST_F(PredictionManagerTest, NoHostModelFeaturesForHost) {
@@ -1213,14 +1215,12 @@ TEST_F(PredictionManagerTest, NoHostModelFeaturesForHost) {
       false, 1);
   EXPECT_LT(test_prediction_model->last_evaluated_features()["host_feat1"], 0);
 
-  EXPECT_FALSE(prediction_manager()->GetHostModelFeaturesForTesting().contains(
-      "bar.com"));
+  EXPECT_FALSE(prediction_manager()->GetHostModelFeaturesForHost("bar.com"));
   // One item loaded from the store when initialized.
-  EXPECT_EQ(1u, prediction_manager()->GetHostModelFeaturesForTesting().size());
+  EXPECT_EQ(1u, prediction_manager()->GetHostModelFeaturesForTesting()->size());
 }
 
 TEST_F(PredictionManagerTest, UpdateHostModelFeaturesMissingHost) {
-  base::HistogramTester histogram_tester;
 
   CreatePredictionManager({});
   prediction_manager()->SetPredictionModelFetcherForTesting(
@@ -1239,14 +1239,13 @@ TEST_F(PredictionManagerTest, UpdateHostModelFeaturesMissingHost) {
   prediction_manager()->UpdateHostModelFeaturesForTesting(
       get_models_response.get());
 
-  EXPECT_FALSE(prediction_manager()->GetHostModelFeaturesForTesting().contains(
-      "example1.com"));
+  EXPECT_FALSE(
+      prediction_manager()->GetHostModelFeaturesForHost("example1.com"));
   // One item loaded from the store when initialized.
-  EXPECT_EQ(1u, prediction_manager()->GetHostModelFeaturesForTesting().size());
+  EXPECT_EQ(1u, prediction_manager()->GetHostModelFeaturesForTesting()->size());
 }
 
 TEST_F(PredictionManagerTest, UpdateHostModelFeaturesNoFeature) {
-  base::HistogramTester histogram_tester;
 
   CreatePredictionManager({});
   prediction_manager()->SetPredictionModelFetcherForTesting(
@@ -1264,14 +1263,13 @@ TEST_F(PredictionManagerTest, UpdateHostModelFeaturesNoFeature) {
   prediction_manager()->UpdateHostModelFeaturesForTesting(
       get_models_response.get());
 
-  EXPECT_FALSE(prediction_manager()->GetHostModelFeaturesForTesting().contains(
-      "example1.com"));
+  EXPECT_FALSE(
+      prediction_manager()->GetHostModelFeaturesForHost("example1.com"));
   // One item loaded from the store when initialized.
-  EXPECT_EQ(1u, prediction_manager()->GetHostModelFeaturesForTesting().size());
+  EXPECT_EQ(1u, prediction_manager()->GetHostModelFeaturesForTesting()->size());
 }
 
 TEST_F(PredictionManagerTest, UpdateHostModelFeaturesNoFeatureName) {
-  base::HistogramTester histogram_tester;
 
   CreatePredictionManager({});
   prediction_manager()->SetPredictionModelFetcherForTesting(
@@ -1292,15 +1290,13 @@ TEST_F(PredictionManagerTest, UpdateHostModelFeaturesNoFeatureName) {
   prediction_manager()->UpdateHostModelFeaturesForTesting(
       get_models_response.get());
 
-  EXPECT_FALSE(prediction_manager()->GetHostModelFeaturesForTesting().contains(
-      "example1.com"));
+  EXPECT_FALSE(
+      prediction_manager()->GetHostModelFeaturesForHost("example1.com"));
   // One item loaded from the store when initialized.
-  EXPECT_EQ(1u, prediction_manager()->GetHostModelFeaturesForTesting().size());
+  EXPECT_EQ(1u, prediction_manager()->GetHostModelFeaturesForTesting()->size());
 }
 
 TEST_F(PredictionManagerTest, UpdateHostModelFeaturesDoubleValue) {
-  base::HistogramTester histogram_tester;
-
   CreatePredictionManager({});
   prediction_manager()->SetPredictionModelFetcherForTesting(
       BuildTestPredictionModelFetcher(
@@ -1319,16 +1315,13 @@ TEST_F(PredictionManagerTest, UpdateHostModelFeaturesDoubleValue) {
   prediction_manager()->UpdateHostModelFeaturesForTesting(
       get_models_response.get());
 
-  EXPECT_TRUE(prediction_manager()->GetHostModelFeaturesForTesting().contains(
-      "example1.com"));
-  EXPECT_EQ(
-      3.0,
-      prediction_manager()
-          ->GetHostModelFeaturesForTesting()["example1.com"]["host_feat1"]);
+  auto host_model_features =
+      prediction_manager()->GetHostModelFeaturesForHost("example1.com");
+  EXPECT_TRUE(host_model_features);
+  EXPECT_EQ(3.0, (*host_model_features)["host_feat1"]);
 }
 
 TEST_F(PredictionManagerTest, UpdateHostModelFeaturesIntValue) {
-  base::HistogramTester histogram_tester;
 
   CreatePredictionManager({});
   prediction_manager()->SetPredictionModelFetcherForTesting(
@@ -1348,14 +1341,62 @@ TEST_F(PredictionManagerTest, UpdateHostModelFeaturesIntValue) {
   prediction_manager()->UpdateHostModelFeaturesForTesting(
       get_models_response.get());
 
-  EXPECT_TRUE(prediction_manager()->GetHostModelFeaturesForTesting().contains(
-      "example1.com"));
+  auto host_model_features =
+      prediction_manager()->GetHostModelFeaturesForHost("example1.com");
+  EXPECT_TRUE(host_model_features);
   // We expect the value to be stored as a float but is created from an int64
   // value.
-  EXPECT_EQ(
-      4.0,
-      prediction_manager()
-          ->GetHostModelFeaturesForTesting()["example1.com"]["host_feat1"]);
+  EXPECT_EQ(4.0, (*host_model_features)["host_feat1"]);
+}
+
+TEST_F(PredictionManagerTest, RestrictHostModelFeaturesCacheSize) {
+  CreatePredictionManager({});
+  prediction_manager()->SetPredictionModelFetcherForTesting(
+      BuildTestPredictionModelFetcher(
+          PredictionModelFetcherEndState::kFetchFailed));
+
+  prediction_manager()->RegisterOptimizationTargets(
+      {proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
+
+  SetStoreInitialized();
+  std::vector<std::string> hosts;
+  for (size_t i = 0; i <= features::MaxHostModelFeaturesCacheSize() + 1; i++)
+    hosts.push_back("host" + base::NumberToString(i) + ".com");
+  std::unique_ptr<proto::GetModelsResponse> get_models_response =
+      BuildGetModelsResponse(hosts, {});
+
+  prediction_manager()->UpdateHostModelFeaturesForTesting(
+      get_models_response.get());
+
+  auto* host_model_features_cache =
+      prediction_manager()->GetHostModelFeaturesForTesting();
+  EXPECT_EQ(features::MaxHostModelFeaturesCacheSize(),
+            host_model_features_cache->size());
+}
+
+TEST_F(PredictionManagerTest, FetchHostModelFeaturesNotInCache) {
+  base::HistogramTester histogram_tester;
+
+  CreatePredictionManager({});
+  prediction_manager()->SetPredictionModelFetcherForTesting(
+      BuildTestPredictionModelFetcher(
+          PredictionModelFetcherEndState::
+              kFetchSuccessWithModelsAndHostsModelFeatures));
+
+  std::unique_ptr<proto::GetModelsResponse> get_models_response =
+      BuildGetModelsResponse({"example1.com", "bar.com"}, {});
+  prediction_manager()->UpdateHostModelFeaturesForTesting(
+      get_models_response.get());
+
+  prediction_manager()->RegisterOptimizationTargets(
+      {proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
+
+  SetStoreInitialized();
+
+  EXPECT_TRUE(prediction_model_fetcher()->models_fetched());
+  // Only 1 of the 2 top hosts should have features fetched for it as the other
+  // is already in the host model features cache.
+  EXPECT_EQ(prediction_model_fetcher()->hosts_fetched(), 1ul);
 }
 
 TEST_F(PredictionManagerTest, UpdateHostModelFeaturesUpdateDataInMap) {
@@ -1379,14 +1420,12 @@ TEST_F(PredictionManagerTest, UpdateHostModelFeaturesUpdateDataInMap) {
   prediction_manager()->UpdateHostModelFeaturesForTesting(
       get_models_response.get());
 
-  EXPECT_TRUE(prediction_manager()->GetHostModelFeaturesForTesting().contains(
-      "example1.com"));
+  auto host_model_features =
+      prediction_manager()->GetHostModelFeaturesForHost("example1.com");
+  EXPECT_TRUE(host_model_features);
   // We expect the value to be stored as a float but is created from an int64
   // value.
-  EXPECT_EQ(
-      4.0,
-      prediction_manager()
-          ->GetHostModelFeaturesForTesting()["example1.com"]["host_feat1"]);
+  EXPECT_EQ(4.0, (*host_model_features)["host_feat1"]);
 
   get_models_response = BuildGetModelsResponse({"example1.com"}, {});
   get_models_response->mutable_host_model_features(0)
@@ -1400,20 +1439,15 @@ TEST_F(PredictionManagerTest, UpdateHostModelFeaturesUpdateDataInMap) {
   prediction_manager()->UpdateHostModelFeaturesForTesting(
       get_models_response.get());
 
-  EXPECT_TRUE(prediction_manager()->GetHostModelFeaturesForTesting().contains(
-      "example1.com"));
+  host_model_features =
+      prediction_manager()->GetHostModelFeaturesForHost("example1.com");
+  EXPECT_TRUE(host_model_features);
+
   // We expect the value to be stored as a float but is created from an int64
   // value.
-  EXPECT_EQ(
-      5.0,
-      prediction_manager()
-          ->GetHostModelFeaturesForTesting()["example1.com"]["host_feat1"]);
-  EXPECT_TRUE(prediction_manager()
-                  ->GetHostModelFeaturesForTesting()["example1.com"]
-                  .contains("host_feat_added"));
-  EXPECT_EQ(6.0, prediction_manager()
-                     ->GetHostModelFeaturesForTesting()["example1.com"]
-                                                       ["host_feat_added"]);
+  EXPECT_EQ(5.0, (*host_model_features)["host_feat1"]);
+  EXPECT_TRUE((*host_model_features).contains("host_feat_added"));
+  EXPECT_EQ(6.0, (*host_model_features)["host_feat_added"]);
 }
 
 TEST_P(PredictionManagerTest, ClientFeature) {
@@ -1534,14 +1568,12 @@ TEST_F(PredictionManagerTest,
       {optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
   EXPECT_FALSE(models_and_features_store()->WasHostModelFeaturesLoaded());
   EXPECT_FALSE(models_and_features_store()->WasModelLoaded());
-  EXPECT_FALSE(prediction_manager()->GetHostModelFeaturesForTesting().contains(
-      "foo.com"));
+  EXPECT_FALSE(prediction_manager()->GetHostModelFeaturesForHost("foo.com"));
 
   SetStoreInitialized();
   EXPECT_TRUE(models_and_features_store()->WasHostModelFeaturesLoaded());
   EXPECT_TRUE(models_and_features_store()->WasModelLoaded());
-  EXPECT_TRUE(prediction_manager()->GetHostModelFeaturesForTesting().contains(
-      "foo.com"));
+  EXPECT_TRUE(prediction_manager()->GetHostModelFeaturesForHost("foo.com"));
 
   EXPECT_FALSE(prediction_model_fetcher()->models_fetched());
 }
@@ -1557,16 +1589,14 @@ TEST_F(PredictionManagerTest,
 
   EXPECT_FALSE(models_and_features_store()->WasHostModelFeaturesLoaded());
   EXPECT_FALSE(models_and_features_store()->WasModelLoaded());
-  EXPECT_FALSE(prediction_manager()->GetHostModelFeaturesForTesting().contains(
-      "foo.com"));
+  EXPECT_FALSE(prediction_manager()->GetHostModelFeaturesForHost("foo.com"));
   prediction_manager()->RegisterOptimizationTargets(
       {optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
   RunUntilIdle();
 
   EXPECT_TRUE(models_and_features_store()->WasHostModelFeaturesLoaded());
   EXPECT_TRUE(models_and_features_store()->WasModelLoaded());
-  EXPECT_TRUE(prediction_manager()->GetHostModelFeaturesForTesting().contains(
-      "foo.com"));
+  EXPECT_TRUE(prediction_manager()->GetHostModelFeaturesForHost("foo.com"));
 
   EXPECT_FALSE(prediction_model_fetcher()->models_fetched());
 }

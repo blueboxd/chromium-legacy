@@ -137,14 +137,14 @@ TEST_F(AnimationHostTest, ImplOnlyScrollAnimationUpdateTargetIfDetached) {
 
   time += base::TimeDelta::FromSecondsD(0.1);
   EXPECT_TRUE(host_impl_->ImplOnlyScrollAnimationUpdateTarget(
-      element_id_, scroll_delta, max_scroll_offset, time, base::TimeDelta()));
+      scroll_delta, max_scroll_offset, time, base::TimeDelta()));
 
   // Detach all animations from layers and timelines.
   host_impl_->ClearMutators();
 
   time += base::TimeDelta::FromSecondsD(0.1);
   EXPECT_FALSE(host_impl_->ImplOnlyScrollAnimationUpdateTarget(
-      element_id_, scroll_delta, max_scroll_offset, time, base::TimeDelta()));
+      scroll_delta, max_scroll_offset, time, base::TimeDelta()));
 }
 
 // Tests that verify interaction of AnimationHost with LayerTreeMutator.

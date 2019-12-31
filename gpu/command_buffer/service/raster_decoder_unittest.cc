@@ -21,6 +21,7 @@
 #include "gpu/command_buffer/service/shared_image_factory.h"
 #include "gpu/command_buffer/service/shared_image_manager.h"
 #include "gpu/command_buffer/service/test_helper.h"
+#include "gpu/config/gpu_preferences.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_image_stub.h"
 #include "ui/gl/gl_mock.h"
@@ -297,6 +298,11 @@ TEST_P(RasterDecoderManualInitTest, CopyTexSubImage2DValidateColorFormat) {
   init.extensions.push_back("GL_EXT_texture_rg");
   InitDecoder(init);
 
+  // Recreate |client_texture_mailbox_| as a cleared mailbox.
+  client_texture_mailbox_ = CreateFakeTexture(
+      kServiceTextureId, viz::ResourceFormat::RGBA_8888, /*width=*/2,
+      /*height=*/2, /*cleared=*/true);
+
   // Create dest texture.
   gpu::Mailbox dest_texture_mailbox =
       CreateFakeTexture(kNewServiceId, viz::ResourceFormat::RED_8,
@@ -332,7 +338,7 @@ class RasterDecoderOOPTest : public testing::Test, DecoderClient {
         std::move(share_group), std::move(surface), std::move(context),
         false /* use_virtualized_gl_contexts */, base::DoNothing(),
         GpuPreferences().gr_context_type);
-    context_state_->InitializeGrContext(workarounds, nullptr);
+    context_state_->InitializeGrContext(GpuPreferences(), workarounds, nullptr);
     context_state_->InitializeGL(GpuPreferences(), feature_info);
   }
   void TearDown() override {

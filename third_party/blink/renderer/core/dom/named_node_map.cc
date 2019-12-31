@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/dom/attr.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -105,7 +106,7 @@ void NamedNodeMap::NamedPropertyEnumerator(Vector<String>& names,
   // 3. Return names.
   const AttributeCollection attributes = element_->Attributes();
   names.ReserveInitialCapacity(attributes.size());
-  if (element_->IsHTMLElement() && element_->GetDocument().IsHTMLDocument()) {
+  if (element_->IsHTMLElement() && IsA<HTMLDocument>(element_->GetDocument())) {
     for (const Attribute& attribute : attributes) {
       if ((attribute.Prefix() == attribute.Prefix().LowerASCII()) &&
           (attribute.LocalName() == attribute.LocalName().LowerASCII())) {

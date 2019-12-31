@@ -80,7 +80,7 @@ class DataReductionProxySettingsObserver {
 class DataReductionProxySettings {
  public:
   using SyntheticFieldTrialRegistrationCallback =
-      base::Callback<bool(base::StringPiece, base::StringPiece)>;
+      base::RepeatingCallback<bool(base::StringPiece, base::StringPiece)>;
 
   explicit DataReductionProxySettings(bool is_off_the_record_profile);
   virtual ~DataReductionProxySettings();

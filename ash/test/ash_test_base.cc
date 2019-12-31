@@ -17,6 +17,7 @@
 #include "ash/display/unified_mouse_warp_controller.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
+#include "ash/public/cpp/ash_prefs.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
@@ -139,7 +140,11 @@ void AshTestBase::SetUp() {
 
   AshTestHelper::InitParams params;
   params.start_session = start_session_;
-  params.provide_local_state = provide_local_state_;
+  if (register_local_state_) {
+    DCHECK(local_state_.get());
+    RegisterLocalStatePrefs(local_state_->registry(), true);
+  }
+  params.local_state = local_state_.get();
   params.config_type = AshTestHelper::kUnitTest;
   ash_test_helper_.SetUp(params);
 
@@ -364,6 +369,11 @@ aura::Window* AshTestBase::CreateTestWindowInShellWithDelegateAndType(
 void AshTestBase::ParentWindowInPrimaryRootWindow(aura::Window* window) {
   aura::client::ParentWindowWithContext(window, Shell::GetPrimaryRootWindow(),
                                         gfx::Rect());
+}
+
+void AshTestBase::DisableProvideLocalState() {
+  local_state_.reset();
+  register_local_state_ = false;
 }
 
 TestScreenshotDelegate* AshTestBase::GetScreenshotDelegate() {

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/service/test_shared_image_backing.h"
+#include "build/build_config.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
@@ -53,6 +54,75 @@ class TestSharedImageRepresentationGLTexturePassthrough
 
  private:
   const scoped_refptr<gles2::TexturePassthrough> texture_;
+};
+
+class TestSharedImageRepresentationSkia : public SharedImageRepresentationSkia {
+ public:
+  TestSharedImageRepresentationSkia(SharedImageManager* manager,
+                                    SharedImageBacking* backing,
+                                    MemoryTypeTracker* tracker)
+      : SharedImageRepresentationSkia(manager, backing, tracker) {}
+
+ protected:
+  sk_sp<SkSurface> BeginWriteAccess(
+      int final_msaa_count,
+      const SkSurfaceProps& surface_props,
+      std::vector<GrBackendSemaphore>* begin_semaphores,
+      std::vector<GrBackendSemaphore>* end_semaphores) override {
+    if (!static_cast<TestSharedImageBacking*>(backing())->can_access()) {
+      return nullptr;
+    }
+    return SkSurface::MakeRasterN32Premul(size().width(), size().height());
+  }
+  void EndWriteAccess(sk_sp<SkSurface> surface) override {}
+  sk_sp<SkPromiseImageTexture> BeginReadAccess(
+      std::vector<GrBackendSemaphore>* begin_semaphores,
+      std::vector<GrBackendSemaphore>* end_semaphores) override {
+    if (!static_cast<TestSharedImageBacking*>(backing())->can_access()) {
+      return nullptr;
+    }
+    GrBackendTexture backend_tex(size().width(), size().height(),
+                                 GrMipMapped::kNo, GrMockTextureInfo());
+    return SkPromiseImageTexture::Make(backend_tex);
+  }
+  void EndReadAccess() override {}
+};
+
+class TestSharedImageRepresentationDawn : public SharedImageRepresentationDawn {
+ public:
+  TestSharedImageRepresentationDawn(SharedImageManager* manager,
+                                    SharedImageBacking* backing,
+                                    MemoryTypeTracker* tracker)
+      : SharedImageRepresentationDawn(manager, backing, tracker) {}
+
+  WGPUTexture BeginAccess(WGPUTextureUsage usage) override {
+    if (!static_cast<TestSharedImageBacking*>(backing())->can_access()) {
+      return nullptr;
+    }
+
+    // Return a dummy value.
+    return reinterpret_cast<WGPUTexture>(203);
+  }
+
+  void EndAccess() override {}
+};
+
+class TestSharedImageRepresentationOverlay
+    : public SharedImageRepresentationOverlay {
+ public:
+  TestSharedImageRepresentationOverlay(SharedImageManager* manager,
+                                       SharedImageBacking* backing,
+                                       MemoryTypeTracker* tracker)
+      : SharedImageRepresentationOverlay(manager, backing, tracker) {}
+
+  void BeginReadAccess() override {}
+  void EndReadAccess() override {}
+  gl::GLImage* GetGLImage() override { return nullptr; }
+
+#if defined(OS_ANDROID)
+  void NotifyOverlayPromotion(bool promotion,
+                              const gfx::Rect& bounds) override {}
+#endif
 };
 
 }  // namespace
@@ -144,6 +214,30 @@ TestSharedImageBacking::ProduceGLTexturePassthrough(
     MemoryTypeTracker* tracker) {
   return std::make_unique<TestSharedImageRepresentationGLTexturePassthrough>(
       manager, this, tracker, texture_passthrough_);
+}
+
+std::unique_ptr<SharedImageRepresentationSkia>
+TestSharedImageBacking::ProduceSkia(
+    SharedImageManager* manager,
+    MemoryTypeTracker* tracker,
+    scoped_refptr<SharedContextState> context_state) {
+  return std::make_unique<TestSharedImageRepresentationSkia>(manager, this,
+                                                             tracker);
+}
+
+std::unique_ptr<SharedImageRepresentationDawn>
+TestSharedImageBacking::ProduceDawn(SharedImageManager* manager,
+                                    MemoryTypeTracker* tracker,
+                                    WGPUDevice device) {
+  return std::make_unique<TestSharedImageRepresentationDawn>(manager, this,
+                                                             tracker);
+}
+
+std::unique_ptr<SharedImageRepresentationOverlay>
+TestSharedImageBacking::ProduceOverlay(SharedImageManager* manager,
+                                       MemoryTypeTracker* tracker) {
+  return std::make_unique<TestSharedImageRepresentationOverlay>(manager, this,
+                                                                tracker);
 }
 
 }  // namespace gpu

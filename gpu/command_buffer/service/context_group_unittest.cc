@@ -40,7 +40,7 @@ class ContextGroupTest : public GpuServiceTest {
  public:
   static const bool kBindGeneratesResource = false;
 
-  ContextGroupTest() = default;
+  ContextGroupTest() : discardable_manager_(gpu_preferences_) {}
 
  protected:
   void SetUp() override {
@@ -171,5 +171,3 @@ TEST_F(ContextGroupTest, MultipleContexts) {
 
 }  // namespace gles2
 }  // namespace gpu
-
-

@@ -102,6 +102,7 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
             self.constructor_groups = []
             self.operations = list(operations)
             self.operation_groups = []
+            self.exposed_constructs = []
             self.stringifier = stringifier
             self.iterable = iterable
             self.maplike = maplike
@@ -162,6 +163,7 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
                        self._operations),
                 owner=self) for operation_group_ir in ir.operation_groups
         ])
+        self._exposed_constructs = tuple(ir.exposed_constructs)
         self._stringifier = None
         if ir.stringifier:
             operations = filter(lambda x: x.is_stringifier, self._operations)
@@ -265,19 +267,18 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
         return self._operation_groups
 
     @property
+    def exposed_constructs(self):
+        """
+        Returns a list of the constructs that are exposed on this global object.
+        """
+        return tuple(
+            map(lambda ref: ref.target_object, self._exposed_constructs))
+
+    @property
     def named_constructor(self):
         """Returns a named constructor or None."""
         assert False, "Not implemented yet."
 
-    @property
-    def exposed_interfaces(self):
-        """
-        Returns a tuple of interfaces that are exposed to this interface, if
-        this is a global interface.  Returns None otherwise.
-        """
-        assert False, "Not implemented yet."
-
-    # Special operations
     @property
     def indexed_property_handler(self):
         """

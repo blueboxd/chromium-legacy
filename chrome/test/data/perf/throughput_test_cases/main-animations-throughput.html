@@ -32,6 +32,8 @@ const targetMainFps =
   window.location.hash.length > 1 ? +window.location.hash.substr(1) : 0;
 const skipEvery = targetMainFps > 0 ? parseInt(60 / targetMainFps) : 0;
 
+const shouldJank = window.location.search.indexOf('?jank') >= 0;
+
 var currentValue = 0;
 const maxValue = 150;
 const valueChange = 5 * skipEvery;
@@ -53,6 +55,10 @@ function animateStep() {
       currentValue -= valueChange;
       if (currentValue <= minValue)
         incrementing = true;
+    }
+    if (shouldJank) {
+      const now = new Date();
+      while ((new Date() - now) < 16) {}
     }
     mainanim.style[attributeName] = setProp(currentValue);
   }

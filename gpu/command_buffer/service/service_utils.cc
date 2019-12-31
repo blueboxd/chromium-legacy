@@ -129,8 +129,13 @@ GpuPreferences ParseGpuPreferences(const base::CommandLine* command_line) {
   gpu_preferences.enforce_gl_minimums =
       command_line->HasSwitch(switches::kEnforceGLMinimums);
   if (GetUintFromSwitch(command_line, switches::kForceGpuMemAvailableMb,
-                        &gpu_preferences.force_gpu_mem_available)) {
-    gpu_preferences.force_gpu_mem_available *= 1024 * 1024;
+                        &gpu_preferences.force_gpu_mem_available_bytes)) {
+    gpu_preferences.force_gpu_mem_available_bytes *= 1024 * 1024;
+  }
+  if (GetUintFromSwitch(
+          command_line, switches::kForceGpuMemDiscardableLimitMb,
+          &gpu_preferences.force_gpu_mem_discardable_limit_bytes)) {
+    gpu_preferences.force_gpu_mem_discardable_limit_bytes *= 1024 * 1024;
   }
   if (GetUintFromSwitch(command_line, switches::kGpuProgramCacheSizeKb,
                         &gpu_preferences.gpu_program_cache_size)) {

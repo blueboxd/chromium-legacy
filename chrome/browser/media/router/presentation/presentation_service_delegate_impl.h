@@ -19,6 +19,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/presentation/presentation_service_delegate_observers.h"
+#include "chrome/browser/media/router/presentation/web_contents_presentation_manager.h"
 #include "chrome/common/media_router/media_source.h"
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "content/public/browser/presentation_request.h"
@@ -87,27 +88,14 @@ class StartPresentationContext {
 // it also provides default presentation URL that is required for creating
 // browser-initiated presentations.  It is scoped to the lifetime of a
 // WebContents, and is managed by the associated WebContents.
+// It is accessed through the WebContentsPresentationManager interface by
+// clients (e.g. the UI code) that is interested in the presentation status of
+// the WebContents, but not in other aspects such as the render frame.
 class PresentationServiceDelegateImpl
     : public content::WebContentsUserData<PresentationServiceDelegateImpl>,
-      public content::ControllerPresentationServiceDelegate {
+      public content::ControllerPresentationServiceDelegate,
+      public WebContentsPresentationManager {
  public:
-  // Observer interface for listening to default presentation request
-  // changes for the WebContents.
-  class DefaultPresentationRequestObserver {
-   public:
-    virtual ~DefaultPresentationRequestObserver() = default;
-
-    // Called when default presentation request for the corresponding
-    // WebContents is set or changed.
-    // |default_presentation_info|: New default presentation request.
-    virtual void OnDefaultPresentationChanged(
-        const content::PresentationRequest& default_presentation_request) = 0;
-
-    // Called when default presentation request for the corresponding
-    // WebContents has been removed.
-    virtual void OnDefaultPresentationRemoved() = 0;
-  };
-
   // Retrieves the instance of PresentationServiceDelegateImpl that was attached
   // to the specified WebContents.  If no instance was attached, creates one,
   // and attaches it to the specified WebContents.
@@ -160,33 +148,21 @@ class PresentationServiceDelegateImpl
       const content::PresentationConnectionStateChangedCallback&
           state_changed_cb) override;
 
-  // Callback invoked when a default PresentationRequest is started from a
-  // browser-initiated dialog.
-  void OnRouteResponse(const content::PresentationRequest& request,
-                       mojom::RoutePresentationConnectionPtr connection,
-                       const RouteRequestResult& result);
+  // WebContentsPresentationManager implementation.
+  void AddObserver(WebContentsPresentationManager::Observer* observer) override;
+  void RemoveObserver(
+      WebContentsPresentationManager::Observer* observer) override;
+  bool HasDefaultPresentationRequest() const override;
+  const content::PresentationRequest& GetDefaultPresentationRequest()
+      const override;
+  void OnPresentationResponse(const content::PresentationRequest& request,
+                              mojom::RoutePresentationConnectionPtr connection,
+                              const RouteRequestResult& result) override;
 
-  // Adds / removes an observer for listening to default PresentationRequest
-  // changes. This class does not own |observer|. When |observer| is about to
-  // be destroyed, |RemoveDefaultPresentationRequestObserver| must be called.
-  void AddDefaultPresentationRequestObserver(
-      DefaultPresentationRequestObserver* observer);
-  void RemoveDefaultPresentationRequestObserver(
-      DefaultPresentationRequestObserver* observer);
-
-  // Gets the default presentation request for the owning WebContents. It
-  // is an error to call this method if the default presentation request does
-  // not exist.
-  const content::PresentationRequest& GetDefaultPresentationRequest() const;
-
-  // Returns true if there is a default presentation request for the owning tab
-  // WebContents.
-  bool HasDefaultPresentationRequest() const;
+  base::WeakPtr<PresentationServiceDelegateImpl> GetWeakPtr();
 
   // Returns the WebContents that owns this instance.
   content::WebContents* web_contents() const { return web_contents_; }
-
-  base::WeakPtr<PresentationServiceDelegateImpl> GetWeakPtr();
 
   bool HasScreenAvailabilityListenerForTest(
       int render_process_id,
@@ -276,6 +252,9 @@ class PresentationServiceDelegateImpl
       const blink::mojom::PresentationInfo& presentation_info,
       mojom::RoutePresentationConnectionPtr* connection);
 
+  void NotifyDefaultPresentationChanged(
+      const content::PresentationRequest* request);
+
   // References to the WebContents that owns this instance, and associated
   // browser profile's MediaRouter instance.
   content::WebContents* const web_contents_;
@@ -283,8 +262,8 @@ class PresentationServiceDelegateImpl
 
   // References to the observers listening for changes to the default
   // presentation of the associated WebContents.
-  base::ObserverList<DefaultPresentationRequestObserver>::Unchecked
-      default_presentation_request_observers_;
+  base::ObserverList<WebContentsPresentationManager::Observer>
+      presentation_observers_;
 
   // Default presentation request for the owning WebContents.
   base::Optional<content::PresentationRequest> default_presentation_request_;

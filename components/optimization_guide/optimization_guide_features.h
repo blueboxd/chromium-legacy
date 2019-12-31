@@ -99,6 +99,14 @@ bool IsOptimizationTargetPredictionEnabled();
 // to be used and remain in the OptimizationGuideStore.
 base::TimeDelta StoredHostModelFeaturesFreshnessDuration();
 
+// The maximum number of hosts allowed to be requested by the client to the
+// remote Optimzation Guide Service for use by prediction models.
+size_t MaxHostsForOptimizationGuideServiceModelsFetch();
+
+// The maximum number of hosts allowed to be maintained in a least-recently-used
+// cache by the prediction manager.
+size_t MaxHostModelFeaturesCacheSize();
+
 // Returns true if the optimization target decision for |optimization_target|
 // should not be propagated to the caller in an effort to fully understand the
 // statistics for the served model and not taint the resulting data.

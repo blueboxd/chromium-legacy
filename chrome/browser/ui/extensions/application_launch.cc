@@ -144,14 +144,22 @@ bool IsAllowedToOverrideURL(const extensions::Extension* extension,
 // |override_url|, if non-empty, will be preferred over the extension's
 // launch url.
 GURL UrlForExtension(const extensions::Extension* extension,
-                     const GURL& override_url) {
+                     Profile* profile,
+                     const apps::AppLaunchParams& params) {
   if (!extension)
-    return override_url;
+    return params.override_url;
 
   GURL url;
-  if (!override_url.is_empty()) {
-    DCHECK(IsAllowedToOverrideURL(extension, override_url));
-    url = override_url;
+  if (!params.override_url.is_empty()) {
+    DCHECK(IsAllowedToOverrideURL(extension, params.override_url));
+    url = params.override_url;
+  } else if (extension->from_bookmark()) {
+    web_app::FileHandlerManager& file_handler_manager =
+        web_app::WebAppProviderBase::GetProviderBase(profile)
+            ->file_handler_manager();
+    url = file_handler_manager
+              .GetMatchingFileHandlerURL(params.app_id, params.launch_files)
+              .value_or(extensions::AppLaunchInfo::GetFullLaunchURL(extension));
   } else {
     url = extensions::AppLaunchInfo::GetFullLaunchURL(extension);
   }
@@ -303,7 +311,7 @@ WebContents* OpenEnabledApplication(Profile* profile,
   UMA_HISTOGRAM_ENUMERATION("Extensions.HostedAppLaunchContainer",
                             params.container);
 
-  GURL url = UrlForExtension(extension, params.override_url);
+  GURL url = UrlForExtension(extension, profile, params);
 
   // System Web Apps go through their own launch path.
   base::Optional<web_app::SystemAppType> system_app_type =
@@ -335,6 +343,11 @@ WebContents* OpenEnabledApplication(Profile* profile,
     default:
       NOTREACHED();
       break;
+  }
+
+  if (base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI)) {
+    web_launch::WebLaunchFilesHelper::SetLaunchPaths(tab, url,
+                                                     params.launch_files);
   }
 
   if (extension->from_bookmark()) {
@@ -410,23 +423,12 @@ Browser* CreateApplicationWindow(Profile* profile,
 
 WebContents* NavigateApplicationWindow(Browser* browser,
                                        const apps::AppLaunchParams& params,
-                                       const GURL& default_url,
+                                       const GURL& url,
                                        WindowOpenDisposition disposition) {
   const Extension* const extension = GetExtension(browser->profile(), params);
   ui::PageTransition transition =
       (extension ? ui::PAGE_TRANSITION_AUTO_BOOKMARK
                  : ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
-
-  GURL url = default_url;
-
-  if (extension && extension->from_bookmark()) {
-    web_app::FileHandlerManager& file_handler_manager =
-        web_app::WebAppProviderBase::GetProviderBase(browser->profile())
-            ->file_handler_manager();
-    url = file_handler_manager
-              .GetMatchingFileHandlerURL(params.app_id, params.launch_files)
-              .value_or(default_url);
-  }
 
   NavigateParams nav_params(browser, url, transition);
   nav_params.disposition = disposition;

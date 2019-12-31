@@ -10,8 +10,8 @@ namespace network {
 namespace {
 
 struct BytesTransferredKey {
-  uint32_t process_id;
-  uint32_t routing_id;
+  int32_t process_id;
+  int32_t routing_id;
 };
 
 }  // namespace
@@ -39,7 +39,7 @@ class NetworkUsageAccumulatorTest : public testing::Test {
     return nullptr;
   }
 
-  void ClearBytesTransferredForProcess(uint32_t process_id) {
+  void ClearBytesTransferredForProcess(int32_t process_id) {
     network_usage_accumulator_.ClearBytesTransferredForProcess(process_id);
   }
 

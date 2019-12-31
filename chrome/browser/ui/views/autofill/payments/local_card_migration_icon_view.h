@@ -18,8 +18,10 @@ class ManageMigrationUiController;
 // bubble.
 class LocalCardMigrationIconView : public PageActionIconView {
  public:
-  LocalCardMigrationIconView(CommandUpdater* command_updater,
-                             PageActionIconView::Delegate* delegate);
+  LocalCardMigrationIconView(
+      CommandUpdater* command_updater,
+      IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
+      PageActionIconView::Delegate* page_action_icon_delegate);
   ~LocalCardMigrationIconView() override;
 
   // PageActionIconView:

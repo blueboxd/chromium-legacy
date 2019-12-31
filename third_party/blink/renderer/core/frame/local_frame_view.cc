@@ -458,13 +458,6 @@ void LocalFrameView::FrameRectsChanged(const IntRect& old_rect) {
     if (frame_->IsMainFrame())
       frame_->GetPage()->GetVisualViewport().MainFrameDidChangeSize();
     GetFrame().Loader().RestoreScrollPositionAndViewState();
-    if (GetScrollableArea()) {
-      if (GetScrollableArea()->ApplyPendingHistoryRestoreScrollOffset()) {
-        if (ScrollingCoordinator* scrolling_coordinator =
-                GetFrame().GetPage()->GetScrollingCoordinator())
-          scrolling_coordinator->FrameViewRootLayerDidChange(this);
-      }
-    }
   }
 }
 

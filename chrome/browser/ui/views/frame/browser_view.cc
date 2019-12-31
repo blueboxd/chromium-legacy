@@ -87,6 +87,7 @@
 #include "chrome/browser/ui/views/frame/contents_layout_manager.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/tab_strip_region_view.h"
+#include "chrome/browser/ui/views/frame/top_container_loading_bar.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/frame/web_contents_close_handler.h"
 #include "chrome/browser/ui/views/frame/web_footer_experiment_view.h"
@@ -898,6 +899,8 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
       // read out to screen readers, even if focus doesn't actually change.
       GetWidget()->GetFocusManager()->ClearFocus();
     }
+    if (loading_bar_)
+      loading_bar_->SetWebContents(nullptr);
     contents_web_view_->SetWebContents(nullptr);
     devtools_web_view_->SetWebContents(nullptr);
   }
@@ -939,6 +942,8 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
     }
 
     web_contents_close_handler_->ActiveTabChanged();
+    if (loading_bar_)
+      loading_bar_->SetWebContents(new_contents);
     contents_web_view_->SetWebContents(new_contents);
     SadTabHelper* sad_tab_helper = SadTabHelper::FromWebContents(new_contents);
     if (sad_tab_helper)
@@ -968,6 +973,8 @@ void BrowserView::OnTabDetached(content::WebContents* contents,
     // freed. This is because the focus manager performs some operations
     // on the selected WebContents when it is removed.
     web_contents_close_handler_->ActiveTabChanged();
+    if (loading_bar_)
+      loading_bar_->SetWebContents(nullptr);
     contents_web_view_->SetWebContents(nullptr);
     infobar_container_->ChangeInfoBarManager(nullptr);
     app_banner_manager_observer_.RemoveAll();
@@ -1776,6 +1783,9 @@ void BrowserView::OnTabStripModelChanged(
   // possible change.
   if (selection.selection_changed())
     toolbar_->InvalidateLayout();
+
+  if (loading_bar_)
+    loading_bar_->SetWebContents(GetActiveWebContents());
 
   if (change.type() != TabStripModelChange::kInserted)
     return;
@@ -2697,13 +2707,21 @@ void BrowserView::MaybeInitializeWebUITabStrip() {
       webui_tab_strip_ = top_container_->AddChildView(
           std::make_unique<WebUITabStripContainerView>(browser_.get(),
                                                        contents_container_));
+      loading_bar_ = top_container_->AddChildView(
+          std::make_unique<TopContainerLoadingBar>());
+      loading_bar_->SetWebContents(GetActiveWebContents());
     }
   } else if (webui_tab_strip_) {
     top_container_->RemoveChildView(webui_tab_strip_);
     delete webui_tab_strip_;
     webui_tab_strip_ = nullptr;
+
+    top_container_->RemoveChildView(loading_bar_);
+    delete loading_bar_;
+    loading_bar_ = nullptr;
   }
   GetBrowserViewLayout()->set_webui_tab_strip(webui_tab_strip_);
+  GetBrowserViewLayout()->set_loading_bar(loading_bar_);
   if (toolbar_)
     toolbar_->UpdateForWebUITabStrip();
 #endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)

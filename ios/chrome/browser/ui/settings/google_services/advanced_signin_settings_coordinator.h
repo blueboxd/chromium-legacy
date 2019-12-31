@@ -7,7 +7,6 @@
 
 #import "base/ios/block_types.h"
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
-#import "ios/chrome/browser/ui/settings/google_services/advanced_signin_settings_constants.h"
 
 @class AdvancedSigninSettingsCoordinator;
 @protocol ApplicationCommands;

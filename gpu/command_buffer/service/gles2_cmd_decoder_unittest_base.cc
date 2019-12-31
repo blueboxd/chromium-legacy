@@ -132,7 +132,8 @@ GLES2DecoderTestBase::GLES2DecoderTestBase()
       cached_stencil_front_mask_(static_cast<GLuint>(-1)),
       cached_stencil_back_mask_(static_cast<GLuint>(-1)),
       shader_language_version_(100),
-      shader_translator_cache_(gpu_preferences_) {
+      shader_translator_cache_(gpu_preferences_),
+      discardable_manager_(gpu_preferences_) {
   memset(immediate_buffer_, 0xEE, sizeof(immediate_buffer_));
 }
 
@@ -2394,7 +2395,9 @@ GpuPreferences GenerateGpuPreferencesForPassthroughTests() {
 GLES2DecoderPassthroughTestBase::GLES2DecoderPassthroughTestBase(
     ContextType context_type)
     : gpu_preferences_(GenerateGpuPreferencesForPassthroughTests()),
-      shader_translator_cache_(gpu_preferences_) {
+      shader_translator_cache_(gpu_preferences_),
+      discardable_manager_(gpu_preferences_),
+      passthrough_discardable_manager_(gpu_preferences_) {
   context_creation_attribs_.context_type = context_type;
 }
 

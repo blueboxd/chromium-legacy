@@ -52,7 +52,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoaderFactory final
   // URLLoaders.
   void ClearBindings();
 
-  uint32_t process_id() const { return process_id_; }
+  int32_t process_id() const { return process_id_; }
 
   // Set whether the factory allows CORS preflights. See IsSane.
   static void SetAllowExternalPreflightsForTesting(bool allow) {
@@ -91,7 +91,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoaderFactory final
 
   // Retained from URLLoaderFactoryParams:
   const bool disable_web_security_;
-  const uint32_t process_id_ = mojom::kInvalidProcessId;
+  const int32_t process_id_ = mojom::kInvalidProcessId;
   const base::Optional<url::Origin> request_initiator_site_lock_;
 
   // Relative order of |network_loader_factory_| and |loaders_| matters -

@@ -11,7 +11,6 @@ import androidx.annotation.MainThread;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
@@ -23,10 +22,7 @@ import org.chromium.components.signin.AccountTrackerService;
 import org.chromium.components.signin.AuthException;
 import org.chromium.net.NetworkChangeNotifier;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -41,8 +37,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 public final class ProfileOAuth2TokenServiceDelegate
         implements AccountTrackerService.OnSystemAccountsSeededListener {
     private static final String TAG = "OAuth2TokenService";
-
-    public static final String STORED_ACCOUNTS_KEY = "google.services.stored_accounts";
 
     /**
      * A simple callback for getAccessToken.
@@ -126,18 +120,6 @@ public final class ProfileOAuth2TokenServiceDelegate
             List<String> accountNames = mAccountManagerFacade.tryGetGoogleAccountNames();
             return accountNames.toArray(new String[accountNames.size()]);
         }
-    }
-
-    /**
-     * Called by native to list the accounts Id with OAuth2 refresh tokens.
-     * This can differ from getSystemAccountNames as the user add/remove accounts
-     * from the OS. updateAccountList should be called to keep these two
-     * in sync.
-     */
-    @CalledByNative
-    @VisibleForTesting
-    static String[] getAccounts() {
-        return getStoredAccounts();
     }
 
     /**
@@ -325,26 +307,6 @@ public final class ProfileOAuth2TokenServiceDelegate
     private void reloadAllAccountsWithPrimaryAccountAfterSeeding(@Nullable String accountId) {
         ProfileOAuth2TokenServiceDelegateJni.get().reloadAllAccountsWithPrimaryAccountAfterSeeding(
                 mNativeProfileOAuth2TokenServiceDelegate, accountId);
-    }
-
-    private static String[] getStoredAccounts() {
-        Set<String> accounts =
-                ContextUtils.getAppSharedPreferences().getStringSet(STORED_ACCOUNTS_KEY, null);
-        return accounts == null ? new String[] {} : accounts.toArray(new String[0]);
-    }
-
-    /**
-     * Called by native to save the account IDs that have associated OAuth2 refresh tokens.
-     * This is called during updateAccountList to sync with getSystemAccountNames.
-     * @param accounts IDs to save.
-     */
-    @CalledByNative
-    private static void setAccounts(String[] accounts) {
-        Set<String> set = new HashSet<>(Arrays.asList(accounts));
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putStringSet(STORED_ACCOUNTS_KEY, set)
-                .apply();
     }
 
     private interface AuthTask<T> {

@@ -56,7 +56,7 @@ uint32_t TestClient::GetBackgroundColor() {
   return 0;
 }
 
-float TestClient::GetToolbarHeightInScreenCoords() {
+float TestClient::GetToolbarHeightInScreenCoords() const {
   return 0;
 }
 

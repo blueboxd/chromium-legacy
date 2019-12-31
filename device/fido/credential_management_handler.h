@@ -90,7 +90,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CredentialManagementHandler
     kWaitingForTouch,
     kGettingRetries,
     kWaitingForPIN,
-    kGettingEphemeralKey,
     kGettingPINToken,
     kReady,
     kGettingMetadata,
@@ -108,9 +107,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CredentialManagementHandler
   void OnRetriesResponse(CtapDeviceResponseCode status,
                          base::Optional<pin::RetriesResponse> response);
   void OnHavePIN(std::string pin);
-  void OnHaveEphemeralKey(std::string pin,
-                          CtapDeviceResponseCode status,
-                          base::Optional<pin::KeyAgreementResponse> response);
   void OnHavePINToken(CtapDeviceResponseCode status,
                       base::Optional<pin::TokenResponse> response);
   void OnCredentialsMetadata(

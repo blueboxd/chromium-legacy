@@ -36,7 +36,7 @@ class VIEWS_EXAMPLES_EXPORT TabbedPaneExample : public ExampleBase,
   void TabSelectedAt(int index) override;
 
   // Print the status of the tab in the status area.
-  void PrintStatus();
+  void PrintCurrentStatus();
 
   void AddButton(const std::string& label);
 

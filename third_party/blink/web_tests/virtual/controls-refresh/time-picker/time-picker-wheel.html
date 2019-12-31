@@ -32,7 +32,5 @@ function test1() {
   }, 200);
 }
 
-openPicker(document.getElementById('time'), t.step_func(test1), t.step_func_done(() => {
-    assert_false(internals.runtimeFlags.formControlsRefreshEnabled, "Popup did not open.");
-  }));
+openPicker(document.getElementById('time'), t.step_func(test1));
 </script>

@@ -7,6 +7,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/page/scrolling/element_fragment_anchor.h"
 #include "third_party/blink/renderer/core/page/scrolling/text_fragment_anchor.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -68,7 +69,7 @@ FragmentAnchor* FragmentAnchor::TryCreate(const KURL& url,
   // Track how often we have a element fragment that we can't find. Only track
   // if we didn't match a text fragment since we expect those would inflate the
   // "failed" case.
-  if (frame.GetDocument()->IsHTMLDocument() && url.HasFragmentIdentifier() &&
+  if (IsA<HTMLDocument>(frame.GetDocument()) && url.HasFragmentIdentifier() &&
       !text_fragment_anchor_created) {
     UMA_HISTOGRAM_BOOLEAN("TextFragmentAnchor.ElementIdFragmentFound",
                           element_id_anchor_found);

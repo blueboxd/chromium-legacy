@@ -7,6 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
+#include "ui/views/examples/examples_window.h"
 #include "ui/views/layout/grid_layout.h"
 
 using base::ASCIIToUTF16;
@@ -67,18 +68,17 @@ void TabbedPaneExample::ButtonPressed(Button* sender, const ui::Event& event) {
     if (tabbed_pane_->GetTabCount() > 1)
       tabbed_pane_->SelectTabAt(1);
   }
-  PrintStatus();
+  PrintCurrentStatus();
 }
 
 void TabbedPaneExample::TabSelectedAt(int index) {
   // Just print the status when selection changes.
-  PrintStatus();
+  PrintCurrentStatus();
 }
 
-void TabbedPaneExample::PrintStatus() {
-  ExampleBase::PrintStatus("Tab Count:%" PRIuS ", Selected Tab:%" PRIuS,
-                           tabbed_pane_->GetTabCount(),
-                           tabbed_pane_->GetSelectedTabIndex());
+void TabbedPaneExample::PrintCurrentStatus() {
+  PrintStatus("Tab Count:%" PRIuS ", Selected Tab:%" PRIuS,
+              tabbed_pane_->GetTabCount(), tabbed_pane_->GetSelectedTabIndex());
 }
 
 void TabbedPaneExample::AddButton(const std::string& label) {

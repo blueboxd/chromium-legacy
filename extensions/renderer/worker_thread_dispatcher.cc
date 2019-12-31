@@ -264,12 +264,14 @@ void WorkerThreadDispatcher::OnDispatchOnDisconnect(
 
 void WorkerThreadDispatcher::AddWorkerData(
     int64_t service_worker_version_id,
+    int activation_sequence,
     ScriptContext* script_context,
     std::unique_ptr<NativeExtensionBindingsSystem> bindings_system) {
   ServiceWorkerData* data = g_data_tls.Pointer()->Get();
   if (!data) {
-    ServiceWorkerData* new_data = new ServiceWorkerData(
-        service_worker_version_id, script_context, std::move(bindings_system));
+    ServiceWorkerData* new_data =
+        new ServiceWorkerData(service_worker_version_id, activation_sequence,
+                              script_context, std::move(bindings_system));
     g_data_tls.Pointer()->Set(new_data);
   }
 
@@ -300,8 +302,8 @@ void WorkerThreadDispatcher::DidStartContext(
   const int thread_id = content::WorkerThread::GetCurrentId();
   DCHECK_NE(thread_id, kMainThreadId);
   Send(new ExtensionHostMsg_DidStartServiceWorkerContext(
-      data->context()->GetExtensionID(), service_worker_scope,
-      service_worker_version_id, thread_id));
+      data->context()->GetExtensionID(), data->activation_sequence(),
+      service_worker_scope, service_worker_version_id, thread_id));
 }
 
 void WorkerThreadDispatcher::DidStopContext(const GURL& service_worker_scope,
@@ -311,8 +313,8 @@ void WorkerThreadDispatcher::DidStopContext(const GURL& service_worker_scope,
   DCHECK_NE(thread_id, kMainThreadId);
   DCHECK_EQ(service_worker_version_id, data->service_worker_version_id());
   Send(new ExtensionHostMsg_DidStopServiceWorkerContext(
-      data->context()->GetExtensionID(), service_worker_scope,
-      service_worker_version_id, thread_id));
+      data->context()->GetExtensionID(), data->activation_sequence(),
+      service_worker_scope, service_worker_version_id, thread_id));
 }
 
 void WorkerThreadDispatcher::RemoveWorkerData(

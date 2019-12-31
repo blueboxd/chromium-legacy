@@ -55,7 +55,8 @@
           "-v",
           "--browser=android-chrome-bundle",
           "--upload-results",
-          "--test-shard-map-filename=android-pixel2-perf-aab-fyi_map.json"
+          "--test-shard-map-filename=android-pixel2-perf-aab-fyi_map.json",
+          "--run-ref-build"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {

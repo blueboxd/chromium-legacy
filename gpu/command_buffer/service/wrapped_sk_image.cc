@@ -157,6 +157,7 @@ class WrappedSkImage : public ClearTrackingSharedImageBacking {
       if (!image_)
         return false;
 
+      SetCleared();
       OnWriteSucceeded();
     } else {
       // Initializing to bright green makes it obvious if the pixels are not

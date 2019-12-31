@@ -153,6 +153,8 @@ class RecordReplayContext : public GpuControl {
   RecordReplayContext()
       : gpu_preferences_(GetGpuPreferences()),
         share_group_(new gl::GLShareGroup),
+        discardable_manager_(gpu::GpuPreferences()),
+        passthrough_discardable_manager_(gpu::GpuPreferences()),
         translator_cache_(gpu_preferences_) {
     bool bind_generates_resource = false;
     if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-stub")) {

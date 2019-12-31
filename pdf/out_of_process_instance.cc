@@ -1009,6 +1009,10 @@ void OutOfProcessInstance::SendAccessibilityViewportInfo() {
 
   viewport_info.zoom = zoom_;
   viewport_info.scale = device_scale_;
+  viewport_info.total_scrollable_size = {GetTotalScrollableWidth(),
+                                         GetTotalScrollableHeight()};
+  viewport_info.current_scroll_position = {GetHorizontalScrollPosition(),
+                                           GetVerticalScrollPosition()};
 
   engine_->GetSelection(&viewport_info.selection_start_page_index,
                         &viewport_info.selection_start_char_index,
@@ -1289,6 +1293,25 @@ int OutOfProcessInstance::GetDocumentPixelWidth() const {
 int OutOfProcessInstance::GetDocumentPixelHeight() const {
   return static_cast<int>(
       ceil(document_size_.height() * zoom_ * device_scale_));
+}
+
+int OutOfProcessInstance::GetTotalScrollableWidth() const {
+  return std::max(GetDocumentPixelWidth() - plugin_size_.width(), 0);
+}
+
+int OutOfProcessInstance::GetTotalScrollableHeight() const {
+  return std::max(static_cast<int>(GetDocumentPixelHeight() +
+                                   GetToolbarHeightInScreenCoords() -
+                                   plugin_size_.height()),
+                  0);
+}
+
+int OutOfProcessInstance::GetHorizontalScrollPosition() const {
+  return static_cast<int>(scroll_offset_.x() * device_scale_);
+}
+
+int OutOfProcessInstance::GetVerticalScrollPosition() const {
+  return static_cast<int>(scroll_offset_.y() * device_scale_);
 }
 
 void OutOfProcessInstance::FillRect(const pp::Rect& rect, uint32_t color) {
@@ -1982,7 +2005,7 @@ void OutOfProcessInstance::IsEditModeChanged(bool is_edit_mode) {
   pp::PDF::SetPluginCanSave(this, ShouldSaveEdits());
 }
 
-float OutOfProcessInstance::GetToolbarHeightInScreenCoords() {
+float OutOfProcessInstance::GetToolbarHeightInScreenCoords() const {
   return top_toolbar_height_in_viewport_coords_ * device_scale_;
 }
 

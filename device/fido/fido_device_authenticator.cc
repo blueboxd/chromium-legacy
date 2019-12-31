@@ -120,13 +120,26 @@ void FidoDeviceAuthenticator::GetEphemeralKey(
 
 void FidoDeviceAuthenticator::GetPINToken(
     std::string pin,
-    const pin::KeyAgreementResponse& peer_key,
     GetPINTokenCallback callback) {
   DCHECK(Options());
   DCHECK(Options()->client_pin_availability !=
          AuthenticatorSupportedOptions::ClientPinAvailability::kNotSupported);
 
-  pin::TokenRequest request(pin, peer_key);
+  GetEphemeralKey(base::BindOnce(
+      &FidoDeviceAuthenticator::OnHaveEphemeralKeyForGetPINToken,
+      weak_factory_.GetWeakPtr(), std::move(pin), std::move(callback)));
+}
+
+void FidoDeviceAuthenticator::OnHaveEphemeralKeyForGetPINToken(
+    std::string pin,
+    GetPINTokenCallback callback,
+    CtapDeviceResponseCode status,
+    base::Optional<pin::KeyAgreementResponse> key) {
+  if (status != CtapDeviceResponseCode::kSuccess) {
+    std::move(callback).Run(status, base::nullopt);
+    return;
+  }
+  pin::TokenRequest request(pin, *key);
   std::array<uint8_t, 32> shared_key = request.shared_key();
   RunOperation<pin::TokenRequest, pin::TokenResponse>(
       std::move(request), std::move(callback),
@@ -134,27 +147,57 @@ void FidoDeviceAuthenticator::GetPINToken(
 }
 
 void FidoDeviceAuthenticator::SetPIN(const std::string& pin,
-                                     const pin::KeyAgreementResponse& peer_key,
                                      SetPINCallback callback) {
   DCHECK(Options());
   DCHECK(Options()->client_pin_availability !=
          AuthenticatorSupportedOptions::ClientPinAvailability::kNotSupported);
 
+  GetEphemeralKey(base::BindOnce(
+      &FidoDeviceAuthenticator::OnHaveEphemeralKeyForSetPIN,
+      weak_factory_.GetWeakPtr(), std::move(pin), std::move(callback)));
+}
+
+void FidoDeviceAuthenticator::OnHaveEphemeralKeyForSetPIN(
+    std::string pin,
+    SetPINCallback callback,
+    CtapDeviceResponseCode status,
+    base::Optional<pin::KeyAgreementResponse> key) {
+  if (status != CtapDeviceResponseCode::kSuccess) {
+    std::move(callback).Run(status, base::nullopt);
+    return;
+  }
+
   RunOperation<pin::SetRequest, pin::EmptyResponse>(
-      pin::SetRequest(pin, peer_key), std::move(callback),
+      pin::SetRequest(pin, *key), std::move(callback),
       base::BindOnce(&pin::EmptyResponse::Parse));
 }
 
 void FidoDeviceAuthenticator::ChangePIN(const std::string& old_pin,
                                         const std::string& new_pin,
-                                        pin::KeyAgreementResponse& peer_key,
                                         SetPINCallback callback) {
   DCHECK(Options());
   DCHECK(Options()->client_pin_availability !=
          AuthenticatorSupportedOptions::ClientPinAvailability::kNotSupported);
 
+  GetEphemeralKey(
+      base::BindOnce(&FidoDeviceAuthenticator::OnHaveEphemeralKeyForChangePIN,
+                     weak_factory_.GetWeakPtr(), std::move(old_pin),
+                     std::move(new_pin), std::move(callback)));
+}
+
+void FidoDeviceAuthenticator::OnHaveEphemeralKeyForChangePIN(
+    std::string old_pin,
+    std::string new_pin,
+    SetPINCallback callback,
+    CtapDeviceResponseCode status,
+    base::Optional<pin::KeyAgreementResponse> key) {
+  if (status != CtapDeviceResponseCode::kSuccess) {
+    std::move(callback).Run(status, base::nullopt);
+    return;
+  }
+
   RunOperation<pin::ChangeRequest, pin::EmptyResponse>(
-      pin::ChangeRequest(old_pin, new_pin, peer_key), std::move(callback),
+      pin::ChangeRequest(old_pin, new_pin, *key), std::move(callback),
       base::BindOnce(&pin::EmptyResponse::Parse));
 }
 

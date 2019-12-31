@@ -228,9 +228,8 @@ void UserScriptListener::OnExtensionLoaded(
 
   URLPatterns new_patterns;
   CollectURLPatterns(extension, &new_patterns);
-  if (!new_patterns.empty()) {
-    AppendNewURLPatterns(browser_context, new_patterns);
-  }
+  DCHECK(!new_patterns.empty());
+  AppendNewURLPatterns(browser_context, new_patterns);
 }
 
 void UserScriptListener::OnExtensionUnloaded(

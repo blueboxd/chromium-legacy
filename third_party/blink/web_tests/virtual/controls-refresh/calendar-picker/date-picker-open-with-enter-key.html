@@ -13,11 +13,7 @@
 test(() => {
   document.getElementById('date').focus();
   eventSender.keyDown("Enter");
-  if (internals.runtimeFlags.formControlsRefreshEnabled) {
-    assert_not_equals(internals.pagePopupWindow, null);
-  } else {
-    assert_equals(internals.pagePopupWindow, null);
-  }
+  assert_not_equals(internals.pagePopupWindow, null);
 }, "Test opening date picker with Enter key.");
 
 </script>

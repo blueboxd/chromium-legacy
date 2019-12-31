@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/html_link_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
@@ -759,7 +760,7 @@ Response InspectorDOMAgent::setAttributesAsText(int element_id,
   DocumentFragment* fragment = element->GetDocument().createDocumentFragment();
 
   bool should_ignore_case =
-      element->GetDocument().IsHTMLDocument() && element->IsHTMLElement();
+      IsA<HTMLDocument>(element->GetDocument()) && element->IsHTMLElement();
   // Not all elements can represent the context (i.e. IFRAME), hence using
   // document.body.
   if (should_ignore_case && element->GetDocument().body()) {
@@ -900,7 +901,8 @@ Response InspectorDOMAgent::setOuterHTML(int node_id,
 
   Document* document =
       IsA<Document>(node) ? To<Document>(node) : node->ownerDocument();
-  if (!document || (!document->IsHTMLDocument() && !IsA<XMLDocument>(document)))
+  if (!document ||
+      (!IsA<HTMLDocument>(document) && !IsA<XMLDocument>(document)))
     return Response::Error("Not an HTML/XML document");
 
   Node* new_node = nullptr;

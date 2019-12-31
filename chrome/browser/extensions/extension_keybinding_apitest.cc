@@ -20,7 +20,7 @@
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/extensions/browser_action_test_util.h"
+#include "chrome/browser/ui/extensions/extension_action_test_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
@@ -282,7 +282,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, Basic) {
   // immaterial to this test).
   ASSERT_TRUE(RunExtensionTest("keybinding/conflicting")) << message_;
 
-  auto browser_actions_bar = BrowserActionTestUtil::Create(browser());
+  auto browser_actions_bar = ExtensionActionTestHelper::Create(browser());
   // Test that there are two browser actions in the toolbar.
   ASSERT_EQ(2, browser_actions_bar->NumberOfBrowserActions());
 
@@ -373,8 +373,8 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, OverflowedPageActionTriggers) {
         ToolbarActionsModel::Get(profile());
     toolbar_actions_model->SetVisibleIconCount(0);
   }
-  std::unique_ptr<BrowserActionTestUtil> test_helper =
-      BrowserActionTestUtil::Create(browser());
+  std::unique_ptr<ExtensionActionTestHelper> test_helper =
+      ExtensionActionTestHelper::Create(browser());
   EXPECT_EQ(0, test_helper->VisibleBrowserActions());
 
   ui_test_utils::NavigateToURL(

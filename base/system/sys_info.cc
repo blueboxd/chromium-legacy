@@ -10,10 +10,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/no_destructor.h"
 #include "base/system/sys_info_internal.h"
 #include "base/task/post_task.h"
@@ -24,28 +22,14 @@
 
 namespace base {
 namespace {
-
-// Feature used to control the heuristics used to categorize a device as low
-// end.
-const base::Feature kLowEndDeviceDetectionFeature{
-    "LowEndDeviceDetection", base::FEATURE_DISABLED_BY_DEFAULT};
-
-static const int kLowMemoryDeviceThresholdMBDefault = 512;
-
-int GetLowMemoryDeviceThresholdMB() {
-  static constexpr base::FeatureParam<int> kLowEndDeviceMemoryThresholdMB{
-      &kLowEndDeviceDetectionFeature, "LowEndDeviceMemoryThresholdMB",
-      kLowMemoryDeviceThresholdMBDefault};
-  // If the feature is disabled then |Get| will return the default value.
-  return kLowEndDeviceMemoryThresholdMB.Get();
-}
+static const int kLowMemoryDeviceThresholdMB = 512;
 }  // namespace
 
 // static
 int64_t SysInfo::AmountOfPhysicalMemory() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableLowEndDeviceMode)) {
-    return GetLowMemoryDeviceThresholdMB() * 1024 * 1024;
+    return kLowMemoryDeviceThresholdMB * 1024 * 1024;
   }
 
   return AmountOfPhysicalMemoryImpl();
@@ -56,10 +40,10 @@ int64_t SysInfo::AmountOfAvailablePhysicalMemory() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableLowEndDeviceMode)) {
     // Estimate the available memory by subtracting our memory used estimate
-    // from the fake |GetLowMemoryDeviceThresholdMB()| limit.
+    // from the fake |kLowMemoryDeviceThresholdMB| limit.
     size_t memory_used =
         AmountOfPhysicalMemoryImpl() - AmountOfAvailablePhysicalMemoryImpl();
-    size_t memory_limit = GetLowMemoryDeviceThresholdMB() * 1024 * 1024;
+    size_t memory_limit = kLowMemoryDeviceThresholdMB * 1024 * 1024;
     // std::min ensures no underflow, as |memory_used| can be > |memory_limit|.
     return memory_limit - std::min(memory_used, memory_limit);
   }
@@ -86,7 +70,7 @@ bool DetectLowEndDevice() {
     return false;
 
   int ram_size_mb = SysInfo::AmountOfPhysicalMemoryMB();
-  return (ram_size_mb > 0 && ram_size_mb <= GetLowMemoryDeviceThresholdMB());
+  return (ram_size_mb > 0 && ram_size_mb <= kLowMemoryDeviceThresholdMB);
 }
 
 // static

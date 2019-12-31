@@ -28,9 +28,6 @@ class VIEWS_EXAMPLES_EXPORT ExampleBase {
  protected:
   explicit ExampleBase(const char* title);
 
-  // Prints a message in the status area, at the bottom of the window.
-  void PrintStatus(const char* format, ...);
-
  private:
   // Name of the example - used as title in the combobox list.
   std::string example_title_;

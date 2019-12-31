@@ -193,6 +193,17 @@ base::TimeDelta StoredHostModelFeaturesFreshnessDuration() {
       "max_store_duration_for_host_model_features_in_days", 7));
 }
 
+size_t MaxHostsForOptimizationGuideServiceModelsFetch() {
+  return GetFieldTrialParamByFeatureAsInt(
+      kOptimizationTargetPrediction,
+      "max_hosts_for_optimization_guide_service_models_fetch", 30);
+}
+
+size_t MaxHostModelFeaturesCacheSize() {
+  return GetFieldTrialParamByFeatureAsInt(
+      kOptimizationTargetPrediction, "max_host_model_features_cache_size", 100);
+}
+
 bool IsOptimizationTargetPredictionEnabled() {
   return base::FeatureList::IsEnabled(kOptimizationTargetPrediction);
 }

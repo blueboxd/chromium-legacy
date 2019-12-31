@@ -356,7 +356,8 @@ struct ExtensionMsg_Loaded_Params {
   ExtensionMsg_Loaded_Params();
   ~ExtensionMsg_Loaded_Params();
   ExtensionMsg_Loaded_Params(const extensions::Extension* extension,
-                             bool include_tab_permissions);
+                             bool include_tab_permissions,
+                             base::Optional<int> worker_activation_sequence);
 
   ExtensionMsg_Loaded_Params(ExtensionMsg_Loaded_Params&& other);
   ExtensionMsg_Loaded_Params& operator=(ExtensionMsg_Loaded_Params&& other);
@@ -390,6 +391,10 @@ struct ExtensionMsg_Loaded_Params {
 
   // We keep this separate so that it can be used in logging.
   std::string id;
+
+  // If this extension is Service Worker based, then this contains the
+  // activation sequence of the extension.
+  base::Optional<int> worker_activation_sequence;
 
   // Send creation flags so extension is initialized identically.
   int creation_flags;
@@ -1060,16 +1065,18 @@ IPC_MESSAGE_CONTROL3(ExtensionHostMsg_DidInitializeServiceWorkerContext,
 //     straightforward as it changes SW IPC ordering with respect of rest of
 //     Chrome.
 // See https://crbug.com/879015#c4 for details.
-IPC_MESSAGE_CONTROL4(ExtensionHostMsg_DidStartServiceWorkerContext,
+IPC_MESSAGE_CONTROL5(ExtensionHostMsg_DidStartServiceWorkerContext,
                      std::string /* extension_id */,
+                     int /* activation_sequence */,
                      GURL /* service_worker_scope */,
                      int64_t /* service_worker_version_id */,
                      int /* worker_thread_id */)
 
 // Tells the browser that an extension service worker context has been
 // destroyed.
-IPC_MESSAGE_CONTROL4(ExtensionHostMsg_DidStopServiceWorkerContext,
+IPC_MESSAGE_CONTROL5(ExtensionHostMsg_DidStopServiceWorkerContext,
                      std::string /* extension_id */,
+                     int /* activation_sequence */,
                      GURL /* service_worker_scope */,
                      int64_t /* service_worker_version_id */,
                      int /* worker_thread_id */)

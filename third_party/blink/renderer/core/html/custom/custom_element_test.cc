@@ -234,7 +234,7 @@ TEST(CustomElementTest,
 
   // create an element with an uppercase tag name
   Document& document = holder->GetDocument();
-  EXPECT_TRUE(document.IsHTMLDocument())
+  EXPECT_TRUE(IsA<HTMLDocument>(document))
       << "this test requires a HTML document";
   Element* element = document.CreateElementForBinding("A-A", should_not_throw);
   EXPECT_EQ(definition, element->GetCustomElementDefinition());

@@ -4,7 +4,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/ui/extensions/browser_action_test_util.h"
+#include "chrome/browser/ui/extensions/extension_action_test_helper.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -35,8 +35,8 @@ IN_PROC_BROWSER_TEST_F(AutoplayExtensionBrowserTest, AutoplayAllowedInIframe) {
       LoadExtension(test_data_dir_.AppendASCII("autoplay_iframe"));
   ASSERT_TRUE(extension) << message_;
 
-  std::unique_ptr<BrowserActionTestUtil> browser_action_test_util =
-      BrowserActionTestUtil::Create(browser());
+  std::unique_ptr<ExtensionActionTestHelper> browser_action_test_util =
+      ExtensionActionTestHelper::Create(browser());
   extensions::ResultCatcher catcher;
   content::WindowedNotificationObserver popup_observer(
       content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,

@@ -138,8 +138,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
 
   net::LoadState GetLoadStateForTesting() const;
 
-  uint32_t GetRenderFrameId() const;
-  uint32_t GetProcessId() const;
+  int32_t GetRenderFrameId() const;
+  int32_t GetProcessId() const;
   uint32_t GetResourceType() const;
 
   // Whether this URLLoader should allow sending/setting cookies for requests

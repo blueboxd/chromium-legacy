@@ -451,8 +451,11 @@ void Dispatcher::WillEvaluateServiceWorkerOnWorkerThread(
     std::unique_ptr<IPCMessageSender> ipc_sender =
         IPCMessageSender::CreateWorkerThreadIPCMessageSender(
             worker_dispatcher, service_worker_version_id);
+    int worker_activation_sequence =
+        *RendererExtensionRegistry::Get()->GetWorkerActivationSequence(
+            extension->id());
     worker_dispatcher->AddWorkerData(
-        service_worker_version_id, context,
+        service_worker_version_id, worker_activation_sequence, context,
         CreateBindingsSystem(std::move(ipc_sender)));
     worker_thread_util::SetWorkerContextProxy(context_proxy);
 
@@ -985,6 +988,10 @@ void Dispatcher::OnLoaded(
       // TODO(devlin): This may be fixed by crbug.com/528026. Monitor, and
       // consider making this a release CHECK.
       NOTREACHED();
+    }
+    if (param.worker_activation_sequence) {
+      extension_registry->SetWorkerActivationSequence(
+          extension, *param.worker_activation_sequence);
     }
     if (param.uses_default_policy_blocked_allowed_hosts) {
       extension->permissions_data()->SetUsesDefaultHostRestrictions();

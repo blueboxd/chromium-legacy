@@ -654,15 +654,13 @@ void AnimationHost::ImplOnlyScrollAnimationCreate(
 }
 
 bool AnimationHost::ImplOnlyScrollAnimationUpdateTarget(
-    ElementId element_id,
     const gfx::Vector2dF& scroll_delta,
     const gfx::ScrollOffset& max_scroll_offset,
     base::TimeTicks frame_monotonic_time,
     base::TimeDelta delayed_by) {
   DCHECK(scroll_offset_animations_impl_);
   return scroll_offset_animations_impl_->ScrollAnimationUpdateTarget(
-      element_id, scroll_delta, max_scroll_offset, frame_monotonic_time,
-      delayed_by);
+      scroll_delta, max_scroll_offset, frame_monotonic_time, delayed_by);
 }
 
 ScrollOffsetAnimations& AnimationHost::scroll_offset_animations() const {

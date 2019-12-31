@@ -56,10 +56,12 @@ class ExtensionServiceWorkerMessageFilter
                                            int64_t service_worker_version_id,
                                            int thread_id);
   void OnDidStartServiceWorkerContext(const ExtensionId& extension_id,
+                                      int activation_sequence,
                                       const GURL& service_worker_scope,
                                       int64_t service_worker_version_id,
                                       int thread_id);
   void OnDidStopServiceWorkerContext(const ExtensionId& extension_id,
+                                     int activation_sequence,
                                      const GURL& service_worker_scope,
                                      int64_t service_worker_version_id,
                                      int thread_id);

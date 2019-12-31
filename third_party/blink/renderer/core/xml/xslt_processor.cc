@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/xml/document_xslt.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -151,7 +152,7 @@ DocumentFragment* XSLTProcessor::transformToFragment(Node* source_node,
   String result_encoding;
 
   // If the output document is HTML, default to HTML method.
-  if (output_doc->IsHTMLDocument())
+  if (IsA<HTMLDocument>(output_doc))
     result_mime_type = "text/html";
 
   if (!TransformToString(source_node, result_mime_type, result_string,

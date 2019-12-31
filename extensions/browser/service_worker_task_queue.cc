@@ -41,6 +41,36 @@ const char kServiceWorkerVersion[] = "version";
 
 ServiceWorkerTaskQueue::TestObserver* g_test_observer = nullptr;
 
+// ServiceWorkerRegistration state of an activated extension.
+enum class RegistrationState {
+  // Not registered.
+  kNotRegistered,
+  // Registration is inflight.
+  kPending,
+  // Registration is complete.
+  kRegistered,
+};
+
+// Browser process worker state of an activated extension.
+enum class BrowserState {
+  // Initial state, not started.
+  kInitial,
+  // Worker is in the process of starting from the browser process.
+  kStarting,
+  // Worker has completed starting (i.e. has seen DidStartWorkerForScope).
+  kStarted,
+};
+
+// Render process worker state of an activated extension.
+enum class RendererState {
+  // Initial state, neither started nor stopped.
+  kInitial,
+  // Worker thread has started.
+  kStarted,
+  // Worker thread has not started or has been stopped.
+  kStopped,
+};
+
 }  // namespace
 
 ServiceWorkerTaskQueue::ServiceWorkerTaskQueue(BrowserContext* browser_context)
@@ -109,19 +139,44 @@ void ServiceWorkerTaskQueue::StartServiceWorkerOnCoreThreadToRunTasks(
                      context_id, task_queue_weak));
 }
 
-// The current state of a worker.
-struct ServiceWorkerTaskQueue::WorkerState {
-  // Whether or not worker has completed starting (DidStartWorkerForScope).
-  bool browser_ready = false;
-
-  // Whether or not worker is ready in the renderer
-  // (DidStartServiceWorkerContext).
-  bool renderer_ready = false;
-
-  // If |browser_ready| = true, this is the ActivationSequence of the worker.
-  base::Optional<ActivationSequence> sequence;
-
+// The current worker related state of an activated extension.
+class ServiceWorkerTaskQueue::WorkerState {
+ public:
   WorkerState() = default;
+
+  WorkerState(const WorkerState&) = delete;
+  WorkerState& operator=(const WorkerState&) = delete;
+
+  void SetWorkerId(const WorkerId& worker_id, ProcessManager* process_manager) {
+    if (worker_id_ && *worker_id_ != worker_id) {
+      // Sanity check that the old worker is gone.
+      DCHECK(!process_manager->HasServiceWorker(*worker_id_));
+      // Clear stale renderer state if there's any.
+      renderer_state_ = RendererState::kInitial;
+    }
+    worker_id_ = worker_id;
+  }
+
+  bool ready() const {
+    return registration_state_ == RegistrationState::kRegistered &&
+           browser_state_ == BrowserState::kStarted &&
+           renderer_state_ == RendererState::kStarted && worker_id_.has_value();
+  }
+  bool has_pending_tasks() const { return !pending_tasks_.empty(); }
+
+ private:
+  friend class ServiceWorkerTaskQueue;
+
+  RegistrationState registration_state_ = RegistrationState::kNotRegistered;
+  BrowserState browser_state_ = BrowserState::kInitial;
+  RendererState renderer_state_ = RendererState::kInitial;
+
+  // Pending tasks that will be run once the worker becomes ready.
+  std::vector<PendingTask> pending_tasks_;
+
+  // Contains the worker's WorkerId associated with this WorkerState, once we
+  // have discovered info about the worker.
+  base::Optional<WorkerId> worker_id_;
 };
 
 void ServiceWorkerTaskQueue::DidStartWorkerForScope(
@@ -136,11 +191,12 @@ void ServiceWorkerTaskQueue::DidStartWorkerForScope(
     // Extension run with |sequence| was already deactivated.
     // TODO(lazyboy): Add a DCHECK that the worker in question is actually
     // shutting down soon.
-    DCHECK(!base::Contains(pending_tasks_, context_id));
+    DCHECK(!GetWorkerState(context_id));
     return;
   }
 
-  const LazyContextId& lazy_context_id = context_id.first;
+  WorkerState* worker_state = GetWorkerState(context_id);
+  DCHECK(worker_state);
   const WorkerId worker_id = {extension_id, process_id, version_id, thread_id};
 
   // Note: If the worker has already stopped on worker thread
@@ -151,15 +207,12 @@ void ServiceWorkerTaskQueue::DidStartWorkerForScope(
   // renderer before we execute tasks in the browser process. This will also
   // avoid holding the worker in |worker_state_map_| until deactivation as noted
   // above.
-  WorkerState* worker_state =
-      GetOrCreateWorkerState(WorkerKey(lazy_context_id, worker_id));
-  DCHECK(worker_state);
-  DCHECK(!worker_state->browser_ready) << "Worker was already loaded";
-  worker_state->browser_ready = true;
-  worker_state->sequence = sequence;
+  DCHECK_NE(BrowserState::kStarted, worker_state->browser_state_)
+      << "Worker was already loaded";
+  worker_state->SetWorkerId(worker_id, ProcessManager::Get(browser_context_));
+  worker_state->browser_state_ = BrowserState::kStarted;
 
-  RunPendingTasksIfWorkerReady(lazy_context_id, version_id, process_id,
-                               thread_id);
+  RunPendingTasksIfWorkerReady(context_id);
 }
 
 void ServiceWorkerTaskQueue::DidStartWorkerFail(
@@ -168,9 +221,10 @@ void ServiceWorkerTaskQueue::DidStartWorkerFail(
   if (!IsCurrentSequence(context_id.first.extension_id(), context_id.second)) {
     // This can happen is when the registration got unregistered right before we
     // tried to start it. See crbug.com/999027 for details.
-    DCHECK(!base::Contains(pending_tasks_, context_id));
+    DCHECK(!GetWorkerState(context_id));
     return;
   }
+
   // TODO(lazyboy): Handle failure cases.
   DCHECK(false) << "DidStartWorkerFail: " << context_id.first.extension_id();
 }
@@ -189,50 +243,70 @@ void ServiceWorkerTaskQueue::DidInitializeServiceWorkerContext(
 void ServiceWorkerTaskQueue::DidStartServiceWorkerContext(
     int render_process_id,
     const ExtensionId& extension_id,
+    int activation_sequence,
     const GURL& service_worker_scope,
     int64_t service_worker_version_id,
     int thread_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  LazyContextId context_id(browser_context_, extension_id,
-                           service_worker_scope);
+  if (!IsCurrentSequence(extension_id, activation_sequence))
+    return;
+
+  SequencedContextId context_id(
+      LazyContextId(browser_context_, extension_id, service_worker_scope),
+      activation_sequence);
   const WorkerId worker_id = {extension_id, render_process_id,
                               service_worker_version_id, thread_id};
-  WorkerState* worker_state =
-      GetOrCreateWorkerState(WorkerKey(context_id, worker_id));
-  DCHECK(!worker_state->renderer_ready) << "Worker already started";
-  worker_state->renderer_ready = true;
+  WorkerState* worker_state = GetWorkerState(context_id);
+  DCHECK(worker_state);
+  // If |worker_state| had a worker running previously, for which we didn't
+  // see DidStopServiceWorkerContext notification (typically happens on render
+  // process shutdown), then we'd preserve stale state in |renderer_state_|.
+  //
+  // This isn't a problem because the next browser process readiness
+  // (DidStartWorkerForScope) or the next renderer process readiness
+  // (DidStartServiceWorkerContext) will clear the state, whichever happens
+  // first.
+  //
+  // TODO(lazyboy): Update the renderer state in RenderProcessExited() and
+  // uncomment the following DCHECK:
+  // DCHECK_NE(RendererState::kStarted, worker_state->renderer_state_)
+  //    << "Worker already started";
+  worker_state->SetWorkerId(worker_id, ProcessManager::Get(browser_context_));
+  worker_state->renderer_state_ = RendererState::kStarted;
 
-  RunPendingTasksIfWorkerReady(context_id, service_worker_version_id,
-                               render_process_id, thread_id);
+  RunPendingTasksIfWorkerReady(context_id);
 }
 
 void ServiceWorkerTaskQueue::DidStopServiceWorkerContext(
     int render_process_id,
     const ExtensionId& extension_id,
+    int activation_sequence,
     const GURL& service_worker_scope,
     int64_t service_worker_version_id,
     int thread_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!IsCurrentSequence(extension_id, activation_sequence))
+    return;
+
   const WorkerId worker_id = {extension_id, render_process_id,
                               service_worker_version_id, thread_id};
   ProcessManager::Get(browser_context_)->UnregisterServiceWorker(worker_id);
-  LazyContextId context_id(browser_context_, extension_id,
-                           service_worker_scope);
+  SequencedContextId context_id(
+      LazyContextId(browser_context_, extension_id, service_worker_scope),
+      activation_sequence);
 
-  WorkerKey worker_key(context_id, worker_id);
-  WorkerState* worker_state = GetWorkerState(worker_key);
-  if (!worker_state) {
+  WorkerState* worker_state = GetWorkerState(context_id);
+  DCHECK(worker_state);
+
+  if (worker_state->worker_id_ != worker_id) {
     // We can see DidStopServiceWorkerContext right after DidInitialize and
     // without DidStartServiceWorkerContext.
     return;
   }
 
-  // Clean up both the renderer and browser readiness states.
-  // One caveat is that although this is renderer notification, we also clear
-  // the browser readiness state, this is because a worker can be
-  // |browser_ready| and was waiting for DidStartServiceWorkerContext, but
-  // instead received DidStopServiceWorkerContext.
-  worker_state_map_.erase(worker_key);
+  DCHECK_NE(RendererState::kStopped, worker_state->renderer_state_);
+  worker_state->renderer_state_ = RendererState::kStopped;
+  worker_state->worker_id_ = base::nullopt;
 }
 
 // static
@@ -259,11 +333,13 @@ void ServiceWorkerTaskQueue::AddPendingTask(
   DCHECK(sequence) << "Trying to add pending task to an inactive extension: "
                    << lazy_context_id.extension_id();
   const SequencedContextId context_id(lazy_context_id, *sequence);
-  auto& tasks = pending_tasks_[context_id];
+  WorkerState* worker_state = GetWorkerState(context_id);
+  DCHECK(worker_state);
+  auto& tasks = worker_state->pending_tasks_;
   bool needs_start_worker = tasks.empty();
   tasks.push_back(std::move(task));
 
-  if (pending_registrations_.count(context_id) > 0) {
+  if (worker_state->registration_state_ != RegistrationState::kRegistered) {
     // If the worker hasn't finished registration, wait for it to complete.
     // DidRegisterServiceWorker will Start worker to run |task| later.
     return;
@@ -281,6 +357,11 @@ void ServiceWorkerTaskQueue::ActivateExtension(const Extension* extension) {
   const ExtensionId extension_id = extension->id();
   ActivationSequence current_sequence = ++next_activation_sequence_;
   activation_sequences_[extension_id] = current_sequence;
+  SequencedContextId context_id(
+      LazyContextId(browser_context_, extension_id, extension->url()),
+      current_sequence);
+  DCHECK(!base::Contains(worker_state_map_, context_id));
+  WorkerState& worker_state = worker_state_map_[context_id];
 
   // Note: version.IsValid() = false implies we didn't have any prefs stored.
   base::Version version = RetrieveRegisteredServiceWorkerVersion(extension_id);
@@ -292,15 +373,13 @@ void ServiceWorkerTaskQueue::ActivateExtension(const Extension* extension) {
   }
 
   if (service_worker_already_registered) {
+    worker_state.registration_state_ = RegistrationState::kRegistered;
     // TODO(https://crbug.com/901101): We should kick off an async check to see
     // if the registration is *actually* there and re-register if necessary.
     return;
   }
 
-  SequencedContextId context_id(
-      LazyContextId(browser_context_, extension_id, extension->url()),
-      current_sequence);
-  pending_registrations_.insert(context_id);
+  worker_state.registration_state_ = RegistrationState::kPending;
   GURL script_url = extension->GetResourceURL(
       BackgroundInfo::GetBackgroundServiceWorkerScript(extension));
   blink::mojom::ServiceWorkerRegistrationOptions option;
@@ -329,14 +408,11 @@ void ServiceWorkerTaskQueue::DeactivateExtension(const Extension* extension) {
   SequencedContextId context_id(
       LazyContextId(browser_context_, extension_id, extension->url()),
       *sequence);
-  ClearPendingTasks(context_id);
-
-  // Clear loaded worker if it was waiting for start.
-  // Note that we don't clear the entire state here as we expect the renderer to
-  // stop shortly after this and its notification will clear the state.
-  ClearBrowserReadyForWorkers(
-      LazyContextId(browser_context_, extension_id, extension->url()),
-      *sequence);
+  WorkerState* worker_state = GetWorkerState(context_id);
+  DCHECK(worker_state);
+  // TODO(lazyboy): Run orphaned tasks with nullptr ContextInfo.
+  worker_state->pending_tasks_.clear();
+  worker_state_map_.erase(context_id);
 
   util::GetStoragePartitionForExtensionId(extension->id(), browser_context_)
       ->GetServiceWorkerContext()
@@ -353,6 +429,9 @@ void ServiceWorkerTaskQueue::RunTasksAfterStartWorker(
   const LazyContextId& lazy_context_id = context_id.first;
   if (lazy_context_id.browser_context() != browser_context_)
     return;
+
+  WorkerState* worker_state = GetWorkerState(context_id);
+  DCHECK_NE(BrowserState::kStarted, worker_state->browser_state_);
 
   content::StoragePartition* partition =
       util::GetStoragePartitionForExtensionId(
@@ -377,35 +456,30 @@ void ServiceWorkerTaskQueue::RunTasksAfterStartWorker(
 void ServiceWorkerTaskQueue::DidRegisterServiceWorker(
     const SequencedContextId& context_id,
     bool success) {
-  pending_registrations_.erase(context_id);
   ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context_);
   const ExtensionId& extension_id = context_id.first.extension_id();
   DCHECK(registry);
   const Extension* extension =
       registry->enabled_extensions().GetByID(extension_id);
   if (!extension) {
-    // DeactivateExtension must have cleared |pending_tasks_| already.
-    DCHECK(!base::Contains(pending_tasks_, context_id));
     return;
   }
+  if (!IsCurrentSequence(extension_id, context_id.second))
+    return;
+
+  WorkerState* worker_state = GetWorkerState(context_id);
+  DCHECK(worker_state);
 
   if (!success) {
-    if (!IsCurrentSequence(extension_id, context_id.second)) {
-      // DeactivateExtension must have cleared |pending_tasks_| already.
-      DCHECK(!base::Contains(pending_tasks_, context_id));
-      return;
-    }
     // TODO(lazyboy): Handle failure case thoroughly.
     DCHECK(false) << "Failed to register Service Worker";
     return;
   }
 
+  worker_state->registration_state_ = RegistrationState::kRegistered;
   SetRegisteredServiceWorkerInfo(extension->id(), extension->version());
 
-  auto pending_tasks_iter = pending_tasks_.find(context_id);
-  const bool has_pending_tasks = pending_tasks_iter != pending_tasks_.end() &&
-                                 pending_tasks_iter->second.size() > 0u;
-  if (has_pending_tasks) {
+  if (worker_state->has_pending_tasks()) {
     // TODO(lazyboy): If worker for |context_id| is already running, consider
     // not calling StartWorker. This isn't straightforward as service worker's
     // internal state is mostly on the core thread.
@@ -467,43 +541,33 @@ void ServiceWorkerTaskQueue::RemoveRegisteredServiceWorkerInfo(
 }
 
 void ServiceWorkerTaskQueue::RunPendingTasksIfWorkerReady(
-    const LazyContextId& context_id,
-    int64_t version_id,
-    int process_id,
-    int thread_id) {
-  WorkerState* worker_state = GetWorkerState(WorkerKey(
-      context_id,
-      {context_id.extension_id(), process_id, version_id, thread_id}));
+    const SequencedContextId& context_id) {
+  WorkerState* worker_state = GetWorkerState(context_id);
   DCHECK(worker_state);
-  if (!worker_state->browser_ready || !worker_state->renderer_ready) {
+  if (!worker_state->ready()) {
     // Worker isn't ready yet, wait for next event and run the tasks then.
     return;
   }
-  base::Optional<int> sequence = worker_state->sequence;
-  DCHECK(sequence.has_value());
 
   // Running |pending_tasks_[context_id]| marks the completion of
   // DidStartWorkerForScope, clean up |browser_ready| state of the worker so
   // that new tasks can be queued up.
-  worker_state->browser_ready = false;
+  worker_state->browser_state_ = BrowserState::kInitial;
 
-  auto iter = pending_tasks_.find(SequencedContextId(context_id, *sequence));
-  DCHECK(iter != pending_tasks_.end()) << "Worker ready, but no tasks to run!";
-  std::vector<PendingTask> tasks = std::move(iter->second);
-  pending_tasks_.erase(iter);
+  DCHECK(worker_state->has_pending_tasks())
+      << "Worker ready, but no tasks to run!";
+  std::vector<PendingTask> tasks;
+  std::swap(worker_state->pending_tasks_, tasks);
+  DCHECK(worker_state->worker_id_);
+  const auto& worker_id = *worker_state->worker_id_;
   for (auto& task : tasks) {
     auto context_info = std::make_unique<LazyContextTaskQueue::ContextInfo>(
-        context_id.extension_id(),
-        content::RenderProcessHost::FromID(process_id), version_id, thread_id,
-        context_id.service_worker_scope());
+        context_id.first.extension_id(),
+        content::RenderProcessHost::FromID(worker_id.render_process_id),
+        worker_id.version_id, worker_id.thread_id,
+        context_id.first.service_worker_scope());
     std::move(task).Run(std::move(context_info));
   }
-}
-
-void ServiceWorkerTaskQueue::ClearPendingTasks(
-    const SequencedContextId& context_id) {
-  // TODO(lazyboy): Run orphaned tasks with nullptr ContextInfo.
-  pending_tasks_.erase(context_id);
 }
 
 bool ServiceWorkerTaskQueue::IsCurrentSequence(
@@ -522,44 +586,11 @@ ServiceWorkerTaskQueue::GetCurrentSequence(
   return iter->second;
 }
 
-ServiceWorkerTaskQueue::WorkerState*
-ServiceWorkerTaskQueue::GetOrCreateWorkerState(const WorkerKey& worker_key) {
-  auto iter = worker_state_map_.find(worker_key);
-  if (iter == worker_state_map_.end())
-    iter = worker_state_map_.emplace(worker_key, WorkerState()).first;
-  return &(iter->second);
-}
-
 ServiceWorkerTaskQueue::WorkerState* ServiceWorkerTaskQueue::GetWorkerState(
-    const WorkerKey& worker_key) {
-  auto iter = worker_state_map_.find(worker_key);
-  if (iter == worker_state_map_.end())
-    return nullptr;
-  return &(iter->second);
-}
-
-void ServiceWorkerTaskQueue::ClearBrowserReadyForWorkers(
-    const LazyContextId& context_id,
-    ActivationSequence sequence) {
-  // TODO(lazyboy): We could use |worker_state_map_|.lower_bound() to avoid
-  // iterating over all workers. Note that it would require creating artificial
-  // WorkerKey with |context_id|.
-  for (auto iter = worker_state_map_.begin();
-       iter != worker_state_map_.end();) {
-    if (iter->first.first != context_id || iter->second.sequence != sequence) {
-      ++iter;
-      continue;
-    }
-
-    iter->second.browser_ready = false;
-    iter->second.sequence = base::nullopt;
-
-    // Clean up stray entries if renderer readiness was also gone.
-    if (!iter->second.renderer_ready)
-      iter = worker_state_map_.erase(iter);
-    else
-      ++iter;
-  }
+    const SequencedContextId& context_id) {
+  auto worker_iter = worker_state_map_.find(context_id);
+  return worker_iter == worker_state_map_.end() ? nullptr
+                                                : &worker_iter->second;
 }
 
 }  // namespace extensions

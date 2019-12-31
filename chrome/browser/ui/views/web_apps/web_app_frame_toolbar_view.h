@@ -111,7 +111,6 @@ class WebAppFrameToolbarView : public views::AccessiblePaneView,
   const std::vector<ContentSettingImageView*>&
   GetContentSettingViewsForTesting() const;
 
-  SkColor GetCaptionColor() const;
   void UpdateChildrenColor();
 
   // The containing browser view.

@@ -8,12 +8,14 @@
 #include <memory>
 #include <vector>
 
+#include "base/strings/stringprintf.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/views/examples/example_base.h"
 #include "ui/views/examples/views_examples_export.h"
 
 namespace views {
 namespace examples {
+
+class VIEWS_EXAMPLES_EXPORT ExampleBase;
 
 // Shows a window with the views examples in it. |extra_examples| contains any
 // additional examples to add. |window_context| is used to determine where the
@@ -23,6 +25,15 @@ VIEWS_EXAMPLES_EXPORT void ShowExamplesWindow(
     gfx::NativeWindow window_context = nullptr,
     std::vector<std::unique_ptr<ExampleBase>> extra_examples =
         std::vector<std::unique_ptr<ExampleBase>>());
+
+// Prints |string| in the status area, at the bottom of the window.
+VIEWS_EXAMPLES_EXPORT void LogStatus(const std::string& string);
+
+// Same as LogStatus(), but with a format string.
+template <typename... Args>
+void PrintStatus(const char* format, Args... args) {
+  LogStatus(base::StringPrintf(format, args...));
+}
 
 }  // namespace examples
 }  // namespace views

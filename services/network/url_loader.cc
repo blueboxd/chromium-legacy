@@ -511,7 +511,7 @@ class URLLoader::FileOpenerForUpload {
 
   FileOpenerForUpload(std::vector<base::FilePath> paths,
                       URLLoader* url_loader,
-                      uint32_t process_id,
+                      int32_t process_id,
                       mojom::NetworkContextClient* const network_context_client,
                       SetUpUploadCallback set_up_upload_callback)
       : paths_(std::move(paths)),
@@ -595,7 +595,7 @@ class URLLoader::FileOpenerForUpload {
   // The paths of files for upload
   const std::vector<base::FilePath> paths_;
   URLLoader* const url_loader_;
-  const uint32_t process_id_;
+  const int32_t process_id_;
   mojom::NetworkContextClient* const network_context_client_;
   SetUpUploadCallback set_up_upload_callback_;
   // The files opened so far.
@@ -1256,11 +1256,11 @@ net::LoadState URLLoader::GetLoadStateForTesting() const {
   return url_request_->GetLoadState().state;
 }
 
-uint32_t URLLoader::GetRenderFrameId() const {
+int32_t URLLoader::GetRenderFrameId() const {
   return render_frame_id_;
 }
 
-uint32_t URLLoader::GetProcessId() const {
+int32_t URLLoader::GetProcessId() const {
   return factory_params_->process_id;
 }
 

@@ -17,12 +17,15 @@ namespace {
 constexpr double kAnimationTextFullLengthShownProgressState = 0.5;
 }  // namespace
 
-SharingIconView::SharingIconView(PageActionIconView::Delegate* delegate,
-                                 GetControllerCallback get_controller_callback,
-                                 GetBubbleCallback get_bubble_callback)
+SharingIconView::SharingIconView(
+    IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
+    PageActionIconView::Delegate* page_action_icon_delegate,
+    GetControllerCallback get_controller_callback,
+    GetBubbleCallback get_bubble_callback)
     : PageActionIconView(/*command_updater=*/nullptr,
                          /*command_id=*/0,
-                         delegate),
+                         icon_label_bubble_delegate,
+                         page_action_icon_delegate),
       get_controller_callback_(std::move(get_controller_callback)),
       get_bubble_callback_(std::move(get_bubble_callback)) {
   SetVisible(false);

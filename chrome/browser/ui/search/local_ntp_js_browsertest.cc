@@ -80,8 +80,9 @@ IN_PROC_BROWSER_TEST_F(LocalNTPJavascriptTest, CustomBackgroundsTests) {
   EXPECT_TRUE(success);
 }
 
+// TODO(crbug.com/1038385): This test is flaky.
 // This runs a bunch of pure JS-side tests for the richer picker.
-IN_PROC_BROWSER_TEST_F(LocalNTPJavascriptTest, CustomizeMenuTests) {
+IN_PROC_BROWSER_TEST_F(LocalNTPJavascriptTest, DISABLED_CustomizeMenuTests) {
   content::WebContents* active_tab = local_ntp_test_utils::OpenNewTab(
       browser(), GURL(chrome::kChromeUINewTabURL));
   ASSERT_TRUE(search::IsInstantNTP(active_tab));

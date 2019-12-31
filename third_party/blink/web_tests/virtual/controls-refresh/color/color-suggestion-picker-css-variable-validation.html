@@ -39,10 +39,8 @@ t.step(() => {
     assert_true(colorSwatchHeight.trim() === '0' || colorSwatchHeight.endsWith('px'), 'Color swatch height must be 0 or end in \'px\'');
     assert_true(colorSwatchPadding.trim() === '0' || colorSwatchPadding.endsWith('px'), 'Color swatch padding must be 0 or end in \'px\'');
     assert_true(colorSwatchWidth.trim() === '0' || colorSwatchWidth.endsWith('px'), 'Color swatch width must be 0 or end in \'px\'');
-    if (internals.runtimeFlags.formControlsRefreshEnabled) {
-      const scrollbarWidth = popupWindow.getComputedStyle(popupDocumentBody).getPropertyValue('--scrollbar-width');
-      assert_true(scrollbarWidth.trim() === '0' || scrollbarWidth.endsWith('px'), 'Scrollbar width must be 0 or end in \'px\'');
-    }
+    const scrollbarWidth = popupWindow.getComputedStyle(popupDocumentBody).getPropertyValue('--scrollbar-width');
+    assert_true(scrollbarWidth.trim() === '0' || scrollbarWidth.endsWith('px'), 'Scrollbar width must be 0 or end in \'px\'');
   }));
 });
 </script>

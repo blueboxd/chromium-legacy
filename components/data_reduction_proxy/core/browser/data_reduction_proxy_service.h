@@ -119,9 +119,9 @@ class DataReductionProxyService
   virtual void SetProxyPrefs(bool enabled, bool at_startup);
 
   void LoadHistoricalDataUsage(
-      const HistoricalDataUsageCallback& load_data_usage_callback);
+      HistoricalDataUsageCallback load_data_usage_callback);
   void LoadCurrentDataUsageBucket(
-      const LoadCurrentDataUsageCallback& load_current_data_usage_callback);
+      LoadCurrentDataUsageCallback load_current_data_usage_callback);
   void StoreCurrentDataUsageBucket(std::unique_ptr<DataUsageBucket> current);
   void DeleteHistoricalDataUsage();
   void DeleteBrowsingHistory(const base::Time& start, const base::Time& end);

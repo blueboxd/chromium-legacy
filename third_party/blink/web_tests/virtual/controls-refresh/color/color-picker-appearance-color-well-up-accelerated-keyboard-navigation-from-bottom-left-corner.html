@@ -35,8 +35,6 @@ t.step(() => {
     assert_equals(rValueContainer.value, '186');
     assert_equals(gValueContainer.value, '186');
     assert_equals(bValueContainer.value, '186');
-  }), t.step_func_done(() => {
-    assert_false(internals.runtimeFlags.formControlsRefreshEnabled, "Popup should only not open when the formControlsRefresh flag is disabled.");
   }));
 });
 </script>

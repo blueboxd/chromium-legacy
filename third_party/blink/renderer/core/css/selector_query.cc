@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/dom/nth_index_cache.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
+#include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -172,7 +173,7 @@ inline bool MatchesTagName(const QualifiedName& tag_name,
   // version during parsing if applicable. Yet, type selectors are lower-cased
   // for selectors in html documents. Compare the upper case converted names
   // instead to allow matching SVG elements like foreignObject.
-  if (!element.IsHTMLElement() && element.GetDocument().IsHTMLDocument())
+  if (!element.IsHTMLElement() && IsA<HTMLDocument>(element.GetDocument()))
     return element.TagQName().LocalNameUpper() == tag_name.LocalNameUpper();
   return false;
 }

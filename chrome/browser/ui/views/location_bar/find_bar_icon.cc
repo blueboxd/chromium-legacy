@@ -12,9 +12,15 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/animation/ink_drop.h"
 
-FindBarIcon::FindBarIcon(Browser* browser,
-                         PageActionIconView::Delegate* delegate)
-    : PageActionIconView(nullptr, 0, delegate), browser_(browser) {
+FindBarIcon::FindBarIcon(
+    Browser* browser,
+    IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
+    PageActionIconView::Delegate* page_action_icon_delegate)
+    : PageActionIconView(nullptr,
+                         0,
+                         icon_label_bubble_delegate,
+                         page_action_icon_delegate),
+      browser_(browser) {
   DCHECK(browser_);
 }
 

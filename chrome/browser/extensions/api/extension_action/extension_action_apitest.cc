@@ -19,7 +19,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/extensions/browser_action_test_util.h"
+#include "chrome/browser/ui/extensions/extension_action_test_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -473,11 +473,11 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, OnClickedDispatching) {
       FILE_PATH_LITERAL("background.js"),
       base::StringPrintf(kBackgroundJsTemplate, GetAPIName(GetParam())));
 
-  // Though this says "BrowserActionTestUtil", it's actually used for all
+  // Though this says "ExtensionActionTestHelper", it's actually used for all
   // toolbar actions.
   // TODO(devlin): Rename it to ToolbarActionTestUtil.
-  std::unique_ptr<BrowserActionTestUtil> toolbar_helper =
-      BrowserActionTestUtil::Create(browser());
+  std::unique_ptr<ExtensionActionTestHelper> toolbar_helper =
+      ExtensionActionTestHelper::Create(browser());
   EXPECT_EQ(0, toolbar_helper->NumberOfBrowserActions());
   const Extension* extension = LoadExtension(test_dir.UnpackedPath());
   ASSERT_TRUE(extension);
@@ -526,8 +526,8 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, PopupCreation) {
   const Extension* extension = LoadExtension(test_dir.UnpackedPath());
   ASSERT_TRUE(extension);
 
-  std::unique_ptr<BrowserActionTestUtil> toolbar_helper =
-      BrowserActionTestUtil::Create(browser());
+  std::unique_ptr<ExtensionActionTestHelper> toolbar_helper =
+      ExtensionActionTestHelper::Create(browser());
 
   ExtensionAction* action = GetExtensionAction(*extension);
   ASSERT_TRUE(action);
@@ -615,8 +615,8 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPICanvasTest, DynamicSetIcon) {
   EXPECT_TRUE(ActionHasDefaultState(*action, tab_id));
   EnsureActionIsEnabledOnActiveTab(action);
 
-  std::unique_ptr<BrowserActionTestUtil> toolbar_helper =
-      BrowserActionTestUtil::Create(browser());
+  std::unique_ptr<ExtensionActionTestHelper> toolbar_helper =
+      ExtensionActionTestHelper::Create(browser());
 
   ASSERT_EQ(1, toolbar_helper->NumberOfBrowserActions());
   EXPECT_EQ(extension->id(), toolbar_helper->GetExtensionId(0));

@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/processing_instruction.h"
+#include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_link_element.h"
 #include "third_party/blink/renderer/core/html/html_style_element.h"
 #include "third_party/blink/renderer/core/html/imports/html_import.h"
@@ -44,7 +45,7 @@ AtomicString StyleSheetCandidate::Title() const {
 }
 
 bool StyleSheetCandidate::IsXSL() const {
-  return !GetNode().GetDocument().IsHTMLDocument() && type_ == kPi &&
+  return !IsA<HTMLDocument>(GetNode().GetDocument()) && type_ == kPi &&
          To<ProcessingInstruction>(GetNode()).IsXSL();
 }
 

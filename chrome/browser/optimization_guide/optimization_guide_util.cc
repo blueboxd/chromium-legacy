@@ -5,6 +5,8 @@
 #include "chrome/browser/optimization_guide/optimization_guide_util.h"
 
 #include "base/logging.h"
+#include "net/base/url_util.h"
+#include "url/url_canon.h"
 
 std::string GetStringNameForOptimizationTarget(
     optimization_guide::proto::OptimizationTarget optimization_target) {
@@ -16,4 +18,16 @@ std::string GetStringNameForOptimizationTarget(
   }
   NOTREACHED();
   return std::string();
+}
+
+bool IsHostValidToFetchFromRemoteOptimizationGuide(const std::string& host) {
+  if (net::HostStringIsLocalhost(host))
+    return false;
+  url::CanonHostInfo host_info;
+  std::string canonicalized_host(net::CanonicalizeHost(host, &host_info));
+  if (host_info.IsIPAddress() ||
+      !net::IsCanonicalizedHostCompliant(canonicalized_host)) {
+    return false;
+  }
+  return true;
 }

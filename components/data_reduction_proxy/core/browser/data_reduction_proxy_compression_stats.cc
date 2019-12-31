@@ -333,13 +333,13 @@ void DataReductionProxyCompressionStats::Init() {
 
   data_usage_reporting_enabled_.Init(
       prefs::kDataUsageReportingEnabled, pref_service_,
-      base::Bind(
+      base::BindRepeating(
           &DataReductionProxyCompressionStats::OnDataUsageReportingPrefChanged,
           weak_factory_.GetWeakPtr()));
 
   if (data_usage_reporting_enabled_.GetValue()) {
     current_data_usage_load_status_ = LOADING;
-    service_->LoadCurrentDataUsageBucket(base::Bind(
+    service_->LoadCurrentDataUsageBucket(base::BindRepeating(
         &DataReductionProxyCompressionStats::OnCurrentDataUsageLoaded,
         weak_factory_.GetWeakPtr()));
   }
@@ -522,8 +522,9 @@ void DataReductionProxyCompressionStats::GetContentLengths(
 }
 
 void DataReductionProxyCompressionStats::GetHistoricalDataUsage(
-    const HistoricalDataUsageCallback& get_data_usage_callback) {
-  GetHistoricalDataUsageImpl(get_data_usage_callback, base::Time::Now());
+    HistoricalDataUsageCallback get_data_usage_callback) {
+  GetHistoricalDataUsageImpl(std::move(get_data_usage_callback),
+                             base::Time::Now());
 }
 
 void DataReductionProxyCompressionStats::DeleteBrowsingHistory(
@@ -751,7 +752,7 @@ void DataReductionProxyCompressionStats::DeleteHistoricalDataUsage() {
 }
 
 void DataReductionProxyCompressionStats::GetHistoricalDataUsageImpl(
-    const HistoricalDataUsageCallback& get_data_usage_callback,
+    HistoricalDataUsageCallback get_data_usage_callback,
     const base::Time& now) {
 #if !defined(OS_ANDROID)
   if (current_data_usage_load_status_ != LOADED) {
@@ -759,8 +760,8 @@ void DataReductionProxyCompressionStats::GetHistoricalDataUsageImpl(
     // extension can retry after a slight delay.
     // This use case is unlikely to occur in practice since current data usage
     // should have sufficient time to load before user tries to view data usage.
-    get_data_usage_callback.Run(
-        std::make_unique<std::vector<DataUsageBucket>>());
+    std::move(get_data_usage_callback)
+        .Run(std::make_unique<std::vector<DataUsageBucket>>());
     return;
   }
 #endif
@@ -779,14 +780,14 @@ void DataReductionProxyCompressionStats::GetHistoricalDataUsageImpl(
     service_->StoreCurrentDataUsageBucket(std::move(data_usage_bucket));
   }
 
-  service_->LoadHistoricalDataUsage(get_data_usage_callback);
+  service_->LoadHistoricalDataUsage(std::move(get_data_usage_callback));
 }
 
 void DataReductionProxyCompressionStats::OnDataUsageReportingPrefChanged() {
   if (data_usage_reporting_enabled_.GetValue()) {
     if (current_data_usage_load_status_ == NOT_LOADED) {
       current_data_usage_load_status_ = LOADING;
-      service_->LoadCurrentDataUsageBucket(base::Bind(
+      service_->LoadCurrentDataUsageBucket(base::BindOnce(
           &DataReductionProxyCompressionStats::OnCurrentDataUsageLoaded,
           weak_factory_.GetWeakPtr()));
     }

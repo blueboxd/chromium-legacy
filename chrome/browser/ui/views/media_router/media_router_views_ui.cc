@@ -26,7 +26,6 @@
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_router_metrics.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
-#include "chrome/browser/media/router/presentation/presentation_service_delegate_impl.h"
 #include "chrome/browser/media/router/providers/wired_display/wired_display_media_route_provider.h"
 #include "chrome/browser/media/webrtc/desktop_media_picker_controller.h"
 #include "chrome/browser/profiles/profile.h"
@@ -198,7 +197,13 @@ class MediaRouterViewsUI::WebContentsFullscreenOnLoadedObserver final
   base::OneShotTimer capture_poll_timer_;
 };
 
-MediaRouterViewsUI::MediaRouterViewsUI() = default;
+MediaRouterViewsUI::MediaRouterViewsUI(content::WebContents* initiator)
+    : presentation_manager_(WebContentsPresentationManager::Get(initiator)),
+      initiator_(initiator) {
+  CHECK(initiator_);
+  if (presentation_manager_)
+    presentation_manager_->AddObserver(this);
+}
 
 MediaRouterViewsUI::~MediaRouterViewsUI() {
   for (CastDialogController::Observer& observer : observers_)
@@ -206,9 +211,9 @@ MediaRouterViewsUI::~MediaRouterViewsUI() {
 
   if (query_result_manager_.get())
     query_result_manager_->RemoveObserver(this);
-  if (presentation_service_delegate_.get())
-    presentation_service_delegate_->RemoveDefaultPresentationRequestObserver(
-        this);
+  if (presentation_manager_)
+    presentation_manager_->RemoveObserver(this);
+
   // If |start_presentation_context_| still exists, then it means presentation
   // route request was never attempted.
   if (start_presentation_context_) {
@@ -264,21 +269,14 @@ void MediaRouterViewsUI::ClearIssue(const Issue::Id& issue_id) {
   RemoveIssue(issue_id);
 }
 
-void MediaRouterViewsUI::InitWithDefaultMediaSource(
-    content::WebContents* initiator,
-    PresentationServiceDelegateImpl* delegate) {
-  DCHECK(initiator);
-  DCHECK(!presentation_service_delegate_);
+void MediaRouterViewsUI::InitWithDefaultMediaSource() {
   DCHECK(!query_result_manager_);
+  InitCommon();
 
-  InitCommon(initiator);
-  if (delegate) {
-    presentation_service_delegate_ = delegate->GetWeakPtr();
-    presentation_service_delegate_->AddDefaultPresentationRequestObserver(this);
-  }
-
-  if (delegate && delegate->HasDefaultPresentationRequest()) {
-    OnDefaultPresentationChanged(delegate->GetDefaultPresentationRequest());
+  if (presentation_manager_ &&
+      presentation_manager_->HasDefaultPresentationRequest()) {
+    OnDefaultPresentationChanged(
+        &presentation_manager_->GetDefaultPresentationRequest());
   } else {
     // Register for MediaRoute updates without a media source.
     routes_observer_ = std::make_unique<UIMediaRoutesObserver>(
@@ -289,21 +287,16 @@ void MediaRouterViewsUI::InitWithDefaultMediaSource(
 }
 
 void MediaRouterViewsUI::InitWithStartPresentationContext(
-    content::WebContents* initiator,
-    PresentationServiceDelegateImpl* delegate,
     std::unique_ptr<StartPresentationContext> context) {
-  DCHECK(initiator);
-  DCHECK(delegate);
   DCHECK(context);
   DCHECK(!start_presentation_context_);
   DCHECK(!query_result_manager_);
 
   start_presentation_context_ = std::move(context);
-  presentation_service_delegate_ = delegate->GetWeakPtr();
 
-  InitCommon(initiator);
+  InitCommon();
   OnDefaultPresentationChanged(
-      start_presentation_context_->presentation_request());
+      &start_presentation_context_->presentation_request());
 }
 
 bool MediaRouterViewsUI::CreateRoute(const MediaSink::Id& sink_id,
@@ -379,7 +372,7 @@ std::vector<MediaSinkWithCastModes> MediaRouterViewsUI::GetEnabledSinks()
   // the best place to do this, but the Media Router browser service and
   // extension process are shared between normal and incognito, so incognito
   // behaviors around sink availability have to be handled at the UI layer.
-  if (initiator()->GetBrowserContext()->IsOffTheRecord()) {
+  if (initiator_->GetBrowserContext()->IsOffTheRecord()) {
     base::EraseIf(enabled_sinks, [](const MediaSinkWithCastModes& sink) {
       return sink.sink.IsMaybeCloudSink();
     });
@@ -390,7 +383,6 @@ std::vector<MediaSinkWithCastModes> MediaRouterViewsUI::GetEnabledSinks()
 
 base::string16 MediaRouterViewsUI::GetPresentationRequestSourceName() const {
   GURL gurl = GetFrameURL();
-  CHECK(initiator_);
   // Presentation URLs are only possible on https: and other secure contexts,
   // so we can omit http/https schemes here.
   return gurl.SchemeIs(extensions::kExtensionScheme)
@@ -482,10 +474,7 @@ void MediaRouterViewsUI::HandleCreateSessionRequestRouteResponse(
   // TODO(crbug.com/868186): Close the dialog.
 }
 
-void MediaRouterViewsUI::InitCommon(content::WebContents* initiator) {
-  DCHECK(initiator);
-  initiator_ = initiator;
-
+void MediaRouterViewsUI::InitCommon() {
   GetMediaRouter()->OnUserGesture();
 
   // Create |collator_| before |query_result_manager_| so that |collator_| is
@@ -514,7 +503,7 @@ void MediaRouterViewsUI::InitCommon(content::WebContents* initiator) {
   query_result_manager_->SetSourcesForCastMode(
       MediaCastMode::LOCAL_FILE, {MediaSource::ForTab(0)}, origin);
 
-  SessionID::id_type tab_id = SessionTabHelper::IdForTab(initiator).id();
+  SessionID::id_type tab_id = SessionTabHelper::IdForTab(initiator_).id();
   if (tab_id != -1) {
     MediaSource mirroring_source(MediaSource::ForTab(tab_id));
     query_result_manager_->SetSourcesForCastMode(MediaCastMode::TAB_MIRROR,
@@ -533,12 +522,17 @@ void MediaRouterViewsUI::InitCommon(content::WebContents* initiator) {
 }
 
 void MediaRouterViewsUI::OnDefaultPresentationChanged(
-    const content::PresentationRequest& presentation_request) {
+    const content::PresentationRequest* presentation_request) {
+  if (!presentation_request) {
+    OnDefaultPresentationRemoved();
+    return;
+  }
+
   std::vector<MediaSource> sources;
-  for (const auto& url : presentation_request.presentation_urls) {
+  for (const auto& url : presentation_request->presentation_urls) {
     sources.push_back(MediaSource::ForPresentationUrl(url));
   }
-  presentation_request_ = presentation_request;
+  presentation_request_ = *presentation_request;
   query_result_manager_->SetSourcesForCastMode(
       MediaCastMode::PRESENTATION, sources,
       presentation_request_->frame_origin);
@@ -589,8 +583,6 @@ base::Optional<RouteParameters> MediaRouterViewsUI::GetRouteParameters(
     const MediaSink::Id& sink_id,
     MediaCastMode cast_mode) {
   DCHECK(query_result_manager_);
-  DCHECK(initiator_);
-
   RouteParameters params;
 
   // Note that there is a rarely-encountered bug, where the MediaCastMode to
@@ -636,7 +628,7 @@ base::Optional<RouteParameters> MediaRouterViewsUI::GetRouteParameters(
   //     The StartPresentationContext will need to be answered with the route
   //     response.
   // (3) Browser-initiated presentation route request. If successful,
-  //     PresentationServiceDelegateImpl will have to be notified. Note that we
+  //     WebContentsPresentationManager will have to be notified. Note that we
   //     treat subsequent route requests from a Presentation API-initiated
   //     dialogs as browser-initiated.
   // TODO(https://crbug.com/868186): Close the Views dialog in case (2).
@@ -654,15 +646,14 @@ base::Optional<RouteParameters> MediaRouterViewsUI::GetRouteParameters(
       params.route_result_callbacks.push_back(base::BindOnce(
           &MediaRouterViewsUI::HandleCreateSessionRequestRouteResponse,
           weak_factory_.GetWeakPtr()));
-    } else if (presentation_service_delegate_) {
+    } else if (presentation_manager_) {
       params.presentation_callback = base::BindOnce(
-          &PresentationServiceDelegateImpl::OnRouteResponse,
-          presentation_service_delegate_, *presentation_request_);
+          &WebContentsPresentationManager::OnPresentationResponse,
+          presentation_manager_, *presentation_request_);
     }
   }
 
   params.timeout = GetRouteRequestTimeout(cast_mode);
-  CHECK(initiator_);
   params.incognito = initiator_->GetBrowserContext()->IsOffTheRecord();
 
   return base::make_optional(std::move(params));
@@ -948,13 +939,11 @@ content::WebContents* MediaRouterViewsUI::OpenTabWithUrl(const GURL& url) {
 }
 
 MediaRouter* MediaRouterViewsUI::GetMediaRouter() const {
-  CHECK(initiator_);
   return MediaRouterFactory::GetApiForBrowserContext(
       initiator_->GetBrowserContext());
 }
 
 Browser* MediaRouterViewsUI::GetBrowser() {
-  CHECK(initiator_);
   return chrome::FindBrowserWithWebContents(initiator_);
 }
 

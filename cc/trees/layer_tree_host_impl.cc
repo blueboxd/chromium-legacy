@@ -2732,9 +2732,10 @@ void LayerTreeHostImpl::DidNotProduceFrame(const viz::BeginFrameAck& ack,
   if (layer_tree_frame_sink_)
     layer_tree_frame_sink_->DidNotProduceFrame(ack);
 
-  // If a frame was not submitted because there was no damage, then notify the
+  // If a frame was not submitted because there was no damage, or the scheduler
+  // hit the frame-deadline while waiting for the main-thread, notify the
   // trackers.
-  if (reason == FrameSkippedReason::kNoDamage &&
+  if (reason != FrameSkippedReason::kRecoverLatency &&
       impl_thread_phase_ == ImplThreadPhase::INSIDE_IMPL_FRAME) {
     // It is possible that |ack| is for a 'future frame', i.e. for the next
     // frame from the one currently being handled by the compositor (represented
@@ -2746,8 +2747,10 @@ void LayerTreeHostImpl::DidNotProduceFrame(const viz::BeginFrameAck& ack,
     const auto& args = current_begin_frame_tracker_.Current();
     if (args.frame_id == ack.frame_id) {
       frame_trackers_.NotifyImplFrameCausedNoDamage(ack);
-      if (begin_main_frame_sent_during_impl_)
+      if (begin_main_frame_sent_during_impl_ &&
+          reason == FrameSkippedReason::kNoDamage) {
         frame_trackers_.NotifyMainFrameCausedNoDamage(args);
+      }
     }
   }
 }
@@ -4116,9 +4119,9 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimatedBegin(
   // that ScrollBy uses for non-animated wheel scrolls.
   scroll_status = ScrollBegin(scroll_state, WHEEL);
   if (scroll_status.thread == SCROLL_ON_IMPL_THREAD) {
-    scroll_animating_latched_element_id_ = ElementId();
-    scroll_animating_overscroll_target_element_id_ = ElementId();
-    ScrollEndImpl();
+    scroll_animating_latched_element_id_ = CurrentlyScrollingNode()->element_id;
+    scroll_animating_overscroll_target_element_id_ =
+        CurrentlyScrollingNode()->element_id;
   }
   return scroll_status;
 }
@@ -4177,8 +4180,6 @@ bool LayerTreeHostImpl::ScrollAnimationCreateInternal(
     return false;
   }
 
-  scroll_tree.set_currently_scrolling_node(scroll_node->id);
-
   gfx::ScrollOffset current_offset =
       scroll_tree.current_scroll_offset(scroll_node->element_id);
   gfx::ScrollOffset target_offset = scroll_tree.ClampScrollOffsetToLimits(
@@ -4224,7 +4225,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
 
   scroll_accumulated_this_frame_ += gfx::ScrollOffset(scroll_delta);
 
-  if (scroll_node) {
+  if (scroll_node && mutator_host_->IsImplOnlyScrollAnimating()) {
     // Flash the overlay scrollbar even if the scroll dalta is 0.
     if (settings_.scrollbar_flash_after_any_scroll_update) {
       FlashAllScrollbars(false);
@@ -4261,9 +4262,26 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
     return scroll_status;
   }
 
+  // TODO(bokan): This method currently does both targeting/latching as well
+  // as updating. As such, it's a combination of a gesture Begin and Update.
+  // We'll soon transform it so that this method can assume a scroller is
+  // already latched.  The only decision it needs to make is whether to create
+  // a new animation or update an existing one, however, the scroll_node should
+  // already be latched. However, to avoid changing too much at once, for now
+  // this re-targeting remains here but if we're already latched we'll force
+  // targeting the same node so we don't change the latch mid-stream.
+  // https://crbug.com/1016229.
   ScrollStateData scroll_state_data;
   scroll_state_data.position_x = viewport_point.x();
   scroll_state_data.position_y = viewport_point.y();
+  scroll_state_data.is_beginning = true;
+  scroll_state_data.delta_x_hint = scroll_delta.x();
+  scroll_state_data.delta_y_hint = scroll_delta.y();
+  if (scroll_node) {
+    scroll_state_data.set_current_native_scrolling_element(
+        scroll_node->element_id);
+  }
+
   ScrollState scroll_state(scroll_state_data);
 
   // ScrollAnimated is used for animated wheel scrolls. We find the first layer
@@ -4341,31 +4359,11 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
         break;
       }
     }
-    // Set overscroll event target since neither an ongoing scroll animation has
-    // been updated nor a new scroll animation has been created for the current
-    // GSU.
-    if (!scroll_animating_latched_element_id_) {
-      // When no scroll animation has been created during the current scroll
-      // sequence (i.e. scroll_animating_latched_element_id_ == ElementId()) we
-      // need to set last_scroller_element_id_ here since scrollEnd won't get
-      // called.
-      last_scroller_element_id_ = scroll_node->element_id;
-      // We will send the overscroll events to viewport or the last element in
-      // the cut chain when no scroll animation has been created during the
-      // current scroll sequence.
-      scroll_animating_overscroll_target_element_id_ = scroll_node->element_id;
-    } else {
-      // When a scroll animation has been created during the current scroll
-      // sequence, the overscroll events target should be the element that
-      // scrolling is latched to.
-      scroll_animating_overscroll_target_element_id_ =
-          scroll_animating_latched_element_id_;
-    }
+
     overscroll_delta_for_main_thread_ += pending_delta;
     client_->SetNeedsCommitOnImplThread();
   }
 
-  ScrollEndImpl();
   if (scroll_status.thread == SCROLL_ON_IMPL_THREAD) {
     // Update scroll_status.thread to SCROLL_IGNORED when there is no ongoing
     // scroll animation, we can scroll on impl thread and yet, we couldn't
@@ -4657,6 +4655,8 @@ void LayerTreeHostImpl::LatchToScroller(ScrollState* scroll_state,
                        TRACE_EVENT_SCOPE_THREAD, "isNull",
                        scroll_node ? false : true);
   active_tree_->SetCurrentlyScrollingNode(scroll_node);
+  last_scroller_element_id_ =
+      scroll_node ? scroll_node->element_id : ElementId();
 }
 
 bool LayerTreeHostImpl::CanConsumeDelta(const ScrollNode& scroll_node,
@@ -4974,22 +4974,6 @@ void LayerTreeHostImpl::ClearCurrentlyScrollingNode() {
   scroll_animating_snap_target_ids_ = TargetSnapAreaElementIds();
 }
 
-void LayerTreeHostImpl::ScrollEndImpl() {
-  // In smooth-scrolling path when the GSE arrives after scroll animation
-  // completion, CurrentlyScrollingNode() is already cleared due to
-  // ScrollEndImpl call inside ScrollOffsetAnimationFinished. In this case
-  // last_scroller_element_id_ is already set in the same ScrollEndImpl call and
-  // we should not reset it here.
-  if (!last_scroller_element_id_ && CurrentlyScrollingNode())
-    last_scroller_element_id_ = CurrentlyScrollingNode()->element_id;
-
-  browser_controls_offset_manager_->ScrollEnd();
-  ClearCurrentlyScrollingNode();
-  frame_trackers_.StopSequence(wheel_scrolling_
-                                   ? FrameSequenceTrackerType::kWheelScroll
-                                   : FrameSequenceTrackerType::kTouchScroll);
-}
-
 void LayerTreeHostImpl::ScrollEnd(bool should_snap) {
   if ((should_snap && SnapAtScrollEnd()) ||
       mutator_host_->IsImplOnlyScrollAnimating()) {
@@ -4997,7 +4981,13 @@ void LayerTreeHostImpl::ScrollEnd(bool should_snap) {
     deferred_scroll_end_ = true;
     return;
   }
-  ScrollEndImpl();
+
+  browser_controls_offset_manager_->ScrollEnd();
+  ClearCurrentlyScrollingNode();
+  frame_trackers_.StopSequence(wheel_scrolling_
+                                   ? FrameSequenceTrackerType::kWheelScroll
+                                   : FrameSequenceTrackerType::kTouchScroll);
+
   deferred_scroll_end_ = false;
   scroll_gesture_did_end_ = true;
   client_->SetNeedsCommitOnImplThread();
@@ -5935,7 +5925,7 @@ bool LayerTreeHostImpl::ScrollAnimationUpdateTarget(
   gfx::Vector2dF scaled_delta =
       gfx::ScaleVector2d(scroll_delta, 1.f / scale_factor);
   bool animation_updated = mutator_host_->ImplOnlyScrollAnimationUpdateTarget(
-      scroll_node->element_id, scaled_delta,
+      scaled_delta,
       active_tree_->property_trees()->scroll_tree.MaxScrollOffset(
           scroll_node->id),
       CurrentBeginFrameArgs().frame_time, delayed_by);
@@ -6116,8 +6106,6 @@ void LayerTreeHostImpl::ScrollOffsetAnimationFinished() {
     ScrollEnd(/*should_snap=*/false);
     return;
   }
-
-  ScrollEndImpl();
 }
 
 void LayerTreeHostImpl::NotifyAnimationWorkletStateChange(

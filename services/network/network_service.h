@@ -127,7 +127,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
       mojom::HttpAuthStaticParamsPtr http_auth_static_params) override;
   void ConfigureHttpAuthPrefs(
       mojom::HttpAuthDynamicParamsPtr http_auth_dynamic_params) override;
-  void SetRawHeadersAccess(uint32_t process_id,
+  void SetRawHeadersAccess(int32_t process_id,
                            const std::vector<url::Origin>& origins) override;
   void SetMaxConnectionsPerProxy(int32_t max_connections) override;
   void GetNetworkChangeManager(
@@ -152,8 +152,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 #if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
   void SetEncryptionKey(const std::string& encryption_key) override;
 #endif
-  void AddCorbExceptionForPlugin(uint32_t process_id) override;
-  void RemoveCorbExceptionForPlugin(uint32_t process_id) override;
+  void AddCorbExceptionForPlugin(int32_t process_id) override;
+  void RemoveCorbExceptionForPlugin(int32_t process_id) override;
   void OnMemoryPressure(base::MemoryPressureListener::MemoryPressureLevel
                             memory_pressure_level) override;
   void OnPeerToPeerConnectionsCountChange(uint32_t count) override;
@@ -176,7 +176,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   void OnBeforeURLRequest();
 
   bool quic_disabled() const { return quic_disabled_; }
-  bool HasRawHeadersAccess(uint32_t process_id, const GURL& resource_url) const;
+  bool HasRawHeadersAccess(int32_t process_id, const GURL& resource_url) const;
 
   mojom::NetworkServiceClient* client() {
     return client_.is_bound() ? client_.get() : nullptr;
@@ -299,7 +299,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 
   // A per-process_id map of origins that are white-listed to allow
   // them to request raw headers for resources they request.
-  std::map<uint32_t, base::flat_set<url::Origin>>
+  std::map<int32_t, base::flat_set<url::Origin>>
       raw_headers_access_origins_by_pid_;
 
   bool quic_disabled_ = false;

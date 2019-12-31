@@ -351,14 +351,10 @@ id<GREYMatcher> ClearBrowsingDataCell() {
 // Tests that clearing the cookies through the UI does clear all of them. Use a
 // local server to navigate to a page that sets then tests a cookie, and then
 // clears the cookie and tests it is not set.
-#if defined(CHROME_EARL_GREY_1)
-#define MAYBE_testClearCookies testClearCookies
-#elif defined(CHROME_EARL_GREY_2)
-#define MAYBE_testClearCookies DISABLED_testClearCookies
-#endif
 // TODO(crbug.com/1036133): [ChromeEarlGrey cookies] does not work correctly in
 // this test.
-- (void)MAYBE_testClearCookies {
+// TODO(crbug.com/1038398): This test crashes flakily.
+- (void)DISABLED_testClearCookies {
   // Creates a map of canned responses and set up the test HTML server.
   std::map<GURL, std::pair<std::string, std::string>> response;
 

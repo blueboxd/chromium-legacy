@@ -11,6 +11,7 @@
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "components/strings/grit/components_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/test/event_generator.h"
@@ -47,11 +48,11 @@ class TestIconLabelBubbleView : public IconLabelBubbleView {
     SHRINKING,
   };
 
-  explicit TestIconLabelBubbleView(const gfx::FontList& font_list)
-      : IconLabelBubbleView(font_list), value_(0), is_bubble_showing_(false) {
+  explicit TestIconLabelBubbleView(const gfx::FontList& font_list,
+                                   Delegate* delegate)
+      : IconLabelBubbleView(font_list, delegate) {
     GetImageView()->SetImageSize(gfx::Size(kImageSize, kImageSize));
     SetLabel(base::ASCIIToUTF16("Label"));
-    separator_view()->set_disable_animation_for_test(true);
   }
 
   void SetCurrentAnimationValue(int value) {
@@ -83,9 +84,6 @@ class TestIconLabelBubbleView : public IconLabelBubbleView {
 
  protected:
   // IconLabelBubbleView:
-  SkColor GetTextColor() const override { return kTestColor; }
-  SkColor GetInkDropBaseColor() const override { return kTestColor; }
-
   bool ShouldShowLabel() const override {
     return !IsShrinking() ||
            (width() >
@@ -119,16 +117,28 @@ class TestIconLabelBubbleView : public IconLabelBubbleView {
   }
 
  private:
-  int value_;
-  bool is_bubble_showing_;
+  std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_ =
+      std::make_unique<ui::ScopedAnimationDurationScaleMode>(
+          ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+  int value_ = 0;
+  bool is_bubble_showing_ = false;
   DISALLOW_COPY_AND_ASSIGN(TestIconLabelBubbleView);
 };
 
 }  // namespace
 
-class IconLabelBubbleViewTest : public ChromeViewsTestBase {
+class IconLabelBubbleViewTestBase : public ChromeViewsTestBase,
+                                    public IconLabelBubbleView::Delegate {
+ public:
+  // IconLabelBubbleView::Delegate:
+  SkColor GetIconLabelBubbleSurroundingForegroundColor() const override {
+    return kTestColor;
+  }
+};
+
+class IconLabelBubbleViewTest : public IconLabelBubbleViewTestBase {
  protected:
-  // ChromeViewsTestBase:
+  // IconLabelBubbleViewTestBase:
   void SetUp() override {
     ChromeViewsTestBase::SetUp();
     gfx::FontList font_list;
@@ -136,7 +146,7 @@ class IconLabelBubbleViewTest : public ChromeViewsTestBase {
     CreateWidget();
     generator_ =
         std::make_unique<ui::test::EventGenerator>(GetRootWindow(widget_));
-    view_ = new TestIconLabelBubbleView(font_list);
+    view_ = new TestIconLabelBubbleView(font_list, this);
     view_->SetBoundsRect(gfx::Rect(0, 0, 24, 24));
     widget_->SetContentsView(view_);
 
@@ -417,7 +427,7 @@ TEST_F(IconLabelBubbleViewTest,
 #if defined(OS_CHROMEOS)
 // Verifies IconLabelBubbleView::CalculatePreferredSize() doesn't crash when
 // there is a widget but no compositor.
-using IconLabelBubbleViewCrashTest = ChromeViewsTestBase;
+using IconLabelBubbleViewCrashTest = IconLabelBubbleViewTestBase;
 
 TEST_F(IconLabelBubbleViewCrashTest,
        GetPreferredSizeDoesntCrashWhenNoCompositor) {
@@ -428,7 +438,7 @@ TEST_F(IconLabelBubbleViewCrashTest,
   views::Widget widget;
   widget.Init(std::move(params));
   IconLabelBubbleView* icon_label_bubble_view =
-      new TestIconLabelBubbleView(font_list);
+      new TestIconLabelBubbleView(font_list, this);
   icon_label_bubble_view->SetLabel(base::ASCIIToUTF16("x"));
   widget.GetContentsView()->AddChildView(icon_label_bubble_view);
   aura::Window* widget_native_view = widget.GetNativeView();

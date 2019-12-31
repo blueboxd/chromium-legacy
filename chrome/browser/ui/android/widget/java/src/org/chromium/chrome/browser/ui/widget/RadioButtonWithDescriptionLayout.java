@@ -10,16 +10,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RadioGroup;
 
-import androidx.annotation.Nullable;
-
 import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * <p>
  * Manages a group of exclusive RadioButtonWithDescriptions, automatically inserting a margin in
  * between the rows to prevent them from squishing together. Has the option to set an accessory view
  * on any given RadioButtonWithDescription. Only one accessory view per layout is supported.
- *
+ * <pre>
  * -------------------------------------------------
  * | O | MESSAGE #1                                |
  *        description_1                            |
@@ -27,41 +26,27 @@ import java.util.List;
  * | O | MESSAGE #N                                |
  *        description_n                            |
  * -------------------------------------------------
+ * </pre>
+ * </p>
+ *
+ * <p>
+ * To declare in XML, define a RadioButtonWithDescriptionLayout that contains
+ * RadioButtonWithDescription and/or RadioButtonWithEditText children.
+ * For example:
+ * <pre>{@code
+ *  <org.chromium.chrome.browser.ui.widget.RadioButtonWithDescriptionLayout
+ *       android:layout_width="match_parent"
+ *       android:layout_height="match_parent" >
+ *       <org.chromium.chrome.browser.ui.widget.RadioButtonWithDescription
+ *           ... />
+ *       <org.chromium.chrome.browser.ui.widget.RadioButtonWithEditText
+ *           ... />
+ *   </org.chromium.chrome.browser.ui.widget.RadioButtonWithDescriptionLayout>
+ * }</pre>
+ * </p>
  */
 public final class RadioButtonWithDescriptionLayout
         extends RadioGroup implements RadioButtonWithDescription.ButtonCheckedStateChangedListener {
-    /** Encapsulates information required to build a layout. */
-    public static class Option {
-        private final CharSequence mTitle;
-        private final CharSequence mDescription;
-        private final Object mTag;
-
-        /**
-         * @param title The title for this option. This will be displayed as the main text for the
-         *              checkbox.
-         * @param description The description for this option. This will be displayed as the subtext
-         *                    under the main text for the checkbox.
-         * @param tag The tag for this option. This can be used to identify the checkbox in event
-         *            listeners.
-         */
-        public Option(CharSequence title, CharSequence description, @Nullable Object tag) {
-            mTitle = title;
-            mDescription = description;
-            mTag = tag;
-        }
-
-        public CharSequence getTitle() {
-            return mTitle;
-        }
-
-        public CharSequence getDescription() {
-            return mDescription;
-        }
-
-        public Object getTag() {
-            return mTag;
-        }
-    }
 
     private final int mMarginBetweenRows;
     private final List<RadioButtonWithDescription> mRadioButtonsWithDescriptions;
@@ -110,24 +95,14 @@ public final class RadioButtonWithDescriptionLayout
     }
 
     /**
-     * Given a set of {@link Option} creates a set of {@link RadioButtonWithDescription}. When lists
-     * are built this way, there are two options for getting the checkbox you want in an event
-     * listener callback.
-     * 1. Set a tag on the Option and use that with {@link View#findViewWithTag).
-     * 2. Use the id passed through to {@link RadioGroup.OnCheckedChangeListener#onCheckedChanged}.
-     *    with {@link View#findViewById}.
-     *
-     * @param options List of options to add to this group.
+     * Add group of {@link RadioButtonWithDescription} into current layout. For buttons that already
+     * exist in other radio button group, the radio button group will be transferred into the group
+     * inside current layout.
+     * @param buttons List of {@link RadioButtonWithDescription} to add to this group.
      */
-    public void addOptions(List<Option> options) {
-        for (Option option : options) {
-            RadioButtonWithDescription b = new RadioButtonWithDescription(getContext(), null);
-            b.setTitleText(option.getTitle());
-            b.setDescriptionText(option.getDescription());
-            b.setTag(option.getTag());
-
+    public void addButtons(List<RadioButtonWithDescription> buttons) {
+        for (RadioButtonWithDescription b : buttons) {
             setupButton(b);
-
             addView(b, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         }
 

@@ -251,9 +251,8 @@ PrerenderManager::AddPrerenderFromLinkRelPrerender(
       origin = ORIGIN_LINK_REL_PRERENDER_SAMEDOMAIN;
     }
     // TODO(ajwong): This does not correctly handle storage for isolated apps.
-    session_storage_namespace =
-        source_web_contents->GetController()
-            .GetDefaultSessionStorageNamespace();
+    session_storage_namespace = source_web_contents->GetController()
+                                    .GetDefaultSessionStorageNamespace();
   }
   return AddPrerenderWithPreconnectFallback(origin, url, referrer,
                                             initiator_origin, gfx::Rect(size),
@@ -357,8 +356,7 @@ bool PrerenderManager::MaybeUsePrerenderedPage(const GURL& url,
   // namespace.
   // TODO(ajwong): This doesn't handle isolated apps correctly.
   PrerenderData* prerender_data = FindPrerenderData(
-      url,
-      web_contents->GetController().GetDefaultSessionStorageNamespace());
+      url, web_contents->GetController().GetDefaultSessionStorageNamespace());
   if (!prerender_data)
     return false;
   DCHECK(prerender_data->contents());
@@ -397,7 +395,7 @@ WebContents* PrerenderManager::SwapInternal(const GURL& url,
   }
 
   if (WebContents* new_web_contents =
-      prerender_data->contents()->prerender_contents()) {
+          prerender_data->contents()->prerender_contents()) {
     if (web_contents == new_web_contents)
       return nullptr;  // Do not swap in to ourself.
 
@@ -416,8 +414,8 @@ WebContents* PrerenderManager::SwapInternal(const GURL& url,
   // Do not swap if the target WebContents is not the only WebContents in its
   // current BrowsingInstance.
   if (web_contents->GetSiteInstance()->GetRelatedActiveContentsCount() != 1u) {
-    DCHECK_GT(
-        web_contents->GetSiteInstance()->GetRelatedActiveContentsCount(), 1u);
+    DCHECK_GT(web_contents->GetSiteInstance()->GetRelatedActiveContentsCount(),
+              1u);
     prerender_data->contents()->Destroy(
         FINAL_STATUS_NON_EMPTY_BROWSING_INSTANCE);
     return nullptr;
@@ -426,12 +424,6 @@ WebContents* PrerenderManager::SwapInternal(const GURL& url,
   // Do not use the prerendered version if there is an opener object.
   if (web_contents->HasOpener()) {
     prerender_data->contents()->Destroy(FINAL_STATUS_WINDOW_OPENER);
-    return nullptr;
-  }
-
-  // Do not swap in the prerender if the current WebContents is being captured.
-  if (web_contents->IsBeingCaptured()) {
-    prerender_data->contents()->Destroy(FINAL_STATUS_PAGE_BEING_CAPTURED);
     return nullptr;
   }
 
@@ -542,8 +534,8 @@ bool PrerenderManager::IsWebContentsPrerendering(
 bool PrerenderManager::HasPrerenderedUrl(
     GURL url,
     content::WebContents* web_contents) const {
-  content::SessionStorageNamespace* session_storage_namespace = web_contents->
-      GetController().GetDefaultSessionStorageNamespace();
+  content::SessionStorageNamespace* session_storage_namespace =
+      web_contents->GetController().GetDefaultSessionStorageNamespace();
 
   for (const auto& prerender_data : active_prerenders_) {
     PrerenderContents* prerender_contents = prerender_data->contents();
@@ -647,8 +639,8 @@ std::unique_ptr<base::DictionaryValue> PrerenderManager::CopyAsValue() const {
   auto dict_value = std::make_unique<base::DictionaryValue>();
   dict_value->Set("history", prerender_history_->CopyEntriesAsValue());
   dict_value->Set("active", GetActivePrerendersAsValue());
-  dict_value->SetBoolean("enabled",
-      GetPredictionStatus() == NetworkPredictionStatus::ENABLED);
+  dict_value->SetBoolean(
+      "enabled", GetPredictionStatus() == NetworkPredictionStatus::ENABLED);
   std::string disabled_note;
   if (GetPredictionStatus() == NetworkPredictionStatus::DISABLED_ALWAYS)
     disabled_note = "Disabled by user setting";
@@ -848,8 +840,8 @@ PrerenderManager::AddPrerenderWithPreconnectFallback(
   // TODO(ppi): Check whether there are usually enough render processes
   // available on Android. If not, kill an existing renderers so that we can
   // create a new one.
-  if (content::RenderProcessHost::ShouldTryToUseExistingProcessHost(
-          profile_, url) &&
+  if (content::RenderProcessHost::ShouldTryToUseExistingProcessHost(profile_,
+                                                                    url) &&
       !content::RenderProcessHost::run_renderer_in_process()) {
     SkipPrerenderContentsAndMaybePreconnect(url, origin,
                                             FINAL_STATUS_TOO_MANY_PROCESSES);
@@ -1093,7 +1085,7 @@ bool PrerenderManager::DoesRateLimitAllowPrerender(Origin origin) const {
   if (!config_.rate_limit_enabled)
     return true;
   return elapsed_time >=
-      base::TimeDelta::FromMilliseconds(kMinTimeBetweenPrerendersMs);
+         base::TimeDelta::FromMilliseconds(kMinTimeBetweenPrerendersMs);
 }
 
 void PrerenderManager::DeleteOldWebContents() {
@@ -1189,8 +1181,7 @@ void PrerenderManager::ScheduleDeleteOldWebContents(
 
 void PrerenderManager::AddToHistory(PrerenderContents* contents) {
   PrerenderHistory::Entry entry(contents->prerender_url(),
-                                contents->final_status(),
-                                contents->origin(),
+                                contents->final_status(), contents->origin(),
                                 base::Time::Now());
   prerender_history_->AddEntry(entry);
 }

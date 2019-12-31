@@ -9,7 +9,6 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "device/fido/fido_constants.h"
-#include "device/fido/pin.h"
 
 namespace device {
 
@@ -25,27 +24,19 @@ void FidoAuthenticator::GetRetries(
   NOTREACHED();
 }
 
-void FidoAuthenticator::GetEphemeralKey(
-    FidoAuthenticator::GetEphemeralKeyCallback callback) {
-  NOTREACHED();
-}
-
 void FidoAuthenticator::GetPINToken(
     std::string pin,
-    const pin::KeyAgreementResponse& peer_key,
     FidoAuthenticator::GetPINTokenCallback callback) {
   NOTREACHED();
 }
 
 void FidoAuthenticator::SetPIN(const std::string& pin,
-                               const pin::KeyAgreementResponse& peer_key,
                                FidoAuthenticator::SetPINCallback callback) {
   NOTREACHED();
 }
 
 void FidoAuthenticator::ChangePIN(const std::string& old_pin,
                                   const std::string& new_pin,
-                                  pin::KeyAgreementResponse& peer_key,
                                   SetPINCallback callback) {
   NOTREACHED();
 }

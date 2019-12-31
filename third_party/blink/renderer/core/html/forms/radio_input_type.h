@@ -59,6 +59,7 @@ class RadioInputType final : public BaseCheckableInputType {
 
   HTMLInputElement* FindNextFocusableRadioButtonInGroup(HTMLInputElement*,
                                                         bool);
+  HTMLInputElement* CheckedRadioButtonForGroup() const;
 };
 
 }  // namespace blink

@@ -124,8 +124,8 @@ SerializerMarkupAccumulator::SerializerMarkupAccumulator(
     FrameSerializerResourceDelegate& resource_delegate,
     Document& document)
     : MarkupAccumulator(kResolveAllURLs,
-                        document.IsHTMLDocument() ? SerializationType::kHTML
-                                                  : SerializationType::kXML),
+                        IsA<HTMLDocument>(document) ? SerializationType::kHTML
+                                                    : SerializationType::kXML),
       delegate_(delegate),
       resource_delegate_(resource_delegate),
       document_(&document) {}
@@ -273,7 +273,7 @@ std::pair<Node*, Element*> SerializerMarkupAccumulator::GetAuxiliaryDOMTree(
 void SerializerMarkupAccumulator::AppendAttributeValue(
     const String& attribute_value) {
   MarkupFormatter::AppendAttributeValue(markup_, attribute_value,
-                                        document_->IsHTMLDocument());
+                                        IsA<HTMLDocument>(document_.Get()));
 }
 
 void SerializerMarkupAccumulator::AppendRewrittenAttribute(

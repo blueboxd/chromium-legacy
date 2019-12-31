@@ -30,9 +30,15 @@ namespace content {
 class WebContents;
 }
 
-IntentPickerView::IntentPickerView(Browser* browser,
-                                   PageActionIconView::Delegate* delegate)
-    : PageActionIconView(nullptr, 0, delegate), browser_(browser) {}
+IntentPickerView::IntentPickerView(
+    Browser* browser,
+    IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
+    PageActionIconView::Delegate* page_action_icon_delegate)
+    : PageActionIconView(nullptr,
+                         0,
+                         icon_label_bubble_delegate,
+                         page_action_icon_delegate),
+      browser_(browser) {}
 
 IntentPickerView::~IntentPickerView() = default;
 

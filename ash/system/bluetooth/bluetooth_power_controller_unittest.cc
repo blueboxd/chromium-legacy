@@ -50,7 +50,7 @@ device::BluetoothAdapter* GetBluetoothAdapter() {
 // of default pref values before the pref service initialization notifications.
 class BluetoothPowerControllerTest : public NoSessionAshTestBase {
  public:
-  BluetoothPowerControllerTest() { disable_provide_local_state(); }
+  BluetoothPowerControllerTest() { DisableProvideLocalState(); }
   ~BluetoothPowerControllerTest() override = default;
 
   void SetUp() override {

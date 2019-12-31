@@ -120,7 +120,7 @@ class DisplayPrefsTest : public AshTestBase {
   ~DisplayPrefsTest() override {}
 
   void SetUp() override {
-    disable_provide_local_state();
+    DisableProvideLocalState();
     AshTestBase::SetUp();
     DisplayPrefs::RegisterLocalStatePrefs(local_state_.registry());
     display_prefs()->SetPrefServiceForTest(&local_state_);

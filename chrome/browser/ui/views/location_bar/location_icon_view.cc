@@ -28,9 +28,13 @@
 using content::WebContents;
 using security_state::SecurityLevel;
 
-LocationIconView::LocationIconView(const gfx::FontList& font_list,
-                                   Delegate* delegate)
-    : IconLabelBubbleView(font_list), delegate_(delegate) {
+LocationIconView::LocationIconView(
+    const gfx::FontList& font_list,
+    IconLabelBubbleView::Delegate* parent_delegate,
+    Delegate* delegate)
+    : IconLabelBubbleView(font_list, parent_delegate), delegate_(delegate) {
+  DCHECK(delegate_);
+
   SetID(VIEW_ID_LOCATION_ICON);
   Update(true);
   SetUpForAnimation();
@@ -45,19 +49,12 @@ gfx::Size LocationIconView::GetMinimumSize() const {
   return GetMinimumSizeForPreferredSize(GetPreferredSize());
 }
 
-bool LocationIconView::OnMousePressed(const ui::MouseEvent& event) {
-  delegate_->OnLocationIconPressed(event);
-
-  IconLabelBubbleView::OnMousePressed(event);
-  return true;
-}
-
 bool LocationIconView::OnMouseDragged(const ui::MouseEvent& event) {
   delegate_->OnLocationIconDragged(event);
   return IconLabelBubbleView::OnMouseDragged(event);
 }
 
-SkColor LocationIconView::GetTextColor() const {
+SkColor LocationIconView::GetForegroundColor() const {
   SecurityLevel security_level = SecurityLevel::NONE;
   if (!delegate_->IsEditingOrEmpty())
     security_level = delegate_->GetLocationBarModel()->GetSecurityLevel();
@@ -73,8 +70,16 @@ bool LocationIconView::ShowBubble(const ui::Event& event) {
   return delegate_->ShowPageInfoDialog();
 }
 
-SkColor LocationIconView::GetInkDropBaseColor() const {
-  return delegate_->GetLocationIconInkDropColor();
+bool LocationIconView::IsBubbleShowing() const {
+  return PageInfoBubbleView::GetShownBubbleType() !=
+         PageInfoBubbleView::BUBBLE_NONE;
+}
+
+bool LocationIconView::OnMousePressed(const ui::MouseEvent& event) {
+  delegate_->OnLocationIconPressed(event);
+
+  IconLabelBubbleView::OnMousePressed(event);
+  return true;
 }
 
 void LocationIconView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -94,11 +99,6 @@ void LocationIconView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
   IconLabelBubbleView::GetAccessibleNodeData(node_data);
   node_data->role = ax::mojom::Role::kPopUpButton;
-}
-
-bool LocationIconView::IsBubbleShowing() const {
-  return PageInfoBubbleView::GetShownBubbleType() !=
-         PageInfoBubbleView::BUBBLE_NONE;
 }
 
 int LocationIconView::GetMinimumLabelTextWidth() const {

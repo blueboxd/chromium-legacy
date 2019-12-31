@@ -347,9 +347,9 @@ void DataReductionProxyConfig::SetProxyConfig(bool enabled, bool at_startup) {
     // It is safe to use base::Unretained here, since it gets executed
     // synchronously on the IO thread, and |this| outlives
     // |secure_proxy_checker_|.
-    SecureProxyCheck(
-        base::Bind(&DataReductionProxyConfig::HandleSecureProxyCheckResponse,
-                   base::Unretained(this)));
+    SecureProxyCheck(base::BindRepeating(
+        &DataReductionProxyConfig::HandleSecureProxyCheckResponse,
+        base::Unretained(this)));
   }
   network_properties_manager_->ResetWarmupURLFetchMetrics();
   FetchWarmupProbeURL();
@@ -601,9 +601,9 @@ void DataReductionProxyConfig::ContinueNetworkChanged(
     // It is safe to use base::Unretained here, since it gets executed
     // synchronously on the IO thread, and |this| outlives
     // |secure_proxy_checker_|.
-    SecureProxyCheck(
-        base::Bind(&DataReductionProxyConfig::HandleSecureProxyCheckResponse,
-                   base::Unretained(this)));
+    SecureProxyCheck(base::BindRepeating(
+        &DataReductionProxyConfig::HandleSecureProxyCheckResponse,
+        base::Unretained(this)));
   }
 }
 

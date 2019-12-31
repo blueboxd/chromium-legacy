@@ -40,6 +40,7 @@ struct PageActionIconParams {
   int between_icon_spacing = 0;
   Browser* browser = nullptr;
   CommandUpdater* command_updater = nullptr;
+  IconLabelBubbleView::Delegate* icon_label_bubble_delegate = nullptr;
   PageActionIconView::Delegate* page_action_icon_delegate = nullptr;
   views::ButtonObserver* button_observer = nullptr;
   views::ViewObserver* view_observer = nullptr;

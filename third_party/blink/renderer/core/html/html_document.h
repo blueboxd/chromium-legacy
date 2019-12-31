@@ -55,7 +55,12 @@ inline bool HTMLDocument::HasNamedItem(const AtomicString& name) {
   return named_item_counts_.Contains(name);
 }
 
-DEFINE_DOCUMENT_TYPE_CASTS(HTMLDocument);
+template <>
+struct DowncastTraits<HTMLDocument> {
+  static bool AllowFrom(const Document& document) {
+    return document.IsHTMLDocument();
+  }
+};
 
 }  // namespace blink
 

@@ -173,8 +173,9 @@ base::TimeDelta WebAppFrameToolbarView::OriginTotalDuration() {
 
 class WebAppFrameToolbarView::ContentSettingsContainer : public views::View {
  public:
-  explicit ContentSettingsContainer(
-      ContentSettingImageView::Delegate* delegate);
+  ContentSettingsContainer(
+      IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
+      ContentSettingImageView::Delegate* content_setting_image_delegate);
   ~ContentSettingsContainer() override = default;
 
   void UpdateContentSettingViewsVisibility() {
@@ -224,7 +225,8 @@ class WebAppFrameToolbarView::ContentSettingsContainer : public views::View {
 };
 
 WebAppFrameToolbarView::ContentSettingsContainer::ContentSettingsContainer(
-    ContentSettingImageView::Delegate* delegate) {
+    IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
+    ContentSettingImageView::Delegate* content_setting_image_delegate) {
   views::BoxLayout& layout =
       *SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
@@ -237,7 +239,8 @@ WebAppFrameToolbarView::ContentSettingsContainer::ContentSettingsContainer(
       ContentSettingImageModel::GenerateContentSettingImageModels();
   for (auto& model : models) {
     auto image_view = std::make_unique<ContentSettingImageView>(
-        std::move(model), delegate,
+        std::move(model), icon_label_bubble_delegate,
+        content_setting_image_delegate,
         views::CustomFrameView::GetWindowTitleFontList());
     // Padding around content setting icons.
     constexpr auto kContentSettingIconInteriorPadding = gfx::Insets(4);
@@ -367,6 +370,7 @@ WebAppFrameToolbarView::NavigationButtonContainer::
 class WebAppFrameToolbarView::ToolbarButtonContainer
     : public views::View,
       public BrowserActionsContainer::Delegate,
+      public IconLabelBubbleView::Delegate,
       public ContentSettingImageView::Delegate,
       public ImmersiveModeController::Observer,
       public PageActionIconView::Delegate,
@@ -468,8 +472,16 @@ class WebAppFrameToolbarView::ToolbarButtonContainer
                                                      main_bar);
   }
 
+  // IconLabelBubbleView::Delegate:
+  SkColor GetIconLabelBubbleSurroundingForegroundColor() const override {
+    return GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_TextfieldDefaultColor);
+  }
+  SkColor GetIconLabelBubbleInkDropColor() const override {
+    return icon_color_;
+  }
+
   // ContentSettingImageView::Delegate:
-  SkColor GetContentSettingInkDropColor() const override { return icon_color_; }
   content::WebContents* GetContentSettingWebContents() override {
     return browser_view_->GetActiveWebContents();
   }
@@ -493,7 +505,6 @@ class WebAppFrameToolbarView::ToolbarButtonContainer
   }
 
   // PageActionIconView::Delegate:
-  SkColor GetPageActionInkDropColor() const override { return icon_color_; }
   content::WebContents* GetWebContentsForPageActionIconView() override {
     return browser_view_->GetActiveWebContents();
   }
@@ -548,7 +559,7 @@ WebAppFrameToolbarView::ToolbarButtonContainer::ToolbarButtonContainer(
 
   if (app_controller->HasTitlebarContentSettings()) {
     content_settings_container_ =
-        AddChildView(std::make_unique<ContentSettingsContainer>(this));
+        AddChildView(std::make_unique<ContentSettingsContainer>(this, this));
     views::SetHitTestComponent(content_settings_container_,
                                static_cast<int>(HTCLIENT));
   }
@@ -569,6 +580,7 @@ WebAppFrameToolbarView::ToolbarButtonContainer::ToolbarButtonContainer(
       HorizontalPaddingBetweenPageActionsAndAppMenuButtons();
   params.browser = browser_view_->browser();
   params.command_updater = browser_view_->browser()->command_controller();
+  params.icon_label_bubble_delegate = this;
   params.page_action_icon_delegate = this;
   page_action_icon_container_view_ =
       AddChildView(std::make_unique<PageActionIconContainerView>(params));
@@ -863,12 +875,8 @@ WebAppFrameToolbarView::GetContentSettingViewsForTesting() const {
       ->get_content_setting_views();
 }
 
-SkColor WebAppFrameToolbarView::GetCaptionColor() const {
-  return paint_as_active_ ? active_color_ : inactive_color_;
-}
-
 void WebAppFrameToolbarView::UpdateChildrenColor() {
-  SkColor icon_color = GetCaptionColor();
+  const SkColor icon_color = paint_as_active_ ? active_color_ : inactive_color_;
   if (left_container_)
     left_container_->SetIconColor(icon_color);
   right_container_->SetIconColor(icon_color);

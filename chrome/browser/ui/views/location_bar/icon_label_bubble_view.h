@@ -46,31 +46,19 @@ class IconLabelBubbleView : public views::InkDropObserver,
  public:
   static constexpr int kTrailingPaddingPreMd = 2;
 
-  // A view that draws the separator.
-  class SeparatorView : public views::View {
+  class Delegate {
    public:
-    explicit SeparatorView(IconLabelBubbleView* owner);
+    // Returns the foreground color of items around the IconLabelBubbleView,
+    // e.g. nearby text items.  By default, the IconLabelBubbleView will use
+    // this as its foreground color and ink drop base color.
+    virtual SkColor GetIconLabelBubbleSurroundingForegroundColor() const = 0;
 
-    // views::View:
-    void OnPaint(gfx::Canvas* canvas) override;
-
-    // Updates the opacity based on the ink drop's state.
-    void UpdateOpacity();
-
-    void set_disable_animation_for_test(bool disable_animation_for_test) {
-      disable_animation_for_test_ = disable_animation_for_test;
-    }
-
-   private:
-    // Weak.
-    IconLabelBubbleView* owner_;
-
-    bool disable_animation_for_test_ = false;
-
-    DISALLOW_COPY_AND_ASSIGN(SeparatorView);
+    // Returns the base color for ink drops.  If not overridden, this returns
+    // GetIconLabelBubbleSurroundingForegroundColor().
+    virtual SkColor GetIconLabelBubbleInkDropColor() const;
   };
 
-  explicit IconLabelBubbleView(const gfx::FontList& font_list);
+  IconLabelBubbleView(const gfx::FontList& font_list, Delegate* delegate);
   ~IconLabelBubbleView() override;
 
   // views::InkDropObserver:
@@ -91,7 +79,7 @@ class IconLabelBubbleView : public views::InkDropObserver,
   SkColor GetParentBackgroundColor() const;
 
   // Exposed for testing.
-  SeparatorView* separator_view() const { return separator_view_; }
+  views::View* separator_view() const { return separator_view_; }
 
   // Exposed for testing.
   bool is_animating_label() const { return slide_animation_.is_animating(); }
@@ -111,8 +99,8 @@ class IconLabelBubbleView : public views::InkDropObserver,
  protected:
   static constexpr int kOpenTimeMS = 150;
 
-  // Gets the color for displaying text.
-  virtual SkColor GetTextColor() const = 0;
+  // Gets the color for displaying text and/or icons.
+  virtual SkColor GetForegroundColor() const;
 
   // Returns true when the separator should be visible.
   virtual bool ShouldShowSeparator() const;
@@ -138,7 +126,7 @@ class IconLabelBubbleView : public views::InkDropObserver,
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnThemeChanged() override;
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
-  SkColor GetInkDropBaseColor() const override = 0;
+  SkColor GetInkDropBaseColor() const override;
   bool IsTriggerableEvent(const ui::Event& event) override;
   bool ShouldUpdateInkDropOnClickCanceled() const override;
   void NotifyClick(const ui::Event& event) override;
@@ -194,6 +182,24 @@ class IconLabelBubbleView : public views::InkDropObserver,
  private:
   class HighlightPathGenerator;
 
+  // A view that draws the separator.
+  class SeparatorView : public views::View {
+   public:
+    explicit SeparatorView(IconLabelBubbleView* owner);
+
+    // views::View:
+    void OnPaint(gfx::Canvas* canvas) override;
+
+    // Updates the opacity based on the ink drop's state.
+    void UpdateOpacity();
+
+   private:
+    // Weak.
+    IconLabelBubbleView* owner_;
+
+    DISALLOW_COPY_AND_ASSIGN(SeparatorView);
+  };
+
   // Spacing between the image and the label.
   int GetInternalSpacing() const;
 
@@ -228,6 +234,8 @@ class IconLabelBubbleView : public views::InkDropObserver,
 
   // Sets the border padding around this view.
   void UpdateBorder();
+
+  Delegate* delegate_;
 
   // The contents of the bubble.
   SeparatorView* separator_view_;

@@ -22,7 +22,7 @@
 SelectedKeywordView::SelectedKeywordView(LocationBarView* location_bar,
                                          const gfx::FontList& font_list,
                                          Profile* profile)
-    : IconLabelBubbleView(font_list),
+    : IconLabelBubbleView(font_list, location_bar),
       location_bar_(location_bar),
       profile_(profile) {
   full_label_.SetFontList(font_list);
@@ -37,19 +37,15 @@ SelectedKeywordView::~SelectedKeywordView() {}
 void SelectedKeywordView::ResetImage() {
   SetImage(gfx::CreateVectorIcon(vector_icons::kSearchIcon,
                                  GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
-                                 GetTextColor()));
+                                 GetForegroundColor()));
 }
 
 void SelectedKeywordView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   SetLabelForCurrentWidth();
 }
 
-SkColor SelectedKeywordView::GetTextColor() const {
+SkColor SelectedKeywordView::GetForegroundColor() const {
   return location_bar_->GetColor(OmniboxPart::LOCATION_BAR_SELECTED_KEYWORD);
-}
-
-SkColor SelectedKeywordView::GetInkDropBaseColor() const {
-  return location_bar_->GetLocationIconInkDropColor();
 }
 
 gfx::Size SelectedKeywordView::CalculatePreferredSize() const {

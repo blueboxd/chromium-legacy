@@ -20,8 +20,10 @@ class ManagePasswordsIconViews : public ManagePasswordsIconView,
  public:
   static const char kClassName[];
 
-  ManagePasswordsIconViews(CommandUpdater* updater,
-                           PageActionIconView::Delegate* delegate);
+  ManagePasswordsIconViews(
+      CommandUpdater* updater,
+      IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
+      PageActionIconView::Delegate* page_action_icon_delegate);
   ~ManagePasswordsIconViews() override;
 
   // ManagePasswordsIconView:

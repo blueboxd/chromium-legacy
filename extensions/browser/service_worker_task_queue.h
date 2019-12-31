@@ -72,6 +72,12 @@ class Extension;
 class ServiceWorkerTaskQueue : public KeyedService,
                                public LazyContextTaskQueue {
  public:
+  // Unique identifier for an extension's activation->deactivation span.
+  // TODO(lazyboy): Move this under extensions/common/ for consistency, so that
+  // renderer process can use this instead of using "int" directly. We'd also
+  // want StrongAlias for this.
+  using ActivationSequence = int;
+
   explicit ServiceWorkerTaskQueue(content::BrowserContext* browser_context);
   ~ServiceWorkerTaskQueue() override;
 
@@ -102,15 +108,23 @@ class ServiceWorkerTaskQueue : public KeyedService,
   // has completed executing.
   void DidStartServiceWorkerContext(int render_process_id,
                                     const ExtensionId& extension_id,
+                                    int activation_sequence,
                                     const GURL& service_worker_scope,
                                     int64_t service_worker_version_id,
                                     int thread_id);
   // Called once an extension Service Worker was destroyed.
   void DidStopServiceWorkerContext(int render_process_id,
                                    const ExtensionId& extension_id,
+                                   int activation_sequence,
                                    const GURL& service_worker_scope,
                                    int64_t service_worker_version_id,
                                    int thread_id);
+
+  // Returns the current ActivationSequence for an extension, if the extension
+  // is currently activated. Returns base::nullopt if the extension isn't
+  // activated.
+  base::Optional<ActivationSequence> GetCurrentSequence(
+      const ExtensionId& extension_id) const;
 
   class TestObserver {
    public:
@@ -130,14 +144,9 @@ class ServiceWorkerTaskQueue : public KeyedService,
   static void SetObserverForTest(TestObserver* observer);
 
  private:
-  // Unique identifier for an extension's activation->deactivation span.
-  using ActivationSequence = int;
   using SequencedContextId = std::pair<LazyContextId, ActivationSequence>;
 
-  // Key used to identify a WorkerState within the worker container.
-  using WorkerKey = std::pair<LazyContextId, WorkerId>;
-
-  struct WorkerState;
+  class WorkerState;
 
   static void DidStartWorkerForScopeOnCoreThread(
       const SequencedContextId& context_id,
@@ -184,40 +193,19 @@ class ServiceWorkerTaskQueue : public KeyedService,
   // If the worker with |context_id| has seen worker start
   // (DidStartWorkerForScope) and load (DidStartServiceWorkerContext) then runs
   // all pending tasks for that worker.
-  void RunPendingTasksIfWorkerReady(const LazyContextId& context_id,
-                                    int64_t version_id,
-                                    int process_id,
-                                    int thread_id);
-
-  void ClearPendingTasks(const SequencedContextId& context_id);
+  void RunPendingTasksIfWorkerReady(const SequencedContextId& context_id);
 
   // Returns true if |sequence| is the current activation sequence for
   // |extension_id|.
   bool IsCurrentSequence(const ExtensionId& extension_id,
                          ActivationSequence sequence) const;
 
-  // Returns the current ActivationSequence for an extension, if the extension
-  // is currently activated. Returns base::nullopt if the extension isn't
-  // activated.
-  base::Optional<ActivationSequence> GetCurrentSequence(
-      const ExtensionId& extension_id) const;
-
-  WorkerState* GetOrCreateWorkerState(const WorkerKey& worker_key);
-  WorkerState* GetWorkerState(const WorkerKey& worker_key);
-  void ClearBrowserReadyForWorkers(const LazyContextId& context_id,
-                                   ActivationSequence sequence);
+  WorkerState* GetWorkerState(const SequencedContextId& context_id);
 
   ActivationSequence next_activation_sequence_ = 0;
 
-  // Set of extension ids that hasn't completed Service Worker registration.
-  std::set<SequencedContextId> pending_registrations_;
-
-  // The state of each workers we know about.
-  std::map<WorkerKey, WorkerState> worker_state_map_;
-
-  // Pending tasks for a |LazyContextId| with an ActivationSequence.
-  // These tasks will be run once the corresponding worker becomes ready.
-  std::map<SequencedContextId, std::vector<PendingTask>> pending_tasks_;
+  // The state of worker of each activated extension.
+  std::map<SequencedContextId, WorkerState> worker_state_map_;
 
   content::BrowserContext* const browser_context_ = nullptr;
 

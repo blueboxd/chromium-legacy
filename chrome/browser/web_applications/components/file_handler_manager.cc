@@ -97,6 +97,9 @@ void FileHandlerManager::OnAppRegistrarDestroyed() {
 const base::Optional<GURL> FileHandlerManager::GetMatchingFileHandlerURL(
     const AppId& app_id,
     const std::vector<base::FilePath>& launch_files) {
+  if (!base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI))
+    return base::nullopt;
+
   const std::vector<apps::FileHandlerInfo>* file_handlers =
       GetAllFileHandlers(app_id);
   if (!file_handlers || launch_files.empty())

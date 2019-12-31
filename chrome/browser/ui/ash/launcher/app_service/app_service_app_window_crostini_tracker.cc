@@ -98,6 +98,13 @@ void AppServiceAppWindowCrostiniTracker::OnWindowVisibilityChanged(
           chromeos::ProfileHelper::Get()->GetProfileByAccountId(
               primary_account_id));
 
+  // Windows without an application id set will get filtered out here.
+  const std::string& crostini_shelf_app_id =
+      registry_service->GetCrostiniShelfAppId(
+          exo::GetShellApplicationId(window), exo::GetShellStartupId(window));
+  if (crostini_shelf_app_id.empty())
+    return;
+
   // At this point, all remaining windows are Crostini windows. Firstly, we add
   // support for forcibly closing it. We use the registration to retrieve the
   // app's name, but this may be null in the case of apps with no associated

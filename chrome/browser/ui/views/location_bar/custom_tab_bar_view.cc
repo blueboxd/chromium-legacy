@@ -198,7 +198,7 @@ CustomTabBarView::CustomTabBarView(BrowserView* browser_view,
   close_button_ = AddChildView(CreateCloseButton(this, foreground_color));
 
   location_icon_view_ =
-      AddChildView(std::make_unique<LocationIconView>(font_list, this));
+      AddChildView(std::make_unique<LocationIconView>(font_list, this, this));
 
   auto title_origin_view =
       std::make_unique<CustomTabBarTitleOriginView>(background_color_);
@@ -349,6 +349,11 @@ void CustomTabBarView::ExecuteCommand(int command_id, int event_flags) {
   }
 }
 
+SkColor CustomTabBarView::GetIconLabelBubbleSurroundingForegroundColor() const {
+  return GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldDefaultColor);
+}
+
 content::WebContents* CustomTabBarView::GetWebContents() {
   return delegate_->GetWebContents();
 }
@@ -382,11 +387,6 @@ gfx::ImageSkia CustomTabBarView::GetLocationIcon(
       delegate_->GetLocationBarModel()->GetVectorIcon(),
       GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
       GetSecurityChipColor(GetLocationBarModel()->GetSecurityLevel()));
-}
-
-SkColor CustomTabBarView::GetLocationIconInkDropColor() const {
-  return GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldDefaultColor);
 }
 
 const LocationBarModel* CustomTabBarView::GetLocationBarModel() const {

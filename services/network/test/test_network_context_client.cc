@@ -22,7 +22,7 @@ TestNetworkContextClient::TestNetworkContextClient(
 TestNetworkContextClient::~TestNetworkContextClient() {}
 
 void TestNetworkContextClient::OnFileUploadRequested(
-    uint32_t process_id,
+    int32_t process_id,
     bool async,
     const std::vector<base::FilePath>& file_paths,
     OnFileUploadRequestedCallback callback) {

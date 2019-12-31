@@ -18,8 +18,12 @@ namespace qrcode_generator {
 
 QRCodeGeneratorIconView::QRCodeGeneratorIconView(
     CommandUpdater* command_updater,
-    PageActionIconView::Delegate* delegate)
-    : PageActionIconView(command_updater, IDC_QRCODE_GENERATOR, delegate) {
+    IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
+    PageActionIconView::Delegate* page_action_icon_delegate)
+    : PageActionIconView(command_updater,
+                         IDC_QRCODE_GENERATOR,
+                         icon_label_bubble_delegate,
+                         page_action_icon_delegate) {
   SetVisible(false);
   SetLabel(l10n_util::GetStringUTF16(IDS_OMNIBOX_QRCODE_GENERATOR_ICON_LABEL));
 }
@@ -63,7 +67,7 @@ const gfx::VectorIcon& QRCodeGeneratorIconView::GetVectorIcon() const {
   return kQrcodeGeneratorIcon;
 }
 
-SkColor QRCodeGeneratorIconView::GetTextColor() const {
+SkColor QRCodeGeneratorIconView::GetForegroundColor() const {
   return GetOmniboxColor(GetThemeProvider(),
                          OmniboxPart::LOCATION_BAR_TEXT_DEFAULT);
 }

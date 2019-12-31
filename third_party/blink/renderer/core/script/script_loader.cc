@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/imports/html_import.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -765,7 +766,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   if (GetScriptType() == mojom::ScriptType::kClassic &&
       element_->HasSourceAttribute() &&
       context_document->GetFrame()->ShouldForceDeferScript() &&
-      context_document->IsHTMLDocument() && parser_inserted_ &&
+      IsA<HTMLDocument>(context_document) && parser_inserted_ &&
       !element_->AsyncAttributeValue()) {
     // In terms of ScriptLoader flags, force deferred scripts behave like
     // parser-blocking scripts, except that |force_deferred_| is set.
@@ -857,7 +858,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 
   // Check for inline script that should be force deferred.
   if (context_document->GetFrame()->ShouldForceDeferScript() &&
-      context_document->IsHTMLDocument() && parser_inserted_) {
+      IsA<HTMLDocument>(context_document) && parser_inserted_) {
     force_deferred_ = true;
     will_be_parser_executed_ = true;
     return true;

@@ -112,7 +112,7 @@ HTMLElement* CustomElementDefinition::CreateElementForConstructor(
         document);
   }
   // TODO(davaajav): write this as one call to setCustomElementState instead of
-  // two
+  // two.
   element->SetCustomElementState(CustomElementState::kUndefined);
   element->SetCustomElementDefinition(this);
   return element;
@@ -190,21 +190,39 @@ CustomElementDefinition::ConstructionStackScope::~ConstructionStackScope() {
 
 // https://html.spec.whatwg.org/C/#concept-upgrade-an-element
 void CustomElementDefinition::Upgrade(Element& element) {
-  DCHECK_EQ(element.GetCustomElementState(), CustomElementState::kUndefined);
+  // 4.13.5.1 If element is custom, then return.
+  // 4.13.5.2 If element's custom element state is "failed", then return.
+  if (element.GetCustomElementState() == CustomElementState::kCustom ||
+      element.GetCustomElementState() == CustomElementState::kFailed) {
+    return;
+  }
 
+  // 4.13.5.3. Set element's custom element state to "failed".
+  element.SetCustomElementState(CustomElementState::kFailed);
+
+  // 4.13.5.4: For each attribute in element's attribute list, in order, enqueue
+  // a custom element callback reaction with element, callback name
+  // "attributeChangedCallback", and an argument list containing attribute's
+  // local name, null, attribute's value, and attribute's namespace.
   if (!observed_attributes_.IsEmpty())
     EnqueueAttributeChangedCallbackForAllAttributes(element);
 
+  // 4.13.5.5: If element is connected, then enqueue a custom element callback
+  // reaction with element, callback name "connectedCallback", and an empty
+  // argument list.
   if (element.isConnected() && HasConnectedCallback())
     EnqueueConnectedCallback(element);
 
   bool succeeded = false;
   {
+    // 4.13.5.6: Add element to the end of definition's construction stack.
     ConstructionStackScope construction_stack_scope(*this, element);
+    // 4.13.5.8: Run the constructor, catching exceptions.
     succeeded = RunConstructor(element);
   }
   if (!succeeded) {
-    element.SetCustomElementState(CustomElementState::kFailed);
+    // 4.13.5.?: If the above steps threw an exception, then element's custom
+    // element state will remain "failed".
     CustomElementReactionStack::Current().ClearQueue(element);
     return;
   }

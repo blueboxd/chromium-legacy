@@ -54,6 +54,8 @@ class CORE_EXPORT HTMLFormControlElementWithState
   bool user_has_edited_the_field_ = false;
   HTMLFormControlElementWithState(const QualifiedName& tag_name, Document&);
 
+  void QueueInputAndChangeEvents();
+
   void FinishParsingChildren() override;
   bool IsFormControlElementWithState() const final;
 

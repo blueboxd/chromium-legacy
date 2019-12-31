@@ -1404,7 +1404,7 @@ void Document::ChildrenChanged(const ChildrenChange& change) {
   // documents there may never be a <body> (since the parser won't always
   // insert one), so we resume here too. That does mean XHTML documents make
   // frames when there's only a <head>, but such documents are pretty rare.
-  if (document_element_ && !IsHTMLDocument())
+  if (document_element_ && !IsA<HTMLDocument>(this))
     BeginLifecycleUpdatesIfRenderingReady();
 }
 
@@ -1421,7 +1421,7 @@ bool Document::IsInMainFrame() const {
 }
 
 AtomicString Document::ConvertLocalName(const AtomicString& name) {
-  return IsHTMLDocument() ? name.LowerASCII() : name;
+  return IsA<HTMLDocument>(this) ? name.LowerASCII() : name;
 }
 
 // Just creates an element with specified qualified name without any
@@ -1480,7 +1480,7 @@ Element* Document::CreateElementForBinding(const AtomicString& name,
     return nullptr;
   }
 
-  if (IsXHTMLDocument() || IsHTMLDocument()) {
+  if (IsXHTMLDocument() || IsA<HTMLDocument>(this)) {
     // 2. If the context object is an HTML document, let localName be
     // converted to ASCII lowercase.
     AtomicString local_name = ConvertLocalName(name);
@@ -1545,7 +1545,7 @@ Element* Document::CreateElementForBinding(
   // 2. localName converted to ASCII lowercase
   const AtomicString& converted_local_name = ConvertLocalName(local_name);
   QualifiedName q_name(g_null_atom, converted_local_name,
-                       IsXHTMLDocument() || IsHTMLDocument()
+                       IsXHTMLDocument() || IsA<HTMLDocument>(this)
                            ? html_names::xhtmlNamespaceURI
                            : g_null_atom);
 
@@ -1789,7 +1789,7 @@ Comment* Document::createComment(const String& data) {
 
 CDATASection* Document::createCDATASection(const String& data,
                                            ExceptionState& exception_state) {
-  if (IsHTMLDocument()) {
+  if (IsA<HTMLDocument>(this)) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
         "This operation is not supported for HTML documents.");
@@ -1821,7 +1821,7 @@ ProcessingInstruction* Document::createProcessingInstruction(
         "The data provided ('" + data + "') contains '?>'.");
     return nullptr;
   }
-  if (IsHTMLDocument()) {
+  if (IsA<HTMLDocument>(this)) {
     UseCounter::Count(*this,
                       WebFeature::kHTMLDocumentCreateProcessingInstruction);
   }
@@ -2049,7 +2049,7 @@ String Document::SuggestedMIMEType() const {
   }
   if (xmlStandalone())
     return "text/xml";
-  if (IsHTMLDocument())
+  if (IsA<HTMLDocument>(this))
     return "text/html";
 
   if (DocumentLoader* document_loader = Loader())
@@ -2247,7 +2247,7 @@ void Document::RemoveTitle(Element* title_element) {
   title_element_ = nullptr;
 
   // Update title based on first title element in the document, if one exists.
-  if (IsHTMLDocument() || IsXHTMLDocument()) {
+  if (IsA<HTMLDocument>(this) || IsXHTMLDocument()) {
     if (HTMLTitleElement* title =
             Traversal<HTMLTitleElement>::FirstWithin(*this))
       SetTitleElement(title);
@@ -3035,12 +3035,14 @@ void Document::ApplyScrollRestorationLogic() {
   View()->InvokeFragmentAnchor();
 
   auto& frame_loader = GetFrame()->Loader();
-  auto& document_loader = *frame_loader.GetDocumentLoader();
+  auto* document_loader = frame_loader.GetDocumentLoader();
+  if (!document_loader)
+    return;
   if (frame_->IsLoading() &&
-      !FrameLoader::NeedsHistoryItemRestore(document_loader.LoadType()))
+      !FrameLoader::NeedsHistoryItemRestore(document_loader->LoadType()))
     return;
 
-  auto* history_item = frame_loader.GetDocumentLoader()->GetHistoryItem();
+  auto* history_item = document_loader->GetHistoryItem();
 
   if (!history_item || !history_item->GetViewState())
     return;
@@ -3062,18 +3064,14 @@ void Document::ApplyScrollRestorationLogic() {
       scroll_offset;
 
   bool can_restore_without_annoying_user =
-      !document_loader.GetInitialScrollState().was_scrolled_by_user &&
+      !document_loader->GetInitialScrollState().was_scrolled_by_user &&
       (can_restore_without_clamping || !frame_->IsLoading() ||
        !should_restore_scroll);
   if (!can_restore_without_annoying_user)
     return;
 
   frame_loader.RestoreScrollPositionAndViewState();
-  if (View()->GetScrollableArea()->ApplyPendingHistoryRestoreScrollOffset()) {
-    if (ScrollingCoordinator* scrolling_coordinator =
-            View()->GetFrame().GetPage()->GetScrollingCoordinator())
-      scrolling_coordinator->FrameViewRootLayerDidChange(View());
-  }
+  View()->GetScrollableArea()->ApplyPendingHistoryRestoreScrollOffset();
 }
 
 void Document::UpdateStyleAndLayout(ForcedLayoutStatus status) {
@@ -3620,8 +3618,8 @@ CanvasFontCache* Document::GetCanvasFontCache() {
 }
 
 DocumentParser* Document::CreateParser() {
-  if (IsHTMLDocument()) {
-    return MakeGarbageCollected<HTMLDocumentParser>(ToHTMLDocument(*this),
+  if (auto* html_document = DynamicTo<HTMLDocument>(this)) {
+    return MakeGarbageCollected<HTMLDocumentParser>(*html_document,
                                                     parser_sync_policy_);
   }
   // FIXME: this should probably pass the frame instead
@@ -3629,7 +3627,7 @@ DocumentParser* Document::CreateParser() {
 }
 
 bool Document::IsFrameSet() const {
-  if (!IsHTMLDocument())
+  if (!IsA<HTMLDocument>(this))
     return false;
   return IsA<HTMLFrameSetElement>(body());
 }
@@ -3682,7 +3680,7 @@ void Document::open(Document* entered_document,
 
   // If |document| is an XML document, then throw an "InvalidStateError"
   // DOMException exception.
-  if (!IsHTMLDocument()) {
+  if (!IsA<HTMLDocument>(this)) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Only HTML documents support open().");
     return;
@@ -4014,7 +4012,7 @@ void Document::close(ExceptionState& exception_state) {
 
   // If the Document object is an XML document, then throw an
   // "InvalidStateError" DOMException.
-  if (!IsHTMLDocument()) {
+  if (!IsA<HTMLDocument>(this)) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Only HTML documents support close().");
     return;
@@ -4491,7 +4489,7 @@ void Document::write(const String& text,
     return;
   }
 
-  if (!IsHTMLDocument()) {
+  if (!IsA<HTMLDocument>(this)) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Only HTML documents support write().");
     return;
@@ -4870,11 +4868,11 @@ void Document::DidLoadAllScriptBlockingResources() {
       WTF::Bind(&Document::ExecuteScriptsWaitingForResources,
                 WrapWeakPersistent(this)));
 
-  if (IsHTMLDocument() && body()) {
+  if (IsA<HTMLDocument>(this) && body()) {
     // For HTML if we have no more stylesheets to load and we're past the body
     // tag, we should have something to paint so resume.
     BeginLifecycleUpdatesIfRenderingReady();
-  } else if (!IsHTMLDocument() && documentElement()) {
+  } else if (!IsA<HTMLDocument>(this) && documentElement()) {
     // For non-HTML there is no body so resume as soon as the sheets are loaded.
     BeginLifecycleUpdatesIfRenderingReady();
   }
@@ -7531,7 +7529,7 @@ Node* EventTargetNodeForDocument(Document* doc) {
   if (plugin_document && !node) {
     node = plugin_document->PluginNode();
   }
-  if (!node && doc->IsHTMLDocument())
+  if (!node && IsA<HTMLDocument>(doc))
     node = doc->body();
   if (!node)
     node = doc->documentElement();
@@ -7743,7 +7741,7 @@ Document& Document::EnsureTemplateDocument() {
   if (template_document_)
     return *template_document_;
 
-  if (IsHTMLDocument()) {
+  if (IsA<HTMLDocument>(this)) {
     template_document_ = MakeGarbageCollected<HTMLDocument>(
         DocumentInit::Create()
             .WithContextDocument(ContextDocument())

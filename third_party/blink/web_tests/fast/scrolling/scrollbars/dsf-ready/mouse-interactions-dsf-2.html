@@ -104,14 +104,11 @@ window.onload = () => {
     if (onLinuxPlatform)
       expected_offset = window.devicePixelRatio == 1 ? 87 : 82;
     else if (onMacPlatform)
-      expected_offset = 74;
+      expected_offset = 72;
     else
       expected_offset = 82;
 
-    // TODO(arakeri): crbug.com/1019076 Option + click is off by 3-4 px.
-    assert_approx_equals(standardDivFast.scrollTop, expected_offset, 3,
-    modifier + " + click forward didn't scroll.");
-
+    assert_equals(standardDivFast.scrollTop, expected_offset, modifier + " + click forward didn't scroll.");
     await mouseClickOn(SCROLLBAR_BUTTON_FWD.x, standardRectFast.top +
     ((onMacPlatform ? 0 : BUTTON_WIDTH) + 2), /*left_click*/0, modifier);
     assert_equals(standardDivFast.scrollTop, 0, modifier + " + click backward didn't scroll.");

@@ -9,22 +9,22 @@
 
 #include "base/auto_reset.h"
 #include "base/macros.h"
-#include "chrome/browser/ui/extensions/browser_action_test_util.h"
+#include "chrome/browser/ui/extensions/extension_action_test_helper.h"
 
 class Browser;
 class ExtensionsMenuItemView;
 class ExtensionsMenuView;
 class ExtensionsToolbarContainer;
 
-// An implementation of BrowserActionTestUtil that works with the ExtensionsMenu
-// (i.e., when features::kExtensionsToolbarMenu is enabled).
-class ExtensionsMenuTestUtil : public BrowserActionTestUtil {
+// An implementation of ExtensionActionTestHelper that works with the
+// ExtensionsMenu (i.e., when features::kExtensionsToolbarMenu is enabled).
+class ExtensionsMenuTestUtil : public ExtensionActionTestHelper {
  public:
   ExtensionsMenuTestUtil(Browser* browser, bool is_real_window);
 
   ~ExtensionsMenuTestUtil() override;
 
-  // BrowserActionTestUtil:
+  // ExtensionActionTestHelper:
   int NumberOfBrowserActions() override;
   int VisibleBrowserActions() override;
   void InspectPopup(int index) override;
@@ -41,10 +41,10 @@ class ExtensionsMenuTestUtil : public BrowserActionTestUtil {
   void SetWidth(int width) override;
   ToolbarActionsBar* GetToolbarActionsBar() override;
   ExtensionsContainer* GetExtensionsContainer() override;
-  std::unique_ptr<BrowserActionTestUtil> CreateOverflowBar(
+  std::unique_ptr<ExtensionActionTestHelper> CreateOverflowBar(
       Browser* browser) override;
   // TODO(devlin): Some of these popup methods have a common implementation
-  // between this and BrowserActionTestUtilViews. It would make sense to
+  // between this and ExtensionActionTestHelperViews. It would make sense to
   // extract them (since they aren't dependent on the extension action UI
   // implementation).
   gfx::Size GetMinPopupSize() override;

@@ -177,6 +177,7 @@ public class SysUtils {
             return false;
         }
 
+        // If this logic changes, update the comments above base::SysUtils::IsLowEndDevice.
         sAmountOfPhysicalMemoryKB = detectAmountOfPhysicalMemoryKB();
         boolean isLowEnd = true;
         if (sAmountOfPhysicalMemoryKB <= 0) {

@@ -133,10 +133,10 @@ void HTMLIFrameElement::ParseAttribute(
   const QualifiedName& name = params.name;
   const AtomicString& value = params.new_value;
   if (name == html_names::kNameAttr) {
-    if (IsInDocumentTree() && GetDocument().IsHTMLDocument()) {
-      HTMLDocument& document = ToHTMLDocument(GetDocument());
-      document.RemoveNamedItem(name_);
-      document.AddNamedItem(value);
+    auto* document = DynamicTo<HTMLDocument>(GetDocument());
+    if (document && IsInDocumentTree()) {
+      document->RemoveNamedItem(name_);
+      document->AddNamedItem(value);
     }
     AtomicString old_name = name_;
     name_ = value;
@@ -368,9 +368,9 @@ Node::InsertionNotificationRequest HTMLIFrameElement::InsertedInto(
   InsertionNotificationRequest result =
       HTMLFrameElementBase::InsertedInto(insertion_point);
 
-  if (insertion_point.IsInDocumentTree() && GetDocument().IsHTMLDocument()) {
-    ToHTMLDocument(GetDocument()).AddNamedItem(name_);
-
+  auto* html_doc = DynamicTo<HTMLDocument>(GetDocument());
+  if (html_doc && insertion_point.IsInDocumentTree()) {
+    html_doc->AddNamedItem(name_);
     if (!ContentSecurityPolicy::IsValidCSPAttr(
             required_csp_, GetDocument().RequiredCSP().GetString())) {
       if (!required_csp_.IsEmpty()) {
@@ -391,8 +391,9 @@ Node::InsertionNotificationRequest HTMLIFrameElement::InsertedInto(
 
 void HTMLIFrameElement::RemovedFrom(ContainerNode& insertion_point) {
   HTMLFrameElementBase::RemovedFrom(insertion_point);
-  if (insertion_point.IsInDocumentTree() && GetDocument().IsHTMLDocument())
-    ToHTMLDocument(GetDocument()).RemoveNamedItem(name_);
+  auto* html_doc = DynamicTo<HTMLDocument>(GetDocument());
+  if (html_doc && insertion_point.IsInDocumentTree())
+    html_doc->RemoveNamedItem(name_);
 }
 
 bool HTMLIFrameElement::IsInteractiveContent() const {

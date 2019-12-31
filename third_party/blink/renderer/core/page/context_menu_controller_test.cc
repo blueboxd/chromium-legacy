@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
+#include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/input/context_menu_allowed_scope.h"
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
@@ -535,7 +536,7 @@ TEST_F(ContextMenuControllerTest, EditingActionsEnabledInXMLDocument) {
 
   Document* document = GetDocument();
   ASSERT_TRUE(IsA<XMLDocument>(document));
-  ASSERT_FALSE(document->IsHTMLDocument());
+  ASSERT_FALSE(IsA<HTMLDocument>(document));
 
   Element* text_element = document->getElementById("t");
   document->UpdateStyleAndLayout();

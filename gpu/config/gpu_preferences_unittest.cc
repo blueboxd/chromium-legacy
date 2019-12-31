@@ -46,7 +46,10 @@ void CheckGpuPreferencesEqual(GpuPreferences left, GpuPreferences right) {
             right.enable_gpu_driver_debug_logging);
   EXPECT_EQ(left.disable_gpu_program_cache, right.disable_gpu_program_cache);
   EXPECT_EQ(left.enforce_gl_minimums, right.enforce_gl_minimums);
-  EXPECT_EQ(left.force_gpu_mem_available, right.force_gpu_mem_available);
+  EXPECT_EQ(left.force_gpu_mem_available_bytes,
+            right.force_gpu_mem_available_bytes);
+  EXPECT_EQ(left.force_gpu_mem_discardable_limit_bytes,
+            right.force_gpu_mem_discardable_limit_bytes);
   EXPECT_EQ(left.gpu_program_cache_size, right.gpu_program_cache_size);
   EXPECT_EQ(left.disable_gpu_shader_disk_cache,
             right.disable_gpu_shader_disk_cache);
@@ -138,7 +141,8 @@ TEST(GpuPreferencesTest, EncodeDecode) {
     GPU_PREFERENCES_FIELD(enable_gpu_driver_debug_logging, true)
     GPU_PREFERENCES_FIELD(disable_gpu_program_cache, true)
     GPU_PREFERENCES_FIELD(enforce_gl_minimums, true)
-    GPU_PREFERENCES_FIELD(force_gpu_mem_available, 4096)
+    GPU_PREFERENCES_FIELD(force_gpu_mem_available_bytes, 4096)
+    GPU_PREFERENCES_FIELD(force_gpu_mem_discardable_limit_bytes, 8092)
     GPU_PREFERENCES_FIELD(gpu_program_cache_size,
                           kDefaultMaxProgramCacheMemoryBytes - 1)
     GPU_PREFERENCES_FIELD(disable_gpu_shader_disk_cache, true)

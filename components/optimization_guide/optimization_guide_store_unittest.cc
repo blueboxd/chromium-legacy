@@ -314,7 +314,18 @@ class OptimizationGuideStoreTest : public testing::Test {
   void PurgeExpiredFetchedHints() {
     guide_store()->PurgeExpiredFetchedHints();
 
-    // OnFetchedHintsLoadedToMaybePurge
+    // OnLoadExpiredEntriesToPurge
+    db()->LoadCallback(true);
+    // OnUpdateStore
+    db()->UpdateCallback(true);
+    // OnLoadEntryKeys callback
+    db()->LoadCallback(true);
+  }
+
+  void PurgeExpiredHostModelFeatures() {
+    guide_store()->PurgeExpiredHostModelFeatures();
+
+    // OnLoadExpiredEntriesToPurge
     db()->LoadCallback(true);
     // OnUpdateStore
     db()->UpdateCallback(true);
@@ -2010,6 +2021,43 @@ TEST_F(OptimizationGuideStoreTest, ClearHostModelFeatures) {
   ClearHostModelFeaturesFromDatabase();
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.ClearHostModelFeatures.StoreAvailable", true, 1);
+
+  for (size_t i = 0; i < update_host_model_features_count; ++i) {
+    std::string host_suffix = GetHostSuffix(i);
+    OptimizationGuideStore::EntryKey entry_key;
+    EXPECT_FALSE(
+        guide_store()->FindHostModelFeaturesEntryKey(host_suffix, &entry_key));
+  }
+}
+
+TEST_F(OptimizationGuideStoreTest, PurgeExpiredHostModelFeatures) {
+  base::HistogramTester histogram_tester;
+  size_t update_host_model_features_count = 5;
+  MetadataSchemaState schema_state = MetadataSchemaState::kValid;
+  base::Time update_time = base::Time().Now();
+  SeedInitialData(schema_state, 0, base::Time().Now());
+  CreateDatabase();
+  InitializeStore(schema_state);
+
+  std::unique_ptr<StoreUpdateData> update_data =
+      guide_store()->CreateUpdateDataForHostModelFeatures(
+          update_time, update_time -
+                           optimization_guide::features::
+                               StoredHostModelFeaturesFreshnessDuration());
+  ASSERT_TRUE(update_data);
+  SeedHostModelFeaturesUpdateData(update_data.get(),
+                                  update_host_model_features_count);
+  UpdateHostModelFeatures(std::move(update_data));
+
+  for (size_t i = 0; i < update_host_model_features_count; ++i) {
+    std::string host_suffix = GetHostSuffix(i);
+    OptimizationGuideStore::EntryKey entry_key;
+    EXPECT_TRUE(
+        guide_store()->FindHostModelFeaturesEntryKey(host_suffix, &entry_key));
+  }
+
+  // Remove expired host model features from the opt. guide store.
+  PurgeExpiredHostModelFeatures();
 
   for (size_t i = 0; i < update_host_model_features_count; ++i) {
     std::string host_suffix = GetHostSuffix(i);

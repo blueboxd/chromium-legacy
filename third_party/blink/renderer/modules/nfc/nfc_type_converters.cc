@@ -30,8 +30,8 @@ namespace mojo {
 NDEFRecordPtr TypeConverter<NDEFRecordPtr, blink::NDEFRecord*>::Convert(
     const blink::NDEFRecord* record) {
   return NDEFRecord::New(
-      record->recordType(), record->mediaType(), record->id(),
-      record->encoding(), record->lang(), record->payloadData(),
+      record->category(), record->recordType(), record->mediaType(),
+      record->id(), record->encoding(), record->lang(), record->payloadData(),
       TypeConverter<NDEFMessagePtr, blink::NDEFMessage*>::Convert(
           record->payload_message()));
 }

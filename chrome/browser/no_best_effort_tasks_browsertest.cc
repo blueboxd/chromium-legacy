@@ -253,9 +253,9 @@ IN_PROC_BROWSER_TEST_F(NoBestEffortTasksTest, BlobXMLHttpRequest) {
 // use BEST_EFFORT tasks.
 class NoBestEffortTasksTestWithQuota : public NoBestEffortTasksTest {
  protected:
-  std::unique_ptr<storage::QuotaSettings> CreateQuotaSettings() override {
-    // Return nullptr to use the real quota subsystem.
-    return nullptr;
+  bool UseProductionQuotaSettings() override {
+    // Return true to use the real quota subsystem.
+    return true;
   }
 };
 

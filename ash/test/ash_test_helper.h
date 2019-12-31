@@ -77,8 +77,7 @@ class AshTestHelper {
   struct InitParams {
     // True if the user should log in.
     bool start_session = true;
-    // True to inject local-state PrefService into the Shell.
-    bool provide_local_state = true;
+    PrefService* local_state = nullptr;
     ConfigType config_type = kUnitTest;
   };
 
@@ -139,8 +138,8 @@ class AshTestHelper {
 
  private:
   // Called when running in ash to create Shell.
-  void CreateShell(bool provide_local_state,
-                   base::Optional<ShellInitParams> init_params);
+  void CreateShell(base::Optional<ShellInitParams> init_params,
+                   PrefService* local_state);
 
   std::unique_ptr<chromeos::system::ScopedFakeStatisticsProvider>
       statistics_provider_;
@@ -171,8 +170,6 @@ class AshTestHelper {
 
   std::unique_ptr<TestKeyboardControllerObserver>
       test_keyboard_controller_observer_;
-
-  std::unique_ptr<PrefService> local_state_;
 
   DISALLOW_COPY_AND_ASSIGN(AshTestHelper);
 };

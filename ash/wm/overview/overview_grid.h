@@ -94,9 +94,9 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // first position in the grid. |use_spawn_animation| has no effect if either
   // |animate| or |reposition| are false.
   //
-  // Note: This function should only be called by |OverviewSession::AddItem|.
-  // |overview_session_| keeps count of all overview items, but this function
-  // does not update the tally.
+  // Note: This function should only be called by |OverviewSession::AddItem| and
+  // |OverviewGrid::AppendItem|. |overview_session_| keeps count of all overview
+  // items, but this function does not update the tally.
   void AddItem(aura::Window* window,
                bool reposition,
                bool animate,
@@ -105,20 +105,23 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
                bool use_spawn_animation = false);
 
   // Similar to the above function, but adds the window to the end of the grid.
+  // Note: This function should only be called by |OverviewSession::AppendItem|.
+  // |overview_session_| keeps count of all overview items, but this function
+  // does not update the tally.
   void AppendItem(aura::Window* window,
                   bool reposition,
                   bool animate,
                   bool use_spawn_animation = false);
 
   // Removes |overview_item| from the grid. |overview_item| cannot already be
-  // absent from the grid. No items are repositioned.
+  // absent from the grid. If |item_destroying| is true, we may want to notify
+  // |overview_session_| that this grid has become empty. If |item_destroying|
+  // and |reposition| are both true, all items are repositioned with animation.
+  // |reposition| has no effect if |item_destroying| is false.
   //
   // Note: This function should only be called by |OverviewSession::RemoveItem|
   // and |OverviewGrid::Shutdown|. |overview_session_| keeps count of all
-  // overview items, but this function does not update the tally. If
-  // |item_destroying| is true, we may want to notify |overview_session_| that
-  // there are no longer any items. Calls |PositionWindows| to animate the items
-  // to their new locations if |reposition| is true.
+  // overview items, but this function does not update the tally.
   void RemoveItem(OverviewItem* overview_item,
                   bool item_destroying = false,
                   bool reposition = false);

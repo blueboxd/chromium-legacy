@@ -26,7 +26,8 @@ class ReaderModeIconView : public PageActionIconView,
                            public content::WebContentsObserver {
  public:
   ReaderModeIconView(CommandUpdater* command_updater,
-                     PageActionIconView::Delegate* delegate);
+                     IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
+                     PageActionIconView::Delegate* page_action_icon_delegate);
   ~ReaderModeIconView() override = default;
 
  protected:

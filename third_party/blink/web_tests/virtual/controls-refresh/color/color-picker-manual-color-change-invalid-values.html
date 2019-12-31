@@ -54,8 +54,6 @@ t.step(() => {
     assert_equals(hexValueContainer.value, '');
     eventSender.keyDown('Tab');
     assert_equals(hexValueContainer.value, '#00000a', 'Invalid value should be reset when the value container is blurred.');
-  }), t.step_func_done(() => {
-    assert_false(internals.runtimeFlags.formControlsRefreshEnabled, "Popup should only not open when the formControlsRefresh flag is disabled.");
   }));
 });
 </script>

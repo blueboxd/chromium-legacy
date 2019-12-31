@@ -16,6 +16,7 @@
 #include "content/public/test/test_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
+#include "storage/browser/quota/quota_settings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -57,6 +58,11 @@ class BrowserTestBase : public testing::Test {
 
   // Override this to disallow accesses to be production-compatible.
   virtual bool AllowFileAccessFromFiles();
+
+  // By default browser tests use hardcoded quota settings for consistency,
+  // instead of dynamically based on available disk space. Tests can override
+  // this if they want to use the production path.
+  virtual bool UseProductionQuotaSettings();
 
   // Crash the Network Service process. Should only be called when
   // out-of-process Network Service is enabled. Re-applies any added host
@@ -104,6 +110,12 @@ class BrowserTestBase : public testing::Test {
 
   // Sets expected browser exit code, in case it's different than 0 (success).
   void set_expected_exit_code(int code) { expected_exit_code_ = code; }
+
+  // Sets flag to allow host resolutions to reach the network. Must be called
+  // before Setup() to take effect.
+  void set_allow_network_access_to_host_resolutions() {
+    allow_network_access_to_host_resolutions_ = true;
+  }
 
   const net::SpawnedTestServer* spawned_test_server() const {
     return spawned_test_server_.get();
@@ -201,9 +213,13 @@ class BrowserTestBase : public testing::Test {
   // not run and report a false positive result.
   bool set_up_called_;
 
+  std::unique_ptr<storage::QuotaSettings> quota_settings_;
+
   std::unique_ptr<NoRendererCrashesAssertion> no_renderer_crashes_assertion_;
 
   bool initialized_network_process_ = false;
+
+  bool allow_network_access_to_host_resolutions_ = false;
 
 #if defined(OS_POSIX)
   bool handle_sigterm_;

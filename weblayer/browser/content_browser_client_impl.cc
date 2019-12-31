@@ -34,7 +34,6 @@
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/service_manager/public/cpp/binder_map.h"
-#include "storage/browser/quota/quota_settings.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
@@ -404,15 +403,6 @@ void ContentBrowserClientImpl::RegisterBrowserInterfaceBindersForFrame(
   map->Add<blink::mojom::InstalledAppProvider>(
       base::BindRepeating(&StubInstalledAppProvider::Create));
 #endif
-}
-
-void ContentBrowserClientImpl::GetQuotaSettings(
-    content::BrowserContext* context,
-    content::StoragePartition* partition,
-    base::OnceCallback<void(base::Optional<storage::QuotaSettings>)> callback) {
-  storage::GetNominalDynamicSettings(
-      partition->GetPath(), context->IsOffTheRecord(),
-      storage::GetDefaultDeviceInfoHelper(), std::move(callback));
 }
 
 #if defined(OS_ANDROID)

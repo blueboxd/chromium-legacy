@@ -44,7 +44,7 @@ class DataReductionProxyService;
 class DataReductionProxyMutableConfigValues;
 class DataReductionProxyRequestOptions;
 
-typedef base::Callback<void(const std::string&)> ConfigStorer;
+using ConfigStorer = base::RepeatingCallback<void(const std::string&)>;
 
 // Retrieves the default net::BackoffEntry::Policy for the Data Reduction Proxy
 // configuration service client.

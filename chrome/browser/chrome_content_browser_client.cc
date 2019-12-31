@@ -611,8 +611,6 @@ using plugins::ChromeContentBrowserClientPluginsPart;
 
 namespace {
 
-const storage::QuotaSettings* g_default_quota_settings;
-
 #if BUILDFLAG(ENABLE_PLUGINS)
 // TODO(teravest): Add renderer-side API-specific checking for these APIs so
 // that blanket permission isn't granted to all dev channel APIs for these.
@@ -2633,20 +2631,6 @@ bool ChromeContentBrowserClient::ShouldUseGmsCoreGeolocationProvider() {
 scoped_refptr<content::QuotaPermissionContext>
 ChromeContentBrowserClient::CreateQuotaPermissionContext() {
   return new ChromeQuotaPermissionContext();
-}
-
-void ChromeContentBrowserClient::GetQuotaSettings(
-    content::BrowserContext* context,
-    content::StoragePartition* partition,
-    storage::OptionalQuotaSettingsCallback callback) {
-  if (g_default_quota_settings) {
-    // For debugging tests harness can inject settings.
-    std::move(callback).Run(*g_default_quota_settings);
-    return;
-  }
-  storage::GetNominalDynamicSettings(
-      partition->GetPath(), context->IsOffTheRecord(),
-      storage::GetDefaultDeviceInfoHelper(), std::move(callback));
 }
 
 content::GeneratedCodeCacheSettings
@@ -4909,12 +4893,6 @@ bool ChromeContentBrowserClient::HandleWebUIReverse(
 
 ui::NativeTheme* ChromeContentBrowserClient::GetWebTheme() const {
   return ui::NativeTheme::GetInstanceForWeb();
-}
-
-// static
-void ChromeContentBrowserClient::SetDefaultQuotaSettingsForTesting(
-    const storage::QuotaSettings* settings) {
-  g_default_quota_settings = settings;
 }
 
 scoped_refptr<safe_browsing::UrlCheckerDelegate>

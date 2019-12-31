@@ -85,7 +85,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentHandler
     kWaitingForTouch,
     kGettingRetries,
     kWaitingForPIN,
-    kGettingEphemeralKey,
     kGettingPINToken,
     kReady,
     kEnrolling,
@@ -105,9 +104,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentHandler
   void OnRetriesResponse(CtapDeviceResponseCode,
                          base::Optional<pin::RetriesResponse>);
   void OnHavePIN(std::string pin);
-  void OnHaveEphemeralKey(std::string,
-                          CtapDeviceResponseCode,
-                          base::Optional<pin::KeyAgreementResponse>);
   void OnHavePINToken(CtapDeviceResponseCode,
                       base::Optional<pin::TokenResponse>);
   void OnEnrollResponse(SampleCallback,

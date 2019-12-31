@@ -9,19 +9,16 @@ import android.annotation.SuppressLint;
 
 import androidx.annotation.WorkerThread;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninHelper;
 import org.chromium.components.signin.AccountIdProvider;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
-import org.chromium.components.signin.identitymanager.ProfileOAuth2TokenServiceDelegate;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -139,11 +136,6 @@ public final class SigninTestUtil {
     public static void resetSigninState() {
         // Clear cached signed account name and accounts list.
         ChromeSigninController.get().setSignedInAccountName(null);
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putStringSet(
-                        ProfileOAuth2TokenServiceDelegate.STORED_ACCOUNTS_KEY, new HashSet<>())
-                .apply();
     }
 
     private SigninTestUtil() {}

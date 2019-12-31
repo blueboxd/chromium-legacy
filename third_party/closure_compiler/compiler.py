@@ -24,7 +24,7 @@ class Compiler(object):
   and produce minified output."""
 
   _JAR_COMMAND = [
-    "java",
+    os.path.join(_CURRENT_DIR, "..", "jdk", "current", "bin", "java"),
     "-jar",
     "-Xms1024m",
     "-client",

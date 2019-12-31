@@ -81,6 +81,10 @@ New Procedures and Functions
 
     mode - the access mode with which to begin access.
 
+    This function indicates that the calling context will access the SharedImage
+    bound to <texture> until glEndSharedImageAccessDirectCHROMIUM is called, or
+    the calling context deletes <texture>.
+
     INVALID_OPERATION is generated if the texture id indicated is not
     backed by a shared image.
 

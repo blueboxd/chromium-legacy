@@ -441,6 +441,7 @@ body:not([surprise-me-disabled]) [visibleif~='surprise-me-disabled'] {
   font-family: 'Roboto';
   font-size: 13px;
   font-weight: 500;
+  line-height: 13px;
 }
 
 :not(.no-images) .top-header-contents {

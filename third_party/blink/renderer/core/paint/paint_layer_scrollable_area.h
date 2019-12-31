@@ -584,7 +584,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
     pending_view_state_ = view_state;
   }
 
-  bool ApplyPendingHistoryRestoreScrollOffset() override;
+  void ApplyPendingHistoryRestoreScrollOffset() override;
 
  private:
   bool NeedsScrollbarReconstruction() const;

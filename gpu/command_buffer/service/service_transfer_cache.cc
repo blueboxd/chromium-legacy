@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
@@ -123,9 +124,11 @@ ServiceTransferCache::CacheEntryInternal&
 ServiceTransferCache::CacheEntryInternal::operator=(
     CacheEntryInternal&& other) = default;
 
-ServiceTransferCache::ServiceTransferCache()
+ServiceTransferCache::ServiceTransferCache(const GpuPreferences& preferences)
     : entries_(EntryCache::NO_AUTO_EVICT),
-      cache_size_limit_(DiscardableCacheSizeLimit()),
+      cache_size_limit_(preferences.force_gpu_mem_discardable_limit_bytes
+                            ? preferences.force_gpu_mem_discardable_limit_bytes
+                            : DiscardableCacheSizeLimit()),
       max_cache_entries_(kMaxCacheEntries) {
   // In certain cases, ThreadTaskRunnerHandle isn't set (Android Webview).
   // Don't register a dump provider in these cases.
@@ -249,21 +252,10 @@ void ServiceTransferCache::EnforceLimits() {
 
 void ServiceTransferCache::PurgeMemory(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
-  switch (memory_pressure_level) {
-    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
-      // This function is only called with moderate or critical pressure.
-      NOTREACHED();
-      return;
-    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
-      cache_size_limit_ = cache_size_limit_ / 4;
-      break;
-    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
-      cache_size_limit_ = 0u;
-      break;
-  }
-
+  base::AutoReset<size_t> reset_limit(
+      &cache_size_limit_, DiscardableCacheSizeLimitForPressure(
+                              cache_size_limit_, memory_pressure_level));
   EnforceLimits();
-  cache_size_limit_ = DiscardableCacheSizeLimit();
 }
 
 void ServiceTransferCache::DeleteAllEntriesForDecoder(int decoder_id) {

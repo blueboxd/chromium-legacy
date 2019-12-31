@@ -38,6 +38,7 @@
 #include "content/browser/scheduler/browser_task_executor.h"
 #include "content/browser/startup_data_impl.h"
 #include "content/browser/startup_helper.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/browser/tracing/memory_instrumentation_util.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/app/content_main.h"
@@ -217,6 +218,16 @@ BrowserTestBase::~BrowserTestBase() {
 void BrowserTestBase::SetUp() {
   set_up_called_ = true;
 
+  if (!UseProductionQuotaSettings()) {
+    // By default use hardcoded quota settings to have a consistent testing
+    // environment.
+    const int kQuota = 5 * 1024 * 1024;
+    quota_settings_ =
+        std::make_unique<storage::QuotaSettings>(kQuota * 5, kQuota, 0, 0);
+    StoragePartitionImpl::SetDefaultQuotaSettingsForTesting(
+        quota_settings_.get());
+  }
+
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   // Features that depend on external factors (e.g. memory pressure monitor) can
@@ -322,7 +333,8 @@ void BrowserTestBase::SetUp() {
   // not affect the results.
   command_line->AppendSwitchASCII(switches::kForceDisplayColorProfile, "srgb");
 
-  test_host_resolver_ = std::make_unique<TestHostResolver>();
+  if (!allow_network_access_to_host_resolutions_)
+    test_host_resolver_ = std::make_unique<TestHostResolver>();
 
   ContentBrowserSanityChecker scoped_enable_sanity_checks;
 
@@ -514,10 +526,16 @@ void BrowserTestBase::TearDown() {
   ui::test::EventGeneratorDelegate::SetFactoryFunction(
       ui::test::EventGeneratorDelegate::FactoryFunction());
 #endif
+
+  StoragePartitionImpl::SetDefaultQuotaSettingsForTesting(nullptr);
 }
 
 bool BrowserTestBase::AllowFileAccessFromFiles() {
   return true;
+}
+
+bool BrowserTestBase::UseProductionQuotaSettings() {
+  return false;
 }
 
 void BrowserTestBase::SimulateNetworkServiceCrash() {
@@ -734,12 +752,25 @@ void BrowserTestBase::InitializeNetworkProcess() {
     return;
 
   initialized_network_process_ = true;
+
   host_resolver()->DisableModifications();
 
   // Send the host resolver rules to the network service if it's in use. No need
   // to do this if it's running in the browser process though.
   if (!IsOutOfProcessNetworkService())
     return;
+
+  mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
+  content::GetNetworkService()->BindTestInterface(
+      network_service_test.BindNewPipeAndPassReceiver());
+
+  // Do not set up host resolver rules if we allow the test to access
+  // the network.
+  if (allow_network_access_to_host_resolutions_) {
+    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+    network_service_test->SetAllowNetworkAccessToHostResolutions();
+    return;
+  }
 
   net::RuleBasedHostResolverProc::RuleList rules = host_resolver()->GetRules();
   std::vector<network::mojom::RulePtr> mojo_rules;
@@ -791,10 +822,6 @@ void BrowserTestBase::InitializeNetworkProcess() {
 
   if (mojo_rules.empty())
     return;
-
-  mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
-  content::GetNetworkService()->BindTestInterface(
-      network_service_test.BindNewPipeAndPassReceiver());
 
   // Send the DNS rules to network service process. Android needs the RunLoop
   // to dispatch a Java callback that makes network process to enter native

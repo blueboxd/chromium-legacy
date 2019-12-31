@@ -16,8 +16,13 @@
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/size.h"
 
-ZoomView::ZoomView(PageActionIconView::Delegate* delegate)
-    : PageActionIconView(nullptr, 0, delegate), icon_(&kZoomMinusIcon) {
+ZoomView::ZoomView(IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
+                   PageActionIconView::Delegate* page_action_icon_delegate)
+    : PageActionIconView(nullptr,
+                         0,
+                         icon_label_bubble_delegate,
+                         page_action_icon_delegate),
+      icon_(&kZoomMinusIcon) {
   SetVisible(false);
 }
 

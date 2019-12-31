@@ -39,7 +39,10 @@ DirectContextProvider::DirectContextProvider(
     const gpu::GpuPreferences& gpu_preferences,
     gpu::gles2::FeatureInfo* feature_info,
     std::unique_ptr<DirectContextProviderDelegate> delegate)
-    : translator_cache_(gpu_preferences), delegate_(std::move(delegate)) {
+    : discardable_manager_(gpu_preferences),
+      passthrough_discardable_manager_(gpu_preferences),
+      translator_cache_(gpu_preferences),
+      delegate_(std::move(delegate)) {
   DCHECK(gl_context->IsCurrent(gl_surface.get()));
 
   auto limits = gpu::SharedMemoryLimits::ForMailboxContext();

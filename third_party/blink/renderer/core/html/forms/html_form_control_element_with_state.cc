@@ -275,6 +275,17 @@ bool HTMLFormControlElementWithState::ShouldSaveAndRestoreFormControlState()
   return isConnected() && ShouldAutocomplete();
 }
 
+void HTMLFormControlElementWithState::QueueInputAndChangeEvents() {
+  auto task_runner = GetDocument().GetTaskRunner(TaskType::kUserInteraction);
+  task_runner->PostTask(
+      FROM_HERE, WTF::Bind(&HTMLFormControlElementWithState::DispatchInputEvent,
+                           WrapWeakPersistent(this)));
+  task_runner->PostTask(
+      FROM_HERE,
+      WTF::Bind(&HTMLFormControlElementWithState::DispatchChangeEvent,
+                WrapWeakPersistent(this)));
+}
+
 void HTMLFormControlElementWithState::FinishParsingChildren() {
   HTMLFormControlElement::FinishParsingChildren();
   ListedElement::TakeStateAndRestore();

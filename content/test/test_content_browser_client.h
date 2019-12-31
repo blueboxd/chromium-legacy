@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "content/public/browser/content_browser_client.h"
-#include "storage/browser/quota/quota_settings.h"
 
 namespace content {
 
@@ -24,10 +23,6 @@ class TestContentBrowserClient : public ContentBrowserClient {
   base::FilePath GetDefaultDownloadDirectory() override;
   GeneratedCodeCacheSettings GetGeneratedCodeCacheSettings(
       content::BrowserContext* context) override;
-  void GetQuotaSettings(
-      content::BrowserContext* context,
-      content::StoragePartition* partition,
-      storage::OptionalQuotaSettingsCallback callback) override;
   std::string GetUserAgent() override;
 #if defined(OS_ANDROID)
   void GetAdditionalMappedFilesForChildProcess(

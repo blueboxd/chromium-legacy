@@ -328,8 +328,13 @@ void ElementInternals::SetElementArrayAttribute(
 bool ElementInternals::IsTargetFormAssociated() const {
   if (Target().IsFormAssociatedCustomElement())
     return true;
-  if (Target().GetCustomElementState() != CustomElementState::kUndefined)
+  // Custom element could be in the process of upgrading here, during which
+  // it will have state kFailed according to:
+  // https://html.spec.whatwg.org/multipage/custom-elements.html#upgrades
+  if (Target().GetCustomElementState() != CustomElementState::kUndefined &&
+      Target().GetCustomElementState() != CustomElementState::kFailed) {
     return false;
+  }
   // An element is in "undefined" state in its constructor JavaScript code.
   // ElementInternals needs to handle elements to be form-associated same as
   // form-associated custom elements because web authors want to call

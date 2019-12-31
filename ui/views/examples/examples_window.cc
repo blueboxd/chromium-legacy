@@ -179,7 +179,7 @@ class ExamplesWindowContents : public WidgetDelegateView,
 
   ~ExamplesWindowContents() override = default;
 
-  // Prints a message in the status area, at the bottom of the window.
+  // Sets the status area (at the bottom of the window) to |status|.
   void SetStatus(const std::string& status) {
     status_label_->SetText(base::UTF8ToUTF16(status));
   }

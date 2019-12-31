@@ -16,6 +16,8 @@ class VIEWS_EXAMPLES_EXPORT LinkExample : public ExampleBase,
                                           public LinkListener {
  public:
   LinkExample();
+  LinkExample(const LinkExample&) = delete;
+  LinkExample& operator=(const LinkExample&) = delete;
   ~LinkExample() override;
 
   // ExampleBase:
@@ -24,10 +26,6 @@ class VIEWS_EXAMPLES_EXPORT LinkExample : public ExampleBase,
  private:
   // LinkListener:
   void LinkClicked(Link* source, int event_flags) override;
-
-  Link* link_;
-
-  DISALLOW_COPY_AND_ASSIGN(LinkExample);
 };
 
 }  // namespace examples

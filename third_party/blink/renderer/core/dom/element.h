@@ -621,8 +621,11 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   }
 
   bool IsDefined() const {
-    return !(static_cast<int>(GetCustomElementState()) &
-             static_cast<int>(CustomElementState::kNotDefinedFlag));
+    // An element whose custom element state is "uncustomized" or "custom"
+    // is said to be defined.
+    // https://dom.spec.whatwg.org/#concept-element-defined
+    return GetCustomElementState() == CustomElementState::kUncustomized ||
+           GetCustomElementState() == CustomElementState::kCustom;
   }
   bool IsUpgradedV0CustomElement() {
     return GetV0CustomElementState() == kV0Upgraded;

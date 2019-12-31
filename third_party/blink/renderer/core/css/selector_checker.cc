@@ -101,7 +101,7 @@ static bool MatchesTagName(const Element& element,
   const AtomicString& local_name = tag_q_name.LocalName();
   if (local_name != CSSSelector::UniversalSelectorAtom() &&
       local_name != element.localName()) {
-    if (element.IsHTMLElement() || !element.GetDocument().IsHTMLDocument())
+    if (element.IsHTMLElement() || !IsA<HTMLDocument>(element.GetDocument()))
       return false;
     // Non-html elements in html documents are normalized to their camel-cased
     // version during parsing if applicable. Yet, type selectors are lower-cased
@@ -132,7 +132,7 @@ static bool MatchesTagNameForVTT(
 
   if (local_name != CSSSelector::UniversalSelectorAtom() &&
       local_name != element.localName()) {
-    if (element.IsHTMLElement() || !element.GetDocument().IsHTMLDocument())
+    if (element.IsHTMLElement() || !IsA<HTMLDocument>(element.GetDocument()))
       return false;
 
     // Non-html elements in html documents are normalized to their camel-cased
@@ -773,7 +773,7 @@ static bool AnyAttributeMatches(Element& element,
   AttributeCollection attributes = element.AttributesWithoutUpdate();
   for (const auto& attribute_item : attributes) {
     if (!attribute_item.Matches(selector_attr)) {
-      if (element.IsHTMLElement() || !element.GetDocument().IsHTMLDocument())
+      if (element.IsHTMLElement() || !IsA<HTMLDocument>(element.GetDocument()))
         continue;
       // Non-html attributes in html documents are normalized to their camel-
       // cased version during parsing if applicable. Yet, attribute selectors
@@ -798,7 +798,7 @@ static bool AnyAttributeMatches(Element& element,
     // a case-insensitive manner regardless of whether the case insensitive
     // flag is set or not.
     bool legacy_case_insensitive =
-        element.GetDocument().IsHTMLDocument() &&
+        IsA<HTMLDocument>(element.GetDocument()) &&
         !HTMLDocument::IsCaseSensitiveAttribute(selector_attr);
 
     // If case-insensitive, re-check, and count if result differs.
@@ -1295,7 +1295,7 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       return MatchesSpatialNavigationInterestPseudoClass(element);
     case CSSSelector::kPseudoIsHtml:
       DCHECK(is_ua_rule_);
-      return element.GetDocument().IsHTMLDocument();
+      return IsA<HTMLDocument>(element.GetDocument());
     case CSSSelector::kPseudoListBox:
       DCHECK(is_ua_rule_);
       return MatchesListBoxPseudoClass(element);

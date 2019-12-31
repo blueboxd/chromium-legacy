@@ -31,8 +31,8 @@ import "url/mojom/url.mojom";
 import "mojo/public/mojom/base/application_state.mojom";
 
 struct LoadInfo {
-  uint32 process_id;
-  uint32 routing_id;
+  int32 process_id;
+  int32 routing_id;
   string host;
   uint32 load_state;  // net::LoadState enum
   mojo_base.mojom.String16 state_param;
@@ -247,7 +247,7 @@ interface NetworkService {
   // Granting a permission increases risks in case the child process becomes
   // compromised, so this should be done only in specific cases
   // (e.g. DevTools attached).
-  SetRawHeadersAccess(uint32 process_id, array<url.mojom.Origin> origins);
+  SetRawHeadersAccess(int32 process_id, array<url.mojom.Origin> origins);
 
   // Sets the maximum number of connections for a proxy server.
   //   * Negative values will set the default proxy connection limit (32)
@@ -305,10 +305,10 @@ interface NetworkService {
   // TODO(lukasza, laforge): https://crbug.com/702995: Remove the ...ForPlugin
   // methods once Flash support is removed from Chromium (probably around 2020
   // - see https://www.chromium.org/flash-roadmap).
-  AddCorbExceptionForPlugin(uint32 process_id);
+  AddCorbExceptionForPlugin(int32 process_id);
 
   // Reverts AddCorbExceptionForPlugin.
-  RemoveCorbExceptionForPlugin(uint32 process_id);
+  RemoveCorbExceptionForPlugin(int32 process_id);
 
   // Called when the system is low on memory.
   OnMemoryPressure(mojo_base.mojom.MemoryPressureLevel memory_pressure_level);

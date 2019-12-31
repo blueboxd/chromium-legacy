@@ -47,8 +47,7 @@ class CC_ANIMATION_EXPORT ScrollOffsetAnimationsImpl
                                        base::TimeDelta delayed_by,
                                        base::TimeDelta animation_start_offset);
 
-  bool ScrollAnimationUpdateTarget(ElementId element_id,
-                                   const gfx::Vector2dF& scroll_delta,
+  bool ScrollAnimationUpdateTarget(const gfx::Vector2dF& scroll_delta,
                                    const gfx::ScrollOffset& max_scroll_offset,
                                    base::TimeTicks frame_monotonic_time,
                                    base::TimeDelta delayed_by);

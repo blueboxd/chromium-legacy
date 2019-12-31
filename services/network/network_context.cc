@@ -572,7 +572,7 @@ void NetworkContext::DisableQuic() {
 
 void NetworkContext::DestroyURLLoaderFactory(
     cors::CorsURLLoaderFactory* url_loader_factory) {
-  const uint32_t process_id = url_loader_factory->process_id();
+  const int32_t process_id = url_loader_factory->process_id();
 
   auto it = url_loader_factories_.find(url_loader_factory);
   DCHECK(it != url_loader_factories_.end());

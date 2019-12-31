@@ -22,11 +22,12 @@ namespace autofill {
 
 LocalCardMigrationIconView::LocalCardMigrationIconView(
     CommandUpdater* command_updater,
-    PageActionIconView::Delegate* delegate)
+    IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
+    PageActionIconView::Delegate* page_action_icon_delegate)
     : PageActionIconView(command_updater,
                          IDC_MIGRATE_LOCAL_CREDIT_CARD_FOR_PAGE,
-                         delegate) {
-  DCHECK(delegate);
+                         icon_label_bubble_delegate,
+                         page_action_icon_delegate) {
   SetID(VIEW_ID_MIGRATE_LOCAL_CREDIT_CARD_BUTTON);
   if (base::FeatureList::IsEnabled(
           features::kAutofillCreditCardUploadFeedback)) {

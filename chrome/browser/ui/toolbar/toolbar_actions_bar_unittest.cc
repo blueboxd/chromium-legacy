@@ -58,7 +58,7 @@ const extensions::Extension* GetExtensionByPath(
 // order matches, the return value is empty; otherwise, it contains the error.
 std::string VerifyToolbarOrderForBar(
     const ToolbarActionsBar* actions_bar,
-    BrowserActionTestUtil* browser_action_test_util,
+    ExtensionActionTestHelper* browser_action_test_util,
     const char* expected_names[],
     size_t total_size,
     size_t visible_count) {
@@ -172,7 +172,8 @@ void ToolbarActionsBarUnitTest::SetUp() {
           profile());
 
   ToolbarActionsBar::disable_animations_for_testing_ = true;
-  browser_action_test_util_ = BrowserActionTestUtil::Create(browser(), false);
+  browser_action_test_util_ =
+      ExtensionActionTestHelper::Create(browser(), false);
 
   overflow_browser_action_test_util_ =
       browser_action_test_util_->CreateOverflowBar(browser());

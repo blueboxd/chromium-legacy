@@ -28,7 +28,6 @@ class FidoDiscoveryFactory;
 
 namespace pin {
 struct EmptyResponse;
-struct KeyAgreementResponse;
 struct RetriesResponse;
 class TokenResponse;
 }  // namespace pin
@@ -76,8 +75,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
     kGettingRetries,
     kWaitingForPIN,
     kWaitingForNewPIN,
-    kGetEphemeralKey,
-    kGetEphemeralKeyForNewPIN,
     kSettingPIN,
     kRequestWithPIN,
     kFinished,
@@ -97,11 +94,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
   void OnHavePIN(std::string pin);
   void OnRetriesResponse(CtapDeviceResponseCode status,
                          base::Optional<pin::RetriesResponse> response);
-  void OnHaveEphemeralKey(std::string pin,
-                          CtapDeviceResponseCode status,
-                          base::Optional<pin::KeyAgreementResponse> response);
   void OnHaveSetPIN(std::string pin,
-                    pin::KeyAgreementResponse key_agreement,
                     CtapDeviceResponseCode status,
                     base::Optional<pin::EmptyResponse> response);
   void OnHavePINToken(CtapDeviceResponseCode status,

@@ -135,7 +135,7 @@ class CORE_EXPORT RootFrameViewport final
     should_restore_scroll_ = should_restore_scroll;
   }
 
-  bool ApplyPendingHistoryRestoreScrollOffset() override;
+  void ApplyPendingHistoryRestoreScrollOffset() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RootFrameViewportTest, DistributeScrollOrder);

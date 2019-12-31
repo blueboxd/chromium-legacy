@@ -162,10 +162,12 @@ def IsWindows():
 
 
 class GtestCommandGenerator(object):
-  def __init__(self, options, override_executable=None, additional_flags=None):
+  def __init__(self, options, override_executable=None, additional_flags=None,
+               ignore_shard_env_vars=False):
     self._options = options
     self._override_executable = override_executable
     self._additional_flags = additional_flags or []
+    self._ignore_shard_env_vars = ignore_shard_env_vars
 
   def generate(self, output_dir):
     """Generate the command to run to start the gtest perf test.
@@ -178,6 +180,7 @@ class GtestCommandGenerator(object):
             self._generate_repeat_args() +
             self._generate_also_run_disabled_tests_args() +
             self._generate_output_args(output_dir) +
+            self._generate_shard_args() +
             self._get_passthrough_args()
            )
 
@@ -195,6 +198,17 @@ class GtestCommandGenerator(object):
 
   def _get_passthrough_args(self):
     return self._options.passthrough_args + self._additional_flags
+
+  def _generate_shard_args(self):
+    """Teach the gtest to ignore the environment variables.
+
+    GTEST_SHARD_INDEX and GTEST_TOTAL_SHARDS will confuse the gtest
+    and convince it to only run some of its tests. Instead run all
+    of them.
+    """
+    if self._ignore_shard_env_vars:
+      return ['--test-launcher-total-shards=1', '--test-launcher-shard-index=0']
+    return []
 
   def _generate_filter_args(self):
     if self._options.isolated_script_test_filter:
@@ -377,7 +391,12 @@ class TelemetryCommandGenerator(object):
 
   def _generate_reference_build_args(self):
     if self._is_reference:
-      return ['--browser=reference',
+      reference_browser_flag = '--browser=reference'
+      # TODO(crbug.com/1038137): Make the logic generic once more reference
+      # settings are added
+      if '--browser=android-chrome-bundle' in self._get_passthrough_args():
+        reference_browser_flag = '--browser=reference-android-chrome-bundle'
+      return [reference_browser_flag,
               '--max-failures=5']
     return []
 
@@ -618,7 +637,7 @@ def main(sys_args):
             additional_flags = configuration['arguments']
           command_generator = GtestCommandGenerator(
               options, override_executable=configuration['path'],
-              additional_flags=additional_flags)
+              additional_flags=additional_flags, ignore_shard_env_vars=True)
           output_paths = OutputFilePaths(isolated_out_dir, name).SetUp()
           print('\n### {folder} ###'.format(folder=name))
           return_code = execute_gtest_perf_test(

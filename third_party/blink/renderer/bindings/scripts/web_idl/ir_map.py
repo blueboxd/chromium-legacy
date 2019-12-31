@@ -194,7 +194,7 @@ class IRMap(object):
                 accumulated.extend(irs)
             return accumulated
         else:
-            return self.find_by_kind(kind).itervalues()
+            return list(self.find_by_kind(kind).itervalues())
 
     def irs_of_kinds(self, *kinds):
         """

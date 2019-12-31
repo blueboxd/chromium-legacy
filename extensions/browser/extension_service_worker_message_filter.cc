@@ -146,6 +146,7 @@ void ExtensionServiceWorkerMessageFilter::OnDidInitializeServiceWorkerContext(
 
 void ExtensionServiceWorkerMessageFilter::OnDidStartServiceWorkerContext(
     const ExtensionId& extension_id,
+    int activation_sequence,
     const GURL& service_worker_scope,
     int64_t service_worker_version_id,
     int thread_id) {
@@ -161,12 +162,13 @@ void ExtensionServiceWorkerMessageFilter::OnDidStartServiceWorkerContext(
 
   ServiceWorkerTaskQueue::Get(browser_context_)
       ->DidStartServiceWorkerContext(render_process_id_, extension_id,
-                                     service_worker_scope,
+                                     activation_sequence, service_worker_scope,
                                      service_worker_version_id, thread_id);
 }
 
 void ExtensionServiceWorkerMessageFilter::OnDidStopServiceWorkerContext(
     const ExtensionId& extension_id,
+    int activation_sequence,
     const GURL& service_worker_scope,
     int64_t service_worker_version_id,
     int thread_id) {
@@ -182,7 +184,7 @@ void ExtensionServiceWorkerMessageFilter::OnDidStopServiceWorkerContext(
 
   ServiceWorkerTaskQueue::Get(browser_context_)
       ->DidStopServiceWorkerContext(render_process_id_, extension_id,
-                                    service_worker_scope,
+                                    activation_sequence, service_worker_scope,
                                     service_worker_version_id, thread_id);
 }
 

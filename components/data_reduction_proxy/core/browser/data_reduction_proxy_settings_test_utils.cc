@@ -126,7 +126,7 @@ void DataReductionProxySettingsTestBase::InitDataReductionProxy(
   settings_->InitDataReductionProxySettings(
       test_context_->pref_service(),
       std::move(settings_->data_reduction_proxy_service_));
-  settings_->SetCallbackToRegisterSyntheticFieldTrial(base::Bind(
+  settings_->SetCallbackToRegisterSyntheticFieldTrial(base::BindRepeating(
       &DataReductionProxySettingsTestBase::OnSyntheticFieldTrialRegistration,
       base::Unretained(this)));
 

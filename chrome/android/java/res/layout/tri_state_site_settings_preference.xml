@@ -25,7 +25,7 @@
             android:layout_height="wrap_content"
             android:paddingStart="?android:attr/listPreferredItemPaddingStart"
             android:background="?android:attr/selectableItemBackground"
-            app:titleText="@string/website_settings_category_allowed" />
+            app:primaryText="@string/website_settings_category_allowed" />
 
         <org.chromium.chrome.browser.ui.widget.RadioButtonWithDescription
             android:id="@+id/ask"
@@ -33,7 +33,7 @@
             android:layout_height="wrap_content"
             android:paddingStart="?android:attr/listPreferredItemPaddingStart"
             android:background="?android:attr/selectableItemBackground"
-            app:titleText="@string/website_settings_category_ask" />
+            app:primaryText="@string/website_settings_category_ask" />
 
         <org.chromium.chrome.browser.ui.widget.RadioButtonWithDescription
             android:id="@+id/blocked"
@@ -41,7 +41,7 @@
             android:layout_height="wrap_content"
             android:paddingStart="?android:attr/listPreferredItemPaddingStart"
             android:background="?android:attr/selectableItemBackground"
-            app:titleText="@string/website_settings_category_blocked" />
+            app:primaryText="@string/website_settings_category_blocked" />
 
     </org.chromium.chrome.browser.ui.widget.RadioButtonWithDescriptionLayout>
 </LinearLayout>

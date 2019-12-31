@@ -24,7 +24,8 @@ class StarView : public PageActionIconView,
  public:
   StarView(CommandUpdater* command_updater,
            Browser* browser,
-           PageActionIconView::Delegate* delegate);
+           IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
+           PageActionIconView::Delegate* page_action_icon_delegate);
   ~StarView() override;
 
   // Shows the BookmarkPromoBubbleView when the BookmarkTracker calls for it.

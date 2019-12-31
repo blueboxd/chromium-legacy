@@ -190,11 +190,8 @@ PaintPropertyChangeType VisualViewport::UpdatePaintPropertyNodesIfNeeded(
       // As an optimization, attempt to directly update the compositor
       // scale translation node and return kChangedOnlyCompositedValues which
       // avoids an expensive PaintArtifactCompositor update.
-      // TODO(crbug.com/953322): We need to implement this optimization for
-      // CompositeAfterPaint as well.
-      if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-          effective_change_type ==
-              PaintPropertyChangeType::kChangedOnlySimpleValues) {
+      if (effective_change_type ==
+          PaintPropertyChangeType::kChangedOnlySimpleValues) {
         if (auto* paint_artifact_compositor = GetPaintArtifactCompositor()) {
           bool updated =
               paint_artifact_compositor->DirectlyUpdatePageScaleTransform(
@@ -273,11 +270,8 @@ PaintPropertyChangeType VisualViewport::UpdatePaintPropertyNodesIfNeeded(
       // As an optimization, attempt to directly update the compositor
       // translation node and return kChangedOnlyCompositedValues which avoids
       // an expensive PaintArtifactCompositor update.
-      // TODO(crbug.com/953322): We need to implement this optimization for
-      // CompositeAfterPaint as well.
-      if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-          effective_change_type ==
-              PaintPropertyChangeType::kChangedOnlySimpleValues) {
+      if (effective_change_type ==
+          PaintPropertyChangeType::kChangedOnlySimpleValues) {
         if (auto* paint_artifact_compositor = GetPaintArtifactCompositor()) {
           bool updated =
               paint_artifact_compositor->DirectlyUpdateScrollOffsetTransform(
@@ -376,15 +370,16 @@ void VisualViewport::SetSize(const IntSize& size) {
   TRACE_EVENT_INSTANT1("loading", "viewport", TRACE_EVENT_SCOPE_THREAD, "data",
                        ViewportToTracedValue());
 
+  if (!MainFrame())
+    return;
+
   // Need to re-compute sizes for the overlay scrollbars.
   if (scrollbar_layer_horizontal_) {
     DCHECK(scrollbar_layer_vertical_);
     UpdateScrollbarLayer(kHorizontalScrollbar);
     UpdateScrollbarLayer(kVerticalScrollbar);
+    MainFrame()->View()->SetVisualViewportNeedsRepaint();
   }
-
-  if (!MainFrame())
-    return;
 
   EnqueueResizeEvent();
 }

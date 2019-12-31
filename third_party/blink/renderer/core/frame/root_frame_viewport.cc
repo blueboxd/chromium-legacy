@@ -241,9 +241,9 @@ IntRect RootFrameViewport::ScrollCornerRect() const {
   return LayoutViewport().ScrollCornerRect();
 }
 
-bool RootFrameViewport::ApplyPendingHistoryRestoreScrollOffset() {
+void RootFrameViewport::ApplyPendingHistoryRestoreScrollOffset() {
   if (!pending_view_state_)
-    return false;
+    return;
 
   bool should_restore_scale = pending_view_state_->page_scale_factor_;
 
@@ -289,7 +289,6 @@ bool RootFrameViewport::ApplyPendingHistoryRestoreScrollOffset() {
   should_restore_scroll_ = false;
 
   pending_view_state_.reset();
-  return true;
 }
 
 void RootFrameViewport::SetScrollOffset(const ScrollOffset& offset,

@@ -337,8 +337,13 @@ void GLManager::InitializeWithWorkaroundsImpl(
   attribs.offscreen_framebuffer_size = options.size;
   attribs.buffer_preserved = options.preserve_backbuffer;
   attribs.bind_generates_resource = options.bind_generates_resource;
+
   translator_cache_ =
       std::make_unique<gles2::ShaderTranslatorCache>(gpu_preferences_);
+  discardable_manager_ =
+      std::make_unique<ServiceDiscardableManager>(gpu_preferences_);
+  passthrough_discardable_manager_ =
+      std::make_unique<PassthroughDiscardableManager>(gpu_preferences_);
 
   if (!context_group) {
     GpuFeatureInfo gpu_feature_info;
@@ -351,7 +356,7 @@ void GLManager::InitializeWithWorkaroundsImpl(
         translator_cache_.get(), &completeness_cache_, feature_info,
         options.bind_generates_resource, &image_manager_, options.image_factory,
         nullptr /* progress_reporter */, gpu_feature_info,
-        &discardable_manager_, &passthrough_discardable_manager_,
+        discardable_manager_.get(), passthrough_discardable_manager_.get(),
         &shared_image_manager_);
   }
 

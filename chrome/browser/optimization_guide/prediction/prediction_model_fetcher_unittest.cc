@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -10,10 +11,12 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/optimization_guide/prediction/prediction_model_fetcher.h"
+#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -126,6 +129,59 @@ TEST_F(PredictionModelFetcherTest, FetchOptimizationGuideServiceModels) {
 
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.PredictionModelFetcher.GetModelsRequest.HostCount", 2,
+      1);
+
+  EXPECT_TRUE(SimulateResponse(response_content, net::HTTP_OK));
+  EXPECT_TRUE(models_fetched());
+
+  // No HostModelFeatures are returned.
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.PredictionModelFetcher.GetModelsResponse."
+      "HostModelFeatureCount",
+      0, 1);
+}
+
+TEST_F(PredictionModelFetcherTest,
+       FetchOptimizationGuideServiceModelsLimitHosts) {
+  base::HistogramTester histogram_tester;
+  std::string response_content;
+  std::vector<std::string> hosts;
+  for (size_t i = 0;
+       i <= features::MaxHostsForOptimizationGuideServiceModelsFetch() + 1; i++)
+    hosts.push_back("host" + base::NumberToString(i) + ".com");
+  std::vector<optimization_guide::proto::ModelInfo> models_request_info({});
+  EXPECT_TRUE(FetchModels(
+      models_request_info, hosts,
+      optimization_guide::proto::RequestContext::CONTEXT_BATCH_UPDATE));
+  VerifyHasPendingFetchRequests();
+
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.PredictionModelFetcher.GetModelsRequest.HostCount",
+      features::MaxHostsForOptimizationGuideServiceModelsFetch(), 1);
+
+  EXPECT_TRUE(SimulateResponse(response_content, net::HTTP_OK));
+  EXPECT_TRUE(models_fetched());
+
+  // No HostModelFeatures are returned.
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.PredictionModelFetcher.GetModelsResponse."
+      "HostModelFeatureCount",
+      0, 1);
+}
+
+TEST_F(PredictionModelFetcherTest, FetchFilterInvalidHosts) {
+  base::HistogramTester histogram_tester;
+  std::string response_content;
+  std::vector<std::string> hosts = {"192.168.1.1", "_abc", "localhost",
+                                    "foo.com"};
+  std::vector<optimization_guide::proto::ModelInfo> models_request_info({});
+  EXPECT_TRUE(FetchModels(
+      models_request_info, hosts,
+      optimization_guide::proto::RequestContext::CONTEXT_BATCH_UPDATE));
+  VerifyHasPendingFetchRequests();
+
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.PredictionModelFetcher.GetModelsRequest.HostCount", 1,
       1);
 
   EXPECT_TRUE(SimulateResponse(response_content, net::HTTP_OK));

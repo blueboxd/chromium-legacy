@@ -262,12 +262,6 @@ class CompositingSimTest : public PaintTestConfigurations, public SimTest {
 INSTANTIATE_LAYER_LIST_TEST_SUITE_P(CompositingSimTest);
 
 TEST_P(CompositingSimTest, LayerUpdatesDoNotInvalidateEarlierLayers) {
-  // TODO(crbug.com/765003): CAP may make different layerization decisions and
-  // we cannot guarantee that both divs will be composited in this test. When
-  // CAP gets closer to launch, this test should be updated to pass.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   InitializeWithHTML(R"HTML(
       <!DOCTYPE html>
       <style>
@@ -276,6 +270,7 @@ TEST_P(CompositingSimTest, LayerUpdatesDoNotInvalidateEarlierLayers) {
           width: 100px;
           height: 100px;
           will-change: transform;
+          background: lightblue;
         }
       </style>
       <div id='a'></div>
@@ -284,16 +279,9 @@ TEST_P(CompositingSimTest, LayerUpdatesDoNotInvalidateEarlierLayers) {
 
   Compositor().BeginFrame();
 
-  auto* a_element = GetElementById("a");
   auto* a_layer = CcLayerByDOMElementId("a");
-  DCHECK_EQ(a_layer->element_id(), CompositorElementIdFromUniqueObjectId(
-                                       a_element->GetLayoutObject()->UniqueId(),
-                                       CompositorElementIdNamespace::kPrimary));
   auto* b_element = GetElementById("b");
   auto* b_layer = CcLayerByDOMElementId("b");
-  DCHECK_EQ(b_layer->element_id(), CompositorElementIdFromUniqueObjectId(
-                                       b_element->GetLayoutObject()->UniqueId(),
-                                       CompositorElementIdNamespace::kPrimary));
 
   // Initially, neither a nor b should have a layer that should push properties.
   cc::LayerTreeHost& host = Compositor().layer_tree_host();
@@ -313,12 +301,6 @@ TEST_P(CompositingSimTest, LayerUpdatesDoNotInvalidateEarlierLayers) {
 }
 
 TEST_P(CompositingSimTest, LayerUpdatesDoNotInvalidateLaterLayers) {
-  // TODO(crbug.com/765003): CAP may make different layerization decisions and
-  // we cannot guarantee that both divs will be composited in this test. When
-  // CAP gets closer to launch, this test should be updated to pass.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   InitializeWithHTML(R"HTML(
       <!DOCTYPE html>
       <style>
@@ -327,6 +309,7 @@ TEST_P(CompositingSimTest, LayerUpdatesDoNotInvalidateLaterLayers) {
           width: 100px;
           height: 100px;
           will-change: transform;
+          background: lightblue;
         }
       </style>
       <div id='a'></div>
@@ -338,19 +321,9 @@ TEST_P(CompositingSimTest, LayerUpdatesDoNotInvalidateLaterLayers) {
 
   auto* a_element = GetElementById("a");
   auto* a_layer = CcLayerByDOMElementId("a");
-  DCHECK_EQ(a_layer->element_id(), CompositorElementIdFromUniqueObjectId(
-                                       a_element->GetLayoutObject()->UniqueId(),
-                                       CompositorElementIdNamespace::kPrimary));
   auto* b_element = GetElementById("b");
   auto* b_layer = CcLayerByDOMElementId("b");
-  DCHECK_EQ(b_layer->element_id(), CompositorElementIdFromUniqueObjectId(
-                                       b_element->GetLayoutObject()->UniqueId(),
-                                       CompositorElementIdNamespace::kPrimary));
-  auto* c_element = GetElementById("c");
   auto* c_layer = CcLayerByDOMElementId("c");
-  DCHECK_EQ(c_layer->element_id(), CompositorElementIdFromUniqueObjectId(
-                                       c_element->GetLayoutObject()->UniqueId(),
-                                       CompositorElementIdNamespace::kPrimary));
 
   // Initially, no layer should need to push properties.
   cc::LayerTreeHost& host = Compositor().layer_tree_host();
@@ -411,12 +384,6 @@ TEST_P(CompositingSimTest,
 // non-layer-list mode, this occurs in BuildPropertyTreesInternal (see:
 // SetLayerPropertyChangedForChild).
 TEST_P(CompositingSimTest, LayerSubtreeTransformPropertyChanged) {
-  // TODO(crbug.com/765003): CAP may make different layerization decisions and
-  // we cannot guarantee that both divs will be composited in this test. When
-  // CAP gets closer to launch, this test should be updated to pass.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   InitializeWithHTML(R"HTML(
       <!DOCTYPE html>
       <style>
@@ -426,6 +393,7 @@ TEST_P(CompositingSimTest, LayerSubtreeTransformPropertyChanged) {
           height: 100px;
           will-change: transform;
           transform: translate(10px, 10px);
+          background: lightgreen;
         }
         #inner {
           width: 100px;
@@ -443,16 +411,7 @@ TEST_P(CompositingSimTest, LayerSubtreeTransformPropertyChanged) {
 
   auto* outer_element = GetElementById("outer");
   auto* outer_element_layer = CcLayerByDOMElementId("outer");
-  DCHECK_EQ(outer_element_layer->element_id(),
-            CompositorElementIdFromUniqueObjectId(
-                outer_element->GetLayoutObject()->UniqueId(),
-                CompositorElementIdNamespace::kPrimary));
-  auto* inner_element = GetElementById("inner");
   auto* inner_element_layer = CcLayerByDOMElementId("inner");
-  DCHECK_EQ(inner_element_layer->element_id(),
-            CompositorElementIdFromUniqueObjectId(
-                inner_element->GetLayoutObject()->UniqueId(),
-                CompositorElementIdNamespace::kPrimary));
 
   // Initially, no layer should have |subtree_property_changed| set.
   EXPECT_FALSE(outer_element_layer->subtree_property_changed());
@@ -488,12 +447,6 @@ TEST_P(CompositingSimTest, LayerSubtreeTransformPropertyChanged) {
 // |transform_changed| set. In non-layer-list mode, this occurs in
 // cc::TransformTree::OnTransformAnimated and cc::Layer::SetTransform.
 TEST_P(CompositingSimTest, DirectTransformPropertyUpdate) {
-  // TODO(crbug.com/765003): CAP may make different layerization decisions and
-  // we cannot guarantee that both divs will be composited in this test. When
-  // CAP gets closer to launch, this test should be updated to pass.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   InitializeWithHTML(R"HTML(
       <!DOCTYPE html>
       <style>
@@ -503,6 +456,7 @@ TEST_P(CompositingSimTest, DirectTransformPropertyUpdate) {
           height: 100px;
           will-change: transform;
           transform: translate(10px, 10px) scale(1, 2);
+          background: lightgreen;
         }
         #inner {
           width: 100px;
@@ -520,10 +474,6 @@ TEST_P(CompositingSimTest, DirectTransformPropertyUpdate) {
 
   auto* outer_element = GetElementById("outer");
   auto* outer_element_layer = CcLayerByDOMElementId("outer");
-  DCHECK_EQ(outer_element_layer->element_id(),
-            CompositorElementIdFromUniqueObjectId(
-                outer_element->GetLayoutObject()->UniqueId(),
-                CompositorElementIdNamespace::kPrimary));
   auto transform_tree_index = outer_element_layer->transform_tree_index();
   auto* transform_node =
       GetPropertyTrees()->transform_tree.Node(transform_tree_index);
@@ -548,12 +498,6 @@ TEST_P(CompositingSimTest, DirectTransformPropertyUpdate) {
 // the changed value of a directly updated transform is still set if some other
 // change causes PaintArtifactCompositor to run and do non-direct updates.
 TEST_P(CompositingSimTest, DirectTransformPropertyUpdateCausesChange) {
-  // TODO(crbug.com/765003): CAP may make different layerization decisions and
-  // we cannot guarantee that both divs will be composited in this test. When
-  // CAP gets closer to launch, this test should be updated to pass.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   InitializeWithHTML(R"HTML(
       <!DOCTYPE html>
       <style>
@@ -563,6 +507,7 @@ TEST_P(CompositingSimTest, DirectTransformPropertyUpdateCausesChange) {
           height: 100px;
           will-change: transform;
           transform: translate(1px, 2px);
+          background: lightgreen;
         }
         #inner {
           width: 100px;
@@ -581,20 +526,12 @@ TEST_P(CompositingSimTest, DirectTransformPropertyUpdateCausesChange) {
 
   auto* outer_element = GetElementById("outer");
   auto* outer_element_layer = CcLayerByDOMElementId("outer");
-  DCHECK_EQ(outer_element_layer->element_id(),
-            CompositorElementIdFromUniqueObjectId(
-                outer_element->GetLayoutObject()->UniqueId(),
-                CompositorElementIdNamespace::kPrimary));
   auto outer_transform_tree_index = outer_element_layer->transform_tree_index();
   auto* outer_transform_node =
       GetPropertyTrees()->transform_tree.Node(outer_transform_tree_index);
 
   auto* inner_element = GetElementById("inner");
   auto* inner_element_layer = CcLayerByDOMElementId("inner");
-  DCHECK_EQ(inner_element_layer->element_id(),
-            CompositorElementIdFromUniqueObjectId(
-                inner_element->GetLayoutObject()->UniqueId(),
-                CompositorElementIdNamespace::kPrimary));
   auto inner_transform_tree_index = inner_element_layer->transform_tree_index();
   auto* inner_transform_node =
       GetPropertyTrees()->transform_tree.Node(inner_transform_tree_index);
@@ -697,12 +634,6 @@ TEST_P(CompositingSimTest, AffectedByOuterViewportBoundsDelta) {
 // |transform_changed| set. In non-layer-list mode, this occurs in
 // cc::Layer::SetTransformOrigin.
 TEST_P(CompositingSimTest, DirectTransformOriginPropertyUpdate) {
-  // TODO(crbug.com/765003): CAP may make different layerization decisions and
-  // we cannot guarantee that both divs will be composited in this test. When
-  // CAP gets closer to launch, this test should be updated to pass.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   InitializeWithHTML(R"HTML(
       <!DOCTYPE html>
       <style>
@@ -712,6 +643,7 @@ TEST_P(CompositingSimTest, DirectTransformOriginPropertyUpdate) {
           height: 100px;
           transform: rotate3d(3, 2, 1, 45deg);
           transform-origin: 10px 10px 100px;
+          background: lightblue;
         }
       </style>
       <div id='box'></div>
@@ -721,10 +653,6 @@ TEST_P(CompositingSimTest, DirectTransformOriginPropertyUpdate) {
 
   auto* box_element = GetElementById("box");
   auto* box_element_layer = CcLayerByDOMElementId("box");
-  DCHECK_EQ(box_element_layer->element_id(),
-            CompositorElementIdFromUniqueObjectId(
-                box_element->GetLayoutObject()->UniqueId(),
-                CompositorElementIdNamespace::kPrimary));
   auto transform_tree_index = box_element_layer->transform_tree_index();
   auto* transform_node =
       GetPropertyTrees()->transform_tree.Node(transform_tree_index);
@@ -820,12 +748,6 @@ TEST_P(CompositingSimTest, LayerSubtreeEffectPropertyChanged) {
 // This test is similar to |LayerSubtreeTransformPropertyChanged| but for
 // clip property node changes.
 TEST_P(CompositingSimTest, LayerSubtreeClipPropertyChanged) {
-  // TODO(crbug.com/765003): CAP may make different layerization decisions and
-  // we cannot guarantee that both divs will be composited in this test. When
-  // CAP gets closer to launch, this test should be updated to pass.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   InitializeWithHTML(R"HTML(
       <!DOCTYPE html>
       <style>
@@ -836,6 +758,7 @@ TEST_P(CompositingSimTest, LayerSubtreeClipPropertyChanged) {
           will-change: transform;
           position: absolute;
           clip: rect(10px, 80px, 70px, 40px);
+          background: lightgreen;
         }
         #inner {
           width: 100px;
@@ -853,12 +776,7 @@ TEST_P(CompositingSimTest, LayerSubtreeClipPropertyChanged) {
 
   auto* outer_element = GetElementById("outer");
   auto* outer_element_layer = CcLayerByDOMElementId("outer");
-  auto* inner_element = GetElementById("inner");
   auto* inner_element_layer = CcLayerByDOMElementId("inner");
-  DCHECK_EQ(inner_element_layer->element_id(),
-            CompositorElementIdFromUniqueObjectId(
-                inner_element->GetLayoutObject()->UniqueId(),
-                CompositorElementIdNamespace::kPrimary));
 
   // Initially, no layer should have |subtree_property_changed| set.
   EXPECT_FALSE(outer_element_layer->subtree_property_changed());

@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/controls/combobox/combobox.h"
+#include "ui/views/examples/examples_window.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace views {

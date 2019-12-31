@@ -11,6 +11,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/containers/mru_cache.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -48,6 +49,9 @@ class OptimizationGuideStore;
 class PredictionModel;
 class PredictionModelFetcher;
 class TopHostProvider;
+
+using HostModelFeaturesMRUCache =
+    base::HashingMRUCache<std::string, base::flat_map<std::string, float>>;
 
 // A PredictionManager supported by the optimization guide that makes an
 // OptimizationTargetDecision by evaluating the corresponding prediction model
@@ -87,7 +91,7 @@ class PredictionManager
   // if model for the optimization target is not currently on the client.
   OptimizationTargetDecision ShouldTargetNavigation(
       content::NavigationHandle* navigation_handle,
-      proto::OptimizationTarget optimization_target) const;
+      proto::OptimizationTarget optimization_target);
 
   // Update |session_fcp_| and |previous_fcp_| with |fcp|.
   void UpdateFCPSessionStatistics(base::TimeDelta fcp);
@@ -133,8 +137,11 @@ class PredictionManager
 
   // Return the host model features for all hosts used by this
   // PredictionManager for testing.
-  base::flat_map<std::string, base::flat_map<std::string, float>>
-  GetHostModelFeaturesForTesting() const;
+  const HostModelFeaturesMRUCache* GetHostModelFeaturesForTesting() const;
+
+  // Returns the host model features for a host if available.
+  base::Optional<base::flat_map<std::string, float>>
+  GetHostModelFeaturesForHost(const std::string& host) const;
 
   // Return the set of features that each host in |host_model_features_map_|
   // contains for testing.
@@ -166,10 +173,11 @@ class PredictionManager
                       optimization_targets_at_intialization);
 
   // Construct and return a map containing the current feature values for the
-  // requested set of model features.
+  // requested set of model features. The host model features cache is updated
+  // based on if host model features were used.
   base::flat_map<std::string, float> BuildFeatureMap(
       content::NavigationHandle* navigation_handle,
-      const base::flat_set<std::string>& model_features) const;
+      const base::flat_set<std::string>& model_features);
 
   // Calculate and return the current value for the client feature specified
   // by |model_feature|. Return nullopt if the client does not support the
@@ -273,12 +281,8 @@ class PredictionManager
   // prediction manager.
   base::flat_set<proto::OptimizationTarget> registered_optimization_targets_;
 
-  // A map of host to host model features known to the prediction manager.
-  //
-  // TODO(crbug/1001194): When loading features for the map, the size should be
-  // restricted.
-  base::flat_map<std::string, base::flat_map<std::string, float>>
-      host_model_features_map_;
+  // A MRU cache of host to host model features known to the prediction manager.
+  HostModelFeaturesMRUCache host_model_features_cache_;
 
   // The current session's FCP statistics for HTTP/HTTPS navigations.
   OptimizationGuideSessionStatistic session_fcp_;

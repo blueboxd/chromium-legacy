@@ -8,12 +8,20 @@
 #include <forward_list>
 #include <map>
 
+#include "ui/color/color_buildflags.h"
+
+#if BUILDFLAG(USE_COLOR_PIPELINE)
 #include "base/component_export.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_mixer.h"
+#else
+#include "ui/base/theme_provider.h"  // nogncheck
+#endif
 
 namespace ui {
+
+#if BUILDFLAG(USE_COLOR_PIPELINE)
 
 // A ColorProvider holds the complete pipeline of ColorMixers that compute
 // result colors for UI elements.  ColorProvider is meant to be a long-lived
@@ -48,6 +56,12 @@ class COMPONENT_EXPORT(COLOR) ColorProvider {
   // frequent inserts and could grow very large.
   mutable std::map<ColorId, SkColor> cache_;
 };
+
+#else
+
+using ColorProvider = ThemeProvider;
+
+#endif  // !BUILDFLAG(USE_COLOR_PIPELINE)
 
 }  // namespace ui
 

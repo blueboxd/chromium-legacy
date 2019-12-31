@@ -153,6 +153,7 @@ bool MaybeAddCommandLineArgsFromConfig(const base::Value& config,
       switches::kEnableFuchsiaAudioConsumer,
       switches::kEnableLowEndDeviceMode,
       switches::kForceGpuMemAvailableMb,
+      switches::kForceGpuMemDiscardableLimitMb,
       switches::kMinHeightForGpuRasterTile,
       switches::kRendererProcessLimit,
   };

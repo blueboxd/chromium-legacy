@@ -128,6 +128,8 @@ GpuChannelManager::GpuChannelManager(
       default_offscreen_surface_(std::move(default_offscreen_surface)),
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
       gpu_feature_info_(gpu_feature_info),
+      discardable_manager_(gpu_preferences_),
+      passthrough_discardable_manager_(gpu_preferences_),
       image_decode_accelerator_worker_(image_decode_accelerator_worker),
       activity_flags_(std::move(activity_flags)),
       memory_pressure_listener_(
@@ -516,9 +518,9 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
         return nullptr;
       }
     }
-    shared_context_state_->InitializeGrContext(gpu_driver_bug_workarounds_,
-                                               gr_shader_cache(),
-                                               &activity_flags_, watchdog_);
+    shared_context_state_->InitializeGrContext(
+        gpu_preferences_, gpu_driver_bug_workarounds_, gr_shader_cache(),
+        &activity_flags_, watchdog_);
   }
 
   gr_cache_controller_.emplace(shared_context_state_.get(), task_runner_);

@@ -19,7 +19,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/media/router/issues_observer.h"
 #include "chrome/browser/media/router/media_router_dialog_controller.h"
-#include "chrome/browser/media/router/presentation/presentation_service_delegate_impl.h"
+#include "chrome/browser/media/router/presentation/web_contents_presentation_manager.h"
 #include "chrome/browser/ui/media_router/cast_dialog_controller.h"
 #include "chrome/browser/ui/media_router/cast_dialog_model.h"
 #include "chrome/browser/ui/media_router/media_cast_mode.h"
@@ -53,11 +53,10 @@ class RouteRequestResult;
 class MediaRouterViewsUI
     : public CastDialogController,
       public QueryResultManager::Observer,
-      public PresentationServiceDelegateImpl::
-          DefaultPresentationRequestObserver,
+      public WebContentsPresentationManager::Observer,
       public MediaRouterFileDialog::MediaRouterFileDialogDelegate {
  public:
-  MediaRouterViewsUI();
+  explicit MediaRouterViewsUI(content::WebContents* initiator);
   ~MediaRouterViewsUI() override;
 
   // CastDialogController:
@@ -71,36 +70,22 @@ class MediaRouterViewsUI
   void ClearIssue(const Issue::Id& issue_id) override;
 
   // Initializes internal state (e.g. starts listening for MediaSinks) for
-  // targeting the default MediaSource (if any) of the initiator tab that owns
-  // |delegate|, as well as mirroring sources of that tab.
-  // The contents of the UI will change as the default MediaSource changes.
-  // If there is a default MediaSource, then PRESENTATION MediaCastMode will be
-  // added to |cast_modes_|.
-  // Init* methods can only be called once.
-  // |initiator|: Reference to the WebContents that initiated the dialog.
-  //              Must not be null.
-  // |delegate|: PresentationServiceDelegateImpl of the initiator tab.
-  //             Must not be null.
-  // TODO(imcheng): Replace use of impl with an intermediate abstract
-  // interface.
-  void InitWithDefaultMediaSource(content::WebContents* initiator,
-                                  PresentationServiceDelegateImpl* delegate);
+  // targeting the default MediaSource (if any) of |initiator_|, as well as
+  // mirroring sources of that tab. The contents of the UI will change as the
+  // default MediaSource changes. If there is a default MediaSource, then
+  // PRESENTATION MediaCastMode will be added to |cast_modes_|. Init* methods
+  // can only be called once.
+  void InitWithDefaultMediaSource();
 
   // Initializes internal state targeting the presentation specified in
-  // |context|. Also sets up mirroring sources based on |initiator|.
+  // |context|. Also sets up mirroring sources based on |initiator_|.
   // This is different from InitWithDefaultMediaSource() in that it does not
   // listen for default media source changes, as the UI is fixed to the source
-  // in |request|.
+  // in |context|.
   // Init* methods can only be called once.
-  // |initiator|: Reference to the WebContents that initiated the dialog.
-  //              Must not be null.
-  // |delegate|: PresentationServiceDelegateImpl of the initiator tab.
-  //             Must not be null.
   // |context|: Context object for the PresentationRequest. This instance will
   //            take ownership of it. Must not be null.
   void InitWithStartPresentationContext(
-      content::WebContents* initiator,
-      PresentationServiceDelegateImpl* delegate,
       std::unique_ptr<StartPresentationContext> context);
 
   // Requests a route be created from the source mapped to
@@ -225,13 +210,14 @@ class MediaRouterViewsUI
   virtual void HandleCreateSessionRequestRouteResponse(
       const RouteRequestResult&);
 
-  // Initializes the dialog with mirroring sources derived from |initiator|.
-  virtual void InitCommon(content::WebContents* initiator);
+  // Initializes the dialog with mirroring sources derived from |initiator_|.
+  virtual void InitCommon();
 
-  // PresentationServiceDelegateImpl::DefaultPresentationObserver
+  // WebContentsPresentationManager::Observer
   void OnDefaultPresentationChanged(
-      const content::PresentationRequest& presentation_request) override;
-  void OnDefaultPresentationRemoved() override;
+      const content::PresentationRequest* presentation_request) override;
+
+  void OnDefaultPresentationRemoved();
 
   // Called to update the dialog with the current list of of enabled sinks.
   void UpdateSinks();
@@ -392,17 +378,12 @@ class MediaRouterViewsUI
   // mode, if supported. Otherwise set to nullopt.
   base::Optional<content::PresentationRequest> presentation_request_;
 
-  // It's possible for PresentationServiceDelegateImpl to be destroyed before
-  // this class.
-  // (e.g. if a tab with the UI open is closed, then the tab WebContents will
-  // be destroyed first momentarily before the UI WebContents).
-  // Holding a WeakPtr to PresentationServiceDelegateImpl is the cleanest way to
-  // handle this.
-  // TODO(imcheng): hold a weak ptr to an abstract type instead.
-  base::WeakPtr<PresentationServiceDelegateImpl> presentation_service_delegate_;
+  // |presentation_manager_| notifies |this| whenever there is an update to the
+  // default PresentationRequest or MediaRoutes associated with |initiator_|.
+  base::WeakPtr<WebContentsPresentationManager> presentation_manager_;
 
   // WebContents for the tab for which the Cast dialog is shown.
-  content::WebContents* initiator_ = nullptr;
+  content::WebContents* const initiator_;
 
   // The dialog that handles opening the file dialog and validating and
   // returning the results.

@@ -592,7 +592,7 @@ TEST_F(ShellTest2, DontCrashWhenWindowDeleted) {
 // Tests the local state code path.
 class ShellLocalStateTest : public AshTestBase {
  public:
-  ShellLocalStateTest() { disable_provide_local_state(); }
+  ShellLocalStateTest() { DisableProvideLocalState(); }
 
  protected:
   std::unique_ptr<TestingPrefServiceSimple> local_state_;

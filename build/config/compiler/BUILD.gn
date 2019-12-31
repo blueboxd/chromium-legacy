@@ -613,25 +613,25 @@ config("compiler") {
     } else {
       ldflags += [ "-flto=thin" ]
 
+      # Enabling ThinLTO on Chrome OS too, in an effort to reduce the memory
+      # usage in crbug.com/1038040. Note this will increase build time in
+      # Chrome OS.
+
       # Limit the parallelism to avoid too aggressive competition between
       # linker jobs. This is still suboptimal to a potential dynamic
       # resource allocation scheme, but should be good enough.
       if (use_lld) {
         ldflags += [ "-Wl,--thinlto-jobs=" + max_jobs_per_link ]
 
-        # Caching on Chrome OS materially slows the PFQ down; disable it until
-        # we can figure out why. (crbug.com/964328)
-        if (!is_chromeos) {
-          # Limit the size of the ThinLTO cache to the lesser of 10% of
-          # available disk space, 10GB and 100000 files.
-          cache_policy =
-              "cache_size=10%:cache_size_bytes=10g:cache_size_files=100000"
-          ldflags += [
-            "-Wl,--thinlto-cache-dir=" +
-                rebase_path("$root_out_dir/thinlto-cache", root_build_dir),
-            "-Wl,--thinlto-cache-policy,$cache_policy",
-          ]
-        }
+        # Limit the size of the ThinLTO cache to the lesser of 10% of
+        # available disk space, 10GB and 100000 files.
+        cache_policy =
+            "cache_size=10%:cache_size_bytes=10g:cache_size_files=100000"
+        ldflags += [
+          "-Wl,--thinlto-cache-dir=" +
+              rebase_path("$root_out_dir/thinlto-cache", root_build_dir),
+          "-Wl,--thinlto-cache-policy,$cache_policy",
+        ]
       } else {
         ldflags += [ "-Wl,-plugin-opt,jobs=" + max_jobs_per_link ]
       }

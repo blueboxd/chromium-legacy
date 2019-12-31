@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
@@ -217,14 +218,24 @@ PLATFORM_EXPORT bool operator==(const StepsTimingFunction&,
 PLATFORM_EXPORT bool operator==(const TimingFunction&, const TimingFunction&);
 PLATFORM_EXPORT bool operator!=(const TimingFunction&, const TimingFunction&);
 
-#define DEFINE_TIMING_FUNCTION_TYPE_CASTS(typeName, enumName)           \
-  DEFINE_TYPE_CASTS(typeName##TimingFunction, TimingFunction, value,    \
-                    value->GetType() == TimingFunction::Type::enumName, \
-                    value.GetType() == TimingFunction::Type::enumName)
-
-DEFINE_TIMING_FUNCTION_TYPE_CASTS(Linear, LINEAR);
-DEFINE_TIMING_FUNCTION_TYPE_CASTS(CubicBezier, CUBIC_BEZIER);
-DEFINE_TIMING_FUNCTION_TYPE_CASTS(Steps, STEPS);
+template <>
+struct DowncastTraits<LinearTimingFunction> {
+  static bool AllowFrom(const TimingFunction& value) {
+    return value.GetType() == TimingFunction::Type::LINEAR;
+  }
+};
+template <>
+struct DowncastTraits<CubicBezierTimingFunction> {
+  static bool AllowFrom(const TimingFunction& value) {
+    return value.GetType() == TimingFunction::Type::CUBIC_BEZIER;
+  }
+};
+template <>
+struct DowncastTraits<StepsTimingFunction> {
+  static bool AllowFrom(const TimingFunction& value) {
+    return value.GetType() == TimingFunction::Type::STEPS;
+  }
+};
 
 }  // namespace blink
 

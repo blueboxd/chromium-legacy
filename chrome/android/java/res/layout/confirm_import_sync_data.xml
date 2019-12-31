@@ -29,14 +29,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="?android:attr/selectableItemBackground"
-            app:titleText="@string/sync_import_existing_data" />
+            app:primaryText="@string/sync_import_existing_data" />
 
         <org.chromium.chrome.browser.ui.widget.RadioButtonWithDescription
             android:id="@+id/sync_keep_separate_choice"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="?android:attr/selectableItemBackground"
-            app:titleText="@string/sync_keep_existing_data_separate" />
+            app:primaryText="@string/sync_keep_existing_data_separate" />
 
     </LinearLayout>
 </ScrollView>

@@ -43,6 +43,7 @@ class CompositorTimingHistory;
 enum class FrameSkippedReason {
   kRecoverLatency,
   kNoDamage,
+  kWaitingOnMain,
 };
 
 class SchedulerClient {

@@ -318,19 +318,17 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
 
                 if (intent != null) {
                     startActivity(intent);
-                    return;
+                } else {
+                    // AccountManagerFacade couldn't create intent, use SigninUtils to open settings
+                    // instead.
+                    SigninUtils.openSettingsForAllAccounts(getActivity());
                 }
 
-                // AccountManagerFacade couldn't create intent, use SigninUtils to open settings
-                // instead.
-                SigninUtils.openSettingsForAllAccounts(getActivity());
+                // Return to the last opened tab if triggered from the content area.
+                if (mGaiaServiceType != GAIAServiceType.GAIA_SERVICE_TYPE_NONE) {
+                    if (isAdded()) getActivity().finish();
+                }
             });
-
-            // Return to the last opened tab if triggered from the content area.
-            if (mGaiaServiceType != GAIAServiceType.GAIA_SERVICE_TYPE_NONE) {
-                if (isAdded()) getActivity().finish();
-            }
-
             return true;
         });
         addAccountPreference.setManagedPreferenceDelegate(preference -> !canAddAccounts());

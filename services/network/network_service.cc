@@ -531,7 +531,7 @@ void NetworkService::ConfigureHttpAuthPrefs(
 }
 
 void NetworkService::SetRawHeadersAccess(
-    uint32_t process_id,
+    int32_t process_id,
     const std::vector<url::Origin>& origins) {
   DCHECK(process_id);
   if (!origins.size()) {
@@ -558,7 +558,7 @@ void NetworkService::SetMaxConnectionsPerProxy(int32_t max_connections) {
       net::HttpNetworkSession::NORMAL_SOCKET_POOL, new_limit);
 }
 
-bool NetworkService::HasRawHeadersAccess(uint32_t process_id,
+bool NetworkService::HasRawHeadersAccess(int32_t process_id,
                                          const GURL& resource_url) const {
   // Allow raw headers for browser-initiated requests.
   if (!process_id)
@@ -638,12 +638,12 @@ void NetworkService::SetEncryptionKey(const std::string& encryption_key) {
 }
 #endif
 
-void NetworkService::AddCorbExceptionForPlugin(uint32_t process_id) {
+void NetworkService::AddCorbExceptionForPlugin(int32_t process_id) {
   DCHECK_NE(mojom::kBrowserProcessId, process_id);
   CrossOriginReadBlocking::AddExceptionForPlugin(process_id);
 }
 
-void NetworkService::RemoveCorbExceptionForPlugin(uint32_t process_id) {
+void NetworkService::RemoveCorbExceptionForPlugin(int32_t process_id) {
   DCHECK_NE(mojom::kBrowserProcessId, process_id);
   CrossOriginReadBlocking::RemoveExceptionForPlugin(process_id);
 }
@@ -773,7 +773,7 @@ void NetworkService::UpdateLoadInfo() {
   // For requests from the same {process_id, routing_id} pair, pick the most
   // important. For ones from the browser, return all of them.
   std::vector<mojom::LoadInfoPtr> infos;
-  std::map<std::pair<uint32_t, uint32_t>, mojom::LoadInfoPtr> frame_infos;
+  std::map<std::pair<int32_t, int32_t>, mojom::LoadInfoPtr> frame_infos;
 
   for (auto* network_context : network_contexts_) {
     for (auto* loader :
@@ -784,7 +784,7 @@ void NetworkService::UpdateLoadInfo() {
 
       auto process_id = url_loader->GetProcessId();
       auto routing_id = url_loader->GetRenderFrameId();
-      if (routing_id == static_cast<uint32_t>(MSG_ROUTING_NONE)) {
+      if (routing_id == MSG_ROUTING_NONE) {
         // If there is no routing_id, then the browser can't associate this with
         // a page so no need to send.
         continue;

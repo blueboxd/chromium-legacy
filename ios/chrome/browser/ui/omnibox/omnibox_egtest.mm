@@ -144,13 +144,8 @@ id<GREYMatcher> SearchCopiedTextButton() {
 
 // Tests that the XClientData header is sent when navigating to
 // https://google.com through the omnibox.
-- (void)testXClientData {
-#if !TARGET_IPHONE_SIMULATOR
-  // TODO(crbug.com/1036225): Test flaky on iOS 12 device.
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Flaky on iOS 12 device.");
-  }
-#endif
+// TODO(crbug.com/1036225): Test very flaky on all config.
+- (void)DISABLED_testXClientData {
   // Rewrite the google URL to localhost URL.
   [OmniboxAppInterface rewriteGoogleURLToLocalhost];
 

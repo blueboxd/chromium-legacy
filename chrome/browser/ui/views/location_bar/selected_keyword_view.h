@@ -36,8 +36,7 @@ class SelectedKeywordView : public IconLabelBubbleView {
   // IconLabelBubbleView:
   gfx::Size CalculatePreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
-  SkColor GetTextColor() const override;
-  SkColor GetInkDropBaseColor() const override;
+  SkColor GetForegroundColor() const override;
 
   // The current keyword, or an empty string if no keyword is displayed.
   void SetKeyword(const base::string16& keyword);

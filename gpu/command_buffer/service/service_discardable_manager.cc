@@ -6,13 +6,17 @@
 
 #include <inttypes.h>
 
+#include "base/command_line.h"
 #include "base/memory/singleton.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "gpu/config/gpu_preferences.h"
 
 namespace gpu {
 
@@ -80,9 +84,12 @@ ServiceDiscardableManager::GpuDiscardableEntry::GpuDiscardableEntry(
 ServiceDiscardableManager::GpuDiscardableEntry::~GpuDiscardableEntry() =
     default;
 
-ServiceDiscardableManager::ServiceDiscardableManager()
+ServiceDiscardableManager::ServiceDiscardableManager(
+    const GpuPreferences& preferences)
     : entries_(EntryCache::NO_AUTO_EVICT),
-      cache_size_limit_(DiscardableCacheSizeLimit()) {
+      cache_size_limit_(preferences.force_gpu_mem_discardable_limit_bytes
+                            ? preferences.force_gpu_mem_discardable_limit_bytes
+                            : DiscardableCacheSizeLimit()) {
   // In certain cases, ThreadTaskRunnerHandle isn't set (Android Webview).
   // Don't register a dump provider in these cases.
   if (base::ThreadTaskRunnerHandle::IsSet()) {

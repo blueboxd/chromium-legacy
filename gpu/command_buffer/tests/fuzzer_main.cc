@@ -339,9 +339,10 @@ class CommandBufferSetup {
 #else
 #error invalid configuration
 #endif
-    discardable_manager_ = std::make_unique<ServiceDiscardableManager>();
+    discardable_manager_ =
+        std::make_unique<ServiceDiscardableManager>(gpu_preferences_);
     passthrough_discardable_manager_ =
-        std::make_unique<PassthroughDiscardableManager>();
+        std::make_unique<PassthroughDiscardableManager>(gpu_preferences_);
 
     if (gpu_preferences_.use_passthrough_cmd_decoder)
       recreate_context_ = true;
@@ -384,7 +385,8 @@ class CommandBufferSetup {
         share_group_, surface_, std::move(shared_context),
         config_.workarounds.use_virtualized_gl_contexts, base::DoNothing(),
         gpu_preferences_.gr_context_type);
-    context_state_->InitializeGrContext(config_.workarounds, nullptr);
+    context_state_->InitializeGrContext(gpu_preferences_, config_.workarounds,
+                                        nullptr);
     context_state_->InitializeGL(gpu_preferences_, feature_info);
 
     shared_image_manager_ = std::make_unique<SharedImageManager>();

@@ -36,6 +36,7 @@ void PageActionIconController::Init(const PageActionIconParams& params,
                                     PageActionIconContainer* icon_container) {
   DCHECK(icon_container);
   DCHECK(!icon_container_);
+  DCHECK(params.icon_label_bubble_delegate);
   DCHECK(params.page_action_icon_delegate);
 
   icon_container_ = icon_container;
@@ -45,12 +46,13 @@ void PageActionIconController::Init(const PageActionIconParams& params,
       case PageActionIconType::kBookmarkStar:
         bookmark_star_icon_ =
             new StarView(params.command_updater, params.browser,
+                         params.icon_label_bubble_delegate,
                          params.page_action_icon_delegate);
         page_action_icons_.push_back(bookmark_star_icon_);
         break;
       case PageActionIconType::kClickToCall:
         click_to_call_icon_ = new SharingIconView(
-            params.page_action_icon_delegate,
+            params.icon_label_bubble_delegate, params.page_action_icon_delegate,
             base::BindRepeating([](content::WebContents* contents) {
               return static_cast<SharingUiController*>(
                   ClickToCallUiController::GetOrCreateFromWebContents(
@@ -61,66 +63,77 @@ void PageActionIconController::Init(const PageActionIconParams& params,
         break;
       case PageActionIconType::kCookieControls:
         cookie_controls_icon_ =
-            new CookieControlsIconView(params.page_action_icon_delegate);
+            new CookieControlsIconView(params.icon_label_bubble_delegate,
+                                       params.page_action_icon_delegate);
         page_action_icons_.push_back(cookie_controls_icon_);
         break;
       case PageActionIconType::kFind:
         find_icon_ =
-            new FindBarIcon(params.browser, params.page_action_icon_delegate);
+            new FindBarIcon(params.browser, params.icon_label_bubble_delegate,
+                            params.page_action_icon_delegate);
         page_action_icons_.push_back(find_icon_);
         break;
       case PageActionIconType::kIntentPicker:
         intent_picker_icon_ = new IntentPickerView(
-            params.browser, params.page_action_icon_delegate);
+            params.browser, params.icon_label_bubble_delegate,
+            params.page_action_icon_delegate);
         page_action_icons_.push_back(intent_picker_icon_);
         break;
       case PageActionIconType::kLocalCardMigration:
         local_card_migration_icon_ = new autofill::LocalCardMigrationIconView(
-            params.command_updater, params.page_action_icon_delegate);
+            params.command_updater, params.icon_label_bubble_delegate,
+            params.page_action_icon_delegate);
         page_action_icons_.push_back(local_card_migration_icon_);
         break;
       case PageActionIconType::kManagePasswords:
         DCHECK(params.command_updater);
         manage_passwords_icon_ = new ManagePasswordsIconViews(
-            params.command_updater, params.page_action_icon_delegate);
+            params.command_updater, params.icon_label_bubble_delegate,
+            params.page_action_icon_delegate);
         page_action_icons_.push_back(manage_passwords_icon_);
         break;
       case PageActionIconType::kNativeFileSystemAccess:
         native_file_system_access_icon_ = new NativeFileSystemAccessIconView(
+            params.icon_label_bubble_delegate,
             params.page_action_icon_delegate);
         page_action_icons_.push_back(native_file_system_access_icon_);
         break;
       case PageActionIconType::kPwaInstall:
         DCHECK(params.command_updater);
         pwa_install_icon_ = new PwaInstallView(
-            params.command_updater, params.page_action_icon_delegate);
+            params.command_updater, params.icon_label_bubble_delegate,
+            params.page_action_icon_delegate);
         page_action_icons_.push_back(pwa_install_icon_);
         break;
       case PageActionIconType::kQRCodeGenerator:
         qrcode_generator_icon_view_ =
             new qrcode_generator::QRCodeGeneratorIconView(
-                params.command_updater, params.page_action_icon_delegate);
+                params.command_updater, params.icon_label_bubble_delegate,
+                params.page_action_icon_delegate);
         page_action_icons_.push_back(qrcode_generator_icon_view_);
         break;
       case PageActionIconType::kReaderMode:
         DCHECK(params.command_updater);
         reader_mode_icon_ = new ReaderModeIconView(
-            params.command_updater, params.page_action_icon_delegate);
+            params.command_updater, params.icon_label_bubble_delegate,
+            params.page_action_icon_delegate);
         page_action_icons_.push_back(reader_mode_icon_);
         break;
       case PageActionIconType::kSaveCard:
         save_card_icon_ = new autofill::SaveCardIconView(
-            params.command_updater, params.page_action_icon_delegate);
+            params.command_updater, params.icon_label_bubble_delegate,
+            params.page_action_icon_delegate);
         page_action_icons_.push_back(save_card_icon_);
         break;
       case PageActionIconType::kSendTabToSelf:
         send_tab_to_self_icon_ = new send_tab_to_self::SendTabToSelfIconView(
-            params.command_updater, params.page_action_icon_delegate);
+            params.command_updater, params.icon_label_bubble_delegate,
+            params.page_action_icon_delegate);
         page_action_icons_.push_back(send_tab_to_self_icon_);
         break;
       case PageActionIconType::kSharedClipboard:
         shared_clipboard_icon_ = new SharingIconView(
-            params.page_action_icon_delegate,
+            params.icon_label_bubble_delegate, params.page_action_icon_delegate,
             base::BindRepeating([](content::WebContents* contents) {
               return static_cast<SharingUiController*>(
                   SharedClipboardUiController::GetOrCreateFromWebContents(
@@ -132,11 +145,13 @@ void PageActionIconController::Init(const PageActionIconParams& params,
       case PageActionIconType::kTranslate:
         DCHECK(params.command_updater);
         translate_icon_ = new TranslateIconView(
-            params.command_updater, params.page_action_icon_delegate);
+            params.command_updater, params.icon_label_bubble_delegate,
+            params.page_action_icon_delegate);
         page_action_icons_.push_back(translate_icon_);
         break;
       case PageActionIconType::kZoom:
-        zoom_icon_ = new ZoomView(params.page_action_icon_delegate);
+        zoom_icon_ = new ZoomView(params.icon_label_bubble_delegate,
+                                  params.page_action_icon_delegate);
         page_action_icons_.push_back(zoom_icon_);
         break;
     }

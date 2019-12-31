@@ -750,14 +750,14 @@ namespace {
 class WebAppNonClientFrameViewAshTest
     : public TopChromeMdParamTest<BrowserActionsBarBrowserTest> {
  public:
-  WebAppNonClientFrameViewAshTest()
-      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+  WebAppNonClientFrameViewAshTest() = default;
 
   ~WebAppNonClientFrameViewAshTest() override = default;
 
-  GURL GetAppURL() {
+  GURL GetAppURL() const {
     return https_server_.GetURL("app.com", "/ssl/google.html");
   }
+
   static SkColor GetThemeColor() { return SK_ColorBLUE; }
 
   Browser* app_browser_ = nullptr;
@@ -832,9 +832,11 @@ class WebAppNonClientFrameViewAshTest
 
   AppMenu* GetAppMenu() { return web_app_menu_button_->app_menu(); }
 
-  SkColor GetActiveColor() { return web_app_frame_toolbar_->active_color_; }
+  SkColor GetActiveColor() const {
+    return web_app_frame_toolbar_->active_color_;
+  }
 
-  bool GetPaintingAsActive() {
+  bool GetPaintingAsActive() const {
     return web_app_frame_toolbar_->paint_as_active_;
   }
 
@@ -853,9 +855,9 @@ class WebAppNonClientFrameViewAshTest
 
     return *std::find_if(
         content_setting_views_->begin(), content_setting_views_->end(),
-        [](auto v) {
-          return ContentSettingImageModel::ImageType::GEOLOCATION ==
-                 v->GetTypeForTesting();
+        [](const auto* view) {
+          return view->GetTypeForTesting() ==
+                 ContentSettingImageModel::ImageType::GEOLOCATION;
         });
   }
 
@@ -873,7 +875,7 @@ class WebAppNonClientFrameViewAshTest
 
  private:
   // For mocking a secure site.
-  net::EmbeddedTestServer https_server_;
+  net::EmbeddedTestServer https_server_{net::EmbeddedTestServer::TYPE_HTTPS};
   content::ContentMockCertVerifier cert_verifier_;
 
   DISALLOW_COPY_AND_ASSIGN(WebAppNonClientFrameViewAshTest);

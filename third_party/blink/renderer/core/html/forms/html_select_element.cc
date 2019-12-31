@@ -1237,6 +1237,7 @@ void HTMLSelectElement::RestoreFormControlState(const FormControlState& state) {
   }
 
   SetNeedsValidityCheck();
+  QueueInputAndChangeEvents();
 }
 
 void HTMLSelectElement::ParseMultipleAttribute(const AtomicString& value) {

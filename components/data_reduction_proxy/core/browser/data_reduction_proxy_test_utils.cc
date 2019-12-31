@@ -468,8 +468,8 @@ DataReductionProxyTestContext::Builder::Build() {
     config_client.reset(new DataReductionProxyConfigServiceClient(
         GetBackoffPolicy(), request_options.get(), raw_mutable_config,
         config.get(), service.get(), test_network_connection_tracker,
-        base::Bind(&TestConfigStorer::StoreSerializedConfig,
-                   base::Unretained(config_storer.get()))));
+        base::BindRepeating(&TestConfigStorer::StoreSerializedConfig,
+                            base::Unretained(config_storer.get()))));
   }
 
   service->SetDependenciesForTesting(

@@ -2688,11 +2688,6 @@ TEST_P(VisualViewportTest, PaintScrollbar) {
 // When a pinch-zoom occurs, the viewport scale and translation nodes can be
 // directly updated without a PaintArtifactCompositor update.
 TEST_P(VisualViewportTest, DirectPinchZoomPropertyUpdate) {
-  // TODO(crbug.com/953322): Implement this optimization for
-  // CompositeAfterPaint.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   InitializeWithAndroidSettings();
 
   RegisterMockedHttpURLLoad("200-by-800-viewport.html");
@@ -2797,6 +2792,42 @@ TEST_P(VisualViewportTest, SetLocationBeforePrePaint) {
   ASSERT_TRUE(visual_viewport.LayerForScrolling());
   EXPECT_EQ(gfx::ScrollOffset(12, 34),
             visual_viewport.LayerForScrolling()->CurrentScrollOffset());
+}
+
+TEST_P(VisualViewportTest, ScrollbarGeometryOnSizeChange) {
+  InitializeWithAndroidSettings();
+  WebView()->MainFrameWidget()->Resize(WebSize(100, 100));
+  RegisterMockedHttpURLLoad("content-width-1000.html");
+  NavigateTo(base_url_ + "content-width-1000.html");
+
+  auto& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
+  EXPECT_EQ(IntSize(100, 100), visual_viewport.Size());
+  auto* horizontal_scrollbar = visual_viewport.LayerForHorizontalScrollbar();
+  auto* vertical_scrollbar = visual_viewport.LayerForVerticalScrollbar();
+  ASSERT_TRUE(horizontal_scrollbar);
+  ASSERT_TRUE(vertical_scrollbar);
+  EXPECT_EQ(gfx::Vector2dF(0, 93),
+            horizontal_scrollbar->offset_to_transform_parent());
+  EXPECT_EQ(gfx::Vector2dF(93, 0),
+            vertical_scrollbar->offset_to_transform_parent());
+  EXPECT_EQ(gfx::Size(93, 7), horizontal_scrollbar->bounds());
+  EXPECT_EQ(gfx::Size(7, 93), vertical_scrollbar->bounds());
+
+  // Simulate hiding of the top controls.
+  WebView()->MainFrameWidget()->Resize(WebSize(100, 120));
+  UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_FALSE(GetFrame()->View()->VisualViewportNeedsRepaint());
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(IntSize(100, 120), visual_viewport.Size());
+  ASSERT_EQ(horizontal_scrollbar,
+            visual_viewport.LayerForHorizontalScrollbar());
+  ASSERT_EQ(vertical_scrollbar, visual_viewport.LayerForVerticalScrollbar());
+  EXPECT_EQ(gfx::Vector2dF(0, 113),
+            horizontal_scrollbar->offset_to_transform_parent());
+  EXPECT_EQ(gfx::Vector2dF(93, 0),
+            vertical_scrollbar->offset_to_transform_parent());
+  EXPECT_EQ(gfx::Size(93, 7), horizontal_scrollbar->bounds());
+  EXPECT_EQ(gfx::Size(7, 113), vertical_scrollbar->bounds());
 }
 
 }  // namespace

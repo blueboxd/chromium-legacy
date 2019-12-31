@@ -351,6 +351,7 @@ bool DisplayManager::InitFromCommandLine() {
            size_str, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
     info_list.push_back(ManagedDisplayInfo::CreateFromSpec(part));
     info_list.back().set_native(true);
+    info_list.back().set_from_native_platform(true);
   }
   MaybeInitInternalDisplay(&info_list[0]);
   OnNativeDisplaysChanged(info_list);

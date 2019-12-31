@@ -72,7 +72,7 @@ class HTMLDocumentParserTest : public PageTestBase {
 }  // namespace
 
 TEST_F(HTMLDocumentParserTest, AppendPrefetch) {
-  HTMLDocument& document = ToHTMLDocument(GetDocument());
+  auto& document = To<HTMLDocument>(GetDocument());
   ProvidePrerendererClientTo(
       *document.GetPage(),
       MakeGarbageCollected<MockPrerendererClient>(*document.GetPage(), true));
@@ -94,7 +94,7 @@ TEST_F(HTMLDocumentParserTest, AppendPrefetch) {
 }
 
 TEST_F(HTMLDocumentParserTest, AppendNoPrefetch) {
-  HTMLDocument& document = ToHTMLDocument(GetDocument());
+  auto& document = To<HTMLDocument>(GetDocument());
   EXPECT_FALSE(document.IsPrefetchOnly());
   // Use ForceSynchronousParsing to allow calling append().
   HTMLDocumentParser* parser = CreateParser(document);

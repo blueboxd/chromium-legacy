@@ -17,7 +17,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_base.h"
-#include "storage/browser/quota/quota_settings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/page_transition_types.h"
 
@@ -264,8 +263,6 @@ class InProcessBrowserTest : public content::BrowserTestBase {
     open_about_blank_on_browser_launch_ = value;
   }
 
-  virtual std::unique_ptr<storage::QuotaSettings> CreateQuotaSettings();
-
  private:
   void Initialize();
 
@@ -292,11 +289,6 @@ class InProcessBrowserTest : public content::BrowserTestBase {
 
   // True if the about:blank tab should be opened when the browser is launched.
   bool open_about_blank_on_browser_launch_ = true;
-
-  // We use fake quota settings by default to have a consistent testing
-  // environment.  These can be overridden by subclasses via the
-  // CreateQuotaSettings() method.
-  std::unique_ptr<storage::QuotaSettings> quota_settings_;
 
   // Use a default download directory to make sure downloads don't end up in the
   // system default location.

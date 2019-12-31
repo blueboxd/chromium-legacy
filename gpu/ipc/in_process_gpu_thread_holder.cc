@@ -99,7 +99,8 @@ void InProcessGpuThreadHolder::InitializeOnGpuThread(
   auto feature_info = base::MakeRefCounted<gles2::FeatureInfo>(
       gpu_driver_bug_workarounds, gpu_feature_info_);
   context_state_->InitializeGL(gpu_preferences_, feature_info);
-  context_state_->InitializeGrContext(gpu_driver_bug_workarounds, nullptr);
+  context_state_->InitializeGrContext(gpu_preferences_,
+                                      gpu_driver_bug_workarounds, nullptr);
 
   task_executor_ = std::make_unique<GpuInProcessThreadService>(
       task_runner(), scheduler_.get(), sync_point_manager_.get(),

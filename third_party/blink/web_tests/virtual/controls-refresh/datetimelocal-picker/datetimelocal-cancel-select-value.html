@@ -14,10 +14,6 @@
 let t = async_test('Test cancel select value in datetime-local popup');
 
 function selectValue() {
-  if (!internals.runtimeFlags.formControlsRefreshEnabled) {
-    t.done();
-  }
-
   let dateTimeElement = document.getElementById("datetime-local");
   clickDayCellAt(3, 4);
   clickTimeCellAt(0, 4);

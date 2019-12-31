@@ -209,7 +209,7 @@ bool V8ContextSnapshot::InstallConditionalFeatures(
   // The below code handles window.document on the main world.
   {
     CHECK(document);
-    DCHECK(document->IsHTMLDocument());
+    DCHECK(IsA<HTMLDocument>(document));
     CHECK(document->ContainsWrapper());
     v8::Local<v8::Object> document_wrapper =
         ToV8(document, global_proxy, isolate).As<v8::Object>();
@@ -426,7 +426,7 @@ bool V8ContextSnapshot::CanCreateContextFromSnapshot(
   // When creating a context for the main world from snapshot, we also need a
   // HTMLDocument instance. If typeof window.document is not HTMLDocument, e.g.
   // SVGDocument or XMLDocument, we can't create contexts from the snapshot.
-  return !world.IsMainWorld() || document->IsHTMLDocument();
+  return !world.IsMainWorld() || IsA<HTMLDocument>(document);
 }
 
 void V8ContextSnapshot::EnsureInterfaceTemplatesForWorld(

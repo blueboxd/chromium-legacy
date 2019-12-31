@@ -251,7 +251,13 @@ class SkiaOutputDeviceBufferQueueTest : public TestOnGpu {
     EXPECT_EQ(images.size(), (size_t)CountBuffers());
   }
 
-  Image* GetCurrentImage() { return output_device_->GetCurrentImage(); }
+  Image* GetCurrentImage() {
+    // Call Begin/EndPaint to ensusre the image is initialized before use.
+    output_device_->BeginPaint();
+    GrBackendSemaphore semaphore;
+    output_device_->EndPaint(semaphore);
+    return output_device_->GetCurrentImage();
+  }
 
   void SwapBuffers() {
     auto present_callback =

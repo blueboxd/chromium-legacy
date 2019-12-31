@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_registration_context.h"
+#include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
@@ -239,7 +240,7 @@ DocumentInit& DocumentInit::WithNewRegistrationContext() {
 
 V0CustomElementRegistrationContext* DocumentInit::RegistrationContext(
     Document* document) const {
-  if (!document->IsHTMLDocument() && !document->IsXHTMLDocument())
+  if (!IsA<HTMLDocument>(document) && !document->IsXHTMLDocument())
     return nullptr;
 
   if (create_new_registration_context_)

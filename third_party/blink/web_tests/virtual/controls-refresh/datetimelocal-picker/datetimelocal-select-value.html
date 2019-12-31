@@ -14,10 +14,6 @@
 let t = async_test('Test select value in datetime-local popup');
 
 function selectValue() {
-  if (!internals.runtimeFlags.formControlsRefreshEnabled) {
-    t.done();
-  }
-
   let dateTimeElement = document.getElementById("datetime-local");
   dateTimeElement.addEventListener("change", t.step_func_done(() => {
     assert_equals(dateTimeElement.value, "2019-02-27T17:03");

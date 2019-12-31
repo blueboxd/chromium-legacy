@@ -16,7 +16,7 @@ namespace extensions {
 class Extension;
 }
 
-class BrowserActionTestUtil;
+class ExtensionActionTestHelper;
 class ToolbarActionsModel;
 
 // A platform-independent browser test class for the browser actions bar.
@@ -29,7 +29,7 @@ class BrowserActionsBarBrowserTest : public extensions::ExtensionBrowserTest {
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;
 
-  BrowserActionTestUtil* browser_actions_bar() {
+  ExtensionActionTestHelper* browser_actions_bar() {
     return browser_actions_bar_.get();
   }
   ToolbarActionsModel* toolbar_model() { return toolbar_model_; }
@@ -52,7 +52,7 @@ class BrowserActionsBarBrowserTest : public extensions::ExtensionBrowserTest {
  private:
   base::test::ScopedFeatureList feature_list_;
 
-  std::unique_ptr<BrowserActionTestUtil> browser_actions_bar_;
+  std::unique_ptr<ExtensionActionTestHelper> browser_actions_bar_;
 
   // The associated toolbar model, weak.
   ToolbarActionsModel* toolbar_model_;

@@ -29,6 +29,7 @@ import org.chromium.device.mojom.NdefMessage;
 import org.chromium.device.mojom.NdefPushOptions;
 import org.chromium.device.mojom.NdefPushTarget;
 import org.chromium.device.mojom.NdefRecord;
+import org.chromium.device.mojom.NdefRecordTypeCategory;
 import org.chromium.device.mojom.NdefScanOptions;
 import org.chromium.device.mojom.Nfc;
 import org.chromium.device.mojom.NfcClient;
@@ -598,9 +599,18 @@ public class NfcImpl implements Nfc {
             if (options.id != null && !options.id.equals(message.data[i].id)) {
                 continue;
             }
-            if (options.recordType != null
-                    && !options.recordType.equals(message.data[i].recordType)) {
-                continue;
+            if (options.recordType != null) {
+                if (message.data[i].category == NdefRecordTypeCategory.EXTERNAL) {
+                    // The spec https://w3c.github.io/web-nfc/#the-record-type-string says "Two
+                    // external types MUST be compared character by character, in case-insensitive
+                    // manner".
+                    if (options.recordType.compareToIgnoreCase(message.data[i].recordType) != 0) {
+                        continue;
+                    }
+                    // All other types should be compared in case-sensitive manner.
+                } else if (!options.recordType.equals(message.data[i].recordType)) {
+                    continue;
+                }
             }
             if (!options.mediaType.isEmpty()
                     && !options.mediaType.equals(message.data[i].mediaType)) {

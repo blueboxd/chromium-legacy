@@ -74,6 +74,12 @@ interface NetworkServiceTest {
   [Sync]
   SetTransportSecurityStateSource(uint16 reporting_port) => ();
 
+  // Allow host resolutions to reach the network. Since going to the network
+  // can be a source of flakiness, this should only be called in tests that
+  // can tolerate this, such as those run manually or on an FYI bot.
+  [Sync]
+  SetAllowNetworkAccessToHostResolutions() => ();
+
   // Causes the next host resolve to the given hostname to crash the process.
   CrashOnResolveHost(string host);
 

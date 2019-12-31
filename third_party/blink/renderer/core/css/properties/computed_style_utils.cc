@@ -1617,8 +1617,8 @@ CSSValue* ComputedStyleUtils::CreateTimingFunctionValue(
     const TimingFunction* timing_function) {
   switch (timing_function->GetType()) {
     case TimingFunction::Type::CUBIC_BEZIER: {
-      const CubicBezierTimingFunction* bezier_timing_function =
-          ToCubicBezierTimingFunction(timing_function);
+      const auto* bezier_timing_function =
+          To<CubicBezierTimingFunction>(timing_function);
       if (bezier_timing_function->GetEaseType() !=
           CubicBezierTimingFunction::EaseType::CUSTOM) {
         CSSValueID value_id = CSSValueID::kInvalid;
@@ -1647,8 +1647,8 @@ CSSValue* ComputedStyleUtils::CreateTimingFunctionValue(
     }
 
     case TimingFunction::Type::STEPS: {
-      const StepsTimingFunction* steps_timing_function =
-          ToStepsTimingFunction(timing_function);
+      const auto* steps_timing_function =
+          To<StepsTimingFunction>(timing_function);
       StepsTimingFunction::StepPosition position =
           steps_timing_function->GetStepPosition();
       int steps = steps_timing_function->NumberOfSteps();

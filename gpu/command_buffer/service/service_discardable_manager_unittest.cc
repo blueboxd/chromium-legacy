@@ -15,6 +15,7 @@
 #include "gpu/command_buffer/service/shared_image_manager.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "gpu/config/gpu_preferences.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_image_stub.h"
 #include "ui/gl/gl_mock.h"
@@ -65,7 +66,7 @@ static const size_t kSmallTextureSize = 4 * kSmallTextureDim * kSmallTextureDim;
 
 class ServiceDiscardableManagerTest : public GpuServiceTest {
  public:
-  ServiceDiscardableManagerTest() = default;
+  ServiceDiscardableManagerTest() : discardable_manager_(GpuPreferences()) {}
   ~ServiceDiscardableManagerTest() override = default;
 
  protected:

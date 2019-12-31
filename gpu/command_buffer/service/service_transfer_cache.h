@@ -48,7 +48,7 @@ class GPU_GLES2_EXPORT ServiceTransferCache
     uint32_t entry_id;
   };
 
-  ServiceTransferCache();
+  explicit ServiceTransferCache(const GpuPreferences& preferences);
   ~ServiceTransferCache() override;
 
   bool CreateLockedEntry(const EntryKey& key,
@@ -137,10 +137,10 @@ class GPU_GLES2_EXPORT ServiceTransferCache
   int total_image_count_ = 0;
 
   // The limit above which the cache will start evicting resources.
-  size_t cache_size_limit_ = 0;
+  size_t cache_size_limit_;
 
   // The max number of entries we will hold in the cache.
-  size_t max_cache_entries_ = 0;
+  size_t max_cache_entries_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceTransferCache);
 };

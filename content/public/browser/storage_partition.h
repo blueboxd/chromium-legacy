@@ -42,6 +42,7 @@ class NetworkContext;
 namespace storage {
 class QuotaManager;
 class SpecialStoragePolicy;
+struct QuotaSettings;
 }
 
 namespace storage {
@@ -263,6 +264,11 @@ class CONTENT_EXPORT StoragePartition {
 
   // Wait until code cache's shutdown is complete. For test use only.
   virtual void WaitForCodeCacheShutdownForTesting() = 0;
+
+  // The value pointed to by |settings| should remain valid until the
+  // the function is called again with a new value or a nullptr.
+  static void SetDefaultQuotaSettingsForTesting(
+      const storage::QuotaSettings* settings);
 
  protected:
   virtual ~StoragePartition() {}

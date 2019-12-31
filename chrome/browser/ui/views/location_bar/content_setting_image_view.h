@@ -41,9 +41,6 @@ class ContentSettingImageView : public IconLabelBubbleView,
  public:
   class Delegate {
    public:
-    // Gets the color to use for the ink highlight.
-    virtual SkColor GetContentSettingInkDropColor() const = 0;
-
     // Gets the web contents the ContentSettingImageView is for.
     virtual content::WebContents* GetContentSettingWebContents() = 0;
 
@@ -58,6 +55,7 @@ class ContentSettingImageView : public IconLabelBubbleView,
   };
 
   ContentSettingImageView(std::unique_ptr<ContentSettingImageModel> image_model,
+                          IconLabelBubbleView::Delegate* parent_delegate,
                           Delegate* delegate,
                           const gfx::FontList& font_list);
   ~ContentSettingImageView() override;
@@ -78,11 +76,9 @@ class ContentSettingImageView : public IconLabelBubbleView,
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   void OnThemeChanged() override;
-  SkColor GetTextColor() const override;
   bool ShouldShowSeparator() const override;
   bool ShowBubble(const ui::Event& event) override;
   bool IsBubbleShowing() const override;
-  SkColor GetInkDropBaseColor() const override;
   void AnimationEnded(const gfx::Animation* animation) override;
 
   ContentSettingImageModel::ImageType GetTypeForTesting() const;

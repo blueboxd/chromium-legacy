@@ -89,7 +89,8 @@ class WindowSizerTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(WindowSizerTest);
 };
 
-IN_PROC_BROWSER_TEST_F(WindowSizerTest, OpenBrowserUsingShelfItem) {
+// TODO(crbug.com/1038342): Test is flaky.
+IN_PROC_BROWSER_TEST_F(WindowSizerTest, DISABLED_OpenBrowserUsingShelfItem) {
   // Don't shutdown when closing the last browser window.
   ScopedKeepAlive test_keep_alive(KeepAliveOrigin::BROWSER_PROCESS_CHROMEOS,
                                   KeepAliveRestartOption::DISABLED);
@@ -133,7 +134,8 @@ IN_PROC_BROWSER_TEST_F(WindowSizerTest, OpenBrowserUsingShelfItem) {
   EXPECT_EQ(root_windows[0], ash::Shell::GetRootWindowForNewWindows());
 }
 
-IN_PROC_BROWSER_TEST_F(WindowSizerTest, OpenBrowserUsingContextMenu) {
+// TODO(crbug.com/1038342): Test is flaky.
+IN_PROC_BROWSER_TEST_F(WindowSizerTest, DISABLED_OpenBrowserUsingContextMenu) {
   // Don't shutdown when closing the last browser window.
   ScopedKeepAlive test_keep_alive(KeepAliveOrigin::BROWSER_PROCESS_CHROMEOS,
                                   KeepAliveRestartOption::DISABLED);

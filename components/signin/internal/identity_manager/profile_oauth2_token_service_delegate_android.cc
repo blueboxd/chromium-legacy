@@ -239,23 +239,7 @@ void ProfileOAuth2TokenServiceDelegateAndroid::UpdateAuthError(
 
 std::vector<CoreAccountId>
 ProfileOAuth2TokenServiceDelegateAndroid::GetAccounts() const {
-  std::vector<std::string> accounts;
-  JNIEnv* env = AttachCurrentThread();
-
-  // TODO(crbug.com/1028580) Pass |j_accounts| as a list of
-  // org.chromium.components.signin.identitymanager.CoreAccountId and convert it
-  // to CoreAccountId using ConvertFromJavaCoreAccountId.
-  ScopedJavaLocalRef<jobjectArray> j_accounts =
-      signin::Java_ProfileOAuth2TokenServiceDelegate_getAccounts(env);
-  ;
-  // TODO(fgorski): We may decide to filter out some of the accounts.
-  base::android::AppendJavaStringArrayToStringVector(env, j_accounts,
-                                                     &accounts);
-  std::vector<CoreAccountId> account_ids;
-  for (auto& account : accounts)
-    account_ids.push_back(CoreAccountId::FromString(account));
-
-  return account_ids;
+  return accounts_;
 }
 
 std::vector<std::string>
@@ -301,11 +285,7 @@ ProfileOAuth2TokenServiceDelegateAndroid::GetValidAccounts() {
 
 void ProfileOAuth2TokenServiceDelegateAndroid::SetAccounts(
     const std::vector<CoreAccountId>& accounts) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobjectArray> java_accounts(
-      base::android::ToJavaArrayOfStrings(env, ToStringList(accounts)));
-  signin::Java_ProfileOAuth2TokenServiceDelegate_setAccounts(env,
-                                                             java_accounts);
+  accounts_ = accounts;
 }
 
 std::unique_ptr<OAuth2AccessTokenFetcher>

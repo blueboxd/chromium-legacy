@@ -489,15 +489,19 @@ void MakeCredentialRequestHandler::OnHavePIN(std::string pin) {
   }
 
   if (state_ == State::kWaitingForPIN) {
-    state_ = State::kGetEphemeralKey;
-  } else {
-    DCHECK_EQ(state_, State::kWaitingForNewPIN);
-    state_ = State::kGetEphemeralKeyForNewPIN;
+    state_ = State::kRequestWithPIN;
+    authenticator_->GetPINToken(
+        std::move(pin),
+        base::BindOnce(&MakeCredentialRequestHandler::OnHavePINToken,
+                       weak_factory_.GetWeakPtr()));
+    return;
   }
 
-  authenticator_->GetEphemeralKey(
-      base::BindOnce(&MakeCredentialRequestHandler::OnHaveEphemeralKey,
-                     weak_factory_.GetWeakPtr(), std::move(pin)));
+  DCHECK_EQ(state_, State::kWaitingForNewPIN);
+  state_ = State::kSettingPIN;
+  authenticator_->SetPIN(
+      pin, base::BindOnce(&MakeCredentialRequestHandler::OnHaveSetPIN,
+                          weak_factory_.GetWeakPtr(), pin));
 }
 
 void MakeCredentialRequestHandler::OnRetriesResponse(
@@ -525,41 +529,8 @@ void MakeCredentialRequestHandler::OnRetriesResponse(
                      weak_factory_.GetWeakPtr()));
 }
 
-void MakeCredentialRequestHandler::OnHaveEphemeralKey(
-    std::string pin,
-    CtapDeviceResponseCode status,
-    base::Optional<pin::KeyAgreementResponse> response) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
-  DCHECK(state_ == State::kGetEphemeralKey ||
-         state_ == State::kGetEphemeralKeyForNewPIN);
-
-  if (status != CtapDeviceResponseCode::kSuccess) {
-    state_ = State::kFinished;
-    std::move(completion_callback_)
-        .Run(MakeCredentialStatus::kAuthenticatorResponseInvalid, base::nullopt,
-             nullptr);
-    return;
-  }
-
-  if (state_ == State::kGetEphemeralKey) {
-    state_ = State::kRequestWithPIN;
-    authenticator_->GetPINToken(
-        std::move(pin), *response,
-        base::BindOnce(&MakeCredentialRequestHandler::OnHavePINToken,
-                       weak_factory_.GetWeakPtr()));
-  } else {
-    DCHECK_EQ(state_, State::kGetEphemeralKeyForNewPIN);
-    state_ = State::kSettingPIN;
-    authenticator_->SetPIN(
-        pin, *response,
-        base::BindOnce(&MakeCredentialRequestHandler::OnHaveSetPIN,
-                       weak_factory_.GetWeakPtr(), pin, *response));
-  }
-}
-
 void MakeCredentialRequestHandler::OnHaveSetPIN(
     std::string pin,
-    pin::KeyAgreementResponse key_agreement,
     CtapDeviceResponseCode status,
     base::Optional<pin::EmptyResponse> response) {
   DCHECK_EQ(state_, State::kSettingPIN);
@@ -576,7 +547,7 @@ void MakeCredentialRequestHandler::OnHaveSetPIN(
   // get a PIN token.
   state_ = State::kRequestWithPIN;
   authenticator_->GetPINToken(
-      std::move(pin), key_agreement,
+      std::move(pin),
       base::BindOnce(&MakeCredentialRequestHandler::OnHavePINToken,
                      weak_factory_.GetWeakPtr()));
 }

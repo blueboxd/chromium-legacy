@@ -434,12 +434,16 @@ void ExtensionRegistrar::ActivateExtension(const Extension* extension,
       base::Bind(&ExtensionRegistrar::OnExtensionRegisteredWithRequestContexts,
                  weak_factory_.GetWeakPtr(), WrapRefCounted(extension)));
 
-  renderer_helper_->OnExtensionLoaded(*extension);
-
+  // Activate the extension before calling
+  // RendererStartupHelper::OnExtensionLoaded() below, so that we have
+  // activation information ready while we send ExtensionMsg_Load IPC.
+  //
   // TODO(lazyboy): We should move all logic that is required to start up an
   // extension to a separate class, instead of calling adhoc methods like
   // service worker ones below.
   ActivateTaskQueueForExtension(browser_context_, extension);
+
+  renderer_helper_->OnExtensionLoaded(*extension);
 
   // Tell subsystems that use the ExtensionRegistryObserver::OnExtensionLoaded
   // about the new extension.

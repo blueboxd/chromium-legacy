@@ -200,7 +200,7 @@ bool operator==(const CubicBezierTimingFunction& lhs,
   if (rhs.GetType() != TimingFunction::Type::CUBIC_BEZIER)
     return false;
 
-  const CubicBezierTimingFunction& ctf = ToCubicBezierTimingFunction(rhs);
+  const auto& ctf = To<CubicBezierTimingFunction>(rhs);
   if ((lhs.GetEaseType() == CubicBezierTimingFunction::EaseType::CUSTOM) &&
       (ctf.GetEaseType() == CubicBezierTimingFunction::EaseType::CUSTOM))
     return (lhs.X1() == ctf.X1()) && (lhs.Y1() == ctf.Y1()) &&
@@ -213,7 +213,7 @@ bool operator==(const StepsTimingFunction& lhs, const TimingFunction& rhs) {
   if (rhs.GetType() != TimingFunction::Type::STEPS)
     return false;
 
-  const StepsTimingFunction& stf = ToStepsTimingFunction(rhs);
+  const auto& stf = To<StepsTimingFunction>(rhs);
   return (lhs.NumberOfSteps() == stf.NumberOfSteps()) &&
          (lhs.GetStepPosition() == stf.GetStepPosition());
 }
@@ -223,15 +223,15 @@ bool operator==(const StepsTimingFunction& lhs, const TimingFunction& rhs) {
 bool operator==(const TimingFunction& lhs, const TimingFunction& rhs) {
   switch (lhs.GetType()) {
     case TimingFunction::Type::LINEAR: {
-      const LinearTimingFunction& linear = ToLinearTimingFunction(lhs);
+      const auto& linear = To<LinearTimingFunction>(lhs);
       return (linear == rhs);
     }
     case TimingFunction::Type::CUBIC_BEZIER: {
-      const CubicBezierTimingFunction& cubic = ToCubicBezierTimingFunction(lhs);
+      const auto& cubic = To<CubicBezierTimingFunction>(lhs);
       return (cubic == rhs);
     }
     case TimingFunction::Type::STEPS: {
-      const StepsTimingFunction& step = ToStepsTimingFunction(lhs);
+      const auto& step = To<StepsTimingFunction>(lhs);
       return (step == rhs);
     }
     default:

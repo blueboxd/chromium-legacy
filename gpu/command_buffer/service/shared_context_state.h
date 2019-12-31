@@ -64,7 +64,8 @@ class GPU_GLES2_EXPORT SharedContextState
       viz::DawnContextProvider* dawn_context_provider = nullptr,
       gpu::MemoryTracker::Observer* peak_memory_monitor = nullptr);
 
-  void InitializeGrContext(const GpuDriverBugWorkarounds& workarounds,
+  void InitializeGrContext(const GpuPreferences& gpu_preferences,
+                           const GpuDriverBugWorkarounds& workarounds,
                            GrContextOptions::PersistentCache* cache,
                            GpuProcessActivityFlags* activity_flags = nullptr,
                            gl::ProgressReporter* progress_reporter = nullptr);

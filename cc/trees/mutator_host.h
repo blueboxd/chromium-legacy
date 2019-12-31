@@ -145,7 +145,6 @@ class MutatorHost {
       base::TimeDelta delayed_by,
       base::TimeDelta animation_start_offset) = 0;
   virtual bool ImplOnlyScrollAnimationUpdateTarget(
-      ElementId element_id,
       const gfx::Vector2dF& scroll_delta,
       const gfx::ScrollOffset& max_scroll_offset,
       base::TimeTicks frame_monotonic_time,

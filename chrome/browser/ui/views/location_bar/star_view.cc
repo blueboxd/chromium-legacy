@@ -53,8 +53,12 @@ int GetBookmarkPromoStringSpecifier() {
 
 StarView::StarView(CommandUpdater* command_updater,
                    Browser* browser,
-                   PageActionIconView::Delegate* delegate)
-    : PageActionIconView(command_updater, IDC_BOOKMARK_THIS_TAB, delegate),
+                   IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
+                   PageActionIconView::Delegate* page_action_icon_delegate)
+    : PageActionIconView(command_updater,
+                         IDC_BOOKMARK_THIS_TAB,
+                         icon_label_bubble_delegate,
+                         page_action_icon_delegate),
       browser_(browser) {
   DCHECK(browser_);
   extension_observer_.Add(

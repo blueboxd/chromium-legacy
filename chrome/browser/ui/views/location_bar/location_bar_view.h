@@ -70,6 +70,7 @@ class LocationBarView : public LocationBar,
                         public ChromeOmniboxEditController,
                         public DropdownBarHostDelegate,
                         public views::ButtonListener,
+                        public IconLabelBubbleView::Delegate,
                         public LocationIconView::Delegate,
                         public ContentSettingImageView::Delegate,
                         public PageActionIconView::Delegate,
@@ -186,8 +187,10 @@ class LocationBarView : public LocationBar,
   LocationBarModel* GetLocationBarModel() override;
   content::WebContents* GetWebContents() override;
 
+  // IconLabelBubbleView::Delegate:
+  SkColor GetIconLabelBubbleSurroundingForegroundColor() const override;
+
   // ContentSettingImageView::Delegate:
-  SkColor GetContentSettingInkDropColor() const override;
   content::WebContents* GetContentSettingWebContents() override;
   ContentSettingBubbleModelDelegate* GetContentSettingBubbleModelDelegate()
       override;
@@ -213,7 +216,7 @@ class LocationBarView : public LocationBar,
   Browser* browser() { return browser_; }
   Profile* profile() { return profile_; }
 
-  // LocationIconView::Delegate
+  // LocationIconView::Delegate:
   bool IsEditingOrEmpty() const override;
   void OnLocationIconPressed(const ui::MouseEvent& event) override;
   void OnLocationIconDragged(const ui::MouseEvent& event) override;
@@ -222,7 +225,6 @@ class LocationBarView : public LocationBar,
       security_state::SecurityLevel security_level) const override;
   gfx::ImageSkia GetLocationIcon(LocationIconView::Delegate::IconFetchedCallback
                                      on_icon_fetched) const override;
-  SkColor GetLocationIconInkDropColor() const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SecurityIndicatorTest, CheckIndicatorText);
@@ -306,7 +308,6 @@ class LocationBarView : public LocationBar,
                            const gfx::Point& p) override;
 
   // PageActionIconView::Delegate:
-  SkColor GetPageActionInkDropColor() const override;
   content::WebContents* GetWebContentsForPageActionIconView() override;
   bool IsLocationBarUserInputInProgress() const override;
 

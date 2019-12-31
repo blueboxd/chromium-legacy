@@ -64,6 +64,7 @@
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/html_head_element.h"
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
@@ -1917,7 +1918,7 @@ InspectorStyleSheet* InspectorCSSAgent::ViaInspectorStyleSheet(
   if (!document)
     return nullptr;
 
-  if (!document->IsHTMLDocument() && !document->IsSVGDocument())
+  if (!IsA<HTMLDocument>(document) && !document->IsSVGDocument())
     return nullptr;
 
   CSSStyleSheet& inspector_sheet =

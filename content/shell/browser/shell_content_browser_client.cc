@@ -53,7 +53,6 @@
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/service_manager/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
-#include "storage/browser/quota/quota_settings.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "ui/base/ui_base_features.h"
@@ -299,13 +298,6 @@ WebContentsViewDelegate* ShellContentBrowserClient::GetWebContentsViewDelegate(
 scoped_refptr<content::QuotaPermissionContext>
 ShellContentBrowserClient::CreateQuotaPermissionContext() {
   return new ShellQuotaPermissionContext();
-}
-
-void ShellContentBrowserClient::GetQuotaSettings(
-    BrowserContext* context,
-    StoragePartition* partition,
-    storage::OptionalQuotaSettingsCallback callback) {
-  std::move(callback).Run(storage::GetHardCodedSettings(100 * 1024 * 1024));
 }
 
 GeneratedCodeCacheSettings

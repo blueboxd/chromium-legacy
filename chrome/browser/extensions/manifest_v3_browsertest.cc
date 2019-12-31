@@ -6,7 +6,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/extensions/browser_action_test_util.h"
+#include "chrome/browser/ui/extensions/extension_action_test_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/version_info/channel.h"
@@ -126,8 +126,8 @@ IN_PROC_BROWSER_TEST_F(ManifestV3BrowserTest, ActionAPI) {
   ASSERT_TRUE(extension);
   ASSERT_TRUE(listener.WaitUntilSatisfied());
 
-  std::unique_ptr<BrowserActionTestUtil> action_test_util =
-      BrowserActionTestUtil::Create(browser());
+  std::unique_ptr<ExtensionActionTestHelper> action_test_util =
+      ExtensionActionTestHelper::Create(browser());
   ASSERT_EQ(1, action_test_util->NumberOfBrowserActions());
   EXPECT_EQ(extension->id(), action_test_util->GetExtensionId(0));
 

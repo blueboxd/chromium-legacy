@@ -170,6 +170,11 @@ class OptimizationGuideStore {
   // removed.
   void PurgeExpiredFetchedHints();
 
+  // Removes all host model features that have expired from the store.
+  // |entry_keys_| is updated after the expired host model features are
+  // removed.
+  void PurgeExpiredHostModelFeatures();
+
   // Creates and returns a StoreUpdateData object for Prediction Models. This
   // object is used to collect a batch of prediction models in a format that is
   // usable to update the store on a background thread. This is always created
@@ -344,11 +349,10 @@ class OptimizationGuideStore {
       EntryKey* out_entry_key,
       const EntryKeyPrefix& entry_key_prefix) const;
 
-  // Callback that identifies any expired hints from |fetched_entries| and
+  // Callback that identifies any expired |entries| and
   // asynchronously removes them from the store.
-  void OnLoadFetchedHintsToPurgeExpired(
-      bool success,
-      std::unique_ptr<EntryMap> fetched_entries);
+  void OnLoadEntriesToPurgeExpired(bool success,
+                                   std::unique_ptr<EntryMap> entries);
 
   // Callback that runs after the database finishes being initialized. If
   // |purge_existing_data| is true, then unconditionally purges the database;

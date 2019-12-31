@@ -7,6 +7,8 @@
 #include <cmath>
 #include <cstdlib>
 
+#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/ash_prefs.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/test/shell_test_api.h"
@@ -34,6 +36,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/time/time_override.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "components/user_manager/fake_user_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_names.h"
@@ -43,6 +46,8 @@
 #include "ui/aura/window.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/test/layer_animator_test_controller.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/views/widget/widget.h"
@@ -2615,6 +2620,50 @@ TEST_F(WallpaperControllerTest, AlwaysOnTopWallpaper) {
   EXPECT_EQ(3, GetWallpaperCount());
   EXPECT_EQ(controller_->GetWallpaperType(), DEFAULT);
   EXPECT_EQ(kShellWindowId_WallpaperContainer, GetWallpaperContainerId());
+}
+
+namespace {
+
+class WallpaperControllerPrefTest : public AshTestBase {
+ public:
+  WallpaperControllerPrefTest() = default;
+  ~WallpaperControllerPrefTest() override = default;
+
+  void SetUp() override {
+    {
+      RegisterLocalStatePrefs(local_state_->registry(), true);
+      register_local_state_ = false;
+      DictionaryPrefUpdate update(local_state_.get(),
+                                  prefs::kDisplayProperties);
+
+      base::DictionaryValue* pref_data = update.Get();
+
+      auto property = std::make_unique<base::DictionaryValue>();
+      property->SetInteger("rotation",
+                           static_cast<int>(display::Display::ROTATE_90));
+      property->SetInteger("width", 800);
+      property->SetInteger("height", 600);
+      pref_data->Set("2200000000", std::move(property));
+    }
+    AshTestBase::SetUp();
+  }
+};
+
+}  // namespace
+
+// Make sure that the display and the wallpaper view are rotated correctly at
+// startup.
+TEST_F(WallpaperControllerPrefTest, InitWithPrefs) {
+  auto* wallpaper_view = Shell::GetPrimaryRootWindowController()
+                             ->wallpaper_widget_controller()
+                             ->wallpaper_view();
+  auto* root_window =
+      wallpaper_view->GetWidget()->GetNativeWindow()->GetRootWindow();
+
+  EXPECT_EQ(gfx::Size(600, 800), display::Screen::GetScreen()
+                                     ->GetDisplayNearestWindow(root_window)
+                                     .size());
+  EXPECT_EQ(root_window->bounds().size(), wallpaper_view->bounds().size());
 }
 
 }  // namespace ash

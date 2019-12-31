@@ -252,7 +252,8 @@ TEST_F(FontSizeJsTest, TestAdjustFontSizeForUnit) {
 }
 
 // Tests that __gCrWeb.accessibility.adjustFontSize works for nested elements.
-TEST_F(FontSizeJsTest, TestAdjustFontSizeForNestedElements) {
+// TODO(crbug.com/1038529): Re-enable this test.
+TEST_F(FontSizeJsTest, FLAKY_TestAdjustFontSizeForNestedElements) {
   // TODO(crbug.com/983776): This test fails on ipad since beta5 due to a
   // simulator bug. Re-enable this once the bug is fixed.
   if (base::ios::IsRunningOnIOS13OrLater() &&

@@ -301,12 +301,14 @@
   self.formInputAccessoryCoordinator.navigator = self;
   [self.formInputAccessoryCoordinator start];
 
+  self.snackbarCoordinator = [[SnackbarCoordinator alloc]
+      initWithBaseViewController:self.viewController];
+  self.snackbarCoordinator.dispatcher = self.dispatcher;
+  [self.snackbarCoordinator start];
+
   self.translateInfobarCoordinator = [[LegacyTranslateInfobarCoordinator alloc]
       initWithBaseViewController:self.viewController
-                    browserState:self.browserState
-                    webStateList:self.browser->GetWebStateList()
-                      dispatcher:static_cast<id<SnackbarCommands>>(
-                                     self.dispatcher)];
+                         browser:self.browser];
   [self.translateInfobarCoordinator start];
 
   self.pageInfoCoordinator = [[PageInfoLegacyCoordinator alloc]
@@ -333,11 +335,6 @@
   /* RecentTabsCoordinator is created and started by a BrowserCommand */
 
   /* RepostFormCoordinator is created and started by a delegate method */
-
-  self.snackbarCoordinator = [[SnackbarCoordinator alloc]
-      initWithBaseViewController:self.viewController];
-  self.snackbarCoordinator.dispatcher = self.dispatcher;
-  [self.snackbarCoordinator start];
 
   self.storeKitCoordinator = [[StoreKitCoordinator alloc]
       initWithBaseViewController:self.viewController];

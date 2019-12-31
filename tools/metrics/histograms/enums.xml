@@ -41517,16 +41517,16 @@ Called by update_use_counter_css.py.-->
   <int value="7" label="Ephemeral icon and local file"/>
   <int value="8" label="Context menu and presentation"/>
   <int value="9" label="Context menu and tab mirroring"/>
-  <int value="11" label="Context menu and desktop mirroring"/>
-  <int value="12" label="Context menu and local file"/>
-  <int value="13" label="Page and presentation"/>
-  <int value="14" label="Page and tab mirroring"/>
-  <int value="15" label="Page and desktop mirroring"/>
-  <int value="16" label="Page and local file"/>
-  <int value="17" label="App menu and presentation"/>
-  <int value="18" label="App menu and tab mirroring"/>
-  <int value="19" label="App menu and desktop mirroring"/>
-  <int value="20" label="App menu and local file"/>
+  <int value="10" label="Context menu and desktop mirroring"/>
+  <int value="11" label="Context menu and local file"/>
+  <int value="12" label="Page and presentation"/>
+  <int value="13" label="Page and tab mirroring"/>
+  <int value="14" label="Page and desktop mirroring"/>
+  <int value="15" label="Page and local file"/>
+  <int value="16" label="App menu and presentation"/>
+  <int value="17" label="App menu and tab mirroring"/>
+  <int value="18" label="App menu and desktop mirroring"/>
+  <int value="19" label="App menu and local file"/>
 </enum>
 
 <enum name="MediaRouterDialogOpenOrigin">
@@ -51032,10 +51032,10 @@ Called by update_net_trust_anchors.py.-->
   <int value="41" label="WOULD_HAVE_BEEN_USED (Obsolete)"/>
   <int value="42" label="REGISTER_PROTOCOL_HANDLER"/>
   <int value="43" label="CREATING_AUDIO_STREAM"/>
-  <int value="44" label="PAGE_BEING_CAPTURED"/>
+  <int value="44" label="PAGE_BEING_CAPTURED (Obsolete)"/>
   <int value="45" label="BAD_DEFERRED_REDIRECT"/>
   <int value="46" label="NAVIGATION_UNCOMMITTED"/>
-  <int value="47" label="NEW_NAVIGATION_ENTRY"/>
+  <int value="47" label="NEW_NAVIGATION_ENTRY (Obsolete)"/>
   <int value="48" label="COOKIE_STORE_NOT_LOADED (Obsolete)"/>
   <int value="49" label="COOKIE_CONFLICT (Obsolete)"/>
   <int value="50" label="NON_EMPTY_BROWSING_INSTANCE"/>
@@ -62967,6 +62967,7 @@ Full version information for the fingerprint enum values:
   <int value="1941011596" label="IFX 9655 rev 35 fw 4.34 build 03f2"/>
   <int value="1953654937" label="IFX 9645 rev 45 fw 133.33 build 00e3"/>
   <int value="2024714959" label="IFX 9655 rev 32 fw 4.34 build 03f2"/>
+  <int value="2036182876" label="CROS Cr50 0.3.24"/>
   <int value="2061474747"
       label="CROS Cr50 0.2.2 aka 0.4.4 Flags 0x10(pre-pvt)"/>
   <int value="2104725364" label="CROS Cr50 0.3.20"/>

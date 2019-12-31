@@ -182,10 +182,16 @@ class BASE_EXPORT SysInfo {
   static std::string GetIOSBuildNumber();
 #endif  // defined(OS_IOS)
 
-  // Returns true if this is a low-end device.
-  // Low-end device refers to devices having a very low amount of total
-  // system memory, typically <= 1GB.
-  // See also SysUtils.java, method isLowEndDevice.
+  // Returns true for low-end devices that may require extreme tradeoffs,
+  // including user-visible changes, for acceptable performance.
+  // For general memory optimizations, consider |AmountOfPhysicalMemoryMB|.
+  //
+  // On Android this returns:
+  //   true when memory <= 1GB on Android O and later.
+  //   true when memory <= 512MB on Android N and earlier.
+  // This is not the same as "low-memory" and will be false on a large number of
+  // <=1GB pre-O Android devices. See: |detectLowEndDevice| in SysUtils.java.
+  // On Desktop this returns true when memory <= 512MB.
   static bool IsLowEndDevice();
 
  private:

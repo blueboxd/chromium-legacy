@@ -23,8 +23,13 @@
     </declare-styleable>
 
     <declare-styleable name="RadioButtonWithDescription">
-        <attr name="titleText" format="string" />
+        <attr name="primaryText" format="string" />
         <attr name="descriptionText" format="string" />
+    </declare-styleable>
+
+    <declare-styleable name="RadioButtonWithEditText">
+        <attr name="android:hint"/>
+        <attr name="android:inputType" />
     </declare-styleable>
 
     <declare-styleable name="RoundedCornerImageView">

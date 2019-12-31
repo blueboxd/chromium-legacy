@@ -19,12 +19,12 @@ class DataUsageBucket;
 class DataUsageStore;
 
 // Callback for loading the historical data usage.
-typedef base::Callback<void(std::unique_ptr<std::vector<DataUsageBucket>>)>
-    HistoricalDataUsageCallback;
+using HistoricalDataUsageCallback =
+    base::OnceCallback<void(std::unique_ptr<std::vector<DataUsageBucket>>)>;
 
 // Callback for loading data usage for the current bucket.
-typedef base::Callback<void(std::unique_ptr<DataUsageBucket>)>
-    LoadCurrentDataUsageCallback;
+using LoadCurrentDataUsageCallback =
+    base::OnceCallback<void(std::unique_ptr<DataUsageBucket>)>;
 
 // Contains and initializes all Data Reduction Proxy objects that have a
 // lifetime based on the DB task runner.

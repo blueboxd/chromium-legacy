@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/message_box_view.h"
+#include "ui/views/examples/examples_window.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/view.h"
 
@@ -57,8 +58,9 @@ void MessageBoxExample::ButtonPressed(Button* sender, const ui::Event& event) {
   if (sender == status_) {
     message_box_view_->SetCheckBoxLabel(
         ASCIIToUTF16(message_box_view_->IsCheckBoxSelected() ? "on" : "off"));
-    PrintStatus(message_box_view_->IsCheckBoxSelected() ?
-       "Check Box Selected" : "Check Box Not Selected");
+    LogStatus(message_box_view_->IsCheckBoxSelected()
+                  ? "Check Box Selected"
+                  : "Check Box Not Selected");
   } else if (sender == toggle_) {
     message_box_view_->SetCheckBoxSelected(
         !message_box_view_->IsCheckBoxSelected());

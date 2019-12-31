@@ -321,7 +321,7 @@ void DataReductionProxyService::AddCustomProxyConfigClient(
 }
 
 void DataReductionProxyService::LoadHistoricalDataUsage(
-    const HistoricalDataUsageCallback& load_data_usage_callback) {
+    HistoricalDataUsageCallback load_data_usage_callback) {
   std::unique_ptr<std::vector<DataUsageBucket>> data_usage(
       new std::vector<DataUsageBucket>());
   std::vector<DataUsageBucket>* data_usage_ptr = data_usage.get();
@@ -330,11 +330,12 @@ void DataReductionProxyService::LoadHistoricalDataUsage(
       base::BindOnce(&DBDataOwner::LoadHistoricalDataUsage,
                      db_data_owner_->GetWeakPtr(),
                      base::Unretained(data_usage_ptr)),
-      base::BindOnce(load_data_usage_callback, std::move(data_usage)));
+      base::BindOnce(std::move(load_data_usage_callback),
+                     std::move(data_usage)));
 }
 
 void DataReductionProxyService::LoadCurrentDataUsageBucket(
-    const LoadCurrentDataUsageCallback& load_current_data_usage_callback) {
+    LoadCurrentDataUsageCallback load_current_data_usage_callback) {
   std::unique_ptr<DataUsageBucket> bucket(new DataUsageBucket());
   DataUsageBucket* bucket_ptr = bucket.get();
   db_task_runner_->PostTaskAndReply(
@@ -342,7 +343,8 @@ void DataReductionProxyService::LoadCurrentDataUsageBucket(
       base::BindOnce(&DBDataOwner::LoadCurrentDataUsageBucket,
                      db_data_owner_->GetWeakPtr(),
                      base::Unretained(bucket_ptr)),
-      base::BindOnce(load_current_data_usage_callback, std::move(bucket)));
+      base::BindOnce(std::move(load_current_data_usage_callback),
+                     std::move(bucket)));
 }
 
 void DataReductionProxyService::StoreCurrentDataUsageBucket(

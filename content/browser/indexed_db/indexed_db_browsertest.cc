@@ -60,6 +60,7 @@
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/database/database_util.h"
 #include "storage/browser/quota/quota_manager.h"
+#include "storage/browser/quota/quota_settings.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -84,12 +85,24 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
   void SetUp() override {
     GetTestClassFactory()->Reset();
     IndexedDBClassFactory::SetIndexedDBClassFactoryGetter(GetIDBClassFactory);
+
+    // Some tests need more space than the default used for browser tests.
+    static storage::QuotaSettings quota_settings =
+        storage::GetHardCodedSettings(100 * 1024 * 1024);
+    StoragePartition::SetDefaultQuotaSettingsForTesting(&quota_settings);
+
     ContentBrowserTest::SetUp();
   }
 
   void TearDown() override {
     IndexedDBClassFactory::SetIndexedDBClassFactoryGetter(nullptr);
     ContentBrowserTest::TearDown();
+  }
+
+  bool UseProductionQuotaSettings() override {
+    // So that the browser test harness doesn't call
+    // SetDefaultQuotaSettingsForTesting and overwrite the settings above.
+    return true;
   }
 
   void FailOperation(FailClass failure_class,

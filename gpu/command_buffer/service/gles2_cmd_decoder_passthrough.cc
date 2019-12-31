@@ -391,7 +391,10 @@ operator=(SharedImageData&& other) {
 bool PassthroughResources::SharedImageData::BeginAccess(GLenum mode,
                                                         gl::GLApi* api) {
   DCHECK(!is_being_accessed());
-  scoped_access_ = representation_->BeginScopedAccess(mode);
+  // When importing a texture for use in passthrough cmd decoder, always allow
+  // uncleared access. We ensure the texture is cleared below.
+  scoped_access_ = representation_->BeginScopedAccess(
+      mode, SharedImageRepresentation::AllowUnclearedAccess::kYes);
   if (!scoped_access_) {
     return false;
   }

@@ -34,7 +34,6 @@
 #include "net/ssl/client_cert_identity.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/service_manager/sandbox/switches.h"
-#include "storage/browser/quota/quota_settings.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/switches.h"
 
@@ -147,15 +146,6 @@ HeadlessContentBrowserClient::GetDevToolsManagerDelegate() {
 scoped_refptr<content::QuotaPermissionContext>
 HeadlessContentBrowserClient::CreateQuotaPermissionContext() {
   return new HeadlessQuotaPermissionContext();
-}
-
-void HeadlessContentBrowserClient::GetQuotaSettings(
-    content::BrowserContext* context,
-    content::StoragePartition* partition,
-    ::storage::OptionalQuotaSettingsCallback callback) {
-  ::storage::GetNominalDynamicSettings(
-      partition->GetPath(), context->IsOffTheRecord(),
-      ::storage::GetDefaultDeviceInfoHelper(), std::move(callback));
 }
 
 content::GeneratedCodeCacheSettings

@@ -12,6 +12,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "chrome/browser/optimization_guide/optimization_guide_util.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "content/public/browser/network_service_instance.h"
@@ -70,8 +71,19 @@ bool PredictionModelFetcher::FetchOptimizationGuideServiceModels(
 
   pending_models_request_->set_request_context(request_context);
 
-  for (const auto& host : hosts)
+  // Limit the number of hosts to fetch features for, the list of hosts
+  // is assumed to be ordered from most to least important by the top
+  // host provider.
+  for (const auto& host : hosts) {
+    // Skip over localhosts, IP addresses, and invalid hosts.
+    if (!IsHostValidToFetchFromRemoteOptimizationGuide(host))
+      continue;
     pending_models_request_->add_hosts(host);
+    if (static_cast<size_t>(pending_models_request_->hosts_size()) >=
+        features::MaxHostsForOptimizationGuideServiceModelsFetch()) {
+      break;
+    }
+  }
 
   for (const auto& model_request_info : models_request_info)
     *pending_models_request_->add_requested_models() = model_request_info;
@@ -122,7 +134,7 @@ bool PredictionModelFetcher::FetchOptimizationGuideServiceModels(
   UMA_HISTOGRAM_COUNTS_100(
       "OptimizationGuide.PredictionModelFetcher."
       "GetModelsRequest.HostCount",
-      hosts.size());
+      pending_models_request_->hosts_size());
 
   // |url_loader_| should not retry on 5xx errors since the server may already
   // be overloaded.  |url_loader_| should retry on network changes since the

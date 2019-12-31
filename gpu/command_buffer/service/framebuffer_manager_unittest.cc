@@ -17,6 +17,7 @@
 #include "gpu/command_buffer/service/service_discardable_manager.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "gpu/config/gpu_preferences.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_mock.h"
 
@@ -44,7 +45,8 @@ class FramebufferManagerTest : public GpuServiceTest {
  public:
   FramebufferManagerTest()
       : manager_(1, 1, nullptr),
-        feature_info_(new FeatureInfo()) {
+        feature_info_(new FeatureInfo()),
+        discardable_manager_(GpuPreferences()) {
     texture_manager_.reset(new TextureManager(
         nullptr, feature_info_.get(), kMaxTextureSize, kMaxCubemapSize,
         kMaxRectangleTextureSize, kMax3DTextureSize, kMaxArrayTextureLayers,
@@ -123,7 +125,8 @@ class FramebufferInfoTestBase : public GpuServiceTest {
         manager_(kMaxDrawBuffers,
                  kMaxColorAttachments,
                  &framebuffer_completeness_cache_),
-        feature_info_(new FeatureInfo()) {
+        feature_info_(new FeatureInfo()),
+        discardable_manager_(GpuPreferences()) {
     texture_manager_.reset(new TextureManager(
         nullptr, feature_info_.get(), kMaxTextureSize, kMaxCubemapSize,
         kMaxRectangleTextureSize, kMax3DTextureSize, kMaxArrayTextureLayers,

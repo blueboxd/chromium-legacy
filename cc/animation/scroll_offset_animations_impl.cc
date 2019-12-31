@@ -88,7 +88,6 @@ void ScrollOffsetAnimationsImpl::ScrollAnimationCreateInternal(
 }
 
 bool ScrollOffsetAnimationsImpl::ScrollAnimationUpdateTarget(
-    ElementId element_id,
     const gfx::Vector2dF& scroll_delta,
     const gfx::ScrollOffset& max_scroll_offset,
     base::TimeTicks frame_monotonic_time,
@@ -99,8 +98,6 @@ bool ScrollOffsetAnimationsImpl::ScrollAnimationUpdateTarget(
                          TRACE_EVENT_SCOPE_THREAD);
     return false;
   }
-
-  DCHECK_EQ(element_id, scroll_offset_animation_->element_id());
 
   KeyframeModel* keyframe_model =
       scroll_offset_animation_->GetKeyframeModel(TargetProperty::SCROLL_OFFSET);

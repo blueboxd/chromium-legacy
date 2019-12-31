@@ -1,7 +1,17 @@
 <!DOCTYPE html>
+<script>
+document.addEventListener('change', e => {
+  parent.inputOrChangeEvents.push('change/' + e.target.type);
+});
+document.addEventListener('input', e => {
+  parent.inputOrChangeEvents.push('input/' + e.target.type);
+});
+</script>
 <div></div>
 <input type=checkbox disabled>
 <input type=text disabled>
+<textarea></textarea>
+<select><option>1<option>2</select>
 <script>
 document.querySelector('div').innerHTML = '<input type=checkbox><input type=text>'
 </script>

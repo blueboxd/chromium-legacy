@@ -29,6 +29,8 @@ CommandBufferTaskExecutor::CommandBufferTaskExecutor(
       share_group_(share_group),
       share_group_surface_format_(share_group_surface_format),
       program_cache_(program_cache),
+      discardable_manager_(gpu_preferences_),
+      passthrough_discardable_manager_(gpu_preferences_),
       shader_translator_cache_(gpu_preferences_),
       shared_image_manager_(shared_image_manager) {
   DCHECK(mailbox_manager_);

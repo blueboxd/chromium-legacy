@@ -42,6 +42,7 @@ ToolbarAccountIconContainerView::ToolbarAccountIconContainerView(
   };
   params.browser = browser_;
   params.command_updater = browser_->command_controller();
+  params.icon_label_bubble_delegate = this;
   params.page_action_icon_delegate = this;
   params.button_observer = this;
   params.view_observer = this;
@@ -64,7 +65,15 @@ void ToolbarAccountIconContainerView::UpdateAllIcons() {
   avatar_->UpdateIcon();
 }
 
-SkColor ToolbarAccountIconContainerView::GetPageActionInkDropColor() const {
+SkColor
+ToolbarAccountIconContainerView::GetIconLabelBubbleSurroundingForegroundColor()
+    const {
+  return GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldDefaultColor);
+}
+
+SkColor ToolbarAccountIconContainerView::GetIconLabelBubbleInkDropColor()
+    const {
   return GetToolbarInkDropBaseColor(this);
 }
 

@@ -17,9 +17,14 @@
 #include "components/omnibox/browser/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 
-PwaInstallView::PwaInstallView(CommandUpdater* command_updater,
-                               PageActionIconView::Delegate* delegate)
-    : PageActionIconView(nullptr, 0, delegate) {
+PwaInstallView::PwaInstallView(
+    CommandUpdater* command_updater,
+    IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
+    PageActionIconView::Delegate* page_action_icon_delegate)
+    : PageActionIconView(nullptr,
+                         0,
+                         icon_label_bubble_delegate,
+                         page_action_icon_delegate) {
   SetVisible(false);
   SetLabel(l10n_util::GetStringUTF16(IDS_OMNIBOX_PWA_INSTALL_ICON_LABEL));
   SetUpForInOutAnimation();

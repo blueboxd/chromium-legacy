@@ -141,6 +141,11 @@ NET_EXPORT_PRIVATE std::string GetDohProviderIdForHistogramFromNameserver(
 NET_EXPORT_PRIVATE std::string SecureDnsModeToString(
     const DnsConfig::SecureDnsMode secure_dns_mode);
 
+// Returns a map of DoH provider names and server templates
+// from the auto-upgrade list for testing.
+NET_EXPORT_PRIVATE std::map<std::string, std::string>
+GetDohServerTemplatesListForTesting();
+
 }  // namespace net
 
 #endif  // NET_DNS_DNS_UTIL_H_

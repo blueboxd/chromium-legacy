@@ -46,11 +46,13 @@ const OmniboxView* PageActionIconView::Delegate::GetOmniboxView() const {
   return nullptr;
 }
 
-PageActionIconView::PageActionIconView(CommandUpdater* command_updater,
-                                       int command_id,
-                                       PageActionIconView::Delegate* delegate,
-                                       const gfx::FontList& font_list)
-    : IconLabelBubbleView(font_list),
+PageActionIconView::PageActionIconView(
+    CommandUpdater* command_updater,
+    int command_id,
+    IconLabelBubbleView::Delegate* parent_delegate,
+    PageActionIconView::Delegate* delegate,
+    const gfx::FontList& font_list)
+    : IconLabelBubbleView(font_list, parent_delegate),
       command_updater_(command_updater),
       delegate_(delegate),
       command_id_(command_id) {
@@ -88,11 +90,6 @@ void PageActionIconView::ExecuteForTesting() {
   OnExecuting(EXECUTE_SOURCE_MOUSE);
 }
 
-SkColor PageActionIconView::GetTextColor() const {
-  return GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldDefaultColor);
-}
-
 void PageActionIconView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kButton;
   node_data->SetName(GetTextForTooltipAndAccessibleName());
@@ -113,10 +110,6 @@ void PageActionIconView::ViewHierarchyChanged(
 void PageActionIconView::OnThemeChanged() {
   IconLabelBubbleView::OnThemeChanged();
   UpdateIconImage();
-}
-
-SkColor PageActionIconView::GetInkDropBaseColor() const {
-  return delegate_->GetPageActionInkDropColor();
 }
 
 bool PageActionIconView::ShouldShowSeparator() const {

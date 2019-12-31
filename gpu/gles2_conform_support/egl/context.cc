@@ -61,6 +61,8 @@ Context::Context(Display* display, const Config* config)
       is_destroyed_(false),
       gpu_driver_bug_workarounds_(
           platform_gpu_feature_info_.enabled_gpu_driver_bug_workarounds),
+      discardable_manager_(gpu::GpuPreferences()),
+      passthrough_discardable_manager_(gpu::GpuPreferences()),
       translator_cache_(gpu::GpuPreferences()) {}
 
 Context::~Context() {

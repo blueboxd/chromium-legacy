@@ -7,7 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/settings/google_services/google_services_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_consumer.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_mode.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_service_delegate.h"

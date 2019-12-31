@@ -7,6 +7,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "content/public/renderer/render_thread.h"
+#include "extensions/common/manifest_handlers/background_info.h"
 
 namespace extensions {
 
@@ -100,6 +101,26 @@ bool RendererExtensionRegistry::ExtensionBindingsAllowed(
     const GURL& url) const {
   base::AutoLock lock(lock_);
   return extensions_.ExtensionBindingsAllowed(url);
+}
+
+void RendererExtensionRegistry::SetWorkerActivationSequence(
+    const scoped_refptr<const Extension>& extension,
+    int worker_activation_sequence) {
+  DCHECK(content::RenderThread::Get());
+  DCHECK(Contains(extension->id()));
+  DCHECK(BackgroundInfo::IsServiceWorkerBased(extension.get()));
+
+  base::AutoLock lock(lock_);
+  worker_activation_sequences_[extension->id()] = worker_activation_sequence;
+}
+
+base::Optional<int> RendererExtensionRegistry::GetWorkerActivationSequence(
+    const ExtensionId& extension_id) const {
+  base::AutoLock lock(lock_);
+  auto iter = worker_activation_sequences_.find(extension_id);
+  if (iter == worker_activation_sequences_.end())
+    return base::nullopt;
+  return iter->second;
 }
 
 }  // namespace extensions

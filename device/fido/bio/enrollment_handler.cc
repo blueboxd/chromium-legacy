@@ -163,29 +163,10 @@ void BioEnrollmentHandler::OnRetriesResponse(
 void BioEnrollmentHandler::OnHavePIN(std::string pin) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(state_, State::kWaitingForPIN);
-  state_ = State::kGettingEphemeralKey;
-  authenticator_->GetEphemeralKey(
-      base::BindOnce(&BioEnrollmentHandler::OnHaveEphemeralKey,
-                     weak_factory_.GetWeakPtr(), std::move(pin)));
-}
-
-void BioEnrollmentHandler::OnHaveEphemeralKey(
-    std::string pin,
-    CtapDeviceResponseCode status,
-    base::Optional<pin::KeyAgreementResponse> response) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(State::kGettingEphemeralKey, state_);
-
-  if (status != CtapDeviceResponseCode::kSuccess) {
-    Finish(BioEnrollmentStatus::kAuthenticatorResponseInvalid);
-    return;
-  }
-
   state_ = State::kGettingPINToken;
   authenticator_->GetPINToken(
-      std::move(pin), *response,
-      base::BindOnce(&BioEnrollmentHandler::OnHavePINToken,
-                     weak_factory_.GetWeakPtr()));
+      std::move(pin), base::BindOnce(&BioEnrollmentHandler::OnHavePINToken,
+                                     weak_factory_.GetWeakPtr()));
 }
 
 void BioEnrollmentHandler::OnHavePINToken(

@@ -10,6 +10,7 @@
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/examples/examples_window.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 
@@ -121,8 +122,9 @@ void BubbleExample::ButtonPressed(Button* sender, const ui::Event& event) {
   BubbleDialogDelegateView::CreateBubble(bubble);
 
   bubble->GetWidget()->Show();
-  PrintStatus("Click with optional modifiers: [Ctrl] for set_arrow(NONE), "
-     "[Alt] for set_arrow(FLOAT), or [Shift] to reverse the arrow iteration.");
+  LogStatus(
+      "Click with optional modifiers: [Ctrl] for set_arrow(NONE), "
+      "[Alt] for set_arrow(FLOAT), or [Shift] to reverse the arrow iteration.");
 }
 
 }  // namespace examples

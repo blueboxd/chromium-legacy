@@ -67,6 +67,7 @@ class BrowserViewLayout : public views::LayoutManager {
   void set_webui_tab_strip(views::View* webui_tab_strip) {
     webui_tab_strip_ = webui_tab_strip;
   }
+  void set_loading_bar(views::View* loading_bar) { loading_bar_ = loading_bar; }
   void set_bookmark_bar(BookmarkBarView* bookmark_bar) {
     bookmark_bar_ = bookmark_bar;
   }
@@ -154,6 +155,7 @@ class BrowserViewLayout : public views::LayoutManager {
   views::View* const contents_separator_;
 
   views::View* webui_tab_strip_ = nullptr;
+  views::View* loading_bar_ = nullptr;
   TabStrip* tab_strip_ = nullptr;
   BookmarkBarView* bookmark_bar_ = nullptr;
   views::View* download_shelf_ = nullptr;

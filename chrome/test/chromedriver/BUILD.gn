@@ -344,6 +344,7 @@ python_library("chromedriver_py_tests") {
   pydeps_file = "test/run_py_tests.pydeps"
   data = [
     "//chrome/test/data/chromedriver/",
+    "//chrome/test/chromedriver/js/",
     "//testing/scripts/run_chromedriver_tests.py",
     "//testing/scripts/common.py",
     "//testing/xvfb.py",

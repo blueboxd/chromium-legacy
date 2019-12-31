@@ -816,7 +816,7 @@ void XMLHttpRequest::send(Document* document, ExceptionState& exception_state) {
   scoped_refptr<EncodedFormData> http_body;
 
   if (AreMethodAndURLValidForSend()) {
-    if (document->IsHTMLDocument())
+    if (IsA<HTMLDocument>(document))
       UpdateContentTypeAndCharset("text/html;charset=UTF-8", "UTF-8");
     else if (IsA<XMLDocument>(document))
       UpdateContentTypeAndCharset("application/xml;charset=UTF-8", "UTF-8");

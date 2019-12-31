@@ -116,7 +116,7 @@ function setSubmitListener(form, fetchDataUrl) {
           mainVersions.filter(v2 => compareVersions(v2, '71.0.0.0') > 0);
     }
 
-    if (showAll.value) {
+    if (showAll.checked) {
       activeVersions = [...mainVersions, ...canaryVersions];
       activeVersions.sort(compareVersions);
     } else {

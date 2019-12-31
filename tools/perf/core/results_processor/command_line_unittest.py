@@ -137,8 +137,25 @@ class TestProcessOptions(ProcessOptionsTestCase):
     self.assertEqual(options.output_formats, ['csv', 'html'])
 
   def testTraceProcessorPath_noBuildDir(self):
-    options = self.ParseArgs([])
+    with mock.patch(module('os.environ.get'), return_value=None):
+      options = self.ParseArgs([])
     self.assertIsNone(options.trace_processor_path)
+
+  def testTraceProcessorPath_chromiumOutputDir(self):
+    def isfile(path):
+      return path == '/path/to/chromium/out_test/Debug/trace_processor_shell'
+
+    def env_get(name):
+      if name == 'CHROMIUM_OUTPUT_DIR':
+        return '/path/to/chromium/out_test/Debug'
+
+    with mock.patch(module('os.path.isfile')) as isfile_patch:
+      with mock.patch(module('os.environ.get')) as env_patch:
+        isfile_patch.side_effect = isfile
+        env_patch.side_effect = env_get
+        options = self.ParseArgs([])
+    self.assertEqual(options.trace_processor_path,
+                     '/path/to/chromium/out_test/Debug/trace_processor_shell')
 
   def testTraceProcessorPath_oneBuildDir(self):
     def isfile(path):

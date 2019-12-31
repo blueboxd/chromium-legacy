@@ -269,11 +269,11 @@ void V8Window::NamedPropertyGetterCustom(
   }
 
   // Search named items in the document.
-  Document* doc = To<LocalFrame>(frame)->GetDocument();
-  if (!doc || !doc->IsHTMLDocument())
+  auto* doc = DynamicTo<HTMLDocument>(To<LocalFrame>(frame)->GetDocument());
+  if (!doc)
     return;
 
-  bool has_named_item = ToHTMLDocument(doc)->HasNamedItem(name);
+  bool has_named_item = doc->HasNamedItem(name);
   bool has_id_item = doc->HasElementWithId(name);
 
   if (!has_named_item && !has_id_item)

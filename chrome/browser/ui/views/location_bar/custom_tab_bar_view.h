@@ -35,6 +35,7 @@ class CustomTabBarView : public views::AccessiblePaneView,
                          public TabStripModelObserver,
                          public ui::SimpleMenuModel::Delegate,
                          public views::ContextMenuController,
+                         public IconLabelBubbleView::Delegate,
                          public LocationIconView::Delegate,
                          public views::ButtonListener {
  public:
@@ -60,6 +61,9 @@ class CustomTabBarView : public views::AccessiblePaneView,
   void OnPaintBackground(gfx::Canvas* canvas) override;
   void ChildPreferredSizeChanged(views::View* child) override;
 
+  // IconLabelBubbleView::Delegate:
+  SkColor GetIconLabelBubbleSurroundingForegroundColor() const override;
+
   // LocationIconView::Delegate:
   content::WebContents* GetWebContents() override;
   bool IsEditingOrEmpty() const override;
@@ -71,7 +75,6 @@ class CustomTabBarView : public views::AccessiblePaneView,
   const LocationBarModel* GetLocationBarModel() const override;
   gfx::ImageSkia GetLocationIcon(LocationIconView::Delegate::IconFetchedCallback
                                      on_icon_fetched) const override;
-  SkColor GetLocationIconInkDropColor() const override;
 
   // ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

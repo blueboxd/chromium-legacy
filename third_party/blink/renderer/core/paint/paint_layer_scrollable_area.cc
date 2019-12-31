@@ -230,9 +230,9 @@ void PaintLayerScrollableArea::DisposeImpl() {
   layer_ = nullptr;
 }
 
-bool PaintLayerScrollableArea::ApplyPendingHistoryRestoreScrollOffset() {
+void PaintLayerScrollableArea::ApplyPendingHistoryRestoreScrollOffset() {
   if (!pending_view_state_)
-    return false;
+    return;
 
   // TODO(pnoland): attempt to restore the anchor in more places than this.
   // Anchor-based restore should allow for earlier restoration.
@@ -246,7 +246,6 @@ bool PaintLayerScrollableArea::ApplyPendingHistoryRestoreScrollOffset() {
   }
 
   pending_view_state_.reset();
-  return true;
 }
 
 void PaintLayerScrollableArea::Trace(blink::Visitor* visitor) {

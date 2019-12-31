@@ -121,14 +121,12 @@ void MediaRouterDialogControllerViews::OnServiceDisabled() {
 }
 
 void MediaRouterDialogControllerViews::InitializeMediaRouterUI() {
-  ui_ = std::make_unique<MediaRouterViewsUI>();
-  PresentationServiceDelegateImpl* delegate =
-      PresentationServiceDelegateImpl::FromWebContents(initiator());
-  if (!start_presentation_context_) {
-    ui_->InitWithDefaultMediaSource(initiator(), delegate);
-  } else {
+  ui_ = std::make_unique<MediaRouterViewsUI>(initiator());
+  if (start_presentation_context_) {
     ui_->InitWithStartPresentationContext(
-        initiator(), delegate, std::move(start_presentation_context_));
+        std::move(start_presentation_context_));
+  } else {
+    ui_->InitWithDefaultMediaSource();
   }
 }
 

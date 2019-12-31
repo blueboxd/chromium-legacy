@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
 #include "chrome/browser/media/router/providers/wired_display/wired_display_media_route_provider.h"
 #include "chrome/browser/media/router/test/mock_media_router.h"
@@ -107,19 +108,6 @@ class PresentationRequestCallbacks {
   blink::mojom::PresentationError expected_error_;
 };
 
-// Injects a MediaRouter instance into MediaRouterViewsUI.
-class TestMediaRouterViewsUI : public MediaRouterViewsUI {
- public:
-  explicit TestMediaRouterViewsUI(MediaRouter* router) : router_(router) {}
-  ~TestMediaRouterViewsUI() override = default;
-
-  MediaRouter* GetMediaRouter() const override { return router_; }
-
- private:
-  MediaRouter* router_;
-  DISALLOW_COPY_AND_ASSIGN(TestMediaRouterViewsUI);
-};
-
 class TestWebContentsDisplayObserver : public WebContentsDisplayObserver {
  public:
   explicit TestWebContentsDisplayObserver(const display::Display& display)
@@ -143,21 +131,30 @@ class MediaRouterViewsUITest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
+    SetMediaRouterFactory();
+    mock_router_ = static_cast<MockMediaRouter*>(
+        MediaRouterFactory::GetApiForBrowserContext(GetBrowserContext()));
+
     // Store sink observers so that they can be notified in tests.
-    ON_CALL(mock_router_, RegisterMediaSinksObserver(_))
-        .WillByDefault(Invoke([this](MediaSinksObserver* observer) {
+    ON_CALL(*mock_router_, RegisterMediaSinksObserver(_))
+        .WillByDefault([this](MediaSinksObserver* observer) {
           media_sinks_observers_.push_back(observer);
           return true;
-        }));
+        });
 
     SessionTabHelper::CreateForWebContents(web_contents());
-    ui_ = std::make_unique<TestMediaRouterViewsUI>(&mock_router_);
-    ui_->InitWithDefaultMediaSource(web_contents(), nullptr);
+    ui_ = std::make_unique<MediaRouterViewsUI>(web_contents());
+    ui_->InitWithDefaultMediaSource();
   }
 
   void TearDown() override {
     ui_.reset();
     ChromeRenderViewHostTestHarness::TearDown();
+  }
+
+  virtual void SetMediaRouterFactory() {
+    MediaRouterFactory::GetInstance()->SetTestingFactory(
+        GetBrowserContext(), base::BindRepeating(&MockMediaRouter::Create));
   }
 
   void CreateMediaRouterUIForURL(const GURL& url) {
@@ -166,8 +163,8 @@ class MediaRouterViewsUITest : public ChromeRenderViewHostTestHarness {
     content::RenderFrameHostTester::CommitPendingLoad(
         &web_contents()->GetController());
     SessionTabHelper::CreateForWebContents(web_contents());
-    ui_ = std::make_unique<TestMediaRouterViewsUI>(&mock_router_);
-    ui_->InitWithDefaultMediaSource(web_contents(), nullptr);
+    ui_ = std::make_unique<MediaRouterViewsUI>(web_contents());
+    ui_->InitWithDefaultMediaSource();
   }
 
   // These methods are used so that we don't have to friend each test case that
@@ -186,7 +183,7 @@ class MediaRouterViewsUITest : public ChromeRenderViewHostTestHarness {
     MediaSource media_source =
         MediaSource::ForTab(SessionTabHelper::IdForTab(web_contents()).id());
     EXPECT_CALL(
-        mock_router_,
+        *mock_router_,
         CreateRouteInternal(media_source.id(), kSinkId, _, web_contents(), _,
                             base::TimeDelta::FromSeconds(60), is_incognito));
     MediaSink sink(kSinkId, kSinkName, SinkIconType::GENERIC);
@@ -202,7 +199,7 @@ class MediaRouterViewsUITest : public ChromeRenderViewHostTestHarness {
     MediaSink sink(kSinkId, kSinkName, SinkIconType::CAST);
     ui_->OnResultsUpdated({{sink, {cast_mode}}});
     MediaRouteResponseCallback callback;
-    EXPECT_CALL(mock_router_,
+    EXPECT_CALL(*mock_router_,
                 CreateRouteInternal(
                     _, _, _, _, _,
                     base::TimeDelta::FromSeconds(timeout_seconds), false))
@@ -210,7 +207,7 @@ class MediaRouterViewsUITest : public ChromeRenderViewHostTestHarness {
     for (MediaSinksObserver* sinks_observer : media_sinks_observers_)
       sinks_observer->OnSinksUpdated({sink}, std::vector<url::Origin>());
     ui_->StartCasting(kSinkId, cast_mode);
-    Mock::VerifyAndClearExpectations(&mock_router_);
+    Mock::VerifyAndClearExpectations(mock_router_);
 
     EXPECT_CALL(observer, OnModelUpdated(_))
         .WillOnce(WithArg<0>([&](const CastDialogModel& model) {
@@ -238,13 +235,13 @@ class MediaRouterViewsUITest : public ChromeRenderViewHostTestHarness {
                    base::Unretained(request_callbacks.get())));
     StartPresentationContext* context_ptr = context.get();
     ui_->set_start_presentation_context_for_test(std::move(context));
-    ui_->OnDefaultPresentationChanged(context_ptr->presentation_request());
+    ui_->OnDefaultPresentationChanged(&context_ptr->presentation_request());
     return request_callbacks;
   }
 
  protected:
   std::vector<MediaSinksObserver*> media_sinks_observers_;
-  MockMediaRouter mock_router_;
+  MockMediaRouter* mock_router_ = nullptr;
   std::unique_ptr<MediaRouterViewsUI> ui_;
   std::unique_ptr<StartPresentationContext> start_presentation_context_;
   content::PresentationRequest presentation_request_{
@@ -326,8 +323,9 @@ TEST_F(MediaRouterViewsUITest, SetDialogHeader) {
 
   GURL gurl("https://example.com");
   url::Origin origin = url::Origin::Create(gurl);
-  ui_->OnDefaultPresentationChanged(content::PresentationRequest(
-      content::GlobalFrameRoutingId(), {gurl}, origin));
+  content::PresentationRequest presentation_request(
+      content::GlobalFrameRoutingId(), {gurl}, origin);
+  ui_->OnDefaultPresentationChanged(&presentation_request);
 
   // Now that the presentation request has been set, the dialog header contains
   // its origin.
@@ -347,7 +345,7 @@ TEST_F(MediaRouterViewsUITest, StartCasting) {
 }
 
 TEST_F(MediaRouterViewsUITest, StopCasting) {
-  EXPECT_CALL(mock_router_, TerminateRoute(kRouteId));
+  EXPECT_CALL(*mock_router_, TerminateRoute(kRouteId));
   ui_->StopCasting(kRouteId);
 }
 
@@ -430,7 +428,7 @@ TEST_F(MediaRouterViewsUITest, AddAndRemoveIssue) {
                             {sink2, {MediaCastMode::TAB_MIRROR}}});
 
   MockControllerObserver observer(ui_.get());
-  MockIssuesObserver issues_observer(mock_router_.GetIssueManager());
+  MockIssuesObserver issues_observer(mock_router_->GetIssueManager());
   issues_observer.Init();
   const std::string issue_title("Issue 1");
   IssueInfo issue(issue_title, IssueInfo::Action::DISMISS,
@@ -450,7 +448,7 @@ TEST_F(MediaRouterViewsUITest, AddAndRemoveIssue) {
             EXPECT_EQ(model.media_sinks()[1].id, sink2.id());
             EXPECT_EQ(model.media_sinks()[1].issue->info().title, issue_title);
           })));
-  mock_router_.GetIssueManager()->AddIssue(issue);
+  mock_router_->GetIssueManager()->AddIssue(issue);
 
   EXPECT_CALL(observer, OnModelUpdated(_))
       .WillOnce(WithArg<0>(Invoke([&sink2](const CastDialogModel& model) {
@@ -458,7 +456,7 @@ TEST_F(MediaRouterViewsUITest, AddAndRemoveIssue) {
         EXPECT_EQ(model.media_sinks()[1].id, sink2.id());
         EXPECT_FALSE(model.media_sinks()[1].issue.has_value());
       })));
-  mock_router_.GetIssueManager()->ClearIssue(issue_id);
+  mock_router_->GetIssueManager()->ClearIssue(issue_id);
 }
 
 TEST_F(MediaRouterViewsUITest, ShowDomainForHangouts) {
@@ -514,7 +512,7 @@ TEST_F(MediaRouterViewsUITest, RouteCreationTimeoutForPresentation) {
   content::PresentationRequest presentation_request(
       {0, 0}, {GURL("https://presentationurl.com")},
       url::Origin::Create(GURL("https://frameurl.fakeurl")));
-  ui_->OnDefaultPresentationChanged(presentation_request);
+  ui_->OnDefaultPresentationChanged(&presentation_request);
   StartCastingAndExpectTimeout(
       MediaCastMode::PRESENTATION,
       l10n_util::GetStringFUTF8(IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT,
@@ -535,7 +533,7 @@ TEST_F(MediaRouterViewsUITest, RouteCreationLocalFileModeInTab) {
   EXPECT_CALL(*file_dialog_ptr, GetLastSelectedFileUrl())
       .WillOnce(Return(GURL(file_url)));
   content::WebContents* location_file_opened = nullptr;
-  EXPECT_CALL(mock_router_, CreateRouteInternal(_, _, _, _, _, _, _))
+  EXPECT_CALL(*mock_router_, CreateRouteInternal(_, _, _, _, _, _, _))
       .WillOnce(SaveArgWithMove<3>(&location_file_opened));
   ui_->CreateRoute(kSinkId, MediaCastMode::LOCAL_FILE);
 
@@ -695,6 +693,13 @@ TEST_F(MediaRouterViewsUITest, UpdateSinksWhenDialogMovesToAnotherDisplay) {
 
 class MediaRouterViewsUIIncognitoTest : public MediaRouterViewsUITest {
  protected:
+  void SetMediaRouterFactory() override {
+    // We must set the factory on the non-incognito browser context.
+    MediaRouterFactory::GetInstance()->SetTestingFactory(
+        MediaRouterViewsUITest::GetBrowserContext(),
+        base::BindRepeating(&MockMediaRouter::Create));
+  }
+
   content::BrowserContext* GetBrowserContext() override {
     return static_cast<Profile*>(MediaRouterViewsUITest::GetBrowserContext())
         ->GetOffTheRecordProfile();

@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
@@ -1526,7 +1527,7 @@ void DocumentLoader::InstallNewDocument(
     // commits on same origin loads to avoid confusing users. We also require
     // that this be an html document served via http.
     document->SetDeferredCompositorCommitIsAllowed(is_same_origin_navigation_ &&
-                                                   document->IsHTMLDocument());
+                                                   IsA<HTMLDocument>(document));
   } else {
     document->SetDeferredCompositorCommitIsAllowed(false);
   }

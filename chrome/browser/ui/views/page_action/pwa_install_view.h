@@ -12,8 +12,10 @@
 // installability checks and can be installed.
 class PwaInstallView : public PageActionIconView {
  public:
-  explicit PwaInstallView(CommandUpdater* command_updater,
-                          PageActionIconView::Delegate* delegate);
+  explicit PwaInstallView(
+      CommandUpdater* command_updater,
+      IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
+      PageActionIconView::Delegate* page_action_icon_delegate);
   ~PwaInstallView() override;
 
  protected:

@@ -1660,6 +1660,7 @@ TEST_F(LayerTreeHostImplTest, ScrollSnapAfterAnimatedScroll) {
 
   EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
             host_impl_->ScrollAnimated(pointer_position, delta).thread);
+  host_impl_->ScrollEnd();
 
   EXPECT_EQ(overflow->scroll_tree_index(),
             host_impl_->CurrentlyScrollingNode()->id);
@@ -11032,6 +11033,7 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimated) {
     EXPECT_EQ(
         InputHandler::SCROLL_ON_IMPL_THREAD,
         host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(0, 50)).thread);
+    host_impl_->ScrollEnd();
 
     EXPECT_EQ(0, set_needs_commit_count);
     EXPECT_EQ(1, set_needs_redraw_count);
@@ -11099,7 +11101,9 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimatedWhileZoomed) {
         host_impl_->ScrollAnimated(gfx::Point(10, 10), gfx::Vector2d(0, 20))
             .thread);
 
-    EXPECT_EQ(scrolling_layer->scroll_tree_index(),
+    // Scrolling the inner viewport happens through the Viewport class which
+    // uses the outer viewport to represent "latched to the viewport".
+    EXPECT_EQ(OuterViewportScrollLayer()->scroll_tree_index(),
               host_impl_->CurrentlyScrollingNode()->id);
   }
 
@@ -11231,6 +11235,8 @@ TEST_F(LayerTreeHostImplTest, SecondScrollAnimatedBeginNotIgnored) {
                 ->ScrollAnimatedBegin(
                     BeginState(gfx::Point(), gfx::Vector2dF(0, 10)).get())
                 .thread);
+
+  host_impl_->ScrollEnd();
 
   // The second ScrollAnimatedBegin should not get ignored.
   EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
@@ -11471,6 +11477,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimated) {
   EXPECT_EQ(
       InputHandler::SCROLL_ON_IMPL_THREAD,
       host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(0, 50)).thread);
+  host_impl_->ScrollEnd();
   host_impl_->DidFinishImplFrame();
 
   begin_frame_args.frame_time =
@@ -11518,7 +11525,8 @@ TEST_F(LayerTreeHostImplTimelinesTest, ImplPinchZoomScrollAnimated) {
   host_impl_->active_tree()->SetPageScaleOnActiveTree(page_scale_factor);
 
   // Scroll by a small amount, there should be no bubbling to the outer
-  // viewport.
+  // viewport (but scrolling the viewport always sets the outer as the
+  // currently scrolling node).
   base::TimeTicks start_time =
       base::TimeTicks() + base::TimeDelta::FromMilliseconds(250);
   viz::BeginFrameArgs begin_frame_args =
@@ -11528,7 +11536,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ImplPinchZoomScrollAnimated) {
       host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(10, 20)).thread);
   host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
-  EXPECT_EQ(inner_scroll_layer->scroll_tree_index(),
+  EXPECT_EQ(outer_scroll_layer->scroll_tree_index(),
             host_impl_->CurrentlyScrollingNode()->id);
 
   begin_frame_args.frame_id.sequence_number++;
@@ -11546,7 +11554,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ImplPinchZoomScrollAnimated) {
       host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(100, 100)).thread);
   host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
-  EXPECT_EQ(inner_scroll_layer->scroll_tree_index(),
+  EXPECT_EQ(outer_scroll_layer->scroll_tree_index(),
             host_impl_->CurrentlyScrollingNode()->id);
 
   begin_frame_args.frame_id.sequence_number++;
@@ -11582,7 +11590,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ImplPinchZoomScrollAnimated) {
                 .thread);
   host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
-  EXPECT_EQ(inner_scroll_layer->scroll_tree_index(),
+  EXPECT_EQ(outer_scroll_layer->scroll_tree_index(),
             host_impl_->CurrentlyScrollingNode()->id);
 
   begin_frame_args.frame_id.sequence_number++;
@@ -11621,7 +11629,9 @@ TEST_F(LayerTreeHostImplTimelinesTest, ImplPinchZoomScrollAnimatedUpdate) {
       host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(90, 90)).thread);
   host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
-  EXPECT_EQ(inner_scroll_layer->scroll_tree_index(),
+  // When either the inner or outer node is being scrolled, the outer node is
+  // the one that's "latched".
+  EXPECT_EQ(outer_scroll_layer->scroll_tree_index(),
             host_impl_->CurrentlyScrollingNode()->id);
 
   begin_frame_args.frame_id.sequence_number++;
@@ -11639,7 +11649,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ImplPinchZoomScrollAnimatedUpdate) {
       host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(50, 50)).thread);
   host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
-  EXPECT_EQ(inner_scroll_layer->scroll_tree_index(),
+  EXPECT_EQ(outer_scroll_layer->scroll_tree_index(),
             host_impl_->CurrentlyScrollingNode()->id);
 
   // Verify that all the delta is applied to the inner viewport and nothing is
@@ -11729,8 +11739,13 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedNotUserScrollable) {
 
   EXPECT_VECTOR_EQ(gfx::ScrollOffset(0, 100),
                    scrolling_layer->CurrentScrollOffset());
-  EXPECT_EQ(nullptr, host_impl_->CurrentlyScrollingNode());
+  // The CurrentlyScrollingNode shouldn't be cleared until a GestureScrollEnd.
+  EXPECT_EQ(scrolling_layer->scroll_tree_index(),
+            host_impl_->CurrentlyScrollingNode()->id);
   host_impl_->DidFinishImplFrame();
+
+  host_impl_->ScrollEnd();
+  EXPECT_EQ(nullptr, host_impl_->CurrentlyScrollingNode());
 }
 
 // Test that smooth scrolls clamp correctly when bounds change mid-animation.

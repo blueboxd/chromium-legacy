@@ -161,11 +161,6 @@
     "channel": "beta",
     "location": "unpacked"
   },
-  "declarativeNetRequest.setActionCountAsBadgeText": {
-    "dependencies": ["permission:declarativeNetRequest"],
-    "contexts": ["blessed_extension"],
-    "channel": "trunk"
-  },
   "declarativeWebRequest": {
     "dependencies": ["permission:declarativeWebRequest"],
     "contexts": ["blessed_extension"]

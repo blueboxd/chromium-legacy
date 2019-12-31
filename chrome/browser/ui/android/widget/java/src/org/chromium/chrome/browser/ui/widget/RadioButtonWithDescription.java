@@ -17,10 +17,30 @@ import android.view.View.OnClickListener;
 import android.widget.RadioButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
 import java.util.List;
 
 /**
- * A RadioButton with a title and descriptive text to the right.
+ * <p>
+ * A RadioButton with a primary and descriptive text to the right.
+ * The radio button is designed to be contained in a group, with {@link
+ * RadioButtonWithDescriptionLayout} as the parent view. By default, the object will be inflated
+ * from {@link R.layout.radio_button_with_description).
+ * </p>
+ *
+ * <p>
+ * The primary of the text and an optional description to be contained in the group may be set in
+ * XML. Sample declaration in XML:
+ * <pre> {@code
+ *   <org.chromium.chrome.browser.ui.widget.RadioButtonWithDescription
+ *      android:id="@+id/system_default"
+ *      android:layout_width="match_parent"
+ *      android:layout_height="wrap_content"
+ *      android:background="?attr/selectableItemBackground"
+ *      app:primaryText="@string/feature_foo_option_one"
+ *      app:descriptionText="@string/feature_foo_option_one_description" />
+ * } </pre>
+ * </p>
  */
 public class RadioButtonWithDescription extends RelativeLayout implements OnClickListener {
     /**
@@ -35,8 +55,9 @@ public class RadioButtonWithDescription extends RelativeLayout implements OnClic
     }
 
     private RadioButton mRadioButton;
-    private TextView mTitle;
+    private TextView mPrimary;
     private TextView mDescription;
+
     private ButtonCheckedStateChangedListener mButtonCheckedStateChangedListener;
 
     private List<RadioButtonWithDescription> mGroup;
@@ -49,11 +70,9 @@ public class RadioButtonWithDescription extends RelativeLayout implements OnClic
      */
     public RadioButtonWithDescription(Context context, AttributeSet attrs) {
         super(context, attrs);
-        LayoutInflater.from(context).inflate(R.layout.radio_button_with_description, this, true);
+        LayoutInflater.from(context).inflate(getLayoutResource(), this, true);
 
-        mRadioButton = (RadioButton) findViewById(R.id.radio_button);
-        mTitle = (TextView) findViewById(R.id.title);
-        mDescription = (TextView) findViewById(R.id.description);
+        setViewsInternal();
 
         if (attrs != null) applyAttributes(attrs);
 
@@ -76,12 +95,53 @@ public class RadioButtonWithDescription extends RelativeLayout implements OnClic
         setFocusable(true);
     }
 
-    private void applyAttributes(AttributeSet attrs) {
+    /**
+     * Set the view elements that included in xml internally.
+     */
+    protected void setViewsInternal() {
+        mRadioButton = getRadioButtonView();
+        mPrimary = getPrimaryTextView();
+        mDescription = getDescriptionTextView();
+    }
+
+    /**
+     * @return The layout resource id used for inflating this {@link RadioButtonWithDescription}.
+     */
+    protected int getLayoutResource() {
+        return R.layout.radio_button_with_description;
+    }
+
+    /**
+     * @return RadioButton View inside this {@link RadioButtonWithDescription}.
+     */
+    protected RadioButton getRadioButtonView() {
+        return (RadioButton) findViewById(R.id.radio_button);
+    }
+
+    /**
+     * @return TextView displayed as primary inside this {@link RadioButtonWithDescription}.
+     */
+    protected TextView getPrimaryTextView() {
+        return (TextView) findViewById(R.id.primary);
+    }
+
+    /**
+     * @return TextView displayed as description inside this {@link RadioButtonWithDescription}.
+     */
+    protected TextView getDescriptionTextView() {
+        return (TextView) findViewById(R.id.description);
+    }
+
+    /**
+     * Apply the customized AttributeSet to current view.
+     * @param attrs AttributeSet that will be applied to current view.
+     */
+    protected void applyAttributes(AttributeSet attrs) {
         TypedArray a = getContext().getTheme().obtainStyledAttributes(
                 attrs, R.styleable.RadioButtonWithDescription, 0, 0);
 
-        String titleText = a.getString(R.styleable.RadioButtonWithDescription_titleText);
-        if (titleText != null) mTitle.setText(titleText);
+        String primaryText = a.getString(R.styleable.RadioButtonWithDescription_primaryText);
+        if (primaryText != null) mPrimary.setText(primaryText);
 
         String descriptionText =
                 a.getString(R.styleable.RadioButtonWithDescription_descriptionText);
@@ -89,7 +149,7 @@ public class RadioButtonWithDescription extends RelativeLayout implements OnClic
             mDescription.setText(descriptionText);
             mDescription.setVisibility(View.VISIBLE);
         } else {
-            ((LayoutParams) mTitle.getLayoutParams()).addRule(RelativeLayout.CENTER_VERTICAL);
+            ((LayoutParams) mPrimary.getLayoutParams()).addRule(RelativeLayout.CENTER_VERTICAL);
         }
 
         a.recycle();
@@ -111,17 +171,17 @@ public class RadioButtonWithDescription extends RelativeLayout implements OnClic
     }
 
     /**
-     * Sets the text shown in the title section.
+     * Sets the text shown in the primary section.
      */
-    public void setTitleText(CharSequence text) {
-        mTitle.setText(text);
+    public void setPrimaryText(CharSequence text) {
+        mPrimary.setText(text);
     }
 
     /**
-     * @return The text shown in the title section.
+     * @return The text shown in the primary section.
      */
-    public CharSequence getTitleText() {
-        return mTitle.getText();
+    public CharSequence getPrimaryText() {
+        return mPrimary.getText();
     }
 
     /**
@@ -131,10 +191,10 @@ public class RadioButtonWithDescription extends RelativeLayout implements OnClic
         mDescription.setText(text);
 
         if (TextUtils.isEmpty(text)) {
-            ((LayoutParams) mTitle.getLayoutParams()).addRule(RelativeLayout.CENTER_VERTICAL);
+            ((LayoutParams) mPrimary.getLayoutParams()).addRule(RelativeLayout.CENTER_VERTICAL);
             mDescription.setVisibility(View.GONE);
         } else {
-            ((LayoutParams) mTitle.getLayoutParams()).removeRule(RelativeLayout.CENTER_VERTICAL);
+            ((LayoutParams) mPrimary.getLayoutParams()).removeRule(RelativeLayout.CENTER_VERTICAL);
             mDescription.setVisibility(View.VISIBLE);
         }
     }
@@ -187,11 +247,11 @@ public class RadioButtonWithDescription extends RelativeLayout implements OnClic
         // LinearLayout (no id):
         // |-> RadioButtonWithDescription (id=sync_confirm_import_choice)
         // |   |-> RadioButton            (id=radio_button)
-        // |   |-> TextView               (id=title)
+        // |   |-> TextView               (id=primary)
         // |   \-> TextView               (id=description)
         // \-> RadioButtonWithDescription (id=sync_keep_separate_choice)
         //     |-> RadioButton            (id=radio_button)
-        //     |-> TextView               (id=title)
+        //     |-> TextView               (id=primary)
         //     \-> TextView               (id=description)
         //
         // This causes the automagic state saving and recovery to do the wrong thing and restore all

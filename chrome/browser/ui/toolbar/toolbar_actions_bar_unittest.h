@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/ui/extensions/browser_action_test_util.h"
+#include "chrome/browser/ui/extensions/extension_action_test_helper.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "extensions/common/extension_builder.h"
 
@@ -75,10 +75,10 @@ class ToolbarActionsBarUnitTest : public BrowserWithTestWindowTest,
     return overflow_browser_action_test_util_->GetToolbarActionsBar();
   }
   ToolbarActionsModel* toolbar_model() { return toolbar_model_; }
-  BrowserActionTestUtil* browser_action_test_util() {
+  ExtensionActionTestHelper* browser_action_test_util() {
     return browser_action_test_util_.get();
   }
-  BrowserActionTestUtil* overflow_browser_action_test_util() {
+  ExtensionActionTestHelper* overflow_browser_action_test_util() {
     return overflow_browser_action_test_util_.get();
   }
 
@@ -88,12 +88,12 @@ class ToolbarActionsBarUnitTest : public BrowserWithTestWindowTest,
   // The associated ToolbarActionsModel (owned by the keyed service setup).
   ToolbarActionsModel* toolbar_model_;
 
-  // A BrowserActionTestUtil object constructed with the associated
+  // A ExtensionActionTestHelper object constructed with the associated
   // ToolbarActionsBar.
-  std::unique_ptr<BrowserActionTestUtil> browser_action_test_util_;
+  std::unique_ptr<ExtensionActionTestHelper> browser_action_test_util_;
 
-  // The overflow container's BrowserActionTestUtil.
-  std::unique_ptr<BrowserActionTestUtil> overflow_browser_action_test_util_;
+  // The overflow container's ExtensionActionTestHelper.
+  std::unique_ptr<ExtensionActionTestHelper> overflow_browser_action_test_util_;
 
   std::unique_ptr<ui::test::MaterialDesignControllerTestAPI>
       material_design_state_;

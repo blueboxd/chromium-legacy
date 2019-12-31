@@ -944,11 +944,8 @@ NativeWidgetPrivate* NativeWidgetPrivate::GetTopLevelNativeWidget(
       NativeWidgetMacNSWindowHost::GetFromNativeView(native_view);
   if (!window_host)
     return nullptr;
-  while (window_host->parent()) {
-    if (window_host->native_widget_mac()->GetWidget()->is_top_level())
-      break;
+  while (window_host->parent())
     window_host = window_host->parent();
-  }
   return window_host->native_widget_mac();
 }
 

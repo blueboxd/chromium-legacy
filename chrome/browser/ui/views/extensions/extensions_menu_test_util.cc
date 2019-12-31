@@ -178,7 +178,7 @@ ExtensionsContainer* ExtensionsMenuTestUtil::GetExtensionsContainer() {
   return extensions_container_;
 }
 
-std::unique_ptr<BrowserActionTestUtil>
+std::unique_ptr<ExtensionActionTestHelper>
 ExtensionsMenuTestUtil::CreateOverflowBar(Browser* browser) {
   // There is no overflow bar with the ExtensionsMenu implementation.
   NOTREACHED();

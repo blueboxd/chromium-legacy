@@ -85,8 +85,9 @@ void OutputSurfaceProviderWebview::InitializeContext() {
           GpuServiceWebView::GetInstance()->gpu_preferences(),
           std::move(feature_info));
     }
-    shared_context_state_->InitializeGrContext(workarounds,
-                                               nullptr /* gr_shader_cache */);
+    shared_context_state_->InitializeGrContext(
+        GpuServiceWebView::GetInstance()->gpu_preferences(), workarounds,
+        nullptr /* gr_shader_cache */);
   }
 }
 

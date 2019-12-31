@@ -31,7 +31,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/extensions/browser_action_test_util.h"
+#include "chrome/browser/ui/extensions/extension_action_test_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -112,9 +112,9 @@ class BrowserActionApiTest : public ExtensionApiTest {
   }
 
  protected:
-  BrowserActionTestUtil* GetBrowserActionsBar() {
+  ExtensionActionTestHelper* GetBrowserActionsBar() {
     if (!browser_action_test_util_)
-      browser_action_test_util_ = BrowserActionTestUtil::Create(browser());
+      browser_action_test_util_ = ExtensionActionTestHelper::Create(browser());
     return browser_action_test_util_.get();
   }
 
@@ -146,7 +146,7 @@ class BrowserActionApiTest : public ExtensionApiTest {
   }
 
  private:
-  std::unique_ptr<BrowserActionTestUtil> browser_action_test_util_;
+  std::unique_ptr<ExtensionActionTestHelper> browser_action_test_util_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserActionApiTest);
 };
@@ -523,7 +523,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, TabSpecificBrowserActionState) {
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DISABLED_BrowserActionPopup) {
   ASSERT_TRUE(
       LoadExtension(test_data_dir_.AppendASCII("browser_action/popup")));
-  BrowserActionTestUtil* actions_bar = GetBrowserActionsBar();
+  ExtensionActionTestHelper* actions_bar = GetBrowserActionsBar();
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
 
@@ -658,7 +658,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoBasic) {
   // default.
   Browser* incognito_browser = CreateIncognitoBrowser(browser()->profile());
 
-  ASSERT_EQ(0, BrowserActionTestUtil::Create(incognito_browser)
+  ASSERT_EQ(0, ExtensionActionTestHelper::Create(incognito_browser)
                    ->NumberOfBrowserActions());
 
   ASSERT_TRUE(ready_listener.WaitUntilSatisfied());
@@ -674,7 +674,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoBasic) {
       extension->id(), browser()->profile(), true);
   extension = registry_observer.WaitForExtensionLoaded();
 
-  ASSERT_EQ(1, BrowserActionTestUtil::Create(incognito_browser)
+  ASSERT_EQ(1, ExtensionActionTestHelper::Create(incognito_browser)
                    ->NumberOfBrowserActions());
 
   ASSERT_TRUE(incognito_ready_listener.WaitUntilSatisfied());
@@ -704,7 +704,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoUpdate) {
   // default.
   Browser* incognito_browser = CreateIncognitoBrowser(browser()->profile());
 
-  ASSERT_EQ(0, BrowserActionTestUtil::Create(incognito_browser)
+  ASSERT_EQ(0, ExtensionActionTestHelper::Create(incognito_browser)
                    ->NumberOfBrowserActions());
 
   // Set up a listener so we can reply for the extension to do the update.
@@ -719,7 +719,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoUpdate) {
   extensions::util::SetIsIncognitoEnabled(extension->id(), browser()->profile(),
                                           true);
   extension = registry_observer.WaitForExtensionLoaded();
-  ASSERT_EQ(1, BrowserActionTestUtil::Create(incognito_browser)
+  ASSERT_EQ(1, ExtensionActionTestHelper::Create(incognito_browser)
                    ->NumberOfBrowserActions());
 
   ASSERT_TRUE(incognito_ready_listener.WaitUntilSatisfied());
@@ -755,7 +755,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoSplit) {
 
   // Open an incognito browser.
   Browser* incognito_browser = CreateIncognitoBrowser(browser()->profile());
-  ASSERT_EQ(1, BrowserActionTestUtil::Create(incognito_browser)
+  ASSERT_EQ(1, ExtensionActionTestHelper::Create(incognito_browser)
                    ->NumberOfBrowserActions());
 
   // A click in the regular profile should open a tab in the regular profile.
@@ -944,7 +944,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionPopupWithIframe) {
 
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("browser_action/popup_with_iframe")));
-  BrowserActionTestUtil* actions_bar = GetBrowserActionsBar();
+  ExtensionActionTestHelper* actions_bar = GetBrowserActionsBar();
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
 

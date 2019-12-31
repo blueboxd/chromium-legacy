@@ -155,6 +155,7 @@ SharedContextState::~SharedContextState() {
 }
 
 void SharedContextState::InitializeGrContext(
+    const GpuPreferences& gpu_preferences,
     const GpuDriverBugWorkarounds& workarounds,
     GrContextOptions::PersistentCache* cache,
     GpuProcessActivityFlags* activity_flags,
@@ -220,7 +221,7 @@ void SharedContextState::InitializeGrContext(
   } else {
     gr_context_->setResourceCacheLimit(max_resource_cache_bytes_);
   }
-  transfer_cache_ = std::make_unique<ServiceTransferCache>();
+  transfer_cache_ = std::make_unique<ServiceTransferCache>(gpu_preferences);
 }
 
 bool SharedContextState::InitializeGL(

@@ -1,4 +1,6 @@
 include_rules = [
   "+third_party/skia/include",
+  "+ui/base/theme_provider.h",  # used by color_provider.h when !USE_COLOR_PIPELINE.
   "+ui/gfx",
+  "+ui/native_theme/native_theme.h",  # used by color_id.h when !USE_COLOR_PIPELINE.
 ]

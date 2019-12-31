@@ -586,6 +586,7 @@ FormControlState HTMLInputElement::SaveFormControlState() const {
 void HTMLInputElement::RestoreFormControlState(const FormControlState& state) {
   input_type_view_->RestoreFormControlState(state);
   state_restored_ = true;
+  QueueInputAndChangeEvents();
 }
 
 bool HTMLInputElement::CanStartSelection() const {
@@ -1778,22 +1779,6 @@ String HTMLInputElement::DefaultToolTip() const {
 
 bool HTMLInputElement::ShouldAppearIndeterminate() const {
   return input_type_->ShouldAppearIndeterminate();
-}
-
-bool HTMLInputElement::IsInRequiredRadioButtonGroup() {
-  // TODO(tkent): Remove type check.
-  DCHECK_EQ(type(), input_type_names::kRadio);
-  if (RadioButtonGroupScope* scope = GetRadioButtonGroupScope())
-    return scope->IsInRequiredGroup(this);
-  return false;
-}
-
-HTMLInputElement* HTMLInputElement::CheckedRadioButtonForGroup() {
-  if (checked())
-    return this;
-  if (RadioButtonGroupScope* scope = GetRadioButtonGroupScope())
-    return scope->CheckedButtonForGroup(GetName());
-  return nullptr;
 }
 
 RadioButtonGroupScope* HTMLInputElement::GetRadioButtonGroupScope() const {

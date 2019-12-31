@@ -15,7 +15,8 @@ class ZoomView : public PageActionIconView {
   // WebContents. Because the current WebContents changes as the user switches
   // tabs, a LocationBarView::Delegate is supplied to queried for the current
   // WebContents when needed.
-  explicit ZoomView(PageActionIconView::Delegate* delegate);
+  ZoomView(IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
+           PageActionIconView::Delegate* page_action_icon_delegate);
   ~ZoomView() override;
 
   // Updates the image and its tooltip appropriately, hiding or showing the icon

@@ -17,8 +17,12 @@
 #include "ui/gfx/paint_vector_icon.h"
 
 CookieControlsIconView::CookieControlsIconView(
-    PageActionIconView::Delegate* delegate)
-    : PageActionIconView(nullptr, 0, delegate) {
+    IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
+    PageActionIconView::Delegate* page_action_icon_delegate)
+    : PageActionIconView(nullptr,
+                         0,
+                         icon_label_bubble_delegate,
+                         page_action_icon_delegate) {
   SetVisible(false);
 }
 

@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/core/html/html_all_collection.h"
 #include "third_party/blink/renderer/core/html/html_body_element.h"
 #include "third_party/blink/renderer/core/html/html_collection.h"
+#include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html/html_head_element.h"
 #include "third_party/blink/renderer/core/html/html_link_element.h"
@@ -119,7 +120,7 @@ WebLocalFrame* WebDocument::GetFrame() const {
 }
 
 bool WebDocument::IsHTMLDocument() const {
-  return ConstUnwrap<Document>()->IsHTMLDocument();
+  return IsA<HTMLDocument>(ConstUnwrap<Document>());
 }
 
 bool WebDocument::IsXHTMLDocument() const {

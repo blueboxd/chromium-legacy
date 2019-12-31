@@ -135,7 +135,7 @@ class DataReductionProxyCompressionStats {
   // in-memory stats could be initialized from storage. Data usage is sorted
   // chronologically with the last entry corresponding to |base::Time::Now()|.
   void GetHistoricalDataUsage(
-      const HistoricalDataUsageCallback& get_data_usage_callback);
+      HistoricalDataUsageCallback get_data_usage_callback);
 
   // Deletes browsing history from storage and memory for the given time
   // range. Currently, this method deletes all data usage for the given range.
@@ -242,7 +242,7 @@ class DataReductionProxyCompressionStats {
   // Actual implementation of |GetHistoricalDataUsage|. This helper method
   // explicitly passes |base::Time::Now()| to make testing easier.
   void GetHistoricalDataUsageImpl(
-      const HistoricalDataUsageCallback& get_data_usage_callback,
+      HistoricalDataUsageCallback get_data_usage_callback,
       const base::Time& now);
 
   // Called when |prefs::kDataUsageReportingEnabled| pref values changes.

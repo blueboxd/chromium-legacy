@@ -7,6 +7,7 @@
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_passthrough.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
+#include "gpu/config/gpu_preferences.h"
 
 namespace gpu {
 
@@ -25,9 +26,12 @@ PassthroughDiscardableManager::DiscardableCacheValue::operator=(
 PassthroughDiscardableManager::DiscardableCacheValue::~DiscardableCacheValue() =
     default;
 
-PassthroughDiscardableManager::PassthroughDiscardableManager()
+PassthroughDiscardableManager::PassthroughDiscardableManager(
+    const GpuPreferences& preferences)
     : cache_(DiscardableCache::NO_AUTO_EVICT),
-      cache_size_limit_(DiscardableCacheSizeLimit()) {}
+      cache_size_limit_(preferences.force_gpu_mem_discardable_limit_bytes
+                            ? preferences.force_gpu_mem_discardable_limit_bytes
+                            : DiscardableCacheSizeLimit()) {}
 
 PassthroughDiscardableManager::~PassthroughDiscardableManager() {
   DCHECK(cache_.empty());

@@ -17,7 +17,9 @@
 class CookieControlsIconView : public PageActionIconView,
                                public CookieControlsView {
  public:
-  explicit CookieControlsIconView(PageActionIconView::Delegate* delegate);
+  CookieControlsIconView(
+      IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
+      PageActionIconView::Delegate* page_action_icon_delegate);
   ~CookieControlsIconView() override;
 
   // CookieControlsUI:

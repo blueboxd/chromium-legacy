@@ -1579,7 +1579,7 @@ TEST_F(URLLoaderTest, UploadFileWithoutNetworkServiceClient) {
 
 class CallbackSavingNetworkContextClient : public TestNetworkContextClient {
  public:
-  void OnFileUploadRequested(uint32_t process_id,
+  void OnFileUploadRequested(int32_t process_id,
                              bool async,
                              const std::vector<base::FilePath>& file_paths,
                              OnFileUploadRequestedCallback callback) override {
@@ -2679,8 +2679,8 @@ class MockNetworkContextClient : public TestNetworkContextClient {
   ~MockNetworkContextClient() override = default;
 
   void OnAuthRequired(const base::Optional<base::UnguessableToken>& window_id,
-                      uint32_t process_id,
-                      uint32_t routing_id,
+                      int32_t process_id,
+                      int32_t routing_id,
                       uint32_t request_id,
                       const GURL& url,
                       bool first_auth_attempt,
@@ -2713,8 +2713,8 @@ class MockNetworkContextClient : public TestNetworkContextClient {
 
   void OnCertificateRequested(
       const base::Optional<base::UnguessableToken>& window_id,
-      uint32_t process_id,
-      uint32_t routing_id,
+      int32_t process_id,
+      int32_t routing_id,
       uint32_t request_id,
       const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
       mojo::PendingRemote<mojom::ClientCertificateResponder>

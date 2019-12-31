@@ -29,13 +29,36 @@ enum NDEFPushTarget {
   ANY
 };
 
+// https://w3c.github.io/web-nfc/#the-record-type-string
+enum NDEFRecordTypeCategory {
+  // Standardized well known types, including "empty", "text", "url",
+  // "smart-poster", "absolute-url", "mime", and "unknown", etc.
+  // https://w3c.github.io/web-nfc/#dfn-well-known-type-name
+  kStandardized,
+
+  // External types that follow the rule defined by
+  // https://w3c.github.io/web-nfc/#dfn-external-type-name.
+  kExternal,
+
+  // Local types that follow the rule defined by
+  // https://w3c.github.io/web-nfc/#dfn-local-type-name.
+  kLocal
+};
+
 struct NDEFError {
   NDEFErrorType error_type;
 };
 
 // https://w3c.github.io/web-nfc/#dom-ndefrecord
 struct NDEFRecord {
+  // The category |record_type| belongs to. This field is not exposed to JS, but
+  // is used to transfer information internally and make code more readable,
+  // given that there're some complex logic around external types and local
+  // types (will be supported in the future).
+  NDEFRecordTypeCategory category;
+
   // The type of NDEFRecord.
+  // https://w3c.github.io/web-nfc/#the-record-type-string
   string record_type;
 
   // Represents the IANA media type of the NDEFRecord data field.

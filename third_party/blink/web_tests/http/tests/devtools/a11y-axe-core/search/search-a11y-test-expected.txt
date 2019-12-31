@@ -1,0 +1,22 @@
+Tests accessibility in the Search drawer devtool using the axe-core linter.
+
+Running: testSearchNoResults
+Testing search tool with no results.
+aXe violations: []
+
+
+Running: testSearchMultipleResults
+Testing search tool with multiple results.
+aXe violations: []
+
+
+Running: testSearchShowMoreResults
+Testing search tool with many results (generates "Show more" button).
+aXe violations: []
+
+
+Running: testSearchMultipleHighlightedResults
+Testing search tool with multiple highlighted results.
+aXe violations: []
+
+

@@ -5,30 +5,52 @@
 <body>
 <iframe src="resources/state-restore-dynamic-controls-frame.html"></iframe>
 <script>
+window.inputOrChangeEvents = [];
+
 promise_test(async t => {
   await waitForEvent(window, 'load', {once:true});
   const iframe = document.querySelector('iframe');
-  const container = iframe.contentDocument.querySelector('div');
+  let doc = iframe.contentDocument;
+  const container = doc.querySelector('div');
   // Change states of controls
   container.firstChild.click();
   container.lastChild.focus();
   eventSender.keyDown('z');
+  doc.querySelector('textarea').focus();
+  eventSender.keyDown('y');
+  doc.querySelector('select').focus();
+  eventSender.keyDown('2');
   assert_true(container.firstChild.checked, 'sanity check for a checkbox');
   assert_equals(container.lastChild.value, 'z', 'sanity check for a text field');
+  assert_equals(doc.querySelector('textarea').value, 'y', 'sanity check for a textarea');
+  assert_equals(doc.querySelector('select').value, '2', 'sanity check for a select');
+
+  // Flush asynchronous input/change events
+  await timeOut(t, 0);
 
   // Navigate
   iframe.src = 'data:text/html,<h1></h1>';
   await waitForEvent(iframe, 'load', {once:true});
 
+  inputOrChangeEvents = []
   // Navigate back
   history.back();
   await waitForEvent(iframe, 'load', {once:true});
   // Wait until finishing the restore task.
   await timeOut(t, 0);
-  const inputs = iframe.contentDocument.querySelectorAll('input');
+  doc = iframe.contentDocument;
+  const inputs = doc.querySelectorAll('input');
   assert_true(inputs[0].checked, 'Checkbox state should be restored.');
   assert_equals(inputs[1].value, 'z', 'Text field state should be restored.');
   assert_false(inputs[2].checked, 'Checkbox should have initial value.');
   assert_equals(inputs[3].value, '', 'Text field should have initial value.');
+  assert_equals(doc.querySelector('textarea').value, 'y');
+  assert_equals(doc.querySelector('select').value, '2');
+
+  // Wait for asynchronous input/change events
+  await timeOut(t, 0);
+  assert_array_equals(inputOrChangeEvents, [
+      'input/checkbox', 'change/checkbox', 'input/text', 'change/text',
+      'input/textarea', 'change/textarea', 'input/select-one', 'change/select-one']);
 }, 'Control states should be restored correctly even if controls were inserted before existing controls.');
 </script>

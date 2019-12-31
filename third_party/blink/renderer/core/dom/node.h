@@ -80,14 +80,14 @@ class V8ScrollStateCallback;
 class WebPluginContainerImpl;
 struct PhysicalRect;
 
-const int kDOMNodeTypeShift = 1;
+const int kDOMNodeTypeShift = 2;
 const int kElementNamespaceTypeShift = 4;
 const int kNodeStyleChangeShift = 17;
 const int kNodeCustomElementShift = 19;
 
 // Values for kChildNeedsStyleRecalcFlag, controlling whether a node gets its
 // style recalculated.
-enum StyleChangeType {
+enum StyleChangeType : uint32_t {
   // This node does not need style recalculation.
   kNoStyleChange = 0,
   // This node needs style recalculation.
@@ -96,14 +96,12 @@ enum StyleChangeType {
   kSubtreeStyleChange = 2 << kNodeStyleChangeShift,
 };
 
-enum class CustomElementState {
+enum class CustomElementState : uint32_t {
   // https://dom.spec.whatwg.org/#concept-element-custom-element-state
   kUncustomized = 0,
   kCustom = 1 << kNodeCustomElementShift,
   kUndefined = 2 << kNodeCustomElementShift,
   kFailed = 3 << kNodeCustomElementShift,
-
-  kNotDefinedFlag = 2 << kNodeCustomElementShift,
 };
 
 enum class SlotChangeType {
@@ -272,11 +270,7 @@ class CORE_EXPORT Node : public EventTarget {
 
   // Other methods (not part of DOM)
   bool IsTextNode() const { return GetDOMNodeType() == DOMNodeType::kText; }
-  bool IsContainerNode() const {
-    auto type = GetDOMNodeType();
-    return type == DOMNodeType::kContainer || type == DOMNodeType::kElement ||
-           type == DOMNodeType::kDocumentFragment;
-  }
+  bool IsContainerNode() const { return GetFlag(kIsContainerFlag); }
   bool IsElementNode() const {
     return GetDOMNodeType() == DOMNodeType::kElement;
   }
@@ -919,11 +913,12 @@ class CORE_EXPORT Node : public EventTarget {
   void Trace(Visitor*) override;
 
  private:
-  enum NodeFlags {
+  enum NodeFlags : uint32_t {
     kHasRareDataFlag = 1,
 
     // Node type flags. These never change once created.
-    kDOMNodeTypeMask = 0x7 << kDOMNodeTypeShift,
+    kIsContainerFlag = 1 << 1,
+    kDOMNodeTypeMask = 0x3 << kDOMNodeTypeShift,
     kElementNamespaceTypeMask = 0x3 << kElementNamespaceTypeShift,
     kIsV0InsertionPointFlag = 1 << 6,
 
@@ -977,18 +972,17 @@ class CORE_EXPORT Node : public EventTarget {
   void SetFlag(NodeFlags mask) { node_flags_ |= mask; }
   void ClearFlag(NodeFlags mask) { node_flags_ &= ~mask; }
 
-  enum class DOMNodeType {
+  enum class DOMNodeType : uint32_t {
     kOther = 0,
     kText = 1 << kDOMNodeTypeShift,
-    kContainer = 2 << kDOMNodeTypeShift,
-    kElement = 3 << kDOMNodeTypeShift,
-    kDocumentFragment = 4 << kDOMNodeTypeShift,
+    kElement = 2 << kDOMNodeTypeShift,
+    kDocumentFragment = 3 << kDOMNodeTypeShift,
   };
   DOMNodeType GetDOMNodeType() const {
     return static_cast<DOMNodeType>(node_flags_ & kDOMNodeTypeMask);
   }
 
-  enum class ElementNamespaceType {
+  enum class ElementNamespaceType : uint32_t {
     kOther = 0,
     kHTML = 1 << kElementNamespaceTypeShift,
     kMathML = 2 << kElementNamespaceTypeShift,
@@ -1005,12 +999,11 @@ class CORE_EXPORT Node : public EventTarget {
         kDefaultNodeFlags | static_cast<NodeFlags>(DOMNodeType::kOther),
     kCreateText =
         kDefaultNodeFlags | static_cast<NodeFlags>(DOMNodeType::kText),
-    kCreateContainer =
-        kDefaultNodeFlags | static_cast<NodeFlags>(DOMNodeType::kContainer),
+    kCreateContainer = kDefaultNodeFlags | kIsContainerFlag,
     kCreateElement =
-        kDefaultNodeFlags | static_cast<NodeFlags>(DOMNodeType::kElement),
+        kCreateContainer | static_cast<NodeFlags>(DOMNodeType::kElement),
     kCreateDocumentFragment =
-        kDefaultNodeFlags |
+        kCreateContainer |
         static_cast<NodeFlags>(DOMNodeType::kDocumentFragment),
     kCreateShadowRoot = kCreateDocumentFragment | kIsInShadowTreeFlag,
     kCreateHTMLElement =

@@ -63,6 +63,7 @@ class WorkerThreadDispatcher : public content::RenderThreadObserver,
 
   void AddWorkerData(
       int64_t service_worker_version_id,
+      int activation_sequence,
       ScriptContext* script_context,
       std::unique_ptr<NativeExtensionBindingsSystem> bindings_system);
   void RemoveWorkerData(int64_t service_worker_version_id);

@@ -14,7 +14,7 @@ const MAX_INDEX = 4;
 Polymer({
   is: 'assistant-voice-match',
 
-  behaviors: [OobeDialogHostBehavior],
+  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
 
   /**
    * Current recording index.

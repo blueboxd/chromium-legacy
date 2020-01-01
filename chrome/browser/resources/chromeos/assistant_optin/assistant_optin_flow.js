@@ -20,7 +20,7 @@
 Polymer({
   is: 'assistant-optin-flow',
 
-  behaviors: [OobeDialogHostBehavior],
+  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
 
   /**
    * Indicates the type of the opt-in flow.

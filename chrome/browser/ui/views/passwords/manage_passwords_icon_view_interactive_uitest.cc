@@ -40,6 +40,11 @@ class ManagePasswordsIconViewTest : public ManagePasswordsTest,
     ManagePasswordsTest::SetUp();
   }
 
+  void SetUpOnMainThread() override {
+    ManagePasswordsTest::SetUpOnMainThread();
+    ReduceAnimationTime();
+  }
+
   ManagePasswordsIconViews* GetView() {
     views::View* const view =
         BrowserView::GetBrowserViewForBrowser(browser())
@@ -57,7 +62,34 @@ class ManagePasswordsIconViewTest : public ManagePasswordsTest,
     return GetView()->GetImageView()->GetImage();
   }
 
+  void WaitForAnimationToEnd() {
+    auto* const animating_layout = GetAnimatingLayoutManager();
+    if (animating_layout) {
+      // Wait for animations to finish.
+      base::RunLoop loop;
+      animating_layout->PostOrQueueAction(loop.QuitClosure());
+      loop.Run();
+    }
+  }
+
  private:
+  views::AnimatingLayoutManager* GetAnimatingLayoutManager() {
+    return GetParam() ? static_cast<views::AnimatingLayoutManager*>(
+                            BrowserView::GetBrowserViewForBrowser(browser())
+                                ->toolbar()
+                                ->toolbar_account_icon_container()
+                                ->GetLayoutManager())
+                      : nullptr;
+  }
+
+  void ReduceAnimationTime() {
+    auto* const animating_layout = GetAnimatingLayoutManager();
+    if (animating_layout) {
+      animating_layout->SetAnimationDuration(
+          base::TimeDelta::FromMilliseconds(1));
+    }
+  }
+
   base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsIconViewTest);
@@ -65,12 +97,14 @@ class ManagePasswordsIconViewTest : public ManagePasswordsTest,
 
 IN_PROC_BROWSER_TEST_P(ManagePasswordsIconViewTest, DefaultStateIsInactive) {
   EXPECT_EQ(password_manager::ui::INACTIVE_STATE, ViewState());
+  WaitForAnimationToEnd();
   EXPECT_FALSE(GetView()->GetVisible());
 }
 
 IN_PROC_BROWSER_TEST_P(ManagePasswordsIconViewTest, PendingState) {
   SetupPendingPassword();
   EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE, ViewState());
+  WaitForAnimationToEnd();
   EXPECT_TRUE(GetView()->GetVisible());
   // No tooltip because the bubble is showing.
   EXPECT_EQ(base::string16(), GetTooltipText());
@@ -80,6 +114,7 @@ IN_PROC_BROWSER_TEST_P(ManagePasswordsIconViewTest, PendingState) {
 IN_PROC_BROWSER_TEST_P(ManagePasswordsIconViewTest, ManageState) {
   SetupManagingPasswords();
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, ViewState());
+  WaitForAnimationToEnd();
   EXPECT_TRUE(GetView()->GetVisible());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_TOOLTIP_MANAGE),
             GetTooltipText());
@@ -87,6 +122,7 @@ IN_PROC_BROWSER_TEST_P(ManagePasswordsIconViewTest, ManageState) {
 
 IN_PROC_BROWSER_TEST_P(ManagePasswordsIconViewTest, CloseOnClick) {
   SetupPendingPassword();
+  WaitForAnimationToEnd();
   EXPECT_TRUE(GetView()->GetVisible());
   ui::MouseEvent mouse_down(ui::ET_MOUSE_PRESSED, gfx::Point(10, 10),
                             gfx::Point(900, 60), ui::EventTimeForNow(),

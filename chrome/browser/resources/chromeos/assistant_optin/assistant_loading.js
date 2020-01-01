@@ -12,7 +12,7 @@
 Polymer({
   is: 'assistant-loading',
 
-  behaviors: [OobeDialogHostBehavior],
+  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
 
   properties: {
     /**

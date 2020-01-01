@@ -14,7 +14,7 @@
 Polymer({
   is: 'assistant-value-prop',
 
-  behaviors: [OobeDialogHostBehavior],
+  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
 
   properties: {
     /**

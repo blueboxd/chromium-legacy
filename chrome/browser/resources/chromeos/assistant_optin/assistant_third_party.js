@@ -13,7 +13,7 @@
 Polymer({
   is: 'assistant-third-party',
 
-  behaviors: [OobeDialogHostBehavior],
+  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
 
   properties: {
     /**

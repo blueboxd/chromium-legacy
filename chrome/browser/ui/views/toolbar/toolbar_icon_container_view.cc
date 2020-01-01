@@ -88,10 +88,6 @@ void ToolbarIconContainerView::OnViewBlurred(views::View* observed_view) {
   UpdateHighlight();
 }
 
-const views::View::Views& ToolbarIconContainerView::GetChildren() const {
-  return children();
-}
-
 void ToolbarIconContainerView::OnMouseEntered(const ui::MouseEvent& event) {
   UpdateHighlight();
 }
@@ -119,7 +115,7 @@ bool ToolbarIconContainerView::ShouldDisplayHighlight() {
     return true;
 
   // Focused, pressed or hovered children should trigger the highlight.
-  for (views::View* child : GetChildren()) {
+  for (views::View* child : children()) {
     if (child == main_button_)
       continue;
     if (child->HasFocus())

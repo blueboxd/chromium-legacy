@@ -51031,7 +51031,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="40" label="OPEN_URL"/>
   <int value="41" label="WOULD_HAVE_BEEN_USED (Obsolete)"/>
   <int value="42" label="REGISTER_PROTOCOL_HANDLER"/>
-  <int value="43" label="CREATING_AUDIO_STREAM"/>
+  <int value="43" label="CREATING_AUDIO_STREAM (Obsolete)"/>
   <int value="44" label="PAGE_BEING_CAPTURED (Obsolete)"/>
   <int value="45" label="BAD_DEFERRED_REDIRECT"/>
   <int value="46" label="NAVIGATION_UNCOMMITTED (Obsolete)"/>

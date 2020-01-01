@@ -82,16 +82,14 @@
       <div slot="bottom-buttons" class="flex layout horizontal">
         <div class="flex"></div>
         <oobe-text-button id="skip-button" on-tap="onSkipTap_"
-            disabled="[[buttonsDisabled]]">
-          <div i18n-content="assistantOptinNoThanksButton"></div>
+            disabled="[[buttonsDisabled]]"
+            text-key="assistantOptinNoThanksButton">
         </oobe-text-button>
         <oobe-text-button id="later-button" on-tap="onSkipTap_"
-            disabled="[[buttonsDisabled]]">
-          <div i18n-content="assistantOptinLaterButton"></div>
+            disabled="[[buttonsDisabled]]" text-key="assistantOptinLaterButton">
         </oobe-text-button>
         <oobe-text-button id="agree-button" inverse on-tap="onAgreeTap_"
-            disabled="[[buttonsDisabled]]">
-          <div i18n-content="assistantOptinAgreeButton"></div>
+            disabled="[[buttonsDisabled]]" text-key="assistantOptinAgreeButton">
         </oobe-text-button>
       </div>
     </oobe-dialog>

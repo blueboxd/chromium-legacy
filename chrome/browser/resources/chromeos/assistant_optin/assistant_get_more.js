@@ -13,7 +13,7 @@
 Polymer({
   is: 'assistant-get-more',
 
-  behaviors: [OobeDialogHostBehavior],
+  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
 
   properties: {
     /**

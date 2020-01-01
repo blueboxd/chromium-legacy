@@ -68,13 +68,6 @@ class ToolbarIconContainerView : public views::View,
 
   static const char kToolbarIconContainerViewClassName[];
 
- protected:
-  // TODO(pbos): Remove this when PageActionIconContainerView is not nested
-  // inside ToolbarAccountIconContainerView. This would require making
-  // PageActionIconContainerView something that ToolbarAccountIconContainerView
-  // could inherit instead of nesting into the views hierarchy.
-  virtual const views::View::Views& GetChildren() const;
-
  private:
   friend class ToolbarAccountIconContainerViewBrowserTest;
 

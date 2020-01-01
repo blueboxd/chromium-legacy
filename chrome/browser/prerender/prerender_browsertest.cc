@@ -1893,14 +1893,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   PrerenderTestURL(url, FINAL_STATUS_UNSUPPORTED_SCHEME, 0);
 }
 
-// Checks that a prerender that creates an audio stream (via a WebAudioDevice)
-// is cancelled.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderWebAudioDevice) {
-  DisableLoadEventCheck();
-  PrerenderTestURL("/prerender/prerender_web_audio_device.html",
-                   FINAL_STATUS_CREATING_AUDIO_STREAM, 0);
-}
-
 // Checks that deferred redirects in a synchronous XHR abort the prerender.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDeferredSynchronousXHR) {
   // Disable load event checks because they race with cancellation.

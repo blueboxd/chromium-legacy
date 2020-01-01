@@ -24,7 +24,7 @@
         <div class="flex"></div>
         <oobe-next-button id="next-button" inverse on-tap="onNextTap_"
             disabled="[[buttonsDisabled]]" hidden="[[moreContents]]">
-          <div id="next-button-text"></div>
+          <div id="next-button-text" slot="text"></div>
         </oobe-next-button>
       </div>
     </oobe-dialog>
@@ -39,9 +39,8 @@
         </div>
       </div>
       <div slot="button-container">
-        <oobe-text-button inverse id="overlay-close-button">
-          <div i18n-content="assistantOptinOKButton" id="close-button-text">
-          </div>
+        <oobe-text-button inverse id="overlay-close-button"
+            text-key="assistantOptinOKButton">
         </oobe-text-button>
       </div>
     </cr-dialog>

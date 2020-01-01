@@ -198,13 +198,9 @@ PrerenderManager::PrerenderManager(Profile* profile)
   last_prerender_start_time_ =
       GetCurrentTimeTicks() -
       base::TimeDelta::FromMilliseconds(kMinTimeBetweenPrerendersMs);
-
-  MediaCaptureDevicesDispatcher::GetInstance()->AddObserver(this);
 }
 
 PrerenderManager::~PrerenderManager() {
-  MediaCaptureDevicesDispatcher::GetInstance()->RemoveObserver(this);
-
   // The earlier call to KeyedService::Shutdown() should have
   // emptied these vectors already.
   DCHECK(active_prerenders_.empty());
@@ -1212,21 +1208,6 @@ void PrerenderManager::SkipPrerenderContentsAndMaybePreconnect(
   static_assert(
       FINAL_STATUS_MAX == FINAL_STATUS_NAVIGATION_PREDICTOR_HOLDBACK + 1,
       "Consider whether a failed prerender should fallback to preconnect");
-}
-
-void PrerenderManager::OnCreatingAudioStream(int render_process_id,
-                                             int render_frame_id) {
-  content::RenderFrameHost* render_frame_host =
-      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
-  WebContents* tab = WebContents::FromRenderFrameHost(render_frame_host);
-  if (!tab)
-    return;
-
-  PrerenderContents* prerender_contents = GetPrerenderContents(tab);
-  if (!prerender_contents)
-    return;
-
-  prerender_contents->Destroy(FINAL_STATUS_CREATING_AUDIO_STREAM);
 }
 
 void PrerenderManager::RecordNetworkBytesConsumed(Origin origin,

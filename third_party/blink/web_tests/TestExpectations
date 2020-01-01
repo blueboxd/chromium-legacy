@@ -1924,7 +1924,6 @@ crbug.com/305376 external/wpt/css/css-overflow/webkit-line-clamp-013.html [ Fail
 crbug.com/305376 external/wpt/css/css-overflow/webkit-line-clamp-014.html [ Failure ]
 crbug.com/305376 external/wpt/css/css-overflow/webkit-line-clamp-018.html [ Failure ]
 crbug.com/305376 external/wpt/css/css-overflow/webkit-line-clamp-024.html [ Failure ]
-crbug.com/965137 external/wpt/css/css-overflow/webkit-line-clamp-026.html [ Failure ]
 crbug.com/305376 external/wpt/css/css-overflow/webkit-line-clamp-027.html [ Failure ]
 crbug.com/1007065 external/wpt/css/css-overflow/overflow-codependent-scrollbars.html [ Failure ]
 
@@ -2658,12 +2657,6 @@ crbug.com/1002514 external/wpt/web-share/share-sharePromise-internal-slot.https.
 crbug.com/1012627 [ Win7 ] external/wpt/css/css-text/line-breaking/line-breaking-021.html [ Failure ]
 
 crbug.com/1029514 external/wpt/html/semantics/embedded-content/the-video-element/resize-during-playback.html [ Pass Failure ]
-
-# These need WPT fuzzy matching:
-crbug.com/1035194 [ Linux ] external/wpt/css/filter-effects/css-filters-animation-opacity.html [ Failure ]
-crbug.com/1035194 [ Linux ] external/wpt/css/filter-effects/backdrop-filter-basic-opacity-2.html [ Failure ]
-crbug.com/1035194 [ Linux ] virtual/scalefactor200/external/wpt/css/filter-effects/css-filters-animation-opacity.html [ Failure ]
-crbug.com/1035194 [ Linux ] virtual/scalefactor200/external/wpt/css/filter-effects/backdrop-filter-basic-opacity-2.html [ Failure ]
 
 # css-pseudo-4 ::spelling-error and ::grammar-error not implemented
 crbug.com/1035708 external/wpt/css/css-pseudo/spelling-error-001.html [ Failure ]

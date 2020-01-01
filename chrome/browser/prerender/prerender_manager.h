@@ -18,7 +18,6 @@
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/prerender/prerender_config.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
@@ -74,8 +73,7 @@ class PrerenderManagerObserver {
 // views of web pages. All methods must be called on the UI thread unless
 // indicated otherwise.
 class PrerenderManager : public content::RenderProcessHostObserver,
-                         public KeyedService,
-                         public MediaCaptureDevicesDispatcher::Observer {
+                         public KeyedService {
  public:
   enum PrerenderManagerMode {
     // Deprecated: Enables all types of prerendering for any origin.
@@ -291,10 +289,6 @@ class PrerenderManager : public content::RenderProcessHostObserver,
 
   // Record a final status of a prerendered page in a histogram.
   void RecordFinalStatus(Origin origin, FinalStatus final_status) const;
-
-  // MediaCaptureDevicesDispatcher::Observer
-  void OnCreatingAudioStream(int render_process_id,
-                             int render_frame_id) override;
 
   const Config& config() const { return config_; }
   Config& mutable_config() { return config_; }

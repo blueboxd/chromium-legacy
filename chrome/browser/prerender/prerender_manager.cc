@@ -394,22 +394,10 @@ WebContents* PrerenderManager::SwapInternal(const GURL& url,
     return nullptr;
   }
 
-  if (WebContents* new_web_contents =
-          prerender_data->contents()->prerender_contents()) {
-    if (web_contents == new_web_contents)
-      return nullptr;  // Do not swap in to ourself.
-
-    // We cannot swap in if there is no last committed entry, because we would
-    // show a blank page under an existing entry from the current tab.  Even if
-    // there is a pending entry, it may not commit.
-    // TODO(creis): If there is a pending navigation and no last committed
-    // entry, we might be able to transfer the network request instead.
-    if (!new_web_contents->GetController().CanPruneAllButLastCommitted()) {
-      // Abort this prerender so it is not used later. http://crbug.com/292121
-      prerender_data->contents()->Destroy(FINAL_STATUS_NAVIGATION_UNCOMMITTED);
-      return nullptr;
-    }
-  }
+  WebContents* prerender_web_contents =
+      prerender_data->contents()->prerender_contents();
+  if (prerender_web_contents && web_contents == prerender_web_contents)
+    return nullptr;  // Do not swap in to ourself.
 
   // Do not swap if the target WebContents is not the only WebContents in its
   // current BrowsingInstance.

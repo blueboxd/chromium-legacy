@@ -34,13 +34,8 @@ class InstanceRegistryTest : public testing::Test,
   }
 
   apps::InstanceState GetState(apps::InstanceRegistry& instance_registry,
-                               const aura::Window* window) {
-    apps::InstanceState state = apps::InstanceState::kUnknown;
-    instance_registry.ForOneInstance(
-        window, [&state](const apps::InstanceUpdate& update) {
-          state = update.State();
-        });
-    return state;
+                               aura::Window* window) {
+    return instance_registry.GetState(window);
   }
 
   // apps::InstanceRegistry::Observer overrides.

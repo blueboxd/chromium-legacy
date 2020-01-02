@@ -42,6 +42,8 @@ class AppServiceAppWindowLauncherController
       public apps::InstanceRegistry::Observer,
       public ArcAppWindowDelegate {
  public:
+  using ProfileList = std::vector<Profile*>;
+
   explicit AppServiceAppWindowLauncherController(
       ChromeLauncherController* owner);
   ~AppServiceAppWindowLauncherController() override;
@@ -97,10 +99,11 @@ class AppServiceAppWindowLauncherController
 
   AppWindowBase* GetAppWindow(aura::Window* window);
 
+  ProfileList& GetProfileList() { return profile_list_; }
+
  private:
   using AuraWindowToAppWindow =
       std::map<aura::Window*, std::unique_ptr<AppWindowBase>>;
-  using ProfileList = std::vector<Profile*>;
   using WindowList = std::vector<aura::Window*>;
 
   void SetWindowActivated(aura::Window* window, bool active);
@@ -118,7 +121,15 @@ class AppServiceAppWindowLauncherController
   // AppWindowLauncherController:
   void OnItemDelegateDiscarded(ash::ShelfItemDelegate* delegate) override;
 
-  ash::ShelfID GetShelfId(aura::Window* window) const;
+  // Returns the shelf id for |window|. The window could be teleported from the
+  // inactive user to the active user. When |search_profile_list| is true, we
+  // should check the all proxies for all profiles, otherwise, only check the
+  // current active user profile's proxy.
+  //
+  // When |window|'s visibility or activate status is changed,
+  // |search_profile_list| is false to check the active user profile only. When
+  // |window| is destroyed, |search_profile_list| is true to check all proxies.
+  ash::ShelfID GetShelfId(aura::Window* window, bool search_profile_list) const;
 
   // Register |window| if the owner of the given |window| has a window
   // teleported of the |window|'s application type to the current desktop.

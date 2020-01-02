@@ -22,12 +22,13 @@ namespace content {
 class WebContents;
 }
 
-class Profile;
+class AppServiceAppWindowLauncherController;
 
 // The helper class to operate the App Service Instance Registry.
 class AppServiceInstanceRegistryHelper {
  public:
-  explicit AppServiceInstanceRegistryHelper(Profile* profile);
+  explicit AppServiceInstanceRegistryHelper(
+      AppServiceAppWindowLauncherController* controller);
   ~AppServiceInstanceRegistryHelper();
 
   void ActiveUserChanged();
@@ -96,6 +97,8 @@ class AppServiceInstanceRegistryHelper {
   void AddTabWindow(const std::string& app_id, aura::Window* window);
   // Removes the tab's |window| from |browser_window_to_tab_window_|.
   void RemoveTabWindow(const std::string& app_id, aura::Window* window);
+
+  AppServiceAppWindowLauncherController* controller_ = nullptr;
 
   apps::AppServiceProxy* proxy_ = nullptr;
 

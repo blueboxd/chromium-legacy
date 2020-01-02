@@ -89,6 +89,9 @@ message UserChargingEvent {
     optional int32 screen_brightness_percent = 19;
     // Charge voltage in mV.
     optional int32 voltage = 20;
+    // Whether there's any shutdown/suspend action between the last charge
+    // and current event.
+    optional bool halt_from_last_charge = 21;
   }
 
   message Event {

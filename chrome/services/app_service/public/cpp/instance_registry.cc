@@ -97,6 +97,24 @@ std::set<aura::Window*> InstanceRegistry::GetWindows(
   return std::set<aura::Window*>{};
 }
 
+InstanceState InstanceRegistry::GetState(aura::Window* window) const {
+  auto s_iter = states_.find(window);
+  return (s_iter != states_.end()) ? s_iter->second.get()->State()
+                                   : InstanceState::kUnknown;
+}
+
+ash::ShelfID InstanceRegistry::GetShelfId(aura::Window* window) const {
+  auto s_iter = states_.find(window);
+  return (s_iter != states_.end())
+             ? ash::ShelfID(s_iter->second.get()->AppId(),
+                            s_iter->second.get()->LaunchId())
+             : ash::ShelfID();
+}
+
+bool InstanceRegistry::Exists(aura::Window* window) const {
+  return states_.find(window) != states_.end();
+}
+
 void InstanceRegistry::DoOnInstances(const Instances& deltas) {
   in_progress_ = true;
 

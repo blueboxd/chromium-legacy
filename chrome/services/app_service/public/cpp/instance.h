@@ -20,6 +20,7 @@ enum InstanceState {
   kRunning = 0x02,
   kActive = 0x04,
   kVisible = 0x08,
+  kHidden = 0x10,
   kDestroyed = 0x80,
 };
 

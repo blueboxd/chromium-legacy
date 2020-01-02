@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/public/cpp/shelf_types.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "base/sequence_checker.h"
@@ -91,6 +92,15 @@ class InstanceRegistry {
 
   // Return windows for the |app_id|.
   std::set<aura::Window*> GetWindows(const std::string& app_id);
+
+  // Return the state for the |window|.
+  InstanceState GetState(aura::Window* window) const;
+
+  // Return the shelf id for the |window|.
+  ash::ShelfID GetShelfId(aura::Window* window) const;
+
+  // Return true if there is an instance for the |window|.
+  bool Exists(aura::Window* window) const;
 
   // Calls f, a void-returning function whose arguments are (const
   // apps::InstanceUpdate&), on each window in the instance_registry.

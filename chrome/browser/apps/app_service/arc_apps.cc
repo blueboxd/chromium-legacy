@@ -343,11 +343,6 @@ void ArcApps::LoadIcon(const std::string& app_id,
   if (app_id == arc::kPlayStoreAppId) {
     LoadPlayStoreIcon(icon_compression, size_hint_in_dip, icon_effects,
                       std::move(callback));
-  } else if (allow_placeholder_icon) {
-    constexpr bool is_placeholder_icon = true;
-    LoadIconFromResource(icon_compression, size_hint_in_dip,
-                         IDR_APP_DEFAULT_ICON, is_placeholder_icon,
-                         icon_effects, std::move(callback));
   } else {
     arc_icon_once_loader_.LoadIcon(
         app_id, size_hint_in_dip, icon_compression,

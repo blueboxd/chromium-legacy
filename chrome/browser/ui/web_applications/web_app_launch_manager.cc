@@ -139,11 +139,6 @@ content::WebContents* WebAppLaunchManager::OpenApplication(
   // event and will potentially permit a banner to be shown for the site.
   RecordAppBanner(web_contents, url);
 
-  if (base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI)) {
-    web_launch::WebLaunchFilesHelper::SetLaunchPaths(web_contents, url,
-                                                     params.launch_files);
-  }
-
   return web_contents;
 }
 

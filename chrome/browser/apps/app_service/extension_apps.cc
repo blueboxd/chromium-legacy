@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/public/cpp/app_list/app_list_metrics.h"
+#include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -29,6 +30,9 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/extension_app_utils.h"
 #include "chrome/browser/ui/app_list/extension_uninstaller.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
+#include "chrome/browser/ui/ash/session_controller_client_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -714,10 +718,16 @@ void ExtensionApps::OnAppWindowAdded(extensions::AppWindow* app_window) {
     return;
   }
 
-  DCHECK(!instance_registry_->ForOneInstance(
-      app_window->GetNativeWindow(),
-      [](const apps::InstanceUpdate& update) {}));
+  DCHECK(!instance_registry_->Exists(app_window->GetNativeWindow()));
   app_window_to_aura_window_[app_window] = app_window->GetNativeWindow();
+
+  // Attach window to multi-user manager now to let it manage visibility state
+  // of the window correctly.
+  if (SessionControllerClientImpl::IsMultiProfileAvailable()) {
+    MultiUserWindowManagerHelper::GetWindowManager()->SetWindowOwner(
+        app_window->GetNativeWindow(),
+        multi_user_util::GetAccountIdFromProfile(profile_));
+  }
   RegisterInstance(app_window, InstanceState::kStarted);
 }
 
@@ -727,12 +737,14 @@ void ExtensionApps::OnAppWindowShown(extensions::AppWindow* app_window,
     return;
   }
 
-  InstanceState state = InstanceState::kUnknown;
-  instance_registry_->ForOneInstance(
-      app_window->GetNativeWindow(),
-      [&state](const apps::InstanceUpdate& update) { state = update.State(); });
+  InstanceState state =
+      instance_registry_->GetState(app_window->GetNativeWindow());
+
+  // If the window is shown, it should be started, running and not hidden.
   state = static_cast<apps::InstanceState>(
       state | apps::InstanceState::kStarted | apps::InstanceState::kRunning);
+  state =
+      static_cast<apps::InstanceState>(state & ~apps::InstanceState::kHidden);
   RegisterInstance(app_window, state);
 }
 
@@ -741,9 +753,9 @@ void ExtensionApps::OnAppWindowHidden(extensions::AppWindow* app_window) {
     return;
   }
 
-  // For hidden |app_window|, the other state bit, running, active, and visible
-  // should be cleared, and the state is set back to the started state.
-  RegisterInstance(app_window, InstanceState::kStarted);
+  // For hidden |app_window|, the other state bit, started, running, active, and
+  // visible should be cleared.
+  RegisterInstance(app_window, InstanceState::kHidden);
 }
 
 void ExtensionApps::OnAppWindowRemoved(extensions::AppWindow* app_window) {
@@ -1244,17 +1256,14 @@ bool ExtensionApps::ShouldRecordAppWindowActivity(
 
 void ExtensionApps::RegisterInstance(extensions::AppWindow* app_window,
                                      InstanceState new_state) {
-  InstanceState state = InstanceState::kUnknown;
-  instance_registry_->ForOneInstance(
-      app_window->GetNativeWindow(),
-      [&state](const apps::InstanceUpdate& update) { state = update.State(); });
+  aura::Window* window = app_window->GetNativeWindow();
 
-  // If |state| has been marked as |new_state|, we don't need to update.
-  if (state == new_state) {
+  // If the current state has been marked as |new_state|, we don't need to
+  // update.
+  if (instance_registry_->GetState(window) == new_state) {
     return;
   }
 
-  aura::Window* window = app_window->GetNativeWindow();
   if (new_state == InstanceState::kDestroyed) {
     DCHECK(base::Contains(app_window_to_aura_window_, app_window));
     window = app_window_to_aura_window_[app_window];

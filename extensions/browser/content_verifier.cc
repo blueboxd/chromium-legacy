@@ -503,6 +503,11 @@ void ContentVerifier::GetContentHash(
                      std::move(callback)));
 }
 
+bool ContentVerifier::ShouldComputeHashesOnInstall(const Extension& extension) {
+  return delegate_->GetVerifierSourceType(extension) ==
+         ContentVerifierDelegate::VerifierSourceType::UNSIGNED_HASHES;
+}
+
 void ContentVerifier::VerifyFailed(const ExtensionId& extension_id,
                                    ContentVerifyJob::FailureReason reason) {
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {

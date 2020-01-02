@@ -836,12 +836,8 @@ error::Error WebGPUDecoderImpl::HandleAssociateMailboxImmediate(
     return error::kInvalidArguments;
   }
 
-  // TODO(cwallez@chromium.org): Handle texture clearing. We should either
-  // pre-clear textures, or implement a way to detect whether DAWN has cleared
-  // a texture. crbug.com/1036080
   std::unique_ptr<SharedImageRepresentationDawn::ScopedAccess>
-      shared_image_access = shared_image->BeginScopedAccess(
-          wgpu_usage, SharedImageRepresentation::AllowUnclearedAccess::kYes);
+      shared_image_access = shared_image->BeginScopedAccess(wgpu_usage);
   if (!shared_image_access) {
     DLOG(ERROR) << "AssociateMailbox: Couldn't begin shared image access";
     return error::kInvalidArguments;

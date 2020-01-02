@@ -31,238 +31,216 @@ class CollectionWrapper : public GarbageCollected<CollectionWrapper<T>> {
 };
 
 // =============================================================================
-// Tests that expose data races when modifying collections ================
+// Tests that expose data races when modifying collections =====================
 // =============================================================================
 
-TEST_F(ConcurrentMarkingTest, AddToHashMap) {
+template <typename C>
+void AddToCollection() {
+  constexpr int kIterations = 100;
   IncrementalMarkingTestDriver driver(ThreadState::Current());
-  using Map = HeapHashMap<Member<IntegerObject>, Member<IntegerObject>>;
-  Persistent<CollectionWrapper<Map>> persistent =
-      MakeGarbageCollected<CollectionWrapper<Map>>();
-  Map* map = persistent->GetCollection();
+  Persistent<CollectionWrapper<C>> persistent =
+      MakeGarbageCollected<CollectionWrapper<C>>();
+  C* collection = persistent->GetCollection();
   driver.Start();
-  for (int i = 0; i < 100; ++i) {
+  for (int i = 0; i < kIterations; ++i) {
     driver.SingleConcurrentStep();
-    for (int j = 0; j < 100; ++j) {
-      int num = 100 * i + j;
-      map->insert(MakeGarbageCollected<IntegerObject>(num),
-                  MakeGarbageCollected<IntegerObject>(num));
+    for (int j = 0; j < kIterations; ++j) {
+      int num = kIterations * i + j;
+      collection->insert(MakeGarbageCollected<IntegerObject>(num));
     }
   }
   driver.FinishSteps();
   driver.FinishGC();
+}
+
+template <typename C>
+void RemoveFromCollection() {
+  constexpr int kIterations = 100;
+  IncrementalMarkingTestDriver driver(ThreadState::Current());
+  Persistent<CollectionWrapper<C>> persistent =
+      MakeGarbageCollected<CollectionWrapper<C>>();
+  C* collection = persistent->GetCollection();
+  for (int i = 0; i < (kIterations * kIterations); ++i) {
+    collection->insert(MakeGarbageCollected<IntegerObject>(i));
+  }
+  driver.Start();
+  for (int i = 0; i < kIterations; ++i) {
+    driver.SingleConcurrentStep();
+    for (int j = 0; j < kIterations; ++j) {
+      collection->erase(collection->begin());
+    }
+  }
+  driver.FinishSteps();
+  driver.FinishGC();
+}
+
+template <typename C>
+void SwapCollections() {
+  constexpr int kIterations = 10;
+  IncrementalMarkingTestDriver driver(ThreadState::Current());
+  Persistent<CollectionWrapper<C>> persistent =
+      MakeGarbageCollected<CollectionWrapper<C>>();
+  C* collection = persistent->GetCollection();
+  driver.Start();
+  for (int i = 0; i < (kIterations * kIterations); ++i) {
+    C* new_collection = MakeGarbageCollected<C>();
+    for (int j = 0; j < kIterations * i; ++j) {
+      new_collection->insert(MakeGarbageCollected<IntegerObject>(j));
+    }
+    driver.SingleConcurrentStep();
+    collection->swap(*new_collection);
+  }
+  driver.FinishSteps();
+  driver.FinishGC();
+}
+
+// HeapHashMap
+
+template <typename T>
+class HeapHashMapAdapter : public HeapHashMap<T, T> {
+ public:
+  template <typename U>
+  ALWAYS_INLINE void insert(U* u) {
+    HeapHashMap<T, T>::insert(u, u);
+  }
+};
+
+TEST_F(ConcurrentMarkingTest, AddToHashMap) {
+  AddToCollection<HeapHashMapAdapter<Member<IntegerObject>>>();
 }
 
 TEST_F(ConcurrentMarkingTest, RemoveFromHashMap) {
-  IncrementalMarkingTestDriver driver(ThreadState::Current());
-  using Map = HeapHashMap<Member<IntegerObject>, Member<IntegerObject>>;
-  Persistent<CollectionWrapper<Map>> persistent =
-      MakeGarbageCollected<CollectionWrapper<Map>>();
-  Map* map = persistent->GetCollection();
-  for (int i = 0; i < 10000; ++i) {
-    map->insert(MakeGarbageCollected<IntegerObject>(i),
-                MakeGarbageCollected<IntegerObject>(i));
-  }
-  driver.Start();
-  for (int i = 0; i < 100; ++i) {
-    driver.SingleConcurrentStep();
-    for (int j = 0; j < 100; ++j) {
-      map->erase(map->begin());
-    }
-  }
-  driver.FinishSteps();
-  driver.FinishGC();
+  RemoveFromCollection<HeapHashMapAdapter<Member<IntegerObject>>>();
 }
 
 TEST_F(ConcurrentMarkingTest, SwapHashMaps) {
-  IncrementalMarkingTestDriver driver(ThreadState::Current());
-  using Map = HeapHashMap<Member<IntegerObject>, Member<IntegerObject>>;
-  Persistent<CollectionWrapper<Map>> persistent =
-      MakeGarbageCollected<CollectionWrapper<Map>>();
-  Map* map = persistent->GetCollection();
-  driver.Start();
-  for (int i = 0; i < 100; ++i) {
-    Map new_map;
-    for (int j = 0; j < 10 * i; ++j) {
-      new_map.insert(MakeGarbageCollected<IntegerObject>(j),
-                     MakeGarbageCollected<IntegerObject>(j));
-    }
-    driver.SingleConcurrentStep();
-    map->swap(new_map);
-  }
-  driver.FinishSteps();
-  driver.FinishGC();
+  SwapCollections<HeapHashMapAdapter<Member<IntegerObject>>>();
 }
 
+// HeapHashSet
+
 TEST_F(ConcurrentMarkingTest, AddToHashSet) {
-  IncrementalMarkingTestDriver driver(ThreadState::Current());
-  using Set = HeapHashSet<Member<IntegerObject>>;
-  Persistent<CollectionWrapper<Set>> persistent =
-      MakeGarbageCollected<CollectionWrapper<Set>>();
-  Set* set = persistent->GetCollection();
-  driver.Start();
-  for (int i = 0; i < 100; ++i) {
-    driver.SingleConcurrentStep();
-    for (int j = 0; j < 100; ++j) {
-      int num = 100 * i + j;
-      set->insert(MakeGarbageCollected<IntegerObject>(num));
-    }
-  }
-  driver.FinishSteps();
-  driver.FinishGC();
+  AddToCollection<HeapHashSet<Member<IntegerObject>>>();
 }
 
 TEST_F(ConcurrentMarkingTest, RemoveFromHashSet) {
-  IncrementalMarkingTestDriver driver(ThreadState::Current());
-  using Set = HeapHashSet<Member<IntegerObject>>;
-  Persistent<CollectionWrapper<Set>> persistent =
-      MakeGarbageCollected<CollectionWrapper<Set>>();
-  Set* set = persistent->GetCollection();
-  for (int i = 0; i < 10000; ++i) {
-    set->insert(MakeGarbageCollected<IntegerObject>(i));
-  }
-  driver.Start();
-  for (int i = 0; i < 100; ++i) {
-    driver.SingleConcurrentStep();
-    for (int j = 0; j < 100; ++j) {
-      set->erase(set->begin());
-    }
-  }
-  driver.FinishSteps();
-  driver.FinishGC();
+  RemoveFromCollection<HeapHashSet<Member<IntegerObject>>>();
 }
 
 TEST_F(ConcurrentMarkingTest, SwapHashSets) {
-  IncrementalMarkingTestDriver driver(ThreadState::Current());
-  using Set = HeapHashSet<Member<IntegerObject>>;
-  Persistent<CollectionWrapper<Set>> persistent =
-      MakeGarbageCollected<CollectionWrapper<Set>>();
-  Set* set = persistent->GetCollection();
-  driver.Start();
-  for (int i = 0; i < 100; ++i) {
-    Set new_set;
-    for (int j = 0; j < 10 * i; ++j) {
-      new_set.insert(MakeGarbageCollected<IntegerObject>(j));
-    }
-    driver.SingleConcurrentStep();
-    set->swap(new_set);
-  }
-  driver.FinishSteps();
-  driver.FinishGC();
+  SwapCollections<HeapHashSet<Member<IntegerObject>>>();
 }
 
-TEST_F(ConcurrentMarkingTest, AddToVector) {
-  IncrementalMarkingTestDriver driver(ThreadState::Current());
-  using V = HeapVector<Member<IntegerObject>>;
-  Persistent<CollectionWrapper<V>> persistent =
-      MakeGarbageCollected<CollectionWrapper<V>>();
-  V* vector = persistent->GetCollection();
-  driver.Start();
-  for (int i = 0; i < 100; ++i) {
-    driver.SingleConcurrentStep();
-    for (int j = 0; j < 100; ++j) {
-      int num = 100 * i + j;
-      vector->push_back(MakeGarbageCollected<IntegerObject>(num));
-    }
+// HeapLinkedHashSet
+template <typename T>
+class HeapLinkedHashSetAdapter : public HeapLinkedHashSet<T> {
+ public:
+  ALWAYS_INLINE void swap(HeapLinkedHashSetAdapter<T>& other) {
+    HeapLinkedHashSet<T>::Swap(other);
   }
-  driver.FinishSteps();
-  driver.FinishGC();
+};
+
+TEST_F(ConcurrentMarkingTest, AddToLinkedHashSet) {
+  AddToCollection<HeapLinkedHashSetAdapter<Member<IntegerObject>>>();
+}
+
+TEST_F(ConcurrentMarkingTest, RemoveFromLinkedHashSet) {
+  RemoveFromCollection<HeapLinkedHashSetAdapter<Member<IntegerObject>>>();
+}
+
+TEST_F(ConcurrentMarkingTest, SwapLinkedHashSets) {
+  SwapCollections<HeapLinkedHashSetAdapter<Member<IntegerObject>>>();
+}
+
+// HeapListHashSet
+
+template <typename T>
+class HeapListHashSetAdapter : public HeapListHashSet<T> {
+ public:
+  ALWAYS_INLINE void swap(HeapListHashSetAdapter<T>& other) {
+    HeapListHashSet<T>::Swap(other);
+  }
+};
+
+TEST_F(ConcurrentMarkingTest, AddToListHashSet) {
+  AddToCollection<HeapListHashSetAdapter<Member<IntegerObject>>>();
+}
+
+TEST_F(ConcurrentMarkingTest, RemoveFromListHashSet) {
+  RemoveFromCollection<HeapListHashSetAdapter<Member<IntegerObject>>>();
+}
+
+TEST_F(ConcurrentMarkingTest, SwapListHashSets) {
+  SwapCollections<HeapListHashSetAdapter<Member<IntegerObject>>>();
+}
+
+// HeapHashCountedSet
+
+TEST_F(ConcurrentMarkingTest, AddToHashCountedSet) {
+  AddToCollection<HeapHashCountedSet<Member<IntegerObject>>>();
+}
+
+TEST_F(ConcurrentMarkingTest, RemoveFromHashCountedSet) {
+  RemoveFromCollection<HeapHashCountedSet<Member<IntegerObject>>>();
+}
+
+TEST_F(ConcurrentMarkingTest, SwapHashCountedSets) {
+  SwapCollections<HeapHashCountedSet<Member<IntegerObject>>>();
+}
+
+// HeapVector
+
+template <typename T>
+class HeapVectorAdapter : public HeapVector<T> {
+ public:
+  template <typename U>
+  ALWAYS_INLINE void insert(U* u) {
+    HeapVector<T>::push_back(u);
+  }
+  ALWAYS_INLINE void erase(typename HeapVector<T>::iterator) {
+    HeapVector<T>::pop_back();
+  }
+};
+
+TEST_F(ConcurrentMarkingTest, AddToVector) {
+  AddToCollection<HeapVectorAdapter<Member<IntegerObject>>>();
 }
 
 TEST_F(ConcurrentMarkingTest, RemoveFromVector) {
-  IncrementalMarkingTestDriver driver(ThreadState::Current());
-  using V = HeapVector<Member<IntegerObject>>;
-  Persistent<CollectionWrapper<V>> persistent =
-      MakeGarbageCollected<CollectionWrapper<V>>();
-  V* vector = persistent->GetCollection();
-  for (int i = 0; i < 10000; ++i) {
-    vector->push_back(MakeGarbageCollected<IntegerObject>(i));
-  }
-  driver.Start();
-  for (int i = 0; i < 100; ++i) {
-    driver.SingleConcurrentStep();
-    for (int j = 0; j < 100; ++j) {
-      vector->pop_back();
-    }
-  }
-  driver.FinishSteps();
-  driver.FinishGC();
+  RemoveFromCollection<HeapVectorAdapter<Member<IntegerObject>>>();
 }
 
 TEST_F(ConcurrentMarkingTest, SwapVectors) {
-  IncrementalMarkingTestDriver driver(ThreadState::Current());
-  using V = HeapVector<Member<IntegerObject>>;
-  Persistent<CollectionWrapper<V>> persistent =
-      MakeGarbageCollected<CollectionWrapper<V>>();
-  V* vector = persistent->GetCollection();
-  driver.Start();
-  for (int i = 0; i < 100; ++i) {
-    V new_vector;
-    for (int j = 0; j < 10 * i; ++j) {
-      new_vector.push_back(MakeGarbageCollected<IntegerObject>(j));
-    }
-    driver.SingleConcurrentStep();
-    vector->swap(new_vector);
-  }
-  driver.FinishSteps();
-  driver.FinishGC();
+  SwapCollections<HeapVectorAdapter<Member<IntegerObject>>>();
 }
 
-TEST_F(ConcurrentMarkingTest, AddToDeque) {
-  IncrementalMarkingTestDriver driver(ThreadState::Current());
-  using D = HeapDeque<Member<IntegerObject>>;
-  Persistent<CollectionWrapper<D>> persistent =
-      MakeGarbageCollected<CollectionWrapper<D>>();
-  D* deque = persistent->GetCollection();
-  driver.Start();
-  for (int i = 0; i < 100; ++i) {
-    driver.SingleConcurrentStep();
-    for (int j = 0; j < 100; ++j) {
-      int num = 100 * i + j;
-      deque->push_back(MakeGarbageCollected<IntegerObject>(num));
-    }
+// HeapDeque
+
+template <typename T>
+class HeapDequeAdapter : public HeapDeque<T> {
+ public:
+  template <typename U>
+  ALWAYS_INLINE void insert(U* u) {
+    HeapDeque<T>::push_back(u);
   }
-  driver.FinishSteps();
-  driver.FinishGC();
+  ALWAYS_INLINE void erase(typename HeapDeque<T>::iterator) {
+    HeapDeque<T>::pop_back();
+  }
+  ALWAYS_INLINE void swap(HeapDequeAdapter<T>& other) {
+    HeapDeque<T>::Swap(other);
+  }
+};
+
+TEST_F(ConcurrentMarkingTest, AddToDeque) {
+  AddToCollection<HeapDequeAdapter<Member<IntegerObject>>>();
 }
 
 TEST_F(ConcurrentMarkingTest, RemoveFromDeque) {
-  IncrementalMarkingTestDriver driver(ThreadState::Current());
-  using D = HeapDeque<Member<IntegerObject>>;
-  Persistent<CollectionWrapper<D>> persistent =
-      MakeGarbageCollected<CollectionWrapper<D>>();
-  D* deque = persistent->GetCollection();
-  for (int i = 0; i < 10000; ++i) {
-    deque->push_back(MakeGarbageCollected<IntegerObject>(i));
-  }
-  driver.Start();
-  for (int i = 0; i < 100; ++i) {
-    driver.SingleConcurrentStep();
-    for (int j = 0; j < 100; ++j) {
-      deque->pop_back();
-    }
-  }
-  driver.FinishSteps();
-  driver.FinishGC();
+  RemoveFromCollection<HeapDequeAdapter<Member<IntegerObject>>>();
 }
 
-TEST_F(ConcurrentMarkingTest, SwapDeque) {
-  IncrementalMarkingTestDriver driver(ThreadState::Current());
-  using D = HeapDeque<Member<IntegerObject>>;
-  Persistent<CollectionWrapper<D>> persistent =
-      MakeGarbageCollected<CollectionWrapper<D>>();
-  D* deque = persistent->GetCollection();
-  driver.Start();
-  for (int i = 0; i < 100; ++i) {
-    D new_deque;
-    for (int j = 0; j < 10 * i; ++j) {
-      new_deque.push_back(MakeGarbageCollected<IntegerObject>(j));
-    }
-    driver.SingleConcurrentStep();
-    deque->Swap(new_deque);
-  }
-  driver.FinishSteps();
-  driver.FinishGC();
+TEST_F(ConcurrentMarkingTest, SwapDeques) {
+  SwapCollections<HeapDequeAdapter<Member<IntegerObject>>>();
 }
 
 }  // namespace concurrent_marking_test

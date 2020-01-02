@@ -89,6 +89,13 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
                       bool force_missing_computed_hashes_creation,
                       ContentHashCallback callback);
 
+  // Returns whether or not we should compute hashes during installation.
+  // Typically we don't need this when extension has verified (signed) resources
+  // hashes, as we can postpone hashes computing to the time we'll need them and
+  // check there. But without signed hashes we may not compute hashes at
+  // arbitrary time, we are only allowed to do it during installation.
+  bool ShouldComputeHashesOnInstall(const Extension& extension);
+
   GURL GetSignatureFetchUrlForTest(const ExtensionId& extension_id,
                                    const base::Version& extension_version);
 

@@ -12,6 +12,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
@@ -50,6 +51,14 @@ class SandboxedUnpackerClient
   // Initialize the ref-counted base to always delete on the UI thread. Note
   // the constructor call must also happen on the UI thread.
   SandboxedUnpackerClient();
+
+  // Determines whether |extension| requires computing and storing
+  // computed_hashes.json and returns the result through |callback|.
+  // Currently we do this only for force-installed extensions outside of Chrome
+  // Web Store, and that is reflected in method's name.
+  virtual void ShouldComputeHashesForOffWebstoreExtension(
+      scoped_refptr<const Extension> extension,
+      base::OnceCallback<void(bool)> callback);
 
   // temp_dir - A temporary directory containing the results of the extension
   // unpacking. The client is responsible for deleting this directory.
@@ -223,6 +232,19 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   void OnJSONRulesetIndexed(
       std::unique_ptr<base::DictionaryValue> manifest,
       declarative_net_request::IndexAndPersistJSONRulesetResult result);
+
+  // Computed hashes: if requested (via ShouldComputeHashes callback in
+  // SandbloxedUnpackerClient), calculate hashes of all extensions' resources
+  // and writes them in _metadata/computed_hashes.json. This is used by content
+  // verification system for extensions outside of Chrome Web Store.
+  void CheckComputeHashes(
+      std::unique_ptr<base::DictionaryValue> original_manifest,
+      const base::Optional<int>& dnr_ruleset_checksum);
+
+  void MaybeComputeHashes(
+      std::unique_ptr<base::DictionaryValue> original_manifest,
+      const base::Optional<int>& dnr_ruleset_checksum,
+      bool should_compute_hashes);
 
   // Returns a JsonParser that can be used on the |unpacker_io_task_runner|.
   data_decoder::mojom::JsonParser* GetJsonParserPtr();

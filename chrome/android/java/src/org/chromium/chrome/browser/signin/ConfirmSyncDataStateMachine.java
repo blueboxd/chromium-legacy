@@ -4,9 +4,7 @@
 
 package org.chromium.chrome.browser.signin;
 
-import android.content.Context;
 import android.os.Handler;
-import android.support.v4.app.FragmentManager;
 import android.text.TextUtils;
 
 import androidx.annotation.IntDef;
@@ -66,8 +64,6 @@ public class ConfirmSyncDataStateMachine
     private final ConfirmImportSyncDataDialog.Listener mCallback;
     private final @Nullable String mOldAccountName;
     private final String mNewAccountName;
-    private final FragmentManager mFragmentManager;
-    private final Context mContext;
     private final ConfirmSyncDataStateMachineDelegate mDelegate;
     private final Handler mHandler = new Handler();
 
@@ -80,21 +76,20 @@ public class ConfirmSyncDataStateMachine
      * @param oldAccountName the name of the last signed in account or null
      * @param newAccountName the name of the account user is signing in with
      * @param callback the listener to receive the result of this state machine
+     * @param delegate the delegate responsible of showing dialogs
+     * TODO(https://crbug.com/1038502):
+     * Use a separate interface for the callback to avoid confusion.
      */
-    public ConfirmSyncDataStateMachine(Context context, FragmentManager fragmentManager,
+    public ConfirmSyncDataStateMachine(ConfirmSyncDataStateMachineDelegate delegate,
             @Nullable String oldAccountName, String newAccountName,
             ConfirmImportSyncDataDialog.Listener callback) {
         ThreadUtils.assertOnUiThread();
-        // Includes implicit not-null assertion.
-        assert !newAccountName.equals("") : "New account name must be provided.";
+        assert !TextUtils.isEmpty(newAccountName) : "New account name must be provided.";
 
+        mDelegate = delegate;
         mOldAccountName = oldAccountName;
         mNewAccountName = newAccountName;
-        mFragmentManager = fragmentManager;
-        mContext = context;
         mCallback = callback;
-
-        mDelegate = new ConfirmSyncDataStateMachineDelegate(mFragmentManager);
 
         // New account management status isn't needed right now, but fetching it
         // can take a few seconds, so we kick it off early.

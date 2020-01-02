@@ -4,8 +4,6 @@
 
 #include "third_party/blink/renderer/core/paint/compositing/compositing_reason_finder.h"
 
-#include "base/feature_list.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node.h"
@@ -165,10 +163,8 @@ bool CompositingReasonFinder::RequiresCompositingFor3DTransform(
     return false;
 
   // Don't composite "trivial" 3D transforms such as translateZ(0).
-  if (Platform::Current()->IsLowEndDevice() ||
-      base::FeatureList::IsEnabled(blink::features::kDoNotCompositeTrivial3D)) {
+  if (Platform::Current()->IsLowEndDevice())
     return layout_object.StyleRef().HasNonTrivial3DTransformOperation();
-  }
 
   return layout_object.StyleRef().Has3DTransformOperation();
 }

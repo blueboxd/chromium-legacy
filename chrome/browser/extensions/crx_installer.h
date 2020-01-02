@@ -261,7 +261,15 @@ class CrxInstaller : public SandboxedUnpackerClient {
   // should complete.
   base::Optional<CrxInstallError> AllowInstall(const Extension* extension);
 
+  // To check whether we need to compute hashes or not, we have to make a query
+  // to ContentVerifier, and that should be done on the UI thread.
+  void ShouldComputeHashesOnUI(scoped_refptr<const Extension> extension,
+                               base::OnceCallback<void(bool)> callback);
+
   // SandboxedUnpackerClient
+  void ShouldComputeHashesForOffWebstoreExtension(
+      scoped_refptr<const Extension> extension,
+      base::OnceCallback<void(bool)> callback) override;
   void OnUnpackFailure(const CrxInstallError& error) override;
   void OnUnpackSuccess(
       const base::FilePath& temp_dir,

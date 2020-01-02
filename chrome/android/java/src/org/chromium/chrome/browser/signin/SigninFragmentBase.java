@@ -436,8 +436,8 @@ public abstract class SigninFragmentBase
     }
 
     private void runStateMachineAndSignin(boolean settingsClicked) {
-        mConfirmSyncDataStateMachine = new ConfirmSyncDataStateMachine(getContext(),
-                getChildFragmentManager(),
+        mConfirmSyncDataStateMachine = new ConfirmSyncDataStateMachine(
+                new ConfirmSyncDataStateMachineDelegate(getChildFragmentManager()),
                 PrefServiceBridge.getInstance().getString(Pref.SYNC_LAST_ACCOUNT_NAME),
                 mSelectedAccountName, new ConfirmImportSyncDataDialog.Listener() {
                     @Override

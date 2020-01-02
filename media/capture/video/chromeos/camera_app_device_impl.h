@@ -116,6 +116,8 @@ class CAPTURE_EXPORT CameraAppDeviceImpl : public cros::mojom::CameraAppDevice {
       RemoveCameraEventObserverCallback callback) override;
 
  private:
+  static void DisableEeNr(ReprocessTask* task);
+
   std::string device_id_;
 
   mojo::ReceiverSet<cros::mojom::CameraAppDevice> receivers_;

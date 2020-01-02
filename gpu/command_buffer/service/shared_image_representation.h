@@ -44,9 +44,6 @@ enum class RepresentationAccessMode {
 // api.
 class GPU_GLES2_EXPORT SharedImageRepresentation {
  public:
-  // Used by derived classes.
-  enum class AllowUnclearedAccess { kYes, kNo };
-
   SharedImageRepresentation(SharedImageManager* manager,
                             SharedImageBacking* backing,
                             MemoryTypeTracker* tracker);
@@ -109,10 +106,7 @@ class GPU_GLES2_EXPORT SharedImageRepresentationGLTextureBase
     ScopedAccess(util::PassKey<SharedImageRepresentationGLTextureBase> pass_key,
                  SharedImageRepresentationGLTextureBase* representation)
         : representation_(representation) {}
-    ~ScopedAccess() {
-      representation_->UpdateClearedStateOnEndAccess();
-      representation_->EndAccess();
-    }
+    ~ScopedAccess() { representation_->EndAccess(); }
 
    private:
     SharedImageRepresentationGLTextureBase* representation_ = nullptr;
@@ -125,15 +119,10 @@ class GPU_GLES2_EXPORT SharedImageRepresentationGLTextureBase
                                          MemoryTypeTracker* tracker)
       : SharedImageRepresentation(manager, backing, tracker) {}
 
-  std::unique_ptr<ScopedAccess> BeginScopedAccess(
-      GLenum mode,
-      AllowUnclearedAccess allow_uncleared);
+  std::unique_ptr<ScopedAccess> BeginScopedAccess(GLenum mode);
 
  protected:
   friend class SharedImageRepresentationSkiaGL;
-
-  // Can be overridden to handle clear state tracking when GL access ends.
-  virtual void UpdateClearedStateOnEndAccess() {}
 
   // TODO(ericrk): Make these pure virtual and ensure real implementations
   // exist.
@@ -151,9 +140,6 @@ class GPU_GLES2_EXPORT SharedImageRepresentationGLTexture
 
   // TODO(ericrk): Move this to the ScopedAccess object. crbug.com/1003686
   virtual gles2::Texture* GetTexture() = 0;
-
- protected:
-  void UpdateClearedStateOnEndAccess() override;
 };
 
 class GPU_GLES2_EXPORT SharedImageRepresentationGLTexturePassthrough
@@ -217,13 +203,10 @@ class GPU_GLES2_EXPORT SharedImageRepresentationSkia
       int final_msaa_count,
       const SkSurfaceProps& surface_props,
       std::vector<GrBackendSemaphore>* begin_semaphores,
-      std::vector<GrBackendSemaphore>* end_semaphores,
-      AllowUnclearedAccess allow_uncleared);
-
+      std::vector<GrBackendSemaphore>* end_semaphores);
   std::unique_ptr<ScopedWriteAccess> BeginScopedWriteAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
-      std::vector<GrBackendSemaphore>* end_semaphores,
-      AllowUnclearedAccess allow_uncleared);
+      std::vector<GrBackendSemaphore>* end_semaphores);
 
   // Note: See BeginReadAccess below for a description of the semaphore
   // parameters.
@@ -288,9 +271,7 @@ class GPU_GLES2_EXPORT SharedImageRepresentationDawn
   // Calls BeginAccess and returns a ScopedAccess object which will EndAccess
   // when it goes out of scope. The Representation must outlive the returned
   // ScopedAccess.
-  std::unique_ptr<ScopedAccess> BeginScopedAccess(
-      WGPUTextureUsage usage,
-      AllowUnclearedAccess allow_uncleared);
+  std::unique_ptr<ScopedAccess> BeginScopedAccess(WGPUTextureUsage usage);
 
  private:
   // This can return null in case of a Dawn validation error, for example if

@@ -14,8 +14,7 @@ namespace blink {
 enum {
   kCompositeAfterPaint = 1 << 0,
   kUnderInvalidationChecking = 1 << 1,
-  kFastBorderRadius = 1 << 2,
-  kDoNotCompositeTrivial3D = 1 << 3,
+  kFastBorderRadius = 1 << 2
 };
 
 class PaintTestConfigurations
@@ -51,12 +50,6 @@ class PaintTestConfigurations
 #define INSTANTIATE_SCROLL_HIT_TEST_SUITE_P(test_class) \
   INSTANTIATE_TEST_SUITE_P(All, test_class,             \
                            ::testing::Values(0, kCompositeAfterPaint))
-
-#define INSTANTIATE_DO_NOT_COMPOSITE_TRIVIAL_3D_P(test_class)              \
-  INSTANTIATE_TEST_SUITE_P(                                                \
-      All, test_class,                                                     \
-      ::testing::Values(0, kCompositeAfterPaint, kDoNotCompositeTrivial3D, \
-                        kCompositeAfterPaint | kDoNotCompositeTrivial3D))
 
 }  // namespace blink
 

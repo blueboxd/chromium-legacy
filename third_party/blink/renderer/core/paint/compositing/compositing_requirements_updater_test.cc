@@ -4,13 +4,12 @@
 
 #include "third_party/blink/renderer/core/paint/compositing/compositing_requirements_updater.h"
 
-#include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 
 namespace blink {
 
@@ -128,19 +127,7 @@ TEST_F(CompositingRequirementsUpdaterTest,
   EXPECT_EQ(IntRect(0, 0, 100, 100), tracking->Invalidations()[0].rect);
 }
 
-class CompositingRequirementsUpdaterTestWithDoNotCompositeTrivial3D
-    : public CompositingRequirementsUpdaterTest {
- public:
-  CompositingRequirementsUpdaterTestWithDoNotCompositeTrivial3D() {
-    scoped_feature_list_.InitAndEnableFeature(
-        blink::features::kDoNotCompositeTrivial3D);
-  }
-
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-TEST_F(CompositingRequirementsUpdaterTestWithDoNotCompositeTrivial3D,
-       NonTrivial3DTransforms) {
+TEST_F(CompositingRequirementsUpdaterTest, NonTrivial3DTransforms) {
   ScopedCSSIndependentTransformPropertiesForTest feature_scope(true);
 
   SetBodyInnerHTML(R"HTML(
@@ -169,7 +156,7 @@ TEST_F(CompositingRequirementsUpdaterTestWithDoNotCompositeTrivial3D,
               ToLayoutBox(transform_3d)->Layer()->GetCompositingReasons());
   const auto* transform_2d = GetLayoutObjectByElementId("2d-transform");
   EXPECT_FALSE(transform_2d->StyleRef().HasNonTrivial3DTransformOperation());
-  EXPECT_FALSE(ToLayoutBox(transform_2d)->Layer()->GetCompositingReasons());
+  EXPECT_TRUE(ToLayoutBox(transform_2d)->Layer()->GetCompositingReasons());
 
   const auto* transform_3d_translate_z =
       GetLayoutObjectByElementId("3d-transform-translate-z");
@@ -182,7 +169,7 @@ TEST_F(CompositingRequirementsUpdaterTestWithDoNotCompositeTrivial3D,
       GetLayoutObjectByElementId("2d-transform-translate-z");
   EXPECT_FALSE(
       transform_2d_translate_z->StyleRef().HasNonTrivial3DTransformOperation());
-  EXPECT_FALSE(
+  EXPECT_TRUE(
       ToLayoutBox(transform_2d_translate_z)->Layer()->GetCompositingReasons());
   const auto* transform_2d_translate_x =
       GetLayoutObjectByElementId("2d-transform-translate-x");
@@ -197,7 +184,7 @@ TEST_F(CompositingRequirementsUpdaterTestWithDoNotCompositeTrivial3D,
               ToLayoutBox(xform_rot_x_3d)->Layer()->GetCompositingReasons());
   const auto* xform_rot_x_2d = GetLayoutObjectByElementId("2d-transform-rot-x");
   EXPECT_FALSE(xform_rot_x_2d->StyleRef().HasNonTrivial3DTransformOperation());
-  EXPECT_FALSE(ToLayoutBox(xform_rot_x_2d)->Layer()->GetCompositingReasons());
+  EXPECT_TRUE(ToLayoutBox(xform_rot_x_2d)->Layer()->GetCompositingReasons());
   const auto* xform_rot_z_2d = GetLayoutObjectByElementId("2d-transform-rot-z");
   EXPECT_FALSE(xform_rot_z_2d->StyleRef().HasNonTrivial3DTransformOperation());
   EXPECT_FALSE(ToLayoutBox(xform_rot_z_2d)->Layer()->GetCompositingReasons());
@@ -208,7 +195,7 @@ TEST_F(CompositingRequirementsUpdaterTestWithDoNotCompositeTrivial3D,
               ToLayoutBox(rotation_y_3d)->Layer()->GetCompositingReasons());
   const auto* rotation_y_2d = GetLayoutObjectByElementId("2d-rotation-y");
   EXPECT_FALSE(rotation_y_2d->StyleRef().HasNonTrivial3DTransformOperation());
-  EXPECT_FALSE(ToLayoutBox(rotation_y_2d)->Layer()->GetCompositingReasons());
+  EXPECT_TRUE(ToLayoutBox(rotation_y_2d)->Layer()->GetCompositingReasons());
   const auto* rotation_z_2d = GetLayoutObjectByElementId("2d-rotation-z");
   EXPECT_FALSE(rotation_z_2d->StyleRef().HasNonTrivial3DTransformOperation());
   EXPECT_FALSE(ToLayoutBox(rotation_z_2d)->Layer()->GetCompositingReasons());

@@ -375,9 +375,10 @@ class ArcAppDeferredLauncherWithParamsBrowserTest
   DISALLOW_COPY_AND_ASSIGN(ArcAppDeferredLauncherWithParamsBrowserTest);
 };
 
+// TODO(crbug.com/1038602): Fix this flaky test, and enable it again.
 // This tests simulates normal workflow for starting ARC app in deferred mode.
 IN_PROC_BROWSER_TEST_P(ArcAppDeferredLauncherWithParamsBrowserTest,
-                       StartAppDeferred) {
+                       DISABLED_StartAppDeferred) {
   // Install app to remember existing apps.
   StartInstance();
   InstallTestApps(kTestAppPackage, false);

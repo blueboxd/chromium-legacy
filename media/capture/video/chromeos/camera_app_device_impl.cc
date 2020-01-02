@@ -57,6 +57,9 @@ ReprocessTaskQueue CameraAppDeviceImpl::GetSingleShotReprocessOptions(
   still_capture_task.effect = cros::mojom::Effect::NO_EFFECT;
   still_capture_task.callback =
       base::BindOnce(&OnStillCaptureDone, std::move(take_photo_callback));
+  // Explicitly disable edge enhancement and noise reduction for YUV -> JPG
+  // conversion.
+  DisableEeNr(&still_capture_task);
   result_task_queue.push(std::move(still_capture_task));
   return result_task_queue;
 }
@@ -90,6 +93,9 @@ void CameraAppDeviceImpl::ConsumeReprocessOptions(
   still_capture_task.effect = cros::mojom::Effect::NO_EFFECT;
   still_capture_task.callback =
       base::BindOnce(&OnStillCaptureDone, std::move(take_photo_callback));
+  // Explicitly disable edge enhancement and noise reduction for YUV -> JPG
+  // conversion.
+  DisableEeNr(&still_capture_task);
   result_task_queue.push(std::move(still_capture_task));
 
   base::AutoLock lock(reprocess_tasks_lock_);
@@ -274,6 +280,18 @@ void CameraAppDeviceImpl::RemoveCameraEventObserver(
 
   bool is_success = camera_event_observers_.erase(id) == 1;
   std::move(callback).Run(is_success);
+}
+
+// static
+void CameraAppDeviceImpl::DisableEeNr(ReprocessTask* task) {
+  auto ee_entry =
+      BuildMetadataEntry(cros::mojom::CameraMetadataTag::ANDROID_EDGE_MODE,
+                         cros::mojom::AndroidEdgeMode::ANDROID_EDGE_MODE_OFF);
+  auto nr_entry = BuildMetadataEntry(
+      cros::mojom::CameraMetadataTag::ANDROID_NOISE_REDUCTION_MODE,
+      cros::mojom::AndroidNoiseReductionMode::ANDROID_NOISE_REDUCTION_MODE_OFF);
+  task->extra_metadata.push_back(std::move(ee_entry));
+  task->extra_metadata.push_back(std::move(nr_entry));
 }
 
 }  // namespace media

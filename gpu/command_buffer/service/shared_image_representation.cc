@@ -4,7 +4,6 @@
 
 #include "gpu/command_buffer/service/shared_image_representation.h"
 
-#include "gpu/command_buffer/service/texture_manager.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 
 namespace gpu {
@@ -23,14 +22,7 @@ SharedImageRepresentation::~SharedImageRepresentation() {
 }
 
 std::unique_ptr<SharedImageRepresentationGLTexture::ScopedAccess>
-SharedImageRepresentationGLTextureBase::BeginScopedAccess(
-    GLenum mode,
-    AllowUnclearedAccess allow_uncleared) {
-  if (allow_uncleared != AllowUnclearedAccess::kYes && !IsCleared()) {
-    LOG(ERROR) << "Attempt to access an uninitialized ShardImage";
-    return nullptr;
-  }
-
+SharedImageRepresentationGLTextureBase::BeginScopedAccess(GLenum mode) {
   if (!BeginAccess(mode))
     return nullptr;
 
@@ -52,15 +44,6 @@ bool SharedImageRepresentationSkia::SupportsMultipleConcurrentReadAccess() {
   return false;
 }
 
-void SharedImageRepresentationGLTexture::UpdateClearedStateOnEndAccess() {
-  auto* texture = GetTexture();
-  // Operations on the gles2::Texture may have cleared or uncleared it. Make
-  // sure this state is reflected back in the SharedImage.
-  gfx::Rect cleared_rect = texture->GetLevelClearedRect(texture->target(), 0);
-  if (cleared_rect != ClearedRect())
-    SetClearedRect(cleared_rect);
-}
-
 SharedImageRepresentationSkia::ScopedWriteAccess::ScopedWriteAccess(
     util::PassKey<SharedImageRepresentationSkia> /* pass_key */,
     SharedImageRepresentationSkia* representation,
@@ -76,13 +59,7 @@ SharedImageRepresentationSkia::BeginScopedWriteAccess(
     int final_msaa_count,
     const SkSurfaceProps& surface_props,
     std::vector<GrBackendSemaphore>* begin_semaphores,
-    std::vector<GrBackendSemaphore>* end_semaphores,
-    AllowUnclearedAccess allow_uncleared) {
-  if (allow_uncleared != AllowUnclearedAccess::kYes && !IsCleared()) {
-    LOG(ERROR) << "Attempt to write to an uninitialized ShardImage";
-    return nullptr;
-  }
-
+    std::vector<GrBackendSemaphore>* end_semaphores) {
   sk_sp<SkSurface> surface = BeginWriteAccess(final_msaa_count, surface_props,
                                               begin_semaphores, end_semaphores);
   if (!surface)
@@ -95,12 +72,11 @@ SharedImageRepresentationSkia::BeginScopedWriteAccess(
 std::unique_ptr<SharedImageRepresentationSkia::ScopedWriteAccess>
 SharedImageRepresentationSkia::BeginScopedWriteAccess(
     std::vector<GrBackendSemaphore>* begin_semaphores,
-    std::vector<GrBackendSemaphore>* end_semaphores,
-    AllowUnclearedAccess allow_uncleared) {
+    std::vector<GrBackendSemaphore>* end_semaphores) {
   return BeginScopedWriteAccess(
       0 /* final_msaa_count */,
       SkSurfaceProps(0 /* flags */, kUnknown_SkPixelGeometry), begin_semaphores,
-      end_semaphores, allow_uncleared);
+      end_semaphores);
 }
 
 SharedImageRepresentationSkia::ScopedReadAccess::ScopedReadAccess(
@@ -118,11 +94,6 @@ std::unique_ptr<SharedImageRepresentationSkia::ScopedReadAccess>
 SharedImageRepresentationSkia::BeginScopedReadAccess(
     std::vector<GrBackendSemaphore>* begin_semaphores,
     std::vector<GrBackendSemaphore>* end_semaphores) {
-  if (!IsCleared()) {
-    LOG(ERROR) << "Attempt to read from an uninitialized ShardImage";
-    return nullptr;
-  }
-
   sk_sp<SkPromiseImageTexture> promise_image_texture =
       BeginReadAccess(begin_semaphores, end_semaphores);
   if (!promise_image_texture)
@@ -135,11 +106,6 @@ SharedImageRepresentationSkia::BeginScopedReadAccess(
 
 std::unique_ptr<SharedImageRepresentationOverlay::ScopedReadAccess>
 SharedImageRepresentationOverlay::BeginScopedReadAccess(bool needs_gl_image) {
-  if (!IsCleared()) {
-    LOG(ERROR) << "Attempt to read from an uninitialized ShardImage";
-    return nullptr;
-  }
-
   BeginReadAccess();
   return std::make_unique<ScopedReadAccess>(
       util::PassKey<SharedImageRepresentationOverlay>(), this,
@@ -157,14 +123,7 @@ SharedImageRepresentationDawn::ScopedAccess::~ScopedAccess() {
 }
 
 std::unique_ptr<SharedImageRepresentationDawn::ScopedAccess>
-SharedImageRepresentationDawn::BeginScopedAccess(
-    WGPUTextureUsage usage,
-    AllowUnclearedAccess allow_uncleared) {
-  if (allow_uncleared != AllowUnclearedAccess::kYes && !IsCleared()) {
-    LOG(ERROR) << "Attempt to access an uninitialized ShardImage";
-    return nullptr;
-  }
-
+SharedImageRepresentationDawn::BeginScopedAccess(WGPUTextureUsage usage) {
   WGPUTexture texture = BeginAccess(usage);
   if (!texture)
     return nullptr;

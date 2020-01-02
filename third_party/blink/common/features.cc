@@ -48,10 +48,6 @@ const base::Feature kFreezePurgeMemoryAllPagesFrozen{
 const base::Feature kFreezeUserAgent{"FreezeUserAgent",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When enabled, the compositing of trivial 3D transforms is disabled.
-const base::Feature kDoNotCompositeTrivial3D{"DoNotCompositeTrivial3D",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
-
 // When enabled, enter assumed-overlap mode in compositing overlap testing
 // anytime a fixed or sticky position element is encountered.
 const base::Feature kAssumeOverlapAfterFixedOrStickyPosition{

@@ -44,6 +44,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/browser/content_verifier.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -473,6 +474,30 @@ base::Optional<CrxInstallError> CrxInstaller::AllowInstall(
   }
 
   return base::nullopt;
+}
+
+void CrxInstaller::ShouldComputeHashesOnUI(
+    scoped_refptr<const Extension> extension,
+    base::OnceCallback<void(bool)> callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  extensions::ContentVerifier* content_verifier =
+      extensions::ExtensionSystem::Get(profile_)->content_verifier();
+  bool result = content_verifier &&
+                content_verifier->ShouldComputeHashesOnInstall(*extension);
+  installer_task_runner_->PostTask(FROM_HERE,
+                                   base::BindOnce(std::move(callback), result));
+}
+
+void CrxInstaller::ShouldComputeHashesForOffWebstoreExtension(
+    scoped_refptr<const Extension> extension,
+    base::OnceCallback<void(bool)> callback) {
+  DCHECK(installer_task_runner_->RunsTasksInCurrentSequence());
+  if (!base::PostTask(
+          FROM_HERE, {BrowserThread::UI},
+          base::BindOnce(&CrxInstaller::ShouldComputeHashesOnUI, this,
+                         std::move(extension), std::move(callback)))) {
+    NOTREACHED();
+  }
 }
 
 void CrxInstaller::OnUnpackFailure(const CrxInstallError& error) {

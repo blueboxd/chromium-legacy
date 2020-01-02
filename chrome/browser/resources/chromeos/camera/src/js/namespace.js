@@ -18,6 +18,7 @@ var cca = {
   nav: {},
   perf: {},
   proxy: {},
+  sound: {},
   state: {},
   toast: {},
   tooltip: {},

@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/containers/flat_set.h"
 #include "base/posix/safe_strerror.h"
 #include "base/process/launch.h"
 #include "base/strings/strcat.h"
@@ -86,9 +87,9 @@ void NotifyVideoCaptureDevicesChanged() {
   }
 }
 
-std::vector<int32_t> GetPossibleConstantFramerates(
+base::flat_set<int32_t> GetAvailableFramerates(
     const cros::mojom::CameraInfoPtr& camera_info) {
-  std::vector<int32_t> candidates;
+  base::flat_set<int32_t> candidates;
   auto available_fps_ranges = GetMetadataEntryAsSpan<int32_t>(
       camera_info->static_camera_characteristics,
       cros::mojom::CameraMetadataTag::
@@ -98,21 +99,16 @@ std::vector<int32_t> GetPossibleConstantFramerates(
     // default fps as candidate.
     LOG(WARNING) << "No available fps ranges in metadata. Set default fps as "
                     "candidate.";
-    candidates.push_back(kDefaultFps);
+    candidates.insert(kDefaultFps);
     return candidates;
   }
 
   // The available target fps ranges are stored as pairs int32s: (min, max) x n.
-  const size_t kRangeMinOffset = 0;
   const size_t kRangeMaxOffset = 1;
   const size_t kRangeSize = 2;
 
   for (size_t i = 0; i < available_fps_ranges.size(); i += kRangeSize) {
-    int32_t range_min = available_fps_ranges[i + kRangeMinOffset];
-    int32_t range_max = available_fps_ranges[i + kRangeMaxOffset];
-    if (range_min == range_max) {
-      candidates.push_back(range_min);
-    }
+    candidates.insert(available_fps_ranges[i + kRangeMaxOffset]);
   }
   return candidates;
 }
@@ -212,8 +208,8 @@ void CameraHalDelegate::GetSupportedFormats(
   }
   const cros::mojom::CameraInfoPtr& camera_info = camera_info_[camera_id];
 
-  std::vector<int32_t> candidate_fps_set =
-      GetPossibleConstantFramerates(camera_info);
+  base::flat_set<int32_t> candidate_fps_set =
+      GetAvailableFramerates(camera_info);
 
   const cros::mojom::CameraMetadataEntryPtr* min_frame_durations =
       GetMetadataEntry(camera_info->static_camera_characteristics,

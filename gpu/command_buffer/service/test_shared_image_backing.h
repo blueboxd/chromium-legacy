@@ -52,20 +52,6 @@ class TestSharedImageBacking : public SharedImageBacking {
   ProduceGLTexturePassthrough(SharedImageManager* manager,
                               MemoryTypeTracker* tracker) override;
 
-  // ProduceSkia/Dawn/Overlay all create dummy representations that
-  // don't link up to a real texture.
-  std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
-      SharedImageManager* manager,
-      MemoryTypeTracker* tracker,
-      scoped_refptr<SharedContextState> context_state) override;
-  std::unique_ptr<SharedImageRepresentationDawn> ProduceDawn(
-      SharedImageManager* manager,
-      MemoryTypeTracker* tracker,
-      WGPUDevice device) override;
-  std::unique_ptr<SharedImageRepresentationOverlay> ProduceOverlay(
-      SharedImageManager* manager,
-      MemoryTypeTracker* tracker) override;
-
  private:
   const GLuint service_id_ = 0;
   gles2::Texture* texture_ = nullptr;

@@ -59,6 +59,11 @@ class SharedImageRepresentationEglImageGLTexture
       egl_backing()->EndRead(this, std::move(egl_fence));
     } else if (mode_ == RepresentationAccessMode::kWrite) {
       egl_backing()->EndWrite(std::move(egl_fence));
+
+      if (texture_) {
+        if (texture_->IsLevelCleared(texture_->target(), 0))
+          backing()->SetCleared();
+      }
     } else {
       NOTREACHED();
     }

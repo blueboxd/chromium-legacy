@@ -143,8 +143,7 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, Basic) {
       scoped_write_access;
 
   scoped_write_access = skia_representation->BeginScopedWriteAccess(
-      &begin_semaphores, &end_semaphores,
-      SharedImageRepresentation::AllowUnclearedAccess::kYes);
+      &begin_semaphores, &end_semaphores);
   auto* surface = scoped_write_access->surface();
   EXPECT_TRUE(surface);
   EXPECT_EQ(size.width(), surface->width());
@@ -190,36 +189,27 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, GL_SkiaGL) {
                                      memory_type_tracker_.get());
 
   // Create a SharedImageRepresentationGLTexture.
-  {
-    auto gl_representation =
-        shared_image_representation_factory_->ProduceGLTexture(mailbox);
-    EXPECT_TRUE(gl_representation);
-    EXPECT_EQ(expected_target, gl_representation->GetTexture()->target());
+  auto gl_representation =
+      shared_image_representation_factory_->ProduceGLTexture(mailbox);
+  EXPECT_TRUE(gl_representation);
+  EXPECT_EQ(expected_target, gl_representation->GetTexture()->target());
 
-    // Access the SharedImageRepresentationGLTexutre
-    auto scoped_write_access = gl_representation->BeginScopedAccess(
-        GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM,
-        SharedImageRepresentation::AllowUnclearedAccess::kYes);
+  // Create an FBO.
+  GLuint fbo = 0;
+  gl::GLApi* api = gl::g_current_gl_context;
+  api->glGenFramebuffersEXTFn(1, &fbo);
+  api->glBindFramebufferEXTFn(GL_FRAMEBUFFER, fbo);
 
-    // Create an FBO.
-    GLuint fbo = 0;
-    gl::GLApi* api = gl::g_current_gl_context;
-    api->glGenFramebuffersEXTFn(1, &fbo);
-    api->glBindFramebufferEXTFn(GL_FRAMEBUFFER, fbo);
+  // Attach the texture to FBO.
+  api->glFramebufferTexture2DEXTFn(
+      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+      gl_representation->GetTexture()->target(),
+      gl_representation->GetTexture()->service_id(), 0);
 
-    // Attach the texture to FBO.
-    api->glFramebufferTexture2DEXTFn(
-        GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-        gl_representation->GetTexture()->target(),
-        gl_representation->GetTexture()->service_id(), 0);
-
-    // Set the clear color to green.
-    api->glClearColorFn(0.0f, 1.0f, 0.0f, 1.0f);
-    api->glClearFn(GL_COLOR_BUFFER_BIT);
-
-    gl_representation->GetTexture()->SetLevelCleared(
-        gl_representation->GetTexture()->target(), 0, true);
-  }
+  // Set the clear color to green.
+  api->glClearColorFn(0.0f, 1.0f, 0.0f, 1.0f);
+  api->glClearFn(GL_COLOR_BUFFER_BIT);
+  gl_representation.reset();
 
   // Next create a SharedImageRepresentationSkia to read back the texture data.
   auto skia_representation = shared_image_representation_factory_->ProduceSkia(
@@ -363,8 +353,7 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, Dawn_SkiaGL) {
   // Clear the shared image to green using Dawn.
   {
     auto scoped_access = dawn_representation->BeginScopedAccess(
-        WGPUTextureUsage_OutputAttachment,
-        SharedImageRepresentation::AllowUnclearedAccess::kYes);
+        WGPUTextureUsage_OutputAttachment);
     ASSERT_TRUE(scoped_access);
     wgpu::Texture texture = wgpu::Texture::Acquire(scoped_access->texture());
 

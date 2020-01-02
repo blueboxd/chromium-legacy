@@ -298,11 +298,6 @@ TEST_P(RasterDecoderManualInitTest, CopyTexSubImage2DValidateColorFormat) {
   init.extensions.push_back("GL_EXT_texture_rg");
   InitDecoder(init);
 
-  // Recreate |client_texture_mailbox_| as a cleared mailbox.
-  client_texture_mailbox_ = CreateFakeTexture(
-      kServiceTextureId, viz::ResourceFormat::RGBA_8888, /*width=*/2,
-      /*height=*/2, /*cleared=*/true);
-
   // Create dest texture.
   gpu::Mailbox dest_texture_mailbox =
       CreateFakeTexture(kNewServiceId, viz::ResourceFormat::RED_8,

@@ -2,31 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
-/**
- * Namespace for the Camera app.
- */
-var cca = cca || {};
-
-/**
- * Namespace for sound.
- */
-cca.sound = cca.sound || {};
-
 /**
  * Plays a sound.
  * @param {string} selector Selector of the sound.
  * @return {!Promise} Promise for waiting finishing playing or canceling wait.
  */
-cca.sound.play = function(selector) {
+export function play(selector) {
   // Use a timeout to wait for sound finishing playing instead of end-event
   // as it might not be played at all (crbug.com/135780).
   // TODO(yuli): Don't play sounds if the speaker settings is muted.
-  var cancel;
-  var p = new Promise((resolve, reject) => {
-    var element = document.querySelector(selector);
-    var timeout = setTimeout(resolve, Number(element.dataset.timeout || 0));
+  let cancel;
+  const p = new Promise((resolve, reject) => {
+    const element = document.querySelector(selector);
+    const timeout = setTimeout(resolve, Number(element.dataset.timeout || 0));
     cancel = () => {
       clearTimeout(timeout);
       reject(new Error('cancel'));
@@ -36,4 +24,7 @@ cca.sound.play = function(selector) {
   });
   p.cancel = cancel;
   return p;
-};
+}
+
+/** @const */
+cca.sound.play = play;

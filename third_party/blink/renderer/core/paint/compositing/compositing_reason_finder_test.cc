@@ -40,42 +40,7 @@ TEST_F(CompositingReasonFinderTest, CompositingReasonDependencies) {
                CompositingReason::kComboAllStyleDeterminedReasons);
 }
 
-class CompositingReasonFinderTestWithDoNotCompositeTrivial3D
-    : public CompositingReasonFinderTest {
- public:
-  CompositingReasonFinderTestWithDoNotCompositeTrivial3D() {
-    scoped_feature_list_.InitAndEnableFeature(
-        blink::features::kDoNotCompositeTrivial3D);
-  }
-
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-TEST_F(CompositingReasonFinderTestWithDoNotCompositeTrivial3D,
-       DontPromoteTrivial3D) {
-  SetBodyInnerHTML(R"HTML(
-    <div id='target'
-      style='width: 100px; height: 100px; transform: translateZ(0)'></div>
-  )HTML");
-
-  Element* target = GetDocument().getElementById("target");
-  PaintLayer* paint_layer =
-      ToLayoutBoxModelObject(target->GetLayoutObject())->Layer();
-  EXPECT_EQ(kNotComposited, paint_layer->GetCompositingState());
-}
-
-class CompositingReasonFinderTestWithCompositeTrivial3D
-    : public CompositingReasonFinderTest {
- public:
-  CompositingReasonFinderTestWithCompositeTrivial3D() {
-    scoped_feature_list_.InitAndDisableFeature(
-        blink::features::kDoNotCompositeTrivial3D);
-  }
-
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-TEST_F(CompositingReasonFinderTestWithCompositeTrivial3D, PromoteTrivial3D) {
+TEST_F(CompositingReasonFinderTest, PromoteTrivial3D) {
   SetBodyInnerHTML(R"HTML(
     <div id='target'
       style='width: 100px; height: 100px; transform: translateZ(0)'></div>

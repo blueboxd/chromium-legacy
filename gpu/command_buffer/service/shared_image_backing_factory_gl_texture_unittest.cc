@@ -270,8 +270,7 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Basic) {
   std::unique_ptr<SharedImageRepresentationSkia::ScopedWriteAccess>
       scoped_write_access;
   scoped_write_access = skia_representation->BeginScopedWriteAccess(
-      &begin_semaphores, &end_semaphores,
-      SharedImageRepresentation::AllowUnclearedAccess::kYes);
+      &begin_semaphores, &end_semaphores);
   auto* surface = scoped_write_access->surface();
   EXPECT_TRUE(surface);
   EXPECT_EQ(size.width(), surface->width());
@@ -382,8 +381,7 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Image) {
   std::unique_ptr<SharedImageRepresentationSkia::ScopedWriteAccess>
       scoped_write_access;
   scoped_write_access = skia_representation->BeginScopedWriteAccess(
-      &begin_semaphores, &end_semaphores,
-      SharedImageRepresentation::AllowUnclearedAccess::kYes);
+      &begin_semaphores, &end_semaphores);
   auto* surface = scoped_write_access->surface();
   EXPECT_TRUE(surface);
   EXPECT_EQ(size.width(), surface->width());
@@ -886,8 +884,7 @@ TEST_P(SharedImageBackingFactoryGLTextureThreadSafeTest, OneWriterOneReader) {
   // Begin writing to the underlying texture of the backing via ScopedAccess.
   std::unique_ptr<SharedImageRepresentationGLTexture::ScopedAccess>
       writer_scoped_access = gl_representation->BeginScopedAccess(
-          GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM,
-          SharedImageRepresentation::AllowUnclearedAccess::kNo);
+          GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
 
   DCHECK(writer_scoped_access);
 
@@ -906,8 +903,6 @@ TEST_P(SharedImageBackingFactoryGLTextureThreadSafeTest, OneWriterOneReader) {
   // Set the clear color to green.
   api->glClearColorFn(0.0f, 1.0f, 0.0f, 1.0f);
   api->glClearFn(GL_COLOR_BUFFER_BIT);
-  gl_representation->GetTexture()->SetLevelCleared(
-      gl_representation->GetTexture()->target(), 0, true);
 
   // End writing.
   writer_scoped_access.reset();
@@ -996,8 +991,7 @@ CreateAndValidateSharedImageRepresentations::
   std::unique_ptr<SharedImageRepresentationSkia::ScopedWriteAccess>
       scoped_write_access;
   scoped_write_access = skia_representation->BeginScopedWriteAccess(
-      &begin_semaphores, &end_semaphores,
-      SharedImageRepresentation::AllowUnclearedAccess::kNo);
+      &begin_semaphores, &end_semaphores);
   auto* surface = scoped_write_access->surface();
   EXPECT_TRUE(surface);
   EXPECT_EQ(size_.width(), surface->width());

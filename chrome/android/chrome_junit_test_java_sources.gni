@@ -192,6 +192,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/signin/ConfirmImportSyncDataDialogTest.java",
   "junit/src/org/chromium/chrome/browser/signin/ConfirmManagedSyncDataDialogTest.java",
   "junit/src/org/chromium/chrome/browser/signin/ConfirmSyncDataStateMachineDelegateTest.java",
+  "junit/src/org/chromium/chrome/browser/signin/ConfirmSyncDataStateMachineTest.java",
   "junit/src/org/chromium/chrome/browser/signin/SigninManagerTest.java",
   "junit/src/org/chromium/chrome/browser/signin/SigninPromoUtilTest.java",
   "junit/src/org/chromium/chrome/browser/signin/SigninUtilsStartActivityTest.java",

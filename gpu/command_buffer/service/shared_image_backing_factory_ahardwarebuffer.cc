@@ -234,6 +234,11 @@ class SharedImageRepresentationGLTextureAHB
       ahb_backing()->EndRead(this, std::move(sync_fd));
     } else if (mode_ == RepresentationAccessMode::kWrite) {
       ahb_backing()->EndWrite(std::move(sync_fd));
+
+      if (texture_) {
+        if (texture_->IsLevelCleared(texture_->target(), 0))
+          backing()->SetCleared();
+      }
     }
 
     mode_ = RepresentationAccessMode::kNone;

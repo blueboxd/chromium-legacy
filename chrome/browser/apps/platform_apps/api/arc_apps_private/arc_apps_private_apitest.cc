@@ -77,7 +77,9 @@ class ArcAppsPrivateApiTest : public extensions::ExtensionApiTest {
   DISALLOW_COPY_AND_ASSIGN(ArcAppsPrivateApiTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ArcAppsPrivateApiTest, GetPackageNameAndLaunchApp) {
+// TODO(crbug.com/1038602): Fix this flaky test, and enable it again.
+IN_PROC_BROWSER_TEST_F(ArcAppsPrivateApiTest,
+                       DISABLED_GetPackageNameAndLaunchApp) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(browser()->profile());
   ASSERT_TRUE(prefs);
   CreateAppInstance(prefs);

@@ -1362,28 +1362,40 @@ TEST_P(PaintLayerScrollableAreaTest,
   EXPECT_EQ(ScrollOffset(0, 50), scrollable_area->GetScrollOffset());
 }
 
-class PaintLayerScrollableAreaCompositingTest
-    : public PaintLayerScrollableAreaTest {
- public:
-  PaintLayerScrollableAreaCompositingTest() {
-    if (GetParam() & kDoNotCompositeTrivial3D) {
-      scoped_feature_list_.InitAndEnableFeature(
-          blink::features::kDoNotCompositeTrivial3D);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          blink::features::kDoNotCompositeTrivial3D);
-    }
-  }
+// Test that a trivial 3D transform results in composited scrolling.
+TEST_P(PaintLayerScrollableAreaTest, CompositeWithTrivial3D) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #scroller {
+        width: 100px;
+        height: 100px;
+        overflow: scroll;
+        transform: translateZ(0);
+      }
+      #scrolled {
+        width: 200px;
+        height: 200px;
+      }
+    </style>
+    <div id="scroller">
+      <div id="scrolled"></div>
+    </div>
+  )HTML");
 
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
+  EXPECT_TRUE(UsesCompositedScrolling(GetLayoutObjectByElementId("scroller")));
+}
+
+class PaintLayerScrollableAreaTestLowEndPlatform
+    : public TestingPlatformSupport {
+ public:
+  bool IsLowEndDevice() override { return true; }
 };
 
-INSTANTIATE_DO_NOT_COMPOSITE_TRIVIAL_3D_P(
-    PaintLayerScrollableAreaCompositingTest);
-
-// Test that a trivial 3D transform results in composited scrolling.
-TEST_P(PaintLayerScrollableAreaCompositingTest, CompositeWithTrivial3D) {
+// Test that a trivial 3D transform results in composited scrolling even on
+// low-end devices that may not composite trivial 3D transforms.
+TEST_P(PaintLayerScrollableAreaTest, LowEndCompositeWithTrivial3D) {
+  ScopedTestingPlatformSupport<PaintLayerScrollableAreaTestLowEndPlatform>
+      platform;
   SetBodyInnerHTML(R"HTML(
     <style>
       #scroller {

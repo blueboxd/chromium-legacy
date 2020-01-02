@@ -67,7 +67,7 @@ class PreviewModeClient : public PDFEngine::Client {
   void DocumentHasUnsupportedFeature(const std::string& feature) override;
   void FormTextFieldFocusChange(bool in_focus) override;
   bool IsPrintPreview() override;
-  float GetToolbarHeightInScreenCoords() const override;
+  float GetToolbarHeightInScreenCoords() override;
   uint32_t GetBackgroundColor() override;
 
  private:

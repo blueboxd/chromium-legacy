@@ -1796,19 +1796,16 @@ void RasterDecoderImpl::DoCopySubTextureINTERNALGLPassthrough(
 
   std::unique_ptr<SharedImageRepresentationGLTexturePassthrough::ScopedAccess>
       source_access = source_shared_image->BeginScopedAccess(
-          GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM,
-          SharedImageRepresentation::AllowUnclearedAccess::kNo);
+          GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
   if (!source_access) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
                        "unable to access source for read");
     return;
   }
 
-  // Allow uncleared access, as we manually handle clear tracking.
   std::unique_ptr<SharedImageRepresentationGLTexturePassthrough::ScopedAccess>
       dest_access = dest_shared_image->BeginScopedAccess(
-          GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM,
-          SharedImageRepresentation::AllowUnclearedAccess::kYes);
+          GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
   if (!dest_access) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
                        "unable to access destination for write");
@@ -1875,8 +1872,7 @@ void RasterDecoderImpl::DoCopySubTextureINTERNALGL(
 
   std::unique_ptr<SharedImageRepresentationGLTexture::ScopedAccess>
       source_access = source_shared_image->BeginScopedAccess(
-          GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM,
-          SharedImageRepresentation::AllowUnclearedAccess::kNo);
+          GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
   if (!source_access) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
                        "unable to access source for read");
@@ -1895,11 +1891,9 @@ void RasterDecoderImpl::DoCopySubTextureINTERNALGL(
     return;
   }
 
-  // Allow uncleared access, as we manually handle clear tracking.
   std::unique_ptr<SharedImageRepresentationGLTexture::ScopedAccess>
       dest_access = dest_shared_image->BeginScopedAccess(
-          GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM,
-          SharedImageRepresentation::AllowUnclearedAccess::kYes);
+          GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
   if (!dest_access) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
                        "unable to access destination for write");
@@ -2122,11 +2116,9 @@ void RasterDecoderImpl::DoCopySubTextureINTERNALSkia(
   std::vector<GrBackendSemaphore> begin_semaphores;
   std::vector<GrBackendSemaphore> end_semaphores;
 
-  // Allow uncleared access, as we manually handle clear tracking.
   std::unique_ptr<SharedImageRepresentationSkia::ScopedWriteAccess>
       dest_scoped_access = dest_shared_image->BeginScopedWriteAccess(
-          &begin_semaphores, &end_semaphores,
-          SharedImageRepresentation::AllowUnclearedAccess::kYes);
+          &begin_semaphores, &end_semaphores);
   if (!dest_scoped_access) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
                        "Dest shared image is not writable");
@@ -2344,11 +2336,8 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(
   std::vector<GrBackendSemaphore> begin_semaphores;
   DCHECK(end_semaphores_.empty());
   DCHECK(!scoped_shared_image_write_);
-  // Allow uncleared access, as raster specifically handles uncleared images by
-  // clearing them before writing.
   scoped_shared_image_write_ = shared_image_->BeginScopedWriteAccess(
-      final_msaa_count, surface_props, &begin_semaphores, &end_semaphores_,
-      SharedImageRepresentation::AllowUnclearedAccess::kYes);
+      final_msaa_count, surface_props, &begin_semaphores, &end_semaphores_);
   if (!scoped_shared_image_write_) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
                        "failed to create surface");

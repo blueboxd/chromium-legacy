@@ -460,7 +460,7 @@ WGPUTexture SharedImageRepresentationDawnD3D::BeginAccess(
     // the result.
     // TODO(cwallez@chromium.org): This is incorrect and allows reading
     // uninitialized data. When !IsCleared we should tell dawn_native to
-    // consider the texture lazy-cleared. crbug.com/1036080
+    // consider the texture lazy-cleared.
     SetCleared();
   } else {
     d3d_image_backing->EndAccessD3D12();

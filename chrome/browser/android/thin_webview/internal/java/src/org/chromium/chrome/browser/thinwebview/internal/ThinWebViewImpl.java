@@ -56,6 +56,7 @@ public class ThinWebViewImpl extends FrameLayout implements ThinWebView {
 
     @Override
     public void attachWebContents(WebContents webContents, @Nullable View contentView) {
+        if (mNativeThinWebViewImpl == 0) return;
         mWebContents = webContents;
 
         setContentView(contentView);
@@ -66,11 +67,10 @@ public class ThinWebViewImpl extends FrameLayout implements ThinWebView {
 
     @Override
     public void destroy() {
+        if (mNativeThinWebViewImpl == 0) return;
         mCompositorView.destroy();
-        if (mNativeThinWebViewImpl != 0) {
-            ThinWebViewImplJni.get().destroy(mNativeThinWebViewImpl, ThinWebViewImpl.this);
-            mNativeThinWebViewImpl = 0;
-        }
+        ThinWebViewImplJni.get().destroy(mNativeThinWebViewImpl, ThinWebViewImpl.this);
+        mNativeThinWebViewImpl = 0;
     }
 
     @Override
@@ -80,6 +80,7 @@ public class ThinWebViewImpl extends FrameLayout implements ThinWebView {
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        if (mNativeThinWebViewImpl == 0) return;
         if (w != oldw || h != oldh) {
             ThinWebViewImplJni.get().sizeChanged(
                     mNativeThinWebViewImpl, ThinWebViewImpl.this, w, h);

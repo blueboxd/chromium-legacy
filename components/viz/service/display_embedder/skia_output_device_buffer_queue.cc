@@ -113,13 +113,10 @@ SkSurface* SkiaOutputDeviceBufferQueue::Image::BeginWriteSkia() {
   std::vector<GrBackendSemaphore> begin_semaphores;
   SkSurfaceProps surface_props{0, kUnknown_SkPixelGeometry};
 
-  // Buffer queue is internal to GPU proc and handles texture initialization,
-  // so allow uncleared access.
   // TODO(vasilyt): Props and MSAA
   scoped_write_access_ = skia_representation_->BeginScopedWriteAccess(
       0 /* final_msaa_count */, surface_props, &begin_semaphores,
-      &end_semaphores_,
-      gpu::SharedImageRepresentation::AllowUnclearedAccess::kYes);
+      &end_semaphores_);
   DCHECK(scoped_write_access_);
   if (!begin_semaphores.empty()) {
     scoped_write_access_->surface()->wait(begin_semaphores.size(),
@@ -140,18 +137,13 @@ void SkiaOutputDeviceBufferQueue::Image::EndWriteSkia() {
       SkSurface::BackendSurfaceAccess::kNoAccess, flush_info);
   scoped_write_access_.reset();
   end_semaphores_.clear();
-
-  // SkiaRenderer always draws the full frame.
-  skia_representation_->SetCleared();
 }
 
 void SkiaOutputDeviceBufferQueue::Image::BeginPresent() {
   DCHECK(!scoped_write_access_);
   DCHECK(!scoped_read_access_);
   scoped_read_access_ = gl_representation_->BeginScopedAccess(
-      GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM,
-      gpu::SharedImageRepresentation::AllowUnclearedAccess::kNo);
-  DCHECK(scoped_read_access_);
+      GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
 }
 
 void SkiaOutputDeviceBufferQueue::Image::EndPresent() {

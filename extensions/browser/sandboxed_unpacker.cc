@@ -30,6 +30,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_source.h"
+#include "extensions/browser/computed_hashes.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/install/crx_install_error.h"
 #include "extensions/browser/install/sandboxed_unpacker_failure_reason.h"
@@ -209,6 +210,15 @@ std::set<base::FilePath> GetMessageCatalogPathsToBeSanitized(
   return message_catalog_paths;
 }
 
+// Callback for ComputedHashes::Create, compute hashes for all files except
+// _metadata directory (e.g. computed_hashes.json itself).
+bool ShouldComputeHashesForResource(
+    const base::FilePath& relative_resource_path) {
+  std::vector<base::FilePath::StringType> components;
+  relative_resource_path.GetComponents(&components);
+  return !components.empty() && components[0] != kMetadataFolder;
+}
+
 base::Optional<crx_file::VerifierFormat> g_verifier_format_override_for_test;
 
 }  // namespace
@@ -217,6 +227,12 @@ SandboxedUnpackerClient::SandboxedUnpackerClient()
     : RefCountedDeleteOnSequence<SandboxedUnpackerClient>(
           base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
+
+void SandboxedUnpackerClient::ShouldComputeHashesForOffWebstoreExtension(
+    scoped_refptr<const Extension> extension,
+    base::OnceCallback<void(bool)> callback) {
+  std::move(callback).Run(false);
 }
 
 SandboxedUnpacker::ScopedVerifierFormatOverrideForTest::
@@ -684,7 +700,8 @@ void SandboxedUnpacker::IndexAndPersistJSONRulesetIfNeeded(
 
   if (!declarative_net_request::DNRManifestData::HasRuleset(*extension_)) {
     // The extension did not provide a ruleset.
-    ReportSuccess(std::move(manifest), base::nullopt /*dnr_ruleset_checksum*/);
+    CheckComputeHashes(std::move(manifest),
+                       base::nullopt /*dnr_ruleset_checksum*/);
     return;
   }
 
@@ -707,13 +724,48 @@ void SandboxedUnpacker::OnJSONRulesetIndexed(
     UMA_HISTOGRAM_TIMES(
         declarative_net_request::kIndexAndPersistRulesTimeHistogram,
         result.index_and_persist_time);
-    ReportSuccess(std::move(manifest), result.ruleset_checksum);
+    CheckComputeHashes(std::move(manifest), result.ruleset_checksum);
     return;
   }
 
   ReportFailure(SandboxedUnpackerFailureReason::ERROR_INDEXING_DNR_RULESET,
                 l10n_util::GetStringFUTF16(IDS_EXTENSION_PACKAGE_ERROR_MESSAGE,
                                            base::UTF8ToUTF16(result.error)));
+}
+
+void SandboxedUnpacker::CheckComputeHashes(
+    std::unique_ptr<base::DictionaryValue> manifest,
+    const base::Optional<int>& dnr_ruleset_checksum) {
+  DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
+  client_->ShouldComputeHashesForOffWebstoreExtension(
+      extension_, base::BindOnce(&SandboxedUnpacker::MaybeComputeHashes, this,
+                                 std::move(manifest), dnr_ruleset_checksum));
+}
+
+void SandboxedUnpacker::MaybeComputeHashes(
+    std::unique_ptr<base::DictionaryValue> original_manifest,
+    const base::Optional<int>& dnr_ruleset_checksum,
+    bool should_compute) {
+  DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
+  if (!should_compute) {
+    ReportSuccess(std::move(original_manifest), dnr_ruleset_checksum);
+    return;
+  }
+
+  base::Optional<ComputedHashes::Data> computed_hashes_data =
+      ComputedHashes::Compute(
+          extension_->path(),
+          extension_misc::kContentVerificationDefaultBlockSize,
+          IsCancelledCallback(),
+          base::BindRepeating(&ShouldComputeHashesForResource));
+  if (!computed_hashes_data ||
+      !ComputedHashes(std::move(*computed_hashes_data))
+           .WriteToFile(file_util::GetComputedHashesPath(extension_->path()))) {
+    LOG(ERROR) << "[extension " << extension_->id()
+               << "] Failed to create computed_hashes.json";
+  }
+
+  ReportSuccess(std::move(original_manifest), dnr_ruleset_checksum);
 }
 
 data_decoder::mojom::JsonParser* SandboxedUnpacker::GetJsonParserPtr() {

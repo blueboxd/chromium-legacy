@@ -268,6 +268,7 @@ id<GREYMatcher> BottomToolbar() {
     EARL_GREY_TEST_SKIPPED(
         @"This test makes sense only when there is no Add Payment button.");
   }
+
   NSString* lastDigits = [AutofillAppInterface saveLocalCreditCard];
   [self openCreditCardListInEditMode];
 
@@ -326,6 +327,11 @@ id<GREYMatcher> BottomToolbar() {
       ensureAppLaunchedWithFeaturesEnabled:{kSettingsAddPaymentMethod}
                                   disabled:{}
                             relaunchPolicy:NoForceRelaunchAndResetState];
+  if (![ChromeEarlGrey isSettingsAddPaymentMethodEnabled]) {
+    EARL_GREY_TEST_SKIPPED(
+        @"This test has no meaning when AddPaymentMethod is disabled");
+  }
+
   NSString* lastDigits = [AutofillAppInterface saveLocalCreditCard];
   [self openCreditCardListInEditMode];
 
@@ -350,6 +356,10 @@ id<GREYMatcher> BottomToolbar() {
       ensureAppLaunchedWithFeaturesEnabled:{kSettingsAddPaymentMethod}
                                   disabled:{}
                             relaunchPolicy:NoForceRelaunchAndResetState];
+  if (![ChromeEarlGrey isSettingsAddPaymentMethodEnabled]) {
+    EARL_GREY_TEST_SKIPPED(
+        @"This test has no meaning when AddPaymentMethod is disabled");
+  }
   [AutofillAppInterface saveLocalCreditCard];
   [self openCreditCardListInEditMode];
 
@@ -371,7 +381,10 @@ id<GREYMatcher> BottomToolbar() {
       ensureAppLaunchedWithFeaturesEnabled:{kSettingsAddPaymentMethod}
                                   disabled:{}
                             relaunchPolicy:NoForceRelaunchAndResetState];
-
+  if (![ChromeEarlGrey isSettingsAddPaymentMethodEnabled]) {
+    EARL_GREY_TEST_SKIPPED(
+        @"This test has no meaning when AddPaymentMethod is disabled");
+  }
   NSString* lastDigits = [AutofillAppInterface saveLocalCreditCard];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::
                                           SettingsBottomToolbarDeleteButton()]

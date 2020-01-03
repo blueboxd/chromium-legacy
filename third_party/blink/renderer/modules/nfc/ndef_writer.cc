@@ -66,17 +66,11 @@ ScriptPromise NDEFWriter::push(ScriptState* script_state,
     return ScriptPromise();
   }
 
-  // Step 10.10.1: Run "create NDEF message", if this throws an exception,
+  // Step 11.2: Run "create NDEF message", if this throws an exception,
   // reject p with that exception and abort these steps.
   NDEFMessage* ndef_message =
       NDEFMessage::Create(execution_context, push_message, exception_state);
   if (exception_state.HadException()) {
-    return ScriptPromise();
-  }
-
-  // If NDEFMessage.records is empty, reject promise with TypeError
-  if (ndef_message->records().size() == 0) {
-    exception_state.ThrowTypeError("Empty NDEFMessage was provided.");
     return ScriptPromise();
   }
 

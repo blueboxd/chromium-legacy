@@ -439,7 +439,7 @@ public abstract class SigninFragmentBase
         mConfirmSyncDataStateMachine = new ConfirmSyncDataStateMachine(
                 new ConfirmSyncDataStateMachineDelegate(getChildFragmentManager()),
                 PrefServiceBridge.getInstance().getString(Pref.SYNC_LAST_ACCOUNT_NAME),
-                mSelectedAccountName, new ConfirmImportSyncDataDialog.Listener() {
+                mSelectedAccountName, new ConfirmSyncDataStateMachine.Listener() {
                     @Override
                     public void onConfirm(boolean wipeData) {
                         mConfirmSyncDataStateMachine = null;

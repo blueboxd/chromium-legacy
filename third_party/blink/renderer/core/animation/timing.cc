@@ -186,7 +186,7 @@ Timing::CalculatedTiming Timing::CalculateTimings(
                                           current_direction_is_forwards,
                                           timing_function);
 
-  double time_to_next_iteration = std::numeric_limits<double>::infinity();
+  AnimationTimeDelta time_to_next_iteration = AnimationTimeDelta::Max();
   // Conditionally compute the time to next iteration, which is only
   // applicable if the iteration duration is non-zero.
   if (iteration_duration) {
@@ -203,9 +203,12 @@ Timing::CalculatedTiming Timing::CalculateTimings(
       // active_time cannot be null if iteration_time is not null.
       DCHECK(active_time);
       time_to_next_iteration =
-          iteration_duration - iteration_time->InSecondsF();
-      if (active_duration - active_time->InSecondsF() < time_to_next_iteration)
-        time_to_next_iteration = std::numeric_limits<double>::infinity();
+          AnimationTimeDelta::FromSecondsD(iteration_duration) -
+          iteration_time.value();
+      if (AnimationTimeDelta::FromSecondsD(active_duration) -
+              active_time.value() <
+          time_to_next_iteration)
+        time_to_next_iteration = AnimationTimeDelta::Max();
     }
   }
 

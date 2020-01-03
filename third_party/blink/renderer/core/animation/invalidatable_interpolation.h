@@ -98,11 +98,12 @@ class CORE_EXPORT InvalidatableInterpolation : public Interpolation {
   mutable std::unique_ptr<TypedInterpolationValue> cached_value_;
 };
 
-DEFINE_TYPE_CASTS(InvalidatableInterpolation,
-                  Interpolation,
-                  value,
-                  value->IsInvalidatableInterpolation(),
-                  value.IsInvalidatableInterpolation());
+template <>
+struct DowncastTraits<InvalidatableInterpolation> {
+  static bool AllowFrom(const Interpolation& value) {
+    return value.IsInvalidatableInterpolation();
+  }
+};
 
 }  // namespace blink
 

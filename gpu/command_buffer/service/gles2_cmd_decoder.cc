@@ -98,6 +98,7 @@
 #include "ui/gfx/ipc/color/gfx_param_traits.h"
 #include "ui/gfx/transform.h"
 #include "ui/gl/ca_renderer_layer_params.h"
+#include "ui/gl/color_space_utils.h"
 #include "ui/gl/dc_renderer_layer_params.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
@@ -5863,7 +5864,8 @@ error::Error GLES2DecoderImpl::HandleResizeCHROMIUM(
   GLuint width = static_cast<GLuint>(c.width);
   GLuint height = static_cast<GLuint>(c.height);
   GLfloat scale_factor = c.scale_factor;
-  GLenum color_space = c.color_space;
+  gfx::ColorSpace color_space =
+      gl::ColorSpaceUtils::GetColorSpace(c.color_space);
   GLboolean has_alpha = c.alpha;
   TRACE_EVENT2("gpu", "glResizeChromium", "width", width, "height", height);
 
@@ -5874,29 +5876,6 @@ error::Error GLES2DecoderImpl::HandleResizeCHROMIUM(
   width = base::ClampToRange(width, 1U, kMaxDimension);
   height = base::ClampToRange(height, 1U, kMaxDimension);
 
-  gl::GLSurface::ColorSpace surface_color_space =
-      gl::GLSurface::ColorSpace::UNSPECIFIED;
-  switch (color_space) {
-    case GL_COLOR_SPACE_UNSPECIFIED_CHROMIUM:
-      surface_color_space = gl::GLSurface::ColorSpace::UNSPECIFIED;
-      break;
-    case GL_COLOR_SPACE_SCRGB_LINEAR_CHROMIUM:
-      surface_color_space = gl::GLSurface::ColorSpace::SCRGB_LINEAR;
-      break;
-    case GL_COLOR_SPACE_HDR10_CHROMIUM:
-      surface_color_space = gl::GLSurface::ColorSpace::HDR10;
-      break;
-    case GL_COLOR_SPACE_SRGB_CHROMIUM:
-      surface_color_space = gl::GLSurface::ColorSpace::SRGB;
-      break;
-    case GL_COLOR_SPACE_DISPLAY_P3_CHROMIUM:
-      surface_color_space = gl::GLSurface::ColorSpace::DISPLAY_P3;
-      break;
-    default:
-      LOG(ERROR) << "GLES2DecoderImpl: Context lost because specified color"
-                 << "space was invalid.";
-      return error::kLostContext;
-  }
   bool is_offscreen = !!offscreen_target_frame_buffer_.get();
   if (is_offscreen) {
     if (!ResizeOffscreenFramebuffer(gfx::Size(width, height))) {
@@ -5905,8 +5884,8 @@ error::Error GLES2DecoderImpl::HandleResizeCHROMIUM(
       return error::kLostContext;
     }
   } else {
-    if (!surface_->Resize(gfx::Size(width, height), scale_factor,
-                          surface_color_space, !!has_alpha)) {
+    if (!surface_->Resize(gfx::Size(width, height), scale_factor, color_space,
+                          !!has_alpha)) {
       LOG(ERROR) << "GLES2DecoderImpl: Context lost because resize failed.";
       return error::kLostContext;
     }

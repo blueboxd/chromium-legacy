@@ -2,34 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
-/**
- * Namespace for the Camera app.
- */
-var cca = cca || {};
-
-/**
- * Namespace for views.
- */
-cca.views = cca.views || {};
-
-/**
- * Namespace for Camera view.
- */
-cca.views.camera = cca.views.camera || {};
+import {browserProxy} from '../../browser_proxy/browser_proxy.js';
+import {assertInstanceof} from '../../chrome_util.js';
+// eslint-disable-next-line no-unused-vars
+import {Camera3DeviceInfo} from '../../device/camera3_device_info.js';
+// eslint-disable-next-line no-unused-vars
+import {DeviceInfoUpdater} from '../../device/device_info_updater.js';
+import {ChromeHelper} from '../../mojo/chrome_helper.js';
+import * as nav from '../../nav.js';
+import {PerfEvent} from '../../perf.js';
+import * as state from '../../state.js';
+import * as util from '../../util.js';
 
 /**
  * Creates a controller for the options of Camera view.
  */
-cca.views.camera.Options = class {
+export class Options {
   /**
-   * @param {!cca.device.DeviceInfoUpdater} infoUpdater
+   * @param {!DeviceInfoUpdater} infoUpdater
    * @param {!function()} doSwitchDevice Callback to trigger device switching.
    */
   constructor(infoUpdater, doSwitchDevice) {
     /**
-     * @type {!cca.device.DeviceInfoUpdater}
+     * @type {!DeviceInfoUpdater}
      * @private
      * @const
      */
@@ -47,17 +42,16 @@ cca.views.camera.Options = class {
      * @private
      * @const
      */
-    this.toggleMic_ =
-        /** @type {!HTMLInputElement} */ (
-            document.querySelector('#toggle-mic'));
+    this.toggleMic_ = assertInstanceof(
+        document.querySelector('#toggle-mic'), HTMLInputElement);
 
     /**
      * @type {!HTMLInputElement}
      * @private
      * @const
      */
-    this.toggleMirror_ = /** @type {!HTMLInputElement} */ (
-        document.querySelector('#toggle-mirror'));
+    this.toggleMirror_ = assertInstanceof(
+        document.querySelector('#toggle-mirror'), HTMLInputElement);
 
     /**
      * Device id of the camera device currently used or selected.
@@ -97,7 +91,7 @@ cca.views.camera.Options = class {
 
     [['#switch-device', () => this.switchDevice_()],
      ['#toggle-grid', () => this.animatePreviewGrid_()],
-     ['#open-settings', () => cca.nav.open('settings')],
+     ['#open-settings', () => nav.open('settings')],
     ]
         .forEach(
             ([selector, fn]) =>
@@ -107,16 +101,16 @@ cca.views.camera.Options = class {
     this.toggleMirror_.addEventListener('click', () => this.saveMirroring_());
 
     // Restore saved mirroring states per video device.
-    cca.proxy.browserProxy.localStorageGet(
+    browserProxy.localStorageGet(
         {mirroringToggles: {}},
         (values) => this.mirroringToggles_ = values.mirroringToggles);
     // Remove the deprecated values.
-    cca.proxy.browserProxy.localStorageRemove(
+    browserProxy.localStorageRemove(
         ['effectIndex', 'toggleMulti', 'toggleMirror']);
 
     this.infoUpdater_.addDeviceChangeListener(async (updater) => {
-      cca.state.set(
-          cca.state.State.MULTI_CAMERA,
+      state.set(
+          state.State.MULTI_CAMERA,
           (await updater.getDevicesInfo()).length >= 2);
     });
   }
@@ -134,14 +128,13 @@ cca.views.camera.Options = class {
    * @private
    */
   async switchDevice_() {
-    if (!cca.state.get(cca.state.State.STREAMING) ||
-        cca.state.get(cca.state.State.TAKING)) {
+    if (!state.get(state.State.STREAMING) || state.get(state.State.TAKING)) {
       return;
     }
-    cca.state.set(cca.perf.PerfEvent.CAMERA_SWITCHING, true);
+    state.set(PerfEvent.CAMERA_SWITCHING, true);
     const devices = await this.infoUpdater_.getDevicesInfo();
-    cca.util.animateOnce(
-        /** @type {!HTMLElement} */ (document.querySelector('#switch-device')));
+    util.animateOnce(assertInstanceof(
+        document.querySelector('#switch-device'), HTMLElement));
     let index =
         devices.findIndex((entry) => entry.deviceId === this.videoDeviceId_);
     if (index === -1) {
@@ -152,8 +145,7 @@ cca.views.camera.Options = class {
       this.videoDeviceId_ = devices[index].deviceId;
     }
     const isSuccess = await this.doSwitchDevice_();
-    cca.state.set(
-        cca.perf.PerfEvent.CAMERA_SWITCHING, false, {hasError: !isSuccess});
+    state.set(PerfEvent.CAMERA_SWITCHING, false, {hasError: !isSuccess});
   }
 
   /**
@@ -162,7 +154,7 @@ cca.views.camera.Options = class {
    */
   animatePreviewGrid_() {
     Array.from(document.querySelector('#preview-grid').children)
-        .forEach((grid) => cca.util.animateOnce(grid));
+        .forEach((grid) => util.animateOnce(grid));
   }
 
   /**
@@ -206,7 +198,7 @@ cca.views.camera.Options = class {
       enabled = this.mirroringToggles_[this.videoDeviceId_];
     }
 
-    cca.util.toggleChecked(this.toggleMirror_, enabled);
+    util.toggleChecked(this.toggleMirror_, enabled);
   }
 
   /**
@@ -215,8 +207,7 @@ cca.views.camera.Options = class {
    */
   saveMirroring_() {
     this.mirroringToggles_[this.videoDeviceId_] = this.toggleMirror_.checked;
-    cca.proxy.browserProxy.localStorageSet(
-        {mirroringToggles: this.mirroringToggles_});
+    browserProxy.localStorageSet({mirroringToggles: this.mirroringToggles_});
   }
 
   /**
@@ -235,7 +226,7 @@ cca.views.camera.Options = class {
    *     on HALv1 devices.
    */
   async videoDeviceIds() {
-    /** @type{!Array<(!cca.device.Camera3DeviceInfo|!MediaDeviceInfo)>} */
+    /** @type{!Array<(!Camera3DeviceInfo|!MediaDeviceInfo)>} */
     let devices;
     let facings = null;
 
@@ -251,8 +242,7 @@ cca.views.camera.Options = class {
       devices = await this.infoUpdater_.getDevicesInfo();
     }
 
-    const defaultFacing =
-        await cca.mojo.ChromeHelper.getInstance().isTabletMode() ?
+    const defaultFacing = await ChromeHelper.getInstance().isTabletMode() ?
         cros.mojom.CameraFacing.CAMERA_FACING_BACK :
         cros.mojom.CameraFacing.CAMERA_FACING_FRONT;
     // Put the selected video device id first.
@@ -273,4 +263,7 @@ cca.views.camera.Options = class {
     }
     return sorted;
   }
-};
+}
+
+/** @const */
+cca.views.camera.Options = Options;

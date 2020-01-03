@@ -858,7 +858,7 @@ cca.views.camera.Photo = class extends cca.views.camera.ModeBase {
           continue;
         }
 
-        const val = cca.mojo.parseMetadataData(entry);
+        const val = cca.mojo.parseMetadata(entry);
         parsedMetadata[key] = val;
       }
 

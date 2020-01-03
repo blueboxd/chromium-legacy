@@ -58,18 +58,32 @@ void BlockFlowPaintInvalidator::InvalidateDisplayItemClients(
       reason == PaintInvalidationReason::kSelection)
     return;
 
-  // It's the RootInlineBox that paints the ::first-line background. Note that
-  // since it may be expensive to figure out if the first line is affected by
-  // any ::first-line selectors at all, we just invalidate it unconditionally
-  // which is typically cheaper.
   if (RootInlineBox* line = block_flow_.FirstRootBox()) {
+    // It's the RootInlineBox that paints the ::first-line background. Note that
+    // since it may be expensive to figure out if the first line is affected by
+    // any ::first-line selectors at all, we just invalidate it unconditionally
+    // which is typically cheaper.
     if (line->IsFirstLineStyle()) {
       object_paint_invalidator.InvalidateDisplayItemClient(*line, reason);
     }
   } else if (paint_fragment) {
-    NGPaintFragment* line = paint_fragment->FirstLineBox();
-    if (line && line->PhysicalFragment().UsesFirstLineStyle()) {
-      object_paint_invalidator.InvalidateDisplayItemClient(*line, reason);
+    // The first line NGLineBoxFragment paints the ::first-line background.
+    // Because it may be expensive to figure out if the first line is affected
+    // by any ::first-line selectors at all, we just invalidate unconditionally
+    // which is typically cheaper.
+    if (NGPaintFragment* line = paint_fragment->FirstLineBox()) {
+      if (line->PhysicalFragment().UsesFirstLineStyle())
+        object_paint_invalidator.InvalidateDisplayItemClient(*line, reason);
+    }
+
+    // Line boxes paint hit test display items (see:
+    // NGBoxFragmentPainter::PaintLineBox) and should be invalidated if they
+    // change.
+    if (block_flow_.HasEffectiveAllowedTouchAction()) {
+      for (NGPaintFragment* line : paint_fragment->Children()) {
+        if (line->PhysicalFragment().IsLineBox())
+          object_paint_invalidator.InvalidateDisplayItemClient(*line, reason);
+      }
     }
   }
 

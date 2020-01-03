@@ -375,14 +375,14 @@ void CSSBorderImageLengthBoxInterpolationType::ApplyStandardPropertyValue(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue* non_interpolable_value,
     StyleResolverState& state) const {
-  const InterpolableList& list = ToInterpolableList(interpolable_value);
+  const auto& list = To<InterpolableList>(interpolable_value);
   const NonInterpolableList& non_interpolable_list =
       ToNonInterpolableList(*non_interpolable_value);
   const auto& convert_side = [&list, &non_interpolable_list,
                               &state](wtf_size_t index) -> BorderImageLength {
     switch (GetSideType(non_interpolable_list.Get(index))) {
       case SideType::kNumber:
-        return clampTo<double>(ToInterpolableNumber(list.Get(index))->Value(),
+        return clampTo<double>(To<InterpolableNumber>(list.Get(index))->Value(),
                                0);
       case SideType::kAuto:
         return Length::Auto();

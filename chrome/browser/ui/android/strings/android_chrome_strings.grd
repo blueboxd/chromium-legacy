@@ -4005,7 +4005,7 @@ The site does NOT gain access to the camera. The camera images are only visible 
         Turn on
       </message>
       <message name="IDS_ANDROID_NFC_OFF_GLOBALLY" desc="The message to show when NFC has been turned off globally in Android. Contains a link to the settings menu to enable NFC.">
-        NFC is off for this device. Turn it on NFC in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
+        NFC is off for this device. Turn it on in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
       </message>
     </messages>
   </release>

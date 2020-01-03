@@ -7,6 +7,12 @@ package org.chromium.components.background_task_scheduler;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkInfo;
+import android.os.BatteryManager;
+import android.os.Build;
 import android.os.PowerManager;
 import android.text.format.DateUtils;
 
@@ -18,8 +24,6 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 /**
  * Starts running the BackgroundTask at the specified triggering time.
- * TODO (crbug.com/970160): Check that the requirements set for the BackgroundTask are met before
- * starting it.
  *
  * Receives the information through a broadcast, which is synchronous in the Main thread. The
  * execution of the task will be detached to a best effort task.
@@ -96,8 +100,33 @@ public class BackgroundTaskBroadcastReceiver extends BroadcastReceiver {
             return;
         }
 
+        int taskId = taskParams.getTaskId();
+        ScheduledTaskProto.ScheduledTask scheduledTask =
+                BackgroundTaskSchedulerPrefs.getScheduledTask(taskId);
+        if (scheduledTask == null) {
+            Log.e(TAG, "Cannot get information about task with task ID " + taskId);
+            return;
+        }
+
+        // Only continue if network requirements match network status.
+        if (!networkRequirementsMet(context, taskId,
+                    convertToTaskInfoNetworkType(scheduledTask.getRequiredNetworkType()))) {
+            Log.w(TAG,
+                    "Failed to start task. Network requirements not satisfied for task with task ID"
+                            + taskId);
+            return;
+        }
+
+        // Check if battery requirements match.
+        if (!batteryRequirementsMet(context, taskId, scheduledTask.getRequiresCharging())) {
+            Log.w(TAG,
+                    "Failed to start task. Battery requirements not satisfied for task with task ID"
+                            + taskId);
+            return;
+        }
+
         final BackgroundTask backgroundTask =
-                BackgroundTaskSchedulerFactory.getBackgroundTaskFromTaskId(taskParams.getTaskId());
+                BackgroundTaskSchedulerFactory.getBackgroundTaskFromTaskId(taskId);
         if (backgroundTask == null) {
             Log.w(TAG, "Failed to start task. Could not instantiate BackgroundTask class.");
             // Cancel task if the BackgroundTask class is not found anymore. We assume this means
@@ -115,5 +144,53 @@ public class BackgroundTaskBroadcastReceiver extends BroadcastReceiver {
 
         TaskExecutor taskExecutor = new TaskExecutor(context, wakeLock, taskParams, backgroundTask);
         PostTask.postTask(UiThreadTaskTraits.BEST_EFFORT, taskExecutor::execute);
+    }
+
+    private boolean networkRequirementsMet(Context context, int taskId, int requiredNetworkType) {
+        if (requiredNetworkType == TaskInfo.NetworkType.NONE) return true;
+
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager) context.getApplicationContext().getSystemService(
+                        Context.CONNECTIVITY_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Network network = connectivityManager.getActiveNetwork();
+            if (requiredNetworkType == TaskInfo.NetworkType.ANY) return (network != null);
+        } else {
+            NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+            if (requiredNetworkType == TaskInfo.NetworkType.ANY) return (networkInfo != null);
+        }
+
+        return (!connectivityManager.isActiveNetworkMetered());
+    }
+
+    private boolean batteryRequirementsMet(Context context, int taskId, boolean requiresCharging) {
+        if (!requiresCharging) return true;
+        BatteryManager batteryManager =
+                (BatteryManager) context.getSystemService(Context.BATTERY_SERVICE);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return batteryManager.isCharging();
+        }
+
+        IntentFilter intentFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+        Intent batteryStatus = context.registerReceiver(null, intentFilter);
+        int status = batteryStatus.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
+        return status == BatteryManager.BATTERY_STATUS_CHARGING
+                || status == BatteryManager.BATTERY_STATUS_FULL;
+    }
+
+    private @TaskInfo.NetworkType int convertToTaskInfoNetworkType(
+            ScheduledTaskProto.ScheduledTask.RequiredNetworkType networkType) {
+        switch (networkType) {
+            case NONE:
+                return TaskInfo.NetworkType.NONE;
+            case ANY:
+                return TaskInfo.NetworkType.ANY;
+            case UNMETERED:
+                return TaskInfo.NetworkType.UNMETERED;
+            default:
+                assert false : "Incorrect value of RequiredNetworkType";
+                return -1;
+        }
     }
 }

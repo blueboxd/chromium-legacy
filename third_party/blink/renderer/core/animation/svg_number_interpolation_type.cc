@@ -39,7 +39,7 @@ SVGPropertyBase* SVGNumberInterpolationType::AppliedSVGValue(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue*) const {
   float value =
-      clampTo<float>(ToInterpolableNumber(interpolable_value).Value());
+      clampTo<float>(To<InterpolableNumber>(interpolable_value).Value());
   return MakeGarbageCollected<SVGNumber>(is_non_negative_ && value < 0 ? 0
                                                                        : value);
 }

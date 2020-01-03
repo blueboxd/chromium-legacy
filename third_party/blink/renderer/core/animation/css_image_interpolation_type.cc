@@ -138,7 +138,7 @@ const CSSValue* CSSImageInterpolationType::StaticCreateCSSValue(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue* non_interpolable_value) {
   return ToCSSImageNonInterpolableValue(non_interpolable_value)
-      ->Crossfade(ToInterpolableNumber(interpolable_value).Value());
+      ->Crossfade(To<InterpolableNumber>(interpolable_value).Value());
 }
 
 StyleImage* CSSImageInterpolationType::ResolveStyleImage(

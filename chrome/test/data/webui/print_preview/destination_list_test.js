@@ -114,7 +114,7 @@ suite(destination_list_test.suiteName, function() {
     assertTrue(noMatchHint.hidden);
 
     // Clearing the query restores the original state.
-    list.searchQuery = /()/ig;
+    list.searchQuery = null;
     flush();
     items.forEach(item => assertFalse(item.hidden));
     assertTrue(noMatchHint.hidden);

@@ -313,5 +313,28 @@ cr.define('settings_test', function() {
       assertEquals('4 results', bubbles[1].textContent);
       assertEquals('1 result', bubbles[0].textContent);
     });
+
+    test('diacritics', async () => {
+      document.body.innerHTML = `
+          <settings-section>
+            <select>
+              <option>año de oro</option>
+            </select>
+            <button></button>
+            <settings-subpage>
+              malibu cañon
+            </settings-subpage>
+            danger zone
+          </setting-section>`;
+
+      const subpage = document.querySelector('settings-subpage');
+      subpage.associatedControl = document.querySelector('button');
+
+      await searchManager.search('an', document.body);
+
+      const highlights = document.querySelectorAll('.search-highlight-wrapper');
+      assertEquals(2, highlights.length);
+      assertEquals(2, document.querySelectorAll('.search-bubble').length);
+    });
   });
 });

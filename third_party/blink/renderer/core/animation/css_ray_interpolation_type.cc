@@ -116,7 +116,7 @@ void CSSRayInterpolationType::ApplyStandardPropertyValue(
   const CSSRayNonInterpolableValue& ray_non_interpolable_value =
       ToCSSRayNonInterpolableValue(*non_interpolable_value);
   state.Style()->SetOffsetPath(
-      StyleRay::Create(ToInterpolableNumber(interpolable_value).Value(),
+      StyleRay::Create(To<InterpolableNumber>(interpolable_value).Value(),
                        ray_non_interpolable_value.Mode().Size(),
                        ray_non_interpolable_value.Mode().Contain()));
 }

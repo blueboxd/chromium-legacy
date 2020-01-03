@@ -261,7 +261,7 @@ void NativeViewGLSurfaceWGL::Destroy() {
 
 bool NativeViewGLSurfaceWGL::Resize(const gfx::Size& size,
                                     float scale_factor,
-                                    ColorSpace color_space,
+                                    const gfx::ColorSpace& color_space,
                                     bool has_alpha) {
   RECT rect;
   if (!GetClientRect(window_, &rect)) {

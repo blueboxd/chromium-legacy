@@ -38,7 +38,7 @@ const CSSValue* CSSNumberInterpolationType::CreateCSSValue(
     const InterpolableValue& value,
     const NonInterpolableValue*,
     const StyleResolverState&) const {
-  double number = ToInterpolableNumber(value).Value();
+  double number = To<InterpolableNumber>(value).Value();
   return CSSNumericLiteralValue::Create(
       round_to_integer_ ? round(number) : number,
       CSSPrimitiveValue::UnitType::kNumber);
@@ -105,7 +105,7 @@ void CSSNumberInterpolationType::ApplyStandardPropertyValue(
     const NonInterpolableValue*,
     StyleResolverState& state) const {
   double clamped_number = NumberPropertyFunctions::ClampNumber(
-      CssProperty(), ToInterpolableNumber(interpolable_value).Value());
+      CssProperty(), To<InterpolableNumber>(interpolable_value).Value());
   if (!NumberPropertyFunctions::SetNumber(CssProperty(), *state.Style(),
                                           clamped_number)) {
     StyleBuilder::ApplyProperty(

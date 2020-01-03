@@ -38,7 +38,7 @@ bool GlRenderer::Initialize() {
     return false;
   }
 
-  gl_surface_->Resize(size_, 1.f, gl::GLSurface::ColorSpace::UNSPECIFIED, true);
+  gl_surface_->Resize(size_, 1.f, gfx::ColorSpace(), true);
 
   if (!context_->MakeCurrent(gl_surface_.get())) {
     LOG(ERROR) << "Failed to make GL context current";

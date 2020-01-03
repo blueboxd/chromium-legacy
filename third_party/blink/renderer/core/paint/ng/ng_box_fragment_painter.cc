@@ -1043,8 +1043,8 @@ void NGBoxFragmentPainter::PaintInlineItems(const PaintInfo& paint_info,
   }
 }
 
-// Paint a line box. This function paints only background of `::first-line`. In
-// all other cases, the container box paints background.
+// Paint a line box. This function paints hit tests and backgrounds of
+// `::first-line`. In all other cases, the container box paints background.
 inline void NGBoxFragmentPainter::PaintLineBox(
     const NGPhysicalFragment& line_box_fragment,
     const DisplayItemClient& display_item_client,
@@ -1060,15 +1060,12 @@ inline void NGBoxFragmentPainter::PaintLineBox(
     RecordHitTestDataForLine(paint_info, child_offset, line_box_fragment,
                              display_item_client);
   }
-
-  // Line boxes don't paint anything, except when its ::first-line style has
-  // a background.
-  if (!NGLineBoxFragmentPainter::NeedsPaint(line_box_fragment))
-    return;
-  NGLineBoxFragmentPainter line_box_painter(
-      line_box_fragment, line_box_paint_fragment, line_box_item,
-      PhysicalFragment(), paint_fragment_);
-  line_box_painter.PaintBackgroundBorderShadow(paint_info, child_offset);
+  if (NGLineBoxFragmentPainter::NeedsPaint(line_box_fragment)) {
+    NGLineBoxFragmentPainter line_box_painter(
+        line_box_fragment, line_box_paint_fragment, line_box_item,
+        PhysicalFragment(), paint_fragment_);
+    line_box_painter.PaintBackgroundBorderShadow(paint_info, child_offset);
+  }
 }
 
 void NGBoxFragmentPainter::PaintLineBoxChildren(

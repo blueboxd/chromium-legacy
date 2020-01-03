@@ -152,34 +152,21 @@ void LayoutNGListItem::UpdateMarker() {
     is_marker_text_updated_ = true;
     return;
   }
-  scoped_refptr<ComputedStyle> marker_style =
-      cached_marker_style ? ComputedStyle::Clone(*cached_marker_style)
-                          : list_item->StyleForPseudoElement(kPseudoIdMarker);
-  DCHECK(marker_style);
   if (IsInside()) {
     if (marker_ && !marker_->IsLayoutInline())
       DestroyMarker();
     if (!marker_)
       marker_ = LayoutNGInsideListMarker::CreateAnonymous(&GetDocument());
-    auto margins =
-        LayoutListMarker::InlineMarginsForInside(style, IsMarkerImage());
-    marker_style->SetMarginStart(Length::Fixed(margins.first));
-    marker_style->SetMarginEnd(Length::Fixed(margins.second));
   } else {
     if (marker_ && !marker_->IsLayoutBlockFlow())
       DestroyMarker();
     if (!marker_)
       marker_ = LayoutNGListMarker::CreateAnonymous(&GetDocument());
-    // Do not break inside the marker, and honor the trailing spaces.
-    marker_style->SetWhiteSpace(EWhiteSpace::kPre);
-    // Compute margins for 'outside' during layout, because it requires the
-    // layout size of the marker.
-    // TODO(kojii): absolute position looks more reasonable, and maybe required
-    // in some cases, but this is currently blocked by crbug.com/734554
-    // marker_style->SetPosition(EPosition::kAbsolute);
-    // marker_->SetPositionState(EPosition::kAbsolute);
   }
-  marker_->SetStyle(std::move(marker_style));
+  if (cached_marker_style)
+    marker_->SetStyle(cached_marker_style);
+  else
+    marker_->SetStyle(list_item->StyleForPseudoElement(kPseudoIdMarker));
 
   UpdateMarkerContentIfNeeded();
 

@@ -69,6 +69,9 @@ class CORE_EXPORT AnimationTimeDelta {
   AnimationTimeDelta& operator+=(AnimationTimeDelta other) {
     return *this = (*this + other);
   }
+  AnimationTimeDelta operator-(AnimationTimeDelta other) const {
+    return AnimationTimeDelta(delta_ - other.delta_);
+  }
   template <typename T>
   AnimationTimeDelta operator*(T a) const {
     return AnimationTimeDelta(delta_ * a);

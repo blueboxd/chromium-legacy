@@ -117,9 +117,7 @@ PasswordBubbleViewBase::PasswordBubbleViewBase(
   // happens outside of the bubble. By this the bubble becomes
   // 'easily-dissmisable' and this behavior can be enforced by the
   // corresponding flag.
-  if (!base::FeatureList::IsEnabled(
-          password_manager::features::kStickyBubble) ||
-      easily_dismissable) {
+  if (easily_dismissable) {
     mouse_handler_ =
         std::make_unique<WebContentMouseHandler>(this, web_contents);
   }

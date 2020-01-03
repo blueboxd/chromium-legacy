@@ -100,7 +100,7 @@ TEST_F(GLSurfaceEGLTest, FixedSizeExtension) {
   EXPECT_TRUE(context->MakeCurrent(surface.get()));
 
   gfx::Size resize_size(200, 300);
-  surface->Resize(resize_size, 1.0, GLSurface::ColorSpace::UNSPECIFIED, false);
+  surface->Resize(resize_size, 1.0, gfx::ColorSpace(), false);
   EXPECT_EQ(resize_size, surface->GetSize());
 }
 

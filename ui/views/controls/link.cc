@@ -14,7 +14,6 @@
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font_list.h"
 #include "ui/native_theme/native_theme.h"
@@ -28,25 +27,23 @@ namespace views {
 constexpr gfx::Insets Link::kFocusBorderPadding;
 
 Link::Link(const base::string16& title, int text_context, int text_style)
-    : Label(title, text_context, text_style),
-      requested_enabled_color_(gfx::kPlaceholderColor),
-      requested_enabled_color_set_(false) {
-  Init();
+    : Label(title, text_context, text_style) {
+  RecalculateFont();
+
+  enabled_changed_subscription_ = AddEnabledChangedCallback(
+      base::BindRepeating(&Link::RecalculateFont, base::Unretained(this)));
+
+  // Label() indirectly calls SetText(), but at that point our virtual override
+  // will not be reached.  Call it explicitly here to configure focus.
+  SetText(GetText());
 }
 
 Link::~Link() = default;
 
-// static
-Link::FocusStyle Link::GetDefaultFocusStyle() {
-  return FocusStyle::kUnderline;
-}
-
 Link::FocusStyle Link::GetFocusStyle() const {
-  // Use the default, unless the link would "always" be underlined.
-  if (underline_ && GetDefaultFocusStyle() == FocusStyle::kUnderline)
-    return FocusStyle::kRing;
-
-  return GetDefaultFocusStyle();
+  // Use an underline to indicate focus unless the link is always drawn with an
+  // underline.
+  return underline_ ? FocusStyle::kRing : FocusStyle::kUnderline;
 }
 
 SkColor Link::GetColor() const {
@@ -56,8 +53,8 @@ SkColor Link::GetColor() const {
   if (!GetEnabled())
     return theme->GetSystemColor(ui::NativeTheme::kColorId_LinkDisabled);
 
-  if (requested_enabled_color_set_)
-    return requested_enabled_color_;
+  if (requested_enabled_color_.has_value())
+    return requested_enabled_color_.value();
 
   return GetNativeTheme()->GetSystemColor(
       pressed_ ? ui::NativeTheme::kColorId_LinkPressed
@@ -210,7 +207,6 @@ void Link::OnThemeChanged() {
 }
 
 void Link::SetEnabledColor(SkColor color) {
-  requested_enabled_color_set_ = true;
   requested_enabled_color_ = color;
   Label::SetEnabledColor(GetColor());
 }
@@ -229,22 +225,6 @@ void Link::SetUnderline(bool underline) {
   underline_ = underline;
   RecalculateFont();
   OnPropertyChanged(&underline_, kPropertyEffectsPreferredSizeChanged);
-}
-
-void Link::Init() {
-  listener_ = nullptr;
-  pressed_ = false;
-  underline_ = GetDefaultFocusStyle() != FocusStyle::kUnderline;
-  RecalculateFont();
-
-  enabled_changed_subscription_ = AddEnabledChangedCallback(
-      base::BindRepeating(&Link::RecalculateFont, base::Unretained(this)));
-
-  // Label::Init() calls SetText(), but if that's being called from Label(), our
-  // SetText() override will not be reached (because the constructed class is
-  // only a Label at the moment, not yet a Link).  So explicitly configure focus
-  // here.
-  ConfigureFocus();
 }
 
 void Link::SetPressed(bool pressed) {

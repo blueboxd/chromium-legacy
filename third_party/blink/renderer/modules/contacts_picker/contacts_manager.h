@@ -15,6 +15,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class ScriptPromiseResolver;
 class ScriptState;
 
@@ -29,7 +30,8 @@ class ContactsManager final : public ScriptWrappable {
   // Web-exposed function defined in the IDL file.
   ScriptPromise select(ScriptState* script_state,
                        const Vector<String>& properties,
-                       ContactsSelectOptions* options);
+                       ContactsSelectOptions* options,
+                       ExceptionState& exception_state);
   ScriptPromise getProperties(ScriptState* script_state);
 
  private:

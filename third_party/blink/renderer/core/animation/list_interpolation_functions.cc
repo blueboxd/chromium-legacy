@@ -32,12 +32,12 @@ class UnderlyingItemValue : public UnderlyingValue {
       : underlying_list_(underlying_list), builder_(builder), index_(index) {}
 
   InterpolableValue& MutableInterpolableValue() final {
-    return *ToInterpolableList(underlying_list_.MutableInterpolableValue())
+    return *To<InterpolableList>(underlying_list_.MutableInterpolableValue())
                 .GetMutable(index_);
   }
   void SetInterpolableValue(
       std::unique_ptr<InterpolableValue> interpolable_value) final {
-    ToInterpolableList(underlying_list_.MutableInterpolableValue())
+    To<InterpolableList>(underlying_list_.MutableInterpolableValue())
         .Set(index_, std::move(interpolable_value));
   }
   const NonInterpolableValue* GetNonInterpolableValue() const final {
@@ -65,10 +65,8 @@ bool ListInterpolationFunctions::EqualValues(
   if (!a || !b)
     return false;
 
-  const InterpolableList& interpolable_list_a =
-      ToInterpolableList(*a.interpolable_value);
-  const InterpolableList& interpolable_list_b =
-      ToInterpolableList(*b.interpolable_value);
+  const auto& interpolable_list_a = To<InterpolableList>(*a.interpolable_value);
+  const auto& interpolable_list_b = To<InterpolableList>(*b.interpolable_value);
 
   if (interpolable_list_a.length() != interpolable_list_b.length())
     return false;
@@ -123,9 +121,9 @@ PairwiseInterpolationValue ListInterpolationFunctions::MaybeMergeSingles(
     LengthMatchingStrategy length_matching_strategy,
     MergeSingleItemConversionsCallback merge_single_item_conversions) {
   const wtf_size_t start_length =
-      ToInterpolableList(*start.interpolable_value).length();
+      To<InterpolableList>(*start.interpolable_value).length();
   const wtf_size_t end_length =
-      ToInterpolableList(*end.interpolable_value).length();
+      To<InterpolableList>(*end.interpolable_value).length();
 
   if (length_matching_strategy ==
           ListInterpolationFunctions::LengthMatchingStrategy::kEqual &&
@@ -164,10 +162,9 @@ PairwiseInterpolationValue ListInterpolationFunctions::MaybeMergeSingles(
   Vector<scoped_refptr<const NonInterpolableValue>>
       result_non_interpolable_values(final_length);
 
-  InterpolableList& start_interpolable_list =
-      ToInterpolableList(*start.interpolable_value);
-  InterpolableList& end_interpolable_list =
-      ToInterpolableList(*end.interpolable_value);
+  auto& start_interpolable_list =
+      To<InterpolableList>(*start.interpolable_value);
+  auto& end_interpolable_list = To<InterpolableList>(*end.interpolable_value);
   const NonInterpolableList& start_non_interpolable_list =
       ToNonInterpolableList(*start.non_interpolable_value);
   const NonInterpolableList& end_non_interpolable_list =
@@ -220,8 +217,7 @@ PairwiseInterpolationValue ListInterpolationFunctions::MaybeMergeSingles(
 }
 
 static void RepeatToLength(InterpolationValue& value, wtf_size_t length) {
-  InterpolableList& interpolable_list =
-      ToInterpolableList(*value.interpolable_value);
+  auto& interpolable_list = To<InterpolableList>(*value.interpolable_value);
   const NonInterpolableList& non_interpolable_list =
       ToNonInterpolableList(*value.non_interpolable_value);
   wtf_size_t current_length = interpolable_list.length();
@@ -249,13 +245,12 @@ static void RepeatToLength(InterpolationValue& value, wtf_size_t length) {
 // CloneAndZero-ing the additional items from length_value into value.
 static void PadToSameLength(InterpolationValue& value,
                             const InterpolationValue& length_value) {
-  InterpolableList& interpolable_list =
-      ToInterpolableList(*value.interpolable_value);
+  auto& interpolable_list = To<InterpolableList>(*value.interpolable_value);
   const NonInterpolableList& non_interpolable_list =
       ToNonInterpolableList(*value.non_interpolable_value);
   const wtf_size_t current_length = interpolable_list.length();
-  InterpolableList& target_interpolable_list =
-      ToInterpolableList(*length_value.interpolable_value);
+  auto& target_interpolable_list =
+      To<InterpolableList>(*length_value.interpolable_value);
   const NonInterpolableList& target_non_interpolable_list =
       ToNonInterpolableList(*length_value.non_interpolable_value);
   const wtf_size_t target_length = target_interpolable_list.length();
@@ -341,11 +336,11 @@ void ListInterpolationFunctions::Composite(
         non_interpolable_values_are_compatible,
     CompositeItemCallback composite_item) {
   const wtf_size_t underlying_length =
-      ToInterpolableList(*underlying_value_owner.Value().interpolable_value)
+      To<InterpolableList>(*underlying_value_owner.Value().interpolable_value)
           .length();
 
-  const InterpolableList& interpolable_list =
-      ToInterpolableList(*value.interpolable_value);
+  const auto& interpolable_list =
+      To<InterpolableList>(*value.interpolable_value);
   const wtf_size_t value_length = interpolable_list.length();
 
   if (length_matching_strategy ==
@@ -372,7 +367,7 @@ void ListInterpolationFunctions::Composite(
       MatchLengths(underlying_length, value_length, length_matching_strategy);
 
   if (!InterpolableListsAreCompatible(
-          ToInterpolableList(
+          To<InterpolableList>(
               *underlying_value_owner.Value().interpolable_value),
           interpolable_list, final_length, length_matching_strategy,
           interpolable_values_are_compatible)) {
@@ -414,8 +409,8 @@ void ListInterpolationFunctions::Composite(
       DCHECK_EQ(value_length, final_length);
       PadToSameLength(underlying_value, value);
     }
-    InterpolableList& underlying_interpolable_list =
-        ToInterpolableList(*underlying_value.interpolable_value);
+    auto& underlying_interpolable_list =
+        To<InterpolableList>(*underlying_value.interpolable_value);
 
     NonInterpolableList::AutoBuilder builder(underlying_value_owner);
 

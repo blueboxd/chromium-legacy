@@ -64,7 +64,7 @@ class UnderlyingVisibilityChecker
   bool IsValid(const StyleResolverState&,
                const InterpolationValue& underlying) const final {
     double underlying_fraction =
-        ToInterpolableNumber(*underlying.interpolable_value).Value();
+        To<InterpolableNumber>(*underlying.interpolable_value).Value();
     EVisibility underlying_visibility =
         ToCSSVisibilityNonInterpolableValue(*underlying.non_interpolable_value)
             .Visibility(underlying_fraction);
@@ -100,7 +100,7 @@ InterpolationValue CSSVisibilityInterpolationType::MaybeConvertNeutral(
     const InterpolationValue& underlying,
     ConversionCheckers& conversion_checkers) const {
   double underlying_fraction =
-      ToInterpolableNumber(*underlying.interpolable_value).Value();
+      To<InterpolableNumber>(*underlying.interpolable_value).Value();
   EVisibility underlying_visibility =
       ToCSSVisibilityNonInterpolableValue(*underlying.non_interpolable_value)
           .Visibility(underlying_fraction);
@@ -188,7 +188,7 @@ void CSSVisibilityInterpolationType::ApplyStandardPropertyValue(
     StyleResolverState& state) const {
   // Visibility interpolation has been deferred to application time here due to
   // its non-linear behaviour.
-  double fraction = ToInterpolableNumber(interpolable_value).Value();
+  double fraction = To<InterpolableNumber>(interpolable_value).Value();
   EVisibility visibility =
       ToCSSVisibilityNonInterpolableValue(non_interpolable_value)
           ->Visibility(fraction);

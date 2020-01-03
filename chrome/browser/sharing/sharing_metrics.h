@@ -103,6 +103,7 @@ void LogSharingSelectedAppIndex(SharingFeatureName feature,
 // Logs to UMA the time from sending a FCM message from the Sharing service
 // until an ack message is received for it.
 void LogSharingMessageAckTime(chrome_browser_sharing::MessageType message_type,
+                              SharingDevicePlatform receiver_device_platform,
                               base::TimeDelta time);
 
 // Logs to UMA the number of hours since the target device timestamp was last

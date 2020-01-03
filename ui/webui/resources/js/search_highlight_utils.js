@@ -17,6 +17,9 @@ cr.define('cr.search_highlight_utils', function() {
   /** @type {string} */
   const SEARCH_BUBBLE_CSS_CLASS = 'search-bubble';
 
+  /** @typedef {{start: number, length: number}} */
+  /* #export */ let Range;
+
   /**
    * Replaces the the highlight wrappers given in |wrappers| with the original
    * search nodes.
@@ -52,14 +55,12 @@ cr.define('cr.search_highlight_utils', function() {
    * Applies the highlight UI (yellow rectangle) around all matches in |node|.
    * @param {!Node} node The text node to be highlighted. |node| ends up
    *     being hidden.
-   * @param {!Array<string>} tokens The string tokens after splitting on the
-   *     relevant regExp. Even indices hold text that doesn't need highlighting,
-   *     odd indices hold the text to be highlighted. For example:
-   *     const r = new RegExp('(foo)', 'i');
-   *     'barfoobar foo bar'.split(r) => ['bar', 'foo', 'bar ', 'foo', ' bar']
+   * @param {!Array<!cr.search_highlight_utils.Range>} ranges
    * @return {!Node} The new highlight wrapper.
    */
-  /* #export */ function highlight(node, tokens) {
+  /* #export */ function highlight(node, ranges) {
+    assert(ranges.length > 0);
+
     const wrapper = document.createElement('span');
     wrapper.classList.add(WRAPPER_CSS_CLASS);
     // Use existing node as placeholder to determine where to insert the
@@ -74,6 +75,19 @@ cr.define('cr.search_highlight_utils', function() {
     span.style.display = 'none';
     span.appendChild(node);
     wrapper.appendChild(span);
+
+    const text = node.textContent;
+    /** @type {!Array<string>} */ const tokens = [];
+    for (let i = 0; i < ranges.length; ++i) {
+      const range = ranges[i];
+      const prev = ranges[i - 1] || {start: 0, length: 0};
+      const start = prev.start + prev.length;
+      const length = range.start - start;
+      tokens.push(text.substr(start, length));
+      tokens.push(text.substr(range.start, range.length));
+    }
+    const last = ranges.slice(-1)[0];
+    tokens.push(text.substr(last.start + last.length));
 
     for (let i = 0; i < tokens.length; ++i) {
       if (i % 2 == 0) {
@@ -146,11 +160,21 @@ cr.define('cr.search_highlight_utils', function() {
     return searchBubble;
   }
 
+  /**
+   * @param {string} text
+   * @return {string}
+   */
+  /* #export */ function stripDiacritics(text) {
+    return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
+
   // #cr_define_end
   return {
+    Range,
     createEmptySearchBubble,
     findAndRemoveHighlights,
     highlight,
     removeHighlights,
+    stripDiacritics,
   };
 });

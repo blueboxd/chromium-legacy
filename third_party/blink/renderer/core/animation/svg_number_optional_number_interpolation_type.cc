@@ -42,12 +42,12 @@ SVGNumberOptionalNumberInterpolationType::MaybeConvertSVGValue(
 SVGPropertyBase* SVGNumberOptionalNumberInterpolationType::AppliedSVGValue(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue*) const {
-  const InterpolableList& list = ToInterpolableList(interpolable_value);
+  const auto& list = To<InterpolableList>(interpolable_value);
   return MakeGarbageCollected<SVGNumberOptionalNumber>(
       MakeGarbageCollected<SVGNumber>(
-          ToInterpolableNumber(list.Get(0))->Value()),
+          To<InterpolableNumber>(list.Get(0))->Value()),
       MakeGarbageCollected<SVGNumber>(
-          ToInterpolableNumber(list.Get(1))->Value()));
+          To<InterpolableNumber>(list.Get(1))->Value()));
 }
 
 }  // namespace blink

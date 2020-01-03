@@ -13,6 +13,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "base/win/windows_version.h"
+#include "ui/gfx/color_space_win.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/color_space_utils.h"
 #include "ui/gl/direct_composition_surface_win.h"
@@ -261,7 +262,8 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
     return false;
   }
 
-  DXGI_FORMAT dxgi_format = ColorSpaceUtils::GetDXGIFormat(color_space_);
+  DXGI_FORMAT dxgi_format =
+      gfx::ColorSpaceWin::GetDXGIFormat(color_space_, has_alpha_);
 
   if (!dcomp_surface_ && enable_dc_layers_) {
     TRACE_EVENT2("gpu", "DirectCompositionChildSurfaceWin::CreateSurface",
@@ -318,7 +320,7 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
     Microsoft::WRL::ComPtr<IDXGISwapChain3> swap_chain;
     if (SUCCEEDED(swap_chain_.As(&swap_chain))) {
       swap_chain->SetColorSpace1(
-          ColorSpaceUtils::GetDXGIColorSpace(color_space_));
+          gfx::ColorSpaceWin::GetDXGIColorSpace(color_space_));
     }
   }
 
@@ -383,10 +385,11 @@ void DirectCompositionChildSurfaceWin::SetVSyncEnabled(bool enabled) {
   vsync_enabled_ = enabled;
 }
 
-bool DirectCompositionChildSurfaceWin::Resize(const gfx::Size& size,
-                                              float scale_factor,
-                                              ColorSpace color_space,
-                                              bool has_alpha) {
+bool DirectCompositionChildSurfaceWin::Resize(
+    const gfx::Size& size,
+    float scale_factor,
+    const gfx::ColorSpace& color_space,
+    bool has_alpha) {
   if (size_ == size && has_alpha_ == has_alpha && color_space_ == color_space)
     return true;
 
@@ -403,7 +406,8 @@ bool DirectCompositionChildSurfaceWin::Resize(const gfx::Size& size,
 
   // ResizeBuffers can't change alpha blending mode.
   if (swap_chain_ && resize_only) {
-    DXGI_FORMAT format = ColorSpaceUtils::GetDXGIFormat(color_space_);
+    DXGI_FORMAT format =
+        gfx::ColorSpaceWin::GetDXGIFormat(color_space_, has_alpha_);
     UINT flags = DirectCompositionSurfaceWin::AllowTearing()
                      ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING
                      : 0;

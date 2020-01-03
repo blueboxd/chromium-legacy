@@ -91,16 +91,22 @@ cr.define('settings', function() {
       }
 
       if (node.nodeType == Node.TEXT_NODE) {
-        const textContent = node.nodeValue.trim();
-        if (textContent.length == 0) {
+        const textContent = node.nodeValue;
+        if (textContent.trim().length === 0) {
           return;
         }
 
-        const matches = textContent.match(request.regExp);
-        if (matches) {
+        const strippedText =
+            cr.search_highlight_utils.stripDiacritics(textContent);
+        const ranges = [];
+        for (let match; match = request.regExp.exec(strippedText);) {
+          ranges.push({start: match.index, length: match[0].length});
+        }
+
+        if (ranges.length > 0) {
           foundMatches = true;
           revealParentSection_(
-              node, /*numResults=*/ matches.length, request.bubbles);
+              node, /*numResults=*/ ranges.length, request.bubbles);
 
           if (node.parentNode.nodeName === 'OPTION') {
             const select = node.parentNode.parentNode;
@@ -116,14 +122,14 @@ cr.define('settings', function() {
             }
 
             showBubble_(
-                select, /*numResults=*/ matches.length, request.bubbles,
+                select, /*numResults=*/ ranges.length, request.bubbles,
                 /*horizontallyCenter=*/ true);
           } else {
             request.addTextObserver(node);
-            highlights.push(cr.search_highlight_utils.highlight(
-                node, textContent.split(request.regExp)));
+            highlights.push(cr.search_highlight_utils.highlight(node, ranges));
           }
         }
+
         // Returning early since TEXT_NODE nodes never have children.
         return;
       }
@@ -503,14 +509,14 @@ cr.define('settings', function() {
      */
     generateRegExp_() {
       let regExp = null;
-
       // Generate search text by escaping any characters that would be
       // problematic for regular expressions.
-      const searchText = this.rawQuery_.trim().replace(SANITIZE_REGEX, '\\$&');
-      if (searchText.length > 0) {
-        regExp = new RegExp(`(${searchText})`, 'ig');
+      const strippedQuery =
+          cr.search_highlight_utils.stripDiacritics(this.rawQuery_.trim());
+      const sanitizedQuery = strippedQuery.replace(SANITIZE_REGEX, '\\$&');
+      if (sanitizedQuery.length > 0) {
+        regExp = new RegExp(`(${sanitizedQuery})`, 'ig');
       }
-
       return regExp;
     }
 

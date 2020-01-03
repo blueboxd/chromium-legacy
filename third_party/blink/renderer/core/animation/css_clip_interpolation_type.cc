@@ -275,7 +275,7 @@ void CSSClipInterpolationType::ApplyStandardPropertyValue(
     StyleResolverState& state) const {
   const ClipAutos& autos =
       ToCSSClipNonInterpolableValue(non_interpolable_value)->GetClipAutos();
-  const InterpolableList& list = ToInterpolableList(interpolable_value);
+  const auto& list = To<InterpolableList>(interpolable_value);
   const auto& convert_index = [&list, &state](bool is_auto, wtf_size_t index) {
     if (is_auto)
       return Length::Auto();

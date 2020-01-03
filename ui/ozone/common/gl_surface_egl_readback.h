@@ -28,7 +28,7 @@ class GLSurfaceEglReadback : public gl::PbufferGLSurfaceEGL {
   // GLSurface implementation.
   bool Resize(const gfx::Size& size,
               float scale_factor,
-              ColorSpace color_space,
+              const gfx::ColorSpace& color_space,
               bool has_alpha) override;
   bool IsOffscreen() override;
   gfx::SwapResult SwapBuffers(PresentationCallback callback) override;

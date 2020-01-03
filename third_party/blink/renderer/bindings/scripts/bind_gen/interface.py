@@ -78,14 +78,16 @@ def callback_function_name(cg_context, overload_index=None):
 
     if cg_context.attribute_get:
         kind = "AttributeGet"
-    if cg_context.attribute_set:
+    elif cg_context.attribute_set:
         kind = "AttributeSet"
-    if cg_context.constant:
+    elif cg_context.constant:
         kind = "Constant"
-    if cg_context.constructor_group:
+    elif cg_context.constructor_group:
         property_name = ""
         kind = "Constructor"
-    if cg_context.operation_group:
+    elif cg_context.exposed_construct:
+        kind = "ExposedConstruct"
+    elif cg_context.operation_group:
         kind = "Operation"
 
     if overload_index is None:
@@ -95,9 +97,9 @@ def callback_function_name(cg_context, overload_index=None):
 
     if cg_context.for_world == CodeGenContext.MAIN_WORLD:
         world_suffix = "ForMainWorld"
-    if cg_context.for_world == CodeGenContext.NON_MAIN_WORLDS:
+    elif cg_context.for_world == CodeGenContext.NON_MAIN_WORLDS:
         world_suffix = "ForNonMainWorlds"
-    if cg_context.for_world == CodeGenContext.ALL_WORLDS:
+    elif cg_context.for_world == CodeGenContext.ALL_WORLDS:
         world_suffix = ""
 
     return name_style.func(property_name, kind, callback_suffix, world_suffix)
@@ -107,7 +109,7 @@ def constant_name(cg_context):
     assert isinstance(cg_context, CodeGenContext)
     assert cg_context.constant
 
-    property_name = cg_context.property_.identifier
+    property_name = cg_context.property_.identifier.lower()
 
     kind = "Constant"
 
@@ -643,7 +645,8 @@ def make_cooperative_scheduling_safepoint(cg_context):
 def make_log_activity(cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
-    ext_attrs = cg_context.member_like.extended_attributes
+    target = cg_context.member_like or cg_context.property_
+    ext_attrs = target.extended_attributes
     if "LogActivity" not in ext_attrs:
         return None
     target = ext_attrs.value_of("LogActivity")
@@ -669,10 +672,10 @@ def make_log_activity(cg_context):
     if cg_context.attribute_get:
         _1 = "LogGetter"
         _4 = ""
-    if cg_context.attribute_set:
+    elif cg_context.attribute_set:
         _1 = "LogSetter"
         _4 = ", ${info}[0]"
-    if cg_context.operation_group:
+    elif cg_context.operation_group:
         _1 = "LogMethod"
         _4 = ", ${info}"
     body = _format(pattern, _1=_1, _2=_2, _3=_3, _4=_4)
@@ -936,7 +939,8 @@ def make_overload_dispatcher(cg_context):
 def make_report_deprecate_as(cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
-    name = cg_context.member_like.extended_attributes.value_of("DeprecateAs")
+    target = cg_context.member_like or cg_context.property_
+    name = target.extended_attributes.value_of("DeprecateAs")
     if not name:
         return None
 
@@ -954,7 +958,8 @@ def make_report_deprecate_as(cg_context):
 def make_report_measure_as(cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
-    ext_attrs = cg_context.member_like.extended_attributes
+    target = cg_context.member_like or cg_context.property_
+    ext_attrs = target.extended_attributes
     if not ("Measure" in ext_attrs or "MeasureAs" in ext_attrs):
         assert "HighEntropy" not in ext_attrs, "{}: {}".format(
             cg_context.idl_location_and_name,
@@ -969,9 +974,11 @@ def make_report_measure_as(cg_context):
         suffix = "_AttributeSetter"
     elif cg_context.constructor:
         suffix = "_Constructor"
+    elif cg_context.exposed_construct:
+        suffix = "_ConstructorGetter"
     elif cg_context.operation:
         suffix = "_Method"
-    name = cg_context.member_like.extended_attributes.value_of("MeasureAs")
+    name = target.extended_attributes.value_of("MeasureAs")
     if name:
         name = "k{}".format(name)
     elif cg_context.constructor:
@@ -979,8 +986,7 @@ def make_report_measure_as(cg_context):
     else:
         name = "kV8{}_{}{}".format(
             cg_context.class_like.identifier,
-            name_style.raw.upper_camel_case(cg_context.member_like.identifier),
-            suffix)
+            name_style.raw.upper_camel_case(target.identifier), suffix)
 
     node = SequenceNode()
 
@@ -1062,22 +1068,30 @@ def make_return_value_cache_update_value(cg_context):
 def make_runtime_call_timer_scope(cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
-    pattern = "RUNTIME_CALL_TIMER_SCOPE{_1}(${isolate}, {_2});"
-    _1 = "_DISABLED_BY_DEFAULT"
+    target = cg_context.member_like or cg_context.property_
+
     suffix = ""
     if cg_context.attribute_get:
         suffix = "_Getter"
     elif cg_context.attribute_set:
         suffix = "_Setter"
-    counter = cg_context.member_like.extended_attributes.value_of(
-        "RuntimeCallStatsCounter")
+    elif cg_context.exposed_construct:
+        suffix = "_ConstructorGetterCallback"
+
+    counter = target.extended_attributes.value_of("RuntimeCallStatsCounter")
     if counter:
-        _2 = "k{}{}".format(counter, suffix)
+        macro_name = "RUNTIME_CALL_TIMER_SCOPE"
+        counter_name = "k{}{}".format(counter, suffix)
     else:
-        _2 = "\"Blink_{}_{}{}\"".format(
-            blink_class_name(cg_context.class_like),
-            cg_context.member_like.identifier, suffix)
-    node = TextNode(_format(pattern, _1=_1, _2=_2))
+        macro_name = "RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT"
+        counter_name = "\"Blink_{}_{}{}\"".format(
+            blink_class_name(cg_context.class_like), target.identifier, suffix)
+
+    node = TextNode(
+        _format(
+            "{macro_name}(${isolate}, {counter_name})",
+            macro_name=macro_name,
+            counter_name=counter_name))
     node.accumulate(
         CodeGenAccumulator.require_include_headers([
             "third_party/blink/renderer/platform/bindings/runtime_call_stats.h",
@@ -1394,6 +1408,34 @@ def make_constructor_callback_def(cg_context, function_name):
     return node
 
 
+def make_exposed_construct_callback_def(cg_context, function_name):
+    assert isinstance(cg_context, CodeGenContext)
+    assert isinstance(function_name, str)
+
+    func_def = _make_empty_callback_def(
+        cg_context,
+        function_name,
+        arg_decls=[
+            "v8::Local<v8::Name> property",
+            "const v8::PropertyCallbackInfo<v8::Value>& info",
+        ])
+    body = func_def.body
+
+    v8_set_return_value = _format(
+        "V8SetReturnValueInterfaceObject(${info}, {}::GetWrapperTypeInfo());",
+        v8_bridge_class_name(cg_context.exposed_construct))
+    body.extend([
+        make_runtime_call_timer_scope(cg_context),
+        make_report_deprecate_as(cg_context),
+        make_report_measure_as(cg_context),
+        make_log_activity(cg_context),
+        TextNode(""),
+        TextNode(v8_set_return_value),
+    ])
+
+    return func_def
+
+
 def make_operation_function_def(cg_context, function_name):
     assert isinstance(cg_context, CodeGenContext)
     assert isinstance(function_name, str)
@@ -1690,6 +1732,44 @@ def _make_constant_value_registration_table(table_name, constant_entries):
     ])
 
 
+def _make_exposed_construct_registration_table(table_name,
+                                               exposed_construct_entries):
+    assert isinstance(table_name, str)
+    assert isinstance(exposed_construct_entries, (list, tuple))
+    assert all(
+        isinstance(entry, _PropEntryExposedConstruct)
+        for entry in exposed_construct_entries)
+
+    T = TextNode
+
+    entry_nodes = []
+    for entry in exposed_construct_entries:
+        pattern = ("{{"
+                   "\"{property_name}\", "
+                   "{exposed_construct_callback}, "
+                   "nullptr, "
+                   "static_cast<v8::PropertyAttribute>(v8::DontEnum), "
+                   "V8DOMConfiguration::kOnInstance, "
+                   "V8DOMConfiguration::kDoNotCheckHolder, "
+                   "V8DOMConfiguration::kHasNoSideEffect, "
+                   "V8DOMConfiguration::kAlwaysCallGetter, "
+                   "{world}"
+                   "}}, ")
+        text = _format(
+            pattern,
+            property_name=entry.member.identifier,
+            exposed_construct_callback=entry.prop_callback_name,
+            world=_make_property_entry_world(entry.world))
+        entry_nodes.append(T(text))
+
+    return ListNode([
+        T("static constexpr V8DOMConfiguration::AttributeConfiguration " +
+          table_name + "[] = {"),
+        ListNode(entry_nodes),
+        T("};"),
+    ])
+
+
 def _make_operation_registration_table(table_name, operation_entries):
     assert isinstance(table_name, str)
     assert isinstance(operation_entries, (list, tuple))
@@ -1785,6 +1865,17 @@ class _PropEntryConstructorGroup(_PropEntryMember):
         self.ctor_func_length = ctor_func_length
 
 
+class _PropEntryExposedConstruct(_PropEntryMember):
+    def __init__(self, is_context_dependent, exposure_conditional, world,
+                 exposed_construct, prop_callback_name):
+        assert isinstance(prop_callback_name, str)
+
+        _PropEntryMember.__init__(self, is_context_dependent,
+                                  exposure_conditional, world,
+                                  exposed_construct)
+        self.prop_callback_name = prop_callback_name
+
+
 class _PropEntryOperationGroup(_PropEntryMember):
     def __init__(self, is_context_dependent, exposure_conditional, world,
                  operation_group, op_callback_name, op_func_length):
@@ -1800,7 +1891,7 @@ class _PropEntryOperationGroup(_PropEntryMember):
 
 def _make_property_entries_and_callback_defs(
         cg_context, attribute_entries, constant_entries, constructor_entries,
-        operation_entries):
+        exposed_construct_entries, operation_entries):
     """
     Creates intermediate objects to help property installation and also makes
     code nodes of callback functions.
@@ -1808,6 +1899,7 @@ def _make_property_entries_and_callback_defs(
     Args:
         attribute_entries:
         constructor_entries:
+        exposed_construct_entries:
         operation_entries:
             Output parameters to store the intermediate objects.
     """
@@ -1815,6 +1907,7 @@ def _make_property_entries_and_callback_defs(
     assert isinstance(attribute_entries, list)
     assert isinstance(constant_entries, list)
     assert isinstance(constructor_entries, list)
+    assert isinstance(exposed_construct_entries, list)
     assert isinstance(operation_entries, list)
 
     interface = cg_context.interface
@@ -1824,7 +1917,8 @@ def _make_property_entries_and_callback_defs(
 
     def iterate(members, callback):
         for member in members:
-            is_context_dependent = member.exposure.is_context_dependent
+            is_context_dependent = member.exposure.is_context_dependent(
+                global_names)
             exposure_conditional = expr_from_exposure(member.exposure,
                                                       global_names)
 
@@ -1916,6 +2010,27 @@ def _make_property_entries_and_callback_defs(
                 ctor_func_length=(
                     constructor_group.min_num_of_required_arguments)))
 
+    def process_exposed_construct(exposed_construct, is_context_dependent,
+                                  exposure_conditional, world):
+        cgc = cg_context.make_copy(
+            exposed_construct=exposed_construct, for_world=world)
+        prop_callback_name = callback_function_name(cgc)
+        prop_callback_node = make_exposed_construct_callback_def(
+            cgc, prop_callback_name)
+
+        callback_def_nodes.extend([
+            prop_callback_node,
+            TextNode(""),
+        ])
+
+        exposed_construct_entries.append(
+            _PropEntryExposedConstruct(
+                is_context_dependent=is_context_dependent,
+                exposure_conditional=exposure_conditional,
+                world=world,
+                exposed_construct=exposed_construct,
+                prop_callback_name=prop_callback_name))
+
     def process_operation_group(operation_group, is_context_dependent,
                                 exposure_conditional, world):
         cgc = cg_context.make_copy(
@@ -1940,6 +2055,7 @@ def _make_property_entries_and_callback_defs(
     iterate(interface.attributes, process_attribute)
     iterate(interface.constants, process_constant)
     iterate(interface.constructor_groups, process_constructor_group)
+    iterate(interface.exposed_constructs, process_exposed_construct)
     iterate(interface.operation_groups, process_operation_group)
 
     return callback_def_nodes
@@ -2068,7 +2184,7 @@ def make_install_interface_template(cg_context, function_name, class_name,
 def make_install_properties(cg_context, function_name, class_name,
                             trampoline_var_name, is_context_dependent,
                             attribute_entries, constant_entries,
-                            operation_entries):
+                            exposed_construct_entries, operation_entries):
     """
     Returns:
         A triplet of CodeNode of:
@@ -2088,12 +2204,17 @@ def make_install_properties(cg_context, function_name, class_name,
     assert isinstance(constant_entries, (list, tuple))
     assert all(
         isinstance(entry, _PropEntryConstant) for entry in constant_entries)
+    assert isinstance(exposed_construct_entries, (list, tuple))
+    assert all(
+        isinstance(entry, _PropEntryExposedConstruct)
+        for entry in exposed_construct_entries)
     assert isinstance(operation_entries, (list, tuple))
     assert all(
         isinstance(entry, _PropEntryOperationGroup)
         for entry in operation_entries)
 
-    if not (attribute_entries or constant_entries or operation_entries):
+    if not (attribute_entries or constant_entries or exposed_construct_entries
+            or operation_entries):
         return None, None, None
 
     if is_context_dependent:
@@ -2258,6 +2379,21 @@ def make_install_properties(cg_context, function_name, class_name,
                        _make_constant_value_registration_table,
                        installer_call_text)
 
+    table_name = "kExposedConstructTable"
+    if is_context_dependent:
+        installer_call_text = (
+            "V8DOMConfiguration::InstallAttributes(${isolate}, ${world}, "
+            "${instance_object}, ${prototype_object}, "
+            "kExposedConstructTable, base::size(kExposedConstructTable));")
+    else:
+        installer_call_text = (
+            "V8DOMConfiguration::InstallAttributes(${isolate}, ${world}, "
+            "${instance_template}, ${prototype_template}, "
+            "kExposedConstructTable, base::size(kExposedConstructTable));")
+    install_properties(table_name, exposed_construct_entries,
+                       _make_exposed_construct_registration_table,
+                       installer_call_text)
+
     table_name = "kOperationTable"
     if is_context_dependent:
         installer_call_text = (
@@ -2340,7 +2476,7 @@ def generate_interface(interface):
     is_cross_components = path_manager.is_cross_components
 
     # Class names
-    api_class_name = name_style.class_("v8", interface.identifier)
+    api_class_name = v8_bridge_class_name(interface)
     if is_cross_components:
         impl_class_name = name_style.class_(api_class_name, "impl")
     else:
@@ -2437,12 +2573,14 @@ def generate_interface(interface):
     attribute_entries = []
     constant_entries = []
     constructor_entries = []
+    exposed_construct_entries = []
     operation_entries = []
     callback_defs = _make_property_entries_and_callback_defs(
         cg_context,
         attribute_entries=attribute_entries,
         constant_entries=constant_entries,
         constructor_entries=constructor_entries,
+        exposed_construct_entries=exposed_construct_entries,
         operation_entries=operation_entries)
 
     # Installer functions
@@ -2459,6 +2597,8 @@ def generate_interface(interface):
          is_context_dependent=False,
          attribute_entries=filter(is_unconditional, attribute_entries),
          constant_entries=filter(is_unconditional, constant_entries),
+         exposed_construct_entries=filter(is_unconditional,
+                                          exposed_construct_entries),
          operation_entries=filter(is_unconditional, operation_entries))
     (install_context_independent_props_decl,
      install_context_independent_props_def,
@@ -2470,6 +2610,8 @@ def generate_interface(interface):
          is_context_dependent=False,
          attribute_entries=filter(is_context_independent, attribute_entries),
          constant_entries=filter(is_context_independent, constant_entries),
+         exposed_construct_entries=filter(is_context_independent,
+                                          exposed_construct_entries),
          operation_entries=filter(is_context_independent, operation_entries))
     (install_context_dependent_props_decl, install_context_dependent_props_def,
      install_context_dependent_props_trampoline) = make_install_properties(
@@ -2480,6 +2622,8 @@ def generate_interface(interface):
          is_context_dependent=True,
          attribute_entries=filter(is_context_dependent, attribute_entries),
          constant_entries=filter(is_context_dependent, constant_entries),
+         exposed_construct_entries=filter(is_context_dependent,
+                                          exposed_construct_entries),
          operation_entries=filter(is_context_dependent, operation_entries))
     (install_interface_template_decl, install_interface_template_def,
      install_interface_template_trampoline) = make_install_interface_template(
@@ -2620,5 +2764,5 @@ def generate_interface(interface):
 
 
 def generate_interfaces(web_idl_database):
-    interface = web_idl_database.find("Node")
+    interface = web_idl_database.find("Window")
     generate_interface(interface)

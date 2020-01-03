@@ -2,27 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
-/**
- * Namespace for the Camera app.
- */
-var cca = cca || {};
-
-/**
- * Namespace for views.
- */
-cca.views = cca.views || {};
-
-/**
- * Namespace for Camera view.
- */
-cca.views.camera = cca.views.camera || {};
+import {speak} from '../../toast.js';
 
 /**
  * Controller for the record-time of Camera view.
  */
-cca.views.camera.RecordTime = class {
+export class RecordTime {
   /**
    * @public
    */
@@ -87,7 +72,7 @@ cca.views.camera.RecordTime = class {
    * @return {number} Recorded time in 1 minute buckets.
    */
   stop() {
-    cca.toast.speak('status_msg_recording_stopped');
+    speak('status_msg_recording_stopped');
     if (this.tickTimeout_) {
       clearInterval(this.tickTimeout_);
       this.tickTimeout_ = null;
@@ -98,4 +83,7 @@ cca.views.camera.RecordTime = class {
     this.update_(0);
     return mins;
   }
-};
+}
+
+/** @const */
+cca.views.camera.RecordTime = RecordTime;

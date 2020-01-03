@@ -1344,13 +1344,13 @@ void StyleResolver::ApplyAnimatedStandardProperties(
         state.Style()->ForcedColorAdjust() != EForcedColorAdjust::kNone)
       continue;
     const Interpolation& interpolation = *entry.value.front();
-    if (interpolation.IsInvalidatableInterpolation()) {
+    if (IsA<InvalidatableInterpolation>(interpolation)) {
       CSSInterpolationTypesMap map(state.GetDocument().GetPropertyRegistry(),
                                    state.GetDocument());
       CSSInterpolationEnvironment environment(map, state, nullptr);
       InvalidatableInterpolation::ApplyStack(entry.value, environment);
     } else {
-      ToTransitionInterpolation(interpolation).Apply(state);
+      To<TransitionInterpolation>(interpolation).Apply(state);
     }
   }
 }

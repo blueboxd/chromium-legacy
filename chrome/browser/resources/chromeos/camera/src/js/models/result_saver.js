@@ -2,23 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
-/**
- * Namespace for the Camera app.
- */
-var cca = cca || {};
-
-/**
- * Namespace for models.
- */
-cca.models = cca.models || {};
+// eslint-disable-next-line no-unused-vars
+import {VideoSaver} from './video_saver_interface.js';
 
 /**
  * Handles captured result photos and video.
  * @interface
  */
-cca.models.ResultSaver = class {
+export class ResultSaver {
   /**
    * Saves photo capture result.
    * @param {!Blob} blob Data of the photo to be added.
@@ -29,16 +20,19 @@ cca.models.ResultSaver = class {
 
   /**
    * Returns a video saver to save captured result video.
-   * @return {!Promise<!cca.models.VideoSaver>}
+   * @return {!Promise<!VideoSaver>}
    */
   async startSaveVideo() {}
 
   /**
    * Saves captured video result.
-   * @param {!cca.models.VideoSaver} video Contains the video result to be
+   * @param {!VideoSaver} video Contains the video result to be
    *     saved.
    * @param {string} name Name of the video to be saved.
    * @return {!Promise}
    */
   async finishSaveVideo(video, name) {}
-};
+}
+
+/** @const */
+cca.models.ResultSaver = ResultSaver;

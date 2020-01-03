@@ -2,27 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
+import {assert} from '../../chrome_util.js';
+import * as state from '../../state.js';
+import {Mode, Resolution} from '../../type.js';
+import * as util from '../../util.js';
 
 /**
- * Namespace for the Camera app.
+ * CSS rules.
+ * @type {!Array<!CSSRule>}
  */
-var cca = cca || {};
-
-/**
- * Namespace for views.
- */
-cca.views = cca.views || {};
-
-/**
- * Namespace for Camera view.
- */
-cca.views.camera = cca.views.camera || {};
+const cssRules = [].slice.call(document.styleSheets[0].cssRules);
 
 /**
  * Creates a controller to handle layouts of Camera view.
  */
-cca.views.camera.Layout = class {
+export class Layout {
   /**
    * @public
    */
@@ -58,16 +52,15 @@ cca.views.camera.Layout = class {
    * @private
    */
   static cssStyle_(selector) {
-    const rule = cca.views.camera.Layout.cssRules_.find(
-        (rule) => rule.selectorText === selector);
-    cca.assert(rule !== undefined);
-    cca.assert(rule.style !== null);
+    const rule = cssRules.find((rule) => rule.selectorText === selector);
+    assert(rule !== undefined);
+    assert(rule.style !== null);
     return rule.style;
   }
 
   /**
    * Updates the video element size for previewing in the window.
-   * @return {!cca.Resolution} Letterbox size.
+   * @return {!Resolution} Letterbox size.
    * @private
    */
   updatePreviewSize_() {
@@ -79,7 +72,7 @@ cca.views.camera.Layout = class {
     let contentWidth = 0;
     let contentHeight = 0;
     if (video.videoHeight) {
-      const scale = cca.state.get(cca.Mode.SQUARE) ?
+      const scale = state.get(Mode.SQUARE) ?
           Math.min(window.innerHeight, window.innerWidth) /
               Math.min(video.videoHeight, video.videoWidth) :
           Math.min(
@@ -92,9 +85,8 @@ cca.views.camera.Layout = class {
     }
     let viewportW = contentWidth;
     let viewportH = contentHeight;
-    cca.state.set(
-        cca.state.State.SQUARE_PREVIEW, cca.state.get(cca.Mode.SQUARE));
-    if (cca.state.get(cca.Mode.SQUARE)) {
+    state.set(state.State.SQUARE_PREVIEW, state.get(Mode.SQUARE));
+    if (state.get(Mode.SQUARE)) {
       viewportW = viewportH = Math.min(contentWidth, contentHeight);
       this.squareVideo_.setProperty(
           'left', `${(viewportW - contentWidth) / 2}px`);
@@ -103,7 +95,7 @@ cca.views.camera.Layout = class {
       this.squareViewport_.setProperty('width', `${viewportW}px`);
       this.squareViewport_.setProperty('height', `${viewportH}px`);
     }
-    return new cca.Resolution(
+    return new Resolution(
         window.innerWidth - viewportW, window.innerHeight - viewportH);
   }
 
@@ -111,28 +103,28 @@ cca.views.camera.Layout = class {
    * Updates the layout for video-size or window-size changes.
    */
   update() {
-    const fullWindow = cca.util.isWindowFullSize();
+    const fullWindow = util.isWindowFullSize();
     const tall = window.innerHeight > window.innerWidth;
     const tabletLandscape = fullWindow && !tall;
-    cca.state.set(cca.state.State.TABLET_LANDSCAPE, tabletLandscape);
-    cca.state.set(cca.state.State.MAX_WND, fullWindow);
-    cca.state.set(cca.state.State.TALL, tall);
+    state.set(state.State.TABLET_LANDSCAPE, tabletLandscape);
+    state.set(state.State.MAX_WND, fullWindow);
+    state.set(state.State.TALL, tall);
 
     const {width: letterboxW, height: letterboxH} = this.updatePreviewSize_();
     const isLetterboxW = letterboxH < letterboxW;
 
-    cca.state.set(cca.state.State.W_LETTERBOX, isLetterboxW);
+    state.set(state.State.W_LETTERBOX, isLetterboxW);
     if (isLetterboxW) {
       const modeWidth =
           document.querySelector('#modes-group').getBoundingClientRect().width;
       let layoutToggled = false;
-      [[modeWidth + 30, cca.state.State.W_LETTERBOX_S],
-       [modeWidth + 30 + 72, cca.state.State.W_LETTERBOX_M],
-       [(modeWidth + 30) * 2, cca.state.State.W_LETTERBOX_L],
-       [Infinity, cca.state.State.W_LETTERBOX_XL],
+      [[modeWidth + 30, state.State.W_LETTERBOX_S],
+       [modeWidth + 30 + 72, state.State.W_LETTERBOX_M],
+       [(modeWidth + 30) * 2, state.State.W_LETTERBOX_L],
+       [Infinity, state.State.W_LETTERBOX_XL],
       ]
           .forEach(
-              ([wSize, classname]) => cca.state.set(
+              ([wSize, classname]) => state.set(
                   classname,
                   /* Enable only state which the letterboxW size falls in range
                    * of its wSize and previous wSize. And disable all other
@@ -142,16 +134,10 @@ cca.views.camera.Layout = class {
       // preview-vertical-dock: Dock bottom line of preview between gallery and
       //                        mode selector.
       // otherwise: Vertically center the preview.
-      cca.state.set(
-          cca.state.State.PREVIEW_VERTICAL_DOCK, letterboxH / 2 >= 112);
+      state.set(state.State.PREVIEW_VERTICAL_DOCK, letterboxH / 2 >= 112);
     }
   }
-};
+}
 
-/**
- * CSS rules.
- * @type {!Array<!CSSRule>}
- * @private
- */
-cca.views.camera.Layout.cssRules_ =
-    [].slice.call(document.styleSheets[0].cssRules);
+/** @const */
+cca.views.camera.Layout = Layout;

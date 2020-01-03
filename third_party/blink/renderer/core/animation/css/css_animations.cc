@@ -213,7 +213,7 @@ std::unique_ptr<TypedInterpolationValue> SampleAnimation(
   DCHECK_LE(sample.size(), 1u);
   if (sample.IsEmpty())
     return nullptr;
-  return ToTransitionInterpolation(*sample.at(0)).GetInterpolatedValue();
+  return To<TransitionInterpolation>(*sample.at(0)).GetInterpolatedValue();
 }
 
 // Returns the start time of an animation given the start delay. A negative

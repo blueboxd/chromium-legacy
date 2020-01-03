@@ -218,8 +218,7 @@ IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest, CloseOnClick) {
                    ->GetFocusManager()
                    ->GetFocusedView());
   ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER);
-  EXPECT_EQ(IsBubbleShowing(), base::FeatureList::IsEnabled(
-                                   password_manager::features::kStickyBubble));
+  EXPECT_TRUE(IsBubbleShowing());
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest, CloseOnEsc) {
@@ -227,8 +226,7 @@ IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest, CloseOnEsc) {
   EXPECT_TRUE(IsBubbleShowing());
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_ESCAPE, false,
                                               false, false, false));
-  EXPECT_EQ(IsBubbleShowing(), base::FeatureList::IsEnabled(
-                                   password_manager::features::kStickyBubble));
+  EXPECT_TRUE(IsBubbleShowing());
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest, CloseOnKey) {
@@ -250,8 +248,7 @@ IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest, CloseOnKey) {
   EXPECT_TRUE(web_contents->IsFocusedElementEditable());
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_K, false,
                                               false, false, false));
-  EXPECT_EQ(IsBubbleShowing(), base::FeatureList::IsEnabled(
-                                   password_manager::features::kStickyBubble));
+  EXPECT_TRUE(IsBubbleShowing());
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest,

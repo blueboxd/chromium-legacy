@@ -5,12 +5,14 @@
 #include <memory>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
+#include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -85,9 +87,11 @@ IN_PROC_BROWSER_TEST_F(LocalSyncTest, ShouldStart) {
 #if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // SharingService is only disabled if kSharingDeriveVapidKey is enabled by
   // field trial config, which is never the case for branded builds.
-  EXPECT_EQ(SharingService::State::DISABLED,
-            SharingServiceFactory::GetForBrowserContext(browser()->profile())
-                ->GetStateForTesting());
+  if (base::FeatureList::IsEnabled(kSharingDeriveVapidKey)) {
+    EXPECT_EQ(SharingService::State::DISABLED,
+              SharingServiceFactory::GetForBrowserContext(browser()->profile())
+                  ->GetStateForTesting());
+  }
 #endif  // !BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 #endif  // defined(OS_WIN)

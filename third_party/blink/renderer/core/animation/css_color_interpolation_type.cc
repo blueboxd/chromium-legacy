@@ -114,16 +114,16 @@ Color CSSColorInterpolationType::ResolveInterpolableColor(
     const StyleResolverState& state,
     bool is_visited,
     bool is_text_decoration) {
-  const InterpolableList& list = ToInterpolableList(interpolable_color);
+  const auto& list = To<InterpolableList>(interpolable_color);
   DCHECK_EQ(list.length(), kInterpolableColorIndexCount);
 
-  double red = ToInterpolableNumber(list.Get(kRed))->Value();
-  double green = ToInterpolableNumber(list.Get(kGreen))->Value();
-  double blue = ToInterpolableNumber(list.Get(kBlue))->Value();
-  double alpha = ToInterpolableNumber(list.Get(kAlpha))->Value();
+  double red = To<InterpolableNumber>(list.Get(kRed))->Value();
+  double green = To<InterpolableNumber>(list.Get(kGreen))->Value();
+  double blue = To<InterpolableNumber>(list.Get(kBlue))->Value();
+  double alpha = To<InterpolableNumber>(list.Get(kAlpha))->Value();
 
   if (double currentcolor_fraction =
-          ToInterpolableNumber(list.Get(kCurrentcolor))->Value()) {
+          To<InterpolableNumber>(list.Get(kCurrentcolor))->Value()) {
     auto current_color_getter = is_visited
                                     ? ColorPropertyFunctions::GetVisitedColor
                                     : ColorPropertyFunctions::GetUnvisitedColor;
@@ -146,16 +146,16 @@ Color CSSColorInterpolationType::ResolveInterpolableColor(
   }
   const TextLinkColors& colors = state.GetDocument().GetTextLinkColors();
   if (double webkit_activelink_fraction =
-          ToInterpolableNumber(list.Get(kWebkitActivelink))->Value())
+          To<InterpolableNumber>(list.Get(kWebkitActivelink))->Value())
     AddPremultipliedColor(red, green, blue, alpha, webkit_activelink_fraction,
                           colors.ActiveLinkColor());
   if (double webkit_link_fraction =
-          ToInterpolableNumber(list.Get(kWebkitLink))->Value())
+          To<InterpolableNumber>(list.Get(kWebkitLink))->Value())
     AddPremultipliedColor(
         red, green, blue, alpha, webkit_link_fraction,
         is_visited ? colors.VisitedLinkColor() : colors.LinkColor());
   if (double quirk_inherit_fraction =
-          ToInterpolableNumber(list.Get(kQuirkInherit))->Value())
+          To<InterpolableNumber>(list.Get(kQuirkInherit))->Value())
     AddPremultipliedColor(red, green, blue, alpha, quirk_inherit_fraction,
                           colors.TextColor());
 
@@ -274,7 +274,7 @@ void CSSColorInterpolationType::ApplyStandardPropertyValue(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue*,
     StyleResolverState& state) const {
-  const InterpolableList& color_pair = ToInterpolableList(interpolable_value);
+  const auto& color_pair = To<InterpolableList>(interpolable_value);
   DCHECK_EQ(color_pair.length(), kInterpolableColorPairIndexCount);
   ColorPropertyFunctions::SetUnvisitedColor(
       CssProperty(), *state.Style(),
@@ -292,7 +292,7 @@ const CSSValue* CSSColorInterpolationType::CreateCSSValue(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue*,
     const StyleResolverState& state) const {
-  const InterpolableList& color_pair = ToInterpolableList(interpolable_value);
+  const auto& color_pair = To<InterpolableList>(interpolable_value);
   Color color = ResolveInterpolableColor(*color_pair.Get(kUnvisited), state);
   return cssvalue::CSSColorValue::Create(color.Rgb());
 }
@@ -304,26 +304,23 @@ void CSSColorInterpolationType::Composite(
     double interpolation_fraction) const {
   DCHECK(!underlying_value_owner.Value().non_interpolable_value);
   DCHECK(!value.non_interpolable_value);
-  InterpolableList& underlying_list = ToInterpolableList(
+  auto& underlying_list = To<InterpolableList>(
       *underlying_value_owner.MutableValue().interpolable_value);
-  const InterpolableList& other_list =
-      ToInterpolableList(*value.interpolable_value);
+  const auto& other_list = To<InterpolableList>(*value.interpolable_value);
   // Both lists should have kUnvisited and kVisited.
   DCHECK(underlying_list.length() == kInterpolableColorPairIndexCount);
   DCHECK(other_list.length() == kInterpolableColorPairIndexCount);
   for (wtf_size_t i = 0; i < underlying_list.length(); i++) {
-    InterpolableList& underlying =
-        ToInterpolableList(*underlying_list.GetMutable(i));
-    const InterpolableList& other = ToInterpolableList(*other_list.Get(i));
+    auto& underlying = To<InterpolableList>(*underlying_list.GetMutable(i));
+    const auto& other = To<InterpolableList>(*other_list.Get(i));
     DCHECK(underlying.length() == kInterpolableColorIndexCount);
     DCHECK(other.length() == kInterpolableColorIndexCount);
     for (wtf_size_t j = 0; j < underlying.length(); j++) {
       DCHECK(underlying.Get(j)->IsNumber());
       DCHECK(other.Get(j)->IsNumber());
-      InterpolableNumber& underlying_number =
-          ToInterpolableNumber(*underlying.GetMutable(j));
-      const InterpolableNumber& other_number =
-          ToInterpolableNumber(*other.Get(j));
+      auto& underlying_number =
+          To<InterpolableNumber>(*underlying.GetMutable(j));
+      const auto& other_number = To<InterpolableNumber>(*other.Get(j));
       if (j != kAlpha || underlying_number.Value() != other_number.Value())
         underlying_number.ScaleAndAdd(underlying_fraction, other_number);
     }

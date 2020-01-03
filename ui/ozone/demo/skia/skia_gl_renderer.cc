@@ -64,7 +64,7 @@ bool SkiaGlRenderer::Initialize() {
     return false;
   }
 
-  gl_surface_->Resize(size_, 1.f, gl::GLSurface::ColorSpace::UNSPECIFIED, true);
+  gl_surface_->Resize(size_, 1.f, gfx::ColorSpace(), true);
 
   if (!gl_context_->MakeCurrent(gl_surface_.get())) {
     LOG(FATAL) << "Failed to make GL context current";

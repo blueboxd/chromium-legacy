@@ -457,9 +457,8 @@ const CGFloat kbadgeViewAnimationDuration = 0.2;
 
 // Returns the font size for the location label.
 - (UIFont*)locationLabelFont {
-  return PreferredFontForTextStyleWithMaxCategory(
-      UIFontTextStyleBody, self.traitCollection.preferredContentSizeCategory,
-      UIContentSizeCategoryAccessibilityExtraLarge);
+  return LocationBarSteadyViewFont(
+      self.traitCollection.preferredContentSizeCategory);
 }
 
 @end

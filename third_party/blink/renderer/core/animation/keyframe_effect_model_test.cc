@@ -68,8 +68,8 @@ class AnimationKeyframeEffectModel : public PageTestBase {
     interpolations.push_back(interpolation_value);
     EnsureInterpolatedValueCached(interpolations, GetDocument(), element);
 
-    const TypedInterpolationValue* typed_value =
-        ToInvalidatableInterpolation(interpolation_value)
+    const auto* typed_value =
+        To<InvalidatableInterpolation>(interpolation_value)
             ->GetCachedValueForTesting();
     // Length values are stored as an |InterpolableLength|; here we assume
     // pixels.
@@ -89,8 +89,8 @@ class AnimationKeyframeEffectModel : public PageTestBase {
     interpolations.push_back(interpolation_value);
     EnsureInterpolatedValueCached(interpolations, GetDocument(), element);
 
-    const TypedInterpolationValue* typed_value =
-        ToInvalidatableInterpolation(interpolation_value)
+    const auto* typed_value =
+        To<InvalidatableInterpolation>(interpolation_value)
             ->GetCachedValueForTesting();
     const NonInterpolableValue* non_interpolable_value =
         typed_value->GetNonInterpolableValue();
@@ -167,8 +167,7 @@ const PropertySpecificKeyframeVector& ConstructEffectAndGetKeyframes(
 
 void ExpectProperty(CSSPropertyID property,
                     Interpolation* interpolation_value) {
-  InvalidatableInterpolation* interpolation =
-      ToInvalidatableInterpolation(interpolation_value);
+  auto* interpolation = To<InvalidatableInterpolation>(interpolation_value);
   const PropertyHandle& property_handle = interpolation->GetProperty();
   ASSERT_TRUE(property_handle.IsCSSProperty());
   ASSERT_EQ(property, property_handle.GetCSSProperty().PropertyID());
@@ -177,8 +176,8 @@ void ExpectProperty(CSSPropertyID property,
 Interpolation* FindValue(HeapVector<Member<Interpolation>>& values,
                          CSSPropertyID id) {
   for (auto& value : values) {
-    const PropertyHandle& property =
-        ToInvalidatableInterpolation(value)->GetProperty();
+    const auto& property =
+        To<InvalidatableInterpolation>(value.Get())->GetProperty();
     if (property.IsCSSProperty() &&
         property.GetCSSProperty().PropertyID() == id)
       return value;

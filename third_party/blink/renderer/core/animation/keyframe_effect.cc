@@ -563,7 +563,7 @@ void KeyframeEffect::DetachTarget(Animation* animation) {
 AnimationTimeDelta KeyframeEffect::CalculateTimeToEffectChange(
     bool forwards,
     base::Optional<double> local_time,
-    double time_to_next_iteration) const {
+    AnimationTimeDelta time_to_next_iteration) const {
   const double start_time = SpecifiedTiming().start_delay;
   const double end_time_minus_end_delay =
       start_time + SpecifiedTiming().ActiveDuration();
@@ -586,8 +586,8 @@ AnimationTimeDelta KeyframeEffect::CalculateTimeToEffectChange(
         // Need service to apply fill / fire events.
         const double time_to_end = after_time - local_time.value();
         if (RequiresIterationEvents()) {
-          return AnimationTimeDelta::FromSecondsD(
-              std::min(time_to_end, time_to_next_iteration));
+          return std::min(AnimationTimeDelta::FromSecondsD(time_to_end),
+                          time_to_next_iteration);
         }
         return AnimationTimeDelta::FromSecondsD(time_to_end);
       }

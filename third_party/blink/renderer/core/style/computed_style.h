@@ -2573,6 +2573,11 @@ class ComputedStyle : public ComputedStyleBase,
            static_cast<unsigned>(RenderSubtreeFlags::kSkipViewportActivation);
   }
 
+  bool GeneratesMarkerImage() const {
+    return Display() == EDisplay::kListItem && ListStyleImage() &&
+           !ListStyleImage()->ErrorOccurred();
+  }
+
  private:
   EClear Clear() const { return ClearInternal(); }
   EFloat Floating() const { return FloatingInternal(); }

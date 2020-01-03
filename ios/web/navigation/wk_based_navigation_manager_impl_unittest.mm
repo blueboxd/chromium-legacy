@@ -757,6 +757,9 @@ TEST_F(WKBasedNavigationManagerTest, HideInternalRedirectUrl) {
 // Tests that the virtual URL of a placeholder item is updated to the original
 // URL.
 TEST_F(WKBasedNavigationManagerTest, HideInternalPlaceholderUrl) {
+  if (base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage))
+    return;
+
   GURL original_url = GURL("http://www.1.com?query=special%26chars");
   GURL url = wk_navigation_util::CreatePlaceholderUrlForUrl(original_url);
   NSString* url_spec = base::SysUTF8ToNSString(url.spec());

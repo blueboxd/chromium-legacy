@@ -2,23 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
-/**
- * Namespace for the Camera app.
- */
-var cca = cca || {};
-
-/**
- * Namespace for models.
- */
-cca.models = cca.models || {};
+// eslint-disable-next-line no-unused-vars
+import {VideoSaver} from './video_saver_interface.js';
 
 /**
  * Used to save captured video.
- * @implements {cca.models.VideoSaver}
+ * @implements {VideoSaver}
  */
-cca.models.FileVideoSaver = class {
+export class FileVideoSaver {
   /**
    * @param {!FileEntry} file
    * @param {!FileWriter} writer
@@ -68,11 +59,14 @@ cca.models.FileVideoSaver = class {
    * Creates FileVideoSaver.
    * @param {!FileEntry} file The file which FileVideoSaver saves the result
    *     video into.
-   * @return {!Promise<!cca.models.FileVideoSaver>}
+   * @return {!Promise<!FileVideoSaver>}
    */
   static async create(file) {
     const writer = await new Promise(
         (resolve, reject) => file.createWriter(resolve, reject));
-    return new cca.models.FileVideoSaver(file, writer);
+    return new FileVideoSaver(file, writer);
   }
-};
+}
+
+/** @const */
+cca.models.FileVideoSaver = FileVideoSaver;

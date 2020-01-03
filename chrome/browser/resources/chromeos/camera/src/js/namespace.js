@@ -23,5 +23,7 @@ var cca = {
   toast: {},
   tooltip: {},
   util: {},
-  views: {},
+  views: {
+    camera: {},
+  },
 };

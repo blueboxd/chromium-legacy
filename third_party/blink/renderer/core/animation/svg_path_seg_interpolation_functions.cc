@@ -20,7 +20,7 @@ std::unique_ptr<InterpolableNumber> ConsumeControlAxis(double value,
 float ConsumeInterpolableControlAxis(const InterpolableValue* number,
                                      bool is_absolute,
                                      double current_value) {
-  double value = ToInterpolableNumber(number)->Value();
+  double value = To<InterpolableNumber>(number)->Value();
   return clampTo<float>(is_absolute ? value : value - current_value);
 }
 
@@ -37,7 +37,7 @@ float ConsumeInterpolableCoordinateAxis(const InterpolableValue* number,
                                         bool is_absolute,
                                         double& current_value) {
   double previous_value = current_value;
-  current_value = ToInterpolableNumber(number)->Value();
+  current_value = To<InterpolableNumber>(number)->Value();
   return clampTo<float>(is_absolute ? current_value
                                     : current_value - previous_value);
 }
@@ -85,7 +85,7 @@ PathSegmentData ConsumeInterpolableSingleCoordinate(
     const InterpolableValue& value,
     SVGPathSegType seg_type,
     PathCoordinates& coordinates) {
-  const InterpolableList& list = ToInterpolableList(value);
+  const auto& list = To<InterpolableList>(value);
   bool is_absolute = IsAbsolutePathSegType(seg_type);
   PathSegmentData segment;
   segment.command = seg_type;
@@ -127,7 +127,7 @@ std::unique_ptr<InterpolableValue> ConsumeCurvetoCubic(
 PathSegmentData ConsumeInterpolableCurvetoCubic(const InterpolableValue& value,
                                                 SVGPathSegType seg_type,
                                                 PathCoordinates& coordinates) {
-  const InterpolableList& list = ToInterpolableList(value);
+  const auto& list = To<InterpolableList>(value);
   bool is_absolute = IsAbsolutePathSegType(seg_type);
   PathSegmentData segment;
   segment.command = seg_type;
@@ -166,7 +166,7 @@ PathSegmentData ConsumeInterpolableCurvetoQuadratic(
     const InterpolableValue& value,
     SVGPathSegType seg_type,
     PathCoordinates& coordinates) {
-  const InterpolableList& list = ToInterpolableList(value);
+  const auto& list = To<InterpolableList>(value);
   bool is_absolute = IsAbsolutePathSegType(seg_type);
   PathSegmentData segment;
   segment.command = seg_type;
@@ -201,7 +201,7 @@ std::unique_ptr<InterpolableValue> ConsumeArc(const PathSegmentData& segment,
 PathSegmentData ConsumeInterpolableArc(const InterpolableValue& value,
                                        SVGPathSegType seg_type,
                                        PathCoordinates& coordinates) {
-  const InterpolableList& list = ToInterpolableList(value);
+  const auto& list = To<InterpolableList>(value);
   bool is_absolute = IsAbsolutePathSegType(seg_type);
   PathSegmentData segment;
   segment.command = seg_type;
@@ -209,11 +209,11 @@ PathSegmentData ConsumeInterpolableArc(const InterpolableValue& value,
       list.Get(0), is_absolute, coordinates.current_x));
   segment.target_point.SetY(ConsumeInterpolableCoordinateAxis(
       list.Get(1), is_absolute, coordinates.current_y));
-  segment.ArcRadii().SetX(ToInterpolableNumber(list.Get(2))->Value());
-  segment.ArcRadii().SetY(ToInterpolableNumber(list.Get(3))->Value());
-  segment.SetArcAngle(ToInterpolableNumber(list.Get(4))->Value());
-  segment.arc_large = ToInterpolableNumber(list.Get(5))->Value() >= 0.5;
-  segment.arc_sweep = ToInterpolableNumber(list.Get(6))->Value() >= 0.5;
+  segment.ArcRadii().SetX(To<InterpolableNumber>(list.Get(2))->Value());
+  segment.ArcRadii().SetY(To<InterpolableNumber>(list.Get(3))->Value());
+  segment.SetArcAngle(To<InterpolableNumber>(list.Get(4))->Value());
+  segment.arc_large = To<InterpolableNumber>(list.Get(5))->Value() >= 0.5;
+  segment.arc_sweep = To<InterpolableNumber>(list.Get(6))->Value() >= 0.5;
   return segment;
 }
 
@@ -275,7 +275,7 @@ PathSegmentData ConsumeInterpolableCurvetoCubicSmooth(
     const InterpolableValue& value,
     SVGPathSegType seg_type,
     PathCoordinates& coordinates) {
-  const InterpolableList& list = ToInterpolableList(value);
+  const auto& list = To<InterpolableList>(value);
   bool is_absolute = IsAbsolutePathSegType(seg_type);
   PathSegmentData segment;
   segment.command = seg_type;

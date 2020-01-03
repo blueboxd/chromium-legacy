@@ -15,7 +15,7 @@ PASS Property font-variant-ligatures value 'historical-ligatures' in ::marker
 PASS Property font-variant-numeric value 'slashed-zero' in ::marker
 FAIL Property font-variant-position value 'sub' in ::marker assert_true: font-variant-position doesn't seem to be supported in the computed style expected true got false
 PASS Property font-weight value '900' in ::marker
-PASS Property white-space value 'nowrap' in ::marker
+FAIL Property white-space value 'nowrap' in ::marker assert_equals: expected "nowrap" but got "pre"
 PASS Property color value 'rgb(0, 100, 200)' in ::marker
 PASS Property text-combine-upright value 'all' in ::marker
 PASS Property unicode-bidi value 'plaintext' in ::marker

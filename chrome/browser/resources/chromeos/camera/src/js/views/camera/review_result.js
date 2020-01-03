@@ -2,27 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
-/**
- * Namespace for the Camera app.
- */
-var cca = cca || {};
-
-/**
- * Namespace for views.
- */
-cca.views = cca.views || {};
-
-/**
- * Namespace for Camera view.
- */
-cca.views.camera = cca.views.camera || {};
+import {assertInstanceof} from '../../chrome_util.js';
+import * as state from '../../state.js';
+import * as util from '../../util.js';
 
 /**
  * Creates a controller for reviewing intent result in Camera view.
  */
-cca.views.camera.ReviewResult = class {
+export class ReviewResult {
   /**
    * @public
    */
@@ -31,15 +18,15 @@ cca.views.camera.ReviewResult = class {
      * @const {!HTMLImageElement}
      * @private
      */
-    this.reviewPhotoResult_ = /** @type {!HTMLImageElement} */ (
-        document.querySelector('#review-photo-result'));
+    this.reviewPhotoResult_ = assertInstanceof(
+        document.querySelector('#review-photo-result'), HTMLImageElement);
 
     /**
      * @const {!HTMLVideoElement}
      * @private
      */
-    this.reviewVideoResult_ = /** @type {!HTMLVideoElement} */ (
-        document.querySelector('#review-video-result'));
+    this.reviewVideoResult_ = assertInstanceof(
+        document.querySelector('#review-video-result'), HTMLVideoElement);
 
     /**
      * @const {!HTMLButtonElement}
@@ -75,7 +62,7 @@ cca.views.camera.ReviewResult = class {
 
     this.reviewVideoResult_.onended = () => {
       this.reviewVideoResult_.currentTime = 0;
-      cca.state.set(cca.state.State.PLAYING_RESULT_VIDEO, false);
+      state.set(state.State.PLAYING_RESULT_VIDEO, false);
     };
 
     this.confirmResultButton_.addEventListener(
@@ -91,10 +78,10 @@ cca.views.camera.ReviewResult = class {
    * @private
    */
   playResultVideo_() {
-    if (cca.state.get(cca.state.State.PLAYING_RESULT_VIDEO)) {
+    if (state.get(state.State.PLAYING_RESULT_VIDEO)) {
       return;
     }
-    cca.state.set(cca.state.State.PLAYING_RESULT_VIDEO, true);
+    state.set(state.State.PLAYING_RESULT_VIDEO, true);
     if (document.activeElement === this.playResultVideoButton_) {
       this.confirmResultButton_.focus();
     }
@@ -114,10 +101,10 @@ cca.views.camera.ReviewResult = class {
     }
     const resolve = this.resolveOpen_;
     this.resolveOpen_ = null;
-    cca.state.set(cca.state.State.REVIEW_RESULT, false);
-    cca.state.set(cca.state.State.REVIEW_PHOTO_RESULT, false);
-    cca.state.set(cca.state.State.REVIEW_VIDEO_RESULT, false);
-    cca.state.set(cca.state.State.PLAYING_RESULT_VIDEO, false);
+    state.set(state.State.REVIEW_RESULT, false);
+    state.set(state.State.REVIEW_PHOTO_RESULT, false);
+    state.set(state.State.REVIEW_VIDEO_RESULT, false);
+    state.set(state.State.PLAYING_RESULT_VIDEO, false);
     this.reviewPhotoResult_.src = '';
     this.reviewVideoResult_.src = '';
     resolve(confirmed);
@@ -130,10 +117,10 @@ cca.views.camera.ReviewResult = class {
    *     with the photo result.
    */
   async openPhoto(blob) {
-    const img = await cca.util.blobToImage(blob);
+    const img = await util.blobToImage(blob);
     this.reviewPhotoResult_.src = img.src;
-    cca.state.set(cca.state.State.REVIEW_PHOTO_RESULT, true);
-    cca.state.set(cca.state.State.REVIEW_RESULT, true);
+    state.set(state.State.REVIEW_PHOTO_RESULT, true);
+    state.set(state.State.REVIEW_RESULT, true);
     this.confirmResultButton_.focus();
 
     return new Promise((resolve) => {
@@ -149,12 +136,15 @@ cca.views.camera.ReviewResult = class {
    */
   async openVideo(fileEntry) {
     this.reviewVideoResult_.src = fileEntry.toURL();
-    cca.state.set(cca.state.State.REVIEW_VIDEO_RESULT, true);
-    cca.state.set(cca.state.State.REVIEW_RESULT, true);
+    state.set(state.State.REVIEW_VIDEO_RESULT, true);
+    state.set(state.State.REVIEW_RESULT, true);
     this.confirmResultButton_.focus();
 
     return new Promise((resolve) => {
       this.resolveOpen_ = resolve;
     });
   }
-};
+}
+
+/** @const */
+cca.views.camera.ReviewResult = ReviewResult;

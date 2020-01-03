@@ -85,7 +85,7 @@ void SVGLengthInterpolationType::Apply(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue* non_interpolable_value,
     InterpolationEnvironment& environment) const {
-  SVGElement& element = ToSVGInterpolationEnvironment(environment).SvgElement();
+  auto& element = To<SVGInterpolationEnvironment>(environment).SvgElement();
   SVGLengthContext length_context(&element);
   element.SetWebAnimatedAttribute(
       Attribute(),

@@ -129,10 +129,13 @@ enum class BackForwardNavigationType {
 
   item->SetNavigationInitiationType(
       web::NavigationInitiationType::BROWSER_INITIATED);
-  // The error_retry_state_machine may still be in the
-  // |kDisplayingWebErrorForFailedNavigation| from the navigation that is being
-  // replaced. As the navigation is now successful, the error can be cleared.
-  item->error_retry_state_machine().SetNoNavigationError();
+  if (!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage)) {
+    // The error_retry_state_machine may still be in the
+    // |kDisplayingWebErrorForFailedNavigation| from the navigation that is
+    // being replaced. As the navigation is now successful, the error can be
+    // cleared.
+    item->error_retry_state_machine().SetNoNavigationError();
+  }
   // The load data call will replace the current navigation and the webView URL
   // of the navigation will be replaced by |URL|. Set the URL of the
   // navigationItem to keep them synced.
@@ -321,7 +324,8 @@ enum class BackForwardNavigationType {
     // redirects can not change the origin. It is possible to have more than one
     // pending navigations, so the redirect does not necesserily belong to the
     // pending navigation item.
-    if (!placeholderNavigation &&
+    if ((base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) ||
+         !placeholderNavigation) &&
         item->GetURL().GetOrigin() == requestURL.GetOrigin()) {
       self.navigationManagerImpl->UpdatePendingItemUrl(requestURL);
     }
@@ -350,7 +354,8 @@ enum class BackForwardNavigationType {
       web::NavigationContextImpl::CreateNavigationContext(
           self.webState, requestURL, hasUserGesture, transition,
           rendererInitiated);
-  context->SetPlaceholderNavigation(placeholderNavigation);
+  if (!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage))
+    context->SetPlaceholderNavigation(placeholderNavigation);
   context->SetNavigationItemUniqueID(item->GetUniqueID());
   context->SetIsPost([self.navigationHandler isCurrentNavigationItemPOST]);
   context->SetIsSameDocument(sameDocumentNavigation);
@@ -358,7 +363,9 @@ enum class BackForwardNavigationType {
   // If WKWebView.loading is used for WebState::IsLoading, do not set it for
   // renderer-initated navigation otherwise WebState::IsLoading will remain true
   // after hash change in the web page.
-  if (!IsWKInternalUrl(requestURL) && !placeholderNavigation &&
+  if (!IsWKInternalUrl(requestURL) &&
+      (base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) ||
+       !placeholderNavigation) &&
       (!web::features::UseWKWebViewLoading() || !rendererInitiated)) {
     self.webState->SetIsLoading(true);
   }
@@ -388,7 +395,8 @@ enum class BackForwardNavigationType {
   // placeholder URLs because this may be the only opportunity to update
   // |isLoading| for native view reload.
 
-  if (context && context->IsPlaceholderNavigation())
+  if (!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) &&
+      context && context->IsPlaceholderNavigation())
     return;
 
   if (context && IsRestoreSessionUrl(context->GetUrl()))
@@ -397,7 +405,8 @@ enum class BackForwardNavigationType {
   if (IsRestoreSessionUrl(net::GURLWithNSURL(self.webView.URL)))
     return;
 
-  if (context && context->IsLoadingErrorPage())
+  if (!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) &&
+      context && context->IsLoadingErrorPage())
     return;
 
   if (!loadSuccess) {
@@ -622,9 +631,15 @@ enum class BackForwardNavigationType {
     // Set |item| to nullptr here to avoid any use-after-free issues, as it can
     // be cleared by the call to -registerLoadRequestForURL below.
     item = nullptr;
-    GURL contextURL = IsPlaceholderUrl(navigationURL)
-                          ? ExtractUrlFromPlaceholderUrl(navigationURL)
-                          : navigationURL;
+    GURL contextURL =
+        (!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) &&
+         IsPlaceholderUrl(navigationURL))
+            ? ExtractUrlFromPlaceholderUrl(navigationURL)
+            : navigationURL;
+    BOOL isPlaceholderURL =
+        base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage)
+            ? NO
+            : IsPlaceholderUrl(navigationURL);
     std::unique_ptr<web::NavigationContextImpl> navigationContext =
         [self registerLoadRequestForURL:contextURL
                                referrer:self.currentNavItemReferrer
@@ -632,7 +647,7 @@ enum class BackForwardNavigationType {
                  sameDocumentNavigation:sameDocumentNavigation
                          hasUserGesture:YES
                       rendererInitiated:NO
-                  placeholderNavigation:IsPlaceholderUrl(navigationURL)];
+                  placeholderNavigation:isPlaceholderURL];
 
     if (self.navigationManagerImpl->IsRestoreSessionInProgress()) {
       if (self.navigationManagerImpl->ShouldBlockUrlDuringRestore(

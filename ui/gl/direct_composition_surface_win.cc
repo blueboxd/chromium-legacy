@@ -512,7 +512,7 @@ void* DirectCompositionSurfaceWin::GetHandle() {
 
 bool DirectCompositionSurfaceWin::Resize(const gfx::Size& size,
                                          float scale_factor,
-                                         ColorSpace color_space,
+                                         const gfx::ColorSpace& color_space,
                                          bool has_alpha) {
   // Force a resize and redraw (but not a move, activate, etc.).
   if (!SetWindowPos(window_, nullptr, 0, 0, size.width(), size.height(),

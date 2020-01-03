@@ -119,25 +119,15 @@ void MessageBoxView::SetCheckBoxSelected(bool selected) {
 
 void MessageBoxView::SetLink(const base::string16& text,
                              LinkListener* listener) {
-  size_t child_count = children().size();
-  if (text.empty()) {
-    DCHECK(!listener);
-    delete link_;
-    link_ = nullptr;
-  } else {
-    DCHECK(listener);
-    if (!link_) {
-      // See the comment above in SetCheckBoxLabel();
-      SetLayoutManager(nullptr);
-      link_ = AddChildView(std::make_unique<Link>(text));
-      link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    } else {
-      link_->SetText(text);
-    }
-    link_->set_listener(listener);
-  }
-  if (child_count != children().size())
-    ResetLayoutManager();
+  DCHECK(!text.empty());
+  DCHECK(listener);
+  DCHECK(!link_);
+  // See the comment in SetCheckBoxLabel();
+  SetLayoutManager(nullptr);
+  link_ = AddChildView(std::make_unique<Link>(text));
+  link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  link_->set_listener(listener);
+  ResetLayoutManager();
 }
 
 void MessageBoxView::GetAccessibleNodeData(ui::AXNodeData* node_data) {

@@ -781,7 +781,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   WKNavigation* navigation = [self.webView goToBackForwardListItem:wk_item];
 
   GURL URL = net::GURLWithNSURL(wk_item.URL);
-  if (IsPlaceholderUrl(URL)) {
+  if (!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) &&
+      IsPlaceholderUrl(URL)) {
     // No need to create navigation context for placeholder back forward
     // navigations. Future callbacks do not expect that context will exist.
     return;
@@ -889,8 +890,10 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     _userInteractionState.SetUserInteractionRegisteredSinceLastUrlChange(false);
   }
   if (context && !context->IsLoadingHtmlString() &&
-      !context->IsLoadingErrorPage() && !IsWKInternalUrl(newURL) &&
-      !newURL.SchemeIs(url::kAboutScheme) && self.webView) {
+      (base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) ||
+       !context->IsLoadingErrorPage()) &&
+      !IsWKInternalUrl(newURL) && !newURL.SchemeIs(url::kAboutScheme) &&
+      self.webView) {
     // On iOS13, WebKit started changing the URL visible webView.URL when
     // opening a new tab and then writing to it, e.g.
     // window.open('javascript:document.write(1)').  This URL is never commited,
@@ -924,7 +927,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   *trustLevel = web::URLVerificationTrustLevel::kAbsolute;
   // Placeholder URL is an implementation detail. Don't expose it to users of
   // web layer.
-  if (IsPlaceholderUrl(_documentURL))
+  if (!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) &&
+      IsPlaceholderUrl(_documentURL))
     return ExtractUrlFromPlaceholderUrl(_documentURL);
   return _documentURL;
 }
@@ -1588,7 +1592,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       lastNavigationState == web::WKNavigationState::REDIRECTED;
 
   if (!hasPendingNavigation &&
-      !IsPlaceholderUrl(net::GURLWithNSURL(self.webView.URL))) {
+      (base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) ||
+       !IsPlaceholderUrl(net::GURLWithNSURL(self.webView.URL)))) {
     // Do not update the title if there is a navigation in progress because
     // there is no way to tell if KVO change fired for new or previous page.
     [self.navigationHandler
@@ -1652,12 +1657,16 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (void)navigationObserver:(CRWWebViewNavigationObserver*)navigationObserver
                 didLoadNewURL:(const GURL&)webViewURL
     forSameDocumentNavigation:(BOOL)isSameDocumentNavigation {
-  std::unique_ptr<web::NavigationContextImpl> newContext = [_requestController
-      registerLoadRequestForURL:webViewURL
-         sameDocumentNavigation:isSameDocumentNavigation
-                 hasUserGesture:NO
-              rendererInitiated:YES
-          placeholderNavigation:IsPlaceholderUrl(webViewURL)];
+  BOOL isPlaceholderURL =
+      base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage)
+          ? NO
+          : IsPlaceholderUrl(webViewURL);
+  std::unique_ptr<web::NavigationContextImpl> newContext =
+      [_requestController registerLoadRequestForURL:webViewURL
+                             sameDocumentNavigation:isSameDocumentNavigation
+                                     hasUserGesture:NO
+                                  rendererInitiated:YES
+                              placeholderNavigation:isPlaceholderURL];
   [self.navigationHandler webPageChangedWithContext:newContext.get()
                                             webView:self.webView];
   newContext->SetHasCommitted(!isSameDocumentNavigation);

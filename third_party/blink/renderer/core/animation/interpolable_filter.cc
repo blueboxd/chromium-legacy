@@ -173,7 +173,7 @@ FilterOperation* InterpolableFilter::CreateFilterOperation(
     case FilterOperation::SATURATE:
     case FilterOperation::SEPIA: {
       double value =
-          ClampParameter(ToInterpolableNumber(*value_).Value(), type_);
+          ClampParameter(To<InterpolableNumber>(*value_).Value(), type_);
       return MakeGarbageCollected<BasicColorMatrixFilterOperation>(value,
                                                                    type_);
     }
@@ -183,7 +183,7 @@ FilterOperation* InterpolableFilter::CreateFilterOperation(
     case FilterOperation::INVERT:
     case FilterOperation::OPACITY: {
       double value =
-          ClampParameter(ToInterpolableNumber(*value_).Value(), type_);
+          ClampParameter(To<InterpolableNumber>(*value_).Value(), type_);
       return MakeGarbageCollected<BasicComponentTransferFilterOperation>(value,
                                                                          type_);
     }

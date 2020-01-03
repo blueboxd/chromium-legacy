@@ -128,9 +128,10 @@ InterpolationValue PathInterpolationFunctions::MaybeConvertNeutral(
   conversion_checkers.push_back(
       UnderlyingPathSegTypesChecker::Create(underlying));
   auto result = std::make_unique<InterpolableList>(kPathComponentIndexCount);
-  result->Set(kPathArgsIndex, ToInterpolableList(*underlying.interpolable_value)
-                                  .Get(kPathArgsIndex)
-                                  ->CloneAndZero());
+  result->Set(kPathArgsIndex,
+              To<InterpolableList>(*underlying.interpolable_value)
+                  .Get(kPathArgsIndex)
+                  ->CloneAndZero());
   result->Set(kPathNeutralIndex, std::make_unique<InterpolableNumber>(1));
   return InterpolationValue(std::move(result),
                             underlying.non_interpolable_value.get());
@@ -170,9 +171,9 @@ void PathInterpolationFunctions::Composite(
     double underlying_fraction,
     const InterpolationType& type,
     const InterpolationValue& value) {
-  const InterpolableList& list = ToInterpolableList(*value.interpolable_value);
+  const auto& list = To<InterpolableList>(*value.interpolable_value);
   double neutral_component =
-      ToInterpolableNumber(list.Get(kPathNeutralIndex))->Value();
+      To<InterpolableNumber>(list.Get(kPathNeutralIndex))->Value();
 
   if (neutral_component == 0) {
     underlying_value_owner.Set(type, value);
@@ -197,8 +198,8 @@ std::unique_ptr<SVGPathByteStream> PathInterpolationFunctions::AppliedValue(
   std::unique_ptr<SVGPathByteStream> path_byte_stream =
       std::make_unique<SVGPathByteStream>();
   InterpolatedSVGPathSource source(
-      ToInterpolableList(
-          *ToInterpolableList(interpolable_value).Get(kPathArgsIndex)),
+      To<InterpolableList>(
+          *To<InterpolableList>(interpolable_value).Get(kPathArgsIndex)),
       ToSVGPathNonInterpolableValue(non_interpolable_value)->PathSegTypes());
   SVGPathByteStreamBuilder builder(*path_byte_stream);
   svg_path_parser::ParsePath(source, builder);

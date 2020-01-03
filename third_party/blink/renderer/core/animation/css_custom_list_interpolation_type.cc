@@ -56,8 +56,7 @@ const CSSValue* CSSCustomListInterpolationType::CreateCSSValue(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue* non_interpolable_value,
     const StyleResolverState& state) const {
-  const InterpolableList& interpolable_list =
-      ToInterpolableList(interpolable_value);
+  const auto& interpolable_list = To<InterpolableList>(interpolable_value);
   const NonInterpolableList* non_interpolable_list =
       non_interpolable_value ? &ToNonInterpolableList(*non_interpolable_value)
                              : nullptr;

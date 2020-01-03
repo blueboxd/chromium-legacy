@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/metrics/histogram_macros.h"
+#include "ios/web/common/features.h"
 #import "ios/web/navigation/navigation_manager_delegate.h"
 #import "ios/web/navigation/wk_navigation_util.h"
 #import "ios/web/public/web_client.h"
@@ -462,7 +463,8 @@ NavigationManagerImpl::CreateNavigationItemWithRewriters(
   // Do not rewrite placeholder URL. Navigation code relies on this special URL
   // to implement native view and WebUI, and rewriter code should not be exposed
   // to this special type of about:blank URL.
-  if (!IsPlaceholderUrl(url)) {
+  if (base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) ||
+      !IsPlaceholderUrl(url)) {
     bool url_was_rewritten = false;
     if (additional_rewriters && !additional_rewriters->empty()) {
       url_was_rewritten = web::BrowserURLRewriter::RewriteURLWithWriters(
@@ -519,6 +521,7 @@ void NavigationManagerImpl::FinishLoadURLWithParams(
 }
 
 bool NavigationManagerImpl::IsPlaceholderUrl(const GURL& url) const {
+  DCHECK(!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage));
   return false;  // Default implementation doesn't use placeholder URLs
 }
 

@@ -194,7 +194,7 @@ void CSSFontVariationSettingsInterpolationType::ApplyStandardPropertyValue(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue* non_interpolable_value,
     StyleResolverState& state) const {
-  const InterpolableList& numbers = ToInterpolableList(interpolable_value);
+  const auto& numbers = To<InterpolableList>(interpolable_value);
   const Vector<AtomicString>& tags = GetTags(*non_interpolable_value);
   DCHECK_EQ(numbers.length(), tags.size());
 
@@ -205,7 +205,7 @@ void CSSFontVariationSettingsInterpolationType::ApplyStandardPropertyValue(
   for (wtf_size_t i = 0; i < length; ++i) {
     settings->Append(FontVariationAxis(
         tags[i],
-        clampTo<float>(ToInterpolableNumber(numbers.Get(i))->Value())));
+        clampTo<float>(To<InterpolableNumber>(numbers.Get(i))->Value())));
   }
   state.GetFontBuilder().SetVariationSettings(settings);
 }

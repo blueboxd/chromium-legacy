@@ -23,6 +23,7 @@ source_set("common") {
     "//base",
     "//ios/web/public/navigation",
     "//net",
+    "//services/network/public/cpp",
     "//url",
   ]
 

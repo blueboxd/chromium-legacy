@@ -149,7 +149,7 @@ struct CORE_EXPORT Timing {
         AnimationTimeDelta::Max();
     AnimationTimeDelta time_to_reverse_effect_change =
         AnimationTimeDelta::Max();
-    double time_to_next_iteration = std::numeric_limits<double>::infinity();
+    AnimationTimeDelta time_to_next_iteration = AnimationTimeDelta::Max();
   };
 
   CalculatedTiming CalculateTimings(base::Optional<double> local_time,

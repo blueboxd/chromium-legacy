@@ -261,6 +261,11 @@ BOOL WaitForKeyboardToAppear() {
 
 // Tests that the "Add Credit Cards..." action works.
 - (void)testAddCreditCardsActionOpensAddCreditCardSettings {
+  if (![ChromeEarlGrey isSettingsAddPaymentMethodEnabled]) {
+    EARL_GREY_TEST_SKIPPED(
+        @"This test has no meaning when AddPaymentMethod is disabled");
+  }
+
   [AutofillAppInterface saveLocalCreditCard];
 
   // Bring up the keyboard.
@@ -287,6 +292,11 @@ BOOL WaitForKeyboardToAppear() {
 
 // Tests that the "Add Credit Cards..." action works on OTR.
 - (void)testOTRAddCreditCardsActionOpensAddCreditCardSettings {
+  if (![ChromeEarlGrey isSettingsAddPaymentMethodEnabled]) {
+    EARL_GREY_TEST_SKIPPED(
+        @"This test has no meaning when AddPaymentMethod is disabled");
+  }
+
   [AutofillAppInterface saveLocalCreditCard];
 
   // Open a tab in incognito.
@@ -320,6 +330,11 @@ BOOL WaitForKeyboardToAppear() {
 // Tests that the manual fallback view icon is not highlighted after presenting
 // the add credit card view.
 - (void)testCreditCardsButtonStateAfterPresentingAddCreditCard {
+  if (![ChromeEarlGrey isSettingsAddPaymentMethodEnabled]) {
+    EARL_GREY_TEST_SKIPPED(
+        @"This test has no meaning when AddPaymentMethod is disabled");
+  }
+
   [AutofillAppInterface saveLocalCreditCard];
 
   // Bring up the keyboard.

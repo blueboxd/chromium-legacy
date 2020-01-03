@@ -93,6 +93,7 @@
 /gnu_binutils/
 /google_android_play_core/core-*.aar
 /google_appengine_cloudstorage
+/google_benchmark/src
 /google_toolbox_for_mac/src
 /googlemac
 /grpc/src

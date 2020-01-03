@@ -22,8 +22,8 @@ class AnimationPlaybackEvent final : public Event {
   }
 
   AnimationPlaybackEvent(const AtomicString& type,
-                         double current_time,
-                         double timeline_time);
+                         base::Optional<double> current_time,
+                         base::Optional<double> timeline_time);
   AnimationPlaybackEvent(const AtomicString&,
                          const AnimationPlaybackEventInit*);
   ~AnimationPlaybackEvent() override;

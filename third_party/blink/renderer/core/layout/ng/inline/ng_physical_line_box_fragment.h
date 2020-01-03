@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class NGFragmentItem;
 class NGLineBoxFragmentBuilder;
 
 class CORE_EXPORT NGPhysicalLineBoxFragment final
@@ -65,6 +66,10 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
   // to resolve relative position of its children.
   PhysicalRect ScrollableOverflow(const NGPhysicalBoxFragment& container,
                                   const ComputedStyle& container_style) const;
+  PhysicalRect ScrollableOverflow(const NGPhysicalBoxFragment& container,
+                                  const ComputedStyle& container_style,
+                                  const NGFragmentItem& child,
+                                  const NGInlineCursor& cursor) const;
 
   // Whether the content soft-wraps to the next line.
   bool HasSoftWrapToNextLine() const;

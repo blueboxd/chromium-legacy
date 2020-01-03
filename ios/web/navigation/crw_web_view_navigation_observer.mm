@@ -29,6 +29,7 @@
 using web::NavigationManagerImpl;
 
 using web::wk_navigation_util::IsRestoreSessionUrl;
+// TODO(crbug.com/1038303): This legacy won't be needed anymore.
 using web::wk_navigation_util::IsPlaceholderUrl;
 
 @interface CRWWebViewNavigationObserver ()
@@ -154,7 +155,8 @@ using web::wk_navigation_util::IsPlaceholderUrl;
   // from restore_session.html to the restored URL.
   bool previousURLHasAboutScheme =
       self.documentURL.SchemeIs(url::kAboutScheme) ||
-      IsPlaceholderUrl(self.documentURL) ||
+      (!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) &&
+       IsPlaceholderUrl(self.documentURL)) ||
       web::GetWebClient()->IsAppSpecificURL(self.documentURL);
   bool needs_back_forward_navigation_reload =
       existingContext &&

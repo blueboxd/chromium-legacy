@@ -307,7 +307,7 @@ template <typename BaseClass>
 bool ImageTransportSurfaceOverlayMacBase<BaseClass>::Resize(
     const gfx::Size& pixel_size,
     float scale_factor,
-    gl::GLSurface::ColorSpace color_space,
+    const gfx::ColorSpace& color_space,
     bool has_alpha) {
   pixel_size_ = pixel_size;
   scale_factor_ = scale_factor;

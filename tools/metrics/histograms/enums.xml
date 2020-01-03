@@ -11720,6 +11720,18 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="2147483646" label="STATUS_DATATYPE_MISALIGNMENT"/>
 </enum>
 
+<enum name="CrasHfpBatteryIndicator">
+  <summary>
+    List of known battery indicator supports in Bluetooth Hands-free profile.
+    This list should be aligned with CRAS:
+    https://chromium.googlesource.com/chromiumos/third_party/adhd/+/master/cras/src/server/cras_hfp_slc.h
+  </summary>
+  <int value="0" label="CRAS_HFP_BATTERY_INDICATOR_NONE"/>
+  <int value="1" label="CRAS_HFP_BATTERY_INDICATOR_HFP"/>
+  <int value="2" label="CRAS_HFP_BATTERY_INDICATOR_APPLE"/>
+  <int value="3" label="CRAS_HFP_BATTERY_INDICATOR_BOTH"/>
+</enum>
+
 <enum name="CrasHfpCodec">
   <summary>
     List of codec ids used for SCO audio, in Bluetooth Hands-free profile. This

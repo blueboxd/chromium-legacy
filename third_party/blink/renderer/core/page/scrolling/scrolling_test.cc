@@ -674,7 +674,20 @@ TEST_P(ScrollingTest, touchActionOnInline) {
 
   cc::Region region = cc_layer->touch_action_region().GetRegionForTouchAction(
       TouchAction::kNone);
-  EXPECT_EQ(region.bounds(), gfx::Rect(8, 8, 80, 50));
+  EXPECT_EQ(region.bounds(), gfx::Rect(8, 8, 120, 50));
+}
+
+TEST_P(ScrollingTest, touchActionOnText) {
+  RegisterMockedHttpURLLoad("touch-action-on-text.html");
+  NavigateTo(base_url_ + "touch-action-on-text.html");
+  LoadAhem();
+  ForceFullCompositingUpdate();
+
+  const auto* cc_layer = MainFrameScrollingContentsLayer();
+
+  cc::Region region = cc_layer->touch_action_region().GetRegionForTouchAction(
+      TouchAction::kNone);
+  EXPECT_EQ(region.bounds(), gfx::Rect(8, 8, 160, 30));
 }
 
 TEST_P(ScrollingTest, touchActionWithVerticalRLWritingMode) {

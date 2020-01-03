@@ -14,7 +14,7 @@ import {Resolution,
  *     to the format of input |tag|.
  * @throws {Error} if entry type is not supported.
  */
-export function parseMetadataData(entry) {
+export function parseMetadata(entry) {
   const {buffer} = Uint8Array.from(entry.data);
   switch (entry.type) {
     case cros.mojom.EntryType.TYPE_BYTE:
@@ -60,7 +60,7 @@ function getMetadataData(metadata, tag) {
   for (let i = 0; i < metadata.entryCount; i++) {
     const entry = metadata.entries[i];
     if (entry.tag === tag) {
-      return parseMetadataData(entry);
+      return parseMetadata(entry);
     }
   }
   return [];
@@ -466,4 +466,4 @@ export class DeviceOperator {
 /** @const */
 cca.mojo.DeviceOperator = DeviceOperator;
 /** @const */
-cca.mojo.parseMetadataData = parseMetadataData;
+cca.mojo.parseMetadata = parseMetadata;

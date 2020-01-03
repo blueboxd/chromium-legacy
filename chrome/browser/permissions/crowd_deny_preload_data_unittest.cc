@@ -46,6 +46,7 @@ class CrowdDenyPreloadDataTest : public testing::Test {
   void SetUp() override { ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir()); }
 
   base::test::TaskEnvironment* task_environment() { return &task_environment_; }
+  CrowdDenyPreloadData* preload_data() { return &preload_data_; }
 
   base::FilePath GetPathInTempDir(
       base::FilePath::StringPieceType filename) const {
@@ -67,7 +68,7 @@ class CrowdDenyPreloadDataTest : public testing::Test {
   }
 
   void LoadTestDataAndWait(base::FilePath path) {
-    CrowdDenyPreloadData::GetInstance()->LoadFromDisk(path);
+    preload_data()->LoadFromDisk(path);
     task_environment()->RunUntilIdle();
   }
 
@@ -107,15 +108,15 @@ class CrowdDenyPreloadDataTest : public testing::Test {
   void ExpectEmptyPreloadData() {
     for (const char* origin_string : kAllTestingOrigins) {
       SCOPED_TRACE(origin_string);
-      EXPECT_FALSE(
-          CrowdDenyPreloadData::GetInstance()->GetReputationDataForSite(
-              url::Origin::Create(GURL(origin_string))));
+      EXPECT_FALSE(preload_data()->GetReputationDataForSite(
+          url::Origin::Create(GURL(origin_string))));
     }
   }
 
  private:
   base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir scoped_temp_dir_;
+  CrowdDenyPreloadData preload_data_;
 
   DISALLOW_COPY_AND_ASSIGN(CrowdDenyPreloadDataTest);
 };
@@ -148,33 +149,32 @@ TEST_F(CrowdDenyPreloadDataTest, BadData) {
 TEST_F(CrowdDenyPreloadDataTest, NotificationUserExperienceQuality) {
   ASSERT_NO_FATAL_FAILURE(SerializeAndLoadCannedTestData());
 
-  const auto* data =
-      CrowdDenyPreloadData::GetInstance()->GetReputationDataForSite(
-          url::Origin::Create(GURL(kTestOriginAlpha)));
+  const auto* data = preload_data()->GetReputationDataForSite(
+      url::Origin::Create(GURL(kTestOriginAlpha)));
   ASSERT_TRUE(data);
   EXPECT_EQ(kTestDomainAlpha, data->domain());
   EXPECT_EQ(SiteReputation::UNKNOWN, data->notification_ux_quality());
 
-  data = CrowdDenyPreloadData::GetInstance()->GetReputationDataForSite(
+  data = preload_data()->GetReputationDataForSite(
       url::Origin::Create(GURL(kTestOriginBeta)));
   ASSERT_TRUE(data);
   EXPECT_EQ(kTestDomainBeta, data->domain());
   EXPECT_EQ(SiteReputation::ACCEPTABLE, data->notification_ux_quality());
 
-  data = CrowdDenyPreloadData::GetInstance()->GetReputationDataForSite(
+  data = preload_data()->GetReputationDataForSite(
       url::Origin::Create(GURL(kTestOriginGamma)));
   ASSERT_TRUE(data);
   EXPECT_EQ(kTestDomainGamma, data->domain());
   EXPECT_EQ(SiteReputation::UNSOLICITED_PROMPTS,
             data->notification_ux_quality());
 
-  data = CrowdDenyPreloadData::GetInstance()->GetReputationDataForSite(
+  data = preload_data()->GetReputationDataForSite(
       url::Origin::Create(GURL(kTestOriginDelta)));
   ASSERT_TRUE(data);
   EXPECT_EQ(kTestDomainDelta, data->domain());
   EXPECT_EQ(SiteReputation::UNKNOWN, data->notification_ux_quality());
 
-  data = CrowdDenyPreloadData::GetInstance()->GetReputationDataForSite(
+  data = preload_data()->GetReputationDataForSite(
       url::Origin::Create(GURL(kTestOriginEpsilon)));
   EXPECT_FALSE(data);
 }
@@ -188,12 +188,12 @@ TEST_F(CrowdDenyPreloadDataTest, GetReputationReturnsNullForNonHttpsOrigins) {
   };
 
   ASSERT_NO_FATAL_FAILURE(SerializeAndLoadCannedTestData());
-  EXPECT_TRUE(CrowdDenyPreloadData::GetInstance()->GetReputationDataForSite(
+  EXPECT_TRUE(preload_data()->GetReputationDataForSite(
       url::Origin::Create(GURL(kTestOriginAlpha))));
 
   for (const char* non_https_origin : kNonHttpsOrigins) {
     SCOPED_TRACE(non_https_origin);
-    EXPECT_FALSE(CrowdDenyPreloadData::GetInstance()->GetReputationDataForSite(
+    EXPECT_FALSE(preload_data()->GetReputationDataForSite(
         url::Origin::Create(GURL(non_https_origin))));
   }
 }
@@ -201,9 +201,9 @@ TEST_F(CrowdDenyPreloadDataTest, GetReputationReturnsNullForNonHttpsOrigins) {
 TEST_F(CrowdDenyPreloadDataTest, GetReputationIgnoresPort) {
   ASSERT_NO_FATAL_FAILURE(SerializeAndLoadCannedTestData());
 
-  EXPECT_TRUE(CrowdDenyPreloadData::GetInstance()->GetReputationDataForSite(
+  EXPECT_TRUE(preload_data()->GetReputationDataForSite(
       url::Origin::Create(GURL("https://alpha.com:443"))));
-  EXPECT_TRUE(CrowdDenyPreloadData::GetInstance()->GetReputationDataForSite(
+  EXPECT_TRUE(preload_data()->GetReputationDataForSite(
       url::Origin::Create(GURL("https://alpha.com:1234"))));
 }
 
@@ -227,22 +227,21 @@ TEST_F(CrowdDenyPreloadDataTest, Update) {
   ASSERT_NO_FATAL_FAILURE(SerializeAndLoadTestData(std::move(test_data_v2)));
 
   // Check that the updated preload data is visible.
-  EXPECT_FALSE(CrowdDenyPreloadData::GetInstance()->GetReputationDataForSite(
+  EXPECT_FALSE(preload_data()->GetReputationDataForSite(
       url::Origin::Create(GURL(kTestOriginAlpha))));
-  EXPECT_FALSE(CrowdDenyPreloadData::GetInstance()->GetReputationDataForSite(
+  EXPECT_FALSE(preload_data()->GetReputationDataForSite(
       url::Origin::Create(GURL(kTestOriginBeta))));
-  EXPECT_FALSE(CrowdDenyPreloadData::GetInstance()->GetReputationDataForSite(
+  EXPECT_FALSE(preload_data()->GetReputationDataForSite(
       url::Origin::Create(GURL(kTestOriginGamma))));
 
-  const auto* data =
-      CrowdDenyPreloadData::GetInstance()->GetReputationDataForSite(
-          url::Origin::Create(GURL(kTestOriginDelta)));
+  const auto* data = preload_data()->GetReputationDataForSite(
+      url::Origin::Create(GURL(kTestOriginDelta)));
   ASSERT_TRUE(data);
   EXPECT_EQ(kTestDomainDelta, data->domain());
   EXPECT_EQ(SiteReputation::UNSOLICITED_PROMPTS,
             data->notification_ux_quality());
 
-  data = CrowdDenyPreloadData::GetInstance()->GetReputationDataForSite(
+  data = preload_data()->GetReputationDataForSite(
       url::Origin::Create(GURL(kTestOriginEpsilon)));
   ASSERT_TRUE(data);
   EXPECT_EQ(kTestDomainEpsilon, data->domain());
@@ -306,18 +305,17 @@ TEST_F(CrowdDenyPreloadDataTest, LastOneSurvivesFromUpdatesInQuickSuccession) {
   // TODO(crbug.com/1028642): Think about making this test stronger. Even if the
   // ordering were random, given the generous retry policy in continuous build,
   // the test would still pass most of the time.
-  CrowdDenyPreloadData::GetInstance()->LoadFromDisk(data_path_v2);
-  CrowdDenyPreloadData::GetInstance()->LoadFromDisk(data_path_v3);
+  preload_data()->LoadFromDisk(data_path_v2);
+  preload_data()->LoadFromDisk(data_path_v3);
   task_environment()->RunUntilIdle();
 
   // Expect the new version to have become visible.
-  const auto* data =
-      CrowdDenyPreloadData::GetInstance()->GetReputationDataForSite(
-          url::Origin::Create(GURL(kTestOriginEpsilon)));
+  const auto* data = preload_data()->GetReputationDataForSite(
+      url::Origin::Create(GURL(kTestOriginEpsilon)));
   ASSERT_TRUE(data);
   EXPECT_EQ(kTestDomainEpsilon, data->domain());
   EXPECT_EQ(SiteReputation::ACCEPTABLE, data->notification_ux_quality());
 
-  EXPECT_FALSE(CrowdDenyPreloadData::GetInstance()->GetReputationDataForSite(
+  EXPECT_FALSE(preload_data()->GetReputationDataForSite(
       url::Origin::Create(GURL(kTestOriginDelta))));
 }

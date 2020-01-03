@@ -19,6 +19,7 @@
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
+#import "ios/chrome/browser/ui/util/dynamic_type_util.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/named_guide_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -178,6 +179,7 @@ CGFloat IdentityDiscToolbarOffset(id<UITraitEnvironment> environment) {
   self.searchHintLabel = [[UILabel alloc] init];
   content_suggestions::configureSearchHintLabel(self.searchHintLabel,
                                                 searchField);
+  self.searchHintLabel.font = [self hintLabelFont];
   self.hintLabelLeadingConstraint = [self.searchHintLabel.leadingAnchor
       constraintGreaterThanOrEqualToAnchor:[searchField leadingAnchor]
                                   constant:ntp_header::kHintLabelSidePadding];
@@ -409,6 +411,10 @@ CGFloat IdentityDiscToolbarOffset(id<UITraitEnvironment> environment) {
        previousTraitCollection.horizontalSizeClass)) {
     self.identityDiscTopConstraint.constant = IdentityDiscToolbarOffset(self);
   }
+  if (previousTraitCollection.preferredContentSizeCategory !=
+      self.traitCollection.preferredContentSizeCategory) {
+    self.searchHintLabel.font = [self hintLabelFont];
+  }
 }
 
 #pragma mark - Property accessors
@@ -434,6 +440,12 @@ CGFloat IdentityDiscToolbarOffset(id<UITraitEnvironment> environment) {
 }
 
 #pragma mark - Private
+
+// Returns the font size for the hint label.
+- (UIFont*)hintLabelFont {
+  return LocationBarSteadyViewFont(
+      self.traitCollection.preferredContentSizeCategory);
+}
 
 // Scale the the hint label down to at most content_suggestions::kHintTextScale.
 - (void)scaleHintLabelForPercent:(CGFloat)percent {

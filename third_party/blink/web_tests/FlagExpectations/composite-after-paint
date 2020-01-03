@@ -124,9 +124,6 @@ paint/invalidation/compositing/should-invoke-deferred-compositing.html [ Failure
 paint/invalidation/scroll/overflow-hidden-yet-scrolled-with-custom-scrollbar.html [ Failure ]
 paint/invalidation/scroll/overflow-hidden-yet-scrolled.html [ Failure ]
 
-# Under-invalidation
-fast/events/touch/touch-rect-crash-on-unpromote-layer.html [ Crash ]
-
 # "Missing" raster invalidation because composited layers are re-created.
 crbug.com/842356 paint/invalidation/compositing/containing-block-added-individual.html [ Failure ]
 crbug.com/842356 paint/invalidation/compositing/containing-block-added.html [ Failure ]

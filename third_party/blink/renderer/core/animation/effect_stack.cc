@@ -63,7 +63,8 @@ void CopyToActiveInterpolationsMap(
         !property.IsCSSProperty() || property.IsPresentationAttribute();
     const bool effect_depends_on_underlying_value =
         interpolation->IsInvalidatableInterpolation() &&
-        ToInvalidatableInterpolation(*interpolation).DependsOnUnderlyingValue();
+        To<InvalidatableInterpolation>(*interpolation.Get())
+            .DependsOnUnderlyingValue();
     if (!allow_stacked_effects || !effect_depends_on_underlying_value)
       active_interpolations.clear();
     active_interpolations.push_back(interpolation);

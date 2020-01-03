@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_force_close_watcher.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
@@ -208,6 +209,12 @@ void AppServiceAppWindowCrostiniTracker::Restart(const ash::ShelfID& shelf_id,
 
 std::string AppServiceAppWindowCrostiniTracker::GetShelfAppId(
     aura::Window* window) const {
+  // Only handle the app associated with the primary user.
+  if (!crostini::CrostiniFeatures::Get()->IsUIAllowed(
+          app_service_controller_->owner()->profile())) {
+    return std::string();
+  }
+
   // Transient windows are set up after window init, so remove them here.
   // Crostini shouldn't need to know about ARC app windows.
   if (wm::GetTransientParent(window) ||

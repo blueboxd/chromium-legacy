@@ -53,6 +53,7 @@ web::NavigationItemImpl* GetNavigationItemFromWKItem(
 
 // Returns true if |url1| is the same as |url2| or is a placeholder of |url2|.
 bool IsSameOrPlaceholderOf(const GURL& url1, const GURL& url2) {
+  DCHECK(!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage));
   return url1 == url2 ||
          url1 == web::wk_navigation_util::CreatePlaceholderUrlForUrl(url2);
 }
@@ -210,9 +211,18 @@ void WKBasedNavigationManagerImpl::AddPendingItem(
     current_item_url = target_url;
   }
 
-  if (proxy.backForwardList.currentItem &&
-      IsSameOrPlaceholderOf(current_item_url, pending_item_->GetURL()) &&
-      IsSameOrPlaceholderOf(current_item_url, net::GURLWithNSURL(proxy.URL))) {
+  BOOL isCurrentURLSameAsPending = NO;
+  if (base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage)) {
+    isCurrentURLSameAsPending =
+        current_item_url == pending_item_->GetURL() &&
+        current_item_url == net::GURLWithNSURL(proxy.URL);
+  } else {
+    isCurrentURLSameAsPending =
+        IsSameOrPlaceholderOf(current_item_url, pending_item_->GetURL()) &&
+        IsSameOrPlaceholderOf(current_item_url, net::GURLWithNSURL(proxy.URL));
+  }
+
+  if (proxy.backForwardList.currentItem && isCurrentURLSameAsPending) {
     pending_item_index_ = web_view_cache_.GetCurrentItemIndex();
 
     // If |currentItem| is not already associated with a NavigationItemImpl,
@@ -837,7 +847,8 @@ WKBasedNavigationManagerImpl::GetLastCommittedItemInCurrentOrRestoredSession()
     GURL virtual_url;
     if (wk_navigation_util::IsRestoreSessionUrl(document_url) &&
         wk_navigation_util::ExtractTargetURL(document_url, &virtual_url)) {
-      if (wk_navigation_util::IsPlaceholderUrl(virtual_url)) {
+      if (!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) &&
+          wk_navigation_util::IsPlaceholderUrl(virtual_url)) {
         last_committed_web_view_item_->SetVirtualURL(
             wk_navigation_util::ExtractUrlFromPlaceholderUrl(virtual_url));
       } else {
@@ -950,6 +961,7 @@ void WKBasedNavigationManagerImpl::FinishLoadURLWithParams(
 }
 
 bool WKBasedNavigationManagerImpl::IsPlaceholderUrl(const GURL& url) const {
+  DCHECK(!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage));
   return wk_navigation_util::IsPlaceholderUrl(url);
 }
 
@@ -1087,7 +1099,8 @@ WKBasedNavigationManagerImpl::WKWebViewCache::GetNavigationItemImplAtIndex(
   if (wk_navigation_util::IsRestoreSessionUrl(url)) {
     GURL virtual_url;
     if (wk_navigation_util::ExtractTargetURL(url, &virtual_url)) {
-      if (wk_navigation_util::IsPlaceholderUrl(virtual_url)) {
+      if (!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) &&
+          wk_navigation_util::IsPlaceholderUrl(virtual_url)) {
         new_item->SetVirtualURL(
             wk_navigation_util::ExtractUrlFromPlaceholderUrl(virtual_url));
       } else {
@@ -1101,7 +1114,8 @@ WKBasedNavigationManagerImpl::WKWebViewCache::GetNavigationItemImplAtIndex(
   // navigation. Rather than expose the internal placeholder to the UI and to
   // URL-sensing components outside of //ios/web layer, set virtual URL to the
   // placeholder original URL here.
-  if (wk_navigation_util::IsPlaceholderUrl(url)) {
+  if (!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) &&
+      wk_navigation_util::IsPlaceholderUrl(url)) {
     new_item->SetVirtualURL(
         wk_navigation_util::ExtractUrlFromPlaceholderUrl(url));
   }

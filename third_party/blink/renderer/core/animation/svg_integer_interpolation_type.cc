@@ -27,7 +27,7 @@ InterpolationValue SVGIntegerInterpolationType::MaybeConvertSVGValue(
 SVGPropertyBase* SVGIntegerInterpolationType::AppliedSVGValue(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue*) const {
-  double value = ToInterpolableNumber(interpolable_value).Value();
+  double value = To<InterpolableNumber>(interpolable_value).Value();
   return MakeGarbageCollected<SVGInteger>(round(value));
 }
 

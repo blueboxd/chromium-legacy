@@ -5,6 +5,7 @@
 #import "ios/web/js_messaging/crw_wk_script_message_router.h"
 
 #include "base/logging.h"
+#include "ios/web/common/features.h"
 #include "ios/web/navigation/wk_navigation_util.h"
 #import "net/base/mac/url_conversions.h"
 
@@ -88,7 +89,8 @@
       didReceiveScriptMessage:(WKScriptMessage*)message {
   // Ignore frame registration messages from internal placeholder pages.
   GURL url = net::GURLWithNSURL(message.frameInfo.request.URL);
-  if (web::wk_navigation_util::IsPlaceholderUrl(url)) {
+  if (!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) &&
+      web::wk_navigation_util::IsPlaceholderUrl(url)) {
     return;
   }
 

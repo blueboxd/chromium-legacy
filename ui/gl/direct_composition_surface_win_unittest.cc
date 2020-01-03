@@ -167,8 +167,8 @@ class DirectCompositionSurfaceTest : public testing::Test {
 TEST_F(DirectCompositionSurfaceTest, TestMakeCurrent) {
   if (!surface_)
     return;
-  EXPECT_TRUE(surface_->Resize(gfx::Size(100, 100), 1.0,
-                               GLSurface::ColorSpace::UNSPECIFIED, true));
+  EXPECT_TRUE(
+      surface_->Resize(gfx::Size(100, 100), 1.0, gfx::ColorSpace(), true));
 
   // First SetDrawRectangle must be full size of surface.
   EXPECT_FALSE(surface_->SetDrawRectangle(gfx::Rect(0, 0, 50, 50)));
@@ -187,8 +187,8 @@ TEST_F(DirectCompositionSurfaceTest, TestMakeCurrent) {
   EXPECT_TRUE(surface_->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
   EXPECT_TRUE(context_->IsCurrent(surface_.get()));
 
-  EXPECT_TRUE(surface_->Resize(gfx::Size(50, 50), 1.0,
-                               GLSurface::ColorSpace::UNSPECIFIED, true));
+  EXPECT_TRUE(
+      surface_->Resize(gfx::Size(50, 50), 1.0, gfx::ColorSpace(), true));
   EXPECT_TRUE(context_->IsCurrent(surface_.get()));
   EXPECT_TRUE(surface_->SetDrawRectangle(gfx::Rect(0, 0, 50, 50)));
   EXPECT_TRUE(context_->IsCurrent(surface_.get()));
@@ -198,8 +198,8 @@ TEST_F(DirectCompositionSurfaceTest, TestMakeCurrent) {
   scoped_refptr<GLContext> context2 = CreateGLContext(surface2.get());
 
   surface2->SetEnableDCLayers(true);
-  EXPECT_TRUE(surface2->Resize(gfx::Size(100, 100), 1.0,
-                               GLSurface::ColorSpace::UNSPECIFIED, true));
+  EXPECT_TRUE(
+      surface2->Resize(gfx::Size(100, 100), 1.0, gfx::ColorSpace(), true));
   // The previous IDCompositionSurface should be suspended when another
   // surface is being drawn to.
   EXPECT_TRUE(surface2->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
@@ -217,8 +217,8 @@ TEST_F(DirectCompositionSurfaceTest, DXGIDCLayerSwitch) {
   if (!surface_)
     return;
   surface_->SetEnableDCLayers(false);
-  EXPECT_TRUE(surface_->Resize(gfx::Size(100, 100), 1.0,
-                               GLSurface::ColorSpace::UNSPECIFIED, true));
+  EXPECT_TRUE(
+      surface_->Resize(gfx::Size(100, 100), 1.0, gfx::ColorSpace(), true));
   EXPECT_FALSE(surface_->GetBackbufferSwapChainForTesting());
 
   // First SetDrawRectangle must be full size of surface for DXGI swapchain.
@@ -262,8 +262,8 @@ TEST_F(DirectCompositionSurfaceTest, SwitchAlpha) {
   if (!surface_)
     return;
   surface_->SetEnableDCLayers(false);
-  EXPECT_TRUE(surface_->Resize(gfx::Size(100, 100), 1.0,
-                               GLSurface::ColorSpace::UNSPECIFIED, true));
+  EXPECT_TRUE(
+      surface_->Resize(gfx::Size(100, 100), 1.0, gfx::ColorSpace(), true));
   EXPECT_FALSE(surface_->GetBackbufferSwapChainForTesting());
 
   EXPECT_TRUE(surface_->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
@@ -275,12 +275,12 @@ TEST_F(DirectCompositionSurfaceTest, SwitchAlpha) {
   EXPECT_EQ(DXGI_ALPHA_MODE_PREMULTIPLIED, desc.AlphaMode);
 
   // Resize to the same parameters should have no effect.
-  EXPECT_TRUE(surface_->Resize(gfx::Size(100, 100), 1.0,
-                               GLSurface::ColorSpace::UNSPECIFIED, true));
+  EXPECT_TRUE(
+      surface_->Resize(gfx::Size(100, 100), 1.0, gfx::ColorSpace(), true));
   EXPECT_TRUE(surface_->GetBackbufferSwapChainForTesting());
 
-  EXPECT_TRUE(surface_->Resize(gfx::Size(100, 100), 1.0,
-                               GLSurface::ColorSpace::UNSPECIFIED, false));
+  EXPECT_TRUE(
+      surface_->Resize(gfx::Size(100, 100), 1.0, gfx::ColorSpace(), false));
   EXPECT_FALSE(surface_->GetBackbufferSwapChainForTesting());
 
   EXPECT_TRUE(surface_->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
@@ -604,8 +604,7 @@ class DirectCompositionPixelTest : public DirectCompositionSurfaceTest {
                               const gfx::Size& texture_size,
                               const gfx::Rect& content_rect,
                               const gfx::Rect& quad_rect) {
-    EXPECT_TRUE(surface_->Resize(window_size, 1.0,
-                                 GLSurface::ColorSpace::UNSPECIFIED, true));
+    EXPECT_TRUE(surface_->Resize(window_size, 1.0, gfx::ColorSpace(), true));
     EXPECT_TRUE(surface_->SetDrawRectangle(gfx::Rect(window_size)));
 
     glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -649,8 +648,7 @@ class DirectCompositionPixelTest : public DirectCompositionSurfaceTest {
       surface_->SetEnableDCLayers(false);
 
     gfx::Size window_size(100, 100);
-    EXPECT_TRUE(surface_->Resize(window_size, 1.0,
-                                 GLSurface::ColorSpace::UNSPECIFIED, true));
+    EXPECT_TRUE(surface_->Resize(window_size, 1.0, gfx::ColorSpace(), true));
     EXPECT_TRUE(surface_->SetDrawRectangle(gfx::Rect(window_size)));
 
     glClearColor(1.0, 0.0, 0.0, 1.0);
@@ -703,8 +701,7 @@ class DirectCompositionVideoPixelTest : public DirectCompositionPixelTest {
       return;
 
     gfx::Size window_size(100, 100);
-    EXPECT_TRUE(surface_->Resize(window_size, 1.0,
-                                 GLSurface::ColorSpace::UNSPECIFIED, true));
+    EXPECT_TRUE(surface_->Resize(window_size, 1.0, gfx::ColorSpace(), true));
 
     Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
         QueryD3D11DeviceObjectFromANGLE();
@@ -777,8 +774,7 @@ TEST_F(DirectCompositionPixelTest, SoftwareVideoSwapchain) {
     return;
 
   gfx::Size window_size(100, 100);
-  EXPECT_TRUE(surface_->Resize(window_size, 1.0,
-                               GLSurface::ColorSpace::UNSPECIFIED, true));
+  EXPECT_TRUE(surface_->Resize(window_size, 1.0, gfx::ColorSpace(), true));
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
       QueryD3D11DeviceObjectFromANGLE();
@@ -864,8 +860,7 @@ TEST_F(DirectCompositionPixelTest, SkipVideoLayerEmptyContentsRect) {
   DirectCompositionSurfaceWin::SetScaledOverlaysSupportedForTesting(true);
 
   gfx::Size window_size(100, 100);
-  EXPECT_TRUE(surface_->Resize(window_size, 1.0,
-                               GLSurface::ColorSpace::UNSPECIFIED, true));
+  EXPECT_TRUE(surface_->Resize(window_size, 1.0, gfx::ColorSpace(), true));
   EXPECT_TRUE(surface_->SetDrawRectangle(gfx::Rect(window_size)));
 
   glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -1028,8 +1023,7 @@ TEST_F(DirectCompositionPixelTest, ResizeVideoLayer) {
   DirectCompositionSurfaceWin::SetScaledOverlaysSupportedForTesting(true);
 
   gfx::Size window_size(100, 100);
-  EXPECT_TRUE(surface_->Resize(window_size, 1.0,
-                               GLSurface::ColorSpace::UNSPECIFIED, true));
+  EXPECT_TRUE(surface_->Resize(window_size, 1.0, gfx::ColorSpace(), true));
   EXPECT_TRUE(surface_->SetDrawRectangle(gfx::Rect(window_size)));
 
   glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -1153,8 +1147,7 @@ TEST_F(DirectCompositionPixelTest, SwapChainImage) {
   ASSERT_TRUE(context);
 
   gfx::Size window_size(100, 100);
-  EXPECT_TRUE(surface_->Resize(window_size, 1.0,
-                               GLSurface::ColorSpace::UNSPECIFIED, true));
+  EXPECT_TRUE(surface_->Resize(window_size, 1.0, gfx::ColorSpace(), true));
   EXPECT_TRUE(surface_->SetDrawRectangle(gfx::Rect(window_size)));
 
   glClearColor(0.0, 0.0, 0.0, 1.0);

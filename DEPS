@@ -31,6 +31,7 @@ gclient_gn_args = [
   'build_with_chromium',
   'checkout_android',
   'checkout_android_native_support',
+  'checkout_google_benchmark',
   'checkout_ios_webkit',
   'checkout_nacl',
   'checkout_oculus_sdk',
@@ -72,6 +73,11 @@ vars = {
   # large web capture files. Captured sites test dependencies are also
   # restricted to Googlers only.
   'checkout_chromium_password_manager_test_dependencies': False,
+
+  # By default, do not check out Google Benchmark. The library is only used by a
+  # few specialized benchmarks that most developers do not interact with. Will
+  # be overridden by gclient variables.
+  'checkout_google_benchmark': False,
 
   # Check out and download nacl by default. This can be disabled e.g. with
   # custom_vars.
@@ -179,7 +185,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '6c428fce79e4a570f1316353702ddb4541c2793c',
+  'v8_revision': '2de68515d603bebe3a3048fd3c34db3c48e0e958',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -187,7 +193,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '1fdf6ca5141d8e349e875eab6e51d93d929a7f0e',
+  'angle_revision': 'de97fb4ac4c620af943fc0ecaddb3dd50621689b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -238,7 +244,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '5f98f046f97ca8f9c02fcc668085a4a0405bb5e7',
+  'catapult_revision': 'a5b4ab17af94f75937ed4bebbd2f0d60e5dadd27',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -246,7 +252,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '256dd2b58411189317c8cb41373634a3da27795e',
+  'devtools_frontend_revision': '76bd0f030f3c136a20c0846ee6dd598d23f08d19',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -533,7 +539,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '7967e9ed75ed62d5613a4f4e646f57666c78306c',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'c2500e4ea9dc2b99a080df244247abaae061a198',
       'condition': 'checkout_ios',
   },
 
@@ -798,6 +804,11 @@ deps = {
       ],
       'condition': 'checkout_android',
       'dep_type': 'cipd',
+  },
+
+  'src/third_party/google_benchmark/src': {
+    'url': Var('chromium_git') + '/external/github.com/google/benchmark.git' + '@' + '367119482ff4abc3d73e4a109b410090fc281337',
+    'condition': 'checkout_google_benchmark',
   },
 
   'src/third_party/boringssl/src':
@@ -1483,7 +1494,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + '53655df4cde60b121fc530842ba9a6d5dfec1ae1',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'a43777dead46df4575a58c5ca2733c5f3ff0212b',
+    Var('webrtc_git') + '/src.git' + '@' + '873610ca688a6db70280ddeff7d220c047c07e99',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1553,7 +1564,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@7e4c1e7ba062e5d781a31a69b008a0d8858d9d38',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@9f7810a6a39e74cd4c0fe0171217760e90bc16d6',
     'condition': 'checkout_src_internal',
   },
 

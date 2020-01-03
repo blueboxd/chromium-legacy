@@ -16,6 +16,7 @@
 #include "base/mac/foundation_util.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#include "ios/web/common/features.h"
 #import "ios/web/navigation/navigation_context_impl.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/serializable_user_data_manager_impl.h"
@@ -352,6 +353,9 @@ TEST_F(WebStateImplTest, ObserverTest) {
 
 // Tests that placeholder navigations are not visible to WebStateObservers.
 TEST_F(WebStateImplTest, PlaceholderNavigationNotExposedToObservers) {
+  if (base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage))
+    return;
+
   TestWebStateObserver observer(web_state_.get());
   GURL placeholder_url =
       wk_navigation_util::CreatePlaceholderUrlForUrl(GURL("chrome://newtab"));

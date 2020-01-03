@@ -189,11 +189,8 @@ ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf_widget)
 
   // |animating_background_| will be made visible during hotseat animations.
   ShowAnimatingBackground(false);
-  if (features::IsBackgroundBlurEnabled()) {
-    animating_background_.SetBackdropFilterQuality(0.33f);
-    animating_background_.SetColor(
-        ShelfConfig::Get()->GetMaximizedShelfColor());
-  }
+  animating_background_.SetColor(ShelfConfig::Get()->GetMaximizedShelfColor());
+
   std::unique_ptr<views::View> drag_handle_ptr =
       std::make_unique<views::View>();
   const int radius = kDragHandleCornerRadius;
@@ -406,11 +403,6 @@ void ShelfWidget::DelegateView::OnHotseatTransitionAnimationEnded(
 
 void ShelfWidget::DelegateView::ShowAnimatingBackground(bool show) {
   animating_background_.SetVisible(show);
-
-  // To ensure smooth scrollable shelf animations, we disable blur when the
-  // |animating_background_| is not visible.
-  if (features::IsBackgroundBlurEnabled())
-    animating_background_.SetBackgroundBlur(show ? 30 : 0);
 }
 
 SkColor ShelfWidget::DelegateView::GetShelfBackgroundColor() const {

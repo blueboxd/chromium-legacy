@@ -7,6 +7,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/memory/ptr_util.h"
+#include "ios/web/common/features.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #include "net/http/http_response_headers.h"
 
@@ -148,10 +149,12 @@ WKNavigationType NavigationContextImpl::GetWKNavigationType() const {
 }
 
 bool NavigationContextImpl::IsLoadingErrorPage() const {
+  DCHECK(!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage));
   return is_loading_error_page_;
 }
 
 void NavigationContextImpl::SetLoadingErrorPage(bool is_loading_error_page) {
+  DCHECK(!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage));
   is_loading_error_page_ = is_loading_error_page;
 }
 
@@ -164,10 +167,12 @@ void NavigationContextImpl::SetLoadingHtmlString(bool is_loading_html_string) {
 }
 
 bool NavigationContextImpl::IsPlaceholderNavigation() const {
+  DCHECK(!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage));
   return is_placeholder_navigation_;
 }
 
 void NavigationContextImpl::SetPlaceholderNavigation(bool flag) {
+  DCHECK(!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage));
   is_placeholder_navigation_ = flag;
 }
 

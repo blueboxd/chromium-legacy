@@ -9,3 +9,9 @@ js_library("chrome_platform_analytics") {
 
   externs_list = [ "chrome_platform_analytics.js" ]
 }
+
+js_library("w3c_fileapi") {
+  sources = []
+
+  externs_list = [ "w3c_fileapi.js" ]
+}

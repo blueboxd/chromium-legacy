@@ -65,13 +65,13 @@ void StyleAnimator::Apply(const CSSProperty& property,
   const ActiveInterpolations& interpolations =
       GetActiveInterpolations(state_.AnimationUpdate(), property_handle);
   const Interpolation& interpolation = *interpolations.front();
-  if (interpolation.IsInvalidatableInterpolation()) {
+  if (IsA<InvalidatableInterpolation>(interpolation)) {
     CSSInterpolationTypesMap map(state_.GetDocument().GetPropertyRegistry(),
                                  state_.GetDocument());
     CSSInterpolationEnvironment environment(map, state_, &cascade_, &resolver);
     InvalidatableInterpolation::ApplyStack(interpolations, environment);
   } else {
-    ToTransitionInterpolation(interpolation).Apply(state_);
+    To<TransitionInterpolation>(interpolation).Apply(state_);
   }
 }
 

@@ -167,16 +167,15 @@ class ThreadState::IncrementalMarkingScheduler {
 
   void Dispatch() {
     switch (thread_state_->GetGCState()) {
-      case ThreadState::kIncrementalGCScheduled:
-        thread_state_->IncrementalMarkingStart(reason_);
-        ScheduleTask();
-        break;
       case ThreadState::kIncrementalMarkingStepScheduled:
         thread_state_->IncrementalMarkingStep(
             BlinkGC::kNoHeapPointersOnStack,
             next_incremental_marking_step_duration_);
         UpdateIncrementalMarkingStepDuration();
-        ScheduleTask();
+        if (thread_state_->GetGCState() !=
+            ThreadState::kIncrementalMarkingStepPaused) {
+          ScheduleTask();
+        }
         break;
       case ThreadState::kIncrementalMarkingFinalizeScheduled:
         thread_state_->IncrementalMarkingFinalize();

@@ -2,37 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
-/**
- * Namespace for the Camera app.
- */
-var cca = cca || {};
-
-/**
- * Namespace for models.
- */
-cca.models = cca.models || {};
+import {Intent} from '../intent.js';  // eslint-disable-line no-unused-vars
+import {FileVideoSaver} from './file_video_saver.js';
+import {createPrivateTempVideoFile} from './filesystem.js';
+// eslint-disable-next-line no-unused-vars
+import {VideoSaver} from './video_saver_interface.js';
 
 /**
  * Used to save captured video into a preview file and forward to intent result.
- * @implements {cca.models.VideoSaver}
+ * @implements {VideoSaver}
  */
-cca.models.IntentVideoSaver = class {
+export class IntentVideoSaver {
   /**
-   * @param {!cca.intent.Intent} intent
-   * @param {!cca.models.FileVideoSaver} fileSaver
+   * @param {!Intent} intent
+   * @param {!FileVideoSaver} fileSaver
    * @private
    */
   constructor(intent, fileSaver) {
     /**
-     * @const {!cca.intent.Intent} intent
+     * @const {!Intent} intent
      * @private
      */
     this.intent_ = intent;
 
     /**
-     * @const {!cca.models.FileVideoSaver}
+     * @const {!FileVideoSaver}
      * @private
      */
     this.fileSaver_ = fileSaver;
@@ -56,12 +50,15 @@ cca.models.IntentVideoSaver = class {
 
   /**
    * Creates IntentVideoSaver.
-   * @param {!cca.intent.Intent} intent
-   * @return {!Promise<!cca.models.IntentVideoSaver>}
+   * @param {!Intent} intent
+   * @return {!Promise<!IntentVideoSaver>}
    */
   static async create(intent) {
-    const tmpFile = await cca.models.FileSystem.createPrivateTempVideoFile();
-    const fileSaver = await cca.models.FileVideoSaver.create(tmpFile);
-    return new cca.models.IntentVideoSaver(intent, fileSaver);
+    const tmpFile = await createPrivateTempVideoFile();
+    const fileSaver = await FileVideoSaver.create(tmpFile);
+    return new IntentVideoSaver(intent, fileSaver);
   }
-};
+}
+
+/** @const */
+cca.models.IntentVideoSaver = IntentVideoSaver;

@@ -671,7 +671,7 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   bool dragged_to_another_shelf_ = false;
 
   // The rip off view when a snap back operation is underway.
-  views::View* snap_back_from_rip_off_view_ = nullptr;
+  ShelfAppButton* snap_back_from_rip_off_view_ = nullptr;
 
   // True when this ShelfView is used for Overflow Bubble.
   bool overflow_mode_ = false;

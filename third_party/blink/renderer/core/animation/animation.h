@@ -324,7 +324,7 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   void PlayInternal(AutoRewind auto_rewind, ExceptionState& exception_state);
 
   void ResetPendingTasks();
-  double TimelineTime() const;
+  base::Optional<double> TimelineTime() const;
 
   void ScheduleAsyncFinish();
   void AsyncFinishMicrotask();

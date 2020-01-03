@@ -83,10 +83,6 @@ const base::Feature kPasswordSaveIllustration = {
 const base::Feature kUsernameFirstFlow = {"UsernameFirstFlow",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Makes the password managaer save/update bubble sticky.
-const base::Feature kStickyBubble{"PasswordManagerStickyBubble",
-                                  base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Field trial identifier for password generation requirements.
 const char kGenerationRequirementsFieldTrial[] =
     "PasswordGenerationRequirements";

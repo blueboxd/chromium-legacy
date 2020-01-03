@@ -193,6 +193,27 @@ TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonBasic) {
                 box, visual_rect, visual_rect.Location() + IntSize(10, 20)));
 }
 
+TEST_P(BoxPaintInvalidatorTest,
+       InvalidateLineBoxHitTestOnCompositingStyleChange) {
+  ScopedPaintUnderInvalidationCheckingForTest under_invalidation_checking(true);
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #target {
+        width: 100px;
+        height: 100px;
+        touch-action: none;
+      }
+    </style>
+    <div id="target" style="will-change: transform;">a<br>b</div>
+  )HTML");
+
+  UpdateAllLifecyclePhasesForTest();
+  auto& target = *GetDocument().getElementById("target");
+  target.setAttribute(html_names::kStyleAttr, "");
+  UpdateAllLifecyclePhasesForTest();
+  // This test passes if no underinvalidation occurs.
+}
+
 TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonOtherCases) {
   SetUpHTML();
   auto& target = *GetDocument().getElementById("target");

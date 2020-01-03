@@ -280,5 +280,11 @@ class ExtendedAttributes(object):
 
 
 class ExtendedAttributesMutable(ExtendedAttributes):
+    def __getstate__(self):
+        assert False, "ExtendedAttributesMutable must not be pickled."
+
+    def __setstate__(self, state):
+        assert False, "ExtendedAttributesMutable must not be pickled."
+
     def append(self, ext_attr):
         self._append(ext_attr)

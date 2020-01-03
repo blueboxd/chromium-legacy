@@ -17,8 +17,17 @@ namespace blink {
 NDEFMessage* NDEFMessage::Create(const ExecutionContext* execution_context,
                                  const NDEFMessageInit* init,
                                  ExceptionState& exception_state) {
+  // https://w3c.github.io/web-nfc/#creating-ndef-message
+
+  // NDEFMessageInit#records is a required field.
+  DCHECK(init->hasRecords());
+  if (init->records().IsEmpty()) {
+    exception_state.ThrowTypeError(
+        "NDEFMessageInit#records being empty makes no sense.");
+    return nullptr;
+  }
+
   NDEFMessage* message = MakeGarbageCollected<NDEFMessage>();
-  if (init->hasRecords()) {
     for (const NDEFRecordInit* record_init : init->records()) {
       NDEFRecord* record =
           NDEFRecord::Create(execution_context, record_init, exception_state);
@@ -27,7 +36,6 @@ NDEFMessage* NDEFMessage::Create(const ExecutionContext* execution_context,
       DCHECK(record);
       message->records_.push_back(record);
     }
-  }
   return message;
 }
 
@@ -35,6 +43,7 @@ NDEFMessage* NDEFMessage::Create(const ExecutionContext* execution_context,
 NDEFMessage* NDEFMessage::Create(const ExecutionContext* execution_context,
                                  const NDEFMessageSource& source,
                                  ExceptionState& exception_state) {
+  // https://w3c.github.io/web-nfc/#creating-ndef-message
   if (source.IsString()) {
     NDEFMessage* message = MakeGarbageCollected<NDEFMessage>();
     message->records_.push_back(MakeGarbageCollected<NDEFRecord>(

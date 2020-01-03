@@ -160,8 +160,7 @@ static scoped_refptr<ShadowList> CreateShadowList(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue* non_interpolable_value,
     const StyleResolverState& state) {
-  const InterpolableList& interpolable_list =
-      ToInterpolableList(interpolable_value);
+  const auto& interpolable_list = To<InterpolableList>(interpolable_value);
   wtf_size_t length = interpolable_list.length();
   if (length == 0)
     return nullptr;

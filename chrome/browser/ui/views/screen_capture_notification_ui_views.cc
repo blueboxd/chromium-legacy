@@ -115,9 +115,9 @@ class ScreenCaptureNotificationUIViews : public ScreenCaptureNotificationUI,
   NotificationBarClientView* client_view_ = nullptr;
   views::ImageView* gripper_ = nullptr;
   views::Label* label_ = nullptr;
-  views::Button* source_button_ = nullptr;
-  views::Button* stop_button_ = nullptr;
-  views::Link* hide_link_ = nullptr;
+  views::View* source_button_ = nullptr;
+  views::View* stop_button_ = nullptr;
+  views::View* hide_link_ = nullptr;
   const base::string16 text_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenCaptureNotificationUIViews);
@@ -151,10 +151,8 @@ ScreenCaptureNotificationUIViews::ScreenCaptureNotificationUIViews(
       views::MdTextButton::CreateSecondaryUiBlueButton(this, stop_text);
   stop_button_ = AddChildView(std::move(stop_button));
 
-  // TODO(jiayl): IDS_PASSWORDS_PAGE_VIEW_HIDE_BUTTON is used for the need to
-  // merge to M34. Change it to a new IDS_ after the merge.
   auto hide_link = std::make_unique<views::Link>(
-      l10n_util::GetStringUTF16(IDS_PASSWORDS_PAGE_VIEW_HIDE_BUTTON));
+      l10n_util::GetStringUTF16(IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_HIDE));
   hide_link->set_listener(this);
   hide_link->SetUnderline(false);
   hide_link_ = AddChildView(std::move(hide_link));

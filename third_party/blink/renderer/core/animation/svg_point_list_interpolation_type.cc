@@ -52,8 +52,9 @@ PairwiseInterpolationValue SVGPointListInterpolationType::MaybeMergeSingles(
     InterpolationValue&& start,
     InterpolationValue&& end) const {
   wtf_size_t start_length =
-      ToInterpolableList(*start.interpolable_value).length();
-  wtf_size_t end_length = ToInterpolableList(*end.interpolable_value).length();
+      To<InterpolableList>(*start.interpolable_value).length();
+  wtf_size_t end_length =
+      To<InterpolableList>(*end.interpolable_value).length();
   if (start_length != end_length)
     return nullptr;
 
@@ -66,10 +67,10 @@ void SVGPointListInterpolationType::Composite(
     const InterpolationValue& value,
     double interpolation_fraction) const {
   wtf_size_t start_length =
-      ToInterpolableList(*underlying_value_owner.Value().interpolable_value)
+      To<InterpolableList>(*underlying_value_owner.Value().interpolable_value)
           .length();
   wtf_size_t end_length =
-      ToInterpolableList(*value.interpolable_value).length();
+      To<InterpolableList>(*value.interpolable_value).length();
   if (start_length == end_length)
     InterpolationType::Composite(underlying_value_owner, underlying_fraction,
                                  value, interpolation_fraction);
@@ -82,12 +83,12 @@ SVGPropertyBase* SVGPointListInterpolationType::AppliedSVGValue(
     const NonInterpolableValue*) const {
   auto* result = MakeGarbageCollected<SVGPointList>();
 
-  const InterpolableList& list = ToInterpolableList(interpolable_value);
+  const auto& list = To<InterpolableList>(interpolable_value);
   DCHECK_EQ(list.length() % 2, 0U);
   for (wtf_size_t i = 0; i < list.length(); i += 2) {
     FloatPoint point =
-        FloatPoint(ToInterpolableNumber(list.Get(i))->Value(),
-                   ToInterpolableNumber(list.Get(i + 1))->Value());
+        FloatPoint(To<InterpolableNumber>(list.Get(i))->Value(),
+                   To<InterpolableNumber>(list.Get(i + 1))->Value());
     result->Append(MakeGarbageCollected<SVGPoint>(point));
   }
 

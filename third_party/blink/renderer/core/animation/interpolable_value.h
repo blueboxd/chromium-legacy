@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -151,16 +152,18 @@ class CORE_EXPORT InterpolableList : public InterpolableValue {
   Vector<std::unique_ptr<InterpolableValue>> values_;
 };
 
-DEFINE_TYPE_CASTS(InterpolableNumber,
-                  InterpolableValue,
-                  value,
-                  value->IsNumber(),
-                  value.IsNumber());
-DEFINE_TYPE_CASTS(InterpolableList,
-                  InterpolableValue,
-                  value,
-                  value->IsList(),
-                  value.IsList());
+template <>
+struct DowncastTraits<InterpolableNumber> {
+  static bool AllowFrom(const InterpolableValue& value) {
+    return value.IsNumber();
+  }
+};
+template <>
+struct DowncastTraits<InterpolableList> {
+  static bool AllowFrom(const InterpolableValue& value) {
+    return value.IsList();
+  }
+};
 
 }  // namespace blink
 

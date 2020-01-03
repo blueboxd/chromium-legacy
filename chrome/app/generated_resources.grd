@@ -2681,7 +2681,7 @@ are declared in tools/grit/grit_rule.gni.
         Third-party cookie blocking
       </message>
       <message name="IDS_COOKIE_CONTROLS_HELP" desc="Tooltip shown in the dialog that is shown when cookie blocking is enabled.">
-        Cookies are files created by websites you visit. There are two types of cookies: First-party cookies are created by the site you visit. The site is shown on the address bar. Third-party cookies are created by other sites. These sites own some of the content, like ads or images, that you see on the website you visit.
+        Cookies are files created by websites. There are two types of cookies: First-party cookies are created by the site you visit. The site is shown on the address bar. Third-party cookies are created by other sites. These sites own some of the content, like ads or images, that you see on the website you visit.
       </message>
 
       <!-- Win certificate selector dialog strings.  -->
@@ -5773,9 +5773,6 @@ the Bookmarks menu.">
       <message name="IDS_PASSWORDS_VIA_FEDERATION" desc="Text for federated credential's value.">
         with <ph name="PROVIDER">$1<ex>facebook.com</ex></ph>
       </message>
-      <message name="IDS_PASSWORDS_PAGE_VIEW_HIDE_BUTTON" desc="Text for passwords page view's button to hide a stored password">
-        Hide
-      </message>
 
       <!-- Confirm MessageBox Dialog -->
       <message name="IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL" desc="Confirm MessageBox Dialog's 'Yes' button text">
@@ -6478,6 +6475,9 @@ the Bookmarks menu.">
       </message>
       <message name="IDS_MEDIA_TAB_CAPTURE_WITH_AUDIO_NOTIFICATION_TEXT_DELEGATED" desc="label used in screen capture notification UI to show the screen sharing status when the stream is consumed by a tab instead of the app initiating the window picker">
         <ph name="APP_NAME">$1<ex>html5rocks.com</ex></ph> is sharing a Chrome tab and audio with <ph name="TAB_NAME">$2<ex>https://google.com</ex></ph>.
+      </message>
+      <message name="IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_HIDE" desc="Text shown on a link that hides the notification that the screen is being captured.">
+        Hide
       </message>
       <message name="IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_SOURCE" desc="Text shown on the button that changes the screen capture source.">
         Change source

@@ -2558,15 +2558,14 @@ void ShelfView::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
       // previously hidden status can be shown again. Since the button itself
       // might have gone away or changed locations we check that the button
       // is still in the shelf and show its status again.
-      for (int index = 0; index < view_model_->view_size(); index++) {
-        views::View* view = view_model_->view_at(index);
-        if (view == snap_back_from_rip_off_view_) {
-          CHECK_EQ(ShelfAppButton::kViewClassName, view->GetClassName());
-          ShelfAppButton* button = static_cast<ShelfAppButton*>(view);
-          button->ClearState(ShelfAppButton::STATE_HIDDEN);
-          break;
-        }
-      }
+      const auto& entries = view_model_->entries();
+      const auto iter = std::find_if(
+          entries.begin(), entries.end(), [this](const auto& entry) {
+            return entry.view == snap_back_from_rip_off_view_;
+          });
+      if (iter != entries.end())
+        snap_back_from_rip_off_view_->ClearState(ShelfAppButton::STATE_HIDDEN);
+
       snap_back_from_rip_off_view_ = nullptr;
     }
   }

@@ -153,6 +153,7 @@ js_modulizer("modulize") {
     "web_ui_listener_behavior.js",
   ]
   namespace_rewrites = [
+    "cr.search_highlight_utils.Range|Range",
     "cr.ui.KeyboardShortcutList|KeyboardShortcutList",
     "Polymer.ArraySplice.calculateSplices|calculateSplices",
   ]

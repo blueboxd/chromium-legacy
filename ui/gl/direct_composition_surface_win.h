@@ -95,7 +95,7 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
   void* GetHandle() override;
   bool Resize(const gfx::Size& size,
               float scale_factor,
-              ColorSpace color_space,
+              const gfx::ColorSpace& color_space,
               bool has_alpha) override;
   gfx::SwapResult SwapBuffers(PresentationCallback callback) override;
   gfx::SwapResult PostSubBuffer(int x,

@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_fragment_traversal.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
@@ -174,43 +175,137 @@ PhysicalRect NGPhysicalBoxFragment::ScrollableOverflow() const {
 }
 
 PhysicalRect NGPhysicalBoxFragment::ScrollableOverflowFromChildren() const {
-  if (Children().empty())
+  const NGFragmentItems* items = Items();
+  if (Children().empty() && !items)
     return PhysicalRect();
 
-  const LayoutBox* layout_object = ToLayoutBox(GetLayoutObject());
-  const ComputedStyle& style = Style();
-  DCHECK_EQ(&style, &layout_object->StyleRef(UsesFirstLineStyle()));
-  const WritingMode writing_mode = style.GetWritingMode();
-  const TextDirection direction = style.Direction();
-  const LayoutUnit border_inline_start = LayoutUnit(style.BorderStartWidth());
-  const LayoutUnit border_block_start = LayoutUnit(style.BorderBeforeWidth());
-  const PhysicalSize& size = Size();
+  // Internal struct to share logic between child fragments and child items.
+  // - Inline children's overflow expands by padding end/after.
+  // - Float / OOF overflow is added as is.
+  // - Children not reachable by scroll overflow do not contribute to it.
+  struct ComputeOverflowContext {
+    ComputeOverflowContext(const NGPhysicalBoxFragment& container)
+        : container(container),
+          style(container.Style()),
+          writing_mode(style.GetWritingMode()),
+          direction(style.Direction()),
+          border_inline_start(LayoutUnit(style.BorderStartWidth())),
+          border_block_start(LayoutUnit(style.BorderBeforeWidth())) {
+      DCHECK_EQ(&style, container.GetLayoutObject()->Style(
+                            container.UsesFirstLineStyle()));
 
-  // End and under padding are added to scroll overflow of inline children.
-  // https://github.com/w3c/csswg-drafts/issues/129
-  base::Optional<NGPhysicalBoxStrut> padding_strut;
-  DCHECK_EQ(layout_object->HasOverflowClip(), HasOverflowClip());
-  if (HasOverflowClip()) {
-    padding_strut = NGBoxStrut(LayoutUnit(), layout_object->PaddingEnd(),
-                               LayoutUnit(), layout_object->PaddingAfter())
-                        .ConvertToPhysical(writing_mode, direction);
+      // End and under padding are added to scroll overflow of inline children.
+      // https://github.com/w3c/csswg-drafts/issues/129
+      DCHECK_EQ(container.HasOverflowClip(),
+                container.GetLayoutObject()->HasOverflowClip());
+      if (container.HasOverflowClip()) {
+        const LayoutBox* layout_object =
+            ToLayoutBox(container.GetLayoutObject());
+        padding_strut = NGBoxStrut(LayoutUnit(), layout_object->PaddingEnd(),
+                                   LayoutUnit(), layout_object->PaddingAfter())
+                            .ConvertToPhysical(writing_mode, direction);
+      }
+    }
+
+    // Rectangles not reachable by scroll should not be added to overflow.
+    bool IsRectReachableByScroll(const PhysicalRect& rect) {
+      LogicalOffset rect_logical_end =
+          rect.offset.ConvertToLogical(writing_mode, direction,
+                                       container.Size(), rect.size) +
+          rect.size.ConvertToLogical(writing_mode);
+      return rect_logical_end.inline_offset > border_inline_start &&
+             rect_logical_end.block_offset > border_block_start;
+    }
+
+    void AddChild(const PhysicalRect& child_scrollable_overflow) {
+      // Do not add overflow if fragment is not reachable by scrolling.
+      if (IsRectReachableByScroll(child_scrollable_overflow))
+        children_overflow.Unite(child_scrollable_overflow);
+    }
+
+    void AddFloatingOrOutOfFlowPositionedChild(
+        const NGPhysicalFragment& child,
+        const PhysicalOffset& child_offset) {
+      DCHECK(child.IsFloatingOrOutOfFlowPositioned());
+      PhysicalRect child_scrollable_overflow =
+          child.ScrollableOverflowForPropagation(container);
+      child_scrollable_overflow.offset += ComputeRelativeOffset(
+          child.Style(), writing_mode, direction, container.Size());
+      child_scrollable_overflow.offset += child_offset;
+      AddChild(child_scrollable_overflow);
+    }
+
+    void AddLineBoxChild(const NGPhysicalLineBoxFragment& child,
+                         const PhysicalOffset& child_offset) {
+      if (padding_strut)
+        AddLineBoxRect({child_offset, child.Size()});
+      PhysicalRect child_scrollable_overflow =
+          child.ScrollableOverflow(container, style);
+      child_scrollable_overflow.offset += child_offset;
+      AddChild(child_scrollable_overflow);
+    }
+
+    void AddLineBoxChild(const NGFragmentItem& child,
+                         const NGInlineCursor& cursor) {
+      DCHECK_EQ(&child, cursor.CurrentItem());
+      DCHECK_EQ(child.Type(), NGFragmentItem::kLine);
+      if (padding_strut)
+        AddLineBoxRect(child.Rect());
+      const NGPhysicalLineBoxFragment* line_box = child.LineBoxFragment();
+      DCHECK(line_box);
+      PhysicalRect child_scrollable_overflow =
+          line_box->ScrollableOverflow(container, style, child, cursor);
+      AddChild(child_scrollable_overflow);
+    }
+
+    void AddLineBoxRect(const PhysicalRect& linebox_rect) {
+      DCHECK(padding_strut);
+      if (lineboxes_enclosing_rect)
+        lineboxes_enclosing_rect->Unite(linebox_rect);
+      else
+        lineboxes_enclosing_rect = linebox_rect;
+    }
+
+    void AddPaddingToLineBoxChildren() {
+      if (lineboxes_enclosing_rect) {
+        DCHECK(padding_strut);
+        lineboxes_enclosing_rect->Expand(*padding_strut);
+        AddChild(*lineboxes_enclosing_rect);
+      }
+    }
+
+    const NGPhysicalBoxFragment& container;
+    const ComputedStyle& style;
+    const WritingMode writing_mode;
+    const TextDirection direction;
+    const LayoutUnit border_inline_start;
+    const LayoutUnit border_block_start;
+    base::Optional<NGPhysicalBoxStrut> padding_strut;
+    base::Optional<PhysicalRect> lineboxes_enclosing_rect;
+    PhysicalRect children_overflow;
+  } context(*this);
+
+  // Traverse child items.
+  if (items) {
+    for (NGInlineCursor cursor(*items); cursor; cursor.MoveToNextSibling()) {
+      const NGFragmentItem* item = cursor.CurrentItem();
+      if (item->Type() == NGFragmentItem::kLine) {
+        context.AddLineBoxChild(*item, cursor);
+        continue;
+      }
+
+      if (const NGPhysicalBoxFragment* child_box = item->BoxFragment()) {
+        if (child_box->IsFloatingOrOutOfFlowPositioned()) {
+          context.AddFloatingOrOutOfFlowPositionedChild(*child_box,
+                                                        item->Offset());
+        }
+      }
+    }
   }
 
-  // Rectangles not reachable by scroll should not be added to overflow.
-  auto IsRectReachableByScroll = [&border_inline_start, &border_block_start,
-                                  &writing_mode, &direction,
-                                  &size](const PhysicalRect& rect) {
-    LogicalOffset rect_logical_end =
-        rect.offset.ConvertToLogical(writing_mode, direction, size, rect.size) +
-        rect.size.ConvertToLogical(writing_mode);
-    return (rect_logical_end.inline_offset > border_inline_start &&
-            rect_logical_end.block_offset > border_block_start);
-  };
-
+  // Traverse child fragments.
   const bool children_inline = ChildrenInline();
-  DCHECK_EQ(children_inline, layout_object->ChildrenInline());
-  PhysicalRect children_overflow;
-  base::Optional<PhysicalRect> lineboxes_enclosing_rect;
+  DCHECK_EQ(children_inline, GetLayoutObject()->ChildrenInline());
   // Only add overflow for fragments NG has not reflected into Legacy.
   // These fragments are:
   // - inline fragments,
@@ -218,39 +313,17 @@ PhysicalRect NGPhysicalBoxFragment::ScrollableOverflowFromChildren() const {
   // TODO(layout-dev) Transforms also need to be applied to compute overflow
   // correctly. NG is not yet transform-aware. crbug.com/855965
   for (const auto& child : Children()) {
-    PhysicalRect child_scrollable_overflow;
     if (child->IsFloatingOrOutOfFlowPositioned()) {
-      child_scrollable_overflow =
-          child->ScrollableOverflowForPropagation(*this);
-      child_scrollable_overflow.offset +=
-          ComputeRelativeOffset(child->Style(), writing_mode, direction, size);
+      context.AddFloatingOrOutOfFlowPositionedChild(*child, child.Offset());
     } else if (children_inline && child->IsLineBox()) {
-      DCHECK(child->IsLineBox());
-      child_scrollable_overflow =
-          To<NGPhysicalLineBoxFragment>(*child).ScrollableOverflow(*this,
-                                                                   style);
-      if (padding_strut) {
-        PhysicalRect linebox_rect(child.Offset(), child->Size());
-        if (lineboxes_enclosing_rect)
-          lineboxes_enclosing_rect->Unite(linebox_rect);
-        else
-          lineboxes_enclosing_rect = linebox_rect;
-      }
-    } else {
-      continue;
+      context.AddLineBoxChild(To<NGPhysicalLineBoxFragment>(*child),
+                              child.Offset());
     }
-    child_scrollable_overflow.offset += child.Offset();
-    // Do not add overflow if fragment is not reachable by scrolling.
-    if (IsRectReachableByScroll(child_scrollable_overflow))
-      children_overflow.Unite(child_scrollable_overflow);
-  }
-  if (lineboxes_enclosing_rect) {
-    lineboxes_enclosing_rect->Expand(*padding_strut);
-    if (IsRectReachableByScroll(*lineboxes_enclosing_rect))
-      children_overflow.Unite(*lineboxes_enclosing_rect);
   }
 
-  return children_overflow;
+  context.AddPaddingToLineBoxChildren();
+
+  return context.children_overflow;
 }
 
 LayoutSize NGPhysicalBoxFragment::PixelSnappedScrolledContentOffset() const {

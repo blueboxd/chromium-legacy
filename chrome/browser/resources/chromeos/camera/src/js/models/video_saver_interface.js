@@ -2,23 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
-/**
- * Namespace for the Camera app.
- */
-var cca = cca || {};
-
-/**
- * Namespace for models.
- */
-cca.models = cca.models || {};
-
 /**
  * Used to save captured video.
  * @interface
  */
-cca.models.VideoSaver = class {
+export class VideoSaver {
   /**
    * Writes video data to result video.
    * @param {!Blob} blob Video data to be written.
@@ -31,4 +19,7 @@ cca.models.VideoSaver = class {
    * @return {!Promise<!FileEntry>} Result video file.
    */
   async endWrite() {}
-};
+}
+
+/** @const */
+cca.models.VideoSaver = VideoSaver;

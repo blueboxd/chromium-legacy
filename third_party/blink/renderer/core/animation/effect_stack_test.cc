@@ -82,8 +82,8 @@ class AnimationEffectStackTest : public PageTestBase {
         active_interpolations.at(PropertyHandle(GetCSSPropertyFontSize()));
     EnsureInterpolatedValueCached(interpolations, GetDocument(), element);
 
-    const TypedInterpolationValue* typed_value =
-        ToInvalidatableInterpolation(*interpolations.at(0))
+    const auto* typed_value =
+        To<InvalidatableInterpolation>(*interpolations.at(0))
             .GetCachedValueForTesting();
     // font-size is stored as an |InterpolableLength|; here we assume pixels.
     EXPECT_TRUE(typed_value->GetInterpolableValue().IsLength());
@@ -97,12 +97,13 @@ class AnimationEffectStackTest : public PageTestBase {
         active_interpolations.at(PropertyHandle(GetCSSPropertyZIndex()));
     EnsureInterpolatedValueCached(interpolations, GetDocument(), element);
 
-    const TypedInterpolationValue* typed_value =
-        ToInvalidatableInterpolation(*interpolations.at(0))
+    const auto* typed_value =
+        To<InvalidatableInterpolation>(*interpolations.at(0))
             .GetCachedValueForTesting();
     // z-index is stored as a straight number value.
     EXPECT_TRUE(typed_value->GetInterpolableValue().IsNumber());
-    return ToInterpolableNumber(&typed_value->GetInterpolableValue())->Value();
+    return To<InterpolableNumber>(&typed_value->GetInterpolableValue())
+        ->Value();
   }
 
   Persistent<DocumentTimeline> timeline;

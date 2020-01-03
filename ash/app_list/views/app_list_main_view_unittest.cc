@@ -122,16 +122,13 @@ class AppListMainViewTest : public views::ViewsTestBase {
   // |point| is in |grid_view|'s coordinates.
   AppListItemView* GetItemViewAtPointInGrid(AppsGridView* grid_view,
                                             const gfx::Point& point) {
-    const views::ViewModelT<AppListItemView>* view_model =
-        grid_view->view_model();
-    for (int i = 0; i < view_model->view_size(); ++i) {
-      views::View* view = view_model->view_at(i);
-      if (view->bounds().Contains(point)) {
-        return static_cast<AppListItemView*>(view);
-      }
-    }
-
-    return nullptr;
+    const auto& entries = grid_view->view_model()->entries();
+    const auto iter = std::find_if(
+        entries.begin(), entries.end(), [&point](const auto& entry) {
+          return entry.view->bounds().Contains(point);
+        });
+    return iter == entries.end() ? nullptr
+                                 : static_cast<AppListItemView*>(iter->view);
   }
 
   void SimulateClick(views::View* view) {

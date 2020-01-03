@@ -21,7 +21,7 @@ class UnderlyingLengthChecker : public InterpolationType::ConversionChecker {
   static wtf_size_t GetUnderlyingLength(const InterpolationValue& underlying) {
     if (!underlying)
       return 0;
-    return ToInterpolableList(*underlying.interpolable_value).length();
+    return To<InterpolableList>(*underlying.interpolable_value).length();
   }
 
   bool IsValid(const InterpolationEnvironment&,

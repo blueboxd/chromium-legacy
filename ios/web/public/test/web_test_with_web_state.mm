@@ -10,6 +10,7 @@
 #include "base/scoped_observer.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#include "ios/web/common/features.h"
 #import "ios/web/js_messaging/crw_js_injector.h"
 #import "ios/web/navigation/crw_wk_navigation_states.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
@@ -20,6 +21,7 @@
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
 #import "ios/web/web_state/web_state_impl.h"
+#include "url/url_constants.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -138,18 +140,23 @@ void WebTestWithWebState::LoadHtml(NSString* html, const GURL& url) {
   // TODO(crbug.com/777884): consider changing |-loadHTML| to match WKWebView's
   // |-loadHTMLString:baseURL| that doesn't create a navigation entry.
   if (!web_state()->GetNavigationManager()->GetItemCount()) {
-    GURL placeholder_url = wk_navigation_util::CreatePlaceholderUrlForUrl(url);
+    GURL placeholder_url(url::kAboutBlankURL);
+    if (!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage))
+      placeholder_url = wk_navigation_util::CreatePlaceholderUrlForUrl(url);
+
     NavigationManager::WebLoadParams params(placeholder_url);
     web_state()->GetNavigationManager()->LoadURLWithParams(params);
 
-    // Set NoNavigationError so the placeHolder doesn't trigger a
-    // kNavigatingToFailedNavigationItem.
-    web::WebStateImpl* web_state_impl =
-        static_cast<web::WebStateImpl*>(web_state());
-    web_state_impl->GetNavigationManagerImpl()
-        .GetCurrentItemImpl()
-        ->error_retry_state_machine()
-        .SetIgnorePlaceholderNavigation();
+    if (!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage)) {
+      // Set NoNavigationError so the placeHolder doesn't trigger a
+      // kNavigatingToFailedNavigationItem.
+      web::WebStateImpl* web_state_impl =
+          static_cast<web::WebStateImpl*>(web_state());
+      web_state_impl->GetNavigationManagerImpl()
+          .GetCurrentItemImpl()
+          ->error_retry_state_machine()
+          .SetIgnorePlaceholderNavigation();
+    }
 
     ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
       return web_controller.navigationState == web::WKNavigationState::FINISHED;

@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/contacts_picker/contact_address.h"
 #include "third_party/blink/renderer/modules/contacts_picker/contact_info.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -129,37 +130,33 @@ const Vector<String>& ContactsManager::GetProperties(
 
 ScriptPromise ContactsManager::select(ScriptState* script_state,
                                       const Vector<String>& properties,
-                                      ContactsSelectOptions* options) {
+                                      ContactsSelectOptions* options,
+                                      ExceptionState& exception_state) {
   Document* document = To<Document>(ExecutionContext::From(script_state));
 
   if (document->ParentDocument()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(
-            DOMExceptionCode::kInvalidStateError,
-            "The contacts API can only be used in the top frame"));
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The contacts API can only be used in the top frame");
+    return ScriptPromise();
   }
 
   if (!LocalFrame::HasTransientUserActivation(document ? document->GetFrame()
                                                        : nullptr)) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kSecurityError,
-                          "A user gesture is required to call this method"));
+    exception_state.ThrowSecurityError(
+        "A user gesture is required to call this method");
+    return ScriptPromise();
   }
 
   if (properties.IsEmpty()) {
-    return ScriptPromise::Reject(script_state,
-                                 V8ThrowException::CreateTypeError(
-                                     script_state->GetIsolate(),
-                                     "At least one property must be provided"));
+    exception_state.ThrowTypeError("At least one property must be provided");
+    return ScriptPromise();
   }
 
   if (contact_picker_in_use_) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kInvalidStateError,
-                          "Contacts Picker is already in use."));
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Contacts Picker is already in use.");
+    return ScriptPromise();
   }
 
   bool include_names = false;
@@ -170,12 +167,10 @@ ScriptPromise ContactsManager::select(ScriptState* script_state,
 
   for (const String& property : properties) {
     if (!base::Contains(GetProperties(script_state), property)) {
-      return ScriptPromise::Reject(
-          script_state,
-          V8ThrowException::CreateTypeError(
-              script_state->GetIsolate(),
-              "The provided value '" + property +
-                  "' is not a valid enum value of type ContactProperty"));
+      exception_state.ThrowTypeError(
+          "The provided value '" + property +
+          "' is not a valid enum value of type ContactProperty");
+      return ScriptPromise();
     }
 
     if (property == kName)

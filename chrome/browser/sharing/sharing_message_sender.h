@@ -58,12 +58,14 @@ class SharingMessageSender {
   void OnMessageSent(base::TimeTicks start_time,
                      const std::string& message_guid,
                      chrome_browser_sharing::MessageType message_type,
+                     SharingDevicePlatform receiver_device_platform,
                      SharingSendMessageResult result,
                      base::Optional<std::string> message_id);
 
   void InvokeSendMessageCallback(
       const std::string& message_guid,
       chrome_browser_sharing::MessageType message_type,
+      SharingDevicePlatform receiver_device_platform,
       SharingSendMessageResult result,
       std::unique_ptr<chrome_browser_sharing::ResponseMessage> response);
 
@@ -77,7 +79,7 @@ class SharingMessageSender {
   std::map<std::string, base::TimeTicks> send_message_times_;
   // Map of FCM message_id to random GUID.
   std::map<std::string, std::string> message_guids_;
-  // Map of random message guid to platform of receiver device for metrics.
+  // Map of FCM message_id to platform of receiver device for metrics.
   std::map<std::string, SharingDevicePlatform> receiver_device_platform_;
 
   base::WeakPtrFactory<SharingMessageSender> weak_ptr_factory_{this};

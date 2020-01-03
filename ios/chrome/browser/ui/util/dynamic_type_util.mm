@@ -71,3 +71,9 @@ UIFont* PreferredFontForTextStyleWithMaxCategory(
                  [UITraitCollection
                      traitCollectionWithPreferredContentSizeCategory:category]];
 }
+
+UIFont* LocationBarSteadyViewFont(UIContentSizeCategory currentCategory) {
+  return PreferredFontForTextStyleWithMaxCategory(
+      UIFontTextStyleBody, currentCategory,
+      UIContentSizeCategoryAccessibilityExtraLarge);
+}

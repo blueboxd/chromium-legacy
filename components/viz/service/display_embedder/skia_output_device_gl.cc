@@ -98,10 +98,7 @@ bool SkiaOutputDeviceGL::Reshape(const gfx::Size& size,
                                  gfx::OverlayTransform transform) {
   DCHECK_EQ(transform, gfx::OVERLAY_TRANSFORM_NONE);
 
-  gl::GLSurface::ColorSpace surface_color_space =
-      gl::ColorSpaceUtils::GetGLSurfaceColorSpace(color_space);
-  if (!gl_surface_->Resize(size, device_scale_factor, surface_color_space,
-                           has_alpha)) {
+  if (!gl_surface_->Resize(size, device_scale_factor, color_space, has_alpha)) {
     DLOG(ERROR) << "Failed to resize.";
     return false;
   }

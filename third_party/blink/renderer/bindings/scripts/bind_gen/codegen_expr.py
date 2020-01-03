@@ -147,9 +147,9 @@ def expr_uniq(terms):
 def expr_from_exposure(exposure, global_names=None):
     """
     Args:
-        exposure: web_idl.Exposure
-        in_global: A global name of [Exposed] that the ExecutionContext is
-            supposed to be / represent.
+        exposure: web_idl.Exposure of the target construct.
+        global_names: When specified, it's taken into account that the global
+            object implements |global_names|.
     """
     assert isinstance(exposure, web_idl.Exposure)
     assert (global_names is None
@@ -157,7 +157,9 @@ def expr_from_exposure(exposure, global_names=None):
                 and all(isinstance(name, str) for name in global_names)))
 
     def ref_enabled(feature):
-        return _Expr("RuntimeEnabledFeatures::{}Enabled()".format(feature))
+        arg = "${execution_context}" if feature.is_context_dependent else ""
+        return _Expr("RuntimeEnabledFeatures::{}Enabled({})".format(
+            feature, arg))
 
     top_terms = [_Expr(True)]
 
@@ -175,15 +177,25 @@ def expr_from_exposure(exposure, global_names=None):
         "Worklet": "IsWorkletGlobalScope",
     }
     exposed_terms = []
-    for entry in exposure.global_names_and_features:
-        terms = []
-        if entry.global_name not in (global_names or []):
+    if global_names is None:
+        for entry in exposure.global_names_and_features:
+            terms = []
             pred = GLOBAL_NAME_TO_EXECUTION_CONTEXT_TEST[entry.global_name]
             terms.append(_Expr("${{execution_context}}->{}()".format(pred)))
-        if entry.feature:
-            terms.append(ref_enabled(entry.feature))
-        if terms:
-            exposed_terms.append(expr_and(terms))
+            if entry.feature:
+                terms.append(ref_enabled(entry.feature))
+            if terms:
+                exposed_terms.append(expr_and(terms))
+    else:
+        matched_global_count = 0
+        for entry in exposure.global_names_and_features:
+            if entry.global_name not in global_names:
+                continue
+            matched_global_count += 1
+            if entry.feature:
+                exposed_terms.append(ref_enabled(entry.feature))
+        assert (not exposure.global_names_and_features
+                or matched_global_count > 0)
     if exposed_terms:
         top_terms.append(expr_or(exposed_terms))
 

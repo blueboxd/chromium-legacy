@@ -56,12 +56,30 @@ public class ConfirmSyncDataStateMachine
         int DONE = 4;
     }
 
+    /**
+     * Callback for completion of the {@link ConfirmSyncDataStateMachine}.
+     */
+    interface Listener {
+        /**
+         * The state machine has completed and the state is done, or all necessary
+         * confirmations were given and the sign-in flow can proceed.
+         * @param wipeData Whether the user requested that existing data should be wiped.
+         */
+        void onConfirm(boolean wipeData);
+
+        /**
+         * The state machine is cancelled or the user cancels the sign-in process
+         * of the dialogs.
+         */
+        void onCancel();
+    }
+
     @State
     private int mState = State.BEFORE_OLD_ACCOUNT_DIALOG;
 
     private static final int ACCOUNT_CHECK_TIMEOUT_MS = 30000;
 
-    private final ConfirmImportSyncDataDialog.Listener mCallback;
+    private final Listener mListener;
     private final @Nullable String mOldAccountName;
     private final String mNewAccountName;
     private final ConfirmSyncDataStateMachineDelegate mDelegate;
@@ -75,21 +93,18 @@ public class ConfirmSyncDataStateMachine
      * Create and run state machine, displaying the appropriate dialogs.
      * @param oldAccountName the name of the last signed in account or null
      * @param newAccountName the name of the account user is signing in with
-     * @param callback the listener to receive the result of this state machine
+     * @param listener the listener to receive the result of this state machine
      * @param delegate the delegate responsible of showing dialogs
-     * TODO(https://crbug.com/1038502):
-     * Use a separate interface for the callback to avoid confusion.
      */
     public ConfirmSyncDataStateMachine(ConfirmSyncDataStateMachineDelegate delegate,
-            @Nullable String oldAccountName, String newAccountName,
-            ConfirmImportSyncDataDialog.Listener callback) {
+            @Nullable String oldAccountName, String newAccountName, Listener listener) {
         ThreadUtils.assertOnUiThread();
         assert !TextUtils.isEmpty(newAccountName) : "New account name must be provided.";
 
         mDelegate = delegate;
         mOldAccountName = oldAccountName;
         mNewAccountName = newAccountName;
-        mCallback = callback;
+        mListener = listener;
 
         // New account management status isn't needed right now, but fetching it
         // can take a few seconds, so we kick it off early.
@@ -111,7 +126,7 @@ public class ConfirmSyncDataStateMachine
         mState = State.DONE;
 
         if (isBeingDestroyed) return;
-        mCallback.onCancel();
+        mListener.onCancel();
         mDelegate.dismissAllDialogs();
     }
 
@@ -149,7 +164,7 @@ public class ConfirmSyncDataStateMachine
                 break;
             case State.AFTER_NEW_ACCOUNT_DIALOG:
                 mState = State.DONE;
-                mCallback.onConfirm(mWipeData);
+                mListener.onConfirm(mWipeData);
                 break;
             case State.DONE:
                 throw new IllegalStateException("Can't progress from DONE state!");

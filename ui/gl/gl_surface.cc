@@ -39,7 +39,7 @@ void GLSurface::PrepareToDestroy(bool have_context) {}
 
 bool GLSurface::Resize(const gfx::Size& size,
                        float scale_factor,
-                       ColorSpace color_space,
+                       const gfx::ColorSpace& color_space,
                        bool has_alpha) {
   NOTIMPLEMENTED();
   return false;
@@ -300,7 +300,7 @@ void GLSurfaceAdapter::Destroy() {
 
 bool GLSurfaceAdapter::Resize(const gfx::Size& size,
                               float scale_factor,
-                              ColorSpace color_space,
+                              const gfx::ColorSpace& color_space,
                               bool has_alpha) {
   return surface_->Resize(size, scale_factor, color_space, has_alpha);
 }

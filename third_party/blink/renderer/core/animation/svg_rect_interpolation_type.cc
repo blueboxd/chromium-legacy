@@ -48,12 +48,12 @@ InterpolationValue SVGRectInterpolationType::MaybeConvertSVGValue(
 SVGPropertyBase* SVGRectInterpolationType::AppliedSVGValue(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue*) const {
-  const InterpolableList& list = ToInterpolableList(interpolable_value);
+  const auto& list = To<InterpolableList>(interpolable_value);
   auto* result = MakeGarbageCollected<SVGRect>();
-  result->SetX(ToInterpolableNumber(list.Get(kRectX))->Value());
-  result->SetY(ToInterpolableNumber(list.Get(kRectY))->Value());
-  result->SetWidth(ToInterpolableNumber(list.Get(kRectWidth))->Value());
-  result->SetHeight(ToInterpolableNumber(list.Get(kRectHeight))->Value());
+  result->SetX(To<InterpolableNumber>(list.Get(kRectX))->Value());
+  result->SetY(To<InterpolableNumber>(list.Get(kRectY))->Value());
+  result->SetWidth(To<InterpolableNumber>(list.Get(kRectWidth))->Value());
+  result->SetHeight(To<InterpolableNumber>(list.Get(kRectHeight))->Value());
   return result;
 }
 

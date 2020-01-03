@@ -4382,8 +4382,15 @@ crbug.com/678346 [ Win7 Debug ] storage/indexeddb/index-cursor.html [ Pass Timeo
 crbug.com/678493 http/tests/permissions/chromium/test-request-window.html [ Timeout Pass ]
 crbug.com/678499 http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-preload-allowed.php [ Failure Pass ]
 
-crbug.com/747751 [ Win ] http/tests/devtools/application-panel/resources-panel-resource-preview.js [ Failure Pass ]
 crbug.com/747751 http/tests/devtools/application-panel/storage-view-reports-quota.js [ Pass Timeout ]
+
+crbug.com/1038678 http/tests/devtools/application-panel/resources-panel-iframe-idb.js [ Skip ]
+crbug.com/1038678 http/tests/devtools/application-panel/resources-panel-on-navigation.js [ Skip ]
+crbug.com/1038678 http/tests/devtools/application-panel/resources-panel-resource-preview.js [ Skip ]
+crbug.com/1038678 http/tests/devtools/application-panel/resources-panel-selection-on-reload.js [ Skip ]
+crbug.com/1038678 http/tests/devtools/application-panel/resources-panel-websql.js [ Skip ]
+crbug.com/1038678 http/tests/devtools/service-workers/service-workers-redundant.js [ Skip ]
+crbug.com/1038678 http/tests/devtools/service-workers/service-workers-view.js [ Skip ]
 
 crbug.com/689781 external/wpt/media-source/mediasource-duration.html [ Failure Pass ]
 crbug.com/689781 [ Win ] http/tests/media/media-source/mediasource-duration.html [ Failure Pass ]
@@ -4503,8 +4510,6 @@ crbug.com/725470 editing/shadow/doubleclick-on-meter-in-shadow-crash.html [ Cras
 crbug.com/737959 http/tests/misc/object-image-load-outlives-gc-without-crashing.html [ Failure Pass ]
 
 crbug.com/737959 http/tests/misc/video-poster-image-load-outlives-gc-without-crashing.html [ Failure Pass Crash ]
-
-crbug.com/734762 inspector-protocol/timeline/page-frames.js [ Failure Pass ]
 
 # module script lacks XHTML support
 crbug.com/717643 external/wpt/html/semantics/scripting-1/the-script-element/module/module-in-xhtml.xhtml [ Failure ]
@@ -4898,7 +4903,6 @@ crbug.com/824775 [ Mac ] virtual/audio-service/media/controls/video-controls-wit
 crbug.com/824848 [ Linux ] external/wpt/html/semantics/links/following-hyperlinks/activation-behavior.window.html [ Pass Failure ]
 crbug.com/824848 [ Mac ] external/wpt/html/semantics/links/following-hyperlinks/activation-behavior.window.html [ Pass Failure ]
 crbug.com/824848 [ Win ] external/wpt/html/semantics/links/following-hyperlinks/activation-behavior.window.html [ Pass Failure ]
-crbug.com/824904 inspector-protocol/heap-profiler/heap-objects-tracking.js [ Pass Failure ]
 
 # Sheriff 2018-03-26
 crbug.com/825733 [ Win ] media/color-profile-video-seek-filter.html [ Pass Timeout Failure ]
@@ -6073,7 +6077,6 @@ crbug.com/1029489 http/tests/devtools/elements/elements-linkify-attributes.js [ 
 crbug.com/1029826 http/tests/devtools/copy-network-request.js [ Pass Failure ]
 crbug.com/1029521 virtual/threaded/external/wpt/web-animations/timing-model/animations/updating-the-finished-state.html [ Pass Failure Timeout ]
 crbug.com/1030258 http/tests/devtools/network/network-cookies-pane.js [ Pass Failure ]
-crbug.com/1019723 http/tests/devtools/network/waterfall-header-height-updates.js [ Pass Failure ]
 
 # Enable scroll-snap tests on impl thread
 # These are currently failing on Mac which needs more investigation, snap-scrolls-visual-viewport seems flaky
@@ -6129,7 +6132,7 @@ crbug.com/859169 http/tests/devtools/layers/layer-compositing-reasons.js [ Pass 
 # Sheriff 2019-12-23
 crbug.com/1036626 http/tests/devtools/tracing/tracing-record-input-events.js [ Pass Failure ]
 crbug.com/1036626 virtual/threaded/http/tests/devtools/tracing/tracing-record-input-events.js [ Pass Failure ]
-crbug.com/1036054 [ Mac10.13 ] virtual/threaded/fast/scroll-snap/snap-to-area-with-fractional-offset.html [ Pass Failure ]
+crbug.com/1036054 [ Mac10.13 ] virtual/threaded/fast/scroll-snap/snap-to-area-with-fractional-offset.html [ Pass Timeout ]
 crbug.com/960944 animations/web-animations/animation-state-changes-positive-playback-rate.html [ Pass Failure ]
 crbug.com/1033381 synthetic_gestures/smooth-scroll-tiny-delta.html [ Pass Crash ]
 

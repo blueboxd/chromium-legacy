@@ -34,7 +34,7 @@ class DirectCompositionChildSurfaceWin : public GLSurfaceEGL {
   void SetVSyncEnabled(bool enabled) override;
   bool Resize(const gfx::Size& size,
               float scale_factor,
-              ColorSpace color_space,
+              const gfx::ColorSpace& color_space,
               bool has_alpha) override;
   bool SetEnableDCLayers(bool enable) override;
 
@@ -61,7 +61,7 @@ class DirectCompositionChildSurfaceWin : public GLSurfaceEGL {
   bool enable_dc_layers_ = false;
   bool has_alpha_ = true;
   bool vsync_enabled_ = true;
-  ColorSpace color_space_ = ColorSpace::UNSPECIFIED;
+  gfx::ColorSpace color_space_;
 
   // This is a placeholder surface used when not rendering to the
   // DirectComposition surface.

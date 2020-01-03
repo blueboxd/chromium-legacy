@@ -21,6 +21,7 @@
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gl/ca_renderer_layer_params.h"
+#include "ui/gl/color_space_utils.h"
 #include "ui/gl/dc_renderer_layer_params.h"
 #include "ui/gl/gl_version_info.h"
 
@@ -3914,30 +3915,8 @@ error::Error GLES2DecoderPassthroughImpl::DoResizeCHROMIUM(GLuint width,
       return error::kLostContext;
     }
   } else {
-    gl::GLSurface::ColorSpace surface_color_space =
-        gl::GLSurface::ColorSpace::UNSPECIFIED;
-    switch (color_space) {
-      case GL_COLOR_SPACE_UNSPECIFIED_CHROMIUM:
-        surface_color_space = gl::GLSurface::ColorSpace::UNSPECIFIED;
-        break;
-      case GL_COLOR_SPACE_SCRGB_LINEAR_CHROMIUM:
-        surface_color_space = gl::GLSurface::ColorSpace::SCRGB_LINEAR;
-        break;
-      case GL_COLOR_SPACE_HDR10_CHROMIUM:
-        surface_color_space = gl::GLSurface::ColorSpace::HDR10;
-        break;
-      case GL_COLOR_SPACE_SRGB_CHROMIUM:
-        surface_color_space = gl::GLSurface::ColorSpace::SRGB;
-        break;
-      case GL_COLOR_SPACE_DISPLAY_P3_CHROMIUM:
-        surface_color_space = gl::GLSurface::ColorSpace::DISPLAY_P3;
-        break;
-      default:
-        LOG(ERROR) << "GLES2DecoderPassthroughImpl: Context lost because "
-                      "specified color space was invalid.";
-        return error::kLostContext;
-    }
-    if (!surface_->Resize(safe_size, scale_factor, surface_color_space,
+    if (!surface_->Resize(safe_size, scale_factor,
+                          gl::ColorSpaceUtils::GetColorSpace(color_space),
                           !!alpha)) {
       LOG(ERROR)
           << "GLES2DecoderPassthroughImpl: Context lost because resize failed.";

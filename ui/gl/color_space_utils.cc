@@ -11,48 +11,39 @@ namespace gl {
 
 // static
 GLenum ColorSpaceUtils::GetGLColorSpace(const gfx::ColorSpace& color_space) {
-  switch (color_space.GetTransferID()) {
-    case gfx::ColorSpace::TransferID::LINEAR_HDR:
-      return GL_COLOR_SPACE_SCRGB_LINEAR_CHROMIUM;
-    case gfx::ColorSpace::TransferID::SMPTEST2084:
-      return GL_COLOR_SPACE_HDR10_CHROMIUM;
-    default:
-      return GL_COLOR_SPACE_UNSPECIFIED_CHROMIUM;
-  }
+  if (color_space == gfx::ColorSpace::CreateSCRGBLinear())
+    return GL_COLOR_SPACE_SCRGB_LINEAR_CHROMIUM;
+
+  if (color_space == gfx::ColorSpace::CreateHDR10())
+    return GL_COLOR_SPACE_HDR10_CHROMIUM;
+
+  if (color_space == gfx::ColorSpace::CreateSRGB())
+    return GL_COLOR_SPACE_SRGB_CHROMIUM;
+
+  if (color_space == gfx::ColorSpace::CreateDisplayP3D65())
+    return GL_COLOR_SPACE_DISPLAY_P3_CHROMIUM;
+
+  return GL_COLOR_SPACE_UNSPECIFIED_CHROMIUM;
 }
 
 // static
-GLSurface::ColorSpace ColorSpaceUtils::GetGLSurfaceColorSpace(
-    const gfx::ColorSpace& color_space) {
-  switch (color_space.GetTransferID()) {
-    case gfx::ColorSpace::TransferID::LINEAR_HDR:
-      return GLSurface::ColorSpace::SCRGB_LINEAR;
-    case gfx::ColorSpace::TransferID::SMPTEST2084:
-      return GLSurface::ColorSpace::HDR10;
+gfx::ColorSpace ColorSpaceUtils::GetColorSpace(GLenum color_space) {
+  switch (color_space) {
+    case GL_COLOR_SPACE_UNSPECIFIED_CHROMIUM:
+      break;
+    case GL_COLOR_SPACE_SCRGB_LINEAR_CHROMIUM:
+      return gfx::ColorSpace::CreateSCRGBLinear();
+    case GL_COLOR_SPACE_HDR10_CHROMIUM:
+      return gfx::ColorSpace::CreateHDR10();
+    case GL_COLOR_SPACE_SRGB_CHROMIUM:
+      return gfx::ColorSpace::CreateSRGB();
+    case GL_COLOR_SPACE_DISPLAY_P3_CHROMIUM:
+      return gfx::ColorSpace::CreateDisplayP3D65();
     default:
-      return GLSurface::ColorSpace::UNSPECIFIED;
+      DLOG(ERROR) << "Invalid color space.";
+      break;
   }
+  return gfx::ColorSpace();
 }
-
-#if defined(OS_WIN)
-DXGI_COLOR_SPACE_TYPE ColorSpaceUtils::GetDXGIColorSpace(
-    GLSurface::ColorSpace color_space) {
-  if (color_space == GLSurface::ColorSpace::SCRGB_LINEAR)
-    return DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709;
-  else if (color_space == GLSurface::ColorSpace::HDR10)
-    return DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020;
-  else
-    return DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709;
-}
-
-DXGI_FORMAT ColorSpaceUtils::GetDXGIFormat(GLSurface::ColorSpace color_space) {
-  if (color_space == GLSurface::ColorSpace::SCRGB_LINEAR)
-    return DXGI_FORMAT_R16G16B16A16_FLOAT;
-  else if (color_space == GLSurface::ColorSpace::HDR10)
-    return DXGI_FORMAT_R10G10B10A2_UNORM;
-  else
-    return DXGI_FORMAT_B8G8R8A8_UNORM;
-}
-#endif  // OS_WIN
 
 }  // namespace gl

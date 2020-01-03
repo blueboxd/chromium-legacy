@@ -28,7 +28,7 @@ InterpolationValue SVGAngleInterpolationType::MaybeConvertSVGValue(
 SVGPropertyBase* SVGAngleInterpolationType::AppliedSVGValue(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue*) const {
-  double double_value = ToInterpolableNumber(interpolable_value).Value();
+  double double_value = To<InterpolableNumber>(interpolable_value).Value();
   auto* result = MakeGarbageCollected<SVGAngle>();
   result->NewValueSpecifiedUnits(SVGAngle::kSvgAngletypeDeg, double_value);
   return result;

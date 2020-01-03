@@ -11,6 +11,7 @@
 #include "components/viz/test/begin_frame_args_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/presentation_feedback.h"
+#include "ui/gfx/swap_result.h"
 #include "ui/gl/color_space_utils.h"
 
 namespace viz {

@@ -4431,11 +4431,18 @@ void RenderFrameHostImpl::CreateNewWindow(
     while (top_level_opener->GetParent()) {
       top_level_opener = top_level_opener->GetParent();
     }
-    // Verify that they are same origin. Otherwise leave it to default
-    // unsafe-none.
+    // Verify that they are same origin.
     if (top_level_opener->GetLastCommittedOrigin().IsSameOriginWith(
             GetLastCommittedOrigin())) {
       popup_coop = top_level_opener->cross_origin_opener_policy();
+    } else {
+      // The documents are cross origin, leave COOP of the popup to the default
+      // unsafe-none.
+      // Then set the popup to noopener if the top level COOP is same origin.
+      if (top_level_opener->cross_origin_opener_policy() ==
+          network::mojom::CrossOriginOpenerPolicy::kSameOrigin) {
+        params->opener_suppressed = true;
+      }
     }
   }
 
@@ -4444,8 +4451,6 @@ void RenderFrameHostImpl::CreateNewWindow(
   // means the current renderer process will not be able to route messages to
   // it. Because of this, we will immediately show and navigate the window
   // in OnCreateNewWindowOnUI, using the params provided here.
-  // TODO(pmeuleman): Switch BrowsingInstance when Cross-Origin-Opener-Policy of
-  // the main document and the opened document are incompatible.
   bool is_new_browsing_instance =
       params->opener_suppressed || no_javascript_access;
 

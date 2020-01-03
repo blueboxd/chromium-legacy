@@ -199,15 +199,21 @@ void LogSharingSelectedAppIndex(SharingFeatureName feature,
 }
 
 void LogSharingMessageAckTime(chrome_browser_sharing::MessageType message_type,
+                              SharingDevicePlatform receiver_device_platform,
                               base::TimeDelta time) {
   std::string suffixed_name = base::StrCat(
       {"Sharing.MessageAckTime.", MessageTypeToMessageSuffix(message_type)});
+  std::string platform_suffixed_name =
+      base::StrCat({"Sharing.MessageAckTime.",
+                    DevicePlatformToString(receiver_device_platform), ".",
+                    MessageTypeToMessageSuffix(message_type)});
   switch (message_type) {
     case chrome_browser_sharing::MessageType::UNKNOWN_MESSAGE:
     case chrome_browser_sharing::MessageType::PING_MESSAGE:
     case chrome_browser_sharing::MessageType::CLICK_TO_CALL_MESSAGE:
     case chrome_browser_sharing::MessageType::SHARED_CLIPBOARD_MESSAGE:
       base::UmaHistogramMediumTimes(suffixed_name, time);
+      base::UmaHistogramMediumTimes(platform_suffixed_name, time);
       break;
     case chrome_browser_sharing::MessageType::SMS_FETCH_REQUEST:
       base::UmaHistogramCustomTimes(

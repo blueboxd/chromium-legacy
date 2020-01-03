@@ -8,7 +8,9 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/style/typography.h"
 
@@ -42,10 +44,6 @@ class VIEWS_EXPORT Link : public Label {
                 int text_context = style::CONTEXT_LABEL,
                 int text_style = style::STYLE_LINK);
   ~Link() override;
-
-  // Returns the default FocusStyle for a views::Link. Calling SetUnderline()
-  // may change it: E.g. SetUnderline(true) forces FocusStyle::kRing.
-  static FocusStyle GetDefaultFocusStyle();
 
   // Returns the current FocusStyle of this Link.
   FocusStyle GetFocusStyle() const;
@@ -84,25 +82,22 @@ class VIEWS_EXPORT Link : public Label {
   void SetUnderline(bool underline);
 
  private:
-  void Init();
-
   void SetPressed(bool pressed);
 
   void RecalculateFont();
 
   void ConfigureFocus();
 
-  LinkListener* listener_;
+  LinkListener* listener_ = nullptr;
 
   // Whether the link should be underlined when enabled.
-  bool underline_;
+  bool underline_ = false;
 
   // Whether the link is currently pressed.
-  bool pressed_;
+  bool pressed_ = false;
 
   // The color when the link is neither pressed nor disabled.
-  SkColor requested_enabled_color_;
-  bool requested_enabled_color_set_;
+  base::Optional<SkColor> requested_enabled_color_;
 
   PropertyChangedSubscription enabled_changed_subscription_;
 

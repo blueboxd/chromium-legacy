@@ -4,7 +4,7 @@
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {createEmptySearchBubble, highlight} from 'chrome://resources/js/search_highlight_utils.m.js';
+import {createEmptySearchBubble, highlight, Range, stripDiacritics} from 'chrome://resources/js/search_highlight_utils.m.js';
 
 /**
  * @param {!HTMLElement} element The element to update. Element should have a
@@ -28,13 +28,19 @@ export function updateHighlights(element, query, bubbles) {
         return;
       }
 
-      const textContent = node.nodeValue.trim();
-      if (textContent.length === 0) {
+      const textContent = node.nodeValue;
+      if (textContent.trim().length === 0) {
         return;
       }
 
-      const matches = textContent.match(query);
-      if (matches) {
+      const strippedText = stripDiacritics(textContent);
+      /** @type {!Array<!Range>} */
+      const ranges = [];
+      for (let match; match = query.exec(strippedText);) {
+        ranges.push({start: match.index, length: match[0].length});
+      }
+
+      if (ranges.length > 0) {
         // Don't highlight <select> nodes, yellow rectangles can't be
         // displayed within an <option>.
         if (node.parentNode.nodeName === 'OPTION') {
@@ -48,14 +54,14 @@ export function updateHighlights(element, query, bubbles) {
           const bubble = createEmptySearchBubble(
               /** @type {!Node} */ (assert(node.parentNode.parentNode)),
               /* horizontallyCenter= */ false);
-          const numHits = matches.length + (bubbles.get(bubble) || 0);
+          const numHits = ranges.length + (bubbles.get(bubble) || 0);
           bubbles.set(bubble, numHits);
           const msgName = numHits === 1 ? 'searchResultBubbleText' :
                                           'searchResultsBubbleText';
           bubble.firstChild.textContent =
               loadTimeData.getStringF(msgName, numHits);
         } else {
-          highlights.push(highlight(node, textContent.split(query)));
+          highlights.push(highlight(node, ranges));
         }
       }
     });

@@ -52,7 +52,7 @@ void GLSurfaceEglReadbackX11::Destroy() {
 
 bool GLSurfaceEglReadbackX11::Resize(const gfx::Size& size,
                                      float scale_factor,
-                                     ColorSpace color_space,
+                                     const gfx::ColorSpace& color_space,
                                      bool has_alpha) {
   if (!GLSurfaceEglReadback::Resize(size, scale_factor, color_space,
                                     has_alpha)) {

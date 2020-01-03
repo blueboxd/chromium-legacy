@@ -79,18 +79,23 @@ int GetSafeItemIterators(
 }
 
 bool IsWKInternalUrl(const GURL& url) {
-  return IsPlaceholderUrl(url) || IsRestoreSessionUrl(url);
+  return (!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) &&
+          IsPlaceholderUrl(url)) ||
+         IsRestoreSessionUrl(url);
 }
 
 bool IsWKInternalUrl(NSURL* url) {
-  return IsPlaceholderUrl(url) || IsRestoreSessionUrl(url);
+  return (!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) &&
+          IsPlaceholderUrl(url)) ||
+         IsRestoreSessionUrl(url);
 }
 
 bool URLNeedsUserAgentType(const GURL& url) {
   if (web::GetWebClient()->IsAppSpecificURL(url))
     return false;
 
-  if (url.SchemeIs(url::kAboutScheme) && IsPlaceholderUrl(url)) {
+  if (!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) &&
+      url.SchemeIs(url::kAboutScheme) && IsPlaceholderUrl(url)) {
     return !web::GetWebClient()->IsAppSpecificURL(
         ExtractUrlFromPlaceholderUrl(url));
   }
@@ -197,11 +202,13 @@ bool ExtractTargetURL(const GURL& restore_session_url, GURL* target_url) {
 }
 
 bool IsPlaceholderUrl(const GURL& url) {
+  DCHECK(!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage));
   return url.IsAboutBlank() && base::StartsWith(url.query(), kOriginalUrlKey,
                                                 base::CompareCase::SENSITIVE);
 }
 
 bool IsPlaceholderUrl(NSURL* url) {
+  DCHECK(!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage));
   // about:blank NSURLs don't have nil host and query, so use absolute string
   // matching.
   return [url.scheme isEqual:@"about"] &&
@@ -210,6 +217,7 @@ bool IsPlaceholderUrl(NSURL* url) {
 }
 
 GURL CreatePlaceholderUrlForUrl(const GURL& original_url) {
+  DCHECK(!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage));
   if (!original_url.is_valid())
     return GURL::EmptyGURL();
 
@@ -220,6 +228,7 @@ GURL CreatePlaceholderUrlForUrl(const GURL& original_url) {
 }
 
 GURL ExtractUrlFromPlaceholderUrl(const GURL& url) {
+  DCHECK(!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage));
   std::string value;
   if (IsPlaceholderUrl(url) &&
       net::GetValueForKeyInQuery(url, kOriginalUrlKey, &value)) {

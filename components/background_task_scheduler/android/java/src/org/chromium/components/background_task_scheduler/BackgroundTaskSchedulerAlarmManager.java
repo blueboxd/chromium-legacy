@@ -40,6 +40,7 @@ public class BackgroundTaskSchedulerAlarmManager implements BackgroundTaskSchedu
 
         ScheduledTaskProto.ScheduledTask scheduledTask =
                 BackgroundTaskSchedulerPrefs.getScheduledTask(taskId);
+
         if (scheduledTask == null) {
             Log.e(TAG, "Cannot get information about task with task ID " + taskId);
             return null;

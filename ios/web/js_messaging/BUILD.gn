@@ -9,6 +9,7 @@ source_set("js_messaging") {
   deps = [
     "//base",
     "//crypto",
+    "//ios/web/common:features",
     "//ios/web/navigation:wk_navigation_util",
     "//ios/web/public",
     "//ios/web/public/deprecated",

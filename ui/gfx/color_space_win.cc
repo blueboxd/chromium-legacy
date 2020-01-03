@@ -212,6 +212,26 @@ DXGI_COLOR_SPACE_TYPE ColorSpaceWin::GetDXGIColorSpace(
   }
 }
 
+DXGI_FORMAT ColorSpaceWin::GetDXGIFormat(const gfx::ColorSpace& color_space,
+                                         bool needs_alpha) {
+  // Extended linear color spaces use half-float.
+  if (color_space.GetTransferID() == gfx::ColorSpace::TransferID::LINEAR_HDR)
+    return DXGI_FORMAT_R16G16B16A16_FLOAT;
+
+  // The PQ transfer function needs 10 bits. If we need an alpha channel, then
+  // we will need to bump to 16 bits.
+  if (color_space.GetTransferID() == gfx::ColorSpace::TransferID::SMPTEST2084) {
+    if (needs_alpha)
+      return DXGI_FORMAT_R16G16B16A16_UNORM;
+    else
+      return DXGI_FORMAT_R10G10B10A2_UNORM;
+  }
+
+  // For now just give everything else 8 bits. We will want to use 10 or 16 bits
+  // for BT2020 gamuts.
+  return DXGI_FORMAT_B8G8R8A8_UNORM;
+}
+
 D3D11_VIDEO_PROCESSOR_COLOR_SPACE ColorSpaceWin::GetD3D11ColorSpace(
     const ColorSpace& color_space) {
   D3D11_VIDEO_PROCESSOR_COLOR_SPACE ret = {0};

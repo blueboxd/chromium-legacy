@@ -26,10 +26,7 @@ class CORE_EXPORT LayoutNGListItem final : public LayoutNGBlockFlow {
   static String TextAlternative(const LayoutObject& marker);
 
   LayoutObject* Marker() const { return marker_; }
-  bool IsMarkerImage() const {
-    return StyleRef().ListStyleImage() &&
-           !StyleRef().ListStyleImage()->ErrorOccurred();
-  }
+  bool IsMarkerImage() const { return StyleRef().GeneratesMarkerImage(); }
 
   void UpdateMarkerTextIfNeeded() {
     if (marker_ && !is_marker_text_updated_ && !IsMarkerImage())

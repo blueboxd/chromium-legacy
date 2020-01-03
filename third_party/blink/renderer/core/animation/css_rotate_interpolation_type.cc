@@ -250,7 +250,7 @@ void CSSRotateInterpolationType::Composite(
           *underlying_value_owner.Value().non_interpolable_value);
   const CSSRotateNonInterpolableValue& non_interpolable_value =
       ToCSSRotateNonInterpolableValue(*value.non_interpolable_value);
-  double progress = ToInterpolableNumber(*value.interpolable_value).Value();
+  double progress = To<InterpolableNumber>(*value.interpolable_value).Value();
   underlying_value_owner.MutableValue().non_interpolable_value =
       underlying_non_interpolable_value.Composite(non_interpolable_value,
                                                   progress);
@@ -260,7 +260,7 @@ void CSSRotateInterpolationType::ApplyStandardPropertyValue(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue* untyped_non_interpolable_value,
     StyleResolverState& state) const {
-  double progress = ToInterpolableNumber(interpolable_value).Value();
+  double progress = To<InterpolableNumber>(interpolable_value).Value();
   const CSSRotateNonInterpolableValue& non_interpolable_value =
       ToCSSRotateNonInterpolableValue(*untyped_non_interpolable_value);
   OptionalRotation rotation = non_interpolable_value.SlerpedRotation(progress);

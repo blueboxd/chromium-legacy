@@ -18,6 +18,12 @@ message ScheduledTask {
     EXACT = 2;
   }
 
+  enum RequiredNetworkType {
+    NONE = 0;
+    ANY = 1;
+    UNMETERED = 2;
+  }
+
   // The type of the scheduled task.
   Type type = 1;
 
@@ -62,4 +68,14 @@ message ScheduledTask {
   // PeriodicTask objects store their extras through their scheduling backend
   // (JobScheduler and GcmNetworkManager).
   repeated ExtraItem extras = 3;
+
+  // Required network type, stored for an ExactTask. OneOffTask and PeriodicTask
+  // objects store their required network type through their scheduling backend
+  // (JobScheduler and GCMNetworkManager).
+  RequiredNetworkType required_network_type = 4;
+
+  // Bool representing whether the task requires charging. Stored for an
+  // ExactTask. OneOffTask and PeriodicTask objects store this info through
+  // their scheduling backend (JobScheduler and GCMNetworkManager).
+  bool requires_charging = 5;
 }

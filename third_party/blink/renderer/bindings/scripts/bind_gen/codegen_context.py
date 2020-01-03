@@ -51,6 +51,7 @@ class CodeGenContext(object):
             "constructor": None,
             "constructor_group": None,
             "dict_member": None,
+            "exposed_construct": None,
             "operation": None,
             "operation_group": None,
 
@@ -224,7 +225,8 @@ class CodeGenContext(object):
     @property
     def property_(self):
         return (self.attribute or self.constant or self.constructor_group
-                or self.dict_member or self.operation_group)
+                or self.dict_member or self.exposed_construct
+                or self.operation_group)
 
     @property
     def return_type(self):

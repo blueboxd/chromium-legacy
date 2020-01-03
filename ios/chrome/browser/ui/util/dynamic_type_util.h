@@ -29,4 +29,10 @@ UIFont* PreferredFontForTextStyleWithMaxCategory(
     UIContentSizeCategory currentCategory,
     UIContentSizeCategory maxCategory);
 
+// ********************
+// Specific cases utils
+// ********************
+
+UIFont* LocationBarSteadyViewFont(UIContentSizeCategory currentCategory);
+
 #endif  // IOS_CHROME_BROWSER_UI_UTIL_DYNAMIC_TYPE_UTIL_H_

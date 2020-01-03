@@ -228,10 +228,8 @@ Document* Animation::GetDocument() {
   return document_;
 }
 
-double Animation::TimelineTime() const {
-  if (timeline_)
-    return timeline_->CurrentTime().value_or(NullValue());
-  return NullValue();
+base::Optional<double> Animation::TimelineTime() const {
+  return timeline_ ? timeline_->CurrentTime() : base::nullopt;
 }
 
 // https://drafts.csswg.org/web-animations/#setting-the-current-time-of-an-animation.
@@ -1734,8 +1732,9 @@ bool Animation::Update(TimingUpdateReason reason) {
 void Animation::QueueFinishedEvent() {
   const AtomicString& event_type = event_type_names::kFinish;
   if (GetExecutionContext() && HasEventListeners(event_type)) {
-    double event_current_time =
-        SecondsToMilliseconds(CurrentTimeInternal().value_or(NullValue()));
+    base::Optional<double> event_current_time = CurrentTimeInternal();
+    if (event_current_time)
+      event_current_time = SecondsToMilliseconds(event_current_time.value());
     // TODO(crbug.com/916117): Handle NaN values for scroll-linked animations.
     pending_finished_event_ = MakeGarbageCollected<AnimationPlaybackEvent>(
         event_type, event_current_time, TimelineTime());
@@ -1815,7 +1814,7 @@ void Animation::cancel() {
 
     const AtomicString& event_type = event_type_names::kCancel;
     if (GetExecutionContext() && HasEventListeners(event_type)) {
-      double event_current_time = NullValue();
+      base::Optional<double> event_current_time = base::nullopt;
       // TODO(crbug.com/916117): Handle NaN values for scroll-linked
       // animations.
       pending_cancelled_event_ = MakeGarbageCollected<AnimationPlaybackEvent>(

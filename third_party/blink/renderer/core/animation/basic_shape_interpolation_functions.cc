@@ -216,7 +216,7 @@ scoped_refptr<BasicShape> CreateBasicShape(
     const InterpolableValue& interpolable_value,
     const CSSToLengthConversionData& conversion_data) {
   scoped_refptr<BasicShapeCircle> circle = BasicShapeCircle::Create();
-  const InterpolableList& list = ToInterpolableList(interpolable_value);
+  const auto& list = To<InterpolableList>(interpolable_value);
   circle->SetCenterX(
       CreateCoordinate(*list.Get(kCircleCenterXIndex), conversion_data));
   circle->SetCenterY(
@@ -289,7 +289,7 @@ scoped_refptr<BasicShape> CreateBasicShape(
     const InterpolableValue& interpolable_value,
     const CSSToLengthConversionData& conversion_data) {
   scoped_refptr<BasicShapeEllipse> ellipse = BasicShapeEllipse::Create();
-  const InterpolableList& list = ToInterpolableList(interpolable_value);
+  const auto& list = To<InterpolableList>(interpolable_value);
   ellipse->SetCenterX(
       CreateCoordinate(*list.Get(kEllipseCenterXIndex), conversion_data));
   ellipse->SetCenterY(
@@ -408,7 +408,7 @@ scoped_refptr<BasicShape> CreateBasicShape(
     const InterpolableValue& interpolable_value,
     const CSSToLengthConversionData& conversion_data) {
   scoped_refptr<BasicShapeInset> inset = BasicShapeInset::Create();
-  const InterpolableList& list = ToInterpolableList(interpolable_value);
+  const auto& list = To<InterpolableList>(interpolable_value);
   inset->SetTop(To<InterpolableLength>(*list.Get(kInsetTopIndex))
                     .CreateLength(conversion_data, kValueRangeAll));
   inset->SetRight(To<InterpolableLength>(*list.Get(kInsetRightIndex))
@@ -473,7 +473,7 @@ scoped_refptr<BasicShape> CreateBasicShape(
     const CSSToLengthConversionData& conversion_data) {
   scoped_refptr<BasicShapePolygon> polygon = BasicShapePolygon::Create();
   polygon->SetWindRule(non_interpolable_value.GetWindRule());
-  const InterpolableList& list = ToInterpolableList(interpolable_value);
+  const auto& list = To<InterpolableList>(interpolable_value);
   wtf_size_t size = non_interpolable_value.size();
   DCHECK_EQ(list.length(), size);
   DCHECK_EQ(size % 2, 0U);

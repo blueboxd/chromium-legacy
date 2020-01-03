@@ -339,6 +339,7 @@ void NavigationItemImpl::ResetForCommit() {
 }
 
 ErrorRetryStateMachine& NavigationItemImpl::error_retry_state_machine() {
+  DCHECK(!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage));
   return error_retry_state_machine_;
 }
 

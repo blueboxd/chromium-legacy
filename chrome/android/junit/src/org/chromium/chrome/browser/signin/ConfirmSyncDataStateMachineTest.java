@@ -40,7 +40,7 @@ public class ConfirmSyncDataStateMachineTest {
     private ConfirmSyncDataStateMachineDelegate mDelegateMock;
 
     @Mock
-    private ConfirmImportSyncDataDialog.Listener mImportSyncDataListenerMock;
+    private ConfirmSyncDataStateMachine.Listener mStateMachineListenerMock;
 
     @Mock
     private SigninManager mSigninManagerMock;
@@ -63,13 +63,13 @@ public class ConfirmSyncDataStateMachineTest {
     @Test(expected = AssertionError.class)
     public void testNewAccountNameCannotBeEmpty() {
         ConfirmSyncDataStateMachine stateMachine = new ConfirmSyncDataStateMachine(
-                mDelegateMock, mOldAccountName, null, mImportSyncDataListenerMock);
+                mDelegateMock, mOldAccountName, null, mStateMachineListenerMock);
     }
 
     @Test
     public void testImportSyncDataDialogShownWhenOldAndNewAccountNamesAreDifferent() {
         ConfirmSyncDataStateMachine stateMachine = new ConfirmSyncDataStateMachine(
-                mDelegateMock, mOldAccountName, mNewAccountName, mImportSyncDataListenerMock);
+                mDelegateMock, mOldAccountName, mNewAccountName, mStateMachineListenerMock);
         verify(mDelegateMock)
                 .showConfirmImportSyncDataDialog(any(ConfirmImportSyncDataDialog.Listener.class),
                         eq(mOldAccountName), eq(mNewAccountName));
@@ -79,7 +79,7 @@ public class ConfirmSyncDataStateMachineTest {
     public void testProgressDialogShownWhenOldAndNewAccountNamesAreEqual() {
         String oldAndNewAccountName = "test.old.new@testdomain.com";
         ConfirmSyncDataStateMachine stateMachine = new ConfirmSyncDataStateMachine(mDelegateMock,
-                oldAndNewAccountName, oldAndNewAccountName, mImportSyncDataListenerMock);
+                oldAndNewAccountName, oldAndNewAccountName, mStateMachineListenerMock);
         verify(mDelegateMock, never())
                 .showConfirmImportSyncDataDialog(
                         any(ConfirmImportSyncDataDialog.Listener.class), anyString(), anyString());
@@ -91,7 +91,7 @@ public class ConfirmSyncDataStateMachineTest {
     @Test
     public void testProgressDialogShownWhenOldAccountNameIsEmpty() {
         ConfirmSyncDataStateMachine stateMachine = new ConfirmSyncDataStateMachine(
-                mDelegateMock, null, mNewAccountName, mImportSyncDataListenerMock);
+                mDelegateMock, null, mNewAccountName, mStateMachineListenerMock);
         verify(mDelegateMock, never())
                 .showConfirmImportSyncDataDialog(
                         any(ConfirmImportSyncDataDialog.Listener.class), anyString(), anyString());
@@ -104,9 +104,9 @@ public class ConfirmSyncDataStateMachineTest {
     public void testListenerConfirmedWhenNewAccountIsNotManaged() {
         mockSigninManagerIsAccountManaged(false);
         ConfirmSyncDataStateMachine stateMachine = new ConfirmSyncDataStateMachine(
-                mDelegateMock, null, mNewAccountName, mImportSyncDataListenerMock);
+                mDelegateMock, null, mNewAccountName, mStateMachineListenerMock);
         verify(mDelegateMock).dismissAllDialogs();
-        verify(mImportSyncDataListenerMock).onConfirm(false);
+        verify(mStateMachineListenerMock).onConfirm(false);
     }
 
     @Test
@@ -114,7 +114,7 @@ public class ConfirmSyncDataStateMachineTest {
         mockSigninManagerIsAccountManaged(true);
         when(mSigninManagerNativeMock.extractDomainName(anyString())).thenReturn(mNewAccountName);
         ConfirmSyncDataStateMachine stateMachine = new ConfirmSyncDataStateMachine(
-                mDelegateMock, null, mNewAccountName, mImportSyncDataListenerMock);
+                mDelegateMock, null, mNewAccountName, mStateMachineListenerMock);
         verify(mDelegateMock)
                 .showSignInToManagedAccountDialog(
                         any(ConfirmManagedSyncDataDialog.Listener.class), eq(mNewAccountName));
@@ -126,7 +126,7 @@ public class ConfirmSyncDataStateMachineTest {
         String domain = "manageddomain.com";
         when(mSigninManagerNativeMock.extractDomainName(newAccountName)).thenReturn(domain);
         ConfirmSyncDataStateMachine stateMachine = new ConfirmSyncDataStateMachine(
-                mDelegateMock, null, newAccountName, mImportSyncDataListenerMock);
+                mDelegateMock, null, newAccountName, mStateMachineListenerMock);
         verify(mDelegateMock, never())
                 .showSignInToManagedAccountDialog(
                         any(ConfirmManagedSyncDataDialog.Listener.class), anyString());
@@ -142,25 +142,25 @@ public class ConfirmSyncDataStateMachineTest {
     @Test
     public void testCancelWhenIsNotBeingDestroyed() {
         ConfirmSyncDataStateMachine stateMachine = new ConfirmSyncDataStateMachine(
-                mDelegateMock, mOldAccountName, mNewAccountName, mImportSyncDataListenerMock);
+                mDelegateMock, mOldAccountName, mNewAccountName, mStateMachineListenerMock);
         stateMachine.onCancel();
-        verify(mImportSyncDataListenerMock).onCancel();
+        verify(mStateMachineListenerMock).onCancel();
         verify(mDelegateMock).dismissAllDialogs();
     }
 
     @Test
     public void testCancelWhenIsBeingDestroyed() {
         ConfirmSyncDataStateMachine stateMachine = new ConfirmSyncDataStateMachine(
-                mDelegateMock, mOldAccountName, mNewAccountName, mImportSyncDataListenerMock);
+                mDelegateMock, mOldAccountName, mNewAccountName, mStateMachineListenerMock);
         stateMachine.cancel(true);
-        verify(mImportSyncDataListenerMock, never()).onCancel();
+        verify(mStateMachineListenerMock, never()).onCancel();
         verify(mDelegateMock, never()).dismissAllDialogs();
     }
 
     @Test(expected = IllegalStateException.class)
     public void testStateCannotChangeOnceDone() {
         ConfirmSyncDataStateMachine stateMachine = new ConfirmSyncDataStateMachine(
-                mDelegateMock, mOldAccountName, mNewAccountName, mImportSyncDataListenerMock);
+                mDelegateMock, mOldAccountName, mNewAccountName, mStateMachineListenerMock);
         stateMachine.cancel(true);
         stateMachine.onConfirm();
     }

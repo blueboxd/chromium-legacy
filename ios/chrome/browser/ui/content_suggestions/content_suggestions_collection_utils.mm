@@ -122,7 +122,6 @@ void configureSearchHintLabel(UILabel* searchHintLabel,
     [searchHintLabel setTextAlignment:NSTextAlignmentRight];
   }
   searchHintLabel.textColor = [UIColor colorNamed:kTextfieldPlaceholderColor];
-  searchHintLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
   searchHintLabel.adjustsFontForContentSizeCategory = YES;
   searchHintLabel.textAlignment = NSTextAlignmentCenter;
 }

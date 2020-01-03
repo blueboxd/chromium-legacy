@@ -63,8 +63,8 @@ class UnderlyingFilterListChecker
 
   bool IsValid(const StyleResolverState&,
                const InterpolationValue& underlying) const final {
-    const InterpolableList& underlying_list =
-        ToInterpolableList(*underlying.interpolable_value);
+    const auto& underlying_list =
+        To<InterpolableList>(*underlying.interpolable_value);
     if (underlying_list.length() != types_.size())
       return false;
     for (wtf_size_t i = 0; i < types_.size(); i++) {
@@ -129,8 +129,8 @@ class AlwaysInvalidateChecker
 InterpolationValue CSSFilterListInterpolationType::MaybeConvertNeutral(
     const InterpolationValue& underlying,
     ConversionCheckers& conversion_checkers) const {
-  const InterpolableList* interpolable_list =
-      ToInterpolableList(underlying.interpolable_value.get());
+  const auto* interpolable_list =
+      To<InterpolableList>(underlying.interpolable_value.get());
   conversion_checkers.push_back(
       std::make_unique<UnderlyingFilterListChecker>(interpolable_list));
   // The neutral value for composition for a filter list is the empty list, as
@@ -191,10 +191,9 @@ CSSFilterListInterpolationType::MaybeConvertStandardPropertyUnderlyingValue(
 PairwiseInterpolationValue CSSFilterListInterpolationType::MaybeMergeSingles(
     InterpolationValue&& start,
     InterpolationValue&& end) const {
-  InterpolableList& start_interpolable_list =
-      ToInterpolableList(*start.interpolable_value);
-  InterpolableList& end_interpolable_list =
-      ToInterpolableList(*end.interpolable_value);
+  auto& start_interpolable_list =
+      To<InterpolableList>(*start.interpolable_value);
+  auto& end_interpolable_list = To<InterpolableList>(*end.interpolable_value);
   wtf_size_t start_length = start_interpolable_list.length();
   wtf_size_t end_length = end_interpolable_list.length();
 
@@ -252,8 +251,7 @@ void CSSFilterListInterpolationType::ApplyStandardPropertyValue(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue* non_interpolable_value,
     StyleResolverState& state) const {
-  const InterpolableList& interpolable_list =
-      ToInterpolableList(interpolable_value);
+  const auto& interpolable_list = To<InterpolableList>(interpolable_value);
   wtf_size_t length = interpolable_list.length();
 
   FilterOperations filter_operations;
@@ -290,9 +288,9 @@ CSSFilterListInterpolationType::PreInterpolationCompositeIfNeeded(
     return nullptr;
 
   auto interpolable_list = std::unique_ptr<InterpolableList>(
-      ToInterpolableList(value.interpolable_value.release()));
-  const InterpolableList& underlying_list =
-      ToInterpolableList(*underlying.interpolable_value);
+      To<InterpolableList>(value.interpolable_value.release()));
+  const auto& underlying_list =
+      To<InterpolableList>(*underlying.interpolable_value);
 
   if (composite == EffectModel::CompositeOperation::kCompositeAdd) {
     return PerformAdditiveComposition(std::move(interpolable_list),

@@ -27,14 +27,14 @@ struct Scale {
       Init(1, 1, 1, true);
   }
   explicit Scale(const InterpolableValue& value) {
-    const InterpolableList& list = ToInterpolableList(value);
+    const auto& list = To<InterpolableList>(value);
     if (list.length() == 0) {
       Init(1, 1, 1, true);
       return;
     }
-    Init(ToInterpolableNumber(*list.Get(0)).Value(),
-         ToInterpolableNumber(*list.Get(1)).Value(),
-         ToInterpolableNumber(*list.Get(2)).Value(), false);
+    Init(To<InterpolableNumber>(*list.Get(0)).Value(),
+         To<InterpolableNumber>(*list.Get(1)).Value(),
+         To<InterpolableNumber>(*list.Get(2)).Value(), false);
   }
 
   void Init(double x, double y, double z, bool is_value_none) {
@@ -207,9 +207,9 @@ PairwiseInterpolationValue CSSScaleInterpolationType::MaybeMergeSingles(
     InterpolationValue&& start,
     InterpolationValue&& end) const {
   wtf_size_t start_list_length =
-      ToInterpolableList(*start.interpolable_value).length();
+      To<InterpolableList>(*start.interpolable_value).length();
   wtf_size_t end_list_length =
-      ToInterpolableList(*end.interpolable_value).length();
+      To<InterpolableList>(*end.interpolable_value).length();
   if (start_list_length < end_list_length)
     start.interpolable_value = CreateScaleIdentity();
   else if (end_list_length < start_list_length)
@@ -233,7 +233,7 @@ void CSSScaleInterpolationType::Composite(
     double underlying_fraction,
     const InterpolationValue& value,
     double interpolation_fraction) const {
-  if (ToInterpolableList(
+  if (To<InterpolableList>(
           *underlying_value_owner.MutableValue().interpolable_value)
           .length() == 0) {
     underlying_value_owner.MutableValue().interpolable_value =
@@ -244,11 +244,10 @@ void CSSScaleInterpolationType::Composite(
       ToCSSScaleNonInterpolableValue(*value.non_interpolable_value);
   DCHECK(metadata.IsStartAdditive() || metadata.IsEndAdditive());
 
-  InterpolableList& underlying_list = ToInterpolableList(
+  auto& underlying_list = To<InterpolableList>(
       *underlying_value_owner.MutableValue().interpolable_value);
   for (wtf_size_t i = 0; i < 3; i++) {
-    InterpolableNumber& underlying =
-        ToInterpolableNumber(*underlying_list.GetMutable(i));
+    auto& underlying = To<InterpolableNumber>(*underlying_list.GetMutable(i));
 
     double start = metadata.Start().array[i] *
                    (metadata.IsStartAdditive() ? underlying.Value() : 1);

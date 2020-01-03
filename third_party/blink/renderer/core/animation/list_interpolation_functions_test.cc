@@ -219,12 +219,12 @@ TEST(ListInterpolationFunctionsTest, EqualCompositeSameLengths) {
       WTF::BindRepeating(NonInterpolableValuesAreCompatible),
       WTF::BindRepeating(Composite));
 
-  const auto& result = ToInterpolableList(*owner.Value().interpolable_value);
+  const auto& result = To<InterpolableList>(*owner.Value().interpolable_value);
 
   ASSERT_EQ(result.length(), 3u);
-  EXPECT_EQ(ToInterpolableNumber(result.Get(0))->Value(), 2.0);
-  EXPECT_EQ(ToInterpolableNumber(result.Get(1))->Value(), 4.0);
-  EXPECT_EQ(ToInterpolableNumber(result.Get(2))->Value(), 6.0);
+  EXPECT_EQ(To<InterpolableNumber>(result.Get(0))->Value(), 2.0);
+  EXPECT_EQ(To<InterpolableNumber>(result.Get(1))->Value(), 4.0);
+  EXPECT_EQ(To<InterpolableNumber>(result.Get(2))->Value(), 6.0);
 }
 
 // Two lists of different lengths are not interpolable, so we expect the
@@ -246,11 +246,11 @@ TEST(ListInterpolationFunctionsTest, EqualCompositeDifferentLengths) {
       WTF::BindRepeating(NonInterpolableValuesAreCompatible),
       WTF::BindRepeating(Composite));
 
-  const auto& result = ToInterpolableList(*owner.Value().interpolable_value);
+  const auto& result = To<InterpolableList>(*owner.Value().interpolable_value);
 
   ASSERT_EQ(result.length(), 2u);
-  EXPECT_EQ(ToInterpolableNumber(result.Get(0))->Value(), 4.0);
-  EXPECT_EQ(ToInterpolableNumber(result.Get(1))->Value(), 5.0);
+  EXPECT_EQ(To<InterpolableNumber>(result.Get(0))->Value(), 4.0);
+  EXPECT_EQ(To<InterpolableNumber>(result.Get(1))->Value(), 5.0);
 }
 
 // If one (or more) of the element pairs are incompatible, the list as a whole
@@ -276,12 +276,12 @@ TEST(ListInterpolationFunctionsTest,
       WTF::BindRepeating(NonInterpolableValuesAreCompatible),
       WTF::BindRepeating(Composite));
 
-  const auto& result = ToInterpolableList(*owner.Value().interpolable_value);
+  const auto& result = To<InterpolableList>(*owner.Value().interpolable_value);
 
   ASSERT_EQ(result.length(), 3u);
-  EXPECT_EQ(ToInterpolableNumber(result.Get(0))->Value(), 4.0);
-  EXPECT_EQ(ToInterpolableNumber(result.Get(1))->Value(), 5.0);
-  EXPECT_EQ(ToInterpolableNumber(result.Get(2))->Value(), 6.0);
+  EXPECT_EQ(To<InterpolableNumber>(result.Get(0))->Value(), 4.0);
+  EXPECT_EQ(To<InterpolableNumber>(result.Get(1))->Value(), 5.0);
+  EXPECT_EQ(To<InterpolableNumber>(result.Get(2))->Value(), 6.0);
 }
 
 // If one (or more) of the element pairs are incompatible, the list as a whole
@@ -304,12 +304,12 @@ TEST(ListInterpolationFunctionsTest,
       WTF::BindRepeating(NonInterpolableValuesAreCompatible),
       WTF::BindRepeating(Composite));
 
-  const auto& result = ToInterpolableList(*owner.Value().interpolable_value);
+  const auto& result = To<InterpolableList>(*owner.Value().interpolable_value);
 
   ASSERT_EQ(result.length(), 3u);
-  EXPECT_EQ(ToInterpolableNumber(result.Get(0))->Value(), 4.0);
-  EXPECT_EQ(ToInterpolableNumber(result.Get(1))->Value(), 5.0);
-  EXPECT_EQ(ToInterpolableNumber(result.Get(2))->Value(), 6.0);
+  EXPECT_EQ(To<InterpolableNumber>(result.Get(0))->Value(), 4.0);
+  EXPECT_EQ(To<InterpolableNumber>(result.Get(1))->Value(), 5.0);
+  EXPECT_EQ(To<InterpolableNumber>(result.Get(2))->Value(), 6.0);
 }
 
 TEST(ListInterpolationFunctionsTest, BuilderNoModify) {

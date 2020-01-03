@@ -148,7 +148,7 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
   virtual AnimationTimeDelta CalculateTimeToEffectChange(
       bool forwards,
       base::Optional<double> local_time,
-      double time_to_next_iteration) const = 0;
+      AnimationTimeDelta time_to_next_iteration) const = 0;
 
   const Animation* GetAnimation() const;
   Animation* GetAnimation();

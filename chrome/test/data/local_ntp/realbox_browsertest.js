@@ -172,10 +172,72 @@ test.realbox1.testEmptyValueDoesntQueryAutocomplete = function() {
   assertEquals(test.realbox.queries.length, 0);
 };
 
+test.realbox1.testFocusDoesntQueryAutocomplete = function() {
+  test.realbox.realboxEl.dispatchEvent(new Event('focus'));
+  assertEquals(0, test.realbox.queries.length);
+};
+
+test.realbox1.testTabbingWhenNonEmptyDoesntQueryAutocomplete = function() {
+  test.realbox.realboxEl.value = '   ';
+
+  // Give the realbox focus programmatically.
+  test.realbox.realboxEl.focus();
+
+  test.realbox.realboxEl.dispatchEvent(new KeyboardEvent(
+      'keyup', {bubbles: true, cancelable: true, key: 'Tab'}));
+  assertEquals(0, test.realbox.queries.length);
+};
+
 test.realbox1.testSpacesDontQueryAutocomplete = function() {
   test.realbox.realboxEl.value = '   ';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
   assertEquals(test.realbox.queries.length, 0);
+};
+
+test.realbox1.testTabbingWhenEmptyQueriesAutocomplete = function() {
+  // Give the realbox focus programmatically.
+  test.realbox.realboxEl.focus();
+
+  test.realbox.realboxEl.dispatchEvent(new KeyboardEvent(
+      'keyup', {bubbles: true, cancelable: true, key: 'Tab'}));
+  assertEquals(1, test.realbox.queries.length);
+  assertEquals('', test.realbox.queries[0].input);
+};
+
+test.realbox1.testArrowUpDownQueryAutocomplete = function() {
+  test.realbox.realboxEl.dispatchEvent(new KeyboardEvent('keydown', {
+    bubbles: true,
+    cancelable: true,
+    key: 'ArrowUp',
+  }));
+  assertEquals(1, test.realbox.queries.length);
+  assertEquals('', test.realbox.queries[0].input);
+
+  test.realbox.realboxEl.value = 'hello';
+  test.realbox.realboxEl.dispatchEvent(new KeyboardEvent('keydown', {
+    bubbles: true,
+    cancelable: true,
+    key: 'ArrowDown',
+  }));
+  assertEquals(2, test.realbox.queries.length);
+  assertEquals(test.realbox.realboxEl.value, test.realbox.queries[1].input);
+};
+
+test.realbox1.testLeftClickWhenEmptyQueriesAutocomplete = function() {
+  test.realbox.realboxEl.onclick(test.realbox.trustedEventFacade(
+      'click', {button: 1, target: test.realbox.realboxEl}));
+  assertEquals(0, test.realbox.queries.length);
+
+  test.realbox.realboxEl.value = '   ';
+  test.realbox.realboxEl.onclick(test.realbox.trustedEventFacade(
+      'click', {button: 0, target: test.realbox.realboxEl}));
+  assertEquals(0, test.realbox.queries.length);
+
+  test.realbox.realboxEl.value = '';
+  test.realbox.realboxEl.onclick(test.realbox.trustedEventFacade(
+      'click', {button: 0, target: test.realbox.realboxEl}));
+  assertEquals(1, test.realbox.queries.length);
+  assertEquals('', test.realbox.queries[0].input);
 };
 
 test.realbox1.testInputSentAsQuery = function() {
@@ -755,7 +817,7 @@ test.realbox2.testRemoveIcon = function() {
 };
 
 test.realbox2.testPressEnterOnSelectedMatch = function() {
-  test.realbox.realboxEl.dispatchEvent(new Event('focusin', {bubbles: true}));
+  test.realbox.realboxEl.dispatchEvent(new Event('focus'));
   test.realbox.realboxEl.value = 'hello world';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
 
@@ -787,7 +849,7 @@ test.realbox2.testPressEnterOnSelectedMatch = function() {
 };
 
 test.realbox2.testPressEnterTooQuickly = function() {
-  test.realbox.realboxEl.dispatchEvent(new Event('focusin', {bubbles: true}));
+  test.realbox.realboxEl.dispatchEvent(new Event('focus'));
   test.realbox.realboxEl.value = 'hello';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
 
@@ -945,11 +1007,7 @@ test.realbox2.testPressEnterAfterFocusout = function() {
     relatedTarget: document.body,
   }));
 
-  test.realbox.realboxEl.dispatchEvent(new Event('focusin', {
-    bubbles: true,
-    cancelable: true,
-    target: test.realbox.realboxEl,
-  }));
+  test.realbox.realboxEl.dispatchEvent(new Event('focus'));
 
   let clicked = false;
   matchEls[1].onclick = () => clicked = true;
@@ -1002,15 +1060,9 @@ test.realbox2.testInputAfterFocusoutPrefixMatches = function() {
 };
 
 test.realbox2.testInputAfterFocusoutZeroPrefixMatches = function() {
-  test.realbox.realboxEl.value = '';
-  test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
-
-  // Empty input doesn't query autocomplete.
-  test.realbox.realboxEl.dispatchEvent(new Event('focusin', {
-    bubbles: true,
-    cancelable: true,
-    target: test.realbox.realboxEl,
-  }));
+  // Trigger zero suggest querying autocomplete.
+  test.realbox.realboxEl.onclick(test.realbox.trustedEventFacade(
+      'click', {button: 0, target: test.realbox.realboxEl}));
   assertEquals(1, test.realbox.queries.length);
 
   chrome.embeddedSearch.searchBox.autocompleteresultchanged({
@@ -1061,11 +1113,7 @@ test.realbox2.testArrowUpDownShowsMatchesWhenHidden = function() {
 
   assertFalse(test.realbox.areMatchesShowing());
 
-  test.realbox.realboxEl.dispatchEvent(new Event('focusin', {
-    bubbles: true,
-    cancelable: true,
-    target: test.realbox.realboxEl,
-  }));
+  test.realbox.realboxEl.dispatchEvent(new Event('focus'));
 
   const arrowDown = new KeyboardEvent('keydown', {
     bubbles: true,
@@ -1088,7 +1136,7 @@ test.realbox2.testArrowUpDownShowsMatchesWhenHidden = function() {
 
 // Test that trying to open e.g. chrome:// links goes through the mojo API.
 test.realbox2.testPrivilegedDestinationUrls = function() {
-  test.realbox.realboxEl.dispatchEvent(new Event('focusin', {bubbles: true}));
+  test.realbox.realboxEl.dispatchEvent(new Event('focus'));
   test.realbox.realboxEl.value = 'about';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
 
@@ -1148,10 +1196,8 @@ test.realbox2.testRealboxIconZeroSuggest = function() {
   assertFalse(!!realboxIcon.style.backgroundImage);
 
   // Trigger zero suggest querying autocomplete.
-  test.realbox.realboxEl.dispatchEvent(new Event('focusin', {
-    bubbles: true,
-    target: test.realbox.realboxEl,
-  }));
+  test.realbox.realboxEl.onclick(test.realbox.trustedEventFacade(
+      'click', {button: 0, target: test.realbox.realboxEl}));
   assertEquals(1, test.realbox.queries.length);
 
   chrome.embeddedSearch.searchBox.autocompleteresultchanged({

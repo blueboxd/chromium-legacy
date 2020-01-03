@@ -36,6 +36,8 @@ std::string GetStringNameForOptimizationType(
       return "DeferAllScript";
     case proto::OptimizationType::PERFORMANCE_HINTS:
       return "PerformanceHints";
+    case proto::OptimizationType::LITE_PAGE:
+      return "LitePage";
   }
   NOTREACHED();
   return std::string();

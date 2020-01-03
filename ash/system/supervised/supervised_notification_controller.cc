@@ -76,7 +76,7 @@ void SupervisedNotificationController::CreateOrUpdateNotification() {
     return;
 
   // Regular supervised user.
-  std::unique_ptr<Notification> notification = ash::CreateSystemNotification(
+  std::unique_ptr<Notification> notification = CreateSystemNotification(
       message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SUPERVISED_LABEL),
       GetSupervisedUserMessage(), base::string16() /* display_source */, GURL(),

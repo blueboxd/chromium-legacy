@@ -112,3 +112,7 @@ base::string16 ZoomView::GetTextForTooltipAndAccessibleName() const {
   return l10n_util::GetStringFUTF16(IDS_TOOLTIP_ZOOM,
                                     base::FormatPercent(current_zoom_percent_));
 }
+
+const char* ZoomView::GetClassName() const {
+  return "ZoomView";
+}

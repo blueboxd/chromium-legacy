@@ -201,7 +201,8 @@ void AppServiceAppWindowArcTracker::OnTaskCreated(
   state = static_cast<apps::InstanceState>(
       state | apps::InstanceState::kStarted | apps::InstanceState::kRunning);
   app_service_controller_->app_service_instance_helper()->OnInstances(
-      arc_app_id, window, std::string(), state);
+      task_id_to_arc_app_window_info_[task_id]->app_shelf_id().ToString(),
+      window, std::string(), state);
 }
 
 void AppServiceAppWindowArcTracker::OnTaskDescriptionUpdated(
@@ -384,6 +385,9 @@ void AppServiceAppWindowArcTracker::OnItemDelegateDiscarded(
 }
 
 ash::ShelfID AppServiceAppWindowArcTracker::GetShelfId(int task_id) const {
+  if (observed_profile_ != app_service_controller_->owner()->profile())
+    return ash::ShelfID();
+
   const auto it = task_id_to_arc_app_window_info_.find(task_id);
   if (it == task_id_to_arc_app_window_info_.end())
     return ash::ShelfID();

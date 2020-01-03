@@ -27,6 +27,8 @@ ToolbarIconContainerView::ToolbarIconContainerView(bool uses_highlight)
   views::AnimatingLayoutManager* animating_layout =
       SetLayoutManager(std::make_unique<views::AnimatingLayoutManager>());
   animating_layout->SetShouldAnimateBounds(true);
+  animating_layout->SetDefaultFadeMode(
+      views::AnimatingLayoutManager::FadeInOutMode::kSlideFromTrailingEdge);
   auto* flex_layout = animating_layout->SetTargetLayoutManager(
       std::make_unique<views::FlexLayout>());
   flex_layout->SetCollapseMargins(true)

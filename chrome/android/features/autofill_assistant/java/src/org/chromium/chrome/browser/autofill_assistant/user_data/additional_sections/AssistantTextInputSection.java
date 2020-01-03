@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections;
 
-import static org.chromium.chrome.browser.widget.prefeditor.EditorFieldModel.INPUT_TYPE_HINT_ALPHA_NUMERIC;
+import static org.chromium.chrome.browser.autofill.prefeditor.EditorFieldModel.INPUT_TYPE_HINT_ALPHA_NUMERIC;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
@@ -21,10 +21,10 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.autofill.prefeditor.EditorFieldModel;
+import org.chromium.chrome.browser.autofill.prefeditor.EditorTextField;
 import org.chromium.chrome.browser.autofill_assistant.AssistantTextUtils;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantVerticalExpander;
-import org.chromium.chrome.browser.widget.prefeditor.EditorFieldModel;
-import org.chromium.chrome.browser.widget.prefeditor.EditorTextField;
 
 import java.util.List;
 
@@ -80,7 +80,7 @@ public class AssistantTextInputSection implements AssistantAdditionalSection {
                             /* invalidErrorMessage = */ null, mValue),
                     (v, actionId, event)
                             -> false,
-                    /* filter = */ null, textWatcher, /* observer = */ null);
+                    /* filter = */ null, textWatcher);
         }
     }
 

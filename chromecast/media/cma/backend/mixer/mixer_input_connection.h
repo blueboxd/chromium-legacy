@@ -16,6 +16,7 @@
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
 #include "base/timer/timer.h"
+#include "chromecast/media/audio/audio_clock_simulator.h"
 #include "chromecast/media/audio/audio_fader.h"
 #include "chromecast/media/audio/audio_provider.h"
 #include "chromecast/media/audio/mixer_service/mixer_service.pb.h"
@@ -90,6 +91,7 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
   void OnInactivityTimeout();
   void RestartPlaybackAt(int64_t timestamp, int64_t pts);
   void SetMediaPlaybackRate(double rate);
+  void SetAudioClockRate(double rate);
   void SetPaused(bool paused);
 
   // MixerInput::Source implementation:
@@ -175,6 +177,7 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
   int extra_delay_frames_ GUARDED_BY(lock_) = 0;
   int current_buffer_offset_ GUARDED_BY(lock_) = 0;
   AudioFader fader_ GUARDED_BY(lock_);
+  AudioClockSimulator audio_clock_simulator_ GUARDED_BY(lock_);
   bool zero_fader_frames_ GUARDED_BY(lock_) = false;
   bool started_ GUARDED_BY(lock_) = false;
   double playback_rate_ GUARDED_BY(lock_) = 1.0;

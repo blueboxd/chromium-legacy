@@ -529,8 +529,10 @@ void OptimizationGuideHintsManager::OnTopHostsHintsFetched(
 void OptimizationGuideHintsManager::OnPageNavigationHintsFetched(
     base::Optional<std::unique_ptr<optimization_guide::proto::GetHintsResponse>>
         get_hints_response) {
-  if (!get_hints_response.has_value() || !get_hints_response.value())
+  if (!get_hints_response.has_value() || !get_hints_response.value()) {
+    page_navigation_hosts_being_fetched_.clear();
     return;
+  }
 
   hint_cache_->UpdateFetchedHints(
       std::move(*get_hints_response), clock_->Now() + kUpdateFetchedHintsDelay,
@@ -551,8 +553,10 @@ void OptimizationGuideHintsManager::OnFetchedTopHostsHintsStored() {
 
 void OptimizationGuideHintsManager::OnFetchedPageNavigationHintsStored() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  for (const auto& host : navigation_hosts_last_fetched_real_time_)
+  for (const auto& host : page_navigation_hosts_being_fetched_)
     LoadHintForHost(host, base::DoNothing());
+
+  page_navigation_hosts_being_fetched_.clear();
 }
 
 base::Time OptimizationGuideHintsManager::GetLastHintsFetchAttemptTime() const {
@@ -649,9 +653,9 @@ void OptimizationGuideHintsManager::OnPredictionUpdated(
   if (target_hosts.empty())
     return;
 
-  navigation_hosts_last_fetched_real_time_.clear();
+  page_navigation_hosts_being_fetched_.clear();
   for (const auto& host : target_hosts)
-    navigation_hosts_last_fetched_real_time_.push_back(host);
+    page_navigation_hosts_being_fetched_.push_back(host);
 
   if (!hints_fetcher_) {
     hints_fetcher_ = std::make_unique<optimization_guide::HintsFetcher>(
@@ -934,8 +938,8 @@ void OptimizationGuideHintsManager::OnNavigationStartOrRedirect(
   if (IsAllowedToFetchNavigationHints(navigation_handle->GetURL()) &&
       !hint_cache_->HasHint(navigation_handle->GetURL().host())) {
     std::vector<std::string> hosts{navigation_handle->GetURL().host()};
-    navigation_hosts_last_fetched_real_time_.clear();
-    navigation_hosts_last_fetched_real_time_.push_back(
+    page_navigation_hosts_being_fetched_.clear();
+    page_navigation_hosts_being_fetched_.push_back(
         navigation_handle->GetURL().host());
 
     if (!hints_fetcher_) {
@@ -966,7 +970,7 @@ void OptimizationGuideHintsManager::ClearFetchedHints() {
 
 bool OptimizationGuideHintsManager::IsHintBeingFetched(
     const std::string& host) const {
-  return std::find(navigation_hosts_last_fetched_real_time_.begin(),
-                   navigation_hosts_last_fetched_real_time_.end(),
-                   host) != navigation_hosts_last_fetched_real_time_.end();
+  return std::find(page_navigation_hosts_being_fetched_.begin(),
+                   page_navigation_hosts_being_fetched_.end(),
+                   host) != page_navigation_hosts_being_fetched_.end();
 }

@@ -22,6 +22,7 @@ class NativeFileSystemAccessIconView : public PageActionIconView {
   base::string16 GetTextForTooltipAndAccessibleName() const override;
   void OnExecuting(ExecuteSource execute_source) override;
   const gfx::VectorIcon& GetVectorIcon() const override;
+  const char* GetClassName() const override;
 
  private:
   bool has_write_access_ = false;

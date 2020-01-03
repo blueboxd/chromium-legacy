@@ -328,6 +328,8 @@ class Internals final : public ScriptWrappable {
   InternalRuntimeFlags* runtimeFlags() const;
   unsigned workerThreadCount() const;
 
+  bool isFormControlsRefreshEnabled() const;
+
   String resolveModuleSpecifier(const String& specifier,
                                 const String& base_url_string,
                                 Document*,

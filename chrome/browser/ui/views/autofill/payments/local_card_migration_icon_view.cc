@@ -140,6 +140,10 @@ const gfx::VectorIcon& LocalCardMigrationIconView::GetVectorIconBadge() const {
   return gfx::kNoneIcon;
 }
 
+const char* LocalCardMigrationIconView::GetClassName() const {
+  return "LocalCardMigrationIconView";
+}
+
 base::string16 LocalCardMigrationIconView::GetTextForTooltipAndAccessibleName()
     const {
   return l10n_util::GetStringUTF16(IDS_TOOLTIP_MIGRATE_LOCAL_CARD);

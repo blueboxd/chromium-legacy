@@ -8,21 +8,18 @@ import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.Supplier;
 import org.chromium.base.task.PostTask;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.ui.test.util.DummyUiActivityTestCase;
 
 import java.util.concurrent.TimeUnit;
 
@@ -30,11 +27,7 @@ import java.util.concurrent.TimeUnit;
  * Tests for {@link SnackbarManager}.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-public class SnackbarTest {
-    @Rule
-    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
-
+public class SnackbarTest extends DummyUiActivityTestCase {
     private SnackbarManager mManager;
     private SnackbarController mDefaultController = new SnackbarController() {
         @Override
@@ -58,11 +51,14 @@ public class SnackbarTest {
 
     private boolean mDismissed;
 
-    @Before
-    public void setUp() throws InterruptedException {
+    @Override
+    public void setUpTest() throws Exception {
+        super.setUpTest();
         SnackbarManager.setDurationForTesting(1000);
-        mActivityTestRule.startMainActivityOnBlankPage();
-        mManager = mActivityTestRule.getActivity().getSnackbarManager();
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            mManager = new SnackbarManager(
+                    getActivity(), getActivity().findViewById(android.R.id.content), null);
+        });
     }
 
     @Test
@@ -75,14 +71,9 @@ public class SnackbarTest {
                 Snackbar.TYPE_NOTIFICATION, Snackbar.UMA_TEST_SNACKBAR);
         final Snackbar persistent = Snackbar.make("persistent", mDefaultController,
                 Snackbar.TYPE_PERSISTENT, Snackbar.UMA_TEST_SNACKBAR);
-        PostTask.runOrPostTask(
-                UiThreadTaskTraits.DEFAULT, () -> { mManager.showSnackbar(stackbar); });
-        CriteriaHelper.pollUiThread(new Criteria("First snackbar not shown") {
-            @Override
-            public boolean isSatisfied() {
-                return mManager.isShowing() && mManager.getCurrentSnackbarForTesting() == stackbar;
-            }
-        });
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> mManager.showSnackbar(stackbar));
+        pollSnackbarCondition("First snackbar not shown",
+                () -> mManager.isShowing() && mManager.getCurrentSnackbarForTesting() == stackbar);
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
             mManager.showSnackbar(queuebar);
             Assert.assertTrue("Snackbar not showing", mManager.isShowing());
@@ -96,26 +87,15 @@ public class SnackbarTest {
                     "Snackbars on stack should not be cancelled by persistent snackbars", stackbar,
                     mManager.getCurrentSnackbarForTesting());
         });
-        CriteriaHelper.pollUiThread(new Criteria("Snackbar on queue not shown") {
-            @Override
-            public boolean isSatisfied() {
-                return mManager.isShowing() && mManager.getCurrentSnackbarForTesting() == queuebar;
-            }
-        });
-        CriteriaHelper.pollUiThread(new Criteria("Snackbar on queue not timed out") {
-            @Override
-            public boolean isSatisfied() {
-                return mManager.isShowing()
-                        && mManager.getCurrentSnackbarForTesting() == persistent;
-            }
-        });
+        pollSnackbarCondition("Snackbar on queue not shown",
+                () -> mManager.isShowing() && mManager.getCurrentSnackbarForTesting() == queuebar);
+        pollSnackbarCondition("Snackbar on queue not timed out",
+                ()
+                        -> mManager.isShowing()
+                        && mManager.getCurrentSnackbarForTesting() == persistent);
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> mManager.onClick(null));
-        CriteriaHelper.pollUiThread(new Criteria("Persistent snackbar did not get cleared") {
-            @Override
-            public boolean isSatisfied() {
-                return !mManager.isShowing();
-            }
-        });
+        pollSnackbarCondition(
+                "Persistent snackbar did not get cleared", () -> !mManager.isShowing());
     }
 
     @Test
@@ -129,44 +109,23 @@ public class SnackbarTest {
         final Snackbar persistent = Snackbar.make("persistent", mDefaultController,
                 Snackbar.TYPE_PERSISTENT, Snackbar.UMA_TEST_SNACKBAR);
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> mManager.showSnackbar(persistent));
-        CriteriaHelper.pollUiThread(new Criteria("First snackbar not shown") {
-            @Override
-            public boolean isSatisfied() {
-                return mManager.isShowing()
-                        && mManager.getCurrentSnackbarForTesting() == persistent;
-            }
-        });
+        pollSnackbarCondition("First snackbar not shown",
+                ()
+                        -> mManager.isShowing()
+                        && mManager.getCurrentSnackbarForTesting() == persistent);
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> mManager.showSnackbar(queuebar));
-        CriteriaHelper.pollUiThread(new Criteria(
-                "Persistent snackbar was not cleared by queue snackbar") {
-            @Override
-            public boolean isSatisfied() {
-                return mManager.isShowing() && mManager.getCurrentSnackbarForTesting() == queuebar;
-            }
-        });
+        pollSnackbarCondition("Persistent snackbar was not cleared by queue snackbar",
+                () -> mManager.isShowing() && mManager.getCurrentSnackbarForTesting() == queuebar);
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> mManager.showSnackbar(stackbar));
-        CriteriaHelper.pollUiThread(
-                new Criteria("Snackbar on queue was not cleared by snackbar stack.") {
-                    @Override
-                    public boolean isSatisfied() {
-                        return mManager.isShowing()
-                                && mManager.getCurrentSnackbarForTesting() == stackbar;
-                    }
-                });
-        CriteriaHelper.pollUiThread(new Criteria("Snackbar did not time out") {
-            @Override
-            public boolean isSatisfied() {
-                return mManager.isShowing()
-                        && mManager.getCurrentSnackbarForTesting() == persistent;
-            }
-        });
+        pollSnackbarCondition("Snackbar on queue was not cleared by snackbar stack.",
+                () -> mManager.isShowing() && mManager.getCurrentSnackbarForTesting() == stackbar);
+        pollSnackbarCondition("Snackbar did not time out",
+                ()
+                        -> mManager.isShowing()
+                        && mManager.getCurrentSnackbarForTesting() == persistent);
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> mManager.onClick(null));
-        CriteriaHelper.pollUiThread(new Criteria("Persistent snackbar did not get cleared") {
-            @Override
-            public boolean isSatisfied() {
-                return !mManager.isShowing();
-            }
-        });
+        pollSnackbarCondition(
+                "Persistent snackbar did not get cleared", () -> !mManager.isShowing());
     }
 
     @Test
@@ -176,22 +135,12 @@ public class SnackbarTest {
                 Snackbar.TYPE_ACTION, Snackbar.UMA_TEST_SNACKBAR);
         mDismissed = false;
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> mManager.showSnackbar(snackbar));
-        CriteriaHelper.pollUiThread(
-                new Criteria("Snackbar on queue was not cleared by snackbar stack.") {
-                    @Override
-                    public boolean isSatisfied() {
-                        return mManager.isShowing()
-                                && mManager.getCurrentSnackbarForTesting() == snackbar;
-                    }
-                });
+        pollSnackbarCondition("Snackbar on queue was not cleared by snackbar stack.",
+                () -> mManager.isShowing() && mManager.getCurrentSnackbarForTesting() == snackbar);
         PostTask.runOrPostTask(
                 UiThreadTaskTraits.DEFAULT, () -> mManager.dismissSnackbars(mDismissController));
-        CriteriaHelper.pollUiThread(new Criteria("Snackbar did not time out") {
-            @Override
-            public boolean isSatisfied() {
-                return !mManager.isShowing() && mDismissed;
-            }
-        });
+        pollSnackbarCondition(
+                "Snackbar did not time out", () -> !mManager.isShowing() && mDismissed);
     }
 
     @Test
@@ -203,24 +152,21 @@ public class SnackbarTest {
                 Snackbar.TYPE_PERSISTENT, Snackbar.UMA_TEST_SNACKBAR);
         mDismissed = false;
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> mManager.showSnackbar(snackbar));
-        CriteriaHelper.pollUiThread(new Criteria("Persistent Snackbar not shown.") {
-            @Override
-            public boolean isSatisfied() {
-                return mManager.isShowing() && mManager.getCurrentSnackbarForTesting() == snackbar;
-            }
-        });
+        pollSnackbarCondition("Persistent Snackbar not shown.",
+                () -> mManager.isShowing() && mManager.getCurrentSnackbarForTesting() == snackbar);
         TimeUnit.MILLISECONDS.sleep(timeout);
-        CriteriaHelper.pollUiThread(new Criteria("Persistent snackbar timed out.") {
-            @Override
-            public boolean isSatisfied() {
-                return mManager.isShowing() && !mDismissed;
-            }
-        });
+        pollSnackbarCondition(
+                "Persistent snackbar timed out.", () -> mManager.isShowing() && !mDismissed);
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> mManager.onClick(null));
-        CriteriaHelper.pollUiThread(new Criteria("Persistent snackbar not removed on action.") {
+        pollSnackbarCondition(
+                "Persistent snackbar not removed on action.", () -> !mManager.isShowing());
+    }
+
+    void pollSnackbarCondition(String message, Supplier<Boolean> condition) {
+        CriteriaHelper.pollUiThread(new Criteria(message) {
             @Override
             public boolean isSatisfied() {
-                return !mManager.isShowing();
+                return condition.get();
             }
         });
     }

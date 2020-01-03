@@ -103,7 +103,7 @@ RawData::RawData() = default;
 BlobData::BlobData(FileCompositionStatus composition)
     : file_composition_(composition) {}
 
-BlobData::~BlobData() {}
+BlobData::~BlobData() = default;
 
 Vector<mojom::blink::DataElementPtr> BlobData::ReleaseElements() {
   return std::move(elements_);
@@ -173,6 +173,7 @@ void BlobData::AppendFile(
          "create a blob with a single file with unknown size, use "
          "BlobData::createForFileWithUnknownSize. Otherwise please provide the "
          "file size.";
+  DCHECK_GE(length, 0);
   // Skip zero-byte items, as they don't matter for the contents of the blob.
   if (length == 0)
     return;
@@ -201,6 +202,7 @@ void BlobData::AppendFileSystemURL(
     const base::Optional<base::Time>& expected_modification_time) {
   DCHECK_EQ(file_composition_, FileCompositionStatus::NO_UNKNOWN_SIZE_FILES)
       << "Blobs with a unknown-size file cannot have other items.";
+  DCHECK_GE(length, 0);
   // Skip zero-byte items, as they don't matter for the contents of the blob.
   if (length == 0)
     return;
@@ -359,8 +361,7 @@ BlobDataHandle::BlobDataHandle(
   DCHECK(blob_remote_.is_valid());
 }
 
-BlobDataHandle::~BlobDataHandle() {
-}
+BlobDataHandle::~BlobDataHandle() = default;
 
 mojo::PendingRemote<mojom::blink::Blob> BlobDataHandle::CloneBlobRemote() {
   MutexLocker locker(blob_remote_mutex_);

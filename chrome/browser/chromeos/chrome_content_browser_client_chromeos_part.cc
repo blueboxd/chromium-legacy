@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
 #include "chrome/common/webui_url_constants.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
@@ -98,10 +97,6 @@ void OverrideWebkitPrefsForTabletMode(content::WebContents* contents,
 void OverrideFontSize(content::WebContents* contents,
                       content::WebPreferences* web_prefs) {
   DCHECK(contents);
-  // Prior to SplitSettings, system UI font size follows browser font size.
-  if (!chromeos::features::IsSplitSettingsEnabled())
-    return;
-
   // Check the URL because |contents| may not yet be associated with a window,
   // SettingsWindowManager, etc.
   GURL url = GetURL(contents);

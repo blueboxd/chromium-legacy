@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/containers/circular_deque.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -39,16 +40,20 @@ class QueuedWebMouseWheelEvent : public MouseWheelEventWithLatencyInfo {
 // and dispatch mouse wheel event responses.
 class CONTENT_EXPORT MouseWheelEventQueueClient {
  public:
+  using MouseWheelEventHandledCallback =
+      base::OnceCallback<void(const MouseWheelEventWithLatencyInfo& ack_event,
+                              InputEventAckSource ack_source,
+                              InputEventAckState ack_result)>;
   virtual ~MouseWheelEventQueueClient() {}
-
   virtual void SendMouseWheelEventImmediately(
-      const MouseWheelEventWithLatencyInfo& event) = 0;
-  virtual void ForwardGestureEventWithLatencyInfo(
-      const blink::WebGestureEvent& event,
-      const ui::LatencyInfo& latency_info) = 0;
+      const MouseWheelEventWithLatencyInfo& event,
+      MouseWheelEventHandledCallback callback) = 0;
   virtual void OnMouseWheelEventAck(const MouseWheelEventWithLatencyInfo& event,
                                     InputEventAckSource ack_source,
                                     InputEventAckState ack_result) = 0;
+  virtual void ForwardGestureEventWithLatencyInfo(
+      const blink::WebGestureEvent& event,
+      const ui::LatencyInfo& latency_info) = 0;
   virtual bool IsWheelScrollInProgress() = 0;
   virtual bool IsAutoscrollInProgress() = 0;
 };
@@ -69,12 +74,6 @@ class CONTENT_EXPORT MouseWheelEventQueue {
   // the renderer (e.g. when there are no other queued mouse-wheel event).
   void QueueEvent(const MouseWheelEventWithLatencyInfo& event);
 
-  // Notifies the queue that a mouse wheel event has been processed by the
-  // renderer.
-  void ProcessMouseWheelAck(InputEventAckSource ack_source,
-                            InputEventAckState ack_result,
-                            const MouseWheelEventWithLatencyInfo& ack_event);
-
   // When GestureScrollBegin is received, and it is a different source
   // than mouse wheels terminate the current GestureScroll if there is one.
   // When Gesture{ScrollEnd,FlingStart} is received, resume generating
@@ -90,11 +89,13 @@ class CONTENT_EXPORT MouseWheelEventQueue {
     return event_sent_for_gesture_ack_ != nullptr;
   }
 
-  blink::WebMouseWheelEvent get_wheel_event_awaiting_ack_for_testing() {
-    return event_sent_for_gesture_ack_->event;
-  }
-
  private:
+  // Notifies the queue that a mouse wheel event has been processed by the
+  // renderer.
+  void ProcessMouseWheelAck(const MouseWheelEventWithLatencyInfo& ack_event,
+                            InputEventAckSource ack_source,
+                            InputEventAckState ack_result);
+
   void TryForwardNextEventToRenderer();
   void SendScrollEnd(blink::WebGestureEvent update_event, bool synthetic);
   void SendScrollBegin(const blink::WebGestureEvent& gesture_update,

@@ -464,9 +464,12 @@ gfx::Size InputRouterImpl::GetRootWidgetViewportSize() {
 }
 
 void InputRouterImpl::SendMouseWheelEventImmediately(
-    const MouseWheelEventWithLatencyInfo& wheel_event) {
-  mojom::WidgetInputHandler::DispatchEventCallback callback = base::BindOnce(
-      &InputRouterImpl::MouseWheelEventHandled, weak_this_, wheel_event);
+    const MouseWheelEventWithLatencyInfo& wheel_event,
+    MouseWheelEventQueueClient::MouseWheelEventHandledCallback
+        callee_callback) {
+  mojom::WidgetInputHandler::DispatchEventCallback callback =
+      base::BindOnce(&InputRouterImpl::MouseWheelEventHandled, weak_this_,
+                     wheel_event, std::move(callee_callback));
   FilterAndSendWebInputEvent(wheel_event.event, wheel_event.latency,
                              std::move(callback));
 }
@@ -486,8 +489,9 @@ void InputRouterImpl::ForwardGestureEventWithLatencyInfo(
 }
 
 void InputRouterImpl::SendMouseWheelEventForPinchImmediately(
-    const MouseWheelEventWithLatencyInfo& event) {
-  SendMouseWheelEventImmediately(event);
+    const MouseWheelEventWithLatencyInfo& event,
+    TouchpadPinchEventQueueClient::MouseWheelEventHandledCallback callback) {
+  SendMouseWheelEventImmediately(event, std::move(callback));
 }
 
 void InputRouterImpl::OnGestureEventForPinchAck(
@@ -654,6 +658,7 @@ void InputRouterImpl::GestureEventHandled(
 
 void InputRouterImpl::MouseWheelEventHandled(
     const MouseWheelEventWithLatencyInfo& event,
+    MouseWheelEventQueueClient::MouseWheelEventHandledCallback callback,
     InputEventAckSource source,
     const ui::LatencyInfo& latency,
     InputEventAckState state,
@@ -669,8 +674,7 @@ void InputRouterImpl::MouseWheelEventHandled(
   if (overscroll)
     DidOverscroll(overscroll.value());
 
-  wheel_event_queue_.ProcessMouseWheelAck(source, state, event);
-  touchpad_pinch_event_queue_.ProcessMouseWheelAck(source, state, event);
+  std::move(callback).Run(event, source, state);
 }
 
 void InputRouterImpl::OnHasTouchEventHandlers(bool has_handlers) {

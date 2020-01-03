@@ -79,8 +79,7 @@ class SafeBrowsingBrowserTest : public WebLayerBrowserTest {
   ~SafeBrowsingBrowserTest() override = default;
 
   // WebLayerBrowserTest:
-  void PreRunTestOnMainThread() override {
-    WebLayerBrowserTest::PreRunTestOnMainThread();
+  void SetUpOnMainThread() override {
     NavigateAndWaitForCompletion(GURL("about:blank"), shell());
     safe_browsing::SafeBrowsingApiHandler::SetInstance(fake_handler_.get());
     ASSERT_TRUE(embedded_test_server()->Start());

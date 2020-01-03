@@ -1306,6 +1306,12 @@
           android:readPermission="android.permission.GLOBAL_SEARCH"/>
     </provider>
     <provider
+        android:authorities="org.chromium.chrome.DeveloperModeContentProvider"
+        android:enabled="false"
+        android:exported="true"
+        android:name="org.chromium.android_webview.services.DeveloperModeContentProvider"
+        android:process=":webview_service"/>
+    <provider
         android:authorities="org.chromium.chrome.DownloadFileProvider"
         android:exported="false"
         android:grantUriPermissions="true"
@@ -1323,12 +1329,6 @@
           android:name="android.support.FILE_PROVIDER_PATHS"
           android:resource="@xml/file_paths"/>
     </provider>
-    <provider
-        android:authorities="org.chromium.chrome.FlagOverrideContentProvider"
-        android:enabled="false"
-        android:exported="true"
-        android:name="org.chromium.android_webview.services.FlagOverrideContentProvider"
-        android:process=":webview_service"/>
     <provider
         android:authorities="org.chromium.chrome.LicenseContentProvider"
         android:exported="true"

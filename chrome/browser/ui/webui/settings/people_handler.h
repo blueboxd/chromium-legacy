@@ -128,10 +128,8 @@ class PeopleHandler : public SettingsPageUIHandler,
       const CoreAccountInfo& primary_account_info) override;
   void OnPrimaryAccountCleared(
       const CoreAccountInfo& previous_primary_account_info) override;
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
   void OnExtendedAccountInfoUpdated(const AccountInfo& info) override;
   void OnExtendedAccountInfoRemoved(const AccountInfo& info) override;
-#endif
 
   // syncer::SyncServiceObserver implementation.
   void OnStateChanged(syncer::SyncService* sync) override;
@@ -183,11 +181,9 @@ class PeopleHandler : public SettingsPageUIHandler,
   void OnPinLoginAvailable(bool is_available);
 #endif
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
   void HandleGetStoredAccounts(const base::ListValue* args);
   void HandleStartSyncingWithEmail(const base::ListValue* args);
   base::Value GetStoredAccountsList();
-#endif
 
   // Pushes the updated sync prefs to JavaScript.
   void PushSyncPrefs();

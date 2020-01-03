@@ -1138,8 +1138,8 @@ Response InspectorCSSAgent::getComputedStyleForNode(
   for (CSSPropertyID property_id : CSSPropertyIDList()) {
     const CSSProperty& property_class =
         CSSProperty::Get(resolveCSSPropertyID(property_id));
-    if (!property_class.IsWebExposed() || property_class.IsShorthand() ||
-        !property_class.IsProperty())
+    if (!property_class.IsWebExposed(&node->GetDocument()) ||
+        property_class.IsShorthand() || !property_class.IsProperty())
       continue;
     (*style)->emplace_back(
         protocol::CSS::CSSComputedStyleProperty::create()

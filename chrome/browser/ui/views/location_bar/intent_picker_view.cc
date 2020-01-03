@@ -107,3 +107,7 @@ const gfx::VectorIcon& IntentPickerView::GetVectorIcon() const {
 base::string16 IntentPickerView::GetTextForTooltipAndAccessibleName() const {
   return l10n_util::GetStringUTF16(IDS_TOOLTIP_INTENT_PICKER_ICON);
 }
+
+const char* IntentPickerView::GetClassName() const {
+  return "IntentPickerView";
+}

@@ -6,7 +6,7 @@
 
       input_date.focus();
 
-      if (internals.runtimeFlags.formControlsRefreshEnabled) {
+      if (internals.isFormControlsRefreshEnabled) {
          eventSender.keyDown("Enter");
       } else {
          // Old picker needs Alt+Enter

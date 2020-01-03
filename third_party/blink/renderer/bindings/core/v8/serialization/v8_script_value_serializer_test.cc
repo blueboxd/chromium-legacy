@@ -1481,8 +1481,10 @@ TEST(V8ScriptValueSerializerTest, RoundTripFileNonNativeSnapshot) {
   // Preserving behavior, filesystem URL is not preserved across cloning.
   V8TestingScope scope;
   KURL url("filesystem:http://example.com/isolated/hash/non-native-file");
+  FileMetadata metadata;
+  metadata.length = 0;
   File* file =
-      File::CreateForFileSystemFile(url, FileMetadata(), File::kIsUserVisible);
+      File::CreateForFileSystemFile(url, metadata, File::kIsUserVisible);
   v8::Local<v8::Value> wrapper = ToV8(file, scope.GetScriptState());
   v8::Local<v8::Value> result = RoundTrip(wrapper, scope);
   ASSERT_TRUE(V8File::HasInstance(result, scope.GetIsolate()));

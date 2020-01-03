@@ -90,9 +90,9 @@ bool RelaunchRecommendedBubbleView::ShouldShowCloseButton() const {
 }
 
 gfx::ImageSkia RelaunchRecommendedBubbleView::GetWindowIcon() {
-  return gfx::CreateVectorIcon(gfx::IconDescription(
-      vector_icons::kBusinessIcon, kTitleIconSize, gfx::kChromeIconGrey,
-      base::TimeDelta(), gfx::kNoneIcon));
+  return gfx::CreateVectorIcon(
+      gfx::IconDescription(vector_icons::kBusinessIcon, kTitleIconSize,
+                           gfx::kChromeIconGrey, gfx::kNoneIcon));
 }
 
 bool RelaunchRecommendedBubbleView::ShouldShowWindowIcon() const {

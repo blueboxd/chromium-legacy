@@ -20,6 +20,10 @@ RTCErrorEvent::RTCErrorEvent(const AtomicString& type,
   DCHECK(event_init_dict);
 }
 
+RTCErrorEvent::RTCErrorEvent(const AtomicString& type, webrtc::RTCError error)
+    : Event(type, Bubbles::kNo, Cancelable::kNo),
+      error_(MakeGarbageCollected<RTCError>(error)) {}
+
 RTCError* RTCErrorEvent::error() const {
   return error_;
 }

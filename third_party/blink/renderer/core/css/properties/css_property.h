@@ -19,6 +19,7 @@ namespace blink {
 
 class ComputedStyle;
 class CrossThreadStyleValue;
+class ExecutionContext;
 class LayoutObject;
 class SVGComputedStyle;
 
@@ -89,6 +90,7 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
   virtual const CSSProperty* GetUAProperty() const { return nullptr; }
 
   static void FilterWebExposedCSSPropertiesIntoVector(
+      const ExecutionContext*,
       const CSSPropertyID*,
       size_t length,
       Vector<const CSSProperty*>&);

@@ -21,6 +21,7 @@
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/background.h"
 #include "ui/views/view.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 namespace {
@@ -267,7 +268,15 @@ bool ShelfNavigationWidget::OnNativeWidgetActivationChanged(bool active) {
 }
 
 void ShelfNavigationWidget::OnGestureEvent(ui::GestureEvent* event) {
-  if (shelf_->ProcessGestureEvent(*event)) {
+  // Shelf::ProcessGestureEvent expects an event whose location is in screen
+  // coordinates - create a copy of the event with the location in screen
+  // coordinate system.
+  ui::GestureEvent copy_event(*event);
+  gfx::Point location_in_screen(copy_event.location());
+  wm::ConvertPointToScreen(GetNativeWindow(), &location_in_screen);
+  copy_event.set_location(location_in_screen);
+
+  if (shelf_->ProcessGestureEvent(copy_event)) {
     event->StopPropagation();
     return;
   }

@@ -311,11 +311,6 @@ bool IsQuickAnswersEnabled() {
   return base::FeatureList::IsEnabled(kQuickAnswers);
 }
 
-bool IsSplitSettingsEnabled() {
-  // TODO(dpapad): Remove all calls to this function.
-  return true;
-}
-
 bool IsSplitSettingsSyncEnabled() {
   return base::FeatureList::IsEnabled(kSplitSettingsSync);
 }

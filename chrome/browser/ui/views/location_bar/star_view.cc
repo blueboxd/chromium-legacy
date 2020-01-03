@@ -128,6 +128,10 @@ base::string16 StarView::GetTextForTooltipAndAccessibleName() const {
                                             : IDS_TOOLTIP_STAR);
 }
 
+const char* StarView::GetClassName() const {
+  return "StarView";
+}
+
 SkColor StarView::GetInkDropBaseColor() const {
   return bookmark_promo_observer_.IsObservingSources()
              ? GetNativeTheme()->GetSystemColor(

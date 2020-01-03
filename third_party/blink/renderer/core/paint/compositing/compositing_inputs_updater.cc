@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/compositing/compositing_inputs_updater.h"
 
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
@@ -48,6 +49,13 @@ void CompositingInputsUpdater::Update() {
   UpdateType update_type = kDoNotForceUpdate;
   PaintLayer* layer =
       compositing_inputs_root_ ? compositing_inputs_root_ : root_layer_;
+
+  if (DisplayLockUtilities::NearestLockedExclusiveAncestor(
+          layer->GetLayoutObject())) {
+    compositing_inputs_root_ = nullptr;
+    return;
+  }
+
   CompositingReasons initial_compositing_reasons =
       layer->DirectCompositingReasons();
   ApplyAncestorInfoToSelfAndAncestorsRecursively(layer, update_type, info);

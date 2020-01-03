@@ -58,13 +58,7 @@ namespace gfx {
   DECLARE_VECTOR_COMMAND(DISABLE_AA)                                           \
   /* Flips the x-axis in RTL locales. Default is false, this command sets */   \
   /* it to true. */                                                            \
-  DECLARE_VECTOR_COMMAND(FLIPS_IN_RTL)                                         \
-  /* Defines a timed transition for other elements. */                         \
-  DECLARE_VECTOR_COMMAND(TRANSITION_FROM)                                      \
-  DECLARE_VECTOR_COMMAND(TRANSITION_TO)                                        \
-  /* Parameters are delay (ms), duration (ms), and tween type */               \
-  /* (gfx::Tween::Type). */                                                    \
-  DECLARE_VECTOR_COMMAND(TRANSITION_END)
+  DECLARE_VECTOR_COMMAND(FLIPS_IN_RTL)
 
 #define DECLARE_VECTOR_COMMAND(x) x,
 

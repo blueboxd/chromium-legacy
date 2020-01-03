@@ -149,9 +149,9 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
   // Create business icon.
   int business_icon_size = 20;
   auto business_icon = std::make_unique<views::ImageView>();
-  business_icon->SetImage(gfx::CreateVectorIcon(gfx::IconDescription(
-      vector_icons::kBusinessIcon, business_icon_size, gfx::kChromeIconGrey,
-      base::TimeDelta(), gfx::kNoneIcon)));
+  business_icon->SetImage(gfx::CreateVectorIcon(
+      gfx::IconDescription(vector_icons::kBusinessIcon, business_icon_size,
+                           gfx::kChromeIconGrey, gfx::kNoneIcon)));
 
   // Create the prompt label.
   size_t offset;

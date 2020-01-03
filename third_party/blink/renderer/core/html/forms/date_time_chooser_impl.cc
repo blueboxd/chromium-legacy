@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/platform/language.h"
 #include "third_party/blink/renderer/platform/text/date_components.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
+#include "ui/base/ui_base_features.h"
 
 namespace blink {
 
@@ -124,11 +125,11 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
   AddString("<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
 
   data->Append(ChooserResourceLoader::GetPickerCommonStyleSheet());
-  if (!RuntimeEnabledFeatures::FormControlsRefreshEnabled())
+  if (!features::IsFormControlsRefreshEnabled())
     data->Append(ChooserResourceLoader::GetPickerButtonStyleSheet());
   data->Append(ChooserResourceLoader::GetSuggestionPickerStyleSheet());
   data->Append(ChooserResourceLoader::GetCalendarPickerStyleSheet());
-  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
+  if (features::IsFormControlsRefreshEnabled()) {
     data->Append(ChooserResourceLoader::GetCalendarPickerRefreshStyleSheet());
     if (parameters_->type == input_type_names::kTime ||
         parameters_->type == input_type_names::kDatetimeLocal) {
@@ -175,7 +176,7 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
   AddProperty("isLocaleRTL", locale_->IsRTL(), data);
   AddProperty("isRTL", parameters_->is_anchor_element_rtl, data);
   AddProperty("isFormControlsRefreshEnabled",
-              RuntimeEnabledFeatures::FormControlsRefreshEnabled(), data);
+              features::IsFormControlsRefreshEnabled(), data);
   AddProperty("mode", parameters_->type.GetString(), data);
   AddProperty("isAMPMFirst", parameters_->is_ampm_first, data);
   AddProperty("hasAMPM", parameters_->has_ampm, data);
@@ -224,7 +225,7 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
 
   data->Append(ChooserResourceLoader::GetPickerCommonJS());
   data->Append(ChooserResourceLoader::GetSuggestionPickerJS());
-  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
+  if (features::IsFormControlsRefreshEnabled()) {
     data->Append(ChooserResourceLoader::GetMonthPickerJS());
     if (parameters_->type == input_type_names::kTime) {
       data->Append(ChooserResourceLoader::GetTimePickerJS());

@@ -10,6 +10,8 @@
 #include "components/crx_file/id_util.h"
 #include "components/sync/model/string_ordinal.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_id.h"
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

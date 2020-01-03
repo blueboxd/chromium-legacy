@@ -8,12 +8,17 @@
 #import <UIKit/UIKit.h>
 
 @protocol BrowserCommands;
+@class FindBarViewController;
 @class FindInPageModel;
 
 @interface FindBarControllerIOS : NSObject
 
 // The dispatcher for sending browser commands.
 @property(nonatomic, weak) id<BrowserCommands> dispatcher;
+// The view controller containing all the buttons and textfields that is common
+// between iPhone and iPad.
+@property(nonatomic, strong, readonly)
+    FindBarViewController* findBarViewController;
 
 // Init with incognito style.
 - (instancetype)initWithIncognito:(BOOL)isIncognito;
@@ -29,8 +34,6 @@
 // Updates the results count in Find Bar.
 - (void)updateResultsCount:(FindInPageModel*)model;
 
-// Creates and stores a find bar view to be presented later.
-- (UIView*)createFindBarViewWithDarkAppearance:(BOOL)darkAppearance;
 // Alerts the controller that its find bar will hide.
 - (void)findBarViewWillHide;
 // Alerts the controller that its find bar did hide.

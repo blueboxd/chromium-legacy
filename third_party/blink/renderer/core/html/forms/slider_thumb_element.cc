@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_slider_container.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
+#include "ui/base/ui_base_features.h"
 
 namespace blink {
 
@@ -67,7 +68,7 @@ void SliderThumbElement::SetPositionFromValue() {
   if (GetLayoutObject()) {
     GetLayoutObject()->SetNeedsLayoutAndFullPaintInvalidation(
         layout_invalidation_reason::kSliderValueChanged);
-    if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
+    if (features::IsFormControlsRefreshEnabled()) {
       HTMLInputElement* input(HostInput());
       if (input && input->GetLayoutObject()) {
         // the slider track selected value needs to be updated.

@@ -2884,11 +2884,18 @@ group("ct_telemetry_perf_tests_without_chrome") {
 group("performance_test_suite") {
   testonly = true
   deps = [
+    "//chrome/test:angle_perftests",
     "//chrome/test:telemetry_perf_tests",
     "//components:components_perftests",
     "//components/tracing:tracing_perftests",
+    "//gpu:command_buffer_perftests",
+    "//gpu:command_buffer_perftests",
     "//gpu:gpu_perftests",
   ]
+
+  if (!is_android && !is_fuchsia) {
+    deps += [ "//chrome/test:load_library_perf_tests" ]
+  }
 
   data_deps = [
     "//testing:run_perf_test",
@@ -6087,6 +6094,8 @@ if (!is_android && !is_fuchsia) {
       "../browser/sync/test/integration/sync_app_helper.h",
       "../browser/sync/test/integration/sync_datatype_helper.cc",
       "../browser/sync/test/integration/sync_datatype_helper.h",
+      "../browser/sync/test/integration/sync_disabled_checker.cc",
+      "../browser/sync/test/integration/sync_disabled_checker.h",
       "../browser/sync/test/integration/sync_extension_helper.cc",
       "../browser/sync/test/integration/sync_extension_helper.h",
       "../browser/sync/test/integration/sync_extension_installer.cc",

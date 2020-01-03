@@ -60,6 +60,10 @@ base::string16 ReaderModeIconView::GetTextForTooltipAndAccessibleName() const {
   return l10n_util::GetStringUTF16(IDS_DISTILL_PAGE);
 }
 
+const char* ReaderModeIconView::GetClassName() const {
+  return "ReaderModeIconView";
+}
+
 // TODO(gilmanmh): Consider displaying a bubble the first time a user
 // activates the icon to explain what Reader Mode is.
 views::BubbleDialogDelegateView* ReaderModeIconView::GetBubble() const {

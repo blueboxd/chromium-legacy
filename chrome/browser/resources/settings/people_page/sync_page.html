@@ -13,6 +13,7 @@
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="sync_account_control.html">
 <link rel="import" href="sync_browser_proxy.html">
 <link rel="import" href="../privacy_page/personalization_options.html">
 <link rel="import" href="../route.html">
@@ -20,7 +21,6 @@
 <link rel="import" href="../settings_vars_css.html">
 
 <if expr="not chromeos">
-<link rel="import" href="sync_account_control.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toast/cr_toast.html">
 </if>
 
@@ -81,7 +81,6 @@
         width: 40px;
       }
 
-<if expr="not chromeos">
       #toast {
         left: 0;
         z-index: 1;
@@ -91,9 +90,7 @@
         left: auto;
         right: 0;
       }
-</if>
     </style>
-<if expr="not chromeos">
     <template is="dom-if" if="[[shouldShowSyncAccountControl_(
         syncStatus.syncSystemEnabled, syncStatus.signinAllowed)]]">
       <settings-sync-account-control embedded-in-subpage
@@ -105,7 +102,6 @@
           on-sync-setup-done="onSyncSetupDone_">
       </settings-sync-account-control>
     </template>
-</if>
     <div class="settings-box first" hidden="[[!syncDisabledByAdmin_]]">
       <iron-icon id="disabled-by-admin-icon" icon="cr20:domain"></iron-icon>
       <div class="middle settings-box-text">

@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
+#include "ui/base/ui_base_features.h"
 
 namespace blink {
 
@@ -59,7 +60,7 @@ PickerIndicatorElement::~PickerIndicatorElement() {
 LayoutObject* PickerIndicatorElement::CreateLayoutObject(
     const ComputedStyle& style,
     LegacyLayout legacy) {
-  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled())
+  if (features::IsFormControlsRefreshEnabled())
     return HTMLDivElement::CreateLayoutObject(style, legacy);
 
   return new LayoutDetailsMarker(this);

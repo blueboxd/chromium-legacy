@@ -26,7 +26,6 @@ namespace chromecast {
 class IOBufferPool;
 
 namespace media {
-class AudioResampler;
 class DecoderBufferBase;
 class MediaPipelineBackendForMixer;
 
@@ -60,7 +59,7 @@ class AudioDecoderForMixer
 
   // This allows for very small changes in the rate of audio playback that are
   // (supposedly) imperceptible.
-  float SetAvSyncPlaybackRate(float rate);
+  double SetAvSyncPlaybackRate(double rate);
   void RestartPlaybackAt(int64_t pts, int64_t timestamp);
 
   RenderingDelay GetMixerRenderingDelay();
@@ -110,8 +109,7 @@ class AudioDecoderForMixer
   AudioConfig config_;
   std::unique_ptr<CastAudioDecoder> decoder_;
 
-  std::unique_ptr<AudioResampler> audio_resampler_;
-  float av_sync_clock_rate_ = 1.0f;
+  double av_sync_clock_rate_ = 1.0;
 
   std::unique_ptr<mixer_service::OutputStreamConnection> mixer_input_;
 

@@ -1060,9 +1060,9 @@ base::string16 ChromePasswordProtectionService::GetWarningDetailText(
       IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_ENTERPRISE);
 }
 
-base::string16
-ChromePasswordProtectionService::GetWarningDetailTextForSavedPasswords(
-    std::vector<size_t>* placeholder_offsets) const {
+std::vector<base::string16>
+ChromePasswordProtectionService::GetPlaceholdersForSavedPasswordWarningText()
+    const {
   const std::vector<std::string>& matching_domains =
       saved_passwords_matching_domains();
   const std::list<std::string>& spoofed_domains = common_spoofed_domains();
@@ -1092,7 +1092,14 @@ ChromePasswordProtectionService::GetWarningDetailTextForSavedPasswords(
     placeholders.push_back(base::UTF8ToUTF16(matching_domains[idx]));
     domains_idx++;
   }
+  return placeholders;
+}
 
+base::string16
+ChromePasswordProtectionService::GetWarningDetailTextForSavedPasswords(
+    std::vector<size_t>* placeholder_offsets) const {
+  std::vector<base::string16> placeholders =
+      GetPlaceholdersForSavedPasswordWarningText();
   // If showing the saved passwords domain experiment is not on or if there is
   // are no saved domains, default to original saved passwords reuse warning.
   if (!base::FeatureList::IsEnabled(

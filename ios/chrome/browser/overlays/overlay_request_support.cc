@@ -8,40 +8,51 @@
 #include "base/no_destructor.h"
 
 namespace {
-// OverlayRequestSupport that returns a constant value for IsRequestSupported()
-// regardless of the request type.
-class ConstantOverlayRequestSupport : public OverlayRequestSupport {
+// OverlayRequestSupport that always returns true for IsRequestSupported().
+class UniversalOverlayRequestSupport : public OverlayRequestSupport {
  public:
-  ConstantOverlayRequestSupport(bool should_support)
-      : supports_requests_(should_support) {}
-
   bool IsRequestSupported(OverlayRequest* request) const override {
-    return supports_requests_;
+    return true;
   }
-
- private:
-  // Whether requests should be supported.
-  bool supports_requests_ = false;
+};
+// OverlayRequestSupport that always returns false for IsRequestSupported().
+class DisabledOverlayRequestSupport : public OverlayRequestSupport {
+ public:
+  bool IsRequestSupported(OverlayRequest* request) const override {
+    return false;
+  }
 };
 }  // namespace
+
+OverlayRequestSupport::OverlayRequestSupport(
+    const std::vector<const OverlayRequestSupport*>& supports)
+    : aggregated_support_(supports) {
+  DCHECK(aggregated_support_.size());
+}
 
 OverlayRequestSupport::OverlayRequestSupport() = default;
 
 OverlayRequestSupport::~OverlayRequestSupport() = default;
 
 bool OverlayRequestSupport::IsRequestSupported(OverlayRequest* request) const {
-  NOTREACHED() << "Subclasses implement.";
+  DCHECK(aggregated_support_.size())
+      << "Default implementation is only for aggregated support.  Subclasses "
+         "using the default constructor must implement IsRequestSupported().";
+  for (const OverlayRequestSupport* support : aggregated_support_) {
+    if (support->IsRequestSupported(request))
+      return true;
+  }
   return false;
 }
 
 // static
 const OverlayRequestSupport* OverlayRequestSupport::All() {
-  static base::NoDestructor<ConstantOverlayRequestSupport> support_all(true);
-  return support_all.get();
+  static base::NoDestructor<UniversalOverlayRequestSupport> support;
+  return support.get();
 }
 
 // static
 const OverlayRequestSupport* OverlayRequestSupport::None() {
-  static base::NoDestructor<ConstantOverlayRequestSupport> support_none(false);
-  return support_none.get();
+  static base::NoDestructor<DisabledOverlayRequestSupport> support;
+  return support.get();
 }

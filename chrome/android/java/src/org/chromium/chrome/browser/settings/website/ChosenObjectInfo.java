@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.settings.website;
 
-import org.chromium.chrome.browser.ContentSettingsType;
+import org.chromium.components.content_settings.ContentSettingsType;
 
 import java.io.Serializable;
 

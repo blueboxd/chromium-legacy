@@ -47,7 +47,7 @@ ContextImpl::~ContextImpl() {
 void ContextImpl::DestroyFrame(FrameImpl* frame) {
   auto iter = frames_.find(frame);
   DCHECK(iter != frames_.end());
-  frames_.erase(frames_.find(frame));
+  frames_.erase(iter);
 }
 
 bool ContextImpl::IsJavaScriptInjectionAllowed() {

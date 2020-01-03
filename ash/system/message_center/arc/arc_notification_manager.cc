@@ -575,7 +575,7 @@ void ArcNotificationManager::SetNotificationConfiguration() {
 
   NotificationConfigurationPtr configuration = NotificationConfiguration::New();
   configuration->expansion_animation =
-      ash::features::IsNotificationExpansionAnimationEnabled();
+      features::IsNotificationExpansionAnimationEnabled();
 
   notifications_instance->SetNotificationConfiguration(
       std::move(configuration));

@@ -1317,6 +1317,9 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="AndroidActivityStopReason">
+  <obsolete>
+    Removed 2020-01
+  </obsolete>
   <int value="0" label="Unknown"/>
   <int value="1" label="Chrome sent to background by system back">
     The user pressed the system back button, sending Chrome to the background.
@@ -1339,6 +1342,9 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="AndroidActivitySystemBackAction">
+  <obsolete>
+    Removed 2020-01
+  </obsolete>
   <int value="0" label="Nothing happened"/>
   <int value="1"
       label="The foreground tab contained a help article and was closed"/>

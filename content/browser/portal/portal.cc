@@ -37,20 +37,14 @@ Portal::Portal(RenderFrameHostImpl* owner_render_frame_host)
 Portal::Portal(RenderFrameHostImpl* owner_render_frame_host,
                std::unique_ptr<WebContents> existing_web_contents)
     : Portal(owner_render_frame_host) {
-  SetPortalContents(std::move(existing_web_contents));
-  GetPortalContents()->NotifyInsidePortal(true);
+  portal_contents_.SetOwned(std::move(existing_web_contents));
+  portal_contents_->NotifyInsidePortal(true);
 }
 
 Portal::~Portal() {
   WebContentsImpl* outer_contents_impl = static_cast<WebContentsImpl*>(
       WebContents::FromRenderFrameHost(owner_render_frame_host_));
   devtools_instrumentation::PortalDetached(outer_contents_impl->GetMainFrame());
-
-  FrameTreeNode* outer_node = FrameTreeNode::GloballyFindByID(
-      portal_contents_impl_->GetOuterDelegateFrameTreeNodeId());
-  if (outer_node)
-    outer_node->RemoveObserver(this);
-  portal_contents_impl_->set_portal(nullptr);
   Observe(nullptr);
 }
 
@@ -103,7 +97,7 @@ void Portal::Bind(
   DCHECK(!client_.is_bound());
   receiver_.Bind(std::move(receiver));
   receiver_.set_disconnect_handler(
-      base::BindOnce(&Portal::DestroySelf, base::Unretained(this)));
+      base::BindOnce(&Portal::Close, base::Unretained(this)));
   client_.Bind(std::move(client));
 }
 
@@ -139,31 +133,51 @@ RenderFrameProxyHost* Portal::CreateProxyAndAttachPortal() {
   if (!portal_contents_) {
     // Create the Portal WebContents.
     WebContents::CreateParams params(outer_contents_impl->GetBrowserContext());
-    SetPortalContents(WebContents::Create(params));
+    portal_contents_.SetOwned(base::WrapUnique(
+        static_cast<WebContentsImpl*>(WebContents::Create(params).release())));
     web_contents_created = true;
   }
 
-  DCHECK_EQ(portal_contents_.get(), portal_contents_impl_);
-  DCHECK_EQ(portal_contents_impl_->portal(), this);
-  DCHECK_EQ(portal_contents_impl_->GetDelegate(), this);
+  DCHECK(portal_contents_.OwnsContents());
+  DCHECK_EQ(portal_contents_->portal(), this);
+  DCHECK_EQ(portal_contents_->GetDelegate(), this);
 
-  outer_contents_impl->AttachInnerWebContents(std::move(portal_contents_),
-                                              outer_node->current_frame_host(),
-                                              false /* is_full_page */);
+  DCHECK(!is_closing_) << "Portal should not be shutting down when contents "
+                          "ownership is yielded";
+  outer_contents_impl->AttachInnerWebContents(
+      portal_contents_.ReleaseOwnership(), outer_node->current_frame_host(),
+      false /* is_full_page */);
 
   FrameTreeNode* frame_tree_node =
-      portal_contents_impl_->GetMainFrame()->frame_tree_node();
+      portal_contents_->GetMainFrame()->frame_tree_node();
   RenderFrameProxyHost* proxy_host =
       frame_tree_node->render_manager()->GetProxyToOuterDelegate();
   proxy_host->SetRenderFrameProxyCreated(true);
-  portal_contents_impl_->ReattachToOuterWebContentsFrame();
+  portal_contents_->ReattachToOuterWebContentsFrame();
 
   if (web_contents_created)
-    PortalWebContentsCreated(portal_contents_impl_);
+    PortalWebContentsCreated(portal_contents_.get());
 
   devtools_instrumentation::PortalAttached(outer_contents_impl->GetMainFrame());
 
   return proxy_host;
+}
+
+void Portal::Close() {
+  if (is_closing_)
+    return;
+  is_closing_ = true;
+  receiver_.reset();
+
+  // If the contents is unowned, it would need to be properly detached from the
+  // WebContentsTreeNode before it can be cleanly closed. Otherwise a race is
+  // possible.
+  if (!portal_contents_.OwnsContents()) {
+    DestroySelf();  // Deletes this.
+    return;
+  }
+
+  portal_contents_->ClosePage();
 }
 
 void Portal::Navigate(const GURL& url,
@@ -179,7 +193,7 @@ void Portal::Navigate(const GURL& url,
   owner_render_frame_host_->GetSiteInstance()->GetProcess()->FilterURL(
       false, &out_validated_url);
 
-  FrameTreeNode* portal_root = portal_contents_impl_->GetFrameTree()->root();
+  FrameTreeNode* portal_root = portal_contents_->GetFrameTree()->root();
   RenderFrameHostImpl* portal_frame = portal_root->current_frame_host();
 
   // TODO(lfg): Figure out download policies for portals.
@@ -309,15 +323,18 @@ void Portal::Activate(blink::TransferableMessage data,
   }
   outer_root_node->StopLoading();
 
-  WebContentsDelegate* delegate = outer_contents->GetDelegate();
-  bool is_loading = portal_contents_impl_->IsLoading();
-  std::unique_ptr<WebContents> portal_contents;
+  DCHECK(!is_closing_) << "Portal should not be shutting down when contents "
+                          "ownership is yielded";
 
-  if (portal_contents_impl_->GetOuterWebContents()) {
+  WebContentsDelegate* delegate = outer_contents->GetDelegate();
+  bool is_loading = portal_contents_->IsLoading();
+  std::unique_ptr<WebContents> successor_contents;
+
+  if (portal_contents_->GetOuterWebContents()) {
     FrameTreeNode* outer_frame_tree_node = FrameTreeNode::GloballyFindByID(
-        portal_contents_impl_->GetOuterDelegateFrameTreeNodeId());
+        portal_contents_->GetOuterDelegateFrameTreeNodeId());
     outer_frame_tree_node->RemoveObserver(this);
-    portal_contents = portal_contents_impl_->DetachFromOuterWebContents();
+    successor_contents = portal_contents_->DetachFromOuterWebContents();
     owner_render_frame_host_->RemoveChild(outer_frame_tree_node);
   } else {
     // Portals created for predecessor pages during activation may not be
@@ -325,19 +342,25 @@ void Portal::Activate(blink::TransferableMessage data,
     // node created (i.e. CreateProxyAndAttachPortal isn't called). In this
     // case, we can skip a few of the detachment steps above.
     if (RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
-            portal_contents_impl_->GetMainFrame()->GetView())) {
+            portal_contents_->GetMainFrame()->GetView())) {
       view->Destroy();
     }
-    portal_contents_impl_->CreateRenderWidgetHostViewForRenderManager(
-        portal_contents_impl_->GetRenderViewHost());
-    portal_contents = std::move(portal_contents_);
+    portal_contents_->CreateRenderWidgetHostViewForRenderManager(
+        portal_contents_->GetRenderViewHost());
+    successor_contents = portal_contents_.ReleaseOwnership();
   }
+  DCHECK(!portal_contents_.OwnsContents());
+
+  // This assumes that the delegate keeps the new contents alive long enough to
+  // notify it of activation, at least.
+  WebContentsImpl* successor_contents_raw =
+      static_cast<WebContentsImpl*>(successor_contents.get());
 
   auto* outer_contents_main_frame_view = static_cast<RenderWidgetHostViewBase*>(
       outer_contents->GetMainFrame()->GetView());
   auto* portal_contents_main_frame_view =
       static_cast<RenderWidgetHostViewBase*>(
-          portal_contents_impl_->GetMainFrame()->GetView());
+          successor_contents_raw->GetMainFrame()->GetView());
 
   std::vector<std::unique_ptr<ui::TouchEvent>> touch_events;
 
@@ -351,11 +374,10 @@ void Portal::Activate(blink::TransferableMessage data,
     FlushTouchEventQueues(outer_contents_main_frame_view->host());
   }
 
-  TakeHistoryForActivation(static_cast<WebContentsImpl*>(portal_contents.get()),
-                           outer_contents);
+  TakeHistoryForActivation(successor_contents_raw, outer_contents);
 
   std::unique_ptr<WebContents> predecessor_web_contents =
-      delegate->SwapWebContents(outer_contents, std::move(portal_contents),
+      delegate->SwapWebContents(outer_contents, std::move(successor_contents),
                                 true, is_loading);
   CHECK_EQ(predecessor_web_contents.get(), outer_contents);
 
@@ -369,12 +391,16 @@ void Portal::Activate(blink::TransferableMessage data,
     outer_contents_main_frame_view->Destroy();
   }
 
-  portal_contents_impl_->set_portal(nullptr);
+  // These pointers are cleared so that they don't dangle in the event this
+  // object isn't immediately deleted. It isn't done sooner because
+  // SwapWebContents misbehaves if the WebContents doesn't appear to be a portal
+  // at that time.
+  portal_contents_.Clear();
 
-  portal_contents_impl_->GetMainFrame()->OnPortalActivated(
+  successor_contents_raw->GetMainFrame()->OnPortalActivated(
       std::move(predecessor_web_contents), std::move(data),
       std::move(callback));
-  portal_contents_impl_->NotifyInsidePortal(false);
+  successor_contents_raw->NotifyInsidePortal(false);
 
   devtools_instrumentation::PortalActivated(outer_contents->GetMainFrame());
 }
@@ -382,7 +408,7 @@ void Portal::Activate(blink::TransferableMessage data,
 void Portal::PostMessageToGuest(
     blink::TransferableMessage message,
     const base::Optional<url::Origin>& target_origin) {
-  portal_contents_impl_->GetMainFrame()->ForwardMessageFromHost(
+  portal_contents_->GetMainFrame()->ForwardMessageFromHost(
       std::move(message), owner_render_frame_host_->GetLastCommittedOrigin(),
       target_origin);
 }
@@ -406,7 +432,8 @@ void Portal::OnFrameTreeNodeDestroyed(FrameTreeNode* frame_tree_node) {
   // in the outer WebContents (not the FrameTreeNode of the document containing
   // it). If that outer FrameTreeNode goes away, this Portal should stop
   // accepting new messages and go away as well.
-  DestroySelf();  // Deletes |this|.
+
+  Close();  // May delete |this|.
 }
 
 void Portal::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
@@ -423,7 +450,7 @@ void Portal::WebContentsDestroyed() {
 
 void Portal::LoadingStateChanged(WebContents* source,
                                  bool to_different_document) {
-  DCHECK_EQ(source, portal_contents_impl_);
+  DCHECK_EQ(source, portal_contents_.get());
   if (!source->IsLoading())
     client_->DispatchLoadEvent();
 }
@@ -435,19 +462,59 @@ void Portal::PortalWebContentsCreated(WebContents* portal_web_contents) {
   outer_contents->GetDelegate()->PortalWebContentsCreated(portal_web_contents);
 }
 
+void Portal::CloseContents(WebContents* web_contents) {
+  DCHECK_EQ(web_contents, portal_contents_.get());
+  DestroySelf();  // Deletes |this|.
+}
+
 base::UnguessableToken Portal::GetDevToolsFrameToken() const {
-  return portal_contents_impl_->GetMainFrame()->GetDevToolsFrameToken();
+  return portal_contents_->GetMainFrame()->GetDevToolsFrameToken();
 }
 
 WebContentsImpl* Portal::GetPortalContents() {
-  return portal_contents_impl_;
+  return portal_contents_.get();
 }
 
-void Portal::SetPortalContents(std::unique_ptr<WebContents> web_contents) {
-  portal_contents_ = std::move(web_contents);
-  portal_contents_impl_ = static_cast<WebContentsImpl*>(portal_contents_.get());
-  portal_contents_impl_->SetDelegate(this);
-  portal_contents_impl_->set_portal(this);
+Portal::WebContentsHolder::WebContentsHolder(Portal* portal)
+    : portal_(portal) {}
+
+Portal::WebContentsHolder::~WebContentsHolder() {
+  Clear();
+}
+
+bool Portal::WebContentsHolder::OwnsContents() const {
+  DCHECK(!owned_contents_ || contents_ == owned_contents_.get());
+  return owned_contents_ != nullptr;
+}
+
+void Portal::WebContentsHolder::SetUnowned(WebContentsImpl* web_contents) {
+  Clear();
+  contents_ = web_contents;
+  contents_->SetDelegate(portal_);
+  contents_->set_portal(portal_);
+}
+
+void Portal::WebContentsHolder::SetOwned(
+    std::unique_ptr<WebContents> web_contents) {
+  SetUnowned(static_cast<WebContentsImpl*>(web_contents.get()));
+  owned_contents_ = std::move(web_contents);
+}
+
+void Portal::WebContentsHolder::Clear() {
+  if (!contents_)
+    return;
+
+  FrameTreeNode* outer_node = FrameTreeNode::GloballyFindByID(
+      contents_->GetOuterDelegateFrameTreeNodeId());
+  if (outer_node)
+    outer_node->RemoveObserver(portal_);
+
+  if (contents_->GetDelegate() == portal_)
+    contents_->SetDelegate(nullptr);
+  contents_->set_portal(nullptr);
+
+  contents_ = nullptr;
+  owned_contents_ = nullptr;
 }
 
 }  // namespace content

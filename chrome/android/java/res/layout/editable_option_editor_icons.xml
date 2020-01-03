@@ -19,7 +19,7 @@
             android:layout_height="wrap_content"
             android:textAppearance="@style/TextAppearance.BlackCaption" />
 
-    <org.chromium.chrome.browser.widget.prefeditor.ExpandableGridView
+    <org.chromium.chrome.browser.autofill.prefeditor.ExpandableGridView
             android:id="@+id/icons_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

@@ -67,6 +67,10 @@ const gfx::VectorIcon& QRCodeGeneratorIconView::GetVectorIcon() const {
   return kQrcodeGeneratorIcon;
 }
 
+const char* QRCodeGeneratorIconView::GetClassName() const {
+  return "QRCodeGeneratorIconView";
+}
+
 SkColor QRCodeGeneratorIconView::GetForegroundColor() const {
   return GetOmniboxColor(GetThemeProvider(),
                          OmniboxPart::LOCATION_BAR_TEXT_DEFAULT);

@@ -91,53 +91,47 @@ cr.define('cr.search_highlight_utils', function() {
   }
 
   /**
-   * Highlights an HTML element by displaying a search bubble. The element
-   * should already be visible or the bubble will render incorrectly.
-   * @param {!HTMLElement} element The element to be highlighted.
-   * @param {string} rawQuery The search query.
+   * Creates an empty search bubble (styled HTML element without text).
+   * |node| should already be visible or the bubble will render incorrectly.
+   * @param {!Node} node The node to be highlighted.
    * @param {boolean=} horizontallyCenter Whether or not to horizontally center
-   *     the shown search bubble (if any) based on |element|'s left and width.
-   * @return {?Node} The search bubble that was added, or null if no new bubble
+   *     the shown search bubble (if any) based on |node|'s left and width.
+   * @return {!Node} The search bubble that was added, or null if no new bubble
    *     was added.
    */
-  /* #export */ function highlightControlWithBubble(
-      element, rawQuery, horizontallyCenter) {
-    let anchor = element;
-    if (element.tagName === 'SELECT') {
-      anchor = element.parentNode;
+  /* #export */ function createEmptySearchBubble(node, horizontallyCenter) {
+    let anchor = node;
+    if (node.nodeName === 'SELECT') {
+      anchor = node.parentNode;
     }
-    // NOTE(dbeam): this is theoretically only possible in the select case, but
-    // callers are often fast and loose with regard to casting |element| from a
-    // parentNode (which can easily be a shadow root). So we leave this if for
-    // all branches (rather than solely inside the select branch).
     if (anchor instanceof ShadowRoot) {
       anchor = anchor.host.parentNode;
     }
 
     let searchBubble = anchor.querySelector(`.${SEARCH_BUBBLE_CSS_CLASS}`);
-    // If the element has already been highlighted, there is no need to do
+    // If the node has already been highlighted, there is no need to do
     // anything.
     if (searchBubble) {
-      return null;
+      return searchBubble;
     }
 
     searchBubble = document.createElement('div');
     searchBubble.classList.add(SEARCH_BUBBLE_CSS_CLASS);
     const innards = document.createElement('div');
     innards.classList.add('search-bubble-innards');
-    innards.textContent = rawQuery;
+    innards.textContent = '\u00a0';  // Non-breaking space for offsetHeight.
     searchBubble.appendChild(innards);
     anchor.appendChild(searchBubble);
 
     const updatePosition = function() {
-      assert(typeof element.offsetTop === 'number');
-      searchBubble.style.top = element.offsetTop +
+      assert(typeof node.offsetTop === 'number');
+      searchBubble.style.top = node.offsetTop +
           (innards.classList.contains('above') ? -searchBubble.offsetHeight :
-                                                 element.offsetHeight) +
+                                                 node.offsetHeight) +
           'px';
       if (horizontallyCenter) {
-        const width = element.offsetWidth - searchBubble.offsetWidth;
-        searchBubble.style.left = element.offsetLeft + width / 2 + 'px';
+        const width = node.offsetWidth - searchBubble.offsetWidth;
+        searchBubble.style.left = node.offsetLeft + width / 2 + 'px';
       }
     };
     updatePosition();
@@ -154,9 +148,9 @@ cr.define('cr.search_highlight_utils', function() {
 
   // #cr_define_end
   return {
-    removeHighlights: removeHighlights,
-    findAndRemoveHighlights: findAndRemoveHighlights,
-    highlight: highlight,
-    highlightControlWithBubble: highlightControlWithBubble,
+    createEmptySearchBubble,
+    findAndRemoveHighlights,
+    highlight,
+    removeHighlights,
   };
 });

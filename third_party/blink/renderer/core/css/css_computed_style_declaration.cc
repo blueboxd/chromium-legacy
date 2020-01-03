@@ -226,11 +226,13 @@ void LogUnimplementedPropertyID(const CSSProperty& property) {
 }  // namespace
 
 const Vector<const CSSProperty*>&
-CSSComputedStyleDeclaration::ComputableProperties() {
+CSSComputedStyleDeclaration::ComputableProperties(
+    const ExecutionContext* execution_context) {
   DEFINE_STATIC_LOCAL(Vector<const CSSProperty*>, properties, ());
   if (properties.IsEmpty()) {
     CSSProperty::FilterWebExposedCSSPropertiesIntoVector(
-        kComputedPropertyArray, base::size(kComputedPropertyArray), properties);
+        execution_context, kComputedPropertyArray,
+        base::size(kComputedPropertyArray), properties);
   }
   return properties;
 }
@@ -239,7 +241,8 @@ CSSComputedStyleDeclaration::CSSComputedStyleDeclaration(
     Node* n,
     bool allow_visited_style,
     const String& pseudo_element_name)
-    : node_(n),
+    : CSSStyleDeclaration(n ? &n->GetDocument() : nullptr),
+      node_(n),
       pseudo_element_specifier_(
           CSSSelector::ParsePseudoId(pseudo_element_name)),
       allow_visited_style_(allow_visited_style) {}
@@ -248,7 +251,8 @@ CSSComputedStyleDeclaration::~CSSComputedStyleDeclaration() = default;
 
 String CSSComputedStyleDeclaration::cssText() const {
   StringBuilder result;
-  static const Vector<const CSSProperty*>& properties = ComputableProperties();
+  static const Vector<const CSSProperty*>& properties =
+      ComputableProperties(GetExecutionContext());
 
   for (unsigned i = 0; i < properties.size(); i++) {
     if (i)
@@ -442,14 +446,15 @@ String CSSComputedStyleDeclaration::GetPropertyValue(
 unsigned CSSComputedStyleDeclaration::length() const {
   if (!node_ || !node_->InActiveDocument())
     return 0;
-  return ComputableProperties().size();
+  return ComputableProperties(GetExecutionContext()).size();
 }
 
 String CSSComputedStyleDeclaration::item(unsigned i) const {
   if (i >= length())
     return "";
 
-  return ComputableProperties()[i]->GetPropertyNameString();
+  return ComputableProperties(GetExecutionContext())[i]
+      ->GetPropertyNameString();
 }
 
 bool CSSComputedStyleDeclaration::CssPropertyMatches(
@@ -476,7 +481,7 @@ bool CSSComputedStyleDeclaration::CssPropertyMatches(
 
 MutableCSSPropertyValueSet* CSSComputedStyleDeclaration::CopyProperties()
     const {
-  return CopyPropertiesInSet(ComputableProperties());
+  return CopyPropertiesInSet(ComputableProperties(GetExecutionContext()));
 }
 
 MutableCSSPropertyValueSet* CSSComputedStyleDeclaration::CopyPropertiesInSet(

@@ -6,7 +6,7 @@
 #define IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_WEB_CONTENT_AREA_HTTP_AUTH_OVERLAY_H_
 
 #include "ios/chrome/browser/overlays/public/overlay_request_config.h"
-#include "ios/chrome/browser/overlays/public/overlay_user_data.h"
+#include "ios/chrome/browser/overlays/public/overlay_response_info.h"
 
 // Configuration object for OverlayRequests for HTTP authentication challenges.
 class HTTPAuthOverlayRequestConfig
@@ -30,7 +30,7 @@ class HTTPAuthOverlayRequestConfig
 
 // User interaction info for OverlayResponses for HTTP authentication dialogs.
 class HTTPAuthOverlayResponseInfo
-    : public OverlayUserData<HTTPAuthOverlayResponseInfo> {
+    : public OverlayResponseInfo<HTTPAuthOverlayResponseInfo> {
  public:
   ~HTTPAuthOverlayResponseInfo() override;
 

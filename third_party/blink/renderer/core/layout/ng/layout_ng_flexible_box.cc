@@ -17,6 +17,21 @@ namespace blink {
 LayoutNGFlexibleBox::LayoutNGFlexibleBox(Element* element)
     : LayoutNGMixin<LayoutBlock>(element) {}
 
+bool LayoutNGFlexibleBox::HasTopOverflow() const {
+  if (IsHorizontalWritingMode())
+    return StyleRef().ResolvedIsColumnReverseFlexDirection();
+  return StyleRef().IsLeftToRightDirection() ==
+         StyleRef().ResolvedIsRowReverseFlexDirection();
+}
+
+bool LayoutNGFlexibleBox::HasLeftOverflow() const {
+  if (IsHorizontalWritingMode()) {
+    return StyleRef().IsLeftToRightDirection() ==
+           StyleRef().ResolvedIsRowReverseFlexDirection();
+  }
+  return StyleRef().ResolvedIsColumnReverseFlexDirection();
+}
+
 void LayoutNGFlexibleBox::UpdateBlockLayout(bool relayout_children) {
   LayoutAnalyzer::BlockScope analyzer(*this);
 
@@ -35,6 +50,33 @@ void LayoutNGFlexibleBox::UpdateBlockLayout(bool relayout_children) {
   for (const auto& descendant :
        result->PhysicalFragment().OutOfFlowPositionedDescendants())
     descendant.node.UseLegacyOutOfFlowPositioning();
+}
+
+namespace {
+
+void MergeAnonymousFlexItems(LayoutObject* remove_child) {
+  // When we remove a flex item, and the previous and next siblings of the item
+  // are text nodes wrapped in anonymous flex items, the adjacent text nodes
+  // need to be merged into the same flex item.
+  LayoutObject* prev = remove_child->PreviousSibling();
+  if (!prev || !prev->IsAnonymousBlock())
+    return;
+  LayoutObject* next = remove_child->NextSibling();
+  if (!next || !next->IsAnonymousBlock())
+    return;
+  ToLayoutBoxModelObject(next)->MoveAllChildrenTo(ToLayoutBoxModelObject(prev));
+  To<LayoutBlockFlow>(next)->DeleteLineBoxTree();
+  next->Destroy();
+}
+
+}  // namespace
+
+void LayoutNGFlexibleBox::RemoveChild(LayoutObject* child) {
+  if (!DocumentBeingDestroyed() &&
+      !StyleRef().IsDeprecatedFlexboxUsingFlexLayout())
+    MergeAnonymousFlexItems(child);
+
+  LayoutBlock::RemoveChild(child);
 }
 
 }  // namespace blink

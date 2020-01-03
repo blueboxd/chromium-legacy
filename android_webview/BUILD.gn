@@ -494,13 +494,14 @@ android_library("common_crash_java") {
 android_library("common_java") {
   sources = [
     "java/src/org/chromium/android_webview/common/AwResource.java",
+    "java/src/org/chromium/android_webview/common/DeveloperModeUtils.java",
     "java/src/org/chromium/android_webview/common/Flag.java",
-    "java/src/org/chromium/android_webview/common/FlagOverrideConstants.java",
     "java/src/org/chromium/android_webview/common/FlagOverrideHelper.java",
     "java/src/org/chromium/android_webview/common/ProductionSupportedFlagList.java",
     "java/src/org/chromium/android_webview/common/services/ServiceNames.java",
   ]
   deps = [
+    ":common_commandline_java",
     "//base:base_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
   ]

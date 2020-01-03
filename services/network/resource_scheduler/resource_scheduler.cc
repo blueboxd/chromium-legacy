@@ -312,7 +312,11 @@ class ResourceScheduler::ScheduledResourceRequestImpl
   net::URLRequest* url_request() { return request_; }
   const net::URLRequest* url_request() const { return request_; }
   bool is_async() const { return is_async_; }
-  uint32_t fifo_ordering() const { return fifo_ordering_; }
+  uint32_t fifo_ordering() const {
+    // Ensure that |fifo_ordering_| has been set before it's used.
+    DCHECK_LT(0u, fifo_ordering_);
+    return fifo_ordering_;
+  }
   void set_fifo_ordering(uint32_t fifo_ordering) {
     fifo_ordering_ = fifo_ordering;
   }

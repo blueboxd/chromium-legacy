@@ -9,7 +9,7 @@ import static org.chromium.chrome.browser.settings.website.WebsitePreferenceBrid
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
-import org.chromium.chrome.browser.ContentSettingsType;
+import org.chromium.components.content_settings.ContentSettingsType;
 
 import java.io.Serializable;
 import java.lang.annotation.Retention;

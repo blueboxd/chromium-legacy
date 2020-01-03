@@ -124,16 +124,6 @@ class BLINK_COMMON_EXPORT WebMouseWheelEvent : public WebMouseEvent {
   bool IsCancelable() const { return dispatch_type == kBlocking; }
 };
 
-inline bool operator==(const WebMouseWheelEvent& a,
-                       const WebMouseWheelEvent& b) {
-  return memcmp(&a, &b, a.size()) == 0;
-}
-
-inline bool operator!=(const WebMouseWheelEvent& a,
-                       const WebMouseWheelEvent& b) {
-  return !(a == b);
-}
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_INPUT_WEB_MOUSE_WHEEL_EVENT_H_

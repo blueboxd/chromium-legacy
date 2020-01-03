@@ -731,7 +731,8 @@ class AutofillInteractiveTestWithHistogramTester
     // Only allow requests to be loaded that are necessary for the test. This
     // allows a histogram to test properties of some specific requests.
     std::vector<std::string> allowlist = {
-        "/internal/test_url_path", "https://clients1.google.com/tbproxy"};
+        "/internal/test_url_path", "https://clients1.google.com/tbproxy",
+        "https://content-autofill.googleapis.com/"};
     url_loader_interceptor_ =
         std::make_unique<URLLoaderInterceptor>(base::BindLambdaForTesting(
             [&](URLLoaderInterceptor::RequestParams* params) {
@@ -780,6 +781,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestWithHistogramTester,
   // Assert that the network isolation key is populated for 2 requests:
   // - Navigation: /internal/test_url_path
   // - Autofill query: https://clients1.google.com/tbproxy/af/query?...
+  //   or "https://content-autofill.googleapis.com/..." (depending on the
+  //   finch configuration of the AutofillUseApi feature).
   histogram_tester().ExpectBucketCount("HttpCache.NetworkIsolationKeyPresent2",
                                        2 /*kPresent*/, 2 /*count*/);
 }

@@ -222,4 +222,25 @@ TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonOtherCases) {
   ExpectFullPaintInvalidationOnGeometryChange("With clip-path");
 }
 
+TEST_P(BoxPaintInvalidatorTest, InvalidateHitTestOnCompositingStyleChange) {
+  ScopedPaintUnderInvalidationCheckingForTest under_invalidation_checking(true);
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #target {
+        width: 400px;
+        height: 300px;
+        overflow: hidden;
+        touch-action: none;
+      }
+    </style>
+    <div id="target" style="will-change: transform;"></div>
+  )HTML");
+
+  UpdateAllLifecyclePhasesForTest();
+  auto& target = *GetDocument().getElementById("target");
+  target.setAttribute(html_names::kStyleAttr, "");
+  UpdateAllLifecyclePhasesForTest();
+  // This test passes if no underinvalidation occurs.
+}
+
 }  // namespace blink

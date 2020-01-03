@@ -26,6 +26,7 @@ class IntentPickerView : public PageActionIconView {
   views::BubbleDialogDelegateView* GetBubble() const override;
   const gfx::VectorIcon& GetVectorIcon() const override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;
+  const char* GetClassName() const override;
 
  private:
   bool IsIncognitoMode() const;

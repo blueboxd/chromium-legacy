@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_view.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_error_event.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_peer_connection_handler_platform.h"
@@ -509,6 +510,10 @@ void RTCDataChannel::OnStateChange(
       ScheduleDispatchEvent(Event::Create(event_type_names::kOpen));
       break;
     case webrtc::DataChannelInterface::kClosed:
+      if (!channel()->error().ok()) {
+        ScheduleDispatchEvent(MakeGarbageCollected<RTCErrorEvent>(
+            event_type_names::kError, channel()->error()));
+      }
       ScheduleDispatchEvent(Event::Create(event_type_names::kClose));
       break;
     default:

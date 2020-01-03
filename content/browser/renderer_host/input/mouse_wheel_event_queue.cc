@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/input/mouse_wheel_event_queue.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "content/common/input/input_event_dispatch_type.h"
@@ -99,20 +100,11 @@ bool MouseWheelEventQueue::CanGenerateGestureScroll(
 }
 
 void MouseWheelEventQueue::ProcessMouseWheelAck(
+    const MouseWheelEventWithLatencyInfo& ack_event,
     InputEventAckSource ack_source,
-    InputEventAckState ack_result,
-    const MouseWheelEventWithLatencyInfo& ack_event) {
+    InputEventAckState ack_result) {
   TRACE_EVENT0("input", "MouseWheelEventQueue::ProcessMouseWheelAck");
   if (!event_sent_for_gesture_ack_)
-    return;
-
-  // |ack_event.event| should be the same as
-  // |event_sent_for_gesture_ack_->event|. If they aren't, then don't continue
-  // processing the ack. The two events can potentially be different because
-  // TouchpadPinchEventQueue also dispatches wheel events, and any wheel event
-  // ack that is received is sent to both *EventQueue::ProcessMouseWheelAck
-  // methods.
-  if (ack_event.event != event_sent_for_gesture_ack_->event)
     return;
 
   event_sent_for_gesture_ack_->latency.AddNewLatencyFrom(ack_event.latency);
@@ -284,7 +276,10 @@ void MouseWheelEventQueue::TryForwardNextEventToRenderer() {
         WebInputEvent::kEventNonBlocking;
   }
 
-  client_->SendMouseWheelEventImmediately(*event_sent_for_gesture_ack_);
+  client_->SendMouseWheelEventImmediately(
+      *event_sent_for_gesture_ack_,
+      base::BindOnce(&MouseWheelEventQueue::ProcessMouseWheelAck,
+                     base::Unretained(this)));
 }
 
 void MouseWheelEventQueue::SendScrollEnd(WebGestureEvent update_event,

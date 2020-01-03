@@ -701,10 +701,6 @@
       name: "FallbackCursorMode",
     },
     {
-      name: "FastBorderRadius",
-      status: "experimental",
-    },
-    {
       name: "FeaturePolicyForClientHints",
       status: "experimental",
     },
@@ -776,11 +772,6 @@
       name: "ForceTallerSelectPopup",
       status: {"ChromeOS": "stable"},
     },
-    // This is to communicate features::FormControlsRefresh from ui (and can be
-    // removed when the feature launches).
-    {
-      name: "FormControlsRefresh",
-    },
     {
       name: "FractionalMouseEvent",
     },
@@ -808,7 +799,7 @@
       name: "HrefTranslate",
       depends_on: ["TranslateService"],
       origin_trial_feature_name: "HrefTranslate",
-      status: "experimental",
+      status: "stable",
     },
     // TODO(937746): Web Components v0 is disabled by default, and will be
     // removed after M87.
@@ -1267,7 +1258,6 @@
     // This is to add an option to enable the Reveal button on password inputs while waiting ::reveal gets standardized.
     {
       name: "PasswordReveal",
-      depends_on: ["FormControlsRefresh"],
     },
     {
       name: "PaymentApp",

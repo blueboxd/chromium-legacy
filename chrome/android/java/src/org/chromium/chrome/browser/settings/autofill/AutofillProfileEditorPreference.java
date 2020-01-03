@@ -9,31 +9,32 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.preference.Preference;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
+import org.chromium.chrome.browser.autofill.prefeditor.EditorDialog;
+import org.chromium.chrome.browser.autofill.prefeditor.EditorObserverForTest;
 import org.chromium.chrome.browser.payments.AddressEditor;
 import org.chromium.chrome.browser.payments.AutofillAddress;
 import org.chromium.chrome.browser.payments.SettingsAutofillAndPaymentsObserver;
 import org.chromium.chrome.browser.settings.MainPreferences;
-import org.chromium.chrome.browser.widget.prefeditor.EditorDialog;
-import org.chromium.chrome.browser.widget.prefeditor.EditorObserverForTest;
 
 /**
  * Launches the UI to edit, create or delete an Autofill profile entry.
  */
 public class AutofillProfileEditorPreference extends Preference {
+    private static EditorObserverForTest sObserverForTest;
+
     private final Activity mActivity;
-    private final EditorObserverForTest mObserverForTest;
     private EditorDialog mEditorDialog;
     private AutofillAddress mAutofillAddress;
     private String mGUID;
 
     // TODO(crbug.com/982338): Remove Activity usage for Support Library migration.
-    public AutofillProfileEditorPreference(
-            Activity activity, Context styledContext, EditorObserverForTest observerForTest) {
+    public AutofillProfileEditorPreference(Activity activity, Context styledContext) {
         super(styledContext);
         mActivity = activity;
-        mObserverForTest = observerForTest;
     }
 
     public EditorDialog getEditorDialog() {
@@ -72,8 +73,8 @@ public class AutofillProfileEditorPreference extends Preference {
                     SettingsAutofillAndPaymentsObserver.getInstance().notifyOnAddressUpdated(
                             address);
                 }
-                if (mObserverForTest != null) {
-                    mObserverForTest.onEditorReadyToEdit();
+                if (sObserverForTest != null) {
+                    sObserverForTest.onEditorReadyToEdit();
                 }
             }
         });
@@ -91,11 +92,17 @@ public class AutofillProfileEditorPreference extends Preference {
                     SettingsAutofillAndPaymentsObserver.getInstance().notifyOnAddressDeleted(
                             mGUID);
                 }
-                if (mObserverForTest != null) {
-                    mObserverForTest.onEditorReadyToEdit();
+                if (sObserverForTest != null) {
+                    sObserverForTest.onEditorReadyToEdit();
                 }
             };
         }
-        mEditorDialog = new EditorDialog(mActivity, mObserverForTest, runnable);
+        mEditorDialog = new EditorDialog(mActivity, runnable);
+    }
+
+    @VisibleForTesting
+    public static void setEditorObserverForTest(EditorObserverForTest observerForTest) {
+        sObserverForTest = observerForTest;
+        EditorDialog.setEditorObserverForTest(sObserverForTest);
     }
 }

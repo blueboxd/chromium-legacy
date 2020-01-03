@@ -57,7 +57,7 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
   // This is same method as FlexItem but we need that logic before FlexItem is
   // constructed.
   bool MainAxisIsInlineAxis(const NGBlockNode& child) const;
-  LayoutUnit MainAxisContentExtent(LayoutUnit sum_hypothetical_main_size);
+  LayoutUnit MainAxisContentExtent(LayoutUnit sum_hypothetical_main_size) const;
 
   void HandleOutOfFlowPositioned(NGBlockNode child);
   // TODO(dgrogan): This is redundant with FlexLayoutAlgorithm.IsMultiline() but

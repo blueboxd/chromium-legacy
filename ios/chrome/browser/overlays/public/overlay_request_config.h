@@ -13,7 +13,8 @@
 template <class ConfigType>
 class OverlayRequestConfig : public OverlayUserData<ConfigType> {
  public:
-  // Returns an OverlayRequestSupport that only supports this config.
+  // Returns an OverlayRequestSupport that only supports requests created with
+  // ConfigType.
   static const OverlayRequestSupport* RequestSupport() {
     static base::NoDestructor<SupportsOverlayRequest<ConfigType>> kSupport;
     return kSupport.get();

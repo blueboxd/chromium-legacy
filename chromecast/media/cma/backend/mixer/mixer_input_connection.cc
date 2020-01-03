@@ -179,6 +179,7 @@ MixerInputConnection::MixerInputConnection(
                        kDefaultFadeTime,
                        input_samples_per_second_),
              1.0 /* playback_rate */),
+      audio_clock_simulator_(&fader_),
       use_start_timestamp_(params.use_start_timestamp()),
       playback_start_timestamp_(use_start_timestamp_ ? INT64_MAX : INT64_MIN),
       audio_buffer_pool_(
@@ -253,6 +254,9 @@ bool MixerInputConnection::HandleMetadata(
   }
   if (message.has_set_playback_rate()) {
     SetMediaPlaybackRate(message.set_playback_rate().playback_rate());
+  }
+  if (message.has_set_audio_clock_rate()) {
+    SetAudioClockRate(message.set_audio_clock_rate().rate());
   }
   if (message.has_set_paused()) {
     SetPaused(message.set_paused().paused());
@@ -448,6 +452,13 @@ void MixerInputConnection::SetMediaPlaybackRate(double rate) {
   }
 }
 
+void MixerInputConnection::SetAudioClockRate(double rate) {
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+
+  base::AutoLock lock(lock_);
+  audio_clock_simulator_.SetRate(rate);
+}
+
 void MixerInputConnection::SetPaused(bool paused) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   LOG(INFO) << (paused ? "Pausing " : "Unpausing ") << this;
@@ -573,8 +584,9 @@ int64_t MixerInputConnection::QueueData(scoped_refptr<net::IOBuffer> data) {
   //     |extra_delay_frames_|).
   //   * Queued data in |queue_|.
   //   * Data in the rate shifter, if any.
-  double extra_delay_frames =
-      extra_delay_frames_ + queued_frames_ / playback_rate_;
+  double extra_delay_frames = extra_delay_frames_ +
+                              queued_frames_ / playback_rate_ +
+                              audio_clock_simulator_.DelayFrames();
   if (rate_shifter_) {
     double rate_shifter_delay =
         static_cast<double>(rate_shifter_input_frames_) / playback_rate_ -

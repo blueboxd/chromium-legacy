@@ -11,23 +11,17 @@
 
 namespace blink {
 
-enum {
-  kCompositeAfterPaint = 1 << 0,
-  kUnderInvalidationChecking = 1 << 1,
-  kFastBorderRadius = 1 << 2
-};
+enum { kCompositeAfterPaint = 1 << 0, kUnderInvalidationChecking = 1 << 1 };
 
 class PaintTestConfigurations
     : public testing::WithParamInterface<unsigned>,
       private ScopedCompositeAfterPaintForTest,
-      private ScopedPaintUnderInvalidationCheckingForTest,
-      private ScopedFastBorderRadiusForTest {
+      private ScopedPaintUnderInvalidationCheckingForTest {
  public:
   PaintTestConfigurations()
       : ScopedCompositeAfterPaintForTest(GetParam() & kCompositeAfterPaint),
-        ScopedPaintUnderInvalidationCheckingForTest(GetParam() &
-                                                    kUnderInvalidationChecking),
-        ScopedFastBorderRadiusForTest(GetParam() & kFastBorderRadius) {}
+        ScopedPaintUnderInvalidationCheckingForTest(
+            GetParam() & kUnderInvalidationChecking) {}
   ~PaintTestConfigurations() {
     // Must destruct all objects before toggling back feature flags.
     WebHeap::CollectAllGarbageForTesting();
@@ -42,10 +36,10 @@ class PaintTestConfigurations
   INSTANTIATE_TEST_SUITE_P(All, test_class,      \
                            ::testing::Values(kCompositeAfterPaint))
 
+// TODO(pdr): Remove this in favor of INSTANTIATE_PAINT_TEST_SUITE_P.
 #define INSTANTIATE_LAYER_LIST_TEST_SUITE_P(test_class) \
-  INSTANTIATE_TEST_SUITE_P(                             \
-      All, test_class,                                  \
-      ::testing::Values(0, kCompositeAfterPaint, kFastBorderRadius))
+  INSTANTIATE_TEST_SUITE_P(All, test_class,             \
+                           ::testing::Values(0, kCompositeAfterPaint))
 
 #define INSTANTIATE_SCROLL_HIT_TEST_SUITE_P(test_class) \
   INSTANTIATE_TEST_SUITE_P(All, test_class,             \

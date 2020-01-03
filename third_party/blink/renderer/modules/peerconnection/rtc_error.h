@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_error_init.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/webrtc/api/rtc_error.h"
 
 namespace blink {
 
@@ -18,7 +19,9 @@ class RTCError final : public DOMException {
 
  public:
   static RTCError* Create(const RTCErrorInit* init, String message);
+  static RTCError* Create(webrtc::RTCError);
   RTCError(const RTCErrorInit* init, String message);
+  RTCError(webrtc::RTCError);
 
   const String& errorDetail() const;
   int32_t sdpLineNumber(bool& is_null) const;

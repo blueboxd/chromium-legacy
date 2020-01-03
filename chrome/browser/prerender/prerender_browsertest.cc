@@ -205,14 +205,6 @@ class FaviconUpdateWatcher : public favicon::FaviconDriverObserver {
   DISALLOW_COPY_AND_ASSIGN(FaviconUpdateWatcher);
 };
 
-// Constant used in the test HTML files.
-const char* kPassTitle = "PASS";
-
-std::string CreateClientRedirect(const std::string& dest_url) {
-  const char* const kClientRedirectBase = "/client-redirect?";
-  return kClientRedirectBase + net::EscapeQueryParamValue(dest_url, false);
-}
-
 std::string CreateServerRedirect(const std::string& dest_url) {
   const char* const kServerRedirectBase = "/server-redirect?";
   return kServerRedirectBase + net::EscapeQueryParamValue(dest_url, false);
@@ -247,17 +239,6 @@ bool ShouldAbortPrerenderBeforeSwap(FinalStatus status) {
     default:
       return true;
   }
-}
-
-// Convenience function to wait for a title. Handles the case when the
-// WebContents already has the expected title.
-void WaitForASCIITitle(WebContents* web_contents,
-                       const char* expected_title_ascii) {
-  base::string16 expected_title = base::ASCIIToUTF16(expected_title_ascii);
-  if (web_contents->GetTitle() == expected_title)
-    return;
-  content::TitleWatcher title_watcher(web_contents, expected_title);
-  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 
 // Waits for the destruction of a RenderProcessHost's IPC channel.
@@ -446,12 +427,6 @@ class NewTabNavigationOrSwapObserver : public TabStripModelObserver,
 
   DISALLOW_COPY_AND_ASSIGN(NewTabNavigationOrSwapObserver);
 };
-
-base::FilePath GetTestPath(const std::string& file_name) {
-  return ui_test_utils::GetTestFilePath(
-      base::FilePath(FILE_PATH_LITERAL("prerender")),
-      base::FilePath().AppendASCII(file_name));
-}
 
 }  // namespace
 
@@ -1097,25 +1072,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   EXPECT_TRUE(IsEmptyPrerenderLinkManager());
 }
 
-// Checks that client redirects don't add alias URLs until after they commit.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNoCommitNoSwap2) {
-  // Navigate to a page that then navigates to a URL that never commits.
-  const GURL kNoCommitUrl("http://never-respond.example.com");
-  base::FilePath file(GetTestPath("prerender_page.html"));
-
-  base::RunLoop prerender_start_loop;
-  CreateHangingFirstRequestInterceptor(kNoCommitUrl, file,
-                                       prerender_start_loop.QuitClosure());
-  DisableJavascriptCalls();
-  PrerenderTestURL(CreateClientRedirect(kNoCommitUrl.spec()),
-                   FINAL_STATUS_APP_TERMINATING, 1);
-  // Wait for the hanging request to be scheduled.
-  prerender_start_loop.Run();
-
-  // Navigating to the second URL should not swap.
-  NavigateToURLWithDisposition(kNoCommitUrl, WindowOpenDisposition::CURRENT_TAB,
-                               false);
-}
 
 // Checks that plugins are not loaded while a page is being preloaded, but
 // are loaded when the page is displayed.
@@ -1370,31 +1326,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, OpenTaskManagerAfterPrerender) {
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, any_prerender));
 }
 
-// Checks that audio loads are deferred on prerendering.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5Audio) {
-  PrerenderTestURL("/prerender/prerender_html5_audio.html", FINAL_STATUS_USED,
-                   1);
-  NavigateToDestURL();
-  WaitForASCIITitle(GetActiveWebContents(), kPassTitle);
-}
-
-// Checks that audio loads are deferred on prerendering and played back when
-// the prerender is swapped in if autoplay is set.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5AudioAutoplay) {
-  PrerenderTestURL("/prerender/prerender_html5_audio_autoplay.html",
-                   FINAL_STATUS_USED, 1);
-  NavigateToDestURL();
-  WaitForASCIITitle(GetActiveWebContents(), kPassTitle);
-}
-
-// Checks that video loads are deferred on prerendering.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5Video) {
-  PrerenderTestURL("/prerender/prerender_html5_video.html", FINAL_STATUS_USED,
-                   1);
-  NavigateToDestURL();
-  WaitForASCIITitle(GetActiveWebContents(), kPassTitle);
-}
-
 // TODO(jam): http://crbug.com/350550
 #if !(defined(OS_CHROMEOS) && defined(ADDRESS_SANITIZER))
 
@@ -1418,24 +1349,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderRendererCrash) {
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageWithFragment) {
   PrerenderTestURL("/prerender/prerender_page.html#fragment", FINAL_STATUS_USED,
                    1);
-
-  ChannelDestructionWatcher channel_close_watcher;
-  channel_close_watcher.WatchChannel(browser()
-                                         ->tab_strip_model()
-                                         ->GetActiveWebContents()
-                                         ->GetMainFrame()
-                                         ->GetProcess());
-  NavigateToDestURL();
-  channel_close_watcher.WaitForChannelClose();
-
-  ASSERT_TRUE(IsEmptyPrerenderLinkManager());
-}
-
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderPageWithRedirectedFragment) {
-  PrerenderTestURL(
-      CreateClientRedirect("/prerender/prerender_page.html#fragment"),
-      FINAL_STATUS_USED, 2);
 
   ChannelDestructionWatcher channel_close_watcher;
   channel_close_watcher.WatchChannel(browser()
@@ -1477,26 +1390,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                                WindowOpenDisposition::CURRENT_TAB, false);
 }
 
-// Checks that we do not use a prerendered page when the page uses a client
-// redirect to refresh from a fragment on the same page.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderClientRedirectFromFragment) {
-  PrerenderTestURL(
-      CreateClientRedirect("/prerender/no_prerender_page.html#fragment"),
-      FINAL_STATUS_APP_TERMINATING, 2);
-  NavigateToURLWithDisposition("/prerender/no_prerender_page.html",
-                               WindowOpenDisposition::CURRENT_TAB, false);
-}
-
-// Checks that we do not use a prerendered page when the page uses a client
-// redirect to refresh to a fragment on the same page.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderClientRedirectToFragment) {
-  PrerenderTestURL(CreateClientRedirect("/prerender/no_prerender_page.html"),
-                   FINAL_STATUS_APP_TERMINATING, 2);
-  NavigateToURLWithDisposition("/prerender/no_prerender_page.html#fragment",
-                               WindowOpenDisposition::CURRENT_TAB, false);
-}
 
 // Checks that xhr PUT cancels prerenders.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderXhrPut) {
@@ -1633,16 +1526,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
       url, safe_browsing::SB_THREAT_TYPE_URL_MALWARE);
   PrerenderTestURL(CreateServerRedirect("/prerender/prerender_page.html"),
                    FINAL_STATUS_SAFE_BROWSING, 0);
-}
-
-// Ensures that client redirects to a malware page will cancel prerenders.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderSafeBrowsingClientRedirect) {
-  GURL url = embedded_test_server()->GetURL("/prerender/prerender_page.html");
-  GetFakeSafeBrowsingDatabaseManager()->SetThreatTypeForUrl(
-      url, safe_browsing::SB_THREAT_TYPE_URL_MALWARE);
-  PrerenderTestURL(CreateClientRedirect("/prerender/prerender_page.html"),
-                   FINAL_STATUS_SAFE_BROWSING, 1);
 }
 
 // Ensures that we do not prerender pages which have a malware subresource.

@@ -386,7 +386,7 @@ void ScreenLayoutObserver::CreateOrUpdateNotification(
     return;
   }
 
-  std::unique_ptr<Notification> notification = ash::CreateSystemNotification(
+  std::unique_ptr<Notification> notification = CreateSystemNotification(
       message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId, message,
       additional_message,
       base::string16(),  // display_source
@@ -411,7 +411,7 @@ void ScreenLayoutObserver::OnDisplayConfigurationChanged() {
   UpdateDisplayInfo(&old_info);
 
   const bool current_has_unassociated_display =
-      ash::Shell::Get()->display_manager()->HasUnassociatedDisplay();
+      Shell::Get()->display_manager()->HasUnassociatedDisplay();
 
   // Take |has_unassociated_display_| into consideration in order to avoid
   // showing the notification too frequently. For example, user connects three

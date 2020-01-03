@@ -29,16 +29,6 @@
     dump(UI.panels.resources._sidebar._sidebarTree.rootElement(), '');
   }
 
-  function findTreeElement(parent, path) {
-    if (path.length === 0)
-      return parent;
-    var child = parent.children().find(child => child.title === path[0]);
-    if (!child)
-      return null;
-    child.expand();
-    return findTreeElement(child, path.slice(1));
-  }
-
   async function createTable(queryView) {
     queryView._prompt.setText('CREATE TABLE table1 (id INTEGER PRIMARY KEY ASC, text_field TEXT)');
     queryView._enterKeyPressed(new KeyboardEvent('keydown'));
@@ -52,7 +42,7 @@
       'openDatabase("inspector-test-db", "1.0", "Database for inspector test", 1024*1024)');
 
   var parent = UI.panels.resources._sidebar._sidebarTree.rootElement();
-  var databaseElement = findTreeElement(parent, ['Storage', 'Web SQL', 'inspector-test-db']);
+  var databaseElement = ApplicationTestRunner.findTreeElement(parent, ['Storage', 'Web SQL', 'inspector-test-db']);
 
   TestRunner.addResult('Found: ' + !!databaseElement);
 
@@ -69,7 +59,7 @@
   }
 
   await createTable(queryView);
-  while (!findTreeElement(databaseElement, ['table1'])) {
+  while (!ApplicationTestRunner.findTreeElement(databaseElement, ['table1'])) {
     databaseElement.expand();
     await new Promise(resolve => setTimeout(resolve));
   }

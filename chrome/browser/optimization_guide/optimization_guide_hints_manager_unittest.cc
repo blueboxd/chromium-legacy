@@ -2267,3 +2267,65 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
             optimization_guide::OptimizationTypeDecision::
                 kHintFetchStartedButNotAvailableInTime);
 }
+
+TEST_F(OptimizationGuideHintsManagerFetchingTest,
+       CanApplyOptimizationCalledPostFetchButNoHintsCameBack) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::DEFER_ALL_SCRIPT});
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  hints_manager()->SetHintsFetcherForTesting(
+      BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithNoHints));
+
+  // Set ECT estimate so fetch is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          url_without_hints());
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               base::DoNothing());
+  RunUntilIdle();
+
+  optimization_guide::OptimizationTargetDecision unused_target_decision;
+  optimization_guide::OptimizationTypeDecision optimization_type_decision;
+  hints_manager()->CanApplyOptimization(
+      navigation_handle.get(),
+      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
+      optimization_guide::proto::DEFER_ALL_SCRIPT, &unused_target_decision,
+      &optimization_type_decision, /*optimization_metadata=*/nullptr);
+
+  EXPECT_EQ(optimization_type_decision,
+            optimization_guide::OptimizationTypeDecision::kNoHintAvailable);
+}
+
+TEST_F(OptimizationGuideHintsManagerFetchingTest,
+       CanApplyOptimizationCalledPostFetchButFetchFailed) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::DEFER_ALL_SCRIPT});
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  hints_manager()->SetHintsFetcherForTesting(
+      BuildTestHintsFetcher(HintsFetcherEndState::kFetchFailed));
+
+  // Set ECT estimate so fetch is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          url_without_hints());
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               base::DoNothing());
+  RunUntilIdle();
+
+  optimization_guide::OptimizationTargetDecision unused_target_decision;
+  optimization_guide::OptimizationTypeDecision optimization_type_decision;
+  hints_manager()->CanApplyOptimization(
+      navigation_handle.get(),
+      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
+      optimization_guide::proto::DEFER_ALL_SCRIPT, &unused_target_decision,
+      &optimization_type_decision, /*optimization_metadata=*/nullptr);
+
+  EXPECT_EQ(optimization_type_decision,
+            optimization_guide::OptimizationTypeDecision::kNoHintAvailable);
+}

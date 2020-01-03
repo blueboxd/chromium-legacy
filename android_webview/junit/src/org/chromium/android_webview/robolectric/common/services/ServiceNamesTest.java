@@ -14,8 +14,8 @@ import org.robolectric.annotation.Config;
 import org.chromium.android_webview.common.services.ServiceNames;
 import org.chromium.android_webview.services.AwMinidumpUploadJobService;
 import org.chromium.android_webview.services.CrashReceiverService;
+import org.chromium.android_webview.services.DeveloperModeContentProvider;
 import org.chromium.android_webview.services.DeveloperUiService;
-import org.chromium.android_webview.services.FlagOverrideContentProvider;
 import org.chromium.android_webview.services.VariationsSeedServer;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
@@ -31,11 +31,11 @@ public class ServiceNamesTest {
                 ServiceNames.AW_MINIDUMP_UPLOAD_JOB_SERVICE);
         Assert.assertEquals("Incorrect class name constant", CrashReceiverService.class.getName(),
                 ServiceNames.CRASH_RECEIVER_SERVICE);
+        Assert.assertEquals("Incorrect class name constant",
+                DeveloperModeContentProvider.class.getName(),
+                ServiceNames.DEVELOPER_MODE_CONTENT_PROVIDER);
         Assert.assertEquals("Incorrect class name constant", DeveloperUiService.class.getName(),
                 ServiceNames.DEVELOPER_UI_SERVICE);
-        Assert.assertEquals("Incorrect class name constant",
-                FlagOverrideContentProvider.class.getName(),
-                ServiceNames.FLAG_OVERRIDE_CONTENT_PROVIDER);
         Assert.assertEquals("Incorrect class name constant", VariationsSeedServer.class.getName(),
                 ServiceNames.VARIATIONS_SEED_SERVER);
     }

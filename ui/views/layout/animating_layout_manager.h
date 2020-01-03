@@ -235,16 +235,12 @@ class VIEWS_EXPORT AnimatingLayoutManager : public LayoutManagerBase {
   // Calculates a kScaleFrom[Minimum|Zero] fade and returns the resulting child
   // layout info.
   ChildLayout CalculateScaleFade(const LayoutFadeInfo& fade_info,
-                                 base::Optional<size_t> prev_index,
-                                 base::Optional<size_t> next_index,
                                  double scale_percent,
                                  bool scale_from_zero) const;
 
   // Calculates a kSlideFrom[Leading|Trailing]Edge fade and returns the
   // resulting child layout info.
   ChildLayout CalculateSlideFade(const LayoutFadeInfo& fade_info,
-                                 base::Optional<size_t> prev_index,
-                                 base::Optional<size_t> next_index,
                                  double scale_percent,
                                  bool slide_from_leading) const;
 

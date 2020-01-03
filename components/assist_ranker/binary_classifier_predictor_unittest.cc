@@ -52,9 +52,9 @@ BinaryClassifierPredictorTest::InitPredictor(
   std::unique_ptr<BinaryClassifierPredictor> predictor(
       new BinaryClassifierPredictor(config));
   auto fake_model_loader = std::make_unique<FakeRankerModelLoader>(
-      base::Bind(&BinaryClassifierPredictor::ValidateModel),
-      base::Bind(&BinaryClassifierPredictor::OnModelAvailable,
-                 base::Unretained(predictor.get())),
+      base::BindRepeating(&BinaryClassifierPredictor::ValidateModel),
+      base::BindRepeating(&BinaryClassifierPredictor::OnModelAvailable,
+                          base::Unretained(predictor.get())),
       std::move(ranker_model));
   predictor->LoadModel(std::move(fake_model_loader));
   return predictor;

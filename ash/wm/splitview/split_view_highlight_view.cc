@@ -252,10 +252,8 @@ void SplitViewHighlightView::OnWindowDraggingStateChanged(
     return;
   }
 
-  // The drag just started, and not in a snap area. If |previews_only|, there is
-  // nothing to do. Else fade in.
-  DCHECK_EQ(SplitViewDragIndicators::WindowDraggingState::kNoDrag,
-            previous_window_dragging_state);
+  // The drag just started or came in from another display, and is not currently
+  // in a snap area. If |previews_only|, there is nothing to do. Else fade in.
   DCHECK_EQ(0.f, layer()->GetTargetOpacity());
   if (!previews_only) {
     DoSplitviewOpacityAnimation(layer(), SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_IN);

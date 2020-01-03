@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/platform/data_resource_helper.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "ui/base/ui_base_features.h"
 
 namespace blink {
 
@@ -94,7 +95,7 @@ String LayoutThemeDefault::ExtraDefaultStyleSheet() {
   String windows_style_sheet =
       UncompressResourceAsASCIIString(IDR_UASTYLE_THEME_WIN_CSS);
   String controls_refresh_style_sheet =
-      RuntimeEnabledFeatures::FormControlsRefreshEnabled()
+      features::IsFormControlsRefreshEnabled()
           ? UncompressResourceAsASCIIString(
                 IDR_UASTYLE_THEME_CONTROLS_REFRESH_CSS)
           : String();
@@ -154,14 +155,14 @@ Color LayoutThemeDefault::PlatformInactiveSelectionForegroundColor(
 }
 
 IntSize LayoutThemeDefault::SliderTickSize() const {
-  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled())
+  if (features::IsFormControlsRefreshEnabled())
     return IntSize(1, 4);
   else
     return IntSize(1, 6);
 }
 
 int LayoutThemeDefault::SliderTickOffsetFromTrackCenter() const {
-  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled())
+  if (features::IsFormControlsRefreshEnabled())
     return 7;
   else
     return -16;

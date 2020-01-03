@@ -282,33 +282,5 @@ class LitePage(IntegrationTest):
               response.response_headers)
           continue
 
-  # Checks that the server provides a working interactive CASPR.
-  @ChromeVersionEqualOrAfterM(65)
-  def testInteractiveCASPR(self):
-    with TestDriver() as test_driver:
-      test_driver.AddChromeArg('--enable-spdy-proxy-auth')
-      test_driver.EnableChromeFeature('Previews')
-      test_driver.EnableChromeFeature('DataReductionProxyDecidesTransform')
-      # Need to force 2G speed to get a preview.
-      test_driver.AddChromeArg('--force-effective-connection-type=2G')
-      # Set exp=client_test_icaspr to force iCASPR response.
-      test_driver.SetExperiment('ihdp_integration')
-
-      test_driver.LoadURL('http://check.googlezip.net/previews/ihdp.html')
-
-      # The original page does not have any script resources (scripts are
-      # inlined in the HTML). The snapshotted page should contain exactly one
-      # script: the snapshot.
-      num_scripts = 0
-      for response in test_driver.GetHTTPResponses():
-        if response.request_type == 'Script':
-          num_scripts += 1
-
-      self.assertEqual(1, num_scripts)
-
-      # Make sure the snapshot is restored correctly.
-      window_x = test_driver.ExecuteJavascriptStatement('window.x')
-      self.assertEqual(10, window_x)
-
 if __name__ == '__main__':
   IntegrationTest.RunAllTests()

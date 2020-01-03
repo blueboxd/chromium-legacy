@@ -25,8 +25,14 @@ class CONTENT_EXPORT TouchpadPinchEventQueueClient {
  public:
   virtual ~TouchpadPinchEventQueueClient() = default;
 
+  using MouseWheelEventHandledCallback =
+      base::OnceCallback<void(const MouseWheelEventWithLatencyInfo& event,
+                              InputEventAckSource ack_source,
+                              InputEventAckState ack_result)>;
+
   virtual void SendMouseWheelEventForPinchImmediately(
-      const MouseWheelEventWithLatencyInfo& event) = 0;
+      const MouseWheelEventWithLatencyInfo& event,
+      MouseWheelEventHandledCallback callback) = 0;
   virtual void OnGestureEventForPinchAck(
       const GestureEventWithLatencyInfo& event,
       InputEventAckSource ack_source,
@@ -49,19 +55,15 @@ class CONTENT_EXPORT TouchpadPinchEventQueue {
   // coalesced with previously queued events.
   void QueueEvent(const GestureEventWithLatencyInfo& event);
 
-  // Notifies the queue that a synthetic mouse wheel event has been processed
-  // by the renderer.
-  void ProcessMouseWheelAck(InputEventAckSource ack_source,
-                            InputEventAckState ack_result,
-                            const MouseWheelEventWithLatencyInfo& ack_event);
-
   bool has_pending() const WARN_UNUSED_RESULT;
 
-  blink::WebMouseWheelEvent get_wheel_event_awaiting_ack_for_testing() {
-    return wheel_event_awaiting_ack_.value();
-  }
-
  private:
+  // Notifies the queue that a synthetic mouse wheel event has been processed
+  // by the renderer.
+  void ProcessMouseWheelAck(const MouseWheelEventWithLatencyInfo& ack_event,
+                            InputEventAckSource ack_source,
+                            InputEventAckState ack_result);
+
   void TryForwardNextEventToRenderer();
 
   const bool touchpad_async_pinch_events_;
@@ -69,7 +71,6 @@ class CONTENT_EXPORT TouchpadPinchEventQueue {
 
   base::circular_deque<std::unique_ptr<QueuedTouchpadPinchEvent>> pinch_queue_;
   std::unique_ptr<QueuedTouchpadPinchEvent> pinch_event_awaiting_ack_;
-  base::Optional<blink::WebMouseWheelEvent> wheel_event_awaiting_ack_;
   base::Optional<bool> first_event_prevented_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchpadPinchEventQueue);

@@ -75,6 +75,13 @@ LayoutBlockFlow* LayoutObjectFactory::CreateBlockFlow(
     Node& node,
     const ComputedStyle& style,
     LegacyLayout legacy) {
+  if (style.Display() == EDisplay::kListItem) {
+    // Create a LayoutBlockFlow with a list marker
+    return CreateObject<LayoutBlockFlow, LayoutNGListItem, LayoutListItem>(
+        node, style, legacy);
+  }
+
+  // Create a plain LayoutBlockFlow
   return CreateObject<LayoutBlockFlow, LayoutNGBlockFlow>(node, style, legacy);
 }
 
@@ -84,13 +91,6 @@ LayoutBlock* LayoutObjectFactory::CreateFlexibleBox(Node& node,
   bool disable_ng_for_type = !RuntimeEnabledFeatures::LayoutNGFlexBoxEnabled();
   return CreateObject<LayoutBlock, LayoutNGFlexibleBox, LayoutFlexibleBox>(
       node, style, legacy, disable_ng_for_type);
-}
-
-LayoutBlockFlow* LayoutObjectFactory::CreateListItem(Node& node,
-                                                     const ComputedStyle& style,
-                                                     LegacyLayout legacy) {
-  return CreateObject<LayoutBlockFlow, LayoutNGListItem, LayoutListItem>(
-      node, style, legacy);
 }
 
 LayoutObject* LayoutObjectFactory::CreateListMarker(Node& node,

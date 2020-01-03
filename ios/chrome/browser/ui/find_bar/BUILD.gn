@@ -9,6 +9,8 @@ source_set("find_bar") {
     "find_bar_controller_ios.mm",
     "find_bar_view.h",
     "find_bar_view.mm",
+    "find_bar_view_controller.h",
+    "find_bar_view_controller.mm",
   ]
   deps = [
     ":constants",

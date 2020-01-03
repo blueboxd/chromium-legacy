@@ -23,7 +23,7 @@ class TimeTrayItemView : public TrayItemView, public SessionObserver {
   ~TimeTrayItemView() override;
 
   void UpdateAlignmentForShelf(Shelf* shelf);
-  tray::TimeView* time_view() { return time_view_; }
+  TimeView* time_view() { return time_view_; }
 
   // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;

@@ -111,13 +111,6 @@
         </network-proxy-input>
         <network-proxy-input
             on-proxy-input-change="onProxyInputChange_"
-            editable="[[isEditable_('manual.ftpProxy.host', managedProperties,
-                editable, useSharedProxies)]]"
-            value="{{proxy_.manual.ftpProxy}}"
-            label="[[i18n('networkProxyFtp')]]">
-        </network-proxy-input>
-        <network-proxy-input
-            on-proxy-input-change="onProxyInputChange_"
             editable="[[isEditable_('manual.socks.host', managedProperties,
                 editable, useSharedProxies)]]"
             value="{{proxy_.manual.socks}}"

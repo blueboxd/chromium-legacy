@@ -107,7 +107,7 @@ class EventRouter : public KeyedService,
   // Note that this method will dispatch the event with
   // UserGestureState:USER_GESTURE_UNKNOWN.
   static void DispatchEventToSender(IPC::Sender* ipc_sender,
-                                    void* browser_context_id,
+                                    content::BrowserContext* browser_context,
                                     const std::string& extension_id,
                                     events::HistogramValue histogram_value,
                                     const std::string& event_name,
@@ -277,7 +277,7 @@ class EventRouter : public KeyedService,
   static void DispatchExtensionMessage(
       IPC::Sender* ipc_sender,
       int worker_thread_id,
-      void* browser_context_id,
+      content::BrowserContext* browser_context,
       const std::string& extension_id,
       int event_id,
       const std::string& event_name,
@@ -350,8 +350,8 @@ class EventRouter : public KeyedService,
                                int64_t service_worker_version_id);
 
   // static
-  static void DoDispatchEventToSenderBookkeepingOnUI(
-      void* browser_context_id,
+  static void DoDispatchEventToSenderBookkeeping(
+      content::BrowserContext* context,
       const std::string& extension_id,
       int event_id,
       int render_process_id,

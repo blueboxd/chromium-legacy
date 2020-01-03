@@ -67,12 +67,19 @@ uint64_t GpuChannelManager::GpuPeakMemoryMonitor::GetPeakMemoryUsage(
 
 void GpuChannelManager::GpuPeakMemoryMonitor::StartGpuMemoryTracking(
     uint32_t sequence_num) {
+  TRACE_EVENT_ASYNC_BEGIN1("gpu", "PeakMemoryTracking", sequence_num, "start",
+                           current_memory_);
   sequence_trackers_.emplace(sequence_num, current_memory_);
 }
 
 void GpuChannelManager::GpuPeakMemoryMonitor::StopGpuMemoryTracking(
     uint32_t sequence_num) {
-  sequence_trackers_.erase(sequence_num);
+  auto sequence = sequence_trackers_.find(sequence_num);
+  if (sequence != sequence_trackers_.end()) {
+    TRACE_EVENT_ASYNC_END1("gpu", "PeakMemoryTracking", sequence_num, "peak",
+                           sequence->second);
+    sequence_trackers_.erase(sequence);
+  }
 }
 
 void GpuChannelManager::GpuPeakMemoryMonitor::OnMemoryAllocatedChange(
@@ -89,8 +96,14 @@ void GpuChannelManager::GpuPeakMemoryMonitor::OnMemoryAllocatedChange(
     // |peak_since_last_sequence_update_| on the the memory changes. Then only
     // update the sequences with a new one is added, or the peak is requested.
     for (auto& sequence : sequence_trackers_) {
-      if (current_memory_ > sequence.second)
+      if (current_memory_ > sequence.second) {
         sequence.second = current_memory_;
+        for (auto& sequence : sequence_trackers_) {
+          TRACE_EVENT_ASYNC_STEP_INTO1("gpu", "PeakMemoryTracking",
+                                       sequence.first, "Peak", "peak",
+                                       current_memory_);
+        }
+      }
     }
   }
 }

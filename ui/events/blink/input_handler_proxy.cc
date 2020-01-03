@@ -912,28 +912,19 @@ InputHandlerProxy::HandleGestureScrollUpdate(
   if (ShouldAnimate(gesture_event.SourceDevice(),
                     gesture_event.data.scroll_update.delta_units !=
                         ui::input_types::ScrollGranularity::kScrollByPixel)) {
-    DCHECK(!scroll_state.is_in_inertial_phase());
-    base::TimeTicks event_time = gesture_event.TimeStamp();
-    base::TimeDelta delay = base::TimeTicks::Now() - event_time;
-    switch (input_handler_
-                ->ScrollAnimated(gfx::ToFlooredPoint(scroll_point),
-                                 scroll_delta, delay)
-                .thread) {
-      case cc::InputHandler::SCROLL_ON_IMPL_THREAD:
-        return DID_HANDLE;
-      case cc::InputHandler::SCROLL_IGNORED:
-        TRACE_EVENT_INSTANT0("input", "Scroll Ignored",
-                             TRACE_EVENT_SCOPE_THREAD);
-        return DROP_EVENT;
-      case cc::InputHandler::SCROLL_ON_MAIN_THREAD:
-      case cc::InputHandler::SCROLL_UNKNOWN:
-        if (input_handler_->ScrollingShouldSwitchtoMainThread()) {
-          TRACE_EVENT_INSTANT0("input", "Move Scroll To Main Thread",
-                               TRACE_EVENT_SCOPE_THREAD);
-          gesture_scroll_on_impl_thread_ = false;
-          client_->GenerateScrollBeginAndSendToMainThread(gesture_event);
-        }
-        return DID_NOT_HANDLE;
+    if (input_handler_->ScrollingShouldSwitchtoMainThread()) {
+      TRACE_EVENT_INSTANT0("input", "Move Scroll To Main Thread",
+                           TRACE_EVENT_SCOPE_THREAD);
+      gesture_scroll_on_impl_thread_ = false;
+      client_->GenerateScrollBeginAndSendToMainThread(gesture_event);
+      return DID_NOT_HANDLE;
+    } else {
+      DCHECK(!scroll_state.is_in_inertial_phase());
+      base::TimeTicks event_time = gesture_event.TimeStamp();
+      base::TimeDelta delay = base::TimeTicks::Now() - event_time;
+      input_handler_->ScrollAnimated(gfx::ToFlooredPoint(scroll_point),
+                                     scroll_delta, delay);
+      return DID_HANDLE;
     }
   }
 

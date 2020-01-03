@@ -62,7 +62,7 @@ Polymer({
 
     this.lastString_ = safeQueryString;
     this.searchQuery = safeQueryString.length > 0 ?
-        new RegExp(`(${safeQueryString})`, 'i') :
+        new RegExp(`(${safeQueryString})`, 'ig') :
         null;
   },
 

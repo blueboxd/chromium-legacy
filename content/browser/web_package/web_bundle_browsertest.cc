@@ -1066,7 +1066,9 @@ class WebBundleNetworkBrowserTest : public WebBundleBrowserTestBase {
   DISALLOW_COPY_AND_ASSIGN(WebBundleNetworkBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, Simple) {
+// TODO(crbug.com/1038346): Starting the embedded test server on a fixed port
+// will fail if the bot is simultaneously running several of these tests.
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, DISABLED_Simple) {
   const std::string test_bundle =
       GetTestFile("web_bundle_browsertest_network.wbn");
   RegisterRequestHandler(
@@ -1083,7 +1085,9 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, Simple) {
                               kNetworkTestPort)));
 }
 
-IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, Download) {
+// TODO(crbug.com/1038346): Starting the embedded test server on a fixed port
+// will fail if the bot is simultaneously running several of these tests.
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, DISABLED_Download) {
   const std::string test_bundle =
       GetTestFile("web_bundle_browsertest_network.wbn");
   // Web Bundle file with attachment Content-Disposition must trigger download.
@@ -1106,7 +1110,9 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, Download) {
   EXPECT_EQ(url, download_observer->observed_url());
 }
 
-IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, NoContentLength) {
+// TODO(crbug.com/1038346): Starting the embedded test server on a fixed port
+// will fail if the bot is simultaneously running several of these tests.
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, DISABLED_NoContentLength) {
   const std::string test_bundle =
       GetTestFile("web_bundle_browsertest_network.wbn");
   // No Content-Length header.
@@ -1121,7 +1127,9 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, NoContentLength) {
                               kNetworkTestPort)));
 }
 
-IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, NonSecureUrl) {
+// TODO(crbug.com/1038346): Starting the embedded test server on a fixed port
+// will fail if the bot is simultaneously running several of these tests.
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, DISABLED_NonSecureUrl) {
   const std::string test_bundle =
       GetTestFile("web_bundle_browsertest_network.wbn");
   RegisterRequestHandler(
@@ -1137,7 +1145,10 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, NonSecureUrl) {
       "Web Bundle response must be served from HTTPS or localhost HTTP.");
 }
 
-IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, PrimaryURLNotFound) {
+// TODO(crbug.com/1038346): Starting the embedded test server on a fixed port
+// will fail if the bot is simultaneously running several of these tests.
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
+                       DISABLED_PrimaryURLNotFound) {
   const std::string test_bundle =
       GetTestFile("web_bundle_browsertest_network_primary_url_not_found.wbn");
 
@@ -1154,7 +1165,9 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, PrimaryURLNotFound) {
       "The primary URL resource is not found in the web bundle.");
 }
 
-IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, OriginMismatch) {
+// TODO(crbug.com/1038346): Starting the embedded test server on a fixed port
+// will fail if the bot is simultaneously running several of these tests.
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, DISABLED_OriginMismatch) {
   const std::string test_bundle =
       GetTestFile("web_bundle_browsertest_network.wbn");
   RegisterRequestHandler(
@@ -1171,7 +1184,9 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, OriginMismatch) {
       "bundle.");
 }
 
-IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, InvalidFile) {
+// TODO(crbug.com/1038346): Starting the embedded test server on a fixed port
+// will fail if the bot is simultaneously running several of these tests.
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, DISABLED_InvalidFile) {
   const std::string test_bundle = GetTestFile("invalid_web_bundle.wbn");
   RegisterRequestHandler(
       "/web_bundle/test.wbn",
@@ -1186,7 +1201,10 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, InvalidFile) {
       "Failed to read metadata of Web Bundle file: Wrong magic bytes.");
 }
 
-IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, DataDecoderRestart) {
+// TODO(crbug.com/1038346): Starting the embedded test server on a fixed port
+// will fail if the bot is simultaneously running several of these tests.
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
+                       DISABLED_DataDecoderRestart) {
   const GURL primary_url(base::StringPrintf(
       "http://localhost:%d/web_bundle/network/", kNetworkTestPort));
   const GURL script_url(base::StringPrintf(
@@ -1225,7 +1243,10 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, DataDecoderRestart) {
   EXPECT_EQ(2, mock_factory.GetParserCreationCount());
 }
 
-IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, ParseMetadataCrash) {
+// TODO(crbug.com/1038346): Starting the embedded test server on a fixed port
+// will fail if the bot is simultaneously running several of these tests.
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
+                       DISABLED_ParseMetadataCrash) {
   const GURL primary_url(base::StringPrintf(
       "http://localhost:%d/web_bundle/network/", kNetworkTestPort));
   const std::string test_bundle = "<title>Ready</title>";
@@ -1248,7 +1269,10 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, ParseMetadataCrash) {
                         "connect to the remote parser service");
 }
 
-IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, ParseResponseCrash) {
+// TODO(crbug.com/1038346): Starting the embedded test server on a fixed port
+// will fail if the bot is simultaneously running several of these tests.
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
+                       DISABLED_ParseResponseCrash) {
   const GURL primary_url(base::StringPrintf(
       "http://localhost:%d/web_bundle/network/", kNetworkTestPort));
   const std::string test_bundle = "<title>Ready</title>";
@@ -1271,7 +1295,9 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, ParseResponseCrash) {
                         "Cannot connect to the remote parser service");
 }
 
-IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, PathMismatch) {
+// TODO(crbug.com/1038346): Starting the embedded test server on a fixed port
+// will fail if the bot is simultaneously running several of these tests.
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, DISABLED_PathMismatch) {
   const std::string test_bundle =
       GetTestFile("web_bundle_browsertest_network.wbn");
   RegisterRequestHandler(
@@ -1293,7 +1319,9 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, PathMismatch) {
           kNetworkTestPort, kNetworkTestPort));
 }
 
-IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, Navigations) {
+// TODO(crbug.com/1038346): Starting the embedded test server on a fixed port
+// will fail if the bot is simultaneously running several of these tests.
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, DISABLED_Navigations) {
   const std::string test_bundle = GetTestFile("path_test.wbn");
   RegisterRequestHandler(
       "/web_bundle/path_test/in_scope/path_test.wbn",
@@ -1331,7 +1359,10 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, Navigations) {
       "In scope page from server / in scope script from server");
 }
 
-IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, HistoryNavigations) {
+// TODO(crbug.com/1038346): Starting the embedded test server on a fixed port
+// will fail if the bot is simultaneously running several of these tests.
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
+                       DISABLED_HistoryNavigations) {
   const std::string test_bundle = GetTestFile("path_test.wbn");
   RegisterRequestHandler(
       "/web_bundle/path_test/in_scope/path_test.wbn",
@@ -1385,8 +1416,10 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, HistoryNavigations) {
                 kNetworkTestPort)));
 }
 
+// TODO(crbug.com/1038346): Starting the embedded test server on a fixed port
+// will fail if the bot is simultaneously running several of these tests.
 IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
-                       HistoryNavigationError_UnexpectedContentType) {
+                       DISABLED_HistoryNavigationError_UnexpectedContentType) {
   const std::string test_bundle = GetTestFile("path_test.wbn");
   RunHistoryNavigationErrorTest(
       base::StringPrintf("HTTP/1.1 200 OK\n"
@@ -1403,8 +1436,10 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
       test_bundle, "Unexpected content type.");
 }
 
+// TODO(crbug.com/1038346): Starting the embedded test server on a fixed port
+// will fail if the bot is simultaneously running several of these tests.
 IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
-                       HistoryNavigationError_UnexpectedRedirect) {
+                       DISABLED_HistoryNavigationError_UnexpectedRedirect) {
   const std::string test_bundle = GetTestFile("path_test.wbn");
   RunHistoryNavigationErrorTest(
       base::StringPrintf("HTTP/1.1 200 OK\n"
@@ -1418,8 +1453,10 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
       "", "Unexpected redirect.");
 }
 
+// TODO(crbug.com/1038346): Starting the embedded test server on a fixed port
+// will fail if the bot is simultaneously running several of these tests.
 IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
-                       HistoryNavigationError_ReadMetadataFailure) {
+                       DISABLED_HistoryNavigationError_ReadMetadataFailure) {
   const std::string test_bundle = GetTestFile("path_test.wbn");
   const std::string invalid_bundle = GetTestFile("invalid_web_bundle.wbn");
   RunHistoryNavigationErrorTest(
@@ -1438,8 +1475,10 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
       "Failed to read metadata of Web Bundle file: Wrong magic bytes.");
 }
 
+// TODO(crbug.com/1038346): Starting the embedded test server on a fixed port
+// will fail if the bot is simultaneously running several of these tests.
 IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
-                       HistoryNavigationError_ExpectedUrlNotFound) {
+                       DISABLED_HistoryNavigationError_ExpectedUrlNotFound) {
   const std::string test_bundle = GetTestFile("path_test.wbn");
   const std::string other_bundle =
       GetTestFile("web_bundle_browsertest_network.wbn");

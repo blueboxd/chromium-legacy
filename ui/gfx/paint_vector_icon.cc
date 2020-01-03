@@ -75,8 +75,8 @@ struct CompareIconDescription {
     const VectorIcon* b_icon = &b.icon;
     const VectorIcon* a_badge = &a.badge_icon;
     const VectorIcon* b_badge = &b.badge_icon;
-    return std::tie(a_icon, a.dip_size, a.color, a.elapsed_time, a_badge) <
-           std::tie(b_icon, b.dip_size, b.color, b.elapsed_time, b_badge);
+    return std::tie(a_icon, a.dip_size, a.color, a_badge) <
+           std::tie(b_icon, b.dip_size, b.color, b_badge);
   }
 };
 
@@ -119,7 +119,6 @@ class PathParser {
         return 2;
 
       case CIRCLE:
-      case TRANSITION_END:
         return 3;
 
       case PATH_COLOR_ARGB:
@@ -144,8 +143,6 @@ class PathParser {
       case CLOSE:
       case DISABLE_AA:
       case FLIPS_IN_RTL:
-      case TRANSITION_FROM:
-      case TRANSITION_TO:
         return 0;
     }
 
@@ -219,8 +216,7 @@ void PaintPath(Canvas* canvas,
                const PathElement* path_elements,
                size_t path_size,
                int dip_size,
-               SkColor color,
-               const base::TimeDelta& elapsed_time) {
+               SkColor color) {
   int canvas_size = kReferenceSizeDip;
   std::vector<SkPath> paths;
   std::vector<cc::PaintFlags> flags_array;
@@ -405,68 +401,6 @@ void PaintPath(Canvas* canvas,
       case FLIPS_IN_RTL:
         flips_in_rtl = true;
         break;
-
-      // Transitions work by pushing new paths and a new set of flags onto the
-      // stack. When TRANSITION_END is seen, the paths and flags are
-      // interpolated based on |elapsed_time| and the tween type.
-      case TRANSITION_FROM: {
-        start_new_path();
-        break;
-      }
-
-      case TRANSITION_TO: {
-        start_new_path();
-        start_new_flags();
-        break;
-      }
-
-      case TRANSITION_END: {
-        DCHECK_GT(paths.size(), 2U);
-        // TODO(estade): check whether this operation (interpolation) is costly,
-        // and remove this TRACE log if not.
-        TRACE_EVENT0("ui", "PaintVectorIcon TRANSITION_END");
-
-        const base::TimeDelta delay =
-            base::TimeDelta::FromMillisecondsD(SkScalarToDouble(arg(0)));
-        const base::TimeDelta duration =
-            base::TimeDelta::FromMillisecondsD(SkScalarToDouble(arg(1)));
-
-        double state = 0;
-        if (elapsed_time >= delay + duration) {
-          state = 1;
-        } else if (elapsed_time > delay) {
-          DCHECK(!duration.is_zero());
-          state = (elapsed_time - delay).InMicroseconds() /
-                  static_cast<double>(duration.InMicroseconds());
-        }
-
-        auto weight = Tween::CalculateValue(
-            static_cast<Tween::Type>(SkScalarTruncToInt(arg(2))), state);
-
-        SkPath path1, path2;
-        path1.swap(paths.back());
-        paths.pop_back();
-        path2.swap(paths.back());
-        paths.pop_back();
-
-        SkPath interpolated_path;
-        bool could_interpolate =
-            path1.interpolate(path2, weight, &interpolated_path);
-        DCHECK(could_interpolate);
-        paths.back().addPath(interpolated_path);
-
-        // Perform manual interpolation of flags properties. TODO(estade): fill
-        // more of these in as necessary.
-        DCHECK_GT(flags_array.size(), 1U);
-        cc::PaintFlags& end_flags = flags_array.back();
-        cc::PaintFlags& start_flags = flags_array[flags_array.size() - 2];
-
-        start_flags.setColor(Tween::ColorValueBetween(
-            weight, start_flags.getColor(), end_flags.getColor()));
-
-        flags_array.pop_back();
-        break;
-      }
     }
 
     previous_command_type = command_type;
@@ -497,7 +431,7 @@ class VectorIconSource : public CanvasImageSource {
 
   VectorIconSource(const std::string& definition, int dip_size, SkColor color)
       : CanvasImageSource(Size(dip_size, dip_size)),
-        data_(kNoneIcon, dip_size, color, base::TimeDelta(), kNoneIcon),
+        data_(kNoneIcon, dip_size, color, kNoneIcon),
         path_(PathFromSource(definition)) {}
 
   ~VectorIconSource() override {}
@@ -509,13 +443,11 @@ class VectorIconSource : public CanvasImageSource {
 
   void Draw(Canvas* canvas) override {
     if (path_.empty()) {
-      PaintVectorIcon(canvas, data_.icon, size_.width(), data_.color,
-                      data_.elapsed_time);
+      PaintVectorIcon(canvas, data_.icon, size_.width(), data_.color);
       if (!data_.badge_icon.is_empty())
         PaintVectorIcon(canvas, data_.badge_icon, size_.width(), data_.color);
     } else {
-      PaintPath(canvas, path_.data(), path_.size(), size_.width(), data_.color,
-                base::TimeDelta());
+      PaintPath(canvas, path_.data(), path_.size(), size_.width(), data_.color);
     }
   }
 
@@ -561,12 +493,10 @@ IconDescription::IconDescription(const IconDescription& other) = default;
 IconDescription::IconDescription(const VectorIcon& icon,
                                  int dip_size,
                                  SkColor color,
-                                 const base::TimeDelta& elapsed_time,
                                  const VectorIcon& badge_icon)
     : icon(icon),
       dip_size(dip_size),
       color(color),
-      elapsed_time(elapsed_time),
       badge_icon(badge_icon) {
   if (dip_size == 0)
     this->dip_size = GetDefaultSizeOfVectorIcon(icon);
@@ -576,25 +506,20 @@ IconDescription::~IconDescription() {}
 
 const VectorIcon kNoneIcon = {};
 
-void PaintVectorIcon(Canvas* canvas,
-                     const VectorIcon& icon,
-                     SkColor color,
-                     const base::TimeDelta& elapsed_time) {
-  PaintVectorIcon(canvas, icon, GetDefaultSizeOfVectorIcon(icon), color,
-                  elapsed_time);
+void PaintVectorIcon(Canvas* canvas, const VectorIcon& icon, SkColor color) {
+  PaintVectorIcon(canvas, icon, GetDefaultSizeOfVectorIcon(icon), color);
 }
 
 void PaintVectorIcon(Canvas* canvas,
                      const VectorIcon& icon,
                      int dip_size,
-                     SkColor color,
-                     const base::TimeDelta& elapsed_time) {
+                     SkColor color) {
   DCHECK(!icon.is_empty());
   for (size_t i = 0; i < icon.reps_size; ++i)
     DCHECK(icon.reps[i].path_size > 0);
   const int px_size = gfx::ToCeiledInt(canvas->image_scale() * dip_size);
   const VectorIconRep* rep = GetRepForPxSize(icon, px_size);
-  PaintPath(canvas, rep->path, rep->path_size, dip_size, color, elapsed_time);
+  PaintPath(canvas, rep->path, rep->path_size, dip_size, color);
 }
 
 ImageSkia CreateVectorIcon(const IconDescription& params) {
@@ -611,16 +536,14 @@ ImageSkia CreateVectorIcon(const VectorIcon& icon, SkColor color) {
 ImageSkia CreateVectorIcon(const VectorIcon& icon,
                            int dip_size,
                            SkColor color) {
-  return CreateVectorIcon(
-      IconDescription(icon, dip_size, color, base::TimeDelta(), kNoneIcon));
+  return CreateVectorIcon(IconDescription(icon, dip_size, color, kNoneIcon));
 }
 
 ImageSkia CreateVectorIconWithBadge(const VectorIcon& icon,
                                     int dip_size,
                                     SkColor color,
                                     const VectorIcon& badge_icon) {
-  return CreateVectorIcon(
-      IconDescription(icon, dip_size, color, base::TimeDelta(), badge_icon));
+  return CreateVectorIcon(IconDescription(icon, dip_size, color, badge_icon));
 }
 
 ImageSkia CreateVectorIconFromSource(const std::string& source,
@@ -640,21 +563,6 @@ int GetDefaultSizeOfVectorIcon(const VectorIcon& icon) {
          "CreateVectorIcon().";
   const PathElement* default_icon_path = icon.reps[icon.reps_size - 1].path;
   return GetCanvasDimensions(default_icon_path);
-}
-
-base::TimeDelta GetDurationOfAnimation(const VectorIcon& icon) {
-  base::TimeDelta last_motion;
-  for (PathParser parser(icon.reps[0].path, icon.reps[0].path_size);
-       parser.HasCommandsRemaining(); parser.Advance()) {
-    if (parser.CurrentCommand() != TRANSITION_END)
-      continue;
-
-    auto end_time = base::TimeDelta::FromMillisecondsD(parser.GetArgument(0)) +
-                    base::TimeDelta::FromMillisecondsD(parser.GetArgument(1));
-    if (end_time > last_motion)
-      last_motion = end_time;
-  }
-  return last_motion;
 }
 
 }  // namespace gfx

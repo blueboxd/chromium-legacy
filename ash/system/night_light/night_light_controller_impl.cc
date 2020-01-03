@@ -569,7 +569,7 @@ void NightLightControllerImpl::SetAmbientColorEnabled(bool enabled) {
 
 bool NightLightControllerImpl::GetAmbientColorEnabled() const {
   const bool ambient_eq_supported =
-      ash::features::IsAllowAmbientEQEnabled() &&
+      features::IsAllowAmbientEQEnabled() &&
       chromeos::PowerManagerClient::Get()->SupportsAmbientColor();
   return ambient_eq_supported && active_user_pref_service_ &&
          active_user_pref_service_->GetBoolean(prefs::kAmbientColorEnabled);
@@ -777,7 +777,7 @@ void NightLightControllerImpl::ShowAutoNightLightNotification() {
       l10n_util::GetStringUTF16(IDS_ASH_AUTO_NIGHT_LIGHT_NOTIFY_BUTTON_TEXT)));
 
   std::unique_ptr<message_center::Notification> notification =
-      ash::CreateSystemNotification(
+      CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
           l10n_util::GetStringUTF16(IDS_ASH_AUTO_NIGHT_LIGHT_NOTIFY_TITLE),
           l10n_util::GetStringUTF16(IDS_ASH_AUTO_NIGHT_LIGHT_NOTIFY_BODY),

@@ -459,6 +459,12 @@ are declared in tools/grit/grit_rule.gni.
         <message name="IDS_SEARCH_RESULTS_PLURAL" desc="Message announced to screenreader users when searching completes and results are showing.">
           <ph name="RESULT_COUNT">$1<ex>15</ex></ph> results for '<ph name="SEARCH_TEXT">$2<ex>cookies</ex></ph>'
         </message>
+        <message name="IDS_SEARCH_RESULT_BUBBLE_TEXT" desc="Text that shows in search result bubbles that point at parts of the settings UI which, when clicked, reveal new places for a search results (singular).">
+          1 result
+        </message>
+        <message name="IDS_SEARCH_RESULTS_BUBBLE_TEXT" desc="Text that shows in search result bubbles that point at parts of the settings UI which, when clicked, reveal new places for search results (plural).">
+          <ph name="NUM_RESULTS">$1<ex>5</ex></ph> results
+        </message>
         <message name="IDS_SEARCH_NO_RESULTS" desc="Text description of a search that has no results.">
           No search results found
         </message>
@@ -4537,10 +4543,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         These extensions can see and change information on this site.
       </message>
       <message name="IDS_EXTENSIONS_MENU_WANTS_TO_ACCESS_SITE_DATA" desc="Header for section of extensions that want to access the current site's data">
-        To allow access on this site, click the extension.
+        To give an extension access to this site, click it.
       </message>
       <message name="IDS_EXTENSIONS_MENU_CANT_ACCESS_SITE_DATA" desc="Header for section of extensions that can't access the current site's data">
-        These extensions don't need access to this site.
+        These extensions don't need to see and change information on this site.
       </message>
 
       <!-- Settings API bubble -->

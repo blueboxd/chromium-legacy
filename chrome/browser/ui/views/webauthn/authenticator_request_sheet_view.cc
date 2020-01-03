@@ -207,7 +207,6 @@ void AuthenticatorRequestSheetView::UpdateIconImageFromModel() {
       model()->GetStepIllustration(GetNativeTheme()->ShouldUseDarkColors()
                                        ? ImageColorScheme::kDark
                                        : ImageColorScheme::kLight),
-      0 /* automatic dip_size */, SK_ColorBLACK, base::TimeDelta(),
-      gfx::kNoneIcon);
+      0 /* automatic dip_size */, SK_ColorBLACK, gfx::kNoneIcon);
   step_illustration_->SetImage(gfx::CreateVectorIcon(icon_description));
 }

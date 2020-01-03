@@ -7,20 +7,38 @@
 #include <sstream>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/logging.h"
-#include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-constexpr base::TimeDelta kTimeout = base::TimeDelta::FromSeconds(30);
+constexpr base::TimeDelta kDefaultTimeout = base::TimeDelta::FromSeconds(30);
+
+base::TimeDelta GetTimeoutFromCommandLineOrDefault() {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          "sync-status-change-checker-timeout")) {
+    return kDefaultTimeout;
+  }
+  std::string timeout_string(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          "sync-status-change-checker-timeout"));
+  int timeout_in_seconds = 0;
+  if (!base::StringToInt(timeout_string, &timeout_in_seconds)) {
+    LOG(FATAL) << "Timeout value \"" << timeout_string << "\" was parsed as "
+               << timeout_in_seconds;
+  }
+  return base::TimeDelta::FromSeconds(timeout_in_seconds);
+}
 
 }  // namespace
 
 StatusChangeChecker::StatusChangeChecker()
-    : run_loop_(base::RunLoop::Type::kNestableTasksAllowed),
+    : timeout_(GetTimeoutFromCommandLineOrDefault()),
+      run_loop_(base::RunLoop::Type::kNestableTasksAllowed),
       timed_out_(false) {}
 
 StatusChangeChecker::~StatusChangeChecker() {}
@@ -63,7 +81,7 @@ void StatusChangeChecker::StartBlockingWait() {
   DCHECK(!run_loop_.running());
 
   base::OneShotTimer timer;
-  timer.Start(FROM_HERE, kTimeout,
+  timer.Start(FROM_HERE, timeout_,
               base::BindRepeating(&StatusChangeChecker::OnTimeout,
                                   base::Unretained(this)));
 

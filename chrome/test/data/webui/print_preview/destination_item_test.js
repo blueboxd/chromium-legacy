@@ -100,7 +100,7 @@ suite(destination_item_test.suiteName, function() {
   // Test that the destination is displayed correctly when the search query
   // matches its display name.
   test(assert(destination_item_test.TestNames.QueryName), function() {
-    item.searchQuery = /(Foo)/i;
+    item.searchQuery = /(Foo)/ig;
 
     const name = item.$$('.name');
     assertEquals(printerName + printerName, name.textContent);
@@ -124,7 +124,7 @@ suite(destination_item_test.suiteName, function() {
     item.destination = new Destination(
         printerId, DestinationType.GOOGLE, DestinationOrigin.COOKIES,
         printerName, DestinationConnectionStatus.ONLINE, params);
-    item.searchQuery = /(ABC)/i;
+    item.searchQuery = /(ABC)/ig;
 
     // No highlighting on name.
     const name = item.$$('.name');

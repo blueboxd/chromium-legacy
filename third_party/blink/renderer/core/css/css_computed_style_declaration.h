@@ -34,6 +34,7 @@
 namespace blink {
 
 class ExceptionState;
+class ExecutionContext;
 class LayoutObject;
 class MutableCSSPropertyValueSet;
 class Node;
@@ -42,7 +43,8 @@ class ComputedStyle;
 class CORE_EXPORT CSSComputedStyleDeclaration final
     : public CSSStyleDeclaration {
  public:
-  static const Vector<const CSSProperty*>& ComputableProperties();
+  static const Vector<const CSSProperty*>& ComputableProperties(
+      const ExecutionContext*);
 
   CSSComputedStyleDeclaration(Node*,
                               bool allow_visited_style = false,

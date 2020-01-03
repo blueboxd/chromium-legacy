@@ -160,7 +160,9 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
 
   // MouseWheelEventQueueClient
   void SendMouseWheelEventImmediately(
-      const MouseWheelEventWithLatencyInfo& touch_event) override;
+      const MouseWheelEventWithLatencyInfo& touch_event,
+      MouseWheelEventQueueClient::MouseWheelEventHandledCallback callback)
+      override;
   void OnMouseWheelEventAck(const MouseWheelEventWithLatencyInfo& event,
                             InputEventAckSource ack_source,
                             InputEventAckState ack_result) override;
@@ -172,7 +174,9 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
 
   // TouchpadPinchEventQueueClient
   void SendMouseWheelEventForPinchImmediately(
-      const MouseWheelEventWithLatencyInfo& event) override;
+      const MouseWheelEventWithLatencyInfo& event,
+      TouchpadPinchEventQueueClient::MouseWheelEventHandledCallback callback)
+      override;
   void OnGestureEventForPinchAck(const GestureEventWithLatencyInfo& event,
                                  InputEventAckSource ack_source,
                                  InputEventAckState ack_result) override;
@@ -214,6 +218,7 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
       const base::Optional<cc::TouchAction>& touch_action);
   void MouseWheelEventHandled(
       const MouseWheelEventWithLatencyInfo& event,
+      MouseWheelEventQueueClient::MouseWheelEventHandledCallback callback,
       InputEventAckSource source,
       const ui::LatencyInfo& latency,
       InputEventAckState state,

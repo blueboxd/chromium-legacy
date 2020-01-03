@@ -169,3 +169,7 @@ base::string16 SharingIconView::GetTextForTooltipAndAccessibleName() const {
   return controller ? controller->GetTextForTooltipAndAccessibleName()
                     : base::string16();
 }
+
+const char* SharingIconView::GetClassName() const {
+  return "SharingIconView";
+}

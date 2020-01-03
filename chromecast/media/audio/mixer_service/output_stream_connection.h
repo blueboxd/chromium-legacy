@@ -90,6 +90,10 @@ class OutputStreamConnection : public MixerConnection,
   // 2.0 / sample_rate seconds.
   void SetPlaybackRate(float playback_rate);
 
+  // Changes the audio output clock rate. If the provided |rate| is outside of
+  // the supported range, the rate will be clamped to the supported range.
+  void SetAudioClockRate(double rate);
+
   // Pauses playback.
   void Pause();
 
@@ -120,6 +124,7 @@ class OutputStreamConnection : public MixerConnection,
   int64_t start_pts_ = INT64_MIN;
 
   float playback_rate_ = 1.0f;
+  double audio_clock_rate_ = 1.0;
 
   bool paused_ = false;
   bool sent_eos_ = false;

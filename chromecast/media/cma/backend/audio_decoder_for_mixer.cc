@@ -15,7 +15,7 @@
 #include "build/build_config.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/base/task_runner_impl.h"
-#include "chromecast/media/audio/audio_resampler.h"
+#include "chromecast/media/audio/audio_clock_simulator.h"
 #include "chromecast/media/audio/mixer_service/conversions.h"
 #include "chromecast/media/audio/mixer_service/mixer_service.pb.h"
 #include "chromecast/media/audio/mixer_service/mixer_socket.h"
@@ -175,9 +175,6 @@ void AudioDecoderForMixer::CreateMixerInput(const AudioConfig& config,
   CreateBufferPool(config, buffer_pool_frames_);
   DCHECK_GT(buffer_pool_frames_, 0);
 
-  audio_resampler_ = std::make_unique<AudioResampler>(config.channel_number);
-  audio_resampler_->SetMediaClockRate(av_sync_clock_rate_);
-
   mixer_service::OutputStreamParams params;
   params.set_stream_type(
       backend_->Primary()
@@ -202,6 +199,7 @@ void AudioDecoderForMixer::CreateMixerInput(const AudioConfig& config,
       std::make_unique<mixer_service::OutputStreamConnection>(this, params);
   mixer_input_->Connect();
   mixer_input_->SetVolumeMultiplier(volume_multiplier_);
+  mixer_input_->SetAudioClockRate(av_sync_clock_rate_);
 }
 
 void AudioDecoderForMixer::StartPlaybackAt(int64_t playback_start_timestamp) {
@@ -268,12 +266,12 @@ float AudioDecoderForMixer::SetPlaybackRate(float rate) {
   return rate;
 }
 
-float AudioDecoderForMixer::SetAvSyncPlaybackRate(float rate) {
-  av_sync_clock_rate_ = rate;
-  if (audio_resampler_) {
-    return audio_resampler_->SetMediaClockRate(rate);
-  }
-  return rate;
+double AudioDecoderForMixer::SetAvSyncPlaybackRate(double rate) {
+  av_sync_clock_rate_ = std::max(AudioClockSimulator::kMinRate,
+                                 std::min(rate, AudioClockSimulator::kMaxRate));
+  if (mixer_input_)
+    mixer_input_->SetAudioClockRate(av_sync_clock_rate_);
+  return av_sync_clock_rate_;
 }
 
 bool AudioDecoderForMixer::GetTimestampedPts(int64_t* timestamp,
@@ -534,18 +532,7 @@ void AudioDecoderForMixer::WritePcm(scoped_refptr<DecoderBufferBase> buffer) {
     return;
   }
 
-  // TODO(kmackay) This could be made more efficient by reducing memory
-  // allocations and copies. For example we would resample (and maybe decode)
-  // directly into an IOBuffer.
-  DCHECK(audio_resampler_);
-  scoped_refptr<DecoderBufferBase> resampled =
-      (original_frame_count > 1
-           ? audio_resampler_->ResampleBuffer(std::move(buffer))
-           : std::move(buffer));
-
-  const int frame_count = resampled->data_size() / frame_size;
-  // We only resample if there was more than 1 frame, and the resampler only
-  // subtracts at most 1 frame.
+  const int frame_count = buffer->data_size() / frame_size;
   DCHECK_GT(frame_count, 0);
 
   if (frame_count > buffer_pool_frames_) {
@@ -553,12 +540,12 @@ void AudioDecoderForMixer::WritePcm(scoped_refptr<DecoderBufferBase> buffer) {
   }
 
   auto io_buffer = buffer_pool_->GetBuffer();
-  memcpy(io_buffer->data() + kAudioMessageHeaderSize, resampled->data(),
-         resampled->data_size());
+  memcpy(io_buffer->data() + kAudioMessageHeaderSize, buffer->data(),
+         buffer->data_size());
 
   pending_buffer_complete_ = true;
   mixer_input_->SendAudioBuffer(std::move(io_buffer), frame_count,
-                                resampled->timestamp());
+                                buffer->timestamp());
 }
 
 void AudioDecoderForMixer::FillNextBuffer(void* buffer,

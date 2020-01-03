@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/webrtc/api/rtc_error.h"
 
 namespace blink {
 
@@ -24,6 +25,8 @@ class RTCErrorEvent final : public Event {
 
   RTCErrorEvent(const AtomicString& type,
                 const RTCErrorEventInit* event_init_dict);
+
+  RTCErrorEvent(const AtomicString& type, webrtc::RTCError error);
 
   RTCError* error() const;
 

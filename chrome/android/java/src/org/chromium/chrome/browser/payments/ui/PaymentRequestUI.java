@@ -39,6 +39,9 @@ import org.chromium.base.Callback;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeVersionInfo;
+import org.chromium.chrome.browser.autofill.prefeditor.EditableOption;
+import org.chromium.chrome.browser.autofill.prefeditor.EditorDialog;
+import org.chromium.chrome.browser.autofill.prefeditor.EditorObserverForTest;
 import org.chromium.chrome.browser.payments.PaymentRequestImpl.PaymentUisShowStateReconciler;
 import org.chromium.chrome.browser.payments.ShippingStrings;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.LineItemBreakdownSection;
@@ -46,9 +49,6 @@ import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSecti
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.SectionSeparator;
 import org.chromium.chrome.browser.ui.widget.animation.FocusAnimator;
 import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
-import org.chromium.chrome.browser.widget.prefeditor.EditableOption;
-import org.chromium.chrome.browser.widget.prefeditor.EditorDialog;
-import org.chromium.chrome.browser.widget.prefeditor.EditorObserverForTest;
 import org.chromium.components.browser_ui.widget.FadingEdgeScrollView;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
@@ -406,12 +406,10 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 (ViewGroup) LayoutInflater.from(mContext).inflate(R.layout.payment_request, null);
         prepareRequestView(mContext, title, origin, securityLevel, canAddCards);
 
-        mEditorDialog = new EditorDialog(activity, sEditorObserverForTest,
-                /*deleteRunnable =*/null);
+        mEditorDialog = new EditorDialog(activity, /*deleteRunnable =*/null);
         DimmingDialog.setVisibleStatusBarIconColor(mEditorDialog.getWindow());
 
-        mCardEditorDialog = new EditorDialog(activity, sEditorObserverForTest,
-                /*deleteRunnable =*/null);
+        mCardEditorDialog = new EditorDialog(activity, /*deleteRunnable =*/null);
         DimmingDialog.setVisibleStatusBarIconColor(mCardEditorDialog.getWindow());
 
         // Allow screenshots of the credit card number in Canary, Dev, and developer builds.
@@ -1376,6 +1374,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     @VisibleForTesting
     public static void setEditorObserverForTest(EditorObserverForTest editorObserverForTest) {
         sEditorObserverForTest = editorObserverForTest;
+        EditorDialog.setEditorObserverForTest(sEditorObserverForTest);
     }
 
     @VisibleForTesting

@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "ui/base/ui_base_features.h"
 
 namespace blink {
 
@@ -249,7 +250,7 @@ void LocaleICU::InitializeCalendar() {
                                          UCAL_FIRST_DAY_OF_WEEK) -
                        UCAL_SUNDAY;
 
-  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
+  if (features::IsFormControlsRefreshEnabled()) {
     week_day_short_labels_ = CreateLabelVector(
         short_date_format_, UDAT_NARROW_WEEKDAYS, UCAL_SUNDAY, 7);
   } else {

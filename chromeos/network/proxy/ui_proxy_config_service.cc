@@ -115,11 +115,9 @@ base::Value OncValueForManualProxyList(
     const std::string& source,
     const net::ProxyList& for_http,
     const net::ProxyList& for_https,
-    const net::ProxyList& for_ftp,
     const net::ProxyList& fallback,
     const net::ProxyBypassRules& bypass_rules) {
-  if (for_http.IsEmpty() && for_https.IsEmpty() && for_ftp.IsEmpty() &&
-      fallback.IsEmpty()) {
+  if (for_http.IsEmpty() && for_https.IsEmpty() && fallback.IsEmpty()) {
     return base::Value();
   }
   base::Value result = OncValueWithMode(source, ::onc::proxy::kManual);
@@ -128,7 +126,6 @@ base::Value OncValueForManualProxyList(
       ::onc::proxy::kManual, base::Value(base::Value::Type::DICTIONARY));
   SetManualProxy(manual, source, ::onc::proxy::kHttp, for_http);
   SetManualProxy(manual, source, ::onc::proxy::kHttps, for_https);
-  SetManualProxy(manual, source, ::onc::proxy::kFtp, for_ftp);
   SetManualProxy(manual, source, ::onc::proxy::kSocks, fallback);
 
   base::Value exclude_domains(base::Value::Type::LIST);
@@ -171,13 +168,11 @@ base::Value NetProxyConfigAsOncValue(const net::ProxyConfig& net_config,
                                         net_config.proxy_rules().single_proxies,
                                         net_config.proxy_rules().single_proxies,
                                         net_config.proxy_rules().single_proxies,
-                                        net_config.proxy_rules().single_proxies,
                                         net_config.proxy_rules().bypass_rules);
     case net::ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME:
       return OncValueForManualProxyList(
           source, net_config.proxy_rules().proxies_for_http,
           net_config.proxy_rules().proxies_for_https,
-          net_config.proxy_rules().proxies_for_ftp,
           net_config.proxy_rules().fallback_proxies,
           net_config.proxy_rules().bypass_rules);
   }

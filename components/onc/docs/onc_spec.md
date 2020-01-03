@@ -1131,7 +1131,7 @@ Every network can be configured to use a proxy.
     * (optional) - [ProxyLocation](#ProxyLocation-type)
     * settings for secure HTTP proxy.
 
-* **FTPProxy**
+* **FTPProxy (Unsupported)**
     * (optional) - [ProxyLocation](#ProxyLocation-type)
     * settings for FTP proxy
 

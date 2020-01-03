@@ -16,22 +16,20 @@ namespace tray {
 
 TimeTrayItemView::TimeTrayItemView(Shelf* shelf)
     : TrayItemView(shelf), session_observer_(this) {
-  tray::TimeView::ClockLayout clock_layout =
-      shelf->IsHorizontalAlignment()
-          ? tray::TimeView::ClockLayout::HORIZONTAL_CLOCK
-          : tray::TimeView::ClockLayout::VERTICAL_CLOCK;
-  time_view_ = new tray::TimeView(clock_layout,
-                                  Shell::Get()->system_tray_model()->clock());
+  TimeView::ClockLayout clock_layout =
+      shelf->IsHorizontalAlignment() ? TimeView::ClockLayout::HORIZONTAL_CLOCK
+                                     : TimeView::ClockLayout::VERTICAL_CLOCK;
+  time_view_ =
+      new TimeView(clock_layout, Shell::Get()->system_tray_model()->clock());
   AddChildView(time_view_);
 }
 
 TimeTrayItemView::~TimeTrayItemView() = default;
 
 void TimeTrayItemView::UpdateAlignmentForShelf(Shelf* shelf) {
-  tray::TimeView::ClockLayout clock_layout =
-      shelf->IsHorizontalAlignment()
-          ? tray::TimeView::ClockLayout::HORIZONTAL_CLOCK
-          : tray::TimeView::ClockLayout::VERTICAL_CLOCK;
+  TimeView::ClockLayout clock_layout =
+      shelf->IsHorizontalAlignment() ? TimeView::ClockLayout::HORIZONTAL_CLOCK
+                                     : TimeView::ClockLayout::VERTICAL_CLOCK;
   time_view_->UpdateClockLayout(clock_layout);
 }
 

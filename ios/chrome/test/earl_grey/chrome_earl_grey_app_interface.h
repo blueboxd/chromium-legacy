@@ -53,6 +53,9 @@
 // Loads |URL| as if it was opened from an external application.
 + (void)openURLFromExternalApp:(NSString*)URL;
 
+// Programmatically dismisses settings screen.
++ (void)dismissSettings;
+
 #pragma mark - Tab Utilities (EG2)
 
 // Selects tab with given index in current mode (incognito or main

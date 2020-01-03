@@ -16,6 +16,7 @@ import sys
 import zipfile
 
 from util import build_utils
+from util import jar_info_utils
 from util import manifest_utils
 from util import md5_check
 from util import resource_utils
@@ -108,10 +109,21 @@ def _ZipResources(resource_dirs, zip_path, ignore_pattern):
   files_to_zip = []
   path_info = resource_utils.ResourceInfoFile()
   for index, resource_dir in enumerate(resource_dirs):
+    attributed_aar = None
+    if not resource_dir.startswith('..'):
+      aar_source_info_path = os.path.join(
+          os.path.dirname(resource_dir), 'source.info')
+      if os.path.exists(aar_source_info_path):
+        attributed_aar = jar_info_utils.ReadAarSourceInfo(aar_source_info_path)
+
     for path, archive_path in resource_utils.IterResourceFilesInDirectories(
         [resource_dir], ignore_pattern):
-      # Put the non-prefixed path in the .info file.
-      path_info.AddMapping(archive_path, path)
+      attributed_path = path
+      if attributed_aar:
+        attributed_path = os.path.join(attributed_aar, 'res',
+                                       path[len(resource_dir) + 1:])
+      # Use the non-prefixed archive_path in the .info file.
+      path_info.AddMapping(archive_path, attributed_path)
 
       resource_dir_name = os.path.basename(resource_dir)
       archive_path = '{}_{}/{}'.format(index, resource_dir_name, archive_path)

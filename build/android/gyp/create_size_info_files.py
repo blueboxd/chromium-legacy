@@ -60,29 +60,41 @@ def _MergeJarInfoFiles(output, inputs):
 
   Args:
     output: output file path.
-    inputs: List of .info.jar or .jar files.
+    inputs: List of .jar.info or .jar files.
   """
   info_data = dict()
   for path in inputs:
-    # android_java_prebuilt adds jar files in the src directory (relative to
-    #     the output directory, usually ../../third_party/example.jar).
-    # android_aar_prebuilt collects jar files in the aar file and uses the
-    #     java_prebuilt rule to generate gen/example/classes.jar files.
-    # We scan these prebuilt jars to parse each class path for the FQN. This
-    #     allows us to later map these classes back to their respective src
-    #     directories.
-    # TODO(agrieve): This should probably also check that the mtime of the .info
-    #     is newer than that of the .jar, or change prebuilts to always output
-    #     .info files so that they always exist (and change the depfile to
-    #     depend directly on them).
+    # For non-prebuilts: .jar.info files are written by compile_java.py and map
+    # .class files to .java source paths.
+    #
+    # For prebuilts: No .jar.info file exists, we scan the .jar files here and
+    # map .class files to the .jar.
+    #
+    # For .aar files: We look for a "source.info" file in the containing
+    # directory in order to map classes back to the .aar (rather than mapping
+    # them to the extracted .jar file).
     if path.endswith('.info'):
       info_data.update(jar_info_utils.ParseJarInfoFile(path))
     else:
+      attributed_path = path
+      if not path.startswith('..'):
+        parent_path = os.path.dirname(path)
+        # See if it's an sub-jar within the .aar.
+        if os.path.basename(parent_path) == 'libs':
+          parent_path = os.path.dirname(parent_path)
+        aar_source_info_path = os.path.join(parent_path, 'source.info')
+        # source.info files exist only for jars from android_aar_prebuilt().
+        # E.g. Could have an java_prebuilt() pointing to a generated .jar.
+        if os.path.exists(aar_source_info_path):
+          attributed_path = jar_info_utils.ReadAarSourceInfo(
+              aar_source_info_path)
+
       with zipfile.ZipFile(path) as zip_info:
         for name in zip_info.namelist():
           fully_qualified_name = _FullJavaNameFromClassFilePath(name)
           if fully_qualified_name:
-            info_data[fully_qualified_name] = '{}/{}'.format(path, name)
+            info_data[fully_qualified_name] = '{}/{}'.format(
+                attributed_path, name)
 
   # only_if_changed=False since no build rules depend on this as an input.
   with build_utils.AtomicOutput(output, only_if_changed=False) as f:
@@ -147,7 +159,7 @@ def main(args):
   # Don't bother re-running if no .info files have changed (saves ~250ms).
   md5_check.CallAndRecordIfStale(
       lambda: _MergeJarInfoFiles(options.jar_info_path, jar_inputs),
-      input_paths=jar_inputs,
+      input_paths=jar_inputs + [__file__],
       output_paths=[options.jar_info_path])
 
   # Always recreate these (just as fast as md5 checking them).

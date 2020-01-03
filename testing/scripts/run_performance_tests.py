@@ -181,7 +181,7 @@ class GtestCommandGenerator(object):
             self._generate_also_run_disabled_tests_args() +
             self._generate_output_args(output_dir) +
             self._generate_shard_args() +
-            self._get_passthrough_args()
+            self._get_additional_flags()
            )
 
   @property
@@ -196,8 +196,8 @@ class GtestCommandGenerator(object):
     else:
       return './%s' % executable
 
-  def _get_passthrough_args(self):
-    return self._options.passthrough_args + self._additional_flags
+  def _get_additional_flags(self):
+    return self._additional_flags
 
   def _generate_shard_args(self):
     """Teach the gtest to ignore the environment variables.
@@ -231,10 +231,10 @@ class GtestCommandGenerator(object):
     if self._options.use_gtest_benchmark_script:
       output_args.append('--output-dir=' + output_dir)
     # These flags are to make sure that test output perf metrics in the log.
-    if not '--verbose' in self._get_passthrough_args():
+    if not '--verbose' in self._get_additional_flags():
       output_args.append('--verbose')
     if (not '--test-launcher-print-test-stdio=always'
-        in self._get_passthrough_args()):
+        in self._get_additional_flags()):
       output_args.append('--test-launcher-print-test-stdio=always')
     return output_args
 
@@ -534,7 +534,8 @@ def main(sys_args):
         'lines is the name of the subfolder to find results in.\n')
 
   if options.non_telemetry:
-    command_generator = GtestCommandGenerator(options)
+    command_generator = GtestCommandGenerator(
+        options, additional_flags=options.passthrough_args)
     benchmark_name = options.gtest_benchmark_name
     # Fallback to use the name of the executable if flag isn't set.
     # TODO(crbug.com/870899): remove fallback logic and raise parser error if

@@ -12,7 +12,6 @@ import android.support.v7.preference.PreferenceFragmentCompat;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.offlinepages.prefetch.PrefetchConfiguration;
 import org.chromium.chrome.browser.offlinepages.prefetch.PrefetchPrefs;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
@@ -21,6 +20,7 @@ import org.chromium.chrome.browser.settings.website.ContentSettingsResources;
 import org.chromium.chrome.browser.settings.website.SingleCategorySettings;
 import org.chromium.chrome.browser.settings.website.SiteSettingsCategory;
 import org.chromium.chrome.browser.settings.website.WebsitePreferenceBridge;
+import org.chromium.components.content_settings.ContentSettingsType;
 
 /**
  * Settings fragment that allows the user to configure notifications. It contains general

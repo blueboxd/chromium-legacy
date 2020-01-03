@@ -131,6 +131,11 @@ class StructTraits<network::mojom::ResolveErrorInfoDataView,
     return resolve_error_info.error;
   }
 
+  static bool is_secure_network_error(
+      net::ResolveErrorInfo resolve_error_info) {
+    return resolve_error_info.is_secure_network_error;
+  }
+
   static bool Read(network::mojom::ResolveErrorInfoDataView data,
                    net::ResolveErrorInfo* out);
 };

@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "ui/base/ui_base_features.h"
 
 namespace blink {
 
@@ -136,7 +137,7 @@ const Vector<String>& LocaleMac::WeekDayShortLabels() {
   if (!week_day_short_labels_.IsEmpty())
     return week_day_short_labels_;
   week_day_short_labels_.ReserveCapacity(7);
-  NSArray* array = RuntimeEnabledFeatures::FormControlsRefreshEnabled()
+  NSArray* array = features::IsFormControlsRefreshEnabled()
                        ? [ShortDateFormatter() veryShortWeekdaySymbols]
                        : [ShortDateFormatter() shortWeekdaySymbols];
   if ([array count] == 7) {

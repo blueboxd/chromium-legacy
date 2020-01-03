@@ -316,8 +316,7 @@ TEST_F(UIProxyConfigServiceTest, ManualPolicyPref) {
   std::unique_ptr<UIProxyConfigService> service = CreateServiceForUser();
 
   base::Value policy_prefs_config = ProxyConfigDictionary::CreateFixedServers(
-      "http=proxy1:81;https=proxy2:81;ftp=proxy3:81;socks=proxy4:81",
-      "localhost");
+      "http=proxy1:81;https=proxy2:81;socks=proxy3:81", "localhost");
   user_prefs_.SetManagedPref(
       proxy_config::prefs::kProxy,
       base::Value::ToUniquePtrValue(std::move(policy_prefs_config)));
@@ -328,17 +327,15 @@ TEST_F(UIProxyConfigServiceTest, ManualPolicyPref) {
   std::string expected_json = base::ReplaceStringPlaceholders(
       R"({"Type": $1,
           "Manual": {
-            "HTTPProxy": {"Host": $2, "Port": $6},
-            "SecureHTTPProxy": {"Host": $3, "Port": $6},
-            "FTPProxy": {"Host": $4, "Port": $6},
-            "SOCKS": {"Host": $5, "Port": $6}
+            "HTTPProxy": {"Host": $2, "Port": $5},
+            "SecureHTTPProxy": {"Host": $3, "Port": $5},
+            "SOCKS": {"Host": $4, "Port": $5}
           },
-          "ExcludeDomains": $7
+          "ExcludeDomains": $6
           })",
       {UserPolicyOncValue(R"("Manual")"), UserPolicyOncValue(R"("proxy1")"),
        UserPolicyOncValue(R"("proxy2")"), UserPolicyOncValue(R"("proxy3")"),
-       UserPolicyOncValue(R"("proxy4")"), UserPolicyOncValue("81"),
-       UserPolicyOncValue(R"(["localhost"])")},
+       UserPolicyOncValue("81"), UserPolicyOncValue(R"(["localhost"])")},
       nullptr);
   std::unique_ptr<base::Value> expected =
       base::JSONReader::ReadDeprecated(expected_json);
@@ -349,8 +346,8 @@ TEST_F(UIProxyConfigServiceTest, ManualPolicyPref) {
 TEST_F(UIProxyConfigServiceTest, PartialManualPolicyPref) {
   std::unique_ptr<UIProxyConfigService> service = CreateServiceForUser();
 
-  base::Value policy_prefs_config = ProxyConfigDictionary::CreateFixedServers(
-      "http=proxy1:81;ftp=proxy3:83;", "");
+  base::Value policy_prefs_config =
+      ProxyConfigDictionary::CreateFixedServers("http=proxy1:81;", "");
   user_prefs_.SetManagedPref(
       proxy_config::prefs::kProxy,
       base::Value::ToUniquePtrValue(std::move(policy_prefs_config)));
@@ -362,15 +359,13 @@ TEST_F(UIProxyConfigServiceTest, PartialManualPolicyPref) {
       R"({"Type": $1,
           "Manual": {
             "HTTPProxy": {"Host": $2, "Port": $3},
-            "FTPProxy": {"Host": $4, "Port": $5},
-            "SecureHTTPProxy": {"Host": $6, "Port": $7},
-            "SOCKS": {"Host": $6, "Port": $7}
+            "SecureHTTPProxy": {"Host": $4, "Port": $5},
+            "SOCKS": {"Host": $4, "Port": $5}
           },
-          "ExcludeDomains": $8
+          "ExcludeDomains": $6
           })",
       {UserPolicyOncValue(R"("Manual")"), UserPolicyOncValue(R"("proxy1")"),
-       UserPolicyOncValue("81"), UserPolicyOncValue(R"("proxy3")"),
-       UserPolicyOncValue("83"), UserPolicyOncValue(R"("")"),
+       UserPolicyOncValue("81"), UserPolicyOncValue(R"("")"),
        UserPolicyOncValue("0"), UserPolicyOncValue("[]")},
       nullptr);
   std::unique_ptr<base::Value> expected =
@@ -383,7 +378,7 @@ TEST_F(UIProxyConfigServiceTest, ManualPolicyPrefWithPacPreset) {
   std::unique_ptr<UIProxyConfigService> service = CreateServiceForUser();
 
   base::Value policy_prefs_config = ProxyConfigDictionary::CreateFixedServers(
-      "http=proxy:80;https=proxy:80;ftp=proxy:80;socks=proxy:80", "localhost");
+      "http=proxy:80;https=proxy:80;socks=proxy:80", "localhost");
   user_prefs_.SetManagedPref(
       proxy_config::prefs::kProxy,
       base::Value::ToUniquePtrValue(std::move(policy_prefs_config)));
@@ -405,7 +400,6 @@ TEST_F(UIProxyConfigServiceTest, ManualPolicyPrefWithPacPreset) {
           "Manual": {
             "HTTPProxy": {"Host": $2, "Port": $3},
             "SecureHTTPProxy": {"Host": $2, "Port": $3},
-            "FTPProxy": {"Host": $2, "Port": $3},
             "SOCKS": {"Host": $2, "Port": $3}
           },
           "PAC": $4,
@@ -489,8 +483,7 @@ TEST_F(UIProxyConfigServiceTest, ManualExtensionPref) {
 
   base::Value extension_prefs_config =
       ProxyConfigDictionary::CreateFixedServers(
-          "http=proxy1:81;https=proxy2:82;ftp=proxy3:83;socks=proxy4:81",
-          "localhost");
+          "http=proxy1:81;https=proxy2:82;socks=proxy3:81", "localhost");
   user_prefs_.SetExtensionPref(
       proxy_config::prefs::kProxy,
       base::Value::ToUniquePtrValue(std::move(extension_prefs_config)));
@@ -503,10 +496,9 @@ TEST_F(UIProxyConfigServiceTest, ManualExtensionPref) {
           "Manual": {
             "HTTPProxy": {"Host": $2, "Port": $3},
             "SecureHTTPProxy": {"Host": $4, "Port": $5},
-            "FTPProxy": {"Host": $6, "Port": $7},
-            "SOCKS": {"Host": $8, "Port": $3}
+            "SOCKS": {"Host": $6, "Port": $3}
           },
-          "ExcludeDomains": $9
+          "ExcludeDomains": $7
           })",
       {ExtensionControlledOncValue(R"("Manual")"),
        ExtensionControlledOncValue(R"("proxy1")"),
@@ -514,8 +506,6 @@ TEST_F(UIProxyConfigServiceTest, ManualExtensionPref) {
        ExtensionControlledOncValue(R"("proxy2")"),
        ExtensionControlledOncValue("82"),
        ExtensionControlledOncValue(R"("proxy3")"),
-       ExtensionControlledOncValue("83"),
-       ExtensionControlledOncValue(R"("proxy4")"),
        ExtensionControlledOncValue(R"(["localhost"])")},
       nullptr);
   std::unique_ptr<base::Value> expected =
@@ -723,8 +713,7 @@ TEST_F(UIProxyConfigServiceTest, ManualOncUserPolicy) {
            "Manual": {
              "HTTPProxy": {"Host": "proxy1", "Port": 81},
              "SecureHTTPProxy": {"Host": "proxy2", "Port": 82},
-             "FTPProxy": {"Host": "proxy3", "Port": 83},
-             "SOCKS": {"Host": "proxy4", "Port": 83}}}}])",
+             "SOCKS": {"Host": "proxy3", "Port": 83}}}}])",
       {kTestUserWifiGuid}, nullptr);
   user_prefs_.SetManagedPref(::onc::prefs::kOpenNetworkConfiguration,
                              base::JSONReader::ReadDeprecated(onc_config));
@@ -737,15 +726,14 @@ TEST_F(UIProxyConfigServiceTest, ManualOncUserPolicy) {
           "Manual": {
             "HTTPProxy": {"Host": $2, "Port": $3},
             "SecureHTTPProxy": {"Host": $4, "Port": $5},
-            "FTPProxy": {"Host": $6, "Port": $7},
-            "SOCKS": {"Host": $8, "Port": $7}
+            "SOCKS": {"Host": $7, "Port": $6}
           },
-          "ExcludeDomains": $9
+          "ExcludeDomains": $8
           })",
       {UserPolicyOncValue(R"("Manual")"), UserPolicyOncValue(R"("proxy1")"),
        UserPolicyOncValue("81"), UserPolicyOncValue(R"("proxy2")"),
-       UserPolicyOncValue("82"), UserPolicyOncValue(R"("proxy3")"),
-       UserPolicyOncValue("83"), UserPolicyOncValue(R"("proxy4")"),
+       UserPolicyOncValue("82"), UserPolicyOncValue("83"),
+       UserPolicyOncValue(R"("proxy3")"),
        UserPolicyOncValue(R"(["foo.test", "localhost"])")},
       nullptr);
   std::unique_ptr<base::Value> expected =
@@ -775,8 +763,7 @@ TEST_F(UIProxyConfigServiceTest, PartialManualOncUserPolicy) {
           "Manual": {
             "HTTPProxy": {"Host": $2, "Port": $3},
             "SOCKS": {"Host": $4, "Port": $5},
-            "SecureHTTPProxy": {"Host": $6, "Port": $7},
-            "FTPProxy": {"Host": $6, "Port": $7}
+            "SecureHTTPProxy": {"Host": $6, "Port": $7}
           },
           "ExcludeDomains": $8
           })",

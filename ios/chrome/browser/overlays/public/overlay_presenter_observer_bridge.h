@@ -17,7 +17,7 @@
 @protocol OverlayPresenterObserving <NSObject>
 @optional
 
-// Invoked by OverlayPresenterObserver::GetRequestSupport().
+// Invoked by OverlayPresenterObserver::GetOverlayRequestSupport().
 - (const OverlayRequestSupport*)overlayRequestSupportForPresenter:
     (OverlayPresenter*)presenter;
 

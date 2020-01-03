@@ -14,6 +14,7 @@ import androidx.annotation.Nullable;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
+import org.chromium.chrome.browser.autofill.prefeditor.EditorDialog;
 import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantAdditionalSectionContainer;
 import org.chromium.chrome.browser.payments.AddressEditor;
 import org.chromium.chrome.browser.payments.AutofillAddress;
@@ -22,7 +23,6 @@ import org.chromium.chrome.browser.payments.AutofillPaymentInstrument;
 import org.chromium.chrome.browser.payments.BasicCardUtils;
 import org.chromium.chrome.browser.payments.CardEditor;
 import org.chromium.chrome.browser.payments.ContactEditor;
-import org.chromium.chrome.browser.widget.prefeditor.EditorDialog;
 import org.chromium.components.payments.MethodStrings;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
@@ -557,14 +557,14 @@ class AssistantCollectUserDataBinder
                             model.get(AssistantCollectUserDataModel.REQUEST_PHONE),
                             model.get(AssistantCollectUserDataModel.REQUEST_EMAIL),
                             !webContents.isIncognito());
-            contactEditor.setEditorDialog(new EditorDialog(view.mActivity, null,
+            contactEditor.setEditorDialog(new EditorDialog(view.mActivity,
                     /*deleteRunnable =*/null));
             view.mContactDetailsSection.setEditor(contactEditor);
         }
 
         AddressEditor addressEditor = new AddressEditor(AddressEditor.Purpose.PAYMENT_REQUEST,
                 /* saveToDisk= */ !webContents.isIncognito());
-        addressEditor.setEditorDialog(new EditorDialog(view.mActivity, null,
+        addressEditor.setEditorDialog(new EditorDialog(view.mActivity,
                 /*deleteRunnable =*/null));
 
         CardEditor cardEditor = new CardEditor(webContents, addressEditor,
@@ -576,7 +576,7 @@ class AssistantCollectUserDataBinder
                     getPaymentMethodDataFromNetworks(supportedCardNetworks));
         }
 
-        EditorDialog cardEditorDialog = new EditorDialog(view.mActivity, null,
+        EditorDialog cardEditorDialog = new EditorDialog(view.mActivity,
                 /*deleteRunnable =*/null);
         if (ChromeVersionInfo.isBetaBuild() || ChromeVersionInfo.isStableBuild()) {
             cardEditorDialog.disableScreenshots();

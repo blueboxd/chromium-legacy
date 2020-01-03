@@ -267,10 +267,9 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
       ScrollState* scroll_state,
       InputHandler::ScrollInputType type) override;
   ScrollStatus ScrollAnimatedBegin(ScrollState* scroll_state) override;
-  InputHandler::ScrollStatus ScrollAnimated(
-      const gfx::Point& viewport_point,
-      const gfx::Vector2dF& scroll_delta,
-      base::TimeDelta delayed_by = base::TimeDelta()) override;
+  void ScrollAnimated(const gfx::Point& viewport_point,
+                      const gfx::Vector2dF& scroll_delta,
+                      base::TimeDelta delayed_by = base::TimeDelta()) override;
   InputHandlerScrollResult ScrollBy(ScrollState* scroll_state) override;
   void RequestUpdateForSynchronousInputHandler() override;
   void SetSynchronousInputHandlerRootScrollOffset(

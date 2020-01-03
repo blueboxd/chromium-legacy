@@ -3,28 +3,24 @@
 // found in the LICENSE file.
 
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {highlight, highlightControlWithBubble} from 'chrome://resources/js/search_highlight_utils.m.js';
-
-/**
- * @typedef {{
- *   highlights: !Array<!Node>,
- *   bubbles: !Array<!Node>
- * }}
- */
-export let HighlightResults;
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {createEmptySearchBubble, highlight} from 'chrome://resources/js/search_highlight_utils.m.js';
 
 /**
  * @param {!HTMLElement} element The element to update. Element should have a
  *     shadow root.
  * @param {?RegExp} query The current search query
- * @return {!HighlightResults} The highlight wrappers and
- *     search bubbles that were created.
+ * @param {!Map<!Node, number>} bubbles A map of bubbles created / results found
+ *     so far.
+ * @return {!Array<!Node>} The highlight wrappers that were created.
  */
-export function updateHighlights(element, query) {
-  const result = {highlights: [], bubbles: []};
+export function updateHighlights(element, query, bubbles) {
+  const highlights = [];
   if (!query) {
-    return result;
+    return highlights;
   }
+
+  assert(query.global);
 
   element.shadowRoot.querySelectorAll('.searchable').forEach(childElement => {
     childElement.childNodes.forEach(node => {
@@ -37,7 +33,8 @@ export function updateHighlights(element, query) {
         return;
       }
 
-      if (query.test(textContent)) {
+      const matches = textContent.match(query);
+      if (matches) {
         // Don't highlight <select> nodes, yellow rectangles can't be
         // displayed within an <option>.
         if (node.parentNode.nodeName === 'OPTION') {
@@ -45,17 +42,24 @@ export function updateHighlights(element, query) {
           // Note: The bubble's ::after element, a yellow arrow, will not
           // appear correctly in print preview without SPv175 enabled. See
           // https://crbug.com/817058.
-          const bubble = highlightControlWithBubble(
-              /** @type {!HTMLElement} */ (assert(node.parentNode.parentNode)),
-              textContent.match(query)[0], /*horizontallyCenter=*/ true);
-          if (bubble) {
-            result.bubbles.push(bubble);
-          }
+          // TODO(crbug.com/1038464): turn on horizontallyCenter when we fix
+          // incorrect positioning caused by scrollbar width changing after
+          // search finishes.
+          const bubble = createEmptySearchBubble(
+              /** @type {!Node} */ (assert(node.parentNode.parentNode)),
+              /* horizontallyCenter= */ false);
+          const numHits = matches.length + (bubbles.get(bubble) || 0);
+          bubbles.set(bubble, numHits);
+          const msgName = numHits === 1 ? 'searchResultBubbleText' :
+                                          'searchResultsBubbleText';
+          bubble.firstChild.textContent =
+              loadTimeData.getStringF(msgName, numHits);
         } else {
-          result.highlights.push(highlight(node, textContent.split(query)));
+          highlights.push(highlight(node, textContent.split(query)));
         }
       }
     });
   });
-  return result;
+
+  return highlights;
 }

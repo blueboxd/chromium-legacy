@@ -273,8 +273,10 @@ void HTMLSlotElement::AttachLayoutTree(AttachContext& context) {
 void HTMLSlotElement::DetachLayoutTree(bool performing_reattach) {
   if (SupportsAssignment()) {
     const HeapVector<Member<Node>>& flat_tree_children = assigned_nodes_;
-    for (auto& node : flat_tree_children)
-      node->DetachLayoutTree(performing_reattach);
+    for (auto& node : flat_tree_children) {
+      if (node->GetDocument() == GetDocument())
+        node->DetachLayoutTree(performing_reattach);
+    }
   }
   HTMLElement::DetachLayoutTree(performing_reattach);
 }

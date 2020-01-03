@@ -271,9 +271,9 @@ File::File(const KURL& file_system_url,
       name_(DecodeURLEscapeSequences(file_system_url.LastPathComponent(),
                                      DecodeURLMode::kUTF8OrIsomorphic)),
       file_system_url_(file_system_url),
+      snapshot_size_(metadata.length),
       snapshot_modification_time_(metadata.modification_time) {
-  if (metadata.length >= 0)
-    snapshot_size_ = metadata.length;
+  DCHECK_GE(metadata.length, 0);
 }
 
 File::File(const File& other)

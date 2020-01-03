@@ -19,7 +19,7 @@ namespace ash {
 class HoverHighlightView;
 
 // A PaletteTool implementation with a standard view support.
-class CommonPaletteTool : public PaletteTool, public ash::ViewClickListener {
+class CommonPaletteTool : public PaletteTool, public ViewClickListener {
  protected:
   explicit CommonPaletteTool(Delegate* delegate);
   ~CommonPaletteTool() override;

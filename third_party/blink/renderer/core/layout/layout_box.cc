@@ -2784,6 +2784,10 @@ bool LayoutBox::PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
       StyleRef().HasVisualOverflowingEffect())
     return false;
 
+  // Hit tests rects are painted and depend on the size.
+  if (HasEffectiveAllowedTouchAction())
+    return false;
+
   // Both mask and clip-path generates drawing display items that depends on
   // the size of the box.
   if (HasMask() || HasClipPath())

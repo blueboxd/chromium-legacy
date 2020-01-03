@@ -208,18 +208,18 @@ suite(advanced_dialog_test.suiteName, function() {
         assertTrue(noMatchHint.hidden);
 
         // Searching for Watermark should show only the watermark setting.
-        searchBox.searchQuery = /(Watermark)/i;
+        searchBox.searchQuery = /(Watermark)/ig;
         items.forEach((item, index) => assertEquals(index != 2, item.hidden));
         assertTrue(noMatchHint.hidden);
 
         // Searching for A4 should show only the print area setting.
-        searchBox.searchQuery = /(A4)/i;
+        searchBox.searchQuery = /(A4)/ig;
         items.forEach((item, index) => assertEquals(index != 0, item.hidden));
         assertTrue(noMatchHint.hidden);
 
         // Searching for WXYZ should show no settings and display the "no match"
         // hint.
-        searchBox.searchQuery = /(WXYZ)/i;
+        searchBox.searchQuery = /(WXYZ)/ig;
         items.forEach(item => assertTrue(item.hidden));
         assertFalse(noMatchHint.hidden);
       });

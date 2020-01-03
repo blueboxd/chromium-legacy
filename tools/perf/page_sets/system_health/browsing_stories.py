@@ -83,8 +83,14 @@ class _ArticleBrowsingStory(_BrowsingStory):
   # Some devices take long to load news webpages crbug.com/713036. Set to None
   # because we cannot access DEFAULT_WEB_CONTENTS_TIMEOUT from this file.
   COMPLETE_STATE_WAIT_TIMEOUT = None
+  # On some pages (for ex: facebook) articles appear only after we start
+  # scrolling. This specifies if we need scroll main page.
+  SCROLL_BEFORE_BROWSE = False
 
   def _DidLoadDocument(self, action_runner):
+    # Scroll main page if needed before we start browsing articles.
+    if self.SCROLL_BEFORE_BROWSE:
+      self._ScrollMainPage(action_runner)
     for i in xrange(self.ITEMS_TO_VISIT):
       self._NavigateToItem(action_runner, i)
       self._ReadNextArticle(action_runner)
@@ -132,6 +138,34 @@ class FacebookMobileStory(_ArticleBrowsingStory):
   MAIN_PAGE_SCROLL_REPEAT = 1
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
   TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2016]
+
+
+class FacebookMobileStory2019(_ArticleBrowsingStory):
+  NAME = 'browse:social:facebook:2019'
+  URL = 'https://www.facebook.com/rihanna'
+  ITEM_SELECTOR = '._5msj'
+  MAIN_PAGE_SCROLL_REPEAT = 1
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  IS_SINGLE_PAGE_APP = True
+  SCROLL_BEFORE_BROWSE = True
+
+  TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2019]
+
+  def _Login(self, action_runner):
+    facebook_login.LoginWithMobileSite(action_runner, 'facebook4')
+
+  def _ScrollMainPage(self, action_runner):
+    action_runner.tab.WaitForDocumentReadyStateToBeComplete()
+    # Facebook loads content dynamically. So keep trying to scroll till we find
+    # the elements. Retry 5 times waiting a bit each time.
+    for _ in xrange(5):
+      action_runner.RepeatableBrowserDrivenScroll(
+          repeat_count=self.MAIN_PAGE_SCROLL_REPEAT)
+      result = action_runner.EvaluateJavaScript(
+          'document.querySelectorAll("._5msj").length')
+      if result:
+        break
+      action_runner.Wait(1)
 
 
 class FacebookDesktopStory(_ArticleBrowsingStory):

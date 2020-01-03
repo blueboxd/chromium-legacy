@@ -26,8 +26,6 @@ static_library("browser") {
     "translate_language_list.h",
     "translate_manager.cc",
     "translate_manager.h",
-    "translate_pref_names.cc",
-    "translate_pref_names.h",
     "translate_prefs.cc",
     "translate_prefs.h",
     "translate_ranker.h",
@@ -74,6 +72,10 @@ static_library("browser") {
     "//url",
   ]
 
+  public_deps = [
+    ":translate_pref_names",
+  ]
+
   if (is_ios || is_android) {
     sources += [
       "translate_infobar_delegate.cc",
@@ -81,6 +83,13 @@ static_library("browser") {
     ]
     deps += [ "//components/infobars/core" ]
   }
+}
+
+source_set("translate_pref_names") {
+  sources = [
+    "translate_pref_names.cc",
+    "translate_pref_names.h",
+  ]
 }
 
 source_set("unit_tests") {

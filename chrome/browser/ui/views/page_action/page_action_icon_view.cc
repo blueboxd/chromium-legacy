@@ -94,11 +94,6 @@ void PageActionIconView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kButton;
   const base::string16 name_text = GetTextForTooltipAndAccessibleName();
   node_data->SetName(name_text);
-  // TODO(crbug/1038567): This shouldn't be necessary and suggests a bug in how
-  // we deconstruct icons as we're fading them out. In the interim let's make
-  // sure interactive uitests don't crash as they're trying to hide a button.
-  if (name_text.empty())
-    node_data->SetNameExplicitlyEmpty();
 }
 
 base::string16 PageActionIconView::GetTooltipText(const gfx::Point& p) const {
@@ -190,6 +185,10 @@ void PageActionIconView::OnTouchUiChanged() {
   UpdateBorder();
   if (GetVisible())
     PreferredSizeChanged();
+}
+
+const char* PageActionIconView::GetClassName() const {
+  return "PageActionIconView";
 }
 
 void PageActionIconView::SetIconColor(SkColor icon_color) {

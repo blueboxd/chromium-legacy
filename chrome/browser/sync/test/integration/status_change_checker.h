@@ -57,6 +57,7 @@ class StatusChangeChecker {
   // Called when the blocking wait timeout is exceeded.
   void OnTimeout();
 
+  const base::TimeDelta timeout_;
   base::RunLoop run_loop_;
   bool timed_out_;
 };

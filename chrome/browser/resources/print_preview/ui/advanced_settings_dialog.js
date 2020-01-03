@@ -49,11 +49,11 @@ Polymer({
     'keydown': 'onKeydown_',
   },
 
-  /** @private {!Array<Node>} */
+  /** @private {!Array<!Node>} */
   highlights_: [],
 
-  /** @private {!Array<Node>} */
-  bubbles_: [],
+  /** @private {!Map<!Node, number>} */
+  bubbles_: new Map,
 
   /** @private {!MetricsContext} */
   metrics_: MetricsContext.printSettingsUi(),
@@ -109,11 +109,9 @@ Polymer({
     }
 
     removeHighlights(this.highlights_);
-    for (const bubble of this.bubbles_) {
-      bubble.remove();
-    }
+    this.bubbles_.forEach((number, bubble) => bubble.remove());
     this.highlights_ = [];
-    this.bubbles_ = [];
+    this.bubbles_.clear();
 
     const listItems = this.shadowRoot.querySelectorAll(
         'print-preview-advanced-settings-item');
@@ -122,9 +120,8 @@ Polymer({
       const matches = item.hasMatch(this.searchQuery_);
       item.hidden = !matches;
       hasMatch = hasMatch || matches;
-      const result = item.updateHighlighting(this.searchQuery_);
-      this.highlights_.push(...result.highlights);
-      this.bubbles_.push(...result.bubbles);
+      this.highlights_.push(
+          ...item.updateHighlighting(this.searchQuery_, this.bubbles_));
     });
     return hasMatch;
   },

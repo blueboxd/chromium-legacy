@@ -18,6 +18,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #import "ios/chrome/browser/ntp/features.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/settings/autofill/features.h"
 #import "ios/chrome/browser/ui/table_view/feature_flags.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
@@ -114,6 +115,11 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
 + (void)openURLFromExternalApp:(NSString*)URL {
   chrome_test_util::OpenChromeFromExternalApp(
       GURL(base::SysNSStringToUTF8(URL)));
+}
+
++ (void)dismissSettings {
+  [chrome_test_util::DispatcherForActiveBrowserViewController()
+      closeSettingsUI];
 }
 
 #pragma mark - Tab Utilities (EG2)

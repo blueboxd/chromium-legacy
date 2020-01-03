@@ -72,7 +72,7 @@ public class BaseSuggestionViewTest {
         }
 
         View getDecoratedView() {
-            return mContentView;
+            return mDecoratedView;
         }
 
         View getRefineView() {

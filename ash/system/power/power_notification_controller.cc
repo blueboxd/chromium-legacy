@@ -96,7 +96,7 @@ void PowerNotificationController::OnPowerStatusChanged() {
 
   // Factory testing may place the battery into unusual states.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kAshHideNotificationsForFactory)) {
+          switches::kAshHideNotificationsForFactory)) {
     return;
   }
 
@@ -131,7 +131,7 @@ bool PowerNotificationController::MaybeShowUsbChargerNotification() {
 
   // Check if the notification needs to be created.
   if (show && !usb_charger_was_connected_ && !usb_notification_dismissed_) {
-    std::unique_ptr<Notification> notification = ash::CreateSystemNotification(
+    std::unique_ptr<Notification> notification = CreateSystemNotification(
         message_center::NOTIFICATION_TYPE_SIMPLE, kUsbNotificationId,
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_TITLE),
         ui::SubstituteChromeOSDeviceType(

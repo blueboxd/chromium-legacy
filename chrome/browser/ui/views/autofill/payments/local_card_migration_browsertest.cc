@@ -323,18 +323,7 @@ class LocalCardMigrationBrowserTest
          DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
     FillAndSubmitFormWithCard(card_number);
     WaitForObservedEvent();
-    if (base::FeatureList::IsEnabled(
-            features::kAutofillEnableToolbarStatusChip)) {
-      // Wait for animations to finish.
-      base::RunLoop loop;
-      static_cast<views::AnimatingLayoutManager*>(
-          BrowserView::GetBrowserViewForBrowser(browser())
-              ->toolbar()
-              ->toolbar_account_icon_container()
-              ->GetLayoutManager())
-          ->PostOrQueueAction(loop.QuitClosure());
-      loop.Run();
-    }
+    WaitForAnimationToComplete();
   }
 
   void ClickOnSaveButtonAndWaitForMigrationResults() {
@@ -510,6 +499,21 @@ class LocalCardMigrationBrowserTest
   }
 
   void WaitForCardDeletion() { WaitForPersonalDataChange(browser()); }
+
+  void WaitForAnimationToComplete() {
+    if (base::FeatureList::IsEnabled(
+            features::kAutofillEnableToolbarStatusChip)) {
+      // Wait for animations to finish.
+      base::RunLoop loop;
+      static_cast<views::AnimatingLayoutManager*>(
+          BrowserView::GetBrowserViewForBrowser(browser())
+              ->toolbar()
+              ->toolbar_account_icon_container()
+              ->GetLayoutManager())
+          ->PostOrQueueAction(loop.QuitClosure());
+      loop.Run();
+    }
+  }
 
   std::unique_ptr<
       base::CallbackList<void(content::BrowserContext*)>::Subscription>
@@ -1095,12 +1099,14 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTestForStatusChip,
   AddTabAtIndex(1, GURL("http://example.com/"), ui::PAGE_TRANSITION_TYPED);
   TabStripModel* tab_model = browser()->tab_strip_model();
   tab_model->ActivateTabAt(1, {TabStripModel::GestureType::kOther});
+  WaitForAnimationToComplete();
 
   // Ensures bubble and icon go away if user navigates to another tab.
   EXPECT_FALSE(GetLocalCardMigrationIconView()->GetVisible());
   EXPECT_FALSE(GetLocalCardMigrationOfferBubbleViews());
 
   tab_model->ActivateTabAt(0, {TabStripModel::GestureType::kOther});
+  WaitForAnimationToComplete();
 
   // If the user navigates back, shows only the icon not the bubble.
   EXPECT_TRUE(GetLocalCardMigrationIconView()->GetVisible());

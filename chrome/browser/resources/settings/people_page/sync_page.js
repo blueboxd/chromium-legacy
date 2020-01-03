@@ -562,16 +562,19 @@ Polymer({
     return this.syncPrefs.encryptAllData ? 'three-line' : 'two-line';
   },
 
-  // <if expr="not chromeos">
   /**
    * @return {boolean}
    * @private
    */
   shouldShowSyncAccountControl_: function() {
+    // <if expr="chromeos">
+    if (!loadTimeData.getBoolean('splitSettingsSyncEnabled')) {
+      return false;
+    }
+    // </if>
     return this.syncStatus !== undefined &&
         !!this.syncStatus.syncSystemEnabled && !!this.syncStatus.signinAllowed;
   },
-  // </if>
 
   /**
    * @return {boolean}

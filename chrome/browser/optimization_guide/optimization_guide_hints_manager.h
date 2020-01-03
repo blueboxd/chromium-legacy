@@ -344,8 +344,10 @@ class OptimizationGuideHintsManager
   // Used in testing to subscribe to an update event in this class.
   base::OnceClosure next_update_closure_;
 
-  // Hosts for which hints were last fetched in the real-time.
-  std::vector<std::string> navigation_hosts_last_fetched_real_time_;
+  // Hosts for which hints are currently being fetched with the PAGE_NAVIGATION
+  // request context.
+  // This will be cleared at request completion.
+  std::vector<std::string> page_navigation_hosts_being_fetched_;
 
   // Used to get |weak_ptr_| to self on the UI thread.
   base::WeakPtrFactory<OptimizationGuideHintsManager> ui_weak_ptr_factory_{

@@ -80,8 +80,6 @@ _NEGATIVE_FILTER = [
     'ChromeDriverPageLoadTimeoutTest.testRefreshWithPageLoadTimeout',
     # testFocus is failing
     'JavaScriptTests.testFocus',
-    # https://bugs.chromium.org/p/chromium/issues/detail?id=1038366
-    'JavaScriptTests.testAllJS',
 ]
 
 
@@ -237,6 +235,8 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'ChromeDriverTest.testPushAndNotificationsPermissions',
         'ChromeDriverTest.testSensorPermissions',
         'ChromeDriverTest.testSettingPermissionDoesNotAffectOthers',
+        # Android does not allow changing window size
+        'JavaScriptTests.*',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
@@ -4212,6 +4212,7 @@ class JavaScriptTests(ChromeDriverBaseTestWithWebServer):
   def setUp(self):
     self._driver = self.CreateDriver()
     self.js_root = os.path.dirname(os.path.realpath(__file__)) + '/../js/'
+    self._driver.SetWindowRect(1000, 1000, 0, 0)
 
   def checkTestResult(self):
     def getStatus():

@@ -448,7 +448,7 @@ NetworkIconImpl* FindAndUpdateImageImpl(const NetworkStateProperties* network,
 // Public interface
 
 SkColor GetDefaultColorForIconType(IconType icon_type) {
-  const bool light_icon = icon_type == network_icon::ICON_TYPE_TRAY_OOBE;
+  const bool light_icon = icon_type == ICON_TYPE_TRAY_OOBE;
   return AshColorProvider::Get()->GetContentLayerColor(
       AshColorProvider::ContentLayerType::kIconPrimary,
       light_icon ? AshColorProvider::AshColorMode::kLight

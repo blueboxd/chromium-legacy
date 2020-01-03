@@ -53,6 +53,13 @@ class AudioClockSimulator : public AudioProvider {
   // internally. Will always return 0 or 1.
   int DelayFrames() const;
 
+  // Sets a new playback sample rate. Needed to calculate timestamps correctly.
+  void SetSampleRate(int sample_rate);
+
+  // Sets the playback rate (rate at which samples are played out relative to
+  // the sample rate). Needed to calculate timestamps correctly.
+  void SetPlaybackRate(double playback_rate);
+
   // AudioProvider implementation:
   int FillFrames(int num_frames,
                  int64_t playout_timestamp,
@@ -87,9 +94,12 @@ class AudioClockSimulator : public AudioProvider {
                           float* const* channel_data,
                           int offset);
 
+  int64_t FramesToMicroseconds(int64_t frames);
+
   AudioProvider* const provider_;
-  const int sample_rate_;
+  int sample_rate_;
   const size_t num_channels_;
+  double playback_rate_ = 1.0;
 
   double clock_rate_ = 1.0;
   int64_t input_frames_ = 0;

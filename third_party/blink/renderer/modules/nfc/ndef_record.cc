@@ -251,21 +251,11 @@ static NDEFRecord* CreateExternalRecord(const String& custom_type,
 NDEFRecord* NDEFRecord::Create(const ExecutionContext* execution_context,
                                const NDEFRecordInit* init,
                                ExceptionState& exception_state) {
-  // https://w3c.github.io/web-nfc/#creating-web-nfc-message
-  String record_type;
-  if (!init->hasRecordType()) {
-    if (!init->hasData()) {
-      exception_state.ThrowTypeError("The record has neither type nor data.");
-      return nullptr;
-    }
-    if (init->data().IsString()) {
-      record_type = "text";
-    } else {
-      record_type = "mime";
-    }
-  } else {
-    record_type = init->recordType();
-  }
+  // https://w3c.github.io/web-nfc/#creating-ndef-record
+
+  // NDEFRecordInit#recordType is a required field.
+  DCHECK(init->hasRecordType());
+  const String& record_type = init->recordType();
 
   // https://w3c.github.io/web-nfc/#dom-ndefrecordinit-mediatype
   if (init->hasMediaType() && record_type != "mime") {

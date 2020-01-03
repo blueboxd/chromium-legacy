@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
+#include "ui/base/ui_base_features.h"
 
 namespace blink {
 
@@ -770,7 +771,7 @@ CompositorElementId Scrollbar::GetElementId() {
 }
 
 float Scrollbar::EffectiveZoom() const {
-  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled() && style_source_ &&
+  if (::features::IsFormControlsRefreshEnabled() && style_source_ &&
       style_source_->GetLayoutObject()) {
     return style_source_->GetLayoutObject()->Style()->EffectiveZoom();
   }
@@ -778,7 +779,7 @@ float Scrollbar::EffectiveZoom() const {
 }
 
 bool Scrollbar::ContainerIsRightToLeft() const {
-  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled() && style_source_ &&
+  if (::features::IsFormControlsRefreshEnabled() && style_source_ &&
       style_source_->GetLayoutObject()) {
     TextDirection dir = style_source_->GetLayoutObject()->Style()->Direction();
     return IsRtl(dir);

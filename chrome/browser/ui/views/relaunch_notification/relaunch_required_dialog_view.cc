@@ -87,9 +87,9 @@ bool RelaunchRequiredDialogView::ShouldShowCloseButton() const {
 }
 
 gfx::ImageSkia RelaunchRequiredDialogView::GetWindowIcon() {
-  return gfx::CreateVectorIcon(gfx::IconDescription(
-      vector_icons::kBusinessIcon, kTitleIconSize, gfx::kChromeIconGrey,
-      base::TimeDelta(), gfx::kNoneIcon));
+  return gfx::CreateVectorIcon(
+      gfx::IconDescription(vector_icons::kBusinessIcon, kTitleIconSize,
+                           gfx::kChromeIconGrey, gfx::kNoneIcon));
 }
 
 bool RelaunchRequiredDialogView::ShouldShowWindowIcon() const {

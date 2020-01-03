@@ -24,9 +24,7 @@ class SSLBrowserTest : public WebLayerBrowserTest {
   ~SSLBrowserTest() override = default;
 
   // WebLayerBrowserTest:
-  void PreRunTestOnMainThread() override {
-    WebLayerBrowserTest::PreRunTestOnMainThread();
-
+  void SetUpOnMainThread() override {
     https_server_ = std::make_unique<net::EmbeddedTestServer>(
         net::EmbeddedTestServer::TYPE_HTTPS);
     https_server_->AddDefaultHandlers(

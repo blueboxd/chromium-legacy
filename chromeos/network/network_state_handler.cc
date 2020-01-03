@@ -1413,6 +1413,7 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
   if (key == shill::kSignalStrengthProperty || key == shill::kWifiBSsid ||
       key == shill::kWifiFrequency ||
       key == shill::kWifiFrequencyListProperty ||
+      key == shill::kNetworkTechnologyProperty ||
       (key == shill::kDeviceProperty && value_str == "/")) {
     // Uninteresting update. This includes 'Device' property changes to "/"
     // (occurs before just a service is removed).
@@ -1421,9 +1422,12 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
       return;
     // Otherwise do not trigger 'default network changed'.
     notify_default = false;
-    // Notify signal strength changes for active networks.
-    if (key == shill::kSignalStrengthProperty)
+    // Notify signal strength and network technology changes for active
+    // networks.
+    if (key == shill::kSignalStrengthProperty ||
+        key == shill::kNetworkTechnologyProperty) {
       notify_active = true;
+    }
   }
 
   LogPropertyUpdated(network, key, value);

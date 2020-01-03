@@ -41,9 +41,6 @@ class LayoutObjectFactory {
   static LayoutBlock* CreateFlexibleBox(Node&,
                                         const ComputedStyle&,
                                         LegacyLayout);
-  static LayoutBlockFlow* CreateListItem(Node&,
-                                         const ComputedStyle&,
-                                         LegacyLayout);
   static LayoutObject* CreateListMarker(Node&,
                                         const ComputedStyle&,
                                         LegacyLayout);

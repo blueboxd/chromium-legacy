@@ -514,7 +514,8 @@ TEST_P(SharedImageBackingFactoryD3DTest, GL_SkiaGL) {
 
   std::unique_ptr<SharedImageRepresentationGLTexturePassthrough::ScopedAccess>
       scoped_access = gl_representation->BeginScopedAccess(
-          GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
+          GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM,
+          SharedImageRepresentation::AllowUnclearedAccess::kYes);
   EXPECT_TRUE(scoped_access);
 
   // Create an FBO.
@@ -584,7 +585,8 @@ TEST_P(SharedImageBackingFactoryD3DTest, Dawn_SkiaGL) {
     ASSERT_TRUE(dawn_representation);
 
     auto scoped_access = dawn_representation->BeginScopedAccess(
-        WGPUTextureUsage_OutputAttachment);
+        WGPUTextureUsage_OutputAttachment,
+        SharedImageRepresentation::AllowUnclearedAccess::kNo);
     ASSERT_TRUE(scoped_access);
 
     wgpu::Texture texture = wgpu::Texture::Acquire(scoped_access->texture());

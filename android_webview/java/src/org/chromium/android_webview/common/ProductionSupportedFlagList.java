@@ -28,5 +28,19 @@ public final class ProductionSupportedFlagList {
                             + "compositing."),
             Flag.commandLine("webview-log-js-console-messages",
                     "Mirrors JavaScript console messages to system logs."),
+            Flag.commandLine(CommandLineUtil.CRASH_UPLOADS_ENABLED_FOR_TESTING_SWITCH,
+                    "Used for turning on Breakpad crash reporting in a debug environment where "
+                            + "crash reporting is typically compiled but disabled."),
+            Flag.baseFeature("OutOfBlinkCors",
+                    "Moves CORS logic into the Network Service (rather than inside the blink "
+                            + "rendering engine)."),
+            Flag.baseFeature("VizForWebView", "Enables Viz for WebView."),
+            Flag.baseFeature("WebViewConnectionlessSafeBrowsing",
+                    "Uses GooglePlayService's 'connectionless' APIs for Safe Browsing "
+                            + "security checks."),
+            Flag.baseFeature(
+                    "WebViewBrotliSupport", "Enables brotli compression support in WebView."),
+            Flag.baseFeature("SafeBrowsingCommittedInterstitials",
+                    "Commits Safe Browsing warning pages like page navigations."),
     };
 }

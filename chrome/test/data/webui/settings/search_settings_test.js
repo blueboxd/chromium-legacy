@@ -11,6 +11,8 @@ cr.define('settings_test', function() {
     suiteSetup(function() {
       if (!window.settings || !settings.getSearchManager) {
         return Promise.all([
+          PolymerTest.loadScript('chrome://resources/js/load_time_data.js'),
+          PolymerTest.loadScript('chrome://settings/strings.js'),
           PolymerTest.loadScript(
               'chrome://resources/js/search_highlight_utils.js'),
           PolymerTest.loadScript('chrome://settings/search_settings.js'),
@@ -283,6 +285,33 @@ cr.define('settings_test', function() {
       await searchManager.search('hello', document.body);
 
       assertEquals(1, document.querySelectorAll('.search-bubble').length);
+    });
+
+    test('bubble result count', async () => {
+      document.body.innerHTML = `
+          <settings-section>
+            <select>
+              <option>nohello</option>
+              <option>hello dolly!</option>
+              <option>hello to you, too!</option>
+              <option>you say goodbye, I say hello!</option>
+            </select>
+
+            <button></button>
+            <settings-subpage>
+              hello there!
+            </settings-subpage>
+          </setting-section>`;
+
+      const subpage = document.querySelector('settings-subpage');
+      subpage.associatedControl = document.querySelector('button');
+
+      await searchManager.search('hello', document.body);
+
+      const bubbles = document.querySelectorAll('.search-bubble');
+      assertEquals(2, bubbles.length);
+      assertEquals('4 results', bubbles[1].textContent);
+      assertEquals('1 result', bubbles[0].textContent);
     });
   });
 });

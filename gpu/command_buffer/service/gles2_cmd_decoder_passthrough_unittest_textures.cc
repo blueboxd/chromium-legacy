@@ -166,17 +166,10 @@ TEST_F(GLES2DecoderPassthroughTest, BeginEndSharedImageAccessCRHOMIUM) {
     EXPECT_EQ(GL_NO_ERROR, GetGLError());
     cmds::EndSharedImageAccessDirectCHROMIUM readwrite_end_cmd;
     readwrite_end_cmd.Init(client_id);
-    // EXPECT_EQ(error::kNoError, ExecuteCmd(readwrite_end_cmd));
-    // EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  }
-
-  for (int i = 20; i > 10; --i) {
-    cmds::EndSharedImageAccessDirectCHROMIUM readwrite_end_cmd;
-    readwrite_end_cmd.Init(kNewClientId + i);
     EXPECT_EQ(error::kNoError, ExecuteCmd(readwrite_end_cmd));
     EXPECT_EQ(GL_NO_ERROR, GetGLError());
-    DoDeleteTexture(kNewClientId + i);
-    fprintf(stderr, "EEEE DoDeleteTexture() i=%d\n", i);
+
+    DoDeleteTexture(client_id);
   }
 
   // Cleanup

@@ -1456,6 +1456,7 @@ if (enable_java_templates) {
     }
 
     group(target_name) {
+      forward_variables_from(invoker, [ "assert_no_deps" ])
       public_deps = [
         ":$_build_config_target_name",
         ":$_java_binary_target_name",

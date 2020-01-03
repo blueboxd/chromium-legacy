@@ -59,7 +59,7 @@ class WebState;
 
 // Exposes content inset of contentSuggestions collectionView to ensure all of
 // content is visible under the bottom toolbar.
-@property(nonatomic) UIEdgeInsets contentInset;
+@property(nonatomic, readonly) UIEdgeInsets contentInset;
 
 // Animates the NTP fakebox to the focused position and focuses the real
 // omnibox.

@@ -466,7 +466,6 @@ TEST_F('CrSettingsPeoplePageTest', 'All', function() {
   mocha.run();
 });
 
-GEN('#if !defined(OS_CHROMEOS)');
 /**
  * Test fixture for
  * chrome/browser/resources/settings/people_page/sync_account_control.html.
@@ -493,8 +492,6 @@ CrSettingsPeoplePageSyncAccountControlTest.prototype = {
 TEST_F('CrSettingsPeoplePageSyncAccountControlTest', 'All', function() {
   mocha.run();
 });
-
-GEN('#endif  // !defined(OS_CHROMEOS)');
 
 /**
  * Test fixture for

@@ -87,9 +87,10 @@ double CSSParserToken::NumericValue() const {
 }
 
 CSSPropertyID CSSParserToken::ParseAsUnresolvedCSSPropertyID(
+    const ExecutionContext* execution_context,
     CSSParserMode mode) const {
   DCHECK_EQ(type_, static_cast<unsigned>(kIdentToken));
-  return UnresolvedCSSPropertyID(Value(), mode);
+  return UnresolvedCSSPropertyID(execution_context, Value(), mode);
 }
 
 AtRuleDescriptorID CSSParserToken::ParseAsAtRuleDescriptorID() const {

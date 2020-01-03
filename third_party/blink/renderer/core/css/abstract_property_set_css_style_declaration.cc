@@ -122,7 +122,8 @@ void AbstractPropertySetCSSStyleDeclaration::setProperty(
     const String& value,
     const String& priority,
     ExceptionState& exception_state) {
-  CSSPropertyID property_id = unresolvedCSSPropertyID(property_name);
+  CSSPropertyID property_id =
+      unresolvedCSSPropertyID(execution_context, property_name);
   if (!isValidCSSPropertyID(property_id))
     return;
 

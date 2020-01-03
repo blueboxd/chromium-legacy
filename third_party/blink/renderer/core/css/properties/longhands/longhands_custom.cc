@@ -7882,12 +7882,12 @@ const CSSValue* WillChange::ParseSingleValue(
     if (range.Peek().GetType() != kIdentToken)
       return nullptr;
     CSSPropertyID unresolved_property =
-        UnresolvedCSSPropertyID(range.Peek().Value());
+        UnresolvedCSSPropertyID(context.GetDocument(), range.Peek().Value());
     if (unresolved_property != CSSPropertyID::kInvalid &&
         unresolved_property != CSSPropertyID::kVariable) {
 #if DCHECK_IS_ON()
       DCHECK(CSSProperty::Get(resolveCSSPropertyID(unresolved_property))
-                 .IsWebExposed());
+                 .IsWebExposed(context.GetDocument()));
 #endif
       // Now "all" is used by both CSSValue and CSSPropertyValue.
       // Need to return nullptr when currentValue is CSSPropertyID::kAll.

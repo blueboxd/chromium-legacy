@@ -32,12 +32,48 @@ bool CanFitInBounds(const gfx::Size& size, const SizeBounds& bounds) {
   return true;
 }
 
+// Returns the ChildLayout data for the child view in the proposed layout, or
+// nullptr if not found.
+const ChildLayout* FindChildViewInLayout(const ProposedLayout& layout,
+                                         const View* view) {
+  if (!view)
+    return nullptr;
+
+  // The number of children should be small enough that this is more efficient
+  // than caching a lookup set.
+  for (auto& child_layout : layout.child_layouts) {
+    if (child_layout.child_view == view)
+      return &child_layout;
+  }
+  return nullptr;
+}
+
+// Describes the type of fade, used by LayoutFadeInfo (see below).
+enum LayoutFadeType {
+  // This view is fading in as part of the current animation.
+  kFadingIn,
+  // This view is fading out as part of the current animation.
+  kFadingOut,
+  // This view was fading as part of a previous animation that was interrupted
+  // and redirected. No child views in the current animation should base their
+  // position off of it.
+  kContinuingFade
+};
+
+// Non-const version of above.
+ChildLayout* FindChildViewInLayout(ProposedLayout& layout, const View* view) {
+  // This const_cast is safe because we know we were passed in a non-const
+  // layout (also we don't want to duplicate the logic).
+  return const_cast<ChildLayout*>(
+      FindChildViewInLayout(const_cast<const ProposedLayout&>(layout), view));
+}
+
 }  // namespace
 
 // Holds data about a view that is fading in or out as part of an animation.
 struct AnimatingLayoutManager::LayoutFadeInfo {
-  // Whether the view is fading in or out.
-  bool fading_in = false;
+  // How the child view is fading.
+  LayoutFadeType fade_type;
   // The child view which is fading.
   View* child_view = nullptr;
   // The view previous (leading side) to the fading view which is in both the
@@ -432,6 +468,7 @@ void AnimatingLayoutManager::LayoutImpl() {
 void AnimatingLayoutManager::OnAnimationEnded() {
   DCHECK(is_animating_);
   is_animating_ = false;
+  fade_infos_.clear();
   PostDelayedActions();
   NotifyIsAnimatingChanged();
 }
@@ -546,81 +583,80 @@ void AnimatingLayoutManager::UpdateCurrentLayout(double percent) {
   current_layout_ =
       ProposedLayoutBetween(percent, starting_layout_, target_layout_);
 
-  if (fade_infos_.empty())
-    return;
-
-  std::map<const View*, size_t> view_indices;
-  for (size_t i = 0; i < current_layout_.child_layouts.size(); ++i)
-    view_indices.emplace(current_layout_.child_layouts[i].child_view, i);
-
   for (const LayoutFadeInfo& fade_info : fade_infos_) {
     // This shouldn't happen but we should ensure that with a check.
     DCHECK_NE(-1, host_view()->GetIndexOf(fade_info.child_view));
+
+    // Views that were previously fading are animated as normal, so nothing to
+    // do here.
+    if (fade_info.fade_type == LayoutFadeType::kContinuingFade)
+      continue;
 
     ChildLayout child_layout;
 
     if (percent == 1.0) {
       // At the end of the animation snap to the final state of the child view.
       child_layout.child_view = fade_info.child_view;
-      if (fade_info.fading_in) {
-        child_layout.visible = true;
-        child_layout.bounds =
-            Denormalize(orientation(), fade_info.reference_bounds);
-      } else {
-        child_layout.visible = false;
+      switch (fade_info.fade_type) {
+        case LayoutFadeType::kFadingIn:
+          child_layout.visible = true;
+          child_layout.bounds =
+              Denormalize(orientation(), fade_info.reference_bounds);
+          break;
+        case LayoutFadeType::kFadingOut:
+          child_layout.visible = false;
+          break;
+        case LayoutFadeType::kContinuingFade:
+          NOTREACHED();
+          continue;
       }
     } else if (default_fade_mode_ == FadeInOutMode::kHide) {
       child_layout.child_view = fade_info.child_view;
       child_layout.visible = false;
     } else {
       const double scale_percent =
-          fade_info.fading_in ? percent : 1.0 - percent;
-
-      const base::Optional<size_t> prev_index =
-          fade_info.prev_view
-              ? base::make_optional(view_indices[fade_info.prev_view])
-              : base::nullopt;
-      const base::Optional<size_t> next_index =
-          fade_info.next_view
-              ? base::make_optional(view_indices[fade_info.next_view])
-              : base::nullopt;
+          fade_info.fade_type == LayoutFadeType::kFadingIn ? percent
+                                                           : 1.0 - percent;
 
       switch (default_fade_mode_) {
         case FadeInOutMode::kHide:
           NOTREACHED();
           break;
         case FadeInOutMode::kScaleFromMinimum:
-          child_layout = CalculateScaleFade(fade_info, prev_index, next_index,
-                                            scale_percent,
+          child_layout = CalculateScaleFade(fade_info, scale_percent,
                                             /* scale_from_zero */ false);
           break;
         case FadeInOutMode::kScaleFromZero:
-          child_layout = CalculateScaleFade(fade_info, prev_index, next_index,
-                                            scale_percent,
+          child_layout = CalculateScaleFade(fade_info, scale_percent,
                                             /* scale_from_zero */ true);
           break;
         case FadeInOutMode::kSlideFromLeadingEdge:
-          child_layout = CalculateSlideFade(fade_info, prev_index, next_index,
-                                            scale_percent,
-                                            /* scale_from_zero */ true);
+          child_layout = CalculateSlideFade(fade_info, scale_percent,
+                                            /* slide_from_leading */ true);
           break;
         case FadeInOutMode::kSlideFromTrailingEdge:
-          child_layout = CalculateSlideFade(fade_info, prev_index, next_index,
-                                            scale_percent,
-                                            /* scale_from_zero */ false);
+          child_layout = CalculateSlideFade(fade_info, scale_percent,
+                                            /* slide_from_leading */ false);
           break;
       }
     }
 
-    auto it = view_indices.find(fade_info.child_view);
-    if (it == view_indices.end())
-      current_layout_.child_layouts.push_back(child_layout);
+    ChildLayout* const to_overwrite =
+        FindChildViewInLayout(current_layout_, fade_info.child_view);
+    if (to_overwrite)
+      *to_overwrite = child_layout;
     else
-      current_layout_.child_layouts[it->second] = child_layout;
+      current_layout_.child_layouts.push_back(child_layout);
   }
 }
 
 void AnimatingLayoutManager::CalculateFadeInfos() {
+  // Save any views that were previously fading so we don't try to key off of
+  // them when calculating leading/trailing edge.
+  std::set<const View*> previously_fading;
+  for (const auto& fade_info : fade_infos_)
+    previously_fading.insert(fade_info.child_view);
+
   fade_infos_.clear();
 
   struct ChildInfo {
@@ -665,7 +701,8 @@ void AnimatingLayoutManager::CalculateFadeInfos() {
 
   for (View* child : host_view()->children()) {
     const auto& index = child_to_info[child];
-    if (index.start_visible && index.target_visible) {
+    if (index.start_visible && index.target_visible &&
+        !base::Contains(previously_fading, child)) {
       start_leading_edges.emplace(index.start_bounds.origin_main(), child);
       target_leading_edges.emplace(index.target_bounds.origin_main(), child);
     }
@@ -682,7 +719,7 @@ void AnimatingLayoutManager::CalculateFadeInfos() {
     const auto& current = child_to_info[child];
     if (current.start_visible && !current.target_visible) {
       LayoutFadeInfo fade_info;
-      fade_info.fading_in = false;
+      fade_info.fade_type = LayoutFadeType::kFadingOut;
       fade_info.child_view = child;
       fade_info.reference_bounds = current.start_bounds;
       auto next =
@@ -710,7 +747,7 @@ void AnimatingLayoutManager::CalculateFadeInfos() {
       fade_infos_.push_back(fade_info);
     } else if (!current.start_visible && current.target_visible) {
       LayoutFadeInfo fade_info;
-      fade_info.fading_in = true;
+      fade_info.fade_type = LayoutFadeType::kFadingIn;
       fade_info.child_view = child;
       fade_info.reference_bounds = current.target_bounds;
       auto next =
@@ -736,6 +773,16 @@ void AnimatingLayoutManager::CalculateFadeInfos() {
                                       prev_info.target_bounds.max_main());
       }
       fade_infos_.push_back(fade_info);
+    } else if (base::Contains(previously_fading, child)) {
+      // Capture the fact that this view was fading as part of an animation that
+      // was interrupted. (It is therefore technically still fading.) This
+      // status goes away when the animation ends.
+      LayoutFadeInfo fade_info;
+      fade_info.fade_type = LayoutFadeType::kContinuingFade;
+      fade_info.child_view = child;
+      // No reference bounds or offsets since we'll use the normal animation
+      // pathway for this view.
+      fade_infos_.push_back(fade_info);
     }
   }
 }
@@ -749,7 +796,8 @@ void AnimatingLayoutManager::ResolveFades() {
   // animation have run, the relevant view may still be visible.
   for (const LayoutFadeInfo& fade_info : fade_infos_) {
     View* const child = fade_info.child_view;
-    if (!fade_info.fading_in && host_view()->GetIndexOf(child) >= 0 &&
+    if (fade_info.fade_type == LayoutFadeType::kFadingOut &&
+        host_view()->GetIndexOf(child) >= 0 &&
         !IsChildViewIgnoredByLayout(child) && !IsChildIncludedInLayout(child)) {
       SetViewVisibility(child, false);
     }
@@ -758,24 +806,31 @@ void AnimatingLayoutManager::ResolveFades() {
 
 ChildLayout AnimatingLayoutManager::CalculateScaleFade(
     const LayoutFadeInfo& fade_info,
-    base::Optional<size_t> prev_index,
-    base::Optional<size_t> next_index,
     double scale_percent,
     bool scale_from_zero) const {
   ChildLayout child_layout;
 
   int leading_reference_point = 0;
-  if (prev_index) {
-    const auto& prev_bounds = current_layout_.child_layouts[*prev_index].bounds;
-    leading_reference_point = Normalize(orientation(), prev_bounds).max_main();
+  if (fade_info.prev_view) {
+    // Since prev/next view is always a view in the start and target layouts, it
+    // should also be in the current layout. Therefore this should never return
+    // null.
+    const ChildLayout* const prev_layout =
+        FindChildViewInLayout(current_layout_, fade_info.prev_view);
+    leading_reference_point =
+        Normalize(orientation(), prev_layout->bounds).max_main();
   }
   leading_reference_point += fade_info.offsets.leading();
 
   int trailing_reference_point;
-  if (next_index) {
-    const auto& next_bounds = current_layout_.child_layouts[*next_index].bounds;
+  if (fade_info.next_view) {
+    // Since prev/next view is always a view in the start and target layouts, it
+    // should also be in the current layout. Therefore this should never return
+    // null.
+    const ChildLayout* const next_layout =
+        FindChildViewInLayout(current_layout_, fade_info.next_view);
     trailing_reference_point =
-        Normalize(orientation(), next_bounds).origin_main();
+        Normalize(orientation(), next_layout->bounds).origin_main();
   } else {
     trailing_reference_point =
         Normalize(orientation(), current_layout_.host_size).main();
@@ -794,10 +849,16 @@ ChildLayout AnimatingLayoutManager::CalculateScaleFade(
                .main())) {
     child_layout.visible = true;
     NormalizedRect new_bounds = fade_info.reference_bounds;
-    if (fade_info.fading_in) {
-      new_bounds.set_origin_main(leading_reference_point);
-    } else {
-      new_bounds.set_origin_main(trailing_reference_point - new_size);
+    switch (fade_info.fade_type) {
+      case LayoutFadeType::kFadingIn:
+        new_bounds.set_origin_main(leading_reference_point);
+        break;
+      case LayoutFadeType::kFadingOut:
+        new_bounds.set_origin_main(trailing_reference_point - new_size);
+        break;
+      case LayoutFadeType::kContinuingFade:
+        NOTREACHED();
+        break;
     }
     new_bounds.set_size_main(new_size);
     child_layout.bounds = Denormalize(orientation(), new_bounds);
@@ -808,33 +869,43 @@ ChildLayout AnimatingLayoutManager::CalculateScaleFade(
 
 ChildLayout AnimatingLayoutManager::CalculateSlideFade(
     const LayoutFadeInfo& fade_info,
-    base::Optional<size_t> prev_index,
-    base::Optional<size_t> next_index,
     double scale_percent,
     bool slide_from_leading) const {
   // Fall back to kScaleFromMinimum if there is no edge to slide out from.
-  if (!prev_index.has_value() && !next_index.has_value()) {
-    return CalculateScaleFade(fade_info, prev_index, next_index, scale_percent,
-                              false);
-  }
+  if (!fade_info.prev_view && !fade_info.next_view)
+    return CalculateScaleFade(fade_info, scale_percent, false);
 
   // Slide from the other direction if against the edge of the host view.
-  if (slide_from_leading && !prev_index.has_value())
+  if (slide_from_leading && !fade_info.prev_view)
     slide_from_leading = false;
-  else if (!slide_from_leading && !next_index.has_value())
+  else if (!slide_from_leading && !fade_info.next_view)
     slide_from_leading = true;
 
   NormalizedRect new_bounds = fade_info.reference_bounds;
 
+  // Determine which layout the sliding view will be completely faded in.
+  const ProposedLayout* fully_faded_layout;
+  switch (fade_info.fade_type) {
+    case LayoutFadeType::kFadingIn:
+      fully_faded_layout = &starting_layout_;
+      break;
+    case LayoutFadeType::kFadingOut:
+      fully_faded_layout = &target_layout_;
+      break;
+    case LayoutFadeType::kContinuingFade:
+      NOTREACHED();
+      break;
+  }
+
   if (slide_from_leading) {
+    // Get the layout info for the leading child.
+    const ChildLayout* const leading_child =
+        FindChildViewInLayout(*fully_faded_layout, fade_info.prev_view);
+
     // This is the right side of the leading control that will eclipse the
     // sliding view at the start/end of the animation.
     const int initial_trailing =
-        Normalize(orientation(),
-                  (fade_info.fading_in ? starting_layout_ : target_layout_)
-                      .child_layouts[*prev_index]
-                      .bounds)
-            .max_main();
+        Normalize(orientation(), leading_child->bounds).max_main();
 
     // Interpolate between initial and final trailing edge.
     const int new_trailing = gfx::Tween::IntValueBetween(
@@ -844,14 +915,14 @@ ChildLayout AnimatingLayoutManager::CalculateSlideFade(
     new_bounds.Offset(new_trailing - new_bounds.max_main(), 0);
 
   } else {
+    // Get the layout info for the trailing child.
+    const ChildLayout* const trailing_child =
+        FindChildViewInLayout(*fully_faded_layout, fade_info.next_view);
+
     // This is the left side of the trailing control that will eclipse the
     // sliding view at the start/end of the animation.
     const int initial_leading =
-        Normalize(orientation(),
-                  (fade_info.fading_in ? starting_layout_ : target_layout_)
-                      .child_layouts[*next_index]
-                      .bounds)
-            .origin_main();
+        Normalize(orientation(), trailing_child->bounds).origin_main();
 
     // Interpolate between initial and final leading edge.
     const int new_leading = gfx::Tween::IntValueBetween(

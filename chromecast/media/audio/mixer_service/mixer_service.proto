@@ -87,6 +87,12 @@ message SetPaused {
   optional bool paused = 1;
 }
 
+// Sets (or simulates setting) the audio clock rate. If the provided rate is
+// not supported, the rate will be clamped to the supported range.
+message SetAudioClockRate {
+  optional double rate = 1;
+}
+
 // Indicates that previously pushed audio data has been queued for playback,
 // and the next audio data that is pushed to the mixer will start playing at
 // |next_playback_timestamp|.
@@ -225,4 +231,5 @@ message Generic {
   optional Error error = 20;
   optional NumOutputChannels set_num_output_channels = 21;
   optional StreamInterruption stream_interruption = 22;
+  optional SetAudioClockRate set_audio_clock_rate = 23;
 }

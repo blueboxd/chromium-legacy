@@ -1368,6 +1368,9 @@ void PaintLayer::RemoveChild(PaintLayer* old_child) {
     if (Compositor()) {
       if (!old_child_style.IsStacked())
         Compositor()->SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
+
+      if (Compositor()->GetCompositingInputsRoot() == old_child)
+        Compositor()->ClearCompositingInputsRoot();
     }
     // Dirty the z-order list in which we are contained.
     old_child->DirtyStackingContextZOrderLists();

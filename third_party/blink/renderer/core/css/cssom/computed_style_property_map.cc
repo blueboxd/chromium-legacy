@@ -177,9 +177,10 @@ unsigned int ComputedStylePropertyMap::size() const {
     return 0;
 
   DCHECK(StyledNode());
-  return CSSComputedStyleDeclaration::ComputableProperties().size() +
+  const Document& document = StyledNode()->GetDocument();
+  return CSSComputedStyleDeclaration::ComputableProperties(&document).size() +
          ComputedStyleCSSValueMapping::GetVariables(
-             *style, StyledNode()->GetDocument().GetPropertyRegistry())
+             *style, document.GetPropertyRegistry())
              .size();
 }
 
@@ -265,11 +266,13 @@ void ComputedStylePropertyMap::ForEachProperty(
   if (!style)
     return;
 
+  DCHECK(StyledNode());
+  const Document& document = StyledNode()->GetDocument();
   // Have to sort by all properties by code point, so we have to store
   // them in a buffer first.
   HeapVector<std::pair<CSSPropertyName, Member<const CSSValue>>> values;
   for (const CSSProperty* property :
-       CSSComputedStyleDeclaration::ComputableProperties()) {
+       CSSComputedStyleDeclaration::ComputableProperties(&document)) {
     DCHECK(property);
     DCHECK(!property->IDEquals(CSSPropertyID::kVariable));
     const CSSValue* value = property->CSSValueFromComputedStyle(
@@ -278,8 +281,7 @@ void ComputedStylePropertyMap::ForEachProperty(
       values.emplace_back(CSSPropertyName(property->PropertyID()), value);
   }
 
-  PropertyRegistry* registry =
-      StyledNode()->GetDocument().GetPropertyRegistry();
+  const PropertyRegistry* registry = document.GetPropertyRegistry();
 
   for (const auto& name_value :
        ComputedStyleCSSValueMapping::GetVariables(*style, registry)) {

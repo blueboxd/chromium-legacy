@@ -150,6 +150,9 @@
         "browse:social:facebook": {
             "DEFAULT": "system_health_mobile_028.wprgo"
         },
+        "browse:social:facebook:2019": {
+            "DEFAULT": "system_health_mobile_77b7808065.wprgo"
+        },
         "browse:social:facebook_infinite_scroll": {
             "DEFAULT": "system_health_mobile_062.wprgo"
         },

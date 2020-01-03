@@ -174,7 +174,7 @@ void InsertTextCommand::DoApply(EditingState* editing_state) {
     if (end_of_selection_was_at_start_of_block) {
       if (EditingStyle* typing_style =
               GetDocument().GetFrame()->GetEditor().TypingStyle())
-        typing_style->RemoveBlockProperties();
+        typing_style->RemoveBlockProperties(&GetDocument());
     }
   } else if (GetDocument().GetFrame()->GetEditor().IsOverwriteModeEnabled()) {
     if (PerformOverwrite(text_))

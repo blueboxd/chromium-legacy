@@ -13,14 +13,6 @@
 namespace chromecast {
 namespace media {
 
-namespace {
-
-int64_t FramesToTime(int64_t frames, int sample_rate) {
-  return frames * 1000000 / sample_rate;
-}
-
-}  // namespace
-
 constexpr int AudioClockSimulator::kInterpolateWindow;
 constexpr double AudioClockSimulator::kMaxRate;
 constexpr double AudioClockSimulator::kMinRate;
@@ -53,9 +45,11 @@ int AudioClockSimulator::sample_rate() const {
 double AudioClockSimulator::SetRate(double rate) {
   rate = std::max(kMinRate, std::min(rate, kMaxRate));
 
-  clock_rate_ = rate;
-  input_frames_ = 0;
-  output_frames_ = 0;
+  if (clock_rate_ != rate) {
+    clock_rate_ = rate;
+    input_frames_ = 0;
+    output_frames_ = 0;
+  }
   return rate;
 }
 
@@ -64,6 +58,14 @@ int AudioClockSimulator::DelayFrames() const {
     return 1;
   }
   return 0;
+}
+
+void AudioClockSimulator::SetSampleRate(int sample_rate) {
+  sample_rate_ = sample_rate;
+}
+
+void AudioClockSimulator::SetPlaybackRate(double playback_rate) {
+  playback_rate_ = playback_rate;
 }
 
 int AudioClockSimulator::FillFrames(int num_frames,
@@ -107,7 +109,7 @@ int AudioClockSimulator::FillFrames(int num_frames,
     for (size_t c = 0; c < num_channels_; ++c) {
       channels[c] = channel_data[c] + filled;
     }
-    int64_t timestamp = playout_timestamp + FramesToTime(filled, sample_rate_);
+    int64_t timestamp = playout_timestamp + FramesToMicroseconds(filled);
     int desired = std::min(num_frames - filled, kInterpolateWindow);
     int provided = provider_->FillFrames(desired, timestamp, channels);
     input_frames_ += provided;
@@ -148,7 +150,7 @@ AudioClockSimulator::FillResult AudioClockSimulator::FillDataLengthen(
     // index 1.
     channels[c] = scratch_buffer_->channel(c) + 1;
   }
-  int64_t timestamp = playout_timestamp + FramesToTime(offset, sample_rate_);
+  int64_t timestamp = playout_timestamp + FramesToMicroseconds(offset);
   int provided = provider_->FillFrames(desired_fill, timestamp, channels);
   input_frames_ += provided;
   InterpolateLonger(provided, channel_data, offset);
@@ -213,7 +215,7 @@ AudioClockSimulator::FillResult AudioClockSimulator::FillDataShorten(
   for (size_t c = 0; c < num_channels_; ++c) {
     channels[c] = scratch_buffer_->channel(c) + fill_offset;
   }
-  int64_t timestamp = playout_timestamp + FramesToTime(offset, sample_rate_);
+  int64_t timestamp = playout_timestamp + FramesToMicroseconds(offset);
   int provided = provider_->FillFrames(desired_fill, timestamp, channels);
   if (provided == 0) {
     return {false, 0};
@@ -258,6 +260,10 @@ void AudioClockSimulator::InterpolateShorter(int num_frames,
     first_frame_filled_ = false;
     state_ = State::kPassthrough;  // Finished current interpolation window.
   }
+}
+
+int64_t AudioClockSimulator::FramesToMicroseconds(int64_t frames) {
+  return frames * 1000000 / (sample_rate_ * playback_rate_);
 }
 
 }  // namespace media

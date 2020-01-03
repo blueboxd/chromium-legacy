@@ -9,6 +9,7 @@ js_type_check("closure_compile") {
     ":people_page",
     ":profile_info_browser_proxy",
     ":signout_dialog",
+    ":sync_account_control",
     ":sync_browser_proxy",
     ":sync_page",
   ]
@@ -19,7 +20,6 @@ js_type_check("closure_compile") {
       ":import_data_dialog",
       ":manage_profile",
       ":manage_profile_browser_proxy",
-      ":sync_account_control",
     ]
   }
 

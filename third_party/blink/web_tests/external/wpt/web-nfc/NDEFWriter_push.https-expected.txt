@@ -23,8 +23,6 @@ PASS Check that provided NDEFPushOptions values are correctly converted.
 PASS NDEFWriter.push should read data when ignoreRead is false.
 PASS NDEFWriter.push should ignore reading data when ignoreRead is true.
 PASS NDEFWriter.push should replace all previously configured push operations.
-PASS Test that recordType should be set to 'text' if NDEFRecordInit.record's recordType is undefined and NDEFRecordInit.record's data is DOMString.
-PASS Test that recordType should be set to 'mime' if NDEFRecordInit.record's recordType is undefined and NDEFRecordInit.record's data is not DOMString.
 PASS Test that mediaType should be set to 'application/octet-stream' if NDEFRecordInit.record's recordType is 'mime' and NDEFRecordInit.record's mediaType is undefined.
 PASS NDEFWriter.push should fail when the NFC device coming up does not expose NDEF technology.
 PASS NDEFWriter.push should succeed to push data to an unformatted NFC device when the NDEFPushOptions.overwrite is false.

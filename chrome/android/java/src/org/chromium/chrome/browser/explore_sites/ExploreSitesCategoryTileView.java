@@ -15,7 +15,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandler;
 import org.chromium.chrome.browser.ntp.TitleUtil;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.widget.tile.TileWithTextView;
+import org.chromium.chrome.browser.suggestions.tile.TileWithTextView;
 
 /**
  * A category tile for ExploreSites, containing an icon that is a composition of sites' favicons

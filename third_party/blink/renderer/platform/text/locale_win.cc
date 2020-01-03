@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "ui/base/ui_base_features.h"
 
 namespace blink {
 
@@ -304,7 +305,7 @@ void LocaleWin::EnsureWeekDayShortLabels() {
       LOCALE_SSHORTESTDAYNAME6};
   week_day_short_labels_.ReserveCapacity(base::size(kTypes));
   for (unsigned i = 0; i < base::size(kTypes); ++i) {
-    if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
+    if (features::IsFormControlsRefreshEnabled()) {
       week_day_short_labels_.push_back(GetLocaleInfoString(kTypesRefresh[i]));
     } else {
       week_day_short_labels_.push_back(GetLocaleInfoString(kTypes[i]));

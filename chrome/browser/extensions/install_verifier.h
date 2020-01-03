@@ -15,14 +15,13 @@
 #include "base/memory/weak_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/management_policy.h"
-#include "extensions/common/extension.h"
 
 namespace content {
 class BrowserContext;
 }
 
 namespace extensions {
-
+class Extension;
 class ExtensionPrefs;
 class InstallSigner;
 struct InstallSignature;

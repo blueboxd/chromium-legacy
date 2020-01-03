@@ -92,7 +92,7 @@ ScopedOverviewTransformWindow::ScopedOverviewTransformWindow(
       original_opacity_(window->layer()->GetTargetOpacity()),
       original_mask_layer_(window_->layer()->layer_mask_layer()),
       original_clip_rect_(window_->layer()->clip_rect()) {
-  type_ = GetWindowDimensionsType(window);
+  type_ = GetWindowDimensionsType(window->bounds().size());
 
   std::vector<aura::Window*> transient_children_to_hide;
   for (auto* transient : GetTransientTreeIterator(window)) {
@@ -169,8 +169,7 @@ float ScopedOverviewTransformWindow::GetItemScale(const gfx::SizeF& source,
 
 // static
 ScopedOverviewTransformWindow::GridWindowFillMode
-ScopedOverviewTransformWindow::GetWindowDimensionsType(aura::Window* window) {
-  const gfx::Size size = window->bounds().size();
+ScopedOverviewTransformWindow::GetWindowDimensionsType(const gfx::Size& size) {
   if (size.width() > size.height() * kExtremeWindowRatioThreshold)
     return ScopedOverviewTransformWindow::GridWindowFillMode::kLetterBoxed;
 
@@ -394,7 +393,7 @@ void ScopedOverviewTransformWindow::EnsureVisible() {
 }
 
 void ScopedOverviewTransformWindow::UpdateWindowDimensionsType() {
-  type_ = GetWindowDimensionsType(window_);
+  type_ = GetWindowDimensionsType(window_->bounds().size());
 }
 
 void ScopedOverviewTransformWindow::UpdateRoundedCorners(bool show,

@@ -245,6 +245,10 @@ bool CSSParserContext::IsDocumentHandleEqual(const Document* other) const {
   return document_.Get() == other;
 }
 
+const Document* CSSParserContext::GetDocument() const {
+  return document_.Get();
+}
+
 void CSSParserContext::ReportLayoutAnimationsViolationIfNeeded(
     const StyleRuleKeyframe& rule) const {
   if (!document_)

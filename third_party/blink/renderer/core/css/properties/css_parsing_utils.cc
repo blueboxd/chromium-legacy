@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/properties/longhand.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 #include "third_party/blink/renderer/core/svg/svg_parsing_error.h"
@@ -2594,12 +2595,14 @@ CSSValue* ConsumeTransitionProperty(CSSParserTokenRange& range,
     return nullptr;
   if (token.Id() == CSSValueID::kNone)
     return css_property_parser_helpers::ConsumeIdent(range);
-  CSSPropertyID unresolved_property = token.ParseAsUnresolvedCSSPropertyID();
+  const Document* document = context.GetDocument();
+  CSSPropertyID unresolved_property =
+      token.ParseAsUnresolvedCSSPropertyID(document);
   if (unresolved_property != CSSPropertyID::kInvalid &&
       unresolved_property != CSSPropertyID::kVariable) {
 #if DCHECK_IS_ON()
     DCHECK(CSSProperty::Get(resolveCSSPropertyID(unresolved_property))
-               .IsWebExposed());
+               .IsWebExposed(document));
 #endif
     range.ConsumeIncludingWhitespace();
     return MakeGarbageCollected<CSSCustomIdentValue>(unresolved_property);

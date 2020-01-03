@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/containers/flat_map.h"
+#include "base/run_loop.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "extensions/common/constants.h"
 
@@ -61,6 +62,15 @@ void FakeAppListModelUpdater::MoveItemToFolder(const std::string& id,
     test_api.SetFolderId(folder_id);
     for (AppListModelUpdaterObserver& observer : observers_)
       observer.OnAppListItemUpdated(item);
+  }
+}
+
+void FakeAppListModelUpdater::SetItemIcon(const std::string& id,
+                                          const gfx::ImageSkia& icon) {
+  ++update_image_count_;
+  if (update_image_count_ == expected_update_image_count_ &&
+      !icon_updated_callback_.is_null()) {
+    std::move(icon_updated_callback_).Run();
   }
 }
 
@@ -232,4 +242,11 @@ void FakeAppListModelUpdater::AddObserver(
 void FakeAppListModelUpdater::RemoveObserver(
     AppListModelUpdaterObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void FakeAppListModelUpdater::WaitForIconUpdates(size_t expected_updates) {
+  base::RunLoop run_loop;
+  expected_update_image_count_ = expected_updates + update_image_count_;
+  icon_updated_callback_ = run_loop.QuitClosure();
+  run_loop.Run();
 }

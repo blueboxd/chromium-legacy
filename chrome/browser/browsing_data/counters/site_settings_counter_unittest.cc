@@ -26,8 +26,6 @@
 
 #if !defined(OS_ANDROID)
 #include "content/public/browser/host_zoom_map.h"
-#else
-#include "base/android/build_info.h"
 #endif
 
 namespace {
@@ -51,6 +49,9 @@ class SiteSettingsCounterTest : public testing::Test {
                    browsing_data::ClearBrowsingDataTab::ADVANCED,
                    base::BindRepeating(&SiteSettingsCounterTest::Callback,
                                        base::Unretained(this)));
+#if defined(OS_ANDROID)
+    ClearNotificationsChannels();
+#endif
   }
 
   Profile* profile() { return profile_.get(); }
@@ -90,6 +91,25 @@ class SiteSettingsCounterTest : public testing::Test {
                   ->Value();
   }
 
+#if defined(OS_ANDROID)
+  void ClearNotificationsChannels() {
+    // Because notification channel settings aren't tied to the profile, they
+    // will persist across tests. We need to make sure they're reset here.
+    ContentSettingsForOneType settings;
+    map_->GetSettingsForOneType(ContentSettingsType ::NOTIFICATIONS,
+                                std::string(), &settings);
+    for (auto& setting : settings) {
+      if (!setting.primary_pattern.MatchesAllHosts() ||
+          !setting.secondary_pattern.MatchesAllHosts()) {
+        map_->SetContentSettingCustomScope(
+            setting.primary_pattern, setting.secondary_pattern,
+            ContentSettingsType ::NOTIFICATIONS, std::string(),
+            ContentSetting::CONTENT_SETTING_DEFAULT);
+      }
+    }
+  }
+#endif
+
  private:
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
@@ -117,14 +137,6 @@ TEST_F(SiteSettingsCounterTest, Count) {
 
 // Test that the counter counts correctly when using a time period.
 TEST_F(SiteSettingsCounterTest, CountWithTimePeriod) {
-#if defined(OS_ANDROID)
-  // TODO(crbug.com/981972)
-  if (base::android::BuildInfo::GetInstance()->sdk_int() >=
-      base::android::SDK_VERSION_OREO) {
-    return;
-  }
-#endif
-
   base::SimpleTestClock test_clock;
   map()->SetClockForTesting(&test_clock);
 
@@ -142,9 +154,10 @@ TEST_F(SiteSettingsCounterTest, CountWithTimePeriod) {
 
   // Create a setting at Now()-31days.
   test_clock.SetNow(base::Time::Now() - base::TimeDelta::FromDays(31));
-  map()->SetContentSettingDefaultScope(
-      GURL("http://www.google.com"), GURL("http://www.google.com"),
-      ContentSettingsType::NOTIFICATIONS, std::string(), CONTENT_SETTING_ALLOW);
+  map()->SetContentSettingDefaultScope(GURL("http://www.google.com"),
+                                       GURL("http://www.google.com"),
+                                       ContentSettingsType::MEDIASTREAM_CAMERA,
+                                       std::string(), CONTENT_SETTING_ALLOW);
 
   test_clock.SetNow(base::Time::Now());
   // Only one of the settings was created in the last hour.

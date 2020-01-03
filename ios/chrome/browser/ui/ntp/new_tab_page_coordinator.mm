@@ -106,18 +106,6 @@
   [self.contentSuggestionsCoordinator willUpdateSnapshot];
 }
 
-- (void)setContentInset:(UIEdgeInsets)contentInset {
-  // UIKit will adjust the contentOffset sometimes when changing the
-  // contentInset.bottom.  We don't want the NTP to scroll, so store and re-set
-  // the contentOffset after setting the contentInset.
-  CGPoint contentOffset = self.contentSuggestionsCoordinator.viewController
-                              .collectionView.contentOffset;
-  self.contentSuggestionsCoordinator.viewController.collectionView
-      .contentInset = contentInset;
-  self.contentSuggestionsCoordinator.viewController.collectionView
-      .contentOffset = contentOffset;
-}
-
 - (void)focusFakebox {
   [self.contentSuggestionsCoordinator.headerController focusFakebox];
 }

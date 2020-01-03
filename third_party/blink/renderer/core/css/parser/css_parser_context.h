@@ -119,6 +119,7 @@ class CORE_EXPORT CSSParserContext final
   void CountDeprecation(WebFeature) const;
   bool IsUseCounterRecordingEnabled() const { return document_; }
   bool IsDocumentHandleEqual(const Document* other) const;
+  const Document* GetDocument() const;
 
   ContentSecurityPolicyDisposition ShouldCheckContentSecurityPolicy() const {
     return should_check_content_security_policy_;

@@ -68,6 +68,7 @@ class HttpWithDnsOverHttpsTest : public TestWithTaskEnvironment {
         request_context_(true),
         doh_server_(EmbeddedTestServer::Type::TYPE_HTTPS),
         test_server_(EmbeddedTestServer::Type::TYPE_HTTPS),
+        fail_doh_requests_(false),
         doh_queries_served_(0),
         test_https_requests_served_(0) {
     doh_server_.RegisterRequestHandler(
@@ -111,8 +112,14 @@ class HttpWithDnsOverHttpsTest : public TestWithTaskEnvironment {
 
   std::unique_ptr<test_server::HttpResponse> HandleDefaultConnect(
       const test_server::HttpRequest& request) {
+    std::unique_ptr<test_server::BasicHttpResponse> http_response(
+        new test_server::BasicHttpResponse);
     if (request.relative_url.compare("/dns_query") == 0) {
       doh_queries_served_++;
+      if (fail_doh_requests_) {
+        http_response->set_code(HTTP_NOT_FOUND);
+        return std::move(http_response);
+      }
 
       // Parse request content as a DnsQuery to access the question.
       auto request_buffer =
@@ -140,9 +147,6 @@ class HttpWithDnsOverHttpsTest : public TestWithTaskEnvironment {
                                   0x00, 0x04,  // - RDLENGTH = 4 bytes
                                   0x7f, 0x00,  // - RDDATA, IP is 127.0.0.1
                                   0x00, 0x01};
-
-      std::unique_ptr<test_server::BasicHttpResponse> http_response(
-          new test_server::BasicHttpResponse);
       http_response->set_content(
           std::string(header_data, sizeof(header_data)) +
           query.question().as_string() +
@@ -151,8 +155,6 @@ class HttpWithDnsOverHttpsTest : public TestWithTaskEnvironment {
       return std::move(http_response);
     } else {
       test_https_requests_served_++;
-      std::unique_ptr<test_server::BasicHttpResponse> http_response(
-          new test_server::BasicHttpResponse);
       http_response->set_content(kTestBody);
       http_response->set_content_type("text/html");
       return std::move(http_response);
@@ -160,12 +162,17 @@ class HttpWithDnsOverHttpsTest : public TestWithTaskEnvironment {
   }
 
  protected:
+  void set_fail_doh_requests(bool fail_doh_requests) {
+    fail_doh_requests_ = fail_doh_requests;
+  }
+
   std::unique_ptr<ContextHostResolver> resolver_;
   scoped_refptr<net::TestHostResolverProc> host_resolver_proc_;
   std::unique_ptr<MockCertVerifier> cert_verifier_;
   TestURLRequestContext request_context_;
   EmbeddedTestServer doh_server_;
   EmbeddedTestServer test_server_;
+  bool fail_doh_requests_;
   uint32_t doh_queries_served_;
   uint32_t test_https_requests_served_;
 };
@@ -285,6 +292,32 @@ TEST_F(HttpWithDnsOverHttpsTest, EndToEnd) {
   EXPECT_TRUE(d.response_completed());
   EXPECT_EQ(d.request_status(), 0);
   EXPECT_EQ(d.data_received(), kTestBody);
+}
+
+TEST_F(HttpWithDnsOverHttpsTest, EndToEndFail) {
+  // Fail all DoH requests.
+  set_fail_doh_requests(true);
+
+  // Make a request that will trigger a DoH query.
+  TestDelegate d;
+  GURL main_url = test_server_.GetURL("fail.example.com", "/test");
+  std::unique_ptr<URLRequest> req(context()->CreateRequest(
+      main_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+  req->Start();
+  base::RunLoop().Run();
+  EXPECT_TRUE(test_server_.ShutdownAndWaitUntilComplete());
+  EXPECT_TRUE(doh_server_.ShutdownAndWaitUntilComplete());
+
+  // No HTTPS connection to the test server will be attempted due to the
+  // host resolution error.
+  EXPECT_EQ(test_https_requests_served_, 0u);
+
+  EXPECT_TRUE(d.response_completed());
+  EXPECT_EQ(d.request_status(), net::ERR_DNS_MALFORMED_RESPONSE);
+
+  const auto& resolve_error_info = req->response_info().resolve_error_info;
+  EXPECT_TRUE(resolve_error_info.is_secure_network_error);
+  EXPECT_EQ(resolve_error_info.error, net::ERR_DNS_MALFORMED_RESPONSE);
 }
 
 }  // namespace

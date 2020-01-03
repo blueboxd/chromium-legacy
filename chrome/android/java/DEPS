@@ -9,6 +9,7 @@ include_rules = [
   "+chrome/browser/download/android/java",
   "+chrome/browser/image_fetcher/android/java",
   "+chrome/browser/preferences/android/java",
+  "+chrome/browser/settings/android/java",
   "+chrome/browser/util/android/java",
   "+chrome/lib/lifecycle/public",
   "+components/autofill/android/java/src/org/chromium/components/autofill",

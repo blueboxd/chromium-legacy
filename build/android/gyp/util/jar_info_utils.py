@@ -13,6 +13,13 @@ import os
 # contains its .class definition instead.
 
 
+def ReadAarSourceInfo(info_path):
+  """Returns the source= path from an .aar's source.info file."""
+  # The .info looks like: "source=path/to/.aar\n".
+  with open(info_path) as f:
+    return f.read().rstrip().split('=', 1)[1]
+
+
 def ParseJarInfoFile(info_path):
   """Parse a given .jar.info file as a dictionary.
 

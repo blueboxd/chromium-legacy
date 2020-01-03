@@ -162,7 +162,7 @@ TopShortcutsView::TopShortcutsView(UnifiedSystemTrayController* controller)
   container_ = new TopShortcutButtonContainer();
   AddChildView(container_);
 
-  ash::Shell* shell = Shell::Get();
+  Shell* shell = Shell::Get();
 
   bool is_on_login_screen =
       shell->session_controller()->login_status() == LoginStatus::NOT_LOGGED_IN;

@@ -5,6 +5,8 @@
 #ifndef CHROMECAST_MEDIA_AUDIO_CAPTURE_SERVICE_CONSTANTS_H_
 #define CHROMECAST_MEDIA_AUDIO_CAPTURE_SERVICE_CONSTANTS_H_
 
+#include <cstdint>
+
 namespace chromecast {
 namespace media {
 namespace capture_service {

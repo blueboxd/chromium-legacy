@@ -67,8 +67,10 @@ void RecyclableCompositorMac::Unsuspend() {
   compositor_suspended_lock_ = nullptr;
 }
 
-void RecyclableCompositorMac::UpdateSurface(const gfx::Size& size_pixels,
-                                            float scale_factor) {
+void RecyclableCompositorMac::UpdateSurface(
+    const gfx::Size& size_pixels,
+    float scale_factor,
+    const gfx::ColorSpace& color_space) {
   if (size_pixels != size_pixels_ || scale_factor != scale_factor_) {
     size_pixels_ = size_pixels;
     scale_factor_ = scale_factor;
@@ -78,15 +80,21 @@ void RecyclableCompositorMac::UpdateSurface(const gfx::Size& size_pixels,
     compositor()->SetScaleAndSize(scale_factor_, size_pixels_,
                                   local_surface_id_allocation);
   }
+  if (color_space != color_space_) {
+    color_space_ = color_space;
+    compositor()->SetDisplayColorSpace(color_space_);
+  }
 }
 
 void RecyclableCompositorMac::InvalidateSurface() {
   size_pixels_ = gfx::Size();
   scale_factor_ = 1.f;
   local_surface_id_allocator_.Invalidate();
+  color_space_ = gfx::ColorSpace();
   compositor()->SetScaleAndSize(
       scale_factor_, size_pixels_,
       local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation());
+  compositor()->SetDisplayColorSpace(color_space_);
 }
 
 void RecyclableCompositorMac::OnCompositingDidCommit(

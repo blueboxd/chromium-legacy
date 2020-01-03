@@ -5,7 +5,6 @@
 #ifndef UI_GFX_PAINT_VECTOR_ICON_H_
 #define UI_GFX_PAINT_VECTOR_ICON_H_
 
-#include "base/time/time.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/image/image_skia.h"
@@ -23,7 +22,6 @@ struct GFX_EXPORT IconDescription {
   IconDescription(const VectorIcon& icon,
                   int dip_size,
                   SkColor color,
-                  const base::TimeDelta& elapsed_time,
                   const VectorIcon& badge_icon);
 
   ~IconDescription();
@@ -31,7 +29,6 @@ struct GFX_EXPORT IconDescription {
   const VectorIcon& icon;
   int dip_size;
   SkColor color;
-  const base::TimeDelta elapsed_time;
   const VectorIcon& badge_icon;
 };
 
@@ -39,22 +36,17 @@ GFX_EXPORT extern const VectorIcon kNoneIcon;
 
 // Draws a vector icon identified by |id| onto |canvas| at (0, 0). |color| is
 // used as the fill. The size will come from the .icon file (the 1x version, if
-// multiple versions exist). |elapsed_time| is used to determine the state of
-// any transitions the icon may define.
-GFX_EXPORT void PaintVectorIcon(
-    Canvas* canvas,
-    const VectorIcon& icon,
-    SkColor color,
-    const base::TimeDelta& elapsed_time = base::TimeDelta());
+// multiple versions exist).
+GFX_EXPORT void PaintVectorIcon(Canvas* canvas,
+                                const VectorIcon& icon,
+                                SkColor color);
 
-// As above, with a specificed size. |dip_size| is the length of a single edge
+// As above, with a specified size. |dip_size| is the length of a single edge
 // of the square icon, in device independent pixels.
-GFX_EXPORT void PaintVectorIcon(
-    Canvas* canvas,
-    const VectorIcon& icon,
-    int dip_size,
-    SkColor color,
-    const base::TimeDelta& elapsed_time = base::TimeDelta());
+GFX_EXPORT void PaintVectorIcon(Canvas* canvas,
+                                const VectorIcon& icon,
+                                int dip_size,
+                                SkColor color);
 
 // Creates an ImageSkia which will render the icon on demand.
 // TODO(estade): update clients to use this version and remove the other
@@ -89,10 +81,6 @@ GFX_EXPORT ImageSkia CreateVectorIconFromSource(const std::string& source,
 // Calculates the size that will be default for |icon|, in dip. This will be the
 // smallest icon size |icon| contains.
 GFX_EXPORT int GetDefaultSizeOfVectorIcon(const gfx::VectorIcon& icon);
-
-// Calculates and returns the elapsed time at which all animations/transitions
-// will be finished.
-GFX_EXPORT base::TimeDelta GetDurationOfAnimation(const VectorIcon& icon);
 
 }  // namespace gfx
 

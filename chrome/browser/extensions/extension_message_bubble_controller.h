@@ -15,14 +15,14 @@
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
-#include "extensions/common/extension.h"
+#include "extensions/common/extension_id.h"
 
 class Browser;
 class ToolbarActionsModel;
 class Profile;
 
 namespace extensions {
-
+class Extension;
 class ExtensionService;
 
 class ExtensionMessageBubbleController : public BrowserListObserver,

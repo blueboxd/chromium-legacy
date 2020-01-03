@@ -10,6 +10,8 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "components/viz/host/host_frame_sink_manager.h"
+#include "content/browser/compositor/surface_utils.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
@@ -17,6 +19,7 @@
 #include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_tap_gesture.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
+#include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame.mojom-test-utils.h"
@@ -512,7 +515,33 @@ IN_PROC_BROWSER_TEST_F(PortalHitTestBrowserTest, InputToOOPIFAfterActivation) {
                        "portal.activate().then(() => { "
                        "  document.body.removeChild(portal); "
                        "});"));
-    activated_observer.WaitForActivateAndHitTestData();
+    activated_observer.WaitForActivate();
+
+    RenderWidgetHostViewBase* view =
+        portal_frame->GetRenderWidgetHost()->GetView();
+    viz::FrameSinkId root_frame_sink_id = view->GetRootFrameSinkId();
+    HitTestRegionObserver hit_test_observer(root_frame_sink_id);
+
+    // The hit test region for the portal frame should be at index 1 after
+    // activation, so we wait for the hit test data to update until it's in
+    // this state.
+    auto hit_test_index = [&]() -> base::Optional<size_t> {
+      const auto& display_hit_test_query_map =
+          GetHostFrameSinkManager()->display_hit_test_query();
+      auto it = display_hit_test_query_map.find(root_frame_sink_id);
+      // On Mac, we create a new root layer after activation, so the hit test
+      // data may not have anything for the new layer yet.
+      if (it == display_hit_test_query_map.end())
+        return base::nullopt;
+      CHECK_EQ(portal_frame->GetRenderWidgetHost()->GetView(), view);
+      size_t index;
+      if (!it->second->FindIndexOfFrameSink(view->GetFrameSinkId(), &index))
+        return base::nullopt;
+      return index;
+    };
+    hit_test_observer.WaitForHitTestData();
+    while (hit_test_index() != 1u)
+      hit_test_observer.WaitForHitTestDataChange();
   }
   EXPECT_EQ(shell()->web_contents(), portal_contents);
 

@@ -227,14 +227,17 @@ def _OnStaleMd5(lint_path,
       os.remove(result_path)
 
     env = os.environ.copy()
-    stderr_filter = None
+    stderr_filter = build_utils.FilterReflectiveAccessJavaWarnings
     if cache_dir:
       env['_JAVA_OPTIONS'] = '-Duser.home=%s' % _RebasePath(cache_dir)
       # When _JAVA_OPTIONS is set, java prints to stderr:
       # Picked up _JAVA_OPTIONS: ...
       #
       # We drop all lines that contain _JAVA_OPTIONS from the output
-      stderr_filter = lambda l: re.sub(r'.*_JAVA_OPTIONS.*\n?', '', l)
+      stderr_filter = lambda l: re.sub(
+          r'.*_JAVA_OPTIONS.*\n?',
+          '',
+          build_utils.FilterReflectiveAccessJavaWarnings(l))
 
     def fail_func(returncode, stderr):
       if returncode != 0:
@@ -245,6 +248,8 @@ def _OnStaleMd5(lint_path,
       return False
 
     try:
+      env['JAVA_HOME'] = os.path.relpath(build_utils.JAVA_HOME,
+                                         build_utils.DIR_SOURCE_ROOT)
       build_utils.CheckOutput(cmd, cwd=build_utils.DIR_SOURCE_ROOT,
                               env=env or None, stderr_filter=stderr_filter,
                               fail_func=fail_func)

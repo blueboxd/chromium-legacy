@@ -36,8 +36,10 @@ class MutableCSSPropertyValueSet;
 class PropertySetCSSStyleDeclaration
     : public AbstractPropertySetCSSStyleDeclaration {
  public:
+  // TODO(rodneyding): plumb actual context here to replace nullptr
   PropertySetCSSStyleDeclaration(MutableCSSPropertyValueSet& property_set)
-      : property_set_(&property_set) {}
+      : AbstractPropertySetCSSStyleDeclaration(nullptr),
+        property_set_(&property_set) {}
 
   void Trace(blink::Visitor*) override;
 

@@ -182,6 +182,7 @@
 #include "third_party/blink/renderer/platform/wtf/dtoa.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding_registry.h"
+#include "ui/base/ui_base_features.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -332,6 +333,10 @@ InternalRuntimeFlags* Internals::runtimeFlags() const {
 
 unsigned Internals::workerThreadCount() const {
   return WorkerThread::WorkerThreadCount();
+}
+
+bool Internals::isFormControlsRefreshEnabled() const {
+  return ::features::IsFormControlsRefreshEnabled();
 }
 
 GCObservation* Internals::observeGC(ScriptValue script_value) {
@@ -3196,13 +3201,14 @@ bool Internals::isUseCounted(Document* document, uint32_t feature) {
 
 bool Internals::isCSSPropertyUseCounted(Document* document,
                                         const String& property_name) {
-  return document->IsPropertyCounted(unresolvedCSSPropertyID(property_name));
+  return document->IsPropertyCounted(
+      unresolvedCSSPropertyID(document, property_name));
 }
 
 bool Internals::isAnimatedCSSPropertyUseCounted(Document* document,
                                                 const String& property_name) {
   return document->IsAnimatedPropertyCounted(
-      unresolvedCSSPropertyID(property_name));
+      unresolvedCSSPropertyID(document, property_name));
 }
 
 void Internals::clearUseCounter(Document* document, uint32_t feature) {

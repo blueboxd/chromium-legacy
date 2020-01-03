@@ -14,7 +14,7 @@ RTCError* RTCError::Create(const RTCErrorInit* init, String message) {
 }
 
 RTCError::RTCError(const RTCErrorInit* init, String message)
-    : DOMException(0u, "RTCError", std::move(message), String()),
+    : DOMException(DOMExceptionCode::kOperationError, std::move(message)),
       error_detail_(init->errorDetail()),
       sdp_line_number_(init->hasSdpLineNumber()
                            ? base::Optional<int32_t>(init->sdpLineNumber())
@@ -32,6 +32,13 @@ RTCError::RTCError(const RTCErrorInit* init, String message)
       sent_alert_(init->hasSentAlert()
                       ? base::Optional<uint32_t>(init->sentAlert())
                       : base::nullopt) {}
+
+RTCError::RTCError(webrtc::RTCError err)
+    : DOMException(DOMExceptionCode::kOperationError, err.message()),
+      error_detail_(webrtc::ToString(err.error_detail())),
+      sctp_cause_code_(err.sctp_cause_code()
+                           ? base::Optional<int32_t>(*err.sctp_cause_code())
+                           : base::nullopt) {}
 
 const String& RTCError::errorDetail() const {
   return error_detail_;

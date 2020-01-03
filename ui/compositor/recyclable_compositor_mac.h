@@ -41,21 +41,24 @@ class COMPOSITOR_EXPORT RecyclableCompositorMac
   void Unsuspend();
 
   // Update the compositor's surface information, if needed.
-  void UpdateSurface(const gfx::Size& size_pixels, float scale_factor);
+  void UpdateSurface(const gfx::Size& size_pixels,
+                     float scale_factor,
+                     const gfx::ColorSpace& color_space);
   // Invalidate the compositor's surface information.
   void InvalidateSurface();
-
-  // The viz::ParentLocalSurfaceIdAllocator for the ui::Compositor dispenses
-  // viz::LocalSurfaceIds that are renderered into by the ui::Compositor.
-  viz::ParentLocalSurfaceIdAllocator local_surface_id_allocator_;
-  gfx::Size size_pixels_;
-  float scale_factor_ = 1.f;
 
  private:
   friend class RecyclableCompositorMacFactory;
 
   // ui::CompositorObserver implementation:
   void OnCompositingDidCommit(ui::Compositor* compositor) override;
+
+  // The viz::ParentLocalSurfaceIdAllocator for the ui::Compositor dispenses
+  // viz::LocalSurfaceIds that are renderered into by the ui::Compositor.
+  viz::ParentLocalSurfaceIdAllocator local_surface_id_allocator_;
+  gfx::Size size_pixels_;
+  float scale_factor_ = 1.f;
+  gfx::ColorSpace color_space_;
 
   std::unique_ptr<ui::AcceleratedWidgetMac> accelerated_widget_mac_;
   ui::Compositor compositor_;

@@ -1787,6 +1787,9 @@ void MainThreadSchedulerImpl::DisableVirtualTimeForTesting() {
   virtual_time_control_task_queue_ = nullptr;
   ApplyVirtualTimePolicy();
 
+  main_thread_only().initial_virtual_time = base::Time();
+  main_thread_only().initial_virtual_time_ticks = base::TimeTicks();
+
   // Reset the MetricsHelper because it gets confused by time going backwards.
   base::TimeTicks now = tick_clock()->NowTicks();
   main_thread_only().metrics_helper.ResetForTest(now);

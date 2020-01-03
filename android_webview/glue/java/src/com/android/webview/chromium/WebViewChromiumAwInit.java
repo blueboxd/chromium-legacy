@@ -34,6 +34,9 @@ import org.chromium.android_webview.R;
 import org.chromium.android_webview.VariationsSeedLoader;
 import org.chromium.android_webview.WebViewChromiumRunQueue;
 import org.chromium.android_webview.common.AwResource;
+import org.chromium.android_webview.common.DeveloperModeUtils;
+import org.chromium.android_webview.common.FlagOverrideHelper;
+import org.chromium.android_webview.common.ProductionSupportedFlagList;
 import org.chromium.android_webview.gfx.AwDrawFnImpl;
 import org.chromium.base.BuildConfig;
 import org.chromium.base.BuildInfo;
@@ -168,8 +171,11 @@ public class WebViewChromiumAwInit {
             // available when AwFeatureListCreator::SetUpFieldTrials() runs.
             finishVariationsInitLocked();
 
-            if (AwBrowserProcess.isDeveloperModeEnabled()) {
-                AwBrowserProcess.getAndApplyFlagOverridesSync();
+            String webViewPackageName = AwBrowserProcess.getWebViewPackageName();
+            if (DeveloperModeUtils.isDeveloperModeEnabled(webViewPackageName)) {
+                FlagOverrideHelper helper =
+                        new FlagOverrideHelper(ProductionSupportedFlagList.sFlagList);
+                helper.applyFlagOverrides(DeveloperModeUtils.getFlagOverrides(webViewPackageName));
             }
 
             AwBrowserProcess.start();

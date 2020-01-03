@@ -35,7 +35,7 @@ class UnifiedSystemTrayView;
 // case, this class calls UnifiedSystemTray::CloseBubble() to delete itself.
 class ASH_EXPORT UnifiedSystemTrayBubble
     : public TrayBubbleBase,
-      public ash::ScreenLayoutObserver,
+      public ScreenLayoutObserver,
       public views::WidgetObserver,
       public ShelfObserver,
       public ::wm::ActivationChangeObserver,

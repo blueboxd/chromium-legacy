@@ -61,7 +61,7 @@ class ASH_EXPORT ScopedOverviewTransformWindow
                             int title_height);
 
   static ScopedOverviewTransformWindow::GridWindowFillMode
-  GetWindowDimensionsType(aura::Window* window);
+  GetWindowDimensionsType(const gfx::Size& size);
 
   ScopedOverviewTransformWindow(OverviewItem* overview_item,
                                 aura::Window* window);

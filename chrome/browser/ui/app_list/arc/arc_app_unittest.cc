@@ -625,6 +625,8 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
 
   arc::FakeAppInstance* app_instance() { return arc_test_.app_instance(); }
 
+  FakeAppListModelUpdater* model_updater() { return model_updater_.get(); }
+
  private:
   ArcAppTest arc_test_;
   std::unique_ptr<FakeAppListModelUpdater> model_updater_;
@@ -2140,16 +2142,23 @@ TEST_P(ArcAppModelBuilderTest, IconLoaderWithBadIcon) {
   EXPECT_EQ(delegate.update_image_count(), 1U);
 }
 
-// https://crbug.com/1030009
-TEST_P(ArcAppModelBuilderTest, DISABLED_IconLoader) {
+TEST_P(ArcAppModelBuilderTest, IconLoader) {
   const arc::mojom::AppInfo& app = fake_apps()[0];
   const std::string app_id = ArcAppTest::GetAppId(app);
 
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
   ASSERT_NE(nullptr, prefs);
 
-  SendRefreshAppList(std::vector<arc::mojom::AppInfo>(fake_apps().begin(),
-                                                      fake_apps().begin() + 1));
+  const std::vector<ui::ScaleFactor>& scale_factors =
+      ui::GetSupportedScaleFactors();
+
+  app_instance()->SendRefreshAppList(std::vector<arc::mojom::AppInfo>(
+      fake_apps().begin(), fake_apps().begin() + 1));
+
+  // Wait AppServiceAppItem to finish loading icon, otherwise, the test result
+  // could be flaky, because the update image count could include the icon
+  // updates by AppServiceAppItem.
+  model_updater()->WaitForIconUpdates(1 + scale_factors.size());
 
   FakeAppIconLoaderDelegate delegate;
   ArcAppIconLoader icon_loader(
@@ -2163,8 +2172,6 @@ TEST_P(ArcAppModelBuilderTest, DISABLED_IconLoader) {
   // Validate default image.
   ValidateIcon(delegate.image());
 
-  const std::vector<ui::ScaleFactor>& scale_factors =
-      ui::GetSupportedScaleFactors();
   AppServiceAppItem* app_item = FindArcItem(app_id);
   for (auto& scale_factor : scale_factors) {
     // Force the icon to be loaded.

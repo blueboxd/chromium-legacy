@@ -53,7 +53,7 @@ void UpdateNotificationController::OnUpdateAvailable() {
        model_->notification_style() == NotificationStyle::kAdminRequired)
           ? message_center::SystemNotificationWarningLevel::WARNING
           : message_center::SystemNotificationWarningLevel::NORMAL;
-  std::unique_ptr<Notification> notification = ash::CreateSystemNotification(
+  std::unique_ptr<Notification> notification = CreateSystemNotification(
       message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
       GetNotificationTitle(), GetNotificationMessage(),
       base::string16() /* display_source */, GURL(),

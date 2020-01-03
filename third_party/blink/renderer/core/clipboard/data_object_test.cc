@@ -128,8 +128,10 @@ TEST_F(DataObjectTest, fileSystemId) {
 
   data_object_->AddFilename(file_path, String(), String());
   data_object_->AddFilename(file_path, String(), "fileSystemIdForFilename");
+  FileMetadata metadata;
+  metadata.length = 0;
   data_object_->Add(
-      File::CreateForFileSystemFile(url, FileMetadata(), File::kIsUserVisible),
+      File::CreateForFileSystemFile(url, metadata, File::kIsUserVisible),
       "fileSystemIdForFileSystemFile");
 
   ASSERT_EQ(3U, data_object_->length());

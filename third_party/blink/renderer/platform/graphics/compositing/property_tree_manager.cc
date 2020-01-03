@@ -794,9 +794,6 @@ void PropertyTreeManager::ForceRenderSurfaceIfSyntheticRoundedCornerClip(
 bool PropertyTreeManager::SupportsShaderBasedRoundedCorner(
     const ClipPaintPropertyNode& clip,
     PropertyTreeManager::CcEffectType type) {
-  if (!RuntimeEnabledFeatures::FastBorderRadiusEnabled())
-    return false;
-
   if (type & CcEffectType::kSyntheticFor2dAxisAlignment)
     return false;
 
@@ -815,11 +812,10 @@ bool PropertyTreeManager::SupportsShaderBasedRoundedCorner(
     return false;
   }
 
-  // Rounded corners that differ are not supported by the
-  // CALayerOverlay system on Mac. Instead of letting it fall back
-  // to the (worse for memory and battery) non-CALayerOverlay system
-  // for such cases, fall back to a non-fast border-radius mask for
-  // the effect node.
+  // Rounded corners that differ are not supported by the CALayerOverlay system
+  // on Mac. Instead of letting it fall back to the (worse for memory and
+  // battery) non-CALayerOverlay system for such cases, fall back to a
+  // non-shader border-radius mask for the effect node.
 #if defined(OS_MACOSX)
   if (radii.TopLeft() != radii.TopRight() ||
       radii.TopLeft() != radii.BottomRight() ||

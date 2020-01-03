@@ -130,9 +130,9 @@ public final class DeveloperUiService extends Service {
             startService(new Intent(this, DeveloperUiService.class));
             markAsForegroundService();
 
-            ComponentName flagOverrideContentProvider =
-                    new ComponentName(this, FlagOverrideContentProvider.class.getName());
-            getPackageManager().setComponentEnabledSetting(flagOverrideContentProvider,
+            ComponentName developerModeContentProvider =
+                    new ComponentName(this, DeveloperModeContentProvider.class.getName());
+            getPackageManager().setComponentEnabledSetting(developerModeContentProvider,
                     PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
 
             mDeveloperModeEnabled = true;
@@ -144,9 +144,9 @@ public final class DeveloperUiService extends Service {
             if (!mDeveloperModeEnabled) return;
             mDeveloperModeEnabled = false;
 
-            ComponentName flagOverrideContentProvider =
-                    new ComponentName(this, FlagOverrideContentProvider.class.getName());
-            getPackageManager().setComponentEnabledSetting(flagOverrideContentProvider,
+            ComponentName developerModeContentProvider =
+                    new ComponentName(this, DeveloperModeContentProvider.class.getName());
+            getPackageManager().setComponentEnabledSetting(developerModeContentProvider,
                     PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
 
             // Finally, stop the service explicitly. Do this last to make sure we do the other

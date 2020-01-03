@@ -45,6 +45,10 @@ base::string16 FindBarIcon::GetTextForTooltipAndAccessibleName() const {
   return l10n_util::GetStringUTF16(IDS_TOOLTIP_FIND);
 }
 
+const char* FindBarIcon::GetClassName() const {
+  return "FindBarIcon";
+}
+
 void FindBarIcon::OnExecuting(ExecuteSource execute_source) {}
 
 views::BubbleDialogDelegateView* FindBarIcon::GetBubble() const {

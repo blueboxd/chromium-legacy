@@ -4,10 +4,9 @@
 
 source_set("overlays") {
   public = [
-    "public/aggregate_overlay_request_support.h",
     "public/overlay_callback_manager.h",
     "public/overlay_dismissal_callback.h",
-    "public/overlay_dispatch_callback_storage.h",
+    "public/overlay_dispatch_callback.h",
     "public/overlay_modality.h",
     "public/overlay_presentation_callback.h",
     "public/overlay_presentation_context.h",
@@ -21,15 +20,16 @@ source_set("overlays") {
     "public/overlay_request_queue.h",
     "public/overlay_request_support.h",
     "public/overlay_response.h",
+    "public/overlay_response_info.h",
+    "public/overlay_response_support.h",
     "public/overlay_user_data.h",
   ]
   sources = [
-    "aggregate_overlay_request_support.cc",
     "default_overlay_request_cancel_handler.h",
     "default_overlay_request_cancel_handler.mm",
     "overlay_callback_manager_impl.cc",
     "overlay_callback_manager_impl.h",
-    "overlay_dispatch_callback_storage.cc",
+    "overlay_dispatch_callback.cc",
     "overlay_presenter_impl.h",
     "overlay_presenter_impl.mm",
     "overlay_presenter_observer.cc",
@@ -42,6 +42,7 @@ source_set("overlays") {
     "overlay_request_support.cc",
     "overlay_response_impl.cc",
     "overlay_response_impl.h",
+    "overlay_response_support.cc",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -59,15 +60,16 @@ source_set("overlays") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "aggregate_overlay_request_support_unittest.cc",
     "default_overlay_request_cancel_handler_unittest.mm",
     "overlay_callback_manager_impl_unittest.cc",
+    "overlay_dispatch_callback_unittest.cc",
     "overlay_presenter_impl_unittest.mm",
     "overlay_presenter_observer_bridge_unittest.mm",
     "overlay_request_impl_unittest.cc",
     "overlay_request_queue_impl_unittest.mm",
     "overlay_request_support_unittest.cc",
     "overlay_request_unittest.cc",
+    "overlay_response_support_unittest.cc",
     "overlay_response_unittest.cc",
   ]
 

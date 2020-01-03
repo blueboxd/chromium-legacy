@@ -38,6 +38,7 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
   void RemoveUninstalledItem(const std::string& id) override;
   void MoveItemToFolder(const std::string& id,
                         const std::string& folder_id) override;
+  void SetItemIcon(const std::string& id, const gfx::ImageSkia& icon) override;
   // For SearchModel:
   void SetSearchEngineIsGoogle(bool is_google) override;
   void PublishSearchResults(
@@ -74,12 +75,18 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
   void AddObserver(AppListModelUpdaterObserver* observer) override;
   void RemoveObserver(AppListModelUpdaterObserver* observer) override;
 
+  void WaitForIconUpdates(size_t expected_updates);
+
  private:
   bool search_engine_is_google_ = false;
   std::vector<std::unique_ptr<ChromeAppListItem>> items_;
   std::vector<ChromeSearchResult*> search_results_;
   base::ObserverList<AppListModelUpdaterObserver> observers_;
   Profile* profile_;
+
+  size_t update_image_count_ = 0;
+  size_t expected_update_image_count_ = 0;
+  base::OnceClosure icon_updated_callback_;
 
   void FindOrCreateOemFolder(
       const std::string& oem_folder_name,

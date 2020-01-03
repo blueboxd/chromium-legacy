@@ -113,6 +113,15 @@ void OutputStreamConnection::SetPlaybackRate(float playback_rate) {
   }
 }
 
+void OutputStreamConnection::SetAudioClockRate(double rate) {
+  audio_clock_rate_ = rate;
+  if (socket_) {
+    Generic message;
+    message.mutable_set_audio_clock_rate()->set_rate(rate);
+    socket_->SendProto(message);
+  }
+}
+
 void OutputStreamConnection::Pause() {
   paused_ = true;
   if (socket_) {
@@ -144,6 +153,9 @@ void OutputStreamConnection::OnConnected(std::unique_ptr<MixerSocket> socket) {
   }
   if (playback_rate_ != 1.0f) {
     message.mutable_set_playback_rate()->set_playback_rate(playback_rate_);
+  }
+  if (audio_clock_rate_ != 1.0) {
+    message.mutable_set_audio_clock_rate()->set_rate(audio_clock_rate_);
   }
   if (volume_multiplier_ != 1.0f) {
     message.mutable_set_stream_volume()->set_volume(volume_multiplier_);

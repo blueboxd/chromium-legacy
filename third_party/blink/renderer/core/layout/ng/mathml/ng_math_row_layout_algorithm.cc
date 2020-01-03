@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_layout_part.h"
 #include "third_party/blink/renderer/core/mathml/mathml_element.h"
 
 namespace blink {
@@ -47,8 +48,15 @@ void NGMathRowLayoutAlgorithm::LayoutRowItems(
   LayoutUnit inline_offset, max_row_ascent, max_row_descent;
   for (NGLayoutInputNode child = Node().FirstChild(); child;
        child = child.NextSibling()) {
-    if (child.IsOutOfFlowPositioned())
+    if (child.IsOutOfFlowPositioned()) {
+      // TODO(rbuis): OOF should be "where child would have been if not
+      // absolutely positioned".
+      // Issue: https://github.com/mathml-refresh/mathml/issues/16
+      container_builder_.AddOutOfFlowChildCandidate(
+          To<NGBlockNode>(child), {border_scrollbar_padding_.inline_start,
+                                   border_scrollbar_padding_.block_start});
       continue;
+    }
     const ComputedStyle& child_style = child.Style();
     NGConstraintSpace child_space = CreateConstraintSpaceForMathChild(
         Node(), child_available_size_, ConstraintSpace(), child);
@@ -96,8 +104,6 @@ scoped_refptr<const NGLayoutResult> NGMathRowLayoutAlgorithm::Layout() {
   child_available_size_ =
       ShrinkAvailableSize(border_box_size, border_scrollbar_padding_);
 
-  // TODO(rbuis): add OOF elements.
-
   NGContainerFragmentBuilder::ChildrenVector children;
   LayoutRowItems(&children, &max_row_block_baseline, &max_row_size);
 
@@ -122,7 +128,11 @@ scoped_refptr<const NGLayoutResult> NGMathRowLayoutAlgorithm::Layout() {
       max_row_size.block_size + border_scrollbar_padding_.BlockSum());
   container_builder_.SetBlockSize(block_size);
 
-  // TODO(rbuis): handle OOF layout part.
+  NGOutOfFlowLayoutPart(
+      Node(), ConstraintSpace(),
+      container_builder_.Borders() + container_builder_.Scrollbar(),
+      &container_builder_)
+      .Run();
 
   return container_builder_.ToBoxFragment();
 }

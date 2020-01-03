@@ -771,6 +771,27 @@
             ]
         }
     ],
+    "AutofillCompany": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "RejectBirthyearAsCompany",
+                    "enable_features": [
+                        "AutofillEnableCompanyName",
+                        "AutofillRejectCompanyBirthyear"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillDynamicForms": [
         {
             "platforms": [
@@ -786,26 +807,6 @@
                     "name": "FullLaunch",
                     "enable_features": [
                         "AutofillDynamicForms"
-                    ]
-                }
-            ]
-        }
-    ],
-    "AutofillEnableCompanyName": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Disabled",
-                    "disable_features": [
-                        "AutofillEnableCompanyName"
                     ]
                 }
             ]
@@ -1018,7 +1019,7 @@
             ]
         }
     ],
-    "AutofillRejectCompanyBirthyear": [
+    "AutofillServerBehaviors": [
         {
             "platforms": [
                 "android",
@@ -1030,9 +1031,13 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "API_Enabled",
+                    "params": {
+                        "autofill-server-url": "https://content-autofill.googleapis.com/"
+                    },
                     "enable_features": [
-                        "AutofillRejectCompanyBirthyear"
+                        "AutofillServerCommunication",
+                        "AutofillUseApi"
                     ]
                 }
             ]
@@ -2606,25 +2611,6 @@
                     "name": "Enabled_FCMInvalidations_20190507",
                     "enable_features": [
                         "FCMInvalidations"
-                    ]
-                }
-            ]
-        }
-    ],
-    "FastBorderRadius": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "FastBorderRadius"
                     ]
                 }
             ]
@@ -6933,6 +6919,28 @@
                     ],
                     "disable_features": [
                         "UkmReportNoisedUserBirthYearAndGender"
+                    ]
+                }
+            ]
+        }
+    ],
+    "UnidoDeviceExpiration": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_24",
+                    "params": {
+                        "SharingDeviceExpirationHours": "24"
+                    },
+                    "enable_features": [
+                        "SharingDeviceExpiration"
                     ]
                 }
             ]

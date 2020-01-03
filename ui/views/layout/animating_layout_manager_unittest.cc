@@ -1498,7 +1498,7 @@ TEST_F(AnimatingLayoutManagerTest, FlexLayout_RemoveShowingViewDoesNotCrash) {
   EXPECT_FALSE(layout()->is_animating());
 }
 
-// Regression test for crbug.com/1037947
+// Regression test for crbug.com/1037947 (1/2)
 TEST_F(AnimatingLayoutManagerTest, FlexLayout_DoubleSlide) {
   layout()->SetShouldAnimateBounds(true);
   layout()->SetOrientation(LayoutOrientation::kHorizontal);
@@ -1562,6 +1562,75 @@ TEST_F(AnimatingLayoutManagerTest, FlexLayout_DoubleSlide) {
   view()->Layout();
   EXPECT_FALSE(layout()->is_animating());
   EnsureLayout(expected_start, "after second slide");
+}
+
+// Regression test for crbug.com/1037947 (2/2) - Tests a case during sliding
+// where if an animation is reversed after a fading-in and fading-out views have
+// exchanged relative positions in the layout, the new fading-out view will
+// slide behind the wrong view.
+//
+// Incorrect behavior (C slides behind B):
+// [A]    [B]
+// [A]C] [B]
+// [A][C]B]
+// [A][B[C]   <--- animation is reversed here
+// [A] [B]C]
+// [A]    [B]
+//
+// Correct behavior (C slides behind A):
+// [A]    [B]
+// [A]C] [B]
+// [A][C]B]
+// [A][B[C]   <--- animation is reversed here
+// [A][C[B]
+// [A]C] [B]
+// [A]    [B]
+//
+TEST_F(AnimatingLayoutManagerTest, FlexLayout_RedirectAfterExchangePlaces) {
+  layout()->SetShouldAnimateBounds(true);
+  layout()->SetOrientation(LayoutOrientation::kHorizontal);
+  layout()->SetDefaultFadeMode(
+      AnimatingLayoutManager::FadeInOutMode::kSlideFromLeadingEdge);
+  child(2)->SetVisible(false);
+  auto* const flex_layout =
+      layout()->SetTargetLayoutManager(std::make_unique<FlexLayout>());
+  flex_layout->SetOrientation(LayoutOrientation::kHorizontal);
+  flex_layout->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  flex_layout->SetDefault(kMarginsKey, gfx::Insets(50));
+
+  layout()->ResetLayout();
+  SizeAndLayout();
+
+  // Initial layout change: show 2, hide 1.
+  layout()->FadeOut(child(1));
+  layout()->FadeIn(child(2));
+
+  // Advance the layout most of the way.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(750));
+  view()->Layout();
+
+  // Verify that the two views are visible and that they have passed each other.
+  EXPECT_TRUE(child(1)->GetVisible());
+  EXPECT_TRUE(child(2)->GetVisible());
+  EXPECT_GT(child(2)->bounds().x(), child(1)->bounds().right());
+
+  // Save the bounds of both views to verify that child(1) moves right while
+  // child(2) moves left.
+  const gfx::Rect old_child1_bounds = child(1)->bounds();
+  const gfx::Rect old_child2_bounds = child(2)->bounds();
+
+  // Reverse the layout direction.
+  layout()->FadeIn(child(1));
+  layout()->FadeOut(child(2));
+
+  // Advance the layout most of the way.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(150));
+  view()->Layout();
+
+  EXPECT_TRUE(child(1)->GetVisible());
+  EXPECT_TRUE(child(2)->GetVisible());
+  EXPECT_GT(child(1)->x(), old_child1_bounds.x());
+  EXPECT_LT(child(2)->x(), old_child2_bounds.x());
 }
 
 TEST_F(AnimatingLayoutManagerTest, FlexLayout_FadeInOnAdded) {

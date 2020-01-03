@@ -23,7 +23,6 @@ aggregate_vector_icons("chrome_vector_icons") {
     "blocked_redirect.icon",
     "bluetooth.icon",
     "browser_tools.icon",
-    "browser_tools_animated.icon",
     "browser_tools_error.icon",
     "browser_tools_update.icon",
     "caret_down.icon",

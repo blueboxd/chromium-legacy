@@ -43,6 +43,8 @@ class CORE_EXPORT CSSStyleDeclaration : public ScriptWrappable {
  public:
   ~CSSStyleDeclaration() override = default;
 
+  void Trace(Visitor* visitor) override;
+
   virtual CSSRule* parentRule() const = 0;
   String cssFloat() { return GetPropertyValueInternal(CSSPropertyID::kFloat); }
   void setCSSFloat(const ExecutionContext* execution_context,
@@ -100,9 +102,12 @@ class CORE_EXPORT CSSStyleDeclaration : public ScriptWrappable {
   bool NamedPropertyQuery(const AtomicString&, ExceptionState&);
 
  protected:
-  CSSStyleDeclaration() = default;
+  CSSStyleDeclaration(ExecutionContext* context)
+      : execution_context_(context) {}
+  ExecutionContext* GetExecutionContext() const;
 
  private:
+  WeakMember<ExecutionContext> execution_context_;
   DISALLOW_COPY_AND_ASSIGN(CSSStyleDeclaration);
 };
 

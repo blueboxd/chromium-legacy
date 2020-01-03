@@ -7,11 +7,6 @@
 #include <limits>
 #include <utility>
 
-#include "components/viz/common/features.h"
-#include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
-#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
-#include "components/viz/test/test_frame_sink_manager.h"
-#include "content/browser/compositor/surface_utils.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "ui/compositor/test/in_process_context_provider.h"
@@ -25,46 +20,31 @@ constexpr uint32_t kDefaultClientId = std::numeric_limits<uint32_t>::max();
 }  // namespace
 
 TestImageTransportFactory::TestImageTransportFactory()
-    : enable_viz_(features::IsVizDisplayCompositorEnabled()),
-      frame_sink_id_allocator_(kDefaultClientId) {
-  if (enable_viz_) {
-    test_frame_sink_manager_impl_ =
-        std::make_unique<viz::TestFrameSinkManagerImpl>();
+    : frame_sink_id_allocator_(kDefaultClientId) {
+  mojo::PendingRemote<viz::mojom::FrameSinkManager> frame_sink_manager;
+  mojo::PendingReceiver<viz::mojom::FrameSinkManager>
+      frame_sink_manager_receiver =
+          frame_sink_manager.InitWithNewPipeAndPassReceiver();
+  mojo::PendingRemote<viz::mojom::FrameSinkManagerClient>
+      frame_sink_manager_client;
+  mojo::PendingReceiver<viz::mojom::FrameSinkManagerClient>
+      frame_sink_manager_client_receiver =
+          frame_sink_manager_client.InitWithNewPipeAndPassReceiver();
 
-    mojo::PendingRemote<viz::mojom::FrameSinkManager> frame_sink_manager;
-    mojo::PendingReceiver<viz::mojom::FrameSinkManager>
-        frame_sink_manager_receiver =
-            frame_sink_manager.InitWithNewPipeAndPassReceiver();
-    mojo::PendingRemote<viz::mojom::FrameSinkManagerClient>
-        frame_sink_manager_client;
-    mojo::PendingReceiver<viz::mojom::FrameSinkManagerClient>
-        frame_sink_manager_client_receiver =
-            frame_sink_manager_client.InitWithNewPipeAndPassReceiver();
+  // Bind endpoints in HostFrameSinkManager.
+  host_frame_sink_manager_.BindAndSetManager(
+      std::move(frame_sink_manager_client_receiver), nullptr,
+      std::move(frame_sink_manager));
 
-    // Bind endpoints in HostFrameSinkManager.
-    host_frame_sink_manager_.BindAndSetManager(
-        std::move(frame_sink_manager_client_receiver), nullptr,
-        std::move(frame_sink_manager));
-
-    // Bind endpoints in TestFrameSinkManagerImpl. For non-tests there would be
-    // a FrameSinkManagerImpl running in another process and these interface
-    // endpoints would be bound there.
-    test_frame_sink_manager_impl_->BindReceiver(
-        std::move(frame_sink_manager_receiver),
-        std::move(frame_sink_manager_client));
-  } else {
-    shared_bitmap_manager_ = std::make_unique<viz::ServerSharedBitmapManager>();
-    frame_sink_manager_impl_ = std::make_unique<viz::FrameSinkManagerImpl>(
-        shared_bitmap_manager_.get());
-    surface_utils::ConnectWithLocalFrameSinkManager(
-        &host_frame_sink_manager_, frame_sink_manager_impl_.get());
-  }
+  // Bind endpoints in TestFrameSinkManagerImpl. For non-tests there would be
+  // a FrameSinkManagerImpl running in another process and these interface
+  // endpoints would be bound there.
+  test_frame_sink_manager_impl_.BindReceiver(
+      std::move(frame_sink_manager_receiver),
+      std::move(frame_sink_manager_client));
 }
 
-TestImageTransportFactory::~TestImageTransportFactory() {
-  for (auto& observer : observer_list_)
-    observer.OnLostSharedContext();
-}
+TestImageTransportFactory::~TestImageTransportFactory() = default;
 
 void TestImageTransportFactory::CreateLayerTreeFrameSink(
     base::WeakPtr<ui::Compositor> compositor) {
@@ -101,16 +81,6 @@ TestImageTransportFactory::GetGpuMemoryBufferManager() {
 
 cc::TaskGraphRunner* TestImageTransportFactory::GetTaskGraphRunner() {
   return &task_graph_runner_;
-}
-
-void TestImageTransportFactory::AddObserver(
-    ui::ContextFactoryObserver* observer) {
-  observer_list_.AddObserver(observer);
-}
-
-void TestImageTransportFactory::RemoveObserver(
-    ui::ContextFactoryObserver* observer) {
-  observer_list_.RemoveObserver(observer);
 }
 
 viz::FrameSinkId TestImageTransportFactory::AllocateFrameSinkId() {

@@ -123,6 +123,9 @@ enum OptimizationType {
   // This optimization is used to provide aggregated performance information
   // about the page and pages it links to.
   PERFORMANCE_HINTS = 6;
+  // This optimization allows page loads going through the data reduction
+  // proxy to be transformed by the proxy.
+  LITE_PAGE = 7;
 }
 
 // Presents semantics for how page load URLs should be matched.

@@ -2106,15 +2106,27 @@ TextureRef::~TextureRef() {
 }
 
 bool TextureRef::BeginAccessSharedImage(GLenum mode) {
-  shared_image_scoped_access_ = shared_image_->BeginScopedAccess(mode);
+  // When accessing through TextureManager, we are using legacy GL logic which
+  // tracks clearning internally. Always allow access to uncleared
+  // SharedImages.
+  shared_image_scoped_access_ = shared_image_->BeginScopedAccess(
+      mode, SharedImageRepresentation::AllowUnclearedAccess::kYes);
   if (!shared_image_scoped_access_) {
     return false;
   }
+  // After beginning access, the returned gles2::Texture's cleared status
+  // should match the SharedImage's.
+  DCHECK_EQ(shared_image_->ClearedRect(),
+            texture_->GetLevelClearedRect(texture_->target(), 0));
   return true;
 }
 
 void TextureRef::EndAccessSharedImage() {
   shared_image_scoped_access_.reset();
+  // After ending access, the SharedImages cleared rect should be synchronized
+  // with |texture_|'s.
+  DCHECK_EQ(shared_image_->ClearedRect(),
+            texture_->GetLevelClearedRect(texture_->target(), 0));
 }
 
 void TextureRef::ForceContextLost() {

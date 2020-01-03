@@ -105,3 +105,7 @@ const gfx::VectorIcon& NativeFileSystemAccessIconView::GetVectorIcon() const {
   return has_write_access_ ? kSaveOriginalFileIcon
                            : vector_icons::kInsertDriveFileOutlineIcon;
 }
+
+const char* NativeFileSystemAccessIconView::GetClassName() const {
+  return "NativeFileSystemAccessIconView";
+}

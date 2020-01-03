@@ -86,8 +86,8 @@ int IOSChromeSyncedTabDelegate::GetEntryCount() const {
 }
 
 GURL IOSChromeSyncedTabDelegate::GetVirtualURLAtIndex(int i) const {
-  DCHECK_GE(i, 0);
   if (GetSessionStorageIfNeeded()) {
+    DCHECK_GE(i, 0);
     NSArray* item_storages = session_storage_.itemStorages;
     DCHECK_LT(i, static_cast<int>(item_storages.count));
     CRWNavigationItemStorage* item = item_storages[i];
@@ -98,8 +98,8 @@ GURL IOSChromeSyncedTabDelegate::GetVirtualURLAtIndex(int i) const {
 }
 
 GURL IOSChromeSyncedTabDelegate::GetFaviconURLAtIndex(int i) const {
-  DCHECK_GE(i, 0);
   if (GetSessionStorageIfNeeded()) {
+    DCHECK_GE(i, 0);
     return GURL();
   }
   NavigationItem* item = GetPossiblyPendingItemAtIndex(web_state_, i);
@@ -108,8 +108,8 @@ GURL IOSChromeSyncedTabDelegate::GetFaviconURLAtIndex(int i) const {
 
 ui::PageTransition IOSChromeSyncedTabDelegate::GetTransitionAtIndex(
     int i) const {
-  DCHECK_GE(i, 0);
   if (GetSessionStorageIfNeeded()) {
+    DCHECK_GE(i, 0);
     return ui::PAGE_TRANSITION_LINK;
   }
   NavigationItem* item = GetPossiblyPendingItemAtIndex(web_state_, i);
@@ -223,21 +223,21 @@ bool IOSChromeSyncedTabDelegate::GetSessionStorageIfNeeded() const {
   // is displayed. Before restoration, the session storage must be used.
   bool should_use_storage =
       web_state_->GetNavigationManager()->IsRestoreSessionInProgress();
-  bool storage_has_tabs = false;
+  bool storage_has_navigation_items = false;
   if (should_use_storage) {
     if (!session_storage_) {
       session_storage_ = web_state_->BuildSessionStorage();
     }
-    storage_has_tabs = session_storage_.itemStorages.count;
+    storage_has_navigation_items = session_storage_.itemStorages.count;
 #if DCHECK_IS_ON()
-    if (storage_has_tabs) {
+    if (storage_has_navigation_items) {
       DCHECK_GE(session_storage_.lastCommittedItemIndex, 0);
       DCHECK_LT(session_storage_.lastCommittedItemIndex,
                 static_cast<int>(session_storage_.itemStorages.count));
     }
 #endif
   }
-  return should_use_storage && storage_has_tabs;
+  return should_use_storage && storage_has_navigation_items;
 }
 
 WEB_STATE_USER_DATA_KEY_IMPL(IOSChromeSyncedTabDelegate)

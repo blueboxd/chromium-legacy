@@ -101,10 +101,10 @@
   <message name="IDS_SETTINGS_PROFILE_NAME_AND_PICTURE" desc="Label of the link that takes you to the page to edit your name and picture for your chrome profile.">
     Chromium name and picture
   </message>
+</if>
   <message name="IDS_SETTINGS_PEOPLE_SIGN_IN_PROMPT_SECONDARY_WITH_ACCOUNT" desc="The secondary text displayed to prompt users to enable sync for an account that is alredy present in Chromium.">
     Sync and personalize Chromium across your devices
   </message>
-</if>
 
   <!-- Sync Page -->
   <message name="IDS_SETTINGS_SYNC_SIGNIN" desc="The label that appears on the sync button in the options dialog when sync has not been set up by the user.">
@@ -119,14 +119,12 @@
   <message name="IDS_DRIVE_SUGGEST_PREF_DESC" desc="The documentation string of the 'Show Drive Results in Omnibox' - full description sentence">
     Chromium will access your Drive to make suggestions in the address bar
   </message>
-<if expr="not chromeos">
-    <message name="IDS_SETTINGS_SYNC_SIGN_IN_PROMPT_WITH_NO_ACCOUNT" desc="The text displayed to prompt users to sign in to Chromium.">
-      Sign in to sync and personalize Chromium across your devices
-    </message>
-    <message name="IDS_SETTINGS_SYNC_SIGN_IN_PROMPT_WITH_ACCOUNT" desc="The text displayed to prompt users to enable sync for an account that is alredy present in Chromium.">
-      Sync and personalize Chromium across your devices
-    </message>
-</if>
+  <message name="IDS_SETTINGS_SYNC_SIGN_IN_PROMPT_WITH_NO_ACCOUNT" desc="The text displayed to prompt users to sign in to Chromium.">
+    Sign in to sync and personalize Chromium across your devices
+  </message>
+  <message name="IDS_SETTINGS_SYNC_SIGN_IN_PROMPT_WITH_ACCOUNT" desc="The text displayed to prompt users to enable sync for an account that is alredy present in Chromium.">
+    Sync and personalize Chromium across your devices
+  </message>
 
   <!-- Languages Page -->
   <!-- Chrome OS string is in settings_strings.grdp. -->

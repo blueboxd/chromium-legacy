@@ -4,8 +4,6 @@
 
 #include "content/test/web_gesture_curve_mock.h"
 
-#include "third_party/blink/public/platform/web_float_size.h"
-
 WebGestureCurveMock::WebGestureCurveMock(
     const gfx::Vector2dF& velocity,
     const blink::WebSize& cumulative_scroll)

@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "ui/base/ui_base_features.h"
 
 namespace blink {
 
@@ -184,7 +185,7 @@ void HTMLMeterElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {
   value_ = MakeGarbageCollected<HTMLDivElement>(GetDocument());
   UpdateValueAppearance(0);
 
-  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
+  if (features::IsFormControlsRefreshEnabled()) {
     auto* clip = MakeGarbageCollected<HTMLDivElement>(GetDocument());
     clip->SetShadowPseudoId(AtomicString("-internal-meter-clip"));
     bar->AppendChild(clip);

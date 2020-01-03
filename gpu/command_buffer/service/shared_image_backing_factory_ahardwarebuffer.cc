@@ -234,11 +234,6 @@ class SharedImageRepresentationGLTextureAHB
       ahb_backing()->EndRead(this, std::move(sync_fd));
     } else if (mode_ == RepresentationAccessMode::kWrite) {
       ahb_backing()->EndWrite(std::move(sync_fd));
-
-      if (texture_) {
-        if (texture_->IsLevelCleared(texture_->target(), 0))
-          backing()->SetCleared();
-      }
     }
 
     mode_ = RepresentationAccessMode::kNone;
@@ -921,6 +916,11 @@ std::unique_ptr<SharedImageBacking> SharedImageBackingFactoryAHB::MakeBacking(
   auto backing = std::make_unique<SharedImageBackingAHB>(
       mailbox, format, size, color_space, usage, std::move(handle),
       estimated_size, is_thread_safe, std::move(initial_upload_fd));
+
+  // If we uploaded initial data, set the backing as cleared.
+  if (!pixel_data.empty())
+    backing->SetCleared();
+
   return backing;
 }
 

@@ -94,19 +94,19 @@ void SelectToSpeakTray::CheckStatusAndUpdateIcon() {
     return;
   }
 
-  ash::SelectToSpeakState state =
+  SelectToSpeakState state =
       Shell::Get()->accessibility_controller()->GetSelectToSpeakState();
   switch (state) {
-    case ash::SelectToSpeakState::kSelectToSpeakStateInactive:
+    case SelectToSpeakState::kSelectToSpeakStateInactive:
       icon_->SetImage(inactive_image_);
       SetIsActive(false);
       break;
-    case ash::SelectToSpeakState::kSelectToSpeakStateSelecting:
+    case SelectToSpeakState::kSelectToSpeakStateSelecting:
       // Activate the start selection button during selection.
       icon_->SetImage(selecting_image_);
       SetIsActive(true);
       break;
-    case ash::SelectToSpeakState::kSelectToSpeakStateSpeaking:
+    case SelectToSpeakState::kSelectToSpeakStateSpeaking:
       icon_->SetImage(speaking_image_);
       SetIsActive(true);
       break;

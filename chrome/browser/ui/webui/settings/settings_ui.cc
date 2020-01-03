@@ -279,6 +279,8 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean(
       "showParentalControls",
       chromeos::settings::ShouldShowParentalControls(profile));
+  html_source->AddBoolean("splitSettingsSyncEnabled",
+                          chromeos::features::IsSplitSettingsSyncEnabled());
 #endif
 
 #if defined(OS_CHROMEOS)

@@ -10,7 +10,7 @@
     android:background="@color/modern_primary_color">
 
     <!-- Toolbar -->
-    <org.chromium.chrome.browser.widget.prefeditor.EditorDialogToolbar
+    <org.chromium.chrome.browser.autofill.prefeditor.EditorDialogToolbar
         android:id="@+id/action_bar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"

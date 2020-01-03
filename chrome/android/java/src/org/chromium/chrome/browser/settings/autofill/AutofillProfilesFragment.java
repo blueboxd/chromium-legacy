@@ -19,10 +19,10 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
+import org.chromium.chrome.browser.autofill.prefeditor.EditorObserverForTest;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
 import org.chromium.chrome.browser.settings.MainPreferences;
 import org.chromium.chrome.browser.settings.ManagedPreferenceDelegate;
-import org.chromium.chrome.browser.widget.prefeditor.EditorObserverForTest;
 
 /**
  * Autofill profiles fragment, which allows the user to edit autofill profiles.
@@ -85,8 +85,8 @@ public class AutofillProfilesFragment extends PreferenceFragmentCompat
             // Add a preference for the profile.
             Preference pref;
             if (profile.getIsLocal()) {
-                AutofillProfileEditorPreference localPref = new AutofillProfileEditorPreference(
-                        getActivity(), getStyledContext(), sObserverForTest);
+                AutofillProfileEditorPreference localPref =
+                        new AutofillProfileEditorPreference(getActivity(), getStyledContext());
                 localPref.setTitle(profile.getFullName());
                 localPref.setSummary(profile.getLabel());
                 localPref.setKey(localPref.getTitle().toString()); // For testing.
@@ -106,8 +106,8 @@ public class AutofillProfilesFragment extends PreferenceFragmentCompat
         // Add 'Add address' button. Tap of it brings up address editor which allows users type in
         // new addresses.
         if (PersonalDataManager.isAutofillProfileEnabled()) {
-            AutofillProfileEditorPreference pref = new AutofillProfileEditorPreference(
-                    getActivity(), getStyledContext(), sObserverForTest);
+            AutofillProfileEditorPreference pref =
+                    new AutofillProfileEditorPreference(getActivity(), getStyledContext());
             Drawable plusIcon = ApiCompatibilityUtils.getDrawable(getResources(), R.drawable.plus);
             plusIcon.mutate();
             plusIcon.setColorFilter(
@@ -144,6 +144,7 @@ public class AutofillProfilesFragment extends PreferenceFragmentCompat
     @VisibleForTesting
     public static void setObserverForTest(EditorObserverForTest observerForTest) {
         sObserverForTest = observerForTest;
+        AutofillProfileEditorPreference.setEditorObserverForTest(sObserverForTest);
     }
 
     private Context getStyledContext() {

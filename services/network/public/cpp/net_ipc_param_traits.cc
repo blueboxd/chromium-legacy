@@ -317,11 +317,13 @@ void ParamTraits<net::OCSPVerifyResult>::Log(const param_type& p,
 void ParamTraits<net::ResolveErrorInfo>::Write(base::Pickle* m,
                                                const param_type& p) {
   WriteParam(m, p.error);
+  WriteParam(m, p.is_secure_network_error);
 }
 bool ParamTraits<net::ResolveErrorInfo>::Read(const base::Pickle* m,
                                               base::PickleIterator* iter,
                                               param_type* r) {
-  return ReadParam(m, iter, &r->error);
+  return ReadParam(m, iter, &r->error) &&
+         ReadParam(m, iter, &r->is_secure_network_error);
 }
 void ParamTraits<net::ResolveErrorInfo>::Log(const param_type& p,
                                              std::string* l) {

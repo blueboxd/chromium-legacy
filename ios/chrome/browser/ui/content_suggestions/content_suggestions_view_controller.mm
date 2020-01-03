@@ -315,6 +315,12 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
 
 - (void)viewSafeAreaInsetsDidChange {
   [super viewSafeAreaInsetsDidChange];
+
+  // Only get the bottom safe area inset.
+  UIEdgeInsets insets = UIEdgeInsetsZero;
+  insets.bottom = self.view.safeAreaInsets.bottom;
+  self.collectionView.contentInset = insets;
+
   [self.headerSynchronizer
       updateFakeOmniboxOnNewWidth:self.collectionView.bounds.size.width];
   [self.headerSynchronizer updateConstraints];

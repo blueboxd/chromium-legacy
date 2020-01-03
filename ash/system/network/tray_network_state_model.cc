@@ -54,7 +54,7 @@ class TrayNetworkStateModel::Impl
     : public chromeos::network_config::mojom::CrosNetworkConfigObserver {
  public:
   explicit Impl(TrayNetworkStateModel* model) : model_(model) {
-    ash::GetNetworkConfigService(
+    GetNetworkConfigService(
         remote_cros_network_config_.BindNewPipeAndPassReceiver());
     remote_cros_network_config_->AddObserver(
         cros_network_config_observer_receiver_.BindNewPipeAndPassRemote());

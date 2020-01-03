@@ -174,6 +174,11 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
       ReusedPasswordAccountType password_type,
       std::vector<size_t>* placeholder_offsets) const;
 
+  // Get placeholders for the warning detail text for saved password reuse
+  // warnings.
+  std::vector<base::string16> GetPlaceholdersForSavedPasswordWarningText()
+      const;
+
   // If password protection trigger is configured via enterprise policy, gets
   // the name of the organization that owns the enterprise policy. Otherwise,
   // returns an empty string.

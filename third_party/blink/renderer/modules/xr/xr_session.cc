@@ -1528,8 +1528,12 @@ base::Optional<TransformationMatrix> XRSession::MojoFromViewer() const {
   if (!CanReportPoses())
     return base::nullopt;
 
-  if (!mojo_from_viewer_)
+  if (!mojo_from_viewer_) {
+    if (sensorless_session_)
+      return TransformationMatrix();
+
     return base::nullopt;
+  }
 
   return *mojo_from_viewer_.get();
 }

@@ -30,7 +30,8 @@ void TopContainerBackground::Paint(gfx::Canvas* canvas,
 
     canvas->TileImageInt(*theme_provider->GetImageSkiaNamed(IDR_THEME_TOOLBAR),
                          pos.x(), pos.y(), bounds.x(), bounds.y(),
-                         bounds.width(), bounds.height());
+                         bounds.width(), bounds.height(), 1.0f,
+                         SkTileMode::kRepeat, SkTileMode::kMirror);
   } else {
     canvas->DrawColor(theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR));
   }

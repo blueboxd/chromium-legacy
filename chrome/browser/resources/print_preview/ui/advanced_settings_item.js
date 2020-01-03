@@ -15,7 +15,7 @@ import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bun
 import {Destination, VendorCapability, VendorCapabilitySelectOption} from '../data/destination.js';
 import {getStringForCurrentLocale} from '../print_preview_utils.js';
 
-import {HighlightResults, updateHighlights} from './highlight_utils.js';
+import {updateHighlights} from './highlight_utils.js';
 import {SettingsBehavior} from './settings_behavior.js';
 
 Polymer({
@@ -208,10 +208,10 @@ Polymer({
 
   /**
    * @param {?RegExp} query The current search query.
-   * @return {!HighlightResults} The highlight wrappers and
-   *     search bubbles that were created.
+   * @param {!Map<!Node, number>} bubbles
+   * @return {!Array<!Node>} The highlight wrappers and that were created.
    */
-  updateHighlighting: function(query) {
-    return updateHighlights(this, query);
+  updateHighlighting: function(query, bubbles) {
+    return updateHighlights(this, query, bubbles);
   },
 });

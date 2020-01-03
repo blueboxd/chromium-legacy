@@ -5,5 +5,6 @@ PASS connection with one data channel should eventually have connected connectio
 FAIL connection with one data channel should eventually have transports in connected state Cannot read property 'transport' of null
 PASS connectionState remains new when not adding remote ice candidates
 PASS connectionState transitions to connected via connecting
+PASS Closing a PeerConnection should not fire connectionstatechange event
 Harness: the test ran to completion.
 

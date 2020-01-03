@@ -136,6 +136,9 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Loads |URL| as if it was opened from an external application.
 - (void)openURLFromExternalApp:(const GURL&)URL;
 
+// Programmatically dismisses settings screen.
+- (void)dismissSettings;
+
 #pragma mark - Settings Utilities (EG2)
 
 // Sets value for content setting.

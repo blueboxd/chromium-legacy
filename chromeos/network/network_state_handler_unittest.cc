@@ -1636,6 +1636,25 @@ TEST_F(NetworkStateHandlerTest, NetworkActiveNetworksStateChanged) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, test_observer_->active_network_change_count());
 
+  // Activate cellular network so that it's part of active network list.
+  service_test_->SetServiceProperty(
+      kShillManagerClientStubCellular, shill::kActivationStateProperty,
+      base::Value(shill::kActivationStateActivating));
+  base::RunLoop().RunUntilIdle();
+  expected_active_network_paths = {kShillManagerClientStubCellular};
+  EXPECT_EQ(expected_active_network_paths,
+            test_observer_->active_network_paths());
+  // Test that network technology change signals the observer.
+  test_observer_->reset_change_counts();
+  service_test_->SetServiceProperty(kShillManagerClientStubCellular,
+                                    shill::kNetworkTechnologyProperty,
+                                    base::Value(shill::kNetworkTechnologyUmts));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, test_observer_->active_network_change_count());
+  // Remove cellular service.
+  service_test_->RemoveService(kShillManagerClientStubCellular);
+  base::RunLoop().RunUntilIdle();
+
   // Add two Tether networks.
   test_observer_->reset_change_counts();
   network_state_handler_->SetTetherTechnologyState(

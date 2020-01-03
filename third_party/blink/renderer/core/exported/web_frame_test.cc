@@ -182,10 +182,6 @@ using testing::_;
 
 namespace blink {
 
-::std::ostream& operator<<(::std::ostream& os, const WebFloatSize& size) {
-  return os << "WebFloatSize: [" << size.width << ", " << size.height << "]";
-}
-
 namespace {
 
 template <typename Function>
@@ -10167,8 +10163,8 @@ TEST_P(WebFrameOverscrollTest,
   // being run in a WebView without a size. This test should be fixed along with
   // the bug, crbug.com/589320.
   // Page scrolls vertically, but over-scrolls horizontally.
-  // EXPECT_CALL(client, didOverscroll(WebFloatSize(-100, 0), WebFloatSize(-100,
-  // 0), gfx::PointF(100, 100), WebFloatSize()));
+  // EXPECT_CALL(client, didOverscroll(gfx::Vector2dF(-100, 0),
+  // gfx::Vector2dF(-100, 0), gfx::PointF(100, 100), gfx::Vector2dF()));
   // ScrollUpdate(&webViewHelper, 100, 50);
   // Mock::VerifyAndClearExpectations(&client);
 
@@ -10178,8 +10174,8 @@ TEST_P(WebFrameOverscrollTest,
   // Mock::VerifyAndClearExpectations(&client);
 
   // Page scrolls horizontally, but over-scrolls vertically.
-  // EXPECT_CALL(client, didOverscroll(WebFloatSize(0, 100), WebFloatSize(0,
-  // 100), gfx::PointF(100, 100), WebFloatSize()));
+  // EXPECT_CALL(client, didOverscroll(gfx::Vector2dF(0, 100), gfx::Vector2dF(0,
+  // 100), gfx::PointF(100, 100), gfx::Vector2dF()));
   // ScrollUpdate(&webViewHelper, -100, -100);
   // Mock::VerifyAndClearExpectations(&client);
 }

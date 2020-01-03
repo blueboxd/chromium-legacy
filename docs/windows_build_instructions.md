@@ -23,8 +23,8 @@ Are you a Google employee? See
 
 ### Visual Studio
 
-Chromium requires Visual Studio 2017 (>=15.7.2) or 2019 (>=16.0.0) to build.
-Visual Studio can also be used to debug Chromium and Visual Studio 2019 is
+Chromium requires Visual Studio 2017 (>=15.7.2) to build, but VS2019 (>=16.0.0)
+is preferred. Visual Studio can also be used to debug Chromium, and VS2019 is
 preferred for this as it handles Chromium's large debug information much better.
 The clang-cl compiler is used but Visual Studio's header files, libraries, and
 some tools are required. Visual Studio Community Edition should work if its
@@ -89,8 +89,8 @@ if your system PATH has a Python in it, you will be out of luck.
 Also, add a DEPOT_TOOLS_WIN_TOOLCHAIN system variable in the same way, and set
 it to 0. This tells depot_tools to use your locally installed version of Visual
 Studio (by default, depot_tools will try to use a google-internal version). If
-you want to build with Visual Studio 2019 instead of Visual Studio 2017 (the
-default) then set the GYP_MSVS_VERSION environment variable to 2019.
+you want to build with Visual Studio 2017 instead of Visual Studio 2019 (the
+default) then set the GYP_MSVS_VERSION environment variable to 2017.
 
 From a cmd.exe shell, run the command gclient (without arguments). On first
 run, gclient will install all the Windows-specific bits needed to work with

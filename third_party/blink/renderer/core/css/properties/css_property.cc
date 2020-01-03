@@ -53,12 +53,13 @@ const CSSValue* CSSProperty::CSSValueFromComputedStyle(
 }
 
 void CSSProperty::FilterWebExposedCSSPropertiesIntoVector(
+    const ExecutionContext* execution_context,
     const CSSPropertyID* properties,
     size_t propertyCount,
     Vector<const CSSProperty*>& outVector) {
   for (unsigned i = 0; i < propertyCount; i++) {
     const CSSProperty& property = Get(properties[i]);
-    if (property.IsWebExposed())
+    if (property.IsWebExposed(execution_context))
       outVector.push_back(&property);
   }
 }

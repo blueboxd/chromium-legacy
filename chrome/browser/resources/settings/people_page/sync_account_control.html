@@ -140,6 +140,8 @@
         display: block;
       }
     </style>
+    <!-- TODO(jamescook): Show the promo on Chrome OS if the user is signed-in
+         but has sync disabled. -->
     <div id="banner" hidden="[[syncStatus.signedIn]]" part="banner"></div>
     <div class$="settings-box first
                  [[getPromoHeaderClass_(subLabel_)]]"
@@ -191,11 +193,14 @@
             </div>
           </div>
         </div>
+<!-- Chrome OS does not allow switching users for sync. -->
+<if expr="not chromeos">
         <cr-icon-button class="icon-arrow-dropdown"
             hidden="[[syncStatus.signedIn]]" on-click="onMenuButtonTap_"
             id="dropdown-arrow" aria-label="$i18n{useAnotherAccount}">
         </cr-icon-button>
         <div class="separator" hidden="[[syncStatus.signedIn]]"></div>
+</if>
         <cr-button id="sync-button" class="action-button"
             hidden="[[syncStatus.signedIn]]" on-click="onSyncButtonTap_"
             disabled="[[shouldDisableSyncButton_(showSetupButtons_,
@@ -224,6 +229,8 @@
           </cr-button>
         </div>
       </div>
+<!-- Chrome OS does not allow switching users for sync. -->
+<if expr="not chromeos">
       <template is="dom-if" if="[[!syncStatus.signedIn]]" restamp>
         <cr-action-menu id="menu" auto-reposition
             role-description="$i18n{menu}">
@@ -247,6 +254,7 @@
           </button>
         </cr-action-menu>
       </template>
+</if>
     </template>
   </template>
   <script src="sync_account_control.js"></script>

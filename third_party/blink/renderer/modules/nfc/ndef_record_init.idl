@@ -13,7 +13,7 @@ typedef (DOMString or ArrayBuffer or ArrayBufferView or NDEFMessageInit)
 // https://w3c.github.io/web-nfc/#dom-ndefrecordinit
 
 dictionary NDEFRecordInit {
-    USVString recordType;
+    required USVString recordType;
     USVString mediaType;
     USVString id;
 

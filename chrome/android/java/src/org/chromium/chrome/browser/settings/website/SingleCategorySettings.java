@@ -39,7 +39,6 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionManager;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.preferences.Pref;
@@ -56,6 +55,7 @@ import org.chromium.chrome.browser.settings.SearchUtils;
 import org.chromium.chrome.browser.settings.SettingsUtils;
 import org.chromium.chrome.browser.settings.website.Website.StoredDataClearedCallback;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.ui.widget.Toast;
 
 import java.util.ArrayList;

@@ -10,8 +10,8 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.MathUtils;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.settings.website.WebsitePreferenceBridge.StorageInfoClearedCallback;
+import org.chromium.components.content_settings.ContentSettingsType;
 
 import java.io.Serializable;
 import java.util.ArrayList;

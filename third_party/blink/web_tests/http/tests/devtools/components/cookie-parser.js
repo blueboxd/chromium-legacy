@@ -13,10 +13,9 @@
     var output = 'name: ' + cookie.name() + ', value: ' + cookie.value() + ', httpOnly: ' + cookie.httpOnly() +
         ', sameSite: ' + cookie.sameSite() + ', secure: ' + cookie.secure() + ', session: ' + cookie.session() +
         ', path: ' + cookie.path() + ', domain: ' + cookie.domain() + ', port: ' + cookie.port() +
-        ', expires: ' + (expires ? expires.getTime() : 'n/a') + ', size: ' + cookie.size();
+        ', expires: ' + (expires ? expires.getTime() : 'n/a') + ', size: ' + cookie.size() + ', priority: ' + cookie.priority();
 
     TestRunner.addResult(output);
-    TestRunner.addObject(cookie.attributes());
   };
 
   TestRunner.dumpCookies = function(cookies) {
@@ -61,5 +60,8 @@
   TestRunner.parseAndDumpSetCookie('cooke1 = value; HttpOnly; Secure; SameSite=Secure;');
   TestRunner.parseAndDumpSetCookie('cooke1; Path=/; Domain=.example.com;');
   TestRunner.parseAndDumpSetCookie('cooke1=; Path=/; Domain=.example.com;');
+  TestRunner.parseAndDumpSetCookie('cooke1=; Path=/; Domain=.example.com; Priority=High');
+  TestRunner.parseAndDumpSetCookie('cooke1=; Path=/; Domain=.example.com; Priority=Low');
+  TestRunner.parseAndDumpSetCookie('cooke1=; Path=/; Domain=.example.com; Priority=Medium');
   TestRunner.completeTest();
 })();

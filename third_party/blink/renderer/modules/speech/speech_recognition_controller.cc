@@ -66,7 +66,6 @@ void SpeechRecognitionController::Start(
   msg_params->max_hypotheses = max_alternatives;
   msg_params->continuous = continuous;
   msg_params->interim_results = interim_results;
-  msg_params->origin = GetSupplementable()->GetDocument()->GetSecurityOrigin();
   msg_params->client = std::move(session_client);
   msg_params->session_receiver = std::move(session_receiver);
 

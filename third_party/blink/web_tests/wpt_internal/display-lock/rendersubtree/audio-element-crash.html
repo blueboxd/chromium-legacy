@@ -1,0 +1,28 @@
+<!doctype HTML>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<div id="parent">
+    <div id="invisible"></div>
+</div>
+<audio id="audioEl" controls="controls">
+</audio>
+<script>
+let t = async_test('Does not crash');
+let audioEl = document.querySelector('#audioEl');
+function boom1() {
+  audioEl.setAttribute("rendersubtree", "invisible");
+  audioEl.src = "x";
+}
+
+function boom2() {
+  invisible.setAttribute("rendersubtree", "invisible");
+  document.caretRangeFromPoint(1, 2);
+  document.body.appendChild(audioEl);
+  t.done();
+}
+
+onload = () => {
+  parent.addEventListener("DOMSubtreeModified", boom1);
+  setTimeout(boom2, 200);
+};
+</script>

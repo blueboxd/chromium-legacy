@@ -68,6 +68,12 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
   // the proxy.
   RenderFrameProxyHost* CreateProxyAndAttachPortal();
 
+  // Closes the contents associated with this object gracefully, and destroys
+  // itself thereafter. This will fire unload and related event handlers.
+  // Once closing begins, the Portal interface receiver is closed. The host
+  // document can no longer manage the lifetime.
+  void Close();
+
   // blink::mojom::Portal implementation.
   void Navigate(const GURL& url,
                 blink::mojom::ReferrerPtr referrer,
@@ -94,6 +100,7 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
   void LoadingStateChanged(WebContents* source,
                            bool to_different_document) override;
   void PortalWebContentsCreated(WebContents* portal_web_contents) override;
+  void CloseContents(WebContents*) override;
 
   // Returns the token which uniquely identifies this Portal.
   const base::UnguessableToken& portal_token() const { return portal_token_; }
@@ -121,6 +128,57 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
   blink::mojom::PortalClient& client() { return *(client_.get()); }
 
  private:
+  // Manages the relationship between the Portal and its guest WebContents.
+  //
+  // The WebContents may either be:
+  // * owned by this object (via unique_ptr) when it is not attached to the
+  //   FrameTreeNode/WebContents tree, e.g. during activation but before
+  //   adoption
+  // * unowned by this object, in which case it is owned elsewhere, generally
+  //   via by WebContentsTreeNode
+  //
+  // It can transition between these two states. In either state, the Portal
+  // must be configured as the portal and delegate of the WebContents.
+  //
+  // Finally, if the Portal drops its relationship with a WebContents, it must
+  // also stop observing the corresponding outer FrameTreeNode.
+  class WebContentsHolder {
+   public:
+    explicit WebContentsHolder(Portal* portal);
+    WebContentsHolder(const WebContentsHolder&) = delete;
+    ~WebContentsHolder();
+
+    WebContentsHolder& operator=(const WebContentsHolder&) = delete;
+
+    explicit operator bool() const { return contents_; }
+    WebContentsImpl& operator*() const { return *contents_; }
+    WebContentsImpl* operator->() const { return contents_; }
+    WebContentsImpl* get() const { return contents_; }
+    bool OwnsContents() const;
+
+    void SetUnowned(WebContentsImpl*);
+    void SetOwned(std::unique_ptr<WebContents>);
+    void Clear();
+
+    // Maintains a link to the same contents, but yields ownership to the
+    // caller.
+    std::unique_ptr<WebContents> ReleaseOwnership() {
+      DCHECK(OwnsContents());
+      return std::move(owned_contents_);
+    }
+
+   private:
+    // The outer Portal object.
+    Portal* portal_ = nullptr;
+
+    // Non-null, even when the contents is not owned.
+    WebContentsImpl* contents_ = nullptr;
+
+    // When the portal is not attached, the Portal owns its WebContents.
+    // If not null, |owned_contents_| is equal to |contents_|.
+    std::unique_ptr<WebContents> owned_contents_;
+  };
+
   void SetPortalContents(std::unique_ptr<WebContents> web_contents);
 
   RenderFrameHostImpl* owner_render_frame_host_;
@@ -141,9 +199,10 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
   mojo::AssociatedRemote<blink::mojom::PortalClient> client_;
 
   // When the portal is not attached, the Portal owns its WebContents.
-  std::unique_ptr<WebContents> portal_contents_;
+  WebContentsHolder portal_contents_{this};
 
-  WebContentsImpl* portal_contents_impl_ = nullptr;
+  // Set when |Close| is called. Destruction will occur shortly thereafter.
+  bool is_closing_ = false;
 
   // Another implementation of blink::mojom::Portal to bind instead.
   // For use in testing only.

@@ -45,10 +45,12 @@ class PerfDataGeneratorTest(unittest.TestCase):
     try:
       with open(fake_perf_waterfall_file, 'w') as f:
         json.dump(data, f)
-      self.assertEquals(
-          perf_data_generator.get_scheduled_non_telemetry_benchmarks(
-              fake_perf_waterfall_file),
-          {'ninja_test', 'gun_slinger', 'test_dancing', 'test_singing'})
+      benchmarks = perf_data_generator.get_scheduled_non_telemetry_benchmarks(
+          fake_perf_waterfall_file)
+      self.assertIn('ninja_test', benchmarks)
+      self.assertIn('gun_slinger', benchmarks)
+      self.assertIn('test_dancing', benchmarks)
+      self.assertIn('test_singing', benchmarks)
     finally:
       os.remove(fake_perf_waterfall_file)
 
@@ -83,8 +85,8 @@ class TestIsPerfBenchmarksSchedulingValid(unittest.TestCase):
     valid = perf_data_generator.is_perf_benchmarks_scheduling_valid(
         'dummy', self.test_stream)
 
-    self.assertEquals(valid, True)
     self.assertEquals(self.test_stream.getvalue(), '')
+    self.assertEquals(valid, True)
 
   def test_UnscheduledCppBenchmarks(self):
     self.get_non_telemetry_benchmarks.return_value = {'honda'}

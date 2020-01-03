@@ -176,12 +176,12 @@ class CC_EXPORT InputHandler {
   // a subsequent call to ScrollAnimated can begin on the impl thread.
   virtual ScrollStatus ScrollAnimatedBegin(ScrollState* scroll_state) = 0;
 
-  // Returns SCROLL_ON_IMPL_THREAD if an animation is initiated on the impl
-  // thread. delayed_by is the delay that is taken into account when determining
-  // the duration of the animation.
-  virtual ScrollStatus ScrollAnimated(const gfx::Point& viewport_point,
-                                      const gfx::Vector2dF& scroll_delta,
-                                      base::TimeDelta delayed_by) = 0;
+  // |delayed_by| is the delay that is taken into account when determining
+  // the duration of the animation. TODO(bokan): Should eventually be merged
+  // into ScrollBy. https://crbug.com/1016229.
+  virtual void ScrollAnimated(const gfx::Point& viewport_point,
+                              const gfx::Vector2dF& scroll_delta,
+                              base::TimeDelta delayed_by) = 0;
 
   // Scroll the layer selected by |ScrollBegin| by given |scroll_state| delta.
   // Internally, the delta is transformed to local layer's coordinate space for

@@ -73,7 +73,7 @@ void OnGetFileInfo(int fields,
   if (fields & storage::FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY)
     file_info.is_directory = *metadata->is_directory;
   if (fields & storage::FileSystemOperation::GET_METADATA_FIELD_SIZE)
-    file_info.size = *metadata->size;
+    file_info.size = std::max(int64_t{0}, *metadata->size);
 
   if (fields & storage::FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED) {
     file_info.last_modified = *metadata->modification_time;

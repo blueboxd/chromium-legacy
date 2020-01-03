@@ -150,9 +150,9 @@ suite(advanced_item_test.suiteName, function() {
   // Test that the setting is displayed correctly when the search query
   // matches its display name.
   test(assert(advanced_item_test.TestNames.QueryName), function() {
-    const query = /(Type)/i;
+    const query = /(Type)/ig;
     assertTrue(item.hasMatch(query));
-    item.updateHighlighting(query);
+    item.updateHighlighting(query, new Map);
 
     const label = item.$$('.label');
     assertEquals(
@@ -173,9 +173,9 @@ suite(advanced_item_test.suiteName, function() {
   // Test that the setting is displayed correctly when the search query
   // matches one of the select options.
   test(assert(advanced_item_test.TestNames.QueryOption), function() {
-    const query = /(cycle)/i;
+    const query = /(cycle)/ig;
     assertTrue(item.hasMatch(query));
-    item.updateHighlighting(query);
+    item.updateHighlighting(query, new Map);
 
     const label = item.$$('.label');
     assertEquals('Paper Type', label.textContent);
@@ -188,6 +188,6 @@ suite(advanced_item_test.suiteName, function() {
     assertEquals(0, control.querySelectorAll('.search-highlight-hit').length);
     const searchBubbleHits = control.querySelectorAll('.search-bubble');
     assertEquals(1, searchBubbleHits.length);
-    assertEquals('cycle', searchBubbleHits[0].textContent);
+    assertEquals('1 result', searchBubbleHits[0].textContent);
   });
 });

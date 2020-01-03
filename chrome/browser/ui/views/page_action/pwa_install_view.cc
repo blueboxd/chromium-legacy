@@ -75,3 +75,7 @@ base::string16 PwaInstallView::GetTextForTooltipAndAccessibleName() const {
       IDS_OMNIBOX_PWA_INSTALL_ICON_TOOLTIP,
       banners::AppBannerManager::GetInstallableWebAppName(web_contents));
 }
+
+const char* PwaInstallView::GetClassName() const {
+  return "PwaInstallView";
+}

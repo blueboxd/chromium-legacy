@@ -91,6 +91,9 @@ def _PerformExtract(aar_file, output_dir, name_whitelist):
     os.mkdir(tmp_dir)
     build_utils.ExtractAll(
         aar_file, path=tmp_dir, predicate=name_whitelist.__contains__)
+    # Write a breadcrumb so that SuperSize can attribute files back to the .aar.
+    with open(os.path.join(tmp_dir, 'source.info'), 'w') as f:
+      f.write('source={}\n'.format(aar_file))
     shutil.rmtree(output_dir, ignore_errors=True)
     shutil.move(tmp_dir, output_dir)
 
@@ -147,10 +150,12 @@ def main():
       if args.ignore_resources:
         names = [n for n in names if not n.startswith('res')]
 
+    output_paths = [os.path.join(args.output_dir, n) for n in names]
+    output_paths.append(os.path.join(args.output_dir, 'source.info'))
     md5_check.CallAndRecordIfStale(
         lambda: _PerformExtract(args.aar_file, args.output_dir, set(names)),
         input_paths=[args.aar_file],
-        output_paths=[os.path.join(args.output_dir, n) for n in names])
+        output_paths=output_paths)
 
   elif args.command == 'list':
     aar_output_present = args.output != '-' and os.path.isfile(args.output)

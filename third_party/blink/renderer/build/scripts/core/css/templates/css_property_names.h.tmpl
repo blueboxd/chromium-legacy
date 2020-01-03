@@ -17,6 +17,8 @@ class String;
 
 namespace blink {
 
+class ExecutionContext;
+
 enum class CSSPropertyID {
     kInvalid = 0,
     kVariable = 1,
@@ -66,9 +68,10 @@ inline CSSPropertyID resolveCSSPropertyID(CSSPropertyID id)
 
 inline bool isPropertyAlias(CSSPropertyID id) { return static_cast<int>(id) & {{alias_offset}}; }
 
-CSSPropertyID CORE_EXPORT unresolvedCSSPropertyID(const WTF::String&);
+CSSPropertyID CORE_EXPORT unresolvedCSSPropertyID(const ExecutionContext*, const WTF::String&);
 
 CSSPropertyID CORE_EXPORT cssPropertyID(const WTF::String&);
+CSSPropertyID CORE_EXPORT cssPropertyID(const ExecutionContext*, const WTF::String&);
 
 class CSSPropertyIDList {
   STACK_ALLOCATED();

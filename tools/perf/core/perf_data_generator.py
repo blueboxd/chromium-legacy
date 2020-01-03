@@ -339,7 +339,7 @@ BUILDERS = {
         'isolate': 'performance_test_suite',
       }
     ],
-    'platform': 'android-chrome',
+    'platform': 'android-chrome-bundle',
     'dimension': {
       'device_os': 'OMB1.180119.001',
       'device_type': 'gobo',
@@ -504,7 +504,7 @@ BUILDERS = {
         'isolate': 'performance_test_suite',
       }
     ],
-    'platform': 'android-chrome',
+    'platform': 'android-chrome-bundle',
     'dimension': {
       'pool': 'chrome.tests.perf',
       'os': 'Android',
@@ -600,21 +600,6 @@ BUILDERS = {
       {
         'isolate': 'performance_test_suite',
       },
-      {
-        'isolate': 'load_library_perf_tests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
-      },
-      {
-        'isolate': 'components_perftests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
-      },
-      {
-        'isolate': 'media_perftests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
-      }
     ],
     'platform': 'win',
     'target_bits': 32,
@@ -631,41 +616,6 @@ BUILDERS = {
         'isolate': 'performance_test_suite',
         'extra_args': [
             '--assert-gpu-compositing',
-        ],
-      },
-      {
-        'isolate': 'load_library_perf_tests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
-      },
-      {
-        'isolate': 'angle_perftests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
-      },
-      {
-        'isolate': 'media_perftests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
-      },
-      {
-        'name': 'passthrough_command_buffer_perftests',
-        'isolate': 'command_buffer_perftests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
-        'extra_args': [
-            '--use-cmd-decoder=passthrough',
-            '--use-angle=gl-null',
-        ],
-      },
-      {
-        'name': 'validating_command_buffer_perftests',
-        'isolate': 'command_buffer_perftests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
-        'extra_args': [
-            '--use-cmd-decoder=validating',
-            '--use-stub',
         ],
       },
     ],
@@ -760,31 +710,6 @@ BUILDERS = {
         'extra_args': [
           '--assert-gpu-compositing',
         ],
-      },
-      {
-        'isolate': 'performance_browser_tests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
-      },
-      {
-        'isolate': 'net_perftests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
-      },
-      {
-        'isolate': 'views_perftests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
-      },
-      {
-        'isolate': 'media_perftests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
-      },
-      {
-        'isolate': 'base_perftests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
       },
     ],
     'platform': 'mac',
@@ -970,6 +895,10 @@ def get_scheduled_non_telemetry_benchmarks(perf_waterfall_file):
                     'performance_webview_test_suite',
                     'performance_weblayer_test_suite'):
       test_names.add(name)
+
+  for platform in bot_platforms.ALL_PLATFORMS:
+    for executable in platform.executables:
+      test_names.add(executable.name)
 
   return test_names
 

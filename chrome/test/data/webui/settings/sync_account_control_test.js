@@ -128,7 +128,10 @@ cr.define('settings_sync_account_control', function() {
 
       assertVisible(testElement.$$('#promo-header'), true);
       assertVisible(testElement.$$('#avatar-row'), false);
-      assertVisible(testElement.$$('#menu'), false);
+      // Chrome OS does not use the account switch menu.
+      if (!cr.isChromeOS) {
+        assertVisible(testElement.$$('#menu'), false);
+      }
       assertVisible(testElement.$$('#sign-in'), true);
 
       testElement.$$('#sign-in').click();
@@ -136,6 +139,10 @@ cr.define('settings_sync_account_control', function() {
     });
 
     test('not signed in but has stored accounts', function() {
+      // Chrome OS users are always signed in.
+      if (cr.isChromeOS) {
+        return;
+      }
       testElement.syncStatus = {
         firstSetupInProgress: false,
         signedIn: false,
@@ -241,11 +248,14 @@ cr.define('settings_sync_account_control', function() {
       Polymer.dom.flush();
 
       assertVisible(testElement.$$('#avatar-row'), true);
-      assertVisible(testElement.$$('cr-icon-button'), false);
       assertVisible(testElement.$$('#promo-header'), false);
       assertFalse(testElement.$$('#sync-icon-container').hidden);
 
-      assertFalse(!!testElement.$$('#menu'));
+      // Chrome OS does not use the account switch menu.
+      if (!cr.isChromeOS) {
+        assertVisible(testElement.$$('cr-icon-button'), false);
+        assertFalse(!!testElement.$$('#menu'));
+      }
 
       const userInfo = testElement.$$('#user-info');
       assertTrue(userInfo.textContent.includes('barName'));

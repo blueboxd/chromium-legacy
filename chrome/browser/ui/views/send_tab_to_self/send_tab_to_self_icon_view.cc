@@ -85,6 +85,10 @@ const gfx::VectorIcon& SendTabToSelfIconView::GetVectorIcon() const {
   return kSendTabToSelfIcon;
 }
 
+const char* SendTabToSelfIconView::GetClassName() const {
+  return "SendTabToSelfIconView";
+}
+
 SkColor SendTabToSelfIconView::GetForegroundColor() const {
   return GetOmniboxColor(GetThemeProvider(),
                          OmniboxPart::LOCATION_BAR_TEXT_DEFAULT);

@@ -218,9 +218,38 @@ _OFFICIAL_EXCEPT_DISPLAY_LOCKING_JETSTREAM2 = PerfSuite(
         ['blink_perf.display_locking', 'jetstream2'])
 
 _TRACING_PERFTESTS = ExecutableConfig('tracing_perftests', estimated_runtime=50)
-_COMPONENTS_PERFTESTS = ExecutableConfig('components_perftests',
-                                         estimated_runtime=110)
+_COMPONENTS_PERFTESTS = ExecutableConfig(
+    'components_perftests', flags=[
+        '--xvfb',
+    ], estimated_runtime=110,)
 _GPU_PERFTESTS = ExecutableConfig('gpu_perftests', estimated_runtime=60)
+_LOAD_LIBRARY_PERF_TESTS = ExecutableConfig(
+    'load_library_perf_tests', estimated_runtime=3)
+_MEDIA_PERFTESTS = ExecutableConfig(
+    'media_perftests', flags=[
+        '--single-process-tests', '--test-launcher-retry-limit=0',
+        '--isolated-script-test-filter=*::-*_unoptimized::*_unaligned::'
+        '*unoptimized_aligned',
+    ], estimated_runtime=16)
+_ANGLE_PERFTESTS = ExecutableConfig(
+    'angle_perftests', flags=[
+        '--test-launcher-retry-limit=0',
+        '--test-launcher-jobs=1',
+    ], estimated_runtime=1988)
+_PASSTHROUGH_COMMAND_BUFFER_PERFTESTS = ExecutableConfig(
+    'passthrough_command_buffer_perftests',
+    path='command_buffer_perftests',
+    flags=[
+        '--use-cmd-decoder=passthrough',
+        '--use-angle=gl-null',
+    ], estimated_runtime=30)
+_VALIDATING_COMMAND_BUFFER_PERFTESTS = ExecutableConfig(
+    'validating_command_buffer_perftests',
+    path='command_buffer_perftests',
+    flags=[
+        '--use-cmd-decoder=validating',
+        '--use-stub',
+    ], estimated_runtime=23)
 
 _LINUX_BENCHMARK_CONFIGS = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
 _MAC_HIGH_END_BENCHMARK_CONFIGS = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
@@ -231,7 +260,13 @@ _WIN_10_LOW_END_HP_CANDIDATE_BENCHMARK_CONFIGS = PerfSuite(
     [_GetBenchmarkConfig('v8.browsing_desktop')])
 _WIN_7_BENCHMARK_CONFIGS = PerfSuite(
     _OFFICIAL_EXCEPT_DISPLAY_LOCKING_JETSTREAM2).Remove(['rendering.desktop'])
+_WIN_7_EXECUTABLE_CONFIGS = frozenset([
+    _LOAD_LIBRARY_PERF_TESTS, _COMPONENTS_PERFTESTS, _MEDIA_PERFTESTS])
 _WIN_7_GPU_BENCHMARK_CONFIGS = _OFFICIAL_EXCEPT_DISPLAY_LOCKING_JETSTREAM2
+_WIN_7_GPU_EXECUTABLE_CONFIGS = frozenset([
+    _LOAD_LIBRARY_PERF_TESTS, _ANGLE_PERFTESTS, _MEDIA_PERFTESTS,
+    _PASSTHROUGH_COMMAND_BUFFER_PERFTESTS,
+    _VALIDATING_COMMAND_BUFFER_PERFTESTS])
 _ANDROID_GO_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('system_health.memory_mobile'),
     _GetBenchmarkConfig('system_health.common_mobile'),
@@ -309,10 +344,10 @@ WIN_10 = PerfPlatform(
     26, 'win')
 WIN_7 = PerfPlatform(
     'Win 7 Perf', 'N/A', _WIN_7_BENCHMARK_CONFIGS,
-    5, 'win')
+    4, 'win', executables=_WIN_7_EXECUTABLE_CONFIGS)
 WIN_7_GPU = PerfPlatform(
     'Win 7 Nvidia GPU Perf', 'N/A', _WIN_7_GPU_BENCHMARK_CONFIGS,
-    5, 'win')
+    4, 'win', executables=_WIN_7_GPU_EXECUTABLE_CONFIGS)
 
 # Android
 ANDROID_GO = PerfPlatform(

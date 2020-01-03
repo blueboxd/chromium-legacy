@@ -37,7 +37,7 @@ class UserChooserDetailedViewControllerTest : public AshTestBase {
   // AshTestBase
   void SetUp() override {
     AshTestBase::SetUp();
-    tray_test_api_ = ash::SystemTrayTestApi::Create();
+    tray_test_api_ = SystemTrayTestApi::Create();
     tray_test_api_->DisableAnimations();
   }
 

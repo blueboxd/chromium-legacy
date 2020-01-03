@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/common/input/event_with_latency_info.h"
 #include "content/public/common/content_features.h"
@@ -18,10 +19,10 @@
 
 namespace content {
 
-class MockTouchpadPinchEventQueueClient : public TouchpadPinchEventQueueClient {
+class MockTouchpadPinchEventQueueClient {
  public:
   MockTouchpadPinchEventQueueClient() = default;
-  ~MockTouchpadPinchEventQueueClient() override = default;
+  ~MockTouchpadPinchEventQueueClient() = default;
 
   // TouchpadPinchEventQueueClient
   MOCK_METHOD1(SendMouseWheelEventForPinchImmediately,
@@ -32,7 +33,8 @@ class MockTouchpadPinchEventQueueClient : public TouchpadPinchEventQueueClient {
                     InputEventAckState ack_result));
 };
 
-class TouchpadPinchEventQueueTest : public testing::TestWithParam<bool> {
+class TouchpadPinchEventQueueTest : public testing::TestWithParam<bool>,
+                                    public TouchpadPinchEventQueueClient {
  protected:
   TouchpadPinchEventQueueTest() : async_events_enabled_(GetParam()) {
     if (async_events_enabled_) {
@@ -42,7 +44,7 @@ class TouchpadPinchEventQueueTest : public testing::TestWithParam<bool> {
       scoped_feature_list_.InitAndDisableFeature(
           features::kTouchpadAsyncPinchEvents);
     }
-    queue_ = std::make_unique<TouchpadPinchEventQueue>(&mock_client_);
+    queue_ = std::make_unique<TouchpadPinchEventQueue>(this);
   }
   ~TouchpadPinchEventQueueTest() = default;
 
@@ -101,17 +103,39 @@ class TouchpadPinchEventQueueTest : public testing::TestWithParam<bool> {
     QueueEvent(event);
   }
 
+  using HandleEventCallback =
+      base::OnceCallback<void(InputEventAckSource ack_source,
+                              InputEventAckState ack_result)>;
+
   void SendWheelEventAck(InputEventAckSource ack_source,
                          InputEventAckState ack_result) {
-    const MouseWheelEventWithLatencyInfo mouse_event_with_latency_info(
-        queue_->get_wheel_event_awaiting_ack_for_testing(), ui::LatencyInfo());
-    queue_->ProcessMouseWheelAck(ack_source, ack_result,
-                                 mouse_event_with_latency_info);
+    std::move(callbacks_.front()).Run(ack_source, ack_result);
+    callbacks_.pop_front();
+  }
+
+  void SendMouseWheelEventForPinchImmediately(
+      const MouseWheelEventWithLatencyInfo& event,
+      MouseWheelEventHandledCallback callback) override {
+    mock_client_.SendMouseWheelEventForPinchImmediately(event);
+    callbacks_.emplace_back(base::BindOnce(
+        [](MouseWheelEventHandledCallback callback,
+           const MouseWheelEventWithLatencyInfo& event,
+           InputEventAckSource ack_source, InputEventAckState ack_result) {
+          std::move(callback).Run(event, ack_source, ack_result);
+        },
+        std::move(callback), event));
+  }
+
+  void OnGestureEventForPinchAck(const GestureEventWithLatencyInfo& event,
+                                 InputEventAckSource ack_source,
+                                 InputEventAckState ack_result) override {
+    mock_client_.OnGestureEventForPinchAck(event, ack_source, ack_result);
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
   testing::StrictMock<MockTouchpadPinchEventQueueClient> mock_client_;
   std::unique_ptr<TouchpadPinchEventQueue> queue_;
+  base::circular_deque<HandleEventCallback> callbacks_;
   const bool async_events_enabled_;
 };
 
@@ -643,19 +667,6 @@ TEST_P(TouchpadPinchEventQueueTest, IgnoreNonMatchingEvents) {
   QueuePinchBegin();
   QueuePinchUpdate(1.23, false);
   QueuePinchEnd();
-
-  // Create a fake end event to give to ProcessMouseWheelAck to confirm that
-  // it correctly filters this event out and doesn't start processing the ack.
-  blink::WebMouseWheelEvent fake_end_event(
-      blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kControlKey,
-      blink::WebInputEvent::GetStaticTimeStampForTests());
-  fake_end_event.dispatch_type = blink::WebMouseWheelEvent::kBlocking;
-  fake_end_event.phase = blink::WebMouseWheelEvent::kPhaseEnded;
-  const MouseWheelEventWithLatencyInfo fake_end_event_with_latency_info(
-      fake_end_event, ui::LatencyInfo());
-  queue_->ProcessMouseWheelAck(InputEventAckSource::MAIN_THREAD,
-                               INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
-                               fake_end_event_with_latency_info);
 
   SendWheelEventAck(InputEventAckSource::MAIN_THREAD,
                     INPUT_EVENT_ACK_STATE_CONSUMED);

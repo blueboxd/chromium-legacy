@@ -69,7 +69,7 @@ suite(destination_list_test.suiteName, function() {
     assertTrue(noMatchHint.hidden);
 
     // Searching for "e" should show "One", "Three", and "Five".
-    list.searchQuery = /(e)/i;
+    list.searchQuery = /(e)/ig;
     flush();
     assertEquals(undefined, Array.from(items).find(item => {
       return !item.hidden &&
@@ -79,7 +79,7 @@ suite(destination_list_test.suiteName, function() {
     assertTrue(noMatchHint.hidden);
 
     // Searching for "ABC" should show "One" and "Three".
-    list.searchQuery = /(ABC)/i;
+    list.searchQuery = /(ABC)/ig;
     flush();
     assertEquals(undefined, Array.from(items).find(item => {
       return !item.hidden && item.destination.displayName != 'One' &&
@@ -88,7 +88,7 @@ suite(destination_list_test.suiteName, function() {
     assertTrue(noMatchHint.hidden);
 
     // Searching for "F" should show "Four" and "Five"
-    list.searchQuery = /(F)/i;
+    list.searchQuery = /(F)/ig;
     flush();
     assertEquals(undefined, Array.from(items).find(item => {
       return !item.hidden && item.destination.displayName != 'Four' &&
@@ -98,13 +98,13 @@ suite(destination_list_test.suiteName, function() {
 
     // Searching for UVW should show no destinations and display the "no
     // match" hint.
-    list.searchQuery = /(UVW)/i;
+    list.searchQuery = /(UVW)/ig;
     flush();
     items.forEach(item => assertTrue(item.hidden));
     assertFalse(noMatchHint.hidden);
 
     // Searching for 123 should show destinations "Three", "Four", and "Five".
-    list.searchQuery = /(123)/i;
+    list.searchQuery = /(123)/ig;
     flush();
     assertEquals(undefined, Array.from(items).find(item => {
       return !item.hidden &&
@@ -114,7 +114,7 @@ suite(destination_list_test.suiteName, function() {
     assertTrue(noMatchHint.hidden);
 
     // Clearing the query restores the original state.
-    list.searchQuery = /()/i;
+    list.searchQuery = /()/ig;
     flush();
     items.forEach(item => assertFalse(item.hidden));
     assertTrue(noMatchHint.hidden);

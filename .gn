@@ -662,4 +662,5 @@ exec_script_whitelist =
       "//remoting/host/installer/win/generate_clsids.gni",
 
       "//tools/grit/grit_rule.gni",
+      "//tools/gritsettings/BUILD.gn",
     ]

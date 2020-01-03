@@ -46,24 +46,6 @@ cast_source_set("processing") {
   cflags = [ "-ffast-math" ]
 }
 
-cast_source_set("audio_resampler") {
-  sources = [
-    "audio_resampler.cc",
-    "audio_resampler.h",
-  ]
-
-  deps = [
-    "//base",
-    "//chromecast/media/cma/base",
-    "//media",
-  ]
-
-  # Use fastest possible float math.
-  configs -= [ "//build/config/compiler:default_optimization" ]
-  configs += [ "//build/config/compiler:optimize_speed" ]
-  cflags = [ "-ffast-math" ]
-}
-
 cast_source_set("audio") {
   sources = [
     "cast_audio_input_stream.cc",

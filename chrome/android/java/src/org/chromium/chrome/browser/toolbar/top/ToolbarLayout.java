@@ -804,7 +804,7 @@ public abstract class ToolbarLayout
         if (getLocationBar() != null) {
             getLocationBar().setUrlBarFocus(false, null, LocationBar.OmniboxFocusReason.UNFOCUS);
         }
-        return mToolbarTabController != null && mToolbarTabController.back() != null;
+        return mToolbarTabController != null && mToolbarTabController.back();
     }
 
     /**

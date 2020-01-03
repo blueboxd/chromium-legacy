@@ -43,7 +43,8 @@ namespace blink {
 bool DOMWindowCSS::supports(const ExecutionContext* execution_context,
                             const String& property,
                             const String& value) {
-  CSSPropertyID unresolved_property = unresolvedCSSPropertyID(property);
+  CSSPropertyID unresolved_property =
+      unresolvedCSSPropertyID(execution_context, property);
   if (unresolved_property == CSSPropertyID::kInvalid)
     return false;
   if (unresolved_property == CSSPropertyID::kVariable) {
@@ -59,7 +60,7 @@ bool DOMWindowCSS::supports(const ExecutionContext* execution_context,
 
 #if DCHECK_IS_ON()
   DCHECK(CSSProperty::Get(resolveCSSPropertyID(unresolved_property))
-             .IsWebExposed());
+             .IsWebExposed(execution_context));
 #endif
 
   // This will return false when !important is present

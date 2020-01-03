@@ -32,6 +32,7 @@
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
+#include "chrome/browser/sync/test/integration/sync_disabled_checker.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "chrome/browser/ui/browser.h"
@@ -941,7 +942,17 @@ void SyncTest::ResetSyncForPrimaryAccount() {
     // clearing.
     SetupSyncNoWaitingForCompletion();
     GetClient(0)->ResetSyncForPrimaryAccount();
-    GetClient(0)->StopSyncServiceAndClearData();
+    // After reset account, the client should get a NOT_MY_BIRTHDAY error
+    // and disable sync. Adding a wait to make sure this is propagated.
+    ASSERT_TRUE(SyncDisabledChecker(GetSyncService(0)).Wait());
+    CloseBrowserSynchronously(browsers_[0]);
+    // After reset, this client will disable sync. It may log some messages
+    // that do not contribute to test failures. It includes:
+    //   PostClientToServerMessage with SERVER_RETURN_NOT_MY_BIRTHDAY
+    //   PostClientToServerMessage with NETWORK_CONNECTION_UNAVAILABLE
+    //   mcs_client fails with 401.
+    LOG(WARNING) << "Finished reset account. Warning logs before "
+                 << "this log may be safe to ignore.";
     ClearProfiles();
     use_new_user_data_dir_ = old_use_new_user_data_dir;
     num_clients_ = old_num_clients;

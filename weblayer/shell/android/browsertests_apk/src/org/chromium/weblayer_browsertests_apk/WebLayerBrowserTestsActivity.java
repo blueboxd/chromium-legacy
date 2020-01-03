@@ -77,7 +77,7 @@ public class WebLayerBrowserTestsActivity extends NativeBrowserTestActivity {
                 new RelativeLayout.LayoutParams(
                         LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 
-        Fragment fragment = WebLayer.createBrowserFragment(null);
+        Fragment fragment = WebLayer.createBrowserFragment("BrowserTestProfile");
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.add(viewId, fragment);

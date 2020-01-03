@@ -39,6 +39,7 @@ class ReaderModeIconView : public PageActionIconView,
   void UpdateImpl() override;
   const gfx::VectorIcon& GetVectorIcon() const override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;
+  const char* GetClassName() const override;
 
   // GetBubble() is required by PageActionIconView; however, the icon
   // intentionally does not display a bubble when activated.

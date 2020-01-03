@@ -27,7 +27,7 @@ import org.chromium.chrome.browser.util.KeyNavigationUtil;
  */
 public class BaseSuggestionView extends SimpleHorizontalLayoutView {
     protected final ImageView mActionView;
-    protected final DecoratedSuggestionView mContentView;
+    protected final DecoratedSuggestionView mDecoratedView;
 
     private SuggestionViewDelegate mDelegate;
 
@@ -44,14 +44,14 @@ public class BaseSuggestionView extends SimpleHorizontalLayoutView {
         @DrawableRes
         int selectableBackgroundRes = themeRes.resourceId;
 
-        mContentView = new DecoratedSuggestionView(getContext(), selectableBackgroundRes);
-        mContentView.setOnClickListener(v -> mDelegate.onSelection());
-        mContentView.setOnLongClickListener(v -> {
+        mDecoratedView = new DecoratedSuggestionView(getContext(), selectableBackgroundRes);
+        mDecoratedView.setOnClickListener(v -> mDelegate.onSelection());
+        mDecoratedView.setOnLongClickListener(v -> {
             mDelegate.onLongPress();
             return true;
         });
-        mContentView.setLayoutParams(LayoutParams.forDynamicView());
-        addView(mContentView);
+        mDecoratedView.setLayoutParams(LayoutParams.forDynamicView());
+        addView(mDecoratedView);
 
         // Action icons. Currently we only support the Refine button.
         mActionView = new ImageView(getContext());
@@ -106,7 +106,7 @@ public class BaseSuggestionView extends SimpleHorizontalLayoutView {
 
     @Override
     public void setSelected(boolean selected) {
-        mContentView.setSelected(selected);
+        mDecoratedView.setSelected(selected);
         mDelegate.onSetUrlToSuggestion();
     }
 
@@ -116,12 +116,17 @@ public class BaseSuggestionView extends SimpleHorizontalLayoutView {
      * @param view View to be displayed as suggestion content.
      */
     void setContentView(View view) {
-        mContentView.setContentView(view);
+        mDecoratedView.setContentView(view);
     }
 
     /** @return Embedded suggestion content view. */
     public View getContentView() {
-        return mContentView.getContentView();
+        return mDecoratedView.getContentView();
+    }
+
+    /** @return Decorated suggestion view. */
+    DecoratedSuggestionView getDecoratedSuggestionView() {
+        return mDecoratedView;
     }
 
     /**
@@ -135,7 +140,7 @@ public class BaseSuggestionView extends SimpleHorizontalLayoutView {
 
     /** @return Widget holding suggestion decoration icon. */
     RoundedCornerImageView getSuggestionImageView() {
-        return mContentView.getImageView();
+        return mDecoratedView.getImageView();
     }
 
     /** @return Widget holding action icon. */
@@ -153,6 +158,6 @@ public class BaseSuggestionView extends SimpleHorizontalLayoutView {
      * @return View with the specified ID or null, if view could not be found.
      */
     public <T extends View> T findContentView(@IdRes int id) {
-        return mContentView.findContentView(id);
+        return mDecoratedView.findContentView(id);
     }
 }

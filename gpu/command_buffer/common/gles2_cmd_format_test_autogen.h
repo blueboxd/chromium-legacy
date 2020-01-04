@@ -4443,17 +4443,20 @@ TEST_F(GLES2FormatTest, FlushMappedBufferRange) {
 
 TEST_F(GLES2FormatTest, ResizeCHROMIUM) {
   cmds::ResizeCHROMIUM& cmd = *GetBufferAs<cmds::ResizeCHROMIUM>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLuint>(11),
-                           static_cast<GLuint>(12), static_cast<GLfloat>(13),
-                           static_cast<GLenum>(14), static_cast<GLboolean>(15));
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLint>(11), static_cast<GLint>(12),
+                           static_cast<GLfloat>(13), static_cast<GLboolean>(14),
+                           static_cast<GLuint>(15), static_cast<GLuint>(16),
+                           static_cast<GLsizei>(17));
   EXPECT_EQ(static_cast<uint32_t>(cmds::ResizeCHROMIUM::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLuint>(11), cmd.width);
-  EXPECT_EQ(static_cast<GLuint>(12), cmd.height);
+  EXPECT_EQ(static_cast<GLint>(11), cmd.width);
+  EXPECT_EQ(static_cast<GLint>(12), cmd.height);
   EXPECT_EQ(static_cast<GLfloat>(13), cmd.scale_factor);
-  EXPECT_EQ(static_cast<GLenum>(14), cmd.color_space);
-  EXPECT_EQ(static_cast<GLboolean>(15), cmd.alpha);
+  EXPECT_EQ(static_cast<GLboolean>(14), cmd.alpha);
+  EXPECT_EQ(static_cast<GLuint>(15), cmd.shm_id);
+  EXPECT_EQ(static_cast<GLuint>(16), cmd.shm_offset);
+  EXPECT_EQ(static_cast<GLsizei>(17), cmd.color_space_size);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 

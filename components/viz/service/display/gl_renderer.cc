@@ -3485,8 +3485,7 @@ void GLRenderer::ScheduleDCLayers() {
     DCHECK(texture_ids[0]);
     // TODO(sunnyps): Set color space in renderer like we do for tiles.
     gl_->SetColorSpaceMetadataCHROMIUM(
-        texture_ids[0],
-        reinterpret_cast<GLColorSpace>(&dc_layer_overlay.color_space));
+        texture_ids[0], dc_layer_overlay.color_space.AsGLColorSpace());
 
     int z_order = dc_layer_overlay.z_order;
     const gfx::Rect& content_rect = dc_layer_overlay.content_rect;

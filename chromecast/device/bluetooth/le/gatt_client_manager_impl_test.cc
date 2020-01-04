@@ -273,7 +273,8 @@ TEST_F(GattClientManagerTest, RemoteDeviceConnect) {
 
   // First connect request fails right away.
   EXPECT_CALL(*gatt_client_, Connect(kTestAddr1)).WillOnce(Return(false));
-  EXPECT_CALL(*gatt_client_, ClearPendingConnect(kTestAddr1)).WillOnce(Return(true));
+  EXPECT_CALL(*gatt_client_, ClearPendingConnect(kTestAddr1))
+      .WillOnce(Return(true));
   EXPECT_CALL(cb_, Run(false));
   device->Connect(cb_.Get());
   EXPECT_FALSE(device->IsConnected());
@@ -483,7 +484,8 @@ TEST_F(GattClientManagerTest, ConnectTimeout) {
 
   // Let Connect request timeout
   // We should expect to receive Connect failure message
-  EXPECT_CALL(*gatt_client_, ClearPendingConnect(kTestAddr1)).WillOnce(Return(true));
+  EXPECT_CALL(*gatt_client_, ClearPendingConnect(kTestAddr1))
+      .WillOnce(Return(true));
   EXPECT_CALL(cb_, Run(false));
   task_environment_.FastForwardBy(GattClientManagerImpl::kConnectTimeout);
   EXPECT_FALSE(device->IsConnected());
@@ -610,7 +612,8 @@ TEST_F(GattClientManagerTest, DisconnectAllTimeout) {
   gatt_client_manager_->DisconnectAll(cb.Get());
 
   // Let the fist Disconnect request timeout
-  EXPECT_CALL(*gatt_client_, ClearPendingDisconnect(kTestAddr1)).WillOnce(Return(true));;
+  EXPECT_CALL(*gatt_client_, ClearPendingDisconnect(kTestAddr1))
+      .WillOnce(Return(true));
 
   // We should expect to receive DisconnectAll failure message
   EXPECT_CALL(cb, Run(false));
@@ -1092,30 +1095,32 @@ TEST_F(GattClientManagerTest, WriteType) {
   const std::vector<uint8_t> kTestData1 = {0x1, 0x2, 0x3};
 
   bluetooth_v2_shlib::Gatt::Service service;
-  bluetooth_v2_shlib::Gatt::Characteristic characteristic;
 
   service.uuid = {{0x1}};
   service.handle = 0x1;
   service.primary = true;
 
-  characteristic.uuid = {{0x1, 0x1}};
-  characteristic.handle = 0x2;
-  characteristic.permissions = bluetooth_v2_shlib::Gatt::PERMISSION_WRITE;
-  characteristic.properties = bluetooth_v2_shlib::Gatt::PROPERTY_WRITE;
-  service.characteristics.push_back(characteristic);
+  {
+    bluetooth_v2_shlib::Gatt::Characteristic characteristic;
+    characteristic.uuid = {{0x1, 0x1}};
+    characteristic.handle = 0x2;
+    characteristic.permissions = bluetooth_v2_shlib::Gatt::PERMISSION_WRITE;
+    characteristic.properties = bluetooth_v2_shlib::Gatt::PROPERTY_WRITE;
+    service.characteristics.push_back(characteristic);
 
-  characteristic.uuid = {{0x1, 0x2}};
-  characteristic.handle = 0x3;
-  characteristic.permissions = bluetooth_v2_shlib::Gatt::PERMISSION_WRITE;
-  characteristic.properties =
-      bluetooth_v2_shlib::Gatt::PROPERTY_WRITE_NO_RESPONSE;
-  service.characteristics.push_back(characteristic);
+    characteristic.uuid = {{0x1, 0x2}};
+    characteristic.handle = 0x3;
+    characteristic.permissions = bluetooth_v2_shlib::Gatt::PERMISSION_WRITE;
+    characteristic.properties =
+        bluetooth_v2_shlib::Gatt::PROPERTY_WRITE_NO_RESPONSE;
+    service.characteristics.push_back(characteristic);
 
-  characteristic.uuid = {{0x1, 0x3}};
-  characteristic.handle = 0x4;
-  characteristic.permissions = bluetooth_v2_shlib::Gatt::PERMISSION_WRITE;
-  characteristic.properties = bluetooth_v2_shlib::Gatt::PROPERTY_SIGNED_WRITE;
-  service.characteristics.push_back(characteristic);
+    characteristic.uuid = {{0x1, 0x3}};
+    characteristic.handle = 0x4;
+    characteristic.permissions = bluetooth_v2_shlib::Gatt::PERMISSION_WRITE;
+    characteristic.properties = bluetooth_v2_shlib::Gatt::PROPERTY_SIGNED_WRITE;
+    service.characteristics.push_back(characteristic);
+  }
 
   Connect(kTestAddr1);
   bluetooth_v2_shlib::Gatt::Client::Delegate* delegate =

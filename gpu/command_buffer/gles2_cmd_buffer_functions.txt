@@ -303,7 +303,7 @@ GL_APICALL GLboolean    GL_APIENTRY glUnmapBuffer (GLenumBufferTarget target);
 GL_APICALL void         GL_APIENTRY glFlushMappedBufferRange (GLenumBufferTarget target, GLintptrNotNegative offset, GLsizeiptr size);
 GL_APICALL void*        GL_APIENTRY glMapTexSubImage2DCHROMIUM (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, GLenum access);
 GL_APICALL void         GL_APIENTRY glUnmapTexSubImage2DCHROMIUM (const void* mem);
-GL_APICALL void         GL_APIENTRY glResizeCHROMIUM (GLuint width, GLuint height, GLfloat scale_factor, GLenum color_space, GLboolean alpha);
+GL_APICALL void         GL_APIENTRY glResizeCHROMIUM (GLuint width, GLuint height, GLfloat scale_factor, GLcolorSpace color_space, GLboolean alpha);
 GL_APICALL const GLchar* GL_APIENTRY glGetRequestableExtensionsCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glRequestExtensionCHROMIUM (const char* extension);
 GL_APICALL void         GL_APIENTRY glGetProgramInfoCHROMIUM (GLidProgram program, GLsizeiNotNegative bufsize, GLsizei* size, void* info);
@@ -409,7 +409,7 @@ GL_APICALL bool         GL_APIENTRY glLockDiscardableTextureCHROMIUM (GLuint tex
 GL_APICALL void         GL_APIENTRY glTexStorage2DImageCHROMIUM (GLenumTextureBindTarget target, GLenumTextureInternalFormatStorage internalFormat, GLenumClientBufferUsage bufferUsage, GLsizei width, GLsizei height);
 
 // Extension CHROMIUM_color_space_metadata
-GL_APICALL void         GL_APIENTRY glSetColorSpaceMetadataCHROMIUM (GLuint texture_id, GLColorSpace color_space);
+GL_APICALL void         GL_APIENTRY glSetColorSpaceMetadataCHROMIUM (GLuint texture_id, GLcolorSpace color_space);
 
 // Extension EXT_window_rectangles
 GL_APICALL void         GL_APIENTRY glWindowRectanglesEXT (GLenumWindowRectanglesMode mode, GLsizeiNotNegative count, const GLint* box);

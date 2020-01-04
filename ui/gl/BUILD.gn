@@ -66,8 +66,6 @@ jumbo_component("gl") {
     "buffer_format_utils.h",
     "ca_renderer_layer_params.cc",
     "ca_renderer_layer_params.h",
-    "color_space_utils.cc",
-    "color_space_utils.h",
     "dc_renderer_layer_params.cc",
     "dc_renderer_layer_params.h",
     "dual_gpu_state.cc",

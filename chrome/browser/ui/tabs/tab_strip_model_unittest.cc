@@ -3155,7 +3155,7 @@ TEST_F(TabStripModelTest, RemoveTabFromGroupUpdatesObservers) {
   strip.CloseAllTabs();
 }
 
-TEST_F(TabStripModelTest, RemoveTabFromGroupReorders) {
+TEST_F(TabStripModelTest, RemoveTabFromGroupMaintainsOrder) {
   TestTabStripModelDelegate delegate;
   TabStripModel strip(&delegate, profile());
   PrepareTabs(&strip, 2);
@@ -3163,9 +3163,9 @@ TEST_F(TabStripModelTest, RemoveTabFromGroupReorders) {
 
   strip.RemoveFromGroup({0});
 
-  EXPECT_FALSE(strip.GetTabGroupForTab(1).has_value());
-  EXPECT_TRUE(strip.GetTabGroupForTab(0).has_value());
-  EXPECT_EQ("1 0", GetTabStripStateString(strip));
+  EXPECT_TRUE(strip.GetTabGroupForTab(1).has_value());
+  EXPECT_FALSE(strip.GetTabGroupForTab(0).has_value());
+  EXPECT_EQ("0 1", GetTabStripStateString(strip));
 
   strip.CloseAllTabs();
 }
@@ -3182,7 +3182,8 @@ TEST_F(TabStripModelTest, RemoveTabFromGroupDoesntReorderIfNoGroup) {
   strip.CloseAllTabs();
 }
 
-TEST_F(TabStripModelTest, RemoveTabFromGroupMaintainsOrderOfSelectedTabs) {
+TEST_F(TabStripModelTest,
+       RemoveTabFromGroupMaintainsRelativeOrderOfSelectedTabs) {
   TestTabStripModelDelegate delegate;
   TabStripModel strip(&delegate, profile());
   PrepareTabs(&strip, 4);
@@ -3190,11 +3191,11 @@ TEST_F(TabStripModelTest, RemoveTabFromGroupMaintainsOrderOfSelectedTabs) {
 
   strip.RemoveFromGroup({0, 2});
 
-  EXPECT_TRUE(strip.GetTabGroupForTab(0).has_value());
+  EXPECT_FALSE(strip.GetTabGroupForTab(0).has_value());
   EXPECT_TRUE(strip.GetTabGroupForTab(1).has_value());
-  EXPECT_FALSE(strip.GetTabGroupForTab(2).has_value());
+  EXPECT_TRUE(strip.GetTabGroupForTab(2).has_value());
   EXPECT_FALSE(strip.GetTabGroupForTab(3).has_value());
-  EXPECT_EQ("1 3 0 2", GetTabStripStateString(strip));
+  EXPECT_EQ("0 1 3 2", GetTabStripStateString(strip));
 
   strip.CloseAllTabs();
 }
@@ -3208,12 +3209,12 @@ TEST_F(TabStripModelTest, RemoveTabFromGroupMixtureOfGroups) {
 
   strip.RemoveFromGroup({0, 3, 4});
 
-  EXPECT_TRUE(strip.GetTabGroupForTab(0).has_value());
-  EXPECT_FALSE(strip.GetTabGroupForTab(1).has_value());
+  EXPECT_FALSE(strip.GetTabGroupForTab(0).has_value());
+  EXPECT_TRUE(strip.GetTabGroupForTab(1).has_value());
   EXPECT_TRUE(strip.GetTabGroupForTab(2).has_value());
   EXPECT_FALSE(strip.GetTabGroupForTab(3).has_value());
   EXPECT_FALSE(strip.GetTabGroupForTab(4).has_value());
-  EXPECT_EQ("1 0 2 3 4", GetTabStripStateString(strip));
+  EXPECT_EQ("0 1 2 3 4", GetTabStripStateString(strip));
 
   strip.CloseAllTabs();
 }

@@ -28,6 +28,7 @@
 #include "gpu/ipc/common/gpu_memory_buffer_impl_android_hardware_buffer.h"
 #include "gpu/ipc/common/gpu_surface_tracker.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gl/android/surface_texture.h"
 
 #include <android/native_window_jni.h>
@@ -283,8 +284,9 @@ void MailboxToSurfaceBridge::ResizeSurface(int width, int height) {
   }
   DVLOG(1) << __FUNCTION__ << ": resize Surface to " << surface_width_ << "x"
            << surface_height_;
+  gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
   gl_->ResizeCHROMIUM(surface_width_, surface_height_, 1.f,
-                      GL_COLOR_SPACE_UNSPECIFIED_CHROMIUM, false);
+                      color_space.AsGLColorSpace(), false);
   gl_->Viewport(0, 0, surface_width_, surface_height_);
 }
 

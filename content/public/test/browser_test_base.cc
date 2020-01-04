@@ -333,8 +333,7 @@ void BrowserTestBase::SetUp() {
   // not affect the results.
   command_line->AppendSwitchASCII(switches::kForceDisplayColorProfile, "srgb");
 
-  if (!allow_network_access_to_host_resolutions_)
-    test_host_resolver_ = std::make_unique<TestHostResolver>();
+  test_host_resolver_ = std::make_unique<TestHostResolver>();
 
   ContentBrowserSanityChecker scoped_enable_sanity_checks;
 
@@ -752,25 +751,12 @@ void BrowserTestBase::InitializeNetworkProcess() {
     return;
 
   initialized_network_process_ = true;
-
   host_resolver()->DisableModifications();
 
   // Send the host resolver rules to the network service if it's in use. No need
   // to do this if it's running in the browser process though.
   if (!IsOutOfProcessNetworkService())
     return;
-
-  mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
-  content::GetNetworkService()->BindTestInterface(
-      network_service_test.BindNewPipeAndPassReceiver());
-
-  // Do not set up host resolver rules if we allow the test to access
-  // the network.
-  if (allow_network_access_to_host_resolutions_) {
-    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
-    network_service_test->SetAllowNetworkAccessToHostResolutions();
-    return;
-  }
 
   net::RuleBasedHostResolverProc::RuleList rules = host_resolver()->GetRules();
   std::vector<network::mojom::RulePtr> mojo_rules;
@@ -822,6 +808,10 @@ void BrowserTestBase::InitializeNetworkProcess() {
 
   if (mojo_rules.empty())
     return;
+
+  mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
+  content::GetNetworkService()->BindTestInterface(
+      network_service_test.BindNewPipeAndPassReceiver());
 
   // Send the DNS rules to network service process. Android needs the RunLoop
   // to dispatch a Java callback that makes network process to enter native

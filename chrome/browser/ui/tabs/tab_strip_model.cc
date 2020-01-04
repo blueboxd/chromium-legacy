@@ -1021,6 +1021,14 @@ void TabStripModel::AddToExistingGroup(const std::vector<int>& indices,
   AddToExistingGroupImpl(indices, group);
 }
 
+void TabStripModel::MoveTabsAndSetGroup(const std::vector<int>& indices,
+                                        int destination_index,
+                                        tab_groups::TabGroupId group) {
+  ReentrancyCheck reentrancy_check(&reentrancy_guard_);
+
+  MoveTabsAndSetGroupImpl(indices, destination_index, group);
+}
+
 void TabStripModel::AddToGroupForRestore(const std::vector<int>& indices,
                                          tab_groups::TabGroupId group) {
   ReentrancyCheck reentrancy_check(&reentrancy_guard_);
@@ -1050,20 +1058,33 @@ void TabStripModel::UpdateGroupForDragRevert(
 void TabStripModel::RemoveFromGroup(const std::vector<int>& indices) {
   ReentrancyCheck reentrancy_check(&reentrancy_guard_);
 
-  // Remove each tab from the group it's in, if any. Go from right to left
-  // since tabs may move to the right.
-  for (int i = indices.size() - 1; i >= 0; i--) {
-    const int index = indices[i];
-    base::Optional<tab_groups::TabGroupId> old_group = GetTabGroupForTab(index);
-    if (!old_group.has_value())
-      continue;
+  std::map<tab_groups::TabGroupId, std::vector<int>> indices_per_tab_group;
 
-    // Move the tab until it's the rightmost tab in its group
-    int new_index = index;
-    while (ContainsIndex(new_index + 1) &&
-           GetTabGroupForTab(new_index + 1) == old_group)
-      new_index++;
-    MoveAndSetGroup(index, new_index, base::nullopt);
+  for (int index : indices) {
+    base::Optional<tab_groups::TabGroupId> old_group = GetTabGroupForTab(index);
+    if (old_group.has_value())
+      indices_per_tab_group[old_group.value()].push_back(index);
+  }
+
+  for (const auto& kv : indices_per_tab_group) {
+    const std::vector<int>& tabs_in_group =
+        group_model_->GetTabGroup(kv.first)->ListTabs();
+
+    // Split group into |left_of_group| and |right_of_group| depending on
+    // whether the index is closest to the left or right edge.
+    std::vector<int> left_of_group;
+    std::vector<int> right_of_group;
+    for (int index : kv.second) {
+      if (index < tabs_in_group[tabs_in_group.size() / 2]) {
+        left_of_group.push_back(index);
+      } else {
+        right_of_group.push_back(index);
+      }
+    }
+    MoveTabsAndSetGroupImpl(left_of_group, tabs_in_group.front(),
+                            base::nullopt);
+    MoveTabsAndSetGroupImpl(right_of_group, tabs_in_group.back() + 1,
+                            base::nullopt);
   }
 }
 
@@ -1751,7 +1772,7 @@ void TabStripModel::AddToNewGroupImpl(const std::vector<int>& indices,
   std::vector<int> new_indices = indices;
   new_indices = SetTabsPinned(new_indices, false);
 
-  MoveTabsIntoGroupImpl(new_indices, destination_index, new_group);
+  MoveTabsAndSetGroupImpl(new_indices, destination_index, new_group);
 }
 
 void TabStripModel::AddToExistingGroupImpl(const std::vector<int>& indices,
@@ -1790,13 +1811,14 @@ void TabStripModel::AddToExistingGroupImpl(const std::vector<int>& indices,
     }
   }
 
-  MoveTabsIntoGroupImpl(tabs_left_of_group, tabs_in_group.front(), group);
-  MoveTabsIntoGroupImpl(tabs_right_of_group, tabs_in_group.back() + 1, group);
+  MoveTabsAndSetGroupImpl(tabs_left_of_group, tabs_in_group.front(), group);
+  MoveTabsAndSetGroupImpl(tabs_right_of_group, tabs_in_group.back() + 1, group);
 }
 
-void TabStripModel::MoveTabsIntoGroupImpl(const std::vector<int>& indices,
-                                          int destination_index,
-                                          tab_groups::TabGroupId group) {
+void TabStripModel::MoveTabsAndSetGroupImpl(
+    const std::vector<int>& indices,
+    int destination_index,
+    base::Optional<tab_groups::TabGroupId> group) {
   // Some tabs will need to be moved to the right, some to the left. We need to
   // handle those separately. First, move tabs to the right, starting with the
   // rightmost tab so we don't cause other tabs we are about to move to shift.

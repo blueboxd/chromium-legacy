@@ -38,11 +38,10 @@ class MEDIA_EXPORT VideoFrameLayout {
   static constexpr size_t kBufferAddressAlignment = 32;
 
   // Factory functions.
-  // |format| and |coded_size| must be specified.
-  // |is_single_planar| is optional. It describes planes can be stored (although
-  // not always) in multiple buffers. It is specified only in HW decoder code.
+  // |format| and |coded_size| must always be specified.
   // |planes| info is also optional but useful to represent the layout of a
-  // video frame buffer correctly.
+  // video frame buffer correctly. When omitted, its information is all set
+  // to zero, so clients should be wary not to use this information.
   // |buffer_addr_align| can be specified to request a specific buffer memory
   // alignment.
   // |modifier| is the additional information of |format|. It will become some
@@ -50,17 +49,24 @@ class MEDIA_EXPORT VideoFrameLayout {
   // buffer format is different from a standard |format| due to tiling.
   // The returned base::Optional will be base::nullopt if the configured values
   // are invalid.
+
+  // Create a layout suitable for |format| at |coded_size|. The stride, offsets
+  // and size of all planes are set to 0, since that information cannot reliably
+  // be infered from the arguments.
   static base::Optional<VideoFrameLayout> Create(VideoPixelFormat format,
                                                  const gfx::Size& coded_size);
 
-  // The size of |strides| must be NumPlanes(|format|). Planes' offset will be
-  // 0.
+  // Create a layout suitable for |format| at |coded_size|, with the |strides|
+  // for each plane specified. The offsets and size of all planes are set to 0.
+  // The size of |strides| must be equal to NumPlanes(|format|).
   static base::Optional<VideoFrameLayout> CreateWithStrides(
       VideoPixelFormat format,
       const gfx::Size& coded_size,
       std::vector<int32_t> strides);
 
-  // The size of |planes| must be NumPlanes(|format|).
+  // Create a layout suitable for |format| at |coded_size|, with the |planes|
+  // fully provided.
+  // The size of |planes| must be equal to NumPlanes(|format|).
   static base::Optional<VideoFrameLayout> CreateWithPlanes(
       VideoPixelFormat format,
       const gfx::Size& coded_size,

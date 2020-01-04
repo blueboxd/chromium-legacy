@@ -111,12 +111,6 @@ class BrowserTestBase : public testing::Test {
   // Sets expected browser exit code, in case it's different than 0 (success).
   void set_expected_exit_code(int code) { expected_exit_code_ = code; }
 
-  // Sets flag to allow host resolutions to reach the network. Must be called
-  // before Setup() to take effect.
-  void set_allow_network_access_to_host_resolutions() {
-    allow_network_access_to_host_resolutions_ = true;
-  }
-
   const net::SpawnedTestServer* spawned_test_server() const {
     return spawned_test_server_.get();
   }
@@ -218,8 +212,6 @@ class BrowserTestBase : public testing::Test {
   std::unique_ptr<NoRendererCrashesAssertion> no_renderer_crashes_assertion_;
 
   bool initialized_network_process_ = false;
-
-  bool allow_network_access_to_host_resolutions_ = false;
 
 #if defined(OS_POSIX)
   bool handle_sigterm_;

@@ -92,6 +92,7 @@ target(link_target_type, "service_sources") {
     "//gpu/ipc/common:surface_handle_type",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/gfx/ipc/color",
     "//ui/gl",
   ]
 
@@ -320,7 +321,6 @@ target(link_target_type, "gles2_sources") {
     "//third_party/zlib",
     "//ui/gfx",
     "//ui/gfx/geometry",
-    "//ui/gfx/ipc/color",
     "//ui/gl",
     "//ui/gl:buildflags",
     "//ui/gl/init",

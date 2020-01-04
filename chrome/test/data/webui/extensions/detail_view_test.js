@@ -181,6 +181,13 @@ suite(extension_detail_view_tests.suiteName, function() {
     item.set('data.disableReasons.blockedByPolicy', false);
     flush();
 
+    item.set('data.disableReasons.custodianApprovalRequired', true);
+    flush();
+    expectTrue(testIsVisible('#enableToggle'));
+    expectTrue(item.$$('#enableToggle').disabled);
+    item.set('data.disableReasons.custodianApprovalRequired', false);
+    flush();
+
     item.set('data.state', chrome.developerPrivate.ExtensionState.TERMINATED);
     flush();
     expectFalse(testIsVisible('#enableToggle'));

@@ -180,6 +180,7 @@ export function createExtensionInfo(opt_properties) {
           corruptInstall: false,
           updateRequired: false,
           blockedByPolicy: false,
+          custodianApprovalRequired: false,
         },
         homePage: {specified: false, url: ''},
         iconUrl: 'chrome://extension-icon/' + id + '/24/0',

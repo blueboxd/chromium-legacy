@@ -2701,14 +2701,17 @@ void FlushMappedBufferRange(GLenum target, GLintptr offset, GLsizeiptr size) {
   }
 }
 
-void ResizeCHROMIUM(GLuint width,
-                    GLuint height,
+void ResizeCHROMIUM(GLint width,
+                    GLint height,
                     GLfloat scale_factor,
-                    GLenum color_space,
-                    GLboolean alpha) {
+                    GLboolean alpha,
+                    GLuint shm_id,
+                    GLuint shm_offset,
+                    GLsizei color_space_size) {
   gles2::cmds::ResizeCHROMIUM* c = GetCmdSpace<gles2::cmds::ResizeCHROMIUM>();
   if (c) {
-    c->Init(width, height, scale_factor, color_space, alpha);
+    c->Init(width, height, scale_factor, alpha, shm_id, shm_offset,
+            color_space_size);
   }
 }
 

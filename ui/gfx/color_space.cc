@@ -516,6 +516,10 @@ sk_sp<SkColorSpace> ColorSpace::ToSkColorSpace() const {
   return sk_color_space;
 }
 
+const struct _GLcolorSpace* ColorSpace::AsGLColorSpace() const {
+  return reinterpret_cast<const struct _GLcolorSpace*>(this);
+}
+
 ColorSpace::PrimaryID ColorSpace::GetPrimaryID() const {
   return primaries_;
 }

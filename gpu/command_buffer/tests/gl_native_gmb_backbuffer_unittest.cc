@@ -50,7 +50,8 @@ class GLNativeGMBTest : public testing::Test {
     EXPECT_NEAR(alpha, pixel[3], 2);
 
     // Resize, then clear the back buffer and check its contents.
-    glResizeCHROMIUM(10, 10, 1, GL_COLOR_SPACE_UNSPECIFIED_CHROMIUM, true);
+    gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
+    glResizeCHROMIUM(10, 10, 1, color_space.AsGLColorSpace(), true);
     glClearColor(0.5f, 0.6f, 0.7f, 0.8f);
     glClear(GL_COLOR_BUFFER_BIT);
     memset(pixel, 0, 4);

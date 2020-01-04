@@ -73,8 +73,8 @@ SkPath MakePath(const AccessibilityFocusRing& input_ring,
   }
 
   SkPath path;
-  gfx::Point p0 = ring.points[0] - offset;
-  path.moveTo(SkIntToScalar(p0.x()), SkIntToScalar(p0.y()));
+  gfx::Point start = ring.points[0] - offset;
+  path.moveTo(SkIntToScalar(start.x()), SkIntToScalar(start.y()));
   for (int i = 0; i < 12; i++) {
     int index0 = ((3 * i) + 1) % 36;
     int index1 = ((3 * i) + 2) % 36;

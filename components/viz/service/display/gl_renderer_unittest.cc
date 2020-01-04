@@ -2084,7 +2084,7 @@ class OutputSurfaceMockGLES2Interface : public TestGLES2Interface {
                void(GLuint width,
                     GLuint height,
                     float device_scale,
-                    GLenum color_space,
+                    GLcolorSpace color_space,
                     GLboolean has_alpha));
   MOCK_METHOD4(
       DrawElements,

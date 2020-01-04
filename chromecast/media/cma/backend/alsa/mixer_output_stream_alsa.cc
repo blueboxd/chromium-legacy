@@ -17,22 +17,22 @@
 #include "media/base/audio_sample_types.h"
 #include "media/base/media_switches.h"
 
-#define RETURN_FALSE_ON_ERROR(snd_func, ...)                      \
-  do {                                                            \
-    int err = alsa_->snd_func(__VA_ARGS__);                       \
-    if (err < 0) {                                                \
-      LOG(ERROR) << #snd_func " error: " << alsa_->StrError(err); \
-      return false;                                               \
-    }                                                             \
+#define RETURN_FALSE_ON_ERROR(snd_func, ...)                        \
+  do {                                                              \
+    int a_err = alsa_->snd_func(__VA_ARGS__);                       \
+    if (a_err < 0) {                                                \
+      LOG(ERROR) << #snd_func " error: " << alsa_->StrError(a_err); \
+      return false;                                                 \
+    }                                                               \
   } while (0)
 
-#define RETURN_ERROR_CODE(snd_func, ...)                          \
-  do {                                                            \
-    int err = alsa_->snd_func(__VA_ARGS__);                       \
-    if (err < 0) {                                                \
-      LOG(ERROR) << #snd_func " error: " << alsa_->StrError(err); \
-      return err;                                                 \
-    }                                                             \
+#define RETURN_ERROR_CODE(snd_func, ...)                            \
+  do {                                                              \
+    int a_err = alsa_->snd_func(__VA_ARGS__);                       \
+    if (a_err < 0) {                                                \
+      LOG(ERROR) << #snd_func " error: " << alsa_->StrError(a_err); \
+      return a_err;                                                 \
+    }                                                               \
   } while (0)
 
 #define CHECK_PCM_INITIALIZED()                                              \

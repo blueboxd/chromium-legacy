@@ -965,7 +965,7 @@ void GLES2InterfaceStub::UnmapTexSubImage2DCHROMIUM(const void* /* mem */) {}
 void GLES2InterfaceStub::ResizeCHROMIUM(GLuint /* width */,
                                         GLuint /* height */,
                                         GLfloat /* scale_factor */,
-                                        GLenum /* color_space */,
+                                        GLcolorSpace /* color_space */,
                                         GLboolean /* alpha */) {}
 const GLchar* GLES2InterfaceStub::GetRequestableExtensionsCHROMIUM() {
   return 0;
@@ -1321,7 +1321,7 @@ void GLES2InterfaceStub::TexStorage2DImageCHROMIUM(GLenum /* target */,
                                                    GLsizei /* height */) {}
 void GLES2InterfaceStub::SetColorSpaceMetadataCHROMIUM(
     GLuint /* texture_id */,
-    GLColorSpace /* color_space */) {}
+    GLcolorSpace /* color_space */) {}
 void GLES2InterfaceStub::WindowRectanglesEXT(GLenum /* mode */,
                                              GLsizei /* count */,
                                              const GLint* /* box */) {}

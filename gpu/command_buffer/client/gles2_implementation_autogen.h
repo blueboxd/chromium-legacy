@@ -994,7 +994,7 @@ void UnmapTexSubImage2DCHROMIUM(const void* mem) override;
 void ResizeCHROMIUM(GLuint width,
                     GLuint height,
                     GLfloat scale_factor,
-                    GLenum color_space,
+                    GLcolorSpace color_space,
                     GLboolean alpha) override;
 
 const GLchar* GetRequestableExtensionsCHROMIUM() override;
@@ -1366,7 +1366,7 @@ void TexStorage2DImageCHROMIUM(GLenum target,
                                GLsizei height) override;
 
 void SetColorSpaceMetadataCHROMIUM(GLuint texture_id,
-                                   GLColorSpace color_space) override;
+                                   GLcolorSpace color_space) override;
 
 void WindowRectanglesEXT(GLenum mode, GLsizei count, const GLint* box) override;
 

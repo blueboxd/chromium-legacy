@@ -59,7 +59,8 @@ export function userCanChangeEnablement(item) {
   if (item.disableReasons.corruptInstall ||
       item.disableReasons.suspiciousInstall ||
       item.disableReasons.updateRequired ||
-      item.disableReasons.blockedByPolicy) {
+      item.disableReasons.blockedByPolicy ||
+      item.disableReasons.custodianApprovalRequired) {
     return false;
   }
   // An item with dependent extensions can't be disabled (it would bork the

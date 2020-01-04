@@ -89,8 +89,7 @@ TEST_F(CastSessionIdMapTest, CanHoldMultiple) {
   std::string saved_session_id = "";
   base::UnguessableToken group_id = web_contents_1->GetAudioGroupId();
   if (group_id) {
-    std::string saved_session_id =
-        CastSessionIdMap::GetSessionId(group_id.ToString());
+    saved_session_id = CastSessionIdMap::GetSessionId(group_id.ToString());
     EXPECT_EQ(saved_session_id, test_session_id_1);
   }
 

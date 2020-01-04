@@ -20,7 +20,6 @@
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/common/swap_buffers_flags.h"
 #include "ui/gfx/overlay_transform_utils.h"
-#include "ui/gl/color_space_utils.h"
 
 namespace viz {
 
@@ -100,7 +99,7 @@ void GLOutputSurface::Reshape(const gfx::Size& size,
   has_set_draw_rectangle_since_last_resize_ = false;
   context_provider()->ContextGL()->ResizeCHROMIUM(
       size.width(), size.height(), device_scale_factor,
-      gl::ColorSpaceUtils::GetGLColorSpace(color_space), has_alpha);
+      color_space.AsGLColorSpace(), has_alpha);
 }
 
 void GLOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {

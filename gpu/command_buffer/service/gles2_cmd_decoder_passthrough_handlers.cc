@@ -6,7 +6,6 @@
 
 #include "gpu/command_buffer/common/discardable_handle.h"
 #include "gpu/command_buffer/service/multi_draw_manager.h"
-#include "ui/gfx/ipc/color/gfx_param_traits.h"
 
 namespace gpu {
 namespace gles2 {
@@ -1559,9 +1558,12 @@ error::Error GLES2DecoderPassthroughImpl::HandleResizeCHROMIUM(
   GLuint width = static_cast<GLuint>(c.width);
   GLuint height = static_cast<GLuint>(c.height);
   GLfloat scale_factor = static_cast<GLfloat>(c.scale_factor);
-  GLenum color_space = static_cast<GLenum>(c.color_space);
   GLboolean has_alpha = static_cast<GLboolean>(c.alpha);
-
+  gfx::ColorSpace color_space;
+  if (!ReadColorSpace(c.shm_id, c.shm_offset, c.color_space_size,
+                      &color_space)) {
+    return error::kOutOfBounds;
+  }
   return DoResizeCHROMIUM(width, height, scale_factor, color_space, has_alpha);
 }
 
@@ -2300,23 +2302,11 @@ error::Error GLES2DecoderPassthroughImpl::HandleSetColorSpaceMetadataCHROMIUM(
       *static_cast<const volatile gles2::cmds::SetColorSpaceMetadataCHROMIUM*>(
           cmd_data);
   GLuint texture_id = c.texture_id;
-  GLsizei color_space_size = c.color_space_size;
-  const char* data = static_cast<const char*>(
-      GetAddressAndCheckSize(c.shm_id, c.shm_offset, color_space_size));
-  if (!data) {
-    return error::kOutOfBounds;
-  }
-
-  // Make a copy to reduce the risk of a time of check to time of use attack.
-  std::vector<char> color_space_data(data, data + color_space_size);
-  base::Pickle color_space_pickle(color_space_data.data(), color_space_size);
-  base::PickleIterator iterator(color_space_pickle);
   gfx::ColorSpace color_space;
-  if (!IPC::ParamTraits<gfx::ColorSpace>::Read(&color_space_pickle, &iterator,
-                                               &color_space)) {
+  if (!ReadColorSpace(c.shm_id, c.shm_offset, c.color_space_size,
+                      &color_space)) {
     return error::kOutOfBounds;
   }
-
   return DoSetColorSpaceMetadataCHROMIUM(texture_id, color_space);
 }
 

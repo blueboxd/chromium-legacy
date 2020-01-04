@@ -2038,7 +2038,7 @@ void GLES2TraceImplementation::UnmapTexSubImage2DCHROMIUM(const void* mem) {
 void GLES2TraceImplementation::ResizeCHROMIUM(GLuint width,
                                               GLuint height,
                                               GLfloat scale_factor,
-                                              GLenum color_space,
+                                              GLcolorSpace color_space,
                                               GLboolean alpha) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::ResizeCHROMIUM");
   gl_->ResizeCHROMIUM(width, height, scale_factor, color_space, alpha);
@@ -2767,7 +2767,7 @@ void GLES2TraceImplementation::TexStorage2DImageCHROMIUM(GLenum target,
 
 void GLES2TraceImplementation::SetColorSpaceMetadataCHROMIUM(
     GLuint texture_id,
-    GLColorSpace color_space) {
+    GLcolorSpace color_space) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu",
                                 "GLES2Trace::SetColorSpaceMetadataCHROMIUM");
   gl_->SetColorSpaceMetadataCHROMIUM(texture_id, color_space);

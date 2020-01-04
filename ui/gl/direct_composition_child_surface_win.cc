@@ -15,7 +15,6 @@
 #include "base/win/windows_version.h"
 #include "ui/gfx/color_space_win.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gl/color_space_utils.h"
 #include "ui/gl/direct_composition_surface_win.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_angle_util_win.h"

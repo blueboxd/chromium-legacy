@@ -557,6 +557,9 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
       0;
   info->disable_reasons.blocked_by_policy =
       (disable_reasons & disable_reason::DISABLE_BLOCKED_BY_POLICY) != 0;
+  info->disable_reasons.custodian_approval_required =
+      (disable_reasons & disable_reason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED) !=
+      0;
 
   // Error collection.
   bool error_console_enabled =

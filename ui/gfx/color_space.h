@@ -26,6 +26,9 @@ template <class T, class U>
 struct StructTraits;
 }  // namespace mojo
 
+// Used to serialize a gfx::ColorSpace through the GPU command buffer.
+struct _GLcolorSpace;
+
 namespace gfx {
 
 namespace mojom {
@@ -243,6 +246,11 @@ class COLOR_SPACE_EXPORT ColorSpace {
   // This will return nullptr for non-RGB spaces, spaces with non-FULL
   // range, and unspecified spaces.
   sk_sp<SkColorSpace> ToSkColorSpace() const;
+
+  // Return a GLcolorSpace value that is valid for the lifetime of |this|. This
+  // function is used to serialize ColorSpace objects across the GPU command
+  // buffer.
+  const _GLcolorSpace* AsGLColorSpace() const;
 
   // For YUV color spaces, return the closest SkYUVColorSpace.
   // Returns true if a close match is found.

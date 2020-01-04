@@ -5658,18 +5658,18 @@ void GLES2Implementation::ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
 
 void GLES2Implementation::SetColorSpaceMetadataCHROMIUM(
     GLuint texture_id,
-    GLColorSpace color_space) {
+    GLcolorSpace color_space) {
 #if defined(__native_client__)
   // Including gfx::ColorSpace would bring Skia and a lot of other code into
   // NaCl's IRT.
   SetGLError(GL_INVALID_VALUE, "GLES2::SetColorSpaceMetadataCHROMIUM",
              "not supported");
 #else
-  gfx::ColorSpace* gfx_color_space =
-      reinterpret_cast<gfx::ColorSpace*>(color_space);
+  gfx::ColorSpace gfx_color_space;
+  if (color_space)
+    gfx_color_space = *reinterpret_cast<const gfx::ColorSpace*>(color_space);
   base::Pickle color_space_data;
-  IPC::ParamTraits<gfx::ColorSpace>::Write(&color_space_data, *gfx_color_space);
-
+  IPC::ParamTraits<gfx::ColorSpace>::Write(&color_space_data, gfx_color_space);
   ScopedTransferBufferPtr buffer(color_space_data.size(), helper_,
                                  transfer_buffer_);
   if (!buffer.valid() || buffer.size() < color_space_data.size()) {
@@ -6027,12 +6027,35 @@ void GLES2Implementation::UnmapTexSubImage2DCHROMIUM(const void* mem) {
 void GLES2Implementation::ResizeCHROMIUM(GLuint width,
                                          GLuint height,
                                          float scale_factor,
-                                         GLenum color_space,
+                                         GLcolorSpace gl_color_space,
                                          GLboolean alpha) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glResizeCHROMIUM(" << width << ", "
                      << height << ", " << scale_factor << ", " << alpha << ")");
-  helper_->ResizeCHROMIUM(width, height, scale_factor, color_space, alpha);
+  // Including gfx::ColorSpace would bring Skia and a lot of other code into
+  // NaCl's IRT, so just leave the color space unspecified.
+#if !defined(__native_client__)
+  if (gl_color_space) {
+    gfx::ColorSpace gfx_color_space =
+        *reinterpret_cast<const gfx::ColorSpace*>(gl_color_space);
+    base::Pickle color_space_data;
+    IPC::ParamTraits<gfx::ColorSpace>::Write(&color_space_data,
+                                             gfx_color_space);
+    ScopedTransferBufferPtr buffer(color_space_data.size(), helper_,
+                                   transfer_buffer_);
+    if (!buffer.valid() || buffer.size() < color_space_data.size()) {
+      SetGLError(GL_OUT_OF_MEMORY, "GLES2::SetColorSpaceMetadataCHROMIUM",
+                 "out of memory");
+      return;
+    }
+    memcpy(buffer.address(), color_space_data.data(), color_space_data.size());
+    helper_->ResizeCHROMIUM(width, height, scale_factor, alpha, buffer.shm_id(),
+                            buffer.offset(), color_space_data.size());
+    CheckGLError();
+    return;
+  }
+#endif
+  helper_->ResizeCHROMIUM(width, height, scale_factor, alpha, 0, 0, 0);
   CheckGLError();
 }
 

@@ -49,8 +49,7 @@ ScopedGpuMemoryBufferTexture::ScopedGpuMemoryBufferTexture(
                                 GL_SCANOUT_CHROMIUM, size_.width(),
                                 size_.height());
   if (color_space_.IsValid()) {
-    gl->SetColorSpaceMetadataCHROMIUM(
-        gl_id_, reinterpret_cast<GLColorSpace>(&color_space_));
+    gl->SetColorSpaceMetadataCHROMIUM(gl_id_, color_space_.AsGLColorSpace());
   }
   gl->BindTexture(target_, 0);
 }

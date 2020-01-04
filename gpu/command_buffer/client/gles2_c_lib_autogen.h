@@ -1413,7 +1413,7 @@ void GL_APIENTRY GLES2UnmapTexSubImage2DCHROMIUM(const void* mem) {
 void GL_APIENTRY GLES2ResizeCHROMIUM(GLuint width,
                                      GLuint height,
                                      GLfloat scale_factor,
-                                     GLenum color_space,
+                                     GLcolorSpace color_space,
                                      GLboolean alpha) {
   gles2::GetGLContext()->ResizeCHROMIUM(width, height, scale_factor,
                                         color_space, alpha);
@@ -1932,7 +1932,7 @@ void GL_APIENTRY GLES2TexStorage2DImageCHROMIUM(GLenum target,
                                                    bufferUsage, width, height);
 }
 void GL_APIENTRY GLES2SetColorSpaceMetadataCHROMIUM(GLuint texture_id,
-                                                    GLColorSpace color_space) {
+                                                    GLcolorSpace color_space) {
   gles2::GetGLContext()->SetColorSpaceMetadataCHROMIUM(texture_id, color_space);
 }
 void GL_APIENTRY GLES2WindowRectanglesEXT(GLenum mode,

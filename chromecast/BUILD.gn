@@ -53,6 +53,7 @@ group("all") {
 # This is a config which is applied on all cast_* targets (which should be all
 # code under chromecast/).
 config("cast_config") {
+  cflags = [ "-Wshadow" ]
 }
 
 config("iot_service") {

@@ -341,6 +341,13 @@ suite(extension_item_tests.suiteName, function() {
     flush();
     testVisible(item, '#enableToggle', true);
     expectTrue(item.$['enableToggle'].disabled);
+    item.set('data.disableReasons.blockedByPolicy', false);
+    flush();
+
+    item.set('data.disableReasons.custodianApprovalRequired', true);
+    flush();
+    testVisible(item, '#enableToggle', true);
+    expectTrue(item.$$('#enableToggle').disabled);
   });
 
   test(assert(extension_item_tests.TestNames.RemoveButton), function() {

@@ -2142,7 +2142,8 @@ void TabDragController::UpdateGroupForDraggedTabs() {
   }
 
   if (updated_group.has_value()) {
-    attached_model->AddToExistingGroup(selected, updated_group.value());
+    attached_model->MoveTabsAndSetGroup(selected, selected[0],
+                                        updated_group.value());
   } else {
     attached_model->RemoveFromGroup(selected);
     attached_model->MoveSelectedTabsTo(to_index);

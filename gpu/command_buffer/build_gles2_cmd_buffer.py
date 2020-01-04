@@ -3652,6 +3652,10 @@ _FUNCTION_INFO = {
   'ResizeCHROMIUM': {
     'type': 'Custom',
     'impl_func': False,
+    'client_test': False,
+    'cmd_args': 'GLint width, GLint height, GLfloat scale_factor, GLboolean '
+                'alpha, GLuint shm_id, GLuint shm_offset, GLsizei '
+                'color_space_size',
     'extension': True,
     'trace_level': 1,
   },

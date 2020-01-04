@@ -614,40 +614,20 @@ typedef void (GL_APIENTRYP PFNGLDRAWBUFFERSEXTPROC) (
 /* GL_CHROMIUM_resize */
 #ifndef GL_CHROMIUM_resize
 #define GL_CHROMIUM_resize 1
+typedef const struct _GLcolorSpace* GLcolorSpace;
 #ifdef GL_GLEXT_PROTOTYPES
 GL_APICALL void GL_APIENTRY glResizeCHROMIUM(GLuint width,
                                              GLuint height,
                                              GLfloat scale_factor,
-                                             GLenum color_space,
+                                             GLcolorSpace color_space,
                                              GLboolean alpha);
 
 #endif
 typedef void(GL_APIENTRYP PFNGLRESIZECHROMIUMPROC)(GLuint width,
                                                    GLuint height,
                                                    GLfloat scale_factor,
-                                                   GLenum color_space,
+                                                   GLcolorSpace color_space,
                                                    GLboolean alpha);
-
-#ifndef GL_COLOR_SPACE_UNSPECIFIED_CHROMIUM
-#define GL_COLOR_SPACE_UNSPECIFIED_CHROMIUM 0x8AF1
-#endif
-
-#ifndef GL_COLOR_SPACE_SCRGB_LINEAR_CHROMIUM
-#define GL_COLOR_SPACE_SCRGB_LINEAR_CHROMIUM 0x8AF2
-#endif
-
-#ifndef GL_COLOR_SPACE_SRGB_CHROMIUM
-#define GL_COLOR_SPACE_SRGB_CHROMIUM 0x8AF3
-#endif
-
-#ifndef GL_COLOR_SPACE_DISPLAY_P3_CHROMIUM
-#define GL_COLOR_SPACE_DISPLAY_P3_CHROMIUM 0x8AF4
-#endif
-
-#ifndef GL_COLOR_SPACE_HDR10_CHROMIUM
-#define GL_COLOR_SPACE_HDR10_CHROMIUM 0x8AF5
-#endif
-
 #endif  /* GL_CHROMIUM_resize */
 
 /* GL_CHROMIUM_get_multiple */
@@ -1255,14 +1235,13 @@ typedef void(GL_APIENTRYP PFNGLTEXSTORAGE2DIMAGECHROMIUM)(GLenum target,
 
 #ifndef GL_CHROMIUM_color_space_metadata
 #define GL_CHROMIUM_color_space_metadata 1
-typedef struct _GLColorSpace* GLColorSpace;
 #ifdef GL_GLEXT_PROTOTYPES
 GL_APICALL void GL_APIENTRY
-glSetColorSpaceMetadataCHROMIUM(GLuint texture_id, GLColorSpace color_space);
+glSetColorSpaceMetadataCHROMIUM(GLuint texture_id, GLcolorSpace color_space);
 #endif
 typedef void(GL_APIENTRYP PFNGLSETCOLORSPACEMETADATACHROMIUM)(
     GLuint texture_id,
-    GLColorSpace color_space);
+    GLcolorSpace color_space);
 #endif /* GL_CHROMIUM_color_space_metadata */
 
 /* GL_CHROMIUM_dither_and_premultiply_copy */

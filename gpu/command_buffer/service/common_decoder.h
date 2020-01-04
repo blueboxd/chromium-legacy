@@ -22,6 +22,10 @@
 typedef int GLsizei;
 typedef int GLint;
 
+namespace gfx {
+class ColorSpace;
+}  // namespace gfx
+
 namespace gpu {
 
 class CommandBufferServiceBase;
@@ -192,6 +196,13 @@ class GPU_EXPORT CommonDecoder {
   // Exit the command processing loop to allow context preemption and GPU
   // watchdog checks in CommandExecutor().
   virtual void ExitCommandProcessingEarly() {}
+
+  // Read a serialized gfx::ColorSpace. Return true on success and false if the
+  // serialization was invalid.
+  bool ReadColorSpace(uint32_t shm_id,
+                      uint32_t shm_offset,
+                      uint32_t color_space_size,
+                      gfx::ColorSpace* color_space);
 
  private:
   // Generate a member function prototype for each command in an automated and

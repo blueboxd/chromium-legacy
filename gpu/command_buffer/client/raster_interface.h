@@ -26,7 +26,7 @@ enum class BufferUsage;
 }  // namespace gfx
 
 extern "C" typedef struct _ClientBuffer* ClientBuffer;
-extern "C" typedef struct _GLColorSpace* GLColorSpace;
+extern "C" typedef const struct _GLcolorSpace* GLcolorSpace;
 
 namespace gpu {
 

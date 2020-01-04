@@ -163,6 +163,7 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline {
   void OnAudioDecoderChange(const PipelineDecoderInfo& info);
   void OnVideoDecoderChange(const PipelineDecoderInfo& info);
   void OnRemotePlayStateChange(MediaStatus::State state);
+  void OnVideoFrameRateChange(base::Optional<int> fps);
 
   // Task completion callbacks from RendererWrapper.
   void OnSeekDone(bool is_suspended);

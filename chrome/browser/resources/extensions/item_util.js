@@ -58,7 +58,8 @@ export function userCanChangeEnablement(item) {
   // Item is forcefully disabled.
   if (item.disableReasons.corruptInstall ||
       item.disableReasons.suspiciousInstall ||
-      item.disableReasons.updateRequired) {
+      item.disableReasons.updateRequired ||
+      item.disableReasons.blockedByPolicy) {
     return false;
   }
   // An item with dependent extensions can't be disabled (it would bork the

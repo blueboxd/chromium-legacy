@@ -423,10 +423,6 @@ void ScrollbarThemeMac::UpdateScrollbarOverlayColorTheme(
   }
 }
 
-WebScrollbarButtonsPlacement ScrollbarThemeMac::ButtonsPlacement() const {
-  return kWebScrollbarButtonsPlacementNone;
-}
-
 bool ScrollbarThemeMac::HasThumb(const Scrollbar& scrollbar) {
   ScrollbarPainter painter = PainterForScrollbar(scrollbar);
   int min_length_for_thumb =
@@ -439,20 +435,15 @@ bool ScrollbarThemeMac::HasThumb(const Scrollbar& scrollbar) {
               : scrollbar.Height()) >= min_length_for_thumb;
 }
 
-IntRect ScrollbarThemeMac::BackButtonRect(const Scrollbar& scrollbar,
-                                          ScrollbarPart part) {
-  DCHECK_EQ(ButtonsPlacement(), kWebScrollbarButtonsPlacementNone);
+IntRect ScrollbarThemeMac::BackButtonRect(const Scrollbar& scrollbar) {
   return IntRect();
 }
 
-IntRect ScrollbarThemeMac::ForwardButtonRect(const Scrollbar& scrollbar,
-                                             ScrollbarPart part) {
-  DCHECK_EQ(ButtonsPlacement(), kWebScrollbarButtonsPlacementNone);
+IntRect ScrollbarThemeMac::ForwardButtonRect(const Scrollbar& scrollbar) {
   return IntRect();
 }
 
 IntRect ScrollbarThemeMac::TrackRect(const Scrollbar& scrollbar) {
-  DCHECK(!HasButtons(scrollbar));
   return scrollbar.FrameRect();
 }
 

@@ -199,6 +199,11 @@ void MojoRendererService::OnVideoOpacityChange(bool opaque) {
   client_->OnVideoOpacityChange(opaque);
 }
 
+void MojoRendererService::OnVideoFrameRateChange(base::Optional<int> fps) {
+  DVLOG(2) << __func__ << "(" << (fps ? *fps : -1) << ")";
+  // TODO(liberato): plumb to |client_|.
+}
+
 void MojoRendererService::OnStreamReady(
     base::OnceCallback<void(bool)> callback) {
   DCHECK_EQ(state_, STATE_INITIALIZING);

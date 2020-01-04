@@ -521,10 +521,17 @@ void IDBDatabase::EnqueueEvent(Event* event) {
 
 DispatchEventResult IDBDatabase::DispatchEventInternal(Event& event) {
   IDB_TRACE("IDBDatabase::dispatchEvent");
-  if (!GetExecutionContext())
-    return DispatchEventResult::kCanceledBeforeDispatch;
+
+  event.SetTarget(this);
+
+  // If this event originated from script, it should have no side effects.
+  if (!event.isTrusted())
+    return EventTarget::DispatchEventInternal(event);
   DCHECK(event.type() == event_type_names::kVersionchange ||
          event.type() == event_type_names::kClose);
+
+  if (!GetExecutionContext())
+    return DispatchEventResult::kCanceledBeforeDispatch;
 
   DispatchEventResult dispatch_result =
       EventTarget::DispatchEventInternal(event);

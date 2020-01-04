@@ -186,7 +186,7 @@ class CandidateFormat {
   // false is returned, and the name of one of the constraints that
   // could not be satisfied is returned in |failed_constraint_name| if
   // |failed_constraint_name| is not null.
-  bool ApplyConstraintSet(const WebMediaTrackConstraintSet& constraint_set,
+  bool ApplyConstraintSet(const MediaTrackConstraintSetPlatform& constraint_set,
                           const char** failed_constraint_name = nullptr) {
     auto rescale_intersection =
         rescale_set_.Intersection(media_constraints::RescaleSetFromConstraint(
@@ -253,7 +253,7 @@ class CandidateFormat {
   // The track settings that correspond to this fitness are returned on the
   // |track_settings| output parameter. The fitness function is based on
   // https://w3c.github.io/mediacapture-main/#dfn-fitness-distance.
-  double Fitness(const WebMediaTrackConstraintSet& basic_constraint_set,
+  double Fitness(const MediaTrackConstraintSetPlatform& basic_constraint_set,
                  VideoTrackAdapterSettings* track_settings) const {
     DCHECK(!rescale_set_.IsEmpty());
     double track_fitness_with_rescale = HUGE_VAL;
@@ -338,7 +338,8 @@ class CandidateFormat {
   // the corresponding width, height and frameRate properties.
   // This distance is intended to be used to break ties among candidates that
   // are equally good according to the standard fitness distance.
-  double NativeFitness(const WebMediaTrackConstraintSet& constraint_set) const {
+  double NativeFitness(
+      const MediaTrackConstraintSetPlatform& constraint_set) const {
     return NumericRangeNativeFitness(constraint_set.width, MinWidth(),
                                      MaxWidth(), NativeWidth()) +
            NumericRangeNativeFitness(constraint_set.height, MinHeight(),
@@ -406,7 +407,7 @@ bool FacingModeSatisfiesConstraint(media::VideoFacingMode value,
 // satisfied.
 bool DeviceSatisfiesConstraintSet(
     const DeviceInfo& device,
-    const WebMediaTrackConstraintSet& constraint_set,
+    const MediaTrackConstraintSetPlatform& constraint_set,
     const char** failed_constraint_name = nullptr) {
   if (!constraint_set.device_id.Matches(WebString(device.device_id))) {
     UpdateFailedConstraintName(constraint_set.device_id,
@@ -447,7 +448,7 @@ bool OptionalBoolSatisfiesConstraint(
 }
 
 double DeviceFitness(const DeviceInfo& device,
-                     const WebMediaTrackConstraintSet& constraint_set) {
+                     const MediaTrackConstraintSetPlatform& constraint_set) {
   return StringConstraintFitnessDistance(WebString(device.device_id),
                                          constraint_set.device_id) +
          StringConstraintFitnessDistance(WebString(device.group_id),
@@ -464,7 +465,7 @@ double DeviceFitness(const DeviceInfo& device,
 double CandidateFitness(const DeviceInfo& device,
                         const CandidateFormat& candidate_format,
                         const base::Optional<bool>& noise_reduction,
-                        const WebMediaTrackConstraintSet& constraint_set,
+                        const MediaTrackConstraintSetPlatform& constraint_set,
                         VideoTrackAdapterSettings* track_settings) {
   return DeviceFitness(device, constraint_set) +
          candidate_format.Fitness(constraint_set, track_settings) +

@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.suggestions;
 
 import org.chromium.base.DiscardableReferencePool;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
-import org.chromium.chrome.browser.snackbar.SnackbarManager;
+import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 
 /**
  * Interface between the suggestion surface and the rest of the browser.

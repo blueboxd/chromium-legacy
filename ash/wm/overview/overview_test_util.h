@@ -33,6 +33,10 @@ const std::vector<std::unique_ptr<OverviewItem>>& GetOverviewItemsForRoot(
 // Returns the OverviewItem associated with |window| if it exists.
 OverviewItem* GetOverviewItemForWindow(aura::Window* window);
 
+// Returns a rect that accounts for the shelf hotseat. Used by tests which test
+// the grids' bounds in relation to work area or snapped window bounds.
+gfx::Rect ShrinkBoundsByHotseatInset(const gfx::Rect& rect);
+
 }  // namespace ash
 
 #endif  // ASH_WM_OVERVIEW_OVERVIEW_TEST_UTIL_H_

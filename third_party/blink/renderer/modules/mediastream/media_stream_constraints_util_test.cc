@@ -21,7 +21,7 @@ constexpr double kSourceAspectRatio =
 constexpr double kSourceFrameRate = 100.0;
 
 VideoTrackAdapterSettings SelectTrackSettings(
-    const WebMediaTrackConstraintSet& basic_constraint_set,
+    const MediaTrackConstraintSetPlatform& basic_constraint_set,
     const media_constraints::ResolutionSet& resolution_set,
     const media_constraints::NumericRangeSet<double>& frame_rate_set,
     bool enable_rescale = true) {
@@ -53,10 +53,10 @@ TEST_F(MediaStreamConstraintsUtilTest, BooleanConstraints) {
   bool value_true = false;
   bool value_false = false;
   EXPECT_TRUE(GetConstraintValueAsBoolean(
-      constraints, &WebMediaTrackConstraintSet::echo_cancellation,
+      constraints, &MediaTrackConstraintSetPlatform::echo_cancellation,
       &value_true));
   EXPECT_TRUE(GetConstraintValueAsBoolean(
-      constraints, &WebMediaTrackConstraintSet::goog_echo_cancellation,
+      constraints, &MediaTrackConstraintSetPlatform::goog_echo_cancellation,
       &value_false));
   EXPECT_TRUE(value_true);
   EXPECT_FALSE(value_false);
@@ -67,10 +67,10 @@ TEST_F(MediaStreamConstraintsUtilTest, BooleanConstraints) {
   constraint_factory.AddAdvanced().goog_echo_cancellation.SetExact(true);
   constraints = constraint_factory.CreateMediaConstraints();
   EXPECT_TRUE(GetConstraintValueAsBoolean(
-      constraints, &WebMediaTrackConstraintSet::echo_cancellation,
+      constraints, &MediaTrackConstraintSetPlatform::echo_cancellation,
       &value_false));
   EXPECT_TRUE(GetConstraintValueAsBoolean(
-      constraints, &WebMediaTrackConstraintSet::goog_echo_cancellation,
+      constraints, &MediaTrackConstraintSetPlatform::goog_echo_cancellation,
       &value_true));
   EXPECT_TRUE(value_true);
   EXPECT_FALSE(value_false);
@@ -81,7 +81,7 @@ TEST_F(MediaStreamConstraintsUtilTest, BooleanConstraints) {
   constraint_factory.basic().echo_cancellation.SetExact(true);
   constraints = constraint_factory.CreateMediaConstraints();
   EXPECT_TRUE(GetConstraintValueAsBoolean(
-      constraints, &WebMediaTrackConstraintSet::echo_cancellation,
+      constraints, &MediaTrackConstraintSetPlatform::echo_cancellation,
       &value_true));
   EXPECT_TRUE(value_true);
 }
@@ -95,9 +95,9 @@ TEST_F(MediaStreamConstraintsUtilTest, DoubleConstraints) {
 
   double value;
   EXPECT_FALSE(GetConstraintValueAsDouble(
-      constraints, &WebMediaTrackConstraintSet::frame_rate, &value));
+      constraints, &MediaTrackConstraintSetPlatform::frame_rate, &value));
   EXPECT_TRUE(GetConstraintValueAsDouble(
-      constraints, &WebMediaTrackConstraintSet::aspect_ratio, &value));
+      constraints, &MediaTrackConstraintSetPlatform::aspect_ratio, &value));
   EXPECT_EQ(test_value, value);
 }
 
@@ -110,15 +110,15 @@ TEST_F(MediaStreamConstraintsUtilTest, IntConstraints) {
 
   int value;
   EXPECT_TRUE(GetConstraintValueAsInteger(
-      constraints, &WebMediaTrackConstraintSet::width, &value));
+      constraints, &MediaTrackConstraintSetPlatform::width, &value));
   EXPECT_EQ(test_value, value);
 
   // An exact value should also be reflected as min and max.
   EXPECT_TRUE(GetConstraintMaxAsInteger(
-      constraints, &WebMediaTrackConstraintSet::width, &value));
+      constraints, &MediaTrackConstraintSetPlatform::width, &value));
   EXPECT_EQ(test_value, value);
   EXPECT_TRUE(GetConstraintMinAsInteger(
-      constraints, &WebMediaTrackConstraintSet::width, &value));
+      constraints, &MediaTrackConstraintSetPlatform::width, &value));
   EXPECT_EQ(test_value, value);
 }
 

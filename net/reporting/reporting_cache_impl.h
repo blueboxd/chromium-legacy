@@ -14,6 +14,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/flat_set.h"
+#include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
@@ -49,10 +51,7 @@ class ReportingCacheImpl : public ReportingCache {
   void GetReports(
       std::vector<const ReportingReport*>* reports_out) const override;
   base::Value GetReportsAsValue() const override;
-  void GetNonpendingReports(
-      std::vector<const ReportingReport*>* reports_out) const override;
-  void SetReportsPending(
-      const std::vector<const ReportingReport*>& reports) override;
+  std::vector<const ReportingReport*> GetReportsToDeliver() override;
   void ClearReportsPending(
       const std::vector<const ReportingReport*>& reports) override;
   void IncrementReportsAttempts(
@@ -130,15 +129,15 @@ class ReportingCacheImpl : public ReportingCache {
     std::set<std::string> endpoint_group_names;
   };
 
+  using ReportSet = base::flat_set<std::unique_ptr<ReportingReport>,
+                                   base::UniquePtrComparator>;
   using OriginClientMap = std::unordered_multimap<std::string, OriginClient>;
   using EndpointGroupMap =
       std::map<ReportingEndpointGroupKey, CachedReportingEndpointGroup>;
   using EndpointMap =
       std::multimap<ReportingEndpointGroupKey, ReportingEndpoint>;
 
-  void RemoveReportInternal(const ReportingReport* report);
-
-  const ReportingReport* FindReportToEvict() const;
+  ReportSet::const_iterator FindReportToEvict() const;
 
   // Sanity-checks the entire data structure of clients, groups, and endpoints,
   // if DCHECK is on. The cached clients should pass this sanity check after
@@ -295,17 +294,8 @@ class ReportingCacheImpl : public ReportingCache {
 
   ReportingContext* context_;
 
-  // Owns all reports, keyed by const raw pointer for easier lookup.
-  std::unordered_map<const ReportingReport*, std::unique_ptr<ReportingReport>>
-      reports_;
-
-  // Reports that have been marked pending (in use elsewhere and should not be
-  // deleted until no longer pending).
-  std::unordered_set<const ReportingReport*> pending_reports_;
-
-  // Reports that have been marked doomed (would have been deleted, but were
-  // pending when the deletion was requested).
-  std::unordered_set<const ReportingReport*> doomed_reports_;
+  // Reports that have not yet been successfully uploaded.
+  ReportSet reports_;
 
   // Map of clients for all configured origins, keyed on domain name (there may
   // be multiple origins per domain name).

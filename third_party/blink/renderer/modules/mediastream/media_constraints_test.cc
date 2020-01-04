@@ -64,7 +64,7 @@ TEST(MediaTrackConstraintsTest, BooleanConstraint) {
 }
 
 TEST(MediaTrackConstraintsTest, ConstraintSetEmpty) {
-  WebMediaTrackConstraintSet the_set;
+  MediaTrackConstraintSetPlatform the_set;
   EXPECT_TRUE(the_set.IsEmpty());
   the_set.echo_cancellation.SetExact(false);
   EXPECT_FALSE(the_set.IsEmpty());
@@ -77,8 +77,8 @@ TEST(MediaTrackConstraintsTest, ConstraintName) {
 }
 
 TEST(MediaTrackConstraintsTest, MandatoryChecks) {
-  WebMediaTrackConstraintSet the_set;
-  std::string found_name;
+  MediaTrackConstraintSetPlatform the_set;
+  String found_name;
   EXPECT_FALSE(the_set.HasMandatory());
   EXPECT_FALSE(the_set.HasMandatoryOutsideSet({"width"}, found_name));
   EXPECT_FALSE(the_set.width.HasMandatory());
@@ -94,7 +94,7 @@ TEST(MediaTrackConstraintsTest, MandatoryChecks) {
 }
 
 TEST(MediaTrackConstraintsTest, SetToString) {
-  WebMediaTrackConstraintSet the_set;
+  MediaTrackConstraintSetPlatform the_set;
   EXPECT_EQ("", the_set.ToString());
   the_set.width.SetMax(240);
   EXPECT_EQ("width: {max: 240}", the_set.ToString().Utf8());
@@ -105,8 +105,8 @@ TEST(MediaTrackConstraintsTest, SetToString) {
 
 TEST(MediaTrackConstraintsTest, ConstraintsToString) {
   MediaConstraints the_constraints;
-  WebMediaTrackConstraintSet basic;
-  Vector<WebMediaTrackConstraintSet> advanced(static_cast<size_t>(1));
+  MediaTrackConstraintSetPlatform basic;
+  Vector<MediaTrackConstraintSetPlatform> advanced(static_cast<size_t>(1));
   basic.width.SetMax(240);
   advanced[0].echo_cancellation.SetExact(true);
   the_constraints.Initialize(basic, advanced);
@@ -128,8 +128,8 @@ TEST(MediaTrackConstraintsTest, ConvertWebConstraintsBasic) {
 TEST(MediaTrackConstraintsTest, ConvertWebSingleStringConstraint) {
   MediaConstraints input;
 
-  WebMediaTrackConstraintSet basic;
-  Vector<WebMediaTrackConstraintSet> advanced;
+  MediaTrackConstraintSetPlatform basic;
+  Vector<MediaTrackConstraintSetPlatform> advanced;
 
   basic.facing_mode.SetIdeal(Vector<String>({"foo"}));
   input.Initialize(basic, advanced);
@@ -147,8 +147,8 @@ TEST(MediaTrackConstraintsTest, ConvertWebDoubleStringConstraint) {
   buffer[0] = "foo";
   buffer[1] = "bar";
 
-  WebMediaTrackConstraintSet basic;
-  Vector<WebMediaTrackConstraintSet> advanced;
+  MediaTrackConstraintSetPlatform basic;
+  Vector<MediaTrackConstraintSetPlatform> advanced;
   basic.facing_mode.SetIdeal(buffer);
   input.Initialize(basic, advanced);
 
@@ -226,15 +226,15 @@ TEST(MediaTrackConstraintsTest, IdealAndExactConvertToNaked) {
   MediaConstraints input;
   Vector<String> buffer(static_cast<size_t>(1u));
 
-  WebMediaTrackConstraintSet basic;
-  WebMediaTrackConstraintSet advanced_element1;
-  WebMediaTrackConstraintSet advanced_element2;
+  MediaTrackConstraintSetPlatform basic;
+  MediaTrackConstraintSetPlatform advanced_element1;
+  MediaTrackConstraintSetPlatform advanced_element2;
   buffer[0] = "ideal";
   basic.facing_mode.SetIdeal(buffer);
   advanced_element1.facing_mode.SetIdeal(buffer);
   buffer[0] = "exact";
   advanced_element2.facing_mode.SetExact(buffer);
-  Vector<WebMediaTrackConstraintSet> advanced;
+  Vector<MediaTrackConstraintSetPlatform> advanced;
   advanced.push_back(advanced_element1);
   advanced.push_back(advanced_element2);
   input.Initialize(basic, advanced);

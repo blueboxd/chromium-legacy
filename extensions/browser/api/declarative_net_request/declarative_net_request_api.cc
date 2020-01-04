@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/optional.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
@@ -273,7 +274,32 @@ DeclarativeNetRequestGetMatchedRulesFunction::
 
 ExtensionFunction::ResponseAction
 DeclarativeNetRequestGetMatchedRulesFunction::Run() {
-  return RespondNow(NoArguments());
+  using Params = dnr_api::GetMatchedRules::Params;
+
+  base::string16 error;
+  std::unique_ptr<Params> params(Params::Create(*args_, &error));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  EXTENSION_FUNCTION_VALIDATE(error.empty());
+
+  base::Optional<int> tab_id;
+  // TODO(crbug.com/983761): Add timestamp filtering as well.
+
+  if (params->filter && params->filter->tab_id)
+    tab_id = *params->filter->tab_id;
+
+  declarative_net_request::RulesMonitorService* rules_monitor_service =
+      declarative_net_request::RulesMonitorService::Get(browser_context());
+  DCHECK(rules_monitor_service);
+
+  const declarative_net_request::ActionTracker& action_tracker =
+      rules_monitor_service->action_tracker();
+
+  dnr_api::RulesMatchedDetails details;
+  details.rules_matched_info =
+      action_tracker.GetMatchedRules(extension_id(), tab_id);
+
+  return RespondNow(
+      ArgumentList(dnr_api::GetMatchedRules::Results::Create(details)));
 }
 
 DeclarativeNetRequestSetActionCountAsBadgeTextFunction::

@@ -85,13 +85,15 @@ void MaximizeIfSnapped(aura::Window* window);
 // Get the grid bounds if a window is snapped in splitview, or what they will be
 // when snapped based on |target_root| and |indicator_state|. If
 // |divider_changed| is true, maybe clamp the bounds to a minimum size and shift
-// the bounds offscreen.
+// the bounds offscreen. If |account_for_hotseat| is true, inset the bounds by
+// the hotseat size.
 gfx::Rect GetGridBoundsInScreen(aura::Window* target_root);
 gfx::Rect GetGridBoundsInScreen(
     aura::Window* target_root,
     base::Optional<SplitViewDragIndicators::WindowDraggingState>
         window_dragging_state,
-    bool divider_changed);
+    bool divider_changed,
+    bool account_for_hotseat);
 
 // Gets the bounds of a window if it were to be snapped or about to be snapped
 // in splitview. Returns nothing if we are not in tablet mode, or if we aren't

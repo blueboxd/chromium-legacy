@@ -81,6 +81,11 @@ class MEDIA_EXPORT Pipeline {
     // during playback.
     virtual void OnAudioDecoderChange(const PipelineDecoderInfo& info) = 0;
     virtual void OnVideoDecoderChange(const PipelineDecoderInfo& info) = 0;
+
+    // Executed whenever the video frame rate changes.  |fps| will be unset if
+    // the frame rate is unstable.  The duration used for the frame rate is
+    // based on wall clock time, not media time.
+    virtual void OnVideoFrameRateChange(base::Optional<int> fps) = 0;
   };
 
   virtual ~Pipeline() {}

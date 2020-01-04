@@ -10,7 +10,6 @@
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
-#include "third_party/blink/public/common/input/web_scroll_types.h"
 #include "third_party/blink/public/platform/web_content_security_policy.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/web/web_frame.h"
@@ -155,12 +154,6 @@ class WebRemoteFrame : public WebFrame {
   // used to properly chain the recursive scrolling between the two processes.
   virtual void ScrollRectToVisible(const WebRect&,
                                    const WebScrollIntoViewParams&) = 0;
-
-  // Continues to bubble logical scroll that reached the local root in the child
-  // frame's process. Scroll bubbling continues from the frame owner element.
-  virtual void BubbleLogicalScroll(
-      WebScrollDirection direction,
-      ui::input_types::ScrollGranularity granularity) = 0;
 
   virtual void IntrinsicSizingInfoChanged(const WebIntrinsicSizingInfo&) = 0;
 

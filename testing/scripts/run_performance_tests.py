@@ -97,7 +97,6 @@ GTEST_CONVERSION_WHITELIST = [
   'components_perftests',
   'dawn_perf_tests',
   'gpu_perftests',
-  'latency_perftests',
   'load_library_perf_tests',
   'media_perftests',
   'net_perftests',
@@ -190,7 +189,7 @@ class GtestCommandGenerator(object):
     return self._override_executable or self._options.executable
 
   def _get_executable(self):
-    executable = self.executable_name
+    executable = str(self.executable_name)
     if IsWindows():
       return r'.\%s.exe' % executable
     else:

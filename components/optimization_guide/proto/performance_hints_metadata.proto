@@ -1,0 +1,42 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package optimization_guide.proto;
+
+// A classification of the historical performance of a URL or set of URLs.
+enum PerformanceClass {
+  PERFORMANCE_UNKNOWN = 0;
+  // Historic performance for the associated key is relatively slow.
+  PERFORMANCE_SLOW = 1;
+  // Historic performance for the associated key is relatively fast.
+  PERFORMANCE_FAST = 2;
+}
+
+message PerformanceHint {
+  // URLs that match this key should utilize the associated information.
+  oneof key {
+    // Uses wildcard strings (e.g. "https://google.com/*/page.html") to match
+    // URLs. See the following code for more information:
+    // https://cs.chromium.org/chromium/src/components/optimization_guide/url_pattern_with_wildcards.h
+    string wildcard_pattern = 1;
+  }
+
+  // A classification of the historical performance of URLs matching the
+  // associated key.
+  optional PerformanceClass performance_class = 2;
+}
+
+// Optimization metadata associated with Performance Hints.
+//
+// This is only populated for the PERFORMANCE_HINTS optimization type.
+message PerformanceHintsMetadata {
+  // An ordered set of performance hints.
+  //
+  // Only the first matching hint should be applied to a given URL.
+  repeated PerformanceHint performance_hints = 1;
+}

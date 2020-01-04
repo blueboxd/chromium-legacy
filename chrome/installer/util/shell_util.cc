@@ -1287,9 +1287,9 @@ bool GetAppShortcutsFolder(ShellUtil::ShellChange level, base::FilePath* path) {
 
 // Shortcut filters for BatchShortcutAction().
 
-typedef base::Callback<bool(const base::FilePath& /*shortcut_path*/,
-                            const base::string16& /*args*/)>
-    ShortcutFilterCallback;
+using ShortcutFilterCallback =
+    base::RepeatingCallback<bool(const base::FilePath& shortcut_path,
+                                 const base::string16& args)>;
 
 // FilterTargetEq is a shortcut filter that matches only shortcuts that have a
 // specific target, and optionally matches shortcuts that have non-empty
@@ -1330,13 +1330,13 @@ bool FilterTargetEq::Match(const base::FilePath& target_path,
 }
 
 ShortcutFilterCallback FilterTargetEq::AsShortcutFilterCallback() {
-  return base::Bind(&FilterTargetEq::Match, base::Unretained(this));
+  return base::BindRepeating(&FilterTargetEq::Match, base::Unretained(this));
 }
 
 // Shortcut operations for BatchShortcutAction().
 
-typedef base::Callback<bool(const base::FilePath& /*shortcut_path*/)>
-    ShortcutOperationCallback;
+using ShortcutOperationCallback =
+    base::RepeatingCallback<bool(const base::FilePath& shortcut_path)>;
 
 bool ShortcutOpUnpinFromTaskbar(const base::FilePath& shortcut_path) {
   VLOG(1) << "Trying to unpin from taskbar " << shortcut_path.value();
@@ -2203,7 +2203,7 @@ bool ShellUtil::RegisterChromeBrowser(const base::FilePath& chrome_exe,
 
   // Ensure that the shell is notified of the mutations below. Specific exit
   // points may disable this if no mutations are made.
-  base::ScopedClosureRunner notify_on_exit(base::Bind([] {
+  base::ScopedClosureRunner notify_on_exit(base::BindOnce([] {
     SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, nullptr, nullptr);
   }));
 
@@ -2310,10 +2310,10 @@ bool ShellUtil::RemoveShortcuts(ShortcutLocation location,
 
   FilterTargetEq shortcut_filter(target_exe, false);
   // Main operation to apply to each shortcut in the directory specified.
-  ShortcutOperationCallback shortcut_operation(
+  ShortcutOperationCallback shortcut_operation =
       location == SHORTCUT_LOCATION_TASKBAR_PINS
-          ? base::Bind(&ShortcutOpUnpinFromTaskbar)
-          : base::Bind(&ShortcutOpDelete));
+          ? base::BindRepeating(&ShortcutOpUnpinFromTaskbar)
+          : base::BindRepeating(&ShortcutOpDelete);
   bool success =
       BatchShortcutAction(shortcut_filter.AsShortcutFilterCallback(),
                           shortcut_operation, location, level, nullptr);
@@ -2337,8 +2337,8 @@ bool ShellUtil::RetargetShortcutsWithArgs(
     return true;  // Vacuous success.
 
   FilterTargetEq shortcut_filter(old_target_exe, true);
-  ShortcutOperationCallback shortcut_operation(
-      base::Bind(&ShortcutOpRetarget, old_target_exe, new_target_exe));
+  ShortcutOperationCallback shortcut_operation =
+      base::BindRepeating(&ShortcutOpRetarget, old_target_exe, new_target_exe);
   return BatchShortcutAction(shortcut_filter.AsShortcutFilterCallback(),
                              shortcut_operation, location, level, nullptr);
 }
@@ -2354,8 +2354,8 @@ bool ShellUtil::ShortcutListMaybeRemoveUnknownArgs(
   if (!ShortcutLocationIsSupported(location))
     return false;
   FilterTargetEq shortcut_filter(chrome_exe, true);
-  ShortcutOperationCallback shortcut_operation(
-      base::Bind(&ShortcutOpListOrRemoveUnknownArgs, do_removal, shortcuts));
+  ShortcutOperationCallback shortcut_operation = base::BindRepeating(
+      &ShortcutOpListOrRemoveUnknownArgs, do_removal, shortcuts);
   return BatchShortcutAction(shortcut_filter.AsShortcutFilterCallback(),
                              shortcut_operation, location, level, cancel);
 }

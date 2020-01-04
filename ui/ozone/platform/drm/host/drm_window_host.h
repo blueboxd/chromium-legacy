@@ -20,9 +20,8 @@
 
 namespace ui {
 
-class DrmDisplayHostManager;
 class DrmCursor;
-class DrmOverlayManager;
+class DrmDisplayHostManager;
 class DrmWindowHostManager;
 class EventFactoryEvdev;
 class GpuThreadAdapter;
@@ -47,8 +46,7 @@ class DrmWindowHost : public PlatformWindow,
                 EventFactoryEvdev* event_factory,
                 DrmCursor* cursor,
                 DrmWindowHostManager* window_manager,
-                DrmDisplayHostManager* display_manager,
-                DrmOverlayManager* overlay_manager);
+                DrmDisplayHostManager* display_manager);
   ~DrmWindowHost() override;
 
   void Initialize();
@@ -107,8 +105,6 @@ class DrmWindowHost : public PlatformWindow,
   DrmCursor* const cursor_;                       // Not owned.
   DrmWindowHostManager* const window_manager_;    // Not owned.
   DrmDisplayHostManager* const display_manager_;  // Not owned.
-  // TODO(crbug.com/936425): Remove after VizDisplayCompositor feature launches.
-  DrmOverlayManager* const overlay_manager_;  // Not owned.
 
   gfx::Rect bounds_;
   const gfx::AcceleratedWidget widget_;

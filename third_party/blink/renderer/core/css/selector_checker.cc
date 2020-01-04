@@ -1611,42 +1611,21 @@ bool SelectorChecker::CheckScrollbarPseudoClass(
       return scrollbar_part_ == kBackButtonEndPart ||
              scrollbar_part_ == kForwardButtonEndPart ||
              scrollbar_part_ == kForwardTrackPart;
-    case CSSSelector::kPseudoDoubleButton: {
-      WebScrollbarButtonsPlacement buttons_placement =
-          scrollbar_->GetTheme().ButtonsPlacement();
-      if (scrollbar_part_ == kBackButtonStartPart ||
-          scrollbar_part_ == kForwardButtonStartPart ||
-          scrollbar_part_ == kBackTrackPart)
-        return buttons_placement == kWebScrollbarButtonsPlacementDoubleStart ||
-               buttons_placement == kWebScrollbarButtonsPlacementDoubleBoth;
-      if (scrollbar_part_ == kBackButtonEndPart ||
-          scrollbar_part_ == kForwardButtonEndPart ||
-          scrollbar_part_ == kForwardTrackPart)
-        return buttons_placement == kWebScrollbarButtonsPlacementDoubleEnd ||
-               buttons_placement == kWebScrollbarButtonsPlacementDoubleBoth;
+    case CSSSelector::kPseudoDoubleButton:
+      // :double-button matches nothing on all platforms.
       return false;
-    }
-    case CSSSelector::kPseudoSingleButton: {
-      WebScrollbarButtonsPlacement buttons_placement =
-          scrollbar_->GetTheme().ButtonsPlacement();
-      if (scrollbar_part_ == kBackButtonStartPart ||
-          scrollbar_part_ == kForwardButtonEndPart ||
-          scrollbar_part_ == kBackTrackPart ||
-          scrollbar_part_ == kForwardTrackPart)
-        return buttons_placement == kWebScrollbarButtonsPlacementSingle;
-      return false;
-    }
-    case CSSSelector::kPseudoNoButton: {
-      WebScrollbarButtonsPlacement buttons_placement =
-          scrollbar_->GetTheme().ButtonsPlacement();
-      if (scrollbar_part_ == kBackTrackPart)
-        return buttons_placement == kWebScrollbarButtonsPlacementNone ||
-               buttons_placement == kWebScrollbarButtonsPlacementDoubleEnd;
-      if (scrollbar_part_ == kForwardTrackPart)
-        return buttons_placement == kWebScrollbarButtonsPlacementNone ||
-               buttons_placement == kWebScrollbarButtonsPlacementDoubleStart;
-      return false;
-    }
+    case CSSSelector::kPseudoSingleButton:
+      if (!scrollbar_->GetTheme().NativeThemeHasButtons())
+        return false;
+      return scrollbar_part_ == kBackButtonStartPart ||
+             scrollbar_part_ == kForwardButtonEndPart ||
+             scrollbar_part_ == kBackTrackPart ||
+             scrollbar_part_ == kForwardTrackPart;
+    case CSSSelector::kPseudoNoButton:
+      if (scrollbar_->GetTheme().NativeThemeHasButtons())
+        return false;
+      return scrollbar_part_ == kBackTrackPart ||
+             scrollbar_part_ == kForwardTrackPart;
     case CSSSelector::kPseudoCornerPresent:
       return scrollbar_->GetScrollableArea() &&
              scrollbar_->GetScrollableArea()->IsScrollCornerVisible();

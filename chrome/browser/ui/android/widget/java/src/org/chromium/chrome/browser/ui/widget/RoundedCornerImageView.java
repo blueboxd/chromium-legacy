@@ -21,6 +21,7 @@ import android.graphics.drawable.shapes.RoundRectShape;
 import android.graphics.drawable.shapes.Shape;
 import android.support.annotation.ColorInt;
 import android.support.v4.view.ViewCompat;
+import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 
@@ -40,7 +41,7 @@ import androidx.annotation.Nullable;
  * Note : This does not properly handle padding. Padding will not be taken into account when rounded
  * corners are used.
  */
-public class RoundedCornerImageView extends ImageView {
+public class RoundedCornerImageView extends AppCompatImageView {
     private final RectF mTmpRect = new RectF();
     private final Matrix mTmpMatrix = new Matrix();
 

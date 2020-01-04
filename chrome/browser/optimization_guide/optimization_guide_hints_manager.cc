@@ -728,54 +728,63 @@ bool OptimizationGuideHintsManager::HasLoadedOptimizationFilter(
          blacklist_optimization_filters_.end();
 }
 
-void OptimizationGuideHintsManager::CanApplyOptimization(
+optimization_guide::OptimizationTargetDecision
+OptimizationGuideHintsManager::ShouldTargetNavigation(
     content::NavigationHandle* navigation_handle,
-    optimization_guide::proto::OptimizationTarget optimization_target,
+    optimization_guide::proto::OptimizationTarget optimization_target) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (optimization_target !=
+      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD) {
+    return optimization_guide::OptimizationTargetDecision::
+        kModelNotAvailableOnClient;
+  }
+
+  net::EffectiveConnectionType max_ect_trigger =
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_2G;
+
+  const auto& url = navigation_handle->GetURL();
+  if (url.has_host()) {
+    const auto& host = url.host();
+    // Check if we have a hint already loaded for this navigation.
+    const optimization_guide::proto::Hint* loaded_hint =
+        hint_cache_->GetHintIfLoaded(host);
+    const optimization_guide::proto::PageHint* matched_page_hint =
+        loaded_hint ? GetPageHintForNavigation(navigation_handle, loaded_hint)
+                    : nullptr;
+
+    if (matched_page_hint && matched_page_hint->has_max_ect_trigger()) {
+      max_ect_trigger = optimization_guide::ConvertProtoEffectiveConnectionType(
+          matched_page_hint->max_ect_trigger());
+    }
+  }
+
+  if (current_effective_connection_type_ !=
+          net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN &&
+      current_effective_connection_type_ <= max_ect_trigger) {
+    return optimization_guide::OptimizationTargetDecision::kPageLoadMatches;
+  }
+
+  return optimization_guide::OptimizationTargetDecision::kPageLoadDoesNotMatch;
+}
+
+optimization_guide::OptimizationTypeDecision
+OptimizationGuideHintsManager::CanApplyOptimization(
+    content::NavigationHandle* navigation_handle,
     optimization_guide::proto::OptimizationType optimization_type,
-    optimization_guide::OptimizationTargetDecision*
-        optimization_target_decision,
-    optimization_guide::OptimizationTypeDecision* optimization_type_decision,
     optimization_guide::OptimizationMetadata* optimization_metadata) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(optimization_target_decision);
-  DCHECK(optimization_type_decision);
 
   // Clear out optimization metadata if provided.
   if (optimization_metadata)
     (*optimization_metadata).previews_metadata.Clear();
 
-  *optimization_target_decision =
-      optimization_guide::OptimizationTargetDecision::kUnknown;
-  *optimization_type_decision =
-      optimization_guide::OptimizationTypeDecision::kUnknown;
-
-  bool should_update_optimization_target_decision = true;
-  if (optimization_target !=
-      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD) {
-    *optimization_target_decision = optimization_guide::
-        OptimizationTargetDecision::kModelNotAvailableOnClient;
-    should_update_optimization_target_decision = false;
-  }
-
   const auto& url = navigation_handle->GetURL();
   // If the URL doesn't have a host, we cannot query the hint for it, so just
   // return early.
-  if (!url.has_host()) {
-    if (should_update_optimization_target_decision) {
-      *optimization_target_decision =
-          optimization_guide::OptimizationTargetDecision::kPageLoadDoesNotMatch;
-    }
-    *optimization_type_decision =
-        optimization_guide::OptimizationTypeDecision::kNoHintAvailable;
-    return;
-  }
+  if (!url.has_host())
+    return optimization_guide::OptimizationTypeDecision::kNoHintAvailable;
   const auto& host = url.host();
-
-  net::EffectiveConnectionType max_ect_trigger =
-      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_2G;
-
-  // TODO(sophiechang): Maybe cache the page hint for a navigation ID so we
-  // don't have to iterate through all page hints every time this is called.
 
   // Check if we have a hint already loaded for this navigation.
   const optimization_guide::proto::Hint* loaded_hint =
@@ -792,27 +801,9 @@ void OptimizationGuideHintsManager::CanApplyOptimization(
   if (navigation_data) {
     navigation_data->set_has_hint_after_commit(has_hint_in_cache);
 
-    if (loaded_hint)
+    if (loaded_hint) {
       navigation_data->set_serialized_hint_version_string(
           loaded_hint->version());
-  }
-
-  if (matched_page_hint && matched_page_hint->has_max_ect_trigger()) {
-    max_ect_trigger = optimization_guide::ConvertProtoEffectiveConnectionType(
-        matched_page_hint->max_ect_trigger());
-  }
-
-  if (should_update_optimization_target_decision) {
-    if (current_effective_connection_type_ ==
-            net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN ||
-        current_effective_connection_type_ > max_ect_trigger) {
-      // The current network is not slow enough, so this navigation is likely
-      // not going to be painful.
-      *optimization_target_decision =
-          optimization_guide::OptimizationTargetDecision::kPageLoadDoesNotMatch;
-    } else {
-      *optimization_target_decision =
-          optimization_guide::OptimizationTargetDecision::kPageLoadMatches;
     }
   }
 
@@ -825,22 +816,19 @@ void OptimizationGuideHintsManager::CanApplyOptimization(
     // if the URL matches anything in the filter.
     if (blacklist_optimization_filters_.find(optimization_type) !=
         blacklist_optimization_filters_.end()) {
-      *optimization_type_decision =
-          blacklist_optimization_filters_[optimization_type]->Matches(url)
-              ? optimization_guide::OptimizationTypeDecision::
-                    kNotAllowedByOptimizationFilter
-              : optimization_guide::OptimizationTypeDecision::
-                    kAllowedByOptimizationFilter;
-      return;
+      return blacklist_optimization_filters_[optimization_type]->Matches(url)
+                 ? optimization_guide::OptimizationTypeDecision::
+                       kNotAllowedByOptimizationFilter
+                 : optimization_guide::OptimizationTypeDecision::
+                       kAllowedByOptimizationFilter;
     }
 
     // Check if we had an optimization filter for it, but it was not loaded into
     // memory.
     if (optimization_types_with_filter_.find(optimization_type) !=
         optimization_types_with_filter_.end()) {
-      *optimization_type_decision = optimization_guide::
-          OptimizationTypeDecision::kHadOptimizationFilterButNotLoadedInTime;
-      return;
+      return optimization_guide::OptimizationTypeDecision::
+          kHadOptimizationFilterButNotLoadedInTime;
     }
   }
 
@@ -849,21 +837,18 @@ void OptimizationGuideHintsManager::CanApplyOptimization(
     // cache, we do not know what to do with the URL so just return.
     // Otherwise, we do have information, but we just do not know it yet.
     if (has_hint_in_cache) {
-      *optimization_type_decision = optimization_guide::
-          OptimizationTypeDecision::kHadHintButNotLoadedInTime;
-    } else if (IsHintBeingFetched(url.host())) {
-      *optimization_type_decision = optimization_guide::
-          OptimizationTypeDecision::kHintFetchStartedButNotAvailableInTime;
-    } else {
-      *optimization_type_decision =
-          optimization_guide::OptimizationTypeDecision::kNoHintAvailable;
+      return optimization_guide::OptimizationTypeDecision::
+          kHadHintButNotLoadedInTime;
     }
-    return;
+    if (IsHintBeingFetched(url.host())) {
+      return optimization_guide::OptimizationTypeDecision::
+          kHintFetchStartedButNotAvailableInTime;
+    }
+    return optimization_guide::OptimizationTypeDecision::kNoHintAvailable;
   }
+
   if (!matched_page_hint) {
-    *optimization_type_decision =
-        optimization_guide::OptimizationTypeDecision::kNoMatchingPageHint;
-    return;
+    return optimization_guide::OptimizationTypeDecision::kNoMatchingPageHint;
   }
 
   // Now check if we have any optimizations for it.
@@ -883,14 +868,11 @@ void OptimizationGuideHintsManager::CanApplyOptimization(
       (*optimization_metadata).previews_metadata =
           optimization.previews_metadata();
     }
-    *optimization_type_decision =
-        optimization_guide::OptimizationTypeDecision::kAllowedByHint;
-    return;
+    return optimization_guide::OptimizationTypeDecision::kAllowedByHint;
   }
 
   // We didn't find anything, so it's not allowed by the hint.
-  *optimization_type_decision =
-      optimization_guide::OptimizationTypeDecision::kNotAllowedByHint;
+  return optimization_guide::OptimizationTypeDecision::kNotAllowedByHint;
 }
 
 void OptimizationGuideHintsManager::OnEffectiveConnectionTypeChanged(
@@ -905,7 +887,7 @@ bool OptimizationGuideHintsManager::IsAllowedToFetchNavigationHints(
   if (!IsUserPermittedToFetchFromRemoteOptimizationGuide(profile_))
     return false;
 
-  if (!url.is_valid() || !url.SchemeIs(url::kHttpsScheme))
+  if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS())
     return false;
 
   base::Optional<net::EffectiveConnectionType> ect_max_threshold =

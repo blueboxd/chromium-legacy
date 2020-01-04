@@ -32,6 +32,7 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.DisableNativeTestRule;
 import org.chromium.base.test.util.JniMocker;
+import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountTrackerService;
 import org.chromium.components.signin.base.CoreAccountId;
@@ -80,9 +81,14 @@ public class SigninManagerTest {
 
         AndroidSyncSettings androidSyncSettings = mock(AndroidSyncSettings.class);
 
+        ExternalAuthUtils externalAuthUtils = mock(ExternalAuthUtils.class);
+        // Pretend Google Play services are available as it is required for the sign-in
+        doReturn(false).when(externalAuthUtils).isGooglePlayServicesMissing(any());
+
         doReturn(null).when(mIdentityManager).getPrimaryAccountId();
-        mSigninManager = new SigninManager(0 /* nativeSigninManagerAndroid */,
-                mAccountTrackerService, mIdentityManager, mIdentityMutator, androidSyncSettings);
+        mSigninManager =
+                new SigninManager(0 /* nativeSigninManagerAndroid */, mAccountTrackerService,
+                        mIdentityManager, mIdentityMutator, androidSyncSettings, externalAuthUtils);
 
         mAccount = new CoreAccountInfo(new CoreAccountId("gaia-id-user"),
                 AccountManagerFacade.createAccountFromName("user@domain.com"), "gaia-id-user");

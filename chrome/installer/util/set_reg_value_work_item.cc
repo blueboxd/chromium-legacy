@@ -113,11 +113,11 @@ SetRegValueWorkItem::SetRegValueWorkItem(
     const std::wstring& key_path,
     REGSAM wow64_access,
     const std::wstring& value_name,
-    const GetValueFromExistingCallback& get_value_callback)
+    GetValueFromExistingCallback get_value_callback)
     : predefined_root_(predefined_root),
       key_path_(key_path),
       value_name_(value_name),
-      get_value_callback_(get_value_callback),
+      get_value_callback_(std::move(get_value_callback)),
       overwrite_(true),
       wow64_access_(wow64_access),
       type_(REG_SZ),
@@ -178,7 +178,8 @@ bool SetRegValueWorkItem::DoImpl() {
     if (previous_type_ == REG_SZ)
       BinaryDataToString(previous_value_, &previous_value_str);
 
-    StringToBinaryData(get_value_callback_.Run(previous_value_str), &value_);
+    StringToBinaryData(std::move(get_value_callback_).Run(previous_value_str),
+                       &value_);
   }
 
   result = key.WriteValue(value_name_.c_str(), &value_[0],

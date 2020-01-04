@@ -1987,7 +1987,6 @@ interface HTMLAnchorElement : HTMLElement
     getter host
     getter hostname
     getter href
-    getter hrefTranslate
     getter hreflang
     getter name
     getter origin
@@ -2015,7 +2014,6 @@ interface HTMLAnchorElement : HTMLElement
     setter host
     setter hostname
     setter href
-    setter hrefTranslate
     setter hreflang
     setter name
     setter password

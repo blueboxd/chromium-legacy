@@ -43,10 +43,15 @@ class CGaiaCredentialProviderModule
   // validity is up to date.
   void RefreshTokenHandleValidity();
 
+  // Initializes the crash reporting for the module. Initialization happens only
+  // once even if the function is called multiple times.
+  void InitializeCrashReporting();
+
  private:
   std::unique_ptr<base::AtExitManager> exit_manager_;
   bool is_testing_ = false;
   bool token_handle_validity_refreshed_ = false;
+  volatile long crashpad_initialized_ = 0;
 };
 
 }  // namespace credential_provider

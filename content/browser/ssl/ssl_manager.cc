@@ -377,20 +377,28 @@ bool SSLManager::UpdateEntry(NavigationEntryImpl* entry,
   // necessarily have site instances.  Without a process, the entry can't
   // possibly have insecure content.  See bug https://crbug.com/12423.
   if (site_instance && ssl_host_state_delegate_) {
-    std::string host = entry->GetURL().host();
-    int process_id = site_instance->GetProcess()->GetID();
-    if (ssl_host_state_delegate_->DidHostRunInsecureContent(
-            host, process_id, SSLHostStateDelegate::MIXED_CONTENT)) {
-      entry->GetSSL().content_status |= SSLStatus::RAN_INSECURE_CONTENT;
-    }
+    const base::Optional<url::Origin>& entry_origin =
+        entry->root_node()->frame_entry->committed_origin();
+    // In some cases (e.g., unreachable URLs), navigation entries might not have
+    // origins attached to them. We don't care about tracking mixed content for
+    // those cases.
+    if (entry_origin.has_value()) {
+      const std::string& host = entry_origin->host();
+      int process_id = site_instance->GetProcess()->GetID();
+      if (ssl_host_state_delegate_->DidHostRunInsecureContent(
+              host, process_id, SSLHostStateDelegate::MIXED_CONTENT)) {
+        entry->GetSSL().content_status |= SSLStatus::RAN_INSECURE_CONTENT;
+      }
 
-    // Only record information about subresources with cert errors if the
-    // main page is HTTPS with a certificate.
-    if (entry->GetURL().SchemeIsCryptographic() &&
-        entry->GetSSL().certificate &&
-        ssl_host_state_delegate_->DidHostRunInsecureContent(
-            host, process_id, SSLHostStateDelegate::CERT_ERRORS_CONTENT)) {
-      entry->GetSSL().content_status |= SSLStatus::RAN_CONTENT_WITH_CERT_ERRORS;
+      // Only record information about subresources with cert errors if the
+      // main page is HTTPS with a certificate.
+      if (entry->GetURL().SchemeIsCryptographic() &&
+          entry->GetSSL().certificate &&
+          ssl_host_state_delegate_->DidHostRunInsecureContent(
+              host, process_id, SSLHostStateDelegate::CERT_ERRORS_CONTENT)) {
+        entry->GetSSL().content_status |=
+            SSLStatus::RAN_CONTENT_WITH_CERT_ERRORS;
+      }
     }
   }
 

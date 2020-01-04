@@ -3895,28 +3895,17 @@ InputHandler::ScrollStatus LayerTreeHostImpl::RootScrollBegin(
     ScrollState* scroll_state,
     InputHandler::ScrollInputType type) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::RootScrollBegin");
-
-  ClearCurrentlyScrollingNode();
-
-  gfx::Point viewport_point(scroll_state->position_x(),
-                            scroll_state->position_y());
-
-  gfx::PointF device_viewport_point = gfx::ScalePoint(
-      gfx::PointF(viewport_point), active_tree_->device_scale_factor());
-  LayerImpl* first_scrolling_layer_or_scrollbar =
-      active_tree_->FindFirstScrollingLayerOrScrollbarThatIsHitByPoint(
-          device_viewport_point);
-
-  if (IsTouchDraggingScrollbar(first_scrolling_layer_or_scrollbar, type)) {
-    TRACE_EVENT_INSTANT0("cc", "Scrollbar Scrolling", TRACE_EVENT_SCOPE_THREAD);
+  if (!OuterViewportScrollNode()) {
     ScrollStatus scroll_status;
-    scroll_status.thread = SCROLL_ON_MAIN_THREAD;
+    scroll_status.thread = InputHandler::SCROLL_IGNORED;
     scroll_status.main_thread_scrolling_reasons =
-        MainThreadScrollingReason::kScrollbarScrolling;
+        MainThreadScrollingReason::kNoScrollingLayer;
     return scroll_status;
   }
 
-  return ScrollBeginImpl(scroll_state, OuterViewportScrollNode(), type);
+  scroll_state->data()->set_current_native_scrolling_element(
+      OuterViewportScrollNode()->element_id);
+  return ScrollBegin(scroll_state, type);
 }
 
 InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
@@ -4112,11 +4101,6 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimatedBegin(
   // this does not currently go through the scroll customization machinery
   // that ScrollBy uses for non-animated wheel scrolls.
   scroll_status = ScrollBegin(scroll_state, WHEEL);
-  if (scroll_status.thread == SCROLL_ON_IMPL_THREAD) {
-    scroll_animating_latched_element_id_ = CurrentlyScrollingNode()->element_id;
-    scroll_animating_overscroll_target_element_id_ =
-        CurrentlyScrollingNode()->element_id;
-  }
   return scroll_status;
 }
 
@@ -4267,7 +4251,6 @@ void LayerTreeHostImpl::ScrollAnimated(const gfx::Point& viewport_point,
     did_scroll_x_for_scroll_gesture_ |= scrolled.x() != 0;
     did_scroll_y_for_scroll_gesture_ |= scrolled.y() != 0;
     if (scrolled == pending_delta) {
-      scroll_animating_latched_element_id_ = scroll_node->element_id;
       TRACE_EVENT_INSTANT0("cc", "Viewport scroll animated",
                            TRACE_EVENT_SCOPE_THREAD);
       animation_created = true;
@@ -4277,7 +4260,6 @@ void LayerTreeHostImpl::ScrollAnimated(const gfx::Point& viewport_point,
     if (ScrollAnimationCreate(scroll_node, delta, delayed_by)) {
       did_scroll_x_for_scroll_gesture_ |= delta.x() != 0;
       did_scroll_y_for_scroll_gesture_ |= delta.y() != 0;
-      scroll_animating_latched_element_id_ = scroll_node->element_id;
       TRACE_EVENT_INSTANT0("cc", "created scroll animation",
                            TRACE_EVENT_SCOPE_THREAD);
       animation_created = true;
@@ -4583,8 +4565,7 @@ void LayerTreeHostImpl::LatchToScroller(ScrollState* scroll_state,
                        TRACE_EVENT_SCOPE_THREAD, "isNull",
                        scroll_node ? false : true);
   active_tree_->SetCurrentlyScrollingNode(scroll_node);
-  last_scroller_element_id_ =
-      scroll_node ? scroll_node->element_id : ElementId();
+  last_latched_scroller_ = scroll_node ? scroll_node->element_id : ElementId();
 }
 
 bool LayerTreeHostImpl::CanConsumeDelta(const ScrollNode& scroll_node,
@@ -5149,27 +5130,12 @@ std::unique_ptr<ScrollAndScaleSet> LayerTreeHostImpl::ProcessScrollDeltas() {
   scroll_info->overscroll_delta = overscroll_delta_for_main_thread_;
   overscroll_delta_for_main_thread_ = gfx::Vector2dF();
 
-  if (scroll_gesture_did_end_) {
-    // When the scrolling has finished send the element id of the last node that
-    // has scrolled.
-    scroll_info->scroll_latched_element_id = last_scroller_element_id_;
-    last_scroller_element_id_ = ElementId();
-  } else {
-    // In scroll animation path CurrentlyScrollingNode does not exist during
-    // overscrolling. Use the explicitly stored overscroll target instead.
-    scroll_info->scroll_latched_element_id =
-        scroll_animating_overscroll_target_element_id_;
-    scroll_animating_overscroll_target_element_id_ = ElementId();
-
-    if (!scroll_info->scroll_latched_element_id) {
-      // In non-animating scroll path the overscroll target is always the
-      // CurrentlyScrollingNode.
-      ScrollNode* node =
-          active_tree_->property_trees()->scroll_tree.CurrentlyScrollingNode();
-      scroll_info->scroll_latched_element_id =
-          node ? node->element_id : ElementId();
-    }
-  }
+  // Use the |last_latched_scroller_| rather than the |CurrentlyScrollingNode|
+  // since the latter may be cleared by a GSE before we've committed these
+  // values to the main thread.
+  scroll_info->scroll_latched_element_id = last_latched_scroller_;
+  if (scroll_gesture_did_end_)
+    last_latched_scroller_ = ElementId();
 
   if (browser_controls_manager()) {
     scroll_info->browser_controls_constraint =

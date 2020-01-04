@@ -204,12 +204,13 @@ void RemoteFrame::SetInheritedEffectiveTouchAction(TouchAction touch_action) {
 }
 
 bool RemoteFrame::BubbleLogicalScrollFromChildFrame(
-    ScrollDirection direction,
+    mojom::blink::ScrollDirection direction,
     ScrollGranularity granularity,
     Frame* child) {
   DCHECK(child->Client());
-  To<LocalFrame>(child)->Client()->BubbleLogicalScrollInParentFrame(
-      direction, granularity);
+  To<LocalFrame>(child)
+      ->GetLocalFrameHostRemote()
+      .BubbleLogicalScrollInParentFrame(direction, granularity);
   return false;
 }
 
@@ -348,6 +349,16 @@ void RemoteFrame::Focus() {
 
 void RemoteFrame::SetHadStickyUserActivationBeforeNavigation(bool value) {
   Frame::SetHadStickyUserActivationBeforeNavigation(value);
+}
+
+void RemoteFrame::BubbleLogicalScroll(
+    mojom::blink::ScrollDirection direction,
+    ui::input_types::ScrollGranularity granularity) {
+  Frame* parent_frame = Client()->Parent();
+  DCHECK(parent_frame);
+  DCHECK(parent_frame->IsLocalFrame());
+
+  parent_frame->BubbleLogicalScrollFromChildFrame(direction, granularity, this);
 }
 
 bool RemoteFrame::IsIgnoredForHitTest() const {

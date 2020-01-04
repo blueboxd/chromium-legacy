@@ -49,8 +49,8 @@ class UserHiveVisitor {
 TEST(UserHiveVisitorTest, VisitAllUserHives) {
   UserHiveVisitor visitor;
 
-  VisitUserHives(
-      base::Bind(&UserHiveVisitor::OnUserHive, base::Unretained(&visitor)));
+  VisitUserHives(base::BindRepeating(&UserHiveVisitor::OnUserHive,
+                                     base::Unretained(&visitor)));
 
   EXPECT_GT(visitor.sids_visited().size(), 0U);
 }
@@ -61,8 +61,8 @@ TEST(UserHiveVisitor, VisitOneHive) {
   UserHiveVisitor visitor;
 
   visitor.set_early_exit(true);
-  VisitUserHives(
-      base::Bind(&UserHiveVisitor::OnUserHive, base::Unretained(&visitor)));
+  VisitUserHives(base::BindRepeating(&UserHiveVisitor::OnUserHive,
+                                     base::Unretained(&visitor)));
 
   EXPECT_EQ(1U, visitor.sids_visited().size());
 }

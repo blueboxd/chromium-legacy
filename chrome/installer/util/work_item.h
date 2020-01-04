@@ -57,7 +57,7 @@ class WorkItem {
   // |existing_value| will be empty if the value didn't previously exist or
   // existed under a non-string type.
   using GetValueFromExistingCallback =
-      base::Callback<std::wstring(const std::wstring& existing_value)>;
+      base::OnceCallback<std::wstring(const std::wstring& existing_value)>;
 
   // All registry operations can be instructed to operate on a specific view
   // of the registry by specifying a REGSAM value to the wow64_access parameter.
@@ -95,7 +95,8 @@ class WorkItem {
 
   // Create a CallbackWorkItem that invokes a callback.
   static CallbackWorkItem* CreateCallbackWorkItem(
-      base::Callback<bool(const CallbackWorkItem&)> callback);
+      base::OnceCallback<bool(const CallbackWorkItem&)> do_action,
+      base::OnceCallback<void(const CallbackWorkItem&)> rollback_action);
 
   // Create a CopyTreeWorkItem that recursively copies a file system hierarchy
   // from source path to destination path.
@@ -186,7 +187,7 @@ class WorkItem {
       const std::wstring& key_path,
       REGSAM wow64_access,
       const std::wstring& value_name,
-      const GetValueFromExistingCallback& get_value_callback);
+      GetValueFromExistingCallback get_value_callback);
 
   // Add a SelfRegWorkItem that registers or unregisters a DLL at the
   // specified path.

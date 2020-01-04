@@ -44,8 +44,8 @@ class CustomScrollbarTheme final : public ScrollbarTheme {
     return GetTheme().ScrollbarThickness(control_size);
   }
 
-  WebScrollbarButtonsPlacement ButtonsPlacement() const override {
-    return GetTheme().ButtonsPlacement();
+  bool NativeThemeHasButtons() override {
+    return GetTheme().NativeThemeHasButtons();
   }
 
   void PaintScrollCorner(GraphicsContext&,
@@ -89,11 +89,13 @@ class CustomScrollbarTheme final : public ScrollbarTheme {
                             const CustomScrollbar* = nullptr);
 
  protected:
+  ScrollbarPart HitTest(const Scrollbar&, const IntPoint&) override;
+
   bool HasButtons(const Scrollbar&) override;
   bool HasThumb(const Scrollbar&) override;
 
-  IntRect BackButtonRect(const Scrollbar&, ScrollbarPart) override;
-  IntRect ForwardButtonRect(const Scrollbar&, ScrollbarPart) override;
+  IntRect BackButtonRect(const Scrollbar&) override;
+  IntRect ForwardButtonRect(const Scrollbar&) override;
   IntRect TrackRect(const Scrollbar&) override;
 
   void PaintTrackAndButtons(GraphicsContext&,
@@ -112,6 +114,7 @@ class CustomScrollbarTheme final : public ScrollbarTheme {
                                           const IntRect&) override;
 
  private:
+  IntRect ButtonRect(const Scrollbar&, ScrollbarPart);
   void PaintScrollbarBackground(GraphicsContext&, const Scrollbar&);
   void PaintTrackBackground(GraphicsContext&, const Scrollbar&, const IntRect&);
   void PaintTrackPiece(GraphicsContext&,

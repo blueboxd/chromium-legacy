@@ -74,6 +74,8 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv) {
     return E_NOTIMPL;
   }
 
+  _AtlModule.InitializeCrashReporting();
+
   HRESULT hr = _AtlModule.DllGetClassObject(rclsid, riid, ppv);
 
   // Start refreshing token handle validity as soon as possible so that when
@@ -154,6 +156,9 @@ void CALLBACK SaveAccountInfoW(HWND /*hwnd*/,
                                wchar_t* /*pszCmdLine*/,
                                int /*show*/) {
   LOGFN(INFO);
+
+  _AtlModule.InitializeCrashReporting();
+
   HANDLE hStdin = ::GetStdHandle(STD_INPUT_HANDLE);  // No need to close.
   if (hStdin == INVALID_HANDLE_VALUE) {
     LOGFN(INFO) << "No stdin";

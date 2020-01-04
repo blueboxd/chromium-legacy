@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
-<translation id="100812568230599391">Αλλάξτε το στυλ προβολής σε παρεμβολή.</translation>
+<translation id="100812568230599391">Αλλάξτε το στιλ προβολής σε παρεμβολή.</translation>
 <translation id="1011903154582639569">Εντοπίστε ένα πλήκτρο και έπειτα σηκώστε το δάκτυλό σας για να πληκτρολογήσετε</translation>
 <translation id="1012173283529841972">Στοιχείο λίστας</translation>
 <translation id="1013742170491673792">αναζήτηση ρόλου</translation>
@@ -23,7 +23,7 @@
 <translation id="1114836634143403764">Πρόταση</translation>
 <translation id="1120743664840974483">{"α": "Αστέρι", "β": "Βάτραχος", "γ": "Γάτα", "δ": "Δέντρο", "ε": "Ελέφαντας", "ζ": "Ζάρι", "η": "Ήλιος", "θ": "Θησαυρός", "ι": "Ιππότης", "κ": "Κότα","λ": "Λαγός", "μ": "Μήλο", "ν": "Νάνος", "ξ": "Ξιφίας", "ο": "Ομπρέλα","π": "Πάπια", "ρ": "Ρόδι", "σ": "Σαλιγκάρι", "τ": "Τρένο", "υ": "Υποβρύχιο", "φ": "Φεγγάρι", "χ": "Χελιδόνι", "ψ": "Ψάρι","ω": "Ώρα"}</translation>
 <translation id="1120938014254001895">Σύρετε δύο δάκτυλα προς τα πάνω</translation>
-<translation id="1124771028211010580">Το τρέχον στυλ προβολής είναι η παράθεση.</translation>
+<translation id="1124771028211010580">Το τρέχον στιλ προβολής είναι η παράθεση.</translation>
 <translation id="1126928665165112660">Δεν είναι πλάγια γραφή</translation>
 <translation id="113582498867142724">Συλλογή <ph name="TAG" /> με <ph name="NUM" /> στοιχεία</translation>
 <translation id="1155043339247954670">Δεν υπάρχει επόμενο στοιχείο στη λίστα.</translation>
@@ -419,6 +419,7 @@
 <translation id="3914732343065571127">Αναφορά εντολών ChromeVox</translation>
 <translation id="3930383913623796990">Πράσινο της Άνοιξης</translation>
 <translation id="3930498801443296724">Ελκυστική φράση</translation>
+<translation id="3935615366277838204">Κεφαλαίο <ph name="LETTER" /></translation>
 <translation id="3936394396199829062">Λεβάντα ρουζ</translation>
 <translation id="3941269780691800708">Εκφώνηση κειμένου κάτω από το ποντίκι.</translation>
 <translation id="394953087167197343">Ένδειξη ορθογραφικού σφάλματος:</translation>
@@ -520,7 +521,7 @@
 <translation id="4591507479202817876">, επιλέχθηκε</translation>
 <translation id="4597532268155981612">φόρμα</translation>
 <translation id="4597896406374528575">Απρίλιος</translation>
-<translation id="460018603901637538">Αλλάξτε το στυλ προβολής σε παράθεση.</translation>
+<translation id="460018603901637538">Αλλάξτε το στιλ προβολής σε παράθεση.</translation>
 <translation id="4601367666219428522">πίνακας <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Παράβλεψη του επόμενου πατήματος πλήκτρου</translation>
 <translation id="461613135510474570">Πρόταση</translation>
@@ -854,6 +855,7 @@
 <translation id="699159175332639490">Αναζήτηση + O + W</translation>
 <translation id="6994042831499278539">Αναφορά στο γλωσσάρι</translation>
 <translation id="6996566555547746822">Επόμενο σύνθετο πλαίσιο</translation>
+<translation id="6997224546856374593">Κατά την ανάγνωση κεφαλαίων:</translation>
 <translation id="700202842116345659">Βιβλιογραφική καταχώριση</translation>
 <translation id="7005146664810010831">Δεν βρέθηκε διεύθυνση URL</translation>
 <translation id="7010712454773919705">Πλήκτρο τροποποίησης ChromeVox</translation>
@@ -887,7 +889,7 @@
 <translation id="7153618581592392745">Λιλά</translation>
 <translation id="7157306005867877619">Περίληψη</translation>
 <translation id="7161771961008409533">Αναδυόμενο κουμπί</translation>
-<translation id="7165714724802225287">Το τρέχον στυλ προβολής είναι η παρεμβολή.</translation>
+<translation id="7165714724802225287">Το τρέχον στιλ προβολής είναι η παρεμβολή.</translation>
 <translation id="7167657087543110">εκφώνηση χαρακτήρων</translation>
 <translation id="7170733337935166589">Μετάβαση προς τα εμπρός κατά τη συνεχόμενη ανάγνωση</translation>
 <translation id="7173102181852295013">Σκούρο μπλε</translation>
@@ -935,6 +937,7 @@
 <translation id="744163271241493234">κωδικός πρόσβασης</translation>
 <translation id="7491962110804786152">καρτέλα</translation>
 <translation id="7492049978501397201">Έγινε εισαγωγή διαλόγου</translation>
+<translation id="7505149250476994901">Πείτε "κεφαλαίο" πριν από το γράμμα</translation>
 <translation id="7518543783849163354">Για προσωρινή διακοπή της εκφώνησης του ChromeVox, πατήστε το πλήκτρο Control.</translation>
 <translation id="7521682724501952239">Μπορείτε να χρησιμοποιήσετε το ChromeVox με την οθόνη αφής.</translation>
 <translation id="7532613204005497612">Ιούνιος</translation>

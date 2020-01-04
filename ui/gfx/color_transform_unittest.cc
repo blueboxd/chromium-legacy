@@ -7,7 +7,7 @@
 
 #include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/src/core/SkColorFilterPriv.h"
+#include "third_party/skia/include/effects/SkRuntimeEffect.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/color_transform.h"
 #include "ui/gfx/icc_profile.h"
@@ -517,9 +517,10 @@ TEST(SimpleColorSpace, CanParseSkShaderSource) {
           src, dst, ColorTransform::Intent::INTENT_PERCEPTUAL);
       std::string source = "void main(inout half4 color) {" +
                            transform->GetSkShaderSource() + "}";
-      SkRuntimeColorFilterFactory factory(
-          SkString(source.c_str(), source.length()), nullptr);
-      EXPECT_TRUE(factory.testCompile());
+      auto result =
+          SkRuntimeEffect::Make(SkString(source.c_str(), source.length()));
+      EXPECT_NE(std::get<0>(result), nullptr);
+      EXPECT_TRUE(std::get<1>(result).isEmpty()) << std::get<1>(result).c_str();
     }
   }
 }

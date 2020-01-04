@@ -41,13 +41,26 @@ CustomScrollbarTheme* CustomScrollbarTheme::GetCustomScrollbarTheme() {
   return &theme;
 }
 
+ScrollbarPart CustomScrollbarTheme::HitTest(const Scrollbar& scrollbar,
+                                            const IntPoint& test_position) {
+  auto result = ScrollbarTheme::HitTest(scrollbar, test_position);
+  if (result == kScrollbarBGPart) {
+    // The ScrollbarTheme knows nothing about the double buttons.
+    if (ButtonRect(scrollbar, kBackButtonEndPart).Contains(test_position))
+      return kBackButtonEndPart;
+    if (ButtonRect(scrollbar, kForwardButtonStartPart).Contains(test_position))
+      return kForwardButtonStartPart;
+  }
+  return result;
+}
+
 void CustomScrollbarTheme::ButtonSizesAlongTrackAxis(const Scrollbar& scrollbar,
                                                      int& before_size,
                                                      int& after_size) {
-  IntRect first_button = BackButtonRect(scrollbar, kBackButtonStartPart);
-  IntRect second_button = ForwardButtonRect(scrollbar, kForwardButtonStartPart);
-  IntRect third_button = BackButtonRect(scrollbar, kBackButtonEndPart);
-  IntRect fourth_button = ForwardButtonRect(scrollbar, kForwardButtonEndPart);
+  IntRect first_button = ButtonRect(scrollbar, kBackButtonStartPart);
+  IntRect second_button = ButtonRect(scrollbar, kForwardButtonStartPart);
+  IntRect third_button = ButtonRect(scrollbar, kBackButtonEndPart);
+  IntRect fourth_button = ButtonRect(scrollbar, kForwardButtonEndPart);
   if (scrollbar.Orientation() == kHorizontalScrollbar) {
     before_size = first_button.Width() + second_button.Width();
     after_size = third_button.Width() + fourth_button.Width();
@@ -74,14 +87,17 @@ int CustomScrollbarTheme::MinimumThumbLength(const Scrollbar& scrollbar) {
   return To<CustomScrollbar>(scrollbar).MinimumThumbLength();
 }
 
-IntRect CustomScrollbarTheme::BackButtonRect(const Scrollbar& scrollbar,
-                                             ScrollbarPart part_type) {
+IntRect CustomScrollbarTheme::ButtonRect(const Scrollbar& scrollbar,
+                                         ScrollbarPart part_type) {
   return To<CustomScrollbar>(scrollbar).ButtonRect(part_type);
 }
 
-IntRect CustomScrollbarTheme::ForwardButtonRect(const Scrollbar& scrollbar,
-                                                ScrollbarPart part_type) {
-  return To<CustomScrollbar>(scrollbar).ButtonRect(part_type);
+IntRect CustomScrollbarTheme::BackButtonRect(const Scrollbar& scrollbar) {
+  return ButtonRect(scrollbar, kBackButtonStartPart);
+}
+
+IntRect CustomScrollbarTheme::ForwardButtonRect(const Scrollbar& scrollbar) {
+  return ButtonRect(scrollbar, kForwardButtonEndPart);
 }
 
 IntRect CustomScrollbarTheme::TrackRect(const Scrollbar& scrollbar) {
@@ -141,17 +157,15 @@ void CustomScrollbarTheme::PaintTrackAndButtons(GraphicsContext& context,
   PaintPart(context, scrollbar, scrollbar.FrameRect(), kScrollbarBGPart);
 
   if (HasButtons(scrollbar)) {
-    PaintButton(context, scrollbar,
-                BackButtonRect(scrollbar, kBackButtonStartPart),
+    PaintButton(context, scrollbar, ButtonRect(scrollbar, kBackButtonStartPart),
                 kBackButtonStartPart);
-    PaintButton(context, scrollbar,
-                BackButtonRect(scrollbar, kBackButtonEndPart),
+    PaintButton(context, scrollbar, ButtonRect(scrollbar, kBackButtonEndPart),
                 kBackButtonEndPart);
     PaintButton(context, scrollbar,
-                ForwardButtonRect(scrollbar, kForwardButtonStartPart),
+                ButtonRect(scrollbar, kForwardButtonStartPart),
                 kForwardButtonStartPart);
     PaintButton(context, scrollbar,
-                ForwardButtonRect(scrollbar, kForwardButtonEndPart),
+                ButtonRect(scrollbar, kForwardButtonEndPart),
                 kForwardButtonEndPart);
   }
 

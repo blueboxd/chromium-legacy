@@ -461,15 +461,6 @@ Polymer({
     return !!(list && list.length);
   },
 
-  /**
-   * @private
-   * @param {boolean} toggleValue
-   * @return {string}
-   */
-  getOnOffLabel_: function(toggleValue) {
-    return toggleValue ? this.i18n('toggleOn') : this.i18n('toggleOff');
-  },
-
   /** @private */
   hasPasswords_: function() {
     return this.savedPasswords.length > 0;

@@ -27,11 +27,11 @@ import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.snackbar.Snackbar;
-import org.chromium.chrome.browser.snackbar.SnackbarManager;
-import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
+import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
+import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.ui.widget.TintedDrawable;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlConstants;
@@ -126,8 +126,8 @@ public class BookmarkUtils {
         if (parent != null) {
             parentItem = bookmarkModel.getBookmarkById(parent);
         }
-        if (parent == null || parentItem == null || parentItem.isManaged() || !parentItem.isFolder()
-                || !parentItem.isEditable()) {
+        if (parent == null || parentItem == null || parentItem.isManaged()
+                || !parentItem.isFolder()) {
             parent = bookmarkModel.getDefaultFolder();
         }
         BookmarkId bookmarkId =

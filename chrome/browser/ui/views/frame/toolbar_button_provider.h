@@ -10,9 +10,9 @@
 class AppMenuButton;
 class AvatarToolbarButton;
 class BrowserActionsContainer;
+class ExtensionsToolbarContainer;
 class PageActionIconView;
 class ReloadButton;
-class ToolbarActionView;
 class ToolbarButton;
 
 namespace gfx {
@@ -32,9 +32,8 @@ class ToolbarButtonProvider {
   // TODO(pbos): Transition callers off of this function.
   virtual BrowserActionsContainer* GetBrowserActionsContainer() = 0;
 
-  // Gets the associated ToolbarActionView for this id.
-  virtual ToolbarActionView* GetToolbarActionViewForId(
-      const std::string& id) = 0;
+  // Gets the ExtensionsToolbarContainer.
+  virtual ExtensionsToolbarContainer* GetExtensionsToolbarContainer() = 0;
 
   // Gets the default view to use as an anchor for extension dialogs if the
   // ToolbarActionView is not visible or available.

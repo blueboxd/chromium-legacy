@@ -409,15 +409,15 @@ void EnrollmentHandlerChromeOS::StartRegistration() {
 }
 
 void EnrollmentHandlerChromeOS::StartAttestationBasedEnrollmentFlow() {
-  const chromeos::attestation::AttestationFlow::CertificateCallback callback =
-      base::Bind(
+  chromeos::attestation::AttestationFlow::CertificateCallback callback =
+      base::BindOnce(
           &EnrollmentHandlerChromeOS::HandleRegistrationCertificateResult,
           weak_ptr_factory_.GetWeakPtr());
   attestation_flow_->GetCertificate(
       chromeos::attestation::PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE,
       EmptyAccountId(), std::string() /* request_origin */,
       false /* force_new_key */, std::string(), /* key_name */
-      callback);
+      std::move(callback));
 }
 
 void EnrollmentHandlerChromeOS::HandleRegistrationCertificateResult(

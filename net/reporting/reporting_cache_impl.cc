@@ -46,18 +46,10 @@ ReportingCacheImpl::ReportingCacheImpl(ReportingContext* context)
 }
 
 ReportingCacheImpl::~ReportingCacheImpl() {
-  base::TimeTicks now = tick_clock().NowTicks();
-
-  // Mark all undoomed reports as erased at shutdown, and record outcomes of
-  // all remaining reports (doomed or not).
-  for (auto it = reports_.begin(); it != reports_.end(); ++it) {
-    ReportingReport* report = it->second.get();
-    if (!base::Contains(doomed_reports_, report))
+  for (const auto& report : reports_) {
+    if (report->status != ReportingReport::Status::DOOMED)
       report->outcome = ReportingReport::Outcome::ERASED_REPORTING_SHUT_DOWN;
-    report->RecordOutcome(now);
   }
-
-  reports_.clear();
 }
 
 void ReportingCacheImpl::AddReport(const GURL& url,
@@ -72,20 +64,19 @@ void ReportingCacheImpl::AddReport(const GURL& url,
                                                   type, std::move(body), depth,
                                                   queued, attempts);
 
-  auto inserted =
-      reports_.insert(std::make_pair(report.get(), std::move(report)));
+  auto inserted = reports_.insert(std::move(report));
   DCHECK(inserted.second);
 
   if (reports_.size() > context_->policy().max_report_count) {
     // There should be at most one extra report (the one added above).
     DCHECK_EQ(context_->policy().max_report_count + 1, reports_.size());
-    const ReportingReport* to_evict = FindReportToEvict();
-    DCHECK_NE(nullptr, to_evict);
+    ReportSet::const_iterator to_evict = FindReportToEvict();
+    DCHECK(to_evict != reports_.end());
     // The newly-added report isn't pending, so even if all other reports are
     // pending, the cache should have a report to evict.
-    DCHECK(!base::Contains(pending_reports_, to_evict));
-    reports_[to_evict]->outcome = ReportingReport::Outcome::ERASED_EVICTED;
-    RemoveReportInternal(to_evict);
+    DCHECK(!to_evict->get()->IsUploadPending());
+    to_evict->get()->outcome = ReportingReport::Outcome::ERASED_EVICTED;
+    reports_.erase(to_evict);
   }
 
   context_->NotifyCachedReportsUpdated();
@@ -94,27 +85,23 @@ void ReportingCacheImpl::AddReport(const GURL& url,
 void ReportingCacheImpl::GetReports(
     std::vector<const ReportingReport*>* reports_out) const {
   reports_out->clear();
-  for (const auto& it : reports_) {
-    if (!base::Contains(doomed_reports_, it.first))
-      reports_out->push_back(it.second.get());
+  for (const auto& report : reports_) {
+    if (report->status != ReportingReport::Status::DOOMED)
+      reports_out->push_back(report.get());
   }
 }
 
 base::Value ReportingCacheImpl::GetReportsAsValue() const {
-  // Sort the queued reports by origin and timestamp.
+  // Sort all unsent reports by origin and timestamp.
   std::vector<const ReportingReport*> sorted_reports;
   sorted_reports.reserve(reports_.size());
-  for (const auto& it : reports_) {
-    sorted_reports.push_back(it.second.get());
+  for (const auto& report : reports_) {
+    sorted_reports.push_back(report.get());
   }
   std::sort(sorted_reports.begin(), sorted_reports.end(),
             [](const ReportingReport* report1, const ReportingReport* report2) {
-              if (report1->queued < report2->queued)
-                return true;
-              else if (report1->queued > report2->queued)
-                return false;
-              else
-                return report1->url < report2->url;
+              return std::tie(report1->queued, report1->url) <
+                     std::tie(report2->queued, report2->url);
             });
 
   std::vector<base::Value> report_list;
@@ -130,35 +117,31 @@ base::Value ReportingCacheImpl::GetReportsAsValue() const {
     if (report->body) {
       report_dict.SetKey("body", report->body->Clone());
     }
-    if (base::Contains(doomed_reports_, report)) {
-      report_dict.SetKey("status", base::Value("doomed"));
-    } else if (base::Contains(pending_reports_, report)) {
-      report_dict.SetKey("status", base::Value("pending"));
-    } else {
-      report_dict.SetKey("status", base::Value("queued"));
+    switch (report->status) {
+      case ReportingReport::Status::DOOMED:
+        report_dict.SetKey("status", base::Value("doomed"));
+        break;
+      case ReportingReport::Status::PENDING:
+        report_dict.SetKey("status", base::Value("pending"));
+        break;
+      case ReportingReport::Status::QUEUED:
+        report_dict.SetKey("status", base::Value("queued"));
+        break;
     }
     report_list.push_back(std::move(report_dict));
   }
   return base::Value(std::move(report_list));
 }
 
-void ReportingCacheImpl::GetNonpendingReports(
-    std::vector<const ReportingReport*>* reports_out) const {
-  reports_out->clear();
-  for (const auto& it : reports_) {
-    if (!base::Contains(pending_reports_, it.first) &&
-        !base::Contains(doomed_reports_, it.first)) {
-      reports_out->push_back(it.second.get());
-    }
+std::vector<const ReportingReport*> ReportingCacheImpl::GetReportsToDeliver() {
+  std::vector<const ReportingReport*> reports_out;
+  for (const auto& report : reports_) {
+    if (report->IsUploadPending())
+      continue;
+    report->status = ReportingReport::Status::PENDING;
+    reports_out.push_back(report.get());
   }
-}
-
-void ReportingCacheImpl::SetReportsPending(
-    const std::vector<const ReportingReport*>& reports) {
-  for (const ReportingReport* report : reports) {
-    auto inserted = pending_reports_.insert(report);
-    DCHECK(inserted.second);
-  }
+  return reports_out;
 }
 
 void ReportingCacheImpl::ClearReportsPending(
@@ -166,23 +149,23 @@ void ReportingCacheImpl::ClearReportsPending(
   std::vector<const ReportingReport*> reports_to_remove;
 
   for (const ReportingReport* report : reports) {
-    size_t erased = pending_reports_.erase(report);
-    DCHECK_EQ(1u, erased);
-    if (base::Contains(doomed_reports_, report)) {
-      reports_to_remove.push_back(report);
-      doomed_reports_.erase(report);
+    auto it = reports_.find(report);
+    DCHECK(it != reports_.end());
+    if (it->get()->status == ReportingReport::Status::DOOMED) {
+      reports_.erase(it);
+    } else {
+      DCHECK_EQ(ReportingReport::Status::PENDING, it->get()->status);
+      it->get()->status = ReportingReport::Status::QUEUED;
     }
   }
-
-  for (const ReportingReport* report : reports_to_remove)
-    RemoveReportInternal(report);
 }
 
 void ReportingCacheImpl::IncrementReportsAttempts(
     const std::vector<const ReportingReport*>& reports) {
   for (const ReportingReport* report : reports) {
-    DCHECK(base::Contains(reports_, report));
-    reports_[report]->attempts++;
+    auto it = reports_.find(report);
+    DCHECK(it != reports_.end());
+    it->get()->attempts++;
   }
 
   context_->NotifyCachedReportsUpdated();
@@ -213,34 +196,29 @@ void ReportingCacheImpl::IncrementEndpointDeliveries(
 void ReportingCacheImpl::RemoveReports(
     const std::vector<const ReportingReport*>& reports,
     ReportingReport::Outcome outcome) {
+  base::Optional<base::TimeTicks> delivered = base::nullopt;
+  if (outcome == ReportingReport::Outcome::DELIVERED)
+    delivered = tick_clock().NowTicks();
   for (const ReportingReport* report : reports) {
-    reports_[report]->outcome = outcome;
-    if (base::Contains(pending_reports_, report)) {
-      doomed_reports_.insert(report);
+    auto it = reports_.find(report);
+    DCHECK(it != reports_.end());
+
+    it->get()->outcome = outcome;
+    it->get()->delivered = delivered;
+
+    if (it->get()->IsUploadPending()) {
+      it->get()->status = ReportingReport::Status::DOOMED;
     } else {
-      DCHECK(!base::Contains(doomed_reports_, report));
-      RemoveReportInternal(report);
+      reports_.erase(it);
     }
   }
-
   context_->NotifyCachedReportsUpdated();
 }
 
 void ReportingCacheImpl::RemoveAllReports(ReportingReport::Outcome outcome) {
   std::vector<const ReportingReport*> reports_to_remove;
-  for (auto it = reports_.begin(); it != reports_.end(); ++it) {
-    ReportingReport* report = it->second.get();
-    report->outcome = outcome;
-    if (!base::Contains(pending_reports_, report))
-      reports_to_remove.push_back(report);
-    else
-      doomed_reports_.insert(report);
-  }
-
-  for (const ReportingReport* report : reports_to_remove)
-    RemoveReportInternal(report);
-
-  context_->NotifyCachedReportsUpdated();
+  GetReports(&reports_to_remove);
+  RemoveReports(reports_to_remove, outcome);
 }
 
 size_t ReportingCacheImpl::GetFullReportCountForTesting() const {
@@ -249,12 +227,16 @@ size_t ReportingCacheImpl::GetFullReportCountForTesting() const {
 
 bool ReportingCacheImpl::IsReportPendingForTesting(
     const ReportingReport* report) const {
-  return base::Contains(pending_reports_, report);
+  DCHECK(report);
+  DCHECK(reports_.find(report) != reports_.end());
+  return report->IsUploadPending();
 }
 
 bool ReportingCacheImpl::IsReportDoomedForTesting(
     const ReportingReport* report) const {
-  return base::Contains(doomed_reports_, report);
+  DCHECK(report);
+  DCHECK(reports_.find(report) != reports_.end());
+  return report->status == ReportingReport::Status::DOOMED;
 }
 
 void ReportingCacheImpl::OnParsedHeader(
@@ -672,25 +654,21 @@ ReportingCacheImpl::OriginClient::OriginClient(OriginClient&& other) = default;
 
 ReportingCacheImpl::OriginClient::~OriginClient() = default;
 
-void ReportingCacheImpl::RemoveReportInternal(const ReportingReport* report) {
-  reports_[report]->RecordOutcome(tick_clock().NowTicks());
-  size_t erased = reports_.erase(report);
-  DCHECK_EQ(1u, erased);
-}
+ReportingCacheImpl::ReportSet::const_iterator
+ReportingCacheImpl::FindReportToEvict() const {
+  ReportSet::const_iterator to_evict = reports_.end();
 
-const ReportingReport* ReportingCacheImpl::FindReportToEvict() const {
-  const ReportingReport* earliest_queued = nullptr;
-
-  for (const auto& it : reports_) {
-    const ReportingReport* report = it.first;
-    if (base::Contains(pending_reports_, report))
+  for (auto it = reports_.begin(); it != reports_.end(); ++it) {
+    // Don't evict pending or doomed reports.
+    if (it->get()->IsUploadPending())
       continue;
-    if (!earliest_queued || report->queued < earliest_queued->queued) {
-      earliest_queued = report;
+    if (to_evict == reports_.end() ||
+        it->get()->queued < to_evict->get()->queued) {
+      to_evict = it;
     }
   }
 
-  return earliest_queued;
+  return to_evict;
 }
 
 void ReportingCacheImpl::SanityCheckClients() const {

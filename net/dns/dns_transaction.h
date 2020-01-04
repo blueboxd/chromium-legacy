@@ -47,10 +47,35 @@ class NET_EXPORT_PRIVATE DnsTransaction {
   virtual void SetRequestPriority(RequestPriority priority) = 0;
 };
 
+// Startable/Cancellable object to represent a DNS probe sequence.
+class DnsProbeRunner {
+ public:
+  // Destruction cancels the probes.
+  virtual ~DnsProbeRunner() {}
+
+  // Starts the probes. Should only be called once and not after destruction of
+  // the DnsTransactionFactory.
+  virtual void Start() = 0;
+
+  // Restarts (or initially starts if not yet started) the probes for a network
+  // change. May be called multiple times, but should not be called after
+  // destruction of the DnsTransactionFactory.
+  virtual void RestartForNetworkChange() = 0;
+
+  // Gets the delay until the next scheduled probe to the specified DoH server.
+  // Returns base::TimeDelta() if no probe scheduled.
+  virtual base::TimeDelta GetDelayUntilNextProbeForTest(
+      size_t doh_server_index) const = 0;
+};
+
 // Creates DnsTransaction which performs asynchronous DNS search.
 // It does NOT perform caching, aggregation or prioritization of transactions.
 //
 // Destroying the factory does NOT affect any already created DnsTransactions.
+//
+// DnsProbeRunners, however, will safely abort themselves on destruction of
+// their creating factory, and they should only be started or restarted while
+// the factory is still alive.
 class NET_EXPORT_PRIVATE DnsTransactionFactory {
  public:
   // Called with the response or NULL if no matching response was received.
@@ -83,20 +108,14 @@ class NET_EXPORT_PRIVATE DnsTransactionFactory {
       DnsConfig::SecureDnsMode secure_dns_mode,
       URLRequestContext* url_request_context) WARN_UNUSED_RESULT = 0;
 
+  // Creates a runner to run the DoH probe sequence for all configured DoH
+  // resolvers.
+  virtual std::unique_ptr<DnsProbeRunner> CreateDohProbeRunner(
+      URLRequestContext* url_request_context) WARN_UNUSED_RESULT = 0;
+
   // The given EDNS0 option will be included in all DNS queries performed by
   // transactions from this factory.
   virtual void AddEDNSOption(const OptRecordRdata::Opt& opt) = 0;
-
-  // Gets the delay until the next scheduled probe to the specified DoH server.
-  // Returns base::TimeDelta() if no probe scheduled.
-  virtual base::TimeDelta GetDelayUntilNextProbeForTest(
-      unsigned doh_server_index) = 0;
-
-  // Initiate probe sequences to all configured DoH resolvers.
-  virtual void StartDohProbes(URLRequestContext* context,
-                              bool network_change) = 0;
-
-  virtual void CancelDohProbes() = 0;
 
   // Returns the default SecureDnsMode in the config.
   virtual DnsConfig::SecureDnsMode GetSecureDnsModeForTest() = 0;

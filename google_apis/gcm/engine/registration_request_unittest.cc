@@ -106,8 +106,8 @@ void GCMRegistrationRequestTest::CreateRequest(const std::string& sender_ids) {
   request_.reset(new RegistrationRequest(
       GURL(kRegistrationURL), request_info, std::move(request_handler),
       GetBackoffPolicy(),
-      base::Bind(&RegistrationRequestTest::RegistrationCallback,
-                 base::Unretained(this)),
+      base::BindOnce(&RegistrationRequestTest::RegistrationCallback,
+                     base::Unretained(this)),
       max_retry_count_, url_loader_factory(),
       base::ThreadTaskRunnerHandle::Get(), &recorder_, sender_ids));
 }
@@ -430,8 +430,8 @@ void InstanceIDGetTokenRequestTest::CreateRequest(
   request_.reset(new RegistrationRequest(
       GURL(kRegistrationURL), request_info, std::move(request_handler),
       GetBackoffPolicy(),
-      base::Bind(&RegistrationRequestTest::RegistrationCallback,
-                 base::Unretained(this)),
+      base::BindOnce(&RegistrationRequestTest::RegistrationCallback,
+                     base::Unretained(this)),
       max_retry_count_, url_loader_factory(),
       base::ThreadTaskRunnerHandle::Get(), &recorder_, authorized_entity));
 }

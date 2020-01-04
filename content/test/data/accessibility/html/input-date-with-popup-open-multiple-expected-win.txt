@@ -45,25 +45,24 @@ ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
 ++++++++++++++++ROLE_SYSTEM_GRAPHIC
 ++++++++++++ROLE_SYSTEM_PUSHBUTTON name='Show previous month' FOCUSABLE
 ++++++++++++++ROLE_SYSTEM_GRAPHIC
-++++++++++++ROLE_SYSTEM_PUSHBUTTON name='Today' FOCUSABLE
-++++++++++++++IA2_ROLE_SECTION
 ++++++++++++ROLE_SYSTEM_PUSHBUTTON name='Show next month' FOCUSABLE
 ++++++++++++++ROLE_SYSTEM_GRAPHIC
 ++++++++++++ROLE_SYSTEM_TABLE FOCUSABLE
 ++++++++++++++IA2_ROLE_SECTION
 ++++++++++++++++IA2_ROLE_SECTION
-++++++++++++++++++ROLE_SYSTEM_STATICTEXT name='Sun'
+++++++++++++++++++ROLE_SYSTEM_STATICTEXT name='Su'
 ++++++++++++++++IA2_ROLE_SECTION
-++++++++++++++++++ROLE_SYSTEM_STATICTEXT name='Mon'
+++++++++++++++++++ROLE_SYSTEM_STATICTEXT name='Mo'
 ++++++++++++++++IA2_ROLE_SECTION
-++++++++++++++++++ROLE_SYSTEM_STATICTEXT name='Tue'
+++++++++++++++++++ROLE_SYSTEM_STATICTEXT name='Tu'
 ++++++++++++++++IA2_ROLE_SECTION
-++++++++++++++++++ROLE_SYSTEM_STATICTEXT name='Wed'
+++++++++++++++++++ROLE_SYSTEM_STATICTEXT name='We'
 ++++++++++++++++IA2_ROLE_SECTION
-++++++++++++++++++ROLE_SYSTEM_STATICTEXT name='Thu'
+++++++++++++++++++ROLE_SYSTEM_STATICTEXT name='Th'
 ++++++++++++++++IA2_ROLE_SECTION
-++++++++++++++++++ROLE_SYSTEM_STATICTEXT name='Fri'
+++++++++++++++++++ROLE_SYSTEM_STATICTEXT name='Fr'
 ++++++++++++++++IA2_ROLE_SECTION
-++++++++++++++++++ROLE_SYSTEM_STATICTEXT name='Sat'
+++++++++++++++++++ROLE_SYSTEM_STATICTEXT name='Sa'
 ++++++++++++++IA2_ROLE_SECTION
 ++++++++++++++++IA2_ROLE_SECTION
+++++++++++++++ROLE_SYSTEM_PUSHBUTTON name='Today' FOCUSABLE

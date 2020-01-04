@@ -190,7 +190,6 @@ button {
   font-size: 12pt;
   font-weight: bold;
   height: 35px;
-  height: 35px;
   line-height: 35px;
   overflow: hidden;
   padding: 0 12px;
@@ -228,6 +227,7 @@ button {
   padding: 0 12px;
 }
 
+.menu-item.active,
 .menu-item:hover,
 .menu-item.hover,
 .menu-item:focus {
@@ -348,4 +348,8 @@ button {
  */
 *[hidden] {
   display: none !important;
+}
+
+#search-bar {
+  width: 100%;
 }

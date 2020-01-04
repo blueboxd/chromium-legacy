@@ -27,7 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLL_TYPES_H_
 
 #include "third_party/blink/public/common/input/web_gesture_event.h"
-#include "third_party/blink/public/common/input/web_scroll_types.h"
+#include "third_party/blink/public/mojom/input/scroll_direction.mojom-blink.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -49,7 +49,6 @@ inline ScrollOffset ToScrollOffset(const gfx::PointF& p) {
   return ScrollOffset(p.x(), p.y());
 }
 
-using ScrollDirection = WebScrollDirection;
 using ui::input_types::ScrollGranularity;
 
 enum ScrollDirectionPhysical {
@@ -80,11 +79,12 @@ inline bool IsExplicitScrollType(ScrollType scroll_type) {
 
 // Convert logical scroll direction to physical. Physical scroll directions are
 // unaffected.
-inline ScrollDirectionPhysical ToPhysicalDirection(ScrollDirection direction,
-                                                   bool is_vertical,
-                                                   bool is_flipped) {
+inline ScrollDirectionPhysical ToPhysicalDirection(
+    mojom::blink::ScrollDirection direction,
+    bool is_vertical,
+    bool is_flipped) {
   switch (direction) {
-    case kScrollBlockDirectionBackward: {
+    case mojom::blink::ScrollDirection::kScrollBlockDirectionBackward: {
       if (is_vertical) {
         if (!is_flipped)
           return kScrollUp;
@@ -94,7 +94,7 @@ inline ScrollDirectionPhysical ToPhysicalDirection(ScrollDirection direction,
         return kScrollLeft;
       return kScrollRight;
     }
-    case kScrollBlockDirectionForward: {
+    case mojom::blink::ScrollDirection::kScrollBlockDirectionForward: {
       if (is_vertical) {
         if (!is_flipped)
           return kScrollDown;
@@ -104,7 +104,7 @@ inline ScrollDirectionPhysical ToPhysicalDirection(ScrollDirection direction,
         return kScrollRight;
       return kScrollLeft;
     }
-    case kScrollInlineDirectionBackward: {
+    case mojom::blink::ScrollDirection::kScrollInlineDirectionBackward: {
       if (is_vertical) {
         if (!is_flipped)
           return kScrollLeft;
@@ -114,7 +114,7 @@ inline ScrollDirectionPhysical ToPhysicalDirection(ScrollDirection direction,
         return kScrollUp;
       return kScrollDown;
     }
-    case kScrollInlineDirectionForward: {
+    case mojom::blink::ScrollDirection::kScrollInlineDirectionForward: {
       if (is_vertical) {
         if (!is_flipped)
           return kScrollRight;
@@ -125,13 +125,13 @@ inline ScrollDirectionPhysical ToPhysicalDirection(ScrollDirection direction,
       return kScrollUp;
     }
     // Direction is already physical
-    case kScrollUpIgnoringWritingMode:
+    case mojom::blink::ScrollDirection::kScrollUpIgnoringWritingMode:
       return kScrollUp;
-    case kScrollDownIgnoringWritingMode:
+    case mojom::blink::ScrollDirection::kScrollDownIgnoringWritingMode:
       return kScrollDown;
-    case kScrollLeftIgnoringWritingMode:
+    case mojom::blink::ScrollDirection::kScrollLeftIgnoringWritingMode:
       return kScrollLeft;
-    case kScrollRightIgnoringWritingMode:
+    case mojom::blink::ScrollDirection::kScrollRightIgnoringWritingMode:
       return kScrollRight;
     default:
       NOTREACHED();
@@ -140,21 +140,22 @@ inline ScrollDirectionPhysical ToPhysicalDirection(ScrollDirection direction,
   return kScrollUp;
 }
 
-inline ScrollDirection ToScrollDirection(ScrollDirectionPhysical direction) {
+inline mojom::blink::ScrollDirection ToScrollDirection(
+    ScrollDirectionPhysical direction) {
   switch (direction) {
     case kScrollUp:
-      return kScrollUpIgnoringWritingMode;
+      return mojom::blink::ScrollDirection::kScrollUpIgnoringWritingMode;
     case kScrollDown:
-      return kScrollDownIgnoringWritingMode;
+      return mojom::blink::ScrollDirection::kScrollDownIgnoringWritingMode;
     case kScrollLeft:
-      return kScrollLeftIgnoringWritingMode;
+      return mojom::blink::ScrollDirection::kScrollLeftIgnoringWritingMode;
     case kScrollRight:
-      return kScrollRightIgnoringWritingMode;
+      return mojom::blink::ScrollDirection::kScrollRightIgnoringWritingMode;
     default:
       NOTREACHED();
       break;
   }
-  return kScrollUpIgnoringWritingMode;
+  return mojom::blink::ScrollDirection::kScrollUpIgnoringWritingMode;
 }
 
 enum ScrollInertialPhase {

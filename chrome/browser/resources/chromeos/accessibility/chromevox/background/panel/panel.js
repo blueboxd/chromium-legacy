@@ -303,6 +303,7 @@ Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
   Panel.pendingCallback_ = null;
 
   // Build the top-level menus.
+  var searchMenu = Panel.addSearchMenu('panel_search_menu');
   var jumpMenu = Panel.addMenu('panel_menu_jump');
   var speechMenu = Panel.addMenu('panel_menu_speech');
   var tabsMenu = Panel.addMenu('panel_menu_tabs');
@@ -486,14 +487,16 @@ Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
     }
   }
 
-  // Activate either the specified menu or the first menu.
-  var selectedMenu = Panel.menus_[0];
+  // Activate either the specified menu or the search menu.
+  var selectedMenu = Panel.searchMenu;
   for (var i = 0; i < Panel.menus_.length; i++) {
     if (Panel.menus_[i].menuMsg == opt_activateMenuTitle) {
       selectedMenu = Panel.menus_[i];
     }
   }
-  Panel.activateMenu(selectedMenu);
+
+  var activateFirstItem = (selectedMenu != Panel.searchMenu);
+  Panel.activateMenu(selectedMenu, activateFirstItem);
 };
 
 /** Open incremental search. */
@@ -524,13 +527,13 @@ Panel.clearMenus = function() {
 /**
  * Create a new menu with the given name and add it to the menu bar.
  * @param {string} menuMsg The msg id of the new menu to add.
- * @return {PanelMenu} The menu just created.
+ * @return {!PanelMenu} The menu just created.
  */
 Panel.addMenu = function(menuMsg) {
   var menu = new PanelMenu(menuMsg);
   $('menu-bar').appendChild(menu.menuBarItemElement);
   menu.menuBarItemElement.addEventListener('mouseover', function() {
-    Panel.activateMenu(menu);
+    Panel.activateMenu(menu, true /* activateFirstItem */);
   }, false);
   menu.menuBarItemElement.addEventListener(
       'mouseup', Panel.onMouseUpOnMenuTitle_.bind(this, menu), false);
@@ -680,7 +683,7 @@ Panel.addNodeMenu = function(menuMsg, node, pred, defer) {
   var menu = new PanelNodeMenu(menuMsg, node, pred, defer);
   $('menu-bar').appendChild(menu.menuBarItemElement);
   menu.menuBarItemElement.addEventListener('mouseover', function() {
-    Panel.activateMenu(menu);
+    Panel.activateMenu(menu, true /* activateFirstItem */);
   }, false);
   menu.menuBarItemElement.addEventListener(
       'mouseup', Panel.onMouseUpOnMenuTitle_.bind(this, menu), false);
@@ -690,10 +693,43 @@ Panel.addNodeMenu = function(menuMsg, node, pred, defer) {
 };
 
 /**
+ * Create a new search menu with the given name and add it to the menu bar.
+ * @param {string} menuMsg The msg id of the new menu to add.
+ * @return {!PanelMenu} The menu just created.
+ */
+Panel.addSearchMenu = function(menuMsg) {
+  Panel.searchMenu = new PanelSearchMenu(menuMsg);
+  // Add event listerns to search bar.
+  Panel.searchMenu.searchBar.addEventListener(
+      'input', Panel.onSearchBarQuery, false);
+  Panel.searchMenu.searchBar.addEventListener('mouseup', function(event) {
+    // Clicking in the panel causes us to either activate an item or close the
+    // menus altogether. Prevent that from happening if we click the search bar.
+    event.preventDefault();
+    event.stopPropagation();
+  }, false);
+
+  $('menu-bar').appendChild(Panel.searchMenu.menuBarItemElement);
+  Panel.searchMenu.menuBarItemElement.addEventListener(
+      'mouseover', function(event) {
+        Panel.activateMenu(Panel.searchMenu, false /* activateFirstItem */);
+      }, false);
+  Panel.searchMenu.menuBarItemElement.addEventListener(
+      'mouseup', Panel.onMouseUpOnMenuTitle_.bind(this, Panel.searchMenu),
+      false);
+  $('menus_background').appendChild(Panel.searchMenu.menuContainerElement);
+  Panel.menus_.push(Panel.searchMenu);
+  return Panel.searchMenu;
+};
+
+/**
  * Activate a menu, which implies hiding the previous active menu.
  * @param {PanelMenu} menu The new menu to activate.
+ * @param {boolean} activateFirstItem Whether or not we should activate the
+ *     menu's
+ * first item.
  */
-Panel.activateMenu = function(menu) {
+Panel.activateMenu = function(menu, activateFirstItem) {
   if (menu == Panel.activeMenu_) {
     return;
   }
@@ -707,7 +743,7 @@ Panel.activateMenu = function(menu) {
   Panel.pendingCallback_ = null;
 
   if (Panel.activeMenu_) {
-    Panel.activeMenu_.activate();
+    Panel.activeMenu_.activate(activateFirstItem);
   }
 };
 
@@ -748,7 +784,7 @@ Panel.advanceActiveMenuBy = function(delta) {
       activeIndex = Panel.menus_.length - 1;
     }
   }
-  Panel.activateMenu(Panel.menus_[activeIndex]);
+  Panel.activateMenu(Panel.menus_[activeIndex], true /* activateFirstItem */);
 };
 
 /**
@@ -798,7 +834,7 @@ Panel.onMouseUp = function(event) {
  * @private
  */
 Panel.onMouseUpOnMenuTitle_ = function(menu, mouseUpEvent) {
-  Panel.activateMenu(menu);
+  Panel.activateMenu(menu, true /* activateFirstItem */);
   mouseUpEvent.preventDefault();
   mouseUpEvent.stopPropagation();
 };
@@ -826,6 +862,28 @@ Panel.onKeyDown = function(event) {
 
   if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
     return;
+  }
+
+  // We need special logic for navigating the search bar.
+  // If left/right arrow are pressed, we should adjust the search bar's cursor.
+  // We only want to advance the active menu if we are at the beginning/end of
+  // the search bar's contents.
+  if (event.target == Panel.searchMenu.searchBar) {
+    switch (event.key) {
+      case 'ArrowLeft':
+      case 'ArrowRight':
+        if (event.target.value) {
+          var cursorIndex = event.target.selectionStart +
+              (event.key == 'ArrowRight' ? 1 : -1);
+          var queryLength = event.target.value.length;
+          if (cursorIndex >= 0 && cursorIndex <= queryLength) {
+            return;
+          }
+        }
+        break;
+      case ' ':
+        return;
+    }
   }
 
   switch (event.key) {
@@ -857,7 +915,7 @@ Panel.onKeyDown = function(event) {
       Panel.scrollToBottom();
       break;
     case 'Enter':
-    case ' ':  // Space
+    case ' ':
       Panel.pendingCallback_ = Panel.getCallbackForCurrentItem();
       Panel.closeMenusAndRestoreFocus();
       break;
@@ -1008,3 +1066,48 @@ window.addEventListener('hashchange', function() {
     bkgnd['CommandHandler']['onCommand']('toggleStickyMode');
   }
 }, false);
+
+/**
+ * Listens to changes in the menu search bar. Populates the search menu
+ * with items that match the search bar's contents.
+ * Note: we ignore PanelNodeMenu items and items without shortcuts.
+ * @param {Event} event The input event.
+ */
+Panel.onSearchBarQuery = function(event) {
+  if (!Panel.searchMenu) {
+    throw Error('Panel.searchMenu must be defined');
+  }
+  var query = event.target.value.toLowerCase();
+  Panel.searchMenu.clear();
+  // Show the search results menu.
+  Panel.activateMenu(Panel.searchMenu, false /* activateFirstItem */);
+  // Populate.
+  if (query) {
+    for (var i = 0; i < Panel.menus_.length; ++i) {
+      var menu = Panel.menus_[i];
+      if (menu === Panel.searchMenu || menu instanceof PanelNodeMenu) {
+        continue;
+      }
+      var items = menu.items;
+      for (var j = 0; j < items.length; ++j) {
+        var item = items[j];
+        if (!item.menuItemShortcut) {
+          // Only add menu items that have shortcuts.
+          continue;
+        }
+        var itemText = item.text.toLowerCase();
+        var match = itemText.includes(query) &&
+            (itemText !== Msgs.getMsg('panel_menu_item_none').toLowerCase());
+        if (match) {
+          Panel.searchMenu.copyAndAddMenuItem(item);
+        }
+      }
+    }
+  }
+
+  if (Panel.searchMenu.items.length === 0) {
+    Panel.searchMenu.addMenuItem(
+        Msgs.getMsg('panel_menu_item_none'), '', '', '', function() {});
+  }
+  Panel.searchMenu.activateItem(0);
+};

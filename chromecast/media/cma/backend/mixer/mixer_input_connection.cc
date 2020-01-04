@@ -438,7 +438,8 @@ void MixerInputConnection::SetMediaPlaybackRate(double rate) {
     return;
   }
 
-  rate_shifter_ = std::make_unique<::media::AudioRendererAlgorithm>();
+  rate_shifter_ =
+      std::make_unique<::media::AudioRendererAlgorithm>(&media_log_);
   rate_shifter_->Initialize(
       ::media::AudioParameters(::media::AudioParameters::AUDIO_PCM_LINEAR,
                                ::media::GuessChannelLayout(num_channels_),

@@ -2251,7 +2251,8 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
           std::move(resource_request), redirect_chain_, response_head_.Clone(),
           std::move(response_body_), std::move(url_loader_client_endpoints_),
           ssl_info_.has_value() ? ssl_info_->cert_status : 0,
-          frame_tree_node_->frame_tree_node_id());
+          frame_tree_node_->frame_tree_node_id(),
+          from_download_cross_origin_redirect_);
 
       OnRequestFailedInternal(
           network::URLLoaderCompletionStatus(net::ERR_ABORTED),
@@ -3734,10 +3735,6 @@ bool NavigationRequest::IsSameProcess() {
 
 int NavigationRequest::GetNavigationEntryOffset() {
   return navigation_entry_offset_;
-}
-
-bool NavigationRequest::FromDownloadCrossOriginRedirect() {
-  return from_download_cross_origin_redirect_;
 }
 
 const net::ProxyServer& NavigationRequest::GetProxyServer() {

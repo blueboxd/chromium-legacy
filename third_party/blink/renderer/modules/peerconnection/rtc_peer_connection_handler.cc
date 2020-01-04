@@ -154,7 +154,7 @@ void GetRTCSessionDescriptionPlatformFromSessionDescriptionCallback(
 
 absl::optional<bool> ConstraintToOptional(
     const MediaConstraints& constraints,
-    const blink::BooleanConstraint blink::WebMediaTrackConstraintSet::*picker) {
+    const blink::BooleanConstraint MediaTrackConstraintSetPlatform::*picker) {
   bool value;
   if (GetConstraintValueAsBoolean(constraints, picker, &value)) {
     return absl::optional<bool>(value);
@@ -172,7 +172,7 @@ void CopyConstraintsIntoRtcConfiguration(
 
   bool the_value;
   if (GetConstraintValueAsBoolean(
-          constraints, &blink::WebMediaTrackConstraintSet::enable_i_pv6,
+          constraints, &MediaTrackConstraintSetPlatform::enable_i_pv6,
           &the_value)) {
     configuration->disable_ipv6 = !the_value;
   } else {
@@ -180,22 +180,22 @@ void CopyConstraintsIntoRtcConfiguration(
     configuration->disable_ipv6 = false;
   }
 
-  if (GetConstraintValueAsBoolean(
-          constraints, &blink::WebMediaTrackConstraintSet::enable_dscp,
-          &the_value)) {
+  if (GetConstraintValueAsBoolean(constraints,
+                                  &MediaTrackConstraintSetPlatform::enable_dscp,
+                                  &the_value)) {
     configuration->set_dscp(the_value);
   }
 
   if (GetConstraintValueAsBoolean(
           constraints,
-          &blink::WebMediaTrackConstraintSet::goog_cpu_overuse_detection,
+          &MediaTrackConstraintSetPlatform::goog_cpu_overuse_detection,
           &the_value)) {
     configuration->set_cpu_adaptation(the_value);
   }
 
   if (GetConstraintValueAsBoolean(
           constraints,
-          &blink::WebMediaTrackConstraintSet::
+          &MediaTrackConstraintSetPlatform::
               goog_enable_video_suspend_below_min_bitrate,
           &the_value)) {
     configuration->set_suspend_below_min_bitrate(the_value);
@@ -203,22 +203,22 @@ void CopyConstraintsIntoRtcConfiguration(
 
   if (!GetConstraintValueAsBoolean(
           constraints,
-          &blink::WebMediaTrackConstraintSet::enable_rtp_data_channels,
+          &MediaTrackConstraintSetPlatform::enable_rtp_data_channels,
           &configuration->enable_rtp_data_channel)) {
     configuration->enable_rtp_data_channel = false;
   }
   int rate;
   if (GetConstraintValueAsInteger(
           constraints,
-          &blink::WebMediaTrackConstraintSet::goog_screencast_min_bitrate,
+          &MediaTrackConstraintSetPlatform::goog_screencast_min_bitrate,
           &rate)) {
     configuration->screencast_min_bitrate = rate;
   }
   configuration->combined_audio_video_bwe = ConstraintToOptional(
       constraints,
-      &blink::WebMediaTrackConstraintSet::goog_combined_audio_video_bwe);
+      &MediaTrackConstraintSetPlatform::goog_combined_audio_video_bwe);
   configuration->enable_dtls_srtp = ConstraintToOptional(
-      constraints, &blink::WebMediaTrackConstraintSet::enable_dtls_srtp);
+      constraints, &MediaTrackConstraintSetPlatform::enable_dtls_srtp);
 }
 
 // Class mapping responses from calls to libjingle CreateOffer/Answer and
@@ -511,7 +511,7 @@ void ConvertConstraintsToWebrtcOfferOptions(
   if (constraints.IsEmpty()) {
     return;
   }
-  std::string failing_name;
+  String failing_name;
   if (constraints.Basic().HasMandatoryOutsideSet(
           {constraints.Basic().offer_to_receive_audio.GetName(),
            constraints.Basic().offer_to_receive_video.GetName(),
@@ -524,16 +524,16 @@ void ConvertConstraintsToWebrtcOfferOptions(
                 << failing_name;
   }
   GetConstraintValueAsInteger(
-      constraints, &blink::WebMediaTrackConstraintSet::offer_to_receive_audio,
+      constraints, &MediaTrackConstraintSetPlatform::offer_to_receive_audio,
       &output->offer_to_receive_audio);
   GetConstraintValueAsInteger(
-      constraints, &blink::WebMediaTrackConstraintSet::offer_to_receive_video,
+      constraints, &MediaTrackConstraintSetPlatform::offer_to_receive_video,
       &output->offer_to_receive_video);
   GetConstraintValueAsBoolean(
-      constraints, &blink::WebMediaTrackConstraintSet::voice_activity_detection,
+      constraints, &MediaTrackConstraintSetPlatform::voice_activity_detection,
       &output->voice_activity_detection);
   GetConstraintValueAsBoolean(constraints,
-                              &blink::WebMediaTrackConstraintSet::ice_restart,
+                              &MediaTrackConstraintSetPlatform::ice_restart,
                               &output->ice_restart);
 }
 

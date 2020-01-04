@@ -90,6 +90,7 @@ bool CSSLayoutDefinition::Instance::Layout(
     const NGBlockNode& node,
     const LogicalSize& border_box_size,
     const NGBoxStrut& border_scrollbar_padding,
+    const LayoutUnit child_percentage_resolution_block_size_for_min_max,
     CustomLayoutScope* custom_layout_scope,
     FragmentResultOptions* fragment_result_options,
     scoped_refptr<SerializedScriptValue>* fragment_result_data) {
@@ -144,8 +145,10 @@ bool CSSLayoutDefinition::Instance::Layout(
 
   // Run the work queue until exhaustion.
   while (!custom_layout_scope->Queue()->IsEmpty()) {
-    for (auto& task : *custom_layout_scope->Queue())
-      task.Run(node, space, node.Style(), border_scrollbar_padding);
+    for (auto& task : *custom_layout_scope->Queue()) {
+      task.Run(space, node.Style(),
+               child_percentage_resolution_block_size_for_min_max);
+    }
     custom_layout_scope->Queue()->clear();
     {
       v8::MicrotasksScope microtasks_scope(isolate, microtask_queue,
@@ -218,6 +221,7 @@ bool CSSLayoutDefinition::Instance::IntrinsicSizes(
     const NGBlockNode& node,
     const LogicalSize& border_box_size,
     const NGBoxStrut& border_scrollbar_padding,
+    const LayoutUnit child_percentage_resolution_block_size_for_min_max,
     CustomLayoutScope* custom_layout_scope,
     IntrinsicSizesResultOptions* intrinsic_sizes_result_options) {
   ScriptState* script_state = definition_->GetScriptState();
@@ -266,8 +270,10 @@ bool CSSLayoutDefinition::Instance::IntrinsicSizes(
 
   // Run the work queue until exhaustion.
   while (!custom_layout_scope->Queue()->IsEmpty()) {
-    for (auto& task : *custom_layout_scope->Queue())
-      task.Run(node, space, node.Style(), border_scrollbar_padding);
+    for (auto& task : *custom_layout_scope->Queue()) {
+      task.Run(space, node.Style(),
+               child_percentage_resolution_block_size_for_min_max);
+    }
     custom_layout_scope->Queue()->clear();
     {
       v8::MicrotasksScope microtasks_scope(isolate, microtask_queue,

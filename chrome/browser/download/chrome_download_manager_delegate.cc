@@ -212,12 +212,14 @@ void CheckCanDownload(const content::WebContents::Getter& web_contents_getter,
                       const GURL& url,
                       const std::string& request_method,
                       base::Optional<url::Origin> request_initiator,
+                      bool from_download_cross_origin_redirect,
                       CanDownloadCallback can_download_cb) {
   DownloadRequestLimiter* limiter =
       g_browser_process->download_request_limiter();
   if (limiter) {
     limiter->CanDownload(web_contents_getter, url, request_method,
                          std::move(request_initiator),
+                         from_download_cross_origin_redirect,
                          base::BindOnce(std::move(can_download_cb), true));
   }
 }
@@ -234,7 +236,9 @@ void OnDownloadAcquireFileAccessPermissionDone(
     bool granted) {
   if (granted) {
     CheckCanDownload(web_contents_getter, url, request_method,
-                     std::move(request_initiator), std::move(can_download_cb));
+                     std::move(request_initiator),
+                     false /* from_download_cross_origin_redirect */,
+                     std::move(can_download_cb));
   } else {
     std::move(can_download_cb).Run(false, false);
   }
@@ -1390,6 +1394,7 @@ void ChromeDownloadManagerDelegate::CheckDownloadAllowed(
     const GURL& url,
     const std::string& request_method,
     base::Optional<url::Origin> request_initiator,
+    bool from_download_cross_origin_redirect,
     content::CheckDownloadAllowedCallback check_download_allowed_cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CanDownloadCallback cb = base::BindOnce(
@@ -1403,7 +1408,8 @@ void ChromeDownloadManagerDelegate::CheckDownloadAllowed(
                  std::move(request_initiator), base::Passed(&cb)));
 #else
   CheckCanDownload(web_contents_getter, url, request_method,
-                   std::move(request_initiator), std::move(cb));
+                   std::move(request_initiator),
+                   from_download_cross_origin_redirect, std::move(cb));
 #endif
 }
 

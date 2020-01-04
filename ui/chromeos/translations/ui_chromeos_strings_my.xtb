@@ -80,6 +80,7 @@
 <translation id="1847880352285315359">သိမ်းပြီးပါပြီ</translation>
 <translation id="1864756863218646478">ဖိုင်ကို မတွေ့နိုင်ပါ။</translation>
 <translation id="1921986354447415460">Turkish-F ကီးဘုတ်</translation>
+<translation id="1924372192547904021"><ph name="DRIVE_NAME" /> ကို ဖော်မက်ချထားသည်</translation>
 <translation id="1931134289871235022">ဆလိုဗက်</translation>
 <translation id="1933345018156373194">ရွှေ့၍မရပါ၊ မျှော်လင့်မထားသည့် အမှား- <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">ဖင်လန်</translation>
@@ -163,6 +164,7 @@
 <translation id="2942290791863759244">ဂျာမန် NEO ၂ ကီးဘုတ်</translation>
 <translation id="2943400156390503548">ဆလိုက်များ</translation>
 <translation id="2943503720238418293">ပိုတိုသောအမည်ကို အသုံးပြုပါ</translation>
+<translation id="2949781154072577687"><ph name="DRIVE_NAME" /> ကို ဖော်မက်ချနေသည်...</translation>
 <translation id="2951236788251446349">ငါးထီး</translation>
 <translation id="2963783323012015985">တူရကီ ကီးဘုတ်</translation>
 <translation id="2966459079597787514">ဆွီဒင် ကီးဘုတ်</translation>
@@ -568,6 +570,7 @@
 <translation id="7649070708921625228">အကူအညီ</translation>
 <translation id="7654209398114106148">ဖိုင် <ph name="NUMBER_OF_ITEMS" /> ခုကို ရွှေ့နေသည်…</translation>
 <translation id="7658239707568436148">မလုပ်တော့</translation>
+<translation id="7695430100978772476"><ph name="DRIVE_NAME" /> ကို ဖော်မက်ချ၍မရပါ</translation>
 <translation id="770015031906360009">ဂရိ</translation>
 <translation id="7706319470528945664">ပေါ်တူဂီ ကီးဘုတ်</translation>
 <translation id="7711920809702896782">ဓာတ်ပုံအချက်အလက်</translation>

@@ -32,6 +32,7 @@ class CORE_EXPORT NGCustomLayoutAlgorithm
   const NGLayoutAlgorithmParams& params_;
   const NGBoxStrut border_padding_;
   const NGBoxStrut border_scrollbar_padding_;
+  LayoutUnit child_percentage_resolution_block_size_for_min_max_;
 };
 
 }  // namespace blink

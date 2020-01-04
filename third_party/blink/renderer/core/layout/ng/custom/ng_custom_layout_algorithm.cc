@@ -31,6 +31,11 @@ NGCustomLayoutAlgorithm::NGCustomLayoutAlgorithm(
   container_builder_.SetIsNewFormattingContext(
       params.space.IsNewFormattingContext());
   container_builder_.SetInitialFragmentGeometry(params.fragment_geometry);
+  const NGConstraintSpace& space = ConstraintSpace();
+  child_percentage_resolution_block_size_for_min_max_ =
+      CalculateChildPercentageBlockSizeForMinMax(
+          space, Node(), border_padding_,
+          space.PercentageResolutionBlockSize());
 }
 
 base::Optional<MinMaxSize> NGCustomLayoutAlgorithm::ComputeMinMaxSize(
@@ -56,10 +61,11 @@ base::Optional<MinMaxSize> NGCustomLayoutAlgorithm::ComputeMinMaxSize(
 
   IntrinsicSizesResultOptions* intrinsic_sizes_result_options =
       IntrinsicSizesResultOptions::Create();
-  if (!instance->IntrinsicSizes(ConstraintSpace(), document, Node(),
-                                container_builder_.InitialBorderBoxSize(),
-                                border_scrollbar_padding_, &scope,
-                                intrinsic_sizes_result_options)) {
+  if (!instance->IntrinsicSizes(
+          ConstraintSpace(), document, Node(),
+          container_builder_.InitialBorderBoxSize(), border_scrollbar_padding_,
+          child_percentage_resolution_block_size_for_min_max_, &scope,
+          intrinsic_sizes_result_options)) {
     // TODO(ikilpatrick): Report this error to the developer.
     return FallbackMinMaxSize(input);
   }
@@ -72,7 +78,7 @@ base::Optional<MinMaxSize> NGCustomLayoutAlgorithm::ComputeMinMaxSize(
                           intrinsic_sizes_result_options->minContentSize()));
 
   if (input.size_type == NGMinMaxSizeType::kContentBoxSize)
-    sizes -= border_padding_.InlineSum();
+    sizes -= border_scrollbar_padding_.InlineSum();
 
   sizes.min_size.ClampNegativeToZero();
   sizes.max_size.ClampNegativeToZero();
@@ -105,10 +111,11 @@ scoped_refptr<const NGLayoutResult> NGCustomLayoutAlgorithm::Layout() {
   FragmentResultOptions* fragment_result_options =
       FragmentResultOptions::Create();
   scoped_refptr<SerializedScriptValue> fragment_result_data;
-  if (!instance->Layout(ConstraintSpace(), document, Node(),
-                        container_builder_.InitialBorderBoxSize(),
-                        border_scrollbar_padding_, &scope,
-                        fragment_result_options, &fragment_result_data)) {
+  if (!instance->Layout(
+          ConstraintSpace(), document, Node(),
+          container_builder_.InitialBorderBoxSize(), border_scrollbar_padding_,
+          child_percentage_resolution_block_size_for_min_max_, &scope,
+          fragment_result_options, &fragment_result_data)) {
     // TODO(ikilpatrick): Report this error to the developer.
     return FallbackLayout();
   }

@@ -268,7 +268,7 @@ ResolutionSet ResolutionSet::Intersection(const ResolutionSet& other) const {
 }
 
 Point ResolutionSet::SelectClosestPointToIdeal(
-    const WebMediaTrackConstraintSet& constraint_set,
+    const MediaTrackConstraintSetPlatform& constraint_set,
     int default_height,
     int default_width) const {
   DCHECK_GE(default_height, 1);
@@ -535,7 +535,7 @@ void ResolutionSet::TryAddVertex(std::vector<Point>* vertices,
 }
 
 ResolutionSet ResolutionSet::FromConstraintSet(
-    const WebMediaTrackConstraintSet& constraint_set) {
+    const MediaTrackConstraintSetPlatform& constraint_set) {
   return ResolutionSet(
       MinDimensionFromConstraint(constraint_set.height),
       MaxDimensionFromConstraint(constraint_set.height),
@@ -567,7 +567,7 @@ DiscreteSet<bool> BoolSetFromConstraint(const BooleanConstraint& constraint) {
 DiscreteSet<bool> RescaleSetFromConstraint(
     const StringConstraint& resize_mode_constraint) {
   DCHECK_EQ(resize_mode_constraint.GetName(),
-            WebMediaTrackConstraintSet().resize_mode.GetName());
+            MediaTrackConstraintSetPlatform().resize_mode.GetName());
   bool contains_none = resize_mode_constraint.Matches(
       WebString::FromASCII(WebMediaStreamTrack::kResizeModeNone));
   bool contains_rescale = resize_mode_constraint.Matches(

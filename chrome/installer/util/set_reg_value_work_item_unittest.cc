@@ -264,8 +264,8 @@ TEST_F(SetRegValueWorkItemTest, ModifyExistingWithCallback) {
   std::unique_ptr<SetRegValueWorkItem> work_item(
       WorkItem::CreateSetRegValueWorkItem(
           HKEY_CURRENT_USER, kTestKey, WorkItem::kWow64Default, kNameStr,
-          base::Bind(&VerifyPreviousValueAndReplace, &callback_invocation_count,
-                     kDataStr1, kDataStr2)));
+          base::BindOnce(&VerifyPreviousValueAndReplace,
+                         &callback_invocation_count, kDataStr1, kDataStr2)));
 
   // The callback should not be used until the item is executed.
   EXPECT_EQ(0, callback_invocation_count);
@@ -296,8 +296,8 @@ TEST_F(SetRegValueWorkItemTest, ModifyNonExistingWithCallback) {
   std::unique_ptr<SetRegValueWorkItem> work_item(
       WorkItem::CreateSetRegValueWorkItem(
           HKEY_CURRENT_USER, kTestKey, WorkItem::kWow64Default, kNameStr,
-          base::Bind(&VerifyPreviousValueAndReplace, &callback_invocation_count,
-                     L"", kDataStr1)));
+          base::BindOnce(&VerifyPreviousValueAndReplace,
+                         &callback_invocation_count, L"", kDataStr1)));
 
   EXPECT_EQ(0, callback_invocation_count);
 
@@ -327,8 +327,8 @@ TEST_F(SetRegValueWorkItemTest, ModifyExistingNonStringWithStringCallback) {
   std::unique_ptr<SetRegValueWorkItem> work_item(
       WorkItem::CreateSetRegValueWorkItem(
           HKEY_CURRENT_USER, kTestKey, WorkItem::kWow64Default, kNameStr,
-          base::Bind(&VerifyPreviousValueAndReplace, &callback_invocation_count,
-                     L"", kDataStr1)));
+          base::BindOnce(&VerifyPreviousValueAndReplace,
+                         &callback_invocation_count, L"", kDataStr1)));
 
   EXPECT_EQ(0, callback_invocation_count);
 

@@ -120,6 +120,19 @@ void SearchIPCRouter::AutocompleteResultChanged(
   embedded_search_client()->AutocompleteResultChanged(std::move(result));
 }
 
+void SearchIPCRouter::AutocompleteMatchImageAvailable(
+    uint32_t match_index,
+    const std::string& image_url,
+    const std::string& data_url) {
+  if (!policy_->ShouldProcessAutocompleteMatchImageAvailable(is_active_tab_) ||
+      !embedded_search_client()) {
+    return;
+  }
+
+  embedded_search_client()->AutocompleteMatchImageAvailable(
+      match_index, image_url, data_url);
+}
+
 void SearchIPCRouter::OnNavigationEntryCommitted() {
   ++commit_counter_;
   if (!embedded_search_client())

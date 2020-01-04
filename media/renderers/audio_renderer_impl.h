@@ -25,6 +25,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/power_monitor/power_observer.h"
 #include "base/synchronization/lock.h"
 #include "media/base/audio_decoder.h"
@@ -88,6 +89,7 @@ class MEDIA_EXPORT AudioRendererImpl
   void Flush(base::OnceClosure callback) override;
   void StartPlaying() override;
   void SetVolume(float volume) override;
+  void SetLatencyHint(base::Optional<base::TimeDelta> latency_hint) override;
 
   // base::PowerObserver implementation.
   void OnSuspend() override;
@@ -281,6 +283,10 @@ class MEDIA_EXPORT AudioRendererImpl
   // Algorithm for scaling audio.
   double playback_rate_;
   std::unique_ptr<AudioRendererAlgorithm> algorithm_;
+
+  // Stored value from last call to SetLatencyHint(). Passed to |algorithm_|
+  // during Initialize().
+  base::Optional<base::TimeDelta> latency_hint_;
 
   // Simple state tracking variable.
   State state_;

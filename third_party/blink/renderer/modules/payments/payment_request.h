@@ -67,9 +67,11 @@ class MODULES_EXPORT PaymentRequest final
                  ExceptionState&);
   ~PaymentRequest() override;
 
-  ScriptPromise show(ScriptState*);
-  ScriptPromise show(ScriptState*, ScriptPromise details_promise);
-  ScriptPromise abort(ScriptState*);
+  ScriptPromise show(ScriptState*, ExceptionState&);
+  ScriptPromise show(ScriptState*,
+                     ScriptPromise details_promise,
+                     ExceptionState&);
+  ScriptPromise abort(ScriptState*, ExceptionState&);
 
   const String& id() const { return id_; }
   PaymentAddress* getShippingAddress() const { return shipping_address_.Get(); }
@@ -80,8 +82,8 @@ class MODULES_EXPORT PaymentRequest final
   DEFINE_ATTRIBUTE_EVENT_LISTENER(shippingoptionchange, kShippingoptionchange)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(paymentmethodchange, kPaymentmethodchange)
 
-  ScriptPromise canMakePayment(ScriptState*);
-  ScriptPromise hasEnrolledInstrument(ScriptState*);
+  ScriptPromise canMakePayment(ScriptState*, ExceptionState&);
+  ScriptPromise hasEnrolledInstrument(ScriptState*, ExceptionState&);
 
   // ScriptWrappable:
   bool HasPendingActivity() const override;
@@ -91,8 +93,12 @@ class MODULES_EXPORT PaymentRequest final
   ExecutionContext* GetExecutionContext() const override;
 
   // PaymentStateResolver:
-  ScriptPromise Complete(ScriptState*, PaymentComplete result) override;
-  ScriptPromise Retry(ScriptState*, const PaymentValidationErrors*) override;
+  ScriptPromise Complete(ScriptState*,
+                         PaymentComplete result,
+                         ExceptionState&) override;
+  ScriptPromise Retry(ScriptState*,
+                      const PaymentValidationErrors*,
+                      ExceptionState&) override;
 
   // PaymentRequestDelegate:
   void OnUpdatePaymentDetails(const ScriptValue& details_script_value) override;

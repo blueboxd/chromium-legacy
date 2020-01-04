@@ -312,36 +312,6 @@ void WilcoDtcSupportdBridge::PerformWebRequest(
       std::move(request_body_content), std::move(callback));
 }
 
-void WilcoDtcSupportdBridge::GetConfigurationData(
-    GetConfigurationDataCallback callback) {
-  std::move(callback).Run(configuration_data_ ? *configuration_data_
-                                              : std::string());
-}
-
-void WilcoDtcSupportdBridge::HandleEvent(WilcoDtcSupportdEvent event) {
-  switch (event) {
-    case WilcoDtcSupportdEvent::kBatteryAuth:
-      notification_controller_->ShowBatteryAuthNotification();
-      return;
-    case WilcoDtcSupportdEvent::kNonWilcoCharger:
-      notification_controller_->ShowNonWilcoChargerNotification();
-      return;
-    case WilcoDtcSupportdEvent::kIncompatibleDock:
-      notification_controller_->ShowIncompatibleDockNotification();
-      return;
-    case WilcoDtcSupportdEvent::kDockError:
-      notification_controller_->ShowDockErrorNotification();
-      return;
-    case WilcoDtcSupportdEvent::kDockDisplay:
-      notification_controller_->ShowDockDisplayNotification();
-      return;
-    case WilcoDtcSupportdEvent::kDockThunderbolt:
-      notification_controller_->ShowDockThunderboltNotification();
-      return;
-  }
-  LOG(ERROR) << "Unrecognized event " << event << " event";
-}
-
 void WilcoDtcSupportdBridge::SendWilcoDtcMessageToUi(
     mojo::ScopedHandle json_message,
     SendWilcoDtcMessageToUiCallback callback) {
@@ -371,6 +341,36 @@ void WilcoDtcSupportdBridge::SendWilcoDtcMessageToUi(
             std::move(callback).Run(std::move(response_mojo_handle));
           },
           std::move(callback)));
+}
+
+void WilcoDtcSupportdBridge::GetConfigurationData(
+    GetConfigurationDataCallback callback) {
+  std::move(callback).Run(configuration_data_ ? *configuration_data_
+                                              : std::string());
+}
+
+void WilcoDtcSupportdBridge::HandleEvent(WilcoDtcSupportdEvent event) {
+  switch (event) {
+    case WilcoDtcSupportdEvent::kBatteryAuth:
+      notification_controller_->ShowBatteryAuthNotification();
+      return;
+    case WilcoDtcSupportdEvent::kNonWilcoCharger:
+      notification_controller_->ShowNonWilcoChargerNotification();
+      return;
+    case WilcoDtcSupportdEvent::kIncompatibleDock:
+      notification_controller_->ShowIncompatibleDockNotification();
+      return;
+    case WilcoDtcSupportdEvent::kDockError:
+      notification_controller_->ShowDockErrorNotification();
+      return;
+    case WilcoDtcSupportdEvent::kDockDisplay:
+      notification_controller_->ShowDockDisplayNotification();
+      return;
+    case WilcoDtcSupportdEvent::kDockThunderbolt:
+      notification_controller_->ShowDockThunderboltNotification();
+      return;
+  }
+  LOG(ERROR) << "Unrecognized event " << event << " event";
 }
 
 }  // namespace chromeos

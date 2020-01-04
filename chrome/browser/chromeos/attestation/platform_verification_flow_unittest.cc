@@ -143,13 +143,13 @@ class PlatformVerificationFlowTest : public ::testing::Test {
             Invoke(this, &PlatformVerificationFlowTest::FakeSignChallenge)));
   }
 
-  void FakeGetCertificate(
-      const AttestationFlow::CertificateCallback& callback) {
+  void FakeGetCertificate(AttestationFlow::CertificateCallback callback) {
     std::string certificate =
         (fake_certificate_index_ < fake_certificate_list_.size()) ?
             fake_certificate_list_[fake_certificate_index_] : kTestCertificate;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, certificate_status_, certificate));
+        FROM_HERE,
+        base::BindOnce(std::move(callback), certificate_status_, certificate));
     ++fake_certificate_index_;
   }
 

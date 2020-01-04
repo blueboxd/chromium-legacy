@@ -18,6 +18,7 @@ static_library("browser") {
     "paint_preview_base_service.h",
     "paint_preview_client.cc",
     "paint_preview_client.h",
+    "paint_preview_policy.h",
   ]
 
   deps = [

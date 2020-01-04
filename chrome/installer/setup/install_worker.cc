@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -125,23 +126,12 @@ void AddInstallerCopyTasks(const InstallerState& installer_state,
 // the case for new installs only. Updates and overinstalls leave the rule
 // in-place on rollback since a previous install of Chrome will be used in that
 // case.
-bool AddFirewallRulesCallback(bool system_level,
-                              const base::FilePath& chrome_path,
-                              bool remove_on_rollback,
+bool AddFirewallRulesCallback(const base::FilePath& chrome_path,
                               const CallbackWorkItem& work_item) {
-  // There is no work to do on rollback if this is not a new install.
-  if (work_item.IsRollback() && !remove_on_rollback)
-    return true;
-
   std::unique_ptr<FirewallManager> manager =
       FirewallManager::Create(chrome_path);
   if (!manager) {
     LOG(ERROR) << "Failed creating a FirewallManager. Continuing with install.";
-    return true;
-  }
-
-  if (work_item.IsRollback()) {
-    manager->RemoveFirewallRules();
     return true;
   }
 
@@ -154,15 +144,29 @@ bool AddFirewallRulesCallback(bool system_level,
   return true;
 }
 
+// A callback invoked by |work_item| that removes firewall rules on rollback
+// if this is a new install.
+void RemoveFirewallRulesCallback(const base::FilePath& chrome_path,
+                                 const CallbackWorkItem& work_item) {
+  std::unique_ptr<FirewallManager> manager =
+      FirewallManager::Create(chrome_path);
+  if (!manager) {
+    LOG(ERROR) << "Failed creating a FirewallManager. Continuing rollback.";
+    return;
+  }
+
+  manager->RemoveFirewallRules();
+}
+
 // Adds work items to |list| to create firewall rules.
 void AddFirewallRulesWorkItems(const InstallerState& installer_state,
                                bool is_new_install,
                                WorkItemList* list) {
-  list->AddCallbackWorkItem(
-      base::Bind(&AddFirewallRulesCallback,
-                 installer_state.system_install(),
-                 installer_state.target_path().Append(kChromeExe),
-                 is_new_install));
+  base::FilePath chrome_path = installer_state.target_path().Append(kChromeExe);
+  WorkItem* item = list->AddCallbackWorkItem(
+      base::BindOnce(&AddFirewallRulesCallback, chrome_path),
+      base::BindOnce(&RemoveFirewallRulesCallback, chrome_path));
+  item->set_rollback_enabled(is_new_install);
 }
 
 // Probes COM machinery to get an instance of notification_helper.exe's
@@ -170,16 +174,9 @@ void AddFirewallRulesWorkItems(const InstallerState& installer_state,
 //
 // This is required so that COM purges its cache of the path to the binary,
 // which changes on updates.
-//
-// This callback unconditionally returns true since an install should not be
-// aborted if the probe fails.
 bool ProbeNotificationActivatorCallback(const CLSID& toast_activator_clsid,
                                         const CallbackWorkItem& work_item) {
   DCHECK(toast_activator_clsid != CLSID_NULL);
-
-  // Noop on rollback.
-  if (work_item.IsRollback())
-    return true;
 
   Microsoft::WRL::ComPtr<IUnknown> notification_activator;
   HRESULT hr =
@@ -189,6 +186,7 @@ bool ProbeNotificationActivatorCallback(const CLSID& toast_activator_clsid,
   if (hr != REGDB_E_CLASSNOTREG) {
     LOG(ERROR) << "Unexpected result creating NotificationActivator; hr=0x"
                << std::hex << hr;
+    return false;
   }
 
   return true;
@@ -903,11 +901,10 @@ void AddInstallWorkItems(const InstallationState& original_state,
 
   // Set permissions early on both temp and target, since moved files may not
   // inherit permissions.
-  WorkItem* add_ac_acl_to_install =
-      install_list->AddCallbackWorkItem(base::BindRepeating(
+  WorkItem* add_ac_acl_to_install = install_list->AddCallbackWorkItem(
+      base::BindOnce(
           [](const base::FilePath& target_path, const base::FilePath& temp_path,
              const CallbackWorkItem& work_item) {
-            DCHECK(!work_item.IsRollback());
             std::vector<const wchar_t*> sids = {
                 kChromeInstallFilesCapabilitySid,
                 kLpacChromeInstallFilesCapabilitySid};
@@ -923,7 +920,8 @@ void AddInstallWorkItems(const InstallationState& original_state,
                                       success);
             return success;
           },
-          target_path, temp_path));
+          target_path, temp_path),
+      base::DoNothing());
   add_ac_acl_to_install->set_best_effort(true);
   add_ac_acl_to_install->set_rollback_enabled(false);
 
@@ -934,16 +932,17 @@ void AddInstallWorkItems(const InstallationState& original_state,
 
   if (installer_state.system_install()) {
     WorkItem* add_acl_to_histogram_storage_dir_work_item =
-        install_list->AddCallbackWorkItem(base::Bind(
-            [](const base::FilePath& histogram_storage_dir,
-               const CallbackWorkItem& work_item) {
-              DCHECK(!work_item.IsRollback());
-              return AddAclToPath(histogram_storage_dir,
-                                  ATL::Sids::AuthenticatedUser(),
-                                  FILE_GENERIC_READ | FILE_DELETE_CHILD,
-                                  CONTAINER_INHERIT_ACE | OBJECT_INHERIT_ACE);
-            },
-            histogram_storage_dir));
+        install_list->AddCallbackWorkItem(
+            base::BindOnce(
+                [](const base::FilePath& histogram_storage_dir,
+                   const CallbackWorkItem& work_item) {
+                  return AddAclToPath(
+                      histogram_storage_dir, ATL::Sids::AuthenticatedUser(),
+                      FILE_GENERIC_READ | FILE_DELETE_CHILD,
+                      CONTAINER_INHERIT_ACE | OBJECT_INHERIT_ACE);
+                },
+                histogram_storage_dir),
+            base::DoNothing());
     add_acl_to_histogram_storage_dir_work_item->set_best_effort(true);
     add_acl_to_histogram_storage_dir_work_item->set_rollback_enabled(false);
   }
@@ -1032,9 +1031,12 @@ void AddNativeNotificationWorkItems(
                                 KEY_WOW64_64KEY);
 
   // Force COM to flush its cache containing the path to the old handler.
-  list->AddCallbackWorkItem(
-      base::BindRepeating(&ProbeNotificationActivatorCallback,
-                          install_static::GetToastActivatorClsid()));
+  WorkItem* item = list->AddCallbackWorkItem(
+      base::BindOnce(&ProbeNotificationActivatorCallback,
+                     install_static::GetToastActivatorClsid()),
+      base::BindOnce(base::IgnoreResult(&ProbeNotificationActivatorCallback),
+                     install_static::GetToastActivatorClsid()));
+  item->set_best_effort(true);
 
   base::string16 toast_activator_server_path =
       toast_activator_reg_path + L"\\LocalServer32";

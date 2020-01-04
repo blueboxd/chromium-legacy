@@ -1588,7 +1588,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // applied to this document.
   void BindContentSecurityPolicy();
 
-  bool InForcedColorsMode() const;
+  void UpdateForcedColors();
+  bool InForcedColorsMode() const { return in_forced_colors_mode_; }
 
   // Returns true if the subframe document is cross-site to the main frame. If
   // we can't tell whether the document was ever cross-site or not (e.g. it is
@@ -2154,6 +2155,8 @@ class CORE_EXPORT Document : public ContainerNode,
       element_explicitly_set_attr_elements_map_;
 
   Member<IntersectionObserver> display_lock_activation_observer_;
+
+  bool in_forced_colors_mode_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;

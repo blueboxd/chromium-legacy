@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/modules/payments/payment_request.h"
 #include "third_party/blink/renderer/modules/payments/payment_test_helper.h"
+#include "third_party/blink/renderer/platform/bindings/exception_code.h"
 
 namespace blink {
 namespace {
@@ -22,9 +23,9 @@ TEST(HasEnrolledInstrumentTest, RejectPromiseOnUserCancel) {
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
-      BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
+      BuildPaymentDetailsInitForTest(), ASSERT_NO_EXCEPTION);
 
-  request->hasEnrolledInstrument(scope.GetScriptState())
+  request->hasEnrolledInstrument(scope.GetScriptState(), ASSERT_NO_EXCEPTION)
       .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
 
   static_cast<PaymentRequestClient*>(request)->OnError(
@@ -36,9 +37,9 @@ TEST(HasEnrolledInstrumentTest, RejectPromiseOnUnknownError) {
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
-      BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
+      BuildPaymentDetailsInitForTest(), ASSERT_NO_EXCEPTION);
 
-  request->hasEnrolledInstrument(scope.GetScriptState())
+  request->hasEnrolledInstrument(scope.GetScriptState(), ASSERT_NO_EXCEPTION)
       .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
 
   static_cast<PaymentRequestClient*>(request)->OnError(
@@ -47,13 +48,14 @@ TEST(HasEnrolledInstrumentTest, RejectPromiseOnUnknownError) {
 
 TEST(HasEnrolledInstrumentTest, RejectDuplicateRequest) {
   PaymentRequestV8TestingScope scope;
-  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
-      BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
-  request->hasEnrolledInstrument(scope.GetScriptState());
-  request->hasEnrolledInstrument(scope.GetScriptState())
-      .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
+      BuildPaymentDetailsInitForTest(), ASSERT_NO_EXCEPTION);
+  request->hasEnrolledInstrument(scope.GetScriptState(), ASSERT_NO_EXCEPTION);
+  request->hasEnrolledInstrument(scope.GetScriptState(),
+                                 scope.GetExceptionState());
+  EXPECT_EQ(scope.GetExceptionState().Code(),
+            ToExceptionCode(DOMExceptionCode::kInvalidStateError));
 }
 
 TEST(HasEnrolledInstrumentTest, RejectQueryQuotaExceeded) {
@@ -61,9 +63,9 @@ TEST(HasEnrolledInstrumentTest, RejectQueryQuotaExceeded) {
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
-      BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
+      BuildPaymentDetailsInitForTest(), ASSERT_NO_EXCEPTION);
 
-  request->hasEnrolledInstrument(scope.GetScriptState())
+  request->hasEnrolledInstrument(scope.GetScriptState(), ASSERT_NO_EXCEPTION)
       .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
 
   static_cast<PaymentRequestClient*>(request)->OnHasEnrolledInstrument(
@@ -75,9 +77,9 @@ TEST(HasEnrolledInstrumentTest, ReturnHasNoEnrolledInstrument) {
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
-      BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
+      BuildPaymentDetailsInitForTest(), ASSERT_NO_EXCEPTION);
   String captor;
-  request->hasEnrolledInstrument(scope.GetScriptState())
+  request->hasEnrolledInstrument(scope.GetScriptState(), ASSERT_NO_EXCEPTION)
       .Then(funcs.ExpectCall(&captor), funcs.ExpectNoCall());
 
   static_cast<PaymentRequestClient*>(request)->OnHasEnrolledInstrument(
@@ -92,9 +94,9 @@ TEST(HasEnrolledInstrumentTest, ReturnHasEnrolledInstrument) {
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
-      BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
+      BuildPaymentDetailsInitForTest(), ASSERT_NO_EXCEPTION);
   String captor;
-  request->hasEnrolledInstrument(scope.GetScriptState())
+  request->hasEnrolledInstrument(scope.GetScriptState(), ASSERT_NO_EXCEPTION)
       .Then(funcs.ExpectCall(&captor), funcs.ExpectNoCall());
 
   static_cast<PaymentRequestClient*>(request)->OnHasEnrolledInstrument(
@@ -109,9 +111,9 @@ TEST(CanMakePaymentTest, RejectPromiseOnUserCancel) {
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
-      BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
+      BuildPaymentDetailsInitForTest(), ASSERT_NO_EXCEPTION);
 
-  request->canMakePayment(scope.GetScriptState())
+  request->canMakePayment(scope.GetScriptState(), ASSERT_NO_EXCEPTION)
       .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
 
   static_cast<PaymentRequestClient*>(request)->OnError(
@@ -124,9 +126,9 @@ TEST(CanMakePaymentTest, RejectPromiseOnUnknownError) {
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
-      BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
+      BuildPaymentDetailsInitForTest(), ASSERT_NO_EXCEPTION);
 
-  request->canMakePayment(scope.GetScriptState())
+  request->canMakePayment(scope.GetScriptState(), ASSERT_NO_EXCEPTION)
       .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
 
   static_cast<PaymentRequestClient*>(request)->OnError(
@@ -135,14 +137,14 @@ TEST(CanMakePaymentTest, RejectPromiseOnUnknownError) {
 
 TEST(CanMakePaymentTest, RejectDuplicateRequest) {
   PaymentRequestV8TestingScope scope;
-  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
-      BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
-  request->canMakePayment(scope.GetScriptState());
+      BuildPaymentDetailsInitForTest(), ASSERT_NO_EXCEPTION);
+  request->canMakePayment(scope.GetScriptState(), ASSERT_NO_EXCEPTION);
 
-  request->canMakePayment(scope.GetScriptState())
-      .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
+  request->canMakePayment(scope.GetScriptState(), scope.GetExceptionState());
+  EXPECT_EQ(scope.GetExceptionState().Code(),
+            ToExceptionCode(DOMExceptionCode::kInvalidStateError));
 }
 
 TEST(CanMakePaymentTest, ReturnCannotMakePayment) {
@@ -150,9 +152,9 @@ TEST(CanMakePaymentTest, ReturnCannotMakePayment) {
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
-      BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
+      BuildPaymentDetailsInitForTest(), ASSERT_NO_EXCEPTION);
   String captor;
-  request->canMakePayment(scope.GetScriptState())
+  request->canMakePayment(scope.GetScriptState(), ASSERT_NO_EXCEPTION)
       .Then(funcs.ExpectCall(&captor), funcs.ExpectNoCall());
 
   static_cast<PaymentRequestClient*>(request)->OnCanMakePayment(
@@ -167,9 +169,9 @@ TEST(CanMakePaymentTest, ReturnCanMakePayment) {
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
-      BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
+      BuildPaymentDetailsInitForTest(), ASSERT_NO_EXCEPTION);
   String captor;
-  request->canMakePayment(scope.GetScriptState())
+  request->canMakePayment(scope.GetScriptState(), ASSERT_NO_EXCEPTION)
       .Then(funcs.ExpectCall(&captor), funcs.ExpectNoCall());
 
   static_cast<PaymentRequestClient*>(request)->OnCanMakePayment(

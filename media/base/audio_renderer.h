@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "media/base/buffering_state.h"
 #include "media/base/media_export.h"
@@ -58,6 +59,11 @@ class MEDIA_EXPORT AudioRenderer {
 
   // Sets the output volume.
   virtual void SetVolume(float volume) = 0;
+
+  // Set a hint indicating target latency. See comment in renderer.h.
+  // |latency_hint| may be nullopt to indicate the hint has been cleared
+  // (restore UA default).
+  virtual void SetLatencyHint(base::Optional<base::TimeDelta> latency_hint) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioRenderer);

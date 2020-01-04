@@ -116,7 +116,8 @@ body.hide-fakebox #fakebox {
   visibility: hidden;
 }
 
-#fakebox-container {
+#fakebox-container,
+#realbox-container {
   margin: 0 auto 0 auto;
   /* Increase min-width again to account for the search icon: 390px new
    * min-width + additional 20px */
@@ -263,7 +264,7 @@ body.hide-fakebox #fakebox {
   overflow: hidden;
   padding-bottom: 8px;
   padding-inline-end: 16px;
-  padding-inline-start: 48px;
+  padding-inline-start: 52px;
   padding-top: 8px;
   position: relative;
   text-decoration: none;
@@ -275,6 +276,24 @@ body.hide-fakebox #fakebox {
   background-position-x: calc(100% - 16px);
 }
 
+#realbox-matches a.has-image {
+  display: flex;
+  flex-direction: column;
+  height: 32px;
+  justify-content: center;
+  padding-bottom: 6px;
+  padding-top: 6px;
+}
+
+#realbox-matches a.has-image > span {
+  margin-bottom: 2px;
+  margin-top: 2px;
+}
+
+#realbox-matches a.has-image .description {
+  font-size: 14px;
+}
+
 #realbox-matches.removable a {
   padding-inline-end: 48px;
 }
@@ -284,15 +303,21 @@ body.hide-fakebox #fakebox {
 }
 
 .clock-icon,
+.search-icon,
+.image-container {
+  bottom: 0;
+  margin: auto;
+  position: absolute;
+  top: 0;
+}
+
+.clock-icon,
 .search-icon {
   -webkit-mask-position: center;
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: 16px;
   background-color: var(--search-box-icon, rgb(117, 117, 117));
-  bottom: 0;
   left: 16px;
-  position: absolute;
-  top: 0;
   width: 24px;
 }
 
@@ -310,7 +335,29 @@ body.hide-fakebox #fakebox {
 }
 
 html[dir=rtl] :-webkit-any(.clock-icon, .search-icon) {
+  left: auto;
   right: 16px;
+}
+
+.image-container {
+  align-items: center;
+  border-radius: 8px;
+  display: flex;
+  height: 32px;
+  justify-content: center;
+  left: 12px;
+  width: 32px;
+}
+
+html[dir=rtl] .image-container {
+  left: auto;
+  right: 12px;
+}
+
+.match-image {
+  border-radius: 8px;
+  max-height: 32px;
+  max-width: 32px;
 }
 
 #realbox-matches a:hover {
@@ -415,7 +462,7 @@ html[dir=rtl] #fakebox-text {
 
 #fakebox-text,
 #realbox {
-  padding-inline-start: 48px;
+  padding-inline-start: 52px;
 }
 
 #fakebox-cursor {

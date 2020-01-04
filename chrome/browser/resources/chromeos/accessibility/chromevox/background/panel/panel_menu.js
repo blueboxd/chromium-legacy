@@ -8,8 +8,10 @@
 
 goog.provide('PanelMenu');
 goog.provide('PanelNodeMenu');
+goog.provide('PanelSearchMenu');
 
 goog.require('AutomationTreeWalker');
+goog.require('Msgs');
 goog.require('Output');
 goog.require('PanelMenuItem');
 goog.require('constants');
@@ -77,12 +79,15 @@ PanelMenu.prototype = {
    * @param {string} menuItemBraille
    * @param {string} gesture
    * @param {Function} callback The function to call if this item is selected.
+   * @param {string=} opt_id An optional id for the menu item element.
    * @return {!PanelMenuItem} The menu item just created.
    */
   addMenuItem: function(
-      menuItemTitle, menuItemShortcut, menuItemBraille, gesture, callback) {
+      menuItemTitle, menuItemShortcut, menuItemBraille, gesture, callback,
+      opt_id) {
     var menuItem = new PanelMenuItem(
-        menuItemTitle, menuItemShortcut, menuItemBraille, gesture, callback);
+        menuItemTitle, menuItemShortcut, menuItemBraille, gesture, callback,
+        opt_id);
     this.items_.push(menuItem);
     this.menuElement.appendChild(menuItem.element);
 
@@ -113,8 +118,11 @@ PanelMenu.prototype = {
   /**
    * Activate this menu, which means showing it and positioning it on the
    * screen underneath its title in the menu bar.
+   * @param {boolean} activateFirstItem Whether or not we should activate the
+   *     menu's
+   * first item.
    */
-  activate: function() {
+  activate: function(activateFirstItem) {
     this.menuContainerElement.style.visibility = 'visible';
     this.menuContainerElement.style.opacity = 1;
     this.menuBarItemElement.classList.add('active');
@@ -133,7 +141,9 @@ PanelMenu.prototype = {
     }
 
     // Make the first item active.
-    this.activateItem(0);
+    if (activateFirstItem) {
+      this.activateItem(0);
+    }
   },
 
   /**
@@ -240,6 +250,13 @@ PanelMenu.prototype = {
         break;
       }
     }
+  },
+
+  /**
+   * @return {Array<PanelMenuItem>}
+   */
+  get items() {
+    return this.items_;
   }
 };
 
@@ -271,10 +288,11 @@ PanelNodeMenu.prototype = {
   __proto__: PanelMenu.prototype,
 
   /** @override */
-  activate: function() {
-    var activeItem = this.activeIndex_;
-    PanelMenu.prototype.activate.call(this);
-    this.activateItem(activeItem);
+  activate: function(activateFirstItem) {
+    PanelMenu.prototype.activate.call(this, activateFirstItem);
+    if (activateFirstItem) {
+      this.activateItem(this.activeIndex_);
+    }
   },
 
   /**
@@ -364,5 +382,123 @@ PanelNodeMenu.prototype = {
           Msgs.getMsg('panel_menu_item_none'), '', '', '', function() {});
       this.activateItem(0);
     }
+  }
+};
+
+/**
+ * Implements a menu that allows users to dynamically search the contents of the
+ * ChromeVox menus.
+ * @param {!string} menuMsg The msg id of the menu.
+ * @extends {PanelMenu}
+ * @constructor
+ */
+PanelSearchMenu = function(menuMsg) {
+  PanelMenu.call(this, menuMsg);
+  this.searchResultCounter_ = 0;
+
+  // Add id attribute to the menu so we can associate it with search bar.
+  this.menuElement.setAttribute('id', 'search-results');
+
+  // Create the search bar.
+  this.searchBar = document.createElement('input');
+  this.searchBar.setAttribute('id', 'search-bar');
+  this.searchBar.setAttribute('type', 'search');
+  this.searchBar.setAttribute('aria-controls', 'search-results');
+  this.searchBar.setAttribute('aria-activedescendant', '');
+  this.searchBar.setAttribute(
+      'placeholder', Msgs.getMsg('search_chromevox_menus'));
+  this.searchBar.setAttribute(
+      'aria-label', Msgs.getMsg('search_chromevox_menus'));
+  this.searchBar.setAttribute('role', 'searchbox');
+
+  // Add the search bar above the menu.
+  this.menuContainerElement.insertBefore(this.searchBar, this.menuElement);
+};
+
+PanelSearchMenu.prototype = {
+  __proto__: PanelMenu.prototype,
+
+  /** @override */
+  activate: function(activateFirstItem) {
+    PanelMenu.prototype.activate.call(this, false);
+    this.searchBar.focus();
+  },
+
+  /** @override */
+  activateItem: function(index) {
+    this.resetItemAtActiveIndex();
+    if (this.items_.length === 0) {
+      return;
+    }
+    if (index >= 0) {
+      index = (index + this.items_.length) % this.items_.length;
+    } else {
+      if (index >= this.activeIndex_) {
+        index = 0;
+      } else {
+        index = this.items_.length - 1;
+      }
+    }
+    this.activeIndex_ = index;
+    var item = this.items_[this.activeIndex_];
+    this.searchBar.setAttribute('aria-activedescendant', item.element.id);
+    item.element.classList.add('active');
+  },
+
+  /** @override */
+  advanceItemBy: function(delta) {
+    this.activateItem(this.activeIndex_ + delta);
+  },
+
+  /**
+   * Clears this menu's contents.
+   */
+  clear: function() {
+    this.items_ = [];
+    this.activeIndex_ = -1;
+    while (this.menuElement.children.length !== 0) {
+      this.menuElement.removeChild(this.menuElement.firstChild);
+    }
+  },
+
+  /**
+   * A convenience method to add a copy of an existing PanelMenuItem.
+   * @param {!PanelMenuItem} item The item we want to copy.
+   * @return {!PanelMenuItem} The menu item that was just created.
+   */
+  copyAndAddMenuItem: function(item) {
+    this.searchResultCounter_ = this.searchResultCounter_ + 1;
+    return this.addMenuItem(
+        item.menuItemTitle, item.menuItemShortcut, item.menuItemBraille,
+        item.gesture, item.callback,
+        'result-number-' + this.searchResultCounter_.toString());
+  },
+
+  /** @override */
+  deactivate: function() {
+    this.resetItemAtActiveIndex();
+    PanelMenu.prototype.deactivate.call(this);
+  },
+
+  /**
+   * Resets the item at this.activeIndex_.
+   */
+  resetItemAtActiveIndex: function() {
+    // Sanity check.
+    if (this.activeIndex_ < 0 || this.activeIndex_ >= this.items.length) {
+      return;
+    }
+
+    this.items_[this.activeIndex_].element.classList.remove('active');
+  },
+
+  /** @override */
+  scrollToTop: function() {
+    this.activateItem(0);
+  },
+
+  /** @override */
+  scrollToBottom: function() {
+    this.activateItem(this.items_.length - 1);
   }
 };

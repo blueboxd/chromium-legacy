@@ -26,7 +26,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLLBAR_THEME_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLLBAR_THEME_H_
 
-#include "third_party/blink/public/platform/web_scrollbar_buttons_placement.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
@@ -57,7 +56,7 @@ class CORE_EXPORT ScrollbarTheme {
   // |context|'s current space is the space of the scrollbar's FrameRect().
   void Paint(const Scrollbar&, GraphicsContext& context);
 
-  virtual ScrollbarPart HitTest(const Scrollbar&, const IntPoint&);
+  ScrollbarPart HitTestRootFramePosition(const Scrollbar&, const IntPoint&);
 
   // This returns a fixed value regardless of device-scale-factor.
   // This returns thickness when scrollbar is painted.  i.e. It's not 0 even in
@@ -67,10 +66,6 @@ class CORE_EXPORT ScrollbarTheme {
     return 0;
   }
   virtual int ScrollbarMargin() const { return 0; }
-
-  virtual WebScrollbarButtonsPlacement ButtonsPlacement() const {
-    return kWebScrollbarButtonsPlacementSingle;
-  }
 
   virtual bool IsSolidColor() const { return false; }
   virtual bool UsesOverlayScrollbars() const { return false; }
@@ -136,13 +131,18 @@ class CORE_EXPORT ScrollbarTheme {
   // should also override PaintThumbWithOpacity().
   virtual float ThumbOpacity(const Scrollbar&) const { return 1.0f; }
 
-  virtual bool HasButtons(const Scrollbar&) = 0;
+  // Whether the native theme of the OS has scrollbar buttons.
+  virtual bool NativeThemeHasButtons() = 0;
+  // Whether the scrollbar has buttons. It's the same as NativeThemeHasButtons()
+  // except for custom scrollbars which can override the OS settings.
+  virtual bool HasButtons(const Scrollbar&) { return NativeThemeHasButtons(); }
+
   virtual bool HasThumb(const Scrollbar&) = 0;
 
   // All these rects are in the same coordinate space as the scrollbar's
   // FrameRect.
-  virtual IntRect BackButtonRect(const Scrollbar&, ScrollbarPart) = 0;
-  virtual IntRect ForwardButtonRect(const Scrollbar&, ScrollbarPart) = 0;
+  virtual IntRect BackButtonRect(const Scrollbar&) = 0;
+  virtual IntRect ForwardButtonRect(const Scrollbar&) = 0;
   virtual IntRect TrackRect(const Scrollbar&) = 0;
   virtual IntRect ThumbRect(const Scrollbar&);
   virtual int ThumbThickness(const Scrollbar&);
@@ -200,6 +200,9 @@ class CORE_EXPORT ScrollbarTheme {
   virtual bool AllowsHitTest() const { return true; }
 
  protected:
+  // The point is in the same coordinate space as the scrollbar's FrameRect.
+  virtual ScrollbarPart HitTest(const Scrollbar&, const IntPoint&);
+
   virtual int TickmarkBorderWidth() { return 0; }
   virtual void PaintTrack(GraphicsContext&, const Scrollbar&, const IntRect&) {}
   virtual void PaintButton(GraphicsContext&,

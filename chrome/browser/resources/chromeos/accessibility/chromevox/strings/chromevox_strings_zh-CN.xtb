@@ -418,6 +418,7 @@
 <translation id="3914732343065571127">ChromeVox 命令参考</translation>
 <translation id="3930383913623796990">春绿色</translation>
 <translation id="3930498801443296724">重要引述</translation>
+<translation id="3935615366277838204">大写 <ph name="LETTER" /></translation>
 <translation id="3936394396199829062">薰衣草紫红色</translation>
 <translation id="3941269780691800708">说出鼠标指针下方的文字。</translation>
 <translation id="394953087167197343">表示拼写错误：</translation>
@@ -853,6 +854,7 @@
 <translation id="699159175332639490">搜索键 + O + W</translation>
 <translation id="6994042831499278539">词汇表参考资料</translation>
 <translation id="6996566555547746822">下一个组合框</translation>
+<translation id="6997224546856374593">读出大写字母时：</translation>
 <translation id="700202842116345659">参考书目</translation>
 <translation id="7005146664810010831">找不到网址</translation>
 <translation id="7010712454773919705">ChromeVox辅助键</translation>
@@ -933,6 +935,7 @@
 <translation id="744163271241493234">pwded</translation>
 <translation id="7491962110804786152">标签</translation>
 <translation id="7492049978501397201">已进入对话框</translation>
+<translation id="7505149250476994901">先说“大写”，后读字母</translation>
 <translation id="7518543783849163354">要使 ChromeVox 暂时停止朗读功能，请按 Ctrl 键。</translation>
 <translation id="7521682724501952239">您可将 ChromeVox 与触摸屏搭配使用。</translation>
 <translation id="7532613204005497612">6月</translation>

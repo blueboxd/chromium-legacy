@@ -840,7 +840,7 @@ base::Time GetConsoleSessionStartTime() {
     return base::Time();
   }
   base::ScopedClosureRunner wts_deleter(
-      base::Bind(&::WTSFreeMemory, base::Unretained(buffer)));
+      base::BindOnce(&::WTSFreeMemory, base::Unretained(buffer)));
 
   WTSINFO* wts_info = nullptr;
   if (buffer_size < sizeof(*wts_info))

@@ -57,8 +57,6 @@ struct LoadingPredictorConfig {
   LoadingPredictorConfig(const LoadingPredictorConfig& other);
   ~LoadingPredictorConfig();
 
-  bool IsSmallDBEnabledForTest() const;
-
   // If a navigation hasn't seen a load complete event in this much time, it
   // is considered abandoned.
   size_t max_navigation_lifetime_seconds;

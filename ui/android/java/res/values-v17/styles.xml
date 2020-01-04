@@ -242,7 +242,7 @@
 
     <!-- Error Text Styles -->
     <style name="TextAppearance.ErrorCaption" tools:ignore="UnusedResources">
-        <item name="android:textColor">@color/error_text_color</item>
+        <item name="android:textColor">@color/default_text_color_error</item>
         <item name="android:textSize">@dimen/text_size_small</item>
     </style>
 

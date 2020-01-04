@@ -419,6 +419,7 @@
 <translation id="3914732343065571127">ChromeVox 명령어 참조</translation>
 <translation id="3930383913623796990">스프링 그린</translation>
 <translation id="3930498801443296724">인용문</translation>
+<translation id="3935615366277838204">대문자 <ph name="LETTER" /></translation>
 <translation id="3936394396199829062">라벤더 블러시</translation>
 <translation id="3941269780691800708">마우스 커서를 올린 텍스트를 음성으로 알려줍니다.</translation>
 <translation id="394953087167197343">맞춤법 오류 표시:</translation>
@@ -854,6 +855,7 @@
 <translation id="699159175332639490">검색 + O + W</translation>
 <translation id="6994042831499278539">용어 참조</translation>
 <translation id="6996566555547746822">다음 콤보 상자</translation>
+<translation id="6997224546856374593">대문자를 읽을 방법을 선택하세요.</translation>
 <translation id="700202842116345659">참고문헌 항목</translation>
 <translation id="7005146664810010831">URL을 찾을 수 없음</translation>
 <translation id="7010712454773919705">ChromeVox 특수키</translation>
@@ -934,6 +936,7 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="744163271241493234">pwded</translation>
 <translation id="7491962110804786152">tab</translation>
 <translation id="7492049978501397201">대화상자 입력함</translation>
+<translation id="7505149250476994901">문자 전에 "대문자"라고 말하기</translation>
 <translation id="7518543783849163354">일시적으로 ChromeVox의 음성 안내를 중지하려면 Control 키를 누릅니다.</translation>
 <translation id="7521682724501952239">터치스크린으로 ChromeVox를 사용할 수 있습니다.</translation>
 <translation id="7532613204005497612">6월</translation>

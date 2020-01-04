@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -409,6 +410,10 @@ class WebAppFrameToolbarView::ToolbarButtonContainer
     return browser_actions_container_;
   }
 
+  ExtensionsToolbarContainer* extensions_container() {
+    return extensions_container_;
+  }
+
   WebAppMenuButton* web_app_menu_button() { return web_app_menu_button_; }
 
  private:
@@ -765,16 +770,14 @@ BrowserActionsContainer* WebAppFrameToolbarView::GetBrowserActionsContainer() {
   return right_container_->browser_actions_container();
 }
 
-ToolbarActionView* WebAppFrameToolbarView::GetToolbarActionViewForId(
-    const std::string& id) {
-  // TODO(pbos): Implement this for kExtensionsToolbarMenu.
-  CHECK(!base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu));
-  return right_container_->browser_actions_container()->GetViewForId(id);
+ExtensionsToolbarContainer*
+WebAppFrameToolbarView::GetExtensionsToolbarContainer() {
+  return right_container_->extensions_container();
 }
 
 views::View* WebAppFrameToolbarView::GetDefaultExtensionDialogAnchorView() {
-  // TODO(pbos): Implement this for kExtensionsToolbarMenu.
-  CHECK(!base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu));
+  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu))
+    return right_container_->extensions_container()->extensions_button();
   return GetAppMenuButton();
 }
 

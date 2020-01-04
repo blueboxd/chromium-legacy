@@ -37,11 +37,13 @@ namespace {
 constexpr base::FilePath::CharType kCredentialProviderDll[] =
     FILE_PATH_LITERAL("Gaia1_0.dll");
 
+constexpr base::FilePath::CharType kCredentialProviderSetupExe[] =
+    FILE_PATH_LITERAL("gcp_setup.exe");
+
 // List of files to install.  If the file list is changed here, make sure to
 // update the files added in make_setup.py.
 constexpr const base::FilePath::CharType* kFilenames[] = {
-    FILE_PATH_LITERAL("gcp_setup.exe"),
-    FILE_PATH_LITERAL("gcp_eventlog_provider.dll"),
+    kCredentialProviderSetupExe, FILE_PATH_LITERAL("gcp_eventlog_provider.dll"),
     kCredentialProviderDll,  // Base name to the CP dll.
 };
 
@@ -225,6 +227,18 @@ HRESULT DoInstall(const base::FilePath& installer_path,
   if (SUCCEEDED(hr))
     DeleteVersionsExcept(gcp_path, product_version);
 
+  base::FilePath setup_exe_path = dest_path.Append(kCredentialProviderSetupExe);
+  hr = WriteUninstallRegistryValues(setup_exe_path);
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "WriteUninstallRegistryValues failed hr=" << putHR(hr);
+    // Uninstall registry values are written for MSI wrapper. Failing to write
+    // them will only impact uninstalling through uninstall shortcuts on
+    // Windows. There is still a workaround to uninstall by calling
+    // "gcp_setup.exe --uninstall" from a terminal. So, ignoring the failure in
+    // this case until we support rollback of installation that fails mid-way
+    // through.
+  }
+
   return S_OK;
 }
 
@@ -309,26 +323,61 @@ void GetInstalledFileBasenames(const base::FilePath::CharType* const** names,
 }
 
 int EnableStatsCollection(const base::CommandLine& cmdline) {
-  DCHECK(cmdline.HasSwitch(credential_provider::switches::kEnableStats) ||
-         cmdline.HasSwitch(credential_provider::switches::kDisableStats));
+  DCHECK(cmdline.HasSwitch(switches::kEnableStats) ||
+         cmdline.HasSwitch(switches::kDisableStats));
 
-  bool enable =
-      !cmdline.HasSwitch(credential_provider::switches::kDisableStats);
+  bool enable = !cmdline.HasSwitch(switches::kDisableStats);
 
   base::win::RegKey key;
-  LONG sts = key.Create(HKEY_LOCAL_MACHINE,
-                        credential_provider::kRegUpdaterClientStateAppPath,
-                        KEY_SET_VALUE | KEY_WOW64_32KEY);
-  if (sts != ERROR_SUCCESS) {
-    LOGFN(ERROR) << "Unable to open omaha key sts=" << sts;
+  LONG status = key.Create(HKEY_LOCAL_MACHINE, kRegUpdaterClientStateAppPath,
+                           KEY_SET_VALUE | KEY_WOW64_32KEY);
+  if (status != ERROR_SUCCESS) {
+    LOGFN(ERROR) << "Unable to open omaha key=" << kRegUpdaterClientStateAppPath
+                 << " status=" << status;
   } else {
-    sts =
-        key.WriteValue(credential_provider::kRegUsageStatsName, enable ? 1 : 0);
-    if (sts != ERROR_SUCCESS)
-      LOGFN(ERROR) << "Unable to write userstats value sts=" << sts;
+    status = key.WriteValue(kRegUsageStatsName, enable ? 1 : 0);
+    if (status != ERROR_SUCCESS) {
+      LOGFN(ERROR) << "Unable to write " << kRegUsageStatsName
+                   << " value status=" << status;
+    }
   }
 
-  return sts == ERROR_SUCCESS ? 0 : -1;
+  return status == ERROR_SUCCESS ? 0 : -1;
+}
+
+HRESULT WriteUninstallRegistryValues(const base::FilePath& setup_exe) {
+  base::win::RegKey key;
+  LONG status = key.Create(HKEY_LOCAL_MACHINE, kRegUpdaterClientStateAppPath,
+                           KEY_SET_VALUE | KEY_WOW64_32KEY);
+  if (status != ERROR_SUCCESS) {
+    HRESULT hr = HRESULT_FROM_WIN32(status);
+    LOGFN(ERROR) << "Unable to open " << kRegUpdaterClientStateAppPath
+                 << " hr=" << putHR(hr);
+    return hr;
+  } else {
+    status =
+        key.WriteValue(kRegUninstallStringField, setup_exe.value().c_str());
+    if (status != ERROR_SUCCESS) {
+      HRESULT hr = HRESULT_FROM_WIN32(status);
+      LOGFN(ERROR) << "Unable to write " << kRegUninstallStringField
+                   << " hr=" << putHR(hr);
+      return hr;
+    }
+
+    base::CommandLine uninstall_arguments(base::CommandLine::NO_PROGRAM);
+    uninstall_arguments.AppendSwitch(switches::kUninstall);
+
+    status = key.WriteValue(kRegUninstallArgumentsField,
+                            uninstall_arguments.GetCommandLineString().c_str());
+    if (status != ERROR_SUCCESS) {
+      HRESULT hr = HRESULT_FROM_WIN32(status);
+      LOGFN(ERROR) << "Unable to write " << kRegUninstallArgumentsField
+                   << " hr=" << putHR(hr);
+      return hr;
+    }
+  }
+
+  return HRESULT_FROM_WIN32(status);
 }
 
 }  // namespace credential_provider

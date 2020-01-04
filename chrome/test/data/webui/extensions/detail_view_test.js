@@ -170,6 +170,17 @@ suite(extension_detail_view_tests.suiteName, function() {
 
     expectTrue(testIsVisible('#enableToggle'));
     expectFalse(testIsVisible('#terminated-reload-button'));
+
+    // This section tests that the enable toggle is visible but disabled when
+    // disableReasons.blockedByPolicy is true. This test prevents a regression
+    // to crbug/1003014.
+    item.set('data.disableReasons.blockedByPolicy', true);
+    flush();
+    expectTrue(testIsVisible('#enableToggle'));
+    expectTrue(item.$$('#enableToggle').disabled);
+    item.set('data.disableReasons.blockedByPolicy', false);
+    flush();
+
     item.set('data.state', chrome.developerPrivate.ExtensionState.TERMINATED);
     flush();
     expectFalse(testIsVisible('#enableToggle'));

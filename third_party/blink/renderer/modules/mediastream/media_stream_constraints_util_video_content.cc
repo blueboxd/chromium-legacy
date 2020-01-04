@@ -57,7 +57,7 @@ class VideoContentCaptureCandidates {
   VideoContentCaptureCandidates()
       : has_explicit_max_height_(false), has_explicit_max_width_(false) {}
   explicit VideoContentCaptureCandidates(
-      const WebMediaTrackConstraintSet& constraint_set)
+      const MediaTrackConstraintSetPlatform& constraint_set)
       : resolution_set_(ResolutionSet::FromConstraintSet(constraint_set)),
         has_explicit_max_height_(ConstraintHasMax(constraint_set.height) &&
                                  ConstraintMax(constraint_set.height) <=
@@ -174,7 +174,7 @@ gfx::Size ToGfxSize(const Point& point) {
 
 double SelectFrameRateFromCandidates(
     const DoubleRangeSet& candidate_set,
-    const WebMediaTrackConstraintSet& basic_constraint_set,
+    const MediaTrackConstraintSetPlatform& basic_constraint_set,
     double default_frame_rate) {
   double frame_rate = basic_constraint_set.frame_rate.HasIdeal()
                           ? basic_constraint_set.frame_rate.Ideal()
@@ -189,7 +189,7 @@ double SelectFrameRateFromCandidates(
 
 media::VideoCaptureParams SelectVideoCaptureParamsFromCandidates(
     const VideoContentCaptureCandidates& candidates,
-    const WebMediaTrackConstraintSet& basic_constraint_set,
+    const MediaTrackConstraintSetPlatform& basic_constraint_set,
     int default_height,
     int default_width,
     double default_frame_rate,
@@ -213,7 +213,7 @@ media::VideoCaptureParams SelectVideoCaptureParamsFromCandidates(
 
 std::string SelectDeviceIDFromCandidates(
     const StringSet& candidates,
-    const WebMediaTrackConstraintSet& basic_constraint_set) {
+    const MediaTrackConstraintSetPlatform& basic_constraint_set) {
   DCHECK(!candidates.IsEmpty());
   if (basic_constraint_set.device_id.HasIdeal()) {
     // If there are multiple elements specified by ideal, break ties by choosing
@@ -239,7 +239,7 @@ std::string SelectDeviceIDFromCandidates(
 
 base::Optional<bool> SelectNoiseReductionFromCandidates(
     const BoolSet& candidates,
-    const WebMediaTrackConstraintSet& basic_constraint_set) {
+    const MediaTrackConstraintSetPlatform& basic_constraint_set) {
   DCHECK(!candidates.IsEmpty());
   if (basic_constraint_set.goog_noise_reduction.HasIdeal() &&
       candidates.Contains(basic_constraint_set.goog_noise_reduction.Ideal())) {
@@ -256,7 +256,7 @@ base::Optional<bool> SelectNoiseReductionFromCandidates(
 
 bool SelectRescaleFromCandidates(
     const BoolSet& candidates,
-    const WebMediaTrackConstraintSet& basic_constraint_set) {
+    const MediaTrackConstraintSetPlatform& basic_constraint_set) {
   DCHECK(!candidates.IsEmpty());
   if (basic_constraint_set.resize_mode.HasIdeal()) {
     for (const auto& ideal_resize_value :
@@ -288,7 +288,7 @@ int ClampToValidScreenCastDimension(int value) {
 
 VideoCaptureSettings SelectResultFromCandidates(
     const VideoContentCaptureCandidates& candidates,
-    const WebMediaTrackConstraintSet& basic_constraint_set,
+    const MediaTrackConstraintSetPlatform& basic_constraint_set,
     mojom::MediaStreamType stream_type,
     int screen_width,
     int screen_height) {
@@ -357,7 +357,7 @@ VideoCaptureSettings SelectResultFromCandidates(
 
 VideoCaptureSettings UnsatisfiedConstraintsResult(
     const VideoContentCaptureCandidates& candidates,
-    const WebMediaTrackConstraintSet& constraint_set) {
+    const MediaTrackConstraintSetPlatform& constraint_set) {
   DCHECK(candidates.IsEmpty());
   if (candidates.resolution_set().IsHeightEmpty()) {
     return VideoCaptureSettings(constraint_set.height.GetName());

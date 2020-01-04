@@ -28,8 +28,10 @@ const char kPaintPreviewDir[] = "paint_preview";
 PaintPreviewBaseService::PaintPreviewBaseService(
     const base::FilePath& path,
     const std::string& ascii_feature_name,
+    std::unique_ptr<PaintPreviewPolicy> policy,
     bool is_off_the_record)
-    : file_manager_(
+    : policy_(std::move(policy)),
+      file_manager_(
           path.AppendASCII(kPaintPreviewDir).AppendASCII(ascii_feature_name)),
       is_off_the_record_(is_off_the_record) {}
 PaintPreviewBaseService::~PaintPreviewBaseService() = default;
@@ -49,6 +51,11 @@ void PaintPreviewBaseService::CapturePaintPreview(
     const base::FilePath& root_dir,
     gfx::Rect clip_rect,
     OnCapturedCallback callback) {
+  if (policy_ && !policy_->SupportedForContents(web_contents)) {
+    std::move(callback).Run(kContentUnsupported, nullptr);
+    return;
+  }
+
   PaintPreviewClient::CreateForWebContents(web_contents);  // Is a singleton.
   auto* client = PaintPreviewClient::FromWebContents(web_contents);
   if (!client) {

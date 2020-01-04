@@ -40,7 +40,9 @@ class FontSizeJsTest : public web::WebJsTest<web::WebTestWithWebState> {
   // '-webkit-text-size-adjust=none' also works.
   void LoadHtml(NSString* html) {
     LoadHtmlAndInject(
-        [NSString stringWithFormat:@"<html><meta name='viewport' "
+        [NSString stringWithFormat:@"<html><style>"
+                                   @"html { -webkit-text-size-adjust=none }"
+                                   @"</style><meta name='viewport' "
                                    @"content='initial-scale=1.0'>%@</html>",
                                    html]);
   }
@@ -252,8 +254,7 @@ TEST_F(FontSizeJsTest, TestAdjustFontSizeForUnit) {
 }
 
 // Tests that __gCrWeb.accessibility.adjustFontSize works for nested elements.
-// TODO(crbug.com/1038529): Re-enable this test.
-TEST_F(FontSizeJsTest, FLAKY_TestAdjustFontSizeForNestedElements) {
+TEST_F(FontSizeJsTest, TestAdjustFontSizeForNestedElements) {
   // TODO(crbug.com/983776): This test fails on ipad since beta5 due to a
   // simulator bug. Re-enable this once the bug is fixed.
   if (base::ios::IsRunningOnIOS13OrLater() &&

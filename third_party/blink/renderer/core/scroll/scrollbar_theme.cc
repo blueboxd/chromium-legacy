@@ -58,20 +58,25 @@ void ScrollbarTheme::Paint(const Scrollbar& scrollbar,
     PaintThumbWithOpacity(graphics_context, scrollbar, thumb_rect);
 }
 
-ScrollbarPart ScrollbarTheme::HitTest(const Scrollbar& scrollbar,
-                                      const IntPoint& position_in_root_frame) {
-  ScrollbarPart result = kNoPart;
+ScrollbarPart ScrollbarTheme::HitTestRootFramePosition(
+    const Scrollbar& scrollbar,
+    const IntPoint& position_in_root_frame) {
+  if (!AllowsHitTest())
+    return kNoPart;
+
   if (!scrollbar.Enabled())
-    return result;
+    return kNoPart;
 
   IntPoint test_position =
       scrollbar.ConvertFromRootFrame(position_in_root_frame);
   test_position.Move(scrollbar.X(), scrollbar.Y());
+  return HitTest(scrollbar, test_position);
+}
 
+ScrollbarPart ScrollbarTheme::HitTest(const Scrollbar& scrollbar,
+                                      const IntPoint& test_position) {
   if (!scrollbar.FrameRect().Contains(test_position))
     return kNoPart;
-
-  result = kScrollbarBGPart;
 
   IntRect track = TrackRect(scrollbar);
   if (track.Contains(test_position)) {
@@ -81,27 +86,20 @@ ScrollbarPart ScrollbarTheme::HitTest(const Scrollbar& scrollbar,
     SplitTrack(scrollbar, track, before_thumb_rect, thumb_rect,
                after_thumb_rect);
     if (thumb_rect.Contains(test_position))
-      result = kThumbPart;
-    else if (before_thumb_rect.Contains(test_position))
-      result = kBackTrackPart;
-    else if (after_thumb_rect.Contains(test_position))
-      result = kForwardTrackPart;
-    else
-      result = kTrackBGPart;
-  } else if (BackButtonRect(scrollbar, kBackButtonStartPart)
-                 .Contains(test_position)) {
-    result = kBackButtonStartPart;
-  } else if (BackButtonRect(scrollbar, kBackButtonEndPart)
-                 .Contains(test_position)) {
-    result = kBackButtonEndPart;
-  } else if (ForwardButtonRect(scrollbar, kForwardButtonStartPart)
-                 .Contains(test_position)) {
-    result = kForwardButtonStartPart;
-  } else if (ForwardButtonRect(scrollbar, kForwardButtonEndPart)
-                 .Contains(test_position)) {
-    result = kForwardButtonEndPart;
+      return kThumbPart;
+    if (before_thumb_rect.Contains(test_position))
+      return kBackTrackPart;
+    if (after_thumb_rect.Contains(test_position))
+      return kForwardTrackPart;
+    return kTrackBGPart;
   }
-  return result;
+
+  if (BackButtonRect(scrollbar).Contains(test_position))
+    return kBackButtonStartPart;
+  if (ForwardButtonRect(scrollbar).Contains(test_position))
+    return kForwardButtonEndPart;
+
+  return kScrollbarBGPart;
 }
 
 void ScrollbarTheme::PaintScrollCorner(
@@ -312,19 +310,13 @@ void ScrollbarTheme::PaintTrackAndButtons(GraphicsContext& context,
                            DisplayItem::kScrollbarTrackAndButtons);
 
   if (HasButtons(scrollbar)) {
-    IntRect back_button_rect = BackButtonRect(scrollbar, kBackButtonStartPart);
+    IntRect back_button_rect = BackButtonRect(scrollbar);
     back_button_rect.MoveBy(offset);
     PaintButton(context, scrollbar, back_button_rect, kBackButtonStartPart);
 
-    IntRect forward_button_rect =
-        ForwardButtonRect(scrollbar, kForwardButtonEndPart);
+    IntRect forward_button_rect = ForwardButtonRect(scrollbar);
     forward_button_rect.MoveBy(offset);
     PaintButton(context, scrollbar, forward_button_rect, kForwardButtonEndPart);
-
-    // Non-custom scrollbars don't have kBackButtonEndPart and
-    // kForwardButtonStartPart.
-    DCHECK(BackButtonRect(scrollbar, kBackButtonEndPart).IsEmpty());
-    DCHECK(ForwardButtonRect(scrollbar, kForwardButtonStartPart).IsEmpty());
   }
 
   IntRect track_rect = TrackRect(scrollbar);

@@ -24,6 +24,7 @@
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_util.h"
+#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
 #include "ash/wm/overview/drop_target_view.h"
 #include "ash/wm/overview/overview_constants.h"
@@ -209,24 +210,18 @@ std::unique_ptr<views::Widget> CreateDropTargetWidget(
   return widget;
 }
 
-// Returns 1 if the name of |window_dragging_state| begins with "kFrom," else 0.
 float GetWantedDropTargetOpacity(
     SplitViewDragIndicators::WindowDraggingState window_dragging_state) {
   switch (window_dragging_state) {
     case SplitViewDragIndicators::WindowDraggingState::kNoDrag:
-      return 0.f;
     case SplitViewDragIndicators::WindowDraggingState::kOtherDisplay:
-      return 0.f;
-    case SplitViewDragIndicators::WindowDraggingState::kFromOverview:
-      return 1.f;
-    case SplitViewDragIndicators::WindowDraggingState::kFromTop:
-      return 1.f;
-    case SplitViewDragIndicators::WindowDraggingState::kFromShelf:
-      return 1.f;
     case SplitViewDragIndicators::WindowDraggingState::kToSnapLeft:
-      return 0.f;
     case SplitViewDragIndicators::WindowDraggingState::kToSnapRight:
       return 0.f;
+    case SplitViewDragIndicators::WindowDraggingState::kFromOverview:
+    case SplitViewDragIndicators::WindowDraggingState::kFromTop:
+    case SplitViewDragIndicators::WindowDraggingState::kFromShelf:
+      return 1.f;
   }
 }
 
@@ -557,6 +552,11 @@ void OverviewGrid::AppendItem(aura::Window* window,
           window_list_.size(), use_spawn_animation);
 }
 
+void OverviewGrid::AddItemInMruOrder(aura::Window* window, bool animate) {
+  AddItem(window, /*reposition=*/true, animate, /*ignored_items=*/{},
+          FindInsertionIndex(window));
+}
+
 void OverviewGrid::RemoveItem(OverviewItem* overview_item,
                               bool item_destroying,
                               bool reposition) {
@@ -605,7 +605,8 @@ void OverviewGrid::RemoveItem(OverviewItem* overview_item,
             ? base::make_optional(
                   split_view_drag_indicators_->current_window_dragging_state())
             : base::nullopt,
-        /*divider_changed=*/false);
+        /*divider_changed=*/false,
+        /*account_for_hotseat=*/true);
     SetBoundsAndUpdatePositions(grid_bounds, ignored_items, /*animate=*/true);
   }
 }
@@ -668,7 +669,7 @@ void OverviewGrid::RearrangeDuringDrag(
   // Update the grid's bounds.
   const gfx::Rect wanted_grid_bounds = GetGridBoundsInScreen(
       root_window_, base::make_optional(window_dragging_state),
-      /*divider_changed=*/false);
+      /*divider_changed=*/false, /*account_for_hotseat=*/true);
   if (bounds_ != wanted_grid_bounds) {
     SetBoundsAndUpdatePositions(wanted_grid_bounds,
                                 {GetOverviewItemContaining(dragged_window)},
@@ -918,7 +919,8 @@ void OverviewGrid::OnSplitViewDividerPositionChanged() {
   SetBoundsAndUpdatePositions(
       GetGridBoundsInScreen(root_window_,
                             /*window_dragging_state=*/base::nullopt,
-                            /*divider_changed=*/true),
+                            /*divider_changed=*/true,
+                            /*account_for_hotseat=*/true),
       /*ignored_items=*/{}, /*animate=*/false);
 }
 
@@ -1835,6 +1837,24 @@ size_t OverviewGrid::GetOverviewItemIndex(OverviewItem* item) const {
   return iter - window_list_.begin();
 }
 
+size_t OverviewGrid::FindInsertionIndex(const aura::Window* window) {
+  DCHECK(!GetDropTarget());
+  size_t index = 0u;
+  for (aura::Window* mru_window :
+       Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk)) {
+    if (index == window_list_.size() || mru_window == window)
+      return index;
+    // As we iterate over the whole MRU window list, the windows in this grid
+    // will be encountered in the same order, but possibly with other windows in
+    // between. Ignore those other windows, and only increment |index| when we
+    // reach the next window in this grid.
+    if (mru_window == window_list_[index]->GetWindow())
+      ++index;
+  }
+  NOTREACHED();
+  return 0u;
+}
+
 void OverviewGrid::AddDraggedWindowIntoOverviewOnDragEnd(
     aura::Window* dragged_window) {
   DCHECK(overview_session_);
@@ -1882,7 +1902,7 @@ gfx::Rect OverviewGrid::GetDesksWidgetBounds() const {
       !SplitViewController::IsLayoutHorizontal() &&
       !SplitViewController::Get(root_window_)->InSplitViewMode()) {
     desks_widget_root_bounds.Offset(
-        0, bounds_.height() * kHighlightScreenPrimaryAxisRatio +
+        0, split_view_drag_indicators_->GetLeftHighlightViewBounds().height() +
                2 * kHighlightScreenEdgePaddingDp);
   }
 

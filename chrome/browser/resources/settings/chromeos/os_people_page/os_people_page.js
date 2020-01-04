@@ -193,7 +193,7 @@ Polymer({
    */
   getSyncRowLabel_: function() {
     if (this.splitSettingsSyncEnabled_) {
-      return this.i18n('peopleOsSyncRowLabel');
+      return this.i18n('osSyncPageTitle');
     } else {
       return this.i18n('syncAndNonPersonalizedServices');
     }

@@ -219,6 +219,8 @@ class SearchIPCRouter : public content::WebContentsObserver,
     virtual bool ShouldProcessOptOutOfSearchSuggestions() = 0;
     virtual bool ShouldProcessThemeChangeMessages() = 0;
     virtual bool ShouldProcessAutocompleteResultChanged(bool is_active_tab) = 0;
+    virtual bool ShouldProcessAutocompleteMatchImageAvailable(
+        bool is_active_tab) = 0;
     virtual bool ShouldProcessQueryAutocomplete(bool is_active_tab) = 0;
     virtual bool ShouldProcessStopAutocomplete() = 0;
     virtual bool ShouldProcessBlocklistPromo() = 0;
@@ -247,6 +249,11 @@ class SearchIPCRouter : public content::WebContentsObserver,
 
   // Updates the renderer with the autocomplete results.
   void AutocompleteResultChanged(chrome::mojom::AutocompleteResultPtr result);
+
+  // Updates the renderer with the given autocomplete match's image data.
+  void AutocompleteMatchImageAvailable(uint32_t match_index,
+                                       const std::string& image_url,
+                                       const std::string& data_url);
 
   // Tells the SearchIPCRouter that a new page in an Instant process committed.
   void OnNavigationEntryCommitted();

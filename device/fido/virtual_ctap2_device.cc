@@ -798,11 +798,18 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
                            cbor::Value(true));
   }
 
+  base::Optional<CredProtect> cred_protect;
   if (request.cred_protect) {
+    cred_protect = request.cred_protect->first;
+  }
+  if (config_.force_cred_protect) {
+    cred_protect = config_.force_cred_protect;
+  }
+
+  if (cred_protect) {
     extensions_map.emplace(
         cbor::Value(kExtensionCredProtect),
-        cbor::Value(
-            request.cred_protect->first == CredProtect::kUVRequired ? 3 : 2));
+        cbor::Value(cred_protect == CredProtect::kUVRequired ? 3 : 2));
   }
 
   if (config_.add_extra_extension) {
@@ -872,10 +879,7 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
     registration.rp = request.rp;
   }
 
-  if (request.cred_protect) {
-    registration.protection = request.cred_protect->first;
-  }
-
+  registration.protection = cred_protect;
   StoreNewKey(key_handle, std::move(registration));
   return CtapDeviceResponseCode::kSuccess;
 }

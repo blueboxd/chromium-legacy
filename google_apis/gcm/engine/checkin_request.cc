@@ -100,12 +100,12 @@ CheckinRequest::CheckinRequest(
     const GURL& checkin_url,
     const RequestInfo& request_info,
     const net::BackoffEntry::Policy& backoff_policy,
-    const CheckinRequestCallback& callback,
+    CheckinRequestCallback callback,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner,
     GCMStatsRecorder* recorder)
     : url_loader_factory_(url_loader_factory),
-      callback_(callback),
+      callback_(std::move(callback)),
       backoff_entry_(&backoff_policy),
       checkin_url_(checkin_url),
       request_info_(request_info),
@@ -237,7 +237,7 @@ void CheckinRequest::OnURLLoadComplete(const network::SimpleURLLoader* source,
     CheckinRequestStatus status = response_status == net::HTTP_BAD_REQUEST ?
         HTTP_BAD_REQUEST : HTTP_UNAUTHORIZED;
     RecordCheckinStatusAndReportUMA(status, recorder_, false);
-    callback_.Run(response_status, response_proto);
+    std::move(callback_).Run(response_status, response_proto);
     return;
   }
 
@@ -263,7 +263,7 @@ void CheckinRequest::OnURLLoadComplete(const network::SimpleURLLoader* source,
   }
 
   RecordCheckinStatusAndReportUMA(SUCCESS, recorder_, false);
-  callback_.Run(response_status, response_proto);
+  std::move(callback_).Run(response_status, response_proto);
 }
 
 }  // namespace gcm

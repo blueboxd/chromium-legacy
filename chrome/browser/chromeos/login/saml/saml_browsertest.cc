@@ -1718,8 +1718,8 @@ INSTANTIATE_TEST_SUITE_P(SAMLPasswordAttributesSuite,
                          testing::Bool());
 
 void FakeGetCertificateCallbackTrue(
-    const attestation::AttestationFlow::CertificateCallback& callback) {
-  callback.Run(attestation::ATTESTATION_SUCCESS, "certificate");
+    attestation::AttestationFlow::CertificateCallback callback) {
+  std::move(callback).Run(attestation::ATTESTATION_SUCCESS, "certificate");
 }
 
 void FakeEnterpriseChallenge(

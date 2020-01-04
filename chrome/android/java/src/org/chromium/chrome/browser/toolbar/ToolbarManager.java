@@ -1002,9 +1002,9 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
                             (id) -> mActivity.onOptionsItemSelected(id, null));
         }
 
-        mToolbar.initializeWithNative(tabModelSelector, controlsVisibilityDelegate, layoutManager,
-                tabSwitcherClickHandler, tabSwitcherLongClickHandler, newTabClickHandler,
-                bookmarkClickHandler, customTabsBackClickHandler, overviewModeBehavior);
+        mToolbar.initializeWithNative(tabModelSelector, layoutManager, tabSwitcherClickHandler,
+                tabSwitcherLongClickHandler, newTabClickHandler, bookmarkClickHandler,
+                customTabsBackClickHandler, overviewModeBehavior);
 
         mToolbar.addOnAttachStateChangeListener(new OnAttachStateChangeListener() {
             @Override

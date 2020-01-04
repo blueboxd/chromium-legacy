@@ -97,7 +97,7 @@ class ASH_EXPORT SplitViewDragIndicators {
   void SetWindowDraggingState(WindowDraggingState window_dragging_state);
   void OnDisplayBoundsChanged();
   bool GetIndicatorTypeVisibilityForTesting(IndicatorType type) const;
-  gfx::Rect GetLeftHighlightViewBoundsForTesting() const;
+  gfx::Rect GetLeftHighlightViewBounds() const;
   WindowDraggingState current_window_dragging_state() const {
     return current_window_dragging_state_;
   }

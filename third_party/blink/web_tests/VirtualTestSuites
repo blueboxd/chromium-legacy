@@ -197,7 +197,8 @@
   {
     "prefix": "layout_ng_flex_box",
     "bases": ["css3/flexbox",
-              "external/wpt/css/css-flexbox"],
+              "external/wpt/css/css-flexbox",
+	      "external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox"],
     "args": ["--enable-blink-features=LayoutNGFlexBox"]
   },
   {

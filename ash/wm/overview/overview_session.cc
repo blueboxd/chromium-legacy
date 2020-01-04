@@ -403,14 +403,7 @@ void OverviewSession::AddItem(
     return;
 
   grid->AddItem(window, reposition, animate, ignored_items, index);
-  ++num_items_;
-
-  UpdateNoWindowsWidget();
-
-  // Transfer focus from |window| to |overview_focus_widget_| to match the
-  // behavior of entering overview mode in the beginning.
-  DCHECK(overview_focus_widget_);
-  wm::ActivateWindow(GetOverviewFocusWindow());
+  OnItemAdded();
 }
 
 void OverviewSession::AppendItem(aura::Window* window,
@@ -422,14 +415,17 @@ void OverviewSession::AppendItem(aura::Window* window,
     return;
 
   grid->AppendItem(window, reposition, animate, /*use_spawn_animation=*/true);
-  ++num_items_;
+  OnItemAdded();
+}
 
-  UpdateNoWindowsWidget();
+void OverviewSession::AddItemInMruOrder(aura::Window* window, bool animate) {
+  // Early exit if a grid already contains |window|.
+  OverviewGrid* grid = GetGridWithRootWindow(window->GetRootWindow());
+  if (!grid || grid->GetOverviewItemContaining(window))
+    return;
 
-  // Transfer focus from |window| to |overview_focus_widget_| to match the
-  // behavior of entering overview mode in the beginning.
-  DCHECK(overview_focus_widget_);
-  wm::ActivateWindow(GetOverviewFocusWindow());
+  grid->AddItemInMruOrder(window, animate);
+  OnItemAdded();
 }
 
 void OverviewSession::RemoveItem(OverviewItem* overview_item) {
@@ -1095,6 +1091,15 @@ void OverviewSession::RefreshNoWindowsWidgetBounds(bool animate) {
   DCHECK(grid);
   no_windows_widget_->SetBoundsCenteredIn(grid->GetGridEffectiveBounds(),
                                           animate);
+}
+
+void OverviewSession::OnItemAdded() {
+  ++num_items_;
+  UpdateNoWindowsWidget();
+  // Transfer focus from |window| to |overview_focus_widget_| to match the
+  // behavior of entering overview mode in the beginning.
+  DCHECK(overview_focus_widget_);
+  wm::ActivateWindow(GetOverviewFocusWindow());
 }
 
 }  // namespace ash

@@ -72,7 +72,7 @@ class NativeFileSystemFileWriterBrowserTest : public ContentBrowserTest {
         EvalJs(
             shell(),
             "(async () => {"
-            "  let e = await self.chooseFileSystemEntries({type: 'openFile'});"
+            "  let e = await self.chooseFileSystemEntries({type: 'open-file'});"
             "  self.entry = e;"
             "  self.writers = [];"
             "  return e.name; })()"));
@@ -100,7 +100,7 @@ class NativeFileSystemFileWriterBrowserTest : public ContentBrowserTest {
         EvalJs(
             shell(),
             "(async () => {"
-            "  let e = await self.chooseFileSystemEntries({type: 'openFile'});"
+            "  let e = await self.chooseFileSystemEntries({type: 'open-file'});"
             "  self.entry = e;"
             "  self.writers = [];"
             "  return e.name; })()"));

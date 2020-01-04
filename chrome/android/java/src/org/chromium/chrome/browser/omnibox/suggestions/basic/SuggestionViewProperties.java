@@ -4,13 +4,10 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions.basic;
 
-import android.text.Spannable;
-import android.text.TextUtils;
-import android.text.style.UpdateAppearance;
-
 import androidx.annotation.IntDef;
 
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewProperties;
+import org.chromium.chrome.browser.omnibox.suggestions.base.SuggestionSpannable;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModel.WritableBooleanPropertyKey;
@@ -42,56 +39,6 @@ public class SuggestionViewProperties {
         int TOTAL_COUNT = 8;
     }
 
-    /**
-     * Container for suggestion text that prevents updates when the text/spans has not changed.
-     */
-    public static class SuggestionTextContainer {
-        public final Spannable text;
-
-        public SuggestionTextContainer(Spannable text) {
-            this.text = text;
-        }
-
-        @Override
-        public String toString() {
-            return "SuggestionTextContainer: " + (text == null ? "null" : text.toString());
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (!(obj instanceof SuggestionTextContainer)) return false;
-            SuggestionTextContainer other = (SuggestionTextContainer) obj;
-            if (!TextUtils.equals(text, other.text)) return false;
-            if (text == null) return false;
-
-            UpdateAppearance[] thisSpans = text.getSpans(0, text.length(), UpdateAppearance.class);
-            UpdateAppearance[] otherSpans =
-                    other.text.getSpans(0, other.text.length(), UpdateAppearance.class);
-            if (thisSpans.length != otherSpans.length) return false;
-            for (int i = 0; i < thisSpans.length; i++) {
-                UpdateAppearance thisSpan = thisSpans[i];
-                UpdateAppearance otherSpan = otherSpans[i];
-                if (!thisSpan.getClass().equals(otherSpan.getClass())) return false;
-
-                if (text.getSpanStart(thisSpan) != other.text.getSpanStart(otherSpan)
-                        || text.getSpanEnd(thisSpan) != other.text.getSpanEnd(otherSpan)
-                        || text.getSpanFlags(thisSpan) != other.text.getSpanFlags(otherSpan)) {
-                    return false;
-                }
-
-                // TODO(tedchoc): This is a dangerous assumption.  We should actually update all
-                //                span types we use in suggestion text to implement .equals and
-                //                ensure the internal styles (e.g. color used in a foreground span)
-                //                is actually the same.  This "seems" safe for now, but not
-                //                particularly robust.
-                //
-                //                Once that happens, share this logic with
-                //                UrlBarMediator#isNewTextEquivalentToExistingText.
-            }
-            return true;
-        }
-    }
-
     /** @see OmniboxSuggestionType */
     public static final WritableIntPropertyKey SUGGESTION_TYPE = new WritableIntPropertyKey();
 
@@ -103,11 +50,11 @@ public class SuggestionViewProperties {
             new WritableBooleanPropertyKey();
 
     /** The actual text content for the first line of text. */
-    public static final WritableObjectPropertyKey<SuggestionTextContainer> TEXT_LINE_1_TEXT =
+    public static final WritableObjectPropertyKey<SuggestionSpannable> TEXT_LINE_1_TEXT =
             new WritableObjectPropertyKey<>();
 
     /** The actual text content for the second line of text. */
-    public static final WritableObjectPropertyKey<SuggestionTextContainer> TEXT_LINE_2_TEXT =
+    public static final WritableObjectPropertyKey<SuggestionSpannable> TEXT_LINE_2_TEXT =
             new WritableObjectPropertyKey<>();
 
     public static final PropertyKey[] ALL_UNIQUE_KEYS = new PropertyKey[] {SUGGESTION_TYPE,

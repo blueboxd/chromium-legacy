@@ -801,16 +801,8 @@ BrowserActionsContainer* ToolbarView::GetBrowserActionsContainer() {
   return browser_actions_;
 }
 
-ToolbarActionView* ToolbarView::GetToolbarActionViewForId(
-    const std::string& id) {
-  if (display_mode_ != DisplayMode::NORMAL)
-    return nullptr;
-  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
-    DCHECK(extensions_container_);
-    return extensions_container_->GetViewForId(id);
-  }
-  DCHECK(GetBrowserActionsContainer());
-  return GetBrowserActionsContainer()->GetViewForId(id);
+ExtensionsToolbarContainer* ToolbarView::GetExtensionsToolbarContainer() {
+  return extensions_container_;
 }
 
 views::View* ToolbarView::GetDefaultExtensionDialogAnchorView() {

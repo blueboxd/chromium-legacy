@@ -27,6 +27,9 @@ test.realbox.IDS = {
  * @const
  */
 test.realbox.CLASSES = {
+  HAS_IMAGE: 'has-image',
+  IMAGE_CONTAINER: 'image-container',
+  MATCH_IMAGE: 'match-image',
   REMOVABLE: 'removable',
   REMOVE_ICON: 'remove-icon',
   SELECTED: 'selected',
@@ -1299,4 +1302,65 @@ test.realbox2.testRealboxIconPrefixSearch = function() {
   // Escape again should clear/hide matches and favicon.
   assertFalse(test.realbox.areMatchesShowing());
   assertFalse(!!realboxIcon.style.backgroundImage);
+};
+
+test.realbox2.testEntityMatchImage = function() {
+  const imageUrl = 'http://example.com/star.png';
+  const dataUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC=';
+
+  const realboxIcon = $(test.realbox.IDS.REALBOX_ICON);
+  assertFalse(!!realboxIcon.style.backgroundImage);
+
+  test.realbox.realboxEl.value = 'star';
+  test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
+
+  chrome.embeddedSearch.searchBox.autocompleteresultchanged({
+    input: test.realbox.realboxEl.value,
+    matches: [
+      test.realbox.getSearchMatch({
+        allowedToBeDefaultMatch: true,
+        imageUrl,
+        imageDominantColor: '#757575'
+      }),
+      test.realbox.getSearchMatch(),
+    ],
+  });
+  assertTrue(test.realbox.areMatchesShowing());
+
+  // The first match is selected but it doesn't change the realbox icon.
+  const matchEls = $(test.realbox.IDS.REALBOX_MATCHES).children;
+  assertEquals(2, matchEls.length);
+  assertTrue(matchEls[0].classList.contains(test.realbox.CLASSES.SELECTED));
+  assertFalse(!!realboxIcon.style.backgroundImage);
+
+  // The first match is showing a placeholder color until the image loads.
+  assertTrue(matchEls[0].classList.contains(test.realbox.CLASSES.HAS_IMAGE));
+  const imageContainerEl = matchEls[0].getElementsByClassName(
+      test.realbox.CLASSES.IMAGE_CONTAINER)[0];
+  assertEquals(
+      'rgba(117, 117, 117, 0.25)', imageContainerEl.style.backgroundColor);
+
+  // The URL of the loaded image must match that of the autocomplete result at
+  // the given index.
+  chrome.embeddedSearch.searchBox.autocompletematchimageavailable(
+      1, imageUrl, dataUrl);
+  assertEquals(0, imageContainerEl.children.length);
+  assertEquals(
+      'rgba(117, 117, 117, 0.25)', imageContainerEl.style.backgroundColor);
+
+  chrome.embeddedSearch.searchBox.autocompletematchimageavailable(
+      0, 'http://example.com/moon.png', dataUrl);
+  assertEquals(0, imageContainerEl.children.length);
+  assertEquals(
+      'rgba(117, 117, 117, 0.25)', imageContainerEl.style.backgroundColor);
+
+  // Once the image is successfully loaded it replaces the placeholder color.
+  chrome.embeddedSearch.searchBox.autocompletematchimageavailable(
+      0, imageUrl, dataUrl);
+  assertEquals(
+      dataUrl,
+      imageContainerEl
+          .getElementsByClassName(test.realbox.CLASSES.MATCH_IMAGE)[0]
+          .src);
+  assertEquals('transparent', imageContainerEl.style.backgroundColor);
 };

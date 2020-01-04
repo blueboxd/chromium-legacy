@@ -19,37 +19,37 @@ class BLINK_COMMON_EXPORT WebTouchEvent : public WebInputEvent {
   // Ash/Aura.
   enum { kTouchesLengthCap = 16 };
 
-  unsigned touches_length;
+  unsigned touches_length = 0;
   // List of all touches, regardless of state.
-  WebTouchPoint touches[kTouchesLengthCap];
+  WebTouchPoint touches[kTouchesLengthCap] = {};
 
   // Whether the event is blocking, non-blocking, all event
   // listeners were passive or was forced to be non-blocking.
-  DispatchType dispatch_type;
+  DispatchType dispatch_type = kBlocking;
 
   // For a single touch, this is true after the touch-point has moved beyond
   // the platform slop region. For a multitouch, this is true after any
   // touch-point has moved (by whatever amount).
-  bool moved_beyond_slop_region;
+  bool moved_beyond_slop_region = false;
 
   // True for events from devices like some pens that support hovering
   // over digitizer and the events are sent while the device was hovering.
-  bool hovering;
+  bool hovering = false;
 
   // Whether this touch event is a touchstart or a first touchmove event per
   // scroll.
-  bool touch_start_or_first_touch_move;
+  bool touch_start_or_first_touch_move = false;
 
   // A unique identifier for the touch event. Valid ids start at one and
   // increase monotonically. Zero means an unknown id.
-  uint32_t unique_touch_event_id;
+  uint32_t unique_touch_event_id = 0;
 
-  WebTouchEvent()
-      : WebInputEvent(sizeof(WebTouchEvent)), dispatch_type(kBlocking) {}
+  WebTouchEvent() = default;
 
   WebTouchEvent(Type type, int modifiers, base::TimeTicks time_stamp)
-      : WebInputEvent(sizeof(WebTouchEvent), type, modifiers, time_stamp),
-        dispatch_type(kBlocking) {}
+      : WebInputEvent(type, modifiers, time_stamp) {}
+
+  std::unique_ptr<WebInputEvent> Clone() const override;
 
   // Sets any scaled values to be their computed values and sets |frame_scale_|
   // back to 1 and |frame_translate_| X and Y coordinates back to 0.

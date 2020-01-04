@@ -167,10 +167,6 @@ MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::
 MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::
     ~RemoteVideoSourceDelegate() {}
 
-namespace {
-void DoNothing(const scoped_refptr<rtc::RefCountInterface>& ref) {}
-}  // namespace
-
 void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
     const webrtc::VideoFrame& incoming_frame) {
   const bool render_immediately = incoming_frame.timestamp_us() == 0;
@@ -260,8 +256,10 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
 
   // The bind ensures that we keep a reference to the underlying buffer.
   if (buffer->type() != webrtc::VideoFrameBuffer::Type::kNative) {
-    video_frame->AddDestructionObserver(
-        ConvertToBaseOnceCallback(CrossThreadBindOnce(&DoNothing, buffer)));
+    video_frame->AddDestructionObserver(ConvertToBaseOnceCallback(
+        CrossThreadBindOnce(base::DoNothing::Once<
+                                const scoped_refptr<rtc::RefCountInterface>&>(),
+                            buffer)));
   }
 
   // Rotation may be explicitly set sometimes.

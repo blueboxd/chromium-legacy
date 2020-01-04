@@ -1114,79 +1114,81 @@ base::Optional<SkColor> ThemeService::GetOmniboxColor(
     int id,
     bool incognito,
     bool* has_custom_color) const {
-  // |custom| will be set to true if any part of the computation of the
-  // color relied on a custom base color from the theme supplier.
-  struct OmniboxColor {
-    SkColor value;
-    bool custom;
+  // Avoid infinite loop caused by GetColor(TP::COLOR_TOOLBAR) call in
+  // GetOmniboxColorImpl().
+  if (id == TP::COLOR_TOOLBAR)
+    return base::nullopt;
+
+  const auto color = GetOmniboxColorImpl(id, incognito);
+  if (!color)
+    return base::nullopt;
+  if (has_custom_color)
+    *has_custom_color = color.value().custom;
+  return color.value().value;
+}
+
+base::Optional<ThemeService::OmniboxColor> ThemeService::GetOmniboxColorImpl(
+    int id,
+    bool incognito) const {
+  // Some utilities from color_utils are reimplemented throughout this function
+  // to plumb the custom bit through.
+  const auto get_resulting_paint_color = [&](OmniboxColor fg, OmniboxColor bg) {
+    return OmniboxColor{color_utils::GetResultingPaintColor(fg.value, bg.value),
+                        fg.custom || bg.custom};
+  };
+  const auto get_base_color = [&](int id) -> OmniboxColor {
+    SkColor color;
+    if (theme_supplier_ && theme_supplier_->GetColor(id, &color))
+      return {color, true};
+    return {GetDefaultColor(id, incognito), false};
   };
 
+  // Compute the two base colors, |bg| and |fg|.
+  OmniboxColor bg = get_resulting_paint_color(
+      get_base_color(TP::COLOR_OMNIBOX_BACKGROUND),
+      {GetColor(TP::COLOR_TOOLBAR, incognito, nullptr), false});
+  OmniboxColor fg =
+      get_resulting_paint_color(get_base_color(TP::COLOR_OMNIBOX_TEXT), bg);
+
+  // Certain output cases are based on inverted bg/fg.
   const bool high_contrast =
       theme_supplier_ && theme_supplier_->get_theme_type() ==
                              CustomThemeSupplier::ThemeType::INCREASED_CONTRAST;
-
   const bool invert =
       high_contrast && (id == TP::COLOR_OMNIBOX_RESULTS_BG_SELECTED ||
                         id == TP::COLOR_OMNIBOX_RESULTS_TEXT_SELECTED ||
                         id == TP::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED_SELECTED ||
                         id == TP::COLOR_OMNIBOX_RESULTS_ICON_SELECTED ||
                         id == TP::COLOR_OMNIBOX_RESULTS_URL_SELECTED);
-
-  // Some utilities from color_utils are reimplemented here to plumb the custom
-  // bit through.
-  auto get_color_with_max_contrast = [](OmniboxColor color) -> OmniboxColor {
-    return {color_utils::GetColorWithMaxContrast(color.value), color.custom};
+  const auto get_color_with_max_contrast = [](OmniboxColor color) {
+    return OmniboxColor{color_utils::GetColorWithMaxContrast(color.value),
+                        color.custom};
   };
-  auto derive_default_icon_color = [](OmniboxColor color) -> OmniboxColor {
-    return {color_utils::DeriveDefaultIconColor(color.value), color.custom};
-  };
-  auto blend_toward_max_contrast = [](OmniboxColor color,
-                                      SkAlpha alpha) -> OmniboxColor {
-    return {color_utils::BlendTowardMaxContrast(color.value, alpha),
-            color.custom};
-  };
-  auto blend_for_min_contrast = [&](OmniboxColor fg, OmniboxColor bg,
-                                    base::Optional<OmniboxColor> hc_fg =
-                                        base::nullopt,
-                                    base::Optional<float> contrast_ratio =
-                                        base::nullopt) -> OmniboxColor {
+  const auto blend_for_min_contrast = [&](OmniboxColor fg, OmniboxColor bg,
+                                          base::Optional<OmniboxColor> hc_fg =
+                                              base::nullopt,
+                                          base::Optional<float> contrast_ratio =
+                                              base::nullopt) {
     base::Optional<SkColor> hc_fg_arg;
     bool custom = fg.custom || bg.custom;
     if (hc_fg) {
       hc_fg_arg = hc_fg.value().value;
       custom |= hc_fg.value().custom;
     }
+    // If high contrast is on, increase the minimum contrast ratio.
+    // TODO(pkasting): Ideally we could do this in the base
+    // BlendForMinContrast() function.
     const float ratio = contrast_ratio.value_or(
         high_contrast ? 6.0f : color_utils::kMinimumReadableContrastRatio);
-    return {
+    return OmniboxColor{
         color_utils::BlendForMinContrast(fg.value, bg.value, hc_fg_arg, ratio)
             .color,
         custom};
   };
-  auto get_resulting_paint_color = [&](OmniboxColor fg, OmniboxColor bg) {
-    return OmniboxColor{color_utils::GetResultingPaintColor(fg.value, bg.value),
-                        fg.custom || bg.custom};
-  };
-
-  auto get_base_color = [&](int id) -> OmniboxColor {
-    SkColor color;
-    if (theme_supplier_ && theme_supplier_->GetColor(id, &color))
-      return {color, true};
-    return {GetDefaultColor(id, incognito), false};
-  };
-  // Avoid infinite loop caused by GetColor() below.
-  if (id == TP::COLOR_TOOLBAR)
-    return base::nullopt;
-  // These are the only base colors.
-  OmniboxColor bg = get_resulting_paint_color(
-      get_base_color(TP::COLOR_OMNIBOX_BACKGROUND),
-      {GetColor(TP::COLOR_TOOLBAR, incognito, nullptr), false});
-  OmniboxColor fg =
-      get_resulting_paint_color(get_base_color(TP::COLOR_OMNIBOX_TEXT), bg);
   if (invert) {
     // Given a color with some contrast against the opposite endpoint, returns a
     // color with that same contrast against the nearby endpoint.
-    auto invert_color = [&](OmniboxColor fg) -> OmniboxColor {
+    auto invert_color = [&](OmniboxColor fg) {
       const auto bg = get_color_with_max_contrast(fg);
       const auto inverted_bg = get_color_with_max_contrast(bg);
       const float contrast = color_utils::GetContrastRatio(fg.value, bg.value);
@@ -1197,81 +1199,85 @@ base::Optional<SkColor> ThemeService::GetOmniboxColor(
   }
   const bool dark = color_utils::IsDark(bg.value);
 
-  auto results_bg_color = [&]() { return get_color_with_max_contrast(fg); };
-  auto bg_hovered_color = [&]() { return blend_toward_max_contrast(bg, 0x0A); };
-  auto security_chip_color = [&](OmniboxColor color) {
+  // All remaining colors can be built atop the two base colors.
+  const auto derive_default_icon_color = [](OmniboxColor color) {
+    return OmniboxColor{color_utils::DeriveDefaultIconColor(color.value),
+                        color.custom};
+  };
+  const auto blend_toward_max_contrast = [](OmniboxColor color, SkAlpha alpha) {
+    return OmniboxColor{color_utils::BlendTowardMaxContrast(color.value, alpha),
+                        color.custom};
+  };
+  const auto results_bg_color = [&]() {
+    return get_color_with_max_contrast(fg);
+  };
+  const auto bg_hovered_color = [&]() {
+    return blend_toward_max_contrast(bg, 0x0A);
+  };
+  const auto security_chip_color = [&](OmniboxColor color) {
     return blend_for_min_contrast(color, bg_hovered_color());
   };
-  auto results_bg_hovered_color = [&]() {
+  const auto results_bg_hovered_color = [&]() {
     return blend_toward_max_contrast(results_bg_color(), 0x1A);
   };
-  auto url_color = [&](OmniboxColor bg) {
+  const auto url_color = [&](OmniboxColor bg) {
     return blend_for_min_contrast(
         {gfx::kGoogleBlue500, false}, bg,
         {{dark ? gfx::kGoogleBlue050 : gfx::kGoogleBlue900, false}});
   };
-  auto results_bg_selected_color = [&]() {
+  const auto results_bg_selected_color = [&]() {
     return blend_toward_max_contrast(results_bg_color(), 0x29);
   };
-  auto blend_with_clamped_contrast = [&](OmniboxColor bg) {
+  const auto blend_with_clamped_contrast = [&](OmniboxColor bg) {
     return blend_for_min_contrast(fg, fg, blend_for_min_contrast(bg, bg));
   };
-
-  auto get_omnibox_color_impl = [&](int id) -> base::Optional<OmniboxColor> {
-    switch (id) {
-      case TP::COLOR_OMNIBOX_TEXT:
-      case TP::COLOR_OMNIBOX_RESULTS_TEXT_SELECTED:
-        return fg;
-      case TP::COLOR_OMNIBOX_BACKGROUND:
-        return bg;
-      case TP::COLOR_OMNIBOX_BACKGROUND_HOVERED:
-        return bg_hovered_color();
-      case TP::COLOR_OMNIBOX_RESULTS_BG:
-        return results_bg_color();
-      case TP::COLOR_OMNIBOX_RESULTS_BG_SELECTED:
-        return results_bg_selected_color();
-      case TP::COLOR_OMNIBOX_BUBBLE_OUTLINE:
-        return {{dark ? gfx::kGoogleGrey100
-                      : SkColorSetA(gfx::kGoogleGrey900, 0x24),
-                 false}};
-      case TP::COLOR_OMNIBOX_TEXT_DIMMED:
-        return blend_with_clamped_contrast(bg_hovered_color());
-      case TP::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED:
-        return blend_with_clamped_contrast(results_bg_hovered_color());
-      case TP::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED_SELECTED:
-        return blend_with_clamped_contrast(results_bg_selected_color());
-      case TP::COLOR_OMNIBOX_RESULTS_ICON:
-        return blend_for_min_contrast(derive_default_icon_color(fg),
-                                      results_bg_color());
-      case TP::COLOR_OMNIBOX_RESULTS_ICON_SELECTED:
-        return blend_for_min_contrast(derive_default_icon_color(fg),
-                                      results_bg_selected_color());
-      case TP::COLOR_OMNIBOX_RESULTS_BG_HOVERED:
-        return results_bg_hovered_color();
-      case TP::COLOR_OMNIBOX_BUBBLE_OUTLINE_EXPERIMENTAL_KEYWORD_MODE:
-      case TP::COLOR_OMNIBOX_SELECTED_KEYWORD:
-        if (dark)
-          return {{gfx::kGoogleGrey100, false}};
-        FALLTHROUGH;
-      case TP::COLOR_OMNIBOX_RESULTS_URL:
-        return url_color(results_bg_hovered_color());
-      case TP::COLOR_OMNIBOX_RESULTS_URL_SELECTED:
-        return url_color(results_bg_selected_color());
-      case TP::COLOR_OMNIBOX_SECURITY_CHIP_DEFAULT:
-      case TP::COLOR_OMNIBOX_SECURITY_CHIP_SECURE:
-        return dark ? blend_toward_max_contrast(fg, 0x18)
-                    : security_chip_color(derive_default_icon_color(fg));
-      case TP::COLOR_OMNIBOX_SECURITY_CHIP_DANGEROUS:
-        return dark ? blend_toward_max_contrast(fg, 0x18)
-                    : security_chip_color({gfx::kGoogleRed600, false});
-    }
-    return base::nullopt;
-  };
-
-  const auto color = get_omnibox_color_impl(id);
-  if (!color)
-    return base::nullopt;
-  if (has_custom_color)
-    *has_custom_color = color.value().custom;
-  return color.value().value;
+  switch (id) {
+    case TP::COLOR_OMNIBOX_TEXT:
+    case TP::COLOR_OMNIBOX_RESULTS_TEXT_SELECTED:
+      return fg;
+    case TP::COLOR_OMNIBOX_BACKGROUND:
+      return bg;
+    case TP::COLOR_OMNIBOX_BACKGROUND_HOVERED:
+      return bg_hovered_color();
+    case TP::COLOR_OMNIBOX_RESULTS_BG:
+      return results_bg_color();
+    case TP::COLOR_OMNIBOX_RESULTS_BG_SELECTED:
+      return results_bg_selected_color();
+    case TP::COLOR_OMNIBOX_BUBBLE_OUTLINE:
+      return {
+          {dark ? gfx::kGoogleGrey100 : SkColorSetA(gfx::kGoogleGrey900, 0x24),
+           false}};
+    case TP::COLOR_OMNIBOX_TEXT_DIMMED:
+      return blend_with_clamped_contrast(bg_hovered_color());
+    case TP::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED:
+      return blend_with_clamped_contrast(results_bg_hovered_color());
+    case TP::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED_SELECTED:
+      return blend_with_clamped_contrast(results_bg_selected_color());
+    case TP::COLOR_OMNIBOX_RESULTS_ICON:
+      return blend_for_min_contrast(derive_default_icon_color(fg),
+                                    results_bg_color());
+    case TP::COLOR_OMNIBOX_RESULTS_ICON_SELECTED:
+      return blend_for_min_contrast(derive_default_icon_color(fg),
+                                    results_bg_selected_color());
+    case TP::COLOR_OMNIBOX_RESULTS_BG_HOVERED:
+      return results_bg_hovered_color();
+    case TP::COLOR_OMNIBOX_BUBBLE_OUTLINE_EXPERIMENTAL_KEYWORD_MODE:
+    case TP::COLOR_OMNIBOX_SELECTED_KEYWORD:
+      if (dark)
+        return {{gfx::kGoogleGrey100, false}};
+      FALLTHROUGH;
+    case TP::COLOR_OMNIBOX_RESULTS_URL:
+      return url_color(results_bg_hovered_color());
+    case TP::COLOR_OMNIBOX_RESULTS_URL_SELECTED:
+      return url_color(results_bg_selected_color());
+    case TP::COLOR_OMNIBOX_SECURITY_CHIP_DEFAULT:
+    case TP::COLOR_OMNIBOX_SECURITY_CHIP_SECURE:
+      return dark ? blend_toward_max_contrast(fg, 0x18)
+                  : security_chip_color(derive_default_icon_color(fg));
+    case TP::COLOR_OMNIBOX_SECURITY_CHIP_DANGEROUS:
+      return dark ? blend_toward_max_contrast(fg, 0x18)
+                  : security_chip_color({gfx::kGoogleRed600, false});
+    default:
+      return base::nullopt;
+  }
 }

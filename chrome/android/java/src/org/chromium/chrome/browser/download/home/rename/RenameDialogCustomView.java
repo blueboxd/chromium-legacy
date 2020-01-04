@@ -147,7 +147,7 @@ public class RenameDialogCustomView extends ScrollView {
 
     private void setErrorMessageVisibility(boolean hasError) {
         mErrorMessageView.setTextColor(
-                ApiCompatibilityUtils.getColor(getResources(), R.color.error_text_color));
+                ApiCompatibilityUtils.getColor(getResources(), R.color.default_text_color_error));
         mErrorMessageView.setVisibility(hasError ? View.VISIBLE : View.GONE);
     }
 

@@ -47,6 +47,8 @@ struct AutocompleteMatch {
   string destination_url;
   mojo_base.mojom.String16 inline_autocompletion;
   mojo_base.mojom.String16 fill_into_edit;
+  string image_dominant_color;
+  string image_url;
   bool is_search_type;  // Result of AutocompleteMatch::IsSearchType().
   string type;  // Result of AutocompleteMatchType::ToString().
   bool swap_contents_and_description;
@@ -224,6 +226,11 @@ struct SearchBoxTheme;
 interface EmbeddedSearchClient {
   // Updates the NTP realbox with the autocomplete results.
   AutocompleteResultChanged(AutocompleteResult result);
+
+  // Updates the NTP realbox with the given autocomplete match's image data.
+  AutocompleteMatchImageAvailable(uint32 match_index,
+                                  string image_url,
+                                  string data_url);
 
   // Update the page sequence number for the page.
   SetPageSequenceNumber(int32 page_seq_no);

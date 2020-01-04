@@ -33,37 +33,6 @@
 #include "mojo/public/cpp/bindings/shared_remote.h"
 
 namespace media {
-namespace {
-
-void ReportMojoVideoDecoderInitializeStatusToUMAAndRunCB(
-    VideoDecoder::InitCB init_cb,
-    bool success) {
-  // Send the same histogram as GpuVideoDecoder to avoid breaking the existing
-  // tests.
-  // TODO(crbug.com/902968): Remove it after deprecating GpuVideoDecoder.
-  PipelineStatus status = success ? PIPELINE_OK : DECODER_ERROR_NOT_SUPPORTED;
-  UMA_HISTOGRAM_ENUMERATION("Media.GpuVideoDecoderInitializeStatus", status,
-                            PIPELINE_STATUS_MAX + 1);
-
-  std::move(init_cb).Run(success);
-}
-
-void ReportMojoVideoDecoderErrorStatusToUMAAndRunCB(
-    VideoDecoder::DecodeCB decode_cb,
-    DecodeStatus status) {
-  // Send the same histogram as GpuVideoDecoder to avoid breaking the existing
-  // tests.
-  // TODO(crbug.com/902968): Remove it after deprecating GpuVideoDecoder.
-  if (status == DecodeStatus::DECODE_ERROR) {
-    UMA_HISTOGRAM_ENUMERATION("Media.GpuVideoDecoderError",
-                              media::VideoDecodeAccelerator::PLATFORM_FAILURE,
-                              media::VideoDecodeAccelerator::ERROR_MAX + 1);
-  }
-
-  std::move(decode_cb).Run(status);
-}
-
-}  // namespace
 
 // Provides a thread-safe channel for VideoFrame destruction events.
 class MojoVideoFrameHandleReleaser
@@ -156,14 +125,12 @@ void MojoVideoDecoder::Initialize(const VideoDecoderConfig& config,
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  InitCB bound_init_cb = base::BindOnce(
-      &ReportMojoVideoDecoderInitializeStatusToUMAAndRunCB, std::move(init_cb));
   // Fail immediately if we know that the remote side cannot support |config|.
   if (gpu_factories_ && gpu_factories_->IsDecoderConfigSupported(
                             video_decoder_implementation_, config) ==
                             GpuVideoAcceleratorFactories::Supported::kFalse) {
     task_runner_->PostTask(FROM_HERE,
-                           base::BindOnce(std::move(bound_init_cb), false));
+                           base::BindOnce(std::move(init_cb), false));
     return;
   }
 
@@ -178,7 +145,7 @@ void MojoVideoDecoder::Initialize(const VideoDecoderConfig& config,
   if (config.is_encrypted() && CdmContext::kInvalidCdmId == cdm_id) {
     DVLOG(1) << __func__ << ": Invalid CdmContext.";
     task_runner_->PostTask(FROM_HERE,
-                           base::BindOnce(std::move(bound_init_cb), false));
+                           base::BindOnce(std::move(init_cb), false));
     return;
   }
 
@@ -187,12 +154,12 @@ void MojoVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   if (has_connection_error_) {
     task_runner_->PostTask(FROM_HERE,
-                           base::BindOnce(std::move(bound_init_cb), false));
+                           base::BindOnce(std::move(init_cb), false));
     return;
   }
 
   initialized_ = false;
-  init_cb_ = std::move(bound_init_cb);
+  init_cb_ = std::move(init_cb);
   output_cb_ = output_cb;
   waiting_cb_ = waiting_cb;
 
@@ -217,13 +184,10 @@ void MojoVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   DVLOG(3) << __func__ << ": " << buffer->AsHumanReadableString();
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  DecodeCB bound_decode_cb = base::BindOnce(
-      &ReportMojoVideoDecoderErrorStatusToUMAAndRunCB, std::move(decode_cb));
-
   if (has_connection_error_) {
     task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(std::move(bound_decode_cb), DecodeStatus::DECODE_ERROR));
+        base::BindOnce(std::move(decode_cb), DecodeStatus::DECODE_ERROR));
     return;
   }
 
@@ -237,12 +201,12 @@ void MojoVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   if (!mojo_buffer) {
     task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(std::move(bound_decode_cb), DecodeStatus::DECODE_ERROR));
+        base::BindOnce(std::move(decode_cb), DecodeStatus::DECODE_ERROR));
     return;
   }
 
   uint64_t decode_id = decode_counter_++;
-  pending_decodes_[decode_id] = std::move(bound_decode_cb);
+  pending_decodes_[decode_id] = std::move(decode_cb);
   remote_decoder_->Decode(std::move(mojo_buffer),
                           base::Bind(&MojoVideoDecoder::OnDecodeDone,
                                      base::Unretained(this), decode_id));

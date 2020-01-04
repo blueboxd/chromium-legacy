@@ -20,13 +20,13 @@ FakeServerProxy::FakeServerProxy() : result_(true) {}
 FakeServerProxy::~FakeServerProxy() = default;
 
 void FakeServerProxy::SendEnrollRequest(const std::string& request,
-                                        const DataCallback& callback) {
-  callback.Run(result_, request + "_response");
+                                        DataCallback callback) {
+  std::move(callback).Run(result_, request + "_response");
 }
 
 void FakeServerProxy::SendCertificateRequest(const std::string& request,
-                                             const DataCallback& callback) {
-  callback.Run(result_, request + "_response");
+                                             DataCallback callback) {
+  std::move(callback).Run(result_, request + "_response");
 }
 
 MockServerProxy::MockServerProxy() {

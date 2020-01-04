@@ -38,16 +38,12 @@ namespace blink {
 
 // TODO(mustaq): Unify WebTouchPoint & WebMouseEvent into WebPointerEvent.
 // crbug.com/508283
-class WebTouchPoint : public WebPointerProperties {
+class BLINK_COMMON_EXPORT WebTouchPoint : public WebPointerProperties {
  public:
   WebTouchPoint() : WebTouchPoint(WebPointerProperties(0)) {}
 
   WebTouchPoint(WebPointerProperties web_pointer_properties)
-      : WebPointerProperties(web_pointer_properties),
-        state(kStateUndefined),
-        radius_x(0),
-        radius_y(0),
-        rotation_angle(0) {}
+      : WebPointerProperties(web_pointer_properties) {}
 
   enum State {
     kStateUndefined,
@@ -59,11 +55,11 @@ class WebTouchPoint : public WebPointerProperties {
     kStateMax = kStateCancelled
   };
 
-  State state;
+  State state = kStateUndefined;
 
-  float radius_x;
-  float radius_y;
-  float rotation_angle;
+  float radius_x = 0.0f;
+  float radius_y = 0.0f;
+  float rotation_angle = 0.0f;
 };
 
 }  // namespace blink

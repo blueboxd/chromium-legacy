@@ -241,7 +241,7 @@ class MODULES_EXPORT AudioCaptureSettings {
 // constraints.
 MODULES_EXPORT bool GetConstraintValueAsBoolean(
     const MediaConstraints& constraints,
-    const blink::BooleanConstraint blink::WebMediaTrackConstraintSet::*picker,
+    const blink::BooleanConstraint MediaTrackConstraintSetPlatform::*picker,
     bool* value);
 
 // Method to get int value of constraint with |name| from constraints.
@@ -249,17 +249,17 @@ MODULES_EXPORT bool GetConstraintValueAsBoolean(
 // constraints.
 MODULES_EXPORT bool GetConstraintValueAsInteger(
     const MediaConstraints& constraints,
-    const blink::LongConstraint blink::WebMediaTrackConstraintSet::*picker,
+    const blink::LongConstraint MediaTrackConstraintSetPlatform::*picker,
     int* value);
 
 MODULES_EXPORT bool GetConstraintMinAsInteger(
     const MediaConstraints& constraints,
-    const blink::LongConstraint blink::WebMediaTrackConstraintSet::*picker,
+    const blink::LongConstraint MediaTrackConstraintSetPlatform::*picker,
     int* value);
 
 MODULES_EXPORT bool GetConstraintMaxAsInteger(
     const MediaConstraints& constraints,
-    const blink::LongConstraint blink::WebMediaTrackConstraintSet::*picker,
+    const blink::LongConstraint MediaTrackConstraintSetPlatform::*picker,
     int* value);
 
 // Method to get double precision value of constraint with |name| from
@@ -267,7 +267,7 @@ MODULES_EXPORT bool GetConstraintMaxAsInteger(
 // or Optional constraints.
 MODULES_EXPORT bool GetConstraintValueAsDouble(
     const MediaConstraints& constraints,
-    const blink::DoubleConstraint blink::WebMediaTrackConstraintSet::*picker,
+    const blink::DoubleConstraint MediaTrackConstraintSetPlatform::*picker,
     double* value);
 
 // This function selects track settings from a set of candidate resolutions and
@@ -296,7 +296,7 @@ MODULES_EXPORT bool GetConstraintValueAsDouble(
 // This function has undefined behavior if any of |resolution_set| or
 // |frame_rate_set| are empty.
 MODULES_EXPORT VideoTrackAdapterSettings SelectVideoTrackAdapterSettings(
-    const blink::WebMediaTrackConstraintSet& basic_constraint_set,
+    const MediaTrackConstraintSetPlatform& basic_constraint_set,
     const media_constraints::ResolutionSet& resolution_set,
     const media_constraints::NumericRangeSet<double>& frame_rate_set,
     const media::VideoCaptureFormat& source_format,

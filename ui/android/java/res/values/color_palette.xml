@@ -14,20 +14,20 @@
     <color name="modern_blue_700">#3367D6</color>
     <color name="modern_blue_800" tools:ignore="UnusedResources">#185ABC</color>
     <color name="modern_grey_50" tools:ignore="UnusedResources">#F8F9FA</color>
-    <color name="modern_grey_100" tools:ignore="UnusedResources">#F1F3F4</color>
-    <color name="modern_grey_100_alpha_38" tools:ignore="UnusedResources">#61F1F3F4</color>
+    <color name="modern_grey_100">#F1F3F4</color>
+    <color name="modern_grey_100_alpha_38">#61F1F3F4</color>
     <color name="modern_grey_200" tools:ignore="UnusedResources">#E8EAED</color>
     <color name="modern_grey_200_alpha_38" tools:ignore="UnusedResources">#61E8EAED</color>
-    <color name="modern_grey_300" tools:ignore="UnusedResources">#DADCE0</color>
+    <color name="modern_grey_300">#DADCE0</color>
     <color name="modern_grey_300_alpha_38">#61DADCE0</color>
     <color name="modern_grey_400" tools:ignore="UnusedResources">#BDC1C6</color>
     <color name="modern_grey_500" tools:ignore="UnusedResources">#9AA0A6</color>
     <color name="modern_grey_600">#80868B</color>
     <color name="modern_grey_700">#5F6368</color>
     <color name="modern_grey_800" tools:ignore="UnusedResources">#3C4043</color>
-    <color name="modern_grey_800_alpha_38" tools:ignore="UnusedResources">#613C4043</color>
+    <color name="modern_grey_800_alpha_38">#613C4043</color>
     <color name="modern_grey_900">#202124</color>
-    <color name="modern_grey_900_alpha_38" tools:ignore="UnusedResources">#61202124</color>
+    <color name="modern_grey_900_alpha_38">#61202124</color>
 
     <color name="modern_grey_900_with_grey_200_alpha_5">#292A2D</color>
     <color name="modern_grey_900_with_grey_200_alpha_8">#303134</color>
@@ -47,14 +47,26 @@
     <color name="white_alpha_50">#80FFFFFF</color>
     <color name="white_alpha_70">#B3FFFFFF</color>
 
+    <!-- Old color palette -->
     <color name="google_red_300">#F28B82</color>
     <color name="google_red_600">#D93025</color>
     <color name="google_green_300">#81C995</color>
     <color name="google_green_600">#1E8E3E</color>
+
+    <color name="google_blue_grey_500" tools:ignore="UnusedResources">#607D8B</color>
+    <!-- Only use for older versions of Android mimics UI. -->
+    <color name="google_blue_grey_900" tools:ignore="UnusedResources">#263238</color>
+    <color name="google_blue_50" tools:ignore="UnusedResources">#E3F2FD</color>
 
     <!-- Warning: One off below, do not use for other purpose. -->
     <!-- TODO(https://crbug.com/1020436): Update the highlight colors to meet accessibility
         contrast ratio. -->
     <color name="highlight_color_on_light_text" tools:ignore="UnusedResources">#CC5595FE</color>
     <color name="highlight_color_on_dark_text" tools:ignore="UnusedResources">#C6DAFC</color>
+
+    <color name="black_alpha_12" tools:ignore="UnusedResources">#1F000000</color>
+    <color name="black_alpha_20" tools:ignore="UnusedResources">#33000000</color>
+    <color name="black_alpha_30" tools:ignore="UnusedResources">#4D000000</color>
+
+    <color name="white_alpha_65" tools:ignore="UnusedResources">#A6FFFFFF</color>
 </resources>

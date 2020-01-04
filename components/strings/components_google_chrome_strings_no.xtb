@@ -18,7 +18,7 @@
           <ph name="ADVANCED_TITLE" />
           &gt;
           <ph name="PROXIES_TITLE" />
-          og sørg for at konfigurasjonen din er angitt til «ingen mellomtjener» eller «direkte».</translation>
+          og sørg for at konfigurasjonen din er angitt til «ingen proxy-tjener» eller «direkte».</translation>
 <translation id="6341737370356890233">Gå til
         Chrome-menyen &gt;
         <ph name="SETTINGS_TITLE" />
@@ -36,6 +36,6 @@
           <ph name="PROXIES_TITLE" />        
           &gt;
           LAN-innstillinger         
-          og fjern avmerkingen for «Bruk en mellomtjener for LAN-nettverket».</translation>
-<translation id="8187289872471304532">Gå til Programmer &gt; Systeminnstillinger &gt; Nettverk &gt; Avansert &gt; Mellomtjenere og fjern avmerkingen for alle valgte mellomtjenere.</translation>
+          og fjern avmerkingen for «Bruk en proxy-tjener for LAN-nettverket».</translation>
+<translation id="8187289872471304532">Gå til Programmer &gt; Systeminnstillinger &gt; Nettverk &gt; Avansert &gt; Proxy-tjenere og fjern avmerkingen for alle valgte proxy-tjenere.</translation>
 </translationbundle>

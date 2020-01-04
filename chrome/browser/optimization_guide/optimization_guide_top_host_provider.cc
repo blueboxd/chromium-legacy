@@ -322,7 +322,7 @@ std::vector<std::string> OptimizationGuideTopHostProvider::GetTopHosts() {
       (time_clock_->Now() - blacklist_initialized_time);
 
   for (const auto& detail : engagement_details) {
-    if (!detail.origin.SchemeIs(url::kHttpsScheme))
+    if (!detail.origin.SchemeIsHTTPOrHTTPS())
       continue;
     // Once the engagement score is less than the initial engagement score for a
     // newly navigated host, return the current set of top hosts. This threshold

@@ -419,6 +419,7 @@
 <translation id="3914732343065571127">ChromeVox コマンド リファレンス</translation>
 <translation id="3930383913623796990">スプリング グリーン</translation>
 <translation id="3930498801443296724">引用</translation>
+<translation id="3935615366277838204">大文字の <ph name="LETTER" /></translation>
 <translation id="3936394396199829062">ラベンダー ブラッシュ</translation>
 <translation id="3941269780691800708">カーソル部分のテキストを読み上げます。</translation>
 <translation id="394953087167197343">つづり間違いを表す:</translation>
@@ -854,6 +855,7 @@
 <translation id="699159175332639490">検索+O+W キー</translation>
 <translation id="6994042831499278539">用語参照</translation>
 <translation id="6996566555547746822">次のコンボ ボックス</translation>
+<translation id="6997224546856374593">大文字の読み上げ:</translation>
 <translation id="700202842116345659">文献情報</translation>
 <translation id="7005146664810010831">URL が見つかりません</translation>
 <translation id="7010712454773919705">ChromeVox 修飾キー</translation>
@@ -934,6 +936,7 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="744163271241493234">パスワードを編集</translation>
 <translation id="7491962110804786152">タブ</translation>
 <translation id="7492049978501397201">ダイアログを入力しました</translation>
+<translation id="7505149250476994901">「大文字の」と言ってから文字を読み上げる</translation>
 <translation id="7518543783849163354">ChromeVox の読み上げを一時的に停止するには、Ctrl キーを押します。</translation>
 <translation id="7521682724501952239">タッチスクリーンで ChromeVox を使用できます。</translation>
 <translation id="7532613204005497612">6 月</translation>

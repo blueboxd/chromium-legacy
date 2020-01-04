@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "ui/ozone/platform/drm/common/drm_overlay_manager.h"
+#include "ui/ozone/platform/drm/gpu/drm_overlay_manager.h"
 
 namespace ui {
 class DrmThreadProxy;

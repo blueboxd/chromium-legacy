@@ -24,10 +24,9 @@ class NGBoxFragmentPainterTest : public PaintControllerPaintTest,
         ScopedLayoutNGForTest(true) {}
 };
 
-using NGBoxFragmentPainterScrollHitTestTest = NGBoxFragmentPainterTest;
-INSTANTIATE_SCROLL_HIT_TEST_SUITE_P(NGBoxFragmentPainterScrollHitTestTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(NGBoxFragmentPainterTest);
 
-TEST_P(NGBoxFragmentPainterScrollHitTestTest, ScrollHitTestOrder) {
+TEST_P(NGBoxFragmentPainterTest, ScrollHitTestOrder) {
   GetPage().GetSettings().SetPreferCompositingToLCDTextEnabled(false);
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>

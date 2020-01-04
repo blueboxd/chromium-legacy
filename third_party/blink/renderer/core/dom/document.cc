@@ -1253,6 +1253,8 @@ Document::Document(const DocumentInit& initializer,
 
   lifecycle_.AdvanceTo(DocumentLifecycle::kInactive);
 
+  UpdateForcedColors();
+
   // Since CSSFontSelector requires Document::fetcher_ and StyleEngine owns
   // CSSFontSelector, need to initialize |style_engine_| after initializing
   // |fetcher_|.
@@ -8648,15 +8650,20 @@ bool Document::RequireTrustedTypes() const {
 }
 
 void Document::ColorSchemeChanged() {
+  UpdateForcedColors();
   GetStyleEngine().ColorSchemeChanged();
   MediaQueryAffectingValueChanged();
 }
 
-bool Document::InForcedColorsMode() const {
-  return RuntimeEnabledFeatures::ForcedColorsEnabled() && Platform::Current() &&
-         Platform::Current()->ThemeEngine() &&
-         Platform::Current()->ThemeEngine()->GetForcedColors() !=
-             ForcedColors::kNone;
+void Document::UpdateForcedColors() {
+  auto* web_theme_engine =
+      RuntimeEnabledFeatures::ForcedColorsEnabled() && Platform::Current()
+          ? Platform::Current()->ThemeEngine()
+          : nullptr;
+  ForcedColors forced_colors = web_theme_engine
+                                   ? web_theme_engine->GetForcedColors()
+                                   : ForcedColors::kNone;
+  in_forced_colors_mode_ = forced_colors != ForcedColors::kNone;
 }
 
 bool Document::IsCrossSiteSubframe() const {

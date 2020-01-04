@@ -1141,7 +1141,7 @@ class TabListMediator {
                                       : R.color.default_icon_color_inverse);
             ColorStateList actionButtonBackgroundColorList =
                     AppCompatResources.getColorStateList(mContext,
-                            tab.isIncognito() ? R.color.default_icon_color_white
+                            tab.isIncognito() ? R.color.default_icon_color_light
                                               : R.color.default_icon_color);
             // TODO(995876): Update color modern_blue_300 to active_color_dark when the associated
             // bug is landed.

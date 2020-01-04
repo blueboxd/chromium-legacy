@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/paint_preview/browser/file_manager.h"
+#include "components/paint_preview/browser/paint_preview_policy.h"
 #include "components/paint_preview/common/mojom/paint_preview_recorder.mojom.h"
 #include "components/paint_preview/common/proto/paint_preview.pb.h"
 #include "content/public/browser/web_contents.h"
@@ -33,6 +34,7 @@ class PaintPreviewBaseService : public KeyedService {
  public:
   enum CaptureStatus {
     kOk = 0,
+    kContentUnsupported,
     kClientCreationFailed,
     kCaptureFailed,
   };
@@ -44,9 +46,12 @@ class PaintPreviewBaseService : public KeyedService {
   // Creates a service instance for a feature. Artifacts produced will live in
   // |profile_dir|/paint_preview/|ascii_feature_name|. Implementers of the
   // factory can also elect their factory to not construct services in the event
-  // a profile |is_off_the_record|.
+  // a profile |is_off_the_record|. The |policy| object is responsible for
+  // determining whether or not a given WebContents is amenable to paint
+  // preview. If nullptr is passed as |policy| all content is deemed amenable.
   PaintPreviewBaseService(const base::FilePath& profile_dir,
                           const std::string& ascii_feature_name,
+                          std::unique_ptr<PaintPreviewPolicy> policy,
                           bool is_off_the_record);
   ~PaintPreviewBaseService() override;
 
@@ -95,6 +100,7 @@ class PaintPreviewBaseService : public KeyedService {
                   mojom::PaintPreviewStatus status,
                   std::unique_ptr<PaintPreviewProto> proto);
 
+  std::unique_ptr<PaintPreviewPolicy> policy_ = nullptr;
   FileManager file_manager_;
   bool is_off_the_record_;
 

@@ -29,7 +29,6 @@ using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::NavigationBarDoneButton;
 using chrome_test_util::SettingsDoneButton;
-using chrome_test_util::SettingsMenuBackButton;
 
 namespace {
 
@@ -60,6 +59,17 @@ id<GREYMatcher> NavigationBarEditButton() {
 // screen.
 id<GREYMatcher> BottomToolbar() {
   return grey_accessibilityID(kAutofillPaymentMethodsToolbarId);
+}
+
+id<GREYMatcher> SettingsMenuBackButton(NSString* backItemTitle) {
+#if defined(CHROME_EARL_GREY_2)
+  return grey_allOf(
+      grey_accessibilityLabel(backItemTitle),
+      grey_kindOfClassName(@"UIAccessibilityBackButtonElement"),
+      grey_ancestor(grey_accessibilityID(@"SettingNavigationBar")), nil);
+#else
+  return chrome_test_util::SettingsMenuBackButton();
+#endif
 }
 
 }  // namespace
@@ -115,7 +125,9 @@ id<GREYMatcher> BottomToolbar() {
 
 // Close the settings.
 - (void)exitSettingsMenu {
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+  [[EarlGrey
+      selectElementWithMatcher:SettingsMenuBackButton(l10n_util::GetNSString(
+                                   IDS_IOS_SETTINGS_TITLE))]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -124,13 +136,7 @@ id<GREYMatcher> BottomToolbar() {
 }
 
 // Test that the page for viewing Autofill credit card details is as expected.
-// TODO(crbug.com/1037681): Enable for EG2.
-#if defined(CHROME_EARL_GREY_2)
-#define MAYBE_testCreditCardViewPage DISABLED_testCreditCardViewPage
-#else
-#define MAYBE_testCreditCardViewPage testCreditCardViewPage
-#endif
-- (void)MAYBE_testCreditCardViewPage {
+- (void)testCreditCardViewPage {
   NSString* lastDigits = [AutofillAppInterface saveLocalCreditCard];
   [self openEditCreditCard:[self creditCardLabel:lastDigits]];
 
@@ -146,44 +152,32 @@ id<GREYMatcher> BottomToolbar() {
   }
 
   // Go back to the list view page.
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+  [[EarlGrey
+      selectElementWithMatcher:SettingsMenuBackButton(l10n_util::GetNSString(
+                                   IDS_AUTOFILL_PAYMENT_METHODS))]
       performAction:grey_tap()];
 
   [self exitSettingsMenu];
 }
 
 // Test that the page for viewing Autofill credit card details is accessible.
-// TODO(crbug.com/1037681): Enable for EG2.
-#if defined(CHROME_EARL_GREY_2)
-#define MAYBE_testAccessibilityOnCreditCardViewPage \
-  DISABLED_testAccessibilityOnCreditCardViewPage
-#else
-#define MAYBE_testAccessibilityOnCreditCardViewPage \
-  testAccessibilityOnCreditCardViewPage
-#endif
-- (void)MAYBE_testAccessibilityOnCreditCardViewPage {
+- (void)testAccessibilityOnCreditCardViewPage {
   NSString* lastDigits = [AutofillAppInterface saveLocalCreditCard];
   [self openEditCreditCard:[self creditCardLabel:lastDigits]];
 
   [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
 
   // Go back to the list view page.
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+  [[EarlGrey
+      selectElementWithMatcher:SettingsMenuBackButton(l10n_util::GetNSString(
+                                   IDS_AUTOFILL_PAYMENT_METHODS))]
       performAction:grey_tap()];
 
   [self exitSettingsMenu];
 }
 
 // Test that the page for editing Autofill credit card details is accessible.
-// TODO(crbug.com/1037681): Enable for EG2.
-#if defined(CHROME_EARL_GREY_2)
-#define MAYBE_testAccessibilityOnCreditCardEditPage \
-  DISABLED_testAccessibilityOnCreditCardEditPage
-#else
-#define MAYBE_testAccessibilityOnCreditCardEditPage \
-  testAccessibilityOnCreditCardEditPage
-#endif
-- (void)MAYBE_testAccessibilityOnCreditCardEditPage {
+- (void)testAccessibilityOnCreditCardEditPage {
   NSString* lastDigits = [AutofillAppInterface saveLocalCreditCard];
   [self openEditCreditCard:[self creditCardLabel:lastDigits]];
 
@@ -193,7 +187,9 @@ id<GREYMatcher> BottomToolbar() {
   [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
 
   // Go back to the list view page.
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+  [[EarlGrey
+      selectElementWithMatcher:SettingsMenuBackButton(l10n_util::GetNSString(
+                                   IDS_AUTOFILL_PAYMENT_METHODS))]
       performAction:grey_tap()];
 
   [self exitSettingsMenu];
@@ -201,13 +197,7 @@ id<GREYMatcher> BottomToolbar() {
 
 // Checks that the Autofill credit cards list view is in edit mode and the
 // Autofill credit cards switch is disabled.
-// TODO(crbug.com/1037681): Enable for EG2.
-#if defined(CHROME_EARL_GREY_2)
-#define MAYBE_testListViewEditMode DISABLED_testListViewEditMode
-#else
-#define MAYBE_testListViewEditMode testListViewEditMode
-#endif
-- (void)MAYBE_testListViewEditMode {
+- (void)testListViewEditMode {
   [AutofillAppInterface saveLocalCreditCard];
   [self openCreditCardsSettings];
 
@@ -225,13 +215,7 @@ id<GREYMatcher> BottomToolbar() {
 
 // Checks that the Autofill credit card switch can be toggled on/off and the
 // list of Autofill credit cards is not affected by it.
-// TODO(crbug.com/1037681): Enable for EG2.
-#if defined(CHROME_EARL_GREY_2)
-#define MAYBE_testToggleCreditCardSwitch DISABLED_testToggleCreditCardSwitch
-#else
-#define MAYBE_testToggleCreditCardSwitch testToggleCreditCardSwitch
-#endif
-- (void)MAYBE_testToggleCreditCardSwitch {
+- (void)testToggleCreditCardSwitch {
   NSString* lastDigits = [AutofillAppInterface saveLocalCreditCard];
   [self openCreditCardsSettings];
 

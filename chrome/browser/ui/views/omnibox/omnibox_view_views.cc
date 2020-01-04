@@ -204,15 +204,6 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
       friendly_suggestion_text_prefix_length_(0) {
   SetID(VIEW_ID_OMNIBOX);
   SetFontList(font_list);
-
-  if (base::FeatureList::IsEnabled(
-          omnibox::kHideSteadyStateUrlPathQueryAndRef)) {
-    // The animation only applies when the path is dimmed to begin with.
-    SkColor starting_color =
-        location_bar_view_->GetColor(OmniboxPart::LOCATION_BAR_TEXT_DIMMED);
-    path_fade_animation_ =
-        std::make_unique<PathFadeAnimation>(this, starting_color);
-  }
 }
 
 OmniboxViewViews::~OmniboxViewViews() {
@@ -231,15 +222,14 @@ void OmniboxViewViews::Init() {
   SetTextInputType(ui::TEXT_INPUT_TYPE_URL);
   GetRenderText()->SetElideBehavior(gfx::ELIDE_TAIL);
   GetRenderText()->set_symmetric_selection_visual_bounds(true);
+  InstallPlaceholderText();
+  scoped_template_url_service_observer_.Add(
+      model()->client()->GetTemplateURLService());
 
   if (popup_window_mode_)
     SetReadOnly(true);
 
   if (location_bar_view_) {
-    InstallPlaceholderText();
-    scoped_template_url_service_observer_.Add(
-        model()->client()->GetTemplateURLService());
-
     // Initialize the popup view using the same font.
     popup_view_.reset(
         new OmniboxPopupContentsView(this, model(), location_bar_view_,
@@ -309,9 +299,6 @@ void OmniboxViewViews::ResetTabState(content::WebContents* web_contents) {
 }
 
 void OmniboxViewViews::InstallPlaceholderText() {
-  set_placeholder_text_color(
-      location_bar_view_->GetColor(OmniboxPart::LOCATION_BAR_TEXT_DIMMED));
-
   const TemplateURL* const default_provider =
       model()->client()->GetTemplateURLService()->GetDefaultSearchProvider();
   if (default_provider) {
@@ -584,6 +571,21 @@ void OmniboxViewViews::RemovedFromWidget() {
 
 bool OmniboxViewViews::ShouldDoLearning() {
   return location_bar_view_ && !location_bar_view_->profile()->IsOffTheRecord();
+}
+
+void OmniboxViewViews::OnThemeChanged() {
+  const SkColor dimmed_text_color = GetOmniboxColor(
+      GetThemeProvider(), OmniboxPart::LOCATION_BAR_TEXT_DIMMED);
+  set_placeholder_text_color(dimmed_text_color);
+
+  if (base::FeatureList::IsEnabled(
+          omnibox::kHideSteadyStateUrlPathQueryAndRef)) {
+    // The animation only applies when the path is dimmed to begin with.
+    path_fade_animation_ =
+        std::make_unique<PathFadeAnimation>(this, dimmed_text_color);
+  }
+
+  EmphasizeURLComponents();
 }
 
 bool OmniboxViewViews::IsDropCursorForInsertion() const {
@@ -1060,9 +1062,9 @@ int OmniboxViewViews::GetOmniboxTextLength() const {
 }
 
 void OmniboxViewViews::SetEmphasis(bool emphasize, const gfx::Range& range) {
-  SkColor color = location_bar_view_->GetColor(
-      emphasize ? OmniboxPart::LOCATION_BAR_TEXT_DEFAULT
-                : OmniboxPart::LOCATION_BAR_TEXT_DIMMED);
+  SkColor color = GetOmniboxColor(
+      GetThemeProvider(), emphasize ? OmniboxPart::LOCATION_BAR_TEXT_DEFAULT
+                                    : OmniboxPart::LOCATION_BAR_TEXT_DIMMED);
   if (range.IsValid())
     ApplyColor(color, range);
   else

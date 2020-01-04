@@ -33,7 +33,6 @@ import org.chromium.chrome.browser.compositor.Invalidator;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.findinpage.FindToolbar;
-import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
@@ -458,12 +457,6 @@ public abstract class ToolbarLayout
     void handleFindLocationBarStateChange(boolean showing) {
         mFindInPageToolbarShowing = showing;
     }
-
-    /**
-     * Sets the delegate to handle visibility of browser controls.
-     */
-    void setBrowserControlsVisibilityDelegate(
-            BrowserStateBrowserControlsVisibilityDelegate controlsVisibilityDelegate) {}
 
     /**
      * Sets the OnClickListener that will be notified when the TabSwitcher button is pressed.

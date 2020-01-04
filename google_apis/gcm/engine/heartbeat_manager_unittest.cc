@@ -83,10 +83,11 @@ HeartbeatManagerTest::HeartbeatManagerTest()
       reconnects_triggered_(0) {}
 
 void HeartbeatManagerTest::StartManager() {
-  manager_->Start(base::Bind(&HeartbeatManagerTest::SendHeartbeatClosure,
-                             base::Unretained(this)),
-                  base::Bind(&HeartbeatManagerTest::TriggerReconnectClosure,
-                             base::Unretained(this)));
+  manager_->Start(
+      base::BindRepeating(&HeartbeatManagerTest::SendHeartbeatClosure,
+                          base::Unretained(this)),
+      base::BindRepeating(&HeartbeatManagerTest::TriggerReconnectClosure,
+                          base::Unretained(this)));
 }
 
 void HeartbeatManagerTest::SendHeartbeatClosure() {

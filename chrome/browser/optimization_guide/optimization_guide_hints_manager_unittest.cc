@@ -1021,26 +1021,17 @@ TEST_F(OptimizationGuideHintsManagerTest, CanApplyOptimizationUrlWithNoHost) {
                                   kBlackBlacklistBloomFilterNumBits, &config);
   ProcessHints(config, "1.0.0.0");
 
-  // Set ECT estimate to be "painful".
-  hints_manager()->OnEffectiveConnectionTypeChanged(
-      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
           GURL("urlwithnohost"));
 
-  optimization_guide::OptimizationTargetDecision optimization_target_decision;
-  optimization_guide::OptimizationTypeDecision optimization_type_decision;
-  hints_manager()->CanApplyOptimization(
-      navigation_handle.get(),
-      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
-      optimization_guide::proto::LITE_PAGE_REDIRECT,
-      &optimization_target_decision, &optimization_type_decision,
-      /*optimization_metadata=*/nullptr);
+  optimization_guide::OptimizationTypeDecision optimization_type_decision =
+      hints_manager()->CanApplyOptimization(
+          navigation_handle.get(),
+          optimization_guide::proto::LITE_PAGE_REDIRECT,
+          /*optimization_metadata=*/nullptr);
 
   // Make sure decisions are logged correctly.
-  EXPECT_EQ(
-      optimization_guide::OptimizationTargetDecision::kPageLoadDoesNotMatch,
-      optimization_target_decision);
   EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kNoHintAvailable,
             optimization_type_decision);
   // Make sure navigation data is populated correctly.
@@ -1051,6 +1042,73 @@ TEST_F(OptimizationGuideHintsManagerTest, CanApplyOptimizationUrlWithNoHost) {
   EXPECT_EQ(base::nullopt, navigation_data->has_hint_after_commit());
   EXPECT_EQ(base::nullopt, navigation_data->serialized_hint_version_string());
   EXPECT_FALSE(navigation_data->has_page_hint_value());
+}
+
+TEST_F(OptimizationGuideHintsManagerTest,
+       ShouldTargetNavigationUrlWithNoHostECTSlowerThanDefault) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::LITE_PAGE_REDIRECT});
+
+  optimization_guide::proto::Configuration config;
+  optimization_guide::BloomFilter blacklist_bloom_filter(
+      kBlackBlacklistBloomFilterNumHashFunctions,
+      kBlackBlacklistBloomFilterNumBits);
+  PopulateBlackBlacklistBloomFilter(&blacklist_bloom_filter);
+  AddBlacklistBloomFilterToConfig(optimization_guide::proto::LITE_PAGE_REDIRECT,
+                                  blacklist_bloom_filter,
+                                  kBlackBlacklistBloomFilterNumHashFunctions,
+                                  kBlackBlacklistBloomFilterNumBits, &config);
+  ProcessHints(config, "1.0.0.0");
+
+  // Set ECT estimate to be "painful".
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_2G);
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          GURL("urlwithnohost"));
+
+  optimization_guide::OptimizationTargetDecision optimization_target_decision =
+      hints_manager()->ShouldTargetNavigation(
+          navigation_handle.get(),
+          optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
+
+  // Make sure decisions are logged correctly.
+  EXPECT_EQ(optimization_guide::OptimizationTargetDecision::kPageLoadMatches,
+            optimization_target_decision);
+}
+
+TEST_F(OptimizationGuideHintsManagerTest,
+       ShouldTargetNavigationUrlWithNoHostECTFasterThanDefault) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::LITE_PAGE_REDIRECT});
+
+  optimization_guide::proto::Configuration config;
+  optimization_guide::BloomFilter blacklist_bloom_filter(
+      kBlackBlacklistBloomFilterNumHashFunctions,
+      kBlackBlacklistBloomFilterNumBits);
+  PopulateBlackBlacklistBloomFilter(&blacklist_bloom_filter);
+  AddBlacklistBloomFilterToConfig(optimization_guide::proto::LITE_PAGE_REDIRECT,
+                                  blacklist_bloom_filter,
+                                  kBlackBlacklistBloomFilterNumHashFunctions,
+                                  kBlackBlacklistBloomFilterNumBits, &config);
+  ProcessHints(config, "1.0.0.0");
+
+  // Set ECT estimate to be "fast".
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G);
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          GURL("urlwithnohost"));
+
+  optimization_guide::OptimizationTargetDecision optimization_target_decision =
+      hints_manager()->ShouldTargetNavigation(
+          navigation_handle.get(),
+          optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
+
+  // Make sure decisions are logged correctly.
+  EXPECT_EQ(
+      optimization_guide::OptimizationTargetDecision::kPageLoadDoesNotMatch,
+      optimization_target_decision);
 }
 
 TEST_F(OptimizationGuideHintsManagerTest,
@@ -1066,25 +1124,17 @@ TEST_F(OptimizationGuideHintsManagerTest,
                                   kBlackBlacklistBloomFilterNumBits, &config);
   ProcessHints(config, "1.0.0.0");
 
-  // Set ECT estimate to be "painful".
-  hints_manager()->OnEffectiveConnectionTypeChanged(
-      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
           GURL("https://whatever.com/123"));
 
-  optimization_guide::OptimizationTargetDecision optimization_target_decision;
-  optimization_guide::OptimizationTypeDecision optimization_type_decision;
-  hints_manager()->CanApplyOptimization(
-      navigation_handle.get(),
-      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
-      optimization_guide::proto::LITE_PAGE_REDIRECT,
-      &optimization_target_decision, &optimization_type_decision,
-      /*optimization_metadata=*/nullptr);
+  optimization_guide::OptimizationTypeDecision optimization_type_decision =
+      hints_manager()->CanApplyOptimization(
+          navigation_handle.get(),
+          optimization_guide::proto::LITE_PAGE_REDIRECT,
+          /*optimization_metadata=*/nullptr);
 
   // Make sure decisions are logged correctly.
-  EXPECT_EQ(optimization_guide::OptimizationTargetDecision::kPageLoadMatches,
-            optimization_target_decision);
   EXPECT_EQ(optimization_guide::OptimizationTypeDecision::
                 kHadOptimizationFilterButNotLoadedInTime,
             optimization_type_decision);
@@ -1114,25 +1164,17 @@ TEST_F(OptimizationGuideHintsManagerTest,
                                   kBlackBlacklistBloomFilterNumBits, &config);
   ProcessHints(config, "1.0.0.0");
 
-  // Set ECT estimate to be "painful".
-  hints_manager()->OnEffectiveConnectionTypeChanged(
-      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
           GURL("https://m.black.com/123"));
 
-  optimization_guide::OptimizationTargetDecision optimization_target_decision;
-  optimization_guide::OptimizationTypeDecision optimization_type_decision;
-  hints_manager()->CanApplyOptimization(
-      navigation_handle.get(),
-      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
-      optimization_guide::proto::LITE_PAGE_REDIRECT,
-      &optimization_target_decision, &optimization_type_decision,
-      /*optimization_metadata=*/nullptr);
+  optimization_guide::OptimizationTypeDecision optimization_type_decision =
+      hints_manager()->CanApplyOptimization(
+          navigation_handle.get(),
+          optimization_guide::proto::LITE_PAGE_REDIRECT,
+          /*optimization_metadata=*/nullptr);
 
   // Make sure decisions are logged correctly.
-  EXPECT_EQ(optimization_guide::OptimizationTargetDecision::kPageLoadMatches,
-            optimization_target_decision);
   EXPECT_EQ(optimization_guide::OptimizationTypeDecision::
                 kNotAllowedByOptimizationFilter,
             optimization_type_decision);
@@ -1162,25 +1204,17 @@ TEST_F(OptimizationGuideHintsManagerTest,
                                   kBlackBlacklistBloomFilterNumBits, &config);
   ProcessHints(config, "1.0.0.0");
 
-  // Set ECT estimate to be "painful".
-  hints_manager()->OnEffectiveConnectionTypeChanged(
-      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
           GURL("https://whatever.com/123"));
 
-  optimization_guide::OptimizationTargetDecision optimization_target_decision;
-  optimization_guide::OptimizationTypeDecision optimization_type_decision;
-  hints_manager()->CanApplyOptimization(
-      navigation_handle.get(),
-      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
-      optimization_guide::proto::LITE_PAGE_REDIRECT,
-      &optimization_target_decision, &optimization_type_decision,
-      /*optimization_metadata=*/nullptr);
+  optimization_guide::OptimizationTypeDecision optimization_type_decision =
+      hints_manager()->CanApplyOptimization(
+          navigation_handle.get(),
+          optimization_guide::proto::LITE_PAGE_REDIRECT,
+          /*optimization_metadata=*/nullptr);
 
   // Make sure decisions are logged correctly.
-  EXPECT_EQ(optimization_guide::OptimizationTargetDecision::kPageLoadMatches,
-            optimization_target_decision);
   EXPECT_EQ(optimization_guide::OptimizationTypeDecision::
                 kAllowedByOptimizationFilter,
             optimization_type_decision);
@@ -1194,7 +1228,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   EXPECT_FALSE(navigation_data->has_page_hint_value());
 }
 
-TEST_F(OptimizationGuideHintsManagerTest, CanApplyOptimizationNoECTEstimate) {
+TEST_F(OptimizationGuideHintsManagerTest, ShouldTargetNavigationNoECTEstimate) {
   hints_manager()->RegisterOptimizationTypes(
       {optimization_guide::proto::LITE_PAGE_REDIRECT});
 
@@ -1216,34 +1250,19 @@ TEST_F(OptimizationGuideHintsManagerTest, CanApplyOptimizationNoECTEstimate) {
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
           GURL("https://whatever.com/123"));
 
-  optimization_guide::OptimizationTargetDecision optimization_target_decision;
-  optimization_guide::OptimizationTypeDecision optimization_type_decision;
-  hints_manager()->CanApplyOptimization(
-      navigation_handle.get(),
-      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
-      optimization_guide::proto::LITE_PAGE_REDIRECT,
-      &optimization_target_decision, &optimization_type_decision,
-      /*optimization_metadata=*/nullptr);
+  optimization_guide::OptimizationTargetDecision optimization_target_decision =
+      hints_manager()->ShouldTargetNavigation(
+          navigation_handle.get(),
+          optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
 
   // Make sure decisions are logged correctly.
   EXPECT_EQ(
       optimization_guide::OptimizationTargetDecision::kPageLoadDoesNotMatch,
       optimization_target_decision);
-  EXPECT_EQ(optimization_guide::OptimizationTypeDecision::
-                kAllowedByOptimizationFilter,
-            optimization_type_decision);
-  // Make sure navigation data is populated correctly.
-  OptimizationGuideNavigationData* navigation_data =
-      OptimizationGuideNavigationData::GetFromNavigationHandle(
-          navigation_handle.get());
-  EXPECT_EQ(base::nullopt, navigation_data->has_hint_before_commit());
-  EXPECT_FALSE(navigation_data->has_hint_after_commit().value());
-  EXPECT_EQ(base::nullopt, navigation_data->serialized_hint_version_string());
-  EXPECT_FALSE(navigation_data->has_page_hint_value());
 }
 
 TEST_F(OptimizationGuideHintsManagerTest,
-       CanApplyOptimizationNoHintToTriggerHigherThan2G) {
+       ShouldTargetNavigationNoHintToTriggerHigherThan2G) {
   hints_manager()->RegisterOptimizationTypes(
       {optimization_guide::proto::LITE_PAGE_REDIRECT});
 
@@ -1265,39 +1284,21 @@ TEST_F(OptimizationGuideHintsManagerTest,
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
           GURL("https://whatever.com/123"));
 
-  optimization_guide::OptimizationTargetDecision optimization_target_decision;
-  optimization_guide::OptimizationTypeDecision optimization_type_decision;
-  hints_manager()->CanApplyOptimization(
-      navigation_handle.get(),
-      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
-      optimization_guide::proto::LITE_PAGE_REDIRECT,
-      &optimization_target_decision, &optimization_type_decision,
-      /*optimization_metadata=*/nullptr);
+  optimization_guide::OptimizationTargetDecision optimization_target_decision =
+      hints_manager()->ShouldTargetNavigation(
+          navigation_handle.get(),
+          optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
 
   // Make sure decisions are logged correctly.
   EXPECT_EQ(
       optimization_guide::OptimizationTargetDecision::kPageLoadDoesNotMatch,
       optimization_target_decision);
-  EXPECT_EQ(optimization_guide::OptimizationTypeDecision::
-                kAllowedByOptimizationFilter,
-            optimization_type_decision);
-  // Make sure navigation data is populated correctly.
-  OptimizationGuideNavigationData* navigation_data =
-      OptimizationGuideNavigationData::GetFromNavigationHandle(
-          navigation_handle.get());
-  EXPECT_EQ(base::nullopt, navigation_data->has_hint_before_commit());
-  EXPECT_FALSE(navigation_data->has_hint_after_commit().value());
-  EXPECT_EQ(base::nullopt, navigation_data->serialized_hint_version_string());
-  EXPECT_FALSE(navigation_data->has_page_hint_value());
 }
 
 TEST_F(OptimizationGuideHintsManagerTest,
        CanApplyOptimizationAndPopulatesMetadataWithFirstOptThatMatchesNoExp) {
   InitializeWithDefaultConfig("1.0.0.0");
 
-  // Set ECT estimate so hint is activated.
-  hints_manager()->OnEffectiveConnectionTypeChanged(
-      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
           url_with_hints());
@@ -1306,19 +1307,14 @@ TEST_F(OptimizationGuideHintsManagerTest,
                                                run_loop.QuitClosure());
   run_loop.Run();
 
-  optimization_guide::OptimizationTargetDecision optimization_target_decision;
-  optimization_guide::OptimizationTypeDecision optimization_type_decision;
   optimization_guide::OptimizationMetadata optimization_metadata;
-  hints_manager()->CanApplyOptimization(
-      navigation_handle.get(),
-      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
-      optimization_guide::proto::NOSCRIPT, &optimization_target_decision,
-      &optimization_type_decision, &optimization_metadata);
+  optimization_guide::OptimizationTypeDecision optimization_type_decision =
+      hints_manager()->CanApplyOptimization(navigation_handle.get(),
+                                            optimization_guide::proto::NOSCRIPT,
+                                            &optimization_metadata);
   EXPECT_EQ(1234, optimization_metadata.previews_metadata.inflation_percent());
 
   // Make sure decisions are logged correctly.
-  EXPECT_EQ(optimization_guide::OptimizationTargetDecision::kPageLoadMatches,
-            optimization_target_decision);
   EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kAllowedByHint,
             optimization_type_decision);
   // Make sure navigation data is populated correctly.
@@ -1332,7 +1328,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
 }
 
 TEST_F(OptimizationGuideHintsManagerTest,
-       CanApplyOptimizationHasHintButNotSlowEnough) {
+       ShouldTargetNavigationButNotSlowEnough) {
   InitializeWithDefaultConfig("1.0.0.0");
 
   // Set ECT estimate so hint is activated.
@@ -1346,34 +1342,19 @@ TEST_F(OptimizationGuideHintsManagerTest,
                                                run_loop.QuitClosure());
   run_loop.Run();
 
-  optimization_guide::OptimizationTargetDecision optimization_target_decision;
-  optimization_guide::OptimizationTypeDecision optimization_type_decision;
-  optimization_guide::OptimizationMetadata optimization_metadata;
-  hints_manager()->CanApplyOptimization(
-      navigation_handle.get(),
-      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
-      optimization_guide::proto::NOSCRIPT, &optimization_target_decision,
-      &optimization_type_decision, &optimization_metadata);
-  EXPECT_EQ(1234, optimization_metadata.previews_metadata.inflation_percent());
+  optimization_guide::OptimizationTargetDecision optimization_target_decision =
+      hints_manager()->ShouldTargetNavigation(
+          navigation_handle.get(),
+          optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
 
   // Make sure decisions are logged correctly.
   EXPECT_EQ(
       optimization_guide::OptimizationTargetDecision::kPageLoadDoesNotMatch,
       optimization_target_decision);
-  EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kAllowedByHint,
-            optimization_type_decision);
-  // Make sure navigation data is populated correctly.
-  OptimizationGuideNavigationData* navigation_data =
-      OptimizationGuideNavigationData::GetFromNavigationHandle(
-          navigation_handle.get());
-  EXPECT_TRUE(navigation_data->has_hint_before_commit().value());
-  EXPECT_TRUE(navigation_data->has_hint_after_commit().value());
-  EXPECT_EQ("someversion", navigation_data->serialized_hint_version_string());
-  ASSERT_TRUE(navigation_data->page_hint());
 }
 
 TEST_F(OptimizationGuideHintsManagerTest,
-       CanApplyOptimizationWithNonPainfulPageLoadTarget) {
+       ShouldTargetNavigationWithNonPainfulPageLoadTarget) {
   InitializeWithDefaultConfig("1.0.0.0");
 
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
@@ -1384,40 +1365,21 @@ TEST_F(OptimizationGuideHintsManagerTest,
                                                run_loop.QuitClosure());
   run_loop.Run();
 
-  optimization_guide::OptimizationTargetDecision optimization_target_decision;
-  optimization_guide::OptimizationTypeDecision optimization_type_decision;
-  optimization_guide::OptimizationMetadata optimization_metadata;
-  hints_manager()->CanApplyOptimization(
-      navigation_handle.get(),
-      optimization_guide::proto::OPTIMIZATION_TARGET_UNKNOWN,
-      optimization_guide::proto::NOSCRIPT, &optimization_target_decision,
-      &optimization_type_decision, &optimization_metadata);
-  // Make sure metadata is populated.
-  EXPECT_EQ(1234, optimization_metadata.previews_metadata.inflation_percent());
+  optimization_guide::OptimizationTargetDecision optimization_target_decision =
+      hints_manager()->ShouldTargetNavigation(
+          navigation_handle.get(),
+          optimization_guide::proto::OPTIMIZATION_TARGET_UNKNOWN);
 
   // Make sure decisions are logged correctly.
   EXPECT_EQ(optimization_guide::OptimizationTargetDecision::
                 kModelNotAvailableOnClient,
             optimization_target_decision);
-  EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kAllowedByHint,
-            optimization_type_decision);
-  // Make sure navigation data is populated correctly.
-  OptimizationGuideNavigationData* navigation_data =
-      OptimizationGuideNavigationData::GetFromNavigationHandle(
-          navigation_handle.get());
-  EXPECT_TRUE(navigation_data->has_hint_before_commit().value());
-  EXPECT_TRUE(navigation_data->has_hint_after_commit().value());
-  EXPECT_EQ("someversion", navigation_data->serialized_hint_version_string());
-  EXPECT_TRUE(navigation_data->has_page_hint_value());
 }
 
 TEST_F(OptimizationGuideHintsManagerTest,
        CanApplyOptimizationHasPageHintButNoMatchingOptType) {
   InitializeWithDefaultConfig("1.0.0.0");
 
-  // Set ECT estimate so hint is activated.
-  hints_manager()->OnEffectiveConnectionTypeChanged(
-      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
           url_with_hints());
@@ -1426,19 +1388,12 @@ TEST_F(OptimizationGuideHintsManagerTest,
                                                run_loop.QuitClosure());
   run_loop.Run();
 
-  optimization_guide::OptimizationTargetDecision optimization_target_decision;
-  optimization_guide::OptimizationTypeDecision optimization_type_decision;
-  optimization_guide::OptimizationMetadata optimization_metadata;
-  hints_manager()->CanApplyOptimization(
-      navigation_handle.get(),
-      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
-      optimization_guide::proto::DEFER_ALL_SCRIPT,
-      &optimization_target_decision, &optimization_type_decision,
-      /*optimization_metadata=*/nullptr);
+  optimization_guide::OptimizationTypeDecision optimization_type_decision =
+      hints_manager()->CanApplyOptimization(
+          navigation_handle.get(), optimization_guide::proto::DEFER_ALL_SCRIPT,
+          /*optimization_metadata=*/nullptr);
 
   // Make sure decisions are logged correctly.
-  EXPECT_EQ(optimization_guide::OptimizationTargetDecision::kPageLoadMatches,
-            optimization_target_decision);
   EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kNotAllowedByHint,
             optimization_type_decision);
   // Make sure navigation data is populated correctly.
@@ -1455,9 +1410,6 @@ TEST_F(OptimizationGuideHintsManagerTest,
        CanApplyOptimizationUsesCachedPageHintFromNavigationData) {
   InitializeWithDefaultConfig("1.0.0.0");
 
-  // Set ECT estimate so hint is activated.
-  hints_manager()->OnEffectiveConnectionTypeChanged(
-      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
           url_with_hints());
@@ -1473,19 +1425,12 @@ TEST_F(OptimizationGuideHintsManagerTest,
           navigation_handle.get());
   navigation_data->set_page_hint(nullptr);
 
-  optimization_guide::OptimizationTargetDecision optimization_target_decision;
-  optimization_guide::OptimizationTypeDecision optimization_type_decision;
-  optimization_guide::OptimizationMetadata optimization_metadata;
-  hints_manager()->CanApplyOptimization(
-      navigation_handle.get(),
-      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
-      optimization_guide::proto::DEFER_ALL_SCRIPT,
-      &optimization_target_decision, &optimization_type_decision,
-      /*optimization_metadata=*/nullptr);
+  optimization_guide::OptimizationTypeDecision optimization_type_decision =
+      hints_manager()->CanApplyOptimization(
+          navigation_handle.get(), optimization_guide::proto::DEFER_ALL_SCRIPT,
+          /*optimization_metadata=*/nullptr);
 
   // Make sure decisions are logged correctly.
-  EXPECT_EQ(optimization_guide::OptimizationTargetDecision::kPageLoadMatches,
-            optimization_target_decision);
   EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kNoMatchingPageHint,
             optimization_type_decision);
   // Make sure navigation data is populated correctly.
@@ -1542,19 +1487,12 @@ TEST_F(OptimizationGuideHintsManagerTest,
                                                run_loop.QuitClosure());
   run_loop.Run();
 
-  optimization_guide::OptimizationTargetDecision optimization_target_decision;
-  optimization_guide::OptimizationTypeDecision optimization_type_decision;
-  optimization_guide::OptimizationMetadata optimization_metadata;
-  hints_manager()->CanApplyOptimization(
-      navigation_handle.get(),
-      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
-      optimization_guide::proto::NOSCRIPT, &optimization_target_decision,
-      &optimization_type_decision,
-      /*optimization_metadata=*/nullptr);
+  optimization_guide::OptimizationTypeDecision optimization_type_decision =
+      hints_manager()->CanApplyOptimization(navigation_handle.get(),
+                                            optimization_guide::proto::NOSCRIPT,
+                                            /*optimization_metadata=*/nullptr);
 
   // Make sure decisions are logged correctly.
-  EXPECT_EQ(optimization_guide::OptimizationTargetDecision::kPageLoadMatches,
-            optimization_target_decision);
   EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kNoMatchingPageHint,
             optimization_type_decision);
   // Make sure navigation data is populated correctly.
@@ -1571,27 +1509,19 @@ TEST_F(OptimizationGuideHintsManagerTest,
        CanApplyOptimizationNoHintForNavigationMetadataClearedAnyway) {
   InitializeWithDefaultConfig("1.0.0.0");
 
-  // Set ECT estimate so hint is activated.
-  hints_manager()->OnEffectiveConnectionTypeChanged(
-      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
           GURL("https://nohint.com"));
 
-  optimization_guide::OptimizationTargetDecision optimization_target_decision;
-  optimization_guide::OptimizationTypeDecision optimization_type_decision;
   optimization_guide::OptimizationMetadata optimization_metadata;
   optimization_metadata.previews_metadata.set_inflation_percent(12345);
-  hints_manager()->CanApplyOptimization(
-      navigation_handle.get(),
-      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
-      optimization_guide::proto::NOSCRIPT, &optimization_target_decision,
-      &optimization_type_decision, &optimization_metadata);
+  optimization_guide::OptimizationTypeDecision optimization_type_decision =
+      hints_manager()->CanApplyOptimization(navigation_handle.get(),
+                                            optimization_guide::proto::NOSCRIPT,
+                                            &optimization_metadata);
   EXPECT_EQ(0, optimization_metadata.previews_metadata.inflation_percent());
 
   // Make sure decisions are logged correctly.
-  EXPECT_EQ(optimization_guide::OptimizationTargetDecision::kPageLoadMatches,
-            optimization_target_decision);
   EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kNoHintAvailable,
             optimization_type_decision);
   // Make sure navigation data is populated correctly.
@@ -1608,25 +1538,17 @@ TEST_F(OptimizationGuideHintsManagerTest,
        CanApplyOptimizationHasHintInCacheButNotLoaded) {
   InitializeWithDefaultConfig("1.0.0.0");
 
-  // Set ECT estimate so hint is activated.
-  hints_manager()->OnEffectiveConnectionTypeChanged(
-      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
           url_with_hints());
 
-  optimization_guide::OptimizationTargetDecision optimization_target_decision;
-  optimization_guide::OptimizationTypeDecision optimization_type_decision;
   optimization_guide::OptimizationMetadata optimization_metadata;
-  hints_manager()->CanApplyOptimization(
-      navigation_handle.get(),
-      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
-      optimization_guide::proto::NOSCRIPT, &optimization_target_decision,
-      &optimization_type_decision, &optimization_metadata);
+  optimization_guide::OptimizationTypeDecision optimization_type_decision =
+      hints_manager()->CanApplyOptimization(navigation_handle.get(),
+                                            optimization_guide::proto::NOSCRIPT,
+                                            &optimization_metadata);
 
   // Make sure decisions are logged correctly.
-  EXPECT_EQ(optimization_guide::OptimizationTargetDecision::kPageLoadMatches,
-            optimization_target_decision);
   EXPECT_EQ(
       optimization_guide::OptimizationTypeDecision::kHadHintButNotLoadedInTime,
       optimization_type_decision);
@@ -1675,22 +1597,13 @@ TEST_F(OptimizationGuideHintsManagerTest,
                                                run_loop.QuitClosure());
   run_loop.Run();
 
-  // Set ECT estimate so hint is activated.
-  hints_manager()->OnEffectiveConnectionTypeChanged(
-      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
-
-  optimization_guide::OptimizationTargetDecision optimization_target_decision;
-  optimization_guide::OptimizationTypeDecision optimization_type_decision;
-  hints_manager()->CanApplyOptimization(
-      navigation_handle.get(),
-      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
-      optimization_guide::proto::LITE_PAGE_REDIRECT,
-      &optimization_target_decision, &optimization_type_decision,
-      /*optimization_metadata=*/nullptr);
+  optimization_guide::OptimizationTypeDecision optimization_type_decision =
+      hints_manager()->CanApplyOptimization(
+          navigation_handle.get(),
+          optimization_guide::proto::LITE_PAGE_REDIRECT,
+          /*optimization_metadata=*/nullptr);
 
   // Make sure decision points logged correctly.
-  EXPECT_EQ(optimization_guide::OptimizationTargetDecision::kPageLoadMatches,
-            optimization_target_decision);
   EXPECT_EQ(optimization_guide::OptimizationTypeDecision::
                 kNotAllowedByOptimizationFilter,
             optimization_type_decision);
@@ -1741,21 +1654,13 @@ TEST_F(OptimizationGuideHintsManagerTest,
                                                run_loop.QuitClosure());
   run_loop.Run();
 
-  hints_manager()->OnEffectiveConnectionTypeChanged(
-      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G);
-
-  optimization_guide::OptimizationTargetDecision optimization_target_decision;
-  optimization_guide::OptimizationTypeDecision optimization_type_decision;
-  hints_manager()->CanApplyOptimization(
-      navigation_handle.get(),
-      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
-      optimization_guide::proto::LITE_PAGE_REDIRECT,
-      &optimization_target_decision, &optimization_type_decision,
-      /*optimization_metadata=*/nullptr);
+  optimization_guide::OptimizationTypeDecision optimization_type_decision =
+      hints_manager()->CanApplyOptimization(
+          navigation_handle.get(),
+          optimization_guide::proto::LITE_PAGE_REDIRECT,
+          /*optimization_metadata=*/nullptr);
 
   // Make sure decisions are logged correctly.
-  EXPECT_EQ(optimization_guide::OptimizationTargetDecision::kPageLoadMatches,
-            optimization_target_decision);
   EXPECT_EQ(optimization_guide::OptimizationTypeDecision::
                 kAllowedByOptimizationFilter,
             optimization_type_decision);
@@ -1786,9 +1691,6 @@ TEST_F(OptimizationGuideHintsManagerExperimentTest,
        CanApplyOptimizationAndPopulatesMetadataWithFirstOptThatMatchesWithExp) {
   InitializeWithDefaultConfig("1.0.0.0");
 
-  // Set ECT estimate so hint is activated.
-  hints_manager()->OnEffectiveConnectionTypeChanged(
-      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
           url_with_hints());
@@ -1797,19 +1699,14 @@ TEST_F(OptimizationGuideHintsManagerExperimentTest,
                                                run_loop.QuitClosure());
   run_loop.Run();
 
-  optimization_guide::OptimizationTargetDecision optimization_target_decision;
-  optimization_guide::OptimizationTypeDecision optimization_type_decision;
   optimization_guide::OptimizationMetadata optimization_metadata;
-  hints_manager()->CanApplyOptimization(
-      navigation_handle.get(),
-      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
-      optimization_guide::proto::NOSCRIPT, &optimization_target_decision,
-      &optimization_type_decision, &optimization_metadata);
+  optimization_guide::OptimizationTypeDecision optimization_type_decision =
+      hints_manager()->CanApplyOptimization(navigation_handle.get(),
+                                            optimization_guide::proto::NOSCRIPT,
+                                            &optimization_metadata);
   EXPECT_EQ(12345, optimization_metadata.previews_metadata.inflation_percent());
 
   // Make sure decisions are logged correctly.
-  EXPECT_EQ(optimization_guide::OptimizationTargetDecision::kPageLoadMatches,
-            optimization_target_decision);
   EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kAllowedByHint,
             optimization_type_decision);
   // Make sure navigation data is populated correctly.
@@ -2085,7 +1982,7 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
 }
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest,
-       HintsFetched_AtSRP_ECT_SLOW_2G_InsecureHostsRemoved) {
+       HintsFetched_AtSRP_ECT_SLOW_2G_NonHTTPOrHTTPSHostsRemoved) {
   hints_manager()->RegisterOptimizationTypes(
       {optimization_guide::proto::DEFER_ALL_SCRIPT});
   InitializeWithDefaultConfig("1.0.0.0");
@@ -2099,7 +1996,8 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
   base::HistogramTester histogram_tester;
   std::vector<GURL> sorted_predicted_urls;
   sorted_predicted_urls.push_back(GURL("https://foo.com/page1.html"));
-  sorted_predicted_urls.push_back(GURL("http://insecure-bar.com/"));
+  sorted_predicted_urls.push_back(GURL("file://non-web-bar.com/"));
+  sorted_predicted_urls.push_back(GURL("http://httppage.com/"));
 
   NavigationPredictorKeyedService::Prediction prediction(
       nullptr, GURL("https://www.google.com/"), sorted_predicted_urls);
@@ -2108,7 +2006,7 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
   // Ensure that we only include 1 secure host in the request. These would be
   // foo.com.
   histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1, 1);
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 2, 1);
 }
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest, HintsFetched_AtSRP_ECT_4G) {
@@ -2255,13 +2153,10 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
           url_without_hints());
   hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
                                                base::DoNothing());
-  optimization_guide::OptimizationTargetDecision unused_target_decision;
-  optimization_guide::OptimizationTypeDecision optimization_type_decision;
-  hints_manager()->CanApplyOptimization(
-      navigation_handle.get(),
-      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
-      optimization_guide::proto::DEFER_ALL_SCRIPT, &unused_target_decision,
-      &optimization_type_decision, /*optimization_metadata=*/nullptr);
+  optimization_guide::OptimizationTypeDecision optimization_type_decision =
+      hints_manager()->CanApplyOptimization(
+          navigation_handle.get(), optimization_guide::proto::DEFER_ALL_SCRIPT,
+          /*optimization_metadata=*/nullptr);
 
   EXPECT_EQ(optimization_type_decision,
             optimization_guide::OptimizationTypeDecision::
@@ -2287,13 +2182,10 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
                                                base::DoNothing());
   RunUntilIdle();
 
-  optimization_guide::OptimizationTargetDecision unused_target_decision;
-  optimization_guide::OptimizationTypeDecision optimization_type_decision;
-  hints_manager()->CanApplyOptimization(
-      navigation_handle.get(),
-      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
-      optimization_guide::proto::DEFER_ALL_SCRIPT, &unused_target_decision,
-      &optimization_type_decision, /*optimization_metadata=*/nullptr);
+  optimization_guide::OptimizationTypeDecision optimization_type_decision =
+      hints_manager()->CanApplyOptimization(
+          navigation_handle.get(), optimization_guide::proto::DEFER_ALL_SCRIPT,
+          /*optimization_metadata=*/nullptr);
 
   EXPECT_EQ(optimization_type_decision,
             optimization_guide::OptimizationTypeDecision::kNoHintAvailable);
@@ -2318,13 +2210,10 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
                                                base::DoNothing());
   RunUntilIdle();
 
-  optimization_guide::OptimizationTargetDecision unused_target_decision;
-  optimization_guide::OptimizationTypeDecision optimization_type_decision;
-  hints_manager()->CanApplyOptimization(
-      navigation_handle.get(),
-      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
-      optimization_guide::proto::DEFER_ALL_SCRIPT, &unused_target_decision,
-      &optimization_type_decision, /*optimization_metadata=*/nullptr);
+  optimization_guide::OptimizationTypeDecision optimization_type_decision =
+      hints_manager()->CanApplyOptimization(
+          navigation_handle.get(), optimization_guide::proto::DEFER_ALL_SCRIPT,
+          /*optimization_metadata=*/nullptr);
 
   EXPECT_EQ(optimization_type_decision,
             optimization_guide::OptimizationTypeDecision::kNoHintAvailable);

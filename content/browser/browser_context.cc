@@ -17,6 +17,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/guid.h"
@@ -611,7 +612,10 @@ BrowserContext::~BrowserContext() {
   DCHECK(!GetUserData(kStoragePartitionMapKeyName))
       << "StoragePartitionMap is not shut down properly";
 
-  DCHECK(was_notify_will_be_destroyed_called_);
+  if (!was_notify_will_be_destroyed_called_) {
+    NOTREACHED();
+    base::debug::DumpWithoutCrashing();
+  }
 
   RemoveBrowserContextFromInstanceGroupMap(this);
 

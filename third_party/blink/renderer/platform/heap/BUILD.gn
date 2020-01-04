@@ -5,12 +5,8 @@
 import("//build/buildflag_header.gni")
 import("//build/config/jumbo.gni")
 import("//testing/test.gni")
+import("//third_party/blink/public/public_features.gni")
 import("//third_party/blink/renderer/platform/platform.gni")
-
-declare_args() {
-  # Enables heap verification.
-  enable_blink_heap_verification = false
-}
 
 buildflag_header("blink_heap_buildflags") {
   header = "heap_buildflags.h"

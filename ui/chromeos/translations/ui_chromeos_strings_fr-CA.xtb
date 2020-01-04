@@ -80,6 +80,7 @@
 <translation id="1847880352285315359">Enregistré</translation>
 <translation id="1864756863218646478">Fichier introuvable.</translation>
 <translation id="1921986354447415460">Clavier turc-F</translation>
+<translation id="1924372192547904021"><ph name="DRIVE_NAME" /> formaté</translation>
 <translation id="1931134289871235022">Slovaque</translation>
 <translation id="1933345018156373194">Échec du transfert en raison d'une erreur inattendue : <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">Finnois</translation>
@@ -163,6 +164,7 @@
 <translation id="2942290791863759244">Clavier allemand NEO 2</translation>
 <translation id="2943400156390503548">Présentations</translation>
 <translation id="2943503720238418293">Utilisez un nom plus court</translation>
+<translation id="2949781154072577687">Formatage de <ph name="DRIVE_NAME" /> en cours…</translation>
 <translation id="2951236788251446349">Méduse</translation>
 <translation id="2963783323012015985">Clavier turc</translation>
 <translation id="2966459079597787514">Clavier suédois</translation>
@@ -570,6 +572,7 @@
 <translation id="7649070708921625228">Aide</translation>
 <translation id="7654209398114106148">Déplacement de <ph name="NUMBER_OF_ITEMS" /> éléments en cours…</translation>
 <translation id="7658239707568436148">Annuler</translation>
+<translation id="7695430100978772476">Impossible de formater <ph name="DRIVE_NAME" /></translation>
 <translation id="770015031906360009">Grec</translation>
 <translation id="7706319470528945664">Clavier portugais</translation>
 <translation id="7711920809702896782">Renseignements sur le fichier image</translation>

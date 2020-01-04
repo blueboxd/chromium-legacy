@@ -515,7 +515,7 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
   // should be impacted by a scroll).
   if (!frame_view->IsInPerformLayout()) {
     if (!Layer()->IsRootLayer()) {
-      Layer()->SetNeedsCompositingInputsUpdate();
+      Layer()->SetNeedsCompositingInputsUpdate(false);
       Layer()->ClearClipRects();
     }
 
@@ -779,7 +779,7 @@ void PaintLayerScrollableArea::ContentsResized() {
   ScrollableArea::ContentsResized();
   // Need to update the bounds of the scroll property.
   GetLayoutBox()->SetNeedsPaintPropertyUpdate();
-  Layer()->SetNeedsCompositingInputsUpdate();
+  Layer()->SetNeedsCompositingInputsUpdate(false);
 }
 
 IntPoint PaintLayerScrollableArea::LastKnownMousePosition() const {
@@ -2014,7 +2014,7 @@ void PaintLayerScrollableArea::InvalidateAllStickyConstraints() {
     for (PaintLayer* sticky_layer : d->sticky_constraints_map_.Keys()) {
       if (sticky_layer->GetLayoutObject().StyleRef().GetPosition() ==
           EPosition::kSticky) {
-        sticky_layer->SetNeedsCompositingInputsUpdate();
+        sticky_layer->SetNeedsCompositingInputsUpdate(false);
         sticky_layer->GetLayoutObject().SetNeedsPaintPropertyUpdate();
       }
     }
@@ -2029,7 +2029,7 @@ void PaintLayerScrollableArea::InvalidateStickyConstraintsFor(
     d->sticky_constraints_map_.erase(layer);
     if (needs_compositing_update &&
         layer->GetLayoutObject().StyleRef().HasStickyConstrainedPosition()) {
-      layer->SetNeedsCompositingInputsUpdate();
+      layer->SetNeedsCompositingInputsUpdate(false);
       layer->GetLayoutObject().SetNeedsPaintPropertyUpdate();
     }
   }
@@ -2341,7 +2341,7 @@ void PaintLayerScrollableArea::UpdateCompositingLayersAfterScroll() {
       }
     }
   } else {
-    Layer()->SetNeedsCompositingInputsUpdate();
+    Layer()->SetNeedsCompositingInputsUpdate(false);
   }
 }
 

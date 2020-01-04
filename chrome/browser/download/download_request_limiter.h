@@ -245,15 +245,18 @@ class DownloadRequestLimiter
                    const GURL& url,
                    const std::string& request_method,
                    base::Optional<url::Origin> request_initiator,
+                   bool from_download_cross_origin_redirect,
                    Callback callback);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DownloadTest, DownloadResourceThrottleCancels);
   FRIEND_TEST_ALL_PREFIXES(DownloadTest,
                            DownloadRequestLimiterDisallowsAnchorDownloadTag);
+  FRIEND_TEST_ALL_PREFIXES(DownloadTest,
+                           CrossOriginRedirectDownloadFromAnchorDownload);
   FRIEND_TEST_ALL_PREFIXES(
       DownloadTest,
-      MultipleAnchorDownloadsRequestsCrossOriginRedirectToAnotherDownload);
+      MultipleCrossOriginRedirectDownloadsFromAnchorDownload);
   FRIEND_TEST_ALL_PREFIXES(DownloadTest, MultipleDownloadsFromIframeSrcdoc);
   FRIEND_TEST_ALL_PREFIXES(ContentSettingBubbleControllerTest, Init);
   FRIEND_TEST_ALL_PREFIXES(ContentSettingImageModelBrowserTest,
@@ -281,6 +284,7 @@ class DownloadRequestLimiter
   void CanDownloadImpl(content::WebContents* originating_contents,
                        const std::string& request_method,
                        base::Optional<url::Origin> request_initiator,
+                       bool from_download_cross_origin_redirect,
                        Callback callback);
 
   // Invoked when decision to download has been made.
@@ -288,6 +292,7 @@ class DownloadRequestLimiter
       const content::WebContents::Getter& web_contents_getter,
       const std::string& request_method,
       base::Optional<url::Origin> request_initiator,
+      bool from_download_cross_origin_redirect,
       Callback orig_callback,
       bool allow);
 

@@ -22,6 +22,7 @@ component("common") {
   deps = [
     "//cc/ipc",
     "//third_party/blink/common",
+    "//ui/events/ipc",
   ]
 }
 
@@ -91,7 +92,6 @@ source_set("headers") {
     "input/web_mouse_wheel_event.h",
     "input/web_pointer_event.h",
     "input/web_pointer_properties.h",
-    "input/web_scroll_types.h",
     "input/web_touch_event.h",
     "input/web_touch_point.h",
     "loader/loading_behavior_flag.h",

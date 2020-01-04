@@ -172,6 +172,7 @@ public class SigninManager
     private final IdentityManager mIdentityManager;
     private final IdentityMutator mIdentityMutator;
     private final AndroidSyncSettings mAndroidSyncSettings;
+    private final ExternalAuthUtils mExternalAuthUtils;
     private final ObserverList<SignInStateObserver> mSignInStateObservers = new ObserverList<>();
     private final ObserverList<SignInAllowedObserver> mSignInAllowedObservers =
             new ObserverList<>();
@@ -212,13 +213,13 @@ public class SigninManager
         assert identityManager != null;
         assert identityMutator != null;
         return new SigninManager(nativeSigninManagerAndroid, accountTrackerService, identityManager,
-                identityMutator, AndroidSyncSettings.get());
+                identityMutator, AndroidSyncSettings.get(), ExternalAuthUtils.getInstance());
     }
 
     @VisibleForTesting
     SigninManager(long nativeSigninManagerAndroid, AccountTrackerService accountTrackerService,
             IdentityManager identityManager, IdentityMutator identityMutator,
-            AndroidSyncSettings androidSyncSettings) {
+            AndroidSyncSettings androidSyncSettings, ExternalAuthUtils externalAuthUtils) {
         ThreadUtils.assertOnUiThread();
         assert androidSyncSettings != null;
         mNativeSigninManagerAndroid = nativeSigninManagerAndroid;
@@ -226,6 +227,7 @@ public class SigninManager
         mIdentityManager = identityManager;
         mIdentityMutator = identityMutator;
         mAndroidSyncSettings = androidSyncSettings;
+        mExternalAuthUtils = externalAuthUtils;
 
         mSigninAllowedByPolicy =
                 SigninManagerJni.get().isSigninAllowedByPolicy(mNativeSigninManagerAndroid);
@@ -381,6 +383,7 @@ public class SigninManager
     // TODO(crbug.com/1002056) SigninManager.Signin should use CoreAccountInfo as a parameter.
     public void signIn(@SigninAccessPoint int accessPoint, Account account,
             @Nullable SignInCallback callback) {
+        assert isSignInAllowed() : "Sign-in isn't allowed!";
         if (account == null) {
             Log.w(TAG, "Ignoring sign-in request due to null account.");
             if (callback != null) callback.onSignInAborted();
@@ -669,7 +672,7 @@ public class SigninManager
     }
 
     private boolean isGooglePlayServicesPresent() {
-        return !ExternalAuthUtils.getInstance().isGooglePlayServicesMissing(
+        return !mExternalAuthUtils.isGooglePlayServicesMissing(
                 ContextUtils.getApplicationContext());
     }
 

@@ -136,13 +136,8 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
   }
 
   void SendReports() {
-    std::vector<const ReportingReport*> reports;
-    cache()->GetNonpendingReports(&reports);
-
-    // Mark all of these reports as pending, so that they're not deleted out
-    // from under us while we're checking permissions (possibly on another
-    // thread).
-    cache()->SetReportsPending(reports);
+    std::vector<const ReportingReport*> reports =
+        cache()->GetReportsToDeliver();
 
     // First determine which origins we're allowed to upload reports about.
     std::set<url::Origin> report_origins;

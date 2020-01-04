@@ -390,10 +390,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
       const WebRect&,
       const WebScrollIntoViewParams&) {}
 
-  virtual void BubbleLogicalScrollInParentFrame(
-      ScrollDirection direction,
-      ScrollGranularity granularity) = 0;
-
   virtual void SetVirtualTimePauser(
       WebScopedVirtualTimePauser virtual_time_pauser) {}
 

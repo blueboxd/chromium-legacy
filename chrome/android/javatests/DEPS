@@ -4,6 +4,7 @@ include_rules = [
   "+chrome/browser/ui/android/appmenu",
   "-chrome/browser/ui/android/appmenu/internal",
   "+chrome/browser/ui/android/widget",
+  "+chrome/browser/ui/messages/android/java",
   "+chrome/browser/util/android",
   "+chrome/lib/lifecycle/public",
   "+components/autofill/android/java/src/org/chromium/components/autofill",

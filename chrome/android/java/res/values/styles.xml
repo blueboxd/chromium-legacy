@@ -499,7 +499,7 @@
 
     <!-- Payments UI -->
     <style name="TextAppearance.PaymentsUiSectionWarningText">
-        <item name="android:textColor">@color/error_text_color</item>
+        <item name="android:textColor">@color/default_text_color_error</item>
         <item name="android:textSize">@dimen/text_size_medium</item>
     </style>
     <style name="TextAppearance.PaymentsUiSectionDescriptiveTextEndAligned" parent="TextAppearance.BlackBody">
@@ -516,7 +516,7 @@
         <item name="android:textStyle">bold</item>
     </style>
     <style name="TextAppearance.PaymentRequestErrorText">
-        <item name="android:textColor">@color/error_text_color</item>
+        <item name="android:textColor">@color/default_text_color_error</item>
         <item name="android:textSize">@dimen/text_size_large</item>
     </style>
 
@@ -590,7 +590,7 @@
         <item name="android:background">@android:color/transparent</item>
     </style>
     <style name="TextAppearance.BottomToolbarLabel" parent="TextAppearance.RobotoMediumStyle">
-        <item name="android:textColor">@color/default_text_color_dark_secondary</item>
+        <item name="android:textColor">@color/default_text_color_secondary_dark</item>
         <item name="android:textSize">12sp</item>
     </style>
     <style name="BottomToolbarButtonWrapper">

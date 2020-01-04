@@ -1,0 +1,4 @@
+include_rules = [
+  # TODO(crbug.com/996940): Remove this when done debugging.
+  "+components/crash",
+]

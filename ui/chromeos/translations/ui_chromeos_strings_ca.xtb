@@ -80,6 +80,7 @@
 <translation id="1847880352285315359">S'ha desat</translation>
 <translation id="1864756863218646478">No s'ha pogut trobar el fitxer.</translation>
 <translation id="1921986354447415460">Teclat turc-F</translation>
+<translation id="1924372192547904021">S'ha formatat <ph name="DRIVE_NAME" /></translation>
 <translation id="1931134289871235022">Eslovac</translation>
 <translation id="1933345018156373194">El trasllat ha fallat, s'ha produït un error inesperat: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">Finès</translation>
@@ -163,6 +164,7 @@
 <translation id="2942290791863759244">Teclat alemany (NEO 2)</translation>
 <translation id="2943400156390503548">Diapositives</translation>
 <translation id="2943503720238418293">Utilitza un nom més curt</translation>
+<translation id="2949781154072577687">S'està formatant <ph name="DRIVE_NAME" />...</translation>
 <translation id="2951236788251446349">Medusa</translation>
 <translation id="2963783323012015985">Teclat turc</translation>
 <translation id="2966459079597787514">Teclat suec</translation>
@@ -569,6 +571,7 @@
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7654209398114106148">S'estan traslladant <ph name="NUMBER_OF_ITEMS" /> elements...</translation>
 <translation id="7658239707568436148">Cancel·la</translation>
+<translation id="7695430100978772476">No s'ha pogut formatar <ph name="DRIVE_NAME" /></translation>
 <translation id="770015031906360009">Grec</translation>
 <translation id="7706319470528945664">Teclat portuguès</translation>
 <translation id="7711920809702896782">Informació de la imatge</translation>

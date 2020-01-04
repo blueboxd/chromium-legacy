@@ -199,6 +199,7 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
   MOCK_METHOD1(OnVideoConfigChange, void(const VideoDecoderConfig&));
   MOCK_METHOD1(OnVideoNaturalSizeChange, void(const gfx::Size&));
   MOCK_METHOD1(OnVideoOpacityChange, void(bool));
+  MOCK_METHOD1(OnVideoFrameRateChange, void(base::Optional<int>));
   MOCK_METHOD1(OnDurationChange, void(base::TimeDelta));
   MOCK_METHOD1(OnRemotePlayStateChange, void(MediaStatus::State state));
 
@@ -458,6 +459,10 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
     return OutputFrames(renderer_->algorithm_->frames_buffered());
   }
 
+  OutputFrames buffer_playback_threshold() {
+    return OutputFrames(renderer_->algorithm_->QueuePlaybackThreshold());
+  }
+
   OutputFrames buffer_capacity() {
     return OutputFrames(renderer_->algorithm_->QueueCapacity());
   }
@@ -689,7 +694,7 @@ TEST_F(AudioRendererImplTest, DecoderUnderflow) {
   WaitForPendingRead();
 
   // Verify the next FillBuffer() call triggers a buffering state change
-  // update. Expect a decoder underflow flag because demuxer is not blocked in a
+  // update. Expect a decoder underflow flag because demuxer is not blocked on a
   // pending read.
   EXPECT_CALL(
       *this, OnBufferingStateChange(BUFFERING_HAVE_NOTHING, DECODER_UNDERFLOW));
@@ -719,7 +724,7 @@ TEST_F(AudioRendererImplTest, DemuxerUnderflow) {
   WaitForPendingRead();
 
   // Verify the next FillBuffer() call triggers a buffering state change
-  // update. Expect a decoder underflow flag because demuxer is not blocked in a
+  // update. Expect a demuxer underflow flag because demuxer is blocked on a
   // pending read.
   EXPECT_CALL(
       *this, OnBufferingStateChange(BUFFERING_HAVE_NOTHING, DEMUXER_UNDERFLOW));
@@ -1378,6 +1383,180 @@ TEST_F(AudioRendererImplTest, SinkIsFlushed) {
   WaitableMessageLoopEvent flush_event;
   renderer_->Flush(flush_event.GetClosure());
   flush_event.RunAndWait();
+}
+
+TEST_F(AudioRendererImplTest, LowLatencyHint) {
+  // Frames per buffer chosen to be small enough that we will have some room to
+  // decrease the algorithm buffer below its default value of 200ms.
+  int kFramesPerBuffer = 100;
+  // Use a basic setup that avoids buffer conversion and sample rate mismatch.
+  // This simplifies passing frames to the algorithm and verification of
+  // frames-to-time logic.
+  ConfigureBasicRenderer(AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                                         kChannelLayout, kInputSamplesPerSecond,
+                                         kFramesPerBuffer));
+  Initialize();
+
+  // Setup renderer for playback.
+  next_timestamp_->SetBaseTimestamp(base::TimeDelta());
+  renderer_->SetMediaTime(base::TimeDelta());
+  renderer_->StartPlaying();
+  StartTicking();
+  WaitForPendingRead();
+
+  // With no latency hint set, the default playback threshold should equal
+  // the buffer's total capacity.
+  const int default_buffer_playback_threshold =
+      buffer_playback_threshold().value;
+  const int default_buffer_capacity = buffer_capacity().value;
+  EXPECT_EQ(default_buffer_playback_threshold, default_buffer_capacity);
+
+  // Fill the buffer to the playback threshold. Verify HAVE_ENOUGH is reached.
+  EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH,
+                                            BUFFERING_CHANGE_REASON_UNKNOWN));
+  SatisfyPendingRead(InputFrames(default_buffer_playback_threshold));
+  EXPECT_EQ(frames_buffered().value, default_buffer_playback_threshold);
+  base::RunLoop().RunUntilIdle();  // Let HAVE_ENOUGH post.
+  testing::Mock::VerifyAndClearExpectations(this);
+
+  // Force underflow by reading 1 frame past the buffered amount.
+  EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_NOTHING, _));
+  ConsumeBitstreamBufferedData(OutputFrames(frames_buffered().value + 1));
+  base::RunLoop().RunUntilIdle();  // Let HAVE_NOTHING post.
+  testing::Mock::VerifyAndClearExpectations(this);
+
+  // Underflow should trigger a capacity increase *when no latency hint is set*.
+  // Playback threshold should also increase, still matching capacity.
+  EXPECT_GT(buffer_capacity().value, default_buffer_capacity);
+  EXPECT_EQ(buffer_playback_threshold().value, buffer_capacity().value);
+
+  // Set a *LATENCY HINT* that reduces the playback buffering threshold by half.
+  base::TimeDelta default_buffering_latency =
+      AudioTimestampHelper::FramesToTime(default_buffer_playback_threshold,
+                                         kInputSamplesPerSecond);
+  base::TimeDelta low_latency = default_buffering_latency / 2;
+  renderer_->SetLatencyHint(low_latency);
+
+  // Verify playback threshold now reflects the lower latency target.
+  int low_latency_playback_threshold = buffer_playback_threshold().value;
+  EXPECT_EQ(AudioTimestampHelper::FramesToTime(low_latency_playback_threshold,
+                                               kInputSamplesPerSecond),
+            low_latency);
+
+  // Verify total buffer capacity is unchanged, leaving it higher than the
+  // playback threshold.
+  EXPECT_EQ(buffer_capacity().value, default_buffer_capacity);
+  EXPECT_GT(buffer_capacity().value, low_latency_playback_threshold);
+
+  // Verify HAVE_ENOUGH is reached when filled to this lower threshold value.
+  EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH,
+                                            BUFFERING_CHANGE_REASON_UNKNOWN));
+  SatisfyPendingRead(InputFrames(low_latency_playback_threshold));
+  EXPECT_EQ(frames_buffered().value, low_latency_playback_threshold);
+  base::RunLoop().RunUntilIdle();  // Let HAVE_ENOUGH post.
+  testing::Mock::VerifyAndClearExpectations(this);
+
+  // Verify the buffer will happily continue filling, exceeding the playback
+  // threshold, until it becomes "full";
+  DeliverRemainingAudio();
+  EXPECT_GE(frames_buffered().value, buffer_capacity().value);
+
+  // Again force underflow by reading 1 frame past the buffered amount.
+  EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_NOTHING, _));
+  ConsumeBitstreamBufferedData(OutputFrames(frames_buffered().value + 1));
+  base::RunLoop().RunUntilIdle();  // Let HAVE_NOTHING post.
+  testing::Mock::VerifyAndClearExpectations(this);
+
+  // With latency hint set, this underflow should NOT trigger a capacity
+  // increase, nor a change to the playback threshold.
+  EXPECT_EQ(buffer_capacity().value, default_buffer_capacity);
+  EXPECT_EQ(buffer_playback_threshold().value, low_latency_playback_threshold);
+}
+
+TEST_F(AudioRendererImplTest, HighLatencyHint) {
+  // Frames per buffer chosen to be small enough that we will have some room to
+  // decrease the algorithm buffer below its default value of 200ms.
+  int kFramesPerBuffer = 100;
+  // Use a basic setup that avoids buffer conversion and sample rate mismatch.
+  // This simplifies passing frames to the algorithm and verification of
+  // frames-to-time logic.
+  ConfigureBasicRenderer(AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                                         kChannelLayout, kInputSamplesPerSecond,
+                                         kFramesPerBuffer));
+  Initialize();
+
+  // Setup renderer for playback.
+  next_timestamp_->SetBaseTimestamp(base::TimeDelta());
+  renderer_->SetMediaTime(base::TimeDelta());
+  renderer_->StartPlaying();
+  StartTicking();
+  WaitForPendingRead();
+
+  // With no latency hint set, the default playback threshold should equal
+  // the buffer's total capacity.
+  const int default_buffer_playback_threshold =
+      buffer_playback_threshold().value;
+  const int default_buffer_capacity = buffer_capacity().value;
+  EXPECT_EQ(default_buffer_playback_threshold, default_buffer_capacity);
+
+  // Fill the buffer to the playback threshold. Verify HAVE_ENOUGH is reached.
+  EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH,
+                                            BUFFERING_CHANGE_REASON_UNKNOWN));
+  SatisfyPendingRead(InputFrames(default_buffer_playback_threshold));
+  EXPECT_EQ(frames_buffered().value, default_buffer_playback_threshold);
+  base::RunLoop().RunUntilIdle();  // Let HAVE_ENOUGH post.
+  testing::Mock::VerifyAndClearExpectations(this);
+
+  // Force underflow by reading 1 frame past the buffered amount.
+  EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_NOTHING, _));
+  ConsumeBitstreamBufferedData(OutputFrames(frames_buffered().value + 1));
+  base::RunLoop().RunUntilIdle();  // Let HAVE_NOTHING post.
+  testing::Mock::VerifyAndClearExpectations(this);
+
+  // Underflow should trigger a capacity increase *when no latency hint is set*.
+  // Playback threshold should also increase, still matching capacity.
+  EXPECT_GT(buffer_capacity().value, default_buffer_capacity);
+  EXPECT_EQ(buffer_playback_threshold().value, buffer_capacity().value);
+
+  // Set a *LATENCY HINT* that increases the playback buffering threshold by 2x.
+  base::TimeDelta default_buffering_latency =
+      AudioTimestampHelper::FramesToTime(default_buffer_playback_threshold,
+                                         kInputSamplesPerSecond);
+  base::TimeDelta high_latency = default_buffering_latency * 2;
+  renderer_->SetLatencyHint(high_latency);
+
+  // Verify playback threshold now reflects the higher latency target.
+  int high_latency_playback_threshold = buffer_playback_threshold().value;
+  EXPECT_EQ(AudioTimestampHelper::FramesToTime(high_latency_playback_threshold,
+                                               kInputSamplesPerSecond),
+            high_latency);
+
+  // Verify total buffer capacity is also increased by the same amount.
+  EXPECT_GT(buffer_capacity().value, default_buffer_capacity);
+  EXPECT_EQ(buffer_capacity().value, high_latency_playback_threshold);
+
+  // Verify HAVE_ENOUGH is reached when filled to this higher threshold value.
+  EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH,
+                                            BUFFERING_CHANGE_REASON_UNKNOWN));
+  SatisfyPendingRead(InputFrames(high_latency_playback_threshold));
+  EXPECT_EQ(frames_buffered().value, high_latency_playback_threshold);
+  base::RunLoop().RunUntilIdle();  // Let HAVE_ENOUGH post.
+  testing::Mock::VerifyAndClearExpectations(this);
+
+  // Verify the buffer is also considered "full" when saturated to this higher
+  // threshold.
+  EXPECT_GE(frames_buffered().value, buffer_capacity().value);
+
+  // Again force underflow by reading 1 frame past the buffered amount.
+  EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_NOTHING, _));
+  ConsumeBitstreamBufferedData(OutputFrames(frames_buffered().value + 1));
+  base::RunLoop().RunUntilIdle();  // Let HAVE_NOTHING post.
+  testing::Mock::VerifyAndClearExpectations(this);
+
+  // With a latency hint set, this underflow should NOT trigger a capacity
+  // increase, nor a change to the playback threshold.
+  EXPECT_EQ(buffer_capacity().value, high_latency_playback_threshold);
+  EXPECT_EQ(buffer_playback_threshold().value, high_latency_playback_threshold);
 }
 
 }  // namespace media

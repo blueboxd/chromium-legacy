@@ -79,18 +79,11 @@ class NET_EXPORT ReportingCache {
   // base::Value.
   virtual base::Value GetReportsAsValue() const = 0;
 
-  // Gets all reports in the cache that aren't pending. The returned pointers
-  // are valid as long as either no calls to |RemoveReports| have happened or
-  // the reports' |pending| flag has been set to true using |SetReportsPending|.
-  //
-  // (Clears any existing data in |*reports_out|.)
-  virtual void GetNonpendingReports(
-      std::vector<const ReportingReport*>* reports_out) const = 0;
-
-  // Marks a set of reports as pending. |reports| must not already be marked as
-  // pending.
-  virtual void SetReportsPending(
-      const std::vector<const ReportingReport*>& reports) = 0;
+  // Gets all reports in the cache that aren't pending or doomed (i.e. that are
+  // eligible for delivery), and marks returned reports as pending in
+  // preparation for a delivery attempt. The returned pointers are valid as long
+  // as the reports are still pending.
+  virtual std::vector<const ReportingReport*> GetReportsToDeliver() = 0;
 
   // Unmarks a set of reports as pending. |reports| must be previously marked as
   // pending.

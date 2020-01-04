@@ -416,10 +416,11 @@ TEST_F(OptimizationGuideTopHostProviderTest,
   // The host, anyscheme.com, should still be on the blacklist.
   EXPECT_TRUE(IsHostBlacklisted(file_url.host()));
 
-  // TopHostProviderImpl prevents HTTP hosts from being returned.
+  // HTTP/HTTPS navigation should remove the host from the blacklist and then
+  // be returned.
   SimulateNavigation(http_url);
   hosts = top_host_provider()->GetTopHosts();
-  EXPECT_EQ(hosts.size(), 0u);
+  EXPECT_EQ(hosts.size(), 1u);
 
   EXPECT_FALSE(IsHostBlacklisted(http_url.host()));
 }

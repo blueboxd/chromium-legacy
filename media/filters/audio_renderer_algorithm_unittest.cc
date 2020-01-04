@@ -23,7 +23,9 @@
 #include "base/stl_util.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_bus.h"
+#include "media/base/audio_timestamp_helper.h"
 #include "media/base/channel_layout.h"
+#include "media/base/media_util.h"
 #include "media/base/test_helpers.h"
 #include "media/base/timestamp_constants.h"
 #include "media/filters/wsola_internals.h"
@@ -72,13 +74,13 @@ static void FillWithSquarePulseTrain(
 class AudioRendererAlgorithmTest : public testing::Test {
  public:
   AudioRendererAlgorithmTest()
-      : frames_enqueued_(0),
+      : algorithm_(&media_log_),
+        frames_enqueued_(0),
         channels_(0),
         channel_layout_(CHANNEL_LAYOUT_NONE),
         sample_format_(kUnknownSampleFormat),
         samples_per_second_(0),
-        bytes_per_sample_(0) {
-  }
+        bytes_per_sample_(0) {}
 
   ~AudioRendererAlgorithmTest() override = default;
 
@@ -119,44 +121,64 @@ class AudioRendererAlgorithmTest : public testing::Test {
     bool is_encrypted = false;
     algorithm_.Initialize(params, is_encrypted);
     algorithm_.SetChannelMask(std::move(channel_mask));
-    FillAlgorithmQueue();
+    FillAlgorithmQueueUntilFull();
   }
 
-  void FillAlgorithmQueue() {
+  base::TimeDelta BufferedTime() {
+    return AudioTimestampHelper::FramesToTime(algorithm_.frames_buffered(),
+                                              samples_per_second_);
+  }
+
+  scoped_refptr<AudioBuffer> MakeBuffer(int frame_size) {
     // The value of the data is meaningless; we just want non-zero data to
     // differentiate it from muted data.
     scoped_refptr<AudioBuffer> buffer;
+    switch (sample_format_) {
+      case kSampleFormatAc3:
+      case kSampleFormatEac3:
+        buffer = MakeBitstreamAudioBuffer(
+            sample_format_, channel_layout_,
+            ChannelLayoutToChannelCount(channel_layout_), samples_per_second_,
+            1, 1, frame_size, kFrameSize, kNoTimestamp);
+        break;
+      case kSampleFormatU8:
+        buffer = MakeAudioBuffer<uint8_t>(
+            sample_format_, channel_layout_,
+            ChannelLayoutToChannelCount(channel_layout_), samples_per_second_,
+            1, 1, frame_size, kNoTimestamp);
+        break;
+      case kSampleFormatS16:
+        buffer = MakeAudioBuffer<int16_t>(
+            sample_format_, channel_layout_,
+            ChannelLayoutToChannelCount(channel_layout_), samples_per_second_,
+            1, 1, frame_size, kNoTimestamp);
+        break;
+      case kSampleFormatS32:
+        buffer = MakeAudioBuffer<int32_t>(
+            sample_format_, channel_layout_,
+            ChannelLayoutToChannelCount(channel_layout_), samples_per_second_,
+            1, 1, frame_size, kNoTimestamp);
+        break;
+      default:
+        NOTREACHED() << "Unrecognized format " << sample_format_;
+    }
+    return buffer;
+  }
+
+  void FillAlgorithmQueueUntilAdequate() {
+    // Note: "adequate" may be <= "full" depending on current latency hint.
+    EXPECT_FALSE(algorithm_.IsQueueFull());
+    EXPECT_FALSE(algorithm_.IsQueueAdequateForPlayback());
+    while (!algorithm_.IsQueueAdequateForPlayback()) {
+      // "Adequate" tests may be sensitive to over-filling. Only add one buffer
+      // at a time to trigger "adequate" threshold precisely.
+      algorithm_.EnqueueBuffer(MakeBuffer(1));
+    }
+  }
+
+  void FillAlgorithmQueueUntilFull() {
     while (!algorithm_.IsQueueFull()) {
-      switch (sample_format_) {
-        case kSampleFormatAc3:
-        case kSampleFormatEac3:
-          buffer = MakeBitstreamAudioBuffer(
-              sample_format_, channel_layout_,
-              ChannelLayoutToChannelCount(channel_layout_), samples_per_second_,
-              1, 1, kFrameSize, kFrameSize, kNoTimestamp);
-          break;
-        case kSampleFormatU8:
-          buffer = MakeAudioBuffer<uint8_t>(
-              sample_format_, channel_layout_,
-              ChannelLayoutToChannelCount(channel_layout_), samples_per_second_,
-              1, 1, kFrameSize, kNoTimestamp);
-          break;
-        case kSampleFormatS16:
-          buffer = MakeAudioBuffer<int16_t>(
-              sample_format_, channel_layout_,
-              ChannelLayoutToChannelCount(channel_layout_), samples_per_second_,
-              1, 1, kFrameSize, kNoTimestamp);
-          break;
-        case kSampleFormatS32:
-          buffer = MakeAudioBuffer<int32_t>(
-              sample_format_, channel_layout_,
-              ChannelLayoutToChannelCount(channel_layout_), samples_per_second_,
-              1, 1, kFrameSize, kNoTimestamp);
-          break;
-        default:
-          NOTREACHED() << "Unrecognized format " << sample_format_;
-      }
-      algorithm_.EnqueueBuffer(buffer);
+      algorithm_.EnqueueBuffer(MakeBuffer(kFrameSize));
       frames_enqueued_ += kFrameSize;
     }
   }
@@ -231,7 +253,7 @@ class AudioRendererAlgorithmTest : public testing::Test {
       first_fill_buffer = false;
       frames_remaining -= frames_written;
 
-      FillAlgorithmQueue();
+      FillAlgorithmQueueUntilFull();
     }
 
     EXPECT_EQ(algorithm_.frames_buffered() * channels_ * sizeof(float),
@@ -280,7 +302,7 @@ class AudioRendererAlgorithmTest : public testing::Test {
     std::unique_ptr<AudioBus> bus =
         AudioBus::Create(channels_, buffer_size_in_frames);
 
-    FillAlgorithmQueue();
+    FillAlgorithmQueueUntilFull();
 
     int frames_written;
     int total_frames_written = 0;
@@ -387,6 +409,7 @@ class AudioRendererAlgorithmTest : public testing::Test {
 
  protected:
   AudioRendererAlgorithm algorithm_;
+  NullMediaLog media_log_;
   int frames_enqueued_;
   int channels_;
   ChannelLayout channel_layout_;
@@ -776,7 +799,9 @@ TEST_F(AudioRendererAlgorithmTest, WsolaSpeedup) {
 
 TEST_F(AudioRendererAlgorithmTest, FillBufferOffset) {
   Initialize();
-  algorithm_.IncreaseQueueCapacity();
+  // Pad the queue capacity so fill requests for all rates bellow can be fully
+  // satisfied.
+  algorithm_.IncreasePlaybackThreshold();
 
   std::unique_ptr<AudioBus> bus = AudioBus::Create(channels_, kFrameSize);
 
@@ -793,7 +818,7 @@ TEST_F(AudioRendererAlgorithmTest, FillBufferOffset) {
     ASSERT_EQ(kHalfSize, frames_filled);
     ASSERT_TRUE(VerifyAudioData(bus.get(), 0, kHalfSize, 0));
     ASSERT_FALSE(VerifyAudioData(bus.get(), kHalfSize, kHalfSize, 0));
-    FillAlgorithmQueue();
+    FillAlgorithmQueueUntilFull();
   }
 }
 
@@ -830,6 +855,231 @@ TEST_F(AudioRendererAlgorithmTest, FillBuffer_ChannelMask) {
       sum += bus->channel(ch)[i];
     ASSERT_NE(sum, 0);
   }
+}
+
+// The |plabyack_threshold_| should == |capacity_| by default, when no
+// |latency_hint_| is set.
+TEST_F(AudioRendererAlgorithmTest, NoLatencyHint) {
+  // Queue is initially empty. Capacity is unset.
+  EXPECT_EQ(algorithm_.frames_buffered(), 0);
+  EXPECT_EQ(algorithm_.QueueCapacity(), 0);
+
+  // Initialize sets capacity fills queue.
+  Initialize();
+  EXPECT_GT(algorithm_.QueueCapacity(), 0);
+  EXPECT_TRUE(algorithm_.IsQueueFull());
+  EXPECT_TRUE(algorithm_.IsQueueAdequateForPlayback());
+
+  // No latency hint is set, so playback threshold should == capacity. Observe
+  // that the queue is neither "full" nor "adequate for playback" if we are one
+  // one frame below the capacity limit.
+  std::unique_ptr<AudioBus> bus = AudioBus::Create(channels_, kFrameSize);
+  int requested_frames =
+      (algorithm_.frames_buffered() - algorithm_.QueueCapacity()) + 1;
+  const int frames_filled =
+      algorithm_.FillBuffer(bus.get(), 0, requested_frames, 1);
+  EXPECT_EQ(frames_filled, requested_frames);
+  EXPECT_EQ(algorithm_.frames_buffered(), algorithm_.QueueCapacity() - 1);
+  EXPECT_FALSE(algorithm_.IsQueueFull());
+  EXPECT_FALSE(algorithm_.IsQueueAdequateForPlayback());
+
+  // Queue should again be "adequate for playback" and "full" it we add a single
+  // frame such that frames_buffered() == QueueCapacity().
+  DCHECK_EQ(sample_format_, kSampleFormatS16);
+  algorithm_.EnqueueBuffer(MakeBuffer(1));
+  EXPECT_TRUE(algorithm_.IsQueueFull());
+  EXPECT_TRUE(algorithm_.IsQueueAdequateForPlayback());
+  EXPECT_EQ(algorithm_.frames_buffered(), algorithm_.QueueCapacity());
+
+  // Increasing playback threshold should also increase capacity.
+  int orig_capacity = algorithm_.QueueCapacity();
+  algorithm_.IncreasePlaybackThreshold();
+  EXPECT_GT(algorithm_.QueueCapacity(), orig_capacity);
+  EXPECT_FALSE(algorithm_.IsQueueFull());
+  EXPECT_FALSE(algorithm_.IsQueueAdequateForPlayback());
+
+  // Filling again, 1 frame at a time, we should reach "adequate" and "full" in
+  // the same step.
+  while (!algorithm_.IsQueueFull()) {
+    algorithm_.EnqueueBuffer(MakeBuffer(1));
+    EXPECT_EQ(algorithm_.IsQueueFull(),
+              algorithm_.IsQueueAdequateForPlayback());
+  }
+
+  // Flushing should restore queue capacity and playback threshold to the
+  // original value.
+  algorithm_.FlushBuffers();
+  EXPECT_EQ(algorithm_.QueueCapacity(), orig_capacity);
+  EXPECT_FALSE(algorithm_.IsQueueFull());
+  EXPECT_FALSE(algorithm_.IsQueueAdequateForPlayback());
+
+  // Filling again, 1 frame at a time, we should reach "adequate" and "full" in
+  // the same step.
+  while (!algorithm_.IsQueueFull()) {
+    algorithm_.EnqueueBuffer(MakeBuffer(1));
+    EXPECT_EQ(algorithm_.IsQueueFull(),
+              algorithm_.IsQueueAdequateForPlayback());
+  }
+}
+
+// The |playback_threshold_| should be < |capacity_| when a latency hint is
+// set to reduce the playback delay.
+TEST_F(AudioRendererAlgorithmTest, LowLatencyHint) {
+  // Initialize with a buffer size that leaves some gap between the min capacity
+  // (2*buffer_size) and the default capacity (200ms).
+  const int kBufferSize = kSamplesPerSecond / 50;
+  Initialize(CHANNEL_LAYOUT_STEREO, kSampleFormatS16, kSamplesPerSecond,
+             kBufferSize);
+
+  // FlushBuffers to start out empty.
+  algorithm_.FlushBuffers();
+
+  EXPECT_GT(algorithm_.QueueCapacity(), 0);
+  EXPECT_FALSE(algorithm_.IsQueueFull());
+  EXPECT_FALSE(algorithm_.IsQueueAdequateForPlayback());
+
+  // Set a latency hint at half the default capacity.
+  const int orig_queue_capcity = algorithm_.QueueCapacity();
+  base::TimeDelta low_latency_hint = AudioTimestampHelper::FramesToTime(
+      orig_queue_capcity / 2, samples_per_second_);
+  algorithm_.SetLatencyHint(low_latency_hint);
+
+  // Hint is less than capacity, so capacity should be unchanged.
+  EXPECT_EQ(algorithm_.QueueCapacity(), orig_queue_capcity);
+
+  // Fill until "adequate". Verify "adequate" buffer time reflects the hinted
+  // latency, and that "adequate" is less than "full".
+  FillAlgorithmQueueUntilAdequate();
+  EXPECT_EQ(BufferedTime(), low_latency_hint);
+  EXPECT_FALSE(algorithm_.IsQueueFull());
+
+  // Set a new *slightly higher* hint. Verify we're no longer "adequate".
+  low_latency_hint += base::TimeDelta::FromMilliseconds(10);
+  algorithm_.SetLatencyHint(low_latency_hint);
+  EXPECT_FALSE(algorithm_.IsQueueAdequateForPlayback());
+
+  // Fill until "adequate". Verify "adequate" buffer time reflects the
+  // *slightly higher* hinted latency, and that "adequate" is less than "full".
+  FillAlgorithmQueueUntilAdequate();
+  EXPECT_EQ(BufferedTime(), low_latency_hint);
+  EXPECT_FALSE(algorithm_.IsQueueFull());
+
+  // Clearing the hint should restore the higher default playback threshold,
+  // such that we no longer have enough buffer to be "adequate for playback".
+  algorithm_.SetLatencyHint(base::nullopt);
+  EXPECT_FALSE(algorithm_.IsQueueAdequateForPlayback());
+
+  // Fill until "full". Verify that "adequate" now matches "full".
+  while (!algorithm_.IsQueueFull()) {
+    algorithm_.EnqueueBuffer(MakeBuffer(1));
+    EXPECT_EQ(algorithm_.IsQueueAdequateForPlayback(),
+              algorithm_.IsQueueFull());
+  }
+}
+
+// Note: the behavior of FlushBuffers() that is not specific to high vs low
+// latency hints. Testing it with "high" is slightly more interesting. Testing
+// with both "high" and "low" is excessive.
+TEST_F(AudioRendererAlgorithmTest, HighLatencyHint) {
+  // Initialize with a buffer size that leaves some gap between the min capacity
+  // (2*buffer_size) and the default capacity (200ms).
+  const int kBufferSize = kSamplesPerSecond / 50;
+  Initialize(CHANNEL_LAYOUT_STEREO, kSampleFormatS16, kSamplesPerSecond,
+             kBufferSize);
+  const int default_capacity = algorithm_.QueueCapacity();
+
+  // FlushBuffers to start out empty.
+  algorithm_.FlushBuffers();
+
+  // Set a "high" latency hint.
+  const base::TimeDelta high_latency_hint = AudioTimestampHelper::FramesToTime(
+      algorithm_.QueueCapacity() * 2, samples_per_second_);
+  algorithm_.SetLatencyHint(high_latency_hint);
+  const int high_latency_capacity = algorithm_.QueueCapacity();
+  EXPECT_GT(high_latency_capacity, default_capacity);
+
+  // Fill until "adequate". Verify it reflects the high latency hint.
+  EXPECT_TRUE(BufferedTime().is_zero());
+  FillAlgorithmQueueUntilAdequate();
+  EXPECT_EQ(BufferedTime(), high_latency_hint);
+
+  // Flush the queue!
+  algorithm_.FlushBuffers();
+
+  // Verify |capcity_| was not changed by flush. The latency hint supersedes any
+  // automatic queue size adjustments.
+  EXPECT_EQ(algorithm_.QueueCapacity(), high_latency_capacity);
+
+  // Similarly, verify that |playback_threshold_| was not changed by refilling
+  // and observing that the "adequate" buffered time still matches the hint.
+  FillAlgorithmQueueUntilAdequate();
+  EXPECT_EQ(BufferedTime(), high_latency_hint);
+
+  // Clearing the hint should restore the lower default playback threshold and
+  // capacity.
+  algorithm_.SetLatencyHint(base::nullopt);
+  EXPECT_EQ(algorithm_.QueueCapacity(), default_capacity);
+
+  // The queue is over-full from our last fill when the hint was set. Flush and
+  // refill to the reduced "adequate" threshold.
+  algorithm_.FlushBuffers();
+  FillAlgorithmQueueUntilAdequate();
+  EXPECT_LT(BufferedTime(), high_latency_hint);
+
+  // With latency hint now unset, callers are now free to adjust the queue size
+  // (e.g. in response to underflow). Lets increase the threshold!
+  algorithm_.IncreasePlaybackThreshold();
+
+  // Verify higher capacity means we're no longer "adequate" nor "full".
+  EXPECT_GT(algorithm_.QueueCapacity(), default_capacity);
+  EXPECT_FALSE(algorithm_.IsQueueAdequateForPlayback());
+  EXPECT_FALSE(algorithm_.IsQueueFull());
+
+  // Flush the queue and verify the increase has been reverted.
+  algorithm_.FlushBuffers();
+  EXPECT_EQ(algorithm_.QueueCapacity(), default_capacity);
+
+  // Refill to verify "adequate" matches the "full" at the default capacity.
+  while (!algorithm_.IsQueueAdequateForPlayback()) {
+    algorithm_.EnqueueBuffer(MakeBuffer(1));
+    EXPECT_EQ(algorithm_.IsQueueAdequateForPlayback(),
+              algorithm_.IsQueueFull());
+  }
+}
+
+// Algorithm should clam specified hint to a reasonable min/max.
+TEST_F(AudioRendererAlgorithmTest, ClampLatencyHint) {
+  // Initialize with a buffer size that leaves some gap between the min capacity
+  // (2*buffer_size) and the default capacity (200ms).
+  const int kBufferSize = kSamplesPerSecond / 50;
+  Initialize(CHANNEL_LAYOUT_STEREO, kSampleFormatS16, kSamplesPerSecond,
+             kBufferSize);
+  const int default_capacity = algorithm_.QueueCapacity();
+
+  // FlushBuffers to start out empty.
+  algorithm_.FlushBuffers();
+
+  // Set a crazy high latency hint.
+  algorithm_.SetLatencyHint(base::TimeDelta::FromSeconds(100));
+
+  const base::TimeDelta kDefaultMax = base::TimeDelta::FromSeconds(3);
+  // Verify "full" and "adequate" thresholds increased, but to a known max well
+  // bellow the hinted value.
+  EXPECT_GT(algorithm_.QueueCapacity(), default_capacity);
+  FillAlgorithmQueueUntilAdequate();
+  EXPECT_EQ(BufferedTime(), kDefaultMax);
+
+  // FlushBuffers to return to empty.
+  algorithm_.FlushBuffers();
+
+  // Set an impossibly low latency hint.
+  algorithm_.SetLatencyHint(base::TimeDelta::FromSeconds(0));
+
+  // Verify "full" and "adequate" thresholds decreased, but to a known minimum
+  // well above the hinted value.
+  EXPECT_EQ(algorithm_.QueueCapacity(), default_capacity);
+  FillAlgorithmQueueUntilAdequate();
+  EXPECT_EQ(algorithm_.frames_buffered(), 2 * kBufferSize);
 }
 
 }  // namespace media

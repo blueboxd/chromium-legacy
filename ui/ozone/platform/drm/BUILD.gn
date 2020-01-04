@@ -20,10 +20,6 @@ source_set("gbm") {
     "client_native_pixmap_factory_gbm.cc",
     "client_native_pixmap_factory_gbm.h",
     "common/display_types.h",
-    "common/drm_overlay_candidates.cc",
-    "common/drm_overlay_candidates.h",
-    "common/drm_overlay_manager.cc",
-    "common/drm_overlay_manager.h",
     "common/drm_util.cc",
     "common/drm_util.h",
     "common/scoped_drm_types.cc",
@@ -46,6 +42,10 @@ source_set("gbm") {
     "gpu/drm_gpu_display_manager.h",
     "gpu/drm_gpu_util.cc",
     "gpu/drm_gpu_util.h",
+    "gpu/drm_overlay_candidates.cc",
+    "gpu/drm_overlay_candidates.h",
+    "gpu/drm_overlay_manager.cc",
+    "gpu/drm_overlay_manager.h",
     "gpu/drm_overlay_manager_gpu.cc",
     "gpu/drm_overlay_manager_gpu.h",
     "gpu/drm_overlay_plane.cc",
@@ -176,8 +176,8 @@ source_set("gbm") {
 source_set("gbm_unittests") {
   testonly = true
   sources = [
-    "common/drm_overlay_manager_unittest.cc",
     "common/drm_util_unittest.cc",
+    "gpu/drm_overlay_manager_unittest.cc",
     "gpu/drm_overlay_validator_unittest.cc",
     "gpu/drm_thread_unittest.cc",
     "gpu/drm_window_unittest.cc",

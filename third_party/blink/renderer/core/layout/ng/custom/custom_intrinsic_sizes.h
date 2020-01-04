@@ -15,7 +15,7 @@ class CustomLayoutChild;
 
 // This represents the result of intrinsicSizes (on a LayoutChild).
 //
-// This should eventually mirror the information in a MinMaxSize, it has the
+// This should mirror the information in a MinMaxSize, and it has the
 // additional capability that it is exposed to web developers.
 class CustomIntrinsicSizes : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();

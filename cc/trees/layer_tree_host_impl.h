@@ -1182,26 +1182,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   std::unique_ptr<PendingTreeRasterDurationHistogramTimer>
       pending_tree_raster_duration_timer_;
 
-  // The element id of the scroll node to which scroll animations must latch.
-  // This gets reset at ScrollAnimatedBegin, and updated the first time that a
-  // scroll animation is created in ScrollAnimated. We need to use element ids
-  // instead of node ids since they are stable across the property tree update
-  // in SetPropertyTrees.
-  ElementId scroll_animating_latched_element_id_;
-
-  // In scroll animation path CurrentlyScrollingNode does not exist when there
-  // is no ongoing scroll animation (e.g. during overscrolling). In this case we
-  // need to explicitly store the element id of the overscroll event target. The
-  // overscroll event target is either the element that scroll animation is
-  // latched to (scroll_animating_latched_element_id_) when any scrolling has
-  // happened during the current scroll sequence or the last element in the
-  // scroll chain when no scrolling has happened during the current scroll
-  // sequence. TODO(input-dev): Decouple CurrentlyScrollingNode life cycle from
-  // scroll animation life cycle to use CurrentlyScrollingNode instead of both
-  // scroll_animating_latched_element_id_ and
-  // scroll_animating_overscroll_target_element_id_. https://crbug.com/940508
-  ElementId scroll_animating_overscroll_target_element_id_;
-
   // If a scroll snap is being animated, then the value of this will be the
   // element id(s) of the target(s). Otherwise, the ids will be invalid.
   // At the end of a scroll animation, the target should be set as the scroll
@@ -1271,8 +1251,10 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   bool scroll_gesture_did_end_;
 
   // Set in ScrollBegin and outlives the currently scrolling node so it can be
-  // used to send the scrollend DOM event when scrolling has happened on CC.
-  ElementId last_scroller_element_id_;
+  // used to send the scrollend and overscroll DOM events from the main thread
+  // when scrolling occurs on the compositor thread. This value is cleared at
+  // the first commit after a GSE.
+  ElementId last_latched_scroller_;
 
   // Scroll animation can finish either before or after GSE arrival.
   // deferred_scroll_end_ is set when the GSE has arrvied before scroll

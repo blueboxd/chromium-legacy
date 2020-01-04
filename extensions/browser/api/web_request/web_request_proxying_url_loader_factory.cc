@@ -10,8 +10,10 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/feature_list.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "components/crash/core/common/crash_key.h"
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -1036,6 +1038,20 @@ void WebRequestProxyingURLLoaderFactory::CreateLoaderAndStart(
       request_id_generator_->Generate(routing_id, request_id);
 
   if (request_id) {
+    // TODO(crbug.com/996940): Remove these when done debugging.
+    static crash_reporter::CrashKeyString<1024> url_key("wr-url");
+    crash_reporter::ScopedCrashKeyString url_string(
+        &url_key, request.url.possibly_invalid_spec());
+
+    static crash_reporter::CrashKeyString<8> type_key("wr-loader-type");
+    crash_reporter::ScopedCrashKeyString type_string(
+        &type_key, base::NumberToString(int(loader_factory_type_)));
+
+    static crash_reporter::CrashKeyString<32> id_key("wr-request-id");
+    crash_reporter::ScopedCrashKeyString id_string(
+        &id_key, base::NumberToString(render_process_id_) + ":" +
+                     base::NumberToString(request_id));
+
     // Only requests with a non-zero request ID can have their proxy associated
     // with said ID. This is necessary to support correlation against any auth
     // events received by the browser. Requests with a request ID of 0 therefore

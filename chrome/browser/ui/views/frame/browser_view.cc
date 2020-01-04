@@ -1231,8 +1231,10 @@ void BrowserView::FocusToolbar() {
 }
 
 ExtensionsContainer* BrowserView::GetExtensionsContainer() {
-  if (toolbar_ && toolbar_->extensions_container())
-    return toolbar_->extensions_container();
+  ExtensionsToolbarContainer* const extensions_toolbar_container =
+      toolbar_button_provider_->GetExtensionsToolbarContainer();
+  if (extensions_toolbar_container)
+    return extensions_toolbar_container;
 
   CHECK(!base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu));
   BrowserActionsContainer* container =

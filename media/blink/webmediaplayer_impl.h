@@ -348,6 +348,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void OnVideoConfigChange(const VideoDecoderConfig& config) override;
   void OnVideoNaturalSizeChange(const gfx::Size& size) override;
   void OnVideoOpacityChange(bool opaque) override;
+  void OnVideoFrameRateChange(base::Optional<int> fps) override;
   void OnVideoAverageKeyframeDistanceUpdate() override;
   void OnAudioDecoderChange(const PipelineDecoderInfo& info) override;
   void OnVideoDecoderChange(const PipelineDecoderInfo& info) override;

@@ -15,10 +15,10 @@ android_resources("java_resources") {
 
 android_library("java") {
   java_files = [
-    "java/src/org/chromium/chrome/browser/snackbar/SnackbarView.java",
-    "java/src/org/chromium/chrome/browser/snackbar/Snackbar.java",
-    "java/src/org/chromium/chrome/browser/snackbar/SnackbarCollection.java",
-    "java/src/org/chromium/chrome/browser/snackbar/SnackbarManager.java",
+    "java/src/org/chromium/chrome/browser/ui/messages/snackbar/SnackbarView.java",
+    "java/src/org/chromium/chrome/browser/ui/messages/snackbar/Snackbar.java",
+    "java/src/org/chromium/chrome/browser/ui/messages/snackbar/SnackbarCollection.java",
+    "java/src/org/chromium/chrome/browser/ui/messages/snackbar/SnackbarManager.java",
   ]
   deps = [
     ":java_resources",
@@ -29,5 +29,39 @@ android_library("java") {
     "//components/browser_ui/widget/android:java",
     "//third_party/android_deps:com_android_support_support_compat_java",
     "//ui/android:ui_full_java",
+  ]
+}
+
+java_library("junit") {
+  # Skip platform checks since Robolectric depends on requires_android targets.
+  bypass_platform_checks = true
+  testonly = true
+  sources = [
+    "java/src/org/chromium/chrome/browser/ui/messages/snackbar/SnackbarCollectionUnitTest.java",
+  ]
+  deps = [
+    ":java",
+    "//base:base_java_test_support",
+    "//third_party/junit",
+    "//third_party/mockito:mockito_java",
+  ]
+}
+
+android_library("javatests") {
+  testonly = true
+  sources = [
+    "java/src/org/chromium/chrome/browser/ui/messages/snackbar/SnackbarTest.java",
+  ]
+  deps = [
+    ":java",
+    "//base:base_java",
+    "//base:base_java_test_support",
+    "//chrome/test/android:chrome_java_test_support",
+    "//content/public/android:content_java",
+    "//content/public/test/android:content_java_test_support",
+    "//third_party/android_support_test_runner:rules_java",
+    "//third_party/android_support_test_runner:runner_java",
+    "//third_party/junit",
+    "//ui/android:ui_java_test_support"
   ]
 }

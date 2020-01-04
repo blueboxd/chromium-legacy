@@ -11,8 +11,10 @@ import "third_party/blink/public/mojom/devtools/console_message.mojom";
 import "third_party/blink/public/mojom/frame/fullscreen.mojom";
 import "third_party/blink/public/mojom/frame/lifecycle.mojom";
 import "third_party/blink/public/mojom/frame/sudden_termination_disabler_type.mojom";
+import "third_party/blink/public/mojom/input/scroll_direction.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
+import "ui/events/mojom/scroll_granularity.mojom";
 
 // Implemented in Browser, this interface defines frame-specific methods that
 // will be invoked from the render process (e.g. content::RenderFrameHostImpl).
@@ -114,6 +116,11 @@ interface LocalFrameHost {
   // a previous navigation on the same eTLD+1. This ensures the state is
   // propagated to any remote frames.
   HadStickyUserActivationBeforeNavigationChanged(bool has_gesture);
+
+  // Sent by a local root to continue bubbling a logical scroll in its parent
+  // process.
+  BubbleLogicalScrollInParentFrame(ScrollDirection direction,
+                                   ui.mojom.ScrollGranularity granularity);
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will
@@ -238,4 +245,9 @@ interface RemoteFrame {
   // Notifies this remote frame to mark that the previous document on that
   // frame had received a user gesture on the same eTLD+1.
   SetHadStickyUserActivationBeforeNavigation(bool has_gesture);
+
+  // Sent to the remote frame placeholder in the parent process to continue
+  // bubbling a logical scroll from a cross-process frame.
+  BubbleLogicalScroll(ScrollDirection direction,
+                      ui.mojom.ScrollGranularity granularity);
 };

@@ -359,9 +359,16 @@ class StartSurfaceMediator
             mIsIncognito = mTabModelSelector.isIncognitoSelected();
             mPropertyModel.set(IS_INCOGNITO, mIsIncognito);
 
+            // if OvervieModeState is NOT_SHOWN, default to SHOWING_HOMEPAGE. This should only
+            // happen when entering Start through SwipeDown gesture on URL bar.
+            if (mOverviewModeState == OverviewModeState.NOT_SHOWN) {
+                mOverviewModeState = OverviewModeState.SHOWING_HOMEPAGE;
+            }
+
             // set OverviewModeState
             @OverviewModeState
             int shownState = computeOverviewStateShown();
+            assert (isShownState(shownState));
             setOverviewState(shownState);
 
             // Make sure FeedSurfaceCoordinator is built before the explore surface is showing by

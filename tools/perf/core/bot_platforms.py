@@ -250,11 +250,28 @@ _VALIDATING_COMMAND_BUFFER_PERFTESTS = ExecutableConfig(
         '--use-cmd-decoder=validating',
         '--use-stub',
     ], estimated_runtime=23)
+_VIEWS_PERFTESTS = ExecutableConfig(
+    'views_perftests', flags=[
+        '--xvfb'
+    ], estimated_runtime=7)
+_BASE_PERFTESTS = ExecutableConfig(
+    'base_perftests', flags=[
+        '--test-launcher-jobs=1',
+        '--test-launcher-retry-limit=0'
+    ], estimated_runtime=270)
+_DAWN_PERF_TESTS = ExecutableConfig(
+    'dawn_perf_tests', flags=[
+        '--test-launcher-jobs=1',
+        '--test-launcher-retry-limit=0'
+    ], estimated_runtime=270)
 
 _LINUX_BENCHMARK_CONFIGS = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
 _MAC_HIGH_END_BENCHMARK_CONFIGS = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
 _MAC_LOW_END_BENCHMARK_CONFIGS = _OFFICIAL_EXCEPT_JETSTREAM2
 _WIN_10_BENCHMARK_CONFIGS = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
+_WIN_10_EXECUTABLE_CONFIGS = frozenset([
+    _ANGLE_PERFTESTS, _MEDIA_PERFTESTS, _COMPONENTS_PERFTESTS, _VIEWS_PERFTESTS,
+    _BASE_PERFTESTS, _DAWN_PERF_TESTS])
 _WIN_10_LOW_END_BENCHMARK_CONFIGS = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
 _WIN_10_LOW_END_HP_CANDIDATE_BENCHMARK_CONFIGS = PerfSuite(
     [_GetBenchmarkConfig('v8.browsing_desktop')])
@@ -287,6 +304,7 @@ _ANDROID_NEXUS_5X_WEBVIEW_BENCHMARK_CONFIGS = (
 _ANDROID_NEXUS_6_WEBVIEW_BENCHMARK_CONFIGS = (
     _OFFICIAL_EXCEPT_DISPLAY_LOCKING_JETSTREAM2)
 _ANDROID_PIXEL2_BENCHMARK_CONFIGS = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
+_ANDROID_PIXEL2_EXECUTABLE_CONFIGS = frozenset([_ANGLE_PERFTESTS])
 _ANDROID_PIXEL2_WEBVIEW_BENCHMARK_CONFIGS = (
     _OFFICIAL_EXCEPT_DISPLAY_LOCKING_JETSTREAM2)
 _ANDROID_PIXEL2_WEBLAYER_BENCHMARK_CONFIGS = PerfSuite([
@@ -341,7 +359,7 @@ WIN_10 = PerfPlatform(
     'win-10-perf',
     'Windows Intel HD 630 towers, Core i7-7700 3.6 GHz, 16GB RAM,'
     ' Intel Kaby Lake HD Graphics 630', _WIN_10_BENCHMARK_CONFIGS,
-    26, 'win')
+    26, 'win', executables=_WIN_10_EXECUTABLE_CONFIGS)
 WIN_7 = PerfPlatform(
     'Win 7 Perf', 'N/A', _WIN_7_BENCHMARK_CONFIGS,
     4, 'win', executables=_WIN_7_EXECUTABLE_CONFIGS)
@@ -376,7 +394,8 @@ ANDROID_NEXUS_6_WEBVIEW = PerfPlatform(
     'android', run_reference_build=False)
 ANDROID_PIXEL2 = PerfPlatform(
     'android-pixel2-perf', 'Android OPM1.171019.021',
-    _ANDROID_PIXEL2_BENCHMARK_CONFIGS, 35, 'android')
+    _ANDROID_PIXEL2_BENCHMARK_CONFIGS, 35, 'android',
+    executables=_ANDROID_PIXEL2_EXECUTABLE_CONFIGS)
 ANDROID_PIXEL2_WEBVIEW = PerfPlatform(
     'android-pixel2_webview-perf', 'Android OPM1.171019.021',
     _ANDROID_PIXEL2_WEBVIEW_BENCHMARK_CONFIGS, 21, 'android',

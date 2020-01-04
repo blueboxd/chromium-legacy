@@ -419,6 +419,7 @@
 <translation id="3914732343065571127">ChromeVox का निर्देश संदर्भ</translation>
 <translation id="3930383913623796990">बसंती हरा</translation>
 <translation id="3930498801443296724">पुलकोट</translation>
+<translation id="3935615366277838204">बड़ा <ph name="LETTER" /></translation>
 <translation id="3936394396199829062">बैंगनी लाल</translation>
 <translation id="3941269780691800708">माउस के नीचे वाला टेक्स्ट बोलें</translation>
 <translation id="394953087167197343">स्पेलिंग की गलती दिखाएं:</translation>
@@ -454,7 +455,7 @@
 <translation id="4161104397932142764">{COUNT,plural, =1{सेकंड}one{सेकंड}other{सेकंड}}</translation>
 <translation id="4161663686871496107">ChromeVox की बोलकर दी जाने वाली सुविधा तैयार है</translation>
 <translation id="4173994908659439270">बदलाव करने लायक कोई अगला टेक्स्ट फ़ील्ड नहीं</translation>
-<translation id="4176463684765177261">अक्षम किए गए</translation>
+<translation id="4176463684765177261">बंद किया गया</translation>
 <translation id="4187322598335821254">लाइन एक-एक करके खिसकाने के लिए ऊपर या नीचे स्वाइप करें</translation>
 <translation id="4188530942454211480">पिछला वाक्य</translation>
 <translation id="4191918948604314587">बटन</translation>
@@ -854,6 +855,7 @@
 <translation id="699159175332639490">खोज + O + W</translation>
 <translation id="6994042831499278539">संदर्भ के लिए शब्दावली</translation>
 <translation id="6996566555547746822">अगला कॉम्बो बॉक्स</translation>
+<translation id="6997224546856374593">बड़े अक्षर पढ़ते समय:</translation>
 <translation id="700202842116345659">संदर्भ सूची प्रविष्टि</translation>
 <translation id="7005146664810010831">कोई URL नहीं मिला</translation>
 <translation id="7010712454773919705">ChromeVox बदलने वाली की</translation>
@@ -934,6 +936,7 @@
 <translation id="744163271241493234">pwded</translation>
 <translation id="7491962110804786152">टैब</translation>
 <translation id="7492049978501397201">डाला गया डॉयलॉग</translation>
+<translation id="7505149250476994901">अक्षर से पहले "बड़ा" कहें</translation>
 <translation id="7518543783849163354">ChromeVox को अस्थायी रूप से बोलने से रोकने के लिए, Control कुंजी दबाएं.</translation>
 <translation id="7521682724501952239">आप टचस्क्रीन के ज़रिए ChromeVox का इस्तेमाल कर सकते हैं.</translation>
 <translation id="7532613204005497612">जून</translation>

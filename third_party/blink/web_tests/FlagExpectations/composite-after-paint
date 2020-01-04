@@ -198,10 +198,6 @@ paint/invalidation/reflection/scroll-fixed-reflected-layer.html [ Failure ]
 crbug.com/900241 paint/invalidation/animation/opacity-animation.html [ Failure ]
 crbug.com/900241 paint/invalidation/animation/transform-animation.html [ Failure ]
 
-# These tests have additional hit test rects. These may correct and simply due
-# to different layerization decisions, but this needs investigation.
-crbug.com/909749 fast/events/touch/compositor-touch-hit-rects-non-composited-scroll.html [ Failure ]
-
 # Backdrop filter
 crbug.com/923429 css3/filters/backdrop-filter-plus-mask.html [ Failure ]
 crbug.com/923429 css3/filters/backdrop-filter-plus-mask-large.html [ Failure ]

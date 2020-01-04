@@ -207,6 +207,14 @@ class ThemeService : public content::NotificationObserver,
   bool ready_ = false;
 
  private:
+  struct OmniboxColor {
+    SkColor value;
+
+    // True if any part of the computation of the color relied on a custom base
+    // color from the theme supplier.
+    bool custom;
+  };
+
   // This class implements ui::ThemeProvider on behalf of ThemeService and keeps
   // track of the incognito state of the calling code.
   class BrowserThemeProvider : public ui::ThemeProvider {
@@ -333,6 +341,10 @@ class ThemeService : public content::NotificationObserver,
   base::Optional<SkColor> GetOmniboxColor(int id,
                                           bool incognito,
                                           bool* has_custom_color) const;
+
+  // Helper function that contains the main implementation of GetOmniboxColor().
+  base::Optional<OmniboxColor> GetOmniboxColorImpl(int id,
+                                                   bool incognito) const;
 
   Profile* profile_;
 

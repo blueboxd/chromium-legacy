@@ -6,6 +6,10 @@
 
 namespace blink {
 
+std::unique_ptr<WebInputEvent> WebGestureEvent::Clone() const {
+  return std::make_unique<WebGestureEvent>(*this);
+}
+
 float WebGestureEvent::DeltaXInRootFrame() const {
   if (type_ == WebInputEvent::kGestureScrollBegin)
     return data.scroll_begin.delta_x_hint / frame_scale_;

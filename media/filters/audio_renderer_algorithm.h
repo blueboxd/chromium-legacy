@@ -31,6 +31,7 @@
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_buffer_queue.h"
 #include "media/base/audio_parameters.h"
+#include "media/base/media_log.h"
 
 namespace media {
 
@@ -44,8 +45,9 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   static constexpr double kUpperResampleThreshold = 1.06;
   static constexpr double kLowerResampleThreshold = 0.95;
 
-  AudioRendererAlgorithm();
-  AudioRendererAlgorithm(AudioRendererAlgorithmParameters params);
+  AudioRendererAlgorithm(MediaLog* media_log);
+  AudioRendererAlgorithm(MediaLog* media_log,
+                         AudioRendererAlgorithmParameters params);
   ~AudioRendererAlgorithm();
 
   // Initializes this object with information about the audio stream.
@@ -83,14 +85,28 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   // read completes.
   void EnqueueBuffer(scoped_refptr<AudioBuffer> buffer_in);
 
-  // Returns true if |audio_buffer_| is at or exceeds capacity.
+  // Sets a target queue latency. This target will be clamped and stored in
+  // |playback_threshold_|. It may also cause an increase in |capacity_|. A
+  // value of nullopt indicates the algorithm should restore the default value.
+  void SetLatencyHint(base::Optional<base::TimeDelta> latency_hint);
+
+  // Returns true if the |audio_buffer_| is >= |playback_threshold_|.
+  bool IsQueueAdequateForPlayback();
+
+  // Returns the required size for |audio_buffer_| to be "adequate for
+  // playback". See IsQueueAdequateForPlayback().
+  int QueuePlaybackThreshold() const { return playback_threshold_; }
+
+  // Returns true if |audio_buffer_| is >= |capacity_|.
   bool IsQueueFull();
 
   // Returns the capacity of |audio_buffer_| in frames.
   int QueueCapacity() const { return capacity_; }
 
-  // Increase the capacity of |audio_buffer_| if possible.
-  void IncreaseQueueCapacity();
+  // Increase the |playback_threshold_| and |capacity_| of |audio_buffer_| if
+  // possible. Should not be called if a custom |playback_threshold_| was
+  // specified.
+  void IncreasePlaybackThreshold();
 
   // Sets a flag to bypass underflow detection, to read out all remaining data.
   void MarkEndOfStream();
@@ -164,6 +180,8 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   // Called by |resampler_| to get more audio data.
   void OnResamplerRead(int frame_delay, AudioBus* audio_bus);
 
+  MediaLog* media_log_;
+
   // Parameters.
   AudioRendererAlgorithmParameters audio_renderer_algorithm_params_;
 
@@ -178,6 +196,16 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
 
   // Buffered audio data.
   AudioBufferQueue audio_buffer_;
+
+  // Hint to adjust |playback_threshold_| as a means of controlling playback
+  // start latency. See SetLatencyHint();
+  base::Optional<base::TimeDelta> latency_hint_;
+
+  // How many frames to have in queue before beginning playback.
+  int64_t playback_threshold_;
+
+  // Minimum allowed value for |plabyack_threshold_| calculated by Initialize().
+  int64_t min_playback_threshold_;
 
   // How many frames to have in the queue before we report the queue is full.
   int64_t capacity_;

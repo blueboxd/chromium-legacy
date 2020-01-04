@@ -94,6 +94,10 @@ void OptimizationGuideNavigationData::RecordHintCoverage(
     UMA_HISTOGRAM_BOOLEAN("OptimizationGuide.HintCache.HasHint.BeforeCommit",
                           has_hint_before_commit);
     UMA_HISTOGRAM_BOOLEAN(
+        "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
+        "BeforeCommit",
+        was_host_covered_by_fetch_at_navigation_start_.value_or(false));
+    UMA_HISTOGRAM_BOOLEAN(
         "OptimizationGuide.Hints.NavigationHostCoverage.BeforeCommit",
         WasHostCoveredByHintOrFetchAtNavigationStart());
   }

@@ -40,7 +40,6 @@
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
-#include "third_party/blink/public/common/input/web_scroll_types.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/common/navigation/triggering_event_info.h"
@@ -669,12 +668,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual void ScrollRectToVisibleInParentFrame(
       const WebRect&,
       const WebScrollIntoViewParams&) {}
-
-  // When the bubbling of a logical scroll reaches a local root, bubbling
-  // will be continued in the parent process.
-  virtual void BubbleLogicalScrollInParentFrame(
-      WebScrollDirection direction,
-      ui::input_types::ScrollGranularity granularity) {}
 
   // MediaStream -----------------------------------------------------
 

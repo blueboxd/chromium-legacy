@@ -11,6 +11,10 @@ namespace features {
 const base::Feature kLoadingOnlyLearnHighPriorityResources{
     "LoadingOnlyLearnHighPriorityResources", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Configures the loading predictor table size and other base parameters.
+const base::Feature kLoadingPredictorTableConfig{
+    "LoadingPredictorTableConfig", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Modifies loading predictor so that the predictions also contain origins of
 // the redirect target of the navigation.
 const base::Feature kLoadingPreconnectToRedirectTarget{

@@ -18,6 +18,7 @@ namespace blink {
 class CustomLayoutScope;
 class FragmentResultOptions;
 class IntrinsicSizesResultOptions;
+class LayoutUnit;
 struct LogicalSize;
 class NGBlockNode;
 struct NGBoxStrut;
@@ -54,24 +55,28 @@ class CSSLayoutDefinition final : public GarbageCollected<CSSLayoutDefinition>,
     // Runs the web developer defined layout, returns true if everything
     // succeeded. It populates the FragmentResultOptions dictionary, and
     // fragment_result_data.
-    bool Layout(const NGConstraintSpace&,
-                const Document&,
-                const NGBlockNode&,
-                const LogicalSize& border_box_size,
-                const NGBoxStrut& border_scrollbar_padding,
-                CustomLayoutScope*,
-                FragmentResultOptions*,
-                scoped_refptr<SerializedScriptValue>* fragment_result_data);
+    bool Layout(
+        const NGConstraintSpace&,
+        const Document&,
+        const NGBlockNode&,
+        const LogicalSize& border_box_size,
+        const NGBoxStrut& border_scrollbar_padding,
+        const LayoutUnit child_percentage_resolution_block_size_for_min_max,
+        CustomLayoutScope*,
+        FragmentResultOptions*,
+        scoped_refptr<SerializedScriptValue>* fragment_result_data);
 
     // Runs the web developer defined intrinsicSizes, returns true if everything
     // succeeded. It populates the IntrinsicSizesResultOptions dictionary.
-    bool IntrinsicSizes(const NGConstraintSpace&,
-                        const Document&,
-                        const NGBlockNode&,
-                        const LogicalSize& border_box_size,
-                        const NGBoxStrut& border_scrollbar_padding,
-                        CustomLayoutScope*,
-                        IntrinsicSizesResultOptions*);
+    bool IntrinsicSizes(
+        const NGConstraintSpace&,
+        const Document&,
+        const NGBlockNode&,
+        const LogicalSize& border_box_size,
+        const NGBoxStrut& border_scrollbar_padding,
+        const LayoutUnit child_percentage_resolution_block_size_for_min_max,
+        CustomLayoutScope*,
+        IntrinsicSizesResultOptions*);
 
     void Trace(blink::Visitor*);
 

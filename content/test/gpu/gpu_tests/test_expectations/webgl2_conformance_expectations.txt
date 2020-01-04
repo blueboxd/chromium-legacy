@@ -2,7 +2,7 @@
 # tags: [ d3d11 no-angle vulkan opengl opengles no-use-gl ]
 # tags: [ passthrough no-passthrough ]
 # tags: [ intel intel-0xa2e
-#         amd amd-0x6613 amd-0x699f
+#         amd amd-0x6613 amd-0x699f amd-0x679e
 #         nvidia nvidia-0xf02 nvidia-0xfe9 nvidia-0x1cb3
 #         qualcomm qualcomm-adreno-(tm)-540 ]
 # tags: [ debug ]
@@ -213,7 +213,6 @@ crbug.com/963205 [ win nvidia opengl passthrough ] conformance/extensions/webgl-
 crbug.com/963205 [ win nvidia opengl passthrough ] conformance/extensions/webgl-compressed-texture-s3tc-srgb.html [ RetryOnFailure ]
 crbug.com/715001 [ opengl win nvidia                    ] conformance/limits/gl-max-texture-dimensions.html [ Failure ]
 crbug.com/703779 [ opengl win nvidia                    ] conformance/textures/misc/texture-size.html [ Failure ]
-crbug.com/781668 [ opengl win nvidia-0x1cb3             ] conformance2/textures/canvas_sub_rectangle/tex-2d-rgb565-rgb-unsigned_byte.html [ Failure ]
 crbug.com/921055 [ opengl win passthrough nvidia-0x1cb3 ] conformance2/textures/image_bitmap_from_image_data/tex-2d-rgb9_e5-rgb-float.html [ RetryOnFailure ]
 crbug.com/905003 [ opengl win passthrough nvidia        ] conformance2/textures/misc/integer-cubemap-specification-order-bug.html [ Failure ]
 crbug.com/887578 [ opengl win passthrough nvidia        ] deqp/data/gles3/shaders/conversions.html [ RetryOnFailure ]
@@ -764,7 +763,7 @@ crbug.com/angleproject/3685 [ android opengles ] conformance2/transform_feedback
 crbug.com/angleproject/3686 [ android opengles ] deqp/functional/gles3/multisample.html [ Failure ]
 crbug.com/angleproject/3753 [ android opengles ] conformance/textures/misc/texture-upload-size.html [ Failure ]
 
-crbug.com/1037958 [ mac amd ] conformance2/transform_feedback/switching-objects.html [ RetryOnFailure ]
+crbug.com/1037958 [ mac amd-0x679e ] conformance2/transform_feedback/switching-objects.html [ RetryOnFailure ]
 
 # Conflicting expectations to test that the
 # "Expectations have no collisions" unittest works.

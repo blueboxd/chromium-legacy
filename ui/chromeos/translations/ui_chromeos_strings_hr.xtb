@@ -80,6 +80,7 @@
 <translation id="1847880352285315359">Spremljeno</translation>
 <translation id="1864756863218646478">Nije bilo moguće pronaći datoteku.</translation>
 <translation id="1921986354447415460">Turska F tipkovnica</translation>
+<translation id="1924372192547904021">Formatiran disk <ph name="DRIVE_NAME" /></translation>
 <translation id="1931134289871235022">slovački</translation>
 <translation id="1933345018156373194">Premještanje nije uspjelo, neočekivana pogreška: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">Finski</translation>
@@ -163,6 +164,7 @@
 <translation id="2942290791863759244">njemačka NEO 2 tipkovnica</translation>
 <translation id="2943400156390503548">Prezentacije</translation>
 <translation id="2943503720238418293">Upotrijebite kraći naziv</translation>
+<translation id="2949781154072577687">Formatiranje diska <ph name="DRIVE_NAME" />...</translation>
 <translation id="2951236788251446349">Meduza</translation>
 <translation id="2963783323012015985">Turska tipkovnica</translation>
 <translation id="2966459079597787514">Švedska tipkovnica</translation>
@@ -569,6 +571,7 @@
 <translation id="7649070708921625228">Pomoć</translation>
 <translation id="7654209398114106148">Premještanje stavki (<ph name="NUMBER_OF_ITEMS" />)...</translation>
 <translation id="7658239707568436148">Odustani</translation>
+<translation id="7695430100978772476">Nije uspjelo formatiranje diska <ph name="DRIVE_NAME" /></translation>
 <translation id="770015031906360009">Grčki</translation>
 <translation id="7706319470528945664">Portugalska tipkovnica</translation>
 <translation id="7711920809702896782">Informacije o slici</translation>

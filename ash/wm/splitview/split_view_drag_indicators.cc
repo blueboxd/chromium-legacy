@@ -663,8 +663,7 @@ bool SplitViewDragIndicators::GetIndicatorTypeVisibilityForTesting(
          0.f;
 }
 
-gfx::Rect SplitViewDragIndicators::GetLeftHighlightViewBoundsForTesting()
-    const {
+gfx::Rect SplitViewDragIndicators::GetLeftHighlightViewBounds() const {
   return indicators_view_->left_highlight_view()->bounds();
 }
 

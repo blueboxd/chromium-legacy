@@ -13,6 +13,7 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/metrics/bucket_ranges.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
@@ -135,6 +136,10 @@ class NET_EXPORT_PRIVATE DnsSession : public base::RefCounted<DnsSession> {
   std::unique_ptr<StreamSocket> CreateTCPSocket(unsigned server_index,
                                                 const NetLogSource& source);
 
+  base::WeakPtr<DnsSession> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
  private:
   friend class base::RefCounted<DnsSession>;
   struct ServerStats;
@@ -179,6 +184,8 @@ class NET_EXPORT_PRIVATE DnsSession : public base::RefCounted<DnsSession> {
     RttBuckets();
   };
   static base::LazyInstance<RttBuckets>::Leaky rtt_buckets_;
+
+  base::WeakPtrFactory<DnsSession> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DnsSession);
 };

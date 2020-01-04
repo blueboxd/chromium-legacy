@@ -139,7 +139,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
           env->cert_transparency_verifier.get(), nullptr,
           &env->crypto_client_stream_factory, &env->quic_context);
 
-  SetQuicRestartFlag(quic_coalesce_stream_frames_2, true);
   QuicStreamRequest request(factory.get());
   TestCompletionCallback callback;
   NetErrorDetails net_error_details;

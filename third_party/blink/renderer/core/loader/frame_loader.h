@@ -261,7 +261,6 @@ class CORE_EXPORT FrameLoader final {
   void ClearClientNavigation();
 
   void RestoreScrollPositionAndViewState(WebFrameLoadType,
-                                         bool is_same_document,
                                          const HistoryItem::ViewState&,
                                          HistoryScrollRestorationType);
 
@@ -313,8 +312,6 @@ class CORE_EXPORT FrameLoader final {
     bool is_history_navigation_in_new_frame = false;
   };
   std::unique_ptr<ClientNavigationState> client_navigation_;
-
-  bool in_restore_scroll_;
 
   WebSandboxFlags forced_sandbox_flags_;
   // A snapshot value of frame_owner's sandbox flags states at the beginning of

@@ -35,12 +35,7 @@ TEST_P(BoxPainterTest, DontPaintEmptyDecorationBackground) {
                                              PaintPhase::kSelfOutlineOnly))));
 }
 
-using BoxPainterScrollHitTestTest = PaintControllerPaintTest;
-
-INSTANTIATE_SCROLL_HIT_TEST_SUITE_P(BoxPainterScrollHitTestTest);
-
-TEST_P(BoxPainterScrollHitTestTest,
-       ScrollHitTestOrderWithScrollBackgroundAttachment) {
+TEST_P(BoxPainterTest, ScrollHitTestOrderWithScrollBackgroundAttachment) {
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar { display: none; }
@@ -94,8 +89,7 @@ TEST_P(BoxPainterScrollHitTestTest,
   }
 }
 
-TEST_P(BoxPainterScrollHitTestTest,
-       ScrollHitTestOrderWithLocalBackgroundAttachment) {
+TEST_P(BoxPainterTest, ScrollHitTestOrderWithLocalBackgroundAttachment) {
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar { display: none; }
@@ -152,7 +146,7 @@ TEST_P(BoxPainterScrollHitTestTest,
   }
 }
 
-TEST_P(BoxPainterScrollHitTestTest, ScrollHitTestProperties) {
+TEST_P(BoxPainterTest, ScrollHitTestProperties) {
   // This test depends on the CompositeAfterPaint behavior of painting solid
   // color backgrounds into both the non-scrolled and scrolled spaces.
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())

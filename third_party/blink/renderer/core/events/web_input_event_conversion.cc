@@ -120,8 +120,8 @@ unsigned ToWebInputEventModifierFrom(WebMouseEvent::Button button) {
 WebPointerEvent TransformWebPointerEvent(float frame_scale,
                                          gfx::Vector2dF frame_translate,
                                          const WebPointerEvent& event) {
-  // frameScale is default initialized in debug builds to be 0.
-  DCHECK_EQ(0, event.FrameScale());
+  // frameScale is default initialized to 1.
+  DCHECK_EQ(1, event.FrameScale());
   DCHECK_EQ(0, event.FrameTranslate().x());
   DCHECK_EQ(0, event.FrameTranslate().y());
   WebPointerEvent result = event;

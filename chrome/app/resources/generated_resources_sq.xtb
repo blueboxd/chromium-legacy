@@ -244,6 +244,7 @@
 <translation id="1329584516321524826">U përditësua pikërisht tani</translation>
 <translation id="1330145147221172764">Aktivizo tastierën në ekran</translation>
 <translation id="1331977651797684645">Isha unë.</translation>
+<translation id="1333489022424033687">Disa veçori në <ph name="ORIGIN" /> mund të mos funksionojnë deri sa të pastrosh të dhënat që sajtet e tjera kanë ruajtur në pajisjen tënde</translation>
 <translation id="133535873114485416">Hyrja e preferuar</translation>
 <translation id="1335929031622236846">Regjistro pajisjen tënde</translation>
 <translation id="1338802252451106843"><ph name="ORIGIN" /> dëshiron që ta hapë këtë aplikacion.</translation>
@@ -314,7 +315,6 @@
 <translation id="1433811987160647649">Pyet para se të hysh</translation>
 <translation id="1434696352799406980">Ky funksion do të rivendosë faqen e parë, faqen e skedës së re, motorin e kërkimit dhe skedat e gozhduara. Ai do të çaktivizojë po ashtu të gjitha shtesat dhe do të pastrojë të dhënat e përkohshme si kukit. Faqeshënuesit, historiku dhe fjalëkalimet e ruajtura nuk do të pastrohen.</translation>
 <translation id="1434886155212424586">Faqja kryesore është faqja "Skedë e re"</translation>
-<translation id="1435979430299962295">Për të lejuar qasjen në këtë sajt, kliko te shtesa.</translation>
 <translation id="1436390408194692385">E vlefshme për <ph name="TICKET_TIME_LEFT" /></translation>
 <translation id="1436671784520050284">Vazhdo konfigurimin</translation>
 <translation id="1436784010935106834">U hoq</translation>
@@ -1033,7 +1033,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="2445484935443597917">Krijo një profil të ri</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> dëshiron të verifikojë identitetin tënd</translation>
 <translation id="2448312741937722512">Shkruaj</translation>
-<translation id="2448734521821581858">Kukit janë skedarë të krijuar nga sajtet e uebit që viziton ti. Ka dy lloje kukish: Kukit e palëve të para krijohen nga sajti që viziton ti. Sajti shfaqet në shiritin e kërkimit. Kukit e palëve të treta krijohen nga sajte të tjera. Këto sajte zotërojnë disa nga përmbajtjet, si p.sh. reklamat ose imazhet që ti shikon në sajtin e uebit që viziton.</translation>
 <translation id="2450223707519584812">Nuk do të jesh në gjendje të shtosh përdorues sepse mungojnë çelësat e API Google. Shiko <ph name="DETAILS_URL" /> për detaje.</translation>
 <translation id="2450849356604136918">Nuk ka shikime aktive</translation>
 <translation id="2451298179137331965">2x</translation>
@@ -4078,6 +4077,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="6843423766595476978">"Ok Google" është plotësisht gati</translation>
 <translation id="6845038076637626672">Hape të zmadhuar</translation>
 <translation id="6845325883481699275">Ndihmo në përmirësimin e sigurisë së Chrome</translation>
+<translation id="6847125920277401289">Liro hapësirë për të vazhduar</translation>
 <translation id="6848388270925200958">Në këtë moment, ke disa karta që mund të përdoren vetëm në këtë pajisje</translation>
 <translation id="6850286078059909152">Ngjyra e tekstit</translation>
 <translation id="6851497530878285708">Aplikacioni u aktivizua</translation>
@@ -4102,10 +4102,10 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="6885771755599377173">Pamja paraprake e informacioneve të sistemit</translation>
 <translation id="6886476658664859389">Çelësi i sigurisë me NFC</translation>
 <translation id="6886871292305414135">Hape lidhjen në një skedë të re</translation>
-<translation id="6890912377247906520">Këto shtesa nuk kanë nevojë për qasje te ky sajt.</translation>
 <translation id="6892812721183419409">Hape lidhjen si <ph name="USER" /></translation>
 <translation id="6895032998810961280">Raporto detaje te Google për softuerët e dëmshëm, cilësimet e sistemit dhe proceset që u gjetën në kompjuter gjatë këtij pastrimi</translation>
 <translation id="6896758677409633944">Kopjo</translation>
+<translation id="6897363604023044284">Zgjidh sajtet për t'i pastruar</translation>
 <translation id="6898440773573063262">Aplikacionet "kioskë" mund të konfigurohen tani për t'u hapur automatikisht në këtë pajisje.</translation>
 <translation id="6898699227549475383">Organizata (O)</translation>
 <translation id="6900284862687837908">Aplikacioni i sfondit: <ph name="BACKGROUND_APP_URL" /></translation>

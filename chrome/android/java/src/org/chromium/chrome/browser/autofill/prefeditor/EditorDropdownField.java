@@ -188,7 +188,7 @@ class EditorDropdownField implements EditorFieldView {
                         0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
                 ((TextView) view).setError(mFieldModel.getErrorMessage(), drawable);
                 mUnderline.setBackgroundColor(ApiCompatibilityUtils.getColor(
-                        mContext.getResources(), R.color.error_text_color));
+                        mContext.getResources(), R.color.default_text_color_error));
                 mErrorLabel.setText(mFieldModel.getErrorMessage());
                 mErrorLabel.setVisibility(View.VISIBLE);
             } else {

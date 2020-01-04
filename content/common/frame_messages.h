@@ -55,7 +55,6 @@
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
-#include "third_party/blink/public/common/input/web_scroll_types.h"
 #include "third_party/blink/public/common/media/media_player_action.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
@@ -73,7 +72,6 @@
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/public/web/web_frame_owner_properties.h"
 #include "third_party/blink/public/web/web_tree_scope_type.h"
-#include "ui/events/types/scroll_types.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
@@ -143,9 +141,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::UserActivationUpdateType,
                           blink::UserActivationUpdateType::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::MediaPlayerAction::Type,
                           blink::MediaPlayerAction::Type::kMaxValue)
-IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebScrollDirection,
-                              blink::kFirstScrollDirection,
-                              blink::kLastScrollDirection)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FeaturePolicyDisposition,
                           blink::mojom::FeaturePolicyDisposition::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FrameVisibility,
@@ -878,12 +873,6 @@ IPC_MESSAGE_ROUTED2(FrameMsg_ScrollRectToVisible,
                     gfx::Rect /* rect_to_scroll */,
                     blink::WebScrollIntoViewParams /* properties */)
 
-// Sent to the parent process of a cross-process frame to continue bubbling
-// a logical scroll.
-IPC_MESSAGE_ROUTED2(FrameMsg_BubbleLogicalScroll,
-                    blink::WebScrollDirection /* direction */,
-                    ui::input_types::ScrollGranularity /* granularity */)
-
 // Tells the renderer to perform the given action on the media player location
 // at the given point in the view coordinate space.
 IPC_MESSAGE_ROUTED2(FrameMsg_MediaPlayerActionAt,
@@ -1304,12 +1293,6 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_WebUISend,
 IPC_MESSAGE_ROUTED2(FrameHostMsg_ScrollRectToVisibleInParentFrame,
                     gfx::Rect /* rect_to_scroll */,
                     blink::WebScrollIntoViewParams /* properties */)
-
-// Sent by a local root to continue bubbling a logical scroll in its parent
-// process.
-IPC_MESSAGE_ROUTED2(FrameHostMsg_BubbleLogicalScrollInParentFrame,
-                    blink::WebScrollDirection /* direction */,
-                    ui::input_types::ScrollGranularity /* granularity */)
 
 // Sent to notify that a frame called |window.focus()|.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_FrameDidCallFocus)

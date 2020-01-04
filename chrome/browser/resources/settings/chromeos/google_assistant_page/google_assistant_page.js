@@ -131,7 +131,8 @@ Polymer({
    * @private
    */
   getAssistantOnOffLabel_: function(toggleValue) {
-    return this.i18n(toggleValue ? 'toggleOn' : 'toggleOff');
+    return this.i18n(
+        toggleValue ? 'searchGoogleAssistantOn' : 'searchGoogleAssistantOff');
   },
 
   /** @private */

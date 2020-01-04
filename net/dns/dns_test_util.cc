@@ -573,6 +573,33 @@ class MockDnsTransactionFactory::MockTransaction
   bool delayed_;
 };
 
+class MockDnsTransactionFactory::MockDohProbeRunner : public DnsProbeRunner {
+ public:
+  explicit MockDohProbeRunner(base::WeakPtr<MockDnsTransactionFactory> factory)
+      : factory_(std::move(factory)) {}
+
+  ~MockDohProbeRunner() override {
+    if (factory_)
+      factory_->running_doh_probe_runners_.erase(this);
+  }
+
+  void Start() override {
+    DCHECK(factory_);
+    factory_->running_doh_probe_runners_.insert(this);
+  }
+
+  void RestartForNetworkChange() override { Start(); }
+
+  base::TimeDelta GetDelayUntilNextProbeForTest(
+      size_t doh_server_index) const override {
+    NOTREACHED();
+    return base::TimeDelta();
+  }
+
+ private:
+  base::WeakPtr<MockDnsTransactionFactory> factory_;
+};
+
 MockDnsTransactionFactory::MockDnsTransactionFactory(
     MockDnsClientRuleList rules)
     : rules_(std::move(rules)) {}
@@ -596,23 +623,12 @@ std::unique_ptr<DnsTransaction> MockDnsTransactionFactory::CreateTransaction(
   return transaction;
 }
 
+std::unique_ptr<DnsProbeRunner> MockDnsTransactionFactory::CreateDohProbeRunner(
+    URLRequestContext* url_request_context) {
+  return std::make_unique<MockDohProbeRunner>(weak_ptr_factory_.GetWeakPtr());
+}
+
 void MockDnsTransactionFactory::AddEDNSOption(const OptRecordRdata::Opt& opt) {}
-
-base::TimeDelta MockDnsTransactionFactory::GetDelayUntilNextProbeForTest(
-    unsigned doh_server_index) {
-  NOTREACHED();
-  return base::TimeDelta();
-}
-
-void MockDnsTransactionFactory::StartDohProbes(
-    URLRequestContext* url_request_context,
-    bool network_change) {
-  doh_probes_running_ = true;
-}
-
-void MockDnsTransactionFactory::CancelDohProbes() {
-  doh_probes_running_ = false;
-}
 
 DnsConfig::SecureDnsMode MockDnsTransactionFactory::GetSecureDnsModeForTest() {
   return DnsConfig::SecureDnsMode::AUTOMATIC;
@@ -705,13 +721,16 @@ const DnsHosts* MockDnsClient::GetHosts() const {
 void MockDnsClient::ActivateDohProbes(URLRequestContext* url_request_context) {
   DCHECK(url_request_context);
   DCHECK(!probe_context_);
+  DCHECK(!probe_transaction_);
+
   probe_context_ = url_request_context;
-  factory_->StartDohProbes(probe_context_, false /* network_change */);
+  probe_transaction_ = factory_->CreateDohProbeRunner(probe_context_);
+  probe_transaction_->Start();
 }
 
 void MockDnsClient::CancelDohProbes() {
-  factory_->CancelDohProbes();
   probe_context_ = nullptr;
+  probe_transaction_.reset();
 }
 
 DnsTransactionFactory* MockDnsClient::GetTransactionFactory() {

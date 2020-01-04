@@ -1340,23 +1340,24 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
       const bool dragged_to_bezel =
           std::ceil(end_of_drag_in_screen) >= screen_bottom;
 
+      if (dragged_to_bezel)
+        return HotseatState::kHidden;
+
+      if (std::abs(last_drag_velocity_) >= 120) {
+        if (last_drag_velocity_ > 0)
+          return HotseatState::kHidden;
+        return HotseatState::kExtended;
+      }
+
       const int top_of_hotseat_to_screen_bottom =
           screen_bottom -
           shelf_widget_->hotseat_widget()->GetWindowBoundsInScreen().y();
       const bool dragged_over_half_hotseat_size =
           top_of_hotseat_to_screen_bottom <
           ShelfConfig::Get()->hotseat_size() / 2;
-
-      // Drags to the bezel may have large velocities, even if the drag is slow.
-      // Decide the state based on position first, before checking
-      // |last_drag_velocity_|.
-      if (dragged_to_bezel || dragged_over_half_hotseat_size)
+      if (dragged_over_half_hotseat_size)
         return HotseatState::kHidden;
-      if (std::abs(last_drag_velocity_) >= 120) {
-        if (last_drag_velocity_ > 0)
-          return HotseatState::kHidden;
-        return HotseatState::kExtended;
-      }
+
       return HotseatState::kExtended;
     }
     case kDragAppListInProgress:
@@ -2478,6 +2479,7 @@ void ShelfLayoutManager::CancelDrag() {
   hotseat_is_in_drag_ = false;
   drag_status_ = kDragNone;
   drag_start_point_in_screen_ = gfx::Point();
+  last_drag_velocity_ = 0;
 }
 
 void ShelfLayoutManager::CompleteDragWithChangedVisibility() {
@@ -2499,6 +2501,7 @@ void ShelfLayoutManager::CompleteDragWithChangedVisibility() {
   if (hotseat_is_in_drag_)
     hotseat_presentation_time_recorder_.reset();
   hotseat_is_in_drag_ = false;
+  last_drag_velocity_ = 0;
 }
 
 float ShelfLayoutManager::GetAppListBackgroundOpacityOnShelfOpacity() {

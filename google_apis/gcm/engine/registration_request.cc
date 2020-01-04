@@ -120,13 +120,13 @@ RegistrationRequest::RegistrationRequest(
     const RequestInfo& request_info,
     std::unique_ptr<CustomRequestHandler> custom_request_handler,
     const net::BackoffEntry::Policy& backoff_policy,
-    const RegistrationCallback& callback,
+    RegistrationCallback callback,
     int max_retry_count,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner,
     GCMStatsRecorder* recorder,
     const std::string& source_to_record)
-    : callback_(callback),
+    : callback_(std::move(callback)),
       request_info_(request_info),
       custom_request_handler_(std::move(custom_request_handler)),
       registration_url_(registration_url),
@@ -313,7 +313,7 @@ void RegistrationRequest::OnURLLoadComplete(
     custom_request_handler_->ReportStatusToUMA(status);
   }
 
-  callback_.Run(status, token);
+  std::move(callback_).Run(status, token);
 }
 
 }  // namespace gcm

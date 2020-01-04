@@ -333,6 +333,14 @@ suite(extension_item_tests.suiteName, function() {
     item.set('data.state', 'BLACKLISTED');
     flush();
     expectTrue(item.$['enableToggle'].disabled);
+
+    // This section tests that the enable toggle is visible but disabled
+    // when disableReasons.blockedByPolicy is true. This test prevents a
+    // regression to crbug/1003014.
+    item.set('data.disableReasons.blockedByPolicy', true);
+    flush();
+    testVisible(item, '#enableToggle', true);
+    expectTrue(item.$['enableToggle'].disabled);
   });
 
   test(assert(extension_item_tests.TestNames.RemoveButton), function() {

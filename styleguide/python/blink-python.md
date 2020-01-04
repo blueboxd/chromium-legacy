@@ -14,5 +14,3 @@ style recommendation is likely to change._
 ## Differences from Chromium style
 
 * Line length limit is 132
-* Uses four-space indent
-* Uses `function_name`, `method_name` rather than `FunctionName`, `MethodName`

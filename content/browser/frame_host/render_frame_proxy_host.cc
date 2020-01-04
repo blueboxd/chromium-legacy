@@ -334,12 +334,6 @@ void RenderFrameProxyHost::ScrollRectToVisible(
   Send(new FrameMsg_ScrollRectToVisible(routing_id_, rect_to_scroll, params));
 }
 
-void RenderFrameProxyHost::BubbleLogicalScroll(
-    blink::WebScrollDirection direction,
-    ui::input_types::ScrollGranularity granularity) {
-  Send(new FrameMsg_BubbleLogicalScroll(routing_id_, direction, granularity));
-}
-
 void RenderFrameProxyHost::OnDetach() {
   if (frame_tree_node_->render_manager()->IsMainFrameForInnerDelegate()) {
     frame_tree_node_->render_manager()->RemoveOuterDelegateFrame();

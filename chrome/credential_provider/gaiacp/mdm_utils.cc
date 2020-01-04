@@ -30,6 +30,7 @@
 
 namespace credential_provider {
 
+constexpr wchar_t kRegInitializeCrashReporting[] = L"init_crash_reporting";
 constexpr wchar_t kRegMdmUrl[] = L"mdm";
 constexpr wchar_t kRegMdmEnableForcePasswordReset[] =
     L"mdm_enable_force_password";

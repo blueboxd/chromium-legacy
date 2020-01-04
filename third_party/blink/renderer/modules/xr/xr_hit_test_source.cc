@@ -46,6 +46,8 @@ void XRHitTestSource::Update(
   last_frame_results_.clear();
 
   for (auto& result : hit_test_results) {
+    DVLOG(3) << __func__ << ": processing hit test result, hit matrix: "
+             << result->hit_matrix.ToString();
     last_frame_results_.push_back(
         std::make_unique<TransformationMatrix>(result->hit_matrix.matrix()));
   }

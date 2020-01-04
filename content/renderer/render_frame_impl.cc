@@ -6857,15 +6857,6 @@ void RenderFrameImpl::ScrollRectToVisibleInParentFrame(
       routing_id_, rect_to_scroll, params));
 }
 
-void RenderFrameImpl::BubbleLogicalScrollInParentFrame(
-    blink::WebScrollDirection direction,
-    ui::input_types::ScrollGranularity granularity) {
-  DCHECK(IsLocalRoot());
-  DCHECK(!IsMainFrame());
-  Send(new FrameHostMsg_BubbleLogicalScrollInParentFrame(routing_id_, direction,
-                                                         granularity));
-}
-
 bool RenderFrameImpl::IsBrowserSideNavigationPending() {
   return browser_side_navigation_pending_;
 }

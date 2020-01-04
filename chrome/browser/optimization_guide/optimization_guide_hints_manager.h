@@ -104,15 +104,18 @@ class OptimizationGuideHintsManager
   bool HasLoadedOptimizationFilter(
       optimization_guide::proto::OptimizationType optimization_type);
 
-  // Populates |optimization_target_decision| and |optimization_type_decision|
-  // for whether the page load matches the given parameters.
-  void CanApplyOptimization(
+  // Returns the OptimizationTargetDecision based on the given parameters.
+  // TODO(crbug/1021364): Remove this method once the hints have nothing to do
+  // with predicting navigations.
+  optimization_guide::OptimizationTargetDecision ShouldTargetNavigation(
       content::NavigationHandle* navigation_handle,
-      optimization_guide::proto::OptimizationTarget optimization_target,
+      optimization_guide::proto::OptimizationTarget optimization_target);
+
+  // Returns the OptimizationTypeDecision based on the given parameters.
+  // |optimization_metadata| will be populated, if applicable.
+  optimization_guide::OptimizationTypeDecision CanApplyOptimization(
+      content::NavigationHandle* navigation_handle,
       optimization_guide::proto::OptimizationType optimization_type,
-      optimization_guide::OptimizationTargetDecision*
-          optimization_target_decision,
-      optimization_guide::OptimizationTypeDecision* optimization_type_decision,
       optimization_guide::OptimizationMetadata* optimization_metadata);
 
   // Clears fetched hints from |hint_cache_|.
@@ -152,8 +155,10 @@ class OptimizationGuideHintsManager
                            HintsFetched_AtNonSRP_ECT_SLOW_2G);
   FRIEND_TEST_ALL_PREFIXES(OptimizationGuideHintsManagerFetchingTest,
                            HintsFetched_AtSRP_ECT_SLOW_2G_DuplicatesRemoved);
-  FRIEND_TEST_ALL_PREFIXES(OptimizationGuideHintsManagerFetchingTest,
-                           HintsFetched_AtSRP_ECT_SLOW_2G_InsecureHostsRemoved);
+  FRIEND_TEST_ALL_PREFIXES(
+      OptimizationGuideHintsManagerFetchingTest,
+      HintsFetched_AtSRP_ECT_SLOW_2G_NonHTTPOrHTTPSHostsRemoved);
+
   // Processes the hints component.
   //
   // Should always be called on the thread that belongs to

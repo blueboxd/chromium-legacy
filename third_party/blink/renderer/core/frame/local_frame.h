@@ -150,9 +150,10 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // subtree, updating the inert bit on all descendant frames.
   void SetIsInert(bool) override;
   void SetInheritedEffectiveTouchAction(TouchAction) override;
-  bool BubbleLogicalScrollFromChildFrame(ScrollDirection direction,
-                                         ScrollGranularity granularity,
-                                         Frame* child) override;
+  bool BubbleLogicalScrollFromChildFrame(
+      mojom::blink::ScrollDirection direction,
+      ScrollGranularity granularity,
+      Frame* child) override;
   void DidFocus() override;
 
   void DidChangeThemeColor();

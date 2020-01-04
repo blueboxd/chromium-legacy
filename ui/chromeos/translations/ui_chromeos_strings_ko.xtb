@@ -80,6 +80,7 @@
 <translation id="1847880352285315359">저장됨</translation>
 <translation id="1864756863218646478">파일을 찾지 못했습니다.</translation>
 <translation id="1921986354447415460">터키어-F 키보드</translation>
+<translation id="1924372192547904021"><ph name="DRIVE_NAME" />이(가) 포맷되었습니다.</translation>
 <translation id="1931134289871235022">슬로바키아어</translation>
 <translation id="1933345018156373194">이동에 실패했습니다. 예상치 못한 오류: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">핀란드어</translation>
@@ -163,6 +164,7 @@
 <translation id="2942290791863759244">독일어 NEO 2 키보드</translation>
 <translation id="2943400156390503548">프레젠테이션</translation>
 <translation id="2943503720238418293">더 짧은 이름을 입력해 주세요.</translation>
+<translation id="2949781154072577687"><ph name="DRIVE_NAME" />을(를) 포맷 중...</translation>
 <translation id="2951236788251446349">해파리</translation>
 <translation id="2963783323012015985">터키어 키보드</translation>
 <translation id="2966459079597787514">스웨덴어 키보드</translation>
@@ -569,6 +571,7 @@
 <translation id="7649070708921625228">도움말</translation>
 <translation id="7654209398114106148">항목 <ph name="NUMBER_OF_ITEMS" />개 이동 중...</translation>
 <translation id="7658239707568436148">취소</translation>
+<translation id="7695430100978772476"><ph name="DRIVE_NAME" />을(를) 포맷할 수 없습니다.</translation>
 <translation id="770015031906360009">그리스어</translation>
 <translation id="7706319470528945664">포르투갈어 키보드</translation>
 <translation id="7711920809702896782">이미지 정보</translation>

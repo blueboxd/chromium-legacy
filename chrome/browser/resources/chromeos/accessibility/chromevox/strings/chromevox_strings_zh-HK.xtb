@@ -419,6 +419,7 @@
 <translation id="3914732343065571127">ChromeVox 指令參考資料</translation>
 <translation id="3930383913623796990">春綠色</translation>
 <translation id="3930498801443296724">重要嘅引述</translation>
+<translation id="3935615366277838204">大寫 <ph name="LETTER" /></translation>
 <translation id="3936394396199829062">薰衣草紫紅色</translation>
 <translation id="3941269780691800708">說出滑鼠游標下的文字。</translation>
 <translation id="394953087167197343">標示拼字錯誤：</translation>
@@ -854,6 +855,7 @@
 <translation id="699159175332639490">搜尋鍵 + O + W</translation>
 <translation id="6994042831499278539">詞彙表參考資料</translation>
 <translation id="6996566555547746822">下一個下拉式方塊</translation>
+<translation id="6997224546856374593">在讀出大寫字母時：</translation>
 <translation id="700202842116345659">參考書目資料</translation>
 <translation id="7005146664810010831">找不到網址</translation>
 <translation id="7010712454773919705">ChromeVox 輔助鍵</translation>
@@ -934,6 +936,7 @@
 <translation id="744163271241493234">pwded</translation>
 <translation id="7491962110804786152">分頁</translation>
 <translation id="7492049978501397201">已輸入對話方塊</translation>
+<translation id="7505149250476994901">先說「大寫」再讀出字母</translation>
 <translation id="7518543783849163354">如要暫時停止 ChromeVox 朗讀功能，請按 Control 鍵。</translation>
 <translation id="7521682724501952239">您可以透過觸控螢幕使用 ChromeVox。</translation>
 <translation id="7532613204005497612">6 月</translation>

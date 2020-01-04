@@ -272,15 +272,22 @@ Other options:
     new_ids_gen = assigner.GenerateNewIds(item_list, args.naive)
     # Create replacement specs usable by _MultiReplace().
     repl = [(tag.lo, tag.hi, str(new_id)) for tag, new_id in new_ids_gen]
-    # Update "SRCDIR" entry.
-    new_srcdir = os.path.relpath(src_dir, os.path.dirname(args.output))
-    repl.append(
-        (root_obj['SRCDIR'].lo, root_obj['SRCDIR'].hi, repr(new_srcdir)))
+    rel_input_dir = args.input
+    # Update "SRCDIR" entry if output is specified.
+    if args.output:
+      new_srcdir = os.path.relpath(src_dir, os.path.dirname(args.output))
+      repl.append((root_obj['SRCDIR'].lo, root_obj['SRCDIR'].hi,
+                   repr(new_srcdir)))
+      rel_input_dir = os.path.join('$SRCDIR',
+                                   os.path.relpath(rel_input_dir, new_srcdir))
+
     new_data = _MultiReplace(data, repl)
     if args.add_header:
-      new_data = ('# GENERATED FILE.\n' +
-                  '# Edit {} instead.\n'.format(args.input) +
-                  '#################\n') + new_data
+      header = []
+      header.append('# GENERATED FILE.')
+      header.append('# Edit %s instead.' % rel_input_dir)
+      header.append('#' * 80)
+      new_data = '\n'.join(header + ['']) + new_data
     _WriteFile(args.output, new_data)
 
     if args.depfile:

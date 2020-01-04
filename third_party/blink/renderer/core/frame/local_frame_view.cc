@@ -2027,9 +2027,9 @@ void LocalFrameView::UpdateGeometriesIfNeeded() {
   views.clear();
 }
 
-void LocalFrameView::UpdateAllLifecyclePhases(
+bool LocalFrameView::UpdateAllLifecyclePhases(
     DocumentLifecycle::LifecycleUpdateReason reason) {
-  GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhases(
+  return GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhases(
       DocumentLifecycle::kPaintClean, reason);
 }
 

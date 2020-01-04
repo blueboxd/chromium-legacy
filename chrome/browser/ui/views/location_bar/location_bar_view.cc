@@ -619,12 +619,8 @@ void LocationBarView::OnThemeChanged() {
 
   RefreshBackground();
 
-  // When the native theme changes, so can the colors used for emphasized text.
-  omnibox_view_->EmphasizeURLComponents();
-
   location_icon_view_->Update(/*suppress_animations=*/false);
   RefreshClearAllButtonIcon();
-  SchedulePaint();
 }
 
 void LocationBarView::ChildPreferredSizeChanged(views::View* child) {

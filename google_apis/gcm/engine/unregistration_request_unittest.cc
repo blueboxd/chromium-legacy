@@ -101,8 +101,8 @@ void GCMUnregistrationRequestTest::CreateRequest() {
   request_.reset(new UnregistrationRequest(
       GURL(kRegistrationURL), request_info, std::move(request_handler),
       GetBackoffPolicy(),
-      base::Bind(&UnregistrationRequestTest::UnregistrationCallback,
-                 base::Unretained(this)),
+      base::BindOnce(&UnregistrationRequestTest::UnregistrationCallback,
+                     base::Unretained(this)),
       max_retry_count_, url_loader_factory(),
       base::ThreadTaskRunnerHandle::Get(), &recorder_, std::string()));
 }
@@ -318,8 +318,8 @@ void InstaceIDDeleteTokenRequestTest::CreateRequest(
   request_.reset(new UnregistrationRequest(
       GURL(kRegistrationURL), request_info, std::move(request_handler),
       GetBackoffPolicy(),
-      base::Bind(&UnregistrationRequestTest::UnregistrationCallback,
-                 base::Unretained(this)),
+      base::BindOnce(&UnregistrationRequestTest::UnregistrationCallback,
+                     base::Unretained(this)),
       max_retry_count(), url_loader_factory(),
       base::ThreadTaskRunnerHandle::Get(), &recorder_, std::string()));
 }

@@ -7747,6 +7747,62 @@ IN_PROC_BROWSER_TEST_F(RecurrentInterstitialBrowserTest,
       SSLErrorControllerClient::RecurrentErrorAction::kProceed, 1);
 }
 
+// Tests that mixed content is tracked by origin, not by URL. This is tested by
+// checking that mixed content flags are set appropriately for about:blank URLs
+// (who inherit the origin of their opener).
+//
+// Note: we test that mixed content flags are propagated from an opener page to
+// about:blank, but not the other way around. This is because there is no way
+// for a mixed content flag to propagate from about:blank to a different
+// tab. Passive mixed content flags are not propagated from one tab to another,
+// and for active mixed content, there's no way to bypass mixed content blocking
+// on about:blank pages, so there's no way that the origin would get flagged for
+// active mixed content from an about:blank page. (There's no way to bypass
+// mixed content blocking on about:blank pages because the bypass is implemented
+// as a content setting, which doesn't apply to about:blank.)
+IN_PROC_BROWSER_TEST_F(SSLUITest, ActiveMixedContentTrackedByOrigin) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(https_server_.Start());
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+
+  std::string replacement_path = GetFilePathWithHostAndPortReplacement(
+      "/ssl/page_runs_insecure_content.html",
+      embedded_test_server()->host_port_pair());
+
+  // The insecure script is allowed to load because SSLUITestBase sets the
+  // --allow-running-insecure-content flag.
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL(replacement_path));
+  ssl_test_util::CheckAuthenticationBrokenState(
+      tab, CertError::NONE, AuthState::RAN_INSECURE_CONTENT);
+
+  // Open a new tab from the current page. After an initial navigation,
+  // navigate it to about:blank and check that the about:blank page is
+  // downgraded, because it shares an origin with |tab| which ran mixed
+  // content.
+  //
+  // Note that the security indicator is not downgraded on the initial
+  // about:blank navigation in the new tab. Initial about:blank navigations
+  // don't have navigation entries (yet), so there is no way to track the mixed
+  // content state for these navigations. See https://crbug.com/1038765.
+  ui_test_utils::TabAddedWaiter tab_waiter(browser());
+  ASSERT_TRUE(content::ExecJs(tab, "w = window.open()"));
+  tab_waiter.Wait();
+  WebContents* opened_tab = browser()->tab_strip_model()->GetWebContentsAt(1);
+  content::TestNavigationObserver first_navigation(opened_tab);
+  ASSERT_TRUE(content::ExecJs(
+      tab, content::JsReplace("w.location.href = $1",
+                              embedded_test_server()->GetURL("/title1.html"))));
+  first_navigation.Wait();
+  ssl_test_util::CheckUnauthenticatedState(opened_tab, AuthState::NONE);
+  content::TestNavigationObserver about_blank_navigation(opened_tab);
+  ASSERT_TRUE(content::ExecJs(tab, "w.location.href = 'about:blank'"));
+  about_blank_navigation.Wait();
+  ssl_test_util::CheckAuthenticationBrokenState(
+      opened_tab, CertError::NONE, AuthState::RAN_INSECURE_CONTENT);
+}
+
 // TODO(jcampan): more tests to do below.
 
 // Visit a page over https that contains a frame with a redirect.

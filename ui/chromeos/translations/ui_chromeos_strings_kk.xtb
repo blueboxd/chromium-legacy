@@ -80,6 +80,7 @@
 <translation id="1847880352285315359">Сақталды</translation>
 <translation id="1864756863218646478">Файлды табу мүмкін емес.</translation>
 <translation id="1921986354447415460">Turkish-F (түрік) пернетақтасы</translation>
+<translation id="1924372192547904021"><ph name="DRIVE_NAME" /> форматталды.</translation>
 <translation id="1931134289871235022">Словак</translation>
 <translation id="1933345018156373194">Тасымалданбады, күтпеген қате шықты: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">фин</translation>
@@ -163,6 +164,7 @@
 <translation id="2942290791863759244">Неміс NEO 2 пернетақтасы</translation>
 <translation id="2943400156390503548">Slides</translation>
 <translation id="2943503720238418293">Қысқарақ атау енгізіңіз</translation>
+<translation id="2949781154072577687"><ph name="DRIVE_NAME" /> форматталуда...</translation>
 <translation id="2951236788251446349">Медуза</translation>
 <translation id="2963783323012015985">Түрік пернетақтасы</translation>
 <translation id="2966459079597787514">Швед пернетақтасы</translation>
@@ -568,6 +570,7 @@
 <translation id="7649070708921625228">Анықтама</translation>
 <translation id="7654209398114106148"><ph name="NUMBER_OF_ITEMS" /> элемент жылжытылуда…</translation>
 <translation id="7658239707568436148">Бас тарту</translation>
+<translation id="7695430100978772476"><ph name="DRIVE_NAME" /> форматталмады.</translation>
 <translation id="770015031906360009">грек</translation>
 <translation id="7706319470528945664">Португал пернетақтасы</translation>
 <translation id="7711920809702896782">Сурет ақпараты</translation>

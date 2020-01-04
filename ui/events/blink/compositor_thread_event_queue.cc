@@ -76,12 +76,12 @@ void CompositorThreadEventQueue::Queue(
 
   std::unique_ptr<EventWithCallback> scroll_event =
       std::make_unique<EventWithCallback>(
-          WebInputEventTraits::Clone(coalesced_events.first), oldest_latency,
+          coalesced_events.first.Clone(), oldest_latency,
           oldest_creation_timestamp, timestamp_now, nullptr);
 
   std::unique_ptr<EventWithCallback> pinch_event =
       std::make_unique<EventWithCallback>(
-          WebInputEventTraits::Clone(coalesced_events.second), oldest_latency,
+          coalesced_events.second.Clone(), oldest_latency,
           oldest_creation_timestamp, timestamp_now,
           std::move(combined_original_events));
 

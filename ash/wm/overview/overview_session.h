@@ -174,6 +174,10 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // TODO(afakhry): Expose |use_spawn_animation| if needed.
   void AppendItem(aura::Window* window, bool reposition, bool animate);
 
+  // Similar to |AddItem| with reposition=true, but adds the window at the
+  // correct position according to MRU order.
+  void AddItemInMruOrder(aura::Window* window, bool animate);
+
   // Removes |overview_item| from the corresponding grid. No items are
   // repositioned.
   void RemoveItem(OverviewItem* overview_item);
@@ -361,6 +365,8 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   void UpdateNoWindowsWidget();
 
   void RefreshNoWindowsWidgetBounds(bool animate);
+
+  void OnItemAdded();
 
   // Tracks observed windows.
   base::flat_set<aura::Window*> observed_windows_;

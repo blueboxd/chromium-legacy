@@ -196,6 +196,7 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   void OnAudioConfigChange(const AudioDecoderConfig& config);
   void OnVideoConfigChange(const VideoDecoderConfig& config);
   void OnVideoOpacityChange(bool opaque);
+  void OnVideoFrameRateChange(base::Optional<int> fps);
 
   void OnStreamRestartCompleted();
 

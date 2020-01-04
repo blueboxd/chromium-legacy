@@ -274,7 +274,7 @@ class PaintArtifactCompositorTest : public testing::Test,
   std::unique_ptr<LayerTreeHostEmbedder> layer_tree_;
 };
 
-INSTANTIATE_LAYER_LIST_TEST_SUITE_P(PaintArtifactCompositorTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(PaintArtifactCompositorTest);
 
 const auto kNotScrollingOnMain =
     cc::MainThreadScrollingReason::kNotScrollingOnMain;

@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.omnibox.suggestions.basic;
 
 import android.support.annotation.ColorRes;
-import android.text.Spannable;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
@@ -17,7 +16,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonPropertie
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionView;
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewBinder;
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewProperties;
-import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewProperties.SuggestionTextContainer;
+import org.chromium.chrome.browser.omnibox.suggestions.base.SuggestionSpannable;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -33,10 +32,7 @@ public class SuggestionViewViewBinder extends BaseSuggestionViewBinder {
             content.setDelegate(model.get(BaseSuggestionViewProperties.SUGGESTION_DELEGATE));
         } else if (propertyKey == SuggestionViewProperties.TEXT_LINE_1_TEXT) {
             TextView tv = view.findContentView(R.id.line_1);
-            final SuggestionTextContainer container =
-                    model.get(SuggestionViewProperties.TEXT_LINE_1_TEXT);
-            final Spannable span = container != null ? container.text : null;
-            tv.setText(span);
+            tv.setText(model.get(SuggestionViewProperties.TEXT_LINE_1_TEXT));
             // Force layout to ensure infinite suggest aligns correctly.
             // The view may be re-used and may not require re-positioning by itself.
             // We want to make sure that regardless whether it's a regular text suggestion or
@@ -68,9 +64,7 @@ public class SuggestionViewViewBinder extends BaseSuggestionViewBinder {
                     isSearch ? TextView.TEXT_DIRECTION_INHERIT : TextView.TEXT_DIRECTION_LTR);
         } else if (propertyKey == SuggestionViewProperties.TEXT_LINE_2_TEXT) {
             TextView tv = view.findContentView(R.id.line_2);
-            final SuggestionTextContainer container =
-                    model.get(SuggestionViewProperties.TEXT_LINE_2_TEXT);
-            final Spannable span = container != null ? container.text : null;
+            final SuggestionSpannable span = model.get(SuggestionViewProperties.TEXT_LINE_2_TEXT);
             if (!TextUtils.isEmpty(span)) {
                 tv.setText(span);
                 tv.setVisibility(View.VISIBLE);
@@ -92,7 +86,7 @@ public class SuggestionViewViewBinder extends BaseSuggestionViewBinder {
         line1.setTextColor(ApiCompatibilityUtils.getColor(view.getResources(), color1));
 
         @ColorRes
-        final int color2 = isSearch ? (useDarkMode ? R.color.default_text_color_dark_secondary
+        final int color2 = isSearch ? (useDarkMode ? R.color.default_text_color_secondary_dark
                                                    : R.color.default_text_color_light)
                                     : (useDarkMode ? R.color.suggestion_url_dark_modern
                                                    : R.color.suggestion_url_light_modern);

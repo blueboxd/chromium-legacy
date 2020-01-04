@@ -564,6 +564,21 @@ const char* IDBTransaction::InactiveErrorMessage() const {
 
 DispatchEventResult IDBTransaction::DispatchEventInternal(Event& event) {
   IDB_TRACE1("IDBTransaction::dispatchEvent", "txn.id", id_);
+
+  event.SetTarget(this);
+
+  // Per spec: "A transaction's get the parent algorithm returns the
+  // transaction’s connection."
+  HeapVector<Member<EventTarget>> targets;
+  targets.push_back(this);
+  targets.push_back(db());
+
+  // If this event originated from script, it should have no side effects.
+  if (!event.isTrusted())
+    return IDBEventDispatcher::Dispatch(event, targets);
+  DCHECK(event.type() == event_type_names::kComplete ||
+         event.type() == event_type_names::kAbort);
+
   if (!GetExecutionContext()) {
     state_ = kFinished;
     return DispatchEventResult::kCanceledBeforeDispatch;
@@ -574,14 +589,6 @@ DispatchEventResult IDBTransaction::DispatchEventInternal(Event& event) {
   DCHECK_EQ(event.target(), this);
   state_ = kFinished;
 
-  HeapVector<Member<EventTarget>> targets;
-  targets.push_back(this);
-  targets.push_back(db());
-
-  // FIXME: When we allow custom event dispatching, this will probably need to
-  // change.
-  DCHECK(event.type() == event_type_names::kComplete ||
-         event.type() == event_type_names::kAbort);
   DispatchEventResult dispatch_result =
       IDBEventDispatcher::Dispatch(event, targets);
   // FIXME: Try to construct a test where |this| outlives openDBRequest and we

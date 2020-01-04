@@ -418,6 +418,7 @@
 <translation id="3914732343065571127">Справочник на командите на ChromeVox</translation>
 <translation id="3930383913623796990">пролетнозелено</translation>
 <translation id="3930498801443296724">Изнесен цитат</translation>
+<translation id="3935615366277838204">Главна буква <ph name="LETTER" /></translation>
 <translation id="3936394396199829062">лавандуловорозово</translation>
 <translation id="3941269780691800708">Изговаряне на текста под курсора на мишката.</translation>
 <translation id="394953087167197343">Индикация за правописна грешка:</translation>
@@ -853,6 +854,7 @@
 <translation id="699159175332639490">клавиш „търсене“ + O + W</translation>
 <translation id="6994042831499278539">Препратка към определение в терминологичния речник</translation>
 <translation id="6996566555547746822">Следващият разгъващ се списък</translation>
+<translation id="6997224546856374593">При четене на главни букви:</translation>
 <translation id="700202842116345659">Библиографски запис</translation>
 <translation id="7005146664810010831">Няма намерен URL адрес</translation>
 <translation id="7010712454773919705">Модифициращ клавиш за ChromeVox</translation>
@@ -933,6 +935,7 @@
 <translation id="744163271241493234">pwded</translation>
 <translation id="7491962110804786152">раздел</translation>
 <translation id="7492049978501397201">Влязохте в диалогов прозорец</translation>
+<translation id="7505149250476994901">Кажете „Главна буква“ преди буквата</translation>
 <translation id="7518543783849163354">За да спрете временно говора на ChromeVox, натиснете клавиша Control.</translation>
 <translation id="7521682724501952239">Можете да използвате ChromeVox със сензорния екран.</translation>
 <translation id="7532613204005497612">юни</translation>

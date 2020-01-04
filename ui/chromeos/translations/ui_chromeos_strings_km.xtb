@@ -80,6 +80,7 @@
 <translation id="1847880352285315359">បាន​រក្សាទុក</translation>
 <translation id="1864756863218646478">ឯកសារមិនត្រូវបានរកឃើញទេ។</translation>
 <translation id="1921986354447415460">ក្តារចុច តួកគី-F</translation>
+<translation id="1924372192547904021">បានសម្អាត <ph name="DRIVE_NAME" /></translation>
 <translation id="1931134289871235022">ស្លូវ៉ាគី</translation>
 <translation id="1933345018156373194">មិនអាចផ្លាស់ទីបានទេ បញ្ហាមិនបានរំពឹងទុក៖ <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">ភាសាហ្វាំងឡង់</translation>
@@ -163,6 +164,7 @@
 <translation id="2942290791863759244">ក្តារចុច NEO 2 អាល្លឺម៉ង់</translation>
 <translation id="2943400156390503548">ស្លាយ៍</translation>
 <translation id="2943503720238418293">ប្រើ​ឈ្មោះ​ខ្លី​ជាងនេះ</translation>
+<translation id="2949781154072577687">កំពុងសម្អាត <ph name="DRIVE_NAME" />...</translation>
 <translation id="2951236788251446349">ខ្ញែសមុទ្រ</translation>
 <translation id="2963783323012015985">ក្តារចុចទួរគី</translation>
 <translation id="2966459079597787514">ក្តារចុចស៊ុយអែដ</translation>
@@ -568,6 +570,7 @@
 <translation id="7649070708921625228">ជំនួយ</translation>
 <translation id="7654209398114106148">កំពុងផ្លាស់ទី​ធាតុ <ph name="NUMBER_OF_ITEMS" /> ...</translation>
 <translation id="7658239707568436148">បដិសេធ</translation>
+<translation id="7695430100978772476">មិនអាច​សម្អាត <ph name="DRIVE_NAME" /> បានទេ</translation>
 <translation id="770015031906360009">ភាសាក្រិក</translation>
 <translation id="7706319470528945664">ក្តារចុចប័រទុយហ្គាល់</translation>
 <translation id="7711920809702896782">ព័ត៌មាន​អំពី​រូបភាព</translation>

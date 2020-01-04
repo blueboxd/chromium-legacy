@@ -134,8 +134,17 @@ const base::Feature kDirectManipulationStylus = {
 };
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
+// Enable the FormControlsRefresh feature for Windows, ChromeOS, and Linux.
+// This feature will be released for Mac and Android in later milestones.
+// See crbug.com/1012106 for the Windows launch bug, and crbug.com/1012108 for
+// the Mac launch bug.
 const base::Feature kFormControlsRefresh = {"FormControlsRefresh",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_LINUX)
+                                            base::FEATURE_ENABLED_BY_DEFAULT
+#else
+                                            base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Enable WebUI accessibility enhancements for review and testing.
 const base::Feature kWebUIA11yEnhancements{"WebUIA11yEnhancements",

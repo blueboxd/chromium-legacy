@@ -1012,6 +1012,11 @@ void XRSession::CleanUpUnusedHitTestSources() {
 
   CleanUpUnusedHitTestSourcesHelper(
       &hit_test_source_ids_to_transient_input_hit_test_sources_);
+
+  DVLOG(3) << __func__ << ": Number of active hit test sources: "
+           << hit_test_source_ids_to_hit_test_sources_.size()
+           << ", number of active hit test sources for transient input: "
+           << hit_test_source_ids_to_transient_input_hit_test_sources_.size();
 }
 
 void XRSession::ProcessHitTestData(
@@ -1025,6 +1030,11 @@ void XRSession::ProcessHitTestData(
     // We have received hit test results for hit test subscriptions - process
     // each result and notify its corresponding hit test source about new
     // results for the current frame.
+    DVLOG(3) << __func__ << "hit_test_subscriptions_data->results.size()="
+             << hit_test_subscriptions_data->results.size() << ", "
+             << "hit_test_subscriptions_data->transient_input_results.size()="
+             << hit_test_subscriptions_data->transient_input_results.size();
+
     for (auto& hit_test_subscription_data :
          hit_test_subscriptions_data->results) {
       auto it = hit_test_source_ids_to_hit_test_sources_.find(
@@ -1046,6 +1056,8 @@ void XRSession::ProcessHitTestData(
       }
     }
   } else {
+    DVLOG(3) << __func__ << ": hit_test_subscriptions_data unavailable";
+
     // We have not received hit test results for any of the hit test
     // subscriptions in the current frame - clean up the results on all hit test
     // source objects.

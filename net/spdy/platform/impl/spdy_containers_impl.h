@@ -23,8 +23,8 @@ using SpdyHashMapImpl = std::unordered_map<KeyType, ValueType, Hash>;
 template <typename ElementType, typename Hasher, typename Eq>
 using SpdyHashSetImpl = std::unordered_set<ElementType, Hasher, Eq>;
 
-template <typename Key, typename Value, typename Hash>
-using SpdyLinkedHashMapImpl = quiche::SimpleLinkedHashMap<Key, Value, Hash>;
+template <typename Key, typename Value, typename Hash, typename Eq>
+using SpdyLinkedHashMapImpl = quiche::SimpleLinkedHashMap<Key, Value, Hash, Eq>;
 
 template <typename T, size_t N, typename A = std::allocator<T>>
 using SpdyInlinedVectorImpl = std::vector<T, A>;

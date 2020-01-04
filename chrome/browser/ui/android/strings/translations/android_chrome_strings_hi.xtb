@@ -95,7 +95,7 @@
 <translation id="169515064810179024">साइटों को हलचल पकड़ने वाले सेंसर ऐक्सेस करने से रोकें</translation>
 <translation id="1711267867945983636">जारी रखने के लिए, अपने फ़ोन पर NFC चालू करें</translation>
 <translation id="1717218214683051432">मोशन सेंसर</translation>
-<translation id="1718835860248848330">अंतिम घंटा</translation>
+<translation id="1718835860248848330">पिछला घंटा</translation>
 <translation id="1736419249208073774">बेहतर जानें</translation>
 <translation id="1743802530341753419">साइटों को डिवाइस से कनेक्ट करने की अनुमति देने से पहले पूछें (हम इस सेटिंग को चालू रखने का सुझाव देते हैं)</translation>
 <translation id="1749561566933687563">अपने बुकमार्क समन्‍वयित करें</translation>
@@ -198,7 +198,7 @@
 <translation id="2482878487686419369">सूचनाएं</translation>
 <translation id="2490684707762498678"><ph name="APP_NAME" /> प्रबंधित करता है</translation>
 <translation id="2494974097748878569">Chrome में Google Assistant</translation>
-<translation id="2496180316473517155">ब्राउज़िंग इतिहास...</translation>
+<translation id="2496180316473517155">ब्राउज़िंग इतिहास</translation>
 <translation id="2497852260688568942">सिंक को आपके व्यवस्थापक ने अक्षम कर दिया है</translation>
 <translation id="2498359688066513246">सहायता और फ़ीडबैक</translation>
 <translation id="2501278716633472235">वापस जाएं</translation>
@@ -834,7 +834,6 @@
 <translation id="729975465115245577">आपके डिवाइस में पासवर्ड फ़ाइल को स्टोर करने वाला कोई ऐप्लिकेशन नहीं है.</translation>
 <translation id="7302081693174882195">जानकारी: बचाए गए डेटा की मात्रा के अनुसार क्रम से लगाया गया</translation>
 <translation id="7302486331832100261">आप आम तौर पर, सूचनाओंं पर रोक लगाते हैं. अनुमति देने के लिए, 'जानकारी' पर टैप करें.</translation>
-<translation id="7311441321349344333">इस डिवाइस पर NFC बंद है. <ph name="BEGIN_LINK" />Android सेटिंग<ph name="END_LINK" /> में NFC चालू करें.</translation>
 <translation id="7328017930301109123">'लाइट मोड' में, Chrome पेजों को ज़्यादा तेज़ी से लोड करता है और 60 प्रतिशत तक कम डेटा इस्तेमाल करता है.</translation>
 <translation id="7333031090786104871">पिछली साइट अब भी जोड़ी जा रही है</translation>
 <translation id="7352939065658542140">वीडियो</translation>

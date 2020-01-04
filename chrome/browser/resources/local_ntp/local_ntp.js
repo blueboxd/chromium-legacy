@@ -67,6 +67,8 @@ const CLASSES = {
   // Applies styles to dialogs used in customization.
   CUSTOMIZE_DIALOG: 'customize-dialog',
   DELAYED_HIDE_NOTIFICATION: 'mv-notice-delayed-hide',
+  DESCRIPTION: 'description',
+  DIM: 'dim',
   DISMISSABLE: 'dismissable',
   DISMISS_ICON: 'dismiss-icon',
   DISMISS_PROMO: 'dismiss-promo',
@@ -78,12 +80,18 @@ const CLASSES = {
   FLOAT_UP: 'float-up',
   // Applies drag focus style to the fakebox
   FAKEBOX_DRAG_FOCUS: 'fakebox-drag-focused',
+  HAS_IMAGE: 'has-image',  // A realbox match with an image.
   // Applies a different style to the error notification if a link is present.
   HAS_LINK: 'has-link',
   HIDE_FAKEBOX: 'hide-fakebox',
   HIDE_NOTIFICATION: 'notice-hide',
+  // Contains the image next to a realbox match. Displays a placeholder color
+  // while the realbox match image is loading.
+  IMAGE_CONTAINER: 'image-container',
   INITED: 'inited',  // Reveals the <body> once init() is done.
   LEFT_ALIGN_ATTRIBUTION: 'left-align-attribution',
+  // The image next to a realbox match.
+  MATCH_IMAGE: 'match-image',
   // Vertically centers the most visited section for a non-Google provided page.
   NON_GOOGLE_PAGE: 'non-google-page',
   REMOVABLE: 'removable',
@@ -262,6 +270,13 @@ let delayedHideNotification = null;
 let enterWasPressed = false;
 
 /**
+ * A cache from image URL to image content in the form of data URL in order to
+ * reuse match image data that have been loaded before and to avoid flickering.
+ * @type {!Object<string>}
+ */
+const imageUrlToDataUrlCache = {};
+
+/**
  * True if dark mode is enabled.
  * @type {boolean}
  */
@@ -351,6 +366,36 @@ function autocompleteResultChanged(result) {
   } else {
     setRealboxIcon(undefined);
   }
+}
+
+/**
+ * @param {number} matchIndex
+ * @param {string} imageUrl
+ * @param {string} dataUrl
+ */
+function autocompleteMatchImageAvailable(matchIndex, imageUrl, dataUrl) {
+  if (!autocompleteResult || !autocompleteResult.matches[matchIndex] ||
+      autocompleteResult.matches[matchIndex].imageUrl !== imageUrl) {
+    return;
+  }
+
+  // Ignore images that have previously been loaded. Those are rendered already.
+  if (imageUrlToDataUrlCache[imageUrl]) {
+    return;
+  }
+  imageUrlToDataUrlCache[imageUrl] = dataUrl;
+
+  const realboxMatchesEl = $(IDS.REALBOX_MATCHES);
+  const matchEls = Array.from(realboxMatchesEl.children);
+  assert(autocompleteResult.matches.length === matchEls.length);
+
+  const imageContainerEl = assert(
+      matchEls[matchIndex].getElementsByClassName(CLASSES.IMAGE_CONTAINER)[0]);
+  const imageEl = document.createElement('img');
+  imageEl.classList.add(CLASSES.MATCH_IMAGE);
+  imageEl.src = dataUrl;
+  imageContainerEl.appendChild(imageEl);
+  imageContainerEl.style.backgroundColor = 'transparent';
 }
 
 /**
@@ -878,6 +923,8 @@ function init() {
       realboxWrapper.addEventListener('keydown', onRealboxWrapperKeydown);
 
       searchboxApiHandle.autocompleteresultchanged = autocompleteResultChanged;
+      searchboxApiHandle.autocompletematchimageavailable =
+          autocompleteMatchImageAvailable;
 
       if (!iframesAndVoiceSearchDisabledForTesting) {
         speech.init(
@@ -1630,28 +1677,52 @@ function renderAutocompleteMatches(matches) {
       }
     };
 
+    const hasImage = !!match.imageUrl;
+    if (hasImage) {
+      matchEl.classList.add(CLASSES.HAS_IMAGE);
+    }
+
     if (match.isSearchType) {
       const icon = document.createElement('div');
-      const isSearchHistory = SEARCH_HISTORY_MATCH_TYPES.includes(match.type);
-      icon.classList.add(
-          isSearchHistory ? CLASSES.CLOCK_ICON : CLASSES.SEARCH_ICON);
+      if (hasImage) {
+        icon.classList.add(CLASSES.IMAGE_CONTAINER);
+
+        if (imageUrlToDataUrlCache[match.imageUrl]) {
+          const imageEl = document.createElement('img');
+          imageEl.classList.add(CLASSES.MATCH_IMAGE);
+          imageEl.src = imageUrlToDataUrlCache[match.imageUrl];
+          icon.appendChild(imageEl);
+        } else if (match.imageDominantColor) {
+          // .25 Opacity matching c/b/u/views/omnibox/omnibox_match_cell_view.cc
+          icon.style.backgroundColor = match.imageDominantColor + '40';
+        }
+      } else {
+        const isSearchHistory = SEARCH_HISTORY_MATCH_TYPES.includes(match.type);
+        icon.classList.add(
+            isSearchHistory ? CLASSES.CLOCK_ICON : CLASSES.SEARCH_ICON);
+      }
       matchEl.appendChild(icon);
     } else {
       const iconUrl = getIconUrl(match.destinationUrl);
       matchEl.style.backgroundImage = `url(${iconUrl})`;
     }
 
-    const contentsEls =
+    const contentsEl =
         renderMatchClassifications(match.contents, match.contentsClass);
-    const descriptionEls = [];
-    const separatorEls = [];
+    let descriptionEl;
+    let separatorEl;
     let separatorText = '';
 
     if (match.description) {
-      descriptionEls.push(...renderMatchClassifications(
-          match.description, match.descriptionClass));
-      separatorText = configData.translatedStrings.realboxSeparator;
-      separatorEls.push(document.createTextNode(separatorText));
+      descriptionEl =
+          renderMatchClassifications(match.description, match.descriptionClass);
+      descriptionEl.classList.add(CLASSES.DESCRIPTION);
+      if (hasImage) {
+        descriptionEl.classList.add(CLASSES.DIM);
+      } else {
+        separatorText = configData.translatedStrings.realboxSeparator;
+        separatorEl = document.createTextNode(separatorText);
+      }
     }
 
     const ariaLabel = match.swapContentsAndDescription ?
@@ -1660,11 +1731,13 @@ function renderAutocompleteMatches(matches) {
     matchEl.setAttribute('aria-label', ariaLabel);
 
     const layout = match.swapContentsAndDescription ?
-        [descriptionEls, separatorEls, contentsEls] :
-        [contentsEls, separatorEls, descriptionEls];
+        [descriptionEl, separatorEl, contentsEl] :
+        [contentsEl, separatorEl, descriptionEl];
 
-    for (const col of layout) {
-      col.forEach(colEl => matchEl.appendChild(colEl));
+    for (const colEl of layout) {
+      if (colEl) {
+        matchEl.appendChild(colEl);
+      }
     }
 
     if (match.supportsDeletion && configData.suggestionTransparencyEnabled) {
@@ -1718,16 +1791,22 @@ function renderAutocompleteMatches(matches) {
 /**
  * @param {string} text
  * @param {!Array<!ACMatchClassification>} classifications
- * @return {!Array<!Element>}
+ * @return {!Element}
  */
 function renderMatchClassifications(text, classifications) {
-  return classifications.map((classification, i) => {
-    const classes = classificationStyleToClasses(classification.style);
-    const next = classifications[i + 1] || {offset: text.length};
-    const classifiedText = text.substring(classification.offset, next.offset);
-    return classes.length ? spanWithClasses(classifiedText, classes) :
-                            document.createTextNode(classifiedText);
-  });
+  return classifications
+      .map((classification, i) => {
+        const classes = classificationStyleToClasses(classification.style);
+        const next = classifications[i + 1] || {offset: text.length};
+        const classifiedText =
+            text.substring(classification.offset, next.offset);
+        return classes.length ? spanWithClasses(classifiedText, classes) :
+                                document.createTextNode(classifiedText);
+      })
+      .reduce((container, currentElement) => {
+        container.appendChild(currentElement);
+        return container;
+      }, document.createElement('span'));
 }
 
 /**

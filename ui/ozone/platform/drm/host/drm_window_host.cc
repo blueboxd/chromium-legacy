@@ -11,7 +11,6 @@
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/events/ozone/events_ozone.h"
 #include "ui/events/platform/platform_event_source.h"
-#include "ui/ozone/platform/drm/common/drm_overlay_manager.h"
 #include "ui/ozone/platform/drm/host/drm_cursor.h"
 #include "ui/ozone/platform/drm/host/drm_display_host.h"
 #include "ui/ozone/platform/drm/host/drm_display_host_manager.h"
@@ -26,15 +25,13 @@ DrmWindowHost::DrmWindowHost(PlatformWindowDelegate* delegate,
                              EventFactoryEvdev* event_factory,
                              DrmCursor* cursor,
                              DrmWindowHostManager* window_manager,
-                             DrmDisplayHostManager* display_manager,
-                             DrmOverlayManager* overlay_manager)
+                             DrmDisplayHostManager* display_manager)
     : delegate_(delegate),
       sender_(sender),
       event_factory_(event_factory),
       cursor_(cursor),
       window_manager_(window_manager),
       display_manager_(display_manager),
-      overlay_manager_(overlay_manager),
       bounds_(bounds),
       widget_(window_manager->NextAcceleratedWidget()) {
   window_manager_->AddWindow(widget_, this);
@@ -244,9 +241,6 @@ void DrmWindowHost::SendBoundsChange() {
   // window bounds when the window size shrinks.
   cursor_->CommitBoundsChange(widget_, bounds_, GetCursorConfinedBounds());
   sender_->GpuWindowBoundsChanged(widget_, bounds_);
-
-  if (overlay_manager_)
-    overlay_manager_->ResetCache();
 }
 
 }  // namespace ui

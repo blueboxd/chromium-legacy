@@ -5,10 +5,12 @@
 #include "ash/shelf/scrollable_shelf_view.h"
 
 #include "ash/public/cpp/shelf_config.h"
+#include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_test_util.h"
 #include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shelf/shelf_widget.h"
+#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/test/scoped_feature_list.h"
@@ -443,6 +445,31 @@ class HotseatScrollableShelfViewTest : public ScrollableShelfViewTest {
 
   base::test::ScopedFeatureList scoped_feature_list_;
 };
+
+// Verifies that after adding the second display, shelf icons showing on
+// the primary display are also visible on the second display
+// (https://crbug.com/1035596).
+TEST_F(HotseatScrollableShelfViewTest, CheckTappableIndicesOnSecondDisplay) {
+  constexpr int icon_number = 5;
+  for (int i = 0; i < icon_number; i++)
+    AddAppShortcut();
+
+  // Adds the second display.
+  UpdateDisplay("600x800,600x800");
+
+  Shelf* secondary_shelf =
+      Shell::GetRootWindowControllerWithDisplayId(GetSecondaryDisplay().id())
+          ->shelf();
+  ScrollableShelfView* secondary_scrollable_shelf_view =
+      secondary_shelf->shelf_widget()
+          ->hotseat_widget()
+          ->scrollable_shelf_view();
+
+  // Verifies that the all icons are visible on the secondary display.
+  EXPECT_EQ(icon_number - 1,
+            secondary_scrollable_shelf_view->last_tappable_app_index());
+  EXPECT_EQ(0, secondary_scrollable_shelf_view->first_tappable_app_index());
+}
 
 // Verifies that the scrollable shelf in oveflow mode has the correct layout
 // after switching to tablet mode (https://crbug.com/1017979).

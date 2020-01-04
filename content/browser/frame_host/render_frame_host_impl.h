@@ -84,7 +84,6 @@
 #include "third_party/blink/public/common/frame/blocked_navigation_types.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
-#include "third_party/blink/public/common/input/web_scroll_types.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/commit_result/commit_result.mojom.h"
@@ -1294,6 +1293,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
       bool present,
       blink::mojom::SuddenTerminationDisablerType disabler_type) override;
   void HadStickyUserActivationBeforeNavigationChanged(bool value) override;
+  void BubbleLogicalScrollInParentFrame(
+      blink::mojom::ScrollDirection direction,
+      ui::input_types::ScrollGranularity granularity) override;
 
  protected:
   friend class RenderFrameHostFactory;
@@ -1494,9 +1496,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnScrollRectToVisibleInParentFrame(
       const gfx::Rect& rect_to_scroll,
       const blink::WebScrollIntoViewParams& params);
-  void OnBubbleLogicalScrollInParentFrame(
-      blink::WebScrollDirection direction,
-      ui::input_types::ScrollGranularity granularity);
   void OnFrameDidCallFocus();
   void OnRenderFallbackContentInParentProcess();
   void OnDownloadUrl(const FrameHostMsg_DownloadUrl_Params& params);

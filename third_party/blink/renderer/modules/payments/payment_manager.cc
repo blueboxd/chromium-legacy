@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/modules/payments/payment_instruments.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -32,20 +33,20 @@ void PaymentManager::setUserHint(const String& user_hint) {
 
 ScriptPromise PaymentManager::enableDelegations(
     ScriptState* script_state,
-    const Vector<String>& stringified_delegations) {
+    const Vector<String>& stringified_delegations,
+    ExceptionState& exception_state) {
   if (!script_state->ContextIsValid()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kInvalidStateError,
-                          "Cannot enable payment delegations"));
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Cannot enable payment delegations");
+    return ScriptPromise();
   }
 
   if (enable_delegations_resolver_) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kInvalidStateError,
-                          "Cannot call enableDelegations() again until "
-                          "the previous enableDelegations() is finished"));
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "Cannot call enableDelegations() again until the previous "
+        "enableDelegations() is finished");
+    return ScriptPromise();
   }
 
   Vector<payments::mojom::blink::PaymentDelegation> delegations;

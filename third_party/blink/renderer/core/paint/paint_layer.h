@@ -794,7 +794,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     bool is_under_position_sticky = false;
   };
   void SetNeedsVisualOverflowRecalc();
-  void SetNeedsCompositingInputsUpdate();
+  void SetNeedsCompositingInputsUpdate(bool mark_ancestor_flags = true);
 
   // This methods marks everything from this layer up to the |ancestor| argument
   // (both included).

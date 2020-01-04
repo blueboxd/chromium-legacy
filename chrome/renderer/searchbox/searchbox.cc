@@ -541,6 +541,15 @@ void SearchBox::AutocompleteResultChanged(
   }
 }
 
+void SearchBox::AutocompleteMatchImageAvailable(uint32_t match_index,
+                                                const std::string& image_url,
+                                                const std::string& data_url) {
+  if (can_run_js_in_renderframe_) {
+    SearchBoxExtension::DispatchAutocompleteMatchImageAvailable(
+        render_frame()->GetWebFrame(), match_index, image_url, data_url);
+  }
+}
+
 void SearchBox::MostVisitedInfoChanged(
     const InstantMostVisitedInfo& most_visited_info) {
   has_received_most_visited_ = true;

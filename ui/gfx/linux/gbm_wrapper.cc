@@ -32,23 +32,23 @@ namespace {
 #define WRAP_GBM_FN(x) \
   ALLOW_UNUSED_TYPE decltype(x)* get_##x() { return x; }
 #else
-#define WRAP_GBM_FN(x)                                                        \
-  decltype(auto) get_##x() {                                                  \
-    static auto* x##_ =                                                       \
-        reinterpret_cast<decltype(::x)*>(dlsym(RTLD_DEFAULT, STRINGIZE(x)));  \
-    return x##_;                                                              \
-  }                                                                           \
-  /* Functions that call dlsym-loaded functions must not be instrumented with \
-   * CFI_ICALL. */                                                            \
-  template <typename... Args>                                                 \
-  NO_SANITIZE("cfi-icall")                                                    \
-  decltype(auto) x(Args&&... args) {                                          \
-    if (!get_##x()) {                                                         \
-      LOG(FATAL) << STRINGIZE(x) << "() is not available on this platform. "  \
-                 << STRINGIZE(get_##x)                                        \
-                 << "() should be used to determine availability.";           \
-    }                                                                         \
-    return get_##x()(std::forward<Args>(args)...);                            \
+#define WRAP_GBM_FN(x)                                                       \
+  decltype(auto) get_##x() {                                                 \
+    static auto* x##_ =                                                      \
+        reinterpret_cast<decltype(::x)*>(dlsym(RTLD_DEFAULT, STRINGIZE(x))); \
+    return x##_;                                                             \
+  }                                                                          \
+  /* Functions that call dlsym-loaded functions must not be instrumented */  \
+  /* with CFI_ICALL. */                                                      \
+  template <typename... Args>                                                \
+  NO_SANITIZE("cfi-icall")                                                   \
+  decltype(auto) call_##x(Args&&... args) {                                  \
+    if (!get_##x()) {                                                        \
+      LOG(FATAL) << STRINGIZE(x) << "() is not available on this platform. " \
+                 << STRINGIZE(get_##x)                                       \
+                 << "() should be used to determine availability.";          \
+    }                                                                        \
+    return get_##x()(std::forward<Args>(args)...);                           \
   }
 #endif
 
@@ -56,6 +56,10 @@ namespace {
 // is dropped.
 WRAP_GBM_FN(gbm_bo_map)
 WRAP_GBM_FN(gbm_bo_unmap)
+#if !defined(MINIGBM)
+#define gbm_bo_map call_gbm_bo_map
+#define gbm_bo_unmap call_gbm_bo_unmap
+#endif
 
 // TODO(https://crbug.com/784010): Remove these once support for Ubuntu Trusty
 // and Debian Stretch are dropped.
@@ -65,6 +69,14 @@ WRAP_GBM_FN(gbm_bo_get_modifier)
 WRAP_GBM_FN(gbm_bo_get_offset)
 WRAP_GBM_FN(gbm_bo_get_plane_count)
 WRAP_GBM_FN(gbm_bo_get_stride_for_plane)
+#if !defined(MINIGBM)
+#define gbm_bo_create_with_modifiers call_gbm_bo_create_with_modifiers
+#define gbm_bo_get_handle_for_plane call_gbm_bo_get_handle_for_plane
+#define gbm_bo_get_modifier call_gbm_bo_get_modifier
+#define gbm_bo_get_offset call_gbm_bo_get_offset
+#define gbm_bo_get_plane_count call_gbm_bo_get_plane_count
+#define gbm_bo_get_stride_for_plane call_gbm_bo_get_stride_for_plane
+#endif
 
 int GetPlaneFdForBo(gbm_bo* bo, size_t plane) {
 #if defined(MINIGBM)

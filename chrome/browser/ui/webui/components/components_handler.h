@@ -8,10 +8,10 @@
 #include <memory>
 #include <string>
 
+#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/update_client/update_client.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace base {
@@ -48,7 +48,9 @@ class ComponentsHandler : public content::WebUIMessageHandler,
   static std::unique_ptr<base::ListValue> LoadComponents();
   static void OnDemandUpdate(const std::string& component_id);
 
-  content::NotificationRegistrar registrar_;
+  ScopedObserver<component_updater::ComponentUpdateService,
+                 component_updater::ComponentUpdateService::Observer>
+      observer_{this};
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_COMPONENTS_COMPONENTS_HANDLER_H_

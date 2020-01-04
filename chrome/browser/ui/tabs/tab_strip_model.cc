@@ -1021,14 +1021,6 @@ void TabStripModel::AddToExistingGroup(const std::vector<int>& indices,
   AddToExistingGroupImpl(indices, group);
 }
 
-void TabStripModel::MoveTabsIntoGroup(const std::vector<int>& indices,
-                                      int destination_index,
-                                      tab_groups::TabGroupId group) {
-  ReentrancyCheck reentrancy_check(&reentrancy_guard_);
-
-  MoveTabsIntoGroupImpl(indices, destination_index, group);
-}
-
 void TabStripModel::AddToGroupForRestore(const std::vector<int>& indices,
                                          tab_groups::TabGroupId group) {
   ReentrancyCheck reentrancy_check(&reentrancy_guard_);
@@ -1775,24 +1767,31 @@ void TabStripModel::AddToExistingGroupImpl(const std::vector<int>& indices,
   if (!group_model_->ContainsTabGroup(group))
     return;
 
-  int destination_index = -1;
-  for (int i = contents_data_.size() - 1; i >= 0; i--) {
-    if (contents_data_[i]->group() == group) {
-      destination_index = i + 1;
-      break;
+  // Unpin tabs when grouping -- the states should be mutually exclusive.
+  std::vector<int> new_indices = SetTabsPinned(indices, false);
+
+  std::vector<int> tabs_in_group = group_model_->GetTabGroup(group)->ListTabs();
+  DCHECK(base::STLIsSorted(tabs_in_group));
+
+  // Split |new_indices| into |tabs_left_of_group| and |tabs_right_of_group| to
+  // be moved to proper destination index. Directly set the group for indices
+  // that are inside the group.
+  std::vector<int> tabs_left_of_group;
+  std::vector<int> tabs_right_of_group;
+  for (int new_index : new_indices) {
+    if (new_index >= tabs_in_group.front() &&
+        new_index <= tabs_in_group.back()) {
+      GroupTab(new_index, group);
+    } else if (new_index < tabs_in_group.front()) {
+      tabs_left_of_group.push_back(new_index);
+    } else {
+      DCHECK(new_index > tabs_in_group.back());
+      tabs_right_of_group.push_back(new_index);
     }
   }
 
-  // Ignore indices that are already in the group.
-  std::vector<int> new_indices;
-  for (int candidate_index : indices) {
-    if (GetTabGroupForTab(candidate_index) != group)
-      new_indices.push_back(candidate_index);
-  }
-  // Unpin tabs when grouping -- the states should be mutually exclusive.
-  new_indices = SetTabsPinned(new_indices, false);
-
-  MoveTabsIntoGroupImpl(new_indices, destination_index, group);
+  MoveTabsIntoGroupImpl(tabs_left_of_group, tabs_in_group.front(), group);
+  MoveTabsIntoGroupImpl(tabs_right_of_group, tabs_in_group.back() + 1, group);
 }
 
 void TabStripModel::MoveTabsIntoGroupImpl(const std::vector<int>& indices,
@@ -1816,6 +1815,7 @@ void TabStripModel::MoveTabsIntoGroupImpl(const std::vector<int>& indices,
   for (size_t i = numTabsMovingRight; i < indices.size(); i++) {
     move_left_indices.push_back(indices[i]);
   }
+
   // Move tabs to the left, starting with the leftmost tab.
   for (size_t i = 0; i < move_left_indices.size(); i++)
     MoveAndSetGroup(move_left_indices[i], destination_index + i, group);

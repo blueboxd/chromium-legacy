@@ -23,6 +23,8 @@
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_clock.h"
 #include "net/third_party/quiche/src/quic/test_tools/mock_random.h"
+#include "net/third_party/quiche/src/quic/test_tools/qpack/qpack_encoder_test_utils.h"
+#include "net/third_party/quiche/src/quic/test_tools/qpack/qpack_test_utils.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_framer.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
 
@@ -311,14 +313,15 @@ class QuicTestPacketMaker {
 
   spdy::SpdyHeaderBlock GetRequestHeaders(const std::string& method,
                                           const std::string& scheme,
-                                          const std::string& path);
+                                          const std::string& path) const;
 
-  spdy::SpdyHeaderBlock ConnectRequestHeaders(const std::string& host_port);
+  spdy::SpdyHeaderBlock ConnectRequestHeaders(
+      const std::string& host_port) const;
 
-  spdy::SpdyHeaderBlock GetResponseHeaders(const std::string& status);
+  spdy::SpdyHeaderBlock GetResponseHeaders(const std::string& status) const;
 
   spdy::SpdyHeaderBlock GetResponseHeaders(const std::string& status,
-                                           const std::string& alt_svc);
+                                           const std::string& alt_svc) const;
 
   spdy::SpdyFramer* spdy_request_framer() { return &spdy_request_framer_; }
   spdy::SpdyFramer* spdy_response_framer() { return &spdy_response_framer_; }
@@ -338,23 +341,6 @@ class QuicTestPacketMaker {
                                  size_t* encoded_data_length);
 
  private:
-  // QpackEncoder::DecoderStreamErrorDelegate implementation that does nothing
-  class DecoderStreamErrorDelegate
-      : public quic::QpackEncoder::DecoderStreamErrorDelegate {
-   public:
-    ~DecoderStreamErrorDelegate() override = default;
-
-    void OnDecoderStreamError(quiche::QuicheStringPiece error_message) override;
-  };
-
-  // QpackEncoderStreamSender::Delegate implementation that does nothing.
-  class EncoderStreamSenderDelegate : public quic::QpackStreamSenderDelegate {
-   public:
-    ~EncoderStreamSenderDelegate() override = default;
-
-    void WriteStreamData(quiche::QuicheStringPiece data) override;
-  };
-
   std::unique_ptr<quic::QuicReceivedPacket> MakePacket(
       const quic::QuicPacketHeader& header,
       const quic::QuicFrame& frame);
@@ -414,8 +400,8 @@ class QuicTestPacketMaker {
   spdy::SpdyFramer spdy_request_framer_;
   spdy::SpdyFramer spdy_response_framer_;
   bool save_packet_frames_;
-  DecoderStreamErrorDelegate decoder_stream_error_delegate_;
-  EncoderStreamSenderDelegate encoder_stream_sender_delegate_;
+  quic::test::NoopDecoderStreamErrorDelegate decoder_stream_error_delegate_;
+  quic::test::NoopQpackStreamSenderDelegate encoder_stream_sender_delegate_;
   quic::QpackEncoder qpack_encoder_;
   quic::test::MockRandom random_generator_;
   std::map<quic::QuicStreamId, quic::QuicStreamOffset> stream_offsets_;

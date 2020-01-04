@@ -4,7 +4,9 @@
 
 #include "chrome/browser/predictors/loading_predictor_config.h"
 
+#include "base/metrics/field_trial_params.h"
 #include "chrome/browser/net/prediction_options.h"
+#include "chrome/browser/predictors/predictors_features.h"
 #include "chrome/browser/profiles/profile.h"
 
 namespace predictors {
@@ -38,9 +40,18 @@ bool IsPreconnectAllowed(Profile* profile) {
 }
 
 LoadingPredictorConfig::LoadingPredictorConfig()
-    : max_navigation_lifetime_seconds(60),
-      max_hosts_to_track(100),
-      max_origins_per_entry(50),
+    : max_navigation_lifetime_seconds(base::GetFieldTrialParamByFeatureAsInt(
+          features::kLoadingPredictorTableConfig,
+          "max_navigation_lifetime_seconds",
+          60)),
+      max_hosts_to_track(base::GetFieldTrialParamByFeatureAsInt(
+          features::kLoadingPredictorTableConfig,
+          "max_hosts_to_track",
+          100)),
+      max_origins_per_entry(base::GetFieldTrialParamByFeatureAsInt(
+          features::kLoadingPredictorTableConfig,
+          "max_origins_per_entry",
+          50)),
       max_consecutive_misses(3),
       max_redirect_consecutive_misses(5),
       flush_data_to_disk_delay_seconds(30) {}
@@ -49,9 +60,5 @@ LoadingPredictorConfig::LoadingPredictorConfig(
     const LoadingPredictorConfig& other) = default;
 
 LoadingPredictorConfig::~LoadingPredictorConfig() = default;
-
-bool LoadingPredictorConfig::IsSmallDBEnabledForTest() const {
-  return max_hosts_to_track == 100;
-}
 
 }  // namespace predictors

@@ -46,25 +46,24 @@ document
 ++++++++++++++++++img
 ++++++++++++++button Name='Show previous month'
 ++++++++++++++++img
-++++++++++++++button Name='Today'
-++++++++++++++++group IsControlElement=false
 ++++++++++++++button Name='Show next month'
 ++++++++++++++++img
 ++++++++++++++grid Grid.ColumnCount=0 Grid.RowCount=0 Selection.CanSelectMultiple=false Selection.IsSelectionRequired=false Table.RowOrColumnMajor='RowMajor'
 ++++++++++++++++group IsControlElement=false
 ++++++++++++++++++group IsControlElement=false
-++++++++++++++++++++description Name='Sun'
+++++++++++++++++++++description Name='Su'
 ++++++++++++++++++group IsControlElement=false
-++++++++++++++++++++description Name='Mon'
+++++++++++++++++++++description Name='Mo'
 ++++++++++++++++++group IsControlElement=false
-++++++++++++++++++++description Name='Tue'
+++++++++++++++++++++description Name='Tu'
 ++++++++++++++++++group IsControlElement=false
-++++++++++++++++++++description Name='Wed'
+++++++++++++++++++++description Name='We'
 ++++++++++++++++++group IsControlElement=false
-++++++++++++++++++++description Name='Thu'
+++++++++++++++++++++description Name='Th'
 ++++++++++++++++++group IsControlElement=false
-++++++++++++++++++++description Name='Fri'
+++++++++++++++++++++description Name='Fr'
 ++++++++++++++++++group IsControlElement=false
-++++++++++++++++++++description Name='Sat'
+++++++++++++++++++++description Name='Sa'
 ++++++++++++++++group IsControlElement=false
 ++++++++++++++++++group IsControlElement=false
+++++++++++++++++button Name='Today'

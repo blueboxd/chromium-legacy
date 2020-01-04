@@ -35,13 +35,13 @@ namespace attestation {
 // Interface for access to the Privacy CA server.
 class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) ServerProxy {
  public:
-  typedef base::Callback<void(bool success, const std::string& data)>
-      DataCallback;
+  using DataCallback =
+      base::OnceCallback<void(bool success, const std::string& data)>;
   virtual ~ServerProxy();
   virtual void SendEnrollRequest(const std::string& request,
-                                 const DataCallback& on_response) = 0;
+                                 DataCallback on_response) = 0;
   virtual void SendCertificateRequest(const std::string& request,
-                                      const DataCallback& on_response) = 0;
+                                      DataCallback on_response) = 0;
   virtual PrivacyCAType GetType();
 };
 
@@ -58,9 +58,9 @@ class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) ServerProxy {
 // This class is not thread safe.
 class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) AttestationFlow {
  public:
-  typedef base::RepeatingCallback<
-      void(AttestationStatus status, const std::string& pem_certificate_chain)>
-      CertificateCallback;
+  using CertificateCallback =
+      base::OnceCallback<void(AttestationStatus status,
+                              const std::string& pem_certificate_chain)>;
 
   // Returns the attestation key type for a given |certificate_profile|.
   //
@@ -129,40 +129,48 @@ class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) AttestationFlow {
                               const std::string& request_origin,
                               bool force_new_key,
                               const std::string& key_name,
-                              const CertificateCallback& callback);
+                              CertificateCallback callback);
 
  private:
+  // Handles the result of a call to TpmAttestationIsEnrolled. Reports success
+  // if enrollment is complete and otherwise starts the process.
+  //
+  // Parameters
+  //   callback - Called with the success or failure of the enrollment.
+  //   result - Result of TpmAttestationIsEnrolled().
+  void OnEnrollmentCheckComplete(base::OnceCallback<void(bool)> callback,
+                                 base::Optional<bool> result);
+
   // Asynchronously waits for attestation to be ready and start enrollment once
   // it is. If attestation is not ready by the time the flow's timeout is
   // reached, fail.
   //
   // Parameters
-  //   retries_left - Number of retries left (-1 for infinite retries).
-  //   on_failure - Called if any failure occurs.
-  //   next_task - Called on successful enrollment.
-  void WaitForAttestationReadyAndStartEnroll(base::TimeTicks end_time,
-                                             const base::Closure& on_failure,
-                                             const base::Closure& next_task);
+  //   end_time - Time after which preparation should time out.
+  //   callback - Called with the success or failure of the enrollment.
+  void WaitForAttestationPrepared(base::TimeTicks end_time,
+                                  base::OnceCallback<void(bool)> callback);
 
-  // Called when attestation is prepared, to start the actual enrollment flow.
+  // Handles the result of a call to TpmAttestationIsPrepared. Starts enrollment
+  // on success and retries after |retry_delay_| if not.
   //
   // Parameters
-  //   on_failure - Called if any failure occurs.
-  //   next_task - Called on successful enrollment.
-  void StartEnroll(const base::Closure& on_failure,
-                   const base::Closure& next_task);
+  //   end_time - Time after which preparation should time out.
+  //   callback - Called with the success or failure of the enrollment.
+  //   result - Result of TpmAttestationIsPrepared().
+  void OnPreparedCheckComplete(base::TimeTicks end_time,
+                               base::OnceCallback<void(bool)> callback,
+                               base::Optional<bool> result);
 
   // Called when the attestation daemon has finished creating an enrollment
   // request for the Privacy CA.  The request is asynchronously forwarded as-is
   // to the PCA.
   //
   // Parameters
-  //   on_failure - Called if any failure occurs.
-  //   next_task - Called on successful enrollment.
+  //   callback - Called with the success or failure of the enrollment.
   //   success - The status of request creation.
   //   data - The request data for the Privacy CA.
-  void SendEnrollRequestToPCA(const base::Closure& on_failure,
-                              const base::Closure& next_task,
+  void SendEnrollRequestToPCA(base::OnceCallback<void(bool)> callback,
                               bool success,
                               const std::string& data);
 
@@ -171,12 +179,10 @@ class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) AttestationFlow {
   // complete the enrollment operation.
   //
   // Parameters
-  //   on_failure - Called if any failure occurs.
-  //   next_task - Called on successful enrollment.
+  //   callback - Called with the success or failure of the enrollment.
   //   success - The status of the Privacy CA operation.
   //   data - The response data from the Privacy CA.
-  void SendEnrollResponseToDaemon(const base::Closure& on_failure,
-                                  const base::Closure& next_task,
+  void SendEnrollResponseToDaemon(base::OnceCallback<void(bool)> callback,
                                   bool success,
                                   const std::string& data);
 
@@ -184,12 +190,10 @@ class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) AttestationFlow {
   // the operation was successful, the next_task callback is called.
   //
   // Parameters
-  //   on_failure - Called if any failure occurs.
-  //   next_task - Called on successful enrollment.
+  //   callback - Called with the success or failure of the enrollment.
   //   success - The status of the enrollment operation.
   //   not_used - An artifact of the cryptohome D-Bus interface; ignored.
-  void OnEnrollComplete(const base::Closure& on_failure,
-                        const base::Closure& next_task,
+  void OnEnrollComplete(base::OnceCallback<void(bool)> callback,
                         bool success,
                         cryptohome::MountError not_used);
 
@@ -205,13 +209,38 @@ class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) AttestationFlow {
   //   key_name - The name of the key. If left empty, a default name derived
   //              from the |certiifcate_profile| and |account_id| will be used.
   //   callback - Called when the operation completes.
+  //   enrolled - Success or failure of the enrollment phase.
   void StartCertificateRequest(
       const AttestationCertificateProfile certificate_profile,
       const AccountId& account_id,
       const std::string& request_origin,
       bool generate_new_key,
       const std::string& key_name,
-      const CertificateCallback& callback);
+      CertificateCallback callback,
+      bool enrolled);
+
+  // Called with the result of TpmAttestationDoesKeyExist(). Will query the
+  // existing certificate if it exists and otherwise start a new certificate
+  // request.
+  //
+  // Parameters
+  //   certificate_profile - Specifies what kind of certificate should be
+  //                         requested from the CA.
+  //   account_id - Identifies the active user.
+  //   request_origin - An identifier for the origin of this request.
+  //   generate_new_key - If set to true a new key is generated.
+  //   key_name - The name of the key. If left empty, a default name derived
+  //              from the |certiifcate_profile| and |account_id| will be used.
+  //   callback - Called when the operation completes.
+  //   result - Result of TpmAttestationDoesKeyExist().
+  void OnKeyExistCheckComplete(
+      AttestationCertificateProfile certificate_profile,
+      const AccountId& account_id,
+      const std::string& request_origin,
+      const std::string& key_name,
+      AttestationKeyType key_type,
+      CertificateCallback callback,
+      base::Optional<bool> result);
 
   // Called when the attestation daemon has finished creating a certificate
   // request for the Privacy CA.  The request is asynchronously forwarded as-is
@@ -227,7 +256,7 @@ class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) AttestationFlow {
   void SendCertificateRequestToPCA(AttestationKeyType key_type,
                                    const AccountId& account_id,
                                    const std::string& key_name,
-                                   const CertificateCallback& callback,
+                                   CertificateCallback callback,
                                    bool success,
                                    const std::string& data);
 
@@ -245,7 +274,7 @@ class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) AttestationFlow {
   void SendCertificateResponseToDaemon(AttestationKeyType key_type,
                                        const AccountId& account_id,
                                        const std::string& key_name,
-                                       const CertificateCallback& callback,
+                                       CertificateCallback callback,
                                        bool success,
                                        const std::string& data);
 
@@ -255,7 +284,7 @@ class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) AttestationFlow {
   //   callback - Called when the operation completes.
   //   success - The status of request finishing.
   //   data - The certificate data in PEM format.
-  void OnCertRequestFinished(const CertificateCallback& callback,
+  void OnCertRequestFinished(CertificateCallback callback,
                              bool success,
                              const std::string& data);
 
@@ -269,19 +298,7 @@ class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) AttestationFlow {
   void GetExistingCertificate(AttestationKeyType key_type,
                               const AccountId& account_id,
                               const std::string& key_name,
-                              const CertificateCallback& callback);
-
-  // Checks whether attestation is ready. If it is, runs |next_task|. If not,
-  // reschedules a check after a delay unless we are out of retry time, in
-  // which case we run |on_failure|.
-  //
-  // Parameters
-  //   end_time - The time at or past which we give up retrying.
-  //   on_failure - Called if any failure occurs or after we give up retrying.
-  //   next_task - Called when attestation is ready.
-  void CheckAttestationReadyAndReschedule(base::TimeTicks end_time,
-                                          const base::Closure& on_failure,
-                                          const base::Closure& next_task);
+                              CertificateCallback callback);
 
   cryptohome::AsyncMethodCaller* async_caller_;
   CryptohomeClient* cryptohome_client_;

@@ -6,22 +6,10 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Please see src/ui/android/java/res/values/colors.xml for the shared common colors. -->
 
+    <!--  TODO(crbug.com/775198): move all hex color values to color_palette.xml  -->
     <!-- Other colors -->
-    <color name="dark_action_bar_color">#263238</color>
+    <color name="dark_action_bar_color">@color/google_blue_grey_900</color>
     <color name="dark_status_bar_color">#161E21</color>
-
-    <!-- Modern color palette -->
-    <color name="black_alpha_12">#1F000000</color>
-    <color name="black_alpha_20">#33000000</color>
-    <color name="black_alpha_30">#4D000000</color>
-    <color name="white_alpha_65">#A6FFFFFF</color>
-
-    <!-- Old color palette -->
-    <color name="google_blue_grey_500">#607D8B</color>
-    <color name="google_blue_50">#E3F2FD</color>
-
-    <!-- TODO(https://crbug.com/919835): Clarify whether these colors can be reused. -->
-    <color name="google_yellow_600">#F9AB00</color>
 
     <!-- Infobar colors -->
     <color name="infobar_icon_drawable_color">@color/default_icon_color_blue</color>
@@ -33,13 +21,13 @@
     <color name="tab_back_incognito">#4F4F4F</color>
 
     <!-- App banner colors -->
-    <color name="app_banner_install_button_bg">#0F9D58</color>
+    <color name="app_banner_install_button_bg">@color/default_green</color>
 
     <!-- App menu colors -->
     <color name="update_menu_item_text_color">@color/default_red</color>
 
     <!-- URL Emphasizer colors -->
-    <color name="url_emphasis_non_emphasized_text">@color/default_text_color_dark_secondary</color>
+    <color name="url_emphasis_non_emphasized_text">@color/default_text_color_secondary_dark</color>
     <color name="url_emphasis_light_non_emphasized_text">@color/white_alpha_50</color>
     <color name="url_emphasis_domain_and_registry">@color/default_text_color_dark</color>
     <color name="url_emphasis_light_domain_and_registry">@android:color/white</color>

@@ -154,6 +154,7 @@ class OmniboxViewViews : public OmniboxView,
 
  protected:
   // views::Textfield:
+  void OnThemeChanged() override;
   bool IsDropCursorForInsertion() const override;
 
  private:

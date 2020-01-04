@@ -29,11 +29,13 @@
     var curlWin = await logView._generateCurlCommand(newRequest(false, headers, data, opt_url), 'win');
     var curlUnix = await logView._generateCurlCommand(newRequest(false, headers, data, opt_url), 'unix');
     var powershell = await logView._generatePowerShellCommand(newRequest(false, headers, data, opt_url));
-    var fetch = await logView._generateFetchCall(newRequest(false, headers, data, opt_url));
-    TestRunner.addResult(`cURL Windows: ${curlWin}`);
-    TestRunner.addResult(`cURL Unix: ${curlUnix}`);
-    TestRunner.addResult(`Powershell: ${powershell}`);
-    TestRunner.addResult(`fetch: ${fetch}`);
+    var fetchForBrowser = await logView._generateFetchCall(newRequest(false, headers, data, opt_url), false);
+    var fetchForNodejs = await logView._generateFetchCall(newRequest(false, headers, data, opt_url), true);
+    TestRunner.addResult(`cURL Windows:\n${curlWin}\n\n`);
+    TestRunner.addResult(`cURL Unix:\n${curlUnix}\n\n`);
+    TestRunner.addResult(`Powershell:\n${powershell}\n\n`);
+    TestRunner.addResult(`fetch (for browser):\n${fetchForBrowser}\n\n`);
+    TestRunner.addResult(`fetch (for nodejs):\n${fetchForNodejs}\n\n`);
   }
 
   async function dumpMultipleRequests(blobPattern) {
@@ -44,11 +46,13 @@
     var allCurlWin = await logView._generateAllCurlCommand(allRequests, 'win');
     var allCurlUnix = await logView._generateAllCurlCommand(allRequests, 'unix');
     var allPowershell = await logView._generateAllPowerShellCommand(allRequests);
-    var allFetch = await logView._generateAllFetchCall(allRequests);
-    TestRunner.addResult(`cURL Windows: ${allCurlWin}`);
-    TestRunner.addResult(`cURL Unix: ${allCurlUnix}`);
-    TestRunner.addResult(`Powershell: ${allPowershell}`);
-    TestRunner.addResult(`fetch: ${allFetch}`);
+    var allFetchForBrowser = await logView._generateAllFetchCall(allRequests, false);
+    var allFetchForNodejs = await logView._generateAllFetchCall(allRequests, true);
+    TestRunner.addResult(`cURL Windows:\n${allCurlWin}\n\n`);
+    TestRunner.addResult(`cURL Unix:\n${allCurlUnix}\n\n`);
+    TestRunner.addResult(`Powershell:\n${allPowershell}\n\n`);
+    TestRunner.addResult(`fetch (for browser):\n${allFetchForBrowser}\n\n`);
+    TestRunner.addResult(`fetch (for nodejs):\n${allFetchForNodejs}\n\n`);
   }
 
   await dumpRequest({});

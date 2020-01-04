@@ -27,14 +27,15 @@ namespace auto_screen_brightness {
 
 namespace {
 
-// Reads string content from |model_params_path|, which should exist.
+// Reads string content from |model_params_path| if it exists.
 // This should run in another thread to be non-blocking to the main thread (if
 // |is_testing| is false).
 std::string LoadModelParamsFromDisk(const base::FilePath& model_params_path,
                                     bool is_testing) {
   DCHECK(is_testing ||
          !content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  DCHECK(base::PathExists(model_params_path));
+  if (!base::PathExists(model_params_path))
+    return std::string();
 
   std::string content;
   if (!base::ReadFileToString(model_params_path, &content)) {
@@ -137,13 +138,6 @@ ModelConfigLoaderImpl::ModelConfigLoaderImpl(
 
 void ModelConfigLoaderImpl::Init() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (!base::PathExists(model_params_path_)) {
-    // Allow experiment flags to provide configs if there isn't any config from
-    // the disk.
-    InitFromParams();
-    return;
-  }
 
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,

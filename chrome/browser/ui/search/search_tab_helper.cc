@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/base64.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -103,6 +104,8 @@ std::vector<chrome::mojom::AutocompleteMatchPtr> CreateAutocompleteMatches(
                                                     description_class.style));
     }
     mojom_match->destination_url = match.destination_url.spec();
+    mojom_match->image_dominant_color = match.image_dominant_color;
+    mojom_match->image_url = match.image_url;
     mojom_match->fill_into_edit = match.fill_into_edit;
     mojom_match->inline_autocompletion = match.inline_autocompletion;
     mojom_match->is_search_type = AutocompleteMatch::IsSearchType(match.type);
@@ -512,6 +515,34 @@ void SearchTabHelper::OnResultChanged(bool default_result_changed) {
   ipc_router_.AutocompleteResultChanged(chrome::mojom::AutocompleteResult::New(
       autocomplete_controller_->input().text(),
       CreateAutocompleteMatches(autocomplete_controller_->result())));
+
+  // Create new bitmap requests.
+  BitmapFetcherHelper bitmap_fetcher_helper(profile());
+  int match_index = -1;
+  for (const auto& match : autocomplete_controller_->result()) {
+    match_index++;
+    if (match.ImageUrl().is_empty()) {
+      continue;
+    }
+    bitmap_fetcher_helper.RequestImage(
+        match.ImageUrl(),
+        base::BindRepeating(&SearchTabHelper::OnBitmapFetched,
+                            weak_factory_.GetWeakPtr(), match_index,
+                            match.ImageUrl().spec()));
+  }
+}
+
+void SearchTabHelper::OnBitmapFetched(int match_index,
+                                      const std::string& image_url,
+                                      const SkBitmap& bitmap) {
+  auto data = gfx::Image::CreateFrom1xBitmap(bitmap).As1xPNGBytes();
+  std::string base_64;
+  base::Base64Encode(base::StringPiece(data->front_as<char>(), data->size()),
+                     &base_64);
+  const char kDataUrlPrefix[] = "data:image/png;base64,";
+  std::string data_url = GURL(kDataUrlPrefix + base_64).spec();
+
+  ipc_router_.AutocompleteMatchImageAvailable(match_index, image_url, data_url);
 }
 
 void SearchTabHelper::OnSelectLocalBackgroundImage() {

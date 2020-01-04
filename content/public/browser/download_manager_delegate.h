@@ -189,6 +189,7 @@ class CONTENT_EXPORT DownloadManagerDelegate {
       const GURL& url,
       const std::string& request_method,
       base::Optional<url::Origin> request_initiator,
+      bool from_download_cross_origin_redirect,
       CheckDownloadAllowedCallback check_download_allowed_cb);
 
   // Gets a callback which can connect the download manager to a Quarantine

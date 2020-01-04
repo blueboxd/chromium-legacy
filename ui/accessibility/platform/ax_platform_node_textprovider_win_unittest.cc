@@ -87,7 +87,7 @@ class MockIRawElementProviderSimple
   }
 };
 
-TEST_F(AXPlatformNodeTextProviderTest, TestITextProviderRangeFromChild) {
+TEST_F(AXPlatformNodeTextProviderTest, ITextProviderRangeFromChild) {
   ui::AXNodeData text_data;
   text_data.id = 2;
   text_data.role = ax::mojom::Role::kStaticText;
@@ -176,7 +176,103 @@ TEST_F(AXPlatformNodeTextProviderTest, TestITextProviderRangeFromChild) {
       other_root_node_raw.Get(), &text_range_provider));
 }
 
-TEST_F(AXPlatformNodeTextProviderTest, TestNearestTextIndexToPoint) {
+TEST_F(AXPlatformNodeTextProviderTest,
+       ITextProviderRangeFromChildMultipleChildren) {
+  const int ROOT_ID = 1;
+  const int DIALOG_ID = 2;
+  const int DIALOG_LABEL_ID = 3;
+  const int DIALOG_DESCRIPTION_ID = 4;
+  const int BUTTON_ID = 5;
+  const int BUTTON_IMG_ID = 6;
+  const int BUTTON_TEXT_ID = 7;
+  const int DIALOG_DETAIL_ID = 8;
+
+  ui::AXNodeData root;
+  root.id = ROOT_ID;
+  root.SetName("Document");
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.child_ids = {DIALOG_ID};
+
+  ui::AXNodeData dialog;
+  dialog.id = DIALOG_ID;
+  dialog.role = ax::mojom::Role::kDialog;
+  dialog.child_ids = {DIALOG_LABEL_ID, DIALOG_DESCRIPTION_ID, BUTTON_ID,
+                      DIALOG_DETAIL_ID};
+
+  ui::AXNodeData dialog_label;
+  dialog_label.id = DIALOG_LABEL_ID;
+  dialog_label.role = ax::mojom::Role::kStaticText;
+  dialog_label.SetName("Dialog label.");
+
+  ui::AXNodeData dialog_description;
+  dialog_description.id = DIALOG_DESCRIPTION_ID;
+  dialog_description.role = ax::mojom::Role::kStaticText;
+  dialog_description.SetName("Dialog description.");
+
+  ui::AXNodeData button;
+  button.id = BUTTON_ID;
+  button.role = ax::mojom::Role::kButton;
+  button.child_ids = {BUTTON_IMG_ID, BUTTON_TEXT_ID};
+
+  ui::AXNodeData button_img;
+  button_img.id = BUTTON_IMG_ID;
+  button_img.role = ax::mojom::Role::kImage;
+
+  ui::AXNodeData button_text;
+  button_text.id = BUTTON_TEXT_ID;
+  button_text.role = ax::mojom::Role::kStaticText;
+  button_text.SetName("ok.");
+
+  ui::AXNodeData dialog_detail;
+  dialog_detail.id = DIALOG_DETAIL_ID;
+  dialog_detail.role = ax::mojom::Role::kStaticText;
+  dialog_detail.SetName("Some more detail about dialog.");
+
+  ui::AXTreeUpdate update;
+  ui::AXTreeData tree_data;
+  tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  update.tree_data = tree_data;
+  update.has_tree_data = true;
+  update.root_id = ROOT_ID;
+  update.nodes = {root,   dialog,     dialog_label, dialog_description,
+                  button, button_img, button_text,  dialog_detail};
+
+  Init(update);
+
+  AXNode* root_node = GetRootNode();
+  AXNodePosition::SetTree(tree_.get());
+  AXNode* dialog_node = root_node->children()[0];
+
+  ComPtr<IRawElementProviderSimple> root_node_raw =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(root_node);
+  ComPtr<IRawElementProviderSimple> dialog_node_raw =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(dialog_node);
+
+  // Call RangeFromChild on the root with the dialog child passed in.
+  ComPtr<ITextProvider> text_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      root_node_raw->GetPatternProvider(UIA_TextPatternId, &text_provider));
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  EXPECT_HRESULT_SUCCEEDED(text_provider->RangeFromChild(dialog_node_raw.Get(),
+                                                         &text_range_provider));
+
+  base::win::ScopedBstr text_content;
+  EXPECT_HRESULT_SUCCEEDED(
+      text_range_provider->GetText(-1, text_content.Receive()));
+  EXPECT_EQ(0, wcscmp(static_cast<BSTR>(text_content),
+                      L"Dialog label.Dialog description.ok.Some more detail "
+                      L"about dialog."));
+
+  // Check the reverse relationship that GetEnclosingElement on the text range
+  // gives back the dialog.
+  ComPtr<IRawElementProviderSimple> enclosing_element;
+  EXPECT_HRESULT_SUCCEEDED(
+      text_range_provider->GetEnclosingElement(&enclosing_element));
+  EXPECT_EQ(enclosing_element.Get(), dialog_node_raw.Get());
+}
+
+TEST_F(AXPlatformNodeTextProviderTest, NearestTextIndexToPoint) {
   ui::AXNodeData text_data;
   text_data.id = 2;
   text_data.role = ax::mojom::Role::kInlineTextBox;
@@ -232,7 +328,7 @@ TEST_F(AXPlatformNodeTextProviderTest, TestNearestTextIndexToPoint) {
   }
 }
 
-TEST_F(AXPlatformNodeTextProviderTest, TestITextProviderDocumentRange) {
+TEST_F(AXPlatformNodeTextProviderTest, ITextProviderDocumentRange) {
   ui::AXNodeData text_data;
   text_data.id = 2;
   text_data.role = ax::mojom::Role::kStaticText;
@@ -258,7 +354,7 @@ TEST_F(AXPlatformNodeTextProviderTest, TestITextProviderDocumentRange) {
       text_provider->get_DocumentRange(&text_range_provider));
 }
 
-TEST_F(AXPlatformNodeTextProviderTest, TestITextProviderDocumentRangeNested) {
+TEST_F(AXPlatformNodeTextProviderTest, ITextProviderDocumentRangeNested) {
   ui::AXNodeData text_data;
   text_data.id = 3;
   text_data.role = ax::mojom::Role::kStaticText;
@@ -289,7 +385,7 @@ TEST_F(AXPlatformNodeTextProviderTest, TestITextProviderDocumentRangeNested) {
       text_provider->get_DocumentRange(&text_range_provider));
 }
 
-TEST_F(AXPlatformNodeTextProviderTest, TestITextProviderSupportedSelection) {
+TEST_F(AXPlatformNodeTextProviderTest, ITextProviderSupportedSelection) {
   ui::AXNodeData text_data;
   text_data.id = 2;
   text_data.role = ax::mojom::Role::kStaticText;
@@ -316,7 +412,7 @@ TEST_F(AXPlatformNodeTextProviderTest, TestITextProviderSupportedSelection) {
   EXPECT_EQ(text_selection_mode, SupportedTextSelection_Single);
 }
 
-TEST_F(AXPlatformNodeTextProviderTest, TestITextProviderGetSelection) {
+TEST_F(AXPlatformNodeTextProviderTest, ITextProviderGetSelection) {
   ui::AXNodeData text_data;
   text_data.id = 2;
   text_data.role = ax::mojom::Role::kStaticText;
@@ -501,7 +597,7 @@ TEST_F(AXPlatformNodeTextProviderTest, TestITextProviderGetSelection) {
   AXNodePosition::SetTree(nullptr);
 }
 
-TEST_F(AXPlatformNodeTextProviderTest, TestITextProviderGetActiveComposition) {
+TEST_F(AXPlatformNodeTextProviderTest, ITextProviderGetActiveComposition) {
   ui::AXNodeData text_data;
   text_data.id = 2;
   text_data.role = ax::mojom::Role::kStaticText;
@@ -563,7 +659,7 @@ TEST_F(AXPlatformNodeTextProviderTest, TestITextProviderGetActiveComposition) {
   EXPECT_EQ(*GetEnd(actual_range.Get()), *expected_end);
 }
 
-TEST_F(AXPlatformNodeTextProviderTest, TestITextProviderGetConversionTarget) {
+TEST_F(AXPlatformNodeTextProviderTest, ITextProviderGetConversionTarget) {
   ui::AXNodeData text_data;
   text_data.id = 2;
   text_data.role = ax::mojom::Role::kStaticText;

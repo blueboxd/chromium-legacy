@@ -219,6 +219,12 @@ void FuchsiaAudioRenderer::SetVolume(float volume) {
   volume_control_->SetVolume(volume);
 }
 
+void FuchsiaAudioRenderer::SetLatencyHint(
+    base::Optional<base::TimeDelta> latency_hint) {
+  // TODO(chcunningham): Implement at some later date after we've vetted the API
+  // shape and usefulness outside of fuchsia.
+}
+
 void FuchsiaAudioRenderer::StartTicking() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 

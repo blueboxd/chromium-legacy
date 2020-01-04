@@ -413,16 +413,6 @@ void WebRemoteFrameImpl::ScrollRectToVisible(
       element_bounds_in_document, caret_bounds_in_document, true);
 }
 
-void WebRemoteFrameImpl::BubbleLogicalScroll(WebScrollDirection direction,
-                                             ScrollGranularity granularity) {
-  Frame* parent_frame = GetFrame()->Tree().Parent();
-  DCHECK(parent_frame);
-  DCHECK(parent_frame->IsLocalFrame());
-
-  parent_frame->BubbleLogicalScrollFromChildFrame(direction, granularity,
-                                                  GetFrame());
-}
-
 void WebRemoteFrameImpl::IntrinsicSizingInfoChanged(
     const WebIntrinsicSizingInfo& web_sizing_info) {
   FrameOwner* owner = GetFrame()->Owner();

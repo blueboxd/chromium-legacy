@@ -3808,6 +3808,12 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="Used to describe capital letters" name="IDS_CHROMEVOX_ANNOUNCE_CAPITAL_LETTER">
         Cap <ph name="letter">$1<ex>A</ex></ph>
       </message>
+      <message desc="The hint text and label for the search bar in the ChromeVox menus" name="IDS_CHROMEVOX_SEARCH_CHROMEVOX_MENUS">
+        Search ChromeVox menus
+      </message>
+      <message desc="Title displayed in the panel for the search menu." name="IDS_CHROMEVOX_PANEL_SEARCH_MENU">
+        Search menu
+      </message>
     </messages>
   </release>
 </grit>

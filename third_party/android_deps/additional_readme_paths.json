@@ -145,6 +145,7 @@
     "libs/com_google_protobuf_protobuf_lite",
     "libs/com_googlecode_java_diff_utils_diffutils",
     "libs/com_squareup_javapoet",
+    "libs/javax_annotation_javax_annotation_api",
     "libs/javax_annotation_jsr250_api",
     "libs/javax_inject_javax_inject",
     "libs/net_sf_kxml_kxml2",

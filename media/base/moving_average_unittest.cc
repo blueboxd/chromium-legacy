@@ -45,4 +45,19 @@ TEST(MovingAverageTest, Reset) {
   EXPECT_EQ(base::TimeDelta(), moving_average.Deviation());
 }
 
+TEST(MovingAverageTest, MinAndMax) {
+  MovingAverage moving_average(5);
+  base::TimeDelta min = base::TimeDelta::FromSeconds(1);
+  base::TimeDelta med = base::TimeDelta::FromSeconds(50);
+  base::TimeDelta max = base::TimeDelta::FromSeconds(100);
+  moving_average.AddSample(min);
+  moving_average.AddSample(med);
+  moving_average.AddSample(med);
+  moving_average.AddSample(med);
+  moving_average.AddSample(max);
+  auto extremes = moving_average.GetMinAndMax();
+  EXPECT_EQ(extremes.first, min);
+  EXPECT_EQ(extremes.second, max);
+}
+
 }  // namespace media

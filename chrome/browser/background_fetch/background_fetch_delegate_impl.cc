@@ -269,6 +269,7 @@ void BackgroundFetchDelegateImpl::GetPermissionForOrigin(
     // used as the URL, and the |request_method| is set to GET.
     limiter->CanDownload(
         wc_getter, origin.GetURL(), "GET", base::nullopt,
+        false /* from_download_cross_origin_redirect */,
         base::AdaptCallbackForRepeating(base::BindOnce(
             &BackgroundFetchDelegateImpl::
                 DidGetPermissionFromDownloadRequestLimiter,

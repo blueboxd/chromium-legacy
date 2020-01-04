@@ -201,9 +201,10 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
 
   // Continues to bubble logical scroll from |child| in this frame.
   // Returns true if the scroll was consumed locally.
-  virtual bool BubbleLogicalScrollFromChildFrame(ScrollDirection direction,
-                                                 ScrollGranularity granularity,
-                                                 Frame* child) = 0;
+  virtual bool BubbleLogicalScrollFromChildFrame(
+      mojom::blink::ScrollDirection direction,
+      ScrollGranularity granularity,
+      Frame* child) = 0;
 
   const base::UnguessableToken& GetDevToolsFrameToken() const {
     return devtools_frame_token_;

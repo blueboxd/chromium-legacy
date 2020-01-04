@@ -30,13 +30,18 @@ bool WebGLMultiDrawInstancedBaseVertexBaseInstance::Supported(
   // Logic: IsSupportedByValidating || IsSupportedByPassthroughOnANGLE
   // GL_ANGLE_base_vertex_base_instance is removed from supports if we requested
   // GL_WEBGL_draw_instanced_base_vertex_base_instance first
-  // So we need to add a or for
+  // So we need to add an OR for
   // GL_WEBGL_draw_instanced_base_vertex_base_instance
+  // Same happens for GL_ANGLE_multi_draw if GL_WEBGL_multi_draw is requested
+  // first
   return (context->ExtensionsUtil()->SupportsExtension(
               "GL_WEBGL_draw_instanced_base_vertex_base_instance") &&
           context->ExtensionsUtil()->SupportsExtension(
               "GL_WEBGL_multi_draw_instanced_base_vertex_base_instance")) ||
-         (context->ExtensionsUtil()->SupportsExtension("GL_ANGLE_multi_draw") &&
+         ((context->ExtensionsUtil()->SupportsExtension(
+               "GL_ANGLE_multi_draw") ||
+           context->ExtensionsUtil()->EnsureExtensionEnabled(
+               "GL_WEBGL_multi_draw")) &&
           (context->ExtensionsUtil()->SupportsExtension(
                "GL_ANGLE_base_vertex_base_instance") ||
            context->ExtensionsUtil()->SupportsExtension(

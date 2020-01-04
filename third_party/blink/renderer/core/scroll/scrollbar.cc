@@ -350,7 +350,8 @@ bool Scrollbar::GestureEvent(const WebGestureEvent& evt,
   switch (evt.GetType()) {
     case WebInputEvent::kGestureTapDown: {
       IntPoint position = FlooredIntPoint(evt.PositionInRootFrame());
-      SetPressedPart(GetTheme().HitTest(*this, position), evt.GetType());
+      SetPressedPart(GetTheme().HitTestRootFramePosition(*this, position),
+                     evt.GetType());
       pressed_pos_ = Orientation() == kHorizontalScrollbar
                          ? ConvertFromRootFrame(position).X()
                          : ConvertFromRootFrame(position).Y();
@@ -466,7 +467,7 @@ void Scrollbar::MouseMoved(const WebMouseEvent& evt) {
                        : ConvertFromRootFrame(position).Y();
   }
 
-  ScrollbarPart part = GetTheme().HitTest(*this, position);
+  ScrollbarPart part = GetTheme().HitTestRootFramePosition(*this, position);
   if (part != hovered_part_) {
     if (pressed_part_ != kNoPart) {
       if (part == pressed_part_) {
@@ -512,7 +513,7 @@ void Scrollbar::MouseUp(const WebMouseEvent& mouse_event) {
         ScrollableArea::GetForScrolling(scrollable_area_->GetLayoutBox());
     scrollable_area_for_scrolling->SnapAfterScrollbarScrolling(orientation_);
 
-    ScrollbarPart part = GetTheme().HitTest(
+    ScrollbarPart part = GetTheme().HitTestRootFramePosition(
         *this, FlooredIntPoint(mouse_event.PositionInRootFrame()));
     if (part == kNoPart) {
       SetHoveredPart(kNoPart);
@@ -529,7 +530,8 @@ void Scrollbar::MouseDown(const WebMouseEvent& evt) {
     return;
 
   IntPoint position = FlooredIntPoint(evt.PositionInRootFrame());
-  SetPressedPart(GetTheme().HitTest(*this, position), evt.GetType());
+  SetPressedPart(GetTheme().HitTestRootFramePosition(*this, position),
+                 evt.GetType());
   int pressed_pos = Orientation() == kHorizontalScrollbar
                         ? ConvertFromRootFrame(position).X()
                         : ConvertFromRootFrame(position).Y();

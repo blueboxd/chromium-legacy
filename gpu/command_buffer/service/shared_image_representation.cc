@@ -48,8 +48,8 @@ bool SharedImageRepresentationGLTextureBase::BeginAccess(GLenum mode) {
   return true;
 }
 
-bool SharedImageRepresentationSkia::SupportsMultipleConcurrentReadAccess() {
-  return false;
+gpu::TextureBase* SharedImageRepresentationGLTexture::GetTextureBase() {
+  return GetTexture();
 }
 
 void SharedImageRepresentationGLTexture::UpdateClearedStateOnEndAccess() {
@@ -59,6 +59,15 @@ void SharedImageRepresentationGLTexture::UpdateClearedStateOnEndAccess() {
   gfx::Rect cleared_rect = texture->GetLevelClearedRect(texture->target(), 0);
   if (cleared_rect != ClearedRect())
     SetClearedRect(cleared_rect);
+}
+
+gpu::TextureBase*
+SharedImageRepresentationGLTexturePassthrough::GetTextureBase() {
+  return GetTexturePassthrough().get();
+}
+
+bool SharedImageRepresentationSkia::SupportsMultipleConcurrentReadAccess() {
+  return false;
 }
 
 SharedImageRepresentationSkia::ScopedWriteAccess::ScopedWriteAccess(

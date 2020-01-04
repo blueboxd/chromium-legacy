@@ -6,6 +6,10 @@
 
 namespace blink {
 
+std::unique_ptr<WebInputEvent> WebTouchEvent::Clone() const {
+  return std::make_unique<WebTouchEvent>(*this);
+}
+
 WebTouchEvent WebTouchEvent::FlattenTransform() const {
   WebTouchEvent transformed_event = *this;
   for (unsigned i = 0; i < touches_length; ++i) {

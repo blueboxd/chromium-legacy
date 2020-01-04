@@ -72,7 +72,7 @@ class WebAppFrameToolbarView : public views::AccessiblePaneView,
 
   // ToolbarButtonProvider:
   BrowserActionsContainer* GetBrowserActionsContainer() override;
-  ToolbarActionView* GetToolbarActionViewForId(const std::string& id) override;
+  ExtensionsToolbarContainer* GetExtensionsToolbarContainer() override;
   views::View* GetDefaultExtensionDialogAnchorView() override;
   PageActionIconView* GetPageActionIconView(PageActionIconType type) override;
   AppMenuButton* GetAppMenuButton() override;

@@ -93,6 +93,7 @@ FakeMediaSource::FakeMediaSource(
       video_stream_index_(-1),
       video_frame_rate_numerator_(video_config.max_frame_rate),
       video_frame_rate_denominator_(1),
+      audio_algo_(&media_log_),
       video_first_pts_(0),
       video_first_pts_set_(false) {
   CHECK(output_audio_params_.IsValid());

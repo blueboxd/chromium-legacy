@@ -56,6 +56,20 @@ inline std::string SpdyHexDumpImpl(SpdyStringPiece data) {
   return net::HexDump(data);
 }
 
+struct SpdyStringPieceCaseHashImpl {
+  size_t operator()(SpdyStringPiece data) const {
+    std::string lower = ToLowerASCII(data);
+    base::StringPieceHash hasher;
+    return hasher(lower);
+  }
+};
+
+struct SpdyStringPieceCaseEqImpl {
+  bool operator()(SpdyStringPiece piece1, SpdyStringPiece piece2) const {
+    return base::EqualsCaseInsensitiveASCII(piece1, piece2);
+  }
+};
+
 }  // namespace spdy
 
 #endif  // NET_SPDY_PLATFORM_IMPL_SPDY_STRING_UTILS_IMPL_H_

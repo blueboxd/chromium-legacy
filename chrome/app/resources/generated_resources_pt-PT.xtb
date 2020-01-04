@@ -36,7 +36,7 @@
 <translation id="1041175011127912238">Esta página não está a responder.</translation>
 <translation id="1041263367839475438">Dispositivos disponíveis</translation>
 <translation id="1042174272890264476">O seu computador também tem a biblioteca RLZ de <ph name="SHORT_PRODUCT_NAME" /> incorporada. A RLZ atribui uma etiqueta não exclusiva e não identificável a nível pessoal para medir as pesquisas e a utilização de <ph name="SHORT_PRODUCT_NAME" /> impulsionada por uma campanha promocional específica. Estas etiquetas por vezes aparecem em consultas da Pesquisa Google em <ph name="PRODUCT_NAME" />.</translation>
-<translation id="1043818413152647937">Também pretende limpar os dados destas aplicações?</translation>
+<translation id="1043818413152647937">Também pretende limpar os dados destas apps?</translation>
 <translation id="1045692658517323508">{0,plural, =1{Atualize dentro de 1 minuto}other{Atualize dentro de # minutos}}</translation>
 <translation id="1046635659603195359">Parece que já configurou o Voice Match com o Assistente Google noutro dispositivo. É possível utilizar estas gravações anteriores para criar um modelo de voz neste dispositivo. Este processo deve demorar menos de um minuto.</translation>
 <translation id="1047431265488717055">Copiar te&amp;xto do link</translation>
@@ -244,6 +244,7 @@
 <translation id="1329584516321524826">Atualizado mesmo agora</translation>
 <translation id="1330145147221172764">Ativar o teclado no ecrã</translation>
 <translation id="1331977651797684645">Fui eu.</translation>
+<translation id="1333489022424033687">Algumas funcionalidades em <ph name="ORIGIN" /> poderão não funcionar até limpar os dados que outros sites armazenaram no seu dispositivo.</translation>
 <translation id="133535873114485416">Introdução preferida</translation>
 <translation id="1335929031622236846">Inscreva o seu dispositivo</translation>
 <translation id="1338802252451106843"><ph name="ORIGIN" /> pretende abrir esta aplicação.</translation>
@@ -314,7 +315,6 @@
 <translation id="1433811987160647649">Perguntar antes de aceder</translation>
 <translation id="1434696352799406980">Repõe a página inicial, a página novo separador, o motor de pesquisa e os separadores fixos. Também desativa todas as extensões e limpa os dados temporários como os cookies. Os marcadores, o histórico e as palavras-passe guardadas não são limpos.</translation>
 <translation id="1434886155212424586">A Página inicial é a página Novo separador</translation>
-<translation id="1435979430299962295">Para permitir o acesso neste site, clique na extensão.</translation>
 <translation id="1436390408194692385">Válido por <ph name="TICKET_TIME_LEFT" /></translation>
 <translation id="1436671784520050284">Continuar configuração</translation>
 <translation id="1436784010935106834">Removido</translation>
@@ -1035,7 +1035,6 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2445484935443597917">Criar um novo perfil</translation>
 <translation id="2446585455334014596">A aplicação <ph name="APP_NAME" /> pretende validar a sua identidade</translation>
 <translation id="2448312741937722512">Tipo</translation>
-<translation id="2448734521821581858">Os cookies são ficheiros criados pelos Websites aos quais acedeu. Existem dois tipos de cookies: os cookies originais são criados pelo site ao qual acede. O site é apresentado na barra de endereço. Os cookies de terceiros são criados por outros sites. Estes sites possuem algum do conteúdo, tal como anúncios ou imagens, que vê no Website ao qual acede.</translation>
 <translation id="2450223707519584812">Não pode adicionar utilizadores porque as chaves da API do Google estão em falta. Consulte <ph name="DETAILS_URL" /> para obter detalhes.</translation>
 <translation id="2450849356604136918">Sem vistas ativas</translation>
 <translation id="2451298179137331965">2x</translation>
@@ -1149,7 +1148,7 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2587922766792651800">Tempo limite excedido</translation>
 <translation id="2588636910004461974">Dispositivos de <ph name="VENDOR_NAME" /></translation>
 <translation id="2594999711683503743">Pesquise no Google ou escreva o URL</translation>
-<translation id="2600522410036850735">Este dispositivo receberá atualizações de software e de segurança automáticas até <ph name="MONTH_AND_YEAR" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Saber mais&lt;/a&gt;</translation>
+<translation id="2600522410036850735">Este dispositivo receberá atualizações automáticas de software e segurança até <ph name="MONTH_AND_YEAR" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Saber mais&lt;/a&gt;</translation>
 <translation id="2603115962224169880">Limpar o computador</translation>
 <translation id="2603463522847370204">Abrir na janela de &amp;navegação anónima</translation>
 <translation id="2604255671529671813">Erro de ligação à rede</translation>
@@ -2395,7 +2394,7 @@ Pretende pará-lo?</translation>
 <translation id="4364327530094270451">Melão</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> está a partilhar uma janela.</translation>
 <translation id="4364830672918311045">Apresentar notificações</translation>
-<translation id="436499142539576997">Falha ao obter dados de aplicações. Ainda a tentar executar a aplicação…</translation>
+<translation id="436499142539576997">Falha ao obter dados da app. Ainda a tentar executar a app…</translation>
 <translation id="4370975561335139969">O email e a palavra-passe introduzidos não coincidem.</translation>
 <translation id="437184764829821926">Definições avançadas do tipo de letra</translation>
 <translation id="4374831787438678295">Instalador para o Linux</translation>
@@ -2837,7 +2836,7 @@ Pretende pará-lo?</translation>
 <translation id="5038863510258510803">A ativar...</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5042282098504489593">Abra as Definições para ligar o <ph name="USB_DEVICE_NAME" /> ao Linux.</translation>
-<translation id="5043913660911154449">Em alternativa, especifique o PPD da impressora. <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" />.</translation>
+<translation id="5043913660911154449">Em alternativa, especifique o PPD da impressora. <ph name="LINK_BEGIN" />Saber mais<ph name="LINK_END" /></translation>
 <translation id="5045550434625856497">Palavra-passe incorrecta</translation>
 <translation id="504561833207953641">A abrir numa sessão existente do navegador…</translation>
 <translation id="5047421709274785093">Impedir que os sites utilizem sensores de movimento e de luz</translation>
@@ -4082,6 +4081,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6843423766595476978">O Ok Google está pronto</translation>
 <translation id="6845038076637626672">Abrir Maximizada</translation>
 <translation id="6845325883481699275">Ajudar a melhorar a segurança do Chrome</translation>
+<translation id="6847125920277401289">Liberte espaço para continuar</translation>
 <translation id="6848388270925200958">De momento, tem alguns cartões que apenas podem ser utilizados neste dispositivo.</translation>
 <translation id="6850286078059909152">Cor do texto</translation>
 <translation id="6851497530878285708">Aplicação ativada</translation>
@@ -4106,10 +4106,10 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6885771755599377173">Pré-visualização das informações do sistema</translation>
 <translation id="6886476658664859389">Chave de segurança de NFC</translation>
 <translation id="6886871292305414135">Abrir link num novo &amp;separador</translation>
-<translation id="6890912377247906520">Estas extensões não precisam de acesso a este site.</translation>
 <translation id="6892812721183419409">Abrir link como <ph name="USER" /></translation>
 <translation id="6895032998810961280">Comunicar detalhes à Google sobre software prejudicial, definições do sistema e processos encontrados no seu computador durante esta limpeza</translation>
 <translation id="6896758677409633944">Copiar</translation>
+<translation id="6897363604023044284">Escolher sites a limpar</translation>
 <translation id="6898440773573063262">Já é possível configurar aplicações de quiosque para início automático neste dispositivo.</translation>
 <translation id="6898699227549475383">Organização (O)</translation>
 <translation id="6900284862687837908">Aplicação em segundo plano: <ph name="BACKGROUND_APP_URL" /></translation>
@@ -5677,7 +5677,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="9065203028668620118">Editar</translation>
 <translation id="9066773882585798925">Ouvir o texto em voz alta</translation>
 <translation id="9066782832737749352">Síntese de voz</translation>
-<translation id="9067559831321817373">Faça a gestão das suas contas com sessão iniciada. Os Websites, as aplicações e as extensões no Chrome e no Google Play podem utilizar estas contas para personalizar a sua experiência, consoante as autorizações. &lt;a&gt;Saber mais&lt;/a&gt;</translation>
+<translation id="9067559831321817373">Faça a gestão das suas contas com sessão iniciada. Os Websites, as apps e as extensões no Chrome e Google Play podem utilizar estas contas para personalizar a sua experiência, consoante as autorizações. &lt;a&gt;Saber mais&lt;/a&gt;</translation>
 <translation id="9068849894565669697">Selecionar cor</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

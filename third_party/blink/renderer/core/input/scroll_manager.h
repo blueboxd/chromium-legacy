@@ -62,14 +62,14 @@ class CORE_EXPORT ScrollManager : public GarbageCollected<ScrollManager>,
   // granularity - The units that the  scroll delta parameter is in.
   // startNode - Optional. If provided, start chaining from the given node.
   //             If not, use the current focus or last clicked node.
-  bool LogicalScroll(ScrollDirection,
+  bool LogicalScroll(mojom::blink::ScrollDirection,
                      ScrollGranularity,
                      Node* start_node,
                      Node* mouse_press_node);
 
   // Performs a logical scroll that chains, crossing frames, starting from
   // the given node or a reasonable default (focus/last clicked).
-  bool BubblingScroll(ScrollDirection,
+  bool BubblingScroll(mojom::blink::ScrollDirection,
                       ScrollGranularity,
                       Node* starting_node,
                       Node* mouse_press_node);

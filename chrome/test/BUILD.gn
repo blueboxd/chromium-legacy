@@ -2884,7 +2884,9 @@ group("ct_telemetry_perf_tests_without_chrome") {
 group("performance_test_suite") {
   testonly = true
   deps = [
+    "//base:base_perftests",
     "//chrome/test:angle_perftests",
+    "//chrome/test:dawn_perf_tests",
     "//chrome/test:telemetry_perf_tests",
     "//components:components_perftests",
     "//components/tracing:tracing_perftests",
@@ -2894,7 +2896,10 @@ group("performance_test_suite") {
   ]
 
   if (!is_android && !is_fuchsia) {
-    deps += [ "//chrome/test:load_library_perf_tests" ]
+    deps += [
+      "//chrome/test:load_library_perf_tests",
+      "//ui/views:views_perftests",
+    ]
   }
 
   data_deps = [

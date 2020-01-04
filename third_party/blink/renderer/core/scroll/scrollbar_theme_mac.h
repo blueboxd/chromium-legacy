@@ -68,7 +68,6 @@ class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
   int ScrollbarThickness(ScrollbarControlSize = kRegularScrollbar) override;
   bool UsesOverlayScrollbars() const override;
   void UpdateScrollbarOverlayColorTheme(const Scrollbar&) override;
-  WebScrollbarButtonsPlacement ButtonsPlacement() const override;
 
   void SetNewPainterForScrollbar(Scrollbar&, ScrollbarPainter);
   ScrollbarPainter PainterForScrollbar(const Scrollbar&) const;
@@ -102,13 +101,11 @@ class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
   bool ShouldDragDocumentInsteadOfThumb(const Scrollbar&,
                                         const WebMouseEvent&) override;
 
-  virtual void UpdateButtonPlacement(WebScrollbarButtonsPlacement) {}
-
   IntRect TrackRect(const Scrollbar&) override;
-  IntRect BackButtonRect(const Scrollbar&, ScrollbarPart) override;
-  IntRect ForwardButtonRect(const Scrollbar&, ScrollbarPart) override;
+  IntRect BackButtonRect(const Scrollbar&) override;
+  IntRect ForwardButtonRect(const Scrollbar&) override;
 
-  bool HasButtons(const Scrollbar&) override { return false; }
+  bool NativeThemeHasButtons() override { return false; }
   bool HasThumb(const Scrollbar&) override;
 
   int MinimumThumbLength(const Scrollbar&) override;

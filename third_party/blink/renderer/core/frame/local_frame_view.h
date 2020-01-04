@@ -329,7 +329,8 @@ class CORE_EXPORT LocalFrameView final
   // lifecycle update (e.g., based on visibility) and will not end up being
   // PaintClean. Set |reason| to indicate the reason for this update,
   // for metrics purposes.
-  void UpdateAllLifecyclePhases(
+  // Returns whether the lifecycle was successfully updated to PaintClean.
+  bool UpdateAllLifecyclePhases(
       DocumentLifecycle::LifecycleUpdateReason reason);
 
   // Computes the style, layout, compositing and pre-paint lifecycle stages

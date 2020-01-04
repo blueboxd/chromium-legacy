@@ -136,6 +136,7 @@ namespace developerPrivate {
     boolean suspiciousInstall;
     boolean corruptInstall;
     boolean updateRequired;
+    boolean blockedByPolicy;
   };
 
   dictionary OptionsPage {

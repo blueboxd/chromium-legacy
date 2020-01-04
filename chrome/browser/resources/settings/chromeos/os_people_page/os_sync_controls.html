@@ -40,13 +40,13 @@
           on-click="onTurnOnSyncButtonClick_"
           aria-describedby="featureLabel"
           hidden="[[osSyncFeatureEnabled]]">
-        Turn on PLACEHOLDER
+        $i18n{osSyncTurnOn}
       </cr-button>
       <cr-button id="turnOffSyncButton"
           on-click="onTurnOffSyncButtonClick_"
           aria-describedby="featureLabel"
           hidden="[[!osSyncFeatureEnabled]]">
-        Turn off PLACEHOLDER
+        $i18n{osSyncTurnOff}
       </cr-button>
     </div>
     <div class="settings-box">
@@ -67,7 +67,7 @@
       <div class="list-item" hidden="[[!osSyncPrefs.osAppsRegistered]]">
         <div id="osAppsCheckboxLabel"
             label-disabled$="[[areDataTypeTogglesDisabled_]]">
-          $i18n{syncOsAppsCheckboxLabel}
+          $i18n{osSyncAppsCheckboxLabel}
         </div>
         <cr-toggle id="osAppsControl"
             checked="{{osSyncPrefs.osAppsSynced}}"
@@ -80,7 +80,7 @@
       <div class="list-item" hidden="[[!osSyncPrefs.osPreferencesRegistered]]">
         <div id="osSettingsCheckboxLabel"
             label-disabled$="[[areDataTypeTogglesDisabled_]]">
-          $i18n{syncOsSettingsCheckboxLabel}
+          $i18n{osSyncSettingsCheckboxLabel}
         </div>
         <cr-toggle id="osPreferencesControl"
             checked="{{osSyncPrefs.osPreferencesSynced}}"

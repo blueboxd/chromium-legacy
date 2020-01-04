@@ -93,10 +93,6 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // overview is already active, it will use a special spawn animation on its
   // first position in the grid. |use_spawn_animation| has no effect if either
   // |animate| or |reposition| are false.
-  //
-  // Note: This function should only be called by |OverviewSession::AddItem| and
-  // |OverviewGrid::AppendItem|. |overview_session_| keeps count of all overview
-  // items, but this function does not update the tally.
   void AddItem(aura::Window* window,
                bool reposition,
                bool animate,
@@ -105,23 +101,21 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
                bool use_spawn_animation = false);
 
   // Similar to the above function, but adds the window to the end of the grid.
-  // Note: This function should only be called by |OverviewSession::AppendItem|.
-  // |overview_session_| keeps count of all overview items, but this function
-  // does not update the tally.
   void AppendItem(aura::Window* window,
                   bool reposition,
                   bool animate,
                   bool use_spawn_animation = false);
+
+  // Adds |window| at the correct position according to MRU order. |window|
+  // cannot already be on the grid. Repositions all items. If |animate| is true,
+  // animates the repositioning.
+  void AddItemInMruOrder(aura::Window* window, bool animate);
 
   // Removes |overview_item| from the grid. |overview_item| cannot already be
   // absent from the grid. If |item_destroying| is true, we may want to notify
   // |overview_session_| that this grid has become empty. If |item_destroying|
   // and |reposition| are both true, all items are repositioned with animation.
   // |reposition| has no effect if |item_destroying| is false.
-  //
-  // Note: This function should only be called by |OverviewSession::RemoveItem|
-  // and |OverviewGrid::Shutdown|. |overview_session_| keeps count of all
-  // overview items, but this function does not update the tally.
   void RemoveItem(OverviewItem* overview_item,
                   bool item_destroying = false,
                   bool reposition = false);
@@ -418,6 +412,10 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
 
   // Returns the index of |item| in |window_list_|.
   size_t GetOverviewItemIndex(OverviewItem* item) const;
+
+  // Returns the index where |window| can be inserted into |window_list_| based
+  // on MRU order.
+  size_t FindInsertionIndex(const aura::Window* window);
 
   // Adds the |dragged_window| into overview on drag ended. Might need to update
   // the window's bounds if it has been resized.

@@ -37,6 +37,7 @@
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_observer.h"
+#include "ash/wm/overview/overview_test_util.h"
 #include "ash/wm/splitview/multi_display_overview_and_split_view_test.h"
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
@@ -3620,7 +3621,7 @@ TEST_P(SplitViewTabDraggingTest, DragIndicatorsInPortraitOrientationTest) {
   EXPECT_TRUE(WindowState::Get(window.get())->IsMaximized());
 }
 
-// Tests that if dragging a window into the preview split area, overivew bounds
+// Tests that if dragging a window into the preview split area, overview bounds
 // should be adjusted accordingly.
 TEST_P(SplitViewTabDraggingTest, AdjustOverviewBoundsDuringDragging) {
   const gfx::Rect bounds(0, 0, 400, 400);
@@ -3648,7 +3649,9 @@ TEST_P(SplitViewTabDraggingTest, AdjustOverviewBoundsDuringDragging) {
   const gfx::Rect work_area_bounds =
       screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           window1.get());
-  EXPECT_EQ(current_grid->bounds(), work_area_bounds);
+  const gfx::Rect expected_grid_bounds =
+      ShrinkBoundsByHotseatInset(work_area_bounds);
+  EXPECT_EQ(expected_grid_bounds, current_grid->bounds());
 
   auto target_opacity = [](views::Widget* widget) {
     return widget->GetNativeWindow()->layer()->GetTargetOpacity();
@@ -3666,15 +3669,16 @@ TEST_P(SplitViewTabDraggingTest, AdjustOverviewBoundsDuringDragging) {
   // Now drag |window1| to the left preview split area.
   DragWindowTo(resizer.get(),
                gfx::Point(0, work_area_bounds.CenterPoint().y()));
-  EXPECT_EQ(
-      current_grid->bounds(),
-      split_view_controller()->GetSnappedWindowBoundsInScreen(
-          SplitViewController::RIGHT, /*window_for_minimum_size=*/nullptr));
+  EXPECT_EQ(current_grid->bounds(),
+            ShrinkBoundsByHotseatInset(
+                split_view_controller()->GetSnappedWindowBoundsInScreen(
+                    SplitViewController::RIGHT,
+                    /*window_for_minimum_size=*/nullptr)));
   EXPECT_EQ(0.f, target_opacity(drop_target_widget));
 
   // Drag it to middle.
   DragWindowTo(resizer.get(), work_area_bounds.CenterPoint());
-  EXPECT_EQ(current_grid->bounds(), work_area_bounds);
+  EXPECT_EQ(expected_grid_bounds, current_grid->bounds());
   EXPECT_EQ(1.f, target_opacity(drop_target_widget));
 
   // Drag |window1| to the right preview split area.
@@ -3682,8 +3686,9 @@ TEST_P(SplitViewTabDraggingTest, AdjustOverviewBoundsDuringDragging) {
                                          work_area_bounds.CenterPoint().y()));
   EXPECT_EQ(
       current_grid->bounds(),
-      split_view_controller()->GetSnappedWindowBoundsInScreen(
-          SplitViewController::LEFT, /*window_for_minimum_size=*/nullptr));
+      ShrinkBoundsByHotseatInset(
+          split_view_controller()->GetSnappedWindowBoundsInScreen(
+              SplitViewController::LEFT, /*window_for_minimum_size=*/nullptr)));
   EXPECT_EQ(0.f, target_opacity(drop_target_widget));
 
   CompleteDrag(std::move(resizer));
@@ -3698,7 +3703,8 @@ TEST_P(SplitViewTabDraggingTest, AdjustOverviewBoundsDuringDragging) {
   EXPECT_FALSE(selector_controller->InOverviewSession());
 
   // Now drag |window1| again. Overview and splitview should be both active at
-  // the same time during dragging.
+  // the same time during dragging. Since one window is snapped, the hotseat
+  // should not be visible and should not affect the grid bounds.
   resizer = StartDrag(window1.get(), window1.get());
   EXPECT_TRUE(selector_controller->InOverviewSession());
   EXPECT_EQ(split_view_controller()->state(),

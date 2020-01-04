@@ -29,13 +29,13 @@ class AttestationCAClient : public ServerProxy {
 
   // chromeos::attestation::ServerProxy:
   void SendEnrollRequest(const std::string& request,
-                         const DataCallback& on_response) override;
+                         DataCallback on_response) override;
   void SendCertificateRequest(const std::string& request,
-                              const DataCallback& on_response) override;
+                              DataCallback on_response) override;
 
   void OnURLLoadComplete(
       std::list<std::unique_ptr<network::SimpleURLLoader>>::iterator it,
-      const DataCallback& on_response,
+      DataCallback on_response,
       std::unique_ptr<std::string> response_body);
 
   PrivacyCAType GetType() override;
@@ -47,7 +47,7 @@ class AttestationCAClient : public ServerProxy {
   // data when the fetch is complete.
   void FetchURL(const std::string& url,
                 const std::string& request,
-                const DataCallback& on_response);
+                DataCallback on_response);
 
   // Loaders used for the processing the requests. Invalidated after completion.
   std::list<std::unique_ptr<network::SimpleURLLoader>> url_loaders_;

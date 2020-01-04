@@ -443,8 +443,6 @@ ScrollableShelfView::~ScrollableShelfView() {
 }
 
 void ScrollableShelfView::Init() {
-  shelf_view_->Init();
-
   // Although there is no animation for ScrollableShelfView, a layer is still
   // needed. Otherwise, the child view without its own layer will be painted on
   // RootView and RootView is beneath |opaque_background_| in ShelfWidget. As a
@@ -479,6 +477,10 @@ void ScrollableShelfView::Init() {
   GetShelf()->tooltip()->set_shelf_tooltip_delegate(this);
 
   set_context_menu_controller(this);
+
+  // Initializes |shelf_view_| after scrollable shelf view's children are
+  // initialized.
+  shelf_view_->Init();
 }
 
 void ScrollableShelfView::OnFocusRingActivationChanged(bool activated) {
@@ -578,15 +580,17 @@ float ScrollableShelfView::CalculateClampedScrollOffset(float scroll) const {
 }
 
 void ScrollableShelfView::StartShelfScrollAnimation(float scroll_distance) {
-  StopObservingImplicitAnimations();
-  during_scroll_animation_ = true;
+  const gfx::Vector2dF scroll_offset_before_update = scroll_offset_;
+  UpdateScrollOffset(scroll_distance);
 
-  // If layout strategy is altered, gradient zone should be updated in Layout().
-  // Otherwise, we have to update the gradient zone explicitly for scroll
-  // animation.
-  if (!UpdateScrollOffset(scroll_distance))
-    MaybeUpdateGradientZone(/*is_left_arrow_changed=*/false,
-                            /*is_right_arrow_changed=*/false);
+  if (scroll_offset_before_update == scroll_offset_)
+    return;
+
+  StopObservingImplicitAnimations();
+
+  during_scroll_animation_ = true;
+  MaybeUpdateGradientZone(/*is_left_arrow_changed=*/false,
+                          /*is_right_arrow_changed=*/false);
 
   ui::ScopedLayerAnimationSettings animation_settings(
       shelf_view_->layer()->GetAnimator());
@@ -671,7 +675,8 @@ void ScrollableShelfView::Layout() {
   gfx::Size arrow_button_group_size(kArrowButtonGroupWidth,
                                     shelf_container_bounds.height());
 
-  // The bounds of |left_arrow_| and |right_arrow_| in the parent coordinates.
+  // The bounds of |left_arrow_| and |right_arrow_| are in the
+  // ScrollableShelfView's local coordinates.
   gfx::Rect left_arrow_bounds;
   gfx::Rect right_arrow_bounds;
 
@@ -718,15 +723,22 @@ void ScrollableShelfView::Layout() {
       (right_arrow_->bounds() != right_arrow_bounds) ||
       (!right_arrow_bounds.IsEmpty() && !right_arrow_->GetVisible());
 
-  // Layout |left_arrow| if it should show.
+  // Layout |left_arrow_| if it should show.
   left_arrow_->SetVisible(!left_arrow_bounds.IsEmpty());
   if (left_arrow_->GetVisible())
     left_arrow_->SetBoundsRect(left_arrow_bounds);
 
-  // Layout |right_arrow| if it should show.
+  // Layout |right_arrow_| if it should show.
   right_arrow_->SetVisible(!right_arrow_bounds.IsEmpty());
   if (right_arrow_->GetVisible())
     right_arrow_->SetBoundsRect(right_arrow_bounds);
+
+  // Layer::Clone(), which may be triggered by screen rotation, does not copy
+  // the mask layer. So we may need to reset the mask layer.
+  if (!layer()->layer_mask_layer()) {
+    DCHECK(!gradient_layer_delegate_->layer()->layer_mask_back_link());
+    layer()->SetMaskLayer(gradient_layer_delegate_->layer());
+  }
 
   if (gradient_layer_delegate_->layer()->bounds() != layer()->bounds())
     gradient_layer_delegate_->layer()->SetBounds(layer()->bounds());
@@ -891,6 +903,11 @@ void ScrollableShelfView::ScrollRectToVisible(const gfx::Rect& rect) {
     return;
 
   ScrollToMainOffset(main_axis_offset_after_scroll, /*animating=*/true);
+}
+
+std::unique_ptr<ui::Layer> ScrollableShelfView::RecreateLayer() {
+  layer()->SetMaskLayer(nullptr);
+  return views::View::RecreateLayer();
 }
 
 const char* ScrollableShelfView::GetClassName() const {
@@ -1262,17 +1279,20 @@ bool ScrollableShelfView::ProcessGestureEvent(const ui::GestureEvent& event) {
       return false;
     }
 
-    layout_strategy_ = layout_strategy_before_main_axis_scrolling_;
     const int scroll_velocity = is_horizontal_alignment
                                     ? event.details().velocity_x()
                                     : event.details().velocity_y();
-    float page_scrolling_offset =
-        CalculatePageScrollingOffset(scroll_velocity < 0, layout_strategy_);
-    ScrollToMainOffset((is_horizontal_alignment
-                            ? scroll_offset_before_main_axis_scrolling_.x()
-                            : scroll_offset_before_main_axis_scrolling_.y()) +
-                           page_scrolling_offset,
-                       /*animating=*/true);
+    float page_scrolling_offset = CalculatePageScrollingOffset(
+        scroll_velocity < 0, layout_strategy_before_main_axis_scrolling_);
+
+    // Only starts animation when scroll distance is greater than zero.
+    if (std::fabs(page_scrolling_offset) > 0.f) {
+      ScrollToMainOffset((is_horizontal_alignment
+                              ? scroll_offset_before_main_axis_scrolling_.x()
+                              : scroll_offset_before_main_axis_scrolling_.y()) +
+                             page_scrolling_offset,
+                         /*animating=*/true);
+    }
 
     return true;
   }
@@ -1409,13 +1429,23 @@ void ScrollableShelfView::UpdateGradientZone() {
 
 ScrollableShelfView::FadeZone ScrollableShelfView::CalculateStartGradientZone()
     const {
+  if (!should_show_start_gradient_zone_)
+    return FadeZone();
+
   gfx::Rect zone_rect;
   bool fade_in = false;
   const bool is_horizontal_alignment = GetShelf()->IsHorizontalAlignment();
-  const gfx::Rect left_arrow_bounds = left_arrow_->bounds();
-
-  if (!should_show_start_gradient_zone_)
-    return FadeZone();
+  gfx::Rect left_arrow_bounds;
+  if (left_arrow_->GetVisible()) {
+    left_arrow_bounds = left_arrow_->bounds();
+  } else {
+    // If the arrow button is invisible, the gradient zone is created on
+    // the side of |visible_space_|.
+    left_arrow_bounds = gfx::Rect(
+        is_horizontal_alignment ? GetMirroredRect(visible_space_).x() : 0,
+        is_horizontal_alignment ? 0 : visible_space_.y(), /*width=*/0,
+        /*height=*/0);
+  }
 
   if (is_horizontal_alignment) {
     int gradient_start;
@@ -1447,13 +1477,25 @@ ScrollableShelfView::FadeZone ScrollableShelfView::CalculateStartGradientZone()
 
 ScrollableShelfView::FadeZone ScrollableShelfView::CalculateEndGradientZone()
     const {
+  if (!should_show_end_gradient_zone_)
+    return FadeZone();
+
   gfx::Rect zone_rect;
   bool fade_in = false;
   const bool is_horizontal_alignment = GetShelf()->IsHorizontalAlignment();
-  const gfx::Rect right_arrow_bounds = right_arrow_->bounds();
 
-  if (!should_show_end_gradient_zone_)
-    return FadeZone();
+  gfx::Rect right_arrow_bounds;
+  if (right_arrow_->GetVisible()) {
+    right_arrow_bounds = right_arrow_->bounds();
+  } else {
+    // If the arrow button is invisible, the gradient zone is created on
+    // the side of |visible_space_|.
+    right_arrow_bounds = gfx::Rect(
+        is_horizontal_alignment ? GetMirroredRect(visible_space_).right() : 0,
+        is_horizontal_alignment ? 0 : visible_space_.bottom(),
+        /*width=*/0,
+        /*height=*/0);
+  }
 
   if (is_horizontal_alignment) {
     int gradient_start;
@@ -1490,8 +1532,8 @@ void ScrollableShelfView::UpdateGradientZoneState() {
   }
 
   if (during_scroll_animation_) {
-    should_show_start_gradient_zone_ = ShouldShowLeftArrow();
-    should_show_end_gradient_zone_ = ShouldShowRightArrow();
+    should_show_start_gradient_zone_ = true;
+    should_show_end_gradient_zone_ = true;
     return;
   }
 
@@ -1677,7 +1719,10 @@ void ScrollableShelfView::UpdateAvailableSpace() {
 
   // The hotseat uses |available_space_| to determine where to show its
   // background, so notify it when it is recalculated.
-  GetShelf()->shelf_widget()->hotseat_widget()->UpdateOpaqueBackground();
+  if (HotseatWidget::ShouldShowHotseatBackground()) {
+    GetShelf()->shelf_widget()->hotseat_widget()->SetOpaqueBackground(
+        GetHotseatBackgroundBounds());
+  }
 
   // Paddings are within the shelf view. It makes sure that |shelf_view_|'s
   // bounds are not changed by adding/removing the shelf icon under the same
@@ -1827,7 +1872,7 @@ float ScrollableShelfView::CalculateMainAxisScrollDistance() const {
                                              : scroll_offset_.y();
 }
 
-bool ScrollableShelfView::UpdateScrollOffset(float target_offset) {
+void ScrollableShelfView::UpdateScrollOffset(float target_offset) {
   target_offset = CalculateClampedScrollOffset(target_offset);
 
   if (GetShelf()->IsHorizontalAlignment())
@@ -1849,8 +1894,6 @@ bool ScrollableShelfView::UpdateScrollOffset(float target_offset) {
   shelf_container_view_->layer()->SetClipRect(visible_space_);
 
   UpdateTappableIconIndices();
-
-  return strategy_needs_update;
 }
 
 void ScrollableShelfView::UpdateAvailableSpaceAndScroll() {

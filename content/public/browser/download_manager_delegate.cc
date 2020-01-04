@@ -58,6 +58,7 @@ void DownloadManagerDelegate::CheckDownloadAllowed(
     const GURL& url,
     const std::string& request_method,
     base::Optional<url::Origin> request_initiator,
+    bool from_download_cross_origin_redirect,
     CheckDownloadAllowedCallback check_download_allowed_cb) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(check_download_allowed_cb), true));

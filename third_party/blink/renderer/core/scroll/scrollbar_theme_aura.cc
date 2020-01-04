@@ -160,22 +160,12 @@ bool ScrollbarThemeAura::HasThumb(const Scrollbar& scrollbar) {
   return ThumbLength(scrollbar) > 0;
 }
 
-IntRect ScrollbarThemeAura::BackButtonRect(const Scrollbar& scrollbar,
-                                           ScrollbarPart part) {
-  // Windows and Linux just have single arrows.
-  if (part == kBackButtonEndPart)
-    return IntRect();
-
+IntRect ScrollbarThemeAura::BackButtonRect(const Scrollbar& scrollbar) {
   IntSize size = ButtonSize(scrollbar);
   return IntRect(scrollbar.X(), scrollbar.Y(), size.Width(), size.Height());
 }
 
-IntRect ScrollbarThemeAura::ForwardButtonRect(const Scrollbar& scrollbar,
-                                              ScrollbarPart part) {
-  // Windows and Linux just have single arrows.
-  if (part == kForwardButtonStartPart)
-    return IntRect();
-
+IntRect ScrollbarThemeAura::ForwardButtonRect(const Scrollbar& scrollbar) {
   IntSize size = ButtonSize(scrollbar);
   int x, y;
   if (scrollbar.Orientation() == kHorizontalScrollbar) {
@@ -299,7 +289,6 @@ ScrollbarPart ScrollbarThemeAura::PartsToInvalidateOnThumbPositionChange(
     float old_position,
     float new_position) const {
   ScrollbarPart invalid_parts = kNoPart;
-  DCHECK_EQ(ButtonsPlacement(), kWebScrollbarButtonsPlacementSingle);
   static const ScrollbarPart kButtonParts[] = {kBackButtonStartPart,
                                                kForwardButtonEndPart};
   for (ScrollbarPart part : kButtonParts) {

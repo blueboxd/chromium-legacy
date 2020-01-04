@@ -795,8 +795,9 @@ void ChromeClientImpl::DetachCompositorAnimationTimeline(
 }
 
 void ChromeClientImpl::EnterFullscreen(LocalFrame& frame,
-                                       const FullscreenOptions* options) {
-  web_view_->EnterFullscreen(frame, options);
+                                       const FullscreenOptions* options,
+                                       bool for_cross_process_descendant) {
+  web_view_->EnterFullscreen(frame, options, for_cross_process_descendant);
 }
 
 void ChromeClientImpl::ExitFullscreen(LocalFrame& frame) {

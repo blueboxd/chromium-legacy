@@ -814,7 +814,8 @@ void DownloadManagerImpl::InterceptNavigation(
     mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     net::CertStatus cert_status,
-    int frame_tree_node_id) {
+    int frame_tree_node_id,
+    bool from_download_cross_origin_redirect) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!delegate_) {
     DropDownload();
@@ -837,9 +838,9 @@ void DownloadManagerImpl::InterceptNavigation(
           std::move(response_head), std::move(response_body),
           std::move(url_loader_client_endpoints));
 
-  delegate_->CheckDownloadAllowed(std::move(web_contents_getter), url, method,
-                                  std::move(request_initiator),
-                                  std::move(on_download_checks_done));
+  delegate_->CheckDownloadAllowed(
+      std::move(web_contents_getter), url, method, std::move(request_initiator),
+      from_download_cross_origin_redirect, std::move(on_download_checks_done));
 }
 
 int DownloadManagerImpl::RemoveDownloadsByURLAndTime(
@@ -1363,9 +1364,10 @@ void DownloadManagerImpl::BeginDownloadInternal(
             weak_factory_.GetWeakPtr(), std::move(params),
             std::move(blob_url_loader_factory), is_new_download, site_url);
     if (delegate_) {
-      delegate_->CheckDownloadAllowed(std::move(web_contents_getter), url,
-                                      method, std::move(initiator),
-                                      std::move(on_can_download_checks_done));
+      delegate_->CheckDownloadAllowed(
+          std::move(web_contents_getter), url, method, std::move(initiator),
+          false /* from_download_cross_origin_redirect */,
+          std::move(on_can_download_checks_done));
       return;
     }
   }

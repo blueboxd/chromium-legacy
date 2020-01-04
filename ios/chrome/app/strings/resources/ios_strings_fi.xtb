@@ -47,7 +47,7 @@
 <translation id="145015347812617860"><ph name="COUNT" /> kohdetta</translation>
 <translation id="1491277525950327607">Muuta asetusta kaksoisnapauttamalla.</translation>
 <translation id="1509486075633541495">Kirjaudu sisään verkkosivustolle</translation>
-<translation id="152234381334907219">Tallentamaton</translation>
+<translation id="152234381334907219">Tallentamattomat</translation>
 <translation id="1540800554400757039">Osoite 1</translation>
 <translation id="1545749641540134597">Skannaa QR-koodi</translation>
 <translation id="1552525382687785070">Järjestelmänvalvoja on poistanut synkronoinnin käytöstä</translation>
@@ -64,7 +64,7 @@
 <translation id="168715261339224929">Ota synkronointi käyttöön, niin voit käyttää kirjanmerkkejä kaikilla laitteillasi.</translation>
 <translation id="1687475363370981210">Merkitse kaikki luetuiksi</translation>
 <translation id="1690731385917361335">Ei kohteita</translation>
-<translation id="1692118695553449118">Synkronointi on käytössä.</translation>
+<translation id="1692118695553449118">Synkronointi on päällä</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> valittu</translation>
 <translation id="1740468249224277719">Asenna kaksoisnapauttamalla.</translation>
 <translation id="1746815479209538200">Jos haluat selata verkkoa, lisää uusi välilehti.</translation>
@@ -301,7 +301,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5062321486222145940">Asenna Google Drive</translation>
 <translation id="5083464117946352670">Tiedostokokoa ei voi määrittää</translation>
 <translation id="5094827893301452931">Tweet julkaistu.</translation>
-<translation id="5127805178023152808">Synkronointi ei ole käytössä</translation>
+<translation id="5127805178023152808">Synkronointi on pois päältä</translation>
 <translation id="5132942445612118989">Synkronoi salasanasi, historiasi ja paljon muuta kaikilla laitteilla</translation>
 <translation id="5140288047769711648">Chrome muistaa tämän salasanan, jotta sinun ei tarvitse.</translation>
 <translation id="5150492518600715772">Lähetä laitteeseen</translation>
@@ -349,13 +349,13 @@ Handoff täytyy ottaa käyttöön myös Asetusten Yleiset-osiossa. Lisäksi mole
 <translation id="5854790677617711513">Yli 30 päivää vanhat</translation>
 <translation id="5857090052475505287">Uusi kansio</translation>
 <translation id="5857770089550859117">Synkronointi edellyttää tunnuslausetta.</translation>
-<translation id="5860033963881614850">Pois käytöstä</translation>
+<translation id="5860033963881614850">Pois päältä</translation>
 <translation id="5869029295770560994">Selvä</translation>
 <translation id="5871497086027727873">1 kohde siirretty</translation>
 <translation id="5897956970858271241">Avaa kopioitu linkki</translation>
 <translation id="5911030830365207728">Google Kääntäjä</translation>
 <translation id="5913600720976431809">Sivun käännösvalinnat</translation>
-<translation id="5916664084637901428">Käytössä</translation>
+<translation id="5916664084637901428">Päällä</translation>
 <translation id="5938160824633642847">Laite on lähes täynnä. Vapauta tilaa ja yritä uudelleen.</translation>
 <translation id="5948291296578561264">Tämän avulla voit tallentaa kuvia kuvakirjastoon.</translation>
 <translation id="5955891643922670672">Näytetään offline-versio</translation>
@@ -452,7 +452,7 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="6998989275928107238">Vastaanottaja</translation>
 <translation id="7004499039102548441">Hiljattain suljetut välilehdet</translation>
 <translation id="7006788746334555276">Sisältöasetukset</translation>
-<translation id="7015203776128479407">Synkronoinnin ensimääritystä ei tehty loppuun. Synkronointi ei ole käytössä.</translation>
+<translation id="7015203776128479407">Synkronoinnin ensimääritystä ei tehty loppuun. Synkronointi on pois päältä.</translation>
 <translation id="7029809446516969842">Salasanat</translation>
 <translation id="7053983685419859001">Estä</translation>
 <translation id="7062545763355031412">Hyväksy ja vaihda tiliä</translation>

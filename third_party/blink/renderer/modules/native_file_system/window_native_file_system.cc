@@ -29,14 +29,14 @@ namespace {
 
 mojom::blink::ChooseFileSystemEntryType ConvertChooserType(const String& input,
                                                            bool multiple) {
-  if (input == "openFile") {
+  if (input == "open-file" || input == "openFile") {
     return multiple
                ? mojom::blink::ChooseFileSystemEntryType::kOpenMultipleFiles
                : mojom::blink::ChooseFileSystemEntryType::kOpenFile;
   }
-  if (input == "saveFile")
+  if (input == "save-file" || input == "saveFile")
     return mojom::blink::ChooseFileSystemEntryType::kSaveFile;
-  if (input == "openDirectory")
+  if (input == "open-directory" || input == "openDirectory")
     return mojom::blink::ChooseFileSystemEntryType::kOpenDirectory;
   NOTREACHED();
   return mojom::blink::ChooseFileSystemEntryType::kOpenFile;

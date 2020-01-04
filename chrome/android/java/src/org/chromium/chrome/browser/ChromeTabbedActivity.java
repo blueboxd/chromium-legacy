@@ -1879,7 +1879,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
                 getCurrentTabModel().closeTab(tabToClose, false, true, false);
 
                 // If there is no next tab to open, enter overview mode.
-                if (!hasNextTab) mOverviewModeController.showOverview(false);
+                if (!hasNextTab) showOverview(OverviewModeState.SHOWING_START);
             }, CLOSE_TAB_ON_MINIMIZE_DELAY_MS);
         }
     }

@@ -277,12 +277,12 @@ void GCMConnectionHandlerImplTest::Connect(
     ScopedMessage* dst_proto) {
   connection_handler_ = std::make_unique<ConnectionHandlerImpl>(
       base::ThreadTaskRunnerHandle::Get(), TestTimeouts::tiny_timeout(),
-      base::Bind(&GCMConnectionHandlerImplTest::ReadContinuation,
-                 base::Unretained(this), dst_proto),
-      base::Bind(&GCMConnectionHandlerImplTest::WriteContinuation,
-                 base::Unretained(this)),
-      base::Bind(&GCMConnectionHandlerImplTest::ConnectionContinuation,
-                 base::Unretained(this)));
+      base::BindRepeating(&GCMConnectionHandlerImplTest::ReadContinuation,
+                          base::Unretained(this), dst_proto),
+      base::BindRepeating(&GCMConnectionHandlerImplTest::WriteContinuation,
+                          base::Unretained(this)),
+      base::BindRepeating(&GCMConnectionHandlerImplTest::ConnectionContinuation,
+                          base::Unretained(this)));
   EXPECT_FALSE(connection_handler()->CanSendMessage());
   connection_handler_->Init(*BuildLoginRequest(kAuthId, kAuthToken, ""),
                             std::move(receive_pipe_handle_),

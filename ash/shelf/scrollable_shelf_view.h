@@ -177,6 +177,7 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   void ViewHierarchyChanged(
       const views::ViewHierarchyChangedDetails& details) override;
   void ScrollRectToVisible(const gfx::Rect& rect) override;
+  std::unique_ptr<ui::Layer> RecreateLayer() override;
 
   // ShelfButtonDelegate:
   void OnShelfButtonAboutToRequestFocusFromTabTraversal(ShelfButton* button,
@@ -363,7 +364,7 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // Updates |scroll_offset_| from |target_offset_| using shelf alignment.
   // |scroll_offset_| may need to update in following cases: (1) View bounds are
   // changed. (2) View is scrolled. (3) A shelf icon is added/removed.
-  bool UpdateScrollOffset(float target_offset);
+  void UpdateScrollOffset(float target_offset);
 
   // Updates the available space, which may also trigger the change in scroll
   // offset and layout strategy.

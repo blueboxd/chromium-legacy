@@ -8,6 +8,7 @@ option optimize_for = LITE_RUNTIME;
 package optimization_guide.proto;
 
 import "common_types.proto";
+import "performance_hints_metadata.proto";
 import "previews_metadata.proto";
 
 // Information about the hint that the client already has for a host.
@@ -185,7 +186,10 @@ message Optimization {
   //
   // It is expected that the client and server have agreed upon the appropriate
   // metadata type for the optimization type.
-  oneof metadata { PreviewsMetadata previews_metadata = 10; }
+  oneof metadata {
+    PreviewsMetadata previews_metadata = 10;
+    PerformanceHintsMetadata performance_hints_metadata = 11;
+  }
 }
 
 message PageHint {

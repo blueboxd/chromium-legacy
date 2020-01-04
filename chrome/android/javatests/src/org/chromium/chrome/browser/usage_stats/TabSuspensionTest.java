@@ -64,7 +64,7 @@ import java.util.concurrent.TimeoutException;
         // Direct all hostnames to EmbeddedTestServer running on 127.0.0.1.
         ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1", "ignore-certificate-errors",
         MediaSwitches.AUTOPLAY_NO_GESTURE_REQUIRED_POLICY})
-@MinAndroidSdkLevel(Build.VERSION_CODES.P)
+@MinAndroidSdkLevel(Build.VERSION_CODES.Q)
 public class TabSuspensionTest {
     private static final String STARTING_FQDN = "example.com";
     private static final String DIFFERENT_FQDN = "www.google.com";

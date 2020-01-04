@@ -370,7 +370,6 @@ crbug.com/874695 fast/forms/color/color-suggestion-picker-one-row-appearance.htm
 crbug.com/874695 fast/forms/color/color-suggestion-picker-two-row-appearance.html [ Slow ]
 crbug.com/874695 fast/forms/number/number-spinbutton-gets-disabled-or-readonly.html [ Slow ]
 crbug.com/874695 fast/forms/select/input-select-after-resize.html [ Slow ]
-crbug.com/874695 fast/forms/suggestion-picker/date-suggestion-picker-key-operations.html [ Slow ]
 crbug.com/874695 fast/history/history-back-twice-with-subframes-assert.html [ Slow ]
 crbug.com/874695 fast/media/mq-color-gamut-picture.html [ Slow ]
 crbug.com/874695 fast/peerconnection/RTCPeerConnection-many.html [ Slow ]
@@ -667,7 +666,8 @@ crbug.com/984003 http/tests/virtual-scroller/find-element-66-10px.html [ Slow ]
 # Slow when using Vulkan.
 crbug.com/994331 compositing/lots-of-img-layers.html [ Slow ]
 
-crbug.com/1028478 [ Mac ] http/tests/devtools/a11y-axe-core/changes/changes-a11y-test.js [ Slow ]
-crbug.com/1020379 http/tests/devtools/a11y-axe-core/performance/landing-page-a11y-test.js [ Slow ]
 crbug.com/1028479 [ Mac ] http/tests/devtools/bindings/jssourcemap-navigator-overlapping-sources.js [ Slow ]
 crbug.com/1027439 http/tests/devtools/storage-panel-dom-storage-update.js [ Slow ]
+
+# Mark all axe audit tests slow.
+crbug.com/1020379 http/tests/devtools/a11y-axe-core/* [ Slow ]

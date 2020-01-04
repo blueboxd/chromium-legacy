@@ -931,7 +931,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
                     int drawableTint;
                     if (mRowType == OPTION_ROW_TYPE_WARNING) {
                         drawableId = R.drawable.ic_warning_white_24dp;
-                        drawableTint = R.color.error_text_color;
+                        drawableTint = R.color.default_text_color_error;
                     } else {
                         drawableId = R.drawable.plus;
                         drawableTint = R.color.default_icon_color_blue;

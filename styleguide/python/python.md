@@ -1,34 +1,38 @@
-# Chromium Python style guide
+# Chromium Python Style Guide
 
 _For other languages, please see the [Chromium style
 guides](https://chromium.googlesource.com/chromium/src/+/master/styleguide/styleguide.md)._
 
-Chromium follows [PEP-8](https://www.python.org/dev/peps/pep-0008/) unless an
-exception is listed below.
+Chromium follows [PEP-8](https://www.python.org/dev/peps/pep-0008/).
 
-See also the [Chromium OS Python Style
-Guidelines](https://sites.google.com/a/chromium.org/dev/chromium-os/python-style-guidelines).
+It is also encouraged to follow advice from
+[Google's Python Style Guide](https://google.github.io/styleguide/pyguide.html),
+which is a superset of PEP-8.
+
+See also:
+* [Chromium OS Python Style Guide](https://sites.google.com/a/chromium.org/dev/chromium-os/python-style-guidelines)
+* [Blink Python Style Guide](blink-python.md)
+
+[TOC]
+
+## Our Previous Python Style
+
+Chromium used to differ from PEP-8 in the following ways:
+* Use two-space indentation instead of four-space indentation.
+* Use `CamelCase()` method and function names instead of `unix_hacker_style()`
+  names.
+* 80 character line limits rather than 79.
+
+New scripts should not follow these deviations, but they should be followed when
+making changes to files that follow them.
+
+## Making Style Guide Changes
 
 You can propose changes to this style guide by sending an email to
 `python@chromium.org`. Ideally, the list will arrive at some consensus and you
 can request review for a change to this file. If there's no consensus,
 [`//styleguide/python/OWNERS`](https://chromium.googlesource.com/chromium/src/+/master/styleguide/python/OWNERS)
 get to decide.
-
-Blink code in `third_party/blink` uses [Blink style](blink-python.md).
-
-[TOC]
-
-## Differences from PEP-8
-
-* Use two-space indentation instead of four-space indentation.
-* Use `CamelCase()` method and function names instead of `unix_hacker_style()`
-  names.
-
-(The rationale for these is mostly legacy: the code was originally written
-following Google's internal style guideline, the cost of updating all of the
-code to PEP-8 compliance was not small, and consistency was seen to be a
-greater virtue than compliance.)
 
 ## Tools
 
@@ -56,6 +60,14 @@ Entire files can be formatted (rather than just touched lines) via:
 ```sh
 git cl format --python --full
 ```
+
+YAPF has gotchas. You should review its changes before submitting. Notably:
+ * It does not re-wrap comments.
+ * It won't insert characters in order wrap lines. You might need to add ()s
+   yourself in order to have to wrap long lines for you.
+ * It formats lists differently depending on whether or not they end with a
+   trailing comma.
+
 
 #### Bugs
 * Are tracked here: https://github.com/google/yapf/issues.

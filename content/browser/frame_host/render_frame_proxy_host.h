@@ -16,7 +16,6 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
-#include "third_party/blink/public/common/input/web_scroll_types.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 
@@ -128,11 +127,6 @@ class RenderFrameProxyHost : public IPC::Listener,
   // coordinates of the originating frame in OOPIF process.
   void ScrollRectToVisible(const gfx::Rect& rect_to_scroll,
                            const blink::WebScrollIntoViewParams& params);
-
-  // Continues to bubble a logical scroll from the frame's process. Bubbling
-  // continues from the frame owner element in the parent process.
-  void BubbleLogicalScroll(blink::WebScrollDirection direction,
-                           ui::input_types::ScrollGranularity granularity);
 
   // Sets render frame proxy created state. If |created| is false, any existing
   // mojo connections to RenderFrameProxyHost will be closed.

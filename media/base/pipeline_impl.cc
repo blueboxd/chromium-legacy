@@ -144,6 +144,7 @@ class PipelineImpl::RendererWrapper : public DemuxerHost,
   void OnVideoConfigChange(const VideoDecoderConfig& config) final;
   void OnVideoNaturalSizeChange(const gfx::Size& size) final;
   void OnVideoOpacityChange(bool opaque) final;
+  void OnVideoFrameRateChange(base::Optional<int> fps) final;
 
   // Common handlers for notifications from renderers and demuxer.
   void OnPipelineError(PipelineStatus error);
@@ -816,6 +817,15 @@ void PipelineImpl::RendererWrapper::OnVideoOpacityChange(bool opaque) {
   main_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&PipelineImpl::OnVideoOpacityChange,
                                 weak_pipeline_, opaque));
+}
+
+void PipelineImpl::RendererWrapper::OnVideoFrameRateChange(
+    base::Optional<int> fps) {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+
+  main_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&PipelineImpl::OnVideoFrameRateChange,
+                                weak_pipeline_, fps));
 }
 
 void PipelineImpl::RendererWrapper::OnAudioConfigChange(
@@ -1525,6 +1535,15 @@ void PipelineImpl::OnVideoOpacityChange(bool opaque) {
 
   DCHECK(client_);
   client_->OnVideoOpacityChange(opaque);
+}
+
+void PipelineImpl::OnVideoFrameRateChange(base::Optional<int> fps) {
+  DVLOG(2) << __func__;
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(IsRunning());
+
+  DCHECK(client_);
+  client_->OnVideoFrameRateChange(fps);
 }
 
 void PipelineImpl::OnAudioConfigChange(const AudioDecoderConfig& config) {

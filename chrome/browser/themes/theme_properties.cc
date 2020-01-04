@@ -54,9 +54,11 @@ SkColor GetLightModeColor(int id) {
     // increment the version number in browser_theme_pack.cc.
     case ThemeProperties::COLOR_FRAME:
     case ThemeProperties::COLOR_BACKGROUND_TAB:
+    case ThemeProperties::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_ACTIVE:
       return SkColorSetRGB(0xDE, 0xE1, 0xE6);
     case ThemeProperties::COLOR_FRAME_INACTIVE:
     case ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE:
+    case ThemeProperties::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INACTIVE:
       return color_utils::HSLShift(
           GetLightModeColor(ThemeProperties::COLOR_FRAME),
           ThemeProperties::GetDefaultTint(ThemeProperties::TINT_FRAME_INACTIVE,
@@ -85,11 +87,6 @@ SkColor GetLightModeColor(int id) {
       return SkColorSetRGB(0x96, 0x96, 0x96);
     case ThemeProperties::COLOR_CONTROL_BUTTON_BACKGROUND:
       return SK_ColorTRANSPARENT;
-    case ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON:
-      // If color is not explicitly specified, it should be calculated from
-      // TINT_BUTTONS.
-      NOTREACHED();
-      return gfx::kPlaceholderColor;
     case ThemeProperties::COLOR_NTP_LOGO:
       return SkColorSetRGB(0xEE, 0xEE, 0xEE);
     case ThemeProperties::COLOR_NTP_SHORTCUT:
@@ -108,11 +105,6 @@ SkColor GetLightModeColor(int id) {
     case ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR:
     case ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR_INACTIVE:
       return SkColorSetA(SK_ColorBLACK, 0x40);
-#if defined(OS_WIN)
-    case ThemeProperties::COLOR_ACCENT_BORDER:
-      NOTREACHED();
-      return gfx::kPlaceholderColor;
-#endif
     case ThemeProperties::COLOR_FEATURE_PROMO_BUBBLE_TEXT:
       return SK_ColorWHITE;
     case ThemeProperties::COLOR_FEATURE_PROMO_BUBBLE_BACKGROUND:
@@ -128,11 +120,15 @@ SkColor GetLightModeColor(int id) {
     case ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE:
     case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO:
     case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE:
-      NOTREACHED() << "These values should be queried via their respective "
-                      "non-incognito equivalents and an appropriate "
-                      "|incognito| value.";
-      FALLTHROUGH;
+    case ThemeProperties::
+        COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_ACTIVE:
+    case ThemeProperties::
+        COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_INACTIVE:
+      NOTREACHED() << "This color should be queried via its non-incognito "
+                      "equivalent and an appropriate |incognito| value.";
+      return gfx::kPlaceholderColor;
     default:
+      NOTREACHED() << "This color should only be queried through ThemeService.";
       return gfx::kPlaceholderColor;
   }
 }

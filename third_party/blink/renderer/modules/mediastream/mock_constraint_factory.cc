@@ -14,7 +14,7 @@ MockConstraintFactory::MockConstraintFactory() {}
 
 MockConstraintFactory::~MockConstraintFactory() {}
 
-WebMediaTrackConstraintSet& MockConstraintFactory::AddAdvanced() {
+MediaTrackConstraintSetPlatform& MockConstraintFactory::AddAdvanced() {
   advanced_.emplace_back();
   return advanced_.back();
 }
@@ -41,7 +41,7 @@ void MockConstraintFactory::DisableAecAudioConstraints() {
 }
 
 void MockConstraintFactory::Reset() {
-  basic_ = WebMediaTrackConstraintSet();
+  basic_ = MediaTrackConstraintSetPlatform();
   advanced_.clear();
 }
 

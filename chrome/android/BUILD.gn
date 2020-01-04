@@ -671,6 +671,7 @@ junit_binary("chrome_junit_tests") {
     "//chrome/browser/preferences:preferences_junit_tests",
     "//chrome/browser/ui/android/appmenu/internal:junit",
     "//chrome/browser/ui/android/widget:ui_widget_junit_tests",
+    "//chrome/browser/ui/messages/android:junit",
     "//chrome/test/android:chrome_java_test_support",
     "//components/background_task_scheduler:background_task_scheduler_java",
     "//components/bookmarks/common/android:bookmarks_java",
@@ -2057,6 +2058,7 @@ chrome_test_apk_tmpl("chrome_public_test_apk") {
     "//chrome/browser/touch_to_fill/android:test_java",
     "//chrome/browser/ui/android/appmenu/internal:javatests",
     "//chrome/browser/ui/android/widget:ui_widget_java_tests",
+    "//chrome/browser/ui/messages/android:javatests",
     "//chrome/browser/util:javatests",
   ]
 

@@ -526,6 +526,36 @@ class DeclarativeNetRequestBrowserTest
     navigation_observer.Wait();
   }
 
+  // Calls getMatchedRules for |extension_id| and optionally, the |tab_id| and
+  // returns comma separated pairs of rule_id and tab_id, with each pair
+  // delimited by '|'. Matched Rules are sorted in ascending order by ruleId,
+  // and ties are resolved by the tabId (in ascending order.)
+  // E.g. "<rule_1>,<tab_1>|<rule_2>,<tab_2>|<rule_3>,<tab_3>"
+  std::string GetRuleAndTabIdsMatched(const ExtensionId& extension_id,
+                                      base::Optional<int> tab_id) {
+    const char kGetMatchedRulesScript[] = R"(
+      chrome.declarativeNetRequest.getMatchedRules({%s}, (rules) => {
+        // |ruleAndTabIds| is a list of `${ruleId},${tabId}`
+        var ruleAndTabIds = rules.rulesMatchedInfo.map(rule => {
+          return [rule.rule.ruleId, rule.tabId];
+        }).sort((a, b) => {
+          // Sort ascending by rule ID, and resolve ties by tab ID.
+          const idDiff = a.ruleId - b.ruleId;
+          return (idDiff != 0) ? idDiff : a.tabId - b.tabId;
+        }).map(ruleAndTabId => ruleAndTabId.join());
+
+        // Join the comma separated (ruleId,tabId) pairs with '|'.
+        window.domAutomationController.send(ruleAndTabIds.join('|'));
+      });
+    )";
+
+    std::string tab_id_param =
+        tab_id ? base::StringPrintf("tabId: %d", *tab_id) : "";
+    return ExecuteScriptInBackgroundPage(
+        extension_id,
+        base::StringPrintf(kGetMatchedRulesScript, tab_id_param.c_str()));
+  }
+
   std::set<GURL> GetAndResetRequestsToServer() {
     base::AutoLock lock(requests_to_server_lock_);
     std::set<GURL> results = requests_to_server_;
@@ -2704,6 +2734,10 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, Redirect) {
 // of actions taken on requests matching the extension's ruleset.
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
                        ActionsMatchedCountAsBadgeText) {
+  // Load the extension with a background script so scripts can be run from its
+  // generated background page.
+  set_has_background_script(true);
+
   auto get_url_for_host = [this](std::string hostname) {
     return embedded_test_server()->GetURL(hostname,
                                           "/pages_with_script/index.html");
@@ -2824,6 +2858,31 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
 
   // Verify that the badge text for the first tab is unaffected.
   EXPECT_EQ(first_tab_badge_text, action->GetDisplayBadgeText(first_tab_id));
+
+  // Verify that the correct rules are returned via getMatchedRules.
+  auto get_matched_rule_ids = [this](int tab_id) {
+    const char kGetMatchedRulesScript[] = R"(
+      chrome.declarativeNetRequest.getMatchedRules({tabId: %d}, (rules) => {
+        var ruleIds =
+            rules.rulesMatchedInfo.map(rule => rule.rule.ruleId).sort();
+        window.domAutomationController.send(ruleIds.join());
+      });
+    )";
+
+    return ExecuteScriptInBackgroundPage(
+        last_loaded_extension_id(),
+        base::StringPrintf(kGetMatchedRulesScript, tab_id));
+  };
+
+  // Four rules should be matched on the tab with |first_tab_id|:
+  //   - the block rule for abc.com (ruleId = 1)
+  //   - the redirect rule for def.com (ruleId = 2)
+  //   - the removeHeaders rule for jkl.com (ruleId = 3)
+  //   - the allow rule for abcd.com (ruleId = 5)
+  EXPECT_EQ("1,2,3,5", get_matched_rule_ids(first_tab_id));
+
+  // No rule should be matched on the tab with |second_tab_id|.
+  EXPECT_EQ("", get_matched_rule_ids(second_tab_id));
 }
 
 // Ensure web request events are still dispatched even if DNR blocks/redirects
@@ -3425,6 +3484,203 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Unpacked,
   // The request to |set_cookie_and_referer_url| should be matched with the
   // Referer rule (ruleId 1) and the Set-Cookie rule (ruleId 2).
   EXPECT_EQ("1,2", matched_rule_ids);
+}
+
+// Test that getMatchedRules returns the correct rules when called by different
+// extensions with rules matched by requests initiated from different tabs.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
+                       GetMatchedRulesMultipleTabs) {
+  // Load the extension with a background script so scripts can be run from its
+  // generated background page.
+  set_has_background_script(true);
+
+  // Sub-frames are used for navigations instead of the main-frame to allow
+  // multiple requests to be made without triggering a main-frame navigation,
+  // which would move rules attributed to the previous main-frame to the unknown
+  // tab ID.
+  const std::string kFrameName1 = "frame1";
+  const GURL page_url = embedded_test_server()->GetURL(
+      "nomatch.com", "/page_with_two_frames.html");
+
+  auto get_url_for_host = [this](std::string hostname) {
+    return embedded_test_server()->GetURL(hostname,
+                                          "/pages_with_script/index.html");
+  };
+
+  auto create_block_rule = [](int id, const std::string& url_filter) {
+    TestRule rule = CreateGenericRule();
+    rule.id = id;
+    rule.condition->url_filter = url_filter;
+    rule.condition->resource_types = std::vector<std::string>({"sub_frame"});
+    rule.action->type = "block";
+    return rule;
+  };
+
+  TestRule abc_rule = create_block_rule(kMinValidID, "abc.com");
+  TestRule def_rule = create_block_rule(kMinValidID + 1, "def.com");
+
+  ASSERT_NO_FATAL_FAILURE(
+      LoadExtensionWithRules({abc_rule}, "extension_1", {}));
+  auto extension_1_id = last_loaded_extension_id();
+
+  ASSERT_NO_FATAL_FAILURE(
+      LoadExtensionWithRules({def_rule}, "extension_2", {}));
+  auto extension_2_id = last_loaded_extension_id();
+
+  ui_test_utils::NavigateToURL(browser(), page_url);
+  ASSERT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
+  const int first_tab_id = ExtensionTabUtil::GetTabId(web_contents());
+
+  // Navigate to abc.com. The rule from |extension_1| should match for
+  // |first_tab_id|.
+  NavigateFrame(kFrameName1, get_url_for_host("abc.com"));
+
+  // Navigate to abc.com. The rule from |extension_2| should match for
+  // |first_tab_id|.
+  NavigateFrame(kFrameName1, get_url_for_host("def.com"));
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), page_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
+  ASSERT_TRUE(browser()->tab_strip_model()->IsTabSelected(1));
+
+  ui_test_utils::NavigateToURL(browser(), page_url);
+  ASSERT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
+  const int second_tab_id = ExtensionTabUtil::GetTabId(web_contents());
+
+  // Navigate to abc.com from the second tab. The rule from |extension_1| should
+  // match for |second_tab_id|.
+  NavigateFrame(kFrameName1, get_url_for_host("abc.com"));
+
+  int abc_id = *abc_rule.id;
+  int def_id = *def_rule.id;
+
+  struct {
+    ExtensionId extension_id;
+    base::Optional<int> tab_id;
+    std::string expected_rule_and_tab_ids;
+  } test_cases[] = {
+      // No filter is specified for |extension_1|, therefore two MatchedRuleInfo
+      // should be returned:
+      // (abc_id, first_tab_id) and (abc_id, second_tab_id)
+      {extension_1_id, base::nullopt,
+       base::StringPrintf("%d,%d|%d,%d", abc_id, first_tab_id, abc_id,
+                          second_tab_id)},
+
+      // Filtering by tab_id = |first_tab_id| should return one MatchedRuleInfo:
+      // (abc_id, first_tab_id)
+      {extension_1_id, first_tab_id,
+       base::StringPrintf("%d,%d", abc_id, first_tab_id)},
+
+      // Filtering by tab_id = |second_tab_id| should return one
+      // MatchedRuleInfo: (abc_id, second_tab_id)
+      {extension_1_id, second_tab_id,
+       base::StringPrintf("%d,%d", abc_id, second_tab_id)},
+
+      // For |extension_2|, filtering by tab_id = |first_tab_id| should return
+      // one MatchedRuleInfo: (def_id, first_tab_id)
+      {extension_2_id, first_tab_id,
+       base::StringPrintf("%d,%d", def_id, first_tab_id)},
+
+      // Since no rules from |extension_2| was matched for the second tab,
+      // getMatchedRules should not return any rules.
+      {extension_2_id, second_tab_id, ""}};
+
+  for (const auto& test_case : test_cases) {
+    if (test_case.tab_id) {
+      SCOPED_TRACE(base::StringPrintf(
+          "Testing getMatchedRules for tab %d and extension %s",
+          *test_case.tab_id, test_case.extension_id.c_str()));
+    } else {
+      SCOPED_TRACE(base::StringPrintf(
+          "Testing getMatchedRules for all tabs and extension %s",
+          test_case.extension_id.c_str()));
+    }
+
+    std::string actual_rule_and_tab_ids =
+        GetRuleAndTabIdsMatched(test_case.extension_id, test_case.tab_id);
+    EXPECT_EQ(test_case.expected_rule_and_tab_ids, actual_rule_and_tab_ids);
+  }
+
+  // Close the second tab opened.
+  browser()->tab_strip_model()->CloseSelectedTabs();
+
+  ASSERT_EQ(1, browser()->tab_strip_model()->count());
+  ASSERT_TRUE(browser()->tab_strip_model()->IsTabSelected(0));
+
+  std::string actual_rule_and_tab_ids =
+      GetRuleAndTabIdsMatched(extension_1_id, base::nullopt);
+
+  // The matched rule info for the second tab should have its tab ID changed to
+  // the unknown tab ID after the second tab has been closed.
+  EXPECT_EQ(
+      base::StringPrintf("%d,%d|%d,%d", abc_id, extension_misc::kUnknownTabId,
+                         abc_id, first_tab_id),
+      actual_rule_and_tab_ids);
+}
+
+// Test that rules matched for main-frame navigations are attributed will be
+// reset when a main-frame navigation finishes.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
+                       GetMatchedRulesMainFrame) {
+  // Load the extension with a background script so scripts can be run from its
+  // generated background page.
+  set_has_background_script(true);
+
+  const std::string test_host = "abc.com";
+  GURL page_url = embedded_test_server()->GetURL(
+      test_host, "/pages_with_script/index.html");
+
+  TestRule rule = CreateGenericRule();
+  rule.id = kMinValidID;
+  rule.condition->url_filter = test_host;
+  rule.condition->resource_types = std::vector<std::string>({"main_frame"});
+  rule.action->type = "block";
+
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules({rule}, "extension_1", {}));
+
+  // Navigate to abc.com.
+  ui_test_utils::NavigateToURL(browser(), page_url);
+  std::string actual_rule_and_tab_ids =
+      GetRuleAndTabIdsMatched(last_loaded_extension_id(), base::nullopt);
+
+  // Since the block rule for abc.com is matched for the main-frame navigation
+  // request, it should be attributed to the current tab.
+  const int first_tab_id = ExtensionTabUtil::GetTabId(web_contents());
+  std::string expected_rule_and_tab_ids =
+      base::StringPrintf("%d,%d", *rule.id, first_tab_id);
+
+  EXPECT_EQ(expected_rule_and_tab_ids, actual_rule_and_tab_ids);
+
+  // Navigate to abc.com again.
+  ui_test_utils::NavigateToURL(browser(), page_url);
+  actual_rule_and_tab_ids =
+      GetRuleAndTabIdsMatched(last_loaded_extension_id(), base::nullopt);
+
+  // The same block rule is matched for this navigation request, and should be
+  // attributed to the current tab. Since the main-frame for which the older
+  // matched rule is associated with is no longer active, the older matched
+  // rule's tab ID should be changed to the unknown tab ID.
+  expected_rule_and_tab_ids =
+      base::StringPrintf("%d,%d|%d,%d", *rule.id, extension_misc::kUnknownTabId,
+                         *rule.id, first_tab_id);
+
+  EXPECT_EQ(expected_rule_and_tab_ids, actual_rule_and_tab_ids);
+
+  // Navigate to nomatch,com.
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "nomatch.com", "/pages_with_script/index.html"));
+
+  // No rules should be matched for the navigation request to nomatch.com and
+  // all rules previously attributed to |first_tab_id| should now be attributed
+  // to the unknown tab ID as a result of the navigation. Therefore
+  // GetMatchedRules should return no matched rules.
+  actual_rule_and_tab_ids =
+      GetRuleAndTabIdsMatched(last_loaded_extension_id(), first_tab_id);
+  EXPECT_EQ("", actual_rule_and_tab_ids);
 }
 
 // Test fixture to verify that host permissions for the request url and the

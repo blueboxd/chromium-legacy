@@ -26,16 +26,11 @@ void ComponentsHandler::RegisterMessages() {
 }
 
 void ComponentsHandler::OnJavascriptAllowed() {
-  component_updater::ComponentUpdateService* cus =
-      g_browser_process->component_updater();
-  cus->AddObserver(this);
+  observer_.Add(g_browser_process->component_updater());
 }
 
 void ComponentsHandler::OnJavascriptDisallowed() {
-  component_updater::ComponentUpdateService* cus =
-      g_browser_process->component_updater();
-  if (cus)
-    cus->RemoveObserver(this);
+  observer_.RemoveAll();
 }
 
 void ComponentsHandler::HandleRequestComponentsData(
@@ -142,7 +137,7 @@ base::string16 ComponentsHandler::ServiceStatusToString(
 void ComponentsHandler::OnDemandUpdate(const std::string& component_id) {
   component_updater::ComponentUpdateService* cus =
       g_browser_process->component_updater();
-  if (cus) {
+  if (cus) {  // TODO(dbeam): can this return nullptr if called from UI thread?
     cus->GetOnDemandUpdater().OnDemandUpdate(
         component_id, component_updater::OnDemandUpdater::Priority::FOREGROUND,
         component_updater::Callback());

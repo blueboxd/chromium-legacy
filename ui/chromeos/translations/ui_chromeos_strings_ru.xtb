@@ -80,6 +80,7 @@
 <translation id="1847880352285315359">Сохранено</translation>
 <translation id="1864756863218646478">Не удалось найти файл.</translation>
 <translation id="1921986354447415460">Турецкая раскладка (Turkish-F)</translation>
+<translation id="1924372192547904021">Внешнее хранилище "<ph name="DRIVE_NAME" />" отформатировано.</translation>
 <translation id="1931134289871235022">Словацкий</translation>
 <translation id="1933345018156373194">Произошла непредвиденная ошибка. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">Финский</translation>
@@ -163,6 +164,7 @@
 <translation id="2942290791863759244">Немецкая раскладка (NEO 2)</translation>
 <translation id="2943400156390503548">Слайды</translation>
 <translation id="2943503720238418293">Слишком длинное название.</translation>
+<translation id="2949781154072577687">Форматирование внешнего хранилища "<ph name="DRIVE_NAME" />"…</translation>
 <translation id="2951236788251446349">Медуза</translation>
 <translation id="2963783323012015985">Турецкая раскладка</translation>
 <translation id="2966459079597787514">Шведская раскладка</translation>
@@ -569,6 +571,7 @@
 <translation id="7649070708921625228">Справка</translation>
 <translation id="7654209398114106148">Перемещение объектов (<ph name="NUMBER_OF_ITEMS" />)…</translation>
 <translation id="7658239707568436148">Отмена</translation>
+<translation id="7695430100978772476">Не удалось отформатировать внешнее хранилище "<ph name="DRIVE_NAME" />".</translation>
 <translation id="770015031906360009">Греческий</translation>
 <translation id="7706319470528945664">Португальская раскладка</translation>
 <translation id="7711920809702896782">Информация об изображении</translation>

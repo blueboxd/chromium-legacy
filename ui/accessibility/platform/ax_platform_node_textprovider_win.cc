@@ -8,6 +8,7 @@
 
 #include "base/win/scoped_safearray.h"
 #include "ui/accessibility/ax_node_position.h"
+#include "ui/accessibility/platform/ax_platform_node_base.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 #include "ui/accessibility/platform/ax_platform_node_textrangeprovider_win.h"
 
@@ -257,42 +258,9 @@ STDMETHODIMP AXPlatformNodeTextProviderWin::get_DocumentRange(
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXT_GET_DOCUMENTRANGE);
   UIA_VALIDATE_TEXTPROVIDER_CALL();
 
-  // Start and end should be leaf text positions that span the beginning
-  // and end of text content within a node for get_DocumentRange. The start
-  // position should be the directly first child and the end position should
-  // be the deepest last child node.
-  AXNodePosition::AXPositionInstance start =
-      owner()->GetDelegate()->CreateTextPositionAt(0)->AsLeafTextPosition();
-
-  AXNodePosition::AXPositionInstance end;
-  if (ui::IsDocument(owner()->GetData().role)) {
-    // Fast path for getting the range of the web root.
-    end = start->CreatePositionAtEndOfDocument();
-  } else if (owner()->GetChildCount() == 0) {
-    end = owner()
-              ->GetDelegate()
-              ->CreateTextPositionAt(0)
-              ->CreatePositionAtEndOfAnchor()
-              ->AsLeafTextPosition();
-  } else {
-    AXPlatformNode* deepest_last_child =
-        AXPlatformNode::FromNativeViewAccessible(
-            owner()->ChildAtIndex(owner()->GetChildCount() - 1));
-
-    while (deepest_last_child &&
-           deepest_last_child->GetDelegate()->GetChildCount() > 0) {
-      deepest_last_child = AXPlatformNode::FromNativeViewAccessible(
-          deepest_last_child->GetDelegate()->ChildAtIndex(
-              deepest_last_child->GetDelegate()->GetChildCount() - 1));
-    }
-    end = deepest_last_child->GetDelegate()
-              ->CreateTextPositionAt(0)
-              ->CreatePositionAtEndOfAnchor()
-              ->AsLeafTextPosition();
-  }
-
-  *range = AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
-      owner_.Get(), std::move(start), std::move(end));
+  // Get range from child, where child is the current node. In other words,
+  // getting the text range of the current owner AxPlatformNodeWin node.
+  *range = GetRangeFromChild(owner(), owner());
 
   return S_OK;
 }
@@ -337,15 +305,31 @@ ITextRangeProvider* AXPlatformNodeTextProviderWin::GetRangeFromChild(
   DCHECK(descendant->GetDelegate());
   DCHECK(ancestor->IsDescendant(descendant));
 
-  // Start and end should be leaf text positions.
+  // Start and end should be leaf text positions that span the beginning and end
+  // of text content within a node. The start position should be the directly
+  // first child and the end position should be the deepest last child node.
   AXNodePosition::AXPositionInstance start =
       descendant->GetDelegate()->CreateTextPositionAt(0)->AsLeafTextPosition();
 
-  AXNodePosition::AXPositionInstance end =
-      descendant->GetDelegate()
-          ->CreateTextPositionAt(start->MaxTextOffset())
-          ->AsLeafTextPosition()
-          ->CreatePositionAtEndOfAnchor();
+  AXNodePosition::AXPositionInstance end;
+  if (ui::IsDocument(descendant->GetData().role)) {
+    // Fast path for getting the range of the web root.
+    end = start->CreatePositionAtEndOfDocument();
+  } else if (descendant->GetChildCount() == 0) {
+    end = descendant->GetDelegate()
+              ->CreateTextPositionAt(0)
+              ->CreatePositionAtEndOfAnchor()
+              ->AsLeafTextPosition();
+  } else {
+    AXPlatformNodeBase* deepest_last_child = descendant->GetLastChild();
+    while (deepest_last_child && deepest_last_child->GetChildCount() > 0)
+      deepest_last_child = deepest_last_child->GetLastChild();
+
+    end = deepest_last_child->GetDelegate()
+              ->CreateTextPositionAt(0)
+              ->CreatePositionAtEndOfAnchor()
+              ->AsLeafTextPosition();
+  }
 
   return AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
       ancestor, std::move(start), std::move(end));

@@ -30,15 +30,21 @@ class MODULES_EXPORT PaymentInstruments final : public ScriptWrappable {
   explicit PaymentInstruments(
       const mojo::Remote<payments::mojom::blink::PaymentManager>&);
 
-  ScriptPromise deleteInstrument(ScriptState*, const String& instrument_key);
-  ScriptPromise get(ScriptState*, const String& instrument_key);
-  ScriptPromise keys(ScriptState*);
-  ScriptPromise has(ScriptState*, const String& instrument_key);
+  ScriptPromise deleteInstrument(ScriptState*,
+                                 const String& instrument_key,
+                                 ExceptionState&);
+  ScriptPromise get(ScriptState*,
+                    const String& instrument_key,
+                    ExceptionState&);
+  ScriptPromise keys(ScriptState*, ExceptionState&);
+  ScriptPromise has(ScriptState*,
+                    const String& instrument_key,
+                    ExceptionState&);
   ScriptPromise set(ScriptState*,
                     const String& instrument_key,
                     const PaymentInstrument* details,
                     ExceptionState&);
-  ScriptPromise clear(ScriptState*);
+  ScriptPromise clear(ScriptState*, ExceptionState&);
 
  private:
   mojom::blink::PermissionService* GetPermissionService(ScriptState*);

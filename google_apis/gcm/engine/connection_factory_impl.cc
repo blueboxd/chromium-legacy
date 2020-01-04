@@ -112,8 +112,8 @@ void ConnectionFactoryImpl::Connect() {
     connection_handler_ = CreateConnectionHandler(
         base::TimeDelta::FromMilliseconds(kReadTimeoutMs), read_callback_,
         write_callback_,
-        base::Bind(&ConnectionFactoryImpl::ConnectionHandlerCallback,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindRepeating(&ConnectionFactoryImpl::ConnectionHandlerCallback,
+                            weak_ptr_factory_.GetWeakPtr()));
   }
 
   if (connecting_ || waiting_for_backoff_)

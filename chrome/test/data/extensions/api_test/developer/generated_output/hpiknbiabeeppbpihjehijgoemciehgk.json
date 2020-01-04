@@ -2,6 +2,7 @@
    "dependentExtensions": [  ],
    "description": "",
    "disableReasons": {
+      "blockedByPolicy": false,
       "corruptInstall": false,
       "suspiciousInstall": false,
       "updateRequired": false

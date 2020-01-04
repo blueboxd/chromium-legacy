@@ -6,6 +6,7 @@ include_rules = [
   "+chrome/browser/ui/android/appmenu",
   "-chrome/browser/ui/android/appmenu/internal",
   "+chrome/browser/ui/android/widget",
+  "+chrome/browser/ui/messages/android/java",
   "+chrome/browser/download/android/java",
   "+chrome/browser/image_fetcher/android/java",
   "+chrome/browser/preferences/android/java",

@@ -3026,23 +3026,23 @@ TEST_F(TabStripModelTest, AddTabToExistingGroupUpdatesObservers) {
   strip.CloseAllTabs();
 }
 
-TEST_F(TabStripModelTest, AddTabToExistingGroupReordersToTheRight) {
+TEST_F(TabStripModelTest, AddTabToLeftOfExistingGroupReorders) {
   TestTabStripModelDelegate delegate;
   TabStripModel strip(&delegate, profile());
-  PrepareTabs(&strip, 2);
+  PrepareTabs(&strip, 3);
 
-  strip.AddToNewGroup({1});
-  base::Optional<tab_groups::TabGroupId> group = strip.GetTabGroupForTab(1);
+  strip.AddToNewGroup({2});
+  base::Optional<tab_groups::TabGroupId> group = strip.GetTabGroupForTab(2);
 
   strip.AddToExistingGroup({0}, group.value());
-  EXPECT_EQ(strip.GetTabGroupForTab(0), group);
   EXPECT_EQ(strip.GetTabGroupForTab(1), group);
-  EXPECT_EQ("1 0", GetTabStripStateString(strip));
+  EXPECT_EQ(strip.GetTabGroupForTab(2), group);
+  EXPECT_EQ("1 0 2", GetTabStripStateString(strip));
 
   strip.CloseAllTabs();
 }
 
-TEST_F(TabStripModelTest, AddTabToExistingGroupReordersToTheLeft) {
+TEST_F(TabStripModelTest, AddTabToRighOfExistingGroupReorders) {
   TestTabStripModelDelegate delegate;
   TabStripModel strip(&delegate, profile());
   PrepareTabs(&strip, 3);
@@ -3072,7 +3072,7 @@ TEST_F(TabStripModelTest, AddTabToExistingGroupReorders) {
   EXPECT_EQ(strip.GetTabGroupForTab(1), group);
   EXPECT_EQ(strip.GetTabGroupForTab(2), group);
   EXPECT_FALSE(strip.GetTabGroupForTab(3).has_value());
-  EXPECT_EQ("1 0 3 2", GetTabStripStateString(strip));
+  EXPECT_EQ("0 1 3 2", GetTabStripStateString(strip));
 
   strip.CloseAllTabs();
 }
@@ -3089,7 +3089,7 @@ TEST_F(TabStripModelTest, AddTabToExistingGroupUnpins) {
   strip.AddToExistingGroup({0}, group.value());
   EXPECT_FALSE(strip.IsTabPinned(0));
   EXPECT_EQ(strip.GetTabGroupForTab(0), group);
-  EXPECT_EQ("1 0", GetTabStripStateString(strip));
+  EXPECT_EQ("0 1", GetTabStripStateString(strip));
 
   strip.CloseAllTabs();
 }

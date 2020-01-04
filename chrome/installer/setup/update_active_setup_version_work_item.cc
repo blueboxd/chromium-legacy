@@ -42,11 +42,10 @@ UpdateActiveSetupVersionWorkItem::UpdateActiveSetupVersionWorkItem(
           active_setup_path,
           WorkItem::kWow64Default,
           L"Version",
-          base::Bind(
+          base::BindOnce(
               &UpdateActiveSetupVersionWorkItem::GetUpdatedActiveSetupVersion,
               base::Unretained(this))),
-      operation_(operation) {
-}
+      operation_(operation) {}
 
 bool UpdateActiveSetupVersionWorkItem::DoImpl() {
   set_reg_value_work_item_.set_best_effort(best_effort());

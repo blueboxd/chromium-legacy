@@ -244,6 +244,7 @@
 <translation id="1329584516321524826">Nou net opgedateer</translation>
 <translation id="1330145147221172764">Aktiveer opskerm-sleutelbord</translation>
 <translation id="1331977651797684645">Dit was ek.</translation>
+<translation id="1333489022424033687">Sommige kenmerke op <ph name="ORIGIN" /> sal dalk nie werk voordat jy data uitgevee het wat ander werwe op jou toestel geberg het nie</translation>
 <translation id="133535873114485416">Voorkeurinvoer</translation>
 <translation id="1335929031622236846">Skryf jou toestel in</translation>
 <translation id="1338802252451106843"><ph name="ORIGIN" /> wil hierdie program oopmaak.</translation>
@@ -314,7 +315,6 @@
 <translation id="1433811987160647649">Vra voordat toegang verkry word</translation>
 <translation id="1434696352799406980">Dit sal jou afskopbladsy, nuweoortjiebladsy, soekenjin en vasgespelde oortjies terugstel. Dit sal ook alle uitbreidings deaktiveer en tydelike data, soos webkoekies, uitvee. Jou boekmerke, geskiedenis en gestoorde wagwoorde sal nie uitgevee word nie.</translation>
 <translation id="1434886155212424586">Tuisblad is die Nuwe oortjie-bladsy</translation>
-<translation id="1435979430299962295">Klik die uitbreiding om toegang tot hierdie werf toe te laat.</translation>
 <translation id="1436390408194692385">Geldig vir <ph name="TICKET_TIME_LEFT" /></translation>
 <translation id="1436671784520050284">Gaan voort met opstelling</translation>
 <translation id="1436784010935106834">Verwyder</translation>
@@ -1036,7 +1036,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="2445484935443597917">Skep 'n nuwe profiel</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> wil jou identiteit verifieer</translation>
 <translation id="2448312741937722512">Soort</translation>
-<translation id="2448734521821581858">Webkoekies is lêers wat geskep word deur webwerwe wat jy besoek. Daar is twee soorte webkoekies: Eersteparty-webkoekies word geskep deur die werf wat jy besoek. Die werf word in die adresbalk gewys. Derdeparty-webkoekies word deur ander webwerwe geskep. Hierdie werwe besit van die inhoud, soos advertensies of prente, wat jy sien op die webwerf wat jy besoek.</translation>
 <translation id="2450223707519584812">Jy sal nie gebruikers kan byvoeg nie omdat Google-API-sleutels ontbreek. Sien <ph name="DETAILS_URL" /> vir besonderhede.</translation>
 <translation id="2450849356604136918">Geen aktiewe aansigte nie</translation>
 <translation id="2451298179137331965">2x</translation>
@@ -4082,6 +4081,7 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="6843423766595476978">Ok Google is gereed</translation>
 <translation id="6845038076637626672">Maak groot oop</translation>
 <translation id="6845325883481699275">Help om Chrome-sekuriteit te verbeter</translation>
+<translation id="6847125920277401289">Maak spasie beskikbaar om voort te gaan</translation>
 <translation id="6848388270925200958">Jy het op die oomblik 'n paar kaarte wat net op hierdie toestel gebruik kan word</translation>
 <translation id="6850286078059909152">Tekskleur</translation>
 <translation id="6851497530878285708">Program is geaktiveer</translation>
@@ -4106,10 +4106,10 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="6885771755599377173">Voorskou van stelselinligting</translation>
 <translation id="6886476658664859389">NFC-sekuriteitsleutel</translation>
 <translation id="6886871292305414135">Maak skakel in nuwe oortjie oop</translation>
-<translation id="6890912377247906520">Hierdie uitbreidings het nie toegang tot hierdie werf nodig nie.</translation>
 <translation id="6892812721183419409">Maak skakel oop as <ph name="USER" /></translation>
 <translation id="6895032998810961280">Gee besonderhede oor skadelike sagteware, stelselinstellings en prosesse wat jy op jou rekenaar gekry het by Google aan.</translation>
 <translation id="6896758677409633944">Kopieer</translation>
+<translation id="6897363604023044284">Kies werwe om uit te vee</translation>
 <translation id="6898440773573063262">Kiosk-programme kan nou opgestel word om outomaties op hierdie toestel te begin.</translation>
 <translation id="6898699227549475383">Organisasie (O)</translation>
 <translation id="6900284862687837908">Agtergrondprogram: <ph name="BACKGROUND_APP_URL" /></translation>

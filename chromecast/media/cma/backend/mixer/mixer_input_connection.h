@@ -24,6 +24,7 @@
 #include "chromecast/media/cma/backend/mixer/mixer_input.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/volume_control.h"
+#include "media/base/media_util.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -193,6 +194,7 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
   // to us.
   int64_t playback_start_pts_ GUARDED_BY(lock_) = INT64_MIN;
   int remaining_silence_frames_ GUARDED_BY(lock_) = 0;
+  ::media::NullMediaLog media_log_;
   std::unique_ptr<::media::AudioRendererAlgorithm> rate_shifter_
       GUARDED_BY(lock_);
   std::unique_ptr<::media::AudioBus> rate_shifter_output_ GUARDED_BY(lock_);

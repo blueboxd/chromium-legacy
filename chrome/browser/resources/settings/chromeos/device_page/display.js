@@ -604,7 +604,9 @@ Polymer({
    * @private
    */
   getUnifiedDesktopText_: function(unifiedDesktopMode) {
-    return this.i18n(unifiedDesktopMode ? 'toggleOn' : 'toggleOff');
+    return this.i18n(
+        unifiedDesktopMode ? 'displayUnifiedDesktopOn' :
+                             'displayUnifiedDesktopOff');
   },
 
   /**

@@ -391,8 +391,10 @@ def _ParseBenchmarks(shard_map_path):
   for shard, benchmarks_in_shard in shard_map.iteritems():
     if "extra_infos" in shard:
       continue
-    for benchmark, _ in benchmarks_in_shard['benchmarks'].iteritems():
-      all_benchmarks.add(benchmark)
+    if benchmarks_in_shard.get('benchmarks'):
+      all_benchmarks |= set(benchmarks_in_shard['benchmarks'].keys())
+    if benchmarks_in_shard.get('executables'):
+      all_benchmarks |= set(benchmarks_in_shard['executables'].keys())
   return frozenset(all_benchmarks)
 
 
@@ -436,7 +438,8 @@ def _ValidateShardMaps(args):
   # Check that bot_platforms.py matches the actual shard maps
   for platform in bot_platforms.ALL_PLATFORMS:
     platform_benchmark_names = set(
-        b.name for b in platform.benchmark_configs)
+        b.name for b in platform.benchmark_configs) | set(
+            e.name for e in platform.executables)
     shard_map_benchmark_names = _ParseBenchmarks(platform.shards_map_file_path)
     for benchmark in platform_benchmark_names - shard_map_benchmark_names:
       errors.append(

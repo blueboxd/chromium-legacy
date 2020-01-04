@@ -43,12 +43,9 @@ TaskAttributionVector PerformanceLongTaskTiming::attribution() const {
 
 void PerformanceLongTaskTiming::BuildJSONValue(V8ObjectBuilder& builder) const {
   PerformanceEntry::BuildJSONValue(builder);
-  HeapVector<ScriptValue> attribution;
-  for (unsigned i = 0; i < attribution_.size(); i++) {
-    attribution.push_back(
-        attribution_[i]->toJSONForBinding(builder.GetScriptState()));
-  }
-  builder.Add("attribution", attribution);
+  ScriptState* script_state = builder.GetScriptState();
+  builder.Add("attribution", FreezeV8Object(ToV8(attribution_, script_state),
+                                            script_state->GetIsolate()));
 }
 
 void PerformanceLongTaskTiming::Trace(blink::Visitor* visitor) {

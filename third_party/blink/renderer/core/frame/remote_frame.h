@@ -51,9 +51,10 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   void RemoveBackForwardCacheEviction() override {}
   void SetIsInert(bool) override;
   void SetInheritedEffectiveTouchAction(TouchAction) override;
-  bool BubbleLogicalScrollFromChildFrame(ScrollDirection direction,
-                                         ScrollGranularity granularity,
-                                         Frame* child) override;
+  bool BubbleLogicalScrollFromChildFrame(
+      mojom::blink::ScrollDirection direction,
+      ScrollGranularity granularity,
+      Frame* child) override;
   void DidFocus() override;
 
   void SetCcLayer(cc::Layer*,
@@ -99,6 +100,9 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   void Collapse(bool collapsed) final;
   void Focus() override;
   void SetHadStickyUserActivationBeforeNavigation(bool value) override;
+  void BubbleLogicalScroll(
+      mojom::blink::ScrollDirection direction,
+      ui::input_types::ScrollGranularity granularity) override;
 
  private:
   // Frame protected overrides:

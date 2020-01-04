@@ -227,36 +227,35 @@ class OnCanDownloadDecidedObserver {
  public:
   OnCanDownloadDecidedObserver() = default;
 
-  void Wait(const std::vector<bool>& expected_decisions) {
-    if (expected_decisions.size() <= decisions_.size()) {
-      EXPECT_TRUE(std::equal(expected_decisions.begin(),
-                             expected_decisions.end(), decisions_.begin()));
-    } else {
-      expected_decisions_ = expected_decisions;
-      base::RunLoop run_loop;
-      completion_closure_ = run_loop.QuitClosure();
-      run_loop.Run();
-    }
+  void WaitForNumberOfDecisions(size_t expected_num_of_decisions) {
+    if (expected_num_of_decisions <= decisions_.size())
+      return;
+
+    expected_num_of_decisions_ = expected_num_of_decisions;
+    base::RunLoop run_loop;
+    completion_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
   }
 
   void OnCanDownloadDecided(bool allow) {
     decisions_.push_back(allow);
-    if (decisions_.size() == expected_decisions_.size()) {
+    if (decisions_.size() == expected_num_of_decisions_) {
       DCHECK(!completion_closure_.is_null());
-      EXPECT_EQ(decisions_, expected_decisions_);
       std::move(completion_closure_).Run();
     }
   }
 
+  const std::vector<bool>& GetDecisions() { return decisions_; }
+
   void Reset() {
+    expected_num_of_decisions_ = 0;
     decisions_.clear();
-    expected_decisions_.clear();
     completion_closure_.Reset();
   }
 
  private:
   std::vector<bool> decisions_;
-  std::vector<bool> expected_decisions_;
+  size_t expected_num_of_decisions_ = 0;
   base::Closure completion_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(OnCanDownloadDecidedObserver);
@@ -1610,7 +1609,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest,
       "window.domAutomationController.send(startDownload1());",
       &download_attempted));
   ASSERT_TRUE(download_attempted);
-  can_download_observer.Wait({false});
+  can_download_observer.WaitForNumberOfDecisions(1);
+  EXPECT_FALSE(can_download_observer.GetDecisions().front());
   can_download_observer.Reset();
 
   // Let the 2nd download to succeed.
@@ -1623,7 +1623,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest,
       "window.domAutomationController.send(startDownload2());",
       &download_attempted));
   ASSERT_TRUE(download_attempted);
-  can_download_observer.Wait({true});
+  can_download_observer.WaitForNumberOfDecisions(1);
+  EXPECT_TRUE(can_download_observer.GetDecisions().front());
+
   // Waits for the 2nd download to complete.
   observer->WaitForFinished();
 
@@ -3492,7 +3494,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MultipleDownloadsFromIframeSrcdoc) {
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url, 1);
 
   // Only the 1st download should succeed. The following should fail.
-  can_download_observer.Wait({true, false, false});
+  can_download_observer.WaitForNumberOfDecisions(3);
+  std::vector<bool> expected_decisions{true, false, false};
+  EXPECT_EQ(can_download_observer.GetDecisions(), expected_decisions);
 
   downloads_observer->WaitForFinished();
 
@@ -3500,14 +3504,53 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MultipleDownloadsFromIframeSrcdoc) {
       1u, downloads_observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
 }
 
-// Test the scenario for 3 consecutive <a download> download attempts that all
-// trigger a x-origin redirect to another download. No download is expected to
-// happen.
-IN_PROC_BROWSER_TEST_F(
-    DownloadTest,
-    MultipleAnchorDownloadsRequestsCrossOriginRedirectToAnotherDownload) {
+// Test <a download> download that triggers a x-origin redirect to another
+// download. The download should succeed.
+IN_PROC_BROWSER_TEST_F(DownloadTest,
+                       CrossOriginRedirectDownloadFromAnchorDownload) {
   std::unique_ptr<content::DownloadTestObserver> downloads_observer(
-      CreateWaiter(browser(), 0u));
+      CreateWaiter(browser(), 1u));
+  OnCanDownloadDecidedObserver can_download_observer;
+  g_browser_process->download_request_limiter()
+      ->SetOnCanDownloadDecidedCallbackForTesting(base::BindRepeating(
+          &OnCanDownloadDecidedObserver::OnCanDownloadDecided,
+          base::Unretained(&can_download_observer)));
+
+  embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL(
+      "/downloads/multiple_a_download_x_origin_redirect_to_download.html");
+
+  base::StringPairs port_replacement;
+  port_replacement.push_back(std::make_pair(
+      "{{PORT}}", base::NumberToString(embedded_test_server()->port())));
+  std::string download_url = net::test_server::GetFilePathWithReplacements(
+      "redirect_x_origin_download.html", port_replacement);
+
+  url = GURL(url.spec() + "?download_url=" + download_url + "&num_downloads=1");
+
+  // Navigate to a page that triggers a <a download> download attempt that
+  // triggers a x-origin redirect to another download.
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url, 1);
+
+  // The <a download> attempt and well as the redirected download should both
+  // pass the download limiter check.
+  can_download_observer.WaitForNumberOfDecisions(2);
+  std::vector<bool> expected_decisions{true, true};
+  EXPECT_EQ(can_download_observer.GetDecisions(), expected_decisions);
+
+  // Wait for the redirected download resulted from the download attempt to
+  // finish.
+  downloads_observer->WaitForFinished();
+}
+
+// Test the scenario for 3 consecutive <a download> download attempts that all
+// trigger a x-origin redirect to another download. Only the redirected download
+// resulted from the 1st <a download> attempt should succeed.
+IN_PROC_BROWSER_TEST_F(DownloadTest,
+                       MultipleCrossOriginRedirectDownloadsFromAnchorDownload) {
+  std::unique_ptr<content::DownloadTestObserver> downloads_observer(
+      CreateWaiter(browser(), 1u));
 
   OnCanDownloadDecidedObserver can_download_observer;
   g_browser_process->download_request_limiter()
@@ -3526,24 +3569,26 @@ IN_PROC_BROWSER_TEST_F(
   std::string download_url = net::test_server::GetFilePathWithReplacements(
       "redirect_x_origin_download.html", port_replacement);
 
-  url = GURL(url.spec() + "?download_url=" + download_url);
+  url = GURL(url.spec() + "?download_url=" + download_url + "&num_downloads=3");
 
   // Navigate to a page that triggers 3 consecutive <a download> download
   // attempts that all trigger a x-origin redirect to another download.
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url, 1);
 
   // The 1st <a download> attempt should pass the download limiter check,
-  // and prevent further download attempts from passing. The subsequent 2nd/3rd
-  // <a download> attempts as well as the |download as a result of the x-origin
-  // redirect from the 1st download attempt| should all fail the download
-  // limiter check.
-  can_download_observer.Wait({true, false, false, false});
+  // and prevent subsequent 2nd/3rd download attempts from passing the check.
+  // The download resulted from the x-origin redirect from the 1st download
+  // attempt will still pass the check, which could happen at any point
+  // before/between/after the 2nd and 3rd <a download> attempts.
+  can_download_observer.WaitForNumberOfDecisions(4);
+  const std::vector<bool>& decisions = can_download_observer.GetDecisions();
+  EXPECT_EQ(decisions.size(), 4u);
+  EXPECT_TRUE(decisions.front());
+  EXPECT_EQ(1, std::count(decisions.begin() + 1, decisions.end(), true));
 
-  // Only the 1st <a download> attempt passed the download limiter check, but it
-  // was still aborted by a x-origin redirect, therefore we expect no download
-  // to happen.
-  EXPECT_EQ(
-      0u, downloads_observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
+  // Wait for the redirected download resulted from the 1st download attempt to
+  // finish.
+  downloads_observer->WaitForFinished();
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_Renaming) {

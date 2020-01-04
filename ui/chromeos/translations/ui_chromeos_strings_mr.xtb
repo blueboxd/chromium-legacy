@@ -80,6 +80,7 @@
 <translation id="1847880352285315359">सेव्ह केले</translation>
 <translation id="1864756863218646478">फाइल आढळू शकली नाही.</translation>
 <translation id="1921986354447415460">तुर्की-F कीबोर्ड</translation>
+<translation id="1924372192547904021"><ph name="DRIVE_NAME" /> फॉरमॅट केला आहे</translation>
 <translation id="1931134289871235022">स्लोव्हाक</translation>
 <translation id="1933345018156373194">हलवता आले नाही, अनपेक्षित एरर: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">फिन्निश</translation>
@@ -163,6 +164,7 @@
 <translation id="2942290791863759244">जर्मन NEO 2 कीबोर्ड</translation>
 <translation id="2943400156390503548">स्लाइड</translation>
 <translation id="2943503720238418293">लहान नाव वापरा</translation>
+<translation id="2949781154072577687"><ph name="DRIVE_NAME" /> फॉरमॅट करत आहे...</translation>
 <translation id="2951236788251446349">जेलिफिश</translation>
 <translation id="2963783323012015985">तुर्कीश कीबोर्ड</translation>
 <translation id="2966459079597787514">स्वीडिश कीबोर्ड</translation>
@@ -569,6 +571,7 @@ Google ड्राइव्ह मधील फायली अपडेट क
 <translation id="7649070708921625228">मदत</translation>
 <translation id="7654209398114106148"><ph name="NUMBER_OF_ITEMS" /> आयटम हलवत आहे...</translation>
 <translation id="7658239707568436148">रद्द करा</translation>
+<translation id="7695430100978772476"><ph name="DRIVE_NAME" /> फॉरमॅट करता आला नाही</translation>
 <translation id="770015031906360009">ग्रीक</translation>
 <translation id="7706319470528945664">पोर्तुगीज कीबोर्ड</translation>
 <translation id="7711920809702896782">इमेज माहिती</translation>

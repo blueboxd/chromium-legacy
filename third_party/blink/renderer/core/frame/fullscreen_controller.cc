@@ -124,7 +124,8 @@ void FullscreenController::DidExitFullscreen() {
 }
 
 void FullscreenController::EnterFullscreen(LocalFrame& frame,
-                                           const FullscreenOptions* options) {
+                                           const FullscreenOptions* options,
+                                           bool for_cross_process_descendant) {
   // TODO(dtapuska): If we are already in fullscreen. If the options are
   // different than the currently requested one we may wish to request
   // fullscreen mode again.
@@ -166,8 +167,13 @@ void FullscreenController::EnterFullscreen(LocalFrame& frame,
     if (options->screen()->DisplayId() != Screen::kInvalidDisplayId)
       fullscreen_options->display_id = options->screen()->DisplayId();
   }
-  frame.GetLocalFrameHostRemote().EnterFullscreen(
-      std::move(fullscreen_options));
+
+  // Don't send redundant EnterFullscreen message to the browser for the
+  // ancestor frames if the subframe has already entered fullscreen.
+  if (!for_cross_process_descendant) {
+    frame.GetLocalFrameHostRemote().EnterFullscreen(
+        std::move(fullscreen_options));
+  }
 
   state_ = State::kEnteringFullscreen;
 }

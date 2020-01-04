@@ -12,6 +12,10 @@
 #include "chrome/services/app_service/public/cpp/app_update.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 
+namespace {
+const char kArcIntentHelperAppId[] = "lomchfnmkmhfhbibboadbgabihofenaa";
+}
+
 AppServiceAppIconLoader::AppServiceAppIconLoader(
     Profile* profile,
     int resource_size_in_dip,
@@ -27,6 +31,10 @@ AppServiceAppIconLoader::AppServiceAppIconLoader(
 AppServiceAppIconLoader::~AppServiceAppIconLoader() = default;
 
 bool AppServiceAppIconLoader::CanLoadImageForApp(const std::string& app_id) {
+  // Skip the ARC intent helper, the system Android app that proxies links to
+  // Chrome, which should be hidden.
+  if (app_id == kArcIntentHelperAppId)
+    return false;
   return true;
 }
 

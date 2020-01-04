@@ -29,8 +29,8 @@ namespace gcm {
 // receipt/failures and triggering reconnection as necessary.
 class GCM_EXPORT HeartbeatManager : public base::PowerObserver {
  public:
-  typedef base::Callback<void(ConnectionFactory::ConnectionResetReason)>
-      ReconnectCallback;
+  using ReconnectCallback =
+      base::RepeatingCallback<void(ConnectionFactory::ConnectionResetReason)>;
 
   // |io_task_runner|: for running IO tasks.
   // |maybe_power_wrapped_io_task_runner|: for running IO tasks, where if the
@@ -46,7 +46,7 @@ class GCM_EXPORT HeartbeatManager : public base::PowerObserver {
   // Start the heartbeat logic.
   // |send_heartbeat_callback_| is the callback the HeartbeatManager uses to
   // send new heartbeats. Only one heartbeat can be outstanding at a time.
-  void Start(const base::Closure& send_heartbeat_callback,
+  void Start(const base::RepeatingClosure& send_heartbeat_callback,
              const ReconnectCallback& trigger_reconnect_callback);
 
   // Stop the timer. Start(..) must be called again to begin sending heartbeats
@@ -134,7 +134,7 @@ class GCM_EXPORT HeartbeatManager : public base::PowerObserver {
   base::Time suspend_time_;
 
   // Callbacks for interacting with the the connection.
-  base::Closure send_heartbeat_callback_;
+  base::RepeatingClosure send_heartbeat_callback_;
   ReconnectCallback trigger_reconnect_callback_;
 
   base::WeakPtrFactory<HeartbeatManager> weak_ptr_factory_{this};

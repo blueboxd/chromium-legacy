@@ -80,6 +80,7 @@
 <translation id="1847880352285315359">Yadda saxlandı</translation>
 <translation id="1864756863218646478">Fayl tapılmadı.</translation>
 <translation id="1921986354447415460">Türk-F klaviaturası</translation>
+<translation id="1924372192547904021"><ph name="DRIVE_NAME" /> formatlandı</translation>
 <translation id="1931134289871235022">Slovak</translation>
 <translation id="1933345018156373194">Köçürmək alınmadı, gözlənilməz xəta baş verdi: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">Fin</translation>
@@ -163,6 +164,7 @@
 <translation id="2942290791863759244">Alman NEO 2 klaviaturası</translation>
 <translation id="2943400156390503548">Slaydlar</translation>
 <translation id="2943503720238418293">Qısa ad istifadə edin</translation>
+<translation id="2949781154072577687"><ph name="DRIVE_NAME" /> formatlanır...</translation>
 <translation id="2951236788251446349">Meduza</translation>
 <translation id="2963783323012015985">Türk klaviaturası</translation>
 <translation id="2966459079597787514">İsveç klaviaturası</translation>
@@ -568,6 +570,7 @@
 <translation id="7649070708921625228">Yardım</translation>
 <translation id="7654209398114106148"><ph name="NUMBER_OF_ITEMS" /> element köçürülür...</translation>
 <translation id="7658239707568436148">Ləğv edin</translation>
+<translation id="7695430100978772476"><ph name="DRIVE_NAME" /> formatlanmadı</translation>
 <translation id="770015031906360009">Yunan</translation>
 <translation id="7706319470528945664">Portuqal klaviaturası</translation>
 <translation id="7711920809702896782">Şəkil məlumatı</translation>

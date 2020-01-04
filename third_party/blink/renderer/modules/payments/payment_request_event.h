@@ -22,6 +22,7 @@ class AtomicString;
 
 namespace blink {
 
+class ExceptionState;
 class RespondWithObserver;
 class ScriptPromiseResolver;
 class ScriptState;
@@ -70,9 +71,11 @@ class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
                                     const ScriptValue& method_details,
                                     ExceptionState& exception_state);
   ScriptPromise changeShippingAddress(ScriptState*,
-                                      PaymentAddressInit* shippingAddress);
+                                      PaymentAddressInit* shippingAddress,
+                                      ExceptionState&);
   ScriptPromise changeShippingOption(ScriptState*,
-                                     const String& shipping_option_id);
+                                     const String& shipping_option_id,
+                                     ExceptionState&);
   void respondWith(ScriptState*, ScriptPromise, ExceptionState&);
 
   void Trace(blink::Visitor*) override;

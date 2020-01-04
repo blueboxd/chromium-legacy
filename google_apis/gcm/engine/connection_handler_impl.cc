@@ -110,9 +110,9 @@ void ConnectionHandlerImpl::SendMessage(
     message.SerializeToCodedStream(&coded_output_stream);
   }
 
-  if (output_stream_->Flush(
-          base::Bind(&ConnectionHandlerImpl::OnMessageSent,
-                     weak_ptr_factory_.GetWeakPtr())) != net::ERR_IO_PENDING) {
+  if (output_stream_->Flush(base::BindOnce(
+          &ConnectionHandlerImpl::OnMessageSent,
+          weak_ptr_factory_.GetWeakPtr())) != net::ERR_IO_PENDING) {
     OnMessageSent();
   }
 }
@@ -132,18 +132,17 @@ void ConnectionHandlerImpl::Login(
     login_request.SerializeToCodedStream(&coded_output_stream);
   }
 
-  if (output_stream_->Flush(
-          base::Bind(&ConnectionHandlerImpl::OnMessageSent,
-                     weak_ptr_factory_.GetWeakPtr())) != net::ERR_IO_PENDING) {
+  if (output_stream_->Flush(base::BindOnce(
+          &ConnectionHandlerImpl::OnMessageSent,
+          weak_ptr_factory_.GetWeakPtr())) != net::ERR_IO_PENDING) {
     io_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&ConnectionHandlerImpl::OnMessageSent,
                                   weak_ptr_factory_.GetWeakPtr()));
   }
 
-  read_timeout_timer_.Start(FROM_HERE,
-                            read_timeout_,
-                            base::Bind(&ConnectionHandlerImpl::OnTimeout,
-                                       weak_ptr_factory_.GetWeakPtr()));
+  read_timeout_timer_.Start(FROM_HERE, read_timeout_,
+                            base::BindOnce(&ConnectionHandlerImpl::OnTimeout,
+                                           weak_ptr_factory_.GetWeakPtr()));
   WaitForData(MCS_VERSION_TAG_AND_SIZE);
 }
 
@@ -238,9 +237,8 @@ void ConnectionHandlerImpl::WaitForData(ProcessingState state) {
   int unread_byte_count = input_stream_->UnreadByteCount();
   if (min_bytes_needed > unread_byte_count &&
       input_stream_->Refresh(
-          base::Bind(&ConnectionHandlerImpl::WaitForData,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     state),
+          base::BindOnce(&ConnectionHandlerImpl::WaitForData,
+                         weak_ptr_factory_.GetWeakPtr(), state),
           max_bytes_needed - unread_byte_count) == net::ERR_IO_PENDING) {
     return;
   }
@@ -323,10 +321,9 @@ void ConnectionHandlerImpl::OnGotMessageTag() {
            << static_cast<unsigned int>(message_tag_);
 
   if (!read_timeout_timer_.IsRunning()) {
-    read_timeout_timer_.Start(FROM_HERE,
-                              read_timeout_,
-                              base::Bind(&ConnectionHandlerImpl::OnTimeout,
-                                         weak_ptr_factory_.GetWeakPtr()));
+    read_timeout_timer_.Start(FROM_HERE, read_timeout_,
+                              base::BindOnce(&ConnectionHandlerImpl::OnTimeout,
+                                             weak_ptr_factory_.GetWeakPtr()));
   }
   OnGotMessageSize();
 }
@@ -442,10 +439,10 @@ void ConnectionHandlerImpl::OnGotMessageBytes() {
                 << ", expecting " << message_size_;
       input_stream_->RebuildBuffer();
 
-      read_timeout_timer_.Start(FROM_HERE,
-                                read_timeout_,
-                                base::Bind(&ConnectionHandlerImpl::OnTimeout,
-                                           weak_ptr_factory_.GetWeakPtr()));
+      read_timeout_timer_.Start(
+          FROM_HERE, read_timeout_,
+          base::BindOnce(&ConnectionHandlerImpl::OnTimeout,
+                         weak_ptr_factory_.GetWeakPtr()));
       WaitForData(MCS_PROTO_BYTES);
       return;
     }

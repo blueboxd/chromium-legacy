@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_ACTION_TRACKER_H_
 #define EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_ACTION_TRACKER_H_
 
+#include <list>
 #include <map>
 #include <vector>
 
@@ -39,11 +40,11 @@ class ActionTracker {
   // called by an extension.
   void OnPreferenceEnabled(const ExtensionId& extension_id) const;
 
-  // Clears the action count for the specified |extension_id| for all tabs.
+  // Clears the TrackedInfo for the specified |extension_id| for all tabs.
   // Called when an extension's ruleset is removed.
   void ClearExtensionData(const ExtensionId& extension_id);
 
-  // Clears the action count for every extension for the specified |tab_id|.
+  // Clears the TrackedInfo for every extension for the specified |tab_id|.
   // Called when the tab has been closed.
   void ClearTabData(int tab_id);
 
@@ -52,8 +53,14 @@ class ActionTracker {
   void ClearPendingNavigation(int64_t navigation_id);
 
   // Called when a main-frame navigation to a different document commits.
-  // Updates the badge count for all extensions for the given |tab_id|.
-  void ResetActionCountForTab(int tab_id, int64_t navigation_id);
+  // Updates the TrackedInfo for all extensions for the given |tab_id|.
+  void ResetTrackedInfoForTab(int tab_id, int64_t navigation_id);
+
+  // Returns all matched rules for |extension_id|. If |tab_id| is provided, only
+  // rules matched for |tab_id| will be returned.
+  std::vector<api::declarative_net_request::MatchedRuleInfo> GetMatchedRules(
+      const ExtensionId& extension_id,
+      base::Optional<int> tab_id) const;
 
  private:
   // Template key type used for TrackedInfo, specified by an extension_id and
@@ -76,9 +83,33 @@ class ActionTracker {
   using ExtensionTabIdKey = TrackedInfoContextKey<int>;
   using ExtensionNavigationIdKey = TrackedInfoContextKey<int64_t>;
 
+  // Represents a matched rule. This is used as a lightweight version of
+  // api::declarative_net_request::MatchedRuleInfo.
+  struct TrackedRule {
+    TrackedRule(int rule_id,
+                api::declarative_net_request::SourceType source_type);
+    TrackedRule(const TrackedRule& other) = delete;
+    TrackedRule& operator=(const TrackedRule& other) = delete;
+
+    const int rule_id;
+    const api::declarative_net_request::SourceType source_type;
+  };
+
   // Info tracked for each ExtensionTabIdKey or ExtensionNavigationIdKey.
   struct TrackedInfo {
+    TrackedInfo();
+    ~TrackedInfo();
+    TrackedInfo(const TrackedInfo& other) = delete;
+    TrackedInfo& operator=(const TrackedInfo& other) = delete;
+    TrackedInfo(TrackedInfo&&);
+    TrackedInfo& operator=(TrackedInfo&&);
+
+    // The number of actions matched. Invalid when the corresponding
+    // TrackedInfoContextKey has a tab_id of -1. Does not include allow rules.
     size_t action_count = 0;
+
+    // The list of rules matched. Includes allow rules.
+    std::list<TrackedRule> matched_rules;
   };
 
   // Called from OnRuleMatched. Dispatches a OnRuleMatchedDebug event to the
@@ -87,14 +118,23 @@ class ActionTracker {
       const RequestAction& request_action,
       api::declarative_net_request::RequestDetails request_details);
 
-  // Maps a pair of (extension ID, tab ID) to the number of actions matched for
-  // the extension and tab specified.
-  std::map<ExtensionTabIdKey, TrackedInfo> actions_matched_;
+  // For all matched rules attributed to |tab_id|, set their tab ID to the
+  // unknown tab ID (-1). Called by ClearTabData and ResetActionCountForTab.
+  void TransferRulesOnTabInvalid(int tab_id);
 
-  // Maps a pair of (extension ID, navigation ID) to the number of actions
-  // matched for the main-frame request associated with the navigation ID in the
-  // key. These actions are added to |actions_matched_| once the navigation
-  // commits.
+  // Converts an internally represented |tracked_rule| to a MatchedRuleInfo.
+  api::declarative_net_request::MatchedRuleInfo CreateMatchedRuleInfo(
+      const TrackedRule& tracked_rule,
+      int tab_id) const;
+
+  // Maps a pair of (extension ID, tab ID) to the TrackedInfo for that pair.
+  // TODO(crbug.com/1035106): Prune the rules for the invalid tab ID to prevent
+  // this from growing unbounded.
+  std::map<ExtensionTabIdKey, TrackedInfo> rules_tracked_;
+
+  // Maps a pair of (extension ID, navigation ID) to the TrackedInfo matched for
+  // the main-frame request associated with the navigation ID in the key. The
+  // TrackedInfo is added to |rules_tracked_| once the navigation commits.
   std::map<ExtensionNavigationIdKey, TrackedInfo> pending_navigation_actions_;
 
   content::BrowserContext* browser_context_;

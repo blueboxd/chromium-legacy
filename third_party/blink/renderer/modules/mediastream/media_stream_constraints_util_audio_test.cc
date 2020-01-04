@@ -41,7 +41,7 @@ using BoolSetFunction = void (blink::BooleanConstraint::*)(bool);
 using StringSetFunction =
     void (blink::StringConstraint::*)(const blink::WebString&);
 using MockFactoryAccessor =
-    blink::WebMediaTrackConstraintSet& (blink::MockConstraintFactory::*)();
+    MediaTrackConstraintSetPlatform& (blink::MockConstraintFactory::*)();
 
 const BoolSetFunction kBoolSetFunctions[] = {
     &blink::BooleanConstraint::SetExact,
@@ -576,11 +576,10 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SingleBoolConstraint) {
       &AudioCaptureSettings::disable_local_echo,
       &AudioCaptureSettings::render_to_associated_sink};
 
-  const std::vector<
-      blink::BooleanConstraint blink::WebMediaTrackConstraintSet::*>
+  const std::vector<blink::BooleanConstraint MediaTrackConstraintSetPlatform::*>
       kMainBoolConstraints = {
-          &blink::WebMediaTrackConstraintSet::disable_local_echo,
-          &blink::WebMediaTrackConstraintSet::render_to_associated_sink};
+          &MediaTrackConstraintSetPlatform::disable_local_echo,
+          &MediaTrackConstraintSetPlatform::render_to_associated_sink};
 
   ASSERT_EQ(kMainSettings.size(), kMainBoolConstraints.size());
   for (auto set_function : kBoolSetFunctions) {
@@ -607,19 +606,15 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SingleBoolConstraint) {
     }
   }
 
-  const std::vector<
-      blink::BooleanConstraint blink::WebMediaTrackConstraintSet::*>
+  const std::vector<blink::BooleanConstraint MediaTrackConstraintSetPlatform::*>
       kAudioProcessingConstraints = {
-          &blink::WebMediaTrackConstraintSet::goog_audio_mirroring,
-          &blink::WebMediaTrackConstraintSet::goog_auto_gain_control,
-          &blink::WebMediaTrackConstraintSet::
-              goog_experimental_echo_cancellation,
-          &blink::WebMediaTrackConstraintSet::goog_noise_suppression,
-          &blink::WebMediaTrackConstraintSet::
-              goog_experimental_noise_suppression,
-          &blink::WebMediaTrackConstraintSet::goog_highpass_filter,
-          &blink::WebMediaTrackConstraintSet::
-              goog_experimental_auto_gain_control,
+          &MediaTrackConstraintSetPlatform::goog_audio_mirroring,
+          &MediaTrackConstraintSetPlatform::goog_auto_gain_control,
+          &MediaTrackConstraintSetPlatform::goog_experimental_echo_cancellation,
+          &MediaTrackConstraintSetPlatform::goog_noise_suppression,
+          &MediaTrackConstraintSetPlatform::goog_experimental_noise_suppression,
+          &MediaTrackConstraintSetPlatform::goog_highpass_filter,
+          &MediaTrackConstraintSetPlatform::goog_experimental_auto_gain_control,
       };
 
   ASSERT_EQ(kAudioProcessingProperties.size(),
@@ -1455,20 +1450,15 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, ContradictoryEchoCancellation) {
 // default value set by the echoCancellation constraint.
 TEST_P(MediaStreamConstraintsUtilAudioTest,
        EchoCancellationAndSingleBoolConstraint) {
-
-  const std::vector<
-      blink::BooleanConstraint blink::WebMediaTrackConstraintSet::*>
+  const std::vector<blink::BooleanConstraint MediaTrackConstraintSetPlatform::*>
       kAudioProcessingConstraints = {
-          &blink::WebMediaTrackConstraintSet::goog_audio_mirroring,
-          &blink::WebMediaTrackConstraintSet::goog_auto_gain_control,
-          &blink::WebMediaTrackConstraintSet::
-              goog_experimental_echo_cancellation,
-          &blink::WebMediaTrackConstraintSet::goog_noise_suppression,
-          &blink::WebMediaTrackConstraintSet::
-              goog_experimental_noise_suppression,
-          &blink::WebMediaTrackConstraintSet::goog_highpass_filter,
-          &blink::WebMediaTrackConstraintSet::
-              goog_experimental_auto_gain_control,
+          &MediaTrackConstraintSetPlatform::goog_audio_mirroring,
+          &MediaTrackConstraintSetPlatform::goog_auto_gain_control,
+          &MediaTrackConstraintSetPlatform::goog_experimental_echo_cancellation,
+          &MediaTrackConstraintSetPlatform::goog_noise_suppression,
+          &MediaTrackConstraintSetPlatform::goog_experimental_noise_suppression,
+          &MediaTrackConstraintSetPlatform::goog_highpass_filter,
+          &MediaTrackConstraintSetPlatform::goog_experimental_auto_gain_control,
       };
 
   ASSERT_EQ(kAudioProcessingProperties.size(),
@@ -1636,11 +1626,11 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SourceWithNoAudioProcessing) {
 
     // These constraints are false in |source|.
     const std::vector<
-        blink::BooleanConstraint blink::WebMediaTrackConstraintSet::*>
+        blink::BooleanConstraint MediaTrackConstraintSetPlatform::*>
         kConstraints = {
-            &blink::WebMediaTrackConstraintSet::echo_cancellation,
-            &blink::WebMediaTrackConstraintSet::disable_local_echo,
-            &blink::WebMediaTrackConstraintSet::render_to_associated_sink,
+            &MediaTrackConstraintSetPlatform::echo_cancellation,
+            &MediaTrackConstraintSetPlatform::disable_local_echo,
+            &MediaTrackConstraintSetPlatform::render_to_associated_sink,
         };
 
     for (size_t i = 0; i < kConstraints.size(); ++i) {
@@ -1703,17 +1693,17 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SourceWithAudioProcessing) {
             properties, use_defaults /* disable_local_echo */,
             use_defaults /* render_to_associated_sink */);
     const std::vector<
-        blink::BooleanConstraint blink::WebMediaTrackConstraintSet::*>
+        blink::BooleanConstraint MediaTrackConstraintSetPlatform::*>
         kAudioProcessingConstraints = {
-            &blink::WebMediaTrackConstraintSet::goog_audio_mirroring,
-            &blink::WebMediaTrackConstraintSet::goog_auto_gain_control,
-            &blink::WebMediaTrackConstraintSet::
+            &MediaTrackConstraintSetPlatform::goog_audio_mirroring,
+            &MediaTrackConstraintSetPlatform::goog_auto_gain_control,
+            &MediaTrackConstraintSetPlatform::
                 goog_experimental_echo_cancellation,
-            &blink::WebMediaTrackConstraintSet::goog_noise_suppression,
-            &blink::WebMediaTrackConstraintSet::
+            &MediaTrackConstraintSetPlatform::goog_noise_suppression,
+            &MediaTrackConstraintSetPlatform::
                 goog_experimental_noise_suppression,
-            &blink::WebMediaTrackConstraintSet::goog_highpass_filter,
-            &blink::WebMediaTrackConstraintSet::
+            &MediaTrackConstraintSetPlatform::goog_highpass_filter,
+            &MediaTrackConstraintSetPlatform::
                 goog_experimental_auto_gain_control,
         };
     ASSERT_EQ(kAudioProcessingConstraints.size(),
@@ -1781,10 +1771,10 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SourceWithAudioProcessing) {
 
     // These constraints are false in |source|.
     const std::vector<
-        blink::BooleanConstraint blink::WebMediaTrackConstraintSet::*>
+        blink::BooleanConstraint MediaTrackConstraintSetPlatform::*>
         kAudioBrowserConstraints = {
-            &blink::WebMediaTrackConstraintSet::disable_local_echo,
-            &blink::WebMediaTrackConstraintSet::render_to_associated_sink,
+            &MediaTrackConstraintSetPlatform::disable_local_echo,
+            &MediaTrackConstraintSetPlatform::render_to_associated_sink,
         };
     for (size_t i = 0; i < kAudioBrowserConstraints.size(); ++i) {
       constraint_factory_.Reset();

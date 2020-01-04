@@ -34,22 +34,24 @@ namespace attestation {
 
 namespace {
 
-void CertCallbackSuccess(const AttestationFlow::CertificateCallback& callback) {
+void CertCallbackSuccess(AttestationFlow::CertificateCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, ATTESTATION_SUCCESS, "fake_cert"));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), ATTESTATION_SUCCESS, "fake_cert"));
 }
 
 void CertCallbackUnspecifiedFailure(
-    const AttestationFlow::CertificateCallback& callback) {
+    AttestationFlow::CertificateCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, ATTESTATION_UNSPECIFIED_FAILURE, ""));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), ATTESTATION_UNSPECIFIED_FAILURE, ""));
 }
 
 void CertCallbackBadRequestFailure(
-    const AttestationFlow::CertificateCallback& callback) {
+    AttestationFlow::CertificateCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(callback, ATTESTATION_SERVER_BAD_REQUEST_FAILURE, ""));
+      FROM_HERE, base::BindOnce(std::move(callback),
+                                ATTESTATION_SERVER_BAD_REQUEST_FAILURE, ""));
 }
 
 void StatusCallbackSuccess(policy::CloudPolicyClient::StatusCallback callback) {

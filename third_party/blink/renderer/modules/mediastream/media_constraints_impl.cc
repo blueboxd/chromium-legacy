@@ -271,7 +271,7 @@ static void ParseOldStyleNames(
     ExecutionContext* context,
     const Vector<NameValueStringConstraint>& old_names,
     bool report_unknown_names,
-    WebMediaTrackConstraintSet& result,
+    MediaTrackConstraintSetPlatform& result,
     MediaErrorState& error_state) {
   for (const NameValueStringConstraint& constraint : old_names) {
     if (constraint.name_.Equals(kMinAspectRatio)) {
@@ -461,17 +461,17 @@ static MediaConstraints CreateFromNamedConstraints(
     Vector<NameValueStringConstraint>& mandatory,
     const Vector<NameValueStringConstraint>& optional,
     MediaErrorState& error_state) {
-  WebMediaTrackConstraintSet basic;
-  WebMediaTrackConstraintSet advanced;
+  MediaTrackConstraintSetPlatform basic;
+  MediaTrackConstraintSetPlatform advanced;
   MediaConstraints constraints;
   ParseOldStyleNames(context, mandatory, true, basic, error_state);
   if (error_state.HadException())
     return constraints;
   // We ignore unknow names and syntax errors in optional constraints.
   MediaErrorState ignored_error_state;
-  Vector<WebMediaTrackConstraintSet> advanced_vector;
+  Vector<MediaTrackConstraintSetPlatform> advanced_vector;
   for (const auto& optional_constraint : optional) {
-    WebMediaTrackConstraintSet advanced_element;
+    MediaTrackConstraintSetPlatform advanced_element;
     Vector<NameValueStringConstraint> element_as_list(1, optional_constraint);
     ParseOldStyleNames(context, element_as_list, false, advanced_element,
                        ignored_error_state);
@@ -625,7 +625,7 @@ void CopyBooleanConstraint(
 
 void CopyConstraintSet(const MediaTrackConstraintSet* constraints_in,
                        NakedValueDisposition naked_treatment,
-                       WebMediaTrackConstraintSet& constraint_buffer) {
+                       MediaTrackConstraintSetPlatform& constraint_buffer) {
   if (constraints_in->hasWidth()) {
     CopyLongConstraint(constraints_in->width(), naked_treatment,
                        constraint_buffer.width);
@@ -695,13 +695,13 @@ void CopyConstraintSet(const MediaTrackConstraintSet* constraints_in,
 MediaConstraints ConvertTrackConstraintsToMediaConstraints(
     const MediaTrackConstraints* constraints_in) {
   MediaConstraints constraints;
-  WebMediaTrackConstraintSet constraint_buffer;
-  Vector<WebMediaTrackConstraintSet> advanced_buffer;
+  MediaTrackConstraintSetPlatform constraint_buffer;
+  Vector<MediaTrackConstraintSetPlatform> advanced_buffer;
   CopyConstraintSet(constraints_in, NakedValueDisposition::kTreatAsIdeal,
                     constraint_buffer);
   if (constraints_in->hasAdvanced()) {
     for (const auto& element : constraints_in->advanced()) {
-      WebMediaTrackConstraintSet advanced_element;
+      MediaTrackConstraintSetPlatform advanced_element;
       CopyConstraintSet(element, NakedValueDisposition::kTreatAsExact,
                         advanced_element);
       advanced_buffer.push_back(advanced_element);
@@ -887,7 +887,7 @@ BooleanOrConstrainBooleanParameters ConvertBoolean(
   return output_union;
 }
 
-void ConvertConstraintSet(const WebMediaTrackConstraintSet& input,
+void ConvertConstraintSet(const MediaTrackConstraintSetPlatform& input,
                           NakedValueDisposition naked_treatment,
                           MediaTrackConstraintSet* output) {
   if (!input.width.IsEmpty())

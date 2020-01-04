@@ -6,6 +6,7 @@
 #define UI_GFX_PAINT_VECTOR_ICON_H_
 
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -19,10 +20,12 @@ struct VectorIcon;
 struct GFX_EXPORT IconDescription {
   IconDescription(const IconDescription& other);
 
+  // If |dip_size| is 0, the default size of |icon| will be used.
+  // If |badge_icon| is null, the icon has no badge.
   IconDescription(const VectorIcon& icon,
-                  int dip_size,
-                  SkColor color,
-                  const VectorIcon& badge_icon);
+                  int dip_size = 0,
+                  SkColor color = gfx::kPlaceholderColor,
+                  const VectorIcon* badge_icon = nullptr);
 
   ~IconDescription();
 

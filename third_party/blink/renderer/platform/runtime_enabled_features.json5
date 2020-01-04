@@ -799,7 +799,7 @@
       name: "HrefTranslate",
       depends_on: ["TranslateService"],
       origin_trial_feature_name: "HrefTranslate",
-      status: "stable",
+      status: "experimental",
     },
     // TODO(937746): Web Components v0 is disabled by default, and will be
     // removed after M87.

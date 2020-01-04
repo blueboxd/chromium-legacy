@@ -378,9 +378,6 @@ TEST_F(ReportingDeliveryAgentTest, ConcurrentRemove) {
   pending_uploads()[0]->Complete(ReportingUploader::Outcome::SUCCESS);
   cache()->GetReports(&reports);
   EXPECT_TRUE(reports.empty());
-  // This is slightly sketchy since |report| has been freed, but it nonetheless
-  // should not be in the set of doomed reports.
-  EXPECT_FALSE(cache()->IsReportDoomedForTesting(report));
 }
 
 TEST_F(ReportingDeliveryAgentTest, ConcurrentRemoveDuringPermissionsCheck) {
@@ -417,9 +414,6 @@ TEST_F(ReportingDeliveryAgentTest, ConcurrentRemoveDuringPermissionsCheck) {
   pending_uploads()[0]->Complete(ReportingUploader::Outcome::SUCCESS);
   cache()->GetReports(&reports);
   EXPECT_TRUE(reports.empty());
-  // This is slightly sketchy since |report| has been freed, but it nonetheless
-  // should not be in the set of doomed reports.
-  EXPECT_FALSE(cache()->IsReportDoomedForTesting(report));
 }
 
 // Test that the agent will combine reports destined for the same endpoint, even

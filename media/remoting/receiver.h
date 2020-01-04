@@ -41,6 +41,7 @@ class Receiver final : public RendererClient {
   void OnVideoConfigChange(const VideoDecoderConfig& config) override;
   void OnVideoNaturalSizeChange(const gfx::Size& size) override;
   void OnVideoOpacityChange(bool opaque) override;
+  void OnVideoFrameRateChange(base::Optional<int>) override;
 
   void OnReceivedRpc(std::unique_ptr<pb::RpcMessage> message);
   void OnReceivedBuffer(DemuxerStream::Type type,

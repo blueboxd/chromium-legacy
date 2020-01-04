@@ -32,7 +32,7 @@ namespace blink {
 
 using blink::AudioCaptureSettings;
 using blink::AudioProcessingProperties;
-using ConstraintSet = blink::WebMediaTrackConstraintSet;
+using ConstraintSet = MediaTrackConstraintSetPlatform;
 using BooleanConstraint = blink::BooleanConstraint;
 using EchoCancellationType = AudioProcessingProperties::EchoCancellationType;
 using ProcessingType = AudioCaptureSettings::ProcessingType;
@@ -812,7 +812,7 @@ class ProcessingBasedContainer {
   // This struct groups related fields or entries from
   // AudioProcessingProperties,
   // ProcessingBasedContainer::boolean_containers_, and
-  // blink::WebMediaTrackConstraintSet.
+  // MediaTrackConstraintSetPlatform.
   struct BooleanPropertyContainerInfo {
     BooleanContainerId index;
     BooleanConstraint ConstraintSet::*constraint_member;
@@ -1177,7 +1177,7 @@ class DeviceContainer {
   };
 
   // This struct groups related fields or entries from
-  // DeviceContainer::boolean_containers_ and blink::WebMediaTrackConstraintSet.
+  // DeviceContainer::boolean_containers_ and MediaTrackConstraintSetPlatform.
   struct BooleanPropertyContainerInfo {
     BooleanContainerId index;
     BooleanConstraint ConstraintSet::*constraint_member;

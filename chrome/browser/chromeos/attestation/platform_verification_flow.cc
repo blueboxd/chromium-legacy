@@ -255,19 +255,18 @@ void PlatformVerificationFlow::OnAttestationPrepared(
 void PlatformVerificationFlow::GetCertificate(const ChallengeContext& context,
                                               const AccountId& account_id,
                                               bool force_new_key) {
-  std::unique_ptr<base::OneShotTimer> timer(new base::OneShotTimer());
-  base::Closure timeout_callback = base::Bind(
-      &PlatformVerificationFlow::OnCertificateTimeout,
-      this,
-      context);
-  timer->Start(FROM_HERE, timeout_delay_, timeout_callback);
+  auto timer = std::make_unique<base::OneShotTimer>();
+  base::OnceClosure timeout_callback = base::BindOnce(
+      &PlatformVerificationFlow::OnCertificateTimeout, this, context);
+  timer->Start(FROM_HERE, timeout_delay_, std::move(timeout_callback));
 
   AttestationFlow::CertificateCallback certificate_callback =
-      base::Bind(&PlatformVerificationFlow::OnCertificateReady, this, context,
-                 account_id, base::Passed(&timer));
-  attestation_flow_->GetCertificate(
-      PROFILE_CONTENT_PROTECTION_CERTIFICATE, account_id, context.service_id,
-      force_new_key, std::string() /*key_name*/, certificate_callback);
+      base::BindOnce(&PlatformVerificationFlow::OnCertificateReady, this,
+                     context, account_id, std::move(timer));
+  attestation_flow_->GetCertificate(PROFILE_CONTENT_PROTECTION_CERTIFICATE,
+                                    account_id, context.service_id,
+                                    force_new_key, std::string() /*key_name*/,
+                                    std::move(certificate_callback));
 }
 
 void PlatformVerificationFlow::OnCertificateReady(
@@ -339,14 +338,14 @@ void PlatformVerificationFlow::OnChallengeReady(
     renewals_in_progress_.insert(certificate_chain);
     // Fire off a certificate request so next time we'll have a new one.
     AttestationFlow::CertificateCallback renew_callback =
-        base::Bind(&PlatformVerificationFlow::RenewCertificateCallback, this,
-                   certificate_chain);
+        base::BindOnce(&PlatformVerificationFlow::RenewCertificateCallback,
+                       this, std::move(certificate_chain));
     attestation_flow_->GetCertificate(
         PROFILE_CONTENT_PROTECTION_CERTIFICATE, account_id, context.service_id,
         true,           // force_new_key
         std::string(),  // key_name, empty means a default one will be
                         // generated.
-        renew_callback);
+        std::move(renew_callback));
   }
 }
 

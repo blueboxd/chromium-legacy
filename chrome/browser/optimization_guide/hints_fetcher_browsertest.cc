@@ -946,7 +946,7 @@ IN_PROC_BROWSER_TEST_F(HintsFetcherBrowserTest,
   SetUpComponentUpdateHints(https_url());
 
   // Expect that the browser initialization will record at least one sample
-  // in each of the following histograms as One Platform Hints are enabled.
+  // in each of the following histograms as hints fetching is enabled.
   EXPECT_GE(RetryForHistogramUntilCountReached(
                 histogram_tester,
                 "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1),
@@ -972,10 +972,14 @@ IN_PROC_BROWSER_TEST_F(HintsFetcherBrowserTest,
 
   RetryForHistogramUntilCountReached(
       histogram_tester,
-      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", 1);
+      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
+      "BeforeCommit",
+      1);
 
   histogram_tester->ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", true, 1);
+      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
+      "BeforeCommit",
+      true, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -987,7 +991,7 @@ IN_PROC_BROWSER_TEST_F(
   SetUpComponentUpdateHints(https_url());
 
   // Expect that the browser initialization will record at least one sample
-  // in each of the following histograms as One Platform Hints are enabled.
+  // in each of the following histograms as hints fetching is enabled.
   EXPECT_GE(RetryForHistogramUntilCountReached(
                 histogram_tester,
                 "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1),
@@ -1000,6 +1004,7 @@ IN_PROC_BROWSER_TEST_F(
 
   histogram_tester->ExpectUniqueSample(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", net::HTTP_OK, 1);
+
   histogram_tester->ExpectUniqueSample(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.NetErrorCode", net::OK,
       1);
@@ -1012,10 +1017,14 @@ IN_PROC_BROWSER_TEST_F(
 
   RetryForHistogramUntilCountReached(
       histogram_tester,
-      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", 1);
+      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
+      "BeforeCommit",
+      1);
 
   histogram_tester->ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", false, 1);
+      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
+      "BeforeCommit",
+      false, 1);
 }
 
 // Test that the hints are fetched at the time of the navigation.
@@ -1067,13 +1076,6 @@ IN_PROC_BROWSER_TEST_F(
     SetExpectedHintsRequestForHosts(expected_hosts_2g);
     ui_test_utils::NavigateToURL(browser(), GURL(host_2g));
 
-    RetryForHistogramUntilCountReached(
-        histogram_tester,
-        "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", 1);
-
-    histogram_tester->ExpectUniqueSample(
-        "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", false,
-        1);
     EXPECT_EQ(2u, count_hints_requests_received());
     RetryForHistogramUntilCountReached(
         histogram_tester, optimization_guide::kLoadedHintLocalHistogramString,
@@ -1083,6 +1085,10 @@ IN_PROC_BROWSER_TEST_F(
         "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
         "AtCommit",
         1);
+    histogram_tester->ExpectUniqueSample(
+        "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
+        "BeforeCommit",
+        false, 1);
     histogram_tester->ExpectUniqueSample(
         "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
         "AtCommit",
@@ -1102,13 +1108,6 @@ IN_PROC_BROWSER_TEST_F(
     SetExpectedHintsRequestForHosts(expected_hosts_4g);
     ui_test_utils::NavigateToURL(browser(), GURL(host_4g));
 
-    RetryForHistogramUntilCountReached(
-        histogram_tester,
-        "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", 2);
-
-    histogram_tester->ExpectUniqueSample(
-        "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", false,
-        2);
     EXPECT_EQ(2u, count_hints_requests_received());
     RetryForHistogramUntilCountReached(
         histogram_tester, optimization_guide::kLoadedHintLocalHistogramString,
@@ -1118,6 +1117,10 @@ IN_PROC_BROWSER_TEST_F(
         "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
         "AtCommit",
         2);
+    histogram_tester->ExpectUniqueSample(
+        "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
+        "BeforeCommit",
+        false, 2);
     histogram_tester->ExpectBucketCount(
         "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
         "AtCommit",
@@ -1143,13 +1146,6 @@ IN_PROC_BROWSER_TEST_F(
     SetExpectedHintsRequestForHosts(expected_hosts_3g);
     ui_test_utils::NavigateToURL(browser(), GURL(host_3g));
 
-    RetryForHistogramUntilCountReached(
-        histogram_tester,
-        "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", 3);
-
-    histogram_tester->ExpectUniqueSample(
-        "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", false,
-        3);
     EXPECT_EQ(3u, count_hints_requests_received());
     RetryForHistogramUntilCountReached(
         histogram_tester, optimization_guide::kLoadedHintLocalHistogramString,
@@ -1160,6 +1156,10 @@ IN_PROC_BROWSER_TEST_F(
         "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
         "AtCommit",
         3);
+    histogram_tester->ExpectUniqueSample(
+        "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
+        "BeforeCommit",
+        false, 3);
     histogram_tester->ExpectBucketCount(
         "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
         "AtCommit",
@@ -1182,17 +1182,6 @@ IN_PROC_BROWSER_TEST_F(
     SetExpectedHintsRequestForHosts(expected_hosts_3g);
     ui_test_utils::NavigateToURL(browser(),
                                  GURL("https://unseenhost_3g.com/test1.html"));
-
-    RetryForHistogramUntilCountReached(
-        histogram_tester,
-        "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", 4);
-
-    // Hints should be available this time for the navigation.
-    histogram_tester->ExpectBucketCount(
-        "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", false,
-        3);
-    histogram_tester->ExpectBucketCount(
-        "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", true, 1);
     // Hints should not be fetched for the same host again.
     EXPECT_EQ(3u, count_hints_requests_received());
     RetryForHistogramUntilCountReached(
@@ -1206,6 +1195,14 @@ IN_PROC_BROWSER_TEST_F(
         4);
     histogram_tester->ExpectBucketCount(
         "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
+        "BeforeCommit",
+        true, 1);
+    histogram_tester->ExpectBucketCount(
+        "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
+        "BeforeCommit",
+        false, 3);
+    histogram_tester->ExpectBucketCount(
+        "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
         "AtCommit",
         true, 3);
     histogram_tester->ExpectBucketCount(
@@ -1213,42 +1210,6 @@ IN_PROC_BROWSER_TEST_F(
         "AtCommit",
         false, 1);
   }
-}
-
-IN_PROC_BROWSER_TEST_F(
-    HintsFetcherBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMEOS(HintsFetcherHostCoveredNotHTTPS)) {
-  const base::HistogramTester* histogram_tester = GetHistogramTester();
-
-  // Whitelist NoScript for https_url()'s' host.
-  SetUpComponentUpdateHints(https_url());
-
-  // Expect that the browser initialization will record at least one sample
-  // in each of the following histograms as One Platform Hints are enabled.
-  EXPECT_GE(RetryForHistogramUntilCountReached(
-                histogram_tester,
-                "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1),
-            1);
-
-  EXPECT_GE(RetryForHistogramUntilCountReached(
-                histogram_tester,
-                "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", 1),
-            1);
-
-  histogram_tester->ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", net::HTTP_OK, 1);
-
-  histogram_tester->ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.GetHintsRequest.NetErrorCode", net::OK,
-      1);
-  histogram_tester->ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.GetHintsRequest.HintCount", 1, 1);
-
-  // Navigate to a HTTP host; the navigation should not be recorded.
-  ui_test_utils::NavigateToURL(browser(), GURL("http://example1.com"));
-
-  histogram_tester->ExpectTotalCount(
-      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", 0);
 }
 
 class HintsFetcherChangeDefaultBlacklistSizeBrowserTest
@@ -1394,13 +1355,6 @@ IN_PROC_BROWSER_TEST_F(
   RetryForHistogramUntilCountReached(
       histogram_tester, "AnchorElementMetrics.Visible.HighestNavigationScore",
       1);
-
-  RetryForHistogramUntilCountReached(
-      histogram_tester,
-      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", 1);
-
-  histogram_tester->ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", false, 1);
 
   WaitUntilHintsFetcherRequestReceived();
   EXPECT_EQ(1u, count_hints_requests_received());

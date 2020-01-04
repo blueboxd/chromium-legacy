@@ -419,6 +419,7 @@
 <translation id="3914732343065571127">ການອ້າງອີງຄຳສັ່ງ ChromeVox</translation>
 <translation id="3930383913623796990">ສີຂຽວສະປຣິງກຣີນ</translation>
 <translation id="3930498801443296724">ການອ້າງອີງ</translation>
+<translation id="3935615366277838204"><ph name="LETTER" /> ຕົວພິມໃຫຍ່</translation>
 <translation id="3936394396199829062">ສີມ່ວງລາເວັນເດີບລັຊ</translation>
 <translation id="3941269780691800708">ເວົ້າຂໍ້ຄວາມຢູ່ກ້ອງເມົ້າ</translation>
 <translation id="394953087167197343">ລະບຸການສະກົດຄຳຜິດ:</translation>
@@ -854,6 +855,7 @@
 <translation id="699159175332639490">ຊອກຫາ + O + W</translation>
 <translation id="6994042831499278539">ການອ້າງອີງປະມວນຄຳສັບ</translation>
 <translation id="6996566555547746822">ກ່ອງ combo ຕໍ່ໄປ</translation>
+<translation id="6997224546856374593">ເມື່ອອ່ານອັກສອນຕົວພິມໃຫຍ່</translation>
 <translation id="700202842116345659">ລາຍການບັນນານຸກົມ</translation>
 <translation id="7005146664810010831">ບໍ່ພົບ URL</translation>
 <translation id="7010712454773919705">ປຸ່ມເຄື່ອງຂະຫຍາຍ ChromeVox</translation>
@@ -934,6 +936,7 @@
 <translation id="744163271241493234">pwded</translation>
 <translation id="7491962110804786152">ແຖບ</translation>
 <translation id="7492049978501397201">ປ້ອນບົດ​ສົນທະນາ​ເຂົ້າແລ້ວ</translation>
+<translation id="7505149250476994901">ເວົ້າ "ຕົວພິມໃຫຍ່" ກ່ອນຕົວອັກສອນ</translation>
 <translation id="7518543783849163354">ເພື່ອຢຸດ ChromeVox ຈາກການເວົ້າໄວ້ຊົ່ວຄາວ, ໃຫ້ກົດປຸ່ມ Control.</translation>
 <translation id="7521682724501952239">ທ່ານສາມາດໃຊ້ ChromeVox ກັບໜ້າຈໍສຳຜັດໄດ້.</translation>
 <translation id="7532613204005497612">ມິ​ຖຸ​ນາ</translation>

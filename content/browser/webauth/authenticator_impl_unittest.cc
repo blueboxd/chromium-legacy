@@ -4151,6 +4151,65 @@ TEST_F(ResidentKeyAuthenticatorImplTest, CredProtectRegistration) {
   }
 }
 
+TEST_F(ResidentKeyAuthenticatorImplTest, AuthenticatorSetsCredProtect) {
+  // Some authenticators are expected to set the credProtect extension ad
+  // libitum. Therefore we should only require that the returned extension is at
+  // least as restrictive as requested, but perhaps not exactly equal.
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+
+  constexpr blink::mojom::ProtectionPolicy kMojoLevels[] = {
+      blink::mojom::ProtectionPolicy::NONE,
+      blink::mojom::ProtectionPolicy::UV_OR_CRED_ID_REQUIRED,
+      blink::mojom::ProtectionPolicy::UV_REQUIRED,
+  };
+  constexpr device::CredProtect kDeviceLevels[] = {
+      device::CredProtect::kUVOrCredIDRequired,  // dummy entry.
+      device::CredProtect::kUVOrCredIDRequired,
+      device::CredProtect::kUVRequired,
+  };
+
+  for (int requested_level = 0; requested_level < 3; requested_level++) {
+    for (int forced_level = 1; forced_level < 3; forced_level++) {
+      SCOPED_TRACE(::testing::Message() << "requested=" << requested_level);
+      SCOPED_TRACE(::testing::Message() << "forced=" << forced_level);
+      device::VirtualCtap2Device::Config config;
+      config.pin_support = true;
+      config.resident_key_support = true;
+      config.cred_protect_support = true;
+      config.force_cred_protect = kDeviceLevels[forced_level];
+      virtual_device_factory_->SetCtap2Config(config);
+      virtual_device_factory_->mutable_state()->registrations.clear();
+
+      PublicKeyCredentialCreationOptionsPtr options = make_credential_options();
+      options->authenticator_selection->SetRequireResidentKeyForTesting(true);
+      options->protection_policy = kMojoLevels[requested_level];
+      options->authenticator_selection
+          ->SetUserVerificationRequirementForTesting(
+              device::UserVerificationRequirement::kRequired);
+
+      TestMakeCredentialCallback callback_receiver;
+      authenticator->MakeCredential(std::move(options),
+                                    callback_receiver.callback());
+      callback_receiver.WaitForCallback();
+
+      if (requested_level <= forced_level) {
+        EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+        ASSERT_EQ(
+            1u, virtual_device_factory_->mutable_state()->registrations.size());
+        const base::Optional<device::CredProtect> result =
+            virtual_device_factory_->mutable_state()
+                ->registrations.begin()
+                ->second.protection;
+        EXPECT_EQ(*result, config.force_cred_protect);
+      } else {
+        EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
+                  callback_receiver.status());
+      }
+    }
+  }
+}
+
 TEST_F(ResidentKeyAuthenticatorImplTest, ProtectedNonResidentCreds) {
   // Until we have UVToken, there's a danger that we'll preflight UV-required
   // credential IDs such that the authenticator denies knowledge of all of them

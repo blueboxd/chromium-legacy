@@ -65,7 +65,7 @@ HeartbeatManager::~HeartbeatManager() {
 }
 
 void HeartbeatManager::Start(
-    const base::Closure& send_heartbeat_callback,
+    const base::RepeatingClosure& send_heartbeat_callback,
     const ReconnectCallback& trigger_reconnect_callback) {
   DCHECK(!send_heartbeat_callback.is_null());
   DCHECK(!trigger_reconnect_callback.is_null());
@@ -129,7 +129,7 @@ void HeartbeatManager::UpdateHeartbeatTimer(
   bool was_running = heartbeat_timer_->IsRunning();
   base::TimeDelta remaining_delay =
       heartbeat_timer_->desired_run_time() - base::TimeTicks::Now();
-  base::Closure timer_task(heartbeat_timer_->user_task());
+  base::RepeatingClosure timer_task = heartbeat_timer_->user_task();
 
   heartbeat_timer_->Stop();
   heartbeat_timer_ = std::move(timer);
@@ -186,10 +186,10 @@ void HeartbeatManager::RestartTimer() {
 
   heartbeat_expected_time_ =
       base::Time::Now() + base::TimeDelta::FromMilliseconds(interval_ms);
-  heartbeat_timer_->Start(FROM_HERE,
-                          base::TimeDelta::FromMilliseconds(interval_ms),
-                          base::Bind(&HeartbeatManager::OnHeartbeatTriggered,
-                                     weak_ptr_factory_.GetWeakPtr()));
+  heartbeat_timer_->Start(
+      FROM_HERE, base::TimeDelta::FromMilliseconds(interval_ms),
+      base::BindRepeating(&HeartbeatManager::OnHeartbeatTriggered,
+                          weak_ptr_factory_.GetWeakPtr()));
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // Windows, Mac, Android, iOS, and Chrome OS all provide a way to be notified

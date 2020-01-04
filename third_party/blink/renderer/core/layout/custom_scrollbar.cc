@@ -236,33 +236,20 @@ void CustomScrollbar::UpdateScrollbarPart(ScrollbarPart part_type,
   bool need_layout_object =
       !destroy && part_style && part_style->Display() != EDisplay::kNone;
 
-  if (need_layout_object && part_style->Display() != EDisplay::kBlock) {
-    // See if we are a button that should not be visible according to OS
-    // settings.
-    WebScrollbarButtonsPlacement buttons_placement =
-        GetTheme().ButtonsPlacement();
+  if (need_layout_object &&
+      // display:block overrides OS settings.
+      part_style->Display() != EDisplay::kBlock) {
+    // If not display:block, visibility of buttons depends on OS settings.
     switch (part_type) {
       case kBackButtonStartPart:
-        need_layout_object =
-            (buttons_placement == kWebScrollbarButtonsPlacementSingle ||
-             buttons_placement == kWebScrollbarButtonsPlacementDoubleStart ||
-             buttons_placement == kWebScrollbarButtonsPlacementDoubleBoth);
-        break;
-      case kForwardButtonStartPart:
-        need_layout_object =
-            (buttons_placement == kWebScrollbarButtonsPlacementDoubleStart ||
-             buttons_placement == kWebScrollbarButtonsPlacementDoubleBoth);
+      case kForwardButtonEndPart:
+        // Create buttons only if the OS theme has scrollbar buttons.
+        need_layout_object = GetTheme().NativeThemeHasButtons();
         break;
       case kBackButtonEndPart:
-        need_layout_object =
-            (buttons_placement == kWebScrollbarButtonsPlacementDoubleEnd ||
-             buttons_placement == kWebScrollbarButtonsPlacementDoubleBoth);
-        break;
-      case kForwardButtonEndPart:
-        need_layout_object =
-            (buttons_placement == kWebScrollbarButtonsPlacementSingle ||
-             buttons_placement == kWebScrollbarButtonsPlacementDoubleEnd ||
-             buttons_placement == kWebScrollbarButtonsPlacementDoubleBoth);
+      case kForwardButtonStartPart:
+        // These buttons are not supported by any OS.
+        need_layout_object = false;
         break;
       default:
         break;

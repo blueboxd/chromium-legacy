@@ -8,27 +8,28 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/modules/payments/payment_request.h"
 #include "third_party/blink/renderer/modules/payments/payment_test_helper.h"
+#include "third_party/blink/renderer/platform/bindings/exception_code.h"
 
 namespace blink {
 namespace {
 
 TEST(CompleteTest, CannotCallCompleteTwice) {
   PaymentRequestV8TestingScope scope;
-  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
-      BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
-  EXPECT_FALSE(scope.GetExceptionState().HadException());
-  request->show(scope.GetScriptState());
+      BuildPaymentDetailsInitForTest(), ASSERT_NO_EXCEPTION);
+  request->show(scope.GetScriptState(), ASSERT_NO_EXCEPTION);
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnPaymentResponse(BuildPaymentResponseForTest());
   request->Complete(scope.GetScriptState(),
-                    PaymentStateResolver::PaymentComplete::kFail);
+                    PaymentStateResolver::PaymentComplete::kFail,
+                    ASSERT_NO_EXCEPTION);
 
-  request
-      ->Complete(scope.GetScriptState(),
-                 PaymentStateResolver::PaymentComplete::kSuccess)
-      .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
+  request->Complete(scope.GetScriptState(),
+                    PaymentStateResolver::PaymentComplete::kSuccess,
+                    scope.GetExceptionState());
+  EXPECT_EQ(scope.GetExceptionState().Code(),
+            ToExceptionCode(DOMExceptionCode::kInvalidStateError));
 }
 
 TEST(CompleteTest, ResolveCompletePromiseOnUnknownError) {
@@ -36,15 +37,15 @@ TEST(CompleteTest, ResolveCompletePromiseOnUnknownError) {
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
-      BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
-  EXPECT_FALSE(scope.GetExceptionState().HadException());
-  request->show(scope.GetScriptState());
+      BuildPaymentDetailsInitForTest(), ASSERT_NO_EXCEPTION);
+  request->show(scope.GetScriptState(), ASSERT_NO_EXCEPTION);
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnPaymentResponse(BuildPaymentResponseForTest());
 
   request
       ->Complete(scope.GetScriptState(),
-                 PaymentStateResolver::PaymentComplete::kSuccess)
+                 PaymentStateResolver::PaymentComplete::kSuccess,
+                 ASSERT_NO_EXCEPTION)
       .Then(funcs.ExpectCall(), funcs.ExpectNoCall());
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)->OnError(
@@ -56,15 +57,15 @@ TEST(CompleteTest, ResolveCompletePromiseOnUserClosingUI) {
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
-      BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
-  EXPECT_FALSE(scope.GetExceptionState().HadException());
-  request->show(scope.GetScriptState());
+      BuildPaymentDetailsInitForTest(), ASSERT_NO_EXCEPTION);
+  request->show(scope.GetScriptState(), ASSERT_NO_EXCEPTION);
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnPaymentResponse(BuildPaymentResponseForTest());
 
   request
       ->Complete(scope.GetScriptState(),
-                 PaymentStateResolver::PaymentComplete::kSuccess)
+                 PaymentStateResolver::PaymentComplete::kSuccess,
+                 ASSERT_NO_EXCEPTION)
       .Then(funcs.ExpectCall(), funcs.ExpectNoCall());
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)->OnError(
@@ -76,22 +77,21 @@ TEST(CompleteTest, ResolveCompletePromiseOnUserClosingUI) {
 // should be rejected.
 TEST(CompleteTest, RejectCompletePromiseAfterError) {
   PaymentRequestV8TestingScope scope;
-  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
-      BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
-  EXPECT_FALSE(scope.GetExceptionState().HadException());
-  request->show(scope.GetScriptState());
+      BuildPaymentDetailsInitForTest(), ASSERT_NO_EXCEPTION);
+  request->show(scope.GetScriptState(), ASSERT_NO_EXCEPTION);
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnPaymentResponse(BuildPaymentResponseForTest());
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)->OnError(
       payments::mojom::blink::PaymentErrorReason::USER_CANCEL,
       "User closed the UI.");
 
-  request
-      ->Complete(scope.GetScriptState(),
-                 PaymentStateResolver::PaymentComplete::kSuccess)
-      .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
+  request->Complete(scope.GetScriptState(),
+                    PaymentStateResolver::PaymentComplete::kSuccess,
+                    scope.GetExceptionState());
+  EXPECT_EQ(scope.GetExceptionState().Code(),
+            ToExceptionCode(DOMExceptionCode::kInvalidStateError));
 }
 
 TEST(CompleteTest, ResolvePromiseOnComplete) {
@@ -99,15 +99,15 @@ TEST(CompleteTest, ResolvePromiseOnComplete) {
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
-      BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
-  EXPECT_FALSE(scope.GetExceptionState().HadException());
-  request->show(scope.GetScriptState());
+      BuildPaymentDetailsInitForTest(), ASSERT_NO_EXCEPTION);
+  request->show(scope.GetScriptState(), ASSERT_NO_EXCEPTION);
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnPaymentResponse(BuildPaymentResponseForTest());
 
   request
       ->Complete(scope.GetScriptState(),
-                 PaymentStateResolver::PaymentComplete::kSuccess)
+                 PaymentStateResolver::PaymentComplete::kSuccess,
+                 ASSERT_NO_EXCEPTION)
       .Then(funcs.ExpectCall(), funcs.ExpectNoCall());
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
@@ -119,9 +119,8 @@ TEST(CompleteTest, RejectCompletePromiseOnUpdateDetailsFailure) {
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
-      BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
-  EXPECT_FALSE(scope.GetExceptionState().HadException());
-  request->show(scope.GetScriptState())
+      BuildPaymentDetailsInitForTest(), ASSERT_NO_EXCEPTION);
+  request->show(scope.GetScriptState(), ASSERT_NO_EXCEPTION)
       .Then(funcs.ExpectCall(), funcs.ExpectNoCall());
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnPaymentResponse(BuildPaymentResponseForTest());
@@ -129,7 +128,8 @@ TEST(CompleteTest, RejectCompletePromiseOnUpdateDetailsFailure) {
   String error_message;
   request
       ->Complete(scope.GetScriptState(),
-                 PaymentStateResolver::PaymentComplete::kSuccess)
+                 PaymentStateResolver::PaymentComplete::kSuccess,
+                 ASSERT_NO_EXCEPTION)
       .Then(funcs.ExpectNoCall(), funcs.ExpectCall(&error_message));
 
   request->OnUpdatePaymentDetailsFailure("oops");
@@ -143,25 +143,23 @@ TEST(CompleteTest, RejectCompletePromiseAfterTimeout) {
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
-      BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
-  EXPECT_FALSE(scope.GetExceptionState().HadException());
-  request->show(scope.GetScriptState())
+      BuildPaymentDetailsInitForTest(), ASSERT_NO_EXCEPTION);
+  request->show(scope.GetScriptState(), ASSERT_NO_EXCEPTION)
       .Then(funcs.ExpectCall(), funcs.ExpectNoCall());
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnPaymentResponse(BuildPaymentResponseForTest());
   request->OnCompleteTimeoutForTesting();
 
   String error_message;
-  request
-      ->Complete(scope.GetScriptState(),
-                 PaymentStateResolver::PaymentComplete::kSuccess)
-      .Then(funcs.ExpectNoCall(), funcs.ExpectCall(&error_message));
+  request->Complete(scope.GetScriptState(),
+                    PaymentStateResolver::PaymentComplete::kSuccess,
+                    scope.GetExceptionState());
+  EXPECT_EQ(scope.GetExceptionState().Code(),
+            ToExceptionCode(DOMExceptionCode::kInvalidStateError));
 
   v8::MicrotasksScope::PerformCheckpoint(scope.GetScriptState()->GetIsolate());
-  EXPECT_EQ(
-      "InvalidStateError: Timed out after 60 seconds, complete() called too "
-      "late",
-      error_message);
+  EXPECT_EQ("Timed out after 60 seconds, complete() called too late",
+            scope.GetExceptionState().Message());
 }
 
 }  // namespace

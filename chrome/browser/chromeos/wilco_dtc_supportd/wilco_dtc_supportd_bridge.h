@@ -83,10 +83,6 @@ class WilcoDtcSupportdBridge final
                : nullptr;
   }
 
-  // wilco_dtc_supportd::mojom::WilcoDtcSupportdClient overrides.
-  void HandleEvent(
-      wilco_dtc_supportd::mojom::WilcoDtcSupportdEvent event) override;
-
  private:
   // Starts waiting until the wilco_dtc_supportd D-Bus service becomes available
   // (or until this waiting fails).
@@ -118,6 +114,8 @@ class WilcoDtcSupportdBridge final
       mojo::ScopedHandle json_message,
       SendWilcoDtcMessageToUiCallback callback) override;
   void GetConfigurationData(GetConfigurationDataCallback callback) override;
+  void HandleEvent(
+      wilco_dtc_supportd::mojom::WilcoDtcSupportdEvent event) override;
 
   std::unique_ptr<Delegate> delegate_;
 

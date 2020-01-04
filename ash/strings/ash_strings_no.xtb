@@ -144,7 +144,7 @@
 <translation id="2865888419503095837">Nettverksinformasjon</translation>
 <translation id="2872961005593481000">Slå av</translation>
 <translation id="2878884018241093801">Ingen nylige elementer</translation>
-<translation id="2903844815300039659">Koble til <ph name="NAME" />, <ph name="STRENGTH" /></translation>
+<translation id="2903844815300039659">Koblet til <ph name="NAME" />, <ph name="STRENGTH" /></translation>
 <translation id="2942350706960889382">Dokket lupe</translation>
 <translation id="2942516765047364088">Hylleposisjon</translation>
 <translation id="2946119680249604491">Legg til forbindelse</translation>
@@ -293,7 +293,7 @@
 <translation id="490375751687810070">Vertikal</translation>
 <translation id="4905614135390995787">Hurtigtasten for å slå høykontrastmodus av eller på er endret. Bruk <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="490788395437447240"><ph name="BATTERY_PERCENTAGE" /> % batteri</translation>
-<translation id="4917385247580444890">Sterk</translation>
+<translation id="4917385247580444890">Sterkt</translation>
 <translation id="4918086044614829423">Godta</translation>
 <translation id="4924411785043111640">Start på nytt og tilbakestill</translation>
 <translation id="495046168593986294">Rull opp</translation>
@@ -507,8 +507,8 @@
 <translation id="8054466585765276473">Beregner batteritid.</translation>
 <translation id="8061464966246066292">Høy kontrast</translation>
 <translation id="8098591350844501178">Slutt å caste skjermen til <ph name="RECEIVER_NAME" /></translation>
-<translation id="8113423164597455979">På for alle apper</translation>
-<translation id="8132793192354020517">Tilkoblet <ph name="NAME" /></translation>
+<translation id="8113423164597455979">På, alle apper</translation>
+<translation id="8132793192354020517">Koblet til <ph name="NAME" /></translation>
 <translation id="813913629614996137">Initialiserer …</translation>
 <translation id="8142441511840089262">Dobbeltklikk</translation>
 <translation id="8142699993796781067">Privat nettverk</translation>

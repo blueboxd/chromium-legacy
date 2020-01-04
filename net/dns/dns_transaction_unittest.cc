@@ -252,13 +252,14 @@ class TestSocketFactory : public MockClientSocketFactory {
   }
 
   void OnConnect(const IPEndPoint& endpoint) {
-    remote_endpoints_.push_back(endpoint);
+    remote_endpoints_.emplace_back(endpoint);
   }
 
   struct RemoteNameserver {
-    RemoteNameserver(IPEndPoint insecure_nameserver)
+    explicit RemoteNameserver(IPEndPoint insecure_nameserver)
         : insecure_nameserver(insecure_nameserver) {}
-    RemoteNameserver(DnsConfig::DnsOverHttpsServerConfig secure_nameserver)
+    explicit RemoteNameserver(
+        DnsConfig::DnsOverHttpsServerConfig secure_nameserver)
         : secure_nameserver(secure_nameserver) {}
 
     base::Optional<IPEndPoint> insecure_nameserver;
@@ -755,7 +756,7 @@ class DnsTransactionTestBase : public testing::Test {
       if (server.use_post && request->method() == "POST") {
         if (url_base == request->url().spec()) {
           server_found = true;
-          socket_factory_->remote_endpoints_.push_back(server);
+          socket_factory_->remote_endpoints_.emplace_back(server);
         }
       } else if (!server.use_post && request->method() == "GET") {
         std::string prefix = url_base + "?dns=";
@@ -763,7 +764,7 @@ class DnsTransactionTestBase : public testing::Test {
                                      request->url().spec().begin());
         if (mispair.first == prefix.end()) {
           server_found = true;
-          socket_factory_->remote_endpoints_.push_back(server);
+          socket_factory_->remote_endpoints_.emplace_back(server);
         }
       }
     }
@@ -2376,8 +2377,10 @@ TEST_F(DnsTransactionTestWithMockTime, ProbeUntilSuccess) {
                       base::size(kT4ResponseDatagram), ASYNC, Transport::HTTPS,
                       nullptr /* opt_rdata */,
                       DnsQuery::PaddingStrategy::BLOCK_LENGTH_128);
-  transaction_factory_->StartDohProbes(&request_context,
-                                       false /* network_change */);
+
+  std::unique_ptr<DnsProbeRunner> runner =
+      transaction_factory_->CreateDohProbeRunner(&request_context);
+  runner->Start();
 
   // The first probe happens without any delay.
   RunUntilIdle();
@@ -2386,19 +2389,50 @@ TEST_F(DnsTransactionTestWithMockTime, ProbeUntilSuccess) {
       -1);
 
   // Expect the server to still be unavailable after the second probe.
-  FastForwardBy(transaction_factory_->GetDelayUntilNextProbeForTest(0));
+  FastForwardBy(runner->GetDelayUntilNextProbeForTest(0));
   EXPECT_EQ(
       session_->NextGoodDohServerIndex(0, DnsConfig::SecureDnsMode::AUTOMATIC),
       -1);
 
   // Expect the server to be available after the successful third probe.
-  FastForwardBy(transaction_factory_->GetDelayUntilNextProbeForTest(0));
+  FastForwardBy(runner->GetDelayUntilNextProbeForTest(0));
   EXPECT_EQ(
       session_->NextGoodDohServerIndex(0, DnsConfig::SecureDnsMode::AUTOMATIC),
       0);
 }
 
-TEST_F(DnsTransactionTestWithMockTime, CancelDohProbes) {
+TEST_F(DnsTransactionTestWithMockTime, MultipleProbeRunners) {
+  ConfigureDohServers(true /* use_post */);
+  TestURLRequestContext request_context;
+  AddQueryAndResponse(4, kT4HostName, kT4Qtype, kT4ResponseDatagram,
+                      base::size(kT4ResponseDatagram), ASYNC, Transport::HTTPS,
+                      nullptr /* opt_rdata */,
+                      DnsQuery::PaddingStrategy::BLOCK_LENGTH_128);
+  AddQueryAndResponse(4, kT4HostName, kT4Qtype, kT4ResponseDatagram,
+                      base::size(kT4ResponseDatagram), ASYNC, Transport::HTTPS,
+                      nullptr /* opt_rdata */,
+                      DnsQuery::PaddingStrategy::BLOCK_LENGTH_128);
+
+  std::unique_ptr<DnsProbeRunner> runner1 =
+      transaction_factory_->CreateDohProbeRunner(&request_context);
+  std::unique_ptr<DnsProbeRunner> runner2 =
+      transaction_factory_->CreateDohProbeRunner(&request_context);
+  runner1->Start();
+  runner2->Start();
+
+  // The first two probes (one for each runner) happen without any delay
+  // and mark the first server good.
+  RunUntilIdle();
+  EXPECT_EQ(
+      session_->NextGoodDohServerIndex(0, DnsConfig::SecureDnsMode::AUTOMATIC),
+      0);
+
+  // Both probes expected to be complete and no longer running.
+  EXPECT_EQ(runner1->GetDelayUntilNextProbeForTest(0), base::TimeDelta());
+  EXPECT_EQ(runner2->GetDelayUntilNextProbeForTest(0), base::TimeDelta());
+}
+
+TEST_F(DnsTransactionTestWithMockTime, CancelDohProbe) {
   ConfigureDohServers(true /* use_post */);
   TestURLRequestContext request_context;
   AddQueryAndErrorResponse(4, kT4HostName, kT4Qtype, ERR_CONNECTION_REFUSED,
@@ -2409,8 +2443,10 @@ TEST_F(DnsTransactionTestWithMockTime, CancelDohProbes) {
                            SYNCHRONOUS, Transport::HTTPS,
                            nullptr /* opt_rdata */,
                            DnsQuery::PaddingStrategy::BLOCK_LENGTH_128);
-  transaction_factory_->StartDohProbes(&request_context,
-                                       false /* network_change */);
+
+  std::unique_ptr<DnsProbeRunner> runner =
+      transaction_factory_->CreateDohProbeRunner(&request_context);
+  runner->Start();
 
   // The first probe happens without any delay.
   RunUntilIdle();
@@ -2419,31 +2455,116 @@ TEST_F(DnsTransactionTestWithMockTime, CancelDohProbes) {
       -1);
 
   // Expect the server to still be unavailable after the second probe.
-  FastForwardBy(transaction_factory_->GetDelayUntilNextProbeForTest(0));
+  FastForwardBy(runner->GetDelayUntilNextProbeForTest(0));
   EXPECT_EQ(
       session_->NextGoodDohServerIndex(0, DnsConfig::SecureDnsMode::AUTOMATIC),
       -1);
 
-  transaction_factory_->CancelDohProbes();
+  base::TimeDelta next_delay = runner->GetDelayUntilNextProbeForTest(0);
+  runner.reset();
 
   // Server stays unavailable because probe canceled before (non-existent)
   // success. No success result is added, so this FastForward will cause a
   // failure if probes attempt to run.
-  FastForwardBy(transaction_factory_->GetDelayUntilNextProbeForTest(0));
+  FastForwardBy(next_delay);
   EXPECT_EQ(
       session_->NextGoodDohServerIndex(0, DnsConfig::SecureDnsMode::AUTOMATIC),
       -1);
 }
 
-TEST_F(DnsTransactionTestWithMockTime, CancelDohProbes_AfterSuccess) {
+TEST_F(DnsTransactionTestWithMockTime, CancelOneOfMultipleProbeRunners) {
+  ConfigureDohServers(true /* use_post */);
+  TestURLRequestContext request_context;
+  AddQueryAndErrorResponse(4, kT4HostName, kT4Qtype, ERR_CONNECTION_REFUSED,
+                           SYNCHRONOUS, Transport::HTTPS,
+                           nullptr /* opt_rdata */,
+                           DnsQuery::PaddingStrategy::BLOCK_LENGTH_128);
+  AddQueryAndErrorResponse(4, kT4HostName, kT4Qtype, ERR_CONNECTION_REFUSED,
+                           SYNCHRONOUS, Transport::HTTPS,
+                           nullptr /* opt_rdata */,
+                           DnsQuery::PaddingStrategy::BLOCK_LENGTH_128);
+  AddQueryAndResponse(4, kT4HostName, kT4Qtype, kT4ResponseDatagram,
+                      base::size(kT4ResponseDatagram), ASYNC, Transport::HTTPS,
+                      nullptr /* opt_rdata */,
+                      DnsQuery::PaddingStrategy::BLOCK_LENGTH_128);
+
+  std::unique_ptr<DnsProbeRunner> runner1 =
+      transaction_factory_->CreateDohProbeRunner(&request_context);
+  std::unique_ptr<DnsProbeRunner> runner2 =
+      transaction_factory_->CreateDohProbeRunner(&request_context);
+  runner1->Start();
+  runner2->Start();
+
+  // The first two probes (one for each runner) happen without any delay.
+  RunUntilIdle();
+  EXPECT_EQ(
+      session_->NextGoodDohServerIndex(0, DnsConfig::SecureDnsMode::AUTOMATIC),
+      -1);
+  EXPECT_GT(runner1->GetDelayUntilNextProbeForTest(0), base::TimeDelta());
+  EXPECT_GT(runner2->GetDelayUntilNextProbeForTest(0), base::TimeDelta());
+
+  // Cancel only one probe runner.
+  runner1.reset();
+
+  // Expect the server to be available after the successful third probe.
+  FastForwardBy(runner2->GetDelayUntilNextProbeForTest(0));
+  EXPECT_EQ(
+      session_->NextGoodDohServerIndex(0, DnsConfig::SecureDnsMode::AUTOMATIC),
+      0);
+  EXPECT_EQ(runner2->GetDelayUntilNextProbeForTest(0), base::TimeDelta());
+}
+
+TEST_F(DnsTransactionTestWithMockTime, CancelAllOfMultipleProbeRunners) {
+  ConfigureDohServers(true /* use_post */);
+  TestURLRequestContext request_context;
+  AddQueryAndErrorResponse(4, kT4HostName, kT4Qtype, ERR_CONNECTION_REFUSED,
+                           SYNCHRONOUS, Transport::HTTPS,
+                           nullptr /* opt_rdata */,
+                           DnsQuery::PaddingStrategy::BLOCK_LENGTH_128);
+  AddQueryAndErrorResponse(4, kT4HostName, kT4Qtype, ERR_CONNECTION_REFUSED,
+                           SYNCHRONOUS, Transport::HTTPS,
+                           nullptr /* opt_rdata */,
+                           DnsQuery::PaddingStrategy::BLOCK_LENGTH_128);
+
+  std::unique_ptr<DnsProbeRunner> runner1 =
+      transaction_factory_->CreateDohProbeRunner(&request_context);
+  std::unique_ptr<DnsProbeRunner> runner2 =
+      transaction_factory_->CreateDohProbeRunner(&request_context);
+  runner1->Start();
+  runner2->Start();
+
+  // The first two probes (one for each runner) happen without any delay.
+  RunUntilIdle();
+  EXPECT_EQ(
+      session_->NextGoodDohServerIndex(0, DnsConfig::SecureDnsMode::AUTOMATIC),
+      -1);
+  EXPECT_GT(runner1->GetDelayUntilNextProbeForTest(0), base::TimeDelta());
+  EXPECT_GT(runner2->GetDelayUntilNextProbeForTest(0), base::TimeDelta());
+
+  base::TimeDelta next_delay = runner1->GetDelayUntilNextProbeForTest(0);
+  runner1.reset();
+  runner2.reset();
+
+  // Server stays unavailable because probe canceled before (non-existent)
+  // success. No success result is added, so this FastForward will cause a
+  // failure if probes attempt to run.
+  FastForwardBy(next_delay);
+  EXPECT_EQ(
+      session_->NextGoodDohServerIndex(0, DnsConfig::SecureDnsMode::AUTOMATIC),
+      -1);
+}
+
+TEST_F(DnsTransactionTestWithMockTime, CancelDohProbe_AfterSuccess) {
   ConfigureDohServers(true /* use_post */);
   TestURLRequestContext request_context;
   AddQueryAndResponse(4, kT4HostName, kT4Qtype, kT4ResponseDatagram,
                       base::size(kT4ResponseDatagram), SYNCHRONOUS,
                       Transport::HTTPS, nullptr /* opt_rdata */,
                       DnsQuery::PaddingStrategy::BLOCK_LENGTH_128);
-  transaction_factory_->StartDohProbes(&request_context,
-                                       false /* network_change */);
+
+  std::unique_ptr<DnsProbeRunner> runner =
+      transaction_factory_->CreateDohProbeRunner(&request_context);
+  runner->Start();
 
   // The first probe happens without any delay, and immediately succeeds.
   RunUntilIdle();
@@ -2451,13 +2572,41 @@ TEST_F(DnsTransactionTestWithMockTime, CancelDohProbes_AfterSuccess) {
       session_->NextGoodDohServerIndex(0, DnsConfig::SecureDnsMode::AUTOMATIC),
       0);
 
-  transaction_factory_->CancelDohProbes();
+  runner.reset();
 
   // No change expected after cancellation.
   RunUntilIdle();
   EXPECT_EQ(
       session_->NextGoodDohServerIndex(0, DnsConfig::SecureDnsMode::AUTOMATIC),
       0);
+}
+
+TEST_F(DnsTransactionTestWithMockTime, DestroyFactoryAfterStartingDohProbe) {
+  ConfigureDohServers(true /* use_post */);
+  TestURLRequestContext request_context;
+  AddQueryAndErrorResponse(4, kT4HostName, kT4Qtype, ERR_CONNECTION_REFUSED,
+                           SYNCHRONOUS, Transport::HTTPS,
+                           nullptr /* opt_rdata */,
+                           DnsQuery::PaddingStrategy::BLOCK_LENGTH_128);
+
+  std::unique_ptr<DnsProbeRunner> runner =
+      transaction_factory_->CreateDohProbeRunner(&request_context);
+  runner->Start();
+
+  // The first probe happens without any delay.
+  RunUntilIdle();
+  EXPECT_EQ(
+      session_->NextGoodDohServerIndex(0, DnsConfig::SecureDnsMode::AUTOMATIC),
+      -1);
+
+  // Destroy factory and session.
+  transaction_factory_.reset();
+  ASSERT_TRUE(session_->HasOneRef());
+  session_.reset();
+
+  // Probe should not encounter issues and should stop running.
+  FastForwardBy(runner->GetDelayUntilNextProbeForTest(0));
+  EXPECT_EQ(runner->GetDelayUntilNextProbeForTest(0), base::TimeDelta());
 }
 
 }  // namespace

@@ -436,6 +436,8 @@ let ACMatchClassification;
  *   inlineAutocompletion: string,
  *   isSearchType: boolean,
  *   fillIntoEdit: string,
+ *   imageDominantColor: string,
+ *   imageUrl: string,
  *   supportsDeletion: boolean,
  *   swapContentsAndDescription: boolean,
  *   type: string,
@@ -453,6 +455,9 @@ let AutocompleteResult;
 
 /** @type {function(!AutocompleteResult):void} */
 window.chrome.embeddedSearch.searchBox.autocompleteresultchanged;
+
+/** @type {function(number, string, string):void} */
+window.chrome.embeddedSearch.searchBox.autocompletematchimageavailable;
 
 /**
  * @param {number} line

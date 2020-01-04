@@ -244,6 +244,7 @@
 <translation id="1329584516321524826">Uppfært rétt í þessu</translation>
 <translation id="1330145147221172764">Kveikja á skjályklaborði</translation>
 <translation id="1331977651797684645">Þetta var ég.</translation>
+<translation id="1333489022424033687">Sumir eiginleikar á <ph name="ORIGIN" /> virka hugsanlega ekki þar til þú hreinsar gögn sem önnur vefsvæði hafa vistað í tækinu þínu</translation>
 <translation id="133535873114485416">Inntak sem skal nota</translation>
 <translation id="1335929031622236846">Skráðu tækið þitt</translation>
 <translation id="1338802252451106843"><ph name="ORIGIN" /> vill opna þetta forrit.</translation>
@@ -314,7 +315,6 @@
 <translation id="1433811987160647649">Spyrja fyrir notkun</translation>
 <translation id="1434696352799406980">Þetta endurstillir í senn ræsisíðuna þína, skammvalssíðuna, leitarvélina og festa flipa. Enn fremur slekkur þessi aðgerð á öllum viðbótum og hreinsar burt tímabundin gögn á borð við fótspor. Bókamerkjunum þínum, ferlinum og vistuðum aðgangsorðum verður ekki eytt.</translation>
 <translation id="1434886155212424586">Heimasíðan er síða nýrra flipa</translation>
-<translation id="1435979430299962295">Smelltu á viðbótina til að heimila aðgang fyrir þetta vefsvæði.</translation>
 <translation id="1436390408194692385">Gildir í <ph name="TICKET_TIME_LEFT" /></translation>
 <translation id="1436671784520050284">Halda uppsetningu áfram</translation>
 <translation id="1436784010935106834">Fjarlægð</translation>
@@ -1036,7 +1036,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="2445484935443597917">Búa til nýjan prófíl</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> vill staðfesta auðkenni þitt</translation>
 <translation id="2448312741937722512">Gerð</translation>
-<translation id="2448734521821581858">Fótspor eru skrár sem myndast á vefsvæðum sem þú heimsækir. Það eru tvær tegundir af fótsporum: Fótspor frá fyrsta aðila eru búin til af vefsvæðinu sem þú heimsækir. Vefsvæðið kemur fram á veffangastikunni. Fótspor frá þriðja aðila eru búin til af öðrum vefsvæðum. Þessi vefsvæði eiga eitthvað af efninu, eins og auglýsingar eða myndir, sem þú sérð á vefsvæðinu sem þú heimsækir.</translation>
 <translation id="2450223707519584812">Þú getur ekki bætt inn notendum vegna þess að það vantar Google forritaskil. Sjá frekari upplýsingar á <ph name="DETAILS_URL" />.</translation>
 <translation id="2450849356604136918">Engin virk yfirlit</translation>
 <translation id="2451298179137331965">2x</translation>
@@ -4081,6 +4080,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="6843423766595476978">Ok Google er tilbúið</translation>
 <translation id="6845038076637626672">Opna stækkað</translation>
 <translation id="6845325883481699275">Hjálpaðu til við að bæta öryggi Chrome</translation>
+<translation id="6847125920277401289">Losaðu um pláss til að halda áfram</translation>
 <translation id="6848388270925200958">Eins og er ertu með einhver kort sem aðeins er hægt að nota í þessu tæki</translation>
 <translation id="6850286078059909152">Textalitur</translation>
 <translation id="6851497530878285708">Forrit virkt</translation>
@@ -4105,10 +4105,10 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="6885771755599377173">Forskoðun kerfisupplýsinga</translation>
 <translation id="6886476658664859389">NFC-öryggislykill</translation>
 <translation id="6886871292305414135">Opna &amp;tengil í nýjum flipa</translation>
-<translation id="6890912377247906520">Þessar viðbætur þurfa ekki aðgang að þessu vefsvæði.</translation>
 <translation id="6892812721183419409">Opna tengil sem <ph name="USER" /></translation>
 <translation id="6895032998810961280">Tilkynna Google upplýsingar um skaðlegan hugbúnað, kerfisstillingar og ferli sem fundust í tölvunni þinni í þessari hreinsun</translation>
 <translation id="6896758677409633944">Afrita</translation>
+<translation id="6897363604023044284">Veldu svæði til að hreinsa</translation>
 <translation id="6898440773573063262">Sjálfsalaforrit er nú hægt að grunnstilla þannig að þau séu ræst sjálfkrafa í þessu tæki.</translation>
 <translation id="6898699227549475383">Notendaskipan (O)</translation>
 <translation id="6900284862687837908">Bakgrunnsforrit: <ph name="BACKGROUND_APP_URL" /></translation>

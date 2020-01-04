@@ -22,6 +22,7 @@
 #include "base/time/tick_clock.h"
 #include "media/base/audio_converter.h"
 #include "media/base/audio_parameters.h"
+#include "media/base/media_util.h"
 #include "media/cast/cast_config.h"
 #include "media/filters/audio_renderer_algorithm.h"
 #include "media/filters/ffmpeg_demuxer.h"
@@ -161,6 +162,7 @@ class FakeMediaSource : public media::AudioConverter::InputCallback {
   std::unique_ptr<media::AudioFifo> audio_fifo_;
   std::unique_ptr<media::AudioBus> audio_fifo_input_bus_;
   media::AudioRendererAlgorithm audio_algo_;
+  media::NullMediaLog media_log_;
 
   // Track the timestamp of audio sent to the receiver.
   std::unique_ptr<media::AudioTimestampHelper> audio_sent_ts_;

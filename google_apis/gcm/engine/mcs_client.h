@@ -87,16 +87,17 @@ class GCM_EXPORT MCSClient {
   // Callback for MCSClient's error conditions.
   // TODO(fgorski): Keeping it as a callback with intention to add meaningful
   // error information.
-  typedef base::Callback<void()> ErrorCallback;
+  using ErrorCallback = base::OnceCallback<void()>;
   // Callback when a message is received.
-  typedef base::Callback<void(const MCSMessage& message)>
-      OnMessageReceivedCallback;
+  using OnMessageReceivedCallback =
+      base::RepeatingCallback<void(const MCSMessage& message)>;
   // Callback when a message is sent (and receipt has been acknowledged by
   // the MCS endpoint).
-  typedef base::Callback<void(int64_t user_serial_number,
-                              const std::string& app_id,
-                              const std::string& message_id,
-                              MessageSendStatus status)> OnMessageSentCallback;
+  using OnMessageSentCallback =
+      base::RepeatingCallback<void(int64_t user_serial_number,
+                                   const std::string& app_id,
+                                   const std::string& message_id,
+                                   MessageSendStatus status)>;
 
   MCSClient(const std::string& version_string,
             base::Clock* clock,
@@ -115,7 +116,7 @@ class GCM_EXPORT MCSClient {
   // |success == true|.
   // If an error loading the GCM store is encountered,
   // |initialization_callback| will be invoked with |success == false|.
-  void Initialize(const ErrorCallback& initialization_callback,
+  void Initialize(ErrorCallback initialization_callback,
                   const OnMessageReceivedCallback& message_received_callback,
                   const OnMessageSentCallback& message_sent_callback,
                   std::unique_ptr<GCMStore::LoadResult> load_result);

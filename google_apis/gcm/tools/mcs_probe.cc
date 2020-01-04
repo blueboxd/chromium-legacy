@@ -298,8 +298,9 @@ void MCSProbe::Start() {
       "probe", &clock_, connection_factory_.get(), gcm_store_.get(),
       base::ThreadTaskRunnerHandle::Get(), &recorder_);
   run_loop_ = std::make_unique<base::RunLoop>();
-  gcm_store_->Load(GCMStore::CREATE_IF_MISSING,
-                   base::Bind(&MCSProbe::LoadCallback, base::Unretained(this)));
+  gcm_store_->Load(
+      GCMStore::CREATE_IF_MISSING,
+      base::BindOnce(&MCSProbe::LoadCallback, base::Unretained(this)));
   run_loop_->Run();
 }
 
@@ -309,19 +310,18 @@ void MCSProbe::LoadCallback(std::unique_ptr<GCMStore::LoadResult> load_result) {
     DVLOG(1) << "Presetting MCS id " << android_id_;
     load_result->device_android_id = android_id_;
     load_result->device_security_token = secret_;
-    gcm_store_->SetDeviceCredentials(android_id_,
-                                     secret_,
-                                     base::Bind(&MCSProbe::UpdateCallback,
-                                                base::Unretained(this)));
+    gcm_store_->SetDeviceCredentials(
+        android_id_, secret_,
+        base::BindOnce(&MCSProbe::UpdateCallback, base::Unretained(this)));
   } else {
     android_id_ = load_result->device_android_id;
     secret_ = load_result->device_security_token;
     DVLOG(1) << "Loaded MCS id " << android_id_;
   }
   mcs_client_->Initialize(
-      base::Bind(&MCSProbe::ErrorCallback, base::Unretained(this)),
-      base::Bind(&MessageReceivedCallback), base::Bind(&MessageSentCallback),
-      std::move(load_result));
+      base::BindOnce(&MCSProbe::ErrorCallback, base::Unretained(this)),
+      base::BindRepeating(&MessageReceivedCallback),
+      base::BindRepeating(&MessageSentCallback), std::move(load_result));
 
   if (!android_id_ || !secret_) {
     DVLOG(1) << "Checkin to generate new MCS credentials.";
@@ -403,7 +403,7 @@ void MCSProbe::CheckIn() {
 
   checkin_request_ = std::make_unique<CheckinRequest>(
       GServicesSettings().GetCheckinURL(), request_info, kDefaultBackoffPolicy,
-      base::Bind(&MCSProbe::OnCheckInCompleted, base::Unretained(this)),
+      base::BindOnce(&MCSProbe::OnCheckInCompleted, base::Unretained(this)),
       shared_url_loader_factory_, base::ThreadTaskRunnerHandle::Get(),
       &recorder_);
   checkin_request_->Start();
@@ -426,10 +426,9 @@ void MCSProbe::OnCheckInCompleted(
   android_id_ = checkin_response.android_id();
   secret_ = checkin_response.security_token();
 
-  gcm_store_->SetDeviceCredentials(android_id_,
-                                   secret_,
-                                   base::Bind(&MCSProbe::UpdateCallback,
-                                              base::Unretained(this)));
+  gcm_store_->SetDeviceCredentials(
+      android_id_, secret_,
+      base::BindOnce(&MCSProbe::UpdateCallback, base::Unretained(this)));
 
   StartMCSLogin();
 }

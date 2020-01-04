@@ -17,6 +17,9 @@ import processor
 
 
 _CURRENT_DIR = os.path.join(os.path.dirname(__file__))
+_JAVA_BIN = "java"
+_JDK_PATH = os.path.join(_CURRENT_DIR, "..", "jdk", "current", "bin", _JAVA_BIN)
+_JAVA_PATH = _JDK_PATH if os.path.isfile(_JDK_PATH) else _JAVA_BIN
 
 
 class Compiler(object):
@@ -24,11 +27,11 @@ class Compiler(object):
   and produce minified output."""
 
   _JAR_COMMAND = [
-    os.path.join(_CURRENT_DIR, "..", "jdk", "current", "bin", "java"),
-    "-jar",
-    "-Xms1024m",
-    "-client",
-    "-XX:+TieredCompilation"
+      _JAVA_PATH,
+      "-jar",
+      "-Xms1024m",
+      "-client",
+      "-XX:+TieredCompilation",
   ]
 
   _POLYMER_EXTERNS = os.path.join(_CURRENT_DIR, "externs", "polymer-1.0.js")

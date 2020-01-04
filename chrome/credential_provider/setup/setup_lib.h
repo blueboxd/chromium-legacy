@@ -54,9 +54,13 @@ HRESULT RelaunchUninstaller(const base::FilePath& installer_path);
 void GetInstalledFileBasenames(const base::FilePath::CharType* const** names,
                                size_t* count);
 
-// Enable or disable stats and crash report collection.  Returns 0 on success
+// Enable or disable stats and crash report collection. Returns 0 on success
 // and -1 on failure.
 int EnableStatsCollection(const base::CommandLine& cmdline);
+
+// Writes the UninstallString and UninstallArguments values to the product's
+// ClientState key in support of uninstallation by the MSI wrapper.
+HRESULT WriteUninstallRegistryValues(const base::FilePath& setup_exe);
 
 }  // namespace credential_provider
 

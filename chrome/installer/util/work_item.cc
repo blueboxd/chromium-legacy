@@ -24,8 +24,9 @@ WorkItem::WorkItem() = default;
 WorkItem::~WorkItem() = default;
 
 CallbackWorkItem* WorkItem::CreateCallbackWorkItem(
-    base::Callback<bool(const CallbackWorkItem&)> callback) {
-  return new CallbackWorkItem(callback);
+    base::OnceCallback<bool(const CallbackWorkItem&)> do_action,
+    base::OnceCallback<void(const CallbackWorkItem&)> rollback_action) {
+  return new CallbackWorkItem(std::move(do_action), std::move(rollback_action));
 }
 
 CopyTreeWorkItem* WorkItem::CreateCopyTreeWorkItem(
@@ -133,12 +134,9 @@ SetRegValueWorkItem* WorkItem::CreateSetRegValueWorkItem(
     const std::wstring& key_path,
     REGSAM wow64_access,
     const std::wstring& value_name,
-    const GetValueFromExistingCallback& get_value_callback) {
-  return new SetRegValueWorkItem(predefined_root,
-                                 key_path,
-                                 wow64_access,
-                                 value_name,
-                                 get_value_callback);
+    GetValueFromExistingCallback get_value_callback) {
+  return new SetRegValueWorkItem(predefined_root, key_path, wow64_access,
+                                 value_name, std::move(get_value_callback));
 }
 
 SelfRegWorkItem* WorkItem::CreateSelfRegWorkItem(const std::wstring& dll_path,

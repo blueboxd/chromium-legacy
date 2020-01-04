@@ -2245,6 +2245,10 @@ void WebMediaPlayerImpl::OnVideoOpacityChange(bool opaque) {
     bridge_->SetContentsOpaque(opaque_);
 }
 
+void WebMediaPlayerImpl::OnVideoFrameRateChange(base::Optional<int> fps) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+}
+
 void WebMediaPlayerImpl::OnAudioConfigChange(const AudioDecoderConfig& config) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(ready_state_, WebMediaPlayer::kReadyStateHaveNothing);

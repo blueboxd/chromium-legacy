@@ -16,16 +16,26 @@ goog.require('EventSourceType');
  * @param {string} menuItemBraille The braille keystrokes to select this item.
  * @param {string} gesture The gesture to select this item.
  * @param {Function} callback The function to call if this item is selected.
+ * @param {string=} opt_id An optional id for the menu item element.
  * @constructor
  */
 PanelMenuItem = function(
-    menuItemTitle, menuItemShortcut, menuItemBraille, gesture, callback) {
+    menuItemTitle, menuItemShortcut, menuItemBraille, gesture, callback,
+    opt_id) {
+  // Save inputs.
+  this.menuItemTitle = menuItemTitle;
+  this.menuItemShortcut = menuItemShortcut;
+  this.menuItemBraille = menuItemBraille;
+  this.gesture = gesture;
   this.callback = callback;
 
   this.element = document.createElement('tr');
   this.element.className = 'menu-item';
   this.element.tabIndex = -1;
   this.element.setAttribute('role', 'menuitem');
+  if (opt_id) {
+    this.element.id = opt_id;
+  }
 
   this.element.addEventListener(
       'mouseover', (function(evt) {

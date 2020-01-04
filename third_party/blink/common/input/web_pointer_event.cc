@@ -30,8 +30,7 @@ WebInputEvent::Type PointerEventTypeForTouchPointState(
 
 WebPointerEvent::WebPointerEvent(const WebTouchEvent& touch_event,
                                  const WebTouchPoint& touch_point)
-    : WebInputEvent(sizeof(WebPointerEvent),
-                    PointerEventTypeForTouchPointState(touch_point.state),
+    : WebInputEvent(PointerEventTypeForTouchPointState(touch_point.state),
                     touch_event.GetModifiers(),
                     touch_event.TimeStamp()),
 
@@ -58,10 +57,7 @@ WebPointerEvent::WebPointerEvent(const WebTouchEvent& touch_event,
 
 WebPointerEvent::WebPointerEvent(WebInputEvent::Type type,
                                  const WebMouseEvent& mouse_event)
-    : WebInputEvent(sizeof(WebPointerEvent),
-                    type,
-                    mouse_event.GetModifiers(),
-                    mouse_event.TimeStamp()),
+    : WebInputEvent(type, mouse_event.GetModifiers(), mouse_event.TimeStamp()),
       WebPointerProperties(mouse_event),
       hovering(true),
       width(std::numeric_limits<float>::quiet_NaN()),
@@ -70,6 +66,10 @@ WebPointerEvent::WebPointerEvent(WebInputEvent::Type type,
   DCHECK_LE(type, WebInputEvent::kPointerTypeLast);
   SetFrameScale(mouse_event.FrameScale());
   SetFrameTranslate(mouse_event.FrameTranslate());
+}
+
+std::unique_ptr<WebInputEvent> WebPointerEvent::Clone() const {
+  return std::make_unique<WebPointerEvent>(*this);
 }
 
 WebPointerEvent WebPointerEvent::CreatePointerCausesUaActionEvent(

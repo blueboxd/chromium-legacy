@@ -444,7 +444,6 @@ fast/css-generated-content/bug-106384.html
 fast/css-generated-content/table-with-scrollbar-corner.html
 fast/css/getComputedStyle/getComputedStyle-margin-percentage.html
 fast/css-grid-layout/grid-item-before-anonymous-child-crash.html
-fast/css/image-orientation/image-orientation.html
 fast/css-intrinsic-dimensions/tables.html
 fast/css-intrinsic-dimensions/width-shrinks-avoid-floats.html
 fast/css/invalid-percentage-property.html

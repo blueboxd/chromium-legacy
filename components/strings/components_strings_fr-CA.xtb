@@ -1367,7 +1367,7 @@ Détails supplémentaires :
 <translation id="7567204685887185387">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />. Il se peut que son certificat de sécurité ait été émis de manière frauduleuse. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="7569952961197462199">Supprimer la carte de crédit de Chrome?</translation>
 <translation id="7569983096843329377">Noir</translation>
-<translation id="7575207903026901870">Supprimer le bouton Suggestion, appuyez sur Entrer pour supprimer cette suggestion</translation>
+<translation id="7575207903026901870">Bouton Supprimer la suggestion, appuyez sur Entrée pour supprimer cette suggestion</translation>
 <translation id="7578104083680115302">Payez rapidement sur les sites et les applications, sur tous les appareils, à l'aide des cartes que vous avez enregistrées avec Google.</translation>
 <translation id="7592362899630581445">Le certificat du serveur ne respecte pas les restrictions de noms.</translation>
 <translation id="7598391785903975535">Moins de <ph name="UPPER_ESTIMATE" /></translation>
@@ -1613,7 +1613,7 @@ Détails supplémentaires :
 <translation id="8891727572606052622">Mode mandataire non valide.</translation>
 <translation id="8903921497873541725">Zoom avant</translation>
 <translation id="890485472659500557">Ingénierie C</translation>
-<translation id="890493561996401738">Supprimer le bouton Suggestion, appuyez sur Entrer pour le supprimer, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
+<translation id="890493561996401738">Bouton Supprimer la suggestion, appuyez sur Entrée pour supprimer, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Vous êtes passé en mode de navigation privée</translation>
 <translation id="8912362522468806198">Compte Google</translation>
 <translation id="8918231688545606538">Cette page est suspecte</translation>

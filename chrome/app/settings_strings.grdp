@@ -882,10 +882,10 @@
     </message>
   </if>
   <if expr="chromeos">
-    <message name="IDS_SETTINGS_DEVICE_OFF" desc="In Settings pages, the label when a bluetooth, wifi, or mobile device is off (disabled).">
+    <message name="IDS_SETTINGS_DEVICE_OFF" desc="In Settings pages, the label when a bluetooth, wifi, or mobile device is off (disabled)." meaning="Device is disabled.">
       Off
     </message>
-    <message name="IDS_SETTINGS_DEVICE_ON" desc="In Settings pages, the label when a bluetooth, wifi, or mobile device is on (enabled).">
+    <message name="IDS_SETTINGS_DEVICE_ON" desc="In Settings pages, the label when a bluetooth, wifi, or mobile device is on (enabled)." meaning="Device is enabled.">
       On
     </message>
     <message name="IDS_SETTINGS_RESTART" desc="Text for a button that will restart ChromeOS.">
@@ -903,12 +903,6 @@
   </message>
   <message name="IDS_SETTINGS_EDIT" desc="Label used on a menu item or button, used in different contexts to edit an item.">
     Edit
-  </message>
-  <message name="IDS_SETTINGS_TOGGLE_ON" desc="Label used on a main settings toggle that is on.">
-    On
-  </message>
-  <message name="IDS_SETTINGS_TOGGLE_OFF" desc="Label used on a main settings toggle that is off.">
-    Off
   </message>
   <message name="IDS_SETTINGS_NOT_VALID" desc="Text indicating that an input is not valid.">
    Not valid
@@ -2863,6 +2857,9 @@
     Show language options
   </message>
   <if expr="chromeos">
+    <message name="IDS_SETTINGS_LANGUAGES_BROWSER_LANGUAGES_LIST_ORDERING_INSTRUCTIONS" desc="Explanatory message about ordering the list of languages.">
+      Add languages or reorder list.
+    </message>
     <message name="IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_ORDERING_INSTRUCTIONS" desc="Explanatory message about ordering the list of languages.">
       Add languages or reorder list. <ph name="BEGIN_LINK">&lt;a&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
     </message>
@@ -2878,7 +2875,7 @@
     </message>
   </if>
   <if expr="not chromeos">
-    <message name="IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_ORDERING_INSTRUCTIONS" desc="Explanatory message about ordering the list of languages.">
+    <message name="IDS_SETTINGS_LANGUAGES_BROWSER_LANGUAGES_LIST_ORDERING_INSTRUCTIONS" desc="Explanatory message about ordering the list of languages.">
       Order languages based on your preference
     </message>
   </if>
@@ -3186,6 +3183,12 @@
   <message name="IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_DISABLED" desc="Sub label for the Google Assistant button when Assistant is disabled.">
     Disabled
   </message>
+  <message name="IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_ON" desc="Row label in Google Assistant settings." meaning="Google Assistant is off.">
+    On
+  </message>
+  <message name="IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_OFF" desc="Row label in Google Assistant settings." meaning="Google Assistant is on.">
+    Off
+  </message>
 </if>
 
   <!-- Search Engines Page -->
@@ -3255,7 +3258,7 @@
   <message name="IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_HOTWORD_WITHOUT_DSP_ALWAYS_ON" desc="Always-on label for hotword-enable dropdown without DSP support.">
     Always on
   </message>
-  <message name="IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_HOTWORD_WITHOUT_DSP_OFF" desc="Off label for hotword-enable dropdown without DSP support.">
+  <message name="IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_HOTWORD_WITHOUT_DSP_OFF" desc="Off label for hotword-enable dropdown without DSP support." meaning="Ok Google hotwording is disabled.">
     Off
   </message>
   <message name="IDS_SETTINGS_GOOGLE_ASSISTANT_VOICE_SETTINGS" desc="Title for the Assistant voice settings.">
@@ -4828,6 +4831,12 @@
     </message>
     <message name="IDS_SETTINGS_DISPLAY_UNIFIED_DESKTOP" desc="In Device Settings > Displays, the label for the control for the unified desktop feature.">
       Allow windows to span displays
+    </message>
+    <message name="IDS_SETTINGS_DISPLAY_UNIFIED_DESKTOP_ON" desc="Label for the state for the unified desktop feature." meaning="Windows are allowed to span displays.">
+      On
+    </message>
+    <message name="IDS_SETTINGS_DISPLAY_UNIFIED_DESKTOP_OFF" desc="Label for the state for the unified desktop feature." meaning="Windows are not allowed to span displays.">
+      Off
     </message>
     <message name="IDS_SETTINGS_DISPLAY_SCREEN" desc="In Device Settings > Displays, the label for the dropdown menu for changing the dispay type.">
       Screen

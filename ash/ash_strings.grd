@@ -261,10 +261,10 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_NIGHT_LIGHT_SETTINGS_TOOLTIP" desc="The tooltip text used for the button in the status tray to show the Night Light feature (which controls the color temperature of the screen) settings.">
         Show Night Light settings
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_NIGHT_LIGHT_OFF_STATE" desc="The label for the Off state of the Night Light feature.">
+      <message name="IDS_ASH_STATUS_TRAY_NIGHT_LIGHT_OFF_STATE" desc="Button label for the Night Light feature." meaning="Night Light feature is off.">
         Off
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_NIGHT_LIGHT_ON_STATE" desc="The label for the On state of the Night Light feature.">
+      <message name="IDS_ASH_STATUS_TRAY_NIGHT_LIGHT_ON_STATE" desc="Button label for the Night Light feature." meaning="Night Light feature is on.">
         On
       </message>
       <message name="IDS_ASH_STATUS_TRAY_CAST" desc="The label used as the header in the cast popup.">
@@ -350,10 +350,10 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISABLED" desc="The label used in the tray popup to notify that bluetooth is disabled.">
         Bluetooth disabled
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_ENABLED_SHORT" desc="The short label used in the tray popup to notify that bluetooth is enabled.">
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_ENABLED_SHORT" desc="Bluetooth button label in the status tray popup." meaning="Bluetooth is enabled.">
         On
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISABLED_SHORT" desc="The short label used in the tray popup to notify that bluetooth is disabled.">
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISABLED_SHORT" desc="Bluetooth button label in the status tray popup." meaning="Bluetooth is disabled.">
         Off
       </message>
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERING" desc="The label used in the tray popup to show bluetooth is discovering devices.">
@@ -1463,10 +1463,10 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_VPN_TOOLTIP" desc="The tooltip text used for the button that shows VPN settings.">
         Show VPN settings
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_VPN_DISCONNECTED_SHORT" desc="The short label used in system tray bubble to display vpn is disconnected.">
+      <message name="IDS_ASH_STATUS_TRAY_VPN_DISCONNECTED_SHORT" desc="VPN button label in the system tray bubble." meaning="VPN is disconnected.">
         Off
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_VPN_CONNECTED_SHORT" desc="The short label used in system tray bubble to display vpn is connected.">
+      <message name="IDS_ASH_STATUS_TRAY_VPN_CONNECTED_SHORT" desc="VPN button label in the system tray bubble." meaning="VPN is connected.">
         On
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_WIFI_ENABLED" desc="The label used in the tray popup to notify that Wi-Fi is turned on.">

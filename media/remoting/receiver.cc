@@ -325,5 +325,7 @@ void Receiver::OnVideoOpacityChange(bool opaque) {
   rpc_broker_->SendMessageToRemote(std::move(rpc));
 }
 
+void Receiver::OnVideoFrameRateChange(base::Optional<int>) {}
+
 }  // namespace remoting
 }  // namespace media

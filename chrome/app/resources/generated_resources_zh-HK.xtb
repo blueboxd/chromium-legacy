@@ -244,6 +244,7 @@
 <translation id="1329584516321524826">上次更新時間：剛才</translation>
 <translation id="1330145147221172764">啟用螢幕小鍵盤</translation>
 <translation id="1331977651797684645">這是我本人。</translation>
+<translation id="1333489022424033687">如不清除其他網站在裝置上儲存的資料，<ph name="ORIGIN" /> 的部分功能可能無法正常運作</translation>
 <translation id="133535873114485416">偏好的輸入模式</translation>
 <translation id="1335929031622236846">註冊您的裝置</translation>
 <translation id="1338802252451106843"><ph name="ORIGIN" /> 想開啟此應用程式。</translation>
@@ -314,7 +315,6 @@
 <translation id="1433811987160647649">存取前先詢問</translation>
 <translation id="1434696352799406980">此功能會重設您的起始網頁、新分頁、搜尋引擎和固定標籤，同時停用所有擴充程式並清除 Cookie 等暫存資料，但不會清除您的書籤、記錄及已儲存的密碼。</translation>
 <translation id="1434886155212424586">首頁是新分頁</translation>
-<translation id="1435979430299962295">如要授予此網站的存取權，請按一下該擴充程式。</translation>
 <translation id="1436390408194692385">有效期限：<ph name="TICKET_TIME_LEFT" /></translation>
 <translation id="1436671784520050284">繼續設定</translation>
 <translation id="1436784010935106834">已移除</translation>
@@ -1035,7 +1035,6 @@
 <translation id="2445484935443597917">建立新的設定檔</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> 要求驗證您的身分</translation>
 <translation id="2448312741937722512">類型</translation>
-<translation id="2448734521821581858">Cookie 是您瀏覽的網站所建立的檔案，並可分為兩種：第一方 Cookie 由您瀏覽的網站建立，網址列上會顯示該網站的網址。第三方 Cookie 則由其他網站建立。這些網站擁有所瀏覽網站的部分內容，例如廣告和圖片。</translation>
 <translation id="2450223707519584812">找不到 Google API 金鑰，因此您無法新增使用者。詳情請參閱 <ph name="DETAILS_URL" />。</translation>
 <translation id="2450849356604136918">沒有運作中的檢視</translation>
 <translation id="2451298179137331965">2 倍</translation>
@@ -4079,6 +4078,7 @@
 <translation id="6843423766595476978">「Ok Google」已設定完成</translation>
 <translation id="6845038076637626672">最大化開啟</translation>
 <translation id="6845325883481699275">協助提高 Chrome 安全性</translation>
+<translation id="6847125920277401289">騰出空間才能繼續</translation>
 <translation id="6848388270925200958">目前您有部分付款卡只可在此裝置上使用</translation>
 <translation id="6850286078059909152">文字顏色</translation>
 <translation id="6851497530878285708">已啟用應用程式</translation>
@@ -4103,10 +4103,10 @@
 <translation id="6885771755599377173">預覽系統資訊</translation>
 <translation id="6886476658664859389">NFC 安全密鑰</translation>
 <translation id="6886871292305414135">在新分頁中開啟連結(&amp;T)</translation>
-<translation id="6890912377247906520">這些擴充程式無需存取此網站。</translation>
 <translation id="6892812721183419409">以 <ph name="USER" /> 身分開啟連結</translation>
 <translation id="6895032998810961280">在執行清理時，向 Google 報告任何在電腦上發現的有害軟件、系統設定及程序的詳細資料</translation>
 <translation id="6896758677409633944">複製</translation>
+<translation id="6897363604023044284">選擇要清除的網站資料</translation>
 <translation id="6898440773573063262">Kiosk 應用程式現可設為自動在這部裝置上啟動。</translation>
 <translation id="6898699227549475383">機構 (O)</translation>
 <translation id="6900284862687837908">背景應用程式：<ph name="BACKGROUND_APP_URL" /></translation>
@@ -5257,7 +5257,7 @@
 <translation id="850875081535031620">未發現任何有害軟件</translation>
 <translation id="8509177919508253835">重設安全密鑰並建立 PIN</translation>
 <translation id="8509646642152301857">拼字檢查字典下載失敗。</translation>
-<translation id="8510617356402557055">發生非預期的問題嗎？<ph name="BEGIN_LINK" />傳送意見<ph name="END_LINK" /></translation>
+<translation id="8510617356402557055">發生未預期的問題嗎？<ph name="BEGIN_LINK" />傳送意見<ph name="END_LINK" /></translation>
 <translation id="8512476990829870887">結束處理程序</translation>
 <translation id="851263357009351303">永遠允許 <ph name="HOST" /> 顯示圖片</translation>
 <translation id="8513108775083588393">自動旋轉</translation>

@@ -923,6 +923,9 @@
 "fieldtext"
 "canvas"
 "canvastext"
+"invisible"
+"skip-activation"
+"skip-viewport-activation"
 
 # at-rules
 "@charset"
@@ -1275,6 +1278,7 @@
 "r"
 "range"
 "region-fragment"
+"render-subtree"
 "rest"
 "rest-after"
 "rest-before"

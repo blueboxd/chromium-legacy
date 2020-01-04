@@ -38,7 +38,8 @@ class WorkItemList : public WorkItem {
 
   // Add a CallbackWorkItem that invokes a callback.
   virtual WorkItem* AddCallbackWorkItem(
-      base::Callback<bool(const CallbackWorkItem&)> callback);
+      base::OnceCallback<bool(const CallbackWorkItem&)> do_action,
+      base::OnceCallback<void(const CallbackWorkItem&)> rollback_action);
 
   // Add a CopyTreeWorkItem to the list of work items.
   // See the NOTE in the documentation for the CopyTreeWorkItem class for
@@ -118,7 +119,7 @@ class WorkItemList : public WorkItem {
       const std::wstring& key_path,
       REGSAM wow64_access,
       const std::wstring& value_name,
-      const WorkItem::GetValueFromExistingCallback& get_value_callback);
+      WorkItem::GetValueFromExistingCallback get_value_callback);
 
   // Add a SelfRegWorkItem that registers or unregisters a DLL at the
   // specified path. If user_level_registration is true, then alternate

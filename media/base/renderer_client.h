@@ -54,6 +54,11 @@ class MEDIA_EXPORT RendererClient {
   // TODO(crbug.com/988535): Used by AudioRendererImpl.  This can be removed
   // when the bug is resolved.
   virtual bool IsVideoStreamAvailable();
+
+  // Called when the bucketed frames per second has changed.  |fps| will be
+  // unset if the frame rate is unstable.  The duration used for the frame rate
+  // is based on the wall clock time, not the media time.
+  virtual void OnVideoFrameRateChange(base::Optional<int> fps) = 0;
 };
 
 }  // namespace media

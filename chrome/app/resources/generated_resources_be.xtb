@@ -224,7 +224,7 @@
 <translation id="1306606229401759371">Змяніць налады</translation>
 <translation id="1307165550267142340">PIN-код створаны</translation>
 <translation id="1307559529304613120">Памылка.  Сістэме не ўдалося захаваць доўгатэрміновы маркер доступу API для гэтай прылады.</translation>
-<translation id="1309199320876169714">Выдаленне праграмы Plugin VM...</translation>
+<translation id="1309199320876169714">Выдаленне Plugin VM...</translation>
 <translation id="1313405956111467313">Аўтаматычная канфігурацыя проксі-сервера</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313705515580255288">Вашы закладкі, гісторыя і іншыя налады будуць сінхранізавацца з Уліковым запісам Google.</translation>
@@ -244,6 +244,7 @@
 <translation id="1329584516321524826">Абноўлена толькі што</translation>
 <translation id="1330145147221172764">Уключыць экранную клавіятуру</translation>
 <translation id="1331977651797684645">Гэта я.</translation>
+<translation id="1333489022424033687">Некаторыя функцыі на сайце <ph name="ORIGIN" /> могуць не працаваць, пакуль вы не выдаліце даныя, захаваныя на прыладзе іншымі сайтамі</translation>
 <translation id="133535873114485416">Пажаданы спосаб уводу</translation>
 <translation id="1335929031622236846">Зарэгіструйце прыладу</translation>
 <translation id="1338802252451106843"><ph name="ORIGIN" /> збіраецца адкрыць гэту праграму.</translation>
@@ -314,7 +315,6 @@
 <translation id="1433811987160647649">Запытваць перад атрыманнем доступу</translation>
 <translation id="1434696352799406980">Будуць скінуты налады пачатковай старонкі, старонкі новай укладкі і пошукавай сістэмы, а таксама адмацаваны ўсе ўкладкі. Акрамя, таго, будуць выключаны ўсе пашырэнні і выдалены часовыя даныя, такія як файлы cookie. Вашы закладкі, гісторыя і захаваныя паролі не будуць выдалены.</translation>
 <translation id="1434886155212424586">Галоўнай старонкай з'яўляецца старонка новай укладкі</translation>
-<translation id="1435979430299962295">Каб дазволіць доступ на гэтым сайце, націсніце на пашырэнне.</translation>
 <translation id="1436390408194692385">Дзейнічае яшчэ <ph name="TICKET_TIME_LEFT" /></translation>
 <translation id="1436671784520050284">Працягнуць наладку</translation>
 <translation id="1436784010935106834">Выдалены</translation>
@@ -1036,7 +1036,6 @@
 <translation id="2445484935443597917">Стварыць новы профіль</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> запытвае спраўджанне вашай асобы</translation>
 <translation id="2448312741937722512">Тып</translation>
-<translation id="2448734521821581858">Файлы cookie – гэта файлы, якія ствараюцца вэб-сайтамі, якія вы наведваеце. Ёсць два віды файлаў cookie. Асноўныя файлы cookie ствараюцца самім сайтам, які вы наведваеце. Ён паказваецца ў адрасным радку. Староннія файлы cookie ствараюцца іншымі сайтамі. Гэтым сайтам належыць пэўнае змесціва, такое як рэклама або відарысы, якое вы бачыце на вэб-сайце, які наведваеце.</translation>
 <translation id="2450223707519584812">Вы не зможаце дадаваць карыстальнікаў, бо адсутнічаюць ключы Google API. Даведацца больш: <ph name="DETAILS_URL" />.</translation>
 <translation id="2450849356604136918">Няма актыўных праглядаў</translation>
 <translation id="2451298179137331965">2х</translation>
@@ -1362,7 +1361,7 @@
 <translation id="2871813825302180988">Гэты ўліковы запіс ужо выкарыстоўваецца на гэтай прыладзе.</translation>
 <translation id="287286579981869940">Дадаць: <ph name="PROVIDER_NAME" />...</translation>
 <translation id="2872961005593481000">Завяршыць працу</translation>
-<translation id="2874478552394649323">Выдаліць праграму Plugin VM</translation>
+<translation id="2874478552394649323">Выдаліць Plugin VM</translation>
 <translation id="2874939134665556319">Папярэдні трэк</translation>
 <translation id="2875698561019555027">(Старонкі памылак Chrome)</translation>
 <translation id="2876336351874743617">Палец 2</translation>
@@ -1378,7 +1377,7 @@
 <translation id="2889064240420137087">Адкрыць спасылку з дапамогай...</translation>
 <translation id="2889925978073739256">Працягваць блакіраваць не змешчаныя ў пясочніцу ўбудовы</translation>
 <translation id="2893168226686371498">Стандартны браўзер</translation>
-<translation id="2893208266590504003">Не ўдалося выдаліць праграму Plugin VM</translation>
+<translation id="2893208266590504003">Не ўдалося выдаліць Plugin VM</translation>
 <translation id="2894757982205307093">Стварыць у групе новую ўкладку</translation>
 <translation id="289644616180464099">SIM-карта заблакіравана</translation>
 <translation id="2896909745808647285">Файл "<ph name="FILE_NAME" />" зашыфраваны, таму яго адкрыццё было заблакіравана.</translation>
@@ -4081,6 +4080,7 @@
 <translation id="6843423766595476978">"Ok Google" наладжаны</translation>
 <translation id="6845038076637626672">Адкрыць у разгорнутым выглядзе</translation>
 <translation id="6845325883481699275">Дапамагаць павысіць бяспеку Chrome</translation>
+<translation id="6847125920277401289">Каб працягнуць, вызваліце месца</translation>
 <translation id="6848388270925200958">Зараз у вас ёсць карткі, якія могуць выкарыстоўвацца толькі на гэтай прыладзе</translation>
 <translation id="6850286078059909152">Колер тэксту</translation>
 <translation id="6851497530878285708">Праграма ўключана</translation>
@@ -4105,10 +4105,10 @@
 <translation id="6885771755599377173">Перадпрагляд інфармацыі пра сістэму</translation>
 <translation id="6886476658664859389">Ключ бяспекі NFC</translation>
 <translation id="6886871292305414135">Адкрыць спасылку ў новай &amp;укладцы</translation>
-<translation id="6890912377247906520">Гэтым пашырэнням не патрэбен доступ да гэтага сайта.</translation>
 <translation id="6892812721183419409">Адкрыць спасылку як <ph name="USER" /></translation>
 <translation id="6895032998810961280">Паведаміць у Google звесткі аб шкодных праграмах, наладах сістэмы і працэсах, выяўленых на вашым камп'ютары падчас ачысткі</translation>
 <translation id="6896758677409633944">Капіраваць</translation>
+<translation id="6897363604023044284">Выбраць сайты для выдалення даных</translation>
 <translation id="6898440773573063262">Цяпер для праграм-кіёскаў на гэтай прыладзе можна наладзіць аўтаматычны запуск.</translation>
 <translation id="6898699227549475383">Арганізацыя (А)</translation>
 <translation id="6900284862687837908">Фонавая праграма: <ph name="BACKGROUND_APP_URL" /></translation>
@@ -5738,7 +5738,7 @@
 <translation id="9169496697824289689">Паказаць спалучэнні клавіш</translation>
 <translation id="916964310188958970">Чаму паказваецца гэта прапанова?</translation>
 <translation id="9169931577761441333">Дадайце праграму "<ph name="APP_NAME" />" на галоўны экран</translation>
-<translation id="9170305483456271385">Праграма Plugin VM выдалена</translation>
+<translation id="9170305483456271385">Plugin VM выдалены</translation>
 <translation id="9170848237812810038">&amp;Адрабіць</translation>
 <translation id="9170884462774788842">Іншая праграма на камп'ютары дадала тэму, якая можа змяніць працу Chrome.</translation>
 <translation id="9173995187295789444">Ідзе пошук прылад Bluetooth...</translation>

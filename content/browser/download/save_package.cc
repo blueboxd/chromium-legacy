@@ -790,7 +790,7 @@ void SavePackage::SaveNextFile(bool process_all_remaining_items) {
     save_item_ptr->Start();
 
     // Find the frame responsible for making the network request below - it will
-    // be used in security checks made later by ResourceDispatcherHostImpl.
+    // be used in security checks made later.
     int requester_frame_tree_node_id =
         save_item_ptr->save_source() == SaveFileCreateInfo::SAVE_FILE_FROM_NET
             ? save_item_ptr->container_frame_tree_node_id()

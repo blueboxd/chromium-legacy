@@ -109,12 +109,11 @@ bool ScrollbarThemeOverlay::HasThumb(const Scrollbar& scrollbar) {
   return true;
 }
 
-IntRect ScrollbarThemeOverlay::BackButtonRect(const Scrollbar&, ScrollbarPart) {
+IntRect ScrollbarThemeOverlay::BackButtonRect(const Scrollbar&) {
   return IntRect();
 }
 
-IntRect ScrollbarThemeOverlay::ForwardButtonRect(const Scrollbar&,
-                                                 ScrollbarPart) {
+IntRect ScrollbarThemeOverlay::ForwardButtonRect(const Scrollbar&) {
   return IntRect();
 }
 
@@ -239,10 +238,6 @@ int ScrollbarThemeOverlay::MinimumThumbLength(const Scrollbar& scrollbar) {
       ->ThemeEngine()
       ->GetSize(WebThemeEngine::kPartScrollbarHorizontalThumb)
       .width;
-}
-
-bool ScrollbarThemeOverlay::AllowsHitTest() const {
-  return true;
 }
 
 }  // namespace blink

@@ -258,8 +258,7 @@ void WidgetInputHandlerManager::GenerateScrollBeginAndSendToMainThread(
   blink::WebGestureEvent scroll_begin =
       ui::ScrollBeginFromScrollUpdate(update_event);
 
-  DispatchNonBlockingEventToMainThread(
-      ui::WebInputEventTraits::Clone(scroll_begin), ui::LatencyInfo());
+  DispatchNonBlockingEventToMainThread(scroll_begin.Clone(), ui::LatencyInfo());
 }
 
 void WidgetInputHandlerManager::SetWhiteListedTouchAction(

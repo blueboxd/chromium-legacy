@@ -429,7 +429,7 @@ bool KeyframeEffect::AnimationsPreserveAxisAlignment(
       continue;
     DCHECK(value->IsTransform());
     const auto& transform_operations =
-        ToCompositorKeyframeTransform(value)->GetTransformOperations();
+        To<CompositorKeyframeTransform>(value)->GetTransformOperations();
     if (!transform_operations.PreservesAxisAlignment())
       return false;
   }

@@ -60,6 +60,9 @@ template("js_library") {
                              "testonly",
                              "visibility",
                            ])
+    inputs = [
+      "$script_path/compiler.py",
+    ]
     output_file = "$target_gen_dir/$target_name.js_library"
     outputs = [
       output_file,

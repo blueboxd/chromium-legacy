@@ -244,6 +244,7 @@
 <translation id="1329584516321524826">たった今更新されました</translation>
 <translation id="1330145147221172764">画面キーボードを有効にする</translation>
 <translation id="1331977651797684645">これは私です。</translation>
+<translation id="1333489022424033687">容量不足のため、<ph name="ORIGIN" /> の一部の機能が動作しない可能性があります。デバイスに保存された他のサイトのデータを削除してください</translation>
 <translation id="133535873114485416">優先する入力</translation>
 <translation id="1335929031622236846">デバイスを登録する</translation>
 <translation id="1338802252451106843"><ph name="ORIGIN" /> がこのアプリケーションを開く許可を求めています。</translation>
@@ -314,7 +315,6 @@
 <translation id="1433811987160647649">アクセスする前に確認する</translation>
 <translation id="1434696352799406980">起動ページ、新しいタブページ、検索エンジン、固定タブをリセットします。また、すべての拡張機能を無効にし、Cookie などの一時データを削除します。ただし、ブックマーク、履歴、保存したパスワードはそのまま残ります。</translation>
 <translation id="1434886155212424586">ホームページは新しいタブのページです</translation>
-<translation id="1435979430299962295">このサイトでアクセスを許可するには、拡張機能をクリックしてください。</translation>
 <translation id="1436390408194692385">有効期限まであと <ph name="TICKET_TIME_LEFT" /></translation>
 <translation id="1436671784520050284">設定を続行</translation>
 <translation id="1436784010935106834">削除しました</translation>
@@ -1036,7 +1036,6 @@
 <translation id="2445484935443597917">新しいプロフィールを作成</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> が本人確認を求めています</translation>
 <translation id="2448312741937722512">種類</translation>
-<translation id="2448734521821581858">Cookie は、アクセスしたウェブサイトによって作成されるファイルです。Cookie には 2 種類あります。1 つ目の「ファーストパーティの Cookie」は、現在アクセスしているサイト、つまりアドレスバーに表示されているサイトによって作成されます。2 つ目の「サードパーティの Cookie」は、他のサイト、つまりアクセス中のウェブサイトに表示されているコンテンツの一部（広告、画像など）を所有しているサイトによって作成されます。</translation>
 <translation id="2450223707519584812">Google API キーがないため、ユーザーを追加できません。詳しくは、<ph name="DETAILS_URL" /> をご覧ください。</translation>
 <translation id="2450849356604136918">アクティブ ビューなし</translation>
 <translation id="2451298179137331965">2 倍</translation>
@@ -4081,6 +4080,7 @@
 <translation id="6843423766595476978">OK Google の設定が完了しました</translation>
 <translation id="6845038076637626672">最大化して開く</translation>
 <translation id="6845325883481699275">Chrome のセキュリティ改善に協力する</translation>
+<translation id="6847125920277401289">続行するには容量を空けてください</translation>
 <translation id="6848388270925200958">現在、このデバイスでのみ使用できるカードがいくつかあります</translation>
 <translation id="6850286078059909152">テキストの色</translation>
 <translation id="6851497530878285708">アプリは有効です</translation>
@@ -4105,10 +4105,10 @@
 <translation id="6885771755599377173">システム情報のプレビュー</translation>
 <translation id="6886476658664859389">NFC セキュリティ キー</translation>
 <translation id="6886871292305414135">新しいタブで開く(&amp;T)</translation>
-<translation id="6890912377247906520">これらの拡張機能は、このサイトへのアクセスを必要としていません。</translation>
 <translation id="6892812721183419409"><ph name="USER" /> としてリンクを開く</translation>
 <translation id="6895032998810961280">このクリーンアップ中にパソコン上で見つかった有害なソフトウェア、システム設定、プロセスについて詳細なレポートを Google に送信する</translation>
 <translation id="6896758677409633944">コピー</translation>
+<translation id="6897363604023044284">データを削除するサイトを選択</translation>
 <translation id="6898440773573063262">このデバイスでキオスク アプリケーションが自動起動するように設定できるようになりました。</translation>
 <translation id="6898699227549475383">組織（O）</translation>
 <translation id="6900284862687837908">バックグラウンド アプリ: <ph name="BACKGROUND_APP_URL" /></translation>

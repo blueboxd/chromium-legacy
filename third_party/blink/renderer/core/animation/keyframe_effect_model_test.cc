@@ -706,7 +706,7 @@ TEST_F(AnimationKeyframeEffectModel, CompositorSnapshotUpdateCustomProperty) {
   // Test value holds the correct number type
   EXPECT_TRUE(value);
   EXPECT_TRUE(value->IsDouble());
-  EXPECT_EQ(ToCompositorKeyframeDouble(value)->ToDouble(), 100);
+  EXPECT_EQ(To<CompositorKeyframeDouble>(value)->ToDouble(), 100);
 }
 
 TEST_F(AnimationKeyframeEffectModel, CompositorUpdateColorProperty) {
@@ -751,22 +751,22 @@ TEST_F(AnimationKeyframeEffectModel, CompositorUpdateColorProperty) {
   // Test rgb color input
   EXPECT_TRUE(value_rgb);
   EXPECT_TRUE(value_rgb->IsColor());
-  EXPECT_EQ(ToCompositorKeyframeColor(value_rgb)->ToColor(), SK_ColorGREEN);
+  EXPECT_EQ(To<CompositorKeyframeColor>(value_rgb)->ToColor(), SK_ColorGREEN);
 
   // Test hsl color input
   EXPECT_TRUE(value_hsl);
   EXPECT_TRUE(value_hsl->IsColor());
-  EXPECT_EQ(ToCompositorKeyframeColor(value_hsl)->ToColor(), SK_ColorGREEN);
+  EXPECT_EQ(To<CompositorKeyframeColor>(value_hsl)->ToColor(), SK_ColorGREEN);
 
   // Test named color input
   EXPECT_TRUE(value_name);
   EXPECT_TRUE(value_name->IsColor());
-  EXPECT_EQ(ToCompositorKeyframeColor(value_name)->ToColor(), SK_ColorGREEN);
+  EXPECT_EQ(To<CompositorKeyframeColor>(value_name)->ToColor(), SK_ColorGREEN);
 
   // Test hex color input
   EXPECT_TRUE(value_hex);
   EXPECT_TRUE(value_hex->IsColor());
-  EXPECT_EQ(ToCompositorKeyframeColor(value_hex)->ToColor(), SK_ColorGREEN);
+  EXPECT_EQ(To<CompositorKeyframeColor>(value_hex)->ToColor(), SK_ColorGREEN);
 
   // currentcolor is a CSSIdentifierValue not a color
   EXPECT_FALSE(value_curr);
@@ -779,11 +779,13 @@ TEST_F(AnimationKeyframeEffectModel, CompositorUpdateColorProperty) {
 
   EXPECT_TRUE(value_mixed0);
   EXPECT_TRUE(value_mixed0->IsColor());
-  EXPECT_EQ(ToCompositorKeyframeColor(value_mixed0)->ToColor(), SK_ColorBLACK);
+  EXPECT_EQ(To<CompositorKeyframeColor>(value_mixed0)->ToColor(),
+            SK_ColorBLACK);
 
   EXPECT_TRUE(value_mixed1);
   EXPECT_TRUE(value_mixed1->IsColor());
-  EXPECT_EQ(ToCompositorKeyframeColor(value_mixed1)->ToColor(), SK_ColorGREEN);
+  EXPECT_EQ(To<CompositorKeyframeColor>(value_mixed1)->ToColor(),
+            SK_ColorGREEN);
 }
 
 }  // namespace blink

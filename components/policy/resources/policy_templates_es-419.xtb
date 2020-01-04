@@ -1045,13 +1045,13 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           El valor debe ser un conjunto de diccionarios en formato JSON con strings. Cada diccionario debe tener el formato <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, en donde <ph name="URL_PATTERN_PLACEHOLDER" /> es un patrón de configuración de contenido. <ph name="FILTER_PLACEHOLDER" /> restringe los certificados de cliente que el navegador seleccionará automáticamente. Más allá del filtro, solo se seleccionarán los certificados que cumplan con la solicitud de certificado del servidor. Por ejemplo, si <ph name="FILTER_PLACEHOLDER" /> tiene el formato <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />. Además, solo se seleccionan los certificados de cliente que emitió un cliente con el nombre común <ph name="ISSUER_CN_PLACEHOLDER" />. Si <ph name="FILTER_PLACEHOLDER" /> contiene las secciones <ph name="ISSUER_STRING_VALUE" /> y <ph name="SUBJECT_STRING_VALUE" />, un certificado de cliente deberá cumplir con ambas condiciones para ser elegido. Si <ph name="FILTER_PLACEHOLDER" /> especifica una organización ("O"), un certificado deberá contar con, al menos, una organización que coincida con el valor indicado para ser elegido. Si <ph name="FILTER_PLACEHOLDER" /> especifica una unidad organizacional ("OU"), un certificado debe contar con, al menos, una unidad organizacional que coincida con el valor indicado para ser elegido. Si <ph name="FILTER_PLACEHOLDER" /> es el diccionario vacío <ph name="EMPTY_DICTIONARY" />, no se restringirá la selección de certificados de cliente.
 
           Si no se configura esta política, no se implementará la selección automática para ningún sitio.</translation>
-<translation id="2528659559494311776">Esta política controla una función de seguridad en TLS 1.3 que protege las conexiones contra ataques para cambiar a una versión anterior. La función es retrocompatible y no afecta las conexiones a proxies o servidores que cumplen con el protocolo TLS 1.2. Sin embargo, las versiones anteriores de algunos proxies de intercepción TLS tienen una falla en la implementación que genera la incompatibilidad.
+<translation id="2528659559494311776">Esta política controla una función de seguridad en TLS 1.3 que protege las conexiones contra ataques de cambio a una versión anterior. La función es retrocompatible y no afecta las conexiones a proxies o servidores que emplean el protocolo TLS 1.2. Sin embargo, las versiones anteriores de algunos proxies de intercepción de TLS tienen una falla de implementación que genera la incompatibilidad.
 
-      Si se establece esta política como verdadera o no se establece, <ph name="PRODUCT_NAME" /> habilitará estas protecciones de seguridad para todas las conexiones.
+      Si esta política se configura como verdadera o bien no se configura, <ph name="PRODUCT_NAME" /> habilitará estas protecciones para todas las conexiones.
 
-      Si se configura como falsa, <ph name="PRODUCT_NAME" /> inhabilitará estas protecciones de seguridad para las conexiones autenticadas con certificados de CA instalados a nivel local. Estas protecciones están siempre habilitadas para las conexiones autenticadas con los certificados de CA con confianza pública.
+      Si se configura como falsa, <ph name="PRODUCT_NAME" /> inhabilitará estas protecciones para las conexiones autenticadas con certificados de CA instalados a nivel local. Estas protecciones están siempre habilitadas para las conexiones autenticadas con certificados de CA con confianza pública.
 
-      Se cambió el valor predeterminado para esta política en <ph name="PRODUCT_NAME" /> 81 de falso a verdadero. Se espera que los proxies afectados generen un error en las conexiones (código de error: ERR_TLS13_DOWNGRADE_DETECTED). Es posible que los administradores que necesiten más tiempo para actualizar los proxies afectados utilicen esta política para inhabilitar de forma temporal esta función de seguridad. Después de la versión 85, se quitará esta política.
+      Se cambió el valor predeterminado para esta política en <ph name="PRODUCT_NAME" /> 81 de falso a verdadero. Se espera que los proxies afectados generen un error en las conexiones (código de error: ERR_TLS13_DOWNGRADE_DETECTED). Los administradores que necesiten más tiempo para actualizar los proxies afectados pueden utilizar esta política para inhabilitar de forma temporal esta función de seguridad. Después de la versión 85, se quitará esta política.
       </translation>
 <translation id="2529659024053332711">Permite especificar el comportamiento en el inicio.
 
@@ -1592,13 +1592,13 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="3432863169147125747">Controla la configuración de impresión.</translation>
 <translation id="3434053014926283175">Cambia el botón principal del mouse al botón derecho en la pantalla de acceso.
 
-          Si se establece esta política como habilitada, el botón derecho del mouse siempre será la tecla principal en la pantalla de acceso.
+          Si esta política se configura como habilitada, el botón derecho del mouse siempre será el principal en la pantalla de acceso.
 
-          Si se configura como inhabilitada, el botón izquierdo del mouse siempre será la tecla principal en la pantalla de acceso.
+          Si se configura como inhabilitada, el botón izquierdo del mouse siempre será el principal en la pantalla de acceso.
 
-          Si la estableces, los usuarios no podrán cambiarla ni anularla.
+          Si configuras esta política, los usuarios no podrán cambiarla ni anularla.
 
-          Si no la configuras, el botón izquierdo del mouse inicialmente será la tecla principal en la pantalla de acceso, pero el usuario podrá cambiarla en cualquier momento.</translation>
+          Si no la configuras, el botón izquierdo del mouse será el principal en la pantalla de acceso inicialmente, pero el usuario podrá cambiarlo en cualquier momento.</translation>
 <translation id="3434932177006334880">Esta configuración se denominaba EnableWebBasedSignin antes de Chrome 42. A partir de Chrome 43, dejará de ser compatible.
 
       Esta configuración es útil para los clientes empresariales que usan soluciones SSO que todavía no son compatibles con el nuevo flujo de acceso integrado.

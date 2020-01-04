@@ -541,7 +541,7 @@ void ExtensionActionRunner::DidFinishNavigation(
     int tab_id = ExtensionTabUtil::GetTabId(web_contents());
     declarative_net_request::ActionTracker& action_tracker =
         rules_monitor_service->action_tracker();
-    action_tracker.ResetActionCountForTab(tab_id,
+    action_tracker.ResetTrackedInfoForTab(tab_id,
                                           navigation_handle->GetNavigationId());
   }
 }

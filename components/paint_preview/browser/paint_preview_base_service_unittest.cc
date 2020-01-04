@@ -27,10 +27,33 @@ namespace {
 
 const char kTestFeatureDir[] = "test_feature";
 
+class RejectionPaintPreviewPolicy : public PaintPreviewPolicy {
+ public:
+  RejectionPaintPreviewPolicy() = default;
+  ~RejectionPaintPreviewPolicy() override = default;
+
+  RejectionPaintPreviewPolicy(const RejectionPaintPreviewPolicy&) = delete;
+  RejectionPaintPreviewPolicy& operator=(const RejectionPaintPreviewPolicy&) =
+      delete;
+
+  bool SupportedForContents(content::WebContents* web_contents) override {
+    return false;
+  }
+};
+
+// Builds a PaintPreviewBaseService associated with |key| which will never
+// permit paint previews.
+std::unique_ptr<KeyedService> BuildServiceWithRejectionPolicy(
+    SimpleFactoryKey* key) {
+  return std::make_unique<PaintPreviewBaseService>(
+      key->GetPath(), kTestFeatureDir,
+      std::make_unique<RejectionPaintPreviewPolicy>(), key->IsOffTheRecord());
+}
+
 // Builds a PaintPreviewBaseService associated with |key|.
 std::unique_ptr<KeyedService> BuildService(SimpleFactoryKey* key) {
   return std::make_unique<PaintPreviewBaseService>(
-      key->GetPath(), kTestFeatureDir, key->IsOffTheRecord());
+      key->GetPath(), kTestFeatureDir, nullptr, key->IsOffTheRecord());
 }
 
 // Returns the GUID corresponding to |rfh|.
@@ -133,6 +156,12 @@ class PaintPreviewBaseServiceTest : public content::RenderViewHostTestHarness {
         browser_context()->GetPath(), browser_context()->IsOffTheRecord());
     PaintPreviewBaseServiceFactory::GetInstance()->SetTestingFactory(
         key_.get(), base::BindRepeating(&BuildService));
+
+    rejection_policy_key_ = std::make_unique<SimpleFactoryKey>(
+        browser_context()->GetPath(), browser_context()->IsOffTheRecord());
+    PaintPreviewBaseServiceFactory::GetInstance()->SetTestingFactory(
+        rejection_policy_key_.get(),
+        base::BindRepeating(&BuildServiceWithRejectionPolicy));
   }
 
   void OverrideInterface(MockPaintPreviewRecorder* service) {
@@ -148,8 +177,14 @@ class PaintPreviewBaseServiceTest : public content::RenderViewHostTestHarness {
     return PaintPreviewBaseServiceFactory::GetForKey(key_.get());
   }
 
+  PaintPreviewBaseService* CreateServiceWithRejectionPolicy() {
+    return PaintPreviewBaseServiceFactory::GetForKey(
+        rejection_policy_key_.get());
+  }
+
  private:
   std::unique_ptr<SimpleFactoryKey> key_ = nullptr;
+  std::unique_ptr<SimpleFactoryKey> rejection_policy_key_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(PaintPreviewBaseServiceTest);
 };
@@ -231,6 +266,40 @@ TEST_F(PaintPreviewBaseServiceTest, CaptureFailed) {
           },
           loop.QuitClosure(),
           PaintPreviewBaseService::CaptureStatus::kCaptureFailed));
+  loop.Run();
+}
+
+TEST_F(PaintPreviewBaseServiceTest, CaptureDisallowed) {
+  MockPaintPreviewRecorder recorder;
+  auto params = mojom::PaintPreviewCaptureParams::New();
+  params->clip_rect = gfx::Rect(0, 0, 0, 0);
+  params->is_main_frame = true;
+  recorder.SetExpectedParams(std::move(params));
+  auto response = mojom::PaintPreviewCaptureResponse::New();
+  response->id = main_rfh()->GetRoutingID();
+  recorder.SetResponse(mojom::PaintPreviewStatus::kFailed, std::move(response));
+  OverrideInterface(&recorder);
+
+  auto* service = CreateServiceWithRejectionPolicy();
+  EXPECT_FALSE(service->IsOffTheRecord());
+  base::FilePath path;
+  ASSERT_TRUE(service->GetFileManager()->CreateOrGetDirectoryFor(
+      web_contents()->GetLastCommittedURL(), &path));
+
+  base::RunLoop loop;
+  service->CapturePaintPreview(
+      web_contents(), path, gfx::Rect(0, 0, 0, 0),
+      base::BindOnce(
+          [](base::OnceClosure quit_closure,
+             PaintPreviewBaseService::CaptureStatus expected_status,
+             PaintPreviewBaseService::CaptureStatus status,
+             std::unique_ptr<PaintPreviewProto> proto) {
+            EXPECT_EQ(status, expected_status);
+            EXPECT_EQ(proto, nullptr);
+            std::move(quit_closure).Run();
+          },
+          loop.QuitClosure(),
+          PaintPreviewBaseService::CaptureStatus::kContentUnsupported));
   loop.Run();
 }
 

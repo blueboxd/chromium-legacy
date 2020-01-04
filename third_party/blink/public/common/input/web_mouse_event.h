@@ -20,10 +20,10 @@ class BLINK_COMMON_EXPORT WebMouseEvent : public WebInputEvent,
  public:
   static constexpr PointerId kMousePointerId = std::numeric_limits<int>::max();
 
-  int click_count;
+  int click_count = {};
 
   // Only used for contextmenu events.
-  WebMenuSourceType menu_source_type;
+  WebMenuSourceType menu_source_type = kMenuSourceNone;
 
   WebMouseEvent(Type type_param,
                 gfx::PointF position,
@@ -34,10 +34,7 @@ class BLINK_COMMON_EXPORT WebMouseEvent : public WebInputEvent,
                 base::TimeTicks time_stamp_param,
                 WebMenuSourceType menu_source_type_param = kMenuSourceNone,
                 PointerId id_param = kMousePointerId)
-      : WebInputEvent(sizeof(WebMouseEvent),
-                      type_param,
-                      modifiers_param,
-                      time_stamp_param),
+      : WebInputEvent(type_param, modifiers_param, time_stamp_param),
         WebPointerProperties(id_param,
                              PointerType::kMouse,
                              button_param,
@@ -53,13 +50,10 @@ class BLINK_COMMON_EXPORT WebMouseEvent : public WebInputEvent,
                 int modifiers_param,
                 base::TimeTicks time_stamp_param,
                 PointerId id_param = kMousePointerId)
-      : WebMouseEvent(sizeof(WebMouseEvent),
-                      type_param,
-                      modifiers_param,
-                      time_stamp_param,
-                      id_param) {}
+      : WebInputEvent(type_param, modifiers_param, time_stamp_param),
+        WebPointerProperties(id_param) {}
 
-  WebMouseEvent() : WebMouseEvent(sizeof(WebMouseEvent), kMousePointerId) {}
+  WebMouseEvent() : WebMouseEvent(kMousePointerId) {}
 
   bool FromTouch() const {
     return (GetModifiers() & kIsCompatibilityEventForTouch) != 0;
@@ -73,6 +67,8 @@ class BLINK_COMMON_EXPORT WebMouseEvent : public WebInputEvent,
                 base::TimeTicks time_stamp_param,
                 PointerId id_param = kMousePointerId);
 
+  std::unique_ptr<WebInputEvent> Clone() const override;
+
   gfx::PointF PositionInRootFrame() const;
 
   // Sets any scaled values to be their computed values and sets |frame_scale_|
@@ -80,16 +76,7 @@ class BLINK_COMMON_EXPORT WebMouseEvent : public WebInputEvent,
   WebMouseEvent FlattenTransform() const;
 
  protected:
-  WebMouseEvent(unsigned size_param, PointerId id_param)
-      : WebInputEvent(size_param), WebPointerProperties(id_param) {}
-
-  WebMouseEvent(unsigned size_param,
-                Type type,
-                int modifiers,
-                base::TimeTicks time_stamp,
-                PointerId id_param)
-      : WebInputEvent(size_param, type, modifiers, time_stamp),
-        WebPointerProperties(id_param) {}
+  WebMouseEvent(PointerId id_param) : WebPointerProperties(id_param) {}
 
   void FlattenTransformSelf();
 

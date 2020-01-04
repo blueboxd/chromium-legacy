@@ -373,10 +373,6 @@ class CONTENT_EXPORT NavigationHandle {
 
   // Returns whether this navigation is currently deferred.
   virtual bool IsDeferredForTesting() = 0;
-
-  // Whether this navigation was triggered by a x-origin redirect following a
-  // prior (most likely <a download>) download attempt.
-  virtual bool FromDownloadCrossOriginRedirect() = 0;
 };
 
 }  // namespace content

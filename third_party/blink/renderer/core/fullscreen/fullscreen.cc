@@ -637,7 +637,8 @@ ScriptPromise Fullscreen::RequestFullscreen(Element& pending,
     From(document).pending_requests_.push_back(
         MakeGarbageCollected<PendingRequest>(&pending, request_type, resolver));
     LocalFrame& frame = *document.GetFrame();
-    frame.GetChromeClient().EnterFullscreen(frame, options);
+    frame.GetChromeClient().EnterFullscreen(frame, options,
+                                            for_cross_process_descendant);
   } else {
     // Note: Although we are past the "in parallel" point, it's OK to continue
     // synchronously because when |error| is true, |ContinueRequestFullscreen()|

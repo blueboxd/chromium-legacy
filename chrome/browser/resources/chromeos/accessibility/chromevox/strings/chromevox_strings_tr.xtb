@@ -418,6 +418,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="3914732343065571127">ChromeVox Komut Referansı</translation>
 <translation id="3930383913623796990">İlkbahar Yeşili</translation>
 <translation id="3930498801443296724">Alıntı</translation>
+<translation id="3935615366277838204">Büyük harf <ph name="LETTER" /></translation>
 <translation id="3936394396199829062">Lila</translation>
 <translation id="3941269780691800708">Fare işaretçisinin altındaki metni oku.</translation>
 <translation id="394953087167197343">Yazım hatasını belirtin:</translation>
@@ -853,6 +854,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="699159175332639490">Arama + O + W</translation>
 <translation id="6994042831499278539">Terimler sözlüğü referansı</translation>
 <translation id="6996566555547746822">Sonraki birleşik kutu</translation>
+<translation id="6997224546856374593">Büyük harfleri okurken:</translation>
 <translation id="700202842116345659">Kaynakça girişi</translation>
 <translation id="7005146664810010831">URL bulunamadı.</translation>
 <translation id="7010712454773919705">ChromeVox değiştirici tuş</translation>
@@ -933,6 +935,7 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="744163271241493234">pwded</translation>
 <translation id="7491962110804786152">tab</translation>
 <translation id="7492049978501397201">İletişim kutusuna girildi</translation>
+<translation id="7505149250476994901">Harften önce "büyük harf" olduğunu söyleyin</translation>
 <translation id="7518543783849163354">ChromeVox'un konuşmasını geçici olarak durdurmak için Control tuşuna basın.</translation>
 <translation id="7521682724501952239">ChromeVox'u dokunmatik ekranla kullanabilirsiniz.</translation>
 <translation id="7532613204005497612">Haziran</translation>

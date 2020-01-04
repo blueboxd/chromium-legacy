@@ -844,42 +844,49 @@ const net::BackoffEntry::Policy kProbeBackoffPolicy = {
     false,
 };
 
-// DnsOverHttpsProbeRunner implements a prober that continually sends test
-// queries (with backoff) to DoH servers to determine availability.
-class DnsOverHttpsProbeRunner {
+// Probe runner that continually sends test queries (with backoff) to DoH
+// servers to determine availability.
+//
+// Expected to be contained in request classes owned externally to HostResolver,
+// so no assumptions are made regarding cancellation compared to the DnsSession.
+// Instead, uses WeakPtrs to gracefully clean itself up and stop probing after
+// session destruction.
+class DnsOverHttpsProbeRunner : public DnsProbeRunner {
  public:
-  DnsOverHttpsProbeRunner(DnsSession* session) : session_(session) {
+  DnsOverHttpsProbeRunner(base::WeakPtr<DnsSession> session,
+                          URLRequestContext* context)
+      : session_(std::move(session)), context_(context) {
+    DCHECK(session_);
+    DCHECK(context_);
+
     DNSDomainFromDot(kDoHProbeHostname, &formatted_probe_hostname_);
 
     for (size_t i = 0; i < session_->config().dns_over_https_servers.size();
          i++) {
-      probe_stats_.push_back(nullptr);
+      probe_stats_list_.push_back(nullptr);
     }
   }
 
-  base::TimeDelta GetDelayUntilNextProbeForTest(unsigned doh_server_index) {
-    if (doh_server_index >= probe_stats_.size() ||
-        !probe_stats_[doh_server_index])
+  ~DnsOverHttpsProbeRunner() override = default;
+
+  void Start() override {
+    DCHECK(!started_);
+    StartProbes(false /* network_change */);
+  }
+
+  void RestartForNetworkChange() override {
+    StartProbes(true /* network_change */);
+  }
+
+  base::TimeDelta GetDelayUntilNextProbeForTest(
+      size_t doh_server_index) const override {
+    if (doh_server_index >= probe_stats_list_.size() ||
+        !probe_stats_list_[doh_server_index])
       return base::TimeDelta();
 
-    return probe_stats_[doh_server_index]->backoff_entry->GetTimeUntilRelease();
+    return probe_stats_list_[doh_server_index]
+        ->backoff_entry->GetTimeUntilRelease();
   }
-
-  void StartProbe(int doh_server_index,
-                  URLRequestContext* context,
-                  bool network_change) {
-    DCHECK(context);
-
-    // Clear the existing probe stats.
-    probe_stats_[doh_server_index] = std::make_unique<ProbeStats>();
-    session_->SetProbeSuccess(doh_server_index, false /* success */);
-    ContinueProbe(doh_server_index, context,
-                  probe_stats_[doh_server_index]->weak_factory.GetWeakPtr(),
-                  network_change,
-                  base::TimeTicks::Now() /* sequence_start_time */);
-  }
-
-  void CancelProbes() { probe_stats_.clear(); }
 
  private:
   struct ProbeStats {
@@ -892,11 +899,32 @@ class DnsOverHttpsProbeRunner {
     base::WeakPtrFactory<ProbeStats> weak_factory{this};
   };
 
+  void StartProbes(bool network_change) {
+    DCHECK(session_);
+
+    started_ = true;
+
+    for (size_t i = 0; i < session_->config().dns_over_https_servers.size();
+         i++) {
+      // Clear the existing probe stats.
+      probe_stats_list_[i] = std::make_unique<ProbeStats>();
+      session_->SetProbeSuccess(i, false /* success */);
+      ContinueProbe(i, probe_stats_list_[i]->weak_factory.GetWeakPtr(),
+                    network_change,
+                    base::TimeTicks::Now() /* sequence_start_time */);
+    }
+  }
+
   void ContinueProbe(int doh_server_index,
-                     URLRequestContext* context,
                      base::WeakPtr<ProbeStats> probe_stats,
                      bool network_change,
                      base::TimeTicks sequence_start_time) {
+    // If the DnsSession has been destroyed, no reason to continue probing.
+    if (!session_) {
+      probe_stats_list_.clear();
+      return;
+    }
+
     // If the ProbeStats for which this probe was scheduled has been deleted,
     // don't continue to send probes.
     if (!probe_stats)
@@ -908,24 +936,23 @@ class DnsOverHttpsProbeRunner {
     // than on probe completion.
     DCHECK(probe_stats);
     DCHECK(probe_stats->backoff_entry);
-    DCHECK(context);
     probe_stats->backoff_entry->InformOfRequest(false /* success */);
     base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&DnsOverHttpsProbeRunner::ContinueProbe,
-                       base::Unretained(this), doh_server_index, context,
+                       weak_ptr_factory_.GetWeakPtr(), doh_server_index,
                        probe_stats, network_change, sequence_start_time),
         probe_stats->backoff_entry->GetTimeUntilRelease());
 
     unsigned attempt_number = probe_stats->probe_attempts.size();
-    ConstructDnsHTTPAttempt(session_, doh_server_index,
+    ConstructDnsHTTPAttempt(session_.get(), doh_server_index,
                             formatted_probe_hostname_, dns_protocol::kTypeA,
                             nullptr /* opt_rdata */,
-                            &probe_stats->probe_attempts, context,
+                            &probe_stats->probe_attempts, context_,
                             RequestPriority::DEFAULT_PRIORITY);
 
     probe_stats->probe_attempts.back()->Start(base::BindOnce(
-        &DnsOverHttpsProbeRunner::ProbeComplete, base::Unretained(this),
+        &DnsOverHttpsProbeRunner::ProbeComplete, weak_ptr_factory_.GetWeakPtr(),
         attempt_number, doh_server_index, std::move(probe_stats),
         network_change, sequence_start_time,
         base::TimeTicks::Now() /* query_start_time */));
@@ -939,7 +966,7 @@ class DnsOverHttpsProbeRunner {
                      base::TimeTicks query_start_time,
                      int rv) {
     bool success = false;
-    if (rv == OK && probe_stats) {
+    if (rv == OK && probe_stats && session_) {
       // Check that the response parses properly before considering it a
       // success.
       DCHECK_LT(attempt_number, probe_stats->probe_attempts.size());
@@ -959,7 +986,7 @@ class DnsOverHttpsProbeRunner {
         session_->RecordRTT(doh_server_index, true /* is_doh_server */,
                             base::TimeTicks::Now() - query_start_time, rv);
         session_->SetProbeSuccess(doh_server_index, true /* success */);
-        probe_stats_[doh_server_index] = nullptr;
+        probe_stats_list_[doh_server_index] = nullptr;
         success = true;
       }
     }
@@ -971,9 +998,16 @@ class DnsOverHttpsProbeRunner {
         base::TimeTicks::Now() - sequence_start_time);
   }
 
-  DnsSession* session_;
+  bool started_ = false;
+  base::WeakPtr<DnsSession> session_;
+  URLRequestContext* const context_;
   std::string formatted_probe_hostname_;
-  std::vector<std::unique_ptr<ProbeStats>> probe_stats_;
+
+  // List of ProbeStats, one for each DoH server, indexed by the DoH server
+  // config index.
+  std::vector<std::unique_ptr<ProbeStats>> probe_stats_list_;
+
+  base::WeakPtrFactory<DnsOverHttpsProbeRunner> weak_ptr_factory_{this};
 };
 
 // ----------------------------------------------------------------------------
@@ -1461,7 +1495,6 @@ class DnsTransactionFactoryImpl : public DnsTransactionFactory {
  public:
   explicit DnsTransactionFactoryImpl(DnsSession* session) {
     session_ = session;
-    probe_runner_ = std::make_unique<DnsOverHttpsProbeRunner>(session_.get());
   }
 
   std::unique_ptr<DnsTransaction> CreateTransaction(
@@ -1477,6 +1510,12 @@ class DnsTransactionFactoryImpl : public DnsTransactionFactory {
         opt_rdata_.get(), secure, secure_dns_mode, url_request_context);
   }
 
+  std::unique_ptr<DnsProbeRunner> CreateDohProbeRunner(
+      URLRequestContext* url_request_context) override {
+    return std::make_unique<DnsOverHttpsProbeRunner>(session_->GetWeakPtr(),
+                                                     url_request_context);
+  }
+
   void AddEDNSOption(const OptRecordRdata::Opt& opt) override {
     if (opt_rdata_ == nullptr)
       opt_rdata_ = std::make_unique<OptRecordRdata>();
@@ -1484,33 +1523,12 @@ class DnsTransactionFactoryImpl : public DnsTransactionFactory {
     opt_rdata_->AddOpt(opt);
   }
 
-  base::TimeDelta GetDelayUntilNextProbeForTest(
-      unsigned doh_server_index) override {
-    return probe_runner_->GetDelayUntilNextProbeForTest(doh_server_index);
-  }
-
-  void StartDohProbes(URLRequestContext* context,
-                      bool network_change) override {
-    if (!context) {
-      // Unable to run DoH probes without a URLRequestContext.
-      return;
-    }
-
-    for (size_t i = 0; i < session_->config().dns_over_https_servers.size();
-         i++) {
-      probe_runner_->StartProbe(i, context, network_change);
-    }
-  }
-
-  void CancelDohProbes() override { probe_runner_->CancelProbes(); }
-
   DnsConfig::SecureDnsMode GetSecureDnsModeForTest() override {
     return session_->config().secure_dns_mode;
   }
 
  private:
   scoped_refptr<DnsSession> session_;
-  std::unique_ptr<DnsOverHttpsProbeRunner> probe_runner_;
   std::unique_ptr<OptRecordRdata> opt_rdata_;
 };
 

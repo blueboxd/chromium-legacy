@@ -98,12 +98,11 @@ void CopyLockResult(base::RunLoop* loop,
 }
 
 void CertCallbackSuccess(
-    const chromeos::attestation::AttestationFlow::CertificateCallback&
-        callback) {
+    chromeos::attestation::AttestationFlow::CertificateCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(callback, chromeos::attestation::ATTESTATION_SUCCESS,
-                     "fake_cert"));
+      base::BindOnce(std::move(callback),
+                     chromeos::attestation::ATTESTATION_SUCCESS, "fake_cert"));
 }
 
 class TestingDeviceCloudPolicyManagerChromeOS

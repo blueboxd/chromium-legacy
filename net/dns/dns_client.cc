@@ -158,6 +158,7 @@ class DnsClientImpl : public DnsClient,
   void ActivateDohProbes(URLRequestContext* url_request_context) override {
     DCHECK(url_request_context);
     DCHECK(!url_request_context_for_probes_);
+    DCHECK(!doh_probe_runner_);
 
     url_request_context_for_probes_ = url_request_context;
     StartDohProbes(false /* network_change */);
@@ -166,9 +167,7 @@ class DnsClientImpl : public DnsClient,
   void CancelDohProbes() override {
     DCHECK(url_request_context_for_probes_);
 
-    if (factory_)
-      factory_->CancelDohProbes();
-
+    doh_probe_runner_.reset();
     url_request_context_for_probes_ = nullptr;
   }
 
@@ -244,6 +243,7 @@ class DnsClientImpl : public DnsClient,
   void UpdateSession(base::Optional<DnsConfig> new_effective_config) {
     factory_.reset();
     session_ = nullptr;
+    doh_probe_runner_.reset();
 
     if (new_effective_config) {
       DCHECK(new_effective_config.value().IsValid());
@@ -278,7 +278,15 @@ class DnsClientImpl : public DnsClient,
     if (!url_request_context_for_probes_ || !factory_)
       return;
 
-    factory_->StartDohProbes(url_request_context_for_probes_, network_change);
+    if (!doh_probe_runner_) {
+      doh_probe_runner_ =
+          factory_->CreateDohProbeRunner(url_request_context_for_probes_);
+    }
+
+    if (network_change)
+      doh_probe_runner_->RestartForNetworkChange();
+    else
+      doh_probe_runner_->Start();
   }
 
   bool insecure_enabled_ = false;
@@ -292,6 +300,7 @@ class DnsClientImpl : public DnsClient,
   std::unique_ptr<AddressSorter> address_sorter_ =
       AddressSorter::CreateAddressSorter();
   URLRequestContext* url_request_context_for_probes_ = nullptr;
+  std::unique_ptr<DnsProbeRunner> doh_probe_runner_;
 
   NetLog* net_log_;
 

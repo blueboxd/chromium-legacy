@@ -59,7 +59,6 @@
 
 #if defined(OS_MACOSX)
 #include "third_party/blink/public/platform/mac/web_scrollbar_theme.h"
-#include "third_party/blink/public/platform/web_scrollbar_buttons_placement.h"
 #endif
 
 #undef IPC_MESSAGE_EXPORT
@@ -80,10 +79,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::ThreeDAPIType,
 IPC_ENUM_TRAITS_MAX_VALUE(ui::TextInputType, ui::TEXT_INPUT_TYPE_MAX)
 
 #if defined(OS_MACOSX)
-IPC_ENUM_TRAITS_MAX_VALUE(
-    blink::WebScrollbarButtonsPlacement,
-    blink::WebScrollbarButtonsPlacement::kWebScrollbarButtonsPlacementLast)
-
 IPC_ENUM_TRAITS_MAX_VALUE(blink::ScrollerStyle, blink::kScrollerStyleOverlay)
 #endif
 

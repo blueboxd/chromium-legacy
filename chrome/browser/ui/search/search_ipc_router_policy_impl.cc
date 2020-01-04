@@ -137,6 +137,11 @@ bool SearchIPCRouterPolicyImpl::ShouldProcessAutocompleteResultChanged(
   return is_active_tab && !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
 
+bool SearchIPCRouterPolicyImpl::ShouldProcessAutocompleteMatchImageAvailable(
+    bool is_active_tab) {
+  return is_active_tab && !is_incognito_ && search::IsInstantNTP(web_contents_);
+}
+
 bool SearchIPCRouterPolicyImpl::ShouldProcessQueryAutocomplete(
     bool is_active_tab) {
   return is_active_tab && !is_incognito_ && search::IsInstantNTP(web_contents_);

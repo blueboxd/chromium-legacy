@@ -80,6 +80,7 @@
 <translation id="1847880352285315359">Gestoor</translation>
 <translation id="1864756863218646478">Die lêer kon nie gevind word nie.</translation>
 <translation id="1921986354447415460">Turkse F-sleutelbord</translation>
+<translation id="1924372192547904021">Het <ph name="DRIVE_NAME" /> geformateer</translation>
 <translation id="1931134289871235022">Slowaaks</translation>
 <translation id="1933345018156373194">Kon nie skuif nie; 'n onverwagse fout: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">Fins</translation>
@@ -163,6 +164,7 @@
 <translation id="2942290791863759244">Duitse NEO 2-sleutelbord</translation>
 <translation id="2943400156390503548">Skyfies</translation>
 <translation id="2943503720238418293">Gebruik 'n korter naam</translation>
+<translation id="2949781154072577687">Formateer tans <ph name="DRIVE_NAME" /> …</translation>
 <translation id="2951236788251446349">Jellievis</translation>
 <translation id="2963783323012015985">Turkse sleutelbord</translation>
 <translation id="2966459079597787514">Sweedse sleutelbord</translation>
@@ -568,6 +570,7 @@
 <translation id="7649070708921625228">Hulp</translation>
 <translation id="7654209398114106148">Skuif tans <ph name="NUMBER_OF_ITEMS" /> items …</translation>
 <translation id="7658239707568436148">Kanselleer</translation>
+<translation id="7695430100978772476">Kon nie <ph name="DRIVE_NAME" /> formateer nie</translation>
 <translation id="770015031906360009">Grieks</translation>
 <translation id="7706319470528945664">Portugese sleutelbord</translation>
 <translation id="7711920809702896782">Prentinligting</translation>

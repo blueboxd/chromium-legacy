@@ -4161,15 +4161,16 @@ TEST_F(LayerTreeHostImplTest, ScrollHitTestOnScrollbar) {
 
   // Wheel scroll on root scrollbar should process on impl thread.
   {
-    InputHandler::ScrollStatus status = host_impl_->RootScrollBegin(
+    InputHandler::ScrollStatus status = host_impl_->ScrollBegin(
         BeginState(gfx::Point(1, 1), gfx::Vector2dF()).get(),
         InputHandler::WHEEL);
     EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
+    host_impl_->ScrollEnd();
   }
 
   // Touch scroll on root scrollbar should process on main thread.
   {
-    InputHandler::ScrollStatus status = host_impl_->RootScrollBegin(
+    InputHandler::ScrollStatus status = host_impl_->ScrollBegin(
         BeginState(gfx::Point(1, 1), gfx::Vector2dF()).get(),
         InputHandler::TOUCHSCREEN);
     EXPECT_EQ(InputHandler::SCROLL_ON_MAIN_THREAD, status.thread);
@@ -4185,11 +4186,12 @@ TEST_F(LayerTreeHostImplTest, ScrollHitTestOnScrollbar) {
     EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
     EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
               status.main_thread_scrolling_reasons);
+    host_impl_->ScrollEnd();
   }
 
   // Touch scroll on scrollbar should process on main thread.
   {
-    InputHandler::ScrollStatus status = host_impl_->RootScrollBegin(
+    InputHandler::ScrollStatus status = host_impl_->ScrollBegin(
         BeginState(gfx::Point(51, 51), gfx::Vector2dF()).get(),
         InputHandler::TOUCHSCREEN);
     EXPECT_EQ(InputHandler::SCROLL_ON_MAIN_THREAD, status.thread);

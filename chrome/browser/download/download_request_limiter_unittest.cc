@@ -76,6 +76,7 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
         web_contents,
         "GET",  // request method
         std::move(origin),
+        false,  // from_download_cross_origin_redirect
         base::Bind(&DownloadRequestLimiterTest::ContinueDownload,
                    base::Unretained(this)));
     base::RunLoop().RunUntilIdle();

@@ -67,13 +67,9 @@ class TestReportingCache : public ReportingCache {
     NOTREACHED();
     return base::Value();
   }
-  void GetNonpendingReports(
-      std::vector<const ReportingReport*>* reports_out) const override {
+  std::vector<const ReportingReport*> GetReportsToDeliver() override {
     NOTREACHED();
-  }
-  void SetReportsPending(
-      const std::vector<const ReportingReport*>& reports) override {
-    NOTREACHED();
+    return {};
   }
   void ClearReportsPending(
       const std::vector<const ReportingReport*>& reports) override {

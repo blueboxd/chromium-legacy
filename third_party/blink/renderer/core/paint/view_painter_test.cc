@@ -15,14 +15,14 @@ using testing::ElementsAre;
 
 namespace blink {
 
-class ViewPainterTest : public PaintControllerPaintTest {
+class ViewPainterFixedBackgroundTest : public PaintControllerPaintTest {
  protected:
   void RunFixedBackgroundTest(bool prefer_compositing_to_lcd_text);
 };
 
-INSTANTIATE_PAINT_TEST_SUITE_P(ViewPainterTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(ViewPainterFixedBackgroundTest);
 
-void ViewPainterTest::RunFixedBackgroundTest(
+void ViewPainterFixedBackgroundTest::RunFixedBackgroundTest(
     bool prefer_compositing_to_lcd_text) {
   if (prefer_compositing_to_lcd_text) {
     Settings* settings = GetDocument().GetFrame()->GetSettings();
@@ -108,19 +108,19 @@ void ViewPainterTest::RunFixedBackgroundTest(
   }
 }
 
-TEST_P(ViewPainterTest, DocumentFixedBackgroundLowDPI) {
+TEST_P(ViewPainterFixedBackgroundTest, DocumentFixedBackgroundLowDPI) {
   RunFixedBackgroundTest(false);
 }
 
-TEST_P(ViewPainterTest, DocumentFixedBackgroundHighDPI) {
+TEST_P(ViewPainterFixedBackgroundTest, DocumentFixedBackgroundHighDPI) {
   RunFixedBackgroundTest(true);
 }
 
-using ViewPainterScrollHitTestTest = PaintControllerPaintTest;
+using ViewPainterTest = PaintControllerPaintTest;
 
-INSTANTIATE_SCROLL_HIT_TEST_SUITE_P(ViewPainterScrollHitTestTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(ViewPainterTest);
 
-TEST_P(ViewPainterScrollHitTestTest, DocumentBackgroundWithScroll) {
+TEST_P(ViewPainterTest, DocumentBackgroundWithScroll) {
   SetBodyInnerHTML(R"HTML(
     <style>::-webkit-scrollbar { display: none }</style>
     <div style='height: 5000px'></div>
@@ -167,7 +167,7 @@ TEST_P(ViewPainterScrollHitTestTest, DocumentBackgroundWithScroll) {
   }
 }
 
-TEST_P(ViewPainterScrollHitTestTest, FrameScrollHitTestProperties) {
+TEST_P(ViewPainterTest, FrameScrollHitTestProperties) {
   // This test depends on the CompositeAfterPaint behavior of painting solid
   // color backgrounds into both the non-scrolled and scrolled spaces.
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())

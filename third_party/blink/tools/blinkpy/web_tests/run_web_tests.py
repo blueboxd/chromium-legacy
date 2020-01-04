@@ -527,8 +527,10 @@ def parse_args(args):
                 default='',
                 help='The name of the builder shown on the waterfall running '
                      'this script, e.g. "Mac10.13 Tests".'),
-            # TODO(crbug/1002702): Remove this, it's not actually a Buildbot
-            # master since Buildbot is gone.
+            # TODO(qyearsley): This is not actually a Buildbot master since
+            # Buildbot is gone; all instances of the term "master" in this
+            # code-base should be removed after test-results.appspot.com is
+            # removed.
             optparse.make_option('--master-name'),
             optparse.make_option(
                 '--test-results-server',

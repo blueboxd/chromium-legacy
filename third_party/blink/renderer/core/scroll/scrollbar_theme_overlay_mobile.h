@@ -16,14 +16,16 @@ class CORE_EXPORT ScrollbarThemeOverlayMobile : public ScrollbarThemeOverlay {
 
   void PaintThumb(GraphicsContext&, const Scrollbar&, const IntRect&) override;
   bool AllowsHitTest() const override { return false; }
-  ScrollbarPart HitTest(const Scrollbar&, const IntPoint&) override {
-    return kNoPart;
-  }
   bool IsSolidColor() const override { return true; }
   bool UsesNinePatchThumbResource() const override { return false; }
 
  protected:
   ScrollbarThemeOverlayMobile(int thumb_thickness, int scrollbar_margin, Color);
+
+  ScrollbarPart HitTest(const Scrollbar&, const IntPoint&) override {
+    NOTREACHED();
+    return kNoPart;
+  }
 
  private:
   Color color_;

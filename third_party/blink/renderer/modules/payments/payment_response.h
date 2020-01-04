@@ -21,6 +21,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class PaymentAddress;
 class PaymentStateResolver;
 class PaymentValidationErrors;
@@ -58,8 +59,10 @@ class MODULES_EXPORT PaymentResponse final
   const String& payerEmail() const { return payer_email_; }
   const String& payerPhone() const { return payer_phone_; }
 
-  ScriptPromise complete(ScriptState*, const String& result = "");
-  ScriptPromise retry(ScriptState*, const PaymentValidationErrors*);
+  ScriptPromise complete(ScriptState*, const String& result, ExceptionState&);
+  ScriptPromise retry(ScriptState*,
+                      const PaymentValidationErrors*,
+                      ExceptionState&);
 
   bool HasPendingActivity() const override;
 

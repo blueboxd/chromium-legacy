@@ -6,6 +6,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/webrtc/common_video/include/video_frame_buffer.h"
 #include "third_party/webrtc/common_video/libyuv/include/webrtc_libyuv.h"
 #include "third_party/webrtc/rtc_base/ref_counted_object.h"
@@ -166,8 +167,10 @@ WebRtcVideoFrameAdapter::CreateFrameAdapter() const {
     }
 
     // Keep |frame_| alive until |i420_frame| is destroyed.
-    i420_frame->AddDestructionObserver(base::BindOnce(
-        base::DoNothing::Once<scoped_refptr<media::VideoFrame>>(), frame_));
+    i420_frame->AddDestructionObserver(
+        ConvertToBaseOnceCallback(CrossThreadBindOnce(
+            base::DoNothing::Once<scoped_refptr<media::VideoFrame>>(),
+            frame_)));
 
     IsValidFrame(*i420_frame);
     return new rtc::RefCountedObject<FrameAdapter<webrtc::I420BufferInterface>>(

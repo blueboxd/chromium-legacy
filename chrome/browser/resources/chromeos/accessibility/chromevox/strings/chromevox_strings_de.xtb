@@ -418,6 +418,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="3914732343065571127">ChromeVox – Befehle in der Übersicht</translation>
 <translation id="3930383913623796990">Frühlingsgrün</translation>
 <translation id="3930498801443296724">Textzitat</translation>
+<translation id="3935615366277838204">Großbuchstabe <ph name="LETTER" /></translation>
 <translation id="3936394396199829062">Lavendelrosa</translation>
 <translation id="3941269780691800708">Text unter dem Mauszeiger vorlesen.</translation>
 <translation id="394953087167197343">Rechtschreibfehler angeben:</translation>
@@ -853,6 +854,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="699159175332639490">Suchtaste + "O" + "W"</translation>
 <translation id="6994042831499278539">Glossarreferenz</translation>
 <translation id="6996566555547746822">Nächstes Kombinationsfeld</translation>
+<translation id="6997224546856374593">Beim Lesen von Großbuchstaben:</translation>
 <translation id="700202842116345659">Bibliografieeintrag</translation>
 <translation id="7005146664810010831">Keine URL gefunden</translation>
 <translation id="7010712454773919705">ChromeVox-Modifikatortaste</translation>
@@ -933,6 +935,7 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="744163271241493234">pwded</translation>
 <translation id="7491962110804786152">tab</translation>
 <translation id="7492049978501397201">Dialogfeldtext eingegeben</translation>
+<translation id="7505149250476994901">Sagen Sie "Großbuchstabe" vor dem Buchstaben</translation>
 <translation id="7518543783849163354">Um ChromeVox vorübergehend stummzuschalten, drücken Sie die Strg-Taste.</translation>
 <translation id="7521682724501952239">Sie können ChromeVox mit einem Touchscreen verwenden.</translation>
 <translation id="7532613204005497612">Juni</translation>

@@ -80,6 +80,7 @@
 <translation id="1847880352285315359">Salvo</translation>
 <translation id="1864756863218646478">O arquivo não foi encontrado.</translation>
 <translation id="1921986354447415460">Teclado padrão F em turco</translation>
+<translation id="1924372192547904021"><ph name="DRIVE_NAME" /> formatado</translation>
 <translation id="1931134289871235022">Eslovaco</translation>
 <translation id="1933345018156373194">Falha ao mover, erro inesperado: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">Finlandês</translation>
@@ -163,6 +164,7 @@
 <translation id="2942290791863759244">Teclado alemão NEO 2</translation>
 <translation id="2943400156390503548">Apresentações</translation>
 <translation id="2943503720238418293">Use um nome mais curto</translation>
+<translation id="2949781154072577687">Formatando <ph name="DRIVE_NAME" />…</translation>
 <translation id="2951236788251446349">Água-viva</translation>
 <translation id="2963783323012015985">Teclado turco</translation>
 <translation id="2966459079597787514">Teclado sueco</translation>
@@ -569,6 +571,7 @@
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7654209398114106148">Movendo <ph name="NUMBER_OF_ITEMS" /> itens…</translation>
 <translation id="7658239707568436148">Cancelar</translation>
+<translation id="7695430100978772476">Não foi possível formatar <ph name="DRIVE_NAME" />.</translation>
 <translation id="770015031906360009">Grego</translation>
 <translation id="7706319470528945664">Teclado português</translation>
 <translation id="7711920809702896782">Informações sobre a imagem</translation>

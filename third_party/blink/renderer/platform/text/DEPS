@@ -19,7 +19,7 @@ include_rules = [
 ]
 
 specific_include_rules = {
-  "(locale_mac\.mm|locale_icu\.cc|locale_win\.cc)": [
+  "(locale_mac\.mm|locale_icu\.cc|locale_win\.cc|locale_win_test\.cc)": [
     "+ui/base/ui_base_features.h",
   ],
 }

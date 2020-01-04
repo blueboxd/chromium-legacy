@@ -246,9 +246,13 @@ TEST_P(ReportingCacheTest, RemovePendingReports) {
   EXPECT_FALSE(cache()->IsReportPendingForTesting(reports[0]));
   EXPECT_FALSE(cache()->IsReportDoomedForTesting(reports[0]));
 
-  cache()->SetReportsPending(reports);
+  EXPECT_EQ(reports, cache()->GetReportsToDeliver());
   EXPECT_TRUE(cache()->IsReportPendingForTesting(reports[0]));
   EXPECT_FALSE(cache()->IsReportDoomedForTesting(reports[0]));
+
+  // After getting reports to deliver, everything in the cache should be
+  // pending, so another call to GetReportsToDeliver should return nothing.
+  EXPECT_EQ(0u, cache()->GetReportsToDeliver().size());
 
   cache()->RemoveReports(reports, ReportingReport::Outcome::UNKNOWN);
   EXPECT_TRUE(cache()->IsReportPendingForTesting(reports[0]));
@@ -280,9 +284,13 @@ TEST_P(ReportingCacheTest, RemoveAllPendingReports) {
   EXPECT_FALSE(cache()->IsReportPendingForTesting(reports[0]));
   EXPECT_FALSE(cache()->IsReportDoomedForTesting(reports[0]));
 
-  cache()->SetReportsPending(reports);
+  EXPECT_EQ(reports, cache()->GetReportsToDeliver());
   EXPECT_TRUE(cache()->IsReportPendingForTesting(reports[0]));
   EXPECT_FALSE(cache()->IsReportDoomedForTesting(reports[0]));
+
+  // After getting reports to deliver, everything in the cache should be
+  // pending, so another call to GetReportsToDeliver should return nothing.
+  EXPECT_EQ(0u, cache()->GetReportsToDeliver().size());
 
   cache()->RemoveAllReports(ReportingReport::Outcome::UNKNOWN);
   EXPECT_TRUE(cache()->IsReportPendingForTesting(reports[0]));
@@ -313,19 +321,50 @@ TEST_P(ReportingCacheTest, GetReportsAsValue) {
       AddAndReturnReport(kUrl1_, kUserAgent_, kGroup2_, kType_,
                          std::make_unique<base::DictionaryValue>(), 0,
                          now + base::TimeDelta::FromSeconds(100), 1);
-  cache()->AddReport(kUrl2_, kUserAgent_, kGroup1_, kType_,
-                     std::make_unique<base::DictionaryValue>(), 2,
-                     now + base::TimeDelta::FromSeconds(200), 0);
-  cache()->AddReport(kUrl1_, kUserAgent_, kGroup1_, kType_,
-                     std::make_unique<base::DictionaryValue>(), 0,
-                     now + base::TimeDelta::FromSeconds(300), 0);
-  // Mark report1 as pending as report2 as doomed
-  cache()->SetReportsPending({report1, report2});
+  // Mark report1 and report2 as pending.
+  EXPECT_THAT(cache()->GetReportsToDeliver(),
+              ::testing::UnorderedElementsAre(report1, report2));
+  // Mark report2 as doomed.
   cache()->RemoveReports({report2}, ReportingReport::Outcome::UNKNOWN);
 
   base::Value actual = cache()->GetReportsAsValue();
-  std::unique_ptr<base::Value> expected =
-      base::test::ParseJsonDeprecated(R"json(
+  base::Value expected = base::test::ParseJson(R"json(
+      [
+        {
+          "url": "https://origin1/path",
+          "group": "group2",
+          "type": "default",
+          "status": "doomed",
+          "body": {},
+          "attempts": 1,
+          "depth": 0,
+          "queued": "100000",
+        },
+        {
+          "url": "https://origin1/path",
+          "group": "group1",
+          "type": "default",
+          "status": "pending",
+          "body": {},
+          "attempts": 0,
+          "depth": 0,
+          "queued": "200000",
+        },
+      ]
+      )json");
+  EXPECT_EQ(expected, actual);
+
+  // Add two new reports that will show up as "queued".
+  const ReportingReport* report3 =
+      AddAndReturnReport(kUrl2_, kUserAgent_, kGroup1_, kType_,
+                         std::make_unique<base::DictionaryValue>(), 2,
+                         now + base::TimeDelta::FromSeconds(200), 0);
+  const ReportingReport* report4 =
+      AddAndReturnReport(kUrl1_, kUserAgent_, kGroup1_, kType_,
+                         std::make_unique<base::DictionaryValue>(), 0,
+                         now + base::TimeDelta::FromSeconds(300), 0);
+  actual = cache()->GetReportsAsValue();
+  expected = base::test::ParseJson(R"json(
       [
         {
           "url": "https://origin1/path",
@@ -369,7 +408,11 @@ TEST_P(ReportingCacheTest, GetReportsAsValue) {
         },
       ]
       )json");
-  EXPECT_EQ(*expected, actual);
+  EXPECT_EQ(expected, actual);
+
+  // GetReportsToDeliver only returns the non-pending reports.
+  EXPECT_THAT(cache()->GetReportsToDeliver(),
+              ::testing::UnorderedElementsAre(report3, report4));
 }
 
 TEST_P(ReportingCacheTest, Endpoints) {
@@ -961,18 +1004,19 @@ TEST_P(ReportingCacheTest, DontEvictPendingReports) {
   ASSERT_GT(std::numeric_limits<size_t>::max(), max_report_count);
 
   // Enqueue the maximum number of reports, spaced apart in time.
+  std::vector<const ReportingReport*> reports;
   for (size_t i = 0; i < max_report_count; ++i) {
-    cache()->AddReport(kUrl1_, kUserAgent_, kGroup1_, kType_,
-                       std::make_unique<base::DictionaryValue>(), 0,
-                       tick_clock()->NowTicks(), 0);
+    reports.push_back(
+        AddAndReturnReport(kUrl1_, kUserAgent_, kGroup1_, kType_,
+                           std::make_unique<base::DictionaryValue>(), 0,
+                           tick_clock()->NowTicks(), 0));
     tick_clock()->Advance(base::TimeDelta::FromMinutes(1));
   }
   EXPECT_EQ(max_report_count, report_count());
 
   // Mark all of the queued reports pending.
-  std::vector<const ReportingReport*> queued_reports;
-  cache()->GetReports(&queued_reports);
-  cache()->SetReportsPending(queued_reports);
+  EXPECT_THAT(cache()->GetReportsToDeliver(),
+              ::testing::UnorderedElementsAreArray(reports));
 
   // Add one more report to force the cache to evict one. Since the cache has
   // only pending reports, it will be forced to evict the *new* report!
@@ -982,11 +1026,15 @@ TEST_P(ReportingCacheTest, DontEvictPendingReports) {
 
   // Make sure the cache evicted a report, and make sure the report evicted was
   // the new, non-pending one.
-  std::vector<const ReportingReport*> reports;
-  cache()->GetReports(&reports);
-  EXPECT_EQ(max_report_count, reports.size());
-  for (const ReportingReport* report : reports)
+  std::vector<const ReportingReport*> reports_after_eviction;
+  cache()->GetReports(&reports_after_eviction);
+  EXPECT_EQ(max_report_count, reports_after_eviction.size());
+  for (const ReportingReport* report : reports_after_eviction) {
     EXPECT_TRUE(cache()->IsReportPendingForTesting(report));
+  }
+
+  EXPECT_THAT(reports_after_eviction,
+              ::testing::UnorderedElementsAreArray(reports));
 }
 
 TEST_P(ReportingCacheTest, EvictEndpointsOverPerOriginLimit) {

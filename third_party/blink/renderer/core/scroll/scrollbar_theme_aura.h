@@ -41,11 +41,11 @@ class CORE_EXPORT ScrollbarThemeAura : public ScrollbarTheme {
   int ScrollbarThickness(ScrollbarControlSize) override;
 
  protected:
-  bool HasButtons(const Scrollbar&) override { return true; }
+  bool NativeThemeHasButtons() override { return true; }
   bool HasThumb(const Scrollbar&) override;
 
-  IntRect BackButtonRect(const Scrollbar&, ScrollbarPart) override;
-  IntRect ForwardButtonRect(const Scrollbar&, ScrollbarPart) override;
+  IntRect BackButtonRect(const Scrollbar&) override;
+  IntRect ForwardButtonRect(const Scrollbar&) override;
   IntRect TrackRect(const Scrollbar&) override;
   int MinimumThumbLength(const Scrollbar&) override;
 

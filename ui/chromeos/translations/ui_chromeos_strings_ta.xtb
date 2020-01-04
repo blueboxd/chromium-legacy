@@ -80,6 +80,7 @@
 <translation id="1847880352285315359">சேமிக்கப்பட்டது</translation>
 <translation id="1864756863218646478">கோப்பைக் கண்டறிய முடியவில்லை.</translation>
 <translation id="1921986354447415460">டர்கிஷ்-F விசைப்பலகை</translation>
+<translation id="1924372192547904021"><ph name="DRIVE_NAME" /> ஃபார்மேட் செய்யப்பட்டது</translation>
 <translation id="1931134289871235022">ஸ்லோவாக்</translation>
 <translation id="1933345018156373194">நகர்த்த முடியவில்லை, எதிர்பாராத பிழை: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">ஃபின்னிஷ்</translation>
@@ -163,6 +164,7 @@
 <translation id="2942290791863759244">ஜெர்மன் NEO 2 விசைப்பலகை</translation>
 <translation id="2943400156390503548">ஸ்லைடுகள்</translation>
 <translation id="2943503720238418293">சிறிய பெயரைப் பயன்படுத்தவும்</translation>
+<translation id="2949781154072577687"><ph name="DRIVE_NAME" /> ஐ ஃபார்மேட் செய்கிறது...</translation>
 <translation id="2951236788251446349">ஜெல்லிஃபிஷ்</translation>
 <translation id="2963783323012015985">டர்கிஷ் விசைப்பலகை</translation>
 <translation id="2966459079597787514">ஸ்வீடிஷ் விசைப்பலகை</translation>
@@ -275,6 +277,7 @@
 <translation id="4336032328163998280">நகலெடுக்கும் செயல்பாடு தோல்வி. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4364327530094270451">முலாம்பழம்</translation>
 <translation id="4372884569765913867">1x1</translation>
+<translation id="4394214039309501350">வெளிப்புற இணைப்பு</translation>
 <translation id="4425149324548788773">எனது இயக்ககம்</translation>
 <translation id="4465830120256509958">பிரேசிலியன் விசைப்பலகை</translation>
 <translation id="4470564870223067757">ஹாங்குல் 2 செட்</translation>
@@ -568,6 +571,7 @@
 <translation id="7649070708921625228">உதவி</translation>
 <translation id="7654209398114106148"><ph name="NUMBER_OF_ITEMS" /> உள்ளடக்கங்களை நகர்த்துகிறது...</translation>
 <translation id="7658239707568436148">ரத்து செய்</translation>
+<translation id="7695430100978772476"><ph name="DRIVE_NAME" /> ஐ ஃபார்மேட் செய்ய முடியவில்லை</translation>
 <translation id="770015031906360009">கிரேக்கம்</translation>
 <translation id="7706319470528945664">போர்ச்சுகீஸ் விசைப்பலகை</translation>
 <translation id="7711920809702896782">படத் தகவல்</translation>

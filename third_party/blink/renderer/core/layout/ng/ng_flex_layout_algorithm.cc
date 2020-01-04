@@ -350,8 +350,6 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
     // Use ChildHasIntrinsicMainAxisSize as a guide.
     scoped_refptr<const NGLayoutResult> layout_result =
         child.Layout(child_space, /* break_token */ nullptr);
-    NGFragment fragment_in_child_writing_mode(
-        child_style.GetWritingMode(), layout_result->PhysicalFragment());
 
     // We want the child's min/max size in its writing mode, not ours. We'll
     // only ever use it if the child's inline axis is our main axis.
@@ -376,7 +374,7 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
       if (MainAxisIsInlineAxis(child))
         flex_base_border_box = intrinsic_sizes_border_box.max_size;
       else
-        flex_base_border_box = fragment_in_child_writing_mode.BlockSize();
+        flex_base_border_box = layout_result->IntrinsicBlockSize();
     } else {
       // TODO(dgrogan): Check for definiteness.
       // This block covers case A in
@@ -394,7 +392,7 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
         // flex basis is in child's block direction.
         flex_base_border_box = ResolveMainBlockLength(
             child_space, child_style, border_padding_in_child_writing_mode,
-            length_to_resolve, fragment_in_child_writing_mode.BlockSize(),
+            length_to_resolve, layout_result->IntrinsicBlockSize(),
             LengthResolvePhase::kLayout);
       }
     }
@@ -433,31 +431,25 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
           child_space, child_style, border_padding_in_child_writing_mode,
           intrinsic_sizes_border_box, max_property_in_main_axis,
           LengthResolvePhase::kLayout);
-      min_max_sizes_in_cross_axis_direction.max_size =
-          ResolveMaxBlockLength(child_space, child_style,
-                                border_scrollbar_padding_in_child_writing_mode,
-                                max_property_in_cross_axis,
-                                fragment_in_child_writing_mode.BlockSize(),
-                                LengthResolvePhase::kLayout);
-      min_max_sizes_in_cross_axis_direction.min_size =
-          ResolveMinBlockLength(child_space, child_style,
-                                border_scrollbar_padding_in_child_writing_mode,
-                                min_property_in_cross_axis,
-                                fragment_in_child_writing_mode.BlockSize(),
-                                LengthResolvePhase::kLayout);
+      min_max_sizes_in_cross_axis_direction.max_size = ResolveMaxBlockLength(
+          child_space, child_style, border_padding_in_child_writing_mode,
+          max_property_in_cross_axis, layout_result->IntrinsicBlockSize(),
+          LengthResolvePhase::kLayout);
+      min_max_sizes_in_cross_axis_direction.min_size = ResolveMinBlockLength(
+          child_space, child_style, border_padding_in_child_writing_mode,
+          min_property_in_cross_axis, layout_result->IntrinsicBlockSize(),
+          LengthResolvePhase::kLayout);
     } else {
       min_max_sizes_in_main_axis_direction.max_size = ResolveMaxBlockLength(
           child_space, child_style, border_padding_in_child_writing_mode,
-          max_property_in_main_axis, fragment_in_child_writing_mode.BlockSize(),
+          max_property_in_main_axis, layout_result->IntrinsicBlockSize(),
           LengthResolvePhase::kLayout);
       min_max_sizes_in_cross_axis_direction.max_size = ResolveMaxInlineLength(
-          child_space, child_style,
-          border_scrollbar_padding_in_child_writing_mode,
+          child_space, child_style, border_padding_in_child_writing_mode,
           intrinsic_sizes_border_box, max_property_in_cross_axis,
           LengthResolvePhase::kLayout);
       min_max_sizes_in_cross_axis_direction.min_size = ResolveMinInlineLength(
-          child_space, child_style,
-          border_scrollbar_padding_in_child_writing_mode,
+          child_space, child_style, border_padding_in_child_writing_mode,
           intrinsic_sizes_border_box, min_property_in_cross_axis,
           LengthResolvePhase::kLayout);
     }
@@ -526,8 +518,7 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
     } else {
       min_max_sizes_in_main_axis_direction.min_size = ResolveMinBlockLength(
           child_space, child_style, border_padding_in_child_writing_mode, min,
-          fragment_in_child_writing_mode.BlockSize(),
-          LengthResolvePhase::kLayout);
+          layout_result->IntrinsicBlockSize(), LengthResolvePhase::kLayout);
     }
     // TODO(dgrogan): Should this include scrollbar?
     min_max_sizes_in_main_axis_direction -= main_axis_border_scrollbar_padding;

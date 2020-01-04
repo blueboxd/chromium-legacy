@@ -210,6 +210,11 @@ class WilcoDtcSupportdBridgeTest : public testing::Test {
     return wilco_dtc_supportd_bridge_.get();
   }
 
+  wilco_dtc_supportd::mojom::WilcoDtcSupportdClient*
+  wilco_dtc_supportd_client() {
+    return wilco_dtc_supportd_bridge_.get();
+  }
+
   FakeWilcoDtcSupportdClient* wilco_dtc_supportd_dbus_client() {
     WilcoDtcSupportdClient* const wilco_dtc_supportd_client =
         WilcoDtcSupportdClient::Get();
@@ -460,19 +465,19 @@ TEST_F(WilcoDtcSupportdBridgeTest, RetryCounterReset) {
 // Test that the bridge calls the right method on the notification controller.
 TEST_F(WilcoDtcSupportdBridgeTest, HandleEvent) {
   EXPECT_CALL(*notification_controller(), ShowBatteryAuthNotification());
-  wilco_dtc_supportd_bridge()->HandleEvent(
+  wilco_dtc_supportd_client()->HandleEvent(
       wilco_dtc_supportd::mojom::WilcoDtcSupportdEvent::kBatteryAuth);
 
   EXPECT_CALL(*notification_controller(), ShowIncompatibleDockNotification());
-  wilco_dtc_supportd_bridge()->HandleEvent(
+  wilco_dtc_supportd_client()->HandleEvent(
       wilco_dtc_supportd::mojom::WilcoDtcSupportdEvent::kIncompatibleDock);
 
   EXPECT_CALL(*notification_controller(), ShowNonWilcoChargerNotification());
-  wilco_dtc_supportd_bridge()->HandleEvent(
+  wilco_dtc_supportd_client()->HandleEvent(
       wilco_dtc_supportd::mojom::WilcoDtcSupportdEvent::kNonWilcoCharger);
 
   EXPECT_CALL(*notification_controller(), ShowDockErrorNotification());
-  wilco_dtc_supportd_bridge()->HandleEvent(
+  wilco_dtc_supportd_client()->HandleEvent(
       wilco_dtc_supportd::mojom::WilcoDtcSupportdEvent::kDockError);
 }
 

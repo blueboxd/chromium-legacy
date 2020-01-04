@@ -1003,7 +1003,7 @@ TEST_P(PaintLayerScrollableAreaTest, ViewScrollWithFixedAttachmentBackground) {
   EXPECT_TRUE(fixed_background_div->NeedsPaintPropertyUpdate());
   EXPECT_FALSE(GetLayoutView().ShouldDoFullPaintInvalidation());
   EXPECT_FALSE(GetLayoutView().BackgroundNeedsFullPaintInvalidation());
-  EXPECT_TRUE(GetLayoutView().NeedsPaintPropertyUpdate());
+  EXPECT_FALSE(GetLayoutView().NeedsPaintPropertyUpdate());
 }
 
 TEST_P(PaintLayerScrollableAreaTest,
@@ -1056,7 +1056,7 @@ TEST_P(PaintLayerScrollableAreaTest,
   EXPECT_TRUE(fixed_background_div->NeedsPaintPropertyUpdate());
   EXPECT_FALSE(GetLayoutView().ShouldDoFullPaintInvalidation());
   EXPECT_FALSE(GetLayoutView().BackgroundNeedsFullPaintInvalidation());
-  EXPECT_TRUE(GetLayoutView().NeedsPaintPropertyUpdate());
+  EXPECT_FALSE(GetLayoutView().NeedsPaintPropertyUpdate());
 }
 
 TEST_P(PaintLayerScrollableAreaTest,
@@ -1109,7 +1109,7 @@ TEST_P(PaintLayerScrollableAreaTest,
   EXPECT_TRUE(fixed_background_div->NeedsPaintPropertyUpdate());
   EXPECT_FALSE(GetLayoutView().ShouldDoFullPaintInvalidation());
   EXPECT_FALSE(GetLayoutView().BackgroundNeedsFullPaintInvalidation());
-  EXPECT_TRUE(GetLayoutView().NeedsPaintPropertyUpdate());
+  EXPECT_FALSE(GetLayoutView().NeedsPaintPropertyUpdate());
 }
 
 TEST_P(PaintLayerScrollableAreaTest, HitTestOverlayScrollbars) {

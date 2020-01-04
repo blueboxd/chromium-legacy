@@ -1028,14 +1028,15 @@ PaintLayer* PaintLayer::EnclosingLayerForPaintInvalidation() const {
   return nullptr;
 }
 
-void PaintLayer::SetNeedsCompositingInputsUpdate() {
+void PaintLayer::SetNeedsCompositingInputsUpdate(bool mark_ancestor_flags) {
   SetNeedsCompositingInputsUpdateInternal();
 
   // TODO(chrishtr): These are a bit of a heavy hammer, because not all
   // things which require compositing inputs update require a descendant-
   // dependent flags update. Reduce call sites after CAP launch allows
   /// removal of CompositingInputsUpdater.
-  MarkAncestorChainForFlagsUpdate(NeedsDescendantDependentUpdate);
+  if (mark_ancestor_flags)
+    MarkAncestorChainForFlagsUpdate(NeedsDescendantDependentUpdate);
 }
 
 void PaintLayer::SetNeedsVisualOverflowRecalc() {

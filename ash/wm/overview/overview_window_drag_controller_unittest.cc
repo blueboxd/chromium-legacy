@@ -384,7 +384,7 @@ class OverviewWindowDragControllerDesksPortraitTabletTest
   }
 
   int GetExpectedDesksBarShiftAmount() {
-    return drag_indicators()->GetLeftHighlightViewBoundsForTesting().bottom() +
+    return drag_indicators()->GetLeftHighlightViewBounds().bottom() +
            kHighlightScreenEdgePaddingDp;
   }
 

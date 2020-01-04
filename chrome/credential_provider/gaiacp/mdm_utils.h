@@ -17,6 +17,9 @@ namespace credential_provider {
 
 // Mdm registry value key name.
 
+// Determines if crash reporting is initialized for credential provider DLL.
+extern const wchar_t kRegInitializeCrashReporting[];
+
 // The url used to register the machine to MDM. If specified and non-empty
 // additional user access restrictions will be applied to users associated
 // to GCPW that have invalid token handles.

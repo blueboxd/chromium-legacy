@@ -444,6 +444,8 @@ base::Value CreateAutocompleteMatches(
     dict.SetStringKey("inlineAutocompletion", match->inline_autocompletion);
     dict.SetBoolKey("isSearchType", match->is_search_type);
     dict.SetStringKey("fillIntoEdit", match->fill_into_edit);
+    dict.SetStringKey("imageDominantColor", match->image_dominant_color);
+    dict.SetStringKey("imageUrl", match->image_url);
     dict.SetBoolKey("swapContentsAndDescription",
                     match->swap_contents_and_description);
     dict.SetStringKey("type", match->type);
@@ -494,6 +496,19 @@ static const char kDispatchAutocompleteResultChanged[] =
     "    typeof window.chrome.embeddedSearch.searchBox"
     "        .autocompleteresultchanged === 'function') {"
     "  window.chrome.embeddedSearch.searchBox.autocompleteresultchanged(%s);"
+    "  true;"
+    "}";
+
+static const char kDispatchAutocompleteMatchImageAvailable[] =
+    "if (window.chrome &&"
+    "    window.chrome.embeddedSearch &&"
+    "    window.chrome.embeddedSearch.searchBox &&"
+    "    "
+    "window.chrome.embeddedSearch.searchBox.autocompletematchimageavailable &&"
+    "    typeof window.chrome.embeddedSearch.searchBox"
+    "        .autocompletematchimageavailable === 'function') {"
+    "  window.chrome.embeddedSearch.searchBox"
+    "      .autocompletematchimageavailable(%d, '%s', '%s');"
     "  true;"
     "}";
 
@@ -1457,6 +1472,7 @@ void SearchBoxExtension::DispatchDeleteCustomLinkResult(
   Dispatch(frame, script);
 }
 
+// static
 void SearchBoxExtension::DispatchAutocompleteResultChanged(
     blink::WebLocalFrame* frame,
     chrome::mojom::AutocompleteResultPtr result) {
@@ -1468,6 +1484,18 @@ void SearchBoxExtension::DispatchAutocompleteResultChanged(
   base::JSONWriter::Write(dict, &json);
   Dispatch(frame, blink::WebString::FromUTF8(base::StringPrintf(
                       kDispatchAutocompleteResultChanged, json.c_str())));
+}
+
+// static
+void SearchBoxExtension::DispatchAutocompleteMatchImageAvailable(
+    blink::WebLocalFrame* frame,
+    uint32_t match_index,
+    const std::string& image_url,
+    const std::string& data_url) {
+  blink::WebString script(blink::WebString::FromUTF8(
+      base::StringPrintf(kDispatchAutocompleteMatchImageAvailable, match_index,
+                         image_url.c_str(), data_url.c_str())));
+  Dispatch(frame, script);
 }
 
 // static

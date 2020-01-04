@@ -77,7 +77,8 @@ class VideoRendererImplTest : public testing::Test {
   }
 
   VideoRendererImplTest()
-      : decoder_(nullptr),
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
+        decoder_(nullptr),
         demuxer_stream_(DemuxerStream::VIDEO),
         simulate_decode_delay_(false),
         expect_init_success_(true) {
@@ -283,6 +284,8 @@ class VideoRendererImplTest : public testing::Test {
     task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(std::move(decode_cb_), DecodeStatus::OK));
   }
+
+  bool HasQueuedFrames() const { return decode_results_.size() > 0; }
 
   void AdvanceWallclockTimeInMs(int time_ms) {
     EXPECT_TRUE(
@@ -1059,6 +1062,40 @@ TEST_F(VideoRendererImplTest, OpacityChange) {
   Destroy();
 }
 
+TEST_F(VideoRendererImplTest, VideoFrameRateChange) {
+  Initialize();
+
+  EXPECT_CALL(mock_cb_, FrameReceived(_)).Times(AnyNumber());
+  EXPECT_CALL(mock_cb_, OnBufferingStateChange(_, _)).Times(AnyNumber());
+  EXPECT_CALL(mock_cb_, OnStatisticsUpdate(_)).Times(AnyNumber());
+  EXPECT_CALL(mock_cb_, OnVideoNaturalSizeChange(_)).Times(1);
+  EXPECT_CALL(mock_cb_, OnVideoOpacityChange(_)).Times(1);
+
+  // Send 50fps frames first.
+  EXPECT_CALL(mock_cb_, OnVideoFrameRateChange(base::Optional<int>(50)));
+  QueueFrames("0 20 40 60 80 100 120 140 160 180 200");
+  QueueFrames("220 240 260 280 300 320 340 360 380 400");
+
+  // Also queue some frames that aren't at 50fps, so that we get an unknown fps.
+  EXPECT_CALL(mock_cb_, OnVideoFrameRateChange(base::Optional<int>()));
+  QueueFrames("500 600");
+
+  // Drain everything.
+  StartPlayingFrom(0);
+  renderer_->OnTimeProgressing();
+  time_source_.StartTicking();
+  // Send in all the frames we queued.
+  while (HasQueuedFrames()) {
+    AdvanceTimeInMs(20);
+    AdvanceWallclockTimeInMs(20);
+    // This runs the sink callbacks to consume frames.
+    task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(20));
+    base::RunLoop().RunUntilIdle();
+  }
+
+  Destroy();
+}
+
 class VideoRendererImplAsyncAddFrameReadyTest : public VideoRendererImplTest {
  public:
   void InitializeWithMockGpuMemoryBufferVideoFramePool() {
@@ -1258,6 +1295,7 @@ class UnderflowTest
                   OnBufferingStateChange(BUFFERING_HAVE_ENOUGH,
                                          BUFFERING_CHANGE_REASON_UNKNOWN))
           .WillOnce(RunClosure(event.GetClosure()));
+      EXPECT_CALL(mock_cb_, OnVideoFrameRateChange(base::Optional<int>(50)));
 
       // Note: In the normal underflow case we queue 5 frames here instead of
       // four since the underflow increases the number of required frames to

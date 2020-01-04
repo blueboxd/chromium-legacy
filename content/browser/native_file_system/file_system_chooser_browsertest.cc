@@ -165,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, SaveFile_NonExistingFile) {
             EvalJs(shell(),
                    "(async () => {"
                    "  let e = await self.chooseFileSystemEntries("
-                   "      {type: 'saveFile'});"
+                   "      {type: 'save-file'});"
                    "  self.entry = e;"
                    "  return e.name; })()"));
   EXPECT_EQ(ui::SelectFileDialog::SELECT_SAVEAS_FILE, dialog_params.type);
@@ -198,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
             EvalJs(shell(),
                    "(async () => {"
                    "  let e = await self.chooseFileSystemEntries("
-                   "      {type: 'saveFile'});"
+                   "      {type: 'save-file'});"
                    "  self.entry = e;"
                    "  return e.name; })()"));
   EXPECT_EQ(ui::SelectFileDialog::SELECT_SAVEAS_FILE, dialog_params.type);
@@ -231,7 +231,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
   ASSERT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
   auto result =
-      EvalJs(shell(), "self.chooseFileSystemEntries({type: 'saveFile'})");
+      EvalJs(shell(), "self.chooseFileSystemEntries({type: 'save-file'})");
   EXPECT_TRUE(result.error.find("not allowed") != std::string::npos)
       << result.error;
   EXPECT_EQ(ui::SelectFileDialog::SELECT_NONE, dialog_params.type);
@@ -250,7 +250,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, FullscreenSaveFile) {
             EvalJs(shell(),
                    "(async () => {"
                    "  let e = await self.chooseFileSystemEntries("
-                   "      {type: 'saveFile'});"
+                   "      {type: 'save-file'});"
                    "  self.entry = e;"
                    "  return e.name; })()"));
   EXPECT_FALSE(IsFullscreen());
@@ -305,7 +305,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, OpenDirectory) {
             EvalJs(shell(),
                    "(async () => {"
                    "  let e = await self.chooseFileSystemEntries("
-                   "      {type: 'openDirectory'});"
+                   "      {type: 'open-directory'});"
                    "  self.selected_entry = e;"
                    "  return e.name; })()"));
   EXPECT_EQ(ui::SelectFileDialog::SELECT_FOLDER, dialog_params.type);
@@ -323,7 +323,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, FullscreenOpenDirectory) {
             EvalJs(shell(),
                    "(async () => {"
                    "  let e = await self.chooseFileSystemEntries("
-                   "      {type: 'openDirectory'});"
+                   "      {type: 'open-directory'});"
                    "  self.selected_entry = e;"
                    "  return e.name; })()"));
   EXPECT_FALSE(IsFullscreen());
@@ -360,7 +360,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, OpenDirectory_DenyAccess) {
   ASSERT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
   auto result =
-      EvalJs(shell(), "self.chooseFileSystemEntries({type: 'openDirectory'})");
+      EvalJs(shell(), "self.chooseFileSystemEntries({type: 'open-directory'})");
   EXPECT_TRUE(result.error.find("aborted") != std::string::npos)
       << result.error;
 }
@@ -395,7 +395,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
   ASSERT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
   auto result =
-      EvalJs(shell(), "self.chooseFileSystemEntries({type: 'saveFile'})");
+      EvalJs(shell(), "self.chooseFileSystemEntries({type: 'save-file'})");
   EXPECT_TRUE(result.error.find("aborted") != std::string::npos)
       << result.error;
 
@@ -443,7 +443,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
   ASSERT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
   auto result =
-      EvalJs(shell(), "self.chooseFileSystemEntries({type: 'saveFile'})");
+      EvalJs(shell(), "self.chooseFileSystemEntries({type: 'save-file'})");
   EXPECT_TRUE(result.error.find("aborted") != std::string::npos)
       << result.error;
 

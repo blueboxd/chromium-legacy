@@ -99,7 +99,8 @@ void CheckinRequestTest::CreateRequest(uint64_t android_id,
   // security_token.
   request_.reset(new CheckinRequest(
       GURL(kCheckinURL), request_info, GetBackoffPolicy(),
-      base::Bind(&CheckinRequestTest::FetcherCallback, base::Unretained(this)),
+      base::BindOnce(&CheckinRequestTest::FetcherCallback,
+                     base::Unretained(this)),
       url_loader_factory(), base::ThreadTaskRunnerHandle::Get(), &recorder_));
 
   // Setting android_id_ and security_token_ to blank value, not used elsewhere

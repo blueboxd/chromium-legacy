@@ -327,7 +327,7 @@ void AudioDecoderAndroid::CreateRateShifter(const AudioConfig& config) {
   rate_shifter_info_.push_back(RateShifterInfo(1.0f));
 
   rate_shifter_output_.reset();
-  rate_shifter_.reset(new ::media::AudioRendererAlgorithm());
+  rate_shifter_.reset(new ::media::AudioRendererAlgorithm(&media_log_));
   bool is_encrypted = false;
   rate_shifter_->Initialize(
       ::media::AudioParameters(

@@ -419,6 +419,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="3914732343065571127">Tham chiếu lệnh dành cho ChromeVox</translation>
 <translation id="3930383913623796990">Màu lục lơ</translation>
 <translation id="3930498801443296724">Đoạn trích dẫn</translation>
+<translation id="3935615366277838204"><ph name="LETTER" /> hoa</translation>
 <translation id="3936394396199829062">Màu hồng tím oải hương</translation>
 <translation id="3941269780691800708">Nói văn bản bên dưới con chuột.</translation>
 <translation id="394953087167197343">Biểu thị lỗi chính tả:</translation>
@@ -854,6 +855,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="699159175332639490">Tìm kiếm + O + W</translation>
 <translation id="6994042831499278539">Tham chiếu bảng thuật ngữ</translation>
 <translation id="6996566555547746822">Hộp kết hợp tiếp theo</translation>
+<translation id="6997224546856374593">Khi đọc các chữ cái viết hoa:</translation>
 <translation id="700202842116345659">Mục nhập danh mục</translation>
 <translation id="7005146664810010831">Không tìm thấy URL nào</translation>
 <translation id="7010712454773919705">Phím bổ trợ ChromeVox</translation>
@@ -934,6 +936,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="744163271241493234">pwded</translation>
 <translation id="7491962110804786152">tab</translation>
 <translation id="7492049978501397201">Đã vào hộp thoại</translation>
+<translation id="7505149250476994901">Nói "hoa" sau chữ cái</translation>
 <translation id="7518543783849163354">Để ChromeVox tạm thời ngừng nói, nhấn phím Control.</translation>
 <translation id="7521682724501952239">Bạn có thể sử dụng ChromeVox với màn hình cảm ứng.</translation>
 <translation id="7532613204005497612">Tháng 6</translation>
@@ -948,7 +951,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="7609342235116740824">Thông báo URL của trang hiện tại</translation>
 <translation id="7609363189280667021">Chuyển đổi phụ đề chữ nổi</translation>
 <translation id="761303759119251275">Ghi nhận tác giả</translation>
-<translation id="762020119231868829">Tạm dừng tất cả các tiện ích con phương tiện hiện đang phát</translation>
+<translation id="762020119231868829">Tạm dừng tất cả các tiện ích phương tiện hiện đang phát</translation>
 <translation id="7625690649919402823">Bảng tiếp theo</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), Lớp <ph name="GRADE" /></translation>
 <translation id="763535765081585392">Biểu thị chữ gạch dưới:</translation>

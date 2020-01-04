@@ -240,6 +240,9 @@ class SearchBox : public content::RenderFrameObserver,
   // Overridden from chrome::mojom::EmbeddedSearchClient:
   void AutocompleteResultChanged(
       chrome::mojom::AutocompleteResultPtr result) override;
+  void AutocompleteMatchImageAvailable(uint32_t match_index,
+                                       const std::string& image_url,
+                                       const std::string& data_url) override;
   void SetPageSequenceNumber(int page_seq_no) override;
   void FocusChanged(OmniboxFocusState new_focus_state,
                     OmniboxFocusChangeReason reason) override;

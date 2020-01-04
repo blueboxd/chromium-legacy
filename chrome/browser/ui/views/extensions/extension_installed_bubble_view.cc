@@ -117,9 +117,11 @@ views::View* AnchorViewForBrowser(const extensions::Extension* extension,
       // anchor to a visible action. Right now this view is most likely not
       // visible, and will fall back on the default case on showing the
       // installed dialog anchored to the general extensions toolbar button.
-      reference_view =
-          browser_view->toolbar_button_provider()->GetToolbarActionViewForId(
-              extension->id());
+      ExtensionsToolbarContainer* const container =
+          browser_view->toolbar_button_provider()
+              ->GetExtensionsToolbarContainer();
+      if (container)
+        reference_view = container->GetViewForId(extension->id());
     } else {
       BrowserActionsContainer* container =
           browser_view->toolbar()->browser_actions();

@@ -39,16 +39,17 @@ CustomLayoutWorkTask::CustomLayoutWorkTask(
 
 CustomLayoutWorkTask::~CustomLayoutWorkTask() = default;
 
-void CustomLayoutWorkTask::Run(const NGBlockNode& parent,
-                               const NGConstraintSpace& parent_space,
-                               const ComputedStyle& parent_style,
-                               const NGBoxStrut& border_scrollbar_padding) {
+void CustomLayoutWorkTask::Run(
+    const NGConstraintSpace& parent_space,
+    const ComputedStyle& parent_style,
+    const LayoutUnit child_percentage_resolution_block_size_for_min_max) {
   DCHECK(token_->IsValid());
   NGLayoutInputNode child = child_->GetLayoutNode();
 
   if (type_ == CustomLayoutWorkTask::TaskType::kIntrinsicSizes) {
-    RunIntrinsicSizesTask(parent, parent_space, parent_style,
-                          border_scrollbar_padding, child);
+    RunIntrinsicSizesTask(parent_style,
+                          child_percentage_resolution_block_size_for_min_max,
+                          child);
   } else {
     DCHECK_EQ(type_, CustomLayoutWorkTask::TaskType::kLayoutFragment);
     RunLayoutFragmentTask(parent_space, parent_style, child);
@@ -138,22 +139,13 @@ void CustomLayoutWorkTask::RunLayoutFragmentTask(
 }
 
 void CustomLayoutWorkTask::RunIntrinsicSizesTask(
-    const NGBlockNode& parent,
-    const NGConstraintSpace& parent_space,
     const ComputedStyle& parent_style,
-    const NGBoxStrut& border_scrollbar_padding,
+    const LayoutUnit child_percentage_resolution_block_size_for_min_max,
     NGLayoutInputNode child) {
   DCHECK_EQ(type_, CustomLayoutWorkTask::TaskType::kIntrinsicSizes);
   DCHECK(resolver_);
 
-  // TODO(almaher) should use border_padding instead of
-  // border_scrollbar_padding.
-  LayoutUnit child_percentage_resolution_block_size =
-      CalculateChildPercentageBlockSizeForMinMax(
-          parent_space, parent, border_scrollbar_padding,
-          parent_space.PercentageResolutionBlockSize());
-
-  MinMaxSizeInput input(child_percentage_resolution_block_size);
+  MinMaxSizeInput input(child_percentage_resolution_block_size_for_min_max);
   MinMaxSize sizes =
       ComputeMinAndMaxContentContribution(parent_style, child, input);
   resolver_->Resolve(MakeGarbageCollected<CustomIntrinsicSizes>(

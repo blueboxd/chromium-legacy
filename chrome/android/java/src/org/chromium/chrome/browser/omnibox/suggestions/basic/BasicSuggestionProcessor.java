@@ -7,8 +7,6 @@ package org.chromium.chrome.browser.omnibox.suggestions.basic;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.support.annotation.DrawableRes;
-import android.text.Spannable;
-import android.text.SpannableString;
 import android.text.TextUtils;
 
 import org.chromium.base.Supplier;
@@ -23,8 +21,8 @@ import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionUiType;
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.base.SuggestionDrawableState;
+import org.chromium.chrome.browser.omnibox.suggestions.base.SuggestionSpannable;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewProperties.SuggestionIcon;
-import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewProperties.SuggestionTextContainer;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -193,21 +191,21 @@ public class BasicSuggestionProcessor extends BaseSuggestionViewProcessor {
     public void populateModel(OmniboxSuggestion suggestion, PropertyModel model, int position) {
         super.populateModel(suggestion, model, position);
         final @OmniboxSuggestionType int suggestionType = suggestion.getType();
-        Spannable textLine2 = null;
+        SuggestionSpannable textLine2 = null;
         boolean urlHighlighted = false;
 
         if (suggestion.isUrlSuggestion()) {
             if (!TextUtils.isEmpty(suggestion.getUrl())) {
-                Spannable str = SpannableString.valueOf(suggestion.getDisplayText());
+                SuggestionSpannable str = new SuggestionSpannable(suggestion.getDisplayText());
                 urlHighlighted = applyHighlightToMatchRegions(
                         str, suggestion.getDisplayTextClassifications());
                 textLine2 = str;
             }
         } else if (suggestionType == OmniboxSuggestionType.SEARCH_SUGGEST_PROFILE) {
-            textLine2 = SpannableString.valueOf(suggestion.getDescription());
+            textLine2 = new SuggestionSpannable(suggestion.getDescription());
         }
 
-        final Spannable textLine1 =
+        final SuggestionSpannable textLine1 =
                 getSuggestedQuery(suggestion, suggestion.isUrlSuggestion(), !urlHighlighted);
 
         updateSuggestionIcon(suggestion, model);
@@ -216,10 +214,8 @@ public class BasicSuggestionProcessor extends BaseSuggestionViewProcessor {
                         || suggestionType == OmniboxSuggestionType.CLIPBOARD_IMAGE
                         || suggestionType == OmniboxSuggestionType.CLIPBOARD_TEXT);
         model.set(SuggestionViewProperties.SUGGESTION_TYPE, suggestion.getType());
-        model.set(
-                SuggestionViewProperties.TEXT_LINE_1_TEXT, new SuggestionTextContainer(textLine1));
-        model.set(
-                SuggestionViewProperties.TEXT_LINE_2_TEXT, new SuggestionTextContainer(textLine2));
+        model.set(SuggestionViewProperties.TEXT_LINE_1_TEXT, textLine1);
+        model.set(SuggestionViewProperties.TEXT_LINE_2_TEXT, textLine2);
         fetchSuggestionFavicon(model, suggestion.getUrl(), suggestion.getType());
     }
 
@@ -263,7 +259,7 @@ public class BasicSuggestionProcessor extends BaseSuggestionViewProcessor {
      * @param shouldHighlight Whether the query should be highlighted.
      * @return The first line of text.
      */
-    private Spannable getSuggestedQuery(OmniboxSuggestion suggestion,
+    private SuggestionSpannable getSuggestedQuery(OmniboxSuggestion suggestion,
             boolean showDescriptionIfPresent, boolean shouldHighlight) {
         String userQuery = mUrlBarEditingTextProvider.getTextWithoutAutocomplete();
         String suggestedQuery = null;
@@ -284,7 +280,7 @@ public class BasicSuggestionProcessor extends BaseSuggestionViewProcessor {
                     new OmniboxSuggestion.MatchClassification(0, MatchClassificationStyle.NONE));
         }
 
-        Spannable str = SpannableString.valueOf(suggestedQuery);
+        SuggestionSpannable str = new SuggestionSpannable(suggestedQuery);
         if (shouldHighlight) applyHighlightToMatchRegions(str, classifications);
         return str;
     }

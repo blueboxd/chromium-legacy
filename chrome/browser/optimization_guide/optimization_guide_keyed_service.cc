@@ -210,13 +210,8 @@ OptimizationGuideKeyedService::ShouldTargetNavigation(
         navigation_handle, optimization_target);
   } else {
     DCHECK(hints_manager_);
-    optimization_guide::OptimizationTypeDecision
-        unused_optimization_type_decision;
-    hints_manager_->CanApplyOptimization(
-        navigation_handle, optimization_target,
-        optimization_guide::proto::OPTIMIZATION_NONE,
-        &optimization_target_decision, &unused_optimization_type_decision,
-        /*optimization_metadata=*/nullptr);
+    optimization_target_decision = hints_manager_->ShouldTargetNavigation(
+        navigation_handle, optimization_target);
   }
 
   LogOptimizationTargetDecision(navigation_handle, optimization_target,
@@ -232,13 +227,9 @@ OptimizationGuideKeyedService::CanApplyOptimization(
     optimization_guide::OptimizationMetadata* optimization_metadata) {
   DCHECK(hints_manager_);
 
-  optimization_guide::OptimizationTargetDecision
-      unused_optimization_target_decision;
-  optimization_guide::OptimizationTypeDecision optimization_type_decision;
-  hints_manager_->CanApplyOptimization(
-      navigation_handle, optimization_guide::proto::OPTIMIZATION_TARGET_UNKNOWN,
-      optimization_type, &unused_optimization_target_decision,
-      &optimization_type_decision, optimization_metadata);
+  optimization_guide::OptimizationTypeDecision optimization_type_decision =
+      hints_manager_->CanApplyOptimization(navigation_handle, optimization_type,
+                                           optimization_metadata);
 
   LogOptimizationTypeDecision(navigation_handle, optimization_type,
                               optimization_type_decision);

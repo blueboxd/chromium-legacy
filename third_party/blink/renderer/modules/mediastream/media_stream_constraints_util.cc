@@ -175,41 +175,41 @@ AudioCaptureSettings& AudioCaptureSettings::operator=(
 
 bool GetConstraintValueAsBoolean(
     const MediaConstraints& constraints,
-    const BooleanConstraint WebMediaTrackConstraintSet::*picker,
+    const BooleanConstraint MediaTrackConstraintSetPlatform::*picker,
     bool* value) {
   return ScanConstraintsForExactValue(constraints, picker, value);
 }
 
 bool GetConstraintValueAsInteger(
     const MediaConstraints& constraints,
-    const LongConstraint WebMediaTrackConstraintSet::*picker,
+    const LongConstraint MediaTrackConstraintSetPlatform::*picker,
     int* value) {
   return ScanConstraintsForExactValue(constraints, picker, value);
 }
 
 bool GetConstraintMinAsInteger(
     const MediaConstraints& constraints,
-    const LongConstraint WebMediaTrackConstraintSet::*picker,
+    const LongConstraint MediaTrackConstraintSetPlatform::*picker,
     int* value) {
   return ScanConstraintsForMinValue(constraints, picker, value);
 }
 
 bool GetConstraintMaxAsInteger(
     const MediaConstraints& constraints,
-    const LongConstraint WebMediaTrackConstraintSet::*picker,
+    const LongConstraint MediaTrackConstraintSetPlatform::*picker,
     int* value) {
   return ScanConstraintsForMaxValue(constraints, picker, value);
 }
 
 bool GetConstraintValueAsDouble(
     const MediaConstraints& constraints,
-    const DoubleConstraint WebMediaTrackConstraintSet::*picker,
+    const DoubleConstraint MediaTrackConstraintSetPlatform::*picker,
     double* value) {
   return ScanConstraintsForExactValue(constraints, picker, value);
 }
 
 VideoTrackAdapterSettings SelectVideoTrackAdapterSettings(
-    const WebMediaTrackConstraintSet& basic_constraint_set,
+    const MediaTrackConstraintSetPlatform& basic_constraint_set,
     const media_constraints::ResolutionSet& resolution_set,
     const media_constraints::NumericRangeSet<double>& frame_rate_set,
     const media::VideoCaptureFormat& source_format,

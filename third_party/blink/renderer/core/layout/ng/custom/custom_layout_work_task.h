@@ -14,12 +14,11 @@ namespace blink {
 class ComputedStyle;
 class CustomLayoutChild;
 class CustomLayoutToken;
-class NGBlockNode;
+class LayoutUnit;
 class NGConstraintSpace;
 class NGLayoutInputNode;
 class SerializedScriptValue;
 class ScriptPromiseResolver;
-struct NGBoxStrut;
 
 // Contains all the information needed to resolve a promise with a fragment or
 // intrinsic-sizes.
@@ -46,10 +45,9 @@ class CustomLayoutWorkTask {
   ~CustomLayoutWorkTask();
 
   // Runs this work task.
-  void Run(const NGBlockNode& parent,
-           const NGConstraintSpace& parent_space,
+  void Run(const NGConstraintSpace& parent_space,
            const ComputedStyle& parent_style,
-           const NGBoxStrut& border_scrollbar_padding);
+           const LayoutUnit child_percentage_resolution_block_size_for_min_max);
 
  private:
   Persistent<CustomLayoutChild> child_;
@@ -62,11 +60,10 @@ class CustomLayoutWorkTask {
   void RunLayoutFragmentTask(const NGConstraintSpace& parent_space,
                              const ComputedStyle& parent_style,
                              NGLayoutInputNode child);
-  void RunIntrinsicSizesTask(const NGBlockNode& parent,
-                             const NGConstraintSpace& parent_space,
-                             const ComputedStyle& parent_style,
-                             const NGBoxStrut& border_scrollbar_padding,
-                             NGLayoutInputNode child);
+  void RunIntrinsicSizesTask(
+      const ComputedStyle& parent_style,
+      const LayoutUnit child_percentage_resolution_block_size_for_min_max,
+      NGLayoutInputNode child);
 };
 
 }  // namespace blink

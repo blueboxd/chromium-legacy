@@ -27,6 +27,9 @@ class ASH_EXPORT HotseatWidget : public views::Widget,
   HotseatWidget();
   ~HotseatWidget() override;
 
+  // Returns whether the hotseat background should be shown.
+  static bool ShouldShowHotseatBackground();
+
   // Initializes the widget, sets its contents view and basic properties.
   void Initialize(aura::Window* container, Shelf* shelf);
 
@@ -57,8 +60,9 @@ class ASH_EXPORT HotseatWidget : public views::Widget,
   // Returns the target opacity (between 0 and 1) given current conditions.
   float CalculateOpacity();
 
-  // Updates the opaque background which functions as the hotseat background.
-  void UpdateOpaqueBackground();
+  // Sets the bounds of the opaque background which functions as the hotseat
+  // background.
+  void SetOpaqueBackground(const gfx::Rect& background_bounds);
 
   // Updates this widget's layout according to current conditions.
   void UpdateLayout(bool animate);

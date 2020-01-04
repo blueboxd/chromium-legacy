@@ -72,8 +72,10 @@ void WorkItemList::AddWorkItem(WorkItem* work_item) {
 }
 
 WorkItem* WorkItemList::AddCallbackWorkItem(
-    base::Callback<bool(const CallbackWorkItem&)> callback) {
-  WorkItem* item = WorkItem::CreateCallbackWorkItem(callback);
+    base::OnceCallback<bool(const CallbackWorkItem&)> do_action,
+    base::OnceCallback<void(const CallbackWorkItem&)> rollback_action) {
+  WorkItem* item = WorkItem::CreateCallbackWorkItem(std::move(do_action),
+                                                    std::move(rollback_action));
   AddWorkItem(item);
   return item;
 }
@@ -202,12 +204,10 @@ WorkItem* WorkItemList::AddSetRegValueWorkItem(
     const std::wstring& key_path,
     REGSAM wow64_access,
     const std::wstring& value_name,
-    const WorkItem::GetValueFromExistingCallback& get_value_callback) {
-  WorkItem* item = WorkItem::CreateSetRegValueWorkItem(predefined_root,
-                                                       key_path,
-                                                       wow64_access,
-                                                       value_name,
-                                                       get_value_callback);
+    WorkItem::GetValueFromExistingCallback get_value_callback) {
+  WorkItem* item = WorkItem::CreateSetRegValueWorkItem(
+      predefined_root, key_path, wow64_access, value_name,
+      std::move(get_value_callback));
   AddWorkItem(item);
   return item;
 }

@@ -42,12 +42,7 @@ class BLINK_PLATFORM_EXPORT WebCoalescedInputEvent {
   WebVector<const WebInputEvent*> GetPredictedEventsPointers() const;
 
  private:
-  struct BLINK_PLATFORM_EXPORT WebInputEventDeleter {
-    void operator()(blink::WebInputEvent*) const;
-  };
-
-  using WebScopedInputEvent =
-      std::unique_ptr<WebInputEvent, WebInputEventDeleter>;
+  using WebScopedInputEvent = std::unique_ptr<WebInputEvent>;
 
   WebScopedInputEvent MakeWebScopedInputEvent(const blink::WebInputEvent&);
 

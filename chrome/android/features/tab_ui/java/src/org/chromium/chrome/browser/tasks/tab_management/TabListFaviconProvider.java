@@ -62,7 +62,7 @@ public class TabListFaviconProvider {
             sRoundedChromeDrawable = processBitmap(chromeBitmap);
         }
         mDefaultIconColor = mContext.getResources().getColor(R.color.default_icon_color);
-        mIncognitoIconColor = mContext.getResources().getColor(R.color.default_icon_color_white);
+        mIncognitoIconColor = mContext.getResources().getColor(R.color.default_icon_color_light);
     }
 
     private Drawable processBitmap(Bitmap bitmap) {

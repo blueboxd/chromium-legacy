@@ -116,12 +116,11 @@ void GetCertificateCallbackTrue(
     const std::string& request_origin,
     bool force_new_key,
     const std::string& key_name,
-    const chromeos::attestation::AttestationFlow::CertificateCallback&
-        callback) {
+    chromeos::attestation::AttestationFlow::CertificateCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindRepeating(callback, chromeos::attestation::ATTESTATION_SUCCESS,
-                          "certificate"));
+      FROM_HERE, base::BindOnce(std::move(callback),
+                                chromeos::attestation::ATTESTATION_SUCCESS,
+                                "certificate"));
 }
 
 void GetCertificateCallbackUnspecifiedFailure(
@@ -130,13 +129,12 @@ void GetCertificateCallbackUnspecifiedFailure(
     const std::string& request_origin,
     bool force_new_key,
     const std::string& key_name,
-    const chromeos::attestation::AttestationFlow::CertificateCallback&
-        callback) {
+    chromeos::attestation::AttestationFlow::CertificateCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindRepeating(
-          callback, chromeos::attestation::ATTESTATION_UNSPECIFIED_FAILURE,
-          ""));
+      base::BindOnce(std::move(callback),
+                     chromeos::attestation::ATTESTATION_UNSPECIFIED_FAILURE,
+                     ""));
 }
 
 void GetCertificateCallbackBadRequestFailure(
@@ -145,12 +143,11 @@ void GetCertificateCallbackBadRequestFailure(
     const std::string& request_origin,
     bool force_new_key,
     const std::string& key_name,
-    const chromeos::attestation::AttestationFlow::CertificateCallback&
-        callback) {
+    chromeos::attestation::AttestationFlow::CertificateCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindRepeating(
-          callback,
+      base::BindOnce(
+          std::move(callback),
           chromeos::attestation::ATTESTATION_SERVER_BAD_REQUEST_FAILURE, ""));
 }
 

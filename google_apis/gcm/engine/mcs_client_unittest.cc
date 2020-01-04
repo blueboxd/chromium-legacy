@@ -222,13 +222,14 @@ void MCSClientTest::BuildMCSClient() {
 void MCSClientTest::InitializeClient() {
   gcm_store_->Load(
       GCMStore::CREATE_IF_MISSING,
-      base::Bind(
+      base::BindOnce(
           &MCSClient::Initialize, base::Unretained(mcs_client_.get()),
-          base::Bind(&MCSClientTest::ErrorCallback, base::Unretained(this)),
-          base::Bind(&MCSClientTest::MessageReceivedCallback,
-                     base::Unretained(this)),
-          base::Bind(&MCSClientTest::MessageSentCallback,
-                     base::Unretained(this))));
+          base::BindRepeating(&MCSClientTest::ErrorCallback,
+                              base::Unretained(this)),
+          base::BindRepeating(&MCSClientTest::MessageReceivedCallback,
+                              base::Unretained(this)),
+          base::BindRepeating(&MCSClientTest::MessageSentCallback,
+                              base::Unretained(this))));
   run_loop_->RunUntilIdle();
   run_loop_.reset(new base::RunLoop());
 }
@@ -266,8 +267,8 @@ void MCSClientTest::AddExpectedLoginRequest(
 void MCSClientTest::StoreCredentials() {
   gcm_store_->SetDeviceCredentials(
       kAndroidId, kSecurityToken,
-      base::Bind(&MCSClientTest::SetDeviceCredentialsCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&MCSClientTest::SetDeviceCredentialsCallback,
+                     base::Unretained(this)));
   run_loop_->Run();
   run_loop_.reset(new base::RunLoop());
 }

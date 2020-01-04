@@ -235,7 +235,7 @@ bool ScrollManager::CanScroll(const ScrollState& scroll_state,
   return clamped_offset != current_offset;
 }
 
-bool ScrollManager::LogicalScroll(ScrollDirection direction,
+bool ScrollManager::LogicalScroll(mojom::blink::ScrollDirection direction,
                                   ScrollGranularity granularity,
                                   Node* start_node,
                                   Node* mouse_press_node) {
@@ -334,7 +334,7 @@ bool ScrollManager::LogicalScroll(ScrollDirection direction,
 
 // TODO(bokan): This should be merged with logicalScroll assuming
 // defaultSpaceEventHandler's chaining scroll can be done crossing frames.
-bool ScrollManager::BubblingScroll(ScrollDirection direction,
+bool ScrollManager::BubblingScroll(mojom::blink::ScrollDirection direction,
                                    ScrollGranularity granularity,
                                    Node* starting_node,
                                    Node* mouse_press_node) {

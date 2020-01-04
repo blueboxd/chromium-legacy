@@ -16,12 +16,54 @@
 #include "chrome/browser/chromeos/power/auto_screen_brightness/modeller_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "components/session_manager/core/session_manager.h"
 
 namespace chromeos {
 namespace power {
 namespace auto_screen_brightness {
 
 Controller::Controller() {
+  auto* session_manager = session_manager::SessionManager::Get();
+  DCHECK(session_manager);
+
+  if (!session_manager->sessions().empty()) {
+    // If a user session has been created, we can use the primary user profile
+    // to initialize all components immediately without waiting for
+    // |OnUserSessionStarted| to be called.
+    InitializeComponents();
+    return;
+  }
+
+  // Wait for a user session to be created.
+  session_manager->AddObserver(this);
+  observing_session_manager_ = true;
+}
+
+Controller::~Controller() {
+  if (observing_session_manager_) {
+    auto* session_manager = session_manager::SessionManager::Get();
+    if (session_manager)
+      session_manager->RemoveObserver(this);
+  }
+}
+
+void Controller::OnUserSessionStarted(bool /* is_primary_user */) {
+  // The first sign-in user is the primary user, hence if |OnUserSessionStarted|
+  // is called, the primary user profile should have been created. We will
+  // ignore |is_primary_user|.
+  if (is_initialized_)
+    return;
+
+  InitializeComponents();
+}
+
+void Controller::InitializeComponents() {
+  DCHECK(!is_initialized_);
+  is_initialized_ = true;
+
+  Profile* const profile = ProfileManager::GetPrimaryUserProfile();
+  DCHECK(profile);
+
   chromeos::PowerManagerClient* power_manager_client =
       chromeos::PowerManagerClient::Get();
   DCHECK(power_manager_client);
@@ -41,8 +83,6 @@ Controller::Controller() {
       ui::UserActivityDetector::Get();
   DCHECK(user_activity_detector);
 
-  Profile* const profile = ProfileManager::GetPrimaryUserProfile();
-  DCHECK(profile);
   modeller_ = std::make_unique<ModellerImpl>(
       profile, als_reader_.get(), brightness_monitor_.get(),
       model_config_loader_.get(), user_activity_detector,
@@ -53,8 +93,6 @@ Controller::Controller() {
       model_config_loader_.get(), metrics_reporter_.get());
   adapter_->Init();
 }
-
-Controller::~Controller() = default;
 
 }  // namespace auto_screen_brightness
 }  // namespace power

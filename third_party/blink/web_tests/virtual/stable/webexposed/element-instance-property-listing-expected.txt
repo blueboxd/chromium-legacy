@@ -266,7 +266,6 @@ html element a
     property host
     property hostname
     property href
-    property hrefTranslate
     property hreflang
     property name
     property origin

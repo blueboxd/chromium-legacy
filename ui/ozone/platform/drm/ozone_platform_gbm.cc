@@ -159,8 +159,7 @@ class OzonePlatformGbm : public OzonePlatform {
 
     auto platform_window = std::make_unique<DrmWindowHost>(
         delegate, properties.bounds, adapter, event_factory_ozone_.get(),
-        cursor_.get(), window_manager_.get(), display_manager_.get(),
-        overlay_manager_.get());
+        cursor_.get(), window_manager_.get(), display_manager_.get());
     platform_window->Initialize();
     return std::move(platform_window);
   }
@@ -325,6 +324,7 @@ class OzonePlatformGbm : public OzonePlatform {
   std::unique_ptr<GbmSurfaceFactory> surface_factory_;
   scoped_refptr<IPC::MessageFilter> gpu_message_filter_;
   scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
+  std::unique_ptr<DrmOverlayManager> overlay_manager_;
 
   // TODO(rjkroege,sadrul): Provide a more elegant solution for this issue when
   // running in single process mode.
@@ -338,9 +338,9 @@ class OzonePlatformGbm : public OzonePlatform {
   // TODO(rjkroege): Remove gpu_platform_support_host_ once ozone/drm with mojo
   // has reached the stable channel.
   // A raw pointer to either |gpu_platform_support_host_| or |host_drm_device_|
-  // is passed to |display_manager_| and |overlay_manager_| in IntializeUI.
-  // To avoid a use after free, the following two members should be declared
-  // before the two managers, so that they're deleted after them.
+  // is passed to |display_manager_| in InitializeUI(). To avoid a use after
+  // free, the following two members should be declared before the two managers,
+  // so that they're deleted after them.
   std::unique_ptr<DrmGpuPlatformSupportHost> gpu_platform_support_host_;
 
   // Objects in the host process.
@@ -357,7 +357,6 @@ class OzonePlatformGbm : public OzonePlatform {
   std::unique_ptr<DrmCursor> cursor_;
   std::unique_ptr<EventFactoryEvdev> event_factory_ozone_;
   std::unique_ptr<DrmDisplayHostManager> display_manager_;
-  std::unique_ptr<DrmOverlayManager> overlay_manager_;
   InitializedHostProperties host_properties_;
 
   base::WeakPtrFactory<OzonePlatformGbm> weak_factory_{this};

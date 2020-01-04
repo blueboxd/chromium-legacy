@@ -389,7 +389,7 @@ class SharedImageBackingD3D : public SharedImageBacking {
       SharedImageManager* manager,
       MemoryTypeTracker* tracker,
       scoped_refptr<SharedContextState> context_state) override {
-    return SharedImageRepresentationSkiaGL::CreateForPassthrough(
+    return SharedImageRepresentationSkiaGL::Create(
         ProduceGLTexturePassthrough(manager, tracker), std::move(context_state),
         manager, this, tracker);
   }

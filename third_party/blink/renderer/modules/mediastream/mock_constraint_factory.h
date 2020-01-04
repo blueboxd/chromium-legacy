@@ -19,16 +19,16 @@ class MockConstraintFactory {
   ~MockConstraintFactory();
 
   MediaConstraints CreateMediaConstraints() const;
-  WebMediaTrackConstraintSet& basic() { return basic_; }
-  WebMediaTrackConstraintSet& AddAdvanced();
+  MediaTrackConstraintSetPlatform& basic() { return basic_; }
+  MediaTrackConstraintSetPlatform& AddAdvanced();
 
   void DisableDefaultAudioConstraints();
   void DisableAecAudioConstraints();
   void Reset();
 
  private:
-  WebMediaTrackConstraintSet basic_;
-  Vector<WebMediaTrackConstraintSet> advanced_;
+  MediaTrackConstraintSetPlatform basic_;
+  Vector<MediaTrackConstraintSetPlatform> advanced_;
 
   DISALLOW_COPY_AND_ASSIGN(MockConstraintFactory);
 };

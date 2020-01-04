@@ -226,8 +226,8 @@ void ResourceScheduler::ScheduledResourceRequest::RunResumeCallback() {
   std::move(resume_callback_).Run();
 }
 
-// This is the handle we return to the ResourceDispatcherHostImpl so it can
-// interact with the request.
+// This is the handle we return to the URLLoader so it can interact with the
+// request.
 class ResourceScheduler::ScheduledResourceRequestImpl
     : public ScheduledResourceRequest {
  public:

@@ -169,6 +169,57 @@ void ReportMakeCredentialRequestTransport(FidoAuthenticator* authenticator) {
   }
 }
 
+// ValidateResponseExtensions returns true iff |extensions| is valid as a
+// response to |request| from an authenticator that reports that it supports
+// |options|.
+bool ValidateResponseExtensions(const CtapMakeCredentialRequest& request,
+                                const AuthenticatorSupportedOptions& options,
+                                const cbor::Value& extensions) {
+  if (!extensions.is_map()) {
+    return false;
+  }
+
+  for (const auto& it : extensions.GetMap()) {
+    if (!it.first.is_string()) {
+      return false;
+    }
+    const std::string& ext_name = it.first.GetString();
+
+    if (ext_name == kExtensionCredProtect) {
+      if (!options.supports_cred_protect || !it.second.is_integer()) {
+        return false;
+      }
+
+      // The authenticator can return any valid credProtect value that is
+      // equal to, or greater than, what was requested, including when
+      // nothing was requested.
+      const int64_t requested_level =
+          request.cred_protect
+              ? base::strict_cast<int64_t>(request.cred_protect->first)
+              : 1;
+      const int64_t returned_level = it.second.GetInteger();
+
+      if (returned_level < requested_level ||
+          returned_level >
+              base::strict_cast<int64_t>(CredProtect::kUVRequired)) {
+        FIDO_LOG(ERROR) << "Returned credProtect level (" << returned_level
+                        << ") is invalid or less than the requested level ("
+                        << requested_level << ")";
+        return false;
+      }
+    } else if (ext_name == kExtensionHmacSecret) {
+      if (!request.hmac_secret || !it.second.is_bool()) {
+        return false;
+      }
+    } else {
+      // Authenticators may not return unknown extensions.
+      return false;
+    }
+  }
+
+  return true;
+}
+
 }  // namespace
 
 MakeCredentialRequestHandler::MakeCredentialRequestHandler(
@@ -389,30 +440,15 @@ void MakeCredentialRequestHandler::HandleResponse(
 
   const base::Optional<cbor::Value>& extensions =
       response->attestation_object().authenticator_data().extensions();
-  if (extensions) {
-    // The fact that |extensions| is a map is checked in
-    // |AuthenticatorData::DecodeAuthenticatorData|.
-    for (const auto& it : extensions->GetMap()) {
-      if (request_.cred_protect &&
-          authenticator->Options()->supports_cred_protect &&
-          it.first.is_string() &&
-          it.first.GetString() == kExtensionCredProtect &&
-          it.second.is_integer()) {
-        continue;
-      }
-      if (request_.hmac_secret && it.first.is_string() &&
-          it.first.GetString() == kExtensionHmacSecret && it.second.is_bool()) {
-        continue;
-      }
-
-      FIDO_LOG(ERROR)
-          << "Failing make credential request due to extensions block: "
-          << cbor::DiagnosticWriter::Write(*extensions);
-      std::move(completion_callback_)
-          .Run(MakeCredentialStatus::kAuthenticatorResponseInvalid,
-               base::nullopt, authenticator);
-      return;
-    }
+  if (extensions && !ValidateResponseExtensions(
+                        request_, *authenticator->Options(), *extensions)) {
+    FIDO_LOG(ERROR)
+        << "Failing make credential request due to extensions block: "
+        << cbor::DiagnosticWriter::Write(*extensions);
+    std::move(completion_callback_)
+        .Run(MakeCredentialStatus::kAuthenticatorResponseInvalid, base::nullopt,
+             authenticator);
+    return;
   }
 
   if (authenticator->AuthenticatorTransport()) {

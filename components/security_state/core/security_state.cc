@@ -173,6 +173,14 @@ SecurityLevel GetSecurityLevel(
     return NONE;
   }
 
+  // Downgrade the security level for active insecure subresources. This comes
+  // before handling non-cryptographic schemes below, because secure pages with
+  // non-cryptographic schemes (e.g., about:blank) can still have mixed content.
+  if (visible_security_state.ran_mixed_content ||
+      visible_security_state.ran_content_with_cert_errors) {
+    return kRanInsecureContentLevel;
+  }
+
   // Choose the appropriate security level for requests to HTTP and remaining
   // pseudo URLs (blob:, filesystem:). filesystem: is a standard scheme so does
   // not need to be explicitly listed here.
@@ -190,12 +198,6 @@ SecurityLevel GetSecurityLevel(
           visible_security_state.insecure_input_events);
     }
     return NONE;
-  }
-
-  // Downgrade the security level for active insecure subresources.
-  if (visible_security_state.ran_mixed_content ||
-      visible_security_state.ran_content_with_cert_errors) {
-    return kRanInsecureContentLevel;
   }
 
   // Downgrade the security level for pages loaded over legacy TLS versions.

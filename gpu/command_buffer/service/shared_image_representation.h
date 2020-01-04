@@ -29,6 +29,8 @@ class GLImage;
 }
 
 namespace gpu {
+class TextureBase;
+
 namespace gles2 {
 class Texture;
 class TexturePassthrough;
@@ -129,6 +131,8 @@ class GPU_GLES2_EXPORT SharedImageRepresentationGLTextureBase
       GLenum mode,
       AllowUnclearedAccess allow_uncleared);
 
+  virtual gpu::TextureBase* GetTextureBase() = 0;
+
  protected:
   friend class SharedImageRepresentationSkiaGL;
 
@@ -152,6 +156,8 @@ class GPU_GLES2_EXPORT SharedImageRepresentationGLTexture
   // TODO(ericrk): Move this to the ScopedAccess object. crbug.com/1003686
   virtual gles2::Texture* GetTexture() = 0;
 
+  gpu::TextureBase* GetTextureBase() override;
+
  protected:
   void UpdateClearedStateOnEndAccess() override;
 };
@@ -167,6 +173,8 @@ class GPU_GLES2_EXPORT SharedImageRepresentationGLTexturePassthrough
   // TODO(ericrk): Move this to the ScopedAccess object. crbug.com/1003686
   virtual const scoped_refptr<gles2::TexturePassthrough>&
   GetTexturePassthrough() = 0;
+
+  gpu::TextureBase* GetTextureBase() override;
 };
 
 class GPU_GLES2_EXPORT SharedImageRepresentationSkia

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.omnibox.suggestions.base;
 
 import android.content.Context;
 import android.support.annotation.IdRes;
+import android.support.v7.widget.AppCompatImageView;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -54,7 +55,7 @@ public class BaseSuggestionView extends SimpleHorizontalLayoutView {
         addView(mDecoratedView);
 
         // Action icons. Currently we only support the Refine button.
-        mActionView = new ImageView(getContext());
+        mActionView = new AppCompatImageView(getContext());
         mActionView.setBackgroundResource(selectableBackgroundRes);
         mActionView.setClickable(true);
         mActionView.setFocusable(true);

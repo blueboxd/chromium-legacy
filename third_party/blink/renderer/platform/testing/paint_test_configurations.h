@@ -36,15 +36,6 @@ class PaintTestConfigurations
   INSTANTIATE_TEST_SUITE_P(All, test_class,      \
                            ::testing::Values(kCompositeAfterPaint))
 
-// TODO(pdr): Remove this in favor of INSTANTIATE_PAINT_TEST_SUITE_P.
-#define INSTANTIATE_LAYER_LIST_TEST_SUITE_P(test_class) \
-  INSTANTIATE_TEST_SUITE_P(All, test_class,             \
-                           ::testing::Values(0, kCompositeAfterPaint))
-
-#define INSTANTIATE_SCROLL_HIT_TEST_SUITE_P(test_class) \
-  INSTANTIATE_TEST_SUITE_P(All, test_class,             \
-                           ::testing::Values(0, kCompositeAfterPaint))
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_PAINT_TEST_CONFIGURATIONS_H_

@@ -17,6 +17,7 @@
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
 #include "media/base/audio_buffer.h"
+#include "media/base/media_util.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -106,6 +107,7 @@ class AudioDecoderAndroid : public MediaPipelineBackend::AudioDecoder,
   std::unique_ptr<CastAudioDecoder> decoder_;
 
   std::unique_ptr<::media::AudioRendererAlgorithm> rate_shifter_;
+  ::media::NullMediaLog media_log_;
   base::circular_deque<RateShifterInfo> rate_shifter_info_;
   std::unique_ptr<::media::AudioBus> rate_shifter_output_;
 

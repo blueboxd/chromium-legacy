@@ -1,0 +1,1565 @@
+{
+  "schema": "pedals_translation_model",
+  "schema_version": 1,
+  "time_generated": "20200103T181909",
+  "primary_language_code": "en",
+  "locales": [
+    {
+      "language_code": "de",
+      "tokenize_characters": " -",
+      "ignore_group": {
+        "required": false,
+        "single": false,
+        "synonyms": [
+          "wie",
+          "wo",
+          "kann",
+          "ich",
+          "man",
+          "die",
+          "meine",
+          "meinem",
+          "seine",
+          "seinem",
+          "in",
+          "aus",
+          "im",
+          "mit",
+          "den",
+          "ein",
+          "seinen",
+          "meinen",
+          "mein",
+          "sein"
+        ]
+      },
+      "pedals": [
+        {
+          "name": "CLEAR_BROWSING_DATA",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "browser",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "löschen",
+                "entfernen",
+                "leeren"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "cache",
+                "verlauf",
+                "browserverlauf",
+                "suchverlauf",
+                "browserdaten",
+                "daten"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "CHANGE_SEARCH_ENGINE",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "browser",
+                "chrome",
+                "google"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "ändern",
+                "wechseln",
+                "umstellen",
+                "einstellen"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "standardeinstellung suche",
+                "suchmaschine",
+                "standardsuchmaschine",
+                "standard suchmaschine",
+                "standardsuche",
+                "standard suche",
+                "standard suchmaschine",
+                "sucheinstellung",
+                "einstellungen suche"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "MANAGE_PASSWORDS",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "browser",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "verwalten",
+                "ändern",
+                "anzeigen",
+                "anschauen"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "passwörter",
+                "passwort"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "CHANGE_HOME_PAGE",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "browser",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "ändern",
+                "einstellen",
+                "wechseln",
+                "umstellen"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "start seite",
+                "startseite"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "UPDATE_CREDIT_CARD",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "browser",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "ändern",
+                "aktualisieren",
+                "bearbeiten"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "kreditkarte",
+                "kreditkartendaten",
+                "kredit karte",
+                "kartendaten"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "LAUNCH_INCOGNITO",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "browser",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "starten",
+                "surfen",
+                "arbeiten",
+                "öffnen"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "inkognitofenster",
+                "inkognito fenster",
+                "inkognitomodus",
+                "inkognito modus",
+                "privatmodus",
+                "privat modus",
+                "privat",
+                "inkognito"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "TRANSLATE",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "browser",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "übersetzen",
+                "sprache ändern"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "webseite",
+                "website",
+                "seite",
+                "diese webseite",
+                "diese website",
+                "diese seite"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "diese"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "UPDATE_CHROME",
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "browser",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "aktualisieren",
+                "upgraden",
+                "upgrade",
+                "update",
+                "installieren"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "language_code": "en",
+      "tokenize_characters": " -",
+      "ignore_group": {
+        "required": false,
+        "single": false,
+        "synonyms": [
+          "inside",
+          "within",
+          "for",
+          "how",
+          "the",
+          "an",
+          "do",
+          "in",
+          "my",
+          "on",
+          "to",
+          "a",
+          "i"
+        ]
+      },
+      "pedals": [
+        {
+          "name": "CLEAR_BROWSING_DATA",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "browser",
+                "browsing",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "delete",
+                "remove",
+                "erase",
+                "clear",
+                "wipe"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "history",
+                "cache",
+                "data"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "CHANGE_SEARCH_ENGINE",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "browser",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "choose",
+                "change",
+                "switch",
+                "select"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "standard search engine",
+                "default search engine",
+                "search engine",
+                "search"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "MANAGE_PASSWORDS",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "browser",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "manager",
+                "manage",
+                "update",
+                "change"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "passwords"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "CHANGE_HOME_PAGE",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "browser",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "change",
+                "choose",
+                "set"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "home page",
+                "homepage"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "UPDATE_CREDIT_CARD",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "browser",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "update",
+                "edit",
+                "change"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "credit card info",
+                "credit cards",
+                "credit card",
+                "card info",
+                "cards"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "LAUNCH_INCOGNITO",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "browser",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "launch",
+                "start",
+                "enter",
+                "open",
+                "create"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "incognito window",
+                "incognito mode",
+                "private window",
+                "incognito tab",
+                "private mode",
+                "private tab",
+                "incognito"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "TRANSLATE",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "browser",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "change language",
+                "translate"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "this page",
+                "page",
+                "this"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "UPDATE_CHROME",
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "browser",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "upgrade",
+                "install",
+                "update"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "language_code": "fr",
+      "tokenize_characters": " -",
+      "ignore_group": {
+        "required": false,
+        "single": false,
+        "synonyms": [
+          "une",
+          "un",
+          "de",
+          "des",
+          "dans",
+          "le",
+          "la",
+          "les"
+        ]
+      },
+      "pedals": [
+        {
+          "name": "CLEAR_BROWSING_DATA",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "navigateur",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "supprimer",
+                "effacer",
+                "vider",
+                "enlever",
+                "supprime",
+                "efface",
+                "vide",
+                "enlève"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "historique",
+                "cache",
+                "données",
+                "navigation",
+                "informations",
+                "infos",
+                "traces"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "CHANGE_SEARCH_ENGINE",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "navigateur",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "choisir",
+                "changer",
+                "passer",
+                "sélectionner",
+                "modifier",
+                "actualiser",
+                "choisis",
+                "choisit",
+                "change",
+                "passe",
+                "sélectionne",
+                "modifie",
+                "actualise"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "moteur de recherche par défaut",
+                "moteur de recherche",
+                "recherche",
+                "autre moteur de recherche",
+                "moteur de recherche standard"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "MANAGE_PASSWORDS",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "navigateur",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "gestionnaire",
+                "gérer",
+                "mettre à jour",
+                "changer",
+                "modifier",
+                "actualiser",
+                "gère",
+                "met à jour",
+                "change",
+                "modifie",
+                "actualise",
+                "met à jour",
+                "mets à jour"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "mot de passe",
+                "mots de passe"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "CHANGE_HOME_PAGE",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "navigateur",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "changer",
+                "choisir",
+                "définir",
+                "modifier",
+                "actualiser",
+                "choisis",
+                "choisit",
+                "définis",
+                "définit",
+                "modifie",
+                "actualise"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "page d'accueil",
+                "page accueil",
+                "homepage"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "UPDATE_CREDIT_CARD",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "navigateur",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "mettre à jour",
+                "modifier",
+                "actualiser",
+                "changer",
+                "met à jour",
+                "mets à jour",
+                "modifie",
+                "actualise",
+                "change"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "cartes de crédit",
+                "infos carte de crédit",
+                "cartes",
+                "cartes de paiement",
+                "carte bancaire",
+                "mode de paiement",
+                "infos bancaires",
+                "cartes bancaires",
+                "carte de paiement",
+                "informations bancaires",
+                "informations de carte"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "LAUNCH_INCOGNITO",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "navigateur",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "lancer",
+                "démarrer",
+                "passer",
+                "ouvrir",
+                "choisir",
+                "sélectionner",
+                "naviguer",
+                "lance",
+                "démarre",
+                "passe",
+                "ouvre",
+                "choisis",
+                "choisit",
+                "sélectionne"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "navigation privée",
+                "fenêtre confidentielle",
+                "mode privé",
+                "mode incognito",
+                "onglet privé",
+                "incognito",
+                "fenetre privée",
+                "mode confidentialité",
+                "fenêtre privée",
+                "confidentialité",
+                "navigation confidentielle",
+                "onglet incognito",
+                "sans traces"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "TRANSLATE",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "navigateur",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "traduire",
+                "sélectionner la langue",
+                "changer langue",
+                "traduis",
+                "traduit",
+                "sélectionne la langue",
+                "change langue"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "cette page",
+                "page",
+                "cette page"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "UPDATE_CHROME",
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "navigateur",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "mettre à jour",
+                "installer",
+                "mettre à niveau",
+                "actualiser",
+                "met à jour",
+                "mets à jour",
+                "installe",
+                "mets à niveau",
+                "met à niveau",
+                "actualise"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "dernière version"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "language_code": "ja",
+      "tokenize_characters": "",
+      "ignore_group": {
+        "required": false,
+        "single": false,
+        "synonyms": [
+          " ",
+          "する",
+          "の",
+          "で",
+          "を",
+          "方法",
+          "やり方",
+          "仕方"
+        ]
+      },
+      "pedals": [
+        {
+          "name": "CLEAR_BROWSING_DATA",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "グーグルクローム",
+                "ブラウザ",
+                "ブラウザー",
+                "ブラウジング",
+                "chrome",
+                "クローム"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "消す",
+                "削除",
+                "消去",
+                "クリア"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "履歴",
+                "キャッシュ",
+                "データ",
+                "閲覧履歴"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "CHANGE_SEARCH_ENGINE",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "グーグルクローム",
+                "ブラウザ",
+                "ブラウザー",
+                "chrome",
+                "クローム"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "選択",
+                "変更",
+                "切替",
+                "切り替え",
+                "管理",
+                "変える",
+                "設定"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "既定検索エンジン",
+                "デフォルト検索エンジン",
+                "検索エンジン",
+                "サーチエンジン"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "MANAGE_PASSWORDS",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "グーグルクローム",
+                "ブラウザ",
+                "ブラウザー",
+                "chrome",
+                "クローム"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "管理",
+                "アップデート",
+                "更新",
+                "再設定",
+                "変更",
+                "変える"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "パスワード"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "CHANGE_HOME_PAGE",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "グーグルクローム",
+                "ブラウザ",
+                "ブラウザー",
+                "chrome",
+                "クローム"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "変更",
+                "変える",
+                "選択",
+                "選ぶ",
+                "設定"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "ホームページ",
+                "hp"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "UPDATE_CREDIT_CARD",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "グーグルクローム",
+                "ブラウザ",
+                "ブラウザー",
+                "chrome",
+                "クローム"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "更新",
+                "アップデート",
+                "編集",
+                "変更",
+                "変える"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "クレジットカード情報",
+                "クレジットカード",
+                "お支払い",
+                "お支払い情報",
+                "カード情報",
+                "カード",
+                "支払い",
+                "支払い情報"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "LAUNCH_INCOGNITO",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "グーグルクローム",
+                "ブラウザ",
+                "ブラウザー",
+                "chrome",
+                "クローム"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "起動",
+                "開始",
+                "開く",
+                "使い方",
+                "オン",
+                "有効",
+                "使う"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "シークレットウィンドウ",
+                "シークレットモード",
+                "プライベートブラウジング",
+                "シークレットタブ",
+                "プライベートモード",
+                "プライベートタブ",
+                "シークレット"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "TRANSLATE",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "グーグルクローム",
+                "ブラウザ",
+                "ブラウザー",
+                "chrome",
+                "クローム"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "言語設定",
+                "言語切替",
+                "言語変更",
+                "翻訳"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "このページ",
+                "ページ",
+                "これ",
+                "この"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "UPDATE_CHROME",
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "グーグルクローム",
+                "ブラウザ",
+                "ブラウザー",
+                "chrome",
+                "クローム"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "アップグレード",
+                "インストール",
+                "アップデート",
+                "更新",
+                "ダウンロード"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "language_code": "zh-CN",
+      "tokenize_characters": "",
+      "ignore_group": {
+        "required": false,
+        "single": false,
+        "synonyms": [
+          " "
+        ]
+      },
+      "pedals": [
+        {
+          "name": "CLEAR_BROWSING_DATA",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "浏览器",
+                "浏览",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "清除",
+                "删除",
+                "移除",
+                "去除",
+                "清理",
+                "擦除"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "数据",
+                "历史",
+                "记录",
+                "缓存",
+                "浏览数据",
+                "浏览历史",
+                "浏览记录",
+                "访问记录",
+                "访问历史"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "CHANGE_SEARCH_ENGINE",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "浏览器",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "更改",
+                "更换",
+                "改变",
+                "切换",
+                "换",
+                "设置"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "搜索引擎",
+                "搜索器",
+                "搜索",
+                "默认搜索"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "MANAGE_PASSWORDS",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "浏览器",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "管理",
+                "修改",
+                "更新",
+                "更换",
+                "更改",
+                "设置"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "密码"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "CHANGE_HOME_PAGE",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "浏览器",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "更改",
+                "更换",
+                "改变",
+                "切换",
+                "换",
+                "设置",
+                "修改"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "主页",
+                "首页"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "UPDATE_CREDIT_CARD",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "浏览器",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "更新",
+                "更改",
+                "更换",
+                "修改",
+                "设置"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "信用卡",
+                "银行卡",
+                "支付卡"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "LAUNCH_INCOGNITO",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "浏览器",
+                "浏览",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "启动",
+                "开启",
+                "打开",
+                "开始",
+                "启用",
+                "进入"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "无痕模式",
+                "无痕窗口",
+                "私密模式",
+                "私密窗口",
+                "隐身模式"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "TRANSLATE",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "浏览器",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "翻译",
+                "切换语言",
+                "转换",
+                "切换",
+                "转化"
+              ]
+            },
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "这句话",
+                "这段话",
+                "此内容",
+                "本页面"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "UPDATE_CHROME",
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "浏览器",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "更新",
+                "升级",
+                "安装"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

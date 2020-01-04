@@ -553,7 +553,8 @@ void UninstallActiveSetupEntries(const InstallerState& installer_state) {
   VLOG(1) << "Uninstall per-user Active Setup keys.";
   std::vector<const base::string16*> paths = {&active_setup_path,
                                               &alternate_active_setup_path};
-  VisitUserHives(base::Bind(&DeleteUserRegistryKeys, base::Unretained(&paths)));
+  VisitUserHives(
+      base::BindRepeating(&DeleteUserRegistryKeys, base::Unretained(&paths)));
 }
 
 // Removes the persistent blacklist state for the current user.  Note: this will

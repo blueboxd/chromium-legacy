@@ -92,7 +92,7 @@ class CompositingTest : public PaintTestConfigurations, public testing::Test {
   std::unique_ptr<frame_test_helpers::WebViewHelper> web_view_helper_;
 };
 
-INSTANTIATE_LAYER_LIST_TEST_SUITE_P(CompositingTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(CompositingTest);
 
 TEST_P(CompositingTest, DidScrollCallbackAfterScrollableAreaChanges) {
   InitializeWithHTML(*WebView()->MainFrameImpl()->GetFrame(),
@@ -259,7 +259,7 @@ class CompositingSimTest : public PaintTestConfigurations, public SimTest {
   }
 };
 
-INSTANTIATE_LAYER_LIST_TEST_SUITE_P(CompositingSimTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(CompositingSimTest);
 
 TEST_P(CompositingSimTest, LayerUpdatesDoNotInvalidateEarlierLayers) {
   InitializeWithHTML(R"HTML(

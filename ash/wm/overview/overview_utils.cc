@@ -9,10 +9,13 @@
 #include "ash/home_screen/home_launcher_gesture_handler.h"
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/scoped_animation_disabler.h"
 #include "ash/screen_util.h"
+#include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
 #include "ash/wm/overview/delayed_animation_observer_impl.h"
@@ -226,14 +229,16 @@ void MaximizeIfSnapped(aura::Window* window) {
 gfx::Rect GetGridBoundsInScreen(aura::Window* target_root) {
   return GetGridBoundsInScreen(target_root,
                                /*window_dragging_state=*/base::nullopt,
-                               /*divider_changed=*/false);
+                               /*divider_changed=*/false,
+                               /*account_for_hotseat=*/true);
 }
 
 gfx::Rect GetGridBoundsInScreen(
     aura::Window* target_root,
     base::Optional<SplitViewDragIndicators::WindowDraggingState>
         window_dragging_state,
-    bool divider_changed) {
+    bool divider_changed,
+    bool account_for_hotseat) {
   auto* split_view_controller = SplitViewController::Get(target_root);
   auto state = split_view_controller->state();
 
@@ -275,6 +280,33 @@ gfx::Rect GetGridBoundsInScreen(
       // When this function is called, SplitViewController should have already
       // handled the state change.
       NOTREACHED();
+  }
+
+  // Hotseat is overlaps the work area / split view bounds when extended, but in
+  // some cases we don't want its bounds in our calculations.
+  if (account_for_hotseat) {
+    Shelf* shelf = Shelf::ForWindow(target_root);
+    const bool hotseat_extended =
+        shelf->shelf_layout_manager()->hotseat_state() ==
+        HotseatState::kExtended;
+    // When a window is dragged from the top of the screen, overview gets
+    // entered immediately but the window does not get deactivated right away so
+    // the hotseat state does not get updated until the window gets dragged a
+    // bit. In this case, determine whether the hotseat will be extended to
+    // avoid doing a expensive double grid layout.
+    auto* overview_session =
+        Shell::Get()->overview_controller()->overview_session();
+    const bool hotseat_will_extend =
+        overview_session &&
+        overview_session->enter_exit_overview_type() ==
+            OverviewSession::EnterExitOverviewType::kImmediateEnter &&
+        !split_view_controller->InSplitViewMode();
+    if (hotseat_extended || hotseat_will_extend) {
+      const int hotseat_bottom_inset =
+          ShelfConfig::Get()->hotseat_size() +
+          ShelfConfig::Get()->hotseat_bottom_padding();
+      bounds.Inset(0, 0, 0, hotseat_bottom_inset);
+    }
   }
 
   if (!divider_changed)
@@ -328,9 +360,11 @@ base::Optional<gfx::RectF> GetSplitviewBoundsMaintainingAspectRatio(
     return base::nullopt;
   }
 
+  // The hotseat bounds do not affect splitview after a window is snapped, so
+  // the aspect ratio should reflect it and not worry about the hotseat.
   return base::make_optional(gfx::RectF(GetGridBoundsInScreen(
       root_window, base::make_optional(window_dragging_state),
-      /*divider_changed=*/false)));
+      /*divider_changed=*/false, /*account_for_hotseat=*/false)));
 }
 
 bool ShouldUseTabletModeGridLayout() {

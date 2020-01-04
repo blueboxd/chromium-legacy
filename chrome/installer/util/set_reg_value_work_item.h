@@ -45,7 +45,7 @@ class SetRegValueWorkItem : public WorkItem {
                       const std::wstring& key_path,
                       REGSAM wow64_access,
                       const std::wstring& value_name,
-                      const GetValueFromExistingCallback& get_value_callback);
+                      GetValueFromExistingCallback get_value_callback);
 
   ~SetRegValueWorkItem() override;
 
@@ -82,7 +82,7 @@ class SetRegValueWorkItem : public WorkItem {
 
   // If this is set, it will be used to get the desired value to be set based on
   // the existing value in the registry.
-  const GetValueFromExistingCallback get_value_callback_;
+  GetValueFromExistingCallback get_value_callback_;
 
   // Whether to overwrite the existing value under the target key.
   bool overwrite_;

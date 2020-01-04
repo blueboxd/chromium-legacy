@@ -12,46 +12,6 @@
 
 namespace blink {
 
-namespace {
-
-struct WebInputEventDelete {
-  template <class EventType>
-  bool Execute(WebInputEvent* event) const {
-    if (!event)
-      return false;
-    DCHECK_EQ(sizeof(EventType), event->size());
-    delete static_cast<EventType*>(event);
-    return true;
-  }
-};
-
-template <typename Operator, typename ArgIn>
-bool Apply(Operator op, WebInputEvent::Type type, const ArgIn& arg_in) {
-  if (WebInputEvent::IsMouseEventType(type))
-    return op.template Execute<WebMouseEvent>(arg_in);
-  if (type == WebInputEvent::kMouseWheel)
-    return op.template Execute<WebMouseWheelEvent>(arg_in);
-  if (WebInputEvent::IsKeyboardEventType(type))
-    return op.template Execute<WebKeyboardEvent>(arg_in);
-  if (WebInputEvent::IsTouchEventType(type))
-    return op.template Execute<WebTouchEvent>(arg_in);
-  if (WebInputEvent::IsGestureEventType(type))
-    return op.template Execute<WebGestureEvent>(arg_in);
-  if (WebInputEvent::IsPointerEventType(type))
-    return op.template Execute<WebPointerEvent>(arg_in);
-
-  NOTREACHED() << "Unknown webkit event type " << type;
-  return false;
-}
-}
-
-void WebCoalescedInputEvent::WebInputEventDeleter::operator()(
-    WebInputEvent* event) const {
-  if (!event)
-    return;
-  Apply(WebInputEventDelete(), event->GetType(), event);
-}
-
 WebInputEvent* WebCoalescedInputEvent::EventPointer() {
   return event_.get();
 }

@@ -13,6 +13,7 @@ from .blink_v8_bridge import blink_type_info
 from .blink_v8_bridge import make_v8_to_blink_value
 from .blink_v8_bridge import make_v8_to_blink_value_variadic
 from .blink_v8_bridge import v8_bridge_class_name
+from .code_node import EmptyNode
 from .code_node import ListNode
 from .code_node import SequenceNode
 from .code_node import SymbolDefinitionNode
@@ -521,7 +522,7 @@ def bind_return_value(code_node, cg_context):
             # [ReflectOnly]
             node = _make_reflect_process_keyword_state(cg_context)
             if node:
-                nodes.append(T(""))
+                nodes.append(EmptyNode())
                 nodes.append(node)
 
         return SymbolDefinitionNode(symbol_node, nodes)
@@ -929,7 +930,7 @@ def make_overload_dispatcher(cg_context):
 
     return SequenceNode([
         branches,
-        T(""),
+        EmptyNode(),
         T("${exception_state}.ThrowTypeError"
           "(\"Overload resolution failed.\");\n"
           "return;"),
@@ -1226,10 +1227,10 @@ def make_attribute_get_callback_def(cg_context, function_name):
         make_report_deprecate_as(cg_context),
         make_report_measure_as(cg_context),
         make_log_activity(cg_context),
-        TextNode(""),
+        EmptyNode(),
         make_check_receiver(cg_context),
         make_return_value_cache_return_early(cg_context),
-        TextNode(""),
+        EmptyNode(),
         make_check_security_of_return_value(cg_context),
         make_v8_set_return_value(cg_context),
         make_return_value_cache_update_value(cg_context),
@@ -1260,10 +1261,10 @@ def make_attribute_set_callback_def(cg_context, function_name):
         make_report_deprecate_as(cg_context),
         make_report_measure_as(cg_context),
         make_log_activity(cg_context),
-        TextNode(""),
+        EmptyNode(),
         make_check_receiver(cg_context),
         make_check_argument_length(cg_context),
-        TextNode(""),
+        EmptyNode(),
     ])
 
     if "PutForwards" in ext_attrs:
@@ -1276,7 +1277,7 @@ def make_attribute_set_callback_def(cg_context, function_name):
 
     body.extend([
         make_steps_of_ce_reactions(cg_context),
-        TextNode(""),
+        EmptyNode(),
         make_v8_set_return_value(cg_context),
     ])
 
@@ -1310,7 +1311,7 @@ def make_constant_callback_def(cg_context, function_name):
     body.extend([
         make_runtime_call_timer_scope(cg_context),
         logging_nodes,
-        TextNode(""),
+        EmptyNode(),
         TextNode(v8_set_return_value),
     ])
 
@@ -1338,11 +1339,11 @@ def make_overload_dispatcher_function_def(cg_context, function_name):
 
     if cg_context.operation_group:
         body.append(make_cooperative_scheduling_safepoint(cg_context))
-        body.append(TextNode(""))
+        body.append(EmptyNode())
 
     if cg_context.constructor_group:
         body.append(make_check_constructor_call(cg_context))
-        body.append(TextNode(""))
+        body.append(EmptyNode())
 
     body.append(make_overload_dispatcher(cg_context))
 
@@ -1363,7 +1364,7 @@ def make_constructor_function_def(cg_context, function_name):
         make_report_deprecate_as(cg_context),
         make_report_measure_as(cg_context),
         make_log_activity(cg_context),
-        T(""),
+        EmptyNode(),
     ])
 
     if "HTMLConstructor" in cg_context.constructor.extended_attributes:
@@ -1401,7 +1402,7 @@ def make_constructor_callback_def(cg_context, function_name):
         node.extend([
             make_constructor_function_def(
                 cgc, callback_function_name(cgc, constructor.overload_index)),
-            TextNode(""),
+            EmptyNode(),
         ])
     node.append(
         make_overload_dispatcher_function_def(cg_context, function_name))
@@ -1429,7 +1430,7 @@ def make_exposed_construct_callback_def(cg_context, function_name):
         make_report_deprecate_as(cg_context),
         make_report_measure_as(cg_context),
         make_log_activity(cg_context),
-        TextNode(""),
+        EmptyNode(),
         TextNode(v8_set_return_value),
     ])
 
@@ -1448,11 +1449,11 @@ def make_operation_function_def(cg_context, function_name):
         make_report_deprecate_as(cg_context),
         make_report_measure_as(cg_context),
         make_log_activity(cg_context),
-        TextNode(""),
+        EmptyNode(),
         make_check_receiver(cg_context),
-        TextNode(""),
+        EmptyNode(),
         make_steps_of_ce_reactions(cg_context),
-        TextNode(""),
+        EmptyNode(),
         make_check_security_of_return_value(cg_context),
         make_v8_set_return_value(cg_context),
     ])
@@ -1476,7 +1477,7 @@ def make_operation_callback_def(cg_context, function_name):
         node.extend([
             make_operation_function_def(
                 cgc, callback_function_name(cgc, operation.overload_index)),
-            TextNode(""),
+            EmptyNode(),
         ])
     node.append(
         make_overload_dispatcher_function_def(cg_context, function_name))
@@ -1948,9 +1949,9 @@ def _make_property_entries_and_callback_defs(
 
         callback_def_nodes.extend([
             attr_get_callback_node,
-            TextNode(""),
+            EmptyNode(),
             attr_set_callback_node,
-            TextNode(""),
+            EmptyNode(),
         ])
 
         attribute_entries.append(
@@ -1975,7 +1976,7 @@ def _make_property_entries_and_callback_defs(
 
         callback_def_nodes.extend([
             const_callback_node,
-            TextNode(""),
+            EmptyNode(),
         ])
 
         constant_entries.append(
@@ -1997,7 +1998,7 @@ def _make_property_entries_and_callback_defs(
 
         callback_def_nodes.extend([
             ctor_callback_node,
-            TextNode(""),
+            EmptyNode(),
         ])
 
         constructor_entries.append(
@@ -2020,7 +2021,7 @@ def _make_property_entries_and_callback_defs(
 
         callback_def_nodes.extend([
             prop_callback_node,
-            TextNode(""),
+            EmptyNode(),
         ])
 
         exposed_construct_entries.append(
@@ -2040,7 +2041,7 @@ def _make_property_entries_and_callback_defs(
 
         callback_def_nodes.extend([
             op_callback_node,
-            TextNode(""),
+            EmptyNode(),
         ])
 
         operation_entries.append(
@@ -2132,7 +2133,7 @@ def make_install_interface_template(cg_context, function_name, class_name,
           "${isolate}, ${interface_template}, "
           "${wrapper_type_info}->interface_name, ${parent_interface_template}, "
           "kV8DefaultWrapperInternalFieldCount);"),
-        T(""),
+        EmptyNode(),
     ])
 
     for entry in constructor_entries:
@@ -2154,7 +2155,7 @@ def make_install_interface_template(cg_context, function_name, class_name,
             body.extend([T(set_callback), T(set_length)])
         else:
             assert False
-    body.append(T(""))
+    body.append(EmptyNode())
 
     if ("Global" in cg_context.class_like.extended_attributes
             or cg_context.class_like.identifier == "Location"):
@@ -2165,7 +2166,7 @@ def make_install_interface_template(cg_context, function_name, class_name,
         body.extend([
             T("${instance_template}->SetImmutableProto();"),
             T("${prototype_template}->SetImmutableProto();"),
-            T(""),
+            EmptyNode(),
         ])
 
     func_call_pattern = ("{}(${isolate}, ${world}, ${instance_template}, "
@@ -2319,7 +2320,7 @@ def make_install_properties(cg_context, function_name, class_name,
                     make_table_func(table_name, unconditional_entries),
                     TextNode(installer_call_text),
                 ]))
-            body.append(TextNode(""))
+            body.append(EmptyNode())
         for conditional, entries in conditional_to_entries.iteritems():
             body.append(
                 CxxUnlikelyIfNode(
@@ -2328,7 +2329,7 @@ def make_install_properties(cg_context, function_name, class_name,
                         make_table_func(table_name, entries),
                         TextNode(installer_call_text),
                     ]))
-        body.append(TextNode(""))
+        body.append(EmptyNode())
 
     table_name = "kAttributeTable"
     if is_context_dependent:
@@ -2645,11 +2646,11 @@ def generate_interface(interface):
     ])
     installer_function_defs = ListNode([
         install_interface_template_def,
-        TextNode(""),
+        EmptyNode(),
         install_unconditional_props_def,
-        TextNode(""),
+        EmptyNode(),
         install_context_independent_props_def,
-        TextNode(""),
+        EmptyNode(),
         install_context_dependent_props_def,
     ])
     installer_function_trampolines = ListNode([
@@ -2662,59 +2663,59 @@ def generate_interface(interface):
     # Header part (copyright, include directives, and forward declarations)
     api_header_node.extend([
         make_copyright_header(),
-        TextNode(""),
+        EmptyNode(),
         enclose_with_header_guard(
             ListNode([
                 make_header_include_directives(api_header_node.accumulator),
-                TextNode(""),
+                EmptyNode(),
                 api_header_blink_ns,
             ]), name_style.header_guard(api_header_path)),
     ])
     api_header_blink_ns.body.extend([
         make_forward_declarations(api_header_node.accumulator),
-        TextNode(""),
+        EmptyNode(),
     ])
     api_source_node.extend([
         make_copyright_header(),
-        TextNode(""),
+        EmptyNode(),
         TextNode("#include \"{}\"".format(api_header_path)),
-        TextNode(""),
+        EmptyNode(),
         make_header_include_directives(api_source_node.accumulator),
-        TextNode(""),
+        EmptyNode(),
         api_source_blink_ns,
     ])
     api_source_blink_ns.body.extend([
         make_forward_declarations(api_source_node.accumulator),
-        TextNode(""),
+        EmptyNode(),
     ])
     if is_cross_components:
         impl_header_node.extend([
             make_copyright_header(),
-            TextNode(""),
+            EmptyNode(),
             enclose_with_header_guard(
                 ListNode([
                     make_header_include_directives(
                         impl_header_node.accumulator),
-                    TextNode(""),
+                    EmptyNode(),
                     impl_header_blink_ns,
                 ]), name_style.header_guard(impl_header_path)),
         ])
         impl_header_blink_ns.body.extend([
             make_forward_declarations(impl_header_node.accumulator),
-            TextNode(""),
+            EmptyNode(),
         ])
         impl_source_node.extend([
             make_copyright_header(),
-            TextNode(""),
+            EmptyNode(),
             TextNode("#include \"{}\"".format(impl_header_path)),
-            TextNode(""),
+            EmptyNode(),
             make_header_include_directives(impl_source_node.accumulator),
-            TextNode(""),
+            EmptyNode(),
             impl_source_blink_ns,
         ])
         impl_source_blink_ns.body.extend([
             make_forward_declarations(impl_source_node.accumulator),
-            TextNode(""),
+            EmptyNode(),
         ])
     impl_source_node.accumulator.add_include_headers(
         collect_include_headers(interface))
@@ -2731,23 +2732,23 @@ def generate_interface(interface):
         api_class_def.private_section.append(trampoline_var_defs)
         impl_class_def.public_section.extend([
             cross_component_init_decl,
-            TextNode(""),
+            EmptyNode(),
             installer_function_decls,
         ])
         impl_source_blink_ns.body.extend([
             cross_component_init_def,
-            TextNode(""),
+            EmptyNode(),
         ])
     else:
         api_class_def.public_section.append(installer_function_decls)
 
     if constant_defs:
-        api_class_def.public_section.append(TextNode(""))
+        api_class_def.public_section.append(EmptyNode())
         api_class_def.public_section.append(constant_defs)
 
     impl_source_blink_ns.body.extend([
         CxxNamespaceNode(name="", body=callback_defs),
-        TextNode(""),
+        EmptyNode(),
         installer_function_defs,
     ])
 

@@ -733,9 +733,8 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   MarginValues MarginValuesForChild(LayoutBox& child) const;
 
   // Allocated only when some of these fields have non-default values
-  struct LayoutBlockFlowRareData {
-    USING_FAST_MALLOC(LayoutBlockFlowRareData);
-
+  struct LayoutBlockFlowRareData final
+      : public GarbageCollected<LayoutBlockFlowRareData> {
    public:
     explicit LayoutBlockFlowRareData(const LayoutBlockFlow* block);
     ~LayoutBlockFlowRareData();
@@ -754,6 +753,8 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
     static LayoutUnit NegativeMarginAfterDefault(const LayoutBlockFlow* block) {
       return (-block->MarginAfter()).ClampNegativeToZero();
     }
+
+    void Trace(Visitor*) {}
 
     MarginValues margins_;
     LayoutUnit pagination_strut_propagated_from_child_;
@@ -911,7 +912,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   bool CheckIfIsSelfCollapsingBlock() const;
 
  protected:
-  std::unique_ptr<LayoutBlockFlowRareData> rare_data_;
+  Persistent<LayoutBlockFlowRareData> rare_data_;
   std::unique_ptr<FloatingObjects> floating_objects_;
 
   friend class MarginInfo;

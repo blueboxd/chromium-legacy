@@ -7,6 +7,7 @@ import web_idl
 from . import name_style
 from .clang_format import clang_format
 from .code_node import CodeNode
+from .code_node import EmptyNode
 from .code_node import LiteralNode
 from .code_node import SequenceNode
 from .codegen_accumulator import CodeGenAccumulator
@@ -69,9 +70,9 @@ def enclose_with_header_guard(code_node, header_guard):
     return SequenceNode([
         LiteralNode("#ifndef {}".format(header_guard)),
         LiteralNode("#define {}".format(header_guard)),
-        LiteralNode(""),
+        EmptyNode(),
         code_node,
-        LiteralNode(""),
+        EmptyNode(),
         LiteralNode("#endif  // {}".format(header_guard)),
     ])
 
@@ -82,9 +83,9 @@ def enclose_with_namespace(code_node, namespace):
 
     return SequenceNode([
         LiteralNode("namespace {} {{".format(namespace)),
-        LiteralNode(""),
+        EmptyNode(),
         code_node,
-        LiteralNode(""),
+        EmptyNode(),
         LiteralNode("}}  // namespace {}".format(namespace)),
     ])
 

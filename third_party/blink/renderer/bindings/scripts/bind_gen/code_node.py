@@ -339,10 +339,21 @@ class CodeNode(object):
             symbol_node, set()).add(symbol_scope_chain)
 
 
+class EmptyNode(CodeNode):
+    """Represents the zero-length text and renders nothing."""
+
+    def __init__(self):
+        CodeNode.__init__(self)
+
+    def _render(self, renderer, last_render_state):
+        pass
+
+
 class LiteralNode(CodeNode):
     """
     Represents a literal text, which will be rendered as is without any template
-    magic applied.
+    magic applied.  The given literal text object will be stringified on each
+    rendering.
     """
 
     def __init__(self, literal_text):
@@ -358,7 +369,28 @@ class LiteralNode(CodeNode):
             renderer.pop_caller()
 
 
-class TextNode(CodeNode):
+def TextNode(template_text):
+    """
+    Represents a template text node.
+
+    TextNode is designed to be a leaf node of a code node tree.  TextNode
+    represents a template text while LiteralNode represents a literal text.
+    All template magics will be applied to |template_text|.
+
+    This function is pretending to be a CodeNode subclass and instantiates one
+    of text-ish code node subclass depending on the content of |template_text|.
+    """
+    assert isinstance(template_text, str)
+
+    if "$" in template_text or "%" in template_text:
+        return _TextNode(template_text)
+    elif template_text:
+        return LiteralNode(template_text)
+    else:
+        return EmptyNode()
+
+
+class _TextNode(CodeNode):
     """
     Represents a template text node.
 

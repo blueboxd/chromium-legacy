@@ -44,7 +44,7 @@ struct GATTNotifySessionAndCharacteristicClient;
 class RenderFrameHost;
 class RenderProcessHost;
 
-bool HasEmptyOrInvalidFilter(
+bool HasValidFilter(
     const base::Optional<
         std::vector<blink::mojom::WebBluetoothLeScanFilterPtr>>& filters);
 

@@ -177,16 +177,7 @@ def expr_from_exposure(exposure, global_names=None):
         "Worklet": "IsWorkletGlobalScope",
     }
     exposed_terms = []
-    if global_names is None:
-        for entry in exposure.global_names_and_features:
-            terms = []
-            pred = GLOBAL_NAME_TO_EXECUTION_CONTEXT_TEST[entry.global_name]
-            terms.append(_Expr("${{execution_context}}->{}()".format(pred)))
-            if entry.feature:
-                terms.append(ref_enabled(entry.feature))
-            if terms:
-                exposed_terms.append(expr_and(terms))
-    else:
+    if global_names:
         matched_global_count = 0
         for entry in exposure.global_names_and_features:
             if entry.global_name not in global_names:
@@ -196,6 +187,15 @@ def expr_from_exposure(exposure, global_names=None):
                 exposed_terms.append(ref_enabled(entry.feature))
         assert (not exposure.global_names_and_features
                 or matched_global_count > 0)
+    else:
+        for entry in exposure.global_names_and_features:
+            terms = []
+            pred = GLOBAL_NAME_TO_EXECUTION_CONTEXT_TEST[entry.global_name]
+            terms.append(_Expr("${{execution_context}}->{}()".format(pred)))
+            if entry.feature:
+                terms.append(ref_enabled(entry.feature))
+            if terms:
+                exposed_terms.append(expr_and(terms))
     if exposed_terms:
         top_terms.append(expr_or(exposed_terms))
 

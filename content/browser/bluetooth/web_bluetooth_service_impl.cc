@@ -129,57 +129,54 @@ blink::mojom::WebBluetoothResult TranslateGATTErrorAndRecord(
 // the maximum device name length is 248 bytes (UTF-8 encoded).
 constexpr size_t kMaxLengthForDeviceName = 248;
 
-bool IsEmptyOrInvalidFilter(
-    const blink::mojom::WebBluetoothLeScanFilterPtr& filter) {
+bool IsValidFilter(const blink::mojom::WebBluetoothLeScanFilterPtr& filter) {
   // At least one member needs to be present.
   if (!filter->name && !filter->name_prefix && !filter->services)
-    return true;
+    return false;
 
   // The renderer will never send a |name| or a |name_prefix| longer than
   // kMaxLengthForDeviceName.
   if (filter->name && filter->name->size() > kMaxLengthForDeviceName)
-    return true;
+    return false;
 
   if (filter->name_prefix &&
       filter->name_prefix->size() > kMaxLengthForDeviceName)
-    return true;
+    return false;
 
   // The |name_prefix| should not be empty
   if (filter->name_prefix && filter->name_prefix->empty())
-    return true;
+    return false;
 
-  return false;
+  return true;
 }
 
-bool IsRequestDeviceOptionsInvalid(
+bool IsValidRequestDeviceOptions(
     const blink::mojom::WebBluetoothRequestDeviceOptionsPtr& options) {
   if (options->accept_all_devices)
-    return options->filters.has_value();
+    return !options->filters.has_value();
 
-  return HasEmptyOrInvalidFilter(options->filters);
+  return HasValidFilter(options->filters);
 }
 
-bool IsRequestScanOptionsInvalid(
+bool IsValidRequestScanOptions(
     const blink::mojom::WebBluetoothRequestLEScanOptionsPtr& options) {
   if (options->accept_all_advertisements)
-    return options->filters.has_value();
+    return !options->filters.has_value();
 
-  return HasEmptyOrInvalidFilter(options->filters);
+  return HasValidFilter(options->filters);
 }
 
 }  // namespace
 
-bool HasEmptyOrInvalidFilter(
+bool HasValidFilter(
     const base::Optional<
         std::vector<blink::mojom::WebBluetoothLeScanFilterPtr>>& filters) {
   if (!filters) {
-    return true;
+    return false;
   }
 
-  return filters->empty()
-             ? true
-             : filters->end() != std::find_if(filters->begin(), filters->end(),
-                                              IsEmptyOrInvalidFilter);
+  return !filters->empty() &&
+         std::all_of(filters->begin(), filters->end(), IsValidFilter);
 }
 
 // Struct that holds the result of a cache query.
@@ -1247,7 +1244,7 @@ void WebBluetoothServiceImpl::RequestScanningStartImpl(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // The renderer should never send invalid options.
-  if (IsRequestScanOptionsInvalid(options)) {
+  if (!IsValidRequestScanOptions(options)) {
     CrashRendererAndClosePipe(bad_message::BDH_INVALID_OPTIONS);
     return;
   }
@@ -1363,7 +1360,7 @@ void WebBluetoothServiceImpl::RequestDeviceImpl(
     RequestDeviceCallback callback,
     scoped_refptr<device::BluetoothAdapter> adapter) {
   // The renderer should never send invalid options.
-  if (IsRequestDeviceOptionsInvalid(options)) {
+  if (!IsValidRequestDeviceOptions(options)) {
     CrashRendererAndClosePipe(bad_message::BDH_INVALID_OPTIONS);
     return;
   }

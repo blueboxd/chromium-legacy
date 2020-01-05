@@ -452,8 +452,7 @@ void LayoutMultiColumnSet::UpdateLayout() {
 void LayoutMultiColumnSet::ComputeIntrinsicLogicalWidths(
     LayoutUnit& min_logical_width,
     LayoutUnit& max_logical_width) const {
-  min_logical_width = flow_thread_->MinPreferredLogicalWidth();
-  max_logical_width = flow_thread_->MaxPreferredLogicalWidth();
+  max_logical_width = min_logical_width = LayoutUnit();
 }
 
 void LayoutMultiColumnSet::ComputeLogicalHeight(

@@ -252,7 +252,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'eb7e7731ed988e0e6d73610b547395b1f6fba3e3',
+  'devtools_frontend_revision': 'd74594bbbb7102646f60c058a58a995a8f4e1a75',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1494,7 +1494,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + '53655df4cde60b121fc530842ba9a6d5dfec1ae1',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'f3aa6326b8e21f627b9fba72040122723251999b',
+    Var('webrtc_git') + '/src.git' + '@' + 'cfe75c12ee04d17e7898ebc0a8ad1051b6627e53',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1564,7 +1564,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@c7797980325fb0e94713d95dd1772b73d9fd1327',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@d6a7998fa3bf33272ff61454d73caf70c895d1e2',
     'condition': 'checkout_src_internal',
   },
 

@@ -1536,8 +1536,9 @@ TEST_F(IncrementalMarkingTest, ConservativeGCWhileCompactionScheduled) {
   driver.Start();
   driver.FinishSteps();
   ThreadState::Current()->CollectGarbage(
-      BlinkGC::kHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kConcurrentAndLazySweeping, BlinkGC::GCReason::kConservativeGC);
+      BlinkGC::CollectionType::kMajor, BlinkGC::kHeapPointersOnStack,
+      BlinkGC::kAtomicMarking, BlinkGC::kConcurrentAndLazySweeping,
+      BlinkGC::GCReason::kConservativeGC);
 
   // Heap compaction should be canceled if incremental marking finishes with a
   // conservative GC.

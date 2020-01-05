@@ -279,7 +279,8 @@ class PLATFORM_EXPORT ThreadState final {
 
   void EnableCompactionForNextGCForTesting();
 
-  bool FinishIncrementalMarkingIfRunning(BlinkGC::StackState,
+  bool FinishIncrementalMarkingIfRunning(BlinkGC::CollectionType,
+                                         BlinkGC::StackState,
                                          BlinkGC::MarkingType,
                                          BlinkGC::SweepingType,
                                          BlinkGC::GCReason);
@@ -335,7 +336,8 @@ class PLATFORM_EXPORT ThreadState final {
   v8::Isolate* GetIsolate() const { return isolate_; }
 
   // Use CollectAllGarbageForTesting below for testing!
-  void CollectGarbage(BlinkGC::StackState,
+  void CollectGarbage(BlinkGC::CollectionType,
+                      BlinkGC::StackState,
                       BlinkGC::MarkingType,
                       BlinkGC::SweepingType,
                       BlinkGC::GCReason);
@@ -428,7 +430,8 @@ class PLATFORM_EXPORT ThreadState final {
   // The following methods are used to compose RunAtomicPause. Public users
   // should use the CollectGarbage entrypoint. Internal users should use these
   // methods to compose a full garbage collection.
-  void AtomicPauseMarkPrologue(BlinkGC::StackState,
+  void AtomicPauseMarkPrologue(BlinkGC::CollectionType,
+                               BlinkGC::StackState,
                                BlinkGC::MarkingType,
                                BlinkGC::GCReason);
   void AtomicPauseMarkRoots(BlinkGC::StackState,
@@ -443,13 +446,15 @@ class PLATFORM_EXPORT ThreadState final {
   // RunAtomicPause composes the final atomic pause that finishes a mark-compact
   // phase of a garbage collection. Depending on SweepingType it may also finish
   // sweeping or schedule lazy/concurrent sweeping.
-  void RunAtomicPause(BlinkGC::StackState,
+  void RunAtomicPause(BlinkGC::CollectionType,
+                      BlinkGC::StackState,
                       BlinkGC::MarkingType,
                       BlinkGC::SweepingType,
                       BlinkGC::GCReason);
 
   // The version is needed to be able to start incremental marking.
-  void MarkPhasePrologue(BlinkGC::StackState,
+  void MarkPhasePrologue(BlinkGC::CollectionType,
+                         BlinkGC::StackState,
                          BlinkGC::MarkingType,
                          BlinkGC::GCReason);
   void MarkPhaseEpilogue(BlinkGC::MarkingType);
@@ -587,6 +592,7 @@ class PLATFORM_EXPORT ThreadState final {
   int gc_age_ = 0;
 
   struct GCData {
+    BlinkGC::CollectionType collection_type;
     BlinkGC::StackState stack_state;
     BlinkGC::MarkingType marking_type;
     BlinkGC::GCReason reason;

@@ -545,6 +545,44 @@ BUILDERS = {
             '--assert-gpu-compositing',
         ],
       },
+      # TODO(crbug.com/1039019): Remove all of the following gtests and enable
+      # as part of the shard maps.
+      {
+        'isolate': 'angle_perftests',
+        'num_shards': 1,
+        'type': TEST_TYPES.GTEST,
+        'extra_args': [
+            '--shard-timeout=300'
+        ],
+      },
+      {
+        'isolate': 'media_perftests',
+        'num_shards': 1,
+        'type': TEST_TYPES.GTEST,
+      },
+      {
+        'isolate': 'components_perftests',
+        'num_shards': 1,
+        'type': TEST_TYPES.GTEST,
+      },
+      {
+        'isolate': 'views_perftests',
+        'num_shards': 1,
+        'type': TEST_TYPES.GTEST,
+      },
+      {
+        'isolate': 'base_perftests',
+        'num_shards': 1,
+        'type': TEST_TYPES.GTEST,
+      },
+      {
+        'isolate': 'dawn_perf_tests',
+        'num_shards': 1,
+        'type': TEST_TYPES.GTEST,
+        'extra_args': [
+            '--shard-timeout=300'
+        ],
+      },
     ],
     'platform': 'win',
     'target_bits': 64,
@@ -564,6 +602,23 @@ BUILDERS = {
       {
         'isolate': 'performance_test_suite',
       },
+      # TODO(crbug.com/1039019): Remove all of the following gtests and enable
+      # as part of the shard maps.
+      {
+        'isolate': 'load_library_perf_tests',
+        'num_shards': 1,
+        'type': TEST_TYPES.GTEST,
+      },
+      {
+        'isolate': 'components_perftests',
+        'num_shards': 1,
+        'type': TEST_TYPES.GTEST,
+      },
+      {
+        'isolate': 'media_perftests',
+        'num_shards': 1,
+        'type': TEST_TYPES.GTEST,
+      }
     ],
     'platform': 'win',
     'target_bits': 32,
@@ -580,6 +635,43 @@ BUILDERS = {
         'isolate': 'performance_test_suite',
         'extra_args': [
             '--assert-gpu-compositing',
+        ],
+      },
+      # TODO(crbug.com/1039019): Remove all of the following gtests and enable
+      # as part of the shard maps.
+      {
+        'isolate': 'load_library_perf_tests',
+        'num_shards': 1,
+        'type': TEST_TYPES.GTEST,
+      },
+      {
+        'isolate': 'angle_perftests',
+        'num_shards': 1,
+        'type': TEST_TYPES.GTEST,
+      },
+      {
+        'isolate': 'media_perftests',
+        'num_shards': 1,
+        'type': TEST_TYPES.GTEST,
+      },
+      {
+        'name': 'passthrough_command_buffer_perftests',
+        'isolate': 'command_buffer_perftests',
+        'num_shards': 1,
+        'type': TEST_TYPES.GTEST,
+        'extra_args': [
+            '--use-cmd-decoder=passthrough',
+            '--use-angle=gl-null',
+        ],
+      },
+      {
+        'name': 'validating_command_buffer_perftests',
+        'isolate': 'command_buffer_perftests',
+        'num_shards': 1,
+        'type': TEST_TYPES.GTEST,
+        'extra_args': [
+            '--use-cmd-decoder=validating',
+            '--use-stub',
         ],
       },
     ],

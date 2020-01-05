@@ -150,11 +150,14 @@ def render_code_node(code_node):
     Renders |code_node| and turns it into text letting |code_node| apply all
     necessary changes (side effects).  Returns the resulting text.
     """
-    prev = "_"
+    renderer = code_node.renderer
+    prev = None
     current = ""
     while current != prev:
+        renderer.reset()
         prev = current
-        current = str(code_node)
+        code_node.render()
+        current = renderer.to_text()
     return current
 
 

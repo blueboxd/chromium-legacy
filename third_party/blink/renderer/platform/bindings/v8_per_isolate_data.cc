@@ -172,8 +172,9 @@ void V8PerIsolateData::WillBeDestroyed(v8::Isolate* isolate) {
   // callbacks are missing and state gets out of sync.
   ThreadState* const thread_state = ThreadState::Current();
   thread_state->FinishIncrementalMarkingIfRunning(
-      BlinkGC::kHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kEagerSweeping, BlinkGC::GCReason::kThreadTerminationGC);
+      BlinkGC::CollectionType::kMajor, BlinkGC::kHeapPointersOnStack,
+      BlinkGC::kAtomicMarking, BlinkGC::kEagerSweeping,
+      BlinkGC::GCReason::kThreadTerminationGC);
   thread_state->DetachFromIsolate();
 }
 

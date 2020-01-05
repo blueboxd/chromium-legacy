@@ -15,7 +15,8 @@ namespace blink {
 void TestSupportingGC::PreciselyCollectGarbage(
     BlinkGC::SweepingType sweeping_type) {
   ThreadState::Current()->CollectGarbage(
-      BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking, sweeping_type,
+      BlinkGC::CollectionType::kMajor, BlinkGC::kNoHeapPointersOnStack,
+      BlinkGC::kAtomicMarking, sweeping_type,
       BlinkGC::GCReason::kForcedGCForTesting);
 }
 
@@ -23,7 +24,8 @@ void TestSupportingGC::PreciselyCollectGarbage(
 void TestSupportingGC::ConservativelyCollectGarbage(
     BlinkGC::SweepingType sweeping_type) {
   ThreadState::Current()->CollectGarbage(
-      BlinkGC::kHeapPointersOnStack, BlinkGC::kAtomicMarking, sweeping_type,
+      BlinkGC::CollectionType::kMajor, BlinkGC::kHeapPointersOnStack,
+      BlinkGC::kAtomicMarking, sweeping_type,
       BlinkGC::GCReason::kForcedGCForTesting);
 }
 

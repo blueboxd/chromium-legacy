@@ -160,10 +160,15 @@ class CodeNode(object):
 
     def __str__(self):
         """
-        Renders this CodeNode object into a Mako template.  This is supposed to
-        be used in a Mako template as ${code_node}.
+        Renders this CodeNode object directly into the renderer's text buffer
+        and always returns the empty string.  This is because it's faster to
+        accumulate the rendering result directly in a single text buffer than
+        making a lot of string pieces and concatenating them.
+
+        This function is supposed to be used in a Mako template as ${code_node}.
         """
-        return self.render()
+        self.render()
+        return ""
 
     def render(self):
         """
@@ -180,7 +185,7 @@ class CodeNode(object):
         self._is_rendering = True
 
         try:
-            text = self._render(
+            self._render(
                 renderer=renderer, last_render_state=last_render_state)
         finally:
             self._is_rendering = False
@@ -192,8 +197,6 @@ class CodeNode(object):
                 request(accumulator)
             self._accumulate_requests = []
 
-        return text
-
     def _render(self, renderer, last_render_state):
         """
         Renders this CodeNode object as a text string and also propagates
@@ -201,7 +204,7 @@ class CodeNode(object):
 
         Only limited subclasses may override this method.
         """
-        return renderer.render(
+        renderer.render(
             caller=self,
             template=self._template,
             template_vars=self.template_vars)
@@ -343,13 +346,16 @@ class LiteralNode(CodeNode):
     """
 
     def __init__(self, literal_text):
-        literal_text_gensym = CodeNode.gensym()
-        template_text = format_template(
-            "${{{literal_text}}}", literal_text=literal_text_gensym)
-        template_vars = {literal_text_gensym: literal_text}
+        CodeNode.__init__(self)
 
-        CodeNode.__init__(
-            self, template_text=template_text, template_vars=template_vars)
+        self._literal_text = literal_text
+
+    def _render(self, renderer, last_render_state):
+        renderer.push_caller(self)
+        try:
+            renderer.render_text(str(self._literal_text))
+        finally:
+            renderer.pop_caller()
 
 
 class TextNode(CodeNode):
@@ -425,33 +431,12 @@ class ListNode(CodeNode):
         assert isinstance(head, str)
         assert isinstance(tail, str)
 
-        element_nodes_gensym = CodeNode.gensym()
-        element_nodes = []
-        template_text = format_template(
-            """\
-% if {element_nodes}:
-{head}\\
-% endif
-% for node in {element_nodes}:
-${node}\\
-% if not loop.last:
-{separator}\\
-% endif
-% endfor
-% if {element_nodes}:
-{tail}\\
-% endif\
-""",
-            element_nodes=element_nodes_gensym,
-            separator=separator,
-            head=head,
-            tail=tail)
-        template_vars = {element_nodes_gensym: element_nodes}
+        CodeNode.__init__(self)
 
-        CodeNode.__init__(
-            self, template_text=template_text, template_vars=template_vars)
-
-        self._element_nodes = element_nodes
+        self._element_nodes = []
+        self._separator = separator
+        self._head = head
+        self._tail = tail
 
         if code_nodes is not None:
             self.extend(code_nodes)
@@ -464,6 +449,23 @@ ${node}\\
 
     def __len__(self):
         return len(self._element_nodes)
+
+    def _render(self, renderer, last_render_state):
+        renderer.push_caller(self)
+        try:
+            if self._element_nodes:
+                renderer.render_text(self._head)
+            is_first = True
+            for node in self._element_nodes:
+                if is_first:
+                    is_first = False
+                else:
+                    renderer.render_text(self._separator)
+                node.render()
+            if self._element_nodes:
+                renderer.render_text(self._tail)
+        finally:
+            renderer.pop_caller()
 
     def append(self, node):
         if node is None:
@@ -760,6 +762,14 @@ class SymbolNode(CodeNode):
             self._definition_constructor = definition_constructor
 
     def _render(self, renderer, last_render_state):
+        self._request_symbol_definition(renderer)
+
+        renderer.render_text(self.name)
+
+    def request_symbol_definition(self):
+        self._request_symbol_definition(self.renderer)
+
+    def _request_symbol_definition(self, renderer):
         symbol_scope_chain = tuple(
             filter(lambda node: isinstance(node, SymbolScopeNode),
                    renderer.callers_from_first_to_last))
@@ -774,8 +784,6 @@ class SymbolNode(CodeNode):
                 scope.on_undefined_code_symbol_found(self)
                 if scope is self.outer:
                     break
-
-        return self.name
 
     @property
     def name(self):

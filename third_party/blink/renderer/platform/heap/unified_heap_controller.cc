@@ -46,7 +46,8 @@ void UnifiedHeapController::TracePrologue(
 
   // Be conservative here as a new garbage collection gets started right away.
   thread_state_->FinishIncrementalMarkingIfRunning(
-      BlinkGC::kHeapPointersOnStack, BlinkGC::kIncrementalAndConcurrentMarking,
+      BlinkGC::CollectionType::kMajor, BlinkGC::kHeapPointersOnStack,
+      BlinkGC::kIncrementalAndConcurrentMarking,
       BlinkGC::kConcurrentAndLazySweeping,
       thread_state_->current_gc_data_.reason);
 
@@ -65,7 +66,7 @@ void UnifiedHeapController::EnterFinalPause(EmbedderStackState stack_state) {
   ThreadHeapStatsCollector::BlinkGCInV8Scope nested_scope(
       thread_state_->Heap().stats_collector());
   thread_state_->AtomicPauseMarkPrologue(
-      ToBlinkGCStackState(stack_state),
+      BlinkGC::CollectionType::kMajor, ToBlinkGCStackState(stack_state),
       BlinkGC::kIncrementalAndConcurrentMarking,
       thread_state_->current_gc_data_.reason);
   thread_state_->AtomicPauseMarkRoots(ToBlinkGCStackState(stack_state),

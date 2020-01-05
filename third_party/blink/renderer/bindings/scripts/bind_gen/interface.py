@@ -1176,9 +1176,9 @@ def make_v8_set_return_value(cg_context):
     T = TextNode
 
     if cg_context.attribute_set or cg_context.return_type.unwrap().is_void:
-        # Render a SymbolNode |return_value| discarding the content text, and
-        # let a symbol definition be inserted.
-        return T("<% str(return_value) %>")
+        # Request a SymbolNode |return_value| to define itself without rendering
+        # any text.
+        return T("<% return_value.request_symbol_definition() %>")
 
     return_type_body = cg_context.return_type.unwrap()
     if (cg_context.for_world == cg_context.MAIN_WORLD

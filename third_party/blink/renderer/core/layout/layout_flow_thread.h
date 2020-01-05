@@ -105,6 +105,8 @@ class CORE_EXPORT LayoutFlowThread : public LayoutBlockFlow {
   // can easily avoid drawing the children directly.
   PaintLayerType LayerTypeRequired() const final { return kNormalPaintLayer; }
 
+  bool NeedsPreferredWidthsRecalculation() const final { return true; }
+
   virtual void FlowThreadDescendantWasInserted(LayoutObject*) {}
   virtual void FlowThreadDescendantWillBeRemoved(LayoutObject*) {}
   virtual void FlowThreadDescendantStyleWillChange(

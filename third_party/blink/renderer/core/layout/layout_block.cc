@@ -1532,6 +1532,9 @@ void LayoutBlock::ComputeBlockPreferredLogicalWidths(
       // We don't really know whether the containing block of this child did
       // change or is going to change size. However, this is our only
       // opportunity to make sure that it gets its min/max widths calculated.
+      // This is also an important hook for flow threads; if the container of a
+      // flow thread needs its preferred logical widths recalculated, so does
+      // the flow thread, potentially.
       child->SetPreferredLogicalWidthsDirty();
     }
 

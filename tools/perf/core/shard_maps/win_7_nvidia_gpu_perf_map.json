@@ -59,18 +59,6 @@
                 "end": 86,
                 "abridged": false
             }
-        },
-        "executables": {
-            "angle_perftests": {
-                "path": "angle_perftests",
-                "arguments": [
-                    "--test-launcher-retry-limit=0",
-                    "--test-launcher-jobs=1"
-                ]
-            },
-            "load_library_perf_tests": {
-                "path": "load_library_perf_tests"
-            }
         }
     },
     "1": {
@@ -116,23 +104,6 @@
                 "end": 5,
                 "abridged": false
             }
-        },
-        "executables": {
-            "media_perftests": {
-                "path": "media_perftests",
-                "arguments": [
-                    "--single-process-tests",
-                    "--test-launcher-retry-limit=0",
-                    "--isolated-script-test-filter=*::-*_unoptimized::*_unaligned::*unoptimized_aligned"
-                ]
-            },
-            "passthrough_command_buffer_perftests": {
-                "path": "command_buffer_perftests",
-                "arguments": [
-                    "--use-cmd-decoder=passthrough",
-                    "--use-angle=gl-null"
-                ]
-            }
         }
     },
     "2": {
@@ -170,15 +141,6 @@
             },
             "webrtc": {
                 "abridged": false
-            }
-        },
-        "executables": {
-            "validating_command_buffer_perftests": {
-                "path": "command_buffer_perftests",
-                "arguments": [
-                    "--use-cmd-decoder=validating",
-                    "--use-stub"
-                ]
             }
         }
     },

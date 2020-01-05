@@ -64,6 +64,11 @@ class PLATFORM_EXPORT BlinkGC final {
   STATIC_ONLY(BlinkGC);
 
  public:
+  // CollectionType represents generational collection. kMinor collects objects
+  // in the young generation (i.e. allocated since the previous collection
+  // cycle, since we use sticky bits), kMajor collects the entire heap.
+  enum class CollectionType { kMinor, kMajor };
+
   // When garbage collecting we need to know whether or not there
   // can be pointers to Blink GC managed objects on the stack for
   // each thread. When threads reach a safe point they record

@@ -285,7 +285,8 @@ void ThreadState::RunTerminationGC() {
   DCHECK(!IsMainThread());
   DCHECK(CheckThread());
 
-  FinishIncrementalMarkingIfRunning(BlinkGC::kNoHeapPointersOnStack,
+  FinishIncrementalMarkingIfRunning(BlinkGC::CollectionType::kMajor,
+                                    BlinkGC::kNoHeapPointersOnStack,
                                     BlinkGC::kIncrementalAndConcurrentMarking,
                                     BlinkGC::kConcurrentAndLazySweeping,
                                     BlinkGC::GCReason::kThreadTerminationGC);
@@ -306,7 +307,8 @@ void ThreadState::RunTerminationGC() {
   int current_count = GetPersistentRegion()->NodesInUse();
   DCHECK_GE(current_count, 0);
   while (current_count != old_count) {
-    CollectGarbage(BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
+    CollectGarbage(BlinkGC::CollectionType::kMajor,
+                   BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
                    BlinkGC::kEagerSweeping,
                    BlinkGC::GCReason::kThreadTerminationGC);
     // Release the thread-local static persistents that were
@@ -325,7 +327,8 @@ void ThreadState::RunTerminationGC() {
          i < kMaxTerminationGCLoops && GetPersistentRegion()->NodesInUse();
          i++) {
       GetPersistentRegion()->PrepareForThreadStateTermination(this);
-      CollectGarbage(BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
+      CollectGarbage(BlinkGC::CollectionType::kMajor,
+                     BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
                      BlinkGC::kEagerSweeping,
                      BlinkGC::GCReason::kThreadTerminationGC);
     }
@@ -697,7 +700,8 @@ void ThreadState::RunScheduledGC(BlinkGC::StackState stack_state) {
       CollectAllGarbageForTesting();
       break;
     case kPreciseGCScheduled:
-      CollectGarbage(BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
+      CollectGarbage(BlinkGC::CollectionType::kMajor,
+                     BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
                      BlinkGC::kConcurrentAndLazySweeping,
                      BlinkGC::GCReason::kPreciseGC);
       break;
@@ -706,9 +710,11 @@ void ThreadState::RunScheduledGC(BlinkGC::StackState stack_state) {
   }
 }
 
-void ThreadState::AtomicPauseMarkPrologue(BlinkGC::StackState stack_state,
-                                          BlinkGC::MarkingType marking_type,
-                                          BlinkGC::GCReason reason) {
+void ThreadState::AtomicPauseMarkPrologue(
+    BlinkGC::CollectionType collection_type,
+    BlinkGC::StackState stack_state,
+    BlinkGC::MarkingType marking_type,
+    BlinkGC::GCReason reason) {
   ThreadHeapStatsCollector::EnabledScope mark_prologue_scope(
       Heap().stats_collector(),
       ThreadHeapStatsCollector::kAtomicPauseMarkPrologue, "epoch", gc_age_,
@@ -744,7 +750,7 @@ void ThreadState::AtomicPauseMarkPrologue(BlinkGC::StackState stack_state,
     current_gc_data_.stack_state = stack_state;
     Heap().stats_collector()->UpdateReason(reason);
   } else {
-    MarkPhasePrologue(stack_state, marking_type, reason);
+    MarkPhasePrologue(collection_type, stack_state, marking_type, reason);
   }
 
   if (stack_state == BlinkGC::kNoHeapPointersOnStack) {
@@ -1158,7 +1164,8 @@ void ThreadState::IncrementalMarkingStart(BlinkGC::GCReason reason) {
         BlinkGC::ToString(reason));
     AtomicPauseScope atomic_pause_scope(this);
     ScriptForbiddenScope script_forbidden_scope;
-    MarkPhasePrologue(BlinkGC::kNoHeapPointersOnStack,
+    MarkPhasePrologue(BlinkGC::CollectionType::kMajor,
+                      BlinkGC::kNoHeapPointersOnStack,
                       BlinkGC::kIncrementalAndConcurrentMarking, reason);
     {
       MutexLocker persistent_lock(ProcessHeap::CrossThreadPersistentMutex());
@@ -1262,11 +1269,13 @@ void ThreadState::IncrementalMarkingFinalize() {
   // UMA accounting and allow follow up GCs if necessary.
   DCHECK_EQ(BlinkGC::kIncrementalAndConcurrentMarking,
             current_gc_data_.marking_type);
-  CollectGarbage(BlinkGC::kNoHeapPointersOnStack, current_gc_data_.marking_type,
+  CollectGarbage(current_gc_data_.collection_type,
+                 BlinkGC::kNoHeapPointersOnStack, current_gc_data_.marking_type,
                  BlinkGC::kConcurrentAndLazySweeping, current_gc_data_.reason);
 }
 
 bool ThreadState::FinishIncrementalMarkingIfRunning(
+    BlinkGC::CollectionType collection_type,
     BlinkGC::StackState stack_state,
     BlinkGC::MarkingType marking_type,
     BlinkGC::SweepingType sweeping_type,
@@ -1278,14 +1287,16 @@ bool ThreadState::FinishIncrementalMarkingIfRunning(
     if (IsUnifiedGCMarkingInProgress()) {
       unified_heap_controller()->FinalizeTracing();
     } else {
-      RunAtomicPause(stack_state, marking_type, sweeping_type, reason);
+      RunAtomicPause(collection_type, stack_state, marking_type, sweeping_type,
+                     reason);
     }
     return true;
   }
   return false;
 }
 
-void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
+void ThreadState::CollectGarbage(BlinkGC::CollectionType collection_type,
+                                 BlinkGC::StackState stack_state,
                                  BlinkGC::MarkingType marking_type,
                                  BlinkGC::SweepingType sweeping_type,
                                  BlinkGC::GCReason reason) {
@@ -1301,7 +1312,7 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
       GetIsolate(), RuntimeCallStats::CounterId::kCollectGarbage);
 
   const bool was_incremental_marking = FinishIncrementalMarkingIfRunning(
-      stack_state, marking_type, sweeping_type, reason);
+      collection_type, stack_state, marking_type, sweeping_type, reason);
 
   // We don't want floating garbage for the specific garbage collection types
   // mentioned below. In this case we will follow up with a regular full
@@ -1315,7 +1326,8 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
     CompleteSweep();
     SetGCState(kNoGCScheduled);
     Heap().stats_collector()->NotifyMarkingStarted(reason);
-    RunAtomicPause(stack_state, marking_type, sweeping_type, reason);
+    RunAtomicPause(collection_type, stack_state, marking_type, sweeping_type,
+                   reason);
   }
 
   const base::TimeDelta total_collect_garbage_time =
@@ -1569,7 +1581,8 @@ void ThreadState::PoisonUnmarkedObjects() {
 }
 #endif  // ADDRESS_SANITIZER
 
-void ThreadState::RunAtomicPause(BlinkGC::StackState stack_state,
+void ThreadState::RunAtomicPause(BlinkGC::CollectionType collection_type,
+                                 BlinkGC::StackState stack_state,
                                  BlinkGC::MarkingType marking_type,
                                  BlinkGC::SweepingType sweeping_type,
                                  BlinkGC::GCReason reason) {
@@ -1578,7 +1591,7 @@ void ThreadState::RunAtomicPause(BlinkGC::StackState stack_state,
   TRACE_EVENT1("blink_gc,devtools.timeline", "BlinkGC.AtomicPhase", "forced",
                IsForcedGC(reason));
 
-  AtomicPauseMarkPrologue(stack_state, marking_type, reason);
+  AtomicPauseMarkPrologue(collection_type, stack_state, marking_type, reason);
   AtomicPauseMarkRoots(stack_state, marking_type, reason);
   AtomicPauseMarkTransitiveClosure();
   AtomicPauseMarkEpilogue(marking_type);
@@ -1595,7 +1608,8 @@ MarkingVisitor::MarkingMode GetMarkingMode(bool should_compact) {
 
 }  // namespace
 
-void ThreadState::MarkPhasePrologue(BlinkGC::StackState stack_state,
+void ThreadState::MarkPhasePrologue(BlinkGC::CollectionType collection_type,
+                                    BlinkGC::StackState stack_state,
                                     BlinkGC::MarkingType marking_type,
                                     BlinkGC::GCReason reason) {
   SetGCPhase(GCPhase::kMarking);
@@ -1608,6 +1622,7 @@ void ThreadState::MarkPhasePrologue(BlinkGC::StackState stack_state,
   }
 
   current_gc_data_.reason = reason;
+  current_gc_data_.collection_type = collection_type;
   current_gc_data_.visitor =
       IsUnifiedGCMarkingInProgress()
           ? std::make_unique<UnifiedHeapMarkingVisitor>(
@@ -1709,8 +1724,8 @@ void ThreadState::CollectAllGarbageForTesting(BlinkGC::StackState stack_state) {
   // We need to run multiple GCs to collect a chain of persistent handles.
   size_t previous_live_objects = 0;
   for (int i = 0; i < 5; ++i) {
-    CollectGarbage(stack_state, BlinkGC::kAtomicMarking,
-                   BlinkGC::kEagerSweeping,
+    CollectGarbage(BlinkGC::CollectionType::kMajor, stack_state,
+                   BlinkGC::kAtomicMarking, BlinkGC::kEagerSweeping,
                    BlinkGC::GCReason::kForcedGCForTesting);
     const size_t live_objects =
         Heap().stats_collector()->previous().marked_bytes;

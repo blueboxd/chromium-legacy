@@ -4,7 +4,9 @@
 
 import sys
 
+import mako.runtime
 import mako.template
+import mako.util
 
 
 _MAKO_TEMPLATE_PASS_KEY = object()
@@ -38,8 +40,21 @@ class MakoRenderer(object):
     """Represents a renderer object implemented with Mako templates."""
 
     def __init__(self):
+        self._text_buffer = None
         self._caller_stack = []
         self._caller_stack_on_error = []
+
+    def reset(self):
+        """
+        Resets the rendering states of this object.  Must be called before
+        the first call to |render| or |render_text|.
+        """
+        self._text_buffer = mako.util.FastEncodingBuffer()
+
+    def to_text(self):
+        """Returns the rendering result."""
+        assert self._text_buffer is not None
+        return self._text_buffer.getvalue()
 
     def render(self, caller, template, template_vars):
         """
@@ -63,7 +78,9 @@ class MakoRenderer(object):
         try:
             mako_template = template.mako_template(
                 pass_key=_MAKO_TEMPLATE_PASS_KEY)
-            text = mako_template.render(**template_vars)
+            mako_context = mako.runtime.Context(self._text_buffer,
+                                                **template_vars)
+            mako_template.render_context(mako_context)
         except:
             # Print stacktrace of template rendering.
             sys.stderr.write("\n")
@@ -89,7 +106,16 @@ class MakoRenderer(object):
         finally:
             self._caller_stack.pop()
 
-        return text
+    def render_text(self, text):
+        """Renders a plain text as is."""
+        assert isinstance(text, str)
+        self._text_buffer.write(text)
+
+    def push_caller(self, caller):
+        self._caller_stack.append(caller)
+
+    def pop_caller(self):
+        self._caller_stack.pop()
 
     @property
     def callers_from_first_to_last(self):

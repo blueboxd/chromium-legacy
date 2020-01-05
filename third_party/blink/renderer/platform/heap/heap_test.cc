@@ -264,7 +264,8 @@ class TestGCScope : public TestGCCollectGarbageScope {
     ThreadState::Current()->Heap().stats_collector()->NotifyMarkingStarted(
         BlinkGC::GCReason::kForcedGCForTesting);
     ThreadState::Current()->AtomicPauseMarkPrologue(
-        state, BlinkGC::kAtomicMarking, BlinkGC::GCReason::kPreciseGC);
+        BlinkGC::CollectionType::kMajor, state, BlinkGC::kAtomicMarking,
+        BlinkGC::GCReason::kPreciseGC);
   }
   ~TestGCScope() {
     ThreadState::Current()->AtomicPauseMarkEpilogue(BlinkGC::kAtomicMarking);
@@ -1827,8 +1828,8 @@ TEST_F(HeapTest, LazySweepingPages) {
   for (int i = 0; i < 1000; i++)
     MakeGarbageCollected<SimpleFinalizedObject>();
   ThreadState::Current()->CollectGarbage(
-      BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kConcurrentAndLazySweeping,
+      BlinkGC::CollectionType::kMajor, BlinkGC::kNoHeapPointersOnStack,
+      BlinkGC::kAtomicMarking, BlinkGC::kConcurrentAndLazySweeping,
       BlinkGC::GCReason::kForcedGCForTesting);
   EXPECT_EQ(0, SimpleFinalizedObject::destructor_calls_);
   for (int i = 0; i < 10000; i++)
@@ -1861,8 +1862,8 @@ TEST_F(HeapTest, LazySweepingLargeObjectPages) {
   for (int i = 0; i < 10; i++)
     MakeGarbageCollected<LargeHeapObject>();
   ThreadState::Current()->CollectGarbage(
-      BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kConcurrentAndLazySweeping,
+      BlinkGC::CollectionType::kMajor, BlinkGC::kNoHeapPointersOnStack,
+      BlinkGC::kAtomicMarking, BlinkGC::kConcurrentAndLazySweeping,
       BlinkGC::GCReason::kForcedGCForTesting);
   EXPECT_EQ(0, LargeHeapObject::destructor_calls_);
   for (int i = 0; i < 10; i++) {
@@ -1873,8 +1874,8 @@ TEST_F(HeapTest, LazySweepingLargeObjectPages) {
   MakeGarbageCollected<LargeHeapObject>();
   EXPECT_EQ(10, LargeHeapObject::destructor_calls_);
   ThreadState::Current()->CollectGarbage(
-      BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kConcurrentAndLazySweeping,
+      BlinkGC::CollectionType::kMajor, BlinkGC::kNoHeapPointersOnStack,
+      BlinkGC::kAtomicMarking, BlinkGC::kConcurrentAndLazySweeping,
       BlinkGC::GCReason::kForcedGCForTesting);
   EXPECT_EQ(10, LargeHeapObject::destructor_calls_);
   PreciselyCollectGarbage();

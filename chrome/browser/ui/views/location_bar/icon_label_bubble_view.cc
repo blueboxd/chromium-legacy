@@ -16,7 +16,6 @@
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/scoped_canvas.h"
@@ -65,9 +64,12 @@ IconLabelBubbleView::SeparatorView::SeparatorView(IconLabelBubbleView* owner) {
 }
 
 void IconLabelBubbleView::SeparatorView::OnPaint(gfx::Canvas* canvas) {
-  const SkColor background_color = owner_->GetParentBackgroundColor();
-  const SkColor separator_color =
-      SkColorSetA(color_utils::GetColorWithMaxContrast(background_color), 0x69);
+  // This uses the surrounding context as the base color instead of
+  // IconLabelBubbleView::GetForegroundColor() so that if the
+  // IconLabelBubbleView has been emphasized (e.g. red text for a security
+  // error) the separator will still blend into the background.
+  const SkColor separator_color = SkColorSetA(
+      owner_->delegate_->GetIconLabelBubbleSurroundingForegroundColor(), 0x69);
   const float x = GetLocalBounds().right() -
                   owner_->GetEndPaddingWithSeparator() -
                   1.0f / canvas->image_scale();
@@ -193,11 +195,6 @@ SkColor IconLabelBubbleView::GetForegroundColor() const {
   return delegate_->GetIconLabelBubbleSurroundingForegroundColor();
 }
 
-SkColor IconLabelBubbleView::GetParentBackgroundColor() const {
-  return GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldDefaultBackground);
-}
-
 bool IconLabelBubbleView::ShouldShowSeparator() const {
   return ShouldShowLabel();
 }
@@ -308,7 +305,7 @@ void IconLabelBubbleView::OnThemeChanged() {
   label()->SetBackground(nullptr);
 
   SetEnabledTextColors(GetForegroundColor());
-  label()->SetBackgroundColor(GetParentBackgroundColor());
+  label()->SetBackgroundColor(delegate_->GetIconLabelBubbleBackgroundColor());
   SchedulePaint();
 }
 

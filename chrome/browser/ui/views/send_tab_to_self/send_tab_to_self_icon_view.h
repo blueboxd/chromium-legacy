@@ -27,7 +27,6 @@ class SendTabToSelfIconView : public PageActionIconView {
   // PageActionIconView:
   views::BubbleDialogDelegateView* GetBubble() const override;
   void UpdateImpl() override;
-  SkColor GetForegroundColor() const override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;
 
   // gfx::AnimationDelegate:

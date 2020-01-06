@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/arc/accessibility/accessibility_window_info_data_wrapper.h"
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_util.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
+#include "components/exo/wm_helper.h"
 #include "extensions/browser/api/automation_internal/automation_event_router.h"
 #include "extensions/common/extension_messages.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -230,10 +231,13 @@ const gfx::Rect AXTreeSourceArc::GetBounds(
     return info_data_bounds;
   }
 
+  exo::WMHelper* wm_helper = exo::WMHelper::GetInstance();
+  if (!wm_helper)
+    return info_data_bounds;
+
   // TODO(katie): offset_container_id should work and we shouldn't have to
   // go into this code path for each node.
   aura::Window* toplevel_window = active_window->GetToplevelWindow();
-  float scale = toplevel_window->layer()->device_scale_factor();
 
   views::Widget* widget = views::Widget::GetWidgetForNativeView(active_window);
   DCHECK(widget);
@@ -241,6 +245,8 @@ const gfx::Rect AXTreeSourceArc::GetBounds(
   DCHECK(widget->widget_delegate()->GetContentsView());
   const gfx::Rect bounds =
       widget->widget_delegate()->GetContentsView()->GetBoundsInScreen();
+
+  float scale = wm_helper->GetDefaultDeviceScaleFactor();
 
   // Bounds of root node is relative to its container, i.e. contents view
   // (ShellSurfaceBase).
@@ -259,7 +265,9 @@ const gfx::Rect AXTreeSourceArc::GetBounds(
                                                    ->GetBoundsForClientView()
                                                    .y())));
   }
-  return info_data_bounds;
+  return gfx::ScaleToEnclosingRect(
+      info_data_bounds,
+      toplevel_window->layer()->device_scale_factor() / scale);
 }
 
 void AXTreeSourceArc::InvalidateTree() {

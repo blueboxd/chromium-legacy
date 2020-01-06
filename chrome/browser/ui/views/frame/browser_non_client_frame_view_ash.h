@@ -196,6 +196,9 @@ class BrowserNonClientFrameViewAsh
   // Returns whether this window is currently in the overview list.
   bool IsInOverviewMode() const;
 
+  // Called any time the frame color may have changed.
+  void OnUpdateFrameColor();
+
   // Returns the top level aura::Window for this browser window.
   const aura::Window* GetFrameWindow() const;
   aura::Window* GetFrameWindow();

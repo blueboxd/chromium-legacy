@@ -22,13 +22,16 @@ class TestLocationIconDelegate : public IconLabelBubbleView::Delegate,
   SkColor GetIconLabelBubbleSurroundingForegroundColor() const override {
     return SK_ColorBLACK;
   }
+  SkColor GetIconLabelBubbleBackgroundColor() const override {
+    return SK_ColorWHITE;
+  }
 
   // LocationIconView::Delegate:
   content::WebContents* GetWebContents() override { return nullptr; }
   bool IsEditingOrEmpty() const override { return is_editing_or_empty_; }
   SkColor GetSecurityChipColor(
       security_state::SecurityLevel security_level) const override {
-    return SK_ColorWHITE;
+    return GetIconLabelBubbleSurroundingForegroundColor();
   }
   bool ShowPageInfoDialog() override { return false; }
   const LocationBarModel* GetLocationBarModel() const override {

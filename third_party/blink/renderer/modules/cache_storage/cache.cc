@@ -860,18 +860,15 @@ ScriptPromise Cache::AddAllImpl(ScriptState* script_state,
   promises.resize(requests.size());
   for (wtf_size_t i = 0; i < requests.size(); ++i) {
     if (!requests[i]->url().ProtocolIsInHTTPFamily()) {
-      return ScriptPromise::Reject(script_state,
-                                   V8ThrowException::CreateTypeError(
-                                       script_state->GetIsolate(),
-                                       "Add/AddAll does not support schemes "
-                                       "other than \"http\" or \"https\""));
+      exception_state.ThrowTypeError(
+          "Add/AddAll does not support schemes "
+          "other than \"http\" or \"https\"");
+      return ScriptPromise();
     }
     if (requests[i]->method() != http_names::kGET) {
-      return ScriptPromise::Reject(
-          script_state,
-          V8ThrowException::CreateTypeError(
-              script_state->GetIsolate(),
-              "Add/AddAll only supports the GET request method."));
+      exception_state.ThrowTypeError(
+          "Add/AddAll only supports the GET request method.");
+      return ScriptPromise();
     }
     request_infos[i].SetRequest(requests[i]);
 

@@ -82,6 +82,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     // The offset of the border box, initially in this child coordinate system.
     // |ComputeInlinePositions()| converts it to the offset within the line box.
     LogicalOffset offset;
+    LogicalSize size;
     // The offset of a positioned float wrt. the root BFC. This should only be
     // set for positioned floats.
     NGBfcOffset bfc_offset;
@@ -103,7 +104,8 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     Child() = default;
     // Create a placeholder. A placeholder does not have a fragment nor a bidi
     // level.
-    Child(LogicalOffset offset) : offset(offset) {}
+    Child(LayoutUnit block_offset, LayoutUnit block_size)
+        : offset(LayoutUnit(), block_offset), size(LayoutUnit(), block_size) {}
     // Crete a bidi control. A bidi control does not have a fragment, but has
     // bidi level and affects bidi reordering.
     Child(UBiDiLevel bidi_level) : bidi_level(bidi_level) {}
@@ -111,10 +113,12 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     Child(scoped_refptr<const NGLayoutResult> layout_result,
           LogicalOffset offset,
           LayoutUnit inline_size,
+          unsigned children_count,
           UBiDiLevel bidi_level)
         : layout_result(std::move(layout_result)),
           offset(offset),
           inline_size(inline_size),
+          children_count(children_count),
           bidi_level(bidi_level) {}
     // Create an in-flow |NGPhysicalTextFragment|.
     Child(scoped_refptr<const NGPhysicalTextFragment> fragment,
@@ -185,6 +189,12 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
         return &layout_result->PhysicalFragment();
       return fragment.get();
     }
+    TextDirection ResolvedDirection() const {
+      // Inline boxes are not leaves that they don't have directions.
+      DCHECK(HasBidiLevel() || layout_result->PhysicalFragment().IsInlineBox());
+      return HasBidiLevel() ? DirectionFromLevel(bidi_level)
+                            : TextDirection::kLtr;
+    }
   };
 
   // A vector of Child.
@@ -235,10 +245,10 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     void InsertChild(unsigned index,
                      scoped_refptr<const NGLayoutResult> layout_result,
                      const LogicalOffset& offset,
-                     LayoutUnit inline_size,
-                     UBiDiLevel bidi_level) {
+                     unsigned children_count) {
       children_.insert(index, Child{std::move(layout_result), offset,
-                                    inline_size, bidi_level});
+                                    /* inline_size */ LayoutUnit(),
+                                    children_count, /* bidi_level */ 0});
     }
 
     void MoveInInlineDirection(LayoutUnit);

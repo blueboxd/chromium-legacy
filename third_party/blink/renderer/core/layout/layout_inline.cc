@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_fragment_traversal.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_outline_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
@@ -54,6 +55,15 @@
 namespace blink {
 
 namespace {
+
+// TODO(layout-dev): Once we generate fragment for all inline element, we should
+// use |LayoutObject::EnclosingBlockFlowFragment()|.
+const NGPhysicalBoxFragment* ContainingBlockFlowFragmentOf(
+    const LayoutInline& node) {
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+    return nullptr;
+  return node.ContainingBlockFlowFragment();
+}
 
 // TODO(xiaochengh): Deduplicate with a similar function in ng_paint_fragment.cc
 // ::before, ::after and ::first-letter can be hit test targets.
@@ -777,10 +787,12 @@ template <typename PhysicalRectCollector>
 void LayoutInline::CollectLineBoxRects(
     const PhysicalRectCollector& yield) const {
   if (IsInLayoutNGInlineFormattingContext()) {
-    NGInlineCursor cursor;
-    cursor.MoveTo(*this);
-    for (; cursor; cursor.MoveToNextForSameLayoutObject())
-      yield(cursor.CurrentRect());
+    const auto* box_fragment = ContainingBlockFlowFragmentOf(*this);
+    if (!box_fragment)
+      return;
+    for (const auto& fragment :
+         NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this))
+      yield(fragment.RectInContainerBox());
     return;
   }
   if (!AlwaysCreateLineBoxes()) {

@@ -106,7 +106,7 @@ RenderWidgetTargeter::TargetingRequest::TargetingRequest(
     const ui::LatencyInfo& latency) {
   this->root_view = std::move(root_view);
   this->location = ComputeEventLocation(event);
-  this->event = event.Clone();
+  this->event = ui::WebInputEventTraits::Clone(event);
   this->latency = latency;
 }
 

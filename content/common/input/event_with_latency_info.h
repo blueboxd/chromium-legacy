@@ -41,6 +41,9 @@ class EventWithLatencyInfo {
     if (other.event.GetType() != event.GetType())
       return false;
 
+    DCHECK_EQ(sizeof(T), event.size());
+    DCHECK_EQ(sizeof(T), other.event.size());
+
     return ui::CanCoalesce(other.event, event);
   }
 

@@ -110,14 +110,8 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
   web_app::AppBrowserController* controller =
       browser_view->browser()->app_controller();
   if (controller && controller->HasTitlebarToolbar()) {
-    // TODO(alancutter): Avoid snapshotting GetCaptionColor() values here and
-    // call it on demand in WebAppFrameToolbarView::UpdateIconsColor() via a
-    // delegate interface.
-    set_web_app_frame_toolbar(
-        AddChildView(std::make_unique<WebAppFrameToolbarView>(
-            frame, browser_view,
-            GetCaptionColor(BrowserFrameActiveState::kActive),
-            GetCaptionColor(BrowserFrameActiveState::kInactive))));
+    set_web_app_frame_toolbar(AddChildView(
+        std::make_unique<WebAppFrameToolbarView>(frame, browser_view)));
   }
 
   // The window title appears above the web app frame toolbar (if present),

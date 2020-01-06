@@ -1,0 +1,10 @@
+PASS cloned.value is target.value
+PASS internals.shadowPseudoId(clonedShadowRoot.firstChild) is internals.shadowPseudoId(targetShadowRoot.firstChild)
+PASS internals.shadowPseudoId(clonedShadowRoot.firstChild.firstChild) is internals.shadowPseudoId(targetShadowRoot.firstChild.firstChild)
+PASS internals.shadowPseudoId(clonedShadowRoot.firstChild.firstChild.firstChild) is internals.shadowPseudoId(targetShadowRoot.firstChild.firstChild.firstChild)
+FAIL clonedShadowRoot.firstChild.firstChild.firstChild.style.width should be 70%. Was .
+FAIL targetShadowRoot.firstChild.firstChild.firstChild.style.width should be 50%. Was .
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

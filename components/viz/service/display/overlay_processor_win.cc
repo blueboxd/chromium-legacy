@@ -44,8 +44,9 @@ void OverlayProcessorWin::ProcessForOverlays(
     std::vector<gfx::Rect>* content_bounds) {
   TRACE_EVENT0("viz", "OverlayProcessorWin::ProcessForOverlays");
 
+  RenderPass* root_render_pass = render_passes->back().get();
   // Skip overlay processing if we have copy request.
-  if (!render_passes->back()->copy_requests.empty()) {
+  if (!root_render_pass->copy_requests.empty()) {
     damage_rect->Union(dc_layer_overlay_processor_
                            ->previous_frame_overlay_damage_contribution());
     // Update damage rect before calling ClearOverlayState, otherwise
@@ -54,11 +55,17 @@ void OverlayProcessorWin::ProcessForOverlays(
     return;
   }
 
+  // Skip overlay processing if output colorspace is HDR.
+  // Since Overlay only supports NV12 and YUY2 now, HDR content (usually P010
+  // format) cannot output through overlay without format degrading.
+  if (root_render_pass->color_space.IsHDR())
+    return;
+
   if (!enable_dc_overlay_)
     return;
 
   dc_layer_overlay_processor_->Process(
-      resource_provider, gfx::RectF(render_passes->back()->output_rect),
+      resource_provider, gfx::RectF(root_render_pass->output_rect),
       render_passes, damage_rect, candidates);
 }
 

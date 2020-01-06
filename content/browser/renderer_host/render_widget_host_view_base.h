@@ -273,14 +273,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   virtual void FocusedNodeChanged(bool is_editable_node,
                                   const gfx::Rect& node_bounds_in_screen) {}
 
-  // This method is called by RenderWidgetHostImpl when a new
-  // RendererCompositorFrameSink is created in the renderer. The view is
-  // expected not to return resources belonging to the old
-  // RendererCompositorFrameSink after this method finishes.
-  virtual void DidCreateNewRendererCompositorFrameSink(
-      viz::mojom::CompositorFrameSinkClient*
-          renderer_compositor_frame_sink) = 0;
-
   // This is called by the RenderWidgetHostImpl to provide a new compositor
   // frame that was received from the renderer process. if Viz service hit
   // testing is enabled then a HitTestRegionList provides hit test data

@@ -89,11 +89,6 @@ const char* SendTabToSelfIconView::GetClassName() const {
   return "SendTabToSelfIconView";
 }
 
-SkColor SendTabToSelfIconView::GetForegroundColor() const {
-  return GetOmniboxColor(GetThemeProvider(),
-                         OmniboxPart::LOCATION_BAR_TEXT_DEFAULT);
-}
-
 base::string16 SendTabToSelfIconView::GetTextForTooltipAndAccessibleName()
     const {
   return l10n_util::GetStringUTF16(IDS_OMNIBOX_TOOLTIP_SEND_TAB_TO_SELF);

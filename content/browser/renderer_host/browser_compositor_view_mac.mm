@@ -108,17 +108,6 @@ viz::FrameSinkId BrowserCompositorMac::GetRootFrameSinkId() {
   return viz::FrameSinkId();
 }
 
-void BrowserCompositorMac::DidCreateNewRendererCompositorFrameSink(
-    viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) {
-  renderer_compositor_frame_sink_ = renderer_compositor_frame_sink;
-  delegated_frame_host_->DidCreateNewRendererCompositorFrameSink(
-      renderer_compositor_frame_sink_);
-}
-
-void BrowserCompositorMac::OnDidNotProduceFrame(const viz::BeginFrameAck& ack) {
-  delegated_frame_host_->DidNotProduceFrame(ack);
-}
-
 void BrowserCompositorMac::SetBackgroundColor(SkColor background_color) {
   background_color_ = background_color;
   if (recyclable_compositor_)
@@ -310,14 +299,6 @@ void BrowserCompositorMac::DisableRecyclingForShutdown() {
   ui::RecyclableCompositorMacFactory::Get()->DisableRecyclingForShutdown();
 }
 
-void BrowserCompositorMac::SetNeedsBeginFrames(bool needs_begin_frames) {
-  delegated_frame_host_->SetNeedsBeginFrames(needs_begin_frames);
-}
-
-void BrowserCompositorMac::SetWantsAnimateOnlyBeginFrames() {
-  delegated_frame_host_->SetWantsAnimateOnlyBeginFrames();
-}
-
 void BrowserCompositorMac::TakeFallbackContentFrom(
     BrowserCompositorMac* other) {
   delegated_frame_host_->TakeFallbackContentFrom(
@@ -337,10 +318,6 @@ bool BrowserCompositorMac::DelegatedFrameHostIsVisible() const {
 
 SkColor BrowserCompositorMac::DelegatedFrameHostGetGutterColor() const {
   return client_->BrowserCompositorMacGetGutterColor();
-}
-
-void BrowserCompositorMac::OnBeginFrame(base::TimeTicks frame_time) {
-  client_->BrowserCompositorMacOnBeginFrame(frame_time);
 }
 
 void BrowserCompositorMac::OnFrameTokenChanged(uint32_t frame_token) {

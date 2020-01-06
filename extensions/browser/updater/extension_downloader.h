@@ -37,10 +37,6 @@ class IdentityManager;
 struct AccessTokenInfo;
 }  // namespace signin
 
-namespace net {
-class URLRequestStatus;
-}
-
 namespace network {
 class SharedURLLoaderFactory;
 class SimpleURLLoader;
@@ -338,7 +334,6 @@ class ExtensionDownloader {
   // |true| if the fetch should be retried. Returns |false| if the failure was
   // not related to authentication, leaving the ExtensionFetch data unmodified.
   bool IterateFetchCredentialsAfterFailure(ExtensionFetch* fetch,
-                                           const net::URLRequestStatus& status,
                                            int response_code);
 
   void OnAccessTokenFetchComplete(GoogleServiceAuthError error,

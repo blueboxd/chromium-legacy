@@ -152,9 +152,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       bool for_root_frame) override;
   bool LockMouse(bool request_unadjusted_movement) override;
   void UnlockMouse() override;
-  void DidCreateNewRendererCompositorFrameSink(
-      viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink)
-      override;
   void SubmitCompositorFrame(
       const viz::LocalSurfaceId& local_surface_id,
       viz::CompositorFrame frame,
@@ -245,9 +242,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SetBeginFrameSource(viz::BeginFrameSource* begin_frame_source);
   void DidPresentCompositorFrames(
       const viz::FrameTimingDetailsMap& timing_details);
-  void DidReceiveCompositorFrameAck(
-      const std::vector<viz::ReturnedResource>& resources);
-  void ReclaimResources(const std::vector<viz::ReturnedResource>& resources);
 
   // viz::BeginFrameObserver implementation.
   void OnBeginFrame(const viz::BeginFrameArgs& args) override;
@@ -565,9 +559,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   base::TimeTicks prev_mousedown_timestamp_;
   gfx::Point prev_mousedown_point_;
   int left_click_count_ = 0;
-
-  viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink_ =
-      nullptr;
 
   base::ObserverList<DestructionObserver>::Unchecked destruction_observers_;
 

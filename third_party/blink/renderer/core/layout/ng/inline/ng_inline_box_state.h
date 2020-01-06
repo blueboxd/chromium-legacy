@@ -116,14 +116,22 @@ class CORE_EXPORT NGInlineLayoutStateStack {
 
   // Initialize the box state stack for a new line.
   // @return The initial box state for the line.
-  NGInlineBoxState* OnBeginPlaceItems(const ComputedStyle&, FontBaseline, bool);
+  NGInlineBoxState* OnBeginPlaceItems(
+      const ComputedStyle&,
+      FontBaseline,
+      bool line_height_quirk,
+      NGLineBoxFragmentBuilder::ChildList* line_box);
 
   // Push a box state stack.
   NGInlineBoxState* OnOpenTag(const NGInlineItem&,
                               const NGInlineItemResult&,
+                              FontBaseline baseline_type,
                               const NGLineBoxFragmentBuilder::ChildList&);
-  NGInlineBoxState* OnOpenTag(const ComputedStyle&,
-                              const NGLineBoxFragmentBuilder::ChildList&);
+  // This variation adds a box placeholder to |line_box|.
+  NGInlineBoxState* OnOpenTag(const NGInlineItem&,
+                              const NGInlineItemResult&,
+                              FontBaseline baseline_type,
+                              NGLineBoxFragmentBuilder::ChildList* line_box);
 
   // Pop a box state stack.
   NGInlineBoxState* OnCloseTag(NGLineBoxFragmentBuilder::ChildList*,
@@ -182,6 +190,7 @@ class CORE_EXPORT NGInlineLayoutStateStack {
   void AddBoxFragmentPlaceholder(NGInlineBoxState*,
                                  NGLineBoxFragmentBuilder::ChildList*,
                                  FontBaseline);
+  void AddBoxData(NGInlineBoxState*, NGLineBoxFragmentBuilder::ChildList*);
 
   enum PositionPending { kPositionNotPending, kPositionPending };
 

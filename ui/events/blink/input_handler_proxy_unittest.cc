@@ -94,7 +94,7 @@ WebScopedInputEvent CreateGestureScrollPinch(WebInputEvent::Type type,
     gesture.data.pinch_update.scale = delta_y_or_scale;
     gesture.SetPositionInWidget(gfx::PointF(x, y));
   }
-  return gesture.Clone();
+  return WebInputEventTraits::Clone(gesture);
 }
 
 class MockInputHandler : public cc::InputHandler {
@@ -2640,14 +2640,14 @@ class InputHandlerProxyMomentumScrollJankTest : public testing::Test {
     WebGestureEvent gesture(WebInputEvent::kGestureScrollBegin,
                             WebInputEvent::kNoModifiers, tick_clock_.NowTicks(),
                             blink::WebGestureDevice::kTouchscreen);
-    HandleGesture(gesture.Clone());
+    HandleGesture(WebInputEventTraits::Clone(gesture));
   }
 
   void HandleScrollEnd() {
     WebGestureEvent gesture(WebInputEvent::kGestureScrollEnd,
                             WebInputEvent::kNoModifiers, tick_clock_.NowTicks(),
                             blink::WebGestureDevice::kTouchscreen);
-    HandleGesture(gesture.Clone());
+    HandleGesture(WebInputEventTraits::Clone(gesture));
   }
 
   void HandleScrollUpdate(bool is_momentum) {
@@ -2659,7 +2659,7 @@ class InputHandlerProxyMomentumScrollJankTest : public testing::Test {
       gesture.data.scroll_update.inertial_phase =
           blink::WebGestureEvent::InertialPhaseState::kMomentum;
     }
-    HandleGesture(gesture.Clone());
+    HandleGesture(WebInputEventTraits::Clone(gesture));
   }
 
   void AdvanceClock(uint32_t milliseconds) {

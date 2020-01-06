@@ -1202,7 +1202,7 @@ def _make_empty_callback_def(cg_context, function_name, arg_decls=None):
 
     func_def = CxxFuncDefNode(
         name=function_name, arg_decls=arg_decls, return_type="void")
-    func_def.add_template_vars(cg_context.template_bindings())
+    func_def.set_base_template_vars(cg_context.template_bindings())
 
     body = func_def.body
     body.add_template_var("info", "info")
@@ -2118,7 +2118,7 @@ def make_install_interface_template(cg_context, function_name, class_name,
         class_name=class_name,
         arg_decls=arg_decls,
         return_type=return_type)
-    func_def.add_template_vars(cg_context.template_bindings())
+    func_def.set_base_template_vars(cg_context.template_bindings())
 
     body = func_def.body
     body.add_template_vars({
@@ -2277,7 +2277,7 @@ def make_install_properties(cg_context, function_name, class_name,
         class_name=class_name,
         arg_decls=arg_decls,
         return_type=return_type)
-    func_def.add_template_vars(cg_context.template_bindings())
+    func_def.set_base_template_vars(cg_context.template_bindings())
 
     body = func_def.body
     if is_context_dependent:
@@ -2448,7 +2448,7 @@ def make_cross_component_init(cg_context, function_name, class_name):
         class_name=class_name,
         arg_decls=[],
         return_type="void")
-    func_def.add_template_vars(cg_context.template_bindings())
+    func_def.set_base_template_vars(cg_context.template_bindings())
 
     body = func_def.body
     body.extend([
@@ -2531,7 +2531,7 @@ def generate_interface(interface):
         cg_context.class_name,
         final=True,
         export=component_export(api_component))
-    api_class_def.add_template_vars(cg_context.template_bindings())
+    api_class_def.set_base_template_vars(cg_context.template_bindings())
     api_class_def.top_section.append(TextNode("STATIC_ONLY(${class_name});"))
     if is_cross_components:
         api_class_def.bottom_section.append(
@@ -2540,7 +2540,7 @@ def generate_interface(interface):
             impl_class_name,
             final=True,
             export=component_export(impl_component))
-        impl_class_def.add_template_vars(cg_context.template_bindings())
+        impl_class_def.set_base_template_vars(cg_context.template_bindings())
         impl_class_def.top_section.append(
             TextNode("STATIC_ONLY(${impl_class_name});"))
     else:
@@ -2765,5 +2765,5 @@ def generate_interface(interface):
 
 
 def generate_interfaces(web_idl_database):
-    interface = web_idl_database.find("Window")
+    interface = web_idl_database.find("Navigator")
     generate_interface(interface)

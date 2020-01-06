@@ -672,7 +672,7 @@ void InputHandler::DispatchMouseEvent(
   modifiers |= button_modifiers;
   base::TimeTicks timestamp = GetEventTimeTicks(maybe_timestamp);
 
-  std::unique_ptr<blink::WebMouseEvent> mouse_event;
+  std::unique_ptr<blink::WebMouseEvent, ui::WebInputEventDeleter> mouse_event;
   blink::WebMouseWheelEvent* wheel_event = nullptr;
 
   if (type == blink::WebInputEvent::kMouseWheel) {

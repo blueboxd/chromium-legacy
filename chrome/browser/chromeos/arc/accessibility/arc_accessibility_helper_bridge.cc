@@ -69,11 +69,9 @@ void DispatchFocusChange(arc::mojom::AccessibilityNodeInfoData* node_data,
   if (!active_window)
     return;
 
-  aura::Window* toplevel_window = active_window->GetToplevelWindow();
-
   gfx::Rect bounds_in_screen = gfx::ScaleToEnclosingRect(
       node_data->bounds_in_screen,
-      1.0f / toplevel_window->layer()->device_scale_factor());
+      1.0f / wm_helper->GetDefaultDeviceScaleFactor());
 
   views::Widget* widget = views::Widget::GetWidgetForNativeView(active_window);
   DCHECK(widget);

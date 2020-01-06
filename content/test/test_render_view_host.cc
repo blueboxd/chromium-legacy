@@ -169,11 +169,6 @@ gfx::Rect TestRenderWidgetHostView::GetBoundsInRootWindow() {
   return gfx::Rect();
 }
 
-void TestRenderWidgetHostView::DidCreateNewRendererCompositorFrameSink(
-    viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) {
-  did_change_compositor_frame_sink_ = true;
-}
-
 void TestRenderWidgetHostView::SubmitCompositorFrame(
     const viz::LocalSurfaceId& local_surface_id,
     viz::CompositorFrame frame,

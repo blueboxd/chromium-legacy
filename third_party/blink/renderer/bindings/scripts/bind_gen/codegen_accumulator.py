@@ -17,6 +17,10 @@ class CodeGenAccumulator(object):
         # Forward declarations of C++ struct
         self._struct_decls = set()
 
+    def total_size(self):
+        return (len(self.include_headers) + len(self.class_decls) + len(
+            self.struct_decls))
+
     @property
     def include_headers(self):
         return self._include_headers

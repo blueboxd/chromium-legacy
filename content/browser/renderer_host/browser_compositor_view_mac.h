@@ -31,7 +31,6 @@ namespace content {
 class BrowserCompositorMacClient {
  public:
   virtual SkColor BrowserCompositorMacGetGutterColor() const = 0;
-  virtual void BrowserCompositorMacOnBeginFrame(base::TimeTicks frame_time) = 0;
   virtual void OnFrameTokenChanged(uint32_t frame_token) = 0;
   virtual void DestroyCompositorForShutdown() = 0;
   virtual bool OnBrowserCompositorSurfaceIdChanged() = 0;
@@ -68,14 +67,9 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient,
   // no valid frame is available.
   const gfx::CALayerParams* GetLastCALayerParams() const;
 
-  void DidCreateNewRendererCompositorFrameSink(
-      viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink);
-  void OnDidNotProduceFrame(const viz::BeginFrameAck& ack);
   void SetBackgroundColor(SkColor background_color);
   void UpdateVSyncParameters(const base::TimeTicks& timebase,
                              const base::TimeDelta& interval);
-  void SetNeedsBeginFrames(bool needs_begin_frames);
-  void SetWantsAnimateOnlyBeginFrames();
   void TakeFallbackContentFrom(BrowserCompositorMac* other);
 
   // Update the renderer's SurfaceId to reflect the current dimensions of the
@@ -128,7 +122,6 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient,
   ui::Layer* DelegatedFrameHostGetLayer() const override;
   bool DelegatedFrameHostIsVisible() const override;
   SkColor DelegatedFrameHostGetGutterColor() const override;
-  void OnBeginFrame(base::TimeTicks frame_time) override;
   void OnFrameTokenChanged(uint32_t frame_token) override;
   float GetDeviceScaleFactor() const override;
   void InvalidateLocalSurfaceIdOnEviction() override;
@@ -186,8 +179,6 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient,
   std::unique_ptr<ui::Layer> root_layer_;
 
   SkColor background_color_ = SK_ColorWHITE;
-  viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink_ =
-      nullptr;
 
   // The viz::ParentLocalSurfaceIdAllocator for the delegated frame host
   // dispenses viz::LocalSurfaceIds that are renderered into by the renderer

@@ -52,25 +52,25 @@ class BLINK_COMMON_EXPORT WebMouseWheelEvent : public WebMouseEvent {
     kScrollVertical
   };
 
-  float delta_x = 0.0f;
-  float delta_y = 0.0f;
-  float wheel_ticks_x = 0.0f;
-  float wheel_ticks_y = 0.0f;
+  float delta_x;
+  float delta_y;
+  float wheel_ticks_x;
+  float wheel_ticks_y;
 
-  float acceleration_ratio_x = 1.0f;
-  float acceleration_ratio_y = 1.0f;
+  float acceleration_ratio_x;
+  float acceleration_ratio_y;
 
-  Phase phase = kPhaseNone;
-  Phase momentum_phase = kPhaseNone;
+  Phase phase;
+  Phase momentum_phase;
 
-  RailsMode rails_mode = kRailsModeFree;
+  RailsMode rails_mode;
 
   // Whether the event is blocking, non-blocking, all event
   // listeners were passive or was forced to be non-blocking.
-  DispatchType dispatch_type = kBlocking;
+  DispatchType dispatch_type;
 
   // The expected result of this wheel event (if not canceled).
-  EventAction event_action = EventAction::kPageZoom;
+  EventAction event_action;
 
   // True when phase information is added in mouse_wheel_phase_handler based
   // on its timer.
@@ -80,13 +80,39 @@ class BLINK_COMMON_EXPORT WebMouseWheelEvent : public WebMouseEvent {
   // kScrollByPrecisePixel, kScrollByPixel, and kScrollByPage, as they are
   // the only values expected after converting an OS event to a
   // WebMouseWheelEvent.
-  ui::input_types::ScrollGranularity delta_units =
-      ui::input_types::ScrollGranularity::kScrollByPixel;
+  ui::input_types::ScrollGranularity delta_units;
 
   WebMouseWheelEvent(Type type, int modifiers, base::TimeTicks time_stamp)
-      : WebMouseEvent(type, modifiers, time_stamp, kMousePointerId) {}
+      : WebMouseEvent(sizeof(WebMouseWheelEvent),
+                      type,
+                      modifiers,
+                      time_stamp,
+                      kMousePointerId),
+        delta_x(0.0f),
+        delta_y(0.0f),
+        wheel_ticks_x(0.0f),
+        wheel_ticks_y(0.0f),
+        acceleration_ratio_x(1.0f),
+        acceleration_ratio_y(1.0f),
+        phase(kPhaseNone),
+        momentum_phase(kPhaseNone),
+        rails_mode(kRailsModeFree),
+        dispatch_type(kBlocking),
+        delta_units(ui::input_types::ScrollGranularity::kScrollByPixel) {}
 
-  WebMouseWheelEvent() : WebMouseEvent(kMousePointerId) {}
+  WebMouseWheelEvent()
+      : WebMouseEvent(sizeof(WebMouseWheelEvent), kMousePointerId),
+        delta_x(0.0f),
+        delta_y(0.0f),
+        wheel_ticks_x(0.0f),
+        wheel_ticks_y(0.0f),
+        acceleration_ratio_x(1.0f),
+        acceleration_ratio_y(1.0f),
+        phase(kPhaseNone),
+        momentum_phase(kPhaseNone),
+        rails_mode(kRailsModeFree),
+        dispatch_type(kBlocking),
+        delta_units(ui::input_types::ScrollGranularity::kScrollByPixel) {}
 
   float DeltaXInRootFrame() const;
   float DeltaYInRootFrame() const;
@@ -96,8 +122,6 @@ class BLINK_COMMON_EXPORT WebMouseWheelEvent : public WebMouseEvent {
   WebMouseWheelEvent FlattenTransform() const;
 
   bool IsCancelable() const { return dispatch_type == kBlocking; }
-
-  std::unique_ptr<WebInputEvent> Clone() const override;
 };
 
 }  // namespace blink

@@ -53,7 +53,6 @@
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/events/event.h"
-#include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
@@ -386,16 +385,18 @@ class WebAppFrameToolbarView::ToolbarButtonContainer
     page_action_icon_container_view_->controller()->UpdateAll();
   }
 
-  void SetIconColor(SkColor icon_color) {
-    icon_color_ = icon_color;
+  void SetColors(SkColor foreground_color, SkColor background_color) {
+    foreground_color_ = foreground_color;
+    background_color_ = background_color;
     if (web_app_origin_text_)
-      web_app_origin_text_->SetTextColor(icon_color);
+      web_app_origin_text_->SetTextColor(foreground_color_);
     if (content_settings_container_)
-      content_settings_container_->SetIconColor(icon_color);
+      content_settings_container_->SetIconColor(foreground_color_);
     if (extensions_container_)
-      extensions_container_->OverrideIconColor(icon_color);
-    page_action_icon_container_view_->controller()->SetIconColor(icon_color);
-    web_app_menu_button_->SetColor(icon_color);
+      extensions_container_->OverrideIconColor(foreground_color_);
+    page_action_icon_container_view_->controller()->SetIconColor(
+        foreground_color_);
+    web_app_menu_button_->SetColor(foreground_color_);
   }
 
   ContentSettingsContainer* content_settings_container() {
@@ -479,11 +480,10 @@ class WebAppFrameToolbarView::ToolbarButtonContainer
 
   // IconLabelBubbleView::Delegate:
   SkColor GetIconLabelBubbleSurroundingForegroundColor() const override {
-    return GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_TextfieldDefaultColor);
+    return foreground_color_;
   }
-  SkColor GetIconLabelBubbleInkDropColor() const override {
-    return icon_color_;
+  SkColor GetIconLabelBubbleBackgroundColor() const override {
+    return background_color_;
   }
 
   // ContentSettingImageView::Delegate:
@@ -530,7 +530,8 @@ class WebAppFrameToolbarView::ToolbarButtonContainer
   // The containing browser view.
   BrowserView* const browser_view_;
 
-  SkColor icon_color_ = gfx::kPlaceholderColor;
+  SkColor foreground_color_ = gfx::kPlaceholderColor;
+  SkColor background_color_ = gfx::kPlaceholderColor;
 
   // All remaining members are owned by the views hierarchy.
   WebAppOriginText* web_app_origin_text_ = nullptr;
@@ -650,12 +651,8 @@ void WebAppFrameToolbarView::ToolbarButtonContainer::OnWidgetVisibilityChanged(
 }
 
 WebAppFrameToolbarView::WebAppFrameToolbarView(views::Widget* widget,
-                                               BrowserView* browser_view,
-                                               SkColor active_color,
-                                               SkColor inactive_color)
-    : browser_view_(browser_view),
-      active_color_(active_color),
-      inactive_color_(inactive_color) {
+                                               BrowserView* browser_view)
+    : browser_view_(browser_view) {
   DCHECK(browser_view_);
   DCHECK(web_app::AppBrowserController::IsForWebAppBrowser(
       browser_view_->browser()));
@@ -699,7 +696,6 @@ WebAppFrameToolbarView::WebAppFrameToolbarView(views::Widget* widget,
                                     views::MaximumFlexSizeRule::kPreferred)
                                     .WithOrder(1));
 
-  UpdateChildrenColor();
   UpdateStatusIconsVisibility();
 
   DCHECK(!browser_view_->toolbar_button_provider() ||
@@ -720,12 +716,15 @@ void WebAppFrameToolbarView::UpdateStatusIconsVisibility() {
 void WebAppFrameToolbarView::UpdateCaptionColors() {
   const BrowserNonClientFrameView* frame_view =
       browser_view_->frame()->GetFrameView();
+  DCHECK(frame_view);
 
-  // frame_view is nullptr during BrowserNonClientFrameViewAsh::Init().
-  if (!frame_view)
-    return;
-  active_color_ = frame_view->GetCaptionColor(BrowserFrameActiveState::kActive);
-  inactive_color_ =
+  active_background_color_ =
+      frame_view->GetFrameColor(BrowserFrameActiveState::kActive);
+  active_foreground_color_ =
+      frame_view->GetCaptionColor(BrowserFrameActiveState::kActive);
+  inactive_background_color_ =
+      frame_view->GetFrameColor(BrowserFrameActiveState::kInactive);
+  inactive_foreground_color_ =
       frame_view->GetCaptionColor(BrowserFrameActiveState::kInactive);
   UpdateChildrenColor();
 }
@@ -868,6 +867,10 @@ void WebAppFrameToolbarView::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();
 }
 
+void WebAppFrameToolbarView::OnThemeChanged() {
+  UpdateCaptionColors();
+}
+
 views::View* WebAppFrameToolbarView::GetContentSettingContainerForTesting() {
   return right_container_->content_settings_container();
 }
@@ -879,8 +882,11 @@ WebAppFrameToolbarView::GetContentSettingViewsForTesting() const {
 }
 
 void WebAppFrameToolbarView::UpdateChildrenColor() {
-  const SkColor icon_color = paint_as_active_ ? active_color_ : inactive_color_;
+  const SkColor foreground_color =
+      paint_as_active_ ? active_foreground_color_ : inactive_foreground_color_;
   if (left_container_)
-    left_container_->SetIconColor(icon_color);
-  right_container_->SetIconColor(icon_color);
+    left_container_->SetIconColor(foreground_color);
+  right_container_->SetColors(
+      foreground_color,
+      paint_as_active_ ? active_background_color_ : inactive_background_color_);
 }

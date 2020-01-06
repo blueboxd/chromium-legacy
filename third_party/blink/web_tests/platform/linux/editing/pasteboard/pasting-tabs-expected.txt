@@ -24,7 +24,7 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (64,0) size 38x19
           text run at (64,0) width 38: "<-Tab"
 layer at (8,64) size 179x36 clip at (9,65) size 177x34
-  LayoutTextControl {TEXTAREA} at (0,0) size 179x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+  LayoutTextControl {TEXTAREA} at (0,0) size 179x36 [bgcolor=#FFFFFF] [border: (1px solid #767676)]
     LayoutBlockFlow {DIV} at (3,3) size 175x16
       LayoutText {#text} at (0,0) size 104x16
         text run at (0,0) width 104: "Tab->\x{9}<-Tab"

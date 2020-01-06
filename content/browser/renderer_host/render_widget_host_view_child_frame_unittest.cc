@@ -139,16 +139,6 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
         new MockFrameConnectorDelegate(use_zoom_for_device_scale_factor);
     test_frame_connector_->SetView(view_);
     view_->SetFrameConnectorDelegate(test_frame_connector_);
-
-    mojo::PendingRemote<viz::mojom::CompositorFrameSink> sink;
-    mojo::PendingReceiver<viz::mojom::CompositorFrameSink> sink_receiver =
-        sink.InitWithNewPipeAndPassReceiver();
-    renderer_compositor_frame_sink_ =
-        std::make_unique<FakeRendererCompositorFrameSink>(
-            std::move(sink), renderer_compositor_frame_sink_remote_
-                                 .BindNewPipeAndPassReceiver());
-    view_->DidCreateNewRendererCompositorFrameSink(
-        renderer_compositor_frame_sink_remote_.get());
   }
 
   void TearDown() override {
@@ -189,14 +179,6 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
   RenderWidgetHostImpl* widget_host_;
   RenderWidgetHostViewChildFrame* view_;
   MockFrameConnectorDelegate* test_frame_connector_;
-  std::unique_ptr<FakeRendererCompositorFrameSink>
-      renderer_compositor_frame_sink_;
-
- private:
-  mojo::Remote<viz::mojom::CompositorFrameSinkClient>
-      renderer_compositor_frame_sink_remote_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewChildFrameTest);
 };
 
 viz::CompositorFrame CreateDelegatedFrame(float scale_factor,

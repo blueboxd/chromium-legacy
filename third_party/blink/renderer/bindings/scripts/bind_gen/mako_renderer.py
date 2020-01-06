@@ -41,6 +41,7 @@ class MakoRenderer(object):
 
     def __init__(self):
         self._text_buffer = None
+        self._is_invalidated = False
         self._caller_stack = []
         self._caller_stack_on_error = []
 
@@ -50,6 +51,14 @@ class MakoRenderer(object):
         the first call to |render| or |render_text|.
         """
         self._text_buffer = mako.util.FastEncodingBuffer()
+        self._is_invalidated = False
+
+    def is_rendering_complete(self):
+        return not (self._is_invalidated or self._text_buffer is None
+                    or self._caller_stack)
+
+    def invalidate_rendering_result(self):
+        self._is_invalidated = True
 
     def to_text(self):
         """Returns the rendering result."""

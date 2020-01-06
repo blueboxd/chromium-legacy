@@ -53,9 +53,10 @@ base::Optional<Fourcc> FindImageProcessorOutputFormat(V4L2Device* ip_device) {
             preferred_formats_first);
 
   for (uint32_t processor_output_format : processor_output_formats) {
-    if (ip_device->CanCreateEGLImageFrom(processor_output_format)) {
+    auto fourcc = Fourcc::FromV4L2PixFmt(processor_output_format);
+    if (fourcc && ip_device->CanCreateEGLImageFrom(*fourcc)) {
       DVLOGF(3) << "Image processor output format=" << processor_output_format;
-      return Fourcc::FromV4L2PixFmt(processor_output_format);
+      return fourcc;
     }
   }
 

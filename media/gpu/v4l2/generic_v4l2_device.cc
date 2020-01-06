@@ -195,7 +195,7 @@ std::vector<base::ScopedFD> GenericV4L2Device::GetDmabufsForV4L2Buffer(
   return dmabuf_fds;
 }
 
-bool GenericV4L2Device::CanCreateEGLImageFrom(uint32_t v4l2_pixfmt) {
+bool GenericV4L2Device::CanCreateEGLImageFrom(const Fourcc fourcc) {
   static uint32_t kEGLImageDrmFmtsSupported[] = {
     DRM_FORMAT_ARGB8888,
 #if defined(ARCH_CPU_ARM_FAMILY)
@@ -207,7 +207,7 @@ bool GenericV4L2Device::CanCreateEGLImageFrom(uint32_t v4l2_pixfmt) {
   return std::find(
              kEGLImageDrmFmtsSupported,
              kEGLImageDrmFmtsSupported + base::size(kEGLImageDrmFmtsSupported),
-             V4L2PixFmtToDrmFormat(v4l2_pixfmt)) !=
+             V4L2PixFmtToDrmFormat(fourcc.ToV4L2PixFmt())) !=
          kEGLImageDrmFmtsSupported + base::size(kEGLImageDrmFmtsSupported);
 }
 
@@ -217,20 +217,16 @@ EGLImageKHR GenericV4L2Device::CreateEGLImage(
     GLuint texture_id,
     const gfx::Size& size,
     unsigned int buffer_index,
-    uint32_t v4l2_pixfmt,
-    const std::vector<base::ScopedFD>& dmabuf_fds) {
+    const Fourcc fourcc,
+    std::vector<base::ScopedFD>&& dmabuf_fds) {
   DVLOGF(3);
-  if (!CanCreateEGLImageFrom(v4l2_pixfmt)) {
+
+  if (!CanCreateEGLImageFrom(fourcc)) {
     VLOGF(1) << "Unsupported V4L2 pixel format";
     return EGL_NO_IMAGE_KHR;
   }
 
-  const auto vf_format_fourcc = Fourcc::FromV4L2PixFmt(v4l2_pixfmt);
-  if (!vf_format_fourcc) {
-    VLOGF(1) << "Unrecognized pixel format " << FourccToString(v4l2_pixfmt);
-    return EGL_NO_IMAGE_KHR;
-  }
-  const VideoPixelFormat vf_format = vf_format_fourcc->ToVideoPixelFormat();
+  const VideoPixelFormat vf_format = fourcc.ToVideoPixelFormat();
   // Number of components, as opposed to the number of V4L2 planes, which is
   // just a buffer count.
   size_t num_planes = VideoFrame::NumPlanes(vf_format);
@@ -248,7 +244,7 @@ EGLImageKHR GenericV4L2Device::CreateEGLImage(
   attrs.push_back(EGL_HEIGHT);
   attrs.push_back(size.height());
   attrs.push_back(EGL_LINUX_DRM_FOURCC_EXT);
-  attrs.push_back(V4L2PixFmtToDrmFormat(v4l2_pixfmt));
+  attrs.push_back(V4L2PixFmtToDrmFormat(fourcc.ToV4L2PixFmt()));
 
   // For existing formats, if we have less buffers (V4L2 planes) than
   // components (planes), the remaining planes are stored in the last
@@ -290,16 +286,12 @@ EGLImageKHR GenericV4L2Device::CreateEGLImage(
 
 scoped_refptr<gl::GLImage> GenericV4L2Device::CreateGLImage(
     const gfx::Size& size,
-    uint32_t fourcc,
-    const std::vector<base::ScopedFD>& dmabuf_fds) {
+    const Fourcc fourcc,
+    std::vector<base::ScopedFD>&& dmabuf_fds) {
   DVLOGF(3);
   DCHECK(CanCreateEGLImageFrom(fourcc));
-  const auto vf_format_fourcc = Fourcc::FromV4L2PixFmt(fourcc);
-  if (!vf_format_fourcc) {
-    VLOGF(1) << "Unrecognized pixel format " << FourccToString(fourcc);
-    return nullptr;
-  }
-  const VideoPixelFormat vf_format = vf_format_fourcc->ToVideoPixelFormat();
+
+  const VideoPixelFormat vf_format = fourcc.ToVideoPixelFormat();
   size_t num_planes = VideoFrame::NumPlanes(vf_format);
   DCHECK_LE(num_planes, 3u);
   DCHECK_LE(dmabuf_fds.size(), num_planes);
@@ -344,7 +336,7 @@ scoped_refptr<gl::GLImage> GenericV4L2Device::CreateGLImage(
   }
 
   gfx::BufferFormat buffer_format = gfx::BufferFormat::BGRA_8888;
-  switch (fourcc) {
+  switch (fourcc.ToV4L2PixFmt()) {
     case DRM_FORMAT_ARGB8888:
       buffer_format = gfx::BufferFormat::BGRA_8888;
       break;

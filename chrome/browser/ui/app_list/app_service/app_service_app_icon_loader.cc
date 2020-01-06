@@ -41,7 +41,9 @@ bool AppServiceAppIconLoader::CanLoadImageForApp(const std::string& app_id) {
 void AppServiceAppIconLoader::FetchImage(const std::string& app_id) {
   AppIDToIconMap::const_iterator it = icon_map_.find(app_id);
   if (it != icon_map_.end()) {
-    delegate()->OnAppImageUpdated(app_id, it->second);
+    if (!it->second.isNull()) {
+      delegate()->OnAppImageUpdated(app_id, it->second);
+    }
     return;
   }
 
@@ -57,7 +59,7 @@ void AppServiceAppIconLoader::ClearImage(const std::string& app_id) {
 
 void AppServiceAppIconLoader::UpdateImage(const std::string& app_id) {
   AppIDToIconMap::const_iterator it = icon_map_.find(app_id);
-  if (it == icon_map_.end()) {
+  if (it == icon_map_.end() || it->second.isNull()) {
     return;
   }
 

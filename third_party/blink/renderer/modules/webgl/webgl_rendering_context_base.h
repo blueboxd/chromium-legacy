@@ -606,7 +606,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   void commit();
 
-  ScriptPromise makeXRCompatible(ScriptState*);
+  ScriptPromise makeXRCompatible(ScriptState*, ExceptionState&);
   bool IsXRCompatible();
 
   void UpdateNumberOfUserAllocatedMultisampledRenderbuffers(int delta);

@@ -105,7 +105,8 @@ bool NGInlineBoxState::CanAddTextOfStyle(
 NGInlineBoxState* NGInlineLayoutStateStack::OnBeginPlaceItems(
     const ComputedStyle& line_style,
     FontBaseline baseline_type,
-    bool line_height_quirk) {
+    bool line_height_quirk,
+    NGLineBoxFragmentBuilder::ChildList* line_box) {
   if (stack_.IsEmpty()) {
     // For the first line, push a box state for the line itself.
     stack_.resize(1);
@@ -114,7 +115,9 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnBeginPlaceItems(
   } else {
     // For the following lines, clear states that are not shared across lines.
     for (NGInlineBoxState& box : stack_) {
-      box.fragment_start = 0;
+      box.fragment_start = line_box->size();
+      if (&box != stack_.begin())
+        AddBoxFragmentPlaceholder(&box, line_box, baseline_type);
       if (!line_height_quirk)
         box.metrics = box.text_metrics;
       else
@@ -133,15 +136,15 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnBeginPlaceItems(
   DCHECK(box_data_list_.IsEmpty());
 
   // Initialize the box state for the line box.
-  NGInlineBoxState& line_box = LineBoxState();
-  if (line_box.style != &line_style) {
-    line_box.style = &line_style;
+  NGInlineBoxState& line_box_state = LineBoxState();
+  if (line_box_state.style != &line_style) {
+    line_box_state.style = &line_style;
 
     // Use a "strut" (a zero-width inline box with the element's font and
     // line height properties) as the initial metrics for the line box.
     // https://drafts.csswg.org/css2/visudet.html#strut
     if (!line_height_quirk)
-      line_box.ComputeTextMetrics(line_style, baseline_type);
+      line_box_state.ComputeTextMetrics(line_style, baseline_type);
   }
 
   return &stack_.back();
@@ -150,31 +153,32 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnBeginPlaceItems(
 NGInlineBoxState* NGInlineLayoutStateStack::OnOpenTag(
     const NGInlineItem& item,
     const NGInlineItemResult& item_result,
+    FontBaseline baseline_type,
+    NGLineBoxFragmentBuilder::ChildList* line_box) {
+  NGInlineBoxState* box =
+      OnOpenTag(item, item_result, baseline_type, *line_box);
+  AddBoxFragmentPlaceholder(box, line_box, baseline_type);
+  return box;
+}
+
+NGInlineBoxState* NGInlineLayoutStateStack::OnOpenTag(
+    const NGInlineItem& item,
+    const NGInlineItemResult& item_result,
+    FontBaseline baseline_type,
     const NGLineBoxFragmentBuilder::ChildList& line_box) {
   DCHECK(item.Style());
-  NGInlineBoxState* box = OnOpenTag(*item.Style(), line_box);
+  const ComputedStyle& style = *item.Style();
+  stack_.resize(stack_.size() + 1);
+  NGInlineBoxState* box = &stack_.back();
+  box->fragment_start = line_box.size();
+  box->style = &style;
   box->item = &item;
-
-  if (item.ShouldCreateBoxFragment())
-    box->SetNeedsBoxFragment();
-
-  // Compute box properties regardless of needs_box_fragment since close tag may
-  // also set needs_box_fragment.
+  box->needs_box_fragment = item.ShouldCreateBoxFragment();
   box->has_start_edge = item_result.has_edge;
   box->margin_inline_start = item_result.margins.inline_start;
   box->margin_inline_end = item_result.margins.inline_end;
   box->borders = item_result.borders;
   box->padding = item_result.padding;
-  return box;
-}
-
-NGInlineBoxState* NGInlineLayoutStateStack::OnOpenTag(
-    const ComputedStyle& style,
-    const NGLineBoxFragmentBuilder::ChildList& line_box) {
-  stack_.resize(stack_.size() + 1);
-  NGInlineBoxState* box = &stack_.back();
-  box->fragment_start = line_box.size();
-  box->style = &style;
   return box;
 }
 
@@ -209,8 +213,8 @@ void NGInlineLayoutStateStack::OnEndPlaceItems(
   // Copy the final offset to |box_data_list_|.
   for (BoxData& box_data : box_data_list_) {
     const NGLineBoxFragmentBuilder::Child& placeholder =
-        (*line_box)[box_data.fragment_end];
-    DCHECK(!placeholder.HasFragment());
+        (*line_box)[box_data.fragment_start];
+    DCHECK(placeholder.IsPlaceholder());
     box_data.offset = placeholder.offset;
   }
 }
@@ -220,7 +224,7 @@ void NGInlineLayoutStateStack::EndBoxState(
     NGLineBoxFragmentBuilder::ChildList* line_box,
     FontBaseline baseline_type) {
   if (box->needs_box_fragment)
-    AddBoxFragmentPlaceholder(box, line_box, baseline_type);
+    AddBoxData(box, line_box);
 
   PositionPending position_pending =
       ApplyBaselineShift(box, line_box, baseline_type);
@@ -251,12 +255,11 @@ void NGInlineLayoutStateStack::AddBoxFragmentPlaceholder(
     NGInlineBoxState* box,
     NGLineBoxFragmentBuilder::ChildList* line_box,
     FontBaseline baseline_type) {
-  DCHECK(box->needs_box_fragment);
   DCHECK(box->style);
   const ComputedStyle& style = *box->style;
 
-  LogicalOffset offset;
-  LogicalSize size;
+  LayoutUnit block_offset;
+  LayoutUnit block_size;
   if (!is_empty_line_) {
     // The inline box should have the height of the font metrics without the
     // line-height property. Compute from style because |box->metrics| includes
@@ -265,16 +268,29 @@ void NGInlineLayoutStateStack::AddBoxFragmentPlaceholder(
 
     // Extend the block direction of the box by borders and paddings. Inline
     // direction is already included into positions in NGLineBreaker.
-    offset.block_offset =
+    block_offset =
         -metrics.ascent - (box->borders.line_over + box->padding.line_over);
-    size.block_size = metrics.LineHeight() + box->borders.BlockSum() +
-                      box->padding.BlockSum();
+    block_size = metrics.LineHeight() + box->borders.BlockSum() +
+                 box->padding.BlockSum();
   }
+  line_box->AddChild(block_offset, block_size);
+  DCHECK((*line_box)[line_box->size() - 1].IsPlaceholder());
+}
 
-  unsigned fragment_end = line_box->size();
+// Add a |BoxData|, for each close-tag that needs a box fragment.
+void NGInlineLayoutStateStack::AddBoxData(
+    NGInlineBoxState* box,
+    NGLineBoxFragmentBuilder::ChildList* line_box) {
+  DCHECK(box->needs_box_fragment);
+  DCHECK(box->style);
+  const ComputedStyle& style = *box->style;
+  NGLineBoxFragmentBuilder::Child& placeholder =
+      (*line_box)[box->fragment_start];
+  DCHECK(placeholder.IsPlaceholder());
+  const unsigned fragment_end = line_box->size();
   DCHECK(box->item);
   BoxData& box_data = box_data_list_.emplace_back(
-      box->fragment_start, fragment_end, box->item, size);
+      box->fragment_start, fragment_end, box->item, placeholder.size);
   box_data.padding = box->padding;
   if (box->has_start_edge) {
     box_data.has_line_left_edge = true;
@@ -297,31 +313,23 @@ void NGInlineLayoutStateStack::AddBoxFragmentPlaceholder(
               box_data.margin_border_padding_line_right);
   }
 
-  if (fragment_end > box->fragment_start) {
-    // The start is marked only in BoxData, while end is marked
-    // in both BoxData and the list itself.
-    // With a list of 4 text fragments:
-    // |  0  |  1  |  2  |  3  |
-    // |text0|text1|text2|text3|
-    // By adding a BoxData(2,4) (end is exclusive), it becomes:
-    // |  0  |  1  |  2  |  3  |  4  |
-    // |text0|text1|text2|text3|null |
-    // The "null" is added to the list to compute baseline shift of the box
-    // separately from text fragments.
-    line_box->AddChild(offset);
-  } else {
-    // Do not defer creating a box fragment if this is an empty inline box.
-    // An empty box fragment is still flat that we do not have to defer.
-    // Also, placeholders cannot be reordred if empty.
-    offset.inline_offset += box_data.margin_line_left;
-    LayoutUnit advance = box_data.margin_border_padding_line_left +
-                         box_data.margin_border_padding_line_right;
-    box_data.size.inline_size =
-        advance - box_data.margin_line_left - box_data.margin_line_right;
-    line_box->AddChild(box_data.CreateBoxFragment(line_box), offset, advance,
-                       /* bidi_level */ 0);
-    box_data_list_.pop_back();
-  }
+  DCHECK((*line_box)[box->fragment_start].IsPlaceholder());
+  DCHECK_GT(fragment_end, box->fragment_start);
+  if (fragment_end > box->fragment_start + 1)
+    return;
+
+  // Do not defer creating a box fragment if this is an empty inline box.
+  // An empty box fragment is still flat that we do not have to defer.
+  // Also, placeholders cannot be reordred if empty.
+  placeholder.offset.inline_offset += box_data.margin_line_left;
+  LayoutUnit advance = box_data.margin_border_padding_line_left +
+                       box_data.margin_border_padding_line_right;
+  box_data.size.inline_size =
+      advance - box_data.margin_line_left - box_data.margin_line_right;
+  placeholder.layout_result = box_data.CreateBoxFragment(line_box);
+  placeholder.inline_size = advance;
+  DCHECK(!placeholder.children_count);
+  box_data_list_.pop_back();
 }
 
 void NGInlineLayoutStateStack::ChildInserted(unsigned index) {
@@ -348,6 +356,7 @@ void NGInlineLayoutStateStack::PrepareForReorder(
   unsigned box_data_index = 0;
   for (const BoxData& box_data : box_data_list_) {
     box_data_index++;
+    DCHECK((*line_box)[box_data.fragment_start].IsPlaceholder());
     for (unsigned i = box_data.fragment_start; i < box_data.fragment_end; i++) {
       NGLineBoxFragmentBuilder::Child& child = (*line_box)[i];
       if (!child.box_data_index)
@@ -358,10 +367,11 @@ void NGInlineLayoutStateStack::PrepareForReorder(
   // When boxes are nested, placeholders have indexes to which box it should be
   // added. Copy them to BoxData.
   for (BoxData& box_data : box_data_list_) {
-    const NGLineBoxFragmentBuilder::Child& placeholder =
-        (*line_box)[box_data.fragment_end];
-    DCHECK(!placeholder.HasFragment());
-    box_data.parent_box_data_index = placeholder.box_data_index;
+    if (!box_data.fragment_start)
+      continue;
+    const NGLineBoxFragmentBuilder::Child& parent =
+        (*line_box)[box_data.fragment_start - 1];
+    box_data.parent_box_data_index = parent.box_data_index;
   }
 }
 
@@ -569,24 +579,20 @@ void NGInlineLayoutStateStack::CreateBoxFragments(
     unsigned end = box_data.fragment_end;
     DCHECK_GT(end, start);
     NGLineBoxFragmentBuilder::Child* child = &(*line_box)[start];
-
     scoped_refptr<const NGLayoutResult> box_fragment =
         box_data.CreateBoxFragment(line_box);
-    if (!child->HasFragment()) {
+    if (child->IsPlaceholder()) {
       child->layout_result = std::move(box_fragment);
       child->offset = box_data.offset;
       child->children_count = end - start;
-    } else {
-      // In most cases, |start_child| is moved to the children of the box, and
-      // is empty. It's not empty when it's out-of-flow. Insert in such case.
-      // TODO(kojii): With |NGFragmentItem|, all cases hit this code. Consider
-      // creating an empty item beforehand to avoid inserting.
-      line_box->InsertChild(start, std::move(box_fragment), box_data.offset,
-                            LayoutUnit(), 0);
-      ChildInserted(start + 1);
-      child = &(*line_box)[start];
-      child->children_count = end - start + 1;
+      continue;
     }
+
+    // |AddBoxFragmentPlaceholder| adds a placeholder at |fragment_start|, but
+    // bidi reordering may move it. Insert in such case.
+    line_box->InsertChild(start, std::move(box_fragment), box_data.offset,
+                          end - start + 1);
+    ChildInserted(start + 1);
   }
 
   box_data_list_.clear();
@@ -826,8 +832,10 @@ NGLineHeightMetrics NGInlineLayoutStateStack::MetricsForTopAndBottomAlign(
       continue;
 
     // |block_offset| is the top position when the baseline is at 0.
-    LayoutUnit box_ascent =
-        -line_box[box_data.fragment_end].offset.block_offset;
+    const NGLineBoxFragmentBuilder::Child& placeholder =
+        line_box[box_data.fragment_start];
+    DCHECK(placeholder.IsPlaceholder());
+    LayoutUnit box_ascent = -placeholder.offset.block_offset;
     NGLineHeightMetrics box_metrics(box_ascent,
                                     box_data.size.block_size - box_ascent);
     // The top/bottom of inline boxes should not include their paddings.
@@ -892,6 +900,8 @@ void NGInlineBoxState::CheckSame(const NGInlineBoxState& other) const {
 
   DCHECK_EQ(needs_box_fragment, other.needs_box_fragment);
 
+  // TODO: fast/borders/rtl-border-05.html
+  // if (needs_box_fragment)
   DCHECK_EQ(has_start_edge, other.has_start_edge);
   // |has_end_edge| may not match because it will be computed in |OnCloseTag|.
 

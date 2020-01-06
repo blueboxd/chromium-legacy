@@ -20,10 +20,6 @@
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/resources/single_release_callback.h"
-#include "components/viz/common/switches.h"
-#include "components/viz/host/host_frame_sink_manager.h"
-#include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
-#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/public/common/content_switches.h"
@@ -49,12 +45,9 @@ DelegatedFrameHost::DelegatedFrameHost(const viz::FrameSinkId& frame_sink_id,
                                        bool should_register_frame_sink_id)
     : frame_sink_id_(frame_sink_id),
       client_(client),
-      enable_viz_(features::IsVizDisplayCompositorEnabled()),
       should_register_frame_sink_id_(should_register_frame_sink_id),
       host_frame_sink_manager_(GetHostFrameSinkManager()),
       frame_evictor_(std::make_unique<viz::FrameEvictor>(this)) {
-  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  factory->GetContextFactory()->AddObserver(this);
   DCHECK(host_frame_sink_manager_);
   host_frame_sink_manager_->RegisterFrameSinkId(
       frame_sink_id_, this, viz::ReportFirstSurfaceActivation::kNo);
@@ -62,7 +55,6 @@ DelegatedFrameHost::DelegatedFrameHost(const viz::FrameSinkId& frame_sink_id,
       frame_sink_id_, "Compositing.MainFrameSynchronization.Duration");
   host_frame_sink_manager_->SetFrameSinkDebugLabel(frame_sink_id_,
                                                    "DelegatedFrameHost");
-  CreateCompositorFrameSinkSupport();
   frame_evictor_->SetVisible(client_->DelegatedFrameHostIsVisible());
 
   stale_content_layer_ =
@@ -73,10 +65,7 @@ DelegatedFrameHost::DelegatedFrameHost(const viz::FrameSinkId& frame_sink_id,
 
 DelegatedFrameHost::~DelegatedFrameHost() {
   DCHECK(!compositor_);
-  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  factory->GetContextFactory()->RemoveObserver(this);
 
-  ResetCompositorFrameSinkSupport();
   DCHECK(host_frame_sink_manager_);
   host_frame_sink_manager_->InvalidateFrameSinkId(frame_sink_id_);
 }
@@ -209,35 +198,6 @@ bool DelegatedFrameHost::CanCopyFromCompositingSurface() const {
   return local_surface_id_.is_valid();
 }
 
-void DelegatedFrameHost::SetNeedsBeginFrames(bool needs_begin_frames) {
-  if (enable_viz_) {
-    NOTIMPLEMENTED();
-    return;
-  }
-
-  needs_begin_frame_ = needs_begin_frames;
-  support_->SetNeedsBeginFrame(needs_begin_frames);
-}
-
-void DelegatedFrameHost::SetWantsAnimateOnlyBeginFrames() {
-  if (enable_viz_) {
-    NOTIMPLEMENTED();
-    return;
-  }
-
-  support_->SetWantsAnimateOnlyBeginFrames();
-}
-
-void DelegatedFrameHost::DidNotProduceFrame(const viz::BeginFrameAck& ack) {
-  if (enable_viz_) {
-    NOTIMPLEMENTED();
-    return;
-  }
-
-  DCHECK(!ack.has_damage);
-  support_->DidNotProduceFrame(ack);
-}
-
 bool DelegatedFrameHost::HasPrimarySurface() const {
   const viz::SurfaceId* primary_surface_id =
       client_->DelegatedFrameHostGetLayer()->GetSurfaceId();
@@ -314,36 +274,6 @@ SkColor DelegatedFrameHost::GetGutterColor() const {
   return client_->DelegatedFrameHostGetGutterColor();
 }
 
-void DelegatedFrameHost::DidCreateNewRendererCompositorFrameSink(
-    viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) {
-  ResetCompositorFrameSinkSupport();
-  renderer_compositor_frame_sink_ = renderer_compositor_frame_sink;
-  CreateCompositorFrameSinkSupport();
-}
-
-void DelegatedFrameHost::SubmitCompositorFrame(
-    const viz::LocalSurfaceId& local_surface_id,
-    viz::CompositorFrame frame,
-    base::Optional<viz::HitTestRegionList> hit_test_region_list) {
-  support_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                                  std::move(hit_test_region_list));
-}
-
-void DelegatedFrameHost::DidReceiveCompositorFrameAck(
-    const std::vector<viz::ReturnedResource>& resources) {
-  renderer_compositor_frame_sink_->DidReceiveCompositorFrameAck(resources);
-}
-
-void DelegatedFrameHost::ReclaimResources(
-    const std::vector<viz::ReturnedResource>& resources) {
-  renderer_compositor_frame_sink_->ReclaimResources(resources);
-}
-
-void DelegatedFrameHost::OnBeginFramePausedChanged(bool paused) {
-  if (renderer_compositor_frame_sink_)
-    renderer_compositor_frame_sink_->OnBeginFramePausedChanged(paused);
-}
-
 void DelegatedFrameHost::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
   NOTREACHED();
@@ -351,14 +281,6 @@ void DelegatedFrameHost::OnFirstSurfaceActivation(
 
 void DelegatedFrameHost::OnFrameTokenChanged(uint32_t frame_token) {
   client_->OnFrameTokenChanged(frame_token);
-}
-
-void DelegatedFrameHost::OnBeginFrame(
-    const viz::BeginFrameArgs& args,
-    const viz::FrameTimingDetailsMap& timing_details) {
-  if (renderer_compositor_frame_sink_)
-    renderer_compositor_frame_sink_->OnBeginFrame(args, timing_details);
-  client_->OnBeginFrame(args.frame_time);
 }
 
 void DelegatedFrameHost::ResetFallbackToFirstNavigationSurface() {
@@ -479,11 +401,6 @@ void DelegatedFrameHost::OnCompositingShuttingDown(ui::Compositor* compositor) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DelegatedFrameHost, ContextFactoryObserver implementation:
-
-void DelegatedFrameHost::OnLostSharedContext() {}
-
-////////////////////////////////////////////////////////////////////////////////
 // DelegatedFrameHost, private:
 
 void DelegatedFrameHost::AttachToCompositor(ui::Compositor* compositor) {
@@ -504,29 +421,6 @@ void DelegatedFrameHost::DetachFromCompositor() {
   if (should_register_frame_sink_id_)
     compositor_->RemoveChildFrameSink(frame_sink_id_);
   compositor_ = nullptr;
-}
-
-void DelegatedFrameHost::CreateCompositorFrameSinkSupport() {
-  if (enable_viz_)
-    return;
-
-  DCHECK(!support_);
-  constexpr bool is_root = false;
-  DCHECK(host_frame_sink_manager_);
-  support_ = host_frame_sink_manager_->CreateCompositorFrameSinkSupport(
-      this, frame_sink_id_, is_root);
-  if (compositor_ && should_register_frame_sink_id_)
-    compositor_->AddChildFrameSink(frame_sink_id_);
-  if (needs_begin_frame_)
-    support_->SetNeedsBeginFrame(true);
-}
-
-void DelegatedFrameHost::ResetCompositorFrameSinkSupport() {
-  if (!support_)
-    return;
-  if (compositor_ && should_register_frame_sink_id_)
-    compositor_->RemoveChildFrameSink(frame_sink_id_);
-  support_.reset();
 }
 
 void DelegatedFrameHost::DidNavigate() {

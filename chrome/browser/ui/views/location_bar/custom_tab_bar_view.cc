@@ -138,6 +138,10 @@ class CustomTabBarTitleOriginView : public views::View {
     return title_label_->font_list().GetExpectedTextWidth(kMinCharacters);
   }
 
+  SkColor GetLocationColor() const {
+    return location_label_->GetEnabledColor();
+  }
+
   // views::View:
   gfx::Size GetMinimumSize() const override {
     return gfx::Size(GetMinimumWidth(), GetPreferredSize().height());
@@ -350,8 +354,11 @@ void CustomTabBarView::ExecuteCommand(int command_id, int event_flags) {
 }
 
 SkColor CustomTabBarView::GetIconLabelBubbleSurroundingForegroundColor() const {
-  return GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldDefaultColor);
+  return title_origin_view_->GetLocationColor();
+}
+
+SkColor CustomTabBarView::GetIconLabelBubbleBackgroundColor() const {
+  return background_color_;
 }
 
 content::WebContents* CustomTabBarView::GetWebContents() {

@@ -197,20 +197,18 @@ void LocationBarView::Init() {
 
   RefreshBackground();
 
-  ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
-
   // Initialize the inline autocomplete view which is visible only when IME is
   // turned on.  Use the same font with the omnibox and highlighted background.
   auto ime_inline_autocomplete_view = std::make_unique<views::Label>(
       base::string16(), views::Label::CustomFont{font_list});
   ime_inline_autocomplete_view->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   ime_inline_autocomplete_view->SetAutoColorReadabilityEnabled(false);
-  ime_inline_autocomplete_view->SetBackground(
-      views::CreateSolidBackground(native_theme->GetSystemColor(
-          ui::NativeTheme::ColorId::
-              kColorId_TextfieldSelectionBackgroundFocused)));
-  ime_inline_autocomplete_view->SetEnabledColor(native_theme->GetSystemColor(
-      ui::NativeTheme::ColorId::kColorId_TextfieldSelectionColor));
+  ime_inline_autocomplete_view->SetBackground(views::CreateSolidBackground(
+      GetOmniboxColor(GetThemeProvider(), OmniboxPart::LOCATION_BAR_BACKGROUND,
+                      OmniboxPartState::SELECTED)));
+  ime_inline_autocomplete_view->SetEnabledColor(GetOmniboxColor(
+      GetThemeProvider(), OmniboxPart::LOCATION_BAR_TEXT_DEFAULT,
+      OmniboxPartState::SELECTED));
   ime_inline_autocomplete_view->SetVisible(false);
   ime_inline_autocomplete_view_ =
       AddChildView(std::move(ime_inline_autocomplete_view));
@@ -670,8 +668,11 @@ WebContents* LocationBarView::GetWebContents() {
 }
 
 SkColor LocationBarView::GetIconLabelBubbleSurroundingForegroundColor() const {
-  return GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldDefaultColor);
+  return GetColor(OmniboxPart::LOCATION_BAR_TEXT_DEFAULT);
+}
+
+SkColor LocationBarView::GetIconLabelBubbleBackgroundColor() const {
+  return GetColor(OmniboxPart::LOCATION_BAR_BACKGROUND);
 }
 
 content::WebContents* LocationBarView::GetContentSettingWebContents() {

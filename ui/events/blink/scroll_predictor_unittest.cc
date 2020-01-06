@@ -58,10 +58,10 @@ class ScrollPredictorTest : public testing::Test {
     gesture.data.scroll_update.delta_y = delta_y;
     gesture.data.scroll_update.inertial_phase = phase;
 
-    original_events_.emplace_back(gesture.Clone(), LatencyInfo(),
-                                  base::NullCallback());
+    original_events_.emplace_back(WebInputEventTraits::Clone(gesture),
+                                  LatencyInfo(), base::NullCallback());
 
-    return gesture.Clone();
+    return WebInputEventTraits::Clone(gesture);
   }
 
   void CoalesceWith(const WebScopedInputEvent& new_event,
@@ -90,7 +90,7 @@ class ScrollPredictorTest : public testing::Test {
         WebInputEvent::GetStaticTimeStampForTests() +
             base::TimeDelta::FromMillisecondsD(time_delta_in_milliseconds));
 
-    event = event_with_callback->event().Clone();
+    event = WebInputEventTraits::Clone(event_with_callback->event());
   }
 
   std::unique_ptr<ui::InputPredictor::InputData> PredictionAvailable(
@@ -203,7 +203,7 @@ TEST_F(ScrollPredictorTest, ScrollResamplingStates) {
                               WebInputEvent::kNoModifiers,
                               WebInputEvent::GetStaticTimeStampForTests(),
                               blink::WebGestureDevice::kTouchscreen);
-  WebScopedInputEvent event = gesture_end.Clone();
+  WebScopedInputEvent event = WebInputEventTraits::Clone(gesture_end);
   HandleResampleScrollEvents(event);
   EXPECT_FALSE(GetResamplingState());
 }

@@ -50,12 +50,15 @@ class IconLabelBubbleView : public views::InkDropObserver,
    public:
     // Returns the foreground color of items around the IconLabelBubbleView,
     // e.g. nearby text items.  By default, the IconLabelBubbleView will use
-    // this as its foreground color and ink drop base color.
+    // this as its foreground color, separator, and ink drop base color.
     virtual SkColor GetIconLabelBubbleSurroundingForegroundColor() const = 0;
 
     // Returns the base color for ink drops.  If not overridden, this returns
     // GetIconLabelBubbleSurroundingForegroundColor().
     virtual SkColor GetIconLabelBubbleInkDropColor() const;
+
+    // Returns the background color behind the IconLabelBubbleView.
+    virtual SkColor GetIconLabelBubbleBackgroundColor() const = 0;
   };
 
   IconLabelBubbleView(const gfx::FontList& font_list, Delegate* delegate);
@@ -74,9 +77,6 @@ class IconLabelBubbleView : public views::InkDropObserver,
 
   const views::ImageView* GetImageView() const { return image(); }
   views::ImageView* GetImageView() { return image(); }
-
-  // Returns the color of the IconLabelBubbleView's surrounding context.
-  SkColor GetParentBackgroundColor() const;
 
   // Exposed for testing.
   views::View* separator_view() const { return separator_view_; }

@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/views/accessible_pane_view.h"
 
 namespace views {
@@ -46,16 +47,13 @@ class WebAppFrameToolbarView : public views::AccessiblePaneView,
   // The total duration of the origin fade animation.
   static base::TimeDelta OriginTotalDuration();
 
-  // |active_color| and |inactive_color| indicate the colors to use
-  // for button icons when the window is focused and blurred respectively.
-  WebAppFrameToolbarView(views::Widget* widget,
-                         BrowserView* browser_view,
-                         SkColor active_color,
-                         SkColor inactive_color);
+  WebAppFrameToolbarView(views::Widget* widget, BrowserView* browser_view);
   ~WebAppFrameToolbarView() override;
 
   void UpdateStatusIconsVisibility();
 
+  // Called when the caption colors may have changed; updates the local values
+  // and triggers a repaint if necessary.
   void UpdateCaptionColors();
 
   // Sets the container to paints its buttons the active/inactive color.
@@ -68,7 +66,7 @@ class WebAppFrameToolbarView : public views::AccessiblePaneView,
                                         int y,
                                         int available_height);
 
-  SkColor active_color_for_testing() const { return active_color_; }
+  SkColor active_color_for_testing() const { return active_foreground_color_; }
 
   // ToolbarButtonProvider:
   BrowserActionsContainer* GetBrowserActionsContainer() override;
@@ -94,6 +92,7 @@ class WebAppFrameToolbarView : public views::AccessiblePaneView,
   // views::AccessiblePaneView:
   const char* GetClassName() const override;
   void ChildPreferredSizeChanged(views::View* child) override;
+  void OnThemeChanged() override;
 
  private:
   friend class WebAppNonClientFrameViewAshTest;
@@ -118,8 +117,10 @@ class WebAppFrameToolbarView : public views::AccessiblePaneView,
 
   // Button and text colors.
   bool paint_as_active_ = true;
-  SkColor active_color_;
-  SkColor inactive_color_;
+  SkColor active_background_color_ = gfx::kPlaceholderColor;
+  SkColor active_foreground_color_ = gfx::kPlaceholderColor;
+  SkColor inactive_background_color_ = gfx::kPlaceholderColor;
+  SkColor inactive_foreground_color_ = gfx::kPlaceholderColor;
 
   class NavigationButtonContainer;
   class ToolbarButtonContainer;

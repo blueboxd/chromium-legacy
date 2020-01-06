@@ -450,10 +450,6 @@ void RenderWidgetHostImpl::SetView(RenderWidgetHostViewBase* view) {
       if (!create_frame_sink_callback_.is_null())
         std::move(create_frame_sink_callback_).Run(view_->GetFrameSinkId());
     } else {
-      if (renderer_compositor_frame_sink_.is_bound()) {
-        view->DidCreateNewRendererCompositorFrameSink(
-            renderer_compositor_frame_sink_.get());
-      }
       // Views start out not needing begin frames, so only update its state
       // if the value has changed.
       if (needs_begin_frames_)
@@ -2949,16 +2945,6 @@ void RenderWidgetHostImpl::RequestCompositorFrameSink(
   compositor_frame_sink_receiver_.Bind(
       std::move(compositor_frame_sink_receiver),
       BrowserMainLoop::GetInstance()->GetResizeTaskRunner());
-
-  renderer_compositor_frame_sink_.reset();
-  renderer_compositor_frame_sink_.Bind(std::move(compositor_frame_sink_client));
-  auto* compositor_frame_sink_client_ptr =
-      renderer_compositor_frame_sink_.get();
-
-  if (view_) {
-    view_->DidCreateNewRendererCompositorFrameSink(
-        compositor_frame_sink_client_ptr);
-  }
 }
 
 void RenderWidgetHostImpl::RegisterRenderFrameMetadataObserver(

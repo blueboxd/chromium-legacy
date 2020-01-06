@@ -10,7 +10,6 @@
 #include "chrome/browser/chromeos/extensions/wallpaper_function_base.h"
 #include "chrome/common/extensions/api/wallpaper.h"
 #include "components/account_id/account_id.h"
-#include "net/url_request/url_request_status.h"
 
 // Implementation of chrome.wallpaper.setWallpaper API.
 // After this API being called, a jpeg encoded wallpaper will be saved to

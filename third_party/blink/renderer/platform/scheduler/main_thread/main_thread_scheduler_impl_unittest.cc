@@ -58,13 +58,10 @@ class FakeInputEvent : public blink::WebInputEvent {
  public:
   explicit FakeInputEvent(blink::WebInputEvent::Type event_type,
                           int modifiers = WebInputEvent::kNoModifiers)
-      : WebInputEvent(event_type,
+      : WebInputEvent(sizeof(FakeInputEvent),
+                      event_type,
                       modifiers,
                       WebInputEvent::GetStaticTimeStampForTests()) {}
-
-  std::unique_ptr<WebInputEvent> Clone() const override {
-    return std::make_unique<FakeInputEvent>(*this);
-  }
 };
 
 class FakeTouchEvent : public blink::WebTouchEvent {

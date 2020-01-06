@@ -82,15 +82,15 @@ void NGFragmentItemsBuilder::AddItems(Child* child_begin, Child* child_end) {
       // Floats are in the fragment tree, not in the fragment item list.
       DCHECK(!box.IsFloating());
 
+      // Take the fast path when we know |child| does not have child items.
       if (child.children_count <= 1) {
         // Compute |has_floating_descendants_for_paint_| to optimize tree
         // traversal in paint.
         if (!has_floating_descendants_for_paint_ && box.IsFloating())
           has_floating_descendants_for_paint_ = true;
 
-        DCHECK(child.HasBidiLevel());
         items_.push_back(std::make_unique<NGFragmentItem>(
-            box, 1, DirectionFromLevel(child.bidi_level)));
+            box, 1, child.ResolvedDirection()));
         offsets_.push_back(child.offset);
         ++child_iter;
         continue;
@@ -116,9 +116,8 @@ void NGFragmentItemsBuilder::AddItems(Child* child_begin, Child* child_end) {
       wtf_size_t item_count = items_.size() - box_start_index;
 
       // Create an item for the start of the box.
-      DCHECK(child.HasBidiLevel());
       items_[box_start_index] = std::make_unique<NGFragmentItem>(
-          box, item_count, DirectionFromLevel(child.bidi_level));
+          box, item_count, child.ResolvedDirection());
       continue;
     }
 

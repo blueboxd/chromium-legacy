@@ -21,12 +21,14 @@ namespace blink {
 class BLINK_COMMON_EXPORT WebPointerEvent : public WebInputEvent,
                                             public WebPointerProperties {
  public:
-  WebPointerEvent() : WebPointerProperties(0) {}
+  WebPointerEvent()
+      : WebInputEvent(sizeof(WebPointerEvent)), WebPointerProperties(0) {}
   WebPointerEvent(WebInputEvent::Type type_param,
                   WebPointerProperties web_pointer_properties_param,
                   float width_param,
                   float height_param)
-      : WebPointerProperties(web_pointer_properties_param),
+      : WebInputEvent(sizeof(WebPointerEvent)),
+        WebPointerProperties(web_pointer_properties_param),
         width(width_param),
         height(height_param) {
     SetType(type_param);
@@ -34,46 +36,44 @@ class BLINK_COMMON_EXPORT WebPointerEvent : public WebInputEvent,
   WebPointerEvent(const WebTouchEvent&, const WebTouchPoint&);
   WebPointerEvent(WebInputEvent::Type, const WebMouseEvent&);
 
-  std::unique_ptr<WebInputEvent> Clone() const override;
-
   static WebPointerEvent CreatePointerCausesUaActionEvent(
       WebPointerProperties::PointerType,
       base::TimeTicks time_stamp);
 
   // ------------ Touch Point Specific ------------
 
-  float rotation_angle = 0.0f;
+  float rotation_angle;
 
   // ------------ Touch Event Specific ------------
 
   // A unique identifier for the touch event. Valid ids start at one and
   // increase monotonically. Zero means an unknown id.
-  uint32_t unique_touch_event_id = 0;
+  uint32_t unique_touch_event_id;
 
   // Whether the event is blocking, non-blocking, all event
   // listeners were passive or was forced to be non-blocking.
-  DispatchType dispatch_type = kBlocking;
+  DispatchType dispatch_type;
 
   // For a single touch, this is true after the touch-point has moved beyond
   // the platform slop region. For a multitouch, this is true after any
   // touch-point has moved (by whatever amount).
-  bool moved_beyond_slop_region = false;
+  bool moved_beyond_slop_region;
 
   // Whether this touch event is a touchstart or a first touchmove event per
   // scroll.
-  bool touch_start_or_first_touch_move = false;
+  bool touch_start_or_first_touch_move;
 
   // ------------ Common fields across pointer types ------------
 
   // True if this pointer was hovering and false otherwise. False value entails
   // the event was processed as part of gesture detection and it may cause
   // scrolling.
-  bool hovering = false;
+  bool hovering;
 
   // TODO(crbug.com/736014): We need a clarified definition of the scale and
   // the coordinate space on these attributes.
-  float width = 0.0f;
-  float height = 0.0f;
+  float width;
+  float height;
 
   bool IsCancelable() const { return dispatch_type == kBlocking; }
   bool HasWidth() const { return !std::isnan(width); }

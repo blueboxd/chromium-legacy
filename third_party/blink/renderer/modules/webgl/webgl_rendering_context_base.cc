@@ -792,12 +792,12 @@ scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
 }
 
 ScriptPromise WebGLRenderingContextBase::makeXRCompatible(
-    ScriptState* script_state) {
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
   if (isContextLost()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
-                                           "Context lost."));
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Context lost.");
+    return ScriptPromise();
   }
 
   if (xr_compatible_) {
@@ -812,11 +812,10 @@ ScriptPromise WebGLRenderingContextBase::makeXRCompatible(
 
   // TODO(http://crbug.com/876140) Trigger context loss and recreate on
   // compatible GPU.
-  return ScriptPromise::RejectWithDOMException(
-      script_state,
-      MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNotSupportedError,
-          "Context is not compatible. Switching not yet implemented."));
+  exception_state.ThrowDOMException(
+      DOMExceptionCode::kNotSupportedError,
+      "Context is not compatible. Switching not yet implemented.");
+  return ScriptPromise();
 }
 
 bool WebGLRenderingContextBase::IsXRCompatible() {

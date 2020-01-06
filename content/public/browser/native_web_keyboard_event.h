@@ -57,7 +57,7 @@ struct CONTENT_EXPORT NativeWebKeyboardEvent : public blink::WebKeyboardEvent {
 #endif
 
   NativeWebKeyboardEvent(const NativeWebKeyboardEvent& event);
-  ~NativeWebKeyboardEvent() override;
+  ~NativeWebKeyboardEvent();
 
   NativeWebKeyboardEvent& operator=(const NativeWebKeyboardEvent& event);
 

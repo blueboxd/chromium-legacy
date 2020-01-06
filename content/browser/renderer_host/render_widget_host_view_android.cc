@@ -1055,35 +1055,11 @@ bool RenderWidgetHostViewAndroid::ShouldRouteEvents() const {
          host()->delegate()->GetInputEventRouter();
 }
 
-void RenderWidgetHostViewAndroid::DidReceiveCompositorFrameAck(
-    const std::vector<viz::ReturnedResource>& resources) {
-  renderer_compositor_frame_sink_->DidReceiveCompositorFrameAck(resources);
-}
-
 void RenderWidgetHostViewAndroid::DidPresentCompositorFrames(
     const viz::FrameTimingDetailsMap& timing_details) {
   timing_details_ = timing_details;
   if (!timing_details_.empty())
     AddBeginFrameRequest(BEGIN_FRAME);
-}
-
-void RenderWidgetHostViewAndroid::ReclaimResources(
-    const std::vector<viz::ReturnedResource>& resources) {
-  renderer_compositor_frame_sink_->ReclaimResources(resources);
-}
-
-void RenderWidgetHostViewAndroid::DidCreateNewRendererCompositorFrameSink(
-    viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) {
-  if (!delegated_frame_host_) {
-    DCHECK(!using_browser_compositor_);
-    // We don't expect RendererCompositorFrameSink on Android WebView.
-    // (crbug.com/721102)
-    bad_message::ReceivedBadMessage(host()->GetProcess(),
-                                    bad_message::RWH_BAD_FRAME_SINK_REQUEST);
-    return;
-  }
-  delegated_frame_host_->CompositorFrameSinkChanged();
-  renderer_compositor_frame_sink_ = renderer_compositor_frame_sink;
 }
 
 void RenderWidgetHostViewAndroid::EvictFrameIfNecessary() {
@@ -1589,8 +1565,6 @@ void RenderWidgetHostViewAndroid::SendBeginFrame(viz::BeginFrameArgs args) {
   if (sync_compositor_) {
     sync_compositor_->BeginFrame(view_.GetWindowAndroid(), args,
                                  timing_details_);
-  } else if (renderer_compositor_frame_sink_) {
-    renderer_compositor_frame_sink_->OnBeginFrame(args, timing_details_);
   }
   timing_details_.clear();
 }
@@ -2237,8 +2211,6 @@ void RenderWidgetHostViewAndroid::SendBeginFramePaused() {
   if (!using_browser_compositor_ && !using_viz_for_webview_) {
     if (sync_compositor_)
       sync_compositor_->SetBeginFramePaused(paused);
-  } else if (renderer_compositor_frame_sink_) {
-    renderer_compositor_frame_sink_->OnBeginFramePausedChanged(paused);
   }
 }
 

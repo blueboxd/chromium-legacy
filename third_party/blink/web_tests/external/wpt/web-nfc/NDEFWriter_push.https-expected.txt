@@ -28,5 +28,6 @@ PASS NDEFWriter.push should fail when the NFC device coming up does not expose N
 PASS NDEFWriter.push should succeed to push data to an unformatted NFC device when the NDEFPushOptions.overwrite is false.
 PASS NDEFWriter.push should succeed to overwrite the existing data when the NDEFPushOptions.overwrite is true.
 FAIL NDEFWriter.push should fail when there are NDEF records on the NFC device and NDEFPushOptions.overwrite is false. assert_unreached: Should have rejected: undefined Reached unreachable code
+PASS NDEFWriter.push should fail with NetworkError when NFC data transfer fails.
 Harness: the test ran to completion.
 

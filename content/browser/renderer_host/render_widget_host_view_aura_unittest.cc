@@ -248,24 +248,9 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
             new FakeDelegatedFrameHostClientAura(this)) {
     InstallDelegatedFrameHostClient(
         this, base::WrapUnique(delegated_frame_host_client_));
-    CreateNewRendererCompositorFrameSink();
   }
 
   ~FakeRenderWidgetHostViewAura() override {}
-
-  void CreateNewRendererCompositorFrameSink() {
-    mojo::PendingRemote<viz::mojom::CompositorFrameSink> sink;
-    mojo::PendingReceiver<viz::mojom::CompositorFrameSink> sink_receiver =
-        sink.InitWithNewPipeAndPassReceiver();
-
-    renderer_compositor_frame_sink_remote_.reset();
-    renderer_compositor_frame_sink_ =
-        std::make_unique<FakeRendererCompositorFrameSink>(
-            std::move(sink), renderer_compositor_frame_sink_remote_
-                                 .BindNewPipeAndPassReceiver());
-    DidCreateNewRendererCompositorFrameSink(
-        renderer_compositor_frame_sink_remote_.get());
-  }
 
   void UseFakeDispatcher() {
     dispatcher_ = new FakeWindowEventDispatcher(window()->GetHost());
@@ -294,10 +279,6 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
     return GetDelegatedFrameHost()->HasSavedFrame();
   }
 
-  void ReclaimResources(const std::vector<viz::ReturnedResource>& resources) {
-    GetDelegatedFrameHost()->ReclaimResources(resources);
-  }
-
   const ui::MotionEventAura& pointer_state() {
     return event_handler()->pointer_state();
   }
@@ -309,8 +290,6 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
 
   gfx::Size last_frame_size_;
   FakeWindowEventDispatcher* dispatcher_;
-  std::unique_ptr<FakeRendererCompositorFrameSink>
-      renderer_compositor_frame_sink_;
 
  private:
   FakeDelegatedFrameHostClientAura* delegated_frame_host_client_;
@@ -592,15 +571,6 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
 
   void SendNotConsumedAcks(MockWidgetInputHandler::MessageVector& events) {
     events.clear();
-  }
-
-  // TODO(crbug.com/844469): Delete this helper once Viz launches as it will be
-  // obsolete.
-  viz::FrameSinkManagerImpl* GetFrameSinkManager() {
-    DCHECK(!features::IsVizDisplayCompositorEnabled());
-    return view_->GetDelegatedFrameHost()
-        ->GetCompositorFrameSinkSupportForTesting()
-        ->frame_sink_manager();
   }
 
   const ui::MotionEventAura& pointer_state() { return view_->pointer_state(); }
@@ -3028,82 +2998,6 @@ viz::CompositorFrame MakeDelegatedFrame(float scale_factor,
   return frame;
 }
 
-// This test verifies that returned resources do not require a pending ack.
-TEST_F(RenderWidgetHostViewAuraTest, ReturnedResources) {
-  gfx::Size view_size(100, 100);
-  gfx::Rect view_rect(view_size);
-
-  view_->InitAsChild(nullptr);
-  aura::client::ParentWindowWithContext(
-      view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
-      gfx::Rect());
-  view_->SetSize(view_size);
-  view_->Show();
-  sink_->ClearMessages();
-
-  // Accumulate some returned resources. This should trigger an IPC.
-  std::vector<viz::ReturnedResource> resources;
-  viz::ReturnedResource resource;
-  resource.id = 1;
-  resources.push_back(resource);
-  view_->renderer_compositor_frame_sink_->Reset();
-  view_->ReclaimResources(resources);
-  view_->renderer_compositor_frame_sink_->Flush();
-  EXPECT_FALSE(view_->renderer_compositor_frame_sink_->did_receive_ack());
-  EXPECT_FALSE(
-      view_->renderer_compositor_frame_sink_->last_reclaimed_resources()
-          .empty());
-}
-
-// This test verifies that when the CompositorFrameSink changes, the old
-// resources are not returned.
-TEST_F(RenderWidgetHostViewAuraTest, TwoOutputSurfaces) {
-  // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
-  // https://crbug.com/844469
-  if (features::IsVizDisplayCompositorEnabled())
-    return;
-
-  viz::SurfaceManager* manager = GetFrameSinkManager()->surface_manager();
-
-  gfx::Size view_size(100, 100);
-  gfx::Rect view_rect(view_size);
-
-  view_->InitAsChild(nullptr);
-  aura::client::ParentWindowWithContext(
-      view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
-      gfx::Rect());
-  view_->SetSize(view_size);
-  view_->Show();
-  sink_->ClearMessages();
-
-  // Submit a frame with resources.
-  viz::CompositorFrame frame = MakeDelegatedFrame(1.f, view_size, view_rect);
-  viz::TransferableResource resource;
-  resource.id = 1;
-  frame.resource_list.push_back(resource);
-  view_->SubmitCompositorFrame(kArbitraryLocalSurfaceId, std::move(frame),
-                               base::nullopt);
-  EXPECT_EQ(0u, sink_->message_count());
-
-  // Signal that a new RendererCompositorFrameSink was created by the renderer.
-  view_->CreateNewRendererCompositorFrameSink();
-
-  // Submit another frame. The resources for the previous frame belong to the
-  // old RendererCompositorFrameSink and should not be returned.
-  view_->SubmitCompositorFrame(view_->surface_id().local_surface_id(),
-                               MakeDelegatedFrame(1.f, view_size, view_rect),
-                               base::nullopt);
-  EXPECT_EQ(0u, sink_->message_count());
-
-  // Report that the surface is drawn to trigger an ACK.
-  view_->renderer_compositor_frame_sink_->Reset();
-  viz::Surface* surface = manager->GetSurfaceForId(view_->surface_id());
-  EXPECT_TRUE(surface);
-  surface->SendAckToClient();
-  view_->renderer_compositor_frame_sink_->Flush();
-  EXPECT_TRUE(view_->renderer_compositor_frame_sink_->did_receive_ack());
-}
-
 // Resizing in fullscreen mode should send the up-to-date screen info.
 // http://crbug.com/324350
 TEST_F(RenderWidgetHostViewAuraTest, DISABLED_FullscreenResize) {
@@ -3242,24 +3136,9 @@ TEST_F(RenderWidgetHostViewAuraTest, BackgroundColorOrder) {
   EXPECT_EQ(static_cast<unsigned>(SK_ColorWHITE), *view_->GetBackgroundColor());
 }
 
-// Resizing is disabled due to flakiness. Commit might come before
-// DrawWaiterForTest looks for compositor frame. crbug.com/759653
-TEST_F(RenderWidgetHostViewAuraTest, DISABLED_Resize) {
-  gfx::Size size1(100, 100);
-  gfx::Size size2(200, 200);
-  gfx::Size size3(300, 300);
-  parent_local_surface_id_allocator_.GenerateId();
-  viz::LocalSurfaceId id1 =
-      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
-          .local_surface_id();
-  parent_local_surface_id_allocator_.GenerateId();
-  viz::LocalSurfaceId id2 =
-      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
-          .local_surface_id();
-  parent_local_surface_id_allocator_.GenerateId();
-  viz::LocalSurfaceId id3 =
-      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
-          .local_surface_id();
+TEST_F(RenderWidgetHostViewAuraTest, Resize) {
+  constexpr gfx::Size size1(100, 100);
+  constexpr gfx::Size size2(200, 200);
 
   aura::Window* root_window = parent_view_->GetNativeView()->GetRootWindow();
   view_->InitAsChild(nullptr);
@@ -3267,23 +3146,21 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_Resize) {
       view_->GetNativeView(), root_window, gfx::Rect(size1));
   view_->Show();
   view_->SetSize(size1);
-  view_->SubmitCompositorFrame(
-      id1, MakeDelegatedFrame(1.f, size1, gfx::Rect(size1)), base::nullopt);
-  ui::DrawWaiterForTest::WaitForCommit(
-      root_window->GetHost()->compositor());
+  EXPECT_EQ(size1.ToString(), view_->GetRequestedRendererSize().ToString());
+  EXPECT_TRUE(widget_host_->visual_properties_ack_pending_for_testing());
+
   {
     cc::RenderFrameMetadata metadata;
     metadata.viewport_size_in_pixels = size1;
-    metadata.local_surface_id_allocation = base::nullopt;
     widget_host_->DidUpdateVisualProperties(metadata);
+    EXPECT_FALSE(widget_host_->visual_properties_ack_pending_for_testing());
   }
   sink_->ClearMessages();
-  // Resize logic is idle (no pending resize, no pending commit).
-  EXPECT_EQ(size1.ToString(), view_->GetRequestedRendererSize().ToString());
 
-  // Resize renderer, should produce a Resize message
+  // Resize the renderer. This should produce an UpdateVisualProperties IPC.
   view_->SetSize(size2);
   EXPECT_EQ(size2.ToString(), view_->GetRequestedRendererSize().ToString());
+  EXPECT_TRUE(widget_host_->visual_properties_ack_pending_for_testing());
   ASSERT_EQ(1u, sink_->message_count());
   {
     const IPC::Message* msg = sink_->GetMessageAt(0);
@@ -3293,77 +3170,19 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_Resize) {
     WidgetMsg_UpdateVisualProperties::Read(msg, &params);
     EXPECT_EQ(size2, std::get<0>(params).new_size);
   }
-  // Send resize ack to observe new Resize messages.
+  // Render should send back RenderFrameMetadata with new size.
   {
     cc::RenderFrameMetadata metadata;
     metadata.viewport_size_in_pixels = size2;
-    metadata.local_surface_id_allocation = base::nullopt;
     widget_host_->DidUpdateVisualProperties(metadata);
+    EXPECT_FALSE(widget_host_->visual_properties_ack_pending_for_testing());
   }
   sink_->ClearMessages();
 
-  // Resize renderer again, before receiving a frame. Should not produce a
-  // Resize message.
-  view_->SetSize(size3);
-  EXPECT_EQ(size2.ToString(), view_->GetRequestedRendererSize().ToString());
-  EXPECT_EQ(0u, sink_->message_count());
-
-  // Receive a frame of the new size, should be skipped and not produce a Resize
-  // message.
-  view_->renderer_compositor_frame_sink_->Reset();
-  view_->SubmitCompositorFrame(
-      id3, MakeDelegatedFrame(1.f, size3, gfx::Rect(size3)), base::nullopt);
-  view_->renderer_compositor_frame_sink_->Flush();
-  // Expect the frame ack;
-  EXPECT_TRUE(view_->renderer_compositor_frame_sink_->did_receive_ack());
-  EXPECT_EQ(size2.ToString(), view_->GetRequestedRendererSize().ToString());
-
-  // Receive a frame of the correct size, should not be skipped and, and should
-  // produce a Resize message after the commit.
-  view_->renderer_compositor_frame_sink_->Reset();
-  view_->SubmitCompositorFrame(
-      id2, MakeDelegatedFrame(1.f, size2, gfx::Rect(size2)), base::nullopt);
-  view_->renderer_compositor_frame_sink_->Flush();
-  viz::SurfaceId surface_id = view_->surface_id();
-  if (!surface_id.is_valid()) {
-    // No frame ack yet.
-    EXPECT_FALSE(view_->renderer_compositor_frame_sink_->did_receive_ack());
-  } else {
-    // Frame isn't desired size, so early ack.
-    EXPECT_TRUE(view_->renderer_compositor_frame_sink_->did_receive_ack());
-  }
-  EXPECT_EQ(size2.ToString(), view_->GetRequestedRendererSize().ToString());
-
-  // Wait for commit, then we should unlock the compositor and send a Resize
-  // message (and a frame ack)
-  ui::DrawWaiterForTest::WaitForCommit(
-      root_window->GetHost()->compositor());
-
-  bool has_resize = false;
-  for (uint32_t i = 0; i < sink_->message_count(); ++i) {
-    const IPC::Message* msg = sink_->GetMessageAt(i);
-    switch (msg->type()) {
-      case WidgetMsg_UpdateVisualProperties::ID: {
-        EXPECT_FALSE(has_resize);
-        WidgetMsg_UpdateVisualProperties::Param params;
-        WidgetMsg_UpdateVisualProperties::Read(msg, &params);
-        EXPECT_EQ(size3, std::get<0>(params).new_size);
-        has_resize = true;
-        break;
-      }
-      default:
-        ADD_FAILURE() << "Unexpected message " << msg->type();
-        break;
-    }
-  }
-  EXPECT_TRUE(has_resize);
-  {
-    cc::RenderFrameMetadata metadata;
-    metadata.viewport_size_in_pixels = size3;
-    metadata.local_surface_id_allocation = base::nullopt;
-    widget_host_->DidUpdateVisualProperties(metadata);
-  }
-  sink_->ClearMessages();
+  // Calling SetSize() with the current size should be a no-op.
+  view_->SetSize(size2);
+  EXPECT_FALSE(widget_host_->visual_properties_ack_pending_for_testing());
+  ASSERT_EQ(0u, sink_->message_count());
 }
 
 // This test verifies that the primary SurfaceId is populated on resize.
@@ -3401,41 +3220,6 @@ TEST_F(RenderWidgetHostViewAuraTest, DeviceScaleFactorChanges) {
   viz::SurfaceId new_surface_id = *view_->window_->layer()->GetSurfaceId();
   EXPECT_NE(new_surface_id, initial_surface_id);
   EXPECT_EQ(gfx::Size(300, 300), view_->window_->layer()->bounds().size());
-}
-
-// This test verifies that changing the CompositorFrameSink (and thus evicting
-// the current surface) does not crash,
-TEST_F(RenderWidgetHostViewAuraTest, CompositorFrameSinkChange) {
-  // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
-  // https://crbug.com/844469
-  if (features::IsVizDisplayCompositorEnabled())
-    return;
-
-  gfx::Rect view_rect(100, 100);
-  gfx::Size frame_size = view_rect.size();
-
-  view_->InitAsChild(nullptr);
-  aura::client::ParentWindowWithContext(
-      view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
-      gfx::Rect());
-  view_->SetSize(view_rect.size());
-
-  // Swap a frame.
-  view_->SubmitCompositorFrame(kArbitraryLocalSurfaceId,
-                               MakeDelegatedFrame(1.f, frame_size, view_rect),
-                               base::nullopt);
-  view_->RunOnCompositingDidCommit();
-
-  // Signal that a new RendererCompositorFrameSink was created.
-  view_->CreateNewRendererCompositorFrameSink();
-
-  // Submit a frame from the new RendererCompositorFrameSink.
-  parent_local_surface_id_allocator_.GenerateId();
-  view_->SubmitCompositorFrame(
-      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
-          .local_surface_id(),
-      MakeDelegatedFrame(1.f, frame_size, view_rect), base::nullopt);
-  view_->RunOnCompositingDidCommit();
 }
 
 // This test verifies that frame eviction plays well with surface
@@ -3640,55 +3424,6 @@ TEST_F(RenderWidgetHostViewAuraTest, SourceEventTypeExistsInLatencyInfo) {
   EXPECT_EQ(widget_host_->lastWheelOrTouchEventLatencyInfo.source_event_type(),
             ui::SourceEventType::TOUCH);
   view_->OnTouchEvent(&release);
-}
-
-// Tests that BeginFrameAcks are forwarded correctly from the
-// SwapCompositorFrame and OnDidNotProduceFrame IPCs through DelegatedFrameHost
-// and its CompositorFrameSinkSupport.
-TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
-  // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
-  // https://crbug.com/844469
-  if (features::IsVizDisplayCompositorEnabled())
-    return;
-
-  gfx::Rect view_rect(100, 100);
-  gfx::Size frame_size = view_rect.size();
-  viz::LocalSurfaceId local_surface_id = kArbitraryLocalSurfaceId;
-
-  view_->InitAsChild(nullptr);
-  aura::client::ParentWindowWithContext(
-      view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
-      gfx::Rect());
-  view_->SetSize(view_rect.size());
-
-  viz::FakeSurfaceObserver observer;
-  viz::SurfaceManager* surface_manager =
-      GetFrameSinkManager()->surface_manager();
-  surface_manager->AddObserver(&observer);
-
-  view_->SetNeedsBeginFrames(true);
-  constexpr uint64_t source_id = 10;
-
-  {
-    // Ack from CompositorFrame is forwarded.
-    viz::BeginFrameAck ack(source_id, 5, true);
-    viz::CompositorFrame frame = MakeDelegatedFrame(1.f, frame_size, view_rect);
-    frame.metadata.begin_frame_ack = ack;
-    view_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                                 base::nullopt);
-    view_->RunOnCompositingDidCommit();
-    EXPECT_EQ(ack, observer.last_ack());
-  }
-
-  {
-    // Explicit ack through OnDidNotProduceFrame is forwarded.
-    viz::BeginFrameAck ack(source_id, 6, false);
-    view_->OnDidNotProduceFrame(ack);
-    EXPECT_EQ(ack, observer.last_ack());
-  }
-
-  surface_manager->RemoveObserver(&observer);
-  view_->SetNeedsBeginFrames(false);
 }
 
 TEST_F(RenderWidgetHostViewAuraTest, VisibleViewportTest) {
@@ -5668,44 +5403,6 @@ TEST_F(RenderWidgetHostViewAuraTest, GestureTapFromStylusHasPointerType) {
   EXPECT_EQ(WebInputEvent::kGestureTap, gesture_event->GetType());
   EXPECT_EQ(blink::WebPointerProperties::PointerType::kPen,
             gesture_event->primary_pointer_type);
-}
-
-// Verify that a hit test region list that was provided to the view in a
-// SubmitCompositorFrame becomes the active hit test region in the
-// viz::HitTestManager.
-TEST_F(RenderWidgetHostViewAuraTest, HitTestRegionListSubmitted) {
-  // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
-  // https://crbug.com/844469
-  if (features::IsVizDisplayCompositorEnabled())
-    return;
-
-  gfx::Rect view_rect(0, 0, 100, 100);
-  gfx::Size frame_size = view_rect.size();
-
-  view_->InitAsChild(nullptr);
-  aura::client::ParentWindowWithContext(
-      view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
-      gfx::Rect());
-  view_->SetSize(view_rect.size());
-
-  viz::SurfaceId surface_id(view_->GetFrameSinkId(), kArbitraryLocalSurfaceId);
-
-  base::Optional<viz::HitTestRegionList> hit_test_region_list(base::in_place);
-  hit_test_region_list->flags = viz::HitTestRegionFlags::kHitTestMine;
-  hit_test_region_list->bounds.SetRect(0, 0, 100, 100);
-  view_->SubmitCompositorFrame(kArbitraryLocalSurfaceId,
-                               MakeDelegatedFrame(1.f, frame_size, view_rect),
-                               std::move(hit_test_region_list));
-
-  viz::TestLatestLocalSurfaceIdLookupDelegate delegate;
-  delegate.SetSurfaceIdMap(
-      viz::SurfaceId(view_->GetFrameSinkId(), kArbitraryLocalSurfaceId));
-  const viz::HitTestRegionList* active_hit_test_region_list =
-      GetFrameSinkManager()->hit_test_manager()->GetActiveHitTestRegionList(
-          &delegate, surface_id.frame_sink_id());
-  EXPECT_EQ(active_hit_test_region_list->flags,
-            viz::HitTestRegionFlags::kHitTestMine);
-  EXPECT_EQ(active_hit_test_region_list->bounds, view_rect);
 }
 
 // Test that the rendering timeout for newly loaded content fires when enough

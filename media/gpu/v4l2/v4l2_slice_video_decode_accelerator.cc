@@ -495,8 +495,9 @@ bool V4L2SliceVideoDecodeAccelerator::SetupFormats() {
   fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
   output_format_fourcc_ = base::nullopt;
   while (device_->Ioctl(VIDIOC_ENUM_FMT, &fmtdesc) == 0) {
-    if (device_->CanCreateEGLImageFrom(fmtdesc.pixelformat)) {
-      output_format_fourcc_ = Fourcc::FromV4L2PixFmt(fmtdesc.pixelformat);
+    auto fourcc = Fourcc::FromV4L2PixFmt(fmtdesc.pixelformat);
+    if (fourcc && device_->CanCreateEGLImageFrom(*fourcc)) {
+      output_format_fourcc_ = fourcc;
       break;
     }
     ++fmtdesc.index;
@@ -1449,7 +1450,7 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
 void V4L2SliceVideoDecodeAccelerator::CreateGLImageFor(
     size_t buffer_index,
     int32_t picture_buffer_id,
-    std::vector<base::ScopedFD> passed_dmabuf_fds,
+    std::vector<base::ScopedFD>&& dmabuf_fds,
     GLuint client_texture_id,
     GLuint texture_id,
     const gfx::Size& size,
@@ -1471,8 +1472,8 @@ void V4L2SliceVideoDecodeAccelerator::CreateGLImageFor(
     return;
   }
 
-  scoped_refptr<gl::GLImage> gl_image = gl_image_device_->CreateGLImage(
-      size, fourcc.ToV4L2PixFmt(), passed_dmabuf_fds);
+  scoped_refptr<gl::GLImage> gl_image =
+      gl_image_device_->CreateGLImage(size, fourcc, std::move(dmabuf_fds));
   if (!gl_image) {
     VLOGF(1) << "Could not create GLImage,"
              << " index=" << buffer_index << " texture_id=" << texture_id;
@@ -1551,7 +1552,7 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureForImportTask(
 
 void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureTask(
     int32_t picture_buffer_id,
-    std::vector<base::ScopedFD> passed_dmabuf_fds,
+    std::vector<base::ScopedFD>&& passed_dmabuf_fds,
     int32_t stride) {
   DVLOGF(3) << "picture_buffer_id=" << picture_buffer_id;
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());

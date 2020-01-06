@@ -189,6 +189,7 @@ class LocationBarView : public LocationBar,
 
   // IconLabelBubbleView::Delegate:
   SkColor GetIconLabelBubbleSurroundingForegroundColor() const override;
+  SkColor GetIconLabelBubbleBackgroundColor() const override;
 
   // ContentSettingImageView::Delegate:
   content::WebContents* GetContentSettingWebContents() override;

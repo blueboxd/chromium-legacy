@@ -168,7 +168,8 @@ void InputEventPrediction::AddPredictedEvents(
       last_event_timestamp_ + mouse_predictor_->MaxPredictionTime();
   bool success = true;
   while (success) {
-    ui::WebScopedInputEvent predicted_event = coalesced_event.Event().Clone();
+    ui::WebScopedInputEvent predicted_event =
+        ui::WebInputEventTraits::Clone(coalesced_event.Event());
     success = false;
     if (predicted_event->GetType() == WebInputEvent::kTouchMove) {
       WebTouchEvent& touch_event =

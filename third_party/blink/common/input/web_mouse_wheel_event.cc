@@ -6,10 +6,6 @@
 
 namespace blink {
 
-std::unique_ptr<WebInputEvent> WebMouseWheelEvent::Clone() const {
-  return std::make_unique<WebMouseWheelEvent>(*this);
-}
-
 float WebMouseWheelEvent::DeltaXInRootFrame() const {
   return delta_x / frame_scale_;
 }

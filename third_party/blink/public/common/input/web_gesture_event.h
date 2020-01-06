@@ -26,7 +26,7 @@ class BLINK_COMMON_EXPORT WebGestureEvent : public WebInputEvent {
     kMaxValue = kMomentum,
   };
 
-  bool is_source_touch_event_set_non_blocking = false;
+  bool is_source_touch_event_set_non_blocking;
 
   // The pointer type for the first touch point in the gesture.
   WebPointerProperties::PointerType primary_pointer_type =
@@ -38,7 +38,7 @@ class BLINK_COMMON_EXPORT WebGestureEvent : public WebInputEvent {
   // not released through a touch event (e.g. timer-released gesture events or
   // gesture events with source_device != WebGestureDevice::kTouchscreen), the
   // field contains 0. See crbug.com/618738.
-  uint32_t unique_touch_event_id = 0;
+  uint32_t unique_touch_event_id;
 
   union {
     // Tap information must be set for GestureTap, GestureTapUnconfirmed,
@@ -180,23 +180,22 @@ class BLINK_COMMON_EXPORT WebGestureEvent : public WebInputEvent {
   // Screen coordinate
   gfx::PointF position_in_screen_;
 
-  WebGestureDevice source_device_ = WebGestureDevice::kUninitialized;
+  WebGestureDevice source_device_;
 
  public:
   WebGestureEvent(Type type,
                   int modifiers,
                   base::TimeTicks time_stamp,
                   WebGestureDevice device = WebGestureDevice::kUninitialized)
-      : WebInputEvent(type, modifiers, time_stamp), source_device_(device) {
-    memset(&data, 0, sizeof(data));
-  }
+      : WebInputEvent(sizeof(WebGestureEvent), type, modifiers, time_stamp),
+        source_device_(device) {}
 
-  WebGestureEvent() { memset(&data, 0, sizeof(data)); }
+  WebGestureEvent()
+      : WebInputEvent(sizeof(WebGestureEvent)),
+        source_device_(WebGestureDevice::kUninitialized) {}
 
   const gfx::PointF& PositionInWidget() const { return position_in_widget_; }
   const gfx::PointF& PositionInScreen() const { return position_in_screen_; }
-
-  std::unique_ptr<WebInputEvent> Clone() const override;
 
   void SetPositionInWidget(const gfx::PointF& point) {
     position_in_widget_ = point;

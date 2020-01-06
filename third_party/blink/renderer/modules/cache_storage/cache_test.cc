@@ -62,7 +62,7 @@ class ScopedFetcherForTests final
   ScriptPromise Fetch(ScriptState* script_state,
                       const RequestInfo& request_info,
                       const RequestInit*,
-                      ExceptionState&) override {
+                      ExceptionState& exception_state) override {
     ++fetch_count_;
     if (expected_url_) {
       String fetched_url;
@@ -80,10 +80,9 @@ class ScopedFetcherForTests final
       response_ = nullptr;
       return promise;
     }
-    return ScriptPromise::Reject(
-        script_state, V8ThrowException::CreateTypeError(
-                          script_state->GetIsolate(),
-                          "Unexpected call to fetch, no response available."));
+    exception_state.ThrowTypeError(
+        "Unexpected call to fetch, no response available.");
+    return ScriptPromise();
   }
 
   // This does not take ownership of its parameter. The provided sample object

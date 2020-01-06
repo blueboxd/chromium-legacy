@@ -42,7 +42,7 @@ namespace blink {
 
 // WebInputEvent --------------------------------------------------------------
 
-class BLINK_COMMON_EXPORT WebInputEvent {
+class WebInputEvent {
  public:
   // When we use an input method (or an input method editor), we receive
   // two events for a keypress. The former event is a keydown, which
@@ -426,30 +426,61 @@ class BLINK_COMMON_EXPORT WebInputEvent {
   base::TimeTicks TimeStamp() const { return time_stamp_; }
   void SetTimeStamp(base::TimeTicks time_stamp) { time_stamp_ = time_stamp; }
 
+  unsigned size() const { return size_; }
+
   void SetTargetFrameMovedRecently() {
     modifiers_ |= kTargetFrameMovedRecently;
   }
 
-  virtual ~WebInputEvent() = default;
-
-  virtual std::unique_ptr<WebInputEvent> Clone() const = 0;
-
  protected:
   // The root frame scale.
-  float frame_scale_ = 1;
+  float frame_scale_;
 
   // The root frame translation (applied post scale).
   gfx::Vector2dF frame_translate_;
 
-  WebInputEvent(Type type, int modifiers, base::TimeTicks time_stamp)
-      : time_stamp_(time_stamp), type_(type), modifiers_(modifiers) {}
+  WebInputEvent(unsigned size,
+                Type type,
+                int modifiers,
+                base::TimeTicks time_stamp) {
+    // TODO(dtapuska): Remove this memset when we remove the chrome IPC of this
+    // struct.
+    memset(this, 0, size);
+    time_stamp_ = time_stamp;
+    size_ = size;
+    type_ = type;
+    modifiers_ = modifiers;
+#if DCHECK_IS_ON()
+    // If dcheck is on force failures if frame scale is not initialized
+    // correctly by causing DIV0.
+    frame_scale_ = 0;
+#else
+    frame_scale_ = 1;
+#endif
+  }
 
-  WebInputEvent() { time_stamp_ = base::TimeTicks(); }
+  explicit WebInputEvent(unsigned size_param) {
+    // TODO(dtapuska): Remove this memset when we remove the chrome IPC of this
+    // struct.
+    memset(this, 0, size_param);
+    time_stamp_ = base::TimeTicks();
+    size_ = size_param;
+    type_ = kUndefined;
+#if DCHECK_IS_ON()
+    // If dcheck is on force failures if frame scale is not initialized
+    // correctly by causing DIV0.
+    frame_scale_ = 0;
+#else
+    frame_scale_ = 1;
+#endif
+  }
 
   // Event time since platform start with microsecond resolution.
   base::TimeTicks time_stamp_;
-  Type type_ = kUndefined;
-  int modifiers_ = kNoModifiers;
+  // The size of this structure, for serialization.
+  unsigned size_;
+  Type type_;
+  int modifiers_;
 };
 
 }  // namespace blink

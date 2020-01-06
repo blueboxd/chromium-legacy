@@ -706,14 +706,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("openFileDialogSelectAllDisabled").WithBrowser(),
         TestCase("openMultiFileDialogSelectAllEnabled").WithBrowser()));
 
-#if defined(NDEBUG)
-#define MAYBE_CopyBetweenWindows CopyBetweenWindows
-#else
-// Flaky on Chrome OS Debug. TODO(crbug.com/1008909).
-#define MAYBE_CopyBetweenWindows DISABLED_CopyBetweenWindows
-#endif
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
-    MAYBE_CopyBetweenWindows, /* copy_between_windows.js */
+    CopyBetweenWindows, /* copy_between_windows.js */
     FilesAppBrowserTest,
     ::testing::Values(TestCase("copyBetweenWindowsLocalToDrive"),
                       TestCase("copyBetweenWindowsLocalToUsb"),

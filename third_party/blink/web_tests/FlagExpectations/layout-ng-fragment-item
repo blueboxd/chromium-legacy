@@ -78,7 +78,7 @@ crbug.com/982194 external/wpt/css/CSS2/floats/floats-rule3-outside-right-002.xht
 crbug.com/982194 external/wpt/css/CSS2/floats/floats-rule7-outside-left-001.xht [ Failure ]
 crbug.com/982194 external/wpt/css/CSS2/floats/floats-rule7-outside-right-001.xht [ Failure ]
 crbug.com/982194 external/wpt/css/CSS2/floats/hit-test-floats-001.html [ Failure ]
-crbug.com/982194 external/wpt/css/CSS2/positioning/abspos-float-with-inline-container.html [ Crash ]
+crbug.com/982194 external/wpt/css/CSS2/positioning/abspos-float-with-inline-container.html [ Crash Failure ]
 crbug.com/982194 external/wpt/css/CSS2/positioning/toogle-abspos-on-relpos-inline-child.html [ Failure ]
 crbug.com/982194 external/wpt/css/css-contain/contain-layout-017.html [ Pass ]
 crbug.com/982194 external/wpt/css/css-contain/contain-paint-021.html [ Pass ]

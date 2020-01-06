@@ -244,7 +244,7 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // file descriptors. |stride| is the number of bytes from one row of pixels
   // to the next row.
   void ImportBufferForPictureTask(int32_t picture_buffer_id,
-                                  std::vector<base::ScopedFD> dmabuf_fds,
+                                  std::vector<base::ScopedFD>&& dmabuf_fds,
                                   int32_t stride);
 
   // Check |planes| and |dmabuf_fds| are valid in import mode, besides
@@ -260,7 +260,7 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // described by |fourcc|.
   void CreateEGLImageFor(size_t buffer_index,
                          int32_t picture_buffer_id,
-                         std::vector<base::ScopedFD> dmabuf_fds,
+                         std::vector<base::ScopedFD>&& dmabuf_fds,
                          GLuint texture_id,
                          const gfx::Size& size,
                          const Fourcc fourcc);

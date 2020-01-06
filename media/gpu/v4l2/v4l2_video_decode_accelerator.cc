@@ -459,7 +459,7 @@ void V4L2VideoDecodeAccelerator::AssignPictureBuffersTask(
 void V4L2VideoDecodeAccelerator::CreateEGLImageFor(
     size_t buffer_index,
     int32_t picture_buffer_id,
-    std::vector<base::ScopedFD> dmabuf_fds,
+    std::vector<base::ScopedFD>&& dmabuf_fds,
     GLuint texture_id,
     const gfx::Size& size,
     const Fourcc fourcc) {
@@ -484,7 +484,7 @@ void V4L2VideoDecodeAccelerator::CreateEGLImageFor(
 
   EGLImageKHR egl_image = egl_image_device_->CreateEGLImage(
       egl_display_, gl_context->GetHandle(), texture_id, size, buffer_index,
-      fourcc.ToV4L2PixFmt(), dmabuf_fds);
+      fourcc, std::move(dmabuf_fds));
   if (egl_image == EGL_NO_IMAGE_KHR) {
     VLOGF(1) << "could not create EGLImageKHR,"
              << " index=" << buffer_index << " texture_id=" << texture_id;
@@ -608,7 +608,7 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureForImportTask(
 
 void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
     int32_t picture_buffer_id,
-    std::vector<base::ScopedFD> dmabuf_fds,
+    std::vector<base::ScopedFD>&& dmabuf_fds,
     int32_t stride) {
   DVLOGF(3) << "picture_buffer_id=" << picture_buffer_id
             << ", dmabuf_fds.size()=" << dmabuf_fds.size()
@@ -2325,8 +2325,9 @@ bool V4L2VideoDecodeAccelerator::SetupFormats() {
   memset(&fmtdesc, 0, sizeof(fmtdesc));
   fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
   while (device_->Ioctl(VIDIOC_ENUM_FMT, &fmtdesc) == 0) {
-    if (device_->CanCreateEGLImageFrom(fmtdesc.pixelformat)) {
-      output_format_fourcc_ = Fourcc::FromV4L2PixFmt(fmtdesc.pixelformat);
+    auto fourcc = Fourcc::FromV4L2PixFmt(fmtdesc.pixelformat);
+    if (fourcc && device_->CanCreateEGLImageFrom(*fourcc)) {
+      output_format_fourcc_ = *fourcc;
       break;
     }
     ++fmtdesc.index;

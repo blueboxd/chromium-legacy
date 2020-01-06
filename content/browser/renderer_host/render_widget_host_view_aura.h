@@ -107,8 +107,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   bool IsMouseLocked() override;
   gfx::Size GetVisibleViewportSize() override;
   void SetInsets(const gfx::Insets& insets) override;
-  void SetNeedsBeginFrames(bool needs_begin_frames) override;
-  void SetWantsAnimateOnlyBeginFrames() override;
+  void SetNeedsBeginFrames(bool needs_begin_frames) override {}
+  void SetWantsAnimateOnlyBeginFrames() override {}
   TouchSelectionControllerClientManager*
   GetTouchSelectionControllerClientManager() override;
 
@@ -158,9 +158,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void UnlockKeyboard() override;
   bool IsKeyboardLocked() override;
   base::flat_map<std::string, std::string> GetKeyboardLayoutMap() override;
-  void DidCreateNewRendererCompositorFrameSink(
-      viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink)
-      override;
   void SubmitCompositorFrame(
       const viz::LocalSurfaceId& local_surface_id,
       viz::CompositorFrame frame,
@@ -523,8 +520,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void OnTextSelectionChanged(TextInputManager* text_input_mangager,
                               RenderWidgetHostViewBase* updated_view) override;
 
-  void OnBeginFrame(base::TimeTicks frame_time);
-
   // Detaches |this| from the input method object.
   void DetachFromInputMethod();
 
@@ -547,9 +542,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Used to set the |popup_child_host_view_| on the |popup_parent_host_view_|
   // and to notify the |event_handler_|.
   void SetPopupChild(RenderWidgetHostViewAura* popup_child_host_view);
-
-  // Tells DelegatedFrameHost whether we need to receive BeginFrames.
-  void UpdateNeedsBeginFramesInternal();
 
   // Called when the window title is changed.
   void WindowTitleChanged();
@@ -602,9 +594,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Current tooltip text.
   base::string16 tooltip_;
 
-  // Whether a request for begin frames has been issued.
-  bool needs_begin_frames_;
-
   // Whether or not a frame observer has been added.
   bool added_frame_observer_;
 
@@ -656,9 +645,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   std::unique_ptr<wm::ScopedTooltipDisabler> tooltip_disabler_;
 
   float device_scale_factor_;
-
-  viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink_ =
-      nullptr;
 
   // While this is a ui::EventHandler for targetting, |event_handler_| actually
   // provides an implementation, and directs events to |host_|.

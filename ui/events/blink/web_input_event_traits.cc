@@ -105,6 +105,17 @@ void ApppendEventDetails(const WebPointerEvent& event, std::string* result) {
       event.rotation_angle, event.tilt_x, event.tilt_y);
 }
 
+struct WebInputEventDelete {
+  template <class EventType>
+  bool Execute(WebInputEvent* event, void*) const {
+    if (!event)
+      return false;
+    DCHECK_EQ(sizeof(EventType), event->size());
+    delete static_cast<EventType*>(event);
+    return true;
+  }
+};
+
 struct WebInputEventToString {
   template <class EventType>
   bool Execute(const WebInputEvent& event, std::string* result) const {
@@ -114,6 +125,17 @@ struct WebInputEventToString {
                   event.GetModifiers());
     const EventType& typed_event = static_cast<const EventType&>(event);
     ApppendEventDetails(typed_event, result);
+    return true;
+  }
+};
+
+struct WebInputEventClone {
+  template <class EventType>
+  bool Execute(const WebInputEvent& event,
+               WebScopedInputEvent* scoped_event) const {
+    DCHECK_EQ(sizeof(EventType), event.size());
+    *scoped_event = WebScopedInputEvent(
+        new EventType(static_cast<const EventType&>(event)));
     return true;
   }
 };
@@ -142,10 +164,23 @@ bool Apply(Operator op,
 
 }  // namespace
 
+void WebInputEventDeleter::operator()(WebInputEvent* event) const {
+  if (!event)
+    return;
+  void* temp = nullptr;
+  Apply(WebInputEventDelete(), event->GetType(), event, temp);
+}
+
 std::string WebInputEventTraits::ToString(const WebInputEvent& event) {
   std::string result;
   Apply(WebInputEventToString(), event.GetType(), event, &result);
   return result;
+}
+
+WebScopedInputEvent WebInputEventTraits::Clone(const WebInputEvent& event) {
+  WebScopedInputEvent scoped_event;
+  Apply(WebInputEventClone(), event.GetType(), event, &scoped_event);
+  return scoped_event;
 }
 
 bool WebInputEventTraits::ShouldBlockEventStream(const WebInputEvent& event) {

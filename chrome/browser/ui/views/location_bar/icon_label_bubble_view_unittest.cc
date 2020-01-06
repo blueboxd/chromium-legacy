@@ -134,6 +134,9 @@ class IconLabelBubbleViewTestBase : public ChromeViewsTestBase,
   SkColor GetIconLabelBubbleSurroundingForegroundColor() const override {
     return kTestColor;
   }
+  SkColor GetIconLabelBubbleBackgroundColor() const override {
+    return kTestColor;
+  }
 };
 
 class IconLabelBubbleViewTest : public IconLabelBubbleViewTestBase {

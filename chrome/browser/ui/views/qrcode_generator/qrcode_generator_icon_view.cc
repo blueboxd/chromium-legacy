@@ -71,11 +71,6 @@ const char* QRCodeGeneratorIconView::GetClassName() const {
   return "QRCodeGeneratorIconView";
 }
 
-SkColor QRCodeGeneratorIconView::GetForegroundColor() const {
-  return GetOmniboxColor(GetThemeProvider(),
-                         OmniboxPart::LOCATION_BAR_TEXT_DEFAULT);
-}
-
 base::string16 QRCodeGeneratorIconView::GetTextForTooltipAndAccessibleName()
     const {
   return l10n_util::GetStringUTF16(IDS_OMNIBOX_QRCODE_GENERATOR_ICON_TOOLTIP);

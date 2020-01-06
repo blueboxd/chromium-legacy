@@ -105,6 +105,13 @@ bool ServiceWorkerUtils::IsPathRestrictionSatisfiedInternal(
       error_message->append("') was received when fetching the script.");
       return false;
     }
+
+    if (max_scope.GetOrigin() != script_url.GetOrigin()) {
+      *error_message = "A cross-origin Service-Worker-Allowed header value ('";
+      error_message->append(*service_worker_allowed_header_value);
+      error_message->append("') was received when fetching the script.");
+      return false;
+    }
     max_scope_string = max_scope.path();
   } else {
     max_scope_string = script_url.GetWithoutFilename().path();

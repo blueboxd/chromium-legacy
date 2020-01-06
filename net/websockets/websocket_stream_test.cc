@@ -1464,7 +1464,7 @@ TEST_P(WebSocketStreamCreateBasicAuthTest, FailureNoCredentials) {
   EXPECT_TRUE(has_failed());
   EXPECT_EQ("HTTP Authentication failed; no valid credentials available",
             failure_message());
-  EXPECT_TRUE(response_info_);
+  EXPECT_FALSE(response_info_);
 }
 
 TEST_P(WebSocketStreamCreateBasicAuthTest, SuccessPasswordInUrl) {
@@ -1482,7 +1482,7 @@ TEST_P(WebSocketStreamCreateBasicAuthTest, FailureIncorrectPasswordInUrl) {
                                 "Zm9vOmJheg==", kUnauthorizedResponse);
   WaitUntilConnectDone();
   EXPECT_TRUE(has_failed());
-  EXPECT_TRUE(response_info_);
+  EXPECT_FALSE(response_info_);
 }
 
 TEST_P(WebSocketStreamCreateBasicAuthTest, SuccessfulConnectionReuse) {

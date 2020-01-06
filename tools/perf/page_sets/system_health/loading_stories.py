@@ -327,6 +327,19 @@ class LoadIrctcStory(_LoadingStory):
   TAGS = [story_tags.EMERGING_MARKET, story_tags.HEALTH_CHECK,
           story_tags.YEAR_2016]
 
+class LoadIrctcStory2019(_LoadingStory):
+  NAME = 'load:news:irctc:2019'
+  URL = 'https://www.irctc.co.in'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.EMERGING_MARKET, story_tags.HEALTH_CHECK,
+          story_tags.YEAR_2019]
+
+  def _Login(self, action_runner):
+    # There is an error on replay that pops up the first time. If we
+    # navigate again, the error disappears.
+    action_runner.tab.WaitForDocumentReadyStateToBeComplete()
+    action_runner.Navigate(self.URL)
+    action_runner.tab.WaitForDocumentReadyStateToBeComplete()
 
 ################################################################################
 # Audio, images, and video.

@@ -65,7 +65,7 @@ class NavigationURLLoader;
 class NavigationUIData;
 class NavigatorDelegate;
 class PrefetchedSignedExchangeCache;
-class ServiceWorkerNavigationHandle;
+class ServiceWorkerMainResourceHandle;
 class SiteInstanceImpl;
 struct SubresourceLoaderParams;
 
@@ -1063,7 +1063,7 @@ class CONTENT_EXPORT NavigationRequest
 
   // Manages the lifetime of a pre-created ServiceWorkerProviderHost until a
   // corresponding provider is created in the renderer.
-  std::unique_ptr<ServiceWorkerNavigationHandle> service_worker_handle_;
+  std::unique_ptr<ServiceWorkerMainResourceHandle> service_worker_handle_;
 
   // Timer for detecting an unexpectedly long time to commit a navigation.
   base::OneShotTimer commit_timeout_timer_;

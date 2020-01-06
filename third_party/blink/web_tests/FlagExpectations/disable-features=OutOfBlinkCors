@@ -1,0 +1,36 @@
+# tags: [ Android Fuchsia IOS IOS12.2 IOS13.0 Linux Mac Mac10.10 Mac10.11 Mac10.12 Retina
+#         Mac10.13 Win Win7 Win10 ]
+# tags: [ Release Debug ]
+# results: [ Timeout Crash Pass Failure Slow Skip ]
+
+# Tests that passes only with OOR-CORS.
+# These tests should not pass at linux-blink-cors-rel fyi bot.
+# TODO(cbur.com/1001450): Remove this file after removing the OOR-CORS releted
+# enterprise policies.
+crbug.com/870173 external/wpt/resource-timing/cors-preflight.any.html [ Skip ]
+crbug.com/870173 external/wpt/resource-timing/cors-preflight.any.worker.html [ Skip ]
+crbug.com/870173 http/tests/devtools/console-xhr-logging.js [ Skip ]
+crbug.com/870173 http/tests/devtools/network/extra-info-redirects.js [ Skip ]
+crbug.com/870173 http/tests/eventsource/eventsource-cors-non-http.html [ Skip ]
+crbug.com/870173 http/tests/eventsource/workers/eventsource-cors-non-http.html [ Skip ]
+crbug.com/870173 http/tests/htmlimports/import-script-block-crossorigin-dynamic.html [ Skip ]
+crbug.com/870173 http/tests/inspector-protocol/network-fetch-content-with-error-status-code.js [ Skip ]
+crbug.com/870173 http/tests/preload/warning/request-mode.html [ Skip ]
+crbug.com/870173 http/tests/security/img-redirect-to-crossorigin-credentials.https.html [ Skip ]
+crbug.com/870173 http/tests/security/script-crossorigin-redirect-credentials.html [ Skip ]
+crbug.com/870173 http/tests/xmlhttprequest/cross-origin-unsupported-url.html [ Skip ]
+crbug.com/870173 http/tests/xmlhttprequest/workers/cross-origin-unsupported-url.html [ Skip ]
+crbug.com/870173 mhtml/cid_in_html_resource.html [ Skip ]
+crbug.com/870173 virtual/omt-worker-fetch/external/wpt/resource-timing/cors-preflight.any.html [ Skip ]
+crbug.com/870173 virtual/omt-worker-fetch/external/wpt/resource-timing/cors-preflight.any.worker.html [ Skip ]
+crbug.com/870173 virtual/omt-worker-fetch/http/tests/workers/worker-redirect.html [ Skip ]
+
+# The fetch-request-xhr.https.html fails on some checks, but has an expectation
+# file to ignore text diffs. It also fails on the same checks even without
+# OOR-CORS, but with different texts. Just mark them as Failure.
+crbug.com/870173 external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
+crbug.com/870173 virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
+crbug.com/870173 virtual/cache-storage-high-priority-match/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
+crbug.com/870173 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
+crbug.com/870173 virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
+crbug.com/870173 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]

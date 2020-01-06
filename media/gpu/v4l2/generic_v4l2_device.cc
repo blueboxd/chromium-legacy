@@ -30,6 +30,7 @@
 #include "media/gpu/macros.h"
 #include "media/gpu/v4l2/generic_v4l2_device.h"
 #include "ui/gfx/native_pixmap.h"
+#include "ui/gfx/native_pixmap_handle.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_image_native_pixmap.h"
@@ -211,14 +212,13 @@ bool GenericV4L2Device::CanCreateEGLImageFrom(const Fourcc fourcc) {
          kEGLImageDrmFmtsSupported + base::size(kEGLImageDrmFmtsSupported);
 }
 
-EGLImageKHR GenericV4L2Device::CreateEGLImage(
-    EGLDisplay egl_display,
-    EGLContext /* egl_context */,
-    GLuint texture_id,
-    const gfx::Size& size,
-    unsigned int buffer_index,
-    const Fourcc fourcc,
-    std::vector<base::ScopedFD>&& dmabuf_fds) {
+EGLImageKHR GenericV4L2Device::CreateEGLImage(EGLDisplay egl_display,
+                                              EGLContext /* egl_context */,
+                                              GLuint texture_id,
+                                              const gfx::Size& size,
+                                              unsigned int buffer_index,
+                                              const Fourcc fourcc,
+                                              gfx::NativePixmapHandle handle) {
   DVLOGF(3);
 
   if (!CanCreateEGLImageFrom(fourcc)) {
@@ -226,17 +226,10 @@ EGLImageKHR GenericV4L2Device::CreateEGLImage(
     return EGL_NO_IMAGE_KHR;
   }
 
-  const VideoPixelFormat vf_format = fourcc.ToVideoPixelFormat();
   // Number of components, as opposed to the number of V4L2 planes, which is
   // just a buffer count.
-  size_t num_planes = VideoFrame::NumPlanes(vf_format);
+  const size_t num_planes = handle.planes.size();
   DCHECK_LE(num_planes, 3u);
-  if (num_planes < dmabuf_fds.size()) {
-    // It's possible for more than one DRM plane to reside in one V4L2 plane,
-    // but not the other way around. We must use all V4L2 planes.
-    LOG(ERROR) << "Invalid plane count";
-    return EGL_NO_IMAGE_KHR;
-  }
 
   std::vector<EGLint> attrs;
   attrs.push_back(EGL_WIDTH);
@@ -246,28 +239,13 @@ EGLImageKHR GenericV4L2Device::CreateEGLImage(
   attrs.push_back(EGL_LINUX_DRM_FOURCC_EXT);
   attrs.push_back(V4L2PixFmtToDrmFormat(fourcc.ToV4L2PixFmt()));
 
-  // For existing formats, if we have less buffers (V4L2 planes) than
-  // components (planes), the remaining planes are stored in the last
-  // V4L2 plane. Use one V4L2 plane per each component until we run out of V4L2
-  // planes, and use the last V4L2 plane for all remaining components, each
-  // with an offset equal to the size of the preceding planes in the same
-  // V4L2 plane.
-  size_t v4l2_plane = 0;
-  size_t plane_offset = 0;
   for (size_t plane = 0; plane < num_planes; ++plane) {
     attrs.push_back(EGL_DMA_BUF_PLANE0_FD_EXT + plane * 3);
-    attrs.push_back(dmabuf_fds[v4l2_plane].get());
+    attrs.push_back(handle.planes[plane].fd.get());
     attrs.push_back(EGL_DMA_BUF_PLANE0_OFFSET_EXT + plane * 3);
-    attrs.push_back(plane_offset);
+    attrs.push_back(handle.planes[plane].offset);
     attrs.push_back(EGL_DMA_BUF_PLANE0_PITCH_EXT + plane * 3);
-    attrs.push_back(VideoFrame::RowBytes(plane, vf_format, size.width()));
-
-    if (v4l2_plane + 1 < dmabuf_fds.size()) {
-      ++v4l2_plane;
-      plane_offset = 0;
-    } else {
-      plane_offset += VideoFrame::PlaneSize(vf_format, plane, size).GetArea();
-    }
+    attrs.push_back(handle.planes[plane].stride);
   }
 
   attrs.push_back(EGL_NONE);
@@ -287,52 +265,19 @@ EGLImageKHR GenericV4L2Device::CreateEGLImage(
 scoped_refptr<gl::GLImage> GenericV4L2Device::CreateGLImage(
     const gfx::Size& size,
     const Fourcc fourcc,
-    std::vector<base::ScopedFD>&& dmabuf_fds) {
+    gfx::NativePixmapHandle handle) {
   DVLOGF(3);
   DCHECK(CanCreateEGLImageFrom(fourcc));
 
-  const VideoPixelFormat vf_format = fourcc.ToVideoPixelFormat();
-  size_t num_planes = VideoFrame::NumPlanes(vf_format);
+  size_t num_planes = handle.planes.size();
   DCHECK_LE(num_planes, 3u);
-  DCHECK_LE(dmabuf_fds.size(), num_planes);
 
   gfx::NativePixmapHandle native_pixmap_handle;
 
-  std::vector<base::ScopedFD> duped_fds;
-  // The number of file descriptors can be less than the number of planes when
-  // v4l2 pix fmt, |fourcc|, is a single plane format. Duplicating the last
-  // file descriptor should be safely used for the later planes, because they
-  // are on the last buffer.
-  for (size_t i = 0; i < num_planes; ++i) {
-    int fd =
-        i < dmabuf_fds.size() ? dmabuf_fds[i].get() : dmabuf_fds.back().get();
-    duped_fds.emplace_back(HANDLE_EINTR(dup(fd)));
-    if (!duped_fds.back().is_valid()) {
-      VPLOGF(1) << "Failed duplicating a dmabuf fd";
-      return nullptr;
-    }
-  }
-
-  // For existing formats, if we have less buffers (V4L2 planes) than
-  // components (planes), the remaining planes are stored in the last
-  // V4L2 plane. Use one V4L2 plane per each component until we run out of V4L2
-  // planes, and use the last V4L2 plane for all remaining components, each
-  // with an offset equal to the size of the preceding planes in the same
-  // V4L2 plane.
-  size_t v4l2_plane = 0;
-  size_t plane_offset = 0;
   for (size_t p = 0; p < num_planes; ++p) {
     native_pixmap_handle.planes.emplace_back(
-        VideoFrame::RowBytes(p, vf_format, size.width()), plane_offset,
-        VideoFrame::PlaneSize(vf_format, p, size).GetArea(),
-        std::move(duped_fds[p]));
-
-    if (v4l2_plane + 1 < dmabuf_fds.size()) {
-      ++v4l2_plane;
-      plane_offset = 0;
-    } else {
-      plane_offset += VideoFrame::PlaneSize(vf_format, p, size).GetArea();
-    }
+        handle.planes[p].stride, handle.planes[p].offset, handle.planes[p].size,
+        std::move(handle.planes[p].fd));
   }
 
   gfx::BufferFormat buffer_format = gfx::BufferFormat::BGRA_8888;

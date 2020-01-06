@@ -1767,12 +1767,12 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   DISALLOW_COPY_AND_ASSIGN(WebGLRenderingContextBase);
 };
 
-// TODO(fserb): remove this.
-DEFINE_TYPE_CASTS(WebGLRenderingContextBase,
-                  CanvasRenderingContext,
-                  context,
-                  context->Is3d(),
-                  context.Is3d());
+template <>
+struct DowncastTraits<WebGLRenderingContextBase> {
+  static bool AllowFrom(const CanvasRenderingContext& context) {
+    return context.Is3d();
+  }
+};
 
 }  // namespace blink
 

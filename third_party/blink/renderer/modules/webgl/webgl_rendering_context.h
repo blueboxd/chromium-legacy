@@ -132,16 +132,6 @@ class WebGLRenderingContext final : public WebGLRenderingContextBase {
   Member<WebGLVideoTexture> webgl_video_texture_;
 };
 
-DEFINE_TYPE_CASTS(WebGLRenderingContext,
-                  CanvasRenderingContext,
-                  context,
-                  context->Is3d() &&
-                      WebGLRenderingContextBase::GetWebGLVersion(context) ==
-                          Platform::kWebGL1ContextType,
-                  context.Is3d() &&
-                      WebGLRenderingContextBase::GetWebGLVersion(&context) ==
-                          Platform::kWebGL1ContextType);
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_RENDERING_CONTEXT_H_

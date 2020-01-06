@@ -169,12 +169,6 @@ std::string ChromeConnectedHeaderHelper::BuildRequestHeader(
     const GURL& url,
     const std::string& gaia_id,
     int profile_mode_mask) {
-#if defined(OS_ANDROID)
-  bool is_mice_enabled = base::FeatureList::IsEnabled(kMiceFeature);
-#else
-  bool is_mice_enabled = false;
-#endif
-
 // If we are on mobile or desktop, an empty |account_id| corresponds to the user
 // not signed into Sync. Do not enforce account consistency, unless Mice is
 // enabled on Android.
@@ -183,7 +177,7 @@ std::string ChromeConnectedHeaderHelper::BuildRequestHeader(
 // filtered upstream and we want to enforce account consistency in Public
 // Sessions and Active Directory logins.
 #if !defined(OS_CHROMEOS)
-  if (gaia_id.empty() && !is_mice_enabled)
+  if (gaia_id.empty())
     return std::string();
 #endif  // !defined(OS_CHROMEOS)
 
@@ -201,9 +195,8 @@ std::string ChromeConnectedHeaderHelper::BuildRequestHeader(
       account_consistency_ == AccountConsistencyMethod::kMirror;
   parts.push_back(base::StringPrintf("%s=%s", kEnableAccountConsistencyAttrName,
                                      is_mirror_enabled ? "true" : "false"));
-  parts.push_back(base::StringPrintf("%s=%s",
-                                     kConsistencyEnabledByDefaultAttrName,
-                                     is_mice_enabled ? "true" : "false"));
+  parts.push_back(base::StringPrintf(
+      "%s=%s", kConsistencyEnabledByDefaultAttrName, "false"));
 
   return base::JoinString(parts, is_header_request ? "," : ":");
 }

@@ -59,12 +59,10 @@ class AppInfoDialogTestApi {
  public:
   explicit AppInfoDialogTestApi(AppInfoDialog* dialog) : dialog_(dialog) {}
 
-  AppInfoHeaderPanel* header_panel() {
-    return static_cast<AppInfoHeaderPanel*>(dialog_->children().front());
-  }
-
-  views::Link* view_in_store_link() {
-    return header_panel()->view_in_store_link_;
+  void ShowAppInWebStore() {
+    auto* header_panel =
+        static_cast<AppInfoHeaderPanel*>(dialog_->children().front());
+    return header_panel->ShowAppInWebStore();
   }
 
  private:
@@ -264,16 +262,14 @@ TEST_F(AppInfoDialogViewsTest, DestroyedOtherProfileDoesNotCloseDialog) {
 // dialog cleanly.
 TEST_F(AppInfoDialogViewsTest, ViewInStore) {
   ShowAppInfo(kTestExtensionId);
-  EXPECT_TRUE(extension_->from_webstore());  // Otherwise there is no link.
-  views::Link* link = test::AppInfoDialogTestApi(dialog_).view_in_store_link();
-  EXPECT_TRUE(link);
+  ASSERT_TRUE(extension_->from_webstore());
 
   TabStripModel* tabs = browser()->tab_strip_model();
   EXPECT_EQ(0, tabs->count());
 
   ASSERT_TRUE(widget_);
   EXPECT_FALSE(widget_->IsClosed());
-  link->OnKeyPressed(ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_SPACE, 0));
+  test::AppInfoDialogTestApi(dialog_).ShowAppInWebStore();
 
   ASSERT_TRUE(widget_);
   EXPECT_TRUE(widget_->IsClosed());

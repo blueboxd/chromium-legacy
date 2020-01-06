@@ -269,7 +269,6 @@ public abstract class ChromeFeatureList {
             "SearchEnginePromo.ExistingDevice";
     public static final String SEARCH_ENGINE_PROMO_NEW_DEVICE = "SearchEnginePromo.NewDevice";
     public static final String MARK_HTTP_AS = "MarkHttpAs";
-    // TODO(crbug.com/980849) Remove ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY
     public static final String MOBILE_IDENTITY_CONSISTENCY = "MobileIdentityConsistency";
     public static final String MODAL_PERMISSION_PROMPTS = "ModalPermissionPrompts";
     public static final String MODAL_PERMISSION_DIALOG_VIEW = "ModalPermissionDialogView";

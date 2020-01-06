@@ -337,9 +337,7 @@ bool OmniboxViewIOS::OnWillChange(NSRange range, NSString* new_text) {
     // as if the pre-edit fake selection was real.
     [field_ exitPreEditState];
 
-    field_.selectedTextRange =
-        [field_ textRangeFromPosition:field_.beginningOfDocument
-                           toPosition:field_.endOfDocument];
+    field_.text = @"";
 
     // Reset |range| to be of zero-length at location zero, as the field will be
     // now cleared.

@@ -1031,7 +1031,8 @@ TEST_F(ServiceWorkerContextTest, ContainerHostIterator) {
   // Iterate over the client container hosts that belong to kOrigin1.
   std::set<ServiceWorkerContainerHost*> results;
   for (auto it = context()->GetClientContainerHostIterator(
-           kOrigin1, true /* include_reserved_clients */);
+           kOrigin1, true /* include_reserved_clients */,
+           false /* include_back_forward_cached_clients */);
        !it->IsAtEnd(); it->Advance()) {
     results.insert(it->GetContainerHost());
   }
@@ -1043,7 +1044,8 @@ TEST_F(ServiceWorkerContextTest, ContainerHostIterator) {
   // (This should not include host4 as it's not for controllee.)
   results.clear();
   for (auto it = context()->GetClientContainerHostIterator(
-           kOrigin2, true /* include_reserved_clients */);
+           kOrigin2, true /* include_reserved_clients */,
+           false /* include_back_forward_cached_clients */);
        !it->IsAtEnd(); it->Advance()) {
     results.insert(it->GetContainerHost());
   }

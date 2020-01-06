@@ -2150,7 +2150,13 @@ TEST_PPAPI_NACL(MAYBE_VideoEncoder)
 // Printing doesn't work in content_browsertests.
 TEST_PPAPI_OUT_OF_PROCESS(Printing)
 
-TEST_PPAPI_NACL(MessageHandler)
+// https://crbug.com/1038957.
+#if defined(OS_LINUX)
+#define MAYBE_MessageHandler DISABLED_MessageHandler
+#else
+#define MAYBE_MessageHandler MessageHandler
+#endif
+TEST_PPAPI_NACL(MAYBE_MessageHandler)
 
 TEST_PPAPI_NACL(MessageLoop_Basics)
 TEST_PPAPI_NACL(MessageLoop_Post)

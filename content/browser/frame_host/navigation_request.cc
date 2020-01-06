@@ -46,7 +46,7 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
-#include "content/browser/service_worker/service_worker_navigation_handle.h"
+#include "content/browser/service_worker/service_worker_main_resource_handle.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/browser/web_package/web_bundle_handle_tracker.h"
@@ -2010,8 +2010,8 @@ void NavigationRequest::OnStartChecksComplete(
   // comment in the header for |loader_|.
   DCHECK(!loader_);
 
-  // Only initialize the ServiceWorkerNavigationHandle if it can be created for
-  // this frame.
+  // Only initialize the ServiceWorkerMainResourceHandle if it can be created
+  // for this frame.
   bool can_create_service_worker =
       (frame_tree_node_->pending_frame_policy().sandbox_flags &
        blink::WebSandboxFlags::kOrigin) != blink::WebSandboxFlags::kOrigin;
@@ -2019,8 +2019,8 @@ void NavigationRequest::OnStartChecksComplete(
     ServiceWorkerContextWrapper* service_worker_context =
         static_cast<ServiceWorkerContextWrapper*>(
             partition->GetServiceWorkerContext());
-    service_worker_handle_ =
-        std::make_unique<ServiceWorkerNavigationHandle>(service_worker_context);
+    service_worker_handle_ = std::make_unique<ServiceWorkerMainResourceHandle>(
+        service_worker_context);
   }
 
   if (IsSchemeSupportedForAppCache(common_params_->url)) {

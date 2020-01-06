@@ -407,23 +407,6 @@
     }                                                                        \
   } while (0)
 
-// The linked ID will not be mangled.
-#define INTERNAL_TRACE_EVENT_ADD_LINK_IDS(category_group, name, id1, id2) \
-  do {                                                                    \
-    INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO(category_group);               \
-    if (INTERNAL_TRACE_EVENT_CATEGORY_GROUP_ENABLED()) {                  \
-      trace_event_internal::TraceID source_id((id1));                     \
-      unsigned int source_flags = source_id.id_flags();                   \
-      trace_event_internal::TraceID target_id((id2));                     \
-      trace_event_internal::AddTraceEvent(                                \
-          TRACE_EVENT_PHASE_LINK_IDS,                                     \
-          INTERNAL_TRACE_EVENT_UID(category_group_enabled), name,         \
-          source_id.scope(), source_id.raw_id(), source_flags,            \
-          trace_event_internal::kNoId, "linked_id",                       \
-          target_id.AsConvertableToTraceFormat());                        \
-    }                                                                     \
-  } while (0)
-
 // Implementation detail: internal macro to create static category and add
 // metadata event if the category is enabled.
 #define INTERNAL_TRACE_EVENT_METADATA_ADD(category_group, name, ...) \
@@ -634,9 +617,6 @@ class BASE_EXPORT TraceID {
   bool has_prefix() const { return has_prefix_; }
   unsigned long long prefix() const { return prefix_; }
   unsigned int id_flags() const { return id_flags_; }
-
-  std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
-  AsConvertableToTraceFormat() const;
 
  private:
   const char* scope_ = nullptr;

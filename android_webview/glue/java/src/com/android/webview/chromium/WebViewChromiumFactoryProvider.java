@@ -30,7 +30,6 @@ import android.webkit.WebViewProvider;
 
 import com.android.webview.chromium.WebViewDelegateFactory.WebViewDelegate;
 
-import org.chromium.android_webview.AwAutofillProvider;
 import org.chromium.android_webview.AwBrowserContext;
 import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.android_webview.AwSettings;
@@ -52,6 +51,7 @@ import org.chromium.base.library_loader.NativeLibraries;
 import org.chromium.base.metrics.CachedMetrics.TimesHistogramSample;
 import org.chromium.base.metrics.ScopedSysTraceEvent;
 import org.chromium.components.autofill.AutofillProvider;
+import org.chromium.components.autofill.AutofillProviderImpl;
 import org.chromium.components.embedder_support.application.ClassLoaderContextWrapperFactory;
 import org.chromium.content_public.browser.LGEmailActionModeWorkaround;
 
@@ -577,7 +577,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
     AutofillProvider createAutofillProvider(Context context, ViewGroup containerView) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return null;
-        return new AwAutofillProvider(context, containerView);
+        return new AutofillProviderImpl(context, containerView);
     }
 
     void startYourEngines(boolean onMainThread) {

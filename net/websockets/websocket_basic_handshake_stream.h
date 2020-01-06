@@ -94,8 +94,6 @@ class NET_EXPORT_PRIVATE WebSocketBasicHandshakeStream final
   // the connection has been accepted.
   void ReadResponseHeadersCallback(CompletionOnceCallback callback, int result);
 
-  void OnFinishOpeningHandshake();
-
   // Validates the response and sends the finished handshake event.
   int ValidateResponse(int rv);
 

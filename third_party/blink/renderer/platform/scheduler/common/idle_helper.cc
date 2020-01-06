@@ -439,9 +439,15 @@ void IdleHelper::State::TraceEventIdlePeriodStateChange(
       !new_running_idle_task) {
     running_idle_task_for_tracing_ = false;
     if (!idle_period_deadline_.is_null() && now > idle_period_deadline_) {
-      TRACE_EVENT_ASYNC_STEP_INTO_WITH_TIMESTAMP0(
-          "renderer.scheduler", idle_period_tracing_name_, this,
-          "DeadlineOverrun",
+      if (last_sub_trace_event_name_) {
+        TRACE_EVENT_NESTABLE_ASYNC_END0("renderer.scheduler",
+                                        last_sub_trace_event_name_,
+                                        TRACE_ID_LOCAL(this));
+      }
+      last_sub_trace_event_name_ = "DeadlineOverrun";
+      TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
+          "renderer.scheduler", last_sub_trace_event_name_,
+          TRACE_ID_LOCAL(this),
           std::max(idle_period_deadline_, last_idle_task_trace_time_));
     }
   }
@@ -449,35 +455,46 @@ void IdleHelper::State::TraceEventIdlePeriodStateChange(
   if (IsInIdlePeriod(new_state)) {
     if (!idle_period_trace_event_started_) {
       idle_period_trace_event_started_ = true;
-      TRACE_EVENT_ASYNC_BEGIN1("renderer.scheduler", idle_period_tracing_name_,
-                               this, "idle_period_length_ms",
-                               (new_deadline - now).InMillisecondsF());
+      TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
+          "renderer.scheduler", idle_period_tracing_name_, TRACE_ID_LOCAL(this),
+          "idle_period_length_ms", (new_deadline - now).InMillisecondsF());
     }
+
+    const char* new_sub_trace_event_name = nullptr;
 
     if (new_running_idle_task) {
       last_idle_task_trace_time_ = now;
       running_idle_task_for_tracing_ = true;
-      TRACE_EVENT_ASYNC_STEP_INTO0("renderer.scheduler",
-                                   idle_period_tracing_name_, this,
-                                   "RunningIdleTask");
+      new_sub_trace_event_name = "RunningIdleTask";
     } else if (new_state == IdlePeriodState::kInShortIdlePeriod) {
-      TRACE_EVENT_ASYNC_STEP_INTO0("renderer.scheduler",
-                                   idle_period_tracing_name_, this,
-                                   "ShortIdlePeriod");
+      new_sub_trace_event_name = "ShortIdlePeriod";
     } else if (IsInLongIdlePeriod(new_state) &&
                new_state != IdlePeriodState::kInLongIdlePeriodPaused) {
-      TRACE_EVENT_ASYNC_STEP_INTO0("renderer.scheduler",
-                                   idle_period_tracing_name_, this,
-                                   "LongIdlePeriod");
+      new_sub_trace_event_name = "LongIdlePeriod";
     } else if (new_state == IdlePeriodState::kInLongIdlePeriodPaused) {
-      TRACE_EVENT_ASYNC_STEP_INTO0("renderer.scheduler",
-                                   idle_period_tracing_name_, this,
-                                   "LongIdlePeriodPaused");
+      new_sub_trace_event_name = "LongIdlePeriodPaused";
+    }
+
+    if (new_sub_trace_event_name) {
+      if (last_sub_trace_event_name_) {
+        TRACE_EVENT_NESTABLE_ASYNC_END0("renderer.scheduler",
+                                        last_sub_trace_event_name_,
+                                        TRACE_ID_LOCAL(this));
+      }
+      TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
+          "renderer.scheduler", new_sub_trace_event_name, TRACE_ID_LOCAL(this));
+      last_sub_trace_event_name_ = new_sub_trace_event_name;
     }
   } else if (idle_period_trace_event_started_) {
+    if (last_sub_trace_event_name_) {
+      TRACE_EVENT_NESTABLE_ASYNC_END0("renderer.scheduler",
+                                      last_sub_trace_event_name_,
+                                      TRACE_ID_LOCAL(this));
+      last_sub_trace_event_name_ = nullptr;
+    }
+    TRACE_EVENT_NESTABLE_ASYNC_END0(
+        "renderer.scheduler", idle_period_tracing_name_, TRACE_ID_LOCAL(this));
     idle_period_trace_event_started_ = false;
-    TRACE_EVENT_ASYNC_END0("renderer.scheduler", idle_period_tracing_name_,
-                           this);
   }
 }
 

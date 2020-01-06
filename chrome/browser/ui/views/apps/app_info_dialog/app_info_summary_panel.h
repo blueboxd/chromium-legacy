@@ -26,7 +26,6 @@ class Extension;
 namespace views {
 class Combobox;
 class Label;
-class Link;
 class View;
 }
 
@@ -79,12 +78,12 @@ class AppInfoSummaryPanel : public AppInfoPanel,
   const std::vector<GURL> GetLicenseUrls() const;
 
   // UI elements on the dialog.
-  views::Label* size_value_;
-  views::Link* homepage_link_;
-  views::Link* licenses_link_;
+  views::Label* size_value_ = nullptr;
+  views::View* homepage_link_ = nullptr;
+  views::View* licenses_link_ = nullptr;
 
   std::unique_ptr<LaunchOptionsComboboxModel> launch_options_combobox_model_;
-  views::Combobox* launch_options_combobox_;
+  views::Combobox* launch_options_combobox_ = nullptr;
 
   base::WeakPtrFactory<AppInfoSummaryPanel> weak_ptr_factory_{this};
 

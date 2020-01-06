@@ -125,15 +125,18 @@ void SuccessReportingCallback(
 bool IsSameOriginClientContainerHost(
     const GURL& origin,
     bool allow_reserved_client,
+    bool allow_back_forward_cached_client,
     ServiceWorkerContainerHost* container_host) {
   DCHECK(container_host->IsContainerForClient());
   // If |container_host| is in BackForwardCache, it should be skipped in
   // iteration, because (1) hosts in BackForwardCache should never be exposed to
   // web as clients and (2) hosts could be in an unknown state after eviction
   // and before deletion.
-  if (IsBackForwardCacheEnabled()) {
-    if (container_host->IsInBackForwardCache())
-      return false;
+  // When |allow_back_forward_cached_client| is true, do not skip the cached
+  // client.
+  if (!allow_back_forward_cached_client &&
+      container_host->IsInBackForwardCache()) {
+    return false;
   }
   return container_host->url().GetOrigin() == origin &&
          (allow_reserved_client || container_host->is_execution_ready());
@@ -339,12 +342,14 @@ void ServiceWorkerContextCore::RemoveProviderHost(int provider_id) {
 std::unique_ptr<ServiceWorkerContextCore::ContainerHostIterator>
 ServiceWorkerContextCore::GetClientContainerHostIterator(
     const GURL& origin,
-    bool include_reserved_clients) {
+    bool include_reserved_clients,
+    bool include_back_forward_cached_clients) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   return base::WrapUnique(new ContainerHostIterator(
       container_host_by_uuid_.get(),
       base::BindRepeating(IsSameOriginClientContainerHost, origin,
-                          include_reserved_clients)));
+                          include_reserved_clients,
+                          include_back_forward_cached_clients)));
 }
 
 std::unique_ptr<ServiceWorkerContextCore::ContainerHostIterator>

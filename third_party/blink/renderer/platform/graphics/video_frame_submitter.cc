@@ -200,8 +200,8 @@ void VideoFrameSubmitter::OnBeginFrame(
 
     ignorable_submitted_frames_.erase(pair.key);
 
-    TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP0(
-        "media", "VideoFrameSubmitter", pair.key,
+    TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
+        "media", "VideoFrameSubmitter", TRACE_ID_LOCAL(pair.key),
         pair.value->presentation_feedback->timestamp);
   }
 
@@ -539,10 +539,14 @@ viz::CompositorFrame VideoFrameSubmitter::CreateCompositorFrame(
   base::TimeTicks value;
   if (video_frame && video_frame->metadata()->GetTimeTicks(
                          media::VideoFrameMetadata::DECODE_END_TIME, &value)) {
-    TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP0("media", "VideoFrameSubmitter",
-                                            *next_frame_token_, value);
-    TRACE_EVENT_ASYNC_STEP_PAST0("media", "VideoFrameSubmitter",
-                                 *next_frame_token_, "Pre-submit buffering");
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
+        "media", "VideoFrameSubmitter", TRACE_ID_LOCAL(*next_frame_token_),
+        value);
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
+        "media", "Pre-submit buffering", TRACE_ID_LOCAL(*next_frame_token_),
+        value);
+    TRACE_EVENT_NESTABLE_ASYNC_END0("media", "Pre-submit buffering",
+                                    TRACE_ID_LOCAL(*next_frame_token_));
 
     frame_token_to_timestamp_map_[*next_frame_token_] = value;
 
@@ -553,9 +557,9 @@ viz::CompositorFrame VideoFrameSubmitter::CreateCompositorFrame(
     UMA_HISTOGRAM_TIMES("Media.VideoFrameSubmitter.PreSubmitBuffering",
                         base::TimeTicks::Now() - value);
   } else {
-    TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(
-        "media", "VideoFrameSubmitter", *next_frame_token_,
-        base::TimeTicks::Now(), "empty video frame?", !video_frame);
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("media", "VideoFrameSubmitter",
+                                      TRACE_ID_LOCAL(*next_frame_token_),
+                                      "empty video frame?", !video_frame);
   }
 
   // We don't assume that the ack is marked as having damage.  However, we're

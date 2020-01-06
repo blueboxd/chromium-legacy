@@ -16,7 +16,7 @@
 #include "content/browser/devtools/shared_worker_devtools_manager.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/interface_provider_filtering.h"
-#include "content/browser/service_worker/service_worker_navigation_handle.h"
+#include "content/browser/service_worker/service_worker_main_resource_handle.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_params_helper.h"
@@ -448,7 +448,7 @@ void SharedWorkerHost::SetAppCacheHandle(
 }
 
 void SharedWorkerHost::SetServiceWorkerHandle(
-    std::unique_ptr<ServiceWorkerNavigationHandle> service_worker_handle) {
+    std::unique_ptr<ServiceWorkerMainResourceHandle> service_worker_handle) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   service_worker_handle_ = std::move(service_worker_handle);
 }

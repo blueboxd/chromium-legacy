@@ -45,9 +45,11 @@ class NET_EXPORT WebSocketEventInterface {
 
   // Called in response to an AddChannelRequest. This means that a response has
   // been received from the remote server.
-  virtual void OnAddChannelResponse(const std::string& selected_subprotocol,
-                                    const std::string& extensions,
-                                    int64_t send_flow_control_quota) = 0;
+  virtual void OnAddChannelResponse(
+      std::unique_ptr<WebSocketHandshakeResponseInfo> response,
+      const std::string& selected_subprotocol,
+      const std::string& extensions,
+      int64_t send_flow_control_quota) = 0;
 
   // Called when a data frame has been received from the remote host and needs
   // to be forwarded to the renderer process.
@@ -101,10 +103,6 @@ class NET_EXPORT WebSocketEventInterface {
   // Called when the browser starts the WebSocket Opening Handshake.
   virtual void OnStartOpeningHandshake(
       std::unique_ptr<WebSocketHandshakeRequestInfo> request) = 0;
-
-  // Called when the browser finishes the WebSocket Opening Handshake.
-  virtual void OnFinishOpeningHandshake(
-      std::unique_ptr<WebSocketHandshakeResponseInfo> response) = 0;
 
   // Callbacks to be used in response to a call to OnSSLCertificateError. Very
   // similar to content::SSLErrorHandler::Delegate (which we can't use directly

@@ -164,13 +164,15 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   void RemoveProviderHost(int provider_id);
 
   // Returns a ContainerHost iterator for all service worker clients for the
-  // |origin|. If |include_reserved_clients| is false, this only returns clients
-  // that are execution ready (i.e., for windows, the document has been
-  // created and for workers, the final response after redirects has been
-  // delivered).
+  // |origin|. If |include_reserved_clients| is true, this includes clients that
+  // are not execution ready (i.e., for windows, the document has not yet been
+  // created and for workers, the final response after redirects has not yet
+  // been delivered). If |include_back_forward_cached_clients| is true, this
+  // includes the clients whose documents are stored in BackForward Cache.
   std::unique_ptr<ContainerHostIterator> GetClientContainerHostIterator(
       const GURL& origin,
-      bool include_reserved_clients);
+      bool include_reserved_clients,
+      bool include_back_forward_cached_clients);
 
   // Returns a ContainerHost iterator for service worker window clients for the
   // |origin|. If |include_reserved_clients| is false, this only returns clients

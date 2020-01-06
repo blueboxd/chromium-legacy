@@ -184,9 +184,9 @@ void ServiceWorkerGlobalScopeProxy::WillEvaluateClassicScript(
     size_t script_size,
     size_t cached_metadata_size) {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
-  TRACE_EVENT_ASYNC_BEGIN0(
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
       "ServiceWorker", "ServiceWorkerGlobalScopeProxy::EvaluateClassicScript",
-      this);
+      TRACE_ID_LOCAL(this));
   // TODO(asamidoi): Remove CountWorkerScript which is called for recording
   // metrics if the metrics are no longer referenced, and then merge
   // WillEvaluateClassicScript and WillEvaluateModuleScript for cleanup.
@@ -217,9 +217,9 @@ void ServiceWorkerGlobalScopeProxy::DidEvaluateClassicScript(bool success) {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   WorkerGlobalScope()->DidEvaluateScript();
   Client().DidEvaluateScript(success);
-  TRACE_EVENT_ASYNC_END1("ServiceWorker",
-                         "ServiceWorkerGlobalScopeProxy::EvaluateClassicScript",
-                         this, "success", success);
+  TRACE_EVENT_NESTABLE_ASYNC_END1(
+      "ServiceWorker", "ServiceWorkerGlobalScopeProxy::EvaluateClassicScript",
+      TRACE_ID_LOCAL(this), "success", success);
 }
 
 void ServiceWorkerGlobalScopeProxy::DidEvaluateModuleScript(bool success) {

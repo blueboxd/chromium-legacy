@@ -115,6 +115,9 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
     // 'background-color' would have had without any user or author
     // declarations.
     kUA = 1 << 10,
+    // Animation properties have this flag set. (I.e. longhands of the
+    // 'animation' and 'transition' shorthands).
+    kAnimation = 1 << 11,
   };
 
   constexpr CSSProperty(CSSPropertyID property_id,

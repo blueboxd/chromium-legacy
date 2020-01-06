@@ -1146,16 +1146,6 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
   GLint unpack_skip_images_;
 };
 
-DEFINE_TYPE_CASTS(WebGL2RenderingContextBase,
-                  CanvasRenderingContext,
-                  context,
-                  context->Is3d() &&
-                      WebGLRenderingContextBase::GetWebGLVersion(context) ==
-                          Platform::kWebGL2ContextType,
-                  context.Is3d() &&
-                      WebGLRenderingContextBase::GetWebGLVersion(&context) ==
-                          Platform::kWebGL2ContextType);
-
 }  // namespace blink
 
 #endif

@@ -402,6 +402,14 @@ TEST(ServiceWorkerUtilsTest, PathRestriction_ServiceWorkerAllowed) {
   EXPECT_TRUE(IsPathRestrictionSatisfiedWithServiceWorkerAllowedHeader(
       GURL("http://example.com/sw.js/hi"), GURL("http://example.com/sw.js"),
       ""));
+
+  // Cross origin header value is not accepted.
+  EXPECT_FALSE(IsPathRestrictionSatisfiedWithServiceWorkerAllowedHeader(
+      GURL("http://example.com/"), GURL("http://example.com/sw.js"),
+      "http://other.com/"));
+  EXPECT_FALSE(IsPathRestrictionSatisfiedWithServiceWorkerAllowedHeader(
+      GURL("http://example.com/foo/"), GURL("http://example.com/bar/sw.js"),
+      "http://other.com/foo/"));
 }
 
 TEST(ServiceWorkerUtilsTest, AllOriginsMatchAndCanAccessServiceWorkers) {

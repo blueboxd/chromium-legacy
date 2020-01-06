@@ -900,8 +900,6 @@ void NGInlineBoxState::CheckSame(const NGInlineBoxState& other) const {
 
   DCHECK_EQ(needs_box_fragment, other.needs_box_fragment);
 
-  // TODO: fast/borders/rtl-border-05.html
-  // if (needs_box_fragment)
   DCHECK_EQ(has_start_edge, other.has_start_edge);
   // |has_end_edge| may not match because it will be computed in |OnCloseTag|.
 

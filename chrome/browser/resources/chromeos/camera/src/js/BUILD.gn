@@ -53,6 +53,9 @@ js_library("intent") {
 js_library("gallerybutton") {
   deps = [
     ":chrome_util",
+    "models:filesystem",
+    "models:result_saver",
+    "models:video_saver",
   ]
   externs_list = [
     "$externs_path/file_manager_private.js",

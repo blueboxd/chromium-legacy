@@ -1,1 +1,8 @@
 file://ui/android/OWNERS
+
+# Files related to integration with system autofill
+per-file *autofill_provider*=michaelbai@chromium.org
+per-file *AutofillProvider*=michaelbai@chromium.org
+per-file *AutofillManagerWrapper*=michaelbai@chromium.org
+per-file *form*=michaelbai@chromium.org
+per-file *Form*=michaelbai@chromium.org

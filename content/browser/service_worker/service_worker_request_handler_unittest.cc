@@ -14,7 +14,7 @@
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
-#include "content/browser/service_worker/service_worker_navigation_handle.h"
+#include "content/browser/service_worker/service_worker_main_resource_handle.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/common/navigation_params.mojom.h"
@@ -55,7 +55,7 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
   void InitializeHandlerForNavigationSimpleTest(const std::string& url,
                                                 bool expected_handler_created) {
     auto navigation_handle =
-        std::make_unique<ServiceWorkerNavigationHandle>(context_wrapper());
+        std::make_unique<ServiceWorkerMainResourceHandle>(context_wrapper());
     GURL gurl(url);
     auto begin_params = mojom::BeginNavigationParams::New();
     begin_params->request_context_type =

@@ -113,8 +113,6 @@ class NET_EXPORT_PRIVATE WebSocketHttp2HandshakeStream
   // in which case returns OK, otherwise returns ERR_INVALID_RESPONSE.
   int ValidateUpgradeResponse(const HttpResponseHeaders* headers);
 
-  void OnFinishOpeningHandshake();
-
   void OnFailure(const std::string& message);
 
   HandshakeResult result_;

@@ -37,6 +37,7 @@ from .codegen_expr import expr_or
 from .codegen_format import format_template as _format
 from .codegen_utils import collect_include_headers
 from .codegen_utils import component_export
+from .codegen_utils import component_export_header
 from .codegen_utils import enclose_with_header_guard
 from .codegen_utils import make_copyright_header
 from .codegen_utils import make_forward_declarations
@@ -1090,7 +1091,7 @@ def make_runtime_call_timer_scope(cg_context):
 
     node = TextNode(
         _format(
-            "{macro_name}(${isolate}, {counter_name})",
+            "{macro_name}(${isolate}, {counter_name});",
             macro_name=macro_name,
             counter_name=counter_name))
     node.accumulate(
@@ -2220,7 +2221,7 @@ def make_install_properties(cg_context, function_name, class_name,
 
     if is_context_dependent:
         arg_decls = [
-            "v8::Local<v8::Content> context",
+            "v8::Local<v8::Context> context",
             "const DOMWrapperWorld& world",
             "v8::Local<v8::Object> instance_object",
             "v8::Local<v8::Object> prototype_object",
@@ -2479,7 +2480,7 @@ def generate_interface(interface):
     # Class names
     api_class_name = v8_bridge_class_name(interface)
     if is_cross_components:
-        impl_class_name = name_style.class_(api_class_name, "impl")
+        impl_class_name = "{}::Impl".format(api_class_name)
     else:
         impl_class_name = api_class_name
 
@@ -2510,11 +2511,6 @@ def generate_interface(interface):
     else:
         impl_header_node = api_header_node
         impl_source_node = api_source_node
-    api_header_node.add_template_var("impl_class_name", impl_class_name)
-    api_source_node.add_template_var("impl_class_name", impl_class_name)
-    if is_cross_components:
-        impl_header_node.add_template_var("impl_class_name", impl_class_name)
-        impl_source_node.add_template_var("impl_class_name", impl_class_name)
 
     # Namespaces
     api_header_blink_ns = CxxNamespaceNode(name_style.namespace("blink"))
@@ -2529,20 +2525,24 @@ def generate_interface(interface):
     # Class definitions
     api_class_def = CxxClassDefNode(
         cg_context.class_name,
+        base_class_names=[
+            _format("bindings::V8InterfaceBridge<${class_name}, {}>",
+                    blink_class_name(interface)),
+        ],
         final=True,
         export=component_export(api_component))
     api_class_def.set_base_template_vars(cg_context.template_bindings())
-    api_class_def.top_section.append(TextNode("STATIC_ONLY(${class_name});"))
     if is_cross_components:
-        api_class_def.bottom_section.append(
-            TextNode("friend class ${impl_class_name};"))
         impl_class_def = CxxClassDefNode(
             impl_class_name,
             final=True,
             export=component_export(impl_component))
         impl_class_def.set_base_template_vars(cg_context.template_bindings())
-        impl_class_def.top_section.append(
-            TextNode("STATIC_ONLY(${impl_class_name});"))
+        api_class_def.public_section.extend([
+            TextNode("// Cross-component implementation class"),
+            TextNode("class Impl;"),
+            EmptyNode(),
+        ])
     else:
         impl_class_def = api_class_def
 
@@ -2717,10 +2717,21 @@ def generate_interface(interface):
             make_forward_declarations(impl_source_node.accumulator),
             EmptyNode(),
         ])
+    api_header_node.accumulator.add_include_headers([
+        component_export_header(api_component),
+        "third_party/blink/renderer/platform/bindings/v8_interface_bridge.h",
+    ])
+    api_header_node.accumulator.add_class_decl(blink_class_name(interface))
+    if is_cross_components:
+        impl_header_node.accumulator.add_include_headers([
+            api_header_path,
+            component_export_header(impl_component),
+        ])
+    impl_source_node.accumulator.add_include_headers([
+        path_manager.blink_path(ext="h"),
+    ])
     impl_source_node.accumulator.add_include_headers(
         collect_include_headers(interface))
-    if is_cross_components:
-        impl_source_node.accumulator.add_include_header(api_header_path)
 
     # Assemble the parts.
     api_header_blink_ns.body.append(api_class_def)
@@ -2730,11 +2741,8 @@ def generate_interface(interface):
     if is_cross_components:
         api_class_def.public_section.append(installer_function_trampolines)
         api_class_def.private_section.append(trampoline_var_defs)
-        impl_class_def.public_section.extend([
-            cross_component_init_decl,
-            EmptyNode(),
-            installer_function_decls,
-        ])
+        impl_class_def.public_section.append(cross_component_init_decl)
+        impl_class_def.private_section.append(installer_function_decls)
         impl_source_blink_ns.body.extend([
             cross_component_init_def,
             EmptyNode(),

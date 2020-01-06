@@ -37,8 +37,8 @@
 #include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
-#include "content/browser/service_worker/service_worker_navigation_handle.h"
-#include "content/browser/service_worker/service_worker_navigation_handle_core.h"
+#include "content/browser/service_worker/service_worker_main_resource_handle.h"
+#include "content/browser/service_worker/service_worker_main_resource_handle_core.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_request_handler.h"
 #include "content/browser/storage_partition_impl.h"
@@ -410,10 +410,10 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   void Start(
       std::unique_ptr<network::PendingSharedURLLoaderFactory>
           pending_network_loader_factory,
-      ServiceWorkerNavigationHandle*
-          service_worker_navigation_handle /* for UI thread only */,
-      ServiceWorkerNavigationHandleCore*
-          service_worker_navigation_handle_core /* for IO thread only */,
+      ServiceWorkerMainResourceHandle*
+          service_worker_handle /* for UI thread only */,
+      ServiceWorkerMainResourceHandleCore*
+          service_worker_handle_core /* for IO thread only */,
       AppCacheNavigationHandle* appcache_handle,
       scoped_refptr<PrefetchedSignedExchangeCache>
           prefetched_signed_exchange_cache,
@@ -434,7 +434,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     web_contents_getter_ = base::BindRepeating(
         &WebContents::FromFrameTreeNodeId, frame_tree_node_id_);
     navigation_ui_data_ = std::move(navigation_ui_data);
-    service_worker_navigation_handle_ = service_worker_navigation_handle;
+    service_worker_handle_ = service_worker_handle;
 
     base::PostTask(FROM_HERE, {BrowserThread::UI},
                    base::BindOnce(&NavigationURLLoaderImpl::OnRequestStarted,
@@ -515,11 +515,11 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     }
 
     // Set up an interceptor for service workers.
-    if (service_worker_navigation_handle_) {
+    if (service_worker_handle_) {
       std::unique_ptr<NavigationLoaderInterceptor> service_worker_interceptor =
           ServiceWorkerRequestHandler::CreateForNavigation(
-              resource_request_->url,
-              service_worker_navigation_handle_->AsWeakPtr(), *request_info);
+              resource_request_->url, service_worker_handle_->AsWeakPtr(),
+              *request_info);
       // The interceptor may not be created in certain cases (e.g., the origin
       // is not secure).
       if (service_worker_interceptor)
@@ -1105,11 +1105,11 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
           // Service Worker related APIs will fail with NoDocumentURL error.
           // TODO(crbug/898733): Support SignedExchange loading and Service
           // Worker integration.
-          if (service_worker_navigation_handle_) {
+          if (service_worker_handle_) {
             RunOrPostTaskOnThread(
                 FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
                 base::BindOnce(
-                    [](ServiceWorkerNavigationHandleCore* core) {
+                    [](ServiceWorkerMainResourceHandleCore* core) {
                       base::WeakPtr<ServiceWorkerContainerHost> container_host =
                           core->container_host();
                       if (container_host) {
@@ -1122,8 +1122,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
                     // Unretained() is safe because the handle owns the core,
                     // and core gets deleted on the core thread in a task that
                     // must occur after this task.
-                    base::Unretained(
-                        service_worker_navigation_handle_->core())));
+                    base::Unretained(service_worker_handle_->core())));
           }
         }
         return true;
@@ -1260,7 +1259,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   // Used to reset the state of ServiceWorkerProviderHost when
   // SignedExchangeRequestHandler will handle the response.
   base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host_;
-  ServiceWorkerNavigationHandle* service_worker_navigation_handle_ = nullptr;
+  ServiceWorkerMainResourceHandle* service_worker_handle_ = nullptr;
 
   // Counts the time overhead of all the hops from the UI to the IO threads.
   base::TimeDelta ui_to_io_time_;
@@ -1283,7 +1282,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
     StoragePartition* storage_partition,
     std::unique_ptr<NavigationRequestInfo> request_info,
     std::unique_ptr<NavigationUIData> navigation_ui_data,
-    ServiceWorkerNavigationHandle* service_worker_navigation_handle,
+    ServiceWorkerMainResourceHandle* service_worker_handle,
     AppCacheNavigationHandle* appcache_handle,
     scoped_refptr<PrefetchedSignedExchangeCache>
         prefetched_signed_exchange_cache,
@@ -1300,10 +1299,8 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
       request_info->common_params->navigation_start, "FrameTreeNode id",
       frame_tree_node_id);
 
-  ServiceWorkerNavigationHandleCore* service_worker_navigation_handle_core =
-      service_worker_navigation_handle
-          ? service_worker_navigation_handle->core()
-          : nullptr;
+  ServiceWorkerMainResourceHandleCore* service_worker_handle_core =
+      service_worker_handle ? service_worker_handle->core() : nullptr;
 
   std::unique_ptr<network::ResourceRequest> new_request =
       CreateResourceRequest(request_info.get(), frame_tree_node_id);
@@ -1443,8 +1440,8 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
       std::move(known_schemes), bypass_redirect_checks,
       weak_factory_.GetWeakPtr());
   request_controller_->Start(
-      std::move(pending_network_factory), service_worker_navigation_handle,
-      service_worker_navigation_handle_core, appcache_handle,
+      std::move(pending_network_factory), service_worker_handle,
+      service_worker_handle_core, appcache_handle,
       std::move(prefetched_signed_exchange_cache),
       std::move(signed_exchange_prefetch_metric_recorder),
       std::move(request_info), std::move(navigation_ui_data),

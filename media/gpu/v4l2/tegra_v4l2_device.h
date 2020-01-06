@@ -16,6 +16,7 @@
 
 #include "base/macros.h"
 #include "media/gpu/v4l2/v4l2_device.h"
+#include "ui/gfx/native_pixmap_handle.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace media {
@@ -50,11 +51,11 @@ class TegraV4L2Device : public V4L2Device {
                              const gfx::Size& size,
                              unsigned int buffer_index,
                              const Fourcc fourcc,
-                             std::vector<base::ScopedFD>&& dmabuf_fds) override;
+                             gfx::NativePixmapHandle handle) override;
   scoped_refptr<gl::GLImage> CreateGLImage(
       const gfx::Size& size,
       const Fourcc fourcc,
-      std::vector<base::ScopedFD>&& dmabuf_fds) override;
+      gfx::NativePixmapHandle handle) override;
   EGLBoolean DestroyEGLImage(EGLDisplay egl_display,
                              EGLImageKHR egl_image) override;
   GLenum GetTextureTarget() override;

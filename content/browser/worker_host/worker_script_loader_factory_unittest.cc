@@ -10,8 +10,8 @@
 #include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
-#include "content/browser/service_worker/service_worker_navigation_handle.h"
-#include "content/browser/service_worker/service_worker_navigation_handle_core.h"
+#include "content/browser/service_worker/service_worker_main_resource_handle.h"
+#include "content/browser/service_worker/service_worker_main_resource_handle_core.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/test/fake_network_url_loader_factory.h"
 #include "net/base/network_isolation_key.h"
@@ -56,7 +56,7 @@ class WorkerScriptLoaderFactoryTest : public testing::Test {
         network::SharedURLLoaderFactory::Create(std::move(info));
 
     // Set up a service worker host for the shared worker.
-    service_worker_handle_ = std::make_unique<ServiceWorkerNavigationHandle>(
+    service_worker_handle_ = std::make_unique<ServiceWorkerMainResourceHandle>(
         helper_->context_wrapper());
   }
 
@@ -86,7 +86,7 @@ class WorkerScriptLoaderFactoryTest : public testing::Test {
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   std::unique_ptr<FakeNetworkURLLoaderFactory> network_loader_factory_instance_;
   scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory_;
-  std::unique_ptr<ServiceWorkerNavigationHandle> service_worker_handle_;
+  std::unique_ptr<ServiceWorkerMainResourceHandle> service_worker_handle_;
 
   WorkerScriptLoaderFactory::BrowserContextGetter browser_context_getter_;
 };

@@ -86,6 +86,19 @@ std::unique_ptr<ChromeMetricsHelper> CreateSSLProblemMetricsHelper(
                                                reporting_info);
 }
 
+std::unique_ptr<ChromeMetricsHelper> CreateBadClockMetricsHelper(
+    content::WebContents* web_contents,
+    const GURL& request_url) {
+  // Set up the metrics helper for the BadClockUI.
+  security_interstitials::MetricsHelper::ReportDetails reporting_info;
+  reporting_info.metric_prefix = "bad_clock";
+  std::unique_ptr<ChromeMetricsHelper> metrics_helper =
+      std::make_unique<ChromeMetricsHelper>(web_contents, request_url,
+                                            reporting_info);
+  metrics_helper.get()->StartRecordingCaptivePortalMetrics(false);
+  return metrics_helper;
+}
+
 }  // namespace
 
 // static
@@ -169,6 +182,27 @@ ChromeSecurityBlockingPageFactory::CreateCaptivePortalBlockingPage(
       base::BindRepeating(&OpenLoginPage));
 
   DoChromeSpecificSetup(page.get());
+  return page.release();
+}
+
+// static
+BadClockBlockingPage*
+ChromeSecurityBlockingPageFactory::CreateBadClockBlockingPage(
+    content::WebContents* web_contents,
+    int cert_error,
+    const net::SSLInfo& ssl_info,
+    const GURL& request_url,
+    const base::Time& time_triggered,
+    ssl_errors::ClockState clock_state,
+    std::unique_ptr<SSLCertReporter> ssl_cert_reporter) {
+  auto page = std::make_unique<BadClockBlockingPage>(
+      web_contents, cert_error, ssl_info, request_url, time_triggered,
+      clock_state, std::move(ssl_cert_reporter),
+      std::make_unique<SSLErrorControllerClient>(
+          web_contents, ssl_info, cert_error, request_url,
+          CreateBadClockMetricsHelper(web_contents, request_url)));
+
+  ChromeSecurityBlockingPageFactory::DoChromeSpecificSetup(page.get());
   return page.release();
 }
 

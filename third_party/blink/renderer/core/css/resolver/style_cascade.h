@@ -241,13 +241,6 @@ class CORE_EXPORT StyleCascade {
     CSSProperty::Flags flags_ = 0;
   };
 
-  // Removes all kAnimationPropertyPriority properties from the cascade,
-  // without applying the properties. This is used when pre-emptively copying
-  // the cascade in case there are animations.
-  //
-  // TODO(crbug.com/985010): Improve with non-destructive Apply.
-  void RemoveAnimationPriority();
-
   // Resolver is an object passed on a stack during Apply. Its most important
   // job is to detect cycles during Apply (in general, keep track of which
   // properties we're currently applying).

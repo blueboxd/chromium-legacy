@@ -64,6 +64,17 @@ def component_export(component):
     return name_style.macro(component, "EXPORT")
 
 
+def component_export_header(component):
+    assert isinstance(component, web_idl.Component)
+
+    if component == "core":
+        return "third_party/blink/renderer/core/core_export.h"
+    elif component == "modules":
+        return "third_party/blink/renderer/modules/modules_export.h"
+    else:
+        assert False
+
+
 def enclose_with_header_guard(code_node, header_guard):
     assert isinstance(code_node, CodeNode)
     assert isinstance(header_guard, str)
@@ -142,7 +153,10 @@ def collect_include_headers(idl_definition):
     for type_def_obj in type_def_objs:
         if isinstance(type_def_obj, web_idl.Enumeration):
             continue
-        header_paths.add(PathManager(type_def_obj).blink_path(ext="h"))
+        if isinstance(type_def_obj, web_idl.Dictionary):
+            header_paths.add(PathManager(type_def_obj).dict_path(ext="h"))
+            continue
+        header_paths.add(PathManager(type_def_obj).api_path(ext="h"))
 
     return header_paths
 

@@ -61,6 +61,10 @@ class TestResultsTracker {
   // Adds |result| to the stored test results.
   void AddTestResult(const TestResult& result);
 
+  // Adds to the current iteration the fact that |count| items were leaked by
+  // one or more tests in |test_names| in its temporary directory.
+  void AddLeakedItems(int count, const std::vector<std::string>& test_names);
+
   // Even when no iterations have occurred, we still want to generate output
   // data with "NOTRUN" status for each test. This method generates a
   // placeholder iteration. The first iteration will overwrite the data in the
@@ -101,6 +105,7 @@ class TestResultsTracker {
   void PrintTests(InputIterator first,
                   InputIterator last,
                   const std::string& description) const;
+  void PrintLeaks(int count, const std::vector<std::string>& test_names) const;
 
   struct AggregateTestResult {
     AggregateTestResult();
@@ -118,6 +123,9 @@ class TestResultsTracker {
     // Aggregate test results grouped by full test name.
     typedef std::map<std::string, AggregateTestResult> ResultsMap;
     ResultsMap results;
+
+    // A sequence of tests that leaked files/dirs in their temp directory.
+    std::vector<std::pair<int, std::vector<std::string>>> leaked_temp_items;
   };
 
   struct CodeLocation {
@@ -129,6 +137,9 @@ class TestResultsTracker {
   };
 
   ThreadChecker thread_checker_;
+
+  // Print tests that leak files and/or directories in their temp dir.
+  bool print_temp_leaks_ = false;
 
   // Set of global tags, i.e. strings indicating conditions that apply to
   // the entire test run.

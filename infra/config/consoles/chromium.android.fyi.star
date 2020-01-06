@@ -8,14 +8,14 @@ luci.console_view(
             category = 'android',
         ),
         luci.console_view_entry(
+            builder = 'ci/Android WebView P Blink-CORS FYI (rel)',
+            category = 'webview',
+            short_name = 'cors',
+        ),
+        luci.console_view_entry(
             builder = 'ci/Android WebView P FYI (rel)',
             category = 'webview',
             short_name = 'p-rel',
-        ),
-        luci.console_view_entry(
-            builder = 'ci/Android WebView P OOR-CORS FYI (rel)',
-            category = 'webview',
-            short_name = 'cors',
         ),
         luci.console_view_entry(
             builder = 'ci/android-marshmallow-x86-fyi-rel',

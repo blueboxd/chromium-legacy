@@ -25,7 +25,7 @@ std::unique_ptr<NavigationURLLoader> NavigationURLLoader::Create(
     StoragePartition* storage_partition,
     std::unique_ptr<NavigationRequestInfo> request_info,
     std::unique_ptr<NavigationUIData> navigation_ui_data,
-    ServiceWorkerNavigationHandle* service_worker_handle,
+    ServiceWorkerMainResourceHandle* service_worker_handle,
     AppCacheNavigationHandle* appcache_handle,
     scoped_refptr<PrefetchedSignedExchangeCache>
         prefetched_signed_exchange_cache,

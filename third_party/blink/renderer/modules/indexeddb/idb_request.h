@@ -74,20 +74,21 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   using Source = IDBObjectStoreOrIDBIndexOrIDBCursor;
   // Container for async tracing state.
   //
-  // The documentation for TRACE_EVENT_ASYNC_{BEGIN,END} suggests identifying
-  // trace events by using pointers or a counter that is always incremented on
-  // the same thread. This is not viable for IndexedDB, because the same object
-  // can result in multiple trace events (requests associated with cursors), and
-  // IndexedDB can be used from multiple threads in the same renderer (workers).
-  // Furthermore, we want to record the beginning event of an async trace right
-  // when we start serving an IDB API call, before the IDBRequest object is
-  // created, so we can't rely on information in an IDBRequest.
+  // The documentation for TRACE_EVENT_NESTABLE_ASYNC_{BEGIN,END} suggests
+  // identifying trace events by using pointers or a counter that is always
+  // incremented on the same thread. This is not viable for IndexedDB, because
+  // the same object can result in multiple trace events (requests associated
+  // with cursors), and IndexedDB can be used from multiple threads in the same
+  // renderer (workers). Furthermore, we want to record the beginning event of
+  // an async trace right when we start serving an IDB API call, before the
+  // IDBRequest object is created, so we can't rely on information in an
+  // IDBRequest.
   //
   // This class solves the ID uniqueness problem by relying on an atomic counter
   // to generating unique IDs in a threadsafe manner. The atomic machinery is
   // used when tracing is enabled. The recording problem is solved by having
   // instances of this class store the information needed to record async trace
-  // end events (via TRACE_EVENT_ASYNC_END).
+  // end events (via TRACE_EVENT_NESTABLE_ASYNC_END).
   //
   // From a mechanical perspective, creating an AsyncTraceState instance records
   // the beginning event of an async trace. The instance is then moved into an

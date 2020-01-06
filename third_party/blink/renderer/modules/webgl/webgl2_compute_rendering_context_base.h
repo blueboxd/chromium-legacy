@@ -126,16 +126,6 @@ class WebGL2ComputeRenderingContextBase : public WebGL2RenderingContextBase {
   HeapVector<Member<WebGLBuffer>> bound_indexed_shader_storage_buffers_;
 };
 
-DEFINE_TYPE_CASTS(WebGL2ComputeRenderingContextBase,
-                  CanvasRenderingContext,
-                  context,
-                  context->Is3d() &&
-                      WebGLRenderingContextBase::GetWebGLVersion(context) ==
-                          Platform::kWebGL2ComputeContextType,
-                  context.Is3d() &&
-                      WebGLRenderingContextBase::GetWebGLVersion(&context) ==
-                          Platform::kWebGL2ComputeContextType);
-
 }  // namespace blink
 
 #endif

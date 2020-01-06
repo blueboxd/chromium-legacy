@@ -21,31 +21,31 @@ public class MinidumpUploadTestUtility {
     private static final long TIME_OUT_MILLIS = 3000;
 
     /**
-     * Utility method for running {@param minidumpUploader}.uploadAllMinidumps on the UI thread to
+     * Utility method for running {@param minidumpUploadJob}.uploadAllMinidumps on the UI thread to
      * avoid breaking any assertions about running on the UI thread.
      */
-    public static void uploadAllMinidumpsOnUiThread(final MinidumpUploader minidumpUploader,
-            final MinidumpUploader.UploadsFinishedCallback uploadsFinishedCallback) {
+    public static void uploadAllMinidumpsOnUiThread(final MinidumpUploadJob minidumpUploadJob,
+            final MinidumpUploadJob.UploadsFinishedCallback uploadsFinishedCallback) {
         uploadAllMinidumpsOnUiThread(
-                minidumpUploader, uploadsFinishedCallback, false /* blockUntilJobPosted */);
+                minidumpUploadJob, uploadsFinishedCallback, false /* blockUntilJobPosted */);
     }
 
     /**
-     * Utility method for running {@param minidumpUploader}.uploadAllMinidumps on the UI thread to
+     * Utility method for running {@param minidumpUploadJob}.uploadAllMinidumps on the UI thread to
      * avoid breaking any assertions about running on the UI thread.
      * @param blockUntilJobPosted whether to block the current thread until the minidump-uploading
      *                            job has been posted to the UI thread. This can be used to avoid
      *                            some race-conditions (e.g. when waiting for variables that are
      *                            initialized in the uploadAllMinidumps call).
      */
-    public static void uploadAllMinidumpsOnUiThread(final MinidumpUploader minidumpUploader,
-            final MinidumpUploader.UploadsFinishedCallback uploadsFinishedCallback,
+    public static void uploadAllMinidumpsOnUiThread(final MinidumpUploadJob minidumpUploadJob,
+            final MinidumpUploadJob.UploadsFinishedCallback uploadsFinishedCallback,
             boolean blockUntilJobPosted) {
         final CountDownLatch jobPostedLatch = new CountDownLatch(1);
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                minidumpUploader.uploadAllMinidumps(uploadsFinishedCallback);
+                minidumpUploadJob.uploadAllMinidumps(uploadsFinishedCallback);
                 jobPostedLatch.countDown();
             }
         });
@@ -61,16 +61,16 @@ public class MinidumpUploadTestUtility {
 
     /**
      * Utility method for uploading minidumps, and waiting for the uploads to finish.
-     * @param minidumpUploader the implementation to use to upload minidumps.
+     * @param minidumpUploadJob the implementation to use to upload minidumps.
      * @param expectReschedule value used to assert whether the uploads should be rescheduled,
      *                         e.g. when uploading succeeds we should normally not expect to
      *                         reschedule.
      */
     public static void uploadMinidumpsSync(
-            MinidumpUploader minidumpUploader, final boolean expectReschedule) {
+            MinidumpUploadJob minidumpUploadJob, final boolean expectReschedule) {
         final CountDownLatch uploadsFinishedLatch = new CountDownLatch(1);
         uploadAllMinidumpsOnUiThread(
-                minidumpUploader, new MinidumpUploader.UploadsFinishedCallback() {
+                minidumpUploadJob, new MinidumpUploadJob.UploadsFinishedCallback() {
                     @Override
                     public void uploadsFinished(boolean reschedule) {
                         assertEquals(expectReschedule, reschedule);

@@ -61,7 +61,6 @@ void CreateSubresourceLoaderFactoryForProviderContext(
 
 }  // namespace
 
-// For service worker clients.
 ServiceWorkerProviderContext::ServiceWorkerProviderContext(
     blink::mojom::ServiceWorkerProviderType provider_type,
     mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainer>

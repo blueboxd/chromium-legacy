@@ -16,7 +16,6 @@ class IdentityManager;
 
 namespace signin {
 class AccountReconcilorDelegate;
-class ConsistencyCookieManagerBase;
 }
 
 class AccountReconcilor;
@@ -49,11 +48,6 @@ class AccountReconcilorFactory : public BrowserContextKeyedServiceFactory {
   // BrowserContextKeyedServiceFactory:
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
-
-  std::unique_ptr<signin::ConsistencyCookieManagerBase>
-  CreateConsistencyCookieManager(signin::IdentityManager* identity_manager,
-                                 SigninClient* signin_client,
-                                 AccountReconcilor* account_reconcilor) const;
 };
 
 #endif  // CHROME_BROWSER_SIGNIN_ACCOUNT_RECONCILOR_FACTORY_H_

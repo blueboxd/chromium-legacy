@@ -426,7 +426,7 @@ TEST_F(ProfileInfoCacheTest, MutateProfile) {
   std::string new_gaia_id = "12345";
   entry_2->SetAuthInfo(new_gaia_id, new_user_name, true);
   EXPECT_EQ(new_user_name, entry_2->GetUserName());
-  EXPECT_EQ(new_gaia_id, GetCache()->GetGAIAIdOfProfileAtIndex(1));
+  EXPECT_EQ(new_gaia_id, entry_2->GetGAIAId());
   EXPECT_NE(new_user_name, entry_1->GetUserName());
 
   // Avatar icons not used on Android.

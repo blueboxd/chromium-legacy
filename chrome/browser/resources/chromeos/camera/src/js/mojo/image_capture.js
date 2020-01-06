@@ -2,32 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
+import {DeviceOperator} from './device_operator.js';
 
 /**
- * Namespace for the Camera app.
- */
-var cca = cca || {};
-
-/**
- * Namespace for mojo.
- */
-cca.mojo = cca.mojo || {};
-
-/**
- * Type definition for cca.mojo.PhotoCapabilities.
+ * Extended PhotoCapabilities type used by Chrome OS HAL3 VCD.
  * @extends {PhotoCapabilities}
  * @record
  */
-cca.mojo.PhotoCapabilities = function() {};
+const CrosPhotoCapabilities = function() {};
 
-/** @type {Array<string>} */
-cca.mojo.PhotoCapabilities.prototype.supportedEffects;
+/** @type {!Array<string>} */
+CrosPhotoCapabilities.prototype.supportedEffects;
 
 /**
  * Creates the wrapper of JS image-capture and Mojo image-capture.
  */
-cca.mojo.ImageCapture = class {
+export class CrosImageCapture {
   /**
    * @param {!MediaStreamTrack} videoTrack A video track whose still images will
    *     be taken.
@@ -50,11 +40,11 @@ cca.mojo.ImageCapture = class {
 
   /**
    * Gets the photo capabilities with the available options/effects.
-   * @return {!Promise<!PhotoCapabilities|cca.mojo.PhotoCapabilities>} Promise
+   * @return {!Promise<!PhotoCapabilities|CrosPhotoCapabilities>} Promise
    *     for the result.
    */
   async getPhotoCapabilities() {
-    const deviceOperator = await cca.mojo.DeviceOperator.getInstance();
+    const deviceOperator = await DeviceOperator.getInstance();
     if (!deviceOperator) {
       return this.capture_.getPhotoCapabilities();
     }
@@ -67,8 +57,8 @@ cca.mojo.ImageCapture = class {
     }
     const baseCapabilities = await this.capture_.getPhotoCapabilities();
 
-    let /** !cca.mojo.PhotoCapabilities */ extendedCapabilities;
-    Object.assign(extendedCapabilities, baseCapabilities, {supportedEffects});
+    const extendedCapabilities = /** @type{!CrosPhotoCapabilities} */ (
+        Object.assign({}, baseCapabilities, {supportedEffects}));
     return extendedCapabilities;
   }
 
@@ -88,7 +78,7 @@ cca.mojo.ImageCapture = class {
   async takePhoto(photoSettings, photoEffects = []) {
     /** @type {Array<!Promise<!Blob>>} */
     const takes = [];
-    const deviceOperator = await cca.mojo.DeviceOperator.getInstance();
+    const deviceOperator = await DeviceOperator.getInstance();
     if (deviceOperator === null && photoEffects.length > 0) {
       throw new Error('Applying effects is not supported on this device');
     }
@@ -122,4 +112,7 @@ cca.mojo.ImageCapture = class {
       return takes;
     }
   }
-};
+}
+
+/** @const */
+cca.mojo.ImageCapture = CrosImageCapture;

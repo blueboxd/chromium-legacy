@@ -20,7 +20,7 @@ class NavigationURLLoaderFactory {
       StoragePartition* storage_partition,
       std::unique_ptr<NavigationRequestInfo> request_info,
       std::unique_ptr<NavigationUIData> navigation_ui_data,
-      ServiceWorkerNavigationHandle* service_worker_handle,
+      ServiceWorkerMainResourceHandle* service_worker_handle,
       NavigationURLLoaderDelegate* delegate,
       bool is_served_from_back_forward_cache) = 0;
 

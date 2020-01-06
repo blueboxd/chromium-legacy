@@ -21,7 +21,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/signin/core/browser/account_reconcilor_delegate.h"
-#include "components/signin/core/browser/consistency_cookie_manager_base.h"
 #include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/signin_client.h"
 #include "components/signin/public/base/signin_metrics.h"
@@ -32,10 +31,6 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-
-#if defined(OS_ANDROID)
-#include "components/signin/core/browser/consistency_cookie_manager_android.h"
-#endif
 
 using signin::AccountReconcilorDelegate;
 using signin_metrics::AccountReconcilorState;
@@ -280,12 +275,6 @@ void AccountReconcilor::Initialize(bool start_reconcile_if_tokens_available) {
     if (start_reconcile_if_tokens_available && IsIdentityManagerReady())
       StartReconcile();
   }
-}
-
-void AccountReconcilor::SetConsistencyCookieManager(
-    std::unique_ptr<signin::ConsistencyCookieManagerBase>
-        consistency_cookie_manager) {
-  consistency_cookie_manager_ = std::move(consistency_cookie_manager);
 }
 
 void AccountReconcilor::EnableReconcile() {

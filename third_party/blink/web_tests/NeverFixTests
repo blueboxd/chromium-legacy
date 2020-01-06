@@ -2085,29 +2085,6 @@ external/wpt/uievents/order-of-events/mouse-events/wheel-basic-manual.html [ Ski
 external/wpt/uievents/order-of-events/mouse-events/wheel-scrolling-manual.html [ Skip ]
 external/wpt/html/webappapis/user-prompts/print-manual.html [ Skip ]
 
-# Tests that do not pass with the Blink CORS, but pass with OOR-CORS.
-# We maintain the Blink CORS for a while, and keep it work without regressions.
-# But will not change the existing behavior for Blink CORS when expectations are
-# changed for the spec update, other features side-effects, and so on.
-# TODO(cbur.com/870173): Double check following failed tests later.
-crbug.com/870173 external/wpt/resource-timing/cors-preflight.any.html [ Skip ]
-crbug.com/870173 external/wpt/resource-timing/cors-preflight.any.worker.html [ Skip ]
-crbug.com/870173 http/tests/devtools/console-xhr-logging.js [ Skip ]
-crbug.com/870173 http/tests/devtools/network/extra-info-redirects.js [ Skip ]
-crbug.com/870173 http/tests/eventsource/eventsource-cors-non-http.html [ Skip ]
-crbug.com/870173 http/tests/eventsource/workers/eventsource-cors-non-http.html [ Skip ]
-crbug.com/870173 http/tests/htmlimports/import-script-block-crossorigin-dynamic.html [ Skip ]
-crbug.com/870173 http/tests/inspector-protocol/network-fetch-content-with-error-status-code.js [ Skip ]
-crbug.com/870173 http/tests/preload/warning/request-mode.html [ Skip ]
-crbug.com/870173 http/tests/security/img-redirect-to-crossorigin-credentials.https.html [ Skip ]
-crbug.com/870173 http/tests/security/script-crossorigin-redirect-credentials.html [ Skip ]
-crbug.com/870173 http/tests/xmlhttprequest/cross-origin-unsupported-url.html [ Skip ]
-crbug.com/870173 http/tests/xmlhttprequest/workers/cross-origin-unsupported-url.html [ Skip ]
-crbug.com/870173 mhtml/cid_in_html_resource.html [ Skip ]
-crbug.com/870173 virtual/omt-worker-fetch/external/wpt/resource-timing/cors-preflight.any.html [ Skip ]
-crbug.com/870173 virtual/omt-worker-fetch/external/wpt/resource-timing/cors-preflight.any.worker.html [ Skip ]
-crbug.com/870173 virtual/omt-worker-fetch/http/tests/workers/worker-redirect.html [ Skip ]
-
 # Windows doesn't have native overlay scrollbar
 [ Win ] virtual/overlay-scrollbar/* [ Skip ]
 

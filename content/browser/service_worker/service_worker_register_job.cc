@@ -799,10 +799,14 @@ void ServiceWorkerRegisterJob::ResolvePromise(
 void ServiceWorkerRegisterJob::AddRegistrationToMatchingProviderHosts(
     ServiceWorkerRegistration* registration) {
   DCHECK(registration);
+  // Include bfcached clients because they need to have the correct
+  // information about the matching registrations if, e.g., claim() is called
+  // while they are in bfcache or after they are restored from bfcache.
   for (std::unique_ptr<ServiceWorkerContextCore::ContainerHostIterator> it =
            context_->GetClientContainerHostIterator(
                registration->scope().GetOrigin(),
-               true /* include_reserved_clients */);
+               true /* include_reserved_clients */,
+               true /* include_back_forward_cached_clients */);
        !it->IsAtEnd(); it->Advance()) {
     ServiceWorkerContainerHost* container_host = it->GetContainerHost();
     DCHECK(container_host->IsContainerForClient());

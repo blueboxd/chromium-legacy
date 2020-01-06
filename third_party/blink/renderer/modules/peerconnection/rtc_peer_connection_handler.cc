@@ -310,7 +310,8 @@ class StatsResponse : public webrtc::StatsObserver {
                 scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : request_(request.get()), main_thread_(task_runner) {
     // Measure the overall time it takes to satisfy a getStats request.
-    TRACE_EVENT_ASYNC_BEGIN0("webrtc", "getStats_Native", this);
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("webrtc", "getStats_Native",
+                                      TRACE_ID_LOCAL(this));
     DETACH_FROM_THREAD(signaling_thread_checker_);
   }
 
@@ -429,7 +430,8 @@ class StatsResponse : public webrtc::StatsObserver {
     // Record the getStats operation as done before calling into Blink so that
     // we don't skew the perf measurements of the native code with whatever the
     // callback might be doing.
-    TRACE_EVENT_ASYNC_END0("webrtc", "getStats_Native", this);
+    TRACE_EVENT_NESTABLE_ASYNC_END0("webrtc", "getStats_Native",
+                                    TRACE_ID_LOCAL(this));
     request_->requestSucceeded(response);
     request_ = nullptr;  // must be freed on the main thread.
   }

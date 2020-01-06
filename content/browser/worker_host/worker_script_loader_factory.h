@@ -20,7 +20,7 @@ namespace content {
 
 class AppCacheHost;
 class BrowserContext;
-class ServiceWorkerNavigationHandle;
+class ServiceWorkerMainResourceHandle;
 class ResourceContext;
 class WorkerScriptLoader;
 
@@ -48,7 +48,7 @@ class CONTENT_EXPORT WorkerScriptLoaderFactory
   // factories used for non-http(s) URLs, e.g., a chrome-extension:// URL.
   WorkerScriptLoaderFactory(
       int process_id,
-      ServiceWorkerNavigationHandle* service_worker_handle,
+      ServiceWorkerMainResourceHandle* service_worker_handle,
       base::WeakPtr<AppCacheHost> appcache_host,
       const BrowserContextGetter& browser_context_getter,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory);
@@ -71,7 +71,7 @@ class CONTENT_EXPORT WorkerScriptLoaderFactory
 
  private:
   const int process_id_;
-  base::WeakPtr<ServiceWorkerNavigationHandle> service_worker_handle_;
+  base::WeakPtr<ServiceWorkerMainResourceHandle> service_worker_handle_;
   base::WeakPtr<AppCacheHost> appcache_host_;
   BrowserContextGetter browser_context_getter_;
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;

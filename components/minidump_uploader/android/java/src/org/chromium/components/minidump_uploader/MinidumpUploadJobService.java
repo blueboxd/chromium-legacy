@@ -32,7 +32,7 @@ public abstract class MinidumpUploadJobService extends JobService {
     // Back-off policy for upload-job.
     private static final int JOB_BACKOFF_POLICY = JobInfo.BACKOFF_POLICY_EXPONENTIAL;
 
-    private MinidumpUploader mMinidumpUploader;
+    private MinidumpUploadJob mMinidumpUploadJob;
 
     // Used in Debug builds to assert that this job service never attempts to run more than one job
     // at a time:
@@ -65,15 +65,15 @@ public abstract class MinidumpUploadJobService extends JobService {
             assert !mRunningJob;
             mRunningJob = true;
         }
-        mMinidumpUploader = createMinidumpUploader(params.getExtras());
-        mMinidumpUploader.uploadAllMinidumps(createJobFinishedCallback(params));
+        mMinidumpUploadJob = createMinidumpUploadJob(params.getExtras());
+        mMinidumpUploadJob.uploadAllMinidumps(createJobFinishedCallback(params));
         return true; // true = processing work on a separate thread, false = done already.
     }
 
     @Override
     public boolean onStopJob(JobParameters params) {
         Log.i(TAG, "Canceling pending uploads due to change in networking status.");
-        boolean reschedule = mMinidumpUploader.cancelUploads();
+        boolean reschedule = mMinidumpUploadJob.cancelUploads();
         synchronized (mRunningLock) {
             mRunningJob = false;
         }
@@ -82,13 +82,13 @@ public abstract class MinidumpUploadJobService extends JobService {
 
     @Override
     public void onDestroy() {
-        mMinidumpUploader = null;
+        mMinidumpUploadJob = null;
         super.onDestroy();
     }
 
-    private MinidumpUploader.UploadsFinishedCallback createJobFinishedCallback(
+    private MinidumpUploadJob.UploadsFinishedCallback createJobFinishedCallback(
             final JobParameters params) {
-        return new MinidumpUploader.UploadsFinishedCallback() {
+        return new MinidumpUploadJob.UploadsFinishedCallback() {
             @Override
             public void uploadsFinished(boolean reschedule) {
                 if (reschedule) {
@@ -103,8 +103,12 @@ public abstract class MinidumpUploadJobService extends JobService {
     }
 
     /**
+     * Create a MinidumpUploadJob instance that implements required logic for uploading minidumps
+     * based upon data (generally containing permission information) captured at the time the job
+     * was scheduled.
+     *
      * @param extras Any extra data persisted for this job.
-     * @return The minidump uploader that jobs should use.
+     * @return The minidump upload job that jobs should use to manage minidump uploading.
      */
-    protected abstract MinidumpUploader createMinidumpUploader(PersistableBundle extras);
+    protected abstract MinidumpUploadJob createMinidumpUploadJob(PersistableBundle extras);
 }

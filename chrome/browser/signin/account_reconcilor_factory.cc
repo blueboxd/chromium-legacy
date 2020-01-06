@@ -17,7 +17,6 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/account_reconcilor_delegate.h"
-#include "components/signin/core/browser/consistency_cookie_manager_base.h"
 #include "components/signin/core/browser/mirror_account_reconcilor_delegate.h"
 #include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/signin_buildflags.h"
@@ -33,11 +32,6 @@
 #include "components/signin/core/browser/active_directory_account_reconcilor_delegate.h"
 #include "components/user_manager/user_manager.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#endif
-
-#if defined(OS_ANDROID)
-#include "components/signin/core/browser/consistency_cookie_manager_android.h"
-#include "components/signin/core/browser/mice_account_reconcilor_delegate.h"
 #endif
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -150,8 +144,6 @@ KeyedService* AccountReconcilorFactory::BuildServiceInstanceFor(
       new AccountReconcilor(identity_manager, signin_client,
                             CreateAccountReconcilorDelegate(profile));
   reconcilor->Initialize(true /* start_reconcile_if_tokens_available */);
-  reconcilor->SetConsistencyCookieManager(CreateConsistencyCookieManager(
-      identity_manager, signin_client, reconcilor));
   return reconcilor;
 }
 
@@ -186,9 +178,6 @@ AccountReconcilorFactory::CreateAccountReconcilorDelegate(Profile* profile) {
           IdentityManagerFactory::GetForProfile(profile),
           chromeos::AccountManagerMigratorFactory::GetForBrowserContext(
               profile));
-#elif defined(OS_ANDROID)
-      if (base::FeatureList::IsEnabled(signin::kMiceFeature))
-        return std::make_unique<signin::MiceAccountReconcilorDelegate>();
 #endif
       return std::make_unique<signin::MirrorAccountReconcilorDelegate>(
           IdentityManagerFactory::GetForProfile(profile));
@@ -208,19 +197,5 @@ AccountReconcilorFactory::CreateAccountReconcilorDelegate(Profile* profile) {
   }
 
   NOTREACHED();
-  return nullptr;
-}
-
-std::unique_ptr<signin::ConsistencyCookieManagerBase>
-AccountReconcilorFactory::CreateConsistencyCookieManager(
-    signin::IdentityManager* identity_manager,
-    SigninClient* signin_client,
-    AccountReconcilor* account_reconcilor) const {
-#if defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(signin::kMiceFeature)) {
-    return std::make_unique<signin::ConsistencyCookieManagerAndroid>(
-        identity_manager, signin_client, account_reconcilor);
-  }
-#endif
   return nullptr;
 }

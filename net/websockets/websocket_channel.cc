@@ -181,8 +181,10 @@ class WebSocketChannel::ConnectDelegate
     creator_->OnCreateURLRequest(request);
   }
 
-  void OnSuccess(std::unique_ptr<WebSocketStream> stream) override {
-    creator_->OnConnectSuccess(std::move(stream));
+  void OnSuccess(
+      std::unique_ptr<WebSocketStream> stream,
+      std::unique_ptr<WebSocketHandshakeResponseInfo> response) override {
+    creator_->OnConnectSuccess(std::move(stream), std::move(response));
     // |this| may have been deleted.
   }
 
@@ -194,11 +196,6 @@ class WebSocketChannel::ConnectDelegate
   void OnStartOpeningHandshake(
       std::unique_ptr<WebSocketHandshakeRequestInfo> request) override {
     creator_->OnStartOpeningHandshake(std::move(request));
-  }
-
-  void OnFinishOpeningHandshake(
-      std::unique_ptr<WebSocketHandshakeResponseInfo> response) override {
-    creator_->OnFinishOpeningHandshake(std::move(response));
   }
 
   void OnSSLCertificateError(
@@ -457,7 +454,8 @@ void WebSocketChannel::OnCreateURLRequest(URLRequest* request) {
 }
 
 void WebSocketChannel::OnConnectSuccess(
-    std::unique_ptr<WebSocketStream> stream) {
+    std::unique_ptr<WebSocketStream> stream,
+    std::unique_ptr<WebSocketHandshakeResponseInfo> response) {
   DCHECK(stream);
   DCHECK_EQ(CONNECTING, state_);
 
@@ -471,9 +469,9 @@ void WebSocketChannel::OnConnectSuccess(
   // TODO(ricea): Get flow control information from the WebSocketStream once we
   // have a multiplexing WebSocketStream.
   current_send_quota_ = send_quota_high_water_mark_;
-  event_interface_->OnAddChannelResponse(stream_->GetSubProtocol(),
-                                         stream_->GetExtensions(),
-                                         send_quota_high_water_mark_);
+  event_interface_->OnAddChannelResponse(
+      std::move(response), stream_->GetSubProtocol(), stream_->GetExtensions(),
+      send_quota_high_water_mark_);
   // |this| may have been deleted after OnAddChannelResponse.
 }
 
@@ -514,11 +512,6 @@ int WebSocketChannel::OnAuthRequired(
 void WebSocketChannel::OnStartOpeningHandshake(
     std::unique_ptr<WebSocketHandshakeRequestInfo> request) {
   event_interface_->OnStartOpeningHandshake(std::move(request));
-}
-
-void WebSocketChannel::OnFinishOpeningHandshake(
-    std::unique_ptr<WebSocketHandshakeResponseInfo> response) {
-  event_interface_->OnFinishOpeningHandshake(std::move(response));
 }
 
 ChannelState WebSocketChannel::WriteFrames() {

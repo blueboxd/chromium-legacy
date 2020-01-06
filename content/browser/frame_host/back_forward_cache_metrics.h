@@ -71,7 +71,8 @@ class BackForwardCacheMetrics
     kRenderFrameHostReused_SameSite = 27,
     kRenderFrameHostReused_CrossSite = 28,
     kNotMostRecentNavigationEntry = 29,
-    kMaxValue = kNotMostRecentNavigationEntry,
+    kServiceWorkerClaim = 30,
+    kMaxValue = kServiceWorkerClaim,
   };
 
   using NotRestoredReasons =

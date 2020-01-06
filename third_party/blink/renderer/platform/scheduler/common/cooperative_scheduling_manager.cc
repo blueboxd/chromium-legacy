@@ -47,15 +47,17 @@ CooperativeSchedulingManager::CooperativeSchedulingManager()
 }
 
 void CooperativeSchedulingManager::EnterAllowedStackScope() {
-  TRACE_EVENT_ASYNC_BEGIN0("renderer.scheduler", "PreemptionAllowedStackScope",
-                           this);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("renderer.scheduler",
+                                    "PreemptionAllowedStackScope",
+                                    TRACE_ID_LOCAL(this));
 
   allowed_stack_scope_depth_++;
 }
 
 void CooperativeSchedulingManager::LeaveAllowedStackScope() {
-  TRACE_EVENT_ASYNC_END0("renderer.scheduler", "PreemptionAllowedStackScope",
-                         this);
+  TRACE_EVENT_NESTABLE_ASYNC_END0("renderer.scheduler",
+                                  "PreemptionAllowedStackScope",
+                                  TRACE_ID_LOCAL(this));
   allowed_stack_scope_depth_--;
   DCHECK_GE(allowed_stack_scope_depth_, 0);
 }

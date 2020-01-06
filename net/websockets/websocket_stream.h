@@ -98,7 +98,9 @@ class NET_EXPORT_PRIVATE WebSocketStream {
 
     // Called on successful connection. The parameter is an object derived from
     // WebSocketStream.
-    virtual void OnSuccess(std::unique_ptr<WebSocketStream> stream) = 0;
+    virtual void OnSuccess(
+        std::unique_ptr<WebSocketStream> stream,
+        std::unique_ptr<WebSocketHandshakeResponseInfo> response) = 0;
 
     // Called on failure to connect.
     // |message| contains defails of the failure.
@@ -107,10 +109,6 @@ class NET_EXPORT_PRIVATE WebSocketStream {
     // Called when the WebSocket Opening Handshake starts.
     virtual void OnStartOpeningHandshake(
         std::unique_ptr<WebSocketHandshakeRequestInfo> request) = 0;
-
-    // Called when the WebSocket Opening Handshake ends.
-    virtual void OnFinishOpeningHandshake(
-        std::unique_ptr<WebSocketHandshakeResponseInfo> response) = 0;
 
     // Called when there is an SSL certificate error. Should call
     // ssl_error_callbacks->ContinueSSLRequest() or

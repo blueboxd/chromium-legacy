@@ -14,17 +14,21 @@ from .code_node import CodeNode
 from .code_node import Likeliness
 from .code_node import ListNode
 from .code_node import SequenceNode
+from .code_node import SymbolNode
 from .code_node import SymbolScopeNode
 from .code_node import TextNode
+from .code_node_cxx import CxxClassDefNode
 from .code_node_cxx import CxxFuncDeclNode
 from .code_node_cxx import CxxFuncDefNode
 from .code_node_cxx import CxxIfElseNode
 from .code_node_cxx import CxxLikelyIfNode
+from .code_node_cxx import CxxNamespaceNode
 from .codegen_accumulator import CodeGenAccumulator
 from .codegen_context import CodeGenContext
 from .codegen_expr import expr_from_exposure
 from .codegen_format import format_template as _format
 from .codegen_utils import collect_include_headers
+from .codegen_utils import component_export
 from .codegen_utils import enclose_with_header_guard
 from .codegen_utils import enclose_with_namespace
 from .codegen_utils import make_copyright_header
@@ -88,24 +92,21 @@ def make_dict_member_get_def(cg_context):
     T = TextNode
 
     member = cg_context.dict_member
+    blink_member_name = _blink_member_name(member)
 
-    func_name = T(
-        _format("${class_name}::{}",
-                _blink_member_name(member).get_api))
     func_def = CxxFuncDefNode(
-        name=func_name,
+        name=blink_member_name.get_api,
         arg_decls=[],
         return_type=blink_type_info(member.idl_type).ref_t,
         const=True)
-    func_def.add_template_vars(cg_context.template_bindings())
+    func_def.set_base_template_vars(cg_context.template_bindings())
 
     body = func_def.body
 
-    _1 = _blink_member_name(member).has_api
-    body.append(T(_format("DCHECK({_1}());", _1=_1)))
-
-    _1 = _blink_member_name(member).value_var
-    body.append(T(_format("return {_1};", _1=_1)))
+    body.extend([
+        T(_format("DCHECK({}());", blink_member_name.has_api)),
+        T(_format("return {};", blink_member_name.value_var)),
+    ])
 
     return func_def
 
@@ -117,12 +118,12 @@ def make_dict_member_has_def(cg_context):
 
     member = cg_context.dict_member
 
-    func_name = T(
-        _format("${class_name}::{}",
-                _blink_member_name(member).has_api))
     func_def = CxxFuncDefNode(
-        name=func_name, arg_decls=[], return_type="bool", const=True)
-    func_def.add_template_vars(cg_context.template_bindings())
+        name=_blink_member_name(member).has_api,
+        arg_decls=[],
+        return_type="bool",
+        const=True)
+    func_def.set_base_template_vars(cg_context.template_bindings())
 
     body = func_def.body
 
@@ -138,26 +139,24 @@ def make_dict_member_set_def(cg_context):
     T = TextNode
 
     member = cg_context.dict_member
+    blink_member_name = _blink_member_name(member)
 
-    func_name = T(
-        _format("${class_name}::{}",
-                _blink_member_name(member).set_api))
     func_def = CxxFuncDefNode(
-        name=func_name,
+        name=blink_member_name.set_api,
         arg_decls=[
             _format("{} value",
                     blink_type_info(member.idl_type).ref_t)
         ],
         return_type="void")
-    func_def.add_template_vars(cg_context.template_bindings())
+    func_def.set_base_template_vars(cg_context.template_bindings())
 
     body = func_def.body
 
-    _1 = _blink_member_name(member).value_var
+    _1 = blink_member_name.value_var
     body.append(T(_format("{_1} = value;", _1=_1)))
 
     if _does_use_presence_flag(member):
-        _1 = _blink_member_name(member).presence_var
+        _1 = blink_member_name.presence_var
         body.append(T(_format("{_1} = true;", _1=_1)))
 
     return func_def
@@ -171,7 +170,8 @@ def make_get_v8_dict_member_names_def(cg_context):
     dictionary = cg_context.dictionary
 
     func_def = CxxFuncDefNode(
-        name=T("${class_name}::GetV8MemberNames"),
+        name="GetV8MemberNames",
+        class_name=cg_context.class_name,
         arg_decls=["v8::Isolate* isolate"],
         return_type="const v8::Eternal<v8::Name>*")
     func_def.add_template_vars(cg_context.template_bindings())
@@ -200,7 +200,8 @@ def make_fill_with_dict_members_def(cg_context):
     dictionary = cg_context.dictionary
 
     func_def = CxxFuncDefNode(
-        name=T("${class_name}::FillWithMembers"),
+        name="FillWithMembers",
+        class_name=cg_context.class_name,
         arg_decls=[
             "v8::Isolate* isolate",
             "v8::Local<v8::Object> creation_context",
@@ -235,7 +236,8 @@ def make_fill_with_own_dict_members_def(cg_context):
     own_members = dictionary.own_members
 
     func_def = CxxFuncDefNode(
-        name=T("${class_name}::FillWithOwnMembers"),
+        name="FillWithOwnMembers",
+        class_name=cg_context.class_name,
         arg_decls=[
             "v8::Isolate* isolate",
             "v8::Local<v8::Object> creation_context",
@@ -246,13 +248,17 @@ def make_fill_with_own_dict_members_def(cg_context):
     func_def.add_template_vars(cg_context.template_bindings())
 
     body = func_def.body
+    body.add_template_var("current_context", "current_context")
+    body.register_code_symbol(
+        SymbolNode(
+            "execution_context", "ExecutionContext* ${execution_context} = "
+            "ToExecutionContext(${current_context});"))
 
     text = """\
 const v8::Eternal<v8::Name>* member_names = GetV8MemberNames(isolate);
-v8::Local<v8::Context> current_context = isolate->GetCurrentContext();"""
+v8::Local<v8::Context> ${current_context} = isolate->GetCurrentContext();"""
     body.append(T(text))
 
-    # TODO(peria): Support runtime enabled / origin trial members.
     for key_index, member in enumerate(own_members):
         _1 = _blink_member_name(member).has_api
         _2 = key_index
@@ -261,7 +267,7 @@ v8::Local<v8::Context> current_context = isolate->GetCurrentContext();"""
 if ({_1}()) {{
   if (!v8_dictionary
            ->CreateDataProperty(
-               current_context,
+               ${current_context},
                member_names[{_2}].Get(isolate),
                ToV8({_3}(), creation_context, isolate))
            .ToChecked()) {{
@@ -290,7 +296,8 @@ def make_dict_create_def(cg_context):
     dictionary = cg_context.dictionary
 
     func_def = CxxFuncDefNode(
-        name=T("${class_name}::Create"),
+        name="Create",
+        class_name=cg_context.class_name,
         arg_decls=[
             "v8::Isolate* isolate",
             "v8::Local<v8::Object> v8_dictionary",
@@ -324,7 +331,8 @@ def make_fill_dict_members_def(cg_context):
         member for member in own_members if member.is_required)
 
     func_def = CxxFuncDefNode(
-        name=T("${class_name}::FillMembers"),
+        name="FillMembers",
+        class_name=cg_context.class_name,
         arg_decls=[
             "v8::Isolate* isolate",
             "v8::Local<v8::Object> v8_dictionary",
@@ -378,7 +386,8 @@ def make_fill_dict_members_internal_def(cg_context):
     own_members = dictionary.own_members
 
     func_def = CxxFuncDefNode(
-        name=T("${class_name}::FillMembersInternal"),
+        name="FillMembersInternal",
+        class_name=cg_context.class_name,
         arg_decls=[
             "v8::Isolate* isolate",
             "v8::Local<v8::Object> v8_dictionary",
@@ -390,6 +399,11 @@ def make_fill_dict_members_internal_def(cg_context):
     body = func_def.body
     body.add_template_var("isolate", "isolate")
     body.add_template_var("exception_state", "exception_state")
+    body.add_template_var("current_context", "current_context")
+    body.register_code_symbol(
+        SymbolNode(
+            "execution_context", "ExecutionContext* ${execution_context} = "
+            "ToExecutionContext(${current_context});"))
 
     if dictionary.inherited:
         text = """\
@@ -404,12 +418,11 @@ if (${exception_state}.HadException()) {
         T("const v8::Eternal<v8::Name>* member_names = "
           "GetV8MemberNames(${isolate});"),
         T("v8::TryCatch try_block(${isolate});"),
-        T("v8::Local<v8::Context> current_context = "
+        T("v8::Local<v8::Context> ${current_context} = "
           "${isolate}->GetCurrentContext();"),
         T("v8::Local<v8::Value> v8_value;"),
     ])
 
-    # TODO(peria): Support origin-trials and runtime enabled features.
     for key_index, member in enumerate(own_members):
         body.append(make_fill_own_dict_member(key_index, member))
 
@@ -423,7 +436,7 @@ def make_fill_own_dict_member(key_index, member):
     T = TextNode
 
     pattern = """
-if (!v8_dictionary->Get(current_context, member_names[{_1}].Get(${isolate}))
+if (!v8_dictionary->Get(${current_context}, member_names[{_1}].Get(${isolate}))
          .ToLocal(&v8_memer)) {{
   ${exception_state}.RethrowV8Exception(try_block.Exception());
   return;
@@ -475,7 +488,8 @@ def make_dict_trace_def(cg_context):
     own_members = dictionary.own_members
 
     func_def = CxxFuncDefNode(
-        name=T("${class_name}::Trace"),
+        name="Trace",
+        class_name=cg_context.class_name,
         arg_decls=["Visitor* visitor"],
         return_type="void")
     func_def.add_template_vars(cg_context.template_bindings())
@@ -502,16 +516,24 @@ def make_dict_class_def(cg_context):
     T = TextNode
 
     dictionary = cg_context.dictionary
+    component = dictionary.components[0]
 
-    alias_base_class_node = None
+    class_def = CxxClassDefNode(
+        cg_context.class_name,
+        base_class_names=[cg_context.base_class_name],
+        export=component_export(component))
+    class_def.set_base_template_vars(cg_context.template_bindings())
+
     if dictionary.inherited:
-        alias_base_class_node = T("using BaseClass = ${base_class_name};")
+        class_def.top_section.append(
+            TextNode("using BaseClass = ${base_class_name};"))
 
-    public_node = ListNode()
-
-    public_node.append(
+    public_section = class_def.public_section
+    public_section.append(
         T("""\
-static ${class_name}* Create();
+static ${class_name}* Create() {
+  return MakeGarbageCollected<${class_name}>();
+}
 static ${class_name}* Create(
     v8::Isolate* isolate,
     v8::Local<v8::Object> v8_dictionary,
@@ -522,30 +544,17 @@ ${class_name}() = default;
 void Trace(Visitor* visitor);
 """))
 
-    # TODO(peria): Consider inlining these accessors.
     for member in dictionary.own_members:
-        member_blink_type = blink_type_info(member.idl_type)
-        public_node.append(
-            CxxFuncDeclNode(
-                name=_blink_member_name(member).get_api,
-                return_type=member_blink_type.ref_t,
-                arg_decls=[],
-                const=True))
-        public_node.append(
-            CxxFuncDeclNode(
-                name=_blink_member_name(member).set_api,
-                arg_decls=[_format("{} value", member_blink_type.ref_t)],
-                return_type="void"))
-        public_node.append(
-            CxxFuncDeclNode(
-                name=_blink_member_name(member).has_api,
-                arg_decls=[],
-                return_type="bool",
-                const=True))
+        member_cg_context = cg_context.make_copy(dict_member=member)
+        public_section.extend([
+            T(""),
+            make_dict_member_get_def(member_cg_context),
+            make_dict_member_has_def(member_cg_context),
+            make_dict_member_set_def(member_cg_context),
+        ])
 
-    protected_node = ListNode()
-
-    protected_node.append(
+    protected_section = class_def.protected_section
+    protected_section.append(
         T("""\
 bool FillWithMembers(
     v8::Isolate* isolate,
@@ -553,9 +562,8 @@ bool FillWithMembers(
     v8::Local<v8::Object> v8_dictionary) const override;
 """))
 
-    private_node = ListNode()
-
-    private_node.append(
+    private_section = class_def.private_section
+    private_section.append(
         T("""\
 static const v8::Eternal<v8::Name>* GetV8MemberNames(v8::Isolate*);
 
@@ -579,158 +587,132 @@ void FillMembersInternal(
     for member in dictionary.own_members:
         _1 = blink_type_info(member.idl_type).member_t
         _2 = _blink_member_name(member).value_var
-        private_node.append(T(_format("{_1} {_2};", _1=_1, _2=_2)))
+        private_section.append(T(_format("{_1} {_2};", _1=_1, _2=_2)))
 
-    private_node.append(T(""))
+    private_section.append(T(""))
     # C++ member variables for precences
     for member in dictionary.own_members:
         if _does_use_presence_flag(member):
             _1 = _blink_member_name(member).presence_var
-            private_node.append(T(_format("bool {_1} = false;", _1=_1)))
+            private_section.append(T(_format("bool {_1} = false;", _1=_1)))
 
-    node = ListNode()
-    node.add_template_vars(cg_context.template_bindings())
-
-    node.extend([
-        T("class ${class_name} : public ${base_class_name} {"),
-        alias_base_class_node,
-        T("public:"),
-        public_node,
-        T(""),
-        T("protected:"),
-        protected_node,
-        T(""),
-        T("private:"),
-        private_node,
-        T("};"),
-    ])
-
-    return node
+    return class_def
 
 
-def generate_dictionary_cc_file(dictionary):
-    class_name = blink_class_name(dictionary)
-    base_class_name = (blink_class_name(dictionary.inherited)
-                       if dictionary.inherited else "bindings::DictionaryBase")
+def generate_dictionary(dictionary):
+    assert len(dictionary.components) == 1, (
+        "We don't support partial dictionaries across components yet.")
+
+    path_manager = PathManager(dictionary)
+    class_name = name_style.class_(blink_class_name(dictionary))
+    if dictionary.inherited:
+        base_class_name = blink_class_name(dictionary.inherited)
+    else:
+        base_class_name = "bindings::DictionaryBase"
+
     cg_context = CodeGenContext(
         dictionary=dictionary,
         class_name=class_name,
         base_class_name=base_class_name)
 
-    code_node = ListNode()
-    code_node.extend([
-        TextNode("// static"),
-        make_get_v8_dict_member_names_def(cg_context),
-        TextNode("// static"),
-        make_dict_create_def(cg_context),
-        make_fill_dict_members_def(cg_context),
-        make_fill_dict_members_internal_def(cg_context),
-        make_fill_with_dict_members_def(cg_context),
-        make_fill_with_own_dict_members_def(cg_context),
-        make_dict_trace_def(cg_context),
+    # Filepaths
+    header_path = path_manager.dict_path(ext="h")
+    source_path = path_manager.dict_path(ext="cc")
+
+    # Root nodes
+    header_node = ListNode(tail="\n")
+    header_node.set_accumulator(CodeGenAccumulator())
+    header_node.set_renderer(MakoRenderer())
+    source_node = ListNode(tail="\n")
+    source_node.set_accumulator(CodeGenAccumulator())
+    source_node.set_renderer(MakoRenderer())
+
+    # Namespaces
+    header_blink_ns = CxxNamespaceNode(name_style.namespace("blink"))
+    source_blink_ns = CxxNamespaceNode(name_style.namespace("blink"))
+
+    # Class definitions
+    class_def = make_dict_class_def(cg_context)
+
+    # Header part (copyright, include directives, and forward declarations)
+    if dictionary.inherited:
+        # TODO(crbug.com/1034398): Use api_path() or impl_path() once we
+        # migrate IDL compiler and move generated code of dictionaries.
+        base_class_header = PathManager(
+            dictionary.inherited).dict_path(ext="h")
+    else:
+        base_class_header = (
+            "third_party/blink/renderer/platform/bindings/dictionary_base.h")
+    header_node.accumulator.add_include_headers(
+        collect_include_headers(dictionary))
+    header_node.accumulator.add_include_headers([
+        base_class_header,
+        "v8/include/v8.h",
     ])
-
-    for member in dictionary.own_members:
-        code_node.extend([
-            make_dict_member_get_def(cg_context.make_copy(dict_member=member)),
-            make_dict_member_has_def(cg_context.make_copy(dict_member=member)),
-            make_dict_member_set_def(cg_context.make_copy(dict_member=member)),
-        ])
-
-    root_node = ListNode(tail="\n")
-    root_node.set_accumulator(CodeGenAccumulator())
-    root_node.set_renderer(MakoRenderer())
-
-    # TODO(crbug.com/1034398): Use api_path() or impl_path() once we migrate
-    # IDL compiler and move generated code of dictionaries.
-    h_file_path = PathManager(dictionary).dict_path(ext="h")
-
-    root_node.accumulator.add_include_headers([
+    header_node.accumulator.add_class_decls([
+        "ExceptionState",
+        "Visitor",
+    ])
+    source_node.accumulator.add_include_headers([
         "third_party/blink/renderer/platform/bindings/exception_messages.h",
         "third_party/blink/renderer/platform/bindings/exception_state.h",
         "third_party/blink/renderer/platform/heap/visitor.h",
         "v8/include/v8.h",
     ])
 
-    root_node.extend([
+    header_node.extend([
         make_copyright_header(),
         TextNode(""),
-        TextNode(_format("#include \"{}\"", h_file_path)),
-        TextNode(""),
-        make_header_include_directives(root_node.accumulator),
-        TextNode(""),
-        enclose_with_namespace(code_node, name_style.namespace("blink")),
+        enclose_with_header_guard(
+            ListNode([
+                make_header_include_directives(header_node.accumulator),
+                TextNode(""),
+                header_blink_ns,
+            ]), name_style.header_guard(header_path)),
     ])
-
-    filepath = PathManager.gen_path_to(
-        PathManager(dictionary).dict_path(ext="cc"))
-    write_code_node_to_file(root_node, filepath)
-
-
-def generate_dictionary_h_file(dictionary):
-    class_name = blink_class_name(dictionary)
-    base_class_name = (blink_class_name(dictionary.inherited)
-                       if dictionary.inherited else "bindings::DictionaryBase")
-    cg_context = CodeGenContext(
-        dictionary=dictionary,
-        class_name=class_name,
-        base_class_name=base_class_name)
-
-    code_node = ListNode()
-    code_node.extend([
-        make_dict_class_def(cg_context),
+    header_blink_ns.body.extend([
+        make_forward_declarations(header_node.accumulator),
+        TextNode(""),
     ])
-
-    root_node = ListNode(tail="\n")
-    root_node.set_accumulator(CodeGenAccumulator())
-    root_node.set_renderer(MakoRenderer())
-
-    root_node.accumulator.add_include_headers(
+    source_node.extend([
+        make_copyright_header(),
+        TextNode(""),
+        TextNode("#include \"{}\"".format(header_path)),
+        TextNode(""),
+        make_header_include_directives(source_node.accumulator),
+        TextNode(""),
+        source_blink_ns,
+    ])
+    source_blink_ns.body.extend([
+        make_forward_declarations(source_node.accumulator),
+        TextNode(""),
+    ])
+    source_node.accumulator.add_include_headers(
         collect_include_headers(dictionary))
-    base_class_header = (
-        "third_party/blink/renderer/platform/bindings/dictionary_base.h")
-    if dictionary.inherited:
-        # TODO(crbug.com/1034398): Use api_path() or impl_path() once we
-        # migrate IDL compiler and move generated code of dictionaries.
-        base_class_header = PathManager(
-            dictionary.inherited).dict_path(ext="h")
-    root_node.accumulator.add_include_headers([
-        base_class_header,
-        "v8/include/v8.h",
-    ])
-    root_node.accumulator.add_class_decls([
-        "ExceptionState",
-        "Visitor",
-    ])
 
-    namespace_node = enclose_with_namespace(
-        ListNode([
-            make_forward_declarations(root_node.accumulator),
-            TextNode(""),
-            code_node,
-        ]), name_style.namespace("blink"))
-
-    header_guard = name_style.header_guard(
-        PathManager(dictionary).dict_path(ext="h"))
-    header_guard_node = enclose_with_header_guard(
-        ListNode([
-            make_header_include_directives(root_node.accumulator),
-            TextNode(""),
-            namespace_node,
-        ]), header_guard)
-
-    root_node.extend([
-        make_copyright_header(),
+    # Assemble the parts.
+    header_blink_ns.body.append(class_def)
+    source_blink_ns.body.extend([
+        make_get_v8_dict_member_names_def(cg_context),
         TextNode(""),
-        header_guard_node,
+        make_dict_create_def(cg_context),
+        TextNode(""),
+        make_fill_dict_members_def(cg_context),
+        TextNode(""),
+        make_fill_dict_members_internal_def(cg_context),
+        TextNode(""),
+        make_fill_with_dict_members_def(cg_context),
+        TextNode(""),
+        make_fill_with_own_dict_members_def(cg_context),
+        TextNode(""),
+        make_dict_trace_def(cg_context),
     ])
 
-    filepath = PathManager.gen_path_to(
-        PathManager(dictionary).dict_path(ext="h"))
-    write_code_node_to_file(root_node, filepath)
+    # Write down to the files.
+    write_code_node_to_file(header_node, path_manager.gen_path_to(header_path))
+    write_code_node_to_file(source_node, path_manager.gen_path_to(source_path))
 
 
 def generate_dictionaries(web_idl_database):
     for dictionary in web_idl_database.dictionaries:
-        generate_dictionary_cc_file(dictionary)
-        generate_dictionary_h_file(dictionary)
+        generate_dictionary(dictionary)

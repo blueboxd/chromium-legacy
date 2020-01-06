@@ -2,17 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
+import {assert, assertInstanceof} from './chrome_util.js';
+import {FileVideoSaver} from './models/file_video_saver.js';
+import * as filesystem from './models/filesystem.js';
+// eslint-disable-next-line no-unused-vars
+import {ResultSaver} from './models/result_saver.js';
+import * as util from './util.js';
 
 /**
- * Namespace for the Camera app.
+ * Width of thumbnail used by cover photo of gallery button.
+ * @type {number}
  */
-var cca = cca || {};
+const THUMBNAIL_WIDTH = 240;
 
 /**
  * Cover photo of gallery button.
  */
-cca.CoverPhoto = class {
+class CoverPhoto {
   /**
    * @param {!FileEntry} file File entry of cover photo.
    * @param {!string} thumbnailUrl Url to its thumbnail.
@@ -49,38 +55,31 @@ cca.CoverPhoto = class {
   /**
    * Creates CoverPhoto objects from photo file.
    * @param {!FileEntry} file
-   * @return {!Promise<!cca.CoverPhoto>}
+   * @return {!Promise<!CoverPhoto>}
    */
   static async create(file) {
-    const fileUrl = await cca.models.FileSystem.pictureURL(file);
-    const isVideo = cca.models.FileSystem.hasVideoPrefix(file);
-    const thumbnail = await cca.util.scalePicture(
-        fileUrl, isVideo, cca.CoverPhoto.THUMBNAIL_WIDTH);
+    const fileUrl = await filesystem.pictureURL(file);
+    const isVideo = filesystem.hasVideoPrefix(file);
+    const thumbnail =
+        await util.scalePicture(fileUrl, isVideo, THUMBNAIL_WIDTH);
     URL.revokeObjectURL(fileUrl);
 
-    return new cca.CoverPhoto(file, URL.createObjectURL(thumbnail));
+    return new CoverPhoto(file, URL.createObjectURL(thumbnail));
   }
-};
-
-/**
- * Width of thumbnail.
- * @type {number}
- * @const
- */
-cca.CoverPhoto.THUMBNAIL_WIDTH = 240;
+}
 
 /**
  * Creates a controller for the gallery-button.
- * @implements {cca.models.ResultSaver}
+ * @implements {ResultSaver}
  */
-cca.GalleryButton = class {
+export class GalleryButton {
   /**
    * @public
    */
   constructor() {
     /**
      * Cover photo from latest saved picture.
-     * @type {?cca.CoverPhoto}
+     * @type {?CoverPhoto}
      * @private
      */
     this.cover_ = null;
@@ -89,7 +88,7 @@ cca.GalleryButton = class {
      * @type {!HTMLButtonElement}
      * @private
      */
-    this.button_ = cca.assertInstanceof(
+    this.button_ = assertInstanceof(
         document.querySelector('#gallery-enter'), HTMLButtonElement);
 
     /**
@@ -126,7 +125,7 @@ cca.GalleryButton = class {
    * @private
    */
   async updateCover_(file) {
-    const cover = file === null ? null : await cca.CoverPhoto.create(file);
+    const cover = file === null ? null : await CoverPhoto.create(file);
     if (this.cover_ === cover) {
       return;
     }
@@ -152,25 +151,24 @@ cca.GalleryButton = class {
 
     // Checks existence of cached cover photo.
     if (this.cover_ !== null) {
-      const file = await cca.models.FileSystem.getFile(
-          dir, this.cover_.name, /* create */ false);
+      const file =
+          await filesystem.getFile(dir, this.cover_.name, /* create */ false);
       if (file !== null) {
         return;
       }
     }
 
     // Rescan file system.
-    const files = await cca.models.FileSystem.getEntries();
+    const files = await filesystem.getEntries();
     if (files.length === 0) {
       await this.updateCover_(null);
       return;
     }
-    const filesWithTime = await Promise.all(files.map(
-        async (file) => ({
-          file,
-          time:
-              (await cca.models.FileSystem.getMetadata(file)).modificationTime,
-        })));
+    const filesWithTime = await Promise.all(
+        files.map(async (file) => ({
+                    file,
+                    time: (await filesystem.getMetadata(file)).modificationTime,
+                  })));
     const lastFile =
         filesWithTime.reduce((last, cur) => last.time > cur.time ? last : cur)
             .file;
@@ -205,10 +203,10 @@ cca.GalleryButton = class {
       // nothing.
       // TODO(yuli): Support showing images by EXIF orientation
       // instead.
-      cca.util.orientPhoto(blob, resolve, () => resolve(blob));
+      util.orientPhoto(blob, resolve, () => resolve(blob));
     });
-    const file = await cca.models.FileSystem.saveBlob(orientedPhoto, name);
-    cca.assert(file !== null);
+    const file = await filesystem.saveBlob(orientedPhoto, name);
+    assert(file !== null);
     await this.updateCover_(file);
   }
 
@@ -216,8 +214,8 @@ cca.GalleryButton = class {
    * @override
    */
   async startSaveVideo() {
-    const tempFile = await cca.models.FileSystem.createTempVideoFile();
-    return cca.models.FileVideoSaver.create(tempFile);
+    const tempFile = await filesystem.createTempVideoFile();
+    return FileVideoSaver.create(tempFile);
   }
 
   /**
@@ -225,8 +223,13 @@ cca.GalleryButton = class {
    */
   async finishSaveVideo(video, name) {
     const tempFile = await video.endWrite();
-    const file = await cca.models.FileSystem.saveVideo(tempFile, name);
-    cca.assert(file !== null);
+    const file = await filesystem.saveVideo(tempFile, name);
+    assert(file !== null);
     await this.updateCover_(file);
   }
-};
+}
+
+/**
+ * @typedef {GalleryButton}
+ */
+cca.GalleryButton = GalleryButton;

@@ -19,7 +19,6 @@ import com.google.android.gms.auth.GoogleAuthUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.task.AsyncTask;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.signin.SigninManager.SignInCallback;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.signin.AccountManagerFacade;
@@ -138,10 +137,8 @@ public class SigninHelper {
             return;
         }
 
-        boolean mice_enabled =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY);
         Account syncAccount = mChromeSigninController.getSignedInUser();
-        if (syncAccount == null && !mice_enabled) {
+        if (syncAccount == null) {
             return;
         }
 

@@ -83,26 +83,21 @@ input[type="range" i]:disabled {
   color: #c5c5c5;
 }
 
-meter::-webkit-meter-inner-element::before,
-meter::-webkit-meter-inner-element::after {
-  display: block;
-  content: "";
-  height: 25%;
+meter::-webkit-meter-inner-element:-internal-shadow-host-has-appearance {
+  display: grid;
+  grid-template-rows: 1fr [line1] 2fr [line2] 1fr;
 }
 
 meter::-webkit-meter-bar {
   background: #efefef;
   border-width: thin;
-  height: 50%;
+  grid-row-start: line1;
+  grid-row-end: line2;
   border-style: solid;
   border-color: rgba(118, 118, 118, 0.3);
   border-radius: 20px;
   box-sizing: border-box;
-}
-
-meter::-internal-meter-clip {
-  clip-path: inset(0px round 20px);
-  height: 100%;
+  overflow: hidden;
 }
 
 meter::-webkit-meter-optimum-value {

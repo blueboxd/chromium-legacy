@@ -5434,7 +5434,7 @@ void WebGLRenderingContextBase::TexImageHelperCanvasRenderingContextHost(
   // (e.g. CanUseTexImageViaGPU returning false).
   if (is_webgl_canvas && upload_via_gpu) {
     source_canvas_webgl_context =
-        ToWebGLRenderingContextBase(context_host->RenderingContext());
+        To<WebGLRenderingContextBase>(context_host->RenderingContext());
   } else {
     image = context_host->GetSourceImageForCanvas(
         &source_image_status, kPreferAcceleration,

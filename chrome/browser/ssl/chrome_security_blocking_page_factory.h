@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SSL_CHROME_SECURITY_BLOCKING_PAGE_FACTORY_H_
 
 #include "base/macros.h"
+#include "components/security_interstitials/content/bad_clock_blocking_page.h"
 #include "components/security_interstitials/content/captive_portal_blocking_page.h"
 #include "components/security_interstitials/content/ssl_blocking_page.h"
 #include "components/security_interstitials/content/ssl_blocking_page_base.h"
@@ -36,6 +37,17 @@ class ChromeSecurityBlockingPageFactory {
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
       const net::SSLInfo& ssl_info,
       int cert_error);
+
+  // Creates a bad clock blocking page. The caller is responsible for
+  // ownership of the returned object.
+  static BadClockBlockingPage* CreateBadClockBlockingPage(
+      content::WebContents* web_contents,
+      int cert_error,
+      const net::SSLInfo& ssl_info,
+      const GURL& request_url,
+      const base::Time& time_triggered,
+      ssl_errors::ClockState clock_state,
+      std::unique_ptr<SSLCertReporter> ssl_cert_reporter);
 
   // Does setup on |page| that is specific to the client (Chrome).
   static void DoChromeSpecificSetup(SSLBlockingPageBase* page);

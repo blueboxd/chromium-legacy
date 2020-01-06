@@ -343,11 +343,11 @@ android_fyi_builder(
 )
 
 android_fyi_builder(
-    name = 'Android WebView P FYI (rel)',
+    name = 'Android WebView P Blink-CORS FYI (rel)',
 )
 
 android_fyi_builder(
-    name = 'Android WebView P OOR-CORS FYI (rel)',
+    name = 'Android WebView P FYI (rel)',
 )
 
 android_fyi_builder(
@@ -1087,6 +1087,10 @@ fyi_builder(
 )
 
 fyi_builder(
+    name = 'linux-blink-cors-rel',
+)
+
+fyi_builder(
     name = 'linux-blink-heap-concurrent-marking-tsan-rel',
 )
 
@@ -1104,10 +1108,6 @@ fyi_builder(
 
 fyi_builder(
     name = 'linux-fieldtrial-rel',
-)
-
-fyi_builder(
-    name = 'linux-oor-cors-rel',
 )
 
 fyi_builder(

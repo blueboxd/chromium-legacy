@@ -15464,6 +15464,180 @@
       }
     ]
   },
+  "linux-blink-cors-rel": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--disable-features=OutOfBlinkCors"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "blink_cors_blink_platform_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ]
+        },
+        "test": "blink_platform_unittests",
+        "test_target": "//third_party/blink/renderer/platform:blink_platform_unittests"
+      },
+      {
+        "args": [
+          "--disable-features=OutOfBlinkCors"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "blink_cors_browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "shards": 10
+        },
+        "test": "browser_tests",
+        "test_target": "//chrome/test:browser_tests"
+      },
+      {
+        "args": [
+          "--disable-features=OutOfBlinkCors"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "blink_cors_content_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ]
+        },
+        "test": "content_browsertests",
+        "test_target": "//content/test:content_browsertests"
+      },
+      {
+        "args": [
+          "--disable-features=OutOfBlinkCors"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "blink_cors_content_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ]
+        },
+        "test": "content_unittests",
+        "test_target": "//content/test:content_unittests"
+      },
+      {
+        "args": [
+          "--disable-features=OutOfBlinkCors"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "blink_cors_extensions_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ]
+        },
+        "test": "extensions_browsertests",
+        "test_target": "//extensions:extensions_browsertests"
+      },
+      {
+        "args": [
+          "--disable-features=OutOfBlinkCors"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "blink_cors_extensions_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ]
+        },
+        "test": "extensions_unittests",
+        "test_target": "//extensions:extensions_unittests"
+      },
+      {
+        "args": [
+          "--disable-features=OutOfBlinkCors"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "blink_cors_services_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ]
+        },
+        "test": "services_unittests",
+        "test_target": "//services:services_unittests"
+      }
+    ],
+    "isolated_scripts": [
+      {
+        "args": [
+          "--num-retries=3",
+          "--additional-driver-flag=--disable-features=OutOfBlinkCors",
+          "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/disable-features=OutOfBlinkCors",
+          "--fuzzy-diff"
+        ],
+        "isolate_name": "blink_web_tests",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "webkit_layout_tests",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "shards": 12
+        },
+        "test_target": "//:blink_web_tests"
+      }
+    ]
+  },
   "linux-blink-heap-concurrent-marking-tsan-rel": {
     "gtest_tests": [
       {
@@ -22403,180 +22577,6 @@
         },
         "test": "openscreen_unittests",
         "test_target": "//chrome/browser/media/router:openscreen_unittests"
-      }
-    ]
-  },
-  "linux-oor-cors-rel": {
-    "gtest_tests": [
-      {
-        "args": [
-          "--enable-features=OutOfBlinkCors"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "oor_cors_blink_platform_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
-        },
-        "test": "blink_platform_unittests",
-        "test_target": "//third_party/blink/renderer/platform:blink_platform_unittests"
-      },
-      {
-        "args": [
-          "--enable-features=OutOfBlinkCors"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "oor_cors_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ],
-          "shards": 10
-        },
-        "test": "browser_tests",
-        "test_target": "//chrome/test:browser_tests"
-      },
-      {
-        "args": [
-          "--enable-features=OutOfBlinkCors"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "oor_cors_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
-        },
-        "test": "content_browsertests",
-        "test_target": "//content/test:content_browsertests"
-      },
-      {
-        "args": [
-          "--enable-features=OutOfBlinkCors"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "oor_cors_content_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
-        },
-        "test": "content_unittests",
-        "test_target": "//content/test:content_unittests"
-      },
-      {
-        "args": [
-          "--enable-features=OutOfBlinkCors"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "oor_cors_extensions_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
-        },
-        "test": "extensions_browsertests",
-        "test_target": "//extensions:extensions_browsertests"
-      },
-      {
-        "args": [
-          "--enable-features=OutOfBlinkCors"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "oor_cors_extensions_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
-        },
-        "test": "extensions_unittests",
-        "test_target": "//extensions:extensions_unittests"
-      },
-      {
-        "args": [
-          "--enable-features=OutOfBlinkCors"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "oor_cors_services_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
-        },
-        "test": "services_unittests",
-        "test_target": "//services:services_unittests"
-      }
-    ],
-    "isolated_scripts": [
-      {
-        "args": [
-          "--num-retries=3",
-          "--additional-driver-flag=--enable-features=OutOfBlinkCors",
-          "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=OutOfBlinkCors",
-          "--fuzzy-diff"
-        ],
-        "isolate_name": "blink_web_tests",
-        "merge": {
-          "args": [
-            "--verbose"
-          ],
-          "script": "//third_party/blink/tools/merge_web_test_results.py"
-        },
-        "name": "webkit_layout_tests",
-        "results_handler": "layout tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ],
-          "shards": 12
-        },
-        "test_target": "//:blink_web_tests"
       }
     ]
   },

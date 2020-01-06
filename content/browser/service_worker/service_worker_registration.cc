@@ -257,9 +257,12 @@ void ServiceWorkerRegistration::ClaimClients() {
   // "For each service worker client client whose origin is the same as the
   //  service worker's origin:
   const bool include_reserved_clients = false;
+  // Include clients in BackForwardCache in order to evict them if needed.
+  const bool include_back_forward_cached_clients = true;
   for (std::unique_ptr<ServiceWorkerContextCore::ContainerHostIterator> it =
-           context_->GetClientContainerHostIterator(scope_.GetOrigin(),
-                                                    include_reserved_clients);
+           context_->GetClientContainerHostIterator(
+               scope_.GetOrigin(), include_reserved_clients,
+               include_back_forward_cached_clients);
        !it->IsAtEnd(); it->Advance()) {
     ServiceWorkerContainerHost* container_host = it->GetContainerHost();
     // "1. If client’s execution ready flag is unset or client’s discarded flag
@@ -283,6 +286,11 @@ void ServiceWorkerRegistration::ClaimClients() {
     //     registration, continue."
     if (container_host->MatchRegistration() != this)
       continue;
+
+    // Evict the client in BackForwardCache.
+    if (container_host->IsInBackForwardCache())
+      container_host->EvictFromBackForwardCache(
+          BackForwardCacheMetrics::NotRestoredReason::kServiceWorkerClaim);
 
     // The remaining steps are performed here:
     container_host->ClaimedByRegistration(this);

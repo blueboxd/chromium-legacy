@@ -21,8 +21,6 @@ static_library("browser") {
     "account_reconcilor_delegate.h",
     "chrome_connected_header_helper.cc",
     "chrome_connected_header_helper.h",
-    "consistency_cookie_manager_base.cc",
-    "consistency_cookie_manager_base.h",
     "cookie_reminter.cc",
     "cookie_reminter.h",
     "cookie_settings_util.cc",
@@ -31,8 +29,6 @@ static_library("browser") {
     "dice_account_reconcilor_delegate.h",
     "dice_header_helper.cc",
     "dice_header_helper.h",
-    "mice_account_reconcilor_delegate.cc",
-    "mice_account_reconcilor_delegate.h",
     "mirror_account_reconcilor_delegate.cc",
     "mirror_account_reconcilor_delegate.h",
     "signin_error_controller.cc",
@@ -93,14 +89,6 @@ static_library("browser") {
     ]
   }
 
-  if (is_android) {
-    sources += [
-      "consistency_cookie_manager_android.cc",
-      "consistency_cookie_manager_android.h",
-    ]
-    deps += [ "android:jni_headers" ]
-  }
-
   if (!enable_dice_support) {
     sources -= [
       "dice_account_reconcilor_delegate.cc",
@@ -117,7 +105,6 @@ source_set("unit_tests") {
     "account_investigator_unittest.cc",
     "account_reconcilor_unittest.cc",
     "dice_account_reconcilor_delegate_unittest.cc",
-    "mice_account_reconcilor_delegate_unittest.cc",
     "signin_error_controller_unittest.cc",
     "signin_header_helper_unittest.cc",
     "signin_investigator_unittest.cc",
@@ -152,10 +139,6 @@ source_set("unit_tests") {
       "account_investigator_unittest.cc",
       "signin_status_metrics_provider_unittest.cc",
     ]
-  }
-
-  if (is_android) {
-    sources += [ "consistency_cookie_manager_unittest.cc" ]
   }
 
   if (!enable_dice_support) {

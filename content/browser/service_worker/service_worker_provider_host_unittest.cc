@@ -276,7 +276,8 @@ class ServiceWorkerProviderHostTest : public testing::Test {
     for (std::unique_ptr<ServiceWorkerContextCore::ContainerHostIterator> it =
              context_->GetClientContainerHostIterator(
                  container_host->url().GetOrigin(),
-                 false /* include_reserved_clients */);
+                 false /* include_reserved_clients */,
+                 false /* include_back_forward_cached_clients */);
          !it->IsAtEnd(); it->Advance()) {
       if (container_host == it->GetContainerHost())
         return true;

@@ -19,7 +19,7 @@ struct ResourceRequest;
 
 namespace content {
 
-class ServiceWorkerNavigationHandle;
+class ServiceWorkerMainResourceHandle;
 struct NavigationRequestInfo;
 
 // Contains factory methods for creating the NavigationLoaderInterceptors for
@@ -32,7 +32,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler {
   // navigation cannot use service workers. Called on the UI thread.
   static std::unique_ptr<NavigationLoaderInterceptor> CreateForNavigation(
       const GURL& url,
-      base::WeakPtr<ServiceWorkerNavigationHandle> navigation_handle,
+      base::WeakPtr<ServiceWorkerMainResourceHandle> navigation_handle,
       const NavigationRequestInfo& request_info);
 
   // Returns a loader interceptor for a dedicated worker or shared worker. May
@@ -41,7 +41,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler {
   static std::unique_ptr<NavigationLoaderInterceptor> CreateForWorker(
       const network::ResourceRequest& resource_request,
       int process_id,
-      base::WeakPtr<ServiceWorkerNavigationHandle> navigation_handle);
+      base::WeakPtr<ServiceWorkerMainResourceHandle> navigation_handle);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRequestHandler);

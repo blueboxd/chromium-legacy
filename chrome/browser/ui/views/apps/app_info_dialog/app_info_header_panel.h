@@ -39,13 +39,13 @@ class AppInfoHeaderPanel : public AppInfoPanel,
  private:
   friend class test::AppInfoDialogTestApi;
 
-  void CreateControls();
-
   // Overridden from views::LinkListener:
   void LinkClicked(views::Link* source, int event_flags) override;
 
   // extensions::ChromeAppIconDelegate:
   void OnIconUpdated(extensions::ChromeAppIcon* icon) override;
+
+  void CreateControls();
 
   // Opens the app in the web store. Must only be called if
   // CanShowAppInWebStore() returns true.
@@ -54,7 +54,6 @@ class AppInfoHeaderPanel : public AppInfoPanel,
 
   // UI elements on the dialog. Elements are nullptr if they are not displayed.
   views::ImageView* app_icon_view_ = nullptr;
-  views::Link* view_in_store_link_ = nullptr;
 
   std::unique_ptr<extensions::ChromeAppIcon> app_icon_;
 

@@ -116,6 +116,8 @@ std::string BackForwardCacheCanStoreDocumentResult::NotRestoredReasonToString(
       return "RenderFrameHost is reused for a cross-site navigation";
     case Reason::kNotMostRecentNavigationEntry:
       return "navigation entry is not the most recent one for this document";
+    case Reason::kServiceWorkerClaim:
+      return "service worker claim is called";
   }
 }
 

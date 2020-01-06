@@ -9,7 +9,6 @@ generate_jni("jni_headers") {
     "java/src/org/chromium/components/signin/AccountManagerFacade.java",
     "java/src/org/chromium/components/signin/AccountTrackerService.java",
     "java/src/org/chromium/components/signin/ChildAccountInfoFetcher.java",
-    "java/src/org/chromium/components/signin/ConsistencyCookieManager.java",
   ]
 }
 
@@ -38,13 +37,11 @@ android_library("java") {
     "java/src/org/chromium/components/signin/ChildAccountInfoFetcher.java",
     "java/src/org/chromium/components/signin/ChildAccountStatus.java",
     "java/src/org/chromium/components/signin/ChromeSigninController.java",
-    "java/src/org/chromium/components/signin/ConsistencyCookieManager.java",
     "java/src/org/chromium/components/signin/GmsAvailabilityException.java",
     "java/src/org/chromium/components/signin/GmsJustUpdatedException.java",
     "java/src/org/chromium/components/signin/MutableObservableValue.java",
     "java/src/org/chromium/components/signin/ObservableValue.java",
     "java/src/org/chromium/components/signin/ProfileDataSource.java",
-    "java/src/org/chromium/components/signin/SigninActivityMonitor.java",
     "java/src/org/chromium/components/signin/SystemAccountManagerDelegate.java",
     "java/src/org/chromium/components/signin/util/PatternMatcher.java",
   ]

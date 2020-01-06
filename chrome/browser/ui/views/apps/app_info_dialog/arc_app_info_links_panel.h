@@ -46,8 +46,9 @@ class ArcAppInfoLinksPanel : public AppInfoPanel,
 
   void UpdateLink(bool enabled);
 
-  ScopedObserver<ArcAppListPrefs, ArcAppListPrefs::Observer> app_list_observer_;
-  views::Link* manage_link_;
+  ScopedObserver<ArcAppListPrefs, ArcAppListPrefs::Observer> app_list_observer_{
+      this};
+  views::Link* manage_link_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppInfoLinksPanel);
 };

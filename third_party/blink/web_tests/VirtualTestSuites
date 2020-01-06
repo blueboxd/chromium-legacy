@@ -339,6 +339,12 @@
     "args": ["--enable-features=SignedExchangeSubresourcePrefetch"]
   },
   {
+    "prefix": "wbn-from-network",
+    "bases": ["external/wpt/web-bundle"],
+    "args": ["--enable-features=WebBundlesFromNetwork"]
+  },
+
+  {
     "prefix": "omt-service-worker-startup",
     "bases": ["external/wpt/service-workers",
               "external/wpt/shape-detection",

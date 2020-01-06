@@ -27,7 +27,7 @@ class NavigationUIData;
 class NavigationURLLoaderDelegate;
 class NavigationURLLoaderFactory;
 class PrefetchedSignedExchangeCache;
-class ServiceWorkerNavigationHandle;
+class ServiceWorkerMainResourceHandle;
 class StoragePartition;
 struct NavigationRequestInfo;
 
@@ -53,7 +53,7 @@ class CONTENT_EXPORT NavigationURLLoader {
       StoragePartition* storage_partition,
       std::unique_ptr<NavigationRequestInfo> request_info,
       std::unique_ptr<NavigationUIData> navigation_ui_data,
-      ServiceWorkerNavigationHandle* service_worker_handle,
+      ServiceWorkerMainResourceHandle* service_worker_handle,
       AppCacheNavigationHandle* appcache_handle,
       scoped_refptr<PrefetchedSignedExchangeCache>
           prefetched_signed_exchange_cache,

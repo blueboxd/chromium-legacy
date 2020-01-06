@@ -100,7 +100,7 @@ class StateTracer {
 
   ~StateTracer() {
     if (slice_is_open_)
-      TRACE_EVENT_ASYNC_END0(category, name_, object_);
+      TRACE_EVENT_NESTABLE_ASYNC_END0(category, name_, TRACE_ID_LOCAL(object_));
   }
 
   // String will be copied before leaving this function.
@@ -122,22 +122,19 @@ class StateTracer {
  private:
   void TraceImpl(const char* state, bool need_copy) {
     if (slice_is_open_) {
-      TRACE_EVENT_ASYNC_END0(category, name_, object_);
+      TRACE_EVENT_NESTABLE_ASYNC_END0(category, name_, TRACE_ID_LOCAL(object_));
       slice_is_open_ = false;
     }
     if (!state || !is_enabled())
       return;
 
-    // Trace viewer logic relies on subslice starting at the exact same time
-    // as the async event.
-    base::TimeTicks now = TRACE_TIME_TICKS_NOW();
-    TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP0(category, name_, object_, now);
     if (need_copy) {
-      TRACE_EVENT_ASYNC_STEP_INTO_WITH_TIMESTAMP0(category, name_, object_,
-                                                  TRACE_STR_COPY(state), now);
+      TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(category, name_,
+                                        TRACE_ID_LOCAL(object_), "state",
+                                        TRACE_STR_COPY(state));
     } else {
-      TRACE_EVENT_ASYNC_STEP_INTO_WITH_TIMESTAMP0(category, name_, object_,
-                                                  state, now);
+      TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
+          category, name_, TRACE_ID_LOCAL(object_), "state", state);
     }
     slice_is_open_ = true;
   }

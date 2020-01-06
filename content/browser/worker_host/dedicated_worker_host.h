@@ -34,7 +34,7 @@ class Origin;
 
 namespace content {
 
-class ServiceWorkerNavigationHandle;
+class ServiceWorkerMainResourceHandle;
 class ServiceWorkerObjectHost;
 class StoragePartitionImpl;
 
@@ -170,7 +170,7 @@ class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost {
   // starting or running.
   mojo::Remote<blink::mojom::DedicatedWorkerHostFactoryClient> client_;
 
-  std::unique_ptr<ServiceWorkerNavigationHandle> service_worker_handle_;
+  std::unique_ptr<ServiceWorkerMainResourceHandle> service_worker_handle_;
 
   BrowserInterfaceBrokerImpl<DedicatedWorkerHost, const url::Origin&> broker_{
       this};

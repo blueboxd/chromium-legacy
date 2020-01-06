@@ -280,7 +280,7 @@ class CxxClassDefNode(CompositeNode):
         """
         assert isinstance(final, bool)
 
-        template_format = ("{export}class {name}{final}{base_clause} {{\n"
+        template_format = ("class{export} {name}{final}{base_clause} {{\n"
                            "  {top_section}\n"
                            "  {public_section}\n"
                            "  {protected_section}\n"
@@ -291,7 +291,7 @@ class CxxClassDefNode(CompositeNode):
         if export is None:
             export = ""
         else:
-            export = ListNode([_to_maybe_text_node(export)], tail=" ")
+            export = ListNode([_to_maybe_text_node(export)], head=" ")
 
         final = " final" if final else ""
 

@@ -102,6 +102,7 @@ load:news:cnn:2018,,"desktop,mobile","2018,javascript_heavy"
 load:news:flipboard,,desktop,2016
 load:news:hackernews:2018,,desktop,2018
 load:news:irctc,,mobile,"2016,emerging_market,health_check"
+load:news:irctc:2019,,mobile,"2019,emerging_market,health_check"
 load:news:nytimes,,mobile,"2016,health_check"
 load:news:nytimes:2018,,desktop,2018
 load:news:nytimes:2019,,mobile,"2019,health_check"

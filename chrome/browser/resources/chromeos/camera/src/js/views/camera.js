@@ -159,16 +159,46 @@ cca.views.Camera = class extends cca.views.View {
     });
     chrome.app.window.current().onMinimized.addListener(() => this.start());
 
+    document.addEventListener('visibilitychange', async () => {
+      const isTabletBackground = await this.isTabletBackground_();
+      const recording = cca.state.get(cca.state.State.TAKING) &&
+          cca.state.get(cca.Mode.VIDEO);
+      if (isTabletBackground && !recording) {
+        this.start();
+      }
+    });
+
     this.configuring_ = null;
   }
 
   /**
-   * Whether app window is suspended.
-   * @return {boolean}
+   * @return {boolean} Returns if window is fully overlapped by other window in
+   * both window mode or tablet mode.
+   * @private
    */
-  get suspended() {
+  get isVisible_() {
+    return document.visibilityState !== 'hidden';
+  }
+
+  /**
+   * @return {!Promise<boolean>} Resolved to boolean value indicating whether
+   * window is put to background in tablet mode.
+   * @private
+   */
+  async isTabletBackground_() {
+    const isTabletMode =
+        await cca.mojo.ChromeHelper.getInstance().isTabletMode();
+    return isTabletMode && !this.isVisible_;
+  }
+
+  /**
+   * Whether app window is suspended.
+   * @return {!Promise<boolean>}
+   */
+  async isSuspended() {
     return this.locked_ || chrome.app.window.current().isMinimized() ||
-        cca.state.get(cca.state.State.SUSPEND);
+        cca.state.get(cca.state.State.SUSPEND) ||
+        await this.isTabletBackground_();
   }
 
   /**
@@ -335,7 +365,7 @@ cca.views.Camera = class extends cca.views.View {
     }
     for (const {resolution: captureR, previewCandidates} of resolCandidates) {
       for (const constraints of previewCandidates) {
-        if (this.suspended) {
+        if (await this.isSuspended()) {
           throw new cca.views.CameraSuspendedError();
         }
         try {
@@ -389,7 +419,7 @@ cca.views.Camera = class extends cca.views.View {
   async start_() {
     try {
       await this.infoUpdater_.lockDeviceInfo(async () => {
-        if (!this.suspended) {
+        if (!await this.isSuspended()) {
           for (const id of await this.options_.videoDeviceIds()) {
             if (await this.startWithDevice_(id)) {
               // Make the different active camera announced by screen reader.

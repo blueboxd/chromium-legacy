@@ -36,7 +36,7 @@ class AppCacheHost;
 class BrowserContext;
 class NavigationLoaderInterceptor;
 class ResourceContext;
-class ServiceWorkerNavigationHandle;
+class ServiceWorkerMainResourceHandle;
 
 // The URLLoader for loading a shared worker script. Only used for the main
 // script request.
@@ -72,7 +72,7 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
       uint32_t options,
       const network::ResourceRequest& resource_request,
       mojo::PendingRemote<network::mojom::URLLoaderClient> client,
-      base::WeakPtr<ServiceWorkerNavigationHandle> service_worker_handle,
+      base::WeakPtr<ServiceWorkerMainResourceHandle> service_worker_handle,
       base::WeakPtr<AppCacheHost> appcache_host,
       const BrowserContextGetter& browser_context_getter,
       scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory,
@@ -145,7 +145,7 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
   const uint32_t options_;
   network::ResourceRequest resource_request_;
   mojo::Remote<network::mojom::URLLoaderClient> client_;
-  base::WeakPtr<ServiceWorkerNavigationHandle> service_worker_handle_;
+  base::WeakPtr<ServiceWorkerMainResourceHandle> service_worker_handle_;
   BrowserContextGetter browser_context_getter_;
   scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory_;
   net::MutableNetworkTrafficAnnotationTag traffic_annotation_;

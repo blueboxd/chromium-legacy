@@ -23,9 +23,7 @@
 
 ArcAppInfoLinksPanel::ArcAppInfoLinksPanel(Profile* profile,
                                            const extensions::Extension* app)
-    : AppInfoPanel(profile, app),
-      app_list_observer_(this),
-      manage_link_(nullptr) {
+    : AppInfoPanel(profile, app) {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       ChromeLayoutProvider::Get()->GetDistanceMetric(
@@ -50,11 +48,9 @@ ArcAppInfoLinksPanel::ArcAppInfoLinksPanel(Profile* profile,
 ArcAppInfoLinksPanel::~ArcAppInfoLinksPanel() {}
 
 void ArcAppInfoLinksPanel::LinkClicked(views::Link* source, int event_flags) {
-  DCHECK_EQ(manage_link_, source);
+  gfx::NativeView native_view = GetWidget()->GetNativeView();
   const int64_t display_id =
-      display::Screen::GetScreen()
-          ->GetDisplayNearestView(source->GetWidget()->GetNativeView())
-          .id();
+      display::Screen::GetScreen()->GetDisplayNearestView(native_view).id();
   if (arc::ShowPackageInfo(
           arc::ArcIntentHelperBridge::kArcIntentHelperPackageName,
           arc::mojom::ShowPackageInfoPage::MANAGE_LINKS, display_id)) {

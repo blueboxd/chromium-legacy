@@ -36,7 +36,7 @@ class AppCacheHost;
 class BrowserContext;
 class RenderFrameHost;
 class ServiceWorkerContextWrapper;
-class ServiceWorkerNavigationHandle;
+class ServiceWorkerMainResourceHandle;
 class ServiceWorkerObjectHost;
 class StoragePartitionImpl;
 struct SubresourceLoaderParams;
@@ -68,7 +68,7 @@ class WorkerScriptFetchInitiator {
           outside_fetch_client_settings_object,
       ResourceType resource_type,
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
-      ServiceWorkerNavigationHandle* service_worker_handle,
+      ServiceWorkerMainResourceHandle* service_worker_handle,
       base::WeakPtr<AppCacheHost> appcache_host,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
       scoped_refptr<network::SharedURLLoaderFactory>
@@ -106,7 +106,7 @@ class WorkerScriptFetchInitiator {
       std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
           subresource_loader_factories,
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
-      ServiceWorkerNavigationHandle* service_worker_handle,
+      ServiceWorkerMainResourceHandle* service_worker_handle,
       base::WeakPtr<AppCacheHost> appcache_host,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
       scoped_refptr<network::SharedURLLoaderFactory>

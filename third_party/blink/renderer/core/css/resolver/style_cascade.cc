@@ -175,16 +175,6 @@ void StyleCascade::Excluder::Clear() {
   mask_ = 0;
 }
 
-void StyleCascade::RemoveAnimationPriority() {
-  using AnimPrio = CSSPropertyPriorityData<kAnimationPropertyPriority>;
-  int first = static_cast<int>(AnimPrio::First());
-  int last = static_cast<int>(AnimPrio::Last());
-  for (int i = first; i <= last; ++i) {
-    CSSPropertyName name(convertToCSSPropertyID(i));
-    cascade_.erase(name);
-  }
-}
-
 const CSSValue* StyleCascade::Resolve(const CSSPropertyName& name,
                                       const CSSValue& value,
                                       Resolver& resolver) {

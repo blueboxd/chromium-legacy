@@ -21,6 +21,7 @@ js_library("filenamer") {
 
 js_library("filesystem") {
   deps = [
+    ":filenamer",
     "../browser_proxy:browser_proxy",
   ]
 }

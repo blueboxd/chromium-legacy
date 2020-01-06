@@ -5,6 +5,8 @@ import("//third_party/protobuf/proto_library.gni")
 
 static_library("security_interstitial_page") {
   sources = [
+    "bad_clock_blocking_page.cc",
+    "bad_clock_blocking_page.h",
     "captive_portal_blocking_page.cc",
     "captive_portal_blocking_page.h",
     "cert_report_helper.cc",
@@ -54,6 +56,7 @@ static_library("security_interstitial_page") {
     "//components/safe_browsing/db:hit_report",
     "//components/safe_browsing/db:util",
     "//components/security_interstitials/core:core",
+    "//components/ssl_errors",
     "//components/strings:components_strings_grit",
     "//components/url_formatter",
     "//components/user_prefs",

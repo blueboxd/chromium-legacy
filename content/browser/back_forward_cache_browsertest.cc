@@ -2800,7 +2800,7 @@ IN_PROC_BROWSER_TEST_P(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
 }
 
 IN_PROC_BROWSER_TEST_P(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
-                       CachedClientBecomesControlledByServiceWorker) {
+                       EvictOnServiceWorkerClaim) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.RegisterRequestHandler(
       base::BindRepeating(&RequestHandlerForUpdateWorker));
@@ -2825,7 +2825,6 @@ IN_PROC_BROWSER_TEST_P(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
                             https_server.GetURL("b.com", "/title1.html")));
   EXPECT_FALSE(deleted.deleted());
   EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
-  RenderFrameHostImpl* rfh_b = current_frame_host();
 
   // 3) Navigate to A in |tab_to_execute_service_worker|.
   EXPECT_TRUE(NavigateToURL(
@@ -2836,19 +2835,21 @@ IN_PROC_BROWSER_TEST_P(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
   // 4) Register a service worker for |tab_to_execute_service_worker|.
   EXPECT_EQ("DONE", EvalJs(tab_to_execute_service_worker,
                            "register('service_worker_registration.js')"));
-  // 5) |rfh_a| becomes controlled by ServiceWorker by clients.claim().
+
+  // 5) The service worker calls clients.claim(). |rfh_a| would normally be
+  //    claimed but because it's in bfcache, it is evicted from the cache.
   EXPECT_EQ("DONE", EvalJs(tab_to_execute_service_worker, "claim()"));
 
-  // 5) Navigate to A in |tab_to_be_bfcached|.
+  // 6) Navigate to A in |tab_to_be_bfcached|.
   tab_to_be_bfcached->web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(tab_to_be_bfcached->web_contents()));
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  EXPECT_FALSE(deleted.deleted());
-  EXPECT_EQ(rfh_a, current_frame_host());
-  EXPECT_FALSE(rfh_a->is_in_back_forward_cache());
-  EXPECT_TRUE(rfh_b->is_in_back_forward_cache());
-  ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kRestored,
+  EXPECT_TRUE(deleted.deleted());
+  ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kNotRestored,
                 FROM_HERE);
+  ExpectNotRestored(
+      {BackForwardCacheMetrics::NotRestoredReason::kServiceWorkerClaim},
+      FROM_HERE);
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

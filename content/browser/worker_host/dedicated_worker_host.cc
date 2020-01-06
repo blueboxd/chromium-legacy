@@ -14,7 +14,7 @@
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/interface_provider_filtering.h"
-#include "content/browser/service_worker/service_worker_navigation_handle.h"
+#include "content/browser/service_worker/service_worker_main_resource_handle.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_params_helper.h"
@@ -180,7 +180,7 @@ void DedicatedWorkerHost::StartScriptLoad(
   // factories be used for subresource loading on the worker.
   file_url_support_ = request_initiator_origin.scheme() == url::kFileScheme;
 
-  service_worker_handle_ = std::make_unique<ServiceWorkerNavigationHandle>(
+  service_worker_handle_ = std::make_unique<ServiceWorkerMainResourceHandle>(
       storage_partition_impl->GetServiceWorkerContext());
 
   WorkerScriptFetchInitiator::Start(

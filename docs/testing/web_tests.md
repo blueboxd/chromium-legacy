@@ -13,6 +13,12 @@ Note that we changed the term "layout tests" to "web tests".
 Please assume these terms mean the identical stuff. We also call it as
 "WebKit tests" and "WebKit layout tests".
 
+["Web platform tests"](./web_platform_tests.md) (WPT) are the preferred form of
+web tests and are located at
+[web_tests/external/wpt](/third_party/blink/web_tests/external/wpt).
+Tests that should work across browsers go there. Other directories are for
+Chrome-specific tests only.
+
 [TOC]
 
 ## Running Web Tests
@@ -580,11 +586,6 @@ files. You can follow the steps below for easier review.
 
 3. Request review of the CL and tell the reviewer to compare the patch sets that
    were uploaded in step 1 and step 2 to see the differences of the rebaselines.
-
-## web-platform-tests
-
-In addition to web tests developed and run just by the Blink team, there is
-also a shared test suite, see [web-platform-tests](./web_platform_tests.md).
 
 ## Known Issues
 

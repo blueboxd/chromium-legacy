@@ -9,6 +9,7 @@
 #include "chromeos/grit/chromeos_help_app_bundle_resources.h"
 #include "chromeos/grit/chromeos_help_app_bundle_resources_map.h"
 #include "chromeos/grit/chromeos_help_app_resources.h"
+#include "chromeos/system/statistics_provider.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/resources/grit/webui_resources.h"
 
@@ -30,6 +31,13 @@ content::WebUIDataSource* CreateHelpAppGuestDataSource() {
 
   // Add strings that can be pulled in.
   source->AddString("boardName", base::SysInfo::GetLsbReleaseBoard());
+  source->AddString("chromeOSVersion", base::SysInfo::OperatingSystemVersion());
+  std::string customization_id;
+  chromeos::system::StatisticsProvider* provider =
+      chromeos::system::StatisticsProvider::GetInstance();
+  provider->GetMachineStatistic(chromeos::system::kCustomizationIdKey,
+                                &customization_id);
+  source->AddString("customizationId", customization_id);
   source->UseStringsJs();
 
   // TODO(crbug.com/1023700): Better solution before launch.

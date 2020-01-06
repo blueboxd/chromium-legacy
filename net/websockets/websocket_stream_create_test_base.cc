@@ -34,7 +34,12 @@ class WebSocketStreamCreateTestBase::TestConnectDelegate
     owner_->url_request_ = request;
   }
 
-  void OnSuccess(std::unique_ptr<WebSocketStream> stream) override {
+  void OnSuccess(
+      std::unique_ptr<WebSocketStream> stream,
+      std::unique_ptr<WebSocketHandshakeResponseInfo> response) override {
+    if (owner_->response_info_)
+      ADD_FAILURE();
+    owner_->response_info_ = std::move(response);
     stream.swap(owner_->stream_);
     done_callback_.Run();
   }
@@ -50,13 +55,6 @@ class WebSocketStreamCreateTestBase::TestConnectDelegate
     // Can be called multiple times (in the case of HTTP auth). Last call
     // wins.
     owner_->request_info_ = std::move(request);
-  }
-
-  void OnFinishOpeningHandshake(
-      std::unique_ptr<WebSocketHandshakeResponseInfo> response) override {
-    if (owner_->response_info_)
-      ADD_FAILURE();
-    owner_->response_info_ = std::move(response);
   }
 
   void OnSSLCertificateError(

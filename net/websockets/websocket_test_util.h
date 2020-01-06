@@ -184,12 +184,12 @@ class DummyConnectDelegate : public WebSocketStream::ConnectDelegate {
   DummyConnectDelegate() = default;
   ~DummyConnectDelegate() override = default;
   void OnCreateRequest(URLRequest* url_request) override {}
-  void OnSuccess(std::unique_ptr<WebSocketStream> stream) override {}
+  void OnSuccess(
+      std::unique_ptr<WebSocketStream> stream,
+      std::unique_ptr<WebSocketHandshakeResponseInfo> response) override {}
   void OnFailure(const std::string& message) override {}
   void OnStartOpeningHandshake(
       std::unique_ptr<WebSocketHandshakeRequestInfo> request) override {}
-  void OnFinishOpeningHandshake(
-      std::unique_ptr<WebSocketHandshakeResponseInfo> response) override {}
   void OnSSLCertificateError(
       std::unique_ptr<WebSocketEventInterface::SSLErrorCallbacks>
           ssl_error_callbacks,

@@ -23,6 +23,7 @@
 #include "components/signin/public/base/avatar_icon_util.h"
 #include "components/signin/public/base/signin_client.h"
 #include "components/signin/public/base/signin_switches.h"
+#include "net/http/http_status_code.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_ANDROID)
@@ -369,6 +370,10 @@ void AccountFetcherService::OnRefreshTokensLoaded() {
 void AccountFetcherService::OnImageFetched(
     const CoreAccountId& account_id,
     const gfx::Image& image,
-    const image_fetcher::RequestMetadata&) {
+    const image_fetcher::RequestMetadata& metadata) {
+  if (metadata.http_response_code != net::HTTP_OK) {
+    DCHECK(image.IsEmpty());
+    return;
+  }
   account_tracker_service_->SetAccountImage(account_id, image);
 }

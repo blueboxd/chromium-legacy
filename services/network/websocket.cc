@@ -72,6 +72,35 @@ mojom::WebSocketMessageType OpCodeToMessageType(
   return static_cast<mojom::WebSocketMessageType>(opCode);
 }
 
+mojom::WebSocketHandshakeResponsePtr ToMojo(
+    std::unique_ptr<net::WebSocketHandshakeResponseInfo> response,
+    bool has_raw_headers_access) {
+  mojom::WebSocketHandshakeResponsePtr response_to_pass(
+      mojom::WebSocketHandshakeResponse::New());
+  response_to_pass->url.Swap(&response->url);
+  response_to_pass->status_code = response->headers->response_code();
+  response_to_pass->status_text = response->headers->GetStatusText();
+  response_to_pass->http_version = response->headers->GetHttpVersion();
+  response_to_pass->remote_endpoint = response->remote_endpoint;
+  size_t iter = 0;
+  std::string name, value;
+  std::string headers_text =
+      base::StrCat({response->headers->GetStatusLine(), "\r\n"});
+  while (response->headers->EnumerateHeaderLines(&iter, &name, &value)) {
+    if (has_raw_headers_access ||
+        !net::HttpResponseHeaders::IsCookieResponseHeader(name)) {
+      // We drop cookie-related headers such as "set-cookie" when the
+      // renderer doesn't have access.
+      response_to_pass->headers.push_back(mojom::HttpHeader::New(name, value));
+      base::StrAppend(&headers_text, {name, ": ", value, "\r\n"});
+    }
+  }
+  headers_text.append("\r\n");
+  response_to_pass->headers_text = headers_text;
+
+  return response_to_pass;
+}
+
 }  // namespace
 
 // Implementation of net::WebSocketEventInterface. Receives events from our
@@ -85,10 +114,11 @@ class WebSocket::WebSocketEventHandler final
   // net::WebSocketEventInterface implementation
 
   void OnCreateURLRequest(net::URLRequest* url_request) override;
-  // TODO(yoichio): Merge OnAddChannelResponse and OnFinishOpeningHandshake.
-  void OnAddChannelResponse(const std::string& selected_subprotocol,
-                            const std::string& extensions,
-                            int64_t send_flow_control_quota) override;
+  void OnAddChannelResponse(
+      std::unique_ptr<net::WebSocketHandshakeResponseInfo> response,
+      const std::string& selected_subprotocol,
+      const std::string& extensions,
+      int64_t send_flow_control_quota) override;
   void OnDataFrame(bool fin,
                    WebSocketMessageType type,
                    base::span<const char> payload) override;
@@ -101,8 +131,6 @@ class WebSocket::WebSocketEventHandler final
   void OnFailChannel(const std::string& message) override;
   void OnStartOpeningHandshake(
       std::unique_ptr<net::WebSocketHandshakeRequestInfo> request) override;
-  void OnFinishOpeningHandshake(
-      std::unique_ptr<net::WebSocketHandshakeResponseInfo> response) override;
   void OnSSLCertificateError(
       std::unique_ptr<net::WebSocketEventInterface::SSLErrorCallbacks>
           callbacks,
@@ -119,8 +147,6 @@ class WebSocket::WebSocketEventHandler final
 
  private:
   WebSocket* const impl_;
-
-  mojom::WebSocketHandshakeResponsePtr response_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketEventHandler);
 };
@@ -143,6 +169,7 @@ void WebSocket::WebSocketEventHandler::OnCreateURLRequest(
 }
 
 void WebSocket::WebSocketEventHandler::OnAddChannelResponse(
+    std::unique_ptr<net::WebSocketHandshakeResponseInfo> response,
     const std::string& selected_protocol,
     const std::string& extensions,
     int64_t send_flow_control_quota) {
@@ -184,11 +211,13 @@ void WebSocket::WebSocketEventHandler::OnAddChannelResponse(
       base::BindRepeating(&WebSocket::OnWritable, base::Unretained(impl_)));
   DCHECK_EQ(mojo_result, MOJO_RESULT_OK);
 
-  response_->selected_protocol = selected_protocol;
-  response_->extensions = extensions;
+  mojom::WebSocketHandshakeResponsePtr mojo_response =
+      ToMojo(std::move(response), !!impl_->has_raw_headers_access_);
+  mojo_response->selected_protocol = selected_protocol;
+  mojo_response->extensions = extensions;
   impl_->handshake_client_->OnConnectionEstablished(
       impl_->receiver_.BindNewPipeAndPassRemote(),
-      impl_->client_.BindNewPipeAndPassReceiver(), std::move(response_),
+      impl_->client_.BindNewPipeAndPassReceiver(), std::move(mojo_response),
       std::move(readable));
   impl_->receiver_.set_disconnect_handler(base::BindOnce(
       &WebSocket::OnConnectionError, base::Unretained(impl_), FROM_HERE));
@@ -287,38 +316,6 @@ void WebSocket::WebSocketEventHandler::OnStartOpeningHandshake(
 
   impl_->handshake_client_->OnOpeningHandshakeStarted(
       std::move(request_to_pass));
-}
-
-void WebSocket::WebSocketEventHandler::OnFinishOpeningHandshake(
-    std::unique_ptr<net::WebSocketHandshakeResponseInfo> response) {
-  DVLOG(3) << "WebSocketEventHandler::OnFinishOpeningHandshake "
-           << reinterpret_cast<void*>(this)
-           << " CanReadRawCookies=" << impl_->has_raw_headers_access_;
-
-  mojom::WebSocketHandshakeResponsePtr response_to_pass(
-      mojom::WebSocketHandshakeResponse::New());
-  response_to_pass->url.Swap(&response->url);
-  response_to_pass->status_code = response->headers->response_code();
-  response_to_pass->status_text = response->headers->GetStatusText();
-  response_to_pass->http_version = response->headers->GetHttpVersion();
-  response_to_pass->remote_endpoint = response->remote_endpoint;
-  size_t iter = 0;
-  std::string name, value;
-  std::string headers_text =
-      base::StrCat({response->headers->GetStatusLine(), "\r\n"});
-  while (response->headers->EnumerateHeaderLines(&iter, &name, &value)) {
-    if (impl_->has_raw_headers_access_ ||
-        !net::HttpResponseHeaders::IsCookieResponseHeader(name)) {
-      // We drop cookie-related headers such as "set-cookie" when the
-      // renderer doesn't have access.
-      response_to_pass->headers.push_back(mojom::HttpHeader::New(name, value));
-      base::StrAppend(&headers_text, {name, ": ", value, "\r\n"});
-    }
-  }
-  headers_text.append("\r\n");
-  response_to_pass->headers_text = headers_text;
-
-  response_ = std::move(response_to_pass);
 }
 
 void WebSocket::WebSocketEventHandler::OnSSLCertificateError(

@@ -284,6 +284,54 @@
       },
     },
 
+    'blink_cors_gtests': {
+      'blink_cors_blink_platform_unittests': {
+        'args': [
+          '--disable-features=OutOfBlinkCors'
+        ],
+        'test': 'blink_platform_unittests'
+      },
+      'blink_cors_browser_tests': {
+        'args': [
+          '--disable-features=OutOfBlinkCors'
+        ],
+        'swarming': {
+          'shards': 10,
+        },
+        'test': 'browser_tests'
+      },
+      'blink_cors_content_browsertests': {
+        'args': [
+          '--disable-features=OutOfBlinkCors'
+        ],
+        'test': 'content_browsertests'
+      },
+      'blink_cors_content_unittests' : {
+        'args': [
+          '--disable-features=OutOfBlinkCors'
+        ],
+        'test': 'content_unittests'
+      },
+      'blink_cors_extensions_browsertests': {
+        'args': [
+          '--disable-features=OutOfBlinkCors'
+        ],
+        'test': 'extensions_browsertests'
+      },
+      'blink_cors_extensions_unittests': {
+        'args': [
+          '--disable-features=OutOfBlinkCors'
+        ],
+        'test': 'extensions_unittests'
+      },
+      'blink_cors_services_unittests': {
+        'args': [
+          '--disable-features=OutOfBlinkCors'
+        ],
+        'test': 'services_unittests'
+      }
+    },
+
     'cast_audio_specific_chromium_gtests': {
       'cast_audio_backend_unittests': {},
       'cast_base_unittests': {},
@@ -2860,54 +2908,6 @@
       'views_unittests': {},
     },
 
-    'oor_cors_gtests': {
-      'oor_cors_blink_platform_unittests': {
-        'args': [
-          '--enable-features=OutOfBlinkCors'
-        ],
-        'test': 'blink_platform_unittests'
-      },
-      'oor_cors_browser_tests': {
-        'args': [
-          '--enable-features=OutOfBlinkCors'
-        ],
-        'swarming': {
-          'shards': 10,
-        },
-        'test': 'browser_tests'
-      },
-      'oor_cors_content_browsertests': {
-        'args': [
-          '--enable-features=OutOfBlinkCors'
-        ],
-        'test': 'content_browsertests'
-      },
-      'oor_cors_content_unittests' : {
-        'args': [
-          '--enable-features=OutOfBlinkCors'
-        ],
-        'test': 'content_unittests'
-      },
-      'oor_cors_extensions_browsertests': {
-        'args': [
-          '--enable-features=OutOfBlinkCors'
-        ],
-        'test': 'extensions_browsertests'
-      },
-      'oor_cors_extensions_unittests': {
-        'args': [
-          '--enable-features=OutOfBlinkCors'
-        ],
-        'test': 'extensions_unittests'
-      },
-      'oor_cors_services_unittests': {
-        'args': [
-          '--enable-features=OutOfBlinkCors'
-        ],
-        'test': 'services_unittests'
-      }
-    },
-
     'opus_tests': {
       'opus_tests': {
         'args': [
@@ -4248,11 +4248,12 @@
       'webview_ui_instrumentation_tests_no_field_trial',
     ],
 
-    'webview_bot_oor_cors_gtests': [
+    'webview_bot_blink_cors_gtests': [
       'system_webview_shell_instrumentation_tests',
       'webview_bot_instrumentation_test_apk_gtest',
       'webview_bot_unittests_gtest',
       'webview_cts_tests_gtest',
+      'webview_cts_tests_gtest_no_field_trial',
       'webview_ui_instrumentation_tests',
     ],
 

@@ -62,21 +62,25 @@ IDBRequest::AsyncTraceState::AsyncTraceState(const char* trace_event_name)
   // If PopulateForNewEvent is called, it sets trace_event_name_ to
   // trace_event_name. Otherwise, trace_event_name_ is nullptr, so this instance
   // is considered empty. This roundabout initialization lets us avoid calling
-  // TRACE_EVENT_ASYNC_END0 with an uninitalized ID.
-  TRACE_EVENT_ASYNC_BEGIN0("IndexedDB", trace_event_name,
-                           PopulateForNewEvent(trace_event_name));
+  // TRACE_EVENT_NESTABLE_ASYNC_END0 with an uninitalized ID.
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
+      "IndexedDB", trace_event_name,
+      TRACE_ID_LOCAL(PopulateForNewEvent(trace_event_name)));
 }
 
 void IDBRequest::AsyncTraceState::RecordAndReset() {
   if (trace_event_name_) {
-    TRACE_EVENT_ASYNC_END0("IndexedDB", trace_event_name_, id_);
+    TRACE_EVENT_NESTABLE_ASYNC_END0("IndexedDB", trace_event_name_,
+                                    TRACE_ID_LOCAL(id_));
     trace_event_name_ = nullptr;
   }
 }
 
 IDBRequest::AsyncTraceState::~AsyncTraceState() {
-  if (trace_event_name_)
-    TRACE_EVENT_ASYNC_END0("IndexedDB", trace_event_name_, id_);
+  if (trace_event_name_) {
+    TRACE_EVENT_NESTABLE_ASYNC_END0("IndexedDB", trace_event_name_,
+                                    TRACE_ID_LOCAL(id_));
+  }
 }
 
 size_t IDBRequest::AsyncTraceState::PopulateForNewEvent(

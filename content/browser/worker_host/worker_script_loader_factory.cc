@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "base/feature_list.h"
-#include "content/browser/service_worker/service_worker_navigation_handle.h"
-#include "content/browser/service_worker/service_worker_navigation_handle_core.h"
+#include "content/browser/service_worker/service_worker_main_resource_handle.h"
+#include "content/browser/service_worker/service_worker_main_resource_handle_core.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/worker_host/worker_script_fetch_initiator.h"
@@ -22,7 +22,7 @@ namespace content {
 
 WorkerScriptLoaderFactory::WorkerScriptLoaderFactory(
     int process_id,
-    ServiceWorkerNavigationHandle* service_worker_handle,
+    ServiceWorkerMainResourceHandle* service_worker_handle,
     base::WeakPtr<AppCacheHost> appcache_host,
     const BrowserContextGetter& browser_context_getter,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory)

@@ -1008,13 +1008,15 @@ void ContainerNode::ChildrenChanged(const ChildrenChange& change) {
   GetDocument().IncDOMTreeVersion();
   GetDocument().NotifyChangeChildren(*this);
   InvalidateNodeListCachesInAncestors(nullptr, nullptr, &change);
-
   if (change.IsChildRemoval() || change.type == kAllChildrenRemoved) {
     GetDocument().GetStyleEngine().ChildrenRemoved(*this);
     return;
   }
   if (!change.IsChildInsertion())
     return;
+  Node* inserted_node = change.sibling_changed;
+  if (inserted_node->IsContainerNode() || inserted_node->IsTextNode())
+    inserted_node->ClearFlatTreeNodeDataIfHostChanged(*this);
   if (!InActiveDocument())
     return;
   if (IsElementNode() && !GetComputedStyle()) {
@@ -1025,11 +1027,8 @@ void ContainerNode::ChildrenChanged(const ChildrenChange& change) {
     // the ComputedStyle goes from null to non-null.
     return;
   }
-  Node* inserted_node = change.sibling_changed;
-  if (inserted_node->IsContainerNode() || inserted_node->IsTextNode()) {
-    inserted_node->ClearFlatTreeNodeDataIfHostChanged(*this);
+  if (inserted_node->IsContainerNode() || inserted_node->IsTextNode())
     inserted_node->SetStyleChangeOnInsertion();
-  }
 }
 
 void ContainerNode::CloneChildNodesFrom(const ContainerNode& node) {

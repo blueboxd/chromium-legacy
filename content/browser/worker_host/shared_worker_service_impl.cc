@@ -18,7 +18,7 @@
 #include "base/task/post_task.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/loader/file_url_loader_factory.h"
-#include "content/browser/service_worker/service_worker_navigation_handle.h"
+#include "content/browser/service_worker/service_worker_main_resource_handle.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -273,8 +273,9 @@ SharedWorkerHost* SharedWorkerServiceImpl::CreateWorker(
       appcache_handle->host()->GetWeakPtr();
   host->SetAppCacheHandle(std::move(appcache_handle));
 
-  auto service_worker_handle = std::make_unique<ServiceWorkerNavigationHandle>(
-      storage_partition_->GetServiceWorkerContext());
+  auto service_worker_handle =
+      std::make_unique<ServiceWorkerMainResourceHandle>(
+          storage_partition_->GetServiceWorkerContext());
   auto* service_worker_handle_raw = service_worker_handle.get();
   host->SetServiceWorkerHandle(std::move(service_worker_handle));
 

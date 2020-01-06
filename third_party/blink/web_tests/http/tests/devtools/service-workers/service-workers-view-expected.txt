@@ -16,6 +16,8 @@ Push
 Push
 Sync
 Sync
+Periodic Sync
+Periodic Sync
 Register ServiceWorker for scope2
 http://127.0.0.1:8000/devtools/service-workers/resources/scope2
 Update
@@ -31,6 +33,8 @@ Push
 Push
 Sync
 Sync
+Periodic Sync
+Periodic Sync
 http://127.0.0.1:8000/devtools/service-workers/resources/scope1/
 Update
 Unregister
@@ -45,6 +49,8 @@ Push
 Push
 Sync
 Sync
+Periodic Sync
+Periodic Sync
 Unregister ServiceWorker for scope1
 http://127.0.0.1:8000/devtools/service-workers/resources/scope2
 Update
@@ -60,6 +66,8 @@ Push
 Push
 Sync
 Sync
+Periodic Sync
+Periodic Sync
 http://127.0.0.1:8000/devtools/service-workers/resources/scope1/ - deleted
 Update
 Unregister
@@ -73,5 +81,7 @@ Push
 Push
 Sync
 Sync
+Periodic Sync
+Periodic Sync
 Unregister ServiceWorker for scope2
 

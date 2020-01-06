@@ -149,11 +149,6 @@ class NET_EXPORT WebSocketChannel {
   void OnStartOpeningHandshake(
       std::unique_ptr<WebSocketHandshakeRequestInfo> request);
 
-  // Called when the stream ends the WebSocket Opening Handshake.
-  // This method is public for testing.
-  void OnFinishOpeningHandshake(
-      std::unique_ptr<WebSocketHandshakeResponseInfo> response);
-
   // The renderer calls AddReceiveFlowControlQuota() to the browser per
   // recerving this amount of data so that the browser can continue sending
   // remaining data to the renderer.
@@ -206,7 +201,9 @@ class NET_EXPORT WebSocketChannel {
 
   // Success callback from WebSocketStream::CreateAndConnectStream(). Reports
   // success to the event interface. May delete |this|.
-  void OnConnectSuccess(std::unique_ptr<WebSocketStream> stream);
+  void OnConnectSuccess(
+      std::unique_ptr<WebSocketStream> stream,
+      std::unique_ptr<WebSocketHandshakeResponseInfo> response);
 
   // Failure callback from WebSocketStream::CreateAndConnectStream(). Reports
   // failure to the event interface. May delete |this|.

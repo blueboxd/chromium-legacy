@@ -1940,6 +1940,13 @@
           '--fuzzy-diff',
         ],
       },
+      'linux-blink-cors-rel': {
+        'args': [
+          '--additional-driver-flag=--disable-features=OutOfBlinkCors',
+          '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/disable-features=OutOfBlinkCors',
+          '--fuzzy-diff',
+        ],
+      },
       'linux-blink-heap-concurrent-marking-tsan-rel': {
         'args': [
           '--release',
@@ -1949,13 +1956,6 @@
       },
       'linux-blink-rel-dummy': {
         'args': [
-          '--fuzzy-diff',
-        ],
-      },
-      'linux-oor-cors-rel': {
-        'args': [
-          '--additional-driver-flag=--enable-features=OutOfBlinkCors',
-          '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=OutOfBlinkCors',
           '--fuzzy-diff',
         ],
       },

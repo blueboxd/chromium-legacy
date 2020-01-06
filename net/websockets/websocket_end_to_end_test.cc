@@ -96,9 +96,11 @@ class ConnectTestingEventInterface : public WebSocketEventInterface {
   // Implementation of WebSocketEventInterface.
   void OnCreateURLRequest(URLRequest* request) override {}
 
-  void OnAddChannelResponse(const std::string& selected_subprotocol,
-                            const std::string& extensions,
-                            int64_t send_flow_control_quota) override;
+  void OnAddChannelResponse(
+      std::unique_ptr<WebSocketHandshakeResponseInfo> response,
+      const std::string& selected_subprotocol,
+      const std::string& extensions,
+      int64_t send_flow_control_quota) override;
 
   void OnDataFrame(bool fin,
                    WebSocketMessageType type,
@@ -118,9 +120,6 @@ class ConnectTestingEventInterface : public WebSocketEventInterface {
 
   void OnStartOpeningHandshake(
       std::unique_ptr<WebSocketHandshakeRequestInfo> request) override;
-
-  void OnFinishOpeningHandshake(
-      std::unique_ptr<WebSocketHandshakeResponseInfo> response) override;
 
   void OnSSLCertificateError(
       std::unique_ptr<SSLErrorCallbacks> ssl_error_callbacks,
@@ -168,6 +167,7 @@ std::string ConnectTestingEventInterface::extensions() const {
 }
 
 void ConnectTestingEventInterface::OnAddChannelResponse(
+    std::unique_ptr<WebSocketHandshakeResponseInfo> response,
     const std::string& selected_subprotocol,
     const std::string& extensions,
     int64_t send_flow_control_quota) {
@@ -197,9 +197,6 @@ void ConnectTestingEventInterface::OnFailChannel(const std::string& message) {
 
 void ConnectTestingEventInterface::OnStartOpeningHandshake(
     std::unique_ptr<WebSocketHandshakeRequestInfo> request) {}
-
-void ConnectTestingEventInterface::OnFinishOpeningHandshake(
-    std::unique_ptr<WebSocketHandshakeResponseInfo> response) {}
 
 void ConnectTestingEventInterface::OnSSLCertificateError(
     std::unique_ptr<SSLErrorCallbacks> ssl_error_callbacks,

@@ -640,9 +640,10 @@ void FrameSchedulerImpl::ResetForNavigation() {
   document_bound_weak_factory_.InvalidateWeakPtrs();
 
   for (const auto& it : back_forward_cache_opt_out_counts_) {
-    TRACE_EVENT_ASYNC_END0(
+    TRACE_EVENT_NESTABLE_ASYNC_END0(
         "renderer.scheduler", "ActiveSchedulerTrackedFeature",
-        reinterpret_cast<intptr_t>(this) ^ static_cast<int>(it.first));
+        TRACE_ID_LOCAL(reinterpret_cast<intptr_t>(this) ^
+                       static_cast<int>(it.first)));
   }
 
   back_forward_cache_opt_out_counts_.clear();
@@ -665,10 +666,11 @@ void FrameSchedulerImpl::OnStartedUsingFeature(
 
   if (old_mask != new_mask) {
     NotifyDelegateAboutFeaturesAfterCurrentTask();
-    TRACE_EVENT_ASYNC_BEGIN1(
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
         "renderer.scheduler", "ActiveSchedulerTrackedFeature",
-        reinterpret_cast<intptr_t>(this) ^ static_cast<int>(feature), "feature",
-        FeatureToString(feature));
+        TRACE_ID_LOCAL(reinterpret_cast<intptr_t>(this) ^
+                       static_cast<int>(feature)),
+        "feature", FeatureToString(feature));
   }
 }
 
@@ -686,9 +688,10 @@ void FrameSchedulerImpl::OnStoppedUsingFeature(
 
   if (old_mask != new_mask) {
     NotifyDelegateAboutFeaturesAfterCurrentTask();
-    TRACE_EVENT_ASYNC_END0(
+    TRACE_EVENT_NESTABLE_ASYNC_END0(
         "renderer.scheduler", "ActiveSchedulerTrackedFeature",
-        reinterpret_cast<intptr_t>(this) ^ static_cast<int>(feature));
+        TRACE_ID_LOCAL(reinterpret_cast<intptr_t>(this) ^
+                       static_cast<int>(feature)));
   }
 }
 

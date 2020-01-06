@@ -32,6 +32,7 @@
 #include "media/video/video_decode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/native_pixmap_handle.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_image.h"
 
@@ -596,31 +597,23 @@ class MEDIA_GPU_EXPORT V4L2Device
   // for the current platform.
   virtual bool CanCreateEGLImageFrom(const Fourcc fourcc) = 0;
 
-  // Create an EGLImage from provided |dmabuf_fds| and bind |texture_id| to it.
+  // Create an EGLImage from provided |handle|, taking full ownership of it.
   // Some implementations may also require the V4L2 |buffer_index| of the buffer
-  // for which |dmabuf_fds| have been exported.
-  // This method takes full ownership of |dmabuf_fds|. The caller shall not use
-  // them after this method returns, and must duplicate them before passing them
-  // if it needs to access the buffers through them afterwards.
+  // for which |handle| has been exported.
   // Return EGL_NO_IMAGE_KHR on failure.
-  virtual EGLImageKHR CreateEGLImage(
-      EGLDisplay egl_display,
-      EGLContext egl_context,
-      GLuint texture_id,
-      const gfx::Size& size,
-      unsigned int buffer_index,
-      const Fourcc fourcc,
-      std::vector<base::ScopedFD>&& dmabuf_fds) = 0;
+  virtual EGLImageKHR CreateEGLImage(EGLDisplay egl_display,
+                                     EGLContext egl_context,
+                                     GLuint texture_id,
+                                     const gfx::Size& size,
+                                     unsigned int buffer_index,
+                                     const Fourcc fourcc,
+                                     gfx::NativePixmapHandle handle) = 0;
 
-  // Create a GLImage from provided |dmabuf_fds|.
-  // This method takes full ownership of |dmabuf_fds|. The caller shall not use
-  // them after this method returns, and must duplicate them before passing them
-  // if it needs to access the buffers through them afterwards.
-  // Return the newly created GLImage.
+  // Create a GLImage from provided |handle|, taking full ownership of it.
   virtual scoped_refptr<gl::GLImage> CreateGLImage(
       const gfx::Size& size,
       const Fourcc fourcc,
-      std::vector<base::ScopedFD>&& dmabuf_fds) = 0;
+      gfx::NativePixmapHandle handle) = 0;
 
   // Destroys the EGLImageKHR.
   virtual EGLBoolean DestroyEGLImage(EGLDisplay egl_display,

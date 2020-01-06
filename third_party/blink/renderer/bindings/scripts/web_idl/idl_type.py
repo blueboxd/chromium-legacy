@@ -232,6 +232,7 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
         Args:
             nullable:
             typedef:
+            variadic:
                 All these arguments take tri-state value: True, False, or None.
                 True unwraps that type, False stops unwrapping that type.  All
                 of specified arguments' values must be consistent, and mixture
@@ -680,6 +681,9 @@ class ReferenceType(IdlType, RefById):
 
     def __hash__(self):
         return hash(self.identifier)
+
+    def _unwrap(self, switches):
+        return self.target_object._unwrap(switches)
 
 
 class DefinitionType(IdlType, WithIdentifier):

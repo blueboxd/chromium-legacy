@@ -2175,7 +2175,6 @@ void StyleResolver::CascadeAndApplyMatchedProperties(
   //
   // TODO(crbug.com/985010): Avoid this copy with non-destructive Apply.
   StyleCascade cascade_copy(cascade);
-  cascade_copy.RemoveAnimationPriority();
 
   if (!cache_success.IsFullCacheHit())
     cascade.Apply();
@@ -2189,6 +2188,7 @@ void StyleResolver::CascadeAndApplyMatchedProperties(
       CascadeAnimations(state, cascade_copy);
       CascadeTransitions(state, cascade_copy);
       StyleAnimator animator(state, cascade_copy);
+      cascade_copy.Exclude(CSSProperty::kAnimation, true);
       cascade_copy.Apply(animator);
     }
   }

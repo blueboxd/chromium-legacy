@@ -4994,6 +4994,7 @@ Unknown properties are collapsed to zero. -->
   <int value="27" label="RenderFrameHost is reused for same-site navigation"/>
   <int value="28" label="RenderFrameHost is reused for cross-site navigation"/>
   <int value="29" label="NavigationEntry is not the most recent one"/>
+  <int value="30" label="ServiceWorker claim"/>
 </enum>
 
 <enum name="BackForwardNavigationType">

@@ -26,7 +26,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/interstitials/enterprise_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ssl/bad_clock_blocking_page.h"
 #include "chrome/browser/ssl/blocked_interception_blocking_page.h"
 #include "chrome/browser/ssl/captive_portal_helper.h"
 #include "chrome/browser/ssl/chrome_security_blocking_page_factory.h"
@@ -36,6 +35,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/prefs/pref_service.h"
+#include "components/security_interstitials/content/bad_clock_blocking_page.h"
 #include "components/security_interstitials/content/captive_portal_blocking_page.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
 #include "components/security_interstitials/content/ssl_blocking_page.h"
@@ -543,9 +543,10 @@ void SSLErrorHandlerDelegateImpl::ShowBadClockInterstitial(
     const base::Time& now,
     ssl_errors::ClockState clock_state) {
   // Show bad clock page. The interstitial owns the blocking page.
-  OnBlockingPageReady(new BadClockBlockingPage(
-      web_contents_, cert_error_, ssl_info_, request_url_, now, clock_state,
-      std::move(ssl_cert_reporter_)));
+  OnBlockingPageReady(
+      ChromeSecurityBlockingPageFactory::CreateBadClockBlockingPage(
+          web_contents_, cert_error_, ssl_info_, request_url_, now, clock_state,
+          std::move(ssl_cert_reporter_)));
 }
 
 void SSLErrorHandlerDelegateImpl::ShowBlockedInterceptionInterstitial() {

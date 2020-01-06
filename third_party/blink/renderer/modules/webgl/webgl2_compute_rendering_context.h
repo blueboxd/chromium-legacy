@@ -80,16 +80,6 @@ class WebGL2ComputeRenderingContext : public WebGL2ComputeRenderingContextBase {
   Member<WebGLVideoTexture> webgl_video_texture_;
 };
 
-DEFINE_TYPE_CASTS(WebGL2ComputeRenderingContext,
-                  CanvasRenderingContext,
-                  context,
-                  context->Is3d() &&
-                      WebGLRenderingContextBase::GetWebGLVersion(context) ==
-                          Platform::kWebGL2ComputeContextType,
-                  context.Is3d() &&
-                      WebGLRenderingContextBase::GetWebGLVersion(&context) ==
-                          Platform::kWebGL2ComputeContextType);
-
 }  // namespace blink
 
 #endif

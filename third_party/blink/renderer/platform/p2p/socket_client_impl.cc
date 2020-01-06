@@ -82,7 +82,7 @@ void P2PSocketClientImpl::SendWithPacketId(const net::IPEndPoint& address,
                                            const Vector<int8_t>& data,
                                            const rtc::PacketOptions& options,
                                            uint64_t packet_id) {
-  TRACE_EVENT_ASYNC_BEGIN0("p2p", "Send", packet_id);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("p2p", "Send", packet_id);
 
   socket_->Send(data, network::P2PPacketInfo(address, options, packet_id),
                 net::MutableNetworkTrafficAnnotationTag(traffic_annotation_));

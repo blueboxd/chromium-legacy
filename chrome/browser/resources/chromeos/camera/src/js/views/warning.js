@@ -2,27 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
-/**
- * Namespace for the Camera app.
- */
-var cca = cca || {};
-
-/**
- * Namespace for views.
- */
-cca.views = cca.views || {};
+import {assertString} from '../chrome_util.js';
+import {View, ViewName} from './view.js';
 
 /**
  * Creates the warning-view controller.
  */
-cca.views.Warning = class extends cca.views.View {
+export class Warning extends View {
   /**
    * @public
    */
   constructor() {
-    super(cca.views.ViewName.WARNING);
+    super(ViewName.WARNING);
 
     /**
      * @type {!Array<string>}
@@ -53,7 +44,7 @@ cca.views.Warning = class extends cca.views.View {
    * @override
    */
   entering(name) {
-    name = cca.assertString(name);
+    name = assertString(name);
 
     // Remove the error-name from the stack to avoid duplication. Then make the
     // error-name the latest one to show its message.
@@ -73,7 +64,7 @@ cca.views.Warning = class extends cca.views.View {
      * Recovered error-name for leaving the view.
      * @type {string}
      */
-    const name = cca.assertString(args[0]);
+    const name = assertString(args[0]);
 
     // Remove the recovered error from the stack but don't leave the view until
     // there is no error left in the stack.
@@ -88,4 +79,7 @@ cca.views.Warning = class extends cca.views.View {
     document.querySelector('#error-msg').textContent = '';
     return true;
   }
-};
+}
+
+/** @const */
+cca.views.Warning = Warning;

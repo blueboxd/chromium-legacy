@@ -71,6 +71,10 @@ crbug.com/992599 [ android android-webview-instrumentation ] Pixel_OffscreenCanv
 # Produces black images on Nexus 5Xs in Android Webview (qualcomm-adreno-(tm)-418) crbug.com/984352
 # Fails on Pixel 2 (qualcomm-adreno-(tm)-540) crbug.com/966069
 crbug.com/805739 [ android ] Pixel_CanvasLowLatency2D [ Skip ]
+crbug.com/1039232 [ android android-chromium qualcomm-adreno-(tm)-540 use-vulkan skia-renderer ] Pixel_CanvasLowLatencyWebGL [ Failure ]
+crbug.com/1039232 [ android android-chromium qualcomm-adreno-(tm)-540 use-vulkan skia-renderer ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ Failure ]
+crbug.com/1039232 [ android android-chromium qualcomm-adreno-(tm)-540 use-vulkan skia-renderer ] Pixel_OffscreenCanvasWebGLDefaultWorker [ Failure ]
+crbug.com/1039232 [ android android-chromium qualcomm-adreno-(tm)-540 use-vulkan skia-renderer ] Pixel_RepeatedWebGLTo2D [ Failure ]
 
 # Skip test that kills GPU process since Android Webview only supports
 # in-process GPU.

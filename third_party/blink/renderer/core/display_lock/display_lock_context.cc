@@ -45,7 +45,7 @@ const char* kElementIsNested = "Element is nested under a locked element.";
 
 // Helper function to convert a display locking state to a string. Used in
 // traces.
-std::string StateToString(DisplayLockContext::State state) {
+const char* StateToString(DisplayLockContext::State state) {
   switch (state) {
     case DisplayLockContext::kLocked:
       return "kLocked";
@@ -952,13 +952,13 @@ operator=(State new_state) {
     return *this;
 
   if (state_ == kUnlocked) {
-    TRACE_EVENT_ASYNC_BEGIN0(
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
         TRACE_DISABLED_BY_DEFAULT("blink.debug.display_lock"),
-        "LockedDisplayLock", this);
-  } else if (new_state == kUnlocked) {
-    TRACE_EVENT_ASYNC_END0(
+        "LockedDisplayLock", TRACE_ID_LOCAL(this));
+  } else {
+    TRACE_EVENT_NESTABLE_ASYNC_END0(
         TRACE_DISABLED_BY_DEFAULT("blink.debug.display_lock"),
-        "LockedDisplayLock", this);
+        StateToString(state_), TRACE_ID_LOCAL(this));
   }
 
   bool was_activatable =
@@ -966,10 +966,15 @@ operator=(State new_state) {
   bool was_locked = context_->IsLocked();
 
   state_ = new_state;
-  if (state_ != kUnlocked) {
-    TRACE_EVENT_ASYNC_STEP_INTO0(
+
+  if (state_ == kUnlocked) {
+    TRACE_EVENT_NESTABLE_ASYNC_END0(
         TRACE_DISABLED_BY_DEFAULT("blink.debug.display_lock"),
-        "LockedDisplayLock", this, StateToString(state_));
+        "LockedDisplayLock", TRACE_ID_LOCAL(this));
+  } else {
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
+        TRACE_DISABLED_BY_DEFAULT("blink.debug.display_lock"),
+        StateToString(state_), TRACE_ID_LOCAL(this));
   }
 
   if (!context_->document_)

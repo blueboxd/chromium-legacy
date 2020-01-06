@@ -145,7 +145,7 @@ luci.console_view(
             category = 'linux',
         ),
         luci.console_view_entry(
-            builder = 'ci/linux-oor-cors-rel',
+            builder = 'ci/linux-blink-cors-rel',
             category = 'linux',
         ),
         luci.console_view_entry(

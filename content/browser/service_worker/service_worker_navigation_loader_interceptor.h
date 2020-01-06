@@ -21,7 +21,7 @@
 
 namespace content {
 
-class ServiceWorkerNavigationHandle;
+class ServiceWorkerMainResourceHandle;
 
 struct ServiceWorkerNavigationLoaderInterceptorParams {
   // For all clients:
@@ -50,7 +50,7 @@ class ServiceWorkerNavigationLoaderInterceptor final
  public:
   ServiceWorkerNavigationLoaderInterceptor(
       const ServiceWorkerNavigationLoaderInterceptorParams& params,
-      base::WeakPtr<ServiceWorkerNavigationHandle> handle);
+      base::WeakPtr<ServiceWorkerMainResourceHandle> handle);
   ~ServiceWorkerNavigationLoaderInterceptor() override;
 
   // NavigationLoaderInterceptor overrides:
@@ -92,7 +92,7 @@ class ServiceWorkerNavigationLoaderInterceptor final
   // DedicatedWorkerHost or SharedWorkerHost which may be destroyed before
   // WorkerScriptLoader which owns |this|.
   // TODO(falken): Arrange things so |handle_| outlives |this| for workers too.
-  const base::WeakPtr<ServiceWorkerNavigationHandle> handle_;
+  const base::WeakPtr<ServiceWorkerMainResourceHandle> handle_;
 
   const ServiceWorkerNavigationLoaderInterceptorParams params_;
 

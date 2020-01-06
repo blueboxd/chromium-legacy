@@ -30,7 +30,6 @@
 
 namespace signin {
 class AccountReconcilorDelegate;
-class ConsistencyCookieManagerBase;
 enum class SetAccountsInCookieResult;
 }
 
@@ -98,10 +97,6 @@ class AccountReconcilor : public KeyedService,
   // Initializes the account reconcilor. Should be called once after
   // construction.
   void Initialize(bool start_reconcile_if_tokens_available);
-
-  void SetConsistencyCookieManager(
-      std::unique_ptr<signin::ConsistencyCookieManagerBase>
-          consistency_cookie_manager);
 
   // Enables and disables the reconciliation.
   void EnableReconcile();
@@ -372,9 +367,6 @@ class AccountReconcilor : public KeyedService,
   int synced_data_deletion_in_progress_count_ = 0;
 
   signin_metrics::AccountReconcilorState state_;
-
-  std::unique_ptr<signin::ConsistencyCookieManagerBase>
-      consistency_cookie_manager_;
 
   base::WeakPtrFactory<AccountReconcilor> weak_factory_{this};
 

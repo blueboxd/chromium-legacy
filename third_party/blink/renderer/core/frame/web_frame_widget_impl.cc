@@ -547,7 +547,8 @@ void WebFrameWidgetImpl::ApplyViewportChanges(const ApplyViewportChangesArgs&) {
 }
 
 void WebFrameWidgetImpl::MouseCaptureLost() {
-  TRACE_EVENT_ASYNC_END0("input", "capturing mouse", this);
+  TRACE_EVENT_NESTABLE_ASYNC_END0("input", "capturing mouse",
+                                  TRACE_ID_LOCAL(this));
   mouse_capture_element_ = nullptr;
 }
 
@@ -696,7 +697,8 @@ void WebFrameWidgetImpl::HandleMouseDown(LocalFrame& main_frame,
         hit_node->GetLayoutObject()->IsEmbeddedObject() && html_element &&
         html_element->IsPluginElement()) {
       mouse_capture_element_ = To<HTMLPlugInElement>(hit_node);
-      TRACE_EVENT_ASYNC_BEGIN0("input", "capturing mouse", this);
+      TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("input", "capturing mouse",
+                                        TRACE_ID_LOCAL(this));
     }
   }
 

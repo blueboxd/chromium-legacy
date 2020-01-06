@@ -32,12 +32,14 @@
 #include "media/base/video_frame_layout.h"
 #include "media/base/video_types.h"
 #include "media/gpu/chromeos/fourcc.h"
+#include "media/gpu/chromeos/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/v4l2/v4l2_image_processor_backend.h"
 #include "media/gpu/v4l2/v4l2_stateful_workaround.h"
 #include "media/gpu/v4l2/v4l2_vda_helpers.h"
 #include "media/video/h264_parser.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/native_pixmap_handle.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/scoped_binders.h"
 
@@ -144,7 +146,6 @@ V4L2VideoDecodeAccelerator::V4L2VideoDecodeAccelerator(
       reset_pending_(false),
       decoder_partial_frame_pending_(false),
       output_dpb_size_(0),
-      output_planes_count_(0),
       picture_clearing_count_(0),
       device_poll_thread_("V4L2DevicePollThread"),
       egl_display_(egl_display),
@@ -152,7 +153,6 @@ V4L2VideoDecodeAccelerator::V4L2VideoDecodeAccelerator(
       make_context_current_cb_(make_context_current_cb),
       video_profile_(VIDEO_CODEC_PROFILE_UNKNOWN),
       input_format_fourcc_(0),
-      egl_image_planes_count_(0),
       weak_this_factory_(this) {
   weak_this_ = weak_this_factory_.GetWeakPtr();
 }
@@ -411,15 +411,14 @@ void V4L2VideoDecodeAccelerator::AssignPictureBuffersTask(
   }
 
   // Reserve all buffers until ImportBufferForPictureTask() is called
-  while (auto buffer_opt = output_queue_->GetFreeBuffer()) {
-    V4L2WritableBufferRef buffer(std::move(*buffer_opt));
-    int i = buffer.BufferId();
+  std::vector<V4L2WritableBufferRef> v4l2_buffers;
+  while (auto buffer_opt = output_queue_->GetFreeBuffer())
+    v4l2_buffers.push_back(std::move(*buffer_opt));
 
-    DCHECK_EQ(output_wait_map_.count(buffers[i].id()), 0u);
-    output_wait_map_.emplace(buffers[i].id(), std::move(buffer));
-  }
+  // Now setup the output record for each buffer and import it if needed.
+  for (auto&& buffer : v4l2_buffers) {
+    const int i = buffer.BufferId();
 
-  for (size_t i = 0; i < buffers.size(); i++) {
     DCHECK(buffers[i].size() == egl_image_size_);
 
     OutputRecord& output_record = output_buffer_map_[i];
@@ -432,20 +431,30 @@ void V4L2VideoDecodeAccelerator::AssignPictureBuffersTask(
                                    ? 0
                                    : buffers[i].service_texture_ids()[0];
 
+    // We move the buffer into output_wait_map_, so get a reference to
+    // its video frame if we need it to create the native pixmap for import.
+    scoped_refptr<VideoFrame> video_frame;
+    if (output_mode_ == Config::OutputMode::ALLOCATE &&
+        !image_processor_device_)
+      video_frame = buffer.GetVideoFrame();
+
+    // The buffer will remain here until ImportBufferForPicture is called,
+    // either by the client, or by ourselves, if we are allocating.
+    DCHECK_EQ(output_wait_map_.count(buffers[i].id()), 0u);
+    output_wait_map_.emplace(buffers[i].id(), std::move(buffer));
+
     if (output_mode_ == Config::OutputMode::ALLOCATE) {
-      std::vector<base::ScopedFD> dmabuf_fds;
-      dmabuf_fds = egl_image_device_->GetDmabufsForV4L2Buffer(
-          i, egl_image_planes_count_, V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
-      if (dmabuf_fds.empty()) {
-        VLOGF(1) << "Failed to get DMABUFs for EGLImage.";
-        NOTIFY_ERROR(PLATFORM_FAILURE);
-        return;
-      }
-      int plane_horiz_bits_per_pixel = VideoFrame::PlaneHorizontalBitsPerPixel(
-          egl_image_format_fourcc_->ToVideoPixelFormat(), 0);
-      ImportBufferForPictureTask(
-          output_record.picture_id, std::move(dmabuf_fds),
-          egl_image_size_.width() * plane_horiz_bits_per_pixel / 8);
+      gfx::NativePixmapHandle native_pixmap;
+
+      // If we are using an image processor, the DMABufs that we need to import
+      // are those of the image processor's buffers, not the decoders. So
+      // pass an empty native pixmap in that case.
+      if (!image_processor_device_)
+        native_pixmap =
+            CreateGpuMemoryBufferHandle(video_frame.get()).native_pixmap_handle;
+
+      ImportBufferForPictureTask(output_record.picture_id,
+                                 std::move(native_pixmap));
     }  // else we'll get triggered via ImportBufferForPicture() from client.
 
     DVLOGF(3) << "buffer[" << i << "]: picture_id=" << output_record.picture_id;
@@ -459,7 +468,7 @@ void V4L2VideoDecodeAccelerator::AssignPictureBuffersTask(
 void V4L2VideoDecodeAccelerator::CreateEGLImageFor(
     size_t buffer_index,
     int32_t picture_buffer_id,
-    std::vector<base::ScopedFD>&& dmabuf_fds,
+    gfx::NativePixmapHandle handle,
     GLuint texture_id,
     const gfx::Size& size,
     const Fourcc fourcc) {
@@ -484,7 +493,7 @@ void V4L2VideoDecodeAccelerator::CreateEGLImageFor(
 
   EGLImageKHR egl_image = egl_image_device_->CreateEGLImage(
       egl_display_, gl_context->GetHandle(), texture_id, size, buffer_index,
-      fourcc, std::move(dmabuf_fds));
+      fourcc, std::move(handle));
   if (egl_image == EGL_NO_IMAGE_KHR) {
     VLOGF(1) << "could not create EGLImageKHR,"
              << " index=" << buffer_index << " texture_id=" << texture_id;
@@ -575,48 +584,22 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureForImportTask(
     return;
   }
 
-  std::vector<base::ScopedFD> dmabuf_fds;
-  for (auto& plane : handle.planes) {
-    dmabuf_fds.push_back(std::move(plane.fd));
-  }
-
-  // If the driver does not accept as many fds as we received from the client,
-  // we have to check if the additional fds are actually duplicated fds pointing
-  // to previous planes; if so, we can close the duplicates and keep only the
-  // original fd(s).
-  // Assume that an fd is a duplicate of a previous plane's fd if offset != 0.
-  // Otherwise, if offset == 0, return error as it may be pointing to a new
-  // plane.
-  for (size_t i = dmabuf_fds.size() - 1; i >= egl_image_planes_count_; i--) {
-    if (handle.planes[i].offset == 0) {
-      VLOGF(1) << "The dmabuf fd points to a new buffer, ";
-      NOTIFY_ERROR(INVALID_ARGUMENT);
-      return;
-    }
-    // Drop safely, because this fd is duplicate dmabuf fd pointing to previous
-    // buffer and the appropriate address can be accessed by associated offset.
-    dmabuf_fds.pop_back();
-  }
-
   for (const auto& plane : handle.planes) {
     DVLOGF(3) << ": offset=" << plane.offset << ", stride=" << plane.stride;
   }
 
-  ImportBufferForPictureTask(picture_buffer_id, std::move(dmabuf_fds),
-                             handle.planes[0].stride);
+  ImportBufferForPictureTask(picture_buffer_id, std::move(handle));
 }
 
 void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
     int32_t picture_buffer_id,
-    std::vector<base::ScopedFD>&& dmabuf_fds,
-    int32_t stride) {
+    gfx::NativePixmapHandle handle) {
   DVLOGF(3) << "picture_buffer_id=" << picture_buffer_id
-            << ", dmabuf_fds.size()=" << dmabuf_fds.size()
-            << ", stride=" << stride;
+            << ", handle.planes.size()=" << handle.planes.size();
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
   TRACE_EVENT2("media,gpu", "V4L2VDA::ImportBufferForPictureTask",
-               "picture_buffer_id", picture_buffer_id, "dmabuf_fds_size",
-               dmabuf_fds.size());
+               "picture_buffer_id", picture_buffer_id, "handle.planes",
+               handle.planes.size());
 
   if (IsDestroyPending())
     return;
@@ -636,27 +619,40 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
     return;
   }
 
-  // TODO(crbug.com/982172): This must be done in AssignPictureBuffers().
-  // However the size of PictureBuffer might not be adjusted by ARC++. So we
-  // keep this until ARC++ side is fixed.
-  int plane_horiz_bits_per_pixel = VideoFrame::PlaneHorizontalBitsPerPixel(
-      egl_image_format_fourcc_->ToVideoPixelFormat(), 0);
-  if (plane_horiz_bits_per_pixel == 0 ||
-      (stride * 8) % plane_horiz_bits_per_pixel != 0) {
-    VLOGF(1) << "Invalid format " << egl_image_format_fourcc_->ToString()
-             << " or stride " << stride;
+  if (!output_wait_map_.count(iter->picture_id)) {
+    VLOGF(1) << "Passed buffer is not waiting to be imported";
     NOTIFY_ERROR(INVALID_ARGUMENT);
     return;
   }
 
-  int adjusted_coded_width = stride * 8 / plane_horiz_bits_per_pixel;
-  // If this is the first picture, then adjust the EGL width.
-  // Otherwise just check that it remains the same.
-  if (decoder_state_ == kAwaitingPictureBuffers) {
-    DCHECK_GE(adjusted_coded_width, egl_image_size_.width());
-    egl_image_size_.set_width(adjusted_coded_width);
+  // TODO(crbug.com/982172): This must be done in AssignPictureBuffers().
+  // However the size of PictureBuffer might not be adjusted by ARC++. So we
+  // keep this until ARC++ side is fixed.
+  if (output_mode_ == Config::OutputMode::IMPORT) {
+    DCHECK_GT(handle.planes.size(), 0u);
+    const int32_t stride = handle.planes[0].stride;
+    int plane_horiz_bits_per_pixel = VideoFrame::PlaneHorizontalBitsPerPixel(
+        egl_image_format_fourcc_->ToVideoPixelFormat(), 0);
+    if (plane_horiz_bits_per_pixel == 0 ||
+        (stride * 8) % plane_horiz_bits_per_pixel != 0) {
+      VLOGF(1) << "Invalid format " << egl_image_format_fourcc_->ToString()
+               << " or stride " << stride;
+      NOTIFY_ERROR(INVALID_ARGUMENT);
+      return;
+    }
+
+    int adjusted_coded_width = stride * 8 / plane_horiz_bits_per_pixel;
+    // If this is the first picture, then adjust the EGL width.
+    // Otherwise just check that it remains the same.
+    if (decoder_state_ == kAwaitingPictureBuffers) {
+      DCHECK_GE(adjusted_coded_width, egl_image_size_.width());
+      egl_image_size_.set_width(adjusted_coded_width);
+    }
+    DCHECK_EQ(egl_image_size_.width(), adjusted_coded_width);
+
+    DVLOGF(3) << "Original egl_image_size=" << egl_image_size_.ToString()
+              << ", adjusted coded width=" << adjusted_coded_width;
   }
-  DCHECK_EQ(egl_image_size_.width(), adjusted_coded_width);
 
   if (image_processor_device_ && !image_processor_) {
     DCHECK_EQ(kAwaitingPictureBuffers, decoder_state_);
@@ -664,8 +660,6 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
     // the decoder state. The client may adjust the coded width. We don't have
     // the final coded size in AssignPictureBuffers yet. Use the adjusted coded
     // width to create the image processor.
-    DVLOGF(3) << "Original egl_image_size=" << egl_image_size_.ToString()
-              << ", adjusted coded width=" << adjusted_coded_width;
     if (!CreateImageProcessor())
       return;
   }
@@ -679,8 +673,10 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
     DVLOGF(3) << "Change state to kDecoding";
   }
 
+  // If we are importing, create the output VideoFrame that we will render
+  // into.
   if (output_mode_ == Config::OutputMode::IMPORT) {
-    DCHECK_EQ(egl_image_planes_count_, dmabuf_fds.size());
+    DCHECK_GT(handle.planes.size(), 0u);
     DCHECK(!iter->output_frame);
 
     auto layout = VideoFrameLayout::Create(
@@ -690,9 +686,21 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
       NOTIFY_ERROR(INVALID_ARGUMENT);
       return;
     }
+
+    // Duplicate the buffer FDs for the VideoFrame instance.
+    std::vector<base::ScopedFD> duped_fds;
+    for (const gfx::NativePixmapPlane& plane : handle.planes) {
+      duped_fds.emplace_back(HANDLE_EINTR(dup(plane.fd.get())));
+      if (!duped_fds.back().is_valid()) {
+        VPLOG(1) << "Failed to duplicate plane FD!";
+        NOTIFY_ERROR(PLATFORM_FAILURE);
+        return;
+      }
+    }
+
     iter->output_frame = VideoFrame::WrapExternalDmabufs(
         *layout, gfx::Rect(visible_size_), visible_size_,
-        DuplicateFDs(dmabuf_fds), base::TimeDelta());
+        DuplicateFDs(duped_fds), base::TimeDelta());
   }
 
   if (iter->texture_id != 0) {
@@ -703,18 +711,20 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
                          device_, egl_display_, iter->egl_image));
     }
 
-    size_t index = iter - output_buffer_map_.begin();
     // If we are not using an image processor, create the EGL image ahead of
     // time since we already have its DMABUF fds. It is guaranteed that
     // CreateEGLImageFor will run before the picture is passed to the client
     // because the picture will need to be cleared on the child thread first.
     if (!image_processor_) {
+      DCHECK_GT(handle.planes.size(), 0u);
+      size_t index = iter - output_buffer_map_.begin();
+
       child_task_runner_->PostTask(
           FROM_HERE,
           base::BindOnce(&V4L2VideoDecodeAccelerator::CreateEGLImageFor,
                          weak_this_, index, picture_buffer_id,
-                         std::move(dmabuf_fds), iter->texture_id,
-                         egl_image_size_, *egl_image_format_fourcc_));
+                         std::move(handle), iter->texture_id, egl_image_size_,
+                         *egl_image_format_fourcc_));
 
       // Early return, AssignEGLImage will make the buffer available for
       // decoding once the EGL image is created.
@@ -1595,12 +1605,10 @@ bool V4L2VideoDecodeAccelerator::EnqueueOutputRecord(
     case V4L2_MEMORY_MMAP:
       ret = std::move(buffer).QueueMMap();
       break;
-    case V4L2_MEMORY_DMABUF: {
-      const auto& fds = output_record.output_frame->DmabufFds();
-      DCHECK_EQ(output_planes_count_, fds.size());
-      ret = std::move(buffer).QueueDMABuf(fds);
+    case V4L2_MEMORY_DMABUF:
+      ret = std::move(buffer).QueueDMABuf(
+          output_record.output_frame->DmabufFds());
       break;
-    }
     default:
       NOTREACHED();
   }
@@ -2187,28 +2195,29 @@ bool V4L2VideoDecodeAccelerator::CreateBuffersForFormat(
     const struct v4l2_format& format,
     const gfx::Size& visible_size) {
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
-  output_planes_count_ = format.fmt.pix_mp.num_planes;
+  size_t egl_image_planes_count;
+
   coded_size_.SetSize(format.fmt.pix_mp.width, format.fmt.pix_mp.height);
   visible_size_ = visible_size;
   if (image_processor_device_) {
     egl_image_size_ = visible_size_;
-    egl_image_planes_count_ = 0;
+    egl_image_planes_count = 0;
     if (!V4L2ImageProcessorBackend::TryOutputFormat(
             output_format_fourcc_->ToV4L2PixFmt(),
             egl_image_format_fourcc_->ToV4L2PixFmt(), coded_size_,
-            &egl_image_size_, &egl_image_planes_count_)) {
+            &egl_image_size_, &egl_image_planes_count)) {
       VLOGF(1) << "Fail to get output size and plane count of processor";
       return false;
     }
   } else {
     egl_image_size_ = coded_size_;
-    egl_image_planes_count_ = output_planes_count_;
+    egl_image_planes_count = format.fmt.pix_mp.num_planes;
   }
   VLOGF(2) << "new resolution: " << coded_size_.ToString()
            << ", visible size: " << visible_size_.ToString()
-           << ", decoder output planes count: " << output_planes_count_
+           << ", decoder output planes count: " << format.fmt.pix_mp.num_planes
            << ", EGLImage size: " << egl_image_size_.ToString()
-           << ", EGLImage plane count: " << egl_image_planes_count_;
+           << ", EGLImage plane count: " << egl_image_planes_count;
 
   return CreateOutputBuffers();
 }
@@ -2674,13 +2683,15 @@ void V4L2VideoDecodeAccelerator::FrameProcessed(
   // uncleared status.
   if (ip_output_record.texture_id != 0 && !ip_output_record.cleared) {
     DCHECK(frame->HasDmaBufs());
+
     child_task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(&V4L2VideoDecodeAccelerator::CreateEGLImageFor,
-                       weak_this_, ip_buffer_index, ip_output_record.picture_id,
-                       media::DuplicateFDs(frame->DmabufFds()),
-                       ip_output_record.texture_id, egl_image_size_,
-                       *egl_image_format_fourcc_));
+        base::BindOnce(
+            &V4L2VideoDecodeAccelerator::CreateEGLImageFor, weak_this_,
+            ip_buffer_index, ip_output_record.picture_id,
+            CreateGpuMemoryBufferHandle(frame.get()).native_pixmap_handle,
+            ip_output_record.texture_id, egl_image_size_,
+            *egl_image_format_fourcc_));
   }
 
   // Remove our job from the IP jobs queue

@@ -98,11 +98,7 @@ base::string16 LaunchOptionsComboboxModel::GetItemAt(int index) {
 
 AppInfoSummaryPanel::AppInfoSummaryPanel(Profile* profile,
                                          const extensions::Extension* app)
-    : AppInfoPanel(profile, app),
-      size_value_(nullptr),
-      homepage_link_(nullptr),
-      licenses_link_(nullptr),
-      launch_options_combobox_(nullptr) {
+    : AppInfoPanel(profile, app) {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       ChromeLayoutProvider::Get()->GetDistanceMetric(
@@ -126,10 +122,10 @@ void AppInfoSummaryPanel::AddDescriptionAndLinksControl(
               DISTANCE_RELATED_CONTROL_VERTICAL_SMALL)));
 
   if (!app_->description().empty()) {
-    const size_t max_length = 400;
+    constexpr size_t kMaxLength = 400;
     base::string16 text = base::UTF8ToUTF16(app_->description());
-    if (text.length() > max_length) {
-      text = text.substr(0, max_length);
+    if (text.length() > kMaxLength) {
+      text = text.substr(0, kMaxLength - 5);
       text += base::ASCIIToUTF16(" ... ");
     }
 
@@ -138,25 +134,18 @@ void AppInfoSummaryPanel::AddDescriptionAndLinksControl(
     description_and_labels_stack->AddChildView(std::move(description_label));
   }
 
-  if (CanShowAppHomePage()) {
-    auto homepage_link = std::make_unique<views::Link>(
-        l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_HOMEPAGE_LINK));
-    homepage_link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    homepage_link->set_listener(this);
-    homepage_link->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
-    homepage_link_ =
-        description_and_labels_stack->AddChildView(std::move(homepage_link));
-  }
-
-  if (CanDisplayLicenses()) {
-    auto licenses_link = std::make_unique<views::Link>(
-        l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_LICENSES_BUTTON_TEXT));
-    licenses_link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    licenses_link->set_listener(this);
-    licenses_link->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
-    licenses_link_ =
-        description_and_labels_stack->AddChildView(std::move(licenses_link));
-  }
+  const auto add_link = [&](int message_id) {
+    auto* link = description_and_labels_stack->AddChildView(
+        std::make_unique<views::Link>(l10n_util::GetStringUTF16(message_id)));
+    link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    link->set_listener(this);
+    link->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+    return link;
+  };
+  if (CanShowAppHomePage())
+    homepage_link_ = add_link(IDS_APPLICATION_INFO_HOMEPAGE_LINK);
+  if (CanDisplayLicenses())
+    licenses_link_ = add_link(IDS_APPLICATION_INFO_LICENSES_BUTTON_TEXT);
 
   vertical_stack->AddChildView(std::move(description_and_labels_stack));
 }
@@ -281,6 +270,7 @@ bool AppInfoSummaryPanel::CanSetLaunchType() const {
   return !app_->is_platform_app() && !app_->is_extension() &&
          app_->id() != extension_misc::kChromeAppId;
 }
+
 void AppInfoSummaryPanel::ShowAppHomePage() {
   DCHECK(CanShowAppHomePage());
   OpenLink(extensions::ManifestURL::GetHomepageURL(app_));

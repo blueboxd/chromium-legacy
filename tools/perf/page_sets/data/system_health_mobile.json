@@ -276,6 +276,9 @@
         "load:news:irctc": {
             "DEFAULT": "system_health_mobile_058.wprgo"
         },
+        "load:news:irctc:2019": {
+            "DEFAULT": "system_health_mobile_941a515134.wprgo"
+        },
         "load:news:nytimes": {
             "DEFAULT": "system_health_mobile_009.wprgo"
         },

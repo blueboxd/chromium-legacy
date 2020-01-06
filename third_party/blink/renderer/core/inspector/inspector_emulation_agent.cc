@@ -374,8 +374,9 @@ void InspectorEmulationAgent::ApplyVirtualTimePolicy(
   virtual_time_base_ticks_ =
       web_local_frame_->View()->Scheduler()->EnableVirtualTime();
   if (new_policy.virtual_time_budget_ms) {
-    TRACE_EVENT_ASYNC_BEGIN1("renderer.scheduler", "VirtualTimeBudget", this,
-                             "budget", *new_policy.virtual_time_budget_ms);
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("renderer.scheduler", "VirtualTimeBudget",
+                                      TRACE_ID_LOCAL(this), "budget",
+                                      *new_policy.virtual_time_budget_ms);
     base::TimeDelta budget_amount =
         base::TimeDelta::FromMillisecondsD(*new_policy.virtual_time_budget_ms);
     web_local_frame_->View()->Scheduler()->GrantVirtualTimeBudget(
@@ -423,7 +424,8 @@ Response InspectorEmulationAgent::setNavigatorOverrides(
 }
 
 void InspectorEmulationAgent::VirtualTimeBudgetExpired() {
-  TRACE_EVENT_ASYNC_END0("renderer.scheduler", "VirtualTimeBudget", this);
+  TRACE_EVENT_NESTABLE_ASYNC_END0("renderer.scheduler", "VirtualTimeBudget",
+                                  TRACE_ID_LOCAL(this));
   WebView* view = web_local_frame_->View();
   if (!view)
     return;

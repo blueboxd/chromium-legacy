@@ -184,15 +184,7 @@ void HTMLMeterElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {
 
   value_ = MakeGarbageCollected<HTMLDivElement>(GetDocument());
   UpdateValueAppearance(0);
-
-  if (features::IsFormControlsRefreshEnabled()) {
-    auto* clip = MakeGarbageCollected<HTMLDivElement>(GetDocument());
-    clip->SetShadowPseudoId(AtomicString("-internal-meter-clip"));
-    bar->AppendChild(clip);
-    clip->AppendChild(value_);
-  } else {
-    bar->AppendChild(value_);
-  }
+  bar->AppendChild(value_);
 
   inner->AppendChild(bar);
 

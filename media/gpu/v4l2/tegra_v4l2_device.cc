@@ -10,6 +10,7 @@
 #include "base/trace_event/trace_event.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/v4l2/tegra_v4l2_device.h"
+#include "ui/gfx/native_pixmap_handle.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace media {
@@ -227,7 +228,7 @@ EGLImageKHR TegraV4L2Device::CreateEGLImage(
     const gfx::Size& /* size */,
     unsigned int buffer_index,
     const Fourcc fourcc,
-    std::vector<base::ScopedFD>&& /* dmabuf_fds */) {
+    gfx::NativePixmapHandle /* handle */) {
   DVLOGF(3);
 
   if (!CanCreateEGLImageFrom(fourcc)) {
@@ -253,7 +254,7 @@ EGLImageKHR TegraV4L2Device::CreateEGLImage(
 scoped_refptr<gl::GLImage> TegraV4L2Device::CreateGLImage(
     const gfx::Size& size,
     const Fourcc fourcc,
-    std::vector<base::ScopedFD>&& dmabuf_fds) {
+    gfx::NativePixmapHandle /* handle */) {
   NOTREACHED();
   return nullptr;
 }

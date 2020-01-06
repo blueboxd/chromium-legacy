@@ -361,6 +361,7 @@ used when committed.
     install Chromium OS on VMWare.
 *   [User Data Directory](user_data_dir.md) - How the user data and cache
     directories are determined on all platforms.
+*   [User Data Storage](user_data_storage.md) - Policy documentation for files in User Data.
 
 ### Mojo &amp; Services
 *   [Intro to Mojo &amp; Services](mojo_and_services.md) - Quick introduction

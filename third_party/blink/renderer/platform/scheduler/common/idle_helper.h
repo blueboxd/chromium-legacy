@@ -195,6 +195,7 @@ class PLATFORM_EXPORT IdleHelper : public base::TaskObserver,
     bool idle_period_trace_event_started_;
     bool running_idle_task_for_tracing_;
     const char* idle_period_tracing_name_;
+    const char* last_sub_trace_event_name_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(State);
   };

@@ -436,7 +436,8 @@ void GetNonWindowClients(
   } else if (controller->context()) {
     GURL origin = controller->script_url().GetOrigin();
     for (auto it = controller->context()->GetClientContainerHostIterator(
-             origin, false /* include_reserved_clients */);
+             origin, false /* include_reserved_clients */,
+             false /* include_back_forward_cached_clients */);
          !it->IsAtEnd(); it->Advance()) {
       AddNonWindowClient(it->GetContainerHost(), options->client_type,
                          &clients);
@@ -476,7 +477,8 @@ void GetWindowClients(
   } else if (controller->context()) {
     GURL origin = controller->script_url().GetOrigin();
     for (auto it = controller->context()->GetClientContainerHostIterator(
-             origin, false /* include_reserved_clients */);
+             origin, false /* include_reserved_clients */,
+             false /* include_back_forward_cached_clients */);
          !it->IsAtEnd(); it->Advance()) {
       AddWindowClient(it->GetContainerHost(), &clients_info);
     }
@@ -682,7 +684,8 @@ void DidNavigate(const base::WeakPtr<ServiceWorkerContextCore>& context,
 
   for (std::unique_ptr<ServiceWorkerContextCore::ContainerHostIterator> it =
            context->GetClientContainerHostIterator(
-               origin, true /* include_reserved_clients */);
+               origin, true /* include_reserved_clients */,
+               false /* include_back_forward_cached_clients */);
        !it->IsAtEnd(); it->Advance()) {
     ServiceWorkerContainerHost* container_host = it->GetContainerHost();
     DCHECK(container_host->IsContainerForClient());

@@ -364,7 +364,8 @@ void WebViewImpl::HandleMouseDown(LocalFrame& main_frame,
         html_element->IsPluginElement()) {
       mouse_capture_element_ = To<HTMLPlugInElement>(hit_node);
       main_frame.Client()->SetMouseCapture(true);
-      TRACE_EVENT_ASYNC_BEGIN0("input", "capturing mouse", this);
+      TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("input", "capturing mouse",
+                                        TRACE_ID_LOCAL(this));
     }
   }
 
@@ -1873,7 +1874,8 @@ void WebViewImpl::OnFallbackCursorModeToggled(bool is_on) {
 }
 
 void WebViewImpl::MouseCaptureLost() {
-  TRACE_EVENT_ASYNC_END0("input", "capturing mouse", this);
+  TRACE_EVENT_NESTABLE_ASYNC_END0("input", "capturing mouse",
+                                  TRACE_ID_LOCAL(this));
   mouse_capture_element_ = nullptr;
   if (AsView().page->DeprecatedLocalMainFrame())
     AsView().page->DeprecatedLocalMainFrame()->Client()->SetMouseCapture(false);

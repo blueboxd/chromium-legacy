@@ -204,7 +204,13 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
     std::unique_ptr<URLRequest> url_request = std::move(url_request_);
     WebSocketHandshakeStreamBase* handshake_stream = handshake_stream_.get();
     handshake_stream_.reset();
-    connect_delegate_->OnSuccess(handshake_stream->Upgrade());
+    auto handshake_response_info =
+        std::make_unique<WebSocketHandshakeResponseInfo>(
+            url_request->url(), url_request->response_headers(),
+            url_request->GetResponseRemoteEndpoint(),
+            url_request->response_time());
+    connect_delegate_->OnSuccess(handshake_stream->Upgrade(),
+                                 std::move(handshake_response_info));
 
     // This is safe even if |this| has already been deleted.
     url_request->CancelWithError(ERR_WS_UPGRADE);
@@ -247,14 +253,6 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
 
   void ReportFailureWithMessage(const std::string& failure_message) {
     connect_delegate_->OnFailure(failure_message);
-  }
-
-  void OnFinishOpeningHandshake() {
-    WebSocketDispatchOnFinishOpeningHandshake(
-        connect_delegate(), url_request_->url(),
-        url_request_->response_headers(),
-        url_request_->GetResponseRemoteEndpoint(),
-        url_request_->response_time());
   }
 
   WebSocketStream::ConnectDelegate* connect_delegate() const {
@@ -388,13 +386,11 @@ void Delegate::OnResponseStarted(URLRequest* request, int net_error) {
       return;
 
     case HTTP_UNAUTHORIZED:
-      owner_->OnFinishOpeningHandshake();
       owner_->ReportFailureWithMessage(
           "HTTP Authentication failed; no valid credentials available");
       return;
 
     case HTTP_PROXY_AUTHENTICATION_REQUIRED:
-      owner_->OnFinishOpeningHandshake();
       owner_->ReportFailureWithMessage("Proxy authentication failed");
       return;
 
@@ -504,20 +500,6 @@ WebSocketStream::CreateAndConnectStreamForTesting(
       std::move(connect_delegate), std::move(api_delegate));
   request->Start(std::move(timer));
   return std::move(request);
-}
-
-void WebSocketDispatchOnFinishOpeningHandshake(
-    WebSocketStream::ConnectDelegate* connect_delegate,
-    const GURL& url,
-    const scoped_refptr<HttpResponseHeaders>& headers,
-    const IPEndPoint& remote_endpoint,
-    base::Time response_time) {
-  DCHECK(connect_delegate);
-  if (headers.get()) {
-    connect_delegate->OnFinishOpeningHandshake(
-        std::make_unique<WebSocketHandshakeResponseInfo>(
-            url, headers, remote_endpoint, response_time));
-  }
 }
 
 }  // namespace net

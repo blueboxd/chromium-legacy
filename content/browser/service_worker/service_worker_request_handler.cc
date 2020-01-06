@@ -8,7 +8,7 @@
 
 #include "base/macros.h"
 #include "content/browser/frame_host/navigation_request_info.h"
-#include "content/browser/service_worker/service_worker_navigation_handle.h"
+#include "content/browser/service_worker/service_worker_main_resource_handle.h"
 #include "content/browser/service_worker/service_worker_navigation_loader_interceptor.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/public/common/origin_util.h"
@@ -35,7 +35,7 @@ bool SchemeMaySupportRedirectingToHTTPS(const GURL& url) {
 std::unique_ptr<NavigationLoaderInterceptor>
 ServiceWorkerRequestHandler::CreateForNavigation(
     const GURL& url,
-    base::WeakPtr<ServiceWorkerNavigationHandle> navigation_handle,
+    base::WeakPtr<ServiceWorkerMainResourceHandle> navigation_handle,
     const NavigationRequestInfo& request_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -63,7 +63,7 @@ std::unique_ptr<NavigationLoaderInterceptor>
 ServiceWorkerRequestHandler::CreateForWorker(
     const network::ResourceRequest& resource_request,
     int process_id,
-    base::WeakPtr<ServiceWorkerNavigationHandle> navigation_handle) {
+    base::WeakPtr<ServiceWorkerMainResourceHandle> navigation_handle) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   auto resource_type =

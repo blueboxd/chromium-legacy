@@ -19,9 +19,6 @@ class FilePath;
 
 namespace spellcheck {
 
-// Short type for holding spellcheck results per individual language.
-using PerLanguageResult = std::vector<std::vector<::SpellCheckResult>>;
-
 // Short type for holding word replacements per individual language.
 using PerLanguageSuggestions = std::vector<std::vector<base::string16>>;
 

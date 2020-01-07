@@ -33,6 +33,7 @@
 #import "ios/chrome/test/app/sync_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/accessibility_util.h"
+#import "ios/testing/hardware_keyboard_util.h"
 #import "ios/testing/nserror_util.h"
 #include "ios/testing/verify_custom_webkit.h"
 #import "ios/web/common/features.h"
@@ -685,6 +686,11 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
       chrome_test_util::GetMainController()
           .interfaceProvider.mainInterface.viewController;
   return mainViewController.keyCommands.count;
+}
+
++ (void)simulatePhysicalKeyboardEvent:(NSString*)input
+                                flags:(UIKeyModifierFlags)flags {
+  chrome_test_util::SimulatePhysicalKeyboardEvent(flags, input);
 }
 
 @end

@@ -11,8 +11,8 @@
 #include <unistd.h>
 
 #include "base/files/file_util.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "base/posix/eintr_wrapper.h"
 
 namespace {
@@ -20,7 +20,7 @@ namespace {
 // We keep the file descriptor for /dev/urandom around so we don't need to
 // reopen it (which is expensive), and since we may not even be able to reopen
 // it if we are later put in a sandbox. This class wraps the file descriptor so
-// we can use LazyInstance to handle opening it on the first access.
+// we can use a static-local variable to handle opening it on the first access.
 class URandomFd {
  public:
 #if defined(OS_AIX)
@@ -43,21 +43,20 @@ class URandomFd {
   const int fd_;
 };
 
-base::LazyInstance<URandomFd>::Leaky g_urandom_fd = LAZY_INSTANCE_INITIALIZER;
-
 }  // namespace
 
 namespace base {
 
 void RandBytes(void* output, size_t output_length) {
-  const int urandom_fd = g_urandom_fd.Pointer()->fd();
+  const int urandom_fd = GetUrandomFD();
   const bool success =
       ReadFromFD(urandom_fd, static_cast<char*>(output), output_length);
   CHECK(success);
 }
 
-int GetUrandomFD(void) {
-  return g_urandom_fd.Pointer()->fd();
+int GetUrandomFD() {
+  static NoDestructor<URandomFd> urandom_fd;
+  return urandom_fd->fd();
 }
 
 }  // namespace base

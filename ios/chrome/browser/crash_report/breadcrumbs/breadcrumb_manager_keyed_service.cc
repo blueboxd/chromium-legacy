@@ -25,7 +25,7 @@ void BreadcrumbManagerKeyedService::RemoveObserver(
 }
 
 const std::list<std::string> BreadcrumbManagerKeyedService::GetEvents(
-    size_t event_count_limit) {
+    size_t event_count_limit) const {
   return breadcrumb_manager_->GetEvents(event_count_limit);
 }
 

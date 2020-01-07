@@ -14,6 +14,8 @@
   # below). MB uses this dict to look up which config to use for a given bot.
   'masters': {
     'chrome': {
+      'chromeos-arm-generic-cfi-thin-lto-chrome': 'cros_chrome_sdk_cfi_thin_lto',
+      'chromeos-betty-cfi-thin-lto-chrome': 'cros_chrome_sdk_cfi_thin_lto',
       'chromeos-betty-chrome': 'cros_chrome_sdk',
       'chromeos-betty-pi-arc-chrome': 'cros_chrome_sdk',
       'chromeos-eve-chrome': 'cros_chrome_sdk',
@@ -22,12 +24,6 @@
       'linux-chrome': 'official_goma',
       'mac-chrome': 'official_goma',
       'win-chrome': 'official_goma_x86',
-    },
-
-    'chromeos.chrome': {
-      'chrome-tot-chromeos-amd64-generic': 'cros_chrome_sdk',
-      'Chrome4CROS Packages': 'chromeos_with_codecs_release_bot',
-      'Linux ChromeOS Buildspec Tests': 'chromeos_with_codecs_release_bot',
     },
 
     # Take care when changing any of these builders to ensure that you do not
@@ -748,6 +744,8 @@
     },
 
     'tryserver.chrome': {
+      'chromeos-arm-generic-cfi-thin-lto-chrome': 'cros_chrome_sdk_cfi_thin_lto',
+      'chromeos-betty-cfi-thin-lto-chrome': 'cros_chrome_sdk_cfi_thin_lto',
       'chromeos-betty-chrome': 'cros_chrome_sdk',
       'chromeos-betty-pi-arc-chrome': 'cros_chrome_sdk',
       'chromeos-eve-chrome': 'cros_chrome_sdk',

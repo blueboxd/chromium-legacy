@@ -5,8 +5,9 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import static org.chromium.chrome.browser.tasks.tab_management.MessageCardViewProperties.MESSAGE_TYPE;
-import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.TabListModelProperties.MODEL_TYPE;
-import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.TabListModelProperties.ModelType.TAB;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.CARD_ALPHA;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.CARD_TYPE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.ModelType.TAB;
 
 import android.app.Activity;
 import android.content.ComponentCallbacks;
@@ -849,7 +850,7 @@ class TabListMediator {
         assert mVisible;
         int count = 0;
         for (int i = 0; i < mModel.size(); i++) {
-            if (mModel.get(i).model.get(MODEL_TYPE) != TAB) continue;
+            if (mModel.get(i).model.get(CARD_TYPE) != TAB) continue;
 
             if (mModel.get(i).model.get(TabProperties.IS_SELECTED)) count++;
             mModel.get(i).model.set(TabProperties.IS_SELECTED, false);
@@ -865,7 +866,7 @@ class TabListMediator {
         }
         if (tabs.size() != mModel.size()) return false;
         for (int i = 0; i < tabs.size(); i++) {
-            if (mModel.get(i).model.get(MODEL_TYPE) == TAB
+            if (mModel.get(i).model.get(CARD_TYPE) == TAB
                     && mModel.get(i).model.get(TabProperties.TAB_ID) != tabs.get(i).getId()) {
                 return false;
             }
@@ -932,7 +933,7 @@ class TabListMediator {
     void softCleanup() {
         assert !mVisible;
         for (int i = 0; i < mModel.size(); i++) {
-            if (mModel.get(i).model.get(MODEL_TYPE) == TAB) {
+            if (mModel.get(i).model.get(CARD_TYPE) == TAB) {
                 mModel.get(i).model.set(TabProperties.THUMBNAIL_FETCHER, null);
             }
         }
@@ -1129,7 +1130,7 @@ class TabListMediator {
                         .with(TabProperties.TAB_CLOSED_LISTENER, mTabClosedListener)
                         .with(TabProperties.CREATE_GROUP_LISTENER,
                                 getCreateGroupButtonListener(tab, isSelected))
-                        .with(TabProperties.ALPHA, 1f)
+                        .with(CARD_ALPHA, 1f)
                         .with(TabProperties.CARD_ANIMATION_STATUS,
                                 ClosableTabGridView.AnimationStatus.CARD_RESTORE)
                         .with(TabProperties.SELECTABLE_TAB_CLICKED_LISTENER,
@@ -1141,7 +1142,7 @@ class TabListMediator {
                         .with(TabProperties.TABSTRIP_FAVICON_BACKGROUND_COLOR_ID,
                                 tabstripFaviconBackgroundDrawableId)
                         .with(TabProperties.ACCESSIBILITY_DELEGATE, mAccessibilityDelegate)
-                        .with(MODEL_TYPE, TAB)
+                        .with(CARD_TYPE, TAB)
                         .build();
 
         if (mUiType == UiType.SELECTABLE) {

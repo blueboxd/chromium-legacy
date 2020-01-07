@@ -69,11 +69,8 @@ class WaylandSurface : public WaylandWindow,
   void OnDragSessionClose(uint32_t dnd_action) override;
   bool OnInitialize(PlatformWindowInitProperties properties) override;
 
-  bool IsMinimized() const;
-  bool IsMaximized() const;
-  bool IsFullscreen() const;
-
-  void MaybeTriggerPendingStateChange();
+  void TriggerStateChanges();
+  void SetWindowState(PlatformWindowState state);
 
   // Creates a surface window, which is visible as a main window.
   bool CreateShellSurface();
@@ -82,6 +79,8 @@ class WaylandSurface : public WaylandWindow,
 
   // Propagates the |min_size_| and |max_size_| to the ShellSurface.
   void SetSizeConstraints();
+
+  void SetOrResetRestoredBounds();
 
   // Wrappers around shell surface.
   std::unique_ptr<ShellSurfaceWrapper> shell_surface_;
@@ -100,14 +99,12 @@ class WaylandSurface : public WaylandWindow,
   // handler that receives DIP from Wayland.
   gfx::Rect pending_bounds_dip_;
 
-  // Stores current states of the window.
+  // Contains the current state of the window.
   PlatformWindowState state_;
-  // Stores a pending state of the window, which is used before the surface is
-  // activated.
-  PlatformWindowState pending_state_;
+  // Contains the previous state of the window.
+  PlatformWindowState previous_state_;
 
   bool is_active_ = false;
-  bool is_minimizing_ = false;
 
   // Id of the chromium app passed through
   // PlatformWindowInitProperties::wm_class_class. This is used by Wayland

@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
@@ -19,6 +20,10 @@
 
 namespace base {
 class TaskRunner;
+}
+
+namespace gfx {
+class ImageSkia;
 }
 
 namespace web_app {
@@ -105,6 +110,13 @@ base::FilePath GetWebAppDataDirectory(const base::FilePath& profile_path,
 // platform shortcuts indicating whether or not they were successfully
 // created.
 using CreateShortcutsCallback = base::OnceCallback<void(bool shortcut_created)>;
+
+// Returns an array of desired icon sizes (in px) to be contained in an app OS
+// shortcut, sorted in ascending order (biggest desired icon size is last).
+base::span<const int> GetDesiredIconSizesForShortcut();
+
+// Load the standard application icon from resources.
+gfx::ImageSkia CreateDefaultApplicationIcon(int size);
 
 namespace internals {
 

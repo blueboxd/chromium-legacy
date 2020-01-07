@@ -54,6 +54,8 @@ class ProfileManager : public content::NotificationObserver,
   // Same as instance method but provides the default user_data_dir as well.
   // If the Profile is going to be used to open a new window then consider using
   // GetLastUsedProfileAllowedByPolicy() instead.
+  // Except in ChromeOS guest sessions, the returned profile is always a regular
+  // profile (non-OffTheRecord).
   static Profile* GetLastUsedProfile();
 
   // Same as GetLastUsedProfile() but returns the incognito Profile if
@@ -61,9 +63,9 @@ class ProfileManager : public content::NotificationObserver,
   // will be used to open new browser windows.
   static Profile* GetLastUsedProfileAllowedByPolicy();
 
-  // Helper function that returns true if incognito mode is forced for |profile|
-  // (normal mode is not available for browsing).
-  static bool IncognitoModeForced(Profile* profile);
+  // Helper function that returns true if OffTheRecord mode is forced for
+  // |profile| (normal mode is not available for browsing).
+  static bool IsOffTheRecordModeForced(Profile* profile);
 
   // Same as instance method but provides the default user_data_dir as well.
   static std::vector<Profile*> GetLastOpenedProfiles();

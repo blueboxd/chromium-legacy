@@ -72,10 +72,11 @@
 #       instead of protobuf_lite.
 #
 #   import_dirs (optional)
-#       A list of extra import directories to be passed to protoc compiler. The
-#       default case is just proto_in_dir.
-#       WARNING: This options should not be used in Chrome code until
-#       http://crbug.com/691451 is resolved.
+#       A list of extra import directories to be passed to protoc compiler.
+#       WARNING: This circumvents proto checkdeps, and should only be used when
+#       needed, typically when proto files cannot cleanly import through
+#       absolute paths, such as for third_party or generated .proto files.
+#       http://crbug.com/691451 tracks fixing this.
 #
 # Parameters for compiling the generated code:
 #

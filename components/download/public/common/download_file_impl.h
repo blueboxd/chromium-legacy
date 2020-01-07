@@ -30,7 +30,6 @@
 #include "components/download/public/common/download_save_info.h"
 #include "components/download/public/common/rate_estimator.h"
 #include "components/services/quarantine/public/mojom/quarantine.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 
 namespace download {

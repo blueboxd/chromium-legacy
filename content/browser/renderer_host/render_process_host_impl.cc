@@ -1971,8 +1971,9 @@ void RenderProcessHostImpl::BindRestrictedCookieManagerForServiceWorker(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   GetStoragePartition()->CreateRestrictedCookieManager(
       network::mojom::RestrictedCookieManagerRole::SCRIPT, origin,
-      origin.GetURL(), origin, true /* is_service_worker */, GetID(),
-      MSG_ROUTING_NONE, std::move(receiver));
+      net::SiteForCookies::FromOrigin(origin), origin,
+      true /* is_service_worker */, GetID(), MSG_ROUTING_NONE,
+      std::move(receiver));
 }
 
 void RenderProcessHostImpl::BindVideoDecodePerfHistory(

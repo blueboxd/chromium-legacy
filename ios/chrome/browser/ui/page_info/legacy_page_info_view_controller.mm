@@ -14,8 +14,8 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/fancy_ui/bidi_container_view.h"
+#include "ios/chrome/browser/ui/page_info/page_info_config.h"
 #import "ios/chrome/browser/ui/page_info/page_info_constants.h"
-#include "ios/chrome/browser/ui/page_info/page_info_model.h"
 #import "ios/chrome/browser/ui/page_info/requirements/page_info_presentation.h"
 #import "ios/chrome/browser/ui/util/animation_util.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
@@ -105,7 +105,7 @@ const CGFloat kButtonXOffset = kTextXPosition;
   CGPoint _arrowOriginPoint;
 
   // Model for the data to display.
-  std::unique_ptr<PageInfoModel> _model;
+  PageInfoConfig* _model;
 
   // Width of the view. Depends on the device (iPad/iPhone).
   CGFloat _viewWidth;
@@ -119,8 +119,8 @@ const CGFloat kButtonXOffset = kTextXPosition;
 
 @property(nonatomic, strong) UIView* containerView;
 @property(nonatomic, strong) UIView* popupContainer;
-// An invisible button added to the |containerView|. Closes the popup just like
-// the tap on the background. Exposed purely for voiceover purposes.
+// An invisible button added to the |containerView|. Closes the popup just
+// like the tap on the background. Exposed purely for voiceover purposes.
 @property(nonatomic, strong) UIButton* closeButton;
 
 @end
@@ -129,7 +129,7 @@ const CGFloat kButtonXOffset = kTextXPosition;
 
 #pragma mark public
 
-- (id)initWithModel:(PageInfoModel*)model
+- (id)initWithModel:(PageInfoConfig*)model
              sourcePoint:(CGPoint)sourcePoint
     presentationProvider:(id<PageInfoPresentation>)provider
                  handler:(id<BrowserCommands>)handler {
@@ -154,7 +154,7 @@ const CGFloat kButtonXOffset = kTextXPosition;
         setAutoresizingMask:(UIViewAutoresizingFlexibleTrailingMargin() |
                              UIViewAutoresizingFlexibleBottomMargin)];
 
-    _model.reset(model);
+    _model = model;
     _arrowOriginPoint = sourcePoint;
     _handler = handler;
 
@@ -211,61 +211,46 @@ const CGFloat kButtonXOffset = kTextXPosition;
   // Keep the new subviews in an array that gets replaced at the end.
   NSMutableArray* subviews = [NSMutableArray array];
 
-  int sectionCount = _model->GetSectionCount();
-  PageInfoModel::ButtonAction action = PageInfoModel::BUTTON_NONE;
-
-  for (int i = 0; i < sectionCount; i++) {
-    PageInfoModel::SectionInfo info = _model->GetSectionInfo(i);
-
-    if (action == PageInfoModel::BUTTON_NONE &&
-        info.button != PageInfoModel::BUTTON_NONE) {
-      // Show the button corresponding to the first section that requires a
-      // button.
-      action = info.button;
-    }
-
     // Only certain sections have images. This affects the X position.
-    BOOL hasImage = _model->GetIconImage(info.icon_id) != nil;
-    CGFloat xPosition = (hasImage ? kTextXPosition : kTextXPositionNoImage);
+  BOOL hasImage = _model.image != nil;
+  CGFloat xPosition = (hasImage ? kTextXPosition : kTextXPositionNoImage);
 
-    // Insert the image subview for sections that are appropriate.
-    CGFloat imageBaseline = offset + kImageSize;
-    if (hasImage) {
-      [self addImageViewForInfo:info
-                     toSubviews:subviews
-                       atOffset:offset + PageInfoImageVerticalOffset()];
-    }
+  // Insert the image subview for sections that are appropriate.
+  CGFloat imageBaseline = offset + kImageSize;
+  if (hasImage) {
+    [self addImage:[_model.image imageWithRenderingMode:
+                                     UIImageRenderingModeAlwaysTemplate]
+        toSubviews:subviews
+          atOffset:offset + PageInfoImageVerticalOffset()];
+  }
 
     // Add the title.
-    if (!info.headline.empty()) {
-      offset += [self addHeadlineViewForInfo:info
-                                  toSubviews:subviews
-                                     atPoint:CGPointMake(xPosition, offset)];
-      offset += kHeadlineSpacing;
-    }
+  offset += [self addHeadline:_model.title
+                   toSubviews:subviews
+                      atPoint:CGPointMake(xPosition, offset)];
+  offset += kHeadlineSpacing;
 
-    // Create the description of the state.
-    offset += [self addDescriptionViewForInfo:info
-                                   toSubviews:subviews
-                                      atPoint:CGPointMake(xPosition, offset)];
+  // Create the description of the state.
+  offset += [self addDescription:_model.message
+                      toSubviews:subviews
+                         atPoint:CGPointMake(xPosition, offset)];
 
-    // If at this point the description and optional headline and button are
-    // not as tall as the image, adjust the offset by the difference.
-    CGFloat imageBaselineDelta = imageBaseline - offset;
-    if (imageBaselineDelta > 0)
-      offset += imageBaselineDelta;
+  // If at this point the description and optional headline and button are
+  // not as tall as the image, adjust the offset by the difference.
+  CGFloat imageBaselineDelta = imageBaseline - offset;
+  if (imageBaselineDelta > 0)
+    offset += imageBaselineDelta;
 
-    // Add the separators.
-    int testSectionCount = sectionCount - 1;
-    if (i != testSectionCount ||
-        (i == testSectionCount && action != PageInfoModel::BUTTON_NONE)) {
-      offset += kVerticalSpacing;
-    }
+  // Add the separators.
+  if (_model.buttonAction != PageInfoButtonActionNone) {
+    offset += kVerticalSpacing;
   }
 
   // The last item at the bottom of the window is the help center link. Do not
   // show this for the internal pages, which have one section.
-  offset += [self addButton:action toSubviews:subviews atOffset:offset];
+  offset += [self addButton:_model.buttonAction
+                 toSubviews:subviews
+                   atOffset:offset];
 
   // Add the bottom padding.
   offset += kVerticalSpacing;
@@ -444,27 +429,25 @@ const CGFloat kButtonXOffset = kTextXPosition;
 // Adds the state image at a pre-determined x position and the given y. This
 // does not affect the next Y position because the image is placed next to
 // a text field that is larger and accounts for the image's size.
-- (void)addImageViewForInfo:(const PageInfoModel::SectionInfo&)info
-                 toSubviews:(NSMutableArray*)subviews
-                   atOffset:(CGFloat)offset {
+- (void)addImage:(UIImage*)image
+      toSubviews:(NSMutableArray*)subviews
+        atOffset:(CGFloat)offset {
   CGRect frame = CGRectMake(kFramePadding, offset, kImageSize, kImageSize);
   UIImageView* imageView = [[UIImageView alloc] initWithFrame:frame];
   imageView.tintColor = UIColor.cr_labelColor;
-  UIImage* image = [_model->GetIconImage(info.icon_id)->ToUIImage()
-      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   [imageView setImage:image];
   [subviews addObject:imageView];
 }
 
 // Adds the title text field at the given x,y position, and returns the y
 // position for the next element.
-- (CGFloat)addHeadlineViewForInfo:(const PageInfoModel::SectionInfo&)info
-                       toSubviews:(NSMutableArray*)subviews
-                          atPoint:(CGPoint)point {
+- (CGFloat)addHeadline:(NSString*)headline
+            toSubviews:(NSMutableArray*)subviews
+               atPoint:(CGPoint)point {
   CGRect frame = CGRectMake(point.x, point.y, _textWidth, kHeadlineHeight);
   UILabel* label = [[UILabel alloc] initWithFrame:frame];
   [label setTextAlignment:NSTextAlignmentNatural];
-  [label setText:base::SysUTF16ToNSString(info.headline)];
+  [label setText:headline];
   [label setTextColor:UIColor.cr_labelColor];
   [label setFont:PageInfoHeadlineFont()];
   [label setFrame:frame];
@@ -475,13 +458,12 @@ const CGFloat kButtonXOffset = kTextXPosition;
 
 // Adds the description text field at the given x,y position, and returns the y
 // position for the next element.
-- (CGFloat)addDescriptionViewForInfo:(const PageInfoModel::SectionInfo&)info
-                          toSubviews:(NSMutableArray*)subviews
-                             atPoint:(CGPoint)point {
+- (CGFloat)addDescription:(NSString*)description
+               toSubviews:(NSMutableArray*)subviews
+                  atPoint:(CGPoint)point {
   CGRect frame = CGRectMake(point.x, point.y, _textWidth, kImageSize);
   UILabel* label = [[UILabel alloc] initWithFrame:frame];
   [label setTextAlignment:NSTextAlignmentNatural];
-  NSString* description = base::SysUTF16ToNSString(info.description);
   UIFont* font = [MDCTypography captionFont];
   [label setTextColor:UIColor.cr_labelColor];
   [label setText:description];
@@ -499,25 +481,25 @@ const CGFloat kButtonXOffset = kTextXPosition;
 }
 
 // Returns a button with title and action configured for |buttonAction|.
-- (UIButton*)buttonForAction:(PageInfoModel::ButtonAction)buttonAction {
-  if (buttonAction == PageInfoModel::BUTTON_NONE) {
+- (UIButton*)buttonForAction:(PageInfoButtonAction)buttonAction {
+  if (buttonAction == PageInfoButtonActionNone) {
     return nil;
   }
   UIButton* button = [[UIButton alloc] initWithFrame:CGRectZero];
   int messageId;
   NSString* accessibilityID = @"Reload button";
   switch (buttonAction) {
-    case PageInfoModel::BUTTON_NONE:
+    case PageInfoButtonActionNone:
       NOTREACHED();
       return nil;
-    case PageInfoModel::BUTTON_SHOW_SECURITY_HELP:
+    case PageInfoButtonActionShowHelp:
       messageId = IDS_LEARN_MORE;
       accessibilityID = @"Learn more";
       [button addTarget:self.handler
                     action:@selector(showSecurityHelpPage)
           forControlEvents:UIControlEventTouchUpInside];
       break;
-    case PageInfoModel::BUTTON_RELOAD:
+    case PageInfoButtonActionReload:
       messageId = IDS_IOS_PAGE_INFO_RELOAD;
       accessibilityID = @"Reload button";
       [button addTarget:self.handler
@@ -537,7 +519,7 @@ const CGFloat kButtonXOffset = kTextXPosition;
 
 // Adds the the button |buttonAction| that explains the icons. Returns the y
 // position delta for the next offset.
-- (CGFloat)addButton:(PageInfoModel::ButtonAction)buttonAction
+- (CGFloat)addButton:(PageInfoButtonAction)buttonAction
           toSubviews:(NSMutableArray*)subviews
             atOffset:(CGFloat)offset {
   UIButton* button = [self buttonForAction:buttonAction];

@@ -216,6 +216,10 @@ IDNSpoofChecker::IDNSpoofChecker() {
        // This ignores variants such as ά, έ, ή, ί.
        "[αικνρυωηοτ]",
        {"gr"}},
+      {// Armenian
+       "[[:Armn:]]",
+       "[ագզէլհյոսւօՙ]",
+       {"am"}},
   };
   for (const WholeScriptConfusableData& data : kWholeScriptConfusables) {
     auto all_letters = std::make_unique<icu::UnicodeSet>(

@@ -113,6 +113,7 @@ source_set("application_delegate_internal") {
     "//components/ukm/ios:features",
     "//ios/chrome/app",
     "//ios/chrome/app:mode",
+    "//ios/chrome/app/intents",
     "//ios/chrome/app/spotlight",
     "//ios/chrome/app/startup",
     "//ios/chrome/browser",

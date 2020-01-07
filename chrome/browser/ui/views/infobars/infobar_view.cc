@@ -278,11 +278,11 @@ views::Label* InfoBarView::CreateLabel(const base::string16& text) const {
   return label;
 }
 
-views::Link* InfoBarView::CreateLink(const base::string16& text,
-                                     views::LinkListener* listener) const {
+views::Link* InfoBarView::CreateLink(const base::string16& text) {
   views::Link* link = new views::Link(text, CONTEXT_BODY_TEXT_LARGE);
   SetLabelDetails(link);
-  link->set_listener(listener);
+  link->set_callback(
+      base::BindRepeating(&InfoBarView::LinkClicked, base::Unretained(this)));
   link->SetProperty(kLabelType, LabelType::kLink);
   return link;
 }
@@ -397,4 +397,11 @@ void InfoBarView::SetLabelDetails(views::Label* label) const {
                      gfx::Insets(ChromeLayoutProvider::Get()->GetDistanceMetric(
                                      DISTANCE_TOAST_LABEL_VERTICAL),
                                  0));
+}
+
+void InfoBarView::LinkClicked(views::Link* source, int event_flags) {
+  if (!owner())
+    return;  // We're closing; don't call anything, it might access the owner.
+  if (delegate()->LinkClicked(ui::DispositionFromEventFlags(event_flags)))
+    RemoveSelf();
 }

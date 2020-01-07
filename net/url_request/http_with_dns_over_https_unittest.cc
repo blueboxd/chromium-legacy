@@ -313,7 +313,7 @@ TEST_F(HttpWithDnsOverHttpsTest, EndToEndFail) {
   EXPECT_EQ(test_https_requests_served_, 0u);
 
   EXPECT_TRUE(d.response_completed());
-  EXPECT_EQ(d.request_status(), net::ERR_NAME_NOT_RESOLVED);
+  EXPECT_EQ(d.request_status(), net::ERR_DNS_MALFORMED_RESPONSE);
 
   const auto& resolve_error_info = req->response_info().resolve_error_info;
   EXPECT_TRUE(resolve_error_info.is_secure_network_error);

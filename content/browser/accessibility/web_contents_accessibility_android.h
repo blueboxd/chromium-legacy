@@ -42,6 +42,8 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
   // Methods called from Java via JNI
   // --------------------------------------------------------------------------
 
+  void DeleteEarly(JNIEnv* env);
+
   // Global methods.
   jboolean IsEnabled(JNIEnv* env,
                      const base::android::JavaParamRef<jobject>& obj);

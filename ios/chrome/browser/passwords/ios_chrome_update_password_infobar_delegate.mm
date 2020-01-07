@@ -86,6 +86,15 @@ IOSChromeUpdatePasswordInfoBarDelegate::GetIdentifier() const {
   return UPDATE_PASSWORD_INFOBAR_DELEGATE_MOBILE;
 }
 
+base::string16 IOSChromeUpdatePasswordInfoBarDelegate::GetLinkText() const {
+  return ShowMultipleAccounts() ? selected_account_ : base::string16();
+}
+
+void IOSChromeUpdatePasswordInfoBarDelegate::InfoBarDismissed() {
+  DCHECK(form_to_save());
+  set_infobar_response(password_manager::metrics_util::CLICKED_CANCEL);
+}
+
 base::string16 IOSChromeUpdatePasswordInfoBarDelegate::GetMessageText() const {
   return selected_account_.length() > 0
              ? l10n_util::GetStringFUTF16(
@@ -113,13 +122,4 @@ bool IOSChromeUpdatePasswordInfoBarDelegate::Accept() {
   form_to_save()->Save();
   set_infobar_response(password_manager::metrics_util::CLICKED_SAVE);
   return true;
-}
-
-void IOSChromeUpdatePasswordInfoBarDelegate::InfoBarDismissed() {
-  DCHECK(form_to_save());
-  set_infobar_response(password_manager::metrics_util::CLICKED_CANCEL);
-}
-
-base::string16 IOSChromeUpdatePasswordInfoBarDelegate::GetLinkText() const {
-  return ShowMultipleAccounts() ? selected_account_ : base::string16();
 }

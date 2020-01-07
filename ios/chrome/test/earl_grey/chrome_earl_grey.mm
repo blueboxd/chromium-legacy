@@ -820,6 +820,11 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return [ChromeEarlGreyAppInterface registeredKeyCommandCount];
 }
 
+- (void)simulatePhysicalKeyboardEvent:(NSString*)input
+                                flags:(UIKeyModifierFlags)flags {
+  [ChromeEarlGreyAppInterface simulatePhysicalKeyboardEvent:input flags:flags];
+}
+
 #pragma mark - Pref Utilities (EG2)
 
 - (void)setBoolValue:(BOOL)value forUserPref:(const std::string&)UTF8PrefName {

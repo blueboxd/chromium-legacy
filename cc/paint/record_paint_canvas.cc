@@ -296,7 +296,7 @@ bool RecordPaintCanvas::isClipEmpty() const {
   return GetCanvas()->isClipEmpty();
 }
 
-const SkMatrix& RecordPaintCanvas::getTotalMatrix() const {
+SkMatrix RecordPaintCanvas::getTotalMatrix() const {
   return GetCanvas()->getTotalMatrix();
 }
 

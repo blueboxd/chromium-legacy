@@ -476,11 +476,9 @@ void ServiceWorkerStorage::StoreRegistration(
                                     std::move(callback), data)));
 }
 
-void ServiceWorkerStorage::UpdateToActiveState(
-    ServiceWorkerRegistration* registration,
-    StatusCallback callback) {
-  DCHECK(registration);
-
+void ServiceWorkerStorage::UpdateToActiveState(int64_t registration_id,
+                                               const GURL& origin,
+                                               StatusCallback callback) {
   DCHECK(state_ == STORAGE_STATE_INITIALIZED ||
          state_ == STORAGE_STATE_DISABLED)
       << state_;
@@ -494,16 +492,17 @@ void ServiceWorkerStorage::UpdateToActiveState(
   base::PostTaskAndReplyWithResult(
       database_task_runner_.get(), FROM_HERE,
       base::BindOnce(&ServiceWorkerDatabase::UpdateVersionToActive,
-                     base::Unretained(database_.get()), registration->id(),
-                     registration->scope().GetOrigin()),
+                     base::Unretained(database_.get()), registration_id,
+                     origin),
       base::BindOnce(&ServiceWorkerStorage::DidUpdateToActiveState,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void ServiceWorkerStorage::UpdateLastUpdateCheckTime(
-    ServiceWorkerRegistration* registration,
+    int64_t registration_id,
+    const GURL& origin,
+    base::Time last_update_check_time,
     StatusCallback callback) {
-  DCHECK(registration);
   DCHECK(state_ == STORAGE_STATE_INITIALIZED ||
          state_ == STORAGE_STATE_DISABLED)
       << state_;
@@ -517,9 +516,8 @@ void ServiceWorkerStorage::UpdateLastUpdateCheckTime(
   base::PostTaskAndReplyWithResult(
       database_task_runner_.get(), FROM_HERE,
       base::BindOnce(&ServiceWorkerDatabase::UpdateLastCheckTime,
-                     base::Unretained(database_.get()), registration->id(),
-                     registration->scope().GetOrigin(),
-                     registration->last_update_check()),
+                     base::Unretained(database_.get()), registration_id, origin,
+                     last_update_check_time),
       base::BindOnce(
           [](StatusCallback callback, ServiceWorkerDatabase::Status status) {
             std::move(callback).Run(DatabaseStatusToStatusCode(status));

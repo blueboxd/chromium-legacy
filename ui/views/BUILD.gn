@@ -138,7 +138,6 @@ jumbo_component("views") {
     "controls/image_view.h",
     "controls/label.h",
     "controls/link.h",
-    "controls/link_listener.h",
     "controls/menu/menu_closure_animation_mac.h",
     "controls/menu/menu_cocoa_watcher_mac.h",
     "controls/menu/menu_config.h",

@@ -231,8 +231,8 @@ void CastSocketImpl::Connect() {
   // Set up connection timeout.
   if (open_params_.connect_timeout.InMicroseconds() > 0) {
     DCHECK(connect_timeout_callback_.IsCancelled());
-    connect_timeout_callback_.Reset(
-        base::Bind(&CastSocketImpl::OnConnectTimeout, base::Unretained(this)));
+    connect_timeout_callback_.Reset(base::BindOnce(
+        &CastSocketImpl::OnConnectTimeout, base::Unretained(this)));
     GetTimer()->Start(FROM_HERE, open_params_.connect_timeout,
                       connect_timeout_callback_.callback());
   }

@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/optional.h"
-#include "chrome/browser/ssl/ssl_error_assistant.pb.h"
+#include "components/security_interstitials/content/ssl_error_assistant.pb.h"
 #include "net/ssl/ssl_info.h"
 #include "url/gurl.h"
 

@@ -37,7 +37,7 @@ BrowserAccessibilityWin::~BrowserAccessibilityWin() {
 void BrowserAccessibilityWin::UpdatePlatformAttributes() {
   GetCOM()->UpdateStep1ComputeWinAttributes();
   GetCOM()->UpdateStep2ComputeHypertext();
-  GetCOM()->UpdateStep3FireEvents(false);
+  GetCOM()->UpdateStep3FireEvents();
 }
 
 ui::AXPlatformNode* BrowserAccessibilityWin::GetAXPlatformNode() const {

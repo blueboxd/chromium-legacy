@@ -181,38 +181,37 @@ bool StructTraits<media_router::mojom::MediaRouteDataView,
   media_router::MediaRoute::Id media_route_id;
   if (!data.ReadMediaRouteId(&media_route_id))
     return false;
-
   out->set_media_route_id(media_route_id);
 
   std::string presentation_id;
   if (!data.ReadPresentationId(&presentation_id))
     return false;
-
   out->set_presentation_id(presentation_id);
 
   base::Optional<media_router::MediaSource::Id> media_source_id;
   if (!data.ReadMediaSource(&media_source_id))
     return false;
-
   if (media_source_id)
     out->set_media_source(media_router::MediaSource(*media_source_id));
 
   media_router::MediaSink::Id media_sink_id;
   if (!data.ReadMediaSinkId(&media_sink_id))
     return false;
-
   out->set_media_sink_id(media_sink_id);
+
+  std::string media_sink_name;
+  if (!data.ReadMediaSinkName(&media_sink_name))
+    return false;
+  out->set_media_sink_name(media_sink_name);
 
   std::string description;
   if (!data.ReadDescription(&description))
     return false;
-
   out->set_description(description);
 
   media_router::RouteControllerType controller_type;
   if (!data.ReadControllerType(&controller_type))
     return false;
-
   out->set_controller_type(controller_type);
 
   out->set_local(data.is_local());

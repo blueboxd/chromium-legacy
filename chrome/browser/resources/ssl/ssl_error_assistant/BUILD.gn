@@ -13,14 +13,15 @@ action("make_ssl_error_assistant_protobuf") {
   output_dir = target_gen_dir
   output_basename = "ssl_error_assistant.pb"
   python_path_root = "$root_out_dir/pyproto"
-  python_path_ssl = "$python_path_root/chrome/browser/ssl/"
+  python_path_ssl =
+      "$python_path_root/components/security_interstitials/content/"
 
   inputs = [
     input_filename,
   ]
 
   deps = [
-    "//chrome/browser/ssl:proto",
+    "//components/security_interstitials/content:proto",
     "//third_party/protobuf:py_proto",
   ]
 

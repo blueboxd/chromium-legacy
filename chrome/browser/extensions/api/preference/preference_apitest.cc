@@ -26,7 +26,7 @@
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_registry.h"

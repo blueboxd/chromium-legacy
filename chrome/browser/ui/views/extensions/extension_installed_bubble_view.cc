@@ -53,7 +53,6 @@
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
-#include "ui/views/controls/link_listener.h"
 #include "ui/views/layout/box_layout.h"
 
 #if !defined(OS_CHROMEOS)
@@ -289,8 +288,7 @@ base::string16 GetHowToUseDescription(const Extension* extension,
 //    GENERIC        -> The app menu. This case includes pageActions that don't
 //                      specify a default icon.
 class ExtensionInstalledBubbleView : public BubbleSyncPromoDelegate,
-                                     public views::BubbleDialogDelegateView,
-                                     public views::LinkListener {
+                                     public views::BubbleDialogDelegateView {
  public:
   ExtensionInstalledBubbleView(
       BubbleReference reference,
@@ -316,8 +314,7 @@ class ExtensionInstalledBubbleView : public BubbleSyncPromoDelegate,
   void OnEnableSync(const AccountInfo& account_info,
                     bool is_default_promo_account) override;
 
-  // views::LinkListener:
-  void LinkClicked(views::Link* source, int event_flags) override;
+  void LinkClicked();
 
   BubbleReference bubble_reference_;
 
@@ -431,7 +428,8 @@ void ExtensionInstalledBubbleView::Init() {
   if (ShouldShowKeybinding(extension_.get(), browser_)) {
     auto* manage_shortcut = AddChildView(std::make_unique<views::Link>(
         l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALLED_MANAGE_SHORTCUTS)));
-    manage_shortcut->set_listener(this);
+    manage_shortcut->set_callback(base::BindRepeating(
+        &ExtensionInstalledBubbleView::LinkClicked, base::Unretained(this)));
     manage_shortcut->SetUnderline(false);
   }
 
@@ -450,8 +448,7 @@ void ExtensionInstalledBubbleView::OnEnableSync(const AccountInfo& account,
   CloseBubble(BUBBLE_CLOSE_NAVIGATED);
 }
 
-void ExtensionInstalledBubbleView::LinkClicked(views::Link* source,
-                                               int event_flags) {
+void ExtensionInstalledBubbleView::LinkClicked() {
   const GURL kUrl(base::StrCat({chrome::kChromeUIExtensionsURL,
                                 chrome::kExtensionConfigureCommandsSubPage}));
   NavigateParams params = GetSingletonTabNavigateParams(browser_, kUrl);

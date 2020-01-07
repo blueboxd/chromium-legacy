@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/modules/encryptedmedia/encrypted_media_utils.h"
 #include "third_party/blink/renderer/modules/encryptedmedia/media_key_session.h"
 #include "third_party/blink/renderer/modules/encryptedmedia/media_keys_policy.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
@@ -271,7 +272,8 @@ MediaKeySession* MediaKeys::createSession(ScriptState* script_state,
 
 ScriptPromise MediaKeys::setServerCertificate(
     ScriptState* script_state,
-    const DOMArrayPiece& server_certificate) {
+    const DOMArrayPiece& server_certificate,
+    ExceptionState& exception_state) {
   // From https://w3c.github.io/encrypted-media/#setServerCertificate
   // The setServerCertificate(serverCertificate) method provides a server
   // certificate to be used to encrypt messages to the license server.
@@ -285,10 +287,8 @@ ScriptPromise MediaKeys::setServerCertificate(
   // 2. If serverCertificate is an empty array, return a promise rejected
   //    with a new a newly created TypeError.
   if (!server_certificate.ByteLengthAsSizeT()) {
-    return ScriptPromise::Reject(
-        script_state, V8ThrowException::CreateTypeError(
-                          script_state->GetIsolate(),
-                          "The serverCertificate parameter is empty."));
+    exception_state.ThrowTypeError("The serverCertificate parameter is empty.");
+    return ScriptPromise();
   }
 
   // 3. Let certificate be a copy of the contents of the serverCertificate

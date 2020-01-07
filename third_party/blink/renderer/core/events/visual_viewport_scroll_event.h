@@ -14,10 +14,6 @@ class VisualViewportScrollEvent final : public Event {
   VisualViewportScrollEvent();
   ~VisualViewportScrollEvent() override;
 
-  static VisualViewportScrollEvent* Create() {
-    return MakeGarbageCollected<VisualViewportScrollEvent>();
-  }
-
   void DoneDispatchingEventAtCurrentTarget() override;
 
   void Trace(blink::Visitor* visitor) override { Event::Trace(visitor); }

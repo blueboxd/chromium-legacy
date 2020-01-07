@@ -48,6 +48,7 @@ bool MediaRoute::operator==(const MediaRoute& other) const {
          presentation_id_ == other.presentation_id_ &&
          media_source_ == other.media_source_ &&
          media_sink_id_ == other.media_sink_id_ &&
+         media_sink_name_ == other.media_sink_name_ &&
          description_ == other.description_ && is_local_ == other.is_local_ &&
          controller_type_ == other.controller_type_ &&
          for_display_ == other.for_display_ &&

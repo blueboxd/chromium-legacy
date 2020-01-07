@@ -44,7 +44,7 @@ TestStoragePartition::GetCookieManagerForBrowserProcess() {
 void TestStoragePartition::CreateRestrictedCookieManager(
     network::mojom::RestrictedCookieManagerRole role,
     const url::Origin& origin,
-    const GURL& site_for_cookies,
+    const net::SiteForCookies& site_for_cookies,
     const url::Origin& top_frame_origin,
     bool is_service_worker,
     int process_id,

@@ -227,8 +227,10 @@ void StyledLabel::Layout() {
 
   // If the layout has been recalculated, add and position all views.
   if (layout_views_) {
-    for (auto& link_target : layout_views_->link_targets)
-      link_target.first->set_listener(this);
+    for (auto& link_target : layout_views_->link_targets) {
+      link_target.first->set_callback(base::BindRepeating(
+          &StyledLabel::LinkClicked, base::Unretained(this)));
+    }
     link_targets_ = std::move(layout_views_->link_targets);
 
     // Delete all non-custom views on removal; custom views are owned-by-client.

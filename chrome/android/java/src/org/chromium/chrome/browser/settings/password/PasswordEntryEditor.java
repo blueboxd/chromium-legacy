@@ -19,7 +19,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.widget.ChromeTextInputLayout;
+import org.chromium.components.browser_ui.widget.text.ChromeTextInputLayout;
 import org.chromium.ui.widget.Toast;
 
 /**

@@ -163,9 +163,10 @@ ClearButtonElement* MultipleFieldsTemporalInputTypeView::GetClearButtonElement()
 
 PickerIndicatorElement*
 MultipleFieldsTemporalInputTypeView::GetPickerIndicatorElement() const {
-  return ToPickerIndicatorElementOrDie(
-      GetElement().UserAgentShadowRoot()->getElementById(
-          shadow_element_names::PickerIndicator()));
+  auto* element = GetElement().UserAgentShadowRoot()->getElementById(
+      shadow_element_names::PickerIndicator());
+  CHECK(!element || IsA<PickerIndicatorElement>(element));
+  return To<PickerIndicatorElement>(element);
 }
 
 inline bool MultipleFieldsTemporalInputTypeView::ContainsFocusedShadowElement()

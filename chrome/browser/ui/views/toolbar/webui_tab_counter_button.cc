@@ -33,22 +33,27 @@
 
 namespace {
 
+constexpr int kDesiredBorderHeight = 22;
+// TODO(999557): Change this to 32 when the font is changed to Roboto.
+constexpr int kDoubleDigitWidth = 30;
+
 class TabCounterAnimator : public gfx::AnimationDelegate {
  public:
   explicit TabCounterAnimator(views::View* animated_view)
-      : animated_view_(animated_view),
-        starting_bounds_(animated_view->bounds()),
-        target_bounds_(starting_bounds_.x(),
-                       starting_bounds_.y() - 4,
-                       starting_bounds_.width(),
-                       starting_bounds_.height()) {
+      : animated_view_(animated_view) {
     animation_ = std::make_unique<gfx::ThrobAnimation>(this);
     animation_->SetTweenType(gfx::Tween::Type::FAST_OUT_SLOW_IN);
     animation_->SetThrobDuration(base::TimeDelta::FromMilliseconds(100));
   }
   ~TabCounterAnimator() override = default;
 
-  void Animate() { animation_->StartThrobbing(1); }
+  void Animate() {
+    starting_bounds_ = animated_view_->bounds();
+    target_bounds_ =
+        gfx::Rect(starting_bounds_.x(), starting_bounds_.y() - 4,
+                  starting_bounds_.width(), starting_bounds_.height());
+    animation_->StartThrobbing(1);
+  }
 
   // AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override {
@@ -59,8 +64,8 @@ class TabCounterAnimator : public gfx::AnimationDelegate {
 
  private:
   views::View* const animated_view_;
-  const gfx::Rect starting_bounds_;
-  const gfx::Rect target_bounds_;
+  gfx::Rect starting_bounds_;
+  gfx::Rect target_bounds_;
   std::unique_ptr<gfx::ThrobAnimation> animation_;
 
   DISALLOW_COPY_AND_ASSIGN(TabCounterAnimator);
@@ -73,6 +78,7 @@ class TabCounterUpdater : public TabStripModelObserver {
                     views::View* tab_counter_container)
       : button_(button),
         tab_counter_(tab_counter),
+        tab_counter_container_(tab_counter_container),
         animator_(tab_counter_container) {}
   ~TabCounterUpdater() override = default;
 
@@ -83,8 +89,28 @@ class TabCounterUpdater : public TabStripModelObserver {
         base::i18n::MessageFormatter::FormatWithNumberedArgs(
             l10n_util::GetStringUTF16(IDS_TOOLTIP_WEBUI_TAB_STRIP_TAB_COUNTER),
             num_tabs));
-    // TODO(999557): Have a 99+-style fallback to limit the max text width.
     tab_counter_->SetText(base::FormatNumber(num_tabs));
+
+    const int button_height = button_->GetLocalBounds().height();
+    const int inset_height = (button_height - kDesiredBorderHeight) / 2;
+    int inset_width = inset_height;
+    int border_width = kDesiredBorderHeight;
+    if (num_tabs < 10) {
+      inset_width = inset_height;
+      border_width = kDesiredBorderHeight;
+    } else if (num_tabs < 100) {
+      inset_width = (button_height - kDoubleDigitWidth) / 2;
+      border_width = kDoubleDigitWidth;
+    } else {
+      // In the triple-digit case, fall back to ':D' to match Android.
+      tab_counter_->SetText(base::string16(base::ASCIIToUTF16(":D")));
+      inset_width = inset_height;
+      border_width = kDesiredBorderHeight;
+    }
+    tab_counter_container_->SetBounds(inset_width, inset_height, border_width,
+                                      kDesiredBorderHeight);
+    tab_counter_->SetBounds(0, 0, border_width, kDesiredBorderHeight);
+
     animator_.Animate();
   }
 
@@ -99,6 +125,7 @@ class TabCounterUpdater : public TabStripModelObserver {
  private:
   views::Button* const button_;
   views::Label* const tab_counter_;
+  views::View* const tab_counter_container_;
   TabCounterAnimator animator_;
 };
 
@@ -179,8 +206,6 @@ std::unique_ptr<views::View> CreateWebUITabCounterButton(
 
   tab_counter->SetID(VIEW_ID_WEBUI_TAB_STRIP_TAB_COUNTER);
 
-  // TODO(999557): Create a custom text style to get the correct size/weight.
-  // TODO(999557): Figure out how to get the right font.
   tab_counter->SetProperty(views::kFlexBehaviorKey,
                            views::FlexSpecification::ForSizeRule(
                                views::MinimumFlexSizeRule::kScaleToMinimum,
@@ -202,12 +227,6 @@ std::unique_ptr<views::View> CreateWebUITabCounterButton(
   views::Label* label = border->AddChildView(std::make_unique<views::Label>(
       base::string16(), CONTEXT_WEB_UI_TAB_COUNTER));
   tab_counter->label_ = label;
-
-  constexpr int kDesiredBorderHeight = 22;
-  const int inset_height = (button_height - kDesiredBorderHeight) / 2;
-  border->SetBounds(inset_height, inset_height, kDesiredBorderHeight,
-                    kDesiredBorderHeight);
-  label->SetBounds(0, 0, kDesiredBorderHeight, kDesiredBorderHeight);
 
   tab_counter->counter_updater_ =
       std::make_unique<TabCounterUpdater>(tab_counter.get(), label, border);

@@ -230,6 +230,10 @@ const base::Feature kIdleDetection{"IdleDetection",
 const base::Feature kInputPredictorTypeChoice{
     "InputPredictorTypeChoice", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Allow Windows specific implementation for the GetInstalledRelatedApps API.
+const base::Feature kInstalledAppProvider{"InstalledAppProvider",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Alternative to switches::kIsolateOrigins, for turning on origin isolation.
 // List of origins to isolate has to be specified via
 // kIsolateOriginsFieldTrialParamName.

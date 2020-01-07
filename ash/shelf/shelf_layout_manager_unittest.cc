@@ -4950,6 +4950,28 @@ TEST_F(HotseatShelfLayoutManagerTest, ExitOverviewWithClickOnHotseat) {
   EXPECT_FALSE(overview_controller->InOverviewSession());
 }
 
+// Hides the hotseat if the hotseat is in kExtendedMode and the system tray
+// is about to show (see https://crbug.com/1028321).
+TEST_F(HotseatShelfLayoutManagerTest, DismissHotseatWhenSystemTrayShows) {
+  TabletModeControllerTestApi().EnterTabletMode();
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+
+  SwipeUpOnShelf();
+  ASSERT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
+
+  // Activates the system tray when hotseat is in kExtended mode.
+  StatusAreaWidget* status_area_widget = GetShelfWidget()->status_area_widget();
+  const gfx::Point status_area_widget_center =
+      status_area_widget->GetNativeView()->GetBoundsInScreen().CenterPoint();
+  GetEventGenerator()->GestureTapAt(status_area_widget_center);
+
+  // Expects that the system tray shows and the hotseat is hidden.
+  EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
+  EXPECT_TRUE(status_area_widget->unified_system_tray()->IsBubbleShown());
+}
+
 class ShelfLayoutManagerWindowDraggingTest : public ShelfLayoutManagerTestBase {
  public:
   ShelfLayoutManagerWindowDraggingTest() = default;

@@ -98,6 +98,18 @@ TrustedScriptURL* TrustedTypePolicy::CreateScriptURL(
   return MakeGarbageCollected<TrustedScriptURL>(script_url);
 }
 
+bool TrustedTypePolicy::HasCreateHTML() {
+  return policy_options_->createHTML();
+}
+
+bool TrustedTypePolicy::HasCreateScript() {
+  return policy_options_->createScript();
+}
+
+bool TrustedTypePolicy::HasCreateScriptURL() {
+  return policy_options_->createScriptURL();
+}
+
 String TrustedTypePolicy::name() const {
   return name_;
 }

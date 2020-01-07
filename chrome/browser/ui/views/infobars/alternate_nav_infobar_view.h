@@ -9,13 +9,11 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
-#include "ui/views/controls/link_listener.h"
 
 class AlternateNavInfoBarDelegate;
 
 // An infobar that shows a string with an embedded link.
-class AlternateNavInfoBarView : public InfoBarView,
-                                public views::LinkListener {
+class AlternateNavInfoBarView : public InfoBarView {
  public:
   explicit AlternateNavInfoBarView(
       std::unique_ptr<AlternateNavInfoBarDelegate> delegate);
@@ -34,9 +32,6 @@ class AlternateNavInfoBarView : public InfoBarView,
   // InfoBarView:
   void Layout() override;
   int ContentMinimumWidth() const override;
-
-  // views::LinkListener:
-  void LinkClicked(views::Link* source, int event_flags) override;
 
   AlternateNavInfoBarDelegate* GetDelegate();
 

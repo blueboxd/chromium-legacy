@@ -19,7 +19,7 @@
 #include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/chrome_features.h"
-#include "components/safe_browsing/db/database_manager.h"
+#include "components/safe_browsing/core/db/database_manager.h"
 
 namespace {
 

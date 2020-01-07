@@ -79,15 +79,21 @@ class CSSImageNonInterpolableValue : public NonInterpolableValue {
 };
 
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE(CSSImageNonInterpolableValue);
-DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(CSSImageNonInterpolableValue);
+template <>
+struct DowncastTraits<CSSImageNonInterpolableValue> {
+  static bool AllowFrom(const NonInterpolableValue* value) {
+    return value && AllowFrom(*value);
+  }
+  static bool AllowFrom(const NonInterpolableValue& value) {
+    return value.GetType() == CSSImageNonInterpolableValue::static_type_;
+  }
+};
 
 scoped_refptr<CSSImageNonInterpolableValue> CSSImageNonInterpolableValue::Merge(
     scoped_refptr<const NonInterpolableValue> start,
     scoped_refptr<const NonInterpolableValue> end) {
-  const CSSImageNonInterpolableValue& start_image_pair =
-      ToCSSImageNonInterpolableValue(*start);
-  const CSSImageNonInterpolableValue& end_image_pair =
-      ToCSSImageNonInterpolableValue(*end);
+  const auto& start_image_pair = To<CSSImageNonInterpolableValue>(*start);
+  const auto& end_image_pair = To<CSSImageNonInterpolableValue>(*end);
   DCHECK(start_image_pair.is_single_);
   DCHECK(end_image_pair.is_single_);
   return Create(start_image_pair.start_, end_image_pair.end_);
@@ -115,9 +121,10 @@ PairwiseInterpolationValue
 CSSImageInterpolationType::StaticMergeSingleConversions(
     InterpolationValue&& start,
     InterpolationValue&& end) {
-  if (!ToCSSImageNonInterpolableValue(*start.non_interpolable_value)
+  if (!To<CSSImageNonInterpolableValue>(*start.non_interpolable_value)
            .IsSingle() ||
-      !ToCSSImageNonInterpolableValue(*end.non_interpolable_value).IsSingle()) {
+      !To<CSSImageNonInterpolableValue>(*end.non_interpolable_value)
+           .IsSingle()) {
     return nullptr;
   }
   return PairwiseInterpolationValue(
@@ -137,7 +144,7 @@ const CSSValue* CSSImageInterpolationType::CreateCSSValue(
 const CSSValue* CSSImageInterpolationType::StaticCreateCSSValue(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue* non_interpolable_value) {
-  return ToCSSImageNonInterpolableValue(non_interpolable_value)
+  return To<CSSImageNonInterpolableValue>(non_interpolable_value)
       ->Crossfade(To<InterpolableNumber>(interpolable_value).Value());
 }
 
@@ -154,8 +161,8 @@ StyleImage* CSSImageInterpolationType::ResolveStyleImage(
 bool CSSImageInterpolationType::EqualNonInterpolableValues(
     const NonInterpolableValue* a,
     const NonInterpolableValue* b) {
-  return ToCSSImageNonInterpolableValue(*a).Equals(
-      ToCSSImageNonInterpolableValue(*b));
+  return To<CSSImageNonInterpolableValue>(*a).Equals(
+      To<CSSImageNonInterpolableValue>(*b));
 }
 
 class UnderlyingImageChecker

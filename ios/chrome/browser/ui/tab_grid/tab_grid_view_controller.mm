@@ -106,11 +106,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 @interface TabGridViewController () <GridViewControllerDelegate,
                                      UIScrollViewAccessibilityDelegate>
-// It is programmer error to broadcast incognito content visibility when the
-// view is not visible. Bookkeeping is based on |-viewWillAppear:| and
+// Whether the view is visible. Bookkeeping is based on |-viewWillAppear:| and
 // |-viewWillDisappear methods. Note that the |Did| methods are not reliably
 // called (e.g., edge case in multitasking).
-@property(nonatomic, assign) BOOL broadcasting;
+@property(nonatomic, assign) BOOL viewVisible;
 // Child view controllers.
 @property(nonatomic, strong) GridViewController* regularTabsViewController;
 @property(nonatomic, strong) GridViewController* incognitoTabsViewController;
@@ -182,7 +181,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (void)viewWillAppear:(BOOL)animated {
-  self.broadcasting = YES;
+  self.viewVisible = YES;
   [self.topToolbar.pageControl setSelectedPage:self.currentPage animated:YES];
   [self configureViewControllerForCurrentSizeClassesAndPage];
   // The toolbars should be hidden (alpha 0.0) before the tab appears, so that
@@ -223,7 +222,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   } else {
     [self hideToolbars];
   }
-  self.broadcasting = NO;
+  self.viewVisible = NO;
   [super viewWillDisappear:animated];
 }
 
@@ -527,7 +526,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
   // If the view is visible and |animated| is YES, animate the change.
   // Otherwise don't.
-  if (self.view.window == nil || !animated) {
+  if (!self.viewVisible || !animated) {
     [self.scrollView setContentOffset:targetOffset animated:NO];
     self.currentPage = targetPage;
   } else {
@@ -1034,7 +1033,9 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 // Broadcasts whether incognito tabs are showing.
 - (void)broadcastIncognitoContentVisibility {
-  if (!self.broadcasting)
+  // It is programmer error to broadcast incognito content visibility when the
+  // view is not visible.
+  if (!self.viewVisible)
     return;
   BOOL incognitoContentVisible =
       (self.currentPage == TabGridPageIncognitoTabs &&
@@ -1130,7 +1131,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     if (count == 0 && self.currentPage == TabGridPageIncognitoTabs) {
       // Show the regular tabs to the user if the last incognito tab is closed.
       self.activePage = TabGridPageRegularTabs;
-      if (self.viewLoaded && self.view.window) {
+      if (self.viewLoaded && self.viewVisible) {
         // Visibly scroll to the regular tabs panel after a slight delay when
         // the user is already in the tab switcher.
         // Per crbug.com/980844, if the user has VoiceOver enabled, don't delay

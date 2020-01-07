@@ -118,7 +118,7 @@
          identityManager:IdentityManagerFactory::GetForBrowserState(
                              self.browserState)
               logoVendor:ios::GetChromeBrowserProvider()->CreateLogoVendor(
-                             self.browserState)];
+                             self.browserState, self.webState)];
 
   BOOL voiceSearchEnabled = ios::GetChromeBrowserProvider()
                                 ->GetVoiceSearchProvider()

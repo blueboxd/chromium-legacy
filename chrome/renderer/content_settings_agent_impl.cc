@@ -278,7 +278,8 @@ void ContentSettingsAgentImpl::RequestFileSystemAccessAsync(
   GetContentSettingsManager().AllowStorageAccess(
       routing_id(),
       chrome::mojom::ContentSettingsManager::StorageType::FILE_SYSTEM,
-      frame->GetSecurityOrigin(), frame->GetDocument().SiteForCookies(),
+      frame->GetSecurityOrigin(),
+      frame->GetDocument().SiteForCookies().RepresentativeUrl(),
       frame->GetDocument().TopFrameOrigin(), std::move(callback));
 }
 
@@ -384,7 +385,8 @@ bool ContentSettingsAgentImpl::AllowStorage(bool local) {
       local
           ? chrome::mojom::ContentSettingsManager::StorageType::LOCAL_STORAGE
           : chrome::mojom::ContentSettingsManager::StorageType::SESSION_STORAGE,
-      frame->GetSecurityOrigin(), frame->GetDocument().SiteForCookies(),
+      frame->GetSecurityOrigin(),
+      frame->GetDocument().SiteForCookies().RepresentativeUrl(),
       frame->GetDocument().TopFrameOrigin(), &result);
   cached_storage_permissions_[key] = result;
   return result;
@@ -648,7 +650,7 @@ bool ContentSettingsAgentImpl::AllowStorageAccess(
   bool result = false;
   GetContentSettingsManager().AllowStorageAccess(
       routing_id(), storage_type, frame->GetSecurityOrigin(),
-      frame->GetDocument().SiteForCookies(),
+      frame->GetDocument().SiteForCookies().RepresentativeUrl(),
       frame->GetDocument().TopFrameOrigin(), &result);
   return result;
 }

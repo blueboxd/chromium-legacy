@@ -7,8 +7,8 @@
 
 #include "ui/views/widget/widget.h"
 
-// This widget uses a reference widget to provide its NativeTheme. The
-// reference widget is assumed to outlive |this|.
+// This widget uses a reference widget to provide its NativeTheme and
+// ThemeProvider. The reference widget is assumed to outlive |this|.
 class ThemeCopyingWidget : public views::Widget {
  public:
   explicit ThemeCopyingWidget(views::Widget* role_model);
@@ -16,6 +16,7 @@ class ThemeCopyingWidget : public views::Widget {
 
   // views::Widget
   const ui::NativeTheme* GetNativeTheme() const override;
+  const ui::ThemeProvider* GetThemeProvider() const override;
 
  private:
   // The widget we'll copy our theme from.

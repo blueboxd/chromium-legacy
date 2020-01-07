@@ -111,7 +111,7 @@ Write and test your change.
 - Conform to the [style guide][cr-styleguide].
 - Include tests.
 - Patches should be a reasonable size to review. Review time often increases
-  expontentially with patch size.
+  exponentially with patch size.
 
 Commit your change locally in git:
 

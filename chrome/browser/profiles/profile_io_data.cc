@@ -407,8 +407,6 @@ void ProfileIOData::Init() const {
 void ProfileIOData::ShutdownOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  safe_browsing_enabled_.Destroy();
-
   bool posted = base::DeleteSoon(FROM_HERE, {BrowserThread::IO}, this);
   if (!posted)
     delete this;

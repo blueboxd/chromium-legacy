@@ -11,7 +11,7 @@
 #include "base/files/file_path.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_delegate.h"
-#include "components/safe_browsing/proto/webprotect.pb.h"
+#include "components/safe_browsing/core/proto/webprotect.pb.h"
 
 namespace content {
 class WebContents;

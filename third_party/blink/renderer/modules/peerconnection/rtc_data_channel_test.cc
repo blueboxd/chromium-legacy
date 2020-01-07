@@ -52,7 +52,7 @@ class MockPeerConnectionHandler : public MockRTCPeerConnectionHandlerPlatform {
       : signaling_thread_(signaling_thread) {}
 
   void RunSynchronousOnceClosureOnSignalingThread(
-      base::OnceClosure closure,
+      CrossThreadOnceClosure closure,
       const char* trace_event_name) override {
     closure_ = std::move(closure);
     RunSynchronous(
@@ -68,7 +68,7 @@ class MockPeerConnectionHandler : public MockRTCPeerConnectionHandlerPlatform {
   }
 
   scoped_refptr<base::TestSimpleTaskRunner> signaling_thread_;
-  base::OnceClosure closure_;
+  CrossThreadOnceClosure closure_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPeerConnectionHandler);
 };

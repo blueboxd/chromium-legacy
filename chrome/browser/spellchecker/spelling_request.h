@@ -20,28 +20,12 @@ class SpellingRequest {
       spellcheck::mojom::SpellCheckHost::RequestTextCheckCallback;
   using DestructionCallback = base::OnceCallback<void(SpellingRequest*)>;
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-  using RequestPartialTextCheckCallback =
-      spellcheck::mojom::SpellCheckHost::RequestPartialTextCheckCallback;
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-
   SpellingRequest(SpellingServiceClient* client,
                   const base::string16& text,
                   int render_process_id,
                   int document_tag,
                   RequestTextCheckCallback callback,
                   DestructionCallback destruction_callback);
-
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-  SpellingRequest(SpellingServiceClient* client,
-                  const base::string16& text,
-                  int render_process_id,
-                  int document_tag,
-                  const std::vector<SpellCheckResult>& partial_results,
-                  bool fill_suggestions,
-                  RequestPartialTextCheckCallback callback,
-                  DestructionCallback destruction_callback);
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 
   ~SpellingRequest();
 
@@ -51,11 +35,6 @@ class SpellingRequest {
       const std::vector<SpellCheckResult>& local_results);
 
  private:
-  // Requests local and remote checks (starts the request).
-  void StartRequest(SpellingServiceClient* client,
-                    int render_process_id,
-                    int document_tag);
-
   // Request server-side checking for |text_|.
   void RequestRemoteCheck(SpellingServiceClient* client, int render_process_id);
 
@@ -87,17 +66,6 @@ class SpellingRequest {
 
   // The string to be spell-checked.
   base::string16 text_;
-
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-  // Partial results from Hunspell for locales unsupported by the native
-  // spellchecker.
-  std::vector<SpellCheckResult> partial_results_;
-
-  // Whether the local check should fill the suggestions at spellcheck time. If
-  // this is false, no suggestions will be looked up (it will instead happen
-  // when the user explicitly requests suggestions).
-  bool fill_suggestions_;
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 
   // Callback to send the results to renderer. Note that both RequestTextCheck
   // and RequestPartialTextCheck have the same callback signatures, so both

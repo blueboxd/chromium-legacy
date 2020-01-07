@@ -22,11 +22,13 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_app_tab_helper.h"
+#include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -96,14 +98,24 @@ class UpdateCheckResultAwaiter {
 
 }  // namespace
 
-class ManifestUpdateManagerBrowserTest : public InProcessBrowserTest {
+class ManifestUpdateManagerBrowserTest
+    : public InProcessBrowserTest,
+      public ::testing::WithParamInterface<ProviderType> {
  public:
   ManifestUpdateManagerBrowserTest() = default;
   ~ManifestUpdateManagerBrowserTest() override = default;
 
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kDesktopPWAsLocalUpdating);
+    if (GetParam() == ProviderType::kWebApps) {
+      scoped_feature_list_.InitWithFeatures(
+          {features::kDesktopPWAsLocalUpdating,
+           features::kDesktopPWAsWithoutExtensions},
+          {});
+    } else if (GetParam() == ProviderType::kBookmarkApps) {
+      scoped_feature_list_.InitWithFeatures(
+          {features::kDesktopPWAsLocalUpdating},
+          {features::kDesktopPWAsWithoutExtensions});
+    }
 
     http_server_.AddDefaultHandlers(GetChromeTestDataDir());
     http_server_.RegisterRequestHandler(base::BindRepeating(
@@ -224,7 +236,7 @@ class ManifestUpdateManagerBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ManifestUpdateManagerBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
                        CheckOutOfScopeNavigation) {
   EXPECT_EQ(GetResultAfterPageLoad(GetAppURL(), nullptr),
             ManifestUpdateResult::kNoAppInScope);
@@ -237,7 +249,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
   histogram_tester_.ExpectTotalCount(kUpdateHistogramName, 0);
 }
 
-IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest, CheckIsThrottled) {
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest, CheckIsThrottled) {
   constexpr base::TimeDelta kDelayBetweenChecks = base::TimeDelta::FromDays(1);
   base::Time time_override = base::Time::UnixEpoch();
   SetTimeOverride(time_override);
@@ -272,7 +284,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest, CheckIsThrottled) {
                                       ManifestUpdateResult::kAppUpToDate, 3);
 }
 
-IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
                        CheckCancelledByWebContentsDestroyed) {
   AppId app_id = InstallWebApp();
   GetManifestUpdateManager(browser()).hang_update_checks_for_testing();
@@ -287,7 +299,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
       kUpdateHistogramName, ManifestUpdateResult::kWebContentsDestroyed, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
                        CheckCancelledByAppUninstalled) {
   AppId app_id = InstallWebApp();
   GetManifestUpdateManager(browser()).hang_update_checks_for_testing();
@@ -303,7 +315,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
                                       ManifestUpdateResult::kAppUninstalled, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
                        CheckIgnoresWhitespaceDifferences) {
   constexpr char kManifestTemplate[] = R"(
     {
@@ -325,7 +337,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
                                       ManifestUpdateResult::kAppUpToDate, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
                        CheckIgnoresNameChange) {
   constexpr char kManifestTemplate[] = R"(
     {
@@ -347,7 +359,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
                                       ManifestUpdateResult::kAppUpToDate, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
                        CheckIgnoresShortNameChange) {
   constexpr char kManifestTemplate[] = R"(
     {
@@ -371,7 +383,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
                                       ManifestUpdateResult::kAppUpToDate, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
                        CheckIgnoresStartUrlChange) {
   constexpr char kManifestTemplate[] = R"(
     {
@@ -392,7 +404,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
                                       ManifestUpdateResult::kAppUpToDate, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
                        CheckIgnoresNoManifestChange) {
   constexpr char kManifestTemplate[] = R"(
     {
@@ -411,7 +423,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
                                       ManifestUpdateResult::kAppUpToDate, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
                        CheckIgnoresInvalidManifest) {
   constexpr char kManifestTemplate[] = R"(
     {
@@ -433,7 +445,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
                                       ManifestUpdateResult::kAppNotEligible, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
                        CheckIgnoresNonLocalApps) {
   constexpr char kManifestTemplate[] = R"(
     {
@@ -458,7 +470,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
   histogram_tester_.ExpectTotalCount(kUpdateHistogramName, 0);
 }
 
-IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
                        CheckIgnoresPlaceholderApps) {
   // Set up app URL to redirect to force placeholder app to install.
   const GURL app_url = GetAppURL();
@@ -499,7 +511,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
       kUpdateHistogramName, ManifestUpdateResult::kAppIsPlaceholder, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
                        CheckFindsThemeColorChange) {
   constexpr char kManifestTemplate[] = R"(
     {
@@ -523,7 +535,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
   EXPECT_EQ(GetProvider().registrar().GetAppThemeColor(app_id), SK_ColorRED);
 }
 
-IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest, CheckKeepsSameName) {
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest, CheckKeepsSameName) {
   constexpr char kManifestTemplate[] = R"(
     {
       "name": "$1",
@@ -551,7 +563,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest, CheckKeepsSameName) {
   EXPECT_EQ(GetProvider().registrar().GetAppShortName(app_id), "App name 1");
 }
 
-IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
                        CheckFindsIconUrlChange) {
   constexpr char kManifestTemplate[] = R"(
     {
@@ -572,7 +584,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
                                       ManifestUpdateResult::kAppUpdated, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
                        CheckUpdatedPolicyAppsNotUninstallable) {
   constexpr char kManifestTemplate[] = R"(
     {
@@ -601,7 +613,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
       GetProvider().install_finalizer().CanUserUninstallFromSync(app_id));
 }
 
-IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
                        CheckFindsScopeChange) {
   constexpr char kManifestTemplate[] = R"(
     {
@@ -624,4 +636,9 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
             http_server_.GetURL("/"));
 }
 
+INSTANTIATE_TEST_SUITE_P(All,
+                         ManifestUpdateManagerBrowserTest,
+                         ::testing::Values(ProviderType::kBookmarkApps,
+                                           ProviderType::kWebApps),
+                         ProviderTypeParamToString);
 }  // namespace web_app

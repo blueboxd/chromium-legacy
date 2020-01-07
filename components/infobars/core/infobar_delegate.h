@@ -9,6 +9,7 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "ui/base/window_open_disposition.h"
+#include "url/gurl.h"
 
 class ConfirmInfoBarDelegate;
 class HungRendererInfoBarDelegate;
@@ -208,6 +209,13 @@ class InfoBarDelegate {
   // resource bundle as its icon.
   virtual gfx::Image GetIcon() const;
 
+  // Returns the text of the link to be displayed, if any. Otherwise returns
+  // an empty string.
+  virtual base::string16 GetLinkText() const;
+
+  // Returns the URL the link should navigate to.
+  virtual GURL GetLinkURL() const;
+
   // Returns true if the supplied |delegate| is equal to this one. Equality is
   // left to the implementation to define. This function is called by the
   // InfoBarManager when determining whether or not a delegate should be
@@ -221,6 +229,16 @@ class InfoBarDelegate {
   // page (not including reloads).  Subclasses wishing to change this behavior
   // can override this function.
   virtual bool ShouldExpire(const NavigationDetails& details) const;
+
+  // Called when the link (if any) is clicked; if this function returns true,
+  // the infobar is then immediately closed. The default implementation opens
+  // the URL returned by GetLinkURL(), above, and returns false. Subclasses MUST
+  // NOT return true if in handling this call something triggers the infobar to
+  // begin closing.
+  //
+  // The |disposition| specifies how the resulting document should be loaded
+  // (based on the event flags present when the link was clicked).
+  virtual bool LinkClicked(WindowOpenDisposition disposition);
 
   // Called when the user clicks on the close button to dismiss the infobar.
   virtual void InfoBarDismissed();

@@ -328,7 +328,7 @@ bool SkiaPaintCanvas::isClipEmpty() const {
   return canvas_->isClipEmpty();
 }
 
-const SkMatrix& SkiaPaintCanvas::getTotalMatrix() const {
+SkMatrix SkiaPaintCanvas::getTotalMatrix() const {
   return canvas_->getTotalMatrix();
 }
 

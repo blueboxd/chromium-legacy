@@ -61,6 +61,12 @@ void DidGetGlobalClientUsageForLimitedGlobalClientUsage(
 
 }  // namespace
 
+struct ClientUsageTracker::AccumulateInfo {
+  size_t pending_jobs = 0;
+  int64_t limited_usage = 0;
+  int64_t unlimited_usage = 0;
+};
+
 ClientUsageTracker::ClientUsageTracker(
     UsageTracker* tracker,
     scoped_refptr<QuotaClient> client,

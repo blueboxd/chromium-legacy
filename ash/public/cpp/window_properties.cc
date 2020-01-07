@@ -46,6 +46,7 @@ DEFINE_UI_CLASS_PROPERTY_KEY(bool, kForceVisibleInMiniViewKey, false)
 DEFINE_UI_CLASS_PROPERTY_KEY(WindowStateType,
                              kPrePipWindowStateTypeKey,
                              WindowStateType::kDefault)
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kPipOriginalWindowKey, false)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kRenderTitleAreaProperty, false)
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect,
                                    kRestoreBoundsOverrideKey,

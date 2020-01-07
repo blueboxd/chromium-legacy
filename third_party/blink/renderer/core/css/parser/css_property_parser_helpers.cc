@@ -193,34 +193,30 @@ class MathFunctionParser {
                               ValueRange value_range = kValueRangeAll)
       : source_range_(range), range_(range) {
     const CSSParserToken& token = range.Peek();
-    if (token.FunctionId() == CSSValueID::kCalc ||
-        token.FunctionId() == CSSValueID::kWebkitCalc) {
-      calc_value_ = CSSMathFunctionValue::Create(
-          CSSMathExpressionNode::ParseCalc(ConsumeFunction(range_)),
-          value_range);
-      return;
-    }
-
-    if (RuntimeEnabledFeatures::CSSComparisonFunctionsEnabled()) {
-      switch (token.FunctionId()) {
-        case CSSValueID::kMin:
-          calc_value_ = CSSMathFunctionValue::Create(
-              CSSMathExpressionNode::ParseMin(ConsumeFunction(range_)),
-              value_range);
-          return;
-        case CSSValueID::kMax:
-          calc_value_ = CSSMathFunctionValue::Create(
-              CSSMathExpressionNode::ParseMax(ConsumeFunction(range_)),
-              value_range);
-          return;
-        case CSSValueID::kClamp:
-          calc_value_ = CSSMathFunctionValue::Create(
-              CSSMathExpressionNode::ParseClamp(ConsumeFunction(range_)),
-              value_range);
-          return;
-        default:
-          break;
-      }
+    switch (token.FunctionId()) {
+      case CSSValueID::kCalc:
+      case CSSValueID::kWebkitCalc:
+        calc_value_ = CSSMathFunctionValue::Create(
+            CSSMathExpressionNode::ParseCalc(ConsumeFunction(range_)),
+            value_range);
+        return;
+      case CSSValueID::kMin:
+        calc_value_ = CSSMathFunctionValue::Create(
+            CSSMathExpressionNode::ParseMin(ConsumeFunction(range_)),
+            value_range);
+        return;
+      case CSSValueID::kMax:
+        calc_value_ = CSSMathFunctionValue::Create(
+            CSSMathExpressionNode::ParseMax(ConsumeFunction(range_)),
+            value_range);
+        return;
+      case CSSValueID::kClamp:
+        calc_value_ = CSSMathFunctionValue::Create(
+            CSSMathExpressionNode::ParseClamp(ConsumeFunction(range_)),
+            value_range);
+        return;
+      default:
+        break;
     }
   }
 

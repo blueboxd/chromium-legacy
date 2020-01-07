@@ -89,7 +89,7 @@
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/safe_browsing/verdict_cache_manager.h"
+#include "components/safe_browsing/core/verdict_cache_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/browsing_data_remover.h"

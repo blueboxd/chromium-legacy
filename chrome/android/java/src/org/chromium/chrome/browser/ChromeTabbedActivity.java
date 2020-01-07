@@ -113,6 +113,7 @@ import org.chromium.chrome.browser.snackbar.undo.UndoBarController;
 import org.chromium.chrome.browser.suggestions.SuggestionsEventReporterBridge;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
 import org.chromium.chrome.browser.survey.ChromeSurveyController;
+import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAssociatedApp;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
@@ -157,6 +158,7 @@ import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsAccessibility;
+import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.PageTransition;
@@ -242,6 +244,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
     private ScreenshotMonitor mScreenshotMonitor;
 
     private ComposedBrowserControlsVisibilityDelegate mAppBrowserControlsVisibilityDelegate;
+    private BrowserControlsVisibilityDelegate mVrBrowserControlsVisibilityDelegate;
     private TabModalLifetimeHandler mTabModalHandler;
 
     private boolean mUIWithNativeInitialized;
@@ -2287,12 +2290,21 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
     public void onEnterVr() {
         super.onEnterVr();
         mControlContainer.setVisibility(View.INVISIBLE);
+        if (mVrBrowserControlsVisibilityDelegate == null) {
+            mVrBrowserControlsVisibilityDelegate =
+                    new BrowserControlsVisibilityDelegate(BrowserControlsState.BOTH);
+            mAppBrowserControlsVisibilityDelegate.addDelegate(mVrBrowserControlsVisibilityDelegate);
+        }
+        mVrBrowserControlsVisibilityDelegate.set(BrowserControlsState.HIDDEN);
     }
 
     @Override
     public void onExitVr() {
         super.onExitVr();
         mControlContainer.setVisibility(View.VISIBLE);
+        if (mVrBrowserControlsVisibilityDelegate != null) {
+            mVrBrowserControlsVisibilityDelegate.set(BrowserControlsState.BOTH);
+        }
     }
 
     /**

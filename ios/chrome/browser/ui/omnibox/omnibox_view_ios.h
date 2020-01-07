@@ -144,10 +144,6 @@ class OmniboxViewIOS : public OmniboxView,
   // Returns |true| if AutocompletePopupView is currently open.
   BOOL IsPopupOpen();
 
-  // Returns the resource ID of the icon to show for the current text. Takes
-  // into account the security level of the page, and |offline_page|.
-  int GetIcon(bool offline_page) const;
-
  protected:
   int GetOmniboxTextLength() const override;
   void EmphasizeURLComponents() override;

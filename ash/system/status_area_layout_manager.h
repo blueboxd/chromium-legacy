@@ -28,7 +28,7 @@ class StatusAreaLayoutManager : public WmDefaultLayoutManager {
  private:
   // Updates layout of the status area. Effectively calls ShelfLayoutManager
   // to update layout of the shelf.
-  void LayoutStatusArea();
+  void LayoutStatusArea(bool animate);
 
   // True when inside LayoutStatusArea method.
   // Used to prevent calling itself again from SetChildBounds().

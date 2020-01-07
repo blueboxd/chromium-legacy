@@ -38,7 +38,7 @@ class PreviewsLitePageInfoBarDelegate : public ConfirmInfoBarDelegate {
   PreviewsLitePageInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
-  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
+  InfoBarIdentifier GetIdentifier() const override;
   void InfoBarDismissed() override;
   int GetButtons() const override;
   base::string16 GetMessageText() const override;

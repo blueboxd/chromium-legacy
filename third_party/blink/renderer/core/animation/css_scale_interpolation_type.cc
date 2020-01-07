@@ -130,7 +130,15 @@ class CSSScaleNonInterpolableValue : public NonInterpolableValue {
 };
 
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE(CSSScaleNonInterpolableValue);
-DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(CSSScaleNonInterpolableValue);
+template <>
+struct DowncastTraits<CSSScaleNonInterpolableValue> {
+  static bool AllowFrom(const NonInterpolableValue* value) {
+    return value && AllowFrom(*value);
+  }
+  static bool AllowFrom(const NonInterpolableValue& value) {
+    return value.GetType() == CSSScaleNonInterpolableValue::static_type_;
+  }
+};
 
 InterpolationValue Scale::CreateInterpolationValue() const {
   if (is_none) {
@@ -199,7 +207,7 @@ InterpolationValue CSSScaleInterpolationType::PreInterpolationCompositeIfNeeded(
     EffectModel::CompositeOperation,
     ConversionCheckers&) const {
   value.non_interpolable_value = CSSScaleNonInterpolableValue::CreateAdditive(
-      ToCSSScaleNonInterpolableValue(*value.non_interpolable_value));
+      To<CSSScaleNonInterpolableValue>(*value.non_interpolable_value));
   return value;
 }
 
@@ -218,8 +226,8 @@ PairwiseInterpolationValue CSSScaleInterpolationType::MaybeMergeSingles(
   return PairwiseInterpolationValue(
       std::move(start.interpolable_value), std::move(end.interpolable_value),
       CSSScaleNonInterpolableValue::Merge(
-          ToCSSScaleNonInterpolableValue(*start.non_interpolable_value),
-          ToCSSScaleNonInterpolableValue(*end.non_interpolable_value)));
+          To<CSSScaleNonInterpolableValue>(*start.non_interpolable_value),
+          To<CSSScaleNonInterpolableValue>(*end.non_interpolable_value)));
 }
 
 InterpolationValue
@@ -240,8 +248,8 @@ void CSSScaleInterpolationType::Composite(
         CreateScaleIdentity();
   }
 
-  const CSSScaleNonInterpolableValue& metadata =
-      ToCSSScaleNonInterpolableValue(*value.non_interpolable_value);
+  const auto& metadata =
+      To<CSSScaleNonInterpolableValue>(*value.non_interpolable_value);
   DCHECK(metadata.IsStartAdditive() || metadata.IsEndAdditive());
 
   auto& underlying_list = To<InterpolableList>(

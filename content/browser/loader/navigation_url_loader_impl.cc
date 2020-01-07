@@ -195,8 +195,7 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
 
   new_request->method = request_info->common_params->method;
   new_request->url = request_info->common_params->url;
-  new_request->site_for_cookies =
-      net::SiteForCookies::FromUrl(request_info->site_for_cookies);
+  new_request->site_for_cookies = request_info->site_for_cookies;
   new_request->attach_same_site_cookies =
       request_info->begin_params->attach_same_site_cookies;
   new_request->trusted_params = network::ResourceRequest::TrustedParams();

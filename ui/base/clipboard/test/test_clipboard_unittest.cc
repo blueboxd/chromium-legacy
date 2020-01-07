@@ -7,7 +7,7 @@
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(USE_AURA)
+#if defined(USE_X11)
 #include "ui/events/platform/platform_event_source.h"
 #endif
 
@@ -20,7 +20,7 @@ base::test::TaskEnvironment* g_task_environment = nullptr;
 }  // namespace
 
 struct TestClipboardTraits {
-#if defined(USE_AURA)
+#if defined(USE_X11)
   static std::unique_ptr<PlatformEventSource> GetEventSource() {
     return nullptr;
   }

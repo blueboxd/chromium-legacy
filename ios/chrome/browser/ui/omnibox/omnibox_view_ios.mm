@@ -667,20 +667,6 @@ BOOL OmniboxViewIOS::IsPopupOpen() {
   return popup_provider_->IsPopupOpen();
 }
 
-int OmniboxViewIOS::GetIcon(bool offlinePage) const {
-  if (!IsEditingOrEmpty()) {
-    if (offlinePage) {
-      return IDR_IOS_OMNIBOX_OFFLINE;
-    }
-    return GetIconForSecurityState(
-        controller()->GetLocationBarModel()->GetSecurityLevel());
-  }
-  return GetIconForAutocompleteMatchType(
-      model() ? model()->CurrentMatch(nullptr).type
-              : AutocompleteMatchType::URL_WHAT_YOU_TYPED,
-      /* is_starred */ false, /* is_incognito */ false);
-}
-
 int OmniboxViewIOS::GetOmniboxTextLength() const {
   return [field_ displayedText].length();
 }

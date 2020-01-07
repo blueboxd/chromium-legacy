@@ -175,6 +175,10 @@ bool IsDialog(const ax::mojom::Role role) {
   }
 }
 
+bool IsFormatBoundary(const ax::mojom::Role role) {
+  return IsControl(role) || IsHeading(role) || IsImageOrVideo(role);
+}
+
 bool IsHeading(const ax::mojom::Role role) {
   switch (role) {
     case ax::mojom::Role::kHeading:

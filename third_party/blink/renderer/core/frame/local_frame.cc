@@ -467,7 +467,7 @@ void LocalFrame::Reload(WebFrameLoadType load_type) {
 }
 
 LocalWindowProxy* LocalFrame::WindowProxy(DOMWrapperWorld& world) {
-  return ToLocalWindowProxy(Frame::GetWindowProxy(world));
+  return To<LocalWindowProxy>(Frame::GetWindowProxy(world));
 }
 
 LocalDOMWindow* LocalFrame::DomWindow() const {

@@ -98,7 +98,7 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   // details on what these do.
   CONTENT_EXPORT void UpdateStep1ComputeWinAttributes();
   CONTENT_EXPORT void UpdateStep2ComputeHypertext();
-  CONTENT_EXPORT void UpdateStep3FireEvents(bool is_subtree_creation);
+  CONTENT_EXPORT void UpdateStep3FireEvents();
 
   //
   // IAccessible2 methods.

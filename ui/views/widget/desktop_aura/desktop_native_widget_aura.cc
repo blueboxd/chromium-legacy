@@ -1034,6 +1034,10 @@ void DesktopNativeWidgetAura::OnSizeConstraintsChanged() {
   desktop_window_tree_host_->SizeConstraintsChanged();
 }
 
+void DesktopNativeWidgetAura::OnNativeViewHierarchyWillChange() {}
+
+void DesktopNativeWidgetAura::OnNativeViewHierarchyChanged() {}
+
 std::string DesktopNativeWidgetAura::GetName() const {
   return name_;
 }

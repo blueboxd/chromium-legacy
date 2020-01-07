@@ -237,8 +237,6 @@ class AdsPageLoadMetricsObserver
   // Total ad bytes loaded by the page since it was observed to be interactive.
   size_t page_ad_bytes_at_interactive_ = 0u;
 
-  bool committed_ = false;
-
   ScopedObserver<subresource_filter::SubresourceFilterObserverManager,
                  subresource_filter::SubresourceFilterObserver>
       subresource_observer_;

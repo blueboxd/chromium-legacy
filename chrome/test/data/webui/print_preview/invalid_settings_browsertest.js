@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationStore, DestinationType, makeRecentDestination, NativeLayer, PluginProxy, ScalingType, setCloudPrintInterfaceForTesting, State, whenReady} from 'chrome://print/print_preview.js';
+import {CloudPrintInterfaceEventType, Destination, DestinationConnectionStatus, DestinationOrigin, DestinationStore, DestinationType, makeRecentDestination, NativeLayer, PluginProxy, ScalingType, setCloudPrintInterfaceForTesting, State, whenReady} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {isWindows} from 'chrome://resources/js/cr.m.js';
 import {CloudPrintInterfaceStub} from 'chrome://test/print_preview/cloud_print_interface_stub.js';
@@ -303,6 +303,11 @@ suite(invalid_settings_browsertest.suiteName, function() {
               destinationSettings.destinationStore_
                   .startLoadCloudDestinations();
 
+              return eventToPromise(
+                  CloudPrintInterfaceEventType.PRINTER_DONE,
+                  cloudPrintInterface.getEventTarget());
+            })
+            .then(function() {
               // FooDevice will be selected since it is the most recently used
               // printer, so the invalid certificate error should be shown.
               // The overlay must be visible for the message to be seen.

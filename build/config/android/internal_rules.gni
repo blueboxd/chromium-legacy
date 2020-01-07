@@ -840,33 +840,6 @@ template("test_runner_script") {
   }
 }
 
-template("stack_script") {
-  generate_wrapper(target_name) {
-    forward_variables_from(invoker,
-                           [
-                             "deps",
-                             "testonly",
-                           ])
-    _stack_target_name = invoker.stack_target_name
-
-    data_deps = [
-      "//third_party/android_platform/development/scripts:stack_py",
-    ]
-    if (defined(invoker.data_deps)) {
-      data_deps += invoker.data_deps
-    }
-
-    executable = "//third_party/android_platform/development/scripts/stack"
-    wrapper_script = "$root_build_dir/bin/stack_${_stack_target_name}"
-
-    executable_args = [
-      "--output-directory",
-      "@WrappedPath(.)",
-      "--arch=$target_cpu",
-    ]
-  }
-}
-
 if (enable_java_templates) {
   android_sdk_jar = "$android_sdk/android.jar"
   android_default_aapt_path = "$android_sdk_build_tools/aapt"
@@ -3045,12 +3018,7 @@ if (enable_java_templates) {
     }
 
     _java_files = []
-    if (defined(invoker.java_files)) {
-      _java_files = invoker.java_files
-    } else if (defined(invoker.sources)) {
-      # TODO(crbug.com/917196): Migrate all usages of "java_files" to "sources".
-      # To support transition, use "sources" variable as valid substitute for
-      # "java_files" for now.
+    if (defined(invoker.sources)) {
       _java_files = invoker.sources
     }
     _srcjar_deps = []

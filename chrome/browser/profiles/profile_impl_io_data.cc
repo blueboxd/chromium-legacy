@@ -34,16 +34,10 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/cookie_config/cookie_store_util.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/network_session_configurator/browser/network_session_configurator.h"
-#include "components/prefs/json_pref_store.h"
-#include "components/prefs/pref_filter.h"
-#include "components/prefs/pref_member.h"
-#include "components/prefs/pref_service.h"
-#include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -115,11 +109,6 @@ void ProfileImplIOData::Handle::LazyInitialize() const {
   // Set initialized_ to true at the beginning in case any of the objects
   // below try to get the ResourceContext pointer.
   initialized_ = true;
-  PrefService* pref_service = profile_->GetPrefs();
-  io_data_->safe_browsing_enabled()->Init(prefs::kSafeBrowsingEnabled,
-      pref_service);
-  io_data_->safe_browsing_enabled()->MoveToSequence(
-      base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
   io_data_->InitializeOnUIThread(profile_);
 }
 

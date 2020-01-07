@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "components/safe_browsing/base_ui_manager.h"
+#include "components/safe_browsing/content/base_ui_manager.h"
 #include "components/security_interstitials/content/unsafe_resource.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"

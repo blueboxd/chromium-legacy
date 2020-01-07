@@ -21,6 +21,7 @@
 #include "extensions/browser/extension_error.h"
 #include "extensions/browser/extension_error_test_util.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/unloaded_extension_reason.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/feature_switch.h"

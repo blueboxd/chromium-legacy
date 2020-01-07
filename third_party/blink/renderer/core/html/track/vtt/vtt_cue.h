@@ -219,9 +219,6 @@ class VTTCue final : public TextTrackCue {
   bool display_tree_should_change_ : 1;
 };
 
-// VTTCue is currently the only TextTrackCue subclass.
-DEFINE_TYPE_CASTS(VTTCue, TextTrackCue, cue, true, true);
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_VTT_VTT_CUE_H_

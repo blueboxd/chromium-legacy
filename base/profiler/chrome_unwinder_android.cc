@@ -31,7 +31,7 @@ const std::string& GetChromeModuleId() {
     base::debug::ElfBuildIdBuffer build_id;
     size_t build_id_length =
         base::debug::ReadElfBuildId(&__executable_start, true, build_id);
-    DCHECK_GT(build_id_length, 0);
+    DCHECK_GT(build_id_length, 0u);
     // Append 0 for the age value.
     return std::string(build_id, build_id_length) + "0";
 #else

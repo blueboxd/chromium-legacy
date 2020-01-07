@@ -41,14 +41,6 @@ class NDEFReadingEvent final : public Event {
   Member<NDEFMessage> message_;
 };
 
-DEFINE_TYPE_CASTS(NDEFReadingEvent,
-                  Event,
-                  event,
-                  event->InterfaceName() ==
-                      event_interface_names::kNDEFReadingEvent,
-                  event.InterfaceName() ==
-                      event_interface_names::kNDEFReadingEvent);
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_NFC_NDEF_READING_EVENT_H_

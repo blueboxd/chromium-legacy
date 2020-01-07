@@ -32,9 +32,13 @@ std::vector<FrameTreeNode*> GetChildren(FrameTreeNode* node) {
   for (size_t i = 0; i != node->child_count(); ++i) {
     if (auto* contents = static_cast<WebContentsImpl*>(
             WebContentsImpl::FromOuterFrameTreeNode(node->child_at(i)))) {
-      // If the child is used for an inner WebContents then add the inner
-      // WebContents.
-      children.push_back(contents->GetFrameTree()->root());
+      // Portals can't receive keyboard events or be focused, so we don't return
+      // find results inside a portal.
+      if (!contents->IsPortal()) {
+        // If the child is used for an inner WebContents then add the inner
+        // WebContents.
+        children.push_back(contents->GetFrameTree()->root());
+      }
     } else {
       children.push_back(node->child_at(i));
     }
@@ -288,6 +292,9 @@ void FindRequestManager::StopFinding(StopFindAction action) {
       RenderFrameHostImpl* rfh = node->current_frame_host();
       if (!CheckFrame(rfh) || !rfh->IsRenderFrameLive())
         continue;
+      DCHECK(
+          !static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(rfh))
+               ->IsPortal());
       rfh->GetFindInPage()->StopFinding(
           static_cast<blink::mojom::StopFindAction>(action));
     }
@@ -470,6 +477,9 @@ void FindRequestManager::ActivateNearestFindResult(float x, float y) {
       if (!CheckFrame(rfh) || !rfh->IsRenderFrameLive())
         continue;
 
+      DCHECK(
+          !static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(rfh))
+               ->IsPortal());
       activate_.pending_replies.insert(rfh);
       // Lifetime of FindRequestManager > RenderFrameHost > Mojo connection,
       // so it's safe to bind |this| and |rfh|.
@@ -505,19 +515,22 @@ void FindRequestManager::RequestFindMatchRects(int current_version) {
 
   // Request the latest find match rects from each frame.
   for (WebContentsImpl* contents : contents_->GetWebContentsAndAllInner()) {
-    for (FrameTreeNode* node : contents->GetFrameTree()->Nodes()) {
-      RenderFrameHostImpl* rfh = node->current_frame_host();
+    if (!contents->IsPortal()) {
+      for (FrameTreeNode* node : contents->GetFrameTree()->Nodes()) {
+        RenderFrameHostImpl* rfh = node->current_frame_host();
 
-      if (!CheckFrame(rfh) || !rfh->IsRenderFrameLive())
-        continue;
+        if (!CheckFrame(rfh) || !rfh->IsRenderFrameLive())
+          continue;
 
-      match_rects_.pending_replies.insert(rfh);
-      auto it = match_rects_.frame_rects.find(rfh);
-      int version = (it != match_rects_.frame_rects.end()) ? it->second.version
-                                                           : kInvalidId;
-      rfh->GetFindInPage()->FindMatchRects(
-          version, base::BindOnce(&FindRequestManager::OnFindMatchRectsReply,
-                                  base::Unretained(this), rfh));
+        match_rects_.pending_replies.insert(rfh);
+        auto it = match_rects_.frame_rects.find(rfh);
+        int version = (it != match_rects_.frame_rects.end())
+                          ? it->second.version
+                          : kInvalidId;
+        rfh->GetFindInPage()->FindMatchRects(
+            version, base::BindOnce(&FindRequestManager::OnFindMatchRectsReply,
+                                    base::Unretained(this), rfh));
+      }
     }
   }
 }
@@ -587,9 +600,14 @@ void FindRequestManager::FindInternal(const FindRequest& request) {
   // This is an initial find operation.
   Reset(request);
   for (WebContentsImpl* contents : contents_->GetWebContentsAndAllInner()) {
-    frame_observers_.push_back(std::make_unique<FrameObserver>(contents, this));
-    for (FrameTreeNode* node : contents->GetFrameTree()->Nodes()) {
-      AddFrame(node->current_frame_host(), false /* force */);
+    // Portals can't receive keyboard events or be focused, so we don't return
+    // find results inside a portal.
+    if (!contents->IsPortal()) {
+      frame_observers_.push_back(
+          std::make_unique<FrameObserver>(contents, this));
+      for (FrameTreeNode* node : contents->GetFrameTree()->Nodes()) {
+        AddFrame(node->current_frame_host(), false /* force */);
+      }
     }
   }
 }

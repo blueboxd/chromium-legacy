@@ -290,4 +290,22 @@ public abstract class PaymentInstrument extends EditableOption {
     public void setMicrontransactionMode() {
         mIsMicrotransaction = true;
     }
+
+    /**
+     * @return The identifier for another payment app that should be hidden when this payment app is
+     * present.
+     */
+    @Nullable
+    public String getApplicationIdentifierToHide() {
+        return null;
+    }
+
+    /**
+     * @return The set of identifier of other apps that would cause this app to be hidden, if any of
+     * them are present, e.g., ["com.bobpay.production", "com.bobpay.beta"].
+     */
+    @Nullable
+    public Set<String> getApplicationIdentifiersThatHideThisApp() {
+        return null;
+    }
 }

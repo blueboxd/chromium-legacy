@@ -11,7 +11,10 @@
 #include "ios/chrome/browser/infobars/infobar_badge_tab_helper_delegate.h"
 #include "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
 #import "ios/chrome/browser/infobars/infobar_type.h"
+#include "ios/chrome/browser/infobars/overlays/overlay_request_infobar_type_util.h"
 #include "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/overlays/public/overlay_presenter.h"
+#import "ios/chrome/browser/overlays/public/overlay_presenter_observer_bridge.h"
 #import "ios/chrome/browser/ui/badges/badge_button.h"
 #import "ios/chrome/browser/ui/badges/badge_consumer.h"
 #import "ios/chrome/browser/ui/badges/badge_item.h"
@@ -36,7 +39,9 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
 }  // namespace
 
 @interface BadgeMediator () <InfobarBadgeTabHelperDelegate,
+                             OverlayPresenterObserving,
                              WebStateListObserving> {
+  std::unique_ptr<OverlayPresenterObserver> _overlayPresenterObserver;
   std::unique_ptr<WebStateListObserver> _webStateListObserver;
 }
 
@@ -49,6 +54,9 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
 
 // The active WebState's badge tab helper.
 @property(nonatomic, readonly) InfobarBadgeTabHelper* badgeTabHelper;
+
+// The infobar banner OverlayPresenter.
+@property(nonatomic, readonly) OverlayPresenter* overlayPresenter;
 
 // The incognito badge, or nil if the Browser is not off-the-record.
 @property(nonatomic, readonly) id<BadgeItem> offTheRecordBadge;
@@ -69,6 +77,12 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
       _offTheRecordBadge = [[BadgeStaticItem alloc]
           initWithBadgeType:BadgeType::kBadgeTypeIncognito];
     }
+    // Set up the OverlayPresenterObserver for the infobar banner presentation.
+    _overlayPresenterObserver =
+        std::make_unique<OverlayPresenterObserverBridge>(self);
+    _overlayPresenter =
+        OverlayPresenter::FromBrowser(browser, OverlayModality::kInfobarBanner);
+    _overlayPresenter->AddObserver(_overlayPresenterObserver.get());
     // Set up the WebStateList and its observer.
     _webStateList = browser->GetWebStateList();
     _webState = _webStateList->GetActiveWebState();
@@ -84,11 +98,26 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
 }
 
 - (void)disconnect {
+  [self disconnectWebStateList];
+  [self disconnectOverlayPresenter];
+}
+
+#pragma mark - Disconnect helpers
+
+- (void)disconnectWebStateList {
   if (_webStateList) {
     self.webState = nullptr;
     _webStateList->RemoveObserver(_webStateListObserver.get());
     _webStateListObserver = nullptr;
     _webStateList = nullptr;
+  }
+}
+
+- (void)disconnectOverlayPresenter {
+  if (_overlayPresenter) {
+    _overlayPresenter->RemoveObserver(_overlayPresenterObserver.get());
+    _overlayPresenterObserver = nullptr;
+    _overlayPresenter = nullptr;
   }
 }
 
@@ -140,7 +169,7 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
     [self updateBadgesForActiveWebState];
 
   // Show the overflow badge if there are multiple BadgeItems.  Otherwise, use
-  // the last badge.
+  // the first badge if it's not fullscreen.
   NSUInteger fullscreenBadgeCount = self.offTheRecordBadge ? 1U : 0U;
   BOOL shouldDisplayOverflowBadge =
       self.badges.count - fullscreenBadgeCount > 1;
@@ -236,6 +265,33 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
       return;
     }
   }
+}
+
+#pragma mark - OverlayPresenterObserving
+
+- (void)overlayPresenter:(OverlayPresenter*)presenter
+    didShowOverlayForRequest:(OverlayRequest*)request {
+  DCHECK_EQ(self.overlayPresenter, presenter);
+  InfobarBadgeTabHelper* badgeTabHelper = self.badgeTabHelper;
+  if (badgeTabHelper) {
+    self.badgeTabHelper->UpdateBadgeForInfobarBannerPresented(
+        GetOverlayRequestInfobarType(request));
+  }
+}
+
+- (void)overlayPresenter:(OverlayPresenter*)presenter
+    didHideOverlayForRequest:(OverlayRequest*)request {
+  DCHECK_EQ(self.overlayPresenter, presenter);
+  InfobarBadgeTabHelper* badgeTabHelper = self.badgeTabHelper;
+  if (badgeTabHelper) {
+    self.badgeTabHelper->UpdateBadgeForInfobarBannerDismissed(
+        GetOverlayRequestInfobarType(request));
+  }
+}
+
+- (void)overlayPresenterDestroyed:(OverlayPresenter*)presenter {
+  DCHECK_EQ(self.overlayPresenter, presenter);
+  [self disconnectOverlayPresenter];
 }
 
 #pragma mark - WebStateListObserver

@@ -106,6 +106,15 @@ void BrowserTabStripModelDelegate::DuplicateContentsAt(int index) {
   DuplicateTabAt(browser_, index);
 }
 
+bool BrowserTabStripModelDelegate::CanMoveTabToWindow(int index) {
+  return CanMoveTabToNewWindow(browser_, index);
+}
+
+void BrowserTabStripModelDelegate::MoveTabToNewWindow(int index) {
+  // chrome:: to disambiguate the free function from this method.
+  return chrome::MoveTabToNewWindow(browser_, index);
+}
+
 void BrowserTabStripModelDelegate::CreateHistoricalTab(
     content::WebContents* contents) {
   // We don't create historical tabs for incognito windows or windows without

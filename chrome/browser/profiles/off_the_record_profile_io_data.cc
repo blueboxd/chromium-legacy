@@ -21,11 +21,8 @@
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/net_log/chrome_net_log.h"
-#include "components/prefs/pref_service.h"
-#include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
@@ -83,10 +80,6 @@ void OffTheRecordProfileIOData::Handle::LazyInitialize() const {
   // Set initialized_ to true at the beginning in case any of the objects
   // below try to get the ResourceContext pointer.
   initialized_ = true;
-  io_data_->safe_browsing_enabled()->Init(prefs::kSafeBrowsingEnabled,
-      profile_->GetPrefs());
-  io_data_->safe_browsing_enabled()->MoveToSequence(
-      base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
   io_data_->InitializeOnUIThread(profile_);
 }
 

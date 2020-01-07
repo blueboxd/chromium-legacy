@@ -4,6 +4,8 @@
 
 source_set("intents") {
   sources = [
+    "OpenInChromeIntent.h",
+    "OpenInChromeIntent.m",
     "SearchInChromeIntent.h",
     "SearchInChromeIntent.m",
   ]

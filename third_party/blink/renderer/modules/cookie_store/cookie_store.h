@@ -7,6 +7,7 @@
 
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/cookies/site_for_cookies.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/cookie_store/cookie_store.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -149,7 +150,7 @@ class CookieStore final : public EventTargetWithInlineData,
   const KURL default_cookie_url_;
 
   // The RFC 6265bis "site for cookies" for this store's ExecutionContext.
-  const KURL default_site_for_cookies_;
+  const net::SiteForCookies default_site_for_cookies_;
 
   // The context in which cookies are accessed.
   const scoped_refptr<SecurityOrigin> default_top_frame_origin_;

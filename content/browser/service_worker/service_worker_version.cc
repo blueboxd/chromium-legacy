@@ -458,7 +458,11 @@ void ServiceWorkerVersion::StopWorker(base::OnceClosure callback) {
 
   switch (running_status()) {
     case EmbeddedWorkerStatus::STARTING:
-    case EmbeddedWorkerStatus::RUNNING:
+    case EmbeddedWorkerStatus::RUNNING: {
+      // EmbeddedWorkerInstance::Stop() may synchronously call
+      // ServiceWorkerVersion::OnStopped() and destroy |this|. This protection
+      // avoids it.
+      scoped_refptr<ServiceWorkerVersion> protect = this;
       embedded_worker_->Stop();
       if (running_status() == EmbeddedWorkerStatus::STOPPED) {
         RunSoon(std::move(callback));
@@ -466,6 +470,7 @@ void ServiceWorkerVersion::StopWorker(base::OnceClosure callback) {
       }
       stop_callbacks_.push_back(std::move(callback));
       return;
+    }
     case EmbeddedWorkerStatus::STOPPING:
       stop_callbacks_.push_back(std::move(callback));
       return;

@@ -602,7 +602,8 @@ MutableCSSPropertyValueSet* CSSPropertyValueSet::CopyPropertiesInSet(
                                                           list.size());
 }
 
-CSSStyleDeclaration* MutableCSSPropertyValueSet::EnsureCSSStyleDeclaration() {
+CSSStyleDeclaration* MutableCSSPropertyValueSet::EnsureCSSStyleDeclaration(
+    ExecutionContext* execution_context) {
   // FIXME: get rid of this weirdness of a CSSStyleDeclaration inside of a
   // style property set.
   if (cssom_wrapper_) {
@@ -611,7 +612,8 @@ CSSStyleDeclaration* MutableCSSPropertyValueSet::EnsureCSSStyleDeclaration() {
     DCHECK(!cssom_wrapper_->ParentElement());
     return cssom_wrapper_.Get();
   }
-  cssom_wrapper_ = MakeGarbageCollected<PropertySetCSSStyleDeclaration>(*this);
+  cssom_wrapper_ = MakeGarbageCollected<PropertySetCSSStyleDeclaration>(
+      execution_context, *this);
   return cssom_wrapper_.Get();
 }
 

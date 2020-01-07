@@ -50,7 +50,6 @@
 #include "third_party/blink/renderer/platform/peerconnection/rtc_stats.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
-#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/webrtc/api/data_channel_interface.h"
@@ -71,6 +70,28 @@ namespace WTF {
 template <>
 struct CrossThreadCopier<scoped_refptr<DataChannelInterface>>
     : public CrossThreadCopierPassThrough<scoped_refptr<DataChannelInterface>> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+
+template <>
+struct CrossThreadCopier<scoped_refptr<PeerConnectionInterface>>
+    : public CrossThreadCopierPassThrough<
+          scoped_refptr<PeerConnectionInterface>> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+
+template <>
+struct CrossThreadCopier<scoped_refptr<webrtc::StatsObserver>>
+    : public CrossThreadCopierPassThrough<
+          scoped_refptr<webrtc::StatsObserver>> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+
+template <>
+struct CrossThreadCopier<
+    RetainedRefWrapper<webrtc::SetSessionDescriptionObserver>>
+    : public CrossThreadCopierPassThrough<
+          RetainedRefWrapper<webrtc::SetSessionDescriptionObserver>> {
   STATIC_ONLY(CrossThreadCopier);
 };
 
@@ -118,13 +139,13 @@ RTCSessionDescriptionPlatform* CreateWebKitSessionDescription(
   return CreateWebKitSessionDescription(sdp, native_desc->type());
 }
 
-void RunClosureWithTrace(base::OnceClosure closure,
+void RunClosureWithTrace(CrossThreadOnceClosure closure,
                          const char* trace_event_name) {
   TRACE_EVENT0("webrtc", trace_event_name);
   std::move(closure).Run();
 }
 
-void RunSynchronousOnceClosure(base::OnceClosure closure,
+void RunSynchronousOnceClosure(CrossThreadOnceClosure closure,
                                const char* trace_event_name,
                                base::WaitableEvent* event) {
   {
@@ -147,7 +168,7 @@ void RunSynchronousRepeatingClosure(const base::RepeatingClosure& closure,
 // Initializes |description| if |description_callback| returns non-null,
 // otherwise does nothing.
 void GetRTCSessionDescriptionPlatformFromSessionDescriptionCallback(
-    base::OnceCallback<const webrtc::SessionDescriptionInterface*()>
+    CrossThreadOnceFunction<const webrtc::SessionDescriptionInterface*()>
         description_callback,
     std::string* out_type,
     std::string* out_sdp,
@@ -499,14 +520,18 @@ void GetStatsOnSignalingThread(
   }
 }
 
+using RTCStatsReportCallbackInternal =
+    CrossThreadOnceFunction<void(std::unique_ptr<RTCStatsReportPlatform>)>;
+
 void GetRTCStatsOnSignalingThread(
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
     scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
-    RTCStatsReportCallback callback,
+    RTCStatsReportCallbackInternal callback,
     const Vector<webrtc::NonStandardGroupId>& exposed_group_ids) {
   TRACE_EVENT0("webrtc", "GetRTCStatsOnSignalingThread");
   native_peer_connection->GetStats(CreateRTCStatsCollectorCallback(
-      main_thread, std::move(callback), exposed_group_ids));
+      main_thread, ConvertToBaseOnceCallback(std::move(callback)),
+      exposed_group_ids));
 }
 
 void ConvertOfferOptionsToWebrtcOfferOptions(
@@ -1286,16 +1311,16 @@ void RTCPeerConnectionHandler::SetLocalDescription(
           track_adapter_map_, content_observer, surface_receivers_only)
           .get());
 
-  signaling_thread()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
+  PostCrossThreadTask(
+      *signaling_thread().get(), FROM_HERE,
+      CrossThreadBindOnce(
           &RunClosureWithTrace,
-          base::BindOnce(
+          CrossThreadBindOnce(
               static_cast<void (webrtc::PeerConnectionInterface::*)(
                   webrtc::SetSessionDescriptionObserver*)>(
                   &webrtc::PeerConnectionInterface::SetLocalDescription),
-              native_peer_connection_, base::RetainedRef(webrtc_observer)),
-          "SetLocalDescription"));
+              native_peer_connection_, WTF::RetainedRef(webrtc_observer)),
+          CrossThreadUnretained("SetLocalDescription")));
 }
 
 void RTCPeerConnectionHandler::SetLocalDescription(
@@ -1362,20 +1387,18 @@ void RTCPeerConnectionHandler::SetLocalDescription(
           track_adapter_map_, content_observer, surface_receivers_only)
           .get());
 
-  signaling_thread()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
+  PostCrossThreadTask(
+      *signaling_thread().get(), FROM_HERE,
+      CrossThreadBindOnce(
           &RunClosureWithTrace,
-          base::BindOnce(
+          CrossThreadBindOnce(
               static_cast<void (webrtc::PeerConnectionInterface::*)(
                   webrtc::SetSessionDescriptionObserver*,
                   webrtc::SessionDescriptionInterface*)>(
                   &webrtc::PeerConnectionInterface::SetLocalDescription),
-              native_peer_connection_,
-              // TODO(crbug.com/787254): Replace with WTF::WrapRefCounted?
-              base::RetainedRef(webrtc_observer),
-              base::Unretained(native_desc)),
-          "SetLocalDescription"));
+              native_peer_connection_, WTF::RetainedRef(webrtc_observer),
+              CrossThreadUnretained(native_desc)),
+          CrossThreadUnretained("SetLocalDescription")));
 }
 
 void RTCPeerConnectionHandler::SetRemoteDescription(
@@ -1445,29 +1468,29 @@ void RTCPeerConnectionHandler::SetRemoteDescription(
                           content_observer, surface_receivers_only)
                           .get());
 
-  signaling_thread()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
+  PostCrossThreadTask(
+      *signaling_thread().get(), FROM_HERE,
+      CrossThreadBindOnce(
           &RunClosureWithTrace,
-          base::BindOnce(
+          CrossThreadBindOnce(
               static_cast<void (webrtc::PeerConnectionInterface::*)(
                   std::unique_ptr<webrtc::SessionDescriptionInterface>,
                   rtc::scoped_refptr<
                       webrtc::SetRemoteDescriptionObserverInterface>)>(
                   &webrtc::PeerConnectionInterface::SetRemoteDescription),
-              native_peer_connection_, base::Passed(&native_desc),
+              native_peer_connection_, WTF::Passed(std::move(native_desc)),
               webrtc_observer),
-          "SetRemoteDescription"));
+          CrossThreadUnretained("SetRemoteDescription")));
 }
 
 RTCSessionDescriptionPlatform* RTCPeerConnectionHandler::LocalDescription() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::localDescription");
 
-  base::OnceCallback<const webrtc::SessionDescriptionInterface*()>
-      description_cb =
-          base::BindOnce(&webrtc::PeerConnectionInterface::local_description,
-                         native_peer_connection_);
+  CrossThreadOnceFunction<const webrtc::SessionDescriptionInterface*()>
+      description_cb = CrossThreadBindOnce(
+          &webrtc::PeerConnectionInterface::local_description,
+          native_peer_connection_);
   return GetRTCSessionDescriptionPlatformOnSignalingThread(
       std::move(description_cb), "localDescription");
 }
@@ -1475,10 +1498,11 @@ RTCSessionDescriptionPlatform* RTCPeerConnectionHandler::LocalDescription() {
 RTCSessionDescriptionPlatform* RTCPeerConnectionHandler::RemoteDescription() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::remoteDescription");
-  base::OnceCallback<const webrtc::SessionDescriptionInterface*()>
-      description_cb =
-          base::BindOnce(&webrtc::PeerConnectionInterface::remote_description,
-                         native_peer_connection_);
+
+  CrossThreadOnceFunction<const webrtc::SessionDescriptionInterface*()>
+      description_cb = CrossThreadBindOnce(
+          &webrtc::PeerConnectionInterface::remote_description,
+          native_peer_connection_);
   return GetRTCSessionDescriptionPlatformOnSignalingThread(
       std::move(description_cb), "remoteDescription");
 }
@@ -1488,8 +1512,8 @@ RTCPeerConnectionHandler::CurrentLocalDescription() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::currentLocalDescription");
 
-  base::OnceCallback<const webrtc::SessionDescriptionInterface*()>
-      description_cb = base::BindOnce(
+  CrossThreadOnceFunction<const webrtc::SessionDescriptionInterface*()>
+      description_cb = CrossThreadBindOnce(
           &webrtc::PeerConnectionInterface::current_local_description,
           native_peer_connection_);
   return GetRTCSessionDescriptionPlatformOnSignalingThread(
@@ -1500,8 +1524,9 @@ RTCSessionDescriptionPlatform*
 RTCPeerConnectionHandler::CurrentRemoteDescription() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::currentRemoteDescription");
-  base::OnceCallback<const webrtc::SessionDescriptionInterface*()>
-      description_cb = base::BindOnce(
+
+  CrossThreadOnceFunction<const webrtc::SessionDescriptionInterface*()>
+      description_cb = CrossThreadBindOnce(
           &webrtc::PeerConnectionInterface::current_remote_description,
           native_peer_connection_);
   return GetRTCSessionDescriptionPlatformOnSignalingThread(
@@ -1512,8 +1537,9 @@ RTCSessionDescriptionPlatform*
 RTCPeerConnectionHandler::PendingLocalDescription() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::pendingLocalDescription");
-  base::OnceCallback<const webrtc::SessionDescriptionInterface*()>
-      description_cb = base::BindOnce(
+
+  CrossThreadOnceFunction<const webrtc::SessionDescriptionInterface*()>
+      description_cb = CrossThreadBindOnce(
           &webrtc::PeerConnectionInterface::pending_local_description,
           native_peer_connection_);
   return GetRTCSessionDescriptionPlatformOnSignalingThread(
@@ -1524,8 +1550,8 @@ RTCSessionDescriptionPlatform*
 RTCPeerConnectionHandler::PendingRemoteDescription() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::pendingRemoteDescription");
-  base::OnceCallback<const webrtc::SessionDescriptionInterface*()>
-      description_cb = base::BindOnce(
+  CrossThreadOnceFunction<const webrtc::SessionDescriptionInterface*()>
+      description_cb = CrossThreadBindOnce(
           &webrtc::PeerConnectionInterface::pending_remote_description,
           native_peer_connection_);
   return GetRTCSessionDescriptionPlatformOnSignalingThread(
@@ -1668,20 +1694,22 @@ void RTCPeerConnectionHandler::GetStats(
     webrtc::PeerConnectionInterface::StatsOutputLevel level,
     rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> selector) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  signaling_thread()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&GetStatsOnSignalingThread, native_peer_connection_, level,
-                     base::WrapRefCounted(observer), std::move(selector)));
+  PostCrossThreadTask(
+      *signaling_thread().get(), FROM_HERE,
+      CrossThreadBindOnce(&GetStatsOnSignalingThread, native_peer_connection_,
+                          level, base::WrapRefCounted(observer),
+                          std::move(selector)));
 }
 
 void RTCPeerConnectionHandler::GetStats(
     RTCStatsReportCallback callback,
     const Vector<webrtc::NonStandardGroupId>& exposed_group_ids) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  signaling_thread()->PostTask(
-      FROM_HERE, base::BindOnce(&GetRTCStatsOnSignalingThread, task_runner_,
-                                native_peer_connection_, std::move(callback),
-                                exposed_group_ids));
+  PostCrossThreadTask(
+      *signaling_thread().get(), FROM_HERE,
+      CrossThreadBindOnce(
+          &GetRTCStatsOnSignalingThread, task_runner_, native_peer_connection_,
+          CrossThreadBindOnce(std::move(callback)), exposed_group_ids));
 }
 
 webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
@@ -1735,7 +1763,7 @@ void RTCPeerConnectionHandler::AddTransceiverWithTrackOnSignalingThread(
 
 webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
 RTCPeerConnectionHandler::AddTransceiverWithKind(
-    std::string kind,
+    const String& kind,
     const webrtc::RtpTransceiverInit& init) {
   DCHECK_EQ(configuration_.sdp_semantics, webrtc::SdpSemantics::kUnifiedPlan);
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
@@ -2102,7 +2130,7 @@ RTCPeerConnectionHandler::NativePeerConnection() {
 }
 
 void RTCPeerConnectionHandler::RunSynchronousOnceClosureOnSignalingThread(
-    base::OnceClosure closure,
+    CrossThreadOnceClosure closure,
     const char* trace_event_name) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   scoped_refptr<base::SingleThreadTaskRunner> thread(signaling_thread());
@@ -2112,11 +2140,11 @@ void RTCPeerConnectionHandler::RunSynchronousOnceClosureOnSignalingThread(
   } else {
     base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                               base::WaitableEvent::InitialState::NOT_SIGNALED);
-    thread->PostTask(
-        FROM_HERE,
-        base::BindOnce(&RunSynchronousOnceClosure, std::move(closure),
-                       base::Unretained(trace_event_name),
-                       base::Unretained(&event)));
+    PostCrossThreadTask(
+        *thread.get(), FROM_HERE,
+        CrossThreadBindOnce(&RunSynchronousOnceClosure, std::move(closure),
+                            CrossThreadUnretained(trace_event_name),
+                            CrossThreadUnretained(&event)));
     event.Wait();
   }
 }
@@ -2611,7 +2639,7 @@ RTCPeerConnectionHandler::signaling_thread() const {
 
 RTCSessionDescriptionPlatform*
 RTCPeerConnectionHandler::GetRTCSessionDescriptionPlatformOnSignalingThread(
-    base::OnceCallback<const webrtc::SessionDescriptionInterface*()>
+    CrossThreadOnceFunction<const webrtc::SessionDescriptionInterface*()>
         description_cb,
     const char* log_text) {
   // Since the webrtc::PeerConnectionInterface::*_description() functions
@@ -2625,10 +2653,10 @@ RTCPeerConnectionHandler::GetRTCSessionDescriptionPlatformOnSignalingThread(
   std::string type, sdp;
   bool success = false;
   RunSynchronousOnceClosureOnSignalingThread(
-      base::BindOnce(
+      CrossThreadBindOnce(
           &GetRTCSessionDescriptionPlatformFromSessionDescriptionCallback,
-          std::move(description_cb), base::Unretained(&type),
-          base::Unretained(&sdp), base::Unretained(&success)),
+          std::move(description_cb), CrossThreadUnretained(&type),
+          CrossThreadUnretained(&sdp), CrossThreadUnretained(&success)),
       log_text);
 
   if (!success)

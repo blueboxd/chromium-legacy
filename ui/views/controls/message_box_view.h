@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/views/controls/link.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -19,8 +20,6 @@ namespace views {
 class Checkbox;
 class Label;
 class LayoutProvider;
-class Link;
-class LinkListener;
 class ScrollView;
 class Textfield;
 
@@ -80,9 +79,8 @@ class VIEWS_EXPORT MessageBoxView : public View {
   // Sets the state of the check-box.
   void SetCheckBoxSelected(bool selected);
 
-  // Sets the text and the listener of the link. If |text| is empty, the link
-  // is removed.
-  void SetLink(const base::string16& text, LinkListener* listener);
+  // Sets the text and the callback of the link. |text| must be non-empty.
+  void SetLink(const base::string16& text, Link::ClickedCallback callback);
 
   // View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;

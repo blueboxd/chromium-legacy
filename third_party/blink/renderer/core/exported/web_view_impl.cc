@@ -1140,7 +1140,7 @@ WebPagePopupImpl* WebViewImpl::OpenPagePopup(PagePopupClient* client) {
   // CreatePopup returns nullptr if this renderer process is about to die.
   if (!popup_widget)
     return nullptr;
-  page_popup_ = ToWebPagePopupImpl(popup_widget);
+  page_popup_ = To<WebPagePopupImpl>(popup_widget);
   page_popup_->Initialize(this, client);
   EnablePopupMouseWheelEventListener(frame);
   return page_popup_.get();
@@ -1153,7 +1153,7 @@ void WebViewImpl::CancelPagePopup() {
 
 void WebViewImpl::ClosePagePopup(PagePopup* popup) {
   DCHECK(popup);
-  WebPagePopupImpl* popup_impl = ToWebPagePopupImpl(popup);
+  auto* popup_impl = To<WebPagePopupImpl>(popup);
   DCHECK_EQ(page_popup_.get(), popup_impl);
   if (page_popup_.get() != popup_impl)
     return;

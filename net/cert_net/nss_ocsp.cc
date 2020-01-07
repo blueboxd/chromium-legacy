@@ -45,9 +45,9 @@ namespace {
 pthread_mutex_t g_request_session_delegate_factory_lock =
     PTHREAD_MUTEX_INITIALIZER;
 
-scoped_refptr<OCSPRequestSessionDelegateFactory>&
+std::unique_ptr<OCSPRequestSessionDelegateFactory>&
 GetRequestSessionDelegateFactoryPtr() {
-  static base::NoDestructor<scoped_refptr<OCSPRequestSessionDelegateFactory>>
+  static base::NoDestructor<std::unique_ptr<OCSPRequestSessionDelegateFactory>>
       wrapper;
   return *wrapper.get();
 }
@@ -564,11 +564,11 @@ void EnsureNSSHttpIOInit() {
 }
 
 void SetOCSPRequestSessionDelegateFactory(
-    scoped_refptr<OCSPRequestSessionDelegateFactory> new_factory) {
-  scoped_refptr<OCSPRequestSessionDelegateFactory> factory_to_be_destructed;
+    std::unique_ptr<OCSPRequestSessionDelegateFactory> new_factory) {
+  std::unique_ptr<OCSPRequestSessionDelegateFactory> factory_to_be_destructed;
 
   pthread_mutex_lock(&g_request_session_delegate_factory_lock);
-  scoped_refptr<OCSPRequestSessionDelegateFactory>& current_factory =
+  std::unique_ptr<OCSPRequestSessionDelegateFactory>& current_factory =
       GetRequestSessionDelegateFactoryPtr();
   // The same NSS-using process should only ever use one concrete
   // OCSPRequestSessionDelegateFactory for the lifetime of that process. If this
@@ -578,7 +578,8 @@ void SetOCSPRequestSessionDelegateFactory(
   // instance.
   DCHECK(!new_factory || !current_factory.get());
 
-  factory_to_be_destructed = std::exchange(current_factory, new_factory);
+  factory_to_be_destructed =
+      std::exchange(current_factory, std::move(new_factory));
   pthread_mutex_unlock(&g_request_session_delegate_factory_lock);
 }
 

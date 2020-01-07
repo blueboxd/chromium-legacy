@@ -175,6 +175,13 @@ class AnimatingLayoutManagerTest : public testing::Test {
   const ProposedLayout& layout1() const { return layout1_; }
   const ProposedLayout& layout2() const { return layout2_; }
 
+  void RunCurrentTasks() {
+    base::RunLoop loop;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  loop.QuitClosure());
+    loop.Run();
+  }
+
   // Replaces one of the children of |view| with a blank TestView.
   // Because child views have e.g. preferred size set by default, in order to
   // use non-default setup this method should be called.
@@ -2184,36 +2191,45 @@ TEST_F(AnimatingLayoutManagerTest, PostOrQueueAction) {
   EXPECT_FALSE(layout()->is_animating());
   test_layout->SetLayout(layout2());
 
-  base::RunLoop loop1;
-  base::RunLoop loop2;
+  bool action1_called = false;
+  bool action2_called = false;
 
   // Invalidating the layout forces a recalculation, which starts the animation.
   view()->InvalidateLayout();
-  layout()->PostOrQueueAction(loop1.QuitClosure());
-  layout()->PostOrQueueAction(loop2.QuitClosure());
+  layout()->PostOrQueueAction(
+      base::BindOnce([](bool* var) { *var = true; }, &action1_called));
+  layout()->PostOrQueueAction(
+      base::BindOnce([](bool* var) { *var = true; }, &action2_called));
   EXPECT_TRUE(layout()->is_animating());
-  EXPECT_EQ(2u, layout()->delayed_actions_for_testing().size());
+
+  // No tasks should be posted, we're still animating.
+  RunCurrentTasks();
+  EXPECT_FALSE(action1_called);
+  EXPECT_FALSE(action2_called);
 
   // Advance partially.
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
   SizeAndLayout();
   EXPECT_TRUE(layout()->is_animating());
-  EXPECT_EQ(2u, layout()->delayed_actions_for_testing().size());
+  RunCurrentTasks();
+  EXPECT_FALSE(action1_called);
+  EXPECT_FALSE(action2_called);
 
   // Advance to completion.
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
   EXPECT_TRUE(layout()->is_animating());
-  EXPECT_EQ(2u, layout()->delayed_actions_for_testing().size());
+  RunCurrentTasks();
+  EXPECT_FALSE(action1_called);
+  EXPECT_FALSE(action2_called);
 
   // Final layout clears the |is_animating| state because the views are now in
   // their final configuration.
   SizeAndLayout();
   EXPECT_FALSE(layout()->is_animating());
-  EXPECT_TRUE(layout()->delayed_actions_for_testing().empty());
-  // Run the loops until their respective QuitClosures have been run, which
-  // verifies that the actions were actually posted.
-  loop1.Run();
-  loop2.Run();
+  // The actions should now have been posted, make sure they run.
+  RunCurrentTasks();
+  EXPECT_TRUE(action1_called);
+  EXPECT_TRUE(action2_called);
 }
 
 TEST_F(AnimatingLayoutManagerTest, PostOrQueueAction_ContinueAnimation) {
@@ -2227,21 +2243,27 @@ TEST_F(AnimatingLayoutManagerTest, PostOrQueueAction_ContinueAnimation) {
   EXPECT_FALSE(layout()->is_animating());
   test_layout->SetLayout(layout2());
 
-  base::RunLoop loop1;
-  base::RunLoop loop2;
+  bool action1_called = false;
+  bool action2_called = false;
 
   // Invalidating the layout forces a recalculation, which starts the animation.
   view()->InvalidateLayout();
-  layout()->PostOrQueueAction(loop1.QuitClosure());
-  layout()->PostOrQueueAction(loop2.QuitClosure());
+  layout()->PostOrQueueAction(
+      base::BindOnce([](bool* var) { *var = true; }, &action1_called));
+  layout()->PostOrQueueAction(
+      base::BindOnce([](bool* var) { *var = true; }, &action2_called));
   EXPECT_TRUE(layout()->is_animating());
-  EXPECT_EQ(2u, layout()->delayed_actions_for_testing().size());
+  RunCurrentTasks();
+  EXPECT_FALSE(action1_called);
+  EXPECT_FALSE(action2_called);
 
   // Advance partially.
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(850));
   SizeAndLayout();
   EXPECT_TRUE(layout()->is_animating());
-  EXPECT_EQ(2u, layout()->delayed_actions_for_testing().size());
+  RunCurrentTasks();
+  EXPECT_FALSE(action1_called);
+  EXPECT_FALSE(action2_called);
 
   // Redirect the layout.
   test_layout->SetLayout(layout1());
@@ -2251,22 +2273,25 @@ TEST_F(AnimatingLayoutManagerTest, PostOrQueueAction_ContinueAnimation) {
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
   SizeAndLayout();
   EXPECT_TRUE(layout()->is_animating());
-  EXPECT_EQ(2u, layout()->delayed_actions_for_testing().size());
+  RunCurrentTasks();
+  EXPECT_FALSE(action1_called);
+  EXPECT_FALSE(action2_called);
 
   // Advance to completion.
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
   EXPECT_TRUE(layout()->is_animating());
-  EXPECT_EQ(2u, layout()->delayed_actions_for_testing().size());
+  RunCurrentTasks();
+  EXPECT_FALSE(action1_called);
+  EXPECT_FALSE(action2_called);
 
   // Final layout clears the |is_animating| state because the views are now in
   // their final configuration.
   SizeAndLayout();
   EXPECT_FALSE(layout()->is_animating());
-  EXPECT_TRUE(layout()->delayed_actions_for_testing().empty());
-  // Run the loops to make sure the delayed actions were posted and end up
-  // running.
-  loop1.Run();
-  loop2.Run();
+  // The tasks should be posted, make sure they run.
+  RunCurrentTasks();
+  EXPECT_TRUE(action1_called);
+  EXPECT_TRUE(action2_called);
 }
 
 TEST_F(AnimatingLayoutManagerTest, PostOrQueueAction_NeverFinishes) {
@@ -2280,26 +2305,36 @@ TEST_F(AnimatingLayoutManagerTest, PostOrQueueAction_NeverFinishes) {
   EXPECT_FALSE(layout()->is_animating());
   test_layout->SetLayout(layout2());
 
+  bool action1_called = false;
+  bool action2_called = false;
+
   // Invalidating the layout forces a recalculation, which starts the animation.
   view()->InvalidateLayout();
-  // Post empty closures. TaskQueueImpl::PostImmediateTaskImpl will CHECK if
-  // they are ever posted as the the task callback is unset.
-  layout()->PostOrQueueAction(base::OnceClosure());
-  layout()->PostOrQueueAction(base::OnceClosure());
+  layout()->PostOrQueueAction(
+      base::BindOnce([](bool* var) { *var = true; }, &action1_called));
+  layout()->PostOrQueueAction(
+      base::BindOnce([](bool* var) { *var = true; }, &action2_called));
   EXPECT_TRUE(layout()->is_animating());
-  EXPECT_EQ(2u, layout()->delayed_actions_for_testing().size());
 
   // Advance partially.
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
   SizeAndLayout();
   EXPECT_TRUE(layout()->is_animating());
-  EXPECT_EQ(2u, layout()->delayed_actions_for_testing().size());
 
-  // Destroy the view and the layout manager.
-  // At the point of writing this, this CHECKs if |PostDelayedActions| is
-  // run in AnimatingLayoutManager's destructor, as it posts empty closures to
-  // the task queue.
+  // Flush the run loop to make sure no posting has happened before this point.
+  RunCurrentTasks();
+  EXPECT_FALSE(action1_called);
+  EXPECT_FALSE(action2_called);
+
+  // Destroy the view and the layout manager. This should not run delayed tasks.
   DestroyView();
+  EXPECT_FALSE(action1_called);
+  EXPECT_FALSE(action2_called);
+
+  // Flush the run loop to make sure the tasks aren't posted either.
+  RunCurrentTasks();
+  EXPECT_FALSE(action1_called);
+  EXPECT_FALSE(action2_called);
 }
 
 TEST_F(AnimatingLayoutManagerTest, PostOrQueueAction_MayPostImmediately) {
@@ -2312,13 +2347,16 @@ TEST_F(AnimatingLayoutManagerTest, PostOrQueueAction_MayPostImmediately) {
 
   base::RunLoop loop1;
   base::RunLoop loop2;
+  bool action1_called = false;
+  bool action2_called = false;
 
   // Since the layout is not animating yet, this action posts immediately.
   EXPECT_FALSE(layout()->is_animating());
-  layout()->PostOrQueueAction(loop1.QuitClosure());
-  EXPECT_TRUE(layout()->delayed_actions_for_testing().empty());
-  // Run loop1 to make sure that the action was actually posted.
-  loop1.Run();
+  layout()->PostOrQueueAction(
+      base::BindOnce([](bool* var) { *var = true; }, &action1_called));
+  RunCurrentTasks();
+  EXPECT_TRUE(action1_called);
+  EXPECT_FALSE(action2_called);
 
   test_layout->SetLayout(layout2());
 
@@ -2326,29 +2364,31 @@ TEST_F(AnimatingLayoutManagerTest, PostOrQueueAction_MayPostImmediately) {
   view()->InvalidateLayout();
 
   // Since the animation is running, this action is queued for later.
-  layout()->PostOrQueueAction(loop2.QuitClosure());
+  layout()->PostOrQueueAction(
+      base::BindOnce([](bool* var) { *var = true; }, &action2_called));
   EXPECT_TRUE(layout()->is_animating());
-  EXPECT_EQ(1u, layout()->delayed_actions_for_testing().size());
+  RunCurrentTasks();
+  EXPECT_FALSE(action2_called);
 
   // Advance partially.
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
   SizeAndLayout();
   EXPECT_TRUE(layout()->is_animating());
-  EXPECT_EQ(1u, layout()->delayed_actions_for_testing().size());
+  RunCurrentTasks();
+  EXPECT_FALSE(action2_called);
 
   // Advance to completion.
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
   EXPECT_TRUE(layout()->is_animating());
-  EXPECT_EQ(1u, layout()->delayed_actions_for_testing().size());
+  RunCurrentTasks();
+  EXPECT_FALSE(action2_called);
 
   // Final layout clears the |is_animating| state because the views are now in
   // their final configuration.
   SizeAndLayout();
   EXPECT_FALSE(layout()->is_animating());
-  EXPECT_TRUE(layout()->delayed_actions_for_testing().empty());
-  // Run loop2 to make sure the delayed action was actually posted and does
-  // eventually run.
-  loop2.Run();
+  RunCurrentTasks();
+  EXPECT_TRUE(action2_called);
 }
 
 TEST_F(AnimatingLayoutManagerTest, ZOrder_UnchangedWhenNotAnimating) {
@@ -2493,19 +2533,20 @@ TEST_F(AnimatingLayoutManagerTest, ConstrainedSpace_TriggersDelayedAction) {
   view()->InvalidateLayout();
   SizeAndLayout();
 
-  base::RunLoop run_loop;
-  layout()->PostOrQueueAction(run_loop.QuitClosure());
-  EXPECT_EQ(1u, layout()->delayed_actions_for_testing().size());
+  bool action_called = false;
+  layout()->PostOrQueueAction(
+      base::BindOnce([](bool* var) { *var = true; }, &action_called));
+  RunCurrentTasks();
+  EXPECT_FALSE(action_called);
 
   // Advance the animation.
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
   // Layout 2 is 200 across. Halfway is 150. Getting less should halt the
   // animation. Note that calling SetSize() should result in a Layout() call.
   view()->SetSize({140, 200});
-  EXPECT_TRUE(layout()->delayed_actions_for_testing().empty());
-  // Run until QuitClosure gets called, meaning that the delayed action has
-  // actually been posted.
-  run_loop.Run();
+  // This should post the delayed actions, so make sure it actually runs.
+  RunCurrentTasks();
+  EXPECT_TRUE(action_called);
 }
 
 TEST_F(AnimatingLayoutManagerTest, ConstrainedSpace_SubsequentAnimation) {

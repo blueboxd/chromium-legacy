@@ -534,10 +534,10 @@ TEST_F(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
   // site.
   ntp_rfh->GetSiteInstance()->IncrementActiveFrameCount();
 
-  // Navigate to a cross-site URL (don't swap out to keep |ntp_rfh| alive).
+  // Navigate to a cross-site URL (don't unload to keep |ntp_rfh| alive).
   auto navigation =
       NavigationSimulatorImpl::CreateBrowserInitiated(kDestUrl, contents());
-  navigation->set_drop_swap_out_ack(true);
+  navigation->set_drop_unload_ack(true);
   navigation->Commit();
   TestRenderFrameHost* dest_rfh = contents()->GetMainFrame();
   ASSERT_TRUE(dest_rfh);
@@ -562,10 +562,10 @@ TEST_F(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
 }
 
 // Test that the FrameHostMsg_UpdateFaviconURL IPC message is ignored if the
-// renderer is in the STATE_PENDING_SWAP_OUT_STATE. The favicon code assumes
+// renderer is in the pending deletion state. The favicon code assumes
 // that it only gets FrameHostMsg_UpdateFaviconURL messages for the most
 // recently committed navigation for each WebContentsImpl.
-TEST_F(RenderFrameHostManagerTest, UpdateFaviconURLWhilePendingSwapOut) {
+TEST_F(RenderFrameHostManagerTest, UpdateFaviconURLWhilePendingUnload) {
   const GURL kChromeURL(GetWebUIURL("foo"));
   const GURL kDestUrl("http://www.google.com/");
   std::vector<FaviconURL> icons;
@@ -589,13 +589,13 @@ TEST_F(RenderFrameHostManagerTest, UpdateFaviconURLWhilePendingSwapOut) {
   // Navigate to a cross-site URL and commit the new page.
   auto navigation =
       NavigationSimulatorImpl::CreateBrowserInitiated(kDestUrl, contents());
-  navigation->set_drop_swap_out_ack(true);
+  navigation->set_drop_unload_ack(true);
   navigation->Commit();
   TestRenderFrameHost* dest_rfh = contents()->GetMainFrame();
   EXPECT_FALSE(ntp_rfh->is_active());
   EXPECT_TRUE(dest_rfh->is_active());
 
-  // The new RVH should be able to update its favicons.
+  // The new RFH should be able to update its favicons.
   {
     PluginFaviconMessageObserver observer(contents());
     EXPECT_TRUE(dest_rfh->OnMessageReceived(
@@ -1124,11 +1124,11 @@ TEST_F(RenderFrameHostManagerTest, WebUIWasCleared) {
   EXPECT_FALSE(main_test_rfh()->web_ui());
 }
 
-// Ensure that we can go back and forward even if a SwapOut ACK isn't received.
+// Ensure that we can go back and forward even if a unload ACK isn't received.
 // See http://crbug.com/93427.
-TEST_F(RenderFrameHostManagerTest, NavigateAfterMissingSwapOutACK) {
+TEST_F(RenderFrameHostManagerTest, NavigateAfterMissingUnloadACK) {
   // When a page enters the BackForwardCache, the RenderFrameHost is not
-  // deleted.  Similarly, no SwapOutACK message is sent.
+  // deleted.  Similarly, no Unload_ACK message is sent.
   contents()->GetController().GetBackForwardCache().DisableForTesting(
       BackForwardCache::TEST_ASSUMES_NO_CACHING);
   const GURL kUrl1("http://www.google.com/");
@@ -1138,15 +1138,15 @@ TEST_F(RenderFrameHostManagerTest, NavigateAfterMissingSwapOutACK) {
   contents()->NavigateAndCommit(kUrl1);
   TestRenderFrameHost* rfh1 = main_test_rfh();
 
-  // Keep active_frame_count nonzero so that no swapped out frames in
-  // this SiteInstance get forcefully deleted.
+  // Keep active_frame_count nonzero so that no unloaded frames in this
+  // SiteInstance get forcefully deleted.
   rfh1->GetSiteInstance()->IncrementActiveFrameCount();
 
   contents()->NavigateAndCommit(kUrl2);
   TestRenderFrameHost* rfh2 = main_test_rfh();
   rfh2->GetSiteInstance()->IncrementActiveFrameCount();
 
-  // Now go back, but suppose the SwapOut_ACK isn't received.  This shouldn't
+  // Now go back, but suppose the Unload_ACK isn't received.  This shouldn't
   // happen, but we have seen it when going back quickly across many entries
   // (http://crbug.com/93427).
   auto back_navigation1 =
@@ -1155,7 +1155,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateAfterMissingSwapOutACK) {
   EXPECT_FALSE(rfh2->is_waiting_for_beforeunload_ack());
 
   // The back navigation commits.
-  back_navigation1->set_drop_swap_out_ack(true);
+  back_navigation1->set_drop_unload_ack(true);
   back_navigation1->Commit();
   EXPECT_TRUE(rfh2->IsWaitingForUnloadACK());
   EXPECT_FALSE(rfh2->is_active());
@@ -1165,10 +1165,10 @@ TEST_F(RenderFrameHostManagerTest, NavigateAfterMissingSwapOutACK) {
   EXPECT_TRUE(main_test_rfh()->is_active());
 }
 
-// Test that we create swapped out RFHs for the opener chain when navigating an
-// opened tab cross-process.  This allows us to support certain cross-process
-// JavaScript calls (http://crbug.com/99202).
-TEST_F(RenderFrameHostManagerTest, CreateSwappedOutOpenerRFHs) {
+// Test that we create RenderFrameProxy objects for the opener chain when
+// navigating an opened tab cross-process.  This allows us to support certain
+// cross-process JavaScript calls (http://crbug.com/99202).
+TEST_F(RenderFrameHostManagerTest, CreateProxiesForOpeners) {
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2 = isolated_cross_site_url();
   const GURL kChromeUrl(GetWebUIURL("foo"));
@@ -1618,12 +1618,13 @@ TEST_F(RenderFrameHostManagerTest, CloseWithPendingWhileUnresponsive) {
   EXPECT_TRUE(close_delegate.is_closed());
 }
 
-// Tests that the RenderFrameHost is properly deleted when the SwapOutACK is
-// received.  (SwapOut and the corresponding ACK always occur after commit.)
-// Also tests that an early SwapOutACK is properly ignored.
-TEST_F(RenderFrameHostManagerTest, DeleteFrameAfterSwapOutACK) {
+// Tests that the RenderFrameHost is properly deleted when the
+// FrameHostMsg_Unload_ACK is received. (UnfreezableFrameMsg_Unload and the
+// corresponding FrameHostMsg_Unload_ACK always occur after commit.)
+// Also tests that an early FrameHostMsg_Unload_ACK is properly ignored.
+TEST_F(RenderFrameHostManagerTest, DeleteFrameAfterUnloadACK) {
   // When a page enters the BackForwardCache, the RenderFrameHost is not
-  // deleted.  Similarly, no SwapOutACK message is sent.
+  // deleted.  Similarly, no Unload_ACK message is sent.
   contents()->GetController().GetBackForwardCache().DisableForTesting(
       BackForwardCache::TEST_ASSUMES_NO_CACHING);
   const GURL kUrl1("http://www.google.com/");
@@ -1643,14 +1644,14 @@ TEST_F(RenderFrameHostManagerTest, DeleteFrameAfterSwapOutACK) {
   EXPECT_TRUE(rfh1->is_active());
   TestRenderFrameHost* rfh2 = contents()->GetPendingMainFrame();
 
-  // Simulate the swap out ack, unexpectedly early (before commit).  It should
+  // Simulate the unload ack, unexpectedly early (before commit).  It should
   // have no effect.
-  rfh1->SimulateSwapOutACK();
+  rfh1->SimulateUnloadACK();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   EXPECT_TRUE(rfh1->is_active());
 
   // The new page commits.
-  navigation->set_drop_swap_out_ack(true);
+  navigation->set_drop_unload_ack(true);
   navigation->Commit();
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(rfh2, contents()->GetMainFrame());
@@ -1658,19 +1659,20 @@ TEST_F(RenderFrameHostManagerTest, DeleteFrameAfterSwapOutACK) {
   EXPECT_TRUE(rfh2->is_active());
   EXPECT_FALSE(rfh1->is_active());
 
-  // Simulate the swap out ack.
-  rfh1->SimulateSwapOutACK();
+  // Simulate the unload ack.
+  rfh1->SimulateUnloadACK();
 
   // rfh1 should have been deleted.
   EXPECT_TRUE(rfh_deleted_observer.deleted());
   rfh1 = nullptr;
 }
 
-// Tests that the RenderFrameHost is properly swapped out when the SwapOut ACK
-// is received.  (SwapOut and the corresponding ACK always occur after commit.)
-TEST_F(RenderFrameHostManagerTest, SwapOutFrameAfterSwapOutACK) {
+// Tests that the RenderFrameHost is properly unloaded when the
+// FrameHostMsg_Unload_ACK is received. (UnfreezableFrameMsg_Unload and the
+// corresponding FrameHostMsg_Unload_ACK always occur after commit.)
+TEST_F(RenderFrameHostManagerTest, UnloadFrameAfterUnloadACK) {
   // When a page enters the BackForwardCache, the RenderFrameHost is not
-  // deleted.  Similarly, no SwapOutACK message is sent.
+  // deleted.  Similarly, no Unload_ACK message is sent.
   contents()->GetController().GetBackForwardCache().DisableForTesting(
       BackForwardCache::TEST_ASSUMES_NO_CACHING);
   const GURL kUrl1("http://www.google.com/");
@@ -1683,7 +1685,7 @@ TEST_F(RenderFrameHostManagerTest, SwapOutFrameAfterSwapOutACK) {
   EXPECT_TRUE(rfh1->is_active());
 
   // Increment the number of active frames in SiteInstanceImpl so that rfh1 is
-  // not deleted on swap out.
+  // not deleted on unload.
   rfh1->GetSiteInstance()->IncrementActiveFrameCount();
 
   // Navigate to new site, simulating onbeforeunload approval.
@@ -1695,7 +1697,7 @@ TEST_F(RenderFrameHostManagerTest, SwapOutFrameAfterSwapOutACK) {
   TestRenderFrameHost* rfh2 = contents()->GetPendingMainFrame();
 
   // The new page commits.
-  navigation->set_drop_swap_out_ack(true);
+  navigation->set_drop_unload_ack(true);
   navigation->Commit();
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(rfh2, contents()->GetMainFrame());
@@ -1703,20 +1705,21 @@ TEST_F(RenderFrameHostManagerTest, SwapOutFrameAfterSwapOutACK) {
   EXPECT_FALSE(rfh1->is_active());
   EXPECT_TRUE(rfh2->is_active());
 
-  // Simulate the swap out ack.
-  rfh1->OnSwappedOut();
+  // Simulate the unload ack.
+  rfh1->OnUnloaded();
 
   // rfh1 should be deleted.
   EXPECT_TRUE(rfh_deleted_observer.deleted());
 }
 
 // Test that the RenderViewHost is properly swapped out if a navigation in the
-// new renderer commits before sending the SwapOut message to the old renderer.
+// new renderer commits before sending the UnfreezableFrameMsg_Unload message to
+// the old renderer.
 // This simulates a cross-site navigation to a synchronously committing URL
 // (e.g., a data URL) and ensures it works properly.
-TEST_F(RenderFrameHostManagerTest, CommitNewNavigationBeforeSendingSwapOut) {
+TEST_F(RenderFrameHostManagerTest, CommitNewNavigationBeforeSendingUnload) {
   // When a page enters the BackForwardCache, the RenderFrameHost is not
-  // deleted.  Similarly, no SwapOutACK message is sent.
+  // deleted.  Similarly, no Unload_ACK message is sent.
   contents()->GetController().GetBackForwardCache().DisableForTesting(
       BackForwardCache::TEST_ASSUMES_NO_CACHING);
   const GURL kUrl1("http://www.google.com/");
@@ -1729,7 +1732,7 @@ TEST_F(RenderFrameHostManagerTest, CommitNewNavigationBeforeSendingSwapOut) {
   EXPECT_TRUE(rfh1->is_active());
 
   // Increment the number of active frames in SiteInstanceImpl so that rfh1 is
-  // not deleted on swap out.
+  // not deleted on unload.
   scoped_refptr<SiteInstanceImpl> site_instance = rfh1->GetSiteInstance();
   site_instance->IncrementActiveFrameCount();
 
@@ -1742,7 +1745,7 @@ TEST_F(RenderFrameHostManagerTest, CommitNewNavigationBeforeSendingSwapOut) {
   TestRenderFrameHost* rfh2 = contents()->GetPendingMainFrame();
 
   // The new page commits.
-  navigation->set_drop_swap_out_ack(true);
+  navigation->set_drop_unload_ack(true);
   navigation->Commit();
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(rfh2, contents()->GetMainFrame());
@@ -1750,8 +1753,8 @@ TEST_F(RenderFrameHostManagerTest, CommitNewNavigationBeforeSendingSwapOut) {
   EXPECT_FALSE(rfh1->is_active());
   EXPECT_TRUE(rfh2->is_active());
 
-  // Simulate the swap out ack.
-  rfh1->OnSwappedOut();
+  // Simulate the unload ack.
+  rfh1->OnUnloaded();
 
   // rfh1 should be deleted.
   EXPECT_TRUE(rfh_deleted_observer.deleted());
@@ -3071,7 +3074,7 @@ TEST_F(RenderFrameHostManagerTest, BeginNavigationIgnoredWhenNotActive) {
   // should be pending delete.
   auto navigation_to_kUrl2 =
       NavigationSimulatorImpl::CreateBrowserInitiated(kUrl2, contents());
-  navigation_to_kUrl2->set_drop_swap_out_ack(true);
+  navigation_to_kUrl2->set_drop_unload_ack(true);
   navigation_to_kUrl2->Commit();
   EXPECT_NE(initial_rfh, main_test_rfh());
   ASSERT_FALSE(delete_observer.deleted());

@@ -2187,7 +2187,7 @@ RTCRtpTransceiver* RTCPeerConnection::addTransceiver(
     const String& kind_string = track_or_kind.GetAsString();
     // TODO(hbos): Make cricket::MediaType an allowed identifier in
     // rtc_peer_connection.cc and use that instead of a boolean.
-    std::string kind;
+    String kind;
     if (kind_string == "audio") {
       kind = webrtc::MediaStreamTrackInterface::kAudioKind;
     } else if (kind_string == "video") {

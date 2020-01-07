@@ -18,8 +18,10 @@
 #include "base/timer/timer.h"
 #include "chrome/common/buildflags.h"
 #include "components/prefs/pref_service.h"
+#include "components/printing/common/print.mojom.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "printing/backend/print_backend.h"
 #include "printing/buildflags/buildflags.h"
 #include "printing/print_job_constants.h"
@@ -366,6 +368,9 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
 
   // Set of printer types on the deny list.
   base::flat_set<PrinterType> printer_type_deny_list_;
+
+  // Used to transmit mojo interface method calls to the associated receiver.
+  mojo::AssociatedRemote<mojom::PrintRenderFrame> print_render_frame_;
 
   base::WeakPtrFactory<PrintPreviewHandler> weak_factory_{this};
 

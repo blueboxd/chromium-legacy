@@ -130,9 +130,7 @@
   ]
                animated:YES];
 
-  if (IsNewClearBrowsingDataUIEnabled()) {
-    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-  }
+  self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
   self.styler.cellBackgroundColor = UIColor.cr_systemBackgroundColor;
   self.styler.tableViewBackgroundColor = UIColor.cr_systemBackgroundColor;
   self.tableView.accessibilityIdentifier =
@@ -167,12 +165,10 @@
   [super viewWillAppear:animated];
   [self.dataManager restartCounters:BrowsingDataRemoveMask::REMOVE_ALL];
 
-  if (IsNewClearBrowsingDataUIEnabled()) {
-    [self updateToolbarButtons];
-    // Showing toolbar here because parent class hides toolbar in
-    // viewWillDisappear:.
-    self.navigationController.toolbarHidden = NO;
-  }
+  [self updateToolbarButtons];
+  // Showing toolbar here because parent class hides toolbar in
+  // viewWillDisappear:.
+  self.navigationController.toolbarHidden = NO;
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -249,9 +245,7 @@
     case ItemTypeDataTypeAutofill:
       // For these cells the selection style application is specified in the
       // corresponding item definition.
-      if (IsNewClearBrowsingDataUIEnabled()) {
-        cellToReturn.selectionStyle = UITableViewCellSelectionStyleNone;
-      }
+      cellToReturn.selectionStyle = UITableViewCellSelectionStyleNone;
       break;
     default:
       break;
@@ -277,38 +271,34 @@
 
 - (void)tableView:(UITableView*)tableView
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
-  if (!IsNewClearBrowsingDataUIEnabled()) {
-    [self tableView:tableView legacyDidSelectRowAtIndexPath:indexPath];
-  } else {
-    TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
-    DCHECK(item);
-    switch (item.type) {
-      case ItemTypeTimeRange: {
-        UIViewController* controller =
-            [[TimeRangeSelectorTableViewController alloc]
-                initWithPrefs:self.browserState->GetPrefs()];
-        [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
-        [self.navigationController pushViewController:controller animated:YES];
-        break;
-      }
-      case ItemTypeDataTypeBrowsingHistory:
-      case ItemTypeDataTypeCookiesSiteData:
-      case ItemTypeDataTypeCache:
-      case ItemTypeDataTypeSavedPasswords:
-      case ItemTypeDataTypeAutofill: {
-        DCHECK([item isKindOfClass:[TableViewClearBrowsingDataItem class]]);
-        TableViewClearBrowsingDataItem* clearBrowsingDataItem =
-            base::mac::ObjCCastStrict<TableViewClearBrowsingDataItem>(item);
-        clearBrowsingDataItem.checked = !clearBrowsingDataItem.checked;
-        [self reconfigureCellsForItems:@[ clearBrowsingDataItem ]];
-        [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
-        break;
-      }
-      default:
-        break;
+  TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
+  DCHECK(item);
+  switch (item.type) {
+    case ItemTypeTimeRange: {
+      UIViewController* controller =
+          [[TimeRangeSelectorTableViewController alloc]
+              initWithPrefs:self.browserState->GetPrefs()];
+      [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
+      [self.navigationController pushViewController:controller animated:YES];
+      break;
     }
-    [self updateToolbarButtons];
+    case ItemTypeDataTypeBrowsingHistory:
+    case ItemTypeDataTypeCookiesSiteData:
+    case ItemTypeDataTypeCache:
+    case ItemTypeDataTypeSavedPasswords:
+    case ItemTypeDataTypeAutofill: {
+      DCHECK([item isKindOfClass:[TableViewClearBrowsingDataItem class]]);
+      TableViewClearBrowsingDataItem* clearBrowsingDataItem =
+          base::mac::ObjCCastStrict<TableViewClearBrowsingDataItem>(item);
+      clearBrowsingDataItem.checked = !clearBrowsingDataItem.checked;
+      [self reconfigureCellsForItems:@[ clearBrowsingDataItem ]];
+      [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
+      break;
+    }
+    default:
+      break;
   }
+  [self updateToolbarButtons];
 }
 
 - (void)tableView:(UITableView*)tableView
@@ -453,25 +443,10 @@
       dataTypeMaskToRemove = dataTypeMaskToRemove | dataTypeItem.dataTypeMask;
     }
   }
-  ActionSheetCoordinator* actionSheetCoordinator;
-  if (IsNewClearBrowsingDataUIEnabled()) {
-    actionSheetCoordinator = [self.dataManager
-        actionSheetCoordinatorWithDataTypesToRemove:dataTypeMaskToRemove
-                                 baseViewController:self
-                                sourceBarButtonItem:sender];
-  } else {
-    // Get button's position in coordinate system of table view.
-    DCHECK_EQ(self.clearBrowsingDataButton, sender);
-    CGRect clearBrowsingDataButtonRect = [self.clearBrowsingDataButton
-        convertRect:self.clearBrowsingDataButton.bounds
-             toView:self.tableView];
-    actionSheetCoordinator = [self.dataManager
-        actionSheetCoordinatorWithDataTypesToRemove:dataTypeMaskToRemove
-                                 baseViewController:self
-                                         sourceRect:clearBrowsingDataButtonRect
-                                         sourceView:self.tableView];
-  }
-  self.actionSheetCoordinator = actionSheetCoordinator;
+  self.actionSheetCoordinator = [self.dataManager
+      actionSheetCoordinatorWithDataTypesToRemove:dataTypeMaskToRemove
+                               baseViewController:self
+                              sourceBarButtonItem:sender];
   [self.actionSheetCoordinator start];
 }
 

@@ -518,6 +518,10 @@ void CollectUserDataAction::OnGetUserData(
     for (const auto& value : user_data->additional_values_to_store) {
       delegate_->GetClientMemory()->set_additional_value(value.first,
                                                          value.second);
+      if (!value.second.empty()) {
+        processed_action_proto_->mutable_collect_user_data_result()
+            ->add_set_text_input_memory_keys(value.first);
+      }
     }
 
     processed_action_proto_->mutable_collect_user_data_result()

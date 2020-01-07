@@ -31,9 +31,6 @@ namespace {
 std::unique_ptr<browsing_data::BrowsingDataCounter>
 CreateCounterForBrowserStateAndPref(ios::ChromeBrowserState* browser_state,
                                     base::StringPiece pref_name) {
-  if (!IsNewClearBrowsingDataUIEnabled())
-    return nullptr;
-
   if (pref_name == browsing_data::prefs::kDeleteBrowsingHistory) {
     return std::make_unique<browsing_data::HistoryCounter>(
         ios::HistoryServiceFactory::GetForBrowserStateIfExists(

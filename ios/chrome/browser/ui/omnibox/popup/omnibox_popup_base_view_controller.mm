@@ -52,8 +52,6 @@ const CGFloat kTopAndBottomPadding = 8.0;
 // view controller was on screen.
 @property(nonatomic, assign) base::TimeTicks viewAppearanceTime;
 
-@property(nonatomic, strong) NSLayoutConstraint* shortcutsViewEdgeConstraint;
-
 @end
 
 @implementation OmniboxPopupBaseViewController
@@ -116,35 +114,6 @@ const CGFloat kTopAndBottomPadding = 8.0;
   [self updateBackgroundColor];
 }
 
-- (void)viewWillTransitionToSize:(CGSize)size
-       withTransitionCoordinator:
-           (id<UIViewControllerTransitionCoordinator>)coordinator {
-  [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
-
-  // Update the leading edge constraints for the shortcuts cell when the view
-  // rotates.
-  if (self.shortcutsEnabled && self.currentResult.count == 0) {
-    __weak __typeof(self) weakSelf = self;
-    [coordinator
-        animateAlongsideTransition:^(
-            id<UIViewControllerTransitionCoordinatorContext> _Nonnull context) {
-          __typeof(self) strongSelf = weakSelf;
-          if (!strongSelf) {
-            return;
-          }
-          CGFloat widthInsets = CenteredTilesMarginForWidth(
-              strongSelf.traitCollection,
-              size.width - strongSelf.view.safeAreaInsets.left -
-                  strongSelf.view.safeAreaInsets.right);
-          strongSelf.shortcutsViewEdgeConstraint.constant = widthInsets;
-          [strongSelf.shortcutsViewController.collectionView
-                  .collectionViewLayout invalidateLayout];
-          [strongSelf.shortcutsCell layoutIfNeeded];
-        }
-                        completion:nil];
-  }
-}
-
 #pragma mark - View lifecycle
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -156,52 +125,6 @@ const CGFloat kTopAndBottomPadding = 8.0;
   [super viewWillDisappear:animated];
   UMA_HISTOGRAM_MEDIUM_TIMES("MobileOmnibox.PopupOpenDuration",
                              base::TimeTicks::Now() - self.viewAppearanceTime);
-}
-
-#pragma mark - Properties accessors
-
-- (void)setShortcutsEnabled:(BOOL)shortcutsEnabled {
-  if (shortcutsEnabled == _shortcutsEnabled) {
-    return;
-  }
-
-  DCHECK(!shortcutsEnabled || self.shortcutsViewController);
-
-  _shortcutsEnabled = shortcutsEnabled;
-  [self.tableView reloadData];
-}
-
-- (UITableViewCell*)shortcutsCell {
-  if (_shortcutsCell) {
-    return _shortcutsCell;
-  }
-
-  DCHECK(self.shortcutsEnabled);
-  DCHECK(self.shortcutsViewController);
-
-  UITableViewCell* cell = [[UITableViewCell alloc] init];
-  _shortcutsCell = cell;
-  cell.backgroundColor = [UIColor clearColor];
-  [self.shortcutsViewController willMoveToParentViewController:self];
-  [self addChildViewController:self.shortcutsViewController];
-  [cell.contentView addSubview:self.shortcutsViewController.view];
-  self.shortcutsViewController.view.translatesAutoresizingMaskIntoConstraints =
-      NO;
-  AddSameConstraintsToSides(self.shortcutsViewController.view, cell.contentView,
-                            (LayoutSides::kTop | LayoutSides::kBottom));
-  AddSameCenterXConstraint(self.shortcutsViewController.view, cell.contentView);
-  self.shortcutsViewEdgeConstraint =
-      [self.shortcutsViewController.view.leadingAnchor
-          constraintEqualToAnchor:cell.contentView.safeAreaLayoutGuide
-                                      .leadingAnchor];
-  // When the device is rotating, the constraints are slightly off for one
-  // runloop. Lower the priority here to prevent unable to satisfy constraints
-  // warning.
-  self.shortcutsViewEdgeConstraint.priority = UILayoutPriorityRequired - 1;
-  self.shortcutsViewEdgeConstraint.active = YES;
-  [self.shortcutsViewController didMoveToParentViewController:self];
-  cell.accessibilityIdentifier = kShortcutsAccessibilityIdentifier;
-  return cell;
 }
 
 #pragma mark - AutocompleteResultConsumer
@@ -312,11 +235,6 @@ const CGFloat kTopAndBottomPadding = 8.0;
 
 - (BOOL)tableView:(UITableView*)tableView
     shouldHighlightRowAtIndexPath:(NSIndexPath*)indexPath {
-  if (self.shortcutsEnabled && indexPath.row == 0 &&
-      self.currentResult.count == 0) {
-    return NO;
-  }
-
   return YES;
 }
 
@@ -332,31 +250,6 @@ const CGFloat kTopAndBottomPadding = 8.0;
   if (row >= self.currentResult.count)
     return;
   [self.delegate autocompleteResultConsumer:self didSelectRow:row];
-}
-
-- (void)tableView:(UITableView*)tableView
-      willDisplayCell:(UITableViewCell*)cell
-    forRowAtIndexPath:(NSIndexPath*)indexPath {
-  // Update the leading edge constraints for the shortcuts cell before it is
-  // displayed.
-  if (self.shortcutsEnabled && indexPath.row == 0 &&
-      self.currentResult.count == 0) {
-    CGFloat widthInsets = CenteredTilesMarginForWidth(
-        self.traitCollection, self.view.bounds.size.width -
-                                  self.view.safeAreaInsets.left -
-                                  self.view.safeAreaInsets.right);
-    if (widthInsets != self.shortcutsViewEdgeConstraint.constant) {
-      self.shortcutsViewEdgeConstraint.constant = widthInsets;
-      // If the insets have changed, the collection view (and thus the table
-      // view) may have changed heights. This could happen due to dynamic type
-      // changing the height of the collection view. It is also necessary for
-      // the first load.
-      [self.shortcutsViewController.collectionView
-              .collectionViewLayout invalidateLayout];
-      [self.shortcutsCell.contentView layoutIfNeeded];
-      [self.tableView reloadData];
-    }
-  }
 }
 
 #pragma mark - UIScrollViewDelegate
@@ -383,9 +276,6 @@ const CGFloat kTopAndBottomPadding = 8.0;
 - (NSInteger)tableView:(UITableView*)tableView
     numberOfRowsInSection:(NSInteger)section {
   DCHECK_EQ(0, section);
-  if (self.shortcutsEnabled && self.currentResult.count == 0) {
-    return 1;
-  }
   return self.currentResult.count;
 }
 
@@ -398,11 +288,6 @@ const CGFloat kTopAndBottomPadding = 8.0;
 - (BOOL)tableView:(UITableView*)tableView
     canEditRowAtIndexPath:(NSIndexPath*)indexPath {
   DCHECK_EQ(0U, (NSUInteger)indexPath.section);
-
-  if (self.shortcutsEnabled && indexPath.row == 0 &&
-      self.currentResult.count == 0) {
-    return NO;
-  }
 
   // iOS doesn't check -numberOfRowsInSection before checking
   // -canEditRowAtIndexPath in a reload call. If |indexPath.row| is too large,

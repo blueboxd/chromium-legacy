@@ -115,10 +115,14 @@ public final class TabImpl extends ITab.Stub {
      */
     public void attachToBrowser(BrowserImpl browser) {
         mBrowser = browser;
-        mWebContents.setTopLevelNativeWindow(browser.getWindowAndroid());
-        mViewAndroidDelegate.setContainerView(browser.getViewAndroidDelegateContainerView());
+        updateFromBrowser();
         SelectionPopupController.fromWebContents(mWebContents)
                 .setActionModeCallback(new ActionModeCallback(mWebContents));
+    }
+
+    public void updateFromBrowser() {
+        mWebContents.setTopLevelNativeWindow(mBrowser.getWindowAndroid());
+        mViewAndroidDelegate.setContainerView(mBrowser.getViewAndroidDelegateContainerView());
     }
 
     public BrowserImpl getBrowser() {

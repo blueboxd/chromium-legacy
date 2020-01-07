@@ -15,13 +15,11 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/sync/one_click_signin_links_delegate.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/link_listener.h"
 #include "ui/views/window/dialog_delegate.h"
 
 // This class allows users to confirm sync signin in cases where signin is
 // untrusted.
-class OneClickSigninDialogView : public views::DialogDelegateView,
-                                 public views::LinkListener {
+class OneClickSigninDialogView : public views::DialogDelegateView {
  public:
   // Show the one-click signin dialog if not already showing.
   static void ShowDialog(const base::string16& email,
@@ -37,6 +35,12 @@ class OneClickSigninDialogView : public views::DialogDelegateView,
   // method is meant to be called only from tests.
   static OneClickSigninDialogView* view_for_testing() { return dialog_view_; }
 
+  // Overridden from views::DialogDelegateView:
+  base::string16 GetWindowTitle() const override;
+  ui::ModalType GetModalType() const override;
+  void WindowClosing() override;
+  bool Accept() override;
+
  protected:
   // Creates a OneClickSigninDialogView.
   OneClickSigninDialogView(
@@ -49,23 +53,6 @@ class OneClickSigninDialogView : public views::DialogDelegateView,
  private:
   friend class OneClickSigninDialogViewTest;
 
-  FRIEND_TEST_ALL_PREFIXES(OneClickSigninDialogViewTest, AdvancedLink);
-  FRIEND_TEST_ALL_PREFIXES(OneClickSigninDialogViewTest, LearnMoreLink);
-
-  void Init();
-
-  // Overridden from views::DialogDelegateView:
-  base::string16 GetWindowTitle() const override;
-  ui::ModalType GetModalType() const override;
-  void WindowClosing() override;
-  bool Accept() override;
-
-  // Overridden from views::LinkListener:
-  void LinkClicked(views::Link* source, int event_flags) override;
-
-  // Delegate to handle clicking on links in the bubble.
-  std::unique_ptr<OneClickSigninLinksDelegate> delegate_;
-
   // The user's email address to be used for sync.
   const base::string16 email_;
 
@@ -73,12 +60,6 @@ class OneClickSigninDialogView : public views::DialogDelegateView,
   // It will be called when the bubble is closed if it has not been called
   // and nulled earlier.
   base::OnceCallback<void(bool)> confirmed_callback_;
-
-  // Link to sync setup advanced page.
-  views::Link* advanced_link_ = nullptr;
-
-  // Link to the Learn More details page
-  views::Link* learn_more_link_ = nullptr;
 
   // The bubble, if we're showing one.
   static OneClickSigninDialogView* dialog_view_;

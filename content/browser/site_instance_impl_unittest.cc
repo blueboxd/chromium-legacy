@@ -386,25 +386,17 @@ TEST_F(SiteInstanceTest, GetSiteForURL) {
   EXPECT_EQ("file", site_url.scheme());
   EXPECT_FALSE(site_url.has_host());
 
-  // Data URLs should include the whole URL, except for the hash, when Site
-  // Isolation is enabled.  Otherwise they just include the scheme.
+  // Data URLs should include the whole URL, except for the hash.
   test_url = GURL("data:text/html,foo");
   site_url = SiteInstance::GetSiteForURL(&context, test_url);
-  if (AreAllSitesIsolatedForTesting())
-    EXPECT_EQ(test_url, site_url);
-  else
-    EXPECT_EQ(GURL("data:"), site_url);
+  EXPECT_EQ(test_url, site_url);
   EXPECT_EQ("data", site_url.scheme());
   EXPECT_FALSE(site_url.has_host());
   test_url = GURL("data:text/html,foo#bar");
   site_url = SiteInstance::GetSiteForURL(&context, test_url);
   EXPECT_FALSE(site_url.has_ref());
-  if (AreAllSitesIsolatedForTesting()) {
-    EXPECT_NE(test_url, site_url);
-    EXPECT_TRUE(site_url.EqualsIgnoringRef(test_url));
-  } else {
-    EXPECT_EQ(GURL("data:"), site_url);
-  }
+  EXPECT_NE(test_url, site_url);
+  EXPECT_TRUE(site_url.EqualsIgnoringRef(test_url));
 
   // Javascript URLs should include the scheme.
   test_url = GURL("javascript:foo();");
@@ -427,24 +419,16 @@ TEST_F(SiteInstanceTest, GetSiteForURL) {
   EXPECT_EQ("file", site_url.scheme());
   EXPECT_FALSE(site_url.has_host());
 
-  // Blob URLs created from a unique origin use the full URL as the site URL
-  // when Site Isolation is enabled, except for the hash.  Otherwise they just
-  // include the scheme.
+  // Blob URLs created from a unique origin use the full URL as the site URL,
+  // except for the hash.
   test_url = GURL("blob:null/1029e5a4-2983-4b90-a585-ed217563acfeb");
   site_url = SiteInstance::GetSiteForURL(&context, test_url);
-  if (AreAllSitesIsolatedForTesting())
-    EXPECT_EQ(test_url, site_url);
-  else
-    EXPECT_EQ(GURL("blob:"), site_url);
+  EXPECT_EQ(test_url, site_url);
   test_url = GURL("blob:null/1029e5a4-2983-4b90-a585-ed217563acfeb#foo");
   site_url = SiteInstance::GetSiteForURL(&context, test_url);
   EXPECT_FALSE(site_url.has_ref());
-  if (AreAllSitesIsolatedForTesting()) {
-    EXPECT_NE(test_url, site_url);
-    EXPECT_TRUE(site_url.EqualsIgnoringRef(test_url));
-  } else {
-    EXPECT_EQ(GURL("blob:"), site_url);
-  }
+  EXPECT_NE(test_url, site_url);
+  EXPECT_TRUE(site_url.EqualsIgnoringRef(test_url));
 
   // Private domains are preserved, appspot being such a site.
   test_url = GURL(

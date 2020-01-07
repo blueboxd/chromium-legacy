@@ -19,13 +19,11 @@
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
-#include "ui/views/controls/link_listener.h"
 #include "ui/views/layout/fill_layout.h"
 
 namespace {
 
-class NetworkProfileBubbleView : public views::BubbleDialogDelegateView,
-                                 public views::LinkListener {
+class NetworkProfileBubbleView : public views::BubbleDialogDelegateView {
  public:
   NetworkProfileBubbleView(views::View* anchor,
                            content::PageNavigator* navigator,
@@ -37,8 +35,7 @@ class NetworkProfileBubbleView : public views::BubbleDialogDelegateView,
   void Init() override;
   bool Accept() override;
 
-  // views::LinkListener:
-  void LinkClicked(views::Link* source, int event_flags) override;
+  void LinkClicked(views::Link* source, int event_flags);
 
   // Used for loading pages.
   content::PageNavigator* navigator_;
@@ -60,7 +57,8 @@ NetworkProfileBubbleView::NetworkProfileBubbleView(
   DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
   auto* learn_more = DialogDelegate::SetExtraView(
       std::make_unique<views::Link>(l10n_util::GetStringUTF16(IDS_LEARN_MORE)));
-  learn_more->set_listener(this);
+  learn_more->set_callback(base::BindRepeating(
+      &NetworkProfileBubbleView::LinkClicked, base::Unretained(this)));
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::NETWORK_SHARE_PROFILE_WARNING);
 }

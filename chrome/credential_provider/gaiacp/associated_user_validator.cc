@@ -197,6 +197,7 @@ bool AssociatedUserValidator::IsOnlineLoginStale(
   HRESULT hr = GetUserProperty(
       sid, base::UTF8ToUTF16(kKeyLastSuccessfulOnlineLoginMillis),
       last_login_millis, &last_login_size);
+
   if (FAILED(hr)) {
     LOGFN(INFO) << "GetUserProperty for " << kKeyLastSuccessfulOnlineLoginMillis
                 << " failed. hr=" << putHR(hr);
@@ -220,7 +221,7 @@ bool AssociatedUserValidator::IsOnlineLoginStale(
 
   int64_t validity_period_in_millis =
       kDayInMillis * static_cast<int64_t>(validity_period_days);
-  long time_delta_from_last_login =
+  int64_t time_delta_from_last_login =
       base::Time::Now().ToDeltaSinceWindowsEpoch().InMilliseconds() -
       last_login_millis_int64;
   return time_delta_from_last_login >= validity_period_in_millis;
@@ -487,13 +488,13 @@ bool AssociatedUserValidator::IsTokenHandleValidForUser(
 
 AssociatedUserValidator::EnforceAuthReason
 AssociatedUserValidator::GetAuthEnforceReason(const base::string16& sid) {
-  // Enforce online login if the last GCPW login was stale.
-  if (IsOnlineLoginStale(sid))
-    return AssociatedUserValidator::EnforceAuthReason::ONLINE_LOGIN_STALE;
-
   // All token handles are valid when no internet connection is available.
-  if (!HasInternetConnection())
-    return AssociatedUserValidator::EnforceAuthReason::NOT_ENFORCED;
+  if (!HasInternetConnection()) {
+    if (!IsOnlineLoginStale(sid)) {
+      return AssociatedUserValidator::EnforceAuthReason::NOT_ENFORCED;
+    }
+    return AssociatedUserValidator::EnforceAuthReason::ONLINE_LOGIN_STALE;
+  }
 
   // If at this point there is no token info entry for this user, assume the
   // user is not associated and does not need a token handle and is thus always

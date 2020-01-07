@@ -89,9 +89,16 @@ class TabStripModelDelegate {
   // Returns whether some contents can be duplicated.
   virtual bool CanDuplicateContentsAt(int index) = 0;
 
-  // Duplicates the contents at the provided index and places it into its own
-  // window.
+  // Duplicates the contents at the provided index and places it into a new tab.
   virtual void DuplicateContentsAt(int index) = 0;
+
+  // Returns whether the contents at |index| can be moved from the current
+  // tabstrip to a different window.
+  virtual bool CanMoveTabToWindow(int index) = 0;
+
+  // Removes the contents at |index| from this tab strip and places it into a
+  // new window.
+  virtual void MoveTabToNewWindow(int index) = 0;
 
   // Creates an entry in the historical tab database for the specified
   // WebContents.

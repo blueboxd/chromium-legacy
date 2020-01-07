@@ -34,6 +34,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_api_frame_id_map.h"
 #include "extensions/browser/extension_function.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/url_pattern_set.h"
 #include "ipc/ipc_sender.h"
 #include "net/base/auth.h"

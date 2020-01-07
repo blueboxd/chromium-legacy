@@ -88,7 +88,9 @@ void NoRendererCrashesAssertion::Observe(
       break;  // Crash - need to trigger a test failure below.
   }
 
-  FAIL() << "Unexpected termination of a renderer process";
+  FAIL() << "Unexpected termination of a renderer process"
+         << "; status: " << process_info->status
+         << ", exit_code: " << process_info->exit_code;
 }
 
 ScopedAllowRendererCrashes::ScopedAllowRendererCrashes()

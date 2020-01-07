@@ -7,6 +7,7 @@
 #include "base/strings/string_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/content_verifier.h"
+#include "extensions/browser/unloaded_extension_reason.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_resource.h"

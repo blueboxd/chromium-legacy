@@ -353,9 +353,9 @@ class DeclarativeNetRequestBrowserTest
     base::FilePath extension_dir = temp_dir_.GetPath().AppendASCII(directory);
     EXPECT_TRUE(base::CreateDirectory(extension_dir));
 
-    WriteManifestAndRuleset(extension_dir, kJSONRulesetFilepath,
-                            kJSONRulesFilename, rules, hosts,
-                            has_background_script_);
+    WriteManifestAndRuleset(
+        extension_dir, kJSONRulesetFilepath, kJSONRulesFilename, rules, hosts,
+        has_background_script_, true /* has_feedback_permission */);
 
     background_page_ready_listener_->Reset();
     const Extension* extension = nullptr;

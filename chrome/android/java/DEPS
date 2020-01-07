@@ -31,6 +31,7 @@ include_rules = [
   "+components/navigation_interception",
   "+components/offline_items_collection/core/android/java",
   "+components/omnibox/browser/android/java",
+  "+components/paint_preview/browser/android/java/src/org/chromium/components/paintpreview",
   "+components/payments/content/android/java/src/org/chromium/components/payments",
   "+components/search_engines/android/java/src/org/chromium/components/search_engines",
   "+components/sync/android/java/src/org/chromium/components/sync",

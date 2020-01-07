@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/views/controls/link_listener.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace content {
@@ -19,6 +18,7 @@ class WebContents;
 }
 
 namespace views {
+class Link;
 class MessageBoxView;
 class Widget;
 }
@@ -29,8 +29,7 @@ class Widget;
 // dialog from its constructor and then delete itself when the user dismisses
 // the dialog.
 class TabModalConfirmDialogViews : public TabModalConfirmDialog,
-                                   public views::DialogDelegate,
-                                   public views::LinkListener {
+                                   public views::DialogDelegate {
  public:
   TabModalConfirmDialogViews(
       std::unique_ptr<TabModalConfirmDialogDelegate> delegate,
@@ -61,8 +60,7 @@ class TabModalConfirmDialogViews : public TabModalConfirmDialog,
   // TabModalConfirmDialogCloseDelegate:
   void CloseDialog() override;
 
-  // views::LinkListener:
-  void LinkClicked(views::Link* source, int event_flags) override;
+  void LinkClicked(views::Link* source, int event_flags);
 
   views::View* GetInitiallyFocusedView() override;
 

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "net/cookies/site_for_cookies.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
@@ -78,7 +79,7 @@ WebURL WebURLLoaderMock::ServeRedirect(
 
   bool report_raw_headers = false;
   bool follow = client_->WillFollowRedirect(
-      redirect_url, redirect_url, WebString(),
+      redirect_url, net::SiteForCookies::FromUrl(redirect_url), WebString(),
       network::mojom::ReferrerPolicy::kDefault, request.HttpMethod(),
       redirect_response, report_raw_headers);
   // |this| might be deleted in willFollowRedirect().

@@ -52,7 +52,7 @@ class ChromeExtensionCookies
   // storage or not depends on the Profile |this| was created for.
   void CreateRestrictedCookieManager(
       const url::Origin& origin,
-      const GURL& site_for_cookies,
+      const net::SiteForCookies& site_for_cookies,
       const url::Origin& top_frame_origin,
       mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver);
 
@@ -76,7 +76,7 @@ class ChromeExtensionCookies
 
     void CreateRestrictedCookieManager(
         const url::Origin& origin,
-        const GURL& site_for_cookies,
+        const net::SiteForCookies& site_for_cookies,
         const url::Origin& top_frame_origin,
         mojo::PendingReceiver<network::mojom::RestrictedCookieManager>
             receiver);

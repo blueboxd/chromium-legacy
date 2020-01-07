@@ -38,5 +38,5 @@ enum MediaKeySessionType {
 ] interface MediaKeys {
     [CallWith=ScriptState, RaisesException] MediaKeySession createSession(optional MediaKeySessionType sessionType = "temporary");
 
-    [CallWith=ScriptState] Promise<boolean> setServerCertificate(BufferSource serverCertificate);
+    [CallWith=ScriptState, RaisesException] Promise<boolean> setServerCertificate(BufferSource serverCertificate);
 };

@@ -92,8 +92,7 @@ def StartPinpointJobs(state, date):
   item = {'revision': revision, 'timestamp': timestamp, 'jobs': []}
   configs = LoadJsonFile(JOB_CONFIGS_PATH)
   for config in configs:
-    config['start_git_hash'] = revision
-    config['end_git_hash'] = revision
+    config['base_git_hash'] = revision
     with tempfile_ext.NamedTemporaryFile() as tmp:
       json.dump(config, tmp)
       tmp.close()

@@ -7397,14 +7397,31 @@ AXPlatformNodeWin::GetPatternProviderFactoryMethod(PATTERNID pattern_id) {
       break;
 
     case UIA_TablePatternId:
+      // https://docs.microsoft.com/en-us/windows/win32/api/uiautomationcore/nn-uiautomationcore-itableprovider
+      // This control pattern is analogous to IGridProvider with the distinction
+      // that any control implementing ITableProvider must also expose a column
+      // and/or row header relationship for each child element.
       if (IsTableLike(data.role)) {
-        return &PatternProvider<ITableProvider>;
+        base::Optional<bool> table_has_headers =
+            GetDelegate()->GetTableHasColumnOrRowHeaderNode();
+        if (table_has_headers.has_value() && table_has_headers.value()) {
+          return &PatternProvider<ITableProvider>;
+        }
       }
       break;
 
     case UIA_TableItemPatternId:
+      // https://docs.microsoft.com/en-us/windows/win32/api/uiautomationcore/nn-uiautomationcore-itableitemprovider
+      // This control pattern is analogous to IGridItemProvider with the
+      // distinction that any control implementing ITableItemProvider must
+      // expose the relationship between the individual cell and its row and
+      // column information.
       if (IsCellOrTableHeader(data.role)) {
-        return &PatternProvider<ITableItemProvider>;
+        base::Optional<bool> table_has_headers =
+            GetDelegate()->GetTableHasColumnOrRowHeaderNode();
+        if (table_has_headers.has_value() && table_has_headers.value()) {
+          return &PatternProvider<ITableItemProvider>;
+        }
       }
       break;
 

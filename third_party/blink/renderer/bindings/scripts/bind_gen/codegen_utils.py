@@ -149,7 +149,7 @@ def collect_include_headers(idl_definition):
 
     traverse_idl_types(idl_definition, collect_type_def_obj)
 
-    header_paths = set()
+    header_paths = set(idl_definition.code_generator_info.blink_headers or [])
     for type_def_obj in type_def_objs:
         if isinstance(type_def_obj, web_idl.Enumeration):
             continue

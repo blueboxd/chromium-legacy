@@ -1038,8 +1038,8 @@ jumbo_source_set("browser") {
     "indexed_db/transaction_impl.h",
     "initiator_csp_context.cc",
     "initiator_csp_context.h",
-    "installedapp/installed_app_provider_impl_default.cc",
-    "installedapp/installed_app_provider_impl_default.h",
+    "installedapp/installed_app_provider_impl.cc",
+    "installedapp/installed_app_provider_impl.h",
     "interface_provider_filtering.cc",
     "interface_provider_filtering.h",
     "isolated_origin_util.cc",
@@ -2083,6 +2083,10 @@ jumbo_source_set("browser") {
   }
 
   if (is_win) {
+    sources += [
+      "installedapp/installed_app_provider_impl_win.cc",
+      "installedapp/installed_app_provider_impl_win.h",
+    ]
     defines += [
       # This prevents the inclusion of atlhost.h which paired
       # with the windows 8 sdk it does the wrong thing.

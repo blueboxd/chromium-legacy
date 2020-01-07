@@ -48,6 +48,7 @@ android_library("java") {
     "//chrome/android:chrome_java",
     "//chrome/browser/preferences:java",
     "//chrome/browser/ui/android/widget:java",
+    "//components/browser_ui/widget/android:java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:com_android_support_design_java",
     "//ui/android:ui_full_java",

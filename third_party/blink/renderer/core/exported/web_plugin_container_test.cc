@@ -158,7 +158,7 @@ class TestPluginWithEditableText : public FakeWebPlugin {
  public:
   static TestPluginWithEditableText* FromContainer(WebElement* element) {
     WebPlugin* plugin =
-        ToWebPluginContainerImpl(element->PluginContainer())->Plugin();
+        To<WebPluginContainerImpl>(element->PluginContainer())->Plugin();
     return static_cast<TestPluginWithEditableText*>(plugin);
   }
 
@@ -274,7 +274,7 @@ void CreateAndHandleKeyboardEvent(WebElement* plugin_container_one_element,
       WebInputEvent::GetStaticTimeStampForTests());
   web_keyboard_event.windows_key_code = key_code;
   KeyboardEvent* key_event = KeyboardEvent::Create(web_keyboard_event, nullptr);
-  ToWebPluginContainerImpl(plugin_container_one_element->PluginContainer())
+  To<WebPluginContainerImpl>(plugin_container_one_element->PluginContainer())
       ->HandleEvent(*key_event);
 }
 
@@ -1134,8 +1134,8 @@ TEST_F(WebPluginContainerTest, IsRectTopmostTest) {
       base_url_ + "plugin_container.html", &plugin_web_frame_client);
   EnablePlugins(web_view, WebSize(300, 300));
 
-  WebPluginContainerImpl* plugin_container_impl =
-      ToWebPluginContainerImpl(GetWebPluginContainer(
+  auto* plugin_container_impl =
+      To<WebPluginContainerImpl>(GetWebPluginContainer(
           web_view, WebString::FromUTF8("translated-plugin")));
   plugin_container_impl->SetFrameRect(IntRect(0, 0, 300, 300));
 
@@ -1158,15 +1158,15 @@ TEST_F(WebPluginContainerTest, IsRectTopmostTestWithOddAndEvenDimensions) {
       base_url_ + "plugin_container.html", &plugin_web_frame_client);
   EnablePlugins(web_view, WebSize(300, 300));
 
-  WebPluginContainerImpl* even_plugin_container_impl =
-      ToWebPluginContainerImpl(GetWebPluginContainer(
+  auto* even_plugin_container_impl =
+      To<WebPluginContainerImpl>(GetWebPluginContainer(
           web_view, WebString::FromUTF8("translated-plugin")));
   even_plugin_container_impl->SetFrameRect(IntRect(0, 0, 300, 300));
   auto even_rect = even_plugin_container_impl->GetElement().BoundsInViewport();
   EXPECT_TRUE(even_plugin_container_impl->IsRectTopmost(even_rect));
 
-  WebPluginContainerImpl* odd_plugin_container_impl =
-      ToWebPluginContainerImpl(GetWebPluginContainer(
+  auto* odd_plugin_container_impl =
+      To<WebPluginContainerImpl>(GetWebPluginContainer(
           web_view, WebString::FromUTF8("odd-dimensions-plugin")));
   odd_plugin_container_impl->SetFrameRect(IntRect(0, 0, 300, 300));
   auto odd_rect = odd_plugin_container_impl->GetElement().BoundsInViewport();
@@ -1189,8 +1189,8 @@ TEST_F(WebPluginContainerTest, ClippedRectsForIframedElement) {
                                   ->ToWebLocalFrame()
                                   ->GetDocument()
                                   .GetElementById("translated-plugin");
-  WebPluginContainerImpl* plugin_container_impl =
-      ToWebPluginContainerImpl(plugin_element.PluginContainer());
+  auto* plugin_container_impl =
+      To<WebPluginContainerImpl>(plugin_element.PluginContainer());
 
   DCHECK(plugin_container_impl);
 
@@ -1221,8 +1221,8 @@ TEST_F(WebPluginContainerTest, ClippedRectsForShiftedIframedElement) {
       web_view->MainFrame()->FirstChild()->ToWebLocalFrame();
   WebElement plugin_element =
       iframe->GetDocument().GetElementById("plugin-hidden-before-scroll");
-  WebPluginContainerImpl* plugin_container_impl =
-      ToWebPluginContainerImpl(plugin_element.PluginContainer());
+  auto* plugin_container_impl =
+      To<WebPluginContainerImpl>(plugin_element.PluginContainer());
 
   DCHECK(plugin_container_impl);
 
@@ -1315,8 +1315,8 @@ TEST_F(WebPluginContainerTest, ClippedRectsForSubpixelPositionedPlugin) {
   WebElement plugin_element =
       web_view->MainFrameImpl()->GetDocument().GetElementById(
           "subpixel-positioned-plugin");
-  WebPluginContainerImpl* plugin_container_impl =
-      ToWebPluginContainerImpl(plugin_element.PluginContainer());
+  auto* plugin_container_impl =
+      To<WebPluginContainerImpl>(plugin_element.PluginContainer());
 
   DCHECK(plugin_container_impl);
 
@@ -1360,8 +1360,8 @@ TEST_F(WebPluginContainerTest, TopmostAfterDetachTest) {
       base_url_ + "plugin_container.html", &plugin_web_frame_client);
   EnablePlugins(web_view, WebSize(300, 300));
 
-  WebPluginContainerImpl* plugin_container_impl =
-      ToWebPluginContainerImpl(GetWebPluginContainer(
+  auto* plugin_container_impl =
+      To<WebPluginContainerImpl>(GetWebPluginContainer(
           web_view, WebString::FromUTF8("translated-plugin")));
   plugin_container_impl->SetFrameRect(IntRect(0, 0, 300, 300));
 

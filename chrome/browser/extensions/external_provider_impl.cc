@@ -54,6 +54,7 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_external_loader.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/extensions/device_local_account_external_policy_loader.h"
+#include "chrome/browser/chromeos/extensions/signin_screen_extensions_external_loader.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_extensions_external_loader.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -588,16 +589,19 @@ void ExternalProviderImpl::CreateExternalProviders(
     // FROM_WEBSTORE/WAS_INSTALLED_BY_DEFAULT are applied because these
     // extension/apps are downloaded from the webstore, and we want to treat
     // them as built-in extensions. Extensions (not apps) installed through this
-    // path will have type |TYPE_LOGIN_SCREE_EXTENSION| with limited API
+    // path will have type |TYPE_LOGIN_SCREEN_EXTENSION| with limited API
     // capabilities.
-    external_loader = base::MakeRefCounted<ExternalPolicyLoader>(
-        profile, ExtensionManagementFactory::GetForBrowserContext(profile),
-        ExternalPolicyLoader::FORCED);
+    crx_location = Manifest::EXTERNAL_POLICY_DOWNLOAD;
+    external_loader =
+        base::MakeRefCounted<chromeos::SigninScreenExtensionsExternalLoader>(
+            profile);
     auto signin_profile_provider = std::make_unique<ExternalProviderImpl>(
         service, external_loader, profile, crx_location,
         Manifest::EXTERNAL_POLICY_DOWNLOAD,
         Extension::FROM_WEBSTORE | Extension::WAS_INSTALLED_BY_DEFAULT |
             Extension::FOR_LOGIN_SCREEN);
+    signin_profile_provider->set_auto_acknowledge(true);
+    signin_profile_provider->set_install_immediately(true);
     signin_profile_provider->set_allow_updates(true);
     provider_list->push_back(std::move(signin_profile_provider));
     return;

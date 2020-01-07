@@ -107,6 +107,8 @@ struct MediaRoute {
   string? media_source;
   // The ID of sink that is rendering the media content.
   string media_sink_id;
+  // Human readable name of the sink.
+  string media_sink_name;
   // Human readable description of the casting activity.  Examples:
   // "Mirroring tab (www.example.com)", "Casting media", "Casting YouTube"
   //

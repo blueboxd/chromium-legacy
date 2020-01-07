@@ -12,7 +12,6 @@
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_view.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
-#include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -34,8 +33,7 @@ class CardUnmaskPromptController;
 class CardUnmaskPromptViews : public CardUnmaskPromptView,
                               public views::ComboboxListener,
                               public views::BubbleDialogDelegateView,
-                              public views::TextfieldController,
-                              public views::LinkListener {
+                              public views::TextfieldController {
  public:
   CardUnmaskPromptViews(CardUnmaskPromptController* controller,
                         content::WebContents* web_contents);
@@ -72,9 +70,6 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   // views::ComboboxListener
   void OnPerformAction(views::Combobox* combobox) override;
 
-  // views::LinkListener
-  void LinkClicked(views::Link* source, int event_flags) override;
-
  private:
   friend class CardUnmaskPromptViewTesterViews;
 
@@ -86,6 +81,8 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   void ClosePrompt();
 
   void UpdateButtonLabels();
+
+  void LinkClicked();
 
   CardUnmaskPromptController* controller_;
   content::WebContents* web_contents_;

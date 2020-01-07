@@ -25,7 +25,7 @@ WorkerContentSettingsClient::WorkerContentSettingsClient(
     is_unique_origin_ = true;
 
   document_origin_ = document.GetSecurityOrigin();
-  site_for_cookies_ = document.SiteForCookies();
+  site_for_cookies_ = document.SiteForCookies().RepresentativeUrl();
   top_frame_origin_ = document.TopFrameOrigin();
 
   content::ChildThread::Get()->BindHostReceiver(

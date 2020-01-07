@@ -44,7 +44,7 @@
 #include "ui/base/clipboard/clipboard_util_win.h"
 #endif
 
-#if defined(USE_AURA)
+#if defined(USE_X11)
 #include "ui/events/platform/platform_event_source.h"
 #endif
 
@@ -65,7 +65,7 @@ class ClipboardTest : public PlatformTest {
   // PlatformTest:
   void SetUp() override {
     PlatformTest::SetUp();
-#if defined(USE_AURA)
+#if defined(USE_X11)
     event_source_ = ClipboardTraits::GetEventSource();
 #endif
     clipboard_ = ClipboardTraits::Create();
@@ -87,7 +87,7 @@ class ClipboardTest : public PlatformTest {
   }
 
  private:
-#if defined(USE_AURA)
+#if defined(USE_X11)
   std::unique_ptr<PlatformEventSource> event_source_;
 #endif
   // ui::Clipboard has a protected destructor, so scoped_ptr doesn't work here.

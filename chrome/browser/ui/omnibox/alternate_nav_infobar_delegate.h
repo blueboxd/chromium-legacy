@@ -36,9 +36,13 @@ class AlternateNavInfoBarDelegate : public infobars::InfoBarDelegate {
                                          const GURL& search_url);
 
   base::string16 GetMessageTextWithOffset(size_t* link_offset) const;
-  base::string16 GetLinkText() const;
-  GURL GetLinkURL() const;
-  bool LinkClicked(WindowOpenDisposition disposition);
+
+  // InfoBarDelegate:
+  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
+  const gfx::VectorIcon& GetVectorIcon() const override;
+  base::string16 GetLinkText() const override;
+  GURL GetLinkURL() const override;
+  bool LinkClicked(WindowOpenDisposition disposition) override;
 
  private:
   AlternateNavInfoBarDelegate(Profile* profile,
@@ -50,10 +54,6 @@ class AlternateNavInfoBarDelegate : public infobars::InfoBarDelegate {
   // Returns an alternate nav infobar that owns |delegate|.
   static std::unique_ptr<infobars::InfoBar> CreateInfoBar(
       std::unique_ptr<AlternateNavInfoBarDelegate> delegate);
-
-  // InfoBarDelegate:
-  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
-  const gfx::VectorIcon& GetVectorIcon() const override;
 
   Profile* profile_;
   const base::string16 text_;

@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/run_loop.h"
 #include "base/values.h"
@@ -128,8 +129,8 @@ class PrintingAPIHandlerUnittest : public testing::Test {
             .Build();
     ExtensionRegistry::Get(testing_profile_)->AddEnabled(extension);
 
-    print_job_manager_ = std::make_unique<chromeos::TestCupsPrintJobManager>(
-        Profile::FromBrowserContext(testing_profile_));
+    print_job_manager_ =
+        std::make_unique<chromeos::TestCupsPrintJobManager>(testing_profile_);
     printers_manager_ = std::make_unique<chromeos::TestCupsPrintersManager>();
     auto cups_wrapper = std::make_unique<chromeos::TestCupsWrapper>();
     cups_wrapper_ = cups_wrapper.get();

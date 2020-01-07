@@ -82,7 +82,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
                                   const GURL& url,
                                   ui::PageTransition transition);
   void SendBeforeUnloadACK(bool proceed) override;
-  void SimulateSwapOutACK() override;
+  void SimulateUnloadACK() override;
   void SimulateFeaturePolicyHeader(
       blink::mojom::FeaturePolicyFeature feature,
       const std::vector<url::Origin>& allowlist) override;

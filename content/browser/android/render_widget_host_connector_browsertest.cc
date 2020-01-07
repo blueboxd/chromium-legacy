@@ -119,4 +119,16 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostConnectorTest,
   EXPECT_EQ(nullptr, connector->GetRWHVAForTesting());
 }
 
+IN_PROC_BROWSER_TEST_F(RenderWidgetHostConnectorTest, DestroyEarly) {
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
+
+  RenderWidgetHostViewAndroid* main_rwhva = render_widget_host_view_android();
+  RenderWidgetHostConnector* connector = render_widget_host_connector();
+  EXPECT_EQ(main_rwhva, connector->GetRWHVAForTesting());
+
+  connector->DestroyEarly();
+  EXPECT_EQ(nullptr, render_widget_host_connector());
+}
+
 }  // namespace content

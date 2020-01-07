@@ -782,6 +782,10 @@ void KeyframeEffect::PushPropertiesTo(KeyframeEffect* keyframe_effect_impl) {
     }
   }
 
+  keyframe_effect_impl->scroll_offset_animation_was_interrupted_ =
+      scroll_offset_animation_was_interrupted_;
+  scroll_offset_animation_was_interrupted_ = false;
+
   // If neither main nor impl have any KeyframeModels, there is nothing further
   // to synchronize.
   if (!has_any_keyframe_model() &&
@@ -803,9 +807,6 @@ void KeyframeEffect::PushPropertiesTo(KeyframeEffect* keyframe_effect_impl) {
     if (current_impl)
       keyframe_model->PushPropertiesTo(current_impl);
   }
-  keyframe_effect_impl->scroll_offset_animation_was_interrupted_ =
-      scroll_offset_animation_was_interrupted_;
-  scroll_offset_animation_was_interrupted_ = false;
 
   keyframe_effect_impl->UpdateTickingState();
 }

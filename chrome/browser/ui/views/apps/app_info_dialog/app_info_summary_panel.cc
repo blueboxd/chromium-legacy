@@ -134,18 +134,22 @@ void AppInfoSummaryPanel::AddDescriptionAndLinksControl(
     description_and_labels_stack->AddChildView(std::move(description_label));
   }
 
-  const auto add_link = [&](int message_id) {
+  const auto add_link = [&](int message_id,
+                            void (AppInfoSummaryPanel::*ptr)()) {
     auto* link = description_and_labels_stack->AddChildView(
         std::make_unique<views::Link>(l10n_util::GetStringUTF16(message_id)));
     link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    link->set_listener(this);
+    link->set_callback(base::BindRepeating(ptr, base::Unretained(this)));
     link->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
-    return link;
   };
-  if (CanShowAppHomePage())
-    homepage_link_ = add_link(IDS_APPLICATION_INFO_HOMEPAGE_LINK);
-  if (CanDisplayLicenses())
-    licenses_link_ = add_link(IDS_APPLICATION_INFO_LICENSES_BUTTON_TEXT);
+  if (CanShowAppHomePage()) {
+    add_link(IDS_APPLICATION_INFO_HOMEPAGE_LINK,
+             &AppInfoSummaryPanel::ShowAppHomePage);
+  }
+  if (CanDisplayLicenses()) {
+    add_link(IDS_APPLICATION_INFO_LICENSES_BUTTON_TEXT,
+             &AppInfoSummaryPanel::DisplayLicenses);
+  }
 
   vertical_stack->AddChildView(std::move(description_and_labels_stack));
 }
@@ -223,16 +227,6 @@ void AppInfoSummaryPanel::OnPerformAction(views::Combobox* combobox) {
   if (combobox == launch_options_combobox_) {
     SetLaunchType(launch_options_combobox_model_->GetLaunchTypeAtIndex(
         launch_options_combobox_->GetSelectedIndex()));
-  } else {
-    NOTREACHED();
-  }
-}
-
-void AppInfoSummaryPanel::LinkClicked(views::Link* source, int event_flags) {
-  if (source == homepage_link_) {
-    ShowAppHomePage();
-  } else if (source == licenses_link_) {
-    DisplayLicenses();
   } else {
     NOTREACHED();
   }

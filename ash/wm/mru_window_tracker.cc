@@ -84,10 +84,15 @@ bool CanIncludeWindowInCycleList(aura::Window* window) {
 }
 
 // A predicate that determines whether |window| can be included in the list
-// built for alt-tab cycling, including Android PIP windows.
+// built for alt-tab cycling, including one of the windows for Android PIP apps.
+// For single-activity PIP, the PIP window is included in the list. (in the case
+// of single-activity PIP, the PIP window is the same as the original window.)
+// For multi-activity PIP, the non-PIP activity is included in the list.
+// See the comment for |kPipOriginalWindowKey| for more detail.
 bool CanIncludeWindowInCycleWithPipList(aura::Window* window) {
   return CanIncludeWindowInCycleList(window) ||
-         window_util::IsArcPipWindow(window);
+         (window_util::IsArcPipWindow(window) &&
+          window->GetProperty(ash::kPipOriginalWindowKey));
 }
 
 // Returns a list of windows ordered by their stacking order such that the most

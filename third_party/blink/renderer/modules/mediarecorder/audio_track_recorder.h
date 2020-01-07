@@ -11,6 +11,7 @@
 #include "base/threading/thread_checker.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/renderer/modules/mediarecorder/track_recorder.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace media {
@@ -31,7 +32,8 @@ class Thread;
 // the "capture thread"). It owns an internal thread to use for encoding, on
 // which lives an AudioTrackEncoder with its own threading subtleties, see the
 // implementation file.
-class MODULES_EXPORT AudioTrackRecorder : public WebMediaStreamAudioSink {
+class MODULES_EXPORT AudioTrackRecorder
+    : public TrackRecorder<WebMediaStreamAudioSink> {
  public:
   enum class CodecId {
     // Do not change the order of codecs. Add new ones right before LAST.
@@ -50,6 +52,7 @@ class MODULES_EXPORT AudioTrackRecorder : public WebMediaStreamAudioSink {
   AudioTrackRecorder(CodecId codec,
                      MediaStreamComponent* track,
                      OnEncodedAudioCB on_encoded_audio_cb,
+                     base::OnceClosure on_track_source_ended_cb,
                      int32_t bits_per_second);
   ~AudioTrackRecorder() override;
 

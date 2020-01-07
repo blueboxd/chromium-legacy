@@ -49,7 +49,15 @@ class CSSVisibilityNonInterpolableValue : public NonInterpolableValue {
 };
 
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE(CSSVisibilityNonInterpolableValue);
-DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(CSSVisibilityNonInterpolableValue);
+template <>
+struct DowncastTraits<CSSVisibilityNonInterpolableValue> {
+  static bool AllowFrom(const NonInterpolableValue* value) {
+    return value && AllowFrom(*value);
+  }
+  static bool AllowFrom(const NonInterpolableValue& value) {
+    return value.GetType() == CSSVisibilityNonInterpolableValue::static_type_;
+  }
+};
 
 class UnderlyingVisibilityChecker
     : public CSSInterpolationType::CSSConversionChecker {
@@ -65,9 +73,9 @@ class UnderlyingVisibilityChecker
                const InterpolationValue& underlying) const final {
     double underlying_fraction =
         To<InterpolableNumber>(*underlying.interpolable_value).Value();
-    EVisibility underlying_visibility =
-        ToCSSVisibilityNonInterpolableValue(*underlying.non_interpolable_value)
-            .Visibility(underlying_fraction);
+    EVisibility underlying_visibility = To<CSSVisibilityNonInterpolableValue>(
+                                            *underlying.non_interpolable_value)
+                                            .Visibility(underlying_fraction);
     return visibility_ == underlying_visibility;
   }
 
@@ -102,7 +110,7 @@ InterpolationValue CSSVisibilityInterpolationType::MaybeConvertNeutral(
   double underlying_fraction =
       To<InterpolableNumber>(*underlying.interpolable_value).Value();
   EVisibility underlying_visibility =
-      ToCSSVisibilityNonInterpolableValue(*underlying.non_interpolable_value)
+      To<CSSVisibilityNonInterpolableValue>(*underlying.non_interpolable_value)
           .Visibility(underlying_fraction);
   conversion_checkers.push_back(
       std::make_unique<UnderlyingVisibilityChecker>(underlying_visibility));
@@ -156,10 +164,10 @@ PairwiseInterpolationValue CSSVisibilityInterpolationType::MaybeMergeSingles(
     InterpolationValue&& start,
     InterpolationValue&& end) const {
   EVisibility start_visibility =
-      ToCSSVisibilityNonInterpolableValue(*start.non_interpolable_value)
+      To<CSSVisibilityNonInterpolableValue>(*start.non_interpolable_value)
           .Visibility();
   EVisibility end_visibility =
-      ToCSSVisibilityNonInterpolableValue(*end.non_interpolable_value)
+      To<CSSVisibilityNonInterpolableValue>(*end.non_interpolable_value)
           .Visibility();
   // One side must be "visible".
   // Spec: https://drafts.csswg.org/css-transitions/#animtype-visibility
@@ -190,7 +198,7 @@ void CSSVisibilityInterpolationType::ApplyStandardPropertyValue(
   // its non-linear behaviour.
   double fraction = To<InterpolableNumber>(interpolable_value).Value();
   EVisibility visibility =
-      ToCSSVisibilityNonInterpolableValue(non_interpolable_value)
+      To<CSSVisibilityNonInterpolableValue>(non_interpolable_value)
           ->Visibility(fraction);
   state.Style()->SetVisibility(visibility);
 }

@@ -273,7 +273,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   int provisional_frame_routing_id_;
 
   // Stores the WebRemoteFrame we are associated with.
-  blink::WebRemoteFrame* web_frame_;
+  blink::WebRemoteFrame* web_frame_ = nullptr;
   std::string unique_name_;
 
   // Provides the mojo interface to this RenderFrameProxy's
@@ -285,12 +285,12 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   // Can be nullptr when this RenderFrameProxy's parent is not a RenderFrame.
   std::unique_ptr<ChildFrameCompositingHelper> compositing_helper_;
 
-  RenderViewImpl* render_view_;
+  RenderViewImpl* render_view_ = nullptr;
 
-  // The widget used for the local frame root. Can be nullptr if there
-  // is no local frame root. This happens for main frame proxies or subframes of
-  // main frame proxies.
-  RenderWidget* render_widget_ = nullptr;
+  // The RenderWidget of the nearest ancestor local root. If the proxy has no
+  // local root ancestor (eg it is a proxy of the root frame) then the pointer
+  // is null.
+  RenderWidget* ancestor_render_widget_ = nullptr;
 
   // Contains token to be used as a frame id in the devtools protocol.
   // It is derived from the content's devtools_frame_token, is

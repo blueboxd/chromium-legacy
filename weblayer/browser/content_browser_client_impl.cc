@@ -36,8 +36,6 @@
 #include "services/service_manager/public/cpp/binder_map.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
-#include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
-#include "third_party/blink/public/mojom/installedapp/related_application.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 #include "weblayer/browser/browser_main_parts_impl.h"
@@ -45,6 +43,7 @@
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/browser/ssl_error_handler.h"
 #include "weblayer/browser/tab_impl.h"
+#include "weblayer/browser/weblayer_browser_interface_binders.h"
 #include "weblayer/browser/weblayer_content_browser_overlay_manifest.h"
 #include "weblayer/common/features.h"
 #include "weblayer/public/fullscreen_delegate.h"
@@ -107,29 +106,6 @@ class SSLCertReporterImpl : public SSLCertReporter {
   void ReportInvalidCertificateChain(
       const std::string& serialized_report) override {}
 };
-
-#if defined(OS_ANDROID)
-// TODO(https://crbug.com/1037884): Remove this.
-class StubInstalledAppProvider : public blink::mojom::InstalledAppProvider {
- public:
-  StubInstalledAppProvider() {}
-  ~StubInstalledAppProvider() override = default;
-
-  // InstalledAppProvider overrides:
-  void FilterInstalledApps(
-      std::vector<blink::mojom::RelatedApplicationPtr> related_apps,
-      FilterInstalledAppsCallback callback) override {
-    std::move(callback).Run(std::vector<blink::mojom::RelatedApplicationPtr>());
-  }
-
-  static void Create(
-      content::RenderFrameHost* rfh,
-      mojo::PendingReceiver<blink::mojom::InstalledAppProvider> receiver) {
-    mojo::MakeSelfOwnedReceiver(std::make_unique<StubInstalledAppProvider>(),
-                                std::move(receiver));
-  }
-};
-#endif
 
 }  // namespace
 
@@ -277,7 +253,7 @@ ContentBrowserClientImpl::CreateURLLoaderThrottles(
       IsSafebrowsingSupported()) {
 #if defined(OS_ANDROID)
     result.push_back(GetSafeBrowsingService()->CreateURLLoaderThrottle(
-        browser_context->GetResourceContext(), wc_getter, frame_tree_node_id));
+        wc_getter, frame_tree_node_id));
 #endif
   }
 
@@ -398,11 +374,7 @@ void ContentBrowserClientImpl::ExposeInterfacesToRenderer(
 void ContentBrowserClientImpl::RegisterBrowserInterfaceBindersForFrame(
     content::RenderFrameHost* render_frame_host,
     service_manager::BinderMapWithContext<content::RenderFrameHost*>* map) {
-#if defined(OS_ANDROID)
-  // TODO(https://crbug.com/1037884): Remove this.
-  map->Add<blink::mojom::InstalledAppProvider>(
-      base::BindRepeating(&StubInstalledAppProvider::Create));
-#endif
+  PopulateWebLayerFrameBinders(render_frame_host, map);
 }
 
 #if defined(OS_ANDROID)

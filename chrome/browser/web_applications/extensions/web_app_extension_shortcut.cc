@@ -30,14 +30,10 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/file_handler_info.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
-#include "extensions/grit/extensions_browser_resources.h"
-#include "skia/ext/image_operations.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/web_applications/components/web_app_shortcut_win.h"
-#include "ui/gfx/icon_util.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -50,39 +46,14 @@ namespace web_app {
 
 namespace {
 
-#if defined(OS_MACOSX)
-const int kDesiredSizes[] = {16, 32, 128, 256, 512};
-const size_t kNumDesiredSizes = base::size(kDesiredSizes);
-#elif defined(OS_LINUX)
-// Linux supports icons of any size. FreeDesktop Icon Theme Specification states
-// that "Minimally you should install a 48x48 icon in the hicolor theme."
-const int kDesiredSizes[] = {16, 32, 48, 128, 256, 512};
-const size_t kNumDesiredSizes = base::size(kDesiredSizes);
-#elif defined(OS_WIN)
-const int* kDesiredSizes = IconUtil::kIconDimensions;
-const size_t kNumDesiredSizes = IconUtil::kNumIconDimensions;
-#else
-const int kDesiredSizes[] = {32};
-const size_t kNumDesiredSizes = base::size(kDesiredSizes);
-#endif
-
 void OnImageLoaded(std::unique_ptr<ShortcutInfo> shortcut_info,
                    ShortcutInfoCallback callback,
                    gfx::ImageFamily image_family) {
   // If the image failed to load (e.g. if the resource being loaded was empty)
   // use the standard application icon.
   if (image_family.empty()) {
-    gfx::Image default_icon =
-        ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-            IDR_APP_DEFAULT_ICON);
-    int size = kDesiredSizes[kNumDesiredSizes - 1];
-    SkBitmap bmp = skia::ImageOperations::Resize(
-        *default_icon.ToSkBitmap(), skia::ImageOperations::RESIZE_BEST, size,
-        size);
-    gfx::ImageSkia image_skia = gfx::ImageSkia::CreateFrom1xBitmap(bmp);
-    // We are on the UI thread, and this image is needed from the FILE thread,
-    // for creating shortcut icon files.
-    image_skia.MakeThreadSafe();
+    int size = GetDesiredIconSizesForShortcut().back();
+    gfx::ImageSkia image_skia = CreateDefaultApplicationIcon(size);
     shortcut_info->favicon.Add(gfx::Image(image_skia));
   } else {
     shortcut_info->favicon = std::move(image_family);
@@ -154,21 +125,21 @@ void GetShortcutInfoForApp(const extensions::Extension* extension,
       ShortcutInfoForExtensionAndProfile(extension, profile));
 
   std::vector<extensions::ImageLoader::ImageRepresentation> info_list;
-  for (size_t i = 0; i < kNumDesiredSizes; ++i) {
-    int size = kDesiredSizes[i];
+
+  for (int size : GetDesiredIconSizesForShortcut()) {
     extensions::ExtensionResource resource =
         extensions::IconsInfo::GetIconResource(extension, size,
                                                ExtensionIconSet::MATCH_EXACTLY);
     if (!resource.empty()) {
       info_list.push_back(extensions::ImageLoader::ImageRepresentation(
           resource, extensions::ImageLoader::ImageRepresentation::ALWAYS_RESIZE,
-          gfx::Size(size, size), ui::SCALE_FACTOR_100P));
+          gfx::Size(size, size),
+          GetScaleForScaleFactor(ui::SCALE_FACTOR_100P)));
     }
   }
 
   if (info_list.empty()) {
-    size_t i = kNumDesiredSizes - 1;
-    int size = kDesiredSizes[i];
+    int size = GetDesiredIconSizesForShortcut().back();
 
     // If there is no icon at the desired sizes, we will resize what we can get.
     // Making a large icon smaller is preferred to making a small icon larger,
@@ -182,7 +153,7 @@ void GetShortcutInfoForApp(const extensions::Extension* extension,
     }
     info_list.push_back(extensions::ImageLoader::ImageRepresentation(
         resource, extensions::ImageLoader::ImageRepresentation::ALWAYS_RESIZE,
-        gfx::Size(size, size), ui::SCALE_FACTOR_100P));
+        gfx::Size(size, size), GetScaleForScaleFactor(ui::SCALE_FACTOR_100P)));
   }
 
   // |info_list| may still be empty at this point, in which case
@@ -197,7 +168,8 @@ void GetShortcutInfoForApp(const extensions::Extension* extension,
 std::unique_ptr<ShortcutInfo> ShortcutInfoForExtensionAndProfile(
     const extensions::Extension* app,
     Profile* profile) {
-  std::unique_ptr<ShortcutInfo> shortcut_info(new ShortcutInfo);
+  auto shortcut_info = std::make_unique<ShortcutInfo>();
+
   shortcut_info->extension_id = app->id();
   shortcut_info->url = extensions::AppLaunchInfo::GetLaunchWebURL(app);
   shortcut_info->title = base::UTF8ToUTF16(app->name());
@@ -212,6 +184,7 @@ std::unique_ptr<ShortcutInfo> ShortcutInfoForExtensionAndProfile(
     shortcut_info->file_handler_mime_types =
         web_app::GetMimeTypesFromFileHandlers(*info);
   }
+
   return shortcut_info;
 }
 

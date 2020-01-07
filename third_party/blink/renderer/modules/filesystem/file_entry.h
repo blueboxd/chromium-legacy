@@ -55,8 +55,6 @@ class MODULES_EXPORT FileEntry final : public Entry {
   void Trace(blink::Visitor*) override;
 };
 
-DEFINE_TYPE_CASTS(FileEntry, Entry, entry, entry->isFile(), entry.isFile());
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_FILE_ENTRY_H_

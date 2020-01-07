@@ -20,6 +20,8 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/permissions/api_permission.h"
+#include "extensions/common/permissions/permissions_data.h"
 
 namespace extensions {
 namespace declarative_net_request {
@@ -57,6 +59,27 @@ void ActionTracker::OnRuleMatched(const RequestAction& request_action,
                                      CreateRequestDetails(request_info));
 
   const ExtensionId& extension_id = request_action.extension_id;
+  const Extension* extension =
+      ExtensionRegistry::Get(browser_context_)
+          ->GetExtensionById(extension_id,
+                             extensions::ExtensionRegistry::ENABLED);
+  DCHECK(extension);
+
+  const bool has_feedback_permission =
+      extension->permissions_data()->HasAPIPermission(
+          APIPermission::kDeclarativeNetRequestFeedback);
+
+  auto add_matched_rule_if_needed = [has_feedback_permission](
+                                        TrackedInfo* tracked_info,
+                                        const RequestAction& request_action) {
+    // Only record a matched rule if |extension| has the feedback permission.
+    if (!has_feedback_permission)
+      return;
+
+    tracked_info->matched_rules.emplace_back(request_action.rule_id,
+                                             request_action.source_type);
+  };
+
   const int tab_id = request_info.frame_data.tab_id;
 
   // Allow rules do not result in any action being taken on the request, and
@@ -69,8 +92,7 @@ void ActionTracker::OnRuleMatched(const RequestAction& request_action,
     DCHECK(request_info.navigation_id);
     TrackedInfo& pending_info = pending_navigation_actions_[{
         extension_id, *request_info.navigation_id}];
-    pending_info.matched_rules.emplace_back(request_action.rule_id,
-                                            request_action.source_type);
+    add_matched_rule_if_needed(&pending_info, request_action);
 
     if (increment_action_count)
       pending_info.action_count++;
@@ -78,8 +100,7 @@ void ActionTracker::OnRuleMatched(const RequestAction& request_action,
   }
 
   TrackedInfo& tracked_info = rules_tracked_[{extension_id, tab_id}];
-  tracked_info.matched_rules.emplace_back(request_action.rule_id,
-                                          request_action.source_type);
+  add_matched_rule_if_needed(&tracked_info, request_action);
 
   if (!increment_action_count)
     return;
@@ -136,10 +157,6 @@ void ActionTracker::ClearTabData(int tab_id) {
 }
 
 void ActionTracker::ClearPendingNavigation(int64_t navigation_id) {
-  RulesMonitorService* rules_monitor_service =
-      RulesMonitorService::Get(browser_context_);
-
-  DCHECK(rules_monitor_service);
   auto compare_by_navigation_id =
       [navigation_id](
           const std::pair<const ExtensionNavigationIdKey, TrackedInfo>& it) {
@@ -228,6 +245,26 @@ std::vector<dnr_api::MatchedRuleInfo> ActionTracker::GetMatchedRules(
   return matched_rules;
 }
 
+int ActionTracker::GetMatchedRuleCountForTest(const ExtensionId& extension_id,
+                                              int tab_id) {
+  ExtensionTabIdKey key(extension_id, tab_id);
+  auto tracked_info = rules_tracked_.find(key);
+
+  return tracked_info == rules_tracked_.end()
+             ? 0
+             : tracked_info->second.matched_rules.size();
+}
+
+int ActionTracker::GetPendingRuleCountForTest(const ExtensionId& extension_id,
+                                              int64_t navigation_id) {
+  ExtensionNavigationIdKey key(extension_id, navigation_id);
+  auto tracked_info = pending_navigation_actions_.find(key);
+
+  return tracked_info == pending_navigation_actions_.end()
+             ? 0
+             : tracked_info->second.matched_rules.size();
+}
+
 template <typename T>
 ActionTracker::TrackedInfoContextKey<T>::TrackedInfoContextKey(
     ExtensionId extension_id,
@@ -272,10 +309,12 @@ void ActionTracker::DispatchOnRuleMatchedDebugIfNeeded(
   DCHECK(extension);
 
   // Do not dispatch an event if the extension has not registered a listener.
+  // |event_router| can be null for some unit tests.
+  const EventRouter* event_router = EventRouter::Get(browser_context_);
   const bool has_extension_registered_for_event =
-      EventRouter::Get(browser_context_)
-          ->ExtensionHasEventListener(extension_id,
-                                      dnr_api::OnRuleMatchedDebug::kEventName);
+      event_router &&
+      event_router->ExtensionHasEventListener(
+          extension_id, dnr_api::OnRuleMatchedDebug::kEventName);
   if (!has_extension_registered_for_event)
     return;
 

@@ -95,7 +95,7 @@ FrameView* LayoutEmbeddedContent::ChildFrameView() const {
 WebPluginContainerImpl* LayoutEmbeddedContent::Plugin() const {
   EmbeddedContentView* embedded_content_view = GetEmbeddedContentView();
   if (embedded_content_view && embedded_content_view->IsPluginView())
-    return ToWebPluginContainerImpl(embedded_content_view);
+    return To<WebPluginContainerImpl>(embedded_content_view);
   return nullptr;
 }
 

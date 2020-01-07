@@ -19,7 +19,6 @@ class ImageButton;
 class ImageView;
 class Label;
 class Link;
-class LinkListener;
 class MenuRunner;
 }  // namespace views
 
@@ -59,8 +58,7 @@ class InfoBarView : public infobars::InfoBar,
 
   // Creates a link with the appropriate font and color for an infobar.
   // NOTE: Subclasses must ignore link clicks if we're unowned.
-  views::Link* CreateLink(const base::string16& text,
-                          views::LinkListener* listener) const;
+  views::Link* CreateLink(const base::string16& text);
 
   // Given |views| and the total |available_width| to display them in, sets
   // each view's size so that the longest view shrinks until it reaches the
@@ -109,6 +107,9 @@ class InfoBarView : public infobars::InfoBar,
   // Sets various attributes on |label| that are common to all child links and
   // labels.
   void SetLabelDetails(views::Label* label) const;
+
+  // Callback used by the link created by CreateLink().
+  void LinkClicked(views::Link* source, int event_flags);
 
   // The optional icon at the left edge of the InfoBar.
   views::ImageView* icon_ = nullptr;

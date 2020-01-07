@@ -10,12 +10,12 @@ import org.chromium.content_public.common.BrowserControlsState;
 /**
  * A delegate to determine visibility of the browser controls.
  */
-public abstract class BrowserControlsVisibilityDelegate extends ObservableSupplierImpl<Integer> {
+public class BrowserControlsVisibilityDelegate extends ObservableSupplierImpl<Integer> {
     /**
      * Constructs a delegate that controls the visibility of the browser controls.
      * @param initialValue The initial browser state visibility.
      */
-    protected BrowserControlsVisibilityDelegate(@BrowserControlsState int initialValue) {
+    public BrowserControlsVisibilityDelegate(@BrowserControlsState int initialValue) {
         set(initialValue);
     }
 

@@ -26,11 +26,14 @@ namespace {
 
 constexpr char kRouteDesc[] = "route description";
 constexpr char kRouteId[] = "route_id";
+constexpr char kSinkName[] = "My Sink";
 
 media_router::MediaRoute CreateMediaRoute() {
-  return media_router::MediaRoute(
+  media_router::MediaRoute route(
       kRouteId, media_router::MediaSource("source_id"), "sink_id", kRouteDesc,
       /* is_local */ true, /* for_display */ true);
+  route.set_media_sink_name(kSinkName);
+  return route;
 }
 
 class MockBitmapFetcher : public BitmapFetcher {
@@ -117,6 +120,7 @@ class CastMediaNotificationItemTest : public testing::Test {
     EXPECT_CALL(view_, UpdateWithMediaMetadata(_))
         .WillOnce([&](const media_session::MediaMetadata& metadata) {
           EXPECT_EQ(base::UTF8ToUTF16(kRouteDesc), metadata.artist);
+          EXPECT_EQ(base::UTF8ToUTF16(kSinkName), metadata.source_title);
         });
     item_->SetView(&view_);
     testing::Mock::VerifyAndClearExpectations(&view_);

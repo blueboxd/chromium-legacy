@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Destination, DestinationConnectionStatus, DestinationErrorType, DestinationOrigin, DestinationState, DestinationStore, DestinationType, Error, makeRecentDestination, NativeLayer, State} from 'chrome://print/print_preview.js';
+import {CloudPrintInterfaceEventType, Destination, DestinationConnectionStatus, DestinationErrorType, DestinationOrigin, DestinationState, DestinationStore, DestinationType, Error, makeRecentDestination, NativeLayer, State} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {isChromeOS} from 'chrome://resources/js/cr.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -21,6 +21,7 @@ destination_settings_test.TestNames = {
   RecentDestinationsMissing: 'recent destinations missing',
   SaveAsPdfRecent: 'save as pdf recent',
   GoogleDriveRecent: 'google drive recent',
+  GoogleDriveAutoselect: 'google drive autoselect',
   SelectSaveAsPdf: 'select save as pdf',
   SelectGoogleDrive: 'select google drive',
   SelectRecentDestination: 'select recent destination',
@@ -190,8 +191,10 @@ suite(destination_settings_test.suiteName, function() {
     cloudPrintInterface.resetResolver('printer');
     cloudPrintInterface.setPrinter(getGoogleDriveDestination(defaultUser));
     window.cr.webUIListenerCallback('user-accounts-updated', [defaultUser]);
-    return cloudPrintInterface.whenCalled('printer').then(
-        waitBeforeNextRender(destinationSettings));
+    return eventToPromise(
+               CloudPrintInterfaceEventType.PRINTER_DONE,
+               cloudPrintInterface.getEventTarget())
+        .then(waitBeforeNextRender(destinationSettings));
   }
 
   /**
@@ -409,6 +412,44 @@ suite(destination_settings_test.suiteName, function() {
             .then(() => {
               assertDropdownItems([
                 makeLocalDestinationKey('ID1'),
+                makeLocalDestinationKey('ID3'),
+                'Save as PDF/local/',
+                '__google__docs/cookies/foo@chromium.org',
+              ]);
+            });
+      });
+
+  // Tests that the dropdown contains the appropriate destinations and loads
+  // correctly when Google Drive is the most recent destination. Regression test
+  // for https://crbug.com/1038645.
+  test(
+      assert(destination_settings_test.TestNames.GoogleDriveAutoselect),
+      function() {
+        recentDestinations = destinations.slice(0, 3).map(
+            destination => makeRecentDestination(destination));
+        recentDestinations.splice(
+            0, 1,
+            makeRecentDestination(getGoogleDriveDestination(defaultUser)));
+        const whenSelected = eventToPromise(
+            DestinationStore.EventType.DESTINATION_SELECT,
+            destinationSettings.destinationStore_);
+        initialAccounts = [defaultUser];
+        cloudPrintInterface.setPrinter(getGoogleDriveDestination(defaultUser));
+        initialize();
+
+        return whenSelected
+            .then(() => {
+              return waitBeforeNextRender(destinationSettings);
+            })
+            .then(() => {
+              // This will result in the destination store setting the most
+              // recent destination.
+              assertEquals(
+                  '__google__docs', destinationSettings.destination.id);
+              assertFalse(destinationSettings.$.destinationSelect.disabled);
+
+              assertDropdownItems([
+                makeLocalDestinationKey('ID2'),
                 makeLocalDestinationKey('ID3'),
                 'Save as PDF/local/',
                 '__google__docs/cookies/foo@chromium.org',

@@ -42,7 +42,7 @@
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 #include "base/strings/string16.h"
 #include "components/password_manager/core/browser/password_store_signin_notifier.h"
-#include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #endif
 
 using autofill::PasswordForm;

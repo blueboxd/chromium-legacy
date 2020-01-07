@@ -22,6 +22,9 @@ class StatusAreaWidgetTestHelper {
   // Returns the StatusAreaWidget that appears on the secondary display.
   static StatusAreaWidget* GetSecondaryStatusAreaWidget();
 
+  // Waits until status area animations are over.
+  static void WaitForAnimationEnd(StatusAreaWidget* status_area_widget);
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(StatusAreaWidgetTestHelper);
 };

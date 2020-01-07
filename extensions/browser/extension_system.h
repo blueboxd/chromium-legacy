@@ -43,6 +43,7 @@ class ServiceWorkerManager;
 class SharedUserScriptMaster;
 class StateStore;
 class ValueStoreFactory;
+enum class UnloadedExtensionReason;
 
 // ExtensionSystem manages the lifetime of many of the services used by the
 // extensions and apps system, and it handles startup and shutdown as needed.

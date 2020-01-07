@@ -8,8 +8,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/password_protection/metrics_util.h"
-#include "components/safe_browsing/proto/csd.pb.h"
+#include "components/safe_browsing/content/password_protection/metrics_util.h"
+#include "components/safe_browsing/core/proto/csd.pb.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 

@@ -29,6 +29,7 @@ class CrostiniInstaller : public KeyedService,
  public:
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
+  // When you add entries to this enum don't forget to update enums.xml
   enum class SetupResult {
     kNotStarted = 0,
     // kUserCancelled = 1,

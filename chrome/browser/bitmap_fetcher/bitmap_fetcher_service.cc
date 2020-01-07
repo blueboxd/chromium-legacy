@@ -24,22 +24,58 @@ const size_t kMaxRequests = 25;  // Maximum number of inflight requests allowed.
 // for few images like weather answers, but with rich entity suggestions showing
 // several images at once, even changing some while the user types, a larger
 // cache is necessary to avoid flickering. Each cache entry is expected to take
-// 16kb (64x64 @ 32bpp).  With 12, the total memory consumed would be ~192kb.
-// 12 is double the default number of maximum suggestions so this can
+// 16kb (64x64 @ 32bpp).  With 16, the total memory consumed would be ~256kb.
+// 16 is double the default number of maximum suggestions so this can
 // accommodate one match image plus one answer image for each result.
 #if defined(OS_ANDROID)
 // Android caches the images in the java layer.
 const int kMaxCacheEntries = 0;
 #else
-const int kMaxCacheEntries = 12;
+const int kMaxCacheEntries = 16;
 #endif
+
+constexpr net::NetworkTrafficAnnotationTag traffic_annotation =
+    net::DefineNetworkTrafficAnnotation("omnibox_result_change", R"(
+        semantics {
+          sender: "Omnibox"
+          description:
+            "Chromium provides answers in the suggestion list for "
+            "certain queries that user types in the omnibox. This request "
+            "retrieves a small image (for example, an icon illustrating "
+            "the current weather conditions) when this can add information "
+            "to an answer."
+          trigger:
+            "Change of results for the query typed by the user in the "
+            "omnibox."
+          data:
+            "The only data sent is the path to an image. No user data is "
+            "included, although some might be inferrable (e.g. whether the "
+            "weather is sunny or rainy in the user's current location) "
+            "from the name of the image in the path."
+          destination: WEBSITE
+        }
+        policy {
+          cookies_allowed: YES
+          cookies_store: "user"
+          setting:
+            "You can enable or disable this feature via 'Use a prediction "
+            "service to help complete searches and URLs typed in the "
+            "address bar.' in Chromium's settings under Advanced. The "
+            "feature is enabled by default."
+          chrome_policy {
+            SearchSuggestEnabled {
+                policy_options {mode: MANDATORY}
+                SearchSuggestEnabled: false
+            }
+          }
+        })");
 
 }  // namespace.
 
 class BitmapFetcherRequest {
  public:
   BitmapFetcherRequest(BitmapFetcherService::RequestId request_id,
-                       BitmapFetcherService::Observer* observer);
+                       BitmapFetcherService::BitmapFetchedCallback callback);
   ~BitmapFetcherRequest();
 
   void NotifyImageChanged(const SkBitmap* bitmap);
@@ -51,7 +87,7 @@ class BitmapFetcherRequest {
 
  private:
   const BitmapFetcherService::RequestId request_id_;
-  std::unique_ptr<BitmapFetcherService::Observer> observer_;
+  BitmapFetcherService::BitmapFetchedCallback callback_;
   const BitmapFetcher* fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(BitmapFetcherRequest);
@@ -59,16 +95,15 @@ class BitmapFetcherRequest {
 
 BitmapFetcherRequest::BitmapFetcherRequest(
     BitmapFetcherService::RequestId request_id,
-    BitmapFetcherService::Observer* observer)
-    : request_id_(request_id), observer_(observer) {
-}
+    BitmapFetcherService::BitmapFetchedCallback callback)
+    : request_id_(request_id), callback_(std::move(callback)) {}
 
 BitmapFetcherRequest::~BitmapFetcherRequest() {
 }
 
 void BitmapFetcherRequest::NotifyImageChanged(const SkBitmap* bitmap) {
   if (bitmap && !bitmap->empty())
-    observer_->OnImageChanged(request_id_, *bitmap);
+    std::move(callback_).Run(*bitmap);
 }
 
 BitmapFetcherService::CacheEntry::CacheEntry() {
@@ -94,13 +129,19 @@ void BitmapFetcherService::CancelRequest(int request_id) {
   }
 }
 
-BitmapFetcherService::RequestId BitmapFetcherService::RequestImage(
+BitmapFetcherService::RequestId BitmapFetcherService::RequestImageForTesting(
     const GURL& url,
-    Observer* observer,
+    BitmapFetchedCallback callback,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation) {
+  return RequestImageImpl(url, std::move(callback), traffic_annotation);
+}
+
+BitmapFetcherService::RequestId BitmapFetcherService::RequestImageImpl(
+    const GURL& url,
+    BitmapFetchedCallback callback,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   // Reject invalid URLs and limit number of simultaneous in-flight requests.
   if (!url.is_valid() || requests_.size() > kMaxRequests) {
-    delete observer;
     return REQUEST_ID_INVALID;
   }
 
@@ -109,7 +150,8 @@ BitmapFetcherService::RequestId BitmapFetcherService::RequestImage(
   if (current_request_id_ == REQUEST_ID_INVALID)
     ++current_request_id_;
   int request_id = current_request_id_;
-  auto request = std::make_unique<BitmapFetcherRequest>(request_id, observer);
+  auto request =
+      std::make_unique<BitmapFetcherRequest>(request_id, std::move(callback));
 
   // Check for existing images first.
   auto iter = cache_.Get(url);
@@ -129,9 +171,7 @@ BitmapFetcherService::RequestId BitmapFetcherService::RequestImage(
   return request_id;
 }
 
-void BitmapFetcherService::Prefetch(
-    const GURL& url,
-    const net::NetworkTrafficAnnotationTag& traffic_annotation) {
+void BitmapFetcherService::Prefetch(const GURL& url) {
   if (url.is_valid())
     EnsureFetcherForUrl(url, traffic_annotation);
 }
@@ -151,6 +191,12 @@ std::unique_ptr<BitmapFetcher> BitmapFetcherService::CreateFetcher(
           ->GetURLLoaderFactoryForBrowserProcess()
           .get());
   return new_fetcher;
+}
+
+BitmapFetcherService::RequestId BitmapFetcherService::RequestImage(
+    const GURL& url,
+    BitmapFetchedCallback callback) {
+  return RequestImageImpl(url, std::move(callback), traffic_annotation);
 }
 
 const BitmapFetcher* BitmapFetcherService::EnsureFetcherForUrl(

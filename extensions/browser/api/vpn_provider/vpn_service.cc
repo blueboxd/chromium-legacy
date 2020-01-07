@@ -33,6 +33,7 @@
 #include "crypto/sha2.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/unloaded_extension_reason.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {

@@ -362,6 +362,8 @@ void ChromeExtensionsBrowserClient::BroadcastEventToRenderers(
 ExtensionCache* ChromeExtensionsBrowserClient::GetExtensionCache() {
   if (!extension_cache_.get()) {
 #if defined(OS_CHROMEOS)
+    // TODO(crbug.com/1012892): Replace this with just BEST_EFFORT, since the
+    // sign-in profile extensions use a different caching mechanism now.
     base::TaskPriority task_priority =
         chromeos::ProfileHelper::IsSigninProfileInitialized() &&
                 chromeos::ProfileHelper::SigninProfileHasLoginScreenExtensions()

@@ -36,6 +36,7 @@
 #include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/message_center/message_center_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
 
 namespace ui {
@@ -64,18 +65,20 @@ class ShelfWidget;
 // To respond to bounds changes in the status area StatusAreaLayoutManager works
 // closely with ShelfLayoutManager.
 // On mus, widget bounds management is handled by the window manager.
-class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
-                                      public ShellObserver,
-                                      public SplitViewObserver,
-                                      public OverviewObserver,
-                                      public ::wm::ActivationChangeObserver,
-                                      public LockStateObserver,
-                                      public WmDefaultLayoutManager,
-                                      public display::DisplayObserver,
-                                      public SessionObserver,
-                                      public WallpaperControllerObserver,
-                                      public LocaleChangeObserver,
-                                      public DesksController::Observer {
+class ASH_EXPORT ShelfLayoutManager
+    : public AppListControllerObserver,
+      public ShellObserver,
+      public SplitViewObserver,
+      public OverviewObserver,
+      public ::wm::ActivationChangeObserver,
+      public LockStateObserver,
+      public WmDefaultLayoutManager,
+      public display::DisplayObserver,
+      public SessionObserver,
+      public WallpaperControllerObserver,
+      public LocaleChangeObserver,
+      public DesksController::Observer,
+      public message_center::MessageCenterObserver {
  public:
   // Suspend work area updates within its scope. Note that relevant
   // ShelfLayoutManager must outlive this class.
@@ -386,6 +389,10 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
     bool pre_lock_screen_animation_active;
     session_manager::SessionState session_state;
   };
+
+  // MessageCenterObserver:
+  void OnCenterVisibilityChanged(
+      message_center::Visibility visibility) override;
 
   // Suspends/resumes work area updates.
   void SuspendWorkAreaUpdate();

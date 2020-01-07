@@ -267,7 +267,7 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
     base::RunLoop run_loop;
     DidPreviewPageListener filter(&run_loop);
     render_thread_->sink().AddFilter(&filter);
-    print_render_frame_helper->OnPrintPreview(dict);
+    print_render_frame_helper->PrintPreview(dict.Clone());
     run_loop.Run();
     render_thread_->sink().RemoveFilter(&filter);
   }

@@ -5,10 +5,11 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import static org.chromium.chrome.browser.tasks.tab_management.MessageCardViewProperties.MESSAGE_TYPE;
-import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.TabListModelProperties.MODEL_TYPE;
-import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.TabListModelProperties.ModelType.MESSAGE;
-import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.TabListModelProperties.ModelType.OTHERS;
-import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.TabListModelProperties.ModelType.TAB;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.CARD_ALPHA;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.CARD_TYPE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.ModelType.MESSAGE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.ModelType.OTHERS;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.ModelType.TAB;
 import static org.chromium.chrome.browser.tasks.tab_management.TabProperties.TAB_ID;
 
 import android.util.Pair;
@@ -26,6 +27,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 
+// TODO(meiliang): Rename TabListModel to CardListModel, since this ModelList not only contains
+// Tabs anymore.
 /**
  * A {@link PropertyListModel} implementation to keep information about a list of
  * {@link org.chromium.chrome.browser.tab.Tab}s.
@@ -34,7 +37,7 @@ class TabListModel extends ModelList {
     /**
      * Required properties for each {@link PropertyModel} managed by this {@link ModelList}.
      */
-    static class TabListModelProperties {
+    static class CardProperties {
         /** Supported Model type within this ModelList. */
         @IntDef({TAB, MESSAGE, OTHERS})
         @Retention(RetentionPolicy.SOURCE)
@@ -44,8 +47,11 @@ class TabListModel extends ModelList {
             int OTHERS = 2;
         }
 
-        public static final PropertyModel.ReadableIntPropertyKey MODEL_TYPE =
+        public static final PropertyModel.ReadableIntPropertyKey CARD_TYPE =
                 new PropertyModel.ReadableIntPropertyKey();
+
+        public static final PropertyModel.WritableFloatPropertyKey CARD_ALPHA =
+                new PropertyModel.WritableFloatPropertyKey();
     }
 
     /**
@@ -56,7 +62,7 @@ class TabListModel extends ModelList {
     public int indexFromId(int tabId) {
         for (int i = 0; i < size(); i++) {
             PropertyModel model = get(i).model;
-            if (model.get(MODEL_TYPE) == TAB && model.get(TAB_ID) == tabId) return i;
+            if (model.get(CARD_TYPE) == TAB && model.get(TAB_ID) == tabId) return i;
         }
         return TabModel.INVALID_TAB_INDEX;
     }
@@ -69,7 +75,7 @@ class TabListModel extends ModelList {
     public int lastIndexForMessageItemFromType(int messageType) {
         for (int i = size() - 1; i >= 0; i--) {
             PropertyModel model = get(i).model;
-            if (model.get(MODEL_TYPE) == MESSAGE && model.get(MESSAGE_TYPE) == messageType) {
+            if (model.get(CARD_TYPE) == MESSAGE && model.get(MESSAGE_TYPE) == messageType) {
                 return i;
             }
         }
@@ -84,7 +90,7 @@ class TabListModel extends ModelList {
 
     private boolean validateListItem(MVCListAdapter.ListItem item) {
         try {
-            item.model.get(MODEL_TYPE);
+            item.model.get(CARD_TYPE);
         } catch (IllegalArgumentException e) {
             return false;
         }
@@ -98,6 +104,7 @@ class TabListModel extends ModelList {
      * @param index         The index of the item in {@link TabListModel} that needs to be updated.
      */
     void updateTabListModelIdForGroup(Tab selectedTab, int index) {
+        if (get(index).model.get(CARD_TYPE) != TAB) return;
         get(index).model.set(TabProperties.TAB_ID, selectedTab.getId());
     }
 
@@ -136,15 +143,16 @@ class TabListModel extends ModelList {
      *         state. If not, restore it to original state.
      */
     void updateSelectedTabForMergeToGroup(int index, boolean isSelected) {
+        if (index < 0 || index >= size()) return;
+
+        assert get(index).model.get(CARD_TYPE) == TAB;
+
         int status = isSelected ? ClosableTabGridView.AnimationStatus.SELECTED_CARD_ZOOM_IN
                                 : ClosableTabGridView.AnimationStatus.SELECTED_CARD_ZOOM_OUT;
-        if (index < 0 || index >= size()
-                || get(index).model.get(TabProperties.CARD_ANIMATION_STATUS) == status) {
-            return;
-        }
+        if (get(index).model.get(TabProperties.CARD_ANIMATION_STATUS) == status) return;
 
         get(index).model.set(TabProperties.CARD_ANIMATION_STATUS, status);
-        get(index).model.set(TabProperties.ALPHA, isSelected ? 0.8f : 1f);
+        get(index).model.set(CARD_ALPHA, isSelected ? 0.8f : 1f);
     }
 
     /**
@@ -156,12 +164,13 @@ class TabListModel extends ModelList {
      *         If not, restore it to original state.
      */
     void updateHoveredTabForMergeToGroup(int index, boolean isHovered) {
+        if (index < 0 || index >= size()) return;
+
+        assert get(index).model.get(CARD_TYPE) == TAB;
+
         int status = isHovered ? ClosableTabGridView.AnimationStatus.HOVERED_CARD_ZOOM_IN
                                : ClosableTabGridView.AnimationStatus.HOVERED_CARD_ZOOM_OUT;
-        if (index < 0 || index >= size()
-                || get(index).model.get(TabProperties.CARD_ANIMATION_STATUS) == status) {
-            return;
-        }
+        if (get(index).model.get(TabProperties.CARD_ANIMATION_STATUS) == status) return;
 
         get(index).model.set(TabProperties.CARD_ANIMATION_STATUS, status);
     }

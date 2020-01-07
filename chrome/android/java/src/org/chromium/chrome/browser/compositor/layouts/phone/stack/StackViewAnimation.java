@@ -19,7 +19,7 @@ import org.chromium.chrome.browser.compositor.layouts.phone.stack.StackAnimation
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 import org.chromium.chrome.browser.tabmodel.TabList;
-import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
+import org.chromium.components.browser_ui.widget.animation.Interpolators;
 
 /**
  * A factory that builds Android view animations for the tab stack.

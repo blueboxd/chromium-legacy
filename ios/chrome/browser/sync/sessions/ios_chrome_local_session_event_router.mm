@@ -99,17 +99,16 @@ void IOSChromeLocalSessionEventRouter::WebStateReplacedAt(
     web::WebState* old_web_state,
     web::WebState* new_web_state,
     int index) {
-  old_web_state->RemoveObserver(this);
-
-  if (new_web_state)
-    new_web_state->AddObserver(this);
+  OnWebStateChange(old_web_state);
+  DCHECK(new_web_state);
+  new_web_state->AddObserver(this);
 }
 
 void IOSChromeLocalSessionEventRouter::WebStateDetachedAt(
     WebStateList* web_state_list,
     web::WebState* web_state,
     int index) {
-  web_state->RemoveObserver(this);
+  OnWebStateChange(web_state);
 }
 
 void IOSChromeLocalSessionEventRouter::TitleWasSet(web::WebState* web_state) {
@@ -136,6 +135,7 @@ void IOSChromeLocalSessionEventRouter::DidChangeBackForwardState(
 void IOSChromeLocalSessionEventRouter::WebStateDestroyed(
     web::WebState* web_state) {
   OnWebStateChange(web_state);
+  web_state->RemoveObserver(this);
 }
 
 void IOSChromeLocalSessionEventRouter::StartObservingWebStateList(

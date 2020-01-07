@@ -16,12 +16,39 @@
 #include "chrome/common/chrome_constants.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/grit/extensions_browser_resources.h"
+#include "skia/ext/image_operations.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_skia.h"
+
+#if defined(OS_WIN)
+#include "ui/gfx/icon_util.h"
+#endif
 
 using content::BrowserThread;
 
 namespace web_app {
 
 namespace {
+
+#if defined(OS_MACOSX)
+const int kDesiredIconSizesForShortcut[] = {16, 32, 128, 256, 512};
+const size_t kNumDesiredIconSizesForShortcut =
+    base::size(kDesiredIconSizesForShortcut);
+#elif defined(OS_LINUX)
+// Linux supports icons of any size. FreeDesktop Icon Theme Specification states
+// that "Minimally you should install a 48x48 icon in the hicolor theme."
+const int kDesiredIconSizesForShortcut[] = {16, 32, 48, 128, 256, 512};
+const size_t kNumDesiredIconSizesForShortcut =
+    base::size(kDesiredIconSizesForShortcut);
+#elif defined(OS_WIN)
+const int* kDesiredIconSizesForShortcut = IconUtil::kIconDimensions;
+const size_t kNumDesiredIconSizesForShortcut = IconUtil::kNumIconDimensions;
+#else
+const int kDesiredIconSizesForShortcut[] = {32};
+const size_t kNumDesiredIconSizesForShortcut =
+    base::size(kDesiredIconSizesForShortcut);
+#endif
 
 void DeleteShortcutInfoOnUIThread(std::unique_ptr<ShortcutInfo> shortcut_info,
                                   base::OnceClosure callback) {
@@ -90,6 +117,31 @@ base::FilePath GetWebAppDataDirectory(const base::FilePath& profile_path,
   return app_data_dir.Append(host_path).Append(scheme_port_path);
 }
 
+base::span<const int> GetDesiredIconSizesForShortcut() {
+  return base::span<const int>(kDesiredIconSizesForShortcut,
+                               kNumDesiredIconSizesForShortcut);
+}
+
+gfx::ImageSkia CreateDefaultApplicationIcon(int size) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // TODO(crbug.com/860581): Create web_app_browser_resources.grd with the
+  // default app icon. Remove dependency on extensions_browser_resources.h and
+  // use IDR_WEB_APP_DEFAULT_ICON here.
+  gfx::Image default_icon =
+      ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+          IDR_APP_DEFAULT_ICON);
+  SkBitmap bmp = skia::ImageOperations::Resize(
+      *default_icon.ToSkBitmap(), skia::ImageOperations::RESIZE_BEST, size,
+      size);
+  gfx::ImageSkia image_skia = gfx::ImageSkia::CreateFrom1xBitmap(bmp);
+  // We are on the UI thread, and this image can be used from the FILE thread,
+  // for creating shortcut icon files.
+  image_skia.MakeThreadSafe();
+
+  return image_skia;
+}
+
 namespace internals {
 
 void PostShortcutIOTask(base::OnceCallback<void(const ShortcutInfo&)> task,
@@ -104,7 +156,7 @@ void ScheduleCreatePlatformShortcuts(
     ShortcutCreationReason reason,
     std::unique_ptr<ShortcutInfo> shortcut_info,
     CreateShortcutsCallback callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   PostShortcutIOTask(base::BindOnce(&CreatePlatformShortcutsAndPostCallback,
                                     shortcut_data_path, creation_locations,

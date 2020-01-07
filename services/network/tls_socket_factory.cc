@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/optional.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"

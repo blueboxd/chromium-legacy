@@ -22,6 +22,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/text/bytes_formatting.h"
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/resources/grit/webui_resources.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -38,6 +39,7 @@ bool CrostiniUpgraderUI::IsEnabled() {
 void AddStringResources(content::WebUIDataSource* source) {
   static constexpr webui::LocalizedString kStrings[] = {
       {"upgrade", IDS_CROSTINI_UPGRADER_UPGRADE_BUTTON},
+      {"retry", IDS_CROSTINI_INSTALLER_RETRY_BUTTON},
       {"close", IDS_APP_CLOSE},
       {"cancel", IDS_APP_CANCEL},
       {"launch", IDS_CROSTINI_UPGRADER_LAUNCH_BUTTON},
@@ -46,10 +48,14 @@ void AddStringResources(content::WebUIDataSource* source) {
       {"promptTitle", IDS_CROSTINI_UPGRADER_TITLE},
       {"backingUpTitle", IDS_CROSTINI_UPGRADER_BACKING_UP_TITLE},
       {"backupSucceededTitle", IDS_CROSTINI_UPGRADER_BACKUP_SUCCEEDED_TITLE},
+      {"prechecksFailedTitle", IDS_CROSTINI_UPGRADER_PRECHECKS_FAILED_TITLE},
       {"upgradingTitle", IDS_CROSTINI_UPGRADER_UPGRADING_TITLE},
       {"succeededTitle", IDS_CROSTINI_UPGRADER_SUCCEEDED_TITLE},
       {"cancelingTitle", IDS_CROSTINI_UPGRADER_CANCELING_TITLE},
       {"errorTitle", IDS_CROSTINI_UPGRADER_ERROR_TITLE},
+
+      {"precheckNoNetwork", IDS_CROSTINI_UPGRADER_PRECHECKS_FAILED_NETWORK},
+      {"precheckNoPower", IDS_CROSTINI_UPGRADER_PRECHECKS_FAILED_POWER},
 
       {"promptMessage", IDS_CROSTINI_UPGRADER_BODY},
       {"backingUpMessage", IDS_CROSTINI_UPGRADER_BACKING_UP_MESSAGE},
@@ -71,6 +77,12 @@ void AddStringResources(content::WebUIDataSource* source) {
   source->AddString("offlineError",
                     l10n_util::GetStringFUTF8(
                         IDS_CROSTINI_INSTALLER_OFFLINE_ERROR, device_name));
+  source->AddString("precheckNoSpace",
+                    l10n_util::GetStringFUTF8(
+                        IDS_CROSTINI_UPGRADER_PRECHECKS_FAILED_SPACE,
+                        ui::FormatBytesWithUnits(
+                            crostini::CrostiniUpgrader::kDiskRequired,
+                            ui::DATA_UNITS_GIBIBYTE, /*show_units=*/true)));
 }
 
 CrostiniUpgraderUI::CrostiniUpgraderUI(content::WebUI* web_ui)

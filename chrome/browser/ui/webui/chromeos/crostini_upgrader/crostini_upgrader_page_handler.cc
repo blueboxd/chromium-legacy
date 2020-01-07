@@ -34,6 +34,10 @@ void CrostiniUpgraderPageHandler::Backup() {
   upgrader_ui_delegate_->Backup();
 }
 
+void CrostiniUpgraderPageHandler::StartPrechecks() {
+  upgrader_ui_delegate_->StartPrechecks();
+}
+
 void CrostiniUpgraderPageHandler::Upgrade() {
   upgrader_ui_delegate_->Upgrade(
       crostini::ContainerId(crostini::kCrostiniDefaultVmName,
@@ -79,6 +83,11 @@ void CrostiniUpgraderPageHandler::OnBackupSucceeded() {
 
 void CrostiniUpgraderPageHandler::OnBackupFailed() {
   page_->OnBackupFailed();
+}
+
+void CrostiniUpgraderPageHandler::PrecheckStatus(
+    chromeos::crostini_upgrader::mojom::UpgradePrecheckStatus status) {
+  page_->PrecheckStatus(status);
 }
 
 void CrostiniUpgraderPageHandler::OnCanceled() {

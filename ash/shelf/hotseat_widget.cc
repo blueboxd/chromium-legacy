@@ -63,11 +63,7 @@ class HotseatWindowTargeter : public aura::WindowTargeter {
   bool GetHitTestRects(aura::Window* target,
                        gfx::Rect* hit_test_rect_mouse,
                        gfx::Rect* hit_test_rect_touch) const override {
-    // If the hotseat is not extended we can use the normal targeting as the
-    // hidden parts of the hotseat will not block non-shelf items from taking
-    // events.
-    if (target == hotseat_widget_->GetNativeWindow() &&
-        hotseat_widget_->state() == HotseatState::kExtended) {
+    if (target == hotseat_widget_->GetNativeWindow()) {
       // Shrink the hit bounds from the size of the window to the size of the
       // hotseat opaque background.
       gfx::Rect hit_bounds = target->bounds();
@@ -247,9 +243,6 @@ void HotseatWidget::Initialize(aura::Window* container, Shelf* shelf) {
     scrollable_shelf_view_ = GetContentsView()->AddChildView(
         std::make_unique<ScrollableShelfView>(ShelfModel::Get(), shelf));
     scrollable_shelf_view_->Init();
-
-    hotseat_window_targeter_ = std::make_unique<aura::ScopedWindowTargeter>(
-        GetNativeWindow(), std::make_unique<HotseatWindowTargeter>(this));
   } else {
     // The shelf view observes the shelf model and creates icons as items are
     // added to the model.
@@ -390,6 +383,18 @@ void HotseatWidget::SetState(HotseatState state) {
     return;
 
   state_ = state;
+
+  if (!IsScrollableShelfEnabled())
+    return;
+
+  // If the hotseat is not extended we can use the normal targeting as the
+  // hidden parts of the hotseat will not block non-shelf items from taking
+  if (state == HotseatState::kExtended) {
+    hotseat_window_targeter_ = std::make_unique<aura::ScopedWindowTargeter>(
+        GetNativeWindow(), std::make_unique<HotseatWindowTargeter>(this));
+  } else {
+    hotseat_window_targeter_.reset();
+  }
 }
 
 }  // namespace ash

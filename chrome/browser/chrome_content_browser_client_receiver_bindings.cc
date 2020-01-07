@@ -29,12 +29,13 @@
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/rappor_recorder_impl.h"
 #include "components/rappor/rappor_service_impl.h"
-#include "components/safe_browsing/browser/mojo_safe_browsing_impl.h"
 #include "components/safe_browsing/buildflags.h"
+#include "components/safe_browsing/content/browser/mojo_safe_browsing_impl.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/startup_metric_utils/browser/startup_metric_host_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/resource_context.h"
 #include "media/mojo/buildflags.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/widevine/cdm/buildflags.h"
@@ -89,6 +90,36 @@ void AddDataReductionProxyReceiver(
   drp_settings->data_reduction_proxy_service()->Clone(std::move(receiver));
 }
 
+// Helper method for ExposeInterfacesToRenderer() that checks the latest
+// SafeBrowsing pref value on the UI thread before hopping over to the IO
+// thread.
+void MaybeCreateSafeBrowsingForRenderer(
+    int process_id,
+    content::ResourceContext* resource_context,
+    base::RepeatingCallback<scoped_refptr<safe_browsing::UrlCheckerDelegate>(
+        bool safe_browsing_enabled)> get_checker_delegate,
+    mojo::PendingReceiver<safe_browsing::mojom::SafeBrowsing> receiver) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  content::RenderProcessHost* render_process_host =
+      content::RenderProcessHost::FromID(process_id);
+  if (!render_process_host)
+    return;
+
+  bool safe_browsing_enabled =
+      Profile::FromBrowserContext(render_process_host->GetBrowserContext())
+          ->GetPrefs()
+          ->GetBoolean(prefs::kSafeBrowsingEnabled);
+  base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})
+      ->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              &safe_browsing::MojoSafeBrowsingImpl::MaybeCreate, process_id,
+              resource_context,
+              base::BindRepeating(get_checker_delegate, safe_browsing_enabled),
+              std::move(receiver)));
+}
+
 }  // namespace
 
 void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
@@ -129,13 +160,13 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
     content::ResourceContext* resource_context =
         render_process_host->GetBrowserContext()->GetResourceContext();
     registry->AddInterface(
-        base::Bind(
-            &safe_browsing::MojoSafeBrowsingImpl::MaybeCreate,
-            render_process_host->GetID(), resource_context,
-            base::Bind(
+        base::BindRepeating(
+            &MaybeCreateSafeBrowsingForRenderer, render_process_host->GetID(),
+            resource_context,
+            base::BindRepeating(
                 &ChromeContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate,
-                base::Unretained(this), resource_context)),
-        base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}));
+                base::Unretained(this))),
+        ui_task_runner);
   }
 #endif
 

@@ -67,7 +67,7 @@ TEST_F(ChromeContentRendererClientSearchBoxTest, RewriteThumbnailURL) {
   bool attach_same_site_cookies;
   // Make sure the SearchBox rewrites a thumbnail request from the main frame.
   client->WillSendRequest(GetMainFrame(), ui::PAGE_TRANSITION_LINK,
-                          blink::WebURL(thumbnail_url), blink::WebURL(),
+                          blink::WebURL(thumbnail_url), net::SiteForCookies(),
                           nullptr, &result, &attach_same_site_cookies);
   EXPECT_NE(result, thumbnail_url);
 
@@ -78,7 +78,7 @@ TEST_F(ChromeContentRendererClientSearchBoxTest, RewriteThumbnailURL) {
   blink::WebLocalFrame* local_child =
       static_cast<blink::WebLocalFrame*>(child_frame);
   client->WillSendRequest(local_child, ui::PAGE_TRANSITION_LINK,
-                          blink::WebURL(thumbnail_url), blink::WebURL(),
+                          blink::WebURL(thumbnail_url), net::SiteForCookies(),
                           nullptr, &result, &attach_same_site_cookies);
   EXPECT_NE(result, thumbnail_url);
 }

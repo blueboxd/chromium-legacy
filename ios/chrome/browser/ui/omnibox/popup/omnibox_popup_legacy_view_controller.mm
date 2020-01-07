@@ -380,11 +380,6 @@ const CGFloat kAnswerRowHeight = 64.0;
 
 - (CGFloat)tableView:(UITableView*)tableView
     heightForRowAtIndexPath:(NSIndexPath*)indexPath {
-  if (self.shortcutsEnabled && indexPath.row == 0 &&
-      self.currentResult.count == 0) {
-    return self.shortcutsViewController.collectionView.collectionViewLayout
-        .collectionViewContentSize.height;
-  }
 
   DCHECK_EQ(0U, (NSUInteger)indexPath.section);
   DCHECK_LT((NSUInteger)indexPath.row, self.currentResult.count);
@@ -395,11 +390,6 @@ const CGFloat kAnswerRowHeight = 64.0;
 - (UITableViewCell*)tableView:(UITableView*)tableView
         cellForRowAtIndexPath:(NSIndexPath*)indexPath {
   DCHECK_EQ(0U, (NSUInteger)indexPath.section);
-
-  if (self.shortcutsEnabled && indexPath.row == 0 &&
-      self.currentResult.count == 0) {
-    return self.shortcutsCell;
-  }
 
   DCHECK_LT((NSUInteger)indexPath.row, self.currentResult.count);
   return _rows[indexPath.row];

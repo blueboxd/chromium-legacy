@@ -13,6 +13,8 @@ static_library("security_interstitial_page") {
     "cert_report_helper.h",
     "certificate_error_report.cc",
     "certificate_error_report.h",
+    "common_name_mismatch_handler.cc",
+    "common_name_mismatch_handler.h",
     "connection_help_ui.cc",
     "connection_help_ui.h",
     "known_interception_disclosure_ui.cc",
@@ -41,7 +43,7 @@ static_library("security_interstitial_page") {
   ]
 
   public_deps = [
-    "//components/safe_browsing/db:hit_report",
+    "//components/safe_browsing/core/db:hit_report",
   ]
 
   deps = [
@@ -52,9 +54,9 @@ static_library("security_interstitial_page") {
     "//components/network_time",
     "//components/prefs:prefs",
     "//components/resources",
-    "//components/safe_browsing/common:safe_browsing_prefs",
-    "//components/safe_browsing/db:hit_report",
-    "//components/safe_browsing/db:util",
+    "//components/safe_browsing/core/common:safe_browsing_prefs",
+    "//components/safe_browsing/core/db:hit_report",
+    "//components/safe_browsing/core/db:util",
     "//components/security_interstitials/core:core",
     "//components/ssl_errors",
     "//components/strings:components_strings_grit",
@@ -75,6 +77,7 @@ static_library("security_interstitial_page") {
 proto_library("proto") {
   sources = [
     "cert_logger.proto",
+    "ssl_error_assistant.proto",
   ]
 }
 

@@ -172,10 +172,6 @@ class CC_EXPORT InputHandler {
   virtual ScrollStatus RootScrollBegin(ScrollState* scroll_state,
                                        ScrollInputType type) = 0;
 
-  // Returns SCROLL_ON_IMPL_THREAD if a layer is actively being scrolled or
-  // a subsequent call to ScrollAnimated can begin on the impl thread.
-  virtual ScrollStatus ScrollAnimatedBegin(ScrollState* scroll_state) = 0;
-
   // |delayed_by| is the delay that is taken into account when determining
   // the duration of the animation. TODO(bokan): Should eventually be merged
   // into ScrollBy. https://crbug.com/1016229.

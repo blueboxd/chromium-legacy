@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/safe_browsing/renderer/threat_dom_details.h"
+#include "components/safe_browsing/content/renderer/threat_dom_details.h"
 
 #include <memory>
 #include "base/strings/string_split.h"
@@ -10,8 +10,8 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/test/base/chrome_render_view_test.h"
-#include "components/safe_browsing/common/safe_browsing.mojom.h"
-#include "components/safe_browsing/features.h"
+#include "components/safe_browsing/core/common/safe_browsing.mojom.h"
+#include "components/safe_browsing/core/features.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/renderer/render_view.h"
 #include "net/base/escape.h"

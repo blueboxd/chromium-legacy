@@ -9,7 +9,7 @@ document
 ++++++description Name=' and a '
 ++++++button Name='Button'
 ++++++description Name='.'
-++++grid Grid.ColumnCount=1 Grid.RowCount=1 Table.RowOrColumnMajor='RowMajor'
+++++grid Grid.ColumnCount=1 Grid.RowCount=1
 ++++++row IsControlElement=false
 ++++++++gridcell Name='Always expose editable tables as tables.' GridItem.Column=0 GridItem.ColumnSpan=1 GridItem.Row=0 GridItem.RowSpan=1
 ++++++++++description Name='Always expose editable tables as tables.' IsControlElement=false

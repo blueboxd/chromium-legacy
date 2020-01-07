@@ -4425,18 +4425,24 @@ enum LocalFrameRootPurgeSignal {
 void LocalFrameView::OnPurgeMemory() {
   DCHECK(frame_->IsLocalRoot());
 
-  // Only record compositor memory purge signals for frames with accelerated
-  // compositing.
-  if (frame_->GetSettings()->GetAcceleratedCompositingEnabled()) {
-    auto initial_or_multiple = received_compositor_memory_pressure_purge_signal_
-                                   ? LocalFrameRootPurgeSignal::kMultiple
-                                   : LocalFrameRootPurgeSignal::kInitial;
-    UMA_HISTOGRAM_ENUMERATION(
-        "Memory.Experimental.Renderer.LocalFrameRootPurgeSignal",
-        initial_or_multiple, LocalFrameRootPurgeSignal::kSignalCount);
-    if (!received_compositor_memory_pressure_purge_signal_)
-      received_compositor_memory_pressure_purge_signal_ = true;
-  }
+  // Only record memory purge signals for frames with accelerated compositing.
+  if (!frame_->GetSettings()->GetAcceleratedCompositingEnabled())
+    return;
+
+  // Only record memory purge signals when visible (foregrounded).
+  Page* page = frame_->GetPage();
+  if (!page || !page->IsPageVisible())
+    return;
+
+  auto initial_or_multiple =
+      received_foreground_compositor_memory_pressure_purge_signal_
+          ? LocalFrameRootPurgeSignal::kMultiple
+          : LocalFrameRootPurgeSignal::kInitial;
+  UMA_HISTOGRAM_ENUMERATION(
+      "Memory.Experimental.Renderer.LocalFrameRootPurgeSignal",
+      initial_or_multiple, LocalFrameRootPurgeSignal::kSignalCount);
+  if (!received_foreground_compositor_memory_pressure_purge_signal_)
+    received_foreground_compositor_memory_pressure_purge_signal_ = true;
 }
 
 }  // namespace blink

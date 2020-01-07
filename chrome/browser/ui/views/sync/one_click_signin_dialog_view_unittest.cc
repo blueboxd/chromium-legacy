@@ -11,7 +11,6 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "chrome/browser/ui/sync/one_click_signin_links_delegate.h"
 #include "chrome/browser/ui/views/chrome_constrained_window_views_client.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -47,9 +46,7 @@ class OneClickSigninDialogViewTest : public ChromeViewsTestBase,
  protected:
   OneClickSigninDialogView* ShowOneClickSigninDialog() {
     OneClickSigninDialogView::ShowDialog(
-        base::string16(),
-        std::make_unique<TestOneClickSigninLinksDelegate>(this),
-        anchor_widget_->GetNativeWindow(),
+        base::string16(), nullptr, anchor_widget_->GetNativeWindow(),
         base::Bind(&OneClickSigninDialogViewTest::ConfirmedCallback,
                    base::Unretained(this)));
 
@@ -86,28 +83,8 @@ class OneClickSigninDialogViewTest : public ChromeViewsTestBase,
 
   bool on_confirmed_callback_called_ = false;
   bool confirmed_ = false;
-  int learn_more_click_count_ = 0;
 
  private:
-  friend class TestOneClickSigninLinksDelegate;
-
-  class TestOneClickSigninLinksDelegate : public OneClickSigninLinksDelegate {
-   public:
-    // |test| is not owned by this object.
-    explicit TestOneClickSigninLinksDelegate(OneClickSigninDialogViewTest* test)
-        : test_(test) {}
-
-    // OneClickSigninLinksDelegate:
-    void OnLearnMoreLinkClicked(bool is_dialog) override {
-      ++test_->learn_more_click_count_;
-    }
-
-   private:
-    OneClickSigninDialogViewTest* test_;
-
-    DISALLOW_COPY_AND_ASSIGN(TestOneClickSigninLinksDelegate);
-  };
-
   // Widget to host the anchor view of the dialog. Destroys itself when closed.
   views::Widget* anchor_widget_ = nullptr;
   base::RunLoop* run_loop_ = nullptr;
@@ -163,32 +140,6 @@ TEST_F(OneClickSigninDialogViewTest, UndoButton) {
   EXPECT_FALSE(OneClickSigninDialogView::IsShowing());
   EXPECT_TRUE(on_confirmed_callback_called_);
   EXPECT_EQ(false, confirmed_);
-}
-
-TEST_F(OneClickSigninDialogViewTest, AdvancedLink) {
-  OneClickSigninDialogView* view = ShowOneClickSigninDialog();
-
-  // Simulate pressing a link in the dialog.
-  views::LinkListener* listener = view;
-  listener->LinkClicked(view->advanced_link_, 0);
-
-  WaitForClose();
-  EXPECT_TRUE(on_confirmed_callback_called_);
-  EXPECT_EQ(true, confirmed_);
-  EXPECT_FALSE(OneClickSigninDialogView::IsShowing());
-}
-
-TEST_F(OneClickSigninDialogViewTest, LearnMoreLink) {
-  OneClickSigninDialogView* view = ShowOneClickSigninDialog();
-
-  views::LinkListener* listener = view;
-  listener->LinkClicked(view->learn_more_link_, 0);
-
-  // View should still be showing and the OnLearnMoreLinkClicked method
-  // of the delegate should have been called with |is_dialog| == true.
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(OneClickSigninDialogView::IsShowing());
-  EXPECT_EQ(1, learn_more_click_count_);
 }
 
 TEST_F(OneClickSigninDialogViewTest, PressEnterKey) {

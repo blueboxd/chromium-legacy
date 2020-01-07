@@ -389,6 +389,14 @@ base::Optional<int> AXNode::GetTableCellCount() const {
   return static_cast<int>(table_info->unique_cell_ids.size());
 }
 
+base::Optional<bool> AXNode::GetTableHasColumnOrRowHeaderNode() const {
+  const AXTableInfo* table_info = GetAncestorTableInfo();
+  if (!table_info)
+    return base::nullopt;
+
+  return table_info->all_headers.size() > 0;
+}
+
 AXNode* AXNode::GetTableCellFromIndex(int index) const {
   const AXTableInfo* table_info = GetAncestorTableInfo();
   if (!table_info)

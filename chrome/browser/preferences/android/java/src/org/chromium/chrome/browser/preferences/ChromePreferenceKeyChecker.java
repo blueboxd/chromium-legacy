@@ -33,7 +33,7 @@ class ChromePreferenceKeyChecker extends BaseChromePreferenceKeyChecker {
      */
     private ChromePreferenceKeyChecker() {
         this(ChromePreferenceKeys.createKeysInUse(),
-                ChromePreferenceKeys.createGrandfatheredFormatKeys());
+                ChromePreferenceKeys.createGrandfatheredKeysInUse());
     }
 
     /**
@@ -72,9 +72,9 @@ class ChromePreferenceKeyChecker extends BaseChromePreferenceKeyChecker {
      * @return Whether |key| is in use.
      */
     private boolean isKeyInUse(String key) {
-        // Grandfathered keys cannot be dynamic, so just check if they are in [keys in use].
+        // Grandfathered keys cannot be dynamic, so a simple map check is enough.
         if (mGrandfatheredFormatKeys.contains(key)) {
-            return mKeysInUse.contains(key);
+            return true;
         }
 
         // If not a format-grandfathered key, assume it follows the format and find out if it is

@@ -353,6 +353,14 @@ String GetStringFromTrustedHTML(const String& string,
     return string;
   }
 
+  if (!default_policy->HasCreateHTML()) {
+    if (TrustedTypeFail(kTrustedHTMLAssignmentAndDefaultPolicyFailed,
+                        execution_context, exception_state, string)) {
+      return g_empty_string;
+    } else {
+      return string;
+    }
+  }
   TrustedHTML* result = default_policy->CreateHTML(
       execution_context->GetIsolate(), string, exception_state);
   if (exception_state.HadException()) {
@@ -410,6 +418,14 @@ String GetStringFromTrustedScript(const String& potential_script,
     return potential_script;
   }
 
+  if (!default_policy->HasCreateScript()) {
+    if (TrustedTypeFail(kTrustedScriptAssignmentAndDefaultPolicyFailed,
+                        execution_context, exception_state, potential_script)) {
+      return g_empty_string;
+    } else {
+      return potential_script;
+    }
+  }
   TrustedScript* result = default_policy->CreateScript(
       execution_context->GetIsolate(), potential_script, exception_state);
   DCHECK_EQ(!result, exception_state.HadException());
@@ -457,6 +473,14 @@ String GetStringFromTrustedScriptURL(
     return string;
   }
 
+  if (!default_policy->HasCreateScriptURL()) {
+    if (TrustedTypeFail(kTrustedScriptURLAssignmentAndDefaultPolicyFailed,
+                        execution_context, exception_state, string)) {
+      return g_empty_string;
+    } else {
+      return string;
+    }
+  }
   TrustedScriptURL* result = default_policy->CreateScriptURL(
       execution_context->GetIsolate(), string, exception_state);
 

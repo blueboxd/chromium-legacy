@@ -103,7 +103,7 @@ class RenderFrameImplTest : public RenderViewTest {
 
     RenderFrameImpl::FromWebFrame(
         view_->GetMainRenderFrame()->GetWebFrame()->FirstChild())
-        ->OnSwapOut(kFrameProxyRouteId, false, frame_replication_state);
+        ->OnUnload(kFrameProxyRouteId, false, frame_replication_state);
 
     mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
         stub_interface_provider;

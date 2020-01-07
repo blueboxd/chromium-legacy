@@ -339,7 +339,10 @@ void ProfileSyncService::AccountStateChanged() {
     // Either a new account was signed in, or the existing account's
     // |is_primary| bit was changed. Start up or reconfigure.
     if (!engine_) {
-      startup_controller_->TryStart(/*force_immediate=*/IsSetupInProgress());
+      // Note: We only get here after an actual sign-in (not during browser
+      // startup with an existing signed-in account), so no need for deferred
+      // startup.
+      startup_controller_->TryStart(/*force_immediate=*/true);
     } else {
       ReconfigureDatatypeManager(/*bypass_setup_in_progress_check=*/false);
     }

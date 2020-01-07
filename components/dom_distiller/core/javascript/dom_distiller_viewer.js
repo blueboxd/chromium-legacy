@@ -210,6 +210,19 @@ class Pincher {
     this.scale = 1.0;
     this.shiftX = 0;
     this.shiftY = 0;
+
+    window.addEventListener('touchstart', (e) => {
+      this.handleTouchStart(e);
+    }, {passive: false});
+    window.addEventListener('touchmove', (e) => {
+      this.handleTouchMove(e);
+    }, {passive: false});
+    window.addEventListener('touchend', (e) => {
+      this.handleTouchEnd(e);
+    }, {passive: false});
+    window.addEventListener('touchcancel', (e) => {
+      this.handleTouchCancel(e);
+    }, {passive: false});
   }
 
   /** @private */
@@ -418,13 +431,6 @@ class Pincher {
 }
 
 const pincher = new Pincher;
-
-window.addEventListener(
-    'touchstart', pincher.handleTouchStart, {passive: false});
-window.addEventListener('touchmove', pincher.handleTouchMove, {passive: false});
-window.addEventListener('touchend', pincher.handleTouchEnd, {passive: false});
-window.addEventListener(
-    'touchcancel', pincher.handleTouchCancel, {passive: false});
 
 document.querySelector('#settings-toggle').addEventListener('click', (e) => {
   const dialog = document.querySelector('#settings-dialog');

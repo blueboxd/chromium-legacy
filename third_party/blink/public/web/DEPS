@@ -24,6 +24,7 @@ include_rules = [
     "+cc/trees/viewport_layers.h",
     "+components/viz/common/surfaces/frame_sink_id.h",
     "+mojo/public",
+    "+net/cookies/site_for_cookies.h",
     "+services/metrics/public/cpp/ukm_source_id.h",
     "+services/network/public/mojom/content_security_policy.mojom-shared.h",
     "+services/network/public/mojom/cors.mojom-shared.h",

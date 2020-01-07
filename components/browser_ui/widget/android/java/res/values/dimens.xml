@@ -6,4 +6,7 @@
 <resources>
     <!-- DualControlLayout dimensions -->
     <dimen name="dual_control_margin_between_items">8dp</dimen>
+
+    <!-- ChromeTextInputLayout dimensions -->
+    <dimen name="text_input_layout_padding_start">3dp</dimen>
 </resources>

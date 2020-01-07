@@ -118,37 +118,42 @@ export class CloudPrintInterfaceStub extends TestBrowserProxy {
    * @override
    */
   printer(printerId, origin, account) {
-    this.methodCalled(
-        'printer', {id: printerId, origin: origin, account: account});
-    const printer = this.cloudPrintersMap_.get(
-        createDestinationKey(printerId, origin, account));
+    // Use setTimeout to make this return asynchronously to better simulate the
+    // real CloudPrintInterface. This allows testing for timing issues, e.g.
+    // https://crbug.com/1038645
+    setTimeout(() => {
+      this.methodCalled(
+          'printer', {id: printerId, origin: origin, account: account});
+      const printer = this.cloudPrintersMap_.get(
+          createDestinationKey(printerId, origin, account));
 
-    if (!this.initialized_) {
-      const activeUser =
-          this.users_.includes(account) ? account : (this.users_[0] || '');
-      if (activeUser) {
-        this.eventTarget_.dispatchEvent(new CustomEvent(
-            CloudPrintInterfaceEventType.UPDATE_USERS,
-            {detail: {users: this.users_, activeUser: activeUser}}));
-        this.initialized_ = true;
+      if (!this.initialized_) {
+        const activeUser =
+            this.users_.includes(account) ? account : (this.users_[0] || '');
+        if (activeUser) {
+          this.eventTarget_.dispatchEvent(new CustomEvent(
+              CloudPrintInterfaceEventType.UPDATE_USERS,
+              {detail: {users: this.users_, activeUser: activeUser}}));
+          this.initialized_ = true;
+        }
       }
-    }
-    if (printer) {
-      printer.capabilities = getCddTemplate(printerId);
-      this.eventTarget_.dispatchEvent(new CustomEvent(
-          CloudPrintInterfaceEventType.PRINTER_DONE, {detail: printer}));
-    } else {
-      this.eventTarget_.dispatchEvent(
-          new CustomEvent(CloudPrintInterfaceEventType.PRINTER_FAILED, {
-            detail: {
-              account: account,
-              origin: origin,
-              destinationId: printerId,
-              status: 200,
-              message: 'Unknown printer',
-            },
-          }));
-    }
+      if (printer) {
+        printer.capabilities = getCddTemplate(printerId);
+        this.eventTarget_.dispatchEvent(new CustomEvent(
+            CloudPrintInterfaceEventType.PRINTER_DONE, {detail: printer}));
+      } else {
+        this.eventTarget_.dispatchEvent(
+            new CustomEvent(CloudPrintInterfaceEventType.PRINTER_FAILED, {
+              detail: {
+                account: account,
+                origin: origin,
+                destinationId: printerId,
+                status: 200,
+                message: 'Unknown printer',
+              },
+            }));
+      }
+    }, 1);
   }
 
   submit(destination, printTicket, documentTitle, data) {

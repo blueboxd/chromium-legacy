@@ -45,12 +45,6 @@ class HTMLAllCollection final : public HTMLCollection {
   void NamedGetter(const AtomicString& name, HTMLCollectionOrElement&);
 };
 
-DEFINE_TYPE_CASTS(HTMLAllCollection,
-                  LiveNodeListBase,
-                  collection,
-                  collection->GetType() == kDocAll,
-                  collection.GetType() == kDocAll);
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_ALL_COLLECTION_H_

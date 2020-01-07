@@ -45,11 +45,12 @@ void CSSDefaultInterpolationType::Apply(
     const InterpolableValue&,
     const NonInterpolableValue* non_interpolable_value,
     InterpolationEnvironment& environment) const {
-  DCHECK(ToCSSDefaultNonInterpolableValue(non_interpolable_value)->CssValue());
+  DCHECK(
+      To<CSSDefaultNonInterpolableValue>(non_interpolable_value)->CssValue());
   StyleBuilder::ApplyProperty(
       GetProperty().GetCSSPropertyName(),
       To<CSSInterpolationEnvironment>(environment).GetState(),
-      *ToCSSDefaultNonInterpolableValue(non_interpolable_value)->CssValue());
+      *To<CSSDefaultNonInterpolableValue>(non_interpolable_value)->CssValue());
 }
 
 }  // namespace blink

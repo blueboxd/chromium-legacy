@@ -83,6 +83,10 @@ class MODULES_EXPORT MediaRecorder
                          double timecode);
   virtual void OnError(const String& message);
 
+  // Causes recording to be stopped, remaining data to be written, and onstop to
+  // be sent, unless recording isn't active in which case nothing happens.
+  void OnAllTracksEnded();
+
   void Trace(blink::Visitor* visitor) override;
 
  private:

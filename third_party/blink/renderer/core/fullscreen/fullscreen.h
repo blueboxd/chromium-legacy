@@ -79,14 +79,17 @@ class CORE_EXPORT Fullscreen final : public GarbageCollected<Fullscreen>,
   };
 
   static void RequestFullscreen(Element&);
-  static ScriptPromise RequestFullscreen(Element&,
-                                         const FullscreenOptions*,
-                                         RequestType,
-                                         ScriptState* state = nullptr);
+  static ScriptPromise RequestFullscreen(
+      Element&,
+      const FullscreenOptions*,
+      RequestType,
+      ScriptState* state = nullptr,
+      ExceptionState* exception_state = nullptr);
 
   static void FullyExitFullscreen(Document&, bool ua_originated = false);
   static ScriptPromise ExitFullscreen(Document&,
                                       ScriptState* state = nullptr,
+                                      ExceptionState* exception_state = nullptr,
                                       bool ua_originated = false);
 
   static bool FullscreenEnabled(Document&);

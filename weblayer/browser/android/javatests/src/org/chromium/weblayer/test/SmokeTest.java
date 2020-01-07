@@ -5,6 +5,7 @@
 package org.chromium.weblayer.test;
 
 import android.support.test.filters.SmallTest;
+import android.support.v4.app.Fragment;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -73,6 +74,40 @@ public class SmokeTest {
         }
 
         Runtime.getRuntime().gc();
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                Reference enqueuedReference = referenceQueue.poll();
+                if (enqueuedReference == null) {
+                    Runtime.getRuntime().gc();
+                    return false;
+                }
+                Assert.assertEquals(reference, enqueuedReference);
+                return true;
+            }
+        });
+    }
+
+    @Test
+    @SmallTest
+    public void testSetRetainInstance() {
+        ReferenceQueue<InstrumentationActivity> referenceQueue = new ReferenceQueue<>();
+        PhantomReference<InstrumentationActivity> reference;
+        {
+            InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl("about:blank");
+
+            mActivityTestRule.setRetainInstance(true);
+            Fragment firstFragment = mActivityTestRule.getFragment();
+            mActivityTestRule.recreateActivity();
+            Fragment secondFragment = mActivityTestRule.getFragment();
+            Assert.assertEquals(firstFragment, secondFragment);
+
+            boolean destroyed =
+                    TestThreadUtils.runOnUiThreadBlockingNoException(() -> activity.isDestroyed());
+            Assert.assertTrue(destroyed);
+            reference = new PhantomReference<>(activity, referenceQueue);
+        }
+
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {

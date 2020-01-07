@@ -94,6 +94,7 @@
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom.h"
 #include "third_party/blink/public/mojom/image_downloader/image_downloader.mojom.h"
+#include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_manager.mojom-forward.h"
 #include "third_party/blink/public/mojom/notifications/notification_service.mojom-forward.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom.h"
@@ -481,7 +482,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Computes site_for_cookies to be used when navigating this frame to
   // |destination|.
-  GURL ComputeSiteForCookiesForNavigation(const GURL& destination) const;
+  net::SiteForCookies ComputeSiteForCookiesForNavigation(
+      const GURL& destination) const;
 
   // Computes site_for_cookies for this frame. A non-empty result denotes which
   // domains are considered first-party to the top-level site when resources are
@@ -490,7 +492,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   //
   // The result can be used to check if cookies (including storage APIs and
   // shared/service workers) are accessible.
-  GURL ComputeSiteForCookies();
+  net::SiteForCookies ComputeSiteForCookies();
 
   // Allows overriding the last committed origin in tests.
   void SetLastCommittedOriginForTesting(const url::Origin& origin);
@@ -569,14 +571,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void SetNavigationRequest(
       std::unique_ptr<NavigationRequest> navigation_request);
 
-  // Tells the renderer that this RenderFrame is being swapped out for one in a
+  // Tells the renderer that this RenderFrame is being replaced with one in a
   // different renderer process.  It should run its unload handler and move to
   // a blank document.  If |proxy| is not null, it should also create a
   // RenderFrameProxy to replace the RenderFrame and set it to |is_loading|
-  // state. The renderer should preserve the RenderFrameProxy object until it
-  // exits, in case we come back.  The renderer can exit if it has no other
-  // active RenderFrames, but not until WasSwappedOut is called.
-  void SwapOut(RenderFrameProxyHost* proxy, bool is_loading);
+  // state. The renderer process keeps the RenderFrameProxy object around as a
+  // placeholder while the frame is rendered in a different process.
+  void Unload(RenderFrameProxyHost* proxy, bool is_loading);
 
   // Remove this frame and its children. This happens asynchronously, an IPC
   // round trip with the renderer process is needed to ensure children's unload
@@ -593,12 +594,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Whether the RFH is waiting for an unload ACK from the renderer.
   bool IsWaitingForUnloadACK() const;
 
-  // Called when either the SwapOut request has been acknowledged or has timed
+  // Called when either the Unload() request has been acknowledged or has timed
   // out.
-  void OnSwappedOut();
+  void OnUnloaded();
 
   // This method returns true from the time this RenderFrameHost is created
-  // until it is pending deletion. Pending deletion starts when SwapOut is
+  // until it is pending deletion. Pending deletion starts when Unload() is
   // called on the frame or one of its ancestors.
   // BackForwardCache: Returns false when the frame is in the BackForwardCache.
   bool is_active() const {
@@ -883,7 +884,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void BindBrowserInterfaceBrokerReceiver(
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>);
 
-  // Exposed so that tests can swap out the implementation and intercept calls.
+  // Exposed so that tests can swap the implementation and intercept calls.
   mojo::AssociatedReceiver<mojom::FrameHost>&
   frame_host_receiver_for_testing() {
     return frame_host_associated_receiver_;
@@ -1156,6 +1157,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void CreateNotificationService(
       mojo::PendingReceiver<blink::mojom::NotificationService> receiver);
 
+  void CreateInstalledAppProvider(
+      mojo::PendingReceiver<blink::mojom::InstalledAppProvider> receiver);
+
 #if defined(OS_ANDROID)
   void BindNFCReceiver(mojo::PendingReceiver<device::mojom::NFC> receiver);
 #endif
@@ -1211,7 +1215,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   network::mojom::CrossOriginOpenerPolicy cross_origin_opener_policy() const {
     return cross_origin_opener_policy_;
   }
-  void SetCrossOriginOriginOpenerPolicyForTesting(
+  void set_cross_origin_opener_policy(
       network::mojom::CrossOriginOpenerPolicy policy) {
     cross_origin_opener_policy_ = policy;
   }
@@ -1220,8 +1224,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // the back-forward cache.
   void DidCommitBackForwardCacheNavigation(
       NavigationRequest* committing_navigation_request,
-      std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
-          validated_params);
+      std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params);
 
   bool has_committed_any_navigation() const {
     return has_committed_any_navigation_;
@@ -1377,7 +1380,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest,
                            UnloadPushStateOnCrossProcessNavigation);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest,
-                           WebUIJavascriptDisallowedAfterSwapOut);
+                           WebUIJavascriptDisallowedAfterUnload);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest, LastCommittedOrigin);
   FRIEND_TEST_ALL_PREFIXES(
       RenderFrameHostManagerUnloadBrowserTest,
@@ -1385,25 +1388,25 @@ class CONTENT_EXPORT RenderFrameHostImpl
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest, CrashSubframe);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest, FindImmediateLocalRoots);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
-                           RenderViewHostIsNotReusedAfterDelayedSwapOutACK);
+                           RenderViewHostIsNotReusedAfterDelayedUnloadACK);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
-                           RenderViewHostStaysActiveWithLateSwapoutACK);
+                           RenderViewHostStaysActiveWithLateUnloadACK);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
                            LoadEventForwardingWhilePendingDeletion);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
                            ContextMenuAfterCrossProcessNavigation);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
-                           ActiveSandboxFlagsRetainedAfterSwapOut);
+                           ActiveSandboxFlagsRetainedAfterUnload);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
-                           LastCommittedURLRetainedAfterSwapOut);
+                           LastCommittedURLRetainedAfterUnload);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
                            RenderFrameProxyNotRecreatedDuringProcessShutdown);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
-                           SwapOutACKArrivesPriorToProcessShutdownRequest);
+                           UnloadACKArrivesPriorToProcessShutdownRequest);
   FRIEND_TEST_ALL_PREFIXES(SecurityExploitBrowserTest,
                            AttemptDuplicateRenderViewHost);
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
-                           FullscreenAfterFrameSwap);
+                           FullscreenAfterFrameUnload);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest, UnloadHandlerSubframes);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest, Unload_ABAB);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
@@ -1443,7 +1446,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       bool proceed,
       const base::TimeTicks& renderer_before_unload_start_time,
       const base::TimeTicks& renderer_before_unload_end_time);
-  void OnSwapOutACK();
+  void OnUnloadACK();
   void OnContextMenu(const ContextMenuParams& params);
   void OnVisualStateResponse(uint64_t id);
   void OnRunJavaScriptDialog(const base::string16& message,
@@ -1506,7 +1509,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Starts traversing the tree from |render_frame_host|.
   // |is_origin_secure| is whether the origin of the destination of the
   // navigation whose site_for_cookies is being calculated is secure.
-  GURL ComputeSiteForCookiesInternal(
+  net::SiteForCookies ComputeSiteForCookiesInternal(
       const RenderFrameHostImpl* render_frame_host,
       bool is_origin_secure) const;
 
@@ -1535,8 +1538,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void IssueKeepAliveHandle(
       mojo::PendingReceiver<mojom::KeepAliveHandle> receiver) override;
   void DidCommitProvisionalLoad(
-      std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
-          validated_params,
+      std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params)
       override;
 
@@ -1546,13 +1548,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // replace DidCommitProvisionalLoad in the long run.
   void DidCommitPerNavigationMojoInterfaceNavigation(
       NavigationRequest* committing_navigation_request,
-      std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
-          validated_params,
+      std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params);
 
   void DidCommitSameDocumentNavigation(
-      std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
-          validated_params) override;
+      std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params)
+      override;
   void BeginNavigation(
       mojom::CommonNavigationParamsPtr common_params,
       mojom::BeginNavigationParamsPtr begin_params,
@@ -1699,9 +1700,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void GetInterface(const std::string& interface_name,
                     mojo::ScopedMessagePipeHandle interface_pipe) override;
 
-  // Allows tests to disable the swapout event timer to simulate bugs that
+  // Allows tests to disable the unload event timer to simulate bugs that
   // happen before it fires (to avoid flakiness).
-  void DisableSwapOutTimerForTesting();
+  void DisableUnloadTimerForTesting();
 
   void SendJavaScriptDialogReply(IPC::Message* reply_msg,
                                  bool success,
@@ -1829,7 +1830,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // A return value of true means that the commit should proceed.
   bool ValidateDidCommitParams(
       NavigationRequest* navigation_request,
-      FrameHostMsg_DidCommitProvisionalLoad_Params* validated_params,
+      FrameHostMsg_DidCommitProvisionalLoad_Params* params,
       bool is_same_document_navigation);
 
   // Updates the site url if the navigation was successful and the page is not
@@ -1840,8 +1841,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // DidCommitPerNavigationMojoInterfaceNavigation.
   void DidCommitNavigation(
       std::unique_ptr<NavigationRequest> committing_navigation_request,
-      std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
-          validated_params,
+      std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params);
 
   // Called when we receive the confirmation that a navigation committed in the
@@ -1851,8 +1851,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // state should be restored to its pre-commit value.
   bool DidCommitNavigationInternal(
       std::unique_ptr<NavigationRequest> navigation_request,
-      std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
-          validated_params,
+      std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params,
       bool is_same_document_navigation);
 
   // Called by the renderer process when it is done processing a same-document
@@ -1869,7 +1868,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Creates a TracedValue object containing the details of a committed
   // navigation, so it can be logged with the tracing system.
   std::unique_ptr<base::trace_event::TracedValue> CommitAsTracedValue(
-      FrameHostMsg_DidCommitProvisionalLoad_Params* validated_params) const;
+      FrameHostMsg_DidCommitProvisionalLoad_Params* params) const;
 
   // Creates URLLoaderFactory objects for |isolated_world_origins|.
   blink::PendingURLLoaderFactoryBundle::OriginMap
@@ -1890,7 +1889,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // subframes have completed running unload handlers. If so, this function
   // destroys this frame. This will happen as soon as...
   // 1) The children in other processes have been deleted.
-  // 2) The ack (FrameHostMsg_Swapout_ACK or FrameHostMsg_Detach) has been
+  // 2) The ack (FrameHostMsg_Unload_ACK or FrameHostMsg_Detach) has been
   //    received. It means this frame in the renderer process is gone.
   void PendingDeletionCheckCompleted();
 
@@ -1916,7 +1915,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Returns true if we should proceed to the Commit callback, false otherwise.
   bool MaybeInterceptCommitCallback(
       NavigationRequest* navigation_request,
-      FrameHostMsg_DidCommitProvisionalLoad_Params* validated_params,
+      FrameHostMsg_DidCommitProvisionalLoad_Params* params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr* interface_params);
 
   // If this RenderFrameHost is a local root (i.e., either the main frame or a
@@ -2059,8 +2058,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   const int routing_id_;
 
   // Boolean indicating whether this RenderFrameHost is being actively used or
-  // is waiting for FrameHostMsg_SwapOut_ACK and thus pending deletion.
-  bool is_waiting_for_swapout_ack_;
+  // is waiting for FrameHostMsg_Unload_ACK and thus pending deletion.
+  bool is_waiting_for_unload_ack_;
 
   // Tracks whether the RenderFrame for this RenderFrameHost has been created in
   // the renderer process.
@@ -2132,10 +2131,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // relevant NavigationEntry.
   int nav_entry_id_;
 
-  // Used to swap out or shut down this RFH when the unload event is taking too
-  // long to execute, depending on the number of active frames in the
-  // SiteInstance.  May be null in tests.
-  std::unique_ptr<TimeoutMonitor> swapout_event_monitor_timeout_;
+  // Used to clean up this RFH when the unload event is taking too long to
+  // execute. May be null in tests.
+  std::unique_ptr<TimeoutMonitor> unload_event_monitor_timeout_;
 
   // GeolocationService which provides Geolocation.
   std::unique_ptr<GeolocationServiceImpl> geolocation_service_;
@@ -2440,7 +2438,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
     // An event such as a navigation happened causing the frame to start its
     // deletion. IPC are sent to execute the unload handlers and delete the
     // RenderFrame. The RenderFrameHost is waiting for an ACK. Either
-    // FrameHostMsg_Swapout_ACK for the navigating frame, or FrameHostMsg_Detach
+    // FrameHostMsg_Unload_ACK for the navigating frame, or FrameHostMsg_Detach
     // for its subframe.
     InProgress,
 

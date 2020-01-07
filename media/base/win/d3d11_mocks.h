@@ -8,6 +8,7 @@
 #include <d3d11.h>
 #include <d3d11_1.h>
 #include <dxgi1_4.h>
+#include <dxgi1_6.h>
 #include <wrl/client.h>
 #include <wrl/implements.h>
 
@@ -286,6 +287,28 @@ class D3D11DeviceMock
   MOCK_STDCALL_METHOD0(GetExceptionMode, UINT());
 };
 
+class DXGIFactoryMock
+    : public Microsoft::WRL::RuntimeClass<
+          Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
+          IDXGIFactory> {
+ public:
+  DXGIFactoryMock();
+  ~DXGIFactoryMock() override;
+  MOCK_STDCALL_METHOD2(CreateSoftwareAdapter, HRESULT(HMODULE, IDXGIAdapter**));
+  MOCK_STDCALL_METHOD3(CreateSwapChain,
+                       HRESULT(IUnknown*,
+                               DXGI_SWAP_CHAIN_DESC*,
+                               IDXGISwapChain**));
+  MOCK_STDCALL_METHOD2(EnumAdapters, HRESULT(UINT, IDXGIAdapter**));
+  MOCK_STDCALL_METHOD1(GetWindowAssociation, HRESULT(HWND*));
+  MOCK_STDCALL_METHOD2(MakeWindowAssociation, HRESULT(HWND, UINT));
+  MOCK_STDCALL_METHOD3(SetPrivateData, HRESULT(REFGUID, UINT, const void*));
+  MOCK_STDCALL_METHOD2(SetPrivateDataInterface,
+                       HRESULT(REFGUID, const IUnknown*));
+  MOCK_STDCALL_METHOD2(GetParent, HRESULT(REFIID, void**));
+  MOCK_STDCALL_METHOD3(GetPrivateData, HRESULT(REFGUID, UINT*, void*));
+};
+
 class DXGIDeviceMock
     : public Microsoft::WRL::RuntimeClass<
           Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
@@ -417,7 +440,112 @@ class DXGIAdapterMock
                        HRESULT(REFGUID, const IUnknown*));
 };
 
-// TODO(crbug.com/788880): This may not be necessary. Tyr out and see if
+class DXGIOutputMock
+    : public Microsoft::WRL::RuntimeClass<
+          Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
+          IDXGIOutput> {
+ public:
+  DXGIOutputMock();
+  ~DXGIOutputMock() override;
+  MOCK_STDCALL_METHOD3(FindClosestMatchingMode,
+                       HRESULT(const DXGI_MODE_DESC*,
+                               DXGI_MODE_DESC*,
+                               IUnknown*));
+  MOCK_STDCALL_METHOD1(GetDesc, HRESULT(DXGI_OUTPUT_DESC*));
+  MOCK_STDCALL_METHOD4(GetDisplayModeList,
+                       HRESULT(DXGI_FORMAT, UINT, UINT*, DXGI_MODE_DESC*));
+  MOCK_STDCALL_METHOD1(GetDisplaySurfaceData, HRESULT(IDXGISurface*));
+  MOCK_STDCALL_METHOD1(GetFrameStatistics, HRESULT(DXGI_FRAME_STATISTICS*));
+  MOCK_STDCALL_METHOD1(GetGammaControl, HRESULT(DXGI_GAMMA_CONTROL*));
+  MOCK_STDCALL_METHOD1(GetGammaControlCapabilities,
+                       HRESULT(DXGI_GAMMA_CONTROL_CAPABILITIES*));
+  MOCK_STDCALL_METHOD0(ReleaseOwnership, void());
+  MOCK_STDCALL_METHOD1(SetDisplaySurface, HRESULT(IDXGISurface*));
+  MOCK_STDCALL_METHOD1(SetGammaControl, HRESULT(const DXGI_GAMMA_CONTROL*));
+  MOCK_STDCALL_METHOD2(TakeOwnership, HRESULT(IUnknown*, BOOL));
+  MOCK_STDCALL_METHOD0(WaitForVBlank, HRESULT());
+
+  MOCK_STDCALL_METHOD3(SetPrivateData, HRESULT(REFGUID, UINT, const void*));
+  MOCK_STDCALL_METHOD2(SetPrivateDataInterface,
+                       HRESULT(REFGUID, const IUnknown*));
+  MOCK_STDCALL_METHOD2(GetParent, HRESULT(REFIID, void**));
+  MOCK_STDCALL_METHOD3(GetPrivateData, HRESULT(REFGUID, UINT*, void*));
+
+  // IUnknown
+  MOCK_STDCALL_METHOD2(QueryInterface, HRESULT(REFIID riid, void** ppv));
+};
+
+class DXGIOutput6Mock
+    : public Microsoft::WRL::RuntimeClass<
+          Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
+          IDXGIOutput6> {
+ public:
+  DXGIOutput6Mock();
+  ~DXGIOutput6Mock() override;
+
+  // IDXGIOutput6
+  MOCK_STDCALL_METHOD1(GetDesc1, HRESULT(DXGI_OUTPUT_DESC1*));
+  MOCK_STDCALL_METHOD1(CheckHardwareCompositionSupport, HRESULT(UINT*));
+
+  // IDXGIOutput5
+  MOCK_STDCALL_METHOD5(DuplicateOutput1,
+                       HRESULT(IUnknown*,
+                               UINT,
+                               UINT,
+                               const DXGI_FORMAT*,
+                               IDXGIOutputDuplication**));
+
+  // IDXGIOutput4
+  MOCK_STDCALL_METHOD4(
+      CheckOverlayColorSpaceSupport,
+      HRESULT(DXGI_FORMAT, DXGI_COLOR_SPACE_TYPE, IUnknown*, UINT*));
+
+  // IDXGIOutput3
+  MOCK_STDCALL_METHOD3(CheckOverlaySupport,
+                       HRESULT(DXGI_FORMAT, IUnknown*, UINT*));
+
+  // IDXGIOutput2
+  MOCK_STDCALL_METHOD0(SupportsOverlays, BOOL());
+
+  // IDXGIOutput1
+  MOCK_STDCALL_METHOD2(DuplicateOutput,
+                       HRESULT(IUnknown*, IDXGIOutputDuplication**));
+  MOCK_STDCALL_METHOD3(FindClosestMatchingMode1,
+                       HRESULT(const DXGI_MODE_DESC1*,
+                               DXGI_MODE_DESC1*,
+                               IUnknown*));
+  MOCK_STDCALL_METHOD4(GetDisplayModeList1,
+                       HRESULT(DXGI_FORMAT, UINT, UINT*, DXGI_MODE_DESC1*));
+  MOCK_STDCALL_METHOD1(GetDisplaySurfaceData1, HRESULT(IDXGIResource*));
+
+  // IDXGIOutput
+  MOCK_STDCALL_METHOD3(FindClosestMatchingMode,
+                       HRESULT(const DXGI_MODE_DESC*,
+                               DXGI_MODE_DESC*,
+                               IUnknown*));
+  MOCK_STDCALL_METHOD1(GetDesc, HRESULT(DXGI_OUTPUT_DESC*));
+  MOCK_STDCALL_METHOD4(GetDisplayModeList,
+                       HRESULT(DXGI_FORMAT, UINT, UINT*, DXGI_MODE_DESC*));
+  MOCK_STDCALL_METHOD1(GetDisplaySurfaceData, HRESULT(IDXGISurface*));
+  MOCK_STDCALL_METHOD1(GetFrameStatistics, HRESULT(DXGI_FRAME_STATISTICS*));
+  MOCK_STDCALL_METHOD1(GetGammaControl, HRESULT(DXGI_GAMMA_CONTROL*));
+  MOCK_STDCALL_METHOD1(GetGammaControlCapabilities,
+                       HRESULT(DXGI_GAMMA_CONTROL_CAPABILITIES*));
+  MOCK_STDCALL_METHOD0(ReleaseOwnership, void());
+  MOCK_STDCALL_METHOD1(SetDisplaySurface, HRESULT(IDXGISurface*));
+  MOCK_STDCALL_METHOD1(SetGammaControl, HRESULT(const DXGI_GAMMA_CONTROL*));
+  MOCK_STDCALL_METHOD2(TakeOwnership, HRESULT(IUnknown*, BOOL));
+  MOCK_STDCALL_METHOD0(WaitForVBlank, HRESULT());
+
+  // IDXGIObject
+  MOCK_STDCALL_METHOD3(SetPrivateData, HRESULT(REFGUID, UINT, const void*));
+  MOCK_STDCALL_METHOD2(SetPrivateDataInterface,
+                       HRESULT(REFGUID, const IUnknown*));
+  MOCK_STDCALL_METHOD2(GetParent, HRESULT(REFIID, void**));
+  MOCK_STDCALL_METHOD3(GetPrivateData, HRESULT(REFGUID, UINT*, void*));
+};
+
+// TODO(crbug.com/788880): This may not be necessary. Try out and see if
 // D3D11VideoDevice1Mock is sufficient. and if so, remove this.
 class D3D11VideoDeviceMock
     : public Microsoft::WRL::RuntimeClass<

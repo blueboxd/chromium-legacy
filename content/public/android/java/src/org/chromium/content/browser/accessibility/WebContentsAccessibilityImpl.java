@@ -43,6 +43,7 @@ import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
 import org.chromium.content_public.browser.AccessibilitySnapshotNode;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsAccessibility;
+import org.chromium.ui.base.WindowAndroid;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -213,6 +214,17 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         mAccessibilityManager.addAccessibilityStateChangeListener(this);
         refreshState();
         mCaptioningController.startListening();
+    }
+
+    @Override
+    public void onWindowAndroidChanged(WindowAndroid windowAndroid) {
+        // Delete this object when switching between WindowAndroids/Activities.
+        WindowEventObserverManager.from(mWebContents).removeObserver(this);
+        mWebContents.removeUserData(WebContentsAccessibilityImpl.class);
+        if (mNativeObj != 0) {
+            WebContentsAccessibilityImplJni.get().deleteEarly(mNativeObj);
+            assert mNativeObj == 0;
+        }
     }
 
     /**
@@ -999,7 +1011,12 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
 
     @CalledByNative
     private void handleCheckStateChanged(int id) {
-        sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_CLICKED);
+        // If the node has accessibility focus, fire TYPE_VIEW_CLICKED event. This check ensures
+        // only necessary announcements are made (e.g. changing a radio group selection
+        // would erroneously announce "checked not checked" without this check)
+        if (mAccessibilityFocusId == id) {
+            sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_CLICKED);
+        }
     }
 
     @CalledByNative
@@ -1533,6 +1550,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     @NativeMethods
     interface Natives {
         long init(WebContentsAccessibilityImpl caller, WebContents webContents);
+        void deleteEarly(long nativeWebContentsAccessibilityAndroid);
         void onAutofillPopupDisplayed(
                 long nativeWebContentsAccessibilityAndroid, WebContentsAccessibilityImpl caller);
         void onAutofillPopupDismissed(

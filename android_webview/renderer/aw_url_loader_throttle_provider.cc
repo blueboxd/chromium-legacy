@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "base/feature_list.h"
-#include "components/safe_browsing/features.h"
-#include "components/safe_browsing/renderer/renderer_url_loader_throttle.h"
+#include "components/safe_browsing/content/renderer/renderer_url_loader_throttle.h"
+#include "components/safe_browsing/core/features.h"
 #include "content/public/common/content_features.h"
 #include "content/public/renderer/render_thread.h"
 

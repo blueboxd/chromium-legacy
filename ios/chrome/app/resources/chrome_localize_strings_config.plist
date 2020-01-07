@@ -46,6 +46,24 @@
 					<key>output</key>
 					<string>Z6KvRw</string>
 				</dict>
+				<dict>
+					<key>input</key>
+					<string>IDS_IOS_INTENTS_OPEN_IN_CHROME_PARAMETER_COMBINATION_TITLE</string>
+					<key>output</key>
+					<string>H6reDO</string>
+				</dict>
+				<dict>
+					<key>input</key>
+					<string>IDS_IOS_INTENTS_OPEN_IN_CHROME_TITLE</string>
+					<key>output</key>
+					<string>ZVOUc7</string>
+				</dict>
+				<dict>
+					<key>input</key>
+					<string>IDS_IOS_INTENTS_OPEN_IN_CHROME_DESCRIPTION</string>
+					<key>output</key>
+					<string>MpiRFx</string>
+				</dict>
 			</array>
 		</dict>
 		<dict>

@@ -59,7 +59,7 @@ if (safe_browsing_mode == 1) {
       deps += [ ":disk_image_type_sniffer_mac" ]
     }
     public_deps = [
-      "//components/safe_browsing:csd_proto",
+      "//components/safe_browsing/core:csd_proto",
     ]
   }
 
@@ -71,10 +71,10 @@ if (safe_browsing_mode == 1) {
     deps = [
       ":file_type_policies",
       "//base",
-      "//components/safe_browsing:features",
+      "//components/safe_browsing/core:features",
     ]
     public_deps = [
-      "//components/safe_browsing:csd_proto",
+      "//components/safe_browsing/core:csd_proto",
     ]
   }
 
@@ -90,7 +90,7 @@ if (safe_browsing_mode == 1) {
       ":file_type_policies",
       "//base",
       "//base:i18n",
-      "//components/safe_browsing:features",
+      "//components/safe_browsing/core:features",
       "//third_party/unrar:unrar",
     ]
 
@@ -109,7 +109,7 @@ if (safe_browsing_mode == 1) {
     ]
 
     public_deps = [
-      "//components/safe_browsing:csd_proto",
+      "//components/safe_browsing/core:csd_proto",
     ]
   }
 
@@ -139,7 +139,7 @@ if (safe_browsing_mode == 1) {
 
     public_deps = [
       "//base",
-      "//components/safe_browsing:csd_proto",
+      "//components/safe_browsing/core:csd_proto",
       "//crypto",
     ]
 
@@ -186,14 +186,14 @@ source_set("safe_browsing") {
       ":binary_feature_extractor",
       ":download_type_util",
       ":rar_analyzer",
-      "//components/safe_browsing:features",
+      "//components/safe_browsing/core:features",
     ]
 
     public_deps = [
       ":proto",
       "//base:i18n",
       "//chrome/common:mojo_bindings",
-      "//components/safe_browsing:csd_proto",
+      "//components/safe_browsing/core:csd_proto",
       "//crypto",
       "//ipc",
       "//third_party/zlib/google:zip",

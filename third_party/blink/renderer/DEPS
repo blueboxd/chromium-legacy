@@ -52,6 +52,7 @@ include_rules = [
     "+base/util/type_safety/strong_alias.h",
     "+build",
     "+components/crash/core/common/crash_key.h",
+    "+net/cookies",
     "+services/network/public/mojom",
     "+services/service_manager/public/cpp/interface_provider.h",
     "+testing/gmock/include/gmock",

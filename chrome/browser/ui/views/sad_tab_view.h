@@ -7,7 +7,6 @@
 
 #include "chrome/browser/ui/sad_tab.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/link_listener.h"
 #include "ui/views/view.h"
 
 namespace content {
@@ -34,7 +33,6 @@ class SadTabViewTestApi;
 ///////////////////////////////////////////////////////////////////////////////
 class SadTabView : public SadTab,
                    public views::View,
-                   public views::LinkListener,
                    public views::ButtonListener {
  public:
   METADATA_HEADER(SadTabView);
@@ -47,9 +45,6 @@ class SadTabView : public SadTab,
 
   // Overridden from views::View:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
-
-  // Overridden from views::LinkListener:
-  void LinkClicked(views::Link* source, int event_flags) override;
 
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* source, const ui::Event& event) override;

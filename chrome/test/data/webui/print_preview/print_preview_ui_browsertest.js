@@ -1072,6 +1072,12 @@ TEST_F('PrintPreviewDestinationSettingsTest', 'GoogleDriveRecent', function() {
   this.runMochaTest(destination_settings_test.TestNames.GoogleDriveRecent);
 });
 
+TEST_F(
+    'PrintPreviewDestinationSettingsTest', 'GoogleDriveAutoselect', function() {
+      this.runMochaTest(
+          destination_settings_test.TestNames.GoogleDriveAutoselect);
+    });
+
 TEST_F('PrintPreviewDestinationSettingsTest', 'SelectSaveAsPdf', function() {
   this.runMochaTest(destination_settings_test.TestNames.SelectSaveAsPdf);
 });

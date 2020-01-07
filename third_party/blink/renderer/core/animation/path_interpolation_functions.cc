@@ -41,7 +41,15 @@ class SVGPathNonInterpolableValue : public NonInterpolableValue {
 };
 
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE(SVGPathNonInterpolableValue);
-DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(SVGPathNonInterpolableValue);
+template <>
+struct DowncastTraits<SVGPathNonInterpolableValue> {
+  static bool AllowFrom(const NonInterpolableValue* value) {
+    return value && AllowFrom(*value);
+  }
+  static bool AllowFrom(const NonInterpolableValue& value) {
+    return value.GetType() == SVGPathNonInterpolableValue::static_type_;
+  }
+};
 
 enum PathComponentIndex : unsigned {
   kPathArgsIndex,
@@ -110,7 +118,7 @@ class UnderlyingPathSegTypesChecker
 
   static const Vector<SVGPathSegType>& GetPathSegTypes(
       const InterpolationValue& underlying) {
-    return ToSVGPathNonInterpolableValue(*underlying.non_interpolable_value)
+    return To<SVGPathNonInterpolableValue>(*underlying.non_interpolable_value)
         .PathSegTypes();
   }
 
@@ -154,10 +162,11 @@ PairwiseInterpolationValue PathInterpolationFunctions::MaybeMergeSingles(
     InterpolationValue&& start,
     InterpolationValue&& end) {
   const Vector<SVGPathSegType>& start_types =
-      ToSVGPathNonInterpolableValue(*start.non_interpolable_value)
+      To<SVGPathNonInterpolableValue>(*start.non_interpolable_value)
           .PathSegTypes();
   const Vector<SVGPathSegType>& end_types =
-      ToSVGPathNonInterpolableValue(*end.non_interpolable_value).PathSegTypes();
+      To<SVGPathNonInterpolableValue>(*end.non_interpolable_value)
+          .PathSegTypes();
   if (start_types.size() == 0 || !PathSegTypesMatch(start_types, end_types))
     return nullptr;
 
@@ -181,10 +190,10 @@ void PathInterpolationFunctions::Composite(
   }
 
   DCHECK(PathSegTypesMatch(
-      ToSVGPathNonInterpolableValue(
+      To<SVGPathNonInterpolableValue>(
           *underlying_value_owner.Value().non_interpolable_value)
           .PathSegTypes(),
-      ToSVGPathNonInterpolableValue(*value.non_interpolable_value)
+      To<SVGPathNonInterpolableValue>(*value.non_interpolable_value)
           .PathSegTypes()));
   underlying_value_owner.MutableValue().interpolable_value->ScaleAndAdd(
       neutral_component, *value.interpolable_value);
@@ -200,7 +209,7 @@ std::unique_ptr<SVGPathByteStream> PathInterpolationFunctions::AppliedValue(
   InterpolatedSVGPathSource source(
       To<InterpolableList>(
           *To<InterpolableList>(interpolable_value).Get(kPathArgsIndex)),
-      ToSVGPathNonInterpolableValue(non_interpolable_value)->PathSegTypes());
+      To<SVGPathNonInterpolableValue>(non_interpolable_value)->PathSegTypes());
   SVGPathByteStreamBuilder builder(*path_byte_stream);
   svg_path_parser::ParsePath(source, builder);
   return path_byte_stream;

@@ -10,8 +10,8 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
-#include "components/safe_browsing/db/hit_report.h"
-#include "components/safe_browsing/db/util.h"
+#include "components/safe_browsing/core/db/hit_report.h"
+#include "components/safe_browsing/core/db/util.h"
 #include "url/gurl.h"
 
 namespace content {

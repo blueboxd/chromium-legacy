@@ -15,6 +15,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/browser/unloaded_extension_reason.h"
 #include "url/origin.h"
 
 namespace extensions {

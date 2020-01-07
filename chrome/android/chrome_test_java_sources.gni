@@ -523,7 +523,6 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/webapps/addtohomescreen/AddToHomescreenTest.java",
   "javatests/src/org/chromium/chrome/browser/webauth/AuthenticatorTest.java",
   "javatests/src/org/chromium/chrome/browser/webshare/WebShareTest.java",
-  "javatests/src/org/chromium/chrome/browser/widget/ChromeTextInputLayoutRenderTest.java",
   "javatests/src/org/chromium/chrome/browser/widget/ScrimTest.java",
   "javatests/src/org/chromium/chrome/browser/widget/ThumbnailDiskStorageTest.java",
   "javatests/src/org/chromium/chrome/browser/widget/ThumbnailProviderImplTest.java",

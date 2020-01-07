@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -301,11 +302,12 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   blink::UserAgentMetadata user_agent_metadata_;
 };
 
-DEFINE_TYPE_CASTS(LocalFrameClientImpl,
-                  LocalFrameClient,
-                  client,
-                  client->IsLocalFrameClientImpl(),
-                  client.IsLocalFrameClientImpl());
+template <>
+struct DowncastTraits<LocalFrameClientImpl> {
+  static bool AllowFrom(const LocalFrameClient& client) {
+    return client.IsLocalFrameClientImpl();
+  }
+};
 
 }  // namespace blink
 

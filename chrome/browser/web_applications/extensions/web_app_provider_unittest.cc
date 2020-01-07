@@ -13,8 +13,6 @@
 
 namespace web_app {
 
-enum class ProviderType { kBookmarkApps, kWebApps };
-
 class WebAppProviderUnitTest
     : public WebAppTest,
       public ::testing::WithParamInterface<ProviderType> {
@@ -23,7 +21,7 @@ class WebAppProviderUnitTest
     if (GetParam() == ProviderType::kWebApps) {
       scoped_feature_list_.InitAndEnableFeature(
           features::kDesktopPWAsWithoutExtensions);
-    } else {
+    } else if (GetParam() == ProviderType::kBookmarkApps) {
       scoped_feature_list_.InitAndDisableFeature(
           features::kDesktopPWAsWithoutExtensions);
     }

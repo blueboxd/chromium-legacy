@@ -535,7 +535,7 @@
     Connect to network
   </message>
   <message name="IDS_NETWORK_SELECTION_HINT" desc="Under-title line on the network selection screen" meaning="A hint to the user why device should be connected to the network">
-    To restore your data, you need an Internet connection.
+    To restore your data, connect to the internet
   </message>
   <message name="IDS_NETWORK_SELECTION_ERROR" desc="Error shown when connection to network failed or timed out.">
     <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> was unable to connect to <ph name="NETWORK_ID">$2<ex>Public Wifi</ex></ph>. Please select another network or try again.
@@ -3606,6 +3606,18 @@
   </message>
   <message name="IDS_CROSTINI_UPGRADER_BACKUP_SUCCEEDED_MESSAGE" desc="Text shown by the Crostini upgrader when the container backup completed successfully, prior to the main upgrade.">
     Linux apps and files have been successfully backed up. Upgrade will begin shortly.
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_PRECHECKS_FAILED_TITLE" desc="Title of the Crostini upgrader when the upgrade prechecks failed.">
+    Error starting upgrade
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_PRECHECKS_FAILED_NETWORK" desc="Text shown by the Crostini upgrader when the upgrade did not start because there was no network connection.">
+    A network connection is required to upgrade Linux. Please connect to the internet and try again.
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_PRECHECKS_FAILED_POWER" desc="Text shown by the Crostini upgrader when the upgrade did not start because there wasn't enough power.">
+    Upgrading Linux can drain your battery significantly. Please connect your device to a charger and try again.
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_PRECHECKS_FAILED_SPACE" desc="Text shown by the Crostini upgrader when the upgrade did not start because there wasn't enough free disk space.">
+    At least <ph name="REQUIRED_SPACE">$1<ex>1GB</ex></ph> of free disk space is required to upgrade Linux. Please free some space on your device and try again.
   </message>
   <message name="IDS_CROSTINI_UPGRADER_UPGRADING_TITLE" desc="Title of the Crostini upgrader when the upgrade is in progress.">
     Upgrading Linux

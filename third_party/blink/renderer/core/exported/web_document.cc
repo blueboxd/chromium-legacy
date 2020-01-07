@@ -139,7 +139,7 @@ ukm::SourceId WebDocument::GetUkmSourceId() const {
   return ConstUnwrap<Document>()->UkmSourceID();
 }
 
-WebURL WebDocument::SiteForCookies() const {
+net::SiteForCookies WebDocument::SiteForCookies() const {
   return ConstUnwrap<Document>()->SiteForCookies();
 }
 

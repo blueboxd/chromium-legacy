@@ -491,17 +491,40 @@ void AppListControllerImpl::OnActiveUserPrefServiceChanged(
     return;
   }
 
-  // Show the app list after signing in in tablet mode. For metrics, the app
-  // list is not considered shown since the browser window is shown over app
-  // list upon login.
-  Show(GetDisplayIdToShowAppListOn(), base::nullopt /* no AppListShowSource */,
-       base::TimeTicks());
-
   // The app list is not dismissed before switching user, suggestion chips will
   // not be shown. So reset app list state and trigger an initial search here to
   // update the suggestion results.
-  presenter_.GetView()->CloseOpenedPage();
-  presenter_.GetView()->search_box_view()->ClearSearch();
+  if (presenter_.GetView()) {
+    presenter_.GetView()->CloseOpenedPage();
+    presenter_.GetView()->search_box_view()->ClearSearch();
+  }
+}
+
+void AppListControllerImpl::OnSessionStateChanged(
+    session_manager::SessionState state) {
+  if (!IsTabletMode())
+    return;
+
+  if (state != session_manager::SessionState::ACTIVE)
+    return;
+
+  // Show the app list after signing in in tablet mode. For metrics, the app
+  // list is not considered shown since the browser window is shown over app
+  // list upon login.
+  if (!presenter_.GetView()) {
+    Show(GetDisplayIdToShowAppListOn(),
+         base::nullopt /* no AppListShowSource */, base::TimeTicks());
+  }
+
+  // Hide app list UI initially to prevent app list from flashing in background
+  // while the initial app window is being shown.
+  if (HasVisibleWindows() ||
+      Shell::Get()->overview_controller()->InOverviewSession()) {
+    presenter_.GetView()->SetVisible(false);
+    presenter_.GetView()->search_box_view()->SetVisible(false);
+  } else {
+    OnVisibilityChanged(true, last_visible_display_id_);
+  }
 }
 
 void AppListControllerImpl::OnAppListItemWillBeDeleted(AppListItem* item) {
@@ -690,7 +713,10 @@ void AppListControllerImpl::OnTabletModeStarted() {
   presenter_.OnTabletModeChanged(true);
 
   // Show the app list if the tablet mode starts.
-  Shell::Get()->home_screen_controller()->Show();
+  if (Shell::Get()->session_controller()->GetSessionState() ==
+      session_manager::SessionState::ACTIVE) {
+    Shell::Get()->home_screen_controller()->Show();
+  }
   UpdateLauncherContainer();
 }
 
@@ -745,12 +771,14 @@ void AppListControllerImpl::OnDisplayConfigurationChanged() {
   // To avoid crashes, we must ensure that the Home Launcher shown status is as
   // expected if it's enabled and we're still in tablet mode.
   // https://crbug.com/900956.
-  const bool should_be_shown = IsTabletMode();
-  if (should_be_shown == presenter_.GetTargetVisibility())
+  const bool should_be_shown =
+      IsTabletMode() && Shell::Get()->session_controller()->GetSessionState() ==
+                            session_manager::SessionState::ACTIVE;
+
+  if (!should_be_shown || should_be_shown == presenter_.GetTargetVisibility())
     return;
 
-  if (should_be_shown)
-    Shell::Get()->home_screen_controller()->Show();
+  Shell::Get()->home_screen_controller()->Show();
 }
 
 void AppListControllerImpl::OnWindowUntracked(aura::Window* untracked_window) {
@@ -1484,6 +1512,11 @@ void AppListControllerImpl::OnVisibilityWillChange(bool visible,
       // list is being hidden.
       if (presenter_.GetView())
         presenter_.GetView()->SelectInitialAppsPage();
+    }
+
+    if (real_target_visibility && presenter_.GetView()) {
+      presenter_.GetView()->SetVisible(true);
+      presenter_.GetView()->search_box_view()->SetVisible(true);
     }
 
     if (client_)

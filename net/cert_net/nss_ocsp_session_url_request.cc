@@ -24,7 +24,7 @@ const int kRecvBufferSize = 4096;
 
 // The maximum size in bytes for the response body when fetching an OCSP/CRL
 // URL.
-const int kMaxResponseSizeInBytesForOCSP = 5 * 1024 * 1024;
+const int kMaxResponseSizeInBytes = 5 * 1024 * 1024;
 }  // namespace
 
 class OCSPRequestSessionDelegateURLRequest;
@@ -167,10 +167,9 @@ class OCSPRequestSessionDelegateURLRequest : public OCSPRequestSessionDelegate,
     }
 
     // Check max size.
-    if (result_->data.size() > kMaxResponseSizeInBytesForOCSP) {
-      result_->data.clear();
-      // Set response code to -1 to signify error.
-      result_->response_code = -1;
+    if (result_->data.size() > kMaxResponseSizeInBytes) {
+      // Reset the result to indicate error.
+      result_.reset();
       FinishLoad();
     }
 
@@ -342,10 +341,10 @@ void OCSPIOLoop::CancelAllRequests() {
     (*request_delegates_.begin())->CancelLoad();
 }
 
-class OCSPRequestSessionDelegateURLRequestFactory
+class OCSPRequestSessionDelegateFactoryURLRequest
     : public OCSPRequestSessionDelegateFactory {
  public:
-  OCSPRequestSessionDelegateURLRequestFactory(
+  OCSPRequestSessionDelegateFactoryURLRequest(
       URLRequestContext* request_context)
       : request_context_(request_context) {}
   scoped_refptr<OCSPRequestSessionDelegate> CreateOCSPRequestSessionDelegate()
@@ -354,15 +353,16 @@ class OCSPRequestSessionDelegateURLRequestFactory
         request_context_);
   }
 
+  ~OCSPRequestSessionDelegateFactoryURLRequest() override = default;
+
  private:
-  ~OCSPRequestSessionDelegateURLRequestFactory() override = default;
   URLRequestContext* request_context_;
 };
 
 void SetURLRequestContextForNSSHttpIO(URLRequestContext* request_context) {
   if (request_context) {
     SetOCSPRequestSessionDelegateFactory(
-        base::MakeRefCounted<OCSPRequestSessionDelegateURLRequestFactory>(
+        std::make_unique<OCSPRequestSessionDelegateFactoryURLRequest>(
             request_context));
   } else {
     SetOCSPRequestSessionDelegateFactory(nullptr);

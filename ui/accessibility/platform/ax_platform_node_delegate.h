@@ -318,6 +318,7 @@ class AX_EXPORT AXPlatformNodeDelegate {
   virtual base::Optional<int> GetTableAriaColCount() const = 0;
   virtual base::Optional<int> GetTableAriaRowCount() const = 0;
   virtual base::Optional<int> GetTableCellCount() const = 0;
+  virtual base::Optional<bool> GetTableHasColumnOrRowHeaderNode() const = 0;
   virtual std::vector<int32_t> GetColHeaderNodeIds() const = 0;
   virtual std::vector<int32_t> GetColHeaderNodeIds(int col_index) const = 0;
   virtual std::vector<int32_t> GetRowHeaderNodeIds() const = 0;

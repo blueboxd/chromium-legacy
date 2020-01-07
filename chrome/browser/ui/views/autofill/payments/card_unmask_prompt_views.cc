@@ -183,22 +183,6 @@ void CardUnmaskPromptViews::GotVerificationResult(
   parent()->Layout();
 }
 
-void CardUnmaskPromptViews::LinkClicked(views::Link* source, int event_flags) {
-  controller_->NewCardLinkClicked();
-  for (views::View* child : input_row_->children())
-    child->SetVisible(true);
-
-  new_card_link_->SetVisible(false);
-  input_row_->InvalidateLayout();
-  cvc_input_->SetInvalid(false);
-  cvc_input_->SetText(base::string16());
-  UpdateButtonLabels();
-  DialogModelChanged();
-  GetWidget()->UpdateWindowTitle();
-  instructions_->SetText(controller_->GetInstructionsMessage());
-  SetRetriableErrorMessage(base::string16());
-}
-
 void CardUnmaskPromptViews::SetRetriableErrorMessage(
     const base::string16& message) {
   error_label_->SetMultiLine(!message.empty());
@@ -232,7 +216,8 @@ void CardUnmaskPromptViews::ShowNewCardLink() {
   auto new_card_link = std::make_unique<views::Link>(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_CARD_UNMASK_NEW_CARD_LINK));
   new_card_link->SetUnderline(false);
-  new_card_link->set_listener(this);
+  new_card_link->set_callback(base::BindRepeating(
+      &CardUnmaskPromptViews::LinkClicked, base::Unretained(this)));
   new_card_link_ = input_row_->AddChildView(std::move(new_card_link));
 }
 
@@ -492,6 +477,22 @@ void CardUnmaskPromptViews::ClosePrompt() {
 void CardUnmaskPromptViews::UpdateButtonLabels() {
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
                                    controller_->GetOkButtonLabel());
+}
+
+void CardUnmaskPromptViews::LinkClicked() {
+  controller_->NewCardLinkClicked();
+  for (views::View* child : input_row_->children())
+    child->SetVisible(true);
+
+  new_card_link_->SetVisible(false);
+  input_row_->InvalidateLayout();
+  cvc_input_->SetInvalid(false);
+  cvc_input_->SetText(base::string16());
+  UpdateButtonLabels();
+  DialogModelChanged();
+  GetWidget()->UpdateWindowTitle();
+  instructions_->SetText(controller_->GetInstructionsMessage());
+  SetRetriableErrorMessage(base::string16());
 }
 
 CardUnmaskPromptView* CreateCardUnmaskPromptView(

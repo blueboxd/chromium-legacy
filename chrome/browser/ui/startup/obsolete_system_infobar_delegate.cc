@@ -29,18 +29,18 @@ ObsoleteSystemInfoBarDelegate::GetIdentifier() const {
   return OBSOLETE_SYSTEM_INFOBAR_DELEGATE;
 }
 
-base::string16 ObsoleteSystemInfoBarDelegate::GetMessageText() const {
-  return ObsoleteSystem::LocalizedObsoleteString();
-}
-
-int ObsoleteSystemInfoBarDelegate::GetButtons() const {
-  return BUTTON_NONE;
-}
-
 base::string16 ObsoleteSystemInfoBarDelegate::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 
 GURL ObsoleteSystemInfoBarDelegate::GetLinkURL() const {
   return GURL(ObsoleteSystem::GetLinkURL());
+}
+
+base::string16 ObsoleteSystemInfoBarDelegate::GetMessageText() const {
+  return ObsoleteSystem::LocalizedObsoleteString();
+}
+
+int ObsoleteSystemInfoBarDelegate::GetButtons() const {
+  return BUTTON_NONE;
 }

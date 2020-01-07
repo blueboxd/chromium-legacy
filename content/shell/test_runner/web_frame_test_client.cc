@@ -407,7 +407,9 @@ void WebFrameTestClient::DidDispatchPingLoader(const blink::WebURL& url) {
 void WebFrameTestClient::WillSendRequest(blink::WebURLRequest& request) {
   // Need to use GURL for host() and SchemeIs()
   GURL url = request.Url();
-  GURL main_document_url = request.SiteForCookies();
+
+  // Warning: this may be null in some cross-site cases.
+  net::SiteForCookies site_for_cookies = request.SiteForCookies();
 
   if (test_runner()->HttpHeadersToClear()) {
     for (const std::string& header : *test_runner()->HttpHeadersToClear()) {
@@ -426,9 +428,9 @@ void WebFrameTestClient::WillSendRequest(blink::WebURLRequest& request) {
       (url.SchemeIs(url::kHttpScheme) || url.SchemeIs(url::kHttpsScheme))) {
     if (!IsLocalHost(host) && !IsTestHost(host) &&
         !HostIsUsedBySomeTestsToGenerateError(host) &&
-        ((!main_document_url.SchemeIs(url::kHttpScheme) &&
-          !main_document_url.SchemeIs(url::kHttpsScheme)) ||
-         IsLocalHost(main_document_url.host())) &&
+        ((site_for_cookies.scheme() != url::kHttpScheme &&
+          site_for_cookies.scheme() != url::kHttpsScheme) ||
+         IsLocalHost(site_for_cookies.registrable_domain())) &&
         !delegate_->AllowExternalPages()) {
       delegate_->PrintMessage(std::string("Blocked access to external URL ") +
                               url.possibly_invalid_spec() + "\n");

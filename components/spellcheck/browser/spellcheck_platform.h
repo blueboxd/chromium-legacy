@@ -124,14 +124,6 @@ void RequestTextCheck(int document_tag,
                       TextCheckCompleteCallback callback);
 
 #if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-// Requests an asynchronous spell and grammar checking for the languages that
-// couldn't be handled by the renderer spellchecker.
-void RequestTextCheck(int document_tag,
-                      const base::string16& text,
-                      const std::vector<SpellCheckResult>& partial_results,
-                      bool fill_suggestions,
-                      TextCheckCompleteCallback callback);
-
 // Finds the replacement suggestions for each language for the given word.
 void GetPerLanguageSuggestions(const base::string16& word,
                                GetSuggestionsCallback callback);

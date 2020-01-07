@@ -312,6 +312,8 @@ class WebContentsAccessibilityAndroid::Connector
             WebContentsAccessibilityAndroid* accessibility);
   ~Connector() override;
 
+  void DeleteEarly();
+
   // RenderWidgetHostConnector:
   void UpdateRenderProcessConnection(
       RenderWidgetHostViewAndroid* old_rwhva,
@@ -335,6 +337,10 @@ WebContentsAccessibilityAndroid::Connector::~Connector() {
       accessibility_->web_contents_->GetRootBrowserAccessibilityManager());
   if (manager)
     manager->set_web_contents_accessibility(nullptr);
+}
+
+void WebContentsAccessibilityAndroid::Connector::DeleteEarly() {
+  RenderWidgetHostConnector::DestroyEarly();
 }
 
 void WebContentsAccessibilityAndroid::Connector::UpdateRenderProcessConnection(
@@ -369,6 +375,10 @@ WebContentsAccessibilityAndroid::~WebContentsAccessibilityAndroid() {
   DeleteAutofillPopupProxy();
 
   Java_WebContentsAccessibilityImpl_onNativeObjectDestroyed(env, obj);
+}
+
+void WebContentsAccessibilityAndroid::DeleteEarly(JNIEnv* env) {
+  connector_->DeleteEarly();
 }
 
 jboolean WebContentsAccessibilityAndroid::IsEnabled(

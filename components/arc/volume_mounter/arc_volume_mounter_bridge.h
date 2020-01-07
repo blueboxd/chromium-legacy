@@ -14,7 +14,6 @@
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
 class BrowserContext;

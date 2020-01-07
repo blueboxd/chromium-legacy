@@ -53,7 +53,9 @@ class MockBaseFetchContext final : public BaseFetchContext {
   ~MockBaseFetchContext() override = default;
 
   // BaseFetchContext overrides:
-  KURL GetSiteForCookies() const override { return KURL(); }
+  net::SiteForCookies GetSiteForCookies() const override {
+    return net::SiteForCookies();
+  }
   scoped_refptr<const blink::SecurityOrigin> GetTopFrameOrigin()
       const override {
     return SecurityOrigin::CreateUniqueOpaque();

@@ -41,14 +41,6 @@ class SensorErrorEvent : public Event {
   Member<DOMException> error_;
 };
 
-DEFINE_TYPE_CASTS(SensorErrorEvent,
-                  Event,
-                  event,
-                  event->InterfaceName() ==
-                      event_interface_names::kSensorErrorEvent,
-                  event.InterfaceName() ==
-                      event_interface_names::kSensorErrorEvent);
-
 }  // namepsace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SENSOR_SENSOR_ERROR_EVENT_H_

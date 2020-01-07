@@ -52,8 +52,7 @@ security_state::SecurityLevel GetSecurityLevelForWebState(
   }
   return security_state::GetSecurityLevel(
       *GetVisibleSecurityStateForWebState(web_state),
-      false /* used policy installed certificate */,
-      base::BindRepeating(&web::IsOriginSecure));
+      false /* used policy installed certificate */);
 }
 
 }  // namespace security_state

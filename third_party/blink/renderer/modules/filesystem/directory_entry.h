@@ -68,12 +68,6 @@ class MODULES_EXPORT DirectoryEntry final : public Entry {
   void Trace(blink::Visitor*) override;
 };
 
-DEFINE_TYPE_CASTS(DirectoryEntry,
-                  Entry,
-                  entry,
-                  entry->isDirectory(),
-                  entry.isDirectory());
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_DIRECTORY_ENTRY_H_

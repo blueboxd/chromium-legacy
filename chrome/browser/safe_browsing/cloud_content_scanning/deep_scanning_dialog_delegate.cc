@@ -28,9 +28,9 @@
 #include "components/policy/core/browser/url_blacklist_manager.h"
 #include "components/policy/core/browser/url_util.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/features.h"
-#include "components/safe_browsing/proto/webprotect.pb.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/features.h"
+#include "components/safe_browsing/core/proto/webprotect.pb.h"
 #include "components/url_matcher/url_matcher.h"
 #include "content/public/browser/web_contents.h"
 #include "crypto/sha2.h"
@@ -166,24 +166,24 @@ std::string GetFileMimeType(base::FilePath path) {
 // Keep sorted for efficient access.
 constexpr const std::array<const base::FilePath::CharType*, 36>
     kSupportedDLPFileTypes = {
-        FILE_PATH_LITERAL(".bzip"),    FILE_PATH_LITERAL(".cab"),
-        FILE_PATH_LITERAL(".doc"),     FILE_PATH_LITERAL(".docx"),
-        FILE_PATH_LITERAL(".eps"),     FILE_PATH_LITERAL(".gzip"),
-        FILE_PATH_LITERAL(".hwp"),     FILE_PATH_LITERAL(".img_for_ocr"),
-        FILE_PATH_LITERAL(".kml"),     FILE_PATH_LITERAL(".kmz"),
-        FILE_PATH_LITERAL(".odp"),     FILE_PATH_LITERAL(".ods"),
-        FILE_PATH_LITERAL(".odt"),     FILE_PATH_LITERAL(".pdf"),
-        FILE_PATH_LITERAL(".ppt"),     FILE_PATH_LITERAL(".pptx"),
-        FILE_PATH_LITERAL(".ps"),      FILE_PATH_LITERAL(".rar"),
-        FILE_PATH_LITERAL(".rtf"),     FILE_PATH_LITERAL(".sdc"),
-        FILE_PATH_LITERAL(".sdd"),     FILE_PATH_LITERAL(".sdw"),
-        FILE_PATH_LITERAL(".seven_z"), FILE_PATH_LITERAL(".sxc"),
-        FILE_PATH_LITERAL(".sxi"),     FILE_PATH_LITERAL(".sxw"),
-        FILE_PATH_LITERAL(".tar"),     FILE_PATH_LITERAL(".ttf"),
-        FILE_PATH_LITERAL(".txt"),     FILE_PATH_LITERAL(".wml"),
-        FILE_PATH_LITERAL(".wpd"),     FILE_PATH_LITERAL(".xls"),
-        FILE_PATH_LITERAL(".xlsx"),    FILE_PATH_LITERAL(".xml"),
-        FILE_PATH_LITERAL(".xps"),     FILE_PATH_LITERAL(".zip")};
+        FILE_PATH_LITERAL(".7z"),          FILE_PATH_LITERAL(".bzip"),
+        FILE_PATH_LITERAL(".cab"),         FILE_PATH_LITERAL(".doc"),
+        FILE_PATH_LITERAL(".docx"),        FILE_PATH_LITERAL(".eps"),
+        FILE_PATH_LITERAL(".gzip"),        FILE_PATH_LITERAL(".hwp"),
+        FILE_PATH_LITERAL(".img_for_ocr"), FILE_PATH_LITERAL(".kml"),
+        FILE_PATH_LITERAL(".kmz"),         FILE_PATH_LITERAL(".odp"),
+        FILE_PATH_LITERAL(".ods"),         FILE_PATH_LITERAL(".odt"),
+        FILE_PATH_LITERAL(".pdf"),         FILE_PATH_LITERAL(".ppt"),
+        FILE_PATH_LITERAL(".pptx"),        FILE_PATH_LITERAL(".ps"),
+        FILE_PATH_LITERAL(".rar"),         FILE_PATH_LITERAL(".rtf"),
+        FILE_PATH_LITERAL(".sdc"),         FILE_PATH_LITERAL(".sdd"),
+        FILE_PATH_LITERAL(".sdw"),         FILE_PATH_LITERAL(".sxc"),
+        FILE_PATH_LITERAL(".sxi"),         FILE_PATH_LITERAL(".sxw"),
+        FILE_PATH_LITERAL(".tar"),         FILE_PATH_LITERAL(".ttf"),
+        FILE_PATH_LITERAL(".txt"),         FILE_PATH_LITERAL(".wml"),
+        FILE_PATH_LITERAL(".wpd"),         FILE_PATH_LITERAL(".xls"),
+        FILE_PATH_LITERAL(".xlsx"),        FILE_PATH_LITERAL(".xml"),
+        FILE_PATH_LITERAL(".xps"),         FILE_PATH_LITERAL(".zip")};
 
 }  // namespace
 

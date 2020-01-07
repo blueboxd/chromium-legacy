@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.CARD_ALPHA;
+
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
@@ -159,8 +161,8 @@ class TabGridViewBinder {
                 int tabId = model.get(TabProperties.TAB_ID);
                 listener.run(tabId);
             });
-        } else if (TabProperties.ALPHA == propertyKey) {
-            view.setAlpha(model.get(TabProperties.ALPHA));
+        } else if (CARD_ALPHA == propertyKey) {
+            view.setAlpha(model.get(CARD_ALPHA));
         } else if (TabProperties.TITLE == propertyKey) {
             String title = model.get(TabProperties.TITLE);
             view.fastFindViewById(R.id.action_button)

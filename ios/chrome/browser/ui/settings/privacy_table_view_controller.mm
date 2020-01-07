@@ -245,18 +245,14 @@ GURL kGoogleServicesSettingsURL("settings://open_google_services");
       controller = [[HandoffTableViewController alloc]
           initWithBrowserState:_browserState];
       break;
-    case ItemTypeClearBrowsingDataClear:
-      if (IsNewClearBrowsingDataUIEnabled()) {
-        ClearBrowsingDataTableViewController* clearBrowsingDataViewController =
-            [[ClearBrowsingDataTableViewController alloc]
-                initWithBrowserState:_browserState];
-        clearBrowsingDataViewController.localDispatcher = self;
-        controller = clearBrowsingDataViewController;
-      } else {
-        controller = [[ClearBrowsingDataCollectionViewController alloc]
-            initWithBrowserState:_browserState];
-      }
+    case ItemTypeClearBrowsingDataClear: {
+      ClearBrowsingDataTableViewController* clearBrowsingDataViewController =
+          [[ClearBrowsingDataTableViewController alloc]
+              initWithBrowserState:_browserState];
+      clearBrowsingDataViewController.localDispatcher = self;
+      controller = clearBrowsingDataViewController;
       break;
+    }
     case ItemTypeWebServicesPaymentSwitch:
     default:
       break;

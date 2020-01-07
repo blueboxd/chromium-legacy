@@ -16,6 +16,7 @@
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_change_dispatcher.h"
 #include "net/cookies/cookie_store.h"
+#include "net/cookies/site_for_cookies.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -48,7 +49,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
                           net::CookieStore* cookie_store,
                           const CookieSettings* cookie_settings,
                           const url::Origin& origin,
-                          const GURL& site_for_cookies,
+                          const net::SiteForCookies& site_for_cookies,
                           const url::Origin& top_frame_origin,
                           mojom::NetworkContextClient* network_context_client,
                           bool is_service_worker,
@@ -57,7 +58,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
 
   ~RestrictedCookieManager() override;
 
-  void OverrideSiteForCookiesForTesting(const GURL& new_site_for_cookies) {
+  void OverrideSiteForCookiesForTesting(
+      const net::SiteForCookies& new_site_for_cookies) {
     site_for_cookies_ = new_site_for_cookies;
   }
   void OverrideOriginForTesting(const url::Origin& new_origin) {
@@ -71,36 +73,36 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
   const CookieSettings* cookie_settings() const { return cookie_settings_; }
 
   void GetAllForUrl(const GURL& url,
-                    const GURL& site_for_cookies,
+                    const net::SiteForCookies& site_for_cookies,
                     const url::Origin& top_frame_origin,
                     mojom::CookieManagerGetOptionsPtr options,
                     GetAllForUrlCallback callback) override;
 
   void SetCanonicalCookie(const net::CanonicalCookie& cookie,
                           const GURL& url,
-                          const GURL& site_for_cookies,
+                          const net::SiteForCookies& site_for_cookies,
                           const url::Origin& top_frame_origin,
                           SetCanonicalCookieCallback callback) override;
 
   void AddChangeListener(
       const GURL& url,
-      const GURL& site_for_cookies,
+      const net::SiteForCookies& site_for_cookies,
       const url::Origin& top_frame_origin,
       mojo::PendingRemote<mojom::CookieChangeListener> listener,
       AddChangeListenerCallback callback) override;
 
   void SetCookieFromString(const GURL& url,
-                           const GURL& site_for_cookies,
+                           const net::SiteForCookies& site_for_cookies,
                            const url::Origin& top_frame_origin,
                            const std::string& cookie,
                            SetCookieFromStringCallback callback) override;
 
   void GetCookiesString(const GURL& url,
-                        const GURL& site_for_cookies,
+                        const net::SiteForCookies& site_for_cookies,
                         const url::Origin& top_frame_origin,
                         GetCookiesStringCallback callback) override;
   void CookiesEnabledFor(const GURL& url,
-                         const GURL& site_for_cookies,
+                         const net::SiteForCookies& site_for_cookies,
                          const url::Origin& top_frame_origin,
                          CookiesEnabledForCallback callback) override;
 
@@ -111,7 +113,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
   // Feeds a net::CookieList to a GetAllForUrl() callback.
   void CookieListToGetAllForUrlCallback(
       const GURL& url,
-      const GURL& site_for_cookies,
+      const net::SiteForCookies& site_for_cookies,
       const url::Origin& top_frame_origin,
       const net::CookieOptions& net_options,
       mojom::CookieManagerGetOptionsPtr options,
@@ -123,7 +125,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
   // invokes the user callback.
   void SetCanonicalCookieResult(
       const GURL& url,
-      const GURL& site_for_cookies,
+      const net::SiteForCookies& site_for_cookies,
       const net::CanonicalCookie& cookie,
       const net::CookieOptions& net_options,
       SetCanonicalCookieCallback user_callback,
@@ -140,14 +142,14 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
   // If the access would not be allowed, this helper calls
   // mojo::ReportBadMessage(), which closes the pipe.
   bool ValidateAccessToCookiesAt(const GURL& url,
-                                 const GURL& site_for_cookies,
+                                 const net::SiteForCookies& site_for_cookies,
                                  const url::Origin& top_frame_origin);
 
   const mojom::RestrictedCookieManagerRole role_;
   net::CookieStore* const cookie_store_;
   const CookieSettings* const cookie_settings_;
   url::Origin origin_;
-  GURL site_for_cookies_;
+  net::SiteForCookies site_for_cookies_;
   url::Origin top_frame_origin_;
   mojom::NetworkContextClient* const network_context_client_;
   const bool is_service_worker_;

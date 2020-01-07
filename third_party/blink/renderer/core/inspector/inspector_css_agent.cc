@@ -2078,7 +2078,9 @@ InspectorCSSAgent::BuildObjectForAttributesStyle(Element* element) {
     return nullptr;
 
   InspectorStyle* inspector_style = MakeGarbageCollected<InspectorStyle>(
-      mutable_attribute_style->EnsureCSSStyleDeclaration(), nullptr, nullptr);
+      mutable_attribute_style->EnsureCSSStyleDeclaration(
+          &element->GetDocument()),
+      nullptr, nullptr);
   return inspector_style->BuildObjectForStyle();
 }
 

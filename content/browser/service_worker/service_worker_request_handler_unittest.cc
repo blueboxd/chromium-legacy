@@ -62,7 +62,8 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
         blink::mojom::RequestContextType::HYPERLINK;
     url::Origin origin = url::Origin::Create(gurl);
     NavigationRequestInfo request_info(
-        CreateCommonNavigationParams(), std::move(begin_params), gurl,
+        CreateCommonNavigationParams(), std::move(begin_params),
+        net::SiteForCookies::FromUrl(gurl),
         net::NetworkIsolationKey(origin, origin), true /* is_main_frame */,
         false /* parent_is_main_frame */, true /* are_ancestors_secure */,
         -1 /* frame_tree_node_id */, false /* is_for_guests_only */,

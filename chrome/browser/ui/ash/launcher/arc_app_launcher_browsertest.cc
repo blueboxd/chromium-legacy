@@ -12,6 +12,7 @@
 #include "ash/shelf/shelf_app_button.h"
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shell.h"
+#include "ash/system/status_area_widget_test_helper.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -337,6 +338,8 @@ IN_PROC_BROWSER_TEST_F(ArcAppDeferredLauncherBrowserTest,
   // during the bounds animation. So wait for the bounds animation to finish
   // then get the final bounds of the shelf button.
   test_api.RunMessageLoopUntilAnimationsDone();
+  ash::StatusAreaWidgetTestHelper::WaitForAnimationEnd(
+      ash::Shelf::ForWindow(root_window)->GetStatusAreaWidget());
 
   const int item_index =
       controller->shelf_model()->ItemIndexByID(ash::ShelfID(app_id));

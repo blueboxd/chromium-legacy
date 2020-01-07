@@ -20,6 +20,7 @@ enum class EmeInitDataType;
 
 namespace blink {
 
+class ExceptionState;
 class HTMLMediaElement;
 class MediaKeys;
 class ScriptPromise;
@@ -38,7 +39,8 @@ class MODULES_EXPORT HTMLMediaElementEncryptedMedia final
   static MediaKeys* mediaKeys(HTMLMediaElement&);
   static ScriptPromise setMediaKeys(ScriptState*,
                                     HTMLMediaElement&,
-                                    MediaKeys*);
+                                    MediaKeys*,
+                                    ExceptionState&);
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(encrypted, kEncrypted)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(waitingforkey, kWaitingforkey)
 

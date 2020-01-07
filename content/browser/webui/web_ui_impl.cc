@@ -146,7 +146,7 @@ void WebUIImpl::RenderFrameReused(RenderFrameHost* render_frame_host) {
   }
 }
 
-void WebUIImpl::RenderFrameHostSwappingOut() {
+void WebUIImpl::RenderFrameHostUnloading() {
   DisallowJavascriptOnAllHandlers();
 }
 

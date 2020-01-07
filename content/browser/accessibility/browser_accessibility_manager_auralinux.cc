@@ -5,6 +5,8 @@
 #include "content/browser/accessibility/browser_accessibility_manager_auralinux.h"
 
 #include <atk/atk.h>
+
+#include <set>
 #include <vector>
 
 #include "content/browser/accessibility/browser_accessibility_auralinux.h"
@@ -248,15 +250,11 @@ void BrowserAccessibilityManagerAuraLinux::OnAtomicUpdateFinished(
   BrowserAccessibilityManager::OnAtomicUpdateFinished(tree, root_changed,
                                                       changes);
 
-  // This is the second step in what will be a three step process mirroring that
-  // used in BrowserAccessibilityManagerWin.
-  for (const auto& change : changes) {
-    const ui::AXNode* changed_node = change.node;
-    DCHECK(changed_node);
-    BrowserAccessibility* obj = GetFromAXNode(changed_node);
-    if (obj && obj->IsNative())
-      ToBrowserAccessibilityAuraLinux(obj)->GetNode()->UpdateHypertext();
-  }
+  std::set<ui::AXPlatformNode*> objs_to_update;
+  CollectChangedNodesAndParentsForAtomicUpdate(tree, changes, &objs_to_update);
+
+  for (auto* node : objs_to_update)
+    static_cast<ui::AXPlatformNodeAuraLinux*>(node)->UpdateHypertext();
 }
 
 void BrowserAccessibilityManagerAuraLinux::OnFindInPageResult(int request_id,

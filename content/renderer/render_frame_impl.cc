@@ -1421,8 +1421,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   render_view->render_widget_ = RenderWidget::CreateForFrame(
       params->main_frame_widget_routing_id, compositor_deps,
       params->visual_properties.display_mode,
-      /*is_undead=*/params->main_frame_routing_id == MSG_ROUTING_NONE,
-      params->never_visible);
+      /*is_undead=*/false, params->never_visible);
 
   RenderWidget* render_widget = render_view->GetWidget();
   render_widget->set_delegate(render_view);
@@ -1583,17 +1582,48 @@ void RenderFrameImpl::CreateFrame(
     // This is equivalent to creating a new RenderWidget if it wasn't undead.
     RenderWidget* render_widget =
         render_view->ReviveUndeadMainFrameRenderWidget();
-    DCHECK(!render_widget->GetWebWidget());
+    if (render_widget) {
+      DCHECK(!render_widget->GetWebWidget());
 
-    // Non-owning pointer that is self-referencing and destroyed by calling
-    // Close(). The RenderViewImpl has a RenderWidget already, but not a
-    // WebFrameWidget, which is now attached here.
-    auto* web_frame_widget = blink::WebFrameWidget::CreateForMainFrame(
-        render_view->GetWidget(), web_frame);
-    // This is equivalent to calling InitForMainFrame() on a new RenderWidget
-    // if it wasn't undead.
-    render_widget->InitForRevivedMainFrame(
-        web_frame_widget, widget_params->visual_properties.screen_info);
+      // Non-owning pointer that is self-referencing and destroyed by calling
+      // Close(). The RenderViewImpl has a RenderWidget already, but not a
+      // WebFrameWidget, which is now attached here.
+      auto* web_frame_widget = blink::WebFrameWidget::CreateForMainFrame(
+          render_view->GetWidget(), web_frame);
+      // This is equivalent to calling InitForMainFrame() on a new RenderWidget
+      // if it wasn't undead.
+      render_widget->InitForRevivedMainFrame(
+          web_frame_widget, widget_params->visual_properties.screen_info);
+    } else {
+      // If RenderView was initialized with a remote main frame then it won't
+      // have an undead widget. We only have an undead widget after the first
+      // time a local main frame was created.
+      //
+      // This block of code mimics RenderFrameImpl::CreateMainFrame().
+      //
+      // Note that |never_visible| is not provided by the browser in this path
+      // which means that a |never_visible| local main frame navigation to the
+      // origin of an OOP child frame could result in losing the |never_visible|
+      // state. We need |never_visible| to be a property of the RenderView so
+      // that future frames can see it.
+      render_view->render_widget_ = RenderWidget::CreateForFrame(
+          widget_params->routing_id, compositor_deps,
+          widget_params->visual_properties.display_mode,
+          /*is_undead=*/false, /*never_visible=*/false);
+
+      render_widget = render_view->GetWidget();
+      render_widget->set_delegate(render_view);
+
+      // Non-owning pointer that is self-referencing and destroyed by calling
+      // Close(). The RenderViewImpl has a RenderWidget already, but not a
+      // WebFrameWidget, which is now attached here.
+      auto* web_frame_widget =
+          blink::WebFrameWidget::CreateForMainFrame(render_widget, web_frame);
+
+      render_widget->InitForMainFrame(
+          RenderWidget::ShowCallback(), web_frame_widget,
+          &widget_params->visual_properties.screen_info);
+    }
 
     // Note that we do *not* call WebViewImpl's DidAttachLocalMainFrame() here
     // yet because this frame is provisional and not attached to the Page yet.
@@ -1620,6 +1650,7 @@ void RenderFrameImpl::CreateFrame(
     // space/context.
     std::unique_ptr<RenderWidget> render_widget = RenderWidget::CreateForFrame(
         widget_params->routing_id, compositor_deps,
+        // TODO(danakj): Use widget_params->visual_properties.screen_info here?
         blink::mojom::DisplayMode::kUndefined,
         /*is_undead=*/false, /*never_visible=*/false);
 
@@ -2185,7 +2216,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderFrameImpl, msg)
     IPC_MESSAGE_HANDLER(FrameMsg_BeforeUnload, OnBeforeUnload)
-    IPC_MESSAGE_HANDLER(UnfreezableFrameMsg_SwapOut, OnSwapOut)
+    IPC_MESSAGE_HANDLER(UnfreezableFrameMsg_Unload, OnUnload)
     IPC_MESSAGE_HANDLER(FrameMsg_SwapIn, OnSwapIn)
     IPC_MESSAGE_HANDLER(FrameMsg_Stop, OnStop)
     IPC_MESSAGE_HANDLER(FrameMsg_ContextMenuClosed, OnContextMenuClosed)
@@ -2314,16 +2345,16 @@ void RenderFrameImpl::OnBeforeUnload(bool is_reload) {
       routing_id, proceed, before_unload_start_time, before_unload_end_time));
 }
 
-// Swap this RenderFrame out so the frame can navigate to a document rendered by
+// Unload this RenderFrame so the frame can navigate to a document rendered by
 // a different process. We also allow this process to exit if there are no other
 // active RenderFrames in it.
 // This executes the unload handlers on this frame and its local descendants.
-void RenderFrameImpl::OnSwapOut(
+void RenderFrameImpl::OnUnload(
     int proxy_routing_id,
     bool is_loading,
     const FrameReplicationState& replicated_frame_state) {
-  TRACE_EVENT1("navigation,rail", "RenderFrameImpl::OnSwapOut",
-               "id", routing_id_);
+  TRACE_EVENT1("navigation,rail", "RenderFrameImpl::OnUnload", "id",
+               routing_id_);
   DCHECK(!base::RunLoop::IsNestedOnCurrentThread());
 
   // Send an UpdateState message before we get deleted.
@@ -2340,8 +2371,9 @@ void RenderFrameImpl::OnSwapOut(
   int routing_id = GetRoutingID();
 
   // Before |this| is destroyed, grab the TaskRunner to be used for sending the
-  // SwapOut ACK.  This will be used to schedule SwapOut ACK to be sent after
-  // any postMessage IPCs scheduled from the unload event above.
+  // FrameHostMsg_Unload_ACK.  This will be used to schedule
+  // FrameHostMsg_Unload_ACK to be sent after any postMessage IPCs scheduled
+  // from the unload event above.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       GetTaskRunner(blink::TaskType::kPostedMessage);
 
@@ -2385,16 +2417,16 @@ void RenderFrameImpl::OnSwapOut(
   // process that is now rendering the frame.
   proxy->SetReplicatedState(replicated_frame_state);
 
-  // Notify the browser that this frame was swapped. Use the RenderThread
+  // Notify the browser that this frame was unloaded. Use the RenderThread
   // directly because |this| is deleted.  Post a task to send the ACK, so that
   // any postMessage IPCs scheduled from the unload handler are sent before
   // the ACK (see https://crbug.com/857274).
-  auto send_swapout_ack = base::BindOnce(
+  auto send_unload_ack = base::BindOnce(
       [](int routing_id, bool is_main_frame) {
-        RenderThread::Get()->Send(new FrameHostMsg_SwapOut_ACK(routing_id));
+        RenderThread::Get()->Send(new FrameHostMsg_Unload_ACK(routing_id));
       },
       routing_id, is_main_frame);
-  task_runner->PostTask(FROM_HERE, std::move(send_swapout_ack));
+  task_runner->PostTask(FROM_HERE, std::move(send_unload_ack));
 }
 
 void RenderFrameImpl::OnSwapIn() {
@@ -6540,7 +6572,7 @@ void RenderFrameImpl::BeginNavigationInternal(
   // Set SiteForCookies.
   WebDocument frame_document = frame_->GetDocument();
   if (info->frame_type == network::mojom::RequestContextFrameType::kTopLevel)
-    request.SetSiteForCookies(request.Url());
+    request.SetSiteForCookies(net::SiteForCookies::FromUrl(request.Url()));
   else
     request.SetSiteForCookies(frame_document.SiteForCookies());
 

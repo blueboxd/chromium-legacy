@@ -40,8 +40,7 @@ PepperBrokerInfoBarDelegate::PepperBrokerInfoBarDelegate(
     HostContentSettingsMap* content_settings,
     TabSpecificContentSettings* tab_content_settings,
     base::OnceCallback<void(bool)> callback)
-    : ConfirmInfoBarDelegate(),
-      url_(url),
+    : url_(url),
       plugin_name_(plugin_name),
       content_settings_(content_settings),
       tab_content_settings_(tab_content_settings),
@@ -59,6 +58,14 @@ PepperBrokerInfoBarDelegate::GetIdentifier() const {
 
 const gfx::VectorIcon& PepperBrokerInfoBarDelegate::GetVectorIcon() const {
   return kExtensionIcon;
+}
+
+base::string16 PepperBrokerInfoBarDelegate::GetLinkText() const {
+  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
+}
+
+GURL PepperBrokerInfoBarDelegate::GetLinkURL() const {
+  return GURL("https://support.google.com/chrome/?p=ib_pepper_broker");
 }
 
 base::string16 PepperBrokerInfoBarDelegate::GetMessageText() const {
@@ -81,14 +88,6 @@ bool PepperBrokerInfoBarDelegate::Accept() {
 bool PepperBrokerInfoBarDelegate::Cancel() {
   DispatchCallback(false);
   return true;
-}
-
-base::string16 PepperBrokerInfoBarDelegate::GetLinkText() const {
-  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
-}
-
-GURL PepperBrokerInfoBarDelegate::GetLinkURL() const {
-  return GURL("https://support.google.com/chrome/?p=ib_pepper_broker");
 }
 
 void PepperBrokerInfoBarDelegate::DispatchCallback(bool result) {

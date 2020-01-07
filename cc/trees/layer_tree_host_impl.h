@@ -266,7 +266,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   InputHandler::ScrollStatus RootScrollBegin(
       ScrollState* scroll_state,
       InputHandler::ScrollInputType type) override;
-  ScrollStatus ScrollAnimatedBegin(ScrollState* scroll_state) override;
   void ScrollAnimated(const gfx::Point& viewport_point,
                       const gfx::Vector2dF& scroll_delta,
                       base::TimeDelta delayed_by = base::TimeDelta()) override;
@@ -740,8 +739,13 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
                : task_runner_provider_->MainThreadTaskRunner();
   }
 
-  InputHandler::ScrollStatus TryScroll(const gfx::PointF& screen_space_point,
-                                       const ScrollTree& scroll_tree,
+  // Determines whether the given scroll node can scroll on the compositor
+  // thread or if there are any reasons it must be scrolled on the main thread
+  // or not at all. Note: in general, this is not sufficient to determine if a
+  // scroll can occur on the compositor thread. If hit testing to a scroll
+  // node, the caller must also check whether the hit point intersects a
+  // non-fast-scrolling-region of any ancestor scrolling layers.
+  InputHandler::ScrollStatus TryScroll(const ScrollTree& scroll_tree,
                                        ScrollNode* scroll_node) const;
 
   // Return all ScrollNode indices that have an associated layer with a non-fast
@@ -771,8 +775,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   void ClearCaches();
 
-  bool CanConsumeDelta(const ScrollNode& scroll_node,
-                       const ScrollState& scroll_state);
+  bool CanConsumeDelta(const ScrollState& scroll_state,
+                       const ScrollNode& scroll_node);
 
   void UpdateImageDecodingHints(
       base::flat_map<PaintImage::Id, PaintImage::DecodingMode>
@@ -895,17 +899,30 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   Viewport& viewport() const { return *viewport_.get(); }
 
-  InputHandler::ScrollStatus ScrollBeginImpl(
-      ScrollState* scroll_state,
-      ScrollNode* scrolling_node,
-      InputHandler::ScrollInputType type);
   bool IsTouchDraggingScrollbar(
       LayerImpl* first_scrolling_layer_or_drawn_scrollbar,
       InputHandler::ScrollInputType type);
   bool IsInitialScrollHitTestReliable(
       LayerImpl* layer,
       LayerImpl* first_scrolling_layer_or_drawn_scrollbar);
-  void LatchToScroller(ScrollState* scroll_state, ScrollNode* starting_node);
+
+  // Given a starting node (determined by hit-test), walks up the scroll tree
+  // looking for the first node that can consume scroll from the given
+  // scroll_state and returns the first such node. If none is found, or if
+  // starting_node is nullptr, returns nullptr;
+  ScrollNode* FindNodeToLatch(ScrollState* scroll_state,
+                              ScrollNode* starting_node,
+                              InputHandler::ScrollInputType type);
+
+  // Called during ScrollBegin once a scroller was successfully latched to
+  // (i.e.  it can and will consume scroll delta on the compositor thread). The
+  // latched scroller is now available in CurrentlyScrollingNode().
+  // TODO(bokan): There's some debate about the name of this method. We should
+  // get consensus on terminology to use and apply it consistently.
+  // https://crrev.com/c/1981336/9/cc/trees/layer_tree_host_impl.cc#4520
+  void DidLatchToScroller(const ScrollState& scroll_state,
+                          InputHandler::ScrollInputType type);
+
   void ScrollLatchedScroller(ScrollState* scroll_state);
 
   bool AnimatePageScale(base::TimeTicks monotonic_time);
@@ -972,8 +989,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // thread side to keep track of the frequency of scrolling with different
   // sources per page load. TODO(crbug.com/691886): Use GRC API to plumb the
   // scroll source info for Use Counters.
-  void UpdateScrollSourceInfo(InputHandler::ScrollInputType type,
-                              ScrollState* scroll_state);
+  void UpdateScrollSourceInfo(const ScrollState& scroll_state,
+                              InputHandler::ScrollInputType type);
 
   bool IsScrolledBy(LayerImpl* child, ScrollNode* ancestor);
   void ShowScrollbarsForImplScroll(ElementId element_id);
@@ -1063,8 +1080,14 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   InputHandlerClient* input_handler_client_ = nullptr;
   bool wheel_scrolling_ = false;
-  bool middle_click_autoscrolling_ = false;
+
+  // This is used to tell the scheduler there are active scroll handlers on the
+  // page so we should prioritize latency during a scroll to try to keep
+  // scroll-linked effects up to data.
+  // TODO(bokan): This is quite old and scheduling has become much more
+  // sophisticated since so it's not clear how much value it's still providing.
   bool scroll_affects_scroll_handler_ = false;
+
   ElementId scroll_element_id_mouse_currently_over_;
   ElementId scroll_element_id_mouse_currently_captured_;
 

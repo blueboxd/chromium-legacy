@@ -50,23 +50,6 @@ void SpellCheckHostImpl::RequestTextCheck(const base::string16& text,
   session_bridge_.RequestTextCheck(text, std::move(callback));
 }
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-void SpellCheckHostImpl::RequestPartialTextCheck(
-    const base::string16& text,
-    int route_id,
-    const std::vector<SpellCheckResult>& partial_results,
-    bool fill_suggestions,
-    RequestPartialTextCheckCallback callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  if (text.empty())
-    mojo::ReportBadMessage("Requested partial text check with empty text");
-
-  // This API requires Chrome-only features.
-  std::move(callback).Run(std::vector<SpellCheckResult>());
-}
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-
 void SpellCheckHostImpl::CheckSpelling(const base::string16& word,
                                        int route_id,
                                        CheckSpellingCallback callback) {

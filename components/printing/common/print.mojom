@@ -6,6 +6,17 @@ module printing.mojom;
 
 import "mojo/public/mojom/base/shared_memory.mojom";
 import "mojo/public/mojom/base/values.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
+
+// Parameters required to print the content of an out-of-process subframe.
+struct PrintFrameContentParams {
+  // Physical printable area of the page in pixels according to dpi.
+  gfx.mojom.Rect printable_area;
+
+  // Cookie that is unique for each print request. It is used to associate the
+  // printed frame with its original print request.
+  int32 document_cookie;
+};
 
 // Interface implemented by a class that desires to render print documents for
 // Chrome print preview.
@@ -37,9 +48,18 @@ interface PrintRenderFrame {
   InitiatePrintPreview(pending_associated_remote<PrintRenderer>? print_renderer,
                        bool has_selection);
 
+  // Tells the RenderFrame to switch the CSS to print media type and render
+  // every requested page for print preview using the given |settings|. This
+  // gets called multiple times as the user updates settings.
+  [EnableIf=enable_print_preview]
+  PrintPreview(mojo_base.mojom.DictionaryValue settings);
+
   // Tells the RenderFrame that the print preview dialog was closed.
   [EnableIf=enable_print_preview]
   OnPrintPreviewDialogClosed();
+
+  // Prints the content of an out-of-process subframe.
+  PrintFrameContent(PrintFrameContentParams params);
 
   // Tells the RenderFrame whether printing is enabled or not.
   SetPrintingEnabled(bool enabled);

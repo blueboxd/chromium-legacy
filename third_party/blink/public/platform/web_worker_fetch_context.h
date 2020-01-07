@@ -24,6 +24,10 @@ namespace base {
 class WaitableEvent;
 }  // namespace base
 
+namespace net {
+class SiteForCookies;
+}  // namespace net
+
 namespace blink {
 
 class WebURLRequest;
@@ -99,11 +103,11 @@ class WebWorkerFetchContext : public base::RefCounted<WebWorkerFetchContext> {
   virtual void SetIsOnSubframe(bool) {}
   virtual bool IsOnSubframe() const { return false; }
 
-  // The URL that should be consulted for the third-party cookie blocking
-  // policy, as defined in Section 2.1.1 and 2.1.2 of
+  // Will be consulted for the third-party cookie blocking policy, as defined in
+  // Section 2.1.1 and 2.1.2 of
   // https://tools.ietf.org/html/draft-ietf-httpbis-cookie-same-site.
   // See content::URLRequest::site_for_cookies() for details.
-  virtual WebURL SiteForCookies() const = 0;
+  virtual net::SiteForCookies SiteForCookies() const = 0;
 
   // The top-frame-origin for the worker. For a dedicated worker this is the
   // top-frame origin of the page that created the worker. For a shared worker

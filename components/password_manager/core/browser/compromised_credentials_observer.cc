@@ -8,7 +8,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "components/password_manager/core/common/password_manager_features.h"
-#include "components/safe_browsing/features.h"
+#include "components/safe_browsing/core/features.h"
 
 namespace password_manager {
 

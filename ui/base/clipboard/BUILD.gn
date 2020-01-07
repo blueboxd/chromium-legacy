@@ -107,7 +107,6 @@ jumbo_component("clipboard") {
     "//mojo/public/cpp/base",
     "//net",
     "//skia",
-    "//ui/events/platform",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
@@ -135,6 +134,7 @@ jumbo_component("clipboard") {
         deps += [
           "//ui/base",
           "//ui/base/x",
+          "//ui/events/platform",
           "//ui/events/x",
           "//ui/gfx/x",
         ]

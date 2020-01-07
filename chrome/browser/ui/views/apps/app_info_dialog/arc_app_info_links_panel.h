@@ -13,7 +13,6 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_panel.h"
-#include "ui/views/controls/link_listener.h"
 
 class Profile;
 
@@ -27,16 +26,12 @@ class Link;
 
 // Shows a link to get to managing supported links activity on ARC side.
 class ArcAppInfoLinksPanel : public AppInfoPanel,
-                             public views::LinkListener,
                              public ArcAppListPrefs::Observer {
  public:
   ArcAppInfoLinksPanel(Profile* profile, const extensions::Extension* app);
   ~ArcAppInfoLinksPanel() override;
 
  private:
-  // views::LinkListener:
-  void LinkClicked(views::Link* source, int event_flags) override;
-
   // ArcAppListPrefs::Observer:
   void OnAppRegistered(const std::string& app_id,
                        const ArcAppListPrefs::AppInfo& app_info) override;
@@ -45,6 +40,7 @@ class ArcAppInfoLinksPanel : public AppInfoPanel,
   void OnAppRemoved(const std::string& app_id) override;
 
   void UpdateLink(bool enabled);
+  void LinkClicked();
 
   ScopedObserver<ArcAppListPrefs, ArcAppListPrefs::Observer> app_list_observer_{
       this};

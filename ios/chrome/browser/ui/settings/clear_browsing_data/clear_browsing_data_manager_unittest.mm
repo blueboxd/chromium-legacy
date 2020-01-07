@@ -117,15 +117,8 @@ TEST_F(ClearBrowsingDataManagerTest, TestModel) {
   [manager_ loadModel:model_];
 
   EXPECT_EQ(3, [model_ numberOfSections]);
-  if (IsNewClearBrowsingDataUIEnabled()) {
-    // Time Range selector.
-    EXPECT_EQ(1, [model_ numberOfItemsInSection:0]);
-    EXPECT_EQ(5, [model_ numberOfItemsInSection:1]);
-  } else {
-    EXPECT_EQ(5, [model_ numberOfItemsInSection:0]);
-    // CBD button.
-    EXPECT_EQ(1, [model_ numberOfItemsInSection:1]);
-  }
+  EXPECT_EQ(1, [model_ numberOfItemsInSection:0]);
+  EXPECT_EQ(5, [model_ numberOfItemsInSection:1]);
   EXPECT_EQ(1, [model_ numberOfItemsInSection:2]);
 }
 
@@ -142,15 +135,8 @@ TEST_F(ClearBrowsingDataManagerTest, TestModelSignedInSyncOff) {
   [manager_ loadModel:model_];
 
   EXPECT_EQ(4, [model_ numberOfSections]);
-  if (IsNewClearBrowsingDataUIEnabled()) {
-    // Time Range selector.
-    EXPECT_EQ(1, [model_ numberOfItemsInSection:0]);
-    EXPECT_EQ(5, [model_ numberOfItemsInSection:1]);
-  } else {
-    EXPECT_EQ(5, [model_ numberOfItemsInSection:0]);
-    // CBD button.
-    EXPECT_EQ(1, [model_ numberOfItemsInSection:1]);
-  }
+  EXPECT_EQ(1, [model_ numberOfItemsInSection:0]);
+  EXPECT_EQ(5, [model_ numberOfItemsInSection:1]);
   EXPECT_EQ(1, [model_ numberOfItemsInSection:2]);
   EXPECT_EQ(1, [model_ numberOfItemsInSection:3]);
 }
@@ -189,11 +175,6 @@ TEST_F(ClearBrowsingDataManagerTest,
        TestCacheCounterFormattingForLessThanAllTime) {
   ASSERT_EQ("en", GetApplicationContext()->GetApplicationLocale());
 
-  // If the new UI is not enabled then the pref value for the time period
-  // is ignored and the time period defaults to ALL_TIME.
-  if (!IsNewClearBrowsingDataUIEnabled()) {
-    return;
-  }
   PrefService* prefs = browser_state_->GetPrefs();
   prefs->SetInteger(browsing_data::prefs::kDeleteTimePeriod,
                     static_cast<int>(browsing_data::TimePeriod::LAST_HOUR));
@@ -223,10 +204,6 @@ TEST_F(ClearBrowsingDataManagerTest,
 }
 
 TEST_F(ClearBrowsingDataManagerTest, TestOnPreferenceChanged) {
-  // Only works with new UI
-  if (!IsNewClearBrowsingDataUIEnabled()) {
-    return;
-  }
   [manager_ loadModel:model_];
   NSArray* timeRangeItems =
       [model_ itemsInSectionWithIdentifier:SectionIdentifierTimeRange];

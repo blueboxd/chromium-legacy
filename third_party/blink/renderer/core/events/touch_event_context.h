@@ -36,8 +36,6 @@ class TouchList;
 
 class TouchEventContext : public GarbageCollected<TouchEventContext> {
  public:
-  static TouchEventContext* Create();
-
   TouchEventContext();
 
   void HandleLocalEvents(Event&) const;

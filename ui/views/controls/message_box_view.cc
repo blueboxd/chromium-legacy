@@ -19,7 +19,6 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/link.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
@@ -118,15 +117,15 @@ void MessageBoxView::SetCheckBoxSelected(bool selected) {
 }
 
 void MessageBoxView::SetLink(const base::string16& text,
-                             LinkListener* listener) {
+                             Link::ClickedCallback callback) {
   DCHECK(!text.empty());
-  DCHECK(listener);
+  DCHECK(!callback.is_null());
   DCHECK(!link_);
   // See the comment in SetCheckBoxLabel();
   SetLayoutManager(nullptr);
   link_ = AddChildView(std::make_unique<Link>(text));
   link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  link_->set_listener(listener);
+  link_->set_callback(std::move(callback));
   ResetLayoutManager();
 }
 

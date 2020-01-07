@@ -112,6 +112,9 @@ ASH_EXPORT bool IsArcWindow(const aura::Window* window);
 // Returns true if |window| is an ARC PIP window.
 ASH_EXPORT bool IsArcPipWindow(const aura::Window* window);
 
+// Expands the Android PIP window.
+ASH_EXPORT void ExpandArcPipWindow();
+
 }  // namespace window_util
 }  // namespace ash
 

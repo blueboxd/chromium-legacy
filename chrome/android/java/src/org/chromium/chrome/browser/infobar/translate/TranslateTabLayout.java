@@ -18,7 +18,7 @@ import android.view.MotionEvent;
 import androidx.annotation.NonNull;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
+import org.chromium.components.browser_ui.widget.animation.Interpolators;
 
 /**
  * TabLayout shown in the TranslateCompactInfoBar.

@@ -22,6 +22,7 @@ const State = {
   PROMPT: 'prompt',
   BACKUP: 'backup',
   BACKUP_SUCCEEDED: 'backupSucceeded',
+  PRECHECKS_FAILED: 'prechecksFailed',
   UPGRADING: 'upgrading',
   ERROR: 'error',
   CANCELING: 'canceling',
@@ -86,13 +87,30 @@ Polymer({
         this.state_ = State.BACKUP_SUCCEEDED;
         // We do a short (2 second) interstitial display of the backup success
         // message before continuing the upgrade.
-        setTimeout(() => {
+        var timeout = new Promise((resolve, reject) => {
+          setTimeout(resolve, 2000);
+        });
+        // We also want to wait for the prechecks to finish.
+        var callback = new Promise((resolve, reject) => {
+          this.startPrechecks_(resolve, reject);
+        });
+        Promise.all([timeout, callback]).then(() => {
           this.startUpgrade_();
-        }, 2000);
+        });
       }),
       callbackRouter.onBackupFailed.addListener(() => {
         assert(this.state_ === State.BACKUP);
         this.state_ = State.ERROR;
+      }),
+      callbackRouter.precheckStatus.addListener((status) => {
+        this.precheckStatus_ = status;
+        if (status ===
+            chromeos.crostiniUpgrader.mojom.UpgradePrecheckStatus.OK) {
+          this.precheckSuccessCallback_();
+        } else {
+          this.state_ = State.PRECHECKS_FAILED;
+          this.precheckFailureCallback_();
+        }
       }),
       callbackRouter.onUpgradeProgress.addListener((progressMessages) => {
         assert(this.state_ === State.UPGRADING);
@@ -134,11 +152,17 @@ Polymer({
         BrowserProxy.getInstance().handler.launch();
         this.closeDialog_();
         break;
+      case State.PRECHECKS_FAILED:
+        this.startPrechecks_(() => {
+          this.startUpgrade_();
+        }, () => {});
       case State.PROMPT:
         if (this.backupCheckboxChecked_) {
           this.startBackup_();
         } else {
-          this.startUpgrade_();
+          this.startPrechecks_(() => {
+            this.startUpgrade_();
+          }, () => {});
         }
         break;
     }
@@ -154,6 +178,7 @@ Polymer({
         this.state_ = State.CANCELING;
         BrowserProxy.getInstance().handler.cancel();
         break;
+      case State.PRECHECKS_FAILED:
       case State.ERROR:
       case State.SUCCEEDED:
         this.closeDialog_();
@@ -172,6 +197,13 @@ Polymer({
   startBackup_: function() {
     this.state_ = State.BACKUP;
     BrowserProxy.getInstance().handler.backup();
+  },
+
+  /** @private */
+  startPrechecks_: function(success, failure) {
+    this.precheckSuccessCallback_ = success;
+    this.precheckFailureCallback_ = failure;
+    BrowserProxy.getInstance().handler.startPrechecks();
   },
 
   /** @private */
@@ -203,6 +235,7 @@ Polymer({
   canDoAction_: function(state) {
     switch (state) {
       case State.PROMPT:
+      case State.PRECHECKS_FAILED:
       case State.SUCCEEDED:
         return true;
     }
@@ -240,6 +273,9 @@ Polymer({
       case State.BACKUP_SUCCEEDED:
         titleId = 'backupSucceededTitle';
         break;
+      case State.PRECHECKS_FAILED:
+        titleId = 'prechecksFailedTitle';
+        break;
       case State.UPGRADING:
         titleId = 'upgradingTitle';
         break;
@@ -267,6 +303,8 @@ Polymer({
     switch (state) {
       case State.PROMPT:
         return loadTimeData.getString('upgrade');
+      case State.PRECHECKS_FAILED:
+        return loadTimeData.getString('retry');
       case State.ERROR:
         return loadTimeData.getString('cancel');
       case State.SUCCEEDED:
@@ -306,6 +344,22 @@ Polymer({
       case State.BACKUP_SUCCEEDED:
         messageId = 'backupSucceededMessage';
         break;
+      case State.PRECHECKS_FAILED:
+        switch (this.precheckStatus_) {
+          case chromeos.crostiniUpgrader.mojom.UpgradePrecheckStatus
+              .NETWORK_FAILURE:
+            messageId = 'precheckNoNetwork';
+            break;
+          case chromeos.crostiniUpgrader.mojom.UpgradePrecheckStatus.LOW_POWER:
+            messageId = 'precheckNoPower';
+            break;
+          case chromeos.crostiniUpgrader.mojom.UpgradePrecheckStatus
+              .INSUFFICIENT_SPACE:
+            messageId = 'precheckNoSpace';
+            break;
+          default:
+            assertNotReached();
+        }
       case State.UPGRADING:
         messageId = 'upgradingMessage';
         break;
@@ -334,6 +388,7 @@ Polymer({
   getIllustrationStyle_: function(state) {
     switch (state) {
       case State.BACKUP_SUCCEEDED:
+      case State.PRECHECKS_FAILED:
       case State.ERROR:
         return 'img-square-illustration';
     }
@@ -349,6 +404,7 @@ Polymer({
     switch (state) {
       case State.BACKUP_SUCCEEDED:
         return 'images/success_illustration.png';
+      case State.PRECHECKS_FAILED:
       case State.ERROR:
         return 'images/error_illustration.png';
     }

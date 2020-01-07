@@ -46,7 +46,7 @@ IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), starting_page));
 
   RenderFrameHostImpl* main_frame = current_frame_host();
-  main_frame->SetCrossOriginOriginOpenerPolicyForTesting(
+  main_frame->set_cross_origin_opener_policy(
       network::mojom::CrossOriginOpenerPolicy::kSameOrigin);
 
   ShellAddedObserver shell_observer;
@@ -72,7 +72,7 @@ IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), starting_page));
 
   RenderFrameHostImpl* main_frame = current_frame_host();
-  main_frame->SetCrossOriginOriginOpenerPolicyForTesting(
+  main_frame->set_cross_origin_opener_policy(
       network::mojom::CrossOriginOpenerPolicy::kSameOriginAllowPopups);
 
   ShellAddedObserver shell_observer;
@@ -98,7 +98,7 @@ IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), starting_page));
 
   RenderFrameHostImpl* main_frame = current_frame_host();
-  main_frame->SetCrossOriginOriginOpenerPolicyForTesting(
+  main_frame->set_cross_origin_opener_policy(
       network::mojom::CrossOriginOpenerPolicy::kSameOrigin);
 
   ShellAddedObserver shell_observer;
@@ -125,7 +125,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(NavigateToURL(shell(), starting_page));
 
   RenderFrameHostImpl* main_frame = current_frame_host();
-  main_frame->SetCrossOriginOriginOpenerPolicyForTesting(
+  main_frame->set_cross_origin_opener_policy(
       network::mojom::CrossOriginOpenerPolicy::kSameOrigin);
 
   ShellAddedObserver new_shell_observer;

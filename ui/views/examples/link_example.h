@@ -6,14 +6,12 @@
 #define UI_VIEWS_EXAMPLES_LINK_EXAMPLE_H_
 
 #include "base/macros.h"
-#include "ui/views/controls/link_listener.h"
 #include "ui/views/examples/example_base.h"
 
 namespace views {
 namespace examples {
 
-class VIEWS_EXAMPLES_EXPORT LinkExample : public ExampleBase,
-                                          public LinkListener {
+class VIEWS_EXAMPLES_EXPORT LinkExample : public ExampleBase {
  public:
   LinkExample();
   LinkExample(const LinkExample&) = delete;
@@ -22,10 +20,6 @@ class VIEWS_EXAMPLES_EXPORT LinkExample : public ExampleBase,
 
   // ExampleBase:
   void CreateExampleView(View* container) override;
-
- private:
-  // LinkListener:
-  void LinkClicked(Link* source, int event_flags) override;
 };
 
 }  // namespace examples

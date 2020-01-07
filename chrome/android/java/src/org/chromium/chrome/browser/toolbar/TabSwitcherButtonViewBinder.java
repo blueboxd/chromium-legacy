@@ -34,6 +34,8 @@ public class TabSwitcherButtonViewBinder
                     model.get(TabSwitcherButtonProperties.ON_LONG_CLICK_LISTENER));
         } else if (TabSwitcherButtonProperties.TINT == propertyKey) {
             view.setTint(model.get(TabSwitcherButtonProperties.TINT));
+        } else if (TabSwitcherButtonProperties.IS_ENABLED == propertyKey) {
+            view.setEnabled(model.get(TabSwitcherButtonProperties.IS_ENABLED));
         } else {
             assert false : "Unhandled property detected in TabSwitcherViewBinder!";
         }

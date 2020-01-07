@@ -43,9 +43,7 @@ using ::testing::ValuesIn;
 
 namespace blink {
 
-// Using RunClosure5 instead of RunClosure to avoid symbol collisions in jumbo
-// builds.
-ACTION_P(RunClosure5, closure) {
+ACTION_P(RunClosure, closure) {
   closure.Run();
 }
 
@@ -296,14 +294,13 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
   {
     const size_t kEncodedSizeThreshold = 16;
     base::RunLoop run_loop;
-    base::RepeatingClosure quit_closure = run_loop.QuitClosure();
     // writeData() is pinged a number of times as the WebM header is written;
     // the last time it is called it has the encoded data.
     EXPECT_CALL(*recorder, WriteData(_, Lt(kEncodedSizeThreshold), _, _))
         .Times(AtLeast(1));
     EXPECT_CALL(*recorder, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
-        .WillOnce(RunClosure5(std::move(quit_closure)));
+        .WillOnce(RunClosure(run_loop.QuitClosure()));
 
     OnVideoFrameForTesting(video_frame);
     run_loop.Run();
@@ -313,14 +310,13 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
   {
     const size_t kEncodedSizeThreshold = 12;
     base::RunLoop run_loop;
-    base::RepeatingClosure quit_closure = run_loop.QuitClosure();
     // The second time around writeData() is called a number of times to write
     // the WebM frame header, and then is pinged with the encoded data.
     EXPECT_CALL(*recorder, WriteData(_, Lt(kEncodedSizeThreshold), _, _))
         .Times(AtLeast(1));
     EXPECT_CALL(*recorder, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
-        .WillOnce(RunClosure5(std::move(quit_closure)));
+        .WillOnce(RunClosure(run_loop.QuitClosure()));
 
     OnVideoFrameForTesting(video_frame);
     run_loop.Run();
@@ -333,20 +329,19 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
     const size_t kEncodedSizeThreshold = 16;
     EXPECT_EQ(4u, media::VideoFrame::NumPlanes(alpha_frame->format()));
     base::RunLoop run_loop;
-    base::RepeatingClosure quit_closure = run_loop.QuitClosure();
     // The second time around writeData() is called a number of times to write
     // the WebM frame header, and then is pinged with the encoded data.
     EXPECT_CALL(*recorder, WriteData(_, Lt(kEncodedSizeThreshold), _, _))
         .Times(AtLeast(1));
     EXPECT_CALL(*recorder, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
-        .WillOnce(RunClosure5(quit_closure));
+        .WillOnce(RunClosure(run_loop.QuitClosure()));
     if (GetParam().encoder_supports_alpha) {
       EXPECT_CALL(*recorder, WriteData(_, Lt(kEncodedSizeThreshold), _, _))
           .Times(AtLeast(1));
       EXPECT_CALL(*recorder, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
           .Times(1)
-          .WillOnce(RunClosure5(std::move(quit_closure)));
+          .WillOnce(RunClosure(run_loop.QuitClosure()));
     }
 
     OnVideoFrameForTesting(alpha_frame);
@@ -395,14 +390,13 @@ TEST_P(MediaRecorderHandlerTest, OpusEncodeAudioFrames) {
   const size_t kEncodedSizeThreshold = 24;
   {
     base::RunLoop run_loop;
-    base::RepeatingClosure quit_closure = run_loop.QuitClosure();
     // writeData() is pinged a number of times as the WebM header is written;
     // the last time it is called it has the encoded data.
     EXPECT_CALL(*recorder, WriteData(_, Lt(kEncodedSizeThreshold), _, _))
         .Times(AtLeast(1));
     EXPECT_CALL(*recorder, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
-        .WillOnce(RunClosure5(std::move(quit_closure)));
+        .WillOnce(RunClosure(run_loop.QuitClosure()));
 
     for (int i = 0; i < kRatioOpusToTestAudioBuffers; ++i)
       OnAudioBusForTesting(*audio_bus1);
@@ -412,14 +406,13 @@ TEST_P(MediaRecorderHandlerTest, OpusEncodeAudioFrames) {
 
   {
     base::RunLoop run_loop;
-    base::RepeatingClosure quit_closure = run_loop.QuitClosure();
     // The second time around writeData() is called a number of times to write
     // the WebM frame header, and then is pinged with the encoded data.
     EXPECT_CALL(*recorder, WriteData(_, Lt(kEncodedSizeThreshold), _, _))
         .Times(AtLeast(1));
     EXPECT_CALL(*recorder, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
-        .WillOnce(RunClosure5(std::move(quit_closure)));
+        .WillOnce(RunClosure(run_loop.QuitClosure()));
 
     for (int i = 0; i < kRatioOpusToTestAudioBuffers; ++i)
       OnAudioBusForTesting(*audio_bus2);
@@ -457,11 +450,10 @@ TEST_P(MediaRecorderHandlerTest, WebmMuxerErrorWhileEncoding) {
   {
     const size_t kEncodedSizeThreshold = 16;
     base::RunLoop run_loop;
-    base::RepeatingClosure quit_closure = run_loop.QuitClosure();
     EXPECT_CALL(*recorder, WriteData(_, _, _, _)).Times(AtLeast(1));
     EXPECT_CALL(*recorder, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
-        .WillOnce(RunClosure5(std::move(quit_closure)));
+        .WillOnce(RunClosure(run_loop.QuitClosure()));
 
     OnVideoFrameForTesting(video_frame);
     run_loop.Run();
@@ -471,11 +463,10 @@ TEST_P(MediaRecorderHandlerTest, WebmMuxerErrorWhileEncoding) {
 
   {
     base::RunLoop run_loop;
-    base::RepeatingClosure quit_closure = run_loop.QuitClosure();
     EXPECT_CALL(*recorder, WriteData(_, _, _, _)).Times(0);
     EXPECT_CALL(*recorder, OnError(_))
         .Times(1)
-        .WillOnce(RunClosure5(std::move(quit_closure)));
+        .WillOnce(RunClosure(run_loop.QuitClosure()));
 
     OnVideoFrameForTesting(video_frame);
     run_loop.Run();
@@ -581,11 +572,10 @@ TEST_P(MediaRecorderHandlerPassthroughTest, PassesThrough) {
                    .BuildRefPtr();
   {
     base::RunLoop run_loop;
-    base::Closure quit_closure = run_loop.QuitClosure();
     EXPECT_CALL(*recorder, WriteData(_, _, _, _)).Times(AtLeast(1));
     EXPECT_CALL(*recorder, WriteData(_, Ge(kFrameSize), _, _))
         .Times(1)
-        .WillOnce(RunClosure5(std::move(quit_closure)));
+        .WillOnce(RunClosure(run_loop.QuitClosure()));
     OnVideoFrameForTesting(frame);
     run_loop.Run();
   }

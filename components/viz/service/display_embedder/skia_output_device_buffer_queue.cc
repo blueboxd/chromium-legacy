@@ -174,6 +174,15 @@ SkiaOutputDeviceBufferQueue::Image::CreateFence() {
   return fence_->GetGpuFence();
 }
 
+SkiaOutputDeviceBufferQueue::InFlightFrame::InFlightFrame(
+    std::unique_ptr<Image> image)
+    : image(std::move(image)) {}
+
+SkiaOutputDeviceBufferQueue::InFlightFrame::InFlightFrame(
+    InFlightFrame&& other) = default;
+
+SkiaOutputDeviceBufferQueue::InFlightFrame::~InFlightFrame() = default;
+
 class SkiaOutputDeviceBufferQueue::OverlayData {
  public:
   OverlayData(
@@ -312,17 +321,17 @@ SkiaOutputDeviceBufferQueue::GetNextImage() {
 }
 
 void SkiaOutputDeviceBufferQueue::PageFlipComplete() {
-  DCHECK(!in_flight_images_.empty());
+  DCHECK(!in_flight_frames_.empty());
 
-  if (in_flight_images_.front()) {
+  if (in_flight_frames_.front().image) {
     if (displayed_image_) {
       displayed_image_->EndPresent();
       available_images_.push_back(std::move(displayed_image_));
     }
-    displayed_image_ = std::move(in_flight_images_.front());
+    displayed_image_ = std::move(in_flight_frames_.front().image);
   }
 
-  in_flight_images_.pop_front();
+  in_flight_frames_.pop_front();
 }
 
 void SkiaOutputDeviceBufferQueue::FreeAllSurfaces() {
@@ -330,8 +339,8 @@ void SkiaOutputDeviceBufferQueue::FreeAllSurfaces() {
   current_image_.reset();
   // This is intentionally not emptied since the swap buffers acks are still
   // expected to arrive.
-  for (auto& image : in_flight_images_)
-    image = nullptr;
+  for (auto& frame : in_flight_frames_)
+    frame.image = nullptr;
 
   available_images_.clear();
 }
@@ -401,16 +410,20 @@ void SkiaOutputDeviceBufferQueue::SwapBuffers(
   // nullptr.
   if (current_image_)
     current_image_->BeginPresent();
-  in_flight_images_.push_back(std::move(current_image_));
+  in_flight_frames_.emplace_back(std::move(current_image_));
 
   StartSwapBuffers({});
 
   if (gl_surface_->SupportsAsyncSwap()) {
-    auto callback =
-        base::BindOnce(&SkiaOutputDeviceBufferQueue::DoFinishSwapBuffers,
-                       weak_ptr_factory_.GetWeakPtr(), image_size_,
-                       std::move(latency_info), std::move(committed_overlays_));
-    gl_surface_->SwapBuffersAsync(std::move(callback), std::move(feedback));
+    in_flight_frames_.back().cancelable_swap_completion_callback =
+        std::make_unique<CancelableSwapCompletionCallback>(base::BindOnce(
+            &SkiaOutputDeviceBufferQueue::DoFinishSwapBuffers,
+            weak_ptr_factory_.GetWeakPtr(), image_size_,
+            std::move(latency_info), std::move(committed_overlays_)));
+    gl_surface_->SwapBuffersAsync(
+        in_flight_frames_.back()
+            .cancelable_swap_completion_callback->callback(),
+        std::move(feedback));
   } else {
     DoFinishSwapBuffers(image_size_, std::move(latency_info),
                         std::move(committed_overlays_),
@@ -424,17 +437,20 @@ void SkiaOutputDeviceBufferQueue::PostSubBuffer(
     const gfx::Rect& rect,
     BufferPresentedCallback feedback,
     std::vector<ui::LatencyInfo> latency_info) {
-  in_flight_images_.push_back(std::move(current_image_));
+  in_flight_frames_.emplace_back(std::move(current_image_));
   StartSwapBuffers({});
 
   if (gl_surface_->SupportsAsyncSwap()) {
-    auto callback =
-        base::BindOnce(&SkiaOutputDeviceBufferQueue::DoFinishSwapBuffers,
-                       weak_ptr_factory_.GetWeakPtr(), image_size_,
-                       std::move(latency_info), std::move(committed_overlays_));
-    gl_surface_->PostSubBufferAsync(rect.x(), rect.y(), rect.width(),
-                                    rect.height(), std::move(callback),
-                                    std::move(feedback));
+    in_flight_frames_.back().cancelable_swap_completion_callback =
+        std::make_unique<CancelableSwapCompletionCallback>(base::BindOnce(
+            &SkiaOutputDeviceBufferQueue::DoFinishSwapBuffers,
+            weak_ptr_factory_.GetWeakPtr(), image_size_,
+            std::move(latency_info), std::move(committed_overlays_)));
+    gl_surface_->PostSubBufferAsync(
+        rect.x(), rect.y(), rect.width(), rect.height(),
+        in_flight_frames_.back()
+            .cancelable_swap_completion_callback->callback(),
+        std::move(feedback));
 
   } else {
     DoFinishSwapBuffers(

@@ -111,7 +111,15 @@ class CSSClipNonInterpolableValue : public NonInterpolableValue {
 };
 
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE(CSSClipNonInterpolableValue);
-DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(CSSClipNonInterpolableValue);
+template <>
+struct DowncastTraits<CSSClipNonInterpolableValue> {
+  static bool AllowFrom(const NonInterpolableValue* value) {
+    return value && AllowFrom(*value);
+  }
+  static bool AllowFrom(const NonInterpolableValue& value) {
+    return value.GetType() == CSSClipNonInterpolableValue::static_type_;
+  }
+};
 
 class UnderlyingAutosChecker
     : public CSSInterpolationType::CSSConversionChecker {
@@ -123,7 +131,7 @@ class UnderlyingAutosChecker
   static ClipAutos GetUnderlyingAutos(const InterpolationValue& underlying) {
     if (!underlying)
       return ClipAutos();
-    return ToCSSClipNonInterpolableValue(*underlying.non_interpolable_value)
+    return To<CSSClipNonInterpolableValue>(*underlying.non_interpolable_value)
         .GetClipAutos();
   }
 
@@ -238,11 +246,12 @@ CSSClipInterpolationType::MaybeConvertStandardPropertyUnderlyingValue(
 PairwiseInterpolationValue CSSClipInterpolationType::MaybeMergeSingles(
     InterpolationValue&& start,
     InterpolationValue&& end) const {
-  const ClipAutos& start_autos =
-      ToCSSClipNonInterpolableValue(*start.non_interpolable_value)
+  const auto& start_autos =
+      To<CSSClipNonInterpolableValue>(*start.non_interpolable_value)
           .GetClipAutos();
-  const ClipAutos& end_autos =
-      ToCSSClipNonInterpolableValue(*end.non_interpolable_value).GetClipAutos();
+  const auto& end_autos =
+      To<CSSClipNonInterpolableValue>(*end.non_interpolable_value)
+          .GetClipAutos();
   if (start_autos != end_autos)
     return nullptr;
   return PairwiseInterpolationValue(std::move(start.interpolable_value),
@@ -255,12 +264,12 @@ void CSSClipInterpolationType::Composite(
     double underlying_fraction,
     const InterpolationValue& value,
     double interpolation_fraction) const {
-  const ClipAutos& underlying_autos =
-      ToCSSClipNonInterpolableValue(
+  const auto& underlying_autos =
+      To<CSSClipNonInterpolableValue>(
           *underlying_value_owner.Value().non_interpolable_value)
           .GetClipAutos();
-  const ClipAutos& autos =
-      ToCSSClipNonInterpolableValue(*value.non_interpolable_value)
+  const auto& autos =
+      To<CSSClipNonInterpolableValue>(*value.non_interpolable_value)
           .GetClipAutos();
   if (underlying_autos == autos)
     underlying_value_owner.MutableValue().interpolable_value->ScaleAndAdd(
@@ -273,8 +282,8 @@ void CSSClipInterpolationType::ApplyStandardPropertyValue(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue* non_interpolable_value,
     StyleResolverState& state) const {
-  const ClipAutos& autos =
-      ToCSSClipNonInterpolableValue(non_interpolable_value)->GetClipAutos();
+  const auto& autos =
+      To<CSSClipNonInterpolableValue>(non_interpolable_value)->GetClipAutos();
   const auto& list = To<InterpolableList>(interpolable_value);
   const auto& convert_index = [&list, &state](bool is_auto, wtf_size_t index) {
     if (is_auto)

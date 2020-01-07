@@ -19,6 +19,7 @@
 namespace extensions {
 class ContentVerifier;
 class Extension;
+enum class UnloadedExtensionReason;
 
 // Contains extension data that needs to be accessed on the IO thread. It can
 // be created on any thread, but all other methods and destructor must be called

@@ -295,16 +295,10 @@ File* File::Clone(const String& name) const {
 }
 
 base::Time File::LastModifiedTime() const {
+  CaptureSnapshotIfNeeded();
+
   if (HasValidSnapshotMetadata() && snapshot_modification_time_)
     return *snapshot_modification_time_;
-
-  uint64_t size;
-  base::Optional<base::Time> modification_time;
-  if (HasBackingFile() &&
-      GetBlobDataHandle()->CaptureSnapshot(&size, &modification_time) &&
-      modification_time) {
-    return *modification_time;
-  }
 
   // lastModified / lastModifiedDate getters should return the current time
   // when the last modification time isn't known.
@@ -324,19 +318,21 @@ ScriptValue File::lastModifiedDate(ScriptState* script_state) const {
                      ToV8(LastModifiedTime(), script_state));
 }
 
+base::Optional<base::Time> File::LastModifiedTimeForSerialization() const {
+  CaptureSnapshotIfNeeded();
+
+  return snapshot_modification_time_;
+}
+
 uint64_t File::size() const {
-  if (HasValidSnapshotMetadata())
-    return *snapshot_size_;
+  CaptureSnapshotIfNeeded();
 
   // FIXME: JavaScript cannot represent sizes as large as uint64_t, we need
   // to come up with an exception to throw if file size is not representable.
-  uint64_t size;
-  base::Optional<base::Time> modification_time;
-  if (!HasBackingFile() ||
-      !GetBlobDataHandle()->CaptureSnapshot(&size, &modification_time)) {
-    return 0;
-  }
-  return size;
+  if (HasValidSnapshotMetadata())
+    return *snapshot_size_;
+
+  return 0;
 }
 
 Blob* File::slice(int64_t start,
@@ -346,41 +342,29 @@ Blob* File::slice(int64_t start,
   if (!has_backing_file_)
     return Blob::slice(start, end, content_type, exception_state);
 
-  // FIXME: This involves synchronous file operation. We need to figure out how
-  // to make it asynchronous.
-  uint64_t size;
-  base::Optional<base::Time> modification_time;
-  CaptureSnapshot(size, modification_time);
-  ClampSliceOffsets(size, start, end);
+  // FIXME: Calling size triggers capturing a snapshot, if we don't have one
+  // already. This involves synchronous file operation. We need to figure out
+  // how to make it asynchronous (or make sure snapshot state is always passed
+  // in when creating a File instance).
+  ClampSliceOffsets(size(), start, end);
 
   uint64_t length = end - start;
   auto blob_data = std::make_unique<BlobData>();
   blob_data->SetContentType(NormalizeType(content_type));
   DCHECK(!path_.IsEmpty());
-  blob_data->AppendFile(path_, start, length, modification_time);
+  blob_data->AppendFile(path_, start, length, snapshot_modification_time_);
   return MakeGarbageCollected<Blob>(
       BlobDataHandle::Create(std::move(blob_data), length));
 }
 
-void File::CaptureSnapshot(
-    uint64_t& snapshot_size,
-    base::Optional<base::Time>& snapshot_modification_time) const {
-  if (HasValidSnapshotMetadata()) {
-    snapshot_size = *snapshot_size_;
-    snapshot_modification_time = snapshot_modification_time_;
+void File::CaptureSnapshotIfNeeded() const {
+  if (HasValidSnapshotMetadata() && snapshot_modification_time_)
     return;
-  }
 
-  // Obtains a snapshot of the file by capturing its current size and
-  // modification time. This is used when we slice a file for the first time.
-  // If we fail to retrieve the size or modification time, probably due to that
-  // the file has been deleted, 0 size is returned.
-  FileMetadata metadata;
-  if (!HasBackingFile() || !GetBlobDataHandle()->CaptureSnapshot(
-                               &snapshot_size, &snapshot_modification_time)) {
-    snapshot_size = 0;
-    snapshot_modification_time = base::nullopt;
-    return;
+  uint64_t snapshot_size;
+  if (GetBlobDataHandle()->CaptureSnapshot(&snapshot_size,
+                                           &snapshot_modification_time_)) {
+    snapshot_size_ = snapshot_size;
   }
 }
 
@@ -392,11 +376,9 @@ void File::AppendTo(BlobData& blob_data) const {
 
   // FIXME: This involves synchronous file operation. We need to figure out how
   // to make it asynchronous.
-  uint64_t size;
-  base::Optional<base::Time> modification_time;
-  CaptureSnapshot(size, modification_time);
+  CaptureSnapshotIfNeeded();
   DCHECK(!path_.IsEmpty());
-  blob_data.AppendFile(path_, 0, size, modification_time);
+  blob_data.AppendFile(path_, 0, *snapshot_size_, snapshot_modification_time_);
 }
 
 bool File::HasSameSource(const File& other) const {

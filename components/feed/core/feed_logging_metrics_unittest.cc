@@ -255,4 +255,13 @@ TEST_F(FeedLoggingMetricsTest, ShouldLogOnMoreButtonClicked) {
               SizeIs(1));
 }
 
+TEST_F(FeedLoggingMetricsTest, ShouldLogOnManageInterestsClicked) {
+  base::HistogramTester histogram_tester;
+
+  feed_logging_metrics()->OnManageInterestsClicked(1);
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "ContentSuggestions.Feed.ManageInterestsOpened"),
+              ElementsAre(base::Bucket(/*min=*/1, /*count=*/1)));
+}
+
 }  // namespace feed

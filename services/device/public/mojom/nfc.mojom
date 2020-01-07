@@ -106,11 +106,13 @@ struct NDEFScanOptions {
   // string means must match on empty.
   string? id;
 
-  // Defines record type filtering constraint.
+  // Defines record type filtering constraint. Null means don't filter, empty
+  // string means must match on empty.
   string? record_type;
 
-  // Defines media type filtering constraint. Empty string means don't filter.
-  string media_type;
+  // Defines media type filtering constraint. Null means don't filter, empty
+  // string means must match on empty.
+  string? media_type;
 };
 
 interface NFC {

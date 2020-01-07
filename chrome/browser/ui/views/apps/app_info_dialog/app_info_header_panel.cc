@@ -96,17 +96,14 @@ void AppInfoHeaderPanel::CreateControls() {
         vertical_info_container_ptr->AddChildView(std::make_unique<views::Link>(
             l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_WEB_STORE_LINK)));
     view_in_store_link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    view_in_store_link->set_listener(this);
+    view_in_store_link->set_callback(base::BindRepeating(
+        &AppInfoHeaderPanel::ShowAppInWebStore, base::Unretained(this)));
     view_in_store_link->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   } else {
     // If there's no link, allow the app's name to take up multiple lines.
     // TODO(sashab): Limit the number of lines to 2.
     app_name_label_ptr->SetMultiLine(true);
   }
-}
-
-void AppInfoHeaderPanel::LinkClicked(views::Link* source, int event_flags) {
-  ShowAppInWebStore();
 }
 
 void AppInfoHeaderPanel::ShowAppInWebStore() {

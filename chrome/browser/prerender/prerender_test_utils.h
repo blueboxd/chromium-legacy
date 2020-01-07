@@ -24,7 +24,7 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "components/safe_browsing/db/test_database_manager.h"
+#include "components/safe_browsing/core/db/test_database_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_widget_host_observer.h"
 #include "url/gurl.h"

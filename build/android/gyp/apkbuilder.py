@@ -319,13 +319,13 @@ def main(args):
     with zipfile.ZipFile(options.resource_apk) as resource_apk, \
          zipfile.ZipFile(f, 'w') as out_apk:
 
-      def add_to_zip(zip_path, data, compress=True):
+      def add_to_zip(zip_path, data, compress=True, alignment=4):
         zipalign.AddToZipHermetic(
             out_apk,
             zip_path,
             data=data,
             compress=compress,
-            alignment=0 if compress and not fast_align else 4)
+            alignment=0 if compress and not fast_align else alignment)
 
       def copy_resource(zipinfo, out_dir=''):
         add_to_zip(
@@ -388,14 +388,14 @@ def main(args):
         # with stale builds when the only change is adding/removing
         # placeholders).
         apk_path = 'lib/%s/%s' % (options.android_abi, name)
-        add_to_zip(apk_path, '')
+        add_to_zip(apk_path, '', alignment=0x1000)
 
       for name in sorted(secondary_native_lib_placeholders):
         # Note: Empty libs files are ignored by md5check (can cause issues
         # with stale builds when the only change is adding/removing
         # placeholders).
         apk_path = 'lib/%s/%s' % (options.secondary_android_abi, name)
-        add_to_zip(apk_path, '')
+        add_to_zip(apk_path, '', alignment=0x1000)
 
       # 5. Resources
       logging.debug('Adding res/')

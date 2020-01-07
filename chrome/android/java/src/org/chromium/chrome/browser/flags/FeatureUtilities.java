@@ -128,6 +128,7 @@ public class FeatureUtilities {
         cacheStartSurfaceEnabled();
         cacheNativeTabSwitcherUiFlags();
         cacheHomepageLocationPolicyEnabled();
+        cachePaintPreviewTestEnabled();
 
         // Propagate REACHED_CODE_PROFILER feature value to LibraryLoader. This can't be done in
         // LibraryLoader itself because it lives in //base and can't depend on ChromeFeatureList.
@@ -415,6 +416,19 @@ public class FeatureUtilities {
      */
     public static boolean isStartSurfaceEnabled() {
         return isFlagEnabled(ChromePreferenceKeys.FLAGS_CACHED_START_SURFACE_ENABLED, false);
+    }
+
+    private static void cachePaintPreviewTestEnabled() {
+        cacheFlag(ChromePreferenceKeys.FLAGS_CACHED_PAINT_PREVIEW_TEST_ENABLED_KEY,
+                ChromeFeatureList.PAINT_PREVIEW_TEST);
+    }
+
+    /**
+     * @return Whether the Paint Preview tapture test is enabled
+     */
+    public static boolean isPaintPreviewTestEnabled() {
+        return isFlagEnabled(
+                ChromePreferenceKeys.FLAGS_CACHED_PAINT_PREVIEW_TEST_ENABLED_KEY, false);
     }
 
     @VisibleForTesting

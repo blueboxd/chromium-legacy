@@ -18,8 +18,6 @@ class Browser;
 class UrlLoadingNotifier;
 struct UrlLoadParams;
 
-@class OpenNewTabCommand;
-
 // Objective-C delegate for UrlLoadingService.
 @protocol URLLoadingServiceDelegate
 

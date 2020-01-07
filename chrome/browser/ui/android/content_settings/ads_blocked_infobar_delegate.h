@@ -28,14 +28,14 @@ class AdsBlockedInfobarDelegate : public ConfirmInfoBarDelegate {
   base::string16 GetToggleText() const;
 
   // ConfirmInfoBarDelegate:
-  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
+  InfoBarIdentifier GetIdentifier() const override;
   int GetIconId() const override;
+  GURL GetLinkURL() const override;
+  bool LinkClicked(WindowOpenDisposition disposition) override;
   base::string16 GetMessageText() const override;
   int GetButtons() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool Cancel() override;
-  GURL GetLinkURL() const override;
-  bool LinkClicked(WindowOpenDisposition disposition) override;
 
  private:
   AdsBlockedInfobarDelegate();

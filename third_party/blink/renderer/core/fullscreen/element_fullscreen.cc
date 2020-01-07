@@ -13,9 +13,11 @@ namespace blink {
 ScriptPromise ElementFullscreen::requestFullscreen(
     ScriptState* script_state,
     Element& element,
-    const FullscreenOptions* options) {
-  return Fullscreen::RequestFullscreen(
-      element, options, Fullscreen::RequestType::kUnprefixed, script_state);
+    const FullscreenOptions* options,
+    ExceptionState& exception_state) {
+  return Fullscreen::RequestFullscreen(element, options,
+                                       Fullscreen::RequestType::kUnprefixed,
+                                       script_state, &exception_state);
 }
 
 void ElementFullscreen::webkitRequestFullscreen(Element& element) {

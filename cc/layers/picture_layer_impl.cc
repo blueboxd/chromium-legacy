@@ -1127,12 +1127,12 @@ void PictureLayerImpl::RecalculateRasterScales() {
 
     float min_scale = MinimumContentsScale();
     float max_scale = std::max(1.f, MinimumContentsScale());
-    float clamped_ideal_source_scale_ =
+    float clamped_ideal_source_scale =
         base::ClampToRange(ideal_source_scale_, min_scale, max_scale);
 
-    while (raster_source_scale_ < clamped_ideal_source_scale_)
+    while (raster_source_scale_ < clamped_ideal_source_scale)
       raster_source_scale_ *= 2.f;
-    while (raster_source_scale_ > 4 * clamped_ideal_source_scale_)
+    while (raster_source_scale_ > 4 * clamped_ideal_source_scale)
       raster_source_scale_ /= 2.f;
 
     raster_source_scale_ =

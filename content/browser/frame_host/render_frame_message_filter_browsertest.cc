@@ -296,7 +296,7 @@ class RestrictedCookieManagerInterceptor
   }
 
   void SetCookieFromString(const GURL& url,
-                           const GURL& site_for_cookies,
+                           const net::SiteForCookies& site_for_cookies,
                            const url::Origin& top_frame_origin,
                            const std::string& cookie,
                            SetCookieFromStringCallback callback) override {
@@ -306,7 +306,7 @@ class RestrictedCookieManagerInterceptor
   }
 
   void GetCookiesString(const GURL& url,
-                        const GURL& site_for_cookies,
+                        const net::SiteForCookies& site_for_cookies,
                         const url::Origin& top_frame_origin,
                         GetCookiesStringCallback callback) override {
     GetForwardingInterface()->GetCookiesString(
@@ -336,7 +336,7 @@ class CookieStoreContentBrowserClient : public ContentBrowserClient {
       network::mojom::RestrictedCookieManagerRole role,
       content::BrowserContext* browser_context,
       const url::Origin& origin,
-      const GURL& site_for_cookies,
+      const net::SiteForCookies& site_for_cookies,
       const url::Origin& top_frame_origin,
       bool is_service_worker,
       int process_id,

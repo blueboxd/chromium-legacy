@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/safe_browsing/incident_reporting/delayed_analysis_callback.h"
-#include "components/safe_browsing/password_protection/password_protection_service.h"
+#include "components/safe_browsing/content/password_protection/password_protection_service.h"
 
 class Profile;
 

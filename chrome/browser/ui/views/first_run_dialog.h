@@ -7,7 +7,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "ui/views/controls/link_listener.h"
 #include "ui/views/window/dialog_delegate.h"
 
 class Profile;
@@ -16,8 +15,7 @@ namespace views {
 class Checkbox;
 }
 
-class FirstRunDialog : public views::DialogDelegateView,
-                       public views::LinkListener {
+class FirstRunDialog : public views::DialogDelegateView {
  public:
   // Displays the first run UI for reporting opt-in, import data etc.
   static void Show(Profile* profile);
@@ -35,10 +33,6 @@ class FirstRunDialog : public views::DialogDelegateView,
   // views::WidgetDelegate:
   void WindowClosing() override;
 
-  // views::LinkListener:
-  void LinkClicked(views::Link* source, int event_flags) override;
-
-  Profile* profile_;
   views::Checkbox* make_default_ = nullptr;
   views::Checkbox* report_crashes_ = nullptr;
   base::Closure quit_runloop_;

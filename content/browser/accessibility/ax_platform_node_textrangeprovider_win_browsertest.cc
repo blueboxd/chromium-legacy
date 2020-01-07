@@ -1841,7 +1841,7 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
 
   ASSERT_HRESULT_SUCCEEDED(
       text_range_provider->ExpandToEnclosingUnit(TextUnit_Format));
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"italic\ntext");
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"italic\ntext\n");
 }
 
 IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
@@ -1913,7 +1913,7 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
 
   AssertMoveByUnitForMarkup(
       TextUnit_Format, "before <img src='test'> after",
-      {L"before ", (kEmbeddedCharacterAsString + L" after").c_str()});
+      {L"before ", kEmbeddedCharacterAsString.c_str(), L" after"});
 
   AssertMoveByUnitForMarkup(TextUnit_Format,
                             "before <a href='test'>link</a> after",
@@ -2079,6 +2079,44 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
       text_range_provider->GetBoundingRectangles(rectangles.Receive()));
   expected_values = {105 + view_offset.x(), 50 + view_offset.y(), 28, 17};
   EXPECT_UIA_DOUBLE_SAFEARRAY_EQ(rectangles.Get(), expected_values);
+}
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       MoveByFormatWithGeneratedContentTableAndSpans) {
+  const std::string html_markup =
+      "<!DOCTYPE html>"
+      "<style>"
+      "h2:before, h2:after { content: \" \"; display: table; }"
+      "span {white-space: pre; }"
+      "</style>"
+      "<div><h2>First Heading</h2><span>\nParagraph One</span></div>"
+      "<div><h2>Second Heading</h2><span>\nParagraph Two</span></div>";
+
+  const std::vector<const wchar_t*> format_units = {
+      L"  \nFirst Heading  ", L"\nParagraph One", L"  \nSecond Heading  ",
+      L"\nParagraph Two"};
+
+  AssertMoveByUnitForMarkup(TextUnit_Format, html_markup, format_units);
+}
+
+// https://crbug.com/1036397
+IN_PROC_BROWSER_TEST_F(
+    AXPlatformNodeTextRangeProviderWinBrowserTest,
+    DISABLED_MoveByFormatWithGeneratedContentTableAndParagraphs) {
+  const std::string html_markup = R"HTML(<!DOCTYPE html>
+        <html>
+        <style>
+            h2:before, h2:after { content: " "; display: table; }
+        </style>
+        <div><h2>First Heading</h2><p>Paragraph One</p></div>
+        <div><h2>Second Heading</h2><p>Paragraph Two</p></div>
+        </html>)HTML";
+
+  const std::vector<const wchar_t*> format_units = {
+      L"  \nFirst Heading  ", L"\nParagraph One", L"  \nSecond Heading  ",
+      L"\nParagraph Two"};
+
+  AssertMoveByUnitForMarkup(TextUnit_Format, html_markup, format_units);
 }
 
 }  // namespace content

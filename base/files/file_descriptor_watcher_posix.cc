@@ -4,12 +4,14 @@
 
 #include "base/files/file_descriptor_watcher_posix.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_for_io.h"
+#include "base/no_destructor.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
@@ -23,8 +25,10 @@ namespace base {
 namespace {
 
 // Per-thread FileDescriptorWatcher registration.
-LazyInstance<ThreadLocalPointer<FileDescriptorWatcher>>::Leaky tls_fd_watcher =
-    LAZY_INSTANCE_INITIALIZER;
+ThreadLocalPointer<FileDescriptorWatcher>& GetTlsFdWatcher() {
+  static NoDestructor<ThreadLocalPointer<FileDescriptorWatcher>> tls_fd_watcher;
+  return *tls_fd_watcher;
+}
 
 }  // namespace
 
@@ -155,8 +159,7 @@ FileDescriptorWatcher::Controller::Controller(MessagePumpForIO::Mode mode,
                                               int fd,
                                               const RepeatingClosure& callback)
     : callback_(callback),
-      io_thread_task_runner_(
-          tls_fd_watcher.Get().Get()->io_thread_task_runner()) {
+      io_thread_task_runner_(GetTlsFdWatcher().Get()->io_thread_task_runner()) {
   DCHECK(!callback_.is_null());
   DCHECK(io_thread_task_runner_);
   watcher_ = std::make_unique<Watcher>(weak_factory_.GetWeakPtr(), mode, fd);
@@ -242,12 +245,12 @@ void FileDescriptorWatcher::Controller::RunCallback() {
 FileDescriptorWatcher::FileDescriptorWatcher(
     scoped_refptr<SingleThreadTaskRunner> io_thread_task_runner)
     : io_thread_task_runner_(std::move(io_thread_task_runner)) {
-  DCHECK(!tls_fd_watcher.Get().Get());
-  tls_fd_watcher.Get().Set(this);
+  DCHECK(!GetTlsFdWatcher().Get());
+  GetTlsFdWatcher().Set(this);
 }
 
 FileDescriptorWatcher::~FileDescriptorWatcher() {
-  tls_fd_watcher.Get().Set(nullptr);
+  GetTlsFdWatcher().Set(nullptr);
 }
 
 std::unique_ptr<FileDescriptorWatcher::Controller>
@@ -263,7 +266,7 @@ FileDescriptorWatcher::WatchWritable(int fd, const RepeatingClosure& callback) {
 
 #if DCHECK_IS_ON()
 void FileDescriptorWatcher::AssertAllowed() {
-  DCHECK(tls_fd_watcher.Get().Get());
+  DCHECK(GetTlsFdWatcher().Get());
 }
 #endif
 

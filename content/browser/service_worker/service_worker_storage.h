@@ -147,12 +147,15 @@ class CONTENT_EXPORT ServiceWorkerStorage {
                          StatusCallback callback);
 
   // Updates the state of the registration's stored version to active.
-  void UpdateToActiveState(ServiceWorkerRegistration* registration,
+  void UpdateToActiveState(int64_t registration_id,
+                           const GURL& origin,
                            StatusCallback callback);
 
   // Updates the stored time to match the value of
   // registration->last_update_check().
-  void UpdateLastUpdateCheckTime(ServiceWorkerRegistration* registration,
+  void UpdateLastUpdateCheckTime(int64_t registration_id,
+                                 const GURL& origin,
+                                 base::Time last_update_check_time,
                                  StatusCallback callback);
 
   // Updates the specified registration's navigation preload state in storage.

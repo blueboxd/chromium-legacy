@@ -1,5 +1,5 @@
 include_rules = [
-  "+components/safe_browsing/db",
+  "+components/safe_browsing/core/db",
   "+components/ukm",
   "+content/public/browser",
   "+content/public/test",

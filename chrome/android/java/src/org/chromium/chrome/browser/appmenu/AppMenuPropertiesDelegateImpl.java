@@ -248,12 +248,16 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
                             && hasMoreThanOneTab);
 
             // Don't allow either "chrome://" pages or interstitial pages to be shared.
-            menu.findItem(R.id.share_row_menu_id)
-                    .setVisible(
-                            !isChromeScheme && !((TabImpl) currentTab).isShowingInterstitialPage());
+            boolean isChromeOrInterstitialPage =
+                    isChromeScheme || ((TabImpl) currentTab).isShowingInterstitialPage();
+            menu.findItem(R.id.share_row_menu_id).setVisible(!isChromeOrInterstitialPage);
 
             ShareHelper.configureDirectShareMenuItem(
                     mContext, menu.findItem(R.id.direct_share_menu_id));
+
+            menu.findItem(R.id.paint_preview_capture_id)
+                    .setVisible(FeatureUtilities.isPaintPreviewTestEnabled()
+                            && !isChromeOrInterstitialPage && !isIncognito);
 
             // Disable find in page on the native NTP.
             menu.findItem(R.id.find_in_page_id)

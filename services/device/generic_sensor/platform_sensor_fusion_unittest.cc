@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/task_environment.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "services/device/generic_sensor/absolute_orientation_euler_angles_fusion_algorithm_using_accelerometer_and_magnetometer.h"
 #include "services/device/generic_sensor/fake_platform_sensor_and_provider.h"
 #include "services/device/generic_sensor/linear_acceleration_fusion_algorithm_using_accelerometer.h"

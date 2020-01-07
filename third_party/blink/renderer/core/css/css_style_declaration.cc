@@ -152,7 +152,7 @@ CSSPropertyID CssPropertyInfo(const ExecutionContext* execution_context,
 }  // namespace
 
 void CSSStyleDeclaration::Trace(Visitor* visitor) {
-  visitor->Trace(execution_context_);
+  ContextClient::Trace(visitor);
   ScriptWrappable::Trace(visitor);
 }
 
@@ -224,12 +224,6 @@ void CSSStyleDeclaration::NamedPropertyEnumerator(Vector<String>& names,
 bool CSSStyleDeclaration::NamedPropertyQuery(const AtomicString& name,
                                              ExceptionState&) {
   return isValidCSSPropertyID(CssPropertyInfo(GetExecutionContext(), name));
-}
-
-ExecutionContext* CSSStyleDeclaration::GetExecutionContext() const {
-  return execution_context_ && !execution_context_->IsContextDestroyed()
-             ? execution_context_.Get()
-             : nullptr;
 }
 
 }  // namespace blink

@@ -155,6 +155,7 @@ void PlatformApiImpl::OnAudioNodesChanged() {
       case chromeos::AUDIO_TYPE_USB:
       case chromeos::AUDIO_TYPE_HEADPHONE:
       case chromeos::AUDIO_TYPE_INTERNAL_MIC:
+      case chromeos::AUDIO_TYPE_FRONT_MIC:
         if (!input_device || input_device->priority < device.priority)
           input_device = &device;
         break;

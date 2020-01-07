@@ -23,8 +23,8 @@ class BrowserContext;
 }
 
 namespace extensions {
-
 class ValueStoreFactory;
+enum class UnloadedExtensionReason;
 
 // A simplified version of ExtensionSystem for cast_shell. Allows
 // cast_shell to skip initialization of services it doesn't need.

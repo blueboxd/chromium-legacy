@@ -73,7 +73,7 @@ bool Viewport::CanScroll(const ScrollNode& node,
                          const ScrollState& scroll_state) const {
   DCHECK(ShouldScroll(node));
 
-  bool result = host_impl_->CanConsumeDelta(*InnerScrollNode(), scroll_state);
+  bool result = host_impl_->CanConsumeDelta(scroll_state, *InnerScrollNode());
 
   // If the passed in node is the inner viewport, we're not interested in the
   // scrollability of the outer viewport. See LTHI::GetNodeToScroll for how the
@@ -81,7 +81,7 @@ bool Viewport::CanScroll(const ScrollNode& node,
   if (node.scrolls_inner_viewport)
     return result;
 
-  result |= host_impl_->CanConsumeDelta(*OuterScrollNode(), scroll_state);
+  result |= host_impl_->CanConsumeDelta(scroll_state, *OuterScrollNode());
   return result;
 }
 

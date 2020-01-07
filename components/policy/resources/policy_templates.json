@@ -16241,20 +16241,11 @@
       'caption': '''Allow collection of WebRTC event logs from Google services''',
       'tags': ['google-sharing'],
       'desc': '''
-      If the policy is set to true, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is allowed to collect WebRTC event logs from Google services (e.g. Google Meet), and upload those logs to Google.
+      Setting the policy to True allows <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to collect WebRTC event logs from Google services such as Hangouts Meet and upload them to Google. These logs have diagnostic information for debugging issues with audio or video meetings in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>, such as the time and size of RTP packets, feedback about congestion on the network, and metadata about time and quality of audio and video frames. These logs have no audio or video content from the meeting. To make debugging easier, Google might associate these logs, by means of a session ID, with other logs collected by the Google service itself.
 
-      If the policy is set to false, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> may not collect nor upload such logs.
+      Setting the policy to False results in no collection or uploading of such logs.
 
-      If the policy is unset, up to and including M76, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> may not collect nor upload such logs.
-
-      If the policy is unset, since M77, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> may collect or upload such logs by default if the browser profile is considered managed, i.e. if the profile receives cloud or machine level policies, and is not a child, ephemeral, login, or incognito profile.
-
-      These logs contain diagnostic information helpful when debugging issues with audio or video calls in Chrome, such as the time and size of sent and received RTP packets, feedback about congestion on the network, and metadata about time and quality of audio and video frames. These logs do not contain audio or video contents from the call.
-
-      This data collection by Chrome can only be triggered by Google's web services, such as Google Hangouts or Google Meet.
-
-      Google may associate these logs, by means of a session ID, with other logs collected by the Google service itself; this is intended to make debugging easier.
-      ''',
+      Leaving the policy unset on versions up to and including M76 means <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> defaults to not being able to collect and upload these logs. Starting at M77, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> defaults to being able to collect and upload these logs from most profiles affected by cloud-based user-level enterprise policies. From M77 up to and including M80, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> can also collect and upload these logs by default from profiles affected by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> on-premise management.''',
     },
     {
       'name': 'PowerSmartDimEnabled',
@@ -17310,7 +17301,9 @@
 
       This policy is intended to give enterprises a chance to migrate to 3rd party software that does not depend on hooking the networking APIs. Proxy servers are recommended over LSPs and Win32 API patching.
 
-      If this policy is not set, networking code may run out of the browser process depending on field trials of the NetworkService experiment.''',
+      If this policy is not set, networking code will run out of the browser process by default.
+
+      This policy will be removed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 82.''',
     },
     {
       'name': 'VoiceInteractionContextEnabled',

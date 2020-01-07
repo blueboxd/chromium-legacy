@@ -23,7 +23,6 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.Supplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 
 import java.util.Arrays;
 import java.util.Set;
@@ -32,18 +31,18 @@ import java.util.Set;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class SigninPromoUtilTest {
-    private ChromePreferenceManager mPreferenceManager;
+    private SigninPreferencesManager mPreferencesManager;
 
     @Before
     public void setUp() {
-        mPreferenceManager = Mockito.mock(ChromePreferenceManager.class);
+        mPreferencesManager = Mockito.mock(SigninPreferencesManager.class);
         // Return default value if last account names are requested
-        when(mPreferenceManager.getSigninPromoLastAccountNames()).thenReturn(null);
+        when(mPreferencesManager.getSigninPromoLastAccountNames()).thenReturn(null);
     }
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(ignoreStubs(mPreferenceManager));
+        verifyNoMoreInteractions(ignoreStubs(mPreferencesManager));
     }
 
     /**
@@ -67,73 +66,73 @@ public class SigninPromoUtilTest {
 
     @Test
     public void whenNoLastShownVersionShouldReturnFalseAndSaveVersion() {
-        when(mPreferenceManager.getSigninPromoLastShownVersion()).thenReturn(0);
+        when(mPreferencesManager.getSigninPromoLastShownVersion()).thenReturn(0);
         Assert.assertFalse(SigninPromoUtil.shouldLaunchSigninPromo(
-                mPreferenceManager, 42, false, false, shouldNotTryToGetAccounts()));
-        verify(mPreferenceManager).setSigninPromoLastShownVersion(42);
+                mPreferencesManager, 42, false, false, shouldNotTryToGetAccounts()));
+        verify(mPreferencesManager).setSigninPromoLastShownVersion(42);
     }
 
     @Test
     public void whenSignedInShouldReturnFalse() {
-        when(mPreferenceManager.getSigninPromoLastShownVersion()).thenReturn(38);
+        when(mPreferencesManager.getSigninPromoLastShownVersion()).thenReturn(38);
         Assert.assertFalse(SigninPromoUtil.shouldLaunchSigninPromo(
-                mPreferenceManager, 42, true, false, shouldNotTryToGetAccounts()));
+                mPreferencesManager, 42, true, false, shouldNotTryToGetAccounts()));
     }
 
     @Test
     public void whenWasSignedInShouldReturnFalse() {
-        when(mPreferenceManager.getSigninPromoLastShownVersion()).thenReturn(38);
+        when(mPreferencesManager.getSigninPromoLastShownVersion()).thenReturn(38);
         Assert.assertFalse(SigninPromoUtil.shouldLaunchSigninPromo(
-                mPreferenceManager, 42, false, true, shouldNotTryToGetAccounts()));
+                mPreferencesManager, 42, false, true, shouldNotTryToGetAccounts()));
     }
 
     @Test
     public void whenVersionDifferenceTooSmallShouldReturnFalse() {
-        when(mPreferenceManager.getSigninPromoLastShownVersion()).thenReturn(41);
+        when(mPreferencesManager.getSigninPromoLastShownVersion()).thenReturn(41);
         Assert.assertFalse(SigninPromoUtil.shouldLaunchSigninPromo(
-                mPreferenceManager, 42, false, false, shouldNotTryToGetAccounts()));
+                mPreferencesManager, 42, false, false, shouldNotTryToGetAccounts()));
     }
 
     @Test
     public void whenNoAccountsShouldReturnFalse() {
-        when(mPreferenceManager.getSigninPromoLastShownVersion()).thenReturn(38);
+        when(mPreferencesManager.getSigninPromoLastShownVersion()).thenReturn(38);
         Assert.assertFalse(SigninPromoUtil.shouldLaunchSigninPromo(
-                mPreferenceManager, 42, false, false, accountsSupplier()));
+                mPreferencesManager, 42, false, false, accountsSupplier()));
     }
 
     @Test
     public void whenNoAccountListStoredShouldReturnTrue() {
-        when(mPreferenceManager.getSigninPromoLastShownVersion()).thenReturn(40);
+        when(mPreferencesManager.getSigninPromoLastShownVersion()).thenReturn(40);
         // Old implementation hasn't been storing account list
-        when(mPreferenceManager.getSigninPromoLastAccountNames()).thenReturn(null);
+        when(mPreferencesManager.getSigninPromoLastAccountNames()).thenReturn(null);
         Assert.assertTrue(SigninPromoUtil.shouldLaunchSigninPromo(
-                mPreferenceManager, 42, false, false, accountsSupplier("test@gmail.com")));
+                mPreferencesManager, 42, false, false, accountsSupplier("test@gmail.com")));
     }
 
     @Test
     public void whenHasNewAccountShouldReturnTrue() {
-        when(mPreferenceManager.getSigninPromoLastShownVersion()).thenReturn(40);
-        when(mPreferenceManager.getSigninPromoLastAccountNames())
+        when(mPreferencesManager.getSigninPromoLastShownVersion()).thenReturn(40);
+        when(mPreferencesManager.getSigninPromoLastAccountNames())
                 .thenReturn(ImmutableSet.of("test@gmail.com"));
-        Assert.assertTrue(SigninPromoUtil.shouldLaunchSigninPromo(mPreferenceManager, 42, false,
+        Assert.assertTrue(SigninPromoUtil.shouldLaunchSigninPromo(mPreferencesManager, 42, false,
                 false, accountsSupplier("test@gmail.com", "test2@gmail.com")));
     }
 
     @Test
     public void whenAccountListUnchangedShouldReturnFalse() {
-        when(mPreferenceManager.getSigninPromoLastShownVersion()).thenReturn(40);
-        when(mPreferenceManager.getSigninPromoLastAccountNames())
+        when(mPreferencesManager.getSigninPromoLastShownVersion()).thenReturn(40);
+        when(mPreferencesManager.getSigninPromoLastAccountNames())
                 .thenReturn(ImmutableSet.of("test@gmail.com"));
         Assert.assertFalse(SigninPromoUtil.shouldLaunchSigninPromo(
-                mPreferenceManager, 42, false, false, accountsSupplier("test@gmail.com")));
+                mPreferencesManager, 42, false, false, accountsSupplier("test@gmail.com")));
     }
 
     @Test
     public void whenNoNewAccountsShouldReturnFalse() {
-        when(mPreferenceManager.getSigninPromoLastShownVersion()).thenReturn(40);
-        when(mPreferenceManager.getSigninPromoLastAccountNames())
+        when(mPreferencesManager.getSigninPromoLastShownVersion()).thenReturn(40);
+        when(mPreferencesManager.getSigninPromoLastAccountNames())
                 .thenReturn(ImmutableSet.of("test@gmail.com", "test2@gmail.com"));
         Assert.assertFalse(SigninPromoUtil.shouldLaunchSigninPromo(
-                mPreferenceManager, 42, false, false, accountsSupplier("test2@gmail.com")));
+                mPreferencesManager, 42, false, false, accountsSupplier("test2@gmail.com")));
     }
 }

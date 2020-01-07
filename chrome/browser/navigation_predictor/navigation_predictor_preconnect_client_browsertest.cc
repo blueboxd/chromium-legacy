@@ -265,4 +265,54 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(3, preresolve_done_count_);
 }
 
+namespace {
+// Feature to control preconnect to search.
+const base::Feature kPreconnectToSearchTest{"PreconnectToSearch",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+}  // namespace
+
+class NavigationPredictorPreconnectClientBrowserTestWithSearch
+    : public NavigationPredictorPreconnectClientBrowserTest {
+ public:
+  NavigationPredictorPreconnectClientBrowserTestWithSearch()
+      : NavigationPredictorPreconnectClientBrowserTest() {
+    feature_list_.InitAndEnableFeature(kPreconnectToSearchTest);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(NavigationPredictorPreconnectClientBrowserTestWithSearch,
+                       PreconnectSearchWithFeature) {
+  static const char kShortName[] = "test";
+  static const char kSearchURL[] =
+      "/anchors_different_area.html?q={searchTerms}";
+  TemplateURLService* model =
+      TemplateURLServiceFactory::GetForProfile(browser()->profile());
+  ASSERT_TRUE(model);
+  search_test_utils::WaitForTemplateURLServiceToLoad(model);
+  ASSERT_TRUE(model->loaded());
+
+  TemplateURLData data;
+  data.SetShortName(base::ASCIIToUTF16(kShortName));
+  data.SetKeyword(data.short_name());
+  data.SetURL(GetTestURL(kSearchURL).spec());
+
+  TemplateURL* template_url = model->Add(std::make_unique<TemplateURL>(data));
+  ASSERT_TRUE(template_url);
+  model->SetUserSelectedDefaultSearchProvider(template_url);
+  const GURL& url = GetTestURL("/anchors_different_area.html?q=cats");
+
+  // There should be 2 DSE preconnects (2 NIKs).
+  WaitForPreresolveCount(2);
+  EXPECT_EQ(2, preresolve_done_count_);
+
+  ui_test_utils::NavigateToURL(browser(), url);
+  // Now there should be an onload preconnect as well as a navigation
+  // preconnect.
+  WaitForPreresolveCount(4);
+  EXPECT_EQ(4, preresolve_done_count_);
+}
+
 }  // namespace

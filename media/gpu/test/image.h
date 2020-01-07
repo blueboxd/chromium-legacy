@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
 #include "media/base/video_types.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media {
@@ -42,6 +43,8 @@ class Image {
   VideoPixelFormat PixelFormat() const;
   // Get the image size.
   const gfx::Size& Size() const;
+  // Get the visible rectangle of the image.
+  const gfx::Rect& VisibleRect() const;
   // Get the image checksum.
   const char* Checksum() const;
 
@@ -57,6 +60,8 @@ class Image {
   VideoPixelFormat pixel_format_ = PIXEL_FORMAT_UNKNOWN;
   // The image size.
   gfx::Size size_;
+  // The visible rectangle of the image.
+  gfx::Rect visible_rect_;
   // The image md5 checksum.
   std::string checksum_;
 

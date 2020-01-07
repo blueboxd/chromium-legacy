@@ -1269,7 +1269,7 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationBackOldNavigationIgnored) {
   // Before that commits, go back again.
   auto back_navigation2 =
       NavigationSimulatorImpl::CreateHistoryNavigation(-1, contents());
-  back_navigation2->set_drop_swap_out_ack(true);
+  back_navigation2->set_drop_unload_ack(true);
   back_navigation2->ReadyToCommit();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   EXPECT_TRUE(contents()->GetPendingMainFrame());

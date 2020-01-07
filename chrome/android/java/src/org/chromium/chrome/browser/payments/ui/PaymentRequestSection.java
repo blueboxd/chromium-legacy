@@ -38,8 +38,8 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.prefeditor.EditableOption;
 import org.chromium.chrome.browser.ui.widget.TintedDrawable;
-import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
 import org.chromium.components.browser_ui.widget.DualControlLayout;
+import org.chromium.components.browser_ui.widget.animation.Interpolators;
 import org.chromium.ui.HorizontalListDividerDrawable;
 import org.chromium.ui.UiUtils;
 

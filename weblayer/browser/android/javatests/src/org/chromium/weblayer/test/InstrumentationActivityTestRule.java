@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.rule.ActivityTestRule;
+import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 
 import org.json.JSONException;
@@ -250,5 +251,13 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
 
     public String getTestDataURL(String path) {
         return getTestServer().getURL("/weblayer/test/data/" + path);
+    }
+
+    public void setRetainInstance(boolean retain) {
+        TestThreadUtils.runOnUiThreadBlocking(() -> getActivity().setRetainInstance(retain));
+    }
+
+    public Fragment getFragment() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(() -> getActivity().getFragment());
     }
 }

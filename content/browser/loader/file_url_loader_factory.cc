@@ -891,7 +891,7 @@ void FileURLLoaderFactory::Clone(
   receivers_.Add(this, std::move(loader));
 }
 
-void CreateFileURLLoader(
+void CreateFileURLLoaderBypassingSecurityChecks(
     const network::ResourceRequest& request,
     mojo::PendingReceiver<network::mojom::URLLoader> loader,
     mojo::PendingRemote<network::mojom::URLLoaderClient> client,

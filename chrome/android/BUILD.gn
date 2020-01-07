@@ -315,6 +315,7 @@ android_library("chrome_java") {
     "//components/navigation_interception/android:navigation_interception_java",
     "//components/offline_items_collection/core:core_java",
     "//components/omnibox/browser:browser_java",
+    "//components/paint_preview/browser/android:java",
     "//components/payments/content/android:java",
     "//components/payments/mojom:mojom_java",
     "//components/policy/android:policy_java",
@@ -1885,11 +1886,6 @@ if (public_android_sdk) {
       android_manifest_dep = ":trichrome_library_64_32_android_manifest"
       is_64_bit_browser = true
       include_32_bit_webview = true
-
-      if (trichrome_synchronized_proguard) {
-        webview_target = "//android_webview:trichrome_webview_64_32_apk"
-        chrome_target = ":trichrome_chrome_64_32_bundle"
-      }
     }
 
     trichrome_library_apk_tmpl("trichrome_library_64_apk") {
@@ -2464,11 +2460,9 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
                              "include_64_bit_webview",
                              "static_library_provider",
                              "static_library_synchronized_proguard",
+                             "resource_ids_provider_dep",
                              "use_trichrome_library",
                            ])
-    if (!_is_trichrome || !trichrome_synchronized_proguard) {
-      bundle_target = ":${invoker.target_name}"
-    }
     target_type = "android_app_bundle_module"
     is_base_module = true
     version_code = _version_code
@@ -2480,8 +2474,10 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
           "monochrome_public_bundle.android_manifest.failed"
     }
 
-    if (_is_trichrome && trichrome_synchronized_proguard) {
-      resource_ids_provider_dep = "//android_webview:trichrome_webview_apk"
+    if (!_is_trichrome ||
+        !defined(invoker.static_library_synchronized_proguard) ||
+        !invoker.static_library_synchronized_proguard) {
+      bundle_target = ":${invoker.target_name}"
     }
   }
 
@@ -2557,6 +2553,9 @@ if (public_android_sdk) {
     static_library_provider = ":trichrome_library_apk"
     if (!is_java_debug) {
       static_library_synchronized_proguard = trichrome_synchronized_proguard
+      if (trichrome_synchronized_proguard) {
+        resource_ids_provider_dep = "//android_webview:trichrome_webview_apk"
+      }
     }
     if (android_64bit_target_cpu) {
       is_64_bit_browser = false

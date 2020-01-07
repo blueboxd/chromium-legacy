@@ -10,6 +10,7 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -621,12 +622,12 @@ void WindowCycleList::SelectWindow(aura::Window* window) {
   if (window_selected_)
     return;
 
-  window->Show();
-  auto* window_state = WindowState::Get(window);
-  if (window_util::IsArcPipWindow(window))
-    window_state->Restore();
-  else
-    window_state->Activate();
+  if (window->GetProperty(kPipOriginalWindowKey)) {
+    window_util::ExpandArcPipWindow();
+  } else {
+    window->Show();
+    WindowState::Get(window)->Activate();
+  }
 
   window_selected_ = true;
 }

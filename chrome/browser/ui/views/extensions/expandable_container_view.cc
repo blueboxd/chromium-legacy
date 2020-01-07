@@ -72,17 +72,13 @@ ExpandableContainerView::ExpandableContainerView(
   layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId);
   auto details_link = std::make_unique<views::Link>(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_DETAILS));
-  details_link->set_listener(this);
+  details_link->set_callback(base::BindRepeating(
+      &ExpandableContainerView::ToggleDetailLevel, base::Unretained(this)));
   details_link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   details_link_ = layout->AddView(std::move(details_link));
 }
 
 ExpandableContainerView::~ExpandableContainerView() = default;
-
-void ExpandableContainerView::LinkClicked(views::Link* source,
-                                          int event_flags) {
-  ToggleDetailLevel();
-}
 
 void ExpandableContainerView::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();

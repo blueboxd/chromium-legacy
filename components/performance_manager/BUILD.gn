@@ -78,13 +78,13 @@ static_library("performance_manager") {
     "render_process_host_proxy.cc",
     "render_process_user_data.cc",
     "render_process_user_data.h",
-    "shared_worker_watcher.cc",
-    "shared_worker_watcher.h",
     "tab_helper_frame_node_source.cc",
     "tab_helper_frame_node_source.h",
     "web_contents_proxy.cc",
     "web_contents_proxy_impl.cc",
     "web_contents_proxy_impl.h",
+    "worker_watcher.cc",
+    "worker_watcher.h",
   ]
   public_deps = [
     "//base",
@@ -124,8 +124,8 @@ source_set("unit_tests") {
     "performance_manager_test_harness.cc",
     "performance_manager_test_harness.h",
     "performance_manager_unittest.cc",
-    "shared_worker_watcher_unittest.cc",
     "web_contents_proxy_unittest.cc",
+    "worker_watcher_unittest.cc",
   ]
 
   deps = [

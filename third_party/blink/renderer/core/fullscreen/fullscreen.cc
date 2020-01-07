@@ -570,7 +570,8 @@ void Fullscreen::RequestFullscreen(Element& pending) {
 ScriptPromise Fullscreen::RequestFullscreen(Element& pending,
                                             const FullscreenOptions* options,
                                             RequestType request_type,
-                                            ScriptState* script_state) {
+                                            ScriptState* script_state,
+                                            ExceptionState* exception_state) {
   RequestFullscreenScope scope;
 
   // 1. Let |pending| be the context object.
@@ -585,11 +586,10 @@ ScriptPromise Fullscreen::RequestFullscreen(Element& pending,
   // 4. If |pendingDoc| is not fully active, then reject |promise| with a
   // TypeError exception and return |promise|.
   if (!document.IsActive() || !document.GetFrame()) {
-    if (!script_state)
+    if (!exception_state)
       return ScriptPromise();
-    return ScriptPromise::Reject(
-        script_state, V8ThrowException::CreateTypeError(
-                          script_state->GetIsolate(), "Document not active"));
+    exception_state->ThrowTypeError("Document not active");
+    return ScriptPromise();
   }
 
   if (script_state) {
@@ -782,12 +782,13 @@ void Fullscreen::FullyExitFullscreen(Document& document, bool ua_originated) {
   DCHECK(IsSimpleFullscreenDocument(doc));
 
   // 3. Exit fullscreen |document|.
-  ExitFullscreen(doc, nullptr, ua_originated);
+  ExitFullscreen(doc, nullptr, nullptr, ua_originated);
 }
 
 // https://fullscreen.spec.whatwg.org/#exit-fullscreen
 ScriptPromise Fullscreen::ExitFullscreen(Document& doc,
                                          ScriptState* script_state,
+                                         ExceptionState* exception_state,
                                          bool ua_originated) {
   // 1. Let |promise| be a new promise.
   // ScriptPromiseResolver is allocated after step 2.
@@ -796,11 +797,10 @@ ScriptPromise Fullscreen::ExitFullscreen(Document& doc,
   // 2. If |doc| is not fully active or |doc|'s fullscreen element is null, then
   // reject |promise| with a TypeError exception and return |promise|.
   if (!doc.IsActive() || !doc.GetFrame() || !FullscreenElementFrom(doc)) {
-    if (!script_state)
+    if (!exception_state)
       return ScriptPromise();
-    return ScriptPromise::Reject(
-        script_state, V8ThrowException::CreateTypeError(
-                          script_state->GetIsolate(), "Document not active"));
+    exception_state->ThrowTypeError("Document not active");
+    return ScriptPromise();
   }
 
   if (script_state)
@@ -1003,7 +1003,7 @@ void Fullscreen::ElementRemoved(Element& node) {
   // 3.1. If |node| is its node document's fullscreen element, exit fullscreen
   // that document.
   if (IsFullscreenElement(node)) {
-    ExitFullscreen(document, nullptr, false);
+    ExitFullscreen(document);
   } else {
     // 3.2. Otherwise, unfullscreen |node| within its node document.
     Unfullscreen(node);

@@ -64,6 +64,7 @@ ResourceRequest::ResourceRequest(const KURL& url)
       cache_mode_(mojom::FetchCacheMode::kDefault),
       skip_service_worker_(false),
       download_to_cache_only_(false),
+      site_for_cookies_set_(false),
       priority_(ResourceLoadPriority::kUnresolved),
       intra_priority_value_(0),
       requestor_id_(0),
@@ -90,7 +91,7 @@ ResourceRequest& ResourceRequest::operator=(const ResourceRequest&) = default;
 std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
     const KURL& new_url,
     const AtomicString& new_method,
-    const KURL& new_site_for_cookies,
+    const net::SiteForCookies& new_site_for_cookies,
     const String& new_referrer,
     network::mojom::ReferrerPolicy new_referrer_policy,
     bool skip_service_worker) const {
@@ -182,12 +183,14 @@ void ResourceRequest::SetTimeoutInterval(
   timeout_interval_ = timout_interval_seconds;
 }
 
-const KURL& ResourceRequest::SiteForCookies() const {
+const net::SiteForCookies& ResourceRequest::SiteForCookies() const {
   return site_for_cookies_;
 }
 
-void ResourceRequest::SetSiteForCookies(const KURL& site_for_cookies) {
+void ResourceRequest::SetSiteForCookies(
+    const net::SiteForCookies& site_for_cookies) {
   site_for_cookies_ = site_for_cookies;
+  site_for_cookies_set_ = true;
 }
 
 const SecurityOrigin* ResourceRequest::TopFrameOrigin() const {

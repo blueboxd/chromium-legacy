@@ -5,7 +5,7 @@
 #ifndef WEBLAYER_BROWSER_SAFE_BROWSING_SAFE_BROWSING_SERVICE_H_
 #define WEBLAYER_BROWSER_SAFE_BROWSING_SAFE_BROWSING_SERVICE_H_
 
-#include "components/safe_browsing/base_ui_manager.h"
+#include "components/safe_browsing/content/base_ui_manager.h"
 
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -15,7 +15,6 @@
 
 namespace content {
 class RenderProcessHost;
-class ResourceContext;
 }
 
 namespace blink {
@@ -46,7 +45,6 @@ class SafeBrowsingService {
   // Executed on UI thread
   void Initialize();
   std::unique_ptr<blink::URLLoaderThrottle> CreateURLLoaderThrottle(
-      content::ResourceContext* resource_context,
       const base::RepeatingCallback<content::WebContents*()>& wc_getter,
       int frame_tree_node_id);
   void AddInterface(service_manager::BinderRegistry* registry,

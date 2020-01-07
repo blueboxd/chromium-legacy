@@ -60,23 +60,21 @@ class NET_EXPORT OCSPRequestSessionDelegate
   virtual ~OCSPRequestSessionDelegate();
 };
 
-class NET_EXPORT OCSPRequestSessionDelegateFactory
-    : public base::RefCountedThreadSafe<OCSPRequestSessionDelegateFactory> {
+class NET_EXPORT OCSPRequestSessionDelegateFactory {
  public:
-  REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
-
   OCSPRequestSessionDelegateFactory();
+
+  // Not thread-safe, but can be called on different threads with the use of
+  // mutual exclusion.
   virtual scoped_refptr<OCSPRequestSessionDelegate>
   CreateOCSPRequestSessionDelegate() = 0;
 
- protected:
-  friend class base::RefCountedThreadSafe<OCSPRequestSessionDelegateFactory>;
   virtual ~OCSPRequestSessionDelegateFactory();
 };
 
 // Sets the factory that creates OCSPRequestSessions.
 NET_EXPORT void SetOCSPRequestSessionDelegateFactory(
-    scoped_refptr<OCSPRequestSessionDelegateFactory> factory);
+    std::unique_ptr<OCSPRequestSessionDelegateFactory> factory);
 
 // Initializes HTTP client functions for NSS.  This function is thread-safe,
 // and HTTP handlers will only ever be initialized once.

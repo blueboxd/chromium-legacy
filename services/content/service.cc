@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "mojo/public/cpp/bindings/binding.h"
 #include "services/content/navigable_contents_factory_impl.h"
 #include "services/content/navigable_contents_impl.h"
 #include "services/content/public/mojom/navigable_contents_factory.mojom.h"

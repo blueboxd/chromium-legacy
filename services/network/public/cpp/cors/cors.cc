@@ -274,10 +274,9 @@ bool ShouldCheckCors(const GURL& request_url,
   // request doesn't have one, CORS should not work.
   DCHECK(request_initiator);
 
-  // TODO(crbug.com/870173): Remove following scheme check once the network
-  // service is fully enabled.
-  if (request_url.SchemeIs(url::kDataScheme))
-    return false;
+  // |request_url| should not contain the url::kDataScheme here, but have a
+  // DCHECK for a while, just in case.
+  DCHECK(!request_url.SchemeIs(url::kDataScheme));
 
   if (request_initiator->IsSameOriginWith(url::Origin::Create(request_url)))
     return false;

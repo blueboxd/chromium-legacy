@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <directxmath.h>
 #include <wrl.h>
 
 #include "base/stl_util.h"

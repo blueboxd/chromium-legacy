@@ -115,7 +115,6 @@ class MockInputHandler : public cc::InputHandler {
   MOCK_METHOD2(RootScrollBegin,
                ScrollStatus(cc::ScrollState*,
                             cc::InputHandler::ScrollInputType type));
-  MOCK_METHOD1(ScrollAnimatedBegin, ScrollStatus(cc::ScrollState*));
   MOCK_METHOD3(ScrollAnimated,
                void(const gfx::Point& viewport_point,
                     const gfx::Vector2dF& scroll_delta,
@@ -739,7 +738,7 @@ TEST_P(InputHandlerProxyTest, AnimatedScrollbarScroll) {
 
   // Test setup for a kGestureScrollBegin.
   gesture_.SetType(WebInputEvent::kGestureScrollBegin);
-  EXPECT_CALL(mock_input_handler_, ScrollAnimatedBegin(_))
+  EXPECT_CALL(mock_input_handler_, ScrollBegin(_, cc::InputHandler::WHEEL))
       .WillOnce(testing::Return(kImplThreadScrollState));
   EXPECT_EQ(expected_disposition_,
             input_handler_->RouteToTypeSpecificHandler(gesture_));
@@ -836,7 +835,7 @@ TEST_P(InputHandlerProxyTest, DISABLED_GestureScrollByCoarsePixels) {
   gesture_.SetType(WebInputEvent::kGestureScrollBegin);
   gesture_.data.scroll_begin.delta_hint_units =
       ui::input_types::ScrollGranularity::kScrollByPixel;
-  EXPECT_CALL(mock_input_handler_, ScrollAnimatedBegin(_))
+  EXPECT_CALL(mock_input_handler_, ScrollBegin(_, cc::InputHandler::WHEEL))
       .WillOnce(testing::Return(kImplThreadScrollState));
   EXPECT_CALL(mock_input_handler_, ScrollingShouldSwitchtoMainThread())
       .WillOnce(testing::Return(false));

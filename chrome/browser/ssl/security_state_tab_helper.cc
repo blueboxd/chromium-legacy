@@ -125,9 +125,8 @@ SecurityStateTabHelper::SecurityStateTabHelper(
 SecurityStateTabHelper::~SecurityStateTabHelper() {}
 
 security_state::SecurityLevel SecurityStateTabHelper::GetSecurityLevel() {
-  return security_state::GetSecurityLevel(
-      *GetVisibleSecurityState(), UsedPolicyInstalledCertificate(),
-      base::BindRepeating(&content::IsOriginSecure));
+  return security_state::GetSecurityLevel(*GetVisibleSecurityState(),
+                                          UsedPolicyInstalledCertificate());
 }
 
 std::unique_ptr<security_state::VisibleSecurityState>

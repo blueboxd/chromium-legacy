@@ -23,7 +23,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "components/download/public/common/download_item.h"
-#include "components/safe_browsing/proto/csd.pb.h"
+#include "components/safe_browsing/core/proto/csd.pb.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
 

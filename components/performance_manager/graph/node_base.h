@@ -16,7 +16,6 @@
 #include "components/performance_manager/graph/graph_impl.h"
 #include "components/performance_manager/graph/node_type.h"
 #include "components/performance_manager/graph/properties.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 

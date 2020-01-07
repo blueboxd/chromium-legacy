@@ -70,7 +70,8 @@ class MediaKeys : public ScriptWrappable,
                                  ExceptionState&);
 
   ScriptPromise setServerCertificate(ScriptState*,
-                                     const DOMArrayPiece& server_certificate);
+                                     const DOMArrayPiece& server_certificate,
+                                     ExceptionState& exception_state);
 
   ScriptPromise getStatusForPolicy(ScriptState*, const MediaKeysPolicy*);
 

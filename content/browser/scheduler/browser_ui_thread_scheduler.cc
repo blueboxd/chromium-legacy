@@ -63,14 +63,7 @@ BrowserUIThreadScheduler::BrowserUIThreadScheduler(
 
 void BrowserUIThreadScheduler::CommonSequenceManagerSetup(
     base::sequence_manager::SequenceManager* sequence_manager) {
-  sequence_manager_ = sequence_manager;
-  sequence_manager_->EnableCrashKeys("ui_scheduler_async_stack");
-}
-
-const scoped_refptr<base::SequencedTaskRunner>&
-BrowserUIThreadScheduler::GetTaskRunnerForCurrentTask() const {
-  DCHECK(sequence_manager_);
-  return sequence_manager_->GetTaskRunnerForCurrentTask();
+  sequence_manager->EnableCrashKeys("ui_scheduler_async_stack");
 }
 
 }  // namespace content

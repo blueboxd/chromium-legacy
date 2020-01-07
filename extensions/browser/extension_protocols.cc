@@ -604,7 +604,7 @@ class ExtensionURLLoaderFactory : public network::mojom::URLLoaderFactory {
           resource.relative_path());
     }
 
-    content::CreateFileURLLoader(
+    content::CreateFileURLLoaderBypassingSecurityChecks(
         request, std::move(loader), std::move(client),
         std::make_unique<FileLoaderObserver>(std::move(verify_job)),
         /* allow_directory_listing */ false, std::move(response_headers));

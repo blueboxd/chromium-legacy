@@ -273,11 +273,11 @@ void TestRenderFrame::NavigateWithError(
                      base::Unretained(mock_frame_host_.get())));
 }
 
-void TestRenderFrame::SwapOut(
+void TestRenderFrame::Unload(
     int proxy_routing_id,
     bool is_loading,
     const FrameReplicationState& replicated_frame_state) {
-  OnSwapOut(proxy_routing_id, is_loading, replicated_frame_state);
+  OnUnload(proxy_routing_id, is_loading, replicated_frame_state);
 }
 
 void TestRenderFrame::SetEditableSelectionOffsets(int start, int end) {

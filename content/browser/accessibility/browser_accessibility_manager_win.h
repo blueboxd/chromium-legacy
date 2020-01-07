@@ -105,6 +105,13 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   // changes, so we only fire the event once for every node.
   std::unordered_set<BrowserAccessibility*> aria_properties_events_;
 
+  // Since there could be duplicate text selection changed events on a node
+  // raised from both FireBlinkEvent and FireGeneratedEvent, we use an unordered
+  // set here to keep track of the unique nodes that had
+  // UIA_Text_TextSelectionChangedEventId, so we only fire the event once for
+  // every node.
+  std::unordered_set<BrowserAccessibility*> text_selection_changed_events_;
+
   // When the ignored state changes for a node, we only want to fire the
   // events relevant to the ignored state change (e.g. show / hide).
   // This set keeps track of what nodes should suppress superfluous events.

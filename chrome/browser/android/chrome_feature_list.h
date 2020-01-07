@@ -15,6 +15,7 @@ namespace android {
 extern const base::Feature kAdjustWebApkInstallationSpace;
 extern const base::Feature kAllowNewIncognitoTabIntents;
 extern const base::Feature kAllowRemoteContextForNotifications;
+extern const base::Feature kAndroidBlockIntentNonSafelistedHeaders;
 extern const base::Feature kAndroidNightMode;
 extern const base::Feature kAndroidNightModeCCT;
 extern const base::Feature kAndroidNightModeForQ;

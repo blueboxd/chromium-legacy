@@ -126,7 +126,6 @@ class SearchResultAnswerCardView::AnswerCardResultView
 
   ~AnswerCardResultView() override {
     contents_->RemoveObserver(this);
-    ClearResult();
   }
 
   bool has_valid_answer_card() const {

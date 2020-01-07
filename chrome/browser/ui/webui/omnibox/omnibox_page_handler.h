@@ -11,8 +11,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "chrome/browser/autocomplete/bitmap_fetcher_helper.h"
 #include "chrome/browser/ui/webui/omnibox/omnibox.mojom.h"
 #include "components/omnibox/browser/autocomplete_controller_delegate.h"
 #include "components/omnibox/browser/autocomplete_input.h"
@@ -91,12 +91,12 @@ class OmniboxPageHandler : public AutocompleteControllerDelegate,
   // The Profile* handed to us in our constructor.
   Profile* profile_;
 
-  BitmapFetcherHelper bitmap_fetcher_helper_;
-
   mojo::Receiver<mojom::OmniboxPageHandler> receiver_;
 
   ScopedObserver<OmniboxControllerEmitter, OmniboxControllerEmitter::Observer>
       observer_;
+
+  base::WeakPtrFactory<OmniboxPageHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxPageHandler);
 };

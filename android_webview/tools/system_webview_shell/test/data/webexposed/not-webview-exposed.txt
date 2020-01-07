@@ -39,6 +39,13 @@ interface PresentationRequest : EventTarget
 # remoteplayback api not supported in webview crbug.com/521319
 interface RemotePlayback : EventTarget
 
+# translation service is not implemented in webview which
+# hrefTranslate is gated on. If it does eventually expose it
+# it should call WebRuntimeFeatures.EnableTranslateService(...)
+interface HTMLAnchorElement : HTMLElement
+    getter hrefTranslate
+    setter hrefTranslate
+
 # web payments api not enabled in webview, crbug.com/667069
 interface HTMLIFrameElement : HTMLElement
     getter allowPaymentRequest

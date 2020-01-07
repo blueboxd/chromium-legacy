@@ -17,24 +17,22 @@ import java.util.List;
  * To add a new key:
  * 1. Declare it as a String constant in this class. Its value should follow the format
  *    "Chrome.[Feature].[Key]" and the constants names should be in alphabetical order.
- * 2. Add it to createKeysInUse().
+ * 2. Add it to {@link #createKeysInUse()}.
  *
  * To deprecate a key that is not used anymore:
  * 1. Add its constant value to createDeprecatedKeysForTesting(), in alphabetical order by value.
- * 2. Remove the key from createKeysInUse().
- * 3. If the key is in createGrandfatheredFormatKeysForTesting(), remove it from there.
- * 4. Delete the constant.
+ * 2. Remove the key from {@link #createKeysInUse()} or {@link #createGrandfatheredKeysInUse()}.
+ * 3. Delete the constant.
  *
  * To add a new KeyPrefix:
  * 1. Declare it as a KeyPrefix constant in this class. Its value should follow the format
  *    "Chrome.[Feature].[KeyPrefix].*" and the constants names should be in alphabetical order.
- * 2. Add PREFIX_CONSTANT.pattern() to the list of used keys in
- *    {@link ChromePreferenceKeys#createKeysInUse()} ()}.
+ * 2. Add PREFIX_CONSTANT.pattern() to {@link #createKeysInUse()}}.
  *
  * To deprecate a KeyPrefix that is not used anymore:
- * 1. Add its String value to createDeprecatedKeysForTesting(), including the ".*", in alphabetical
- *    order by value.
- * 2. Remove it from createKeysInUse().
+ * 1. Add its String value to {@link #createDeprecatedKeysForTesting()}, including the ".*", in
+ *    alphabetical order by value.
+ * 2. Remove it from {@link #createKeysInUse()}.
  * 3. Delete the KeyPrefix constant.
  *
  * Tests in ChromePreferenceKeysTest and checks in {@link ChromePreferenceKeyChecker} ensure the
@@ -323,6 +321,12 @@ public final class ChromePreferenceKeys {
     public static final String FLAGS_CACHED_NIGHT_MODE_DEFAULT_TO_LIGHT =
             "night_mode_default_to_light";
     /**
+     * Whether the Paint Preview Capture menu item is enabled.
+     * Default value is false.
+     */
+    public static final String FLAGS_CACHED_PAINT_PREVIEW_TEST_ENABLED_KEY =
+            "Chrome.Flags.PaintPreviewTestEnabled";
+    /**
      * Whether or not bootstrap tasks should be prioritized (i.e. bootstrap task prioritization
      * experiment is enabled). Default value is true.
      */
@@ -471,123 +475,23 @@ public final class ChromePreferenceKeys {
     public static final String WEBAPK_UNINSTALLED_PACKAGES = "webapk_uninstalled_packages";
 
     /**
-     * These values are currently used as SharedPreferences keys.
+     * These values are currently used as SharedPreferences keys, along with the keys in
+     * {@link #createGrandfatheredKeysInUse()}. Add new SharedPreferences keys here.
      *
-     * @return The list of [keys in use].
+     * @return The list of [keys in use] conforming to the format.
      */
     @CheckDiscard("Validation is performed in tests and in debug builds.")
     static List<String> createKeysInUse() {
         // clang-format off
         return Arrays.asList(
-                ACCESSIBILITY_TAB_SWITCHER,
-                BOOKMARKS_LAST_USED_URL,
-                BOOKMARKS_LAST_USED_PARENT,
-                CHROME_DEFAULT_BROWSER,
-                CONTENT_SUGGESTIONS_SHOWN,
-                CONTEXTUAL_SEARCH_ALL_TIME_OPEN_COUNT,
-                CONTEXTUAL_SEARCH_ALL_TIME_TAP_COUNT,
-                CONTEXTUAL_SEARCH_ALL_TIME_TAP_QUICK_ANSWER_COUNT,
-                CONTEXTUAL_SEARCH_CLICKS_WEEK_0,
-                CONTEXTUAL_SEARCH_CLICKS_WEEK_1,
-                CONTEXTUAL_SEARCH_CLICKS_WEEK_2,
-                CONTEXTUAL_SEARCH_CLICKS_WEEK_3,
-                CONTEXTUAL_SEARCH_CLICKS_WEEK_4,
-                CONTEXTUAL_SEARCH_CURRENT_WEEK_NUMBER,
-                CONTEXTUAL_SEARCH_ENTITY_IMPRESSIONS_COUNT,
-                CONTEXTUAL_SEARCH_ENTITY_OPENS_COUNT,
-                CONTEXTUAL_SEARCH_IMPRESSIONS_WEEK_0,
-                CONTEXTUAL_SEARCH_IMPRESSIONS_WEEK_1,
-                CONTEXTUAL_SEARCH_IMPRESSIONS_WEEK_2,
-                CONTEXTUAL_SEARCH_IMPRESSIONS_WEEK_3,
-                CONTEXTUAL_SEARCH_IMPRESSIONS_WEEK_4,
-                CONTEXTUAL_SEARCH_LAST_ANIMATION_TIME,
-                CONTEXTUAL_SEARCH_NEWEST_WEEK,
-                CONTEXTUAL_SEARCH_OLDEST_WEEK,
-                CONTEXTUAL_SEARCH_PREVIOUS_INTERACTION_ENCODED_OUTCOMES,
-                CONTEXTUAL_SEARCH_PREVIOUS_INTERACTION_EVENT_ID,
-                CONTEXTUAL_SEARCH_PREVIOUS_INTERACTION_TIMESTAMP,
-                CONTEXTUAL_SEARCH_PROMO_OPEN_COUNT,
-                CONTEXTUAL_SEARCH_QUICK_ACTIONS_IGNORED_COUNT,
-                CONTEXTUAL_SEARCH_QUICK_ACTIONS_TAKEN_COUNT,
-                CONTEXTUAL_SEARCH_QUICK_ACTION_IMPRESSIONS_COUNT,
-                CONTEXTUAL_SEARCH_TAP_SINCE_OPEN_COUNT,
-                CONTEXTUAL_SEARCH_TAP_SINCE_OPEN_QUICK_ANSWER_COUNT,
-                CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_COUNT,
                 CONTEXT_MENU_OPEN_IMAGE_IN_EPHEMERAL_TAB_CLICKED,
                 CONTEXT_MENU_OPEN_IN_EPHEMERAL_TAB_CLICKED,
                 CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS_CLICKED,
-                CRASH_UPLOAD_FAILURE_BROWSER,
-                CRASH_UPLOAD_FAILURE_GPU,
-                CRASH_UPLOAD_FAILURE_OTHER,
-                CRASH_UPLOAD_FAILURE_RENDERER,
-                CRASH_UPLOAD_SUCCESS_BROWSER,
-                CRASH_UPLOAD_SUCCESS_GPU,
-                CRASH_UPLOAD_SUCCESS_OTHER,
-                CRASH_UPLOAD_SUCCESS_RENDERER,
-                DATA_REDUCTION_DISPLAYED_FRE_OR_SECOND_PROMO_TIME_MS,
-                DATA_REDUCTION_DISPLAYED_FRE_OR_SECOND_PROMO_VERSION,
-                DATA_REDUCTION_DISPLAYED_FRE_OR_SECOND_RUN_PROMO,
-                DATA_REDUCTION_DISPLAYED_INFOBAR_PROMO,
-                DATA_REDUCTION_DISPLAYED_INFOBAR_PROMO_VERSION,
-                DATA_REDUCTION_DISPLAYED_MILESTONE_PROMO_SAVED_BYTES,
-                DATA_REDUCTION_ENABLED,
-                DATA_REDUCTION_FIRST_ENABLED_TIME,
-                DATA_REDUCTION_FRE_PROMO_OPT_OUT,
-                DATA_REDUCTION_SITE_BREAKDOWN_ALLOWED_DATE,
                 EXPLORE_OFFLINE_CONTENT_AVAILABILITY_STATUS,
-                FIRST_RUN_CACHED_TOS_ACCEPTED,
-                FIRST_RUN_FLOW_COMPLETE,
-                FIRST_RUN_FLOW_SIGNIN_ACCOUNT_NAME,
-                FIRST_RUN_FLOW_SIGNIN_COMPLETE,
-                FIRST_RUN_FLOW_SIGNIN_SETUP,
-                FIRST_RUN_LIGHTWEIGHT_FLOW_COMPLETE,
-                FIRST_RUN_SKIP_WELCOME_PAGE,
                 FLAGS_CACHED.pattern(),
-                FLAGS_CACHED_ADAPTIVE_TOOLBAR_ENABLED,
-                FLAGS_CACHED_BOTTOM_TOOLBAR_ENABLED,
-                FLAGS_CACHED_COMMAND_LINE_ON_NON_ROOTED_ENABLED,
-                FLAGS_CACHED_DOWNLOAD_AUTO_RESUMPTION_IN_NATIVE,
                 FLAGS_CACHED_DUET_TABSTRIP_INTEGRATION_ANDROID_ENABLED,
-                FLAGS_CACHED_GRID_TAB_SWITCHER_ENABLED,
-                FLAGS_CACHED_IMMERSIVE_UI_MODE_ENABLED,
-                FLAGS_CACHED_INTEREST_FEED_CONTENT_SUGGESTIONS,
-                FLAGS_CACHED_LABELED_BOTTOM_TOOLBAR_ENABLED,
-                FLAGS_CACHED_NETWORK_SERVICE_WARM_UP_ENABLED,
-                FLAGS_CACHED_NIGHT_MODE_AVAILABLE,
-                FLAGS_CACHED_NIGHT_MODE_CCT_AVAILABLE,
-                FLAGS_CACHED_NIGHT_MODE_DEFAULT_TO_LIGHT,
-                FLAGS_CACHED_PRIORITIZE_BOOTSTRAP_TASKS,
-                FLAGS_CACHED_SERVICE_MANAGER_FOR_BACKGROUND_PREFETCH,
-                FLAGS_CACHED_SERVICE_MANAGER_FOR_DOWNLOAD_RESUMPTION,
-                FLAGS_CACHED_START_SURFACE_ENABLED,
-                FLAGS_CACHED_SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT,
-                FLAGS_CACHED_TAB_GROUPS_ANDROID_ENABLED,
-                HOMEPAGE_CUSTOM_URI,
-                HOMEPAGE_ENABLED,
-                HOMEPAGE_USE_DEFAULT_URI,
-                HOMEPAGE_LOCATION_POLICY,
-                LATEST_UNSUPPORTED_VERSION,
-                OFFLINE_INDICATOR_V2_ENABLED,
-                PROMOS_SKIPPED_ON_FIRST_START,
-                REACHED_CODE_PROFILER_GROUP,
-                SIGNIN_AND_SYNC_PROMO_SHOW_COUNT,
-                SIGNIN_PROMO_IMPRESSIONS_COUNT_BOOKMARKS,
-                SIGNIN_PROMO_IMPRESSIONS_COUNT_SETTINGS,
-                SIGNIN_PROMO_LAST_SHOWN_ACCOUNT_NAMES,
-                SIGNIN_PROMO_LAST_SHOWN_MAJOR_VERSION,
-                SIGNIN_PROMO_NTP_PROMO_DISMISSED,
-                SIGNIN_PROMO_NTP_PROMO_SUPPRESSION_PERIOD_START,
-                SIGNIN_PROMO_PERSONALIZED_DECLINED,
-                SIGNIN_PROMO_SETTINGS_PERSONALIZED_DISMISSED,
-                START_SURFACE_SINGLE_PANE_ENABLED_KEY,
-                TWA_DIALOG_NUMBER_OF_DISMISSALS_ON_CLEAR_DATA,
-                TWA_DIALOG_NUMBER_OF_DISMISSALS_ON_UNINSTALL,
-                TWA_DISCLOSURE_ACCEPTED_PACKAGES,
-                UI_THEME_DARKEN_WEBSITES_ENABLED,
-                UI_THEME_SETTING,
-                VERIFIED_DIGITAL_ASSET_LINKS,
-                VR_SHOULD_REGISTER_ASSETS_COMPONENT_ON_STARTUP,
-                WEBAPK_UNINSTALLED_PACKAGES
+                FLAGS_CACHED_PAINT_PREVIEW_TEST_ENABLED_KEY,
+                HOMEPAGE_LOCATION_POLICY
         );
         // clang-format on
     }
@@ -626,14 +530,15 @@ public final class ChromePreferenceKeys {
     }
 
     /**
-     * Do not add new constants to this list. Instead, declare new keys in the format
-     * "Chrome.[Feature].[Key]", for example "Chrome.FooBar.FooEnabled".
+     * Do not add new constants to this list unless you are migrating old SharedPreferences keys.
+     * Instead, declare new keys in the format "Chrome.[Feature].[Key]", for example
+     * "Chrome.FooBar.FooEnabled", and add them to {@link #createKeysInUse()}.
      *
-     * @return The list of [keys in use] that does not conform to the "Chrome.[Feature].[Key]"
+     * @return The list of [keys in use] that do not conform to the "Chrome.[Feature].[Key]"
      *     format.
      */
     @CheckDiscard("Validation is performed in tests and in debug builds.")
-    static List<String> createGrandfatheredFormatKeys() {
+    static List<String> createGrandfatheredKeysInUse() {
         // clang-format off
         return Arrays.asList(
                 ACCESSIBILITY_TAB_SWITCHER,

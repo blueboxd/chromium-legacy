@@ -2208,6 +2208,22 @@ TEST(ValuesTest, DictionaryIterator) {
   EXPECT_TRUE(seen2);
 }
 
+TEST(ValuesTest, MutatingCopiedPairsInDictItemsMutatesUnderlyingValues) {
+  Value dict(Value::Type::DICTIONARY);
+  dict.SetKey("key", Value("initial value"));
+
+  // Because the non-const DictItems() iterates over
+  // <const std::string&, Value&> pairs, it's possible
+  // to alter iterated-over values in place even when
+  // "copying" the key-value pair:
+  for (auto kv : dict.DictItems())
+    kv.second.GetString() = "replacement";
+
+  std::string* found = dict.FindStringKey("key");
+  ASSERT_TRUE(found);
+  EXPECT_EQ(*found, "replacement");
+}
+
 TEST(ValuesTest, StdDictionaryIterator) {
   DictionaryValue dict;
   for (auto it = dict.begin(); it != dict.end(); ++it) {

@@ -117,8 +117,6 @@ bool SizesMathFunctionParser::HandleRightParenthesis(
 
 bool SizesMathFunctionParser::HandleComma(Vector<CSSParserToken>& stack,
                                           const CSSParserToken& token) {
-  if (!RuntimeEnabledFeatures::CSSComparisonFunctionsEnabled())
-    return false;
   // Treat comma as a binary right-associative operation for now, so that
   // when reaching the right parenthesis of the function, we can get the
   // number of parameters by counting the number of commas.
@@ -180,13 +178,11 @@ bool SizesMathFunctionParser::CalcToReversePolishNotation(
           return false;
         break;
       case kFunctionToken:
-        if (RuntimeEnabledFeatures::CSSComparisonFunctionsEnabled()) {
-          if (token.FunctionId() == CSSValueID::kMin ||
-              token.FunctionId() == CSSValueID::kMax ||
-              token.FunctionId() == CSSValueID::kClamp) {
-            stack.push_back(token);
-            break;
-          }
+        if (token.FunctionId() == CSSValueID::kMin ||
+            token.FunctionId() == CSSValueID::kMax ||
+            token.FunctionId() == CSSValueID::kClamp) {
+          stack.push_back(token);
+          break;
         }
         if (token.FunctionId() != CSSValueID::kCalc)
           return false;

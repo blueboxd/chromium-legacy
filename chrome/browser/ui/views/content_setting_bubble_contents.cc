@@ -249,7 +249,8 @@ void ContentSettingBubbleContents::ListItemContainer::AddItem(
     auto link = std::make_unique<views::Link>(item.title);
     link->SetElideBehavior(gfx::ELIDE_MIDDLE);
     link->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
-    link->set_listener(parent_);
+    link->set_callback(base::BindRepeating(
+        &ContentSettingBubbleContents::LinkClicked, base::Unretained(parent_)));
     item_contents = std::move(link);
   } else {
     item_contents->SetBorder(
@@ -514,9 +515,10 @@ void ContentSettingBubbleContents::Init() {
         std::make_unique<views::Link>(bubble_content.custom_link);
     custom_link->SetEnabled(bubble_content.custom_link_enabled);
     custom_link->SetMultiLine(true);
-    custom_link->set_listener(this);
+    custom_link->set_callback(
+        base::BindRepeating(&ContentSettingBubbleContents::CustomLinkClicked,
+                            base::Unretained(this)));
     custom_link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    custom_link_ = custom_link.get();
     rows.push_back({std::move(custom_link), LayoutRowType::DEFAULT});
   }
 
@@ -612,6 +614,20 @@ ContentSettingBubbleContents::CreateHelpAndManageView() {
   return container;
 }
 
+void ContentSettingBubbleContents::LinkClicked(views::Link* source,
+                                               int event_flags) {
+  DCHECK(content_setting_bubble_model_);
+  int row = list_item_container_->GetRowIndexOf(source);
+  DCHECK_NE(row, -1);
+  content_setting_bubble_model_->OnListItemClicked(row, event_flags);
+}
+
+void ContentSettingBubbleContents::CustomLinkClicked() {
+  DCHECK(content_setting_bubble_model_);
+  content_setting_bubble_model_->OnCustomLinkClicked();
+  GetWidget()->Close();
+}
+
 void ContentSettingBubbleContents::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
@@ -658,19 +674,6 @@ void ContentSettingBubbleContents::ButtonPressed(views::Button* sender,
   } else {
     NOTREACHED();
   }
-}
-
-void ContentSettingBubbleContents::LinkClicked(views::Link* source,
-                                               int event_flags) {
-  DCHECK(content_setting_bubble_model_);
-  if (source == custom_link_) {
-    content_setting_bubble_model_->OnCustomLinkClicked();
-    GetWidget()->Close();
-    return;
-  }
-  int row = list_item_container_->GetRowIndexOf(source);
-  DCHECK_NE(row, -1);
-  content_setting_bubble_model_->OnListItemClicked(row, event_flags);
 }
 
 void ContentSettingBubbleContents::OnPerformAction(views::Combobox* combobox) {

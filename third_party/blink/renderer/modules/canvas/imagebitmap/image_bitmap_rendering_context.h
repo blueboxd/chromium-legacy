@@ -55,14 +55,6 @@ class MODULES_EXPORT ImageBitmapRenderingContext final
   ~ImageBitmapRenderingContext() override;
 };
 
-DEFINE_TYPE_CASTS(ImageBitmapRenderingContext,
-                  CanvasRenderingContext,
-                  context,
-                  context->GetContextType() ==
-                      CanvasRenderingContext::kContextImageBitmap,
-                  context.GetContextType() ==
-                      CanvasRenderingContext::kContextImageBitmap);
-
 }  // namespace blink
 
 #endif

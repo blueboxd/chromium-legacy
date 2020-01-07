@@ -344,7 +344,6 @@ const int kLocationAuthorizationStatusCount = 5;
     [self.viewController.dispatcher focusFakebox];
   } else {
     [self.omniboxCoordinator focusOmnibox];
-    [self.omniboxPopupCoordinator presentShortcutsIfNecessary];
   }
 }
 
@@ -354,7 +353,6 @@ const int kLocationAuthorizationStatusCount = 5;
   }
   self.isCancellingOmniboxEdit = YES;
   [self.omniboxCoordinator endEditing];
-  [self.omniboxPopupCoordinator dismissShortcuts];
   self.isCancellingOmniboxEdit = NO;
 }
 

@@ -11,6 +11,7 @@ typemaps = [
   "//services/network/public/cpp/ip_endpoint_for_blink.typemap",
   "//services/network/public/cpp/network_interface_for_blink.typemap",
   "//services/network/public/cpp/mutable_network_traffic_annotation_tag.typemap",
+  "//services/network/public/cpp/site_for_cookies.typemap",
   "//services/network/public/cpp/p2p.typemap",
   "//third_party/blink/renderer/core/messaging/blink_cloneable_message.typemap",
   "//third_party/blink/renderer/core/messaging/blink_transferable_message.typemap",

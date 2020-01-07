@@ -48,7 +48,7 @@ document
 ++++++++++++++++img
 ++++++++++++++button Name='Show next month'
 ++++++++++++++++img
-++++++++++++++grid Grid.ColumnCount=0 Grid.RowCount=0 Selection.CanSelectMultiple=false Selection.IsSelectionRequired=false Table.RowOrColumnMajor='RowMajor'
+++++++++++++++grid Grid.ColumnCount=0 Grid.RowCount=0 Selection.CanSelectMultiple=false Selection.IsSelectionRequired=false
 ++++++++++++++++group IsControlElement=false
 ++++++++++++++++++group IsControlElement=false
 ++++++++++++++++++++description Name='Su'

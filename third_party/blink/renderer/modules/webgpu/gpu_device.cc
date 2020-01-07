@@ -115,22 +115,16 @@ GPUBuffer* GPUDevice::createBuffer(const GPUBufferDescriptor* descriptor) {
   return GPUBuffer::Create(this, descriptor);
 }
 
-HeapVector<ScriptValue> GPUDevice::createBufferMapped(
-    ScriptState* script_state,
+HeapVector<GPUBufferOrArrayBuffer> GPUDevice::createBufferMapped(
     const GPUBufferDescriptor* descriptor,
     ExceptionState& exception_state) {
   GPUBuffer* gpu_buffer;
   DOMArrayBuffer* array_buffer;
   std::tie(gpu_buffer, array_buffer) =
       GPUBuffer::CreateMapped(this, descriptor, exception_state);
-
-  v8::Isolate* isolate = script_state->GetIsolate();
-  v8::Local<v8::Object> creation_context = script_state->GetContext()->Global();
-
-  return HeapVector<ScriptValue>({
-      ScriptValue(isolate, ToV8(gpu_buffer, creation_context, isolate)),
-      ScriptValue(isolate, ToV8(array_buffer, creation_context, isolate)),
-  });
+  return HeapVector<GPUBufferOrArrayBuffer>(
+      {GPUBufferOrArrayBuffer::FromGPUBuffer(gpu_buffer),
+       GPUBufferOrArrayBuffer::FromArrayBuffer(array_buffer)});
 }
 
 GPUTexture* GPUDevice::createTexture(const GPUTextureDescriptor* descriptor,

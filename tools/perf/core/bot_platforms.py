@@ -24,9 +24,8 @@ GTEST_STORY_NAME = '_gtest_'
 
 
 def _IsPlatformSupported(benchmark, platform):
-    supported = benchmark.GetSupportedPlatformNames(
-        benchmark.SUPPORTED_PLATFORMS)
-    return 'all' in supported or platform in supported
+  supported = benchmark.GetSupportedPlatformNames(benchmark.SUPPORTED_PLATFORMS)
+  return 'all' in supported or platform in supported
 
 
 class PerfPlatform(object):
@@ -259,14 +258,34 @@ _BASE_PERFTESTS = ExecutableConfig(
         '--test-launcher-jobs=1',
         '--test-launcher-retry-limit=0'
     ], estimated_runtime=270)
+_NET_PERFTESTS = ExecutableConfig('net_perftests', estimated_runtime=60)
 _DAWN_PERF_TESTS = ExecutableConfig(
     'dawn_perf_tests', flags=[
         '--test-launcher-jobs=1',
         '--test-launcher-retry-limit=0'
     ], estimated_runtime=270)
+_PERFORMANCE_BROWSER_TESTS = ExecutableConfig(
+    'performance_browser_tests',
+    flags=[
+        '--full-performance-run',
+        '--test-launcher-jobs=1',
+        '--test-launcher-retry-limit=0',
+        # Allow the full performance runs to take up to 60 seconds (rather than
+        # the default of 30 for normal CQ browser test runs).
+        '--ui-test-action-timeout=60000',
+        '--ui-test-action-max-timeout=60000',
+        '--test-launcher-timeout=60000',
+        '--gtest_filter=*/TabCapturePerformanceTest.*:'
+        '*/CastV2PerformanceTest.*',
+    ],
+    estimated_runtime=67)
 
 _LINUX_BENCHMARK_CONFIGS = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
 _MAC_HIGH_END_BENCHMARK_CONFIGS = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
+_MAC_HIGH_END_EXECUTABLE_CONFIGS = frozenset([
+    _DAWN_PERF_TESTS, _PERFORMANCE_BROWSER_TESTS, _NET_PERFTESTS,
+    _MEDIA_PERFTESTS, _BASE_PERFTESTS
+])
 _MAC_LOW_END_BENCHMARK_CONFIGS = _OFFICIAL_EXCEPT_JETSTREAM2
 _WIN_10_BENCHMARK_CONFIGS = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
 _WIN_10_EXECUTABLE_CONFIGS = frozenset([
@@ -304,7 +323,8 @@ _ANDROID_NEXUS_5X_WEBVIEW_BENCHMARK_CONFIGS = (
 _ANDROID_NEXUS_6_WEBVIEW_BENCHMARK_CONFIGS = (
     _OFFICIAL_EXCEPT_DISPLAY_LOCKING_JETSTREAM2)
 _ANDROID_PIXEL2_BENCHMARK_CONFIGS = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
-_ANDROID_PIXEL2_EXECUTABLE_CONFIGS = frozenset([_ANGLE_PERFTESTS])
+_ANDROID_PIXEL2_EXECUTABLE_CONFIGS = frozenset([
+    _COMPONENTS_PERFTESTS, _MEDIA_PERFTESTS])
 _ANDROID_PIXEL2_WEBVIEW_BENCHMARK_CONFIGS = (
     _OFFICIAL_EXCEPT_DISPLAY_LOCKING_JETSTREAM2)
 _ANDROID_PIXEL2_WEBLAYER_BENCHMARK_CONFIGS = PerfSuite([
@@ -340,7 +360,10 @@ LINUX = PerfPlatform(
 MAC_HIGH_END = PerfPlatform(
     'mac-10_13_laptop_high_end-perf',
     'MacBook Pro, Core i7 2.8 GHz, 16GB RAM, 256GB SSD, Radeon 55',
-    _MAC_HIGH_END_BENCHMARK_CONFIGS, 26, 'mac')
+    _MAC_HIGH_END_BENCHMARK_CONFIGS,
+    26,
+    'mac',
+    executables=_MAC_HIGH_END_EXECUTABLE_CONFIGS)
 MAC_LOW_END = PerfPlatform(
     'mac-10_12_laptop_low_end-perf',
     'MacBook Air, Core i5 1.8 GHz, 8GB RAM, 128GB SSD, HD Graphics',

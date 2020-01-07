@@ -34,6 +34,7 @@ class Location;
 }  // namespace base
 
 namespace net {
+class SiteForCookies;
 class SSLInfo;
 class WebSocketChannel;
 }  // namespace net
@@ -52,7 +53,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
       WebSocketFactory* factory,
       const GURL& url,
       const std::vector<std::string>& requested_protocols,
-      const GURL& site_for_cookies,
+      const net::SiteForCookies& site_for_cookies,
       const net::NetworkIsolationKey& network_isolation_key,
       std::vector<mojom::HttpHeaderPtr> additional_headers,
       int32_t process_id,
@@ -118,7 +119,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   void OnConnectionError(const base::Location& set_from);
   void AddChannel(const GURL& socket_url,
                   const std::vector<std::string>& requested_protocols,
-                  const GURL& site_for_cookies,
+                  const net::SiteForCookies& site_for_cookies,
                   const net::NetworkIsolationKey& network_isolation_key,
                   std::vector<mojom::HttpHeaderPtr> additional_headers);
   void OnSSLCertificateErrorResponse(

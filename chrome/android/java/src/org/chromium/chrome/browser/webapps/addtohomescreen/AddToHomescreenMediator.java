@@ -9,6 +9,7 @@ import android.util.Pair;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.banners.AppData;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
@@ -43,8 +44,14 @@ class AddToHomescreenMediator implements AddToHomescreenViewDelegate {
     }
 
     @CalledByNative
-    void setIcon(Bitmap icon, boolean isAdaptive) {
-        mModel.set(AddToHomescreenProperties.ICON, new Pair<>(icon, isAdaptive));
+    void setIcon(Bitmap icon, boolean isAdaptive, boolean needToAddPadding) {
+        Bitmap iconToShow = icon;
+        if (needToAddPadding) {
+            assert isAdaptive;
+            iconToShow = ShortcutHelper.createHomeScreenIconFromWebIcon(icon, true /*maskable*/);
+        }
+
+        mModel.set(AddToHomescreenProperties.ICON, new Pair<>(iconToShow, isAdaptive));
         mModel.set(AddToHomescreenProperties.CAN_SUBMIT, true);
     }
 

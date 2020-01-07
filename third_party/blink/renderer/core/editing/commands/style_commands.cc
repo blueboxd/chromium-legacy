@@ -216,7 +216,8 @@ bool StyleCommands::SelectionStartHasStyle(LocalFrame& frame,
           frame.Selection().ComputeVisibleSelectionInDOMTreeDeprecated(),
           property_id == CSSPropertyID::kBackgroundColor,
           style_to_check->Style());
-  return style_to_check->TriStateOfStyle(style_at_start, secure_context_mode) !=
+  return style_to_check->TriStateOfStyle(frame.GetDocument(), style_at_start,
+                                         secure_context_mode) !=
          EditingTriState::kFalse;
 }
 

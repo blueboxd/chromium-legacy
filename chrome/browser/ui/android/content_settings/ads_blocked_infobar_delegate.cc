@@ -25,10 +25,7 @@ void AdsBlockedInfobarDelegate::Create(InfoBarService* infobar_service) {
       base::WrapUnique(new AdsBlockedInfobarDelegate())));
 }
 
-AdsBlockedInfobarDelegate::AdsBlockedInfobarDelegate()
-    : ConfirmInfoBarDelegate() {}
-
-AdsBlockedInfobarDelegate::~AdsBlockedInfobarDelegate() {}
+AdsBlockedInfobarDelegate::~AdsBlockedInfobarDelegate() = default;
 
 base::string16 AdsBlockedInfobarDelegate::GetExplanationText() const {
   return l10n_util::GetStringUTF16(IDS_BLOCKED_ADS_PROMPT_EXPLANATION);
@@ -47,6 +44,24 @@ int AdsBlockedInfobarDelegate::GetIconId() const {
   return IDR_ANDROID_INFOBAR_BLOCKED_POPUPS;
 }
 
+GURL AdsBlockedInfobarDelegate::GetLinkURL() const {
+  DCHECK(infobar_expanded_);
+  return GURL(subresource_filter::kLearnMoreLink);
+}
+
+bool AdsBlockedInfobarDelegate::LinkClicked(WindowOpenDisposition disposition) {
+  if (infobar_expanded_) {
+    ChromeSubresourceFilterClient::LogAction(
+        SubresourceFilterAction::kClickedLearnMore);
+    return ConfirmInfoBarDelegate::LinkClicked(disposition);
+  }
+
+  ChromeSubresourceFilterClient::LogAction(
+      SubresourceFilterAction::kDetailsShown);
+  infobar_expanded_ = true;
+  return false;
+}
+
 base::string16 AdsBlockedInfobarDelegate::GetMessageText() const {
   return l10n_util::GetStringUTF16(IDS_BLOCKED_ADS_INFOBAR_MESSAGE);
 }
@@ -57,39 +72,15 @@ int AdsBlockedInfobarDelegate::GetButtons() const {
 
 base::string16 AdsBlockedInfobarDelegate::GetButtonLabel(
     InfoBarButton button) const {
-  if (button == BUTTON_OK)
-    return l10n_util::GetStringUTF16(IDS_OK);
-  return l10n_util::GetStringUTF16(IDS_APP_MENU_RELOAD);
+  return l10n_util::GetStringUTF16((button == BUTTON_OK) ? IDS_OK
+                                                         : IDS_APP_MENU_RELOAD);
 }
 
 bool AdsBlockedInfobarDelegate::Cancel() {
-  content::WebContents* web_contents =
-      InfoBarService::WebContentsFromInfoBar(infobar());
-  ChromeSubresourceFilterClient::FromWebContents(web_contents)
-      ->OnReloadRequested();
+  auto* filter_client = ChromeSubresourceFilterClient::FromWebContents(
+      InfoBarService::WebContentsFromInfoBar(infobar()));
+  filter_client->OnReloadRequested();
   return true;
 }
 
-GURL AdsBlockedInfobarDelegate::GetLinkURL() const {
-  DCHECK(infobar_expanded_);
-  return GURL(subresource_filter::kLearnMoreLink);
-}
-
-bool AdsBlockedInfobarDelegate::LinkClicked(WindowOpenDisposition disposition) {
-  if (infobar_expanded_) {
-    DCHECK_EQ(disposition, WindowOpenDisposition::NEW_FOREGROUND_TAB);
-    infobar()->owner()->OpenURL(GetLinkURL(),
-                                WindowOpenDisposition::NEW_FOREGROUND_TAB);
-    ChromeSubresourceFilterClient::LogAction(
-        SubresourceFilterAction::kClickedLearnMore);
-  } else {
-    ChromeSubresourceFilterClient::LogAction(
-        SubresourceFilterAction::kDetailsShown);
-    infobar_expanded_ = true;
-  }
-  // Returning false keeps the infobar up, which is the behavior we want in all
-  // cases. If the user is navigating via a new foreground tab we do not want
-  // the infobar going away on the tab (and therefore invoking our smart-hiding
-  // logic).
-  return false;
-}
+AdsBlockedInfobarDelegate::AdsBlockedInfobarDelegate() = default;

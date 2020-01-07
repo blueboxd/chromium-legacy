@@ -9,7 +9,6 @@ import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_LONG_M
 import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_MS;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 
-import android.os.Build;
 import android.support.test.filters.MediumTest;
 
 import org.junit.Assert;
@@ -19,7 +18,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -42,8 +40,6 @@ import java.io.IOException;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
-@DisableIf.Build(message = "Flaky on M, but solid thereafter.  https://crbug.com/1034735",
-                 sdk_is_less_than = Build.VERSION_CODES.O)
 public class VrBrowserJavaScriptModalDialogTest {
     @Rule
     public ChromeTabbedActivityVrTestRule mActivityTestRule = new ChromeTabbedActivityVrTestRule();

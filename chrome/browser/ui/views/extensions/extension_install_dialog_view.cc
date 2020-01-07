@@ -208,7 +208,8 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
   if (prompt_->has_webstore_data()) {
     auto store_link = std::make_unique<views::Link>(
         l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_STORE_LINK));
-    store_link->set_listener(this);
+    store_link->set_callback(base::BindRepeating(
+        &ExtensionInstallDialogView::LinkClicked, base::Unretained(this)));
     DialogDelegate::SetExtraView(std::move(store_link));
   }
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
@@ -391,8 +392,7 @@ ui::ModalType ExtensionInstallDialogView::GetModalType() const {
   return ui::MODAL_TYPE_WINDOW;
 }
 
-void ExtensionInstallDialogView::LinkClicked(views::Link* source,
-                                             int event_flags) {
+void ExtensionInstallDialogView::LinkClicked() {
   GURL store_url(extension_urls::GetWebstoreItemDetailURLPrefix() +
                  prompt_->extension()->id());
   OpenURLParams params(store_url, Referrer(),

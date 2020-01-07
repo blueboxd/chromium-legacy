@@ -444,14 +444,15 @@ void RenderFrameHostManager::OnDidSetFramePolicyHeaders() {
   }
 }
 
-void RenderFrameHostManager::SwapOutOldFrame(
+void RenderFrameHostManager::UnloadOldFrame(
     std::unique_ptr<RenderFrameHostImpl> old_render_frame_host) {
-  TRACE_EVENT1("navigation", "RenderFrameHostManager::SwapOutOldFrame",
+  TRACE_EVENT1("navigation", "RenderFrameHostManager::UnloadOldFrame",
                "FrameTreeNode id", frame_tree_node_->frame_tree_node_id());
 
-  // Now close any modal dialogs that would prevent us from swapping out.  This
-  // must be done separately from SwapOut, so that the ScopedPageLoadDeferrer is
-  // no longer on the stack when we send the SwapOut message.
+  // Now close any modal dialogs that would prevent us from unloading the frame.
+  // This must be done separately from Unload(), so that the
+  // ScopedPageLoadDeferrer is no longer on the stack when we send the
+  // UnfreezableFrameMsg_Unload message.
   delegate_->CancelModalDialogsForRenderManager();
 
   // If the old RFH is not live, just return as there is no further work to do.
@@ -459,7 +460,7 @@ void RenderFrameHostManager::SwapOutOldFrame(
   if (!old_render_frame_host->IsRenderFrameLive())
     return;
 
-  // Reset any NavigationRequest in the RenderFrameHost. A swapped out
+  // Reset any NavigationRequest in the RenderFrameHost. An unloaded
   // RenderFrameHost should not be trying to commit a navigation.
   old_render_frame_host->ResetNavigationRequests();
 
@@ -487,7 +488,7 @@ void RenderFrameHostManager::SwapOutOldFrame(
   // BackForwardCache:
   //
   // If the old RenderFrameHost can be stored in the BackForwardCache, return
-  // early without swapping out and running unload handlers, as the document may
+  // early without unloading and running unload handlers, as the document may
   // be restored later.
   {
     BackForwardCacheImpl& back_forward_cache =
@@ -544,10 +545,10 @@ void RenderFrameHostManager::SwapOutOldFrame(
       CreateRenderFrameProxyHost(old_render_frame_host->GetSiteInstance(),
                                  old_render_frame_host->render_view_host());
 
-  // Tell the old RenderFrameHost to swap out and be replaced by the proxy.
-  old_render_frame_host->SwapOut(proxy, true);
+  // Tell the old RenderFrameHost to unload and be replaced by the proxy.
+  old_render_frame_host->Unload(proxy, true);
 
-  // |old_render_frame_host| will be deleted when its SwapOut ACK is received,
+  // |old_render_frame_host| will be deleted when its unload ACK is received,
   // or when the timer times out, or when the RFHM itself is deleted (whichever
   // comes first).
   pending_delete_hosts_.push_back(std::move(old_render_frame_host));
@@ -556,7 +557,7 @@ void RenderFrameHostManager::SwapOutOldFrame(
 void RenderFrameHostManager::DiscardUnusedFrame(
     std::unique_ptr<RenderFrameHostImpl> render_frame_host) {
   // TODO(carlosk): this code is very similar to what can be found in
-  // SwapOutOldFrame and we should see that these are unified at some point.
+  // UnloadOldFrame and we should see that these are unified at some point.
 
   // If the SiteInstance for the pending RFH is being used by others, ensure
   // that it is replaced by a RenderFrameProxyHost to allow other frames to
@@ -566,7 +567,7 @@ void RenderFrameHostManager::DiscardUnusedFrame(
   RenderFrameProxyHost* proxy = nullptr;
   if (site_instance->HasSite() && site_instance->active_frame_count() > 1) {
     // If a proxy already exists for the |site_instance|, just reuse it instead
-    // of creating a new one. There is no need to call SwapOut on the
+    // of creating a new one. There is no need to call Unload() on the
     // |render_frame_host|, as this method is only called to discard a pending
     // or speculative RenderFrameHost, i.e. one that has never hosted an actual
     // document.
@@ -2080,7 +2081,7 @@ void RenderFrameHostManager::SwapOuterDelegateFrame(
   // TODO(lazyboy): This |is_loading| behavior might not be what we want,
   // investigate and fix.
   DCHECK_EQ(render_frame_host->GetSiteInstance(), proxy->GetSiteInstance());
-  render_frame_host->Send(new UnfreezableFrameMsg_SwapOut(
+  render_frame_host->Send(new UnfreezableFrameMsg_Unload(
       render_frame_host->GetRoutingID(), proxy->GetRoutingID(),
       false /* is_loading */,
       render_frame_host->frame_tree_node()->current_replication_state()));
@@ -2478,7 +2479,7 @@ void RenderFrameHostManager::CommitPending(
   // Swap out the old frame now that the new one is visible.
   // This will swap it out and schedule it for deletion when the swap out ack
   // arrives (or immediately if the process isn't live).
-  SwapOutOldFrame(std::move(old_render_frame_host));
+  UnloadOldFrame(std::move(old_render_frame_host));
 
   // Since the new RenderFrameHost is now committed, there must be no proxies
   // for its SiteInstance. Delete any existing ones.

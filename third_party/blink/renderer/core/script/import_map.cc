@@ -439,10 +439,6 @@ ImportMap::SpecifierMap ImportMap::SortAndNormalizeSpecifierMap(
 base::Optional<ImportMap::MatchResult> ImportMap::MatchPrefix(
     const ParsedSpecifier& parsed_specifier,
     const SpecifierMap& specifier_map) const {
-  // Do not perform prefix match for non-bare specifiers.
-  if (parsed_specifier.GetType() != ParsedSpecifier::Type::kBare)
-    return base::nullopt;
-
   const String key = parsed_specifier.GetImportMapKeyString();
 
   // Prefix match, i.e. "Packages" via trailing slashes.

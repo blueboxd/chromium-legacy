@@ -44,6 +44,7 @@
 #include "extensions/renderer/renderer_extension_registry.h"
 #include "extensions/renderer/script_context.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/cookies/site_for_cookies.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -273,7 +274,7 @@ void ChromeExtensionsRendererClient::WillSendRequest(
     blink::WebLocalFrame* frame,
     ui::PageTransition transition_type,
     const blink::WebURL& url,
-    const blink::WebURL& site_for_cookies,
+    const net::SiteForCookies& site_for_cookies,
     const url::Origin* initiator_origin,
     GURL* new_url,
     bool* attach_same_site_cookies) {
@@ -283,10 +284,8 @@ void ChromeExtensionsRendererClient::WillSendRequest(
       initiator_origin->scheme() == extensions::kExtensionScheme) {
     extension_id = initiator_origin->host();
   } else {
-    url::Origin site_for_cookies_origin =
-        url::Origin::Create(GURL(site_for_cookies));
-    if (site_for_cookies_origin.scheme() == extensions::kExtensionScheme) {
-      extension_id = site_for_cookies_origin.host();
+    if (site_for_cookies.scheme() == extensions::kExtensionScheme) {
+      extension_id = site_for_cookies.registrable_domain();
     }
   }
 

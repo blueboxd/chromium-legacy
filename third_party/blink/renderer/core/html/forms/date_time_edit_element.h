@@ -159,12 +159,6 @@ class DateTimeEditElement final : public HTMLDivElement,
   DISALLOW_COPY_AND_ASSIGN(DateTimeEditElement);
 };
 
-DEFINE_TYPE_CASTS(DateTimeEditElement,
-                  Element,
-                  element,
-                  element->IsDateTimeEditElement(),
-                  element.IsDateTimeEditElement());
-
 template <>
 struct DowncastTraits<DateTimeEditElement> {
   static bool AllowFrom(const Element& element) {

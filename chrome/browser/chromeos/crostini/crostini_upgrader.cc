@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/crostini/crostini_upgrader.h"
 
+#include "base/barrier_closure.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager_factory.h"
@@ -17,6 +19,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 
 namespace crostini {
 
@@ -58,7 +61,7 @@ CrostiniUpgrader* CrostiniUpgrader::GetForProfile(Profile* profile) {
 }
 
 CrostiniUpgrader::CrostiniUpgrader(Profile* profile)
-    : profile_(profile), container_id_("", "") {
+    : profile_(profile), container_id_("", ""), pmc_observer_(this) {
   CrostiniManager::GetForProfile(profile_)->AddUpgradeContainerProgressObserver(
       this);
 }
@@ -97,6 +100,72 @@ void CrostiniUpgrader::OnBackup(CrostiniResult result) {
   }
   for (auto& observer : upgrader_observers_) {
     observer.OnBackupSucceeded();
+  }
+}
+
+void CrostiniUpgrader::StartPrechecks() {
+  auto* pmc = chromeos::PowerManagerClient::Get();
+  if (pmc_observer_.IsObserving(pmc)) {
+    // This could happen if two StartPrechecks were run at the same time. If it
+    // does, drop the second call.
+    return;
+  }
+
+  prechecks_callback_ =
+      base::BarrierClosure(2, /* Number of asynchronous prechecks to wait for */
+                           base::BindOnce(&CrostiniUpgrader::DoPrechecks,
+                                          weak_ptr_factory_.GetWeakPtr()));
+
+  pmc_observer_.Add(pmc);
+  pmc->RequestStatusUpdate();
+
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+      base::BindOnce(&base::SysInfo::AmountOfFreeDiskSpace,
+                     base::FilePath(crostini::kHomeDirectory)),
+      base::BindOnce(&CrostiniUpgrader::OnAvailableDiskSpace,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void CrostiniUpgrader::PowerChanged(
+    const power_manager::PowerSupplyProperties& proto) {
+  // A battery can be FULL, CHARGING, DISCHARGING, or NOT_PRESENT. If we're on a
+  // system with no battery, we can assume stable power from the fact that we
+  // are running at all. Otherwise we want the battery to be full or charging. A
+  // less conservative check is possible, but we can expect users to have access
+  // to a charger.
+  power_status_good_ = proto.battery_state() !=
+                       power_manager::PowerSupplyProperties::DISCHARGING;
+
+  auto* pmc = chromeos::PowerManagerClient::Get();
+  pmc_observer_.Remove(pmc);
+
+  prechecks_callback_.Run();
+}
+
+void CrostiniUpgrader::OnAvailableDiskSpace(int64_t bytes) {
+  free_disk_space_ = bytes;
+
+  prechecks_callback_.Run();
+}
+
+void CrostiniUpgrader::DoPrechecks() {
+  chromeos::crostini_upgrader::mojom::UpgradePrecheckStatus status;
+  if (free_disk_space_ < kDiskRequired) {
+    status = chromeos::crostini_upgrader::mojom::UpgradePrecheckStatus::
+        INSUFFICIENT_SPACE;
+  } else if (content::GetNetworkConnectionTracker()->IsOffline()) {
+    status = chromeos::crostini_upgrader::mojom::UpgradePrecheckStatus::
+        NETWORK_FAILURE;
+  } else if (!power_status_good_) {
+    status =
+        chromeos::crostini_upgrader::mojom::UpgradePrecheckStatus::LOW_POWER;
+  } else {
+    status = chromeos::crostini_upgrader::mojom::UpgradePrecheckStatus::OK;
+  }
+
+  for (auto& observer : upgrader_observers_) {
+    observer.PrecheckStatus(status);
   }
 }
 

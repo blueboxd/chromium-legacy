@@ -23,6 +23,10 @@
 struct FakeTextCheckingResult {
   size_t completion_count_ = 0;
   size_t cancellation_count_ = 0;
+  blink::WebVector<blink::WebTextCheckingResult> results_;
+
+  explicit FakeTextCheckingResult();
+  ~FakeTextCheckingResult();
 };
 
 // A fake completion object for verification.
@@ -47,6 +51,11 @@ class FakeSpellCheck : public SpellCheck {
 
   // Test-only method to set the fake language counts
   void SetFakeLanguageCounts(size_t language_count, size_t enabled_count);
+
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+  // Test-only method to initialize Hunspell for the given locale.
+  void InitializeRendererSpellCheckForLocale(const std::string& language);
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 
   // Returns the current number of spell check languages.
   size_t LanguageCount() override;
@@ -83,12 +92,12 @@ class TestingSpellCheckProvider : public SpellCheckProvider,
 
 #if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
   int AddCompletionForTest(
-      std::unique_ptr<FakeTextCheckingCompletion> completion);
+      std::unique_ptr<FakeTextCheckingCompletion> completion,
+      SpellCheckProvider::HybridSpellCheckRequestInfo request_info);
 
-  void HybridSpellCheckParagraphComplete(
-      const base::string16& text,
-      const int request_id,
-      std::vector<SpellCheckResult> renderer_results);
+  void OnRespondTextCheck(int identifier,
+                          const base::string16& line,
+                          const std::vector<SpellCheckResult>& results);
 #endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 
 #if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
@@ -110,11 +119,6 @@ class TestingSpellCheckProvider : public SpellCheckProvider,
   // Variables logging RequestTextCheck() mojo calls.
   std::vector<RequestTextCheckParams> text_check_requests_;
 #endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-  // Variables logging RequestPartialTextCheck() mojo calls.
-  std::vector<RequestTextCheckParams> partial_text_check_requests_;
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 
   // Returns |spellcheck|.
   FakeSpellCheck* spellcheck() {
@@ -148,12 +152,6 @@ class TestingSpellCheckProvider : public SpellCheckProvider,
   void GetPerLanguageSuggestions(
       const base::string16& word,
       GetPerLanguageSuggestionsCallback callback) override;
-  void RequestPartialTextCheck(
-      const base::string16& text,
-      int route_id,
-      const std::vector<SpellCheckResult>& partial_results,
-      bool fill_suggestions,
-      RequestPartialTextCheckCallback callback) override;
 #endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 
 #if defined(OS_ANDROID)

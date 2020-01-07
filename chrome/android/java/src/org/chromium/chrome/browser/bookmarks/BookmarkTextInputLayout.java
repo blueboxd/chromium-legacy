@@ -12,7 +12,7 @@ import android.text.TextWatcher;
 import android.util.AttributeSet;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.widget.ChromeTextInputLayout;
+import org.chromium.components.browser_ui.widget.text.ChromeTextInputLayout;
 
 /**
  * Wraps around {@link ChromeTextInputLayout} to implement a basic empty field error behavior

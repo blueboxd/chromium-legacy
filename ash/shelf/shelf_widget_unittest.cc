@@ -281,27 +281,9 @@ TEST_F(ShelfWidgetTest, HiddenShelfHitTestTouch) {
   }
 }
 
-class ShelfWidgetTestWithoutHotseat : public ShelfWidgetTest {
- public:
-  ShelfWidgetTestWithoutHotseat() = default;
-  ~ShelfWidgetTestWithoutHotseat() override = default;
-
-  void SetUp() override {
-    scoped_features_.InitAndDisableFeature(chromeos::features::kShelfHotseat);
-    ShelfWidgetTest::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_features_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShelfWidgetTestWithoutHotseat);
-};
-
 // Tests that the shelf lets mouse-events close to the edge fall through to the
 // window underneath.
-// TODO(andrewxu|mmourgos): Fix this test with hotseat feature enabled.
-// crbug.com/1037927
-TEST_F(ShelfWidgetTestWithoutHotseat, ShelfEdgeOverlappingWindowHitTestMouse) {
+TEST_F(ShelfWidgetTest, ShelfEdgeOverlappingWindowHitTestMouse) {
   UpdateDisplay("400x400");
   ShelfWidget* shelf_widget = GetShelfWidget();
   gfx::Rect shelf_bounds = shelf_widget->GetWindowBoundsInScreen();

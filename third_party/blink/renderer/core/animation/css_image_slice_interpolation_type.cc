@@ -84,7 +84,15 @@ class CSSImageSliceNonInterpolableValue : public NonInterpolableValue {
 };
 
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE(CSSImageSliceNonInterpolableValue);
-DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(CSSImageSliceNonInterpolableValue);
+template <>
+struct DowncastTraits<CSSImageSliceNonInterpolableValue> {
+  static bool AllowFrom(const NonInterpolableValue* value) {
+    return value && AllowFrom(*value);
+  }
+  static bool AllowFrom(const NonInterpolableValue& value) {
+    return value.GetType() == CSSImageSliceNonInterpolableValue::static_type_;
+  }
+};
 
 namespace {
 
@@ -96,7 +104,7 @@ class UnderlyingSliceTypesChecker
 
   static SliceTypes GetUnderlyingSliceTypes(
       const InterpolationValue& underlying) {
-    return ToCSSImageSliceNonInterpolableValue(
+    return To<CSSImageSliceNonInterpolableValue>(
                *underlying.non_interpolable_value)
         .Types();
   }
@@ -226,11 +234,12 @@ CSSImageSliceInterpolationType::MaybeConvertStandardPropertyUnderlyingValue(
 PairwiseInterpolationValue CSSImageSliceInterpolationType::MaybeMergeSingles(
     InterpolationValue&& start,
     InterpolationValue&& end) const {
-  const SliceTypes& start_slice_types =
-      ToCSSImageSliceNonInterpolableValue(*start.non_interpolable_value)
+  const auto& start_slice_types =
+      To<CSSImageSliceNonInterpolableValue>(*start.non_interpolable_value)
           .Types();
-  const SliceTypes& end_slice_types =
-      ToCSSImageSliceNonInterpolableValue(*end.non_interpolable_value).Types();
+  const auto& end_slice_types =
+      To<CSSImageSliceNonInterpolableValue>(*end.non_interpolable_value)
+          .Types();
 
   if (start_slice_types != end_slice_types)
     return nullptr;
@@ -245,12 +254,12 @@ void CSSImageSliceInterpolationType::Composite(
     double underlying_fraction,
     const InterpolationValue& value,
     double interpolation_fraction) const {
-  const SliceTypes& underlying_types =
-      ToCSSImageSliceNonInterpolableValue(
+  const auto& underlying_types =
+      To<CSSImageSliceNonInterpolableValue>(
           *underlying_value_owner.Value().non_interpolable_value)
           .Types();
-  const SliceTypes& types =
-      ToCSSImageSliceNonInterpolableValue(*value.non_interpolable_value)
+  const auto& types =
+      To<CSSImageSliceNonInterpolableValue>(*value.non_interpolable_value)
           .Types();
 
   if (underlying_types == types)
@@ -266,8 +275,8 @@ void CSSImageSliceInterpolationType::ApplyStandardPropertyValue(
     StyleResolverState& state) const {
   ComputedStyle& style = *state.Style();
   const auto& list = To<InterpolableList>(interpolable_value);
-  const SliceTypes& types =
-      ToCSSImageSliceNonInterpolableValue(non_interpolable_value)->Types();
+  const auto& types =
+      To<CSSImageSliceNonInterpolableValue>(non_interpolable_value)->Types();
   const auto& convert_side = [&types, &list, &style](wtf_size_t index) {
     float value =
         clampTo<float>(To<InterpolableNumber>(list.Get(index))->Value(), 0);

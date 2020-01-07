@@ -65,6 +65,7 @@
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/generic_sensor/sensor_provider_proxy_impl.h"
 #include "content/browser/geolocation/geolocation_service_impl.h"
+#include "content/browser/installedapp/installed_app_provider_impl.h"
 #include "content/browser/interface_provider_filtering.h"
 #include "content/browser/loader/file_url_loader_factory.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
@@ -869,7 +870,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(
       frame_tree_node_(frame_tree_node),
       parent_(nullptr),
       routing_id_(routing_id),
-      is_waiting_for_swapout_ack_(false),
+      is_waiting_for_unload_ack_(false),
       render_frame_created_(false),
       is_waiting_for_beforeunload_ack_(false),
       beforeunload_dialog_request_cancels_unload_(false),
@@ -925,8 +926,9 @@ RenderFrameHostImpl::RenderFrameHostImpl(
 
   SetUpMojoIfNeeded();
 
-  swapout_event_monitor_timeout_.reset(new TimeoutMonitor(base::BindRepeating(
-      &RenderFrameHostImpl::OnSwappedOut, weak_ptr_factory_.GetWeakPtr())));
+  unload_event_monitor_timeout_ =
+      std::make_unique<TimeoutMonitor>(base::BindRepeating(
+          &RenderFrameHostImpl::OnUnloaded, weak_ptr_factory_.GetWeakPtr()));
   beforeunload_timeout_.reset(new TimeoutMonitor(
       base::BindRepeating(&RenderFrameHostImpl::BeforeUnloadTimeout,
                           weak_ptr_factory_.GetWeakPtr())));
@@ -993,7 +995,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(
 
 RenderFrameHostImpl::~RenderFrameHostImpl() {
   // When a RenderFrameHostImpl is deleted, it may still contain children. This
-  // can happen with the swap out timer. It causes a RenderFrameHost to delete
+  // can happen with the unload timer. It causes a RenderFrameHost to delete
   // itself even if it is still waiting for its children to complete their
   // unload handlers.
   //
@@ -1041,13 +1043,13 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   // 1. The RenderFrame can be the main frame. In this case, closing the
   //    associated RenderView will clean up the resources associated with the
   //    main RenderFrame.
-  // 2. The RenderFrame can be swapped out. In this case, the browser sends a
-  //    UnfreezableFrameMsg_SwapOut for the RenderFrame to replace itself with a
+  // 2. The RenderFrame can be unloaded. In this case, the browser sends a
+  //    UnfreezableFrameMsg_Unload for the RenderFrame to replace itself with a
   //    RenderFrameProxy and release its associated resources. |unload_state_|
   //    is advanced to UnloadState::InProgress to track that this IPC is in
   //    flight.
   // 3. The RenderFrame can be detached, as part of removing a subtree (due to
-  //    navigation, swap out, or DOM mutation). In this case, the browser sends
+  //    navigation, unload, or DOM mutation). In this case, the browser sends
   //    a UnfreezableFrameMsg_Delete for the RenderFrame to detach itself and
   //    release its associated resources. If the subframe contains an unload
   //    handler, |unload_state_| is advanced to UnloadState::InProgress to track
@@ -1055,7 +1057,7 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   //    UnloadState::Completed.
   //
   // The browser side gives the renderer a small timeout to finish processing
-  // swap out / detach messages. When the timeout expires, the RFH will be
+  // unload / detach messages. When the timeout expires, the RFH will be
   // removed regardless of whether or not the renderer acknowledged that it
   // completed the work, to avoid indefinitely leaking browser-side state. To
   // avoid leaks, ~RenderFrameHostImpl still validates that the appropriate
@@ -1094,9 +1096,9 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   g_routing_id_frame_map.Get().erase(
       GlobalFrameRoutingId(GetProcess()->GetID(), routing_id_));
 
-  // Null out the swapout timer; in crash dumps this member will be null only if
+  // Null out the unload timer; in crash dumps this member will be null only if
   // the dtor has run.  (It may also be null in tests.)
-  swapout_event_monitor_timeout_.reset();
+  unload_event_monitor_timeout_.reset();
 
   for (auto& iter : visual_state_callbacks_)
     std::move(iter.second).Run(false);
@@ -1551,6 +1553,12 @@ void RenderFrameHostImpl::ExecuteJavaScriptWithUserGestureForTests(
     int32_t world_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  // TODO(mustaq): The render-to-browser state update caused by the below
+  // JavaScriptExecuteRequestsForTests call is redundant with this update. We
+  // should determine if the redundancy can be removed.
+  frame_tree_node()->UpdateUserActivationState(
+      blink::UserActivationUpdateType::kNotifyActivation);
+
   const bool has_user_gesture = true;
   GetNavigationControl()->JavaScriptExecuteRequestForTests(
       javascript, false, has_user_gesture, world_id, base::NullCallback());
@@ -1657,7 +1665,7 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateState, OnUpdateState)
     IPC_MESSAGE_HANDLER(FrameHostMsg_OpenURL, OnOpenURL)
     IPC_MESSAGE_HANDLER(FrameHostMsg_BeforeUnload_ACK, OnBeforeUnloadACK)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_SwapOut_ACK, OnSwapOutACK)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_Unload_ACK, OnUnloadACK)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ContextMenu, OnContextMenu)
     IPC_MESSAGE_HANDLER(FrameHostMsg_VisualStateResponse, OnVisualStateResponse)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_RunJavaScriptDialog,
@@ -2338,12 +2346,12 @@ const url::Origin& RenderFrameHostImpl::ComputeTopFrameOrigin(
   return host->GetLastCommittedOrigin();
 }
 
-GURL RenderFrameHostImpl::ComputeSiteForCookiesForNavigation(
+net::SiteForCookies RenderFrameHostImpl::ComputeSiteForCookiesForNavigation(
     const GURL& destination) const {
   // For top-level navigation, |site_for_cookies| will always be the destination
   // URL.
   if (frame_tree_node_->IsMainFrame())
-    return destination;
+    return net::SiteForCookies::FromUrl(destination);
 
   // Check if everything above the frame being navigated is consistent. It's OK
   // to skip checking the frame itself since it will be validated against
@@ -2352,12 +2360,12 @@ GURL RenderFrameHostImpl::ComputeSiteForCookiesForNavigation(
                                        destination.SchemeIsCryptographic());
 }
 
-GURL RenderFrameHostImpl::ComputeSiteForCookies() {
+net::SiteForCookies RenderFrameHostImpl::ComputeSiteForCookies() {
   return ComputeSiteForCookiesInternal(
       this, GetLastCommittedURL().SchemeIsCryptographic());
 }
 
-GURL RenderFrameHostImpl::ComputeSiteForCookiesInternal(
+net::SiteForCookies RenderFrameHostImpl::ComputeSiteForCookiesInternal(
     const RenderFrameHostImpl* render_frame_host,
     bool is_origin_secure) const {
 #if defined(OS_ANDROID)
@@ -2367,34 +2375,34 @@ GURL RenderFrameHostImpl::ComputeSiteForCookiesInternal(
       frame_tree_node_->navigator()->GetController()->GetLastCommittedEntry();
   if (last_committed_entry &&
       !last_committed_entry->GetBaseURLForDataURL().is_empty()) {
-    return last_committed_entry->GetBaseURLForDataURL();
+    return net::SiteForCookies::FromUrl(
+        last_committed_entry->GetBaseURLForDataURL());
   }
 #endif
 
   const url::Origin& top_document_origin =
       frame_tree_->root()->current_frame_host()->GetLastCommittedOrigin();
-  const GURL& top_document_url = top_document_origin.GetURL();
+  net::SiteForCookies candidate =
+      net::SiteForCookies::FromOrigin(top_document_origin);
 
   if (GetContentClient()
           ->browser()
           ->ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(
-              top_document_url.scheme_piece(), is_origin_secure)) {
-    return top_document_url;
+              top_document_origin.scheme(), is_origin_secure)) {
+    return candidate;
   }
 
   // Make sure every ancestors are same-domain with the main document. Otherwise
   // this will be a 3rd party cookie.
   for (const RenderFrameHostImpl* rfh = render_frame_host; rfh;
        rfh = rfh->parent_) {
-    if ((top_document_origin != rfh->last_committed_origin_) &&
-        !net::registry_controlled_domains::SameDomainOrHost(
-            top_document_url, rfh->last_committed_origin_,
-            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
-      return GURL::EmptyGURL();
+    if (!candidate.IsEquivalent(
+            net::SiteForCookies::FromOrigin(rfh->last_committed_origin_))) {
+      return net::SiteForCookies();
     }
   }
 
-  return top_document_url;
+  return candidate;
 }
 
 void RenderFrameHostImpl::SetOriginAndNetworkIsolationKeyOfNewFrame(
@@ -2510,7 +2518,7 @@ void RenderFrameHostImpl::OnDetach() {
   // A frame is removed while replacing this document with the new one. When it
   // happens, delete the frame and both the new and old documents. Unload
   // handlers aren't guaranteed to run here.
-  if (is_waiting_for_swapout_ack_) {
+  if (is_waiting_for_unload_ack_) {
     parent_->RemoveChild(frame_tree_node_);
     return;
   }
@@ -2636,21 +2644,17 @@ void RenderFrameHostImpl::DidFailLoadWithError(
 }
 
 void RenderFrameHostImpl::DidCommitProvisionalLoad(
-    std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
-        validated_params,
+    std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params,
     mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params) {
-  if (MaybeInterceptCommitCallback(nullptr, validated_params.get(),
-                                   &interface_params)) {
-    DidCommitNavigation(std::move(navigation_request_),
-                        std::move(validated_params),
+  if (MaybeInterceptCommitCallback(nullptr, params.get(), &interface_params)) {
+    DidCommitNavigation(std::move(navigation_request_), std::move(params),
                         std::move(interface_params));
   }
 }
 
 void RenderFrameHostImpl::DidCommitBackForwardCacheNavigation(
     NavigationRequest* committing_navigation_request,
-    std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
-        validated_params) {
+    std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params) {
   auto request = navigation_requests_.find(committing_navigation_request);
   CHECK(request != navigation_requests_.end());
 
@@ -2667,8 +2671,7 @@ void RenderFrameHostImpl::DidCommitBackForwardCacheNavigation(
   // been fired.
   is_loading_ = true;
 
-  DidCommitNavigationInternal(std::move(owned_request),
-                              std::move(validated_params),
+  DidCommitNavigationInternal(std::move(owned_request), std::move(params),
                               /*is_same_document_navigation=*/false);
 
   // The page is already loaded since it came from the cache, so fire the stop
@@ -2678,13 +2681,11 @@ void RenderFrameHostImpl::DidCommitBackForwardCacheNavigation(
 
 void RenderFrameHostImpl::DidCommitPerNavigationMojoInterfaceNavigation(
     NavigationRequest* committing_navigation_request,
-    std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
-        validated_params,
+    std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params,
     mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params) {
   DCHECK(committing_navigation_request);
   committing_navigation_request->IgnoreCommitInterfaceDisconnection();
-  if (!MaybeInterceptCommitCallback(committing_navigation_request,
-                                    validated_params.get(),
+  if (!MaybeInterceptCommitCallback(committing_navigation_request, params.get(),
                                     &interface_params)) {
     return;
   }
@@ -2697,16 +2698,14 @@ void RenderFrameHostImpl::DidCommitPerNavigationMojoInterfaceNavigation(
 
   std::unique_ptr<NavigationRequest> owned_request = std::move(request->second);
   navigation_requests_.erase(committing_navigation_request);
-  DidCommitNavigation(std::move(owned_request), std::move(validated_params),
+  DidCommitNavigation(std::move(owned_request), std::move(params),
                       std::move(interface_params));
 }
 
 void RenderFrameHostImpl::DidCommitSameDocumentNavigation(
-    std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
-        validated_params) {
+    std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params) {
   ScopedActiveURL scoped_active_url(
-      validated_params->url,
-      frame_tree_node()->frame_tree()->root()->current_origin());
+      params->url, frame_tree_node()->frame_tree()->root()->current_origin());
   ScopedCommitStateResetter commit_state_resetter(this);
 
   // When the frame is pending deletion, the browser is waiting for it to unload
@@ -2723,18 +2722,18 @@ void RenderFrameHostImpl::DidCommitSameDocumentNavigation(
   TRACE_EVENT2("navigation",
                "RenderFrameHostImpl::DidCommitSameDocumentNavigation",
                "frame_tree_node", frame_tree_node_->frame_tree_node_id(), "url",
-               validated_params->url.possibly_invalid_spec());
+               params->url.possibly_invalid_spec());
 
   // Check if the navigation matches a stored same-document NavigationRequest.
   // In that case it is browser-initiated.
   bool is_browser_initiated =
       same_document_navigation_request_ &&
       (same_document_navigation_request_->commit_params().navigation_token ==
-       validated_params->navigation_token);
+       params->navigation_token);
   if (!DidCommitNavigationInternal(
           is_browser_initiated ? std::move(same_document_navigation_request_)
                                : nullptr,
-          std::move(validated_params), true /* is_same_document_navigation*/)) {
+          std::move(params), true /* is_same_document_navigation*/)) {
     return;
   }
 
@@ -2799,45 +2798,42 @@ void RenderFrameHostImpl::SetNavigationRequest(
       std::move(navigation_request);
 }
 
-void RenderFrameHostImpl::SwapOut(RenderFrameProxyHost* proxy,
-                                  bool is_loading) {
-  // The end of this event is in OnSwapOutACK when the RenderFrame has completed
+void RenderFrameHostImpl::Unload(RenderFrameProxyHost* proxy, bool is_loading) {
+  // The end of this event is in OnUnloadACK when the RenderFrame has completed
   // the operation and sends back an IPC message.
-  // The trace event may not end properly if the ACK times out.  We expect this
-  // to be fixed when RenderViewHostImpl::OnSwapOut moves to RenderFrameHost.
-  TRACE_EVENT_ASYNC_BEGIN1("navigation", "RenderFrameHostImpl::SwapOut", this,
+  TRACE_EVENT_ASYNC_BEGIN1("navigation", "RenderFrameHostImpl::Unload", this,
                            "frame_tree_node",
                            frame_tree_node_->frame_tree_node_id());
 
   // If this RenderFrameHost is already pending deletion, it must have already
   // gone through this, therefore just return.
   if (unload_state_ != UnloadState::NotRun) {
-    NOTREACHED() << "RFH should be in default state when calling SwapOut.";
+    NOTREACHED() << "RFH should be in default state when calling Unload.";
     return;
   }
 
-  if (swapout_event_monitor_timeout_) {
-    swapout_event_monitor_timeout_->Start(base::TimeDelta::FromMilliseconds(
+  if (unload_event_monitor_timeout_) {
+    unload_event_monitor_timeout_->Start(base::TimeDelta::FromMilliseconds(
         RenderViewHostImpl::kUnloadTimeoutMS));
   }
 
   // There should always be a proxy to replace the old RenderFrameHost.  If
   // there are no remaining active views in the process, the proxy will be
-  // short-lived and will be deleted when the SwapOut ACK is received.
+  // short-lived and will be deleted when the unload ACK is received.
   CHECK(proxy);
 
   // TODO(nasko): If the frame is not live, the RFH should just be deleted by
-  // simulating the receipt of swap out ack.
-  is_waiting_for_swapout_ack_ = true;
+  // simulating the receipt of unload ack.
+  is_waiting_for_unload_ack_ = true;
   unload_state_ = UnloadState::InProgress;
 
   if (IsRenderFrameLive()) {
     FrameReplicationState replication_state =
         proxy->frame_tree_node()->current_replication_state();
-    Send(new UnfreezableFrameMsg_SwapOut(routing_id_, proxy->GetRoutingID(),
-                                         is_loading, replication_state));
+    Send(new UnfreezableFrameMsg_Unload(routing_id_, proxy->GetRoutingID(),
+                                        is_loading, replication_state));
     // Remember that a RenderFrameProxy was created as part of processing the
-    // SwapOut message above.
+    // Unload message above.
     proxy->SetRenderFrameProxyCreated(true);
 
     StartPendingDeletionOnSubtree();
@@ -2848,7 +2844,7 @@ void RenderFrameHostImpl::SwapOut(RenderFrameProxyHost* proxy,
   PendingDeletionCheckCompletedOnSubtree();
 
   if (web_ui())
-    web_ui()->RenderFrameHostSwappingOut();
+    web_ui()->RenderFrameHostUnloading();
 
   web_bluetooth_services_.clear();
 #if !defined(OS_ANDROID)
@@ -3015,19 +3011,19 @@ void RenderFrameHostImpl::ProcessBeforeUnloadACKFromFrame(
 
 bool RenderFrameHostImpl::IsWaitingForUnloadACK() const {
   return render_view_host_->is_waiting_for_close_ack_ ||
-         is_waiting_for_swapout_ack_;
+         is_waiting_for_unload_ack_;
 }
 
-void RenderFrameHostImpl::OnSwapOutACK() {
+void RenderFrameHostImpl::OnUnloadACK() {
   if (frame_tree_node_->render_manager()->is_attaching_inner_delegate()) {
-    // This RFH was swapped out while attaching an inner delegate. The RFH
+    // This RFH was unloaded while attaching an inner delegate. The RFH
     // will stay around but it will no longer be associated with a RenderFrame.
     SetRenderFrameCreated(false);
     return;
   }
 
-  // Ignore spurious swap out ack.
-  if (!is_waiting_for_swapout_ack_)
+  // Ignore spurious unload ack.
+  if (!is_waiting_for_unload_ack_)
     return;
 
   DCHECK_EQ(UnloadState::InProgress, unload_state_);
@@ -3035,12 +3031,12 @@ void RenderFrameHostImpl::OnSwapOutACK() {
   PendingDeletionCheckCompleted();  // Can delete |this|.
 }
 
-void RenderFrameHostImpl::OnSwappedOut() {
-  DCHECK(is_waiting_for_swapout_ack_);
+void RenderFrameHostImpl::OnUnloaded() {
+  DCHECK(is_waiting_for_unload_ack_);
 
-  TRACE_EVENT_ASYNC_END0("navigation", "RenderFrameHostImpl::SwapOut", this);
-  if (swapout_event_monitor_timeout_)
-    swapout_event_monitor_timeout_->Stop();
+  TRACE_EVENT_ASYNC_END0("navigation", "RenderFrameHostImpl::Unload", this);
+  if (unload_event_monitor_timeout_)
+    unload_event_monitor_timeout_->Stop();
 
   ClearWebUI();
 
@@ -3056,8 +3052,8 @@ void RenderFrameHostImpl::OnSwappedOut() {
   CHECK(deleted);
 }
 
-void RenderFrameHostImpl::DisableSwapOutTimerForTesting() {
-  swapout_event_monitor_timeout_.reset();
+void RenderFrameHostImpl::DisableUnloadTimerForTesting() {
+  unload_event_monitor_timeout_.reset();
 }
 
 void RenderFrameHostImpl::SetSubframeUnloadTimeoutForTesting(
@@ -5069,8 +5065,8 @@ void RenderFrameHostImpl::StartPendingDeletionOnSubtree() {
 
 void RenderFrameHostImpl::PendingDeletionCheckCompleted() {
   if (unload_state_ == UnloadState::Completed && children_.empty()) {
-    if (is_waiting_for_swapout_ack_)
-      OnSwappedOut();
+    if (is_waiting_for_unload_ack_)
+      OnUnloaded();
     else
       parent_->RemoveChild(frame_tree_node_);
   }
@@ -5577,7 +5573,7 @@ void RenderFrameHostImpl::CommitNavigation(
     // same-process navigations yet as we are reusing the RenderFrameHost and
     // as the local frame navigates it overrides the values that we are
     // interested in. The cross-process navigation case is handled in
-    // RenderFrameHostManager::SwapOutOldFrame.
+    // RenderFrameHostManager::UnloadOldFrame.
     //
     // Here we are recording the metrics for same-process navigations at the
     // point just before the navigation commits.
@@ -6474,6 +6470,11 @@ void RenderFrameHostImpl::CreateNotificationService(
                                           std::move(receiver));
 }
 
+void RenderFrameHostImpl::CreateInstalledAppProvider(
+    mojo::PendingReceiver<blink::mojom::InstalledAppProvider> receiver) {
+  InstalledAppProviderImpl::Create(this, std::move(receiver));
+}
+
 void RenderFrameHostImpl::CreateDedicatedWorkerHostFactory(
     mojo::PendingReceiver<blink::mojom::DedicatedWorkerHostFactory> receiver) {
   content::CreateDedicatedWorkerHostFactory(
@@ -6927,7 +6928,7 @@ mojom::FrameNavigationControl* RenderFrameHostImpl::GetNavigationControl() {
 
 bool RenderFrameHostImpl::ValidateDidCommitParams(
     NavigationRequest* navigation_request,
-    FrameHostMsg_DidCommitProvisionalLoad_Params* validated_params,
+    FrameHostMsg_DidCommitProvisionalLoad_Params* params,
     bool is_same_document_navigation) {
   RenderProcessHost* process = GetProcess();
 
@@ -6941,8 +6942,8 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
       // Commits in the error page process must only be failures, otherwise
       // successful navigations could commit documents from origins different
       // than the chrome-error://chromewebdata/ one and violate expectations.
-      if (!validated_params->url_is_unreachable) {
-        DEBUG_ALIAS_FOR_ORIGIN(origin_debug_alias, validated_params->origin);
+      if (!params->url_is_unreachable) {
+        DEBUG_ALIAS_FOR_ORIGIN(origin_debug_alias, params->origin);
         bad_message::ReceivedBadMessage(
             process, bad_message::RFH_ERROR_PROCESS_NON_ERROR_COMMIT);
         return false;
@@ -6962,8 +6963,8 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
 
   // Error pages must commit in a opaque origin. Terminate the renderer
   // process if this is violated.
-  if (bypass_checks_for_error_page && !validated_params->origin.opaque()) {
-    DEBUG_ALIAS_FOR_ORIGIN(origin_debug_alias, validated_params->origin);
+  if (bypass_checks_for_error_page && !params->origin.opaque()) {
+    DEBUG_ALIAS_FOR_ORIGIN(origin_debug_alias, params->origin);
     bad_message::ReceivedBadMessage(
         process, bad_message::RFH_ERROR_PROCESS_NON_UNIQUE_ORIGIN_COMMIT);
     return false;
@@ -6971,7 +6972,7 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
 
   // file: URLs can be allowed to access any other origin, based on settings.
   bool bypass_checks_for_file_scheme = false;
-  if (validated_params->origin.scheme() == url::kFileScheme) {
+  if (params->origin.scheme() == url::kFileScheme) {
     WebPreferences prefs = render_view_host_->GetWebkitPreferences();
     if (prefs.allow_universal_access_from_file_urls)
       bypass_checks_for_file_scheme = true;
@@ -6984,8 +6985,7 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
   bool bypass_checks_for_webview = false;
   if ((navigation_request &&
        IsLoadDataWithBaseURL(navigation_request->common_params())) ||
-      (is_same_document_navigation &&
-       IsLoadDataWithBaseURL(*validated_params))) {
+      (is_same_document_navigation && IsLoadDataWithBaseURL(*params))) {
     // Allow bypass if the process isn't locked. Otherwise run normal checks.
     bypass_checks_for_webview = ChildProcessSecurityPolicyImpl::GetInstance()
                                     ->GetOriginLock(process->GetID())
@@ -6997,21 +6997,19 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
     // Attempts to commit certain off-limits URL should be caught more strictly
     // than our FilterURL checks.  If a renderer violates this policy, it
     // should be killed.
-    switch (CanCommitOriginAndUrl(validated_params->origin,
-                                  validated_params->url)) {
+    switch (CanCommitOriginAndUrl(params->origin, params->url)) {
       case CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL:
         // The origin and URL are safe to commit.
         break;
       case CanCommitStatus::CANNOT_COMMIT_URL:
-        DLOG(ERROR) << "CANNOT_COMMIT_URL url '" << validated_params->url << "'"
-                    << " origin '" << validated_params->origin << "'"
+        DLOG(ERROR) << "CANNOT_COMMIT_URL url '" << params->url << "'"
+                    << " origin '" << params->origin << "'"
                     << " lock '"
                     << ChildProcessSecurityPolicyImpl::GetInstance()
                            ->GetOriginLock(process->GetID())
                     << "'";
-        VLOG(1) << "Blocked URL " << validated_params->url.spec();
-        LogCannotCommitUrlCrashKeys(validated_params->url,
-                                    is_same_document_navigation,
+        VLOG(1) << "Blocked URL " << params->url.spec();
+        LogCannotCommitUrlCrashKeys(params->url, is_same_document_navigation,
                                     navigation_request);
 
         // Kills the process.
@@ -7019,14 +7017,13 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
             process, bad_message::RFH_CAN_COMMIT_URL_BLOCKED);
         return false;
       case CanCommitStatus::CANNOT_COMMIT_ORIGIN:
-        DLOG(ERROR) << "CANNOT_COMMIT_ORIGIN url '" << validated_params->url
-                    << "'"
-                    << " origin '" << validated_params->origin << "'"
+        DLOG(ERROR) << "CANNOT_COMMIT_ORIGIN url '" << params->url << "'"
+                    << " origin '" << params->origin << "'"
                     << " lock '"
                     << ChildProcessSecurityPolicyImpl::GetInstance()
                            ->GetOriginLock(process->GetID())
                     << "'";
-        DEBUG_ALIAS_FOR_ORIGIN(origin_debug_alias, validated_params->origin);
+        DEBUG_ALIAS_FOR_ORIGIN(origin_debug_alias, params->origin);
         LogCannotCommitOriginCrashKeys(is_same_document_navigation,
                                        navigation_request);
 
@@ -7047,19 +7044,19 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
   //
   // TODO(https://crbug.com/172694): Currently, when FilterURL detects a bad URL
   // coming from the renderer, it overwrites that URL to about:blank, which
-  // requires |validated_params| to be mutable. Once we kill the renderer
+  // requires |params| to be mutable. Once we kill the renderer
   // instead, the signature of RenderFrameHostImpl::DidCommitProvisionalLoad can
-  // be modified to take |validated_params| by const reference.
-  process->FilterURL(false, &validated_params->url);
-  process->FilterURL(true, &validated_params->referrer.url);
-  for (auto it(validated_params->redirects.begin());
-       it != validated_params->redirects.end(); ++it) {
+  // be modified to take |params| by const reference.
+  process->FilterURL(false, &params->url);
+  process->FilterURL(true, &params->referrer.url);
+  for (auto it(params->redirects.begin()); it != params->redirects.end();
+       ++it) {
     process->FilterURL(false, &(*it));
   }
 
   // Without this check, the renderer can trick the browser into using
   // filenames it can't access in a future session restore.
-  if (!CanAccessFilesOfPageState(validated_params->page_state)) {
+  if (!CanAccessFilesOfPageState(params->page_state)) {
     bad_message::ReceivedBadMessage(
         process, bad_message::RFH_CAN_ACCESS_FILES_OF_PAGE_STATE);
     return false;
@@ -7079,17 +7076,15 @@ void RenderFrameHostImpl::UpdateSiteURL(const GURL& url,
 
 bool RenderFrameHostImpl::DidCommitNavigationInternal(
     std::unique_ptr<NavigationRequest> navigation_request,
-    std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
-        validated_params,
+    std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params,
     bool is_same_document_navigation) {
   // Sanity-check the page transition for frame type.
-  DCHECK_EQ(ui::PageTransitionIsMainFrame(validated_params->transition),
-            !GetParent());
+  DCHECK_EQ(ui::PageTransitionIsMainFrame(params->transition), !GetParent());
 
   // Check that the committing navigation token matches the navigation request.
   if (navigation_request &&
       navigation_request->commit_params().navigation_token !=
-          validated_params->navigation_token) {
+          params->navigation_token) {
     navigation_request.reset();
   }
 
@@ -7100,9 +7095,8 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
 
     //  1) This was a renderer-initiated navigation to an empty document. Most
     //  of the time: about:blank.
-    is_commit_allowed_to_proceed |=
-        validated_params->url.SchemeIs(url::kAboutScheme) &&
-        validated_params->url != GURL(url::kAboutSrcdocURL);
+    is_commit_allowed_to_proceed |= params->url.SchemeIs(url::kAboutScheme) &&
+                                    params->url != GURL(url::kAboutSrcdocURL);
 
     //  2) This was a same-document navigation.
     //  TODO(clamy): We should enforce having a request on browser-initiated
@@ -7118,13 +7112,13 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
 
     //  4) Error pages implementations in Chrome can commit twice.
     //  TODO(clamy): Fix this.
-    is_commit_allowed_to_proceed |= validated_params->url_is_unreachable;
+    is_commit_allowed_to_proceed |= params->url_is_unreachable;
 
     //  5) Special case for DOMSerializerBrowsertests which are implemented
     //  entirely renderer-side and unlike normal RenderView based tests load
     //  file URLs instead of data URLs.
     //  TODO(clamy): Rework the tests to remove this exception.
-    is_commit_allowed_to_proceed |= validated_params->url.SchemeIsFile();
+    is_commit_allowed_to_proceed |= params->url.SchemeIsFile();
 
     if (!is_commit_allowed_to_proceed) {
       bad_message::ReceivedBadMessage(
@@ -7134,7 +7128,7 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     }
   }
 
-  if (!ValidateDidCommitParams(navigation_request.get(), validated_params.get(),
+  if (!ValidateDidCommitParams(navigation_request.get(), params.get(),
                                is_same_document_navigation)) {
     return false;
   }
@@ -7142,7 +7136,7 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   // TODO(clamy): We should stop having a special case for same-document
   // navigation and just put them in the general map of NavigationRequests.
   if (navigation_request &&
-      navigation_request->common_params().url != validated_params->url &&
+      navigation_request->common_params().url != params->url &&
       is_same_document_navigation) {
     same_document_navigation_request_ = std::move(navigation_request);
   }
@@ -7166,7 +7160,7 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   // WebContentsObservers.
   if (!navigation_request) {
     navigation_request = CreateNavigationRequestForCommit(
-        *validated_params, is_same_document_navigation, nullptr);
+        *params, is_same_document_navigation, nullptr);
   }
 
   DCHECK(navigation_request);
@@ -7176,14 +7170,14 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   // only gives the correct page transition at commit time.
   // TODO(clamy): We should get the correct page transition when starting the
   // request.
-  navigation_request->set_transition(validated_params->transition);
+  navigation_request->set_transition(params->transition);
 
-  navigation_request->set_has_user_gesture(validated_params->gesture ==
+  navigation_request->set_has_user_gesture(params->gesture ==
                                            NavigationGestureUser);
 
-  last_http_status_code_ = validated_params->http_status_code;
-  last_http_method_ = validated_params->method;
-  UpdateSiteURL(validated_params->url, validated_params->url_is_unreachable);
+  last_http_status_code_ = params->http_status_code;
+  last_http_method_ = params->method;
+  UpdateSiteURL(params->url, params->url_is_unreachable);
   if (!is_same_document_navigation)
     UpdateRenderProcessHostFramePriorities();
 
@@ -7219,14 +7213,14 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     }));
   }
 
-  frame_tree_node()->navigator()->DidNavigate(this, *validated_params,
+  frame_tree_node()->navigator()->DidNavigate(this, *params,
                                               std::move(navigation_request),
                                               is_same_document_navigation);
 
   if (IsBackForwardCacheEnabled()) {
     // Store the Commit params so they can be reused if the page is ever
     // restored from the BackForwardCache.
-    last_commit_params_ = std::move(validated_params);
+    last_commit_params_ = std::move(params);
   }
 
   if (!is_same_document_navigation) {
@@ -7287,7 +7281,7 @@ void RenderFrameHostImpl::OnCrossDocumentCommitProcessed(
 
 std::unique_ptr<base::trace_event::TracedValue>
 RenderFrameHostImpl::CommitAsTracedValue(
-    FrameHostMsg_DidCommitProvisionalLoad_Params* validated_params) const {
+    FrameHostMsg_DidCommitProvisionalLoad_Params* params) const {
   auto value = std::make_unique<base::trace_event::TracedValue>();
 
   value->SetInteger("frame_tree_node", frame_tree_node_->frame_tree_node_id());
@@ -7295,12 +7289,11 @@ RenderFrameHostImpl::CommitAsTracedValue(
   value->SetString("process lock", ChildProcessSecurityPolicyImpl::GetInstance()
                                        ->GetOriginLock(process_->GetID())
                                        .possibly_invalid_spec());
-  value->SetString("origin", validated_params->origin.Serialize());
-  value->SetInteger("transition", validated_params->transition);
+  value->SetString("origin", params->origin.Serialize());
+  value->SetInteger("transition", params->transition);
 
-  if (!validated_params->base_url.is_empty()) {
-    value->SetString("base_url",
-                     validated_params->base_url.possibly_invalid_spec());
+  if (!params->base_url.is_empty()) {
+    value->SetString("base_url", params->base_url.possibly_invalid_spec());
   }
 
   return value;
@@ -7425,8 +7418,7 @@ void RenderFrameHostImpl::SendCommitFailedNavigation(
 // notification containing parameters identifying the navigation.
 void RenderFrameHostImpl::DidCommitNavigation(
     std::unique_ptr<NavigationRequest> committing_navigation_request,
-    std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
-        validated_params,
+    std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params,
     mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params) {
   NavigationRequest* request;
   if (committing_navigation_request) {
@@ -7436,7 +7428,7 @@ void RenderFrameHostImpl::DidCommitNavigation(
   }
 
   if (request && request->IsNavigationStarted()) {
-    main_frame_request_ids_ = {validated_params->request_id,
+    main_frame_request_ids_ = {params->request_id,
                                request->GetGlobalRequestID()};
     if (deferred_main_frame_load_info_)
       ResourceLoadComplete(std::move(deferred_main_frame_load_info_));
@@ -7445,15 +7437,14 @@ void RenderFrameHostImpl::DidCommitNavigation(
   // committed (not with the *last* committed URL that most other IPCs are
   // associated with).
   ScopedActiveURL scoped_active_url(
-      validated_params->url,
-      frame_tree_node()->frame_tree()->root()->current_origin());
+      params->url, frame_tree_node()->frame_tree()->root()->current_origin());
 
   ScopedCommitStateResetter commit_state_resetter(this);
   RenderProcessHost* process = GetProcess();
 
   TRACE_EVENT2("navigation", "RenderFrameHostImpl::DidCommitProvisionalLoad",
-               "url", validated_params->url.possibly_invalid_spec(), "details",
-               CommitAsTracedValue(validated_params.get()));
+               "url", params->url.possibly_invalid_spec(), "details",
+               CommitAsTracedValue(params.get()));
 
   // If we're waiting for a cross-site beforeunload ack from this renderer and
   // we receive a Navigate message from the main frame, then the renderer was
@@ -7527,7 +7518,7 @@ void RenderFrameHostImpl::DidCommitNavigation(
   }
 
   if (!DidCommitNavigationInternal(std::move(committing_navigation_request),
-                                   std::move(validated_params),
+                                   std::move(params),
                                    false /* is_same_document_navigation */)) {
     return;
   }
@@ -7607,11 +7598,11 @@ void RenderFrameHostImpl::UpdateFrameFrozenState() {
 
 bool RenderFrameHostImpl::MaybeInterceptCommitCallback(
     NavigationRequest* navigation_request,
-    FrameHostMsg_DidCommitProvisionalLoad_Params* validated_params,
+    FrameHostMsg_DidCommitProvisionalLoad_Params* params,
     mojom::DidCommitProvisionalLoadInterfaceParamsPtr* interface_params) {
   if (commit_callback_interceptor_) {
     return commit_callback_interceptor_->WillProcessDidCommitNavigation(
-        navigation_request, validated_params, interface_params);
+        navigation_request, params, interface_params);
   }
   return true;
 }

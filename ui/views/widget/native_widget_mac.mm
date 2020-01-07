@@ -778,6 +778,18 @@ void NativeWidgetMac::OnSizeConstraintsChanged() {
       widget->widget_delegate()->CanMaximize());
 }
 
+void NativeWidgetMac::OnNativeViewHierarchyWillChange() {
+  // If this is not top-level, then the FocusManager may change, so remove our
+  // listeners.
+  if (!GetWidget()->is_top_level())
+    SetFocusManager(nullptr);
+}
+
+void NativeWidgetMac::OnNativeViewHierarchyChanged() {
+  if (!GetWidget()->is_top_level())
+    SetFocusManager(GetWidget()->GetFocusManager());
+}
+
 std::string NativeWidgetMac::GetName() const {
   return name_;
 }

@@ -26,37 +26,6 @@ class OmniboxPopupViewControllerTest : public PlatformTest {
   OmniboxPopupLegacyViewController* popup_view_controller_;
 };
 
-TEST_F(OmniboxPopupViewControllerTest, HasCellsWhenShortcutsEnabled) {
-  // This test makes an assumption that this view controller is a datasource for
-  // a table view. Rewrite this test if this is not the case anymore.
-  EXPECT_TRUE([popup_view_controller_
-      conformsToProtocol:@protocol(UITableViewDataSource)]);
-  id<UITableViewDataSource> datasource =
-      (id<UITableViewDataSource>)popup_view_controller_;
-  UITableView* table_view = [[UITableView alloc] init];
-
-  // A stub view controller.
-  UICollectionViewController* shortcutsViewController =
-      [[UICollectionViewController alloc] init];
-
-  // Shortcuts are not enabled by default.
-  EXPECT_FALSE(popup_view_controller_.shortcutsEnabled);
-
-  // Check that the shorcuts row doesn't appear.
-  [popup_view_controller_ updateMatches:@[] withAnimation:NO];
-  EXPECT_EQ([datasource tableView:table_view numberOfRowsInSection:0], 0);
-
-  // Enable shortcuts and verify they appear. When enabling, the view controller
-  // has to be non-nil.
-  popup_view_controller_.shortcutsViewController = shortcutsViewController;
-  popup_view_controller_.shortcutsEnabled = YES;
-  EXPECT_EQ([datasource tableView:table_view numberOfRowsInSection:0], 1);
-
-  // Disable and verify it disappears again.
-  popup_view_controller_.shortcutsEnabled = NO;
-  EXPECT_EQ([datasource tableView:table_view numberOfRowsInSection:0], 0);
-}
-
 TEST_F(OmniboxPopupViewControllerTest, HasTabMatch) {
   EXPECT_TRUE([popup_view_controller_
       conformsToProtocol:@protocol(UITableViewDataSource)]);

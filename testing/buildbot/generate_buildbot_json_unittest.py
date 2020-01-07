@@ -2549,15 +2549,6 @@ class UnitTest(unittest.TestCase):
                     TEST_SUITE_SORTED,
                     LUCI_MILO_CFG,
                     exceptions=EXCEPTIONS_PER_TEST_UNSORTED)
-    real_dict_format = fbb.check_ast_dict_formatted
-    def fake_dict_format(*args, **kwargs):
-      kwargs['check_sorting'] = True
-      return real_dict_format(*args, **kwargs)
-
-    # Mock this out for now. A future CL will enable sorting by default. Still
-    # want to test the codepath, even if it's not used it production yet.
-    fbb.check_ast_dict_formatted = fake_dict_format
-
     with self.assertRaises(generate_buildbot_json.BBGenErr):
       fbb.check_input_file_consistency(verbose=True)
     joined_lines = ' '.join(fbb.printed_lines)
@@ -3256,15 +3247,6 @@ class MixinTests(unittest.TestCase):
     fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
                     FOO_TEST_SUITE_NOT_SORTED,
                     LUCI_MILO_CFG)
-    real_dict_format = fbb.check_ast_dict_formatted
-    def fake_dict_format(*args, **kwargs):
-      kwargs['check_sorting'] = True
-      return real_dict_format(*args, **kwargs)
-
-    # Mock this out for now. A future CL will enable sorting by default. Still
-    # want to test the codepath, even if it's not used it production yet.
-    fbb.check_ast_dict_formatted = fake_dict_format
-
     with self.assertRaisesRegexp(
         generate_buildbot_json.BBGenErr,
         'The following files have invalid keys: test_suites.pyl'):

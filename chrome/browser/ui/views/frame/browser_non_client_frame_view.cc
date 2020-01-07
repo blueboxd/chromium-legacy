@@ -46,7 +46,10 @@ BrowserNonClientFrameView::BrowserNonClientFrameView(BrowserFrame* frame,
     g_browser_process->profile_manager()->
         GetProfileAttributesStorage().AddObserver(this);
   }
-  MaybeObserveTabstrip();
+  if (browser_view_->tabstrip()) {
+    DCHECK(!tab_strip_observer_.IsObserving(browser_view_->tabstrip()));
+    tab_strip_observer_.Add(browser_view_->tabstrip());
+  }
 }
 
 BrowserNonClientFrameView::~BrowserNonClientFrameView() {
@@ -58,7 +61,6 @@ BrowserNonClientFrameView::~BrowserNonClientFrameView() {
 }
 
 void BrowserNonClientFrameView::OnBrowserViewInitViewsComplete() {
-  MaybeObserveTabstrip();
   UpdateMinimumSize();
 }
 
@@ -383,13 +385,6 @@ int BrowserNonClientFrameView::GetSystemMenuY() const {
          GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP);
 }
 #endif
-
-void BrowserNonClientFrameView::MaybeObserveTabstrip() {
-  if (browser_view_->tabstrip()) {
-    DCHECK(!tab_strip_observer_.IsObserving(browser_view_->tabstrip()));
-    tab_strip_observer_.Add(browser_view_->tabstrip());
-  }
-}
 
 const ui::ThemeProvider*
 BrowserNonClientFrameView::GetThemeProviderForProfile() const {

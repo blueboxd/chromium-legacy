@@ -5,17 +5,13 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 
 #include "base/logging.h"
-#include "components/infobars/core/infobar.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
 
-using infobars::InfoBarDelegate;
+ConfirmInfoBarDelegate::~ConfirmInfoBarDelegate() = default;
 
-ConfirmInfoBarDelegate::~ConfirmInfoBarDelegate() {
-}
-
-InfoBarDelegate::InfoBarAutomationType
-    ConfirmInfoBarDelegate::GetInfoBarAutomationType() const {
+infobars::InfoBarDelegate::InfoBarAutomationType
+ConfirmInfoBarDelegate::GetInfoBarAutomationType() const {
   return CONFIRM_INFOBAR;
 }
 
@@ -29,8 +25,8 @@ int ConfirmInfoBarDelegate::GetButtons() const {
 
 base::string16 ConfirmInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
-  return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
-      IDS_APP_OK : IDS_APP_CANCEL);
+  return l10n_util::GetStringUTF16((button == BUTTON_OK) ? IDS_APP_OK
+                                                         : IDS_APP_CANCEL);
 }
 
 bool ConfirmInfoBarDelegate::OKButtonTriggersUACPrompt() const {
@@ -45,22 +41,10 @@ bool ConfirmInfoBarDelegate::Cancel() {
   return true;
 }
 
-base::string16 ConfirmInfoBarDelegate::GetLinkText() const {
-  return base::string16();
-}
+ConfirmInfoBarDelegate::ConfirmInfoBarDelegate() = default;
 
-GURL ConfirmInfoBarDelegate::GetLinkURL() const {
-  return GURL();
-}
-
-bool ConfirmInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
-  infobar()->owner()->OpenURL(GetLinkURL(), disposition);
-  return false;
-}
-
-ConfirmInfoBarDelegate::ConfirmInfoBarDelegate() {}
-
-bool ConfirmInfoBarDelegate::EqualsDelegate(InfoBarDelegate* delegate) const {
+bool ConfirmInfoBarDelegate::EqualsDelegate(
+    infobars::InfoBarDelegate* delegate) const {
   ConfirmInfoBarDelegate* confirm_delegate =
       delegate->AsConfirmInfoBarDelegate();
   return confirm_delegate &&

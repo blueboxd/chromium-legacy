@@ -1476,4 +1476,45 @@ void BrowserAccessibilityManager::CacheHitTestResult(
   last_hover_bounds_ = hit_test_result->GetClippedScreenBoundsRect();
 }
 
+void BrowserAccessibilityManager::CollectChangedNodesAndParentsForAtomicUpdate(
+    ui::AXTree* tree,
+    const std::vector<ui::AXTreeObserver::Change>& changes,
+    std::set<ui::AXPlatformNode*>* nodes_needing_update) {
+  // The nodes that need to be updated are all of the nodes that were changed,
+  // plus some parents.
+  for (const auto& change : changes) {
+    const ui::AXNode* changed_node = change.node;
+    DCHECK(changed_node);
+
+    BrowserAccessibility* obj = GetFromAXNode(changed_node);
+    if (obj && obj->IsNative())
+      nodes_needing_update->insert(obj->GetAXPlatformNode());
+
+    // When a node is a text node or line break, update its parent, because
+    // its text is part of its hypertext.
+    const ui::AXNode* parent = changed_node->parent();
+    if (!parent)
+      continue;
+
+    if (ui::IsTextOrLineBreak(changed_node->data().role)) {
+      BrowserAccessibility* parent_obj = GetFromAXNode(parent);
+      if (parent_obj && parent_obj->IsNative())
+        nodes_needing_update->insert(parent_obj->GetAXPlatformNode());
+    }
+
+    // When a node is editable, update the editable root too.
+    if (!changed_node->data().HasState(ax::mojom::State::kEditable))
+      continue;
+    const ui::AXNode* editable_root = changed_node;
+    while (editable_root->parent() && editable_root->parent()->data().HasState(
+                                          ax::mojom::State::kEditable)) {
+      editable_root = editable_root->parent();
+    }
+
+    BrowserAccessibility* editable_root_obj = GetFromAXNode(editable_root);
+    if (editable_root_obj && editable_root_obj->IsNative())
+      nodes_needing_update->insert(editable_root_obj->GetAXPlatformNode());
+  }
+}
+
 }  // namespace content

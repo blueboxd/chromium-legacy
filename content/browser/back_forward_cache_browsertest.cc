@@ -1185,7 +1185,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   // Note: We still have a transition proxy that will be used to perform the
-  // frame SwapOut. It gets deleted with rfh_b below.
+  // frame swap. It gets deleted with rfh_b below.
   EXPECT_EQ(3u, render_frame_host_manager()->GetProxyCount());
 
   // Page B should be deleted (not cached).
@@ -4792,7 +4792,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   dialog_observer.WaitForAppModalDialog();
 }
 
-// SwapOutOldFrame will clear all dialogs. We test that further requests for
+// UnloadOldFrame will clear all dialogs. We test that further requests for
 // dialogs coming from JS do not result in the creation of a dialog. This test
 // posts some dialog creation JS to the render from inside the
 // CommitNavigationCallback task. This JS is then able to post a task back to

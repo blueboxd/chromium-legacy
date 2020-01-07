@@ -21,6 +21,9 @@ import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityTabProvider.ActivityTabTabObserver;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.ThemeColorProvider.TintObserver;
+import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeState;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.homepage.HomepagePolicyManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
@@ -45,6 +48,12 @@ public class HomeButton extends ChromeImageButton
     /** The {@link ActivityTabProvider} used to know if the active tab is on the NTP. */
     private ActivityTabProvider mActivityTabProvider;
 
+    /** The {@link OverviewModeBehavior} used to observe overview state changes.  */
+    private OverviewModeBehavior mOverviewModeBehavior;
+
+    /** The {@link OvervieModeObserver} observing the OverviewModeBehavior  */
+    private OverviewModeBehavior.OverviewModeObserver mOverviewModeObserver;
+
     public HomeButton(Context context, AttributeSet attrs) {
         super(context, attrs);
 
@@ -52,6 +61,18 @@ public class HomeButton extends ChromeImageButton
         setImageDrawable(ContextCompat.getDrawable(context, homeButtonIcon));
         HomepageManager.getInstance().addListener(this);
         updateContextMenuListener();
+
+        mOverviewModeObserver = new EmptyOverviewModeObserver() {
+            @Override
+            public void onOverviewModeStateChanged(
+                    @OverviewModeState int overviewModeState, boolean showTabSwitcherToolbar) {
+                if (overviewModeState == OverviewModeState.SHOWN_HOMEPAGE) {
+                    updateButtonEnabledState(false);
+                } else {
+                    updateButtonEnabledState(null);
+                }
+            }
+        };
     }
 
     public void destroy() {
@@ -66,11 +87,22 @@ public class HomeButton extends ChromeImageButton
         }
 
         HomepageManager.getInstance().removeListener(this);
+
+        if (mOverviewModeBehavior != null) {
+            mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
+            mOverviewModeObserver = null;
+        }
     }
 
     public void setThemeColorProvider(ThemeColorProvider themeColorProvider) {
         mThemeColorProvider = themeColorProvider;
         mThemeColorProvider.addTintObserver(this);
+    }
+
+    public void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
+        assert overviewModeBehavior != null;
+        mOverviewModeBehavior = overviewModeBehavior;
+        mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
     }
 
     @Override
@@ -135,6 +167,10 @@ public class HomeButton extends ChromeImageButton
             // view, or from one tab to another tab.
             isEnabled = !isTabNTP(tab);
         }
+        updateButtonEnabledState(isEnabled);
+    }
+
+    private void updateButtonEnabledState(boolean isEnabled) {
         setEnabled(isEnabled);
         updateContextMenuListener();
     }

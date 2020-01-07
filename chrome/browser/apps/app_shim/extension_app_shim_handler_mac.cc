@@ -463,12 +463,12 @@ AppShimHost* ExtensionAppShimHandler::FindHost(Profile* profile,
 }
 
 AppShimHost* ExtensionAppShimHandler::GetHostForBrowser(Browser* browser) {
-  Profile* profile = Profile::FromBrowserContext(browser->profile());
   const Extension* extension =
       apps::ExtensionAppShimHandler::MaybeGetAppForBrowser(browser);
   if (!extension || !extension->is_hosted_app())
     return nullptr;
-  ProfileState* profile_state = GetOrCreateProfileState(profile, extension);
+  ProfileState* profile_state =
+      GetOrCreateProfileState(browser->profile(), extension);
   if (!profile_state)
     return nullptr;
   return profile_state->GetHost();

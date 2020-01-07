@@ -14,12 +14,12 @@ import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInAllowedObserver;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
+import org.chromium.chrome.browser.signin.SigninPreferencesManager;
 import org.chromium.chrome.browser.signin.SigninPromoController;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountsChangeObserver;
@@ -102,7 +102,7 @@ public class SignInPromo extends OptionalLeaf {
      * will not affect promos that were created before this call.
      */
     public static void temporarilySuppressPromos() {
-        ChromePreferenceManager.getInstance().setNewTabPageSigninPromoSuppressionPeriodStart(
+        SigninPreferencesManager.getInstance().setNewTabPageSigninPromoSuppressionPeriodStart(
                 System.currentTimeMillis());
     }
 
@@ -115,7 +115,7 @@ public class SignInPromo extends OptionalLeaf {
     }
 
     private static boolean getSuppressionStatus() {
-        long suppressedFrom = ChromePreferenceManager.getInstance()
+        long suppressedFrom = SigninPreferencesManager.getInstance()
                                       .getNewTabPageSigninPromoSuppressionPeriodStart();
         if (suppressedFrom == 0) return false;
         long currentTime = System.currentTimeMillis();
@@ -123,7 +123,7 @@ public class SignInPromo extends OptionalLeaf {
         if (suppressedFrom <= currentTime && currentTime < suppressedTo) {
             return true;
         }
-        ChromePreferenceManager.getInstance().clearNewTabPageSigninPromoSuppressionPeriodStart();
+        SigninPreferencesManager.getInstance().clearNewTabPageSigninPromoSuppressionPeriodStart();
         return false;
     }
 

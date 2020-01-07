@@ -291,7 +291,8 @@ void HTMLPlugInElement::DetachLayoutTree(bool performing_reattach) {
   // Only try to persist a plugin we actually own.
   WebPluginContainerImpl* plugin = OwnedPlugin();
   if (plugin && keep_plugin) {
-    SetPersistedPlugin(ToWebPluginContainerImpl(ReleaseEmbeddedContentView()));
+    SetPersistedPlugin(
+        To<WebPluginContainerImpl>(ReleaseEmbeddedContentView()));
   } else {
     // A persisted plugin isn't processed and hooked up immediately
     // (synchronously) when attaching the layout object, so it's possible that
@@ -391,7 +392,7 @@ WebPluginContainerImpl* HTMLPlugInElement::PluginEmbeddedContentView() const {
 WebPluginContainerImpl* HTMLPlugInElement::OwnedPlugin() const {
   EmbeddedContentView* view = OwnedEmbeddedContentView();
   if (view && view->IsPluginView())
-    return ToWebPluginContainerImpl(view);
+    return To<WebPluginContainerImpl>(view);
   return nullptr;
 }
 

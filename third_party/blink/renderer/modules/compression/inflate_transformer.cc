@@ -64,8 +64,14 @@ ScriptPromise InflateTransformer::Transform(
   if (buffer_source.IsArrayBufferView()) {
     const auto* view = buffer_source.GetAsArrayBufferView().View();
     const uint8_t* start = static_cast<const uint8_t*>(view->BaseAddress());
-    wtf_size_t length = view->deprecatedByteLengthAsUnsigned();
-    Inflate(start, length, IsFinished(false), controller, exception_state);
+    size_t length = view->byteLengthAsSizeT();
+    if (length > std::numeric_limits<wtf_size_t>::max()) {
+      exception_state.ThrowRangeError(
+          "Buffer size exceeds maximum heap object size.");
+      return ScriptPromise();
+    }
+    Inflate(start, static_cast<wtf_size_t>(length), IsFinished(false),
+            controller, exception_state);
     return ScriptPromise::CastUndefined(script_state_);
   }
   DCHECK(buffer_source.IsArrayBuffer());

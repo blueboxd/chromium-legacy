@@ -72,10 +72,6 @@ class ProfileIOData {
   content_settings::CookieSettings* GetCookieSettings() const;
   HostContentSettingsMap* GetHostContentSettingsMap() const;
 
-  BooleanPrefMember* safe_browsing_enabled() const {
-    return &safe_browsing_enabled_;
-  }
-
 #if defined(OS_CHROMEOS)
   std::string username_hash() const {
     return username_hash_;
@@ -153,9 +149,6 @@ class ProfileIOData {
   // Data from the UI thread from the Profile, used to initialize ProfileIOData.
   // Deleted after lazy initialization.
   mutable std::unique_ptr<ProfileParams> profile_params_;
-
-  // Member variables which are pointed to by the various context objects.
-  mutable BooleanPrefMember safe_browsing_enabled_;
 
   // Pointed to by URLRequestContext.
 #if BUILDFLAG(ENABLE_EXTENSIONS)

@@ -42,6 +42,7 @@ struct SpellCheckResult {
   int location;
   int length;
   std::vector<base::string16> replacements;
+  bool spelling_service_used = false;
 };
 
 #endif  // COMPONENTS_SPELLCHECK_COMMON_SPELLCHECK_RESULT_H_

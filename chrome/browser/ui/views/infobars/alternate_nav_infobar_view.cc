@@ -40,7 +40,7 @@ AlternateNavInfoBarView::AlternateNavInfoBarView(
   AddChildView(label_1_);
 
   link_text_ = delegate_ptr->GetLinkText();
-  link_ = CreateLink(link_text_, this);
+  link_ = CreateLink(link_text_);
   AddChildView(link_);
 
   label_2_text_ = message_text.substr(offset);
@@ -90,16 +90,6 @@ void AlternateNavInfoBarView::Layout() {
 int AlternateNavInfoBarView::ContentMinimumWidth() const {
   int label_1_width = label_1_->GetMinimumSize().width();
   return label_1_width ? label_1_width : link_->GetMinimumSize().width();
-}
-
-void AlternateNavInfoBarView::LinkClicked(views::Link* source,
-                                          int event_flags) {
-  if (!owner())
-    return;  // We're closing; don't call anything, it might access the owner.
-  DCHECK(link_ != NULL);
-  DCHECK_EQ(link_, source);
-  if (GetDelegate()->LinkClicked(ui::DispositionFromEventFlags(event_flags)))
-    RemoveSelf();
 }
 
 AlternateNavInfoBarDelegate* AlternateNavInfoBarView::GetDelegate() {

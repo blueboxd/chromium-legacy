@@ -24,7 +24,7 @@
 #include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/performance_manager/performance_manager_lock_observer.h"
 #include "components/performance_manager/public/graph/graph.h"
-#include "components/performance_manager/shared_worker_watcher.h"
+#include "components/performance_manager/worker_watcher.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 
@@ -131,9 +131,9 @@ void ChromeBrowserMainExtraPartsPerformanceManager::PostMainMessageLoopRun() {
   observed_profiles_.RemoveAll();
 
   // Clear up the worker nodes.
-  for (auto& shared_worker_watcher : shared_worker_watchers_)
-    shared_worker_watcher.second->TearDown();
-  shared_worker_watchers_.clear();
+  for (auto& worker_watcher : worker_watchers_)
+    worker_watcher.second->TearDown();
+  worker_watchers_.clear();
 
   page_live_state_data_helper_.reset();
 
@@ -152,16 +152,14 @@ void ChromeBrowserMainExtraPartsPerformanceManager::PostMainMessageLoopRun() {
 void ChromeBrowserMainExtraPartsPerformanceManager::OnProfileAdded(
     Profile* profile) {
   observed_profiles_.Add(profile);
-  auto shared_worker_watcher =
-      std::make_unique<performance_manager::SharedWorkerWatcher>(
-          profile->UniqueId(),
-          content::BrowserContext::GetDefaultStoragePartition(profile)
-              ->GetSharedWorkerService(),
-          &process_node_source_, &frame_node_source_);
+  auto worker_watcher = std::make_unique<performance_manager::WorkerWatcher>(
+      profile->UniqueId(),
+      content::BrowserContext::GetDefaultStoragePartition(profile)
+          ->GetSharedWorkerService(),
+      &process_node_source_, &frame_node_source_);
 
-  bool inserted = shared_worker_watchers_
-                      .insert({profile, std::move(shared_worker_watcher)})
-                      .second;
+  bool inserted =
+      worker_watchers_.insert({profile, std::move(worker_watcher)}).second;
   DCHECK(inserted);
 }
 
@@ -173,8 +171,8 @@ void ChromeBrowserMainExtraPartsPerformanceManager::
 void ChromeBrowserMainExtraPartsPerformanceManager::OnProfileWillBeDestroyed(
     Profile* profile) {
   observed_profiles_.Remove(profile);
-  auto it = shared_worker_watchers_.find(profile);
-  DCHECK(it != shared_worker_watchers_.end());
+  auto it = worker_watchers_.find(profile);
+  DCHECK(it != worker_watchers_.end());
   it->second->TearDown();
-  shared_worker_watchers_.erase(it);
+  worker_watchers_.erase(it);
 }

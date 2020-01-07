@@ -16,7 +16,11 @@ SearchResultBaseView::SearchResultBaseView() : Button(this) {
   SetInstallFocusRingOnFocus(false);
 }
 
-SearchResultBaseView::~SearchResultBaseView() = default;
+SearchResultBaseView::~SearchResultBaseView() {
+  if (result_)
+    result_->RemoveObserver(this);
+  result_ = nullptr;
+}
 
 bool SearchResultBaseView::SkipDefaultKeyEventProcessing(
     const ui::KeyEvent& event) {

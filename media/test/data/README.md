@@ -779,6 +779,18 @@ RAW NV12 format data. The width and height are 640 and 360, respectively.
 To get the uncompressed yuv, execute the following command.
 `ffmpeg -s:v 1280x720 -pix_fmt nv12 -i puppets-1280x720.nv12.yuv -vf scale=640x360 -c:v rawvideo -pix_fmt nv12 puppets-640x360.nv12.yuv`
 
+#### puppets-480x270.nv12.yuv
+RAW NV12 format data. The width and height are 640 and 360, respectively.
+To get the uncompressed yuv, execute the following command.
+`ffmpeg -s:v 1280x720 -pix_fmt nv12 -i puppets-1280x720.nv12.yuv -vf scale=480x270 -c:v rawvideo -pix_fmt nv12 puppets-480x270.nv12.yuv`
+
+### puppets-640x360\_in\_640x480.nv12.yuv
+RAW NV12 format data. The width and height are 640 and 480, respectively.
+The meaningful image is at the rectangle (0, 0, 640x360) in the image. The area
+outside this rectangle is black.
+To get the uncompressed yuv, execute the following command.
+`ffmpeg -s:v 640x360 -pix_fmt nv12 -i puppets-640x360.nv12.yuv -vf "scale=640:480:force_original_aspect_ratio=decrease,pad=640:480:(ow-iw)/2:(oh-ih)/2" -c:v rawvideo -pix_fmt nv12 puppets-640x360_in_640x480.nv12.yuv`
+
 #### puppets-320x180.nv12.yuv
 RAW NV12 format data. The width and height are 320 and 180, respectively.
 To get the uncompressed yuv, execute the following command.

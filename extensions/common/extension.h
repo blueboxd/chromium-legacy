@@ -494,20 +494,6 @@ struct ExtensionInfo {
   DISALLOW_COPY_AND_ASSIGN(ExtensionInfo);
 };
 
-// TODO(DHNishi): Move this enum to ExtensionRegistryObserver.
-enum class UnloadedExtensionReason {
-  UNDEFINED,              // Undefined state used to initialize variables.
-  DISABLE,                // Extension is being disabled.
-  UPDATE,                 // Extension is being updated to a newer version.
-  UNINSTALL,              // Extension is being uninstalled.
-  TERMINATE,              // Extension has terminated.
-  BLACKLIST,              // Extension has been blacklisted.
-  PROFILE_SHUTDOWN,       // Profile is being shut down.
-  LOCK_ALL,               // All extensions for the profile are blocked.
-  MIGRATED_TO_COMPONENT,  // Extension is being migrated to a component
-                          // action.
-};
-
 // The details sent for EXTENSION_PERMISSIONS_UPDATED notifications.
 struct UpdatedExtensionPermissionsInfo {
   enum Reason {

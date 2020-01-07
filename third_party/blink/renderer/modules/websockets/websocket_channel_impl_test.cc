@@ -156,7 +156,7 @@ class WebSocketChannelImplTest : public PageTestBase {
       ConnectArgs(
           const KURL& url,
           const Vector<String>& protocols,
-          const KURL& site_for_cookies,
+          const net::SiteForCookies& site_for_cookies,
           const String& user_agent,
           mojo::PendingRemote<network::mojom::blink::WebSocketHandshakeClient>
               handshake_client)
@@ -168,7 +168,7 @@ class WebSocketChannelImplTest : public PageTestBase {
 
       KURL url;
       Vector<String> protocols;
-      KURL site_for_cookies;
+      net::SiteForCookies site_for_cookies;
       String user_agent;
       mojo::PendingRemote<network::mojom::blink::WebSocketHandshakeClient>
           handshake_client;
@@ -177,7 +177,7 @@ class WebSocketChannelImplTest : public PageTestBase {
     void Connect(
         const KURL& url,
         const Vector<String>& requested_protocols,
-        const KURL& site_for_cookies,
+        const net::SiteForCookies& site_for_cookies,
         const String& user_agent,
         mojo::PendingRemote<network::mojom::blink::WebSocketHandshakeClient>
             handshake_client) override {
@@ -367,8 +367,9 @@ TEST_F(WebSocketChannelImplTest, ConnectSuccess) {
     EXPECT_CALL(*ChannelClient(), DidConnect(String("a"), String("b")));
   }
 
-  // Make sure that firstPartyForCookies() is set to the given value.
-  EXPECT_EQ("http://example.com/", GetDocument().SiteForCookies().GetString());
+  // Make sure that SiteForCookies() is set to the given value.
+  EXPECT_TRUE(net::SiteForCookies::FromUrl(GURL("http://example.com/"))
+                  .IsEquivalent(GetDocument().SiteForCookies()));
 
   ASSERT_TRUE(Channel()->Connect(KURL("ws://localhost/"), "x"));
   EXPECT_TRUE(connector_.GetConnectArgs().IsEmpty());
@@ -378,7 +379,8 @@ TEST_F(WebSocketChannelImplTest, ConnectSuccess) {
 
   ASSERT_EQ(1u, connect_args.size());
   EXPECT_EQ(connect_args[0].url, KURL("ws://localhost/"));
-  EXPECT_EQ(connect_args[0].site_for_cookies, KURL("http://example.com/"));
+  EXPECT_TRUE(connect_args[0].site_for_cookies.IsEquivalent(
+      net::SiteForCookies::FromUrl(GURL("http://example.com/"))));
 
   EXPECT_EQ(connect_args[0].protocols, Vector<String>({"x"}));
 

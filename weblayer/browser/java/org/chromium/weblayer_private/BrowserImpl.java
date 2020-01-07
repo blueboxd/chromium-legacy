@@ -33,6 +33,7 @@ public class BrowserImpl extends IBrowser.Stub {
     private BrowserViewController mViewController;
     private FragmentWindowAndroid mWindowAndroid;
     private ArrayList<TabImpl> mTabs = new ArrayList<TabImpl>();
+    private TabImpl mActiveTab;
     private IBrowserClient mClient;
     private LocaleChangedBroadcastReceiver mLocaleReceiver;
 
@@ -46,22 +47,31 @@ public class BrowserImpl extends IBrowser.Stub {
     }
 
     public ViewGroup getViewAndroidDelegateContainerView() {
+        if (mViewController == null) return null;
         return mViewController.getContentView();
     }
 
     public void onFragmentAttached(Context context, FragmentWindowAndroid windowAndroid) {
+        assert mWindowAndroid == null;
+        assert mViewController == null;
         mWindowAndroid = windowAndroid;
         mViewController = new BrowserViewController(context, windowAndroid);
-        TabImpl tab = new TabImpl(mProfile, windowAndroid);
-        addTab(tab);
-        boolean set_active_result = setActiveTab(tab);
-        assert set_active_result;
-
         mLocaleReceiver = new LocaleChangedBroadcastReceiver(context);
+
+        if (mTabs.isEmpty()) {
+            TabImpl tab = new TabImpl(mProfile, windowAndroid);
+            addTab(tab);
+            boolean set_active_result = setActiveTab(tab);
+            assert set_active_result;
+        } else {
+            updateAllTabs();
+            mViewController.setActiveTab(mActiveTab);
+        }
     }
 
     public void onFragmentDetached() {
-        destroy(); // For now we don't retain anything between detach and attach.
+        destroyAttachmentState();
+        updateAllTabs();
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -144,6 +154,7 @@ public class BrowserImpl extends IBrowser.Stub {
     public boolean setActiveTab(ITab controller) {
         StrictModeWorkaround.apply();
         TabImpl tab = (TabImpl) controller;
+        mActiveTab = tab;
         if (tab != null && tab.getBrowser() != this) return false;
         mViewController.setActiveTab(tab);
         try {
@@ -157,7 +168,7 @@ public class BrowserImpl extends IBrowser.Stub {
     }
 
     public TabImpl getActiveTab() {
-        return mViewController.getTab();
+        return mActiveTab;
     }
 
     @Override
@@ -190,20 +201,32 @@ public class BrowserImpl extends IBrowser.Stub {
     }
 
     public void destroy() {
+        setActiveTab(null);
+        for (TabImpl tab : mTabs) {
+            tab.destroy();
+        }
+        mTabs.clear();
+        destroyAttachmentState();
+    }
+
+    private void destroyAttachmentState() {
         if (mLocaleReceiver != null) {
             mLocaleReceiver.destroy();
             mLocaleReceiver = null;
         }
         if (mViewController != null) {
             mViewController.destroy();
-            for (TabImpl tab : mTabs) {
-                tab.destroy();
-            }
             mViewController = null;
         }
         if (mWindowAndroid != null) {
             mWindowAndroid.destroy();
             mWindowAndroid = null;
+        }
+    }
+
+    private void updateAllTabs() {
+        for (TabImpl tab : mTabs) {
+            tab.updateFromBrowser();
         }
     }
 }

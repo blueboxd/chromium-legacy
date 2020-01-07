@@ -116,7 +116,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
       const override;
   void SetIsOnSubframe(bool) override;
   bool IsOnSubframe() const override;
-  blink::WebURL SiteForCookies() const override;
+  net::SiteForCookies SiteForCookies() const override;
   base::Optional<blink::WebSecurityOrigin> TopFrameOrigin() const override;
   void DidRunContentWithCertificateErrors() override;
   void DidDisplayContentWithCertificateErrors() override;
@@ -159,7 +159,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   void set_ancestor_frame_id(int id);
   void set_frame_request_blocker(
       scoped_refptr<FrameRequestBlocker> frame_request_blocker);
-  void set_site_for_cookies(const blink::WebURL& site_for_cookies);
+  void set_site_for_cookies(const net::SiteForCookies& site_for_cookies);
   void set_top_frame_origin(const blink::WebSecurityOrigin& top_frame_origin);
 
   // Sets whether the worker context is a secure context.
@@ -332,7 +332,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   // which blocks requests from this worker too when the ancestor frame is
   // blocked.
   scoped_refptr<FrameRequestBlocker> frame_request_blocker_;
-  GURL site_for_cookies_;
+  net::SiteForCookies site_for_cookies_;
   base::Optional<url::Origin> top_frame_origin_;
   GURL origin_url_;
 

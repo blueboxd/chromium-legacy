@@ -52,6 +52,20 @@ Vector<String> PushManager::supportedContentEncodings() {
   return Vector<String>({"aes128gcm", "aesgcm"});
 }
 
+namespace {
+bool ValidateOptions(blink::PushSubscriptionOptions* options,
+                     ExceptionState& exception_state) {
+  DOMArrayBuffer* buffer = options->applicationServerKey();
+  if (!base::CheckedNumeric<wtf_size_t>(buffer->ByteLengthAsSizeT())
+           .IsValid()) {
+    exception_state.ThrowRangeError(
+        "ApplicationServerKey size exceeded the maximum supported size");
+    return false;
+  }
+  return true;
+}
+}  // namespace
+
 ScriptPromise PushManager::subscribe(
     ScriptState* script_state,
     const PushSubscriptionOptionsInit* options_init,
@@ -66,6 +80,9 @@ ScriptPromise PushManager::subscribe(
   PushSubscriptionOptions* options =
       PushSubscriptionOptions::FromOptionsInit(options_init, exception_state);
   if (exception_state.HadException())
+    return ScriptPromise();
+
+  if (!ValidateOptions(options, exception_state))
     return ScriptPromise();
 
   if (!options->IsApplicationServerKeyVapid()) {

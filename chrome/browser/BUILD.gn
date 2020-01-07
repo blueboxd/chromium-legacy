@@ -4,6 +4,7 @@
 
 import("//base/allocator/allocator.gni")
 import("//build/buildflag_header.gni")
+import("//build/config/buildflags_paint_preview.gni")
 import("//build/config/chrome_build.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
@@ -105,8 +106,6 @@ jumbo_static_library("browser") {
     "assist_ranker/assist_ranker_service_factory.h",
     "autocomplete/autocomplete_classifier_factory.cc",
     "autocomplete/autocomplete_classifier_factory.h",
-    "autocomplete/bitmap_fetcher_helper.cc",
-    "autocomplete/bitmap_fetcher_helper.h",
     "autocomplete/chrome_autocomplete_provider_client.cc",
     "autocomplete/chrome_autocomplete_provider_client.h",
     "autocomplete/chrome_autocomplete_scheme_classifier.cc",
@@ -878,6 +877,8 @@ jumbo_static_library("browser") {
     "navigation_predictor/navigation_predictor_keyed_service_factory.h",
     "navigation_predictor/navigation_predictor_preconnect_client.cc",
     "navigation_predictor/navigation_predictor_preconnect_client.h",
+    "navigation_predictor/search_engine_preconnector.cc",
+    "navigation_predictor/search_engine_preconnector.h",
     "net/chrome_cookie_notification_details.h",
     "net/chrome_mojo_proxy_resolver_factory.cc",
     "net/chrome_mojo_proxy_resolver_factory.h",
@@ -1719,8 +1720,6 @@ jumbo_static_library("browser") {
     "ssl/chrome_ssl_host_state_delegate.h",
     "ssl/chrome_ssl_host_state_delegate_factory.cc",
     "ssl/chrome_ssl_host_state_delegate_factory.h",
-    "ssl/common_name_mismatch_handler.cc",
-    "ssl/common_name_mismatch_handler.h",
     "ssl/connection_help_tab_helper.cc",
     "ssl/connection_help_tab_helper.h",
     "ssl/insecure_sensitive_input_driver.cc",
@@ -2075,6 +2074,8 @@ jumbo_static_library("browser") {
     "//components/omnibox/browser",
     "//components/optimization_guide",
     "//components/os_crypt",
+    "//components/paint_preview/buildflags",
+    "//components/paint_preview/features",
     "//components/password_manager/content/browser",
     "//components/password_manager/core/browser",
     "//components/password_manager/core/common",
@@ -2094,7 +2095,7 @@ jumbo_static_library("browser") {
     "//components/rappor:rappor_recorder",
     "//components/renderer_context_menu",
     "//components/resources",
-    "//components/safe_browsing:public",
+    "//components/safe_browsing/core:public",
     "//components/safe_search_api",
     "//components/safe_search_api:safe_search_client",
     "//components/search",
@@ -2993,6 +2994,8 @@ jumbo_static_library("browser") {
       "//components/module_installer/android:native",
       "//components/omnibox/browser",
       "//components/page_load_metrics/browser",
+      "//components/paint_preview/browser/android",
+      "//components/paint_preview/browser/android:jni_headers",
       "//components/payments/content/android",
       "//components/resources:components_resources",
       "//components/send_tab_to_self",
@@ -4437,6 +4440,13 @@ jumbo_static_library("browser") {
     }
   }
 
+  if (enable_paint_preview) {
+    deps += [
+      "//components/paint_preview/browser",
+      "//components/paint_preview/common",
+    ]
+  }
+
   if (enable_captive_portal_detection) {
     sources += [
       "captive_portal/captive_portal_login_detector.cc",
@@ -5688,7 +5698,7 @@ static_library("test_support") {
     "//components/password_manager/core/browser:test_support",
     "//components/policy/core/browser:test_support",
     "//components/prefs:test_support",
-    "//components/safe_browsing:csd_proto",
+    "//components/safe_browsing/core:csd_proto",
     "//components/search_engines:test_support",
     "//components/services/unzip/content",
     "//components/sessions:test_support",

@@ -465,7 +465,7 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       web_app::ReparentWebAppForSecureActiveTab(browser_);
       break;
     case IDC_MOVE_TAB_TO_NEW_WINDOW:
-      MoveTabToNewWindow(browser_);
+      MoveActiveTabToNewWindow(browser_);
       break;
 
 #if defined(OS_CHROMEOS)
@@ -1144,7 +1144,7 @@ void BrowserCommandController::UpdateCommandsForTabState() {
   command_updater_.UpdateCommandEnabled(IDC_WINDOW_CLOSE_OTHER_TABS,
                                         CanCloseOtherTabs(browser_));
   command_updater_.UpdateCommandEnabled(IDC_MOVE_TAB_TO_NEW_WINDOW,
-                                        CanMoveTabToNewWindow(browser_));
+                                        CanMoveActiveTabToNewWindow(browser_));
 
   // Page-related commands
   window()->SetStarredState(

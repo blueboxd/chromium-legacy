@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/safe_browsing/services_delegate.h"
-#include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 
 namespace safe_browsing {
 

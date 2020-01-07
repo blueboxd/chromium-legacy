@@ -821,8 +821,8 @@ TEST_F(PrerenderTest, NoStatePrefetchDuplicate) {
   predictors::LoadingPredictorConfig config;
   PopulateTestConfig(&config);
 
-  auto* loading_predictor = predictors::LoadingPredictorFactory::GetForProfile(
-      Profile::FromBrowserContext(profile()));
+  auto* loading_predictor =
+      predictors::LoadingPredictorFactory::GetForProfile(profile());
   loading_predictor->StartInitialization();
   content::RunAllTasksUntilIdle();
 
@@ -1230,8 +1230,8 @@ TEST_F(PrerenderTest, OmniboxAllowedWhenNotDisabled_LowMemory_FeatureDisabled) {
   predictors::LoadingPredictorConfig config;
   PopulateTestConfig(&config);
 
-  auto* loading_predictor = predictors::LoadingPredictorFactory::GetForProfile(
-      Profile::FromBrowserContext(profile()));
+  auto* loading_predictor =
+      predictors::LoadingPredictorFactory::GetForProfile(profile());
   loading_predictor->StartInitialization();
   content::RunAllTasksUntilIdle();
 
@@ -1255,8 +1255,8 @@ TEST_F(PrerenderTest, Omnibox_AllowedWhenNotDisabled_LowMemory_FeatureEnabled) {
   predictors::LoadingPredictorConfig config;
   PopulateTestConfig(&config);
 
-  auto* loading_predictor = predictors::LoadingPredictorFactory::GetForProfile(
-      Profile::FromBrowserContext(profile()));
+  auto* loading_predictor =
+      predictors::LoadingPredictorFactory::GetForProfile(profile());
   loading_predictor->StartInitialization();
   content::RunAllTasksUntilIdle();
 
@@ -1286,8 +1286,8 @@ TEST_F(PrerenderTest,
   predictors::LoadingPredictorConfig config;
   PopulateTestConfig(&config);
 
-  auto* loading_predictor = predictors::LoadingPredictorFactory::GetForProfile(
-      Profile::FromBrowserContext(profile()));
+  auto* loading_predictor =
+      predictors::LoadingPredictorFactory::GetForProfile(profile());
   loading_predictor->StartInitialization();
   content::RunAllTasksUntilIdle();
 

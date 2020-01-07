@@ -101,11 +101,12 @@ void WebURLRequest::SetUrl(const WebURL& url) {
   resource_request_->SetUrl(url);
 }
 
-WebURL WebURLRequest::SiteForCookies() const {
+const net::SiteForCookies& WebURLRequest::SiteForCookies() const {
   return resource_request_->SiteForCookies();
 }
 
-void WebURLRequest::SetSiteForCookies(const WebURL& site_for_cookies) {
+void WebURLRequest::SetSiteForCookies(
+    const net::SiteForCookies& site_for_cookies) {
   resource_request_->SetSiteForCookies(site_for_cookies);
 }
 

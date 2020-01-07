@@ -8,7 +8,7 @@ import 'chrome://resources/mojo/mojo/public/mojom/base/text_direction.mojom-lite
 
 import {BrowserProxy} from 'chrome://new-tab-page/browser_proxy.js';
 import {isMac} from 'chrome://resources/js/cr.m.js';
-import {keydown, TestProxy} from 'chrome://test/new_tab_page/test_support.js';
+import {assertStyle, keydown, TestProxy} from 'chrome://test/new_tab_page/test_support.js';
 import {eventToPromise, flushTasks} from 'chrome://test/test_util.m.js';
 
 suite('NewTabPageMostVisitedTest', () => {
@@ -613,5 +613,21 @@ suite('NewTabPageMostVisitedTest', () => {
     assertEquals(
         'ltr',
         window.getComputedStyle(mostVisited.$.dialogInputName).direction);
+  });
+
+  test('setting color styles tile color', () => {
+    // Act.
+    mostVisited.style.setProperty('--tile-title-color', 'blue');
+    mostVisited.style.setProperty('--icon-background-color', 'red');
+
+    // Assert.
+    queryAll('.tile-title').forEach(tile => {
+      assertStyle(tile, 'color', 'rgb(0, 0, 255)');
+    });
+    queryAll('.tile-icon').forEach(tile => {
+      assertStyle(tile, 'background-color', 'rgb(255, 0, 0)');
+    });
+    assertStyle(
+        mostVisited.$.addShortCutIcon, 'background-color', 'rgb(0, 0, 255)');
   });
 });

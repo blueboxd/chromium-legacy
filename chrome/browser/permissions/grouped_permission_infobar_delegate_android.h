@@ -44,15 +44,13 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   // Returns the secondary string to show in the infobar in the expanded state.
   base::string16 GetDescriptionText() const;
 
-  // InfoBarDelegate:
-  int GetIconId() const override;
-
   // ConfirmInfoBarDelegate:
+  int GetIconId() const override;
+  bool LinkClicked(WindowOpenDisposition disposition) override;
+  void InfoBarDismissed() override;
   base::string16 GetMessageText() const override;
   bool Accept() override;
   bool Cancel() override;
-  void InfoBarDismissed() override;
-  bool LinkClicked(WindowOpenDisposition disposition) override;
 
   // Returns true if we should show the permission request as a mini-infobar.
   static bool ShouldShowMiniInfobar(content::WebContents* web_contents,

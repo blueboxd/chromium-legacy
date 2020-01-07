@@ -251,10 +251,9 @@ CSSNumericValue* CSSNumericValue::parse(const String& css_text,
     case kFunctionToken:
       if (range.Peek().FunctionId() == CSSValueID::kCalc ||
           range.Peek().FunctionId() == CSSValueID::kWebkitCalc ||
-          (RuntimeEnabledFeatures::CSSComparisonFunctionsEnabled() &&
-           (range.Peek().FunctionId() == CSSValueID::kMin ||
-            range.Peek().FunctionId() == CSSValueID::kMax ||
-            range.Peek().FunctionId() == CSSValueID::kClamp))) {
+          range.Peek().FunctionId() == CSSValueID::kMin ||
+          range.Peek().FunctionId() == CSSValueID::kMax ||
+          range.Peek().FunctionId() == CSSValueID::kClamp) {
         CSSMathExpressionNode* expression =
             CSSMathExpressionNode::ParseCalc(range);
         if (expression)

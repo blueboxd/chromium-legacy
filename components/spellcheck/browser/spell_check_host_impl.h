@@ -45,21 +45,13 @@ class SpellCheckHostImpl : public spellcheck::mojom::SpellCheckHost {
                         int route_id,
                         RequestTextCheckCallback callback) override;
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-  void RequestPartialTextCheck(
-      const base::string16& text,
-      int route_id,
-      const std::vector<SpellCheckResult>& partial_results,
-      bool fill_suggestions,
-      RequestPartialTextCheckCallback callback) override;
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-
   void CheckSpelling(const base::string16& word,
                      int route_id,
                      CheckSpellingCallback callback) override;
   void FillSuggestionList(const base::string16& word,
                           FillSuggestionListCallback callback) override;
-#endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER) &&
+        // !BUILDFLAG(ENABLE_SPELLING_SERVICE)
 
 #if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
   void GetPerLanguageSuggestions(

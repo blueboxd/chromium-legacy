@@ -21,6 +21,7 @@
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_buffer_api.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
+#include "third_party/webrtc/common_video/libyuv/include/webrtc_libyuv.h"
 
 using ppapi::HostResource;
 using ppapi::TrackedCallback;
@@ -136,9 +137,9 @@ void PepperVideoCaptureHost::OnFrameReady(const media::VideoFrame& frame) {
 
   for (uint32_t i = 0; i < buffers_.size(); ++i) {
     if (!buffers_[i].in_use) {
-      DCHECK_EQ(frame.format(), media::PIXEL_FORMAT_I420);
       if (buffers_[i].buffer->size() <
-          media::VideoFrame::AllocationSize(frame.format(), alloc_size_)) {
+          media::VideoFrame::AllocationSize(media::PIXEL_FORMAT_I420,
+                                            alloc_size_)) {
         // TODO(ihf): handle size mismatches gracefully here.
         return;
       }
@@ -146,17 +147,70 @@ void PepperVideoCaptureHost::OnFrameReady(const media::VideoFrame& frame) {
       static_assert(media::VideoFrame::kYPlane == 0, "y plane should be 0");
       static_assert(media::VideoFrame::kUPlane == 1, "u plane should be 1");
       static_assert(media::VideoFrame::kVPlane == 2, "v plane should be 2");
-      for (size_t j = 0; j < media::VideoFrame::NumPlanes(frame.format());
-           ++j) {
-        const uint8_t* src = frame.visible_data(j);
-        const size_t row_bytes = frame.row_bytes(j);
-        const size_t src_stride = frame.stride(j);
-        for (int k = 0; k < frame.rows(j); ++k) {
-          memcpy(dst, src, row_bytes);
-          dst += row_bytes;
-          src += src_stride;
+
+      if (frame.storage_type() ==
+          media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
+        // NV12 is the only supported GMB pixel format at the moment.
+        DCHECK_EQ(frame.format(), media::PIXEL_FORMAT_NV12);
+        auto* gmb = frame.GetGpuMemoryBuffer();
+        if (!gmb->Map()) {
+          DLOG(ERROR) << "Error mapping GpuMemoryBuffer video frame";
+          return;
+        }
+
+        const size_t src_y_stride = gmb->stride(0);
+        const size_t src_uv_stride = gmb->stride(1);
+        const uint8_t* src_y_plane =
+            (static_cast<uint8_t*>(gmb->memory(0)) + frame.visible_rect().x() +
+             (frame.visible_rect().y() * src_y_stride));
+        // UV plane of NV12 has 2-byte pixel width, with half chroma subsampling
+        // both horizontally and vertically.
+        const uint8_t* src_uv_plane =
+            (static_cast<uint8_t*>(gmb->memory(1)) +
+             ((frame.visible_rect().x() * 2) / 2) +
+             ((frame.visible_rect().y() / 2) * src_uv_stride));
+
+        const size_t dst_width = frame.natural_size().width();
+        const gfx::Size dst_size = frame.natural_size();
+        const size_t dst_y_stride = media::VideoFrame::RowBytes(
+            media::VideoFrame::kYPlane, media::PIXEL_FORMAT_I420, dst_width);
+        const size_t dst_u_stride = media::VideoFrame::RowBytes(
+            media::VideoFrame::kUPlane, media::PIXEL_FORMAT_I420, dst_width);
+        const size_t dst_v_stride = media::VideoFrame::RowBytes(
+            media::VideoFrame::kVPlane, media::PIXEL_FORMAT_I420, dst_width);
+        const size_t dst_y_plane_area =
+            media::VideoFrame::PlaneSize(media::PIXEL_FORMAT_I420,
+                                         media::VideoFrame::kYPlane, dst_size)
+                .GetArea();
+        const size_t dst_u_plane_area =
+            media::VideoFrame::PlaneSize(media::PIXEL_FORMAT_I420,
+                                         media::VideoFrame::kUPlane, dst_size)
+                .GetArea();
+
+        webrtc::NV12ToI420Scaler scaler;
+        scaler.NV12ToI420Scale(
+            src_y_plane, src_y_stride, src_uv_plane, src_uv_stride,
+            frame.coded_size().width(), frame.coded_size().height(), dst,
+            dst_y_stride, dst + dst_y_plane_area, dst_u_stride,
+            dst + dst_y_plane_area + dst_u_plane_area, dst_v_stride,
+            frame.natural_size().width(), frame.natural_size().height());
+
+        gmb->Unmap();
+      } else {
+        DCHECK_EQ(frame.format(), media::PIXEL_FORMAT_I420);
+        for (size_t j = 0; j < media::VideoFrame::NumPlanes(frame.format());
+             ++j) {
+          const uint8_t* src = frame.visible_data(j);
+          const size_t row_bytes = frame.row_bytes(j);
+          const size_t src_stride = frame.stride(j);
+          for (int k = 0; k < frame.rows(j); ++k) {
+            memcpy(dst, src, row_bytes);
+            dst += row_bytes;
+            src += src_stride;
+          }
         }
       }
+
       buffers_[i].in_use = true;
       host()->SendUnsolicitedReply(
           pp_resource(), PpapiPluginMsg_VideoCapture_OnBufferReady(i));

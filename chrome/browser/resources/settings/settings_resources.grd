@@ -493,14 +493,6 @@
                    file="default_browser_page/default_browser_page.js"
                    type="chrome_html" />
       </if>
-      <if expr="chromeos">
-        <structure name="IDR_SETTINGS_LOCALIZED_LINK_JS"
-                   file="chromeos/localized_link/localized_link.js"
-                   type="chrome_html" />
-        <structure name="IDR_SETTINGS_LOCALIZED_LINK_HTML"
-                   file="chromeos/localized_link/localized_link.html"
-                   type="chrome_html" />
-      </if>
       <structure name="IDR_SETTINGS_DOWNLOADS_BROWSER_PROXY_HTML"
                  file="downloads_page/downloads_browser_proxy.html"
                  type="chrome_html" />
@@ -523,18 +515,6 @@
                  file="icons.html"
                  type="chrome_html"
                  preprocess="true" />
-      <if expr="chromeos">
-       <!-- TODO(crbug.com/986596): Remove OS icons when SplitSettings
-            is complete. -->
-        <structure name="IDR_SETTINGS_CHROMEOS_OS_ICONS"
-                  file="chromeos/os_icons.html"
-                  type="chrome_html"
-                  preprocess="true" />
-        <structure name="IDR_OS_SETTINGS_OS_SETTINGS_ICONS_CSS_HTML"
-                   file="chromeos/os_settings_icons_css.html"
-                   flattenhtml="true"
-                   type="chrome_html" />
-      </if>
       <structure name="IDR_SETTINGS_RESET_PAGE_HTML"
                  file="reset_page/reset_page.html"
                  type="chrome_html"

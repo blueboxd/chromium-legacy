@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Destination, DestinationConnectionStatus, DestinationErrorType, DestinationOrigin, DestinationStore, DestinationType, makeRecentDestination, NativeLayer, PluginProxy, PrinterType} from 'chrome://print/print_preview.js';
+import {CloudPrintInterfaceEventType, Destination, DestinationConnectionStatus, DestinationErrorType, DestinationOrigin, DestinationStore, DestinationType, makeRecentDestination, NativeLayer, PluginProxy, PrinterType} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {isChromeOS} from 'chrome://resources/js/cr.m.js';
 import {CloudPrintInterfaceStub} from 'chrome://test/print_preview/cloud_print_interface_stub.js';
@@ -396,33 +396,48 @@ suite(destination_store_test.suiteName, function() {
         initialSettings.userAccounts = [account1, account2];
         initialSettings.syncAvailable = true;
 
-        return setInitialSettings().then(() => {
-          // Should have loaded Google Drive as the selected printer, since it
-          // was most recent.
-          assertEquals(
-              Destination.GooglePromotedId.DOCS,
-              destinationStore.selectedDestination.id);
+        const waitForPrinterDone = () => {
+          return eventToPromise(
+              CloudPrintInterfaceEventType.PRINTER_DONE,
+              cloudPrintInterface.getEventTarget());
+        };
 
-          // Only the other cloud destination for the same user account should
-          // have been prefetched.
-          const loadedPrintersAccount1 =
-              destinationStore.destinations(account1);
-          assertEquals(3, loadedPrintersAccount1.length);
-          cloudDestinations.forEach((destination) => {
-            assertEquals(
-                destination.account === account1,
-                loadedPrintersAccount1.some(p => p.key == destination.key));
-          });
-          assertEquals(1, numPrintersSelected);
+        // Wait for all three cloud printers to load.
+        return Promise
+            .all([
+              setInitialSettings(),
+              waitForPrinterDone(),
+            ])
+            .then(() => waitForPrinterDone())
+            .then(() => waitForPrinterDone())
+            .then(() => {
+              // Should have loaded Google Drive as the selected printer, since
+              // it was most recent.
+              assertEquals(
+                  Destination.GooglePromotedId.DOCS,
+                  destinationStore.selectedDestination.id);
 
-          // Cloud printer and Save as PDF exist when filtering for account 2.
-          const loadedPrintersAccount2 =
-              destinationStore.destinations(account2);
-          assertEquals(2, loadedPrintersAccount2.length);
-          assertEquals(
-              Destination.GooglePromotedId.SAVE_AS_PDF,
-              loadedPrintersAccount2[0].id);
-        });
+              // Only the other cloud destination for the same user account
+              // should have been prefetched.
+              const loadedPrintersAccount1 =
+                  destinationStore.destinations(account1);
+              assertEquals(3, loadedPrintersAccount1.length);
+              cloudDestinations.forEach((destination) => {
+                assertEquals(
+                    destination.account === account1,
+                    loadedPrintersAccount1.some(p => p.key == destination.key));
+              });
+              assertEquals(1, numPrintersSelected);
+
+              // Cloud printer and Save as PDF exist when filtering for
+              // account 2.
+              const loadedPrintersAccount2 =
+                  destinationStore.destinations(account2);
+              assertEquals(2, loadedPrintersAccount2.length);
+              assertEquals(
+                  Destination.GooglePromotedId.SAVE_AS_PDF,
+                  loadedPrintersAccount2[0].id);
+            });
       });
 
   /**

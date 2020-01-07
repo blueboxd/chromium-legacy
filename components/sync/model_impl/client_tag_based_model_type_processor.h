@@ -20,7 +20,6 @@
 #include "components/sync/engine/cycle/status_counters.h"
 #include "components/sync/engine/model_type_processor.h"
 #include "components/sync/engine/non_blocking_sync_common.h"
-#include "components/sync/model/conflict_resolution.h"
 #include "components/sync/model/data_batch.h"
 #include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/model/metadata_batch.h"
@@ -126,27 +125,6 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
 
   // If preconditions are met, inform sync that we are ready to connect.
   void ConnectIfReady();
-
-  // Helper function to process the update for a single entity. If a local data
-  // change is required, it will be added to |entity_changes|. The return value
-  // is the tracked entity, or nullptr if the update should be ignored.
-  // |storage_key_to_clear| must not be null and allows the implementation to
-  // indicate that a certain storage key is now obsolete and should be cleared,
-  // which is leveraged in certain conflict resolution scenarios.
-  ProcessorEntity* ProcessUpdate(std::unique_ptr<UpdateResponseData> update,
-                                 EntityChangeList* entity_changes,
-                                 std::string* storage_key_to_clear);
-
-  // Resolve a conflict between |update| and the pending commit in |entity|.
-  ConflictResolution ResolveConflict(std::unique_ptr<UpdateResponseData> update,
-                                     ProcessorEntity* entity,
-                                     EntityChangeList* changes,
-                                     std::string* storage_key_to_clear);
-
-  // Recommit all entities for encryption except those in |already_updated|.
-  void RecommitAllForEncryption(
-      const std::unordered_set<std::string>& already_updated,
-      MetadataChangeList* metadata_changes);
 
   // Validates the update specified by the input parameters and returns whether
   // it should get further processed. If the update is incorrect, this function

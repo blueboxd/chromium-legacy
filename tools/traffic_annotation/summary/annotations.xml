@@ -170,10 +170,11 @@ Refer to README.md for content description and update process.
  <item id="oauth2_api_call_flow" hash_code="29188932" type="2" content_hash_code="108831236" os_list="linux,windows" policy_fields="-1" file_path="google_apis/gaia/oauth2_api_call_flow.cc"/>
  <item id="oauth2_mint_token_flow" hash_code="1112842" type="1" second_id="29188932" content_hash_code="91581432" os_list="linux,windows" semantics_fields="1,2,3,4,5" policy_fields="3,4" file_path="google_apis/gaia/oauth2_mint_token_flow.cc"/>
  <item id="ocsp_start_url_request" hash_code="60921996" type="0" content_hash_code="6288676" os_list="linux" file_path="net/cert_net/nss_ocsp_session_url_request.cc"/>
+ <item id="ocsp_start_url_loader" hash_code="3646641" type="0" content_hash_code="106270072" os_list="linux" file_path="services/network/public/cpp/cert_verifier/nss_ocsp_session_url_loader.cc"/>
  <item id="offline_prefetch" hash_code="19185953" type="0" content_hash_code="112039446" os_list="linux,windows" file_path="components/offline_pages/core/prefetch/prefetch_request_fetcher.cc"/>
  <item id="omnibox_documentsuggest" hash_code="6055066" type="0" content_hash_code="126973249" os_list="linux,windows" file_path="components/omnibox/browser/document_suggestions_service.cc"/>
  <item id="omnibox_navigation_observer" hash_code="61684939" type="0" content_hash_code="70941231" os_list="linux,windows" file_path="chrome/browser/ui/omnibox/chrome_omnibox_navigation_observer.cc"/>
- <item id="omnibox_result_change" hash_code="73107389" type="0" content_hash_code="24802647" os_list="linux,windows" file_path="chrome/browser/autocomplete/bitmap_fetcher_helper.cc"/>
+ <item id="omnibox_result_change" hash_code="73107389" type="0" content_hash_code="24802647" os_list="linux,windows" file_path="chrome/browser/bitmap_fetcher/bitmap_fetcher_service.cc"/>
  <item id="omnibox_suggest" hash_code="47815025" type="0" content_hash_code="86297726" os_list="linux,windows" file_path="components/omnibox/browser/search_provider.cc"/>
  <item id="omnibox_suggest_deletion" hash_code="84212388" type="0" content_hash_code="24981550" os_list="linux,windows" file_path="components/omnibox/browser/base_search_provider.cc"/>
  <item id="omnibox_zerosuggest" hash_code="7687691" type="0" content_hash_code="119419625" os_list="linux,windows" file_path="components/omnibox/browser/remote_suggestions_service.cc"/>
@@ -184,7 +185,7 @@ Refer to README.md for content description and update process.
  <item id="optimization_guide_model" hash_code="106373593" type="0" content_hash_code="32403047" os_list="linux,windows" file_path="chrome/browser/optimization_guide/prediction/prediction_model_fetcher.cc"/>
  <item id="origin_policy_loader" hash_code="6483617" type="0" content_hash_code="20680909" os_list="linux,windows" file_path="services/network/origin_policy/origin_policy_fetcher.cc"/>
  <item id="parallel_download_job" hash_code="135118587" type="0" content_hash_code="105330419" os_list="linux,windows" file_path="components/download/internal/common/parallel_download_job.cc"/>
- <item id="password_protection_request" hash_code="66322287" type="0" content_hash_code="25596947" os_list="linux,windows" file_path="components/safe_browsing/password_protection/password_protection_request.cc"/>
+ <item id="password_protection_request" hash_code="66322287" type="0" content_hash_code="25596947" os_list="linux,windows" file_path="components/safe_browsing/content/password_protection/password_protection_request.cc"/>
  <item id="password_requirements_spec_fetch" hash_code="69585116" type="0" content_hash_code="5591260" os_list="linux,windows" file_path="components/password_manager/core/browser/generation/password_requirements_spec_fetcher_impl.cc"/>
  <item id="payment_instrument_icon_fetcher" hash_code="73309970" type="0" deprecated="2017-09-16" content_hash_code="84709873" file_path=""/>
  <item id="payment_manifest_downloader" hash_code="84045030" type="0" content_hash_code="19293316" os_list="linux,windows" file_path="components/payments/core/payment_manifest_downloader.cc"/>
@@ -192,7 +193,7 @@ Refer to README.md for content description and update process.
  <item id="pdf_plugin_placeholder" hash_code="56866367" type="0" content_hash_code="16907221" os_list="linux,windows" file_path="chrome/browser/plugins/pdf_plugin_placeholder_observer.cc"/>
  <item id="pepper_tcp_socket" hash_code="120623198" type="0" content_hash_code="105652563" os_list="linux,windows" file_path="content/browser/renderer_host/pepper/pepper_socket_utils.cc"/>
  <item id="pepper_udp_socket" hash_code="53512439" type="0" content_hash_code="85431089" os_list="linux,windows" file_path="content/browser/renderer_host/pepper/pepper_socket_utils.cc"/>
- <item id="per_user_topic_registration_request" hash_code="10498172" type="0" content_hash_code="32495619" os_list="linux,windows" file_path="components/invalidation/impl/per_user_topic_registration_request.cc"/>
+ <item id="per_user_topic_registration_request" hash_code="10498172" type="0" content_hash_code="57098847" os_list="linux,windows" file_path="components/invalidation/impl/per_user_topic_subscription_request.cc"/>
  <item id="permission_reporting" hash_code="131741641" type="0" deprecated="2018-03-06" content_hash_code="7213535" file_path=""/>
  <item id="permission_request_creator" hash_code="43206794" type="0" deprecated="2019-07-30" content_hash_code="73571699" file_path=""/>
  <item id="persist_blob_to_indexed_db" hash_code="32030464" type="0" deprecated="2018-08-13" content_hash_code="35410079" file_path=""/>
@@ -233,19 +234,19 @@ Refer to README.md for content description and update process.
  <item id="rlz_ping" hash_code="99279418" type="0" content_hash_code="102108802" os_list="windows" file_path="rlz/lib/financial_ping.cc"/>
  <item id="safe_browsing_backup_request" hash_code="106980485" type="0" deprecated="2018-08-14" content_hash_code="101760679" file_path=""/>
  <item id="safe_browsing_binary_upload" hash_code="71663319" type="0" content_hash_code="105913171" os_list="linux,windows" file_path="chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.cc"/>
- <item id="safe_browsing_cache_collector" hash_code="115907811" type="0" content_hash_code="36392362" os_list="linux,windows" file_path="components/safe_browsing/browser/threat_details_cache.cc"/>
+ <item id="safe_browsing_cache_collector" hash_code="115907811" type="0" content_hash_code="36392362" os_list="linux,windows" file_path="components/safe_browsing/content/browser/threat_details_cache.cc"/>
  <item id="safe_browsing_certificate_error_reporting" hash_code="66590631" type="0" content_hash_code="50197576" os_list="linux,windows" file_path="chrome/browser/ssl/certificate_error_reporter.cc"/>
  <item id="safe_browsing_chunk_backup_request" hash_code="79957943" type="0" deprecated="2018-08-14" content_hash_code="133850277" file_path=""/>
  <item id="safe_browsing_client_side_malware_detector" hash_code="102935425" type="0" deprecated="2019-12-07" content_hash_code="79591279" file_path=""/>
  <item id="safe_browsing_client_side_phishing_detector" hash_code="1313982" type="0" content_hash_code="50199143" os_list="linux,windows" file_path="chrome/browser/safe_browsing/client_side_detection_service.cc"/>
- <item id="safe_browsing_extended_reporting" hash_code="42848942" type="0" content_hash_code="50089173" os_list="linux,windows" file_path="components/safe_browsing/ping_manager.cc"/>
+ <item id="safe_browsing_extended_reporting" hash_code="42848942" type="0" content_hash_code="50089173" os_list="linux,windows" file_path="components/safe_browsing/core/ping_manager.cc"/>
  <item id="safe_browsing_feedback" hash_code="44583821" type="0" content_hash_code="114076664" os_list="linux,windows" file_path="chrome/browser/safe_browsing/download_protection/download_feedback.cc"/>
  <item id="safe_browsing_get_full_hash" hash_code="68745894" type="0" deprecated="2018-08-14" content_hash_code="21739198" file_path=""/>
  <item id="safe_browsing_incident" hash_code="124950347" type="0" content_hash_code="58481082" os_list="linux,windows" file_path="chrome/browser/safe_browsing/incident_reporting/incident_report_uploader_impl.cc"/>
  <item id="safe_browsing_module_loader" hash_code="6019475" type="0" content_hash_code="49511650" os_list="linux,windows" file_path="chrome/browser/safe_browsing/client_side_model_loader.cc"/>
- <item id="safe_browsing_realtime_url_lookup" hash_code="119324658" type="0" content_hash_code="17024823" os_list="linux,windows" file_path="components/safe_browsing/realtime/url_lookup_service.cc"/>
- <item id="safe_browsing_v4_get_hash" hash_code="8561691" type="0" content_hash_code="132435617" os_list="linux,windows" file_path="components/safe_browsing/db/v4_get_hash_protocol_manager.cc"/>
- <item id="safe_browsing_v4_update" hash_code="82509217" type="0" content_hash_code="5247849" os_list="linux,windows" file_path="components/safe_browsing/db/v4_update_protocol_manager.cc"/>
+ <item id="safe_browsing_realtime_url_lookup" hash_code="119324658" type="0" content_hash_code="17024823" os_list="linux,windows" file_path="components/safe_browsing/core/realtime/url_lookup_service.cc"/>
+ <item id="safe_browsing_v4_get_hash" hash_code="8561691" type="0" content_hash_code="132435617" os_list="linux,windows" file_path="components/safe_browsing/core/db/v4_get_hash_protocol_manager.cc"/>
+ <item id="safe_browsing_v4_update" hash_code="82509217" type="0" content_hash_code="5247849" os_list="linux,windows" file_path="components/safe_browsing/core/db/v4_update_protocol_manager.cc"/>
  <item id="save_file_manager" hash_code="56275203" type="0" content_hash_code="56692339" os_list="linux,windows" file_path="content/browser/download/save_file_manager.cc"/>
  <item id="sdch_dictionary_fetch" hash_code="47152935" type="0" deprecated="2017-09-16" content_hash_code="16764294" file_path=""/>
  <item id="search_suggest_service" hash_code="57785193" type="0" content_hash_code="132247652" os_list="linux,windows" file_path="chrome/browser/search/search_suggest/search_suggest_loader_impl.cc"/>
@@ -264,7 +265,7 @@ Refer to README.md for content description and update process.
  <item id="spellcheck_hunspell_dictionary" hash_code="117649486" type="0" content_hash_code="45660952" os_list="linux,windows" file_path="chrome/browser/spellchecker/spellcheck_hunspell_dictionary.cc"/>
  <item id="spellcheck_lookup" hash_code="132553989" type="0" content_hash_code="120395045" os_list="linux,windows" file_path="components/spellcheck/browser/spelling_service_client.cc"/>
  <item id="ssl_hmac_channel_authenticator" hash_code="106124561" type="0" content_hash_code="93707499" os_list="linux,windows" file_path="remoting/protocol/ssl_hmac_channel_authenticator.cc"/>
- <item id="ssl_name_mismatch_lookup" hash_code="114468207" type="0" content_hash_code="97619078" os_list="linux,windows" file_path="chrome/browser/ssl/common_name_mismatch_handler.cc"/>
+ <item id="ssl_name_mismatch_lookup" hash_code="114468207" type="0" content_hash_code="97619078" os_list="linux,windows" file_path="components/security_interstitials/content/common_name_mismatch_handler.cc"/>
  <item id="stream_message_pipe_adapter" hash_code="71837756" type="0" content_hash_code="131019242" os_list="linux,windows" file_path="remoting/protocol/stream_message_pipe_adapter.cc"/>
  <item id="suggestions_image_manager" hash_code="13211343" type="0" deprecated="2018-11-28" content_hash_code="36271280" file_path=""/>
  <item id="suggestions_service" hash_code="35370363" type="0" content_hash_code="66296423" os_list="linux,windows" file_path="components/suggestions/suggestions_service_impl.cc"/>

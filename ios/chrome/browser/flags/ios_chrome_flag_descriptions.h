@@ -239,11 +239,6 @@ extern const char kNewOmniboxPopupLayoutDescription[];
 extern const char kNonModalDialogsName[];
 extern const char kNonModalDialogsDescription[];
 
-// Title and description for the flag to show most visited sites and collection
-// shortcuts in the omnibox popup instead of ZeroSuggest.
-extern const char kOmniboxPopupShortcutIconsInZeroStateName[];
-extern const char kOmniboxPopupShortcutIconsInZeroStateDescription[];
-
 // Title and description for the flag to preserve the default match when an
 // async match updates.
 extern const char kOmniboxPreserveDefaultMatchAgainstAsyncUpdateName[];

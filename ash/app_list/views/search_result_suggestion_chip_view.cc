@@ -68,9 +68,7 @@ SearchResultSuggestionChipView::SearchResultSuggestionChipView(
   InitLayout();
 }
 
-SearchResultSuggestionChipView::~SearchResultSuggestionChipView() {
-  ClearResult();
-}
+SearchResultSuggestionChipView::~SearchResultSuggestionChipView() = default;
 
 void SearchResultSuggestionChipView::SetBackgroundBlurEnabled(bool enabled) {
   // Background blur is enabled if and only if layer exists.

@@ -362,7 +362,8 @@ MediaKeys* HTMLMediaElementEncryptedMedia::mediaKeys(
 ScriptPromise HTMLMediaElementEncryptedMedia::setMediaKeys(
     ScriptState* script_state,
     HTMLMediaElement& element,
-    MediaKeys* media_keys) {
+    MediaKeys* media_keys,
+    ExceptionState& exception_state) {
   HTMLMediaElementEncryptedMedia& this_element =
       HTMLMediaElementEncryptedMedia::From(element);
   DVLOG(EME_LOG_LEVEL) << __func__ << ": current("
@@ -374,10 +375,9 @@ ScriptPromise HTMLMediaElementEncryptedMedia::setMediaKeys(
   // 1. If this object's attaching media keys value is true, return a
   //    promise rejected with an InvalidStateError.
   if (this_element.is_attaching_media_keys_) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
-                                           "Another request is in progress."));
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Another request is in progress.");
+    return ScriptPromise();
   }
 
   // 2. If mediaKeys and the mediaKeys attribute are the same object,

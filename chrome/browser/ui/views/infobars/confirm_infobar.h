@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
-#include "ui/views/controls/link_listener.h"
 
 class ElevationIconSetter;
 
@@ -22,8 +21,7 @@ class MdTextButton;
 // An infobar that shows a message, up to two optional buttons, and an optional,
 // right-aligned link.  This is commonly used to do things like:
 // "Would you like to do X?  [Yes]  [No]               _Learn More_ [x]"
-class ConfirmInfoBar : public InfoBarView,
-                       public views::LinkListener {
+class ConfirmInfoBar : public InfoBarView {
  public:
   explicit ConfirmInfoBar(std::unique_ptr<ConfirmInfoBarDelegate> delegate);
   ~ConfirmInfoBar() override;
@@ -31,9 +29,6 @@ class ConfirmInfoBar : public InfoBarView,
   // InfoBarView:
   void Layout() override;
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
-  // views::LinkListener:
-  void LinkClicked(views::Link* source, int event_flags) override;
 
  protected:
   // InfoBarView:

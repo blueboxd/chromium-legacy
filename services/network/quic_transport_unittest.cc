@@ -109,22 +109,22 @@ class QuicTransportTest : public testing::Test {
   }
   ~QuicTransportTest() override = default;
 
-  std::unique_ptr<QuicTransport> CreateQuicTransport(
+  void CreateQuicTransport(
       const GURL& url,
       const url::Origin& origin,
       const net::NetworkIsolationKey& key,
       mojo::PendingRemote<mojom::QuicTransportHandshakeClient>
           handshake_client) {
-    return std::make_unique<QuicTransport>(url, origin, key, &network_context_,
-                                           std::move(handshake_client));
+    network_context_.CreateQuicTransport(url, origin, key,
+                                         std::move(handshake_client));
   }
-  std::unique_ptr<QuicTransport> CreateQuicTransport(
+  void CreateQuicTransport(
       const GURL& url,
       const url::Origin& origin,
       mojo::PendingRemote<mojom::QuicTransportHandshakeClient>
           handshake_client) {
-    return CreateQuicTransport(url, origin, net::NetworkIsolationKey(),
-                               std::move(handshake_client));
+    CreateQuicTransport(url, origin, net::NetworkIsolationKey(),
+                        std::move(handshake_client));
   }
 
   GURL GetURL(base::StringPiece suffix) {
@@ -156,14 +156,15 @@ TEST_F(QuicTransportTest, ConnectSuccessfully) {
       handshake_client.InitWithNewPipeAndPassReceiver(),
       run_loop_for_handshake.QuitClosure());
 
-  auto transport = CreateQuicTransport(GetURL("/discard"), origin(),
-                                       std::move(handshake_client));
+  CreateQuicTransport(GetURL("/discard"), origin(),
+                      std::move(handshake_client));
 
   run_loop_for_handshake.Run();
 
   EXPECT_TRUE(test_handshake_client.has_seen_connection_establishment());
   EXPECT_FALSE(test_handshake_client.has_seen_handshake_failure());
   EXPECT_FALSE(test_handshake_client.has_seen_mojo_connection_error());
+  EXPECT_EQ(1u, network_context().NumOpenQuicTransports());
 }
 
 TEST_F(QuicTransportTest, ConnectWithError) {
@@ -174,9 +175,9 @@ TEST_F(QuicTransportTest, ConnectWithError) {
       run_loop_for_handshake.QuitClosure());
 
   // This should fail due to the wrong origin
-  auto transport = CreateQuicTransport(
-      GetURL("/discard"), url::Origin::Create(GURL("https://evil.com")),
-      std::move(handshake_client));
+  CreateQuicTransport(GetURL("/discard"),
+                      url::Origin::Create(GURL("https://evil.com")),
+                      std::move(handshake_client));
 
   run_loop_for_handshake.Run();
 
@@ -193,9 +194,9 @@ TEST_F(QuicTransportTest, SendDatagram) {
       handshake_client.InitWithNewPipeAndPassReceiver(),
       run_loop_for_handshake.QuitClosure());
 
-  auto transport = CreateQuicTransport(
-      GetURL("/discard"), url::Origin::Create(GURL("https://example.org/")),
-      std::move(handshake_client));
+  CreateQuicTransport(GetURL("/discard"),
+                      url::Origin::Create(GURL("https://example.org/")),
+                      std::move(handshake_client));
 
   run_loop_for_handshake.Run();
 
@@ -220,9 +221,9 @@ TEST_F(QuicTransportTest, SendToolargeDatagram) {
       handshake_client.InitWithNewPipeAndPassReceiver(),
       run_loop_for_handshake.QuitClosure());
 
-  auto transport = CreateQuicTransport(
-      GetURL("/discard"), url::Origin::Create(GURL("https://example.org/")),
-      std::move(handshake_client));
+  CreateQuicTransport(GetURL("/discard"),
+                      url::Origin::Create(GURL("https://example.org/")),
+                      std::move(handshake_client));
 
   run_loop_for_handshake.Run();
 

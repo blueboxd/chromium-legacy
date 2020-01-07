@@ -36,7 +36,16 @@ class CSSOffsetRotationNonInterpolableValue : public NonInterpolableValue {
 };
 
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE(CSSOffsetRotationNonInterpolableValue);
-DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(CSSOffsetRotationNonInterpolableValue);
+template <>
+struct DowncastTraits<CSSOffsetRotationNonInterpolableValue> {
+  static bool AllowFrom(const NonInterpolableValue* value) {
+    return value && AllowFrom(*value);
+  }
+  static bool AllowFrom(const NonInterpolableValue& value) {
+    return value.GetType() ==
+           CSSOffsetRotationNonInterpolableValue::static_type_;
+  }
+};
 
 namespace {
 
@@ -49,9 +58,10 @@ class UnderlyingRotationTypeChecker
 
   bool IsValid(const StyleResolverState&,
                const InterpolationValue& underlying) const final {
-    return underlying_rotation_type_ == ToCSSOffsetRotationNonInterpolableValue(
-                                            *underlying.non_interpolable_value)
-                                            .RotationType();
+    return underlying_rotation_type_ ==
+           To<CSSOffsetRotationNonInterpolableValue>(
+               *underlying.non_interpolable_value)
+               .RotationType();
   }
 
  private:
@@ -86,7 +96,7 @@ InterpolationValue CSSOffsetRotateInterpolationType::MaybeConvertNeutral(
     const InterpolationValue& underlying,
     ConversionCheckers& conversion_checkers) const {
   OffsetRotationType underlying_rotation_type =
-      ToCSSOffsetRotationNonInterpolableValue(
+      To<CSSOffsetRotationNonInterpolableValue>(
           *underlying.non_interpolable_value)
           .RotationType();
   conversion_checkers.push_back(std::make_unique<UnderlyingRotationTypeChecker>(
@@ -121,10 +131,10 @@ PairwiseInterpolationValue CSSOffsetRotateInterpolationType::MaybeMergeSingles(
     InterpolationValue&& start,
     InterpolationValue&& end) const {
   const OffsetRotationType& start_type =
-      ToCSSOffsetRotationNonInterpolableValue(*start.non_interpolable_value)
+      To<CSSOffsetRotationNonInterpolableValue>(*start.non_interpolable_value)
           .RotationType();
   const OffsetRotationType& end_type =
-      ToCSSOffsetRotationNonInterpolableValue(*end.non_interpolable_value)
+      To<CSSOffsetRotationNonInterpolableValue>(*end.non_interpolable_value)
           .RotationType();
   if (start_type != end_type)
     return nullptr;
@@ -145,11 +155,11 @@ void CSSOffsetRotateInterpolationType::Composite(
     const InterpolationValue& value,
     double interpolation_fraction) const {
   const OffsetRotationType& underlying_type =
-      ToCSSOffsetRotationNonInterpolableValue(
+      To<CSSOffsetRotationNonInterpolableValue>(
           *underlying_value_owner.Value().non_interpolable_value)
           .RotationType();
   const OffsetRotationType& rotation_type =
-      ToCSSOffsetRotationNonInterpolableValue(*value.non_interpolable_value)
+      To<CSSOffsetRotationNonInterpolableValue>(*value.non_interpolable_value)
           .RotationType();
   if (underlying_type == rotation_type) {
     underlying_value_owner.MutableValue().interpolable_value->ScaleAndAdd(
@@ -165,7 +175,7 @@ void CSSOffsetRotateInterpolationType::ApplyStandardPropertyValue(
     StyleResolverState& state) const {
   state.Style()->SetOffsetRotate(StyleOffsetRotation(
       clampTo<float>(To<InterpolableNumber>(interpolable_value).Value()),
-      ToCSSOffsetRotationNonInterpolableValue(*non_interpolable_value)
+      To<CSSOffsetRotationNonInterpolableValue>(*non_interpolable_value)
           .RotationType()));
 }
 

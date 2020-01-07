@@ -16,7 +16,7 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "components/safe_browsing/base_ui_manager.h"
+#include "components/safe_browsing/content/base_ui_manager.h"
 #include "components/security_interstitials/content/unsafe_resource.h"
 
 class GURL;

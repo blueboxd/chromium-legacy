@@ -87,11 +87,12 @@ class PickerIndicatorElement final : public HTMLDivElement,
   Member<DateTimeChooser> chooser_;
 };
 
-DEFINE_TYPE_CASTS(PickerIndicatorElement,
-                  Element,
-                  element,
-                  element->IsPickerIndicatorElement(),
-                  element.IsPickerIndicatorElement());
+template <>
+struct DowncastTraits<PickerIndicatorElement> {
+  static bool AllowFrom(const Element& element) {
+    return element.IsPickerIndicatorElement();
+  }
+};
 
 }  // namespace blink
 #endif

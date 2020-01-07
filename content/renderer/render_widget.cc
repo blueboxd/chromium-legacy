@@ -960,11 +960,9 @@ void RenderWidget::OnUpdateVisualProperties(
     // (such as in RenderViewHost) and distribute it to each frame-hosted
     // RenderWidget from there.
     for (auto& child_proxy : render_frame_proxies_) {
-      if (!is_undead_) {
-        child_proxy.OnPageScaleFactorChanged(
-            visual_properties.page_scale_factor,
-            visual_properties.is_pinch_gesture_active);
-      }
+      child_proxy.OnPageScaleFactorChanged(
+          visual_properties.page_scale_factor,
+          visual_properties.is_pinch_gesture_active);
     }
   }
 
@@ -1977,12 +1975,6 @@ void RenderWidget::StartStopCompositor() {
   if (compositor_never_visible_)
     return;
 
-  // TODO(danakj): We should start the compositor before becoming shown for
-  // *all* provisional frames not just provisional main frames (as they come
-  // back from being undead). However we need to also prevent BeginMainFrame
-  // from occurring, in both cases, until the frame is attached at least. And in
-  // the case of main frames, until blink requests them through
-  // StopDeferringMainFrameUpdate().
   if (is_undead_) {
     layer_tree_view_->SetVisible(false);
     // Drop all gpu resources, this makes SetVisible(true) more expensive/slower
@@ -2404,10 +2396,8 @@ void RenderWidget::UpdateSurfaceAndScreenInfo(
   // Propagate changes down to child local root RenderWidgets and BrowserPlugins
   // in other frame trees/processes.
   if (previous_original_screen_info != GetOriginalScreenInfo()) {
-    for (auto& observer : render_frame_proxies_) {
-      if (!is_undead_)
-        observer.OnScreenInfoChanged(GetOriginalScreenInfo());
-    }
+    for (auto& observer : render_frame_proxies_)
+      observer.OnScreenInfoChanged(GetOriginalScreenInfo());
   }
 }
 
@@ -3480,10 +3470,8 @@ void RenderWidget::SetPageScaleStateAndLimits(float page_scale_factor,
   // the message to their child RenderWidgets (through their proxy child
   // frames).
   for (auto& observer : render_frame_proxies_) {
-    if (!is_undead_) {
-      observer.OnPageScaleFactorChanged(page_scale_factor,
-                                        is_pinch_gesture_active);
-    }
+    observer.OnPageScaleFactorChanged(page_scale_factor,
+                                      is_pinch_gesture_active);
   }
   // Store the value to give to any new RenderFrameProxy that is registered.
   page_scale_factor_from_mainframe_ = page_scale_factor;

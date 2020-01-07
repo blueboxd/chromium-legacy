@@ -35,9 +35,8 @@ public class ChromePreferenceKeyCheckerTest {
 
     @Before
     public void setUp() {
-        List<String> keysInUse =
-                Arrays.asList(KEY1_IN_USE, KEY2_IN_USE, KEY_PREFIX1_IN_USE.pattern(),
-                        KEY_PREFIX2_IN_USE.pattern(), GRANDFATHERED_KEY_IN_USE);
+        List<String> keysInUse = Arrays.asList(KEY1_IN_USE, KEY2_IN_USE,
+                KEY_PREFIX1_IN_USE.pattern(), KEY_PREFIX2_IN_USE.pattern());
         List<String> grandfatheredKeys = Arrays.asList(GRANDFATHERED_KEY_IN_USE);
         mSubject = new ChromePreferenceKeyChecker(keysInUse, grandfatheredKeys);
     }

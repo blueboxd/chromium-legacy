@@ -21,6 +21,12 @@ class WebLayerInternalsUI : public ui::MojoWebUIController,
 
   ~WebLayerInternalsUI() override;
 
+  // Instantiates implementor of the mojom::PageHandler mojo interface
+  // passing the pending receiver that will be internally bound.
+  void BindInterface(
+      mojo::PendingReceiver<weblayer_internals::mojom::PageHandler>
+          pending_receiver);
+
  private:
   // weblayer_internals::mojom::PageHandler:
 #if defined(OS_ANDROID)
@@ -29,11 +35,9 @@ class WebLayerInternalsUI : public ui::MojoWebUIController,
   void SetRemoteDebuggingEnabled(bool enabled) override;
 #endif
 
-  void BindPageHandler(
-      mojo::PendingReceiver<weblayer_internals::mojom::PageHandler>
-          pending_receiver);
-
   mojo::Receiver<weblayer_internals::mojom::PageHandler> receiver_{this};
+
+  WEB_UI_CONTROLLER_TYPE_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(WebLayerInternalsUI);
 };

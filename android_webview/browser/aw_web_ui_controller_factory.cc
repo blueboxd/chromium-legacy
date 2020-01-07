@@ -5,8 +5,8 @@
 #include "android_webview/browser/aw_web_ui_controller_factory.h"
 
 #include "base/memory/ptr_util.h"
-#include "components/safe_browsing/web_ui/constants.h"
-#include "components/safe_browsing/web_ui/safe_browsing_ui.h"
+#include "components/safe_browsing/content/web_ui/safe_browsing_ui.h"
+#include "components/safe_browsing/core/web_ui/constants.h"
 #include "content/public/browser/web_ui.h"
 #include "url/gurl.h"
 

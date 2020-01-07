@@ -6,8 +6,8 @@
 
 #include <memory>
 
-#include "chrome/browser/ssl/ssl_error_assistant.pb.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/security_interstitials/content/ssl_error_assistant.pb.h"
 #include "crypto/sha2.h"
 #include "net/cert/asn1_util.h"
 #include "net/test/cert_test_util.h"

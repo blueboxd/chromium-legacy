@@ -442,18 +442,18 @@ export class DestinationStore extends EventTarget {
    * @private
    */
   fetchPreselectedDestination_(serializedDestination, autoselect) {
-    const key = createRecentDestinationKey(serializedDestination);
-    if (this.inFlightCloudPrintRequests_.has(key)) {
-      // Don't send another request if we are already fetching this
-      // destination.
-      return true;
-    }
-
     const id = serializedDestination.id;
     const origin = serializedDestination.origin;
     if (autoselect) {
       this.autoSelectMatchingDestination_ =
           this.createExactDestinationMatch_(origin, id);
+    }
+
+    const key = createRecentDestinationKey(serializedDestination);
+    if (this.inFlightCloudPrintRequests_.has(key)) {
+      // Don't send another request if we are already fetching this
+      // destination.
+      return true;
     }
 
     let error = false;
@@ -544,7 +544,8 @@ export class DestinationStore extends EventTarget {
     this.nativeLayer_.getEulaUrl(destinationId).then(response => {
       // Check that the currently selected destination ID still matches the
       // destination ID we used to fetch the EULA URL.
-      if (destinationId === this.selectedDestination_.id) {
+      if (this.selectedDestination_ &&
+          destinationId === this.selectedDestination_.id) {
         this.dispatchEvent(new CustomEvent(
             DestinationStore.EventType.DESTINATION_EULA_READY,
             {detail: response}));
@@ -1205,7 +1206,7 @@ export class DestinationStore extends EventTarget {
       this.updateDestination_(dest);
       // <if expr="chromeos">
       // Start the fetch for the PPD EULA URL.
-      this.fetchEulaUrl(this.selectedDestination_.id);
+      this.fetchEulaUrl(dest.id);
       // </if>
     }
   }

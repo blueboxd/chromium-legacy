@@ -62,7 +62,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/printing/browser/printer_capabilities.h"
 #include "components/printing/common/cloud_print_cdd_conversion.h"
-#include "components/printing/common/print_messages.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
 #include "components/url_formatter/url_formatter.h"
@@ -77,6 +76,7 @@
 #include "printing/backend/print_backend_consts.h"
 #include "printing/buildflags/buildflags.h"
 #include "printing/print_settings.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/icu/source/i18n/unicode/ulocdata.h"
 
 #if defined(OS_CHROMEOS)
@@ -839,8 +839,10 @@ void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
 
   VLOG(1) << "Print preview request start";
 
-  rfh->Send(new PrintMsg_PrintPreview(
-      rfh->GetRoutingID(), static_cast<base::DictionaryValue&>(settings)));
+  if (!print_render_frame_.is_bound())
+    rfh->GetRemoteAssociatedInterfaces()->GetInterface(&print_render_frame_);
+
+  print_render_frame_->PrintPreview(settings.Clone());
   last_preview_settings_ = std::move(settings);
 }
 

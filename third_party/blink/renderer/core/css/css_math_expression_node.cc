@@ -1123,22 +1123,20 @@ class CSSMathExpressionNodeParser {
       return result;
     }
 
-    if (RuntimeEnabledFeatures::CSSComparisonFunctionsEnabled()) {
-      if (tokens.Peek().GetType() == kFunctionToken) {
-        CSSValueID function_id = tokens.Peek().FunctionId();
-        CSSParserTokenRange inner_range = tokens.ConsumeBlock();
-        tokens.ConsumeWhitespace();
-        inner_range.ConsumeWhitespace();
-        switch (function_id) {
-          case CSSValueID::kMin:
-            return ParseMinOrMax(inner_range, CSSMathOperator::kMin, depth);
-          case CSSValueID::kMax:
-            return ParseMinOrMax(inner_range, CSSMathOperator::kMax, depth);
-          case CSSValueID::kClamp:
-            return ParseClamp(inner_range, depth);
-          default:
-            break;
-        }
+    if (tokens.Peek().GetType() == kFunctionToken) {
+      CSSValueID function_id = tokens.Peek().FunctionId();
+      CSSParserTokenRange inner_range = tokens.ConsumeBlock();
+      tokens.ConsumeWhitespace();
+      inner_range.ConsumeWhitespace();
+      switch (function_id) {
+        case CSSValueID::kMin:
+          return ParseMinOrMax(inner_range, CSSMathOperator::kMin, depth);
+        case CSSValueID::kMax:
+          return ParseMinOrMax(inner_range, CSSMathOperator::kMax, depth);
+        case CSSValueID::kClamp:
+          return ParseClamp(inner_range, depth);
+        default:
+          break;
       }
     }
 

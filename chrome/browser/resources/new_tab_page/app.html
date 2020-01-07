@@ -1,7 +1,28 @@
 <style include="cr-shared-style">
+  #background {
+    display: inline-block;
+    height: 100%;
+    width: 100%;
+  }
+
   #customizeButton {
+    background-color: white;
+    border: none;
+    border-radius: calc(0.5 * var(--cr-button-height));
     bottom: 16px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 1px 2px rgba(0, 0, 0, 0.23);
+    font-weight: 400;
     position: absolute;
+  }
+
+  #customizeIcon {
+    -webkit-mask-image: url(icons/icon_pencil.svg);
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: 100%;
+    background-color: var(--text-color);
+    height: 16px;
+    margin-inline-end: 8px;
+    width: 16px;
   }
 
   :host-context([dir='ltr']) #customizeButton {
@@ -12,13 +33,23 @@
     left: 16px;
   }
 </style>
-<ntp-most-visited></ntp-most-visited>
-<dom-if if="[[showCustomizeDialog_]]" restamp>
-  <template>
-    <ntp-customize-dialog on-close="onCustomizeDialogClose_">
-    </ntp-customize-dialog>
-  </template>
-</dom-if>
-<cr-button id="customizeButton" on-click="onCustomizeClick_">
-  $i18n{customizeButton}
-</cr-button>
+<div id="background"
+    style="background-color: [[rgbOrInherit_(theme_.backgroundColor)]];">
+  <ntp-most-visited
+      style="--icon-background-color:
+            [[rgbOrInherit_(theme_.shortcutBackgroundColor)]];
+          --tile-title-color:
+            [[rgbOrInherit_(theme_.shortcutTextColor)]];">
+  </ntp-most-visited>
+  <dom-if if="[[showCustomizeDialog_]]" restamp>
+    <template>
+      <ntp-customize-dialog on-close="onCustomizeDialogClose_"
+          theme="[[theme_]]">
+      </ntp-customize-dialog>
+    </template>
+  </dom-if>
+  <cr-button id="customizeButton" on-click="onCustomizeClick_">
+    <div id="customizeIcon"></div>
+    $i18n{customizeButton}
+  </cr-button>
+</div>

@@ -14,6 +14,8 @@
 
 namespace blink {
 
+class ExceptionState;
+
 class NavigatorRequestMediaKeySystemAccess {
   STATIC_ONLY(NavigatorRequestMediaKeySystemAccess);
 
@@ -23,7 +25,8 @@ class NavigatorRequestMediaKeySystemAccess {
       Navigator&,
       const String& key_system,
       const HeapVector<Member<MediaKeySystemConfiguration>>&
-          supported_configurations);
+          supported_configurations,
+      ExceptionState&);
 };
 
 }  // namespace blink

@@ -41,6 +41,10 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_vector.h"
 
+namespace net {
+class SiteForCookies;
+}
+
 namespace blink {
 
 class WebString;
@@ -58,7 +62,7 @@ class BLINK_PLATFORM_EXPORT WebURLLoaderClient {
   // redirect, or false otherwise.
   virtual bool WillFollowRedirect(
       const WebURL& new_url,
-      const WebURL& new_site_for_cookies,
+      const net::SiteForCookies& new_site_for_cookies,
       const WebString& new_referrer,
       network::mojom::ReferrerPolicy new_referrer_policy,
       const WebString& new_method,

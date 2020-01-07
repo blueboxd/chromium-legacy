@@ -40,7 +40,6 @@ class LayoutSearchField final : public LayoutTextControlSingleLine {
       LayoutUnit line_height,
       LayoutUnit non_content_height) const override;
 
-  Element* SearchDecorationElement() const;
   Element* CancelButtonElement() const;
 };
 

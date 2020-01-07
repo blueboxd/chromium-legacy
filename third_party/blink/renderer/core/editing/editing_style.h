@@ -101,7 +101,9 @@ class CORE_EXPORT EditingStyle final : public GarbageCollected<EditingStyle> {
     kIgnoreTextOnlyProperties,
     kDoNotIgnoreTextOnlyProperties
   };
-  EditingTriState TriStateOfStyle(EditingStyle*, SecureContextMode) const;
+  EditingTriState TriStateOfStyle(ExecutionContext*,
+                                  EditingStyle*,
+                                  SecureContextMode) const;
   EditingTriState TriStateOfStyle(const VisibleSelection&,
                                   SecureContextMode) const;
   bool ConflictsWithInlineStyleOfElement(HTMLElement* element) const {

@@ -696,11 +696,8 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
   const auto field_trial_variants =
       OmniboxFieldTrial::GetZeroSuggestVariants(current_page_classification_);
 
-  if (base::Contains(field_trial_variants, kNoneVariant) ||
-      base::FeatureList::IsEnabled(
-          omnibox::kOmniboxPopupShortcutIconsInZeroState)) {
+  if (base::Contains(field_trial_variants, kNoneVariant))
     return NONE;
-  }
 
   // TODO(tommycli): Since this can be configured via ZeroSuggestVariant, we
   // should eliminate this special case and use a field trial configuration.

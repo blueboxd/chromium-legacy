@@ -48,12 +48,10 @@
 
 OmniboxResultView::OmniboxResultView(
     OmniboxPopupContentsView* popup_contents_view,
-    size_t model_index,
-    const ui::ThemeProvider* theme_provider)
+    size_t model_index)
     : AnimationDelegateViews(this),
       popup_contents_view_(popup_contents_view),
       model_index_(model_index),
-      theme_provider_(theme_provider),
       animation_(new gfx::SlideAnimation(this)) {
   CHECK_GE(model_index, 0u);
 
@@ -64,7 +62,7 @@ OmniboxResultView::OmniboxResultView(
           popup_contents_view_, this,
           l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT),
           l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_SHORT_HINT),
-          omnibox::kSwitchIcon, theme_provider_));
+          omnibox::kSwitchIcon));
 
   // This is intentionally not in the tab order by default, but should be if the
   // user has full-acessibility mode on. This is because this is a tertiary
@@ -74,11 +72,6 @@ OmniboxResultView::OmniboxResultView(
   remove_suggestion_button_ =
       AddChildView(views::CreateVectorImageButton(this));
   views::InstallCircleHighlightPathGenerator(remove_suggestion_button_);
-  // TODO(tommycli): We may need to update the color for theme changes.
-  int icon_size = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
-  views::SetImageFromVectorIcon(remove_suggestion_button_,
-                                vector_icons::kCloseRoundedIcon, icon_size,
-                                GetColor(OmniboxPart::RESULTS_ICON));
   remove_suggestion_button_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_OMNIBOX_REMOVE_SUGGESTION));
   remove_suggestion_focus_ring_ =
@@ -90,9 +83,6 @@ OmniboxResultView::OmniboxResultView(
 
   keyword_view_ = AddChildView(std::make_unique<OmniboxMatchCellView>(this));
   keyword_view_->icon()->EnableCanvasFlippingForRTLUI(true);
-  keyword_view_->icon()->SetImage(
-      gfx::CreateVectorIcon(omnibox::kKeywordSearchIcon, icon_size,
-                            GetColor(OmniboxPart::RESULTS_ICON)));
   keyword_view_->icon()->SizeToPreferredSize();
 
   // Calling SetMatch() will result in the child OmniboxMatchCellViews
@@ -105,7 +95,7 @@ OmniboxResultView::OmniboxResultView(
 OmniboxResultView::~OmniboxResultView() {}
 
 SkColor OmniboxResultView::GetColor(OmniboxPart part) const {
-  return GetOmniboxColor(theme_provider_, part, GetThemeState());
+  return GetOmniboxColor(GetThemeProvider(), part, GetThemeState());
 }
 
 void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
@@ -139,8 +129,12 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
                                           keyword_match->description_class);
   }
 
-  Invalidate();
-  InvalidateLayout();
+  // There is no need to invalidate the views hierarchy in the absence of a
+  // widget.
+  if (GetWidget()) {
+    Invalidate();
+    InvalidateLayout();
+  }
 }
 
 void OmniboxResultView::ShowKeyword(bool show_keyword) {
@@ -239,6 +233,42 @@ bool OmniboxResultView::MaybeTriggerSecondaryButton(const ui::Event& event) {
 
   ButtonPressed(button, event);
   return true;
+}
+
+base::string16 OmniboxResultView::ToAccessibilityLabelWithSecondaryButton(
+    const base::string16& match_text,
+    size_t total_matches,
+    int* label_prefix_length) {
+  int additional_message_id = 0;
+  views::Button* secondary_button = GetSecondaryButton();
+  bool button_focused =
+      IsSelected() && popup_contents_view_->model()->selected_line_state() ==
+                          OmniboxPopupModel::BUTTON_FOCUSED;
+
+  // If there's a button focused, we don't want the "n of m" message announced.
+  if (button_focused)
+    total_matches = 0;
+
+  // Add additional messages
+  if (secondary_button == suggestion_tab_switch_button_) {
+    additional_message_id = button_focused
+                                ? IDS_ACC_TAB_SWITCH_BUTTON_FOCUSED_PREFIX
+                                : IDS_ACC_TAB_SWITCH_SUFFIX;
+  } else if (secondary_button == remove_suggestion_button_) {
+    // Don't add an additional message for removable suggestions without button
+    // focus, since they are relatively common.
+    additional_message_id =
+        button_focused ? IDS_ACC_REMOVE_SUGGESTION_FOCUSED_PREFIX : 0;
+  }
+
+  // TODO(tommycli): We re-fetch the original match from the popup model,
+  // because |match_| already has its contents and description swapped by this
+  // class, and we don't want that for the bubble. We should improve this.
+  AutocompleteMatch raw_match =
+      popup_contents_view_->model()->result().match_at(model_index_);
+  return AutocompleteMatchType::ToAccessibilityLabel(
+      raw_match, match_text, model_index_, total_matches, additional_message_id,
+      label_prefix_length);
 }
 
 OmniboxPartState OmniboxResultView::GetThemeState() const {
@@ -427,8 +457,8 @@ void OmniboxResultView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   // Pass false for |is_tab_switch_button_focused|, because the button will
   // receive its own label in the case that a screen reader is listening to
   // selection events on items rather than announcements or value change events.
-  node_data->SetName(AutocompleteMatchType::ToAccessibilityLabel(
-      match_, match_.contents, false));
+  node_data->SetName(
+      AutocompleteMatchType::ToAccessibilityLabel(match_, match_.contents));
 
   node_data->role = ax::mojom::Role::kListBoxOption;
   node_data->AddIntAttribute(ax::mojom::IntAttribute::kPosInSet,
@@ -450,6 +480,10 @@ gfx::Size OmniboxResultView::CalculatePreferredSize() const {
 }
 
 void OmniboxResultView::OnThemeChanged() {
+  views::SetImageFromVectorIcon(remove_suggestion_button_,
+                                vector_icons::kCloseRoundedIcon,
+                                GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
+                                GetColor(OmniboxPart::RESULTS_ICON));
   Invalidate(true);
 }
 
@@ -473,8 +507,8 @@ void OmniboxResultView::EmitTextChangedAccessiblityEvent() {
   // The omnibox results list reuses the same items, but the text displayed for
   // these items is updated as the value of omnibox changes. The displayed text
   // for a given item is exposed to screen readers as the item's name/label.
-  base::string16 current_name = AutocompleteMatchType::ToAccessibilityLabel(
-      match_, match_.contents, false);
+  base::string16 current_name =
+      AutocompleteMatchType::ToAccessibilityLabel(match_, match_.contents);
   if (accessible_name_ != current_name) {
     NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
     accessible_name_ = current_name;

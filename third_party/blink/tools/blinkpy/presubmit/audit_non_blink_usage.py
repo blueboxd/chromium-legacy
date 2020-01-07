@@ -380,6 +380,9 @@ _CONFIG = [
             # Network service.
             'network::.+',
 
+            # Used in network service types.
+            'net::SiteForCookies',
+
             # Some test helpers live in the blink::test namespace.
             'test::.+',
 

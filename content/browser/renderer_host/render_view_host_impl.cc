@@ -343,9 +343,10 @@ bool RenderViewHostImpl::CreateRenderView(
       params->renderer_preferences.get());
   params->web_preferences = GetWebkitPreferences();
   params->view_id = GetRoutingID();
-  params->main_frame_routing_id = main_frame_routing_id_;
-  params->main_frame_widget_routing_id = render_widget_host_->GetRoutingID();
   if (main_rfh) {
+    params->main_frame_routing_id = main_frame_routing_id_;
+    params->main_frame_widget_routing_id =
+        main_rfh->GetRenderWidgetHost()->GetRoutingID();
     params->main_frame_interface_bundle =
         mojom::DocumentScopedInterfaceBundle::New();
     main_rfh->BindInterfaceProviderReceiver(
@@ -354,8 +355,6 @@ bool RenderViewHostImpl::CreateRenderView(
     main_rfh->BindBrowserInterfaceBrokerReceiver(
         params->main_frame_interface_bundle->browser_interface_broker
             .InitWithNewPipeAndPassReceiver());
-    RenderWidgetHostImpl* main_rwh = main_rfh->GetRenderWidgetHost();
-    params->main_frame_widget_routing_id = main_rwh->GetRoutingID();
   }
   params->session_storage_namespace_id =
       delegate_->GetSessionStorageNamespace(instance_.get())->id();

@@ -550,6 +550,28 @@ void remote_surface_set_accessibility_id(wl_client* client,
   NOTIMPLEMENTED();
 }
 
+void remote_surface_set_pip_original_window(wl_client* client,
+                                            wl_resource* resource) {
+  auto* widget = GetUserDataAs<ShellSurfaceBase>(resource)->GetWidget();
+  if (!widget) {
+    LOG(ERROR) << "no widget found for setting pip original window";
+    return;
+  }
+
+  widget->GetNativeWindow()->SetProperty(ash::kPipOriginalWindowKey, true);
+}
+
+void remote_surface_unset_pip_original_window(wl_client* client,
+                                              wl_resource* resource) {
+  auto* widget = GetUserDataAs<ShellSurfaceBase>(resource)->GetWidget();
+  if (!widget) {
+    LOG(ERROR) << "no widget found for unsetting pip original window";
+    return;
+  }
+
+  widget->GetNativeWindow()->SetProperty(ash::kPipOriginalWindowKey, false);
+}
+
 const struct zcr_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_destroy,
     remote_surface_set_app_id,
@@ -596,7 +618,9 @@ const struct zcr_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_set_aspect_ratio,
     remote_surface_block_ime,
     remote_surface_unblock_ime,
-    remote_surface_set_accessibility_id};
+    remote_surface_set_accessibility_id,
+    remote_surface_set_pip_original_window,
+    remote_surface_unset_pip_original_window};
 
 ////////////////////////////////////////////////////////////////////////////////
 // notification_surface_interface:

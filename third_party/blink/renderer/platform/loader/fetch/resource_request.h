@@ -34,6 +34,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
+#include "net/cookies/site_for_cookies.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/cors.mojom-blink-forward.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
@@ -80,7 +81,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   std::unique_ptr<ResourceRequest> CreateRedirectRequest(
       const KURL& new_url,
       const AtomicString& new_method,
-      const KURL& new_site_for_cookies,
+      const net::SiteForCookies& new_site_for_cookies,
       const String& new_referrer,
       network::mojom::ReferrerPolicy new_referrer_policy,
       bool skip_service_worker) const;
@@ -106,8 +107,12 @@ class PLATFORM_EXPORT ResourceRequest final {
   base::TimeDelta TimeoutInterval() const;
   void SetTimeoutInterval(base::TimeDelta);
 
-  const KURL& SiteForCookies() const;
-  void SetSiteForCookies(const KURL&);
+  const net::SiteForCookies& SiteForCookies() const;
+  void SetSiteForCookies(const net::SiteForCookies&);
+
+  // Returns true if SiteForCookies() was set either via SetSiteForCookies or
+  // CreateRedirectRequest.
+  bool SiteForCookiesSet() const { return site_for_cookies_set_; }
 
   const SecurityOrigin* TopFrameOrigin() const;
   void SetTopFrameOrigin(scoped_refptr<const SecurityOrigin>);
@@ -463,7 +468,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   // base::TimeDelta::Max() represents the default timeout on platforms that
   // have one.
   base::TimeDelta timeout_interval_;
-  KURL site_for_cookies_;
+  net::SiteForCookies site_for_cookies_;
   scoped_refptr<const SecurityOrigin> top_frame_origin_;
 
   scoped_refptr<const SecurityOrigin> requestor_origin_;
@@ -484,6 +489,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   mojom::FetchCacheMode cache_mode_;
   bool skip_service_worker_ : 1;
   bool download_to_cache_only_ : 1;
+  bool site_for_cookies_set_ : 1;
   ResourceLoadPriority priority_;
   int intra_priority_value_;
   int requestor_id_;

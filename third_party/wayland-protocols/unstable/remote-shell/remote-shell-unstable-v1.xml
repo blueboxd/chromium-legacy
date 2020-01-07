@@ -38,7 +38,7 @@
     reset.
   </description>
 
-  <interface name="zcr_remote_shell_v1" version="25">
+  <interface name="zcr_remote_shell_v1" version="26">
     <description summary="remote_shell">
       The global interface that allows clients to turn a wl_surface into a
       "real window" which is remotely managed but can be stacked, activated
@@ -237,7 +237,7 @@
 
   </interface>
 
-  <interface name="zcr_remote_surface_v1" version="25">
+  <interface name="zcr_remote_surface_v1" version="26">
     <description summary="A desktop window">
       An interface that may be implemented by a wl_surface, for
       implementations that provide a desktop-style user interface
@@ -1036,7 +1036,6 @@
     </event>
 
     <!-- Version 25 additions -->
-
     <request name="set_accessibility_id" since="25">
       <description summary="set accessibility ID to the surface">
         Set accessibility window ID to the surface
@@ -1044,6 +1043,18 @@
       <arg name="id" type="int" summary="Accessibility ID. Negative number causes to unset existing accessibility ID from the surface."/>
     </request>
 
+    <!-- Version 26 additions -->
+    <request name="set_pip_original_window" since="25">
+      <description summary="set the pip original window">
+        Set this surface the original window for the current PIP window.
+      </description>
+    </request>
+
+    <request name="unset_pip_original_window" since="25">
+      <description summary="unset the pip original window">
+        Unset this surface the original window for the current PIP window.
+      </description>
+    </request>
   </interface>
 
   <interface name="zcr_notification_surface_v1" version="16">

@@ -49,35 +49,6 @@ constexpr base::TimeDelta kFontLoadWaitShort =
 constexpr base::TimeDelta kFontLoadWaitLong =
     base::TimeDelta::FromMilliseconds(3000);
 
-enum FontPackageFormat {
-  kPackageFormatUnknown,
-  kPackageFormatSFNT,
-  kPackageFormatWOFF,
-  kPackageFormatWOFF2,
-  kPackageFormatSVG,
-  kPackageFormatEnumMax
-};
-
-static FontPackageFormat PackageFormatOf(SharedBuffer* buffer) {
-  static constexpr size_t kMaxHeaderSize = 4;
-  char data[kMaxHeaderSize];
-  if (!buffer->GetBytes(data, kMaxHeaderSize))
-    return kPackageFormatUnknown;
-
-  if (data[0] == 'w' && data[1] == 'O' && data[2] == 'F' && data[3] == 'F')
-    return kPackageFormatWOFF;
-  if (data[0] == 'w' && data[1] == 'O' && data[2] == 'F' && data[3] == '2')
-    return kPackageFormatWOFF2;
-  return kPackageFormatSFNT;
-}
-
-static void RecordPackageFormatHistogram(FontPackageFormat format) {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      EnumerationHistogram, package_format_histogram,
-      ("WebFont.PackageFormat", kPackageFormatEnumMax));
-  package_format_histogram.Count(format);
-}
-
 FontResource* FontResource::Fetch(FetchParameters& params,
                                   ResourceFetcher* fetcher,
                                   FontResourceClient* client) {
@@ -146,12 +117,8 @@ scoped_refptr<FontCustomPlatformData> FontResource::GetCustomFontData() {
     if (Data())
       font_data_ = FontCustomPlatformData::Create(Data(), ots_parsing_message_);
 
-    if (font_data_) {
-      RecordPackageFormatHistogram(PackageFormatOf(Data()));
-    } else {
+    if (!font_data_)
       SetStatus(ResourceStatus::kDecodeError);
-      RecordPackageFormatHistogram(kPackageFormatUnknown);
-    }
   }
   return font_data_;
 }

@@ -63,7 +63,7 @@ class AddToHomescreenMediator : public AddToHomescreenDataFetcher::Observer {
 
   // Called immediatedly after |params_| is available. Displays |display_icon|
   // in the installation UI.
-  void SetIcon(const SkBitmap& display_icon);
+  void SetIcon(const SkBitmap& display_icon, bool need_to_add_padding);
 
   // Sends the Web App info to the Java side.
   void SetWebAppInfo(const base::string16& user_title,

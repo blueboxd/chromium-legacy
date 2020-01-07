@@ -3615,25 +3615,6 @@
             ]
         }
     ],
-    "MixedAutoupgrade": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows",
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledAll",
-                    "enable_features": [
-                        "AutoupgradeMixedContent"
-                    ]
-                }
-            ]
-        }
-    ],
     "MyChromeEverywhere": [
         {
             "platforms": [
@@ -4108,9 +4089,7 @@
             "experiments": [
                 {
                     "name": "iOSExperiments",
-                    "enable_features": [
-                        "OmniboxPopupShortcutIconsInZeroState"
-                    ]
+                    "enable_features": []
                 }
             ]
         }
@@ -4464,6 +4443,47 @@
                     "name": "Enabled",
                     "enable_features": [
                         "PassiveEventListenersDueToFling"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PassiveMixedContentAutoupgrade": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "mode": "no-images"
+                    },
+                    "enable_features": [
+                        "AutoupgradeMixedContent"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PassiveMixedContentWarning": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PassiveMixedContentWarning"
                     ]
                 }
             ]
@@ -6832,25 +6852,6 @@
                     },
                     "enable_features": [
                         "Ukm"
-                    ]
-                }
-            ]
-        }
-    ],
-    "URLLoaderThrottleSafeBrowsingChecks": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "linux",
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "URLLoaderThrottleSafeBrowsingChecksEnabled",
-                    "enable_features": [
-                        "S13nSafeBrowsingCheckByURLLoaderThrottle"
                     ]
                 }
             ]

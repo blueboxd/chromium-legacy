@@ -392,6 +392,7 @@ TEST_P(AssociatedUserValidatorUserAccessBlockingTest, BlockUserAccessAsNeeded) {
   const bool password_recovery_enabled = std::get<5>(GetParam());
   const bool contains_stored_password = std::get<6>(GetParam());
   const bool is_last_login_stale = std::get<7>(GetParam());
+
   GoogleMdmEnrolledStatusForTesting forced_status(mdm_enrolled);
 
   GoogleMdmEscrowServiceEnablerForTesting escrow_service_enabler;
@@ -427,7 +428,7 @@ TEST_P(AssociatedUserValidatorUserAccessBlockingTest, BlockUserAccessAsNeeded) {
   TimeClockOverrideValue::current_time_ = base::Time::Now();
   base::subtle::ScopedTimeClockOverrides time_override(
       &TimeClockOverrideValue::NowOverride, nullptr, nullptr);
-  if (is_last_login_stale) {
+  if (is_last_login_stale && !internet_available) {
     base::Time last_online_login = base::Time::Now();
     base::string16 last_online_login_millis = base::NumberToString16(
         last_online_login.ToDeltaSinceWindowsEpoch().InMilliseconds());
@@ -468,7 +469,7 @@ TEST_P(AssociatedUserValidatorUserAccessBlockingTest, BlockUserAccessAsNeeded) {
   DWORD reg_value = 0;
 
   bool is_get_auth_enforced =
-      is_last_login_stale ||
+      (!internet_available && is_last_login_stale) ||
       (internet_available &&
        ((mdm_url_set && !mdm_enrolled) || !token_handle_valid ||
         (password_recovery_enabled && !contains_stored_password)));

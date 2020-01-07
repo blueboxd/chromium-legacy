@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/frame/embedded_content_view.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace cc {
@@ -239,18 +240,16 @@ class CORE_EXPORT WebPluginContainerImpl final
   bool wants_wheel_events_;
 };
 
-DEFINE_TYPE_CASTS(WebPluginContainerImpl,
-                  EmbeddedContentView,
-                  embedded_content_view,
-                  embedded_content_view->IsPluginView(),
-                  embedded_content_view.IsPluginView());
-// Unlike EmbeddedContentView, we need not worry about object type for
-// container. WebPluginContainerImpl is the only subclass of WebPluginContainer.
-DEFINE_TYPE_CASTS(WebPluginContainerImpl,
-                  WebPluginContainer,
-                  container,
-                  true,
-                  true);
+template <>
+struct DowncastTraits<WebPluginContainerImpl> {
+  static bool AllowFrom(const EmbeddedContentView& embedded_content_view) {
+    return embedded_content_view.IsPluginView();
+  }
+  // Unlike EmbeddedContentView, we need not worry about object type for
+  // container. WebPluginContainerImpl is the only subclass of
+  // WebPluginContainer.
+  static bool AllowFrom(const WebPluginContainer& container) { return true; }
+};
 
 }  // namespace blink
 

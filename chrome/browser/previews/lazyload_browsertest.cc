@@ -47,10 +47,9 @@ class LazyLoadBrowserTest : public InProcessBrowserTest {
   }
 
   void EnableDataSaver(bool enabled) {
-    Profile* profile = Profile::FromBrowserContext(browser()->profile());
-
     data_reduction_proxy::DataReductionProxySettings::
-        SetDataSaverEnabledForTesting(profile->GetPrefs(), enabled);
+        SetDataSaverEnabledForTesting(browser()->profile()->GetPrefs(),
+                                      enabled);
     base::RunLoop().RunUntilIdle();
   }
 

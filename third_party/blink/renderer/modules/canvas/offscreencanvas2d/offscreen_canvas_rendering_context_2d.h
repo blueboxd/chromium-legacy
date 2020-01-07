@@ -168,12 +168,6 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
   bool needs_flush_ = false;
 };
 
-DEFINE_TYPE_CASTS(OffscreenCanvasRenderingContext2D,
-                  CanvasRenderingContext,
-                  context,
-                  context->Is2d() && context->Host(),
-                  context.Is2d() && context.Host());
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_OFFSCREENCANVAS2D_OFFSCREEN_CANVAS_RENDERING_CONTEXT_2D_H_

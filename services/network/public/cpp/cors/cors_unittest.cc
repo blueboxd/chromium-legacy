@@ -731,6 +731,19 @@ TEST_F(CorsTest, PrivilegedNoCorsHeaderName) {
   EXPECT_FALSE(IsPrivilegedNoCorsHeaderName("cookie"));
 }
 
+TEST_F(CorsTest, IsForbiddenMethod) {
+  EXPECT_TRUE(IsForbiddenMethod("connect"));
+  EXPECT_TRUE(IsForbiddenMethod("CONNECT"));
+  EXPECT_TRUE(IsForbiddenMethod("Connect"));
+  EXPECT_TRUE(IsForbiddenMethod("CoNnEcT"));
+  EXPECT_FALSE(IsForbiddenMethod("C0NNECT"));
+
+  EXPECT_TRUE(IsForbiddenMethod("trace"));
+  EXPECT_TRUE(IsForbiddenMethod("track"));
+  EXPECT_FALSE(IsForbiddenMethod("trac"));
+  EXPECT_FALSE(IsForbiddenMethod("tracz"));
+}
+
 }  // namespace
 }  // namespace cors
 }  // namespace network

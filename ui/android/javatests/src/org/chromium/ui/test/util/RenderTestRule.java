@@ -11,6 +11,8 @@ import android.os.Build;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.EditText;
 
 import org.junit.Assert;
 import org.junit.rules.TestWatcher;
@@ -26,9 +28,13 @@ import org.chromium.ui.UiUtils;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 /**
@@ -94,6 +100,8 @@ public class RenderTestRule extends TestWatcher {
 
     // How much a channel must differ when comparing pixels in order to be considered different.
     private int mPixelDiffThreshold;
+
+    private Map<String, DiffReport> mMismatchReports = new HashMap<>();
 
     /**
      * An exception thrown after a Render Test if images do not match the goldens or goldens are
@@ -174,11 +182,11 @@ public class RenderTestRule extends TestWatcher {
         File goldenFile = createGoldenPath(filename);
         Bitmap goldenBitmap = BitmapFactory.decodeFile(goldenFile.getAbsolutePath(), options);
 
-        Pair<ComparisonResult, Bitmap> result = compareBitmapToGolden(testBitmap, goldenBitmap);
+        Pair<DiffReport, Bitmap> result = compareBitmapToGolden(testBitmap, goldenBitmap, id);
         Log.i(TAG, "RenderTest %s %s", id, result.first.toString());
 
         // Save the result and any interesting images.
-        switch (result.first) {
+        switch (result.first.getResult()) {
             case MATCH:
                 // We don't do anything with the matches.
                 break;
@@ -189,11 +197,23 @@ public class RenderTestRule extends TestWatcher {
                 break;
             case MISMATCH:
                 mMismatchIds.add(id);
+                mMismatchReports.put(id, result.first);
 
                 saveBitmap(testBitmap, createOutputPath(FAILURE_FOLDER_RELATIVE, filename));
                 saveBitmap(goldenBitmap, createOutputPath(GOLDEN_FOLDER_RELATIVE, filename));
                 saveBitmap(result.second, createOutputPath(DIFF_FOLDER_RELATIVE, filename));
                 break;
+        }
+    }
+
+    /**
+     * Appends the DiffReports if exists.
+     */
+    private void maybeAppendDiffReports(StringBuilder sb) {
+        for (String key : mMismatchIds) {
+            if (mMismatchReports.containsKey(key)) {
+                sb.append(mMismatchReports.get(key));
+            }
         }
     }
 
@@ -223,8 +243,26 @@ public class RenderTestRule extends TestWatcher {
             sb.append(".");
         }
 
-        sb.append(" See RENDER_TESTS.md for how to fix this failure.");
+        sb.append(" See RENDER_TESTS.md for how to fix this failure.\n");
+        maybeAppendDiffReports(sb);
         throw new RenderTestException(sb.toString());
+    }
+
+    /**
+     * Searches the View hierarchy and modifies the Views to provide better stability in tests. For
+     * example it will disable the blinking cursor in EditTexts.
+     */
+    public static void sanitize(View view) {
+        // Add more sanitizations as we discover more flaky attributes.
+        if (view instanceof ViewGroup) {
+            ViewGroup viewGroup = (ViewGroup) view;
+            for (int i = 0; i < viewGroup.getChildCount(); i++) {
+                sanitize(viewGroup.getChildAt(i));
+            }
+        } else if (view instanceof EditText) {
+            EditText editText = (EditText) view;
+            editText.setCursorVisible(false);
+        }
     }
 
     /**
@@ -277,7 +315,8 @@ public class RenderTestRule extends TestWatcher {
             desc = variantPrefix + "-" + desc;
         }
 
-        return String.format("%s.%s.%s.png", testClass, desc, modelSdkIdentifier());
+        return String.format(
+                Locale.getDefault(), "%s.%s.%s.png", testClass, desc, modelSdkIdentifier());
     }
 
     /**
@@ -327,14 +366,15 @@ public class RenderTestRule extends TestWatcher {
 
     /**
      * Compares two Bitmaps.
-     * @return A pair of ComparisonResult and Bitmap. If the ComparisonResult is MISMATCH or MATCH,
+     * @return A pair of DiffReport and Bitmap. If the DiffReport.mResult is MISMATCH or MATCH,
      *         the Bitmap will be a generated pixel-by-pixel difference.
      */
-    private Pair<ComparisonResult, Bitmap> compareBitmapToGolden(Bitmap render, Bitmap golden) {
-        if (golden == null) return Pair.create(ComparisonResult.GOLDEN_NOT_FOUND, null);
+    private Pair<DiffReport, Bitmap> compareBitmapToGolden(
+            Bitmap render, Bitmap golden, String id) {
+        if (golden == null) return Pair.create(DiffReport.newGoldenNotFoundDiffReport(), null);
         // This comparison is much, much faster than doing a pixel-by-pixel comparison, so try this
         // first and only fall back to the pixel comparison if it fails.
-        if (render.sameAs(golden)) return Pair.create(ComparisonResult.MATCH, null);
+        if (render.sameAs(golden)) return Pair.create(DiffReport.newMatchDiffReport(), null);
 
         Bitmap diff = Bitmap.createBitmap(Math.max(render.getWidth(), golden.getWidth()),
                 Math.max(render.getHeight(), golden.getHeight()), render.getConfig());
@@ -347,14 +387,188 @@ public class RenderTestRule extends TestWatcher {
         int minWidth = Math.min(render.getWidth(), golden.getWidth());
         int minHeight = Math.min(render.getHeight(), golden.getHeight());
 
-        int diffPixelsCount =
-                comparePixels(render, golden, diff, mPixelDiffThreshold, 0, minWidth, 0, minHeight)
-                + compareSizes(diff, minWidth, maxWidth, minHeight, maxHeight);
+        DiffReport.Builder report =
+                comparePixels(render, golden, diff, mPixelDiffThreshold, 0, minWidth, 0, minHeight);
+        report.addPixelDiffCount(compareSizes(diff, minWidth, maxWidth, minHeight, maxHeight));
+        report.setID(id);
 
-        if (diffPixelsCount > 0) {
-            return Pair.create(ComparisonResult.MISMATCH, diff);
+        return Pair.create(report.build(), diff);
+    }
+
+    /**
+     * The class represents a read only copy of comparison result between one test rendered image
+     * and its golden image.
+     */
+    static class DiffReport {
+        // The maximum value difference in the red channel.
+        private final int mMaxRDiff;
+        // The maximum value difference in the green channel.
+        private final int mMaxGDiff;
+        // The maximum value difference in the blue channel.
+        private final int mMaxBDiff;
+        // The maximum value difference in the alpha channel.
+        private final int mMaxADiff;
+        // Only store first 20 pixel coordinates.
+        private final List<Pair<Integer, Integer>> mDiffPixelLocations = new ArrayList<>();
+        // The count of pixels being considered diff.
+        private final int mDiffPixelCount;
+        // The comparison result such as Match, Mismatch, and Golden_not_found.
+        private final ComparisonResult mResult;
+        // The ID used to identify the golden image.
+        private final String mID;
+        // The Match DiffReport with no ID associated to it.
+        private static final DiffReport MATCH_DIFF_REPORT =
+                new DiffReport("", 0, 0, 0, 0, null, 0, ComparisonResult.MATCH);
+        // The GoldenNotFound DiffReport with no ID associated to it.
+        private static final DiffReport GOLDEN_NOT_FOUND_DIFF_REPORT =
+                new DiffReport("", 0, 0, 0, 0, null, 0, ComparisonResult.GOLDEN_NOT_FOUND);
+        // The maximum number of entries in mDiffPixelCount
+        private static final int MAXIMUM_TOTAL_PIXEL_LOCATIONS = 20;
+
+        private DiffReport(String id, int rDiff, int gDiff, int bDiff, int aDiff,
+                List<Pair<Integer, Integer>> diffLocations, int diffPixelCount) {
+            this(id, rDiff, gDiff, bDiff, aDiff, diffLocations, diffPixelCount,
+                    ComparisonResult.MISMATCH);
         }
-        return Pair.create(ComparisonResult.MATCH, diff);
+
+        private DiffReport(String id, int rDiff, int gDiff, int bDiff, int aDiff,
+                List<Pair<Integer, Integer>> diffLocations, int diffPixelCount,
+                ComparisonResult result) {
+            mID = id;
+            mMaxRDiff = rDiff;
+            mMaxGDiff = gDiff;
+            mMaxBDiff = bDiff;
+            mMaxADiff = aDiff;
+            if (diffLocations != null) {
+                for (Pair<Integer, Integer> loc : diffLocations) {
+                    mDiffPixelLocations.add(loc);
+                    if (mDiffPixelLocations.size() >= MAXIMUM_TOTAL_PIXEL_LOCATIONS) {
+                        break;
+                    }
+                }
+            }
+            mDiffPixelCount = diffPixelCount;
+            switch (result) {
+                case MISMATCH:
+                    if (isMismatch()) {
+                        mResult = ComparisonResult.MISMATCH;
+                    } else {
+                        // If the isMismatch() check fails, it is a Match.
+                        mResult = ComparisonResult.MATCH;
+                    }
+                    break;
+                case MATCH:
+                case GOLDEN_NOT_FOUND:
+                    mResult = result;
+                    break;
+                default:
+                    mResult = ComparisonResult.MISMATCH;
+            }
+        }
+
+        static DiffReport newMatchDiffReport() {
+            return MATCH_DIFF_REPORT;
+        }
+
+        static DiffReport newGoldenNotFoundDiffReport() {
+            return GOLDEN_NOT_FOUND_DIFF_REPORT;
+        }
+
+        /**
+         * Retrieves a new Builder.
+         */
+        static DiffReport.Builder newBuilder() {
+            return new Builder();
+        }
+
+        /**
+         * Generates a string format of the DiffReport.
+         */
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("====DiffReport====\n");
+            sb.append(String.format(Locale.getDefault(), "id : %s\n", mID));
+            sb.append(String.format(Locale.getDefault(),
+                    "There are %d pixels rendered differently.\n", mDiffPixelCount));
+            sb.append(String.format(Locale.getDefault(),
+                    "The maximum difference in RGBA channels are {R:%d, G:%d, B:%d, A:%d}\n",
+                    mMaxRDiff, mMaxGDiff, mMaxBDiff, mMaxADiff));
+            sb.append(String.format(Locale.getDefault(),
+                    "The different pixels are located at (limited to first %d entries):\n",
+                    MAXIMUM_TOTAL_PIXEL_LOCATIONS));
+            for (Pair<Integer, Integer> loc : mDiffPixelLocations) {
+                sb.append(String.format(Locale.getDefault(), "(%d, %d)\n", loc.first, loc.second));
+            }
+            sb.append("====End of DiffReport====\n");
+            return sb.toString();
+        }
+
+        boolean isMismatch() {
+            return mDiffPixelCount > 0;
+        }
+
+        ComparisonResult getResult() {
+            return mResult;
+        }
+
+        /**
+         * Allows constructing a new DiffReport with read-only properties.
+         */
+        static class Builder {
+            private int mMaxRedDiff;
+            private int mMaxGreenDiff;
+            private int mMaxBlueDiff;
+            private int mMaxAlphaDiff;
+            private int mDiffPixelCount;
+            private String mID;
+            private List<Pair<Integer, Integer>> mDiffPixelLocations = new ArrayList<>();
+
+            Builder setMaxRedDiff(int value) {
+                mMaxRedDiff = value;
+                return this;
+            }
+
+            Builder setMaxGreenDiff(int value) {
+                mMaxGreenDiff = value;
+                return this;
+            }
+
+            Builder setMaxBlueDiff(int value) {
+                mMaxBlueDiff = value;
+                return this;
+            }
+
+            Builder setMaxAlphaDiff(int value) {
+                mMaxAlphaDiff = value;
+                return this;
+            }
+
+            Builder addPixelLocation(Pair<Integer, Integer> loc) {
+                mDiffPixelLocations.add(loc);
+                return this;
+            }
+
+            Builder setPixelDiffCount(int count) {
+                mDiffPixelCount = count;
+                return this;
+            }
+
+            Builder addPixelDiffCount(int count) {
+                mDiffPixelCount += count;
+                return this;
+            }
+
+            Builder setID(String id) {
+                mID = id;
+                return this;
+            }
+
+            DiffReport build() {
+                return new DiffReport(mID, mMaxRedDiff, mMaxGreenDiff, mMaxBlueDiff, mMaxAlphaDiff,
+                        mDiffPixelLocations, mDiffPixelCount);
+            }
+        }
     }
 
     /**
@@ -380,10 +594,11 @@ public class RenderTestRule extends TestWatcher {
      *
      * @param endHeight End x-coord to start diffing the Bitmaps.
      *
-     * @return Returns number of pixels that differ between |goldenImage| and |testImage|
+     * @return Returns a DiffReport.Builder that is used to create a DiffReport.
      */
-    private static int comparePixels(Bitmap testImage, Bitmap goldenImage, Bitmap diffImage,
-            int diffThreshold, int startWidth, int endWidth, int startHeight, int endHeight) {
+    private static DiffReport.Builder comparePixels(Bitmap testImage, Bitmap goldenImage,
+            Bitmap diffImage, int diffThreshold, int startWidth, int endWidth, int startHeight,
+            int endHeight) {
         int diffPixels = 0;
 
         // Get copies of the pixels and compare using that instead of repeatedly calling getPixel,
@@ -394,6 +609,12 @@ public class RenderTestRule extends TestWatcher {
                 writeBitmapToArray(goldenImage, startWidth, startHeight, diffWidth, diffHeight);
         int[] testPixels =
                 writeBitmapToArray(testImage, startWidth, startHeight, diffWidth, diffHeight);
+
+        int maxRedDiff = 0;
+        int maxGreenDiff = 0;
+        int maxBlueDiff = 0;
+        int maxAlphaDiff = 0;
+        DiffReport.Builder builder = DiffReport.newBuilder();
 
         int diffArea = diffHeight * diffWidth;
         for (int i = 0; i < diffArea; ++i) {
@@ -406,13 +627,31 @@ public class RenderTestRule extends TestWatcher {
             int blueDiff = Math.abs(Color.blue(goldenColor) - Color.blue(testColor));
             int alphaDiff = Math.abs(Color.alpha(goldenColor) - Color.alpha(testColor));
 
+            if (redDiff > maxRedDiff) {
+                maxRedDiff = redDiff;
+            }
+            if (blueDiff > maxBlueDiff) {
+                maxBlueDiff = blueDiff;
+            }
+            if (greenDiff > maxGreenDiff) {
+                maxGreenDiff = greenDiff;
+            }
+            if (alphaDiff > maxAlphaDiff) {
+                maxAlphaDiff = alphaDiff;
+            }
+
             if (redDiff > diffThreshold || blueDiff > diffThreshold || greenDiff > diffThreshold
                     || alphaDiff > diffThreshold) {
+                builder.addPixelLocation(Pair.create(i % diffWidth, i / diffWidth));
                 diffPixels++;
                 diffImage.setPixel(i % diffWidth, i / diffWidth, Color.RED);
             }
         }
-        return diffPixels;
+        return builder.setMaxRedDiff(maxRedDiff)
+                .setMaxGreenDiff(maxGreenDiff)
+                .setMaxBlueDiff(maxBlueDiff)
+                .setMaxAlphaDiff(maxAlphaDiff)
+                .setPixelDiffCount(diffPixels);
     }
 
     /**

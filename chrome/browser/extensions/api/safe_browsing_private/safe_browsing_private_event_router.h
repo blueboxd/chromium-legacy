@@ -69,7 +69,16 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
   static const char kKeyReason[];
   static const char kKeyNetErrorCode[];
   static const char kKeyClickedThrough[];
-  static const char kKeyTriggeredRules[];
+  static const char kKeyTriggeredRuleId[];
+  static const char kKeyTriggeredRuleName[];
+  static const char kKeyTriggeredRuleResourceName[];
+  static const char kKeyTriggeredRuleSeverity[];
+  static const char kKeyTriggeredRuleAction[];
+  static const char kKeyMatchedDetectors[];
+  static const char kKeyMatchedDetectorId[];
+  static const char kKeyMatchedDetectorName[];
+  static const char kKeyMatchedDetectorType[];
+  static const char kKeyTriggeredRuleInfo[];
   static const char kKeyThreatType[];
   static const char kKeyContentType[];
   static const char kKeyContentSize[];

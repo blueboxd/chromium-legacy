@@ -65,10 +65,6 @@ const char kSqrtNumberOfPixelsHistogramId[] =
     "PageLoad.Clients.Ads.FrameCounts.AdFrames.PerFrame."
     "SqrtNumberOfPixels";
 
-const char kSmallestDimensionHistogramId[] =
-    "PageLoad.Clients.Ads.FrameCounts.AdFrames.PerFrame."
-    "SmallestDimension";
-
 const char kPeakWindowdPercentHistogramId[] =
     "PageLoad.Clients.Ads.Cpu.FullPage.PeakWindowedPercent";
 
@@ -476,9 +472,6 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest, FramePixelSize) {
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   histogram_tester.ExpectBucketCount(kSqrtNumberOfPixelsHistogramId, 100, 2);
   histogram_tester.ExpectBucketCount(kSqrtNumberOfPixelsHistogramId, 0, 1);
-  histogram_tester.ExpectBucketCount(kSmallestDimensionHistogramId, 0, 1);
-  histogram_tester.ExpectBucketCount(kSmallestDimensionHistogramId, 10, 1);
-  histogram_tester.ExpectBucketCount(kSmallestDimensionHistogramId, 100, 1);
 
   // Verify each UKM entry has a corresponding, unique size.
   auto entries =
@@ -519,14 +512,10 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
 
   // Navigate away to force the histogram recording.
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
-  histogram_tester.ExpectTotalCount(
-      "PageLoad.Clients.Ads.Visible.FrameCounts.AdFrames.PerFrame."
-      "SmallestDimension",
-      0);
   histogram_tester.ExpectUniqueSample(
-      "PageLoad.Clients.Ads.NonVisible.FrameCounts.AdFrames.PerFrame."
-      "SmallestDimension",
-      4, 1);
+      "PageLoad.Clients.Ads.Visible.FrameCounts.AdFrames.Total", 0, 1);
+  histogram_tester.ExpectUniqueSample(
+      "PageLoad.Clients.Ads.NonVisible.FrameCounts.AdFrames.Total", 1, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,

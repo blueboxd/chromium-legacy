@@ -4,6 +4,8 @@
 
 #include "services/network/quic_transport.h"
 
+#include "base/bind.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "net/base/io_buffer.h"
 #include "net/quic/platform/impl/quic_mem_slice_impl.h"
 #include "net/third_party/quiche/src/quic/core/quic_session.h"
@@ -40,6 +42,8 @@ QuicTransport::~QuicTransport() = default;
 
 void QuicTransport::SendDatagram(base::span<const uint8_t> data,
                                  base::OnceCallback<void(bool)> callback) {
+  DCHECK(!torn_down_);
+
   auto buffer = base::MakeRefCounted<net::IOBuffer>(data.size());
   memcpy(buffer->data(), data.data(), data.size());
   quic::QuicMemSlice slice(
@@ -50,6 +54,10 @@ void QuicTransport::SendDatagram(base::span<const uint8_t> data,
 }
 
 void QuicTransport::OnConnected() {
+  if (torn_down_) {
+    return;
+  }
+
   DCHECK(handshake_client_);
 
   handshake_client_->OnConnectionEstablished(
@@ -62,31 +70,51 @@ void QuicTransport::OnConnected() {
 }
 
 void QuicTransport::OnConnectionFailed() {
+  if (torn_down_) {
+    return;
+  }
+
   DCHECK(handshake_client_);
 
   handshake_client_->OnHandshakeFailed();
 
-  Dispose();
-  // |this| is deleted.
+  TearDown();
 }
 
 void QuicTransport::OnClosed() {
+  if (torn_down_) {
+    return;
+  }
+
   DCHECK(!handshake_client_);
 
-  Dispose();
-  // |this| is deleted.
+  TearDown();
 }
 
 void QuicTransport::OnError() {
+  if (torn_down_) {
+    return;
+  }
+
   DCHECK(!handshake_client_);
 
-  Dispose();
-  // |this| is deleted.
+  TearDown();
 }
 
 void QuicTransport::OnIncomingBidirectionalStreamAvailable() {}
 
 void QuicTransport::OnIncomingUnidirectionalStreamAvailable() {}
+
+void QuicTransport::TearDown() {
+  torn_down_ = true;
+  receiver_.reset();
+  handshake_client_.reset();
+  client_.reset();
+
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&QuicTransport::Dispose, weak_factory_.GetWeakPtr()));
+}
 
 void QuicTransport::Dispose() {
   context_->Remove(this);

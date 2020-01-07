@@ -149,8 +149,8 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   // Whether to drop the swap out ack of the previous RenderFrameHost during
   // cross-process navigations. By default this is false, set to true if you
   // want the old RenderFrameHost to be left in a pending swap out state.
-  void set_drop_swap_out_ack(bool drop_swap_out_ack) {
-    drop_swap_out_ack_ = drop_swap_out_ack;
+  void set_drop_unload_ack(bool drop_unload_ack) {
+    drop_unload_ack_ = drop_unload_ack;
   }
 
   // Whether to drop the BeforeUnloadACK of the current RenderFrameHost at the
@@ -238,9 +238,9 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   BuildDidCommitProvisionalLoadParams(bool same_document,
                                       bool failed_navigation);
 
-  // Simulate the UnloadACK in the old RenderFrameHost if it was swapped out at
-  // the commit time.
-  void SimulateSwapOutACKForPreviousFrameIfNeeded(
+  // Simulate the UnloadACK in the old RenderFrameHost if it was unloaded at the
+  // commit time.
+  void SimulateUnloadACKForPreviousFrameIfNeeded(
       RenderFrameHostImpl* previous_frame);
 
   enum State {
@@ -302,7 +302,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   int64_t post_id_ = -1;
 
   bool auto_advance_ = true;
-  bool drop_swap_out_ack_ = false;
+  bool drop_unload_ack_ = false;
   bool block_on_before_unload_ack_ = false;
   bool keep_loading_ = false;
 

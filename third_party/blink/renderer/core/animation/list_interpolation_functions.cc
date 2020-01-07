@@ -41,7 +41,7 @@ class UnderlyingItemValue : public UnderlyingValue {
         .Set(index_, std::move(interpolable_value));
   }
   const NonInterpolableValue* GetNonInterpolableValue() const final {
-    return ToNonInterpolableList(*underlying_list_.GetNonInterpolableValue())
+    return To<NonInterpolableList>(*underlying_list_.GetNonInterpolableValue())
         .Get(index_);
   }
   void SetNonInterpolableValue(
@@ -75,10 +75,10 @@ bool ListInterpolationFunctions::EqualValues(
   if (length == 0)
     return true;
 
-  const NonInterpolableList& non_interpolable_list_a =
-      ToNonInterpolableList(*a.non_interpolable_value);
-  const NonInterpolableList& non_interpolable_list_b =
-      ToNonInterpolableList(*b.non_interpolable_value);
+  const auto& non_interpolable_list_a =
+      To<NonInterpolableList>(*a.non_interpolable_value);
+  const auto& non_interpolable_list_b =
+      To<NonInterpolableList>(*b.non_interpolable_value);
 
   for (wtf_size_t i = 0; i < length; i++) {
     if (!equal_non_interpolable_values(non_interpolable_list_a.Get(i),
@@ -165,14 +165,14 @@ PairwiseInterpolationValue ListInterpolationFunctions::MaybeMergeSingles(
   auto& start_interpolable_list =
       To<InterpolableList>(*start.interpolable_value);
   auto& end_interpolable_list = To<InterpolableList>(*end.interpolable_value);
-  const NonInterpolableList& start_non_interpolable_list =
-      ToNonInterpolableList(*start.non_interpolable_value);
-  const NonInterpolableList& end_non_interpolable_list =
-      ToNonInterpolableList(*end.non_interpolable_value);
+  const auto& start_non_interpolable_list =
+      To<NonInterpolableList>(*start.non_interpolable_value);
+  const auto& end_non_interpolable_list =
+      To<NonInterpolableList>(*end.non_interpolable_value);
   const wtf_size_t start_non_interpolable_length =
-      ToNonInterpolableList(*start.non_interpolable_value).length();
+      To<NonInterpolableList>(*start.non_interpolable_value).length();
   const wtf_size_t end_non_interpolable_length =
-      ToNonInterpolableList(*end.non_interpolable_value).length();
+      To<NonInterpolableList>(*end.non_interpolable_value).length();
   for (wtf_size_t i = 0; i < final_length; i++) {
     if (length_matching_strategy ==
             LengthMatchingStrategy::kLowestCommonMultiple ||
@@ -225,8 +225,8 @@ PairwiseInterpolationValue ListInterpolationFunctions::MaybeMergeSingles(
 
 static void RepeatToLength(InterpolationValue& value, wtf_size_t length) {
   auto& interpolable_list = To<InterpolableList>(*value.interpolable_value);
-  const NonInterpolableList& non_interpolable_list =
-      ToNonInterpolableList(*value.non_interpolable_value);
+  const auto& non_interpolable_list =
+      To<NonInterpolableList>(*value.non_interpolable_value);
   wtf_size_t current_length = interpolable_list.length();
   DCHECK_GT(current_length, 0U);
   if (current_length == length)
@@ -253,13 +253,13 @@ static void RepeatToLength(InterpolationValue& value, wtf_size_t length) {
 static void PadToSameLength(InterpolationValue& value,
                             const InterpolationValue& length_value) {
   auto& interpolable_list = To<InterpolableList>(*value.interpolable_value);
-  const NonInterpolableList& non_interpolable_list =
-      ToNonInterpolableList(*value.non_interpolable_value);
+  const auto& non_interpolable_list =
+      To<NonInterpolableList>(*value.non_interpolable_value);
   const wtf_size_t current_length = interpolable_list.length();
   auto& target_interpolable_list =
       To<InterpolableList>(*length_value.interpolable_value);
-  const NonInterpolableList& target_non_interpolable_list =
-      ToNonInterpolableList(*length_value.non_interpolable_value);
+  const auto& target_non_interpolable_list =
+      To<NonInterpolableList>(*length_value.non_interpolable_value);
   const wtf_size_t target_length = target_interpolable_list.length();
   DCHECK_LT(current_length, target_length);
   auto new_interpolable_list =
@@ -382,10 +382,10 @@ void ListInterpolationFunctions::Composite(
     return;
   }
 
-  const NonInterpolableList& non_interpolable_list =
-      ToNonInterpolableList(*value.non_interpolable_value);
+  const auto& non_interpolable_list =
+      To<NonInterpolableList>(*value.non_interpolable_value);
   if (!NonInterpolableListsAreCompatible(
-          ToNonInterpolableList(
+          To<NonInterpolableList>(
               *underlying_value_owner.Value().non_interpolable_value),
           non_interpolable_list, final_length, length_matching_strategy,
           non_interpolable_values_are_compatible)) {
@@ -436,7 +436,7 @@ void ListInterpolationFunctions::Composite(
 NonInterpolableList::AutoBuilder::AutoBuilder(UnderlyingValue& underlying_value)
     : underlying_value_(underlying_value) {
   DCHECK(underlying_value.GetNonInterpolableValue());
-  DCHECK(IsNonInterpolableList(underlying_value_.GetNonInterpolableValue()));
+  DCHECK(IsA<NonInterpolableList>(underlying_value_.GetNonInterpolableValue()));
 }
 
 NonInterpolableList::AutoBuilder::~AutoBuilder() {
@@ -445,7 +445,7 @@ NonInterpolableList::AutoBuilder::~AutoBuilder() {
   if (!list_.size())
     return;
   const auto& non_interpolable_list =
-      ToNonInterpolableList(*underlying_value_.GetNonInterpolableValue());
+      To<NonInterpolableList>(*underlying_value_.GetNonInterpolableValue());
   DCHECK_EQ(non_interpolable_list.length(), list_.size());
   underlying_value_.SetNonInterpolableValue(
       NonInterpolableList::Create(std::move(list_)));
@@ -457,7 +457,7 @@ void NonInterpolableList::AutoBuilder::Set(
   // Copy list on first call to Set.
   if (!list_.size()) {
     const auto& non_interpolable_list =
-        ToNonInterpolableList(*underlying_value_.GetNonInterpolableValue());
+        To<NonInterpolableList>(*underlying_value_.GetNonInterpolableValue());
     wtf_size_t underlying_length = non_interpolable_list.length();
     for (wtf_size_t i = 0; i < underlying_length; ++i)
       list_.push_back(non_interpolable_list.Get(i));

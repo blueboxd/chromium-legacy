@@ -23,7 +23,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -229,8 +228,7 @@ public class TabListCoordinator implements Destroyable {
         // TODO(crbug.com/1004570) : Support drag and drop, and swipe to dismiss when
         // CLOSE_TAB_SUGGESTIONS is enabled.
         if ((mMode == TabListMode.GRID || mMode == TabListMode.LIST)
-                && selectionDelegateProvider == null
-                && !ChromeFeatureList.isEnabled(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS)) {
+                && selectionDelegateProvider == null) {
             ItemTouchHelper touchHelper = new ItemTouchHelper(mMediator.getItemTouchHelperCallback(
                     context.getResources().getDimension(R.dimen.swipe_to_dismiss_threshold),
                     context.getResources().getDimension(R.dimen.tab_grid_merge_threshold),

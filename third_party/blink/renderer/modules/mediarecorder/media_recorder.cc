@@ -389,13 +389,21 @@ void MediaRecorder::OnError(const String& message) {
   ScheduleDispatchEvent(Event::Create(event_type_names::kError));
 }
 
+void MediaRecorder::OnAllTracksEnded() {
+  StopRecording();
+}
+
 void MediaRecorder::CreateBlobEvent(Blob* blob, double timecode) {
   ScheduleDispatchEvent(MakeGarbageCollected<BlobEvent>(
       event_type_names::kDataavailable, blob, timecode));
 }
 
 void MediaRecorder::StopRecording() {
-  DCHECK(state_ != State::kInactive);
+  if (state_ == State::kInactive) {
+    // This may happen if all tracks have ended and recording has stopped or
+    // never started.
+    return;
+  }
   state_ = State::kInactive;
 
   recorder_handler_->Stop();

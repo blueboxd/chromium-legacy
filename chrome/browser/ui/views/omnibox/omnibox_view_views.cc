@@ -232,9 +232,7 @@ void OmniboxViewViews::Init() {
   if (location_bar_view_) {
     // Initialize the popup view using the same font.
     popup_view_.reset(
-        new OmniboxPopupContentsView(this, model(), location_bar_view_,
-                                     &ThemeService::GetThemeProviderForProfile(
-                                         location_bar_view_->profile())));
+        new OmniboxPopupContentsView(this, model(), location_bar_view_));
   }
 
   // Override the default FocusableBorder from Textfield, since the
@@ -883,13 +881,20 @@ void OmniboxViewViews::ClearAccessibilityLabel() {
 
 void OmniboxViewViews::SetAccessibilityLabel(const base::string16& display_text,
                                              const AutocompleteMatch& match) {
-  bool is_tab_switch_button_focused =
-      model()->popup_model()->selected_line_state() ==
-      OmniboxPopupModel::BUTTON_FOCUSED;
-  friendly_suggestion_text_ = AutocompleteMatchType::ToAccessibilityLabel(
-      match, display_text, model()->popup_model()->selected_line(),
-      model()->result().size(), is_tab_switch_button_focused,
-      &friendly_suggestion_text_prefix_length_);
+  size_t selected_line = model()->popup_model()->selected_line();
+  if (selected_line != OmniboxPopupModel::kNoMatch && popup_view_) {
+    // Although it feels bad to ask a whole different view for the accessibility
+    // text, only the OmniboxResultView knows which secondary button is shown.
+    OmniboxResultView* result_view = popup_view_->result_view_at(selected_line);
+    friendly_suggestion_text_ =
+        result_view->ToAccessibilityLabelWithSecondaryButton(
+            display_text, model()->result().size(),
+            &friendly_suggestion_text_prefix_length_);
+  } else {
+    friendly_suggestion_text_ = AutocompleteMatchType::ToAccessibilityLabel(
+        match, display_text, selected_line, model()->result().size(), 0,
+        &friendly_suggestion_text_prefix_length_);
+  }
 
 #if defined(OS_MACOSX)
   // On macOS, the text field value changed notification is not

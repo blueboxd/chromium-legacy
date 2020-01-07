@@ -32,7 +32,6 @@ source_set("popup") {
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/ntp:util",
     "//ios/chrome/browser/ui/omnibox:omnibox_util",
-    "//ios/chrome/browser/ui/omnibox/popup/shortcuts",
     "//ios/chrome/browser/ui/toolbar/buttons",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/toolbar/public:feature_flags",

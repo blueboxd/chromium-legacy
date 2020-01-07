@@ -73,6 +73,7 @@ class ExtensionUpdater;
 class ExternalInstallManager;
 class SharedModuleService;
 class UpdateObserver;
+enum class UnloadedExtensionReason;
 
 // This is an interface class to encapsulate the dependencies that
 // various classes have on ExtensionService. This allows easy mocking.

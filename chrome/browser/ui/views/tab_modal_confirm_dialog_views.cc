@@ -48,8 +48,11 @@ TabModalConfirmDialogViews::TabModalConfirmDialogViews(
   message_box_view_ = new views::MessageBoxView(init_params);
 
   base::string16 link_text(delegate_->GetLinkText());
-  if (!link_text.empty())
-    message_box_view_->SetLink(link_text, this);
+  if (!link_text.empty()) {
+    message_box_view_->SetLink(
+        link_text, base::BindRepeating(&TabModalConfirmDialogViews::LinkClicked,
+                                       base::Unretained(this)));
+  }
 
   constrained_window::ShowWebModalDialogViews(this, web_contents);
   delegate_->set_close_delegate(this);

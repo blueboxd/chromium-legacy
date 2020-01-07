@@ -32,10 +32,6 @@
 
 namespace blink {
 
-TouchEventContext* TouchEventContext::Create() {
-  return MakeGarbageCollected<TouchEventContext>();
-}
-
 TouchEventContext::TouchEventContext()
     : touches_(TouchList::Create()),
       target_touches_(TouchList::Create()),

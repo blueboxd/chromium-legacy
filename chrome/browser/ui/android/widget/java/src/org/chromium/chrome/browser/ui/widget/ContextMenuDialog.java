@@ -20,7 +20,7 @@ import android.view.animation.Animation.AnimationListener;
 import android.view.animation.ScaleAnimation;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
+import org.chromium.components.browser_ui.widget.animation.Interpolators;
 
 /**
  * ContextMenuDialog is a subclass of AlwaysDismissedDialog that ensures that the proper scale

@@ -48,6 +48,7 @@
 #include "media/base/key_system_names.h"
 #include "media/base/media_switches.h"
 #include "net/http/http_util.h"
+#include "services/network/public/cpp/features.h"
 #include "services/service_manager/sandbox/fuchsia/sandbox_policy_fuchsia.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 #include "ui/gfx/switches.h"
@@ -472,6 +473,11 @@ void ContextProviderImpl::Create(
     // TODO(crbug.com/1023510): Pass the rest of the list to the Context
     // process.
   }
+
+  // TODO(crbug.com/1039788): Re-enable OutOfBlinkCors when custom HTTP header
+  // preflight validation errors are fixed.
+  launch_command.AppendSwitchASCII("disable-features",
+                                   network::features::kOutOfBlinkCors.name);
 
   if (launch_for_test_)
     launch_for_test_.Run(launch_command, launch_options);

@@ -757,8 +757,8 @@ void PrerenderManager::MaybePreconnect(Origin origin,
     return;
   }
 
-  auto* loading_predictor = predictors::LoadingPredictorFactory::GetForProfile(
-      Profile::FromBrowserContext(profile_));
+  auto* loading_predictor =
+      predictors::LoadingPredictorFactory::GetForProfile(profile_);
   if (loading_predictor) {
     loading_predictor->PrepareForPageLoad(
         url_arg, predictors::HintOrigin::OMNIBOX_PRERENDER_FALLBACK, true);

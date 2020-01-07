@@ -26,7 +26,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.payments.SettingsAutofillAndPaymentsObserver;
 import org.chromium.chrome.browser.settings.MainPreferences;
-import org.chromium.chrome.browser.widget.ChromeTextInputLayout;
+import org.chromium.components.browser_ui.widget.text.ChromeTextInputLayout;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;

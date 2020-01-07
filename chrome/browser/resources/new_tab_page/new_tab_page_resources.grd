@@ -32,12 +32,16 @@
           use_base_dir="false" type="BINDATA" compress="gzip" />
       <include name="IDR_NEW_TAB_PAGE_BRUSH_ICON_SVG"
           file="icons/brush.svg" type="BINDATA" compress="gzip" />
+      <include name="IDR_NEW_TAB_PAGE_PENCIL_ICON_SVG"
+          file="icons/icon_pencil.svg" type="BINDATA" compress="gzip" />
     </includes>
     <structures>
       <structure name="IDR_NEW_TAB_PAGE_NEW_TAB_PAGE_HTML"
           file="new_tab_page.html" type="chrome_html" compress="gzip" />
       <structure name="IDR_NEW_TAB_PAGE_BROWSER_PROXY_JS"
           file="browser_proxy.js" type="chrome_html" compress="gzip" />
+      <structure name="IDR_NEW_TAB_PAGE_UTILS_JS"
+          file="utils.js" type="chrome_html" compress="gzip" />
     </structures>
   </release>
 </grit>

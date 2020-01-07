@@ -113,14 +113,13 @@ class PLATFORM_EXPORT ResourceLoader final
   // A failed load is indicated by 1 DidFail(), which can occur at any time
   // before DidFinishLoading(), including synchronous inside one of the other
   // callbacks via ResourceLoader::cancel()
-  bool WillFollowRedirect(
-      const WebURL& new_url,
-      const WebURL& new_site_for_cookies,
-      const WebString& new_referrer,
-      network::mojom::ReferrerPolicy new_referrer_policy,
-      const WebString& new_method,
-      const WebURLResponse& passed_redirect_response,
-      bool& report_raw_headers) override;
+  bool WillFollowRedirect(const WebURL& new_url,
+                          const net::SiteForCookies& new_site_for_cookies,
+                          const WebString& new_referrer,
+                          network::mojom::ReferrerPolicy new_referrer_policy,
+                          const WebString& new_method,
+                          const WebURLResponse& passed_redirect_response,
+                          bool& report_raw_headers) override;
   void DidSendData(uint64_t bytes_sent,
                    uint64_t total_bytes_to_be_sent) override;
   void DidReceiveResponse(const WebURLResponse&) override;

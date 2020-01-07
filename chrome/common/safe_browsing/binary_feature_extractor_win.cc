@@ -14,7 +14,7 @@
 #include "base/logging.h"
 #include "base/threading/scoped_thread_priority.h"
 #include "chrome/common/safe_browsing/pe_image_reader_win.h"
-#include "components/safe_browsing/proto/csd.pb.h"
+#include "components/safe_browsing/core/proto/csd.pb.h"
 
 namespace safe_browsing {
 

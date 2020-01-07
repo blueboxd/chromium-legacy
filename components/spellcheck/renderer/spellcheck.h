@@ -53,14 +53,20 @@ class DictionaryUpdateObserver {
 class SpellCheck : public base::SupportsWeakPtr<SpellCheck>,
                    public spellcheck::mojom::SpellChecker {
  public:
-  using RendererTextCheckCallback =
-      base::OnceCallback<void(std::vector<SpellCheckResult>)>;
-
   // TODO(groby): I wonder if this can be private, non-mac only.
   class SpellcheckRequest;
   enum ResultFilter {
-    DO_NOT_MODIFY = 1,  // Do not modify results.
-    USE_NATIVE_CHECKER,  // Use native checker to double-check.
+    // Do not modify results.
+    DO_NOT_MODIFY = 1,
+    // Use Hunspell to double-check the results from the spelling service
+    // (enhanced spell check). If Hunspell doesn't find a mistake, it most
+    // likely means it was a grammar mistake, not a spelling mistake.
+    USE_HUNSPELL_FOR_GRAMMAR,
+    // Use Hunspell to double-check the results from the native spell checker
+    // for locales that it doesn't support. If Hunspell doesn't find a mistake,
+    // it means the misspelling was a false positive, since the word is
+    // correctly spelled in at least one locale.
+    USE_HUNSPELL_FOR_HYBRID_CHECK,
   };
 
   explicit SpellCheck(
@@ -120,14 +126,6 @@ class SpellCheck : public base::SupportsWeakPtr<SpellCheck>,
                       size_t* misspelling_len,
                       std::nullptr_t null_suggestions_ptr);
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-  // Like SpellCheckParagraph, but only checks languages that the native checker
-  // can't handle.
-  // This method uses non-blink classes for the spellcheck results.
-  void HybridSpellCheckParagraph(const base::string16& text,
-                                 RendererTextCheckCallback callback);
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-
 #if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
   // SpellCheck a paragraph.
   // Returns true if |text| is correctly spelled, false otherwise.
@@ -175,6 +173,7 @@ class SpellCheck : public base::SupportsWeakPtr<SpellCheck>,
 
  private:
    friend class SpellCheckTest;
+   friend class FakeSpellCheck;
    FRIEND_TEST_ALL_PREFIXES(SpellCheckTest, GetAutoCorrectionWord_EN_US);
    FRIEND_TEST_ALL_PREFIXES(SpellCheckTest,
        RequestSpellCheckMultipleTimesWithoutInitialization);

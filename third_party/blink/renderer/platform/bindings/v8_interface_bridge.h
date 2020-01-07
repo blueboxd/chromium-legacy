@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V8_INTERFACE_BRIDGE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V8_INTERFACE_BRIDGE_H_
 
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "v8/include/v8.h"
@@ -46,7 +48,12 @@ class PLATFORM_EXPORT V8InterfaceBridgeBase {
 };
 
 template <class V8T, class T>
-class V8InterfaceBridge : public V8InterfaceBridgeBase {};
+class V8InterfaceBridge : public V8InterfaceBridgeBase {
+ public:
+  static T* ToBlinkUnsafe(v8::Local<v8::Object> receiver) {
+    return ToScriptWrappable(receiver)->ToImpl<T>();
+  }
+};
 
 }  // namespace bindings
 

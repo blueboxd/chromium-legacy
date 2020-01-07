@@ -68,6 +68,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/gesture_event_details.h"
+#include "ui/message_center/message_center.h"
 #include "ui/views/border.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -418,6 +419,7 @@ void ShelfLayoutManager::InitObservers() {
   shelf_background_type_ = GetShelfBackgroundType();
   wallpaper_controller_observer_.Add(shell->wallpaper_controller());
   display::Screen::GetScreen()->AddObserver(this);
+  message_center::MessageCenter::Get()->AddObserver(this);
 
   // DesksController could be null when virtual desks feature is not enabled.
   if (DesksController::Get())
@@ -436,6 +438,8 @@ void ShelfLayoutManager::PrepareForShutdown() {
 
   SplitViewController::Get(shelf_widget_->GetNativeWindow())
       ->RemoveObserver(this);
+
+  message_center::MessageCenter::Get()->RemoveObserver(this);
 }
 
 bool ShelfLayoutManager::IsVisible() const {
@@ -1110,6 +1114,22 @@ int ShelfLayoutManager::CalculateHotseatYInShelf(
 ShelfLayoutManager::TargetBounds::TargetBounds() : opacity(0.0f) {}
 
 ShelfLayoutManager::TargetBounds::~TargetBounds() = default;
+
+void ShelfLayoutManager::OnCenterVisibilityChanged(
+    message_center::Visibility visibility) {
+  if (!chromeos::switches::ShouldShowShelfHotseat())
+    return;
+
+  if (visibility != message_center::VISIBILITY_MESSAGE_CENTER ||
+      hotseat_state() != HotseatState::kExtended) {
+    return;
+  }
+
+  // Hides the hotseat when the hotseat is in kExtended mode and the system
+  // tray shows.
+  base::AutoReset<bool> reset(&should_hide_hotseat_, true);
+  UpdateVisibilityState();
+}
 
 void ShelfLayoutManager::SuspendWorkAreaUpdate() {
   ++suspend_work_area_update_;

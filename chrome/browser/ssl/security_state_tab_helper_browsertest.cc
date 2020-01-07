@@ -50,9 +50,9 @@
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/features.h"
-#include "components/safe_browsing/password_protection/metrics_util.h"
-#include "components/safe_browsing/proto/csd.pb.h"
+#include "components/safe_browsing/content/password_protection/metrics_util.h"
+#include "components/safe_browsing/core/features.h"
+#include "components/safe_browsing/core/proto/csd.pb.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/security_interstitials/content/ssl_blocking_page.h"
 #include "components/security_state/content/ssl_status_input_event_data.h"
@@ -1665,7 +1665,14 @@ IN_PROC_BROWSER_TEST_F(
 
   GURL mixed_content_url(https_server_.GetURL(replacement_path));
   ui_test_utils::NavigateToURL(browser(), mixed_content_url);
-  EXPECT_EQ(blink::SecurityStyle::kNeutral, observer.latest_security_style());
+
+  blink::SecurityStyle expected_mixed_content_security_style =
+      base::FeatureList::IsEnabled(
+          security_state::features::kPassiveMixedContentWarning)
+          ? blink::SecurityStyle::kInsecure
+          : blink::SecurityStyle::kNeutral;
+  EXPECT_EQ(expected_mixed_content_security_style,
+            observer.latest_security_style());
 
   const content::SecurityStyleExplanations& mixed_content_explanation =
       observer.latest_explanations();

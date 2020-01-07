@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/crypto.gni")
 import("//build/config/jumbo.gni")
 import("//testing/test.gni")
 
@@ -10,6 +11,13 @@ jumbo_component("cert_verifier") {
     "cert_net_fetcher_url_loader.cc",
     "cert_net_fetcher_url_loader.h",
   ]
+
+  if (use_nss_certs) {
+    sources += [
+      "nss_ocsp_session_url_loader.cc",
+      "nss_ocsp_session_url_loader.h",
+    ]
+  }
 
   deps = [
     "//base",
@@ -25,11 +33,15 @@ jumbo_component("cert_verifier") {
 source_set("tests") {
   testonly = true
 
+  sources = []
+
   if (!is_ios) {
     # Need TestServer
-    sources = [
-      "cert_net_fetcher_url_loader_unittest.cc",
-    ]
+    sources += [ "cert_net_fetcher_url_loader_unittest.cc" ]
+  }
+
+  if (use_nss_certs) {
+    sources += [ "nss_ocsp_session_url_loader_unittest.cc" ]
   }
 
   deps = [

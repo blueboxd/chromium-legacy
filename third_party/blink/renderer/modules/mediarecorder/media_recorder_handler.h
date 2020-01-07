@@ -109,6 +109,9 @@ class MODULES_EXPORT MediaRecorderHandler final
   // Updates |video_tracks_|,|audio_tracks_| and returns true if any changed.
   bool UpdateTracksAndCheckIfChanged();
 
+  // Stops recording if all sources are ended
+  void OnSourceReadyStateChanged();
+
   void OnVideoFrameForTesting(scoped_refptr<media::VideoFrame> frame,
                               const base::TimeTicks& timestamp);
   void OnEncodedVideoFrameForTesting(scoped_refptr<EncodedVideoFrame> frame,

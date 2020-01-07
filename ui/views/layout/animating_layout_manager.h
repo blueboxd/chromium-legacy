@@ -114,10 +114,6 @@ class VIEWS_EXPORT AnimatingLayoutManager : public LayoutManagerBase {
 
   bool is_animating() const { return is_animating_; }
 
-  const std::vector<base::OnceClosure>& delayed_actions_for_testing() {
-    return delayed_actions_;
-  }
-
   // Sets the owned (non-animating) layout manager which defines the target
   // layout that will be animated to when it changes. This layout manager can
   // only be set once.
@@ -165,8 +161,7 @@ class VIEWS_EXPORT AnimatingLayoutManager : public LayoutManagerBase {
   // check that those resources are still available and valid when it is run. If
   // the layout is not animating the action is posted immediately.
   // There is no guarantee that this action runs as the AnimatingLayoutManager
-  // may get torn down before the task is posted. There is also no guarantees
-  // that AnimatingLayoutManager is still alive when the task does finally run.
+  // may get torn down before the task runs.
   void PostOrQueueAction(base::OnceClosure action);
 
   // Returns a flex rule for the host view that will work in the vast majority
@@ -217,8 +212,12 @@ class VIEWS_EXPORT AnimatingLayoutManager : public LayoutManagerBase {
   // Notifies all observers that the animation state has changed.
   void NotifyIsAnimatingChanged();
 
-  // Posts all delayed actions. See PostOrQueueAction() for more information.
-  void PostDelayedActions();
+  // Runs actions from earlier PostTask() calls.
+  void RunQueuedActions();
+
+  // Moves actions from |queued_actions_| to |actions_to_run_| and posts to
+  // RunDelayedTasks.
+  void PostQueuedActions();
 
   // Updates the current layout to |percent| interpolated between the starting
   // and target layouts.
@@ -305,7 +304,25 @@ class VIEWS_EXPORT AnimatingLayoutManager : public LayoutManagerBase {
 
   std::unique_ptr<AnimationDelegate> animation_delegate_;
   base::ObserverList<Observer, true> observers_;
-  std::vector<base::OnceClosure> delayed_actions_;
+
+  // Actions to be run as animations finish. This is split between queued
+  // actions and queued actions to be run as a result of a pending PostTask().
+  // This prevents a race condition where PostTask() would pick up queued
+  // actions from future delayed actions during animations that were added after
+  // PostTask() ran, even if the layout is animating.
+  // For example: PostTask() due to finished layout -> start layout animation ->
+  // queue action -> the posted task runs while still animating.
+  // Without this division of actions + actions to run PostTask would pick up
+  // the queued task even though it belonged to a later animation that hasn't
+  // yet finished.
+  std::vector<base::OnceClosure> queued_actions_;
+  std::vector<base::OnceClosure> queued_actions_to_run_;
+
+  // True when there's a pending PostTask() to RunQueuedActions(). Used to avoid
+  // scheduling redundant tasks.
+  bool run_queued_actions_is_pending_ = false;
+
+  base::WeakPtrFactory<AnimatingLayoutManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AnimatingLayoutManager);
 };

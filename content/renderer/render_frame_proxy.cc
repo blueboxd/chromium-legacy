@@ -89,20 +89,28 @@ RenderFrameProxy* RenderFrameProxy::CreateProxyToReplaceFrame(
       scope, proxy.get(), proxy->blink_interface_registry_.get(),
       proxy->GetRemoteAssociatedInterfaces());
 
-  bool parent_is_local =
-      !frame_to_replace->GetWebFrame()->Parent() ||
-      frame_to_replace->GetWebFrame()->Parent()->IsWebLocalFrame();
+  RenderWidget* ancestor_widget = nullptr;
+  bool parent_is_local = false;
 
-  // If frame_to_replace has a RenderFrameProxy parent, then its
-  // RenderWidget will be destroyed along with it, so the new
-  // RenderFrameProxy uses its parent's RenderWidget.
-  RenderWidget* widget =
-      parent_is_local
-          ? frame_to_replace->GetLocalRootRenderWidget()
-          : RenderFrameProxy::FromWebFrame(
-                frame_to_replace->GetWebFrame()->Parent()->ToWebRemoteFrame())
-                ->render_widget_;
-  proxy->Init(web_frame, frame_to_replace->render_view(), widget,
+  // A top level frame proxy doesn't have a RenderWidget pointer. The pointer
+  // is to an ancestor local frame's RenderWidget and there are no ancestors.
+  if (frame_to_replace->GetWebFrame()->Parent()) {
+    if (frame_to_replace->GetWebFrame()->Parent()->IsWebLocalFrame()) {
+      // If the frame was a local frame, get its local root's RenderWidget.
+      ancestor_widget = frame_to_replace->GetLocalRootRenderWidget();
+      parent_is_local = true;
+    } else {
+      // Otherwise, grab the pointer from the parent RenderFrameProxy, as
+      // it would already have the correct pointer. A proxy with a proxy child
+      // must be created before its child, so the first proxy in a descendant
+      // chain is either the root or has a local parent frame.
+      RenderFrameProxy* parent = RenderFrameProxy::FromWebFrame(
+          frame_to_replace->GetWebFrame()->Parent()->ToWebRemoteFrame());
+      ancestor_widget = parent->ancestor_render_widget_;
+    }
+  }
+
+  proxy->Init(web_frame, frame_to_replace->render_view(), ancestor_widget,
               parent_is_local);
   return proxy.release();
 }
@@ -127,7 +135,7 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
   std::unique_ptr<RenderFrameProxy> proxy(new RenderFrameProxy(routing_id));
   proxy->devtools_frame_token_ = devtools_frame_token;
   RenderViewImpl* render_view = nullptr;
-  RenderWidget* render_widget = nullptr;
+  RenderWidget* ancestor_widget = nullptr;
   blink::WebRemoteFrame* web_frame = nullptr;
 
   if (!parent) {
@@ -137,7 +145,7 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
         render_view->GetWebView(), proxy.get(),
         proxy->blink_interface_registry_.get(),
         proxy->GetRemoteAssociatedInterfaces(), opener);
-    render_widget = render_view->GetWidget();
+    // Root frame proxy has no ancestors to point to their RenderWidget.
   } else {
     // Create a frame under an existing parent. The parent is always expected
     // to be a RenderFrameProxy, because navigations initiated by local frames
@@ -151,10 +159,10 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
         proxy->GetRemoteAssociatedInterfaces(), opener);
     proxy->unique_name_ = replicated_state.unique_name;
     render_view = parent->render_view();
-    render_widget = parent->render_widget_;
+    ancestor_widget = parent->ancestor_render_widget_;
   }
 
-  proxy->Init(web_frame, render_view, render_widget, false);
+  proxy->Init(web_frame, render_view, ancestor_widget, false);
 
   // Initialize proxy's WebRemoteFrame with the security origin and other
   // replicated information.
@@ -173,8 +181,7 @@ RenderFrameProxy* RenderFrameProxy::CreateProxyForPortal(
     int proxy_routing_id,
     const base::UnguessableToken& devtools_frame_token,
     const blink::WebElement& portal_element) {
-  std::unique_ptr<RenderFrameProxy> proxy(
-      new RenderFrameProxy(proxy_routing_id));
+  auto proxy = base::WrapUnique(new RenderFrameProxy(proxy_routing_id));
   proxy->devtools_frame_token_ = devtools_frame_token;
   blink::WebRemoteFrame* web_frame = blink::WebRemoteFrame::CreateForPortal(
       blink::WebTreeScopeType::kDocument, proxy.get(),
@@ -214,9 +221,6 @@ RenderFrameProxy* RenderFrameProxy::FromWebFrame(
 RenderFrameProxy::RenderFrameProxy(int routing_id)
     : routing_id_(routing_id),
       provisional_frame_routing_id_(MSG_ROUTING_NONE),
-      web_frame_(nullptr),
-      render_view_(nullptr),
-      render_widget_(nullptr),
       // TODO(samans): Investigate if it is safe to delay creation of this
       // object until a FrameSinkId is provided.
       parent_local_surface_id_allocator_(
@@ -230,8 +234,8 @@ RenderFrameProxy::RenderFrameProxy(int routing_id)
 }
 
 RenderFrameProxy::~RenderFrameProxy() {
-  if (render_widget_)
-    render_widget_->UnregisterRenderFrameProxy(this);
+  if (ancestor_render_widget_)
+    ancestor_render_widget_->UnregisterRenderFrameProxy(this);
 
   CHECK(!web_frame_);
   RenderThread::Get()->RemoveRoute(routing_id_);
@@ -240,24 +244,24 @@ RenderFrameProxy::~RenderFrameProxy() {
 
 void RenderFrameProxy::Init(blink::WebRemoteFrame* web_frame,
                             RenderViewImpl* render_view,
-                            RenderWidget* render_widget,
+                            RenderWidget* ancestor_widget,
                             bool parent_is_local) {
   CHECK(web_frame);
   CHECK(render_view);
 
   web_frame_ = web_frame;
   render_view_ = render_view;
-  render_widget_ = render_widget;
+  ancestor_render_widget_ = ancestor_widget;
 
-  // |render_widget_| can be null if this is a proxy for a remote main frame, or
-  // a subframe of that proxy. We don't need to register as an observer [since
-  // the RenderWidget is undead/won't exist]. The observer is used to propagate
-  // VisualProperty changes down the frame/process hierarchy. Remote main frame
-  // proxies do not participate in this flow.
-  if (render_widget_) {
-    render_widget_->RegisterRenderFrameProxy(this);
+  // |ancestor_render_widget_| can be null if this is a proxy for a remote main
+  // frame, or a subframe of that proxy. We don't need to register as an
+  // observer [since there is no ancestor RenderWidget]. The observer is used to
+  // propagate VisualProperty changes down the frame/process hierarchy. Remote
+  // main frame proxies do not participate in this flow.
+  if (ancestor_render_widget_) {
+    ancestor_render_widget_->RegisterRenderFrameProxy(this);
     pending_visual_properties_.screen_info =
-        render_widget_->GetOriginalScreenInfo();
+        ancestor_render_widget_->GetOriginalScreenInfo();
   }
 
   std::pair<FrameProxyMap::iterator, bool> result =
@@ -276,6 +280,8 @@ void RenderFrameProxy::ResendVisualProperties() {
 }
 
 void RenderFrameProxy::OnScreenInfoChanged(const ScreenInfo& screen_info) {
+  DCHECK(ancestor_render_widget_);
+
   pending_visual_properties_.screen_info = screen_info;
   if (crashed_) {
     // Update the sad page to match the current ScreenInfo.
@@ -287,12 +293,16 @@ void RenderFrameProxy::OnScreenInfoChanged(const ScreenInfo& screen_info) {
 }
 
 void RenderFrameProxy::OnZoomLevelChanged(double zoom_level) {
+  DCHECK(ancestor_render_widget_);
+
   pending_visual_properties_.zoom_level = zoom_level;
   SynchronizeVisualProperties();
 }
 
 void RenderFrameProxy::OnPageScaleFactorChanged(float page_scale_factor,
                                                 bool is_pinch_gesture_active) {
+  DCHECK(ancestor_render_widget_);
+
   pending_visual_properties_.page_scale_factor = page_scale_factor;
   pending_visual_properties_.is_pinch_gesture_active = is_pinch_gesture_active;
   SynchronizeVisualProperties();
@@ -300,6 +310,8 @@ void RenderFrameProxy::OnPageScaleFactorChanged(float page_scale_factor,
 
 void RenderFrameProxy::UpdateCaptureSequenceNumber(
     uint32_t capture_sequence_number) {
+  DCHECK(ancestor_render_widget_);
+
   pending_visual_properties_.capture_sequence_number = capture_sequence_number;
   SynchronizeVisualProperties();
 }
@@ -554,6 +566,8 @@ void RenderFrameProxy::OnDidUpdateVisualProperties(
 
 void RenderFrameProxy::OnEnableAutoResize(const gfx::Size& min_size,
                                           const gfx::Size& max_size) {
+  DCHECK(ancestor_render_widget_);
+
   pending_visual_properties_.auto_resize_enabled = true;
   pending_visual_properties_.min_size_for_auto_resize = min_size;
   pending_visual_properties_.max_size_for_auto_resize = max_size;
@@ -561,11 +575,15 @@ void RenderFrameProxy::OnEnableAutoResize(const gfx::Size& min_size,
 }
 
 void RenderFrameProxy::OnDisableAutoResize() {
+  DCHECK(ancestor_render_widget_);
+
   pending_visual_properties_.auto_resize_enabled = false;
   SynchronizeVisualProperties();
 }
 
 void RenderFrameProxy::SynchronizeVisualProperties() {
+  DCHECK(ancestor_render_widget_);
+
   if (!frame_sink_id_.is_valid() || crashed_)
     return;
 
@@ -758,13 +776,13 @@ void RenderFrameProxy::Navigate(const blink::WebURLRequest& request,
 void RenderFrameProxy::FrameRectsChanged(
     const blink::WebRect& local_frame_rect,
     const blink::WebRect& screen_space_rect) {
+  DCHECK(ancestor_render_widget_);
+
   pending_visual_properties_.screen_space_rect = gfx::Rect(screen_space_rect);
   pending_visual_properties_.local_frame_size =
       gfx::Size(local_frame_rect.width, local_frame_rect.height);
-  if (render_widget_) {
-    pending_visual_properties_.screen_info =
-        render_widget_->GetOriginalScreenInfo();
-  }
+  pending_visual_properties_.screen_info =
+      ancestor_render_widget_->GetOriginalScreenInfo();
   if (crashed_) {
     // Update the sad page to match the current size.
     compositing_helper_->ChildFrameGone(local_frame_size(),
@@ -776,6 +794,8 @@ void RenderFrameProxy::FrameRectsChanged(
 
 void RenderFrameProxy::UpdateRemoteViewportIntersection(
     const blink::ViewportIntersectionState& intersection_state) {
+  DCHECK(ancestor_render_widget_);
+
   // If the remote viewport intersection has changed, then we should check if
   // the compositing rect has also changed: if it has, then we should update the
   // visible properties.

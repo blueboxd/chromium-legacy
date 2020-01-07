@@ -5,8 +5,6 @@
 package org.chromium.chrome.test.util;
 
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.EditText;
 
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.RenderTestRule;
@@ -53,17 +51,6 @@ public class ChromeRenderTestRule extends RenderTestRule {
      * example it will disable the blinking cursor in EditTexts.
      */
     public static void sanitize(View view) {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            // Add more sanitizations as we discover more flaky attributes.
-            if (view instanceof ViewGroup) {
-                ViewGroup viewGroup = (ViewGroup) view;
-                for (int i = 0; i < viewGroup.getChildCount(); i++) {
-                    sanitize(viewGroup.getChildAt(i));
-                }
-            } else if (view instanceof EditText) {
-                EditText editText = (EditText) view;
-                editText.setCursorVisible(false);
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> RenderTestRule.sanitize(view));
     }
 }

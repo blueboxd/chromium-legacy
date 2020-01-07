@@ -19,9 +19,9 @@
 #include "base/android/jni_android.h"
 #include "base/bind.h"
 #include "base/task/post_task.h"
-#include "components/safe_browsing/db/database_manager.h"
-#include "components/safe_browsing/db/v4_protocol_manager_util.h"
-#include "components/safe_browsing/web_ui/constants.h"
+#include "components/safe_browsing/core/db/database_manager.h"
+#include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
+#include "components/safe_browsing/core/web_ui/constants.h"
 #include "components/security_interstitials/content/unsafe_resource.h"
 #include "components/security_interstitials/core/urls.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -70,7 +70,6 @@ bool AwUrlCheckerDelegateImpl::IsUrlWhitelisted(const GURL& url) {
 }
 
 bool AwUrlCheckerDelegateImpl::ShouldSkipRequestCheck(
-    content::ResourceContext* resource_context,
     const GURL& original_url,
     int frame_tree_node_id,
     int render_process_id,

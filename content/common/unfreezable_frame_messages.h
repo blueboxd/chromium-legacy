@@ -20,9 +20,9 @@
 
 #define IPC_MESSAGE_START UnfreezableFrameMsgStart
 
-// Swap this RenderFrame out so the frame can navigate to a document rendered by
-// a different process.
-IPC_MESSAGE_ROUTED3(UnfreezableFrameMsg_SwapOut,
+// Unload this RenderFrame and potentially replace it by a RenderFrameProxy, so
+// the frame can navigate to a document rendered by a different process.
+IPC_MESSAGE_ROUTED3(UnfreezableFrameMsg_Unload,
                     int /* proxy_routing_id */,
                     bool /* is_loading */,
                     content::FrameReplicationState /* replication_state */)

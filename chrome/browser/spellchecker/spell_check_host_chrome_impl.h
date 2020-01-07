@@ -82,15 +82,7 @@ class SpellCheckHostChromeImpl : public SpellCheckHostImpl {
   void GetPerLanguageSuggestions(
       const base::string16& word,
       GetPerLanguageSuggestionsCallback callback) override;
-  void RequestPartialTextCheck(
-      const base::string16& text,
-      int route_id,
-      const std::vector<SpellCheckResult>& partial_results,
-      bool fill_suggestions,
-      RequestPartialTextCheckCallback callback) override;
 #endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-
-  void QueueRequest(std::unique_ptr<SpellingRequest> request);
 
   // Clears a finished request from |requests_|. Exposed to SpellingRequest.
   void OnRequestFinished(SpellingRequest* request);

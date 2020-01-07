@@ -117,6 +117,12 @@
 }
 
 - (void)windowDidResignKey:(NSNotification*)notification {
+  // If our app is still active and we're still the key window, ignore this
+  // message, since it just means that a menu extra (on the "system status bar")
+  // was activated; we'll get another |-windowDidResignKey| if we ever really
+  // lose key window status.
+  if ([NSApp isActive] && ([NSApp keyWindow] == notification.object))
+    return;
   _parent->OnWindowKeyStatusChangedTo(false);
 }
 

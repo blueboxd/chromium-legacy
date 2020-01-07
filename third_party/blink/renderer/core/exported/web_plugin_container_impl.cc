@@ -103,6 +103,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scroll_hit_test_display_item.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -442,8 +443,8 @@ void WebPluginContainerImpl::DispatchProgressEvent(const WebString& type,
   if (url.IsEmpty()) {
     event = ProgressEvent::Create(type, length_computable, loaded, total);
   } else {
-    event = ResourceProgressEvent::Create(type, length_computable, loaded,
-                                          total, url);
+    event = MakeGarbageCollected<ResourceProgressEvent>(type, length_computable,
+                                                        loaded, total, url);
   }
   element_->DispatchEvent(*event);
 }

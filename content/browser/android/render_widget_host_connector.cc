@@ -35,11 +35,14 @@ class RenderWidgetHostConnector::Observer
   void RenderWidgetHostViewDestroyed(
       RenderWidgetHostViewAndroid* rwhva) override;
 
+  void DestroyEarly();
   void UpdateRenderWidgetHostView(RenderWidgetHostViewAndroid* new_rwhva);
   RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid() const;
   RenderWidgetHostViewAndroid* active_rwhva() const { return active_rwhva_; }
 
  private:
+  void DoDestroy(WebContentsAndroid* web_contents_android);
+
   RenderWidgetHostConnector* const connector_;
 
   // Active RenderWidgetHostView connected to this instance. Can also point to
@@ -93,6 +96,16 @@ void RenderWidgetHostConnector::Observer::DidDetachInterstitialPage() {
 }
 
 void RenderWidgetHostConnector::Observer::WebContentsAndroidDestroyed(
+    WebContentsAndroid* web_contents_android) {
+  DoDestroy(web_contents_android);
+}
+
+void RenderWidgetHostConnector::Observer::DestroyEarly() {
+  DoDestroy(
+      static_cast<WebContentsImpl*>(web_contents())->GetWebContentsAndroid());
+}
+
+void RenderWidgetHostConnector::Observer::DoDestroy(
     WebContentsAndroid* web_contents_android) {
   web_contents_android->RemoveDestructionObserver(this);
   DCHECK_EQ(active_rwhva_, GetRenderWidgetHostViewAndroid());
@@ -151,6 +164,10 @@ RenderWidgetHostConnector::~RenderWidgetHostConnector() {}
 RenderWidgetHostViewAndroid* RenderWidgetHostConnector::GetRWHVAForTesting()
     const {
   return render_widget_observer_->active_rwhva();
+}
+
+void RenderWidgetHostConnector::DestroyEarly() {
+  render_widget_observer_->DestroyEarly();
 }
 
 WebContents* RenderWidgetHostConnector::web_contents() const {

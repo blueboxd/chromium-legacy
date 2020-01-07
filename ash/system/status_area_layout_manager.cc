@@ -24,7 +24,7 @@ StatusAreaLayoutManager::~StatusAreaLayoutManager() = default;
 // StatusAreaLayoutManager, aura::LayoutManager implementation:
 
 void StatusAreaLayoutManager::OnWindowResized() {
-  LayoutStatusArea();
+  LayoutStatusArea(/*animate=*/false);
 }
 
 void StatusAreaLayoutManager::SetChildBounds(
@@ -50,21 +50,19 @@ void StatusAreaLayoutManager::SetChildBounds(
     return;
 
   WmDefaultLayoutManager::SetChildBounds(child, requested_bounds);
-  LayoutStatusArea();
+  LayoutStatusArea(/*animate=*/true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // StatusAreaLayoutManager, private:
 
-void StatusAreaLayoutManager::LayoutStatusArea() {
+void StatusAreaLayoutManager::LayoutStatusArea(bool animate) {
   // Shelf layout manager may be already doing layout.
   if (shelf_widget_->shelf_layout_manager()->updating_bounds())
     return;
 
   base::AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
-  // TODO(manucornet): This should be animated, but that breaks
-  // |LoginCursorTest|.
-  shelf_widget_->shelf_layout_manager()->LayoutShelf();
+  shelf_widget_->shelf_layout_manager()->LayoutShelf(animate);
 }
 
 }  // namespace ash

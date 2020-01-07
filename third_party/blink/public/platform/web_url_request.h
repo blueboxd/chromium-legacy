@@ -51,6 +51,10 @@ enum class RequestDestination : int32_t;
 }  // namespace mojom
 }  // namespace network
 
+namespace net {
+class SiteForCookies;
+}  // namespace net
+
 namespace blink {
 
 namespace mojom {
@@ -180,8 +184,8 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT void SetUrl(const WebURL&);
 
   // Used to implement third-party cookie blocking.
-  BLINK_PLATFORM_EXPORT WebURL SiteForCookies() const;
-  BLINK_PLATFORM_EXPORT void SetSiteForCookies(const WebURL&);
+  BLINK_PLATFORM_EXPORT const net::SiteForCookies& SiteForCookies() const;
+  BLINK_PLATFORM_EXPORT void SetSiteForCookies(const net::SiteForCookies&);
 
   BLINK_PLATFORM_EXPORT base::Optional<WebSecurityOrigin> TopFrameOrigin()
       const;

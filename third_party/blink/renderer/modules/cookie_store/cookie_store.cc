@@ -160,14 +160,14 @@ const KURL& DefaultCookieURL(ExecutionContext* execution_context) {
   return scope->Url();
 }
 
-KURL DefaultSiteForCookies(ExecutionContext* execution_context) {
+net::SiteForCookies DefaultSiteForCookies(ExecutionContext* execution_context) {
   DCHECK(execution_context);
 
   if (auto* document = DynamicTo<Document>(execution_context))
     return document->SiteForCookies();
 
   auto* scope = To<ServiceWorkerGlobalScope>(execution_context);
-  return scope->Url();
+  return net::SiteForCookies::FromUrl(scope->Url());
 }
 
 scoped_refptr<SecurityOrigin> DefaultTopFrameOrigin(

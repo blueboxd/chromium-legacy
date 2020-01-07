@@ -314,14 +314,14 @@ TEST(ListInterpolationFunctionsTest,
 
 TEST(ListInterpolationFunctionsTest, BuilderNoModify) {
   auto list = CreateNonInterpolableList({1, 2, 3});
-  auto& before = ToNonInterpolableList(*list.non_interpolable_value);
+  auto& before = To<NonInterpolableList>(*list.non_interpolable_value);
 
   {
     TestUnderlyingValue underlying_value(list);
     NonInterpolableList::AutoBuilder builder(underlying_value);
   }
 
-  auto& after = ToNonInterpolableList(*list.non_interpolable_value);
+  auto& after = To<NonInterpolableList>(*list.non_interpolable_value);
 
   EXPECT_EQ(&before, &after);
   ASSERT_EQ(3u, before.length());
@@ -332,7 +332,7 @@ TEST(ListInterpolationFunctionsTest, BuilderNoModify) {
 
 TEST(ListInterpolationFunctionsTest, BuilderModifyFirst) {
   auto list = CreateNonInterpolableList({1, 2, 3});
-  auto& before = ToNonInterpolableList(*list.non_interpolable_value);
+  auto& before = To<NonInterpolableList>(*list.non_interpolable_value);
 
   {
     TestUnderlyingValue underlying_value(list);
@@ -340,7 +340,7 @@ TEST(ListInterpolationFunctionsTest, BuilderModifyFirst) {
     builder.Set(0, TestNonInterpolableValue::Create(4));
   }
 
-  auto& after = ToNonInterpolableList(*list.non_interpolable_value);
+  auto& after = To<NonInterpolableList>(*list.non_interpolable_value);
 
   EXPECT_NE(&before, &after);
   ASSERT_EQ(3u, after.length());
@@ -351,7 +351,7 @@ TEST(ListInterpolationFunctionsTest, BuilderModifyFirst) {
 
 TEST(ListInterpolationFunctionsTest, BuilderModifyMiddle) {
   auto list = CreateNonInterpolableList({1, 2, 3});
-  auto& before = ToNonInterpolableList(*list.non_interpolable_value);
+  auto& before = To<NonInterpolableList>(*list.non_interpolable_value);
 
   {
     TestUnderlyingValue underlying_value(list);
@@ -359,7 +359,7 @@ TEST(ListInterpolationFunctionsTest, BuilderModifyMiddle) {
     builder.Set(1, TestNonInterpolableValue::Create(4));
   }
 
-  auto& after = ToNonInterpolableList(*list.non_interpolable_value);
+  auto& after = To<NonInterpolableList>(*list.non_interpolable_value);
 
   EXPECT_NE(&before, &after);
   ASSERT_EQ(3u, after.length());
@@ -370,7 +370,7 @@ TEST(ListInterpolationFunctionsTest, BuilderModifyMiddle) {
 
 TEST(ListInterpolationFunctionsTest, BuilderModifyLast) {
   auto list = CreateNonInterpolableList({1, 2, 3});
-  auto& before = ToNonInterpolableList(*list.non_interpolable_value);
+  auto& before = To<NonInterpolableList>(*list.non_interpolable_value);
 
   {
     TestUnderlyingValue underlying_value(list);
@@ -378,7 +378,7 @@ TEST(ListInterpolationFunctionsTest, BuilderModifyLast) {
     builder.Set(2, TestNonInterpolableValue::Create(4));
   }
 
-  auto& after = ToNonInterpolableList(*list.non_interpolable_value);
+  auto& after = To<NonInterpolableList>(*list.non_interpolable_value);
 
   EXPECT_NE(&before, &after);
   ASSERT_EQ(3u, after.length());
@@ -389,7 +389,7 @@ TEST(ListInterpolationFunctionsTest, BuilderModifyLast) {
 
 TEST(ListInterpolationFunctionsTest, BuilderModifyAll) {
   auto list = CreateNonInterpolableList({1, 2, 3});
-  auto& before = ToNonInterpolableList(*list.non_interpolable_value);
+  auto& before = To<NonInterpolableList>(*list.non_interpolable_value);
 
   {
     TestUnderlyingValue underlying_value(list);
@@ -399,7 +399,7 @@ TEST(ListInterpolationFunctionsTest, BuilderModifyAll) {
     builder.Set(2, TestNonInterpolableValue::Create(6));
   }
 
-  auto& after = ToNonInterpolableList(*list.non_interpolable_value);
+  auto& after = To<NonInterpolableList>(*list.non_interpolable_value);
 
   EXPECT_NE(&before, &after);
   ASSERT_EQ(3u, after.length());
@@ -410,7 +410,7 @@ TEST(ListInterpolationFunctionsTest, BuilderModifyAll) {
 
 TEST(ListInterpolationFunctionsTest, BuilderModifyReverse) {
   auto list = CreateNonInterpolableList({1, 2, 3, 4, 5});
-  auto& before = ToNonInterpolableList(*list.non_interpolable_value);
+  auto& before = To<NonInterpolableList>(*list.non_interpolable_value);
 
   {
     TestUnderlyingValue underlying_value(list);
@@ -419,7 +419,7 @@ TEST(ListInterpolationFunctionsTest, BuilderModifyReverse) {
     builder.Set(1, TestNonInterpolableValue::Create(7));
   }
 
-  auto& after = ToNonInterpolableList(*list.non_interpolable_value);
+  auto& after = To<NonInterpolableList>(*list.non_interpolable_value);
 
   EXPECT_NE(&before, &after);
   ASSERT_EQ(5u, after.length());
@@ -432,7 +432,7 @@ TEST(ListInterpolationFunctionsTest, BuilderModifyReverse) {
 
 TEST(ListInterpolationFunctionsTest, BuilderModifyListWithOneItem) {
   auto list = CreateNonInterpolableList({1});
-  auto& before = ToNonInterpolableList(*list.non_interpolable_value);
+  auto& before = To<NonInterpolableList>(*list.non_interpolable_value);
 
   {
     TestUnderlyingValue underlying_value(list);
@@ -440,7 +440,7 @@ TEST(ListInterpolationFunctionsTest, BuilderModifyListWithOneItem) {
     builder.Set(0, TestNonInterpolableValue::Create(4));
   }
 
-  auto& after = ToNonInterpolableList(*list.non_interpolable_value);
+  auto& after = To<NonInterpolableList>(*list.non_interpolable_value);
 
   EXPECT_NE(&before, &after);
   EXPECT_EQ(4, ToTestNonInterpolableValue(*after.Get(0)).GetValue());

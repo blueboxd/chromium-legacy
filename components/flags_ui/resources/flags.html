@@ -1,5 +1,5 @@
 <!doctype html>
-<html dir="ltr" lang="en">
+<html dir="$i18n{textdirection}" lang="$i18n{language}">
 <head>
 <meta charset="utf-8">
 <if expr="not is_ios">
@@ -86,7 +86,7 @@
                     : 'experiment-switched flex-container'">
               <div class="flex">
                 <h3 class="experiment-name" jscontent="name"
-                    jsvalues="title: is_default ? '' : $i18n{experiment-enabled};
+                    jsvalues="title: is_default ? '' : '$i18n{experiment-enabled}';
                         id:internal_name + '_name'"></h3>
                 <p>
                   <span jsvalues=".innerHTML:description"></span> –
@@ -133,7 +133,7 @@
                     : 'experiment-switched flex-container'">
               <div class="flex">
                 <h3 class="experiment-name" jscontent="name"
-                    jsvalues="title: is_default ? '' : $i18n{experiment-enabled};
+                    jsvalues="title: is_default ? '' : '$i18n{experiment-enabled}';
                         id:internal_name + '_name'"></h3>
                 <p>
                   <span jsvalues=".innerHTML:description"></span> –

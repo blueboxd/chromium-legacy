@@ -9,7 +9,6 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "components/security_state/core/insecure_input_event_data.h"
@@ -219,19 +218,13 @@ constexpr SecurityLevel kDisplayedInsecureContentLevel = NONE;
 constexpr SecurityLevel kDisplayedInsecureContentWarningLevel = WARNING;
 constexpr SecurityLevel kRanInsecureContentLevel = DANGEROUS;
 
-// Returns true if the given |url|'s origin should be considered secure.
-using IsOriginSecureCallback = base::RepeatingCallback<bool(const GURL& url)>;
-
 // Returns a SecurityLevel to describe the current page.
 // |visible_security_state| contains the relevant security state.
 // |used_policy_installed_certificate| indicates whether the page or request
 // is known to be loaded with a certificate installed by the system admin.
-// |is_origin_secure_callback| determines whether a URL's origin should be
-// considered secure.
 SecurityLevel GetSecurityLevel(
     const VisibleSecurityState& visible_security_state,
-    bool used_policy_installed_certificate,
-    IsOriginSecureCallback is_origin_secure_callback);
+    bool used_policy_installed_certificate);
 
 // Returns true if the current page was loaded using a cryptographic protocol
 // and its certificate has any major errors.

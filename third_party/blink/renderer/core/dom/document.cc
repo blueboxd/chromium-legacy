@@ -5797,13 +5797,15 @@ void Document::EnqueueMediaQueryChangeListeners(
 }
 
 void Document::EnqueueVisualViewportScrollEvent() {
-  VisualViewportScrollEvent* event = VisualViewportScrollEvent::Create();
+  VisualViewportScrollEvent* event =
+      MakeGarbageCollected<VisualViewportScrollEvent>();
   event->SetTarget(domWindow()->visualViewport());
   scripted_animation_controller_->EnqueuePerFrameEvent(event);
 }
 
 void Document::EnqueueVisualViewportResizeEvent() {
-  VisualViewportResizeEvent* event = VisualViewportResizeEvent::Create();
+  VisualViewportResizeEvent* event =
+      MakeGarbageCollected<VisualViewportResizeEvent>();
   event->SetTarget(domWindow()->visualViewport());
   scripted_animation_controller_->EnqueuePerFrameEvent(event);
 }
@@ -6164,7 +6166,7 @@ scoped_refptr<const SecurityOrigin> Document::TopFrameOrigin() const {
   return GetFrame()->Tree().Top().GetSecurityContext()->GetSecurityOrigin();
 }
 
-const KURL Document::SiteForCookies() const {
+net::SiteForCookies Document::SiteForCookies() const {
   // TODO(mkwst): This doesn't properly handle HTML Import documents.
 
   // If this is an imported document, grab its master document's first-party:
@@ -6172,44 +6174,34 @@ const KURL Document::SiteForCookies() const {
     return ImportsController()->Master()->SiteForCookies();
 
   if (!GetFrame())
-    return NullURL();
+    return net::SiteForCookies();
 
   Frame& top = GetFrame()->Tree().Top();
   const SecurityOrigin* origin = top.GetSecurityContext()->GetSecurityOrigin();
   // TODO(yhirano): Ideally |origin| should not be null here.
   if (!origin)
-    return NullURL();
+    return net::SiteForCookies();
+
+  net::SiteForCookies candidate =
+      net::SiteForCookies::FromOrigin(origin->ToUrlOrigin());
 
   if (SchemeRegistry::ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(
           origin->Protocol())) {
-    return origin->IsOpaque() ? NullURL() : KURL(origin->ToRawString());
+    return candidate;
   }
-
-  OriginAccessEntry access_entry(
-      *origin, network::mojom::CorsDomainMatchMode::kAllowRegistrableDomains);
 
   const Frame* current_frame = GetFrame();
   while (current_frame) {
     const SecurityOrigin* cur_security_origin =
         current_frame->GetSecurityContext()->GetSecurityOrigin();
-    // We use 'matchesDomain' here, as it turns out that some folks embed HTTPS
-    // login forms into HTTP pages; we should allow this kind of upgrade.
-    //
-    // The second clause bypasses strange permissiveness of OriginAccessEntry on
-    // empty domain names. See the beginning of OriginAccessEntry::MatchesDomain
-    // in services/network/public/cpp/cors/origin_access_entry.cc
-    if (access_entry.MatchesDomain(*cur_security_origin) ==
-            network::cors::OriginAccessEntry::kDoesNotMatchOrigin ||
-        (origin->Domain().IsEmpty() != cur_security_origin->Host().IsEmpty())) {
-      return NullURL();
+    if (!candidate.IsEquivalent(net::SiteForCookies::FromOrigin(
+            cur_security_origin->ToUrlOrigin()))) {
+      return net::SiteForCookies();
     }
-
     current_frame = current_frame->Tree().Parent();
   }
 
-  // Note: don't want origin->ToString() here since that may mess up file:///,
-  // depending on AllowFileAccessFromFileURLs setting.
-  return origin->IsOpaque() ? NullURL() : KURL(origin->ToRawString());
+  return candidate;
 }
 
 ScriptPromise Document::hasStorageAccess(ScriptState* script_state) const {

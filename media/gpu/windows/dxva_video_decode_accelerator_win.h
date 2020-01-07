@@ -34,6 +34,7 @@
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/windows/d3d11_com_defs.h"
+#include "media/gpu/windows/display_helper.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
@@ -352,6 +353,10 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
                                       int height,
                                       const gfx::ColorSpace& color_space);
 
+  // Some devices require HDR metadata.  This will set it if needed, else
+  // do nothing.
+  void SetDX11ProcessorHDRMetadataIfNeeded();
+
   // Returns the output video frame dimensions (width, height).
   // |sample| :- This is the output sample containing the video frame.
   // |width| :- The width is returned here.
@@ -596,6 +601,8 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   // fed into the decoder. These may change at a config change.
   gfx::Rect current_visible_rect_;
   VideoColorSpace current_color_space_;
+
+  base::Optional<DisplayHelper> display_helper_;
 
   // WeakPtrFactory for posting tasks back to |this|.
   base::WeakPtrFactory<DXVAVideoDecodeAccelerator> weak_this_factory_{this};

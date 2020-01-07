@@ -27,7 +27,7 @@
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 #include "chrome/common/url_constants.h"
 #include "components/google/core/common/google_util.h"
-#include "components/safe_browsing/common/safebrowsing_switches.h"
+#include "components/safe_browsing/core/common/safebrowsing_switches.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"

@@ -32,6 +32,9 @@ import org.chromium.chrome.browser.profiles.Profile;
  */
 @JNINamespace("updates")
 public class UpdateNotificationServiceBridge implements UpdateNotificationController, Destroyable {
+    private static final String PREF_UPDATE_NOTIFICATION_THROTTLE_INTERVAL_KEY =
+            "pref_update_notification_throttle_interval_key";
+
     private final Callback<UpdateStatusProvider.UpdateStatus> mObserver = status -> {
         mUpdateStatus = status;
         processUpdateStatus();
@@ -94,6 +97,29 @@ public class UpdateNotificationServiceBridge implements UpdateNotificationContro
         SharedPreferences preferences = OmahaBase.getSharedPreferences();
         SharedPreferences.Editor editor = preferences.edit();
         editor.putLong(PREF_LAST_TIME_UPDATE_NOTIFICATION_KEY, timestamp);
+        editor.apply();
+    }
+
+    /**
+     * Gets the throttle interval in milliseconds from {@link SharedPreferences}.
+     * return 0 if not exists.
+     */
+    @CalledByNative
+    public static long getThrottleInterval() {
+        SharedPreferences preferences = OmahaBase.getSharedPreferences();
+        return preferences.getLong(PREF_UPDATE_NOTIFICATION_THROTTLE_INTERVAL_KEY, 0);
+    }
+
+    /**
+     * Updates the throttle interval to show Chrome update notification in {@link
+     * SharedPreferences}.
+     * @param interval Throttle interval in milliseconds.
+     */
+    @CalledByNative
+    private static void updateThrottleInterval(long interval) {
+        SharedPreferences preferences = OmahaBase.getSharedPreferences();
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putLong(PREF_UPDATE_NOTIFICATION_THROTTLE_INTERVAL_KEY, interval);
         editor.apply();
     }
 }

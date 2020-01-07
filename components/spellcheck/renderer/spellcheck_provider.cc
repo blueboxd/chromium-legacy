@@ -115,40 +115,6 @@ spellcheck::mojom::SpellCheckHost& SpellCheckProvider::GetSpellCheckHost() {
   return *spell_check_host_;
 }
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-void SpellCheckProvider::HybridSpellCheckParagraphComplete(
-    const base::string16& text,
-    const int request_id,
-    std::vector<SpellCheckResult> renderer_results) {
-  size_t renderer_languages = spellcheck_->EnabledLanguageCount();
-
-  // If there are no renderer results, either 1) there were no languages to
-  // check on the renderer side because all languages are supported by the
-  // platform; or 2) each word was marked correct by at least 1 language. In
-  // case of 2), we can skip the platform check, because we know all words are
-  // correctly spelled in at least 1 language.
-  // Additionally, if the renderer checked all languages, we can completely skip
-  // the browser side.
-  if ((renderer_results.empty() && renderer_languages > 0) ||
-      renderer_languages == spellcheck_->LanguageCount()) {
-    OnRespondTextCheck(request_id, text, renderer_results);
-  } else {
-    // We need to do a platform check. We must decide whether to find the
-    // replacement suggestions now, or wait until the user requests them. If all
-    // languages are checked by the platform, find the suggestions now, because
-    // the platform spellchecker is fast. If we had to check some languages via
-    // Hunspell, then wait until the user requests the replacements, because
-    //  Hunspell is extremely slow at finding them and can hang the page for a
-    // few seconds if the text is not small.
-    GetSpellCheckHost().RequestPartialTextCheck(
-        text, routing_id(), std::move(renderer_results),
-        renderer_languages == 0,
-        base::BindOnce(&SpellCheckProvider::OnRespondTextCheck,
-                       weak_factory_.GetWeakPtr(), request_id, text));
-  }
-}
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-
 void SpellCheckProvider::RequestTextChecking(
     const base::string16& text,
     std::unique_ptr<WebTextCheckingCompletion> completion) {
@@ -170,22 +136,36 @@ void SpellCheckProvider::RequestTextChecking(
 
 #if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
   if (spellcheck::UseWinHybridSpellChecker()) {
-    size_t enabled_count = spellcheck_->EnabledLanguageCount();
-    request_start_times_[last_identifier_] = {
-        /*used_hunspell=*/enabled_count > 0,
-        /*used_native=*/enabled_count != spellcheck_->LanguageCount(),
-        base::TimeTicks::Now()};
+    bool use_hunspell = spellcheck_->EnabledLanguageCount() > 0;
+    bool use_native =
+        spellcheck_->EnabledLanguageCount() != spellcheck_->LanguageCount();
 
-    // Do a first spellcheck pass with Hunspell, then check the rest of the
-    // locales with the native spellchecker.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &SpellCheck::HybridSpellCheckParagraph, spellcheck_->AsWeakPtr(),
-            text,
-            base::BindOnce(
-                &SpellCheckProvider::HybridSpellCheckParagraphComplete,
-                weak_factory_.GetWeakPtr(), text, last_identifier_)));
+    if (!use_hunspell && !use_native) {
+      OnRespondTextCheck(last_identifier_, text, /*results=*/{});
+      return;
+    }
+
+    if (use_native) {
+      // Some languages can be handled by the native spell checker. Use the
+      // regular browser spell check code path. If hybrid spell check is
+      // required (i.e. some locales must be checked by Hunspell), misspellings
+      // from the native spell checker will be double-checked with Hunspell in
+      // the |OnRespondTextCheck| callback.
+      hybrid_requests_info_[last_identifier_] = {/*used_hunspell=*/use_hunspell,
+                                                 /*used_native=*/use_native,
+                                                 base::TimeTicks::Now()};
+      GetSpellCheckHost().RequestTextCheck(
+          text, routing_id(),
+          base::BindOnce(&SpellCheckProvider::OnRespondTextCheck,
+                         weak_factory_.GetWeakPtr(), last_identifier_, text));
+    } else {
+      // No language can be handled by the native spell checker. Use the regular
+      // Hunspell code path.
+      GetSpellCheckHost().CallSpellingService(
+          text,
+          base::BindOnce(&SpellCheckProvider::OnRespondSpellingService,
+                         weak_factory_.GetWeakPtr(), last_identifier_, text));
+    }
     return;
   }
 #endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
@@ -319,11 +299,12 @@ void SpellCheckProvider::OnRespondSpellingService(
     return;
   }
 
-  // Double-check the returned spellchecking results with our spellchecker to
-  // visualize the differences between ours and the on-line spellchecker.
+  // Double-check the returned spellchecking results with Hunspell to visualize
+  // the differences between ours and the enhanced spell checker.
   blink::WebVector<blink::WebTextCheckingResult> textcheck_results;
-  spellcheck_->CreateTextCheckingResults(SpellCheck::USE_NATIVE_CHECKER, 0,
-                                         line, results, &textcheck_results);
+  spellcheck_->CreateTextCheckingResults(SpellCheck::USE_HUNSPELL_FOR_GRAMMAR,
+                                         /*line_offset=*/0, line, results,
+                                         &textcheck_results);
   completion->DidFinishCheckingText(textcheck_results);
 
   // Cache the request and the converted results.
@@ -351,7 +332,6 @@ void SpellCheckProvider::OnRespondTextCheck(
     int identifier,
     const base::string16& line,
     const std::vector<SpellCheckResult>& results) {
-  // TODO(groby): Unify with SpellCheckProvider::OnRespondSpellingService
   DCHECK(spellcheck_);
   if (!text_check_completions_.Lookup(identifier))
     return;
@@ -359,18 +339,30 @@ void SpellCheckProvider::OnRespondTextCheck(
       text_check_completions_.Replace(identifier, nullptr));
   text_check_completions_.Remove(identifier);
   blink::WebVector<blink::WebTextCheckingResult> textcheck_results;
-  spellcheck_->CreateTextCheckingResults(SpellCheck::DO_NOT_MODIFY,
-                                         0,
-                                         line,
-                                         results,
-                                         &textcheck_results);
+
+  SpellCheck::ResultFilter result_filter = SpellCheck::DO_NOT_MODIFY;
+
 #if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-  const auto& request_info = request_start_times_.find(identifier);
-  if (request_info != request_start_times_.end()) {
+  const auto& request_info = hybrid_requests_info_.find(identifier);
+  if (spellcheck::UseWinHybridSpellChecker() &&
+      request_info != hybrid_requests_info_.end() &&
+      request_info->second.used_hunspell && request_info->second.used_native) {
+    // Not all locales could be checked by the native spell checker. Verify each
+    // mistake against Hunspell in the locales that weren't checked.
+    result_filter = SpellCheck::USE_HUNSPELL_FOR_HYBRID_CHECK;
+  }
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+
+  spellcheck_->CreateTextCheckingResults(result_filter,
+                                         /*line_offset=*/0, line, results,
+                                         &textcheck_results);
+
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+  if (request_info != hybrid_requests_info_.end()) {
     spellcheck_renderer_metrics::RecordSpellcheckDuration(
         base::TimeTicks::Now() - request_info->second.request_start_ticks,
         request_info->second.used_hunspell, request_info->second.used_native);
-    request_start_times_.erase(request_info);
+    hybrid_requests_info_.erase(request_info);
   }
 #endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 

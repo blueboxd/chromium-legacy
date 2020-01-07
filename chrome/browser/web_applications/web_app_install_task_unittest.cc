@@ -48,7 +48,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/codec/png_codec.h"
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
@@ -65,18 +64,6 @@
 namespace web_app {
 
 namespace {
-
-bool ReadBitmap(FileUtilsWrapper* utils,
-                const base::FilePath& file_path,
-                SkBitmap* bitmap) {
-  std::string icon_data;
-  if (!utils->ReadFileToString(file_path, &icon_data))
-    return false;
-
-  return gfx::PNGCodec::Decode(
-      reinterpret_cast<const unsigned char*>(icon_data.c_str()),
-      icon_data.size(), bitmap);
-}
 
 constexpr int kIconSizes[] = {
     icon_size::k32, icon_size::k64,  icon_size::k48,

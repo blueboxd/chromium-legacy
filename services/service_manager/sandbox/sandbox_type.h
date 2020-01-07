@@ -38,8 +38,7 @@ enum class SandboxType {
   // Renderer or worker process. Most common case.
   kRenderer,
 
-  // Utility process is as restrictive as the worker process except full
-  // access is allowed to one configurable directory.
+  // Utility processes. Used by most isolated services.
   kUtility,
 
   // GPU process.

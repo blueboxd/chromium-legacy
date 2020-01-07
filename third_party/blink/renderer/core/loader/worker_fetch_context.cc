@@ -51,7 +51,7 @@ WorkerFetchContext::WorkerFetchContext(
   DCHECK(web_context_);
 }
 
-KURL WorkerFetchContext::GetSiteForCookies() const {
+net::SiteForCookies WorkerFetchContext::GetSiteForCookies() const {
   return web_context_->SiteForCookies();
 }
 

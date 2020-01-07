@@ -38,11 +38,6 @@ LayoutSearchField::LayoutSearchField(HTMLInputElement* element)
 
 LayoutSearchField::~LayoutSearchField() = default;
 
-inline Element* LayoutSearchField::SearchDecorationElement() const {
-  return InputElement()->UserAgentShadowRoot()->getElementById(
-      shadow_element_names::SearchDecoration());
-}
-
 inline Element* LayoutSearchField::CancelButtonElement() const {
   return InputElement()->UserAgentShadowRoot()->getElementById(
       shadow_element_names::ClearButton());
@@ -51,16 +46,6 @@ inline Element* LayoutSearchField::CancelButtonElement() const {
 LayoutUnit LayoutSearchField::ComputeControlLogicalHeight(
     LayoutUnit line_height,
     LayoutUnit non_content_height) const {
-  Element* search_decoration = SearchDecorationElement();
-  if (LayoutBox* decoration_layout_object =
-          search_decoration ? search_decoration->GetLayoutBox() : nullptr) {
-    decoration_layout_object->UpdateLogicalHeight();
-    non_content_height =
-        max(non_content_height,
-            decoration_layout_object->BorderAndPaddingLogicalHeight() +
-                decoration_layout_object->MarginLogicalHeight());
-    line_height = max(line_height, decoration_layout_object->LogicalHeight());
-  }
   Element* cancel_button = CancelButtonElement();
   if (LayoutBox* cancel_layout_object =
           cancel_button ? cancel_button->GetLayoutBox() : nullptr) {

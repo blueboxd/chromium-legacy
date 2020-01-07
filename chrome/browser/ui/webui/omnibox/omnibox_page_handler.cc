@@ -18,6 +18,8 @@
 #include "base/values.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
+#include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service.h"
+#include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -197,7 +199,6 @@ OmniboxPageHandler::OmniboxPageHandler(
     Profile* profile,
     mojo::PendingReceiver<mojom::OmniboxPageHandler> receiver)
     : profile_(profile),
-      bitmap_fetcher_helper_(profile),
       receiver_(this, std::move(receiver)),
       observer_(this) {
   observer_.Add(OmniboxControllerEmitter::GetForBrowserContext(profile_));
@@ -280,14 +281,16 @@ void OmniboxPageHandler::OnOmniboxResultChanged(
                                        controller == controller_.get());
 
   // Fill in image data
+  BitmapFetcherService* bitmap_fetcher_service =
+      BitmapFetcherServiceFactory::GetForBrowserContext(profile_);
+
   for (std::string image_url : image_urls) {
     if (image_url.empty()) {
       continue;
     }
-    bitmap_fetcher_helper_.RequestImage(
-        GURL(image_url),
-        base::BindRepeating(&OmniboxPageHandler::OnBitmapFetched,
-                            base::Unretained(this), image_url));
+    bitmap_fetcher_service->RequestImage(
+        GURL(image_url), base::BindOnce(&OmniboxPageHandler::OnBitmapFetched,
+                                        weak_factory_.GetWeakPtr(), image_url));
   }
 }
 

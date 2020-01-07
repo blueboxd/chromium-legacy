@@ -16,7 +16,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/embedder_support/switches.h"
-#include "components/safe_browsing/triggers/ad_popup_trigger.h"
+#include "components/safe_browsing/content/triggers/ad_popup_trigger.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"

@@ -62,7 +62,7 @@ public class AddToHomescreenMediatorTest {
         appData.setPackageInfo("Title", null, 3.4f, "Install", null, null);
 
         addToHomescreenMediator.setNativeAppInfo(appData);
-        addToHomescreenMediator.setIcon(icon, false);
+        addToHomescreenMediator.setIcon(icon, false, false);
 
         // Assert #setNativeAppInfo assigns the correct properties to the model.
         Assert.assertEquals("Title", mPropertyModel.get(AddToHomescreenProperties.TITLE));
@@ -85,7 +85,7 @@ public class AddToHomescreenMediatorTest {
         // Prepare test parameters.
         Bitmap icon = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
         addToHomescreenMediator.setWebAppInfo("Title", "google.com", false);
-        addToHomescreenMediator.setIcon(icon, true);
+        addToHomescreenMediator.setIcon(icon, true, false);
 
         // Assert #setWebAppInfoWithIcon assigns the correct properties to the model.
         Assert.assertEquals("Title", mPropertyModel.get(AddToHomescreenProperties.TITLE));

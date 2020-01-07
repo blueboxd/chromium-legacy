@@ -28,6 +28,7 @@
 #include "components/printing/browser/features.h"
 #include "components/printing/browser/print_composite_client.h"
 #include "components/printing/browser/print_manager_utils.h"
+#include "components/printing/common/print.mojom.h"
 #include "components/printing/common/print_messages.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/render_frame_host.h"
@@ -39,6 +40,7 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 namespace printing {
 
@@ -260,11 +262,16 @@ class PrintBrowserTest : public InProcessBrowserTest {
     frame_host->GetProcess()->AddFilter(filter.get());
   }
 
-  static PrintMsg_PrintFrame_Params GetDefaultPrintFrameParams() {
-    PrintMsg_PrintFrame_Params params;
-    params.printable_area = gfx::Rect(800, 600);
-    params.document_cookie = kDefaultDocumentCookie;
-    return params;
+  static mojom::PrintFrameContentParamsPtr GetDefaultPrintFrameParams() {
+    return mojom::PrintFrameContentParams::New(gfx::Rect(800, 600),
+                                               kDefaultDocumentCookie);
+  }
+
+  static const mojo::AssociatedRemote<mojom::PrintRenderFrame>
+  GetPrintRenderFrame(content::RenderFrameHost* rfh) {
+    mojo::AssociatedRemote<mojom::PrintRenderFrame> remote;
+    rfh->GetRemoteAssociatedInterfaces()->GetInterface(&remote);
+    return remote;
   }
 
  private:
@@ -377,8 +384,7 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintFrameContent) {
   content::RenderFrameHost* rfh = original_contents->GetMainFrame();
   AddFilterForFrame(rfh);
 
-  rfh->Send(new PrintMsg_PrintFrameContent(rfh->GetRoutingID(),
-                                           GetDefaultPrintFrameParams()));
+  GetPrintRenderFrame(rfh)->PrintFrameContent(GetDefaultPrintFrameParams());
 
   // The printed result will be received and checked in
   // TestPrintFrameContentMsgFilter.
@@ -402,8 +408,8 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintSubframeContent) {
 
   AddFilterForFrame(test_frame);
 
-  test_frame->Send(new PrintMsg_PrintFrameContent(
-      test_frame->GetRoutingID(), GetDefaultPrintFrameParams()));
+  GetPrintRenderFrame(test_frame)
+      ->PrintFrameContent(GetDefaultPrintFrameParams());
 
   // The printed result will be received and checked in
   // TestPrintFrameContentMsgFilter.
@@ -447,8 +453,8 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintSubframeChain) {
     AddFilterForFrame(grandchild_frame);
   }
 
-  main_frame->Send(new PrintMsg_PrintFrameContent(
-      main_frame->GetRoutingID(), GetDefaultPrintFrameParams()));
+  GetPrintRenderFrame(main_frame)
+      ->PrintFrameContent(GetDefaultPrintFrameParams());
 
   // The printed result will be received and checked in
   // TestPrintFrameContentMsgFilter.
@@ -491,8 +497,8 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintSubframeABA) {
   if (oopif_enabled)
     AddFilterForFrame(child_frame);
 
-  main_frame->Send(new PrintMsg_PrintFrameContent(
-      main_frame->GetRoutingID(), GetDefaultPrintFrameParams()));
+  GetPrintRenderFrame(main_frame)
+      ->PrintFrameContent(GetDefaultPrintFrameParams());
 
   // The printed result will be received and checked in
   // TestPrintFrameContentMsgFilter.

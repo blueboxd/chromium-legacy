@@ -34,7 +34,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeState;
 import org.chromium.chrome.browser.feed.FeedSurfaceCoordinator;
-import org.chromium.chrome.browser.fullscreen.FullscreenManager;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.ntp.FakeboxDelegate;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
@@ -109,14 +109,16 @@ class StartSurfaceMediator
     private TabModelObserver mNormalTabModelObserver;
     @Nullable
     private TabModelSelectorObserver mTabModelSelectorObserver;
-    private FullscreenManager mFullScreenManager;
+    private ChromeFullscreenManager mFullScreenManager;
+    private ChromeFullscreenManager.FullscreenListener mFullScreenListener;
 
     StartSurfaceMediator(TabSwitcher.Controller controller, TabModelSelector tabModelSelector,
             @Nullable PropertyModel propertyModel,
             @Nullable ExploreSurfaceCoordinator.FeedSurfaceCreator feedSurfaceCreator,
             @Nullable SecondaryTasksSurfaceInitializer secondaryTasksSurfaceInitializer,
             @SurfaceMode int surfaceMode, @Nullable FakeboxDelegate fakeboxDelegate,
-            NightModeStateProvider nightModeStateProvider, FullscreenManager fullscreenManager) {
+            NightModeStateProvider nightModeStateProvider,
+            ChromeFullscreenManager fullscreenManager) {
         mController = controller;
         mTabModelSelector = tabModelSelector;
         mPropertyModel = propertyModel;
@@ -186,6 +188,18 @@ class StartSurfaceMediator
                     public void tabClosureUndone(Tab tab) {
                         if (mOverviewModeState == OverviewModeState.SHOWN_HOMEPAGE) {
                             setTabCarouselVisibility(true);
+                        }
+                    }
+                };
+
+                mFullScreenListener = new ChromeFullscreenManager.FullscreenListener() {
+                    @Override
+                    public void onBottomControlsHeightChanged(
+                            int bottomControlsHeight, int bottomControlsMinHeight) {
+                        // Only pad single pane home page since tabs grid has already been
+                        // padded for the bottom bar.
+                        if (mOverviewModeState == OverviewModeState.SHOWN_HOMEPAGE) {
+                            mPropertyModel.set(BOTTOM_BAR_HEIGHT, bottomControlsHeight);
                         }
                     }
                 };
@@ -381,6 +395,10 @@ class StartSurfaceMediator
             }
             mTabModelSelector.addObserver(mTabModelSelectorObserver);
 
+            if (mFullScreenListener != null) {
+                mFullScreenManager.addListener(mFullScreenListener);
+            }
+
             mPropertyModel.set(IS_SHOWING_OVERVIEW, true);
             mFakeboxDelegate.addUrlFocusChangeListener(mUrlFocusChangeListener);
         }
@@ -442,6 +460,9 @@ class StartSurfaceMediator
             }
             if (mTabModelSelectorObserver != null) {
                 mTabModelSelector.removeObserver(mTabModelSelectorObserver);
+            }
+            if (mFullScreenListener != null) {
+                mFullScreenManager.removeListener(mFullScreenListener);
             }
         }
         for (StartSurface.OverviewModeObserver observer : mObservers) {

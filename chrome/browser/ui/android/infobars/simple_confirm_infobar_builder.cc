@@ -38,15 +38,15 @@ class SimpleConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
   // ConfirmInfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   gfx::Image GetIcon() const override;
+  base::string16 GetLinkText() const override;
   bool ShouldExpire(const NavigationDetails& details) const override;
+  bool LinkClicked(WindowOpenDisposition disposition) override;
   void InfoBarDismissed() override;
   base::string16 GetMessageText() const override;
   int GetButtons() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;
   bool Cancel() override;
-  base::string16 GetLinkText() const override;
-  bool LinkClicked(WindowOpenDisposition disposition) override;
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> java_listener_;
@@ -93,9 +93,19 @@ gfx::Image SimpleConfirmInfoBarDelegate::GetIcon() const {
                                 : icon_bitmap_;
 }
 
+base::string16 SimpleConfirmInfoBarDelegate::GetLinkText() const {
+  return link_text_str_;
+}
+
 bool SimpleConfirmInfoBarDelegate::ShouldExpire(
     const NavigationDetails& details) const {
   return auto_expire_ && ConfirmInfoBarDelegate::ShouldExpire(details);
+}
+
+bool SimpleConfirmInfoBarDelegate::LinkClicked(
+    WindowOpenDisposition disposition) {
+  return !Java_SimpleConfirmInfoBarBuilder_onInfoBarLinkClicked(
+      base::android::AttachCurrentThread(), java_listener_);
 }
 
 void SimpleConfirmInfoBarDelegate::InfoBarDismissed() {
@@ -125,16 +135,6 @@ bool SimpleConfirmInfoBarDelegate::Accept() {
 bool SimpleConfirmInfoBarDelegate::Cancel() {
   return !Java_SimpleConfirmInfoBarBuilder_onInfoBarButtonClicked(
       base::android::AttachCurrentThread(), java_listener_, false);
-}
-
-base::string16 SimpleConfirmInfoBarDelegate::GetLinkText() const {
-  return link_text_str_;
-}
-
-bool SimpleConfirmInfoBarDelegate::LinkClicked(
-    WindowOpenDisposition disposition) {
-  return !Java_SimpleConfirmInfoBarBuilder_onInfoBarLinkClicked(
-      base::android::AttachCurrentThread(), java_listener_);
 }
 
 }  // anonymous namespace

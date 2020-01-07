@@ -41,10 +41,6 @@ const char* const kPseudoUrls[] = {
     "blob:http://test/some-guid", "filesystem:http://test/some-guid",
 };
 
-bool IsOriginSecure(const GURL& url) {
-  return url == kHttpsUrl;
-}
-
 class TestSecurityStateHelper {
  public:
   TestSecurityStateHelper()
@@ -131,9 +127,8 @@ class TestSecurityStateHelper {
   }
 
   security_state::SecurityLevel GetSecurityLevel() const {
-    return security_state::GetSecurityLevel(
-        *GetVisibleSecurityState(), has_policy_certificate_,
-        base::BindRepeating(&IsOriginSecure));
+    return security_state::GetSecurityLevel(*GetVisibleSecurityState(),
+                                            has_policy_certificate_);
   }
 
   bool HasMajorCertificateError() const {

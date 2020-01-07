@@ -11,7 +11,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/chrome_app_icon_delegate.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_panel.h"
-#include "ui/views/controls/link_listener.h"
 
 class Profile;
 namespace extensions {
@@ -29,7 +28,6 @@ class AppInfoDialogTestApi;
 // A small summary panel with the app's name, icon, version, and various links
 // that is displayed at the top of the app info dialog.
 class AppInfoHeaderPanel : public AppInfoPanel,
-                           public views::LinkListener,
                            public base::SupportsWeakPtr<AppInfoHeaderPanel>,
                            public extensions::ChromeAppIconDelegate {
  public:
@@ -38,9 +36,6 @@ class AppInfoHeaderPanel : public AppInfoPanel,
 
  private:
   friend class test::AppInfoDialogTestApi;
-
-  // Overridden from views::LinkListener:
-  void LinkClicked(views::Link* source, int event_flags) override;
 
   // extensions::ChromeAppIconDelegate:
   void OnIconUpdated(extensions::ChromeAppIcon* icon) override;

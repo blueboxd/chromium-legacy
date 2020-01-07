@@ -201,7 +201,7 @@ struct FrameFetchContext::FrozenState final : GarbageCollected<FrozenState> {
   FrozenState(const KURL& url,
               scoped_refptr<const SecurityOrigin> parent_security_origin,
               const ContentSecurityPolicy* content_security_policy,
-              KURL site_for_cookies,
+              net::SiteForCookies site_for_cookies,
               scoped_refptr<const SecurityOrigin> top_frame_origin,
               const ClientHintsPreferences& client_hints_preferences,
               float device_pixel_ratio,
@@ -211,7 +211,7 @@ struct FrameFetchContext::FrozenState final : GarbageCollected<FrozenState> {
       : url(url),
         parent_security_origin(std::move(parent_security_origin)),
         content_security_policy(content_security_policy),
-        site_for_cookies(site_for_cookies),
+        site_for_cookies(std::move(site_for_cookies)),
         top_frame_origin(std::move(top_frame_origin)),
         client_hints_preferences(client_hints_preferences),
         device_pixel_ratio(device_pixel_ratio),
@@ -222,7 +222,7 @@ struct FrameFetchContext::FrozenState final : GarbageCollected<FrozenState> {
   const KURL url;
   const scoped_refptr<const SecurityOrigin> parent_security_origin;
   const Member<const ContentSecurityPolicy> content_security_policy;
-  const KURL site_for_cookies;
+  const net::SiteForCookies site_for_cookies;
   const scoped_refptr<const SecurityOrigin> top_frame_origin;
   const ClientHintsPreferences client_hints_preferences;
   const float device_pixel_ratio;
@@ -305,7 +305,7 @@ FrameFetchContext::FrameFetchContext(
           GetNetworkStateNotifier().SaveDataEnabled() &&
           !GetFrame()->GetSettings()->GetDataSaverHoldbackWebApi()) {}
 
-KURL FrameFetchContext::GetSiteForCookies() const {
+net::SiteForCookies FrameFetchContext::GetSiteForCookies() const {
   if (GetResourceFetcherProperties().IsDetached())
     return frozen_state_->site_for_cookies;
   return frame_or_imported_document_->GetDocument().SiteForCookies();
@@ -788,7 +788,7 @@ void FrameFetchContext::SetFirstPartyCookie(ResourceRequest& request) {
   // Set the first party for cookies url if it has not been set yet (new
   // requests). This value will be updated during redirects, consistent with
   // https://tools.ietf.org/html/draft-ietf-httpbis-cookie-same-site-00#section-2.1.1?
-  if (request.SiteForCookies().IsNull())
+  if (!request.SiteForCookiesSet())
     request.SetSiteForCookies(GetSiteForCookies());
 }
 

@@ -705,10 +705,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   base::Optional<base::TimeTicks> commit_compositor_frame_start_time_;
 };
 
-// We have no ways to check if the specified WebView is an instance of
-// WebViewImpl because WebViewImpl is the only implementation of WebView.
-DEFINE_TYPE_CASTS(WebViewImpl, WebView, webView, true, true);
-
 }  // namespace blink
 
 #endif

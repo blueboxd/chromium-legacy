@@ -38,16 +38,6 @@ namespace service_manager {
 class LocalInterfaceProvider;
 }
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-// A struct to hold information related to logging the end-to-end duration of
-// a spell check request.
-struct SpellCheckDurationInfo {
-  bool used_hunspell;
-  bool used_native;
-  base::TimeTicks request_start_ticks;
-};
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-
 // This class deals with asynchronously invoking text spelling and grammar
 // checking services provided by the browser process (host).
 class SpellCheckProvider : public content::RenderFrameObserver,
@@ -55,6 +45,15 @@ class SpellCheckProvider : public content::RenderFrameObserver,
  public:
   using WebTextCheckCompletions =
       base::IDMap<std::unique_ptr<blink::WebTextCheckingCompletion>>;
+
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+  // A struct to hold information related to hybrid spell check requests.
+  struct HybridSpellCheckRequestInfo {
+    bool used_hunspell;
+    bool used_native;
+    base::TimeTicks request_start_ticks;
+  };
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 
   SpellCheckProvider(
       content::RenderFrame* render_frame,
@@ -135,17 +134,6 @@ class SpellCheckProvider : public content::RenderFrameObserver,
       const std::vector<SpellCheckResult>& results);
 #endif
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-  void HybridSpellCheckParagraphComplete(
-      const base::string16& text,
-      const int request_id,
-      std::vector<SpellCheckResult> renderer_results);
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-  void RecordRequestDuration(int identifier);
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-
   // Holds ongoing spellchecking operations.
   WebTextCheckCompletions text_check_completions_;
 
@@ -168,7 +156,7 @@ class SpellCheckProvider : public content::RenderFrameObserver,
   std::unique_ptr<DictionaryUpdateObserverImpl> dictionary_update_observer_;
 
 #if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-  std::unordered_map<int, SpellCheckDurationInfo> request_start_times_;
+  std::unordered_map<int, HybridSpellCheckRequestInfo> hybrid_requests_info_;
 #endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 
   base::WeakPtrFactory<SpellCheckProvider> weak_factory_{this};

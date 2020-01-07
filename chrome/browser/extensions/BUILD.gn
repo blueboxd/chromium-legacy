@@ -764,9 +764,9 @@ jumbo_static_library("extensions") {
     "//chrome/browser/extensions/api:api_registration",
     "//chrome/common",
     "//chrome/common/extensions/api",
-    "//components/safe_browsing:csd_proto",
-    "//components/safe_browsing:webprotect_proto",
-    "//components/safe_browsing/db:util",
+    "//components/safe_browsing/core:csd_proto",
+    "//components/safe_browsing/core:webprotect_proto",
+    "//components/safe_browsing/core/db:util",
     "//components/signin/core/browser",
     "//content/public/browser",
     "//mojo/public/cpp/bindings",
@@ -836,11 +836,11 @@ jumbo_static_library("extensions") {
     "//components/rappor",
     "//components/resources",
     "//components/safe_browsing:buildflags",
-    "//components/safe_browsing:csd_proto",
-    "//components/safe_browsing:features",
-    "//components/safe_browsing/common:safe_browsing_prefs",
-    "//components/safe_browsing/db:database_manager",
-    "//components/safe_browsing/web_ui:web_ui",
+    "//components/safe_browsing/content/web_ui:web_ui",
+    "//components/safe_browsing/core:csd_proto",
+    "//components/safe_browsing/core:features",
+    "//components/safe_browsing/core/common:safe_browsing_prefs",
+    "//components/safe_browsing/core/db:database_manager",
     "//components/search_engines",
     "//components/services/patch/content",
     "//components/services/unzip/content",
@@ -919,6 +919,10 @@ jumbo_static_library("extensions") {
     "//ui/strings",
     "//url",
   ]
+
+  if (enable_autofill_assistant_api) {
+    deps += [ "//components/autofill_assistant/browser" ]
+  }
 
   if (is_chromeos) {
     sources += [

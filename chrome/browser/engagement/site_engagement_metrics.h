@@ -26,18 +26,14 @@ class SiteEngagementMetrics {
       const std::vector<mojom::SiteEngagementDetails>& details);
   static void RecordOriginsWithMaxEngagement(int total_origins);
   static void RecordOriginsWithMaxDailyEngagement(int total_origins);
-  static void RecordPercentOriginsWithMaxEngagement(double percentage);
   static void RecordEngagement(SiteEngagementService::EngagementType type);
   static void RecordDaysSinceLastShortcutLaunch(int days);
-  static void RecordScoreDecayedFrom(double score);
-  static void RecordScoreDecayedTo(double score);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, CheckHistograms);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest,
                            GetTotalNotificationPoints);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, LastShortcutLaunch);
-  FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, ScoreDecayHistograms);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementHelperTest,
                            MixedInputEngagementAccumulation);
   static const char kTotalEngagementHistogram[];
@@ -45,15 +41,11 @@ class SiteEngagementMetrics {
   static const char kMeanEngagementHistogram[];
   static const char kMedianEngagementHistogram[];
   static const char kEngagementScoreHistogram[];
-  static const char kEngagementScoreHistogramIsZero[];
   static const char kOriginsWithMaxEngagementHistogram[];
   static const char kOriginsWithMaxDailyEngagementHistogram[];
-  static const char kPercentOriginsWithMaxEngagementHistogram[];
   static const char kEngagementTypeHistogram[];
   static const char kEngagementBucketHistogramBase[];
   static const char kDaysSinceLastShortcutLaunchHistogram[];
-  static const char kScoreDecayedFromHistogram[];
-  static const char kScoreDecayedToHistogram[];
 
   static std::vector<std::string> GetEngagementBucketHistogramNames();
 };

@@ -68,11 +68,6 @@ class HTMLFormControlsCollection final : public HTMLCollection {
   mutable Member<HTMLElement> cached_element_;
   mutable unsigned cached_element_offset_in_array_;
 };
-DEFINE_TYPE_CASTS(HTMLFormControlsCollection,
-                  LiveNodeListBase,
-                  collection,
-                  collection->GetType() == kFormControls,
-                  collection.GetType() == kFormControls);
 
 }  // namespace blink
 

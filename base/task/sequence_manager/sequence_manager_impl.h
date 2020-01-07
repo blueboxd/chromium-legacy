@@ -102,8 +102,7 @@ class BASE_EXPORT SequenceManagerImpl
 
   // SequenceManager implementation:
   void BindToCurrentThread() override;
-  const scoped_refptr<SequencedTaskRunner>& GetTaskRunnerForCurrentTask()
-      override;
+  scoped_refptr<SequencedTaskRunner> GetTaskRunnerForCurrentTask() override;
   void BindToMessagePump(std::unique_ptr<MessagePump> message_pump) override;
   void SetObserver(Observer* observer) override;
   void AddTaskTimeObserver(TaskTimeObserver* task_time_observer) override;

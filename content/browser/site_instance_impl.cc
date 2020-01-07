@@ -826,15 +826,7 @@ GURL SiteInstanceImpl::GetSiteForURLInternal(
       //
       // TODO(alexmos,creis): This should eventually be expanded to certain
       // other schemes, such as file:.
-      // TODO(creis): This currently causes problems with tests on Android and
-      // Android WebView.  For now, skip it when Site Isolation is not enabled,
-      // since there's no need to isolate data and blob URLs from each other in
-      // that case.
-      bool is_site_isolation_enabled =
-          SiteIsolationPolicy::UseDedicatedProcessesForAllSites() ||
-          SiteIsolationPolicy::AreIsolatedOriginsEnabled();
-      if (is_site_isolation_enabled &&
-          (url.SchemeIsBlob() || url.scheme() == url::kDataScheme)) {
+      if (url.SchemeIsBlob() || url.scheme() == url::kDataScheme) {
         // We get here for blob URLs of form blob:null/guid.  Use the full URL
         // with the guid in that case, which isolates all blob URLs with unique
         // origins from each other.  We also get here for browser-initiated

@@ -573,7 +573,8 @@ SadTabView::SadTabView(content::WebContents* web_contents, SadTabKind kind)
           this, l10n_util::GetStringUTF16(GetButtonTitle()));
   auto help_link = std::make_unique<views::Link>(
       l10n_util::GetStringUTF16(GetHelpLinkTitle()));
-  help_link->set_listener(this);
+  help_link->set_callback(base::BindRepeating(
+      &SadTab::PerformAction, base::Unretained(this), Action::HELP_LINK));
   layout->StartRowWithPadding(views::GridLayout::kFixedSize, column_set_id,
                               views::GridLayout::kFixedSize,
                               unrelated_vertical_spacing_large);
@@ -611,10 +612,6 @@ void SadTabView::ReinstallInWebView() {
     owner_ = nullptr;
   }
   AttachToWebView();
-}
-
-void SadTabView::LinkClicked(views::Link* source, int event_flags) {
-  PerformAction(Action::HELP_LINK);
 }
 
 void SadTabView::ButtonPressed(views::Button* sender, const ui::Event& event) {

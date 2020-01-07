@@ -24,6 +24,7 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -37,8 +38,10 @@ class CSSValue;
 class ExceptionState;
 enum class SecureContextMode;
 
-class CORE_EXPORT CSSStyleDeclaration : public ScriptWrappable {
+class CORE_EXPORT CSSStyleDeclaration : public ScriptWrappable,
+                                        public ContextClient {
   DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(CSSStyleDeclaration);
 
  public:
   ~CSSStyleDeclaration() override = default;
@@ -102,12 +105,9 @@ class CORE_EXPORT CSSStyleDeclaration : public ScriptWrappable {
   bool NamedPropertyQuery(const AtomicString&, ExceptionState&);
 
  protected:
-  CSSStyleDeclaration(ExecutionContext* context)
-      : execution_context_(context) {}
-  ExecutionContext* GetExecutionContext() const;
+  CSSStyleDeclaration(ExecutionContext* context) : ContextClient(context) {}
 
  private:
-  WeakMember<ExecutionContext> execution_context_;
   DISALLOW_COPY_AND_ASSIGN(CSSStyleDeclaration);
 };
 

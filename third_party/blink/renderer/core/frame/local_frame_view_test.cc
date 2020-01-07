@@ -347,6 +347,21 @@ TEST_F(LocalFrameViewTest, NoSVGImagePurgeSignalHistogram) {
   histogram_tester.ExpectTotalCount(kHistogramName, 1);
 }
 
+TEST_F(LocalFrameViewTest, NoPurgeSignalHistogramWhenBackgrounded) {
+  const char* kHistogramName =
+      "Memory.Experimental.Renderer.LocalFrameRootPurgeSignal";
+  base::HistogramTester histogram_tester;
+
+  SetBodyInnerHTML("");
+  UpdateAllLifecyclePhasesForTest();
+
+  histogram_tester.ExpectTotalCount(kHistogramName, 0);
+
+  GetPage().SetVisibilityState(PageVisibilityState::kHidden, false);
+  MemoryPressureListenerRegistry::Instance().OnPurgeMemory();
+  histogram_tester.ExpectTotalCount(kHistogramName, 0);
+}
+
 // Ensure the fragment navigation "scroll into view and focus" behavior doesn't
 // activate synchronously while rendering is blocked waiting on a stylesheet.
 // See https://crbug.com/851338.

@@ -2660,7 +2660,8 @@ void WebMediaPlayerImpl::StartPipeline() {
     video_decode_stats_reporter_.reset();
 
     demuxer_.reset(new MediaUrlDemuxer(
-        media_task_runner_, loaded_url_, frame_->GetDocument().SiteForCookies(),
+        media_task_runner_, loaded_url_,
+        frame_->GetDocument().SiteForCookies().RepresentativeUrl(),
         frame_->GetDocument().TopFrameOrigin(),
         allow_media_player_renderer_credentials_, demuxer_found_hls_));
     pipeline_controller_->Start(Pipeline::StartType::kNormal, demuxer_.get(),

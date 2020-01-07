@@ -17,7 +17,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
-#include "components/safe_browsing/web_ui/safe_browsing_ui.h"
+#include "components/safe_browsing/content/web_ui/safe_browsing_ui.h"
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -44,8 +44,8 @@
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"
 #include "components/policy/core/common/cloud/realtime_reporting_job_configuration.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/proto/webprotect.pb.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/proto/webprotect.pb.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #if defined(OS_CHROMEOS)
 #include "components/user_manager/user.h"
@@ -89,8 +89,23 @@ const char SafeBrowsingPrivateEventRouter::kKeyReason[] = "reason";
 const char SafeBrowsingPrivateEventRouter::kKeyNetErrorCode[] = "netErrorCode";
 const char SafeBrowsingPrivateEventRouter::kKeyClickedThrough[] =
     "clickedThrough";
-const char SafeBrowsingPrivateEventRouter::kKeyTriggeredRules[] =
-    "triggeredRules";
+const char SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleId[] = "ruleId";
+const char SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleName[] = "ruleName";
+const char SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleResourceName[] =
+    "ruleResourceName";
+const char SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleSeverity[] =
+    "severity";
+const char SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleAction[] = "action";
+const char SafeBrowsingPrivateEventRouter::kKeyMatchedDetectors[] =
+    "matchedDetectors";
+const char SafeBrowsingPrivateEventRouter::kKeyMatchedDetectorId[] =
+    "detectorId";
+const char SafeBrowsingPrivateEventRouter::kKeyMatchedDetectorName[] =
+    "displayName";
+const char SafeBrowsingPrivateEventRouter::kKeyMatchedDetectorType[] =
+    "detectorType";
+const char SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleInfo[] =
+    "triggeredRuleInfo";
 const char SafeBrowsingPrivateEventRouter::kKeyThreatType[] = "threatType";
 const char SafeBrowsingPrivateEventRouter::kKeyContentType[] = "contentType";
 const char SafeBrowsingPrivateEventRouter::kKeyContentSize[] = "contentSize";
@@ -428,11 +443,37 @@ void SafeBrowsingPrivateEventRouter::OnSensitiveDataEvent(
               event.SetIntKey(kKeyContentSize, content_size);
             event.SetStringKey(kKeyTrigger, trigger);
 
-            base::ListValue triggered_rules;
-            for (auto rule : verdict.triggered_rules()) {
-              triggered_rules.AppendString(rule.rule_name());
+            base::ListValue triggered_rule_info;
+            for (const auto& rule : verdict.triggered_rules()) {
+              base::Value triggered_rule(base::Value::Type::DICTIONARY);
+              triggered_rule.SetIntKey(kKeyTriggeredRuleId, rule.rule_id());
+              triggered_rule.SetStringKey(kKeyTriggeredRuleName,
+                                          rule.rule_name());
+              triggered_rule.SetStringKey(kKeyTriggeredRuleResourceName,
+                                          rule.rule_resource_name());
+              triggered_rule.SetStringKey(kKeyTriggeredRuleSeverity,
+                                          rule.rule_severity());
+              triggered_rule.SetIntKey(kKeyTriggeredRuleAction, rule.action());
+
+              base::ListValue matched_detectors;
+              for (const auto& detector : rule.matched_detectors()) {
+                base::Value matched_detector(base::Value::Type::DICTIONARY);
+                matched_detector.SetStringKey(kKeyMatchedDetectorId,
+                                              detector.detector_id());
+                matched_detector.SetStringKey(kKeyMatchedDetectorName,
+                                              detector.display_name());
+                matched_detector.SetStringKey(kKeyMatchedDetectorType,
+                                              detector.detector_type());
+
+                matched_detectors.Append(std::move(matched_detector));
+              }
+              triggered_rule.SetKey(kKeyMatchedDetectors,
+                                    std::move(matched_detectors));
+
+              triggered_rule_info.Append(std::move(triggered_rule));
             }
-            event.SetKey(kKeyTriggeredRules, std::move(triggered_rules));
+            event.SetKey(kKeyTriggeredRuleInfo, std::move(triggered_rule_info));
+
             return event;
           },
           verdict, url.spec(), file_name, download_digest_sha256,

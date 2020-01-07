@@ -39,8 +39,8 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   // Called when a RenderFrame is reused for the same WebUI type (i.e. reload).
   void RenderFrameReused(RenderFrameHost* render_frame_host);
 
-  // Called when the owning RenderFrameHost has started swapping out.
-  void RenderFrameHostSwappingOut();
+  // Called when the owning RenderFrameHost has started unloading.
+  void RenderFrameHostUnloading();
 
   // WebUI implementation:
   WebContents* GetWebContents() override;

@@ -1234,7 +1234,6 @@ public class NFCTest {
 
     private NdefScanOptions createNdefScanOptions() {
         NdefScanOptions options = new NdefScanOptions();
-        options.mediaType = "";
         return options;
     }
 

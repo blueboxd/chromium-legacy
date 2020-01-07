@@ -38,9 +38,13 @@ NavigationPredictorKeyedService::Prediction::sorted_predicted_urls() const {
 }
 
 NavigationPredictorKeyedService::NavigationPredictorKeyedService(
-    content::BrowserContext* browser_context) {
+    content::BrowserContext* browser_context)
+    : search_engine_preconnector_(browser_context) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!browser_context->IsOffTheRecord());
+
+  // Start preconnecting to the search engine.
+  search_engine_preconnector_.StartPreconnecting(/*with_startup_delay=*/true);
 }
 
 NavigationPredictorKeyedService::~NavigationPredictorKeyedService() {
@@ -70,4 +74,9 @@ void NavigationPredictorKeyedService::AddObserver(Observer* observer) {
 void NavigationPredictorKeyedService::RemoveObserver(Observer* observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   observer_list_.RemoveObserver(observer);
+}
+
+SearchEnginePreconnector*
+NavigationPredictorKeyedService::SearchEnginePreconnectorForTesting() {
+  return &search_engine_preconnector_;
 }

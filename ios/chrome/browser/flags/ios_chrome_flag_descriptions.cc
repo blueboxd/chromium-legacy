@@ -275,12 +275,6 @@ const char kNonModalDialogsDescription[] =
     "Presents JavaScript dialogs non-modally so that the user can change tabs "
     "while a dialog is displayed.";
 
-const char kOmniboxPopupShortcutIconsInZeroStateName[] =
-    "Show zero-state omnibox shortcuts";
-const char kOmniboxPopupShortcutIconsInZeroStateDescription[] =
-    "Instead of ZeroSuggest, show most visited sites and collection shortcuts "
-    "in the omnibox popup.";
-
 const char kOmniboxPreserveDefaultMatchAgainstAsyncUpdateName[] =
     "Omnibox Preserve Default Match Against Async Update";
 const char kOmniboxPreserveDefaultMatchAgainstAsyncUpdateDescription[] =

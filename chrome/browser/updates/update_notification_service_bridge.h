@@ -17,7 +17,14 @@ void UpdateLastShownTimeStamp(base::Time timestamp);
 
 // Return persisted timestamp of last shown notification from Android shared
 // preference. Return nullopt if there is no data.
-base::Optional<base::Time> GetLastShownTimestamp();
+base::Optional<base::Time> GetLastShownTimeStamp();
+
+// Updates and persists |interval| in Android shared preference.
+void UpdateThrottleInterval(base::TimeDelta interval);
+
+// Return persisted interval that might be throttled from Android shared
+// preference. Return nullopt if there is no data.
+base::Optional<base::TimeDelta> GetThrottleInterval();
 
 }  // namespace updates
 

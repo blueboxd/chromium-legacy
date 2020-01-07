@@ -77,6 +77,7 @@ class SpellcheckLanguage {
 
  private:
   friend class SpellCheckTest;
+  friend class FakeSpellCheck;
 
   // Returns whether or not the given word is a contraction of valid words
   // (e.g. "word:word").

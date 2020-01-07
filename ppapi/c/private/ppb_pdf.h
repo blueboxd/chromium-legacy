@@ -36,6 +36,10 @@ struct PP_PrivateFindResult {
 struct PP_PrivateAccessibilityViewportInfo {
   double zoom;
   double scale;
+  // |total_scrollable_size| and |current_scroll_position| are relative
+  // to plugin embed and in screen coordinates.
+  struct PP_Size total_scrollable_size;
+  struct PP_Point current_scroll_position;
   struct PP_Point scroll;
   struct PP_Point offset;
   uint32_t selection_start_page_index;

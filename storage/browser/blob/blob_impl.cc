@@ -201,8 +201,12 @@ void BlobImpl::CaptureSnapshot(CaptureSnapshotCallback callback) {
           return;
         }
 
-        // TODO(mek): Use cached snapshot state, rather than always looking up
-        // the current size and modification time.
+        base::Time modification_time = item->expected_modification_time();
+        if (!modification_time.is_null() &&
+            handle->size() != BlobDataHandle::kUnknownSize) {
+          std::move(callback).Run(handle->size(), modification_time);
+          return;
+        }
 
         struct SizeAndTime {
           uint64_t size;

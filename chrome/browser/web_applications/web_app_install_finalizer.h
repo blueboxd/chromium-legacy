@@ -19,6 +19,7 @@ namespace web_app {
 
 class WebApp;
 class WebAppIconManager;
+class WebAppRegistrar;
 class WebAppSyncBridge;
 
 class WebAppInstallFinalizer final : public InstallFinalizer {
@@ -58,6 +59,11 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
                                      Source::Type source,
                                      UninstallWebAppCallback callback);
 
+  void SetWebAppManifestFieldsAndWriteData(
+      const WebApplicationInfo& web_app_info,
+      std::unique_ptr<WebApp> web_app,
+      InstallFinalizedCallback callback);
+
   void OnIconsDataWritten(InstallFinalizedCallback callback,
                           std::unique_ptr<WebApp> web_app,
                           bool success);
@@ -66,11 +72,14 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
                           bool success);
   void OnDatabaseCommitCompleted(InstallFinalizedCallback callback,
                                  const AppId& app_id,
+                                 bool new_app_created,
                                  bool success);
   void OnFallbackInstallFinalized(const AppId& app_in_sync_install_id,
                                   InstallFinalizedCallback callback,
                                   const AppId& installed_app_id,
                                   InstallResultCode code);
+
+  WebAppRegistrar& GetWebAppRegistrar() const;
 
   Profile* const profile_;
   WebAppSyncBridge* const sync_bridge_;

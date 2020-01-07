@@ -942,7 +942,7 @@ bool MultipartUploadRequestBase::GetContentData(
 void MultipartUploadRequestBase::NotifyResult(
     DriveApiErrorCode code,
     const std::string& body,
-    const base::Closure& notify_complete_callback) {
+    base::OnceClosure notify_complete_callback) {
   // The upload is successfully done. Parse the response which should be
   // the entry's metadata.
   if (code == HTTP_CREATED || code == HTTP_SUCCESS) {
@@ -950,10 +950,10 @@ void MultipartUploadRequestBase::NotifyResult(
         blocking_task_runner_.get(), body,
         base::BindOnce(&MultipartUploadRequestBase::OnDataParsed,
                        weak_ptr_factory_.GetWeakPtr(), code,
-                       notify_complete_callback));
+                       std::move(notify_complete_callback)));
   } else {
     NotifyError(MapJsonError(code, body));
-    notify_complete_callback.Run();
+    std::move(notify_complete_callback).Run();
   }
 }
 
@@ -969,14 +969,14 @@ void MultipartUploadRequestBase::NotifyUploadProgress(int64_t current,
 
 void MultipartUploadRequestBase::OnDataParsed(
     DriveApiErrorCode code,
-    const base::Closure& notify_complete_callback,
+    base::OnceClosure notify_complete_callback,
     std::unique_ptr<base::Value> value) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (value)
     callback_.Run(code, google_apis::FileResource::CreateFrom(*value));
   else
     NotifyError(DRIVE_PARSE_ERROR);
-  notify_complete_callback.Run();
+  std::move(notify_complete_callback).Run();
 }
 
 //============================ DownloadFileRequestBase =========================

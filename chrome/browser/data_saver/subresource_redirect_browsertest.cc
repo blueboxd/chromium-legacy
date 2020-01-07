@@ -85,18 +85,17 @@ class SubresourceRedirectBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    //  Need to resolve all 3 of the above servers to 127.0.0.1:port, and
-    //  the servers themselves can't serve using 127.0.0.1:port as the
-    //  compressed resource URLs rely on subdomains, and subdomains
-    //  do not function properly when using 127.0.0.1:port
+    // Need to resolve all 3 of the above servers to 127.0.0.1:port, and
+    // the servers themselves can't serve using 127.0.0.1:port as the
+    // compressed resource URLs rely on subdomains, and subdomains
+    // do not function properly when using 127.0.0.1:port
     command_line->AppendSwitchASCII("host-rules", "MAP * 127.0.0.1");
   }
 
   void EnableDataSaver(bool enabled) {
-    Profile* profile = Profile::FromBrowserContext(browser()->profile());
-
     data_reduction_proxy::DataReductionProxySettings::
-        SetDataSaverEnabledForTesting(profile->GetPrefs(), enabled);
+        SetDataSaverEnabledForTesting(browser()->profile()->GetPrefs(),
+                                      enabled);
     base::RunLoop().RunUntilIdle();
   }
 

@@ -1,7 +1,4 @@
 # TODO(crbug.com/1010568): Enable all sync e2e tests.
--All/TwoClientBookmarksSyncTest.AddBookmarkWhileDisabled_E2ETest/0
--All/TwoClientBookmarksSyncTest.AddBookmarkWhileDisabled_E2ETest/1
--All/TwoClientBookmarksSyncTest.DISABLED_E2ETest_TwoClientsAddBookmarks/1
 -TwoClientDictionarySyncTest.RemoveOnAAddOnB_E2ETest
 -TwoClientExtensionAppsSyncTest*
 -TwoClientExtensionsSyncTest.UpdateEnableDisableExtension_E2ETest
@@ -12,7 +9,6 @@
 -TwoClientExtensionsSyncTest.UninstallPreinstalledExtensions_E2ETest
 -TwoClientExtensionsSyncTest.Uninstall_E2ETest
 -USS/TwoClientPasswordsSyncTest*
--TwoClientPreferencesSyncTest*
 -TwoClientSearchEnginesSyncTest.DeleteSyncedDefault_E2ETest
 -TwoClientSearchEnginesSyncTest.Delete_E2ETest
 -TwoClientSearchEnginesSyncTest.SyncDefault_E2ETest
@@ -24,6 +20,3 @@
 -TwoClientTypedUrlsSyncTest.AddThenDelete_E2ETest
 -TwoClientTypedUrlsSyncTest.DisableEnableSync_E2ETest
 -TwoClientAutofillProfileSyncTest.DISABLED_E2ETest_TwoClientsAddAutofillProfiles
-# Flaky on bots. Can't log in to GCM.
--TwoClientDictionarySyncTest.Sanity_E2ETest
--All/TwoClientBookmarksSyncTest.E2ETest_TwoClientsAddBookmarks/0

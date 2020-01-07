@@ -140,10 +140,6 @@
 
     <style name="Base.Theme.Chromium.Settings" parent="Theme.Chromium.WithActionBar">
         <item name="android:spinnerItemStyle">@style/PreferenceSpinnerItem</item>
-        <item name="floatLabelTextAppearance">@style/TextAppearance.BlackCaption</item>
-        <item name="floatLabelPaddingLeft">@dimen/pref_autofill_field_horizontal_padding</item>
-        <item name="floatLabelPaddingRight">@dimen/pref_autofill_field_horizontal_padding</item>
-        <item name="floatLabelPaddingTop">@dimen/pref_autofill_field_top_margin</item>
         <item name="actionBarStyle">@style/SettingsActionBarModern</item>
         <item name="preferenceTheme">@style/Theme.Chromium.PreferenceTheme</item>
     </style>

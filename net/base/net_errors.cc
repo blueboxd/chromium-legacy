@@ -63,8 +63,8 @@ bool IsClientCertificateError(int error) {
 }
 
 bool IsDnsError(int error) {
-  DCHECK_NE(ERR_NAME_RESOLUTION_FAILED, error);
-  return error == ERR_NAME_NOT_RESOLVED;
+  return (error == ERR_NAME_NOT_RESOLVED ||
+          error == ERR_NAME_RESOLUTION_FAILED);
 }
 
 Error FileErrorToNetError(base::File::Error file_error) {

@@ -4,7 +4,8 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
-import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.TabListModelProperties.MODEL_TYPE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.CARD_ALPHA;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.CARD_TYPE;
 
 import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
@@ -64,9 +65,6 @@ public class TabProperties {
     public static final WritableObjectPropertyKey<TabListMediator.TabActionListener>
             CREATE_GROUP_LISTENER = new WritableObjectPropertyKey<>();
 
-    public static final PropertyModel.WritableFloatPropertyKey ALPHA =
-            new PropertyModel.WritableFloatPropertyKey();
-
     public static final PropertyModel.WritableIntPropertyKey CARD_ANIMATION_STATUS =
             new PropertyModel.WritableIntPropertyKey();
 
@@ -101,12 +99,12 @@ public class TabProperties {
 
     public static final PropertyKey[] ALL_KEYS_TAB_GRID = new PropertyKey[] {TAB_ID,
             TAB_SELECTED_LISTENER, TAB_CLOSED_LISTENER, FAVICON, THUMBNAIL_FETCHER, IPH_PROVIDER,
-            TITLE, IS_SELECTED, CHECKED_DRAWABLE_STATE_LIST, CREATE_GROUP_LISTENER, ALPHA,
+            TITLE, IS_SELECTED, CHECKED_DRAWABLE_STATE_LIST, CREATE_GROUP_LISTENER, CARD_ALPHA,
             CARD_ANIMATION_STATUS, SELECTABLE_TAB_CLICKED_LISTENER, TAB_SELECTION_DELEGATE,
             IS_INCOGNITO, SELECTED_TAB_BACKGROUND_DRAWABLE_ID, TABSTRIP_FAVICON_BACKGROUND_COLOR_ID,
             SELECTABLE_TAB_ACTION_BUTTON_BACKGROUND,
             SELECTABLE_TAB_ACTION_BUTTON_SELECTED_BACKGROUND, URL, ACCESSIBILITY_DELEGATE,
-            MODEL_TYPE};
+            CARD_TYPE};
 
     public static final PropertyKey[] ALL_KEYS_TAB_STRIP =
             new PropertyKey[] {TAB_ID, TAB_SELECTED_LISTENER, TAB_CLOSED_LISTENER, FAVICON,

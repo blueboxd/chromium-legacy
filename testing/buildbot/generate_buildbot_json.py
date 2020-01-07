@@ -1300,7 +1300,7 @@ class BBJSONGenerator(object):
               node.lineno, typ, type(node)))
 
   def check_ast_list_formatted(self, keys, filename, verbose,
-                               check_sorting=False):
+                               check_sorting=True):
     """Checks if a list of ast keys are correctly formatted.
 
     Currently only checks to ensure they're correctly sorted, and that there
@@ -1358,8 +1358,7 @@ class BBJSONGenerator(object):
 
     return False
 
-  def check_ast_dict_formatted(self, node, filename, verbose,
-                               check_sorting=True):
+  def check_ast_dict_formatted(self, node, filename, verbose):
     """Checks if an ast dictionary's keys are correctly formatted.
 
     Just a simple wrapper around check_ast_list_formatted.
@@ -1380,8 +1379,7 @@ class BBJSONGenerator(object):
       self.type_assert(key, ast.Str, filename, verbose)
       keys.append(key)
 
-    return self.check_ast_list_formatted(
-        keys, filename, verbose, check_sorting=check_sorting)
+    return self.check_ast_list_formatted(keys, filename, verbose)
 
   def check_input_files_sorting(self, verbose=False):
     # TODO(https://crbug.com/886993): Add the ability for this script to
@@ -1429,8 +1427,7 @@ class BBJSONGenerator(object):
       assert waterfall_name
       keys.append(waterfall_name)
 
-    if not self.check_ast_list_formatted(
-        keys, filename, verbose, check_sorting=True):
+    if not self.check_ast_list_formatted(keys, filename, verbose):
       bad_files.add(filename)
 
     for filename in (
@@ -1467,8 +1464,7 @@ class BBJSONGenerator(object):
           # 'check_composition_type_test_suites()'
           if key.s == 'basic_suites':
             for group in suite.values:
-              if not self.check_ast_dict_formatted(
-                  group, filename, verbose, check_sorting=False):
+              if not self.check_ast_dict_formatted(group, filename, verbose):
                 bad_files.add(filename)
             break
 
@@ -1477,8 +1473,7 @@ class BBJSONGenerator(object):
         for test in value.values:
           for kind, node in zip(test.keys, test.values):
             if isinstance(node, ast.Dict):
-              if not self.check_ast_dict_formatted(
-                  node, filename, verbose, check_sorting=False):
+              if not self.check_ast_dict_formatted(node, filename, verbose):
                 bad_files.add(filename)
             elif kind.s == 'remove_from':
               # Don't care about sorting; these are usually grouped, since the

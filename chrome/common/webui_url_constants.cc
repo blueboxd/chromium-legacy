@@ -7,7 +7,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "components/nacl/common/buildflags.h"
-#include "components/safe_browsing/web_ui/constants.h"
+#include "components/safe_browsing/core/web_ui/constants.h"
 #include "extensions/buildflags/buildflags.h"
 
 #if defined(OS_CHROMEOS)

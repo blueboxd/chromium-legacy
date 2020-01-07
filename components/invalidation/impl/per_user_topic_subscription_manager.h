@@ -14,7 +14,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/invalidation/impl/channels_states.h"
-#include "components/invalidation/impl/per_user_topic_registration_request.h"
+#include "components/invalidation/impl/per_user_topic_subscription_request.h"
 #include "components/invalidation/public/identity_provider.h"
 #include "components/invalidation/public/invalidation_export.h"
 #include "components/invalidation/public/invalidation_util.h"
@@ -113,13 +113,13 @@ class INVALIDATION_EXPORT PerUserTopicSubscriptionManager {
   void ActOnSuccessfulSubscription(
       const Topic& topic,
       const std::string& private_topic_name,
-      PerUserTopicRegistrationRequest::RequestType type);
+      PerUserTopicSubscriptionRequest::RequestType type);
   void ScheduleRequestForRepetition(const Topic& topic);
   void SubscriptionFinishedForTopic(
       Topic topic,
       Status code,
       std::string private_topic_name,
-      PerUserTopicRegistrationRequest::RequestType type);
+      PerUserTopicSubscriptionRequest::RequestType type);
 
   void RequestAccessToken();
 

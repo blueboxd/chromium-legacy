@@ -65,6 +65,14 @@
 #include "components/policy/core/common/policy_types.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/test/base/testing_profile.h"
+#include "components/account_id/account_id.h"
+#include "components/user_manager/scoped_user_manager.h"
+#endif
+
 namespace webrtc_event_logging {
 
 #if defined(OS_WIN)
@@ -612,6 +620,17 @@ class WebRtcEventLogManagerTestBase : public ::testing::Test {
       bool is_managed_profile,
       bool has_device_level_policies,
       base::Optional<bool> policy_allows_remote_logging) {
+    return CreateBrowserContextWithCustomSupervision(
+        profile_name, is_managed_profile, has_device_level_policies,
+        false /* is_supervised */, policy_allows_remote_logging);
+  }
+  virtual std::unique_ptr<TestingProfile>
+  CreateBrowserContextWithCustomSupervision(
+      std::string profile_name,
+      bool is_managed_profile,
+      bool has_device_level_policies,
+      bool is_supervised,
+      base::Optional<bool> policy_allows_remote_logging) {
     // If profile name not specified, select a unique name.
     if (profile_name.empty()) {
       static size_t index = 0;
@@ -655,9 +674,8 @@ class WebRtcEventLogManagerTestBase : public ::testing::Test {
     provider_.UpdateChromePolicy(policy_map);
 #else
     if (has_device_level_policies) {
-      // This should never happen.
-      // Device level policies cannot be set on Chrome OS and Android.
-      EXPECT_TRUE(false);
+      ADD_FAILURE() << "Invalid test setup. Chrome platform policies cannot be "
+                       "set on Chrome OS and Android.";
     }
 #endif
 
@@ -668,6 +686,9 @@ class WebRtcEventLogManagerTestBase : public ::testing::Test {
     profile_builder.SetPrefService(base::WrapUnique(regular_prefs));
     profile_builder.OverridePolicyConnectorIsManagedForTesting(
         is_managed_profile);
+    if (is_supervised) {
+      profile_builder.SetSupervisedUserId("id");
+    }
     std::unique_ptr<TestingProfile> profile = profile_builder.Build();
 
     // Blocks on the unit under test's task runner, so that we won't proceed
@@ -1029,6 +1050,11 @@ class WebRtcEventLogManagerTestPolicy : public WebRtcEventLogManagerTestBase {
 
     WebRtcEventLogManagerTestBase::SetUp();
   }
+
+#if defined(OS_CHROMEOS)
+  std::unique_ptr<user_manager::ScopedUserManager> GetScopedUserManager(
+      user_manager::UserType user_type);
+#endif
 
   void TestManagedProfileAfterBeingExplicitlySet(bool explicitly_set_value);
 };
@@ -3958,11 +3984,37 @@ TEST_F(WebRtcEventLogManagerTestPolicy, NotManagedRejectsRemoteLogging) {
   EXPECT_EQ(StartRemoteLogging(key), allow_remote_logging);
 }
 
+#if defined(OS_CHROMEOS)
+std::unique_ptr<user_manager::ScopedUserManager>
+WebRtcEventLogManagerTestPolicy::GetScopedUserManager(
+    user_manager::UserType user_type) {
+  const AccountId kAccountId = AccountId::FromUserEmailGaiaId("name", "id");
+  auto mock_user_manager =
+      std::make_unique<testing::NiceMock<chromeos::FakeChromeUserManager>>();
+  // On Chrome OS, there are different user types, some of which can be
+  // affiliated with the device if the device is enterprise-enrolled, i.e. the
+  // logged in account belongs to the org that owns the device. For our
+  // purposes here, affiliation does not matter for the determination of the
+  // policy default, so we can set it to false here. We do not need a user
+  // to profile mapping either, so profile can be a nullptr.
+  mock_user_manager->AddUserWithAffiliationAndTypeAndProfile(
+      kAccountId, /*is_affiliated*/ false, user_type, /*profile*/ nullptr);
+  return std::make_unique<user_manager::ScopedUserManager>(
+      std::move(mock_user_manager));
+}
+#endif
+
 TEST_F(WebRtcEventLogManagerTestPolicy,
        ManagedProfileAllowsRemoteLoggingByDefault) {
   SetUp(true);  // Feature generally enabled (kill-switch not engaged).
 
   const bool allow_remote_logging = true;
+
+#if defined(OS_CHROMEOS)
+  std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager =
+      GetScopedUserManager(user_manager::USER_TYPE_REGULAR);
+#endif
+
   auto browser_context = CreateBrowserContext(
       "name", true /* is_managed_profile */,
       false /* has_device_level_policies */, base::nullopt);
@@ -3975,12 +4027,44 @@ TEST_F(WebRtcEventLogManagerTestPolicy,
   EXPECT_EQ(StartRemoteLogging(key), allow_remote_logging);
 }
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+// Currently we only test the case of supervised child profiles for Chrome OS
+// here. Other user types for Chrome OS are tested in the unit test for
+// ProfileDefaultsToLoggingEnabledTestCase in
+// webrtc_event_log_manager_common_unittest because the test setup in this
+// class currently does not seem to allow for an easy setup of some user types.
+// TODO(crbug.com/1035829): Figure out whether this can be resolved by tweaking
+// the test setup or whether the Active Directory services need to be adapted
+// for easy testing.
 TEST_F(WebRtcEventLogManagerTestPolicy,
-       ManagedByPlatformPoliciesAllowsRemoteLoggingByDefault) {
+       ManagedProfileDoesNotAllowRemoteLoggingForSupervisedProfiles) {
   SetUp(true);  // Feature generally enabled (kill-switch not engaged).
 
-  const bool allow_remote_logging = true;
+  const bool allow_remote_logging = false;
+
+#if defined(OS_CHROMEOS)
+  std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager =
+      GetScopedUserManager(user_manager::USER_TYPE_CHILD);
+#endif
+
+  auto browser_context = CreateBrowserContextWithCustomSupervision(
+      "name", true /* is_managed_profile */,
+      false /* has_device_level_policies */, true /* is_supervised */,
+      base::nullopt);
+
+  auto rph = std::make_unique<MockRenderProcessHost>(browser_context.get());
+  const auto key = GetPeerConnectionKey(rph.get(), kLid);
+
+  ASSERT_TRUE(PeerConnectionAdded(key));
+  ASSERT_TRUE(PeerConnectionSessionIdSet(key));
+  EXPECT_EQ(StartRemoteLogging(key), allow_remote_logging);
+}
+
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+TEST_F(WebRtcEventLogManagerTestPolicy,
+       OnlyManagedByPlatformPoliciesDoesNotAllowRemoteLoggingByDefault) {
+  SetUp(true);  // Feature generally enabled (kill-switch not engaged).
+
+  const bool allow_remote_logging = false;
   auto browser_context =
       CreateBrowserContext("name", false /* is_managed_profile */,
                            true /* has_device_level_policies */, base::nullopt);

@@ -4,6 +4,7 @@
 
 # Do not add any imports to non-//build directories here.
 # Some projects (e.g. V8) do not have non-build directories DEPS'ed in.
+
 import("//build/config/android/config.gni")
 import("//build/config/android/internal_rules.gni")
 import("//build/config/clang/clang.gni")
@@ -13,6 +14,7 @@ import("//build/config/dcheck_always_on.gni")
 import("//build/config/python.gni")
 import("//build/config/zip.gni")
 import("//build/toolchain/toolchain.gni")
+
 assert(is_android)
 
 declare_args() {
@@ -1272,7 +1274,7 @@ if (enable_java_templates) {
   #
   # Example
   #   java_binary("foo") {
-  #     java_files = [ "org/chromium/foo/FooMain.java" ]
+  #     sources = [ "org/chromium/foo/FooMain.java" ]
   #     deps = [ ":bar_java" ]
   #     main_class = "org.chromium.foo.FooMain"
   #   }
@@ -1296,14 +1298,14 @@ if (enable_java_templates) {
   # Declare a Java Annotation Processor.
   #
   # Supports all variables of java_library(), plus:
-  #   jar_path: Path to a prebuilt jar. Mutually exclusive with java_files &
+  #   jar_path: Path to a prebuilt jar. Mutually exclusive with sources &
   #     srcjar_deps.
   #   main_class: The fully-quallified class name of the processor's entry
   #       point.
   #
   # Example
   #   java_annotation_processor("foo_processor") {
-  #     java_files = [ "org/chromium/foo/FooProcessor.java" ]
+  #     sources = [ "org/chromium/foo/FooProcessor.java" ]
   #     deps = [ ":bar_java" ]
   #     main_class = "org.chromium.foo.FooProcessor"
   #   }
@@ -1333,7 +1335,7 @@ if (enable_java_templates) {
   #
   # Example
   #   junit_binary("foo") {
-  #     java_files = [ "org/chromium/foo/FooTest.java" ]
+  #     sources = [ "org/chromium/foo/FooTest.java" ]
   #     deps = [ ":bar_java" ]
   #   }
   template("junit_binary") {
@@ -1446,11 +1448,11 @@ if (enable_java_templates) {
   #   annotation_processor_deps: List of java_annotation_processor targets to
   #     use when compiling.
   #
-  #   jar_path: Path to a prebuilt jar. Mutually exclusive with java_files &
+  #   jar_path: Path to a prebuilt jar. Mutually exclusive with sources &
   #     srcjar_deps.
-  #   java_files: List of .java files included in this library.
+  #   sources: List of .java files included in this library.
   #   srcjar_deps: List of srcjar dependencies. The .java files in the srcjars
-  #     will be added to java_files and be included in this library.
+  #     will be added to sources and be included in this library.
   #
   #   input_jars_paths: A list of paths to the jars that should be included
   #     in the compile-time classpath. These are in addition to library .jars
@@ -1488,7 +1490,7 @@ if (enable_java_templates) {
   #
   # Example
   #   java_library("foo_java") {
-  #     java_files = [
+  #     sources = [
   #       "org/chromium/foo/Foo.java",
   #       "org/chromium/foo/FooInterface.java",
   #       "org/chromium/foo/FooService.java",
@@ -1851,7 +1853,7 @@ if (enable_java_templates) {
   #
   # Example
   #   android_library("foo_java") {
-  #     java_files = [
+  #     sources = [
   #       "android/org/chromium/foo/Foo.java",
   #       "android/org/chromium/foo/FooInterface.java",
   #       "android/org/chromium/foo/FooService.java",
@@ -2140,9 +2142,9 @@ if (enable_java_templates) {
   #     step.
   #   disable_r8_outlining: Turn off outlining during the proguard step.
   #   annotation_processor_deps: List of java_annotation_processor targets to
-  #     use when compiling the java_files given to this target (optional).
+  #     use when compiling the sources given to this target (optional).
   #   processor_args_javac: List of args to pass to annotation processors when
-  #     compiling java_files given to this target (optional).
+  #     compiling sources given to this target (optional).
   template("android_apk_or_module") {
     forward_variables_from(invoker, [ "testonly" ])
     assert(defined(invoker.android_manifest))
@@ -2810,7 +2812,6 @@ if (enable_java_templates) {
                                "base_module_target",
                                "chromium_code",
                                "jacoco_never_instrument",
-                               "java_files",
                                "javac_args",
                                "manifest_package",
                                "native_lib_placeholders",
@@ -3110,15 +3111,6 @@ if (enable_java_templates) {
         # why some classes aren't properly being kept.
         # _final_deps += [ ":$_validate_dex_target" ]
         _final_dex_target_dep = ":$_static_library_dexsplitter_target"
-      }
-    }
-
-    if (_native_libs_deps != []) {
-      _create_stack_script_rule_name = "${_template_name}__stack_script"
-      _final_deps += [ ":${_create_stack_script_rule_name}" ]
-      stack_script(_create_stack_script_rule_name) {
-        stack_target_name = invoker.target_name
-        deps = _native_libs_deps
       }
     }
 
@@ -3448,7 +3440,7 @@ if (enable_java_templates) {
   # Example
   #   android_apk("foo_apk") {
   #     android_manifest = "AndroidManifest.xml"
-  #     java_files = [
+  #     sources = [
   #       "android/org/chromium/foo/FooApplication.java",
   #       "android/org/chromium/foo/FooActivity.java",
   #     ]
@@ -3494,7 +3486,6 @@ if (enable_java_templates) {
                                "input_jars_paths",
                                "use_modern_linker",
                                "jacoco_never_instrument",
-                               "java_files",
                                "javac_args",
                                "jni_registration_header",
                                "jni_sources_blacklist",
@@ -3626,7 +3617,6 @@ if (enable_java_templates) {
                                "input_jars_paths",
                                "is_base_module",
                                "jacoco_never_instrument",
-                               "java_files",
                                "javac_args",
                                "jni_registration_header",
                                "jni_sources_blacklist",
@@ -3764,7 +3754,7 @@ if (enable_java_templates) {
   #     android_manifest = "AndroidManifest.xml"
   #     apk_name = "FooTest"
   #     apk_under_test = "Foo"
-  #     java_files = [
+  #     sources = [
   #       "android/org/chromium/foo/FooTestCase.java",
   #       "android/org/chromium/foo/FooExampleTest.java",
   #     ]
@@ -4053,6 +4043,17 @@ if (enable_java_templates) {
   #       Whether to generate nano protos. If false, this will use the lite proto generator.
   #       Nano protos are deprecated, so please use lite new proto libraries.
   #
+  #   deps (optional)
+  #       Additional dependencies. Passed through to both the action and the
+  #       android_library targets.
+  #
+  #   import_dirs (optional)
+  #       A list of extra import directories to be passed to protoc compiler.
+  #       WARNING: This circumvents proto checkdeps, and should only be used
+  #       when needed, typically when proto files cannot cleanly import through
+  #       absolute paths, such as for third_party or generated .proto files.
+  #       http://crbug.com/691451 tracks fixing this.
+  #
   # Example:
   #  proto_java_library("foo_proto_java") {
   #    proto_path = "src/foo"
@@ -4109,6 +4110,16 @@ if (enable_java_templates) {
                "--srcjar",
                rebase_path(_srcjar_path, root_build_dir),
              ] + rebase_path(sources, root_build_dir)
+
+      if (defined(invoker.import_dirs)) {
+        foreach(_import_dir, invoker.import_dirs) {
+          args += [
+            "--import-dir",
+            rebase_path(_import_dir, root_build_dir),
+          ]
+        }
+      }
+
       if (_generate_nano) {
         args += [ "--nano" ]
       } else {
@@ -4121,11 +4132,14 @@ if (enable_java_templates) {
 
     android_library(target_name) {
       chromium_code = false
-      java_files = []
+      sources = []
       srcjar_deps = [ ":${_template_name}__protoc_java" ]
       deps = [
         _proto_runtime,
       ]
+      if (defined(invoker.deps)) {
+        deps += invoker.deps
+      }
     }
   }
 

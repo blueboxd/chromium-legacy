@@ -5173,70 +5173,96 @@ TEST_F(AXPlatformNodeWinTest, TestUIAErrorHandling) {
 }
 
 TEST_F(AXPlatformNodeWinTest, TestGetPatternProviderSupportedPatterns) {
-  ui::AXNodeData root;
-  int32_t root_id = 1;
-  root.id = root_id;
-  root.role = ax::mojom::Role::kRootWebArea;
+  constexpr int32_t root_id = 1;
+  constexpr int32_t text_field_with_combo_box_id = 2;
+  constexpr int32_t meter_id = 3;
+  constexpr int32_t group_with_scroll_id = 4;
+  constexpr int32_t checkbox_id = 5;
+  constexpr int32_t link_id = 6;
+  constexpr int32_t table_without_header_id = 7;
+  constexpr int32_t table_without_header_cell_id = 8;
+  constexpr int32_t table_with_header_id = 9;
+  constexpr int32_t table_with_header_row_1_id = 10;
+  constexpr int32_t table_with_header_column_header_id = 11;
+  constexpr int32_t table_with_header_row_2_id = 12;
+  constexpr int32_t table_with_header_cell_id = 13;
+  constexpr int32_t grid_without_header_id = 14;
+  constexpr int32_t grid_without_header_cell_id = 15;
+  constexpr int32_t grid_with_header_id = 16;
+  constexpr int32_t grid_with_header_row_1_id = 17;
+  constexpr int32_t grid_with_header_column_header_id = 18;
+  constexpr int32_t grid_with_header_row_2_id = 19;
+  constexpr int32_t grid_with_header_cell_id = 20;
 
-  ui::AXNodeData text_field_with_combo_box;
-  int32_t text_field_with_combo_box_id = 2;
-  text_field_with_combo_box.id = text_field_with_combo_box_id;
-  text_field_with_combo_box.role = ax::mojom::Role::kTextFieldWithComboBox;
-  root.child_ids.push_back(text_field_with_combo_box_id);
+  AXTreeUpdate update;
+  update.tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  update.has_tree_data = true;
+  update.root_id = root_id;
+  update.nodes.resize(20);
+  update.nodes[0].id = root_id;
+  update.nodes[0].role = ax::mojom::Role::kRootWebArea;
+  update.nodes[0].child_ids = {text_field_with_combo_box_id,
+                               meter_id,
+                               group_with_scroll_id,
+                               checkbox_id,
+                               link_id,
+                               table_without_header_id,
+                               table_with_header_id,
+                               grid_without_header_id,
+                               grid_with_header_id};
+  update.nodes[1].id = text_field_with_combo_box_id;
+  update.nodes[1].role = ax::mojom::Role::kTextFieldWithComboBox;
+  update.nodes[2].id = meter_id;
+  update.nodes[2].role = ax::mojom::Role::kMeter;
+  update.nodes[3].id = group_with_scroll_id;
+  update.nodes[3].role = ax::mojom::Role::kGroup;
+  update.nodes[3].AddIntAttribute(ax::mojom::IntAttribute::kScrollXMin, 10);
+  update.nodes[3].AddIntAttribute(ax::mojom::IntAttribute::kScrollXMax, 10);
+  update.nodes[3].AddIntAttribute(ax::mojom::IntAttribute::kScrollX, 10);
+  update.nodes[4].id = checkbox_id;
+  update.nodes[4].role = ax::mojom::Role::kCheckBox;
+  update.nodes[5].id = link_id;
+  update.nodes[5].role = ax::mojom::Role::kLink;
+  update.nodes[6].id = table_without_header_id;
+  update.nodes[6].role = ax::mojom::Role::kTable;
+  update.nodes[6].child_ids = {table_without_header_cell_id};
+  update.nodes[7].id = table_without_header_cell_id;
+  update.nodes[7].role = ax::mojom::Role::kCell;
+  update.nodes[8].id = table_with_header_id;
+  update.nodes[8].role = ax::mojom::Role::kTable;
+  update.nodes[8].child_ids = {table_with_header_row_1_id,
+                               table_with_header_row_2_id};
+  update.nodes[9].id = table_with_header_row_1_id;
+  update.nodes[9].role = ax::mojom::Role::kRow;
+  update.nodes[9].child_ids = {table_with_header_column_header_id};
+  update.nodes[10].id = table_with_header_column_header_id;
+  update.nodes[10].role = ax::mojom::Role::kColumnHeader;
+  update.nodes[11].id = table_with_header_row_2_id;
+  update.nodes[11].role = ax::mojom::Role::kRow;
+  update.nodes[11].child_ids = {table_with_header_cell_id};
+  update.nodes[12].id = table_with_header_cell_id;
+  update.nodes[12].role = ax::mojom::Role::kCell;
+  update.nodes[13].id = grid_without_header_id;
+  update.nodes[13].role = ax::mojom::Role::kGrid;
+  update.nodes[13].child_ids = {grid_without_header_cell_id};
+  update.nodes[14].id = grid_without_header_cell_id;
+  update.nodes[14].role = ax::mojom::Role::kCell;
+  update.nodes[15].id = grid_with_header_id;
+  update.nodes[15].role = ax::mojom::Role::kGrid;
+  update.nodes[15].child_ids = {grid_with_header_row_1_id,
+                                grid_with_header_row_2_id};
+  update.nodes[16].id = grid_with_header_row_1_id;
+  update.nodes[16].role = ax::mojom::Role::kRow;
+  update.nodes[16].child_ids = {grid_with_header_column_header_id};
+  update.nodes[17].id = grid_with_header_column_header_id;
+  update.nodes[17].role = ax::mojom::Role::kColumnHeader;
+  update.nodes[18].id = grid_with_header_row_2_id;
+  update.nodes[18].role = ax::mojom::Role::kRow;
+  update.nodes[18].child_ids = {grid_with_header_cell_id};
+  update.nodes[19].id = grid_with_header_cell_id;
+  update.nodes[19].role = ax::mojom::Role::kCell;
 
-  ui::AXNodeData table;
-  int32_t table_id = 3;
-  table.id = table_id;
-  table.role = ax::mojom::Role::kTable;
-  root.child_ids.push_back(table_id);
-
-  ui::AXNodeData table_cell;
-  int32_t table_cell_id = 4;
-  table_cell.id = table_cell_id;
-  table_cell.role = ax::mojom::Role::kCell;
-  table.child_ids.push_back(table_cell_id);
-
-  ui::AXNodeData meter;
-  int32_t meter_id = 5;
-  meter.id = meter_id;
-  meter.role = ax::mojom::Role::kMeter;
-  root.child_ids.push_back(meter_id);
-
-  ui::AXNodeData group_with_scroll;
-  int32_t group_with_scroll_id = 6;
-  group_with_scroll.id = group_with_scroll_id;
-  group_with_scroll.role = ax::mojom::Role::kGroup;
-  group_with_scroll.AddIntAttribute(ax::mojom::IntAttribute::kScrollXMin, 10);
-  group_with_scroll.AddIntAttribute(ax::mojom::IntAttribute::kScrollXMax, 10);
-  group_with_scroll.AddIntAttribute(ax::mojom::IntAttribute::kScrollX, 10);
-  root.child_ids.push_back(group_with_scroll_id);
-
-  ui::AXNodeData grid;
-  int32_t grid_id = 7;
-  grid.id = grid_id;
-  grid.role = ax::mojom::Role::kGrid;
-  root.child_ids.push_back(grid_id);
-
-  ui::AXNodeData grid_cell;
-  int32_t grid_cell_id = 8;
-  grid_cell.id = grid_cell_id;
-  grid_cell.role = ax::mojom::Role::kCell;
-  grid.child_ids.push_back(grid_cell_id);
-
-  ui::AXNodeData checkbox;
-  int32_t checkbox_id = 9;
-  checkbox.id = checkbox_id;
-  checkbox.role = ax::mojom::Role::kCheckBox;
-  root.child_ids.push_back(checkbox_id);
-
-  ui::AXNodeData link;
-  int32_t link_id = 10;
-  link.id = link_id;
-  link.role = ax::mojom::Role::kLink;
-  root.child_ids.push_back(link_id);
-
-  Init(root, text_field_with_combo_box, table, table_cell, meter,
-       group_with_scroll, grid, grid_cell, checkbox, link);
+  Init(update);
 
   EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_TextEditPatternId,
                         UIA_TextPatternId}),
@@ -5245,14 +5271,6 @@ TEST_F(AXPlatformNodeWinTest, TestGetPatternProviderSupportedPatterns) {
   EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
                         UIA_ExpandCollapsePatternId, UIA_TextChildPatternId}),
             GetSupportedPatternsFromNodeId(text_field_with_combo_box_id));
-
-  EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_GridPatternId,
-                        UIA_TablePatternId, UIA_TextChildPatternId}),
-            GetSupportedPatternsFromNodeId(table_id));
-
-  EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_GridItemPatternId,
-                        UIA_TableItemPatternId, UIA_TextChildPatternId}),
-            GetSupportedPatternsFromNodeId(table_cell_id));
 
   EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
                         UIA_RangeValuePatternId, UIA_TextChildPatternId}),
@@ -5263,22 +5281,57 @@ TEST_F(AXPlatformNodeWinTest, TestGetPatternProviderSupportedPatterns) {
             GetSupportedPatternsFromNodeId(group_with_scroll_id));
 
   EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
-                        UIA_SelectionPatternId, UIA_GridPatternId,
-                        UIA_TablePatternId, UIA_TextChildPatternId}),
-            GetSupportedPatternsFromNodeId(grid_id));
-
-  EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
-                        UIA_GridItemPatternId, UIA_TableItemPatternId,
-                        UIA_TextChildPatternId, UIA_SelectionItemPatternId}),
-            GetSupportedPatternsFromNodeId(grid_cell_id));
-
-  EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
                         UIA_TextChildPatternId, UIA_TogglePatternId}),
             GetSupportedPatternsFromNodeId(checkbox_id));
 
   EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
                         UIA_InvokePatternId, UIA_TextChildPatternId}),
             GetSupportedPatternsFromNodeId(link_id));
+
+  EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_GridPatternId,
+                        UIA_TextChildPatternId}),
+            GetSupportedPatternsFromNodeId(table_without_header_id));
+
+  EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_GridItemPatternId,
+                        UIA_TextChildPatternId}),
+            GetSupportedPatternsFromNodeId(table_without_header_cell_id));
+
+  EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_GridPatternId,
+                        UIA_TablePatternId, UIA_TextChildPatternId}),
+            GetSupportedPatternsFromNodeId(table_with_header_id));
+
+  EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_GridItemPatternId,
+                        UIA_TableItemPatternId, UIA_TextChildPatternId}),
+            GetSupportedPatternsFromNodeId(table_with_header_column_header_id));
+
+  EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_GridItemPatternId,
+                        UIA_TableItemPatternId, UIA_TextChildPatternId}),
+            GetSupportedPatternsFromNodeId(table_with_header_cell_id));
+
+  EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
+                        UIA_SelectionPatternId, UIA_GridPatternId,
+                        UIA_TextChildPatternId}),
+            GetSupportedPatternsFromNodeId(grid_without_header_id));
+
+  EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
+                        UIA_GridItemPatternId, UIA_TextChildPatternId,
+                        UIA_SelectionItemPatternId}),
+            GetSupportedPatternsFromNodeId(grid_without_header_cell_id));
+
+  EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
+                        UIA_SelectionPatternId, UIA_GridPatternId,
+                        UIA_TablePatternId, UIA_TextChildPatternId}),
+            GetSupportedPatternsFromNodeId(grid_with_header_id));
+
+  EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
+                        UIA_GridItemPatternId, UIA_TableItemPatternId,
+                        UIA_TextChildPatternId, UIA_SelectionItemPatternId}),
+            GetSupportedPatternsFromNodeId(grid_with_header_column_header_id));
+
+  EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
+                        UIA_GridItemPatternId, UIA_TableItemPatternId,
+                        UIA_TextChildPatternId, UIA_SelectionItemPatternId}),
+            GetSupportedPatternsFromNodeId(grid_with_header_cell_id));
 }
 
 TEST_F(AXPlatformNodeWinTest, TestGetPatternProviderExpandCollapsePattern) {

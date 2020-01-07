@@ -1693,7 +1693,7 @@ void LargeObjectPage::VerifyMarking() {
 }
 
 Address ObjectStartBitmap::FindHeader(
-    Address address_maybe_pointing_to_the_middle_of_object) {
+    Address address_maybe_pointing_to_the_middle_of_object) const {
   size_t object_offset =
       address_maybe_pointing_to_the_middle_of_object - offset_;
   size_t object_start_number = object_offset / kAllocationGranularity;

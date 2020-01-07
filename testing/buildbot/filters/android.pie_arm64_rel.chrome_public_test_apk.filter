@@ -92,3 +92,6 @@
 # crbug/1034412
 -org.chromium.chrome.browser.media.ui.PictureInPictureControllerTest.testEnterPip
 -org.chromium.chrome.browser.media.ui.PictureInPictureControllerTest.testReenterPip
+
+# crbug/1039522
+-org.chromium.chrome.browser.settings.privacy.BrowsingDataBridgeTest.testClearingSiteSettingsAndCacheWithImportantSites

@@ -17,27 +17,12 @@ import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.tab_activity_glue.ActivityTabWebContentsDelegateAndroid;
-import org.chromium.chrome.browser.vr.VrModuleProvider;
-import org.chromium.content_public.common.BrowserControlsState;
 
 /**
  * {@link TabDelegateFactory} class to be used in all {@link Tab} instances owned by a
  * {@link ChromeTabbedActivity}.
  */
 public class TabbedModeTabDelegateFactory implements TabDelegateFactory {
-    private static class TabbedModeBrowserControlsVisibilityDelegate
-            extends TabStateBrowserControlsVisibilityDelegate {
-        public TabbedModeBrowserControlsVisibilityDelegate(Tab tab) {
-            super(tab);
-        }
-
-        @Override
-        protected int calculateVisibilityConstraints() {
-            if (VrModuleProvider.getDelegate().isInVr()) return BrowserControlsState.HIDDEN;
-            return super.calculateVisibilityConstraints();
-        }
-    }
-
     private final ChromeActivity mActivity;
     private final BrowserControlsVisibilityDelegate mAppBrowserControlsVisibilityDelegate;
     private final Supplier<ShareDelegate> mShareDelegateSupplier;
@@ -69,7 +54,7 @@ public class TabbedModeTabDelegateFactory implements TabDelegateFactory {
     @Override
     public BrowserControlsVisibilityDelegate createBrowserControlsVisibilityDelegate(Tab tab) {
         return new ComposedBrowserControlsVisibilityDelegate(
-                new TabbedModeBrowserControlsVisibilityDelegate(tab),
+                new TabStateBrowserControlsVisibilityDelegate(tab),
                 mAppBrowserControlsVisibilityDelegate);
     }
 }

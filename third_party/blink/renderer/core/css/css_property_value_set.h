@@ -37,6 +37,7 @@
 namespace blink {
 
 class CSSStyleDeclaration;
+class ExecutionContext;
 class ImmutableCSSPropertyValueSet;
 class MutableCSSPropertyValueSet;
 class StyleSheetContents;
@@ -276,7 +277,8 @@ class CORE_EXPORT MutableCSSPropertyValueSet : public CSSPropertyValueSet {
                             SecureContextMode,
                             StyleSheetContents* context_style_sheet);
 
-  CSSStyleDeclaration* EnsureCSSStyleDeclaration();
+  CSSStyleDeclaration* EnsureCSSStyleDeclaration(
+      ExecutionContext* execution_context);
 
   template <typename T>  // CSSPropertyID or AtomicString
   int FindPropertyIndex(T property) const;

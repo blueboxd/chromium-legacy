@@ -725,11 +725,11 @@ class CONTENT_EXPORT RenderFrameHostManager
   // Runs the unload handler in the old RenderFrameHost, after the new
   // RenderFrameHost has committed.  |old_render_frame_host| will either be
   // deleted or put on the pending delete list during this call.
-  void SwapOutOldFrame(
+  void UnloadOldFrame(
       std::unique_ptr<RenderFrameHostImpl> old_render_frame_host);
 
   // Discards a RenderFrameHost that was never made active (for active ones
-  // SwapOutOldFrame is used instead).
+  // UnloadOldFrame is used instead).
   void DiscardUnusedFrame(
       std::unique_ptr<RenderFrameHostImpl> render_frame_host);
 

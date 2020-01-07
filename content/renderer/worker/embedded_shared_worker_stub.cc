@@ -173,7 +173,8 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext() {
   // worker, we need to check the all documents bounded by the shared worker.
   // (crbug.com/723553)
   // https://tools.ietf.org/html/draft-ietf-httpbis-cookie-same-site-07#section-2.1.2
-  worker_fetch_context->set_site_for_cookies(url_);
+  worker_fetch_context->set_site_for_cookies(
+      net::SiteForCookies::FromUrl(url_));
   worker_fetch_context->set_origin_url(url_.GetOrigin());
 
   DCHECK(response_override_);

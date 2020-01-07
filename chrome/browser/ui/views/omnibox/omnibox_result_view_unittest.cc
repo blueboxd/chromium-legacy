@@ -30,13 +30,11 @@ static constexpr int kTestResultViewIndex = 4;
 
 class TestOmniboxPopupContentsView : public OmniboxPopupContentsView {
  public:
-  explicit TestOmniboxPopupContentsView(OmniboxEditModel* edit_model,
-                                        const ui::ThemeProvider* theme_provider)
+  explicit TestOmniboxPopupContentsView(OmniboxEditModel* edit_model)
       : OmniboxPopupContentsView(
             /*omnibox_view=*/nullptr,
             edit_model,
-            /*location_bar_view=*/nullptr,
-            theme_provider),
+            /*location_bar_view=*/nullptr),
         selected_index_(0) {}
 
   void SetSelectedLine(size_t index) override { selected_index_ = index; }
@@ -66,13 +64,12 @@ class OmniboxResultViewTest : public ChromeViewsTestBase {
         views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     widget_->Init(std::move(init_params));
 
-    const ui::ThemeProvider* theme_provider = widget_->GetThemeProvider();
     edit_model_ = std::make_unique<OmniboxEditModel>(
         nullptr, nullptr, std::make_unique<TestOmniboxClient>());
-    popup_view_ = std::make_unique<TestOmniboxPopupContentsView>(
-        edit_model_.get(), theme_provider);
-    result_view_ = new OmniboxResultView(popup_view_.get(),
-                                         kTestResultViewIndex, theme_provider);
+    popup_view_ =
+        std::make_unique<TestOmniboxPopupContentsView>(edit_model_.get());
+    result_view_ =
+        new OmniboxResultView(popup_view_.get(), kTestResultViewIndex);
 
     views::View* root_view = widget_->GetRootView();
     root_view->SetBoundsRect(gfx::Rect(0, 0, 500, 500));

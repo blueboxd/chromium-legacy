@@ -47,6 +47,11 @@ bool TestTabStripModelDelegate::CanDuplicateContentsAt(int index) {
 void TestTabStripModelDelegate::DuplicateContentsAt(int index) {
 }
 
+bool TestTabStripModelDelegate::CanMoveTabToWindow(int index) {
+  return false;
+}
+void TestTabStripModelDelegate::MoveTabToNewWindow(int index) {}
+
 void TestTabStripModelDelegate::CreateHistoricalTab(
     content::WebContents* contents) {
 }

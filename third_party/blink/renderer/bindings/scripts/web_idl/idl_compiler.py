@@ -4,6 +4,9 @@
 
 import functools
 import itertools
+import posixpath
+
+from blinkbuild.name_style_converter import NameStyleConverter
 
 from .callback_function import CallbackFunction
 from .callback_interface import CallbackInterface
@@ -80,6 +83,7 @@ class IdlCompiler(object):
         # Merge partial definitions.
         self._record_defined_in_partial_and_mixin()
         self._propagate_extattrs_per_idl_fragment()
+        self._determine_blink_headers()
         self._merge_partial_interface_likes()
         self._merge_partial_dictionaries()
         # Merge mixins.
@@ -211,6 +215,26 @@ class IdlCompiler(object):
 
         map(process_interface_like, old_irs)
 
+    def _determine_blink_headers(self):
+        irs = self._ir_map.irs_of_kinds(
+            IRMap.IR.Kind.INTERFACE, IRMap.IR.Kind.NAMESPACE,
+            IRMap.IR.Kind.PARTIAL_INTERFACE, IRMap.IR.Kind.PARTIAL_NAMESPACE)
+
+        self._ir_map.move_to_new_phase()
+
+        for old_ir in irs:
+            new_ir = make_copy(old_ir)
+            self._ir_map.add(new_ir)
+            basepath, _ = posixpath.splitext(
+                new_ir.debug_info.location.filepath)
+            dirpath, filename = posixpath.split(basepath)
+            impl_class = new_ir.extended_attributes.value_of("ImplementedAs")
+            if impl_class:
+                filename = NameStyleConverter(impl_class).to_snake_case()
+            header = posixpath.join(dirpath,
+                                    posixpath.extsep.join([filename, "h"]))
+            new_ir.code_generator_info.set_blink_headers([header])
+
     def _merge_partial_interface_likes(self):
         irs = self._ir_map.irs_of_kinds(IRMap.IR.Kind.INTERFACE,
                                         IRMap.IR.Kind.INTERFACE_MIXIN,
@@ -285,6 +309,13 @@ class IdlCompiler(object):
                 new_ir.attributes.extend(to_be_merged.attributes)
                 new_ir.constants.extend(to_be_merged.constants)
                 new_ir.operations.extend(to_be_merged.operations)
+
+                new_ir_headers = new_ir.code_generator_info.blink_headers
+                to_be_merged_headers = (
+                    to_be_merged.code_generator_info.blink_headers)
+                if (new_ir_headers is not None
+                        and to_be_merged_headers is not None):
+                    new_ir_headers.extend(to_be_merged_headers)
 
     def _process_interface_inheritances(self):
         def is_own_member(member):

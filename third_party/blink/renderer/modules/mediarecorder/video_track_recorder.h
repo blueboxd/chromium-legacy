@@ -17,10 +17,11 @@
 #include "media/muxers/webm_muxer.h"
 #include "media/video/video_encode_accelerator.h"
 #include "third_party/blink/public/common/media/video_capture.h"
-#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_sink.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/web/modules/mediastream/encoded_video_frame.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_sink.h"
 #include "third_party/blink/renderer/modules/mediarecorder/buildflags.h"
+#include "third_party/blink/renderer/modules/mediarecorder/track_recorder.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_copier.h"
@@ -70,7 +71,7 @@ class Thread;
 
 // Base class serving as interface for eventually saving encoded frames stemming
 // from media from a source.
-class VideoTrackRecorder : public WebMediaStreamSink {
+class VideoTrackRecorder : public TrackRecorder<MediaStreamVideoSink> {
  public:
   // Do not change the order of codecs; add new ones right before LAST.
   enum class CodecId {
@@ -254,6 +255,8 @@ class VideoTrackRecorder : public WebMediaStreamSink {
     DISALLOW_COPY_AND_ASSIGN(CodecEnumerator);
   };
 
+  explicit VideoTrackRecorder(base::OnceClosure on_track_source_ended_cb);
+
   virtual void Pause() = 0;
   virtual void Resume() = 0;
   virtual void OnVideoFrameForTesting(scoped_refptr<media::VideoFrame> frame,
@@ -285,7 +288,8 @@ class MODULES_EXPORT VideoTrackRecorderImpl : public VideoTrackRecorder {
   VideoTrackRecorderImpl(
       CodecId codec,
       MediaStreamComponent* track,
-      const OnEncodedVideoCB& on_encoded_video_cb,
+      OnEncodedVideoCB on_encoded_video_cb,
+      base::OnceClosure on_track_source_ended_cb,
       int32_t bits_per_second,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner);
   ~VideoTrackRecorderImpl() override;
@@ -336,7 +340,8 @@ class MODULES_EXPORT VideoTrackRecorderPassthrough : public VideoTrackRecorder {
  public:
   VideoTrackRecorderPassthrough(
       MediaStreamComponent* track,
-      OnEncodedVideoCB on_encoded_video_callback,
+      OnEncodedVideoCB on_encoded_video_cb,
+      base::OnceClosure on_track_source_ended_cb,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner);
   ~VideoTrackRecorderPassthrough() override;
 

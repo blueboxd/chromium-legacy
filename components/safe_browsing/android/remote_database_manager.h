@@ -16,8 +16,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "components/safe_browsing/db/database_manager.h"
-#include "components/safe_browsing/realtime/url_lookup_service.h"
+#include "components/safe_browsing/core/db/database_manager.h"
+#include "components/safe_browsing/core/realtime/url_lookup_service.h"
 #include "url/gurl.h"
 
 namespace safe_browsing {

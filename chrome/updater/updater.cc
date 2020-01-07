@@ -24,6 +24,10 @@
 #include "chrome/updater/win/setup/uninstall.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "chrome/updater/mac/setup/setup.h"
+#endif
+
 // To install the updater on Windows, run "updatersetup.exe" from the
 // build directory.
 //
@@ -98,7 +102,7 @@ int UpdaterInstallApp() {
 }
 
 int UpdaterUninstall() {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   return Uninstall();
 #else
   return -1;

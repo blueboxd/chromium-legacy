@@ -62,6 +62,16 @@ class ActionTracker {
       const ExtensionId& extension_id,
       base::Optional<int> tab_id) const;
 
+  // Returns the number of matched rules in |rules_tracked_| for the given
+  // |extension_id| and |tab_id|. Should only be used for tests.
+  int GetMatchedRuleCountForTest(const ExtensionId& extension_id, int tab_id);
+
+  // Returns the number of matched rules in |pending_navigation_actions_| for
+  // the given |extension_id| and |navigation_id|. Should only be used for
+  // tests.
+  int GetPendingRuleCountForTest(const ExtensionId& extension_id,
+                                 int64_t navigation_id);
+
  private:
   // Template key type used for TrackedInfo, specified by an extension_id and
   // another ID.

@@ -70,9 +70,6 @@ void CSSMathMin::BuildCSSText(Nested, ParenLess, StringBuilder& result) const {
 }
 
 CSSMathExpressionNode* CSSMathMin::ToCalcExpressionNode() const {
-  if (!RuntimeEnabledFeatures::CSSComparisonFunctionsEnabled())
-    return nullptr;
-
   CSSMathExpressionVariadicOperation::Operands operands;
   operands.ReserveCapacity(NumericValues().size());
   for (const auto& value : NumericValues()) {

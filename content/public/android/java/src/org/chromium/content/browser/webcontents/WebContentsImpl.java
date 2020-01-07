@@ -922,6 +922,12 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
         return key.cast(data);
     }
 
+    public <T extends UserData> void removeUserData(Class<T> key) {
+        UserDataHost userDataHost = getUserDataHost();
+        if (userDataHost == null) return;
+        userDataHost.removeUserData(key);
+    }
+
     /**
      * @return {@code UserDataHost} that contains internal user data. {@code null} if
      *         it is already gc'ed.

@@ -116,8 +116,6 @@ class GFX_RANGE_EXPORT Range {
   // NSRange does not store the directionality of a range, so if this
   // is_reversed(), the range will get flipped when converted to an NSRange.
   NSRange ToNSRange() const;
-#elif defined(OS_WIN)
-  CHARRANGE ToCHARRANGE() const;
 #endif
   // GTK+ has no concept of a range.
 

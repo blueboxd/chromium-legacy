@@ -86,7 +86,7 @@ class LocalFrameClientImplTest : public testing::Test {
     return web_frame_client_;
   }
   LocalFrameClient& GetLocalFrameClient() {
-    return *ToLocalFrameClientImpl(MainFrame()->GetFrame()->Client());
+    return *To<LocalFrameClientImpl>(MainFrame()->GetFrame()->Client());
   }
 
  private:

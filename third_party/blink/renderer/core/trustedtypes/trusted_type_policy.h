@@ -38,6 +38,10 @@ class CORE_EXPORT TrustedTypePolicy final : public ScriptWrappable {
                                     const String&,
                                     ExceptionState&);
 
+  bool HasCreateHTML();
+  bool HasCreateScript();
+  bool HasCreateScriptURL();
+
   String name() const;
 
   void Trace(blink::Visitor*) override;

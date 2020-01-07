@@ -25,7 +25,7 @@
 #include "chrome/services/file_util/public/cpp/sandboxed_rar_analyzer.h"
 #include "chrome/services/file_util/public/cpp/sandboxed_zip_analyzer.h"
 #include "components/history/core/browser/history_service.h"
-#include "components/safe_browsing/db/database_manager.h"
+#include "components/safe_browsing/core/db/database_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 

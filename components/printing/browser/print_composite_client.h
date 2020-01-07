@@ -9,9 +9,11 @@
 #include <memory>
 
 #include "base/containers/flat_set.h"
+#include "components/printing/common/print.mojom.h"
 #include "components/services/pdf_compositor/public/mojom/pdf_compositor.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 struct PrintHostMsg_DidPrintContent_Params;
@@ -120,6 +122,11 @@ class PrintCompositeClient
 
   mojo::Remote<mojom::PdfCompositor> CreateCompositeRequest();
 
+  // Helper method to fetch the PrintRenderFrame remote interface pointer
+  // associated with a given subframe.
+  const mojo::AssociatedRemote<mojom::PrintRenderFrame>& GetPrintRenderFrame(
+      content::RenderFrameHost* rfh);
+
   // Stores the mapping between document cookies and their corresponding
   // requests.
   std::map<int, mojo::Remote<mojom::PdfCompositor>> compositor_map_;
@@ -138,6 +145,13 @@ class PrintCompositeClient
   base::flat_set<int> is_doc_concurrently_composited_set_;
 
   std::string user_agent_;
+
+  // Stores a PrintRenderFrame associated remote with the RenderFrameHost used
+  // to bind it. The PrintRenderFrame is used to transmit mojo interface method
+  // calls to the associated receiver.
+  std::map<content::RenderFrameHost*,
+           mojo::AssociatedRemote<mojom::PrintRenderFrame>>
+      print_render_frames_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

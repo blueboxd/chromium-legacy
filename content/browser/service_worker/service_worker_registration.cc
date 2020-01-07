@@ -637,7 +637,8 @@ void ServiceWorkerRegistration::OnActivateEventFinished(
   // "Run the Update State algorithm passing registration's active worker and
   // 'activated' as the arguments."
   activating_version->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  context_->storage()->UpdateToActiveState(this, base::DoNothing());
+  context_->storage()->UpdateToActiveState(id(), scope().GetOrigin(),
+                                           base::DoNothing());
 }
 
 void ServiceWorkerRegistration::OnDeleteFinished(

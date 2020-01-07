@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.CARD_ALPHA;
+
 import android.view.ViewGroup;
 
 import org.chromium.ui.modelutil.PropertyKey;
@@ -54,6 +56,8 @@ class MessageCardViewBinder {
                         MessageCardViewProperties.MESSAGE_SERVICE_DISMISS_ACTION_PROVIDER);
                 if (serviceProvider != null) serviceProvider.dismiss(type);
             });
+        } else if (CARD_ALPHA == propertyKey) {
+            itemView.setAlpha(model.get(CARD_ALPHA));
         }
     }
 }

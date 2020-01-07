@@ -7,7 +7,9 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -30,6 +32,7 @@
 #include "ui/accessibility/ax_tree_manager.h"
 #include "ui/accessibility/ax_tree_observer.h"
 #include "ui/accessibility/ax_tree_update.h"
+#include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/gfx/native_widget_types.h"
 
 struct AccessibilityHostMsg_LocationChangeParams;
@@ -467,6 +470,14 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   // after it's updated the internal data structure.
   virtual void SendLocationChangeEvents(
       const std::vector<AccessibilityHostMsg_LocationChangeParams>& params);
+
+  // Given the data from an atomic update, collect the nodes that need updating
+  // assuming that this platform is one where plain text node content is
+  // directly included in parents' hypertext.
+  void CollectChangedNodesAndParentsForAtomicUpdate(
+      ui::AXTree* tree,
+      const std::vector<ui::AXTreeObserver::Change>& changes,
+      std::set<ui::AXPlatformNode*>* nodes_needing_update);
 
   static void SetLastFocusedNode(BrowserAccessibility* node);
   static BrowserAccessibility* GetLastFocusedNode();

@@ -87,8 +87,7 @@ class SequenceManagerThreadDelegate : public Thread::Delegate {
     sequence_manager_->BindToMessagePump(
         std::move(message_pump_factory_).Run());
     sequence_manager_->SetTimerSlack(timer_slack);
-    simple_task_executor_.emplace(sequence_manager_.get(),
-                                  GetDefaultTaskRunner());
+    simple_task_executor_.emplace(GetDefaultTaskRunner());
   }
 
  private:

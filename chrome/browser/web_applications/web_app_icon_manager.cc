@@ -134,6 +134,10 @@ bool WriteDataBlocking(std::unique_ptr<FileUtilsWrapper> utils,
 
   // Commit: move whole app data dir to final destination in one mv operation.
   const base::FilePath app_dir = GetAppDirectory(web_apps_directory, app_id);
+
+  // Try to delete the destination. Needed for update.
+  utils->DeleteFileRecursively(app_dir);
+
   if (!utils->Move(app_temp_dir.GetPath(), app_dir)) {
     LOG(ERROR) << "Could not move temp WebApp directory to final destination.";
     return false;

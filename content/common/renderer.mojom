@@ -28,15 +28,17 @@ struct CreateViewParams {
 
   // The ID of the main frame hosted in the view, or None if creating a view to
   // host a main frame proxy. If this is None, then |proxy_routing_id| should be
-  // set to something other than None.
+  // set to something other than None. The |main_frame_widget_routing_id| is
+  // None if this is None.
   int32 main_frame_routing_id = IPC.mojom.kRoutingIdNone;
+
+  // The ID of the widget for the main frame. The |main_frame_routing_id| is
+  // None if this is None.
+  int32 main_frame_widget_routing_id = IPC.mojom.kRoutingIdNone;
 
   // This is null precisely when |main_frame_routing_id| is MSG_ROUTING_NONE,
   // that is, when creating a RenderView for a remote main frame.
   DocumentScopedInterfaceBundle? main_frame_interface_bundle;
-
-  // The ID of the widget for the main frame.
-  int32 main_frame_widget_routing_id = IPC.mojom.kRoutingIdNone;
 
   // The session storage namespace ID this view should use.
   string session_storage_namespace_id;

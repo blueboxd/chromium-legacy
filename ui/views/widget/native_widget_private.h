@@ -230,6 +230,9 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
   virtual bool IsTranslucentWindowOpacitySupported() const = 0;
   virtual ui::GestureRecognizer* GetGestureRecognizer() = 0;
   virtual void OnSizeConstraintsChanged() = 0;
+  // Called before and after re-parenting of this or an ancestor widget.
+  virtual void OnNativeViewHierarchyWillChange() = 0;
+  virtual void OnNativeViewHierarchyChanged() = 0;
 
   // Returns an internal name that matches the name of the associated Widget.
   virtual std::string GetName() const = 0;

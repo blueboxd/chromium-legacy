@@ -37,12 +37,13 @@ namespace {
 // mojo pipe. This will be restricted to the origin of |url|, and will apply
 // policies from user and ContentBrowserClient to cookie operations.
 mojo::PendingRemote<network::mojom::RestrictedCookieManager>
-GetRestrictedCookieManagerForContext(BrowserContext* browser_context,
-                                     const GURL& url,
-                                     const GURL& site_for_cookies,
-                                     const url::Origin& top_frame_origin,
-                                     int render_process_id,
-                                     int render_frame_id) {
+GetRestrictedCookieManagerForContext(
+    BrowserContext* browser_context,
+    const GURL& url,
+    const net::SiteForCookies& site_for_cookies,
+    const url::Origin& top_frame_origin,
+    int render_process_id,
+    int render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   url::Origin origin = url::Origin::Create(url);
@@ -143,10 +144,12 @@ void MediaResourceGetterImpl::GetAuthCredentials(
 }
 
 void MediaResourceGetterImpl::GetCookies(const GURL& url,
-                                         const GURL& site_for_cookies,
+                                         const GURL& site_for_cookies_url,
                                          const url::Origin& top_frame_origin,
                                          GetCookieCB callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  net::SiteForCookies site_for_cookies =
+      net::SiteForCookies::FromUrl(site_for_cookies_url);
 
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();

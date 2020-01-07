@@ -4,7 +4,8 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
-import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.TabListModelProperties.MODEL_TYPE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.CARD_ALPHA;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.CARD_TYPE;
 
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -42,5 +43,5 @@ class MessageCardViewProperties {
             new PropertyKey[] {ACTION_TEXT, DESCRIPTION_TEXT, DESCRIPTION_TEXT_TEMPLATE,
                     MESSAGE_TYPE, ICON_PROVIDER, UI_ACTION_PROVIDER, UI_DISMISS_ACTION_PROVIDER,
                     MESSAGE_SERVICE_ACTION_PROVIDER, MESSAGE_SERVICE_DISMISS_ACTION_PROVIDER,
-                    DISMISS_BUTTON_CONTENT_DESCRIPTION, MODEL_TYPE};
+                    DISMISS_BUTTON_CONTENT_DESCRIPTION, CARD_TYPE, CARD_ALPHA};
 }

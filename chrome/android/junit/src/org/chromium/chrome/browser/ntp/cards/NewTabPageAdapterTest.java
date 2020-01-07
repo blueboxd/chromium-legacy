@@ -70,11 +70,11 @@ import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.signin.SigninManager;
+import org.chromium.chrome.browser.signin.SigninPreferencesManager;
 import org.chromium.chrome.browser.suggestions.ContentSuggestionsAdditionalAction;
 import org.chromium.chrome.browser.suggestions.DestructionObserver;
 import org.chromium.chrome.browser.suggestions.SuggestionsEventReporter;
@@ -341,7 +341,7 @@ public class NewTabPageAdapterTest {
         CardsVariationParameters.setTestVariationParams(null);
         SharedPreferencesManager.getInstance().writeBoolean(
                 ChromePreferenceKeys.SIGNIN_PROMO_NTP_PROMO_DISMISSED, false);
-        ChromePreferenceManager.getInstance().clearNewTabPageSigninPromoSuppressionPeriodStart();
+        SigninPreferencesManager.getInstance().clearNewTabPageSigninPromoSuppressionPeriodStart();
         PrefServiceBridge.setInstanceForTesting(null);
         ShadowPostTask.reset();
         ShadowChromeFeatureList.reset();
@@ -1003,7 +1003,7 @@ public class NewTabPageAdapterTest {
         useArticleCategory();
 
         // Suppress promo.
-        ChromePreferenceManager.getInstance().setNewTabPageSigninPromoSuppressionPeriodStart(
+        SigninPreferencesManager.getInstance().setNewTabPageSigninPromoSuppressionPeriodStart(
                 System.currentTimeMillis());
 
         resetUiDelegate();
@@ -1019,8 +1019,8 @@ public class NewTabPageAdapterTest {
         useArticleCategory();
 
         // Suppress promo.
-        ChromePreferenceManager preferenceManager = ChromePreferenceManager.getInstance();
-        preferenceManager.setNewTabPageSigninPromoSuppressionPeriodStart(
+        SigninPreferencesManager preferencesManager = SigninPreferencesManager.getInstance();
+        preferencesManager.setNewTabPageSigninPromoSuppressionPeriodStart(
                 System.currentTimeMillis() - SignInPromo.SUPPRESSION_PERIOD_MS);
 
         resetUiDelegate();
@@ -1028,7 +1028,7 @@ public class NewTabPageAdapterTest {
         assertTrue(isSignInPromoVisible());
 
         // SignInPromo should clear shared preference when suppression period ends.
-        assertEquals(0, preferenceManager.getNewTabPageSigninPromoSuppressionPeriodStart());
+        assertEquals(0, preferencesManager.getNewTabPageSigninPromoSuppressionPeriodStart());
     }
 
     @Test

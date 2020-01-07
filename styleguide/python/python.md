@@ -53,7 +53,7 @@ Directories can opt into enforcing auto-formatting by adding a `.style.yapf`
 file with the following contents:
 ```
 [style]
-based_on_style = chromium
+based_on_style = pep8
 ```
 
 Entire files can be formatted (rather than just touched lines) via:

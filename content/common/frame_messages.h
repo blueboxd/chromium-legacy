@@ -1128,8 +1128,10 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_BeforeUnload_ACK,
                     base::TimeTicks /* before_unload_start_time */,
                     base::TimeTicks /* before_unload_end_time */)
 
-// Indicates that the current frame has swapped out, after a SwapOut message.
-IPC_MESSAGE_ROUTED0(FrameHostMsg_SwapOut_ACK)
+// Indicates that the current frame has finished running its unload handler (if
+// one was registered) and has been detached, as a response to
+// UnfreezableFrameMsg_Unload message from the browser process.
+IPC_MESSAGE_ROUTED0(FrameHostMsg_Unload_ACK)
 
 // Tells the browser that a child's visual properties have changed.
 IPC_MESSAGE_ROUTED2(FrameHostMsg_SynchronizeVisualProperties,

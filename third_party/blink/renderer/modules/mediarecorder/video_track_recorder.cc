@@ -109,6 +109,10 @@ VideoTrackRecorderImpl::CodecEnumerator* GetCodecEnumerator() {
 
 }  // anonymous namespace
 
+VideoTrackRecorder::VideoTrackRecorder(
+    base::OnceClosure on_track_source_ended_cb)
+    : TrackRecorder(std::move(on_track_source_ended_cb)) {}
+
 VideoTrackRecorderImpl::CodecEnumerator::CodecEnumerator(
     const media::VideoEncodeAccelerator::SupportedProfiles&
         vea_supported_profiles) {
@@ -477,10 +481,12 @@ bool VideoTrackRecorderImpl::CanUseAcceleratedEncoder(CodecId codec,
 VideoTrackRecorderImpl::VideoTrackRecorderImpl(
     CodecId codec,
     MediaStreamComponent* track,
-    const OnEncodedVideoCB& on_encoded_video_callback,
+    OnEncodedVideoCB on_encoded_video_callback,
+    base::OnceClosure on_track_source_ended_cb,
     int32_t bits_per_second,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner)
-    : track_(track),
+    : VideoTrackRecorder(std::move(on_track_source_ended_cb)),
+      track_(track),
       should_pause_encoder_on_initialization_(false),
       main_task_runner_(std::move(main_task_runner)) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
@@ -489,7 +495,7 @@ VideoTrackRecorderImpl::VideoTrackRecorderImpl(
 
   initialize_encoder_callback_ = WTF::BindRepeating(
       &VideoTrackRecorderImpl::InitializeEncoder, weak_factory_.GetWeakPtr(),
-      codec, on_encoded_video_callback, bits_per_second);
+      codec, std::move(on_encoded_video_callback), bits_per_second);
 
   // InitializeEncoder() will be called on Render Main thread.
   ConnectToTrack(media::BindToCurrentLoop(WTF::BindRepeating(
@@ -617,24 +623,23 @@ void VideoTrackRecorderImpl::DisconnectFromTrack() {
 
 VideoTrackRecorderPassthrough::VideoTrackRecorderPassthrough(
     MediaStreamComponent* track,
-    OnEncodedVideoCB on_encoded_video_callback,
+    OnEncodedVideoCB on_encoded_video_cb,
+    base::OnceClosure on_track_source_ended_callback,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner)
-    : track_(track),
+    : VideoTrackRecorder(std::move(on_track_source_ended_callback)),
+      track_(track),
       state_(KeyFrameState::kWaitingForKeyFrame),
       main_task_runner_(main_task_runner),
-      callback_(std::move(on_encoded_video_callback)) {
+      callback_(std::move(on_encoded_video_cb)) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
-  auto* video_track =
-      static_cast<MediaStreamVideoTrack*>(track_->GetPlatformTrack());
-  DCHECK(video_track);
-
   // HandleEncodedVideoFrame() will be called on Render Main thread.
   // Note: Adding an encoded sink internally generates a new key frame
   // request, no need to RequestRefreshFrame().
-  video_track->AddEncodedSink(
-      this, media::BindToCurrentLoop(WTF::BindRepeating(
-                &VideoTrackRecorderPassthrough::HandleEncodedVideoFrame,
-                weak_factory_.GetWeakPtr())));
+  ConnectEncodedToTrack(
+      WebMediaStreamTrack(track_),
+      media::BindToCurrentLoop(WTF::BindRepeating(
+          &VideoTrackRecorderPassthrough::HandleEncodedVideoFrame,
+          weak_factory_.GetWeakPtr())));
 }
 
 VideoTrackRecorderPassthrough::~VideoTrackRecorderPassthrough() {
@@ -670,9 +675,7 @@ void VideoTrackRecorderPassthrough::DisconnectFromTrack() {
   // TODO(crbug.com/704136) : Remove this method when moving
   // MediaStreamVideoTrack to Oilpan's heap.
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
-  auto* video_track =
-      static_cast<MediaStreamVideoTrack*>(track_->GetPlatformTrack());
-  video_track->RemoveEncodedSink(this);
+  DisconnectEncodedFromTrack();
 }
 
 void VideoTrackRecorderPassthrough::HandleEncodedVideoFrame(

@@ -127,10 +127,6 @@ void PrintMsg_PrintPages_Params::Reset() {
   pages = std::vector<int>();
 }
 
-PrintMsg_PrintFrame_Params::PrintMsg_PrintFrame_Params() {}
-
-PrintMsg_PrintFrame_Params::~PrintMsg_PrintFrame_Params() {}
-
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 PrintHostMsg_RequestPrintPreview_Params::
     PrintHostMsg_RequestPrintPreview_Params()

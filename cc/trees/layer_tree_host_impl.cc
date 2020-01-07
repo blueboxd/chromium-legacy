@@ -3637,7 +3637,6 @@ void LayerTreeHostImpl::BindToClient(InputHandlerClient* client) {
 }
 
 InputHandler::ScrollStatus LayerTreeHostImpl::TryScroll(
-    const gfx::PointF& screen_space_point,
     const ScrollTree& scroll_tree,
     ScrollNode* scroll_node) const {
   InputHandler::ScrollStatus scroll_status;
@@ -3771,8 +3770,7 @@ ScrollNode* LayerTreeHostImpl::FindScrollNodeForDeviceViewportPoint(
          scroll_node = scroll_tree.parent(scroll_node)) {
       // The content layer can also block attempts to scroll outside the main
       // thread.
-      ScrollStatus status =
-          TryScroll(device_viewport_point, scroll_tree, scroll_node);
+      ScrollStatus status = TryScroll(scroll_tree, scroll_node);
       if (IsMainThreadScrolling(status, scroll_node)) {
         *scroll_on_main_thread = true;
         *main_thread_scrolling_reasons = status.main_thread_scrolling_reasons;
@@ -3806,8 +3804,7 @@ ScrollNode* LayerTreeHostImpl::FindScrollNodeForDeviceViewportPoint(
   impl_scroll_node = GetNodeToScroll(impl_scroll_node);
 
   // Ensure that final scroll node scrolls on impl thread (crbug.com/625100)
-  ScrollStatus status =
-      TryScroll(device_viewport_point, scroll_tree, impl_scroll_node);
+  ScrollStatus status = TryScroll(scroll_tree, impl_scroll_node);
   if (IsMainThreadScrolling(status, impl_scroll_node)) {
     *scroll_on_main_thread = true;
     *main_thread_scrolling_reasons = status.main_thread_scrolling_reasons;
@@ -3818,73 +3815,6 @@ ScrollNode* LayerTreeHostImpl::FindScrollNodeForDeviceViewportPoint(
   }
 
   return impl_scroll_node;
-}
-
-InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
-    ScrollState* scroll_state,
-    ScrollNode* scrolling_node,
-    InputHandler::ScrollInputType type) {
-  DCHECK(scroll_state);
-  DCHECK(scroll_state->delta_x() == 0 && scroll_state->delta_y() == 0);
-
-  InputHandler::ScrollStatus scroll_status;
-  scroll_status.main_thread_scrolling_reasons =
-      MainThreadScrollingReason::kNotScrollingOnMain;
-  if (!scrolling_node) {
-    if (settings_.is_layer_tree_for_subframe) {
-      TRACE_EVENT_INSTANT0("cc", "Ignored - No ScrollNode (OOPIF)",
-                           TRACE_EVENT_SCOPE_THREAD);
-      scroll_status.thread = SCROLL_UNKNOWN;
-    } else {
-      TRACE_EVENT_INSTANT0("cc", "Ignroed - No ScrollNode",
-                           TRACE_EVENT_SCOPE_THREAD);
-      scroll_status.thread = SCROLL_IGNORED;
-    }
-    scroll_status.main_thread_scrolling_reasons =
-        MainThreadScrollingReason::kNoScrollingLayer;
-    return scroll_status;
-  }
-  scroll_status.thread = SCROLL_ON_IMPL_THREAD;
-  mutator_host_->ScrollAnimationAbort();
-  scroll_animating_snap_target_ids_ = TargetSnapAreaElementIds();
-
-  browser_controls_offset_manager_->ScrollBegin();
-
-  wheel_scrolling_ = type == InputHandler::WHEEL;
-  middle_click_autoscrolling_ = type == InputHandler::AUTOSCROLL;
-
-  LatchToScroller(scroll_state, scrolling_node);
-
-  // If the CurrentlyScrollingNode doesn't exist after distributing scroll
-  // delta, no scroller can scroll in the given delta hint direction(s).
-  if (!active_tree_->CurrentlyScrollingNode()) {
-    TRACE_EVENT_INSTANT0("cc", "Ignored - Didnt Scroll",
-                         TRACE_EVENT_SCOPE_THREAD);
-    scroll_status.thread = InputHandler::SCROLL_IGNORED;
-    scroll_status.main_thread_scrolling_reasons =
-        MainThreadScrollingReason::kNotScrollingOnMain;
-    return scroll_status;
-  }
-
-  // If the viewport is scrolling and it cannot consume any delta hints, the
-  // scroll event will need to get bubbled if the viewport is for a guest or
-  // oopif.
-  if (ScrollNode* node = active_tree_->CurrentlyScrollingNode()) {
-    if (viewport().ShouldScroll(*node) &&
-        !viewport().CanScroll(*node, *scroll_state)) {
-      scroll_status.bubble = true;
-    }
-  }
-
-  frame_trackers_.StartSequence(wheel_scrolling_
-                                    ? FrameSequenceTrackerType::kWheelScroll
-                                    : FrameSequenceTrackerType::kTouchScroll);
-  client_->RenewTreePriority();
-  RecordCompositorSlowScrollMetric(type, CC_THREAD);
-
-  UpdateScrollSourceInfo(type, scroll_state);
-
-  return scroll_status;
 }
 
 InputHandler::ScrollStatus LayerTreeHostImpl::RootScrollBegin(
@@ -3907,28 +3837,61 @@ InputHandler::ScrollStatus LayerTreeHostImpl::RootScrollBegin(
 InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
     ScrollState* scroll_state,
     InputHandler::ScrollInputType type) {
+  DCHECK(scroll_state);
+  DCHECK(scroll_state->delta_x() == 0 && scroll_state->delta_y() == 0);
+
   ScrollStatus scroll_status;
   scroll_status.main_thread_scrolling_reasons =
       MainThreadScrollingReason::kNotScrollingOnMain;
   TRACE_EVENT0("cc", "LayerTreeHostImpl::ScrollBegin");
 
+  // If this ScrollBegin is non-animated then ensure we cancel any ongoing
+  // animated scrolls.
+  // TODO(bokan): This preserves existing behavior when we had diverging
+  // paths for animated and non-animated scrolls but we should probably
+  // decide when it best makes sense to cancel a scroll animation (maybe
+  // ScrollBy is a better place to do it).
+  if (scroll_state->delta_granularity() ==
+      static_cast<double>(
+          ui::input_types::ScrollGranularity::kScrollByPrecisePixel)) {
+    mutator_host_->ScrollAnimationAbort();
+    scroll_animating_snap_target_ids_ = TargetSnapAreaElementIds();
+  }
+
+  if (CurrentlyScrollingNode()) {
+    // It's possible we haven't yet cleared the CurrentlyScrollingNode if we
+    // received a GSE but we're still animating the last scroll. If that's the
+    // case, we'll simply un-defer the GSE and continue latching to the same
+    // node.
+    DCHECK(deferred_scroll_end_);
+    deferred_scroll_end_ = false;
+    return scroll_status;
+  }
+
   ScrollNode* scrolling_node = nullptr;
   bool scroll_on_main_thread = false;
 
-  // If this element is specified, the caller already knows which scroller they
-  // want to target so skip all the hit testing bits.
-  ElementId current_native_scrolling_element =
-      scroll_state->data()->current_native_scrolling_element();
-  if (current_native_scrolling_element) {
-    auto& scroll_tree = active_tree_->property_trees()->scroll_tree;
-    scrolling_node =
-        scroll_tree.FindNodeFromElementId(current_native_scrolling_element);
-  } else if (!scrolling_node) {
-    // TODO(bokan): ClearCurrentlyScrollingNode shouldn't happen in
-    // ScrollBegin, this should only happen in ScrollEnd. We should DCHECK here
-    // that the state is cleared instead. https://crbug.com/1016229
-    ClearCurrentlyScrollingNode();
+  // TODO(bokan): ClearCurrentlyScrollingNode shouldn't happen in ScrollBegin,
+  // this should only happen in ScrollEnd. We should DCHECK here that the state
+  // is cleared instead. https://crbug.com/1016229
+  ClearCurrentlyScrollingNode();
 
+  if (auto specified_element_id =
+          scroll_state->data()->current_native_scrolling_element()) {
+    // If the caller passed in an element_id we can skip all the hit-testing
+    // bits and provide a node straight-away.
+    auto& scroll_tree = active_tree_->property_trees()->scroll_tree;
+    scrolling_node = scroll_tree.FindNodeFromElementId(specified_element_id);
+
+    // We still need to confirm the targeted node exists and can scroll on the
+    // compositor.
+    if (scrolling_node) {
+      scroll_status = TryScroll(active_tree_->property_trees()->scroll_tree,
+                                scrolling_node);
+      if (IsMainThreadScrolling(scroll_status, scrolling_node))
+        scroll_on_main_thread = true;
+    }
+  } else {
     gfx::Point viewport_point(scroll_state->position_x(),
                               scroll_state->position_y());
 
@@ -3961,21 +3924,52 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
       }
     }
 
-    scrolling_node = FindScrollNodeForDeviceViewportPoint(
+    ScrollNode* starting_node = FindScrollNodeForDeviceViewportPoint(
         device_viewport_point, layer_impl, &scroll_on_main_thread,
         &scroll_status.main_thread_scrolling_reasons);
+
+    // The above finds the ScrollNode that's hit by the given point but we
+    // still need to walk up the scroll tree looking for the first node that
+    // can consume delta from the scroll state.
+    scrolling_node = FindNodeToLatch(scroll_state, starting_node, type);
   }
 
   if (scroll_on_main_thread) {
     RecordCompositorSlowScrollMetric(type, MAIN_THREAD);
-
     scroll_status.thread = SCROLL_ON_MAIN_THREAD;
     return scroll_status;
-  } else if (scrolling_node) {
-    scroll_affects_scroll_handler_ = active_tree_->have_scroll_event_handlers();
+  } else if (!scrolling_node) {
+    scroll_status.main_thread_scrolling_reasons =
+        MainThreadScrollingReason::kNoScrollingLayer;
+    if (settings_.is_layer_tree_for_subframe) {
+      TRACE_EVENT_INSTANT0("cc", "Ignored - No ScrollNode (OOPIF)",
+                           TRACE_EVENT_SCOPE_THREAD);
+      scroll_status.thread = SCROLL_UNKNOWN;
+    } else {
+      TRACE_EVENT_INSTANT0("cc", "Ignroed - No ScrollNode",
+                           TRACE_EVENT_SCOPE_THREAD);
+      scroll_status.thread = SCROLL_IGNORED;
+    }
+    return scroll_status;
   }
 
-  return ScrollBeginImpl(scroll_state, scrolling_node, type);
+  DCHECK_EQ(scroll_status.main_thread_scrolling_reasons,
+            MainThreadScrollingReason::kNotScrollingOnMain);
+  DCHECK_EQ(scroll_status.thread, SCROLL_ON_IMPL_THREAD);
+
+  active_tree_->SetCurrentlyScrollingNode(scrolling_node);
+
+  DidLatchToScroller(*scroll_state, type);
+
+  // If the viewport is scrolling and it cannot consume any delta hints, the
+  // scroll event will need to get bubbled if the viewport is for a guest or
+  // oopif.
+  if (viewport().ShouldScroll(*CurrentlyScrollingNode()) &&
+      !viewport().CanScroll(*CurrentlyScrollingNode(), *scroll_state)) {
+    scroll_status.bubble = true;
+  }
+
+  return scroll_status;
 }
 
 // Requires falling back to main thread scrolling when it hit tests in scrollbar
@@ -4072,32 +4066,6 @@ bool LayerTreeHostImpl::IsInitialScrollHitTestReliable(
   // scrollbar. It may hit the squashing layer at the same time.
   DCHECK(first_scrolling_layer_or_scrollbar->is_scrollbar());
   return false;
-}
-
-InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimatedBegin(
-    ScrollState* scroll_state) {
-  TRACE_EVENT0("cc", "LayerTreeHostImpl::ScrollAnimatedBegin");
-
-  // It's possible we haven't yet cleared the CurrentlyScrollingNode if we
-  // received a GSE but we're still animating the last scroll. If that's the
-  // case, we'll simply un-defer the GSE and continue latching to the same
-  // node.
-  DCHECK(!CurrentlyScrollingNode() || deferred_scroll_end_);
-
-  InputHandler::ScrollStatus scroll_status;
-  scroll_status.main_thread_scrolling_reasons =
-      MainThreadScrollingReason::kNotScrollingOnMain;
-  deferred_scroll_end_ = false;
-
-  if (CurrentlyScrollingNode())
-    return scroll_status;
-
-  // ScrollAnimated is used for animated wheel scrolls. We find the first layer
-  // that can scroll and set up an animation of its scroll offset. Note that
-  // this does not currently go through the scroll customization machinery
-  // that ScrollBy uses for non-animated wheel scrolls.
-  scroll_status = ScrollBegin(scroll_state, WHEEL);
-  return scroll_status;
 }
 
 gfx::Vector2dF LayerTreeHostImpl::ComputeScrollDelta(
@@ -4505,67 +4473,76 @@ void LayerTreeHostImpl::ScrollLatchedScroller(ScrollState* scroll_state) {
   scroll_state->ConsumeDelta(applied_delta.x(), applied_delta.y());
 }
 
-void LayerTreeHostImpl::LatchToScroller(ScrollState* scroll_state,
-                                        ScrollNode* starting_node) {
-  std::list<ScrollNode*> current_scroll_chain;
+ScrollNode* LayerTreeHostImpl::FindNodeToLatch(
+    ScrollState* scroll_state,
+    ScrollNode* starting_node,
+    InputHandler::ScrollInputType type) {
   ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
   ScrollNode* scroll_node = nullptr;
-  if (scroll_state->data()->current_native_scrolling_element()) {
-    DCHECK(starting_node);
-    DCHECK_EQ(starting_node->element_id,
-              scroll_state->data()->current_native_scrolling_element());
+  for (ScrollNode* cur_node = starting_node; cur_node;
+       cur_node = scroll_tree.parent(cur_node)) {
+    if (viewport().ShouldScroll(*cur_node)) {
+      // Don't chain scrolls past a viewport node. Once we reach that, we
+      // should scroll using the appropriate viewport node which may not be
+      // |cur_node|.
+      scroll_node = GetNodeToScroll(cur_node);
+      break;
+    }
 
-    // Needed for non-animated scrolls.
-    scroll_node = starting_node;
-  } else {
-    for (ScrollNode* cur_node = starting_node; cur_node;
-         cur_node = scroll_tree.parent(cur_node)) {
-      if (viewport().ShouldScroll(*cur_node)) {
-        // Don't chain scrolls past a viewport node. Once we reach that, we
-        // should scroll using the appropriate viewport node which may not be
-        // |cur_node|.
-        scroll_node = GetNodeToScroll(cur_node);
-        break;
-      }
+    if (!cur_node->scrollable)
+      continue;
 
-      if (!cur_node->scrollable)
-        continue;
+    // For UX reasons, autoscrolling should always latch to the top-most
+    // scroller, even if it can't scroll in the initial direction.
+    if (type == InputHandler::AUTOSCROLL ||
+        CanConsumeDelta(*scroll_state, *cur_node)) {
+      scroll_node = cur_node;
+      break;
+    }
 
-      if (middle_click_autoscrolling_ ||
-          CanConsumeDelta(*cur_node, *scroll_state)) {
-        scroll_node = cur_node;
-        break;
-      }
+    float delta_x = scroll_state->is_beginning() ? scroll_state->delta_x_hint()
+                                                 : scroll_state->delta_x();
+    float delta_y = scroll_state->is_beginning() ? scroll_state->delta_y_hint()
+                                                 : scroll_state->delta_y();
 
-      float delta_x = scroll_state->is_beginning()
-                          ? scroll_state->delta_x_hint()
-                          : scroll_state->delta_x();
-      float delta_y = scroll_state->is_beginning()
-                          ? scroll_state->delta_y_hint()
-                          : scroll_state->delta_y();
-
-      if (!CanPropagate(cur_node, delta_x, delta_y)) {
-        // If we reach a node with non-auto overscroll-behavior and we still
-        // haven't latched, we must latch to it. Consider a fully scrolled node
-        // with non-auto overscroll-behavior: we are not allowed to further
-        // chain scroll delta passed to it in the current direction but if we
-        // reverse direction we should scroll it so we must be latched to it.
-        scroll_node = cur_node;
-        scroll_state->set_is_scroll_chain_cut(true);
-        break;
-      }
+    if (!CanPropagate(cur_node, delta_x, delta_y)) {
+      // If we reach a node with non-auto overscroll-behavior and we still
+      // haven't latched, we must latch to it. Consider a fully scrolled node
+      // with non-auto overscroll-behavior: we are not allowed to further
+      // chain scroll delta passed to it in the current direction but if we
+      // reverse direction we should scroll it so we must be latched to it.
+      scroll_node = cur_node;
+      scroll_state->set_is_scroll_chain_cut(true);
+      break;
     }
   }
 
-  TRACE_EVENT_INSTANT1("cc", "SetCurrentlyScrollingNode LatchToScroller",
-                       TRACE_EVENT_SCOPE_THREAD, "isNull",
-                       scroll_node ? false : true);
-  active_tree_->SetCurrentlyScrollingNode(scroll_node);
-  last_latched_scroller_ = scroll_node ? scroll_node->element_id : ElementId();
+  return scroll_node;
 }
 
-bool LayerTreeHostImpl::CanConsumeDelta(const ScrollNode& scroll_node,
-                                        const ScrollState& scroll_state) {
+void LayerTreeHostImpl::DidLatchToScroller(const ScrollState& scroll_state,
+                                           InputHandler::ScrollInputType type) {
+  DCHECK(CurrentlyScrollingNode());
+  deferred_scroll_end_ = false;
+  browser_controls_offset_manager_->ScrollBegin();
+  mutator_host_->ScrollAnimationAbort();
+
+  scroll_affects_scroll_handler_ = active_tree_->have_scroll_event_handlers();
+  scroll_animating_snap_target_ids_ = TargetSnapAreaElementIds();
+  last_latched_scroller_ = CurrentlyScrollingNode()->element_id;
+  wheel_scrolling_ = type == InputHandler::WHEEL;
+
+  frame_trackers_.StartSequence(wheel_scrolling_
+                                    ? FrameSequenceTrackerType::kWheelScroll
+                                    : FrameSequenceTrackerType::kTouchScroll);
+  client_->RenewTreePriority();
+  RecordCompositorSlowScrollMetric(type, CC_THREAD);
+
+  UpdateScrollSourceInfo(scroll_state, type);
+}
+
+bool LayerTreeHostImpl::CanConsumeDelta(const ScrollState& scroll_state,
+                                        const ScrollNode& scroll_node) {
   gfx::Vector2dF delta_to_scroll;
   if (scroll_state.is_beginning()) {
     delta_to_scroll = gfx::Vector2dF(scroll_state.delta_x_hint(),
@@ -6065,10 +6042,10 @@ void LayerTreeHostImpl::SetContextVisibility(bool is_visible) {
 }
 
 void LayerTreeHostImpl::UpdateScrollSourceInfo(
-    InputHandler::ScrollInputType type,
-    ScrollState* scroll_state) {
+    const ScrollState& scroll_state,
+    InputHandler::ScrollInputType type) {
   if (type == InputHandler::WHEEL &&
-      scroll_state->delta_granularity() ==
+      scroll_state.delta_granularity() ==
           static_cast<double>(
               ui::input_types::ScrollGranularity::kScrollByPrecisePixel)) {
     has_scrolled_by_precisiontouchpad_ = true;

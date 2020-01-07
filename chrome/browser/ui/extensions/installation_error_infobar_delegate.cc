@@ -29,14 +29,6 @@ InstallationErrorInfoBarDelegate::GetIdentifier() const {
   return INSTALLATION_ERROR_INFOBAR_DELEGATE;
 }
 
-base::string16 InstallationErrorInfoBarDelegate::GetMessageText() const {
-  return error_.message();
-}
-
-int InstallationErrorInfoBarDelegate::GetButtons() const {
-  return BUTTON_OK;
-}
-
 base::string16 InstallationErrorInfoBarDelegate::GetLinkText() const {
   return error_.type() == extensions::CrxInstallErrorType::OTHER &&
                  error_.detail() == extensions::CrxInstallErrorDetail::
@@ -47,4 +39,12 @@ base::string16 InstallationErrorInfoBarDelegate::GetLinkText() const {
 
 GURL InstallationErrorInfoBarDelegate::GetLinkURL() const {
   return GURL("https://support.google.com/chrome_webstore/?p=crx_warning");
+}
+
+base::string16 InstallationErrorInfoBarDelegate::GetMessageText() const {
+  return error_.message();
+}
+
+int InstallationErrorInfoBarDelegate::GetButtons() const {
+  return BUTTON_OK;
 }

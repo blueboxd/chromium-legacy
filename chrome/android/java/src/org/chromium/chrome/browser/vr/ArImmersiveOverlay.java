@@ -84,6 +84,7 @@ public class ArImmersiveOverlay
             View view = mDialog.getWindow().getDecorView();
             view.setSystemUiVisibility(VISIBILITY_FLAGS_IMMERSIVE);
             view.setOnTouchListener(ArImmersiveOverlay.this);
+            view.setKeepScreenOn(true);
             mDialog.setOnCancelListener(this);
             mDialog.getWindow().setLayout(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
@@ -126,6 +127,7 @@ public class ArImmersiveOverlay
             // OverlayVideoMode, putting it in front of that, but behind other non-SurfaceView UI.
             mSurfaceView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
             mSurfaceView.getHolder().addCallback(ArImmersiveOverlay.this);
+            mSurfaceView.setKeepScreenOn(true);
 
             View content = mActivity.getWindow().findViewById(android.R.id.content);
             ViewGroup group = (ViewGroup) content.getParent();

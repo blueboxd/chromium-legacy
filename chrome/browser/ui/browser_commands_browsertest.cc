@@ -70,7 +70,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandsTest, ReloadSelectedTabs) {
 // Tests IDC_MOVE_TAB_TO_NEW_WINDOW. This is a browser test and not a unit test
 // since it needs to create a new browser window, which doesn't work with a
 // TestingProfile.
-IN_PROC_BROWSER_TEST_F(BrowserCommandsTest, MoveTabToNewWindow) {
+IN_PROC_BROWSER_TEST_F(BrowserCommandsTest, MoveActiveTabToNewWindow) {
   GURL url1("chrome://version");
   GURL url2("chrome://about");
   ui_test_utils::NavigateToURL(browser(), url1);

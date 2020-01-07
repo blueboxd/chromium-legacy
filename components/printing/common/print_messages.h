@@ -77,14 +77,6 @@ struct PrintMsg_PrintPages_Params {
   std::vector<int> pages;
 };
 
-struct PrintMsg_PrintFrame_Params {
-  PrintMsg_PrintFrame_Params();
-  ~PrintMsg_PrintFrame_Params();
-
-  gfx::Rect printable_area;
-  int document_cookie;
-};
-
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 struct PrintHostMsg_RequestPrintPreview_Params {
   PrintHostMsg_RequestPrintPreview_Params();
@@ -261,15 +253,6 @@ IPC_STRUCT_TRAITS_BEGIN(PrintMsg_PrintPages_Params)
   IPC_STRUCT_TRAITS_MEMBER(pages)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(PrintMsg_PrintFrame_Params)
-  // Physical printable area of the page in pixels according to dpi.
-  IPC_STRUCT_TRAITS_MEMBER(printable_area)
-
-  // Cookie that is unique for each print request.
-  // It is used to associate the printed frame with its original print request.
-  IPC_STRUCT_TRAITS_MEMBER(document_cookie)
-IPC_STRUCT_TRAITS_END()
-
 // Holds the printed content information.
 // The printed content is in shared memory, and passed as a region.
 // A map on out-of-process subframe contents is also included so the printed
@@ -363,17 +346,6 @@ IPC_STRUCT_END()
 // Tells the RenderFrame to initiate printing or print preview for a particular
 // node, depending on which mode the RenderFrame is in.
 IPC_MESSAGE_ROUTED0(PrintMsg_PrintNodeUnderContextMenu)
-
-// Print content of an out-of-process subframe.
-IPC_MESSAGE_ROUTED1(PrintMsg_PrintFrameContent, PrintMsg_PrintFrame_Params)
-
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-// Tells the RenderFrame to switch the CSS to print media type, renders every
-// requested pages for print preview using the given |settings|. This gets
-// called multiple times as the user updates settings.
-IPC_MESSAGE_ROUTED1(PrintMsg_PrintPreview,
-                    base::DictionaryValue /* settings */)
-#endif
 
 // Messages sent from the renderer to the browser.
 

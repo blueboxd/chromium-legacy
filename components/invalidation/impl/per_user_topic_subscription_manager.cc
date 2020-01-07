@@ -58,7 +58,7 @@ using SubscriptionFinishedCallback =
     base::OnceCallback<void(Topic topic,
                             Status code,
                             std::string private_topic_name,
-                            PerUserTopicRegistrationRequest::RequestType type)>;
+                            PerUserTopicSubscriptionRequest::RequestType type)>;
 
 static const net::BackoffEntry::Policy kBackoffPolicy = {
     // Number of initial errors (in sequence) to ignore before applying
@@ -163,7 +163,7 @@ enum class PerUserTopicSubscriptionManager::TokenStateOnSubscriptionRequest {
 struct PerUserTopicSubscriptionManager::SubscriptionEntry {
   SubscriptionEntry(const Topic& topic,
                     SubscriptionFinishedCallback completion_callback,
-                    PerUserTopicRegistrationRequest::RequestType type,
+                    PerUserTopicSubscriptionRequest::RequestType type,
                     bool topic_is_public = false);
   ~SubscriptionEntry();
 
@@ -175,12 +175,12 @@ struct PerUserTopicSubscriptionManager::SubscriptionEntry {
   const Topic topic;
   const bool topic_is_public;
   SubscriptionFinishedCallback completion_callback;
-  PerUserTopicRegistrationRequest::RequestType type;
+  PerUserTopicSubscriptionRequest::RequestType type;
 
   base::OneShotTimer request_retry_timer_;
   net::BackoffEntry request_backoff_;
 
-  std::unique_ptr<PerUserTopicRegistrationRequest> request;
+  std::unique_ptr<PerUserTopicSubscriptionRequest> request;
 
   DISALLOW_COPY_AND_ASSIGN(SubscriptionEntry);
 };
@@ -188,7 +188,7 @@ struct PerUserTopicSubscriptionManager::SubscriptionEntry {
 PerUserTopicSubscriptionManager::SubscriptionEntry::SubscriptionEntry(
     const Topic& topic,
     SubscriptionFinishedCallback completion_callback,
-    PerUserTopicRegistrationRequest::RequestType type,
+    PerUserTopicSubscriptionRequest::RequestType type,
     bool topic_is_public)
     : topic(topic),
       topic_is_public(topic_is_public),
@@ -290,7 +290,7 @@ void PerUserTopicSubscriptionManager::UpdateSubscribedTopics(
           base::BindOnce(
               &PerUserTopicSubscriptionManager::SubscriptionFinishedForTopic,
               base::Unretained(this)),
-          PerUserTopicRegistrationRequest::SUBSCRIBE, topic.second.is_public);
+          PerUserTopicSubscriptionRequest::SUBSCRIBE, topic.second.is_public);
     }
   }
 
@@ -308,7 +308,7 @@ void PerUserTopicSubscriptionManager::UpdateSubscribedTopics(
           base::BindOnce(
               &PerUserTopicSubscriptionManager::SubscriptionFinishedForTopic,
               base::Unretained(this)),
-          PerUserTopicRegistrationRequest::UNSUBSCRIBE);
+          PerUserTopicSubscriptionRequest::UNSUBSCRIBE);
       private_topic_to_topic_.erase(it->second);
       it = topic_to_private_topic_.erase(it);
       // The decision to unsubscribe from invalidations for |topic| was
@@ -349,7 +349,7 @@ void PerUserTopicSubscriptionManager::StartPendingSubscriptionRequest(
                  << " which is not in the registration map";
     return;
   }
-  PerUserTopicRegistrationRequest::Builder builder;
+  PerUserTopicSubscriptionRequest::Builder builder;
   // Resetting request in case it's running.
   // TODO(crbug.com/1020117): Should probably call it->second->Cancel() instead.
   it->second->request.reset();
@@ -372,11 +372,11 @@ void PerUserTopicSubscriptionManager::StartPendingSubscriptionRequest(
 void PerUserTopicSubscriptionManager::ActOnSuccessfulSubscription(
     const Topic& topic,
     const std::string& private_topic_name,
-    PerUserTopicRegistrationRequest::RequestType type) {
+    PerUserTopicSubscriptionRequest::RequestType type) {
   auto it = pending_subscriptions_.find(topic);
   it->second->request_backoff_.InformOfRequest(true);
   pending_subscriptions_.erase(it);
-  if (type == PerUserTopicRegistrationRequest::SUBSCRIBE) {
+  if (type == PerUserTopicSubscriptionRequest::SUBSCRIBE) {
     // If this was a subscription, update the prefs now (if it was an
     // unsubscription, we've already updated the prefs when scheduling the
     // request).
@@ -392,7 +392,7 @@ void PerUserTopicSubscriptionManager::ActOnSuccessfulSubscription(
   // pending.
   bool all_subscriptions_completed = true;
   for (const auto& entry : pending_subscriptions_) {
-    if (entry.second->type == PerUserTopicRegistrationRequest::SUBSCRIBE) {
+    if (entry.second->type == PerUserTopicSubscriptionRequest::SUBSCRIBE) {
       all_subscriptions_completed = false;
     }
   }
@@ -424,7 +424,7 @@ void PerUserTopicSubscriptionManager::SubscriptionFinishedForTopic(
     Topic topic,
     Status code,
     std::string private_topic_name,
-    PerUserTopicRegistrationRequest::RequestType type) {
+    PerUserTopicSubscriptionRequest::RequestType type) {
   if (code.IsSuccess()) {
     ActOnSuccessfulSubscription(topic, private_topic_name, type);
   } else {
@@ -435,7 +435,7 @@ void PerUserTopicSubscriptionManager::SubscriptionFinishedForTopic(
       RequestAccessToken();
     } else {
       // If one of the subscription requests failed, emit SUBSCRIPTION_FAILURE.
-      if (type == PerUserTopicRegistrationRequest::SUBSCRIBE &&
+      if (type == PerUserTopicSubscriptionRequest::SUBSCRIBE &&
           base::FeatureList::IsEnabled(
               invalidation::switches::kFCMInvalidationsConservativeEnabling)) {
         NotifySubscriptionChannelStateChange(

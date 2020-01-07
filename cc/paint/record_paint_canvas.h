@@ -102,7 +102,7 @@ class CC_PAINT_EXPORT RecordPaintCanvas : public PaintCanvas {
   void drawPicture(sk_sp<const PaintRecord> record) override;
 
   bool isClipEmpty() const override;
-  const SkMatrix& getTotalMatrix() const override;
+  SkMatrix getTotalMatrix() const override;
 
   void Annotate(AnnotationType type,
                 const SkRect& rect,

@@ -11,6 +11,9 @@ import android.view.ViewGroup;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.ThemeColorProvider.TintObserver;
+import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeState;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
@@ -41,6 +44,12 @@ public class TabSwitcherButtonCoordinator {
     private TabCountProvider mTabCountProvider;
     private TabCountObserver mTabCountObserver;
 
+    /** The {@link OverviewModeBehavior} used to observe overview state changes.  */
+    private OverviewModeBehavior mOverviewModeBehavior;
+
+    /** The {@link OvervieModeObserver} observing the OverviewModeBehavior  */
+    private OverviewModeBehavior.OverviewModeObserver mOverviewModeObserver;
+
     /**
      * Build the controller that manages the tab switcher button.
      * @param root The root {@link ViewGroup} for locating the view to inflate.
@@ -49,6 +58,14 @@ public class TabSwitcherButtonCoordinator {
         final TabSwitcherButtonView view = root.findViewById(R.id.tab_switcher_button);
         PropertyModelChangeProcessor.create(
                 mTabSwitcherButtonModel, view, new TabSwitcherButtonViewBinder());
+        mOverviewModeObserver = new EmptyOverviewModeObserver() {
+            @Override
+            public void onOverviewModeStateChanged(
+                    @OverviewModeState int overviewModeState, boolean showTabSwitcherToolbar) {
+                mTabSwitcherButtonModel.set(TabSwitcherButtonProperties.IS_ENABLED,
+                        (overviewModeState == OverviewModeState.SHOWN_TABSWITCHER ? false : true));
+            }
+        };
     }
 
     /**
@@ -81,6 +98,12 @@ public class TabSwitcherButtonCoordinator {
         mTabCountProvider.addObserver(mTabCountObserver);
     }
 
+    public void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
+        assert overviewModeBehavior != null;
+        mOverviewModeBehavior = overviewModeBehavior;
+        mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
+    }
+
     public void destroy() {
         if (mThemeColorProvider != null) {
             mThemeColorProvider.removeTintObserver(mTintObserver);
@@ -89,6 +112,10 @@ public class TabSwitcherButtonCoordinator {
         if (mTabCountProvider != null) {
             mTabCountProvider.removeObserver(mTabCountObserver);
             mTabCountProvider = null;
+        }
+        if (mOverviewModeBehavior != null) {
+            mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
+            mOverviewModeObserver = null;
         }
     }
 }

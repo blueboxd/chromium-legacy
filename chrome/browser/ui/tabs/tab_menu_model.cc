@@ -60,6 +60,8 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
       }
     }
   }
+  AddItemWithStringId(TabStripModel::CommandMoveTabToNewWindow,
+                      IDS_MOVE_TAB_TO_NEW_WINDOW);
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(TabStripModel::CommandReload, IDS_TAB_CXMENU_RELOAD);
   AddItemWithStringId(TabStripModel::CommandDuplicate,

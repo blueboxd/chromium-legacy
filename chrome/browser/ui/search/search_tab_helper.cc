@@ -15,6 +15,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
+#include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service.h"
+#include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
@@ -517,18 +519,19 @@ void SearchTabHelper::OnResultChanged(bool default_result_changed) {
       CreateAutocompleteMatches(autocomplete_controller_->result())));
 
   // Create new bitmap requests.
-  BitmapFetcherHelper bitmap_fetcher_helper(profile());
+  BitmapFetcherService* bitmap_fetcher_service =
+      BitmapFetcherServiceFactory::GetForBrowserContext(profile());
+
   int match_index = -1;
   for (const auto& match : autocomplete_controller_->result()) {
     match_index++;
     if (match.ImageUrl().is_empty()) {
       continue;
     }
-    bitmap_fetcher_helper.RequestImage(
-        match.ImageUrl(),
-        base::BindRepeating(&SearchTabHelper::OnBitmapFetched,
-                            weak_factory_.GetWeakPtr(), match_index,
-                            match.ImageUrl().spec()));
+    bitmap_fetcher_service->RequestImage(
+        match.ImageUrl(), base::BindOnce(&SearchTabHelper::OnBitmapFetched,
+                                         weak_factory_.GetWeakPtr(),
+                                         match_index, match.ImageUrl().spec()));
   }
 }
 

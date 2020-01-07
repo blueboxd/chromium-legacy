@@ -33,6 +33,7 @@ class CrostiniUpgraderPageHandler
 
   // chromeos::crostini_upgrader::mojom::PageHandler:
   void Backup() override;
+  void StartPrechecks() override;
   void Upgrade() override;
   void Cancel() override;
   void CancelBeforeStart() override;
@@ -43,6 +44,8 @@ class CrostiniUpgraderPageHandler
   void OnBackupProgress(int percent) override;
   void OnBackupSucceeded() override;
   void OnBackupFailed() override;
+  void PrecheckStatus(chromeos::crostini_upgrader::mojom::UpgradePrecheckStatus
+                          status) override;
   void OnUpgradeProgress(const std::vector<std::string>& messages) override;
   void OnUpgradeSucceeded() override;
   void OnUpgradeFailed() override;

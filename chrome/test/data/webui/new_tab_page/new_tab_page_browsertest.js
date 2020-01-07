@@ -74,3 +74,15 @@ var NewTabPageThemeIconTest = class extends NewTabPageBrowserTest {
 TEST_F('NewTabPageThemeIconTest', 'All', function() {
   mocha.run();
 });
+
+// eslint-disable-next-line no-var
+var NewTabPageUtilsTest = class extends NewTabPageBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/utils_test.js';
+  }
+};
+
+TEST_F('NewTabPageUtilsTest', 'All', function() {
+  mocha.run();
+});

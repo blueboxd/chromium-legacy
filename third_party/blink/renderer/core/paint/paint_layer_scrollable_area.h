@@ -777,12 +777,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
   base::Optional<HistoryItem::ViewState> pending_view_state_;
 };
 
-DEFINE_TYPE_CASTS(PaintLayerScrollableArea,
-                  ScrollableArea,
-                  scrollableArea,
-                  scrollableArea->IsPaintLayerScrollableArea(),
-                  scrollableArea.IsPaintLayerScrollableArea());
-
 }  // namespace blink
 
 #endif  // LayerScrollableArea_h

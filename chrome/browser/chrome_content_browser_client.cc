@@ -228,15 +228,15 @@
 #include "components/previews/core/previews_switches.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/rappor_service_impl.h"
-#include "components/safe_browsing/browser/browser_url_loader_throttle.h"
-#include "components/safe_browsing/browser/url_checker_delegate.h"
 #include "components/safe_browsing/buildflags.h"
-#include "components/safe_browsing/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/db/database_manager.h"
-#include "components/safe_browsing/features.h"
-#include "components/safe_browsing/password_protection/password_protection_navigation_throttle.h"
-#include "components/safe_browsing/realtime/policy_engine.h"
-#include "components/safe_browsing/verdict_cache_manager.h"
+#include "components/safe_browsing/content/browser/browser_url_loader_throttle.h"
+#include "components/safe_browsing/content/password_protection/password_protection_navigation_throttle.h"
+#include "components/safe_browsing/core/browser/url_checker_delegate.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/db/database_manager.h"
+#include "components/safe_browsing/core/features.h"
+#include "components/safe_browsing/core/realtime/policy_engine.h"
+#include "components/safe_browsing/core/verdict_cache_manager.h"
 #include "components/security_interstitials/content/origin_policy_ui.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
 #include "components/security_interstitials/content/ssl_error_navigation_throttle.h"
@@ -4240,9 +4240,9 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
     result.push_back(safe_browsing::BrowserURLLoaderThrottle::Create(
         base::BindOnce(
             &ChromeContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate,
-            base::Unretained(this)),
-        wc_getter, frame_tree_node_id, profile->GetResourceContext(),
-        cache_manager));
+            base::Unretained(this),
+            profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled)),
+        wc_getter, frame_tree_node_id, cache_manager));
   }
 #endif
 
@@ -4368,9 +4368,10 @@ class FileURLLoaderFactory : public network::mojom::URLLoaderFactory {
               network::URLLoaderCompletionStatus(net::ERR_ACCESS_DENIED));
       return;
     }
-    content::CreateFileURLLoader(request, std::move(loader), std::move(client),
-                                 /*observer=*/nullptr,
-                                 /* allow_directory_listing */ true);
+    content::CreateFileURLLoaderBypassingSecurityChecks(
+        request, std::move(loader), std::move(client),
+        /*observer=*/nullptr,
+        /* allow_directory_listing */ true);
   }
 
   void Clone(
@@ -4580,7 +4581,7 @@ void ChromeContentBrowserClient::CreateWebSocket(
     content::RenderFrameHost* frame,
     WebSocketFactory factory,
     const GURL& url,
-    const GURL& site_for_cookies,
+    const net::SiteForCookies& site_for_cookies,
     const base::Optional<std::string>& user_agent,
     mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>
         handshake_client) {
@@ -4594,8 +4595,8 @@ void ChromeContentBrowserClient::CreateWebSocket(
 
   DCHECK(web_request_api);
   web_request_api->ProxyWebSocket(frame, std::move(factory), url,
-                                  site_for_cookies, user_agent,
-                                  std::move(handshake_client));
+                                  site_for_cookies.RepresentativeUrl(),
+                                  user_agent, std::move(handshake_client));
 #endif
 }
 
@@ -4603,7 +4604,7 @@ bool ChromeContentBrowserClient::WillCreateRestrictedCookieManager(
     network::mojom::RestrictedCookieManagerRole role,
     content::BrowserContext* browser_context,
     const url::Origin& origin,
-    const GURL& site_for_cookies,
+    const net::SiteForCookies& site_for_cookies,
     const url::Origin& top_frame_origin,
     bool is_service_worker,
     int process_id,
@@ -4897,11 +4898,10 @@ ui::NativeTheme* ChromeContentBrowserClient::GetWebTheme() const {
 
 scoped_refptr<safe_browsing::UrlCheckerDelegate>
 ChromeContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate(
-    content::ResourceContext* resource_context) {
+    bool safe_browsing_enabled_for_profile) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
-  if (!io_data->safe_browsing_enabled()->GetValue())
+  if (!safe_browsing_enabled_for_profile)
     return nullptr;
 
   // |safe_browsing_service_| may be unavailable in tests.

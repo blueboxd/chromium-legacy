@@ -86,6 +86,8 @@ class FeedLoggingMetrics {
 
   void OnNotInterestedInTopic(int position, bool committed);
 
+  void OnManageInterestsClicked(int position);
+
   void OnSpinnerStarted(int spinner_type);
 
   void OnSpinnerFinished(base::TimeDelta shown_time, int spinner_type);

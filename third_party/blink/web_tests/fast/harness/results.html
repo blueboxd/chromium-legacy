@@ -179,9 +179,6 @@ p, h2, h3, h4 {
   margin-left: 5px;
 }
 
-#flag-toolbar {
-  display: inline-block;
-}
 #flag-toolbar.hidden {
   display: none;
 }
@@ -319,13 +316,18 @@ TestResult(CRASH) + TextExpectation(Failure) => [ Failure <b>Crash</b> ]</pre>
       Flagged
     </button>
     <div id="flag-toolbar" class="hidden">
+      <span class="fix-width"></span>
       <button onclick="javascript:Query.query('Flag failures', Filters.flagFailure, true)">
         <span class="flag_name"></span> failures
-        <span id="count_flagfailure"></span>
+        <span id="count_flag_failure"></span>
       </button>
-      <button onclick="javascript:Query.query('Flag failures', Filters.flagPass, true)">
+      <button onclick="javascript:Query.query('Flag passes', Filters.flagPass, true)">
         <span class="flag_name"></span> passes
-        <span id="count_flagpass"></span>
+        <span id="count_flag_pass"></span>
+      </button>
+      <button onclick="javascript:Query.query('Flag unexpected passes', Filters.flagUnexpectedPass, true)">
+        <span class="flag_name"></span> unexpected passes
+        <span id="count_flag_unexpected_pass"></span>
       </button>
     </div>
   </div>
@@ -360,8 +362,8 @@ TestResult(CRASH) + TextExpectation(Failure) => [ Failure <b>Crash</b> ]</pre>
   <span style="margin-left: 20px">
     <button id="copy_report" title="Copy the shown/flagged tests to clipboard in the current format"
         onclick="GUI.copyResult(false)" disabled>Copy report</button>
-    <button id="copy_single_line" title="Copy the shown/flagged tests to clipboard in a single line for use in command lines."
-        onclick="GUI.copyResult(true)" disabled>Copy single line</button>
+    <button id="copy_test_names" title="Copy the names of the shown/flagged tests to clipboard in a single line for use in command lines."
+        onclick="GUI.copyResult(true)" disabled>Copy test names</button>
     <label id="flagged_only" class="hidden"><input id="flagged_only_checkbox" type="checkbox" checked>Flagged only</label>
     <span id="copied" class="hidden">Copied.</span>
   </span>
@@ -919,7 +921,7 @@ const Query = {
     document.querySelector("#report_title").innerHTML = name;
     document.querySelector("#progress").style.width = "1%";
     document.querySelector("#copy_report").disabled = true;
-    document.querySelector("#copy_single_line").disabled = true;
+    document.querySelector("#copy_test_names").disabled = true;
         document.querySelector("#report_count").innerText = "";
     let traversal = new Traversal(globalResults.tests);
     let chunkSize = 1000;
@@ -962,22 +964,20 @@ const Filters = {
     return !Filters.containsPass(test.expectedMap) && Filters.containsPass(test.actualMap);
   },
   regressionFromExpectedMap: (finalResult, expectedMap) => {
-    if (expectedMap.has("NEEDSREBASELINE"))
-      return false;
     switch (finalResult) {
       case "SKIP":
         return false;
       case "CRASH":
       case "TIMEOUT":
       case "LEAK":
-        if (expectedMap.has(finalResult))
+        if (expectedMap && expectedMap.has(finalResult))
           return false;
         break;
       case "TEXT":
       case "IMAGE":
       case "IMAGE+TEXT":
       case "AUDIO":
-        if (expectedMap.has("FAIL"))
+        if (expectedMap && expectedMap.has("FAIL"))
           return false;
         break;
       case "MISSING":
@@ -1005,35 +1005,15 @@ const Filters = {
   flagFailure: test => { // Tests that are failing, but expected to pass in base.
     if (Filters.containsPass(test.actualMap))
       return false;
-    if (test.expectedMap.has("NEEDSREBASELINE"))
-      return false;
     let baseMap = test.flagMap ? test.baseMap : test.expectedMap;
-    switch (test.actualFinal) {
-      case "SKIP":
-        return false;
-      case "CRASH":
-      case "TIMEOUT":
-      case "LEAK":
-        if (baseMap && baseMap.has(test.actualFinal))
-          return false;
-        break;
-      case "TEXT":
-      case "IMAGE":
-      case "IMAGE+TEXT":
-      case "AUDIO":
-        if (baseMap && baseMap.has("FAIL"))
-          return false;
-        break;
-      case "MISSING":
-        break;
-      default:
-        console.error("Unexpected test result", test.actualFinal);
-      }
-    return true;
+    return Filters.regressionFromExpectedMap(test.actualFinal, baseMap);
   },
   flagPass: test => {
     return test.baseMap && (Filters.containsPass(test.actualMap) && !Filters.containsPass(test.baseMap));
-  }
+  },
+  flagUnexpectedPass: test => {
+    return test.flagMap && !Filters.containsPass(test.flagMap) && Filters.containsPass(test.actualMap);
+  },
 }; // Filters
 
 // Event handling, initialization.
@@ -1409,7 +1389,7 @@ const GUI = {
   updateCopyButtons: function() {
     let noResult = document.querySelector("#none");
     document.querySelector("#copy_report").disabled = noResult;
-    document.querySelector("#copy_single_line").disabled = noResult;
+    document.querySelector("#copy_test_names").disabled = noResult;
 
     let flagged_only = document.querySelector("#flagged_only");
     if (document.querySelector(".flagged"))
@@ -1440,8 +1420,9 @@ const GUI = {
       "count_flaky": 0,
       "count_unexpected_flaky": 0,
       "count_all": 0,
-      "count_flagfailure": 0,
-      "count_flagpass" : 0
+      "count_flag_failure": 0,
+      "count_flag_pass" : 0,
+      "count_flag_unexpected_pass" : 0,
     };
     var t = new Traversal(fullResults.tests);
     t.traverse( test => {
@@ -1457,9 +1438,11 @@ const GUI = {
       if (Filters.unexpectedFlaky(test))
         counts.count_unexpected_flaky++;
       if (Filters.flagFailure(test))
-        counts.count_flagfailure++;
+        counts.count_flag_failure++;
       if (Filters.flagPass(test))
-        counts.count_flagpass++;
+        counts.count_flag_pass++;
+      if (Filters.flagUnexpectedPass(test))
+        counts.count_flag_unexpected_pass++;
     });
     console.assert(
         counts.count_regressions == fullResults.num_regressions,

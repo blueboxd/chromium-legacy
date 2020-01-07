@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
 #include "third_party/blink/renderer/core/events/touch_event_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -82,7 +83,7 @@ HeapVector<Member<EventTarget>>& TreeScopeEventContext::EnsureEventPath(
 
 TouchEventContext& TreeScopeEventContext::EnsureTouchEventContext() {
   if (!touch_event_context_)
-    touch_event_context_ = TouchEventContext::Create();
+    touch_event_context_ = MakeGarbageCollected<TouchEventContext>();
   return *touch_event_context_;
 }
 

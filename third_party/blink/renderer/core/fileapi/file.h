@@ -205,17 +205,19 @@ class CORE_EXPORT File final : public Blob {
   // If the modification time isn't known, the current time is returned.
   base::Time LastModifiedTime() const;
 
+  // Similar to |LastModifiedTime()|, except this returns base::nullopt rather
+  // than the current time if the modified time is unknown.
+  // This is used by SerializedScriptValue to serialize the last modified time
+  // of a File object.
+  // This method calls CaptureSnapshotIfNeeded, and thus can involve synchronous
+  // IPC and file operations.
+  base::Optional<base::Time> LastModifiedTimeForSerialization() const;
+
   UserVisibility GetUserVisibility() const { return user_visibility_; }
 
   // Returns the relative path of this file in the context of a directory
   // selection.
   const String& webkitRelativePath() const { return relative_path_; }
-
-  // Note that this involves synchronous file operation. Think twice before
-  // calling this function.
-  void CaptureSnapshot(
-      uint64_t& snapshot_size,
-      base::Optional<base::Time>& snapshot_modification_time) const;
 
   // Returns true if this has a valid snapshot metadata
   // (i.e. snapshot_size_.has_value()).
@@ -229,7 +231,9 @@ class CORE_EXPORT File final : public Blob {
   bool AppendToControlState(FormControlState& state);
 
  private:
-  void InvalidateSnapshotMetadata() { snapshot_size_.reset(); }
+  // Note that this involves synchronous file operation. Think twice before
+  // calling this function.
+  void CaptureSnapshotIfNeeded() const;
 
 #if DCHECK_IS_ON()
   // Instances backed by a file must have an empty file system URL.
@@ -251,8 +255,8 @@ class CORE_EXPORT File final : public Blob {
   // we retrieve the latest metadata synchronously in size(),
   // LastModifiedTime() and slice().
   // Otherwise, the snapshot metadata are used directly in those methods.
-  base::Optional<uint64_t> snapshot_size_;
-  const base::Optional<base::Time> snapshot_modification_time_;
+  mutable base::Optional<uint64_t> snapshot_size_;
+  mutable base::Optional<base::Time> snapshot_modification_time_;
 
   String relative_path_;
 };

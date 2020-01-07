@@ -31,7 +31,7 @@ SingleThreadTaskExecutor::SingleThreadTaskExecutor(
       default_task_queue_(sequence_manager_->CreateTaskQueue(
           sequence_manager::TaskQueue::Spec("default_tq"))),
       type_(type),
-      simple_task_executor_(sequence_manager_.get(), task_runner()) {
+      simple_task_executor_(task_runner()) {
   sequence_manager_->SetDefaultTaskRunner(default_task_queue_->task_runner());
   sequence_manager_->BindToMessagePump(std::move(pump));
 }

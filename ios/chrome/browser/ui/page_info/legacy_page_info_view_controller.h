@@ -12,18 +12,16 @@
 #include "base/memory/weak_ptr.h"
 
 @protocol BrowserCommands;
+@class PageInfoConfig;
 @protocol PageInfoPresentation;
-class PageInfoModel;
 
-// TODO(crbug.com/227827) Merge 178763: PageInfoModel has been removed in
-// upstream; check if we should use PageInfoModel.
 // The view controller for the page info view.
 @interface LegacyPageInfoViewController : NSObject
 // Designated initializer.
 // The |sourcePoint| parameter should be in the coordinate system of
 // |provider|'s view. Typically, |sourcePoint| would be the midpoint of a button
 // that resulted in this popup being displayed.
-- (id)initWithModel:(PageInfoModel*)model
+- (id)initWithModel:(PageInfoConfig*)model
              sourcePoint:(CGPoint)sourcePoint
     presentationProvider:(id<PageInfoPresentation>)provider
                  handler:(id<BrowserCommands>)handler;

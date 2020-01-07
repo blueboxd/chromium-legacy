@@ -11,7 +11,6 @@
 #include "base/component_export.h"
 #include "base/no_destructor.h"
 #include "base/sequence_checker.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/tracing/public/mojom/traced_process.mojom.h"
 

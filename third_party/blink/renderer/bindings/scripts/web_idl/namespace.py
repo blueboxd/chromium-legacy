@@ -140,3 +140,8 @@ class Namespace(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
     def operation_groups(self):
         """Returns a list of OperationGroups."""
         return self._operation_groups
+
+    @property
+    def exposed_constructs(self):
+        """Returns exposed constructs."""
+        return ()

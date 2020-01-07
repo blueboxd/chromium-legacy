@@ -16,13 +16,15 @@ class OmniboxTabSwitchButton : public views::MdTextButton {
                          OmniboxResultView* result_view,
                          const base::string16& hint,
                          const base::string16& hint_short,
-                         const gfx::VectorIcon& icon,
-                         const ui::ThemeProvider* theme_provider);
+                         const gfx::VectorIcon& icon);
 
   ~OmniboxTabSwitchButton() override;
 
   // views::MdTextButton:
   void StateChanged(ButtonState old_state) override;
+
+  // views::View:
+  void OnThemeChanged() override;
 
   // Called by parent views to change background on external (not mouse related)
   // event (tab key).
@@ -68,8 +70,6 @@ class OmniboxTabSwitchButton : public views::MdTextButton {
   // Label strings for hint text and its short version (may be same).
   base::string16 hint_;
   base::string16 hint_short_;
-
-  const ui::ThemeProvider* theme_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxTabSwitchButton);
 };

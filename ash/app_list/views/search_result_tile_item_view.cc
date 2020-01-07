@@ -141,9 +141,7 @@ SearchResultTileItemView::SearchResultTileItemView(
   set_context_menu_controller(this);
 }
 
-SearchResultTileItemView::~SearchResultTileItemView() {
-  ClearResult();
-}
+SearchResultTileItemView::~SearchResultTileItemView() = default;
 
 void SearchResultTileItemView::OnResultChanged() {
   // Handle the case where this may be called from a nested run loop while its

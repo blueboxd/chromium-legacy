@@ -820,12 +820,14 @@ void EditingStyle::CollapseTextDecorationProperties(
 }
 
 EditingTriState EditingStyle::TriStateOfStyle(
+    ExecutionContext* execution_context,
     EditingStyle* style,
     SecureContextMode secure_context_mode) const {
   if (!style || !style->mutable_style_)
     return EditingTriState::kFalse;
-  return TriStateOfStyle(style->mutable_style_->EnsureCSSStyleDeclaration(),
-                         kDoNotIgnoreTextOnlyProperties, secure_context_mode);
+  return TriStateOfStyle(
+      style->mutable_style_->EnsureCSSStyleDeclaration(execution_context),
+      kDoNotIgnoreTextOnlyProperties, secure_context_mode);
 }
 
 EditingTriState EditingStyle::TriStateOfStyle(
@@ -868,6 +870,7 @@ EditingTriState EditingStyle::TriStateOfStyle(
 
   if (selection.IsCaret()) {
     return TriStateOfStyle(
+        selection.Start().GetDocument(),
         EditingStyleUtilities::CreateStyleAtSelectionStart(selection),
         secure_context_mode);
   }
@@ -1516,10 +1519,11 @@ void EditingStyle::RemoveStyleFromRulesAndContext(Element* element,
       StyleFromMatchedRulesForElement(element,
                                       StyleResolver::kAllButEmptyCSSRules);
   if (style_from_matched_rules && !style_from_matched_rules->IsEmpty()) {
-    mutable_style_ = GetPropertiesNotIn(
-        mutable_style_.Get(),
-        style_from_matched_rules->EnsureCSSStyleDeclaration(),
-        secure_context_mode);
+    mutable_style_ =
+        GetPropertiesNotIn(mutable_style_.Get(),
+                           style_from_matched_rules->EnsureCSSStyleDeclaration(
+                               &element->GetDocument()),
+                           secure_context_mode);
   }
 
   // 2. Remove style present in context and not overriden by matched rules.
@@ -1536,7 +1540,8 @@ void EditingStyle::RemoveStyleFromRulesAndContext(Element* element,
                             style_from_matched_rules);
     mutable_style_ = GetPropertiesNotIn(
         mutable_style_.Get(),
-        computed_style->mutable_style_->EnsureCSSStyleDeclaration(),
+        computed_style->mutable_style_->EnsureCSSStyleDeclaration(
+            &element->GetDocument()),
         secure_context_mode);
   }
 

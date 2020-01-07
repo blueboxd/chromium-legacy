@@ -16,6 +16,7 @@
 namespace blink {
 
 class ContentDescription;
+class ExceptionState;
 class ScriptPromiseResolver;
 class ScriptState;
 class ServiceWorkerRegistration;
@@ -30,9 +31,13 @@ class ContentIndex final : public ScriptWrappable {
 
   // Web-exposed function defined in the IDL file.
   ScriptPromise add(ScriptState* script_state,
-                    const ContentDescription* description);
-  ScriptPromise deleteDescription(ScriptState* script_state, const String& id);
-  ScriptPromise getDescriptions(ScriptState* script_state);
+                    const ContentDescription* description,
+                    ExceptionState& exception_state);
+  ScriptPromise deleteDescription(ScriptState* script_state,
+                                  const String& id,
+                                  ExceptionState& exception_state);
+  ScriptPromise getDescriptions(ScriptState* script_state,
+                                ExceptionState& exception_state);
 
   void Trace(blink::Visitor* visitor) override;
 

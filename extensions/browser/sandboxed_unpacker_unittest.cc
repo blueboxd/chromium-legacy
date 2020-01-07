@@ -265,8 +265,7 @@ class SandboxedUnpackerTest : public ExtensionsTest {
     sandboxed_unpacker_->extension_root_ = path;
   }
 
-  base::DictionaryValue* RewriteManifestFile(
-      const base::DictionaryValue& manifest) {
+  base::Optional<base::Value> RewriteManifestFile(const base::Value& manifest) {
     return sandboxed_unpacker_->RewriteManifestFile(manifest);
   }
 
@@ -445,7 +444,7 @@ TEST_F(SandboxedUnpackerTest, TestRewriteManifestInjections) {
                       FILE_PATH_LITERAL("manifest.fingerprint")),
                   fingerprint.c_str(),
                   base::checked_cast<int>(fingerprint.size()));
-  std::unique_ptr<base::DictionaryValue> manifest(RewriteManifestFile(
+  base::Optional<base::Value> manifest(RewriteManifestFile(
       *DictionaryBuilder().Set(kVersionStr, kTestVersion).Build()));
   auto* key = manifest->FindStringKey("key");
   auto* version = manifest->FindStringKey(kVersionStr);

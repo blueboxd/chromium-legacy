@@ -3701,17 +3701,6 @@ AXPlatformNodeAuraLinux::GetEmbeddedObjectIndices() {
 }
 
 void AXPlatformNodeAuraLinux::UpdateHypertext() {
-  // For text only objects, ensure that the parent's hypertext is updated as
-  // well. Text only objects insert their text directly into their parents
-  // hypertext, instead of being represented as embedded object characters.
-  if (IsTextOnlyObject()) {
-    if (AtkObject* parent = GetParent()) {
-      if (auto* parent_node = AtkObjectToAXPlatformNodeAuraLinux(parent)) {
-        parent_node->UpdateHypertext();
-      }
-    }
-  }
-
   EnsureAtkObjectIsValid();
   AXHypertext old_hypertext = hypertext_;
   base::OffsetAdjuster::Adjustments old_adjustments = GetHypertextAdjustments();

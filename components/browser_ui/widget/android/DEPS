@@ -1,3 +1,4 @@
 include_rules = [
   "+ui/android",
+  "+content/public/test/android",
 ]

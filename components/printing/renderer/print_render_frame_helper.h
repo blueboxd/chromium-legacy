@@ -31,7 +31,6 @@
 
 struct PrintMsg_Print_Params;
 struct PrintMsg_PrintPages_Params;
-struct PrintMsg_PrintFrame_Params;
 struct PrintHostMsg_SetOptionsFromDocument_Params;
 
 // RenderViewTest-based tests crash on Android
@@ -214,7 +213,6 @@ class PrintRenderFrameHelper
   void DidFailProvisionalLoad() override;
   void DidFinishLoad() override;
   void ScriptedPrint(bool user_initiated) override;
-  bool OnMessageReceived(const IPC::Message& message) override;
 
   void BindPrintRenderFrameReceiver(
       mojo::PendingAssociatedReceiver<mojom::PrintRenderFrame> receiver);
@@ -226,16 +224,12 @@ class PrintRenderFrameHelper
   void InitiatePrintPreview(
       mojo::PendingAssociatedRemote<mojom::PrintRenderer> print_renderer,
       bool has_selection) override;
+  void PrintPreview(base::Value settings) override;
   void OnPrintPreviewDialogClosed() override;
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
+  void PrintFrameContent(mojom::PrintFrameContentParamsPtr params) override;
   void PrintingDone(bool success) override;
   void SetPrintingEnabled(bool enabled) override;
-
-  // Message handlers ---------------------------------------------------------
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  void OnPrintPreview(const base::DictionaryValue& settings);
-#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  void OnPrintFrameContent(const PrintMsg_PrintFrame_Params& params);
 
   // Get |page_size| and |content_area| information from
   // |page_layout_in_points|.

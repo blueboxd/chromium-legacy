@@ -36,7 +36,7 @@ class BreadcrumbManagerKeyedService : public KeyedService {
   // Returns up to |event_count_limit| events from the underlying
   // |breadcrumb_manager|. See |BreadcrumbManager::GetEvents| for returned event
   // details.
-  const std::list<std::string> GetEvents(size_t event_count_limit);
+  const std::list<std::string> GetEvents(size_t event_count_limit) const;
 
  private:
   // A short string identifying the browser state used to initialize the

@@ -612,8 +612,7 @@ public class NfcImpl implements Nfc {
                     continue;
                 }
             }
-            if (!options.mediaType.isEmpty()
-                    && !options.mediaType.equals(message.data[i].mediaType)) {
+            if (options.mediaType != null && !options.mediaType.equals(message.data[i].mediaType)) {
                 continue;
             }
 

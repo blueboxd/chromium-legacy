@@ -14,9 +14,11 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityTabProvider.HintlessActivityTabObserver;
 import org.chromium.chrome.browser.ThemeColorProvider;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.toolbar.HomeButton;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.MenuButton;
@@ -169,10 +171,12 @@ public class BrowsingModeBottomToolbarCoordinator {
      * @param tabCountProvider Updates the tab count number in the tab switcher button.
      * @param themeColorProvider Notifies components when theme color changes.
      * @param incognitoStateProvider Notifies components when incognito state changes.
+     * @param overviewModeBehavior Notifies components when overview mode changes.
      */
     void initializeWithNative(OnClickListener tabSwitcherListener,
             AppMenuButtonHelper menuButtonHelper, TabCountProvider tabCountProvider,
-            ThemeColorProvider themeColorProvider, IncognitoStateProvider incognitoStateProvider) {
+            ThemeColorProvider themeColorProvider, IncognitoStateProvider incognitoStateProvider,
+            OverviewModeBehavior overviewModeBehavior) {
         mMediator.setThemeColorProvider(themeColorProvider);
 
         mHomeButton.setThemeColorProvider(themeColorProvider);
@@ -191,6 +195,15 @@ public class BrowsingModeBottomToolbarCoordinator {
         assert menuButtonHelper != null;
         mMenuButton.setAppMenuButtonHelper(menuButtonHelper);
         mMenuButton.setThemeColorProvider(themeColorProvider);
+
+        // If StartSurface is HomePage, BrowsingModeBottomToolbar is shown in browsing mode and in
+        // overview mode. We need to pass the OverviewModeBehavior to the buttons so they are
+        // disabled based on the moverview state.
+        if (ReturnToChromeExperimentsUtil.shouldShowStartSurfaceAsTheHomePage()) {
+            mShareButton.setOverviewModeBehavior(overviewModeBehavior);
+            mTabSwitcherButtonCoordinator.setOverviewModeBehavior(overviewModeBehavior);
+            mHomeButton.setOverviewModeBehavior(overviewModeBehavior);
+        }
     }
 
     /**

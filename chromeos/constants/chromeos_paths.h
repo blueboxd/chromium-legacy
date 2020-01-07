@@ -51,6 +51,9 @@ enum {
                                         // is stored for the signin profile.
                                         // Currently this is used for policy for
                                         // extensions.
+  DIR_SIGNIN_PROFILE_EXTENSIONS,        // Directory under which a cache of
+                                        // force-installed extensions is
+                                        // maintained for the signin profile.
   DIR_PREINSTALLED_COMPONENTS,          // Directory that contains pre-installed
                                         // components.
   DIR_DEVICE_POLICY_EXTERNAL_DATA,  // Directory where device policy external

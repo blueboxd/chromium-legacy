@@ -2,23 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
-/**
- * Namespace for the Camera app.
- */
-var cca = cca || {};
-
-/**
- * Namespace for the background page.
- */
-cca.bg = cca.bg || {};
+// eslint-disable-next-line no-unused-vars
+import {Intent} from './intent.js';
+// eslint-disable-next-line no-unused-vars
+import {PerfLogger} from './perf.js';
 
 /**
  * Operations supported by foreground window.
  * @interface
  */
-cca.bg.ForegroundOps = class {
+export class ForegroundOps {
   /**
    * Suspend foreground window.
    * @return {!Promise}
@@ -31,29 +24,29 @@ cca.bg.ForegroundOps = class {
    * @abstract
    */
   resume() {}
-};
+}
 
 /**
  * Operations supported by background window.
  * @interface
  */
-cca.bg.BackgroundOps = class {
+export class BackgroundOps {
   /**
    * Sets the implementation of ForegroundOps from foreground window.
-   * @param {!cca.bg.ForegroundOps} ops
+   * @param {!ForegroundOps} ops
    */
   bindForegroundOps(ops) {}
 
   /**
-   * Gets intent associate with cca.bg.Window object.
-   * @return {?cca.intent.Intent}
+   * Gets intent associate with CCA Window object.
+   * @return {?Intent}
    * @abstract
    */
   getIntent() {}
 
   /**
-   * Gets the perf logger associate with cca.bg.Window object.
-   * @return {!cca.perf.PerfLogger}
+   * Gets the perf logger associate with CCA Window object.
+   * @return {!PerfLogger}
    * @abstract
    */
   getPerfLogger() {}
@@ -69,4 +62,9 @@ cca.bg.BackgroundOps = class {
    * @abstract
    */
   notifySuspension() {}
-};
+}
+
+/** @const */
+cca.bg.ForegroundOps = ForegroundOps;
+/** @const */
+cca.bg.BackgroundOps = BackgroundOps;

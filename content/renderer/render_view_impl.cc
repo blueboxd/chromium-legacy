@@ -454,9 +454,6 @@ void RenderViewImpl::Initialize(
     RenderWidget::ShowCallback show_callback,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(RenderThread::IsMainThread());
-  // We have either a main frame or a proxy routing id.
-  DCHECK_NE(params->main_frame_routing_id != MSG_ROUTING_NONE,
-            params->proxy_routing_id != MSG_ROUTING_NONE);
 
   RenderThread::Get()->AddRoute(routing_id_, this);
 
@@ -488,20 +485,6 @@ void RenderViewImpl::Initialize(
     main_render_frame_ = RenderFrameImpl::CreateMainFrame(
         this, compositor_deps, opener_frame, &params, std::move(show_callback));
   } else {
-    // TODO(https://crbug.com/995981): We should not need to create a
-    // RenderWidget for a remote main frame.
-    undead_render_widget_ = RenderWidget::CreateForFrame(
-        params->main_frame_widget_routing_id, compositor_deps,
-        params->visual_properties.display_mode,
-        /*is_undead=*/true, params->never_visible);
-    undead_render_widget_->set_delegate(this);
-    // We intentionally pass in a null webwidget since it is not needed
-    // for remote frames, and we don't have one or a ScreenInfo until we have
-    // a local main frame.
-    undead_render_widget_->InitForMainFrame(std::move(show_callback),
-                                            /*web_frame_widget=*/nullptr,
-                                            /*screen_info=*/nullptr);
-
     RenderFrameProxy::CreateFrameProxy(params->proxy_routing_id, GetRoutingID(),
                                        opener_frame, MSG_ROUTING_NONE,
                                        params->replicated_frame_state,
@@ -1010,9 +993,14 @@ RenderViewImpl* RenderViewImpl::Create(
     RenderWidget::ShowCallback show_callback,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(params->view_id != MSG_ROUTING_NONE);
-  DCHECK(params->main_frame_widget_routing_id != MSG_ROUTING_NONE);
-  RenderViewImpl* render_view;
+  // Frame and widget routing ids come together.
+  DCHECK_EQ(params->main_frame_routing_id == MSG_ROUTING_NONE,
+            params->main_frame_widget_routing_id == MSG_ROUTING_NONE);
+  // We have either a main frame or a proxy routing id.
+  DCHECK_NE(params->main_frame_routing_id != MSG_ROUTING_NONE,
+            params->proxy_routing_id != MSG_ROUTING_NONE);
 
+  RenderViewImpl* render_view;
   if (g_create_render_view_impl) {
     render_view = g_create_render_view_impl(compositor_deps, *params);
   } else {
@@ -1027,22 +1015,22 @@ RenderViewImpl* RenderViewImpl::Create(
 void RenderViewImpl::Destroy() {
   destroying_ = true;
 
-  // If there is no local main frame, then destroying the WebView will not
-  // detach anything, and the RenderWidget will not be destroyed. So we have
-  // to do it here.
-  bool close_render_widget_here = !main_render_frame_;
-
   webview_->Close();
   // The webview_ is already destroyed by the time we get here, remove any
   // references to it.
   g_view_map.Get().erase(webview_);
   webview_ = nullptr;
 
+  // If there is no local main frame, then destroying the WebView will not
+  // detach anything, and the RenderWidget will not be destroyed. So we have
+  // to do it here. But only if we have previously created a local main frame
+  // and RenderWidget else |undead_render_widget_| is null.
+  //
   // We do this after WebView has closed, though it should not matter. WebView
   // only uses the RenderWidget through WebWidgetClient that it accesses through
   // a main frame. So it should not be able to see this happening when there is
   // no local main frame.
-  if (close_render_widget_here) {
+  if (undead_render_widget_) {
     RenderWidget* closing_widget = undead_render_widget_.get();
     closing_widget->CloseForFrame(std::move(undead_render_widget_));
   }
@@ -1840,6 +1828,12 @@ void RenderViewImpl::ApplyPageVisibilityState(
 }
 
 RenderWidget* RenderViewImpl::ReviveUndeadMainFrameRenderWidget() {
+  // There will be no undead RenderWidget until a local main frame has existed
+  // at some point in the past. Returning null signals that a RenderWidget will
+  // need to be created instead.
+  if (!undead_render_widget_)
+    return nullptr;
+
   render_widget_ = std::move(undead_render_widget_);
   render_widget_->SetIsUndead(false);
   return render_widget_.get();

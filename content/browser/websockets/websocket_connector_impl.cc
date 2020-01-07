@@ -29,7 +29,7 @@ WebSocketConnectorImpl::~WebSocketConnectorImpl() = default;
 void WebSocketConnectorImpl::Connect(
     const GURL& url,
     const std::vector<std::string>& requested_protocols,
-    const GURL& site_for_cookies,
+    const net::SiteForCookies& site_for_cookies,
     const base::Optional<std::string>& user_agent,
     mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>
         handshake_client) {
@@ -65,7 +65,7 @@ void WebSocketConnectorImpl::Connect(
 
 void WebSocketConnectorImpl::ConnectCalledByContentBrowserClient(
     const std::vector<std::string>& requested_protocols,
-    const GURL& site_for_cookies,
+    const net::SiteForCookies& site_for_cookies,
     const net::NetworkIsolationKey& network_isolation_key,
     int process_id,
     int frame_id,

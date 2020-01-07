@@ -359,7 +359,7 @@ WebSocket::WebSocket(
     WebSocketFactory* factory,
     const GURL& url,
     const std::vector<std::string>& requested_protocols,
-    const GURL& site_for_cookies,
+    const net::SiteForCookies& site_for_cookies,
     const net::NetworkIsolationKey& network_isolation_key,
     std::vector<mojom::HttpHeaderPtr> additional_headers,
     int32_t child_id,
@@ -528,13 +528,14 @@ void WebSocket::OnConnectionError(const base::Location& set_from) {
 void WebSocket::AddChannel(
     const GURL& socket_url,
     const std::vector<std::string>& requested_protocols,
-    const GURL& site_for_cookies,
+    const net::SiteForCookies& site_for_cookies,
     const net::NetworkIsolationKey& network_isolation_key,
     std::vector<mojom::HttpHeaderPtr> additional_headers) {
   DVLOG(3) << "WebSocket::AddChannel @" << reinterpret_cast<void*>(this)
            << " socket_url=\"" << socket_url << "\" requested_protocols=\""
            << base::JoinString(requested_protocols, ", ") << "\" origin=\""
-           << origin_ << "\" site_for_cookies=\"" << site_for_cookies << "\"";
+           << origin_ << "\" site_for_cookies=\""
+           << site_for_cookies.ToDebugString() << "\"";
 
   DCHECK(!channel_);
 
@@ -556,10 +557,9 @@ void WebSocket::AddChannel(
       headers_to_pass.SetHeader(header->name, header->value);
     }
   }
-  channel_->SendAddChannelRequest(
-      socket_url, requested_protocols, origin_,
-      net::SiteForCookies::FromUrl(site_for_cookies), network_isolation_key,
-      headers_to_pass);
+  channel_->SendAddChannelRequest(socket_url, requested_protocols, origin_,
+                                  site_for_cookies, network_isolation_key,
+                                  headers_to_pass);
 }
 
 void WebSocket::OnWritable(MojoResult result,

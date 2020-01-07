@@ -21,7 +21,8 @@ class ElementFullscreen {
  public:
   static ScriptPromise requestFullscreen(ScriptState*,
                                          Element&,
-                                         const FullscreenOptions*);
+                                         const FullscreenOptions*,
+                                         ExceptionState& exception_state);
 
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(fullscreenchange, kFullscreenchange)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(fullscreenerror, kFullscreenerror)

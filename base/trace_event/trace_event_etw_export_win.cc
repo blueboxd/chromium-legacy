@@ -74,23 +74,24 @@ namespace {
 // group names or the hex representation. We only support the latter. Also, we
 // ignore the level.
 const char* const kFilteredEventGroupNames[] = {
-    "benchmark",                                        // 0x1
-    "blink",                                            // 0x2
-    "browser",                                          // 0x4
-    "cc",                                               // 0x8
-    "evdev",                                            // 0x10
-    "gpu",                                              // 0x20
-    "input",                                            // 0x40
-    "netlog",                                           // 0x80
-    "sequence_manager",                                 // 0x100
-    "toplevel",                                         // 0x200
-    "v8",                                               // 0x400
-    "disabled-by-default-cc.debug",                     // 0x800
-    "disabled-by-default-cc.debug.picture",             // 0x1000
-    "disabled-by-default-toplevel.flow",                // 0x2000
-    "startup",                                          // 0x4000
-    "latency",                                          // 0x8000
-    "blink.user_timing",                                // 0x10000
+    "benchmark",                             // 0x1
+    "blink",                                 // 0x2
+    "browser",                               // 0x4
+    "cc",                                    // 0x8
+    "evdev",                                 // 0x10
+    "gpu",                                   // 0x20
+    "input",                                 // 0x40
+    "netlog",                                // 0x80
+    "sequence_manager",                      // 0x100
+    "toplevel",                              // 0x200
+    "v8",                                    // 0x400
+    "disabled-by-default-cc.debug",          // 0x800
+    "disabled-by-default-cc.debug.picture",  // 0x1000
+    "disabled-by-default-toplevel.flow",     // 0x2000
+    "startup",                               // 0x4000
+    "latency",                               // 0x8000
+    "blink.user_timing",                     // 0x10000
+    "media",                                 // 0x20000
 };
 const char kOtherEventsGroupName[] = "__OTHER_EVENTS";  // 0x2000000000000000
 const char kDisabledOtherEventsGroupName[] =

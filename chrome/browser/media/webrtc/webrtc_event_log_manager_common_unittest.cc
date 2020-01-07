@@ -19,6 +19,16 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/zlib/google/compression_utils.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/test/base/testing_profile.h"
+#include "components/account_id/account_id.h"
+#include "components/user_manager/scoped_user_manager.h"
+#include "content/public/test/browser_task_environment.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#endif
+
 namespace webrtc_event_logging {
 
 namespace {
@@ -651,5 +661,91 @@ TEST_F(GzippedLogFileWriterTest,
   EXPECT_FALSE(writer->Close());
   EXPECT_FALSE(base::PathExists(path_));  // Errored files deleted by Close().
 }
+
+#if defined(OS_CHROMEOS)
+
+struct DoesProfileDefaultToLoggingEnabledForUserTypeTestCase {
+  user_manager::UserType user_type;
+  bool defaults_to_logging_enabled;
+};
+
+class DoesProfileDefaultToLoggingEnabledForUserTypeParametrizedTest
+    : public ::testing::TestWithParam<
+          DoesProfileDefaultToLoggingEnabledForUserTypeTestCase> {
+ protected:
+  content::BrowserTaskEnvironment task_environment_;
+};
+
+TEST_P(DoesProfileDefaultToLoggingEnabledForUserTypeParametrizedTest,
+       WebRtcPolicyDefaultTest) {
+  DoesProfileDefaultToLoggingEnabledForUserTypeTestCase test_case = GetParam();
+
+  TestingProfile::Builder profile_builder;
+  profile_builder.OverridePolicyConnectorIsManagedForTesting(true);
+  std::unique_ptr<TestingProfile> testing_profile = profile_builder.Build();
+  std::unique_ptr<testing::NiceMock<chromeos::FakeChromeUserManager>>
+      fake_user_manager_ = std::make_unique<
+          testing::NiceMock<chromeos::FakeChromeUserManager>>();
+  // We use a standard Gaia account by default:
+  AccountId account_id = AccountId::FromUserEmailGaiaId("name", "id");
+
+  switch (test_case.user_type) {
+    case user_manager::USER_TYPE_REGULAR:
+      fake_user_manager_->AddUserWithAffiliationAndTypeAndProfile(
+          account_id, false, test_case.user_type, testing_profile.get());
+      break;
+    case user_manager::USER_TYPE_GUEST:
+      account_id = fake_user_manager_->GetGuestAccountId();
+      fake_user_manager_->AddGuestUser();
+      break;
+    case user_manager::USER_TYPE_PUBLIC_ACCOUNT:
+      fake_user_manager_->AddPublicAccountUser(account_id);
+      break;
+    case user_manager::USER_TYPE_SUPERVISED:
+      fake_user_manager_->AddSupervisedUser(account_id);
+      break;
+    case user_manager::USER_TYPE_KIOSK_APP:
+      fake_user_manager_->AddKioskAppUser(account_id);
+      break;
+    case user_manager::USER_TYPE_CHILD:
+      fake_user_manager_->AddChildUser(account_id);
+      break;
+    case user_manager::USER_TYPE_ARC_KIOSK_APP:
+      fake_user_manager_->AddArcKioskAppUser(account_id);
+      break;
+    case user_manager::USER_TYPE_ACTIVE_DIRECTORY:
+      account_id = AccountId::AdFromObjGuid("guid");
+      fake_user_manager_->AddUserWithAffiliationAndTypeAndProfile(
+          account_id, false, test_case.user_type, testing_profile.get());
+      break;
+    default:
+      FAIL() << "Invalid test setup. Unexpected user type.";
+      break;
+  }
+
+  fake_user_manager_->LoginUser(account_id);
+  std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_ =
+      std::make_unique<user_manager::ScopedUserManager>(
+          std::move(fake_user_manager_));
+
+  EXPECT_EQ(DoesProfileDefaultToLoggingEnabled(testing_profile.get()),
+            test_case.defaults_to_logging_enabled);
+}
+
+INSTANTIATE_TEST_CASE_P(
+    WebRtcPolicyDefaultTests,
+    DoesProfileDefaultToLoggingEnabledForUserTypeParametrizedTest,
+    testing::ValuesIn(
+        std::vector<DoesProfileDefaultToLoggingEnabledForUserTypeTestCase>{
+            {user_manager::USER_TYPE_REGULAR, true},
+            {user_manager::USER_TYPE_GUEST, false},
+            {user_manager::USER_TYPE_PUBLIC_ACCOUNT, false},
+            {user_manager::USER_TYPE_SUPERVISED, false},
+            {user_manager::USER_TYPE_KIOSK_APP, false},
+            {user_manager::USER_TYPE_CHILD, false},
+            {user_manager::USER_TYPE_ARC_KIOSK_APP, false},
+            {user_manager::USER_TYPE_ACTIVE_DIRECTORY, false}}));
+
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace webrtc_event_logging

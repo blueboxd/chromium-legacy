@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/media_type_names.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
-#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
@@ -63,8 +62,6 @@ static void VerifyCSSCalc(String text,
 }
 
 TEST(SizesMathFunctionParserTest, Basic) {
-  ScopedCSSComparisonFunctionsForTest scope(true);
-
   SizesCalcTestCase test_cases[] = {
       {"calc(500px + 10em)", 660, true, false},
       {"calc(500px / 8)", 62.5, true, false},

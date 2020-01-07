@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SKIA_OUTPUT_DEVICE_BUFFER_QUEUE_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SKIA_OUTPUT_DEVICE_BUFFER_QUEUE_H_
 
+#include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/viz/service/display_embedder/skia_output_device.h"
@@ -66,6 +67,23 @@ class VIZ_SERVICE_EXPORT SkiaOutputDeviceBufferQueue final
   class Image;
   class OverlayData;
 
+  using CancelableSwapCompletionCallback =
+      base::CancelableOnceCallback<void(gfx::SwapResult,
+                                        std::unique_ptr<gfx::GpuFence>)>;
+
+  struct InFlightFrame {
+    explicit InFlightFrame(std::unique_ptr<Image> image);
+    InFlightFrame(const InFlightFrame& other) = delete;
+    InFlightFrame(InFlightFrame&& other);
+    ~InFlightFrame();
+
+    std::unique_ptr<Image> image;
+    // Use CancelableOnceCallback to prevent OverlayData from being destructed
+    // outside SkiaOutputDeviceBufferQueue life span.
+    std::unique_ptr<CancelableSwapCompletionCallback>
+        cancelable_swap_completion_callback;
+  };
+
   Image* GetCurrentImage();
   std::unique_ptr<Image> GetNextImage();
   void PageFlipComplete();
@@ -92,10 +110,10 @@ class VIZ_SERVICE_EXPORT SkiaOutputDeviceBufferQueue final
   std::unique_ptr<Image> displayed_image_;
   // These are free for use, and are not nullptr.
   std::vector<std::unique_ptr<Image>> available_images_;
-  // These have been scheduled to display but are not displayed yet.
-  // Entries of this deque may be nullptr, if they represent frames that have
-  // been destroyed.
-  base::circular_deque<std::unique_ptr<Image>> in_flight_images_;
+  // These contain images that have been scheduled to display but are not
+  // displayed yet. Entries of this deque may have nullptr Image, if they
+  // represent frames that have been destroyed.
+  base::circular_deque<InFlightFrame> in_flight_frames_;
   // Scheduled overlays for the next SwapBuffers call.
   std::vector<OverlayData> pending_overlays_;
   // Committed overlays for the last SwapBuffers call.

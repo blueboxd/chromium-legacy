@@ -125,6 +125,20 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<WindowStateType>* const
     kPrePipWindowStateTypeKey;
 
+// If true, the current PIP window is spawned from this window.
+// Android PIP has two types of behavior depending on how many activities the
+// original task has before entering PIP.
+// SAPIP(Single-activity PIP): If the original task has only one activity, PIP
+// can be handled as window state change of the target window. In this case, the
+// PIP original window is this exact PIP window.
+// MAPIP(Multi-activity PIP): If the original task has more than one activities,
+// a new window is created for PIP, which is a completely different one from
+// the existing window. This existing window is the original window of the
+// current PIP window in this case. This property is used, for example, to
+// calculated the position of the PIP window in the Alt-Tab window cycler.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
+    kPipOriginalWindowKey;
+
 // Maps to ws::mojom::WindowManager::kRenderParentTitleArea_Property.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kRenderTitleAreaProperty;

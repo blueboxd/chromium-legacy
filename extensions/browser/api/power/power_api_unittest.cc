@@ -14,6 +14,7 @@
 #include "base/single_thread_task_runner.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/api_unittest.h"
+#include "extensions/browser/unloaded_extension_reason.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"

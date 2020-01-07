@@ -33,6 +33,7 @@ import "services/network/public/mojom/proxy_lookup_client.mojom";
 import "services/network/public/mojom/proxy_resolving_socket.mojom";
 import "services/network/public/mojom/quic_transport.mojom";
 import "services/network/public/mojom/restricted_cookie_manager.mojom";
+import "services/network/public/mojom/site_for_cookies.mojom";
 import "services/network/public/mojom/ssl_config.mojom";
 import "services/network/public/mojom/tcp_socket.mojom";
 import "services/network/public/mojom/udp_socket.mojom";
@@ -755,7 +756,7 @@ interface NetworkContextClient {
   // the relevant frame.
   OnCookiesChanged(
       bool is_service_worker, int32 process_id, int32 routing_id,
-      url.mojom.Url url, url.mojom.Url site_for_cookies,
+      url.mojom.Url url, SiteForCookies site_for_cookies,
       array<CookieWithStatus> cookie_list);
 
   // Called when an attempt has been made to read the cookies in |cookie_list|,
@@ -777,7 +778,7 @@ interface NetworkContextClient {
   // the relevant frame.
   OnCookiesRead(
       bool is_service_worker, int32 process_id, int32 routing_id,
-      url.mojom.Url url, url.mojom.Url site_for_cookies,
+      url.mojom.Url url, SiteForCookies site_for_cookies,
       array<CookieWithStatus> cookie_list);
 
   // Called to generate an auth token for SPNEGO authentication on Android.
@@ -816,10 +817,9 @@ interface NetworkContext {
   // Gets a RestrictedCookieManager scoped to a given origin, and applying
   // settings configured on the CookieManager associated with this domain.
   //
-  // |site_for_cookies| represents which domains the cookie manager should
-  // consider to be first-party, for purposes of SameSite cookies and any
-  // third-party cookie blocking the embedder may implement. Empty
-  // |site_for_cookies| denotes that no domains are first-party.
+  // |site_for_cookies| represents which domains (perhaps none) the cookie
+  // manager should consider to be first-party, for purposes of SameSite cookies
+  // and any third-party cookie blocking the embedder may implement.
   //
   // |top_frame_origin| represents the domain for top-level frame, and can be
   // used to look up preferences that are dependent on that.
@@ -833,7 +833,7 @@ interface NetworkContext {
       pending_receiver<RestrictedCookieManager> restricted_cookie_manager,
       RestrictedCookieManagerRole role,
       url.mojom.Origin origin,
-      url.mojom.Url site_for_cookies,
+      SiteForCookies site_for_cookies,
       url.mojom.Origin top_frame_origin,
       bool is_service_worker,
       int32 process_id, int32 routing_id);
@@ -1109,7 +1109,7 @@ interface NetworkContext {
   CreateWebSocket(
         url.mojom.Url url,
         array<string> requested_protocols,
-        url.mojom.Url site_for_cookies,
+        SiteForCookies site_for_cookies,
         NetworkIsolationKey network_isolation_key,
         array<HttpHeader> additional_headers,
         int32 process_id,
@@ -1120,7 +1120,9 @@ interface NetworkContext {
         pending_remote<AuthenticationHandler>? auth_handler,
         pending_remote<TrustedHeaderClient>? header_client);
 
-  // Creates a QuicTransport connection to |url|.
+  // Creates a QuicTransport connection to |url|. |origin| is used for the
+  // client indication - see
+  // https://tools.ietf.org/html/draft-vvv-webtransport-quic-01#section-3.2 .
   //
   // It is recommended to detect mojo connection errors on |handshake_client|.
   CreateQuicTransport(

@@ -4,6 +4,18 @@
 
 module chromeos.crostini_upgrader.mojom;
 
+enum UpgradePrecheckStatus {
+  // Good to continue
+  OK,
+  // No network connectivity
+  NETWORK_FAILURE,
+  // Battery is low and not charging
+  LOW_POWER,
+  // Not enough space to do the upgrade
+  INSUFFICIENT_SPACE
+};
+
+
 // Lives in the browser process. A renderer uses this to create a page handler
 // for controlling Crostini upgrade.
 interface PageHandlerFactory {
@@ -17,6 +29,9 @@ interface PageHandlerFactory {
 interface PageHandler {
   // Backup the existing container.
   Backup();
+  // Start running upgrade prechecks. Result is asynchronously
+  // returned via Page::PrecheckStatus.
+  StartPrechecks();
   // Start upgrade
   Upgrade();
   // Cancel an on-going upgrade
@@ -43,6 +58,8 @@ interface Page {
   OnBackupSucceeded();
   // This is called when the backup failed.
   OnBackupFailed();
+  // Handle the result of the prechecks.
+  PrecheckStatus(UpgradePrecheckStatus status);
   // Callback to receive the upgrade progress once the upgrade has started.
   OnUpgradeProgress(array<string> progress_messages);
   // This is called when the upgrade succeeded.

@@ -56,12 +56,6 @@ class ClearButtonElement final : public HTMLDivElement {
   Member<ClearButtonOwner> clear_button_owner_;
 };
 
-DEFINE_TYPE_CASTS(ClearButtonElement,
-                  Element,
-                  element,
-                  element->IsClearButtonElement(),
-                  element.IsClearButtonElement());
-
 template <>
 struct DowncastTraits<ClearButtonElement> {
   static bool AllowFrom(const Element& element) {

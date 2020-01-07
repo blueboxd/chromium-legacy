@@ -12,6 +12,7 @@ js_type_check("closure_compile") {
     ":browser_proxy",
     ":customize_dialog",
     ":theme_icon",
+    ":utils",
   ]
 }
 
@@ -58,6 +59,9 @@ js_library("theme_icon") {
   deps = [
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
+}
+
+js_library("utils") {
 }
 
 polymer_modulizer("app") {

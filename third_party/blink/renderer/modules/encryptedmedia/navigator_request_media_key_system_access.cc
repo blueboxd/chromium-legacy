@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/modules/encryptedmedia/media_key_system_access.h"
 #include "third_party/blink/renderer/modules/encryptedmedia/media_key_system_access_initializer_base.h"
 #include "third_party/blink/renderer/modules/encryptedmedia/media_keys_controller.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/encrypted_media_request.h"
@@ -106,7 +107,8 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
     Navigator& navigator,
     const String& key_system,
     const HeapVector<Member<MediaKeySystemConfiguration>>&
-        supported_configurations) {
+        supported_configurations,
+    ExceptionState& exception_state) {
   DVLOG(3) << __func__;
 
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
@@ -120,11 +122,9 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
         ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
                                mojom::ConsoleMessageLevel::kWarning,
                                kEncryptedMediaFeaturePolicyConsoleWarning));
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(
-            DOMExceptionCode::kSecurityError,
-            "requestMediaKeySystemAccess is disabled by feature policy."));
+    exception_state.ThrowSecurityError(
+        "requestMediaKeySystemAccess is disabled by feature policy.");
+    return ScriptPromise();
   }
 
   // From https://w3c.github.io/encrypted-media/#requestMediaKeySystemAccess
@@ -132,29 +132,25 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
   // 1. If keySystem is the empty string, return a promise rejected with a
   //    newly created TypeError.
   if (key_system.IsEmpty()) {
-    return ScriptPromise::Reject(
-        script_state,
-        V8ThrowException::CreateTypeError(script_state->GetIsolate(),
-                                          "The keySystem parameter is empty."));
+    exception_state.ThrowTypeError("The keySystem parameter is empty.");
+    return ScriptPromise();
   }
 
   // 2. If supportedConfigurations is empty, return a promise rejected with
   //    a newly created TypeError.
   if (!supported_configurations.size()) {
-    return ScriptPromise::Reject(
-        script_state, V8ThrowException::CreateTypeError(
-                          script_state->GetIsolate(),
-                          "The supportedConfigurations parameter is empty."));
+    exception_state.ThrowTypeError(
+        "The supportedConfigurations parameter is empty.");
+    return ScriptPromise();
   }
 
   // 3. Let document be the calling context's Document.
   //    (Done at the begining of this function.)
   if (!document->GetPage()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(
-            DOMExceptionCode::kInvalidStateError,
-            "The context provided is not associated with a page."));
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The context provided is not associated with a page.");
+    return ScriptPromise();
   }
 
   UseCounter::Count(*document, WebFeature::kEncryptedMediaSecureOrigin);

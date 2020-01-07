@@ -423,12 +423,6 @@
       name: "CSSColorSchemeUARendering",
     },
     {
-      // CSS min(), max() and clamp()
-      // https://drafts.csswg.org/css-values-4/#comp-func
-      name: "CSSComparisonFunctions",
-      status: "stable",
-    },
-    {
       name: "CSSFocusVisible",
       status: "experimental",
     },
@@ -799,7 +793,7 @@
       name: "HrefTranslate",
       depends_on: ["TranslateService"],
       origin_trial_feature_name: "HrefTranslate",
-      status: "experimental",
+      status: "stable",
     },
     // TODO(937746): Web Components v0 is disabled by default, and will be
     // removed after M87.
@@ -1027,7 +1021,7 @@
     },
     {
       name: "MediaSessionPosition",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "MediaSessionSeeking",

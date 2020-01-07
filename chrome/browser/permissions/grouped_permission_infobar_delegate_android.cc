@@ -77,6 +77,17 @@ int GroupedPermissionInfoBarDelegate::GetIconId() const {
   return IDR_ANDROID_INFOBAR_NOTIFICATIONS_OFF;
 }
 
+bool GroupedPermissionInfoBarDelegate::LinkClicked(
+    WindowOpenDisposition disposition) {
+  details_expanded_ = true;
+  return false;
+}
+
+void GroupedPermissionInfoBarDelegate::InfoBarDismissed() {
+  if (permission_prompt_)
+    permission_prompt_->Closing();
+}
+
 base::string16 GroupedPermissionInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringUTF16(
       IDS_NOTIFICATION_QUIET_PERMISSION_INFOBAR_TITLE);
@@ -90,17 +101,6 @@ bool GroupedPermissionInfoBarDelegate::Accept() {
 
 bool GroupedPermissionInfoBarDelegate::Cancel() {
   // The infobar needs to be kept open after the "Manage" button is clicked.
-  return false;
-}
-
-void GroupedPermissionInfoBarDelegate::InfoBarDismissed() {
-  if (permission_prompt_)
-    permission_prompt_->Closing();
-}
-
-bool GroupedPermissionInfoBarDelegate::LinkClicked(
-    WindowOpenDisposition disposition) {
-  details_expanded_ = true;
   return false;
 }
 

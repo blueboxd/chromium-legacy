@@ -619,24 +619,22 @@ TEST_F(ProfileSyncServiceStartupTest, FullStartupSequenceFirstTime) {
   EXPECT_EQ(SyncService::TransportState::DISABLED,
             sync_service()->GetTransportState());
 
-  // Sign in. Now Sync-the-transport could start, but gets deferred by default.
+  // Sign in. Now Sync-the-transport can start. Since this was triggered by an
+  // explicit user event, deferred startup is bypassed.
   // Sync-the-feature still doesn't start until the user says they want it.
+  EXPECT_CALL(*sync_engine, Initialize(_));
   SimulateTestUserSignin();
   EXPECT_EQ(
       SyncService::DisableReasonSet(SyncService::DISABLE_REASON_USER_CHOICE),
       sync_service()->GetDisableReasons());
-  EXPECT_EQ(SyncService::TransportState::START_DEFERRED,
+  EXPECT_EQ(SyncService::TransportState::INITIALIZING,
             sync_service()->GetTransportState());
   EXPECT_FALSE(sync_service()->IsSyncFeatureEnabled());
 
-  // Once we give the service a prod by initiating Sync setup, it'll start and
-  // initialize the engine. Since this is the initial Sync start, this will not
-  // be deferred.
-  EXPECT_CALL(*sync_engine, Initialize(_));
+  // Initiate Sync (the feature) setup before the engine initializes itself in
+  // transport mode.
   sync_service()->GetUserSettings()->SetSyncRequested(true);
   auto setup_in_progress_handle = sync_service()->GetSetupInProgressHandle();
-  EXPECT_EQ(SyncService::TransportState::INITIALIZING,
-            sync_service()->GetTransportState());
 
   // Once the engine calls back and says it's initialized, we're just waiting
   // for the user to finish the initial configuration (choosing data types etc.)

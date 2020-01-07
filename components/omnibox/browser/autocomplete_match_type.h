@@ -82,21 +82,26 @@ struct AutocompleteMatchType {
   // Returns the accessibility label for an AutocompleteMatch |match|
   // whose text is |match_text| The accessibility label describes the
   // match for use in a screenreader or other assistive technology.
+  //
+  // |total_matches|, if non-zero, is used in conjunction with |match_index|
+  // to append a ", n of m" positional message.
+  //
+  // |additional_message_id|, if non-zero, is the message ID for an additional
+  // message that the base message should be placed into as a parameter -
+  // this is used for describing a focused or available secondary button.
+  //
   // The |label_prefix_length| is an optional out param that provides the number
   // of characters in the label that were added before the actual match_text.
-  // This version appends ", n of m" positional info the the label:
+  //
+  // TODO(tommycli): It seems odd that we are passing in both |match| and
+  // |match_text|. Using just |match.contents| or |match.fill_into_edit| seems
+  // like it could replace |match_text|. Investigate this.
   static base::string16 ToAccessibilityLabel(
       const AutocompleteMatch& match,
       const base::string16& match_text,
-      size_t match_index,
-      size_t total_matches,
-      bool is_tab_switch_button_focused,
-      int* label_prefix_length = nullptr);
-  // This version returns a plain label without ", n of m" positional info:
-  static base::string16 ToAccessibilityLabel(
-      const AutocompleteMatch& match,
-      const base::string16& match_text,
-      bool is_tab_switch_button_focused,
+      size_t match_index = 0,
+      size_t total_matches = 0,
+      int additional_message_id = 0,
       int* label_prefix_length = nullptr);
 };
 

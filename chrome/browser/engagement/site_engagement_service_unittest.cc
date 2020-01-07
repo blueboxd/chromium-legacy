@@ -54,9 +54,6 @@ namespace {
 
 base::FilePath g_temp_history_dir;
 
-const int kMoreAccumulationsThanNeededToMaxDailyEngagement = 40;
-const int kMoreDaysThanNeededToMaxTotalEngagement = 40;
-const int kMorePeriodsThanNeededToDecayMaxScore = 40;
 const double kMaxRoundingDeviation = 0.0001;
 
 // Waits until a change is observed in site engagement content settings.
@@ -575,8 +572,6 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
       SiteEngagementMetrics::kOriginsWithMaxEngagementHistogram, 0);
   histograms.ExpectTotalCount(
       SiteEngagementMetrics::kOriginsWithMaxDailyEngagementHistogram, 0);
-  histograms.ExpectTotalCount(
-      SiteEngagementMetrics::kPercentOriginsWithMaxEngagementHistogram, 0);
   histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                               0);
 
@@ -595,8 +590,6 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
       SiteEngagementMetrics::kMedianEngagementHistogram, 0, 1);
   histograms.ExpectUniqueSample(
       SiteEngagementMetrics::kOriginsWithMaxEngagementHistogram, 0, 1);
-  histograms.ExpectUniqueSample(
-      SiteEngagementMetrics::kPercentOriginsWithMaxEngagementHistogram, 0, 1);
   histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                               0);
 
@@ -643,8 +636,6 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
       SiteEngagementMetrics::kOriginsWithMaxEngagementHistogram, 0, 2);
   histograms.ExpectUniqueSample(
       SiteEngagementMetrics::kOriginsWithMaxDailyEngagementHistogram, 0, 2);
-  histograms.ExpectUniqueSample(
-      SiteEngagementMetrics::kPercentOriginsWithMaxEngagementHistogram, 0, 2);
   histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                               6);
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
@@ -714,8 +705,6 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
       SiteEngagementMetrics::kOriginsWithMaxEngagementHistogram, 0, 3);
   histograms.ExpectUniqueSample(
       SiteEngagementMetrics::kOriginsWithMaxDailyEngagementHistogram, 0, 3);
-  histograms.ExpectUniqueSample(
-      SiteEngagementMetrics::kPercentOriginsWithMaxEngagementHistogram, 0, 3);
   histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                               12);
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
@@ -799,8 +788,6 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
       SiteEngagementMetrics::kOriginsWithMaxDailyEngagementHistogram, 0, 3);
   histograms.ExpectBucketCount(
       SiteEngagementMetrics::kOriginsWithMaxDailyEngagementHistogram, 1, 1);
-  histograms.ExpectUniqueSample(
-      SiteEngagementMetrics::kPercentOriginsWithMaxEngagementHistogram, 0, 4);
   histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                               24);
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
@@ -1466,101 +1453,6 @@ TEST_F(SiteEngagementServiceTest, Observers) {
     EXPECT_FALSE(tester_not_called.callback_called());
     tester.Observe(nullptr);
   }
-}
-
-TEST_F(SiteEngagementServiceTest, ScoreDecayHistograms) {
-  base::Time current_day = GetReferenceTime();
-  clock_.SetNow(current_day);
-  base::HistogramTester histograms;
-  GURL origin1("http://www.google.com/");
-  GURL origin2("http://drive.google.com/");
-
-  histograms.ExpectTotalCount(SiteEngagementMetrics::kScoreDecayedFromHistogram,
-                              0);
-  histograms.ExpectTotalCount(SiteEngagementMetrics::kScoreDecayedToHistogram,
-                              0);
-
-  service_->AddPoints(origin2, SiteEngagementScore::GetNavigationPoints());
-
-  // Max the score for origin1.
-  for (int i = 0; i < kMoreDaysThanNeededToMaxTotalEngagement; ++i) {
-    current_day += base::TimeDelta::FromDays(1);
-    clock_.SetNow(current_day);
-
-    for (int j = 0; j < kMoreAccumulationsThanNeededToMaxDailyEngagement; ++j)
-      service_->AddPoints(origin1, SiteEngagementScore::GetNavigationPoints());
-  }
-
-  EXPECT_EQ(SiteEngagementScore::kMaxPoints, service_->GetScore(origin1));
-  histograms.ExpectTotalCount(SiteEngagementMetrics::kScoreDecayedFromHistogram,
-                              0);
-  histograms.ExpectTotalCount(SiteEngagementMetrics::kScoreDecayedToHistogram,
-                              0);
-
-  // Check histograms after one decay period.
-  clock_.SetNow(
-      current_day +
-      base::TimeDelta::FromHours(SiteEngagementScore::GetDecayPeriodInHours()));
-
-  // Trigger decay and histogram hit.
-  service_->AddPoints(origin1, 0.01);
-  histograms.ExpectUniqueSample(
-      SiteEngagementMetrics::kScoreDecayedFromHistogram,
-      SiteEngagementScore::kMaxPoints, 1);
-  histograms.ExpectUniqueSample(
-      SiteEngagementMetrics::kScoreDecayedToHistogram,
-      SiteEngagementScore::kMaxPoints - SiteEngagementScore::GetDecayPoints(),
-      1);
-
-  // Check histograms after another decay period.
-  clock_.SetNow(current_day +
-                base::TimeDelta::FromHours(
-                    2 * SiteEngagementScore::GetDecayPeriodInHours()));
-  // Trigger decay and histogram hit.
-  service_->AddPoints(origin1, 0.01);
-  histograms.ExpectTotalCount(SiteEngagementMetrics::kScoreDecayedFromHistogram,
-                              2);
-  histograms.ExpectTotalCount(SiteEngagementMetrics::kScoreDecayedToHistogram,
-                              2);
-
-  // Check decay to zero. Start at the 3rd decay period (we have had two
-  // already). This will be 40 decays in total.
-  for (int i = 3; i <= kMorePeriodsThanNeededToDecayMaxScore; ++i) {
-    clock_.SetNow(current_day +
-                  base::TimeDelta::FromHours(
-                      i * SiteEngagementScore::GetDecayPeriodInHours()));
-    // Trigger decay and histogram hit.
-    service_->AddPoints(origin1, 0.01);
-  }
-  histograms.ExpectTotalCount(SiteEngagementMetrics::kScoreDecayedFromHistogram,
-                              kMorePeriodsThanNeededToDecayMaxScore);
-  histograms.ExpectTotalCount(SiteEngagementMetrics::kScoreDecayedToHistogram,
-                              kMorePeriodsThanNeededToDecayMaxScore);
-  // It should have taken (20 - 3) = 17 of the 38 decays to get to zero, since
-  // we started from 95. Expect the remaining 21 decays to be to bucket 0 (and
-  // hence 20 from bucket 0).
-  histograms.ExpectBucketCount(
-      SiteEngagementMetrics::kScoreDecayedFromHistogram, 0, 20);
-  histograms.ExpectBucketCount(SiteEngagementMetrics::kScoreDecayedToHistogram,
-                               0, 21);
-  // Trigger decay and histogram hit for origin2, checking an independent decay.
-  service_->AddPoints(origin2, 0.01);
-  histograms.ExpectTotalCount(SiteEngagementMetrics::kScoreDecayedFromHistogram,
-                              kMorePeriodsThanNeededToDecayMaxScore + 1);
-  histograms.ExpectTotalCount(SiteEngagementMetrics::kScoreDecayedToHistogram,
-                              kMorePeriodsThanNeededToDecayMaxScore + 1);
-  histograms.ExpectBucketCount(
-      SiteEngagementMetrics::kScoreDecayedFromHistogram, 0, 21);
-  histograms.ExpectBucketCount(SiteEngagementMetrics::kScoreDecayedToHistogram,
-                               0, 22);
-
-  // Add more points and ensure no more samples are present.
-  service_->AddPoints(origin1, 0.01);
-  service_->AddPoints(origin2, 0.01);
-  histograms.ExpectTotalCount(SiteEngagementMetrics::kScoreDecayedFromHistogram,
-                              kMorePeriodsThanNeededToDecayMaxScore + 1);
-  histograms.ExpectTotalCount(SiteEngagementMetrics::kScoreDecayedToHistogram,
-                              kMorePeriodsThanNeededToDecayMaxScore + 1);
 }
 
 TEST_F(SiteEngagementServiceTest, LastEngagementTime) {

@@ -23,6 +23,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/unloaded_extension_reason.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"

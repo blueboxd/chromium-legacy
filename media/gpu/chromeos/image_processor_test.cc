@@ -69,8 +69,12 @@ const base::FilePath::CharType* kNV12Image720P =
     FILE_PATH_LITERAL("puppets-1280x720.nv12.yuv");
 const base::FilePath::CharType* kNV12Image360P =
     FILE_PATH_LITERAL("puppets-640x360.nv12.yuv");
+const base::FilePath::CharType* kNV12Image270P =
+    FILE_PATH_LITERAL("puppets-480x270.nv12.yuv");
 const base::FilePath::CharType* kNV12Image180P =
     FILE_PATH_LITERAL("puppets-320x180.nv12.yuv");
+const base::FilePath::CharType* kNV12Image360PIn480P =
+    FILE_PATH_LITERAL("puppets-640x360_in_640x480.nv12.yuv");
 
 class ImageProcessorParamTest
     : public ::testing::Test,
@@ -107,10 +111,10 @@ class ImageProcessorParamTest
     LOG_ASSERT(input_layout && output_layout);
     ImageProcessor::PortConfig input_config(
         input_fourcc, input_image.Size(), input_layout->planes(),
-        gfx::Rect(input_image.Size()), input_storage_types);
+        input_image.VisibleRect(), input_storage_types);
     ImageProcessor::PortConfig output_config(
         output_fourcc, output_image->Size(), output_layout->planes(),
-        gfx::Rect(output_image->Size()), output_storage_types);
+        output_image->VisibleRect(), output_storage_types);
     // TODO(crbug.com/917951): Select more appropriate number of buffers.
     constexpr size_t kNumBuffers = 1;
     LOG_ASSERT(output_image->IsMetadataLoaded());
@@ -280,8 +284,21 @@ INSTANTIATE_TEST_SUITE_P(
     NV12DownScaling,
     ImageProcessorParamTest,
     ::testing::Values(std::make_tuple(kNV12Image720P, kNV12Image360P),
+                      std::make_tuple(kNV12Image720P, kNV12Image270P),
                       std::make_tuple(kNV12Image720P, kNV12Image180P),
+                      std::make_tuple(kNV12Image360P, kNV12Image270P),
                       std::make_tuple(kNV12Image360P, kNV12Image180P)));
+
+// Crop 360P frame from 480P.
+INSTANTIATE_TEST_SUITE_P(NV12Cropping,
+                         ImageProcessorParamTest,
+                         ::testing::Values(std::make_tuple(kNV12Image360PIn480P,
+                                                           kNV12Image360P)));
+// Crop 360p frame from 480P and scale the area to 270P.
+INSTANTIATE_TEST_SUITE_P(NV12CroppingAndScaling,
+                         ImageProcessorParamTest,
+                         ::testing::Values(std::make_tuple(kNV12Image360PIn480P,
+                                                           kNV12Image270P)));
 
 #if defined(OS_CHROMEOS)
 // TODO(hiroh): Add more tests.

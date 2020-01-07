@@ -7,7 +7,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "components/password_manager/core/browser/sql_table_builder.h"
 #include "components/password_manager/core/common/password_manager_features.h"
-#include "components/safe_browsing/features.h"
+#include "components/safe_browsing/core/features.h"
 #include "sql/database.h"
 #include "sql/statement.h"
 

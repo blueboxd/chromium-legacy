@@ -11,6 +11,7 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
+#include "chrome/browser/navigation_predictor/search_engine_preconnector.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "url/gurl.h"
 
@@ -68,6 +69,8 @@ class NavigationPredictorKeyedService : public KeyedService {
       content::BrowserContext* browser_context);
   ~NavigationPredictorKeyedService() override;
 
+  SearchEnginePreconnector* SearchEnginePreconnectorForTesting();
+
   // |document_url| may be invalid. Called by navigation predictor.
   void OnPredictionUpdated(const content::RenderFrameHost* render_frame_host,
                            const GURL& document_url,
@@ -88,6 +91,9 @@ class NavigationPredictorKeyedService : public KeyedService {
 
   // Last known prediction.
   base::Optional<Prediction> last_prediction_;
+
+  // Manages preconnecting to the user's default search engine.
+  SearchEnginePreconnector search_engine_preconnector_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationPredictorKeyedService);
 };

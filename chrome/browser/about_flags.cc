@@ -96,13 +96,15 @@
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/common/omnibox_features.h"
+#include "components/paint_preview/buildflags/buildflags.h"
+#include "components/paint_preview/features/features.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/payments/core/features.h"
 #include "components/policy/core/common/features.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
 #include "components/printing/browser/features.h"
-#include "components/safe_browsing/features.h"
+#include "components/safe_browsing/core/features.h"
 #include "components/security_interstitials/core/features.h"
 #include "components/security_state/core/features.h"
 #include "components/security_state/core/security_state.h"
@@ -4808,6 +4810,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSlowDCTimerInterruptsWinDescription, kOsWin,
      FEATURE_VALUE_TYPE(base::kSlowDCTimerInterruptsWin)},
 #endif  // OS_WIN
+
+#if BUILDFLAG(ENABLE_PAINT_PREVIEW) && defined(OS_ANDROID)
+    {"paint-preview-test", flag_descriptions::kPaintPreviewTestName,
+     flag_descriptions::kPaintPreviewTestDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(paint_preview::kPaintPreviewTest)},
+#endif  // ENABLE_PAINT_PREVIEW && defined(OS_ANDROID)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

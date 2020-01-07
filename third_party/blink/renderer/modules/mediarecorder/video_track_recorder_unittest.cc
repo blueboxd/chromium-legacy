@@ -117,9 +117,14 @@ class VideoTrackRecorderTest
         ConvertToBaseRepeatingCallback(
             CrossThreadBindRepeating(&VideoTrackRecorderTest::OnEncodedVideo,
                                      CrossThreadUnretained(this))),
+        ConvertToBaseOnceCallback(CrossThreadBindOnce(
+            &VideoTrackRecorderTest::OnSourceReadyStateEnded,
+            CrossThreadUnretained(this))),
         0 /* bits_per_second */,
         scheduler::GetSingleThreadTaskRunnerForTesting());
   }
+
+  MOCK_METHOD0(OnSourceReadyStateEnded, void());
 
   MOCK_METHOD5(OnEncodedVideo,
                void(const media::WebmMuxer::VideoParameters& params,
@@ -166,6 +171,12 @@ class VideoTrackRecorderTest
 // its inner object(s). This is a non trivial sequence.
 TEST_P(VideoTrackRecorderTest, ConstructAndDestruct) {
   InitializeRecorder(testing::get<0>(GetParam()));
+}
+
+TEST_F(VideoTrackRecorderTest, RelaysReadyStateEnded) {
+  InitializeRecorder(VideoTrackRecorder::CodecId::VP8);
+  EXPECT_CALL(*this, OnSourceReadyStateEnded);
+  mock_source_->StopSource();
 }
 
 // Creates the encoder and encodes 2 frames of the same size; the encoder
@@ -316,7 +327,6 @@ TEST_P(VideoTrackRecorderTest, EncodeFrameWithPaddedCodedSize) {
   }
 
   base::RunLoop run_loop;
-  base::RepeatingClosure quit_closure = run_loop.QuitClosure();
   EXPECT_CALL(*this, OnEncodedVideo(_, _, _, _, true))
       .Times(1)
       .WillOnce(RunClosure(run_loop.QuitClosure()));
@@ -384,7 +394,6 @@ TEST_F(VideoTrackRecorderTest, HandlesOnError) {
   EXPECT_FALSE(HasEncoderInstance());
 
   base::RunLoop run_loop;
-  base::RepeatingClosure quit_closure = run_loop.QuitClosure();
   EXPECT_CALL(*this, OnEncodedVideo(_, _, _, _, true))
       .Times(1)
       .WillOnce(RunClosure(run_loop.QuitClosure()));
@@ -464,6 +473,7 @@ class VideoTrackRecorderPassthroughTest
         ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
             &VideoTrackRecorderPassthroughTest::OnEncodedVideo,
             CrossThreadUnretained(this))),
+        ConvertToBaseOnceCallback(CrossThreadBindOnce([] {})),
         scheduler::GetSingleThreadTaskRunnerForTesting());
   }
 
@@ -557,9 +567,9 @@ TEST_F(VideoTrackRecorderPassthroughTest, DoesntForwardDeltaFrameFirst) {
 
   // Frame 3 (deltaframe) - forwarded
   base::RunLoop run_loop;
-  base::Closure quit_closure = run_loop.QuitClosure();
   frame = CreateFrame(/*is_key_frame=*/false, VideoTrackRecorder::CodecId::VP9);
-  EXPECT_CALL(*this, OnEncodedVideo).WillOnce(RunClosure(quit_closure));
+  EXPECT_CALL(*this, OnEncodedVideo)
+      .WillOnce(RunClosure(run_loop.QuitClosure()));
   video_track_recorder_->OnEncodedVideoFrameForTesting(frame,
                                                        base::TimeTicks::Now());
   run_loop.Run();

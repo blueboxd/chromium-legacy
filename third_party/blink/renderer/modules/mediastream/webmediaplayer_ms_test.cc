@@ -183,7 +183,7 @@ class ReusableMessageLoopEvent {
  public:
   ReusableMessageLoopEvent() : event_(new media::WaitableMessageLoopEvent()) {}
 
-  base::Closure GetClosure() const { return event_->GetClosure(); }
+  base::RepeatingClosure GetClosure() const { return event_->GetClosure(); }
 
   media::PipelineStatusCB GetPipelineStatusCB() const {
     return event_->GetPipelineStatusCB();

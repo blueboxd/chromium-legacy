@@ -477,8 +477,18 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // browser state.
 - (void)setPopupPrefValue:(ContentSetting)value;
 
+#pragma mark - Keyboard utilities
+
 // The count of key commands registered with the currently active BVC.
 - (NSInteger)registeredKeyCommandCount;
+
+// Simulates a physical keyboard event.
+// The input is similar to UIKeyCommand parameters, and is designed for testing
+// keyboard shortcuts.
+// Accepts any strings and also UIKeyInput{Up|Down|Left|Right}Arrow and
+// UIKeyInputEscape constants as |input|.
+- (void)simulatePhysicalKeyboardEvent:(NSString*)input
+                                flags:(UIKeyModifierFlags)flags;
 
 #pragma mark - Pref Utilities (EG2)
 

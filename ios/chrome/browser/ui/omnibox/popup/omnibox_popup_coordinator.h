@@ -42,13 +42,6 @@ class WebStateList;
 - (void)start;
 - (void)stop;
 
-// Presents the shortcuts feature if the current page allows for it and update
-// the popup.
-- (void)presentShortcutsIfNecessary;
-
-// Dismisses the shortcuts feature and update the popup.
-- (void)dismissShortcuts;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_POPUP_OMNIBOX_POPUP_COORDINATOR_H_

@@ -21,6 +21,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/service_process_host.h"
 #include "printing/printing_utils.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 namespace printing {
 
@@ -101,6 +102,8 @@ void PrintCompositeClient::RenderFrameDeleted(
     }
     pending_subframe_cookies_.erase(iter);
   }
+
+  print_render_frames_.erase(render_frame_host);
 }
 
 void PrintCompositeClient::OnDidPrintFrameContent(
@@ -143,9 +146,7 @@ void PrintCompositeClient::PrintCrossProcessSubframe(
     const gfx::Rect& rect,
     int document_cookie,
     content::RenderFrameHost* subframe_host) {
-  PrintMsg_PrintFrame_Params params;
-  params.printable_area = rect;
-  params.document_cookie = document_cookie;
+  auto params = mojom::PrintFrameContentParams::New(rect, document_cookie);
   uint64_t frame_guid = GenerateFrameGuid(subframe_host);
   if (!subframe_host->IsRenderFrameLive()) {
     // When the subframe is dead, no need to send message,
@@ -170,8 +171,7 @@ void PrintCompositeClient::PrintCrossProcessSubframe(
   }
 
   // Send the request to the destination frame.
-  subframe_host->Send(
-      new PrintMsg_PrintFrameContent(subframe_host->GetRoutingID(), params));
+  GetPrintRenderFrame(subframe_host)->PrintFrameContent(std::move(params));
   pending_subframe_cookies_[frame_guid].insert(document_cookie);
 }
 
@@ -326,6 +326,18 @@ PrintCompositeClient::CreateCompositeRequest() {
   compositor->SetWebContentsURL(web_contents()->GetLastCommittedURL());
   compositor->SetUserAgent(user_agent_);
   return compositor;
+}
+
+const mojo::AssociatedRemote<mojom::PrintRenderFrame>&
+PrintCompositeClient::GetPrintRenderFrame(content::RenderFrameHost* rfh) {
+  auto it = print_render_frames_.find(rfh);
+  if (it == print_render_frames_.end()) {
+    mojo::AssociatedRemote<mojom::PrintRenderFrame> remote;
+    rfh->GetRemoteAssociatedInterfaces()->GetInterface(&remote);
+    it = print_render_frames_.emplace(rfh, std::move(remote)).first;
+  }
+
+  return it->second;
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(PrintCompositeClient)

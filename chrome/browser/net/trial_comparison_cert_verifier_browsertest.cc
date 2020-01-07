@@ -12,7 +12,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "net/base/features.h"
 #include "net/cert/trial_comparison_cert_verifier.h"
 #include "net/net_buildflags.h"

@@ -40,12 +40,6 @@ const Property* FindProperty(const char* str, unsigned int len) {
   return {{class_name}}Hash::findPropertyImpl(str, len);
 }
 
-CSSPropertyID cssPropertyID(const String& string)
-{
-    // TODO(rodneyding): remove temporary stopgap
-    return resolveCSSPropertyID(unresolvedCSSPropertyID(nullptr, string));
-}
-
 CSSPropertyID cssPropertyID(const ExecutionContext* execution_context, const String& string)
 {
     return resolveCSSPropertyID(unresolvedCSSPropertyID(execution_context, string));

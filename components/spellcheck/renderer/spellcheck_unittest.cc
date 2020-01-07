@@ -1148,8 +1148,8 @@ TEST_F(SpellCheckTest, CreateTextCheckingResultsKeepsMarkers) {
   spellcheck_results.push_back(
       SpellCheckResult(SpellCheckResult::SPELLING, 0, 2, base::string16()));
   blink::WebVector<blink::WebTextCheckingResult> textcheck_results;
-  spell_check()->CreateTextCheckingResults(SpellCheck::USE_NATIVE_CHECKER, 0,
-                                           text, spellcheck_results,
+  spell_check()->CreateTextCheckingResults(SpellCheck::USE_HUNSPELL_FOR_GRAMMAR,
+                                           0, text, spellcheck_results,
                                            &textcheck_results);
   ASSERT_EQ(spellcheck_results.size(), textcheck_results.size());
   EXPECT_EQ(blink::kWebTextDecorationTypeSpelling,
@@ -1166,8 +1166,8 @@ TEST_F(SpellCheckTest, CreateTextCheckingResultsAddsGrammarMarkers) {
   spellcheck_results.push_back(
       SpellCheckResult(SpellCheckResult::SPELLING, 7, 4, base::string16()));
   blink::WebVector<blink::WebTextCheckingResult> textcheck_results;
-  spell_check()->CreateTextCheckingResults(SpellCheck::USE_NATIVE_CHECKER, 0,
-                                           text, spellcheck_results,
+  spell_check()->CreateTextCheckingResults(SpellCheck::USE_HUNSPELL_FOR_GRAMMAR,
+                                           0, text, spellcheck_results,
                                            &textcheck_results);
   ASSERT_EQ(spellcheck_results.size(), textcheck_results.size());
   EXPECT_EQ(blink::kWebTextDecorationTypeGrammar,
@@ -1258,8 +1258,8 @@ TEST_F(SpellCheckTest, CreateTextCheckingResultsKeepsTypographicalApostrophe) {
           {base::UTF8ToUTF16("have"), base::UTF8ToUTF16("haven't")})));
 
   blink::WebVector<blink::WebTextCheckingResult> textcheck_results;
-  spell_check()->CreateTextCheckingResults(SpellCheck::USE_NATIVE_CHECKER, 0,
-                                           text, spellcheck_results,
+  spell_check()->CreateTextCheckingResults(SpellCheck::USE_HUNSPELL_FOR_GRAMMAR,
+                                           0, text, spellcheck_results,
                                            &textcheck_results);
 
   static std::vector<std::vector<const wchar_t*>> kExpectedReplacements = {

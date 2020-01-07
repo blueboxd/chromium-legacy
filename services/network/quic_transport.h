@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/quic/quic_transport_client.h"
@@ -53,15 +54,23 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) QuicTransport final
   void OnIncomingBidirectionalStreamAvailable() override;
   void OnIncomingUnidirectionalStreamAvailable() override;
 
-  void Dispose();
+  bool torn_down() const { return torn_down_; }
 
  private:
+  void TearDown();
+  void Dispose();
+
   const std::unique_ptr<net::QuicTransportClient> transport_;
   NetworkContext* const context_;  // outlives |this|.
 
   mojo::Receiver<mojom::QuicTransport> receiver_;
   mojo::Remote<mojom::QuicTransportHandshakeClient> handshake_client_;
   mojo::Remote<mojom::QuicTransportClient> client_;
+
+  bool torn_down_ = false;
+
+  // This must be the last member.
+  base::WeakPtrFactory<QuicTransport> weak_factory_{this};
 };
 
 }  // namespace network

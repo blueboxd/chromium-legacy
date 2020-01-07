@@ -11,6 +11,7 @@
 #include "base/one_shot_event.h"
 #include "build/build_config.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/unloaded_extension_reason.h"
 
 class Profile;
 

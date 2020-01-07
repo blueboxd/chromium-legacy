@@ -12,6 +12,16 @@
   {
     'name': 'chrome',
     'machines': {
+      'chromeos-arm-generic-cfi-thin-lto-chrome': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+      },
+      'chromeos-betty-cfi-thin-lto-chrome': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+      },
       'chromeos-betty-chrome': {
         'additional_compile_targets': [
           'chromiumos_preflight',

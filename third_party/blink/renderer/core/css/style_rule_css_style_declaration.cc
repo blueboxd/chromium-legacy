@@ -31,7 +31,10 @@ namespace blink {
 StyleRuleCSSStyleDeclaration::StyleRuleCSSStyleDeclaration(
     MutableCSSPropertyValueSet& property_set_arg,
     CSSRule* parent_rule)
-    : PropertySetCSSStyleDeclaration(property_set_arg),
+    : PropertySetCSSStyleDeclaration(
+          const_cast<Document*>(CSSStyleSheet::SingleOwnerDocument(
+              parent_rule->parentStyleSheet())),
+          property_set_arg),
       parent_rule_(parent_rule) {}
 
 StyleRuleCSSStyleDeclaration::~StyleRuleCSSStyleDeclaration() = default;

@@ -68,11 +68,7 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
  private:
   using UsageMap = std::map<url::Origin, int64_t>;
 
-  struct AccumulateInfo {
-    size_t pending_jobs = 0;
-    int64_t limited_usage = 0;
-    int64_t unlimited_usage = 0;
-  };
+  struct AccumulateInfo;
 
   void AccumulateLimitedOriginUsage(AccumulateInfo* info,
                                     UsageCallback callback,

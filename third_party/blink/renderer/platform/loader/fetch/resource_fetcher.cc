@@ -2039,6 +2039,8 @@ void ResourceFetcher::EmulateLoadStartedForInspector(
         FetchParameters::SpeculativePreloadType::kNotSpeculative,
         false /* is_link_preload */));
   }
+  resource_request.SetReferrerString(Referrer::NoReferrer());
+  resource_request.SetReferrerPolicy(network::mojom::ReferrerPolicy::kNever);
 
   ResourceLoaderOptions options = resource->Options();
   options.initiator_info.name = initiator_name;

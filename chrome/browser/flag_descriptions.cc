@@ -4015,6 +4015,13 @@ const char kNaclDescription[] =
     "installed from the Chrome Web Store.";
 #endif  // ENABLE_NACL
 
+#if BUILDFLAG(ENABLE_PAINT_PREVIEW) && defined(OS_ANDROID)
+const char kPaintPreviewTestName[] = "Paint Preview Test";
+const char kPaintPreviewTestDescription[] =
+    "If enabled a menu item is added to the Android main menu to test paint "
+    "previews.";
+#endif  // ENABLE_PAINT_PREVIEW && defined(OS_ANDROID)
+
 #if BUILDFLAG(ENABLE_PLUGINS)
 
 #if defined(OS_CHROMEOS)

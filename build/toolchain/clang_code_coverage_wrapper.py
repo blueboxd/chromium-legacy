@@ -86,6 +86,7 @@ _COVERAGE_EXCLUSION_LIST_MAP = {
         '../../chrome/common/media_router/providers/cast/cast_media_source.cc',
         '../../components/cast_channel/cast_channel_enum.cc',
         '../../components/cast_channel/cast_message_util.cc',
+        '../../ui/events/keycodes/dom/keycode_converter.cc',
     ],
     'chromeos': [
         # These files caused clang to crash while compiling them. They are

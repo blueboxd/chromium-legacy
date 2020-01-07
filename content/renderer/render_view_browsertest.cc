@@ -566,8 +566,8 @@ TEST_F(RenderViewImplTest, IsPinchGestureActivePropagatesToProxies) {
       static_cast<TestRenderFrame*>(RenderFrame::FromWebFrame(
           root_web_frame->FirstChild()->NextSibling()->ToWebLocalFrame()));
   ASSERT_TRUE(child_frame_2);
-  child_frame_1->SwapOut(kProxyRoutingId, true,
-                         ReconstructReplicationStateForTesting(child_frame_1));
+  child_frame_1->Unload(kProxyRoutingId, true,
+                        ReconstructReplicationStateForTesting(child_frame_1));
   EXPECT_TRUE(root_web_frame->FirstChild()->IsWebRemoteFrame());
   RenderFrameProxy* child_proxy_1 = RenderFrameProxy::FromWebFrame(
       root_web_frame->FirstChild()->ToWebRemoteFrame());
@@ -586,11 +586,11 @@ TEST_F(RenderViewImplTest, IsPinchGestureActivePropagatesToProxies) {
   view()->webview()->MainFrameWidget()->ApplyViewportChanges(args);
   EXPECT_TRUE(child_proxy_1->is_pinch_gesture_active_for_testing());
 
-  // Create a new remote child, and get its proxy. Swapping out will force
-  // creation and registering of a new RenderFrameProxy, which should pick up
-  // the existing setting.
-  child_frame_2->SwapOut(kProxyRoutingId + 1, true,
-                         ReconstructReplicationStateForTesting(child_frame_2));
+  // Create a new remote child, and get its proxy. Unloading will force creation
+  // and registering of a new RenderFrameProxy, which should pick up the
+  // existing setting.
+  child_frame_2->Unload(kProxyRoutingId + 1, true,
+                        ReconstructReplicationStateForTesting(child_frame_2));
   EXPECT_TRUE(root_web_frame->FirstChild()->NextSibling()->IsWebRemoteFrame());
   RenderFrameProxy* child_proxy_2 = RenderFrameProxy::FromWebFrame(
       root_web_frame->FirstChild()->NextSibling()->ToWebRemoteFrame());
@@ -1010,8 +1010,8 @@ TEST_F(RenderViewImplScaleFactorTest, DeviceEmulationWithOOPIF) {
       RenderFrame::FromWebFrame(web_frame->FirstChild()->ToWebLocalFrame()));
   ASSERT_TRUE(child_frame);
 
-  child_frame->SwapOut(kProxyRoutingId + 1, true,
-                       ReconstructReplicationStateForTesting(child_frame));
+  child_frame->Unload(kProxyRoutingId + 1, true,
+                      ReconstructReplicationStateForTesting(child_frame));
   EXPECT_TRUE(web_frame->FirstChild()->IsWebRemoteFrame());
   RenderFrameProxy* child_proxy = RenderFrameProxy::FromWebFrame(
       web_frame->FirstChild()->ToWebRemoteFrame());
@@ -1040,8 +1040,8 @@ TEST_F(RenderViewImplScaleFactorTest, DeviceEmulationWithOOPIF) {
 }
 
 // Verify that security origins are replicated properly to RenderFrameProxies
-// when swapping out.
-TEST_F(RenderViewImplTest, OriginReplicationForSwapOut) {
+// when unloading.
+TEST_F(RenderViewImplTest, OriginReplicationForUnload) {
   LoadHTML(
       "Hello <iframe src='data:text/html,frame 1'></iframe>"
       "<iframe src='data:text/html,frame 2'></iframe>");
@@ -1049,12 +1049,12 @@ TEST_F(RenderViewImplTest, OriginReplicationForSwapOut) {
   TestRenderFrame* child_frame = static_cast<TestRenderFrame*>(
       RenderFrame::FromWebFrame(web_frame->FirstChild()->ToWebLocalFrame()));
 
-  // Swap the child frame out and pass a replicated origin to be set for
+  // Unload the child frame and pass a replicated origin to be set for
   // WebRemoteFrame.
   content::FrameReplicationState replication_state =
       ReconstructReplicationStateForTesting(child_frame);
   replication_state.origin = url::Origin::Create(GURL("http://foo.com"));
-  child_frame->SwapOut(kProxyRoutingId, true, replication_state);
+  child_frame->Unload(kProxyRoutingId, true, replication_state);
 
   // The child frame should now be a WebRemoteFrame.
   EXPECT_TRUE(web_frame->FirstChild()->IsWebRemoteFrame());
@@ -1065,13 +1065,13 @@ TEST_F(RenderViewImplTest, OriginReplicationForSwapOut) {
   EXPECT_EQ(origin.ToString(),
             WebString::FromUTF8(replication_state.origin.Serialize()));
 
-  // Now, swap out the second frame using a unique origin and verify that it is
+  // Now, unload the second frame using a unique origin and verify that it is
   // replicated correctly.
   replication_state.origin = url::Origin();
   TestRenderFrame* child_frame2 =
       static_cast<TestRenderFrame*>(RenderFrame::FromWebFrame(
           web_frame->FirstChild()->NextSibling()->ToWebLocalFrame()));
-  child_frame2->SwapOut(kProxyRoutingId + 1, true, replication_state);
+  child_frame2->Unload(kProxyRoutingId + 1, true, replication_state);
   EXPECT_TRUE(web_frame->FirstChild()->NextSibling()->IsWebRemoteFrame());
   EXPECT_TRUE(
       web_frame->FirstChild()->NextSibling()->GetSecurityOrigin().IsOpaque());
@@ -1089,15 +1089,15 @@ TEST_F(RenderViewImplEnableZoomForDSFTest, UpdateDSFAfterSwapIn) {
   LoadHTML("Hello world!");
 
   // Early grab testing values as the main-frame widget becomes inaccessible
-  // when it swaps out.
+  // when it unloads.
   VisualProperties test_visual_properties =
       MakeVisualPropertiesWithDeviceScaleFactor(device_scale);
 
-  // Swap the main frame out after which it should become a WebRemoteFrame.
+  // Unload the main frame after which it should become a WebRemoteFrame.
   content::FrameReplicationState replication_state =
       ReconstructReplicationStateForTesting(frame());
   // replication_state.origin = url::Origin(GURL("http://foo.com"));
-  frame()->SwapOut(kProxyRoutingId, true, replication_state);
+  frame()->Unload(kProxyRoutingId, true, replication_state);
   EXPECT_TRUE(view()->webview()->MainFrame()->IsWebRemoteFrame());
 
   // Do the remote-to-local transition for the proxy, which is to create a
@@ -1163,10 +1163,10 @@ TEST_F(RenderViewImplTest, DetachingProxyAlsoDestroysProvisionalFrame) {
   TestRenderFrame* child_frame = static_cast<TestRenderFrame*>(
       RenderFrame::FromWebFrame(web_frame->FirstChild()->ToWebLocalFrame()));
 
-  // Swap the child frame out.
+  // Unload the child frame.
   FrameReplicationState replication_state =
       ReconstructReplicationStateForTesting(child_frame);
-  child_frame->SwapOut(kProxyRoutingId, true, replication_state);
+  child_frame->Unload(kProxyRoutingId, true, replication_state);
   EXPECT_TRUE(web_frame->FirstChild()->IsWebRemoteFrame());
 
   // Do the first step of a remote-to-local transition for the child proxy,
@@ -1216,11 +1216,11 @@ TEST_F(RenderViewImplEnableZoomForDSFTest,
        SetZoomLevelAfterCrossProcessNavigation) {
   LoadHTML("Hello world!");
 
-  // Swap the main frame out after which it should become a WebRemoteFrame.
+  // Unload the main frame after which it should become a WebRemoteFrame.
   TestRenderFrame* main_frame =
       static_cast<TestRenderFrame*>(view()->GetMainRenderFrame());
-  main_frame->SwapOut(kProxyRoutingId, true,
-                      ReconstructReplicationStateForTesting(main_frame));
+  main_frame->Unload(kProxyRoutingId, true,
+                     ReconstructReplicationStateForTesting(main_frame));
   EXPECT_TRUE(view()->webview()->MainFrame()->IsWebRemoteFrame());
 }
 
@@ -2521,7 +2521,7 @@ TEST_F(RenderViewImplTest, DispatchBeforeUnloadCanDetachFrame) {
       "<script>window.onbeforeunload = function() { "
       "window.console.log('OnBeforeUnload called'); }</script>");
 
-  // Create a callback that swaps the frame when the 'OnBeforeUnload called'
+  // Create a callback that unloads the frame when the 'OnBeforeUnload called'
   // log is printed from the beforeunload handler.
   base::RunLoop run_loop;
   bool was_callback_run = false;
@@ -2530,8 +2530,8 @@ TEST_F(RenderViewImplTest, DispatchBeforeUnloadCanDetachFrame) {
         // Makes sure this happens during the beforeunload handler.
         EXPECT_EQ(base::UTF8ToUTF16("OnBeforeUnload called"), msg);
 
-        // Swaps the main frame.
-        frame()->OnMessageReceived(UnfreezableFrameMsg_SwapOut(
+        // Unloads the main frame.
+        frame()->OnMessageReceived(UnfreezableFrameMsg_Unload(
             frame()->GetRoutingID(), 1, false, FrameReplicationState()));
 
         was_callback_run = true;

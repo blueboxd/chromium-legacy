@@ -10,10 +10,6 @@
 // Feature to retain the contentView in the browser container.
 extern const base::Feature kBrowserContainerKeepsContentView;
 
-// Feature to show most visited sites and collection shortcuts in the omnibox
-// popup instead of ZeroSuggest.
-extern const base::Feature kOmniboxPopupShortcutIconsInZeroState;
-
 // Feature to take snapshots using |-drawViewHierarchy:|.
 extern const base::Feature kSnapshotDrawView;
 

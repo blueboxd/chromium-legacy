@@ -16,6 +16,7 @@
 #include "chrome/browser/notifications/scheduler/public/schedule_service_utils.h"
 #include "chrome/browser/updates/update_notification_config.h"
 #include "chrome/browser/updates/update_notification_info.h"
+#include "chrome/browser/updates/update_notification_service_bridge.h"
 
 namespace updates {
 namespace {
@@ -44,6 +45,24 @@ void UpdateNotificationServiceImpl::Schedule(UpdateNotificationInfo data) {
       notifications::SchedulerClientType::kChromeUpdate,
       base::BindOnce(&UpdateNotificationServiceImpl::OnClientOverviewQueried,
                      weak_ptr_factory_.GetWeakPtr(), std::move(data)));
+}
+
+bool UpdateNotificationServiceImpl::IsReadyToDisplay() const {
+  if (config_->is_enabled)
+    return false;
+
+  auto last_shown_timestamp = updates::GetLastShownTimeStamp();
+  if (last_shown_timestamp.has_value()) {
+    return (GetThrottleInterval() <
+            base::Time::Now() - last_shown_timestamp.value());
+  }
+  return true;
+}
+
+base::TimeDelta UpdateNotificationServiceImpl::GetThrottleInterval() const {
+  auto throttle_interval = updates::GetThrottleInterval();
+  return throttle_interval.has_value() ? throttle_interval.value()
+                                       : config_->default_interval;
 }
 
 void UpdateNotificationServiceImpl::OnClientOverviewQueried(

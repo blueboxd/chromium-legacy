@@ -5,7 +5,7 @@
 #ifndef WEBLAYER_BROWSER_SAFE_BROWSING_SAFE_BROWSING_UI_MANAGER_H_
 #define WEBLAYER_BROWSER_SAFE_BROWSING_SAFE_BROWSING_UI_MANAGER_H_
 
-#include "components/safe_browsing/base_ui_manager.h"
+#include "components/safe_browsing/content/base_ui_manager.h"
 
 namespace weblayer {
 

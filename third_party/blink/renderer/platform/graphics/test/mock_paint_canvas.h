@@ -98,7 +98,7 @@ class MockPaintCanvas : public cc::PaintCanvas {
   MOCK_METHOD1(drawPicture, void(sk_sp<const PaintRecord> record));
   MOCK_CONST_METHOD0(isClipEmpty, bool());
   MOCK_CONST_METHOD0(isClipRect, bool());
-  MOCK_CONST_METHOD0(getTotalMatrix, const SkMatrix&());
+  MOCK_CONST_METHOD0(getTotalMatrix, SkMatrix());
 
   MOCK_METHOD3(Annotate,
                void(AnnotationType type,

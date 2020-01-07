@@ -30,7 +30,7 @@ class Graph;
 class PageLiveStateDecoratorHelper;
 class PerformanceManager;
 class PerformanceManagerRegistry;
-class SharedWorkerWatcher;
+class WorkerWatcher;
 }  // namespace performance_manager
 
 // Handles the initialization of the performance manager and a few dependent
@@ -84,10 +84,9 @@ class ChromeBrowserMainExtraPartsPerformanceManager
   performance_manager::ProcessNodeSource process_node_source_;
   performance_manager::TabHelperFrameNodeSource frame_node_source_;
 
-  // Observes the lifetime of shared workers.
-  base::flat_map<Profile*,
-                 std::unique_ptr<performance_manager::SharedWorkerWatcher>>
-      shared_worker_watchers_;
+  // Observes the lifetime of all types of workers.
+  base::flat_map<Profile*, std::unique_ptr<performance_manager::WorkerWatcher>>
+      worker_watchers_;
 
   // Needed to properly maintain some of the PageLiveStateDecorator' properties.
   std::unique_ptr<performance_manager::PageLiveStateDecoratorHelper>

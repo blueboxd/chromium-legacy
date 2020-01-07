@@ -22,6 +22,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
+#include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/command_updater.h"
@@ -89,7 +90,6 @@ ChromeOmniboxClient::ChromeOmniboxClient(OmniboxEditController* controller,
                                          Profile* profile)
     : controller_(static_cast<ChromeOmniboxEditController*>(controller)),
       profile_(profile),
-      bitmap_fetcher_helper_(profile),
       scheme_classifier_(profile),
       favicon_cache_(FaviconServiceFactory::GetForProfile(
                          profile,
@@ -99,8 +99,10 @@ ChromeOmniboxClient::ChromeOmniboxClient(OmniboxEditController* controller,
                          ServiceAccessType::EXPLICIT_ACCESS)) {}
 
 ChromeOmniboxClient::~ChromeOmniboxClient() {
+  BitmapFetcherService* bitmap_fetcher_service =
+      BitmapFetcherServiceFactory::GetForBrowserContext(profile_);
   for (auto request_id : request_ids_) {
-    bitmap_fetcher_helper_.CancelRequest(request_id);
+    bitmap_fetcher_service->CancelRequest(request_id);
   }
 }
 
@@ -266,9 +268,12 @@ void ChromeOmniboxClient::OnResultChanged(
     const AutocompleteResult& result,
     bool default_match_changed,
     const BitmapFetchedCallback& on_bitmap_fetched) {
+  BitmapFetcherService* bitmap_fetcher_service =
+      BitmapFetcherServiceFactory::GetForBrowserContext(profile_);
+
   // Clear out the old requests.
   for (auto request_id : request_ids_) {
-    bitmap_fetcher_helper_.CancelRequest(request_id);
+    bitmap_fetcher_service->CancelRequest(request_id);
   }
   request_ids_.clear();
   // Create new requests.
@@ -279,11 +284,10 @@ void ChromeOmniboxClient::OnResultChanged(
       continue;
     }
 
-    request_ids_.push_back(bitmap_fetcher_helper_.RequestImage(
-        match.ImageUrl(),
-        base::BindRepeating(&ChromeOmniboxClient::OnBitmapFetched,
-                            base::Unretained(this), on_bitmap_fetched,
-                            result_index)));
+    request_ids_.push_back(bitmap_fetcher_service->RequestImage(
+        match.ImageUrl(), base::BindOnce(&ChromeOmniboxClient::OnBitmapFetched,
+                                         weak_factory_.GetWeakPtr(),
+                                         on_bitmap_fetched, result_index)));
   }
 }
 

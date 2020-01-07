@@ -760,13 +760,21 @@ bool CanDuplicateKeyboardFocusedTab(const Browser* browser) {
   return CanDuplicateTabAt(browser, *GetKeyboardFocusedTabIndex(browser));
 }
 
-bool CanMoveTabToNewWindow(Browser* browser) {
-  return browser->tab_strip_model()->count() > 1;
+bool CanMoveActiveTabToNewWindow(Browser* browser) {
+  return CanMoveTabToNewWindow(browser,
+                               browser->tab_strip_model()->active_index());
 }
 
-void MoveTabToNewWindow(Browser* browser) {
-  int index = browser->tab_strip_model()->active_index();
-  auto contents = browser->tab_strip_model()->DetachWebContentsAt(index);
+void MoveActiveTabToNewWindow(Browser* browser) {
+  MoveTabToNewWindow(browser, browser->tab_strip_model()->active_index());
+}
+bool CanMoveTabToNewWindow(Browser* browser, int tab_index) {
+  return browser->tab_strip_model()->count() > 1 &&
+         CanDuplicateTabAt(browser, tab_index);
+}
+
+void MoveTabToNewWindow(Browser* browser, int tab_index) {
+  auto contents = browser->tab_strip_model()->DetachWebContentsAt(tab_index);
   CHECK(contents);
   CreateAndShowNewWindowWithContents(std::move(contents), browser);
 }

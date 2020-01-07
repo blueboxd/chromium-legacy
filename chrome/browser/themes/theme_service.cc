@@ -1104,9 +1104,9 @@ bool ThemeService::UseDarkModeColors() const {
 }
 
 bool ThemeService::ShouldIgnoreThemeSupplier(int id, bool incognito) const {
-  // The incognito NTP ignores custom theme background colors unless the theme
-  // also sets a custom background image.
-  return UsingCustomTheme() && incognito && (id == TP::COLOR_NTP_BACKGROUND) &&
+  // The incognito NTP uses the default background color instead of any theme
+  // background color, unless the theme also sets a custom background image.
+  return incognito && (id == TP::COLOR_NTP_BACKGROUND) &&
          !HasCustomImage(IDR_THEME_NTP_BACKGROUND);
 }
 

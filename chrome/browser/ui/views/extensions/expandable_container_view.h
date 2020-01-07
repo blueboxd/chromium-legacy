@@ -8,12 +8,15 @@
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "ui/views/controls/link_listener.h"
 #include "ui/views/view.h"
+
+namespace views {
+class Link;
+}
 
 // A view that displays a list of details, along with a link that expands and
 // collapses those details.
-class ExpandableContainerView : public views::View, public views::LinkListener {
+class ExpandableContainerView : public views::View {
  public:
   ExpandableContainerView(const std::vector<base::string16>& details,
                           int available_width);
@@ -21,9 +24,6 @@ class ExpandableContainerView : public views::View, public views::LinkListener {
 
   // views::View:
   void ChildPreferredSizeChanged(views::View* child) override;
-
-  // views::LinkListener:
-  void LinkClicked(views::Link* source, int event_flags) override;
 
   ExpandableContainerView(const ExpandableContainerView&) = delete;
   ExpandableContainerView& operator=(const ExpandableContainerView&) = delete;

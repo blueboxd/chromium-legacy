@@ -41,7 +41,6 @@ extern const base::Feature kUIExperimentSwapTitleAndUrl;
 extern const base::Feature kSpeculativeServiceWorkerStartOnQueryInput;
 extern const base::Feature kDocumentProvider;
 extern const base::Feature kAutocompleteTitles;
-extern const base::Feature kOmniboxPopupShortcutIconsInZeroState;
 extern const base::Feature kOmniboxMaterialDesignWeatherIcons;
 extern const base::Feature kOmniboxDisableInstantExtendedLimit;
 extern const base::Feature kOmniboxSearchEngineLogo;

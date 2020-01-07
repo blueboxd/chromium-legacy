@@ -20,8 +20,8 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/safe_browsing/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/features.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/features.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -1149,7 +1149,7 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, SupportedTypes) {
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.sdc"));
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.sdd"));
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.sdw"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.seven_z"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.7z"));
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.sxc"));
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.sxi"));
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.sxw"));

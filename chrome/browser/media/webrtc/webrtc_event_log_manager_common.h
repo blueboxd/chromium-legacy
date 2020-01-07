@@ -13,6 +13,8 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 
+class Profile;
+
 namespace content {
 class BrowserContext;
 }  // namespace content
@@ -537,6 +539,9 @@ std::string ExtractRemoteBoundWebRtcEventLogLocalIdFromPath(
 // Returns kInvalidWebRtcEventLogWebAppId in case of an error.
 size_t ExtractRemoteBoundWebRtcEventLogWebAppIdFromPath(
     const base::FilePath& path);
+
+// Used to determine the default value for the policy controlling event logging.
+bool DoesProfileDefaultToLoggingEnabled(const Profile* const profile);
 
 }  // namespace webrtc_event_logging
 

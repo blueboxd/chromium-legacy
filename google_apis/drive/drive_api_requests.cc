@@ -1144,7 +1144,7 @@ void SingleBatchableDelegateRequest::ProcessURLFetchResults(
     std::string response_body) {
   delegate_->NotifyResult(
       GetErrorCode(), response_body,
-      base::Bind(
+      base::BindOnce(
           &SingleBatchableDelegateRequest::OnProcessURLFetchResultsComplete,
           weak_ptr_factory_.GetWeakPtr()));
 }
@@ -1347,9 +1347,10 @@ void BatchUploadRequest::ProcessURLFetchResults(
     BatchableDelegate* delegate = child_requests_[i]->request.get();
     // Pass ownership of |delegate| so that child_requests_.clear() won't
     // kill the delegate. It has to be deleted after the notification.
-    delegate->NotifyResult(parts[i].code, parts[i].body,
-                           base::Bind(&base::DeletePointer<BatchableDelegate>,
-                                      child_requests_[i]->request.release()));
+    delegate->NotifyResult(
+        parts[i].code, parts[i].body,
+        base::BindOnce(&base::DeletePointer<BatchableDelegate>,
+                       child_requests_[i]->request.release()));
   }
   child_requests_.clear();
 

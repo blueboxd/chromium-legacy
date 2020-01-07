@@ -7,7 +7,11 @@
 #include <utility>
 #include <vector>
 
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/components/web_app_utils.h"
+#include "chrome/browser/web_applications/file_utils_wrapper.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/codec/png_codec.h"
 
 namespace web_app {
 
@@ -52,6 +56,25 @@ bool AreColorsEqual(SkColor expected_color,
   // Colors are equal if error is below threshold.
   return abs_error_r <= threshold && abs_error_g <= threshold &&
          abs_error_b <= threshold && abs_error_a <= threshold;
+}
+
+base::FilePath GetAppIconsDir(Profile* profile, const AppId& app_id) {
+  base::FilePath web_apps_dir = GetWebAppsDirectory(profile);
+  base::FilePath app_dir = web_apps_dir.AppendASCII(app_id);
+  base::FilePath icons_dir = app_dir.AppendASCII("Icons");
+  return icons_dir;
+}
+
+bool ReadBitmap(FileUtilsWrapper* utils,
+                const base::FilePath& file_path,
+                SkBitmap* bitmap) {
+  std::string icon_data;
+  if (!utils->ReadFileToString(file_path, &icon_data))
+    return false;
+
+  return gfx::PNGCodec::Decode(
+      reinterpret_cast<const unsigned char*>(icon_data.c_str()),
+      icon_data.size(), bitmap);
 }
 
 }  // namespace web_app

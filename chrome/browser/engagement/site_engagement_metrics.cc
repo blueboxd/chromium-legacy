@@ -36,17 +36,11 @@ const char SiteEngagementMetrics::kMedianEngagementHistogram[] =
 const char SiteEngagementMetrics::kEngagementScoreHistogram[] =
     "SiteEngagementService.EngagementScore";
 
-const char SiteEngagementMetrics::kEngagementScoreHistogramIsZero[] =
-    "SiteEngagementService.EngagementScore.IsZero";
-
 const char SiteEngagementMetrics::kOriginsWithMaxEngagementHistogram[] =
     "SiteEngagementService.OriginsWithMaxEngagement";
 
 const char SiteEngagementMetrics::kOriginsWithMaxDailyEngagementHistogram[] =
     "SiteEngagementService.OriginsWithMaxDailyEngagement";
-
-const char SiteEngagementMetrics::kPercentOriginsWithMaxEngagementHistogram[] =
-    "SiteEngagementService.PercentOriginsWithMaxEngagement";
 
 const char SiteEngagementMetrics::kEngagementTypeHistogram[] =
     "SiteEngagementService.EngagementType";
@@ -56,12 +50,6 @@ const char SiteEngagementMetrics::kEngagementBucketHistogramBase[] =
 
 const char SiteEngagementMetrics::kDaysSinceLastShortcutLaunchHistogram[] =
     "SiteEngagementService.DaysSinceLastShortcutLaunch";
-
-const char SiteEngagementMetrics::kScoreDecayedFromHistogram[] =
-    "SiteEngagementService.ScoreDecayedFrom";
-
-const char SiteEngagementMetrics::kScoreDecayedToHistogram[] =
-    "SiteEngagementService.ScoreDecayedTo";
 
 void SiteEngagementMetrics::RecordTotalSiteEngagement(double total_engagement) {
   UMA_HISTOGRAM_COUNTS_10000(kTotalEngagementHistogram, total_engagement);
@@ -88,11 +76,9 @@ void SiteEngagementMetrics::RecordEngagementScores(
   for (size_t i = 0; i < base::size(kEngagementBucketHistogramBuckets); ++i)
     score_buckets[kEngagementBucketHistogramBuckets[i]] = 0;
 
-  const double threshold_0 = std::numeric_limits<double>::epsilon();;
   for (const auto& detail : details) {
     double score = detail.total_score;
     UMA_HISTOGRAM_COUNTS_100(kEngagementScoreHistogram, score);
-    UMA_HISTOGRAM_BOOLEAN(kEngagementScoreHistogramIsZero, score < threshold_0);
 
     auto bucket = score_buckets.lower_bound(score);
     if (bucket == score_buckets.end())
@@ -122,12 +108,6 @@ void SiteEngagementMetrics::RecordOriginsWithMaxDailyEngagement(
                            total_origins);
 }
 
-void SiteEngagementMetrics::RecordPercentOriginsWithMaxEngagement(
-    double percentage) {
-  UMA_HISTOGRAM_COUNTS_100(kPercentOriginsWithMaxEngagementHistogram,
-                           percentage);
-}
-
 void SiteEngagementMetrics::RecordEngagement(
     SiteEngagementService::EngagementType type) {
   UMA_HISTOGRAM_ENUMERATION(kEngagementTypeHistogram, type,
@@ -136,14 +116,6 @@ void SiteEngagementMetrics::RecordEngagement(
 
 void SiteEngagementMetrics::RecordDaysSinceLastShortcutLaunch(int days) {
   UMA_HISTOGRAM_COUNTS_100(kDaysSinceLastShortcutLaunchHistogram, days);
-}
-
-void SiteEngagementMetrics::RecordScoreDecayedFrom(double score) {
-  UMA_HISTOGRAM_COUNTS_100(kScoreDecayedFromHistogram, score);
-}
-
-void SiteEngagementMetrics::RecordScoreDecayedTo(double score) {
-  UMA_HISTOGRAM_COUNTS_100(kScoreDecayedToHistogram, score);
 }
 
 // static

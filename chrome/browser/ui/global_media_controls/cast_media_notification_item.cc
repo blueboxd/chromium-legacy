@@ -126,6 +126,7 @@ CastMediaNotificationItem::CastMediaNotificationItem(
           base::BindRepeating(&CastMediaNotificationItem::ImageChanged,
                               base::Unretained(this))),
       session_info_(CreateSessionInfo()) {
+  metadata_.source_title = base::UTF8ToUTF16(route.media_sink_name());
   metadata_.artist = base::UTF8ToUTF16(route.description());
   notification_controller_->ShowNotification(media_route_id_);
 }

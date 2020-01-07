@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
 #import <XCTest/XCTest.h>
 
 #include "base/bind.h"
@@ -10,10 +9,8 @@
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#include "components/variations/variations_http_header_provider.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_app_interface.h"
-#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_row.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -21,7 +18,6 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
-#import "ios/testing/hardware_keyboard_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -30,6 +26,16 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+#if defined(CHROME_EARL_GREY_2)
+// TODO(crbug.com/1015113) The EG2 macro is breaking indexing for some reason
+// without the trailing semicolon.  For now, disable the extra semi warning
+// so Xcode indexing works for the egtest.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wc++98-compat-extra-semi"
+GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(OmniboxAppInterface);
+#pragma clang diagnostic pop
+#endif  // defined(CHROME_EARL_GREY_2)
 
 using base::test::ios::kWaitForUIElementTimeout;
 
@@ -150,12 +156,8 @@ id<GREYMatcher> SearchCopiedTextButton() {
   [OmniboxAppInterface rewriteGoogleURLToLocalhost];
 
   // Force variations to send the requests.
-  GREYAssertEqual(
-      variations::VariationsHttpHeaderProvider::ForceIdsResult::SUCCESS,
-      variations::VariationsHttpHeaderProvider::GetInstance()
-          ->ForceVariationIds(
-              /*variation_ids=*/{"100"}, /*command_line_variation_ids=*/""),
-      @"Variation not enabled.");
+  GREYAssert([OmniboxAppInterface forceVariationID:100],
+             @"Variation not enabled.");
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       performAction:grey_tap()];
@@ -312,7 +314,8 @@ id<GREYMatcher> SearchCopiedTextButton() {
   [ChromeEarlGreyUI focusOmnibox];
   [self checkLocationBarEditState];
 
-  chrome_test_util::SimulatePhysicalKeyboardEvent(UIKeyModifierCommand, @"C");
+  [ChromeEarlGrey simulatePhysicalKeyboardEvent:@"C"
+                                          flags:UIKeyModifierCommand];
 
   // Edit menu takes a while to copy, and not waiting here will cause Page 2 to
   // load before the copy happens, so Page 2 URL may be copied.
@@ -340,14 +343,16 @@ id<GREYMatcher> SearchCopiedTextButton() {
   [ChromeEarlGreyUI focusOmnibox];
 
   // Attempt to paste.
-  chrome_test_util::SimulatePhysicalKeyboardEvent(UIKeyModifierCommand, @"V");
+  [ChromeEarlGrey simulatePhysicalKeyboardEvent:@"V"
+                                          flags:UIKeyModifierCommand];
 
   // Verify that paste happened.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       assertWithMatcher:chrome_test_util::OmniboxContainingText(kPage1URL)];
 
   // Attempt to undo.
-  chrome_test_util::SimulatePhysicalKeyboardEvent(UIKeyModifierCommand, @"Z");
+  [ChromeEarlGrey simulatePhysicalKeyboardEvent:@"Z"
+                                          flags:UIKeyModifierCommand];
 
   // Verify that undo happened.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
@@ -355,7 +360,8 @@ id<GREYMatcher> SearchCopiedTextButton() {
 
   // Attempt to undo again. Nothing should happen. In the past this could lead
   // to a crash.
-  chrome_test_util::SimulatePhysicalKeyboardEvent(UIKeyModifierCommand, @"Z");
+  [ChromeEarlGrey simulatePhysicalKeyboardEvent:@"Z"
+                                          flags:UIKeyModifierCommand];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       assertWithMatcher:chrome_test_util::OmniboxContainingText(kPage2URL)];
 }

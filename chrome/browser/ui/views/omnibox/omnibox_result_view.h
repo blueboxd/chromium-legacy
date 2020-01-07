@@ -39,17 +39,12 @@ class Button;
 class FocusRing;
 }  // namespace views
 
-namespace ui {
-class ThemeProvider;
-}
-
 class OmniboxResultView : public views::View,
                           public views::AnimationDelegateViews,
                           public views::ButtonListener {
  public:
   OmniboxResultView(OmniboxPopupContentsView* popup_contents_view,
-                    size_t model_index,
-                    const ui::ThemeProvider* theme_provider);
+                    size_t model_index);
   ~OmniboxResultView() override;
 
   // Helper to get the color for |part| using the current state.
@@ -76,6 +71,14 @@ class OmniboxResultView : public views::View,
 
   // If this view has a secondary button, triggers the action and returns true.
   bool MaybeTriggerSecondaryButton(const ui::Event& event);
+
+  // This returns the accessibility label for this result view. This is an
+  // extended version of AutocompleteMatchType::ToAccessibilityLabel() which
+  // also returns narration about the secondary button.
+  base::string16 ToAccessibilityLabelWithSecondaryButton(
+      const base::string16& match_text,
+      size_t total_matches,
+      int* label_prefix_length = nullptr);
 
   OmniboxPartState GetThemeState() const;
 
@@ -142,9 +145,6 @@ class OmniboxResultView : public views::View,
 
   // This result's model index.
   size_t model_index_;
-
-  // The theme provider associated with this view.
-  const ui::ThemeProvider* theme_provider_;
 
   // The data this class is built to display (the "Omnibox Result").
   AutocompleteMatch match_;

@@ -57,17 +57,6 @@ interface SpellCheckHost {
   RequestTextCheck(mojo_base.mojom.String16 text, int32 route_id) =>
       (array<SpellCheckResult> results);
 
-  // Exactly like RequestTextCheck, except the text has already been partially
-  // checked (i.e. only in some locales) by the renderer spell checker, and the
-  // native spell checker should check for the rest of the user's locales. The
-  // renderer's partial results are passed as an array of |SpellCheckResult|.
-  // The platform spell checker needs these results to combine them with the
-  // results from the native checks.
-  [EnableIf=USE_WIN_HYBRID_SPELLCHECKER]
-  RequestPartialTextCheck(mojo_base.mojom.String16 text, int32 route_id,
-      array<SpellCheckResult> partial_results, bool fill_suggestions)
-      => (array<SpellCheckResult> results);
-
   // Disconnects the Android spell checker session bridge.
   [EnableIf=is_android]
   DisconnectSessionBridge();

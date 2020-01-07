@@ -776,6 +776,11 @@ public class IntentHandler {
 
         // We do some logging to determine what kinds of headers developers are inserting.
         IntentHeadersRecorder recorder = shouldLogHeaders ? new IntentHeadersRecorder() : null;
+        boolean shouldBlockNonSafelistedHeaders = ChromeFeatureList.isEnabled(
+                ChromeFeatureList.ANDROID_BLOCK_INTENT_NON_SAFELISTED_HEADERS);
+        IntentHeadersRecorder.HeaderClassifier headerClassifier = shouldBlockNonSafelistedHeaders
+                ? new IntentHeadersRecorder.HeaderClassifier()
+                : null;
         boolean firstParty = shouldLogHeaders
                 ? IntentHandler.notSecureIsIntentChromeOrFirstParty(intent)
                 : false;
@@ -789,6 +794,11 @@ public class IntentHandler {
             if (!HttpUtil.isAllowedHeader(key, value)) continue;
 
             if (shouldLogHeaders) recorder.recordHeader(key, value, firstParty);
+
+            if (shouldBlockNonSafelistedHeaders
+                    && !headerClassifier.isCorsSafelistedHeader(key, value, firstParty)) {
+                continue;
+            }
 
             if (extraHeaders.length() != 0) extraHeaders.append("\n");
             extraHeaders.append(key);

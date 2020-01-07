@@ -185,30 +185,25 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   void Unpack(const base::FilePath& directory);
   void ReadManifestDone(base::Optional<base::Value> manifest,
                         const base::Optional<std::string>& error);
-  void UnpackExtensionSucceeded(
-      std::unique_ptr<base::DictionaryValue> manifest);
+  void UnpackExtensionSucceeded(base::Value manifest);
 
   // Helper which calls ReportFailure.
   void ReportUnpackExtensionFailed(base::StringPiece error);
 
-  void ImageSanitizationDone(std::unique_ptr<base::DictionaryValue> manifest,
-                             ImageSanitizer::Status status,
+  void ImageSanitizationDone(ImageSanitizer::Status status,
                              const base::FilePath& path);
   void ImageSanitizerDecodedImage(const base::FilePath& path, SkBitmap image);
 
-  void ReadMessageCatalogs(std::unique_ptr<base::DictionaryValue> manifest);
+  void ReadMessageCatalogs();
 
   void SanitizeMessageCatalogs(
-      std::unique_ptr<base::DictionaryValue> manifest,
       const std::set<base::FilePath>& message_catalog_paths);
 
-  void MessageCatalogsSanitized(std::unique_ptr<base::DictionaryValue> manifest,
-                                JsonFileSanitizer::Status status,
+  void MessageCatalogsSanitized(JsonFileSanitizer::Status status,
                                 const std::string& error_msg);
 
   // Reports unpack success or failure, or unzip failure.
-  void ReportSuccess(std::unique_ptr<base::DictionaryValue> original_manifest,
-                     const base::Optional<int>& dnr_ruleset_checksum);
+  void ReportSuccess();
 
   // Puts a sanboxed unpacker failure in histogram
   // Extensions.SandboxUnpackFailureReason.
@@ -216,9 +211,8 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
                      const base::string16& error);
 
   // Overwrites original manifest with safe result from utility process.
-  // Returns NULL on error. Caller owns the returned object.
-  base::DictionaryValue* RewriteManifestFile(
-      const base::DictionaryValue& manifest);
+  // Returns nullopt on error.
+  base::Optional<base::Value> RewriteManifestFile(const base::Value& manifest);
 
   // Cleans up temp directory artifacts.
   void Cleanup();
@@ -226,25 +220,18 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   // If a Declarative Net Request JSON ruleset is present, parses the JSON
   // ruleset for the Declarative Net Request API and persists the indexed
   // ruleset.
-  void IndexAndPersistJSONRulesetIfNeeded(
-      std::unique_ptr<base::DictionaryValue> manifest);
+  void IndexAndPersistJSONRulesetIfNeeded();
 
   void OnJSONRulesetIndexed(
-      std::unique_ptr<base::DictionaryValue> manifest,
       declarative_net_request::IndexAndPersistJSONRulesetResult result);
 
   // Computed hashes: if requested (via ShouldComputeHashes callback in
   // SandbloxedUnpackerClient), calculate hashes of all extensions' resources
   // and writes them in _metadata/computed_hashes.json. This is used by content
   // verification system for extensions outside of Chrome Web Store.
-  void CheckComputeHashes(
-      std::unique_ptr<base::DictionaryValue> original_manifest,
-      const base::Optional<int>& dnr_ruleset_checksum);
+  void CheckComputeHashes();
 
-  void MaybeComputeHashes(
-      std::unique_ptr<base::DictionaryValue> original_manifest,
-      const base::Optional<int>& dnr_ruleset_checksum,
-      bool should_compute_hashes);
+  void MaybeComputeHashes(bool should_compute_hashes);
 
   // Returns a JsonParser that can be used on the |unpacker_io_task_runner|.
   data_decoder::mojom::JsonParser* GetJsonParserPtr();
@@ -270,6 +257,15 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
 
   // Root directory of the unpacked extension (a child of temp_dir_).
   base::FilePath extension_root_;
+
+  // Parsed original manifest of the extension. Set after unpacking the
+  // extension and working with its manifest, so after UnpackExtensionSucceeded
+  // is called.
+  base::Optional<base::Value> manifest_;
+
+  // Checksum for the indexed ruleset, see more in
+  // SandboxedUnpackerClient::OnUnpackSuccess description.
+  base::Optional<int> dnr_ruleset_checksum_;
 
   // Represents the extension we're unpacking.
   scoped_refptr<Extension> extension_;

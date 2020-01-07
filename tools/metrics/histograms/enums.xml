@@ -7987,6 +7987,16 @@ histogram as enum -->
   <int value="10" label="Image was not required for activation."/>
 </enum>
 
+<enum name="ChimeEvent">
+  <int value="0" label="Register"/>
+  <int value="1" label="UnRegister"/>
+  <int value="2" label="Notification Create"/>
+  <int value="3" label="Notification Click"/>
+  <int value="4" label="Notification Remove"/>
+  <int value="5" label="Notification Expire"/>
+  <int value="6" label="Notification Action Click"/>
+</enum>
+
 <enum name="ChromeActivityType">
   <int value="0" label="Tabbed Chrome"/>
   <int value="1" label="Custom Tab"/>
@@ -12477,6 +12487,8 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="22" label="Insufficient Disk Space"/>
   <int value="23" label="Error Configuring Container"/>
   <int value="24" label="User Cancelled While Configuring Container"/>
+  <int value="25" label="Error Creating Container"/>
+  <int value="26" label="Bug - Failed without capturing error code"/>
 </enum>
 
 <enum name="CrostiniUISurface">
@@ -37306,6 +37318,7 @@ from previous Chrome versions.
   <int value="-714043324" label="OutOfBlinkCORS:enabled"/>
   <int value="-711991950" label="SiteExplorationUi:enabled"/>
   <int value="-711890895" label="enable-website-settings-manager"/>
+  <int value="-709793261" label="PaintPreviewTest:disabled"/>
   <int value="-709058455" label="ui-slow-animations"/>
   <int value="-706733351" label="enable-floating-virtual-keyboard:enabled"/>
   <int value="-705746939" label="ChromeDuet:enabled"/>
@@ -37603,6 +37616,7 @@ from previous Chrome versions.
   <int value="-310615515" label="EnableSuggestedFiles:disabled"/>
   <int value="-307260007" label="ExtensionsCheckup:disabled"/>
   <int value="-304951461" label="TextSuggestionsTouchBar:enabled"/>
+  <int value="-301310056" label="PaintPreviewTest:enabled"/>
   <int value="-300018686" label="disable-cloud-import"/>
   <int value="-299841473" label="top-document-isolation:enabled"/>
   <int value="-297716805"
@@ -66044,6 +66058,9 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="WebFontPackageFormat">
+  <obsolete>
+    Removed Jan 2020.
+  </obsolete>
   <int value="0" label="Unknown / Decode error"/>
   <int value="1" label="SFNT"/>
   <int value="2" label="WOFF"/>

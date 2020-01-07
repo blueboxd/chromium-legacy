@@ -1673,8 +1673,7 @@ void BrowserAccessibilityComWin::UpdateStep2ComputeHypertext() {
   UpdateComputedHypertext();
 }
 
-void BrowserAccessibilityComWin::UpdateStep3FireEvents(
-    bool is_subtree_creation) {
+void BrowserAccessibilityComWin::UpdateStep3FireEvents() {
   int32_t state = MSAAState();
   const bool ignored = owner()->IsIgnored();
 

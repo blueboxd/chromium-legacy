@@ -11,8 +11,7 @@
 #include "base/json/json_reader.h"
 #include "base/values.h"
 #include "media/base/test_data_util.h"
-
-#define VLOGF(level) VLOG(level) << __func__ << "(): "
+#include "media/gpu/macros.h"
 
 namespace media {
 namespace test {
@@ -145,6 +144,26 @@ bool Image::LoadMetadata() {
   }
   size_ = gfx::Size(width->GetInt(), height->GetInt());
 
+  // Try to get the visible rectangle of the image from the json data.
+  // These values are not in json data if all the image data is in the visible
+  // area.
+  visible_rect_ = gfx::Rect(size_);
+  const base::Value* visible_rect_info =
+      metadata->FindKeyOfType("visible_rect", base::Value::Type::LIST);
+  if (visible_rect_info) {
+    base::Value::ConstListView values = visible_rect_info->GetList();
+    if (values.size() != 4) {
+      VLOGF(1) << "unexpected json format for visible rectangle";
+      return false;
+    }
+    int origin_x = values[0].GetInt();
+    int origin_y = values[1].GetInt();
+    int visible_width = values[2].GetInt();
+    int visible_height = values[3].GetInt();
+    visible_rect_ =
+        gfx::Rect(origin_x, origin_y, visible_width, visible_height);
+  }
+
   // Get the image checksum from the json data.
   const base::Value* checksum =
       metadata->FindKeyOfType("checksum", base::Value::Type::STRING);
@@ -175,6 +194,10 @@ VideoPixelFormat Image::PixelFormat() const {
 
 const gfx::Size& Image::Size() const {
   return size_;
+}
+
+const gfx::Rect& Image::VisibleRect() const {
+  return visible_rect_;
 }
 
 const char* Image::Checksum() const {

@@ -534,10 +534,6 @@ void SiteEngagementService::RecordMetrics(
     total_engagement += detail.total_score;
   }
 
-  int percent_origins_with_max_engagement =
-      (total_origins == 0
-           ? 0
-           : (origins_with_max_engagement * 100) / total_origins);
   double mean_engagement =
       (total_origins == 0 ? 0 : total_engagement / total_origins);
 
@@ -552,8 +548,6 @@ void SiteEngagementService::RecordMetrics(
       OriginsWithMaxDailyEngagement());
   SiteEngagementMetrics::RecordOriginsWithMaxEngagement(
       origins_with_max_engagement);
-  SiteEngagementMetrics::RecordPercentOriginsWithMaxEngagement(
-      percent_origins_with_max_engagement);
 }
 
 bool SiteEngagementService::ShouldRecordEngagement(const GURL& url) const {

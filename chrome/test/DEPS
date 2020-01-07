@@ -38,7 +38,7 @@ include_rules = [
   "+components/policy",
   "+components/prefs",
   "+components/safe_browsing/buildflags.h",
-  "+components/safe_browsing/db",
+  "+components/safe_browsing/core/db",
   "+components/search_engines",
   "+components/services/quarantine",
   "+components/signin/public",

@@ -511,6 +511,10 @@ message CollectUserDataResultProto {
   optional DateTimeProto date_time_end = 8;
   // The values obtained by the generic user interface.
   optional ModelProto model = 9;
+  // The memory keys of all non-empty text inputs, corresponding to the memory
+  // keys specified in |TextInputProto|. The values themselves are stored in the
+  // client and do not leave the device.
+  repeated string set_text_input_memory_keys = 10;
 }
 
 message ProcessedActionProto {

@@ -16,7 +16,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/modules/manifest/manifest_manager.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_error.h"
-#include "third_party/blink/renderer/modules/push_messaging/push_messaging_type_converters.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_messaging_utils.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription_options.h"
@@ -60,7 +59,7 @@ void PushMessagingClient::Subscribe(
   DCHECK(callbacks);
 
   mojom::blink::PushSubscriptionOptionsPtr options_ptr =
-      mojom::blink::PushSubscriptionOptions::From(options);
+      ConvertSubscriptionOptionPointer(options);
 
   // If a developer provided an application server key in |options|, skip
   // fetching the manifest.

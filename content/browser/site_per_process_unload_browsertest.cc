@@ -283,30 +283,31 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 }
 
 // Verify that when the last active frame in a process is going away as part of
-// OnSwapOut, the SwapOut ACK is received prior to the process starting to shut
-// down, ensuring that any related unload work also happens before shutdown.
-// See https://crbug.com/867274 and https://crbug.com/794625.
+// OnUnload, the FrameHostMsg_Unload_ACK is received prior to the process
+// starting to shut down, ensuring that any related unload work also happens
+// before shutdown. See https://crbug.com/867274 and https://crbug.com/794625.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       SwapOutACKArrivesPriorToProcessShutdownRequest) {
+                       UnloadACKArrivesPriorToProcessShutdownRequest) {
   GURL start_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), start_url));
   RenderFrameHostImpl* rfh = web_contents()->GetMainFrame();
-  rfh->DisableSwapOutTimerForTesting();
+  rfh->DisableUnloadTimerForTesting();
 
   // Navigate cross-site.  Since the current frame is the last active frame in
   // the current process, the process will eventually shut down.  Once the
-  // process goes away, ensure that the SwapOut ACK was received (i.e., that we
-  // didn't just simulate OnSwappedOut() due to the process erroneously going
-  // away before the SwapOut ACK was received, as in https://crbug.com/867274).
+  // process goes away, ensure that the FrameHostMsg_Unload_ACK was received
+  // (i.e., that we didn't just simulate OnUnloaded() due to the process
+  // erroneously going away before the FrameHostMsg_Unload_ACK was received, as
+  // in https://crbug.com/867274).
   RenderProcessHostWatcher watcher(
       rfh->GetProcess(), RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  auto swapout_ack_filter = base::MakeRefCounted<ObserveMessageFilter>(
-      FrameMsgStart, FrameHostMsg_SwapOut_ACK::ID);
-  rfh->GetProcess()->AddFilter(swapout_ack_filter.get());
+  auto unload_ack_filter = base::MakeRefCounted<ObserveMessageFilter>(
+      FrameMsgStart, FrameHostMsg_Unload_ACK::ID);
+  rfh->GetProcess()->AddFilter(unload_ack_filter.get());
   GURL cross_site_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURLFromRenderer(shell(), cross_site_url));
   watcher.Wait();
-  EXPECT_TRUE(swapout_ack_filter->has_received_message());
+  EXPECT_TRUE(unload_ack_filter->has_received_message());
   EXPECT_TRUE(watcher.did_exit_normally());
 }
 
@@ -405,8 +406,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   DOMMessageQueue dom_message_queue(
       WebContents::FromRenderFrameHost(web_contents()->GetMainFrame()));
 
-  // Disable the swap out timer on B1.
-  root->child_at(0)->current_frame_host()->DisableSwapOutTimerForTesting();
+  // Disable the unload timer on B1.
+  root->child_at(0)->current_frame_host()->DisableUnloadTimerForTesting();
 
   // Process B and C are expected to shutdown once every unload handler has
   // run.
@@ -499,7 +500,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, Unload_ABAB) {
   UnloadPrint(root->child_at(0), "B1");
   UnloadPrint(root->child_at(0)->child_at(0), "A2");
   UnloadPrint(root->child_at(0)->child_at(0)->child_at(0), "B2");
-  root->current_frame_host()->DisableSwapOutTimerForTesting();
+  root->current_frame_host()->DisableUnloadTimerForTesting();
 
   DOMMessageQueue dom_message_queue(
       WebContents::FromRenderFrameHost(web_contents()->GetMainFrame()));
@@ -563,17 +564,17 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, UnloadNestedPendingDeletion) {
   EXPECT_EQ(RenderFrameHostImpl::UnloadState::NotRun, rfh_c->unload_state_);
 
   // Act as if there was a slow unload handler on rfh_b and rfh_c.
-  // The navigating frames are waiting for FrameHostMsg_SwapoutACK.
-  auto swapout_ack_filter_b = base::MakeRefCounted<DropMessageFilter>(
-      FrameMsgStart, FrameHostMsg_SwapOut_ACK::ID);
-  auto swapout_ack_filter_c = base::MakeRefCounted<DropMessageFilter>(
-      FrameMsgStart, FrameHostMsg_SwapOut_ACK::ID);
-  rfh_b->GetProcess()->AddFilter(swapout_ack_filter_b.get());
-  rfh_c->GetProcess()->AddFilter(swapout_ack_filter_c.get());
+  // The navigating frames are waiting for FrameHostMsg_Unload_ACK.
+  auto unload_ack_filter_b = base::MakeRefCounted<DropMessageFilter>(
+      FrameMsgStart, FrameHostMsg_Unload_ACK::ID);
+  auto unload_ack_filter_c = base::MakeRefCounted<DropMessageFilter>(
+      FrameMsgStart, FrameHostMsg_Unload_ACK::ID);
+  rfh_b->GetProcess()->AddFilter(unload_ack_filter_b.get());
+  rfh_c->GetProcess()->AddFilter(unload_ack_filter_c.get());
   EXPECT_TRUE(ExecuteScript(rfh_b->frame_tree_node(), onunload_script));
   EXPECT_TRUE(ExecuteScript(rfh_c->frame_tree_node(), onunload_script));
-  rfh_b->DisableSwapOutTimerForTesting();
-  rfh_c->DisableSwapOutTimerForTesting();
+  rfh_b->DisableUnloadTimerForTesting();
+  rfh_c->DisableUnloadTimerForTesting();
 
   RenderFrameDeletedObserver delete_b(rfh_b), delete_c(rfh_c);
 
@@ -612,7 +613,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, UnloadNestedPendingDeletion) {
 
   // rfh_b completes its unload event.
   EXPECT_FALSE(delete_b.deleted());
-  rfh_b->OnSwapOutACK();
+  rfh_b->OnUnloadACK();
   EXPECT_TRUE(delete_b.deleted());
 }
 
@@ -639,18 +640,18 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, PartialUnloadHandler) {
   RenderFrameDeletedObserver delete_a2(a2);
   RenderFrameDeletedObserver delete_b1(b1);
 
-  // Disable Detach and Swapout ACK. They will be called manually.
-  auto swapout_ack_filter = base::MakeRefCounted<DropMessageFilter>(
-      FrameMsgStart, FrameHostMsg_SwapOut_ACK::ID);
+  // Disable Detach and FrameHostMsg_Unload_ACK. They will be called manually.
+  auto unload_ack_filter = base::MakeRefCounted<DropMessageFilter>(
+      FrameMsgStart, FrameHostMsg_Unload_ACK::ID);
   auto detach_filter_a = base::MakeRefCounted<DropMessageFilter>(
       FrameMsgStart, FrameHostMsg_Detach::ID);
   auto detach_filter_b = base::MakeRefCounted<DropMessageFilter>(
       FrameMsgStart, FrameHostMsg_Detach::ID);
-  a1->GetProcess()->AddFilter(swapout_ack_filter.get());
+  a1->GetProcess()->AddFilter(unload_ack_filter.get());
   a1->GetProcess()->AddFilter(detach_filter_a.get());
   b1->GetProcess()->AddFilter(detach_filter_b.get());
 
-  a1->DisableSwapOutTimerForTesting();
+  a1->DisableUnloadTimerForTesting();
   // Set an arbitrarily long timeout to ensure the subframe unload timer doesn't
   // fire before we call OnDetach().
   b1->SetSubframeUnloadTimeoutForTesting(base::TimeDelta::FromSeconds(30));
@@ -695,8 +696,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, PartialUnloadHandler) {
   EXPECT_TRUE(delete_a2.deleted());
   EXPECT_EQ(RenderFrameHostImpl::UnloadState::InProgress, a1->unload_state_);
 
-  // 5) A1 receives SwapOutACK and deletes itself.
-  a1->OnSwapOutACK();
+  // 5) A1 receives FrameHostMsg_Unload_ACK and deletes itself.
+  a1->OnUnloadACK();
   EXPECT_TRUE(delete_a1.deleted());
 }
 
@@ -764,14 +765,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   UnloadPrint(rfh_6->frame_tree_node(), "");
   UnloadPrint(rfh_14->frame_tree_node(), "");
 
-  // Disable Detach and Swapout ACK.
-  auto swapout_ack_filter = base::MakeRefCounted<DropMessageFilter>(
-      FrameMsgStart, FrameHostMsg_SwapOut_ACK::ID);
+  // Disable Detach and FrameHostMsg_Unload_ACK.
+  auto unload_ack_filter = base::MakeRefCounted<DropMessageFilter>(
+      FrameMsgStart, FrameHostMsg_Unload_ACK::ID);
   auto detach_filter = base::MakeRefCounted<DropMessageFilter>(
       FrameMsgStart, FrameHostMsg_Detach::ID);
-  rfh_0->GetProcess()->AddFilter(swapout_ack_filter.get());
+  rfh_0->GetProcess()->AddFilter(unload_ack_filter.get());
   rfh_0->GetProcess()->AddFilter(detach_filter.get());
-  rfh_0->DisableSwapOutTimerForTesting();
+  rfh_0->DisableUnloadTimerForTesting();
 
   // 2) Navigate cross process and check the tree. See diagram above.
   EXPECT_TRUE(NavigateToURL(shell(), url_2));
@@ -1009,7 +1010,7 @@ IN_PROC_BROWSER_TEST_F(
   auto detach_filter = base::MakeRefCounted<DropMessageFilter>(
       FrameMsgStart, FrameHostMsg_Detach::ID);
   node3->GetProcess()->AddFilter(detach_filter.get());
-  node2->DisableSwapOutTimerForTesting();
+  node2->DisableUnloadTimerForTesting();
   ASSERT_TRUE(ExecJs(node3, "window.onunload = ()=>{}"));
 
   // Prepare |node4| to respond to postMessage with a report of whether it can
@@ -1102,7 +1103,7 @@ IN_PROC_BROWSER_TEST_F(
   auto detach_filter = base::MakeRefCounted<DropMessageFilter>(
       FrameMsgStart, FrameHostMsg_Detach::ID);
   node3->GetProcess()->AddFilter(detach_filter.get());
-  node2->DisableSwapOutTimerForTesting();
+  node2->DisableUnloadTimerForTesting();
   ASSERT_TRUE(ExecJs(node3, "window.onunload = ()=>{}"));
 
   // Prepare |node4| to respond to postMessage with a report of whether it can
@@ -1350,9 +1351,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessSSLBrowserTest,
   RenderFrameHostImpl* A1 = web_contents()->GetMainFrame();
   RenderFrameHostImpl* B2 = A1->child_at(0)->current_frame_host();
 
-  // Increase SwapOut/Unload timeout to prevent the previous document from
+  // Increase Unload timeout to prevent the previous document from
   // being deleleted before it has finished running B2 unload handler.
-  A1->DisableSwapOutTimerForTesting();
+  A1->DisableUnloadTimerForTesting();
   B2->SetSubframeUnloadTimeoutForTesting(base::TimeDelta::FromSeconds(30));
 
   // Add an unload handler to the subframe and try in that handler to preserve
@@ -1442,9 +1443,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessSSLBrowserTest,
   RenderFrameHostImpl* B2 = A1->child_at(0)->current_frame_host();
   RenderFrameHostImpl* C3 = B2->child_at(0)->current_frame_host();
 
-  // Increase SwapOut/Unload timeout to prevent the previous document from
+  // Increase Unload timeout to prevent the previous document from
   // being deleleted before it has finished running C3 unload handler.
-  A1->DisableSwapOutTimerForTesting();
+  A1->DisableUnloadTimerForTesting();
   B2->SetSubframeUnloadTimeoutForTesting(base::TimeDelta::FromSeconds(30));
   C3->SetSubframeUnloadTimeoutForTesting(base::TimeDelta::FromSeconds(30));
 

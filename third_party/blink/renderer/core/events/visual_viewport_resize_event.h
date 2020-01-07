@@ -14,10 +14,6 @@ class VisualViewportResizeEvent final : public Event {
   VisualViewportResizeEvent();
   ~VisualViewportResizeEvent() override;
 
-  static VisualViewportResizeEvent* Create() {
-    return MakeGarbageCollected<VisualViewportResizeEvent>();
-  }
-
   void DoneDispatchingEventAtCurrentTarget() override;
 
   void Trace(blink::Visitor* visitor) override { Event::Trace(visitor); }

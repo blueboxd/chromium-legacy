@@ -145,7 +145,7 @@ MediaDeviceSaltAndOrigin GetMediaDeviceSaltAndOrigin(int render_process_id,
   if (frame_host) {
     origin = frame_host->GetLastCommittedOrigin();
     url = frame_host->GetLastCommittedURL();
-    site_for_cookies = frame_host->ComputeSiteForCookies();
+    site_for_cookies = frame_host->ComputeSiteForCookies().RepresentativeUrl();
     top_level_origin = frame_host->frame_tree_node()
                            ->frame_tree()
                            ->GetMainFrame()

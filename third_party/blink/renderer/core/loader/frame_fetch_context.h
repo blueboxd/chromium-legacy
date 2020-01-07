@@ -128,7 +128,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   LocalFrameClient* GetLocalFrameClient() const;
 
   // BaseFetchContext overrides:
-  KURL GetSiteForCookies() const override;
+  net::SiteForCookies GetSiteForCookies() const override;
   scoped_refptr<const SecurityOrigin> GetTopFrameOrigin() const override;
   SubresourceFilter* GetSubresourceFilter() const override;
   PreviewsResourceLoadingHints* GetPreviewsResourceLoadingHints()

@@ -42,12 +42,6 @@ GetTLSSequenceManagerImpl() {
   return lazy_tls_ptr.get();
 }
 
-const scoped_refptr<SequencedTaskRunner>& GetNullTaskRunner() {
-  static const base::NoDestructor<scoped_refptr<SequencedTaskRunner>>
-      null_task_runner;
-  return *null_task_runner;
-}
-
 }  // namespace
 
 // This controls how big the the initial for
@@ -340,11 +334,11 @@ void SequenceManagerImpl::BindToCurrentThread(
   BindToMessagePump(std::move(pump));
 }
 
-const scoped_refptr<SequencedTaskRunner>&
+scoped_refptr<SequencedTaskRunner>
 SequenceManagerImpl::GetTaskRunnerForCurrentTask() {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   if (main_thread_only().task_execution_stack.empty())
-    return GetNullTaskRunner();
+    return nullptr;
   return main_thread_only()
       .task_execution_stack.back()
       .pending_task.task_runner;

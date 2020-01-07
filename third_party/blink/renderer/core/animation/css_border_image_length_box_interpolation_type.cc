@@ -98,8 +98,16 @@ class CSSBorderImageLengthBoxSideNonInterpolableValue
 
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE(
     CSSBorderImageLengthBoxSideNonInterpolableValue);
-DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(
-    CSSBorderImageLengthBoxSideNonInterpolableValue);
+template <>
+struct DowncastTraits<CSSBorderImageLengthBoxSideNonInterpolableValue> {
+  static bool AllowFrom(const NonInterpolableValue* value) {
+    return value && AllowFrom(*value);
+  }
+  static bool AllowFrom(const NonInterpolableValue& value) {
+    return value.GetType() ==
+           CSSBorderImageLengthBoxSideNonInterpolableValue::static_type_;
+  }
+};
 
 namespace {
 
@@ -134,9 +142,11 @@ SideType GetSideType(const NonInterpolableValue* side) {
   // In cases where LengthInterpolationFunctions is not used to convert the
   // value (kAuto, kNumber), we will always have a non-interpolable value of
   // type CSSBorderImageLengthBoxSideNonInterpolableValue.
-  if (!side || !IsCSSBorderImageLengthBoxSideNonInterpolableValue(side))
+  auto* non_interpolable =
+      DynamicTo<CSSBorderImageLengthBoxSideNonInterpolableValue>(side);
+  if (!side || !non_interpolable)
     return SideType::kLength;
-  return ToCSSBorderImageLengthBoxSideNonInterpolableValue(*side).GetSideType();
+  return non_interpolable->GetSideType();
 }
 
 struct SideTypes {
@@ -154,7 +164,7 @@ struct SideTypes {
   }
   explicit SideTypes(const InterpolationValue& underlying) {
     const auto& non_interpolable_list =
-        ToNonInterpolableList(*underlying.non_interpolable_value);
+        To<NonInterpolableList>(*underlying.non_interpolable_value);
     DCHECK_EQ(kSideIndexCount, non_interpolable_list.length());
     type[kSideTop] = GetSideType(non_interpolable_list.Get(0));
     type[kSideRight] = GetSideType(non_interpolable_list.Get(1));
@@ -376,8 +386,8 @@ void CSSBorderImageLengthBoxInterpolationType::ApplyStandardPropertyValue(
     const NonInterpolableValue* non_interpolable_value,
     StyleResolverState& state) const {
   const auto& list = To<InterpolableList>(interpolable_value);
-  const NonInterpolableList& non_interpolable_list =
-      ToNonInterpolableList(*non_interpolable_value);
+  const auto& non_interpolable_list =
+      To<NonInterpolableList>(*non_interpolable_value);
   const auto& convert_side = [&list, &non_interpolable_list,
                               &state](wtf_size_t index) -> BorderImageLength {
     switch (GetSideType(non_interpolable_list.Get(index))) {

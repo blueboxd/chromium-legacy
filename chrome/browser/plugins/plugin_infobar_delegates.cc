@@ -102,12 +102,20 @@ OutdatedPluginInfoBarDelegate::GetIdentifier() const {
   return OUTDATED_PLUGIN_INFOBAR_DELEGATE;
 }
 
-void OutdatedPluginInfoBarDelegate::InfoBarDismissed() {
-  base::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Dismissed"));
-}
-
 const gfx::VectorIcon& OutdatedPluginInfoBarDelegate::GetVectorIcon() const {
   return kExtensionIcon;
+}
+
+base::string16 OutdatedPluginInfoBarDelegate::GetLinkText() const {
+  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
+}
+
+GURL OutdatedPluginInfoBarDelegate::GetLinkURL() const {
+  return GURL(chrome::kOutdatedPluginLearnMoreURL);
+}
+
+void OutdatedPluginInfoBarDelegate::InfoBarDismissed() {
+  base::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Dismissed"));
 }
 
 base::string16 OutdatedPluginInfoBarDelegate::GetMessageText() const {
@@ -153,14 +161,6 @@ bool OutdatedPluginInfoBarDelegate::Cancel() {
   }
 
   return true;
-}
-
-base::string16 OutdatedPluginInfoBarDelegate::GetLinkText() const {
-  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
-}
-
-GURL OutdatedPluginInfoBarDelegate::GetLinkURL() const {
-  return GURL(chrome::kOutdatedPluginLearnMoreURL);
 }
 
 void OutdatedPluginInfoBarDelegate::DownloadFinished() {

@@ -1890,6 +1890,12 @@ body.check-select #list-container list li[selected] .detail-thumbnail
   padding-inline-start: 32px;
 }
 
+html[dir='rtl'] #share-menu cr-menu-item,
+html[dir='rtl'] #share-sub-menu cr-menu-item,
+html[dir='rtl'] #tasks-menu cr-menu-item:not(.change-default) {
+  background-position: right 10px center;
+}
+
 #share-menu cr-menu-item[command='#share'] {
   background-image: -webkit-image-set(
       url(../images/files/ui/person_add.png) 1x,

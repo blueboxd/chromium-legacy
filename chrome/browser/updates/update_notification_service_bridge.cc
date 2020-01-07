@@ -56,4 +56,18 @@ base::Optional<base::Time> GetLastShownTimeStamp() {
              : (base::make_optional(base::Time::FromJavaTime(timestamp)));
 }
 
+void UpdateThrottleInterval(base::TimeDelta interval) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_UpdateNotificationServiceBridge_updateThrottleInterval(
+      env, interval.InMilliseconds());
+}
+
+base::Optional<base::TimeDelta> GetThrottleInterval() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  auto interval = Java_UpdateNotificationServiceBridge_getThrottleInterval(env);
+  return interval == 0 ? base::nullopt
+                       : (base::make_optional(
+                             base::TimeDelta::FromMilliseconds(interval)));
+}
+
 }  // namespace updates

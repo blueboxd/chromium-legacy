@@ -10,6 +10,9 @@ android_library("java") {
     "java/src/org/chromium/components/browser_ui/widget/BoundedLinearLayout.java",
     "java/src/org/chromium/components/browser_ui/widget/DualControlLayout.java",
     "java/src/org/chromium/components/browser_ui/widget/FadingEdgeScrollView.java",
+    "java/src/org/chromium/components/browser_ui/widget/animation/CancelAwareAnimatorListener.java",
+    "java/src/org/chromium/components/browser_ui/widget/animation/FocusAnimator.java",
+    "java/src/org/chromium/components/browser_ui/widget/animation/Interpolators.java",
     "java/src/org/chromium/components/browser_ui/widget/displaystyle/DisplayStyleObserver.java",
     "java/src/org/chromium/components/browser_ui/widget/displaystyle/DisplayStyleObserverAdapter.java",
     "java/src/org/chromium/components/browser_ui/widget/displaystyle/HorizontalDisplayStyle.java",
@@ -18,6 +21,7 @@ android_library("java") {
     "java/src/org/chromium/components/browser_ui/widget/displaystyle/ViewResizer.java",
     "java/src/org/chromium/components/browser_ui/widget/text/AccessibleTextView.java",
     "java/src/org/chromium/components/browser_ui/widget/text/AlertDialogEditText.java",
+    "java/src/org/chromium/components/browser_ui/widget/text/ChromeTextInputLayout.java",
     "java/src/org/chromium/components/browser_ui/widget/text/TemplatePreservingTextView.java",
     "java/src/org/chromium/components/browser_ui/widget/text/TextViewWithCompoundDrawables.java",
     "java/src/org/chromium/components/browser_ui/widget/text/VerticallyFixedEditText.java",
@@ -27,6 +31,8 @@ android_library("java") {
     ":java_resources",
     "//base:base_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
+    "//third_party/android_deps:com_android_support_design_java",
+    "//third_party/android_deps:com_android_support_interpolator_java",
     "//ui/android:ui_java",
   ]
 }
@@ -35,6 +41,7 @@ android_resources("java_resources") {
   custom_package = "org.chromium.components.browser_ui.widget"
   resource_dirs = [ "java/res" ]
   deps = [
+    "//components/browser_ui/styles/android:java_resources",
     "//ui/android:ui_java_resources",
   ]
 }
@@ -44,6 +51,7 @@ android_library("javatests") {
 
   sources = [
     "java/src/org/chromium/components/browser_ui/widget/DualControlLayoutTest.java",
+    "java/src/org/chromium/components/browser_ui/widget/text/ChromeTextInputLayoutRenderTest.java",
   ]
   deps = [
     ":java",
@@ -51,10 +59,12 @@ android_library("javatests") {
     ":java_test_resources",
     "//base:base_java_test_support",
     "//content/public/test/android:content_java_test_support",
+    "//third_party/android_deps:com_android_support_appcompat_v7_java",
     "//third_party/android_deps:com_android_support_support_compat_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/junit",
+    "//ui/android:ui_java",
     "//ui/android:ui_java_test_support",
   ]
 }

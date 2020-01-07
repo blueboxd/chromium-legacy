@@ -137,7 +137,9 @@ void CookieControlsBubbleView::UpdateUi() {
         l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_BLOCKED_MESSAGE));
     auto link = std::make_unique<views::Link>(
         l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_NOT_WORKING_TITLE));
-    link->set_listener(this);
+    link->set_callback(
+        base::BindRepeating(&CookieControlsBubbleView::NotWorkingLinkClicked,
+                            base::Unretained(this)));
     extra_view_ = SetExtraView(std::move(link));
     blocked_cookies_.reset();
   } else {
@@ -199,7 +201,9 @@ void CookieControlsBubbleView::Init() {
   auto cookie_link = std::make_unique<views::Link>(
       l10n_util::GetStringUTF16(IDS_BLOCKED_COOKIES_INFO));
   cookie_link->SetMultiLine(true);
-  cookie_link->set_listener(this);
+  cookie_link->set_callback(
+      base::BindRepeating(&CookieControlsBubbleView::ShowCookiesLinkClicked,
+                          base::Unretained(this)));
   cookie_link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   show_cookies_link_ = AddChildView(std::move(cookie_link));
 
@@ -284,18 +288,17 @@ bool CookieControlsBubbleView::Close() {
   return Cancel();
 }
 
-void CookieControlsBubbleView::LinkClicked(views::Link* source,
-                                           int event_flags) {
-  if (source == show_cookies_link_) {
-    base::RecordAction(UserMetricsAction("CookieControls.Bubble.CookiesInUse"));
-    TabDialogs::FromWebContents(web_contents())->ShowCollectedCookies();
-    GetWidget()->Close();
-  } else {
-    DCHECK_EQ(status_, CookieControlsController::Status::kEnabled);
-    base::RecordAction(UserMetricsAction("CookieControls.Bubble.NotWorking"));
-    // Don't go through the controller as this is an intermediary state that
-    // is only relevant for the bubble UI.
-    intermediate_step_ = IntermediateStep::kTurnOffButton;
-    UpdateUi();
-  }
+void CookieControlsBubbleView::ShowCookiesLinkClicked() {
+  base::RecordAction(UserMetricsAction("CookieControls.Bubble.CookiesInUse"));
+  TabDialogs::FromWebContents(web_contents())->ShowCollectedCookies();
+  GetWidget()->Close();
+}
+
+void CookieControlsBubbleView::NotWorkingLinkClicked() {
+  DCHECK_EQ(status_, CookieControlsController::Status::kEnabled);
+  base::RecordAction(UserMetricsAction("CookieControls.Bubble.NotWorking"));
+  // Don't go through the controller as this is an intermediary state that
+  // is only relevant for the bubble UI.
+  intermediate_step_ = IntermediateStep::kTurnOffButton;
+  UpdateUi();
 }

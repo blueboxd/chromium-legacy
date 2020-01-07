@@ -73,6 +73,11 @@ class MediaRoute {
   }
   const MediaSink::Id& media_sink_id() const { return media_sink_id_; }
 
+  void set_media_sink_name(const std::string& media_sink_name) {
+    media_sink_name_ = media_sink_name;
+  }
+  const std::string& media_sink_name() const { return media_sink_name_; }
+
   void set_description(const std::string& description) {
     description_ = description;
   }
@@ -116,6 +121,9 @@ class MediaRoute {
 
   // The ID of sink being routed to.
   MediaSink::Id media_sink_id_;
+
+  // Human readable name of the sink.
+  std::string media_sink_name_;
 
   // Human readable description of the casting activity.  Examples:
   // "Mirroring tab (www.example.com)", "Casting media", "Casting YouTube"

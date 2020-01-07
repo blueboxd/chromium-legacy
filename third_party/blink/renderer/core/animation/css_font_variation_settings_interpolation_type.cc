@@ -41,12 +41,21 @@ class CSSFontVariationSettingsNonInterpolableValue
 
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE(
     CSSFontVariationSettingsNonInterpolableValue);
-DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(
-    CSSFontVariationSettingsNonInterpolableValue);
+template <>
+struct DowncastTraits<CSSFontVariationSettingsNonInterpolableValue> {
+  static bool AllowFrom(const NonInterpolableValue* value) {
+    return value && AllowFrom(*value);
+  }
+  static bool AllowFrom(const NonInterpolableValue& value) {
+    return value.GetType() ==
+           CSSFontVariationSettingsNonInterpolableValue::static_type_;
+  }
+};
 
 static const Vector<AtomicString> GetTags(
     const NonInterpolableValue& non_interpolable_value) {
-  return ToCSSFontVariationSettingsNonInterpolableValue(non_interpolable_value)
+  return To<CSSFontVariationSettingsNonInterpolableValue>(
+             non_interpolable_value)
       .Tags();
 }
 

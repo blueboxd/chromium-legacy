@@ -47,7 +47,8 @@ Polymer({
     blur: 'hideRipple_',
     click: 'onClick_',
     focus: 'onFocus_',
-    keypress: 'onKeyPress_',
+    keydown: 'onKeyDown_',
+    keyup: 'onKeyUp_',
     pointerdown: 'onPointerDown_',
     pointerup: 'onPointerUp_',
   },
@@ -89,7 +90,7 @@ Polymer({
       const shouldToggle = (diff * direction < 0 && this.checked) ||
           (diff * direction > 0 && !this.checked);
       if (shouldToggle) {
-        this.toggleState_(false);
+        this.toggleState_(/* fromKeyboard= */ false);
       }
     };
   },
@@ -157,7 +158,7 @@ Polymer({
 
     // If no pointermove event fired, then user just clicked on the
     // toggle button and therefore it should be toggled.
-    this.toggleState_(false);
+    this.toggleState_(/* fromKeyboard= */ false);
   },
 
   /**
@@ -183,10 +184,36 @@ Polymer({
    * @param {!KeyboardEvent} e
    * @private
    */
-  onKeyPress_: function(e) {
-    if (e.key == ' ' || e.key == 'Enter') {
-      e.preventDefault();
-      this.toggleState_(true);
+  onKeyDown_: function(e) {
+    if (e.key != ' ' && e.key != 'Enter') {
+      return;
+    }
+
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.repeat) {
+      return;
+    }
+
+    if (e.key == 'Enter') {
+      this.toggleState_(/* fromKeyboard= */ true);
+    }
+  },
+
+  /**
+   * @param {!KeyboardEvent} e
+   * @private
+   */
+  onKeyUp_: function(e) {
+    if (e.key != ' ' && e.key != 'Enter') {
+      return;
+    }
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (e.key == ' ') {
+      this.toggleState_(/* fromKeyboard= */ true);
     }
   },
 

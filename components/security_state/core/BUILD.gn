@@ -25,6 +25,10 @@ jumbo_static_library("core") {
     "//net",
     "//url",
   ]
+
+  deps = [
+    "//services/network/public/cpp",
+  ]
 }
 
 if (is_android) {

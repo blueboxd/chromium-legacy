@@ -67,11 +67,13 @@ void FirstRunDialog::Show(Profile* profile) {
   run_loop.Run();
 }
 
-FirstRunDialog::FirstRunDialog(Profile* profile) : profile_(profile) {
+FirstRunDialog::FirstRunDialog(Profile* profile) {
   DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
   DialogDelegate::SetExtraView(
       std::make_unique<views::Link>(l10n_util::GetStringUTF16(IDS_LEARN_MORE)))
-      ->set_listener(this);
+      ->set_callback(base::BindRepeating(&platform_util::OpenExternal,
+                                         base::Unretained(profile),
+                                         GURL(chrome::kLearnMoreReportingURL)));
 
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
@@ -125,8 +127,4 @@ bool FirstRunDialog::Accept() {
 void FirstRunDialog::WindowClosing() {
   first_run::SetShouldShowWelcomePage();
   Done();
-}
-
-void FirstRunDialog::LinkClicked(views::Link* source, int event_flags) {
-  platform_util::OpenExternal(profile_, GURL(chrome::kLearnMoreReportingURL));
 }

@@ -307,21 +307,37 @@ std::unique_ptr<base::Value> RegistryDict::ConvertToJSON(
           new base::DictionaryValue());
       for (RegistryDict::ValueMap::const_iterator entry(values_.begin());
            entry != values_.end(); ++entry) {
-        Schema subschema =
-            schema.valid() ? schema.GetProperty(entry->first) : Schema();
-        std::unique_ptr<base::Value> converted =
-            ConvertRegistryValue(*entry->second, subschema);
-        if (converted)
-          result->SetWithoutPathExpansion(entry->first, std::move(converted));
+        SchemaList matching_schemas =
+            schema.valid() ? schema.GetMatchingProperties(entry->first)
+                           : SchemaList();
+        // Always try the empty schema if no other schemas exist.
+        if (matching_schemas.empty())
+          matching_schemas.push_back(Schema());
+        for (const Schema& subschema : matching_schemas) {
+          std::unique_ptr<base::Value> converted =
+              ConvertRegistryValue(*entry->second, subschema);
+          if (converted) {
+            result->SetWithoutPathExpansion(entry->first, std::move(converted));
+            break;
+          }
+        }
       }
       for (RegistryDict::KeyMap::const_iterator entry(keys_.begin());
            entry != keys_.end(); ++entry) {
-        Schema subschema =
-            schema.valid() ? schema.GetProperty(entry->first) : Schema();
-        std::unique_ptr<base::Value> converted =
-            entry->second->ConvertToJSON(subschema);
-        if (converted)
-          result->SetWithoutPathExpansion(entry->first, std::move(converted));
+        SchemaList matching_schemas =
+            schema.valid() ? schema.GetMatchingProperties(entry->first)
+                           : SchemaList();
+        // Always try the empty schema if no other schemas exist.
+        if (matching_schemas.empty())
+          matching_schemas.push_back(Schema());
+        for (const Schema& subschema : matching_schemas) {
+          std::unique_ptr<base::Value> converted =
+              entry->second->ConvertToJSON(subschema);
+          if (converted) {
+            result->SetWithoutPathExpansion(entry->first, std::move(converted));
+            break;
+          }
+        }
       }
       return std::move(result);
     }

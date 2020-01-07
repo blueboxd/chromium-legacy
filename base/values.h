@@ -463,6 +463,14 @@ class BASE_EXPORT Value {
   // dictionary. These are intended for iteration over all items in the
   // dictionary and are compatible with for-each loops and standard library
   // algorithms.
+  //
+  // Unlike with std::map, a range-for over the non-const version of DictItems()
+  // will range over items of type pair<const std::string&, Value&>, so code of
+  // the form
+  //   for (auto kv : my_value.DictItems())
+  //     Mutate(kv.second);
+  // will actually alter |my_value| in place (if it isn't const).
+  //
   // Note: These CHECK that type() is Type::DICTIONARY.
   dict_iterator_proxy DictItems();
   const_dict_iterator_proxy DictItems() const;

@@ -880,7 +880,8 @@ void ServiceWorkerRegisterJob::BumpLastUpdateCheckTimeIfNeeded() {
 
     if (registration()->newest_installed_version()) {
       context_->storage()->UpdateLastUpdateCheckTime(
-          registration(),
+          registration()->id(), registration()->scope().GetOrigin(),
+          registration()->last_update_check(),
           base::BindOnce([](blink::ServiceWorkerStatusCode status) {
             // Ignore errors; bumping the update check time is just best-effort.
           }));

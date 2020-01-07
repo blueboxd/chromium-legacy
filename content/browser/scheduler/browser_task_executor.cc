@@ -65,12 +65,6 @@ QueueType GetQueueType(const base::TaskTraits& traits,
   }
 }
 
-const scoped_refptr<base::SequencedTaskRunner>& GetNullTaskRunner() {
-  static const base::NoDestructor<scoped_refptr<base::SequencedTaskRunner>>
-      null_task_runner;
-  return *null_task_runner;
-}
-
 }  // namespace
 
 BaseBrowserTaskExecutor::BaseBrowserTaskExecutor() = default;
@@ -398,13 +392,6 @@ BrowserThread::ID BrowserTaskExecutor::GetCurrentThreadID() const {
   return BrowserThread::UI;
 }
 
-const scoped_refptr<base::SequencedTaskRunner>&
-BrowserTaskExecutor::GetContinuationTaskRunner() {
-  NOTREACHED()
-      << "Should have been routed to UIThreadExecutor or IOThreadExecutor";
-  return GetNullTaskRunner();
-}
-
 BrowserTaskExecutor::UIThreadExecutor::UIThreadExecutor(
     std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler)
     : browser_ui_thread_scheduler_(std::move(browser_ui_thread_scheduler)) {
@@ -436,11 +423,6 @@ BrowserThread::ID BrowserTaskExecutor::UIThreadExecutor::GetCurrentThreadID()
   return BrowserThread::UI;
 }
 
-const scoped_refptr<base::SequencedTaskRunner>&
-BrowserTaskExecutor::UIThreadExecutor::GetContinuationTaskRunner() {
-  return browser_ui_thread_scheduler_->GetTaskRunnerForCurrentTask();
-}
-
 BrowserTaskExecutor::IOThreadExecutor::IOThreadExecutor(
     std::unique_ptr<BrowserIOThreadDelegate> browser_io_thread_delegate)
     : browser_io_thread_delegate_(std::move(browser_io_thread_delegate)) {
@@ -466,12 +448,6 @@ void BrowserTaskExecutor::IOThreadExecutor::SetUIThreadHandle(
 BrowserThread::ID BrowserTaskExecutor::IOThreadExecutor::GetCurrentThreadID()
     const {
   return BrowserThread::IO;
-}
-
-const scoped_refptr<base::SequencedTaskRunner>&
-BrowserTaskExecutor::IOThreadExecutor::GetContinuationTaskRunner() {
-  DCHECK(browser_io_thread_delegate_);
-  return browser_io_thread_delegate_->GetTaskRunnerForCurrentTask();
 }
 
 }  // namespace content

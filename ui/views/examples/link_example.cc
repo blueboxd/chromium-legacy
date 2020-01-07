@@ -19,14 +19,10 @@ LinkExample::~LinkExample() = default;
 
 void LinkExample::CreateExampleView(View* container) {
   auto link = std::make_unique<Link>(base::ASCIIToUTF16("Click me!"));
-  link->set_listener(this);
+  link->set_callback(base::BindRepeating(&LogStatus, "Link clicked"));
 
   container->SetLayoutManager(std::make_unique<FillLayout>());
   container->AddChildView(std::move(link));
-}
-
-void LinkExample::LinkClicked(Link* source, int event_flags) {
-  LogStatus("Link clicked");
 }
 
 }  // namespace examples

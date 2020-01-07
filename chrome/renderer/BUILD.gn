@@ -151,8 +151,8 @@ jumbo_static_library("renderer") {
     "//components/rappor/public/mojom",
     "//components/resources:components_resources",
     "//components/safe_browsing:buildflags",
-    "//components/safe_browsing/common:interfaces",
-    "//components/safe_browsing/renderer:throttles",
+    "//components/safe_browsing/content/renderer:throttles",
+    "//components/safe_browsing/core/common:interfaces",
     "//components/security_interstitials/content/renderer:security_interstitial_page_controller",
     "//components/security_interstitials/core:",
     "//components/security_interstitials/core/common/mojom:",
@@ -251,8 +251,8 @@ jumbo_static_library("renderer") {
 
   if (safe_browsing_mode != 0) {
     deps += [
-      "//components/safe_browsing/common",
-      "//components/safe_browsing/renderer",
+      "//components/safe_browsing/content/renderer",
+      "//components/safe_browsing/core/common",
     ]
     if (safe_browsing_mode == 1) {
       sources += [
@@ -277,7 +277,7 @@ jumbo_static_library("renderer") {
       ]
       deps += [
         "//chrome/common/safe_browsing:proto",
-        "//components/safe_browsing:csd_proto",
+        "//components/safe_browsing/core:csd_proto",
         "//third_party/smhasher:murmurhash3",
       ]
     }

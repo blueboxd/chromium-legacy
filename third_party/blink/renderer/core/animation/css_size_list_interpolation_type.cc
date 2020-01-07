@@ -30,7 +30,7 @@ class UnderlyingSizeListChecker
   bool IsValid(const StyleResolverState&,
                const InterpolationValue& underlying) const final {
     const auto& underlying_list =
-        ToNonInterpolableList(*underlying.non_interpolable_value);
+        To<NonInterpolableList>(*underlying.non_interpolable_value);
     wtf_size_t underlying_length = underlying_list.length();
     if (underlying_length != underlying_list_->length())
       return false;
@@ -105,7 +105,7 @@ InterpolationValue CSSSizeListInterpolationType::MaybeConvertNeutral(
     const InterpolationValue& underlying,
     ConversionCheckers& conversion_checkers) const {
   const auto& underlying_list =
-      ToNonInterpolableList(*underlying.non_interpolable_value);
+      To<NonInterpolableList>(*underlying.non_interpolable_value);
   conversion_checkers.push_back(
       std::make_unique<UnderlyingSizeListChecker>(underlying_list));
   return ListInterpolationFunctions::CreateList(
@@ -177,7 +177,7 @@ void CSSSizeListInterpolationType::ApplyStandardPropertyValue(
     StyleResolverState& state) const {
   const auto& interpolable_list = To<InterpolableList>(interpolable_value);
   const auto& non_interpolable_list =
-      ToNonInterpolableList(*non_interpolable_value);
+      To<NonInterpolableList>(*non_interpolable_value);
   wtf_size_t length = interpolable_list.length();
   DCHECK_EQ(length, non_interpolable_list.length());
   DCHECK_EQ(length % 2, 0ul);

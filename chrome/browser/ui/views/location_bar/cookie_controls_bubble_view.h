@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/link_listener.h"
 
 namespace content {
 class WebContents;
@@ -25,7 +24,6 @@ class Label;
 
 // View used to display the cookie controls ui.
 class CookieControlsBubbleView : public LocationBarBubbleDelegateView,
-                                 public views::LinkListener,
                                  public CookieControlsView {
  public:
   static void ShowBubble(views::View* anchor_view,
@@ -69,8 +67,8 @@ class CookieControlsBubbleView : public LocationBarBubbleDelegateView,
   gfx::Size CalculatePreferredSize() const override;
   void AddedToWidget() override;
 
-  // views::LinkListener:
-  void LinkClicked(views::Link* source, int event_flags) override;
+  void ShowCookiesLinkClicked();
+  void NotWorkingLinkClicked();
 
   CookieControlsController* controller_ = nullptr;
 

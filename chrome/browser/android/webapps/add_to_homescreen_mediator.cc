@@ -66,7 +66,10 @@ void AddToHomescreenMediator::StartForAppBanner(
     SetWebAppInfo(params_->shortcut_info->name, params_->shortcut_info->url,
                   is_webapk);
   }
-  SetIcon(params_->primary_icon);
+  // In this code path (show A2HS dialog from app banner), a maskable primary
+  // icon isn't padded yet. We'll need to pad it here.
+  SetIcon(params_->primary_icon,
+          params_->has_maskable_primary_icon /*need_to_add_padding*/);
 }
 
 void AddToHomescreenMediator::StartForAppMenu(
@@ -117,13 +120,15 @@ void AddToHomescreenMediator::OnNativeDetailsShown(JNIEnv* env) {
 
 AddToHomescreenMediator::~AddToHomescreenMediator() = default;
 
-void AddToHomescreenMediator::SetIcon(const SkBitmap& display_icon) {
+void AddToHomescreenMediator::SetIcon(const SkBitmap& display_icon,
+                                      bool need_to_add_padding) {
   JNIEnv* env = base::android::AttachCurrentThread();
   DCHECK(!display_icon.drawsNothing());
   base::android::ScopedJavaLocalRef<jobject> java_bitmap =
       gfx::ConvertToJavaBitmap(&display_icon);
   Java_AddToHomescreenMediator_setIcon(env, java_ref_, java_bitmap,
-                                       params_->has_maskable_primary_icon);
+                                       params_->has_maskable_primary_icon,
+                                       need_to_add_padding);
 }
 
 void AddToHomescreenMediator::SetWebAppInfo(const base::string16& user_title,
@@ -163,7 +168,10 @@ void AddToHomescreenMediator::OnDataAvailable(const ShortcutInfo& info,
   params_->install_source = InstallableMetrics::GetInstallSource(
       data_fetcher_->web_contents(), InstallTrigger::MENU);
 
-  SetIcon(display_icon);
+  // AddToHomescreenMediator::OnDataAvailable() is called in the code path
+  // to show A2HS dialog from app menu. In this code path, display_icon is
+  // already correctly padded if it's maskable.
+  SetIcon(display_icon, false /*need_to_add_padding*/);
 }
 
 void AddToHomescreenMediator::RecordEventForAppMenu(

@@ -17,6 +17,8 @@ from page_sets.login_helpers import facebook_login
 from page_sets.login_helpers import pinterest_login
 from page_sets.login_helpers import tumblr_login
 
+from page_sets.helpers import override_online
+
 from telemetry.util import js_template
 
 
@@ -33,6 +35,12 @@ class _BrowsingStory(system_health_story.SystemHealthStory):
   # Defaults to using the body element if not set.
   CONTAINER_SELECTOR = None
   ABSTRACT_STORY = True
+
+  def __init__(self, story_set, take_memory_measurement,
+               extra_browser_args=None):
+    super(_BrowsingStory, self).__init__(story_set,
+        take_memory_measurement, extra_browser_args)
+    self.script_to_evaluate_on_commit = override_online.ALWAYS_ONLINE
 
   def _WaitForNavigation(self, action_runner):
     if not self.IS_SINGLE_PAGE_APP:
@@ -1654,7 +1662,7 @@ class _InfiniteScrollStory(system_health_story.SystemHealthStory):
     self.script_to_evaluate_on_commit = '''
         window.WebSocket = undefined;
         window.Worker = undefined;
-        window.performance = undefined;'''
+        window.performance = undefined;''' + override_online.ALWAYS_ONLINE
 
   def _DidLoadDocument(self, action_runner):
     action_runner.WaitForJavaScriptCondition(

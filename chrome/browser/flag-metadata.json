@@ -2988,6 +2988,11 @@
      "expiry_milestone": 80
   },
   {
+    "name": "paint-preview-test",
+    "owners": [ "ckitagawa", "mahmoudi", "vollick" ],
+    "expiry_milestone": 83
+  },
+  {
     "name": "passive-event-listeners-due-to-fling",
     "owners": [ "sahel", "input-dev" ],
     "expiry_milestone": 76

@@ -453,7 +453,7 @@ class ServiceWorkerStorageTest : public testing::Test {
     base::RunLoop loop;
     base::Optional<blink::ServiceWorkerStatusCode> result;
     storage()->UpdateToActiveState(
-        registration.get(),
+        registration->id(), registration->scope().GetOrigin(),
         base::BindOnce(&StatusCallback, loop.QuitClosure(), &result));
     EXPECT_FALSE(result.has_value());  // always async
     loop.Run();
@@ -465,7 +465,8 @@ class ServiceWorkerStorageTest : public testing::Test {
     base::RunLoop loop;
     base::Optional<blink::ServiceWorkerStatusCode> result;
     storage()->UpdateLastUpdateCheckTime(
-        registration.get(),
+        registration->id(), registration->scope().GetOrigin(),
+        registration->last_update_check(),
         base::BindOnce(&StatusCallback, loop.QuitClosure(), &result));
     loop.Run();
     return result.value();
@@ -1403,7 +1404,9 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
   // Promote the worker to active and add a controllee.
   registration_->SetActiveVersion(registration_->waiting_version());
   registration_->active_version()->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  storage()->UpdateToActiveState(registration_.get(), base::DoNothing());
+  storage()->UpdateToActiveState(registration_->id(),
+                                 registration_->scope().GetOrigin(),
+                                 base::DoNothing());
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
   base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
       33 /* dummy render process id */, true /* is_parent_frame_secure */,
@@ -1437,7 +1440,9 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
   registration_->SetActiveVersion(registration_->waiting_version());
   registration_->active_version()->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration_->SetWaitingVersion(nullptr);
-  storage()->UpdateToActiveState(registration_.get(), base::DoNothing());
+  storage()->UpdateToActiveState(registration_->id(),
+                                 registration_->scope().GetOrigin(),
+                                 base::DoNothing());
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
   base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
       33 /* dummy render process id */, true /* is_parent_frame_secure */,
@@ -1570,7 +1575,9 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
   // Promote the worker to active worker and add a controllee.
   registration_->SetActiveVersion(registration_->waiting_version());
   registration_->active_version()->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  storage()->UpdateToActiveState(registration_.get(), base::DoNothing());
+  storage()->UpdateToActiveState(registration_->id(),
+                                 registration_->scope().GetOrigin(),
+                                 base::DoNothing());
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
   base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
       33 /* dummy render process id */, true /* is_parent_frame_secure */,
@@ -1620,7 +1627,9 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
 TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration_NoLiveVersion) {
   // Promote the worker to active worker and add a controllee.
   registration_->SetActiveVersion(registration_->waiting_version());
-  storage()->UpdateToActiveState(registration_.get(), base::DoNothing());
+  storage()->UpdateToActiveState(registration_->id(),
+                                 registration_->scope().GetOrigin(),
+                                 base::DoNothing());
 
   // Make an updated registration.
   scoped_refptr<ServiceWorkerVersion> live_version = new ServiceWorkerVersion(

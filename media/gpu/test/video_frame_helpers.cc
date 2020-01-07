@@ -318,14 +318,14 @@ scoped_refptr<VideoFrame> CreateGpuMemoryBufferVideoFrame(
 scoped_refptr<const VideoFrame> CreateVideoFrameFromImage(const Image& image) {
   DCHECK(image.IsLoaded());
   const auto format = image.PixelFormat();
-  const auto& visible_size = image.Size();
+  const auto& image_size = image.Size();
   // Loaded image data must be tight.
-  DCHECK_EQ(image.DataSize(), VideoFrame::AllocationSize(format, visible_size));
+  DCHECK_EQ(image.DataSize(), VideoFrame::AllocationSize(format, image_size));
 
   // Create planes for layout. We cannot use WrapExternalData() because it
   // calls GetDefaultLayout() and it supports only a few pixel formats.
   base::Optional<VideoFrameLayout> layout =
-      CreateVideoFrameLayout(format, visible_size);
+      CreateVideoFrameLayout(format, image_size);
   if (!layout) {
     LOG(ERROR) << "Failed to create VideoFrameLayout";
     return nullptr;
@@ -333,8 +333,8 @@ scoped_refptr<const VideoFrame> CreateVideoFrameFromImage(const Image& image) {
 
   scoped_refptr<const VideoFrame> video_frame =
       VideoFrame::WrapExternalDataWithLayout(
-          *layout, gfx::Rect(visible_size), visible_size, image.Data(),
-          image.DataSize(), base::TimeDelta());
+          *layout, image.VisibleRect(), image.VisibleRect().size(),
+          image.Data(), image.DataSize(), base::TimeDelta());
   if (!video_frame) {
     LOG(ERROR) << "Failed to create VideoFrame";
     return nullptr;

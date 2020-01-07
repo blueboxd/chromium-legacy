@@ -36,6 +36,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/timer/elapsed_timer.h"
+#include "net/cookies/site_for_cookies.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
@@ -1008,7 +1009,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   scoped_refptr<const SecurityOrigin> TopFrameOrigin() const;
 
-  const KURL SiteForCookies() const;
+  net::SiteForCookies SiteForCookies() const;
 
   // Storage Access API methods to check for or request access to storage that
   // may otherwise be blocked.

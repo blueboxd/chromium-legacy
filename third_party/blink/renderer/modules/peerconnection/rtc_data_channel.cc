@@ -234,7 +234,7 @@ RTCDataChannel::RTCDataChannel(
   // thread. Done in a single synchronous call to the signaling thread to ensure
   // channel state consistency.
   peer_connection_handler->RunSynchronousOnceClosureOnSignalingThread(
-      ConvertToBaseOnceCallback(CrossThreadBindOnce(
+      CrossThreadBindOnce(
           [](scoped_refptr<RTCDataChannel::Observer> observer,
              webrtc::DataChannelInterface::DataState current_state) {
             scoped_refptr<webrtc::DataChannelInterface> channel =
@@ -244,7 +244,7 @@ RTCDataChannel::RTCDataChannel(
               observer->OnStateChange();
             }
           },
-          observer_, state_)),
+          observer_, state_),
       "RegisterObserverAndGetStateUpdate");
 
   IncrementCounters(*channel.get());

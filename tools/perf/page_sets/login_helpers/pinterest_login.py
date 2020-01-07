@@ -4,12 +4,15 @@
 
 from page_sets.login_helpers import login_utils
 
+from page_sets.helpers import override_online
+
 
 def _LoginAccount(action_runner, credential, credentials_path):
   account_name, password = login_utils.GetAccountNameAndPassword(
       credential, credentials_path=credentials_path)
 
-  action_runner.Navigate('https://www.pinterest.co.uk/login/')
+  action_runner.Navigate('https://www.pinterest.co.uk/login/',
+                         override_online.ALWAYS_ONLINE)
   action_runner.Wait(1) # Error page happens if this wait is not here.
   action_runner.WaitForElement(selector='button[type=submit]')
 

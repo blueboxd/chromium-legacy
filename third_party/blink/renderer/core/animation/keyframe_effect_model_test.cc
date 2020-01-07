@@ -94,10 +94,10 @@ class AnimationKeyframeEffectModel : public PageTestBase {
             ->GetCachedValueForTesting();
     const NonInterpolableValue* non_interpolable_value =
         typed_value->GetNonInterpolableValue();
-    ASSERT_TRUE(IsCSSDefaultNonInterpolableValue(non_interpolable_value));
+    ASSERT_TRUE(IsA<CSSDefaultNonInterpolableValue>(non_interpolable_value));
 
     const CSSValue* css_value =
-        ToCSSDefaultNonInterpolableValue(non_interpolable_value)->CssValue();
+        To<CSSDefaultNonInterpolableValue>(non_interpolable_value)->CssValue();
     EXPECT_EQ(expected_value, css_value->CssText());
   }
 

@@ -17,7 +17,6 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font_list.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/views/controls/link_listener.h"
 #include "ui/views/native_cursor.h"
 #include "ui/views/style/platform_style.h"
 
@@ -117,8 +116,8 @@ void Link::OnMouseReleased(const ui::MouseEvent& event) {
     // Focus the link on click.
     RequestFocus();
 
-    if (listener_)
-      listener_->LinkClicked(this, event.flags());
+    if (!callback_.is_null())
+      callback_.Run(this, event.flags());
   }
 }
 
@@ -139,8 +138,8 @@ bool Link::OnKeyPressed(const ui::KeyEvent& event) {
   // Focus the link on key pressed.
   RequestFocus();
 
-  if (listener_)
-    listener_->LinkClicked(this, event.flags());
+  if (!callback_.is_null())
+    callback_.Run(this, event.flags());
 
   return true;
 }
@@ -153,8 +152,8 @@ void Link::OnGestureEvent(ui::GestureEvent* event) {
     SetPressed(true);
   } else if (event->type() == ui::ET_GESTURE_TAP) {
     RequestFocus();
-    if (listener_)
-      listener_->LinkClicked(this, event->flags());
+    if (!callback_.is_null())
+      callback_.Run(this, event->flags());
   } else {
     SetPressed(false);
     return;

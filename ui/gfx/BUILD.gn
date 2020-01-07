@@ -710,10 +710,7 @@ test("gfx_unittests") {
     ]
   }
   if (is_win) {
-    sources += [
-      "font_fallback_win_unittest.cc",
-      "range/range_win_unittest.cc",
-    ]
+    sources += [ "font_fallback_win_unittest.cc" ]
   }
   if (is_ios) {
     sources += [

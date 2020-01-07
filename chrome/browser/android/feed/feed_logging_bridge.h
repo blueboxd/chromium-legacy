@@ -160,6 +160,10 @@ class FeedLoggingBridge {
   void ReportScrolledAfterOpen(JNIEnv* j_env,
                                const base::android::JavaRef<jobject>& j_this);
 
+  void OnManageInterestsClicked(JNIEnv* j_env,
+                                const base::android::JavaRef<jobject>& j_this,
+                                const jint j_position);
+
  private:
   FeedLoggingMetrics* feed_logging_metrics_;
 

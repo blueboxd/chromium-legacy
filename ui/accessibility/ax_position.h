@@ -759,6 +759,10 @@ class AXPosition {
     if (CreatePreviousLeafTreePosition()->IsNullPosition())
       return AXBoundaryType::kDocumentStart;
 
+    // Ignored positions cannot be format boundaries.
+    if (IsIgnored())
+      return AXBoundaryType::kNone;
+
     // Iterate over anchors until a format boundary is found. This will return a
     // null position upon crossing a boundary.
     AXPositionInstance previous_position = CreatePreviousLeafTreePosition(
@@ -783,6 +787,10 @@ class AXPosition {
     // Treat the last iterable node as a format boundary
     if (CreateNextLeafTreePosition()->IsNullPosition())
       return AXBoundaryType::kDocumentEnd;
+
+    // Ignored positions cannot be format boundaries.
+    if (IsIgnored())
+      return AXBoundaryType::kNone;
 
     // Iterate over anchors until a format boundary is found. This will return a
     // null position upon crossing a boundary.
@@ -3065,25 +3073,12 @@ class AXPosition {
     if (move_from.IsNullPosition() || move_to.IsNullPosition())
       return true;
 
-    // Treat moving to a leaf with different tags as a format break.
-    if ((move_to.AnchorChildCount() == 0) &&
-        move_from.GetAnchor()->GetStringAttribute(
-            ax::mojom::StringAttribute::kHtmlTag) !=
-            move_to.GetAnchor()->GetStringAttribute(
-                ax::mojom::StringAttribute::kHtmlTag)) {
-      return true;
-    }
-
-    // Treat moving to a different role as a format break
-    ax::mojom::Role current_role = move_from.GetRole();
-    ax::mojom::Role next_role = move_to.GetRole();
-    if (current_role != next_role) {
-      // Limit role breaks to headings only to emphasize text-style differences
-      // over role differences
-      if (current_role == ax::mojom::Role::kHeading ||
-          next_role == ax::mojom::Role::kHeading) {
+    // Treat moving into or out of nodes with certain roles as a format break.
+    ax::mojom::Role from_role = move_from.GetRole();
+    ax::mojom::Role to_role = move_to.GetRole();
+    if (from_role != to_role) {
+      if (IsFormatBoundary(from_role) || IsFormatBoundary(to_role))
         return true;
-      }
     }
 
     // Stop moving when text styles differ.

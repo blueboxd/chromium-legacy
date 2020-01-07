@@ -3276,6 +3276,13 @@ TEST_F(AXPositionTest, CreatePositionAtPreviousFormatStartWithTreePosition) {
       AXBoundaryBehavior::StopAtLastAnchorBoundary);
   EXPECT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(check_box_.id, test_position->anchor_id());
+  EXPECT_EQ(AXNodePosition::BEFORE_TEXT, test_position->child_index());
+
+  test_position = test_position->CreatePreviousFormatStartPosition(
+      AXBoundaryBehavior::StopAtLastAnchorBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTreePosition());
   EXPECT_EQ(button_.id, test_position->anchor_id());
   EXPECT_EQ(AXNodePosition::BEFORE_TEXT, test_position->child_index());
 
@@ -3322,6 +3329,13 @@ TEST_F(AXPositionTest, CreatePositionAtPreviousFormatStartWithTextPosition) {
       AXBoundaryBehavior::StopAtLastAnchorBoundary);
   EXPECT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(check_box_.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->text_offset());
+
+  test_position = test_position->CreatePreviousFormatStartPosition(
+      AXBoundaryBehavior::StopAtLastAnchorBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
   EXPECT_EQ(button_.id, test_position->anchor_id());
   EXPECT_EQ(0, test_position->text_offset());
 
@@ -3363,12 +3377,26 @@ TEST_F(AXPositionTest, CreatePositionAtNextFormatEndWithNullPosition) {
 
 TEST_F(AXPositionTest, CreatePositionAtNextFormatEndWithTreePosition) {
   TestPositionType tree_position = AXNodePosition::CreateTreePosition(
-      tree_.data().tree_id, inline_box1_.id, 0 /* child_index */);
+      tree_.data().tree_id, button_.id, 0 /* child_index */);
   ASSERT_NE(nullptr, tree_position);
   ASSERT_TRUE(tree_position->IsTreePosition());
 
   TestPositionType test_position = tree_position->CreateNextFormatEndPosition(
       AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(check_box_.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->child_index());
+
+  test_position = test_position->CreateNextFormatEndPosition(
+      AXBoundaryBehavior::StopAtLastAnchorBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(inline_box1_.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->child_index());
+
+  test_position = test_position->CreateNextFormatEndPosition(
+      AXBoundaryBehavior::StopAtLastAnchorBoundary);
   EXPECT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsTreePosition());
   EXPECT_EQ(line_break_.id, test_position->anchor_id());
@@ -3406,13 +3434,27 @@ TEST_F(AXPositionTest, CreatePositionAtNextFormatEndWithTreePosition) {
 
 TEST_F(AXPositionTest, CreatePositionAtNextFormatEndWithTextPosition) {
   TestPositionType text_position = AXNodePosition::CreateTextPosition(
-      tree_.data().tree_id, inline_box1_.id, 6 /* text_offset */,
+      tree_.data().tree_id, button_.id, 0 /* text_offset */,
       ax::mojom::TextAffinity::kDownstream);
   ASSERT_NE(nullptr, text_position);
   ASSERT_TRUE(text_position->IsTextPosition());
 
   TestPositionType test_position = text_position->CreateNextFormatEndPosition(
       AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(check_box_.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->text_offset());
+
+  test_position = test_position->CreateNextFormatEndPosition(
+      AXBoundaryBehavior::StopAtLastAnchorBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(inline_box1_.id, test_position->anchor_id());
+  EXPECT_EQ(6, test_position->text_offset());
+
+  test_position = test_position->CreateNextFormatEndPosition(
+      AXBoundaryBehavior::StopAtLastAnchorBoundary);
   EXPECT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsTextPosition());
   EXPECT_EQ(line_break_.id, test_position->anchor_id());
@@ -3496,6 +3538,118 @@ TEST_F(AXPositionTest, CreatePositionAtFormatBoundaryWithTextPosition) {
   EXPECT_TRUE(test_position->IsTextPosition());
   EXPECT_EQ(more_text_data.id, test_position->anchor_id());
   EXPECT_EQ(9, test_position->text_offset());
+}
+
+TEST_F(AXPositionTest, MoveByFormatWithIgnoredNodes) {
+  // ++1 kRootWebArea
+  // ++++2 kGenericContainer
+  // ++++++3 kButton
+  // ++++++++4 kStaticText
+  // ++++++++++5 kInlineTextBox
+  // ++++++++6 kSvgRoot ignored
+  // ++++++++++7 kGenericContainer ignored
+  // ++++8 kGenericContainer
+  // ++++++9 kHeading
+  // ++++++++10 kStaticText
+  // ++++++++++11 kInlineTextBox
+  AXNodeData root_1;
+  AXNodeData generic_container_2;
+  AXNodeData button_3;
+  AXNodeData static_text_4;
+  AXNodeData inline_box_5;
+  AXNodeData svg_root_6;
+  AXNodeData generic_container_7;
+  AXNodeData generic_container_8;
+  AXNodeData heading_9;
+  AXNodeData static_text_10;
+  AXNodeData inline_box_11;
+
+  root_1.id = 1;
+  generic_container_2.id = 2;
+  button_3.id = 3;
+  static_text_4.id = 4;
+  inline_box_5.id = 5;
+  svg_root_6.id = 6;
+  generic_container_7.id = 7;
+  generic_container_8.id = 8;
+  heading_9.id = 9;
+  static_text_10.id = 10;
+  inline_box_11.id = 11;
+
+  root_1.role = ax::mojom::Role::kRootWebArea;
+  root_1.child_ids = {generic_container_2.id, generic_container_8.id};
+
+  generic_container_2.role = ax::mojom::Role::kGenericContainer;
+  generic_container_2.child_ids = {button_3.id};
+
+  button_3.role = ax::mojom::Role::kButton;
+  button_3.child_ids = {static_text_4.id, svg_root_6.id};
+
+  static_text_4.role = ax::mojom::Role::kStaticText;
+  static_text_4.child_ids = {inline_box_5.id};
+  static_text_4.SetName("Button");
+
+  inline_box_5.role = ax::mojom::Role::kInlineTextBox;
+  inline_box_5.SetName("Button");
+
+  svg_root_6.role = ax::mojom::Role::kSvgRoot;
+  svg_root_6.child_ids = {generic_container_7.id};
+  svg_root_6.AddState(ax::mojom::State::kIgnored);
+
+  generic_container_7.role = ax::mojom::Role::kGenericContainer;
+  generic_container_7.AddState(ax::mojom::State::kIgnored);
+
+  generic_container_8.role = ax::mojom::Role::kGenericContainer;
+  generic_container_8.child_ids = {heading_9.id};
+
+  heading_9.role = ax::mojom::Role::kHeading;
+  heading_9.child_ids = {static_text_10.id};
+
+  static_text_10.role = ax::mojom::Role::kStaticText;
+  static_text_10.child_ids = {inline_box_11.id};
+  static_text_10.SetName("Heading");
+
+  inline_box_11.role = ax::mojom::Role::kInlineTextBox;
+  inline_box_11.SetName("Heading");
+
+  std::unique_ptr<AXTree> new_tree = CreateAXTree(
+      {root_1, generic_container_2, button_3, static_text_4, inline_box_5,
+       svg_root_6, generic_container_7, generic_container_8, heading_9,
+       static_text_10, inline_box_11});
+
+  AXNodePosition::SetTree(new_tree.get());
+
+  // Forward movement
+  TestPositionType text_position = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, inline_box_5.id, 6 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position);
+  EXPECT_TRUE(text_position->IsTextPosition());
+  EXPECT_EQ(inline_box_5.id, text_position->anchor_id());
+  EXPECT_EQ(6, text_position->text_offset());
+
+  text_position = text_position->CreateNextFormatEndPosition(
+      AXBoundaryBehavior::StopAtLastAnchorBoundary);
+  ASSERT_NE(nullptr, text_position);
+  EXPECT_TRUE(text_position->IsTextPosition());
+  EXPECT_EQ(inline_box_11.id, text_position->anchor_id());
+  EXPECT_EQ(7, text_position->text_offset());
+
+  // Backward movement
+  text_position = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, inline_box_11.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position);
+  EXPECT_TRUE(text_position->IsTextPosition());
+  EXPECT_EQ(inline_box_11.id, text_position->anchor_id());
+  EXPECT_EQ(0, text_position->text_offset());
+
+  text_position = text_position->CreatePreviousFormatStartPosition(
+      AXBoundaryBehavior::StopAtLastAnchorBoundary);
+  ASSERT_NE(nullptr, text_position);
+  EXPECT_TRUE(text_position->IsTextPosition());
+  EXPECT_EQ(inline_box_5.id, text_position->anchor_id());
+  EXPECT_EQ(0, text_position->text_offset());
 }
 
 TEST_F(AXPositionTest, CreatePositionAtPageBoundaryWithTextPosition) {

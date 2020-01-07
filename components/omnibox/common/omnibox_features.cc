@@ -230,12 +230,6 @@ const base::Feature kDocumentProvider{"OmniboxDocumentProvider",
 const base::Feature kAutocompleteTitles{"OmniboxAutocompleteTitles",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature to replace the standard ZeroSuggest with icons for most visited sites
-// and collections (bookmarks, history, recent tabs, reading list). Only
-// available on iOS.
-const base::Feature kOmniboxPopupShortcutIconsInZeroState{
-    "OmniboxPopupShortcutIconsInZeroState", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Feature to use material design weather icons in the omnibox when displaying
 // weather answers.
 const base::Feature kOmniboxMaterialDesignWeatherIcons{

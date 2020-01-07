@@ -407,6 +407,12 @@ def _make_blink_api_call(code_node, cg_context, num_of_args=None):
     if "ExecutionContext" in values:
         arguments.append("${execution_context}")
 
+    code_generator_info = cg_context.member_like.code_generator_info
+    is_partial = code_generator_info.defined_in_partial
+    if (is_partial and
+            not (cg_context.constructor or cg_context.member_like.is_static)):
+        arguments.append("*${blink_receiver}")
+
     if "Reflect" in ext_attrs:  # [Reflect]
         key = _make_reflect_content_attribute_key(code_node, cg_context)
         if key:
@@ -429,10 +435,8 @@ def _make_blink_api_call(code_node, cg_context, num_of_args=None):
     if cg_context.may_throw_exception:
         arguments.append("${exception_state}")
 
-    code_generator_info = cg_context.member_like.code_generator_info
-
     func_name = (code_generator_info.property_implemented_as
-                 or name_style.api_func(cg_context.member_like.identifier))
+                 or cg_context.member_like.identifier)
     if cg_context.attribute_set:
         func_name = name_style.api_func("set", func_name)
     if cg_context.constructor:
@@ -440,16 +444,12 @@ def _make_blink_api_call(code_node, cg_context, num_of_args=None):
     if "Reflect" in ext_attrs:  # [Reflect]
         func_name = _make_reflect_accessor_func_name(cg_context)
 
-    is_partial_or_mixin = (code_generator_info.defined_in_partial
-                           or code_generator_info.defined_in_mixin)
     if (cg_context.constructor or cg_context.member_like.is_static
-            or is_partial_or_mixin):
+            or is_partial):
         class_like = cg_context.member_like.owner_mixin or cg_context.class_like
         class_name = (code_generator_info.receiver_implemented_as
                       or name_style.class_(class_like.identifier))
         func_designator = "{}::{}".format(class_name, func_name)
-        if not (cg_context.constructor or cg_context.member_like.is_static):
-            arguments.insert(0, "*${blink_receiver}")
     else:
         func_designator = _format("${blink_receiver}->{}", func_name)
 
@@ -640,8 +640,14 @@ def make_check_security_of_return_value(cg_context):
 def make_cooperative_scheduling_safepoint(cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
-    return TextNode("scheduler::CooperativeSchedulingManager::Instance()"
+    node = TextNode("scheduler::CooperativeSchedulingManager::Instance()"
                     "->Safepoint();")
+    node.accumulate(
+        CodeGenAccumulator.require_include_headers([
+            "third_party/blink/renderer/platform/scheduler/public/"
+            "cooperative_scheduling_manager.h"
+        ]))
+    return node
 
 
 def make_log_activity(cg_context):
@@ -1028,7 +1034,7 @@ def make_return_value_cache_return_early(cg_context):
 static const V8PrivateProperty::SymbolKey kPrivatePropertyCachedAttribute;
 auto v8_private_cached_attribute =
     V8PrivateProperty::GetSymbol(${isolate}, kPrivatePropertyCachedAttribute);
-if (!impl->""" + pred + """()) {
+if (!${blink_receiver}->""" + pred + """()) {
   v8::Local<v8::Value> v8_value;
   if (v8_private_cached_attribute.GetOrUndefined(${v8_receiver})
           .ToLocal(&v8_value) && !v8_value->IsUndefined()) {
@@ -1083,22 +1089,18 @@ def make_runtime_call_timer_scope(cg_context):
     counter = target.extended_attributes.value_of("RuntimeCallStatsCounter")
     if counter:
         macro_name = "RUNTIME_CALL_TIMER_SCOPE"
-        counter_name = "k{}{}".format(counter, suffix)
+        counter_name = "RuntimeCallStats::CounterId::k{}{}".format(
+            counter, suffix)
     else:
         macro_name = "RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT"
         counter_name = "\"Blink_{}_{}{}\"".format(
             blink_class_name(cg_context.class_like), target.identifier, suffix)
 
-    node = TextNode(
+    return TextNode(
         _format(
-            "{macro_name}(${isolate}, {counter_name});",
+            "{macro_name}(${info}.GetIsolate(), {counter_name});",
             macro_name=macro_name,
             counter_name=counter_name))
-    node.accumulate(
-        CodeGenAccumulator.require_include_headers([
-            "third_party/blink/renderer/platform/bindings/runtime_call_stats.h",
-        ]))
-    return node
 
 
 def make_steps_of_ce_reactions(cg_context):
@@ -1123,7 +1125,17 @@ def make_steps_of_ce_reactions(cg_context):
         nodes.append(T("// [CEReactions]"))
         nodes.append(T("CEReactionsScope ce_reactions_scope;"))
 
-    return SequenceNode(nodes) if nodes else None
+    if not nodes:
+        return None
+
+    nodes = SequenceNode(nodes)
+    nodes.accumulate(
+        CodeGenAccumulator.require_include_headers([
+            "third_party/blink/renderer/core/html/custom/ce_reactions_scope.h",
+            "third_party/blink/renderer/core/html/custom/"
+            "v0_custom_element_processing_stack.h"
+        ]))
+    return nodes
 
 
 def make_steps_of_put_forwards(cg_context):
@@ -1182,7 +1194,9 @@ def make_v8_set_return_value(cg_context):
         # any text.
         return T("<% return_value.request_symbol_definition() %>")
 
-    return_type_body = cg_context.return_type.unwrap()
+    return_type = cg_context.return_type.unwrap(typedef=True)
+    return_type_body = return_type.unwrap()
+
     if (cg_context.for_world == cg_context.MAIN_WORLD
             and return_type_body.is_interface):
         return T("V8SetReturnValueForMainWorld(${info}, ${return_value});")
@@ -1190,6 +1204,21 @@ def make_v8_set_return_value(cg_context):
     if return_type_body.is_interface:
         return T("V8SetReturnValue(${info}, ${return_value}, "
                  "${creation_context_object});")
+
+    if return_type_body.is_string:
+        if return_type.is_nullable:
+            return T("V8SetReturnValueStringOrNull"
+                     "(${info}, ${return_value}, ${isolate});")
+        else:
+            return T("V8SetReturnValueString"
+                     "(${info}, ${return_value}, ${isolate});")
+
+    if return_type.is_frozen_array:
+        return T("V8SetReturnValue(${info}, FreezeV8Object(ToV8("
+                 "${return_value}, ${v8_receiver}, ${isolate}), ${isolate}));")
+
+    if return_type.is_promise:
+        return T("V8SetReturnValue(${info}, ${return_value}.V8Value());")
 
     return T("V8SetReturnValue(${info}, ${return_value});")
 
@@ -1529,7 +1558,7 @@ def bind_installer_local_vars(code_node, cg_context):
         S("is_in_secure_context",
           ("const bool ${is_in_secure_context} = "
            "${execution_context}->IsSecureContext();")),
-        S("isolate", "v8::Isolate* ${isolate} = ${v8_context}.GetIsolate();"),
+        S("isolate", "v8::Isolate* ${isolate} = ${v8_context}->GetIsolate();"),
         S("prototype_template",
           ("v8::Local<v8::ObjectTemplate> ${prototype_template} = "
            "${interface_template}->PrototypeTemplate();")),
@@ -2728,7 +2757,12 @@ def generate_interface(interface):
             component_export_header(impl_component),
         ])
     impl_source_node.accumulator.add_include_headers([
-        path_manager.blink_path(ext="h"),
+        "third_party/blink/renderer/bindings/core/v8/"
+        "native_value_traits_impl.h",
+        "third_party/blink/renderer/bindings/core/v8/v8_dom_configuration.h",
+        "third_party/blink/renderer/platform/bindings/exception_messages.h",
+        "third_party/blink/renderer/platform/bindings/runtime_call_stats.h",
+        "third_party/blink/renderer/platform/bindings/v8_binding.h",
     ])
     impl_source_node.accumulator.add_include_headers(
         collect_include_headers(interface))

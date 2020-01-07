@@ -628,12 +628,9 @@ bool V8ScriptValueSerializer::WriteFile(File* file,
   if (blob_info_array_) {
     size_t index = blob_info_array_->size();
     DCHECK_LE(index, std::numeric_limits<uint32_t>::max());
-    uint64_t size;
-    base::Optional<base::Time> last_modified_time;
-    file->CaptureSnapshot(size, last_modified_time);
-    blob_info_array_->emplace_back(file->GetBlobDataHandle(), file->GetPath(),
-                                   file->name(), file->type(),
-                                   last_modified_time, size);
+    blob_info_array_->emplace_back(
+        file->GetBlobDataHandle(), file->GetPath(), file->name(), file->type(),
+        file->LastModifiedTimeForSerialization(), file->size());
     WriteUint32(static_cast<uint32_t>(index));
   } else {
     WriteUTF8String(file->HasBackingFile() ? file->GetPath() : g_empty_string);
@@ -641,20 +638,15 @@ bool V8ScriptValueSerializer::WriteFile(File* file,
     WriteUTF8String(file->webkitRelativePath());
     WriteUTF8String(file->Uuid());
     WriteUTF8String(file->type());
-    // TODO(jsbell): metadata is unconditionally captured in the index case.
-    // Why this inconsistency?
-    if (file->HasValidSnapshotMetadata()) {
-      WriteUint32(1);
-      uint64_t size;
-      base::Optional<base::Time> last_modified;
-      file->CaptureSnapshot(size, last_modified);
-      DCHECK_NE(size, std::numeric_limits<uint64_t>::max());
-      WriteUint64(size);
-      WriteDouble(last_modified ? last_modified->ToJsTimeIgnoringNull()
-                                : std::numeric_limits<double>::quiet_NaN());
-    } else {
-      WriteUint32(0);
-    }
+    // Historically we sometimes wouldn't write metadata. This next integer was
+    // 1 or 0 to indicate if metadata is present. Now we always write metadata,
+    // hence always have this hardcoded 1.
+    WriteUint32(1);
+    WriteUint64(file->size());
+    base::Optional<base::Time> last_modified =
+        file->LastModifiedTimeForSerialization();
+    WriteDouble(last_modified ? last_modified->ToJsTimeIgnoringNull()
+                              : std::numeric_limits<double>::quiet_NaN());
     WriteUint32(file->GetUserVisibility() == File::kIsUserVisible ? 1 : 0);
   }
   return true;

@@ -19,7 +19,6 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/text_constants.h"
-#include "ui/views/controls/link_listener.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/view.h"
 
@@ -34,7 +33,7 @@ class StyledLabelListener;
 // supported and will be trimmed on StyledLabel construction. Leading
 // whitespace is respected, provided not only whitespace fits in the first line.
 // In this case, leading whitespace is ignored.
-class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
+class VIEWS_EXPORT StyledLabel : public View {
  public:
   METADATA_HEADER(StyledLabel);
 
@@ -176,8 +175,8 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   void Layout() override;
   void PreferredSizeChanged() override;
 
-  // LinkListener implementation:
-  void LinkClicked(Link* source, int event_flags) override;
+  // Called when any of the child links are clicked.
+  void LinkClicked(Link* source, int event_flags);
 
   // Sets the horizontal alignment; the argument value is mirrored in RTL UI.
   void SetHorizontalAlignment(gfx::HorizontalAlignment alignment);

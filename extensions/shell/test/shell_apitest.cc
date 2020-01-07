@@ -9,6 +9,7 @@
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/notification_types.h"
+#include "extensions/browser/unloaded_extension_reason.h"
 #include "extensions/common/extension_paths.h"
 #include "extensions/shell/browser/shell_extension_system.h"
 #include "extensions/test/result_catcher.h"

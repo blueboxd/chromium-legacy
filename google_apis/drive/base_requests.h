@@ -309,7 +309,7 @@ class BatchableDelegate {
   // |callback|.
   virtual void NotifyResult(DriveApiErrorCode code,
                             const std::string& response_body,
-                            const base::Closure& callback) = 0;
+                            base::OnceClosure callback) = 0;
 
   // Notifies error. Unlike |NotifyResult|, it must report error
   // synchronously. The instance may be deleted just after calling
@@ -575,12 +575,12 @@ class MultipartUploadRequestBase : public BatchableDelegate {
                       std::string* upload_content) override;
   void NotifyResult(DriveApiErrorCode code,
                     const std::string& body,
-                    const base::Closure& callback) override;
+                    base::OnceClosure callback) override;
   void NotifyError(DriveApiErrorCode code) override;
   void NotifyUploadProgress(int64_t current, int64_t total) override;
   // Parses the response value and invokes |callback_| with |FileResource|.
   void OnDataParsed(DriveApiErrorCode code,
-                    const base::Closure& callback,
+                    base::OnceClosure callback,
                     std::unique_ptr<base::Value> value);
 
  private:

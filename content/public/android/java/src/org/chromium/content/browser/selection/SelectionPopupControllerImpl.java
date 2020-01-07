@@ -17,6 +17,7 @@ import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
 import android.graphics.Rect;
 import android.os.Build;
+import android.os.Handler;
 import android.provider.Browser;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -110,6 +111,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
                 SelectionPopupControllerImpl::new;
     }
 
+    private final Handler mHandler;
     private Context mContext;
     private WindowAndroid mWindowAndroid;
     private WebContentsImpl mWebContents;
@@ -128,6 +130,8 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
     // required because ActionMode only exposes a temporary hide routine.
     private Runnable mRepeatingHideRunnable;
 
+    // Can be null temporarily when switching between WindowAndroid.
+    @Nullable
     private View mView;
     private ActionMode mActionMode;
 
@@ -236,6 +240,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
 
     private SelectionPopupControllerImpl(
             WebContents webContents, PopupController popupController, boolean initializeNative) {
+        mHandler = new Handler();
         mWebContents = (WebContentsImpl) webContents;
         mPopupController = popupController;
         mContext = mWebContents.getContext();
@@ -254,7 +259,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
                 assert mHidden;
                 final long hideDuration = getDefaultHideDuration();
                 // Ensure the next hide call occurs before the ActionMode reappears.
-                mView.postDelayed(mRepeatingHideRunnable, hideDuration - 1);
+                mHandler.postDelayed(mRepeatingHideRunnable, hideDuration - 1);
                 hideActionModeTemporarily(hideDuration);
             }
         };
@@ -287,14 +292,12 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
 
     @Override
     public void onUpdateContainerView(ViewGroup view) {
-        assert view != null;
-
         // Cleans up action mode before switching to a new container view.
         if (isActionModeValid()) finishActionMode();
         mUnselectAllOnDismiss = true;
         destroyPastePopup();
 
-        view.setClickable(true);
+        if (view != null) view.setClickable(true);
         mView = view;
         initHandleObserver();
     }
@@ -411,7 +414,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
      * <p> If the action mode cannot be created the selection is cleared.
      */
     public void showActionModeOrClearOnFailure() {
-        if (!isActionModeSupported() || !hasSelection()) return;
+        if (!isActionModeSupported() || !hasSelection() || mView == null) return;
 
         // Just refresh non-floating action mode if it already exists to avoid blinking.
         if (isActionModeValid() && !isFloatingActionMode()) {
@@ -442,6 +445,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
     }
 
     private ActionMode startFloatingActionMode() {
+        assert mView != null;
         assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
         ActionMode actionMode = ContentApiHelperForM.startActionMode(mView, this, mCallback);
         return actionMode;
@@ -460,7 +464,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
     }
 
     private void createAndShowPastePopup() {
-        if (mView.getParent() == null || mView.getVisibility() != View.VISIBLE) {
+        if (mView == null || mView.getParent() == null || mView.getVisibility() != View.VISIBLE) {
             return;
         }
 
@@ -595,6 +599,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
     @Override
     public void onWindowAndroidChanged(WindowAndroid newWindowAndroid) {
         mWindowAndroid = newWindowAndroid;
+        mContext = mWebContents.getContext();
         initHandleObserver();
         destroyPastePopup();
     }
@@ -653,7 +658,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         if (mHidden) {
             mRepeatingHideRunnable.run();
         } else {
-            mView.removeCallbacks(mRepeatingHideRunnable);
+            mHandler.removeCallbacks(mRepeatingHideRunnable);
             // To show the action mode that is being hidden call hide() again with a short delay.
             hideActionModeTemporarily(SHOW_DELAY_MS);
         }
@@ -880,6 +885,8 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
 
     @Override
     public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+        // Actions should only happen when there is a WindowAndroid so mView should not be null.
+        assert mView != null;
         if (!isActionModeValid()) return true;
 
         int id = item.getItemId();
@@ -1001,6 +1008,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
      */
     @VisibleForTesting
     void doAssistAction() {
+        assert mView != null;
         if (mClassificationResult == null || !mClassificationResult.hasNamedAction()) return;
 
         assert mClassificationResult.onClickListener != null
@@ -1379,7 +1387,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
 
     @VisibleForTesting
     /* package */ void performHapticFeedback() {
-        if (BuildInfo.isAtLeastQ()) {
+        if (BuildInfo.isAtLeastQ() && mView != null) {
             mView.performHapticFeedback(HapticFeedbackConstants.TEXT_HANDLE_MOVE);
         }
     }

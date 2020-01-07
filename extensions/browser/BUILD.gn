@@ -339,6 +339,7 @@ jumbo_source_set("browser_sources") {
     "uninstall_ping_sender.cc",
     "uninstall_ping_sender.h",
     "uninstall_reason.h",
+    "unloaded_extension_reason.h",
     "update_observer.h",
     "url_loader_factory_manager.cc",
     "url_loader_factory_manager.h",

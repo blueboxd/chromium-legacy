@@ -14,8 +14,14 @@
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/infobars/test/fake_infobar_ios.h"
 #import "ios/chrome/browser/main/test_browser.h"
+#import "ios/chrome/browser/overlays/public/common/infobars/infobar_overlay_request_config.h"
+#import "ios/chrome/browser/overlays/public/overlay_presenter.h"
+#import "ios/chrome/browser/overlays/public/overlay_request.h"
+#import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
+#include "ios/chrome/browser/overlays/test/fake_overlay_presentation_context.h"
 #import "ios/chrome/browser/ui/badges/badge_consumer.h"
 #import "ios/chrome/browser/ui/badges/badge_item.h"
+#include "ios/chrome/browser/ui/badges/badge_type_util.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/infobars/test_infobar_delegate.h"
 #import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
@@ -71,11 +77,17 @@ class BadgeMediatorTest : public testing::TestWithParam<TestParam> {
         browser_state_(TestChromeBrowserState::Builder().Build()),
         web_state_list_(&web_state_list_delegate_) {
     feature_list_.InitAndEnableFeature(kInfobarUIReboot);
+    OverlayPresenter::FromBrowser(browser(), OverlayModality::kInfobarBanner)
+        ->SetPresentationContext(&overlay_presentation_context_);
     badge_mediator_ = [[BadgeMediator alloc] initWithBrowser:browser()];
     badge_mediator_.consumer = badge_consumer_;
   }
 
-  ~BadgeMediatorTest() override { [badge_mediator_ disconnect]; }
+  ~BadgeMediatorTest() override {
+    OverlayPresenter::FromBrowser(browser(), OverlayModality::kInfobarBanner)
+        ->SetPresentationContext(nullptr);
+    [badge_mediator_ disconnect];
+  }
 
   // Inserts a new WebState to the WebStateList at |index| and activates it.
   void InsertActivatedWebState(int index) {
@@ -141,6 +153,7 @@ class BadgeMediatorTest : public testing::TestWithParam<TestParam> {
   FakeWebStateListDelegate web_state_list_delegate_;
   WebStateList web_state_list_;
   std::unique_ptr<Browser> browser_;
+  FakeOverlayPresentationContext overlay_presentation_context_;
   BadgeMediator* badge_mediator_ = nil;
 };
 
@@ -248,6 +261,38 @@ TEST_P(BadgeMediatorTest, BadgeMediatorTestCloseLastTab) {
   web_state_list_.DetachWebStateAt(0);
   InsertActivatedWebState(/*index=*/0);
   ASSERT_FALSE(badge_consumer_.displayedBadge);
+}
+
+// Tests that the badge mediator successfully updates the InfobarBadgeTabHelper
+// for the active WebState for infobar banner presentation and dismissal.
+TEST_P(BadgeMediatorTest, InfobarBannerOverlayObserving) {
+  // Add an active WebState at index 0 and add an InfoBar with |type| to the
+  // WebState's InfoBarManager, checking that the badge item has been created
+  // with the default BadgeState.
+  InsertActivatedWebState(/*index=*/0);
+  InfobarType type = kFirstInfobarType;
+  InfobarBadgeTabHelper* tab_helper =
+      InfobarBadgeTabHelper::FromWebState(web_state());
+  InfoBarIOS* infobar = AddInfobar(kFirstInfobarType);
+  NSArray<id<BadgeItem>>* items = tab_helper->GetInfobarBadgeItems();
+  ASSERT_EQ(1U, items.count);
+  id<BadgeItem> item = [items firstObject];
+  ASSERT_EQ(BadgeTypeForInfobarType(type), [item badgeType]);
+  ASSERT_FALSE(item.badgeState & BadgeStatePresented);
+
+  // Simulate the presentation of the infobar banner via OverlayPresenter in the
+  // fake presentation context, verifying that the badge state is updated
+  // accordingly.
+  OverlayRequestQueue* queue = OverlayRequestQueue::FromWebState(
+      web_state(), OverlayModality::kInfobarBanner);
+  queue->AddRequest(
+      OverlayRequest::CreateWithConfig<InfobarOverlayRequestConfig>(infobar));
+  EXPECT_TRUE(item.badgeState & BadgeStatePresented);
+
+  // Simulate dismissal of the banner and verify that the badge state is no
+  // longer presented.
+  queue->CancelAllRequests();
+  EXPECT_FALSE(item.badgeState & BadgeStatePresented);
 }
 
 INSTANTIATE_TEST_SUITE_P(/* No InstantiationName */,

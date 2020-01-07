@@ -7,14 +7,19 @@
 
 #include <map>
 
+#include "base/files/file_path.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/common/web_application_info.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 class GURL;
+class Profile;
 
 namespace web_app {
+
+class FileUtilsWrapper;
 
 SkBitmap CreateSquareIcon(int size_px, SkColor solid_color);
 
@@ -30,6 +35,12 @@ void AddIconToIconsMap(const GURL& icon_url,
 bool AreColorsEqual(SkColor expected_color,
                     SkColor actual_color,
                     int threshold);
+
+base::FilePath GetAppIconsDir(Profile* profile, const AppId& app_id);
+
+bool ReadBitmap(FileUtilsWrapper* utils,
+                const base::FilePath& file_path,
+                SkBitmap* bitmap);
 
 }  // namespace web_app
 

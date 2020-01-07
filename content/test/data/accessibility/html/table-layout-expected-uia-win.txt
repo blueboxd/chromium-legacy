@@ -1,5 +1,5 @@
 document Name='Table example #2'
-++grid Grid.ColumnCount=3 Grid.RowCount=3 Table.RowOrColumnMajor='RowMajor'
+++grid Grid.ColumnCount=3 Grid.RowCount=3
 ++++row IsControlElement=false
 ++++++gridcell Name='1' GridItem.Column=0 GridItem.ColumnSpan=1 GridItem.Row=0 GridItem.RowSpan=1
 ++++++++description Name='1' IsControlElement=false

@@ -47,10 +47,6 @@ class WebRtcAudioDeviceImpl;
 class MODULES_EXPORT PeerConnectionDependencyFactory
     : base::MessageLoopCurrent::DestructionObserver {
  public:
-  // TODO(crbug.com/787254): Make this constructor private, when
-  // MockPeerConnectionDependencyFactory gets moved to blink.
-  // (friend class declaration will be needed).
-  PeerConnectionDependencyFactory(bool create_p2p_socket_dispatcher);
   ~PeerConnectionDependencyFactory() override;
 
   static PeerConnectionDependencyFactory* GetInstance();
@@ -125,6 +121,8 @@ class MODULES_EXPORT PeerConnectionDependencyFactory
   GetWebRtcSignalingTaskRunner();
 
  protected:
+  PeerConnectionDependencyFactory(bool create_p2p_socket_dispatcher);
+
   virtual const scoped_refptr<webrtc::PeerConnectionFactoryInterface>&
   GetPcFactory();
   virtual bool PeerConnectionFactoryCreated();

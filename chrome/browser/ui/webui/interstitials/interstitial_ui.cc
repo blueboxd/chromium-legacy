@@ -24,7 +24,7 @@
 #include "chrome/common/buildflags.h"
 #include "chrome/common/url_constants.h"
 #include "components/grit/components_resources.h"
-#include "components/safe_browsing/db/database_manager.h"
+#include "components/safe_browsing/core/db/database_manager.h"
 #include "components/security_interstitials/content/bad_clock_blocking_page.h"
 #include "components/security_interstitials/content/origin_policy_ui.h"
 #include "components/security_interstitials/core/ssl_error_options_mask.h"

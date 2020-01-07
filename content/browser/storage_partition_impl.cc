@@ -1406,7 +1406,7 @@ StoragePartitionImpl::GetCookieManagerForBrowserProcess() {
 void StoragePartitionImpl::CreateRestrictedCookieManager(
     network::mojom::RestrictedCookieManagerRole role,
     const url::Origin& origin,
-    const GURL& site_for_cookies,
+    const net::SiteForCookies& site_for_cookies,
     const url::Origin& top_frame_origin,
     bool is_service_worker,
     int process_id,
@@ -1780,20 +1780,21 @@ void StoragePartitionImpl::OnCookiesChanged(
     int32_t process_id,
     int32_t routing_id,
     const GURL& url,
-    const GURL& site_for_cookies,
+    const net::SiteForCookies& site_for_cookies,
     const std::vector<net::CookieWithStatus>& cookie_list) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(initialized_);
   if (is_service_worker) {
     RunOrPostTaskOnThread(
         FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
-        base::BindOnce(&OnServiceWorkerCookiesChangedOnCoreThread,
-                       service_worker_context_, url, site_for_cookies,
-                       std::move(cookie_list)));
+        base::BindOnce(
+            &OnServiceWorkerCookiesChangedOnCoreThread, service_worker_context_,
+            url, site_for_cookies.RepresentativeUrl(), std::move(cookie_list)));
   } else {
     std::vector<GlobalFrameRoutingId> destination;
     destination.emplace_back(process_id, routing_id);
-    ReportCookiesChangedOnUI(destination, url, site_for_cookies, cookie_list);
+    ReportCookiesChangedOnUI(destination, url,
+                             site_for_cookies.RepresentativeUrl(), cookie_list);
   }
 }
 
@@ -1802,20 +1803,21 @@ void StoragePartitionImpl::OnCookiesRead(
     int32_t process_id,
     int32_t routing_id,
     const GURL& url,
-    const GURL& site_for_cookies,
+    const net::SiteForCookies& site_for_cookies,
     const std::vector<net::CookieWithStatus>& cookie_list) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(initialized_);
   if (is_service_worker) {
     RunOrPostTaskOnThread(
         FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
-        base::BindOnce(&OnServiceWorkerCookiesReadOnCoreThread,
-                       service_worker_context_, url, site_for_cookies,
-                       std::move(cookie_list)));
+        base::BindOnce(
+            &OnServiceWorkerCookiesReadOnCoreThread, service_worker_context_,
+            url, site_for_cookies.RepresentativeUrl(), std::move(cookie_list)));
   } else {
     std::vector<GlobalFrameRoutingId> destination;
     destination.emplace_back(process_id, routing_id);
-    ReportCookiesReadOnUI(destination, url, site_for_cookies, cookie_list);
+    ReportCookiesReadOnUI(destination, url,
+                          site_for_cookies.RepresentativeUrl(), cookie_list);
   }
 }
 

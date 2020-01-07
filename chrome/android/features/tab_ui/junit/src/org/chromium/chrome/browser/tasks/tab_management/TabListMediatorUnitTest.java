@@ -31,8 +31,9 @@ import static org.chromium.chrome.browser.ChromeFeatureList.TAB_GROUPS_UI_IMPROV
 import static org.chromium.chrome.browser.tasks.tab_management.MessageCardViewProperties.MESSAGE_TYPE;
 import static org.chromium.chrome.browser.tasks.tab_management.MessageService.MessageType.FOR_TESTING;
 import static org.chromium.chrome.browser.tasks.tab_management.MessageService.MessageType.TAB_SUGGESTION;
-import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.TabListModelProperties.MODEL_TYPE;
-import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.TabListModelProperties.ModelType.MESSAGE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.CARD_TYPE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.ModelType.MESSAGE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.ModelType.TAB;
 
 import android.app.Activity;
 import android.content.ComponentCallbacks;
@@ -1405,7 +1406,7 @@ public class TabListMediatorUnitTest {
     @Test
     public void addSpecialItem() {
         PropertyModel model = mock(PropertyModel.class);
-        when(model.get(MODEL_TYPE)).thenReturn(MESSAGE);
+        when(model.get(CARD_TYPE)).thenReturn(MESSAGE);
         mMediator.addSpecialItemToModel(0, TabProperties.UiType.DIVIDER, model);
 
         assertTrue(mModel.size() > 0);
@@ -1415,7 +1416,7 @@ public class TabListMediatorUnitTest {
     @Test
     public void addSpecialItem_notPersistOnReset() {
         PropertyModel model = mock(PropertyModel.class);
-        when(model.get(MODEL_TYPE)).thenReturn(MESSAGE);
+        when(model.get(CARD_TYPE)).thenReturn(MESSAGE);
         mMediator.addSpecialItemToModel(0, TabProperties.UiType.DIVIDER, model);
         assertEquals(TabProperties.UiType.DIVIDER, mModel.get(0).type);
 
@@ -1440,7 +1441,7 @@ public class TabListMediatorUnitTest {
         PropertyModel model = mock(PropertyModel.class);
         int expectedMessageType = FOR_TESTING;
         int wrongMessageType = TAB_SUGGESTION;
-        when(model.get(MODEL_TYPE)).thenReturn(MESSAGE);
+        when(model.get(CARD_TYPE)).thenReturn(MESSAGE);
         when(model.get(MESSAGE_TYPE)).thenReturn(expectedMessageType);
         mMediator.addSpecialItemToModel(0, TabProperties.UiType.MESSAGE, model);
         assertEquals(1, mModel.size());
@@ -1774,6 +1775,7 @@ public class TabListMediatorUnitTest {
                 mock(SimpleRecyclerViewAdapter.ViewHolder.class);
         PropertyModel model = new PropertyModel.Builder(TabProperties.ALL_KEYS_TAB_GRID)
                                       .with(TabProperties.TAB_ID, id)
+                                      .with(CARD_TYPE, TAB)
                                       .build();
         viewHolder.model = model;
         doReturn(position).when(viewHolder).getAdapterPosition();

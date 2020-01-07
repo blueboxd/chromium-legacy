@@ -1563,7 +1563,7 @@ int WebLocalFrameImpl::PrintBegin(const WebPrintParams& print_params,
   } else {
     // We only support printing plugin nodes for now.
     plugin_container =
-        ToWebPluginContainerImpl(constrain_to_node.PluginContainer());
+        To<WebPluginContainerImpl>(constrain_to_node.PluginContainer());
   }
 
   if (plugin_container && plugin_container->SupportsPaginatedPrint()) {
@@ -1608,7 +1608,7 @@ bool WebLocalFrameImpl::GetPrintPresetOptionsForPlugin(
     WebPrintPresetOptions* preset_options) {
   WebPluginContainerImpl* plugin_container =
       node.IsNull() ? GetFrame()->GetWebPluginContainer()
-                    : ToWebPluginContainerImpl(node.PluginContainer());
+                    : To<WebPluginContainerImpl>(node.PluginContainer());
 
   if (!plugin_container || !plugin_container->SupportsPaginatedPrint())
     return false;

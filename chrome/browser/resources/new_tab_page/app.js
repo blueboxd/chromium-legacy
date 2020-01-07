@@ -8,7 +8,11 @@ import './customize_dialog.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 
+import {assert} from 'chrome://resources/js/assert.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {BrowserProxy} from './browser_proxy.js';
+import {skColorToRgb} from './utils.js';
 
 class AppElement extends PolymerElement {
   static get is() {
@@ -21,9 +25,34 @@ class AppElement extends PolymerElement {
 
   static get properties() {
     return {
+      /** @private {!newTabPage.mojom.Theme} */
+      theme_: Object,
       /** @private */
       showCustomizeDialog_: Boolean,
     };
+  }
+
+  constructor() {
+    super();
+    /** @private {!newTabPage.mojom.PageCallbackRouter} */
+    this.callbackRouter_ = BrowserProxy.getInstance().callbackRouter;
+    /** @private {?number} */
+    this.setThemeListenerId_ = null;
+  }
+
+  /** @override */
+  connectedCallback() {
+    super.connectedCallback();
+    this.setThemeListenerId_ =
+        this.callbackRouter_.setTheme.addListener(theme => {
+          this.theme_ = theme;
+        });
+  }
+
+  /** @override */
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.callbackRouter_.removeListener(assert(this.setThemeListenerId_));
   }
 
   /** @private */
@@ -34,6 +63,15 @@ class AppElement extends PolymerElement {
   /** @private */
   onCustomizeDialogClose_() {
     this.showCustomizeDialog_ = false;
+  }
+
+  /**
+   * @param {skia.mojom.SkColor} skColor
+   * @return {string}
+   * @private
+   */
+  rgbOrInherit_(skColor) {
+    return skColor ? skColorToRgb(skColor) : 'inherit';
   }
 }
 

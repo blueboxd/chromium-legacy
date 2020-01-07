@@ -38,8 +38,8 @@ def FetchItemIds(tags, limit):
   """
   swarming_attributes = (
     'tasks/list?tags=name:rendering_representative_perf_tests&tags=os:{os}'
-    '&tags=buildername:{buildername}&state=COMPLETED&fields=cursor,'
-    'items(task_id)').format(**tags)
+    '&tags=buildername:{buildername}&tags=master:chromium.gpu.fyi&state='
+    'COMPLETED&fields=cursor,items(task_id)').format(**tags)
 
   query = [
     SWARMING_PATH, 'query', '-S', 'chromium-swarm.appspot.com', '--limit',
@@ -73,11 +73,14 @@ def FetchItemData(task_id, benchmark, index, temp_dir):
   result_file_path = os.path.join(
     output_directory, '0', 'rendering.' + benchmark, 'perf_results.csv')
 
-  df = pandas.read_csv(result_file_path)
-  df = df.loc[df['name'] == 'frame_times']
-  df = df[['stories', 'avg', 'ci_095']]
-  df['index'] = index
-  return df
+  try:
+    df = pandas.read_csv(result_file_path)
+    df = df.loc[df['name'] == 'frame_times']
+    df = df[['stories', 'avg', 'ci_095']]
+    df['index'] = index
+    return df
+  except:
+    print("CSV results were not produced!")
 
 
 def GetPercentileValues(benchmark, tags, limit, percentile):

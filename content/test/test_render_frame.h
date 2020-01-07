@@ -52,9 +52,9 @@ class TestRenderFrame : public RenderFrameImpl {
                          int error_code,
                          const net::ResolveErrorInfo& resolve_error_info,
                          const base::Optional<std::string>& error_page_content);
-  void SwapOut(int proxy_routing_id,
-               bool is_loading,
-               const FrameReplicationState& replicated_frame_state);
+  void Unload(int proxy_routing_id,
+              bool is_loading,
+              const FrameReplicationState& replicated_frame_state);
   void SetEditableSelectionOffsets(int start, int end);
   void ExtendSelectionAndDelete(int before, int after);
   void DeleteSurroundingText(int before, int after);

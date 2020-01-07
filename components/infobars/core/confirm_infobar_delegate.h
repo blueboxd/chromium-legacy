@@ -10,7 +10,6 @@
 #include "components/infobars/core/infobar_delegate.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "ui/gfx/text_constants.h"
-#include "url/gurl.h"
 
 namespace infobars {
 class InfoBar;
@@ -58,23 +57,6 @@ class ConfirmInfoBarDelegate : public infobars::InfoBarDelegate {
   // the infobar is then immediately closed. Subclasses MUST NOT return true if
   // in handling this call something triggers the infobar to begin closing.
   virtual bool Cancel();
-
-  // Returns the text of the link to be displayed, if any. Otherwise returns
-  // an empty string.
-  virtual base::string16 GetLinkText() const;
-
-  // Returns the URL of the link to be displayed.
-  virtual GURL GetLinkURL() const;
-
-  // Called when the link (if any) is clicked; if this function returns true,
-  // the infobar is then immediately closed. The default implementation opens
-  // the URL returned by GetLinkURL(), above, and returns false. Subclasses MUST
-  // NOT return true if in handling this call something triggers the infobar to
-  // begin closing.
-  //
-  // The |disposition| specifies how the resulting document should be loaded
-  // (based on the event flags present when the link was clicked).
-  virtual bool LinkClicked(WindowOpenDisposition disposition);
 
  protected:
   ConfirmInfoBarDelegate();

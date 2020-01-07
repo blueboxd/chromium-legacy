@@ -85,8 +85,7 @@ class HeadlessWebContentsImpl::Delegate : public content::WebContentsDelegate {
     return security_state::GetSecurityStyle(
         security_state::GetSecurityLevel(
             *visible_security_state.get(),
-            false /* used_policy_installed_certificate */,
-            base::BindRepeating(&content::IsOriginSecure)),
+            false /* used_policy_installed_certificate */),
         *visible_security_state.get(), security_style_explanations);
   }
 #endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)

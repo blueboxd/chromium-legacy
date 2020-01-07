@@ -24,6 +24,15 @@
     width: calc(var(--content-width) + 12px);
   }
 
+  #addShortCutIcon {
+    -webkit-mask-image: url(chrome://resources/images/add.svg);
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: 100%;
+    background-color: var(--tile-title-color);
+    height: 24px;
+    width: 24px;
+  }
+
   .tile,
   #addShortcut {
     -webkit-tap-highlight-color: transparent;
@@ -154,7 +163,7 @@
   <a id="addShortcut" tabindex="0" on-click="onAdd_" hidden$="[[!showAdd_]]"
       title="$i18n{addLinkTitle}" on-keydown="onAddShortcutKeyDown_">
     <div class="tile-icon">
-      <img src="chrome://resources/images/add.svg" draggable="false"></img>
+      <div id="addShortCutIcon" draggable="false"></div>
     </div>
     <div class="tile-title">$i18n{addLinkTitle}</div>
   </a>

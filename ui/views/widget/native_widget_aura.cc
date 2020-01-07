@@ -821,6 +821,10 @@ void NativeWidgetAura::OnSizeConstraintsChanged() {
   SetResizeBehaviorFromDelegate(GetWidget()->widget_delegate(), window_);
 }
 
+void NativeWidgetAura::OnNativeViewHierarchyWillChange() {}
+
+void NativeWidgetAura::OnNativeViewHierarchyChanged() {}
+
 std::string NativeWidgetAura::GetName() const {
   return window_ ? window_->GetName() : std::string();
 }

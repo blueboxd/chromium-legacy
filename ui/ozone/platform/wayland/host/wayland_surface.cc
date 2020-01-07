@@ -19,8 +19,7 @@ namespace ui {
 WaylandSurface::WaylandSurface(PlatformWindowDelegate* delegate,
                                WaylandConnection* connection)
     : WaylandWindow(delegate, connection),
-      state_(PlatformWindowState::kNormal),
-      pending_state_(PlatformWindowState::kUnknown) {
+      state_(PlatformWindowState::kNormal) {
   // Set a class property key, which allows |this| to be used for interactive
   // events, e.g. move or resize.
   SetWmMoveResizeHandler(this, AsWmMoveResizeHandler());
@@ -47,6 +46,7 @@ bool WaylandSurface::CreateShellSurface() {
   shell_surface_->SetAppId(app_id_);
   shell_surface_->SetTitle(window_title_);
   SetSizeConstraints();
+  TriggerStateChanges();
   return true;
 }
 
@@ -117,7 +117,7 @@ void WaylandSurface::Hide() {
 bool WaylandSurface::IsVisible() const {
   // X and Windows return true if the window is minimized. For consistency, do
   // the same.
-  return !!shell_surface_ || IsMinimized();
+  return !!shell_surface_ || state_ == PlatformWindowState::kMinimized;
 }
 
 void WaylandSurface::SetTitle(const base::string16& title) {
@@ -133,74 +133,36 @@ void WaylandSurface::SetTitle(const base::string16& title) {
 }
 
 void WaylandSurface::ToggleFullscreen() {
-  DCHECK(shell_surface_);
-
-  // There are some cases, when Chromium triggers a fullscreen state change
-  // before the surface is activated. In such cases, Wayland may ignore state
-  // changes and such flags as --kiosk or --start-fullscreen will be ignored.
-  // To overcome this, set a pending state, and once the surface is activated,
-  // trigger the change.
-  if (!is_active_) {
-    DCHECK(!IsFullscreen());
-    pending_state_ = PlatformWindowState::kFullScreen;
-    return;
-  }
-
   // TODO(msisov, tonikitoo): add multiscreen support. As the documentation says
-  // if shell_surface_set_fullscreen() is not provided with wl_output, it's up
+  // if xdg_toplevel_set_fullscreen() is not provided with wl_output, it's up
   // to the compositor to choose which display will be used to map this surface.
-  if (!IsFullscreen()) {
-    // Fullscreen state changes have to be handled manually and then checked
-    // against configuration events, which come from a compositor. The reason
-    // of manually changing the |state_| is that the compositor answers about
-    // state changes asynchronously, which leads to a wrong return value in
-    // DesktopWindowTreeHostPlatform::IsFullscreen, for example, and media
-    // files can never be set to fullscreen.
-    state_ = PlatformWindowState::kFullScreen;
-    shell_surface_->SetFullscreen();
+
+  // We must track the previous state to correctly say our state as long as it
+  // can be the maximized instead of normal one.
+  PlatformWindowState new_state = PlatformWindowState::kUnknown;
+  if (state_ == PlatformWindowState::kFullScreen) {
+    if (previous_state_ == PlatformWindowState::kMaximized)
+      new_state = previous_state_;
+    else
+      new_state = PlatformWindowState::kNormal;
   } else {
-    // Check the comment above. If it's not handled synchronously, media files
-    // may not leave the fullscreen mode.
-    state_ = PlatformWindowState::kUnknown;
-    shell_surface_->UnSetFullscreen();
+    new_state = PlatformWindowState::kFullScreen;
   }
 
-  connection()->ScheduleFlush();
+  SetWindowState(new_state);
 }
 
 void WaylandSurface::Maximize() {
-  DCHECK(shell_surface_);
-
-  if (IsFullscreen())
-    ToggleFullscreen();
-
-  shell_surface_->SetMaximized();
-  connection()->ScheduleFlush();
+  SetWindowState(PlatformWindowState::kMaximized);
 }
 
 void WaylandSurface::Minimize() {
-  DCHECK(shell_surface_);
-  DCHECK(!is_minimizing_);
-  // Wayland doesn't explicitly say if a window is minimized. Instead, it
-  // notifies that the window is not activated. But there are many cases, when
-  // the window is not minimized and deactivated. In order to properly record
-  // the minimized state, mark this window as being minimized. And as soon as a
-  // configuration event comes, check if the window has been deactivated and has
-  // |is_minimizing_| set.
-  is_minimizing_ = true;
-  shell_surface_->SetMinimized();
-  connection()->ScheduleFlush();
+  SetWindowState(PlatformWindowState::kMinimized);
 }
 
 void WaylandSurface::Restore() {
   DCHECK(shell_surface_);
-
-  // Unfullscreen the window if it is fullscreen.
-  if (IsFullscreen())
-    ToggleFullscreen();
-
-  shell_surface_->UnSetMaximized();
-  connection()->ScheduleFlush();
+  SetWindowState(PlatformWindowState::kNormal);
 }
 
 PlatformWindowState WaylandSurface::GetPlatformWindowState() const {
@@ -223,34 +185,21 @@ void WaylandSurface::HandleSurfaceConfigure(int32_t width,
                                             bool is_maximized,
                                             bool is_fullscreen,
                                             bool is_activated) {
-  // Propagate the window state information to the client.
+  // Store the old state to propagte state changes if Wayland decides to change
+  // the state to something else.
   PlatformWindowState old_state = state_;
-
-  // Ensure that manually handled state changes to fullscreen correspond to the
-  // configuration events from a compositor.
-  DCHECK_EQ(is_fullscreen, IsFullscreen());
-
-  // There are two cases, which must be handled for the minimized state.
-  // The first one is the case, when the surface goes into the minimized state
-  // (check comment in WaylandSurface::Minimize), and the second case is when
-  // the surface still has been minimized, but another configuration event with
-  // !is_activated comes. For this, check if the WaylandSurface has been
-  // minimized before and !is_activated is sent.
-  if ((is_minimizing_ || IsMinimized()) && !is_activated) {
-    is_minimizing_ = false;
+  if (state_ == PlatformWindowState::kMinimized && !is_activated) {
     state_ = PlatformWindowState::kMinimized;
   } else if (is_fullscreen) {
-    // To ensure the |delegate()| is notified about state changes to fullscreen,
-    // assume the old_state is UNKNOWN (check comment in ToggleFullscreen).
-    old_state = PlatformWindowState::kUnknown;
-    DCHECK(state_ == PlatformWindowState::kFullScreen);
+    state_ = PlatformWindowState::kFullScreen;
   } else if (is_maximized) {
     state_ = PlatformWindowState::kMaximized;
   } else {
     state_ = PlatformWindowState::kNormal;
   }
+
   const bool state_changed = old_state != state_;
-  const bool is_normal = !IsFullscreen() && !IsMaximized();
+  const bool is_normal = state_ == PlatformWindowState::kNormal;
 
   // Update state before notifying delegate.
   const bool did_active_change = is_active_ != is_activated;
@@ -281,28 +230,17 @@ void WaylandSurface::HandleSurfaceConfigure(int32_t width,
                                 1.0 / buffer_scale()));
   }
 
-  if (state_changed) {
-    // The |restored_bounds_| are used when the window gets back to normal
-    // state after it went maximized or fullscreen.  So we reset these if the
-    // window has just become normal and store the current bounds if it is
-    // either going out of normal state or simply changes the state and we don't
-    // have any meaningful value stored.
-    if (is_normal) {
-      SetRestoredBoundsInPixels({});
-    } else if (old_state == PlatformWindowState::kNormal ||
-               GetRestoredBoundsInPixels().IsEmpty()) {
-      SetRestoredBoundsInPixels(GetBounds());
-    }
-
-    delegate()->OnWindowStateChanged(state_);
-  }
-
+  // Store the restored bounds of current state differs from the normal state.
+  // It can be client or compositor side change from normal to something else.
+  // Thus, we must store previous bounds to restore later.
+  SetOrResetRestoredBounds();
   ApplyPendingBounds();
+
+  if (state_changed)
+    delegate()->OnWindowStateChanged(state_);
 
   if (did_active_change)
     delegate()->OnActivationChanged(is_active_);
-
-  MaybeTriggerPendingStateChange();
 }
 
 void WaylandSurface::OnDragEnter(const gfx::PointF& point,
@@ -348,24 +286,34 @@ bool WaylandSurface::OnInitialize(PlatformWindowInitProperties properties) {
   return true;
 }
 
-bool WaylandSurface::IsMinimized() const {
-  return state_ == PlatformWindowState::kMinimized;
-}
-
-bool WaylandSurface::IsMaximized() const {
-  return state_ == PlatformWindowState::kMaximized;
-}
-
-bool WaylandSurface::IsFullscreen() const {
-  return state_ == PlatformWindowState::kFullScreen;
-}
-
-void WaylandSurface::MaybeTriggerPendingStateChange() {
-  if (pending_state_ == PlatformWindowState::kUnknown || !is_active_)
+void WaylandSurface::TriggerStateChanges() {
+  if (!shell_surface_)
     return;
-  DCHECK_EQ(pending_state_, PlatformWindowState::kFullScreen);
-  pending_state_ = PlatformWindowState::kUnknown;
-  ToggleFullscreen();
+
+  if (state_ == PlatformWindowState::kFullScreen)
+    shell_surface_->SetFullscreen();
+  else
+    shell_surface_->UnSetFullscreen();
+
+  // Call UnSetMaximized only if current state is normal. Otherwise, if the
+  // current state is fullscreen and the previous is maximized, calling
+  // UnSetMaximized may result in wrong restored window position that clients
+  // are not allowed to know about.
+  if (state_ == PlatformWindowState::kMaximized)
+    shell_surface_->SetMaximized();
+  else if (state_ == PlatformWindowState::kNormal)
+    shell_surface_->UnSetMaximized();
+
+  if (state_ == PlatformWindowState::kMinimized)
+    shell_surface_->SetMinimized();
+
+  connection()->ScheduleFlush();
+}
+
+void WaylandSurface::SetWindowState(PlatformWindowState state) {
+  previous_state_ = state_;
+  state_ = state;
+  TriggerStateChanges();
 }
 
 WmMoveResizeHandler* WaylandSurface::AsWmMoveResizeHandler() {
@@ -379,6 +327,19 @@ void WaylandSurface::SetSizeConstraints() {
     shell_surface_->SetMaxSize(max_size_->width(), max_size_->height());
 
   connection()->ScheduleFlush();
+}
+
+void WaylandSurface::SetOrResetRestoredBounds() {
+  // The |restored_bounds_| are used when the window gets back to normal
+  // state after it went maximized or fullscreen.  So we reset these if the
+  // window has just become normal and store the current bounds if it is
+  // either going out of normal state or simply changes the state and we don't
+  // have any meaningful value stored.
+  if (GetPlatformWindowState() == PlatformWindowState::kNormal) {
+    SetRestoredBoundsInPixels({});
+  } else if (GetRestoredBoundsInPixels().IsEmpty()) {
+    SetRestoredBoundsInPixels(GetBounds());
+  }
 }
 
 }  // namespace ui

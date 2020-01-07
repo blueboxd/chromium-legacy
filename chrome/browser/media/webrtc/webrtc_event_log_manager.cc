@@ -11,25 +11,15 @@
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
-#include "components/policy/core/common/policy_service.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_process_host.h"
-
-#if defined OS_CHROMEOS
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#endif
-
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-#include "chrome/browser/policy/chrome_browser_policy_connector.h"
-#endif
 
 namespace webrtc_event_logging {
 
@@ -102,40 +92,6 @@ bool IsRemoteLoggingFeatureEnabled() {
           << (enabled ? "enabled" : "disabled") << ".";
 
   return enabled;
-}
-
-// Checks whether the Profile is considered managed. Used to
-// determine the default value for the policy controlling event logging.
-bool IsBrowserManagedForProfile(const Profile* profile) {
-// For Chrome OS, exclude the signin profile and ephemeral profiles.
-#if defined(OS_CHROMEOS)
-  if (chromeos::ProfileHelper::IsSigninProfile(profile) ||
-      chromeos::ProfileHelper::IsEphemeralUserProfile(profile)) {
-    return false;
-  }
-#endif
-
-  // Child accounts should not have a logging default of true so
-  // we do not consider them as being managed here.
-  if (profile->IsChild()) {
-    return false;
-  }
-
-  if (profile->GetProfilePolicyConnector()
-          ->policy_service()
-          ->IsInitializationComplete(policy::POLICY_DOMAIN_CHROME) &&
-      profile->GetProfilePolicyConnector()->IsManaged()) {
-    return true;
-  }
-
-  // For desktop, machine level policies (Windows, Linux, Mac OS) can affect
-  // user profiles, so we consider these profiles managed.
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-  return g_browser_process->browser_policy_connector()
-      ->HasMachineLevelPolicies();
-#else
-  return false;
-#endif
 }
 
 BrowserContext* GetBrowserContext(int render_process_id) {
@@ -561,15 +517,9 @@ bool WebRtcEventLogManager::IsRemoteLoggingAllowedForBrowserContext(
   if (webrtc_event_log_collection_allowed_pref->IsDefaultValue()) {
     // The pref has not been set. GetBoolean would only return the default
     // value. However, there is no single default value,
-    // because it depends on whether Chrome is managed,
-    // so we check whether Chrome is managed.
-    // TODO(https://crbug.com/980132): use generalized policy default
-    // mechanism when it is available.
-    const bool managed = IsBrowserManagedForProfile(profile);
-    constexpr bool kCollectionAllowedDefaultManaged = true;
-    constexpr bool kCollectionAllowedDefaultUnManaged = false;
-    return managed ? kCollectionAllowedDefaultManaged
-                   : kCollectionAllowedDefaultUnManaged;
+    // because it depends on whether the profile receives cloud-based
+    // enterprise policies.
+    return DoesProfileDefaultToLoggingEnabled(profile);
   }
 
   // There is a non-default value set, so this value is authoritative.

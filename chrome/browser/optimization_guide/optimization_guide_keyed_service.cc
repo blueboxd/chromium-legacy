@@ -225,7 +225,13 @@ OptimizationGuideKeyedService::CanApplyOptimization(
     content::NavigationHandle* navigation_handle,
     optimization_guide::proto::OptimizationType optimization_type,
     optimization_guide::OptimizationMetadata* optimization_metadata) {
-  DCHECK(hints_manager_);
+  if (!hints_manager_) {
+    // We are not initialized yet, just return unknown.
+    LogOptimizationTypeDecision(
+        navigation_handle, optimization_type,
+        optimization_guide::OptimizationTypeDecision::kDeciderNotInitialized);
+    return optimization_guide::OptimizationGuideDecision::kUnknown;
+  }
 
   optimization_guide::OptimizationTypeDecision optimization_type_decision =
       hints_manager_->CanApplyOptimization(navigation_handle, optimization_type,

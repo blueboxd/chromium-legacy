@@ -379,7 +379,7 @@ void HTMLFrameOwnerElement::SetEmbeddedContentView(
     if (old_view->IsAttached()) {
       old_view->DetachFromLayout();
       if (old_view->IsPluginView())
-        DisposePluginSoon(ToWebPluginContainerImpl(old_view));
+        DisposePluginSoon(To<WebPluginContainerImpl>(old_view));
       else
         old_view->Dispose();
     }

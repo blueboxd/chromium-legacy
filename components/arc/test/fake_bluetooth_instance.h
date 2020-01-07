@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "components/arc/mojom/bluetooth.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
 
 namespace device {
 class BluetoothUUID;

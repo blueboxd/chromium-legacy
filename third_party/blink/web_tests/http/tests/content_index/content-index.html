@@ -22,19 +22,19 @@ contentIndexTest(async (t, index) => {
 contentIndexTest(async (t, index) => {
   await expectTypeErrorWithMessage(
       index.add(createDescription({id: ''})),
-      'ID cannot be empty');
+      `Failed to execute 'add' on 'ContentIndex': ID cannot be empty`);
   await expectTypeErrorWithMessage(
       index.add(createDescription({title: ''})),
-      'Title cannot be empty');
+      `Failed to execute 'add' on 'ContentIndex': Title cannot be empty`);
   await expectTypeErrorWithMessage(
       index.add(createDescription({description:''})),
-      'Description cannot be empty');
+      `Failed to execute 'add' on 'ContentIndex': Description cannot be empty`);
   await expectTypeErrorWithMessage(
       index.add(createDescription({category: 'fake-category'})));
 
   await expectTypeErrorWithMessage(
       index.add(createDescription({iconUrl: 'file://some-local-file.png'})),
-      'Invalid icon URL protocol');
+      `Failed to execute 'add' on 'ContentIndex': Invalid icon URL protocol`);
   await expectTypeErrorWithMessage(
       index.add(createDescription({includeIcons: false})),
       'icons must be provided');
@@ -47,10 +47,10 @@ contentIndexTest(async (t, index) => {
 
   await expectTypeErrorWithMessage(
       index.add(createDescription({launchUrl: 'https://other-domain.com/'})),
-      'Service Worker cannot request provided launch URL');
+      `Failed to execute 'add' on 'ContentIndex': Service Worker cannot request provided launch URL`);
   await expectTypeErrorWithMessage(
       index.add(createDescription({launchUrl: '/different-scope'})),
-      `Launch URL must belong to the Service Worker's scope`);
+      `Failed to execute 'add' on 'ContentIndex': Launch URL must belong to the Service Worker's scope`);
 
   await index.add(createDescription({}));
 

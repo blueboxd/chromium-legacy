@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -63,36 +64,26 @@ static int AccessibilityLabelPrefixLength(base::string16 accessibility_label) {
   return length == base::string16::npos ? 0 : static_cast<int>(length);
 }
 
-// static
-base::string16 AddTabSwitchLabelTextIfNecessary(
-    base::string16 base_message,
-    bool has_tab_match,
-    bool is_tab_switch_button_focused,
-    int* label_prefix_length) {
-  if (!has_tab_match) {
-    return base_message;
+// Gets the localized string |message_id| and places the |replacement| inside.
+// It also adjusts |label_prefix_length|, if non-nullptr.
+base::string16 AddAdditionalMessaging(int message_id,
+                                      base::string16 replacement,
+                                      int* label_prefix_length) {
+  DCHECK(message_id != 0);
+  if (label_prefix_length) {
+    const base::string16 sentinal =
+        base::WideToUTF16(kAccessibilityLabelPrefixEndSentinal);
+    *label_prefix_length += AccessibilityLabelPrefixLength(
+        l10n_util::GetStringFUTF16(message_id, sentinal));
   }
-
-  if (is_tab_switch_button_focused) {
-    const int button_message_id = IDS_ACC_TAB_SWITCH_BUTTON_FOCUSED_PREFIX;
-    if (label_prefix_length) {
-      const base::string16 sentinal =
-          base::WideToUTF16(kAccessibilityLabelPrefixEndSentinal);
-      *label_prefix_length += AccessibilityLabelPrefixLength(
-          l10n_util::GetStringFUTF16(button_message_id, sentinal));
-    }
-    return l10n_util::GetStringFUTF16(button_message_id, base_message);
-  }
-
-  return l10n_util::GetStringFUTF16(IDS_ACC_TAB_SWITCH_SUFFIX, base_message);
+  return l10n_util::GetStringFUTF16(message_id, replacement);
 }
 
-// static
-base::string16 AutocompleteMatchType::ToAccessibilityLabel(
-    const AutocompleteMatch& match,
-    const base::string16& match_text,
-    bool is_tab_switch_button_focused,
-    int* label_prefix_length) {
+// Returns the base label for this match, without handling the positional or
+// secondary button messaging.
+base::string16 GetAccessibilityBaseLabel(const AutocompleteMatch& match,
+                                         const base::string16& match_text,
+                                         int* label_prefix_length) {
   // Types with a message ID of zero get |text| returned as-is.
   static constexpr int message_ids[] = {
       0,                             // URL_WHAT_YOU_TYPED
@@ -138,9 +129,6 @@ base::string16 AutocompleteMatchType::ToAccessibilityLabel(
   static_assert(base::size(message_ids) == AutocompleteMatchType::NUM_TYPES,
                 "message_ids must have NUM_TYPES elements");
 
-  if (label_prefix_length)
-    *label_prefix_length = 0;
-
   // Document provider should use its full display text; description has
   // already been constructed via IDS_DRIVE_SUGGESTION_DESCRIPTION_TEMPLATE.
   // TODO(skare) http://crbug.com/951109: format as string in grd so this isn't
@@ -149,17 +137,12 @@ base::string16 AutocompleteMatchType::ToAccessibilityLabel(
     base::string16 doc_string = match.contents + base::ASCIIToUTF16(", ") +
                                 match.description + base::ASCIIToUTF16(", ") +
                                 match_text;
-    return AddTabSwitchLabelTextIfNecessary(doc_string, match.has_tab_match,
-                                            is_tab_switch_button_focused,
-                                            label_prefix_length);
+    return doc_string;
   }
 
   int message = message_ids[match.type];
-  if (!message) {
-    return AddTabSwitchLabelTextIfNecessary(match_text, match.has_tab_match,
-                                            is_tab_switch_button_focused,
-                                            label_prefix_length);
-  }
+  if (!message)
+    return match_text;
 
   const base::string16 sentinal =
       base::WideToUTF16(kAccessibilityLabelPrefixEndSentinal);
@@ -220,14 +203,9 @@ base::string16 AutocompleteMatchType::ToAccessibilityLabel(
                   l10n_util::GetStringFUTF16(message, sentinal));
   }
 
-  const base::string16 base_message =
-      has_description
-          ? l10n_util::GetStringFUTF16(message, match_text, description)
-          : l10n_util::GetStringFUTF16(message, match_text);
-
-  return AddTabSwitchLabelTextIfNecessary(base_message, match.has_tab_match,
-                                          is_tab_switch_button_focused,
-                                          label_prefix_length);
+  return has_description
+             ? l10n_util::GetStringFUTF16(message, match_text, description)
+             : l10n_util::GetStringFUTF16(message, match_text);
 }
 
 // static
@@ -236,15 +214,29 @@ base::string16 AutocompleteMatchType::ToAccessibilityLabel(
     const base::string16& match_text,
     size_t match_index,
     size_t total_matches,
-    bool is_tab_switch_button_focused,
+    int additional_message_id,
     int* label_prefix_length) {
-  base::string16 result = ToAccessibilityLabel(
-      match, match_text, is_tab_switch_button_focused, label_prefix_length);
+  if (label_prefix_length)
+    *label_prefix_length = 0;
 
-  if (is_tab_switch_button_focused)
-    return result;  // Don't add "n of m" positional info when button focused.
+  // Start with getting the base label.
+  base::string16 result =
+      GetAccessibilityBaseLabel(match, match_text, label_prefix_length);
 
-  return l10n_util::GetStringFUTF16(IDS_ACC_AUTOCOMPLETE_N_OF_M, result,
-                                    base::NumberToString16(match_index + 1),
-                                    base::NumberToString16(total_matches));
+  // Add the additional message, if applicable.
+  if (additional_message_id != 0) {
+    result = AddAdditionalMessaging(additional_message_id, result,
+                                    label_prefix_length);
+  }
+
+  // Add the positional info, if applicable.
+  if (total_matches != 0 && match_index != OmniboxPopupModel::kNoMatch) {
+    // TODO(tommycli): If any localization of the "n of m" positional message
+    // puts it as a prefix, then |label_prefix_length| will get the wrong value.
+    result = l10n_util::GetStringFUTF16(IDS_ACC_AUTOCOMPLETE_N_OF_M, result,
+                                        base::NumberToString16(match_index + 1),
+                                        base::NumberToString16(total_matches));
+  }
+
+  return result;
 }

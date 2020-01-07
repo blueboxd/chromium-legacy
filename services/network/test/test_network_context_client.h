@@ -74,14 +74,14 @@ class TestNetworkContextClient : public network::mojom::NetworkContextClient {
       int32_t process_id,
       int32_t routing_id,
       const GURL& url,
-      const GURL& site_for_cookies,
+      const net::SiteForCookies& site_for_cookies,
       const std::vector<net::CookieWithStatus>& cookie_list) override {}
   void OnCookiesRead(
       bool is_service_worker,
       int32_t process_id,
       int32_t routing_id,
       const GURL& url,
-      const GURL& site_for_cookies,
+      const net::SiteForCookies& site_for_cookies,
       const std::vector<net::CookieWithStatus>& cookie_list) override {}
 #if defined(OS_ANDROID)
   void OnGenerateHttpNegotiateAuthToken(

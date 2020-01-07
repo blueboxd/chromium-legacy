@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "build/build_config.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/cookies/canonical_cookie.h"

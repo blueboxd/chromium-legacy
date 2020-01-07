@@ -37,33 +37,20 @@ void AlternateNavInfoBarDelegate::CreateForOmniboxNavigation(
           search_url))));
 }
 
-AlternateNavInfoBarDelegate::AlternateNavInfoBarDelegate(
-    Profile* profile,
-    const base::string16& text,
-    std::unique_ptr<AutocompleteMatch> match,
-    const GURL& destination_url,
-    const GURL& original_url)
-    : infobars::InfoBarDelegate(),
-      profile_(profile),
-      text_(text),
-      match_(std::move(match)),
-      destination_url_(destination_url),
-      original_url_(original_url) {
-  if (match_)
-    DCHECK_EQ(destination_url_, match_->destination_url);
-
-  DCHECK(destination_url_.is_valid());
-  DCHECK(original_url_.is_valid());
-}
-
-// AlternateNavInfoBarDelegate::CreateInfoBar() is implemented in
-// platform-specific files.
-
 base::string16 AlternateNavInfoBarDelegate::GetMessageTextWithOffset(
     size_t* link_offset) const {
   const base::string16 label = l10n_util::GetStringFUTF16(
       IDS_ALTERNATE_NAV_URL_VIEW_LABEL, base::string16(), link_offset);
   return label;
+}
+
+infobars::InfoBarDelegate::InfoBarIdentifier
+AlternateNavInfoBarDelegate::GetIdentifier() const {
+  return ALTERNATE_NAV_INFOBAR_DELEGATE;
+}
+
+const gfx::VectorIcon& AlternateNavInfoBarDelegate::GetVectorIcon() const {
+  return kGlobeIcon;
 }
 
 base::string16 AlternateNavInfoBarDelegate::GetLinkText() const {
@@ -105,11 +92,24 @@ bool AlternateNavInfoBarDelegate::LinkClicked(
   return true;
 }
 
-infobars::InfoBarDelegate::InfoBarIdentifier
-AlternateNavInfoBarDelegate::GetIdentifier() const {
-  return ALTERNATE_NAV_INFOBAR_DELEGATE;
+AlternateNavInfoBarDelegate::AlternateNavInfoBarDelegate(
+    Profile* profile,
+    const base::string16& text,
+    std::unique_ptr<AutocompleteMatch> match,
+    const GURL& destination_url,
+    const GURL& original_url)
+    : infobars::InfoBarDelegate(),
+      profile_(profile),
+      text_(text),
+      match_(std::move(match)),
+      destination_url_(destination_url),
+      original_url_(original_url) {
+  if (match_)
+    DCHECK_EQ(destination_url_, match_->destination_url);
+
+  DCHECK(destination_url_.is_valid());
+  DCHECK(original_url_.is_valid());
 }
 
-const gfx::VectorIcon& AlternateNavInfoBarDelegate::GetVectorIcon() const {
-  return kGlobeIcon;
-}
+// AlternateNavInfoBarDelegate::CreateInfoBar() is implemented in
+// platform-specific files.

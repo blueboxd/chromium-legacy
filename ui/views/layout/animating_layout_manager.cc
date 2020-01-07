@@ -380,11 +380,9 @@ bool AnimatingLayoutManager::OnViewRemoved(View* host, View* view) {
 }
 
 void AnimatingLayoutManager::PostOrQueueAction(base::OnceClosure action) {
-  if (!is_animating()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(action));
-  } else {
-    delayed_actions_.push_back(std::move(action));
-  }
+  queued_actions_.push_back(std::move(action));
+  if (!is_animating())
+    PostQueuedActions();
 }
 
 FlexRule AnimatingLayoutManager::GetDefaultFlexRule() const {
@@ -469,7 +467,7 @@ void AnimatingLayoutManager::OnAnimationEnded() {
   DCHECK(is_animating_);
   is_animating_ = false;
   fade_infos_.clear();
-  PostDelayedActions();
+  PostQueuedActions();
   NotifyIsAnimatingChanged();
 }
 
@@ -571,10 +569,33 @@ void AnimatingLayoutManager::NotifyIsAnimatingChanged() {
     observer.OnLayoutIsAnimatingChanged(this, is_animating());
 }
 
-void AnimatingLayoutManager::PostDelayedActions() {
-  for (auto& action : delayed_actions_)
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(action));
-  delayed_actions_.clear();
+void AnimatingLayoutManager::RunQueuedActions() {
+  run_queued_actions_is_pending_ = false;
+  std::vector<base::OnceClosure> actions = std::move(queued_actions_to_run_);
+  for (auto& action : actions)
+    std::move(action).Run();
+}
+
+void AnimatingLayoutManager::PostQueuedActions() {
+  // Move queued actions over to actions that should run during the next
+  // PostTask(). This prevents a race between old PostTask() calls and new
+  // delayed actions. See the header for more detail.
+  for (auto& action : queued_actions_)
+    queued_actions_to_run_.push_back(std::move(action));
+  queued_actions_.clear();
+
+  // Early return to prevent multiple RunQueuedAction() tasks.
+  if (run_queued_actions_is_pending_)
+    return;
+
+  // Post to self (instead of posting the queued actions directly) which lets
+  // us:
+  // * Keep "AnimatingLayoutManager::RunDelayedActions" in the stack frame.
+  // * Tie the task lifetimes to AnimatingLayoutManager.
+  run_queued_actions_is_pending_ =
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(&AnimatingLayoutManager::RunQueuedActions,
+                                    weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AnimatingLayoutManager::UpdateCurrentLayout(double percent) {

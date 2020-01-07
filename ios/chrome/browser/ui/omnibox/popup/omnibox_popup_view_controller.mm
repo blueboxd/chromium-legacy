@@ -65,7 +65,6 @@
 - (void)tableView:(UITableView*)tableView
       willDisplayCell:(UITableViewCell*)cell
     forRowAtIndexPath:(NSIndexPath*)indexPath {
-  [super tableView:tableView willDisplayCell:cell forRowAtIndexPath:indexPath];
   if ([cell isKindOfClass:[OmniboxPopupRowCell class]]) {
     OmniboxPopupRowCell* rowCell =
         base::mac::ObjCCastStrict<OmniboxPopupRowCell>(cell);
@@ -83,11 +82,6 @@
 
 - (CGFloat)tableView:(UITableView*)tableView
     heightForRowAtIndexPath:(NSIndexPath*)indexPath {
-  if (self.shortcutsEnabled && indexPath.row == 0 &&
-      self.currentResult.count == 0) {
-    return self.shortcutsViewController.collectionView.collectionViewLayout
-        .collectionViewContentSize.height;
-  }
   return UITableViewAutomaticDimension;
 }
 
@@ -95,11 +89,6 @@
 - (UITableViewCell*)tableView:(UITableView*)tableView
         cellForRowAtIndexPath:(NSIndexPath*)indexPath {
   DCHECK_EQ(0U, (NSUInteger)indexPath.section);
-
-  if (self.shortcutsEnabled && indexPath.row == 0 &&
-      self.currentResult.count == 0) {
-    return self.shortcutsCell;
-  }
 
   DCHECK_LT((NSUInteger)indexPath.row, self.currentResult.count);
   OmniboxPopupRowCell* cell = [self.tableView

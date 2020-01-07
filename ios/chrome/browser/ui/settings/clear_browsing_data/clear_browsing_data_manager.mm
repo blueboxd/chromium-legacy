@@ -178,18 +178,16 @@ static NSDictionary* _imageNamesByItemTypes = @{
     _timeRangePref.Init(browsing_data::prefs::kDeleteTimePeriod,
                         _browserState->GetPrefs());
 
-    if (IsNewClearBrowsingDataUIEnabled()) {
-      _observer = std::make_unique<BrowsingDataRemoverObserverBridge>(self);
-      _scoped_observer = std::make_unique<
-          ScopedObserver<BrowsingDataRemover, BrowsingDataRemoverObserver>>(
-          _observer.get());
-      _scoped_observer->Add(remover);
+    _observer = std::make_unique<BrowsingDataRemoverObserverBridge>(self);
+    _scoped_observer = std::make_unique<
+        ScopedObserver<BrowsingDataRemover, BrowsingDataRemoverObserver>>(
+        _observer.get());
+    _scoped_observer->Add(remover);
 
-      _prefChangeRegistrar.Init(_browserState->GetPrefs());
-      _prefObserverBridge.reset(new PrefObserverBridge(self));
-      _prefObserverBridge->ObserveChangesForPreference(
-          browsing_data::prefs::kDeleteTimePeriod, &_prefChangeRegistrar);
-    }
+    _prefChangeRegistrar.Init(_browserState->GetPrefs());
+    _prefObserverBridge.reset(new PrefObserverBridge(self));
+    _prefObserverBridge->ObserveChangesForPreference(
+        browsing_data::prefs::kDeleteTimePeriod, &_prefChangeRegistrar);
   }
   return self;
 }
@@ -197,22 +195,18 @@ static NSDictionary* _imageNamesByItemTypes = @{
 #pragma mark - Public Methods
 
 - (void)loadModel:(ListModel*)model {
-  // Time range section.
-  // Only implementing new UI for kListTypeCollectionView.
-  if (IsNewClearBrowsingDataUIEnabled()) {
-    [model addSectionWithIdentifier:SectionIdentifierTimeRange];
-    ListItem* timeRangeItem = [self timeRangeItem];
-    [model addItem:timeRangeItem
-        toSectionWithIdentifier:SectionIdentifierTimeRange];
-    if (self.listType == ClearBrowsingDataListType::kListTypeCollectionView) {
-      self.collectionViewTimeRangeItem =
-          base::mac::ObjCCastStrict<LegacySettingsDetailItem>(timeRangeItem);
-    } else {
-      DCHECK(self.listType == ClearBrowsingDataListType::kListTypeTableView);
-      self.tableViewTimeRangeItem =
-          base::mac::ObjCCastStrict<TableViewDetailIconItem>(timeRangeItem);
-      self.tableViewTimeRangeItem.useCustomSeparator = YES;
-    }
+  [model addSectionWithIdentifier:SectionIdentifierTimeRange];
+  ListItem* timeRangeItem = [self timeRangeItem];
+  [model addItem:timeRangeItem
+      toSectionWithIdentifier:SectionIdentifierTimeRange];
+  if (self.listType == ClearBrowsingDataListType::kListTypeCollectionView) {
+    self.collectionViewTimeRangeItem =
+        base::mac::ObjCCastStrict<LegacySettingsDetailItem>(timeRangeItem);
+  } else {
+    DCHECK(self.listType == ClearBrowsingDataListType::kListTypeTableView);
+    self.tableViewTimeRangeItem =
+        base::mac::ObjCCastStrict<TableViewDetailIconItem>(timeRangeItem);
+    self.tableViewTimeRangeItem.useCustomSeparator = YES;
   }
 
   [self addClearBrowsingDataItemsToModel:model];
@@ -297,9 +291,8 @@ static NSDictionary* _imageNamesByItemTypes = @{
                              (~NSByteCountFormatterUseKB);
     formatter.countStyle = NSByteCountFormatterCountStyleMemory;
     NSString* formattedSize = [formatter stringFromByteCount:cacheSizeBytes];
-    return (!IsNewClearBrowsingDataUIEnabled() ||
-            _timeRangePref.GetValue() ==
-                static_cast<int>(browsing_data::TimePeriod::ALL_TIME))
+    return _timeRangePref.GetValue() ==
+                   static_cast<int>(browsing_data::TimePeriod::ALL_TIME)
                ? formattedSize
                : l10n_util::GetNSStringF(
                      IDS_DEL_CACHE_COUNTER_UPPER_ESTIMATE,
@@ -338,8 +331,7 @@ static NSDictionary* _imageNamesByItemTypes = @{
 }
 
 - (void)addClearDataButtonToModel:(ListModel*)model {
-  if (self.listType == ClearBrowsingDataListType::kListTypeTableView &&
-      IsNewClearBrowsingDataUIEnabled()) {
+  if (self.listType == ClearBrowsingDataListType::kListTypeTableView) {
     return;
   }
   // Clear Browsing Data button.
@@ -468,32 +460,29 @@ static NSDictionary* _imageNamesByItemTypes = @{
     collectionClearDataItem.prefName = prefName;
     collectionClearDataItem.accessibilityIdentifier =
         [self accessibilityIdentifierFromItemType:itemType];
-    if (IsNewClearBrowsingDataUIEnabled()) {
-      if (itemType == ItemTypeDataTypeCookiesSiteData) {
-        // Because there is no counter for cookies, an explanatory text is
-        // displayed.
-        collectionClearDataItem.detailText =
-            l10n_util::GetNSString(IDS_DEL_COOKIES_COUNTER);
-      } else {
-        __weak ClearBrowsingDataManager* weakSelf = self;
-        __weak ClearBrowsingDataItem* weakCollectionClearDataItem =
-            collectionClearDataItem;
-        BrowsingDataCounterWrapper::UpdateUICallback callback =
-            base::BindRepeating(
-                ^(const browsing_data::BrowsingDataCounter::Result& result) {
-                  weakCollectionClearDataItem.detailText =
-                      [weakSelf counterTextFromResult:result];
-                  [weakSelf.consumer
-                      updateCellsForItem:weakCollectionClearDataItem];
-                });
-        std::unique_ptr<BrowsingDataCounterWrapper> counter =
-            [self.counterWrapperProducer
-                createCounterWrapperWithPrefName:prefName
-                                    browserState:self.browserState
-                                     prefService:prefs
-                                updateUiCallback:callback];
-        _countersByMasks.emplace(mask, std::move(counter));
-      }
+    if (itemType == ItemTypeDataTypeCookiesSiteData) {
+      // Because there is no counter for cookies, an explanatory text is
+      // displayed.
+      collectionClearDataItem.detailText =
+          l10n_util::GetNSString(IDS_DEL_COOKIES_COUNTER);
+    } else {
+      __weak ClearBrowsingDataManager* weakSelf = self;
+      __weak ClearBrowsingDataItem* weakCollectionClearDataItem =
+          collectionClearDataItem;
+      BrowsingDataCounterWrapper::UpdateUICallback callback =
+          base::BindRepeating(^(
+              const browsing_data::BrowsingDataCounter::Result& result) {
+            weakCollectionClearDataItem.detailText =
+                [weakSelf counterTextFromResult:result];
+            [weakSelf.consumer updateCellsForItem:weakCollectionClearDataItem];
+          });
+      std::unique_ptr<BrowsingDataCounterWrapper> counter =
+          [self.counterWrapperProducer
+              createCounterWrapperWithPrefName:prefName
+                                  browserState:self.browserState
+                                   prefService:prefs
+                              updateUiCallback:callback];
+      _countersByMasks.emplace(mask, std::move(counter));
     }
     clearDataItem = collectionClearDataItem;
   } else {
@@ -505,40 +494,38 @@ static NSDictionary* _imageNamesByItemTypes = @{
         [self accessibilityIdentifierFromItemType:itemType];
     tableViewClearDataItem.dataTypeMask = mask;
     tableViewClearDataItem.prefName = prefName;
-    if (IsNewClearBrowsingDataUIEnabled()) {
-      tableViewClearDataItem.useCustomSeparator = YES;
-      tableViewClearDataItem.checkedBackgroundColor =
-          [[UIColor colorNamed:kBlueColor]
-              colorWithAlphaComponent:kSelectedBackgroundColorAlpha];
-      tableViewClearDataItem.imageName = [_imageNamesByItemTypes
-          objectForKey:[NSNumber numberWithInteger:itemType]];
-      if (itemType == ItemTypeDataTypeCookiesSiteData) {
-        // Because there is no counter for cookies, an explanatory text is
-        // displayed.
-        tableViewClearDataItem.detailText =
-            l10n_util::GetNSString(IDS_DEL_COOKIES_COUNTER);
-      } else {
-        // Having a placeholder |detailText| helps reduce the observable
-        // row-height changes induced by the counter callbacks.
-        tableViewClearDataItem.detailText = @"\u00A0";
-        __weak ClearBrowsingDataManager* weakSelf = self;
-        __weak TableViewClearBrowsingDataItem* weakTableClearDataItem =
-            tableViewClearDataItem;
-        BrowsingDataCounterWrapper::UpdateUICallback callback =
-            base::BindRepeating(
-                ^(const browsing_data::BrowsingDataCounter::Result& result) {
-                  weakTableClearDataItem.detailText =
-                      [weakSelf counterTextFromResult:result];
-                  [weakSelf.consumer updateCellsForItem:weakTableClearDataItem];
-                });
-        std::unique_ptr<BrowsingDataCounterWrapper> counter =
-            [self.counterWrapperProducer
-                createCounterWrapperWithPrefName:prefName
-                                    browserState:self.browserState
-                                     prefService:prefs
-                                updateUiCallback:callback];
-        _countersByMasks.emplace(mask, std::move(counter));
-      }
+    tableViewClearDataItem.useCustomSeparator = YES;
+    tableViewClearDataItem.checkedBackgroundColor =
+        [[UIColor colorNamed:kBlueColor]
+            colorWithAlphaComponent:kSelectedBackgroundColorAlpha];
+    tableViewClearDataItem.imageName = [_imageNamesByItemTypes
+        objectForKey:[NSNumber numberWithInteger:itemType]];
+    if (itemType == ItemTypeDataTypeCookiesSiteData) {
+      // Because there is no counter for cookies, an explanatory text is
+      // displayed.
+      tableViewClearDataItem.detailText =
+          l10n_util::GetNSString(IDS_DEL_COOKIES_COUNTER);
+    } else {
+      // Having a placeholder |detailText| helps reduce the observable
+      // row-height changes induced by the counter callbacks.
+      tableViewClearDataItem.detailText = @"\u00A0";
+      __weak ClearBrowsingDataManager* weakSelf = self;
+      __weak TableViewClearBrowsingDataItem* weakTableClearDataItem =
+          tableViewClearDataItem;
+      BrowsingDataCounterWrapper::UpdateUICallback callback =
+          base::BindRepeating(
+              ^(const browsing_data::BrowsingDataCounter::Result& result) {
+                weakTableClearDataItem.detailText =
+                    [weakSelf counterTextFromResult:result];
+                [weakSelf.consumer updateCellsForItem:weakTableClearDataItem];
+              });
+      std::unique_ptr<BrowsingDataCounterWrapper> counter =
+          [self.counterWrapperProducer
+              createCounterWrapperWithPrefName:prefName
+                                  browserState:self.browserState
+                                   prefService:prefs
+                              updateUiCallback:callback];
+      _countersByMasks.emplace(mask, std::move(counter));
     }
     clearDataItem = tableViewClearDataItem;
   }
@@ -698,9 +685,7 @@ static NSDictionary* _imageNamesByItemTypes = @{
   DCHECK(mask != BrowsingDataRemoveMask::REMOVE_NOTHING);
 
   browsing_data::TimePeriod timePeriod =
-      IsNewClearBrowsingDataUIEnabled()
-          ? static_cast<browsing_data::TimePeriod>(_timeRangePref.GetValue())
-          : browsing_data::TimePeriod::ALL_TIME;
+      static_cast<browsing_data::TimePeriod>(_timeRangePref.GetValue());
   [self.consumer removeBrowsingDataForBrowserState:_browserState
                                         timePeriod:timePeriod
                                         removeMask:mask

@@ -87,6 +87,7 @@ void CastActivityManager::LaunchSession(
                    /* is_local */ true, /* for_display */ true);
   route.set_incognito(incognito);
   route.set_controller_type(RouteControllerType::kGeneric);
+  route.set_media_sink_name(sink.sink().name());
   DVLOG(1) << "LaunchSession: source_id=" << cast_source.source_id()
            << ", route_id: " << route_id << ", sink_id=" << sink_id;
   DoLaunchSessionParams params(route, cast_source, sink, origin, tab_id,
@@ -574,6 +575,7 @@ void CastActivityManager::AddNonLocalActivityRecord(
   // Route description is set in SetOrUpdateSession().
   MediaRoute route(route_id, source, sink_id, /* description */ std::string(),
                    /* is_local */ false, /* for_display */ true);
+  route.set_media_sink_name(sink.sink().name());
 
   auto* activity_ptr = AddCastActivityRecord(route, app_id);
   activity_ptr->SetOrUpdateSession(session, sink, hash_token_);

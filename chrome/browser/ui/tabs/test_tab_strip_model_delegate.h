@@ -28,6 +28,8 @@ class TestTabStripModelDelegate : public TabStripModelDelegate {
   int GetDragActions() const override;
   bool CanDuplicateContentsAt(int index) override;
   void DuplicateContentsAt(int index) override;
+  bool CanMoveTabToWindow(int index) override;
+  void MoveTabToNewWindow(int index) override;
   void CreateHistoricalTab(content::WebContents* contents) override;
   bool ShouldRunUnloadListenerBeforeClosing(
       content::WebContents* contents) override;

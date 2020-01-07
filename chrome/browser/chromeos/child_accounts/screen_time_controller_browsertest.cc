@@ -116,10 +116,8 @@ class ScreenTimeControllerTest : public MixinBasedInProcessBrowserTest {
   }
 
   void MockChildScreenTime(base::TimeDelta used_time) {
-    Profile::FromBrowserContext(child_profile_)
-        ->GetPrefs()
-        ->SetInteger(prefs::kChildScreenTimeMilliseconds,
-                     used_time.InMilliseconds());
+    child_profile_->GetPrefs()->SetInteger(prefs::kChildScreenTimeMilliseconds,
+                                           used_time.InMilliseconds());
   }
 
   bool IsLocked() {

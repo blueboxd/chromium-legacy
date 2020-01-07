@@ -43,7 +43,15 @@ class SVGTransformNonInterpolableValue : public NonInterpolableValue {
 };
 
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE(SVGTransformNonInterpolableValue);
-DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(SVGTransformNonInterpolableValue);
+template <>
+struct DowncastTraits<SVGTransformNonInterpolableValue> {
+  static bool AllowFrom(const NonInterpolableValue* value) {
+    return value && AllowFrom(*value);
+  }
+  static bool AllowFrom(const NonInterpolableValue& value) {
+    return value.GetType() == SVGTransformNonInterpolableValue::static_type_;
+  }
+};
 
 namespace {
 
@@ -175,7 +183,7 @@ SVGTransform* FromInterpolableValue(const InterpolableValue& value,
 
 const Vector<SVGTransformType>& GetTransformTypes(
     const InterpolationValue& value) {
-  return ToSVGTransformNonInterpolableValue(*value.non_interpolable_value)
+  return To<SVGTransformNonInterpolableValue>(*value.non_interpolable_value)
       .TransformTypes();
 }
 
@@ -289,7 +297,7 @@ SVGPropertyBase* SVGTransformListInterpolationType::AppliedSVGValue(
   auto* result = MakeGarbageCollected<SVGTransformList>();
   const auto& list = To<InterpolableList>(interpolable_value);
   const Vector<SVGTransformType>& transform_types =
-      ToSVGTransformNonInterpolableValue(non_interpolable_value)
+      To<SVGTransformNonInterpolableValue>(non_interpolable_value)
           ->TransformTypes();
   for (wtf_size_t i = 0; i < list.length(); ++i)
     result->Append(FromInterpolableValue(*list.Get(i), transform_types.at(i)));

@@ -306,6 +306,11 @@ base::Optional<int> AXPlatformNodeDelegateBase::GetTableCellCount() const {
   return base::nullopt;
 }
 
+base::Optional<bool>
+AXPlatformNodeDelegateBase::GetTableHasColumnOrRowHeaderNode() const {
+  return base::nullopt;
+}
+
 std::vector<int32_t> AXPlatformNodeDelegateBase::GetColHeaderNodeIds() const {
   return {};
 }

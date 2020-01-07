@@ -21,15 +21,13 @@ TEST(AutocompleteMatchTypeTest, AccessibilityLabelHistory) {
   match.type = AutocompleteMatchType::URL_WHAT_YOU_TYPED;
   match.description = kTestTitle;
   EXPECT_EQ(kTestUrl + base::UTF8ToUTF16(", 2 of 9"),
-            AutocompleteMatchType::ToAccessibilityLabel(match, kTestUrl, 1, 9,
-                                                        false));
+            AutocompleteMatchType::ToAccessibilityLabel(match, kTestUrl, 1, 9));
 
   // Decorated with title and match type.
   match.type = AutocompleteMatchType::HISTORY_URL;
   EXPECT_EQ(kTestTitle + base::UTF8ToUTF16(" ") + kTestUrl +
                 base::UTF8ToUTF16(" location from history, 2 of 3"),
-            AutocompleteMatchType::ToAccessibilityLabel(match, kTestUrl, 1, 3,
-                                                        false));
+            AutocompleteMatchType::ToAccessibilityLabel(match, kTestUrl, 1, 3));
 }
 
 TEST(AutocompleteMatchTypeTest, AccessibilityLabelSearch) {
@@ -39,9 +37,13 @@ TEST(AutocompleteMatchTypeTest, AccessibilityLabelSearch) {
   AutocompleteMatch match;
   match.type = AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED;
   match.description = kSearchDesc;
-  EXPECT_EQ(
-      kSearch + base::UTF8ToUTF16(" search, 6 of 8"),
-      AutocompleteMatchType::ToAccessibilityLabel(match, kSearch, 5, 8, false));
+  EXPECT_EQ(kSearch + base::UTF8ToUTF16(" search, 6 of 8"),
+            AutocompleteMatchType::ToAccessibilityLabel(match, kSearch, 5, 8));
+
+  // Make sure there's no suffix if |total_matches| is 0, regardless of the
+  // |match_index| value.
+  EXPECT_EQ(kSearch + base::UTF8ToUTF16(" search"),
+            AutocompleteMatchType::ToAccessibilityLabel(match, kSearch, 5, 0));
 }
 
 namespace {

@@ -82,9 +82,7 @@ SearchResultView::SearchResultView(SearchResultListView* list_view,
   set_notify_enter_exit_on_child(true);
 }
 
-SearchResultView::~SearchResultView() {
-  ClearResult();
-}
+SearchResultView::~SearchResultView() = default;
 
 void SearchResultView::OnResultChanged() {
   OnMetadataChanged();

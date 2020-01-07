@@ -60,8 +60,9 @@ base::Optional<CorsErrorStatus> CheckAccess(
     const url::Origin& origin);
 
 // Returns true if |request_mode| is not kNavigate nor kNoCors, and the
-// origin of |request_url| is not a data URL, and |request_initiator| is not
-// same as the origin of |request_url|,
+// |request_initiator| is not same as the origin of |request_url|. The
+// |request_url| is expected to have a http or https scheme as they are only
+// schemes that the spec officially supports.
 COMPONENT_EXPORT(NETWORK_CPP)
 bool ShouldCheckCors(const GURL& request_url,
                      const base::Optional<url::Origin>& request_initiator,

@@ -72,7 +72,7 @@
 #endif
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
-#include "components/safe_browsing/password_protection/mock_password_protection_service.h"
+#include "components/safe_browsing/content/password_protection/mock_password_protection_service.h"
 #endif
 
 #if defined(OS_ANDROID)

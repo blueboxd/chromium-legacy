@@ -92,14 +92,6 @@ class BeforeInstallPromptEvent final
   Member<UserChoiceProperty> user_choice_;
 };
 
-DEFINE_TYPE_CASTS(BeforeInstallPromptEvent,
-                  Event,
-                  event,
-                  event->InterfaceName() ==
-                      event_interface_names::kBeforeInstallPromptEvent,
-                  event.InterfaceName() ==
-                      event_interface_names::kBeforeInstallPromptEvent);
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_APP_BANNER_BEFORE_INSTALL_PROMPT_EVENT_H_

@@ -11,6 +11,7 @@
 #include "build/buildflag.h"
 #include "chrome/common/buildflags.h"
 #include "components/nacl/common/buildflags.h"
+#include "components/paint_preview/buildflags/buildflags.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
@@ -2414,6 +2415,11 @@ extern const char kXRSandboxDescription[];
 extern const char kNaclName[];
 extern const char kNaclDescription[];
 #endif  // ENABLE_NACL
+
+#if BUILDFLAG(ENABLE_PAINT_PREVIEW) && defined(OS_ANDROID)
+extern const char kPaintPreviewTestName[];
+extern const char kPaintPreviewTestDescription[];
+#endif  // ENABLE_PAINT_PREVIEW && defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 

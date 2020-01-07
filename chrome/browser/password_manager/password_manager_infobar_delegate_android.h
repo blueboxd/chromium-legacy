@@ -21,10 +21,10 @@ class PasswordManagerInfoBarDelegate : public ConfirmInfoBarDelegate {
   // ConfirmInfoBarDelegate:
   InfoBarAutomationType GetInfoBarAutomationType() const override;
   int GetIconId() const override;
-  bool ShouldExpire(const NavigationDetails& details) const override;
-  base::string16 GetMessageText() const override;
   GURL GetLinkURL() const override;
+  bool ShouldExpire(const NavigationDetails& details) const override;
   bool LinkClicked(WindowOpenDisposition disposition) override;
+  base::string16 GetMessageText() const override;
 
  protected:
   PasswordManagerInfoBarDelegate();

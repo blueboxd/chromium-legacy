@@ -842,7 +842,8 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
                  gesture_event.data.scroll_begin.delta_hint_units !=
                      ui::input_types::ScrollGranularity::kScrollByPixel)) {
     DCHECK(!scroll_state.is_in_inertial_phase());
-    scroll_status = input_handler_->ScrollAnimatedBegin(&scroll_state);
+    scroll_status =
+        input_handler_->ScrollBegin(&scroll_state, cc::InputHandler::WHEEL);
   } else {
     scroll_status = input_handler_->ScrollBegin(
         &scroll_state, GestureScrollInputType(gesture_event.SourceDevice()));

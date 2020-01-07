@@ -34,6 +34,7 @@ source_set("updater_tests") {
 
   deps = [
     ":network_fetcher_sources",
+    ":updater_setup_sources",
     "//base/test:test_support",
     "//net:test_support",
     "//testing/gmock",
@@ -50,23 +51,21 @@ mac_app_bundle("updater_bundle") {
   ]
   deps = [
     ":network_fetcher_sources",
+    ":updater_setup_sources",
     "//chrome/updater:common",
   ]
 }
 
-executable("updater_setup") {
+source_set("updater_setup_sources") {
   sources = [
-    "updater_setup/main.cc",
-    "updater_setup/updater_setup.h",
-    "updater_setup/updater_setup.mm",
+    "setup/setup.h",
+    "setup/setup.mm",
   ]
 
   deps = [
     ":network_fetcher_sources",
-    ":updater_bundle",
     "//base",
-    "//chrome/common",
-    "//chrome/common/importer",
+    "//chrome/common/mac:launchd",
     "//chrome/updater:common",
     "//mojo/public/cpp/platform",
   ]
@@ -75,5 +74,16 @@ executable("updater_setup") {
     "AppKit.framework",
     "CoreServices.framework",
     "ServiceManagement.framework",
+  ]
+}
+
+executable("updater_setup") {
+  sources = [
+    "setup/main.cc",
+  ]
+
+  deps = [
+    ":updater_bundle",
+    ":updater_setup_sources",
   ]
 }

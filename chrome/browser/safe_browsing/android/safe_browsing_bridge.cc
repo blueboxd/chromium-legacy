@@ -8,7 +8,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 
 using base::android::JavaParamRef;
 

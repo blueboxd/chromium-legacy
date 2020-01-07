@@ -56,11 +56,11 @@ class GlobalConfirmInfoBar : public TabStripModelObserver,
 
   std::unique_ptr<ConfirmInfoBarDelegate> delegate_;
   std::map<infobars::InfoBarManager*, DelegateProxy*> proxies_;
-  BrowserTabStripTracker browser_tab_strip_tracker_;
+  BrowserTabStripTracker browser_tab_strip_tracker_{this, nullptr, nullptr};
 
   // Indicates if the global infobar is currently in the process of shutting
   // down.
-  bool is_closing_;
+  bool is_closing_ = false;
 
   base::WeakPtrFactory<GlobalConfirmInfoBar> weak_factory_{this};
 

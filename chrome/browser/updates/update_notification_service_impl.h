@@ -32,6 +32,8 @@ class UpdateNotificationServiceImpl : public UpdateNotificationService {
   // UpdateNotificationService implementation.
   void Schedule(UpdateNotificationInfo data) override;
 
+  bool IsReadyToDisplay() const override;
+
   // Called after querying the |ClientOverview| struct from scheduler system
   // completed.
   void OnClientOverviewQueried(UpdateNotificationInfo data,
@@ -39,6 +41,10 @@ class UpdateNotificationServiceImpl : public UpdateNotificationService {
 
   // Build notification ScheduleParams for update notification.
   notifications::ScheduleParams BuildScheduleParams();
+
+  // Return throttle interval from Android shared preference if exists,
+  // otherwise return the default interval from config.
+  base::TimeDelta GetThrottleInterval() const;
 
   // Used to schedule notification to show in the future. Must outlive this
   // class.

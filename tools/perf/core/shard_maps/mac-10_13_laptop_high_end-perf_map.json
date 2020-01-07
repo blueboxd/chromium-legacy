@@ -11,6 +11,23 @@
                 "end": 36,
                 "abridged": false
             }
+        },
+        "executables": {
+            "dawn_perf_tests": {
+                "path": "dawn_perf_tests"
+            },
+            "performance_browser_tests": {
+                "path": "performance_browser_tests"
+            },
+            "net_perftests": {
+                "path": "net_perftests"
+            },
+            "media_perftests": {
+                "path": "media_perftests"
+            },
+            "base_perftests": {
+                "path": "base_perftests"
+            }
         }
     },
     "1": {

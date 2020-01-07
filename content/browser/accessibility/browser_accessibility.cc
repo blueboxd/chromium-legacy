@@ -1698,6 +1698,11 @@ base::Optional<int> BrowserAccessibility::GetTableCellCount() const {
   return node()->GetTableCellCount();
 }
 
+base::Optional<bool> BrowserAccessibility::GetTableHasColumnOrRowHeaderNode()
+    const {
+  return node()->GetTableHasColumnOrRowHeaderNode();
+}
+
 std::vector<int32_t> BrowserAccessibility::GetColHeaderNodeIds() const {
   std::vector<int32_t> result;
   node()->GetTableCellColHeaderNodeIds(&result);

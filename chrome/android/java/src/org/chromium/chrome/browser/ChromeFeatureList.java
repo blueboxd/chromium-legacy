@@ -164,6 +164,8 @@ public abstract class ChromeFeatureList {
             "AutofillCreditCardAuthentication";
     public static final String AUTOFILL_ENABLE_COMPANY_NAME = "AutofillEnableCompanyName";
     public static final String ADJUST_WEBAPK_INSTALLATION_SPACE = "AdjustWebApkInstallationSpace";
+    public static final String ANDROID_BLOCK_INTENT_NON_SAFELISTED_HEADERS =
+            "AndroidBlockIntentNonSafelistedHeaders";
     public static final String ANDROID_NIGHT_MODE = "AndroidNightMode";
     public static final String ANDROID_NIGHT_MODE_CCT = "AndroidNightModeCCT";
     public static final String ANDROID_NIGHT_MODE_FOR_Q = "AndroidNightModeForQ";
@@ -297,6 +299,7 @@ public abstract class ChromeFeatureList {
     public static final String OMNIBOX_SEARCH_ENGINE_LOGO = "OmniboxSearchEngineLogo";
     public static final String OVERLAY_NEW_LAYOUT = "OverlayNewLayout";
     public static final String OVERSCROLL_HISTORY_NAVIGATION = "OverscrollHistoryNavigation";
+    public static final String PAINT_PREVIEW_TEST = "PaintPreviewTest";
     public static final String PASSWORD_EDITING_ANDROID = "PasswordEditingAndroid";
     public static final String PASSWORD_LEAK_DETECTION = "PasswordLeakDetection";
     public static final String PASSWORD_MANAGER_ONBOARDING_ANDROID =

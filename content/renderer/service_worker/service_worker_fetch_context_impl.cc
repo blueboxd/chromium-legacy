@@ -154,12 +154,12 @@ ServiceWorkerFetchContextImpl::GetControllerServiceWorkerMode() const {
   return blink::mojom::ControllerServiceWorkerMode::kNoController;
 }
 
-blink::WebURL ServiceWorkerFetchContextImpl::SiteForCookies() const {
+net::SiteForCookies ServiceWorkerFetchContextImpl::SiteForCookies() const {
   // According to the spec, we can use the |worker_script_url_| for
   // SiteForCookies, because "site for cookies" for the service worker is
   // the service worker's origin's host's registrable domain.
   // https://tools.ietf.org/html/draft-ietf-httpbis-cookie-same-site-07#section-2.1.2
-  return worker_script_url_;
+  return net::SiteForCookies::FromUrl(worker_script_url_);
 }
 
 base::Optional<blink::WebSecurityOrigin>

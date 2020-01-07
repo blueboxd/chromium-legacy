@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_PAGE_H_
 
 #include <stdint.h>
+#include <array>
 #include <atomic>
 
 #include "base/bits.h"
@@ -301,8 +302,7 @@ class FreeListEntry final : public HeapObjectHeader {
       : HeapObjectHeader(size,
                          kGcInfoIndexForFreeListHeader,
                          HeapObjectHeader::kNormalPage),
-        next_(nullptr) {
-  }
+        next_(nullptr) {}
 
   Address GetAddress() { return reinterpret_cast<Address>(this); }
 
@@ -387,7 +387,7 @@ class FreeList {
 };
 
 // Blink heap pages are set up with a guard page before and after the payload.
-inline size_t BlinkPagePayloadSize() {
+constexpr size_t BlinkPagePayloadSize() {
   return kBlinkPageSize - 2 * kBlinkGuardPageSize;
 }
 
@@ -482,7 +482,9 @@ class BasePage {
 #endif
   virtual size_t size() = 0;
 
-  Address GetAddress() { return reinterpret_cast<Address>(this); }
+  Address GetAddress() const {
+    return reinterpret_cast<Address>(const_cast<BasePage*>(this));
+  }
   PageMemory* Storage() const { return storage_; }
   BaseArena* Arena() const { return arena_; }
   ThreadState* thread_state() const { return thread_state_; }
@@ -598,7 +600,8 @@ class PLATFORM_EXPORT ObjectStartBitmap {
   // Finds an object header based on a
   // address_maybe_pointing_to_the_middle_of_object. Will search for an object
   // start in decreasing address order.
-  Address FindHeader(Address address_maybe_pointing_to_the_middle_of_object);
+  Address FindHeader(
+      Address address_maybe_pointing_to_the_middle_of_object) const;
 
   inline void SetBit(Address);
   inline void ClearBit(Address);
@@ -637,12 +640,12 @@ class PLATFORM_EXPORT NormalPage final : public BasePage {
   NormalPage(PageMemory*, BaseArena*);
   ~NormalPage() override;
 
-  Address Payload() { return GetAddress() + PageHeaderSize(); }
-  size_t PayloadSize() {
+  Address Payload() const { return GetAddress() + PageHeaderSize(); }
+  static constexpr size_t PayloadSize() {
     return (BlinkPagePayloadSize() - PageHeaderSize()) & ~kAllocationMask;
   }
-  Address PayloadEnd() { return Payload() + PayloadSize(); }
-  bool ContainedInObjectPayload(Address address) {
+  Address PayloadEnd() const { return Payload() + PayloadSize(); }
+  bool ContainedInObjectPayload(Address address) const {
     return Payload() <= address && address < PayloadEnd();
   }
 
@@ -665,14 +668,14 @@ class PLATFORM_EXPORT NormalPage final : public BasePage {
   bool Contains(Address) override;
 #endif
   size_t size() override { return kBlinkPageSize; }
-  static size_t PageHeaderSize() {
+  static constexpr size_t PageHeaderSize() {
     // Compute the amount of padding we have to add to a header to make the size
     // of the header plus the padding a multiple of 8 bytes.
-    size_t padding_size =
+    constexpr size_t kPaddingSize =
         (sizeof(NormalPage) + kAllocationGranularity -
          (sizeof(HeapObjectHeader) % kAllocationGranularity)) %
         kAllocationGranularity;
-    return sizeof(NormalPage) + padding_size;
+    return sizeof(NormalPage) + kPaddingSize;
   }
 
   inline NormalPageArena* ArenaForNormalPage() const;
@@ -718,7 +721,72 @@ class PLATFORM_EXPORT NormalPage final : public BasePage {
 
   void VerifyMarking() override;
 
+  void MarkCard(Address address);
+
+  // Iterates over all objects in marked cards.
+  template <typename Function>
+  void IterateCardTable(Function function) const;
+
  private:
+  // Data structure that divides a page in a number of cards each of 512 bytes
+  // size. Marked cards are stored in bytes, not bits, to make write barrier
+  // faster and reduce chances of false sharing. This gives only ~0.1% of memory
+  // overhead. Also, since there are guard pages before and after a Blink page,
+  // some of card bits are wasted and unneeded.
+  class CardTable final {
+   public:
+    struct value_type {
+      uint8_t bit;
+      size_t index;
+    };
+
+    struct iterator {
+      iterator& operator++() {
+        ++index;
+        return *this;
+      }
+      value_type operator*() const { return {table->table_[index], index}; }
+      bool operator!=(iterator other) const {
+        return table != other.table || index != other.index;
+      }
+
+      size_t index = 0;
+      const CardTable* table = nullptr;
+    };
+
+    using const_iterator = iterator;
+
+    static constexpr size_t kBitsPerCard = 9;
+    static constexpr size_t kCardSize = 1 << kBitsPerCard;
+
+    const_iterator begin() const { return {FirstPayloadCard(), this}; }
+    const_iterator end() const { return {LastPayloadCard(), this}; }
+
+    void Mark(size_t card) {
+      DCHECK_LE(FirstPayloadCard(), card);
+      DCHECK_GT(LastPayloadCard(), card);
+      table_[card] = 1;
+    }
+
+    bool IsMarked(size_t card) const {
+      DCHECK_LE(FirstPayloadCard(), card);
+      DCHECK_GT(LastPayloadCard(), card);
+      return table_[card];
+    }
+
+    void Clear() { std::fill(table_.begin(), table_.end(), 0); }
+
+   private:
+    static constexpr size_t FirstPayloadCard() {
+      return (kBlinkGuardPageSize + NormalPage::PageHeaderSize()) / kCardSize;
+    }
+    static constexpr size_t LastPayloadCard() {
+      return (kBlinkGuardPageSize + BlinkPagePayloadSize()) / kCardSize;
+    }
+
+    std::array<uint8_t, kBlinkPageSize / kCardSize> table_{};
+  };
+
   struct ToBeFinalizedObject {
     HeapObjectHeader* header;
     void Finalize();
@@ -728,16 +796,22 @@ class PLATFORM_EXPORT NormalPage final : public BasePage {
     size_t size;
   };
 
+  template <typename Function>
+  void IterateOnCard(Function function, size_t card_number) const;
+
   void MergeFreeLists();
   void AddToFreeList(Address start,
                      size_t size,
                      FinalizeType finalize_type,
                      bool found_finalizer);
 
+  CardTable card_table_;
   ObjectStartBitmap object_start_bit_map_;
   Vector<ToBeFinalizedObject> to_be_finalized_objects_;
   FreeList cached_freelist_;
   Vector<FutureFreelistEntry> unfinalized_freelist_;
+
+  friend class CardTableTest;
 };
 
 // Large allocations are allocated as separate objects and linked in a list.
@@ -1325,6 +1399,54 @@ HeapObjectHeader* NormalPage::FindHeaderFromAddress(Address address) {
   DCHECK_LT(0u, header->GcInfoIndex());
   DCHECK_GT(header->PayloadEnd<mode>(), address);
   return header;
+}
+
+template <typename Function>
+void NormalPage::IterateCardTable(Function function) const {
+  // TODO(bikineev): Consider introducing a "dirty" per-page bit to avoid
+  // the loop (this may in turn pessimize barrier implementation).
+  for (auto card : card_table_) {
+    if (UNLIKELY(card.bit)) {
+      IterateOnCard(std::move(function), card.index);
+    }
+  }
+}
+
+// Iterates over all objects in the specified marked card. Please note that
+// since objects are not aligned by the card boundary, it starts from the
+// object which may reside on a previous card.
+template <typename Function>
+void NormalPage::IterateOnCard(Function function, size_t card_number) const {
+#if DCHECK_IS_ON()
+  DCHECK(card_table_.IsMarked(card_number));
+  DCHECK(ArenaForNormalPage()->IsConsistentForGC());
+#endif
+
+  const Address card_begin = RoundToBlinkPageStart(GetAddress()) +
+                             (card_number << CardTable::kBitsPerCard);
+  const Address card_end = card_begin + CardTable::kCardSize;
+  // Generational barrier marks cards corresponding to slots (not source
+  // objects), therefore the potential source object may reside on a
+  // previous card.
+  HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(
+      card_number == card_table_.begin().index
+          ? Payload()
+          : object_start_bit_map_.FindHeader(card_begin));
+  for (; header < reinterpret_cast<HeapObjectHeader*>(card_end);
+       reinterpret_cast<Address&>(header) += header->size()) {
+    if (!header->IsFree()) {
+      function(header);
+    }
+  }
+}
+
+inline void NormalPage::MarkCard(Address address) {
+#if DCHECK_IS_ON()
+  DCHECK(Contains(address));
+#endif
+  const size_t byte = reinterpret_cast<size_t>(address) & kBlinkPageOffsetMask;
+  const size_t card = byte / CardTable::kCardSize;
+  card_table_.Mark(card);
 }
 
 }  // namespace blink

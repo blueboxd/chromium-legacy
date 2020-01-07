@@ -63,7 +63,7 @@ class MockRTCPeerConnectionHandlerPlatform
   AddTransceiverWithTrack(const WebMediaStreamTrack&,
                           const webrtc::RtpTransceiverInit&) override;
   webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
-  AddTransceiverWithKind(std::string kind,
+  AddTransceiverWithKind(const String& kind,
                          const webrtc::RtpTransceiverInit&) override;
   webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>> AddTrack(
       const WebMediaStreamTrack&,
@@ -76,7 +76,7 @@ class MockRTCPeerConnectionHandlerPlatform
   void Stop() override;
   webrtc::PeerConnectionInterface* NativePeerConnection() override;
   void RunSynchronousOnceClosureOnSignalingThread(
-      base::OnceClosure closure,
+      CrossThreadOnceClosure closure,
       const char* trace_event_name) override;
   void RunSynchronousRepeatingClosureOnSignalingThread(
       const base::RepeatingClosure& closure,

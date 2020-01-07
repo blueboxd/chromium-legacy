@@ -196,7 +196,6 @@ AdsPageLoadMetricsObserver::OnCommit(
     ukm::SourceId source_id) {
   DCHECK(ad_frames_data_.empty());
 
-  committed_ = true;
   page_load_is_reload_ =
       navigation_handle->GetReloadType() != content::ReloadType::NONE;
 
@@ -934,10 +933,6 @@ void AdsPageLoadMetricsObserver::RecordPerFrameHistogramsForAdTagging(
     ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.SqrtNumberOfPixels",
                   UMA_HISTOGRAM_COUNTS_10000, visibility,
                   std::sqrt(frame_area));
-    ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.SmallestDimension",
-                  UMA_HISTOGRAM_COUNTS_10000, visibility,
-                  std::min(ad_frame_data.frame_size().width(),
-                           ad_frame_data.frame_size().height()));
 
     ADS_HISTOGRAM("Bytes.AdFrames.PerFrame.Total2", PAGE_BYTES_HISTOGRAM,
                   visibility, ad_frame_data.bytes());

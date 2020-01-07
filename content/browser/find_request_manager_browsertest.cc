@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/find_request_manager.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -21,6 +22,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace content {
 
@@ -902,6 +904,36 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, HistoryBackAndForth) {
   contents()->GetController().GoForward();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   test_page();
+}
+
+class FindRequestManagerPortalTest : public FindRequestManagerTest {
+ public:
+  FindRequestManagerPortalTest() {
+    scoped_feature_list_.InitAndEnableFeature(blink::features::kPortals);
+  }
+  ~FindRequestManagerPortalTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Tests that results find-in-page won't show results inside a portal.
+IN_PROC_BROWSER_TEST_F(FindRequestManagerPortalTest, Portal) {
+  TestNavigationObserver navigation_observer(contents());
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL(
+                                 "a.com", "/find_in_page_with_portal.html")));
+  ASSERT_TRUE(navigation_observer.last_navigation_succeeded());
+
+  auto options = blink::mojom::FindOptions::New();
+  options->run_synchronously_for_testing = true;
+  Find("result", options->Clone());
+  delegate()->WaitForFinalReply();
+
+  FindResults results = delegate()->GetFindResults();
+  EXPECT_EQ(last_request_id(), results.request_id);
+  EXPECT_EQ(2, results.number_of_matches);
+  EXPECT_EQ(1, results.active_match_ordinal);
 }
 
 }  // namespace content

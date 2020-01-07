@@ -2753,12 +2753,12 @@ class MockNetworkContextClient : public TestNetworkContextClient {
       int32_t process_id,
       int32_t routing_id,
       const GURL& url,
-      const GURL& site_for_cookies,
+      const net::SiteForCookies& site_for_cookies,
       const std::vector<net::CookieWithStatus>& cookie_list) override {
     for (const auto& cookie_and_status : cookie_list) {
       reported_response_cookies_.push_back(
-          CookieInfo(url, site_for_cookies, cookie_and_status.cookie,
-                     cookie_and_status.status));
+          CookieInfo(url, site_for_cookies.RepresentativeUrl(),
+                     cookie_and_status.cookie, cookie_and_status.status));
     }
     if (wait_for_reported_response_cookies_ &&
         reported_response_cookies_.size() >=
@@ -2772,12 +2772,12 @@ class MockNetworkContextClient : public TestNetworkContextClient {
       int32_t process_id,
       int32_t routing_id,
       const GURL& url,
-      const GURL& site_for_cookies,
+      const net::SiteForCookies& site_for_cookies,
       const std::vector<net::CookieWithStatus>& cookie_list) override {
     for (const auto& cookie_and_status : cookie_list) {
-      reported_request_cookies_.push_back(CookieInfo(url, site_for_cookies,
-                                                     cookie_and_status.cookie,
-                                                     cookie_and_status.status));
+      reported_request_cookies_.push_back(
+          CookieInfo(url, site_for_cookies.RepresentativeUrl(),
+                     cookie_and_status.cookie, cookie_and_status.status));
     }
     if (wait_for_reported_request_cookies_ &&
         reported_request_cookies_.size() >=

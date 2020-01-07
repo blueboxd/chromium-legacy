@@ -138,20 +138,18 @@ bool HasLogBestEffortTasksSwitch() {
              switches::kLogBestEffortTasks);
 }
 
-// Needed for GetContinuationTaskRunner and CurrentThread. This executor lives
-// for the duration of a threadpool task invocation.
+// Needed for PostTaskHere and CurrentThread. This executor lives for the
+// duration of a threadpool task invocation.
 class EphemeralTaskExecutor : public TaskExecutor {
  public:
   // |sequenced_task_runner| and |single_thread_task_runner| must outlive this
-  // EphemeralTaskExecutor. Note |single_thread_task_runner| may be null.
-  EphemeralTaskExecutor(
-      scoped_refptr<SequencedTaskRunner> sequenced_task_runner,
-      SingleThreadTaskRunner* single_thread_task_runner,
-      const TaskTraits* sequence_traits)
-      : sequenced_task_runner_(std::move(sequenced_task_runner)),
+  // EphemeralTaskExecutor.
+  EphemeralTaskExecutor(SequencedTaskRunner* sequenced_task_runner,
+                        SingleThreadTaskRunner* single_thread_task_runner,
+                        const TaskTraits* sequence_traits)
+      : sequenced_task_runner_(sequenced_task_runner),
         single_thread_task_runner_(single_thread_task_runner),
         sequence_traits_(sequence_traits) {
-    DCHECK(sequenced_task_runner_);
     SetTaskExecutorForCurrentThread(this);
   }
 
@@ -197,11 +195,6 @@ class EphemeralTaskExecutor : public TaskExecutor {
   }
 #endif  // defined(OS_WIN)
 
-  const scoped_refptr<SequencedTaskRunner>& GetContinuationTaskRunner()
-      override {
-    return sequenced_task_runner_;
-  }
-
  private:
   // Currently ignores |traits.priority()|.
   void CheckTraitsCompatibleWithSequenceTraits(const TaskTraits& traits) {
@@ -218,7 +211,7 @@ class EphemeralTaskExecutor : public TaskExecutor {
                sequence_traits_->with_base_sync_primitives());
   }
 
-  const scoped_refptr<SequencedTaskRunner> sequenced_task_runner_;
+  SequencedTaskRunner* const sequenced_task_runner_;
   SingleThreadTaskRunner* const single_thread_task_runner_;
   const TaskTraits* const sequence_traits_;
 };

@@ -272,8 +272,8 @@ class RenderFrameHostManagerTest : public ContentBrowserTest {
   net::HostPortPair foo_host_port_;
 };
 
-// Web pages should not have script access to the swapped out page.
-IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, NoScriptAccessAfterSwapOut) {
+// Web pages should not have script access to the unloaded page.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, NoScriptAccessAfterUnload) {
   StartEmbeddedServer();
 
   // Load a page with links that open in a new window.
@@ -2542,12 +2542,12 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 }
 
 // crbug.com/615274
-// This test ensures that after an RFH is swapped out, the associated WebUI
+// This test ensures that after an RFH is unloaded, the associated WebUI
 // instance is no longer allowed to send JavaScript messages. This is necessary
 // because WebUI currently (and unusually) always sends JavaScript messages to
 // the current main frame, rather than the RFH that owns the WebUI.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
-                       WebUIJavascriptDisallowedAfterSwapOut) {
+                       WebUIJavascriptDisallowedAfterUnload) {
   StartEmbeddedServer();
 
   const GURL web_ui_url(std::string(kChromeUIScheme) + "://" +
@@ -2557,8 +2557,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   RenderFrameHostImpl* rfh =
       static_cast<WebContentsImpl*>(shell()->web_contents())->GetMainFrame();
 
-  // Set up a slow unload handler to force the RFH to linger in the swapped
-  // out but not-yet-deleted state.
+  // Set up a slow unload handler to force the RFH to linger in the unloaded
+  // but not-yet-deleted state.
   EXPECT_TRUE(
       ExecuteScript(rfh, "window.onunload=function(e){ while(1); };\n"));
 
@@ -2574,7 +2574,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   handler->AllowJavascript();
   EXPECT_TRUE(handler->IsJavascriptAllowed());
 
-  rfh->DisableSwapOutTimerForTesting();
+  rfh->DisableUnloadTimerForTesting();
   RenderFrameHostDestructionObserver rfh_observer(rfh);
 
   // Navigate, but wait for commit, not the actual load to finish.
@@ -2590,11 +2590,11 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
       root->render_manager()->GetRenderFrameProxyHost(web_ui_site_instance));
 
   // The previous RFH should still be pending deletion, as we wait for either
-  // the SwapOut ACK or a timeout.
+  // the FrameHostMsg_Unload_ACK or a timeout.
   ASSERT_TRUE(rfh->IsRenderFrameLive());
   ASSERT_FALSE(rfh->is_active());
 
-  // We specifically want verify behavior between swap-out and RFH destruction.
+  // We specifically want verify behavior between unload and RFH destruction.
   ASSERT_FALSE(rfh_observer.deleted());
 
   EXPECT_FALSE(handler->IsJavascriptAllowed());
@@ -2632,10 +2632,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, DontSelectInvalidFiles) {
   EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
       process_id, file));
 
-  // Disable the swap out timer so we wait for the UpdateState message.
+  // Disable the unload timer so we wait for the UpdateState message.
   static_cast<WebContentsImpl*>(shell()->web_contents())
       ->GetMainFrame()
-      ->DisableSwapOutTimerForTesting();
+      ->DisableUnloadTimerForTesting();
 
   // Navigate to a different process and wait for the old process to exit.
   RenderProcessHostWatcher exit_observer(
@@ -2689,8 +2689,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
       process_id, file));
 
-  // Disable the swap out timer so we wait for the UpdateState message.
-  wc->GetMainFrame()->DisableSwapOutTimerForTesting();
+  // Disable the unload timer so we wait for the UpdateState message.
+  wc->GetMainFrame()->DisableUnloadTimerForTesting();
 
   // Navigate to a different process without access to the file, and wait for
   // the old process to exit.
@@ -2840,8 +2840,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
       process_id, file));
 
-  // Disable the swap out timer so we wait for the UpdateState message.
-  root->current_frame_host()->DisableSwapOutTimerForTesting();
+  // Disable the unload timer so we wait for the UpdateState message.
+  root->current_frame_host()->DisableUnloadTimerForTesting();
 
   // Do an in-page navigation in the child to make sure we hear a PageState with
   // the chosen file before the subframe's FrameTreeNode is deleted.  In
@@ -3326,7 +3326,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 }
 
 // Ensure that we don't crash the renderer in CreateRenderView if a proxy goes
-// away between swapout and the next navigation.  See https://crbug.com/581912.
+// away between unload and the next navigation.  See https://crbug.com/581912.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        CreateRenderViewAfterProcessKillAndClosedProxy) {
   StartEmbeddedServer();
@@ -3352,7 +3352,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Navigate the first tab to a different site, and only wait for commit, not
   // load stop.
   RenderFrameHostImpl* rfh_a = root->current_frame_host();
-  rfh_a->DisableSwapOutTimerForTesting();
+  rfh_a->DisableUnloadTimerForTesting();
   SiteInstanceImpl* site_instance_a = rfh_a->GetSiteInstance();
   TestFrameNavigationObserver commit_observer(root);
   shell()->LoadURL(embedded_test_server()->GetURL("b.com", "/title2.html"));
@@ -3362,7 +3362,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_TRUE(root->render_manager()->GetRenderFrameProxyHost(site_instance_a));
 
   // The previous RFH should still be pending deletion, as we wait for either
-  // the SwapOut ACK or a timeout.
+  // the FrameHostMsg_Unload_ACK or a timeout.
   ASSERT_TRUE(rfh_a->IsRenderFrameLive());
   ASSERT_FALSE(rfh_a->is_active());
 
@@ -3407,7 +3407,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 }
 
 // Ensure that we don't crash in RenderViewImpl::Init if a proxy is created
-// after swapout and before navigation.  See https://crbug.com/544755.
+// after unload and before navigation.  See https://crbug.com/544755.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        RenderViewInitAfterNewProxyAndProcessKill) {
   StartEmbeddedServer();
@@ -3424,7 +3424,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Navigate the tab to a different site, and only wait for commit, not load
   // stop.
   RenderFrameHostImpl* rfh_a = root->current_frame_host();
-  rfh_a->DisableSwapOutTimerForTesting();
+  rfh_a->DisableUnloadTimerForTesting();
   SiteInstanceImpl* site_instance_a = rfh_a->GetSiteInstance();
   TestFrameNavigationObserver commit_observer(root);
   shell()->LoadURL(embedded_test_server()->GetURL("b.com", "/title2.html"));
@@ -3432,11 +3432,11 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_NE(site_instance_a, shell()->web_contents()->GetSiteInstance());
 
   // The previous RFH should still be pending deletion, as we wait for either
-  // the SwapOut ACK or a timeout.
+  // the unload ACK or a timeout.
   ASSERT_TRUE(rfh_a->IsRenderFrameLive());
   ASSERT_FALSE(rfh_a->is_active());
 
-  // When the previous RFH was swapped out, it should have still gotten a
+  // When the previous RFH was unloaded, it should have still gotten a
   // replacement proxy even though it's the last active frame in the process.
   EXPECT_TRUE(root->render_manager()->GetRenderFrameProxyHost(site_instance_a));
 
@@ -3687,7 +3687,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Navigate the first tab to a different site and wait for the old process to
   // complete its unload handler and exit.
   RenderFrameHostImpl* rfh_a = root->current_frame_host();
-  rfh_a->DisableSwapOutTimerForTesting();
+  rfh_a->DisableUnloadTimerForTesting();
   RenderProcessHostWatcher exit_observer(
       rfh_a->GetProcess(), RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   TestNavigationObserver commit_observer(web_contents);
@@ -3791,7 +3791,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, LastCommittedOrigin) {
       static_cast<WebContentsImpl*>(shell()->web_contents());
   FrameTreeNode* root = web_contents->GetFrameTree()->root();
   RenderFrameHostImpl* rfh_a = root->current_frame_host();
-  rfh_a->DisableSwapOutTimerForTesting();
+  rfh_a->DisableUnloadTimerForTesting();
 
   EXPECT_EQ(url::Origin::Create(url_a), rfh_a->GetLastCommittedOrigin());
   EXPECT_EQ(rfh_a, web_contents->GetMainFrame());
@@ -3833,7 +3833,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, LastCommittedOrigin) {
   EXPECT_EQ(url::Origin::Create(url_b), rfh_b->GetLastCommittedOrigin());
   FrameTreeNode* child = root->child_at(0);
   RenderFrameHostImpl* child_rfh_b = root->child_at(0)->current_frame_host();
-  child_rfh_b->DisableSwapOutTimerForTesting();
+  child_rfh_b->DisableUnloadTimerForTesting();
   EXPECT_EQ(url::Origin::Create(url_b), child_rfh_b->GetLastCommittedOrigin());
 
   // Navigate subframe to c.com.  Wait for commit but not full load, and then
@@ -5830,10 +5830,11 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerUnloadBrowserTest,
   RenderFrameHostImpl* rfh = root->current_frame_host();
 
   // Set up an unload handler which never finishes to force |rfh| to stay
-  // around in pending delete state and never receive the swapout ACK.
+  // around in pending delete state and never receive the
+  // FrameHostMsg_Unload_ACK.
   EXPECT_TRUE(
       ExecuteScript(rfh, "window.onunload = function(e) { while(1); };\n"));
-  rfh->DisableSwapOutTimerForTesting();
+  rfh->DisableUnloadTimerForTesting();
 
   // Navigate to another page with two subframes.
   RenderFrameDeletedObserver rfh_observer(rfh);
@@ -5855,8 +5856,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerUnloadBrowserTest,
   rfh->GetProcess()->Shutdown(0);
   crash_observer.Wait();
 
-  // The process kill should simulate a swapout ACK and trigger destruction of
-  // the pending delete RFH.
+  // The process kill should simulate a FrameHostMsg_Unload_ACK and trigger
+  // destruction of the pending delete RFH.
   rfh_observer.WaitUntilDeleted();
 
   // Ensure that the process kill didn't incorrectly remove subframes from the

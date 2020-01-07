@@ -18,8 +18,6 @@ blink_modules_sources("push_messaging") {
     "push_messaging_bridge.h",
     "push_messaging_client.cc",
     "push_messaging_client.h",
-    "push_messaging_type_converters.cc",
-    "push_messaging_type_converters.h",
     "push_messaging_utils.cc",
     "push_messaging_utils.h",
     "push_provider.cc",

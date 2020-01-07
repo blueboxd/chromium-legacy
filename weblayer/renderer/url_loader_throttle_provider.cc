@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "components/safe_browsing/renderer/renderer_url_loader_throttle.h"
+#include "components/safe_browsing/content/renderer/renderer_url_loader_throttle.h"
 #include "content/public/renderer/render_thread.h"
 
 namespace weblayer {

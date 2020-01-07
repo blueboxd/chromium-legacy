@@ -915,6 +915,8 @@ TEST_F(GcpGaiaCredentialBaseTest,
                       validity_period_in_days_dword));
 
   GoogleMdmEnrolledStatusForTesting force_success(true);
+  fake_internet_checker()->SetHasInternetConnection(
+      FakeInternetAvailabilityChecker::kHicForceYes);
 
   // Create provider and start logon.
   Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
@@ -932,6 +934,10 @@ TEST_F(GcpGaiaCredentialBaseTest,
   EXPECT_FALSE(fake_associated_user_validator()->IsUserAccessBlockedForTesting(
       OLE2W(first_sid)));
 
+  // Internet should be disabled for stale online login verifications to be
+  // considered.
+  fake_internet_checker()->SetHasInternetConnection(
+      FakeInternetAvailabilityChecker::kHicForceNo);
   // Advance the time that is more than the offline validity period.
   BaseTimeClockOverrideValue::current_time_ =
       last_online_login + base::TimeDelta::FromDays(validity_period_in_days) +
@@ -944,6 +950,10 @@ TEST_F(GcpGaiaCredentialBaseTest,
                   ->DenySigninForUsersWithInvalidTokenHandles(CPUS_LOGON));
   EXPECT_TRUE(fake_associated_user_validator()->IsUserAccessBlockedForTesting(
       OLE2W(first_sid)));
+
+  // Reset the internet back to being on.
+  fake_internet_checker()->SetHasInternetConnection(
+      FakeInternetAvailabilityChecker::kHicForceYes);
 
   ASSERT_EQ(S_OK, StartLogonProcessAndWait());
 

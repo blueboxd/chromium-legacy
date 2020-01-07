@@ -72,14 +72,6 @@ class GPUCanvasContext : public CanvasRenderingContext {
   bool stopped_ = false;
 };
 
-DEFINE_TYPE_CASTS(GPUCanvasContext,
-                  CanvasRenderingContext,
-                  context,
-                  context->GetContextType() ==
-                      CanvasRenderingContext::kContextGPUPresent,
-                  context.GetContextType() ==
-                      CanvasRenderingContext::kContextGPUPresent);
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_CANVAS_CONTEXT_H_

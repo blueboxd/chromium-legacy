@@ -1,10 +1,8 @@
 include_rules = [
-    "+base/atomicops.h",
     "+base/compiler_specific.h",
     "+base/logging.h",
     "+base/gtest_prod_util.h",
     "+base/memory/weak_ptr.h",
-    "+base/sequence_checker.h",
     "+base/single_thread_task_runner.h",
     "+base/synchronization/lock.h",
     "+base/threading/thread_checker.h",

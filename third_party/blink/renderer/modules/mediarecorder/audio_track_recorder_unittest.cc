@@ -18,6 +18,7 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 #include "third_party/opus/src/include/opus.h"
@@ -113,6 +114,7 @@ class AudioTrackRecorderTest : public testing::TestWithParam<ATRTestParams> {
         codec_, blink_track_,
         WTF::BindRepeating(&AudioTrackRecorderTest::OnEncodedAudio,
                            WTF::Unretained(this)),
+        ConvertToBaseOnceCallback(CrossThreadBindOnce([] {})),
         0 /* bits_per_second */);
   }
 

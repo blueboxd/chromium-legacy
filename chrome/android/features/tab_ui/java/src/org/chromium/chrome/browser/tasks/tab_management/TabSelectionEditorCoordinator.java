@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
-import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.TabListModelProperties.MODEL_TYPE;
-import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.TabListModelProperties.ModelType.OTHERS;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.CARD_TYPE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.ModelType.OTHERS;
 
 import android.content.Context;
 import android.support.v7.widget.GridLayoutManager;
@@ -176,7 +176,7 @@ class TabSelectionEditorCoordinator {
 
         if (tabs != null && preSelectedCount > 0 && preSelectedCount < tabs.size()) {
             mTabListCoordinator.addSpecialListItem(preSelectedCount, TabProperties.UiType.DIVIDER,
-                    new PropertyModel.Builder(MODEL_TYPE).with(MODEL_TYPE, OTHERS).build());
+                    new PropertyModel.Builder(CARD_TYPE).with(CARD_TYPE, OTHERS).build());
         }
     }
 

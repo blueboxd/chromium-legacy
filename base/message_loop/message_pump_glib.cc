@@ -9,8 +9,8 @@
 
 #include <glib.h>
 
-#include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/synchronization/lock.h"
@@ -119,7 +119,6 @@ gboolean WorkSourceCheck(GSource* source) {
 gboolean WorkSourceDispatch(GSource* source,
                             GSourceFunc unused_func,
                             gpointer unused_data) {
-
   static_cast<WorkSource*>(source)->pump->HandleDispatch();
   // Always return TRUE so our source stays registered.
   return TRUE;
@@ -144,29 +143,32 @@ struct ThreadInfo {
 };
 
 // Used for accesing |thread_info|.
-static LazyInstance<Lock>::Leaky thread_info_lock = LAZY_INSTANCE_INITIALIZER;
+Lock& GetThreadInfoLock() {
+  static NoDestructor<Lock> thread_info_lock;
+  return *thread_info_lock;
+}
 
 // If non-null it means a MessagePumpGlib exists and has been Run. This is
 // destroyed when the MessagePump is destroyed.
-ThreadInfo* thread_info = nullptr;
+ThreadInfo* g_thread_info = nullptr;
 
 void CheckThread(MessagePumpGlib* pump) {
-  AutoLock auto_lock(thread_info_lock.Get());
-  if (!thread_info) {
-    thread_info = new ThreadInfo;
-    thread_info->pump = pump;
-    thread_info->thread_id = PlatformThread::CurrentId();
+  AutoLock auto_lock(GetThreadInfoLock());
+  if (!g_thread_info) {
+    g_thread_info = new ThreadInfo;
+    g_thread_info->pump = pump;
+    g_thread_info->thread_id = PlatformThread::CurrentId();
   }
-  DCHECK(thread_info->thread_id == PlatformThread::CurrentId()) <<
-      "Running MessagePumpGlib on two different threads; "
-      "this is unsupported by GLib!";
+  DCHECK_EQ(g_thread_info->thread_id, PlatformThread::CurrentId())
+      << "Running MessagePumpGlib on two different threads; "
+         "this is unsupported by GLib!";
 }
 
 void PumpDestroyed(MessagePumpGlib* pump) {
-  AutoLock auto_lock(thread_info_lock.Get());
-  if (thread_info && thread_info->pump == pump) {
-    delete thread_info;
-    thread_info = nullptr;
+  AutoLock auto_lock(GetThreadInfoLock());
+  if (g_thread_info && g_thread_info->pump == pump) {
+    delete g_thread_info;
+    g_thread_info = nullptr;
   }
 }
 

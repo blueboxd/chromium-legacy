@@ -53,12 +53,6 @@ class HTMLTableRowsCollection final : public HTMLCollection {
   Element* VirtualItemAfter(Element*) const override;
 };
 
-DEFINE_TYPE_CASTS(HTMLTableRowsCollection,
-                  LiveNodeListBase,
-                  collection,
-                  collection->GetType() == kTableRows,
-                  collection.GetType() == kTableRows);
-
 }  // namespace blink
 
 #endif

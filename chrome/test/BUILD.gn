@@ -196,7 +196,7 @@ static_library("test_support") {
     "//components/performance_manager/test_support",
     "//components/prefs:test_support",
     "//components/rappor:test_support",
-    "//components/safe_browsing/db:v4_test_util",
+    "//components/safe_browsing/core/db:v4_test_util",
     "//components/search_engines:test_support",
     "//components/sessions:test_support",
     "//components/signin/public/base:test_support",
@@ -709,7 +709,7 @@ if (!is_android) {
       "//components/policy:chrome_settings_proto_generated_compile",
       "//components/resources",
       "//components/safe_browsing:buildflags",
-      "//components/safe_browsing/db:test_database_manager",
+      "//components/safe_browsing/core/db:test_database_manager",
       "//components/services/patch/public/mojom",
       "//components/services/quarantine:test_support",
       "//components/signin/core/browser",
@@ -1007,6 +1007,7 @@ if (!is_android) {
       "../browser/metrics/variations/force_field_trials_browsertest.cc",
       "../browser/navigation_predictor/navigation_predictor_browsertest.cc",
       "../browser/navigation_predictor/navigation_predictor_preconnect_client_browsertest.cc",
+      "../browser/navigation_predictor/search_engine_preconnector_browsertest.cc",
       "../browser/net/chrome_accept_header_browsertest.cc",
       "../browser/net/chrome_mojo_proxy_resolver_factory_browsertest.cc",
       "../browser/net/chrome_network_delegate_browsertest.cc",
@@ -1251,6 +1252,7 @@ if (!is_android) {
       "../browser/ui/browser_navigator_browsertest.cc",
       "../browser/ui/browser_navigator_browsertest.h",
       "../browser/ui/browser_navigator_browsertest_chromeos.cc",
+      "../browser/ui/browser_tab_strip_model_delegate_browsertest.cc",
       "../browser/ui/browser_tabrestore_browsertest.cc",
       "../browser/ui/collected_cookies_browsertest.cc",
       "../browser/ui/content_settings/content_setting_bubble_model_browsertest.cc",
@@ -2455,7 +2457,7 @@ if (!is_android) {
             [ "../browser/chromeos/extensions/printing/printing_apitest.cc" ]
         deps += [ "//printing:test_support" ]
       }
-      if (enable_cros_libassistant) {
+      if (enable_assistant_integration_tests) {
         sources += [
           "../browser/ui/ash/assistant/assistant_browsertest.cc",
           "../browser/ui/ash/assistant/assistant_test_mixin.cc",
@@ -2882,27 +2884,35 @@ group("ct_telemetry_perf_tests_without_chrome") {
 group("performance_test_suite") {
   testonly = true
   deps = [
+    "//chrome/test:telemetry_perf_tests",
+  ]
+
+  data_deps = [
     "//base:base_perftests",
     "//chrome/test:angle_perftests",
     "//chrome/test:dawn_perf_tests",
-    "//chrome/test:telemetry_perf_tests",
     "//components:components_perftests",
     "//components/tracing:tracing_perftests",
     "//gpu:command_buffer_perftests",
-    "//gpu:command_buffer_perftests",
     "//gpu:gpu_perftests",
+    "//media:media_perftests",
+    "//testing:run_perf_test",
   ]
 
   if (!is_android && !is_fuchsia) {
-    deps += [
+    data_deps += [
       "//chrome/test:load_library_perf_tests",
       "//ui/views:views_perftests",
     ]
   }
 
-  data_deps = [
-    "//testing:run_perf_test",
-  ]
+  if (!is_android) {
+    data_deps += [ "//chrome/test:performance_browser_tests" ]
+  }
+
+  if (!is_ios && !is_fuchsia && !is_android) {
+    data_deps += [ "//net:net_perftests" ]
+  }
 }
 
 # Difference between this and performance_test_suite is that this runs a devil
@@ -3648,10 +3658,10 @@ test("unit_tests") {
     "//components/page_load_metrics/common:test_support",
     "//components/resources",
     "//components/safe_browsing:buildflags",
-    "//components/safe_browsing:features",
-    "//components/safe_browsing/db",
-    "//components/safe_browsing/db:test_database_manager",
-    "//components/safe_browsing/password_protection:mock_password_protection",
+    "//components/safe_browsing/content/password_protection:mock_password_protection",
+    "//components/safe_browsing/core:features",
+    "//components/safe_browsing/core/db",
+    "//components/safe_browsing/core/db:test_database_manager",
     "//components/services/patch/content",
     "//components/services/unzip/content",
     "//components/spellcheck:buildflags",
@@ -4430,6 +4440,7 @@ test("unit_tests") {
       "../browser/extensions/api/declarative_content/declarative_content_css_condition_tracker_unittest.cc",
       "../browser/extensions/api/declarative_content/declarative_content_is_bookmarked_condition_tracker_unittest.cc",
       "../browser/extensions/api/declarative_content/declarative_content_page_url_condition_tracker_unittest.cc",
+      "../browser/extensions/api/declarative_net_request/action_tracker_unittest.cc",
       "../browser/extensions/api/declarative_net_request/dnr_test_base.cc",
       "../browser/extensions/api/declarative_net_request/dnr_test_base.h",
       "../browser/extensions/api/declarative_net_request/rule_indexing_unittest.cc",
@@ -4915,11 +4926,10 @@ test("unit_tests") {
       ":test_proto",
       "../common/safe_browsing:mock_binary_feature_extractor",
       "//chrome/services/file_util/public/cpp:unit_tests",
-      "//components/safe_browsing:ping_manager_unittest",
-      "//components/safe_browsing/browser:unittests",
-      "//components/safe_browsing/db:v4_test_util",
-      "//components/safe_browsing/renderer:websocket_sb_handshake_throttle_unittest",
-      "//components/safe_browsing/triggers:ad_redirect_trigger",
+      "//components/safe_browsing/content/renderer:websocket_sb_handshake_throttle_unittest",
+      "//components/safe_browsing/content/triggers:ad_redirect_trigger",
+      "//components/safe_browsing/core:ping_manager_unittest",
+      "//components/safe_browsing/core/db:v4_test_util",
     ]
   } else if (safe_browsing_mode == 2) {
     sources += [ "../browser/safe_browsing/telemetry/android/android_telemetry_service_unittest.cc" ]
@@ -4967,6 +4977,8 @@ test("unit_tests") {
         "../browser/printing/test_printer_query.cc",
         "../browser/printing/test_printer_query.h",
         "../browser/ui/webui/print_preview/extension_printer_handler_unittest.cc",
+        "../browser/ui/webui/print_preview/fake_print_render_frame.cc",
+        "../browser/ui/webui/print_preview/fake_print_render_frame.h",
         "../browser/ui/webui/print_preview/pdf_printer_handler_unittest.cc",
         "../browser/ui/webui/print_preview/pdf_printer_handler_win_unittest.cc",
         "../browser/ui/webui/print_preview/print_preview_handler_unittest.cc",
@@ -6597,7 +6609,7 @@ if (is_win) {
     ]
     deps = [
       "//base",
-      "//components/safe_browsing:csd_proto",
+      "//components/safe_browsing/core:csd_proto",
       "//crypto",
     ]
     libs = [ "wintrust.lib" ]

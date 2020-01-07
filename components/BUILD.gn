@@ -259,10 +259,11 @@ test("components_unittests") {
       "//components/performance_manager:unit_tests",
       "//components/policy/content:unit_tests",
       "//components/previews/content:unit_tests",
-      "//components/safe_browsing/common:unit_tests",
-      "//components/safe_browsing/password_protection:password_protection_unittest",
-      "//components/safe_browsing/triggers:unit_tests",
-      "//components/safe_browsing/web_ui:unit_tests",
+      "//components/safe_browsing/content/password_protection:password_protection_unittest",
+      "//components/safe_browsing/content/triggers:unit_tests",
+      "//components/safe_browsing/content/web_ui:unit_tests",
+      "//components/safe_browsing/core/common:unit_tests",
+      "//components/safe_browsing/core/triggers:unit_tests",
       "//components/security_interstitials/content:unit_tests",
       "//components/security_state/content:unit_tests",
       "//components/services/heap_profiling:unit_tests",
@@ -397,8 +398,8 @@ test("components_unittests") {
   }
   if (safe_browsing_mode == 1) {
     deps += [
-      "//components/safe_browsing:verdict_cache_manager_unittest",
-      "//components/safe_browsing/db:unit_tests_desktop",
+      "//components/safe_browsing/core:verdict_cache_manager_unittest",
+      "//components/safe_browsing/core/db:unit_tests_desktop",
     ]
   } else if (safe_browsing_mode == 2) {
     deps += [ "//components/safe_browsing/android:unit_tests_mobile" ]
@@ -406,7 +407,7 @@ test("components_unittests") {
 
   if (!is_ios) {
     deps += [
-      "//components/safe_browsing/realtime:unit_tests",
+      "//components/safe_browsing/core/realtime:unit_tests",
       "//components/webrtc_logging/browser:unit_tests",
       "//components/webrtc_logging/common:unit_tests",
     ]
@@ -692,11 +693,11 @@ if (!is_ios && !is_fuchsia) {
     }
 
     if (!is_android) {
-      sources += [ "safe_browsing/db/v4_store_perftest.cc" ]
+      sources += [ "safe_browsing/core/db/v4_store_perftest.cc" ]
       deps += [
-        "//components/safe_browsing/db:v4_protocol_manager_util",
-        "//components/safe_browsing/db:v4_store",
-        "//components/safe_browsing/db:v4_test_util",
+        "//components/safe_browsing/core/db:v4_protocol_manager_util",
+        "//components/safe_browsing/core/db:v4_store",
+        "//components/safe_browsing/core/db:v4_test_util",
         "//crypto",
       ]
     }

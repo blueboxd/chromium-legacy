@@ -215,8 +215,8 @@ void TestRenderFrameHost::SendBeforeUnloadACK(bool proceed) {
   OnBeforeUnloadACK(proceed, now, now);
 }
 
-void TestRenderFrameHost::SimulateSwapOutACK() {
-  OnSwapOutACK();
+void TestRenderFrameHost::SimulateUnloadACK() {
+  OnUnloadACK();
 }
 
 // TODO(loonybear): Add a test for non-bool type PolicyValue.

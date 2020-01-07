@@ -790,9 +790,16 @@ void LayoutInline::CollectLineBoxRects(
     const auto* box_fragment = ContainingBlockFlowFragmentOf(*this);
     if (!box_fragment)
       return;
-    for (const auto& fragment :
-         NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this))
-      yield(fragment.RectInContainerBox());
+    if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+      for (const auto& fragment :
+           NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this))
+        yield(fragment.RectInContainerBox());
+      return;
+    }
+    NGInlineCursor cursor;
+    cursor.MoveTo(*this);
+    for (; cursor; cursor.MoveToNextForSameLayoutObject())
+      yield(cursor.CurrentRect());
     return;
   }
   if (!AlwaysCreateLineBoxes()) {

@@ -376,6 +376,28 @@ Remember that we [prefer sequences to physical
 threads](#prefer-sequences-to-physical-threads) and that this thus should rarely
 be necessary.
 
+### Posting to the Current Thread
+
+*** note
+**IMPORTANT:** To post a task that needs mutual exclusion with the current
+sequence of tasks but doesn’t absolutely need to run on the current physical thread,
+use `base::SequencedTaskRunnerHandle::Get()` instead of
+`base::ThreadTaskRunnerHandle::Get()` (ref. [Posting to the Current
+Sequence](#Posting-to-the-Current-Virtual_Thread)). That will better document the
+requirements of the posted task and will avoid unnecessarily making your API
+physical thread-affine. In a single-thread task, `base::SequencedTaskRunnerHandle::Get()`
+is equivalent to `base::ThreadTaskRunnerHandle::Get()`.
+***
+
+If you must post a task to the current physical thread nonetheless, use
+[`base::ThreadTaskRunnerHandle`](https://cs.chromium.org/chromium/src/base/threading/thread_task_runner_handle.h).
+
+```cpp
+// The task will run on the current thread in the future.
+base::ThreadTaskRunnerHandle::Get()->PostTask(
+    FROM_HERE, base::BindOnce(&Task));
+```
+
 ## Posting Tasks to a COM Single-Thread Apartment (STA) Thread (Windows)
 
 Tasks that need to run on a COM Single-Thread Apartment (STA) thread must be

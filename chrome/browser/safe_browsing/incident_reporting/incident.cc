@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/time/time.h"
-#include "components/safe_browsing/proto/csd.pb.h"
+#include "components/safe_browsing/core/proto/csd.pb.h"
 
 namespace safe_browsing {
 

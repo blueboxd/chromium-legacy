@@ -6,15 +6,15 @@
 #define EXTENSIONS_BROWSER_EXTENSION_REGISTRY_OBSERVER_H_
 
 #include "extensions/browser/uninstall_reason.h"
-#include "extensions/common/extension.h"
 
 namespace content {
 class BrowserContext;
 }
 
 namespace extensions {
-
+class Extension;
 class ExtensionRegistry;
+enum class UnloadedExtensionReason;
 
 // Observer for ExtensionRegistry. Exists in a separate header file to reduce
 // the include file burden for typical clients of ExtensionRegistry.

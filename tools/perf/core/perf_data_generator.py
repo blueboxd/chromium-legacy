@@ -98,7 +98,6 @@ FYI_BUILDERS = {
         'isolate': 'performance_test_suite',
         'extra_args': [
           '--output-format=histograms',
-          '--experimental-proto-trace-format',
         ],
       }
     ],
@@ -151,7 +150,6 @@ FYI_BUILDERS = {
         'isolate': 'performance_test_suite',
         'extra_args': [
             '--output-format=histograms',
-            '--experimental-proto-trace-format',
             '--experimental-tbmv3-metrics',
         ],
       }
@@ -354,7 +352,7 @@ BUILDERS = {
         'isolate': 'performance_webview_test_suite',
       }
     ],
-    'platform': 'android-webview-google',
+    'platform': 'android-webview-google-bundle',
     'dimension': {
       'pool': 'chrome.tests.perf-webview',
       'os': 'Android',
@@ -466,7 +464,7 @@ BUILDERS = {
         'isolate': 'performance_webview_test_suite',
       }
     ],
-    'platform': 'android-webview-google',
+    'platform': 'android-webview-google-bundle',
     'dimension': {
       'pool': 'chrome.tests.perf-webview',
       'os': 'Android',
@@ -758,11 +756,6 @@ BUILDERS = {
         'extra_args': [
           '--assert-gpu-compositing',
         ],
-      },
-      {
-        'isolate': 'dawn_perf_tests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
       },
     ],
     'platform': 'mac',

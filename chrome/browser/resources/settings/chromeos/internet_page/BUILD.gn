@@ -106,7 +106,7 @@ js_library("internet_subpage") {
 js_library("network_proxy_section") {
   deps = [
     "../..:route",
-    "../../controls:settings_checkbox",
+    "../../controls:settings_toggle_button",
     "../../prefs:prefs_behavior",
     "//ui/webui/resources/cr_components/chromeos/network:network_proxy",
     "//ui/webui/resources/cr_components/chromeos/network:onc_mojo",

@@ -128,7 +128,7 @@ Polymer({
    * @private
    */
   onAllowSharedDialogConfirm_: function() {
-    /** @type {!SettingsCheckboxElement} */ (this.$.allowShared)
+    /** @type {!SettingsToggleButtonElement} */ (this.$.allowShared)
         .sendPrefChange();
     this.$.confirmAllowSharedDialog.close();
   },
@@ -139,7 +139,7 @@ Polymer({
    * @private
    */
   onAllowSharedDialogCancel_: function() {
-    /** @type {!SettingsCheckboxElement} */ (this.$.allowShared)
+    /** @type {!SettingsToggleButtonElement} */ (this.$.allowShared)
         .resetToPrefValue();
     this.$.confirmAllowSharedDialog.close();
   },

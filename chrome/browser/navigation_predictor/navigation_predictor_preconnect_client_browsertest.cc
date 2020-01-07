@@ -6,6 +6,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/predictors/preconnect_manager.h"
@@ -283,6 +284,12 @@ class NavigationPredictorPreconnectClientBrowserTestWithSearch
   base::test::ScopedFeatureList feature_list_;
 };
 
+// TODO(https://crbug.com/1039813): Test fails consistently on MacOS 10.13
+#if defined(OS_MACOSX)
+#define MAYBE_PreconnectSearchWithFeature DISABLED_PreconnectSearchWithFeature
+#else
+#define MAYBE_PreconnectSearchWithFeature PreconnectSearchWithFeature
+#endif
 IN_PROC_BROWSER_TEST_F(NavigationPredictorPreconnectClientBrowserTestWithSearch,
                        PreconnectSearchWithFeature) {
   static const char kShortName[] = "test";

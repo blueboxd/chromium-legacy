@@ -52,7 +52,6 @@ crbug.com/891861 [ mac no-passthrough ] WebglExtension_WEBGL_multi_draw_instance
 crbug.com/891861 [ android no-passthrough ] WebglExtension_WEBGL_draw_instanced_base_vertex_base_instance [ Skip ]
 crbug.com/891861 [ android no-passthrough ] WebglExtension_WEBGL_multi_draw_instanced_base_vertex_base_instance [ Skip ]
 
-
 # ========================
 # Conformance expectations
 # ========================
@@ -723,6 +722,10 @@ crbug.com/948894 [ android ] conformance2/textures/image_bitmap_from_video/* [ R
 # Video uploads to some texture formats new in WebGL 2.0 are
 # failing.
 crbug.com/951628 [ android no-passthrough ] conformance/rendering/blending.html [ Failure ]
+
+# TODO(crbug.com/1000354): Remove when either workaround is implemented in cmd decoder,
+# or when angle is used everywhere.
+crbug.com/1000354 [ android no-passthrough ] conformance2/extensions/ext-texture-norm16.html [ Skip ]
 
 # Qualcomm (Pixel 2) failures
 crbug.com/906737 [ android qualcomm ] conformance/extensions/webgl-compressed-texture-astc.html [ Failure ]
